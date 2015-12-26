@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_GROUP_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_GROUP_H_
 
+#include <utility>
+
 #include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
@@ -60,20 +62,20 @@ class AssociatedGroup {
 
     if (config == WILL_PASS_PTR) {
       internal::AssociatedInterfacePtrInfoHelper::SetHandle(ptr_info,
-                                                            remote.Pass());
+                                                            std::move(remote));
       // The implementation is local, therefore set the version according to
       // the interface definition that this code is built against.
       ptr_info->set_version(T::Version_);
       internal::AssociatedInterfaceRequestHelper::SetHandle(request,
-                                                            local.Pass());
+                                                            std::move(local));
     } else {
       internal::AssociatedInterfacePtrInfoHelper::SetHandle(ptr_info,
-                                                            local.Pass());
+                                                            std::move(local));
       // The implementation is remote, we don't know about its actual version
       // yet.
       ptr_info->set_version(0u);
       internal::AssociatedInterfaceRequestHelper::SetHandle(request,
-                                                            remote.Pass());
+                                                            std::move(remote));
     }
   }
 

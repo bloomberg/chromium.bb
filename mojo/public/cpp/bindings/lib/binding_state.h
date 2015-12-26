@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_BINDING_STATE_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_BINDING_STATE_H_
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -54,7 +56,8 @@ class BindingState<Interface, false> {
     filters.Append<internal::MessageHeaderValidator>();
     filters.Append<typename Interface::RequestValidator_>();
 
-    router_ = new internal::Router(handle.Pass(), filters.Pass(), waiter);
+    router_ =
+        new internal::Router(std::move(handle), std::move(filters), waiter);
     router_->set_incoming_receiver(&stub_);
     router_->set_connection_error_handler(
         [this]() { connection_error_handler_.Run(); });
@@ -87,7 +90,7 @@ class BindingState<Interface, false> {
     InterfaceRequest<GenericInterface> request =
         MakeRequest<GenericInterface>(router_->PassMessagePipe());
     DestroyRouter();
-    return request.Pass();
+    return std::move(request);
   }
 
   void set_connection_error_handler(const Closure& error_handler) {
@@ -146,7 +149,7 @@ class BindingState<Interface, true> {
   void Bind(ScopedMessagePipeHandle handle, const MojoAsyncWaiter* waiter) {
     DCHECK(!router_);
 
-    router_ = new internal::MultiplexRouter(false, handle.Pass(), waiter);
+    router_ = new internal::MultiplexRouter(false, std::move(handle), waiter);
     stub_.serialization_context()->router = router_;
 
     endpoint_client_.reset(new internal::InterfaceEndpointClient(

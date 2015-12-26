@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_INTERFACE_REQUEST_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_INTERFACE_REQUEST_H_
 
+#include <utility>
+
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/lib/scoped_interface_endpoint_handle.h"
 
@@ -29,11 +31,11 @@ class AssociatedInterfaceRequest {
   // Takes the interface endpoint handle from another
   // AssociatedInterfaceRequest.
   AssociatedInterfaceRequest(AssociatedInterfaceRequest&& other) {
-    handle_ = other.handle_.Pass();
+    handle_ = std::move(other.handle_);
   }
   AssociatedInterfaceRequest& operator=(AssociatedInterfaceRequest&& other) {
     if (this != &other)
-      handle_ = other.handle_.Pass();
+      handle_ = std::move(other.handle_);
     return *this;
   }
 
@@ -65,7 +67,7 @@ class AssociatedInterfaceRequestHelper {
   template <typename Interface>
   static ScopedInterfaceEndpointHandle PassHandle(
       AssociatedInterfaceRequest<Interface>* request) {
-    return request->handle_.Pass();
+    return std::move(request->handle_);
   }
 
   template <typename Interface>
@@ -77,7 +79,7 @@ class AssociatedInterfaceRequestHelper {
   template <typename Interface>
   static void SetHandle(AssociatedInterfaceRequest<Interface>* request,
                         ScopedInterfaceEndpointHandle handle) {
-    request->handle_ = handle.Pass();
+    request->handle_ = std::move(handle);
   }
 };
 

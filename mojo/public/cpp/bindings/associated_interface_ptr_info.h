@@ -6,6 +6,7 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_INTERFACE_PTR_INFO_H_
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/lib/scoped_interface_endpoint_handle.h"
@@ -27,7 +28,7 @@ class AssociatedInterfacePtrInfo {
   AssociatedInterfacePtrInfo() : version_(0u) {}
 
   AssociatedInterfacePtrInfo(AssociatedInterfacePtrInfo&& other)
-      : handle_(other.handle_.Pass()), version_(other.version_) {
+      : handle_(std::move(other.handle_)), version_(other.version_) {
     other.version_ = 0u;
   }
 
@@ -35,7 +36,7 @@ class AssociatedInterfacePtrInfo {
 
   AssociatedInterfacePtrInfo& operator=(AssociatedInterfacePtrInfo&& other) {
     if (this != &other) {
-      handle_ = other.handle_.Pass();
+      handle_ = std::move(other.handle_);
       version_ = other.version_;
       other.version_ = 0u;
     }
@@ -65,7 +66,7 @@ class AssociatedInterfacePtrInfoHelper {
   template <typename Interface>
   static ScopedInterfaceEndpointHandle PassHandle(
       AssociatedInterfacePtrInfo<Interface>* info) {
-    return info->handle_.Pass();
+    return std::move(info->handle_);
   }
 
   template <typename Interface>
@@ -77,7 +78,7 @@ class AssociatedInterfacePtrInfoHelper {
   template <typename Interface>
   static void SetHandle(AssociatedInterfacePtrInfo<Interface>* info,
                         ScopedInterfaceEndpointHandle handle) {
-    info->handle_ = handle.Pass();
+    info->handle_ = std::move(handle);
   }
 };
 

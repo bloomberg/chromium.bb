@@ -49,7 +49,7 @@ struct TypeConverter<test::RectPtr, RedmondRect> {
     rect->y = input.top;
     rect->width = input.right - input.left;
     rect->height = input.bottom - input.top;
-    return rect.Pass();
+    return rect;
   }
 };
 
@@ -71,7 +71,7 @@ struct TypeConverter<test::NamedRegionPtr, RedmondNamedRegion> {
     test::NamedRegionPtr region(test::NamedRegion::New());
     region->name = input.name;
     region->rects = Array<test::RectPtr>::From(input.rects);
-    return region.Pass();
+    return region;
   }
 };
 

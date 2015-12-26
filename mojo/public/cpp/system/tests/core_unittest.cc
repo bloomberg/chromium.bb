@@ -10,8 +10,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <map>
+#include <utility>
 
 #include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -103,7 +103,7 @@ TEST(CoreCppTest, Basic) {
     EXPECT_EQ(kInvalidHandleValue, h.get().value());
 
     // This should be a no-op.
-    Close(h.Pass());
+    Close(std::move(h));
 
     // It should still be invalid.
     EXPECT_EQ(kInvalidHandleValue, h.get().value());
@@ -213,7 +213,7 @@ TEST(CoreCppTest, Basic) {
       EXPECT_EQ(kSignalAll, states[1].satisfiable_signals);
 
       // Test closing |h1| explicitly.
-      Close(h1.Pass());
+      Close(std::move(h1));
       EXPECT_FALSE(h1.get().is_valid());
 
       // Make sure |h1| is closed.
@@ -474,20 +474,10 @@ TEST(CoreCppTest, ScopedHandleMoveCtor) {
 
   // If this fails to close buffer1, ScopedHandleBase::CloseIfNecessary() will
   // assert.
-  buffer1 = buffer2.Pass();
+  buffer1 = std::move(buffer2);
 
   EXPECT_TRUE(buffer1.is_valid());
   EXPECT_FALSE(buffer2.is_valid());
-}
-
-TEST(CoreCppTest, ScopedHandleMoveCtorSelf) {
-  ScopedSharedBufferHandle buffer1;
-  EXPECT_EQ(MOJO_RESULT_OK, CreateSharedBuffer(nullptr, 1024, &buffer1));
-  EXPECT_TRUE(buffer1.is_valid());
-
-  buffer1 = buffer1.Pass();
-
-  EXPECT_TRUE(buffer1.is_valid());
 }
 
 // TODO(vtl): Write data pipe tests.

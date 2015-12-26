@@ -5,9 +5,9 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-
 #include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/message_loop/message_loop.h"
@@ -204,7 +204,7 @@ class ValidationIntegrationTest : public ValidationTest {
     ASSERT_EQ(MOJO_RESULT_OK,
               CreateMessagePipe(nullptr, &tester_endpoint, &testee_endpoint_));
     test_message_receiver_ =
-        new TestMessageReceiver(this, tester_endpoint.Pass());
+        new TestMessageReceiver(this, std::move(tester_endpoint));
   }
 
   void TearDown() override {
@@ -218,7 +218,9 @@ class ValidationIntegrationTest : public ValidationTest {
 
   MessageReceiver* test_message_receiver() { return test_message_receiver_; }
 
-  ScopedMessagePipeHandle testee_endpoint() { return testee_endpoint_.Pass(); }
+  ScopedMessagePipeHandle testee_endpoint() {
+    return std::move(testee_endpoint_);
+  }
 
  private:
   class TestMessageReceiver : public MessageReceiver {
@@ -226,7 +228,7 @@ class ValidationIntegrationTest : public ValidationTest {
     TestMessageReceiver(ValidationIntegrationTest* owner,
                         ScopedMessagePipeHandle handle)
         : owner_(owner),
-          connector_(handle.Pass(),
+          connector_(std::move(handle),
                      mojo::internal::Connector::SINGLE_THREADED_SEND) {
       connector_.set_enforce_errors_from_incoming_receiver(false);
     }
@@ -420,7 +422,7 @@ TEST_F(ValidationTest, ResponseBoundsCheck) {
 //   - X::ResponseValidator_
 TEST_F(ValidationIntegrationTest, InterfacePtr) {
   IntegrationTestInterfacePtr interface_ptr = MakeProxy(
-      InterfacePtrInfo<IntegrationTestInterface>(testee_endpoint().Pass(), 0u));
+      InterfacePtrInfo<IntegrationTestInterface>(testee_endpoint(), 0u));
   interface_ptr.internal_state()->EnableTestingMode();
 
   RunValidationTests("integration_intf_resp", test_message_receiver());
@@ -435,7 +437,7 @@ TEST_F(ValidationIntegrationTest, Binding) {
   IntegrationTestInterfaceImpl interface_impl;
   Binding<IntegrationTestInterface> binding(
       &interface_impl,
-      MakeRequest<IntegrationTestInterface>(testee_endpoint().Pass()));
+      MakeRequest<IntegrationTestInterface>(testee_endpoint()));
   binding.EnableTestingMode();
 
   RunValidationTests("integration_intf_rqst", test_message_receiver());

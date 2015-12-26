@@ -165,7 +165,7 @@ struct ArraySerializer<
                                 const ArrayValidateParams* validate_params) {
     for (size_t i = 0; i < input.size(); ++i) {
       S_Data* element;
-      SerializeCaller<S>::Run(input[i].Pass(), buf, &element,
+      SerializeCaller<S>::Run(std::move(input[i]), buf, &element,
                               validate_params->element_validate_params);
       output->at(i) = element;
       MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
@@ -211,7 +211,7 @@ struct ArraySerializer<
                     Buffer* buf,
                     typename Array<T>::Data_** output,
                     const ArrayValidateParams* validate_params) {
-      SerializeArray_(input.Pass(), buf, output, validate_params);
+      SerializeArray_(std::move(input), buf, output, validate_params);
     }
   };
 
@@ -221,7 +221,7 @@ struct ArraySerializer<
                     Buffer* buf,
                     typename Map<T, U>::Data_** output,
                     const ArrayValidateParams* validate_params) {
-      SerializeMap_(input.Pass(), buf, output, validate_params);
+      SerializeMap_(std::move(input), buf, output, validate_params);
     }
   };
 };
@@ -245,7 +245,7 @@ struct ArraySerializer<U, U_Data, true> {
                                 const ArrayValidateParams* validate_params) {
     for (size_t i = 0; i < input.size(); ++i) {
       U_Data* result = output->storage() + i;
-      SerializeUnion_(input[i].Pass(), buf, &result, true);
+      SerializeUnion_(std::move(input[i]), buf, &result, true);
       MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
           !validate_params->element_is_nullable && output->at(i).is_null(),
           VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,

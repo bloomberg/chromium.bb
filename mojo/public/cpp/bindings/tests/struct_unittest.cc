@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <utility>
 
 #include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -21,7 +22,7 @@ RectPtr MakeRect(int32_t factor = 1) {
   rect->y = 2 * factor;
   rect->width = 10 * factor;
   rect->height = 20 * factor;
-  return rect.Pass();
+  return rect;
 }
 
 void CheckRect(const Rect& rect, int32_t factor = 1) {
@@ -41,10 +42,10 @@ MultiVersionStructPtr MakeMultiVersionStruct() {
   output->f_array[1] = 9;
   output->f_array[2] = 8;
   MessagePipe pipe;
-  output->f_message_pipe = pipe.handle0.Pass();
+  output->f_message_pipe = std::move(pipe.handle0);
   output->f_int16 = 42;
 
-  return output.Pass();
+  return output;
 }
 
 template <typename U, typename T>
@@ -55,7 +56,7 @@ U SerializeAndDeserialize(T input) {
   size_t size = GetSerializedSize_(input);
   mojo::internal::FixedBufferForTesting buf(size + 32);
   InputDataType data;
-  Serialize_(input.Pass(), &buf, &data);
+  Serialize_(std::move(input), &buf, &data);
 
   std::vector<Handle> handles;
   data->EncodePointersAndHandles(&handles);
@@ -70,7 +71,7 @@ U SerializeAndDeserialize(T input) {
 
   U output;
   Deserialize_(output_data, &output, nullptr);
-  return output.Pass();
+  return std::move(output);
 }
 
 using StructTest = testing::Test;
@@ -138,7 +139,7 @@ TEST_F(StructTest, Serialization_Basic) {
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::Rect_Data* data;
-  Serialize_(rect.Pass(), &buf, &data);
+  Serialize_(std::move(rect), &buf, &data);
 
   RectPtr rect2;
   Deserialize_(data, &rect2, nullptr);
@@ -171,7 +172,7 @@ TEST_F(StructTest, Serialization_StructPointers) {
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::RectPair_Data* data;
-  Serialize_(pair.Pass(), &buf, &data);
+  Serialize_(std::move(pair), &buf, &data);
 
   RectPairPtr pair2;
   Deserialize_(data, &pair2, nullptr);
@@ -202,7 +203,7 @@ TEST_F(StructTest, Serialization_ArrayPointers) {
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::NamedRegion_Data* data;
-  Serialize_(region.Pass(), &buf, &data);
+  Serialize_(std::move(region), &buf, &data);
 
   NamedRegionPtr region2;
   Deserialize_(data, &region2, nullptr);
@@ -228,7 +229,7 @@ TEST_F(StructTest, Serialization_NullArrayPointers) {
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::NamedRegion_Data* data;
-  Serialize_(region.Pass(), &buf, &data);
+  Serialize_(std::move(region), &buf, &data);
 
   NamedRegionPtr region2;
   Deserialize_(data, &region2, nullptr);
@@ -246,7 +247,7 @@ TEST_F(StructTest, Versioning_OldToNew) {
     expected_output->f_int32 = 123;
 
     MultiVersionStructPtr output =
-        SerializeAndDeserialize<MultiVersionStructPtr>(input.Pass());
+        SerializeAndDeserialize<MultiVersionStructPtr>(std::move(input));
     EXPECT_TRUE(output);
     EXPECT_TRUE(output->Equals(*expected_output));
   }
@@ -260,7 +261,7 @@ TEST_F(StructTest, Versioning_OldToNew) {
     expected_output->f_rect = MakeRect(5);
 
     MultiVersionStructPtr output =
-        SerializeAndDeserialize<MultiVersionStructPtr>(input.Pass());
+        SerializeAndDeserialize<MultiVersionStructPtr>(std::move(input));
     EXPECT_TRUE(output);
     EXPECT_TRUE(output->Equals(*expected_output));
   }
@@ -276,7 +277,7 @@ TEST_F(StructTest, Versioning_OldToNew) {
     expected_output->f_string = "hello";
 
     MultiVersionStructPtr output =
-        SerializeAndDeserialize<MultiVersionStructPtr>(input.Pass());
+        SerializeAndDeserialize<MultiVersionStructPtr>(std::move(input));
     EXPECT_TRUE(output);
     EXPECT_TRUE(output->Equals(*expected_output));
   }
@@ -300,7 +301,7 @@ TEST_F(StructTest, Versioning_OldToNew) {
     expected_output->f_array[2] = 8;
 
     MultiVersionStructPtr output =
-        SerializeAndDeserialize<MultiVersionStructPtr>(input.Pass());
+        SerializeAndDeserialize<MultiVersionStructPtr>(std::move(input));
     EXPECT_TRUE(output);
     EXPECT_TRUE(output->Equals(*expected_output));
   }
@@ -315,7 +316,7 @@ TEST_F(StructTest, Versioning_OldToNew) {
     input->f_array[1] = 9;
     input->f_array[2] = 8;
     MessagePipe pipe;
-    input->f_message_pipe = pipe.handle0.Pass();
+    input->f_message_pipe = std::move(pipe.handle0);
 
     MultiVersionStructPtr expected_output(MultiVersionStruct::New());
     expected_output->f_int32 = 123;
@@ -329,7 +330,7 @@ TEST_F(StructTest, Versioning_OldToNew) {
     MojoHandle expected_handle = input->f_message_pipe.get().value();
 
     MultiVersionStructPtr output =
-        SerializeAndDeserialize<MultiVersionStructPtr>(input.Pass());
+        SerializeAndDeserialize<MultiVersionStructPtr>(std::move(input));
     EXPECT_TRUE(output);
     EXPECT_EQ(expected_handle, output->f_message_pipe.get().value());
     output->f_message_pipe.reset();
@@ -353,7 +354,7 @@ TEST_F(StructTest, Versioning_NewToOld) {
     MojoHandle expected_handle = input->f_message_pipe.get().value();
 
     MultiVersionStructV7Ptr output =
-        SerializeAndDeserialize<MultiVersionStructV7Ptr>(input.Pass());
+        SerializeAndDeserialize<MultiVersionStructV7Ptr>(std::move(input));
     EXPECT_TRUE(output);
     EXPECT_EQ(expected_handle, output->f_message_pipe.get().value());
     output->f_message_pipe.reset();
@@ -372,7 +373,7 @@ TEST_F(StructTest, Versioning_NewToOld) {
     expected_output->f_array[2] = 8;
 
     MultiVersionStructV5Ptr output =
-        SerializeAndDeserialize<MultiVersionStructV5Ptr>(input.Pass());
+        SerializeAndDeserialize<MultiVersionStructV5Ptr>(std::move(input));
     EXPECT_TRUE(output);
     EXPECT_TRUE(output->Equals(*expected_output));
   }
@@ -385,7 +386,7 @@ TEST_F(StructTest, Versioning_NewToOld) {
     expected_output->f_string = "hello";
 
     MultiVersionStructV3Ptr output =
-        SerializeAndDeserialize<MultiVersionStructV3Ptr>(input.Pass());
+        SerializeAndDeserialize<MultiVersionStructV3Ptr>(std::move(input));
     EXPECT_TRUE(output);
     EXPECT_TRUE(output->Equals(*expected_output));
   }
@@ -397,7 +398,7 @@ TEST_F(StructTest, Versioning_NewToOld) {
     expected_output->f_rect = MakeRect(5);
 
     MultiVersionStructV1Ptr output =
-        SerializeAndDeserialize<MultiVersionStructV1Ptr>(input.Pass());
+        SerializeAndDeserialize<MultiVersionStructV1Ptr>(std::move(input));
     EXPECT_TRUE(output);
     EXPECT_TRUE(output->Equals(*expected_output));
   }
@@ -408,7 +409,7 @@ TEST_F(StructTest, Versioning_NewToOld) {
     expected_output->f_int32 = 123;
 
     MultiVersionStructV0Ptr output =
-        SerializeAndDeserialize<MultiVersionStructV0Ptr>(input.Pass());
+        SerializeAndDeserialize<MultiVersionStructV0Ptr>(std::move(input));
     EXPECT_TRUE(output);
     EXPECT_TRUE(output->Equals(*expected_output));
   }

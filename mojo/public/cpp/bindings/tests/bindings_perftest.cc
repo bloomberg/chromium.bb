@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <utility>
 
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/test_support/test_support.h"
@@ -53,8 +54,7 @@ class PingPongTest {
 };
 
 PingPongTest::PingPongTest(test::PingServicePtr service)
-    : service_(service.Pass()) {
-}
+    : service_(std::move(service)) {}
 
 void PingPongTest::Run(unsigned int iterations) {
   iterations_to_run_ = iterations;
@@ -94,7 +94,7 @@ TEST_F(MojoBindingsPerftest, InProcessPingPong) {
   test::PingServicePtr service;
   PingServiceImpl impl;
   Binding<test::PingService> binding(&impl, GetProxy(&service));
-  PingPongTest test(service.Pass());
+  PingPongTest test(std::move(service));
 
   {
     const unsigned int kIterations = 100000;

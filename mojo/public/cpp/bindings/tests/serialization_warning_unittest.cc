@@ -6,6 +6,7 @@
 #ifndef NDEBUG
 
 #include <stddef.h>
+#include <utility>
 
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
@@ -30,12 +31,12 @@ Array<Array<ScopedHandle>> CreateTestNestedHandleArray() {
     Array<ScopedHandle> nested_array(3);
     for (size_t j = 0; j < nested_array.size(); ++j) {
       MessagePipe pipe;
-      nested_array[j] = ScopedHandle::From(pipe.handle1.Pass());
+      nested_array[j] = ScopedHandle::From(std::move(pipe.handle1));
     }
-    array[i] = nested_array.Pass();
+    array[i] = std::move(nested_array);
   }
 
-  return array.Pass();
+  return array;
 }
 
 class SerializationWarningTest : public testing::Test {
@@ -46,13 +47,13 @@ class SerializationWarningTest : public testing::Test {
   template <typename T>
   void TestWarning(StructPtr<T> obj,
                    mojo::internal::ValidationError expected_warning) {
-    TestStructWarningImpl<T>(obj.Pass(), expected_warning);
+    TestStructWarningImpl<T>(std::move(obj), expected_warning);
   }
 
   template <typename T>
   void TestWarning(InlinedStructPtr<T> obj,
                    mojo::internal::ValidationError expected_warning) {
-    TestStructWarningImpl<T>(obj.Pass(), expected_warning);
+    TestStructWarningImpl<T>(std::move(obj), expected_warning);
   }
 
   template <typename T, typename TPtr>
@@ -62,7 +63,7 @@ class SerializationWarningTest : public testing::Test {
 
     mojo::internal::FixedBufferForTesting buf(GetSerializedSize_(obj));
     typename T::Data_* data;
-    Serialize_(obj.Pass(), &buf, &data);
+    Serialize_(std::move(obj), &buf, &data);
 
     EXPECT_EQ(expected_warning, warning_observer_.last_warning());
   }
@@ -75,7 +76,7 @@ class SerializationWarningTest : public testing::Test {
 
     mojo::internal::FixedBufferForTesting buf(GetSerializedSize_(obj));
     typename T::Data_* data;
-    SerializeArray_(obj.Pass(), &buf, &data, validate_params);
+    SerializeArray_(std::move(obj), &buf, &data, validate_params);
 
     EXPECT_EQ(expected_warning, warning_observer_.last_warning());
   }
@@ -87,66 +88,66 @@ TEST_F(SerializationWarningTest, HandleInStruct) {
   Struct2Ptr test_struct(Struct2::New());
   EXPECT_FALSE(test_struct->hdl.is_valid());
 
-  TestWarning(test_struct.Pass(),
+  TestWarning(std::move(test_struct),
               mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE);
 
   test_struct = Struct2::New();
   MessagePipe pipe;
-  test_struct->hdl = ScopedHandle::From(pipe.handle1.Pass());
+  test_struct->hdl = ScopedHandle::From(std::move(pipe.handle1));
 
-  TestWarning(test_struct.Pass(), mojo::internal::VALIDATION_ERROR_NONE);
+  TestWarning(std::move(test_struct), mojo::internal::VALIDATION_ERROR_NONE);
 }
 
 TEST_F(SerializationWarningTest, StructInStruct) {
   Struct3Ptr test_struct(Struct3::New());
   EXPECT_TRUE(!test_struct->struct_1);
 
-  TestWarning(test_struct.Pass(),
+  TestWarning(std::move(test_struct),
               mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
 
   test_struct = Struct3::New();
   test_struct->struct_1 = Struct1::New();
 
-  TestWarning(test_struct.Pass(), mojo::internal::VALIDATION_ERROR_NONE);
+  TestWarning(std::move(test_struct), mojo::internal::VALIDATION_ERROR_NONE);
 }
 
 TEST_F(SerializationWarningTest, ArrayOfStructsInStruct) {
   Struct4Ptr test_struct(Struct4::New());
   EXPECT_TRUE(!test_struct->data);
 
-  TestWarning(test_struct.Pass(),
+  TestWarning(std::move(test_struct),
               mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
 
   test_struct = Struct4::New();
   test_struct->data.resize(1);
 
-  TestWarning(test_struct.Pass(),
+  TestWarning(std::move(test_struct),
               mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
 
   test_struct = Struct4::New();
   test_struct->data.resize(0);
 
-  TestWarning(test_struct.Pass(), mojo::internal::VALIDATION_ERROR_NONE);
+  TestWarning(std::move(test_struct), mojo::internal::VALIDATION_ERROR_NONE);
 
   test_struct = Struct4::New();
   test_struct->data.resize(1);
   test_struct->data[0] = Struct1::New();
 
-  TestWarning(test_struct.Pass(), mojo::internal::VALIDATION_ERROR_NONE);
+  TestWarning(std::move(test_struct), mojo::internal::VALIDATION_ERROR_NONE);
 }
 
 TEST_F(SerializationWarningTest, FixedArrayOfStructsInStruct) {
   Struct5Ptr test_struct(Struct5::New());
   EXPECT_TRUE(!test_struct->pair);
 
-  TestWarning(test_struct.Pass(),
+  TestWarning(std::move(test_struct),
               mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
 
   test_struct = Struct5::New();
   test_struct->pair.resize(1);
   test_struct->pair[0] = Struct1::New();
 
-  TestWarning(test_struct.Pass(),
+  TestWarning(std::move(test_struct),
               mojo::internal::VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER);
 
   test_struct = Struct5::New();
@@ -154,20 +155,20 @@ TEST_F(SerializationWarningTest, FixedArrayOfStructsInStruct) {
   test_struct->pair[0] = Struct1::New();
   test_struct->pair[1] = Struct1::New();
 
-  TestWarning(test_struct.Pass(), mojo::internal::VALIDATION_ERROR_NONE);
+  TestWarning(std::move(test_struct), mojo::internal::VALIDATION_ERROR_NONE);
 }
 
 TEST_F(SerializationWarningTest, StringInStruct) {
   Struct6Ptr test_struct(Struct6::New());
   EXPECT_TRUE(!test_struct->str);
 
-  TestWarning(test_struct.Pass(),
+  TestWarning(std::move(test_struct),
               mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
 
   test_struct = Struct6::New();
   test_struct->str = "hello world";
 
-  TestWarning(test_struct.Pass(), mojo::internal::VALIDATION_ERROR_NONE);
+  TestWarning(std::move(test_struct), mojo::internal::VALIDATION_ERROR_NONE);
 }
 
 TEST_F(SerializationWarningTest, ArrayOfArraysOfHandles) {
@@ -177,14 +178,14 @@ TEST_F(SerializationWarningTest, ArrayOfArraysOfHandles) {
 
   ArrayValidateParams validate_params_0(
       0, true, new ArrayValidateParams(0, true, nullptr));
-  TestArrayWarning(test_array.Pass(), mojo::internal::VALIDATION_ERROR_NONE,
+  TestArrayWarning(std::move(test_array), mojo::internal::VALIDATION_ERROR_NONE,
                    &validate_params_0);
 
   test_array = CreateTestNestedHandleArray();
   test_array[0] = Array<ScopedHandle>();
   ArrayValidateParams validate_params_1(
       0, false, new ArrayValidateParams(0, true, nullptr));
-  TestArrayWarning(test_array.Pass(),
+  TestArrayWarning(std::move(test_array),
                    mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
                    &validate_params_1);
 
@@ -192,7 +193,7 @@ TEST_F(SerializationWarningTest, ArrayOfArraysOfHandles) {
   test_array[1][0] = ScopedHandle();
   ArrayValidateParams validate_params_2(
       0, true, new ArrayValidateParams(0, false, nullptr));
-  TestArrayWarning(test_array.Pass(),
+  TestArrayWarning(std::move(test_array),
                    mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
                    &validate_params_2);
 }
@@ -204,20 +205,20 @@ TEST_F(SerializationWarningTest, ArrayOfStrings) {
 
   ArrayValidateParams validate_params_0(
       0, true, new ArrayValidateParams(0, false, nullptr));
-  TestArrayWarning(test_array.Pass(), mojo::internal::VALIDATION_ERROR_NONE,
+  TestArrayWarning(std::move(test_array), mojo::internal::VALIDATION_ERROR_NONE,
                    &validate_params_0);
 
   test_array = Array<String>(3);
   ArrayValidateParams validate_params_1(
       0, false, new ArrayValidateParams(0, false, nullptr));
-  TestArrayWarning(test_array.Pass(),
+  TestArrayWarning(std::move(test_array),
                    mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
                    &validate_params_1);
 
   test_array = Array<String>(2);
   ArrayValidateParams validate_params_2(
       3, true, new ArrayValidateParams(0, false, nullptr));
-  TestArrayWarning(test_array.Pass(),
+  TestArrayWarning(std::move(test_array),
                    mojo::internal::VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER,
                    &validate_params_2);
 }

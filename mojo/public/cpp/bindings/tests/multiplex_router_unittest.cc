@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "mojo/public/cpp/bindings/lib/multiplex_router.h"
+
+#include <utility>
+
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/lib/interface_endpoint_client.h"
-#include "mojo/public/cpp/bindings/lib/multiplex_router.h"
 #include "mojo/public/cpp/bindings/lib/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/message_filter.h"
@@ -28,11 +31,11 @@ class MultiplexRouterTest : public testing::Test {
 
   void SetUp() override {
     MessagePipe pipe;
-    router0_ = new MultiplexRouter(true, pipe.handle0.Pass());
-    router1_ = new MultiplexRouter(true, pipe.handle1.Pass());
+    router0_ = new MultiplexRouter(true, std::move(pipe.handle0));
+    router1_ = new MultiplexRouter(true, std::move(pipe.handle1));
     router0_->CreateEndpointHandlePair(&endpoint0_, &endpoint1_);
     endpoint1_ =
-        EmulatePassingEndpointHandle(endpoint1_.Pass(), router1_.get());
+        EmulatePassingEndpointHandle(std::move(endpoint1_), router1_.get());
   }
 
   void TearDown() override {}
@@ -58,10 +61,10 @@ class MultiplexRouterTest : public testing::Test {
 };
 
 TEST_F(MultiplexRouterTest, BasicRequestResponse) {
-  InterfaceEndpointClient client0(endpoint0_.Pass(), nullptr,
+  InterfaceEndpointClient client0(std::move(endpoint0_), nullptr,
                                   make_scoped_ptr(new PassThroughFilter()));
   ResponseGenerator generator;
-  InterfaceEndpointClient client1(endpoint1_.Pass(), &generator,
+  InterfaceEndpointClient client1(std::move(endpoint1_), &generator,
                                   make_scoped_ptr(new PassThroughFilter()));
 
   Message request;
@@ -98,10 +101,10 @@ TEST_F(MultiplexRouterTest, BasicRequestResponse) {
 }
 
 TEST_F(MultiplexRouterTest, BasicRequestResponse_Synchronous) {
-  InterfaceEndpointClient client0(endpoint0_.Pass(), nullptr,
+  InterfaceEndpointClient client0(std::move(endpoint0_), nullptr,
                                   make_scoped_ptr(new PassThroughFilter()));
   ResponseGenerator generator;
-  InterfaceEndpointClient client1(endpoint1_.Pass(), &generator,
+  InterfaceEndpointClient client1(std::move(endpoint1_), &generator,
                                   make_scoped_ptr(new PassThroughFilter()));
 
   Message request;
@@ -140,9 +143,9 @@ TEST_F(MultiplexRouterTest, BasicRequestResponse_Synchronous) {
 }
 
 TEST_F(MultiplexRouterTest, RequestWithNoReceiver) {
-  InterfaceEndpointClient client0(endpoint0_.Pass(), nullptr,
+  InterfaceEndpointClient client0(std::move(endpoint0_), nullptr,
                                   make_scoped_ptr(new PassThroughFilter()));
-  InterfaceEndpointClient client1(endpoint1_.Pass(), nullptr,
+  InterfaceEndpointClient client1(std::move(endpoint1_), nullptr,
                                   make_scoped_ptr(new PassThroughFilter()));
 
   // Without an incoming receiver set on client1, we expect client0 to observe
@@ -164,10 +167,10 @@ TEST_F(MultiplexRouterTest, RequestWithNoReceiver) {
 // Tests MultiplexRouter using the LazyResponseGenerator. The responses will not
 // be sent until after the requests have been accepted.
 TEST_F(MultiplexRouterTest, LazyResponses) {
-  InterfaceEndpointClient client0(endpoint0_.Pass(), nullptr,
+  InterfaceEndpointClient client0(std::move(endpoint0_), nullptr,
                                   make_scoped_ptr(new PassThroughFilter()));
   LazyResponseGenerator generator;
-  InterfaceEndpointClient client1(endpoint1_.Pass(), &generator,
+  InterfaceEndpointClient client1(std::move(endpoint1_), &generator,
                                   make_scoped_ptr(new PassThroughFilter()));
 
   Message request;
@@ -219,14 +222,14 @@ TEST_F(MultiplexRouterTest, LazyResponses) {
 // sending a response, then we trigger connection error at both sides. Moreover,
 // both sides still appear to have a valid message pipe handle bound.
 TEST_F(MultiplexRouterTest, MissingResponses) {
-  InterfaceEndpointClient client0(endpoint0_.Pass(), nullptr,
+  InterfaceEndpointClient client0(std::move(endpoint0_), nullptr,
                                   make_scoped_ptr(new PassThroughFilter()));
   bool error_handler_called0 = false;
   client0.set_connection_error_handler(
       [&error_handler_called0]() { error_handler_called0 = true; });
 
   LazyResponseGenerator generator;
-  InterfaceEndpointClient client1(endpoint1_.Pass(), &generator,
+  InterfaceEndpointClient client1(std::move(endpoint1_), &generator,
                                   make_scoped_ptr(new PassThroughFilter()));
   bool error_handler_called1 = false;
   client1.set_connection_error_handler(
@@ -269,9 +272,9 @@ TEST_F(MultiplexRouterTest, LateResponse) {
 
   LazyResponseGenerator generator;
   {
-    InterfaceEndpointClient client0(endpoint0_.Pass(), nullptr,
+    InterfaceEndpointClient client0(std::move(endpoint0_), nullptr,
                                     make_scoped_ptr(new PassThroughFilter()));
-    InterfaceEndpointClient client1(endpoint1_.Pass(), &generator,
+    InterfaceEndpointClient client1(std::move(endpoint1_), &generator,
                                     make_scoped_ptr(new PassThroughFilter()));
 
     Message request;

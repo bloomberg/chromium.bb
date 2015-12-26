@@ -6,6 +6,7 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_PTR_H_
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -76,7 +77,7 @@ class InterfacePtr {
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
     reset();
     if (info.is_valid())
-      internal_state_.Bind(info.Pass(), waiter);
+      internal_state_.Bind(std::move(info), waiter);
   }
 
   // Returns whether or not this InterfacePtr is bound to a message pipe.
@@ -219,8 +220,8 @@ InterfacePtr<Interface> MakeProxy(
     const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
   InterfacePtr<Interface> ptr;
   if (info.is_valid())
-    ptr.Bind(info.Pass(), waiter);
-  return ptr.Pass();
+    ptr.Bind(std::move(info), waiter);
+  return std::move(ptr);
 }
 
 }  // namespace mojo

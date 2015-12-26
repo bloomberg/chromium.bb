@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_REQUEST_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_REQUEST_H_
 
+#include <utility>
+
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 
 namespace mojo {
@@ -25,9 +27,11 @@ class InterfaceRequest {
   InterfaceRequest(decltype(nullptr)) {}
 
   // Takes the message pipe from another InterfaceRequest.
-  InterfaceRequest(InterfaceRequest&& other) { handle_ = other.handle_.Pass(); }
+  InterfaceRequest(InterfaceRequest&& other) {
+    handle_ = std::move(other.handle_);
+  }
   InterfaceRequest& operator=(InterfaceRequest&& other) {
-    handle_ = other.handle_.Pass();
+    handle_ = std::move(other.handle_);
     return *this;
   }
 
@@ -41,13 +45,13 @@ class InterfaceRequest {
   // Binds the request to a message pipe over which Interface is to be
   // requested.  If the request is already bound to a message pipe, the current
   // message pipe will be closed.
-  void Bind(ScopedMessagePipeHandle handle) { handle_ = handle.Pass(); }
+  void Bind(ScopedMessagePipeHandle handle) { handle_ = std::move(handle); }
 
   // Indicates whether the request currently contains a valid message pipe.
   bool is_pending() const { return handle_.is_valid(); }
 
   // Removes the message pipe from the request and returns it.
-  ScopedMessagePipeHandle PassMessagePipe() { return handle_.Pass(); }
+  ScopedMessagePipeHandle PassMessagePipe() { return std::move(handle_); }
 
  private:
   ScopedMessagePipeHandle handle_;
@@ -59,8 +63,8 @@ class InterfaceRequest {
 template <typename Interface>
 InterfaceRequest<Interface> MakeRequest(ScopedMessagePipeHandle handle) {
   InterfaceRequest<Interface> request;
-  request.Bind(handle.Pass());
-  return request.Pass();
+  request.Bind(std::move(handle));
+  return std::move(request);
 }
 
 // Creates a new message pipe over which Interface is to be served. Binds the
@@ -111,9 +115,9 @@ InterfaceRequest<typename Interface::GenericInterface>
 GetProxy(InterfacePtr<Interface>* ptr) {
   MessagePipe pipe;
   ptr->Bind(InterfacePtrInfo<typename Interface::GenericInterface>(
-      pipe.handle0.Pass(), 0u));
+      std::move(pipe.handle0), 0u));
   return MakeRequest<typename Interface::GenericInterface>(
-      pipe.handle1.Pass());
+      std::move(pipe.handle1));
 }
 
 }  // namespace mojo

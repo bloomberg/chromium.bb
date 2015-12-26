@@ -4,10 +4,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <algorithm>
 #include <ostream>
 #include <string>
+#include <utility>
 
 #include "mojo/public/interfaces/bindings/tests/sample_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,7 +53,7 @@ FooPtr MakeFoo() {
     bar->beta = base + 20;
     bar->gamma = base + 40;
     bar->type = type;
-    extra_bars[i] = bar.Pass();
+    extra_bars[i] = std::move(bar);
   }
 
   mojo::Array<uint8_t> data(10);
@@ -71,8 +71,8 @@ FooPtr MakeFoo() {
     mojo::ScopedDataPipeProducerHandle producer;
     mojo::ScopedDataPipeConsumerHandle consumer;
     mojo::CreateDataPipe(&options, &producer, &consumer);
-    input_streams[i] = consumer.Pass();
-    output_streams[i] = producer.Pass();
+    input_streams[i] = std::move(consumer);
+    output_streams[i] = std::move(producer);
   }
 
   mojo::Array<mojo::Array<bool>> array_of_array_of_bools(2);
@@ -80,7 +80,7 @@ FooPtr MakeFoo() {
     mojo::Array<bool> array_of_bools(2);
     for (size_t j = 0; j < 2; ++j)
       array_of_bools[j] = j;
-    array_of_array_of_bools[i] = array_of_bools.Pass();
+    array_of_array_of_bools[i] = std::move(array_of_bools);
   }
 
   mojo::MessagePipe pipe;
@@ -91,15 +91,15 @@ FooPtr MakeFoo() {
   foo->a = false;
   foo->b = true;
   foo->c = false;
-  foo->bar = bar.Pass();
-  foo->extra_bars = extra_bars.Pass();
-  foo->data = data.Pass();
-  foo->source = pipe.handle1.Pass();
-  foo->input_streams = input_streams.Pass();
-  foo->output_streams = output_streams.Pass();
-  foo->array_of_array_of_bools = array_of_array_of_bools.Pass();
+  foo->bar = std::move(bar);
+  foo->extra_bars = std::move(extra_bars);
+  foo->data = std::move(data);
+  foo->source = std::move(pipe.handle1);
+  foo->input_streams = std::move(input_streams);
+  foo->output_streams = std::move(output_streams);
+  foo->array_of_array_of_bools = std::move(array_of_array_of_bools);
 
-  return foo.Pass();
+  return foo;
 }
 
 // Check that the given |Foo| is identical to the one made by |MakeFoo()|.
@@ -332,8 +332,8 @@ TEST_F(BindingsSampleTest, Basic) {
   CheckFoo(*foo);
 
   PortPtr port;
-  service->Frobinate(foo.Pass(), Service::BAZ_OPTIONS_EXTRA, port.Pass(),
-                     Service::FrobinateCallback());
+  service->Frobinate(std::move(foo), Service::BAZ_OPTIONS_EXTRA,
+                     std::move(port), Service::FrobinateCallback());
 
   delete service;
 }

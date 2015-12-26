@@ -5,6 +5,7 @@
 #include "mojo/public/cpp/bindings/lib/connector.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -44,7 +45,7 @@ Connector::Connector(ScopedMessagePipeHandle message_pipe,
                      ConnectorConfig config,
                      const MojoAsyncWaiter* waiter)
     : waiter_(waiter),
-      message_pipe_(message_pipe.Pass()),
+      message_pipe_(std::move(message_pipe)),
       incoming_receiver_(nullptr),
       async_wait_id_(0),
       error_(false),
@@ -72,7 +73,7 @@ void Connector::CloseMessagePipe() {
 
   CancelWait();
   MayAutoLock locker(lock_.get());
-  Close(message_pipe_.Pass());
+  Close(std::move(message_pipe_));
 }
 
 ScopedMessagePipeHandle Connector::PassMessagePipe() {
@@ -80,7 +81,7 @@ ScopedMessagePipeHandle Connector::PassMessagePipe() {
 
   CancelWait();
   MayAutoLock locker(lock_.get());
-  return message_pipe_.Pass();
+  return std::move(message_pipe_);
 }
 
 void Connector::RaiseError() {
@@ -294,9 +295,9 @@ void Connector::HandleError(bool force_pipe_reset, bool force_async_handler) {
   if (force_pipe_reset) {
     CancelWait();
     MayAutoLock locker(lock_.get());
-    Close(message_pipe_.Pass());
+    Close(std::move(message_pipe_));
     MessagePipe dummy_pipe;
-    message_pipe_ = dummy_pipe.handle0.Pass();
+    message_pipe_ = std::move(dummy_pipe.handle0);
   } else {
     CancelWait();
   }

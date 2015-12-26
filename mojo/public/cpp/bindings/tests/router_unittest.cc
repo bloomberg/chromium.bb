@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "mojo/public/cpp/bindings/lib/router.h"
+
+#include <utility>
+
 #include "base/message_loop/message_loop.h"
 #include "mojo/message_pump/message_pump_mojo.h"
-#include "mojo/public/cpp/bindings/lib/router.h"
 #include "mojo/public/cpp/bindings/tests/message_queue.h"
 #include "mojo/public/cpp/bindings/tests/router_test_util.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -35,8 +38,8 @@ class RouterTest : public testing::Test {
 };
 
 TEST_F(RouterTest, BasicRequestResponse) {
-  internal::Router router0(handle0_.Pass(), internal::FilterChain());
-  internal::Router router1(handle1_.Pass(), internal::FilterChain());
+  internal::Router router0(std::move(handle0_), internal::FilterChain());
+  internal::Router router1(std::move(handle1_), internal::FilterChain());
 
   ResponseGenerator generator;
   router1.set_incoming_receiver(&generator);
@@ -75,8 +78,8 @@ TEST_F(RouterTest, BasicRequestResponse) {
 }
 
 TEST_F(RouterTest, BasicRequestResponse_Synchronous) {
-  internal::Router router0(handle0_.Pass(), internal::FilterChain());
-  internal::Router router1(handle1_.Pass(), internal::FilterChain());
+  internal::Router router0(std::move(handle0_), internal::FilterChain());
+  internal::Router router1(std::move(handle1_), internal::FilterChain());
 
   ResponseGenerator generator;
   router1.set_incoming_receiver(&generator);
@@ -117,8 +120,8 @@ TEST_F(RouterTest, BasicRequestResponse_Synchronous) {
 }
 
 TEST_F(RouterTest, RequestWithNoReceiver) {
-  internal::Router router0(handle0_.Pass(), internal::FilterChain());
-  internal::Router router1(handle1_.Pass(), internal::FilterChain());
+  internal::Router router0(std::move(handle0_), internal::FilterChain());
+  internal::Router router1(std::move(handle1_), internal::FilterChain());
 
   // Without an incoming receiver set on router1, we expect router0 to observe
   // an error as a result of sending a message.
@@ -139,8 +142,8 @@ TEST_F(RouterTest, RequestWithNoReceiver) {
 // Tests Router using the LazyResponseGenerator. The responses will not be
 // sent until after the requests have been accepted.
 TEST_F(RouterTest, LazyResponses) {
-  internal::Router router0(handle0_.Pass(), internal::FilterChain());
-  internal::Router router1(handle1_.Pass(), internal::FilterChain());
+  internal::Router router0(std::move(handle0_), internal::FilterChain());
+  internal::Router router1(std::move(handle1_), internal::FilterChain());
 
   LazyResponseGenerator generator;
   router1.set_incoming_receiver(&generator);
@@ -194,12 +197,12 @@ TEST_F(RouterTest, LazyResponses) {
 // sending a response, then we trigger connection error at both sides. Moreover,
 // both sides still appear to have a valid message pipe handle bound.
 TEST_F(RouterTest, MissingResponses) {
-  internal::Router router0(handle0_.Pass(), internal::FilterChain());
+  internal::Router router0(std::move(handle0_), internal::FilterChain());
   bool error_handler_called0 = false;
   router0.set_connection_error_handler(
       [&error_handler_called0]() { error_handler_called0 = true; });
 
-  internal::Router router1(handle1_.Pass(), internal::FilterChain());
+  internal::Router router1(std::move(handle1_), internal::FilterChain());
   bool error_handler_called1 = false;
   router1.set_connection_error_handler(
       [&error_handler_called1]() { error_handler_called1 = true; });
@@ -244,8 +247,8 @@ TEST_F(RouterTest, LateResponse) {
 
   LazyResponseGenerator generator;
   {
-    internal::Router router0(handle0_.Pass(), internal::FilterChain());
-    internal::Router router1(handle1_.Pass(), internal::FilterChain());
+    internal::Router router0(std::move(handle0_), internal::FilterChain());
+    internal::Router router1(std::move(handle1_), internal::FilterChain());
 
     router1.set_incoming_receiver(&generator);
 

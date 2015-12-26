@@ -5,11 +5,13 @@
 // Note: This file tests both binding.h (mojo::Binding) and strong_binding.h
 // (mojo::StrongBinding).
 
+#include "mojo/public/cpp/bindings/binding.h"
+
 #include <stdint.h>
+#include <utility>
 
 #include "base/message_loop/message_loop.h"
 #include "mojo/message_pump/message_pump_mojo.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/interfaces/bindings/tests/sample_interfaces.mojom.h"
@@ -66,7 +68,7 @@ TEST_F(BindingTest, Close) {
   auto request = GetProxy(&ptr);
   ptr.set_connection_error_handler([&called]() { called = true; });
   ServiceImpl impl;
-  Binding<sample::Service> binding(&impl, request.Pass());
+  Binding<sample::Service> binding(&impl, std::move(request));
 
   binding.Close();
   EXPECT_FALSE(called);
@@ -85,7 +87,7 @@ TEST_F(BindingTest, DestroyClosesMessagePipe) {
   bool called = false;
   auto called_cb = [&called](int32_t result) { called = true; };
   {
-    Binding<sample::Service> binding(&impl, request.Pass());
+    Binding<sample::Service> binding(&impl, std::move(request));
     ptr->Frobinate(nullptr, sample::Service::BAZ_OPTIONS_REGULAR, nullptr,
                    called_cb);
     loop().RunUntilIdle();
@@ -147,7 +149,7 @@ class ServiceImplWithBinding : public ServiceImpl {
  public:
   ServiceImplWithBinding(bool* was_deleted,
                          InterfaceRequest<sample::Service> request)
-      : ServiceImpl(was_deleted), binding_(this, request.Pass()) {
+      : ServiceImpl(was_deleted), binding_(this, std::move(request)) {
     binding_.set_connection_error_handler([this]() { delete this; });
   }
 
@@ -192,7 +194,7 @@ TEST_F(BindingTest, Unbind) {
   EXPECT_FALSE(called);
 
   called = false;
-  binding.Bind(request.Pass());
+  binding.Bind(std::move(request));
   EXPECT_TRUE(binding.is_bound());
   // ...and should succeed again when the rebound.
   ptr->Frobinate(nullptr, sample::Service::BAZ_OPTIONS_REGULAR, nullptr,
@@ -229,7 +231,7 @@ TEST_F(BindingTest, PauseResume) {
   sample::ServicePtr ptr;
   auto request = GetProxy(&ptr);
   ServiceImpl impl;
-  Binding<sample::Service> binding(&impl, request.Pass());
+  Binding<sample::Service> binding(&impl, std::move(request));
   binding.PauseIncomingMethodCallProcessing();
   ptr->Frobinate(nullptr, sample::Service::BAZ_OPTIONS_REGULAR, nullptr,
                  called_cb);
@@ -250,7 +252,7 @@ TEST_F(BindingTest, ErrorHandleNotRunWhilePaused) {
   sample::ServicePtr ptr;
   auto request = GetProxy(&ptr);
   ServiceImpl impl;
-  Binding<sample::Service> binding(&impl, request.Pass());
+  Binding<sample::Service> binding(&impl, std::move(request));
   binding.set_connection_error_handler([&called]() { called = true; });
   binding.PauseIncomingMethodCallProcessing();
 
@@ -282,7 +284,7 @@ TEST_F(StrongBindingTest, DestroyClosesMessagePipe) {
   bool called = false;
   auto called_cb = [&called](int32_t result) { called = true; };
   {
-    StrongBinding<sample::Service> binding(&impl, request.Pass());
+    StrongBinding<sample::Service> binding(&impl, std::move(request));
     ptr->Frobinate(nullptr, sample::Service::BAZ_OPTIONS_REGULAR, nullptr,
                    called_cb);
     loop().RunUntilIdle();
@@ -301,7 +303,7 @@ class ServiceImplWithStrongBinding : public ServiceImpl {
  public:
   ServiceImplWithStrongBinding(bool* was_deleted,
                                InterfaceRequest<sample::Service> request)
-      : ServiceImpl(was_deleted), binding_(this, request.Pass()) {}
+      : ServiceImpl(was_deleted), binding_(this, std::move(request)) {}
 
   StrongBinding<sample::Service>& binding() { return binding_; }
 
@@ -340,7 +342,7 @@ TEST_F(StrongBindingTest, ExplicitDeleteImpl) {
       [&ptr_error_handler_called]() { ptr_error_handler_called = true; });
   bool was_deleted = false;
   ServiceImplWithStrongBinding* impl =
-      new ServiceImplWithStrongBinding(&was_deleted, request.Pass());
+      new ServiceImplWithStrongBinding(&was_deleted, std::move(request));
   bool binding_error_handler_called = false;
   impl->binding().set_connection_error_handler(
       [&binding_error_handler_called]() {

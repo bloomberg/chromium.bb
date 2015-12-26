@@ -6,8 +6,8 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_MAP_INTERNAL_H_
 
 #include <stddef.h>
-
 #include <map>
+#include <utility>
 
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
@@ -146,7 +146,7 @@ struct MapTraits<Key, Value, true> {
          it != m->end();
          ++it, ++i) {
       (*keys)[i] = it->first;
-      (*values)[i] = GetValue(it).Pass();
+      (*values)[i] = std::move(GetValue(it));
     }
   }
   static inline void Finalize(std::map<KeyStorageType, ValueStorageType>* m) {
@@ -190,7 +190,7 @@ struct MapTraits<Key, Value, true> {
     // have to do a manual check so that we don't overwrite an existing object.
     auto it = m->find(key);
     if (it == m->end())
-      new ((*m)[key].buf) Value(value.Pass());
+      new ((*m)[key].buf) Value(std::move(value));
   }
   static inline KeyConstRefType GetKey(
       const typename std::map<KeyStorageType, ValueStorageType>::const_iterator&

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/message_loop/message_loop.h"
 #include "mojo/message_pump/message_pump_mojo.h"
@@ -32,7 +33,7 @@ class ImportedInterfaceImpl : public imported::ImportedInterface {
  public:
   explicit ImportedInterfaceImpl(
       InterfaceRequest<imported::ImportedInterface> request)
-      : binding_(this, request.Pass()) {}
+      : binding_(this, std::move(request)) {}
 
   void DoSomething() override { do_something_count_++; }
 
@@ -47,7 +48,7 @@ int ImportedInterfaceImpl::do_something_count_ = 0;
 class SampleNamedObjectImpl : public sample::NamedObject {
  public:
   explicit SampleNamedObjectImpl(InterfaceRequest<sample::NamedObject> request)
-      : binding_(this, request.Pass()) {}
+      : binding_(this, std::move(request)) {}
   void SetName(const mojo::String& name) override { name_ = name; }
 
   void GetName(const mojo::Callback<void(mojo::String)>& callback) override {
@@ -62,7 +63,7 @@ class SampleNamedObjectImpl : public sample::NamedObject {
 class SampleFactoryImpl : public sample::Factory {
  public:
   explicit SampleFactoryImpl(InterfaceRequest<sample::Factory> request)
-      : binding_(this, request.Pass()) {}
+      : binding_(this, std::move(request)) {}
 
   void DoStuff(sample::RequestPtr request,
                ScopedMessagePipeHandle pipe,
@@ -87,8 +88,8 @@ class SampleFactoryImpl : public sample::Factory {
 
     sample::ResponsePtr response(sample::Response::New());
     response->x = 2;
-    response->pipe = pipe0.Pass();
-    callback.Run(response.Pass(), text1);
+    response->pipe = std::move(pipe0);
+    callback.Run(std::move(response), text1);
 
     if (request->obj)
       request->obj->DoSomething();
@@ -117,7 +118,7 @@ class SampleFactoryImpl : public sample::Factory {
   void CreateNamedObject(
       InterfaceRequest<sample::NamedObject> object_request) override {
     EXPECT_TRUE(object_request.is_pending());
-    new SampleNamedObjectImpl(object_request.Pass());
+    new SampleNamedObjectImpl(std::move(object_request));
   }
 
   // These aren't called or implemented, but exist here to test that the
@@ -166,7 +167,7 @@ struct DoStuffCallback {
       EXPECT_EQ(std::string(kText2), text2);
 
       // Do some more tests of handle passing:
-      ScopedMessagePipeHandle p = response->pipe.Pass();
+      ScopedMessagePipeHandle p = std::move(response->pipe);
       EXPECT_TRUE(p.is_valid());
       EXPECT_FALSE(response->pipe.is_valid());
     }
@@ -193,12 +194,12 @@ TEST_F(HandlePassingTest, Basic) {
 
   sample::RequestPtr request(sample::Request::New());
   request->x = 1;
-  request->pipe = pipe1.handle0.Pass();
-  request->obj = imported.Pass();
+  request->pipe = std::move(pipe1.handle0);
+  request->obj = std::move(imported);
   bool got_response = false;
   std::string got_text_reply;
   DoStuffCallback cb(&got_response, &got_text_reply);
-  factory->DoStuff(request.Pass(), pipe0.handle0.Pass(), cb);
+  factory->DoStuff(std::move(request), std::move(pipe0.handle0), cb);
 
   EXPECT_FALSE(*cb.got_response);
   int count_before = ImportedInterfaceImpl::do_something_count();
@@ -219,7 +220,7 @@ TEST_F(HandlePassingTest, PassInvalid) {
   bool got_response = false;
   std::string got_text_reply;
   DoStuffCallback cb(&got_response, &got_text_reply);
-  factory->DoStuff(request.Pass(), ScopedMessagePipeHandle().Pass(), cb);
+  factory->DoStuff(std::move(request), ScopedMessagePipeHandle(), cb);
 
   EXPECT_FALSE(*cb.got_response);
 
@@ -268,7 +269,7 @@ TEST_F(HandlePassingTest, DataPipe) {
   bool got_response = false;
   std::string got_text_reply;
   DoStuff2Callback cb(&got_response, &got_text_reply);
-  factory->DoStuff2(consumer_handle.Pass(), cb);
+  factory->DoStuff2(std::move(consumer_handle), cb);
 
   EXPECT_FALSE(*cb.got_response);
 
@@ -289,13 +290,13 @@ TEST_F(HandlePassingTest, PipesAreClosed) {
 
   {
     Array<ScopedMessagePipeHandle> pipes(2);
-    pipes[0] = extra_pipe.handle0.Pass();
-    pipes[1] = extra_pipe.handle1.Pass();
+    pipes[0] = std::move(extra_pipe.handle0);
+    pipes[1] = std::move(extra_pipe.handle1);
 
     sample::RequestPtr request(sample::Request::New());
-    request->more_pipes = pipes.Pass();
+    request->more_pipes = std::move(pipes);
 
-    factory->DoStuff(request.Pass(), ScopedMessagePipeHandle(),
+    factory->DoStuff(std::move(request), ScopedMessagePipeHandle(),
                      sample::Factory::DoStuffCallback());
   }
 
@@ -328,7 +329,7 @@ TEST_F(HandlePassingTest, CreateNamedObject) {
 
   InterfaceRequest<sample::NamedObject> object1_request = GetProxy(&object1);
   EXPECT_TRUE(object1_request.is_pending());
-  factory->CreateNamedObject(object1_request.Pass());
+  factory->CreateNamedObject(std::move(object1_request));
   EXPECT_FALSE(object1_request.is_pending());  // We've passed the request.
 
   ASSERT_TRUE(object1);

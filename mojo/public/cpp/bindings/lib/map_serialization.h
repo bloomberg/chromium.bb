@@ -6,6 +6,7 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_MAP_SERIALIZATION_H_
 
 #include <stddef.h>
+#include <utility>
 
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/map_data_internal.h"
@@ -150,8 +151,9 @@ inline void SerializeMap_(
       input.DecomposeMapTo(&keys, &values);
       const internal::ArrayValidateParams* key_validate_params =
           internal::MapKeyValidateParamsFactory<DataKey>::Get();
-      SerializeArray_(keys.Pass(), buf, &result->keys.ptr, key_validate_params);
-      SerializeArray_(values.Pass(), buf, &result->values.ptr,
+      SerializeArray_(std::move(keys), buf, &result->keys.ptr,
+                      key_validate_params);
+      SerializeArray_(std::move(values), buf, &result->values.ptr,
                       value_validate_params);
     }
     *output = result;
@@ -180,7 +182,7 @@ inline bool Deserialize_(internal::Map_Data<DataKey, DataValue>* input,
     if (!Deserialize_(input->values.ptr, &values, context))
       success = false;
 
-    *output = Map<MapKey, MapValue>(keys.Pass(), values.Pass());
+    *output = Map<MapKey, MapValue>(std::move(keys), std::move(values));
   } else {
     output->reset();
   }

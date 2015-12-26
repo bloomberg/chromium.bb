@@ -6,6 +6,7 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_STRONG_BINDING_H_
 
 #include <assert.h>
+#include <utility>
 
 #include "mojo/public/c/environment/async_waiter.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -55,7 +56,7 @@ class StrongBinding {
       ScopedMessagePipeHandle handle,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter())
       : StrongBinding(impl) {
-    Bind(handle.Pass(), waiter);
+    Bind(std::move(handle), waiter);
   }
 
   StrongBinding(
@@ -71,7 +72,7 @@ class StrongBinding {
       InterfaceRequest<Interface> request,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter())
       : StrongBinding(impl) {
-    Bind(request.Pass(), waiter);
+    Bind(std::move(request), waiter);
   }
 
   ~StrongBinding() {}
@@ -80,7 +81,7 @@ class StrongBinding {
       ScopedMessagePipeHandle handle,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
     assert(!binding_.is_bound());
-    binding_.Bind(handle.Pass(), waiter);
+    binding_.Bind(std::move(handle), waiter);
     binding_.set_connection_error_handler([this]() { OnConnectionError(); });
   }
 
@@ -96,7 +97,7 @@ class StrongBinding {
       InterfaceRequest<Interface> request,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
     assert(!binding_.is_bound());
-    binding_.Bind(request.Pass(), waiter);
+    binding_.Bind(std::move(request), waiter);
     binding_.set_connection_error_handler([this]() { OnConnectionError(); });
   }
 

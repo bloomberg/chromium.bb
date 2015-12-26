@@ -7,8 +7,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <new>
+#include <utility>
 #include <vector>
 
 #include "mojo/public/c/system/macros.h"
@@ -505,7 +505,7 @@ struct ArrayTraits<T, true> {
   static inline void PushBack(std::vector<StorageType>* vec, RefType value) {
     size_t old_size = vec->size();
     ResizeStorage(vec, old_size + 1);
-    new (vec->at(old_size).buf) T(value.Pass());
+    new (vec->at(old_size).buf) T(std::move(value));
   }
   static inline void ResizeStorage(std::vector<StorageType>* vec, size_t size) {
     if (size <= vec->capacity()) {
@@ -514,7 +514,7 @@ struct ArrayTraits<T, true> {
     }
     std::vector<StorageType> new_storage(size);
     for (size_t i = 0; i < vec->size(); i++)
-      new (new_storage.at(i).buf) T(at(vec, i).Pass());
+      new (new_storage.at(i).buf) T(std::move(at(vec, i)));
     vec->swap(new_storage);
     Finalize(&new_storage);
   }

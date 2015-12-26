@@ -6,6 +6,7 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_INTERFACE_PTR_H_
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -66,7 +67,7 @@ class AssociatedInterfacePtr {
                         "at the other side of the message pipe.";
 
     if (info.is_valid() && is_local)
-      internal_state_.Bind(info.Pass());
+      internal_state_.Bind(std::move(info));
   }
 
   bool is_bound() const { return internal_state_.is_bound(); }
@@ -185,8 +186,8 @@ AssociatedInterfaceRequest<typename Interface::GenericInterface> GetProxy(
   group->CreateAssociatedInterface(AssociatedGroup::WILL_PASS_REQUEST,
                                    &ptr_info, &request);
 
-  ptr->Bind(ptr_info.Pass());
-  return request.Pass();
+  ptr->Bind(std::move(ptr_info));
+  return std::move(request);
 }
 
 }  // namespace mojo

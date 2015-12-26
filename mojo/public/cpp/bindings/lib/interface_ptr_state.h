@@ -6,8 +6,8 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_INTERFACE_PTR_STATE_H_
 
 #include <stdint.h>
-
 #include <algorithm>  // For |std::swap()|.
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -125,7 +125,7 @@ class InterfacePtrState<Interface, false> {
   // shouldn't be reused.
   InterfacePtrInfo<GenericInterface> PassInterface() {
     return InterfacePtrInfo<GenericInterface>(
-        router_ ? router_->PassMessagePipe() : handle_.Pass(), version_);
+        router_ ? router_->PassMessagePipe() : std::move(handle_), version_);
   }
 
   bool is_bound() const { return handle_.is_valid() || router_; }
@@ -172,7 +172,7 @@ class InterfacePtrState<Interface, false> {
     filters.Append<MessageHeaderValidator>();
     filters.Append<typename Interface::ResponseValidator_>();
 
-    router_ = new Router(handle_.Pass(), filters.Pass(), waiter_);
+    router_ = new Router(std::move(handle_), std::move(filters), waiter_);
     waiter_ = nullptr;
 
     proxy_ = new Proxy(router_);
@@ -334,7 +334,7 @@ class InterfacePtrState<Interface, true> {
       return;
     }
 
-    router_ = new MultiplexRouter(true, handle_.Pass(), waiter_);
+    router_ = new MultiplexRouter(true, std::move(handle_), waiter_);
     endpoint_client_.reset(new InterfaceEndpointClient(
         router_->CreateLocalEndpointHandle(kMasterInterfaceId), nullptr,
         make_scoped_ptr(new typename Interface::ResponseValidator_())));

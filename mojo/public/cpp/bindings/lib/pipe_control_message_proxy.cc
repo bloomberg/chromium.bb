@@ -5,6 +5,7 @@
 #include "mojo/public/cpp/bindings/lib/pipe_control_message_proxy.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
@@ -19,13 +20,13 @@ void SendRunOrClosePipeMessage(MessageReceiver* receiver,
                                pipe_control::RunOrClosePipeInputPtr input) {
   pipe_control::RunOrClosePipeMessageParamsPtr params_ptr(
       pipe_control::RunOrClosePipeMessageParams::New());
-  params_ptr->input = input.Pass();
+  params_ptr->input = std::move(input);
 
   size_t size = GetSerializedSize_(params_ptr);
   MessageBuilder builder(pipe_control::kRunOrClosePipeMessageId, size);
 
   pipe_control::internal::RunOrClosePipeMessageParams_Data* params = nullptr;
-  Serialize_(params_ptr.Pass(), builder.buffer(), &params);
+  Serialize_(std::move(params_ptr), builder.buffer(), &params);
   params->EncodePointersAndHandles(builder.message()->mutable_handles());
   builder.message()->set_interface_id(kInvalidInterfaceId);
   bool ok = receiver->Accept(builder.message());
@@ -46,9 +47,9 @@ void PipeControlMessageProxy::NotifyPeerEndpointClosed(InterfaceId id) {
 
   pipe_control::RunOrClosePipeInputPtr input(
       pipe_control::RunOrClosePipeInput::New());
-  input->set_peer_associated_endpoint_closed_event(event.Pass());
+  input->set_peer_associated_endpoint_closed_event(std::move(event));
 
-  SendRunOrClosePipeMessage(receiver_, input.Pass());
+  SendRunOrClosePipeMessage(receiver_, std::move(input));
 }
 
 void PipeControlMessageProxy::NotifyEndpointClosedBeforeSent(InterfaceId id) {
@@ -58,9 +59,9 @@ void PipeControlMessageProxy::NotifyEndpointClosedBeforeSent(InterfaceId id) {
 
   pipe_control::RunOrClosePipeInputPtr input(
       pipe_control::RunOrClosePipeInput::New());
-  input->set_associated_endpoint_closed_before_sent_event(event.Pass());
+  input->set_associated_endpoint_closed_before_sent_event(std::move(event));
 
-  SendRunOrClosePipeMessage(receiver_, input.Pass());
+  SendRunOrClosePipeMessage(receiver_, std::move(input));
 }
 
 }  // namespace internal

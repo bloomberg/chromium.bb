@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -39,7 +40,7 @@ bool RunResponseForwardToCallback::Accept(Message* message) {
   RunResponseMessageParamsPtr params_ptr;
   Deserialize_(params, &params_ptr, nullptr);
 
-  callback_.Run(params_ptr->query_version_result.Pass());
+  callback_.Run(std::move(params_ptr->query_version_result));
   return true;
 }
 
@@ -49,13 +50,13 @@ void SendRunMessage(MessageReceiverWithResponder* receiver,
   RunMessageParamsPtr params_ptr(RunMessageParams::New());
   params_ptr->reserved0 = 16u;
   params_ptr->reserved1 = 0u;
-  params_ptr->query_version = query_version.Pass();
+  params_ptr->query_version = std::move(query_version);
 
   size_t size = GetSerializedSize_(params_ptr);
   RequestMessageBuilder builder(kRunMessageId, size);
 
   RunMessageParams_Data* params = nullptr;
-  Serialize_(params_ptr.Pass(), builder.buffer(), &params);
+  Serialize_(std::move(params_ptr), builder.buffer(), &params);
   params->EncodePointersAndHandles(builder.message()->mutable_handles());
   MessageReceiver* responder = new RunResponseForwardToCallback(callback);
   if (!receiver->AcceptWithResponder(builder.message(), responder))
@@ -67,13 +68,13 @@ void SendRunOrClosePipeMessage(MessageReceiverWithResponder* receiver,
   RunOrClosePipeMessageParamsPtr params_ptr(RunOrClosePipeMessageParams::New());
   params_ptr->reserved0 = 16u;
   params_ptr->reserved1 = 0u;
-  params_ptr->require_version = require_version.Pass();
+  params_ptr->require_version = std::move(require_version);
 
   size_t size = GetSerializedSize_(params_ptr);
   MessageBuilder builder(kRunOrClosePipeMessageId, size);
 
   RunOrClosePipeMessageParams_Data* params = nullptr;
-  Serialize_(params_ptr.Pass(), builder.buffer(), &params);
+  Serialize_(std::move(params_ptr), builder.buffer(), &params);
   params->EncodePointersAndHandles(builder.message()->mutable_handles());
   bool ok = receiver->Accept(builder.message());
   MOJO_ALLOW_UNUSED_LOCAL(ok);
@@ -96,7 +97,7 @@ void ControlMessageProxy::QueryVersion(
 void ControlMessageProxy::RequireVersion(uint32_t version) {
   RequireVersionPtr require_version(RequireVersion::New());
   require_version->version = version;
-  SendRunOrClosePipeMessage(receiver_, require_version.Pass());
+  SendRunOrClosePipeMessage(receiver_, std::move(require_version));
 }
 
 }  // namespace internal

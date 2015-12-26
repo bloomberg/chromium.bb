@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/message_loop/message_loop.h"
 #include "mojo/message_pump/message_pump_mojo.h"
@@ -19,7 +20,7 @@ namespace {
 class ProviderImpl : public sample::Provider {
  public:
   explicit ProviderImpl(InterfaceRequest<sample::Provider> request)
-      : binding_(this, request.Pass()) {}
+      : binding_(this, std::move(request)) {}
 
   void EchoString(const String& a,
                   const Callback<void(String)>& callback) override {
@@ -38,7 +39,7 @@ class ProviderImpl : public sample::Provider {
   void EchoMessagePipeHandle(
       ScopedMessagePipeHandle a,
       const Callback<void(ScopedMessagePipeHandle)>& callback) override {
-    callback.Run(a.Pass());
+    callback.Run(std::move(a));
   }
 
   void EchoEnum(sample::Enum a,
@@ -126,7 +127,7 @@ TEST_F(RequestResponseTest, EchoMessagePipeHandle) {
   ProviderImpl provider_impl(GetProxy(&provider));
 
   MessagePipe pipe2;
-  provider->EchoMessagePipeHandle(pipe2.handle1.Pass(),
+  provider->EchoMessagePipeHandle(std::move(pipe2.handle1),
                                   MessagePipeWriter("hello"));
 
   PumpMessages();

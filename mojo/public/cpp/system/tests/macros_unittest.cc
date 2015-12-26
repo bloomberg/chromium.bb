@@ -15,6 +15,7 @@
 #include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <utility>
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -97,7 +98,7 @@ class MoveOnlyInt {
   ~MoveOnlyInt() {}
 
   // Move-only constructor and operator=.
-  MoveOnlyInt(MoveOnlyInt&& other) { *this = other.Pass(); }
+  MoveOnlyInt(MoveOnlyInt&& other) { *this = std::move(other); }
   MoveOnlyInt& operator=(MoveOnlyInt&& other) {
     if (&other != this) {
       is_set_ = other.is_set_;
@@ -124,15 +125,12 @@ TEST(MacrosCppTest, MoveOnlyType) {
   EXPECT_EQ(123, x.value());
   MoveOnlyInt y;
   EXPECT_FALSE(y.is_set());
-  y = x.Pass();
+  y = std::move(x);
   EXPECT_FALSE(x.is_set());
   EXPECT_TRUE(y.is_set());
   EXPECT_EQ(123, y.value());
-  MoveOnlyInt z(y.Pass());
+  MoveOnlyInt z(std::move(y));
   EXPECT_FALSE(y.is_set());
-  EXPECT_TRUE(z.is_set());
-  EXPECT_EQ(123, z.value());
-  z = z.Pass();
   EXPECT_TRUE(z.is_set());
   EXPECT_EQ(123, z.value());
 }

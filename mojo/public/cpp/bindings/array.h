@@ -7,10 +7,10 @@
 
 #include <stddef.h>
 #include <string.h>
-
 #include <algorithm>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
@@ -57,7 +57,7 @@ class Array {
   // Creates a non-null array of the specified size. The elements will be
   // value-initialized (meaning that they will be initialized by their default
   // constructor, if any, or else zero-initialized).
-  static Array New(size_t size) { return Array(size).Pass(); }
+  static Array New(size_t size) { return std::move(Array(size)); }
 
   // Creates a new array with a copy of the contents of |other|.
   template <typename U>
@@ -146,7 +146,7 @@ class Array {
     Array result;
     result.is_null_ = is_null_;
     Traits::Clone(vec_, &result.vec_);
-    return result.Pass();
+    return std::move(result);
   }
 
   // Indicates whether the contents of this array are equal to |other|. A null
@@ -197,7 +197,7 @@ struct TypeConverter<Array<T>, std::vector<E>> {
     Array<T> result(input.size());
     for (size_t i = 0; i < input.size(); ++i)
       result[i] = TypeConverter<T, E>::Convert(input[i]);
-    return result.Pass();
+    return std::move(result);
   }
 };
 
@@ -226,7 +226,7 @@ struct TypeConverter<Array<T>, std::set<E>> {
     Array<T> result(0u);
     for (auto i : input)
       result.push_back(TypeConverter<T, E>::Convert(i));
-    return result.Pass();
+    return std::move(result);
   }
 };
 

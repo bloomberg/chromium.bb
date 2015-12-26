@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "mojo/public/cpp/bindings/lib/connector.h"
+
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <utility>
 
 #include "base/message_loop/message_loop.h"
 #include "mojo/message_pump/message_pump_mojo.h"
-#include "mojo/public/cpp/bindings/lib/connector.h"
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/tests/message_queue.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -101,9 +103,9 @@ class ConnectorTest : public testing::Test {
 };
 
 TEST_F(ConnectorTest, Basic) {
-  internal::Connector connector0(handle0_.Pass(),
+  internal::Connector connector0(std::move(handle0_),
                                  internal::Connector::SINGLE_THREADED_SEND);
-  internal::Connector connector1(handle1_.Pass(),
+  internal::Connector connector1(std::move(handle1_),
                                  internal::Connector::SINGLE_THREADED_SEND);
 
   const char kText[] = "hello world";
@@ -129,9 +131,9 @@ TEST_F(ConnectorTest, Basic) {
 }
 
 TEST_F(ConnectorTest, Basic_Synchronous) {
-  internal::Connector connector0(handle0_.Pass(),
+  internal::Connector connector0(std::move(handle0_),
                                  internal::Connector::SINGLE_THREADED_SEND);
-  internal::Connector connector1(handle1_.Pass(),
+  internal::Connector connector1(std::move(handle1_),
                                  internal::Connector::SINGLE_THREADED_SEND);
 
   const char kText[] = "hello world";
@@ -157,9 +159,9 @@ TEST_F(ConnectorTest, Basic_Synchronous) {
 }
 
 TEST_F(ConnectorTest, Basic_EarlyIncomingReceiver) {
-  internal::Connector connector0(handle0_.Pass(),
+  internal::Connector connector0(std::move(handle0_),
                                  internal::Connector::SINGLE_THREADED_SEND);
-  internal::Connector connector1(handle1_.Pass(),
+  internal::Connector connector1(std::move(handle1_),
                                  internal::Connector::SINGLE_THREADED_SEND);
 
   MessageAccumulator accumulator;
@@ -185,9 +187,9 @@ TEST_F(ConnectorTest, Basic_EarlyIncomingReceiver) {
 }
 
 TEST_F(ConnectorTest, Basic_TwoMessages) {
-  internal::Connector connector0(handle0_.Pass(),
+  internal::Connector connector0(std::move(handle0_),
                                  internal::Connector::SINGLE_THREADED_SEND);
-  internal::Connector connector1(handle1_.Pass(),
+  internal::Connector connector1(std::move(handle1_),
                                  internal::Connector::SINGLE_THREADED_SEND);
 
   const char* kText[] = {"hello", "world"};
@@ -217,9 +219,9 @@ TEST_F(ConnectorTest, Basic_TwoMessages) {
 }
 
 TEST_F(ConnectorTest, Basic_TwoMessages_Synchronous) {
-  internal::Connector connector0(handle0_.Pass(),
+  internal::Connector connector0(std::move(handle0_),
                                  internal::Connector::SINGLE_THREADED_SEND);
-  internal::Connector connector1(handle1_.Pass(),
+  internal::Connector connector1(std::move(handle1_),
                                  internal::Connector::SINGLE_THREADED_SEND);
 
   const char* kText[] = {"hello", "world"};
@@ -249,7 +251,7 @@ TEST_F(ConnectorTest, Basic_TwoMessages_Synchronous) {
 }
 
 TEST_F(ConnectorTest, WriteToClosedPipe) {
-  internal::Connector connector0(handle0_.Pass(),
+  internal::Connector connector0(std::move(handle0_),
                                  internal::Connector::SINGLE_THREADED_SEND);
 
   const char kText[] = "hello world";
@@ -277,9 +279,9 @@ TEST_F(ConnectorTest, WriteToClosedPipe) {
 }
 
 TEST_F(ConnectorTest, MessageWithHandles) {
-  internal::Connector connector0(handle0_.Pass(),
+  internal::Connector connector0(std::move(handle0_),
                                  internal::Connector::SINGLE_THREADED_SEND);
-  internal::Connector connector1(handle1_.Pass(),
+  internal::Connector connector1(std::move(handle1_),
                                  internal::Connector::SINGLE_THREADED_SEND);
 
   const char kText[] = "hello world";
@@ -319,9 +321,9 @@ TEST_F(ConnectorTest, MessageWithHandles) {
   // |smph| now owns this handle.
 
   internal::Connector connector_received(
-      smph.Pass(), internal::Connector::SINGLE_THREADED_SEND);
+      std::move(smph), internal::Connector::SINGLE_THREADED_SEND);
   internal::Connector connector_original(
-      pipe.handle1.Pass(), internal::Connector::SINGLE_THREADED_SEND);
+      std::move(pipe.handle1), internal::Connector::SINGLE_THREADED_SEND);
 
   Message message2;
   AllocMessage(kText, &message2);
@@ -340,7 +342,7 @@ TEST_F(ConnectorTest, MessageWithHandles) {
 }
 
 TEST_F(ConnectorTest, WaitForIncomingMessageWithError) {
-  internal::Connector connector0(handle0_.Pass(),
+  internal::Connector connector0(std::move(handle0_),
                                  internal::Connector::SINGLE_THREADED_SEND);
   // Close the other end of the pipe.
   handle1_.reset();
@@ -348,10 +350,10 @@ TEST_F(ConnectorTest, WaitForIncomingMessageWithError) {
 }
 
 TEST_F(ConnectorTest, WaitForIncomingMessageWithDeletion) {
-  internal::Connector connector0(handle0_.Pass(),
+  internal::Connector connector0(std::move(handle0_),
                                  internal::Connector::SINGLE_THREADED_SEND);
   internal::Connector* connector1 = new internal::Connector(
-      handle1_.Pass(), internal::Connector::SINGLE_THREADED_SEND);
+      std::move(handle1_), internal::Connector::SINGLE_THREADED_SEND);
 
   const char kText[] = "hello world";
 
@@ -377,9 +379,9 @@ TEST_F(ConnectorTest, WaitForIncomingMessageWithDeletion) {
 }
 
 TEST_F(ConnectorTest, WaitForIncomingMessageWithReentrancy) {
-  internal::Connector connector0(handle0_.Pass(),
+  internal::Connector connector0(std::move(handle0_),
                                  internal::Connector::SINGLE_THREADED_SEND);
-  internal::Connector connector1(handle1_.Pass(),
+  internal::Connector connector1(std::move(handle1_),
                                  internal::Connector::SINGLE_THREADED_SEND);
 
   const char* kText[] = {"hello", "world"};
@@ -411,13 +413,13 @@ TEST_F(ConnectorTest, WaitForIncomingMessageWithReentrancy) {
 }
 
 TEST_F(ConnectorTest, RaiseError) {
-  internal::Connector connector0(handle0_.Pass(),
+  internal::Connector connector0(std::move(handle0_),
                                  internal::Connector::SINGLE_THREADED_SEND);
   bool error_handler_called0 = false;
   connector0.set_connection_error_handler(
       [&error_handler_called0]() { error_handler_called0 = true; });
 
-  internal::Connector connector1(handle1_.Pass(),
+  internal::Connector connector1(std::move(handle1_),
                                  internal::Connector::SINGLE_THREADED_SEND);
   bool error_handler_called1 = false;
   connector1.set_connection_error_handler(

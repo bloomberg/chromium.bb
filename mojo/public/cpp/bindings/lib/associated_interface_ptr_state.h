@@ -6,8 +6,8 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_ASSOCIATED_INTERFACE_PTR_STATE_H_
 
 #include <stdint.h>
-
 #include <algorithm>  // For |std::swap()|.
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -96,7 +96,7 @@ class AssociatedInterfacePtrState {
 
     AssociatedInterfacePtrInfo<GenericInterface> result;
     result.set_version(version_);
-    AssociatedInterfacePtrInfoHelper::SetHandle(&result, handle.Pass());
+    AssociatedInterfacePtrInfoHelper::SetHandle(&result, std::move(handle));
     return result.Pass();
   }
 

@@ -124,7 +124,9 @@ MultiplexRouter::MultiplexRouter(bool set_interface_id_namesapce_bit,
                                         ->task_runner()),
       set_interface_id_namespace_bit_(set_interface_id_namesapce_bit),
       header_validator_(this),
-      connector_(message_pipe.Pass(), Connector::MULTI_THREADED_SEND, waiter),
+      connector_(std::move(message_pipe),
+                 Connector::MULTI_THREADED_SEND,
+                 waiter),
       encountered_error_(false),
       control_message_handler_(this),
       control_message_proxy_(&connector_),
@@ -293,7 +295,7 @@ void MultiplexRouter::RaiseError() {
 scoped_ptr<AssociatedGroup> MultiplexRouter::CreateAssociatedGroup() {
   scoped_ptr<AssociatedGroup> group(new AssociatedGroup);
   group->router_ = this;
-  return group.Pass();
+  return group;
 }
 
 // static
@@ -400,7 +402,7 @@ void MultiplexRouter::ProcessTasks(bool force_async) {
   lock_.AssertAcquired();
 
   while (!tasks_.empty()) {
-    scoped_ptr<Task> task(tasks_.front().Pass());
+    scoped_ptr<Task> task(std::move(tasks_.front()));
     tasks_.pop_front();
 
     bool processed = task->IsNotifyErrorTask()
@@ -408,7 +410,7 @@ void MultiplexRouter::ProcessTasks(bool force_async) {
                          : ProcessIncomingMessageTask(task.get(), &force_async);
 
     if (!processed) {
-      tasks_.push_front(task.Pass());
+      tasks_.push_front(std::move(task));
       break;
     }
   }
@@ -488,7 +490,7 @@ bool MultiplexRouter::ProcessIncomingMessageTask(Task* task,
 
   *force_async = true;
   InterfaceEndpointClient* client = endpoint->client();
-  scoped_ptr<Message> owned_message = task->message.Pass();
+  scoped_ptr<Message> owned_message = std::move(task->message);
   bool result = false;
   {
     // We must unlock before calling into |client| because it may call this

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "mojo/public/cpp/bindings/lib/value_traits.h"
 #include "mojo/public/interfaces/bindings/tests/test_structs.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,7 +19,7 @@ RectPtr CreateRect() {
   r->y = 2;
   r->width = 3;
   r->height = 4;
-  return r.Pass();
+  return r;
 }
 
 using EqualsTest = testing::Test;
@@ -87,7 +89,7 @@ TEST_F(EqualsTest, Map) {
   n1->rects.push_back(CreateRect());
 
   Map<std::string, NamedRegionPtr> m1;
-  m1.insert("foo", n1.Pass());
+  m1.insert("foo", std::move(n1));
 
   decltype(m1) m2;
   EXPECT_FALSE(m1.Equals(m2));

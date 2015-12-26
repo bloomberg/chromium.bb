@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/message_loop/message_loop.h"
 #include "mojo/message_pump/message_pump_mojo.h"
@@ -43,7 +44,7 @@ typedef mojo::Callback<void(double)> CalcCallback;
 class MathCalculatorImpl : public math::Calculator {
  public:
   explicit MathCalculatorImpl(InterfaceRequest<math::Calculator> request)
-      : total_(0.0), binding_(this, request.Pass()) {}
+      : total_(0.0), binding_(this, std::move(request)) {}
   ~MathCalculatorImpl() override {}
 
   void CloseMessagePipe() { binding_.Close(); }
@@ -73,7 +74,7 @@ class MathCalculatorImpl : public math::Calculator {
 class MathCalculatorUI {
  public:
   explicit MathCalculatorUI(math::CalculatorPtr calculator)
-      : calculator_(calculator.Pass()),
+      : calculator_(std::move(calculator)),
         output_(0.0),
         callback_(MakeRunnable(&MathCalculatorUI::Output, this)) {}
 
@@ -104,7 +105,7 @@ class MathCalculatorUI {
 class SelfDestructingMathCalculatorUI {
  public:
   explicit SelfDestructingMathCalculatorUI(math::CalculatorPtr calculator)
-      : calculator_(calculator.Pass()), nesting_level_(0) {
+      : calculator_(std::move(calculator)), nesting_level_(0) {
     ++num_instances_;
   }
 
@@ -143,7 +144,9 @@ class ReentrantServiceImpl : public sample::Service {
   ~ReentrantServiceImpl() override {}
 
   explicit ReentrantServiceImpl(InterfaceRequest<sample::Service> request)
-      : call_depth_(0), max_call_depth_(0), binding_(this, request.Pass()) {}
+      : call_depth_(0),
+        max_call_depth_(0),
+        binding_(this, std::move(request)) {}
 
   int max_call_depth() { return max_call_depth_; }
 
@@ -207,7 +210,7 @@ TEST_F(InterfacePtrTest, EndToEnd) {
   MathCalculatorImpl calc_impl(GetProxy(&calc));
 
   // Suppose this is instantiated in a process that has pipe1_.
-  MathCalculatorUI calculator_ui(calc.Pass());
+  MathCalculatorUI calculator_ui(std::move(calc));
 
   calculator_ui.Add(2.0);
   calculator_ui.Multiply(5.0);
@@ -222,7 +225,7 @@ TEST_F(InterfacePtrTest, EndToEnd_Synchronous) {
   MathCalculatorImpl calc_impl(GetProxy(&calc));
 
   // Suppose this is instantiated in a process that has pipe1_.
-  MathCalculatorUI calculator_ui(calc.Pass());
+  MathCalculatorUI calculator_ui(std::move(calc));
 
   EXPECT_EQ(0.0, calculator_ui.GetOutput());
 
@@ -247,7 +250,7 @@ TEST_F(InterfacePtrTest, Movable) {
   EXPECT_TRUE(!a);
   EXPECT_FALSE(!b);
 
-  a = b.Pass();
+  a = std::move(b);
 
   EXPECT_FALSE(!a);
   EXPECT_TRUE(!b);
@@ -263,7 +266,8 @@ TEST_F(InterfacePtrTest, Resettable) {
   // Save this so we can test it later.
   Handle handle = pipe.handle0.get();
 
-  a = MakeProxy(InterfacePtrInfo<math::Calculator>(pipe.handle0.Pass(), 0u));
+  a = MakeProxy(
+      InterfacePtrInfo<math::Calculator>(std::move(pipe.handle0), 0u));
 
   EXPECT_FALSE(!a);
 
@@ -290,7 +294,7 @@ TEST_F(InterfacePtrTest, EncounteredError) {
   math::CalculatorPtr proxy;
   MathCalculatorImpl calc_impl(GetProxy(&proxy));
 
-  MathCalculatorUI calculator_ui(proxy.Pass());
+  MathCalculatorUI calculator_ui(std::move(proxy));
 
   calculator_ui.Add(2.0);
   PumpMessages();
@@ -320,7 +324,7 @@ TEST_F(InterfacePtrTest, EncounteredErrorCallback) {
   proxy.set_connection_error_handler(
       [&encountered_error]() { encountered_error = true; });
 
-  MathCalculatorUI calculator_ui(proxy.Pass());
+  MathCalculatorUI calculator_ui(std::move(proxy));
 
   calculator_ui.Add(2.0);
   PumpMessages();
@@ -353,7 +357,7 @@ TEST_F(InterfacePtrTest, DestroyInterfacePtrOnMethodResponse) {
   EXPECT_EQ(0, SelfDestructingMathCalculatorUI::num_instances());
 
   SelfDestructingMathCalculatorUI* impl =
-      new SelfDestructingMathCalculatorUI(proxy.Pass());
+      new SelfDestructingMathCalculatorUI(std::move(proxy));
   impl->BeginTest(false);
 
   PumpMessages();
@@ -368,7 +372,7 @@ TEST_F(InterfacePtrTest, NestedDestroyInterfacePtrOnMethodResponse) {
   EXPECT_EQ(0, SelfDestructingMathCalculatorUI::num_instances());
 
   SelfDestructingMathCalculatorUI* impl =
-      new SelfDestructingMathCalculatorUI(proxy.Pass());
+      new SelfDestructingMathCalculatorUI(std::move(proxy));
   impl->BeginTest(true);
 
   PumpMessages();
@@ -444,7 +448,7 @@ class StrongMathCalculatorImpl : public math::Calculator {
                            bool* destroyed)
       : error_received_(error_received),
         destroyed_(destroyed),
-        binding_(this, handle.Pass()) {
+        binding_(this, std::move(handle)) {
     binding_.set_connection_error_handler(
         [this]() { *error_received_ = true; });
   }
@@ -477,16 +481,16 @@ TEST(StrongConnectorTest, Math) {
   bool error_received = false;
   bool destroyed = false;
   MessagePipe pipe;
-  new StrongMathCalculatorImpl(pipe.handle0.Pass(), &error_received,
+  new StrongMathCalculatorImpl(std::move(pipe.handle0), &error_received,
                                &destroyed);
 
   math::CalculatorPtr calc;
-  calc.Bind(InterfacePtrInfo<math::Calculator>(pipe.handle1.Pass(), 0u));
+  calc.Bind(InterfacePtrInfo<math::Calculator>(std::move(pipe.handle1), 0u));
 
   {
     // Suppose this is instantiated in a process that has the other end of the
     // message pipe.
-    MathCalculatorUI calculator_ui(calc.Pass());
+    MathCalculatorUI calculator_ui(std::move(calc));
 
     calculator_ui.Add(2.0);
     calculator_ui.Multiply(5.0);
@@ -513,7 +517,7 @@ class WeakMathCalculatorImpl : public math::Calculator {
                          bool* destroyed)
       : error_received_(error_received),
         destroyed_(destroyed),
-        binding_(this, handle.Pass()) {
+        binding_(this, std::move(handle)) {
     binding_.set_connection_error_handler(
         [this]() { *error_received_ = true; });
   }
@@ -545,15 +549,16 @@ TEST(WeakConnectorTest, Math) {
   bool error_received = false;
   bool destroyed = false;
   MessagePipe pipe;
-  WeakMathCalculatorImpl impl(pipe.handle0.Pass(), &error_received, &destroyed);
+  WeakMathCalculatorImpl impl(std::move(pipe.handle0), &error_received,
+                              &destroyed);
 
   math::CalculatorPtr calc;
-  calc.Bind(InterfacePtrInfo<math::Calculator>(pipe.handle1.Pass(), 0u));
+  calc.Bind(InterfacePtrInfo<math::Calculator>(std::move(pipe.handle1), 0u));
 
   {
     // Suppose this is instantiated in a process that has the other end of the
     // message pipe.
-    MathCalculatorUI calculator_ui(calc.Pass());
+    MathCalculatorUI calculator_ui(std::move(calc));
 
     calculator_ui.Add(2.0);
     calculator_ui.Multiply(5.0);
@@ -576,8 +581,7 @@ TEST(WeakConnectorTest, Math) {
 class CImpl : public C {
  public:
   CImpl(bool* d_called, InterfaceRequest<C> request)
-      : d_called_(d_called),
-        binding_(this, request.Pass()) {}
+      : d_called_(d_called), binding_(this, std::move(request)) {}
   ~CImpl() override {}
 
  private:
@@ -592,13 +596,12 @@ class CImpl : public C {
 class BImpl : public B {
  public:
   BImpl(bool* d_called, InterfaceRequest<B> request)
-      : d_called_(d_called),
-        binding_(this, request.Pass()) {}
+      : d_called_(d_called), binding_(this, std::move(request)) {}
   ~BImpl() override {}
 
  private:
   void GetC(InterfaceRequest<C> c) override {
-    new CImpl(d_called_, c.Pass());
+    new CImpl(d_called_, std::move(c));
   }
 
   bool* d_called_;
@@ -608,15 +611,14 @@ class BImpl : public B {
 class AImpl : public A {
  public:
   explicit AImpl(InterfaceRequest<A> request)
-      : d_called_(false),
-        binding_(this, request.Pass()) {}
+      : d_called_(false), binding_(this, std::move(request)) {}
   ~AImpl() override {}
 
   bool d_called() const { return d_called_; }
 
  private:
   void GetB(InterfaceRequest<B> b) override {
-    new BImpl(&d_called_, b.Pass());
+    new BImpl(&d_called_, std::move(b));
   }
 
   bool d_called_;

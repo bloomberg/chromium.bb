@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_BINDING_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_BINDING_H_
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
@@ -47,7 +49,7 @@ class AssociatedBinding {
   AssociatedBinding(Interface* impl,
                     AssociatedInterfaceRequest<GenericInterface> request)
       : AssociatedBinding(impl) {
-    Bind(request.Pass());
+    Bind(std::move(request));
   }
 
   ~AssociatedBinding() {}
@@ -79,7 +81,7 @@ class AssociatedBinding {
     }
 
     endpoint_client_.reset(new internal::InterfaceEndpointClient(
-        handle.Pass(), &stub_,
+        std::move(handle), &stub_,
         make_scoped_ptr(new typename Interface::RequestValidator_())));
     endpoint_client_->set_connection_error_handler(
         [this]() { connection_error_handler_.Run(); });

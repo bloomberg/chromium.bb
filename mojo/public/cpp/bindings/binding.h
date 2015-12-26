@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_BINDING_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_BINDING_H_
 
+#include <utility>
+
 #include "base/macros.h"
 #include "mojo/public/c/environment/async_waiter.h"
 #include "mojo/public/cpp/bindings/callback.h"
@@ -73,7 +75,7 @@ class Binding {
           ScopedMessagePipeHandle handle,
           const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter())
       : Binding(impl) {
-    Bind(handle.Pass(), waiter);
+    Bind(std::move(handle), waiter);
   }
 
   // Constructs a completed binding of |impl| to a new message pipe, passing the
@@ -110,7 +112,7 @@ class Binding {
   void Bind(
       ScopedMessagePipeHandle handle,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
-    internal_state_.Bind(handle.Pass(), waiter);
+    internal_state_.Bind(std::move(handle), waiter);
   }
 
   // Completes a binding that was constructed with only an interface
@@ -123,10 +125,10 @@ class Binding {
       InterfacePtr<Interface>* ptr,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
     MessagePipe pipe;
-    ptr->Bind(
-        InterfacePtrInfo<Interface>(pipe.handle0.Pass(), Interface::Version_),
-        waiter);
-    Bind(pipe.handle1.Pass(), waiter);
+    ptr->Bind(InterfacePtrInfo<Interface>(std::move(pipe.handle0),
+                                          Interface::Version_),
+              waiter);
+    Bind(std::move(pipe.handle1), waiter);
   }
 
   // Completes a binding that was constructed with only an interface

@@ -6,8 +6,8 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_MAP_H_
 
 #include <stddef.h>
-
 #include <map>
+#include <utility>
 
 #include "mojo/public/cpp/bindings/lib/map_internal.h"
 #include "mojo/public/cpp/bindings/lib/value_traits.h"
@@ -55,7 +55,7 @@ class Map {
   // corresponding |values|.
   Map(mojo::Array<Key> keys, mojo::Array<Value> values) : is_null_(false) {
     MOJO_DCHECK(keys.size() == values.size());
-    Traits::InitializeFrom(&map_, keys.Pass(), values.Pass());
+    Traits::InitializeFrom(&map_, std::move(keys), std::move(values));
   }
 
   ~Map() { Traits::Finalize(&map_); }
@@ -158,7 +158,7 @@ class Map {
     Map result;
     result.is_null_ = is_null_;
     Traits::Clone(map_, &result.map_);
-    return result.Pass();
+    return std::move(result);
   }
 
   // Indicates whether the contents of this map are equal to those of another
@@ -268,7 +268,7 @@ struct TypeConverter<Map<MojoKey, MojoValue>, std::map<STLKey, STLValue>> {
       result.insert(TypeConverter<MojoKey, STLKey>::Convert(pair.first),
                     TypeConverter<MojoValue, STLValue>::Convert(pair.second));
     }
-    return result.Pass();
+    return std::move(result);
   }
 };
 
