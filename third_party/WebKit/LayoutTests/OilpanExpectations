@@ -36,6 +36,8 @@ crbug.com/501229 fast/forms/associatedFormControls-leak-nodes.html [ Failure ]
 
 crbug.com/569901 [ Debug ] http/tests/serviceworker/navigation-redirect.html [ Pass Failure ]
 
+crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
+
 crbug.com/417181 http/tests/xmlhttprequest/abort-on-changestate-headers-received.html [ Failure Pass ]
 
 crbug.com/299010 [ Win ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
