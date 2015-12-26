@@ -5,6 +5,7 @@
 #include "components/sync_sessions/sessions_sync_manager.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/metrics/field_trial.h"
 #include "build/build_config.h"
@@ -79,11 +80,10 @@ SessionsSyncManager::SessionsSyncManager(
       local_device_(local_device),
       local_session_header_node_id_(TabNodePool::kInvalidTabNodeID),
       stale_session_threshold_days_(kDefaultStaleSessionThresholdDays),
-      local_event_router_(router.Pass()),
+      local_event_router_(std::move(router)),
       page_revisit_broadcaster_(this, sessions_client),
       sessions_updated_callback_(sessions_updated_callback),
-      datatype_refresh_callback_(datatype_refresh_callback) {
-}
+      datatype_refresh_callback_(datatype_refresh_callback) {}
 
 SessionsSyncManager::~SessionsSyncManager() {}
 
@@ -104,8 +104,8 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
   DCHECK(session_tracker_.Empty());
   DCHECK_EQ(0U, local_tab_pool_.Capacity());
 
-  error_handler_ = error_handler.Pass();
-  sync_processor_ = sync_processor.Pass();
+  error_handler_ = std::move(error_handler);
+  sync_processor_ = std::move(sync_processor);
 
   local_session_header_node_id_ = TabNodePool::kInvalidTabNodeID;
 
@@ -351,12 +351,12 @@ void SessionsSyncManager::AssociateTab(SyncedTabDelegate* const tab,
 
 void SessionsSyncManager::RebuildAssociations() {
   syncer::SyncDataList data(sync_processor_->GetAllSyncData(syncer::SESSIONS));
-  scoped_ptr<syncer::SyncErrorFactory> error_handler(error_handler_.Pass());
-  scoped_ptr<syncer::SyncChangeProcessor> processor(sync_processor_.Pass());
+  scoped_ptr<syncer::SyncErrorFactory> error_handler(std::move(error_handler_));
+  scoped_ptr<syncer::SyncChangeProcessor> processor(std::move(sync_processor_));
 
   StopSyncing(syncer::SESSIONS);
-  MergeDataAndStartSyncing(syncer::SESSIONS, data, processor.Pass(),
-                           error_handler.Pass());
+  MergeDataAndStartSyncing(syncer::SESSIONS, data, std::move(processor),
+                           std::move(error_handler));
 }
 
 bool SessionsSyncManager::IsValidSessionHeader(

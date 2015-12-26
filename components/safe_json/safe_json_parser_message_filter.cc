@@ -4,6 +4,8 @@
 
 #include "components/safe_json/safe_json_parser_message_filter.h"
 
+#include <utility>
+
 #include "base/json/json_reader.h"
 #include "base/values.h"
 #include "components/safe_json/safe_json_parser_messages.h"
@@ -43,7 +45,7 @@ void SafeJsonParserMessageFilter::OnParseJSON(const std::string& json) {
       json, base::JSON_PARSE_RFC, &error_code, &error);
   if (value) {
     base::ListValue wrapper;
-    wrapper.Append(value.Pass());
+    wrapper.Append(std::move(value));
     Send(new SafeJsonParserHostMsg_ParseJSON_Succeeded(wrapper));
   } else {
     Send(new SafeJsonParserHostMsg_ParseJSON_Failed(error));

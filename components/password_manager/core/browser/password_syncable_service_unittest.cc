@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/location.h"
@@ -203,7 +204,7 @@ class PasswordSyncableServiceWrapper {
 
   // Returnes the scoped_ptr to |service_| thus NULLing out it.
   scoped_ptr<syncer::SyncChangeProcessor> ReleaseSyncableService() {
-    return service_.Pass();
+    return std::move(service_);
   }
 
  private:
@@ -250,9 +251,8 @@ TEST_F(PasswordSyncableServiceTest, AdditionsInBoth) {
   EXPECT_CALL(*processor_, ProcessSyncChanges(_, ElementsAre(
       SyncChangeIs(SyncChange::ACTION_ADD, form))));
 
-  service()->MergeDataAndStartSyncing(syncer::PASSWORDS,
-                                      list,
-                                      processor_.Pass(),
+  service()->MergeDataAndStartSyncing(syncer::PASSWORDS, list,
+                                      std::move(processor_),
                                       scoped_ptr<syncer::SyncErrorFactory>());
 }
 
@@ -269,9 +269,8 @@ TEST_F(PasswordSyncableServiceTest, AdditionOnlyInSync) {
   EXPECT_CALL(*password_store(), AddLoginImpl(PasswordIs(new_from_sync)));
   EXPECT_CALL(*processor_, ProcessSyncChanges(_, IsEmpty()));
 
-  service()->MergeDataAndStartSyncing(syncer::PASSWORDS,
-                                      list,
-                                      processor_.Pass(),
+  service()->MergeDataAndStartSyncing(syncer::PASSWORDS, list,
+                                      std::move(processor_),
                                       scoped_ptr<syncer::SyncErrorFactory>());
 }
 
@@ -293,9 +292,8 @@ TEST_F(PasswordSyncableServiceTest, AdditionOnlyInPasswordStore) {
   EXPECT_CALL(*processor_, ProcessSyncChanges(_, ElementsAre(
       SyncChangeIs(SyncChange::ACTION_ADD, form))));
 
-  service()->MergeDataAndStartSyncing(syncer::PASSWORDS,
-                                      SyncDataList(),
-                                      processor_.Pass(),
+  service()->MergeDataAndStartSyncing(syncer::PASSWORDS, SyncDataList(),
+                                      std::move(processor_),
                                       scoped_ptr<syncer::SyncErrorFactory>());
 }
 
@@ -314,10 +312,8 @@ TEST_F(PasswordSyncableServiceTest, BothInSync) {
   EXPECT_CALL(*processor_, ProcessSyncChanges(_, IsEmpty()));
 
   service()->MergeDataAndStartSyncing(
-      syncer::PASSWORDS,
-      SyncDataList(1, SyncDataFromPassword(form)),
-      processor_.Pass(),
-      scoped_ptr<syncer::SyncErrorFactory>());
+      syncer::PASSWORDS, SyncDataList(1, SyncDataFromPassword(form)),
+      std::move(processor_), scoped_ptr<syncer::SyncErrorFactory>());
 }
 
 // Both passwords db and sync have the same data but they need to be merged
@@ -340,10 +336,8 @@ TEST_F(PasswordSyncableServiceTest, Merge) {
   EXPECT_CALL(*processor_, ProcessSyncChanges(_, IsEmpty()));
 
   service()->MergeDataAndStartSyncing(
-      syncer::PASSWORDS,
-      SyncDataList(1, SyncDataFromPassword(form2)),
-      processor_.Pass(),
-      scoped_ptr<syncer::SyncErrorFactory>());
+      syncer::PASSWORDS, SyncDataList(1, SyncDataFromPassword(form2)),
+      std::move(processor_), scoped_ptr<syncer::SyncErrorFactory>());
 }
 
 // Initiate sync due to local DB changes.
@@ -356,9 +350,8 @@ TEST_F(PasswordSyncableServiceTest, PasswordStoreChanges) {
       .WillOnce(Return(true));
   EXPECT_CALL(*password_store(), FillBlacklistLogins(_))
       .WillOnce(Return(true));
-  service()->MergeDataAndStartSyncing(syncer::PASSWORDS,
-                                      SyncDataList(),
-                                      processor_.Pass(),
+  service()->MergeDataAndStartSyncing(syncer::PASSWORDS, SyncDataList(),
+                                      std::move(processor_),
                                       scoped_ptr<syncer::SyncErrorFactory>());
 
   autofill::PasswordForm form1;
@@ -518,11 +511,9 @@ TEST_F(PasswordSyncableServiceTest, FailedReadFromPasswordStore) {
   // ActOnPasswordStoreChanges() below shouldn't generate any changes for Sync.
   // |processor_| will be destroyed in MergeDataAndStartSyncing().
   EXPECT_CALL(*processor_, ProcessSyncChanges(_, _)).Times(0);
-  syncer::SyncMergeResult result =
-      service()->MergeDataAndStartSyncing(syncer::PASSWORDS,
-                                          syncer::SyncDataList(),
-                                          processor_.Pass(),
-                                          error_factory.Pass());
+  syncer::SyncMergeResult result = service()->MergeDataAndStartSyncing(
+      syncer::PASSWORDS, syncer::SyncDataList(), std::move(processor_),
+      std::move(error_factory));
   EXPECT_TRUE(result.error().IsSet());
 
   autofill::PasswordForm form;
@@ -552,11 +543,9 @@ TEST_F(PasswordSyncableServiceTest, FailedProcessSyncChanges) {
   EXPECT_CALL(*processor_, ProcessSyncChanges(_, _))
       .Times(1)
       .WillOnce(Return(error));
-  syncer::SyncMergeResult result =
-      service()->MergeDataAndStartSyncing(syncer::PASSWORDS,
-                                          syncer::SyncDataList(),
-                                          processor_.Pass(),
-                                          error_factory.Pass());
+  syncer::SyncMergeResult result = service()->MergeDataAndStartSyncing(
+      syncer::PASSWORDS, syncer::SyncDataList(), std::move(processor_),
+      std::move(error_factory));
   EXPECT_TRUE(result.error().IsSet());
 
   form.signon_realm = kSignonRealm2;
@@ -592,9 +581,8 @@ TEST_F(PasswordSyncableServiceTest, MergeEmptyPasswords) {
       SyncChangeIs(SyncChange::ACTION_DELETE, old_empty_form),
       SyncChangeIs(SyncChange::ACTION_DELETE, sync_empty_form))));
 
-  service()->MergeDataAndStartSyncing(syncer::PASSWORDS,
-                                      sync_data,
-                                      processor_.Pass(),
+  service()->MergeDataAndStartSyncing(syncer::PASSWORDS, sync_data,
+                                      std::move(processor_),
                                       scoped_ptr<syncer::SyncErrorFactory>());
 }
 

@@ -4,6 +4,8 @@
 
 #include "components/safe_json/safe_json_parser_impl.h"
 
+#include <utility>
+
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
@@ -68,7 +70,7 @@ void SafeJsonParserImpl::ReportResultsOnOriginThread() {
   DCHECK(caller_task_runner_->RunsTasksOnCurrentThread());
   if (error_.empty() && parsed_json_) {
     if (!success_callback_.is_null())
-      success_callback_.Run(parsed_json_.Pass());
+      success_callback_.Run(std::move(parsed_json_));
   } else {
     if (!error_callback_.is_null())
       error_callback_.Run(error_);

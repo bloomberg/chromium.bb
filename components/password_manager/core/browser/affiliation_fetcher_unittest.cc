@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/affiliation_fetcher.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/test/null_task_runner.h"
 #include "components/password_manager/core/browser/affiliation_api.pb.h"
@@ -32,7 +34,7 @@ class MockAffiliationFetcherDelegate
 
   void OnFetchSucceeded(scoped_ptr<Result> result) override {
     OnFetchSucceededProxy();
-    result_ = result.Pass();
+    result_ = std::move(result);
   }
 
   const Result& result() const { return *result_.get(); }

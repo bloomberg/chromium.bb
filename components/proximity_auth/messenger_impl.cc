@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/messenger_impl.h"
 
+#include <utility>
+
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/json/json_reader.h"
@@ -67,8 +69,8 @@ std::string GetMessageType(const base::DictionaryValue& message) {
 
 MessengerImpl::MessengerImpl(scoped_ptr<Connection> connection,
                              scoped_ptr<SecureContext> secure_context)
-    : connection_(connection.Pass()),
-      secure_context_(secure_context.Pass()),
+    : connection_(std::move(connection)),
+      secure_context_(std::move(secure_context)),
       weak_ptr_factory_(this) {
   DCHECK(connection_->IsConnected());
   connection_->AddObserver(this);

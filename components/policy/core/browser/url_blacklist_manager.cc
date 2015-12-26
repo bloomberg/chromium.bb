@@ -5,8 +5,8 @@
 #include "components/policy/core/browser/url_blacklist_manager.h"
 
 #include <stdint.h>
-
 #include <limits>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -67,7 +67,7 @@ scoped_ptr<URLBlacklist> BuildBlacklist(
   scoped_ptr<URLBlacklist> blacklist(new URLBlacklist(segment_url));
   blacklist->Block(block.get());
   blacklist->Allow(allow.get());
-  return blacklist.Pass();
+  return blacklist;
 }
 
 // Tokenise the parameter |query| and add appropriate query element matcher
@@ -361,11 +361,9 @@ scoped_refptr<URLMatcherConditionSet> URLBlacklist::CreateConditionSet(
     port_filter.reset(new URLMatcherPortFilter(ranges));
   }
 
-  return new URLMatcherConditionSet(id,
-                                    conditions,
-                                    query_conditions,
-                                    scheme_filter.Pass(),
-                                    port_filter.Pass());
+  return new URLMatcherConditionSet(id, conditions, query_conditions,
+                                    std::move(scheme_filter),
+                                    std::move(port_filter));
 }
 
 // static
@@ -485,7 +483,7 @@ void URLBlacklistManager::UpdateOnIO(scoped_ptr<base::ListValue> block,
 
 void URLBlacklistManager::SetBlacklist(scoped_ptr<URLBlacklist> blacklist) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
-  blacklist_ = blacklist.Pass();
+  blacklist_ = std::move(blacklist);
 }
 
 bool URLBlacklistManager::IsURLBlocked(const GURL& url) const {

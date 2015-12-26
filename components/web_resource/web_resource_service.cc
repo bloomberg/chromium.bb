@@ -78,7 +78,7 @@ void WebResourceService::OnURLFetchComplete(const net::URLFetcher* source) {
     // (on Android in particular) we short-cut the full parsing in the case of
     // trivially "empty" JSONs.
     if (data.empty() || data == "{}") {
-      OnUnpackFinished(make_scoped_ptr(new base::DictionaryValue()).Pass());
+      OnUnpackFinished(make_scoped_ptr(new base::DictionaryValue()));
     } else {
       parse_json_callback_.Run(data,
                                base::Bind(&WebResourceService::OnUnpackFinished,

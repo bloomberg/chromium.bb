@@ -4,6 +4,8 @@
 
 #include "components/rappor/test_rappor_service.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "components/rappor/byte_vector_utils.h"
 #include "components/rappor/proto/rappor_metric.pb.h"
@@ -65,7 +67,7 @@ TestRapporService::~TestRapporService() {}
 
 scoped_ptr<Sample> TestRapporService::CreateSample(RapporType type) {
   scoped_ptr<TestSample> test_sample(new TestSample(type));
-  return test_sample.Pass();
+  return std::move(test_sample);
 }
 
 // Intercepts the sample being recorded and saves it in a test structure.
@@ -77,7 +79,7 @@ void TestRapporService::RecordSampleObj(const std::string& metric_name,
   shadows_.insert(std::pair<std::string, TestSample::Shadow>(
       metric_name, test_sample->GetShadow()));
   // Original version is still called.
-  RapporService::RecordSampleObj(metric_name, sample.Pass());
+  RapporService::RecordSampleObj(metric_name, std::move(sample));
 }
 
 void TestRapporService::RecordSample(const std::string& metric_name,

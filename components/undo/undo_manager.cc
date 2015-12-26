@@ -4,6 +4,8 @@
 
 #include "components/undo/undo_manager.h"
 
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "components/undo/undo_manager_observer.h"
@@ -88,10 +90,10 @@ void UndoManager::AddUndoOperation(scoped_ptr<UndoOperation> operation) {
   }
 
   if (group_actions_count_) {
-    pending_grouped_action_->AddOperation(operation.Pass());
+    pending_grouped_action_->AddOperation(std::move(operation));
   } else {
     UndoGroup* new_action = new UndoGroup();
-    new_action->AddOperation(operation.Pass());
+    new_action->AddOperation(std::move(operation));
     AddUndoGroup(new_action);
   }
 }

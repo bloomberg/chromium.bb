@@ -5,6 +5,7 @@
 #include "components/proximity_auth/remote_device_life_cycle_impl.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -68,7 +69,7 @@ class FakeConnectionFinder : public ConnectionFinder {
     scoped_ptr<FakeConnection> scoped_connection_(
         new FakeConnection(remote_device_));
     connection_ = scoped_connection_.get();
-    connection_callback_.Run(scoped_connection_.Pass());
+    connection_callback_.Run(std::move(scoped_connection_));
   }
 
   FakeConnection* connection() { return connection_; }
@@ -105,7 +106,7 @@ class FakeAuthenticator : public Authenticator {
     scoped_ptr<SecureContext> secure_context;
     if (result == Authenticator::Result::SUCCESS)
       secure_context.reset(new StubSecureContext());
-    callback_.Run(result, secure_context.Pass());
+    callback_.Run(result, std::move(secure_context));
   }
 
  private:
@@ -139,7 +140,7 @@ class TestableRemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycleImpl {
     scoped_ptr<FakeConnectionFinder> scoped_connection_finder(
         new FakeConnectionFinder(remote_device_));
     connection_finder_ = scoped_connection_finder.get();
-    return scoped_connection_finder.Pass();
+    return std::move(scoped_connection_finder);
   }
 
   scoped_ptr<Authenticator> CreateAuthenticator() override {
@@ -147,7 +148,7 @@ class TestableRemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycleImpl {
     scoped_ptr<FakeAuthenticator> scoped_authenticator(
         new FakeAuthenticator(connection_finder_->connection()));
     authenticator_ = scoped_authenticator.get();
-    return scoped_authenticator.Pass();
+    return std::move(scoped_authenticator);
   }
 
   const RemoteDevice remote_device_;

@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/remote_device_loader.h"
 
+#include <utility>
+
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "components/proximity_auth/cryptauth/secure_message_delegate.h"
@@ -21,7 +23,7 @@ RemoteDeviceLoader::RemoteDeviceLoader(
     : remaining_unlock_keys_(unlock_keys),
       user_id_(user_id),
       user_private_key_(user_private_key),
-      secure_message_delegate_(secure_message_delegate.Pass()),
+      secure_message_delegate_(std::move(secure_message_delegate)),
       pref_manager_(pref_manager),
       weak_ptr_factory_(this) {}
 

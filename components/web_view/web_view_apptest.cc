@@ -5,6 +5,7 @@
 #include "components/web_view/public/cpp/web_view.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
@@ -83,7 +84,7 @@ class WebViewTest : public mus::WindowServerTestBase,
   void NavigateTo(const std::string& file) {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = GetTestFileURL(file).spec();
-    web_view()->LoadRequest(request.Pass());
+    web_view()->LoadRequest(std::move(request));
     StartNestedRunLoopUntil(LOADING_DONE);
   }
 

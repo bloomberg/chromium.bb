@@ -4,6 +4,8 @@
 
 #include "components/security_interstitials/core/metrics_helper.h"
 
+#include <utility>
+
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -179,7 +181,7 @@ void MetricsHelper::RecordUserDecisionToRappor(Decision decision) {
                           InterstitialFlagBits::HIGHEST_USED_BIT + 1);
   }
   rappor_service_->RecordSampleObj("interstitial." + settings_.rappor_prefix,
-                                   sample.Pass());
+                                   std::move(sample));
 }
 
 void MetricsHelper::RecordUserInteraction(Interaction interaction) {

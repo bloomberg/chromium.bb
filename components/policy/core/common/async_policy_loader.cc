@@ -4,6 +4,8 @@
 
 #include "components/policy/core/common/async_policy_loader.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
@@ -60,7 +62,7 @@ void AsyncPolicyLoader::Reload(bool force) {
   // Filter out mismatching policies.
   schema_map_->FilterBundle(bundle.get());
 
-  update_callback_.Run(bundle.Pass());
+  update_callback_.Run(std::move(bundle));
   ScheduleNextReload(TimeDelta::FromSeconds(kReloadIntervalSeconds));
 }
 
@@ -74,7 +76,7 @@ scoped_ptr<PolicyBundle> AsyncPolicyLoader::InitialLoad(
   scoped_ptr<PolicyBundle> bundle(Load());
   // Filter out mismatching policies.
   schema_map_->FilterBundle(bundle.get());
-  return bundle.Pass();
+  return bundle;
 }
 
 void AsyncPolicyLoader::Init(const UpdateCallback& update_callback) {

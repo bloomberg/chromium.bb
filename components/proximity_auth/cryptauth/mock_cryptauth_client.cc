@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/callback.h"
 #include "components/proximity_auth/cryptauth/mock_cryptauth_client.h"
+
+#include <utility>
+
+#include "base/callback.h"
 
 namespace proximity_auth {
 
@@ -29,7 +32,7 @@ scoped_ptr<CryptAuthClient> MockCryptAuthClientFactory::CreateInstance() {
 
   FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnCryptAuthClientCreated(client.get()));
-  return client.Pass();
+  return std::move(client);
 }
 
 void MockCryptAuthClientFactory::AddObserver(Observer* observer) {

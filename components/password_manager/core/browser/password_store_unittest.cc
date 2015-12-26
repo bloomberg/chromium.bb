@@ -8,6 +8,7 @@
 // passwords. This will not be needed anymore if crbug.com/466638 is fixed.
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
@@ -169,8 +170,7 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   // Build the forms vector and add the forms to the store.
   ScopedVector<PasswordForm> all_forms;
   for (size_t i = 0; i < arraysize(form_data); ++i) {
-    all_forms.push_back(
-        CreatePasswordFormFromDataForTesting(form_data[i]).Pass());
+    all_forms.push_back(CreatePasswordFormFromDataForTesting(form_data[i]));
     store->AddLogin(*all_forms.back());
   }
   base::MessageLoop::current()->RunUntilIdle();
@@ -340,7 +340,7 @@ TEST_F(PasswordStoreTest, UpdateLoginPrimaryKeyFields) {
 
   MockPasswordStoreConsumer mock_consumer;
   ScopedVector<autofill::PasswordForm> expected_forms;
-  expected_forms.push_back(new_form.Pass());
+  expected_forms.push_back(std::move(new_form));
   EXPECT_CALL(mock_consumer,
               OnGetPasswordStoreResultsConstRef(
                   UnorderedPasswordFormElementsAre(expected_forms.get())));

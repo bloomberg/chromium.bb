@@ -4,6 +4,8 @@
 
 #include "components/storage_monitor/test_storage_monitor.h"
 
+#include <utility>
+
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
@@ -35,7 +37,7 @@ TestStorageMonitor* TestStorageMonitor::CreateAndInstall() {
   monitor->MarkInitialized();
 
   if (StorageMonitor::GetInstance() == NULL) {
-    StorageMonitor::SetStorageMonitorForTesting(pass_monitor.Pass());
+    StorageMonitor::SetStorageMonitorForTesting(std::move(pass_monitor));
     return monitor;
   }
 
@@ -49,7 +51,7 @@ TestStorageMonitor* TestStorageMonitor::CreateForBrowserTests() {
   monitor->MarkInitialized();
 
   scoped_ptr<StorageMonitor> pass_monitor(monitor);
-  StorageMonitor::SetStorageMonitorForTesting(pass_monitor.Pass());
+  StorageMonitor::SetStorageMonitorForTesting(std::move(pass_monitor));
 
   return monitor;
 }

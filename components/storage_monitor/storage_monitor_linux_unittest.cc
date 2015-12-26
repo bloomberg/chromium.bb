@@ -86,7 +86,7 @@ scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
   scoped_ptr<StorageInfo> storage_info;
   if (!device_found) {
     NOTREACHED();
-    return storage_info.Pass();
+    return storage_info;
   }
 
   StorageInfo::Type type = kTestDeviceData[i].type;
@@ -97,7 +97,7 @@ scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
       base::ASCIIToUTF16("vendor name"),
       base::ASCIIToUTF16("model name"),
       kTestDeviceData[i].partition_size_in_bytes));
-  return storage_info.Pass();
+  return storage_info;
 }
 
 uint64_t GetDevicePartitionSize(const std::string& device) {

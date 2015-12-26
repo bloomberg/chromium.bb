@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/throttled_bluetooth_connection_finder.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/test/test_simple_task_runner.h"
@@ -30,7 +32,7 @@ const char kUuid[] = "DEADBEEF-CAFE-FEED-FOOD-D15EA5EBEEF";
 // A callback that stores a found |connection| into |out|.
 void SaveConnection(scoped_ptr<Connection>* out,
                     scoped_ptr<Connection> connection) {
-  *out = connection.Pass();
+  *out = std::move(connection);
 }
 
 class MockBluetoothThrottler : public BluetoothThrottler {

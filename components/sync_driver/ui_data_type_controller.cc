@@ -4,6 +4,8 @@
 
 #include "components/sync_driver/ui_data_type_controller.h"
 
+#include <utility>
+
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -47,7 +49,7 @@ UIDataTypeController::UIDataTypeController(
 void UIDataTypeController::SetGenericChangeProcessorFactoryForTest(
       scoped_ptr<GenericChangeProcessorFactory> factory) {
   DCHECK_EQ(state_, NOT_RUNNING);
-  processor_factory_ = factory.Pass();
+  processor_factory_ = std::move(factory);
 }
 
 UIDataTypeController::~UIDataTypeController() {

@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/cryptauth/cryptauth_enroller_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "components/proximity_auth/cryptauth/cryptauth_client_impl.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_utils.h"
@@ -54,10 +56,9 @@ std::string CreateEnrollmentPublicMetadata() {
 CryptAuthEnrollerImpl::CryptAuthEnrollerImpl(
     scoped_ptr<CryptAuthClientFactory> client_factory,
     scoped_ptr<SecureMessageDelegate> secure_message_delegate)
-    : client_factory_(client_factory.Pass()),
-      secure_message_delegate_(secure_message_delegate.Pass()),
-      weak_ptr_factory_(this) {
-}
+    : client_factory_(std::move(client_factory)),
+      secure_message_delegate_(std::move(secure_message_delegate)),
+      weak_ptr_factory_(this) {}
 
 CryptAuthEnrollerImpl::~CryptAuthEnrollerImpl() {
 }

@@ -14,7 +14,7 @@ namespace password_manager {
 ScopedVector<autofill::PasswordForm>
 StubPasswordManagerClient::PassThroughCredentialsFilter::FilterResults(
     ScopedVector<autofill::PasswordForm> results) const {
-  return results.Pass();
+  return results;
 }
 
 bool StubPasswordManagerClient::PassThroughCredentialsFilter::ShouldSave(

@@ -4,6 +4,8 @@
 
 #include "components/scheduler/base/task_queue_manager_delegate_for_test.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 
@@ -15,13 +17,13 @@ TaskQueueManagerDelegateForTest::Create(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     scoped_ptr<base::TickClock> time_source) {
   return make_scoped_refptr(
-      new TaskQueueManagerDelegateForTest(task_runner, time_source.Pass()));
+      new TaskQueueManagerDelegateForTest(task_runner, std::move(time_source)));
 }
 
 TaskQueueManagerDelegateForTest::TaskQueueManagerDelegateForTest(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     scoped_ptr<base::TickClock> time_source)
-    : task_runner_(task_runner), time_source_(time_source.Pass()) {}
+    : task_runner_(task_runner), time_source_(std::move(time_source)) {}
 
 TaskQueueManagerDelegateForTest::~TaskQueueManagerDelegateForTest() {}
 

@@ -5,9 +5,9 @@
 #include "components/omnibox/browser/shortcuts_backend.h"
 
 #include <stddef.h>
-
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -72,7 +72,7 @@ ShortcutsBackend::ShortcutsBackend(
     base::FilePath database_path,
     bool suppress_db)
     : template_url_service_(template_url_service),
-      search_terms_data_(search_terms_data.Pass()),
+      search_terms_data_(std::move(search_terms_data)),
       current_state_(NOT_INITIALIZED),
       history_service_observer_(this),
       main_runner_(base::ThreadTaskRunnerHandle::Get()),

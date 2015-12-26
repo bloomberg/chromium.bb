@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -40,9 +41,8 @@ ComponentCloudPolicyUpdater::ComponentCloudPolicyUpdater(
     ComponentCloudPolicyStore* store)
     : store_(store),
       external_policy_data_updater_(task_runner,
-                                    external_policy_data_fetcher.Pass(),
-                                    kMaxParallelPolicyDataFetches) {
-}
+                                    std::move(external_policy_data_fetcher),
+                                    kMaxParallelPolicyDataFetches) {}
 
 ComponentCloudPolicyUpdater::~ComponentCloudPolicyUpdater() {
 }
@@ -60,7 +60,7 @@ void ComponentCloudPolicyUpdater::UpdateExternalPolicy(
   // Validate the policy before doing anything else.
   PolicyNamespace ns;
   em::ExternalPolicyData data;
-  if (!store_->ValidatePolicy(response.Pass(), &ns, &data)) {
+  if (!store_->ValidatePolicy(std::move(response), &ns, &data)) {
     LOG(ERROR) << "Failed to validate component policy fetched from DMServer";
     return;
   }

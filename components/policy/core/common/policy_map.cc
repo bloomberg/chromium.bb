@@ -35,7 +35,7 @@ scoped_ptr<PolicyMap::Entry> PolicyMap::Entry::DeepCopy() const {
     copy->external_data_fetcher =
         new ExternalDataFetcher(*external_data_fetcher);
   }
-  return copy.Pass();
+  return copy;
 }
 
 bool PolicyMap::Entry::has_higher_priority_than(

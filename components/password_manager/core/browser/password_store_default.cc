@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/password_store_default.h"
 
 #include <set>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
@@ -21,8 +22,7 @@ PasswordStoreDefault::PasswordStoreDefault(
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
     scoped_ptr<LoginDatabase> login_db)
     : PasswordStore(main_thread_runner, db_thread_runner),
-      login_db_(login_db.Pass()) {
-}
+      login_db_(std::move(login_db)) {}
 
 PasswordStoreDefault::~PasswordStoreDefault() {
 }
@@ -150,7 +150,7 @@ ScopedVector<autofill::PasswordForm> PasswordStoreDefault::FillMatchingLogins(
   ScopedVector<autofill::PasswordForm> matched_forms;
   if (login_db_ && !login_db_->GetLogins(form, &matched_forms))
     return ScopedVector<autofill::PasswordForm>();
-  return matched_forms.Pass();
+  return matched_forms;
 }
 
 bool PasswordStoreDefault::FillAutofillableLogins(

@@ -4,6 +4,8 @@
 
 #include "components/web_view/navigation_controller.h"
 
+#include <utility>
+
 #include "components/web_view/frame.h"
 #include "components/web_view/navigation_controller_delegate.h"
 #include "components/web_view/navigation_entry.h"
@@ -99,7 +101,7 @@ void NavigationController::GoForward() {
 void NavigationController::LoadURL(mojo::URLRequestPtr request) {
   // TODO(erg): This mimics part of NavigationControllerImpl::LoadURL(), minus
   // all the error checking.
-  SetPendingEntry(make_scoped_ptr(new NavigationEntry(request.Pass())));
+  SetPendingEntry(make_scoped_ptr(new NavigationEntry(std::move(request))));
   NavigateToPendingEntry(ReloadType::NO_RELOAD, false);
 }
 

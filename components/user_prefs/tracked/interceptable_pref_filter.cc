@@ -4,6 +4,8 @@
 
 #include "components/user_prefs/tracked/interceptable_pref_filter.h"
 
+#include <utility>
+
 #include "base/bind.h"
 
 InterceptablePrefFilter::InterceptablePrefFilter() {
@@ -16,7 +18,7 @@ void InterceptablePrefFilter::FilterOnLoad(
     scoped_ptr<base::DictionaryValue> pref_store_contents) {
   if (filter_on_load_interceptor_.is_null()) {
     FinalizeFilterOnLoad(post_filter_on_load_callback,
-                         pref_store_contents.Pass(), false);
+                         std::move(pref_store_contents), false);
   } else {
     // Note, in practice (in the implementation as it was in May 2014) it would
     // be okay to pass an unretained |this| pointer below, but in order to avoid
@@ -27,7 +29,7 @@ void InterceptablePrefFilter::FilterOnLoad(
         base::Bind(&InterceptablePrefFilter::FinalizeFilterOnLoad, AsWeakPtr(),
                    post_filter_on_load_callback));
     filter_on_load_interceptor_.Run(finalize_filter_on_load,
-                                    pref_store_contents.Pass());
+                                    std::move(pref_store_contents));
     filter_on_load_interceptor_.Reset();
   }
 }

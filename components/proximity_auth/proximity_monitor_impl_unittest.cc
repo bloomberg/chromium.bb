@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/proximity_monitor_impl.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -39,7 +41,7 @@ class TestProximityMonitorImpl : public ProximityMonitorImpl {
  public:
   explicit TestProximityMonitorImpl(const RemoteDevice& remote_device,
                                     scoped_ptr<base::TickClock> clock)
-      : ProximityMonitorImpl(remote_device, clock.Pass()) {}
+      : ProximityMonitorImpl(remote_device, std::move(clock)) {}
   ~TestProximityMonitorImpl() override {}
 
   using ProximityMonitorImpl::SetStrategy;
@@ -543,7 +545,7 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
       kPersistentSymmetricKey, std::string());
 
   scoped_ptr<base::TickClock> clock(new base::SimpleTestTickClock());
-  ProximityMonitorImpl monitor(unnamed_remote_device, clock.Pass());
+  ProximityMonitorImpl monitor(unnamed_remote_device, std::move(clock));
   monitor.AddObserver(&observer_);
   monitor.Start();
   ProvideConnectionInfo({127, 127, 127});

@@ -4,6 +4,8 @@
 
 #include "components/nacl/browser/pnacl_host.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
@@ -50,9 +52,7 @@ class FileProxy {
 
 FileProxy::FileProxy(scoped_ptr<base::File> file,
                      base::WeakPtr<pnacl::PnaclHost> host)
-    : file_(file.Pass()),
-      host_(host) {
-}
+    : file_(std::move(file)), host_(host) {}
 
 int FileProxy::Write(scoped_refptr<net::DrainableIOBuffer> buffer) {
   int rv = file_->Write(0, buffer->data(), buffer->size());
@@ -63,7 +63,7 @@ int FileProxy::Write(scoped_refptr<net::DrainableIOBuffer> buffer) {
 
 void FileProxy::WriteDone(const PnaclHost::TranslationID& id, int result) {
   if (host_) {
-    host_->OnBufferCopiedToTempFile(id, file_.Pass(), result);
+    host_->OnBufferCopiedToTempFile(id, std::move(file_), result);
   } else {
     BrowserThread::PostBlockingPoolTask(
         FROM_HERE,
@@ -207,8 +207,8 @@ void PnaclHost::DoCreateTemporaryFile(base::FilePath temp_dir,
     if (!file.IsValid())
       PLOG(ERROR) << "Temp file open failed: " << file.error_details();
   }
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE, base::Bind(cb, Passed(file.Pass())));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(cb, Passed(std::move(file))));
 }
 
 void PnaclHost::CreateTemporaryFile(TempFileCallback cb) {
@@ -331,7 +331,7 @@ void PnaclHost::OnTempFileReturn(const TranslationID& id,
     // file was being created.
     LOG(ERROR) << "OnTempFileReturn: id not found";
     BrowserThread::PostBlockingPoolTask(
-        FROM_HERE, base::Bind(CloseBaseFile, Passed(file.Pass())));
+        FROM_HERE, base::Bind(CloseBaseFile, Passed(std::move(file))));
     return;
   }
   if (!file.IsValid()) {
@@ -349,7 +349,7 @@ void PnaclHost::OnTempFileReturn(const TranslationID& id,
   }
   PendingTranslation* pt = &entry->second;
   pt->got_nexe_fd = true;
-  pt->nexe_fd = new base::File(file.Pass());
+  pt->nexe_fd = new base::File(std::move(file));
   CheckCacheQueryReady(entry);
 }
 
@@ -385,7 +385,7 @@ void PnaclHost::CheckCacheQueryReady(
   scoped_ptr<base::File> file(pt->nexe_fd);
   pt->nexe_fd = NULL;
   pt->got_nexe_fd = false;
-  FileProxy* proxy(new FileProxy(file.Pass(), weak_factory_.GetWeakPtr()));
+  FileProxy* proxy(new FileProxy(std::move(file), weak_factory_.GetWeakPtr()));
 
   if (!base::PostTaskAndReplyWithResult(
            BrowserThread::GetBlockingPool(),

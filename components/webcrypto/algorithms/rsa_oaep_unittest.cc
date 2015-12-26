@@ -49,7 +49,7 @@ scoped_ptr<base::DictionaryValue> CreatePublicKeyJwkDict() {
                  Base64EncodeUrlSafe(HexStringToBytes(kPublicKeyModulusHex)));
   jwk->SetString("e",
                  Base64EncodeUrlSafe(HexStringToBytes(kPublicKeyExponentHex)));
-  return jwk.Pass();
+  return jwk;
 }
 
 class WebCryptoRsaOaepTest : public WebCryptoTestBase {};

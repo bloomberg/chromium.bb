@@ -5,6 +5,7 @@
 #include "components/web_view/web_view_impl.h"
 
 #include <queue>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -43,8 +44,8 @@ WebViewImpl::WebViewImpl(mojo::ApplicationImpl* app,
                          mojom::WebViewClientPtr client,
                          mojo::InterfaceRequest<mojom::WebView> request)
     : app_(app),
-      client_(client.Pass()),
-      binding_(this, request.Pass()),
+      client_(std::move(client)),
+      binding_(this, std::move(request)),
       root_(nullptr),
       content_(nullptr),
       find_controller_(this),
@@ -80,7 +81,7 @@ void WebViewImpl::OnLoad(const GURL& pending_url) {
   content_->SetVisible(true);
   content_->AddObserver(this);
 
-  scoped_ptr<PendingWebViewLoad> pending_load(pending_load_.Pass());
+  scoped_ptr<PendingWebViewLoad> pending_load(std::move(pending_load_));
   scoped_ptr<FrameConnection> frame_connection(
       pending_load->frame_connection());
   mus::mojom::WindowTreeClientPtr window_tree_client =
@@ -91,15 +92,15 @@ void WebViewImpl::OnLoad(const GURL& pending_url) {
     devtools_service::DevToolsAgentPtr forward_agent;
     frame_connection->application_connection()->ConnectToService(
         &forward_agent);
-    devtools_agent_->AttachFrame(forward_agent.Pass(), &client_properties);
+    devtools_agent_->AttachFrame(std::move(forward_agent), &client_properties);
   }
 
   mojom::FrameClient* frame_client = frame_connection->frame_client();
   const uint32_t content_handler_id = frame_connection->GetContentHandlerID();
-  frame_tree_.reset(new FrameTree(content_handler_id, content_,
-                                  window_tree_client.Pass(), this, frame_client,
-                                  frame_connection.Pass(), client_properties,
-                                  pending_load->navigation_start_time()));
+  frame_tree_.reset(
+      new FrameTree(content_handler_id, content_, std::move(window_tree_client),
+                    this, frame_client, std::move(frame_connection),
+                    client_properties, pending_load->navigation_start_time()));
 }
 
 void WebViewImpl::PreOrderDepthFirstTraverseTree(Frame* node,
@@ -113,13 +114,13 @@ void WebViewImpl::PreOrderDepthFirstTraverseTree(Frame* node,
 // WebViewImpl, WebView implementation:
 
 void WebViewImpl::LoadRequest(mojo::URLRequestPtr request) {
-  navigation_controller_.LoadURL(request.Pass());
+  navigation_controller_.LoadURL(std::move(request));
 }
 
 void WebViewImpl::GetWindowTreeClient(
     mojo::InterfaceRequest<mus::mojom::WindowTreeClient> window_tree_client) {
   mus::WindowTreeConnection::Create(
-      this, window_tree_client.Pass(),
+      this, std::move(window_tree_client),
       mus::WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
 }
 
@@ -186,7 +187,7 @@ void WebViewImpl::OnWindowDestroyed(mus::Window* window) {
 scoped_ptr<FrameUserData> WebViewImpl::CreateUserDataForNewFrame(
     mojom::FrameClientPtr frame_client) {
   return make_scoped_ptr(
-      new ClientInitiatedFrameConnection(frame_client.Pass()));
+      new ClientInitiatedFrameConnection(std::move(frame_client)));
 }
 
 bool WebViewImpl::CanPostMessageEventToFrame(const Frame* source,
@@ -204,14 +205,14 @@ void WebViewImpl::TitleChanged(const mojo::String& title) {
 }
 
 void WebViewImpl::NavigateTopLevel(Frame* source, mojo::URLRequestPtr request) {
-  client_->TopLevelNavigateRequest(request.Pass());
+  client_->TopLevelNavigateRequest(std::move(request));
 }
 
 void WebViewImpl::CanNavigateFrame(Frame* target,
                                    mojo::URLRequestPtr request,
                                    const CanNavigateFrameCallback& callback) {
   FrameConnection::CreateConnectionForCanNavigateFrame(
-      app_, target, request.Pass(), callback);
+      app_, target, std::move(request), callback);
 }
 
 void WebViewImpl::DidStartNavigation(Frame* frame) {}
@@ -252,7 +253,7 @@ void WebViewImpl::OnFindInPageSelectionUpdated(int32_t request_id,
 void WebViewImpl::HandlePageNavigateRequest(const GURL& url) {
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = url.spec();
-  client_->TopLevelNavigateRequest(request.Pass());
+  client_->TopLevelNavigateRequest(std::move(request));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -260,7 +261,7 @@ void WebViewImpl::HandlePageNavigateRequest(const GURL& url) {
 
 void WebViewImpl::OnNavigate(mojo::URLRequestPtr request) {
   pending_load_.reset(new PendingWebViewLoad(this));
-  pending_load_->Init(request.Pass());
+  pending_load_->Init(std::move(request));
 }
 
 void WebViewImpl::OnDidNavigate() {

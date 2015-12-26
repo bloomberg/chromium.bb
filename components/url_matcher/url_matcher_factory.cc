@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -159,7 +160,8 @@ URLMatcherFactory::CreateFromURLFilterDictionary(
 
   scoped_refptr<URLMatcherConditionSet> url_matcher_condition_set(
       new URLMatcherConditionSet(id, url_matcher_conditions,
-          url_matcher_schema_filter.Pass(), url_matcher_port_filter.Pass()));
+                                 std::move(url_matcher_schema_filter),
+                                 std::move(url_matcher_port_filter)));
   return url_matcher_condition_set;
 }
 

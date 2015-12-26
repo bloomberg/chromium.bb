@@ -117,7 +117,7 @@ OfflinePageModel::OfflinePageModel(
     scoped_ptr<OfflinePageMetadataStore> store,
     const base::FilePath& archives_dir,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-    : store_(store.Pass()),
+    : store_(std::move(store)),
       archives_dir_(archives_dir),
       is_loaded_(false),
       task_runner_(task_runner),
@@ -166,7 +166,7 @@ void OfflinePageModel::SavePage(const GURL& url,
                           base::Bind(&OfflinePageModel::OnCreateArchiveDone,
                                      weak_ptr_factory_.GetWeakPtr(), url,
                                      bookmark_id, base::Time::Now(), callback));
-  pending_archivers_.push_back(archiver.Pass());
+  pending_archivers_.push_back(std::move(archiver));
 }
 
 void OfflinePageModel::MarkPageAccessed(int64_t bookmark_id) {

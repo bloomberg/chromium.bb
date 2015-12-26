@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdint.h>
+#include "components/policy/core/common/cloud/cloud_policy_validator.h"
 
+#include <stdint.h>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -15,7 +17,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
-#include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "crypto/rsa_private_key.h"
@@ -60,8 +61,8 @@ class CloudPolicyValidatorTest : public testing::Test {
       testing::Action<void(UserCloudPolicyValidator*)> check_action,
       scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response) {
     // Create a validator.
-    scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator(
-        policy_response.Pass());
+    scoped_ptr<UserCloudPolicyValidator> validator =
+        CreateValidator(std::move(policy_response));
 
     // Run validation and check the result.
     EXPECT_CALL(*this, ValidationCompletion(validator.get())).WillOnce(
@@ -87,7 +88,7 @@ class CloudPolicyValidatorTest : public testing::Test {
                     public_key_bytes.size());
 
     UserCloudPolicyValidator* validator = UserCloudPolicyValidator::Create(
-        policy_response.Pass(), base::ThreadTaskRunnerHandle::Get());
+        std::move(policy_response), base::ThreadTaskRunnerHandle::Get());
     validator->ValidateTimestamp(timestamp_, timestamp_,
                                  timestamp_option_);
     validator->ValidateUsername(PolicyBuilder::kFakeUsername, true);

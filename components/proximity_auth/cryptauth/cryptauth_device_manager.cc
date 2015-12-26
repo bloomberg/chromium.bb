@@ -5,6 +5,7 @@
 #include "components/proximity_auth/cryptauth/cryptauth_device_manager.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/base64url.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -58,7 +59,7 @@ scoped_ptr<base::DictionaryValue> UnlockKeyToDictionary(
   dictionary->SetString(kExternalDeviceKeyDeviceName, device_name_b64);
   dictionary->SetString(kExternalDeviceKeyBluetoothAddress,
                         bluetooth_address_b64);
-  return dictionary.Pass();
+  return dictionary;
 }
 
 // Converts an unlock key dictionary stored in user prefs to an
@@ -104,8 +105,8 @@ CryptAuthDeviceManager::CryptAuthDeviceManager(
     scoped_ptr<CryptAuthClientFactory> client_factory,
     CryptAuthGCMManager* gcm_manager,
     PrefService* pref_service)
-    : clock_(clock.Pass()),
-      client_factory_(client_factory.Pass()),
+    : clock_(std::move(clock)),
+      client_factory_(std::move(client_factory)),
       gcm_manager_(gcm_manager),
       pref_service_(pref_service),
       weak_ptr_factory_(this) {
@@ -266,7 +267,7 @@ void CryptAuthDeviceManager::OnSyncRequested(
     scoped_ptr<SyncScheduler::SyncRequest> sync_request) {
   FOR_EACH_OBSERVER(Observer, observers_, OnSyncStarted());
 
-  sync_request_ = sync_request.Pass();
+  sync_request_ = std::move(sync_request);
   cryptauth_client_ = client_factory_->CreateInstance();
 
   cryptauth::InvocationReason invocation_reason =

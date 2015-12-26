@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/password_manager/core/browser/password_generation_manager.h"
+
+#include <utility>
 #include <vector>
 
 #include "base/message_loop/message_loop.h"
@@ -16,7 +19,6 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
-#include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
@@ -76,7 +78,9 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_CONST_METHOD0(IsOffTheRecord, bool());
 
   explicit MockPasswordManagerClient(scoped_ptr<PrefService> prefs)
-      : prefs_(prefs.Pass()), store_(new TestPasswordStore), driver_(this) {}
+      : prefs_(std::move(prefs)),
+        store_(new TestPasswordStore),
+        driver_(this) {}
 
   ~MockPasswordManagerClient() override { store_->ShutdownOnUIThread(); }
 
@@ -102,7 +106,7 @@ class PasswordGenerationManagerTest : public testing::Test {
     scoped_ptr<TestingPrefServiceSimple> prefs(new TestingPrefServiceSimple());
     prefs->registry()->RegisterBooleanPref(prefs::kPasswordManagerSavingEnabled,
                                            true);
-    client_.reset(new MockPasswordManagerClient(prefs.Pass()));
+    client_.reset(new MockPasswordManagerClient(std::move(prefs)));
   }
 
   void TearDown() override { client_.reset(); }

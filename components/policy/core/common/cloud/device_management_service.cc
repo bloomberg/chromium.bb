@@ -455,7 +455,7 @@ void DeviceManagementService::Shutdown() {
 
 DeviceManagementService::DeviceManagementService(
     scoped_ptr<Configuration> configuration)
-    : configuration_(configuration.Pass()),
+    : configuration_(std::move(configuration)),
       initialized_(false),
       weak_ptr_factory_(this) {
   DCHECK(configuration_);

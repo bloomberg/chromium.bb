@@ -4,6 +4,8 @@
 
 #include "components/web_view/test_frame_tree_delegate.h"
 
+#include <utility>
+
 #include "base/run_loop.h"
 #include "components/web_view/client_initiated_frame_connection.h"
 #include "components/web_view/frame_connection.h"
@@ -51,7 +53,7 @@ void TestFrameTreeDelegate::WaitForFrameDisconnected(Frame* frame) {
 scoped_ptr<FrameUserData> TestFrameTreeDelegate::CreateUserDataForNewFrame(
     mojom::FrameClientPtr frame_client) {
   return make_scoped_ptr(
-      new ClientInitiatedFrameConnection(frame_client.Pass()));
+      new ClientInitiatedFrameConnection(std::move(frame_client)));
 }
 
 bool TestFrameTreeDelegate::CanPostMessageEventToFrame(
@@ -74,7 +76,7 @@ void TestFrameTreeDelegate::CanNavigateFrame(
     mojo::URLRequestPtr request,
     const CanNavigateFrameCallback& callback) {
   FrameConnection::CreateConnectionForCanNavigateFrame(
-      app_, target, request.Pass(), callback);
+      app_, target, std::move(request), callback);
 }
 
 void TestFrameTreeDelegate::DidStartNavigation(Frame* frame) {}

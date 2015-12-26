@@ -4,10 +4,12 @@
 
 #include "components/web_view/navigation_entry.h"
 
+#include <utility>
+
 namespace web_view {
 
 NavigationEntry::NavigationEntry(mojo::URLRequestPtr original_request)
-    : url_request_(original_request.Pass()) {
+    : url_request_(std::move(original_request)) {
   if (url_request_.originating_time().is_null())
     url_request_.set_originating_time(base::TimeTicks::Now());
 }

@@ -5,6 +5,7 @@
 #include "components/policy/core/common/schema_registry_tracking_policy_provider.h"
 
 #include <string>
+#include <utility>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
@@ -100,7 +101,7 @@ TEST_F(SchemaRegistryTrackingPolicyProviderTest, PassOnChromePolicy) {
            POLICY_SOURCE_CLOUD,
            new base::StringValue("not visible"),
            NULL);
-  mock_provider_.UpdatePolicy(delegate_bundle.Pass());
+  mock_provider_.UpdatePolicy(std::move(delegate_bundle));
   Mock::VerifyAndClearExpectations(&observer_);
 
   EXPECT_FALSE(schema_registry_tracking_provider_.IsInitializationComplete(
@@ -137,7 +138,7 @@ TEST_F(SchemaRegistryTrackingPolicyProviderTest, SchemaReadyWithComponents) {
   bundle->Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "xyz"))
       .CopyFrom(policy_map);
   EXPECT_CALL(observer_, OnUpdatePolicy(&schema_registry_tracking_provider_));
-  mock_provider_.UpdatePolicy(bundle.Pass());
+  mock_provider_.UpdatePolicy(std::move(bundle));
   Mock::VerifyAndClearExpectations(&observer_);
 
   EXPECT_CALL(mock_provider_, RefreshPolicies()).Times(0);
@@ -231,7 +232,7 @@ TEST_F(SchemaRegistryTrackingPolicyProviderTest, RemoveAndAddComponent) {
   scoped_ptr<PolicyBundle> copy(new PolicyBundle);
   copy->CopyFrom(platform_policy);
   EXPECT_CALL(observer_, OnUpdatePolicy(_));
-  mock_provider_.UpdatePolicy(copy.Pass());
+  mock_provider_.UpdatePolicy(std::move(copy));
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_TRUE(
       schema_registry_tracking_provider_.policies().Equals(platform_policy));
@@ -252,7 +253,7 @@ TEST_F(SchemaRegistryTrackingPolicyProviderTest, RemoveAndAddComponent) {
   EXPECT_CALL(observer_, OnUpdatePolicy(_));
   copy.reset(new PolicyBundle);
   copy->CopyFrom(platform_policy);
-  mock_provider_.UpdatePolicy(copy.Pass());
+  mock_provider_.UpdatePolicy(std::move(copy));
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_TRUE(
       schema_registry_tracking_provider_.policies().Equals(platform_policy));

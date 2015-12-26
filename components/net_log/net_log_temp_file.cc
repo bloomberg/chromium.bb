@@ -4,6 +4,8 @@
 
 #include "components/net_log/net_log_temp_file.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
@@ -188,7 +190,7 @@ void NetLogTempFile::StartNetLog(LogType log_type) {
       ChromeNetLog::GetConstants(command_line_string_, channel_string_));
   write_to_file_observer_.reset(new net::WriteToFileNetLogObserver());
   write_to_file_observer_->set_capture_mode(GetCaptureModeForLogType(log_type));
-  write_to_file_observer_->StartObserving(chrome_net_log_, file.Pass(),
+  write_to_file_observer_->StartObserving(chrome_net_log_, std::move(file),
                                           constants.get(), nullptr);
 }
 

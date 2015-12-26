@@ -5,6 +5,7 @@
 #include "components/proximity_auth/cryptauth/cryptauth_device_manager.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/base64url.h"
 #include "base/macros.h"
@@ -116,8 +117,8 @@ class TestCryptAuthDeviceManager : public CryptAuthDeviceManager {
                              scoped_ptr<CryptAuthClientFactory> client_factory,
                              CryptAuthGCMManager* gcm_manager,
                              PrefService* pref_service)
-      : CryptAuthDeviceManager(clock.Pass(),
-                               client_factory.Pass(),
+      : CryptAuthDeviceManager(std::move(clock),
+                               std::move(client_factory),
                                gcm_manager,
                                pref_service),
         scoped_sync_scheduler_(new NiceMock<MockSyncScheduler>()),
@@ -127,7 +128,7 @@ class TestCryptAuthDeviceManager : public CryptAuthDeviceManager {
 
   scoped_ptr<SyncScheduler> CreateSyncScheduler() override {
     EXPECT_TRUE(scoped_sync_scheduler_);
-    return scoped_sync_scheduler_.Pass();
+    return std::move(scoped_sync_scheduler_);
   }
 
   base::WeakPtr<MockSyncScheduler> GetSyncScheduler() {
@@ -202,7 +203,7 @@ class ProximityAuthCryptAuthDeviceManagerTest
     {
       ListPrefUpdate update(&pref_service_,
                             prefs::kCryptAuthDeviceSyncUnlockKeys);
-      update.Get()->Append(unlock_key_dictionary.Pass());
+      update.Get()->Append(std::move(unlock_key_dictionary));
     }
 
     device_manager_.reset(new TestCryptAuthDeviceManager(
@@ -255,7 +256,7 @@ class ProximityAuthCryptAuthDeviceManagerTest
     scoped_ptr<SyncScheduler::SyncRequest> sync_request = make_scoped_ptr(
         new SyncScheduler::SyncRequest(device_manager_->GetSyncScheduler()));
     EXPECT_CALL(*this, OnSyncStartedProxy());
-    delegate->OnSyncRequested(sync_request.Pass());
+    delegate->OnSyncRequested(std::move(sync_request));
 
     EXPECT_EQ(expected_invocation_reason,
               get_my_devices_request_.invocation_reason());
@@ -348,7 +349,7 @@ TEST_F(ProximityAuthCryptAuthDeviceManagerTest, InitWithDefaultPrefs) {
   CryptAuthDeviceManager::RegisterPrefs(pref_service.registry());
 
   TestCryptAuthDeviceManager device_manager(
-      clock.Pass(),
+      std::move(clock),
       make_scoped_ptr(new MockCryptAuthClientFactory(
           MockCryptAuthClientFactory::MockType::MAKE_STRICT_MOCKS)),
       &gcm_manager_, &pref_service);

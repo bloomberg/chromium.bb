@@ -4,6 +4,8 @@
 
 #include "components/policy/core/common/remote_commands/testing_remote_commands_server.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
@@ -135,7 +137,7 @@ TestingRemoteCommandsServer::FetchCommands(
 
 void TestingRemoteCommandsServer::SetClock(scoped_ptr<base::TickClock> clock) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  clock_ = clock.Pass();
+  clock_ = std::move(clock);
 }
 
 size_t TestingRemoteCommandsServer::NumberOfCommandsPendingResult() const {

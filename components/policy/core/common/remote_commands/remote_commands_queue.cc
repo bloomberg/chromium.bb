@@ -4,6 +4,8 @@
 
 #include "components/policy/core/common/remote_commands/remote_commands_queue.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -42,7 +44,7 @@ void RemoteCommandsQueue::AddJob(scoped_ptr<RemoteCommandJob> job) {
 
 void RemoteCommandsQueue::SetClockForTesting(
     scoped_ptr<base::TickClock> clock) {
-  clock_ = clock.Pass();
+  clock_ = std::move(clock);
 }
 
 base::TimeTicks RemoteCommandsQueue::GetNowTicks() {

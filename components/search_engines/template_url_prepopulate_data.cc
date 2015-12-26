@@ -1014,18 +1014,18 @@ scoped_ptr<TemplateURLData> MakePrepopulatedTemplateURLData(
     data->alternate_urls.push_back(alternate_url);
   }
   data->search_terms_replacement_key = search_terms_replacement_key.as_string();
-  return data.Pass();
+  return data;
 }
 
 ScopedVector<TemplateURLData> GetPrepopulatedTemplateURLData(
     PrefService* prefs) {
   ScopedVector<TemplateURLData> t_urls;
   if (!prefs)
-    return t_urls.Pass();
+    return t_urls;
 
   const base::ListValue* list = prefs->GetList(prefs::kSearchProviderOverrides);
   if (!list)
-    return t_urls.Pass();
+    return t_urls;
 
   size_t num_engines = list->GetSize();
   for (size_t i = 0; i != num_engines; ++i) {
@@ -1078,7 +1078,7 @@ ScopedVector<TemplateURLData> GetPrepopulatedTemplateURLData(
           search_terms_replacement_key, id).release());
     }
   }
-  return t_urls.Pass();
+  return t_urls;
 }
 
 bool SameDomain(const GURL& given_url, const GURL& prepopulated_url) {
@@ -1113,7 +1113,7 @@ ScopedVector<TemplateURLData> GetPrepopulatedEngines(
   *default_search_provider_index = 0;
   ScopedVector<TemplateURLData> t_urls = GetPrepopulatedTemplateURLData(prefs);
   if (!t_urls.empty())
-    return t_urls.Pass();
+    return t_urls;
 
   const PrepopulatedEngine** engines;
   size_t num_engines;
@@ -1122,7 +1122,7 @@ ScopedVector<TemplateURLData> GetPrepopulatedEngines(
     t_urls.push_back(
         MakeTemplateURLDataFromPrepopulatedEngine(*engines[i]).release());
   }
-  return t_urls.Pass();
+  return t_urls;
 }
 
 scoped_ptr<TemplateURLData> MakeTemplateURLDataFromPrepopulatedEngine(
@@ -1162,7 +1162,7 @@ scoped_ptr<TemplateURLData> GetPrepopulatedDefaultSearch(PrefService* prefs) {
     default_search_provider.reset(loaded_urls[default_search_index]);
     loaded_urls.weak_erase(loaded_urls.begin() + default_search_index);
   }
-  return default_search_provider.Pass();
+  return default_search_provider;
 }
 
 SearchEngineType GetEngineType(const TemplateURL& url,

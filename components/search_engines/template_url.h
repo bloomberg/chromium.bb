@@ -619,7 +619,7 @@ class TemplateURL {
   // This setter shouldn't be used except by TemplateURLService and
   // TemplateURLServiceClient implementations.
   void set_extension_info(scoped_ptr<AssociatedExtensionInfo> extension_info) {
-    extension_info_ = extension_info.Pass();
+    extension_info_ = std::move(extension_info);
   }
 
   // Returns true if |url| supports replacement.

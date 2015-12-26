@@ -5,6 +5,7 @@
 #include "components/sync_driver/glue/sync_backend_registrar.h"
 
 #include <cstddef>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -30,7 +31,7 @@ SyncBackendRegistrar::SyncBackendRegistrar(
   DCHECK(ui_thread_->BelongsToCurrentThread());
   DCHECK(sync_client_);
 
-  sync_thread_ = sync_thread.Pass();
+  sync_thread_ = std::move(sync_thread);
   if (!sync_thread_) {
     sync_thread_.reset(new base::Thread("Chrome_SyncThread"));
     base::Thread::Options options;
@@ -330,7 +331,7 @@ void SyncBackendRegistrar::RemoveWorker(syncer::ModelSafeGroup group) {
 }
 
 scoped_ptr<base::Thread> SyncBackendRegistrar::ReleaseSyncThread() {
-  return sync_thread_.Pass();
+  return std::move(sync_thread_);
 }
 
 void SyncBackendRegistrar::Shutdown() {

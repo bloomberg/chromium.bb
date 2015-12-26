@@ -60,7 +60,7 @@ class TestURLFetcherCallback {
         url, delegate, response_data, response_code, status));
 
     requested_urls_.insert(url);
-    return fetcher.Pass();
+    return fetcher;
   }
 
   const std::multiset<GURL>& requested_urls() const {

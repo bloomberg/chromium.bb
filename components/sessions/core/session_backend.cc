@@ -5,8 +5,8 @@
 #include "components/sessions/core/session_backend.h"
 
 #include <stdint.h>
-
 #include <limits>
+#include <utility>
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -254,7 +254,7 @@ void SessionBackend::ReadLastSessionCommands(
 
   ScopedVector<sessions::SessionCommand> commands;
   ReadLastSessionCommandsImpl(&commands);
-  callback.Run(commands.Pass());
+  callback.Run(std::move(commands));
 }
 
 bool SessionBackend::ReadLastSessionCommandsImpl(

@@ -5,6 +5,7 @@
 #include "components/proximity_auth/remote_device_loader.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -86,7 +87,7 @@ class ProximityAuthRemoteDeviceLoaderTest : public testing::Test {
 TEST_F(ProximityAuthRemoteDeviceLoaderTest, LoadZeroDevices) {
   std::vector<cryptauth::ExternalDeviceInfo> unlock_keys;
   RemoteDeviceLoader loader(unlock_keys, user_private_key_, kUserId,
-                            secure_message_delegate_.Pass(),
+                            std::move(secure_message_delegate_),
                             pref_manager_.get());
 
   std::vector<RemoteDevice> result;
@@ -102,7 +103,7 @@ TEST_F(ProximityAuthRemoteDeviceLoaderTest, LoadOneClassicRemoteDevice) {
   std::vector<cryptauth::ExternalDeviceInfo> unlock_keys(1,
                                                          CreateUnlockKey("1"));
   RemoteDeviceLoader loader(unlock_keys, user_private_key_, kUserId,
-                            secure_message_delegate_.Pass(),
+                            std::move(secure_message_delegate_),
                             pref_manager_.get());
 
   std::vector<RemoteDevice> result;
@@ -125,7 +126,7 @@ TEST_F(ProximityAuthRemoteDeviceLoaderTest, LoadOneBLERemoteDevice) {
                                                          CreateUnlockKey("1"));
   unlock_keys[0].set_bluetooth_address(std::string());
   RemoteDeviceLoader loader(unlock_keys, user_private_key_, kUserId,
-                            secure_message_delegate_.Pass(),
+                            std::move(secure_message_delegate_),
                             pref_manager_.get());
 
   std::string ble_address = "00:00:00:00:00:00";
@@ -152,7 +153,7 @@ TEST_F(ProximityAuthRemoteDeviceLoaderTest, LoadThreeRemoteDevice) {
   unlock_keys.push_back(CreateUnlockKey("2"));
   unlock_keys.push_back(CreateUnlockKey("3"));
   RemoteDeviceLoader loader(unlock_keys, user_private_key_, kUserId,
-                            secure_message_delegate_.Pass(),
+                            std::move(secure_message_delegate_),
                             pref_manager_.get());
 
   std::vector<RemoteDevice> result;

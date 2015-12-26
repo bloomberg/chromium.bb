@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/credential_manager_password_form_manager.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -32,7 +34,7 @@ CredentialManagerPasswordFormManager::~CredentialManagerPasswordFormManager() {
 
 void CredentialManagerPasswordFormManager::OnGetPasswordStoreResults(
     ScopedVector<autofill::PasswordForm> results) {
-  PasswordFormManager::OnGetPasswordStoreResults(results.Pass());
+  PasswordFormManager::OnGetPasswordStoreResults(std::move(results));
 
   // Mark the form as "preferred", as we've been told by the API that this is
   // indeed the credential set that the user used to sign into the site.

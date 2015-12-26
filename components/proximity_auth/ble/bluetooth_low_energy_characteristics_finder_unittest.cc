@@ -111,7 +111,7 @@ class ProximityAuthBluetoothLowEnergyCharacteristicFinderTest
       ON_CALL(*characteristic.get(), GetIdentifier()).WillByDefault(Return(id));
     ON_CALL(*characteristic.get(), GetService())
         .WillByDefault(Return(service_.get()));
-    return characteristic.Pass();
+    return characteristic;
   }
 
   scoped_refptr<device::MockBluetoothAdapter> adapter_;

@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/policy/core/common/cloud/policy_header_service.h"
+
+#include <utility>
+
 #include "base/base64.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
@@ -10,7 +14,6 @@
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "components/policy/core/common/cloud/policy_header_io_helper.h"
-#include "components/policy/core/common/cloud/policy_header_service.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
@@ -26,7 +29,7 @@ const char kPolicyHeaderName[] = "Chrome-Policy-Posture";
 class TestCloudPolicyStore : public MockCloudPolicyStore {
  public:
   void SetPolicy(scoped_ptr<PolicyData> policy) {
-    policy_ = policy.Pass();
+    policy_ = std::move(policy);
     // Notify observers.
     NotifyStoreLoaded();
   }
@@ -44,7 +47,7 @@ class PolicyHeaderServiceTest : public testing::Test {
                                            kPolicyVerificationKeyHash,
                                            &user_store_,
                                            &device_store_));
-    helper_ = service_->CreatePolicyHeaderIOHelper(task_runner_).Pass();
+    helper_ = service_->CreatePolicyHeaderIOHelper(task_runner_);
   }
 
   void TearDown() override {
@@ -104,7 +107,7 @@ TEST_F(PolicyHeaderServiceTest, TestWithAndWithoutPolicyHeader) {
   std::string expected_policy_token = "expected_dmtoken";
   policy->set_request_token(expected_dmtoken);
   policy->set_policy_token(expected_policy_token);
-  user_store_.SetPolicy(policy.Pass());
+  user_store_.SetPolicy(std::move(policy));
   task_runner_->RunUntilIdle();
 
   net::TestURLRequestContext context;

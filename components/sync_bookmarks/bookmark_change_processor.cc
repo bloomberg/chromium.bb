@@ -880,7 +880,7 @@ BookmarkChangeProcessor::GetBookmarkMetaInfo(
   // Verifies that all entries had unique keys.
   DCHECK_EQ(static_cast<size_t>(specifics.meta_info_size()),
             meta_info_map->size());
-  return meta_info_map.Pass();
+  return meta_info_map;
 }
 
 // static

@@ -132,7 +132,7 @@ scoped_ptr<WDTypedResult> KeywordWebDataService::GetKeywordsImpl(
         KeywordTable::FromWebDatabase(db)->GetBuiltinKeywordVersion();
     result_ptr.reset(new WDResult<WDKeywordsResult>(KEYWORDS_RESULT, result));
   }
-  return result_ptr.Pass();
+  return result_ptr;
 }
 
 WebDatabase::State KeywordWebDataService::SetDefaultSearchProviderIDImpl(

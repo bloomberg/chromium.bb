@@ -115,7 +115,7 @@ void ContentPasswordManagerDriverFactory::DidNavigateAnyFrame(
 void ContentPasswordManagerDriverFactory::TestingSetDriverForFrame(
     content::RenderFrameHost* render_frame_host,
     scoped_ptr<ContentPasswordManagerDriver> driver) {
-  frame_driver_map_[render_frame_host] = driver.Pass();
+  frame_driver_map_[render_frame_host] = std::move(driver);
 }
 
 void ContentPasswordManagerDriverFactory::RequestSendLoggingAvailability() {

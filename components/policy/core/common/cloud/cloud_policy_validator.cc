@@ -5,6 +5,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -171,7 +172,7 @@ CloudPolicyValidatorBase::CloudPolicyValidatorBase(
     google::protobuf::MessageLite* payload,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
     : status_(VALIDATION_OK),
-      policy_(policy_response.Pass()),
+      policy_(std::move(policy_response)),
       payload_(payload),
       validation_flags_(0),
       timestamp_not_before_(0),

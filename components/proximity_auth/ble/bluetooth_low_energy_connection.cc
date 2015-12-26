@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
@@ -343,7 +345,7 @@ void BluetoothLowEnergyConnection::OnGattConnectionCreated(
   // Informing |bluetooth_trottler_| a new connection was established.
   bluetooth_throttler_->OnConnection(this);
 
-  gatt_connection_ = gatt_connection.Pass();
+  gatt_connection_ = std::move(gatt_connection);
   SetSubStatus(SubStatus::WAITING_CHARACTERISTICS);
   characteristic_finder_.reset(CreateCharacteristicsFinder(
       base::Bind(&BluetoothLowEnergyConnection::OnCharacteristicsFound,
@@ -436,7 +438,7 @@ void BluetoothLowEnergyConnection::OnNotifySessionStarted(
   PrintTimeElapsed();
 
   SetSubStatus(SubStatus::NOTIFY_SESSION_READY);
-  notify_session_ = notify_session.Pass();
+  notify_session_ = std::move(notify_session);
 
   SendInviteToConnectSignal();
 }

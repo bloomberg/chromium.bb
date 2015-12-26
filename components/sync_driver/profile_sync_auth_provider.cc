@@ -134,5 +134,5 @@ ProfileSyncAuthProvider::CreateProviderForSyncThread() {
   DCHECK(CalledOnValidThread());
   scoped_ptr<syncer::SyncAuthProvider> auth_provider(new SyncThreadProxy(
       weak_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get()));
-  return auth_provider.Pass();
+  return auth_provider;
 }

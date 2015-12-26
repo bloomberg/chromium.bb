@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -30,8 +31,8 @@ AffiliationBackend::AffiliationBackend(
     scoped_ptr<base::TickClock> time_tick_source)
     : request_context_getter_(request_context_getter),
       task_runner_(task_runner),
-      clock_(time_source.Pass()),
-      tick_clock_(time_tick_source.Pass()),
+      clock_(std::move(time_source)),
+      tick_clock_(std::move(time_tick_source)),
       construction_time_(clock_->Now()),
       weak_ptr_factory_(this) {
   DCHECK_LT(base::Time(), clock_->Now());
@@ -123,7 +124,7 @@ FacetManager* AffiliationBackend::GetOrCreateFacetManager(
   if (!facet_managers_.contains(facet_uri)) {
     scoped_ptr<FacetManager> new_manager(
         new FacetManager(facet_uri, this, clock_.get()));
-    facet_managers_.add(facet_uri, new_manager.Pass());
+    facet_managers_.add(facet_uri, std::move(new_manager));
   }
   return facet_managers_.get(facet_uri);
 }
@@ -283,7 +284,7 @@ void AffiliationBackend::ReportStatistics(size_t requested_facet_uri_count) {
 
 void AffiliationBackend::SetThrottlerForTesting(
     scoped_ptr<AffiliationFetchThrottler> throttler) {
-  throttler_ = throttler.Pass();
+  throttler_ = std::move(throttler);
 }
 
 }  // namespace password_manager

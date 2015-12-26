@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/timer/hi_res_timer_manager.h"
+#include "build/build_config.h"
 #include "components/nacl/loader/nacl_listener.h"
 #include "components/nacl/loader/nacl_main_platform_delegate.h"
 #include "content/public/common/content_switches.h"
@@ -24,7 +25,7 @@ int NaClMain(const content::MainFunctionParams& parameters) {
 
   scoped_ptr<base::PowerMonitorSource> power_monitor_source(
       new base::PowerMonitorDeviceSource());
-  base::PowerMonitor power_monitor(power_monitor_source.Pass());
+  base::PowerMonitor power_monitor(std::move(power_monitor_source));
   base::HighResolutionTimerManager hi_res_timer_manager;
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \

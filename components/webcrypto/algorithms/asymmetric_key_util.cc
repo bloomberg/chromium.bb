@@ -6,6 +6,7 @@
 
 #include <openssl/pkcs12.h>
 #include <stdint.h>
+#include <utility>
 
 #include "components/webcrypto/algorithms/util.h"
 #include "components/webcrypto/blink_key_handle.h"
@@ -71,7 +72,7 @@ Status CreateWebCryptoPublicKey(crypto::ScopedEVP_PKEY public_key,
     return status;
 
   *key = blink::WebCryptoKey::create(
-      CreateAsymmetricKeyHandle(public_key.Pass(), spki_data),
+      CreateAsymmetricKeyHandle(std::move(public_key), spki_data),
       blink::WebCryptoKeyTypePublic, extractable, algorithm, usages);
   return Status::Success();
 }
@@ -89,7 +90,7 @@ Status CreateWebCryptoPrivateKey(crypto::ScopedEVP_PKEY private_key,
     return status;
 
   *key = blink::WebCryptoKey::create(
-      CreateAsymmetricKeyHandle(private_key.Pass(), pkcs8_data),
+      CreateAsymmetricKeyHandle(std::move(private_key), pkcs8_data),
       blink::WebCryptoKeyTypePrivate, extractable, algorithm, usages);
   return Status::Success();
 }

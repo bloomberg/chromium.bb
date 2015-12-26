@@ -4,6 +4,8 @@
 
 #include "components/scheduler/child/idle_helper.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -134,10 +136,10 @@ scoped_refptr<SchedulerTqmDelegate> CreateTaskRunnerDelegate(
     scoped_ptr<TestTimeSource> test_time_source) {
   if (message_loop)
     return SchedulerTqmDelegateImpl::Create(message_loop,
-                                            test_time_source.Pass());
+                                            std::move(test_time_source));
 
   return SchedulerTqmDelegateForTest::Create(mock_task_runner,
-                                             test_time_source.Pass());
+                                             std::move(test_time_source));
 }
 
 };  // namespace

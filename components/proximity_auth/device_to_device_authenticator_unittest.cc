@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/device_to_device_authenticator.h"
 
+#include <utility>
+
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/macros.h"
@@ -84,7 +86,7 @@ class FakeConnection : public Connection {
   // Connection:
   void SendMessageImpl(scoped_ptr<WireMessage> message) override {
     const WireMessage& message_alias = *message;
-    message_buffer_.push_back(message.Pass());
+    message_buffer_.push_back(std::move(message));
     OnDidSendMessage(message_alias, !connection_blocked_);
   }
 
@@ -104,7 +106,7 @@ class DeviceToDeviceAuthenticatorForTest : public DeviceToDeviceAuthenticator {
       scoped_ptr<SecureMessageDelegate> secure_message_delegate)
       : DeviceToDeviceAuthenticator(connection,
                                     kAccountId,
-                                    secure_message_delegate.Pass()),
+                                    std::move(secure_message_delegate)),
         timer_(nullptr) {}
   ~DeviceToDeviceAuthenticatorForTest() override {}
 
@@ -120,7 +122,7 @@ class DeviceToDeviceAuthenticatorForTest : public DeviceToDeviceAuthenticator {
         new base::MockTimer(retain_user_task, is_repeating));
 
     timer_ = timer.get();
-    return timer.Pass();
+    return std::move(timer);
   }
 
   // This instance is owned by the super class.
@@ -212,7 +214,7 @@ class ProximityAuthDeviceToDeviceAuthenticatorTest : public testing::Test {
 
   void OnAuthenticationResult(Authenticator::Result result,
                               scoped_ptr<SecureContext> secure_context) {
-    secure_context_ = secure_context.Pass();
+    secure_context_ = std::move(secure_context);
     OnAuthenticationResultProxy(result);
   }
 

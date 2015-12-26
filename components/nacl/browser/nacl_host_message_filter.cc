@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/sys_info.h"
 #include "build/build_config.h"
@@ -224,9 +225,8 @@ void NaClHostMessageFilter::BatchOpenResourceFiles(
       continue;
 
     prefetched_resource_files.push_back(NaClResourcePrefetchResult(
-        IPC::TakeFileHandleForProcess(file.Pass(), PeerHandle()),
-        file_path_metadata,
-        request_list[i].file_key));
+        IPC::TakeFileHandleForProcess(std::move(file), PeerHandle()),
+        file_path_metadata, request_list[i].file_key));
 
     if (prefetched_resource_files.size() >= kMaxPreOpenResourceFiles)
       break;
@@ -324,7 +324,7 @@ void NaClHostMessageFilter::SyncReturnTemporaryFile(
   if (file.IsValid()) {
     NaClHostMsg_NaClCreateTemporaryFile::WriteReplyParams(
         reply_msg,
-        IPC::TakeFileHandleForProcess(file.Pass(), PeerHandle()));
+        IPC::TakeFileHandleForProcess(std::move(file), PeerHandle()));
   } else {
     reply_msg->set_reply_error();
   }

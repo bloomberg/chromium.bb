@@ -4,6 +4,8 @@
 
 #include "components/user_prefs/tracked/tracked_preferences_migration.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -227,9 +229,9 @@ TrackedPreferencesMigrator::TrackedPreferencesMigrator(
           register_on_successful_unprotected_store_write_callback),
       register_on_successful_protected_store_write_callback_(
           register_on_successful_protected_store_write_callback),
-      unprotected_pref_hash_store_(unprotected_pref_hash_store.Pass()),
-      protected_pref_hash_store_(protected_pref_hash_store.Pass()),
-      legacy_pref_hash_store_(legacy_pref_hash_store.Pass()) {
+      unprotected_pref_hash_store_(std::move(unprotected_pref_hash_store)),
+      protected_pref_hash_store_(std::move(protected_pref_hash_store)),
+      legacy_pref_hash_store_(std::move(legacy_pref_hash_store)) {
   // The callbacks bound below will own this TrackedPreferencesMigrator by
   // reference.
   unprotected_pref_filter->InterceptNextFilterOnLoad(
@@ -252,11 +254,11 @@ void TrackedPreferencesMigrator::InterceptFilterOnLoad(
   switch (id) {
     case UNPROTECTED_PREF_FILTER:
       finalize_unprotected_filter_on_load_ = finalize_filter_on_load;
-      unprotected_prefs_ = prefs.Pass();
+      unprotected_prefs_ = std::move(prefs);
       break;
     case PROTECTED_PREF_FILTER:
       finalize_protected_filter_on_load_ = finalize_filter_on_load;
-      protected_prefs_ = prefs.Pass();
+      protected_prefs_ = std::move(prefs);
       break;
   }
 
@@ -309,9 +311,9 @@ void TrackedPreferencesMigrator::MigrateIfReady() {
   }
 
   // Hand the processed prefs back to their respective filters.
-  finalize_unprotected_filter_on_load_.Run(unprotected_prefs_.Pass(),
+  finalize_unprotected_filter_on_load_.Run(std::move(unprotected_prefs_),
                                            unprotected_prefs_altered);
-  finalize_protected_filter_on_load_.Run(protected_prefs_.Pass(),
+  finalize_protected_filter_on_load_.Run(std::move(protected_prefs_),
                                          protected_prefs_altered);
 
   if (unprotected_prefs_need_cleanup) {
@@ -356,15 +358,12 @@ void SetupTrackedPreferencesMigration(
     InterceptablePrefFilter* protected_pref_filter) {
   scoped_refptr<TrackedPreferencesMigrator> prefs_migrator(
       new TrackedPreferencesMigrator(
-          unprotected_pref_names,
-          protected_pref_names,
-          unprotected_store_cleaner,
-          protected_store_cleaner,
+          unprotected_pref_names, protected_pref_names,
+          unprotected_store_cleaner, protected_store_cleaner,
           register_on_successful_unprotected_store_write_callback,
           register_on_successful_protected_store_write_callback,
-          unprotected_pref_hash_store.Pass(),
-          protected_pref_hash_store.Pass(),
-          legacy_pref_hash_store.Pass(),
-          unprotected_pref_filter,
+          std::move(unprotected_pref_hash_store),
+          std::move(protected_pref_hash_store),
+          std::move(legacy_pref_hash_store), unprotected_pref_filter,
           protected_pref_filter));
 }

@@ -4,6 +4,8 @@
 
 #include "components/nacl/renderer/manifest_downloader.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "components/nacl/renderer/histogram.h"
 #include "components/nacl/renderer/nexe_load_manager.h"
@@ -18,7 +20,7 @@ ManifestDownloader::ManifestDownloader(
     scoped_ptr<blink::WebURLLoader> url_loader,
     bool is_installed,
     Callback cb)
-    : url_loader_(url_loader.Pass()),
+    : url_loader_(std::move(url_loader)),
       is_installed_(is_installed),
       cb_(cb),
       status_code_(-1),

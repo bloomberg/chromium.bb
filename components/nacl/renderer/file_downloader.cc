@@ -4,6 +4,8 @@
 
 #include "components/nacl/renderer/file_downloader.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "components/nacl/renderer/nexe_load_manager.h"
 #include "net/base/net_errors.h"
@@ -17,8 +19,8 @@ FileDownloader::FileDownloader(scoped_ptr<blink::WebURLLoader> url_loader,
                                base::File file,
                                StatusCallback status_cb,
                                ProgressCallback progress_cb)
-    : url_loader_(url_loader.Pass()),
-      file_(file.Pass()),
+    : url_loader_(std::move(url_loader)),
+      file_(std::move(file)),
       status_cb_(status_cb),
       progress_cb_(progress_cb),
       http_status_code_(-1),
@@ -74,7 +76,7 @@ void FileDownloader::didFinishLoading(
     if (file_.Seek(base::File::FROM_BEGIN, 0) != 0)
       status_ = FAILED;
   }
-  status_cb_.Run(status_, file_.Pass(), http_status_code_);
+  status_cb_.Run(status_, std::move(file_), http_status_code_);
   delete this;
 }
 
@@ -98,7 +100,7 @@ void FileDownloader::didFail(
   // some implementations of blink::WebURLLoader will do after calling didFail.
   url_loader_.reset();
 
-  status_cb_.Run(status_, file_.Pass(), http_status_code_);
+  status_cb_.Run(status_, std::move(file_), http_status_code_);
   delete this;
 }
 

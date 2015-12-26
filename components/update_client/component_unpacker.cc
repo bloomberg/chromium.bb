@@ -70,7 +70,7 @@ scoped_ptr<base::DictionaryValue> ReadManifest(
   if (!root->IsType(base::Value::TYPE_DICTIONARY))
     return scoped_ptr<base::DictionaryValue>();
   return scoped_ptr<base::DictionaryValue>(
-             static_cast<base::DictionaryValue*>(root.release())).Pass();
+      static_cast<base::DictionaryValue*>(root.release()));
 }
 
 bool ComponentUnpacker::UnpackInternal() {

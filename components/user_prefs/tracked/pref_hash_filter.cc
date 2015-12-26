@@ -5,8 +5,8 @@
 #include "components/user_prefs/tracked/pref_hash_filter.h"
 
 #include <stdint.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -54,7 +54,7 @@ PrefHashFilter::PrefHashFilter(
     TrackedPreferenceValidationDelegate* delegate,
     size_t reporting_ids_count,
     bool report_super_mac_validity)
-    : pref_hash_store_(pref_hash_store.Pass()),
+    : pref_hash_store_(std::move(pref_hash_store)),
       on_reset_on_load_(on_reset_on_load),
       report_super_mac_validity_(report_super_mac_validity) {
   DCHECK(pref_hash_store_);
@@ -86,8 +86,8 @@ PrefHashFilter::PrefHashFilter(
     }
     DCHECK(tracked_preference);
 
-    bool is_new = tracked_paths_.add(metadata.name,
-                                     tracked_preference.Pass()).second;
+    bool is_new =
+        tracked_paths_.add(metadata.name, std::move(tracked_preference)).second;
     DCHECK(is_new);
   }
 }
@@ -229,5 +229,6 @@ void PrefHashFilter::FinalizeFilterOnLoad(
   UMA_HISTOGRAM_TIMES("Settings.FilterOnLoadTime",
                       base::TimeTicks::Now() - checkpoint);
 
-  post_filter_on_load_callback.Run(pref_store_contents.Pass(), prefs_altered);
+  post_filter_on_load_callback.Run(std::move(pref_store_contents),
+                                   prefs_altered);
 }

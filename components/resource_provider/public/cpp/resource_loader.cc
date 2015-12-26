@@ -5,6 +5,7 @@
 #include "components/resource_provider/public/cpp/resource_loader.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file.h"
@@ -22,7 +23,7 @@ base::File GetFileFromHandle(mojo::ScopedHandle handle) {
   MojoPlatformHandle platform_handle;
   CHECK(MojoExtractPlatformHandle(handle.release().value(),
                                   &platform_handle) == MOJO_RESULT_OK);
-  return base::File(platform_handle).Pass();
+  return base::File(platform_handle);
 }
 }
 
@@ -51,9 +52,9 @@ bool ResourceLoader::BlockUntilLoaded() {
 
 base::File ResourceLoader::ReleaseFile(const std::string& path) {
   CHECK(resource_map_.count(path));
-  scoped_ptr<base::File> file_wrapper(resource_map_[path].Pass());
+  scoped_ptr<base::File> file_wrapper(std::move(resource_map_[path]));
   resource_map_.erase(path);
-  return file_wrapper->Pass();
+  return std::move(*file_wrapper);
 }
 
 void ResourceLoader::OnGotResources(const std::vector<std::string>& paths,
@@ -63,7 +64,7 @@ void ResourceLoader::OnGotResources(const std::vector<std::string>& paths,
   CHECK_EQ(resources.size(), paths.size());
   for (size_t i = 0; i < resources.size(); ++i) {
     resource_map_[paths[i]].reset(
-        new base::File(GetFileFromHandle(resources[i].Pass())));
+        new base::File(GetFileFromHandle(std::move(resources[i]))));
   }
   loaded_ = true;
 }

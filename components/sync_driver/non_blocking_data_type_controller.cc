@@ -4,6 +4,8 @@
 
 #include "components/sync_driver/non_blocking_data_type_controller.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -88,7 +90,7 @@ void NonBlockingDataTypeController::OnProcessorStarted(
   if (BelongsToUIThread()) {
     // Hold on to the activation context until ActivateDataType is called.
     if (state_ == MODEL_STARTING) {
-      activation_context_ = activation_context.Pass();
+      activation_context_ = std::move(activation_context);
     }
     // TODO(stanisc): Figure out if UNRECOVERABLE_ERROR is OK in this case.
     ConfigureResult result = error.IsSet() ? UNRECOVERABLE_ERROR : OK;
@@ -97,7 +99,7 @@ void NonBlockingDataTypeController::OnProcessorStarted(
     RunOnUIThread(
         FROM_HERE,
         base::Bind(&NonBlockingDataTypeController::OnProcessorStarted, this,
-                   error, base::Passed(activation_context.Pass())));
+                   error, base::Passed(std::move(activation_context))));
   }
 }
 
@@ -119,7 +121,8 @@ void NonBlockingDataTypeController::ActivateDataType(
   DCHECK(configurer);
   DCHECK(activation_context_);
   DCHECK_EQ(RUNNING, state_);
-  configurer->ActivateNonBlockingDataType(type(), activation_context_.Pass());
+  configurer->ActivateNonBlockingDataType(type(),
+                                          std::move(activation_context_));
 }
 
 void NonBlockingDataTypeController::DeactivateDataType(

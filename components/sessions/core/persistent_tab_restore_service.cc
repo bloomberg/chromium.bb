@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -307,7 +307,7 @@ void PersistentTabRestoreService::Delegate::OnClearEntries() {
   const Entries& entries = tab_restore_service_helper_->entries();
   for (Entries::const_iterator i = entries.begin(); i != entries.end(); ++i)
     base_session_service_->ScheduleCommand(
-        CreateRestoredEntryCommand((*i)->id).Pass());
+        CreateRestoredEntryCommand((*i)->id));
 
   entries_to_write_ = 0;
 
@@ -316,7 +316,7 @@ void PersistentTabRestoreService::Delegate::OnClearEntries() {
 
   // Schedule a command, otherwise if there are no pending commands Save does
   // nothing.
-  base_session_service_->ScheduleCommand(CreateRestoredEntryCommand(1).Pass());
+  base_session_service_->ScheduleCommand(CreateRestoredEntryCommand(1));
 }
 
 void PersistentTabRestoreService::Delegate::OnRestoreEntryById(
@@ -330,7 +330,7 @@ void PersistentTabRestoreService::Delegate::OnRestoreEntryById(
   if (static_cast<int>(index) < entries_to_write_)
     entries_to_write_--;
 
-  base_session_service_->ScheduleCommand(CreateRestoredEntryCommand(id).Pass());
+  base_session_service_->ScheduleCommand(CreateRestoredEntryCommand(id));
 }
 
 void PersistentTabRestoreService::Delegate::OnAddEntry() {
@@ -407,17 +407,13 @@ void PersistentTabRestoreService::Delegate::ScheduleCommandsForWindow(
   if (valid_tab_count == 0)
     return;  // No tabs to persist.
 
-  base_session_service_->ScheduleCommand(
-      CreateWindowCommand(window.id,
-                          std::min(real_selected_tab, valid_tab_count - 1),
-                          valid_tab_count,
-                          window.timestamp).Pass());
+  base_session_service_->ScheduleCommand(CreateWindowCommand(
+      window.id, std::min(real_selected_tab, valid_tab_count - 1),
+      valid_tab_count, window.timestamp));
 
   if (!window.app_name.empty()) {
-    base_session_service_->ScheduleCommand(
-        CreateSetWindowAppNameCommand(kCommandSetWindowAppName, window.id,
-                                      window.app_name)
-            .Pass());
+    base_session_service_->ScheduleCommand(CreateSetWindowAppNameCommand(
+        kCommandSetWindowAppName, window.id, window.app_name));
   }
 
   for (size_t i = 0; i < window.tabs.size(); ++i) {
@@ -446,31 +442,25 @@ void PersistentTabRestoreService::Delegate::ScheduleCommandsForTab(
   }
 
   // Write the command that identifies the selected tab.
-  base_session_service_->ScheduleCommand(
-      CreateSelectedNavigationInTabCommand(tab.id,
-                                           valid_count_before_selected,
-                                           tab.timestamp).Pass());
+  base_session_service_->ScheduleCommand(CreateSelectedNavigationInTabCommand(
+      tab.id, valid_count_before_selected, tab.timestamp));
 
   if (tab.pinned) {
     PinnedStatePayload payload = true;
     scoped_ptr<SessionCommand> command(
         new SessionCommand(kCommandPinnedState, sizeof(payload)));
     memcpy(command->contents(), &payload, sizeof(payload));
-    base_session_service_->ScheduleCommand(command.Pass());
+    base_session_service_->ScheduleCommand(std::move(command));
   }
 
   if (!tab.extension_app_id.empty()) {
-    base_session_service_->ScheduleCommand(
-        CreateSetTabExtensionAppIDCommand(kCommandSetExtensionAppID, tab.id,
-                                          tab.extension_app_id)
-            .Pass());
+    base_session_service_->ScheduleCommand(CreateSetTabExtensionAppIDCommand(
+        kCommandSetExtensionAppID, tab.id, tab.extension_app_id));
   }
 
   if (!tab.user_agent_override.empty()) {
-    base_session_service_->ScheduleCommand(
-        CreateSetTabUserAgentOverrideCommand(kCommandSetTabUserAgentOverride,
-                                             tab.id, tab.user_agent_override)
-            .Pass());
+    base_session_service_->ScheduleCommand(CreateSetTabUserAgentOverrideCommand(
+        kCommandSetTabUserAgentOverride, tab.id, tab.user_agent_override));
   }
 
   // Then write the navigations.
@@ -918,7 +908,7 @@ void PersistentTabRestoreService::Delegate::RemoveEntryByID(
 PersistentTabRestoreService::PersistentTabRestoreService(
     scoped_ptr<TabRestoreServiceClient> client,
     TimeFactory* time_factory)
-    : client_(client.Pass()),
+    : client_(std::move(client)),
       delegate_(new Delegate(client_.get())),
       helper_(this, delegate_.get(), client_.get(), time_factory) {
   delegate_->set_tab_restore_service_helper(&helper_);

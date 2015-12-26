@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file.h"
@@ -61,8 +62,7 @@ void DoRegisterOpenedNaClExecutableFile(
   nacl_browser->PutFilePath(file_path, &file_token_lo, &file_token_hi);
 
   IPC::PlatformFileForTransit file_desc = IPC::TakeFileHandleForProcess(
-      file.Pass(),
-      nacl_host_message_filter->PeerHandle());
+      std::move(file), nacl_host_message_filter->PeerHandle());
 
   write_reply_message(reply_msg, file_desc, file_token_lo, file_token_hi);
   nacl_host_message_filter->Send(reply_msg);
@@ -105,14 +105,13 @@ void DoOpenPnaclFile(
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&DoRegisterOpenedNaClExecutableFile,
-                   nacl_host_message_filter,
-                   Passed(file_to_open.Pass()), full_filepath, reply_msg,
+                   nacl_host_message_filter, Passed(std::move(file_to_open)),
+                   full_filepath, reply_msg,
                    static_cast<WriteFileInfoReply>(
                        NaClHostMsg_GetReadonlyPnaclFD::WriteReplyParams)));
   } else {
-    IPC::PlatformFileForTransit target_desc =
-        IPC::TakeFileHandleForProcess(file_to_open.Pass(),
-                                      nacl_host_message_filter->PeerHandle());
+    IPC::PlatformFileForTransit target_desc = IPC::TakeFileHandleForProcess(
+        std::move(file_to_open), nacl_host_message_filter->PeerHandle());
     uint64_t dummy_file_token = 0;
     NaClHostMsg_GetReadonlyPnaclFD::WriteReplyParams(
         reply_msg, target_desc, dummy_file_token, dummy_file_token);
@@ -153,16 +152,14 @@ void DoOpenNaClExecutableOnThreadPool(
       // registered in a structure owned by the IO thread.
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(
-              &DoRegisterOpenedNaClExecutableFile,
-              nacl_host_message_filter,
-              Passed(file.Pass()), file_path, reply_msg,
-              static_cast<WriteFileInfoReply>(
-                  NaClHostMsg_OpenNaClExecutable::WriteReplyParams)));
+          base::Bind(&DoRegisterOpenedNaClExecutableFile,
+                     nacl_host_message_filter, Passed(std::move(file)),
+                     file_path, reply_msg,
+                     static_cast<WriteFileInfoReply>(
+                         NaClHostMsg_OpenNaClExecutable::WriteReplyParams)));
     } else {
-      IPC::PlatformFileForTransit file_desc =
-          IPC::TakeFileHandleForProcess(file.Pass(),
-                                        nacl_host_message_filter->PeerHandle());
+      IPC::PlatformFileForTransit file_desc = IPC::TakeFileHandleForProcess(
+          std::move(file), nacl_host_message_filter->PeerHandle());
       uint64_t dummy_file_token = 0;
       NaClHostMsg_OpenNaClExecutable::WriteReplyParams(
           reply_msg, file_desc, dummy_file_token, dummy_file_token);

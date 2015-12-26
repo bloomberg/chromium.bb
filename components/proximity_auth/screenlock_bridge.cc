@@ -83,7 +83,7 @@ ScreenlockBridge::UserPodCustomIconOptions::ToDictionaryValue() const {
   if (is_trial_run_)
     result->SetBoolean("isTrialRun", true);
 
-  return result.Pass();
+  return result;
 }
 
 void ScreenlockBridge::UserPodCustomIconOptions::SetIcon(

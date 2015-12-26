@@ -5,8 +5,8 @@
 #include "components/policy/core/common/cloud/component_cloud_policy_service.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -135,8 +135,8 @@ ComponentCloudPolicyService::Backend::Backend(
     : service_(service),
       task_runner_(task_runner),
       service_task_runner_(service_task_runner),
-      cache_(cache.Pass()),
-      external_policy_data_fetcher_(external_policy_data_fetcher.Pass()),
+      cache_(std::move(cache)),
+      external_policy_data_fetcher_(std::move(external_policy_data_fetcher)),
       store_(this, cache_.get()),
       initialized_(false) {}
 
@@ -171,7 +171,7 @@ void ComponentCloudPolicyService::Backend::Init(
 
   // Start downloading any pending data.
   updater_.reset(new ComponentCloudPolicyUpdater(
-      task_runner_, external_policy_data_fetcher_.Pass(), &store_));
+      task_runner_, std::move(external_policy_data_fetcher_), &store_));
 
   service_task_runner_->PostTask(
       FROM_HERE,
@@ -254,10 +254,8 @@ ComponentCloudPolicyService::ComponentCloudPolicyService(
       new ExternalPolicyDataFetcherBackend(io_task_runner_, request_context));
 
   backend_.reset(
-      new Backend(weak_ptr_factory_.GetWeakPtr(),
-                  backend_task_runner_,
-                  base::ThreadTaskRunnerHandle::Get(),
-                  cache.Pass(),
+      new Backend(weak_ptr_factory_.GetWeakPtr(), backend_task_runner_,
+                  base::ThreadTaskRunnerHandle::Get(), std::move(cache),
                   external_policy_data_fetcher_backend_->CreateFrontend(
                       backend_task_runner_)));
 
@@ -328,7 +326,7 @@ void ComponentCloudPolicyService::OnSchemaRegistryUpdated(
   // Filter the |unfiltered_policy_| again, now that |current_schema_map_| has
   // been updated. We must make sure we never serve invalid policy; we must
   // also filter again if an invalid Schema has now been loaded.
-  OnPolicyUpdated(unfiltered_policy_.Pass());
+  OnPolicyUpdated(std::move(unfiltered_policy_));
 }
 
 void ComponentCloudPolicyService::OnCoreConnected(CloudPolicyCore* core) {
@@ -489,7 +487,7 @@ void ComponentCloudPolicyService::OnBackendInitialized(
   ReloadSchema();
 
   // We're now ready to serve the initial policy; notify the policy observers.
-  OnPolicyUpdated(initial_policy.Pass());
+  OnPolicyUpdated(std::move(initial_policy));
 }
 
 void ComponentCloudPolicyService::ReloadSchema() {
@@ -525,7 +523,7 @@ void ComponentCloudPolicyService::OnPolicyUpdated(
   DCHECK(CalledOnValidThread());
 
   // Store the current unfiltered policies.
-  unfiltered_policy_ = policy.Pass();
+  unfiltered_policy_ = std::move(policy);
 
   // Make a copy in |policy_| and filter it; this is what's passed to the
   // outside world.

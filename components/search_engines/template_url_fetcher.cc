@@ -71,7 +71,7 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
     const ConfirmAddSearchProviderCallback& confirm_add_callback,
     ProviderType provider_type)
     : url_fetcher_(
-          net::URLFetcher::Create(osdd_url, net::URLFetcher::GET, this).Pass()),
+          net::URLFetcher::Create(osdd_url, net::URLFetcher::GET, this)),
       fetcher_(fetcher),
       keyword_(keyword),
       osdd_url_(osdd_url),

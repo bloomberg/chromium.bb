@@ -4,6 +4,8 @@
 
 #include "components/webdata/common/web_database_backend.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "components/webdata/common/web_data_request_manager.h"
@@ -75,7 +77,7 @@ void WebDatabaseBackend::DBWriteTaskWrapper(
     return;
 
   ExecuteWriteTask(task);
-  request_manager_->RequestCompleted(request.Pass());
+  request_manager_->RequestCompleted(std::move(request));
 }
 
 void WebDatabaseBackend::ExecuteWriteTask(
@@ -94,8 +96,8 @@ void WebDatabaseBackend::DBReadTaskWrapper(
   if (request->IsCancelled())
     return;
 
-  request->SetResult(ExecuteReadTask(task).Pass());
-  request_manager_->RequestCompleted(request.Pass());
+  request->SetResult(ExecuteReadTask(task));
+  request_manager_->RequestCompleted(std::move(request));
 }
 
 scoped_ptr<WDTypedResult> WebDatabaseBackend::ExecuteReadTask(

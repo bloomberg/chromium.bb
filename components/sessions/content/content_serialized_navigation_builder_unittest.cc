@@ -43,7 +43,7 @@ scoped_ptr<content::NavigationEntry> MakeNavigationEntryForTest() {
   redirect_chain.push_back(test_data::kRedirectURL1);
   redirect_chain.push_back(test_data::kVirtualURL);
   navigation_entry->SetRedirectChain(redirect_chain);
-  return navigation_entry.Pass();
+  return navigation_entry;
 }
 
 }  // namespace

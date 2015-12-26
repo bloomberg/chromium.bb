@@ -4,6 +4,8 @@
 
 #include "components/rappor/rappor_service.h"
 
+#include <utility>
+
 #include "base/metrics/field_trial.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/stl_util.h"
@@ -67,7 +69,7 @@ RapporService::~RapporService() {
 
 void RapporService::AddDailyObserver(
     scoped_ptr<metrics::DailyEvent::Observer> observer) {
-  daily_event_.AddObserver(observer.Pass());
+  daily_event_.AddObserver(std::move(observer));
 }
 
 void RapporService::Initialize(net::URLRequestContextGetter* request_context) {
@@ -260,7 +262,7 @@ void RapporService::RecordSampleObj(const std::string& metric_name,
   if (!RecordingAllowed(sample->parameters()))
     return;
   DVLOG(1) << "Recording sample of metric \"" << metric_name << "\"";
-  sampler_.AddSample(metric_name, sample.Pass());
+  sampler_.AddSample(metric_name, std::move(sample));
 }
 
 }  // namespace rappor

@@ -4,6 +4,8 @@
 
 #include "components/sync_driver/non_blocking_data_type_controller.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
@@ -146,7 +148,7 @@ class MockBackendDataTypeConfigurer
     sync_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&MockSyncBackend::Connect, base::Unretained(backend_), type,
-                   base::Passed(activation_context.Pass())));
+                   base::Passed(std::move(activation_context))));
   }
 
   void DeactivateNonBlockingDataType(syncer::ModelType type) override {

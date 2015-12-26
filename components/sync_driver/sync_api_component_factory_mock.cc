@@ -4,6 +4,8 @@
 
 #include "components/sync_driver/sync_api_component_factory_mock.h"
 
+#include <utility>
+
 #include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/local_device_info_provider_mock.h"
 #include "components/sync_driver/model_associator.h"
@@ -52,10 +54,10 @@ SyncApiComponentFactoryMock::MakeSyncComponents() {
 
 scoped_ptr<sync_driver::LocalDeviceInfoProvider>
 SyncApiComponentFactoryMock::CreateLocalDeviceInfoProvider() {
-  return local_device_.Pass();
+  return std::move(local_device_);
 }
 
 void SyncApiComponentFactoryMock::SetLocalDeviceInfoProvider(
     scoped_ptr<sync_driver::LocalDeviceInfoProvider> local_device) {
-  local_device_ = local_device.Pass();
+  local_device_ = std::move(local_device);
 }

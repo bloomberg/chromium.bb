@@ -5,6 +5,7 @@
 #include "components/precache/core/precache_fetcher.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -161,7 +162,7 @@ void PrecacheFetcher::Fetcher::LoadFromCache() {
   url_fetcher_cache_->SetRequestContext(request_context_);
   url_fetcher_cache_->SetLoadFlags(net::LOAD_ONLY_FROM_CACHE | kNoTracking);
   scoped_ptr<URLFetcherNullWriter> null_writer(new URLFetcherNullWriter);
-  url_fetcher_cache_->SaveResponseWithWriter(null_writer.Pass());
+  url_fetcher_cache_->SaveResponseWithWriter(std::move(null_writer));
   url_fetcher_cache_->Start();
 }
 
@@ -177,7 +178,7 @@ void PrecacheFetcher::Fetcher::LoadFromNetwork() {
     // We don't need a copy of the response body for resource requests. The
     // request is issued only to populate the browser cache.
     scoped_ptr<URLFetcherNullWriter> null_writer(new URLFetcherNullWriter);
-    url_fetcher_network_->SaveResponseWithWriter(null_writer.Pass());
+    url_fetcher_network_->SaveResponseWithWriter(std::move(null_writer));
   } else {
     // Config and manifest requests do not need to be revalidated. It's okay if
     // they expire from the cache minutes after we request them.

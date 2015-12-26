@@ -198,7 +198,7 @@ scoped_ptr<SuggestionAnswer> SuggestionAnswer::ParseAnswer(
       !ImageLine::ParseImageLine(second_line_json, &result->second_line_))
     return nullptr;
 
-  return result.Pass();
+  return result;
 }
 
 bool SuggestionAnswer::Equals(const SuggestionAnswer& answer) const {

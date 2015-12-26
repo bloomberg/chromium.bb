@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/password_manager.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -47,7 +48,7 @@ class MockStoreResultFilter : public CredentialsFilter {
   ScopedVector<autofill::PasswordForm> FilterResults(
       ScopedVector<autofill::PasswordForm> results) const override {
     FilterResultsPtr(&results);
-    return results.Pass();
+    return results;
   }
 };
 
@@ -101,7 +102,7 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
 ACTION_P(InvokeConsumer, form) {
   ScopedVector<PasswordForm> result;
   result.push_back(make_scoped_ptr(new PasswordForm(form)));
-  arg0->OnGetPasswordStoreResults(result.Pass());
+  arg0->OnGetPasswordStoreResults(std::move(result));
 }
 
 ACTION(InvokeEmptyConsumerWithForms) {

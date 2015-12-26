@@ -4,6 +4,8 @@
 
 #include "components/sync_driver/shared_change_processor.h"
 
+#include <utility>
+
 #include "base/thread_task_runner_handle.h"
 #include "components/sync_driver/generic_change_processor.h"
 #include "components/sync_driver/generic_change_processor_factory.h"
@@ -82,7 +84,7 @@ base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
   scoped_ptr<syncer::AttachmentService> attachment_service =
       generic_change_processor_->GetAttachmentService();
   if (attachment_service) {
-    local_service->SetAttachmentService(attachment_service.Pass());
+    local_service->SetAttachmentService(std::move(attachment_service));
   }
   return local_service;
 }

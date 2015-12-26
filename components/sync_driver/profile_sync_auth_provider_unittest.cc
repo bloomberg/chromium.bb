@@ -28,7 +28,7 @@ class ProfileSyncAuthProviderTest : public ::testing::Test {
         token_service_.get(), kAccountId,
         GaiaConstants::kChromeSyncOAuth2Scope));
     auth_provider_backend_ =
-        auth_provider_frontend_->CreateProviderForSyncThread().Pass();
+        auth_provider_frontend_->CreateProviderForSyncThread();
   }
 
   void RequestTokenFinished(const GoogleServiceAuthError& error,

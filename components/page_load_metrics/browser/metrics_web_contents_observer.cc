@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/location.h"
 #include "base/logging.h"
@@ -413,7 +414,7 @@ void PageLoadTracker::RecordRappor(const PageLoadExtraInfo& info) {
     sample->SetFlagsField("IsSlow", first_contentful_paint.InSecondsF() >= 10,
                           1);
     rappor_service->RecordSampleObj(kRapporMetricsNameCoarseTiming,
-                                     sample.Pass());
+                                    std::move(sample));
   }
 }
 
@@ -423,7 +424,7 @@ MetricsWebContentsObserver::MetricsWebContentsObserver(
     scoped_ptr<PageLoadMetricsEmbedderInterface> embedder_interface)
     : content::WebContentsObserver(web_contents),
       in_foreground_(false),
-      embedder_interface_(embedder_interface.Pass()) {}
+      embedder_interface_(std::move(embedder_interface)) {}
 
 MetricsWebContentsObserver* MetricsWebContentsObserver::CreateForWebContents(
     content::WebContents* web_contents,
@@ -432,8 +433,8 @@ MetricsWebContentsObserver* MetricsWebContentsObserver::CreateForWebContents(
 
   MetricsWebContentsObserver* metrics = FromWebContents(web_contents);
   if (!metrics) {
-    metrics =
-        new MetricsWebContentsObserver(web_contents, embedder_interface.Pass());
+    metrics = new MetricsWebContentsObserver(web_contents,
+                                             std::move(embedder_interface));
     web_contents->SetUserData(UserDataKey(), metrics);
   }
   return metrics;
@@ -521,7 +522,7 @@ void MetricsWebContentsObserver::DidFinishNavigation(
       AbortTypeForPageTransition(navigation_handle->GetPageTransition()),
       navigation_handle->NavigationStart());
 
-  committed_load_ = finished_nav.Pass();
+  committed_load_ = std::move(finished_nav);
   aborted_provisional_loads_.clear();
 
   const GURL& browser_url = web_contents()->GetLastCommittedURL();

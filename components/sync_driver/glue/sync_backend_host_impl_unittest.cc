@@ -5,9 +5,9 @@
 #include "components/sync_driver/glue/sync_backend_host_impl.h"
 
 #include <stdint.h>
-
 #include <cstddef>
 #include <map>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -234,10 +234,10 @@ class SyncBackendHostTest : public testing::Test {
         base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get(),
         syncer::WeakHandle<syncer::JsEventHandler>(), GURL(std::string()),
-        std::string(), credentials_, true, fake_manager_factory_.Pass(),
+        std::string(), credentials_, true, std::move(fake_manager_factory_),
         MakeWeakHandle(test_unrecoverable_error_handler_.GetWeakPtr()),
         base::Closure(), http_post_provider_factory_getter,
-        saved_nigori_state_.Pass());
+        std::move(saved_nigori_state_));
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE,
         run_loop.QuitClosure(),

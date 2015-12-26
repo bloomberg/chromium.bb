@@ -142,8 +142,8 @@ TEST_F(WebContentsModalDialogManagerTest, WebContentsVisible) {
   NativeManagerTracker tracker;
   TestNativeWebContentsModalDialogManager* native_manager =
       new TestNativeWebContentsModalDialogManager(dialog, manager, &tracker);
-  manager->ShowDialogWithManager(dialog,
-      scoped_ptr<SingleWebContentsDialogManager>(native_manager).Pass());
+  manager->ShowDialogWithManager(
+      dialog, scoped_ptr<SingleWebContentsDialogManager>(native_manager));
 
   EXPECT_EQ(NativeManagerTracker::SHOWN, tracker.state_);
   EXPECT_TRUE(manager->IsDialogActive());
@@ -164,8 +164,8 @@ TEST_F(WebContentsModalDialogManagerTest, WebContentsNotVisible) {
   NativeManagerTracker tracker;
   TestNativeWebContentsModalDialogManager* native_manager =
       new TestNativeWebContentsModalDialogManager(dialog, manager, &tracker);
-  manager->ShowDialogWithManager(dialog,
-      scoped_ptr<SingleWebContentsDialogManager>(native_manager).Pass());
+  manager->ShowDialogWithManager(
+      dialog, scoped_ptr<SingleWebContentsDialogManager>(native_manager));
 
   EXPECT_EQ(NativeManagerTracker::NOT_SHOWN, tracker.state_);
   EXPECT_TRUE(manager->IsDialogActive());
@@ -190,12 +190,12 @@ TEST_F(WebContentsModalDialogManagerTest, ShowDialogs) {
       new TestNativeWebContentsModalDialogManager(dialog2, manager, &tracker2);
   TestNativeWebContentsModalDialogManager* native_manager3 =
       new TestNativeWebContentsModalDialogManager(dialog3, manager, &tracker3);
-  manager->ShowDialogWithManager(dialog1,
-      scoped_ptr<SingleWebContentsDialogManager>(native_manager1).Pass());
-  manager->ShowDialogWithManager(dialog2,
-      scoped_ptr<SingleWebContentsDialogManager>(native_manager2).Pass());
-  manager->ShowDialogWithManager(dialog3,
-      scoped_ptr<SingleWebContentsDialogManager>(native_manager3).Pass());
+  manager->ShowDialogWithManager(
+      dialog1, scoped_ptr<SingleWebContentsDialogManager>(native_manager1));
+  manager->ShowDialogWithManager(
+      dialog2, scoped_ptr<SingleWebContentsDialogManager>(native_manager2));
+  manager->ShowDialogWithManager(
+      dialog3, scoped_ptr<SingleWebContentsDialogManager>(native_manager3));
 
   EXPECT_TRUE(delegate->web_contents_blocked());
   EXPECT_EQ(NativeManagerTracker::SHOWN, tracker1.state_);
@@ -214,8 +214,8 @@ TEST_F(WebContentsModalDialogManagerTest, VisibilityObservation) {
   NativeManagerTracker tracker;
   TestNativeWebContentsModalDialogManager* native_manager =
       new TestNativeWebContentsModalDialogManager(dialog, manager, &tracker);
-  manager->ShowDialogWithManager(dialog,
-      scoped_ptr<SingleWebContentsDialogManager>(native_manager).Pass());
+  manager->ShowDialogWithManager(
+      dialog, scoped_ptr<SingleWebContentsDialogManager>(native_manager));
 
   EXPECT_TRUE(manager->IsDialogActive());
   EXPECT_TRUE(delegate->web_contents_blocked());
@@ -247,10 +247,10 @@ TEST_F(WebContentsModalDialogManagerTest, InterstitialPage) {
       new TestNativeWebContentsModalDialogManager(dialog1, manager, &tracker1);
   TestNativeWebContentsModalDialogManager* native_manager2 =
       new TestNativeWebContentsModalDialogManager(dialog2, manager, &tracker2);
-  manager->ShowDialogWithManager(dialog1,
-      scoped_ptr<SingleWebContentsDialogManager>(native_manager1).Pass());
-  manager->ShowDialogWithManager(dialog2,
-      scoped_ptr<SingleWebContentsDialogManager>(native_manager2).Pass());
+  manager->ShowDialogWithManager(
+      dialog1, scoped_ptr<SingleWebContentsDialogManager>(native_manager1));
+  manager->ShowDialogWithManager(
+      dialog2, scoped_ptr<SingleWebContentsDialogManager>(native_manager2));
 
   test_api->DidAttachInterstitialPage();
 
@@ -283,14 +283,14 @@ TEST_F(WebContentsModalDialogManagerTest, CloseDialogs) {
       new TestNativeWebContentsModalDialogManager(dialog3, manager, &tracker3);
   TestNativeWebContentsModalDialogManager* native_manager4 =
       new TestNativeWebContentsModalDialogManager(dialog4, manager, &tracker4);
-  manager->ShowDialogWithManager(dialog1,
-      scoped_ptr<SingleWebContentsDialogManager>(native_manager1).Pass());
-  manager->ShowDialogWithManager(dialog2,
-      scoped_ptr<SingleWebContentsDialogManager>(native_manager2).Pass());
-  manager->ShowDialogWithManager(dialog3,
-      scoped_ptr<SingleWebContentsDialogManager>(native_manager3).Pass());
-  manager->ShowDialogWithManager(dialog4,
-      scoped_ptr<SingleWebContentsDialogManager>(native_manager4).Pass());
+  manager->ShowDialogWithManager(
+      dialog1, scoped_ptr<SingleWebContentsDialogManager>(native_manager1));
+  manager->ShowDialogWithManager(
+      dialog2, scoped_ptr<SingleWebContentsDialogManager>(native_manager2));
+  manager->ShowDialogWithManager(
+      dialog3, scoped_ptr<SingleWebContentsDialogManager>(native_manager3));
+  manager->ShowDialogWithManager(
+      dialog4, scoped_ptr<SingleWebContentsDialogManager>(native_manager4));
 
   native_manager1->Close();
 
@@ -345,9 +345,8 @@ TEST_F(WebContentsModalDialogManagerTest, CloseAllDialogs) {
     native_managers[i] =
         new TestNativeWebContentsModalDialogManager(
             dialog, manager, &(trackers[i]));
-    manager->ShowDialogWithManager(dialog,
-    scoped_ptr<SingleWebContentsDialogManager>(
-        native_managers[i]).Pass());
+    manager->ShowDialogWithManager(
+        dialog, scoped_ptr<SingleWebContentsDialogManager>(native_managers[i]));
   }
 
   for (int i = 0; i < kWindowCount; i++)

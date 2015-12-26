@@ -9,9 +9,9 @@
 #include <mntent.h>
 #include <stdint.h>
 #include <stdio.h>
-
 #include <limits>
 #include <list>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -131,11 +131,11 @@ scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
 
   device::ScopedUdevPtr udev_obj(device::udev_new());
   if (!udev_obj.get())
-    return storage_info.Pass();
+    return storage_info;
 
   struct stat device_stat;
   if (stat(device_path.value().c_str(), &device_stat) < 0)
-    return storage_info.Pass();
+    return storage_info;
 
   char device_type;
   if (S_ISCHR(device_stat.st_mode))
@@ -143,13 +143,13 @@ scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
   else if (S_ISBLK(device_stat.st_mode))
     device_type = 'b';
   else
-    return storage_info.Pass();  // Not a supported type.
+    return storage_info;  // Not a supported type.
 
   device::ScopedUdevDevicePtr device(
       device::udev_device_new_from_devnum(udev_obj.get(), device_type,
                                           device_stat.st_rdev));
   if (!device.get())
-    return storage_info.Pass();
+    return storage_info;
 
   base::string16 volume_label = base::UTF8ToUTF16(
       device::UdevDeviceGetPropertyValue(device.get(), kLabel));
@@ -195,7 +195,7 @@ scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
       vendor_name,
       model_name,
       GetDeviceStorageSize(device_path, device.get())));
-  return storage_info.Pass();
+  return storage_info;
 }
 
 MtabWatcherLinux* CreateMtabWatcherLinuxOnFileThread(
@@ -226,7 +226,7 @@ StorageMonitor::EjectStatus EjectPathOnFileThread(
   if (!process.WaitForExitWithTimeout(base::TimeDelta::FromMilliseconds(3000),
                                       &exit_code)) {
     process.Terminate(-1, false);
-    base::EnsureProcessTerminated(process.Pass());
+    base::EnsureProcessTerminated(std::move(process));
     return StorageMonitor::EJECT_FAILURE;
   }
 

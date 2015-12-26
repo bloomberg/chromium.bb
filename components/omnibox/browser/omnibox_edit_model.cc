@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/format_macros.h"
@@ -172,7 +173,7 @@ OmniboxEditModel::State::~State() {
 OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
                                    OmniboxEditController* controller,
                                    scoped_ptr<OmniboxClient> client)
-    : client_(client.Pass()),
+    : client_(std::move(client)),
       view_(view),
       controller_(controller),
       focus_state_(OMNIBOX_FOCUS_NONE),

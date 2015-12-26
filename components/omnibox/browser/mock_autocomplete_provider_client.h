@@ -6,6 +6,7 @@
 #define COMPONENTS_OMNIBOX_BROWSER_MOCK_AUTOCOMPLETE_PROVIDER_CLIENT_H_
 
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
@@ -78,7 +79,7 @@ class MockAutocompleteProviderClient : public AutocompleteProviderClient {
   MOCK_METHOD1(PrefetchImage, void(const GURL& url));
 
   void set_template_url_service(scoped_ptr<TemplateURLService> service) {
-    template_url_service_ = service.Pass();
+    template_url_service_ = std::move(service);
   }
 
  private:

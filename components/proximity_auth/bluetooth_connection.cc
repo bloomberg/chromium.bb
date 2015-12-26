@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/bluetooth_connection.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/numerics/safe_conversions.h"
@@ -80,7 +82,7 @@ void BluetoothConnection::SendMessageImpl(scoped_ptr<WireMessage> message) {
   memcpy(buffer->data(), serialized_message.c_str(), message_length);
 
   // Send it.
-  pending_message_ = message.Pass();
+  pending_message_ = std::move(message);
   base::WeakPtr<BluetoothConnection> weak_this = weak_ptr_factory_.GetWeakPtr();
   socket_->Send(buffer,
                 message_length,

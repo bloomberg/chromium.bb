@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/device_to_device_secure_context.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
@@ -29,7 +31,7 @@ DeviceToDeviceSecureContext::DeviceToDeviceSecureContext(
     const std::string& symmetric_key,
     const std::string& responder_auth_message,
     ProtocolVersion protocol_version)
-    : secure_message_delegate_(secure_message_delegate.Pass()),
+    : secure_message_delegate_(std::move(secure_message_delegate)),
       symmetric_key_(symmetric_key),
       responder_auth_message_(responder_auth_message),
       protocol_version_(protocol_version),

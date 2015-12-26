@@ -85,7 +85,7 @@ scoped_ptr<PolicyBundle> ConfigDirPolicyLoader::Load() {
   LoadFromPath(config_dir_.Append(kRecommendedConfigDir),
                POLICY_LEVEL_RECOMMENDED,
                bundle.get());
-  return bundle.Pass();
+  return bundle;
 }
 
 base::Time ConfigDirPolicyLoader::LastModificationTime() {

@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/sessions/core/session_backend.h"
+
 #include <stddef.h>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "components/sessions/core/session_backend.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sessions {
@@ -61,7 +63,7 @@ TEST_F(SessionBackendTest, SimpleReadWrite) {
   struct TestData data = { 1,  "a" };
   SessionCommands commands;
   commands.push_back(CreateCommandFromData(data));
-  backend->AppendCommands(commands.Pass(), false);
+  backend->AppendCommands(std::move(commands), false);
   ASSERT_TRUE(commands.empty());
 
   // Read it back in.
@@ -118,10 +120,10 @@ TEST_F(SessionBackendTest, RandomData) {
               commands.begin(); j != commands.end(); ++j) {
         AssertCommandEqualsData(data[j - commands.begin()], *j);
       }
-      backend->AppendCommands(commands.Pass(), false);
+      backend->AppendCommands(std::move(commands), false);
     }
     commands.push_back(CreateCommandFromData(data[i]));
-    backend->AppendCommands(commands.Pass(), false);
+    backend->AppendCommands(std::move(commands), false);
   }
 }
 
@@ -145,7 +147,7 @@ TEST_F(SessionBackendTest, BigData) {
   reinterpret_cast<char*>(big_command->contents())[big_size - 1] = 'z';
   commands.push_back(big_command);
   commands.push_back(CreateCommandFromData(data[1]));
-  backend->AppendCommands(commands.Pass(), false);
+  backend->AppendCommands(std::move(commands), false);
 
   backend = NULL;
   backend = new SessionBackend(sessions::BaseSessionService::SESSION_RESTORE,
@@ -171,7 +173,7 @@ TEST_F(SessionBackendTest, EmptyCommand) {
       new SessionBackend(sessions::BaseSessionService::SESSION_RESTORE, path_));
   SessionCommands empty_commands;
   empty_commands.push_back(CreateCommandFromData(empty_command));
-  backend->AppendCommands(empty_commands.Pass(), true);
+  backend->AppendCommands(std::move(empty_commands), true);
   backend->MoveCurrentSessionToLastSession();
 
   SessionCommands commands;
@@ -189,12 +191,12 @@ TEST_F(SessionBackendTest, Truncate) {
   struct TestData first_data = { 1,  "a" };
   SessionCommands commands;
   commands.push_back(CreateCommandFromData(first_data));
-  backend->AppendCommands(commands.Pass(), false);
+  backend->AppendCommands(std::move(commands), false);
 
   // Write another command, this time resetting the file when appending.
   struct TestData second_data = { 2,  "b" };
   commands.push_back(CreateCommandFromData(second_data));
-  backend->AppendCommands(commands.Pass(), true);
+  backend->AppendCommands(std::move(commands), true);
 
   // Read it back in.
   backend = NULL;

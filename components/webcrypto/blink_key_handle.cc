@@ -4,6 +4,8 @@
 
 #include "components/webcrypto/blink_key_handle.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "components/webcrypto/crypto_data.h"
@@ -63,7 +65,7 @@ class AsymKey : public Key {
  public:
   AsymKey(crypto::ScopedEVP_PKEY pkey,
           const std::vector<uint8_t>& serialized_key_data)
-      : Key(CryptoData(serialized_key_data)), pkey_(pkey.Pass()) {}
+      : Key(CryptoData(serialized_key_data)), pkey_(std::move(pkey)) {}
 
   AsymKey* AsAsymKey() override { return this; }
 
@@ -105,7 +107,7 @@ blink::WebCryptoKeyHandle* CreateSymmetricKeyHandle(
 blink::WebCryptoKeyHandle* CreateAsymmetricKeyHandle(
     crypto::ScopedEVP_PKEY pkey,
     const std::vector<uint8_t>& serialized_key_data) {
-  return new AsymKey(pkey.Pass(), serialized_key_data);
+  return new AsymKey(std::move(pkey), serialized_key_data);
 }
 
 }  // namespace webcrypto

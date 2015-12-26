@@ -4,6 +4,8 @@
 
 #include "components/sync_driver/fake_generic_change_processor.h"
 
+#include <utility>
+
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "sync/api/syncable_service.h"
@@ -67,7 +69,7 @@ bool FakeGenericChangeProcessor::CryptoReadyIfNecessary() {
 
 FakeGenericChangeProcessorFactory::FakeGenericChangeProcessorFactory(
     scoped_ptr<FakeGenericChangeProcessor> processor)
-    : processor_(processor.Pass()) {}
+    : processor_(std::move(processor)) {}
 
 FakeGenericChangeProcessorFactory::~FakeGenericChangeProcessorFactory() {}
 
@@ -79,7 +81,7 @@ FakeGenericChangeProcessorFactory::CreateGenericChangeProcessor(
     const base::WeakPtr<syncer::SyncableService>& local_service,
     const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
     SyncClient* sync_client) {
-  return processor_.Pass();
+  return std::move(processor_);
 }
 
 }  // namespace sync_driver

@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/device_to_device_authenticator.h"
 
+#include <utility>
+
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/proximity_auth/connection.h"
@@ -35,7 +37,7 @@ DeviceToDeviceAuthenticator::DeviceToDeviceAuthenticator(
     scoped_ptr<SecureMessageDelegate> secure_message_delegate)
     : connection_(connection),
       account_id_(account_id),
-      secure_message_delegate_(secure_message_delegate.Pass()),
+      secure_message_delegate_(std::move(secure_message_delegate)),
       state_(State::NOT_STARTED),
       weak_ptr_factory_(this) {
   DCHECK(connection_);
@@ -179,7 +181,7 @@ void DeviceToDeviceAuthenticator::Succeed() {
   callback_.Run(
       Result::SUCCESS,
       make_scoped_ptr(new DeviceToDeviceSecureContext(
-          secure_message_delegate_.Pass(), session_symmetric_key_,
+          std::move(secure_message_delegate_), session_symmetric_key_,
           responder_auth_message_, SecureContext::PROTOCOL_VERSION_THREE_ONE)));
 }
 

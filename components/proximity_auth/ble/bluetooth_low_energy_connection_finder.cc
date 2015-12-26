@@ -5,6 +5,7 @@
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection_finder.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -210,7 +211,7 @@ void BluetoothLowEnergyConnectionFinder::OnAdapterInitialized(
 void BluetoothLowEnergyConnectionFinder::OnDiscoverySessionStarted(
     scoped_ptr<device::BluetoothDiscoverySession> discovery_session) {
   PA_LOG(INFO) << "Discovery session started";
-  discovery_session_ = discovery_session.Pass();
+  discovery_session_ = std::move(discovery_session);
 }
 
 void BluetoothLowEnergyConnectionFinder::OnStartDiscoverySessionError() {
@@ -230,7 +231,7 @@ void BluetoothLowEnergyConnectionFinder::StartDiscoverySession() {
   filter->SetRSSI(kMinDiscoveryRSSI);
 
   adapter_->StartDiscoverySessionWithFilter(
-      filter.Pass(),
+      std::move(filter),
       base::Bind(&BluetoothLowEnergyConnectionFinder::OnDiscoverySessionStarted,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(
@@ -310,7 +311,7 @@ BluetoothDevice* BluetoothLowEnergyConnectionFinder::GetDevice(
 }
 
 void BluetoothLowEnergyConnectionFinder::InvokeCallbackAsync() {
-  connection_callback_.Run(connection_.Pass());
+  connection_callback_.Run(std::move(connection_));
 }
 
 }  // namespace proximity_auth

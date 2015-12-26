@@ -4,6 +4,8 @@
 
 #include "components/signin/core/browser/account_info_fetcher.h"
 
+#include <utility>
+
 #include "base/trace_event/trace_event.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -63,7 +65,7 @@ void AccountInfoFetcher::OnGetUserInfoResponse(
   TRACE_EVENT_ASYNC_STEP_PAST1("AccountFetcherService", "AccountIdFetcher",
                                this, "OnGetUserInfoResponse", "account_id",
                                account_id_);
-  service_->OnUserInfoFetchSuccess(account_id_, user_info.Pass());
+  service_->OnUserInfoFetchSuccess(account_id_, std::move(user_info));
 }
 
 void AccountInfoFetcher::OnOAuthError() {

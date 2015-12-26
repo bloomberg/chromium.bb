@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 #include <string.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/pickle.h"
@@ -837,14 +837,15 @@ bool ReplacePendingCommand(BaseSessionService* base_session_service,
         // it with the new one. We need to add to the end of the list just in
         // case there is a prune command after the update command.
         base_session_service->EraseCommand(*(i.base() - 1));
-        base_session_service->AppendRebuildCommand((*command).Pass());
+        base_session_service->AppendRebuildCommand((std::move(*command)));
         return true;
       }
       return false;
     }
     if ((*command)->id() == kCommandSetActiveWindow &&
         existing_command->id() == kCommandSetActiveWindow) {
-      base_session_service->SwapCommand(existing_command, (*command).Pass());
+      base_session_service->SwapCommand(existing_command,
+                                        (std::move(*command)));
       return true;
     }
   }

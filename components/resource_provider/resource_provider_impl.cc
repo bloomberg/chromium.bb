@@ -5,6 +5,7 @@
 #include "components/resource_provider/resource_provider_impl.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -39,7 +40,7 @@ ScopedHandle GetHandleForPath(const base::FilePath& path) {
     return ScopedHandle();
   }
 
-  return ScopedHandle(mojo::Handle(mojo_handle)).Pass();
+  return ScopedHandle(mojo::Handle(mojo_handle));
 }
 
 }  // namespace
@@ -65,7 +66,7 @@ void ResourceProviderImpl::GetResources(mojo::Array<mojo::String> paths,
           GetPathForResourceNamed(application_path_, paths[i]));
     }
   }
-  callback.Run(handles.Pass());
+  callback.Run(std::move(handles));
 }
 
 }  // namespace resource_provider

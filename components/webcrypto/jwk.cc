@@ -97,7 +97,7 @@ scoped_ptr<base::ListValue> CreateJwkKeyOpsFromWebCryptoUsages(
     if (usages & kJwkWebCryptoUsageMap[i].webcrypto_usage)
       jwk_key_ops->AppendString(kJwkWebCryptoUsageMap[i].jwk_key_op);
   }
-  return jwk_key_ops.Pass();
+  return jwk_key_ops;
 }
 
 // Composes a Web Crypto usage mask from an array of JWK key_ops values.

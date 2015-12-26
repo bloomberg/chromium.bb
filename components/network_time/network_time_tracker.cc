@@ -5,6 +5,7 @@
 #include "components/network_time/network_time_tracker.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
@@ -39,7 +40,7 @@ void NetworkTimeTracker::RegisterPrefs(PrefRegistrySimple* registry) {
 
 NetworkTimeTracker::NetworkTimeTracker(scoped_ptr<base::TickClock> tick_clock,
                                        PrefService* pref_service)
-    : tick_clock_(tick_clock.Pass()),
+    : tick_clock_(std::move(tick_clock)),
       pref_service_(pref_service),
       received_network_time_(false) {
   const base::DictionaryValue* time_mapping =

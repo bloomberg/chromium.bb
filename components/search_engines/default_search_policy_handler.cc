@@ -5,6 +5,7 @@
 #include "components/search_engines/default_search_policy_handler.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/prefs/pref_value_map.h"
@@ -233,7 +234,7 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   if (DefaultSearchProviderIsDisabled(policies)) {
     scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
     dict->SetBoolean(DefaultSearchManager::kDisabledByPolicy, true);
-    DefaultSearchManager::AddPrefValueToMap(dict.Pass(), prefs);
+    DefaultSearchManager::AddPrefValueToMap(std::move(dict), prefs);
     return;
   }
 
@@ -297,7 +298,7 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   if (keyword.empty())
     dict->SetString(DefaultSearchManager::kKeyword, host);
 
-  DefaultSearchManager::AddPrefValueToMap(dict.Pass(), prefs);
+  DefaultSearchManager::AddPrefValueToMap(std::move(dict), prefs);
 }
 
 bool DefaultSearchPolicyHandler::CheckIndividualPolicies(

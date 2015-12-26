@@ -6,8 +6,8 @@
 
 #include <stdio.h>
 #include <string.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -150,8 +150,8 @@ VisitedLinkMaster::LoadFromFileResult::LoadFromFileResult(
     int32_t num_entries,
     int32_t used_count,
     uint8_t salt[LINK_SALT_LENGTH])
-    : file(file.Pass()),
-      shared_memory(shared_memory.Pass()),
+    : file(std::move(file)),
+      shared_memory(std::move(shared_memory)),
       hash_table(hash_table),
       num_entries(num_entries),
       used_count(used_count) {
@@ -672,12 +672,9 @@ bool VisitedLinkMaster::LoadApartFromFile(
     return false;
   }
 
-  *load_from_file_result = new LoadFromFileResult(file_closer.Pass(),
-                                                  shared_memory.Pass(),
-                                                  hash_table,
-                                                  num_entries,
-                                                  used_count,
-                                                  salt);
+  *load_from_file_result =
+      new LoadFromFileResult(std::move(file_closer), std::move(shared_memory),
+                             hash_table, num_entries, used_count, salt);
   return true;
 }
 
@@ -912,7 +909,7 @@ bool VisitedLinkMaster::CreateApartURLTable(
   *hash_table = reinterpret_cast<Fingerprint*>(
       static_cast<char*>(sh_mem->memory()) + sizeof(SharedHeader));
 
-  *shared_memory = sh_mem.Pass();
+  *shared_memory = std::move(sh_mem);
 
   return true;
 }

@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
+#include "components/search_engines/template_url_fetcher.h"
 
+#include <stddef.h>
 #include <string>
+#include <utility>
 
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
@@ -16,7 +18,6 @@
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/template_url.h"
-#include "components/search_engines/template_url_fetcher.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -123,7 +124,7 @@ void TemplateURLFetcherTest::DestroyedCallback() {
 void TemplateURLFetcherTest::ConfirmAddSearchProvider(
     base::ScopedClosureRunner* callback_destruction_notifier,
     scoped_ptr<TemplateURL> template_url) {
-  last_callback_template_url_ = template_url.Pass();
+  last_callback_template_url_ = std::move(template_url);
   add_provider_called_++;
 }
 

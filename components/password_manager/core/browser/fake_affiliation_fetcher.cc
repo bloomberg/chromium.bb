@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/fake_affiliation_fetcher.h"
 
+#include <utility>
+
 namespace password_manager {
 
 password_manager::FakeAffiliationFetcher::FakeAffiliationFetcher(
@@ -18,7 +20,7 @@ password_manager::FakeAffiliationFetcher::~FakeAffiliationFetcher() {
 
 void password_manager::FakeAffiliationFetcher::SimulateSuccess(
     scoped_ptr<AffiliationFetcherDelegate::Result> fake_result) {
-  delegate()->OnFetchSucceeded(fake_result.Pass());
+  delegate()->OnFetchSucceeded(std::move(fake_result));
 }
 
 void password_manager::FakeAffiliationFetcher::SimulateFailure() {

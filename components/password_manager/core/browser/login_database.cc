@@ -6,9 +6,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <algorithm>
 #include <limits>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -1287,7 +1287,7 @@ bool LoginDatabase::StatementToForms(
       psl_domain_match_metric = PSL_DOMAIN_MATCH_FOUND;
       new_form->is_public_suffix_match = true;
     }
-    forms->push_back(new_form.Pass());
+    forms->push_back(std::move(new_form));
   }
 
   if (psl_match) {

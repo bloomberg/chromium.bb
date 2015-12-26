@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/cryptauth/cryptauth_client_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "components/proximity_auth/cryptauth/cryptauth_access_token_fetcher_impl.h"
@@ -50,13 +52,12 @@ CryptAuthClientImpl::CryptAuthClientImpl(
     scoped_ptr<CryptAuthAccessTokenFetcher> access_token_fetcher,
     scoped_refptr<net::URLRequestContextGetter> url_request_context,
     const cryptauth::DeviceClassifier& device_classifier)
-    : api_call_flow_(api_call_flow.Pass()),
-      access_token_fetcher_(access_token_fetcher.Pass()),
+    : api_call_flow_(std::move(api_call_flow)),
+      access_token_fetcher_(std::move(access_token_fetcher)),
       url_request_context_(url_request_context),
       device_classifier_(device_classifier),
       has_call_started_(false),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 CryptAuthClientImpl::~CryptAuthClientImpl() {
 }

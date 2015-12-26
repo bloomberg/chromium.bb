@@ -4,6 +4,8 @@
 
 #include "components/web_view/frame_tree.h"
 
+#include <utility>
+
 #include "components/web_view/frame_tree_delegate.h"
 #include "components/web_view/frame_user_data.h"
 
@@ -25,11 +27,11 @@ FrameTree::FrameTree(uint32_t root_app_id,
                       root_app_id,
                       WindowOwnership::DOESNT_OWN_WINDOW,
                       root_client,
-                      user_data.Pass(),
+                      std::move(user_data),
                       client_properties)),
       progress_(0.f),
       change_id_(1u) {
-  root_->Init(nullptr, window_tree_client.Pass(), nullptr,
+  root_->Init(nullptr, std::move(window_tree_client), nullptr,
               navigation_start_time);
 }
 
@@ -49,15 +51,15 @@ Frame* FrameTree::CreateChildFrame(
     const Frame::ClientPropertyMap& client_properties) {
   mojom::FrameClient* raw_client = client.get();
   scoped_ptr<FrameUserData> user_data =
-      delegate_->CreateUserDataForNewFrame(client.Pass());
+      delegate_->CreateUserDataForNewFrame(std::move(client));
   mus::Window* frame_window = root_->window()->GetChildById(frame_id);
   // |frame_window| may be null if the Window hasn't been created yet. If this
   // is the case the Window will be connected to the Frame in
   // Frame::OnTreeChanged.
   Frame* frame = new Frame(this, frame_window, frame_id, app_id,
                            WindowOwnership::OWNS_WINDOW, raw_client,
-                           user_data.Pass(), client_properties);
-  frame->Init(parent, nullptr, frame_request.Pass(), base::TimeTicks());
+                           std::move(user_data), client_properties);
+  frame->Init(parent, nullptr, std::move(frame_request), base::TimeTicks());
   return frame;
 }
 

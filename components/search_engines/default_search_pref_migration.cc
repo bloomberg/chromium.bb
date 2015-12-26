@@ -98,7 +98,7 @@ scoped_ptr<TemplateURLData> LoadDefaultSearchProviderFromLegacyPrefs(
     default_provider_data->prepopulate_id = value;
   }
 
-  return default_provider_data.Pass();
+  return default_provider_data;
 }
 
 void ClearDefaultSearchProviderFromLegacyPrefs(PrefService* prefs) {

@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/password_syncable_service.h"
 
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "base/location.h"
 #include "base/memory/scoped_vector.h"
@@ -218,8 +220,8 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
 
   // Save |sync_processor_| only if the whole procedure succeeded. In case of
   // failure Sync shouldn't receive any updates from the PasswordStore.
-  sync_error_factory_ = sync_error_factory.Pass();
-  sync_processor_ = sync_processor.Pass();
+  sync_error_factory_ = std::move(sync_error_factory);
+  sync_processor_ = std::move(sync_processor);
 
   metrics_util::LogPasswordSyncState(metrics_util::SYNCING_OK);
   return merge_result;

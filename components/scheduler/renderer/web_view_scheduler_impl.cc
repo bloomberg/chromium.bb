@@ -49,7 +49,7 @@ WebViewSchedulerImpl::createWebFrameSchedulerImpl() {
       new WebFrameSchedulerImpl(renderer_scheduler_, this));
   frame_scheduler->SetPageInBackground(page_in_background_);
   frame_schedulers_.insert(frame_scheduler.get());
-  return frame_scheduler.Pass();
+  return frame_scheduler;
 }
 
 blink::WebPassOwnPtr<blink::WebFrameScheduler>

@@ -4,6 +4,8 @@
 
 #include "components/pdf/browser/pdf_web_contents_helper.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/pdf/browser/open_pdf_in_reader_prompt_client.h"
@@ -22,21 +24,20 @@ void PDFWebContentsHelper::CreateForWebContentsWithClient(
   if (FromWebContents(contents))
     return;
   contents->SetUserData(UserDataKey(),
-                        new PDFWebContentsHelper(contents, client.Pass()));
+                        new PDFWebContentsHelper(contents, std::move(client)));
 }
 
 PDFWebContentsHelper::PDFWebContentsHelper(
     content::WebContents* web_contents,
     scoped_ptr<PDFWebContentsHelperClient> client)
-    : content::WebContentsObserver(web_contents), client_(client.Pass()) {
-}
+    : content::WebContentsObserver(web_contents), client_(std::move(client)) {}
 
 PDFWebContentsHelper::~PDFWebContentsHelper() {
 }
 
 void PDFWebContentsHelper::ShowOpenInReaderPrompt(
     scoped_ptr<OpenPDFInReaderPromptClient> prompt) {
-  open_in_reader_prompt_ = prompt.Pass();
+  open_in_reader_prompt_ = std::move(prompt);
   UpdateLocationBar();
 }
 

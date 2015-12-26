@@ -6,6 +6,7 @@
 
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -80,7 +81,7 @@ class SegregatedPrefStoreTest : public testing::Test {
  protected:
   scoped_ptr<PersistentPrefStore::ReadErrorDelegate> GetReadErrorDelegate() {
     EXPECT_TRUE(read_error_delegate_);
-    return read_error_delegate_.Pass();
+    return std::move(read_error_delegate_);
   }
 
   PrefStoreObserverMock observer_;

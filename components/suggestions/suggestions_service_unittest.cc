@@ -71,7 +71,7 @@ scoped_ptr<net::FakeURLFetcher> CreateURLFetcher(
     download_headers->AddHeader("Content-Type: text/html");
     fetcher->set_response_headers(download_headers);
   }
-  return fetcher.Pass();
+  return fetcher;
 }
 
 // GMock matcher for protobuf equality.

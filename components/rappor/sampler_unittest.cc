@@ -4,6 +4,8 @@
 
 #include "components/rappor/sampler.h"
 
+#include <utility>
+
 #include "components/rappor/byte_vector_utils.h"
 #include "components/rappor/proto/rappor_metric.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,11 +37,11 @@ TEST(RapporSamplerTest, TestExport) {
 
   scoped_ptr<Sample> sample1 = TestSamplerFactory::CreateSample();
   sample1->SetStringField("Foo", "Junk");
-  sampler.AddSample("Metric1", sample1.Pass());
+  sampler.AddSample("Metric1", std::move(sample1));
 
   scoped_ptr<Sample> sample2 = TestSamplerFactory::CreateSample();
   sample2->SetStringField("Foo", "Junk2");
-  sampler.AddSample("Metric1", sample2.Pass());
+  sampler.AddSample("Metric1", std::move(sample2));
 
   // Since the two samples were for one metric, we should randomly get one
   // of the two.

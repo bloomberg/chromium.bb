@@ -70,7 +70,7 @@ UpdateClientImpl::UpdateClientImpl(
     CrxDownloader::Factory crx_downloader_factory)
     : is_stopped_(false),
       config_(config),
-      ping_manager_(ping_manager.Pass()),
+      ping_manager_(std::move(ping_manager)),
       update_engine_(
           new UpdateEngine(config,
                            update_checker_factory,
@@ -109,7 +109,7 @@ void UpdateClientImpl::Install(const std::string& id,
                                              crx_data_callback, callback));
 
   // Install tasks are run concurrently and never queued up.
-  RunTask(task.Pass());
+  RunTask(std::move(task));
 }
 
 void UpdateClientImpl::Update(const std::vector<std::string>& ids,
@@ -125,7 +125,7 @@ void UpdateClientImpl::Update(const std::vector<std::string>& ids,
   // If no other tasks are running at the moment, run this update task.
   // Otherwise, queue the task up.
   if (tasks_.empty()) {
-    RunTask(task.Pass());
+    RunTask(std::move(task));
   } else {
     task_queue_.push(task.release());
   }
@@ -162,7 +162,7 @@ void UpdateClientImpl::OnTaskComplete(
   // Pick up a task from the queue if the queue has pending tasks and no other
   // task is running.
   if (tasks_.empty() && !task_queue_.empty()) {
-    RunTask(scoped_ptr<Task>(task_queue_.front()).Pass());
+    RunTask(scoped_ptr<Task>(task_queue_.front()));
     task_queue_.pop();
   }
 }
@@ -229,7 +229,7 @@ void UpdateClientImpl::Stop() {
 scoped_refptr<UpdateClient> UpdateClientFactory(
     const scoped_refptr<Configurator>& config) {
   scoped_ptr<PingManager> ping_manager(new PingManager(*config));
-  return new UpdateClientImpl(config, ping_manager.Pass(),
+  return new UpdateClientImpl(config, std::move(ping_manager),
                               &UpdateChecker::Create, &CrxDownloader::Create);
 }
 

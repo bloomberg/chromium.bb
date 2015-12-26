@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
@@ -142,7 +143,7 @@ void LogUploader::OnURLFetchComplete(const net::URLFetcher* source) {
   // Note however that |source| is aliased to the fetcher, so we should be
   // careful not to delete it too early.
   DCHECK_EQ(current_fetch_.get(), source);
-  scoped_ptr<net::URLFetcher> fetch(current_fetch_.Pass());
+  scoped_ptr<net::URLFetcher> fetch(std::move(current_fetch_));
 
   const net::URLRequestStatus& request_status = source->GetStatus();
 

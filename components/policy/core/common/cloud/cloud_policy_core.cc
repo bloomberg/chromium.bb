@@ -4,6 +4,8 @@
 
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -38,7 +40,7 @@ CloudPolicyCore::~CloudPolicyCore() {}
 void CloudPolicyCore::Connect(scoped_ptr<CloudPolicyClient> client) {
   CHECK(!client_);
   CHECK(client);
-  client_ = client.Pass();
+  client_ = std::move(client);
   service_.reset(new CloudPolicyService(policy_type_, settings_entity_id_,
                                         client_.get(), store_));
   FOR_EACH_OBSERVER(Observer, observers_, OnCoreConnected(this));
@@ -60,7 +62,7 @@ void CloudPolicyCore::StartRemoteCommandsService(
   DCHECK(factory);
 
   remote_commands_service_.reset(
-      new RemoteCommandsService(factory.Pass(), client_.get()));
+      new RemoteCommandsService(std::move(factory), client_.get()));
 
   // Do an initial remote commands fetch immediately.
   remote_commands_service_->FetchRemoteCommands();

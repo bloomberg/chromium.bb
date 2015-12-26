@@ -264,7 +264,7 @@ void PasswordFormManager::ProvisionallySave(
     mutable_provisionally_saved_form->username_element.clear();
     is_possible_change_password_form_without_username_ = true;
   }
-  provisionally_saved_form_ = mutable_provisionally_saved_form.Pass();
+  provisionally_saved_form_ = std::move(mutable_provisionally_saved_form);
   other_possible_username_action_ = action;
 
   if (HasCompletedMatching())
@@ -405,7 +405,7 @@ void PasswordFormManager::OnRequestDone(
         logins_result.end());
   }
   logins_result =
-      client_->GetStoreResultFilter()->FilterResults(logins_result.Pass());
+      client_->GetStoreResultFilter()->FilterResults(std::move(logins_result));
 
   // Deal with blacklisted forms.
   auto begin_blacklisted = std::partition(
@@ -476,9 +476,9 @@ void PasswordFormManager::OnRequestDone(
       is_credential_protected |= IsValidAndroidFacetURI(login->signon_realm);
 
       if (is_credential_protected)
-        protected_credentials.push_back(login.Pass());
+        protected_credentials.push_back(std::move(login));
       else
-        not_best_matches_.push_back(login.Pass());
+        not_best_matches_.push_back(std::move(login));
       continue;
     }
 
@@ -506,7 +506,7 @@ void PasswordFormManager::OnRequestDone(
     if (best_matches_.find(username) == best_matches_.end())
       best_matches_.insert(std::make_pair(username, std::move(protege)));
     else
-      not_best_matches_.push_back(protege.Pass());
+      not_best_matches_.push_back(std::move(protege));
   }
 
   UMA_HISTOGRAM_COUNTS("PasswordManager.NumPasswordsNotShown",
@@ -603,7 +603,7 @@ void PasswordFormManager::OnGetPasswordStoreResults(
   }
 
   if (!results.empty())
-    OnRequestDone(results.Pass());
+    OnRequestDone(std::move(results));
   state_ = POST_MATCHING_PHASE;
 
   // If password store was slow and provisionally saved form is already here

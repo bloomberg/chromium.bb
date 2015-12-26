@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -132,7 +133,8 @@ blink::WebPluginContainer::TouchEventRequestType ParseTouchEventRequestType(
 
 class DeferredDeleteTask : public blink::WebTaskRunner::Task {
  public:
-  DeferredDeleteTask(scoped_ptr<TestPlugin> plugin) : plugin_(plugin.Pass()) {}
+  DeferredDeleteTask(scoped_ptr<TestPlugin> plugin)
+      : plugin_(std::move(plugin)) {}
 
   void run() override {}
 
@@ -305,7 +307,7 @@ void TestPlugin::updateGeometry(
       DrawSceneSoftware(bitmap->pixels());
       texture_mailbox_ = cc::TextureMailbox(
           bitmap.get(), gfx::Size(rect_.width, rect_.height));
-      shared_bitmap_ = bitmap.Pass();
+      shared_bitmap_ = std::move(bitmap);
     }
   }
 

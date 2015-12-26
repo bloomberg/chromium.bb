@@ -5,6 +5,7 @@
 #include "components/net_log/chrome_net_log.h"
 
 #include <stdio.h>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
@@ -54,7 +55,7 @@ ChromeNetLog::ChromeNetLog(
 
       write_to_file_observer_->set_capture_mode(log_file_mode);
 
-      write_to_file_observer_->StartObserving(this, file.Pass(),
+      write_to_file_observer_->StartObserving(this, std::move(file),
                                               constants.get(), nullptr);
     }
   }

@@ -56,18 +56,18 @@ RefreshTokenAnnotationRequest::SendIfNeeded(
   scoped_ptr<RefreshTokenAnnotationRequest> request;
 
   if (!ShouldSendNow(pref_service))
-    return request.Pass();
+    return request;
 
   // Don't send request if device_id is disabled.
   std::string device_id = signin_client->GetSigninScopedDeviceId();
   if (device_id.empty())
-    return request.Pass();
+    return request;
 
   request.reset(new RefreshTokenAnnotationRequest(
       request_context_getter, signin_client->GetProductVersion(), device_id,
       GaiaUrls::GetInstance()->oauth2_chrome_client_id(), request_callback));
   request->RequestAccessToken(token_service, account_id);
-  return request.Pass();
+  return request;
 }
 
 // static

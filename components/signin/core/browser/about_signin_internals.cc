@@ -289,12 +289,9 @@ void AboutSigninInternals::NotifyObservers() {
 }
 
 scoped_ptr<base::DictionaryValue> AboutSigninInternals::GetSigninStatus() {
-  return signin_status_.ToValue(account_tracker_,
-                                signin_manager_,
-                                signin_error_controller_,
-                                token_service_,
-                                cookie_manager_service_,
-                                client_->GetProductVersion()).Pass();
+  return signin_status_.ToValue(
+      account_tracker_, signin_manager_, signin_error_controller_,
+      token_service_, cookie_manager_service_, client_->GetProductVersion());
 }
 
 void AboutSigninInternals::OnAccessTokenRequested(
@@ -675,5 +672,5 @@ scoped_ptr<base::DictionaryValue> AboutSigninInternals::SigninStatus::ToValue(
     account_info->Append(entry);
   }
 
-  return signin_status.Pass();
+  return signin_status;
 }

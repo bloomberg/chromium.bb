@@ -4,6 +4,8 @@
 
 #include "components/nacl/loader/sandbox_linux/nacl_bpf_sandbox_linux.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "build/build_config.h"
 
@@ -166,7 +168,7 @@ bool InitializeBPFSandbox(base::ScopedFD proc_fd) {
 #if defined(USE_SECCOMP_BPF)
   bool sandbox_is_initialized = content::InitializeSandbox(
       scoped_ptr<sandbox::bpf_dsl::Policy>(new NaClBPFSandboxPolicy),
-      proc_fd.Pass());
+      std::move(proc_fd));
   if (sandbox_is_initialized) {
     RunSandboxSanityChecks();
     return true;

@@ -137,7 +137,7 @@ scoped_ptr<TemplateURLData> GenerateDummyTemplateURLData(
       "UTF-8;UTF-16", ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   data->date_created = base::Time();
   data->last_modified = base::Time();
-  return data.Pass();
+  return data;
 }
 
 }  // namespace

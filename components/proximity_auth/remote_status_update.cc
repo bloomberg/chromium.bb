@@ -93,7 +93,7 @@ scoped_ptr<RemoteStatusUpdate> RemoteStatusUpdate::Deserialize(
     return scoped_ptr<RemoteStatusUpdate>();
   }
 
-  return parsed_update.Pass();
+  return parsed_update;
 }
 
 }  // namespace proximity_auth

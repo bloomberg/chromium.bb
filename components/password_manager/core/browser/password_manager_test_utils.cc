@@ -56,7 +56,7 @@ scoped_ptr<PasswordForm> CreatePasswordFormFromDataForTesting(
     form->blacklisted_by_user = true;
   }
   form->icon_url = GURL(kTestingIconUrlSpec);
-  return form.Pass();
+  return form;
 }
 
 bool ContainsEqualPasswordFormsUnordered(

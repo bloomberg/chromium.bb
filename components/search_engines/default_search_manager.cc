@@ -110,7 +110,8 @@ void DefaultSearchManager::RegisterProfilePrefs(
 void DefaultSearchManager::AddPrefValueToMap(
     scoped_ptr<base::DictionaryValue> value,
     PrefValueMap* pref_value_map) {
-  pref_value_map->SetValue(kDefaultSearchProviderDataPrefName, value.Pass());
+  pref_value_map->SetValue(kDefaultSearchProviderDataPrefName,
+                           std::move(value));
 }
 
 // static
@@ -406,7 +407,7 @@ void DefaultSearchManager::LoadDefaultSearchEngineFromPrefs() {
 void DefaultSearchManager::LoadPrepopulatedDefaultSearch() {
   scoped_ptr<TemplateURLData> data =
       TemplateURLPrepopulateData::GetPrepopulatedDefaultSearch(pref_service_);
-  fallback_default_search_ = data.Pass();
+  fallback_default_search_ = std::move(data);
   MergePrefsDataWithPrepopulated();
 }
 

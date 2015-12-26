@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/policy/core/common/config_dir_policy_loader.h"
+
+#include <utility>
+
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -12,7 +16,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/policy/core/common/async_policy_provider.h"
-#include "components/policy/core/common/config_dir_policy_loader.h"
 #include "components/policy/core/common/configuration_policy_provider_test.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
@@ -86,7 +89,7 @@ ConfigurationPolicyProvider* TestHarness::CreateProvider(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   scoped_ptr<AsyncPolicyLoader> loader(new ConfigDirPolicyLoader(
       task_runner, test_dir(), POLICY_SCOPE_MACHINE));
-  return new AsyncPolicyProvider(registry, loader.Pass());
+  return new AsyncPolicyProvider(registry, std::move(loader));
 }
 
 void TestHarness::InstallEmptyPolicy() {

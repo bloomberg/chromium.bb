@@ -5,7 +5,7 @@
 #include "components/web_view/frame_devtools_agent.h"
 
 #include <string.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -44,7 +44,9 @@ class FrameDevToolsAgent::FrameDevToolsAgentClient
  public:
   FrameDevToolsAgentClient(FrameDevToolsAgent* owner,
                            DevToolsAgentClientPtr forward_client)
-      : owner_(owner), binding_(this), forward_client_(forward_client.Pass()) {
+      : owner_(owner),
+        binding_(this),
+        forward_client_(std::move(forward_client)) {
     forward_client_.set_connection_error_handler(base::Bind(
         &FrameDevToolsAgent::OnForwardClientClosed, base::Unretained(owner_)));
     if (owner_->forward_agent_)
@@ -61,7 +63,7 @@ class FrameDevToolsAgent::FrameDevToolsAgentClient
 
     DevToolsAgentClientPtr client;
     binding_.Bind(&client);
-    owner_->forward_agent_->SetClient(client.Pass());
+    owner_->forward_agent_->SetClient(std::move(client));
   }
 
  private:
@@ -102,7 +104,7 @@ void FrameDevToolsAgent::AttachFrame(
     DevToolsAgentPtr forward_agent,
     Frame::ClientPropertyMap* devtools_properties) {
   RegisterAgentIfNecessary();
-  forward_agent_ = forward_agent.Pass();
+  forward_agent_ = std::move(forward_agent);
 
   StringToVector(id_, &(*devtools_properties)["devtools-id"]);
   if (client_impl_) {
@@ -126,7 +128,7 @@ void FrameDevToolsAgent::RegisterAgentIfNecessary() {
 
   DevToolsAgentPtr agent;
   binding_.Bind(&agent);
-  devtools_registry->RegisterAgent(id_, agent.Pass());
+  devtools_registry->RegisterAgent(id_, std::move(agent));
 }
 
 void FrameDevToolsAgent::HandlePageNavigateRequest(
@@ -152,7 +154,7 @@ void FrameDevToolsAgent::HandlePageNavigateRequest(
 }
 
 void FrameDevToolsAgent::SetClient(DevToolsAgentClientPtr client) {
-  client_impl_.reset(new FrameDevToolsAgentClient(this, client.Pass()));
+  client_impl_.reset(new FrameDevToolsAgentClient(this, std::move(client)));
 }
 
 void FrameDevToolsAgent::DispatchProtocolMessage(const String& message) {

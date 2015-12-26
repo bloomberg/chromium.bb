@@ -6,6 +6,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
@@ -153,7 +154,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
   void Connect() {
     client_ = new MockCloudPolicyClient();
     service_.reset(new ComponentCloudPolicyService(
-        &delegate_, &registry_, &core_, client_, owned_cache_.Pass(),
+        &delegate_, &registry_, &core_, client_, std::move(owned_cache_),
         request_context_, loop_.task_runner(), loop_.task_runner()));
 
     client_->SetDMToken(ComponentPolicyBuilder::kFakeToken);

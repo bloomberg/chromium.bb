@@ -4,6 +4,8 @@
 
 #include "components/test_runner/web_test_interfaces.h"
 
+#include <utility>
+
 #include "components/test_runner/app_banner_client.h"
 #include "components/test_runner/mock_web_audio_device.h"
 #include "components/test_runner/mock_web_media_stream_center.h"
@@ -83,7 +85,7 @@ scoped_ptr<blink::WebAppBannerClient>
 WebTestInterfaces::CreateAppBannerClient() {
   scoped_ptr<AppBannerClient> client(new AppBannerClient);
   interfaces_->SetAppBannerClient(client.get());
-  return client.Pass();
+  return std::move(client);
 }
 
 AppBannerClient* WebTestInterfaces::GetAppBannerClient() {

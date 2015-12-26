@@ -4,6 +4,8 @@
 
 #include "components/policy/core/common/async_policy_provider.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -16,11 +18,9 @@
 
 namespace policy {
 
-AsyncPolicyProvider::AsyncPolicyProvider(
-    SchemaRegistry* registry,
-    scoped_ptr<AsyncPolicyLoader> loader)
-    : loader_(loader.Pass()),
-      weak_factory_(this) {
+AsyncPolicyProvider::AsyncPolicyProvider(SchemaRegistry* registry,
+                                         scoped_ptr<AsyncPolicyLoader> loader)
+    : loader_(std::move(loader)), weak_factory_(this) {
   // Make an immediate synchronous load on startup.
   OnLoaderReloaded(loader_->InitialLoad(registry->schema_map()));
 }
@@ -115,7 +115,7 @@ void AsyncPolicyProvider::OnLoaderReloaded(scoped_ptr<PolicyBundle> bundle) {
   // Only propagate policy updates if there are no pending refreshes, and if
   // Shutdown() hasn't been called yet.
   if (refresh_callback_.IsCancelled() && loader_)
-    UpdatePolicy(bundle.Pass());
+    UpdatePolicy(std::move(bundle));
 }
 
 // static

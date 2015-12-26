@@ -5,9 +5,9 @@
 #include "components/omnibox/browser/search_provider.h"
 
 #include <stddef.h>
-
 #include <algorithm>
 #include <cmath>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -941,7 +941,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
     SearchSuggestionParser::SuggestResult verbatim(
         trimmed_verbatim, AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
         trimmed_verbatim, base::string16(), base::string16(), answer_contents,
-        answer_type, answer.Pass(), std::string(), std::string(), false,
+        answer_type, std::move(answer), std::string(), std::string(), false,
         verbatim_relevance, relevance_from_server, false, trimmed_verbatim);
     AddMatchToMap(verbatim, std::string(), did_not_accept_default_suggestion,
                   false, keyword_url != NULL, &map);

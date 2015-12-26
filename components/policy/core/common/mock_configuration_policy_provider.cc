@@ -5,6 +5,7 @@
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 
 #include <string>
+#include <utility>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -24,7 +25,7 @@ void MockConfigurationPolicyProvider::UpdateChromePolicy(
   scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
   bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .CopyFrom(policy);
-  UpdatePolicy(bundle.Pass());
+  UpdatePolicy(std::move(bundle));
   if (base::MessageLoop::current())
     base::RunLoop().RunUntilIdle();
 }
@@ -37,7 +38,7 @@ void MockConfigurationPolicyProvider::SetAutoRefresh() {
 void MockConfigurationPolicyProvider::RefreshWithSamePolicies() {
   scoped_ptr<PolicyBundle> bundle(new PolicyBundle);
   bundle->CopyFrom(policies());
-  UpdatePolicy(bundle.Pass());
+  UpdatePolicy(std::move(bundle));
 }
 
 MockConfigurationPolicyObserver::MockConfigurationPolicyObserver() {}

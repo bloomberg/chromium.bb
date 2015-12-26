@@ -5,7 +5,7 @@
 #include "components/policy/core/browser/browser_policy_connector_base.h"
 
 #include <stddef.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -129,7 +129,7 @@ void BrowserPolicyConnectorBase::SetPlatformPolicyProvider(
     scoped_ptr<ConfigurationPolicyProvider> provider) {
   CHECK(!platform_policy_provider_);
   platform_policy_provider_ = provider.get();
-  AddPolicyProvider(provider.Pass());
+  AddPolicyProvider(std::move(provider));
 }
 
 }  // namespace policy

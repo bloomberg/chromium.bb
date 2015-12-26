@@ -5,6 +5,7 @@
 #include "components/update_client/url_fetcher_downloader.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
@@ -19,12 +20,11 @@ UrlFetcherDownloader::UrlFetcherDownloader(
     scoped_ptr<CrxDownloader> successor,
     net::URLRequestContextGetter* context_getter,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : CrxDownloader(successor.Pass()),
+    : CrxDownloader(std::move(successor)),
       context_getter_(context_getter),
       task_runner_(task_runner),
       downloaded_bytes_(-1),
-      total_bytes_(-1) {
-}
+      total_bytes_(-1) {}
 
 UrlFetcherDownloader::~UrlFetcherDownloader() {
   DCHECK(thread_checker_.CalledOnValidThread());

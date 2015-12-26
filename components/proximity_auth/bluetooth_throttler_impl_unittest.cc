@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/bluetooth_throttler_impl.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
@@ -17,7 +19,7 @@ namespace {
 class TestBluetoothThrottler : public BluetoothThrottlerImpl {
  public:
   explicit TestBluetoothThrottler(scoped_ptr<base::TickClock> clock)
-      : BluetoothThrottlerImpl(clock.Pass()) {}
+      : BluetoothThrottlerImpl(std::move(clock)) {}
   ~TestBluetoothThrottler() override {}
 
   // Increase visibility for testing.

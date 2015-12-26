@@ -5,6 +5,7 @@
 #include "components/search_provider_logos/logo_tracker.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
@@ -55,7 +56,7 @@ scoped_ptr<EncodedLogo> GetLogoFromCacheOnFileThread(LogoCache* logo_cache,
     return scoped_ptr<EncodedLogo>();
   }
 
-  return logo_cache->GetCachedLogo().Pass();
+  return logo_cache->GetCachedLogo();
 }
 
 void DeleteLogoCacheOnFileThread(LogoCache* logo_cache) {
@@ -72,7 +73,7 @@ LogoTracker::LogoTracker(
     scoped_ptr<LogoDelegate> delegate)
     : is_idle_(true),
       is_cached_logo_valid_(false),
-      logo_delegate_(delegate.Pass()),
+      logo_delegate_(std::move(delegate)),
       logo_cache_(new LogoCache(cached_logo_directory)),
       clock_(new base::DefaultClock()),
       file_task_runner_(file_task_runner),
@@ -135,7 +136,7 @@ void LogoTracker::SetLogoCacheForTests(scoped_ptr<LogoCache> cache) {
 }
 
 void LogoTracker::SetClockForTests(scoped_ptr<base::Clock> clock) {
-  clock_ = clock.Pass();
+  clock_ = std::move(clock);
 }
 
 void LogoTracker::ReturnToIdle(int outcome) {
@@ -227,7 +228,7 @@ void LogoTracker::OnFreshLogoParsed(bool* parsing_failed,
     logo->metadata.source_url = logo_url_.spec();
 
   if (!logo || !logo->encoded_image.get()) {
-    OnFreshLogoAvailable(logo.Pass(), *parsing_failed, SkBitmap());
+    OnFreshLogoAvailable(std::move(logo), *parsing_failed, SkBitmap());
   } else {
     // Store the value of logo->encoded_image for use below. This ensures that
     // logo->encoded_image is evaulated before base::Passed(&logo), which sets
@@ -286,7 +287,7 @@ void LogoTracker::OnFreshLogoAvailable(scoped_ptr<EncodedLogo> encoded_logo,
       FOR_EACH_OBSERVER(LogoObserver,
                         logo_observers_,
                         OnLogoAvailable(logo.get(), false));
-      SetCachedLogo(encoded_logo.Pass());
+      SetCachedLogo(std::move(encoded_logo));
     }
   }
 

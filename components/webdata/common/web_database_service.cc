@@ -5,6 +5,7 @@
 #include "components/webdata/common/web_database_service.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -61,7 +62,7 @@ void WebDatabaseService::AddTable(scoped_ptr<WebDatabaseTable> table) {
     web_db_backend_ = new WebDatabaseBackend(
         path_, new BackendDelegate(weak_ptr_factory_.GetWeakPtr()), db_thread_);
   }
-  web_db_backend_->AddTable(table.Pass());
+  web_db_backend_->AddTable(std::move(table));
 }
 
 void WebDatabaseService::LoadDatabase() {

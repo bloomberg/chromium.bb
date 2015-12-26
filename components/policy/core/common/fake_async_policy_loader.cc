@@ -18,7 +18,7 @@ FakeAsyncPolicyLoader::FakeAsyncPolicyLoader(
 scoped_ptr<PolicyBundle> FakeAsyncPolicyLoader::Load() {
   scoped_ptr<PolicyBundle> result(new PolicyBundle());
   result->CopyFrom(policy_bundle_);
-  return result.Pass();
+  return result;
 }
 
 void FakeAsyncPolicyLoader::InitOnBackgroundThread() {

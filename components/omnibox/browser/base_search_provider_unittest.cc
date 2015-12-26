@@ -4,6 +4,8 @@
 
 #include "components/omnibox/browser/base_search_provider.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -72,7 +74,7 @@ class BaseSearchProviderTest : public testing::Test {
         scoped_ptr<TemplateURLServiceClient>(), nullptr, nullptr,
         base::Closure()));
     client_.reset(new NiceMock<MockAutocompleteProviderClient>());
-    client_->set_template_url_service(template_url_service.Pass());
+    client_->set_template_url_service(std::move(template_url_service));
     provider_ = new NiceMock<TestBaseSearchProvider>(
         AutocompleteProvider::TYPE_SEARCH, client_.get());
   }

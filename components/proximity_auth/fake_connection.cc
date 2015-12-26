@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/fake_connection.h"
 
+#include <utility>
+
 #include "components/proximity_auth/wire_message.h"
 
 namespace proximity_auth {
@@ -29,7 +31,7 @@ void FakeConnection::FinishSendingMessageWithSuccess(bool success) {
   CHECK(current_message_);
   // Capture a copy of the message, as OnDidSendMessage() might reentrantly
   // call SendMessage().
-  scoped_ptr<WireMessage> sent_message = current_message_.Pass();
+  scoped_ptr<WireMessage> sent_message = std::move(current_message_);
   OnDidSendMessage(*sent_message, success);
 }
 
@@ -41,7 +43,7 @@ void FakeConnection::ReceiveMessageWithPayload(const std::string& payload) {
 
 void FakeConnection::SendMessageImpl(scoped_ptr<WireMessage> message) {
   CHECK(!current_message_);
-  current_message_ = message.Pass();
+  current_message_ = std::move(message);
 }
 
 scoped_ptr<WireMessage> FakeConnection::DeserializeWireMessage(

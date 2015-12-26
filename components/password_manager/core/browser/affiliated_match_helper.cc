@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/affiliated_match_helper.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/single_thread_task_runner.h"
@@ -37,9 +39,8 @@ AffiliatedMatchHelper::AffiliatedMatchHelper(
     scoped_ptr<AffiliationService> affiliation_service)
     : password_store_(password_store),
       task_runner_for_waiting_(base::ThreadTaskRunnerHandle::Get()),
-      affiliation_service_(affiliation_service.Pass()),
-      weak_ptr_factory_(this) {
-}
+      affiliation_service_(std::move(affiliation_service)),
+      weak_ptr_factory_(this) {}
 
 AffiliatedMatchHelper::~AffiliatedMatchHelper() {
   if (password_store_)

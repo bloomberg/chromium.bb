@@ -57,7 +57,7 @@ ScopedVector<PasswordForm> SyncCredentialsFilter::FilterResults(
       (autofill_sync_state != DISALLOW_SYNC_CREDENTIALS_FOR_REAUTH ||
        !LastLoadWasTransactionalReauthPage(
            client_->GetLastCommittedEntryURL()))) {
-    return results.Pass();
+    return results;
   }
 
   auto begin_of_removed =
@@ -72,7 +72,7 @@ ScopedVector<PasswordForm> SyncCredentialsFilter::FilterResults(
 
   results.erase(begin_of_removed, results.end());
 
-  return results.Pass();
+  return results;
 }
 
 bool SyncCredentialsFilter::ShouldSave(

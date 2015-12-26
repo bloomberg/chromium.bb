@@ -5,6 +5,7 @@
 #include "components/nacl/renderer/nexe_load_manager.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -287,12 +288,12 @@ void NexeLoadManager::NexeDidCrash() {
 
 void NexeLoadManager::set_trusted_plugin_channel(
     scoped_ptr<TrustedPluginChannel> channel) {
-  trusted_plugin_channel_ = channel.Pass();
+  trusted_plugin_channel_ = std::move(channel);
 }
 
 void NexeLoadManager::set_manifest_service_channel(
     scoped_ptr<ManifestServiceChannel> channel) {
-  manifest_service_channel_ = channel.Pass();
+  manifest_service_channel_ = std::move(channel);
 }
 
 PP_NaClReadyState NexeLoadManager::nacl_ready_state() {

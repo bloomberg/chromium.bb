@@ -4,6 +4,8 @@
 
 #include "components/sessions/core/base_session_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -25,7 +27,7 @@ void RunIfNotCanceled(
     ScopedVector<SessionCommand> commands) {
   if (is_canceled.Run())
     return;
-  callback.Run(commands.Pass());
+  callback.Run(std::move(commands));
 }
 
 void PostOrRunInternalGetCommandsCallback(
@@ -33,7 +35,7 @@ void PostOrRunInternalGetCommandsCallback(
     const BaseSessionService::GetCommandsCallback& callback,
     ScopedVector<SessionCommand> commands) {
   if (task_runner->RunsTasksOnCurrentThread()) {
-    callback.Run(commands.Pass());
+    callback.Run(std::move(commands));
   } else {
     task_runner->PostTask(FROM_HERE,
                           base::Bind(callback, base::Passed(&commands)));

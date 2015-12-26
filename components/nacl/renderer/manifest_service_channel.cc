@@ -4,6 +4,8 @@
 
 #include "components/nacl/renderer/manifest_service_channel.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -24,7 +26,7 @@ ManifestServiceChannel::ManifestServiceChannel(
     scoped_ptr<Delegate> delegate,
     base::WaitableEvent* waitable_event)
     : connected_callback_(connected_callback),
-      delegate_(delegate.Pass()),
+      delegate_(std::move(delegate)),
       channel_(IPC::SyncChannel::Create(
           handle,
           IPC::Channel::MODE_CLIENT,
@@ -33,8 +35,7 @@ ManifestServiceChannel::ManifestServiceChannel(
           true,
           waitable_event)),
       peer_pid_(base::kNullProcessId),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 ManifestServiceChannel::~ManifestServiceChannel() {
   if (!connected_callback_.is_null())
@@ -97,7 +98,7 @@ void ManifestServiceChannel::DidOpenResource(IPC::Message* reply,
     if (ok)
       handle.set_file_handle(file_for_transit, PP_FILEOPENFLAG_READ, 0);
 #else
-    file_for_transit = base::FileDescriptor(file.Pass());
+    file_for_transit = base::FileDescriptor(std::move(file));
     handle.set_file_handle(file_for_transit, PP_FILEOPENFLAG_READ, 0);
 #endif
   }

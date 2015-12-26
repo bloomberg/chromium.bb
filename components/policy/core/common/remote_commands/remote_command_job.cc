@@ -4,6 +4,8 @@
 
 #include "components/policy/core/common/remote_commands/remote_command_job.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 
@@ -120,7 +122,7 @@ scoped_ptr<std::string> RemoteCommandJob::GetResultPayload() const {
   if (!result_payload_)
     return nullptr;
 
-  return result_payload_->Serialize().Pass();
+  return result_payload_->Serialize();
 }
 
 RemoteCommandJob::RemoteCommandJob()
@@ -145,7 +147,7 @@ void RemoteCommandJob::OnCommandExecutionFinishedWithResult(
   DCHECK_EQ(RUNNING, status_);
   status_ = succeeded ? SUCCEEDED : FAILED;
 
-  result_payload_ = result_payload.Pass();
+  result_payload_ = std::move(result_payload);
 
   if (!finished_callback_.is_null())
     finished_callback_.Run();

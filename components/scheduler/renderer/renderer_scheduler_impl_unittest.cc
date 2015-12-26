@@ -4,6 +4,8 @@
 
 #include "components/scheduler/renderer/renderer_scheduler_impl.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -251,7 +253,7 @@ class RendererSchedulerImplTest : public testing::Test {
   }
 
   void Initialize(scoped_ptr<RendererSchedulerImplForTest> scheduler) {
-    scheduler_ = scheduler.Pass();
+    scheduler_ = std::move(scheduler);
     default_task_runner_ = scheduler_->DefaultTaskRunner();
     compositor_task_runner_ = scheduler_->CompositorTaskRunner();
     loading_task_runner_ = scheduler_->LoadingTaskRunner();

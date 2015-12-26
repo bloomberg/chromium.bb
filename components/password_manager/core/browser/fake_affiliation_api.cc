@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/fake_affiliation_api.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,7 +58,7 @@ void ScopedFakeAffiliationAPI::ServeNextRequest() {
     if (had_intersection_with_request)
       fake_response->push_back(preset_equivalence_class);
   }
-  fetcher->SimulateSuccess(fake_response.Pass());
+  fetcher->SimulateSuccess(std::move(fake_response));
 }
 
 void ScopedFakeAffiliationAPI::FailNextRequest() {

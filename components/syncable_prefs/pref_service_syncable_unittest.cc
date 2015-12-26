@@ -263,7 +263,7 @@ TEST_F(PrefServiceSyncableTest, ModelAssociationEmptyCloud) {
   scoped_ptr<base::Value> value(FindValue(kStringPrefName, out));
   ASSERT_TRUE(value.get());
   EXPECT_TRUE(GetPreferenceValue(kStringPrefName).Equals(value.get()));
-  value = FindValue(kListPrefName, out).Pass();
+  value = FindValue(kListPrefName, out);
   ASSERT_TRUE(value.get());
   EXPECT_TRUE(GetPreferenceValue(kListPrefName).Equals(value.get()));
 }

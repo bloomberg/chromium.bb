@@ -42,7 +42,7 @@ scoped_ptr<autofill::PasswordForm> CreatePasswordFormFromCredentialInfo(
     const GURL& origin) {
   scoped_ptr<autofill::PasswordForm> form;
   if (info.type == CredentialType::CREDENTIAL_TYPE_EMPTY)
-    return form.Pass();
+    return form;
 
   form.reset(new autofill::PasswordForm);
   form->icon_url = info.icon;
@@ -58,7 +58,7 @@ scoped_ptr<autofill::PasswordForm> CreatePasswordFormFromCredentialInfo(
           ? origin.spec()
           : "federation://" + origin.host() + "/" + info.federation.host();
   form->username_value = info.id;
-  return form.Pass();
+  return form;
 }
 bool CredentialInfo::operator==(const CredentialInfo& rhs) const {
   return (type == rhs.type && id == rhs.id && name == rhs.name &&

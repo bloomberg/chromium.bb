@@ -5,6 +5,7 @@
 #include "components/web_view/public/cpp/web_view.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "components/mus/public/cpp/window.h"
@@ -26,15 +27,15 @@ void WebView::Init(mojo::ApplicationImpl* app, mus::Window* window) {
   mojom::WebViewClientPtr client;
   mojo::InterfaceRequest<mojom::WebViewClient> client_request =
       GetProxy(&client);
-  binding_.Bind(client_request.Pass());
+  binding_.Bind(std::move(client_request));
 
   mojom::WebViewFactoryPtr factory;
   app->ConnectToService("mojo:web_view", &factory);
-  factory->CreateWebView(client.Pass(), GetProxy(&web_view_));
+  factory->CreateWebView(std::move(client), GetProxy(&web_view_));
 
   mus::mojom::WindowTreeClientPtr window_tree_client;
   web_view_->GetWindowTreeClient(GetProxy(&window_tree_client));
-  window->Embed(window_tree_client.Pass(),
+  window->Embed(std::move(window_tree_client),
                 mus::mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT,
                 base::Bind(&OnEmbed));
 }

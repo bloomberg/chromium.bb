@@ -136,7 +136,7 @@ scoped_ptr<TemplateURL> DefaultSearchPrefMigrationTest::CreateKeyword(
   data.SetKeyword(base::ASCIIToUTF16(keyword));
   data.SetURL(url);
   scoped_ptr<TemplateURL> t_url(new TemplateURL(data));
-  return t_url.Pass();
+  return t_url;
 }
 
 TEST_F(DefaultSearchPrefMigrationTest, MigrateUserSelectedValue) {

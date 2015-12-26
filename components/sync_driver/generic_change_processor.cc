@@ -5,9 +5,9 @@
 #include "components/sync_driver/generic_change_processor.h"
 
 #include <stddef.h>
-
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/location.h"
 #include "base/strings/string_number_conversions.h"
@@ -118,7 +118,8 @@ GenericChangeProcessor::GenericChangeProcessor(
     }
     attachment_service_ =
         sync_client->GetSyncApiComponentFactory()->CreateAttachmentService(
-            attachment_store.Pass(), *user_share, store_birthday, type, this);
+            std::move(attachment_store), *user_share, store_birthday, type,
+            this);
     attachment_service_weak_ptr_factory_.reset(
         new base::WeakPtrFactory<syncer::AttachmentService>(
             attachment_service_.get()));

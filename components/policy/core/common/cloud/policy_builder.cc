@@ -260,7 +260,7 @@ std::string PolicyBuilder::GetBlob() {
 scoped_ptr<em::PolicyFetchResponse> PolicyBuilder::GetCopy() {
   scoped_ptr<em::PolicyFetchResponse> result(new em::PolicyFetchResponse());
   result->CopyFrom(policy_);
-  return result.Pass();
+  return result;
 }
 
 // static

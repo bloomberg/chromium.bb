@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -559,7 +559,7 @@ TEST_F(VariationsSeedProcessorTest, FeatureEnabledOrDisableByTrial) {
 
     EXPECT_TRUE(
         CreateTrialFromStudyWithFeatureList(&study, feature_list.get()));
-    base::FeatureList::SetInstance(feature_list.Pass());
+    base::FeatureList::SetInstance(std::move(feature_list));
 
     // |kUnrelatedFeature| should not be affected.
     EXPECT_FALSE(base::FeatureList::IsEnabled(kUnrelatedFeature));
@@ -696,7 +696,7 @@ TEST_F(VariationsSeedProcessorTest, FeatureAssociationAndForcing) {
 
     EXPECT_TRUE(
         CreateTrialFromStudyWithFeatureList(&study, feature_list.get()));
-    base::FeatureList::SetInstance(feature_list.Pass());
+    base::FeatureList::SetInstance(std::move(feature_list));
 
     // Trial should not be activated initially, but later might get activated
     // depending on the expected values.

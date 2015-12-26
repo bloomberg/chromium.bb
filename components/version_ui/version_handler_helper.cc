@@ -4,6 +4,7 @@
 
 #include "components/version_ui/version_handler_helper.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/metrics/field_trial.h"
@@ -38,7 +39,7 @@ scoped_ptr<base::Value> GetVariationsList() {
     variations_list->Append(new base::StringValue(*it));
   }
 
-  return variations_list.Pass();
+  return std::move(variations_list);
 }
 
 }  // namespace version_ui

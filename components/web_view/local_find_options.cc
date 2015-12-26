@@ -12,7 +12,7 @@ TypeConverter<web_view::mojom::FindOptionsPtr, web_view::LocalFindOptions>::
   web_view::mojom::FindOptionsPtr output = web_view::mojom::FindOptions::New();
   output->forward = input.forward;
   output->continue_last_find = input.continue_last_find;
-  return output.Pass();
+  return output;
 }
 
 }  // namespace mojo

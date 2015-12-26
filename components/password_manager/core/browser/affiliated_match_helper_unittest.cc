@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/affiliated_match_helper.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -292,7 +293,7 @@ class AffiliatedMatchHelperTest : public testing::Test {
     password_store_ = new TestPasswordStore;
 
     match_helper_.reset(
-        new AffiliatedMatchHelper(password_store_.get(), service.Pass()));
+        new AffiliatedMatchHelper(password_store_.get(), std::move(service)));
     match_helper_->SetTaskRunnerUsedForWaitingForTesting(waiting_task_runner_);
   }
 

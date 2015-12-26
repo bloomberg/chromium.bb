@@ -72,7 +72,7 @@ scoped_ptr<PolicyBundle> MockPolicyLoader::Load() {
     bundle.reset(new PolicyBundle());
     bundle->CopyFrom(*loaded);
   }
-  return bundle.Pass();
+  return bundle;
 }
 
 }  // namespace

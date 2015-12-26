@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/cryptauth/sync_scheduler_impl.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/timer/mock_timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -87,7 +89,7 @@ class ProximityAuthSyncSchedulerImplTest : public testing::Test,
 
   void OnSyncRequested(
       scoped_ptr<SyncScheduler::SyncRequest> sync_request) override {
-    sync_request_ = sync_request.Pass();
+    sync_request_ = std::move(sync_request);
   }
 
   base::MockTimer* timer() { return scheduler_->timer(); }

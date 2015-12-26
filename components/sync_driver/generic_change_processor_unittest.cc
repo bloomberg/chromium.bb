@@ -5,8 +5,8 @@
 #include "components/sync_driver/generic_change_processor.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -56,15 +56,14 @@ class MockAttachmentService : public syncer::AttachmentServiceImpl {
 
 MockAttachmentService::MockAttachmentService(
     scoped_ptr<syncer::AttachmentStoreForSync> attachment_store)
-    : AttachmentServiceImpl(attachment_store.Pass(),
+    : AttachmentServiceImpl(std::move(attachment_store),
                             scoped_ptr<syncer::AttachmentUploader>(
                                 new syncer::FakeAttachmentUploader),
                             scoped_ptr<syncer::AttachmentDownloader>(
                                 new syncer::FakeAttachmentDownloader),
                             NULL,
                             base::TimeDelta(),
-                            base::TimeDelta()) {
-}
+                            base::TimeDelta()) {}
 
 MockAttachmentService::~MockAttachmentService() {
 }
@@ -120,13 +119,13 @@ class MockSyncApiComponentFactory : public SyncApiComponentFactory {
       syncer::ModelType model_type,
       syncer::AttachmentService::Delegate* delegate) override {
     scoped_ptr<MockAttachmentService> attachment_service(
-        new MockAttachmentService(attachment_store.Pass()));
+        new MockAttachmentService(std::move(attachment_store)));
     // GenericChangeProcessor takes ownership of the AttachmentService, but we
     // need to have a pointer to it so we can see that it was used properly.
     // Take a pointer and trust that GenericChangeProcessor does not prematurely
     // destroy it.
     mock_attachment_service_ = attachment_service.get();
-    return attachment_service.Pass();
+    return std::move(attachment_service);
   }
 
   MockAttachmentService* GetMockAttachmentService() {

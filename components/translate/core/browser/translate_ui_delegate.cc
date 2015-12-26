@@ -40,7 +40,7 @@ scoped_ptr<icu::Collator> CreateCollator(const std::string& locale) {
   if (!collator || !U_SUCCESS(error))
     return nullptr;
   collator->setStrength(icu::Collator::PRIMARY);
-  return collator.Pass();
+  return collator;
 }
 
 }  // namespace

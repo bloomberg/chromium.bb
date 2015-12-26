@@ -4,6 +4,8 @@
 
 #include "components/policy/core/browser/url_blacklist_policy_handler.h"
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_value_map.h"
 #include "base/values.h"
@@ -77,7 +79,8 @@ void URLBlacklistPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   }
 
   if (disabled_schemes || url_blacklist) {
-    prefs->SetValue(policy_prefs::kUrlBlacklist, merged_url_blacklist.Pass());
+    prefs->SetValue(policy_prefs::kUrlBlacklist,
+                    std::move(merged_url_blacklist));
   }
 }
 

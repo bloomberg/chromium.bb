@@ -4,6 +4,8 @@
 
 #include "components/security_interstitials/core/controller_client.h"
 
+#include <utility>
+
 #include "base/prefs/pref_service.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/security_interstitials/core/metrics_helper.h"
@@ -29,7 +31,7 @@ MetricsHelper* ControllerClient::metrics_helper() const {
 
 void ControllerClient::set_metrics_helper(
     scoped_ptr<MetricsHelper> metrics_helper) {
-  metrics_helper_ = metrics_helper.Pass();
+  metrics_helper_ = std::move(metrics_helper);
 }
 
 void ControllerClient::SetReportingPreference(bool report) {

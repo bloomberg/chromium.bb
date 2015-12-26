@@ -4,6 +4,8 @@
 
 #include "components/policy/core/common/cloud/external_policy_data_fetcher.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -140,7 +142,7 @@ void ExternalPolicyDataFetcher::OnJobFinished(const FetchCallback& callback,
     // finish before the cancellation has reached that thread.
     return;
   }
-  callback.Run(result, data.Pass());
+  callback.Run(result, std::move(data));
   jobs_.erase(it);
   delete job;
 }
@@ -241,7 +243,7 @@ void ExternalPolicyDataFetcherBackend::OnURLFetchComplete(
   ExternalPolicyDataFetcher::Job* job = it->second;
   delete it->first;
   job_map_.erase(it);
-  job->callback.Run(job, result, data.Pass());
+  job->callback.Run(job, result, std::move(data));
 }
 
 void ExternalPolicyDataFetcherBackend::OnURLFetchDownloadProgress(

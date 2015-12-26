@@ -4,6 +4,8 @@
 
 #include "components/signin/core/browser/signin_status_metrics_provider.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
@@ -35,7 +37,7 @@ void RecordComputeSigninStatusHistogram(ComputeSigninStatus status) {
 SigninStatusMetricsProvider::SigninStatusMetricsProvider(
     scoped_ptr<SigninStatusMetricsProviderDelegate> delegate,
     bool is_test)
-    : delegate_(delegate.Pass()),
+    : delegate_(std::move(delegate)),
       scoped_observer_(this),
       is_test_(is_test),
       weak_ptr_factory_(this) {
@@ -66,7 +68,7 @@ void SigninStatusMetricsProvider::ProvideGeneralMetrics(
 // static
 SigninStatusMetricsProvider* SigninStatusMetricsProvider::CreateInstance(
     scoped_ptr<SigninStatusMetricsProviderDelegate> delegate) {
-  return new SigninStatusMetricsProvider(delegate.Pass(), false);
+  return new SigninStatusMetricsProvider(std::move(delegate), false);
 }
 
 void SigninStatusMetricsProvider::OnSigninManagerCreated(

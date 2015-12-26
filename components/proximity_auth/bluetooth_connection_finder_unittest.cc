@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/bluetooth_connection_finder.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -149,7 +151,7 @@ class ProximityAuthBluetoothConnectionFinderTest : public testing::Test {
   MOCK_METHOD1(OnConnectionFoundProxy, void(Connection* connection));
   void OnConnectionFound(scoped_ptr<Connection> connection) {
     OnConnectionFoundProxy(connection.get());
-    last_found_connection_ = connection.Pass();
+    last_found_connection_ = std::move(connection);
   }
 
   // Starts |connection_finder_|. If |expect_connection| is true, then we set an

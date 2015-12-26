@@ -45,7 +45,7 @@ PolicyHeaderService::CreatePolicyHeaderIOHelper(
   scoped_ptr<PolicyHeaderIOHelper> helper = make_scoped_ptr(
       new PolicyHeaderIOHelper(server_url_, initial_header_value, task_runner));
   helpers_.push_back(helper.get());
-  return helper.Pass();
+  return helper;
 }
 
 std::string PolicyHeaderService::CreateHeaderValue() {

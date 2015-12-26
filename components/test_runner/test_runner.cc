@@ -5,8 +5,8 @@
 #include "components/test_runner/test_runner.h"
 
 #include <stddef.h>
-
 #include <limits>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -3044,7 +3044,7 @@ void TestRunner::CopyImageAtAndCapturePixelsAsyncThen(
 void TestRunner::GetManifestCallback(scoped_ptr<InvokeCallbackTask> task,
                                      const blink::WebURLResponse& response,
                                      const std::string& data) {
-  InvokeCallback(task.Pass());
+  InvokeCallback(std::move(task));
 }
 
 void TestRunner::CapturePixelsCallback(scoped_ptr<InvokeCallbackTask> task,
@@ -3088,7 +3088,7 @@ void TestRunner::CapturePixelsCallback(scoped_ptr<InvokeCallbackTask> task,
       &buffer, context->Global(), isolate);
 
   task->SetArguments(3, argv);
-  InvokeCallback(task.Pass());
+  InvokeCallback(std::move(task));
 }
 
 void TestRunner::DispatchBeforeInstallPromptCallback(
@@ -3107,7 +3107,7 @@ void TestRunner::DispatchBeforeInstallPromptCallback(
   argv[0] = v8::Boolean::New(isolate, canceled);
 
   task->SetArguments(1, argv);
-  InvokeCallback(task.Pass());
+  InvokeCallback(std::move(task));
 }
 
 void TestRunner::GetBluetoothManualChooserEventsCallback(
@@ -3129,7 +3129,7 @@ void TestRunner::GetBluetoothManualChooserEventsCallback(
 
   // Call the callback.
   task->SetArguments(1, arg);
-  InvokeCallback(task.Pass());
+  InvokeCallback(std::move(task));
 }
 
 void TestRunner::LocationChangeDone() {

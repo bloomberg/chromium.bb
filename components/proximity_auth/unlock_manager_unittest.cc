@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/unlock_manager.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -162,7 +164,7 @@ class TestUnlockManager : public UnlockManager {
     scoped_ptr<MockProximityMonitor> proximity_monitor(
         new NiceMock<MockProximityMonitor>());
     proximity_monitor_ = proximity_monitor.get();
-    return proximity_monitor.Pass();
+    return std::move(proximity_monitor);
   }
 
   // Owned by the super class.

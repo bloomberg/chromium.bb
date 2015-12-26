@@ -5,6 +5,7 @@
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection_finder.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -132,7 +133,7 @@ class ProximityAuthBluetoothLowEnergyConnectionFinderTest
   }
 
   void OnConnectionFound(scoped_ptr<Connection> connection) {
-    last_found_connection_ = connection.Pass();
+    last_found_connection_ = std::move(connection);
   }
 
   void FindAndExpectStartDiscovery(
@@ -151,7 +152,7 @@ class ProximityAuthBluetoothLowEnergyConnectionFinderTest
         .WillByDefault(Return(true));
     connection_finder.Find(connection_callback_);
     ASSERT_FALSE(discovery_callback.is_null());
-    discovery_callback.Run(discovery_session.Pass());
+    discovery_callback.Run(std::move(discovery_session));
   }
 
   void ExpectRemoveObserver() {
@@ -222,7 +223,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   connection_finder.Find(connection_callback_);
 
   ASSERT_FALSE(discovery_callback.is_null());
-  discovery_callback.Run(discovery_session.Pass());
+  discovery_callback.Run(std::move(discovery_session));
 
   EXPECT_CALL(*adapter_, RemoveObserver(_));
 }
@@ -418,7 +419,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   ON_CALL(*last_discovery_session_alias_, IsActive())
       .WillByDefault(Return(true));
   ASSERT_FALSE(discovery_callback.is_null());
-  discovery_callback.Run(discovery_session.Pass());
+  discovery_callback.Run(std::move(discovery_session));
 
   // Preparing to create a GATT connection to the right device.
   PrepareDevice(kServiceUUID, kTestRemoteDeviceBluetoothAddress, true);
@@ -472,7 +473,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
       .WillByDefault(Return(true));
 
   ASSERT_FALSE(discovery_callback.is_null());
-  discovery_callback.Run(discovery_session.Pass());
+  discovery_callback.Run(std::move(discovery_session));
 
   // Preparing to create a GATT connection to the right device.
   PrepareDevice(kServiceUUID, kTestRemoteDeviceBluetoothAddress, true);

@@ -4,6 +4,8 @@
 
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/guid.h"
@@ -262,7 +264,7 @@ void CloudPolicyClient::UploadCertificate(
       base::Bind(&CloudPolicyClient::OnCertificateUploadCompleted,
                  base::Unretained(this), request_job.get(), callback);
 
-  request_jobs_.push_back(request_job.Pass());
+  request_jobs_.push_back(std::move(request_job));
   request_jobs_.back()->Start(job_callback);
 }
 
@@ -289,7 +291,7 @@ void CloudPolicyClient::UploadDeviceStatus(
       base::Bind(&CloudPolicyClient::OnStatusUploadCompleted,
                  base::Unretained(this), request_job.get(), callback);
 
-  request_jobs_.push_back(request_job.Pass());
+  request_jobs_.push_back(std::move(request_job));
   request_jobs_.back()->Start(job_callback);
 }
 
@@ -317,7 +319,7 @@ void CloudPolicyClient::FetchRemoteCommands(
       base::Bind(&CloudPolicyClient::OnRemoteCommandsFetched,
                  base::Unretained(this), request_job.get(), callback);
 
-  request_jobs_.push_back(request_job.Pass());
+  request_jobs_.push_back(std::move(request_job));
   request_jobs_.back()->Start(job_callback);
 }
 
@@ -342,7 +344,7 @@ void CloudPolicyClient::GetDeviceAttributeUpdatePermission(
       base::Bind(&CloudPolicyClient::OnDeviceAttributeUpdatePermissionCompleted,
       base::Unretained(this), request_job.get(), callback);
 
-  request_jobs_.push_back(request_job.Pass());
+  request_jobs_.push_back(std::move(request_job));
   request_jobs_.back()->Start(job_callback);
 }
 
@@ -372,7 +374,7 @@ void CloudPolicyClient::UpdateDeviceAttributes(
       base::Bind(&CloudPolicyClient::OnDeviceAttributeUpdated,
       base::Unretained(this), request_job.get(), callback);
 
-  request_jobs_.push_back(request_job.Pass());
+  request_jobs_.push_back(std::move(request_job));
   request_jobs_.back()->Start(job_callback);
 }
 
@@ -396,7 +398,7 @@ void CloudPolicyClient::UpdateGcmId(
       base::Bind(&CloudPolicyClient::OnGcmIdUpdated, base::Unretained(this),
                  request_job.get(), callback);
 
-  request_jobs_.push_back(request_job.Pass());
+  request_jobs_.push_back(std::move(request_job));
   request_jobs_.back()->Start(job_callback);
 }
 

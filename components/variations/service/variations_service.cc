@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/build_time.h"
 #include "base/command_line.h"
@@ -276,7 +277,7 @@ VariationsService::VariationsService(
     PrefService* local_state,
     metrics::MetricsStateManager* state_manager,
     const UIStringOverrider& ui_string_overrider)
-    : client_(client.Pass()),
+    : client_(std::move(client)),
       ui_string_overrider_(ui_string_overrider),
       local_state_(local_state),
       state_manager_(state_manager),
@@ -285,7 +286,7 @@ VariationsService::VariationsService(
       create_trials_from_seed_called_(false),
       initial_request_completed_(false),
       disable_deltas_for_next_request_(false),
-      resource_request_allowed_notifier_(notifier.Pass()),
+      resource_request_allowed_notifier_(std::move(notifier)),
       request_count_(0),
       weak_ptr_factory_(this) {
   DCHECK(client_.get());
@@ -493,15 +494,15 @@ scoped_ptr<VariationsService> VariationsService::Create(
           switches::kVariationsServerURL)) {
     DVLOG(1) << "Not creating VariationsService in unofficial build without --"
              << switches::kVariationsServerURL << " specified.";
-    return result.Pass();
+    return result;
   }
 #endif
   result.reset(new VariationsService(
-      client.Pass(),
+      std::move(client),
       make_scoped_ptr(new web_resource::ResourceRequestAllowedNotifier(
           local_state, disable_network_switch)),
       local_state, state_manager, ui_string_overrider));
-  return result.Pass();
+  return result;
 }
 
 // static
@@ -509,7 +510,7 @@ scoped_ptr<VariationsService> VariationsService::CreateForTesting(
     scoped_ptr<VariationsServiceClient> client,
     PrefService* local_state) {
   return make_scoped_ptr(new VariationsService(
-      client.Pass(),
+      std::move(client),
       make_scoped_ptr(new web_resource::ResourceRequestAllowedNotifier(
           local_state, nullptr)),
       local_state, nullptr, UIStringOverrider()));

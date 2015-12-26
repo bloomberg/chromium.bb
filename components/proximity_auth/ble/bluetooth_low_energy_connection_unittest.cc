@@ -5,6 +5,7 @@
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -185,7 +186,7 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
 
     connection->SetTaskRunnerForTesting(task_runner_);
 
-    return connection.Pass();
+    return connection;
   }
 
   // Transitions |connection| from DISCONNECTED to WAITING_CHARACTERISTICS
@@ -260,7 +261,7 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
             kToPeripheralCharID));
     notify_session_alias_ = notify_session.get();
 
-    notify_session_success_callback_.Run(notify_session.Pass());
+    notify_session_success_callback_.Run(std::move(notify_session));
     task_runner_->RunUntilIdle();
 
     EXPECT_EQ(connection->sub_status(),

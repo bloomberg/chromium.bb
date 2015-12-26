@@ -4,6 +4,8 @@
 
 #include "components/sync_driver/ui_data_type_controller.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
@@ -62,8 +64,8 @@ class SyncUIDataTypeControllerTest : public testing::Test,
         new FakeGenericChangeProcessor(type_, this));
     change_processor_ = p.get();
     scoped_ptr<GenericChangeProcessorFactory> f(
-        new FakeGenericChangeProcessorFactory(p.Pass()));
-    preference_dtc_->SetGenericChangeProcessorFactoryForTest(f.Pass());
+        new FakeGenericChangeProcessorFactory(std::move(p)));
+    preference_dtc_->SetGenericChangeProcessorFactoryForTest(std::move(f));
     EXPECT_CALL(model_load_callback_, Run(_, _));
   }
 

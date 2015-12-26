@@ -4,6 +4,8 @@
 
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/sequenced_task_runner.h"
@@ -32,10 +34,9 @@ UserCloudPolicyManager::UserCloudPolicyManager(
                          task_runner,
                          file_task_runner,
                          io_task_runner),
-      store_(store.Pass()),
+      store_(std::move(store)),
       component_policy_cache_path_(component_policy_cache_path),
-      external_data_manager_(external_data_manager.Pass()) {
-}
+      external_data_manager_(std::move(external_data_manager)) {}
 
 UserCloudPolicyManager::~UserCloudPolicyManager() {}
 
@@ -55,7 +56,7 @@ void UserCloudPolicyManager::Connect(
     scoped_ptr<CloudPolicyClient> client) {
   CreateComponentCloudPolicyService(component_policy_cache_path_,
                                     request_context, client.get());
-  core()->Connect(client.Pass());
+  core()->Connect(std::move(client));
   core()->StartRefreshScheduler();
   core()->TrackRefreshDelayPref(local_state,
                                 policy_prefs::kUserPolicyRefreshRate);
@@ -68,13 +69,9 @@ scoped_ptr<CloudPolicyClient>
 UserCloudPolicyManager::CreateCloudPolicyClient(
     DeviceManagementService* device_management_service,
     scoped_refptr<net::URLRequestContextGetter> request_context) {
-  return make_scoped_ptr(
-      new CloudPolicyClient(
-          std::string(),
-          std::string(),
-          kPolicyVerificationKeyHash,
-          device_management_service,
-          request_context)).Pass();
+  return make_scoped_ptr(new CloudPolicyClient(
+      std::string(), std::string(), kPolicyVerificationKeyHash,
+      device_management_service, request_context));
 }
 
 void UserCloudPolicyManager::DisconnectAndRemovePolicy() {

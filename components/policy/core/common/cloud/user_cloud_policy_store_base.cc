@@ -4,6 +4,8 @@
 
 #include "components/policy/core/common/cloud/user_cloud_policy_store_base.h"
 
+#include <utility>
+
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/policy_map.h"
@@ -28,8 +30,8 @@ scoped_ptr<UserCloudPolicyValidator> UserCloudPolicyStoreBase::CreateValidator(
     scoped_ptr<enterprise_management::PolicyFetchResponse> policy,
     CloudPolicyValidatorBase::ValidateTimestampOption timestamp_option) {
   // Configure the validator.
-  UserCloudPolicyValidator* validator =
-      UserCloudPolicyValidator::Create(policy.Pass(), background_task_runner_);
+  UserCloudPolicyValidator* validator = UserCloudPolicyValidator::Create(
+      std::move(policy), background_task_runner_);
   validator->ValidatePolicyType(dm_protocol::kChromeUserPolicyType);
   validator->ValidateAgainstCurrentPolicy(
       policy_.get(),
@@ -45,7 +47,7 @@ void UserCloudPolicyStoreBase::InstallPolicy(
   // Decode the payload.
   policy_map_.Clear();
   DecodePolicy(*payload, external_data_manager(), &policy_map_);
-  policy_ = policy_data.Pass();
+  policy_ = std::move(policy_data);
 }
 
 }  // namespace policy

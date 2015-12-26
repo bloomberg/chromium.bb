@@ -4,6 +4,8 @@
 
 #include "components/web_view/frame_connection.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "build/build_config.h"
@@ -41,8 +43,8 @@ void OnGotContentHandlerForFrame(
   }
   FrameConnection* connection_ptr = connection.get();
   callback.Run(connection_ptr->GetContentHandlerID(),
-               connection_ptr->frame_client(), connection.Pass(),
-               window_tree_client.Pass());
+               connection_ptr->frame_client(), std::move(connection),
+               std::move(window_tree_client));
 }
 
 }  // namespace
@@ -61,7 +63,7 @@ void FrameConnection::CreateConnectionForCanNavigateFrame(
     const FrameTreeDelegate::CanNavigateFrameCallback& callback) {
   scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
   FrameConnection* connection = frame_connection.get();
-  connection->Init(app, request.Pass(),
+  connection->Init(app, std::move(request),
                    base::Bind(&OnGotContentHandlerForFrame, frame->app_id(),
                               callback, base::Passed(&frame_connection)));
 }
@@ -76,7 +78,7 @@ void FrameConnection::Init(mojo::ApplicationImpl* app,
   resource_provider_interfaces.push_back(
       resource_provider::ResourceProvider::Name_);
   filter->filter.insert("mojo:resource_provider",
-                        resource_provider_interfaces.Pass());
+                        std::move(resource_provider_interfaces));
 
   mojo::Array<mojo::String> network_service_interfaces;
   network_service_interfaces.push_back(mojo::CookieStore::Name_);
@@ -84,35 +86,36 @@ void FrameConnection::Init(mojo::ApplicationImpl* app,
   network_service_interfaces.push_back(mojo::URLLoaderFactory::Name_);
   network_service_interfaces.push_back(mojo::WebSocketFactory::Name_);
   filter->filter.insert("mojo:network_service",
-                        network_service_interfaces.Pass());
+                        std::move(network_service_interfaces));
 
   mojo::Array<mojo::String> clipboard_interfaces;
   clipboard_interfaces.push_back(mojo::Clipboard::Name_);
-  filter->filter.insert("mojo:clipboard", clipboard_interfaces.Pass());
+  filter->filter.insert("mojo:clipboard", std::move(clipboard_interfaces));
 
   mojo::Array<mojo::String> tracing_interfaces;
   tracing_interfaces.push_back(tracing::StartupPerformanceDataCollector::Name_);
   tracing_interfaces.push_back(tracing::TraceCollector::Name_);
-  filter->filter.insert("mojo:tracing", tracing_interfaces.Pass());
+  filter->filter.insert("mojo:tracing", std::move(tracing_interfaces));
 
   mojo::Array<mojo::String> window_manager_interfaces;
   window_manager_interfaces.push_back(mus::mojom::Gpu::Name_);
   window_manager_interfaces.push_back(mus::mojom::WindowTreeHostFactory::Name_);
-  filter->filter.insert("mojo:mus", window_manager_interfaces.Pass());
+  filter->filter.insert("mojo:mus", std::move(window_manager_interfaces));
 
   mojo::Array<mojo::String> test_runner_interfaces;
   test_runner_interfaces.push_back(LayoutTestRunner::Name_);
   filter->filter.insert("mojo:web_view_test_runner",
-                        test_runner_interfaces.Pass());
+                        std::move(test_runner_interfaces));
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
   mojo::Array<mojo::String> font_service_interfaces;
   font_service_interfaces.push_back(font_service::FontService::Name_);
-  filter->filter.insert("mojo:font_service", font_service_interfaces.Pass());
+  filter->filter.insert("mojo:font_service",
+                        std::move(font_service_interfaces));
 #endif
 
-  mojo::ApplicationImpl::ConnectParams params(request.Pass());
-  params.set_filter(filter.Pass());
+  mojo::ApplicationImpl::ConnectParams params(std::move(request));
+  params.set_filter(std::move(filter));
   application_connection_ = app->ConnectToApplication(&params);
   application_connection_->ConnectToService(&frame_client_);
   application_connection_->AddContentHandlerIDCallback(on_got_id_callback);
@@ -122,7 +125,7 @@ mus::mojom::WindowTreeClientPtr FrameConnection::GetWindowTreeClient() {
   DCHECK(application_connection_);
   mus::mojom::WindowTreeClientPtr window_tree_client;
   application_connection_->ConnectToService(&window_tree_client);
-  return window_tree_client.Pass();
+  return window_tree_client;
 }
 
 uint32_t FrameConnection::GetContentHandlerID() const {

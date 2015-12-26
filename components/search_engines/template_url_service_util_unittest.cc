@@ -23,7 +23,7 @@ scoped_ptr<TemplateURLData> CreatePrepopulateTemplateURLData(
   data->prepopulate_id = prepopulate_id;
   data->SetKeyword(base::ASCIIToUTF16(keyword));
   data->id = id;
-  return data.Pass();
+  return data;
 }
 
 // Creates a TemplateURL with default values except for the prepopulate ID,

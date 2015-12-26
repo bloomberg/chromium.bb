@@ -38,12 +38,10 @@ NaClTrustedListener::NaClTrustedListener(
     base::SingleThreadTaskRunner* ipc_task_runner,
     base::WaitableEvent* shutdown_event)
     : channel_handle_(handle) {
-  channel_ = IPC::SyncChannel::Create(handle,
-                                      IPC::Channel::MODE_SERVER,
-                                      this,
-                                      ipc_task_runner,
-                                      true,  /* create_channel_now */
-                                      shutdown_event).Pass();
+  channel_ =
+      IPC::SyncChannel::Create(handle, IPC::Channel::MODE_SERVER, this,
+                               ipc_task_runner, true, /* create_channel_now */
+                               shutdown_event);
   channel_->AddFilter(new EOFMessageFilter());
 }
 

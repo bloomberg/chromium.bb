@@ -5,9 +5,9 @@
 #include "components/omnibox/browser/autocomplete_controller.h"
 
 #include <stddef.h>
-
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/format_macros.h"
 #include "base/logging.h"
@@ -172,7 +172,7 @@ AutocompleteController::AutocompleteController(
     AutocompleteControllerDelegate* delegate,
     int provider_types)
     : delegate_(delegate),
-      provider_client_(provider_client.Pass()),
+      provider_client_(std::move(provider_client)),
       history_url_provider_(NULL),
       keyword_provider_(NULL),
       search_provider_(NULL),

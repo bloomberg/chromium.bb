@@ -5,6 +5,7 @@
 #include "components/web_view/url_request_cloneable.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "mojo/common/data_pipe_utils.h"
@@ -21,7 +22,7 @@ namespace web_view {
 URLRequestCloneable::URLRequestCloneable(mojo::URLRequestPtr original_request)
     : url_(original_request->url),
       method_(original_request->method),
-      headers_(original_request->headers.Pass()),
+      headers_(std::move(original_request->headers)),
       response_body_buffer_size_(original_request->response_body_buffer_size),
       auto_follow_redirects_(original_request->auto_follow_redirects),
       bypass_cache_(original_request->bypass_cache),
@@ -31,7 +32,7 @@ URLRequestCloneable::URLRequestCloneable(mojo::URLRequestPtr original_request)
           original_request->originating_time_ticks)) {
   // TODO(erg): Maybe we can do some sort of async copy here?
   for (size_t i = 0; i < original_request->body.size(); ++i) {
-    mojo::common::BlockingCopyToString(original_request->body[i].Pass(),
+    mojo::common::BlockingCopyToString(std::move(original_request->body[i]),
                                        &body_[i]);
   }
 }
@@ -68,7 +69,7 @@ mojo::URLRequestPtr URLRequestCloneable::Clone() const {
       options.element_num_bytes = 1;
       options.capacity_num_bytes = num_bytes;
       mojo::DataPipe data_pipe(options);
-      request->body[i] = data_pipe.consumer_handle.Pass();
+      request->body[i] = std::move(data_pipe.consumer_handle);
       WriteDataRaw(data_pipe.producer_handle.get(), body_[i].data(), &num_bytes,
                    MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
       DCHECK_EQ(num_bytes, body_[i].size());
@@ -77,7 +78,7 @@ mojo::URLRequestPtr URLRequestCloneable::Clone() const {
 
   request->originating_time_ticks = originating_time_.ToInternalValue();
 
-  return request.Pass();
+  return request;
 }
 
 }  // namespace web_view

@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/bluetooth_connection_finder.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -198,7 +200,7 @@ void BluetoothConnectionFinder::OnConnectionStatusChanged(
 }
 
 void BluetoothConnectionFinder::InvokeCallbackAsync() {
-  connection_callback_.Run(connection_.Pass());
+  connection_callback_.Run(std::move(connection_));
 }
 
 }  // namespace proximity_auth

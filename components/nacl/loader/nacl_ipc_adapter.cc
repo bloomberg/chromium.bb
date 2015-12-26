@@ -6,6 +6,7 @@
 
 #include <limits.h>
 #include <string.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -365,7 +366,7 @@ NaClIPCAdapter::NaClIPCAdapter(scoped_ptr<IPC::Channel> channel,
       cond_var_(&lock_),
       task_runner_(runner),
       locked_data_() {
-  io_thread_data_.channel_ = channel.Pass();
+  io_thread_data_.channel_ = std::move(channel);
 }
 
 void NaClIPCAdapter::ConnectChannel() {
@@ -636,7 +637,7 @@ scoped_ptr<IPC::Message> CreateOpenResourceReply(
   // Write empty file tokens.
   new_msg->WriteUInt64(0);  // token_lo
   new_msg->WriteUInt64(0);  // token_hi
-  return new_msg.Pass();
+  return new_msg;
 }
 
 void NaClIPCAdapter::SaveOpenResourceMessage(

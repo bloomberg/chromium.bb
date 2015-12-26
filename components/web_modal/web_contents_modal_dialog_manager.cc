@@ -4,6 +4,8 @@
 
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 
+#include <utility>
+
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -36,7 +38,7 @@ void WebContentsModalDialogManager::SetDelegate(
 void WebContentsModalDialogManager::ShowModalDialog(gfx::NativeWindow dialog) {
   scoped_ptr<SingleWebContentsDialogManager> mgr(
       CreateNativeWebModalManager(dialog, this));
-  ShowDialogWithManager(dialog, mgr.Pass());
+  ShowDialogWithManager(dialog, std::move(mgr));
 }
 
 // TODO(gbillock): Maybe "ShowBubbleWithManager"?
@@ -45,7 +47,7 @@ void WebContentsModalDialogManager::ShowDialogWithManager(
     scoped_ptr<SingleWebContentsDialogManager> manager) {
   if (delegate_)
     manager->HostChanged(delegate_->GetWebContentsModalDialogHost());
-  child_dialogs_.push_back(new DialogState(dialog, manager.Pass()));
+  child_dialogs_.push_back(new DialogState(dialog, std::move(manager)));
 
   if (child_dialogs_.size() == 1) {
     BlockWebContentsInteraction(true);

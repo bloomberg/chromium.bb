@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -21,7 +22,7 @@ namespace em = enterprise_management;
 RemoteCommandsService::RemoteCommandsService(
     scoped_ptr<RemoteCommandsFactory> factory,
     CloudPolicyClient* client)
-    : factory_(factory.Pass()), client_(client), weak_factory_(this) {
+    : factory_(std::move(factory)), client_(client), weak_factory_(this) {
   DCHECK(client_);
   queue_.AddObserver(this);
 }
@@ -62,7 +63,7 @@ bool RemoteCommandsService::FetchRemoteCommands() {
   }
 
   client_->FetchRemoteCommands(
-      id_to_acknowledge.Pass(), previous_results,
+      std::move(id_to_acknowledge), previous_results,
       base::Bind(&RemoteCommandsService::OnRemoteCommandsFetched,
                  weak_factory_.GetWeakPtr()));
 
@@ -71,7 +72,7 @@ bool RemoteCommandsService::FetchRemoteCommands() {
 
 void RemoteCommandsService::SetClockForTesting(
     scoped_ptr<base::TickClock> clock) {
-  queue_.SetClockForTesting(clock.Pass());
+  queue_.SetClockForTesting(std::move(clock));
 }
 
 void RemoteCommandsService::EnqueueCommand(
@@ -100,7 +101,7 @@ void RemoteCommandsService::EnqueueCommand(
     return;
   }
 
-  queue_.AddJob(job.Pass());
+  queue_.AddJob(std::move(job));
 }
 
 void RemoteCommandsService::OnJobStarted(RemoteCommandJob* command) {

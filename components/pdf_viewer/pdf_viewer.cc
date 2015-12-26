@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -102,7 +103,7 @@ class PDFView : public mus::WindowTreeDelegate,
 
     FPDF_ClosePage(page);
 
-    bitmap_uploader_->SetBitmap(width, height, bitmap.Pass(),
+    bitmap_uploader_->SetBitmap(width, height, std::move(bitmap),
                                 bitmap_uploader::BitmapUploader::BGRA);
   }
 
@@ -178,7 +179,7 @@ class PDFView : public mus::WindowTreeDelegate,
                  const OnConnectCallback& callback) override {
     callback.Run();
 
-    frame_ = frame.Pass();
+    frame_ = std::move(frame);
     frame_->DidCommitProvisionalLoad();
   }
   void OnFrameAdded(uint32_t change_id,
@@ -217,7 +218,7 @@ class PDFView : public mus::WindowTreeDelegate,
   void Create(
       mojo::ApplicationConnection* connection,
       mojo::InterfaceRequest<web_view::mojom::FrameClient> request) override {
-    frame_client_binding_.Bind(request.Pass());
+    frame_client_binding_.Bind(std::move(request));
   }
 
   scoped_ptr<mojo::AppRefCount> app_ref_;
@@ -247,13 +248,13 @@ class PDFViewerApplicationDelegate
       mojo::URLResponsePtr response,
       const mojo::Callback<void()>& destruct_callback)
       : app_(this,
-             request.Pass(),
+             std::move(request),
              base::Bind(&PDFViewerApplicationDelegate::OnTerminate,
                         base::Unretained(this))),
         doc_(nullptr),
         is_destroying_(false),
         destruct_callback_(destruct_callback) {
-    FetchPDF(response.Pass());
+    FetchPDF(std::move(response));
   }
 
   ~PDFViewerApplicationDelegate() override {
@@ -268,7 +269,7 @@ class PDFViewerApplicationDelegate
  private:
   void FetchPDF(mojo::URLResponsePtr response) {
     data_.clear();
-    mojo::common::BlockingCopyToString(response->body.Pass(), &data_);
+    mojo::common::BlockingCopyToString(std::move(response->body), &data_);
     if (data_.length() >= static_cast<size_t>(std::numeric_limits<int>::max()))
       return;
     doc_ = FPDF_LoadMemDocument(data_.data(), static_cast<int>(data_.length()),
@@ -303,7 +304,7 @@ class PDFViewerApplicationDelegate
                    base::Unretained(this)));
     pdf_views_.push_back(pdf_view);
     mus::WindowTreeConnection::Create(
-        pdf_view, request.Pass(),
+        pdf_view, std::move(request),
         mus::WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
   }
 
@@ -320,7 +321,7 @@ class PDFViewerApplicationDelegate
 class ContentHandlerImpl : public mojo::ContentHandler {
  public:
   ContentHandlerImpl(mojo::InterfaceRequest<ContentHandler> request)
-      : binding_(this, request.Pass()) {}
+      : binding_(this, std::move(request)) {}
   ~ContentHandlerImpl() override {}
 
  private:
@@ -329,8 +330,8 @@ class ContentHandlerImpl : public mojo::ContentHandler {
       mojo::InterfaceRequest<mojo::Application> request,
       mojo::URLResponsePtr response,
       const mojo::Callback<void()>& destruct_callback) override {
-    new PDFViewerApplicationDelegate(
-        request.Pass(), response.Pass(), destruct_callback);
+    new PDFViewerApplicationDelegate(std::move(request), std::move(response),
+                                     destruct_callback);
   }
 
   mojo::StrongBinding<mojo::ContentHandler> binding_;
@@ -363,7 +364,7 @@ class PDFViewer : public mojo::ApplicationDelegate,
   // InterfaceFactory<ContentHandler>:
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojo::ContentHandler> request) override {
-    new ContentHandlerImpl(request.Pass());
+    new ContentHandlerImpl(std::move(request));
   }
 
   mojo::TracingImpl tracing_;

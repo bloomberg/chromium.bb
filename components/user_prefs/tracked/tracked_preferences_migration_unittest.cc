@@ -6,6 +6,7 @@
 
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -58,7 +59,8 @@ class SimpleInterceptablePrefFilter : public InterceptablePrefFilter {
       const PostFilterOnLoadCallback& post_filter_on_load_callback,
       scoped_ptr<base::DictionaryValue> pref_store_contents,
       bool prefs_altered) override {
-    post_filter_on_load_callback.Run(pref_store_contents.Pass(), prefs_altered);
+    post_filter_on_load_callback.Run(std::move(pref_store_contents),
+                                     prefs_altered);
   }
 };
 
@@ -276,16 +278,14 @@ class TrackedPreferencesMigrationTest : public testing::Test {
       case MOCK_UNPROTECTED_PREF_STORE:
         mock_unprotected_pref_filter_.FilterOnLoad(
             base::Bind(&TrackedPreferencesMigrationTest::GetPrefsBack,
-                       base::Unretained(this),
-                       MOCK_UNPROTECTED_PREF_STORE),
-            unprotected_prefs_.Pass());
+                       base::Unretained(this), MOCK_UNPROTECTED_PREF_STORE),
+            std::move(unprotected_prefs_));
         break;
       case MOCK_PROTECTED_PREF_STORE:
         mock_protected_pref_filter_.FilterOnLoad(
             base::Bind(&TrackedPreferencesMigrationTest::GetPrefsBack,
-                       base::Unretained(this),
-                       MOCK_PROTECTED_PREF_STORE),
-            protected_prefs_.Pass());
+                       base::Unretained(this), MOCK_PROTECTED_PREF_STORE),
+            std::move(protected_prefs_));
         break;
     }
   }
@@ -356,13 +356,13 @@ class TrackedPreferencesMigrationTest : public testing::Test {
     switch (store_id) {
       case MOCK_UNPROTECTED_PREF_STORE:
         EXPECT_FALSE(unprotected_prefs_);
-        unprotected_prefs_ = prefs.Pass();
+        unprotected_prefs_ = std::move(prefs);
         migration_modified_unprotected_store_ = prefs_altered;
         unprotected_store_migration_complete_ = true;
         break;
       case MOCK_PROTECTED_PREF_STORE:
         EXPECT_FALSE(protected_prefs_);
-        protected_prefs_ = prefs.Pass();
+        protected_prefs_ = std::move(prefs);
         migration_modified_protected_store_ = prefs_altered;
         protected_store_migration_complete_ = true;
         break;

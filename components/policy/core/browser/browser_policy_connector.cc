@@ -5,8 +5,8 @@
 #include "components/policy/core/browser/browser_policy_connector.h"
 
 #include <stddef.h>
-
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -103,7 +103,7 @@ void BrowserPolicyConnector::InitInternal(
     scoped_ptr<DeviceManagementService> device_management_service) {
   DCHECK(!is_initialized());
 
-  device_management_service_ = device_management_service.Pass();
+  device_management_service_ = std::move(device_management_service);
 
   policy_statistics_collector_.reset(new policy::PolicyStatisticsCollector(
       base::Bind(&GetChromePolicyDetails), GetChromeSchema(),

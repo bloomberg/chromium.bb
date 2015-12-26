@@ -5,8 +5,8 @@
 #include "components/omnibox/browser/search_suggestion_parser.h"
 
 #include <stddef.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/i18n/icu_string_conversions.h"
 #include "base/json/json_string_value_serializer.h"
@@ -93,7 +93,7 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
       suggest_query_params_(suggest_query_params),
       answer_contents_(answer_contents),
       answer_type_(answer_type),
-      answer_(answer.Pass()),
+      answer_(std::move(answer)),
       should_prefetch_(should_prefetch) {
   match_contents_ = match_contents;
   DCHECK(!match_contents_.empty());
@@ -380,7 +380,7 @@ scoped_ptr<base::Value> SearchSuggestionParser::DeserializeJsonData(
     int error_code = 0;
     scoped_ptr<base::Value> data = deserializer.Deserialize(&error_code, NULL);
     if (error_code == 0)
-      return data.Pass();
+      return data;
   }
   return scoped_ptr<base::Value>();
 }
@@ -550,8 +550,9 @@ bool SearchSuggestionParser::ParseSuggestResults(
           base::CollapseWhitespace(suggestion, false), match_type,
           base::CollapseWhitespace(match_contents, false),
           match_contents_prefix, annotation, answer_contents, answer_type_str,
-          answer.Pass(), suggest_query_params, deletion_url, is_keyword_result,
-          relevance, relevances != NULL, should_prefetch, trimmed_input));
+          std::move(answer), suggest_query_params, deletion_url,
+          is_keyword_result, relevance, relevances != NULL, should_prefetch,
+          trimmed_input));
     }
   }
   results->relevances_from_server = relevances != NULL;

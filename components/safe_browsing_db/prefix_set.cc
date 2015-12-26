@@ -7,6 +7,7 @@
 #include <limits.h>
 
 #include <algorithm>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
@@ -392,11 +393,11 @@ scoped_ptr<const PrefixSet> PrefixSetBuilder::GetPrefixSet(
   std::sort(prefix_set_->full_hashes_.begin(), prefix_set_->full_hashes_.end(),
             SBFullHashLess);
 
-  return prefix_set_.Pass();
+  return std::move(prefix_set_);
 }
 
 scoped_ptr<const PrefixSet> PrefixSetBuilder::GetPrefixSetNoHashes() {
-  return GetPrefixSet(std::vector<SBFullHash>()).Pass();
+  return GetPrefixSet(std::vector<SBFullHash>());
 }
 
 void PrefixSetBuilder::EmitRun() {

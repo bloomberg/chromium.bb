@@ -5,6 +5,7 @@
 #include "components/offline_pages/offline_page_metadata_store_impl.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -189,7 +190,8 @@ void OfflinePageMetadataStoreImpl::AddOrUpdateOfflinePage(
       std::make_pair(base::Int64ToString(offline_page_item.bookmark_id),
                      offline_page_proto));
 
-  UpdateEntries(entries_to_save.Pass(), keys_to_remove.Pass(), callback);
+  UpdateEntries(std::move(entries_to_save), std::move(keys_to_remove),
+                callback);
 }
 
 void OfflinePageMetadataStoreImpl::RemoveOfflinePages(
@@ -203,7 +205,8 @@ void OfflinePageMetadataStoreImpl::RemoveOfflinePages(
   for (int64_t id : bookmark_ids)
     keys_to_remove->push_back(base::Int64ToString(id));
 
-  UpdateEntries(entries_to_save.Pass(), keys_to_remove.Pass(), callback);
+  UpdateEntries(std::move(entries_to_save), std::move(keys_to_remove),
+                callback);
 }
 
 void OfflinePageMetadataStoreImpl::UpdateEntries(
@@ -222,10 +225,9 @@ void OfflinePageMetadataStoreImpl::UpdateEntries(
   }
 
   database_->UpdateEntries(
-      entries_to_save.Pass(), keys_to_remove.Pass(),
+      std::move(entries_to_save), std::move(keys_to_remove),
       base::Bind(&OfflinePageMetadataStoreImpl::UpdateDone,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+                 weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void OfflinePageMetadataStoreImpl::UpdateDone(

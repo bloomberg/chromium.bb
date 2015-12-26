@@ -6,8 +6,8 @@
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_CLOUD_POLICY_VALIDATOR_H_
 
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -323,9 +323,8 @@ class POLICY_EXPORT CloudPolicyValidator : public CloudPolicyValidatorBase {
       scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner) {
     return new CloudPolicyValidator(
-        policy_response.Pass(),
-        scoped_ptr<PayloadProto>(new PayloadProto()),
-        background_task_runner);
+        std::move(policy_response),
+        scoped_ptr<PayloadProto>(new PayloadProto()), background_task_runner);
   }
 
   scoped_ptr<PayloadProto>& payload() {
@@ -345,10 +344,10 @@ class POLICY_EXPORT CloudPolicyValidator : public CloudPolicyValidatorBase {
       scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response,
       scoped_ptr<PayloadProto> payload,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner)
-      : CloudPolicyValidatorBase(policy_response.Pass(),
+      : CloudPolicyValidatorBase(std::move(policy_response),
                                  payload.get(),
                                  background_task_runner),
-        payload_(payload.Pass()) {}
+        payload_(std::move(payload)) {}
 
   scoped_ptr<PayloadProto> payload_;
 

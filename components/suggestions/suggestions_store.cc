@@ -5,8 +5,8 @@
 #include "components/suggestions/suggestions_store.h"
 
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/prefs/pref_service.h"
@@ -28,7 +28,7 @@ SuggestionsStore::SuggestionsStore() {
 SuggestionsStore::~SuggestionsStore() {}
 
 void SuggestionsStore::SetClockForTesting(scoped_ptr<base::Clock> test_clock) {
-  this->clock_ = test_clock.Pass();
+  this->clock_ = std::move(test_clock);
 }
 
 bool SuggestionsStore::LoadSuggestions(SuggestionsProfile* suggestions) {

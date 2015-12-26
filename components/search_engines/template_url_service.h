@@ -6,11 +6,11 @@
 #define COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_H_
 
 #include <stddef.h>
-
 #include <list>
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback_list.h"
@@ -384,7 +384,7 @@ class TemplateURLService : public WebDataServiceConsumer,
       const syncer::SyncDataList& sync_data);
 
 #if defined(UNIT_TEST)
-  void set_clock(scoped_ptr<base::Clock> clock) { clock_ = clock.Pass(); }
+  void set_clock(scoped_ptr<base::Clock> clock) { clock_ = std::move(clock); }
 #endif
 
  private:

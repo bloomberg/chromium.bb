@@ -5,6 +5,7 @@
 #include "components/url_matcher/url_matcher.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/strings/string_util.h"
@@ -498,8 +499,9 @@ TEST(URLMatcherConditionSetTest, Matching) {
   ranges.push_back(URLMatcherPortFilter::CreateRange(80));
   scoped_ptr<URLMatcherPortFilter> filter(new URLMatcherPortFilter(ranges));
   scoped_refptr<URLMatcherConditionSet> condition_set4(
-      new URLMatcherConditionSet(
-          1, conditions, scoped_ptr<URLMatcherSchemeFilter>(), filter.Pass()));
+      new URLMatcherConditionSet(1, conditions,
+                                 scoped_ptr<URLMatcherSchemeFilter>(),
+                                 std::move(filter)));
   EXPECT_TRUE(condition_set4->IsMatch(matching_patterns, url1));
   EXPECT_TRUE(condition_set4->IsMatch(matching_patterns, url3));
   EXPECT_FALSE(condition_set4->IsMatch(matching_patterns, url4));
@@ -563,11 +565,9 @@ bool IsQueryMatch(
   scoped_ptr<URLMatcherPortFilter> port_filter;
 
   scoped_refptr<URLMatcherConditionSet> condition_set(
-      new URLMatcherConditionSet(1,
-                                 conditions,
-                                 query_conditions,
-                                 scheme_filter.Pass(),
-                                 port_filter.Pass()));
+      new URLMatcherConditionSet(1, conditions, query_conditions,
+                                 std::move(scheme_filter),
+                                 std::move(port_filter)));
 
   GURL url("http://www.example.com/foo?" + url_query);
 

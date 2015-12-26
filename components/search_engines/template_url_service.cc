@@ -224,9 +224,9 @@ TemplateURLService::TemplateURLService(
     rappor::RapporService* rappor_service,
     const base::Closure& dsp_change_callback)
     : prefs_(prefs),
-      search_terms_data_(search_terms_data.Pass()),
+      search_terms_data_(std::move(search_terms_data)),
       web_data_service_(web_data_service),
-      client_(client.Pass()),
+      client_(std::move(client)),
       google_url_tracker_(google_url_tracker),
       rappor_service_(rappor_service),
       dsp_change_callback_(dsp_change_callback),
@@ -550,7 +550,7 @@ void TemplateURLService::RegisterOmniboxKeyword(
   scoped_ptr<TemplateURL::AssociatedExtensionInfo> info(
       new TemplateURL::AssociatedExtensionInfo(
           TemplateURL::OMNIBOX_API_EXTENSION, extension_id));
-  AddExtensionControlledTURL(url, info.Pass());
+  AddExtensionControlledTURL(url, std::move(info));
 }
 
 TemplateURLService::TemplateURLVector TemplateURLService::GetTemplateURLs() {
@@ -1058,8 +1058,8 @@ syncer::SyncMergeResult TemplateURLService::MergeDataAndStartSyncing(
     return merge_result;
   }
 
-  sync_processor_ = sync_processor.Pass();
-  sync_error_factory_ = sync_error_factory.Pass();
+  sync_processor_ = std::move(sync_processor);
+  sync_error_factory_ = std::move(sync_error_factory);
 
   // We do a lot of calls to Add/Remove/ResetTemplateURL here, so ensure we
   // don't step on our own toes.
@@ -1362,7 +1362,7 @@ TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
     }
   }
 
-  return turl.Pass();
+  return turl;
 }
 
 // static

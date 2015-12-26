@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/json/json_writer.h"
@@ -813,7 +813,7 @@ PrintWebViewHelper::PrintWebViewHelper(content::RenderView* render_view,
       is_scripted_printing_blocked_(false),
       notify_browser_of_print_failure_(true),
       print_for_preview_(false),
-      delegate_(delegate.Pass()),
+      delegate_(std::move(delegate)),
       print_node_in_progress_(false),
       is_loading_(false),
       is_scripted_preview_delayed_(false),

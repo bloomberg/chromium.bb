@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/connection.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "components/proximity_auth/connection_observer.h"
 #include "components/proximity_auth/wire_message.h"
@@ -35,7 +37,7 @@ void Connection::SendMessage(scoped_ptr<WireMessage> message) {
   }
 
   is_sending_message_ = true;
-  SendMessageImpl(message.Pass());
+  SendMessageImpl(std::move(message));
 }
 
 void Connection::AddObserver(ConnectionObserver* observer) {

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
@@ -240,7 +242,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
     }
 
    private:
-    FakeCrxDownloader() : CrxDownloader(scoped_ptr<CrxDownloader>().Pass()) {}
+    FakeCrxDownloader() : CrxDownloader(scoped_ptr<CrxDownloader>()) {}
     ~FakeCrxDownloader() override {}
 
     void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
@@ -255,7 +257,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
 
   scoped_ptr<PingManager> ping_manager(new FakePingManager(*config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
-      config(), ping_manager.Pass(), &FakeUpdateChecker::Create,
+      config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
 
   // Verify that calling Update does not set ondemand.
@@ -376,7 +378,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
     }
 
    private:
-    FakeCrxDownloader() : CrxDownloader(scoped_ptr<CrxDownloader>().Pass()) {}
+    FakeCrxDownloader() : CrxDownloader(scoped_ptr<CrxDownloader>()) {}
     ~FakeCrxDownloader() override {}
 
     void DoStartDownload(const GURL& url) override {
@@ -426,7 +428,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
 
   scoped_ptr<PingManager> ping_manager(new FakePingManager(*config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
-      config(), ping_manager.Pass(), &FakeUpdateChecker::Create,
+      config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
 
   MockObserver observer;
@@ -579,7 +581,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
     }
 
    private:
-    FakeCrxDownloader() : CrxDownloader(scoped_ptr<CrxDownloader>().Pass()) {}
+    FakeCrxDownloader() : CrxDownloader(scoped_ptr<CrxDownloader>()) {}
     ~FakeCrxDownloader() override {}
 
     void DoStartDownload(const GURL& url) override {
@@ -654,7 +656,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
 
   scoped_ptr<FakePingManager> ping_manager(new FakePingManager(*config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
-      config(), ping_manager.Pass(), &FakeUpdateChecker::Create,
+      config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
 
   MockObserver observer;
@@ -817,7 +819,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
     }
 
    private:
-    FakeCrxDownloader() : CrxDownloader(scoped_ptr<CrxDownloader>().Pass()) {}
+    FakeCrxDownloader() : CrxDownloader(scoped_ptr<CrxDownloader>()) {}
     ~FakeCrxDownloader() override {}
 
     void DoStartDownload(const GURL& url) override {
@@ -892,7 +894,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
 
   scoped_ptr<FakePingManager> ping_manager(new FakePingManager(*config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
-      config(), ping_manager.Pass(), &FakeUpdateChecker::Create,
+      config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
 
   MockObserver observer;
@@ -1075,7 +1077,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
     }
 
    private:
-    FakeCrxDownloader() : CrxDownloader(scoped_ptr<CrxDownloader>().Pass()) {}
+    FakeCrxDownloader() : CrxDownloader(scoped_ptr<CrxDownloader>()) {}
     ~FakeCrxDownloader() override {}
 
     void DoStartDownload(const GURL& url) override {
@@ -1150,7 +1152,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
 
   scoped_ptr<FakePingManager> ping_manager(new FakePingManager(*config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
-      config(), ping_manager.Pass(), &FakeUpdateChecker::Create,
+      config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
 
   MockObserver observer;
@@ -1312,7 +1314,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
     }
 
    private:
-    FakeCrxDownloader() : CrxDownloader(scoped_ptr<CrxDownloader>().Pass()) {}
+    FakeCrxDownloader() : CrxDownloader(scoped_ptr<CrxDownloader>()) {}
     ~FakeCrxDownloader() override {}
 
     void DoStartDownload(const GURL& url) override {
@@ -1362,7 +1364,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
 
   scoped_ptr<PingManager> ping_manager(new FakePingManager(*config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
-      config(), ping_manager.Pass(), &FakeUpdateChecker::Create,
+      config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
 
   MockObserver observer;
@@ -1531,7 +1533,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
     }
 
    private:
-    FakeCrxDownloader() : CrxDownloader(scoped_ptr<CrxDownloader>().Pass()) {}
+    FakeCrxDownloader() : CrxDownloader(scoped_ptr<CrxDownloader>()) {}
     ~FakeCrxDownloader() override {}
 
     void DoStartDownload(const GURL& url) override {
@@ -1622,7 +1624,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
 
   scoped_ptr<FakePingManager> ping_manager(new FakePingManager(*config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
-      config(), ping_manager.Pass(), &FakeUpdateChecker::Create,
+      config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
 
   MockObserver observer;
@@ -1735,7 +1737,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
     }
 
    private:
-    FakeCrxDownloader() : CrxDownloader(scoped_ptr<CrxDownloader>().Pass()) {}
+    FakeCrxDownloader() : CrxDownloader(scoped_ptr<CrxDownloader>()) {}
     ~FakeCrxDownloader() override {}
 
     void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
@@ -1750,7 +1752,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
 
   scoped_ptr<PingManager> ping_manager(new FakePingManager(*config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
-      config(), ping_manager.Pass(), &FakeUpdateChecker::Create,
+      config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
 
   MockObserver observer;
@@ -1864,7 +1866,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
     }
 
    private:
-    FakeCrxDownloader() : CrxDownloader(scoped_ptr<CrxDownloader>().Pass()) {}
+    FakeCrxDownloader() : CrxDownloader(scoped_ptr<CrxDownloader>()) {}
     ~FakeCrxDownloader() override {}
 
     void DoStartDownload(const GURL& url) override {
@@ -1918,7 +1920,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
 
   scoped_ptr<FakePingManager> ping_manager(new FakePingManager(*config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
-      config(), ping_manager.Pass(), &FakeUpdateChecker::Create,
+      config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
 
   // Verify that calling Install sets ondemand.
@@ -2015,7 +2017,7 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
     }
 
    private:
-    FakeCrxDownloader() : CrxDownloader(scoped_ptr<CrxDownloader>().Pass()) {}
+    FakeCrxDownloader() : CrxDownloader(scoped_ptr<CrxDownloader>()) {}
     ~FakeCrxDownloader() override {}
 
     void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
@@ -2030,7 +2032,7 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
 
   scoped_ptr<FakePingManager> ping_manager(new FakePingManager(*config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
-      config(), ping_manager.Pass(), &FakeUpdateChecker::Create,
+      config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
 
   // Verify that calling Install sets ondemand.
@@ -2104,7 +2106,7 @@ TEST_F(UpdateClientTest, EmptyIdList) {
     }
 
    private:
-    FakeCrxDownloader() : CrxDownloader(scoped_ptr<CrxDownloader>().Pass()) {}
+    FakeCrxDownloader() : CrxDownloader(scoped_ptr<CrxDownloader>()) {}
     ~FakeCrxDownloader() override {}
 
     void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }

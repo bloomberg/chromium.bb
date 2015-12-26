@@ -4,6 +4,8 @@
 
 #include "components/sync_driver/glue/sync_backend_host_core.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -95,18 +97,18 @@ DoInitializeOptions::DoInitializeOptions(
       event_handler(event_handler),
       service_url(service_url),
       sync_user_agent(sync_user_agent),
-      http_bridge_factory(http_bridge_factory.Pass()),
+      http_bridge_factory(std::move(http_bridge_factory)),
       credentials(credentials),
       invalidator_client_id(invalidator_client_id),
-      sync_manager_factory(sync_manager_factory.Pass()),
+      sync_manager_factory(std::move(sync_manager_factory)),
       delete_sync_data_folder(delete_sync_data_folder),
       restored_key_for_bootstrapping(restored_key_for_bootstrapping),
       restored_keystore_key_for_bootstrapping(
           restored_keystore_key_for_bootstrapping),
-      internal_components_factory(internal_components_factory.Pass()),
+      internal_components_factory(std::move(internal_components_factory)),
       unrecoverable_error_handler(unrecoverable_error_handler),
       report_unrecoverable_error_function(report_unrecoverable_error_function),
-      saved_nigori_state(saved_nigori_state.Pass()),
+      saved_nigori_state(std::move(saved_nigori_state)),
       clear_data_option(clear_data_option),
       invalidation_versions(invalidation_versions) {}
 
@@ -415,7 +417,7 @@ void SyncBackendHostCore::DoOnIncomingInvalidation(
         }
         scoped_ptr<syncer::InvalidationInterface> inv_adapter(
             new InvalidationAdapter(invalidation));
-        sync_manager_->OnIncomingInvalidation(type, inv_adapter.Pass());
+        sync_manager_->OnIncomingInvalidation(type, std::move(inv_adapter));
         if (!invalidation.is_unknown_version())
           last_invalidation_versions_[type] = invalidation.version();
       }
@@ -465,7 +467,7 @@ void SyncBackendHostCore::DoInitialize(
   args.database_location = sync_data_folder_path_;
   args.event_handler = options->event_handler;
   args.service_url = options->service_url;
-  args.post_factory = options->http_bridge_factory.Pass();
+  args.post_factory = std::move(options->http_bridge_factory);
   args.workers = options->workers;
   args.extensions_activity = options->extensions_activity.get();
   args.change_delegate = options->registrar;  // as SyncManager::ChangeDelegate
@@ -475,13 +477,13 @@ void SyncBackendHostCore::DoInitialize(
   args.restored_keystore_key_for_bootstrapping =
       options->restored_keystore_key_for_bootstrapping;
   args.internal_components_factory =
-      options->internal_components_factory.Pass();
+      std::move(options->internal_components_factory);
   args.encryptor = &encryptor_;
   args.unrecoverable_error_handler = options->unrecoverable_error_handler;
   args.report_unrecoverable_error_function =
       options->report_unrecoverable_error_function;
   args.cancelation_signal = &stop_syncing_signal_;
-  args.saved_nigori_state = options->saved_nigori_state.Pass();
+  args.saved_nigori_state = std::move(options->saved_nigori_state);
   args.clear_data_option = options->clear_data_option;
   sync_manager_->Init(&args);
 }

@@ -4,11 +4,13 @@
 
 #include "components/web_view/client_initiated_frame_connection.h"
 
+#include <utility>
+
 namespace web_view {
 
 ClientInitiatedFrameConnection::ClientInitiatedFrameConnection(
     mojom::FrameClientPtr frame_client)
-    : frame_client_(frame_client.Pass()) {}
+    : frame_client_(std::move(frame_client)) {}
 
 ClientInitiatedFrameConnection::~ClientInitiatedFrameConnection() {}
 

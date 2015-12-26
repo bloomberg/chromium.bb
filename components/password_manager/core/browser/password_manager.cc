@@ -5,8 +5,8 @@
 #include "components/password_manager/core/browser/password_manager.h"
 
 #include <stddef.h>
-
 #include <map>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
@@ -704,7 +704,7 @@ void PasswordManager::OnLoginSuccessful() {
         provisional_save_manager_->password_overridden() ||
         provisional_save_manager_->retry_password_form_password_update();
     if (client_->PromptUserToSaveOrUpdatePassword(
-            provisional_save_manager_.Pass(),
+            std::move(provisional_save_manager_),
             CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER,
             update_password)) {
       if (logger)
@@ -716,7 +716,7 @@ void PasswordManager::OnLoginSuccessful() {
     provisional_save_manager_->Save();
 
     if (provisional_save_manager_->has_generated_password()) {
-      client_->AutomaticPasswordSave(provisional_save_manager_.Pass());
+      client_->AutomaticPasswordSave(std::move(provisional_save_manager_));
     } else {
       provisional_save_manager_.reset();
     }

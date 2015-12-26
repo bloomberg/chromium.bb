@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/affiliation_fetcher.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
@@ -204,7 +205,7 @@ void AffiliationFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
       fetcher_->GetResponseCode() == net::HTTP_OK) {
     if (ParseResponse(result_data.get())) {
       ReportStatistics(AFFILIATION_FETCH_RESULT_SUCCESS, nullptr);
-      delegate_->OnFetchSucceeded(result_data.Pass());
+      delegate_->OnFetchSucceeded(std::move(result_data));
     } else {
       ReportStatistics(AFFILIATION_FETCH_RESULT_MALFORMED, nullptr);
       delegate_->OnMalformedResponse();

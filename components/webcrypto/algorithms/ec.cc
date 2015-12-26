@@ -9,6 +9,7 @@
 #include <openssl/evp.h>
 #include <openssl/pkcs12.h>
 #include <stddef.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -276,12 +277,12 @@ Status EcAlgorithm::GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
 
   // Note that extractable is unconditionally set to true. This is because per
   // the WebCrypto spec generated public keys are always extractable.
-  status = CreateWebCryptoPublicKey(public_pkey.Pass(), key_algorithm, true,
+  status = CreateWebCryptoPublicKey(std::move(public_pkey), key_algorithm, true,
                                     public_usages, &public_key);
   if (status.IsError())
     return status;
 
-  status = CreateWebCryptoPrivateKey(private_pkey.Pass(), key_algorithm,
+  status = CreateWebCryptoPrivateKey(std::move(private_pkey), key_algorithm,
                                      extractable, private_usages, &private_key);
   if (status.IsError())
     return status;
@@ -316,7 +317,7 @@ Status EcAlgorithm::ImportKeyPkcs8(const CryptoData& key_data,
   if (status.IsError())
     return status;
 
-  return CreateWebCryptoPrivateKey(private_key.Pass(),
+  return CreateWebCryptoPrivateKey(std::move(private_key),
                                    blink::WebCryptoKeyAlgorithm::createEc(
                                        algorithm.id(), params->namedCurve()),
                                    extractable, usages, key);
@@ -341,7 +342,7 @@ Status EcAlgorithm::ImportKeySpki(const CryptoData& key_data,
   if (status.IsError())
     return status;
 
-  return CreateWebCryptoPublicKey(public_key.Pass(),
+  return CreateWebCryptoPublicKey(std::move(public_key),
                                   blink::WebCryptoKeyAlgorithm::createEc(
                                       algorithm.id(), params->namedCurve()),
                                   extractable, usages, key);
@@ -448,10 +449,10 @@ Status EcAlgorithm::ImportKeyJwk(const CryptoData& key_data,
 
   // Wrap the EVP_PKEY into a WebCryptoKey
   if (is_private_key) {
-    return CreateWebCryptoPrivateKey(pkey.Pass(), key_algorithm, extractable,
-                                     usages, key);
+    return CreateWebCryptoPrivateKey(std::move(pkey), key_algorithm,
+                                     extractable, usages, key);
   }
-  return CreateWebCryptoPublicKey(pkey.Pass(), key_algorithm, extractable,
+  return CreateWebCryptoPublicKey(std::move(pkey), key_algorithm, extractable,
                                   usages, key);
 }
 

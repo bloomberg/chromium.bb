@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/password_store_factory_util.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "components/password_manager/core/browser/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/affiliation_service.h"
@@ -38,9 +40,10 @@ void ActivateAffiliationBasedMatching(
       new AffiliationService(db_thread_runner));
   affiliation_service->Initialize(request_context_getter, db_path);
   scoped_ptr<AffiliatedMatchHelper> affiliated_match_helper(
-      new AffiliatedMatchHelper(password_store, affiliation_service.Pass()));
+      new AffiliatedMatchHelper(password_store,
+                                std::move(affiliation_service)));
   affiliated_match_helper->Initialize();
-  password_store->SetAffiliatedMatchHelper(affiliated_match_helper.Pass());
+  password_store->SetAffiliatedMatchHelper(std::move(affiliated_match_helper));
 
   password_store->enable_propagating_password_changes_to_web_credentials(
       IsPropagatingPasswordChangesToWebCredentialsEnabled(

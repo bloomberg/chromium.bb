@@ -5,6 +5,7 @@
 #include "components/sync_driver/device_info_sync_service.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
@@ -77,8 +78,8 @@ SyncMergeResult DeviceInfoSyncService::MergeDataAndStartSyncing(
 
   DCHECK(!IsSyncing());
 
-  sync_processor_ = sync_processor.Pass();
-  error_handler_ = error_handler.Pass();
+  sync_processor_ = std::move(sync_processor);
+  error_handler_ = std::move(error_handler);
 
   // Initialization should be completed before this type is enabled
   // and local device info must be available.
@@ -268,7 +269,7 @@ ScopedVector<DeviceInfo> DeviceInfoSyncService::GetAllDeviceInfo() const {
     list.push_back(CreateDeviceInfo(iter->second));
   }
 
-  return list.Pass();
+  return list;
 }
 
 void DeviceInfoSyncService::AddObserver(Observer* observer) {

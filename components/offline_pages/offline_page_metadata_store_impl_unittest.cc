@@ -85,7 +85,7 @@ OfflinePageMetadataStoreImplTest::BuildStore() {
   store->Load(base::Bind(&OfflinePageMetadataStoreImplTest::LoadCallback,
                          base::Unretained(this)));
   PumpLoop();
-  return store.Pass();
+  return store;
 }
 
 void OfflinePageMetadataStoreImplTest::LoadCallback(
@@ -138,7 +138,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, AddOfflinePage) {
 
   // Close the store first to ensure file lock is removed.
   store.reset();
-  store = BuildStore().Pass();
+  store = BuildStore();
   PumpLoop();
 
   EXPECT_EQ(LOAD, last_called_callback_);
@@ -203,7 +203,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, RemoveOfflinePage) {
 
   // Close and reload the store.
   store.reset();
-  store = BuildStore().Pass();
+  store = BuildStore();
   EXPECT_EQ(LOAD, last_called_callback_);
   EXPECT_EQ(STATUS_TRUE, last_status_);
   EXPECT_EQ(0U, offline_pages_.size());
@@ -265,7 +265,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, AddRemoveMultipleOfflinePages) {
 
   // Close and reload the store.
   store.reset();
-  store = BuildStore().Pass();
+  store = BuildStore();
   store->Load(base::Bind(&OfflinePageMetadataStoreImplTest::LoadCallback,
                          base::Unretained(this)));
   PumpLoop();

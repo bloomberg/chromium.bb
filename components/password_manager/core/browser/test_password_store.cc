@@ -89,7 +89,7 @@ ScopedVector<autofill::PasswordForm> TestPasswordStore::FillMatchingLogins(
   for (const auto& stored_form : forms) {
     matched_forms.push_back(new autofill::PasswordForm(stored_form));
   }
-  return matched_forms.Pass();
+  return matched_forms;
 }
 
 void TestPasswordStore::ReportMetricsImpl(const std::string& sync_username,

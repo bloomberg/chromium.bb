@@ -130,7 +130,7 @@ scoped_ptr<EncodedLogo> GoogleParseLogoResponse(
 
   // If this point is reached, parsing has succeeded.
   *parsing_failed = false;
-  return logo.Pass();
+  return logo;
 }
 
 }  // namespace search_provider_logos

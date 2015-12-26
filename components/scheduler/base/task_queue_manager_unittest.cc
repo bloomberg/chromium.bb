@@ -5,6 +5,7 @@
 #include "components/scheduler/base/task_queue_manager.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/location.h"
 #include "base/run_loop.h"
@@ -34,7 +35,7 @@ class MessageLoopTaskRunner : public TaskQueueManagerDelegateForTest {
  public:
   static scoped_refptr<MessageLoopTaskRunner> Create(
       scoped_ptr<base::TickClock> tick_clock) {
-    return make_scoped_refptr(new MessageLoopTaskRunner(tick_clock.Pass()));
+    return make_scoped_refptr(new MessageLoopTaskRunner(std::move(tick_clock)));
   }
 
   // NestableTaskRunner implementation.
@@ -46,7 +47,7 @@ class MessageLoopTaskRunner : public TaskQueueManagerDelegateForTest {
   explicit MessageLoopTaskRunner(scoped_ptr<base::TickClock> tick_clock)
       : TaskQueueManagerDelegateForTest(base::MessageLoop::current()
                                             ->task_runner(),
-                                        tick_clock.Pass()) {}
+                                        std::move(tick_clock)) {}
   ~MessageLoopTaskRunner() override {}
 };
 

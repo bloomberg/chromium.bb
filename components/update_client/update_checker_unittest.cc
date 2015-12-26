@@ -166,7 +166,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
       new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
 
-  update_checker_ = UpdateChecker::Create(*config_).Pass();
+  update_checker_ = UpdateChecker::Create(*config_);
 
   CrxUpdateItem item(BuildCrxUpdateItem());
   std::vector<CrxUpdateItem*> items_to_check;
@@ -212,7 +212,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckError) {
   EXPECT_TRUE(
       post_interceptor_->ExpectRequest(new PartialMatch("updatecheck"), 403));
 
-  update_checker_ = UpdateChecker::Create(*config_).Pass();
+  update_checker_ = UpdateChecker::Create(*config_);
 
   CrxUpdateItem item(BuildCrxUpdateItem());
   std::vector<CrxUpdateItem*> items_to_check;

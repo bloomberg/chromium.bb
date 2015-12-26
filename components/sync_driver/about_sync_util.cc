@@ -357,7 +357,7 @@ scoped_ptr<base::DictionaryValue> ConstructAboutInformation(
 
   if (!service) {
     summary_string.SetValue("Sync service does not exist");
-    return about_info.Pass();
+    return about_info;
   }
 
   syncer::SyncStatus full_status;
@@ -525,7 +525,7 @@ scoped_ptr<base::DictionaryValue> ConstructAboutInformation(
 
   about_info->Set("type_status", service->GetTypeStatusMap());
 
-  return about_info.Pass();
+  return about_info;
 }
 
 }  // namespace sync_ui_util

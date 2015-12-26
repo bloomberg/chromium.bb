@@ -4,6 +4,7 @@
 
 #include "components/sync_driver/device_info_service.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -100,7 +101,7 @@ ScopedVector<DeviceInfo> DeviceInfoService::GetAllDeviceInfo() const {
     list.push_back(CreateDeviceInfo(*iter->second));
   }
 
-  return list.Pass();
+  return list;
 }
 
 void DeviceInfoService::AddObserver(Observer* observer) {
@@ -132,7 +133,7 @@ void DeviceInfoService::UpdateLocalDeviceBackupTime(base::Time backup_time) {
     // EntityMetadata, or  CommitRequestData.
     // TODO(skym): Call ProcessChanges on SMTP.
     // TODO(skym): Persist metadata and data.
-    StoreSpecifics(new_specifics.Pass());
+    StoreSpecifics(std::move(new_specifics));
   }
 
   // Don't call NotifyObservers() because backup time is not part of

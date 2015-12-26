@@ -23,12 +23,9 @@ TrustedPluginChannel::TrustedPluginChannel(
     : nexe_load_manager_(nexe_load_manager),
       is_helper_nexe_(is_helper_nexe) {
   channel_ = IPC::SyncChannel::Create(
-      handle,
-      IPC::Channel::MODE_CLIENT,
-      this,
-      content::RenderThread::Get()->GetIOMessageLoopProxy(),
-      true,
-      shutdown_event).Pass();
+      handle, IPC::Channel::MODE_CLIENT, this,
+      content::RenderThread::Get()->GetIOMessageLoopProxy(), true,
+      shutdown_event);
 }
 
 TrustedPluginChannel::~TrustedPluginChannel() {

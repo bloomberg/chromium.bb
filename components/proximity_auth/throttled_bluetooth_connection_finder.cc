@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/throttled_bluetooth_connection_finder.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/task_runner.h"
@@ -17,11 +19,10 @@ ThrottledBluetoothConnectionFinder::ThrottledBluetoothConnectionFinder(
     scoped_ptr<BluetoothConnectionFinder> connection_finder,
     scoped_refptr<base::TaskRunner> task_runner,
     BluetoothThrottler* throttler)
-    : connection_finder_(connection_finder.Pass()),
+    : connection_finder_(std::move(connection_finder)),
       task_runner_(task_runner),
       throttler_(throttler),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 ThrottledBluetoothConnectionFinder::~ThrottledBluetoothConnectionFinder() {
 }
@@ -49,7 +50,7 @@ void ThrottledBluetoothConnectionFinder::OnConnection(
     const ConnectionCallback& connection_callback,
     scoped_ptr<Connection> connection) {
   throttler_->OnConnection(connection.get());
-  connection_callback.Run(connection.Pass());
+  connection_callback.Run(std::move(connection));
 }
 
 }  // namespace proximity_auth

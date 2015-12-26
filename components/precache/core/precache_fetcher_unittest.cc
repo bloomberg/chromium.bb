@@ -67,7 +67,7 @@ class TestURLFetcherCallback {
     total_response_bytes_ += response_data.size();
     requested_urls_.insert(url);
 
-    return fetcher.Pass();
+    return fetcher;
   }
 
   const std::multiset<GURL>& requested_urls() const {

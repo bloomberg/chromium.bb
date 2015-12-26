@@ -130,7 +130,7 @@ base::File OpenNaClReadExecImpl(const base::FilePath& file_path,
     flags |= base::File::FLAG_EXECUTE;  // Windows only flag.
   base::File file(file_path, flags);
   if (!file.IsValid())
-    return file.Pass();
+    return file;
 
   // Check that the file does not reference a directory. Returning a descriptor
   // to an extension directory could allow an outer sandbox escape. openat(...)
@@ -139,7 +139,7 @@ base::File OpenNaClReadExecImpl(const base::FilePath& file_path,
   if (!file.GetInfo(&file_info) || file_info.is_directory)
     return base::File();
 
-  return file.Pass();
+  return file;
 }
 
 NaClBrowser::NaClBrowser()

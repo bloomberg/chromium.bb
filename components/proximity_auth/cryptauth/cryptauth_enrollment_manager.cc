@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_manager.h"
 
+#include <utility>
+
 #include "base/base64url.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
@@ -48,9 +50,9 @@ CryptAuthEnrollmentManager::CryptAuthEnrollmentManager(
     const cryptauth::GcmDeviceInfo& device_info,
     CryptAuthGCMManager* gcm_manager,
     PrefService* pref_service)
-    : clock_(clock.Pass()),
-      enroller_factory_(enroller_factory.Pass()),
-      secure_message_delegate_(secure_message_delegate.Pass()),
+    : clock_(std::move(clock)),
+      enroller_factory_(std::move(enroller_factory)),
+      secure_message_delegate_(std::move(secure_message_delegate)),
       device_info_(device_info),
       gcm_manager_(gcm_manager),
       pref_service_(pref_service),
@@ -228,7 +230,7 @@ void CryptAuthEnrollmentManager::OnSyncRequested(
     scoped_ptr<SyncScheduler::SyncRequest> sync_request) {
   FOR_EACH_OBSERVER(Observer, observers_, OnEnrollmentStarted());
 
-  sync_request_ = sync_request.Pass();
+  sync_request_ = std::move(sync_request);
   if (gcm_manager_->GetRegistrationId().empty() ||
       pref_service_->GetInteger(prefs::kCryptAuthEnrollmentReason) ==
           cryptauth::INVOCATION_REASON_MANUAL) {

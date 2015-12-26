@@ -4,6 +4,8 @@
 
 #include "components/web_view/web_view_application_delegate.h"
 
+#include <utility>
+
 #include "components/web_view/web_view_impl.h"
 #include "mojo/application/public/cpp/application_connection.h"
 
@@ -26,13 +28,13 @@ bool WebViewApplicationDelegate::ConfigureIncomingConnection(
 void WebViewApplicationDelegate::CreateWebView(
     mojom::WebViewClientPtr client,
     mojo::InterfaceRequest<mojom::WebView> web_view) {
-  new WebViewImpl(app_, client.Pass(), web_view.Pass());
+  new WebViewImpl(app_, std::move(client), std::move(web_view));
 }
 
 void WebViewApplicationDelegate::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mojom::WebViewFactory> request) {
-  factory_bindings_.AddBinding(this, request.Pass());
+  factory_bindings_.AddBinding(this, std::move(request));
 }
 
 }  // namespace web_view

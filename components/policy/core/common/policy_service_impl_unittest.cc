@@ -4,6 +4,8 @@
 
 #include "components/policy/core/common/policy_service_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -336,7 +338,7 @@ TEST_F(PolicyServiceTest, NotifyObserversInMultipleNamespaces) {
       OnPolicyUpdated(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kExtension1),
                       PolicyEquals(&kEmptyPolicyMap),
                       PolicyEquals(&policy_map)));
-  provider0_.UpdatePolicy(bundle.Pass());
+  provider0_.UpdatePolicy(std::move(bundle));
   RunUntilIdle();
   Mock::VerifyAndClearExpectations(&chrome_observer);
   Mock::VerifyAndClearExpectations(&extension_observer);
@@ -374,7 +376,7 @@ TEST_F(PolicyServiceTest, NotifyObserversInMultipleNamespaces) {
       OnPolicyUpdated(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kExtension2),
                       PolicyEquals(&kEmptyPolicyMap),
                       PolicyEquals(&policy_map)));
-  provider0_.UpdatePolicy(bundle.Pass());
+  provider0_.UpdatePolicy(std::move(bundle));
   RunUntilIdle();
   Mock::VerifyAndClearExpectations(&chrome_observer);
   Mock::VerifyAndClearExpectations(&extension_observer);
@@ -606,9 +608,9 @@ TEST_F(PolicyServiceTest, NamespaceMerge) {
   AddTestPolicies(bundle2.get(), "bundle2",
                   POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE);
 
-  provider0_.UpdatePolicy(bundle0.Pass());
-  provider1_.UpdatePolicy(bundle1.Pass());
-  provider2_.UpdatePolicy(bundle2.Pass());
+  provider0_.UpdatePolicy(std::move(bundle0));
+  provider1_.UpdatePolicy(std::move(bundle1));
+  provider2_.UpdatePolicy(std::move(bundle2));
   RunUntilIdle();
 
   PolicyMap expected;
@@ -769,7 +771,7 @@ TEST_F(PolicyServiceTest, FixDeprecatedPolicies) {
                          new base::FundamentalValue(3),
                          NULL);
 
-  provider0_.UpdatePolicy(policy_bundle.Pass());
+  provider0_.UpdatePolicy(std::move(policy_bundle));
   RunUntilIdle();
 
   EXPECT_TRUE(VerifyPolicies(chrome_namespace, expected_chrome));

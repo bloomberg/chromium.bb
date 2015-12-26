@@ -6,7 +6,9 @@
 // This code isn't dead, even if it isn't currently being used. Please refer to:
 // https://www.chromium.org/developers/how-tos/compact-language-detector-cld-data-source-configuration
 
-#include "data_file_renderer_cld_data_provider.h"
+#include "components/translate/content/renderer/data_file_renderer_cld_data_provider.h"
+
+#include <utility>
 
 #include "base/files/file.h"
 #include "base/files/memory_mapped_file.h"
@@ -92,7 +94,7 @@ void DataFileRendererCldDataProvider::LoadCldData(base::File file,
 
   // mmap the file
   g_cld_mmap.Get().value = new base::MemoryMappedFile();
-  bool initialized = g_cld_mmap.Get().value->Initialize(file.Pass());
+  bool initialized = g_cld_mmap.Get().value->Initialize(std::move(file));
   if (!initialized) {
     LOG(ERROR) << "mmap initialization failed";
     delete g_cld_mmap.Get().value;

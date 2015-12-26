@@ -4,6 +4,8 @@
 
 #include "components/webdata/common/web_data_request_manager.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
@@ -63,11 +65,11 @@ void WebDataRequest::OnComplete() {
 }
 
 void WebDataRequest::SetResult(scoped_ptr<WDTypedResult> r) {
-  result_ = r.Pass();
+  result_ = std::move(r);
 }
 
 scoped_ptr<WDTypedResult> WebDataRequest::GetResult(){
-  return result_.Pass();
+  return std::move(result_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

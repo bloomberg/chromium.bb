@@ -81,7 +81,7 @@ ContentSerializedNavigationBuilder::ToNavigationEntry(
             navigation->blocked_state_);
   DCHECK_EQ(0u, navigation->content_pack_categories_.size());
 
-  return entry.Pass();
+  return entry;
 }
 
 // static

@@ -23,7 +23,7 @@ DefaultSearchPrefTestUtil::CreateDefaultSearchPreferenceValue(
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue);
   if (!enabled) {
     value->SetBoolean(DefaultSearchManager::kDisabledByPolicy, true);
-    return value.Pass();
+    return value;
   }
 
   EXPECT_FALSE(keyword.empty());
@@ -52,5 +52,5 @@ DefaultSearchPrefTestUtil::CreateDefaultSearchPreferenceValue(
     alternate_url_list->Append(new base::StringValue(alternate_url));
   value->Set(DefaultSearchManager::kAlternateURLs,
              alternate_url_list.release());
-  return value.Pass();
+  return value;
 }

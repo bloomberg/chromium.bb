@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/remote_device_life_cycle_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/thread_task_runner_handle.h"
@@ -118,7 +120,7 @@ void RemoteDeviceLifeCycleImpl::FindConnection() {
 void RemoteDeviceLifeCycleImpl::OnConnectionFound(
     scoped_ptr<Connection> connection) {
   DCHECK(state_ == RemoteDeviceLifeCycle::State::FINDING_CONNECTION);
-  connection_ = connection.Pass();
+  connection_ = std::move(connection);
   authenticator_ = CreateAuthenticator();
   authenticator_->Authenticate(
       base::Bind(&RemoteDeviceLifeCycleImpl::OnAuthenticationResult,
@@ -146,7 +148,7 @@ void RemoteDeviceLifeCycleImpl::OnAuthenticationResult(
   // Create the MessengerImpl asynchronously. |messenger_| registers itself as
   // an observer of |connection_|, so creating it synchronously would trigger
   // |OnSendCompleted()| as an observer call for |messenger_|.
-  secure_context_ = secure_context.Pass();
+  secure_context_ = std::move(secure_context);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&RemoteDeviceLifeCycleImpl::CreateMessenger,
                             weak_ptr_factory_.GetWeakPtr()));
@@ -156,7 +158,7 @@ void RemoteDeviceLifeCycleImpl::CreateMessenger() {
   DCHECK(state_ == RemoteDeviceLifeCycle::State::AUTHENTICATING);
   DCHECK(secure_context_);
   messenger_.reset(
-      new MessengerImpl(connection_.Pass(), secure_context_.Pass()));
+      new MessengerImpl(std::move(connection_), std::move(secure_context_)));
   messenger_->AddObserver(this);
 
   TransitionToState(RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);

@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/password_manager/core/browser/password_store_default.h"
+
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
@@ -17,7 +21,6 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
-#include "components/password_manager/core/browser/password_store_default.h"
 #include "components/password_manager/core/browser/password_store_origin_unittest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -111,7 +114,7 @@ PasswordStoreDefaultTestDelegate::PasswordStoreDefaultTestDelegate() {
 PasswordStoreDefaultTestDelegate::PasswordStoreDefaultTestDelegate(
     scoped_ptr<LoginDatabase> database) {
   SetupTempDir();
-  store_ = CreateInitializedStore(database.Pass());
+  store_ = CreateInitializedStore(std::move(database));
 }
 
 PasswordStoreDefaultTestDelegate::~PasswordStoreDefaultTestDelegate() {
@@ -137,7 +140,7 @@ PasswordStoreDefaultTestDelegate::CreateInitializedStore(
     scoped_ptr<LoginDatabase> database) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
       base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
-      database.Pass()));
+      std::move(database)));
   store->Init(syncer::SyncableService::StartSyncFlare());
 
   return store;
@@ -180,7 +183,7 @@ TEST(PasswordStoreDefaultTest, NonASCIIData) {
   ScopedVector<PasswordForm> expected_forms;
   for (unsigned int i = 0; i < arraysize(form_data); ++i) {
     expected_forms.push_back(
-        CreatePasswordFormFromDataForTesting(form_data[i]).Pass());
+        CreatePasswordFormFromDataForTesting(form_data[i]));
     store->AddLogin(*expected_forms.back());
   }
 

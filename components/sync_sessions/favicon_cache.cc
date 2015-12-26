@@ -4,6 +4,8 @@
 
 #include "components/sync_sessions/favicon_cache.h"
 
+#include <utility>
+
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
@@ -243,9 +245,9 @@ syncer::SyncMergeResult FaviconCache::MergeDataAndStartSyncing(
     scoped_ptr<syncer::SyncErrorFactory> error_handler) {
   DCHECK(type == syncer::FAVICON_IMAGES || type == syncer::FAVICON_TRACKING);
   if (type == syncer::FAVICON_IMAGES)
-    favicon_images_sync_processor_ = sync_processor.Pass();
+    favicon_images_sync_processor_ = std::move(sync_processor);
   else
-    favicon_tracking_sync_processor_ = sync_processor.Pass();
+    favicon_tracking_sync_processor_ = std::move(sync_processor);
 
   syncer::SyncMergeResult merge_result(type);
   merge_result.set_num_items_before_association(synced_favicons_.size());

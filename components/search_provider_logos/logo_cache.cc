@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
@@ -84,7 +85,7 @@ void LogoCache::SetCachedLogo(const EncodedLogo* logo) {
     metadata.reset(new LogoMetadata(logo->metadata));
     logo_num_bytes_ = static_cast<int>(logo->encoded_image->size());
   }
-  UpdateMetadata(metadata.Pass());
+  UpdateMetadata(std::move(metadata));
   WriteLogo(logo ? logo->encoded_image : NULL);
 }
 
@@ -112,7 +113,7 @@ scoped_ptr<EncodedLogo> LogoCache::GetCachedLogo() {
   scoped_ptr<EncodedLogo> logo(new EncodedLogo());
   logo->encoded_image = encoded_image;
   logo->metadata = *metadata_;
-  return logo.Pass();
+  return logo;
 }
 
 // static
@@ -137,7 +138,7 @@ scoped_ptr<LogoMetadata> LogoCache::LogoMetadataFromString(
     return scoped_ptr<LogoMetadata>();
   }
 
-  return metadata.Pass();
+  return metadata;
 }
 
 // static
@@ -167,7 +168,7 @@ base::FilePath LogoCache::GetMetadataPath() {
 }
 
 void LogoCache::UpdateMetadata(scoped_ptr<LogoMetadata> metadata) {
-  metadata_ = metadata.Pass();
+  metadata_ = std::move(metadata);
   metadata_is_valid_ = true;
 }
 
@@ -186,7 +187,7 @@ void LogoCache::ReadMetadataIfNeeded() {
     }
   }
 
-  UpdateMetadata(metadata.Pass());
+  UpdateMetadata(std::move(metadata));
 }
 
 void LogoCache::WriteMetadata() {

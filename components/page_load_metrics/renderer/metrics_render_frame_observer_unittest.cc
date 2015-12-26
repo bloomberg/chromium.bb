@@ -4,6 +4,8 @@
 
 #include "components/page_load_metrics/renderer/metrics_render_frame_observer.h"
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
@@ -46,7 +48,7 @@ class MockMetricsRenderFrameObserver : public MetricsRenderFrameObserver {
   scoped_ptr<base::Timer> CreateTimer() const override {
     if (!mock_timer_)
       ADD_FAILURE() << "CreateTimer() called, but no MockTimer available.";
-    return mock_timer_.Pass();
+    return std::move(mock_timer_);
   }
 
   // We intercept sent messages and dispatch them to a MockIPCInterceptor, which
@@ -59,7 +61,7 @@ class MockMetricsRenderFrameObserver : public MetricsRenderFrameObserver {
 
   void set_mock_timer(scoped_ptr<base::Timer> timer) {
     ASSERT_EQ(nullptr, mock_timer_);
-    mock_timer_ = timer.Pass();
+    mock_timer_ = std::move(timer);
   }
 
   MOCK_CONST_METHOD0(GetTiming, PageLoadTiming());

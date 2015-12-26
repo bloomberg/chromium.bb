@@ -5,6 +5,7 @@
 #include "components/proximity_auth/webui/proximity_auth_webui_handler.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/base64url.h"
 #include "base/bind.h"
@@ -61,7 +62,7 @@ scoped_ptr<base::DictionaryValue> LogMessageToDictionary(
   dictionary->SetInteger(kLogMessageLineKey, log_message.line);
   dictionary->SetInteger(kLogMessageSeverityKey,
                          static_cast<int>(log_message.severity));
-  return dictionary.Pass();
+  return dictionary;
 }
 
 // Keys in the JSON representation of an ExternalDeviceInfo proto.
@@ -535,7 +536,7 @@ ProximityAuthWebUIHandler::ExternalDeviceInfoToDictionary(
         last_remote_status_update_->secure_screen_lock_state);
     status_dictionary->SetInteger(
         "trustAgent", last_remote_status_update_->trust_agent_state);
-    dictionary->Set(kExternalDeviceRemoteState, status_dictionary.Pass());
+    dictionary->Set(kExternalDeviceRemoteState, std::move(status_dictionary));
   }
 
   return dictionary;
@@ -552,7 +553,7 @@ ProximityAuthWebUIHandler::IneligibleDeviceToDictionary(
   scoped_ptr<base::DictionaryValue> device_dictionary =
       ExternalDeviceInfoToDictionary(ineligible_device.device());
   device_dictionary->Set(kIneligibleDeviceReasons,
-                         ineligibility_reasons.Pass());
+                         std::move(ineligibility_reasons));
   return device_dictionary;
 }
 

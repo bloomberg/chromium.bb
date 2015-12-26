@@ -5,6 +5,7 @@
 #include "components/webcrypto/algorithms/rsa.h"
 
 #include <openssl/evp.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "components/webcrypto/algorithms/asymmetric_key_util.h"
@@ -147,7 +148,7 @@ Status CreateWebCryptoRsaPrivateKey(
   if (status.IsError())
     return status;
 
-  return CreateWebCryptoPrivateKey(private_key.Pass(), key_algorithm,
+  return CreateWebCryptoPrivateKey(std::move(private_key), key_algorithm,
                                    extractable, usages, key);
 }
 
@@ -165,8 +166,8 @@ Status CreateWebCryptoRsaPublicKey(
   if (status.IsError())
     return status;
 
-  return CreateWebCryptoPublicKey(public_key.Pass(), key_algorithm, extractable,
-                                  usages, key);
+  return CreateWebCryptoPublicKey(std::move(public_key), key_algorithm,
+                                  extractable, usages, key);
 }
 
 Status ImportRsaPrivateKey(const blink::WebCryptoAlgorithm& algorithm,
@@ -199,7 +200,7 @@ Status ImportRsaPrivateKey(const blink::WebCryptoAlgorithm& algorithm,
   if (!pkey || !EVP_PKEY_set1_RSA(pkey.get(), rsa.get()))
     return Status::OperationError();
 
-  return CreateWebCryptoRsaPrivateKey(pkey.Pass(), algorithm.id(),
+  return CreateWebCryptoRsaPrivateKey(std::move(pkey), algorithm.id(),
                                       algorithm.rsaHashedImportParams()->hash(),
                                       extractable, usages, key);
 }
@@ -223,7 +224,7 @@ Status ImportRsaPublicKey(const blink::WebCryptoAlgorithm& algorithm,
   if (!pkey || !EVP_PKEY_set1_RSA(pkey.get(), rsa.get()))
     return Status::OperationError();
 
-  return CreateWebCryptoRsaPublicKey(pkey.Pass(), algorithm.id(),
+  return CreateWebCryptoRsaPublicKey(std::move(pkey), algorithm.id(),
                                      algorithm.rsaHashedImportParams()->hash(),
                                      extractable, usages, key);
 }
@@ -320,13 +321,13 @@ Status RsaHashedAlgorithm::GenerateKey(
 
   // Note that extractable is unconditionally set to true. This is because per
   // the WebCrypto spec generated public keys are always extractable.
-  status = CreateWebCryptoRsaPublicKey(public_pkey.Pass(), algorithm.id(),
+  status = CreateWebCryptoRsaPublicKey(std::move(public_pkey), algorithm.id(),
                                        params->hash(), true, public_usages,
                                        &public_key);
   if (status.IsError())
     return status;
 
-  status = CreateWebCryptoRsaPrivateKey(private_pkey.Pass(), algorithm.id(),
+  status = CreateWebCryptoRsaPrivateKey(std::move(private_pkey), algorithm.id(),
                                         params->hash(), extractable,
                                         private_usages, &private_key);
   if (status.IsError())
@@ -365,7 +366,7 @@ Status RsaHashedAlgorithm::ImportKeyPkcs8(
   // TODO(eroman): Validate the algorithm OID against the webcrypto provided
   // hash. http://crbug.com/389400
 
-  return CreateWebCryptoRsaPrivateKey(private_key.Pass(), algorithm.id(),
+  return CreateWebCryptoRsaPrivateKey(std::move(private_key), algorithm.id(),
                                       algorithm.rsaHashedImportParams()->hash(),
                                       extractable, usages, key);
 }
@@ -385,7 +386,7 @@ Status RsaHashedAlgorithm::ImportKeySpki(
   // TODO(eroman): Validate the algorithm OID against the webcrypto provided
   // hash. http://crbug.com/389400
 
-  return CreateWebCryptoRsaPublicKey(public_key.Pass(), algorithm.id(),
+  return CreateWebCryptoRsaPublicKey(std::move(public_key), algorithm.id(),
                                      algorithm.rsaHashedImportParams()->hash(),
                                      extractable, usages, key);
 }

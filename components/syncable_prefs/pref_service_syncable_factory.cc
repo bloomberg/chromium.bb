@@ -67,7 +67,7 @@ scoped_ptr<PrefServiceSyncable> PrefServiceSyncableFactory::CreateSyncable(
           pref_model_associator_client_,
           read_error_callback_,
           async_));
-  return pref_service.Pass();
+  return pref_service;
 }
 
 }  // namespace syncable_prefs

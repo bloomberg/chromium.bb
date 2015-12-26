@@ -173,9 +173,9 @@ SuggestionsService::SuggestionsService(
     scoped_ptr<ImageManager> thumbnail_manager,
     scoped_ptr<BlacklistStore> blacklist_store)
     : url_request_context_(url_request_context),
-      suggestions_store_(suggestions_store.Pass()),
-      thumbnail_manager_(thumbnail_manager.Pass()),
-      blacklist_store_(blacklist_store.Pass()),
+      suggestions_store_(std::move(suggestions_store)),
+      thumbnail_manager_(std::move(thumbnail_manager)),
+      blacklist_store_(std::move(blacklist_store)),
       scheduling_delay_(TimeDelta::FromSeconds(kDefaultSchedulingDelaySec)),
       token_fetcher_(new AccessTokenFetcher(signin_manager, token_service)),
       weak_ptr_factory_(this) {}

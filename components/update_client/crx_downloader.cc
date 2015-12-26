@@ -4,6 +4,8 @@
 
 #include "components/update_client/crx_downloader.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -38,7 +40,7 @@ scoped_ptr<CrxDownloader> CrxDownloader::Create(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
   scoped_ptr<CrxDownloader> url_fetcher_downloader(
       scoped_ptr<CrxDownloader>(new UrlFetcherDownloader(
-          scoped_ptr<CrxDownloader>().Pass(), context_getter, task_runner)));
+          scoped_ptr<CrxDownloader>(), context_getter, task_runner)));
 #if defined(OS_WIN)
   if (is_background_download) {
     return scoped_ptr<CrxDownloader>(new BackgroundDownloader(
@@ -50,8 +52,7 @@ scoped_ptr<CrxDownloader> CrxDownloader::Create(
 }
 
 CrxDownloader::CrxDownloader(scoped_ptr<CrxDownloader> successor)
-    : successor_(successor.Pass()) {
-}
+    : successor_(std::move(successor)) {}
 
 CrxDownloader::~CrxDownloader() {
 }

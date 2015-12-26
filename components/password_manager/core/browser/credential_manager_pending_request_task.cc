@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/credential_manager_pending_request_task.h"
 
+#include <utility>
+
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -102,14 +104,14 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
     std::swap(*it, local_results[0]);
     // Clear the form pointer since its owner is being passed.
     zero_click_form_to_return = nullptr;
-    delegate_->client()->NotifyUserAutoSignin(local_results.Pass());
+    delegate_->client()->NotifyUserAutoSignin(std::move(local_results));
     delegate_->SendCredential(id_, info);
     return;
   }
 
   if (zero_click_only_ ||
       !delegate_->client()->PromptUserToChooseCredentials(
-          local_results.Pass(), federated_results.Pass(), origin_,
+          std::move(local_results), std::move(federated_results), origin_,
           base::Bind(
               &CredentialManagerPendingRequestTaskDelegate::SendCredential,
               base::Unretained(delegate_), id_))) {

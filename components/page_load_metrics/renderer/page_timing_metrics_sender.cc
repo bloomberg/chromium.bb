@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/page_load_metrics/renderer/page_timing_metrics_sender.h"
+
+#include <utility>
+
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/page_load_metrics/common/page_load_metrics_messages.h"
-#include "components/page_load_metrics/renderer/page_timing_metrics_sender.h"
 #include "ipc/ipc_sender.h"
 
 namespace page_load_metrics {
@@ -18,7 +21,9 @@ const int kTimerDelayMillis = 1000;
 PageTimingMetricsSender::PageTimingMetricsSender(IPC::Sender* ipc_sender,
                                                  int routing_id,
                                                  scoped_ptr<base::Timer> timer)
-    : ipc_sender_(ipc_sender), routing_id_(routing_id), timer_(timer.Pass()) {}
+    : ipc_sender_(ipc_sender),
+      routing_id_(routing_id),
+      timer_(std::move(timer)) {}
 
 // On destruction, we want to send any data we have if we have a timer
 // currently running (and thus are talking to a browser process)

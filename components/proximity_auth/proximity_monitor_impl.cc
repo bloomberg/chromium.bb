@@ -5,6 +5,7 @@
 #include "components/proximity_auth/proximity_monitor_impl.h"
 
 #include <math.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -37,7 +38,7 @@ ProximityMonitorImpl::ProximityMonitorImpl(const RemoteDevice& remote_device,
       strategy_(Strategy::NONE),
       remote_device_is_in_proximity_(false),
       is_active_(false),
-      clock_(clock.Pass()),
+      clock_(std::move(clock)),
       polling_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
   if (device::BluetoothAdapterFactory::IsBluetoothAdapterAvailable()) {

@@ -151,7 +151,7 @@ void RendererSchedulerImpl::Shutdown() {
 }
 
 scoped_ptr<blink::WebThread> RendererSchedulerImpl::CreateMainThread() {
-  return make_scoped_ptr(new WebThreadImplForRendererScheduler(this)).Pass();
+  return make_scoped_ptr(new WebThreadImplForRendererScheduler(this));
 }
 
 scoped_refptr<TaskQueue> RendererSchedulerImpl::DefaultTaskRunner() {

@@ -5,8 +5,8 @@
 #include "components/policy/core/browser/url_blacklist_manager.h"
 
 #include <stdint.h>
-
 #include <ostream>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -57,13 +57,13 @@ class TestingURLBlacklistManager : public URLBlacklistManager {
     scoped_ptr<base::ListValue> block(new base::ListValue);
     block->Append(new base::StringValue("example.com"));
     scoped_ptr<base::ListValue> allow(new base::ListValue);
-    URLBlacklistManager::UpdateOnIO(block.Pass(), allow.Pass());
+    URLBlacklistManager::UpdateOnIO(std::move(block), std::move(allow));
   }
 
   // URLBlacklistManager overrides:
   void SetBlacklist(scoped_ptr<URLBlacklist> blacklist) override {
     set_blacklist_called_ = true;
-    URLBlacklistManager::SetBlacklist(blacklist.Pass());
+    URLBlacklistManager::SetBlacklist(std::move(blacklist));
   }
 
   void Update() override {
@@ -642,7 +642,7 @@ TEST_F(URLBlacklistManagerTest, DontBlockResources) {
   scoped_ptr<base::ListValue> blocked(new base::ListValue);
   blocked->Append(new base::StringValue("google.com"));
   blacklist->Block(blocked.get());
-  blacklist_manager_->SetBlacklist(blacklist.Pass());
+  blacklist_manager_->SetBlacklist(std::move(blacklist));
   EXPECT_TRUE(blacklist_manager_->IsURLBlocked(GURL("http://google.com")));
 
   int reason = net::ERR_UNEXPECTED;

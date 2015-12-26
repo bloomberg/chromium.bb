@@ -6,9 +6,9 @@
 #define COMPONENTS_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_BASE_H_
 
 #include <stddef.h>
-
 #include <map>
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -121,7 +121,7 @@ class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
   }
 
   void set_toolkit_delegate(scoped_ptr<ToolkitDelegate> delegate) {
-    toolkit_delegate_ = delegate.Pass();
+    toolkit_delegate_ = std::move(delegate);
   }
 
   ToolkitDelegate* toolkit_delegate() {

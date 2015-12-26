@@ -5,8 +5,8 @@
 #include "components/web_view/frame.h"
 
 #include <stddef.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -44,7 +44,7 @@ mojom::FrameDataPtr FrameToFrameData(const Frame* frame) {
   frame_data->client_properties =
       mojo::Map<mojo::String, mojo::Array<uint8_t>>::From(
           frame->client_properties());
-  return frame_data.Pass();
+  return frame_data;
 }
 
 }  // namespace
@@ -69,7 +69,7 @@ Frame::Frame(FrameTree* tree,
       app_id_(app_id),
       parent_(nullptr),
       window_ownership_(window_ownership),
-      user_data_(user_data.Pass()),
+      user_data_(std::move(user_data)),
       frame_client_(frame_client),
       loading_(false),
       progress_(0.f),
@@ -113,8 +113,8 @@ void Frame::Init(Frame* parent,
   const ClientType client_type = frame_request.is_pending()
                                      ? ClientType::NEW_CHILD_FRAME
                                      : ClientType::EXISTING_FRAME_NEW_APP;
-  InitClient(client_type, nullptr, window_tree_client.Pass(),
-             frame_request.Pass(), navigation_start_time);
+  InitClient(client_type, nullptr, std::move(window_tree_client),
+             std::move(frame_request), navigation_start_time);
 
   tree_->delegate_->DidCreateFrame(this);
 
@@ -171,7 +171,7 @@ void Frame::Find(int32_t request_id,
                  mojom::FindOptionsPtr options,
                  bool wrap_within_frame,
                  const FindCallback& callback) {
-  frame_client_->Find(request_id, search_text, options.Pass(),
+  frame_client_->Find(request_id, search_text, std::move(options),
                       wrap_within_frame, callback);
 }
 
@@ -183,8 +183,8 @@ void Frame::HighlightFindResults(int32_t request_id,
                                  const mojo::String& search_text,
                                  mojom::FindOptionsPtr options,
                                  bool reset) {
-  frame_client_->HighlightFindResults(request_id, search_text, options.Pass(),
-                                      reset);
+  frame_client_->HighlightFindResults(request_id, search_text,
+                                      std::move(options), reset);
 }
 
 void Frame::StopHighlightingFindResults() {
@@ -200,7 +200,7 @@ void Frame::InitClient(ClientType client_type,
     embedded_connection_id_ = kInvalidConnectionId;
     embed_weak_ptr_factory_.InvalidateWeakPtrs();
     window_->Embed(
-        window_tree_client.Pass(),
+        std::move(window_tree_client),
         mus::mojom::WindowTree::ACCESS_POLICY_DEFAULT,
         base::Bind(&Frame::OnEmbedAck, embed_weak_ptr_factory_.GetWeakPtr()));
   }
@@ -211,7 +211,7 @@ void Frame::InitClient(ClientType client_type,
     // This frame (and client) was created by an existing FrameClient. There
     // is no need to send it OnConnect().
     frame_binding_.reset(
-        new mojo::Binding<mojom::Frame>(this, frame_request.Pass()));
+        new mojo::Binding<mojom::Frame>(this, std::move(frame_request)));
     frame_client_->OnConnect(
         nullptr, tree_->change_id(), id_, mojom::WINDOW_CONNECT_TYPE_USE_NEW,
         mojo::Array<mojom::FrameDataPtr>(),
@@ -223,19 +223,19 @@ void Frame::InitClient(ClientType client_type,
 
     mojo::Array<mojom::FrameDataPtr> array(frames.size());
     for (size_t i = 0; i < frames.size(); ++i)
-      array[i] = FrameToFrameData(frames[i]).Pass();
+      array[i] = FrameToFrameData(frames[i]);
 
     mojom::FramePtr frame_ptr;
     // Don't install an error handler. We allow for the target to only
     // implement WindowTreeClient.
     frame_binding_.reset(
-        new mojo::Binding<mojom::Frame>(this, GetProxy(&frame_ptr).Pass()));
+        new mojo::Binding<mojom::Frame>(this, GetProxy(&frame_ptr)));
     frame_client_->OnConnect(
-        frame_ptr.Pass(), tree_->change_id(), id_,
+        std::move(frame_ptr), tree_->change_id(), id_,
         client_type == ClientType::EXISTING_FRAME_SAME_APP
             ? mojom::WINDOW_CONNECT_TYPE_USE_EXISTING
             : mojom::WINDOW_CONNECT_TYPE_USE_NEW,
-        array.Pass(), navigation_start_time.ToInternalValue(),
+        std::move(array), navigation_start_time.ToInternalValue(),
         base::Bind(&OnConnectAck, base::Passed(&data_and_binding)));
     tree_->delegate_->DidStartNavigation(this);
 
@@ -267,20 +267,20 @@ void Frame::ChangeClient(mojom::FrameClient* frame_client,
   if (client_type == ClientType::EXISTING_FRAME_SAME_APP) {
     // See comment in InitClient() for details.
     data_and_binding.reset(new FrameUserDataAndBinding);
-    data_and_binding->user_data = user_data_.Pass();
-    data_and_binding->frame_binding = frame_binding_.Pass();
+    data_and_binding->user_data = std::move(user_data_);
+    data_and_binding->frame_binding = std::move(frame_binding_);
   } else {
     loading_ = false;
     progress_ = 0.f;
   }
 
-  user_data_ = user_data.Pass();
+  user_data_ = std::move(user_data);
   frame_client_ = frame_client;
   frame_binding_.reset();
   app_id_ = app_id;
 
-  InitClient(client_type, data_and_binding.Pass(), window_tree_client.Pass(),
-             nullptr, navigation_start_time);
+  InitClient(client_type, std::move(data_and_binding),
+             std::move(window_tree_client), nullptr, navigation_start_time);
 }
 
 void Frame::OnEmbedAck(bool success, mus::ConnectionSpecificId connection_id) {
@@ -299,10 +299,10 @@ void Frame::OnWillNavigateAck(
   DCHECK(waiting_for_on_will_navigate_ack_);
   DVLOG(2) << "Frame::OnWillNavigateAck id=" << id_;
   waiting_for_on_will_navigate_ack_ = false;
-  ChangeClient(frame_client, user_data.Pass(), window_tree_client.Pass(),
-               app_id, navigation_start_time);
+  ChangeClient(frame_client, std::move(user_data),
+               std::move(window_tree_client), app_id, navigation_start_time);
   if (pending_navigate_.get())
-    StartNavigate(pending_navigate_.Pass());
+    StartNavigate(std::move(pending_navigate_));
 }
 
 void Frame::SetWindow(mus::Window* window) {
@@ -312,7 +312,7 @@ void Frame::SetWindow(mus::Window* window) {
   window_->SetLocalProperty(kFrame, this);
   window_->AddObserver(this);
   if (pending_navigate_.get())
-    StartNavigate(pending_navigate_.Pass());
+    StartNavigate(std::move(pending_navigate_));
 }
 
 void Frame::BuildFrameTree(std::vector<const Frame*>* frames) const {
@@ -344,7 +344,7 @@ void Frame::StartNavigate(mojo::URLRequestPtr request) {
   if (waiting_for_on_will_navigate_ack_) {
     // We're waiting for OnWillNavigate(). We need to wait until that completes
     // before attempting any other loads.
-    pending_navigate_ = request.Pass();
+    pending_navigate_ = std::move(request);
     return;
   }
 
@@ -353,7 +353,7 @@ void Frame::StartNavigate(mojo::URLRequestPtr request) {
   // We need a Window to navigate. When we get the Window we'll complete the
   // navigation.
   if (!window_) {
-    pending_navigate_ = request.Pass();
+    pending_navigate_ = std::move(request);
     return;
   }
 
@@ -366,9 +366,10 @@ void Frame::StartNavigate(mojo::URLRequestPtr request) {
   base::TimeTicks navigation_start_time =
       base::TimeTicks::FromInternalValue(request->originating_time_ticks);
   tree_->delegate_->CanNavigateFrame(
-      this, request.Pass(), base::Bind(&Frame::OnCanNavigateFrame,
-                                       navigate_weak_ptr_factory_.GetWeakPtr(),
-                                       requested_url, navigation_start_time));
+      this, std::move(request),
+      base::Bind(&Frame::OnCanNavigateFrame,
+                 navigate_weak_ptr_factory_.GetWeakPtr(), requested_url,
+                 navigation_start_time));
 }
 
 void Frame::OnCanNavigateFrame(
@@ -389,8 +390,8 @@ void Frame::OnCanNavigateFrame(
     // already
     // and ends up reusing it).
     DCHECK(!window_tree_client);
-    ChangeClient(frame_client, user_data.Pass(), window_tree_client.Pass(),
-                 app_id, navigation_start_time);
+    ChangeClient(frame_client, std::move(user_data),
+                 std::move(window_tree_client), app_id, navigation_start_time);
   } else {
     waiting_for_on_will_navigate_ack_ = true;
     DCHECK(window_tree_client);
@@ -488,7 +489,8 @@ void Frame::PostMessageEventToFrame(uint32_t target_frame_id,
       !tree_->delegate_->CanPostMessageEventToFrame(this, target, event.get()))
     return;
 
-  target->frame_client_->OnPostMessageEvent(id_, target_frame_id, event.Pass());
+  target->frame_client_->OnPostMessageEvent(id_, target_frame_id,
+                                            std::move(event));
 }
 
 void Frame::LoadingStateChanged(bool loading, double progress) {
@@ -553,7 +555,7 @@ void Frame::OnCreatedFrame(
   }
 
   Frame* child_frame = tree_->CreateChildFrame(
-      this, frame_request.Pass(), client.Pass(), frame_id, app_id_,
+      this, std::move(frame_request), std::move(client), frame_id, app_id_,
       client_properties.To<ClientPropertyMap>());
   child_frame->embedded_connection_id_ = embedded_connection_id_;
 }
@@ -569,12 +571,12 @@ void Frame::RequestNavigate(mojom::NavigationTargetType target_type,
       return;
     }
     if (target_frame != tree_->root()) {
-      target_frame->StartNavigate(request.Pass());
+      target_frame->StartNavigate(std::move(request));
       return;
     }
     // Else case if |target_frame| == root. Treat at top level request.
   }
-  tree_->delegate_->NavigateTopLevel(this, request.Pass());
+  tree_->delegate_->NavigateTopLevel(this, std::move(request));
 }
 
 void Frame::DidNavigateLocally(const mojo::String& url) {

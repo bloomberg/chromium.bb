@@ -4,6 +4,8 @@
 
 #include "components/scheduler/child/scheduler_tqm_delegate_impl.h"
 
+#include <utility>
+
 namespace scheduler {
 
 // static
@@ -11,7 +13,7 @@ scoped_refptr<SchedulerTqmDelegateImpl> SchedulerTqmDelegateImpl::Create(
     base::MessageLoop* message_loop,
     scoped_ptr<base::TickClock> time_source) {
   return make_scoped_refptr(
-      new SchedulerTqmDelegateImpl(message_loop, time_source.Pass()));
+      new SchedulerTqmDelegateImpl(message_loop, std::move(time_source)));
 }
 
 SchedulerTqmDelegateImpl::SchedulerTqmDelegateImpl(
@@ -19,7 +21,7 @@ SchedulerTqmDelegateImpl::SchedulerTqmDelegateImpl(
     scoped_ptr<base::TickClock> time_source)
     : message_loop_(message_loop),
       message_loop_task_runner_(message_loop->task_runner()),
-      time_source_(time_source.Pass()) {}
+      time_source_(std::move(time_source)) {}
 
 SchedulerTqmDelegateImpl::~SchedulerTqmDelegateImpl() {
   RestoreDefaultTaskRunner();
