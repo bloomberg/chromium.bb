@@ -50,6 +50,8 @@ TEST_F(EmailDetectorTest, FindEmail) {
   FindAndCheckEmail("@", "");
   FindAndCheckEmail("Just bob @google.com", "");
   FindAndCheckEmail("Why not call larry@google and ask him.", "");
+  FindAndCheckEmail("Lets test invalid invalid@email..com address", "");
+  FindAndCheckEmail("Invalid dots are bad invalid@.email.com address", "");
 }
 
 }  // namespace content

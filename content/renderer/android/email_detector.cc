@@ -21,7 +21,8 @@ const size_t kMaximumEmailLength = 254;
 // disallowed) in order to avoid false positives.
 // Delimiters are word boundaries to allow punctuation, quote marks etc. around
 // the address.
-const char kEmailRegex[] = "\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}\\b";
+const char kEmailRegex[] =
+    "\\b[A-Z0-9._%+-]+@[A-Z0-9-]+(\\.[A-Z0-9-]+)*(\\.[A-Z]{2,6})\\b";
 
 }  // anonymous namespace
 
