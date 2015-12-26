@@ -2477,8 +2477,7 @@ TEST_F(TabStripModelTest, TabBlockedState) {
           reinterpret_cast<gfx::NativeWindow>(0), modal_dialog_manager);
   modal_dialog_manager->ShowDialogWithManager(
       reinterpret_cast<gfx::NativeWindow>(0),
-      scoped_ptr<web_modal::SingleWebContentsDialogManager>(
-          native_manager).Pass());
+      scoped_ptr<web_modal::SingleWebContentsDialogManager>(native_manager));
   EXPECT_TRUE(strip_src.IsTabBlocked(1));
 
   // Detach the tab.

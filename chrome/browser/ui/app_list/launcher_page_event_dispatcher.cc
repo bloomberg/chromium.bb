@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/launcher_page_event_dispatcher.h"
 
+#include <utility>
+
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/launcher_page.h"
@@ -39,7 +41,7 @@ void LauncherPageEventDispatcher::PopSubpage() {
 void LauncherPageEventDispatcher::DispatchEvent(
     scoped_ptr<extensions::Event> event) {
   extensions::EventRouter::Get(profile_)
-      ->DispatchEventToExtension(extension_id_, event.Pass());
+      ->DispatchEventToExtension(extension_id_, std::move(event));
 }
 
 }  // namespace app_list

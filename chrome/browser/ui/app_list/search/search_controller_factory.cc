@@ -119,7 +119,7 @@ scoped_ptr<SearchController> CreateSearchController(
   }
 #endif
 
-  return controller.Pass();
+  return controller;
 }
 
 }  // namespace app_list

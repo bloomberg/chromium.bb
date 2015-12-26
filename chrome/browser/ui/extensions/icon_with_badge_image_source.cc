@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
@@ -109,7 +110,7 @@ void IconWithBadgeImageSource::SetIcon(const gfx::Image& icon) {
 }
 
 void IconWithBadgeImageSource::SetBadge(scoped_ptr<Badge> badge) {
-  badge_ = badge.Pass();
+  badge_ = std::move(badge);
 }
 
 void IconWithBadgeImageSource::Draw(gfx::Canvas* canvas) {

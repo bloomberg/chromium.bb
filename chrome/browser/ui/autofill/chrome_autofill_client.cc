@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -200,7 +202,7 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
   autofill::SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
   autofill::SaveCardBubbleControllerImpl* controller =
       autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents());
-  controller->ShowBubbleForUpload(callback, legal_message.Pass());
+  controller->ShowBubbleForUpload(callback, std::move(legal_message));
 #endif
 }
 

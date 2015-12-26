@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/search/new_tab_page_interceptor_service.h"
 
+#include <utility>
+
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -120,5 +122,5 @@ NewTabPageInterceptorService::CreateInterceptor() {
   scoped_ptr<NewTabPageInterceptor> interceptor(
       new NewTabPageInterceptor(search::GetNewTabPageURL(profile_)));
   interceptor_ = interceptor->GetWeakPtr();
-  return interceptor.Pass();
+  return std::move(interceptor);
 }

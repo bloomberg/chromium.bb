@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/policy_material_design_ui.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
@@ -77,7 +78,7 @@ void PolicyMaterialDesignUIHandler::AddPolicyName(
     if (tags[i] != policy::RISK_TAG_NONE)
       list->AppendString(kPolicyRiskTags[tags[i]].key);
   }
-  names->Set(name, list.Pass());
+  names->Set(name, std::move(list));
 }
 
 void PolicyMaterialDesignUIHandler::SendPolicyNames() const {

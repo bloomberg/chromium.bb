@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/search/instant_controller.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
@@ -63,7 +64,7 @@ void EnsureSearchTermsAreSet(content::WebContents* contents,
           std::string(),
           contents->GetBrowserContext());
   transient->SetExtraData(sessions::kSearchTermsKey, search_terms);
-  controller->SetTransientEntry(transient.Pass());
+  controller->SetTransientEntry(std::move(transient));
 
   SearchTabHelper::FromWebContents(contents)->NavigationEntryUpdated();
 }

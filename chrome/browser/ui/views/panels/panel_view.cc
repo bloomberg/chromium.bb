@@ -5,8 +5,9 @@
 #include "chrome/browser/ui/views/panels/panel_view.h"
 
 #include <stddef.h>
-
 #include <map>
+#include <utility>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -333,7 +334,7 @@ PanelView::PanelView(Panel* panel, const gfx::Rect& bounds, bool always_on_top)
           window_->GetNativeView()->GetHost()->GetAcceleratedWidget());
   scoped_ptr<ui::EventHandler> resizer(
       new X11PanelResizer(panel_.get(), window_->GetNativeWindow()));
-  host->SwapNonClientEventHandler(resizer.Pass());
+  host->SwapNonClientEventHandler(std::move(resizer));
 #endif
 }
 

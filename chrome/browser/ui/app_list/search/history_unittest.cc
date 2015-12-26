@@ -127,7 +127,7 @@ class SearchHistoryTest : public testing::Test {
   }
 
   size_t GetKnownResults(const std::string& query) {
-    known_results_ = history()->GetKnownResults(query).Pass();
+    known_results_ = history()->GetKnownResults(query);
     return known_results_->size();
   }
 

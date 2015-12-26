@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/extensions/extension_installed_bubble.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -47,7 +48,7 @@ class ExtensionInstalledBubbleObserver
  public:
   explicit ExtensionInstalledBubbleObserver(
       scoped_ptr<ExtensionInstalledBubble> bubble)
-      : bubble_(bubble.Pass()),
+      : bubble_(std::move(bubble)),
         extension_registry_observer_(this),
         animation_wait_retries_(0),
         weak_factory_(this) {
@@ -115,7 +116,7 @@ class ExtensionInstalledBubbleObserver
     if (bubble_->ShouldShow()) {
       // Must be 2 lines because the manager will take ownership of bubble.
       BubbleManager* manager = bubble_->browser()->GetBubbleManager();
-      manager->ShowBubble(bubble_.Pass());
+      manager->ShowBubble(std::move(bubble_));
       delete this;
       return;
     }
@@ -168,7 +169,7 @@ scoped_ptr<extensions::Command> GetCommand(
   }
   if (has_command)
     result.reset(new extensions::Command(command));
-  return result.Pass();
+  return result;
 }
 
 }  // namespace

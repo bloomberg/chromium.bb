@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
 
 #include <stddef.h>
-
 #include <algorithm>
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -381,7 +381,7 @@ scoped_ptr<base::DictionaryValue> GetChooserExceptionForPage(
     exception->SetString(kObjectName, name);
     exception->Set(kObject, object->CreateDeepCopy());
   }
-  return exception.Pass();
+  return exception;
 }
 
 // Returns true whenever the |extension| is hosted and has |permission|.
@@ -1184,7 +1184,7 @@ void ContentSettingsHandler::UpdateChooserExceptionsViewFromModel(
   base::ListValue exceptions;
   for (auto& one_provider_exceptions : all_provider_exceptions) {
     for (auto& exception : one_provider_exceptions)
-      exceptions.Append(exception.Pass());
+      exceptions.Append(std::move(exception));
   }
 
   base::StringValue type_string(chooser_type.name);
@@ -1424,7 +1424,7 @@ void ContentSettingsHandler::GetExceptionsFromHostContentSettingsMap(
 
   for (auto& one_provider_exceptions : all_provider_exceptions) {
     for (auto& exception : one_provider_exceptions)
-      exceptions->Append(exception.Pass());
+      exceptions->Append(std::move(exception));
   }
 }
 

@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_distiller.h"
 
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -46,7 +46,7 @@ class PrintPreviewDistiller::WebContentsDelegateImpl
                                    scoped_ptr<base::DictionaryValue> settings,
                                    const base::Closure on_failed_callback)
       : content::WebContentsObserver(web_contents),
-        settings_(settings.Pass()),
+        settings_(std::move(settings)),
         on_failed_callback_(on_failed_callback) {
     web_contents->SetDelegate(this);
 
@@ -224,7 +224,7 @@ PrintPreviewDistiller::PrintPreviewDistiller(
   content::SessionStorageNamespace* session_storage_namespace =
       source_web_contents->GetController().GetDefaultSessionStorageNamespace();
   CreateDestinationWebContents(session_storage_namespace, source_web_contents,
-                               settings.Pass(), on_failed_callback);
+                               std::move(settings), on_failed_callback);
 
   DCHECK(web_contents_);
   ::DistillAndView(source_web_contents, web_contents_.get());
@@ -244,7 +244,7 @@ void PrintPreviewDistiller::CreateDestinationWebContents(
       web_contents_.get());
 
   web_contents_delegate_.reset(new WebContentsDelegateImpl(
-      web_contents_.get(), settings.Pass(), on_failed_callback));
+      web_contents_.get(), std::move(settings), on_failed_callback));
 
   // Set the size of the distilled WebContents.
   ResizeWebContents(web_contents_.get(), gfx::Size(1, 1));

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/external_protocol_dialog.h"
 
+#include <utility>
+
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -43,8 +45,8 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
   }
 
   // Windowing system takes ownership.
-  new ExternalProtocolDialog(
-      delegate.Pass(), render_process_host_id, routing_id);
+  new ExternalProtocolDialog(std::move(delegate), render_process_host_id,
+                             routing_id);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -125,7 +127,7 @@ ExternalProtocolDialog::ExternalProtocolDialog(
     scoped_ptr<const ProtocolDialogDelegate> delegate,
     int render_process_host_id,
     int routing_id)
-    : delegate_(delegate.Pass()),
+    : delegate_(std::move(delegate)),
       render_process_host_id_(render_process_host_id),
       routing_id_(routing_id),
       creation_time_(base::TimeTicks::Now()) {

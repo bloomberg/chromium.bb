@@ -110,7 +110,7 @@ scoped_ptr<LabelButtonBorder> ToolbarActionView::CreateDefaultBorder() const {
   scoped_ptr<LabelButtonBorder> border = LabelButton::CreateDefaultBorder();
   border->set_insets(gfx::Insets(kBorderInset, kBorderInset,
                                  kBorderInset, kBorderInset));
-  return border.Pass();
+  return border;
 }
 
 void ToolbarActionView::OnMouseEntered(const ui::MouseEvent& event) {

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_split.h"
@@ -143,7 +145,7 @@ InstructionView::InstructionView(const base::string16& text,
   // The key name has a border around it.
   scoped_ptr<views::Border> border(views::Border::CreateRoundedRectBorder(
       kKeyNameBorderPx, kKeyNameCornerRadius, foreground_color));
-  key_name_->SetBorder(border.Pass());
+  key_name_->SetBorder(std::move(border));
   AddChildView(key_name_);
 
   after_key_ = new views::Label(base::string16(), font_list);
@@ -252,7 +254,7 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
   scoped_ptr<views::BubbleBorder> bubble_border(new views::BubbleBorder(
       views::BubbleBorder::NONE, shadow_type, background_color));
   set_background(new views::BubbleBackground(bubble_border.get()));
-  SetBorder(bubble_border.Pass());
+  SetBorder(std::move(bubble_border));
   SetFocusable(false);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

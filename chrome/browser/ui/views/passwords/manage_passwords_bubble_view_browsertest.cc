@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_samples.h"
@@ -314,8 +316,8 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, ChooseCredential) {
                           net::URLRequestStatus::FAILED);
   EXPECT_CALL(url_callback, OnRequestDone(icon_url));
 
-  SetupChooseCredentials(local_credentials.Pass(), federated_credentials.Pass(),
-                         origin);
+  SetupChooseCredentials(std::move(local_credentials),
+                         std::move(federated_credentials), origin);
   EXPECT_TRUE(IsBubbleShowing());
   EXPECT_CALL(*this, OnChooseCredential(
       Field(&password_manager::CredentialInfo::type,
@@ -338,8 +340,8 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, ChooseCredentialNoFocus) {
   content::RunAllPendingInMessageLoop();
 
   EXPECT_FALSE(browser()->window()->IsActive());
-  SetupChooseCredentials(local_credentials.Pass(), federated_credentials.Pass(),
-                         origin);
+  SetupChooseCredentials(std::move(local_credentials),
+                         std::move(federated_credentials), origin);
   EXPECT_TRUE(IsBubbleShowing());
 }
 
@@ -365,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSignin) {
                           net::URLRequestStatus::FAILED);
   EXPECT_CALL(url_callback, OnRequestDone(icon_url));
 
-  SetupAutoSignin(local_credentials.Pass());
+  SetupAutoSignin(std::move(local_credentials));
   EXPECT_TRUE(IsBubbleShowing());
 
   ManagePasswordsBubbleView::CloseBubble();
@@ -394,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSigninNoFocus) {
   // Get rid of the warm welcome which makes the bubble sticky.
   password_bubble_experiment::RecordAutoSignInPromptFirstRunExperienceWasShown(
       browser()->profile()->GetPrefs());
-  SetupAutoSignin(local_credentials.Pass());
+  SetupAutoSignin(std::move(local_credentials));
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(IsBubbleShowing());
 

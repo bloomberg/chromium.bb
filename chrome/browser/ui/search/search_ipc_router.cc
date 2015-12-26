@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/search/search_ipc_router.h"
 
+#include <utility>
+
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/common/render_messages.h"
@@ -30,10 +32,11 @@ bool IsProviderValid(const base::string16& provider) {
 }  // namespace
 
 SearchIPCRouter::SearchIPCRouter(content::WebContents* web_contents,
-                                 Delegate* delegate, scoped_ptr<Policy> policy)
+                                 Delegate* delegate,
+                                 scoped_ptr<Policy> policy)
     : WebContentsObserver(web_contents),
       delegate_(delegate),
-      policy_(policy.Pass()),
+      policy_(std::move(policy)),
       commit_counter_(0),
       is_active_tab_(false) {
   DCHECK(web_contents);

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/media/webrtc_logs_ui.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -194,7 +195,7 @@ void WebRtcLogsDOMHandler::UpdateUI() {
       value_w = base::string16(base::ASCIIToUTF16("(unknown time)"));
     upload->SetString("capture_time", value_w);
 
-    upload_list.Append(upload.Pass());
+    upload_list.Append(std::move(upload));
   }
 
   base::StringValue version(version_info::GetVersionNumber());

@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
 #include <stddef.h>
-
 #include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/ash_switches.h"
@@ -249,7 +249,7 @@ class TestV2AppLauncherItemController : public LauncherItemController {
         new ChromeLauncherAppMenuItem(base::string16(), NULL, false));
     items.push_back(
         new ChromeLauncherAppMenuItem(base::string16(), NULL, false));
-    return items.Pass();
+    return items;
   }
   ui::MenuModel* CreateContextMenu(aura::Window* root_window) override {
     return NULL;
@@ -652,7 +652,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     aura::client::ParentWindowWithContext(window.get(), GetContext(),
                                           gfx::Rect(200, 200));
 
-    return new TestBrowserWindowAura(window.Pass());
+    return new TestBrowserWindowAura(std::move(window));
   }
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerTest);

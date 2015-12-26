@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 
 #include <stddef.h>
-
 #include <limits>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/debug/alias.h"
@@ -608,7 +608,7 @@ void Tab::StartPulse() {
 }
 
 void Tab::StopPulse() {
-  StopAndDeleteAnimation(pulse_animation_.Pass());
+  StopAndDeleteAnimation(std::move(pulse_animation_));
 }
 
 void Tab::StartPinnedTabTitleAnimation() {
@@ -641,7 +641,7 @@ void Tab::StartPinnedTabTitleAnimation() {
 }
 
 void Tab::StopPinnedTabTitleAnimation() {
-  StopAndDeleteAnimation(pinned_title_change_animation_.Pass());
+  StopAndDeleteAnimation(std::move(pinned_title_change_animation_));
 }
 
 int Tab::GetWidthOfLargestSelectableRegion() const {

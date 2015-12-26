@@ -46,7 +46,7 @@ ScopedVector<const autofill::PasswordForm> DeepCopyMapToVector(
   ret.reserve(password_form_map.size());
   for (const auto& form_pair : password_form_map)
     ret.push_back(new autofill::PasswordForm(*form_pair.second));
-  return ret.Pass();
+  return ret;
 }
 
 ScopedVector<const autofill::PasswordForm> ConstifyVector(
@@ -54,7 +54,7 @@ ScopedVector<const autofill::PasswordForm> ConstifyVector(
   ScopedVector<const autofill::PasswordForm> ret;
   ret.assign(forms->begin(), forms->end());
   forms->weak_clear();
-  return ret.Pass();
+  return ret;
 }
 
 // Updates one form in |forms| that has the same unique key as |updated_form|.
@@ -99,7 +99,7 @@ ManagePasswordsState::~ManagePasswordsState() {}
 void ManagePasswordsState::OnPendingPassword(
       scoped_ptr<password_manager::PasswordFormManager> form_manager) {
   ClearData();
-  form_manager_ = form_manager.Pass();
+  form_manager_ = std::move(form_manager);
   current_forms_weak_ = ScopedPtrMapToVector(form_manager_->best_matches());
   origin_ = form_manager_->pending_credentials().origin;
   SetState(password_manager::ui::PENDING_PASSWORD_STATE);
@@ -108,7 +108,7 @@ void ManagePasswordsState::OnPendingPassword(
 void ManagePasswordsState::OnUpdatePassword(
     scoped_ptr<password_manager::PasswordFormManager> form_manager) {
   ClearData();
-  form_manager_ = form_manager.Pass();
+  form_manager_ = std::move(form_manager);
   current_forms_weak_ = ScopedPtrMapToVector(form_manager_->best_matches());
   origin_ = form_manager_->pending_credentials().origin;
   SetState(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);

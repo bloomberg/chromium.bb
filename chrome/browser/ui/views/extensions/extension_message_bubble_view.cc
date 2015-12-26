@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/extensions/extension_message_bubble_view.h"
 
+#include <utility>
+
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -43,7 +45,7 @@ ExtensionMessageBubbleView::ExtensionMessageBubbleView(
     views::BubbleBorder::Arrow arrow_location,
     scoped_ptr<extensions::ExtensionMessageBubbleController> controller)
     : BubbleDelegateView(anchor_view, arrow_location),
-      controller_(controller.Pass()),
+      controller_(std::move(controller)),
       anchor_view_(anchor_view),
       headline_(NULL),
       learn_more_(NULL),

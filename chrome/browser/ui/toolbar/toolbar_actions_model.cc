@@ -164,7 +164,7 @@ ScopedVector<ToolbarActionViewController> ToolbarActionsModel::CreateActions(
   for (const ToolbarItem& item : toolbar_items())
     action_list.push_back(CreateActionForItem(browser, bar, item).release());
 
-  return action_list.Pass();
+  return action_list;
 }
 
 scoped_ptr<ToolbarActionViewController>
@@ -187,15 +187,14 @@ ToolbarActionsModel::CreateActionForItem(Browser* browser,
     case COMPONENT_ACTION: {
       DCHECK(use_redesign_);
       result = ComponentToolbarActionsFactory::GetInstance()
-                   ->GetComponentToolbarActionForId(item.id, browser, bar)
-                   .Pass();
+                   ->GetComponentToolbarActionForId(item.id, browser, bar);
       break;
     }
     case UNKNOWN_ACTION:
       NOTREACHED();  // Should never have an UNKNOWN_ACTION in toolbar_items.
       break;
   }
-  return result.Pass();
+  return result;
 }
 
 void ToolbarActionsModel::OnExtensionActionVisibilityChanged(

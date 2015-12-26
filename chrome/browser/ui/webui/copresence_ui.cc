@@ -53,7 +53,7 @@ scoped_ptr<WebUIDataSource> CreateDataSource() {
   data_source->AddResourcePath("copresence.js", IDR_COPRESENCE_JS);
   data_source->SetDefaultResource(IDR_COPRESENCE_HTML);
 
-  return data_source.Pass();
+  return data_source;
 }
 
 }  // namespace

@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
+#include "chrome/browser/ui/app_list/search/people/people_provider.h"
 
+#include <stddef.h>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -13,7 +15,6 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/app_list/search/people/people_provider.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -223,7 +224,7 @@ class PeopleProviderTest : public InProcessBrowserTest {
     response->set_code(net::HTTP_OK);
     response->set_content(mock_server_response_);
 
-    return response.Pass();
+    return std::move(response);
   }
 
   void OnSearchResultsFetched() {

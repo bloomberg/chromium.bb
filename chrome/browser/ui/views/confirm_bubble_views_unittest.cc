@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/confirm_bubble_views.h"
 
+#include <utility>
+
 #include "chrome/browser/ui/confirm_bubble.h"
 #include "chrome/browser/ui/test/test_confirm_bubble_model.h"
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
@@ -30,7 +32,7 @@ TEST_F(ConfirmBubbleViewsTest, CreateAndClose) {
   bool model_deleted = false;
   scoped_ptr<TestConfirmBubbleModel> model(
       new TestConfirmBubbleModel(&model_deleted, NULL, NULL, NULL));
-  ConfirmBubbleViews* bubble = new ConfirmBubbleViews(model.Pass());
+  ConfirmBubbleViews* bubble = new ConfirmBubbleViews(std::move(model));
   gfx::NativeWindow parent = parent_widget->GetNativeWindow();
   constrained_window::CreateBrowserModalDialogViews(bubble, parent)->Show();
 

@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/libgtk2ui/gtk2_ui.h"
 
 #include <math.h>
-#include <set>
-
 #include <pango/pango.h>
+#include <set>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
@@ -728,7 +728,7 @@ scoped_ptr<views::Border> Gtk2UI::CreateNativeBorder(
     views::LabelButton* owning_button,
     scoped_ptr<views::LabelButtonBorder> border) {
   if (owning_button->GetNativeTheme() != NativeThemeGtk2::instance())
-    return border.Pass();
+    return std::move(border);
 
   scoped_ptr<views::LabelButtonAssetBorder> gtk_border(
       new views::LabelButtonAssetBorder(owning_button->style()));
@@ -782,7 +782,8 @@ scoped_ptr<views::Border> Gtk2UI::CreateNativeBorder(
     gtk_border->SetPainter(paintstate[i].focus, paintstate[i].state, painter);
   }
 
-  return gtk_border.Pass();;
+  return std::move(gtk_border);
+  ;
 }
 
 void Gtk2UI::AddWindowButtonOrderObserver(

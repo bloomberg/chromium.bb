@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -60,11 +61,8 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
   // Creates a bookmark bubble view.
   void CreateBubbleView() {
     scoped_ptr<BubbleSyncPromoDelegate> delegate;
-    bubble_.reset(new BookmarkBubbleView(NULL,
-                                         NULL,
-                                         delegate.Pass(),
-                                         profile(),
-                                         GURL(kTestBookmarkURL),
+    bubble_.reset(new BookmarkBubbleView(NULL, NULL, std::move(delegate),
+                                         profile(), GURL(kTestBookmarkURL),
                                          true));
   }
 

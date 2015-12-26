@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
@@ -21,8 +22,7 @@ const char kSelectedMenuItemIndexHistogramName[] =
 
 LauncherApplicationMenuItemModel::LauncherApplicationMenuItemModel(
     ChromeLauncherAppMenuItems item_list)
-    : ash::ShelfMenuModel(this),
-      launcher_items_(item_list.Pass()) {
+    : ash::ShelfMenuModel(this), launcher_items_(std::move(item_list)) {
   Build();
 }
 

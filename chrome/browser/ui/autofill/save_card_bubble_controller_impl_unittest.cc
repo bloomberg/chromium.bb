@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/macros.h"
@@ -72,7 +73,7 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
     scoped_ptr<base::DictionaryValue> legal_message =
         dictionary->CreateDeepCopy();
     controller()->ShowBubbleForUpload(base::Bind(&SaveCardCallback),
-                                      legal_message.Pass());
+                                      std::move(legal_message));
   }
 
   // Returns true if lines are the same.

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_view_state_transition.h"
@@ -143,9 +145,8 @@ class TranslateBubbleViewTest : public views::ViewsTestBase {
         TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE);
     scoped_ptr<TranslateBubbleModel> model(mock_model_);
     bubble_ = new TranslateBubbleView(anchor_widget_->GetContentsView(),
-                                      model.Pass(),
-                                      translate::TranslateErrors::NONE,
-                                      NULL);
+                                      std::move(model),
+                                      translate::TranslateErrors::NONE, NULL);
     views::BubbleDelegateView::CreateBubble(bubble_)->Show();
   }
 

@@ -50,7 +50,7 @@ class PasswordGenerationPopupViewTest : public InProcessBrowserTest {
   }
 
   scoped_ptr<PasswordGenerationPopupViewTester> GetViewTester() {
-    return PasswordGenerationPopupViewTester::For(controller_->view()).Pass();
+    return PasswordGenerationPopupViewTester::For(controller_->view());
   }
 
  protected:

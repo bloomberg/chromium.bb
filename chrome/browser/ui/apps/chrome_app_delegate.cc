@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
@@ -84,7 +86,7 @@ class OpenURLFromTabBasedOnBrowserDefault
  public:
   OpenURLFromTabBasedOnBrowserDefault(scoped_ptr<content::WebContents> source,
                                       const content::OpenURLParams& params)
-      : source_(source.Pass()), params_(params) {}
+      : source_(std::move(source)), params_(params) {}
 
   // Opens a URL when called with the result of if this is the default system
   // browser or not.
@@ -124,7 +126,7 @@ void ChromeAppDelegate::RelinquishKeepAliveAfterTimeout(
   // ChromeAppDelegate which also resets the ScopedKeepAlive. To avoid this,
   // move the ScopedKeepAlive out to here and let it fall out of scope.
   if (chrome_app_delegate.get() && chrome_app_delegate->is_hidden_)
-    scoped_ptr<ScopedKeepAlive>(chrome_app_delegate->keep_alive_.Pass());
+    scoped_ptr<ScopedKeepAlive>(std::move(chrome_app_delegate->keep_alive_));
 }
 
 class ChromeAppDelegate::NewWindowContentsDelegate
@@ -155,7 +157,7 @@ ChromeAppDelegate::NewWindowContentsDelegate::OpenURLFromTab(
     scoped_refptr<ShellIntegration::DefaultWebClientWorker>
         check_if_default_browser_worker =
             new ShellIntegration::DefaultBrowserWorker(
-                new OpenURLFromTabBasedOnBrowserDefault(owned_source.Pass(),
+                new OpenURLFromTabBasedOnBrowserDefault(std::move(owned_source),
                                                         params));
     // Object lifetime notes: The OpenURLFromTabBasedOnBrowserDefault is owned
     // by check_if_default_browser_worker. StartCheckIsDefault() takes lifetime
@@ -169,7 +171,7 @@ ChromeAppDelegate::NewWindowContentsDelegate::OpenURLFromTab(
 ChromeAppDelegate::ChromeAppDelegate(scoped_ptr<ScopedKeepAlive> keep_alive)
     : has_been_shown_(false),
       is_hidden_(true),
-      keep_alive_(keep_alive.Pass()),
+      keep_alive_(std::move(keep_alive)),
       new_window_contents_delegate_(new NewWindowContentsDelegate()),
       weak_factory_(this) {
   registrar_.Add(this,

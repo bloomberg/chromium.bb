@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
 
+#include <utility>
+
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui_handler.h"
 #include "chrome/common/url_constants.h"
@@ -31,5 +33,5 @@ OmniboxUI::~OmniboxUI() {}
 void OmniboxUI::BindUIHandler(
     mojo::InterfaceRequest<OmniboxUIHandlerMojo> request) {
   omnibox_ui_handler_.reset(
-      new OmniboxUIHandler(Profile::FromWebUI(web_ui()), request.Pass()));
+      new OmniboxUIHandler(Profile::FromWebUI(web_ui()), std::move(request)));
 }

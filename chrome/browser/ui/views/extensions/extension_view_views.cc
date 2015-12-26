@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/extensions/extension_view_views.h"
 
+#include <utility>
+
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -140,7 +142,7 @@ scoped_ptr<ExtensionView> ExtensionViewHost::CreateExtensionView(
   // We own |view_|, so don't auto delete when it's removed from the view
   // hierarchy.
   view->set_owned_by_client();
-  return view.Pass();
+  return std::move(view);
 }
 
 }  // namespace extensions

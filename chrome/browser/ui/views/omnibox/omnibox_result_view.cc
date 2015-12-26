@@ -475,7 +475,7 @@ scoped_ptr<gfx::RenderText> OmniboxResultView::CreateRenderText(
   render_text->SetElideBehavior(gfx::ELIDE_TAIL);
   render_text->SetFontList(font_list_);
   render_text->SetText(text);
-  return render_text.Pass();
+  return render_text;
 }
 
 scoped_ptr<gfx::RenderText> OmniboxResultView::CreateClassifiedRenderText(
@@ -519,7 +519,7 @@ scoped_ptr<gfx::RenderText> OmniboxResultView::CreateClassifiedRenderText(
     }
     render_text->ApplyColor(GetColor(GetState(), color_kind), current_range);
   }
-  return render_text.Pass();
+  return render_text;
 }
 
 int OmniboxResultView::GetMatchContentsWidth() const {
@@ -771,7 +771,7 @@ scoped_ptr<gfx::RenderText> OmniboxResultView::CreateAnswerLine(
     AppendAnswerText(destination.get(), space + text_field->text(),
                      text_field->type());
   }
-  return destination.Pass();
+  return destination;
 }
 
 void OmniboxResultView::AppendAnswerText(gfx::RenderText* destination,

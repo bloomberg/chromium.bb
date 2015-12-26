@@ -90,7 +90,7 @@ class TestDownloadsListTracker : public DownloadsListTracker {
     scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
     CHECK_LE(item->GetId(), static_cast<uint64_t>(INT_MAX));
     dict->SetInteger("id", item->GetId());
-    return dict.Pass();
+    return dict;
   }
 };
 

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -66,7 +68,7 @@ ManagePasswordsUIController::~ManagePasswordsUIController() {}
 void ManagePasswordsUIController::OnPasswordSubmitted(
     scoped_ptr<PasswordFormManager> form_manager) {
   bool show_bubble = !form_manager->IsBlacklisted();
-  passwords_data_.OnPendingPassword(form_manager.Pass());
+  passwords_data_.OnPendingPassword(std::move(form_manager));
   if (show_bubble) {
     password_manager::InteractionsStats* stats = GetCurrentInteractionStats();
     const int show_threshold =
@@ -80,7 +82,7 @@ void ManagePasswordsUIController::OnPasswordSubmitted(
 
 void ManagePasswordsUIController::OnUpdatePasswordSubmitted(
     scoped_ptr<PasswordFormManager> form_manager) {
-  passwords_data_.OnUpdatePassword(form_manager.Pass());
+  passwords_data_.OnUpdatePassword(std::move(form_manager));
   base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
   UpdateBubbleAndIconVisibility();
 }
@@ -91,9 +93,8 @@ bool ManagePasswordsUIController::OnChooseCredentials(
     const GURL& origin,
     base::Callback<void(const password_manager::CredentialInfo&)> callback) {
   DCHECK(!local_credentials.empty() || !federated_credentials.empty());
-  passwords_data_.OnRequestCredentials(local_credentials.Pass(),
-                                       federated_credentials.Pass(),
-                                       origin);
+  passwords_data_.OnRequestCredentials(
+      std::move(local_credentials), std::move(federated_credentials), origin);
   base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
   UpdateBubbleAndIconVisibility();
   if (!should_pop_up_bubble_) {
@@ -107,14 +108,14 @@ bool ManagePasswordsUIController::OnChooseCredentials(
 void ManagePasswordsUIController::OnAutoSignin(
     ScopedVector<autofill::PasswordForm> local_forms) {
   DCHECK(!local_forms.empty());
-  passwords_data_.OnAutoSignin(local_forms.Pass());
+  passwords_data_.OnAutoSignin(std::move(local_forms));
   base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
   UpdateBubbleAndIconVisibility();
 }
 
 void ManagePasswordsUIController::OnAutomaticPasswordSave(
     scoped_ptr<PasswordFormManager> form_manager) {
-  passwords_data_.OnAutomaticPasswordSave(form_manager.Pass());
+  passwords_data_.OnAutomaticPasswordSave(std::move(form_manager));
   base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
   UpdateBubbleAndIconVisibility();
 }

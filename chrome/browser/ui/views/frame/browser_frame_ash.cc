@@ -63,9 +63,8 @@ BrowserFrameAsh::BrowserFrameAsh(BrowserFrame* browser_frame,
   Browser* browser = browser_view->browser();
   ash::wm::WindowState* window_state =
       ash::wm::GetWindowState(GetNativeWindow());
-  window_state->SetDelegate(
-      scoped_ptr<ash::wm::WindowStateDelegate>(
-          new BrowserWindowStateDelegate(browser)).Pass());
+  window_state->SetDelegate(scoped_ptr<ash::wm::WindowStateDelegate>(
+      new BrowserWindowStateDelegate(browser)));
 
   // Turn on auto window management if we don't need an explicit bounds.
   // This way the requested bounds are honored.

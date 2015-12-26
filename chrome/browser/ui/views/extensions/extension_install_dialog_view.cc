@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/views/extensions/extension_install_dialog_view.h"
 
 #include <stddef.h>
-
 #include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -107,11 +107,9 @@ void ShowExtensionInstallDialogImpl(
     scoped_ptr<ExtensionInstallPrompt::Prompt> prompt) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   bool use_tab_modal_dialog = prompt->ShouldUseTabModalDialog();
-  ExtensionInstallDialogView* dialog =
-      new ExtensionInstallDialogView(show_params->profile(),
-                                     show_params->GetParentWebContents(),
-                                     delegate,
-                                     prompt.Pass());
+  ExtensionInstallDialogView* dialog = new ExtensionInstallDialogView(
+      show_params->profile(), show_params->GetParentWebContents(), delegate,
+      std::move(prompt));
   if (use_tab_modal_dialog) {
     content::WebContents* parent_web_contents =
         show_params->GetParentWebContents();
@@ -205,7 +203,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     : profile_(profile),
       navigator_(navigator),
       delegate_(delegate),
-      prompt_(prompt.Pass()),
+      prompt_(std::move(prompt)),
       container_(NULL),
       scroll_view_(NULL),
       handled_result_(false) {

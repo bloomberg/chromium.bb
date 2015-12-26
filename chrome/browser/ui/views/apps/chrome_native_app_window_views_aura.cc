@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views_aura.h"
 
+#include <utility>
+
 #include "apps/ui/views/app_window_frame_view.h"
 #include "ash/ash_constants.h"
 #include "ash/frame/custom_frame_view_ash.h"
@@ -319,9 +321,8 @@ ChromeNativeAppWindowViewsAura::CreateNonClientFrameView(
     // Set the delegate now because CustomFrameViewAsh sets the
     // WindowStateDelegate if one is not already set.
     ash::wm::GetWindowState(GetNativeWindow())
-        ->SetDelegate(
-            scoped_ptr<ash::wm::WindowStateDelegate>(
-                new NativeAppWindowStateDelegate(app_window(), this)).Pass());
+        ->SetDelegate(scoped_ptr<ash::wm::WindowStateDelegate>(
+            new NativeAppWindowStateDelegate(app_window(), this)));
 
     if (IsFrameless())
       return CreateNonStandardAppFrame();
@@ -378,7 +379,7 @@ void ChromeNativeAppWindowViewsAura::SetFullscreen(int fullscreen_types) {
 void ChromeNativeAppWindowViewsAura::UpdateShape(scoped_ptr<SkRegion> region) {
   bool had_shape = !!shape();
 
-  ChromeNativeAppWindowViews::UpdateShape(region.Pass());
+  ChromeNativeAppWindowViews::UpdateShape(std::move(region));
 
   aura::Window* native_window = widget()->GetNativeWindow();
   if (shape() && !had_shape) {

@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
+#include "chrome/browser/ui/app_list/search/app_search_provider.h"
 
+#include <stddef.h>
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -14,7 +16,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/extension_app_model_builder.h"
-#include "chrome/browser/ui/app_list/search/app_search_provider.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_profile.h"
@@ -52,8 +53,9 @@ class AppSearchProviderTest : public AppListTestBase {
     controller_.reset(new ::test::TestAppListControllerDelegate);
     builder_.reset(new ExtensionAppModelBuilder(controller_.get()));
     builder_->InitializeWithProfile(profile_.get(), model_.get());
-    app_search_.reset(new AppSearchProvider(
-        profile_.get(), nullptr, clock.Pass(), model_->top_level_item_list()));
+    app_search_.reset(new AppSearchProvider(profile_.get(), nullptr,
+                                            std::move(clock),
+                                            model_->top_level_item_list()));
   }
 
   std::string RunQuery(const std::string& query) {

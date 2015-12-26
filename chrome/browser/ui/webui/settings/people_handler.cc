@@ -774,7 +774,7 @@ scoped_ptr<base::DictionaryValue> PeopleHandler::GetSyncStateDictionary() {
     // Cannot display signin status when running in guest mode on chromeos
     // because there is no SigninManager.
     sync_status->SetBoolean("signinAllowed", false);
-    return sync_status.Pass();
+    return sync_status;
   }
 
   sync_status->SetBoolean("supervisedUser", profile_->IsSupervised());
@@ -821,7 +821,7 @@ scoped_ptr<base::DictionaryValue> PeopleHandler::GetSyncStateDictionary() {
   sync_status->SetString("name", name);
   sync_status->SetString("iconURL", icon_url);
 
-  return sync_status.Pass();
+  return sync_status;
 }
 
 bool PeopleHandler::IsExistingWizardPresent() {

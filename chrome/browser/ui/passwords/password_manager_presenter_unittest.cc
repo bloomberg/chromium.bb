@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/passwords/password_manager_presenter.h"
+
 #include <stddef.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
-#include "chrome/browser/ui/passwords/password_manager_presenter.h"
 #include "chrome/browser/ui/passwords/password_ui_view.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
@@ -93,14 +95,14 @@ void PasswordManagerPresenterTest::AddPasswordEntry(
   form->password_element = base::ASCIIToUTF16("Passwd");
   form->password_value = base::ASCIIToUTF16(password);
   mock_controller_->GetPasswordManagerPresenter()->password_list_.push_back(
-      form.Pass());
+      std::move(form));
 }
 
 void PasswordManagerPresenterTest::AddPasswordException(const GURL& origin) {
   scoped_ptr<autofill::PasswordForm> form(new autofill::PasswordForm());
   form->origin = origin;
   mock_controller_->GetPasswordManagerPresenter()
-      ->password_exception_list_.push_back(form.Pass());
+      ->password_exception_list_.push_back(std::move(form));
 }
 
 void PasswordManagerPresenterTest::UpdateLists() {

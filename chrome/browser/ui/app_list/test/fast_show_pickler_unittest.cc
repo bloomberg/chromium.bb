@@ -79,17 +79,15 @@ TEST_F(AppListModelPicklerUnitTest, EmptyModel) {
 
 TEST_F(AppListModelPicklerUnitTest, OneItem) {
   AppListModel model;
-  model.AddItem(make_scoped_ptr(new AppListItem("abc")).Pass());
+  model.AddItem(make_scoped_ptr(new AppListItem("abc")));
   DoConsistencyChecks(&model);
 }
 
 TEST_F(AppListModelPicklerUnitTest, TwoItems) {
   AppListModel model;
-  AppListItem* app1 =
-      model.AddItem(make_scoped_ptr(new AppListItem("abc")).Pass());
+  AppListItem* app1 = model.AddItem(make_scoped_ptr(new AppListItem("abc")));
   model.SetItemNameAndShortName(app1, "hello, there", "ht");
-  AppListItem* app2 =
-      model.AddItem(make_scoped_ptr(new AppListItem("abc2")).Pass());
+  AppListItem* app2 = model.AddItem(make_scoped_ptr(new AppListItem("abc2")));
   model.SetItemNameAndShortName(app2, "hello, there 2", "ht2");
 
   DoConsistencyChecks(&model);
@@ -97,12 +95,10 @@ TEST_F(AppListModelPicklerUnitTest, TwoItems) {
 
 TEST_F(AppListModelPicklerUnitTest, Images) {
   AppListModel model;
-  AppListItem* app1 =
-      model.AddItem(make_scoped_ptr(new AppListItem("abc")).Pass());
+  AppListItem* app1 = model.AddItem(make_scoped_ptr(new AppListItem("abc")));
   model.SetItemName(app1, "hello, there");
   app1->SetIcon(MakeImage());
-  AppListItem* app2 =
-      model.AddItem(make_scoped_ptr(new AppListItem("abc2")).Pass());
+  AppListItem* app2 = model.AddItem(make_scoped_ptr(new AppListItem("abc2")));
   model.SetItemName(app2, "hello, there 2");
 
   DoConsistencyChecks(&model);
@@ -110,8 +106,7 @@ TEST_F(AppListModelPicklerUnitTest, Images) {
 
 TEST_F(AppListModelPicklerUnitTest, EmptyImage) {
   AppListModel model;
-  AppListItem* app1 =
-      model.AddItem(make_scoped_ptr(new AppListItem("abc")).Pass());
+  AppListItem* app1 = model.AddItem(make_scoped_ptr(new AppListItem("abc")));
   model.SetItemName(app1, "hello, there");
   app1->SetIcon(gfx::ImageSkia());
 

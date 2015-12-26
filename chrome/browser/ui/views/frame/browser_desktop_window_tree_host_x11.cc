@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host_x11.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -79,7 +81,7 @@ BrowserDesktopWindowTreeHostX11::BrowserDesktopWindowTreeHostX11(
       browser_view_(browser_view) {
   scoped_ptr<ui::ThemeProvider> theme_provider(
       new DesktopThemeProvider(browser_view->browser()->profile()));
-  browser_frame->SetThemeProvider(theme_provider.Pass());
+  browser_frame->SetThemeProvider(std::move(theme_provider));
   browser_frame->set_frame_type(
       browser_frame->UseCustomFrame() ? views::Widget::FRAME_TYPE_FORCE_CUSTOM
                                       : views::Widget::FRAME_TYPE_FORCE_NATIVE);

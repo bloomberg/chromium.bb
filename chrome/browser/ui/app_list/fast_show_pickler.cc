@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/fast_show_pickler.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/app_list/app_list_item.h"
@@ -165,7 +166,7 @@ scoped_ptr<AppListItem> FastShowPickler::UnpickleAppListItem(
   if (!UnpickleImage(it, &icon))
     return scoped_ptr<AppListItem>();
   result->SetIcon(icon);
-  return result.Pass();
+  return result;
 }
 
 bool FastShowPickler::PickleAppListItem(base::Pickle* pickle,
@@ -205,7 +206,7 @@ scoped_ptr<base::Pickle> FastShowPickler::PickleAppListModelForFastShow(
       return scoped_ptr<base::Pickle>();
     }
   }
-  return result.Pass();
+  return result;
 }
 
 void FastShowPickler::CopyOver(AppListModel* src, AppListModel* dest) {
@@ -214,7 +215,7 @@ void FastShowPickler::CopyOver(AppListModel* src, AppListModel* dest) {
     AppListItem* src_item = src->top_level_item_list()->item_at(i);
     scoped_ptr<AppListItem> dest_item(new AppListItem(src_item->id()));
     CopyOverItem(src_item, dest_item.get());
-    dest->AddItemToFolder(dest_item.Pass(), src_item->folder_id());
+    dest->AddItemToFolder(std::move(dest_item), src_item->folder_id());
   }
 }
 
@@ -232,12 +233,12 @@ scoped_ptr<AppListModel> FastShowPickler::UnpickleAppListModelForFastShow(
 
   scoped_ptr<AppListModel> model(new AppListModel);
   for (int i = 0; i < app_count; ++i) {
-    scoped_ptr<AppListItem> item(UnpickleAppListItem(&it).Pass());
+    scoped_ptr<AppListItem> item(UnpickleAppListItem(&it));
     if (!item)
       return scoped_ptr<AppListModel>();
     std::string folder_id = item->folder_id();
-    model->AddItemToFolder(item.Pass(), folder_id);
+    model->AddItemToFolder(std::move(item), folder_id);
   }
 
-  return model.Pass();
+  return model;
 }

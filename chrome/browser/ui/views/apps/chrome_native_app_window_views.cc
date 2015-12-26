@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "apps/ui/views/app_window_frame_view.h"
 #include "base/macros.h"
@@ -343,7 +344,7 @@ bool ChromeNativeAppWindowViews::IsFullscreenOrPending() const {
 }
 
 void ChromeNativeAppWindowViews::UpdateShape(scoped_ptr<SkRegion> region) {
-  shape_ = region.Pass();
+  shape_ = std::move(region);
   widget()->SetShape(shape() ? new SkRegion(*shape()) : nullptr);
   widget()->OnSizeConstraintsChanged();
 }

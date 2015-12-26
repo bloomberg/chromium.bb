@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui_browsertest.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -291,9 +293,9 @@ void NetInternalsTest::MessageHandler::GetNetLogFileContents(
       chrome::GetChannelString()));
   scoped_ptr<net::WriteToFileNetLogObserver> net_log_logger(
       new net::WriteToFileNetLogObserver());
-  net_log_logger->StartObserving(
-      g_browser_process->net_log(), temp_file_handle.Pass(), constants.get(),
-      nullptr);
+  net_log_logger->StartObserving(g_browser_process->net_log(),
+                                 std::move(temp_file_handle), constants.get(),
+                                 nullptr);
   g_browser_process->net_log()->AddGlobalEntry(
       net::NetLog::TYPE_NETWORK_IP_ADDRESSES_CHANGED);
   net::BoundNetLog bound_net_log = net::BoundNetLog::Make(

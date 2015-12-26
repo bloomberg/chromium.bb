@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/session_crashed_bubble_view.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -167,7 +167,7 @@ bool SessionCrashedBubble::Show(Browser* browser) {
       base::Bind(&SessionCrashedBubbleView::ShowForReal,
                  base::Passed(&browser_observer)));
 #else
-  SessionCrashedBubbleView::ShowForReal(browser_observer.Pass(), false);
+  SessionCrashedBubbleView::ShowForReal(std::move(browser_observer), false);
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
   return true;

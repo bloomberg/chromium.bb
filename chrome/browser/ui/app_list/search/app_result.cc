@@ -115,7 +115,7 @@ scoped_ptr<SearchResult> AppResult::Duplicate() const {
   copy->set_title_tags(title_tags());
   copy->set_relevance(relevance());
 
-  return copy.Pass();
+  return copy;
 }
 
 ui::MenuModel* AppResult::GetContextMenuModel() {

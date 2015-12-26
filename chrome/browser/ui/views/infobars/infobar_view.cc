@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
@@ -75,7 +76,7 @@ const int InfoBarView::kButtonButtonSpacing = views::kRelatedButtonHSpacing;
 const int InfoBarView::kEndOfLabelSpacing = views::kItemLabelSpacing;
 
 InfoBarView::InfoBarView(scoped_ptr<infobars::InfoBarDelegate> delegate)
-    : infobars::InfoBar(delegate.Pass()),
+    : infobars::InfoBar(std::move(delegate)),
       views::ExternalFocusTracker(this, NULL),
       icon_(NULL),
       close_button_(NULL) {
@@ -134,7 +135,7 @@ views::LabelButton* InfoBarView::CreateLabelButton(
         false, views::Button::STATE_PRESSED,
         views::Painter::CreateImageGridPainter(kPressedImageSet));
 
-    button->SetBorder(button_border.Pass());
+    button->SetBorder(std::move(button_border));
     button->set_animate_on_state_change(false);
     button->SetTextColor(views::Button::STATE_NORMAL, GetInfobarTextColor());
     button->SetTextColor(views::Button::STATE_HOVERED, GetInfobarTextColor());

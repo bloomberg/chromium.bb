@@ -60,7 +60,7 @@ ScopedVector<const autofill::PasswordForm> DeepCopyForms(
                  [](const autofill::PasswordForm* form) {
     return new autofill::PasswordForm(*form);
   });
-  return result.Pass();
+  return result;
 }
 
 password_bubble_experiment::SmartLockBranding GetSmartLockBrandingState(

@@ -171,7 +171,7 @@ ToolbarButton::CreateDefaultBorder() const {
   if (ThemeServiceFactory::GetForProfile(profile_)->UsingSystemTheme())
     border->set_insets(GetLayoutInsets(TOOLBAR_BUTTON));
 
-  return border.Pass();
+  return border;
 }
 
 void ToolbarButton::ShowContextMenuForView(View* source,

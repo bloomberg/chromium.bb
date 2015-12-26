@@ -1321,7 +1321,7 @@ scoped_ptr<base::ListValue> BrowserOptionsHandler::GetProfilesInfoList() {
     profile_info_list->Append(profile_value);
   }
 
-  return profile_info_list.Pass();
+  return profile_info_list;
 }
 
 void BrowserOptionsHandler::SendProfilesInfo() {
@@ -1423,7 +1423,7 @@ BrowserOptionsHandler::GetSyncStateDictionary() {
     // Cannot display signin status when running in guest mode on chromeos
     // because there is no SigninManager.
     sync_status->SetBoolean("signinAllowed", false);
-    return sync_status.Pass();
+    return sync_status;
   }
 
   sync_status->SetBoolean("supervisedUser", profile->IsSupervised());
@@ -1463,7 +1463,7 @@ BrowserOptionsHandler::GetSyncStateDictionary() {
   sync_status->SetBoolean("hasUnrecoverableError",
                           service && service->HasUnrecoverableError());
 
-  return sync_status.Pass();
+  return sync_status;
 }
 
 void BrowserOptionsHandler::HandleSelectDownloadLocation(

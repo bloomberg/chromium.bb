@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_MODEL_H_
 #define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_MODEL_H_
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/clock.h"
@@ -142,7 +144,7 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
     return dismissal_reason_;
   }
 
-  void set_clock(scoped_ptr<base::Clock> clock) { clock_ = clock.Pass(); }
+  void set_clock(scoped_ptr<base::Clock> clock) { clock_ = std::move(clock); }
 #endif
 
  private:

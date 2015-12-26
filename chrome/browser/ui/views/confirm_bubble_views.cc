@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/confirm_bubble_views.h"
 
+#include <utility>
+
 #include "chrome/browser/ui/confirm_bubble.h"
 #include "chrome/browser/ui/confirm_bubble_model.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -14,8 +16,7 @@
 #include "ui/views/widget/widget.h"
 
 ConfirmBubbleViews::ConfirmBubbleViews(scoped_ptr<ConfirmBubbleModel> model)
-    : model_(model.Pass()),
-      link_(NULL) {
+    : model_(std::move(model)), link_(NULL) {
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
@@ -104,7 +105,8 @@ void ShowConfirmBubble(gfx::NativeWindow window,
                        const gfx::Point& origin,
                        scoped_ptr<ConfirmBubbleModel> model) {
   constrained_window::CreateBrowserModalDialogViews(
-      new ConfirmBubbleViews(model.Pass()), window)->Show();
+      new ConfirmBubbleViews(std::move(model)), window)
+      ->Show();
 }
 
 }  // namespace chrome

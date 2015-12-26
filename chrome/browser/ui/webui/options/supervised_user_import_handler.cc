@@ -40,7 +40,7 @@ scoped_ptr<base::ListValue> GetAvatarIcons() {
     avatar_icons->Append(new base::StringValue(avatar_url));
   }
 
-  return avatar_icons.Pass();
+  return avatar_icons;
 }
 
 bool ProfileIsLegacySupervised(const base::FilePath& profile_path) {

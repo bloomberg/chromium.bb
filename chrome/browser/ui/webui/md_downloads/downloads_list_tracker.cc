@@ -123,7 +123,7 @@ void DownloadsListTracker::StartAndSendChunk() {
 
   base::ListValue list;
   while (it != sorted_items_.end() && list.GetSize() < chunk_size_) {
-    list.Append(CreateDownloadItemValue(*it).Pass());
+    list.Append(CreateDownloadItemValue(*it));
     ++it;
   }
 
@@ -308,7 +308,7 @@ scoped_ptr<base::DictionaryValue> DownloadsListTracker::CreateDownloadItemValue(
   file_value->SetBoolean("retry", retry);
   file_value->SetString("state", state);
 
-  return file_value.Pass();
+  return file_value;
 }
 
 bool DownloadsListTracker::IsIncognito(const DownloadItem& item) const {
@@ -382,7 +382,7 @@ void DownloadsListTracker::InsertItem(const SortedSet::iterator& insert) {
     return;
 
   base::ListValue list;
-  list.Append(CreateDownloadItemValue(*insert).Pass());
+  list.Append(CreateDownloadItemValue(*insert));
 
   web_ui_->CallJavascriptFunction(
       "downloads.Manager.insertItems",

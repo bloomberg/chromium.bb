@@ -6,9 +6,9 @@
 
 #include <ctype.h>
 #include <stddef.h>
-
 #include <map>
 #include <string>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -424,7 +424,7 @@ scoped_ptr<base::DictionaryValue> GetLocalPrinterCapabilitiesOnFileThread(
     return scoped_ptr<base::DictionaryValue>();
   }
 
-  return description.Pass();
+  return description;
 }
 
 void EnumeratePrintersOnFileThread(base::ListValue* printers) {
@@ -873,7 +873,7 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
     print_preview_distiller_.reset(new PrintPreviewDistiller(
         initiator, base::Bind(&PrintPreviewUI::OnPrintPreviewFailed,
                               print_preview_ui()->GetWeakPtr()),
-        settings.Pass()));
+        std::move(settings)));
   } else {
     RenderViewHost* rvh = initiator->GetRenderViewHost();
     rvh->Send(new PrintMsg_PrintPreview(rvh->GetRoutingID(), *settings));
@@ -1576,7 +1576,7 @@ void PrintPreviewHandler::LocalPrinterCacheFlushed() {
 
 void PrintPreviewHandler::PrivetCapabilitiesUpdateClient(
     scoped_ptr<local_discovery::PrivetHTTPClient> http_client) {
-  if (!PrivetUpdateClient(http_client.Pass()))
+  if (!PrivetUpdateClient(std::move(http_client)))
     return;
 
   privet_capabilities_operation_ =
@@ -1596,8 +1596,8 @@ bool PrintPreviewHandler::PrivetUpdateClient(
 
   privet_local_print_operation_.reset();
   privet_capabilities_operation_.reset();
-  privet_http_client_ =
-      local_discovery::PrivetV1HTTPClient::CreateDefault(http_client.Pass());
+  privet_http_client_ = local_discovery::PrivetV1HTTPClient::CreateDefault(
+      std::move(http_client));
 
   privet_http_resolution_.reset();
 
@@ -1609,7 +1609,7 @@ void PrintPreviewHandler::PrivetLocalPrintUpdateClient(
     std::string capabilities,
     gfx::Size page_size,
     scoped_ptr<local_discovery::PrivetHTTPClient> http_client) {
-  if (!PrivetUpdateClient(http_client.Pass()))
+  if (!PrivetUpdateClient(std::move(http_client)))
     return;
 
   StartPrivetLocalPrint(print_ticket, capabilities, page_size);

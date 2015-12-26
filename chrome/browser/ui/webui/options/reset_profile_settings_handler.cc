@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/options/reset_profile_settings_handler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
@@ -212,11 +214,9 @@ void ResetProfileSettingsHandler::ResetProfile(bool send_settings) {
   if (!default_settings)
     default_settings.reset(new BrandcodedDefaultSettings);
   resetter_->Reset(
-      ProfileResetter::ALL,
-      default_settings.Pass(),
+      ProfileResetter::ALL, std::move(default_settings),
       base::Bind(&ResetProfileSettingsHandler::OnResetProfileSettingsDone,
-                 AsWeakPtr(),
-                 send_settings));
+                 AsWeakPtr(), send_settings));
   content::RecordAction(base::UserMetricsAction("ResetProfile"));
   UMA_HISTOGRAM_BOOLEAN("ProfileReset.SendFeedback", send_settings);
 }

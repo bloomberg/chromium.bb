@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/sync_internals_message_handler.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -24,7 +26,7 @@ class TestableSyncInternalsMessageHandler : public SyncInternalsMessageHandler {
   explicit TestableSyncInternalsMessageHandler(
       content::WebUI* web_ui,
       scoped_ptr<AboutSyncDataExtractor> about_sync_data_extractor)
-      : SyncInternalsMessageHandler(about_sync_data_extractor.Pass()) {
+      : SyncInternalsMessageHandler(std::move(about_sync_data_extractor)) {
     set_web_ui(web_ui);
   }
 };
@@ -39,7 +41,7 @@ class FakeExtractor : public AboutSyncDataExtractor {
     last_signin_ = signin;
     scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue());
     dictionary->SetString("fake_key", "fake_value");
-    return dictionary.Pass();
+    return dictionary;
   }
 
   int call_count() const { return call_count_; }

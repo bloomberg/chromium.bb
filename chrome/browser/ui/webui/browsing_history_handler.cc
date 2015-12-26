@@ -273,7 +273,7 @@ scoped_ptr<base::DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
   }
 #endif
 
-  return result.Pass();
+  return result;
 }
 
 bool BrowsingHistoryHandler::HistoryEntry::SortByTimeDescending(

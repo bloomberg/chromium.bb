@@ -98,7 +98,7 @@ scoped_ptr<DictionaryValue> FormatToken(const T& token) {
   js_token->SetString("time",
       base::TimeFormatTimeOfDay(token.start_time));
 
-  return js_token.Pass();
+  return js_token;
 }
 
 // Retrieve the CopresenceService, if any.

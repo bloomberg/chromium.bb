@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -71,7 +71,7 @@ AppSearchProvider::AppSearchProvider(Profile* profile,
       list_controller_(list_controller),
       extension_registry_observer_(this),
       top_level_item_list_(top_level_item_list),
-      clock_(clock.Pass()),
+      clock_(std::move(clock)),
       update_results_factory_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   RefreshApps();
@@ -130,7 +130,7 @@ void AppSearchProvider::UpdateResults() {
       } else {
         result->UpdateFromLastLaunched(clock_->Now(), app->last_launch_time());
       }
-      Add(result.Pass());
+      Add(std::move(result));
     }
   } else {
     for (const App* app : apps_) {
@@ -141,7 +141,7 @@ void AppSearchProvider::UpdateResults() {
         continue;
 
       result->UpdateFromMatch(app->indexed_name(), match);
-      Add(result.Pass());
+      Add(std::move(result));
     }
   }
 

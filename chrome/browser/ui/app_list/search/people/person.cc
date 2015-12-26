@@ -70,7 +70,7 @@ scoped_ptr<Person> Person::Create(const base::DictionaryValue& dict) {
   if (!dict.GetString(kKeyId, &person->id) ||
       !dict.GetString(kKeyOwnerId, &person->owner_id)) {
     person.reset();
-    return person.Pass();
+    return person;
   }
 
   // Interaction rank.
@@ -79,7 +79,7 @@ scoped_ptr<Person> Person::Create(const base::DictionaryValue& dict) {
       !base::StringToDouble(
             interaction_rank_string, &person->interaction_rank)) {
     person.reset();
-    return person.Pass();
+    return person;
   }
 
   person->display_name = GetTargetValue(dict, kKeyNames, kKeyDisplayName);
@@ -96,7 +96,7 @@ scoped_ptr<Person> Person::Create(const base::DictionaryValue& dict) {
     person.reset();
   }
 
-  return person.Pass();
+  return person;
 }
 
 Person::Person() : interaction_rank(0.0) {
@@ -108,7 +108,7 @@ Person::~Person() {
 scoped_ptr<Person> Person::Duplicate() {
   scoped_ptr<Person> person(new Person());
   *person = *this;
-  return person.Pass();
+  return person;
 }
 
 }  // namespace app_list

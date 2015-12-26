@@ -4,6 +4,8 @@
 
 #include "ash/wm/window_positioner.h"
 
+#include <utility>
+
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
@@ -70,13 +72,13 @@ void WindowPositionerTest::SetUp() {
   Browser::CreateParams window_params(&profile_,
                                       chrome::HOST_DESKTOP_TYPE_ASH);
   browser_ = chrome::CreateBrowserWithAuraTestWindowForParams(
-      dummy_window.Pass(), &window_params);
+      std::move(dummy_window), &window_params);
 
   // Creating a browser for the popup.
   Browser::CreateParams popup_params(Browser::TYPE_POPUP, &profile_,
                                      chrome::HOST_DESKTOP_TYPE_ASH);
   browser_popup_ = chrome::CreateBrowserWithAuraTestWindowForParams(
-      dummy_popup.Pass(), &popup_params);
+      std::move(dummy_popup), &popup_params);
 
   // We hide all windows upon start - each user is required to set it up
   // as he needs it.

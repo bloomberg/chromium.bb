@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/app_list/search/people/people_result.h"
 
 #include <stddef.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -59,7 +59,7 @@ PeopleResult::PeopleResult(Profile* profile,
                            scoped_ptr<Person> person)
     : profile_(profile),
       controller_(controller),
-      person_(person.Pass()),
+      person_(std::move(person)),
       weak_factory_(this) {
   set_id(person_->id);
   set_title(base::UTF8ToUTF16(person_->display_name));
@@ -112,7 +112,7 @@ void PeopleResult::InvokeAction(int action_index, int event_flags) {
 
 scoped_ptr<SearchResult> PeopleResult::Duplicate() const {
   return scoped_ptr<SearchResult>(
-      new PeopleResult(profile_, controller_, person_->Duplicate().Pass()));
+      new PeopleResult(profile_, controller_, person_->Duplicate()));
 }
 
 void PeopleResult::OnIconLoaded() {
@@ -167,7 +167,7 @@ void PeopleResult::OpenChat() {
   // TODO(rkc): Change this once we remove the hangoutsPrivate API.
   // See crbug.com/306672
   extensions::EventRouter::Get(profile_)
-      ->DispatchEventToExtension(hangouts_extension_id_, event.Pass());
+      ->DispatchEventToExtension(hangouts_extension_id_, std::move(event));
 
   content::RecordAction(base::UserMetricsAction("PeopleSearch_OpenChat"));
 }

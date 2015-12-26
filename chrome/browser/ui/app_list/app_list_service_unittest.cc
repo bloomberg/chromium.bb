@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/app_list/app_list_service.h"
+
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -12,7 +16,6 @@
 #include "base/prefs/testing_pref_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/app_list/test/fake_profile.h"
 #include "chrome/browser/ui/app_list/test/fake_profile_store.h"
@@ -26,7 +29,7 @@ class TestingAppListServiceImpl : public AppListServiceImpl {
   TestingAppListServiceImpl(const base::CommandLine& command_line,
                             PrefService* local_state,
                             scoped_ptr<ProfileStore> profile_store)
-      : AppListServiceImpl(command_line, local_state, profile_store.Pass()),
+      : AppListServiceImpl(command_line, local_state, std::move(profile_store)),
         showing_for_profile_(NULL),
         destroy_app_list_call_count_(0) {}
 
@@ -99,7 +102,7 @@ class AppListServiceUnitTest : public testing::Test {
 
     base::PrefServiceFactory factory;
     factory.set_user_prefs(make_scoped_refptr(new TestingPrefStore));
-    local_state_ = factory.Create(pref_registry).Pass();
+    local_state_ = factory.Create(pref_registry);
 
     profile_store_ = new FakeProfileStore(user_data_dir_, local_state_.get());
     service_.reset(new TestingAppListServiceImpl(

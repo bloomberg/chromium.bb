@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
@@ -382,7 +384,7 @@ void AppListSyncableService::AddItem(scoped_ptr<AppListItem> app_item) {
   }
   VLOG(2) << this << ": AddItem: " << sync_item->ToString()
           << " Folder: '" << folder_id << "'";
-  model_->AddItemToFolder(app_item.Pass(), folder_id);
+  model_->AddItemToFolder(std::move(app_item), folder_id);
 }
 
 AppListSyncableService::SyncItem* AppListSyncableService::FindOrAddSyncItem(
@@ -599,8 +601,8 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
   // Ensure the model is built.
   GetModel();
 
-  sync_processor_ = sync_processor.Pass();
-  sync_error_handler_ = error_handler.Pass();
+  sync_processor_ = std::move(sync_processor);
+  sync_error_handler_ = std::move(error_handler);
   if (switches::IsFolderUIEnabled())
     model_->SetFoldersEnabled(true);
 
@@ -937,7 +939,7 @@ std::string AppListSyncableService::FindOrCreateOemFolder() {
     scoped_ptr<AppListFolderItem> new_folder(new AppListFolderItem(
         kOemFolderId, AppListFolderItem::FOLDER_TYPE_OEM));
     oem_folder =
-        static_cast<AppListFolderItem*>(model_->AddItem(new_folder.Pass()));
+        static_cast<AppListFolderItem*>(model_->AddItem(std::move(new_folder)));
     SyncItem* oem_sync_item = FindSyncItem(kOemFolderId);
     if (oem_sync_item) {
       VLOG(1) << "Creating OEM folder from existing sync item: "

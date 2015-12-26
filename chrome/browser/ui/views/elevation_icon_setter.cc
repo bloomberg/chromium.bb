@@ -50,7 +50,7 @@ scoped_ptr<SkBitmap> GetElevationIcon() {
       gfx::Size(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON))));
   DestroyIcon(icon_info.hIcon);
 #endif
-  return icon.Pass();
+  return icon;
 }
 
 }  // namespace

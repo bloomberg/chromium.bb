@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/search/suggestions/suggestions_search_provider.h"
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -84,7 +86,7 @@ void SuggestionsSearchProvider::OnSuggestionsProfileAvailable(
         profile_, list_controller_, favicon_service_, suggestions_service_,
         suggestion));
     result->set_relevance(1.0 / (i + 1));
-    Add(result.Pass());
+    Add(std::move(result));
   }
 }
 

@@ -65,7 +65,7 @@ scoped_ptr<base::ListValue> SinksToValue(
     value->Append(sink_val.release());
   }
 
-  return value.Pass();
+  return value;
 }
 
 scoped_ptr<base::DictionaryValue> RouteToValue(
@@ -86,7 +86,7 @@ scoped_ptr<base::DictionaryValue> RouteToValue(
                           full_custom_controller_path);
   }
 
-  return dictionary.Pass();
+  return dictionary;
 }
 
 scoped_ptr<base::ListValue> RoutesToValue(
@@ -99,7 +99,7 @@ scoped_ptr<base::ListValue> RoutesToValue(
     value->Append(route_val.release());
   }
 
-  return value.Pass();
+  return value;
 }
 
 scoped_ptr<base::ListValue> CastModesToValue(const CastModeSet& cast_modes,
@@ -115,7 +115,7 @@ scoped_ptr<base::ListValue> CastModesToValue(const CastModeSet& cast_modes,
     value->Append(cast_mode_val.release());
   }
 
-  return value.Pass();
+  return value;
 }
 
 // Returns an Issue dictionary created from |issue| that can be used in WebUI.
@@ -133,7 +133,7 @@ scoped_ptr<base::DictionaryValue> IssueToValue(const Issue& issue) {
     dictionary->SetString("routeId", issue.route_id());
   dictionary->SetBoolean("isBlocking", issue.is_blocking());
 
-  return dictionary.Pass();
+  return dictionary;
 }
 
 bool IsValidIssueActionTypeNum(int issue_action_type_num) {

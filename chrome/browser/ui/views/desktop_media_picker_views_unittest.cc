@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/views/desktop_media_picker_views.h"
+
+#include <utility>
+
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/fake_desktop_media_list.h"
-#include "chrome/browser/ui/views/desktop_media_picker_views.h"
 #include "components/web_modal/test_web_contents_modal_dialog_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -32,12 +35,8 @@ class DesktopMediaPickerViewsTest : public testing::Test {
     base::string16 app_name = base::ASCIIToUTF16("foo");
 
     picker_views_.reset(new DesktopMediaPickerViews());
-    picker_views_->Show(NULL,
-                        test_helper_.GetContext(),
-                        NULL,
-                        app_name,
-                        app_name,
-                        media_list.Pass(),
+    picker_views_->Show(NULL, test_helper_.GetContext(), NULL, app_name,
+                        app_name, std::move(media_list),
                         base::Bind(&DesktopMediaPickerViewsTest::OnPickerDone,
                                    base::Unretained(this)));
   }

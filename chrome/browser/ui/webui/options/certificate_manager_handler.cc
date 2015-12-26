@@ -7,9 +7,9 @@
 #include <errno.h>
 #include <stddef.h>
 #include <stdint.h>
-
 #include <algorithm>
 #include <map>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -1050,7 +1050,7 @@ void CertificateManagerHandler::Delete(const base::ListValue* args) {
 
 void CertificateManagerHandler::OnCertificateManagerModelCreated(
     scoped_ptr<CertificateManagerModel> model) {
-  certificate_manager_model_ = model.Pass();
+  certificate_manager_model_ = std::move(model);
   CertificateManagerModelReady();
 }
 

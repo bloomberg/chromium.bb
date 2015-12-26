@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -193,20 +195,19 @@ WindowSizer::WindowSizer(
     scoped_ptr<StateProvider> state_provider,
     scoped_ptr<TargetDisplayProvider> target_display_provider,
     const Browser* browser)
-    : state_provider_(state_provider.Pass()),
-      target_display_provider_(target_display_provider.Pass()),
+    : state_provider_(std::move(state_provider)),
+      target_display_provider_(std::move(target_display_provider)),
       // TODO(scottmg): NativeScreen is wrong. http://crbug.com/133312
       screen_(gfx::Screen::GetNativeScreen()),
-      browser_(browser) {
-}
+      browser_(browser) {}
 
 WindowSizer::WindowSizer(
     scoped_ptr<StateProvider> state_provider,
     scoped_ptr<TargetDisplayProvider> target_display_provider,
     gfx::Screen* screen,
     const Browser* browser)
-    : state_provider_(state_provider.Pass()),
-      target_display_provider_(target_display_provider.Pass()),
+    : state_provider_(std::move(state_provider)),
+      target_display_provider_(std::move(target_display_provider)),
       screen_(screen),
       browser_(browser) {
   DCHECK(screen_);
@@ -226,9 +227,8 @@ void WindowSizer::GetBrowserWindowBoundsAndShowState(
       new DefaultStateProvider(app_name, browser));
   scoped_ptr<TargetDisplayProvider> target_display_provider(
       new DefaultTargetDisplayProvider);
-  const WindowSizer sizer(state_provider.Pass(),
-                          target_display_provider.Pass(),
-                          browser);
+  const WindowSizer sizer(std::move(state_provider),
+                          std::move(target_display_provider), browser);
   sizer.DetermineWindowBoundsAndShowState(specified_bounds,
                                           window_bounds,
                                           show_state);

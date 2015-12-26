@@ -389,7 +389,7 @@ scoped_ptr<views::LabelButtonBorder> ChevronMenuButton::CreateDefaultBorder()
   scoped_ptr<views::LabelButtonBorder> border =
       views::MenuButton::CreateDefaultBorder();
   border->set_insets(gfx::Insets());
-  return border.Pass();
+  return border;
 }
 
 bool ChevronMenuButton::GetDropFormats(

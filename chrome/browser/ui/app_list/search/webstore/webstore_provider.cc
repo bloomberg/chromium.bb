@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/search/webstore/webstore_provider.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -115,7 +116,7 @@ void WebstoreProvider::StartQuery() {
 void WebstoreProvider::OnWebstoreSearchFetched(
     scoped_ptr<base::DictionaryValue> json) {
   ProcessWebstoreSearchResults(json.get());
-  cache_->Put(WebserviceCache::WEBSTORE, query_, json.Pass());
+  cache_->Put(WebserviceCache::WEBSTORE, query_, std::move(json));
   query_pending_ = false;
 
   if (!webstore_search_fetched_callback_.is_null())
@@ -151,7 +152,7 @@ void WebstoreProvider::ProcessWebstoreSearchResults(
       first_result = false;
     }
 
-    Add(result.Pass());
+    Add(std::move(result));
   }
 }
 

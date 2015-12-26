@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/sync_internals_message_handler.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -45,7 +46,7 @@ SyncInternalsMessageHandler::SyncInternalsMessageHandler()
 
 SyncInternalsMessageHandler::SyncInternalsMessageHandler(
     scoped_ptr<AboutSyncDataExtractor> about_sync_data_extractor)
-    : about_sync_data_extractor_(about_sync_data_extractor.Pass()),
+    : about_sync_data_extractor_(std::move(about_sync_data_extractor)),
       weak_ptr_factory_(this) {}
 
 SyncInternalsMessageHandler::~SyncInternalsMessageHandler() {

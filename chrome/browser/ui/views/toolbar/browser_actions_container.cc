@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 
+#include <utility>
+
 #include "base/compiler_specific.h"
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
@@ -339,10 +341,9 @@ void BrowserActionsContainer::ShowExtensionMessageBubble(
                 ->app_menu_button();
 
   extensions::ExtensionMessageBubbleView* bubble =
-      new extensions::ExtensionMessageBubbleView(
-          reference_view,
-          views::BubbleBorder::TOP_RIGHT,
-          controller.Pass());
+      new extensions::ExtensionMessageBubbleView(reference_view,
+                                                 views::BubbleBorder::TOP_RIGHT,
+                                                 std::move(controller));
   views::BubbleDelegateView::CreateBubble(bubble);
   active_bubble_ = bubble;
   active_bubble_->GetWidget()->AddObserver(this);

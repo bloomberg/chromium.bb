@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
+
+#include <utility>
+
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -77,7 +80,7 @@ class SearchEngineTabHelperBrowserTest : public InProcessBrowserTest {
     http_response->set_code(net::HTTP_OK);
     http_response->set_content(html);
     http_response->set_content_type("text/html");
-    return http_response.Pass();
+    return std::move(http_response);
   }
 
   // Starts a test server that serves a page pointing to a opensearch descriptor

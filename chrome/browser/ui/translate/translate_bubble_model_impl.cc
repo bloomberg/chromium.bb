@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/translate/translate_bubble_model_impl.h"
 
+#include <utility>
+
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/translate_ui_delegate.h"
@@ -11,9 +13,8 @@
 TranslateBubbleModelImpl::TranslateBubbleModelImpl(
     translate::TranslateStep step,
     scoped_ptr<translate::TranslateUIDelegate> ui_delegate)
-    : ui_delegate_(ui_delegate.Pass()),
-      view_state_transition_(TranslateStepToViewState(step)) {
-}
+    : ui_delegate_(std::move(ui_delegate)),
+      view_state_transition_(TranslateStepToViewState(step)) {}
 
 TranslateBubbleModelImpl::~TranslateBubbleModelImpl() {
 }

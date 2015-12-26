@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "base/location.h"
 #include "base/profiler/scoped_tracker.h"
@@ -391,7 +393,7 @@ void ToolbarActionsBar::CreateActions() {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(&ToolbarActionsBar::MaybeShowExtensionBubble,
                                 weak_ptr_factory_.GetWeakPtr(),
-                                base::Passed(controller.Pass())));
+                                base::Passed(std::move(controller))));
     }
   }
 }
@@ -486,7 +488,7 @@ void ToolbarActionsBar::OnAnimationEnded() {
   // Check if we were waiting for animation to complete to either show a
   // message bubble, or to show a popup.
   if (pending_extension_bubble_controller_) {
-    MaybeShowExtensionBubble(pending_extension_bubble_controller_.Pass());
+    MaybeShowExtensionBubble(std::move(pending_extension_bubble_controller_));
   } else if (!popped_out_closure_.is_null()) {
     popped_out_closure_.Run();
     popped_out_closure_.Reset();
@@ -572,7 +574,7 @@ void ToolbarActionsBar::MaybeShowExtensionBubble(
   if (delegate_->IsAnimating()) {
     // If the toolbar is animating, we can't effectively anchor the bubble,
     // so wait until animation stops.
-    pending_extension_bubble_controller_ = controller.Pass();
+    pending_extension_bubble_controller_ = std::move(controller);
   } else if (controller->ShouldShow()) {
     // We check ShouldShow() above because the affected extensions may have been
     // removed since the controller was initialized.
@@ -584,7 +586,7 @@ void ToolbarActionsBar::MaybeShowExtensionBubble(
       if (anchor_action)
         break;
     }
-    delegate_->ShowExtensionMessageBubble(controller.Pass(), anchor_action);
+    delegate_->ShowExtensionMessageBubble(std::move(controller), anchor_action);
   }
 }
 

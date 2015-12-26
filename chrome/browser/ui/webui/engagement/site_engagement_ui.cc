@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/engagement/site_engagement_ui.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,7 +27,7 @@ class SiteEngagementUIHandlerImpl : public SiteEngagementUIHandler {
   SiteEngagementUIHandlerImpl(
       Profile* profile,
       mojo::InterfaceRequest<SiteEngagementUIHandler> request)
-      : profile_(profile), binding_(this, request.Pass()) {
+      : profile_(profile), binding_(this, std::move(request)) {
     DCHECK(profile_);
   }
 
@@ -42,10 +44,10 @@ class SiteEngagementUIHandlerImpl : public SiteEngagementUIHandler {
       SiteEngagementInfoPtr origin_info(SiteEngagementInfo::New());
       origin_info->origin = mojo::String::From(info.first);
       origin_info->score = info.second;
-      engagement_info.push_back(origin_info.Pass());
+      engagement_info.push_back(std::move(origin_info));
     }
 
-    callback.Run(engagement_info.Pass());
+    callback.Run(std::move(engagement_info));
   }
 
  private:
@@ -85,5 +87,5 @@ SiteEngagementUI::~SiteEngagementUI() {}
 void SiteEngagementUI::BindUIHandler(
     mojo::InterfaceRequest<SiteEngagementUIHandler> request) {
   ui_handler_.reset(new SiteEngagementUIHandlerImpl(
-      Profile::FromWebUI(web_ui()), request.Pass()));
+      Profile::FromWebUI(web_ui()), std::move(request)));
 }

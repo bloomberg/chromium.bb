@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/autofill/mock_new_credit_card_bubble_controller.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -21,8 +23,8 @@ void MockNewCreditCardBubbleController::Show(
   CHECK(new_card);
   CHECK(billing_profile);
 
-  new_card_ = new_card.Pass();
-  billing_profile_ = billing_profile.Pass();
+  new_card_ = std::move(new_card);
+  billing_profile_ = std::move(billing_profile);
 
   ++bubbles_shown_;
 }

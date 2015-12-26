@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -346,7 +347,7 @@ void CoreOptionsHandler::NotifyPrefChanged(
     const std::string& controlling_pref_name) {
   scoped_ptr<base::Value> value(
       CreateValueForPref(pref_name, controlling_pref_name));
-  DispatchPrefChangeNotification(pref_name, value.Pass());
+  DispatchPrefChangeNotification(pref_name, std::move(value));
 }
 
 void CoreOptionsHandler::DispatchPrefChangeNotification(

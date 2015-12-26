@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/window_sizer/window_sizer_common_unittest.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "ash/wm/window_resizer.h"
 #include "base/compiler_specific.h"
@@ -193,7 +194,7 @@ void GetWindowBoundsAndShowState(
   scoped_ptr<WindowSizer::TargetDisplayProvider> tdp(
       new TestTargetDisplayProvider);
 
-  WindowSizer sizer(sp.Pass(), tdp.Pass(), &test_screen, browser);
+  WindowSizer sizer(std::move(sp), std::move(tdp), &test_screen, browser);
   sizer.DetermineWindowBoundsAndShowState(passed_in,
                                           out_bounds,
                                           out_show_state);
@@ -232,7 +233,7 @@ ui::WindowShowState GetWindowShowState(
   scoped_ptr<WindowSizer::TargetDisplayProvider> tdp(
       new TestTargetDisplayProvider);
 
-  WindowSizer sizer(sp.Pass(), tdp.Pass(), &test_screen, browser);
+  WindowSizer sizer(std::move(sp), std::move(tdp), &test_screen, browser);
 
   ui::WindowShowState out_show_state = ui::SHOW_STATE_DEFAULT;
   gfx::Rect out_bounds;

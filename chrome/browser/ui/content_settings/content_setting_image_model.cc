@@ -568,7 +568,7 @@ ScopedVector<ContentSettingImageModel>
           CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS));
   result.push_back(new ContentSettingMIDISysExImageModel());
 
-  return result.Pass();
+  return result;
 }
 
 void ContentSettingImageModel::SetIconByResourceId(int id) {

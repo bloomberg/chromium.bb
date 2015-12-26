@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/app_list_model_builder.h"
 
+#include <utility>
+
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
@@ -42,10 +44,10 @@ void AppListModelBuilder::InitializeWithProfile(Profile* profile,
 
 void AppListModelBuilder::InsertApp(scoped_ptr<app_list::AppListItem> app) {
   if (service_) {
-    service_->AddItem(app.Pass());
+    service_->AddItem(std::move(app));
     return;
   }
-  model_->AddItem(app.Pass());
+  model_->AddItem(std::move(app));
 }
 
 const app_list::AppListSyncableService::SyncItem*

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/search/common/url_icon_source.h"
 
 #include <string>
+#include <utility>
 
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
@@ -59,7 +60,7 @@ void UrlIconSource::OnURLFetchComplete(
     const net::URLFetcher* source) {
   CHECK_EQ(icon_fetcher_.get(), source);
 
-  scoped_ptr<net::URLFetcher> fetcher(icon_fetcher_.Pass());
+  scoped_ptr<net::URLFetcher> fetcher(std::move(icon_fetcher_));
 
   if (!fetcher->GetStatus().is_success() ||
       fetcher->GetResponseCode() != 200) {

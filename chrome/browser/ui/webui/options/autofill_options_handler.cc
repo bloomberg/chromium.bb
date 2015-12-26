@@ -80,7 +80,7 @@ scoped_ptr<base::DictionaryValue> CreditCardToDictionary(
   value->SetBoolean("isLocal", card.record_type() == CreditCard::LOCAL_CARD);
   value->SetBoolean("isCached",
                     card.record_type() == CreditCard::FULL_SERVER_CARD);
-  return value.Pass();
+  return value;
 }
 
 // Fills |components| with the address UI components that should be used to

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/extensions/extension_install_dialog_view.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -107,7 +109,7 @@ ExtensionInstallDialogViewTestBase::CreatePrompt() {
   gfx::Image icon = gfx::Image::CreateFrom1xBitmap(icon_bitmap);
   prompt->set_icon(icon);
 
-  return prompt.Pass();
+  return prompt;
 }
 
 class ScrollbarTest : public ExtensionInstallDialogViewTestBase {
@@ -129,7 +131,7 @@ ScrollbarTest::ScrollbarTest()
 bool ScrollbarTest::IsScrollbarVisible(
     scoped_ptr<ExtensionInstallPrompt::Prompt> prompt) {
   ExtensionInstallDialogView* dialog = new ExtensionInstallDialogView(
-      profile(), web_contents(), delegate(), prompt.Pass());
+      profile(), web_contents(), delegate(), std::move(prompt));
 
   // Create the modal view around the install dialog view.
   views::Widget* modal = constrained_window::CreateBrowserModalDialogViews(
@@ -153,7 +155,8 @@ IN_PROC_BROWSER_TEST_F(ScrollbarTest, LongPromptScrollbar) {
   scoped_ptr<ExtensionInstallPrompt::Prompt> prompt = CreatePrompt();
   prompt->SetPermissions(permissions,
                          ExtensionInstallPrompt::REGULAR_PERMISSIONS);
-  ASSERT_TRUE(IsScrollbarVisible(prompt.Pass())) << "Scrollbar is not visible";
+  ASSERT_TRUE(IsScrollbarVisible(std::move(prompt)))
+      << "Scrollbar is not visible";
 }
 
 // Tests that a scrollbar isn't shown for this regression case.
@@ -167,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(ScrollbarTest, ScrollbarRegression) {
   scoped_ptr<ExtensionInstallPrompt::Prompt> prompt = CreatePrompt();
   prompt->SetPermissions(permissions,
                          ExtensionInstallPrompt::REGULAR_PERMISSIONS);
-  ASSERT_FALSE(IsScrollbarVisible(prompt.Pass())) << "Scrollbar is visible";
+  ASSERT_FALSE(IsScrollbarVisible(std::move(prompt))) << "Scrollbar is visible";
 }
 
 class ExtensionInstallDialogViewTest

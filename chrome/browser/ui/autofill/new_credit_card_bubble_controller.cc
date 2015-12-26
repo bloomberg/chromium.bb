@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/autofill/new_credit_card_bubble_controller.h"
 
 #include <string>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
@@ -39,9 +40,8 @@ void NewCreditCardBubbleController::Show(
     content::WebContents* web_contents,
     scoped_ptr<CreditCard> new_card,
     scoped_ptr<AutofillProfile> billing_profile) {
-  (new NewCreditCardBubbleController(web_contents))->SetupAndShow(
-      new_card.Pass(),
-      billing_profile.Pass());
+  (new NewCreditCardBubbleController(web_contents))
+      ->SetupAndShow(std::move(new_card), std::move(billing_profile));
 }
 
 const base::string16& NewCreditCardBubbleController::TitleText() const {
@@ -92,8 +92,8 @@ void NewCreditCardBubbleController::SetupAndShow(
   DCHECK(new_card);
   DCHECK(billing_profile);
 
-  new_card_ = new_card.Pass();
-  billing_profile_ = billing_profile.Pass();
+  new_card_ = std::move(new_card);
+  billing_profile_ = std::move(billing_profile);
 
   const base::string16 card_number =
       new_card_->GetRawInfo(CREDIT_CARD_NUMBER);

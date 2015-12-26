@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/renderer_context_menu/render_view_context_menu_views.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
@@ -33,7 +35,7 @@ RenderViewContextMenuViews::RenderViewContextMenuViews(
     : RenderViewContextMenu(render_frame_host, params),
       bidi_submenu_model_(this) {
   scoped_ptr<ToolkitDelegate> delegate(new ToolkitDelegateViews);
-  set_toolkit_delegate(delegate.Pass());
+  set_toolkit_delegate(std::move(delegate));
 }
 
 RenderViewContextMenuViews::~RenderViewContextMenuViews() {

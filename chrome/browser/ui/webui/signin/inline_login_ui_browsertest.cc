@@ -445,10 +445,9 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
     will_create_browser_context_services_subscription_ =
         BrowserContextDependencyManager::GetInstance()
             ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
-                  base::Bind(&InlineLoginHelperBrowserTest::
-                                 OnWillCreateBrowserContextServices,
-                             base::Unretained(this)))
-            .Pass();
+                base::Bind(&InlineLoginHelperBrowserTest::
+                               OnWillCreateBrowserContextServices,
+                           base::Unretained(this)));
   }
 
   void OnWillCreateBrowserContextServices(content::BrowserContext* context) {

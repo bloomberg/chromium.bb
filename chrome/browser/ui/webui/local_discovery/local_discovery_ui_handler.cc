@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/local_discovery/local_discovery_ui_handler.h"
 
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -66,7 +67,7 @@ scoped_ptr<base::DictionaryValue> CreateDeviceInfo(
   return_value->SetString(kDictionaryKeyDescription, description.description);
   return_value->SetString(kDictionaryKeyType, description.type);
 
-  return return_value.Pass();
+  return return_value;
 }
 
 void ReadDevicesList(
@@ -268,7 +269,8 @@ void LocalDiscoveryUIHandler::HandleShowSyncUI(
 
 void LocalDiscoveryUIHandler::StartRegisterHTTP(
     scoped_ptr<PrivetHTTPClient> http_client) {
-  current_http_client_ = PrivetV1HTTPClient::CreateDefault(http_client.Pass());
+  current_http_client_ =
+      PrivetV1HTTPClient::CreateDefault(std::move(http_client));
 
   std::string user = GetSyncAccount();
 

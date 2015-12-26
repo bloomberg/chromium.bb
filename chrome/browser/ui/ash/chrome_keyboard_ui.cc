@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/chrome_keyboard_ui.h"
 
+#include <utility>
+
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -97,9 +99,9 @@ class AshKeyboardControllerObserver
     scoped_ptr<extensions::Event> event(new extensions::Event(
         extensions::events::VIRTUAL_KEYBOARD_PRIVATE_ON_BOUNDS_CHANGED,
         virtual_keyboard_private::OnBoundsChanged::kEventName,
-        event_args.Pass()));
+        std::move(event_args)));
     event->restrict_to_browser_context = context_;
-    router->BroadcastEvent(event.Pass());
+    router->BroadcastEvent(std::move(event));
   }
 
  private:
@@ -218,7 +220,8 @@ void ChromeKeyboardUI::SetUpdateInputType(ui::TextInputType type) {
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::VIRTUAL_KEYBOARD_PRIVATE_ON_TEXT_INPUT_BOX_FOCUSED,
       virtual_keyboard_private::OnTextInputBoxFocused::kEventName,
-      event_args.Pass()));
+      std::move(event_args)));
   event->restrict_to_browser_context = browser_context();
-  router->DispatchEventToExtension(kVirtualKeyboardExtensionID, event.Pass());
+  router->DispatchEventToExtension(kVirtualKeyboardExtensionID,
+                                   std::move(event));
 }

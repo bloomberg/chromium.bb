@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -79,8 +81,8 @@ void BookmarkBubbleView::ShowBubble(
     return;
 
   bookmark_bubble_ =
-      new BookmarkBubbleView(anchor_view, observer, delegate.Pass(), profile,
-                             url, !already_bookmarked);
+      new BookmarkBubbleView(anchor_view, observer, std::move(delegate),
+                             profile, url, !already_bookmarked);
   if (!anchor_view) {
     bookmark_bubble_->SetAnchorRect(anchor_rect);
     bookmark_bubble_->set_parent_window(parent_window);
@@ -288,7 +290,7 @@ BookmarkBubbleView::BookmarkBubbleView(
     bool newly_bookmarked)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       observer_(observer),
-      delegate_(delegate.Pass()),
+      delegate_(std::move(delegate)),
       profile_(profile),
       url_(url),
       newly_bookmarked_(newly_bookmarked),

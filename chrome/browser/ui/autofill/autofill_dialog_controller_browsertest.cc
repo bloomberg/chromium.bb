@@ -317,7 +317,7 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
   }
 
   scoped_ptr<AutofillDialogViewTester> GetViewTester() {
-    return AutofillDialogViewTester::For(controller()->view()).Pass();
+    return AutofillDialogViewTester::For(controller()->view());
   }
 
   TestAutofillDialogController* controller() { return controller_; }

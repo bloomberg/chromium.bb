@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/autofill/decorated_textfield.h"
 
+#include <utility>
+
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/views/autofill/tooltip_icon.h"
 #include "ui/gfx/canvas.h"
@@ -162,7 +164,7 @@ void DecoratedTextfield::UpdateBorder() {
     border->SetInsets(insets.top(), left, insets.bottom(), right);
   }
 
-  SetBorder(border.Pass());
+  SetBorder(std::move(border));
 }
 
 void DecoratedTextfield::IconChanged() {

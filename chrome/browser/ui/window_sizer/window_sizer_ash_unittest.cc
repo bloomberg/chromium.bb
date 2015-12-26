@@ -43,7 +43,7 @@ scoped_ptr<Browser> CreateTestBrowser(aura::Window* window,
     ash::wm::GetWindowState(browser->window()->GetNativeWindow())
         ->set_window_position_managed(true);
   }
-  return browser.Pass();
+  return browser;
 }
 
 }  // namespace

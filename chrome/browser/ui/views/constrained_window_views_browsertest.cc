@@ -56,7 +56,7 @@ class TestDialog : public views::DialogDelegateView {
 scoped_ptr<TestDialog> ShowModalDialog(content::WebContents* web_contents) {
   scoped_ptr<TestDialog> dialog(new TestDialog());
   constrained_window::ShowWebModalDialogViews(dialog.get(), web_contents);
-  return dialog.Pass();
+  return dialog;
 }
 
 } // namespace

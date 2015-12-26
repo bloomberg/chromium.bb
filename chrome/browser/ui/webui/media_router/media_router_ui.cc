@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/guid.h"
 #include "base/i18n/string_compare.h"
@@ -209,7 +210,7 @@ void MediaRouterUI::InitWithPresentationSessionRequest(
   DCHECK(!create_session_request_);
   DCHECK(!query_result_manager_);
 
-  create_session_request_ = create_session_request.Pass();
+  create_session_request_ = std::move(create_session_request);
   presentation_service_delegate_ = delegate;
   InitCommon(initiator);
   OnDefaultPresentationChanged(create_session_request_->presentation_request());

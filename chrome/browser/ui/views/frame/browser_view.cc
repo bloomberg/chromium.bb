@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 
 #include <stdint.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
@@ -1314,7 +1314,7 @@ void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
 
   BookmarkBubbleView::ShowBubble(GetToolbarView()->GetBookmarkBubbleAnchor(),
                                  gfx::Rect(), nullptr, bookmark_bar_view_.get(),
-                                 delegate.Pass(), browser_->profile(), url,
+                                 std::move(delegate), browser_->profile(), url,
                                  already_bookmarked);
 }
 
@@ -1379,7 +1379,7 @@ void BrowserView::ShowOneClickSigninBubble(
     anchor_view = toolbar_->location_bar();
 
   OneClickSigninBubbleView::ShowBubble(type, email, error_message,
-                                       delegate.Pass(), anchor_view,
+                                       std::move(delegate), anchor_view,
                                        start_sync_callback);
 }
 #endif

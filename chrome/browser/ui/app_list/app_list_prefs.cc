@@ -37,7 +37,7 @@ AppListPrefs::AppListInfo::CreateDictFromAppListInfo() const {
   item_dict->SetString(kModelItemParentId, parent_id);
   item_dict->SetString(kModelItemName, name);
   item_dict->SetInteger(kModelItemType, item_type);
-  return item_dict.Pass();
+  return item_dict;
 }
 
 // static
@@ -58,7 +58,7 @@ AppListPrefs::AppListInfo::CreateAppListInfoFromDict(
 
   info->position = syncer::StringOrdinal(item_ordinal_string);
   info->item_type = static_cast<ItemType>(item_type_int);
-  return info.Pass();
+  return info;
 }
 
 // AppListPrefs

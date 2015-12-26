@@ -153,7 +153,8 @@ class RendererDetails {
     if (service_registry)
       service_registry->ConnectToRemoteService(mojo::GetProxy(&service));
     resource_usage_reporters_.insert(std::make_pair(
-        content, make_linked_ptr(new ProcessResourceUsage(service.Pass()))));
+        content,
+        make_linked_ptr(new ProcessResourceUsage(std::move(service)))));
     DCHECK_EQ(web_contents_.size(), resource_usage_reporters_.size());
   }
 

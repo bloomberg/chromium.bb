@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/supervised_user_internals_message_handler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -34,8 +36,8 @@ base::ListValue* AddSection(base::ListValue* parent_list,
   section->SetString("title", title);
   // Grab a raw pointer to the result before |Pass()|ing it on.
   base::ListValue* result = section_contents.get();
-  section->Set("data", section_contents.Pass());
-  parent_list->Append(section.Pass());
+  section->Set("data", std::move(section_contents));
+  parent_list->Append(std::move(section));
   return result;
 }
 
@@ -47,7 +49,7 @@ void AddSectionEntry(base::ListValue* section_list,
   entry->SetString("stat_name", name);
   entry->SetBoolean("stat_value", value);
   entry->SetBoolean("is_valid", true);
-  section_list->Append(entry.Pass());
+  section_list->Append(std::move(entry));
 }
 
 // Adds a string entry to a section (created with |AddSection| above).
@@ -58,7 +60,7 @@ void AddSectionEntry(base::ListValue* section_list,
   entry->SetString("stat_name", name);
   entry->SetString("stat_value", value);
   entry->SetBoolean("is_valid", true);
-  section_list->Append(entry.Pass());
+  section_list->Append(std::move(entry));
 }
 
 std::string FilteringBehaviorToString(
@@ -264,7 +266,7 @@ void SupervisedUserInternalsMessageHandler::SendBasicInfo() {
   }
 
   base::DictionaryValue result;
-  result.Set("sections", section_list.Pass());
+  result.Set("sections", std::move(section_list));
   web_ui()->CallJavascriptFunction(
       "chrome.supervised_user_internals.receiveBasicInfo", result);
 

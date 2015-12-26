@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/crypto_module_delegate_nss.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "chrome/browser/net/nss_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -22,7 +24,7 @@ void CreateWithSlot(chrome::CryptoModulePasswordReason reason,
     return;
   }
   callback.Run(scoped_ptr<ChromeNSSCryptoModuleDelegate>(
-      new ChromeNSSCryptoModuleDelegate(reason, server, slot.Pass())));
+      new ChromeNSSCryptoModuleDelegate(reason, server, std::move(slot))));
 }
 
 }  // namespace
@@ -35,8 +37,7 @@ ChromeNSSCryptoModuleDelegate::ChromeNSSCryptoModuleDelegate(
       server_(server),
       event_(false, false),
       cancelled_(false),
-      slot_(slot.Pass()) {
-}
+      slot_(std::move(slot)) {}
 
 ChromeNSSCryptoModuleDelegate::~ChromeNSSCryptoModuleDelegate() {}
 
@@ -56,12 +57,12 @@ void ChromeNSSCryptoModuleDelegate::CreateForResourceContext(
   crypto::ScopedPK11Slot slot =
       GetPrivateNSSKeySlotForResourceContext(context, get_slot_callback);
   if (slot)
-    get_slot_callback.Run(slot.Pass());
+    get_slot_callback.Run(std::move(slot));
 }
 
 // TODO(mattm): allow choosing which slot to generate and store the key.
 crypto::ScopedPK11Slot ChromeNSSCryptoModuleDelegate::RequestSlot() {
-  return slot_.Pass();
+  return std::move(slot_);
 }
 
 std::string ChromeNSSCryptoModuleDelegate::RequestPassword(

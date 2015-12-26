@@ -63,8 +63,8 @@ void ManagePasswordsTest::SetupPendingPassword() {
           nullptr, &client, driver.AsWeakPtr(), *test_form(), false));
   test_form_manager->SimulateFetchMatchingLoginsFromPasswordStore();
   ScopedVector<autofill::PasswordForm> best_matches;
-  test_form_manager->OnGetPasswordStoreResults(best_matches.Pass());
-  GetController()->OnPasswordSubmitted(test_form_manager.Pass());
+  test_form_manager->OnGetPasswordStoreResults(std::move(best_matches));
+  GetController()->OnPasswordSubmitted(std::move(test_form_manager));
 }
 
 void ManagePasswordsTest::SetupAutomaticPassword() {
@@ -75,7 +75,7 @@ void ManagePasswordsTest::SetupAutomaticPassword() {
   scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
           nullptr, &client, driver.AsWeakPtr(), *test_form(), false));
-  GetController()->OnAutomaticPasswordSave(test_form_manager.Pass());
+  GetController()->OnAutomaticPasswordSave(std::move(test_form_manager));
 }
 
 void ManagePasswordsTest::SetupChooseCredentials(
@@ -88,20 +88,20 @@ void ManagePasswordsTest::SetupChooseCredentials(
       kTestUsername,
       make_scoped_ptr(new autofill::PasswordForm(*test_form()))));
   GetController()->OnChooseCredentials(
-      local_credentials.Pass(), federated_credentials.Pass(), origin,
+      std::move(local_credentials), std::move(federated_credentials), origin,
       base::Bind(&ManagePasswordsTest::OnChooseCredential, this));
 }
 
 void ManagePasswordsTest::SetupAutoSignin(
     ScopedVector<autofill::PasswordForm> local_credentials) {
-  GetController()->OnAutoSignin(local_credentials.Pass());
+  GetController()->OnAutoSignin(std::move(local_credentials));
 }
 
 scoped_ptr<base::HistogramSamples> ManagePasswordsTest::GetSamples(
     const char* histogram) {
   // Ensure that everything has been properly recorded before pulling samples.
   content::RunAllPendingInMessageLoop();
-  return histogram_tester_.GetHistogramSamplesSinceCreation(histogram).Pass();
+  return histogram_tester_.GetHistogramSamplesSinceCreation(histogram);
 }
 
 PasswordsClientUIDelegate* ManagePasswordsTest::GetController() {

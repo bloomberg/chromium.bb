@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/options/clear_browser_data_handler.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -462,7 +463,7 @@ void ClearBrowserDataHandler::AddCounter(
       Profile::FromWebUI(web_ui()),
       base::Bind(&ClearBrowserDataHandler::UpdateCounterText,
                  base::Unretained(this)));
-  counters_.push_back(counter.Pass());
+  counters_.push_back(std::move(counter));
 }
 
 void ClearBrowserDataHandler::UpdateCounterText(

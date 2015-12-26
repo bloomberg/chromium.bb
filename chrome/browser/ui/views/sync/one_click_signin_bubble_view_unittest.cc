@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/sync/one_click_signin_bubble_view.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
@@ -52,10 +54,7 @@ class OneClickSigninBubbleViewTest : public views::ViewsTestBase {
     delegate.reset(new OneClickSigninBubbleTestDelegate(this));
 
     OneClickSigninBubbleView::ShowBubble(
-        bubble_type,
-        base::string16(),
-        base::string16(),
-        delegate.Pass(),
+        bubble_type, base::string16(), base::string16(), std::move(delegate),
         anchor_widget_->GetContentsView(),
         base::Bind(&OneClickSigninBubbleViewTest::OnStartSync,
                    base::Unretained(this)));

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
@@ -321,12 +323,10 @@ bool ExtensionActionViewController::TriggerPopupWithUrl(
     toolbar_actions_bar_->PopOutAction(
         this,
         base::Bind(&ExtensionActionViewController::ShowPopup,
-                   weak_factory_.GetWeakPtr(),
-                   base::Passed(host.Pass()),
-                   grant_tab_permissions,
-                   show_action));
+                   weak_factory_.GetWeakPtr(), base::Passed(std::move(host)),
+                   grant_tab_permissions, show_action));
   } else {
-    ShowPopup(host.Pass(), grant_tab_permissions, show_action);
+    ShowPopup(std::move(host), grant_tab_permissions, show_action);
   }
 
   return true;
@@ -340,8 +340,8 @@ void ExtensionActionViewController::ShowPopup(
   // (since it can open asynchronously). Check before proceeding.
   if (!popup_host_)
     return;
-  platform_delegate_->ShowPopup(
-      popup_host.Pass(), grant_tab_permissions, show_action);
+  platform_delegate_->ShowPopup(std::move(popup_host), grant_tab_permissions,
+                                show_action);
   view_delegate_->OnPopupShown(grant_tab_permissions);
 }
 
@@ -375,7 +375,7 @@ ExtensionActionViewController::GetIconImageSource(
             extension_action_->GetBadgeTextColor(tab_id),
             extension_action_->GetBadgeBackgroundColor(tab_id)));
   }
-  image_source->SetBadge(badge.Pass());
+  image_source->SetBadge(std::move(badge));
 
   // Greyscaling disabled actions and having a special wants-to-run decoration
   // are gated on the toolbar redesign.
@@ -392,5 +392,5 @@ ExtensionActionViewController::GetIconImageSource(
     image_source->set_paint_decoration(WantsToRun(web_contents) && is_overflow);
   }
 
-  return image_source.Pass();
+  return image_source;
 }

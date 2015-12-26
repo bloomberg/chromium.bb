@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/search/people/people_provider.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -155,7 +156,7 @@ void PeopleProvider::StartQuery() {
 void PeopleProvider::OnPeopleSearchFetched(
     scoped_ptr<base::DictionaryValue> json) {
   ProcessPeopleSearchResults(json.get());
-  cache_->Put(WebserviceCache::PEOPLE, query_, json.Pass());
+  cache_->Put(WebserviceCache::PEOPLE, query_, std::move(json));
 
   if (!people_search_fetched_callback_.is_null())
     people_search_fetched_callback_.Run();
@@ -183,7 +184,7 @@ void PeopleProvider::ProcessPeopleSearchResults(
     if (!result)
       continue;
 
-    Add(result.Pass());
+    Add(std::move(result));
   }
 }
 
@@ -193,10 +194,10 @@ scoped_ptr<SearchResult> PeopleProvider::CreateResult(
 
   scoped_ptr<Person> person = Person::Create(dict);
   if (!person)
-    return result.Pass();
+    return result;
 
-  result.reset(new PeopleResult(profile_, controller_, person.Pass()));
-  return result.Pass();
+  result.reset(new PeopleResult(profile_, controller_, std::move(person)));
+  return result;
 }
 
 void PeopleProvider::SetupForTest(

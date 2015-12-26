@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -302,7 +303,7 @@ void MediaRouterDialogControllerImpl::PopulateDialog(
     media_router_ui->InitWithDefaultMediaSource(delegate);
   } else {
     media_router_ui->InitWithPresentationSessionRequest(
-        initiator(), delegate, create_connection_request.Pass());
+        initiator(), delegate, std::move(create_connection_request));
   }
 }
 

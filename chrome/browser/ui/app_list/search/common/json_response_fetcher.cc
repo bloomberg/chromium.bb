@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/search/common/json_response_fetcher.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/values.h"
 #include "components/safe_json/safe_json_parser.h"
@@ -61,7 +63,7 @@ void JSONResponseFetcher::OnURLFetchComplete(
     const net::URLFetcher* source) {
   CHECK_EQ(fetcher_.get(), source);
 
-  scoped_ptr<net::URLFetcher> fetcher(fetcher_.Pass());
+  scoped_ptr<net::URLFetcher> fetcher(std::move(fetcher_));
 
   if (!fetcher->GetStatus().is_success() ||
       fetcher->GetResponseCode() != 200) {

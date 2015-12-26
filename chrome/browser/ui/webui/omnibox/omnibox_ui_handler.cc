@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui_handler.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -49,9 +49,9 @@ struct TypeConverter<mojo::Array<AutocompleteAdditionalInfoPtr>,
       AutocompleteAdditionalInfoPtr item(AutocompleteAdditionalInfo::New());
       item->key = i->first;
       item->value = i->second;
-      array[index] = item.Pass();
+      array[index] = std::move(item);
     }
-    return array.Pass();
+    return array;
   }
 };
 
@@ -90,7 +90,7 @@ struct TypeConverter<AutocompleteMatchMojoPtr, AutocompleteMatch> {
 
     result->additional_info =
         mojo::Array<AutocompleteAdditionalInfoPtr>::From(input.additional_info);
-    return result.Pass();
+    return result;
   }
 };
 
@@ -104,7 +104,7 @@ struct TypeConverter<AutocompleteResultsForProviderMojoPtr,
     result->provider_name = input->GetName();
     result->results =
         mojo::Array<AutocompleteMatchMojoPtr>::From(input->matches());
-    return result.Pass();
+    return result;
   }
 };
 
@@ -113,8 +113,7 @@ struct TypeConverter<AutocompleteResultsForProviderMojoPtr,
 OmniboxUIHandler::OmniboxUIHandler(
     Profile* profile,
     mojo::InterfaceRequest<OmniboxUIHandlerMojo> request)
-    : profile_(profile),
-      binding_(this, request.Pass()) {
+    : profile_(profile), binding_(this, std::move(request)) {
   ResetController();
 }
 
@@ -164,7 +163,7 @@ void OmniboxUIHandler::OnResultChanged(bool default_match_changed) {
     }
   }
 
-  page_->HandleNewAutocompleteResult(result.Pass());
+  page_->HandleNewAutocompleteResult(std::move(result));
 }
 
 bool OmniboxUIHandler::LookupIsTypedHost(const base::string16& host,
@@ -193,7 +192,7 @@ void OmniboxUIHandler::StartOmniboxQuery(const mojo::String& input_string,
   // important logic and return stale results.  In short, we want the
   // actual results to not depend on the state of the previous request.
   ResetController();
-  page_ = page.Pass();
+  page_ = std::move(page);
   time_omnibox_started_ = base::Time::Now();
   input_ = AutocompleteInput(
       input_string.To<base::string16>(), cursor_position, std::string(), GURL(),

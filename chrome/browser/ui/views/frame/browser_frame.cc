@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 
+#include <utility>
+
 #include "base/debug/leak_annotations.h"
 #include "base/i18n/rtl.h"
 #include "build/build_config.h"
@@ -104,7 +106,7 @@ void BrowserFrame::InitBrowserFrame() {
 }
 
 void BrowserFrame::SetThemeProvider(scoped_ptr<ui::ThemeProvider> provider) {
-  owned_theme_provider_ = provider.Pass();
+  owned_theme_provider_ = std::move(provider);
   theme_provider_ = owned_theme_provider_.get();
 }
 

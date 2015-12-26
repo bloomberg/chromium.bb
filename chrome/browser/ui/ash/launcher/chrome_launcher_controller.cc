@@ -1370,7 +1370,7 @@ ChromeLauncherAppMenuItems ChromeLauncherController::GetApplicationList(
   // extension itself is a valid application and not a panel.
   LauncherItemController* controller = GetLauncherItemController(item.id);
   if (!controller || !GetShelfIDForAppID(controller->app_id()))
-    return ChromeLauncherAppMenuItems().Pass();
+    return ChromeLauncherAppMenuItems();
 
   return controller->GetApplicationList(event_flags);
 }
@@ -2177,7 +2177,7 @@ void ChromeLauncherController::SetShelfItemDelegate(
   DCHECK(item_delegate);
   DCHECK(item_delegate_manager_);
   item_delegate_manager_->SetShelfItemDelegate(
-      id, scoped_ptr<ash::ShelfItemDelegate>(item_delegate).Pass());
+      id, scoped_ptr<ash::ShelfItemDelegate>(item_delegate));
 }
 
 void ChromeLauncherController::AttachProfile(Profile* profile) {

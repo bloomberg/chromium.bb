@@ -231,7 +231,7 @@ scoped_ptr<views::LabelButtonBorder> AppMenuButton::CreateDefaultBorder()
   insets += gfx::Insets(0, 0, 0, margin_trailing_);
   border->set_insets(insets);
 
-  return border.Pass();
+  return border;
 }
 
 gfx::Rect AppMenuButton::GetThemePaintRect() const {

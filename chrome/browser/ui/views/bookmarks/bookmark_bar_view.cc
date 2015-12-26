@@ -227,7 +227,7 @@ class BookmarkButtonBase : public views::LabelButton {
                                    kButtonPaddingHorizontal,
                                    kButtonPaddingVertical,
                                    kButtonPaddingHorizontal));
-    return border.Pass();
+    return border;
   }
 
   bool IsTriggerableEvent(const ui::Event& e) override {

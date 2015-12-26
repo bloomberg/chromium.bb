@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -281,7 +281,7 @@ AppListServiceImpl::AppListServiceImpl()
 AppListServiceImpl::AppListServiceImpl(const base::CommandLine& command_line,
                                        PrefService* local_state,
                                        scoped_ptr<ProfileStore> profile_store)
-    : profile_store_(profile_store.Pass()),
+    : profile_store_(std::move(profile_store)),
       command_line_(command_line),
       local_state_(local_state),
       profile_loader_(new ProfileLoader(profile_store_.get())),

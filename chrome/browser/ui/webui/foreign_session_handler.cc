@@ -70,7 +70,7 @@ scoped_ptr<base::DictionaryValue> SessionTabToValue(
   // confusion with the ID corresponding to a session.  Investigate all the
   // places (C++ and JS) where this is being used.  (http://crbug.com/154865).
   dictionary->SetInteger("sessionId", tab.tab_id.id());
-  return dictionary.Pass();
+  return dictionary;
 }
 
 // Helper for initializing a boilerplate SessionWindow JSON compatible object.
@@ -94,7 +94,7 @@ scoped_ptr<base::DictionaryValue> BuildWindowData(
                                    ui::TimeFormat::LENGTH_SHORT, last_synced));
 
   dictionary->SetInteger("sessionId", window_id);
-  return dictionary.Pass();
+  return dictionary;
 }
 
 // Helper method to create JSON compatible objects from SessionWindow objects.
@@ -118,7 +118,7 @@ scoped_ptr<base::DictionaryValue> SessionWindowToValue(
   scoped_ptr<base::DictionaryValue> dictionary(
     BuildWindowData(window.timestamp, window.window_id.id()));
   dictionary->Set("tabs", tab_values.release());
-  return dictionary.Pass();
+  return dictionary;
 }
 
 }  // namespace

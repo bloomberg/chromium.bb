@@ -284,8 +284,8 @@ class TestAutofillDialogController
   void ShowNewCreditCardBubble(
       scoped_ptr<CreditCard> new_card,
       scoped_ptr<AutofillProfile> billing_profile) override {
-    mock_new_card_bubble_controller_->Show(new_card.Pass(),
-                                           billing_profile.Pass());
+    mock_new_card_bubble_controller_->Show(std::move(new_card),
+                                           std::move(billing_profile));
   }
 
   // AutofillDialogControllerImpl calls this method before showing the dialog

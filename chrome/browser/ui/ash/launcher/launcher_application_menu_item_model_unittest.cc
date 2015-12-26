@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/ui/ash/launcher/test/launcher_application_menu_item_model_test_api.h"
@@ -25,7 +27,7 @@ const char kSelectedMenuItemIndexHistogramName[] =
 TEST(LauncherApplicationMenuItemModelTest,
      VerifyGetNumMenuItemsEnabledWithNoMenuItems) {
   ChromeLauncherAppMenuItems menu_items;
-  LauncherApplicationMenuItemModel menu_model(menu_items.Pass());
+  LauncherApplicationMenuItemModel menu_model(std::move(menu_items));
   LauncherApplicationMenuItemModelTestAPI menu_model_test_api(&menu_model);
 
   EXPECT_EQ(0, menu_model_test_api.GetNumMenuItemsEnabled());
@@ -58,7 +60,7 @@ TEST(LauncherApplicationMenuItemModelTest,
   menu_items.push_back(enabled_menu_item_2);
   menu_items.push_back(enabled_menu_item_3);
 
-  LauncherApplicationMenuItemModel menu_model(menu_items.Pass());
+  LauncherApplicationMenuItemModel menu_model(std::move(menu_items));
   LauncherApplicationMenuItemModelTestAPI menu_model_test_api(&menu_model);
 
   EXPECT_EQ(3, menu_model_test_api.GetNumMenuItemsEnabled());
@@ -74,7 +76,7 @@ TEST(LauncherApplicationMenuItemModelTest,
   base::HistogramTester histogram_tester;
 
   ChromeLauncherAppMenuItems menu_items;
-  LauncherApplicationMenuItemModel menu_model(menu_items.Pass());
+  LauncherApplicationMenuItemModel menu_model(std::move(menu_items));
   LauncherApplicationMenuItemModelTestAPI menu_model_test_api(&menu_model);
   menu_model_test_api.RecordMenuItemSelectedMetrics(kCommandId,
                                                     kNumMenuItemsEnabled);
@@ -103,7 +105,7 @@ TEST(LauncherApplicationMenuItemModelTest,
 
   base::HistogramTester histogram_tester;
 
-  LauncherApplicationMenuItemModel menu_model(menu_items.Pass());
+  LauncherApplicationMenuItemModel menu_model(std::move(menu_items));
   menu_model.ExecuteCommand(kCommandId, kFlags);
 
   histogram_tester.ExpectTotalCount(kNumItemsEnabledHistogramName, 1);

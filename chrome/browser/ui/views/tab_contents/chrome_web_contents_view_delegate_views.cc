@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/tab_contents/chrome_web_contents_view_delegate_views.h"
 
+#include <utility>
+
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/ui/aura/tab_contents/web_drag_bookmark_handler_aura.h"
 #include "chrome/browser/ui/browser.h"
@@ -131,12 +133,12 @@ ChromeWebContentsViewDelegateViews::BuildMenu(
     menu.reset(RenderViewContextMenuViews::Create(focused_frame, params));
     menu->Init();
   }
-  return menu.Pass();
+  return menu;
 }
 
 void ChromeWebContentsViewDelegateViews::ShowMenu(
     scoped_ptr<RenderViewContextMenuBase> menu) {
-  context_menu_ = menu.Pass();
+  context_menu_ = std::move(menu);
   if (!context_menu_)
     return;
 

@@ -155,7 +155,7 @@ AppShortcutLauncherItemController::GetApplicationList(int event_flags) {
     items.push_back(new ChromeLauncherAppMenuItemTab(
         title, &app_icon, web_contents, i == 0));
   }
-  return items.Pass();
+  return items;
 }
 
 std::vector<content::WebContents*>

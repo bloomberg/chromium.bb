@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/extensions/extension_settings_browsertest.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/path_service.h"
@@ -160,7 +161,7 @@ const Extension* ExtensionSettingsUIBrowserTest::InstallExtension(
       return nullptr;
 
     scoped_refptr<extensions::CrxInstaller> installer(
-        extensions::CrxInstaller::Create(service, install_ui.Pass()));
+        extensions::CrxInstaller::Create(service, std::move(install_ui)));
     installer->set_expected_id(std::string());
     installer->set_is_gallery_install(false);
     installer->set_install_source(extensions::Manifest::INTERNAL);

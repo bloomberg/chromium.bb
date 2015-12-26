@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/ssl_client_certificate_selector.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/strings/utf_string_conversions.h"
@@ -29,8 +31,7 @@ SSLClientCertificateSelector::SSLClientCertificateSelector(
     : CertificateSelector(cert_request_info->client_certs, web_contents),
       SSLClientAuthObserver(web_contents->GetBrowserContext(),
                             cert_request_info,
-                            delegate.Pass()) {
-}
+                            std::move(delegate)) {}
 
 SSLClientCertificateSelector::~SSLClientCertificateSelector() {
 }
@@ -45,7 +46,7 @@ void SSLClientCertificateSelector::Init() {
   text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   text_label->SetAllowCharacterBreak(true);
   text_label->SizeToFit(kTableViewWidth);
-  InitWithText(text_label.Pass());
+  InitWithText(std::move(text_label));
 }
 
 void SSLClientCertificateSelector::OnCertSelectedByNotification() {
@@ -109,7 +110,7 @@ void ShowSSLClientCertificateSelector(
     return;
 
   SSLClientCertificateSelector* selector = new SSLClientCertificateSelector(
-      contents, cert_request_info, delegate.Pass());
+      contents, cert_request_info, std::move(delegate));
   selector->Init();
   selector->Show();
 }

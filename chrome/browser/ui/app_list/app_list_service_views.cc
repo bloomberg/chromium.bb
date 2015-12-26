@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/app_list_service_views.h"
 
+#include <utility>
+
 #include "chrome/browser/apps/scoped_keep_alive.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "ui/app_list/app_list_switches.h"
@@ -15,8 +17,7 @@ AppListServiceViews::AppListServiceViews(
     scoped_ptr<AppListControllerDelegate> controller_delegate)
     : shower_(this),
       can_dismiss_(true),
-      controller_delegate_(controller_delegate.Pass()) {
-}
+      controller_delegate_(std::move(controller_delegate)) {}
 
 AppListServiceViews::~AppListServiceViews() {}
 

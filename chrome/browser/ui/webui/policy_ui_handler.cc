@@ -190,7 +190,7 @@ scoped_ptr<base::Value> CopyAndConvert(const base::Value* value) {
     }
   }
 
-  return copy.Pass();
+  return copy;
 }
 
 }  // namespace

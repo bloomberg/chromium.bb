@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/sync/one_click_signin_bubble_view.h"
 
+#include <utility>
+
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "chrome/browser/ui/browser.h"
@@ -61,18 +63,18 @@ void OneClickSigninBubbleView::ShowBubble(
   switch (type) {
     case BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE:
       bubble_view_ = new OneClickSigninBubbleView(
-          error_message, base::string16(), delegate.Pass(),
-          anchor_view, start_sync, false);
+          error_message, base::string16(), std::move(delegate), anchor_view,
+          start_sync, false);
       break;
     case BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG:
       bubble_view_ = new OneClickSigninBubbleView(
-          base::string16(), base::string16(), delegate.Pass(),
-          anchor_view, start_sync, true);
+          base::string16(), base::string16(), std::move(delegate), anchor_view,
+          start_sync, true);
       break;
     case BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_SAML_MODAL_DIALOG:
       bubble_view_ = new OneClickSigninBubbleView(
-          base::string16(), email, delegate.Pass(),
-          anchor_view, start_sync, true);
+          base::string16(), email, std::move(delegate), anchor_view, start_sync,
+          true);
       break;
   }
 
@@ -98,7 +100,7 @@ OneClickSigninBubbleView::OneClickSigninBubbleView(
     const BrowserWindow::StartSyncCallback& start_sync_callback,
     bool is_sync_dialog)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
-      delegate_(delegate.Pass()),
+      delegate_(std::move(delegate)),
       error_message_(error_message),
       email_(email),
       start_sync_callback_(start_sync_callback),

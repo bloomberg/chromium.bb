@@ -52,7 +52,7 @@ scoped_ptr<views::LabelButtonBorder> BackButton::CreateDefaultBorder() const {
   border->set_insets(gfx::Insets(insets.top(), insets.left() + margin_leading_,
                                  insets.bottom(), insets.right()));
 
-  return border.Pass();
+  return border;
 }
 
 gfx::Rect BackButton::GetThemePaintRect() const {
