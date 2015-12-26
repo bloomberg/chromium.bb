@@ -4,12 +4,15 @@
 
 #include "chrome/browser/renderer_host/chrome_resource_dispatcher_host_delegate.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/base64.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/component_updater/component_updater_resource_throttle.h"
@@ -159,7 +162,7 @@ prerender::PrerenderManager* GetPrerenderManager(int render_process_id,
 
 void UpdatePrerenderNetworkBytesCallback(int render_process_id,
                                          int render_view_id,
-                                         int64 bytes) {
+                                         int64_t bytes) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::WebContents* web_contents =
@@ -179,7 +182,7 @@ void UpdatePrerenderNetworkBytesCallback(int render_process_id,
 
 #if defined(ENABLE_EXTENSIONS)
 void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamInfo> stream,
-                                     int64 expected_content_size,
+                                     int64_t expected_content_size,
                                      int render_process_id,
                                      int render_frame_id,
                                      const std::string& extension_id,

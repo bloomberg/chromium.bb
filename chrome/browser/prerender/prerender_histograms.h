@@ -5,8 +5,12 @@
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_HISTOGRAMS_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_HISTOGRAMS_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
@@ -102,8 +106,8 @@ class PrerenderHistograms {
   // RecordBytes.
   void RecordNetworkBytes(Origin origin,
                           bool used,
-                          int64 prerender_bytes,
-                          int64 profile_bytes);
+                          int64_t prerender_bytes,
+                          int64_t profile_bytes);
 
  private:
   base::TimeTicks GetCurrentTimeTicks() const;

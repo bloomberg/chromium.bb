@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_CONTENTS_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_CONTENTS_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -262,7 +265,7 @@ class PrerenderContents : public content::NotificationObserver,
       const base::WeakPtr<PrerenderResourceThrottle>& throttle);
 
   // Increments the number of bytes fetched over the network for this prerender.
-  void AddNetworkBytes(int64 bytes);
+  void AddNetworkBytes(int64_t bytes);
 
  protected:
   PrerenderContents(PrerenderManager* prerender_manager,
@@ -314,7 +317,7 @@ class PrerenderContents : public content::NotificationObserver,
   // The session storage namespace id for use in matching. We must save it
   // rather than get it from the RenderViewHost since in the control group
   // we won't have a RenderViewHost.
-  int64 session_storage_namespace_id_;
+  int64_t session_storage_namespace_id_;
 
  private:
   class WebContentsDelegateImpl;
@@ -399,7 +402,7 @@ class PrerenderContents : public content::NotificationObserver,
 
   // A running tally of the number of bytes this prerender has caused to be
   // transferred over the network for resources.  Updated with AddNetworkBytes.
-  int64 network_bytes_;
+  int64_t network_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderContents);
 };

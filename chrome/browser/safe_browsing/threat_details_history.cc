@@ -6,6 +6,8 @@
 
 #include "chrome/browser/safe_browsing/threat_details_history.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "chrome/browser/chrome_notification_types.h"

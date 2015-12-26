@@ -7,17 +7,20 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_MANAGER_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_MANAGER_H_
 
+#include <stddef.h>
+
 #include <list>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/non_thread_safe.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/ui/browser_list_observer.h"

@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_PROCESS_SINGLETON_MODAL_DIALOG_LOCK_H_
 #define CHROME_BROWSER_PROCESS_SINGLETON_MODAL_DIALOG_LOCK_H_
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "chrome/browser/process_singleton.h"
 #include "ui/gfx/native_widget_types.h"
 

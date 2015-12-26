@@ -4,15 +4,19 @@
 
 #include "chrome/browser/prefs/command_line_pref_store.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "ash/ash_switches.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"

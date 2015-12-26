@@ -5,6 +5,7 @@
 #include "chrome/browser/profiles/profile_shortcut_manager_win.h"
 
 #include <shlobj.h>  // For SHChangeNotify().
+#include <stddef.h>
 
 #include <string>
 #include <vector>
@@ -13,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"

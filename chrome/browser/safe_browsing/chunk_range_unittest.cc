@@ -6,6 +6,8 @@
 
 #include "chrome/browser/safe_browsing/chunk_range.h"
 
+#include <stddef.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace safe_browsing {

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_AVATAR_ICON_UTIL_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_AVATAR_ICON_UTIL_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "third_party/skia/include/core/SkColor.h"

@@ -10,10 +10,11 @@
 //
 // The quoted references are with respect to that document.
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 
 namespace base {

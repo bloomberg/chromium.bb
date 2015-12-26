@@ -4,6 +4,7 @@
 
 #include "chrome/browser/printing/print_preview_data_service.h"
 
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"

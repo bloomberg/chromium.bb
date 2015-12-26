@@ -4,6 +4,7 @@
 
 #include "chrome/browser/permissions/permission_queue_controller.h"
 
+#include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar_service.h"

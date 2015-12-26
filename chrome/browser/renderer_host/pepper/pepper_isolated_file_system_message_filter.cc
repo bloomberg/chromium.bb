@@ -4,6 +4,9 @@
 
 #include "chrome/browser/renderer_host/pepper/pepper_isolated_file_system_message_filter.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"

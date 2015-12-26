@@ -4,6 +4,8 @@
 
 #include "chrome/browser/predictors/autocomplete_action_predictor_table.h"
 
+#include <stddef.h>
+
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"

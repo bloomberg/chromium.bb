@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
@@ -38,7 +41,7 @@ class MockModelLoader : public ModelLoader {
       : ModelLoader(update_renderers_callback, model_name) {}
   ~MockModelLoader() override {}
 
-  MOCK_METHOD1(ScheduleFetch, void(int64));
+  MOCK_METHOD1(ScheduleFetch, void(int64_t));
   MOCK_METHOD2(EndFetch, void(ClientModelStatus, base::TimeDelta));
 
  private:

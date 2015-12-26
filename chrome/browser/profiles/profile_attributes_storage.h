@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_ATTRIBUTES_STORAGE_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_ATTRIBUTES_STORAGE_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
+
 class ProfileAttributesEntry;
 
 class ProfileAttributesStorage {

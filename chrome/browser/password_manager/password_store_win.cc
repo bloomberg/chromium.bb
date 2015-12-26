@@ -4,11 +4,14 @@
 
 #include "chrome/browser/password_manager/password_store_win.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"

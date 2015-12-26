@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_PROCESS_RESOURCE_USAGE_H_
 #define CHROME_BROWSER_PROCESS_RESOURCE_USAGE_H_
 
+#include <stddef.h>
+
 #include <deque>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/common/resource_usage_reporter.mojom.h"
 #include "third_party/WebKit/public/web/WebCache.h"

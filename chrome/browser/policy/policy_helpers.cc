@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/policy_helpers.h"
 
+#include "build/build_config.h"
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
 

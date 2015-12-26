@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/printer_query.h"
@@ -335,7 +336,7 @@ void PrintingMessageFilter::OnUpdatePrintSettingsReply(
 }
 
 #if defined(ENABLE_PRINT_PREVIEW)
-void PrintingMessageFilter::OnCheckForCancel(int32 preview_ui_id,
+void PrintingMessageFilter::OnCheckForCancel(int32_t preview_ui_id,
                                              int preview_request_id,
                                              bool* cancel) {
   PrintPreviewUI::GetCurrentPrintPreviewStatus(preview_ui_id,

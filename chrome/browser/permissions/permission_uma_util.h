@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PERMISSIONS_PERMISSION_UMA_UTIL_H_
 
 #include "base/logging.h"
+#include "base/macros.h"
 
 class GURL;
 class Profile;

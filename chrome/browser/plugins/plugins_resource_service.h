@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PLUGINS_PLUGINS_RESOURCE_SERVICE_H_
 #define CHROME_BROWSER_PLUGINS_PLUGINS_RESOURCE_SERVICE_H_
 
+#include "base/macros.h"
 #include "components/web_resource/web_resource_service.h"
 
 class PrefService;

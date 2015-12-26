@@ -4,12 +4,15 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/module_integrity_verifier_win.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
+#include "base/macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/utf_string_conversions.h"
@@ -325,7 +328,7 @@ bool VerifyModule(
   if (!mapped_module.Initialize(base::FilePath(module_path)))
     return false;
   ModuleVerificationState state(
-      reinterpret_cast<HMODULE>(const_cast<uint8*>(mapped_module.data())));
+      reinterpret_cast<HMODULE>(const_cast<uint8_t*>(mapped_module.data())));
 
   base::win::PEImage mem_peimage(module_handle);
   if (!mem_peimage.VerifyMagic() || !state.disk_peimage.VerifyMagic())

@@ -6,6 +6,8 @@
 
 #include "chrome/browser/safe_browsing/threat_details.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/md5.h"
@@ -26,7 +28,7 @@ using content::BrowserThread;
 
 // Only send small files for now, a better strategy would use the size
 // of the whole report and the user's bandwidth.
-static const uint32 kMaxBodySizeBytes = 1024;
+static const uint32_t kMaxBodySizeBytes = 1024;
 
 namespace safe_browsing {
 

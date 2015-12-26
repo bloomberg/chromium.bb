@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/blacklist_load_analyzer.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"

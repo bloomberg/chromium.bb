@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_PROFILE_RESETTER_PROFILE_RESETTER_H_
 #define CHROME_BROWSER_PROFILE_RESETTER_PROFILE_RESETTER_H_
 
+#include <stdint.h>
+
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -50,7 +52,7 @@ class ProfileResetter : public base::NonThreadSafe,
   };
 
   // Bit vector for Resettable enum.
-  typedef uint32 ResettableFlags;
+  typedef uint32_t ResettableFlags;
 
   static_assert(sizeof(ResettableFlags) == sizeof(Resettable),
                 "ResettableFlags should be the same size as Resettable");

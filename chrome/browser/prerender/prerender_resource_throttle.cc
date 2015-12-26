@@ -4,6 +4,7 @@
 
 #include "chrome/browser/prerender/prerender_resource_throttle.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_util.h"

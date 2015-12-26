@@ -4,6 +4,9 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/module_integrity_verifier_win.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <functional>
 #include <map>
@@ -11,6 +14,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
+#include "base/macros.h"
 #include "base/native_library.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/utf_string_conversions.h"
@@ -111,8 +115,8 @@ class SafeBrowsingModuleVerifierWinTest : public testing::Test {
   }
 
   void GetDiskModuleHandle(HMODULE* disk_handle) {
-    *disk_handle =
-        reinterpret_cast<HMODULE>(const_cast<uint8*>(disk_dll_handle_.data()));
+    *disk_handle = reinterpret_cast<HMODULE>(
+        const_cast<uint8_t*>(disk_dll_handle_.data()));
   }
 
   // Returns the address of the named function exported by the test dll.

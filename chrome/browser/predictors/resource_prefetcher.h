@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_PREDICTORS_RESOURCE_PREFETCHER_H_
 #define CHROME_BROWSER_PREDICTORS_RESOURCE_PREFETCHER_H_
 
+#include <stddef.h>
+
 #include <list>
 #include <map>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/threading/thread_checker.h"

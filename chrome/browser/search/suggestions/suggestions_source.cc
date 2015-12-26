@@ -4,6 +4,9 @@
 
 #include "chrome/browser/search/suggestions/suggestions_source.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/barrier_closure.h"
@@ -48,8 +51,8 @@ void RenderOutputHtml(const SuggestionsProfile& profile,
   out.push_back(kHtmlBody);
   out.push_back("<h1>Suggestions</h1>\n<ul>");
 
-  int64 now = (base::Time::NowFromSystemTime() - base::Time::UnixEpoch())
-      .ToInternalValue();
+  int64_t now = (base::Time::NowFromSystemTime() - base::Time::UnixEpoch())
+                    .ToInternalValue();
   size_t size = profile.suggestions_size();
   for (size_t i = 0; i < size; ++i) {
     const ChromeSuggestion& suggestion = profile.suggestions(i);

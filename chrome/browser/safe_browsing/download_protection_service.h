@@ -8,15 +8,17 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_SERVICE_H_
 #define CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_SERVICE_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
@@ -125,7 +127,7 @@ class DownloadProtectionService {
   }
 
   // Returns the timeout that is used by CheckClientDownload().
-  int64 download_request_timeout_ms() const {
+  int64_t download_request_timeout_ms() const {
     return download_request_timeout_ms_;
   }
 
@@ -235,7 +237,7 @@ class DownloadProtectionService {
   // BinaryFeatureExtractor object, may be overridden for testing.
   scoped_refptr<BinaryFeatureExtractor> binary_feature_extractor_;
 
-  int64 download_request_timeout_ms_;
+  int64_t download_request_timeout_ms_;
 
   scoped_ptr<DownloadFeedbackService> feedback_service_;
 

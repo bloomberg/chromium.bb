@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_HISTORY_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_HISTORY_H_
 
+#include <stddef.h>
+
 #include <list>
 
+#include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "chrome/browser/prerender/prerender_final_status.h"

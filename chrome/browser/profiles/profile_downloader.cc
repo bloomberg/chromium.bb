@@ -4,6 +4,8 @@
 
 #include "chrome/browser/profiles/profile_downloader.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

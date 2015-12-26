@@ -4,6 +4,7 @@
 
 #include "chrome/browser/recovery/recovery_install_global_error_factory.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/recovery/recovery_install_global_error.h"

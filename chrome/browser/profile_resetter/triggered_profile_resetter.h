@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PROFILE_RESETTER_TRIGGERED_PROFILE_RESETTER_H_
 #define CHROME_BROWSER_PROFILE_RESETTER_TRIGGERED_PROFILE_RESETTER_H_
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/keyed_service/core/keyed_service.h"

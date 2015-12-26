@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PRERENDER_PRERENDER_MESSAGE_FILTER_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "url/gurl.h"

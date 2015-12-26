@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_MODULE_INTEGRITY_UNITTEST_UTIL_WIN_H_
 #define CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_MODULE_INTEGRITY_UNITTEST_UTIL_WIN_H_
 
+#include <stddef.h>
+
 namespace safe_browsing {
 
 // The test dlls used by module_integrity_verifier_win_unittest.cc and

@@ -12,6 +12,7 @@
 #include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "build/build_config.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "components/version_info/version_info.h"

@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_PROFILES_AVATAR_MENU_ACTIONS_DESKTOP_H_
 #define CHROME_BROWSER_PROFILES_AVATAR_MENU_ACTIONS_DESKTOP_H_
 
+#include <stddef.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "chrome/browser/profiles/avatar_menu_actions.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 

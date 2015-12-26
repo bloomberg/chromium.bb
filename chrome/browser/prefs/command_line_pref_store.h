@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_PREFS_COMMAND_LINE_PREF_STORE_H_
 #define CHROME_BROWSER_PREFS_COMMAND_LINE_PREF_STORE_H_
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/prefs/value_map_pref_store.h"
 #include "base/values.h"
 

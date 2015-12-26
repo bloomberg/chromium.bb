@@ -4,6 +4,9 @@
 
 #include "chrome/browser/profiles/profile_metrics.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/numerics/safe_conversions.h"
 #include "chrome/browser/mac/keystone_glue.h"
 

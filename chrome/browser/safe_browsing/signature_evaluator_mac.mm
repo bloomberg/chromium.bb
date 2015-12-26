@@ -7,6 +7,8 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <Foundation/Foundation.h>
 #include <Security/Security.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/xattr.h>
 
 #include "base/mac/foundation_util.h"

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_INFO_INTERFACE_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_INFO_INTERFACE_H_
 
+#include <stddef.h>
+
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
 

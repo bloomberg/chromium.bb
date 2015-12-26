@@ -4,6 +4,9 @@
 
 #include "chrome/browser/password_manager/native_backend_kwallet_x.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/bind.h"
@@ -148,7 +151,7 @@ bool DeserializeValueSize(const std::string& signon_realm,
     form->signon_realm.assign(signon_realm);
 
     int scheme = 0;
-    int64 date_created = 0;
+    int64_t date_created = 0;
     int type = 0;
     int generation_upload_status = 0;
     // Note that these will be read back in the order listed due to
@@ -181,7 +184,7 @@ bool DeserializeValueSize(const std::string& signon_realm,
     }
 
     if (version > 2) {
-      int64 date_synced = 0;
+      int64_t date_synced = 0;
       if (!iter.ReadInt64(&date_synced)) {
         LogDeserializationWarning(version, signon_realm, false);
         return false;

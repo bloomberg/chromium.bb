@@ -4,6 +4,8 @@
 
 #include "chrome/browser/prerender/prerender_manager.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <functional>
 #include <string>
@@ -13,6 +15,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -249,7 +252,7 @@ PrerenderHandle* PrerenderManager::AddPrerenderFromLinkRelPrerender(
     int process_id,
     int route_id,
     const GURL& url,
-    const uint32 rel_types,
+    const uint32_t rel_types,
     const content::Referrer& referrer,
     const gfx::Size& size) {
   Origin origin = rel_types & PrerenderRelTypePrerender ?
@@ -1244,10 +1247,10 @@ void PrerenderManager::OnCreatingAudioStream(int render_process_id,
 
 void PrerenderManager::RecordNetworkBytes(Origin origin,
                                           bool used,
-                                          int64 prerender_bytes) {
+                                          int64_t prerender_bytes) {
   if (!ActuallyPrerendering())
     return;
-  int64 recent_profile_bytes =
+  int64_t recent_profile_bytes =
       profile_network_bytes_ - last_recorded_profile_network_bytes_;
   last_recorded_profile_network_bytes_ = profile_network_bytes_;
   DCHECK_GE(recent_profile_bytes, 0);
@@ -1261,7 +1264,7 @@ bool PrerenderManager::IsEnabled() const {
   return chrome_browser_net::CanPrefetchAndPrerenderUI(profile_->GetPrefs());
 }
 
-void PrerenderManager::AddProfileNetworkBytesIfEnabled(int64 bytes) {
+void PrerenderManager::AddProfileNetworkBytesIfEnabled(int64_t bytes) {
   DCHECK_GE(bytes, 0);
   if (IsEnabled() && ActuallyPrerendering())
     profile_network_bytes_ += bytes;

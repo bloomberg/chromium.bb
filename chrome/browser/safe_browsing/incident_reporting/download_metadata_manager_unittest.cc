@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/download_metadata_manager.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"
@@ -42,7 +44,7 @@ namespace {
 const uint32_t kTestDownloadId = 47;
 const uint32_t kOtherDownloadId = 48;
 const uint32_t kCrazyDowloadId = 655;
-const int64 kTestDownloadTimeMsec = 84;
+const int64_t kTestDownloadTimeMsec = 84;
 const char kTestUrl[] = "http://test.test/foo";
 const uint64_t kTestDownloadLength = 1000;
 const double kTestDownloadEndTimeMs = 1413514824057;

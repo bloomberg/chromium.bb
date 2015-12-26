@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sessions/tab_loader_delegate.h"
 
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/network_change_notifier.h"

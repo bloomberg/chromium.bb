@@ -4,6 +4,8 @@
 
 #include "chrome/browser/predictors/predictor_database.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -119,7 +121,7 @@ void PredictorDatabaseInternal::LogDatabaseStats() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::DB) ||
         !BrowserThread::IsMessageLoopValid(BrowserThread::DB));
 
-  int64 db_size;
+  int64_t db_size;
   bool success = base::GetFileSize(db_path_, &db_size);
   DCHECK(success) << "Failed to get file size for " << db_path_.value();
   UMA_HISTOGRAM_MEMORY_KB("PredictorDatabase.DatabaseSizeKB",

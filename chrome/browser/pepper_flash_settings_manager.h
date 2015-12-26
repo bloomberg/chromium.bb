@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_PEPPER_FLASH_SETTINGS_MANAGER_H_
 #define CHROME_BROWSER_PEPPER_FLASH_SETTINGS_MANAGER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "ppapi/c/private/ppp_flash_browser_operations.h"
@@ -31,25 +33,25 @@ class PepperFlashSettingsManager {
    public:
     virtual ~Client() {}
 
-    virtual void OnDeauthorizeContentLicensesCompleted(uint32 request_id,
+    virtual void OnDeauthorizeContentLicensesCompleted(uint32_t request_id,
                                                        bool success) {}
     virtual void OnGetPermissionSettingsCompleted(
-        uint32 request_id,
+        uint32_t request_id,
         bool success,
         PP_Flash_BrowserOperations_Permission default_permission,
         const ppapi::FlashSiteSettings& sites) {}
 
-    virtual void OnSetDefaultPermissionCompleted(uint32 request_id,
+    virtual void OnSetDefaultPermissionCompleted(uint32_t request_id,
                                                  bool success) {}
 
-    virtual void OnSetSitePermissionCompleted(uint32 request_id,
+    virtual void OnSetSitePermissionCompleted(uint32_t request_id,
                                               bool success) {}
 
     virtual void OnGetSitesWithDataCompleted(
-        uint32 request_id,
+        uint32_t request_id,
         const std::vector<std::string>& sites) {}
 
-    virtual void OnClearSiteDataCompleted(uint32 request_id, bool success) {}
+    virtual void OnClearSiteDataCompleted(uint32_t request_id, bool success) {}
   };
 
   // |client| must outlive this object. It is guaranteed that |client| won't
@@ -70,18 +72,18 @@ class PepperFlashSettingsManager {
   // operation is completed.
   // The return value is the same as the request ID passed into
   // Client::OnDeauthorizeContentLicensesCompleted().
-  uint32 DeauthorizeContentLicenses(PrefService* prefs);
+  uint32_t DeauthorizeContentLicenses(PrefService* prefs);
 
   // Gets permission settings.
   // Client::OnGetPermissionSettingsCompleted() will be called when the
   // operation is completed.
-  uint32 GetPermissionSettings(
+  uint32_t GetPermissionSettings(
       PP_Flash_BrowserOperations_SettingType setting_type);
 
   // Sets default permission.
   // Client::OnSetDefaultPermissionCompleted() will be called when the
   // operation is completed.
-  uint32 SetDefaultPermission(
+  uint32_t SetDefaultPermission(
       PP_Flash_BrowserOperations_SettingType setting_type,
       PP_Flash_BrowserOperations_Permission permission,
       bool clear_site_specific);
@@ -89,18 +91,21 @@ class PepperFlashSettingsManager {
   // Sets site-specific permission.
   // Client::OnSetSitePermissionCompleted() will be called when the operation
   // is completed.
-  uint32 SetSitePermission(PP_Flash_BrowserOperations_SettingType setting_type,
-                           const ppapi::FlashSiteSettings& sites);
+  uint32_t SetSitePermission(
+      PP_Flash_BrowserOperations_SettingType setting_type,
+      const ppapi::FlashSiteSettings& sites);
 
   // Gets a list of sites that have stored data.
   // Client::OnGetSitesWithDataCompleted() will be called when the operation is
   // completed.
-  uint32 GetSitesWithData();
+  uint32_t GetSitesWithData();
 
   // Clears data for a certain site.
   // Client::OnClearSiteDataompleted() will be called when the operation is
   // completed.
-  uint32 ClearSiteData(const std::string& site, uint64 flags, uint64 max_age);
+  uint32_t ClearSiteData(const std::string& site,
+                         uint64_t flags,
+                         uint64_t max_age);
 
  private:
   // Core does most of the work. It is ref-counted so that its lifespan can be
@@ -111,7 +116,7 @@ class PepperFlashSettingsManager {
   // another one to handle new requests.
   class Core;
 
-  uint32 GetNextRequestId();
+  uint32_t GetNextRequestId();
 
   void EnsureCoreExists();
 
@@ -126,7 +131,7 @@ class PepperFlashSettingsManager {
 
   scoped_refptr<Core> core_;
 
-  uint32 next_request_id_;
+  uint32_t next_request_id_;
 
   base::WeakPtrFactory<PepperFlashSettingsManager> weak_ptr_factory_;
 

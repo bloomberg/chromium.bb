@@ -4,6 +4,7 @@
 
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/page_load_metrics/common/page_load_metrics_messages.h"
 

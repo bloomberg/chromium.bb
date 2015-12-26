@@ -4,6 +4,8 @@
 
 #include "chrome/browser/plugins/plugin_finder.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"

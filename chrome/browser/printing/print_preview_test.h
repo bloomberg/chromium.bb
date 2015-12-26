@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PRINTING_PRINT_PREVIEW_TEST_H_
 #define CHROME_BROWSER_PRINTING_PRINT_PREVIEW_TEST_H_
 
+#include "base/macros.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 
 class PrintPreviewTest : public BrowserWithTestWindowTest {

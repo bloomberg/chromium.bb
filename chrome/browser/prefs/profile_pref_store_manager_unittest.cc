@@ -4,12 +4,15 @@
 
 #include "chrome/browser/prefs/profile_pref_store_manager.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/json_pref_store.h"

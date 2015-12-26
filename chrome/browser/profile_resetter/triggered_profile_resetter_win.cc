@@ -60,7 +60,7 @@ void TriggeredProfileResetter::Activate() {
   // in this profile. If different, reset the profile and persist the new
   // time.
   PrefService* pref_service = profile_->GetPrefs();
-  const int64 preference_timestamp =
+  const int64_t preference_timestamp =
       pref_service->GetInt64(prefs::kLastProfileResetTimestamp);
 
   if (profile_->IsNewProfile()) {

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <objbase.h>  // For CoInitialize().
+#include <stddef.h>
 
 #include "base/base_paths.h"
 #include "base/files/file_util.h"

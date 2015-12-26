@@ -8,10 +8,10 @@
 #import <Foundation/Foundation.h>
 #include <Security/Authorization.h>
 
-#include "base/basictypes.h"
 #include "base/mac/authorization_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_authorizationref.h"
+#include "base/macros.h"
 #include "chrome/grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 

@@ -6,6 +6,7 @@
 // PolicyMakeDefaultBrowserTest is not valid for this platform.
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"

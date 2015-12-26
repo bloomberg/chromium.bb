@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
 
-#include "base/basictypes.h"
 #include "base/location.h"
 #include "base/prefs/pref_service.h"
 #include "base/single_thread_task_runner.h"

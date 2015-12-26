@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <map>
 #include <queue>
 #include <string>
@@ -9,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
@@ -42,7 +45,7 @@ class MockModelLoader : public ModelLoader {
       : ModelLoader(base::Closure(), model_name) {}
   ~MockModelLoader() override {}
 
-  MOCK_METHOD1(ScheduleFetch, void(int64));
+  MOCK_METHOD1(ScheduleFetch, void(int64_t));
   MOCK_METHOD0(CancelFetcher, void());
 
  private:

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/private_working_set_snapshot.h"
 
+#include <stddef.h>
+
 #include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

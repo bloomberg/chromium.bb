@@ -5,10 +5,12 @@
 #include "chrome/browser/safe_browsing/incident_reporting/incident_reporting_service.h"
 
 #include <math.h>
+#include <stddef.h>
 
 #include <algorithm>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
@@ -18,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
@@ -67,10 +70,10 @@ struct PersistentIncidentState {
 };
 
 // The amount of time the service will wait to collate incidents.
-const int64 kDefaultUploadDelayMs = 1000 * 60;  // one minute
+const int64_t kDefaultUploadDelayMs = 1000 * 60;  // one minute
 
 // The amount of time between running delayed analysis callbacks.
-const int64 kDefaultCallbackIntervalMs = 1000 * 20;
+const int64_t kDefaultCallbackIntervalMs = 1000 * 20;
 
 // Logs the type of incident in |incident_data| to a user metrics histogram.
 void LogIncidentDataType(IncidentDisposition disposition,

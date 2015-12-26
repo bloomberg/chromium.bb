@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PROFILES_INCOGNITO_MODE_POLICY_HANDLER_H_
 #define CHROME_BROWSER_PROFILES_INCOGNITO_MODE_POLICY_HANDLER_H_
 
+#include "base/macros.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 
 class PrefValueMap;

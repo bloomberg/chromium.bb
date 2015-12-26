@@ -4,6 +4,8 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_AVATAR_DOWNLOADER_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_AVATAR_DOWNLOADER_H_
 
+#include <stddef.h>
+
 #include "base/files/file_path.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 

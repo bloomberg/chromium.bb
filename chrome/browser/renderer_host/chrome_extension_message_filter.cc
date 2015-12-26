@@ -4,9 +4,12 @@
 
 #include "chrome/browser/renderer_host/chrome_extension_message_filter.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -31,9 +34,8 @@ using content::BrowserThread;
 
 namespace {
 
-const uint32 kFilteredMessageClasses[] = {
-  ChromeExtensionMsgStart,
-  ExtensionMsgStart,
+const uint32_t kFilteredMessageClasses[] = {
+    ChromeExtensionMsgStart, ExtensionMsgStart,
 };
 
 // Logs an action to the extension activity log for the specified profile.  Can

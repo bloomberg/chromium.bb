@@ -5,15 +5,17 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_INFO_CACHE_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_INFO_CACHE_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"

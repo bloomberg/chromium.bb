@@ -4,6 +4,9 @@
 
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/files/file_util.h"
@@ -115,7 +118,7 @@ class FakeDownloadFeedbackFactory : public DownloadFeedbackFactory {
 };
 
 bool WillStorePings(DownloadProtectionService::DownloadCheckResult result,
-                     int64 size) {
+                    int64_t size) {
   content::MockDownloadItem item;
   EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(size));
 
@@ -172,8 +175,8 @@ class DownloadFeedbackServiceTest : public testing::Test {
 };
 
 TEST_F(DownloadFeedbackServiceTest, MaybeStorePingsForDownload) {
-  const int64 ok_size = DownloadFeedback::kMaxUploadSize;
-  const int64 bad_size = DownloadFeedback::kMaxUploadSize + 1;
+  const int64_t ok_size = DownloadFeedback::kMaxUploadSize;
+  const int64_t bad_size = DownloadFeedback::kMaxUploadSize + 1;
 
   EXPECT_FALSE(WillStorePings(DownloadProtectionService::SAFE, ok_size));
   EXPECT_FALSE(WillStorePings(DownloadProtectionService::DANGEROUS, ok_size));

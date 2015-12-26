@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/command_line.h"
@@ -53,7 +55,7 @@ class MockServiceProcessControl : public ServiceProcessControl {
   MOCK_METHOD0(Disconnect, void());
 
   MOCK_METHOD1(OnMessageReceived, bool(const IPC::Message&));
-  MOCK_METHOD1(OnChannelConnected, void(int32 peer_pid));
+  MOCK_METHOD1(OnChannelConnected, void(int32_t peer_pid));
   MOCK_METHOD0(OnChannelError, void());
 
   MOCK_METHOD1(Send, bool(IPC::Message*));
@@ -116,31 +118,28 @@ void MockServiceProcessControl::SetConnectSuccessMockExpectations(
 }
 
 void MockServiceProcessControl::SetServiceEnabledExpectations() {
-  EXPECT_CALL(
-      *this,
-      Send(Property(&IPC::Message::type,
-                    static_cast<int32>(ServiceMsg_GetCloudPrintProxyInfo::ID))))
-      .Times(1).WillOnce(
-          DoAll(
-              DeleteArg<0>(),
-              WithoutArgs(
-                  Invoke(this, &MockServiceProcessControl::SendEnabledInfo))));
+  EXPECT_CALL(*this, Send(Property(&IPC::Message::type,
+                                   static_cast<int32_t>(
+                                       ServiceMsg_GetCloudPrintProxyInfo::ID))))
+      .Times(1)
+      .WillOnce(DoAll(DeleteArg<0>(),
+                      WithoutArgs(Invoke(
+                          this, &MockServiceProcessControl::SendEnabledInfo))));
 }
 
 void MockServiceProcessControl::SetServiceDisabledExpectations() {
-  EXPECT_CALL(
-      *this,
-      Send(Property(&IPC::Message::type,
-                    static_cast<int32>(ServiceMsg_GetCloudPrintProxyInfo::ID))))
-      .Times(1).WillOnce(
-          DoAll(
-              DeleteArg<0>(),
-              WithoutArgs(
-                  Invoke(this, &MockServiceProcessControl::SendDisabledInfo))));
+  EXPECT_CALL(*this, Send(Property(&IPC::Message::type,
+                                   static_cast<int32_t>(
+                                       ServiceMsg_GetCloudPrintProxyInfo::ID))))
+      .Times(1)
+      .WillOnce(
+          DoAll(DeleteArg<0>(),
+                WithoutArgs(Invoke(
+                    this, &MockServiceProcessControl::SendDisabledInfo))));
 }
 
 void MockServiceProcessControl::SetWillBeEnabledExpectations() {
-  int32 message_id = ServiceMsg_EnableCloudPrintProxyWithRobot::ID;
+  int32_t message_id = ServiceMsg_EnableCloudPrintProxyWithRobot::ID;
   EXPECT_CALL(
       *this,
       Send(Property(&IPC::Message::type, message_id)))
@@ -148,11 +147,11 @@ void MockServiceProcessControl::SetWillBeEnabledExpectations() {
 }
 
 void MockServiceProcessControl::SetWillBeDisabledExpectations() {
-  EXPECT_CALL(
-      *this,
-      Send(Property(&IPC::Message::type,
-                    static_cast<int32>(ServiceMsg_DisableCloudPrintProxy::ID))))
-      .Times(1).WillOnce(DoAll(DeleteArg<0>(), Return(true)));
+  EXPECT_CALL(*this, Send(Property(&IPC::Message::type,
+                                   static_cast<int32_t>(
+                                       ServiceMsg_DisableCloudPrintProxy::ID))))
+      .Times(1)
+      .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 }
 
 bool MockServiceProcessControl::SendEnabledInfo() {

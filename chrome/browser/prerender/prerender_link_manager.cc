@@ -47,7 +47,7 @@ bool ShouldStartRelNextPrerenders() {
   return experiment_name.find("Yes") != std::string::npos;
 }
 
-bool ShouldStartPrerender(const uint32 rel_types) {
+bool ShouldStartPrerender(const uint32_t rel_types) {
   const bool should_start_rel_next_prerenders =
       ShouldStartRelNextPrerenders();
 
@@ -73,14 +73,14 @@ enum RelTypeHistogramEnum {
   RelTypeHistogramEnumMax,
 };
 
-void RecordLinkManagerAdded(const uint32 rel_types) {
-  const uint32 enum_value = rel_types & (RelTypeHistogramEnumMax - 1);
+void RecordLinkManagerAdded(const uint32_t rel_types) {
+  const uint32_t enum_value = rel_types & (RelTypeHistogramEnumMax - 1);
   UMA_HISTOGRAM_ENUMERATION("Prerender.RelTypesLinkAdded", enum_value,
                             RelTypeHistogramEnumMax);
 }
 
-void RecordLinkManagerStarting(const uint32 rel_types) {
-  const uint32 enum_value = rel_types & (RelTypeHistogramEnumMax - 1);
+void RecordLinkManagerStarting(const uint32_t rel_types) {
+  const uint32_t enum_value = rel_types & (RelTypeHistogramEnumMax - 1);
   UMA_HISTOGRAM_ENUMERATION("Prerender.RelTypesLinkStarted", enum_value,
                             RelTypeHistogramEnumMax);
 }
@@ -162,7 +162,7 @@ PrerenderLinkManager::~PrerenderLinkManager() {
 void PrerenderLinkManager::OnAddPrerender(int launcher_child_id,
                                           int prerender_id,
                                           const GURL& url,
-                                          uint32 rel_types,
+                                          uint32_t rel_types,
                                           const content::Referrer& referrer,
                                           const gfx::Size& size,
                                           int render_view_route_id) {
@@ -256,7 +256,7 @@ PrerenderLinkManager::LinkPrerender::LinkPrerender(
     int launcher_child_id,
     int prerender_id,
     const GURL& url,
-    uint32 rel_types,
+    uint32_t rel_types,
     const content::Referrer& referrer,
     const gfx::Size& size,
     int render_view_route_id,
@@ -273,8 +273,7 @@ PrerenderLinkManager::LinkPrerender::LinkPrerender(
       deferred_launcher(deferred_launcher),
       handle(NULL),
       is_match_complete_replacement(false),
-      has_been_abandoned(false) {
-}
+      has_been_abandoned(false) {}
 
 PrerenderLinkManager::LinkPrerender::~LinkPrerender() {
   DCHECK_EQ(static_cast<PrerenderHandle*>(NULL), handle)

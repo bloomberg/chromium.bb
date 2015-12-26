@@ -18,8 +18,11 @@
 #include <string>
 #include <vector>
 
+#include <stddef.h>
+
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"

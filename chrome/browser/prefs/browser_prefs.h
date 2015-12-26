@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PREFS_BROWSER_PREFS_H_
 #define CHROME_BROWSER_PREFS_BROWSER_PREFS_H_
 
+#include "build/build_config.h"
+
 class PrefRegistrySimple;
 class PrefService;
 class Profile;

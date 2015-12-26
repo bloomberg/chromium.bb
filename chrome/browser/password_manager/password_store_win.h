@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_WIN_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_WIN_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 

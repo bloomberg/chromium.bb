@@ -6,6 +6,7 @@
 
 #include <pdh.h>
 #include <pdhmsg.h>
+#include <stddef.h>
 
 #include <algorithm>
 

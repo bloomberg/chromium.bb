@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_SEARCH_LOCAL_NTP_SOURCE_H_
 #define CHROME_BROWSER_SEARCH_LOCAL_NTP_SOURCE_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/public/browser/url_data_source.h"
 
 class Profile;

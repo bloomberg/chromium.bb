@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_UTIL_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_UTIL_H_
 
-#include "base/basictypes.h"
 #include "url/gurl.h"
 
 namespace prerender {

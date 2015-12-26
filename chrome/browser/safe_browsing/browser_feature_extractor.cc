@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/browser_feature_extractor.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <utility>
 

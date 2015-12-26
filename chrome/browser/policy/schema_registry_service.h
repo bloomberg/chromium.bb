@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_POLICY_SCHEMA_REGISTRY_SERVICE_H_
 #define CHROME_BROWSER_POLICY_SCHEMA_REGISTRY_SERVICE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 

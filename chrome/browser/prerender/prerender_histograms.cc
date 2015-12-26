@@ -361,8 +361,8 @@ void PrerenderHistograms::RecordFinalStatus(
 
 void PrerenderHistograms::RecordNetworkBytes(Origin origin,
                                              bool used,
-                                             int64 prerender_bytes,
-                                             int64 profile_bytes) {
+                                             int64_t prerender_bytes,
+                                             int64_t profile_bytes) {
   const int kHistogramMin = 1;
   const int kHistogramMax = 100000000;  // 100M.
   const int kBucketCount = 50;

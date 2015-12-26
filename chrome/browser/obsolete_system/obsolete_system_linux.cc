@@ -4,6 +4,10 @@
 
 #include "chrome/browser/obsolete_system/obsolete_system.h"
 
+#include <stdint.h>
+
+#include "build/build_config.h"
+
 #if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
 #include <gnu/libc-version.h>
 

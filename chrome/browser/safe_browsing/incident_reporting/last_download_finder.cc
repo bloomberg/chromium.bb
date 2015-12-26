@@ -4,6 +4,9 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/last_download_finder.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <functional>
 #include <utility>
@@ -13,6 +16,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -38,12 +42,12 @@ namespace {
 // functions that follow.
 
 // Returns the end time of a download represented by a DownloadRow.
-int64 GetEndTime(const history::DownloadRow& row) {
+int64_t GetEndTime(const history::DownloadRow& row) {
   return row.end_time.ToJavaTime();
 }
 
 // Returns the end time of a download represented by a DownloadDetails.
-int64 GetEndTime(const ClientIncidentReport_DownloadDetails& details) {
+int64_t GetEndTime(const ClientIncidentReport_DownloadDetails& details) {
   return details.download_time_msec();
 }
 

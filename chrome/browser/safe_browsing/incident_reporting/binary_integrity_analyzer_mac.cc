@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_analyzer_mac.h"
 
+#include <stddef.h>
+
 #include "base/files/file_util.h"
 #include "base/mac/bundle_locations.h"
 #include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_incident.h"

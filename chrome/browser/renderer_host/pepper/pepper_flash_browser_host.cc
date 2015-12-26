@@ -5,6 +5,7 @@
 #include "chrome/browser/renderer_host/pepper/pepper_flash_browser_host.h"
 
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/cookie_settings.h"

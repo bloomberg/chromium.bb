@@ -4,9 +4,12 @@
 
 #include "chrome/browser/permissions/permission_context_base.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/permissions/permission_uma_util.h"

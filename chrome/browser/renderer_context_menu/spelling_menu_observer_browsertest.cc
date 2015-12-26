@@ -4,8 +4,11 @@
 
 #include "chrome/browser/renderer_context_menu/spelling_menu_observer.h"
 
+#include <stddef.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"

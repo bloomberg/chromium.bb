@@ -4,6 +4,7 @@
 
 #include "chrome/browser/permissions/permission_bubble_request_impl.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/grit/generated_resources.h"

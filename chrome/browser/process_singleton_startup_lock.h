@@ -9,9 +9,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/process_singleton.h"
 

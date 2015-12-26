@@ -6,8 +6,12 @@
 
 #include "chrome/browser/safe_browsing/threat_details.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/threat_details_cache.h"
 #include "chrome/browser/safe_browsing/threat_details_history.h"
@@ -24,7 +28,7 @@ using content::NavigationEntry;
 using content::WebContents;
 
 // Keep in sync with KMaxNodes in renderer/safe_browsing/threat_dom_details
-static const uint32 kMaxDomNodes = 500;
+static const uint32_t kMaxDomNodes = 500;
 
 namespace safe_browsing {
 

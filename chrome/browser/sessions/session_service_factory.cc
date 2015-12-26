@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sessions/session_service_factory.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_data_deleter.h"
 #include "chrome/browser/sessions/session_service.h"

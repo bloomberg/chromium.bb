@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_LIST_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_LIST_H_
 
+#include <stddef.h>
+
 #include "chrome/browser/profiles/avatar_menu.h"
 
 class ProfileInfoInterface;

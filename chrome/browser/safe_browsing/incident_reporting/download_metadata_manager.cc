@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/download_metadata_manager.h"
 
+#include <stdint.h>
+
 #include <list>
 
 #include "base/bind.h"

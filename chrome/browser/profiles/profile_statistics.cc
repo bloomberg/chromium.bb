@@ -5,6 +5,7 @@
 #include "chrome/browser/profiles/profile_statistics.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_service.h"
 #include "base/task_runner.h"

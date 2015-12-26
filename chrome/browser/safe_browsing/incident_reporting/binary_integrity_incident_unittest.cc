@@ -4,6 +4,9 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_incident.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"

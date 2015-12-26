@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_SIMPLE_PASSWORD_STORE_MAC_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_SIMPLE_PASSWORD_STORE_MAC_H_
 
+#include "base/macros.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 
 // The same as PasswordStoreDefault but running on the dedicated thread. The

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
@@ -11,6 +14,7 @@
 #include "base/md5.h"
 #include "base/path_service.h"
 #include "base/test/test_simple_task_runner.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/safe_browsing_db/prefix_set.h"
 #include "components/safe_browsing_db/util.h"
@@ -109,11 +113,11 @@ class SafeBrowsingStoreFileTest : public PlatformTest {
   }
 
   // Manually read the shard stride info from the file.
-  uint32 ReadStride() {
+  uint32_t ReadStride() {
     base::ScopedFILE file(base::OpenFile(filename_, "rb"));
-    const long kOffset = 4 * sizeof(uint32);
+    const long kOffset = 4 * sizeof(uint32_t);
     EXPECT_EQ(fseek(file.get(), kOffset, SEEK_SET), 0);
-    uint32 shard_stride = 0;
+    uint32_t shard_stride = 0;
     EXPECT_EQ(fread(&shard_stride, sizeof(shard_stride), 1, file.get()), 1U);
     return shard_stride;
   }
@@ -506,8 +510,8 @@ TEST_F(SafeBrowsingStoreFileTest, DetectsCorruption) {
   base::ScopedFILE file(base::OpenFile(filename_, "rb+"));
   const long kOffset = 60;
   EXPECT_EQ(fseek(file.get(), kOffset, SEEK_SET), 0);
-  const uint32 kZero = 0;
-  uint32 previous = kZero;
+  const uint32_t kZero = 0;
+  uint32_t previous = kZero;
   EXPECT_EQ(fread(&previous, sizeof(previous), 1, file.get()), 1U);
   EXPECT_NE(previous, kZero);
   EXPECT_EQ(fseek(file.get(), kOffset, SEEK_SET), 0);
@@ -525,8 +529,8 @@ TEST_F(SafeBrowsingStoreFileTest, DetectsCorruption) {
   }
 
   // Make it look like there is a lot of add-chunks-seen data.
-  const long kAddChunkCountOffset = 2 * sizeof(int32);
-  const int32 kLargeCount = 1000 * 1000 * 1000;
+  const long kAddChunkCountOffset = 2 * sizeof(int32_t);
+  const int32_t kLargeCount = 1000 * 1000 * 1000;
   file.reset(base::OpenFile(filename_, "rb+"));
   EXPECT_EQ(fseek(file.get(), kAddChunkCountOffset, SEEK_SET), 0);
   EXPECT_EQ(fwrite(&kLargeCount, sizeof(kLargeCount), 1, file.get()), 1U);
@@ -678,7 +682,7 @@ TEST_F(SafeBrowsingStoreFileTest, GetAddPrefixesAndHashes) {
 // which shrinking.
 TEST_F(SafeBrowsingStoreFileTest, Resharding) {
   // Loop through multiple stride boundaries (1<<32, 1<<31, 1<<30, 1<<29).
-  const uint32 kTargetStride = 1 << 29;
+  const uint32_t kTargetStride = 1 << 29;
 
   // Each chunk will require 8 bytes per prefix, plus 4 bytes for chunk
   // information.  It should be less than |kTargetFootprint| in the
@@ -686,7 +690,7 @@ TEST_F(SafeBrowsingStoreFileTest, Resharding) {
   // keep the test fast).
   const size_t kPrefixesPerChunk = 10000;
 
-  uint32 shard_stride = 0;
+  uint32_t shard_stride = 0;
   int chunk_id = 1;
 
   // Add a series of chunks, tracking that the stride size changes in a
@@ -711,7 +715,7 @@ TEST_F(SafeBrowsingStoreFileTest, Resharding) {
     ASSERT_EQ(chunk_id * kPrefixesPerChunk, add_prefixes.size());
 
     // New stride should be the same, or shifted one right.
-    const uint32 new_shard_stride = ReadStride();
+    const uint32_t new_shard_stride = ReadStride();
     EXPECT_TRUE((new_shard_stride == shard_stride) ||
                 ((new_shard_stride << 1) == shard_stride));
     shard_stride = new_shard_stride;
@@ -734,7 +738,7 @@ TEST_F(SafeBrowsingStoreFileTest, Resharding) {
     EXPECT_TRUE(store_->FinishUpdate(&builder, &add_full_hashes_result));
 
     // New stride should be the same, or shifted one left.
-    const uint32 new_shard_stride = ReadStride();
+    const uint32_t new_shard_stride = ReadStride();
     EXPECT_TRUE((new_shard_stride == shard_stride) ||
                 (new_shard_stride == (shard_stride << 1)));
     shard_stride = new_shard_stride;

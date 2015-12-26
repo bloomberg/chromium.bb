@@ -5,6 +5,7 @@
 #include "chrome/browser/policy/schema_registry_service_factory.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/policy/core/common/schema.h"

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PROCESS_INFO_SNAPSHOT_H_
 #define CHROME_BROWSER_PROCESS_INFO_SNAPSHOT_H_
 
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/types.h>
 
 #include <map>

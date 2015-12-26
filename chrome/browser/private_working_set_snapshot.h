@@ -9,9 +9,11 @@
 
 #if defined(OS_WIN)
 #include <pdh.h>
+#include <stddef.h>
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "base/win/scoped_handle.h"
 

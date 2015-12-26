@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_PRINTING_PRINTER_MANAGER_DIALOG_H_
 #define CHROME_BROWSER_PRINTING_PRINTER_MANAGER_DIALOG_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace printing {
 

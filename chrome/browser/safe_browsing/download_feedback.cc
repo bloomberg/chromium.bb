@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util_proxy.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/task_runner.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -64,7 +65,7 @@ class DownloadFeedbackImpl : public DownloadFeedback {
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_refptr<base::TaskRunner> file_task_runner_;
   const base::FilePath file_path_;
-  int64 file_size_;
+  int64_t file_size_;
 
   // The safebrowsing request and response of checking that this binary is
   // unsafe.
@@ -192,7 +193,7 @@ void DownloadFeedbackImpl::RecordUploadResult(UploadResultType result) {
 }  // namespace
 
 // static
-const int64 DownloadFeedback::kMaxUploadSize = 50 * 1024 * 1024;
+const int64_t DownloadFeedback::kMaxUploadSize = 50 * 1024 * 1024;
 
 // static
 const char DownloadFeedback::kSbFeedbackURL[] =

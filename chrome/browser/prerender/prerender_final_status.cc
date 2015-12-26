@@ -4,6 +4,7 @@
 
 #include "chrome/browser/prerender/prerender_final_status.h"
 
+#include "base/macros.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 
 namespace prerender {

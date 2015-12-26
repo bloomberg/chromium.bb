@@ -4,6 +4,8 @@
 
 #include "chrome/browser/search_engines/template_url_service_android.h"
 
+#include <stddef.h>
+
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/format_macros.h"

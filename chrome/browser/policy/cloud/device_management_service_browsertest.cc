@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
@@ -39,7 +41,7 @@ namespace {
 // Parses the DeviceManagementRequest in |request_data| and writes a serialized
 // DeviceManagementResponse to |response_data|.
 void ConstructResponse(const char* request_data,
-                       uint64 request_data_length,
+                       uint64_t request_data_length,
                        std::string* response_data) {
   em::DeviceManagementRequest request;
   ASSERT_TRUE(request.ParseFromArray(request_data, request_data_length));

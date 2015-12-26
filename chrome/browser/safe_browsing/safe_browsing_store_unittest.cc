@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+#include <string.h>
+
 #include "chrome/browser/safe_browsing/safe_browsing_store.h"
 #include "components/safe_browsing_db/util.h"
 
@@ -41,8 +44,8 @@ void ProcessHelper(SBAddPrefixes* add_prefixes,
                    SBSubPrefixes* sub_prefixes,
                    std::vector<SBAddFullHash>* add_full_hashes,
                    std::vector<SBSubFullHash>* sub_full_hashes,
-                   const base::hash_set<int32>& add_chunks_deleted,
-                   const base::hash_set<int32>& sub_chunks_deleted) {
+                   const base::hash_set<int32_t>& add_chunks_deleted,
+                   const base::hash_set<int32_t>& sub_chunks_deleted) {
   std::sort(add_prefixes->begin(), add_prefixes->end(),
             SBAddPrefixLess<SBAddPrefix,SBAddPrefix>);
   std::sort(sub_prefixes->begin(), sub_prefixes->end(),
@@ -166,7 +169,7 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsEmpty) {
   SBSubPrefixes sub_prefixes;
   std::vector<SBSubFullHash> sub_hashes;
 
-  const base::hash_set<int32> no_deletions;
+  const base::hash_set<int32_t> no_deletions;
   SBProcessSubs(&add_prefixes, &sub_prefixes, &add_hashes, &sub_hashes,
                 no_deletions, no_deletions);
   EXPECT_TRUE(add_prefixes.empty());
@@ -212,7 +215,7 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsKnockout) {
   add_hashes.push_back(SBAddFullHash(kAddChunk5, kHash4mod));
   sub_hashes.push_back(SBSubFullHash(kSubChunk5, kAddChunk5, kHash4mod));
 
-  const base::hash_set<int32> no_deletions;
+  const base::hash_set<int32_t> no_deletions;
   ProcessHelper(&add_prefixes, &sub_prefixes, &add_hashes, &sub_hashes,
                 no_deletions, no_deletions);
 
@@ -267,8 +270,8 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsDeleteChunk) {
   sub_prefixes.push_back(SBSubPrefix(kSubChunk1, kAddChunk1, kHash3.prefix));
 
   // Subs apply before being deleted.
-  const base::hash_set<int32> no_deletions;
-  base::hash_set<int32> sub_deletions;
+  const base::hash_set<int32_t> no_deletions;
+  base::hash_set<int32_t> sub_deletions;
   sub_deletions.insert(kSubChunk1);
   ProcessHelper(&add_prefixes, &sub_prefixes, &add_hashes, &sub_hashes,
                 no_deletions, sub_deletions);
@@ -285,7 +288,7 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsDeleteChunk) {
   EXPECT_TRUE(sub_hashes.empty());
 
   // Delete the adds, also.
-  base::hash_set<int32> add_deletions;
+  base::hash_set<int32_t> add_deletions;
   add_deletions.insert(kAddChunk1);
   ProcessHelper(&add_prefixes, &sub_prefixes, &add_hashes, &sub_hashes,
                 add_deletions, no_deletions);
@@ -301,8 +304,8 @@ TEST(SafeBrowsingStoreTest, Y2K38) {
   const base::Time future = now + base::TimeDelta::FromDays(3*365);
 
   // TODO: Fix file format before 2035.
-  EXPECT_GT(static_cast<int32>(future.ToTimeT()), 0)
-    << " (int32)time_t is running out.";
+  EXPECT_GT(static_cast<int32_t>(future.ToTimeT()), 0)
+      << " (int32_t)time_t is running out.";
 }
 
 }  // namespace safe_browsing

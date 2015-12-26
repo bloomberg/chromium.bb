@@ -4,6 +4,8 @@
 
 #include "chrome/browser/printing/print_view_manager_basic.h"
 
+#include "build/build_config.h"
+
 #if defined(OS_ANDROID)
 #include "base/bind.h"
 #include "printing/printing_context_android.h"

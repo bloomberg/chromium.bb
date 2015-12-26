@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "components/signin/core/browser/signin_metrics.h"
 
 #if defined(OS_CHROMEOS)

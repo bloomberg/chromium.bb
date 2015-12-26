@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_SESSIONS_SESSION_RESTORE_STATS_COLLECTOR_H_
 #define CHROME_BROWSER_SESSIONS_SESSION_RESTORE_STATS_COLLECTOR_H_
 
+#include <stddef.h>
+
 #include <map>
 
 #include "base/callback_list.h"
+#include "base/macros.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_restore_delegate.h"

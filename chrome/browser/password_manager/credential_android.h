@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_CREDENTIAL_ANDROID_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_CREDENTIAL_ANDROID_H_
 
+#include <stddef.h>
+
 #include "base/android/jni_array.h"
 #include "base/android/scoped_java_ref.h"
 #include "components/autofill/core/common/password_form.h"

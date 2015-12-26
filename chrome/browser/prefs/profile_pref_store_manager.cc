@@ -14,6 +14,7 @@
 #include "base/prefs/persistent_pref_store.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/sequenced_task_runner.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/user_prefs/tracked/pref_hash_store_impl.h"

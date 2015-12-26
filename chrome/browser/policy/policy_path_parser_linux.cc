@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <pwd.h>
+#include <stddef.h>
 #include <sys/types.h>
 #include <unistd.h>
 

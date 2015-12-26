@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_POLICY_CLOUD_TEST_REQUEST_INTERCEPTOR_H_
 #define CHROME_BROWSER_POLICY_CLOUD_TEST_REQUEST_INTERCEPTOR_H_
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "policy/proto/device_management_backend.pb.h"
 

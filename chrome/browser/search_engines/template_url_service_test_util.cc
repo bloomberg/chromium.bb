@@ -4,6 +4,7 @@
 
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/history/history_service_factory.h"

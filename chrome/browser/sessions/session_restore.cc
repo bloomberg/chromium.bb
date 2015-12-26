@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sessions/session_restore.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <list>
 #include <set>
@@ -14,6 +16,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/field_trial.h"
@@ -21,6 +24,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -753,7 +757,7 @@ Browser* SessionRestore::RestoreSession(
     Profile* profile,
     Browser* browser,
     chrome::HostDesktopType host_desktop_type,
-    uint32 behavior,
+    uint32_t behavior,
     const std::vector<GURL>& urls_to_open) {
 #if defined(OS_CHROMEOS)
   chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker(
@@ -780,7 +784,7 @@ Browser* SessionRestore::RestoreSession(
 
 // static
 void SessionRestore::RestoreSessionAfterCrash(Browser* browser) {
-  uint32 behavior = 0;
+  uint32_t behavior = 0;
   if (browser->tab_strip_model()->count() == 1) {
     const content::WebContents* active_tab =
         browser->tab_strip_model()->GetWebContentsAt(0);

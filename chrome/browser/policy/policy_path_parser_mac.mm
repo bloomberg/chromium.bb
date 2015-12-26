@@ -4,19 +4,20 @@
 
 #include "chrome/browser/policy/policy_path_parser.h"
 
-#include "base/basictypes.h"
-#include "base/files/file_path.h"
-#include "base/logging.h"
-#import "base/mac/scoped_nsautorelease_pool.h"
-#include "base/strings/sys_string_conversions.h"
-#include "policy/policy_constants.h"
-
 #import <Cocoa/Cocoa.h>
+#include <stddef.h>
 #import <SystemConfiguration/SCDynamicStore.h>
 #import <SystemConfiguration/SCDynamicStoreCopySpecific.h>
 #import <SystemConfiguration/SystemConfiguration.h>
 
 #include <string>
+
+#include "base/files/file_path.h"
+#include "base/logging.h"
+#import "base/mac/scoped_nsautorelease_pool.h"
+#include "base/macros.h"
+#include "base/strings/sys_string_conversions.h"
+#include "policy/policy_constants.h"
 
 namespace policy {
 

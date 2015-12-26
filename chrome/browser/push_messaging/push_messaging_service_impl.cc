@@ -14,6 +14,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_manager.h"
@@ -240,7 +241,7 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
 void PushMessagingServiceImpl::DeliverMessageCallback(
     const std::string& app_id,
     const GURL& requesting_origin,
-    int64 service_worker_registration_id,
+    int64_t service_worker_registration_id,
     const gcm::IncomingMessage& message,
     const base::Closure& message_handled_closure,
     content::PushDeliveryStatus status) {
@@ -340,7 +341,7 @@ GURL PushMessagingServiceImpl::GetPushEndpoint() {
 
 void PushMessagingServiceImpl::SubscribeFromDocument(
     const GURL& requesting_origin,
-    int64 service_worker_registration_id,
+    int64_t service_worker_registration_id,
     const std::string& sender_id,
     int renderer_id,
     int render_frame_id,
@@ -384,7 +385,7 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
 
 void PushMessagingServiceImpl::SubscribeFromWorker(
     const GURL& requesting_origin,
-    int64 service_worker_registration_id,
+    int64_t service_worker_registration_id,
     const std::string& sender_id,
     bool user_visible,
     const content::PushMessagingService::RegisterCallback& register_callback) {
@@ -577,7 +578,7 @@ void PushMessagingServiceImpl::DidGetEncryptionInfo(
 
 void PushMessagingServiceImpl::Unsubscribe(
     const GURL& requesting_origin,
-    int64 service_worker_registration_id,
+    int64_t service_worker_registration_id,
     const std::string& sender_id,
     const content::PushMessagingService::UnregisterCallback& callback) {
   PushMessagingAppIdentifier app_identifier =

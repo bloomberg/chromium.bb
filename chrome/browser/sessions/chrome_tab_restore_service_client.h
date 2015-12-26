@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SESSIONS_CHROME_TAB_RESTORE_SERVICE_CLIENT_H_
 #define CHROME_BROWSER_SESSIONS_CHROME_TAB_RESTORE_SERVICE_CLIENT_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/sessions/core/tab_restore_service_client.h"
 
 class Profile;

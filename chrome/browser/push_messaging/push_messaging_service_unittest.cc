@@ -4,10 +4,13 @@
 
 #include "content/public/browser/push_messaging_service.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/permissions/permission_manager.h"

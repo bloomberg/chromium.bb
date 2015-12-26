@@ -4,6 +4,9 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/environment_data_collection_win.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 

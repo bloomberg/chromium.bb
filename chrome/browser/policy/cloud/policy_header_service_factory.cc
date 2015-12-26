@@ -5,6 +5,7 @@
 #include "chrome/browser/policy/cloud/policy_header_service_factory.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"

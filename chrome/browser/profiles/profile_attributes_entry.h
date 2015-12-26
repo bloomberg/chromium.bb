@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_ATTRIBUTES_ENTRY_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_ATTRIBUTES_ENTRY_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 

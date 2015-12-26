@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_LIST_DESKTOP_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_LIST_DESKTOP_H_
 
-#include "chrome/browser/profiles/profile_list.h"
+#include <stddef.h>
 
 #include <vector>
+
+#include "base/macros.h"
+#include "chrome/browser/profiles/profile_list.h"
 
 class Browser;
 class ProfileInfoInterface;

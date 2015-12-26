@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PERMISSIONS_PERMISSION_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_PERMISSIONS_PERMISSION_INFOBAR_DELEGATE_H_
 
+#include "base/macros.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"

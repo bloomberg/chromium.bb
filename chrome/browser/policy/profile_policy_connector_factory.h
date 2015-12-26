@@ -8,7 +8,7 @@
 #include <list>
 #include <map>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/content/browser_context_keyed_base_factory.h"
 

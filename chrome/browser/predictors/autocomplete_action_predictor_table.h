@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/predictors/predictor_table_base.h"
 #include "url/gurl.h"

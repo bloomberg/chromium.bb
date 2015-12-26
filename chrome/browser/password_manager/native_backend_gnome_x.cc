@@ -6,12 +6,13 @@
 
 #include <dlfcn.h>
 #include <gnome-keyring.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <map>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -134,7 +135,7 @@ scoped_ptr<PasswordForm> FormFromAttributes(GnomeKeyringAttributeList* attrs) {
   form->signon_realm = string_attr_map["signon_realm"];
   form->ssl_valid = uint_attr_map["ssl_valid"];
   form->preferred = uint_attr_map["preferred"];
-  int64 date_created = 0;
+  int64_t date_created = 0;
   bool date_ok = base::StringToInt64(string_attr_map["date_created"],
                                      &date_created);
   DCHECK(date_ok);
@@ -151,7 +152,7 @@ scoped_ptr<PasswordForm> FormFromAttributes(GnomeKeyringAttributeList* attrs) {
   form->type = static_cast<PasswordForm::Type>(uint_attr_map["type"]);
   form->times_used = uint_attr_map["times_used"];
   form->scheme = static_cast<PasswordForm::Scheme>(uint_attr_map["scheme"]);
-  int64 date_synced = 0;
+  int64_t date_synced = 0;
   base::StringToInt64(string_attr_map["date_synced"], &date_synced);
   form->date_synced = base::Time::FromInternalValue(date_synced);
   form->display_name = UTF8ToUTF16(string_attr_map["display_name"]);
@@ -335,12 +336,12 @@ class GKRMethod : public GnomeKeyringLoader {
 
 void GKRMethod::AddLogin(const PasswordForm& form, const char* app_string) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  int64 date_created = form.date_created.ToInternalValue();
+  int64_t date_created = form.date_created.ToInternalValue();
   // If we are asked to save a password with 0 date, use the current time.
   // We don't want to actually save passwords as though on January 1, 1601.
   if (!date_created)
     date_created = base::Time::Now().ToInternalValue();
-  int64 date_synced = form.date_synced.ToInternalValue();
+  int64_t date_synced = form.date_synced.ToInternalValue();
   std::string form_data;
   SerializeFormDataToBase64String(form.form_data, &form_data);
   gnome_keyring_store_password(

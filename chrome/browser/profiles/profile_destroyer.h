@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_DESTROYER_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_DESTROYER_H_
 
+#include <stdint.h>
+
 #include <set>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -50,7 +53,7 @@ class ProfileDestroyer : public content::RenderProcessHostObserver {
   base::Timer timer_;
 
   // Used to count down the number of render process host left.
-  uint32 num_hosts_;
+  uint32_t num_hosts_;
 
   // The profile being destroyed. If it is set to NULL, it is a signal from
   // another instance of ProfileDestroyer that this instance is canceled.

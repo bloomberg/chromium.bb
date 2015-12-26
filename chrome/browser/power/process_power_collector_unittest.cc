@@ -4,6 +4,7 @@
 
 #include "chrome/browser/power/process_power_collector.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/apps/scoped_keep_alive.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"

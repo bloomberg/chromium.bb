@@ -4,6 +4,9 @@
 
 #include "chrome/browser/profile_resetter/brandcode_config_fetcher.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"

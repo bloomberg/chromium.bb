@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/performance_monitor/process_metrics_history.h"

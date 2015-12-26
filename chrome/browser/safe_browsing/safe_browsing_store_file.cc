@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 
+#include <stddef.h>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/md5.h"
@@ -17,54 +19,54 @@ namespace {
 
 // NOTE(shess): kFileMagic should not be a byte-wise palindrome, so
 // that byte-order changes force corruption.
-const int32 kFileMagic = 0x600D71FE;
+const int32_t kFileMagic = 0x600D71FE;
 
 // Version history:
 // Version 6: aad08754/r2814 by erikkay@google.com on 2008-10-02 (sqlite)
 // Version 7: 6afe28a5/r37435 by shess@chromium.org on 2010-01-28
 // Version 8: d3dd0715/r259791 by shess@chromium.org on 2014-03-27
-const int32 kFileVersion = 8;
+const int32_t kFileVersion = 8;
 
 // ReadAndVerifyHeader() returns this in case of error.
-const int32 kInvalidVersion = -1;
+const int32_t kInvalidVersion = -1;
 
 // Starting with version 8, the storage is sorted and can be sharded to allow
 // updates to be done with lower memory requirements.  Newly written files will
 // be sharded to need less than this amount of memory during update.  Larger
 // values are preferred to minimize looping overhead during processing.
-const int64 kUpdateStorageBytes = 100 * 1024;
+const int64_t kUpdateStorageBytes = 100 * 1024;
 
 // Prevent excessive sharding by setting a lower limit on the shard stride.
 // Smaller values should work fine, but very small values will probably lead to
 // poor performance.  Shard stride is indirectly related to
 // |kUpdateStorageBytes|, setting that very small will bump against this.
-const uint32 kMinShardStride = 1 << 24;
+const uint32_t kMinShardStride = 1 << 24;
 
 // Strides over the entire SBPrefix space.
-const uint64 kMaxShardStride = 1ULL << 32;
+const uint64_t kMaxShardStride = 1ULL << 32;
 
 // Maximum SBPrefix value.
 const SBPrefix kMaxSBPrefix = 0xFFFFFFFF;
 
 // Header at the front of the main database file.
 struct FileHeader {
-  int32 magic, version;
-  uint32 add_chunk_count, sub_chunk_count;
-  uint32 shard_stride;
+  int32_t magic, version;
+  uint32_t add_chunk_count, sub_chunk_count;
+  uint32_t shard_stride;
   // TODO(shess): Is this where 64-bit will bite me?  Perhaps write a
   // specialized read/write?
 };
 
 // Header for each chunk in the chunk-accumulation file.
 struct ChunkHeader {
-  uint32 add_prefix_count, sub_prefix_count;
-  uint32 add_hash_count, sub_hash_count;
+  uint32_t add_prefix_count, sub_prefix_count;
+  uint32_t add_hash_count, sub_hash_count;
 };
 
 // Header for each shard of data in the main database file.
 struct ShardHeader {
-  uint32 add_prefix_count, sub_prefix_count;
-  uint32 add_hash_count, sub_hash_count;
+  uint32_t add_prefix_count, sub_prefix_count;
+  uint32_t add_hash_count, sub_hash_count;
 };
 
 // Enumerate different format-change events for histogramming
@@ -194,11 +196,11 @@ bool WriteContainer(const CT& values, FILE* fp,
 }
 
 // Delete the chunks in |deleted| from |chunks|.
-void DeleteChunksFromSet(const base::hash_set<int32>& deleted,
-                         std::set<int32>* chunks) {
-  for (std::set<int32>::iterator iter = chunks->begin();
+void DeleteChunksFromSet(const base::hash_set<int32_t>& deleted,
+                         std::set<int32_t>* chunks) {
+  for (std::set<int32_t>::iterator iter = chunks->begin();
        iter != chunks->end();) {
-    std::set<int32>::iterator prev = iter++;
+    std::set<int32_t>::iterator prev = iter++;
     if (deleted.count(*prev) > 0)
       chunks->erase(prev);
   }
@@ -220,8 +222,8 @@ bool ReadAndVerifyChecksum(FILE* fp, base::MD5Context* context) {
 // returned.  kInvalidVersion is returned for sanity check or checksum failure.
 int ReadAndVerifyHeader(const base::FilePath& filename,
                         FileHeader* header,
-                        std::set<int32>* add_chunks,
-                        std::set<int32>* sub_chunks,
+                        std::set<int32_t>* add_chunks,
+                        std::set<int32_t>* sub_chunks,
                         FILE* fp,
                         base::MD5Context* context) {
   DCHECK(header);
@@ -261,9 +263,9 @@ int ReadAndVerifyHeader(const base::FilePath& filename,
 // Helper function to write out the initial header and chunks-contained data.
 // Rewinds |fp|, initializes |context|, then writes a file header and
 // |add_chunks| and |sub_chunks|.
-bool WriteHeader(uint32 out_stride,
-                 const std::set<int32>& add_chunks,
-                 const std::set<int32>& sub_chunks,
+bool WriteHeader(uint32_t out_stride,
+                 const std::set<int32_t>& add_chunks,
+                 const std::set<int32_t>& sub_chunks,
                  FILE* fp,
                  base::MD5Context* context) {
   if (!FileRewind(fp))
@@ -400,8 +402,8 @@ class StateInternal {
   // SBProcessSubs).
   void MergeDataAndProcess(const StateInternalPos& beg,
                            const StateInternalPos& end,
-                           const base::hash_set<int32>& add_del_cache,
-                           const base::hash_set<int32>& sub_del_cache) {
+                           const base::hash_set<int32_t>& add_del_cache,
+                           const base::hash_set<int32_t>& sub_del_cache) {
     container_merge(&add_prefixes_,
                     beg.add_prefixes_iter_,
                     end.add_prefixes_iter_,
@@ -511,8 +513,8 @@ bool ReadDbStateHelper(const base::FilePath& filename,
   if (file.get() == NULL)
     return false;
 
-  std::set<int32> add_chunks;
-  std::set<int32> sub_chunks;
+  std::set<int32_t> add_chunks;
+  std::set<int32_t> sub_chunks;
 
   base::MD5Context context;
   FileHeader header;
@@ -522,8 +524,8 @@ bool ReadDbStateHelper(const base::FilePath& filename,
   if (version == kInvalidVersion)
     return false;
 
-  uint64 in_min = 0;
-  uint64 in_stride = header.shard_stride;
+  uint64_t in_min = 0;
+  uint64_t in_stride = header.shard_stride;
   if (!in_stride)
     in_stride = kMaxShardStride;
   if (!IsPowerOfTwo(in_stride))
@@ -548,11 +550,11 @@ bool ReadDbStateHelper(const base::FilePath& filename,
   if (!ReadAndVerifyChecksum(file.get(), &context))
     return false;
 
-  int64 size = 0;
+  int64_t size = 0;
   if (!base::GetFileSize(filename, &size))
     return false;
 
-  return static_cast<int64>(ftell(file.get())) == size;
+  return static_cast<int64_t>(ftell(file.get())) == size;
 }
 
 }  // namespace
@@ -602,7 +604,7 @@ bool SafeBrowsingStoreFile::CheckValidity() {
   if (!FileRewind(file_.get()))
     return OnCorruptDatabase();
 
-  int64 size = 0;
+  int64_t size = 0;
   if (!base::GetFileSize(filename_, &size))
     return OnCorruptDatabase();
 
@@ -611,7 +613,7 @@ bool SafeBrowsingStoreFile::CheckValidity() {
 
   // Read everything except the final digest.
   size_t bytes_left = static_cast<size_t>(size);
-  CHECK(size == static_cast<int64>(bytes_left));
+  CHECK(size == static_cast<int64_t>(bytes_left));
   if (bytes_left < sizeof(base::MD5Digest))
     return OnCorruptDatabase();
   bytes_left -= sizeof(base::MD5Digest);
@@ -649,7 +651,7 @@ bool SafeBrowsingStoreFile::BeginChunk() {
   return ClearChunkBuffers();
 }
 
-bool SafeBrowsingStoreFile::WriteAddPrefix(int32 chunk_id, SBPrefix prefix) {
+bool SafeBrowsingStoreFile::WriteAddPrefix(int32_t chunk_id, SBPrefix prefix) {
   DCHECK(CalledOnValidThread());
   add_prefixes_.push_back(SBAddPrefix(chunk_id, prefix));
   return true;
@@ -686,22 +688,23 @@ bool SafeBrowsingStoreFile::GetAddFullHashes(
   return true;
 }
 
-bool SafeBrowsingStoreFile::WriteAddHash(int32 chunk_id,
+bool SafeBrowsingStoreFile::WriteAddHash(int32_t chunk_id,
                                          const SBFullHash& full_hash) {
   DCHECK(CalledOnValidThread());
   add_hashes_.push_back(SBAddFullHash(chunk_id, full_hash));
   return true;
 }
 
-bool SafeBrowsingStoreFile::WriteSubPrefix(int32 chunk_id,
-                                           int32 add_chunk_id,
+bool SafeBrowsingStoreFile::WriteSubPrefix(int32_t chunk_id,
+                                           int32_t add_chunk_id,
                                            SBPrefix prefix) {
   DCHECK(CalledOnValidThread());
   sub_prefixes_.push_back(SBSubPrefix(chunk_id, add_chunk_id, prefix));
   return true;
 }
 
-bool SafeBrowsingStoreFile::WriteSubHash(int32 chunk_id, int32 add_chunk_id,
+bool SafeBrowsingStoreFile::WriteSubHash(int32_t chunk_id,
+                                         int32_t add_chunk_id,
                                          const SBFullHash& full_hash) {
   DCHECK(CalledOnValidThread());
   sub_hashes_.push_back(SBSubFullHash(chunk_id, add_chunk_id, full_hash));
@@ -835,7 +838,7 @@ bool SafeBrowsingStoreFile::DoUpdate(
     return false;
 
   // Get chunk file's size for validating counts.
-  int64 update_size = 0;
+  int64_t update_size = 0;
   if (!base::GetFileSize(TemporaryFileForFilename(filename_), &update_size))
     return OnCorruptDatabase();
 
@@ -852,7 +855,7 @@ bool SafeBrowsingStoreFile::DoUpdate(
   for (int i = 0; i < chunks_written_; ++i) {
     ChunkHeader header;
 
-    int64 ofs = ftell(new_file_.get());
+    int64_t ofs = ftell(new_file_.get());
     if (ofs == -1)
       return false;
 
@@ -861,7 +864,7 @@ bool SafeBrowsingStoreFile::DoUpdate(
 
     // As a safety measure, make sure that the header describes a sane
     // chunk, given the remaining file size.
-    int64 expected_size = ofs + sizeof(ChunkHeader);
+    int64_t expected_size = ofs + sizeof(ChunkHeader);
     expected_size += header.add_prefix_count * sizeof(SBAddPrefix);
     expected_size += header.sub_prefix_count * sizeof(SBSubPrefix);
     expected_size += header.add_hash_count * sizeof(SBAddFullHash);
@@ -883,9 +886,9 @@ bool SafeBrowsingStoreFile::DoUpdate(
   // Strides must be an even power of two.  |in_stride| will be derived from the
   // input file.  |out_stride| will be derived from an estimate of the resulting
   // file's size.  |process_stride| will be the max of both.
-  uint64 in_stride = kMaxShardStride;
-  uint64 out_stride = kMaxShardStride;
-  uint64 process_stride = 0;
+  uint64_t in_stride = kMaxShardStride;
+  uint64_t out_stride = kMaxShardStride;
+  uint64_t process_stride = 0;
 
   // Used to verify the input's checksum if |!empty_|.
   base::MD5Context in_context;
@@ -915,13 +918,13 @@ bool SafeBrowsingStoreFile::DoUpdate(
 
   // Calculate |out_stride| to break the file down into reasonable shards.
   {
-    int64 original_size = 0;
+    int64_t original_size = 0;
     if (!empty_ && !base::GetFileSize(filename_, &original_size))
       return OnCorruptDatabase();
 
     // Approximate the final size as everything.  Subs and deletes will reduce
     // the size, but modest over-sharding won't hurt much.
-    int64 shard_size = original_size + update_size;
+    int64_t shard_size = original_size + update_size;
 
     // Keep splitting until a single stride of data fits the target.
     size_t shifts = 0;
@@ -950,9 +953,9 @@ bool SafeBrowsingStoreFile::DoUpdate(
   }
 
   // Start at the beginning of the SBPrefix space.
-  uint64 in_min = 0;
-  uint64 out_min = 0;
-  uint64 process_min = 0;
+  uint64_t in_min = 0;
+  uint64_t out_min = 0;
+  uint64_t process_min = 0;
 
   // Start at the beginning of the updates.
   StateInternalPos new_pos = new_state.StateBegin();
@@ -1098,44 +1101,44 @@ bool SafeBrowsingStoreFile::CancelUpdate() {
   return ret;
 }
 
-void SafeBrowsingStoreFile::SetAddChunk(int32 chunk_id) {
+void SafeBrowsingStoreFile::SetAddChunk(int32_t chunk_id) {
   DCHECK(CalledOnValidThread());
   add_chunks_cache_.insert(chunk_id);
 }
 
-bool SafeBrowsingStoreFile::CheckAddChunk(int32 chunk_id) {
+bool SafeBrowsingStoreFile::CheckAddChunk(int32_t chunk_id) {
   DCHECK(CalledOnValidThread());
   return add_chunks_cache_.count(chunk_id) > 0;
 }
 
-void SafeBrowsingStoreFile::GetAddChunks(std::vector<int32>* out) {
+void SafeBrowsingStoreFile::GetAddChunks(std::vector<int32_t>* out) {
   DCHECK(CalledOnValidThread());
   out->clear();
   out->insert(out->end(), add_chunks_cache_.begin(), add_chunks_cache_.end());
 }
 
-void SafeBrowsingStoreFile::SetSubChunk(int32 chunk_id) {
+void SafeBrowsingStoreFile::SetSubChunk(int32_t chunk_id) {
   DCHECK(CalledOnValidThread());
   sub_chunks_cache_.insert(chunk_id);
 }
 
-bool SafeBrowsingStoreFile::CheckSubChunk(int32 chunk_id) {
+bool SafeBrowsingStoreFile::CheckSubChunk(int32_t chunk_id) {
   DCHECK(CalledOnValidThread());
   return sub_chunks_cache_.count(chunk_id) > 0;
 }
 
-void SafeBrowsingStoreFile::GetSubChunks(std::vector<int32>* out) {
+void SafeBrowsingStoreFile::GetSubChunks(std::vector<int32_t>* out) {
   DCHECK(CalledOnValidThread());
   out->clear();
   out->insert(out->end(), sub_chunks_cache_.begin(), sub_chunks_cache_.end());
 }
 
-void SafeBrowsingStoreFile::DeleteAddChunk(int32 chunk_id) {
+void SafeBrowsingStoreFile::DeleteAddChunk(int32_t chunk_id) {
   DCHECK(CalledOnValidThread());
   add_del_cache_.insert(chunk_id);
 }
 
-void SafeBrowsingStoreFile::DeleteSubChunk(int32 chunk_id) {
+void SafeBrowsingStoreFile::DeleteSubChunk(int32_t chunk_id) {
   DCHECK(CalledOnValidThread());
   sub_del_cache_.insert(chunk_id);
 }

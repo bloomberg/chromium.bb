@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_PREFS_INCOGNITO_MODE_PREFS_H_
 #define CHROME_BROWSER_PREFS_INCOGNITO_MODE_PREFS_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 
 class PrefService;
 class Profile;

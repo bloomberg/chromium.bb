@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/cloud/remote_commands_invalidator.h"
 
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/invalidation/fake_invalidation_service.h"

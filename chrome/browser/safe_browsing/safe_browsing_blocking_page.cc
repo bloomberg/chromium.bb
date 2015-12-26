@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
@@ -80,7 +81,7 @@ const char kSocialEngineeringEnabled[] = "Enabled";
 // but clicked "proceed anyway", we delay the call to
 // ThreatDetails::FinishCollection() by this much time (in
 // milliseconds).
-const int64 kMalwareDetailsProceedDelayMilliSeconds = 3000;
+const int64_t kMalwareDetailsProceedDelayMilliSeconds = 3000;
 
 // Constants for the Experience Sampling instrumentation.
 const char kEventNameMalware[] = "safebrowsing_interstitial_";
@@ -444,7 +445,7 @@ void SafeBrowsingBlockingPage::OnDontProceed() {
   }
 }
 
-void SafeBrowsingBlockingPage::FinishThreatDetails(int64 delay_ms,
+void SafeBrowsingBlockingPage::FinishThreatDetails(int64_t delay_ms,
                                                    bool did_proceed,
                                                    int num_visits) {
   if (threat_details_.get() == NULL)

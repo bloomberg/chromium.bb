@@ -7,10 +7,10 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/values.h"
 #include "net/test/spawned_test_server/local_test_server.h"
 #include "url/gurl.h"

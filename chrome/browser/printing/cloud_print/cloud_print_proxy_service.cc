@@ -4,6 +4,8 @@
 
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 
+#include <stddef.h>
+
 #include <stack>
 #include <vector>
 

@@ -4,9 +4,12 @@
 
 #include "chrome/browser/search/local_ntp_source.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"

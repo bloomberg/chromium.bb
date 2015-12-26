@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PREFS_PROFILE_PREF_STORE_MANAGER_H_
 #define CHROME_BROWSER_PREFS_PROFILE_PREF_STORE_MANAGER_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

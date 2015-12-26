@@ -8,6 +8,8 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_LOCAL_DATABASE_MANAGER_H_
 #define CHROME_BROWSER_SAFE_BROWSING_LOCAL_DATABASE_MANAGER_H_
 
+#include <stddef.h>
+
 #include <deque>
 #include <map>
 #include <set>
@@ -17,6 +19,7 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

@@ -7,8 +7,8 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 
 class GlobalErrorService;

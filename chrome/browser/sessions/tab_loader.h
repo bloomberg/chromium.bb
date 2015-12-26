@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_SESSIONS_TAB_LOADER_H_
 #define CHROME_BROWSER_SESSIONS_TAB_LOADER_H_
 
+#include <stddef.h>
+
 #include <list>
 #include <set>
 
+#include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"

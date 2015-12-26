@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_RENDERER_HOST_PEPPER_PEPPER_FLASH_DRM_HOST_H_
 #define CHROME_BROWSER_RENDERER_HOST_PEPPER_PEPPER_FLASH_DRM_HOST_H_
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/renderer_host/pepper/device_id_fetcher.h"
 #include "ppapi/host/host_message_context.h"

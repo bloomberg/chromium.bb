@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_FEEDBACK_H_
 #define CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_FEEDBACK_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback_forward.h"
@@ -37,7 +39,7 @@ class DownloadFeedback : public base::NonThreadSafe {
   // The largest file size we support uploading.
   // Note: changing this will affect the max size of
   // SBDownloadFeedback.SizeSuccess and SizeFailure histograms.
-  static const int64 kMaxUploadSize;
+  static const int64_t kMaxUploadSize;
 
   // The URL where the browser sends download feedback requests.
   static const char kSbFeedbackURL[];

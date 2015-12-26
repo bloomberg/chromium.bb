@@ -4,6 +4,8 @@
 
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <utility>
 
@@ -296,7 +298,7 @@ void ResourcePrefetchPredictorTables::GetAllDataHelper(
 
     PrefetchDataMap::iterator it = data_map->find(primary_key);
     if (it != data_map->end()) {
-      int64 last_visit = metadata_reader.ColumnInt64(1);
+      int64_t last_visit = metadata_reader.ColumnInt64(1);
       it->second.last_visit = base::Time::FromInternalValue(last_visit);
     } else {
       to_delete->push_back(primary_key);

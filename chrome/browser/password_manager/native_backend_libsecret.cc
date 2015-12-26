@@ -5,9 +5,10 @@
 #include "chrome/browser/password_manager/native_backend_libsecret.h"
 
 #include <dlfcn.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <list>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -160,7 +161,7 @@ scoped_ptr<PasswordForm> FormOutOfAttributes(GHashTable* attrs) {
   form->signon_realm = GetStringFromAttributes(attrs, "signon_realm");
   form->ssl_valid = GetUintFromAttributes(attrs, "ssl_valid");
   form->preferred = GetUintFromAttributes(attrs, "preferred");
-  int64 date_created = 0;
+  int64_t date_created = 0;
   bool date_ok = base::StringToInt64(
       GetStringFromAttributes(attrs, "date_created"), &date_created);
   DCHECK(date_ok);
@@ -180,7 +181,7 @@ scoped_ptr<PasswordForm> FormOutOfAttributes(GHashTable* attrs) {
   form->times_used = GetUintFromAttributes(attrs, "times_used");
   form->scheme =
       static_cast<PasswordForm::Scheme>(GetUintFromAttributes(attrs, "scheme"));
-  int64 date_synced = 0;
+  int64_t date_synced = 0;
   base::StringToInt64(GetStringFromAttributes(attrs, "date_synced"),
                       &date_synced);
   form->date_synced = base::Time::FromInternalValue(date_synced);
@@ -210,7 +211,7 @@ class LibsecretAttributesBuilder {
   LibsecretAttributesBuilder();
   ~LibsecretAttributesBuilder();
   void Append(const std::string& name, const std::string& value);
-  void Append(const std::string& name, int64 value);
+  void Append(const std::string& name, int64_t value);
   // GHashTable, its keys and values returned from Get() are destroyed in
   // |LibsecretAttributesBuilder| desctructor.
   GHashTable* Get() { return attrs_; }
@@ -242,7 +243,8 @@ void LibsecretAttributesBuilder::Append(const std::string& name,
   g_hash_table_insert(attrs_, name_str, value_str);
 }
 
-void LibsecretAttributesBuilder::Append(const std::string& name, int64 value) {
+void LibsecretAttributesBuilder::Append(const std::string& name,
+                                        int64_t value) {
   Append(name, base::Int64ToString(value));
 }
 
@@ -433,12 +435,12 @@ bool NativeBackendLibsecret::AddUpdateLoginSearch(
 }
 
 bool NativeBackendLibsecret::RawAddLogin(const PasswordForm& form) {
-  int64 date_created = form.date_created.ToInternalValue();
+  int64_t date_created = form.date_created.ToInternalValue();
   // If we are asked to save a password with 0 date, use the current time.
   // We don't want to actually save passwords as though on January 1, 1601.
   if (!date_created)
     date_created = base::Time::Now().ToInternalValue();
-  int64 date_synced = form.date_synced.ToInternalValue();
+  int64_t date_synced = form.date_synced.ToInternalValue();
   std::string form_data;
   SerializeFormDataToBase64String(form.form_data, &form_data);
   GError* error = nullptr;

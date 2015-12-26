@@ -4,6 +4,8 @@
 
 #include "chrome/browser/printing/print_preview_message_handler.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/bind.h"

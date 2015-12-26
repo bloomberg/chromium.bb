@@ -4,14 +4,19 @@
 
 #include "chrome/browser/profiles/profile_info_cache_unittest.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_avatar_downloader.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
@@ -125,7 +130,7 @@ TEST_F(ProfileInfoCacheTest, AddProfiles) {
   EXPECT_EQ(0u, GetCache()->GetNumberOfProfiles());
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  for (uint32 i = 0; i < 4; ++i) {
+  for (uint32_t i = 0; i < 4; ++i) {
     base::FilePath profile_path =
         GetProfilePath(base::StringPrintf("path_%ud", i));
     base::string16 profile_name =
@@ -158,7 +163,7 @@ TEST_F(ProfileInfoCacheTest, AddProfiles) {
   ResetCache();
 
   EXPECT_EQ(4u, GetCache()->GetNumberOfProfiles());
-  for (uint32 i = 0; i < 4; ++i) {
+  for (uint32_t i = 0; i < 4; ++i) {
     base::FilePath profile_path =
           GetProfilePath(base::StringPrintf("path_%ud", i));
     EXPECT_EQ(i, GetCache()->GetIndexOfProfileWithPath(profile_path));

@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_ACCOUNT_CHOOSER_DIALOG_ANDROID_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_ACCOUNT_CHOOSER_DIALOG_ANDROID_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/android/jni_android.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
 

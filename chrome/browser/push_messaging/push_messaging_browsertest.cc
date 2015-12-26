@@ -2,15 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
@@ -173,7 +178,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   }
 
   PushMessagingAppIdentifier GetAppIdentifierForServiceWorkerRegistration(
-      int64 service_worker_registration_id);
+      int64_t service_worker_registration_id);
 
   void SendMessageAndWaitUntilHandled(
       const PushMessagingAppIdentifier& app_identifier,
@@ -263,7 +268,7 @@ void PushMessagingBrowserTest::TryToSubscribeSuccessfully(
 
 PushMessagingAppIdentifier
 PushMessagingBrowserTest::GetAppIdentifierForServiceWorkerRegistration(
-    int64 service_worker_registration_id) {
+    int64_t service_worker_registration_id) {
   GURL origin = https_server()->GetURL("/").GetOrigin();
   PushMessagingAppIdentifier app_identifier =
       PushMessagingAppIdentifier::FindByServiceWorker(

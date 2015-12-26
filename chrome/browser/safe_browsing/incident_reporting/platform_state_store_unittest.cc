@@ -6,6 +6,8 @@
 
 #if defined(USE_PLATFORM_STATE_STORE)
 
+#include <stdint.h>
+
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"

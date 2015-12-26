@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/password_manager/password_store_mac.h"
-#include "chrome/browser/password_manager/password_store_mac_internal.h"
 
 #include <CoreServices/CoreServices.h>
+#include <stddef.h>
 #include <set>
 #include <string>
 #include <utility>
@@ -15,12 +15,14 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/mac/security_wrappers.h"
+#include "chrome/browser/password_manager/password_store_mac_internal.h"
 #include "components/os_crypt/os_crypt.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/login_database.h"

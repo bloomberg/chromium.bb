@@ -4,6 +4,8 @@
 
 #include "chrome/browser/printing/pdf_to_emf_converter.h"
 
+#include <stdint.h>
+
 #include <queue>
 #include <utility>
 
@@ -11,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/chrome_utility_printing_messages.h"
 #include "chrome/grit/generated_resources.h"
@@ -267,7 +270,7 @@ void LazyEmf::Close() const {
 
 bool LazyEmf::LoadEmf(Emf* emf) const {
   file_->Seek(base::File::FROM_BEGIN, 0);
-  int64 size = file_->GetLength();
+  int64_t size = file_->GetLength();
   if (size <= 0)
     return false;
   std::vector<char> data(size);

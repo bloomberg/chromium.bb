@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_RENDERER_CONTEXT_MENU_CONTEXT_MENU_CONTENT_TYPE_FACTORY_H_
 #define CHROME_BROWSER_RENDERER_CONTEXT_MENU_CONTEXT_MENU_CONTENT_TYPE_FACTORY_H_
 
+#include "base/macros.h"
 #include "content/public/common/context_menu_params.h"
 
 class ContextMenuContentType;

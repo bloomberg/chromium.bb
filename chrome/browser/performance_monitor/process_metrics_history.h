@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MONITOR_PROCESS_METRICS_HISTORY_H_
 #define CHROME_BROWSER_PERFORMANCE_MONITOR_PROCESS_METRICS_HISTORY_H_
 
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/process/process_handle.h"
 #include "content/public/browser/background_tracing_manager.h"

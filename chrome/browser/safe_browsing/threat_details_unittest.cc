@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/pickle.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
@@ -270,7 +273,7 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
     std::sort(expected.begin(), expected.end(),
               &ThreatDetailsTest::ResourceLessThan);
 
-    for (uint32 i = 0; i < expected.size(); ++i) {
+    for (uint32_t i = 0; i < expected.size(); ++i) {
       VerifyResource(resources[i], expected[i]);
     }
 

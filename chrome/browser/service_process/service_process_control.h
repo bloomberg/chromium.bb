@@ -5,18 +5,20 @@
 #ifndef CHROME_BROWSER_SERVICE_PROCESS_SERVICE_PROCESS_CONTROL_H_
 #define CHROME_BROWSER_SERVICE_PROCESS_SERVICE_PROCESS_CONTROL_H_
 
+#include <stdint.h>
+
 #include <queue>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/process/process.h"
+#include "build/build_config.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -99,7 +101,7 @@ class ServiceProcessControl : public IPC::Sender,
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelError() override;
 
   // IPC::Sender implementation
@@ -166,7 +168,7 @@ class ServiceProcessControl : public IPC::Sender,
     scoped_ptr<base::CommandLine> cmd_line_;
     base::Closure notify_task_;
     bool launched_;
-    uint32 retry_count_;
+    uint32_t retry_count_;
     base::Process process_;
   };
 

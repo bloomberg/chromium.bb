@@ -5,11 +5,13 @@
 #include "chrome/browser/process_singleton.h"
 
 #include <shellapi.h>
+#include <stddef.h>
 
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/process/process.h"
 #include "base/process/process_info.h"
 #include "base/strings/string_number_conversions.h"

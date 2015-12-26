@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/search/search_model.h"
 

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/profiles/profile_manager.h"
 
+#include <stdint.h>
+
 #include <set>
 
 #include "base/bind.h"
@@ -20,6 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/startup_task_runner_service_factory.h"
 #include "chrome/browser/browser_process.h"
@@ -129,9 +132,9 @@ std::vector<base::FilePath>& ProfilesToDelete() {
   return profiles_to_delete;
 }
 
-int64 ComputeFilesSize(const base::FilePath& directory,
-                       const base::FilePath::StringType& pattern) {
-  int64 running_size = 0;
+int64_t ComputeFilesSize(const base::FilePath& directory,
+                         const base::FilePath::StringType& pattern) {
+  int64_t running_size = 0;
   base::FileEnumerator iter(directory, false, base::FileEnumerator::FILES,
                             pattern);
   while (!iter.Next().empty())
@@ -142,9 +145,9 @@ int64 ComputeFilesSize(const base::FilePath& directory,
 // Simple task to log the size of the current profile.
 void ProfileSizeTask(const base::FilePath& path, int enabled_app_count) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  const int64 kBytesInOneMB = 1024 * 1024;
+  const int64_t kBytesInOneMB = 1024 * 1024;
 
-  int64 size = ComputeFilesSize(path, FILE_PATH_LITERAL("*"));
+  int64_t size = ComputeFilesSize(path, FILE_PATH_LITERAL("*"));
   int size_MB = static_cast<int>(size / kBytesInOneMB);
   UMA_HISTOGRAM_COUNTS_10000("Profile.TotalSize", size_MB);
 

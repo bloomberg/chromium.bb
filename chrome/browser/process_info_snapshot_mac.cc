@@ -4,6 +4,8 @@
 
 #include "chrome/browser/process_info_snapshot.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/sysctl.h>
 
 #include <sstream>
@@ -12,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
+#include "base/macros.h"
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -139,7 +142,7 @@ static bool GetProcessMemoryInfoUsingPS(
   for (std::vector<base::ProcessId>::const_iterator it = pid_list.begin();
        it != pid_list.end(); ++it) {
     command_line.AppendArg("-p");
-    command_line.AppendArg(base::Int64ToString(static_cast<int64>(*it)));
+    command_line.AppendArg(base::Int64ToString(static_cast<int64_t>(*it)));
   }
 
   std::string output;

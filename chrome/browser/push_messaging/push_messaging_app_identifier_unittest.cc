@@ -4,6 +4,8 @@
 
 #include "chrome/browser/push_messaging/push_messaging_app_identifier.h"
 
+#include <stdint.h>
+
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"

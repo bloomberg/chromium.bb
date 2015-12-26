@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/preference_validation_delegate.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

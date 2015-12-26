@@ -4,6 +4,8 @@
 
 #include "chrome/browser/push_messaging/push_messaging_notification_manager.h"
 
+#include <stddef.h>
+
 #include <bitset>
 
 #include "base/metrics/histogram_macros.h"

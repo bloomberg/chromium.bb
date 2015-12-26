@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PROFILES_PROFILE_SHORTCUT_MANAGER_WIN_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

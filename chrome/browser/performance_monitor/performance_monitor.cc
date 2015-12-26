@@ -4,6 +4,8 @@
 
 #include "chrome/browser/performance_monitor/performance_monitor.h"
 
+#include <stddef.h>
+
 #include "base/memory/singleton.h"
 #include "base/process/process_iterator.h"
 #include "base/strings/utf_string_conversions.h"

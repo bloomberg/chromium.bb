@@ -32,7 +32,10 @@
 #include <string>
 #include <vector>
 
+#include <stdint.h>
+
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
 #include "chrome/browser/interstitials/security_interstitial_page.h"
@@ -133,7 +136,7 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   // report but clicked "proceed anyway", we delay the call to
   // ThreatDetails::FinishCollection() by this much time (in
   // milliseconds), in order to get data from the blocked resource itself.
-  int64 malware_details_proceed_delay_ms_;
+  int64_t malware_details_proceed_delay_ms_;
 
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
       MalwareReportsTransitionDisabled);
@@ -148,7 +151,7 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   // pending threat details object, we look at the user's
   // preferences, and if the option to send threat details is
   // enabled, the report is scheduled to be sent on the |ui_manager_|.
-  void FinishThreatDetails(int64 delay_ms, bool did_proceed, int num_visits);
+  void FinishThreatDetails(int64_t delay_ms, bool did_proceed, int num_visits);
 
   // A list of SafeBrowsingUIManager::UnsafeResource for a tab that the user
   // should be warned about.  They are queued when displaying more than one

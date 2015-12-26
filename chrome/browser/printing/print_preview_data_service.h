@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_PRINTING_PRINT_PREVIEW_DATA_SERVICE_H_
 #define CHROME_BROWSER_PRINTING_PRINT_PREVIEW_DATA_SERVICE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
 class PrintPreviewDataStore;

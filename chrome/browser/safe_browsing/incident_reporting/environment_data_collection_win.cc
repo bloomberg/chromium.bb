@@ -4,10 +4,13 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/environment_data_collection_win.h"
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 
 #include "base/i18n/case_conversion.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
@@ -92,7 +95,7 @@ void CollectRegistryDataForKey(
   std::vector<wchar_t> name_buffer(max_name_len);
   // Read the values.
   if (num_values != 0) {
-    std::vector<uint8> value_buffer(max_value_len != 0 ? max_value_len : 1);
+    std::vector<uint8_t> value_buffer(max_value_len != 0 ? max_value_len : 1);
     DWORD name_size = 0;
     DWORD value_type = REG_NONE;
     DWORD value_size = 0;

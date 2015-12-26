@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_STORE_FILE_H_
 #define CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_STORE_FILE_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <vector>
 
@@ -13,6 +15,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
+#include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 
 namespace safe_browsing {
@@ -20,48 +23,48 @@ namespace safe_browsing {
 // Implement SafeBrowsingStore in terms of a flat file.  The file
 // format is pretty literal:
 //
-// int32 magic;             // magic number "validating" file
-// int32 version;           // format version
+// int32_t magic;             // magic number "validating" file
+// int32_t version;           // format version
 //
 // // Counts for the various data which follows the header.
-// uint32 add_chunk_count;  // Chunks seen, including empties.
-// uint32 sub_chunk_count;  // Ditto.
-// uint32 shard_stride;     // SBPrefix space covered per shard.
+// uint32_t add_chunk_count;  // Chunks seen, including empties.
+// uint32_t sub_chunk_count;  // Ditto.
+// uint32_t shard_stride;     // SBPrefix space covered per shard.
 //                          // 0==entire space in one shard.
 // // Sorted by chunk_id.
 // array[add_chunk_count] {
-//   int32 chunk_id;
+//   int32_t chunk_id;
 // }
 // // Sorted by chunk_id.
 // array[sub_chunk_count] {
-//   int32 chunk_id;
+//   int32_t chunk_id;
 // }
 // MD5Digest header_checksum;  // Checksum over preceeding data.
 //
 // // Sorted by prefix, then add chunk_id, then hash, both within shards and
 // // overall.
 // array[from 0 to wraparound to 0 by shard_stride] {
-//   uint32 add_prefix_count;
-//   uint32 sub_prefix_count;
-//   uint32 add_hash_count;
-//   uint32 sub_hash_count;
+//   uint32_t add_prefix_count;
+//   uint32_t sub_prefix_count;
+//   uint32_t add_hash_count;
+//   uint32_t sub_hash_count;
 //   array[add_prefix_count] {
-//     int32 chunk_id;
-//     uint32 prefix;
+//     int32_t chunk_id;
+//     uint32_t prefix;
 //   }
 //   array[sub_prefix_count] {
-//     int32 chunk_id;
-//     int32 add_chunk_id;
-//     uint32 add_prefix;
+//     int32_t chunk_id;
+//     int32_t add_chunk_id;
+//     uint32_t add_prefix;
 //   }
 //   array[add_hash_count] {
-//     int32 chunk_id;
-//     int32 received_time;     // From base::Time::ToTimeT().
+//     int32_t chunk_id;
+//     int32_t received_time;     // From base::Time::ToTimeT().
 //     char[32] full_hash;
 //   }
 //   array[sub_hash_count] {
-//     int32 chunk_id;
-//     int32 add_chunk_id;
+//     int32_t chunk_id;
+//     int32_t add_chunk_id;
 //     char[32] add_full_hash;
 //   }
 // }
@@ -86,27 +89,27 @@ namespace safe_browsing {
 // the list of chunks seen omitted, as that data is tracked in-memory:
 //
 // array[] {
-//   uint32 add_prefix_count;
-//   uint32 sub_prefix_count;
-//   uint32 add_hash_count;
-//   uint32 sub_hash_count;
+//   uint32_t add_prefix_count;
+//   uint32_t sub_prefix_count;
+//   uint32_t add_hash_count;
+//   uint32_t sub_hash_count;
 //   array[add_prefix_count] {
-//     int32 chunk_id;
-//     uint32 prefix;
+//     int32_t chunk_id;
+//     uint32_t prefix;
 //   }
 //   array[sub_prefix_count] {
-//     int32 chunk_id;
-//     int32 add_chunk_id;
-//     uint32 add_prefix;
+//     int32_t chunk_id;
+//     int32_t add_chunk_id;
+//     uint32_t add_prefix;
 //   }
 //   array[add_hash_count] {
-//     int32 chunk_id;
-//     int32 received_time;     // From base::Time::ToTimeT().
+//     int32_t chunk_id;
+//     int32_t received_time;     // From base::Time::ToTimeT().
 //     char[32] full_hash;
 //   }
 //   array[sub_hash_count] {
-//     int32 chunk_id;
-//     int32 add_chunk_id;
+//     int32_t chunk_id;
+//     int32_t add_chunk_id;
 //     char[32] add_full_hash;
 //   }
 // }
@@ -144,13 +147,13 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
 
   bool BeginChunk() override;
 
-  bool WriteAddPrefix(int32 chunk_id, SBPrefix prefix) override;
-  bool WriteAddHash(int32 chunk_id, const SBFullHash& full_hash) override;
-  bool WriteSubPrefix(int32 chunk_id,
-                      int32 add_chunk_id,
+  bool WriteAddPrefix(int32_t chunk_id, SBPrefix prefix) override;
+  bool WriteAddHash(int32_t chunk_id, const SBFullHash& full_hash) override;
+  bool WriteSubPrefix(int32_t chunk_id,
+                      int32_t add_chunk_id,
                       SBPrefix prefix) override;
-  bool WriteSubHash(int32 chunk_id,
-                    int32 add_chunk_id,
+  bool WriteSubHash(int32_t chunk_id,
+                    int32_t add_chunk_id,
                     const SBFullHash& full_hash) override;
   bool FinishChunk() override;
 
@@ -160,15 +163,15 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
       std::vector<SBAddFullHash>* add_full_hashes_result) override;
   bool CancelUpdate() override;
 
-  void SetAddChunk(int32 chunk_id) override;
-  bool CheckAddChunk(int32 chunk_id) override;
-  void GetAddChunks(std::vector<int32>* out) override;
-  void SetSubChunk(int32 chunk_id) override;
-  bool CheckSubChunk(int32 chunk_id) override;
-  void GetSubChunks(std::vector<int32>* out) override;
+  void SetAddChunk(int32_t chunk_id) override;
+  bool CheckAddChunk(int32_t chunk_id) override;
+  void GetAddChunks(std::vector<int32_t>* out) override;
+  void SetSubChunk(int32_t chunk_id) override;
+  bool CheckSubChunk(int32_t chunk_id) override;
+  void GetSubChunks(std::vector<int32_t>* out) override;
 
-  void DeleteAddChunk(int32 chunk_id) override;
-  void DeleteSubChunk(int32 chunk_id) override;
+  void DeleteAddChunk(int32_t chunk_id) override;
+  void DeleteSubChunk(int32_t chunk_id) override;
 
   // Verify |file_|'s checksum, calling the corruption callback if it
   // does not check out.  Empty input is considered valid.
@@ -229,10 +232,10 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   void ClearUpdateBuffers() {
     ClearChunkBuffers();
     chunks_written_ = 0;
-    std::set<int32>().swap(add_chunks_cache_);
-    std::set<int32>().swap(sub_chunks_cache_);
-    base::hash_set<int32>().swap(add_del_cache_);
-    base::hash_set<int32>().swap(sub_del_cache_);
+    std::set<int32_t>().swap(add_chunks_cache_);
+    std::set<int32_t>().swap(sub_chunks_cache_);
+    base::hash_set<int32_t>().swap(add_del_cache_);
+    base::hash_set<int32_t>().swap(sub_del_cache_);
   }
 
   // The sequenced task runner for this object, used to verify that its state
@@ -261,15 +264,15 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   // Cache of chunks which have been seen.  Loaded from the database
   // on BeginUpdate() so that it can be queried during the
   // transaction.
-  std::set<int32> add_chunks_cache_;
-  std::set<int32> sub_chunks_cache_;
+  std::set<int32_t> add_chunks_cache_;
+  std::set<int32_t> sub_chunks_cache_;
 
   // Cache the set of deleted chunks during a transaction, applied on
   // FinishUpdate().
   // TODO(shess): If the set is small enough, hash_set<> might be
   // slower than plain set<>.
-  base::hash_set<int32> add_del_cache_;
-  base::hash_set<int32> sub_del_cache_;
+  base::hash_set<int32_t> add_del_cache_;
+  base::hash_set<int32_t> sub_del_cache_;
 
   base::Closure corruption_callback_;
 

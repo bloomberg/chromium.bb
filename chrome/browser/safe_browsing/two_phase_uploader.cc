@@ -9,6 +9,7 @@
 #include <limits>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/task_runner.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"

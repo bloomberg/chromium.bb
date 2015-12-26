@@ -4,6 +4,8 @@
 //
 // Implementation of ChunkRange class.
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "chrome/browser/safe_browsing/chunk_range.h"

@@ -5,12 +5,14 @@
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 
 #include <math.h>
+#include <stddef.h>
 
 #include <vector>
 
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

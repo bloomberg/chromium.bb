@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_LINK_MANAGER_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_LINK_MANAGER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -47,7 +50,7 @@ class PrerenderLinkManager : public KeyedService,
   void OnAddPrerender(int child_id,
                       int prerender_id,
                       const GURL& url,
-                      uint32 rel_types,
+                      uint32_t rel_types,
                       const content::Referrer& referrer,
                       const gfx::Size& size,
                       int render_view_route_id);
@@ -76,7 +79,7 @@ class PrerenderLinkManager : public KeyedService,
     LinkPrerender(int launcher_child_id,
                   int prerender_id,
                   const GURL& url,
-                  uint32 rel_types,
+                  uint32_t rel_types,
                   const content::Referrer& referrer,
                   const gfx::Size& size,
                   int render_view_route_id,
@@ -88,7 +91,7 @@ class PrerenderLinkManager : public KeyedService,
     int launcher_child_id;
     int prerender_id;
     GURL url;
-    uint32 rel_types;
+    uint32_t rel_types;
     content::Referrer referrer;
     gfx::Size size;
     int render_view_route_id;

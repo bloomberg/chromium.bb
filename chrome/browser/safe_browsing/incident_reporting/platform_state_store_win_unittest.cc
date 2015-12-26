@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/platform_state_store.h"
 
+#include "base/macros.h"
 #include "base/prefs/pref_notifier_impl.h"
 #include "base/prefs/testing_pref_store.h"
 #include "base/strings/utf_string_conversions.h"

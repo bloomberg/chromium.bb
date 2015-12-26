@@ -5,6 +5,8 @@
 // windows.h must be first otherwise Win8 SDK breaks.
 #include <windows.h>
 #include <LM.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <wincred.h>
 
 // SECURITY_WIN32 must be defined in order to get
@@ -65,7 +67,7 @@ struct PasswordCheckPrefs {
   void Read(PrefService* local_state);
   void Write(PrefService* local_state);
 
-  int64 pref_last_changed_;
+  int64_t pref_last_changed_;
   bool blank_password_;
 };
 
@@ -83,7 +85,7 @@ void PasswordCheckPrefs::Write(PrefService* local_state) {
                         pref_last_changed_);
 }
 
-int64 GetPasswordLastChanged(const WCHAR* username) {
+int64_t GetPasswordLastChanged(const WCHAR* username) {
   LPUSER_INFO_1 user_info = NULL;
   DWORD age = 0;
 
@@ -104,7 +106,7 @@ int64 GetPasswordLastChanged(const WCHAR* username) {
 
 bool CheckBlankPasswordWithPrefs(const WCHAR* username,
                                  PasswordCheckPrefs* prefs) {
-  int64 last_changed = GetPasswordLastChanged(username);
+  int64_t last_changed = GetPasswordLastChanged(username);
 
   // If we cannot determine when the password was last changed
   // then assume the password is not blank

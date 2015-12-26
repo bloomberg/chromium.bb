@@ -4,11 +4,14 @@
 
 #include "chrome/browser/policy/configuration_policy_handler_list_factory.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/prefs/pref_value_map.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/policy/managed_bookmarks_policy_handler.h"
 #include "chrome/browser/profiles/incognito_mode_policy_handler.h"
 #include "chrome/common/chrome_switches.h"

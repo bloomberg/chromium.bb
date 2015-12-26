@@ -187,7 +187,7 @@ void ModelLoader::EndFetch(ClientModelStatus status, base::TimeDelta max_age) {
   ScheduleFetch(delay_ms);
 }
 
-void ModelLoader::ScheduleFetch(int64 delay_ms) {
+void ModelLoader::ScheduleFetch(int64_t delay_ms) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSbDisableAutoUpdate))
     return;

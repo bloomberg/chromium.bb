@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/background/background_trigger.h"
@@ -128,7 +129,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   void DeliverMessageCallback(const std::string& app_id,
                               const GURL& requesting_origin,
-                              int64 service_worker_registration_id,
+                              int64_t service_worker_registration_id,
                               const gcm::IncomingMessage& message,
                               const base::Closure& message_handled_closure,
                               content::PushDeliveryStatus status);

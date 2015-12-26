@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_TWO_PHASE_UPLOADER_H_
 #define CHROME_BROWSER_SAFE_BROWSING_TWO_PHASE_UPLOADER_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback.h"
@@ -39,7 +41,7 @@ class TwoPhaseUploader : public base::NonThreadSafe {
     UPLOAD_FILE,
     STATE_SUCCESS,
   };
-  typedef base::Callback<void(int64 sent, int64 total)> ProgressCallback;
+  typedef base::Callback<void(int64_t sent, int64_t total)> ProgressCallback;
   typedef base::Callback<void(State state,
                               int net_error,
                               int response_code,

@@ -5,6 +5,7 @@
 #include "chrome/browser/policy/test/local_policy_test_server.h"
 
 #include <ctype.h>
+#include <stdint.h>
 
 #include <algorithm>
 #include <vector>
@@ -14,6 +15,7 @@
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "crypto/rsa_private_key.h"
 #include "net/test/python_utils.h"
@@ -89,7 +91,7 @@ bool LocalPolicyTestServer::SetSigningKeyAndSignature(
     const crypto::RSAPrivateKey* key, const std::string& signature) {
   CHECK(server_data_dir_.IsValid());
 
-  std::vector<uint8> signing_key_bits;
+  std::vector<uint8_t> signing_key_bits;
   if (!key->ExportPrivateKey(&signing_key_bits))
     return false;
 

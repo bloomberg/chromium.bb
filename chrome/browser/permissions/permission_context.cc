@@ -4,6 +4,7 @@
 
 #include "chrome/browser/permissions/permission_context.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_factory.h"
 #include "chrome/browser/media/media_stream_camera_permission_context_factory.h"

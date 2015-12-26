@@ -4,6 +4,9 @@
 
 #include "chrome/browser/sessions/session_restore_delegate.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "chrome/browser/sessions/session_restore_stats_collector.h"
 #include "chrome/browser/sessions/tab_loader.h"

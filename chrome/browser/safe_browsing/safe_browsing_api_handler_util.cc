@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_api_handler_util.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/json/json_reader.h"

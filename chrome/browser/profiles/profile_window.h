@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PROFILES_PROFILE_WINDOW_H_
 
 #include "base/callback_forward.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/browser_window.h"

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PREDICTORS_PREDICTOR_TABLE_BASE_H_
 #define CHROME_BROWSER_PREDICTORS_PREDICTOR_TABLE_BASE_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/cancellation_flag.h"
 

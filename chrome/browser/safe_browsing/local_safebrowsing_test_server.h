@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_LOCAL_SAFEBROWSING_TEST_SERVER_H_
 #define CHROME_BROWSER_SAFE_BROWSING_LOCAL_SAFEBROWSING_TEST_SERVER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "net/test/spawned_test_server/local_test_server.h"
 
 namespace safe_browsing {

@@ -5,6 +5,8 @@
 #include "chrome/browser/safe_browsing/signature_evaluator_mac.h"
 
 #include <CoreFoundation/CoreFoundation.h>
+#include <stdint.h>
+#include <string.h>
 #include <sys/xattr.h>
 
 #include <string>

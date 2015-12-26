@@ -5,6 +5,7 @@
 #include "chrome/browser/password_manager/password_store_proxy_mac.h"
 
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"

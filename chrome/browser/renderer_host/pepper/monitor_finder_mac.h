@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_RENDERER_HOST_PEPPER_MONITOR_FINDER_MAC_H_
 
 #include <ApplicationServices/ApplicationServices.h>
+#include <stdint.h>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 

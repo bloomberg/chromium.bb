@@ -4,6 +4,8 @@
 
 #include "chrome/browser/plugins/plugin_prefs.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/bind.h"

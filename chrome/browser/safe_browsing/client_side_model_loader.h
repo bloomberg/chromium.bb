@@ -11,11 +11,14 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_CLIENT_SIDE_MODEL_LOADER_H_
 #define CHROME_BROWSER_SAFE_BROWSING_CLIENT_SIDE_MODEL_LOADER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -56,7 +59,7 @@ class ModelLoader : public net::URLFetcherDelegate {
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Schedules the next fetch of the model.
-  virtual void ScheduleFetch(int64 delay_ms);
+  virtual void ScheduleFetch(int64_t delay_ms);
 
   // Cancel any pending model fetch.
   virtual void CancelFetcher();

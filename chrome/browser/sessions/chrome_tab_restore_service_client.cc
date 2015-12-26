@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sessions/chrome_tab_restore_service_client.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"

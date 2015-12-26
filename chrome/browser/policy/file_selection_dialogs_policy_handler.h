@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_POLICY_FILE_SELECTION_DIALOGS_POLICY_HANDLER_H_
 #define CHROME_BROWSER_POLICY_FILE_SELECTION_DIALOGS_POLICY_HANDLER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 
 namespace policy {

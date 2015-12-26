@@ -4,6 +4,9 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <iterator>
 
@@ -19,6 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 #include "components/safe_browsing_db/prefix_set.h"
 #include "content/public/browser/browser_thread.h"
@@ -216,8 +220,8 @@ void UpdateChunkRangesForList(
 
 // This code always checks for non-zero file size.  This helper makes
 // that less verbose.
-int64 GetFileSizeOrZero(const base::FilePath& file_path) {
-  int64 size_64;
+int64_t GetFileSizeOrZero(const base::FilePath& file_path) {
+  int64_t size_64;
   if (!base::GetFileSize(file_path, &size_64))
     return 0;
   return size_64;
@@ -1663,9 +1667,9 @@ void SafeBrowsingDatabaseNew::LoadIpBlacklist(
     const char* full_hash = it->full_hash.full_hash;
     DCHECK_EQ(crypto::kSHA256Length, arraysize(it->full_hash.full_hash));
     // The format of the IP blacklist is:
-    // SHA-1(IPv6 prefix) + uint8(prefix size) + 11 unused bytes.
+    // SHA-1(IPv6 prefix) + uint8_t(prefix size) + 11 unused bytes.
     std::string hashed_ip_prefix(full_hash, base::kSHA1Length);
-    size_t prefix_size = static_cast<uint8>(full_hash[base::kSHA1Length]);
+    size_t prefix_size = static_cast<uint8_t>(full_hash[base::kSHA1Length]);
     if (prefix_size > kMaxIpPrefixSize || prefix_size < kMinIpPrefixSize) {
       RecordFailure(FAILURE_IP_BLACKLIST_UPDATE_INVALID);
       new_blacklist.clear();  // Load empty blacklist.
@@ -1712,7 +1716,7 @@ SafeBrowsingDatabaseNew::GetUnsynchronizedPrefixGetHashCacheForTesting() {
 
 void SafeBrowsingDatabaseNew::RecordFileSizeHistogram(
     const base::FilePath& file_path) {
-  const int64 file_size = GetFileSizeOrZero(file_path);
+  const int64_t file_size = GetFileSizeOrZero(file_path);
   const int file_size_kilobytes = static_cast<int>(file_size / 1024);
 
   base::FilePath::StringType filename = file_path.BaseName().value();

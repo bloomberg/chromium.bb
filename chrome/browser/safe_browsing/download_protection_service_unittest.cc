@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/download_protection_service.h"
 
+#include <stddef.h>
 #include <stdint.h>
 #include <map>
 #include <string>
@@ -15,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -1908,7 +1910,7 @@ class DownloadProtectionServiceFlagTest : public DownloadProtectionServiceTest {
       : blacklisted_hash_hex_("1e954d9ce0389e2ba7447216f21761f98d1e6540c2abecdbecff570e36c493db") {}
 
   void SetUp() override {
-    std::vector<uint8> bytes;
+    std::vector<uint8_t> bytes;
     ASSERT_TRUE(base::HexStringToBytes(blacklisted_hash_hex_, &bytes) &&
                 bytes.size() == 32);
     blacklisted_hash_ = std::string(bytes.begin(), bytes.end());

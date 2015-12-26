@@ -4,6 +4,8 @@
 
 #include "chrome/browser/plugins/plugin_metadata.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/logging.h"

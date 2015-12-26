@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/policy/core/browser/browser_policy_connector.h"

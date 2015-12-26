@@ -5,13 +5,15 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_STORE_H_
 #define CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_STORE_H_
 
+#include <stdint.h>
+
 #include <deque>
 #include <set>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 
@@ -47,13 +49,13 @@ class PrefixSetBuilder;
 // SBAddPrefixLess() and SBAddPrefixHashLess().
 
 struct SBAddPrefix {
-  int32 chunk_id;
+  int32_t chunk_id;
   SBPrefix prefix;
 
-  SBAddPrefix(int32 id, SBPrefix p) : chunk_id(id), prefix(p) {}
+  SBAddPrefix(int32_t id, SBPrefix p) : chunk_id(id), prefix(p) {}
   SBAddPrefix() : chunk_id(), prefix() {}
 
-  int32 GetAddChunkId() const { return chunk_id; }
+  int32_t GetAddChunkId() const { return chunk_id; }
   SBPrefix GetAddPrefix() const { return prefix; }
 };
 
@@ -62,46 +64,46 @@ struct SBAddPrefix {
 typedef std::deque<SBAddPrefix> SBAddPrefixes;
 
 struct SBSubPrefix {
-  int32 chunk_id;
-  int32 add_chunk_id;
+  int32_t chunk_id;
+  int32_t add_chunk_id;
   SBPrefix add_prefix;
 
-  SBSubPrefix(int32 id, int32 add_id, SBPrefix prefix)
+  SBSubPrefix(int32_t id, int32_t add_id, SBPrefix prefix)
       : chunk_id(id), add_chunk_id(add_id), add_prefix(prefix) {}
   SBSubPrefix() : chunk_id(), add_chunk_id(), add_prefix() {}
 
-  int32 GetAddChunkId() const { return add_chunk_id; }
+  int32_t GetAddChunkId() const { return add_chunk_id; }
   SBPrefix GetAddPrefix() const { return add_prefix; }
 };
 
 typedef std::deque<SBSubPrefix> SBSubPrefixes;
 
 struct SBAddFullHash {
-  int32 chunk_id;
+  int32_t chunk_id;
   // Received field is not used anymore, but is kept for DB compatability.
   // TODO(shess): Deprecate and remove.
-  int32 deprecated_received;
+  int32_t deprecated_received;
   SBFullHash full_hash;
 
-  SBAddFullHash(int32 id, const SBFullHash& h)
+  SBAddFullHash(int32_t id, const SBFullHash& h)
       : chunk_id(id), deprecated_received(), full_hash(h) {}
 
   SBAddFullHash() : chunk_id(), deprecated_received(), full_hash() {}
 
-  int32 GetAddChunkId() const { return chunk_id; }
+  int32_t GetAddChunkId() const { return chunk_id; }
   SBPrefix GetAddPrefix() const { return full_hash.prefix; }
 };
 
 struct SBSubFullHash {
-  int32 chunk_id;
-  int32 add_chunk_id;
+  int32_t chunk_id;
+  int32_t add_chunk_id;
   SBFullHash full_hash;
 
-  SBSubFullHash(int32 id, int32 add_id, const SBFullHash& h)
+  SBSubFullHash(int32_t id, int32_t add_id, const SBFullHash& h)
       : chunk_id(id), add_chunk_id(add_id), full_hash(h) {}
   SBSubFullHash() : chunk_id(), add_chunk_id(), full_hash() {}
 
-  int32 GetAddChunkId() const { return add_chunk_id; }
+  int32_t GetAddChunkId() const { return add_chunk_id; }
   SBPrefix GetAddPrefix() const { return full_hash.prefix; }
 };
 
@@ -139,8 +141,8 @@ void SBProcessSubs(SBAddPrefixes* add_prefixes,
                    SBSubPrefixes* sub_prefixes,
                    std::vector<SBAddFullHash>* add_full_hashes,
                    std::vector<SBSubFullHash>* sub_full_hashes,
-                   const base::hash_set<int32>& add_chunks_deleted,
-                   const base::hash_set<int32>& sub_chunks_deleted);
+                   const base::hash_set<int32_t>& add_chunks_deleted,
+                   const base::hash_set<int32_t>& sub_chunks_deleted);
 
 // Abstract interface for storing data.
 class SafeBrowsingStore {
@@ -180,12 +182,13 @@ class SafeBrowsingStore {
   // and add_chunk_id.
   virtual bool BeginChunk() = 0;
 
-  virtual bool WriteAddPrefix(int32 chunk_id, SBPrefix prefix) = 0;
-  virtual bool WriteAddHash(int32 chunk_id,
-                            const SBFullHash& full_hash) = 0;
-  virtual bool WriteSubPrefix(int32 chunk_id,
-                              int32 add_chunk_id, SBPrefix prefix) = 0;
-  virtual bool WriteSubHash(int32 chunk_id, int32 add_chunk_id,
+  virtual bool WriteAddPrefix(int32_t chunk_id, SBPrefix prefix) = 0;
+  virtual bool WriteAddHash(int32_t chunk_id, const SBFullHash& full_hash) = 0;
+  virtual bool WriteSubPrefix(int32_t chunk_id,
+                              int32_t add_chunk_id,
+                              SBPrefix prefix) = 0;
+  virtual bool WriteSubHash(int32_t chunk_id,
+                            int32_t add_chunk_id,
                             const SBFullHash& full_hash) = 0;
 
   // Collect the chunk data and preferrably store it on disk to
@@ -193,17 +196,17 @@ class SafeBrowsingStore {
   virtual bool FinishChunk() = 0;
 
   // Track the chunks which have been seen.
-  virtual void SetAddChunk(int32 chunk_id) = 0;
-  virtual bool CheckAddChunk(int32 chunk_id) = 0;
-  virtual void GetAddChunks(std::vector<int32>* out) = 0;
-  virtual void SetSubChunk(int32 chunk_id) = 0;
-  virtual bool CheckSubChunk(int32 chunk_id) = 0;
-  virtual void GetSubChunks(std::vector<int32>* out) = 0;
+  virtual void SetAddChunk(int32_t chunk_id) = 0;
+  virtual bool CheckAddChunk(int32_t chunk_id) = 0;
+  virtual void GetAddChunks(std::vector<int32_t>* out) = 0;
+  virtual void SetSubChunk(int32_t chunk_id) = 0;
+  virtual bool CheckSubChunk(int32_t chunk_id) = 0;
+  virtual void GetSubChunks(std::vector<int32_t>* out) = 0;
 
   // Delete the indicated chunk_id.  The chunk will continue to be
   // visible until the end of the transaction.
-  virtual void DeleteAddChunk(int32 chunk_id) = 0;
-  virtual void DeleteSubChunk(int32 chunk_id) = 0;
+  virtual void DeleteAddChunk(int32_t chunk_id) = 0;
+  virtual void DeleteSubChunk(int32_t chunk_id) = 0;
 
   // May be called during update to verify that the storage is valid.
   // Return true if the store seems valid.  If corruption is detected,

@@ -4,10 +4,13 @@
 
 #include "chrome/browser/safe_browsing/download_protection_service.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
@@ -23,6 +26,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -63,7 +67,7 @@
 using content::BrowserThread;
 
 namespace {
-static const int64 kDownloadRequestTimeoutMs = 7000;
+static const int64_t kDownloadRequestTimeoutMs = 7000;
 }  // namespace
 
 namespace safe_browsing {
@@ -1061,7 +1065,7 @@ void DownloadProtectionService::ParseManualBlacklistFlag() {
       command_line->GetSwitchValueASCII(switches::kSbManualDownloadBlacklist);
   for (const std::string& hash_hex : base::SplitString(
            flag_val, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
-    std::vector<uint8> bytes;
+    std::vector<uint8_t> bytes;
     if (base::HexStringToBytes(hash_hex, &bytes) && bytes.size() == 32) {
       manual_blacklist_hashes_.insert(
           std::string(bytes.begin(), bytes.end()));

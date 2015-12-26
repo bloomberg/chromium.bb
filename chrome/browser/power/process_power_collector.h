@@ -7,10 +7,12 @@
 
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/process/process_handle.h"
 #include "base/process/process_metrics.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "components/power/origin_power_map_factory.h"
 #include "url/gurl.h"
 

@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/render_process_host.h"
 
@@ -18,9 +19,9 @@ namespace {
 #if defined(OS_ANDROID)
 // Set the render host waiting time to 5s on Android, that's the same
 // as an "Application Not Responding" timeout.
-const int64 kTimerDelaySeconds = 5;
+const int64_t kTimerDelaySeconds = 5;
 #else
-const int64 kTimerDelaySeconds = 1;
+const int64_t kTimerDelaySeconds = 1;
 #endif
 
 }  // namespace

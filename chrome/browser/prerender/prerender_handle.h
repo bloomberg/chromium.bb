@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_HANDLE_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_HANDLE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/prerender/prerender_manager.h"

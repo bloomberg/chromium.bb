@@ -8,8 +8,8 @@
 #include <stddef.h>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 
 class Profile;

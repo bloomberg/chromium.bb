@@ -5,6 +5,7 @@
 #include "chrome/browser/prerender/prerender_message_filter.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/prerender/prerender_link_manager.h"
 #include "chrome/browser/prerender/prerender_link_manager_factory.h"

@@ -4,12 +4,15 @@
 
 #include "chrome/browser/prerender/prerender_contents.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <functional>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
@@ -759,7 +762,7 @@ void PrerenderContents::AddResourceThrottle(
   resource_throttles_.push_back(throttle);
 }
 
-void PrerenderContents::AddNetworkBytes(int64 bytes) {
+void PrerenderContents::AddNetworkBytes(int64_t bytes) {
   network_bytes_ += bytes;
 }
 

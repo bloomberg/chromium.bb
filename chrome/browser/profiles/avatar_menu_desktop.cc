@@ -4,6 +4,8 @@
 
 #include "chrome/browser/profiles/avatar_menu.h"
 
+#include <stddef.h>
+
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"

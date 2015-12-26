@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 class ResourcesUtil {
  public:
@@ -16,6 +16,7 @@ class ResourcesUtil {
 
  private:
   ResourcesUtil() {}
+
   DISALLOW_COPY_AND_ASSIGN(ResourcesUtil);
 };
 

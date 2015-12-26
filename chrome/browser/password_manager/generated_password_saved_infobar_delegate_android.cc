@@ -4,7 +4,7 @@
 
 #include "chrome/browser/password_manager/generated_password_saved_infobar_delegate_android.h"
 
-#include <cstddef>
+#include <stddef.h>
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/chrome_application.h"
