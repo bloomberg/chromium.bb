@@ -426,6 +426,7 @@ public:
 
     PagePopup* openPagePopup(PagePopupClient*);
     void closePagePopup(PagePopup*);
+    void cleanupPagePopup();
     LocalDOMWindow* pagePopupWindow() const;
 
     // Returns the input event we're currently processing. This is used in some
