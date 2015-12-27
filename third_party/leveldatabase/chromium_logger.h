@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_LEVELDATABASE_CHROMIUM_LOGGER_H_
 #define THIRD_PARTY_LEVELDATABASE_CHROMIUM_LOGGER_H_
 
+#include <stdint.h>
+
 #include "base/files/file.h"
 #include "base/format_macros.h"
 #include "base/strings/string_util.h"
@@ -48,7 +50,7 @@ class ChromiumLogger : public Logger {
                     t.minute,
                     t.second,
                     t.millisecond,
-                    static_cast<uint64>(thread_id));
+                    static_cast<uint64_t>(thread_id));
 
       // Print the message
       if (p < limit) {

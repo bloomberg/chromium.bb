@@ -7,13 +7,17 @@
 #ifndef STORAGE_LEVELDB_PORT_PORT_CHROMIUM_H_
 #define STORAGE_LEVELDB_PORT_PORT_CHROMIUM_H_
 
+#include <stddef.h>
 #include <stdint.h>
-#include <string>
+
 #include <cstring>
+#include <string>
+
 #include "base/atomicops.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
+#include "build/build_config.h"
 
 // Linux's ThreadIdentifier() needs this.
 #if defined(OS_LINUX)
