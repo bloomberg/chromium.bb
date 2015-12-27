@@ -1412,7 +1412,7 @@ int WebGLRenderingContextBase::drawingBufferHeight() const
     return isContextLost() ? 0 : drawingBuffer()->size().height();
 }
 
-unsigned WebGLRenderingContextBase::sizeInBytes(GLenum type)
+unsigned WebGLRenderingContextBase::sizeInBytes(GLenum type) const
 {
     switch (type) {
     case GL_BYTE:
@@ -1429,6 +1429,12 @@ unsigned WebGLRenderingContextBase::sizeInBytes(GLenum type)
         return sizeof(GLuint);
     case GL_FLOAT:
         return sizeof(GLfloat);
+    case GL_HALF_FLOAT:
+        return sizeof(GLushort);
+    case GL_INT_2_10_10_10_REV:
+        return sizeof(GLint);
+    case GL_UNSIGNED_INT_2_10_10_10_REV:
+        return sizeof(GLuint);
     }
     ASSERT_NOT_REACHED();
     return 0;
