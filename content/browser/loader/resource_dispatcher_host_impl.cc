@@ -1594,7 +1594,8 @@ scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::AddStandardHandlers(
 
   if (request->has_upload()) {
     // Block power save while uploading data.
-    throttles.push_back(new PowerSaveBlockResourceThrottle());
+    throttles.push_back(
+        new PowerSaveBlockResourceThrottle(request->url().host()));
   }
 
   // TODO(ricea): Stop looking this up so much.

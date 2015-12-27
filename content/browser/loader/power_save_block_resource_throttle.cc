@@ -14,8 +14,9 @@ const int kPowerSaveBlockDelaySeconds = 30;
 
 }  // namespace
 
-PowerSaveBlockResourceThrottle::PowerSaveBlockResourceThrottle() {
-}
+PowerSaveBlockResourceThrottle::PowerSaveBlockResourceThrottle(
+    const std::string& host)
+    : host_(host) {}
 
 PowerSaveBlockResourceThrottle::~PowerSaveBlockResourceThrottle() {
 }
@@ -41,7 +42,7 @@ const char* PowerSaveBlockResourceThrottle::GetNameForLogging() const {
 void PowerSaveBlockResourceThrottle::ActivatePowerSaveBlocker() {
   power_save_blocker_ = PowerSaveBlocker::Create(
       PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
-      PowerSaveBlocker::kReasonOther, "Uploading data");
+      PowerSaveBlocker::kReasonOther, "Uploading data to " + host_);
 }
 
 }  // namespace content
