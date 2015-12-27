@@ -83,7 +83,10 @@ def _FormatSourceHeader(root):
 
 #include "%(map_header_file)s"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
+
 #include "%(rc_header_file)s"
 
 const GritResourceMap %(map_name)s[] = {

@@ -68,7 +68,8 @@ extern const size_t kTheRcHeaderSize;''', output)
         resource_map.GetFormatter('resource_map_source')(grd, 'en', '.')))
     self.assertEqual('''\
 #include "the_resource_map_header.h"
-#include "base/basictypes.h"
+#include <stddef.h>
+#include "base/macros.h"
 #include "the_rc_header.h"
 const GritResourceMap kTheRcHeader[] = {
   {"IDC_KLONKMENU", IDC_KLONKMENU},
@@ -82,7 +83,8 @@ const size_t kTheRcHeaderSize = arraysize(kTheRcHeader);''', output)
         resource_map.GetFormatter('resource_file_map_source')(grd, 'en', '.')))
     self.assertEqual('''\
 #include "the_resource_map_header.h"
-#include "base/basictypes.h"
+#include <stddef.h>
+#include "base/macros.h"
 #include "the_rc_header.h"
 const GritResourceMap kTheRcHeader[] = {
   {"grit/testdata/klonk.rc", IDC_KLONKMENU},
@@ -136,7 +138,8 @@ extern const size_t kTheRcHeaderSize;''', output)
         resource_map.GetFormatter('resource_map_source')(grd, 'en', '.')))
     self.assertEqual('''\
 #include "the_resource_map_header.h"
-#include "base/basictypes.h"
+#include <stddef.h>
+#include "base/macros.h"
 #include "the_rc_header.h"
 const GritResourceMap kTheRcHeader[] = {
   {"IDR_KLONKMENU", IDR_KLONKMENU},
@@ -146,7 +149,8 @@ const size_t kTheRcHeaderSize = arraysize(kTheRcHeader);''', output)
         resource_map.GetFormatter('resource_map_source')(grd, 'en', '.')))
     self.assertEqual('''\
 #include "the_resource_map_header.h"
-#include "base/basictypes.h"
+#include <stddef.h>
+#include "base/macros.h"
 #include "the_rc_header.h"
 const GritResourceMap kTheRcHeader[] = {
   {"IDR_KLONKMENU", IDR_KLONKMENU},
@@ -196,7 +200,8 @@ extern const size_t kTheRcHeaderSize;''', output)
         resource_map.GetFormatter('resource_map_source')(grd, 'en', '.')))
     self.assertEqual('''\
 #include "the_resource_map_header.h"
-#include "base/basictypes.h"
+#include <stddef.h>
+#include "base/macros.h"
 #include "the_rc_header.h"
 const GritResourceMap kTheRcHeader[] = {
   {"IDC_KLONKMENU", IDC_KLONKMENU},
@@ -208,7 +213,8 @@ const size_t kTheRcHeaderSize = arraysize(kTheRcHeader);''', output)
         resource_map.GetFormatter('resource_file_map_source')(grd, 'en', '.')))
     self.assertEqual('''\
 #include "the_resource_map_header.h"
-#include "base/basictypes.h"
+#include <stddef.h>
+#include "base/macros.h"
 #include "the_rc_header.h"
 const GritResourceMap kTheRcHeader[] = {
   {"grit/testdata/klonk.rc", IDC_KLONKMENU},
@@ -266,7 +272,8 @@ extern const size_t kTheRcHeaderSize;''', output)
         resource_map.GetFormatter('resource_map_source')(grd, 'en', '.')))
     self.assertEqual('''\
 #include "the_rc_map_header.h"
-#include "base/basictypes.h"
+#include <stddef.h>
+#include "base/macros.h"
 #include "the_rc_header.h"
 const GritResourceMap kTheRcHeader[] = {
   {"IDS_PRODUCT_NAME", IDS_PRODUCT_NAME},
