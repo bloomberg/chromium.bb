@@ -5,6 +5,7 @@
 #include "storage/browser/blob/shareable_file_reference.h"
 
 #include <map>
+#include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
@@ -97,7 +98,7 @@ scoped_refptr<ShareableFileReference> ShareableFileReference::GetOrCreate(
 
   // Wasn't in the map, create a new reference and store the pointer.
   scoped_refptr<ShareableFileReference> reference(
-      new ShareableFileReference(scoped_file.Pass()));
+      new ShareableFileReference(std::move(scoped_file)));
   result.first->second = reference.get();
   return reference;
 }
@@ -109,7 +110,7 @@ void ShareableFileReference::AddFinalReleaseCallback(
 }
 
 ShareableFileReference::ShareableFileReference(ScopedFile scoped_file)
-    : scoped_file_(scoped_file.Pass()) {
+    : scoped_file_(std::move(scoped_file)) {
   DCHECK(g_file_map.Get().Find(path())->second == NULL);
 }
 

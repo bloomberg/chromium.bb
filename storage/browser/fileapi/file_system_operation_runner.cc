@@ -5,6 +5,7 @@
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -262,18 +263,17 @@ OperationID FileSystemOperationRunner::Write(
     return handle.id;
   }
 
-  scoped_ptr<FileWriterDelegate> writer_delegate(
-      new FileWriterDelegate(writer.Pass(), url.mount_option().flush_policy()));
+  scoped_ptr<FileWriterDelegate> writer_delegate(new FileWriterDelegate(
+      std::move(writer), url.mount_option().flush_policy()));
 
   scoped_ptr<net::URLRequest> blob_request(
       storage::BlobProtocolHandler::CreateBlobRequest(
-          blob.Pass(), url_request_context, writer_delegate.get()));
+          std::move(blob), url_request_context, writer_delegate.get()));
 
   PrepareForWrite(handle.id, url);
-  operation->Write(
-      url, writer_delegate.Pass(), blob_request.Pass(),
-      base::Bind(&FileSystemOperationRunner::DidWrite, AsWeakPtr(),
-                 handle, callback));
+  operation->Write(url, std::move(writer_delegate), std::move(blob_request),
+                   base::Bind(&FileSystemOperationRunner::DidWrite, AsWeakPtr(),
+                              handle, callback));
   return handle.id;
 }
 
@@ -591,7 +591,7 @@ void FileSystemOperationRunner::DidOpenFile(
                               on_close_callback));
     return;
   }
-  callback.Run(file.Pass(), on_close_callback);
+  callback.Run(std::move(file), on_close_callback);
   FinishOperation(handle.id);
 }
 

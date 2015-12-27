@@ -281,7 +281,7 @@ base::File ObfuscatedFileUtil::CreateOrOpen(
       sandbox_delegate_) {
     sandbox_delegate_->StickyInvalidateUsageCache(url.origin(), url.type());
   }
-  return file.Pass();
+  return file;
 }
 
 base::File::Error ObfuscatedFileUtil::EnsureFileExists(
@@ -1064,7 +1064,7 @@ base::File ObfuscatedFileUtil::CreateAndOpenFile(
 
   base::File file = NativeFileUtil::CreateOrOpen(dest_local_path, file_flags);
   if (!file.IsValid())
-    return file.Pass();
+    return file;
 
   if (!file.created()) {
     file.Close();
@@ -1079,7 +1079,7 @@ base::File ObfuscatedFileUtil::CreateAndOpenFile(
     return base::File(error);
   }
 
-  return file.Pass();
+  return file;
 }
 
 base::File::Error ObfuscatedFileUtil::CreateFile(
@@ -1374,7 +1374,7 @@ base::File ObfuscatedFileUtil::CreateOrOpenInternal(
       context->change_observers()->Notify(
           &FileChangeObserver::OnCreateFile, base::MakeTuple(url));
     }
-    return file.Pass();
+    return file;
   }
 
   if (file_flags & base::File::FLAG_CREATE)
@@ -1408,7 +1408,7 @@ base::File ObfuscatedFileUtil::CreateOrOpenInternal(
       LOG(WARNING) << "Lost a backing file.";
       return base::File(base::File::FILE_ERROR_FAILED);
     }
-    return file.Pass();
+    return file;
   }
 
   // If truncating we need to update the usage.
@@ -1417,7 +1417,7 @@ base::File ObfuscatedFileUtil::CreateOrOpenInternal(
     context->change_observers()->Notify(
         &FileChangeObserver::OnModifyFile, base::MakeTuple(url));
   }
-  return file.Pass();
+  return file;
 }
 
 bool ObfuscatedFileUtil::HasIsolatedStorage(const GURL& origin) {

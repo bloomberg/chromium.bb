@@ -5,8 +5,8 @@
 #include "storage/browser/database/database_tracker.h"
 
 #include <stdint.h>
-
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -761,7 +761,7 @@ const base::File* DatabaseTracker::SaveIncognitoFile(
   if (!file.IsValid())
     return NULL;
 
-  base::File* to_insert = new base::File(file.Pass());
+  base::File* to_insert = new base::File(std::move(file));
   std::pair<FileHandlesMap::iterator, bool> rv =
       incognito_file_handles_.insert(std::make_pair(vfs_file_name, to_insert));
   DCHECK(rv.second);

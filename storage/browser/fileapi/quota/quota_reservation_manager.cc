@@ -5,6 +5,7 @@
 #include "storage/browser/fileapi/quota/quota_reservation_manager.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "storage/browser/fileapi/quota/quota_reservation.h"
 #include "storage/browser/fileapi/quota/quota_reservation_buffer.h"
@@ -13,8 +14,7 @@ namespace storage {
 
 QuotaReservationManager::QuotaReservationManager(
     scoped_ptr<QuotaBackend> backend)
-    : backend_(backend.Pass()),
-      weak_ptr_factory_(this) {
+    : backend_(std::move(backend)), weak_ptr_factory_(this) {
   sequence_checker_.DetachFromSequence();
 }
 

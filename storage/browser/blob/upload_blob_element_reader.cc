@@ -5,6 +5,7 @@
 #include "storage/browser/blob/upload_blob_element_reader.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/single_thread_task_runner.h"
 #include "net/base/net_errors.h"
@@ -18,7 +19,7 @@ UploadBlobElementReader::UploadBlobElementReader(
     scoped_ptr<BlobDataHandle> handle,
     FileSystemContext* file_system_context,
     base::SingleThreadTaskRunner* file_task_runner)
-    : handle_(handle.Pass()),
+    : handle_(std::move(handle)),
       file_system_context_(file_system_context),
       file_runner_(file_task_runner) {}
 

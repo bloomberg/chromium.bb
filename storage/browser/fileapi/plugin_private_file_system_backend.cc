@@ -5,8 +5,8 @@
 #include "storage/browser/fileapi/plugin_private_file_system_backend.h"
 
 #include <stdint.h>
-
 #include <map>
+#include <utility>
 
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"
@@ -182,7 +182,8 @@ FileSystemOperation* PluginPrivateFileSystemBackend::CreateFileSystemOperation(
     base::File::Error* error_code) const {
   scoped_ptr<FileSystemOperationContext> operation_context(
       new FileSystemOperationContext(context));
-  return FileSystemOperation::Create(url, context, operation_context.Pass());
+  return FileSystemOperation::Create(url, context,
+                                     std::move(operation_context));
 }
 
 bool PluginPrivateFileSystemBackend::SupportsStreaming(

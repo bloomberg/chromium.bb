@@ -6,9 +6,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <algorithm>
 #include <limits>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -75,15 +75,15 @@ scoped_ptr<BlobDataHandle> BlobStorageContext::GetBlobDataFromUUID(
   scoped_ptr<BlobDataHandle> result;
   BlobMap::iterator found = blob_map_.find(uuid);
   if (found == blob_map_.end())
-    return result.Pass();
+    return result;
   auto* entry = found->second;
   if (entry->flags & EXCEEDED_MEMORY)
-    return result.Pass();
+    return result;
   DCHECK(!entry->IsBeingBuilt());
   result.reset(new BlobDataHandle(uuid, entry->data->content_type(),
                                   entry->data->content_disposition(), this,
                                   base::ThreadTaskRunnerHandle::Get().get()));
-  return result.Pass();
+  return result;
 }
 
 scoped_ptr<BlobDataHandle> BlobStorageContext::GetBlobDataFromPublicURL(
@@ -119,7 +119,7 @@ scoped_ptr<BlobDataHandle> BlobStorageContext::AddFinishedBlob(
   scoped_ptr<BlobDataHandle> handle =
       GetBlobDataFromUUID(external_builder.uuid_);
   DecrementBlobRefCount(external_builder.uuid_);
-  return handle.Pass();
+  return handle;
 }
 
 scoped_ptr<BlobDataHandle> BlobStorageContext::AddFinishedBlob(
@@ -273,25 +273,25 @@ scoped_refptr<BlobDataItem> BlobStorageContext::AllocateBlobItem(
     case DataElement::TYPE_BYTES:
       DCHECK(!ipc_data.offset());
       element->SetToBytes(ipc_data.bytes(), length);
-      blob_item = new BlobDataItem(element.Pass());
+      blob_item = new BlobDataItem(std::move(element));
       break;
     case DataElement::TYPE_FILE:
       element->SetToFilePathRange(ipc_data.path(), ipc_data.offset(), length,
                                   ipc_data.expected_modification_time());
       blob_item = new BlobDataItem(
-          element.Pass(), ShareableFileReference::Get(ipc_data.path()));
+          std::move(element), ShareableFileReference::Get(ipc_data.path()));
       break;
     case DataElement::TYPE_FILE_FILESYSTEM:
       element->SetToFileSystemUrlRange(ipc_data.filesystem_url(),
                                        ipc_data.offset(), length,
                                        ipc_data.expected_modification_time());
-      blob_item = new BlobDataItem(element.Pass());
+      blob_item = new BlobDataItem(std::move(element));
       break;
     case DataElement::TYPE_BLOB:
       // This is a temporary item that will be deconstructed later.
       element->SetToBlobRange(ipc_data.blob_uuid(), ipc_data.offset(),
                               ipc_data.length());
-      blob_item = new BlobDataItem(element.Pass());
+      blob_item = new BlobDataItem(std::move(element));
       break;
     case DataElement::TYPE_DISK_CACHE_ENTRY:  // This type can't be sent by IPC.
       NOTREACHED();
@@ -447,7 +447,7 @@ bool BlobStorageContext::AppendBlob(
                             static_cast<int64_t>(new_length));
         memory_usage_ += new_length;
         target_blob_builder->AppendSharedBlobItem(new ShareableBlobDataItem(
-            target_blob_uuid, new BlobDataItem(element.Pass())));
+            target_blob_uuid, new BlobDataItem(std::move(element))));
       } break;
       case DataElement::TYPE_FILE: {
         DCHECK_NE(item.length(), std::numeric_limits<uint64_t>::max())
@@ -460,7 +460,7 @@ bool BlobStorageContext::AppendBlob(
                                     item.expected_modification_time());
         target_blob_builder->AppendSharedBlobItem(new ShareableBlobDataItem(
             target_blob_uuid,
-            new BlobDataItem(element.Pass(), item.data_handle_)));
+            new BlobDataItem(std::move(element), item.data_handle_)));
       } break;
       case DataElement::TYPE_FILE_FILESYSTEM: {
         UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.BlobSlice.FileSystem",
@@ -470,7 +470,7 @@ bool BlobStorageContext::AppendBlob(
                                          item.offset() + offset, new_length,
                                          item.expected_modification_time());
         target_blob_builder->AppendSharedBlobItem(new ShareableBlobDataItem(
-            target_blob_uuid, new BlobDataItem(element.Pass())));
+            target_blob_uuid, new BlobDataItem(std::move(element))));
       } break;
       case DataElement::TYPE_DISK_CACHE_ENTRY: {
         scoped_ptr<DataElement> element(new DataElement());
@@ -478,7 +478,7 @@ bool BlobStorageContext::AppendBlob(
                                           new_length);
         target_blob_builder->AppendSharedBlobItem(new ShareableBlobDataItem(
             target_blob_uuid,
-            new BlobDataItem(element.Pass(), item.data_handle_,
+            new BlobDataItem(std::move(element), item.data_handle_,
                              item.disk_cache_entry(),
                              item.disk_cache_stream_index())));
       } break;

@@ -49,7 +49,7 @@ ScopedFile TransientFileUtil::CreateSnapshotFile(
   scoped_file.AddScopeOutCallback(
       base::Bind(&RevokeFileSystem, url.filesystem_id()), NULL);
 
-  return scoped_file.Pass();
+  return scoped_file;
 }
 
 }  // namespace storage

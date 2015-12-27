@@ -5,6 +5,7 @@
 #include "storage/browser/fileapi/sandbox_file_system_backend.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -119,7 +120,8 @@ FileSystemOperation* SandboxFileSystemBackend::CreateFileSystemOperation(
   else
     operation_context->set_quota_limit_type(storage::kQuotaLimitTypeLimited);
 
-  return FileSystemOperation::Create(url, context, operation_context.Pass());
+  return FileSystemOperation::Create(url, context,
+                                     std::move(operation_context));
 }
 
 bool SandboxFileSystemBackend::SupportsStreaming(

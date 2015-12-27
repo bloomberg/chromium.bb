@@ -294,7 +294,7 @@ SandboxFileSystemBackendDelegate::CreateFileSystemOperationContext(
   operation_context->set_change_observers(
       change_observers ? *change_observers : ChangeObserverList());
 
-  return operation_context.Pass();
+  return operation_context;
 }
 
 scoped_ptr<storage::FileStreamReader>

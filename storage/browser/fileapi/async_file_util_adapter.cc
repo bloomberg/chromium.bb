@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -76,7 +76,7 @@ class GetFileInfoHelper {
   void ReplySnapshotFile(
       const AsyncFileUtil::CreateSnapshotFileCallback& callback) {
     callback.Run(error_, file_info_, platform_path_,
-                  ShareableFileReference::GetOrCreate(scoped_file_.Pass()));
+                 ShareableFileReference::GetOrCreate(std::move(scoped_file_)));
   }
 
  private:
@@ -138,7 +138,7 @@ void RunCreateOrOpenCallback(
     FileSystemOperationContext* context,
     const AsyncFileUtil::CreateOrOpenCallback& callback,
     base::File file) {
-  callback.Run(file.Pass(), base::Closure());
+  callback.Run(std::move(file), base::Closure());
 }
 
 }  // namespace

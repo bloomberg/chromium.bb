@@ -4,6 +4,8 @@
 
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 
+#include <utility>
+
 #include "base/strings/string_util.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request_context.h"
@@ -28,8 +30,8 @@ scoped_ptr<net::URLRequest> BlobProtocolHandler::CreateBlobRequest(
   const GURL kBlobUrl("blob://see_user_data/");
   scoped_ptr<net::URLRequest> request = request_context->CreateRequest(
       kBlobUrl, net::DEFAULT_PRIORITY, request_delegate);
-  SetRequestedBlobDataHandle(request.get(), blob_data_handle.Pass());
-  return request.Pass();
+  SetRequestedBlobDataHandle(request.get(), std::move(blob_data_handle));
+  return request;
 }
 
 // static
@@ -84,7 +86,7 @@ BlobDataHandle* BlobProtocolHandler::LookupBlobHandle(
   scoped_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(uuid);
   BlobDataHandle* handle_ptr = handle.get();
   if (handle) {
-    SetRequestedBlobDataHandle(request, handle.Pass());
+    SetRequestedBlobDataHandle(request, std::move(handle));
   }
   return handle_ptr;
 }

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -159,7 +160,7 @@ FileSystemContext::FileSystemContext(
                                              partition_path,
                                              special_storage_policy,
                                              options)),
-      additional_backends_(additional_backends.Pass()),
+      additional_backends_(std::move(additional_backends)),
       auto_mount_handlers_(auto_mount_handlers),
       external_mount_points_(external_mount_points),
       partition_path_(partition_path),

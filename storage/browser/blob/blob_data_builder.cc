@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
@@ -57,14 +58,14 @@ void BlobDataBuilder::AppendData(const char* data, size_t length) {
     return;
   scoped_ptr<DataElement> element(new DataElement());
   element->SetToBytes(data, length);
-  items_.push_back(new BlobDataItem(element.Pass()));
+  items_.push_back(new BlobDataItem(std::move(element)));
 }
 
 size_t BlobDataBuilder::AppendFutureData(size_t length) {
   CHECK_NE(length, 0u);
   scoped_ptr<DataElement> element(new DataElement());
   element->SetToBytesDescription(length);
-  items_.push_back(new BlobDataItem(element.Pass()));
+  items_.push_back(new BlobDataItem(std::move(element)));
   return items_.size() - 1;
 }
 
@@ -107,7 +108,7 @@ size_t BlobDataBuilder::AppendFutureFile(uint64_t offset, uint64_t length) {
   element->SetToFilePathRange(base::FilePath::FromUTF8Unsafe(std::string(
                                   kAppendFutureFileTemporaryFileName)),
                               offset, length, base::Time());
-  items_.push_back(new BlobDataItem(element.Pass()));
+  items_.push_back(new BlobDataItem(std::move(element)));
   return items_.size() - 1;
 }
 
@@ -131,7 +132,7 @@ bool BlobDataBuilder::PopulateFutureFile(
   scoped_ptr<DataElement> element(new DataElement());
   element->SetToFilePathRange(file_reference->path(), offset, length,
                               expected_modification_time);
-  items_[index] = new BlobDataItem(element.Pass(), file_reference);
+  items_[index] = new BlobDataItem(std::move(element), file_reference);
   return true;
 }
 
@@ -142,8 +143,8 @@ void BlobDataBuilder::AppendFile(const base::FilePath& file_path,
   scoped_ptr<DataElement> element(new DataElement());
   element->SetToFilePathRange(file_path, offset, length,
                               expected_modification_time);
-  items_.push_back(
-      new BlobDataItem(element.Pass(), ShareableFileReference::Get(file_path)));
+  items_.push_back(new BlobDataItem(std::move(element),
+                                    ShareableFileReference::Get(file_path)));
 }
 
 void BlobDataBuilder::AppendBlob(const std::string& uuid,
@@ -152,13 +153,13 @@ void BlobDataBuilder::AppendBlob(const std::string& uuid,
   DCHECK_GT(length, 0ul);
   scoped_ptr<DataElement> element(new DataElement());
   element->SetToBlobRange(uuid, offset, length);
-  items_.push_back(new BlobDataItem(element.Pass()));
+  items_.push_back(new BlobDataItem(std::move(element)));
 }
 
 void BlobDataBuilder::AppendBlob(const std::string& uuid) {
   scoped_ptr<DataElement> element(new DataElement());
   element->SetToBlob(uuid);
-  items_.push_back(new BlobDataItem(element.Pass()));
+  items_.push_back(new BlobDataItem(std::move(element)));
 }
 
 void BlobDataBuilder::AppendFileSystemFile(
@@ -170,7 +171,7 @@ void BlobDataBuilder::AppendFileSystemFile(
   scoped_ptr<DataElement> element(new DataElement());
   element->SetToFileSystemUrlRange(url, offset, length,
                                    expected_modification_time);
-  items_.push_back(new BlobDataItem(element.Pass()));
+  items_.push_back(new BlobDataItem(std::move(element)));
 }
 
 void BlobDataBuilder::AppendDiskCacheEntry(
@@ -180,9 +181,8 @@ void BlobDataBuilder::AppendDiskCacheEntry(
   scoped_ptr<DataElement> element(new DataElement());
   element->SetToDiskCacheEntryRange(
       0U, disk_cache_entry->GetDataSize(disk_cache_stream_index));
-  items_.push_back(
-      new BlobDataItem(element.Pass(), data_handle, disk_cache_entry,
-                       disk_cache_stream_index));
+  items_.push_back(new BlobDataItem(std::move(element), data_handle,
+                                    disk_cache_entry, disk_cache_stream_index));
 }
 
 void BlobDataBuilder::Clear() {
