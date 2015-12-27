@@ -198,7 +198,6 @@ crbug.com/248938 virtual/threaded/transitions/start-transform-transition.html [ 
 crbug.com/248938 virtual/threaded/animations/animation-direction-normal.html [ Pass Failure Timeout ]
 crbug.com/248938 virtual/threaded/animations/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/transition-and-animation-3.html [ Pass Timeout ]
-crbug.com/501543 fast/images/size-failure.html [ Crash Timeout Pass ]
 crbug.com/446385 [ Linux Mac ] http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Pass Timeout ]
 crbug.com/446385 [ Win7 Debug ] http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Crash Pass Timeout ]
 crbug.com/441705 fast/media/media-svg-crash.html [ Pass Failure ]
@@ -226,6 +225,8 @@ crbug.com/327832 fast/dynamic/insert-before-table-part-in-continuation.html [ Ne
 crbug.com/542541 [ Debug ] fast/events/click-count.html [ Pass Failure ]
 crbug.com/542541 [ Debug ] virtual/trustedeventsdefaultaction/fast/events/click-count.html [ Pass Failure ]
 crbug.com/542541 [ Debug ] virtual/pointerevent/fast/events/click-count.html [ Pass Failure ]
+
+crbug.com/501543 fast/images/size-failure.html [ Crash Timeout Pass ]
 
 # FIXME issue 570401, FIXME dsf2 is an abbrv, fix the test name per style.
 crbug.com/495750 fast/hidpi/calendar-picker-appearance-dsf2-with-zoom.html [ Skip ]
