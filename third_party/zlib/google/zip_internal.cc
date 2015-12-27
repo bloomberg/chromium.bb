@@ -4,12 +4,15 @@
 
 #include "third_party/zlib/google/zip_internal.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 
 #if defined(USE_SYSTEM_MINIZIP)
 #include <minizip/ioapi.h>

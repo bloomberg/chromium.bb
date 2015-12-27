@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <string>
 #include <vector>
@@ -14,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/zlib/google/zip.h"
@@ -325,9 +329,9 @@ TEST_F(ZipTest, UnzipFilesWithIncorrectSize) {
     SCOPED_TRACE(base::StringPrintf("Processing %d.txt", i));
     base::FilePath file_path = temp_dir.AppendASCII(
         base::StringPrintf("%d.txt", i));
-    int64 file_size = -1;
+    int64_t file_size = -1;
     EXPECT_TRUE(base::GetFileSize(file_path, &file_size));
-    EXPECT_EQ(static_cast<int64>(i), file_size);
+    EXPECT_EQ(static_cast<int64_t>(i), file_size);
   }
 }
 

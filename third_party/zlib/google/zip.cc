@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "third_party/zlib/google/zip_internal.h"
 #include "third_party/zlib/google/zip_reader.h"
 

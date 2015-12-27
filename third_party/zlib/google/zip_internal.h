@@ -5,11 +5,13 @@
 #ifndef THIRD_PARTY_ZLIB_GOOGLE_ZIP_INTERNAL_H_
 #define THIRD_PARTY_ZLIB_GOOGLE_ZIP_INTERNAL_H_
 
+#include <string>
+
+#include "build/build_config.h"
+
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
-
-#include <string>
 
 #if defined(USE_SYSTEM_MINIZIP)
 #include <minizip/unzip.h>

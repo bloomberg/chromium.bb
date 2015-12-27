@@ -4,6 +4,10 @@
 
 #include "third_party/zlib/google/zip_reader.h"
 
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 #include <set>
 #include <string>
 
@@ -12,6 +16,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/md5.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -80,7 +85,7 @@ class MockUnzipListener : public base::SupportsWeakPtr<MockUnzipListener> {
   }
 
   // Progress callback for async functions.
-  void OnUnzipProgress(int64 progress) {
+  void OnUnzipProgress(int64_t progress) {
     DCHECK(progress > current_progress_);
     progress_calls_++;
     current_progress_ = progress;
@@ -96,7 +101,7 @@ class MockUnzipListener : public base::SupportsWeakPtr<MockUnzipListener> {
   int failure_calls_;
   int progress_calls_;
 
-  int64 current_progress_;
+  int64_t current_progress_;
 };
 
 class MockWriterDelegate : public zip::WriterDelegate {
@@ -507,7 +512,7 @@ TEST_F(ZipReaderTest, ExtractToFileAsync_RegularFile) {
   const std::string md5 = base::MD5String(output);
   EXPECT_EQ(kQuuxExpectedMD5, md5);
 
-  int64 file_size = 0;
+  int64_t file_size = 0;
   ASSERT_TRUE(base::GetFileSize(target_file, &file_size));
 
   EXPECT_EQ(file_size, listener.current_progress());

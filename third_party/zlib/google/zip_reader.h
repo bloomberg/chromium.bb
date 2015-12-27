@@ -4,13 +4,16 @@
 #ifndef THIRD_PARTY_ZLIB_GOOGLE_ZIP_READER_H_
 #define THIRD_PARTY_ZLIB_GOOGLE_ZIP_READER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -64,7 +67,7 @@ class ZipReader {
   typedef base::Closure FailureCallback;
   // A callback that is called periodically during the operation with the number
   // of bytes that have been processed so far.
-  typedef base::Callback<void(int64)> ProgressCallback;
+  typedef base::Callback<void(int64_t)> ProgressCallback;
 
   // This class represents information of an entry (file or directory) in
   // a zip file.
@@ -81,7 +84,7 @@ class ZipReader {
     // Returns 0 if the entry is a directory.
     // Note: this value should not be trusted, because it is stored as metadata
     // in the zip archive and can be different from the real uncompressed size.
-    int64 original_size() const { return original_size_; }
+    int64_t original_size() const { return original_size_; }
 
     // Returns the last modified time. If the time stored in the zip file was
     // not valid, the unix epoch will be returned.
@@ -103,7 +106,7 @@ class ZipReader {
 
    private:
     const base::FilePath file_path_;
-    int64 original_size_;
+    int64_t original_size_;
     base::Time last_modified_;
     bool is_directory_;
     bool is_unsafe_;
@@ -237,7 +240,7 @@ class ZipReader {
                     const SuccessCallback& success_callback,
                     const FailureCallback& failure_callback,
                     const ProgressCallback& progress_callback,
-                    const int64 offset);
+                    const int64_t offset);
 
   unzFile zip_file_;
   int num_entries_;

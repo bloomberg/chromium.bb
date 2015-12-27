@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "build/build_config.h"
 
 namespace zip {
 
