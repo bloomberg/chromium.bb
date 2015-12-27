@@ -85,7 +85,7 @@ class CppTypeGenerator(object):
     elif type_.property_type == PropertyType.INTEGER:
       cpp_type = 'int'
     elif type_.property_type == PropertyType.INT64:
-      cpp_type = 'int64'
+      cpp_type = 'int64_t'
     elif type_.property_type == PropertyType.DOUBLE:
       cpp_type = 'double'
     elif type_.property_type == PropertyType.STRING:

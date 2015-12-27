@@ -163,8 +163,6 @@ class _APIHGenerator(object):
 
     c.Append('#include <string>')
     c.Append()
-    c.Append('#include "base/basictypes.h"')
-    c.Append()
     c.Append("class ExtensionFunctionRegistry;")
     c.Append()
     c.Concat(cpp_util.OpenNamespace(self._bundle._cpp_namespace))
