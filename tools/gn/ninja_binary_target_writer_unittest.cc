@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "tools/gn/ninja_binary_target_writer.h"
+
 #include <sstream>
+#include <utility>
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "tools/gn/ninja_binary_target_writer.h"
 #include "tools/gn/scheduler.h"
 #include "tools/gn/target.h"
 #include "tools/gn/test_with_scope.h"
@@ -485,7 +487,7 @@ TEST(NinjaBinaryTargetWriter, WinPrecompiledHeaders) {
   cxx_tool->set_outputs(SubstitutionList::MakeForTest(
       "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o"));
   cxx_tool->set_precompiled_header_type(Tool::PCH_MSVC);
-  pch_toolchain.SetTool(Toolchain::TYPE_CXX, cxx_tool.Pass());
+  pch_toolchain.SetTool(Toolchain::TYPE_CXX, std::move(cxx_tool));
 
   // Add a C compiler as well.
   scoped_ptr<Tool> cc_tool(new Tool);
@@ -496,7 +498,7 @@ TEST(NinjaBinaryTargetWriter, WinPrecompiledHeaders) {
   cc_tool->set_outputs(SubstitutionList::MakeForTest(
       "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o"));
   cc_tool->set_precompiled_header_type(Tool::PCH_MSVC);
-  pch_toolchain.SetTool(Toolchain::TYPE_CC, cc_tool.Pass());
+  pch_toolchain.SetTool(Toolchain::TYPE_CC, std::move(cc_tool));
   pch_toolchain.ToolchainSetupComplete();
 
   // This target doesn't specify precompiled headers.
@@ -613,7 +615,7 @@ TEST(NinjaBinaryTargetWriter, GCCPrecompiledHeaders) {
   cxx_tool->set_outputs(SubstitutionList::MakeForTest(
       "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o"));
   cxx_tool->set_precompiled_header_type(Tool::PCH_GCC);
-  pch_toolchain.SetTool(Toolchain::TYPE_CXX, cxx_tool.Pass());
+  pch_toolchain.SetTool(Toolchain::TYPE_CXX, std::move(cxx_tool));
   pch_toolchain.ToolchainSetupComplete();
 
   // Add a C compiler as well.
@@ -625,7 +627,7 @@ TEST(NinjaBinaryTargetWriter, GCCPrecompiledHeaders) {
   cc_tool->set_outputs(SubstitutionList::MakeForTest(
       "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o"));
   cc_tool->set_precompiled_header_type(Tool::PCH_GCC);
-  pch_toolchain.SetTool(Toolchain::TYPE_CC, cc_tool.Pass());
+  pch_toolchain.SetTool(Toolchain::TYPE_CC, std::move(cc_tool));
   pch_toolchain.ToolchainSetupComplete();
 
   // This target doesn't specify precompiled headers.

@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <utility>
 
 #include "tools/gn/err.h"
 #include "tools/gn/functions.h"
@@ -892,7 +893,7 @@ Value RunTool(Scope* scope,
   if (!block_scope.CheckForUnusedVars(err))
     return Value();
 
-  toolchain->SetTool(tool_type, tool.Pass());
+  toolchain->SetTool(tool_type, std::move(tool));
   return Value();
 }
 

@@ -7,6 +7,7 @@
 
 #include <map>
 #include <set>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -91,7 +92,7 @@ class BuildSettings {
     return exec_script_whitelist_.get();
   }
   void set_exec_script_whitelist(scoped_ptr<std::set<SourceFile>> list) {
-    exec_script_whitelist_ = list.Pass();
+    exec_script_whitelist_ = std::move(list);
   }
 
   // When set (the default), code should perform normal validation of inputs

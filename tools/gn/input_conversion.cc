@@ -4,6 +4,8 @@
 
 #include "tools/gn/input_conversion.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -81,7 +83,7 @@ Value ParseValueOrScope(const Settings* settings,
   // we made, rather than the result of running the block (which will be empty).
   if (what == PARSE_SCOPE) {
     DCHECK(result.type() == Value::NONE);
-    result = Value(origin, scope.Pass());
+    result = Value(origin, std::move(scope));
   }
   return result;
 }

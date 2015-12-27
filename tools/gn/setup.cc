@@ -5,9 +5,9 @@
 #include "tools/gn/setup.h"
 
 #include <stdlib.h>
-
 #include <algorithm>
 #include <sstream>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -652,7 +652,7 @@ bool Setup::FillOtherConfig(const base::CommandLine& cmdline) {
         return false;
       }
     }
-    build_settings_.set_exec_script_whitelist(whitelist.Pass());
+    build_settings_.set_exec_script_whitelist(std::move(whitelist));
   }
 
   return true;

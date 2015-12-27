@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/functions.h"
+
+#include <utility>
+
+#include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/test_with_scope.h"
 #include "tools/gn/value.h"
@@ -47,7 +50,7 @@ TEST(Functions, Defined) {
   undef_accessor->set_member(scoped_ptr<IdentifierNode>(
       new IdentifierNode(undefined_token)));
   ListNode args_list_accessor_defined;
-  args_list_accessor_defined.append_item(undef_accessor.Pass());
+  args_list_accessor_defined.append_item(std::move(undef_accessor));
   result = functions::RunDefined(setup.scope(), &function_call,
                                  &args_list_accessor_defined, &err);
   ASSERT_EQ(Value::BOOLEAN, result.type());

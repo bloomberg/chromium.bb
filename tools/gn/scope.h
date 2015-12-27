@@ -7,6 +7,7 @@
 
 #include <map>
 #include <set>
+#include <utility>
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
@@ -240,7 +241,7 @@ class Scope {
   const PatternList* GetSourcesAssignmentFilter() const;
   void set_sources_assignment_filter(
       scoped_ptr<PatternList> f) {
-    sources_assignment_filter_ = f.Pass();
+    sources_assignment_filter_ = std::move(f);
   }
 
   // Indicates if we're currently processing the build configuration file.

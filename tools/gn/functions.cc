@@ -5,8 +5,8 @@
 #include "tools/gn/functions.h"
 
 #include <stddef.h>
-
 #include <iostream>
+#include <utility>
 
 #include "base/environment.h"
 #include "base/strings/string_util.h"
@@ -673,7 +673,7 @@ Value RunSetSourcesAssignmentFilter(Scope* scope,
     scoped_ptr<PatternList> f(new PatternList);
     f->SetFromValue(args[0], err);
     if (!err->has_error())
-      scope->set_sources_assignment_filter(f.Pass());
+      scope->set_sources_assignment_filter(std::move(f));
   }
   return Value();
 }

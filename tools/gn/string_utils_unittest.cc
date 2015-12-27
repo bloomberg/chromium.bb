@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "tools/gn/string_utils.h"
+
 #include <stdint.h>
+#include <utility>
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/err.h"
 #include "tools/gn/scope.h"
 #include "tools/gn/settings.h"
-#include "tools/gn/string_utils.h"
 #include "tools/gn/token.h"
 #include "tools/gn/value.h"
 
@@ -23,7 +25,7 @@ bool CheckExpansionCase(const char* input, const char* expected, bool success) {
   // Nested scope called "onescope" with a value "one" inside it.
   scoped_ptr<Scope> onescope(new Scope(static_cast<const Settings*>(nullptr)));
   onescope->SetValue("one", Value(nullptr, one), nullptr);
-  scope.SetValue("onescope", Value(nullptr, onescope.Pass()), nullptr);
+  scope.SetValue("onescope", Value(nullptr, std::move(onescope)), nullptr);
 
   // List called "onelist" with one value that maps to 1.
   Value onelist(nullptr, Value::LIST);

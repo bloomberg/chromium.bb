@@ -377,7 +377,7 @@ scoped_ptr<Scope> Scope::MakeClosure() const {
   NonRecursiveMergeTo(result.get(), options, nullptr, "<SHOULDN'T HAPPEN>",
                       &err);
   DCHECK(!err.has_error());
-  return result.Pass();
+  return result;
 }
 
 Scope* Scope::MakeTargetDefaults(const std::string& target_type) {

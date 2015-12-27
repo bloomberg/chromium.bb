@@ -6,7 +6,7 @@
 #define TOOLS_GN_PARSE_TREE_H_
 
 #include <stddef.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -150,12 +150,12 @@ class AccessorNode : public ParseNode {
 
   // Index is the expression inside the []. Will be null if member is set.
   const ParseNode* index() const { return index_.get(); }
-  void set_index(scoped_ptr<ParseNode> i) { index_ = i.Pass(); }
+  void set_index(scoped_ptr<ParseNode> i) { index_ = std::move(i); }
 
   // The member is the identifier on the right hand side of the dot. Will be
   // null if the index is set.
   const IdentifierNode* member() const { return member_.get(); }
-  void set_member(scoped_ptr<IdentifierNode> i) { member_ = i.Pass(); }
+  void set_member(scoped_ptr<IdentifierNode> i) { member_ = std::move(i); }
 
   void SetNewLocation(int line_number);
 
@@ -192,14 +192,10 @@ class BinaryOpNode : public ParseNode {
   void set_op(const Token& t) { op_ = t; }
 
   const ParseNode* left() const { return left_.get(); }
-  void set_left(scoped_ptr<ParseNode> left) {
-    left_ = left.Pass();
-  }
+  void set_left(scoped_ptr<ParseNode> left) { left_ = std::move(left); }
 
   const ParseNode* right() const { return right_.get(); }
-  void set_right(scoped_ptr<ParseNode> right) {
-    right_ = right.Pass();
-  }
+  void set_right(scoped_ptr<ParseNode> right) { right_ = std::move(right); }
 
  private:
   scoped_ptr<ParseNode> left_;
@@ -225,7 +221,7 @@ class BlockNode : public ParseNode {
   void Print(std::ostream& out, int indent) const override;
 
   void set_begin_token(const Token& t) { begin_token_ = t; }
-  void set_end(scoped_ptr<EndNode> e) { end_ = e.Pass(); }
+  void set_end(scoped_ptr<EndNode> e) { end_ = std::move(e); }
   const EndNode* End() const { return end_.get(); }
 
   const std::vector<ParseNode*>& statements() const { return statements_; }
@@ -263,21 +259,15 @@ class ConditionNode : public ParseNode {
   void set_if_token(const Token& token) { if_token_ = token; }
 
   const ParseNode* condition() const { return condition_.get(); }
-  void set_condition(scoped_ptr<ParseNode> c) {
-    condition_ = c.Pass();
-  }
+  void set_condition(scoped_ptr<ParseNode> c) { condition_ = std::move(c); }
 
   const BlockNode* if_true() const { return if_true_.get(); }
-  void set_if_true(scoped_ptr<BlockNode> t) {
-    if_true_ = t.Pass();
-  }
+  void set_if_true(scoped_ptr<BlockNode> t) { if_true_ = std::move(t); }
 
   // This is either empty, a block (for the else clause), or another
   // condition.
   const ParseNode* if_false() const { return if_false_.get(); }
-  void set_if_false(scoped_ptr<ParseNode> f) {
-    if_false_ = f.Pass();
-  }
+  void set_if_false(scoped_ptr<ParseNode> f) { if_false_ = std::move(f); }
 
  private:
   // Token corresponding to the "if" string.
@@ -309,10 +299,10 @@ class FunctionCallNode : public ParseNode {
   void set_function(Token t) { function_ = t; }
 
   const ListNode* args() const { return args_.get(); }
-  void set_args(scoped_ptr<ListNode> a) { args_ = a.Pass(); }
+  void set_args(scoped_ptr<ListNode> a) { args_ = std::move(a); }
 
   const BlockNode* block() const { return block_.get(); }
-  void set_block(scoped_ptr<BlockNode> b) { block_ = b.Pass(); }
+  void set_block(scoped_ptr<BlockNode> b) { block_ = std::move(b); }
 
  private:
   Token function_;
@@ -365,7 +355,7 @@ class ListNode : public ParseNode {
   void Print(std::ostream& out, int indent) const override;
 
   void set_begin_token(const Token& t) { begin_token_ = t; }
-  void set_end(scoped_ptr<EndNode> e) { end_ = e.Pass(); }
+  void set_end(scoped_ptr<EndNode> e) { end_ = std::move(e); }
   const EndNode* End() const { return end_.get(); }
 
   void append_item(scoped_ptr<ParseNode> s) {
@@ -455,7 +445,7 @@ class UnaryOpNode : public ParseNode {
 
   const ParseNode* operand() const { return operand_.get(); }
   void set_operand(scoped_ptr<ParseNode> operand) {
-    operand_ = operand.Pass();
+    operand_ = std::move(operand);
   }
 
  private:

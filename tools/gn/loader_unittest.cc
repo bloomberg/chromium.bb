@@ -78,7 +78,7 @@ void MockInputFileManager::AddCannedResponse(const SourceFile& source_file,
   EXPECT_FALSE(err.has_error());
 
   // Parse.
-  canned->root = Parser::Parse(canned->tokens, &err).Pass();
+  canned->root = Parser::Parse(canned->tokens, &err);
   EXPECT_FALSE(err.has_error());
 
   canned_responses_[source_file] = std::move(canned);

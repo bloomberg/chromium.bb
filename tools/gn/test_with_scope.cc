@@ -4,6 +4,8 @@
 
 #include "tools/gn/test_with_scope.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "tools/gn/parser.h"
 #include "tools/gn/tokenizer.h"
@@ -47,7 +49,7 @@ void TestWithScope::SetupToolchain(Toolchain* toolchain) {
       cc_tool.get());
   cc_tool->set_outputs(SubstitutionList::MakeForTest(
       "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o"));
-  toolchain->SetTool(Toolchain::TYPE_CC, cc_tool.Pass());
+  toolchain->SetTool(Toolchain::TYPE_CC, std::move(cc_tool));
 
   // CXX
   scoped_ptr<Tool> cxx_tool(new Tool);
@@ -57,7 +59,7 @@ void TestWithScope::SetupToolchain(Toolchain* toolchain) {
       cxx_tool.get());
   cxx_tool->set_outputs(SubstitutionList::MakeForTest(
       "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o"));
-  toolchain->SetTool(Toolchain::TYPE_CXX, cxx_tool.Pass());
+  toolchain->SetTool(Toolchain::TYPE_CXX, std::move(cxx_tool));
 
   // OBJC
   scoped_ptr<Tool> objc_tool(new Tool);
@@ -67,7 +69,7 @@ void TestWithScope::SetupToolchain(Toolchain* toolchain) {
       objc_tool.get());
   objc_tool->set_outputs(SubstitutionList::MakeForTest(
       "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o"));
-  toolchain->SetTool(Toolchain::TYPE_OBJC, objc_tool.Pass());
+  toolchain->SetTool(Toolchain::TYPE_OBJC, std::move(objc_tool));
 
   // OBJC
   scoped_ptr<Tool> objcxx_tool(new Tool);
@@ -77,7 +79,7 @@ void TestWithScope::SetupToolchain(Toolchain* toolchain) {
       objcxx_tool.get());
   objcxx_tool->set_outputs(SubstitutionList::MakeForTest(
       "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o"));
-  toolchain->SetTool(Toolchain::TYPE_OBJCXX, objcxx_tool.Pass());
+  toolchain->SetTool(Toolchain::TYPE_OBJCXX, std::move(objcxx_tool));
 
   // Don't use RC and ASM tools in unit tests yet. Add here if needed.
 
@@ -89,7 +91,7 @@ void TestWithScope::SetupToolchain(Toolchain* toolchain) {
   alink_tool->set_output_prefix("lib");
   alink_tool->set_outputs(SubstitutionList::MakeForTest(
       "{{target_out_dir}}/{{target_output_name}}.a"));
-  toolchain->SetTool(Toolchain::TYPE_ALINK, alink_tool.Pass());
+  toolchain->SetTool(Toolchain::TYPE_ALINK, std::move(alink_tool));
 
   // SOLINK
   scoped_ptr<Tool> solink_tool(new Tool);
@@ -101,7 +103,7 @@ void TestWithScope::SetupToolchain(Toolchain* toolchain) {
   solink_tool->set_default_output_extension(".so");
   solink_tool->set_outputs(SubstitutionList::MakeForTest(
       "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"));
-  toolchain->SetTool(Toolchain::TYPE_SOLINK, solink_tool.Pass());
+  toolchain->SetTool(Toolchain::TYPE_SOLINK, std::move(solink_tool));
 
   // SOLINK_MODULE
   scoped_ptr<Tool> solink_module_tool(new Tool);
@@ -113,7 +115,8 @@ void TestWithScope::SetupToolchain(Toolchain* toolchain) {
   solink_module_tool->set_default_output_extension(".so");
   solink_module_tool->set_outputs(SubstitutionList::MakeForTest(
       "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"));
-  toolchain->SetTool(Toolchain::TYPE_SOLINK_MODULE, solink_module_tool.Pass());
+  toolchain->SetTool(Toolchain::TYPE_SOLINK_MODULE,
+                     std::move(solink_module_tool));
 
   // LINK
   scoped_ptr<Tool> link_tool(new Tool);
@@ -123,17 +126,17 @@ void TestWithScope::SetupToolchain(Toolchain* toolchain) {
   link_tool->set_lib_dir_switch("-L");
   link_tool->set_outputs(SubstitutionList::MakeForTest(
       "{{root_out_dir}}/{{target_output_name}}"));
-  toolchain->SetTool(Toolchain::TYPE_LINK, link_tool.Pass());
+  toolchain->SetTool(Toolchain::TYPE_LINK, std::move(link_tool));
 
   // STAMP
   scoped_ptr<Tool> stamp_tool(new Tool);
   SetCommandForTool("touch {{output}}", stamp_tool.get());
-  toolchain->SetTool(Toolchain::TYPE_STAMP, stamp_tool.Pass());
+  toolchain->SetTool(Toolchain::TYPE_STAMP, std::move(stamp_tool));
 
   // COPY
   scoped_ptr<Tool> copy_tool(new Tool);
   SetCommandForTool("cp {{source}} {{output}}", copy_tool.get());
-  toolchain->SetTool(Toolchain::TYPE_COPY, copy_tool.Pass());
+  toolchain->SetTool(Toolchain::TYPE_COPY, std::move(copy_tool));
 
   toolchain->ToolchainSetupComplete();
 }

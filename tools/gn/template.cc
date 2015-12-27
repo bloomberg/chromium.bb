@@ -4,6 +4,8 @@
 
 #include "tools/gn/template.h"
 
+#include <utility>
+
 #include "tools/gn/err.h"
 #include "tools/gn/functions.h"
 #include "tools/gn/parse_tree.h"
@@ -17,9 +19,7 @@ Template::Template(const Scope* scope, const FunctionCallNode* def)
 }
 
 Template::Template(scoped_ptr<Scope> scope, const FunctionCallNode* def)
-    : closure_(scope.Pass()),
-      definition_(def) {
-}
+    : closure_(std::move(scope)), definition_(def) {}
 
 Template::~Template() {
 }
@@ -81,7 +81,7 @@ Value Template::Invoke(Scope* scope,
   template_scope.SetValue(kInvoker, Value(nullptr, scoped_ptr<Scope>()),
                           invocation);
   Value* invoker_value = template_scope.GetMutableValue(kInvoker, false);
-  invoker_value->SetScopeValue(invocation_scope.Pass());
+  invoker_value->SetScopeValue(std::move(invocation_scope));
   template_scope.set_source_dir(scope->GetSourceDir());
 
   const base::StringPiece target_name("target_name");

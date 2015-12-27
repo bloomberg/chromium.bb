@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "tools/gn/operators.h"
+
 #include <stdint.h>
+#include <utility>
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "tools/gn/operators.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/pattern.h"
 #include "tools/gn/test_with_scope.h"
@@ -30,7 +32,7 @@ bool IsValueStringEqualing(const Value& v, const char* s) {
 scoped_ptr<ListNode> ListWithLiteral(const Token& token) {
   scoped_ptr<ListNode> list(new ListNode);
   list->append_item(scoped_ptr<ParseNode>(new LiteralNode(token)));
-  return list.Pass();
+  return list;
 }
 
 }  // namespace
@@ -56,7 +58,7 @@ TEST(Operators, SourcesAppend) {
   // Set up the filter on the scope to remove everything ending with "rm"
   scoped_ptr<PatternList> pattern_list(new PatternList);
   pattern_list->Append(Pattern("*rm"));
-  setup.scope()->set_sources_assignment_filter(pattern_list.Pass());
+  setup.scope()->set_sources_assignment_filter(std::move(pattern_list));
 
   // Append an integer.
   const char integer_value[] = "5";
@@ -121,7 +123,7 @@ TEST(Operators, ListAppend) {
   const char twelve_str[] = "12";
   Token twelve(Location(), Token::INTEGER, twelve_str);
   outer_list->append_item(ListWithLiteral(twelve));
-  node.set_right(outer_list.Pass());
+  node.set_right(std::move(outer_list));
 
   Value ret = ExecuteBinaryOperator(setup.scope(), &node, node.left(),
                                     node.right(), &err);

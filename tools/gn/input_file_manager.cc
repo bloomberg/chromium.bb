@@ -4,6 +4,8 @@
 
 #include "tools/gn/input_file_manager.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "tools/gn/filesystem_utils.h"
@@ -287,7 +289,7 @@ bool InputFileManager::LoadFile(const LocationRange& origin,
     data->loaded = true;
     if (success) {
       data->tokens.swap(tokens);
-      data->parsed_root = root.Pass();
+      data->parsed_root = std::move(root);
     } else {
       data->parse_error = *err;
     }

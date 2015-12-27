@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <string.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "tools/gn/target.h"
@@ -88,7 +89,7 @@ void Toolchain::SetTool(ToolType type, scoped_ptr<Tool> t) {
   DCHECK(type != TYPE_NONE);
   DCHECK(!tools_[type].get());
   t->SetComplete();
-  tools_[type] = t.Pass();
+  tools_[type] = std::move(t);
 }
 
 void Toolchain::ToolchainSetupComplete() {
