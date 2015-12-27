@@ -93,14 +93,14 @@ class BluetoothAdvertisementBlueZTest : public testing::Test {
         make_scoped_ptr(new BluetoothAdvertisement::Data(
             BluetoothAdvertisement::ADVERTISEMENT_TYPE_BROADCAST));
     data->set_service_uuids(
-        make_scoped_ptr(new BluetoothAdvertisement::UUIDList()).Pass());
+        make_scoped_ptr(new BluetoothAdvertisement::UUIDList()));
     data->set_manufacturer_data(
-        make_scoped_ptr(new BluetoothAdvertisement::ManufacturerData()).Pass());
+        make_scoped_ptr(new BluetoothAdvertisement::ManufacturerData()));
     data->set_solicit_uuids(
-        make_scoped_ptr(new BluetoothAdvertisement::UUIDList()).Pass());
+        make_scoped_ptr(new BluetoothAdvertisement::UUIDList()));
     data->set_service_data(
-        make_scoped_ptr(new BluetoothAdvertisement::ServiceData()).Pass());
-    return data.Pass();
+        make_scoped_ptr(new BluetoothAdvertisement::ServiceData()));
+    return data;
   }
 
   // Creates and registers an advertisement with the adapter.
@@ -109,7 +109,7 @@ class BluetoothAdvertisementBlueZTest : public testing::Test {
     advertisement_ = nullptr;
 
     adapter_->RegisterAdvertisement(
-        CreateAdvertisementData().Pass(),
+        CreateAdvertisementData(),
         base::Bind(&BluetoothAdvertisementBlueZTest::RegisterCallback,
                    base::Unretained(this)),
         base::Bind(&BluetoothAdvertisementBlueZTest::AdvertisementErrorCallback,

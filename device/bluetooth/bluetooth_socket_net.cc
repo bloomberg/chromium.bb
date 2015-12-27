@@ -6,6 +6,7 @@
 
 #include <queue>
 #include <string>
+#include <utility>
 
 #include "base/location.h"
 #include "base/logging.h"
@@ -120,7 +121,7 @@ void BluetoothSocketNet::ResetTCPSocket() {
 }
 
 void BluetoothSocketNet::SetTCPSocket(scoped_ptr<net::TCPSocket> tcp_socket) {
-  tcp_socket_ = tcp_socket.Pass();
+  tcp_socket_ = std::move(tcp_socket);
 }
 
 void BluetoothSocketNet::PostSuccess(const base::Closure& callback) {

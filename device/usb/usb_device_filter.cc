@@ -4,6 +4,8 @@
 
 #include "device/usb/usb_device_filter.h"
 
+#include <utility>
+
 #include "base/values.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device.h"
@@ -106,7 +108,7 @@ scoped_ptr<base::Value> UsbDeviceFilter::ToValue() const {
     }
   }
 
-  return obj.Pass();
+  return std::move(obj);
 }
 
 // static

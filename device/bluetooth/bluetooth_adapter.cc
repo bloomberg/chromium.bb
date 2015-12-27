@@ -4,6 +4,8 @@
 
 #include "device/bluetooth/bluetooth_adapter.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -168,9 +170,9 @@ void BluetoothAdapter::OnStartDiscoverySession(
 
   scoped_ptr<BluetoothDiscoverySession> discovery_session(
       new BluetoothDiscoverySession(scoped_refptr<BluetoothAdapter>(this),
-                                    discovery_filter.Pass()));
+                                    std::move(discovery_filter)));
   discovery_sessions_.insert(discovery_session.get());
-  callback.Run(discovery_session.Pass());
+  callback.Run(std::move(discovery_session));
 }
 
 void BluetoothAdapter::OnStartDiscoverySessionError(
@@ -239,7 +241,7 @@ BluetoothAdapter::GetMergedDiscoveryFilterHelper(
     result = BluetoothDiscoveryFilter::Merge(result.get(), curr_filter);
   }
 
-  return result.Pass();
+  return result;
 }
 
 // static

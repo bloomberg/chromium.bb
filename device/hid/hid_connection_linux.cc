@@ -7,8 +7,8 @@
 #include <errno.h>
 #include <linux/hidraw.h>
 #include <sys/ioctl.h>
-
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -136,7 +136,7 @@ HidConnectionLinux::HidConnectionLinux(
       file_task_runner_(file_task_runner),
       weak_factory_(this) {
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
-  device_file_ = device_file.Pass();
+  device_file_ = std::move(device_file);
 
   // The helper is passed a weak pointer to this connection so that it can be
   // cleaned up after the connection is closed.

@@ -85,7 +85,7 @@ scoped_ptr<base::DictionaryValue> GetPropertiesAsDictionary(
 scoped_ptr<PathsVector> GetPowerSourcesPaths(dbus::ObjectProxy* proxy) {
   scoped_ptr<PathsVector> paths(new PathsVector());
   if (!proxy)
-    return paths.Pass();
+    return paths;
 
   dbus::MethodCall method_call(kUPowerServiceName, kUPowerEnumerateDevices);
   scoped_ptr<dbus::Response> response(
@@ -96,7 +96,7 @@ scoped_ptr<PathsVector> GetPowerSourcesPaths(dbus::ObjectProxy* proxy) {
     dbus::MessageReader reader(response.get());
     reader.PopArrayOfObjectPaths(paths.get());
   }
-  return paths.Pass();;
+  return paths;
 }
 
 void UpdateNumberBatteriesHistogram(int count) {

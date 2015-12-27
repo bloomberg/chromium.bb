@@ -5,6 +5,7 @@
 #include "device/bluetooth/bluetooth_device_bluez.h"
 
 #include <stdio.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
@@ -636,7 +637,7 @@ void BluetoothDeviceBlueZ::OnCreateGattConnection(
     const GattConnectionCallback& callback) {
   scoped_ptr<device::BluetoothGattConnection> conn(
       new BluetoothGattConnectionBlueZ(adapter_, GetAddress(), object_path_));
-  callback.Run(conn.Pass());
+  callback.Run(std::move(conn));
 }
 
 void BluetoothDeviceBlueZ::OnConnectError(

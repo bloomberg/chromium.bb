@@ -5,6 +5,7 @@
 #include "device/devices_app/usb/device_impl.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -74,7 +75,7 @@ void OnTransferIn(scoped_ptr<MojoTransferInCallback> callback,
     std::copy(buffer->data(), buffer->data() + buffer_size, bytes.begin());
     data.Swap(&bytes);
   }
-  callback->Run(mojo::ConvertTo<TransferStatus>(status), data.Pass());
+  callback->Run(mojo::ConvertTo<TransferStatus>(status), std::move(data));
 }
 
 void OnControlTransferInPermissionCheckComplete(
@@ -94,7 +95,7 @@ void OnControlTransferInPermissionCheckComplete(
         base::Bind(&OnTransferIn, base::Passed(&callback)));
   } else {
     mojo::Array<uint8_t> data;
-    callback->Run(TRANSFER_STATUS_PERMISSION_DENIED, data.Pass());
+    callback->Run(TRANSFER_STATUS_PERMISSION_DENIED, std::move(data));
   }
 }
 
@@ -144,7 +145,7 @@ void OnIsochronousTransferIn(
       packets[i].Swap(&bytes);
     }
   }
-  callback->Run(mojo::ConvertTo<TransferStatus>(status), packets.Pass());
+  callback->Run(mojo::ConvertTo<TransferStatus>(status), std::move(packets));
 }
 
 void OnIsochronousTransferOut(
@@ -160,9 +161,9 @@ void OnIsochronousTransferOut(
 DeviceImpl::DeviceImpl(scoped_refptr<UsbDevice> device,
                        PermissionProviderPtr permission_provider,
                        mojo::InterfaceRequest<Device> request)
-    : binding_(this, request.Pass()),
+    : binding_(this, std::move(request)),
       device_(device),
-      permission_provider_(permission_provider.Pass()),
+      permission_provider_(std::move(permission_provider)),
       weak_factory_(this) {
   // This object owns itself and will be destroyed if either the message pipe
   // it is bound to is closed or the PermissionProvider it depends on is

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -76,8 +77,8 @@ DataSourceSender::DataSourceSender(
     mojo::InterfacePtr<serial::DataSourceClient> client,
     const ReadyCallback& ready_callback,
     const ErrorCallback& error_callback)
-    : binding_(this, source.Pass()),
-      client_(client.Pass()),
+    : binding_(this, std::move(source)),
+      client_(std::move(client)),
       ready_callback_(ready_callback),
       error_callback_(error_callback),
       available_buffer_capacity_(0),
@@ -162,7 +163,7 @@ void DataSourceSender::DoneInternal(const std::vector<char>& data) {
   if (!data.empty()) {
     mojo::Array<uint8_t> data_to_send(data.size());
     std::copy(data.begin(), data.end(), &data_to_send[0]);
-    client_->OnData(data_to_send.Pass());
+    client_->OnData(std::move(data_to_send));
   }
   pending_send_.reset();
 }

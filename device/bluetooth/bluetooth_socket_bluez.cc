@@ -5,9 +5,9 @@
 #include "device/bluetooth/bluetooth_socket_bluez.h"
 
 #include <stdint.h>
-
 #include <queue>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -368,7 +368,7 @@ void BluetoothSocketBlueZ::NewConnection(
   } else {
     linked_ptr<ConnectionRequest> request(new ConnectionRequest());
     request->device_path = device_path;
-    request->fd = fd.Pass();
+    request->fd = std::move(fd);
     request->options = options;
     request->callback = callback;
 

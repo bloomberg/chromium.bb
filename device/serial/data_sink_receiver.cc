@@ -5,6 +5,7 @@
 #include "device/serial/data_sink_receiver.h"
 
 #include <limits>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -71,7 +72,7 @@ DataSinkReceiver::DataSinkReceiver(
     const ReadyCallback& ready_callback,
     const CancelCallback& cancel_callback,
     const ErrorCallback& error_callback)
-    : binding_(this, request.Pass()),
+    : binding_(this, std::move(request)),
       ready_callback_(ready_callback),
       cancel_callback_(cancel_callback),
       error_callback_(error_callback),
@@ -123,7 +124,7 @@ void DataSinkReceiver::OnData(
     return;
   }
   pending_data_buffers_.push(
-      linked_ptr<DataFrame>(new DataFrame(data.Pass(), callback)));
+      linked_ptr<DataFrame>(new DataFrame(std::move(data), callback)));
   if (!buffer_in_use_)
     RunReadyCallback();
 }
@@ -254,7 +255,7 @@ void DataSinkReceiver::Buffer::DoneWithError(uint32_t bytes_read,
 DataSinkReceiver::DataFrame::DataFrame(
     mojo::Array<uint8_t> data,
     const mojo::Callback<void(uint32_t, int32_t)>& callback)
-    : data_(data.Pass()), offset_(0), callback_(callback) {
+    : data_(std::move(data)), offset_(0), callback_(callback) {
   DCHECK_LT(0u, data_.size());
 }
 

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -21,7 +23,7 @@ class FakeSerialDeviceEnumerator : public SerialDeviceEnumerator {
     mojo::Array<serial::DeviceInfoPtr> devices(1);
     devices[0] = serial::DeviceInfo::New();
     devices[0]->path = "device";
-    return devices.Pass();
+    return devices;
   }
 };
 
@@ -44,7 +46,7 @@ class SerialServiceTest : public testing::Test {
   SerialServiceTest() : connected_(false), expecting_error_(false) {}
 
   void StoreDevices(mojo::Array<serial::DeviceInfoPtr> devices) {
-    devices_ = devices.Pass();
+    devices_ = std::move(devices);
     StopMessageLoop();
   }
 
@@ -88,7 +90,7 @@ class SerialServiceTest : public testing::Test {
     mojo::GetProxy(&source_client);
     service->Connect(path, serial::ConnectionOptions::New(),
                      mojo::GetProxy(&connection), mojo::GetProxy(&sink),
-                     mojo::GetProxy(&source), source_client.Pass());
+                     mojo::GetProxy(&source), std::move(source_client));
     connection.set_connection_error_handler(base::Bind(
         &SerialServiceTest::OnConnectionError, base::Unretained(this)));
     expecting_error_ = !expecting_success;

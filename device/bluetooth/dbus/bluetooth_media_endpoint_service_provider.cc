@@ -5,6 +5,7 @@
 #include "device/bluetooth/dbus/bluetooth_media_endpoint_service_provider.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -255,7 +256,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothMediaEndpointServiceProviderImpl
     } else {
       writer.AppendArrayOfBytes(&configuration[0], configuration.size());
     }
-    response_sender.Run(response.Pass());
+    response_sender.Run(std::move(response));
   }
 
   // Origin thread (i.e. the UI thread in production).

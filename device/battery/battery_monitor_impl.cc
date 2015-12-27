@@ -4,6 +4,8 @@
 
 #include "device/battery/battery_monitor_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 
@@ -12,13 +14,12 @@ namespace device {
 // static
 void BatteryMonitorImpl::Create(
     mojo::InterfaceRequest<BatteryMonitor> request) {
-  new BatteryMonitorImpl(request.Pass());
+  new BatteryMonitorImpl(std::move(request));
 }
 
 BatteryMonitorImpl::BatteryMonitorImpl(
     mojo::InterfaceRequest<BatteryMonitor> request)
-    : binding_(this, request.Pass()),
-      status_to_report_(false) {
+    : binding_(this, std::move(request)), status_to_report_(false) {
   // NOTE: DidChange may be called before AddCallback returns. This is done to
   // report current status.
   subscription_ = BatteryStatusService::GetInstance()->AddCallback(

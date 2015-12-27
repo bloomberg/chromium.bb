@@ -89,8 +89,8 @@ BluetoothAdvertisementBlueZ::BluetoothAdvertisementBlueZ(
       static_cast<
           bluez::BluetoothLEAdvertisementServiceProvider::AdvertisementType>(
           data->type()),
-      data->service_uuids().Pass(), data->manufacturer_data().Pass(),
-      data->solicit_uuids().Pass(), data->service_data().Pass());
+      data->service_uuids(), data->manufacturer_data(), data->solicit_uuids(),
+      data->service_data());
 }
 
 void BluetoothAdvertisementBlueZ::Register(

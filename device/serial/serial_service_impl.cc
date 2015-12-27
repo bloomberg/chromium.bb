@@ -5,6 +5,7 @@
 #include "device/serial/serial_service_impl.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -15,17 +16,16 @@ namespace device {
 SerialServiceImpl::SerialServiceImpl(
     scoped_refptr<SerialConnectionFactory> connection_factory,
     mojo::InterfaceRequest<serial::SerialService> request)
-    : connection_factory_(connection_factory), binding_(this, request.Pass()) {
-}
+    : connection_factory_(connection_factory),
+      binding_(this, std::move(request)) {}
 
 SerialServiceImpl::SerialServiceImpl(
     scoped_refptr<SerialConnectionFactory> connection_factory,
     scoped_ptr<SerialDeviceEnumerator> device_enumerator,
     mojo::InterfaceRequest<serial::SerialService> request)
-    : device_enumerator_(device_enumerator.Pass()),
+    : device_enumerator_(std::move(device_enumerator)),
       connection_factory_(connection_factory),
-      binding_(this, request.Pass()) {
-}
+      binding_(this, std::move(request)) {}
 
 SerialServiceImpl::~SerialServiceImpl() {
 }
@@ -40,7 +40,7 @@ void SerialServiceImpl::Create(
           base::Bind(SerialIoHandler::Create,
                      base::ThreadTaskRunnerHandle::Get(), ui_task_runner),
           io_task_runner),
-      request.Pass());
+      std::move(request));
 }
 
 // static
@@ -68,9 +68,9 @@ void SerialServiceImpl::Connect(
     mojo::InterfacePtr<serial::DataSourceClient> source_client) {
   if (!IsValidPath(path))
     return;
-  connection_factory_->CreateConnection(path, options.Pass(),
-                                        connection_request.Pass(), sink.Pass(),
-                                        source.Pass(), source_client.Pass());
+  connection_factory_->CreateConnection(
+      path, std::move(options), std::move(connection_request), std::move(sink),
+      std::move(source), std::move(source_client));
 }
 
 SerialDeviceEnumerator* SerialServiceImpl::GetDeviceEnumerator() {

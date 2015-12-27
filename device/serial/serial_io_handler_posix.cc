@@ -398,7 +398,7 @@ serial::DeviceControlSignalsPtr SerialIoHandlerPosix::GetControlSignals()
   signals->cts = (status & TIOCM_CTS) != 0;
   signals->dsr = (status & TIOCM_DSR) != 0;
   signals->ri = (status & TIOCM_RI) != 0;
-  return signals.Pass();
+  return signals;
 }
 
 bool SerialIoHandlerPosix::SetControlSignals(
@@ -478,7 +478,7 @@ serial::ConnectionInfoPtr SerialIoHandlerPosix::GetPortInfo() const {
   info->stop_bits =
       (config.c_cflag & CSTOPB) ? serial::STOP_BITS_TWO : serial::STOP_BITS_ONE;
   info->cts_flow_control = (config.c_cflag & CRTSCTS) != 0;
-  return info.Pass();
+  return info;
 }
 
 bool SerialIoHandlerPosix::SetBreak() {

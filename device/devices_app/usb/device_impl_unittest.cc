@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/devices_app/usb/device_impl.h"
+
 #include <stddef.h>
 #include <stdint.h>
-
 #include <map>
 #include <queue>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -15,7 +17,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "device/devices_app/usb/device_impl.h"
 #include "device/devices_app/usb/fake_permission_provider.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_device_handle.h"
@@ -157,7 +158,7 @@ class USBDeviceImplTest : public testing::Test {
     PermissionProviderPtr permission_provider;
     permission_provider_.Bind(mojo::GetProxy(&permission_provider));
     DevicePtr proxy;
-    new DeviceImpl(mock_device_, permission_provider.Pass(),
+    new DeviceImpl(mock_device_, std::move(permission_provider),
                    mojo::GetProxy(&proxy));
 
     // Set up mock handle calls to respond based on mock device configs
@@ -187,7 +188,7 @@ class USBDeviceImplTest : public testing::Test {
     ON_CALL(mock_handle(), IsochronousTransfer(_, _, _, _, _, _, _, _))
         .WillByDefault(Invoke(this, &USBDeviceImplTest::IsochronousTransfer));
 
-    return proxy.Pass();
+    return proxy;
   }
 
   DevicePtr GetMockDeviceProxy() {
@@ -662,7 +663,7 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
     params->index = 7;
     base::RunLoop loop;
     device->ControlTransferIn(
-        params.Pass(), static_cast<uint32_t>(fake_data.size()), 0,
+        std::move(params), static_cast<uint32_t>(fake_data.size()), 0,
         base::Bind(&ExpectTransferInAndThen, TRANSFER_STATUS_COMPLETED,
                    fake_data, loop.QuitClosure()));
     loop.Run();
@@ -684,7 +685,7 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
     params->index = 7;
     base::RunLoop loop;
     device->ControlTransferOut(
-        params.Pass(), mojo::Array<uint8_t>::From(fake_data), 0,
+        std::move(params), mojo::Array<uint8_t>::From(fake_data), 0,
         base::Bind(&ExpectTransferStatusAndThen, TRANSFER_STATUS_COMPLETED,
                    loop.QuitClosure()));
     loop.Run();
@@ -785,7 +786,7 @@ TEST_F(USBDeviceImplTest, IsochronousTransfer) {
       packets[i].Swap(&bytes);
     }
     device->IsochronousTransferOut(
-        1, packets.Pass(), 0,
+        1, std::move(packets), 0,
         base::Bind(&ExpectTransferStatusAndThen, TRANSFER_STATUS_COMPLETED,
                    loop.QuitClosure()));
     loop.Run();

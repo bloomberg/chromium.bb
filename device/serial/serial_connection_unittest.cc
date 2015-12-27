@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdint.h>
+#include "device/serial/serial_connection.h"
 
+#include <stdint.h>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -15,7 +17,6 @@
 #include "device/serial/data_sender.h"
 #include "device/serial/data_stream.mojom.h"
 #include "device/serial/serial.mojom.h"
-#include "device/serial/serial_connection.h"
 #include "device/serial/serial_service_impl.h"
 #include "device/serial/test_serial_io_handler.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -30,7 +31,7 @@ class FakeSerialDeviceEnumerator : public SerialDeviceEnumerator {
     mojo::Array<serial::DeviceInfoPtr> devices(1);
     devices[0] = serial::DeviceInfo::New();
     devices[0]->path = "device";
-    return devices.Pass();
+    return devices;
   }
 };
 
@@ -83,11 +84,11 @@ class SerialConnectionTest : public testing::Test {
         mojo::GetProxy(&source_client);
     service->Connect("device", serial::ConnectionOptions::New(),
                      mojo::GetProxy(&connection_), mojo::GetProxy(&sink),
-                     mojo::GetProxy(&source), source_client.Pass());
-    sender_.reset(new DataSender(sink.Pass(), kBufferSize,
+                     mojo::GetProxy(&source), std::move(source_client));
+    sender_.reset(new DataSender(std::move(sink), kBufferSize,
                                  serial::SEND_ERROR_DISCONNECTED));
     receiver_ =
-        new DataReceiver(source.Pass(), source_client_request.Pass(),
+        new DataReceiver(std::move(source), std::move(source_client_request),
                          kBufferSize, serial::RECEIVE_ERROR_DISCONNECTED);
     connection_.set_connection_error_handler(base::Bind(
         &SerialConnectionTest::OnConnectionError, base::Unretained(this)));
@@ -98,12 +99,12 @@ class SerialConnectionTest : public testing::Test {
   }
 
   void StoreInfo(serial::ConnectionInfoPtr options) {
-    info_ = options.Pass();
+    info_ = std::move(options);
     EventReceived(EVENT_GOT_INFO);
   }
 
   void StoreControlSignals(serial::DeviceControlSignalsPtr signals) {
-    signals_ = signals.Pass();
+    signals_ = std::move(signals);
     EventReceived(EVENT_GOT_CONTROL_SIGNALS);
   }
 
@@ -218,10 +219,10 @@ TEST_F(SerialConnectionTest, SetOptions) {
   options->data_bits = serial::DATA_BITS_SEVEN;
   options->has_cts_flow_control = true;
   options->cts_flow_control = true;
-  connection_->SetOptions(options.Pass(),
-                          base::Bind(&SerialConnectionTest::StoreSuccess,
-                                     base::Unretained(this),
-                                     EVENT_SET_OPTIONS));
+  connection_->SetOptions(
+      std::move(options),
+      base::Bind(&SerialConnectionTest::StoreSuccess, base::Unretained(this),
+                 EVENT_SET_OPTIONS));
   WaitForEvent(EVENT_SET_OPTIONS);
   ASSERT_TRUE(success_);
   serial::ConnectionInfo* info = io_handler_->connection_info();
@@ -254,10 +255,10 @@ TEST_F(SerialConnectionTest, SetControlSignals) {
   signals->has_rts = true;
   signals->rts = true;
 
-  connection_->SetControlSignals(signals.Pass(),
-                                 base::Bind(&SerialConnectionTest::StoreSuccess,
-                                            base::Unretained(this),
-                                            EVENT_SET_CONTROL_SIGNALS));
+  connection_->SetControlSignals(
+      std::move(signals),
+      base::Bind(&SerialConnectionTest::StoreSuccess, base::Unretained(this),
+                 EVENT_SET_CONTROL_SIGNALS));
   WaitForEvent(EVENT_SET_CONTROL_SIGNALS);
   ASSERT_TRUE(success_);
   EXPECT_TRUE(io_handler_->dtr());

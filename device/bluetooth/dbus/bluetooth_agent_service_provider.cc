@@ -4,6 +4,8 @@
 
 #include "device/bluetooth/dbus/bluetooth_agent_service_provider.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -323,7 +325,7 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
             dbus::Response::FromMethodCall(method_call));
         dbus::MessageWriter writer(response.get());
         writer.AppendString(pincode);
-        response_sender.Run(response.Pass());
+        response_sender.Run(std::move(response));
         break;
       }
       case Delegate::REJECTED: {
@@ -354,7 +356,7 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
             dbus::Response::FromMethodCall(method_call));
         dbus::MessageWriter writer(response.get());
         writer.AppendUint32(passkey);
-        response_sender.Run(response.Pass());
+        response_sender.Run(std::move(response));
         break;
       }
       case Delegate::REJECTED: {

@@ -4,6 +4,8 @@
 
 #include "device/serial/serial_io_handler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
@@ -146,7 +148,7 @@ void SerialIoHandler::FinishOpen(base::File file) {
     return;
   }
 
-  file_ = file.Pass();
+  file_ = std::move(file);
 
   bool success = PostOpen() && ConfigurePortImpl();
   if (!success) {
@@ -164,7 +166,8 @@ void SerialIoHandler::Close() {
   if (file_.IsValid()) {
     DCHECK(file_thread_task_runner_.get());
     file_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&SerialIoHandler::DoClose, Passed(file_.Pass())));
+        FROM_HERE,
+        base::Bind(&SerialIoHandler::DoClose, Passed(std::move(file_))));
   }
 }
 
@@ -176,7 +179,7 @@ void SerialIoHandler::DoClose(base::File port) {
 void SerialIoHandler::Read(scoped_ptr<WritableBuffer> buffer) {
   DCHECK(CalledOnValidThread());
   DCHECK(!IsReadPending());
-  pending_read_buffer_ = buffer.Pass();
+  pending_read_buffer_ = std::move(buffer);
   read_canceled_ = false;
   AddRef();
   ReadImpl();
@@ -185,7 +188,7 @@ void SerialIoHandler::Read(scoped_ptr<WritableBuffer> buffer) {
 void SerialIoHandler::Write(scoped_ptr<ReadOnlyBuffer> buffer) {
   DCHECK(CalledOnValidThread());
   DCHECK(!IsWritePending());
-  pending_write_buffer_ = buffer.Pass();
+  pending_write_buffer_ = std::move(buffer);
   write_canceled_ = false;
   AddRef();
   WriteImpl();
@@ -195,7 +198,8 @@ void SerialIoHandler::ReadCompleted(int bytes_read,
                                     serial::ReceiveError error) {
   DCHECK(CalledOnValidThread());
   DCHECK(IsReadPending());
-  scoped_ptr<WritableBuffer> pending_read_buffer = pending_read_buffer_.Pass();
+  scoped_ptr<WritableBuffer> pending_read_buffer =
+      std::move(pending_read_buffer_);
   if (error == serial::RECEIVE_ERROR_NONE) {
     pending_read_buffer->Done(bytes_read);
   } else {
@@ -209,7 +213,7 @@ void SerialIoHandler::WriteCompleted(int bytes_written,
   DCHECK(CalledOnValidThread());
   DCHECK(IsWritePending());
   scoped_ptr<ReadOnlyBuffer> pending_write_buffer =
-      pending_write_buffer_.Pass();
+      std::move(pending_write_buffer_);
   if (error == serial::SEND_ERROR_NONE) {
     pending_write_buffer->Done(bytes_written);
   } else {

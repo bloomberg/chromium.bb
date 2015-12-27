@@ -4,6 +4,8 @@
 
 #include "device/bluetooth/dbus/bluetooth_gatt_service_service_provider.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -96,7 +98,7 @@ class BluetoothGattServiceServiceProviderImpl
       scoped_ptr<dbus::ErrorResponse> error_response =
           dbus::ErrorResponse::FromMethodCall(method_call, kErrorInvalidArgs,
                                               "Expected 'ss'.");
-      response_sender.Run(error_response.Pass());
+      response_sender.Run(std::move(error_response));
       return;
     }
 
@@ -107,7 +109,7 @@ class BluetoothGattServiceServiceProviderImpl
           dbus::ErrorResponse::FromMethodCall(
               method_call, kErrorInvalidArgs,
               "No such interface: '" + interface_name + "'.");
-      response_sender.Run(error_response.Pass());
+      response_sender.Run(std::move(error_response));
       return;
     }
 
@@ -118,7 +120,7 @@ class BluetoothGattServiceServiceProviderImpl
           dbus::ErrorResponse::FromMethodCall(
               method_call, kErrorInvalidArgs,
               "No such property: '" + property_name + "'.");
-      response_sender.Run(error_response.Pass());
+      response_sender.Run(std::move(error_response));
       return;
     }
 
@@ -137,7 +139,7 @@ class BluetoothGattServiceServiceProviderImpl
       writer.CloseContainer(&variant_writer);
     }
 
-    response_sender.Run(response.Pass());
+    response_sender.Run(std::move(response));
   }
 
   // Called by dbus:: when the Bluetooth daemon sets a single property of the
@@ -153,7 +155,7 @@ class BluetoothGattServiceServiceProviderImpl
     scoped_ptr<dbus::ErrorResponse> error_response =
         dbus::ErrorResponse::FromMethodCall(method_call, kErrorPropertyReadOnly,
                                             "All properties are read-only.");
-    response_sender.Run(error_response.Pass());
+    response_sender.Run(std::move(error_response));
   }
 
   // Called by dbus:: when the Bluetooth daemon fetches all properties of the
@@ -171,7 +173,7 @@ class BluetoothGattServiceServiceProviderImpl
       scoped_ptr<dbus::ErrorResponse> error_response =
           dbus::ErrorResponse::FromMethodCall(method_call, kErrorInvalidArgs,
                                               "Expected 's'.");
-      response_sender.Run(error_response.Pass());
+      response_sender.Run(std::move(error_response));
       return;
     }
 
@@ -182,7 +184,7 @@ class BluetoothGattServiceServiceProviderImpl
           dbus::ErrorResponse::FromMethodCall(
               method_call, kErrorInvalidArgs,
               "No such interface: '" + interface_name + "'.");
-      response_sender.Run(error_response.Pass());
+      response_sender.Run(std::move(error_response));
       return;
     }
 
@@ -209,7 +211,7 @@ class BluetoothGattServiceServiceProviderImpl
 
     writer.CloseContainer(&array_writer);
 
-    response_sender.Run(response.Pass());
+    response_sender.Run(std::move(response));
   }
 
   // Called by dbus:: when a method is exported.

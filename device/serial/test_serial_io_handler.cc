@@ -81,13 +81,13 @@ bool TestSerialIoHandler::ConfigurePortImpl() {
 serial::DeviceControlSignalsPtr TestSerialIoHandler::GetControlSignals() const {
   serial::DeviceControlSignalsPtr signals(serial::DeviceControlSignals::New());
   *signals = device_control_signals_;
-  return signals.Pass();
+  return signals;
 }
 
 serial::ConnectionInfoPtr TestSerialIoHandler::GetPortInfo() const {
   serial::ConnectionInfoPtr info(serial::ConnectionInfo::New());
   *info = info_;
-  return info.Pass();
+  return info;
 }
 
 bool TestSerialIoHandler::Flush() const {

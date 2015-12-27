@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -47,7 +48,8 @@ class DataSinkTest : public testing::Test {
         base::Bind(&DataSinkTest::OnDataToRead, base::Unretained(this)),
         base::Bind(&DataSinkTest::OnCancel, base::Unretained(this)),
         base::Bind(&DataSinkTest::OnError, base::Unretained(this)));
-    sender_.reset(new DataSender(sink_handle.Pass(), kBufferSize, kFatalError));
+    sender_.reset(
+        new DataSender(std::move(sink_handle), kBufferSize, kFatalError));
   }
 
   void TearDown() override {
@@ -158,7 +160,7 @@ class DataSinkTest : public testing::Test {
   }
 
   void OnDataToRead(scoped_ptr<ReadOnlyBuffer> buffer) {
-    read_buffer_ = buffer.Pass();
+    read_buffer_ = std::move(buffer);
     read_buffer_contents_ =
         std::string(read_buffer_->GetData(), read_buffer_->GetSize());
     EventReceived(EVENT_READ_BUFFER_READY);

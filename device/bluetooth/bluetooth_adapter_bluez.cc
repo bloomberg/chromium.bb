@@ -5,6 +5,7 @@
 #include "device/bluetooth/bluetooth_adapter_bluez.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -345,7 +346,7 @@ void BluetoothAdapterBlueZ::RegisterAdvertisement(
     const CreateAdvertisementCallback& callback,
     const CreateAdvertisementErrorCallback& error_callback) {
   scoped_refptr<BluetoothAdvertisementBlueZ> advertisement(
-      new BluetoothAdvertisementBlueZ(advertisement_data.Pass(), this));
+      new BluetoothAdvertisementBlueZ(std::move(advertisement_data), this));
   advertisement->Register(base::Bind(callback, advertisement), error_callback);
 }
 
@@ -1198,7 +1199,7 @@ void BluetoothAdapterBlueZ::AddDiscoverySession(
         BluetoothDiscoveryFilter::Transport::TRANSPORT_DUAL));
     df->CopyFrom(*discovery_filter);
     SetDiscoveryFilter(
-        df.Pass(),
+        std::move(df),
         base::Bind(&BluetoothAdapterBlueZ::OnPreSetDiscoveryFilter,
                    weak_ptr_factory_.GetWeakPtr(), callback, error_callback),
         base::Bind(&BluetoothAdapterBlueZ::OnPreSetDiscoveryFilterError,

@@ -5,6 +5,7 @@
 #include "device/bluetooth/bluetooth_adapter_profile_bluez.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -125,7 +126,7 @@ void BluetoothAdapterProfileBlueZ::NewConnection(
     return;
   }
 
-  delegates_[delegate_path.value()]->NewConnection(device_path, fd.Pass(),
+  delegates_[delegate_path.value()]->NewConnection(device_path, std::move(fd),
                                                    options, callback);
 }
 

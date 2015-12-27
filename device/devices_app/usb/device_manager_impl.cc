@@ -5,6 +5,7 @@
 #include "device/devices_app/usb/device_manager_impl.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -39,7 +40,7 @@ void FilterAndConvertDevicesAndThen(
     allowed_devices[i] = DeviceInfo::From(*it->second);
   }
 
-  callback.Run(allowed_devices.Pass());
+  callback.Run(std::move(allowed_devices));
 }
 
 }  // namespace
@@ -48,15 +49,15 @@ void FilterAndConvertDevicesAndThen(
 void DeviceManagerImpl::Create(PermissionProviderPtr permission_provider,
                                mojo::InterfaceRequest<DeviceManager> request) {
   // The created object is owned by its binding.
-  new DeviceManagerImpl(permission_provider.Pass(), request.Pass());
+  new DeviceManagerImpl(std::move(permission_provider), std::move(request));
 }
 
 DeviceManagerImpl::DeviceManagerImpl(
     PermissionProviderPtr permission_provider,
     mojo::InterfaceRequest<DeviceManager> request)
-    : permission_provider_(permission_provider.Pass()),
+    : permission_provider_(std::move(permission_provider)),
       observer_(this),
-      binding_(this, request.Pass()),
+      binding_(this, std::move(request)),
       weak_factory_(this) {
   // This object owns itself and will be destroyed if either the message pipe
   // it is bound to is closed or the PermissionProvider it depends on is
@@ -78,7 +79,7 @@ void DeviceManagerImpl::GetDevices(EnumerationOptionsPtr options,
                                    const GetDevicesCallback& callback) {
   if (!usb_service_) {
     mojo::Array<DeviceInfoPtr> no_devices;
-    callback.Run(no_devices.Pass());
+    callback.Run(std::move(no_devices));
     return;
   }
 
@@ -106,7 +107,7 @@ void DeviceManagerImpl::GetDevice(
   mojo::Array<DeviceInfoPtr> requested_devices(1);
   requested_devices[0] = DeviceInfo::From(*device);
   permission_provider_->HasDevicePermission(
-      requested_devices.Pass(),
+      std::move(requested_devices),
       base::Bind(&DeviceManagerImpl::OnGetDevicePermissionCheckComplete,
                  base::Unretained(this), device,
                  base::Passed(&device_request)));
@@ -122,7 +123,8 @@ void DeviceManagerImpl::OnGetDevicePermissionCheckComplete(
   DCHECK(allowed_guids.size() == 1);
   PermissionProviderPtr permission_provider;
   permission_provider_->Bind(mojo::GetProxy(&permission_provider));
-  new DeviceImpl(device, permission_provider.Pass(), device_request.Pass());
+  new DeviceImpl(device, std::move(permission_provider),
+                 std::move(device_request));
 }
 
 void DeviceManagerImpl::OnGetDevices(EnumerationOptionsPtr options,
@@ -142,7 +144,7 @@ void DeviceManagerImpl::OnGetDevices(EnumerationOptionsPtr options,
   }
 
   permission_provider_->HasDevicePermission(
-      requested_devices.Pass(),
+      std::move(requested_devices),
       base::Bind(&FilterAndConvertDevicesAndThen, device_map, callback));
 }
 
@@ -182,7 +184,7 @@ void DeviceManagerImpl::MaybeRunDeviceChangesCallback() {
 
     permission_request_pending_ = true;
     permission_provider_->HasDevicePermission(
-        requested_devices.Pass(),
+        std::move(requested_devices),
         base::Bind(&DeviceManagerImpl::OnEnumerationPermissionCheckComplete,
                    base::Unretained(this), devices_added, devices_removed));
   }
@@ -214,7 +216,7 @@ void DeviceManagerImpl::OnEnumerationPermissionCheckComplete(
 
     DCHECK(!device_change_callbacks_.empty());
     const GetDeviceChangesCallback& callback = device_change_callbacks_.front();
-    callback.Run(notification.Pass());
+    callback.Run(std::move(notification));
     device_change_callbacks_.pop();
   }
 

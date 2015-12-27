@@ -5,6 +5,7 @@
 #include "device/usb/usb_device_handle_impl.h"
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -264,7 +265,7 @@ UsbDeviceHandleImpl::Transfer::CreateControlTransfer(
                                &UsbDeviceHandleImpl::Transfer::PlatformCallback,
                                transfer.get(), timeout);
 
-  return transfer.Pass();
+  return transfer;
 }
 
 // static
@@ -293,7 +294,7 @@ UsbDeviceHandleImpl::Transfer::CreateBulkTransfer(
       &UsbDeviceHandleImpl::Transfer::PlatformCallback, transfer.get(),
       timeout);
 
-  return transfer.Pass();
+  return transfer;
 }
 
 // static
@@ -322,7 +323,7 @@ UsbDeviceHandleImpl::Transfer::CreateInterruptTransfer(
       &UsbDeviceHandleImpl::Transfer::PlatformCallback, transfer.get(),
       timeout);
 
-  return transfer.Pass();
+  return transfer;
 }
 
 // static
@@ -357,7 +358,7 @@ UsbDeviceHandleImpl::Transfer::CreateIsochronousTransfer(
       packets, &Transfer::PlatformCallback, transfer.get(), timeout);
   libusb_set_iso_packet_lengths(transfer->platform_transfer_, packet_length);
 
-  return transfer.Pass();
+  return transfer;
 }
 
 UsbDeviceHandleImpl::Transfer::Transfer(
@@ -881,7 +882,7 @@ void UsbDeviceHandleImpl::ControlTransferInternal(
     return;
   }
 
-  SubmitTransfer(transfer.Pass());
+  SubmitTransfer(std::move(transfer));
 }
 
 void UsbDeviceHandleImpl::IsochronousTransferInternal(
@@ -912,7 +913,7 @@ void UsbDeviceHandleImpl::IsochronousTransferInternal(
       this, endpoint_address, buffer, static_cast<int>(length), packets,
       packet_length, timeout, callback_task_runner, callback);
 
-  SubmitTransfer(transfer.Pass());
+  SubmitTransfer(std::move(transfer));
 }
 
 void UsbDeviceHandleImpl::GenericTransferInternal(
@@ -965,7 +966,7 @@ void UsbDeviceHandleImpl::GenericTransferInternal(
     return;
   }
 
-  SubmitTransfer(transfer.Pass());
+  SubmitTransfer(std::move(transfer));
 }
 
 void UsbDeviceHandleImpl::SubmitTransfer(scoped_ptr<Transfer> transfer) {

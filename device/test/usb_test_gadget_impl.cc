@@ -150,7 +150,7 @@ class URLRequestContextGetter : public net::URLRequestContextGetter {
     if (!context_) {
       net::URLRequestContextBuilder context_builder;
       context_builder.set_proxy_service(net::ProxyService::CreateDirect());
-      context_ = context_builder.Build().Pass();
+      context_ = context_builder.Build();
     }
     return context_.get();
   }
@@ -522,7 +522,7 @@ bool UsbTestGadget::IsTestEnabled() {
 scoped_ptr<UsbTestGadget> UsbTestGadget::Claim(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   UsbGadgetFactory gadget_factory(io_task_runner);
-  return gadget_factory.WaitForDevice().Pass();
+  return gadget_factory.WaitForDevice();
 }
 
 UsbTestGadgetImpl::UsbTestGadgetImpl(

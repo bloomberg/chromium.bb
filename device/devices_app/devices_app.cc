@@ -5,6 +5,7 @@
 #include "device/devices_app/devices_app.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -105,8 +106,8 @@ void DevicesApp::Create(mojo::ApplicationConnection* connection,
   connection->ConnectToService(&permission_provider);
 
   // Owned by its message pipe.
-  usb::DeviceManagerImpl* device_manager =
-      new usb::DeviceManagerImpl(permission_provider.Pass(), request.Pass());
+  usb::DeviceManagerImpl* device_manager = new usb::DeviceManagerImpl(
+      std::move(permission_provider), std::move(request));
   device_manager->set_connection_error_handler(
       base::Bind(&DevicesApp::OnConnectionError, base::Unretained(this)));
 

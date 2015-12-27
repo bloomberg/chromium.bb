@@ -89,7 +89,7 @@ ScopedUdevDevicePtr DeviceMonitorLinux::GetDeviceFromPath(
   DCHECK(thread_checker_.CalledOnValidThread());
   ScopedUdevDevicePtr device(
       udev_device_new_from_syspath(udev_.get(), path.c_str()));
-  return device.Pass();
+  return device;
 }
 
 void DeviceMonitorLinux::Enumerate(const EnumerateCallback& callback) {

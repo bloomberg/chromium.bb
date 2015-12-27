@@ -101,7 +101,7 @@ void BluetoothDiscoverySession::SetDiscoveryFilter(
   // BluetoothDiscoverySession::SetDiscoveryFilter is only used from a private
   // extension API, so we don't bother histogramming its failures.
   adapter_->SetDiscoveryFilter(
-      adapter_->GetMergedDiscoveryFilter().Pass(), callback,
+      adapter_->GetMergedDiscoveryFilter(), callback,
       base::Bind(&IgnoreDiscoveryOutcome, error_callback));
 }
 

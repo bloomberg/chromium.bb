@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
+#include "device/devices_app/usb/device_manager_impl.h"
 
+#include <stddef.h>
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -15,7 +17,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "device/core/mock_device_client.h"
 #include "device/devices_app/usb/device_impl.h"
-#include "device/devices_app/usb/device_manager_impl.h"
 #include "device/devices_app/usb/fake_permission_provider.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_device_handle.h"
@@ -40,9 +41,9 @@ class USBDeviceManagerImplTest : public testing::Test {
     PermissionProviderPtr permission_provider;
     permission_provider_.Bind(mojo::GetProxy(&permission_provider));
     DeviceManagerPtr device_manager;
-    DeviceManagerImpl::Create(permission_provider.Pass(),
+    DeviceManagerImpl::Create(std::move(permission_provider),
                               mojo::GetProxy(&device_manager));
-    return device_manager.Pass();
+    return device_manager;
   }
 
   MockDeviceClient device_client_;
@@ -120,7 +121,7 @@ TEST_F(USBDeviceManagerImplTest, GetDevices) {
 
   base::RunLoop loop;
   device_manager->GetDevices(
-      options.Pass(),
+      std::move(options),
       base::Bind(&ExpectDevicesAndThen, guids, loop.QuitClosure()));
   loop.Run();
 }

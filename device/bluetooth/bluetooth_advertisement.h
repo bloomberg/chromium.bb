@@ -6,9 +6,9 @@
 #define DEVICE_BLUETOOTH_BLUETOOTH_ADVERTISEMENT_H_
 
 #include <stdint.h>
-
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -60,24 +60,24 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisement
     ~Data();
 
     AdvertisementType type() { return type_; }
-    scoped_ptr<UUIDList> service_uuids() { return service_uuids_.Pass(); }
+    scoped_ptr<UUIDList> service_uuids() { return std::move(service_uuids_); }
     scoped_ptr<ManufacturerData> manufacturer_data() {
-      return manufacturer_data_.Pass();
+      return std::move(manufacturer_data_);
     }
-    scoped_ptr<UUIDList> solicit_uuids() { return solicit_uuids_.Pass(); }
-    scoped_ptr<ServiceData> service_data() { return service_data_.Pass(); }
+    scoped_ptr<UUIDList> solicit_uuids() { return std::move(solicit_uuids_); }
+    scoped_ptr<ServiceData> service_data() { return std::move(service_data_); }
 
     void set_service_uuids(scoped_ptr<UUIDList> service_uuids) {
-      service_uuids_ = service_uuids.Pass();
+      service_uuids_ = std::move(service_uuids);
     }
     void set_manufacturer_data(scoped_ptr<ManufacturerData> manufacturer_data) {
-      manufacturer_data_ = manufacturer_data.Pass();
+      manufacturer_data_ = std::move(manufacturer_data);
     }
     void set_solicit_uuids(scoped_ptr<UUIDList> solicit_uuids) {
-      solicit_uuids_ = solicit_uuids.Pass();
+      solicit_uuids_ = std::move(solicit_uuids);
     }
     void set_service_data(scoped_ptr<ServiceData> service_data) {
-      service_data_ = service_data.Pass();
+      service_data_ = std::move(service_data);
     }
 
     void set_include_tx_power(bool include_tx_power) {

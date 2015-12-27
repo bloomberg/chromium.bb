@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/battery/battery_status_service.h"
+
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "device/battery/battery_status_manager.h"
-#include "device/battery/battery_status_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
@@ -69,7 +72,7 @@ class BatteryStatusServiceTest : public testing::Test {
         new FakeBatteryManager(battery_service_.GetUpdateCallbackForTesting()));
     battery_manager_ = battery_manager.get();
 
-    battery_service_.SetBatteryManagerForTesting(battery_manager.Pass());
+    battery_service_.SetBatteryManagerForTesting(std::move(battery_manager));
   }
 
   void TearDown() override {

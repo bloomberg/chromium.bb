@@ -5,6 +5,7 @@
 #include "device/serial/data_sender.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -49,7 +50,7 @@ class DataSender::PendingSend {
 DataSender::DataSender(mojo::InterfacePtr<serial::DataSink> sink,
                        uint32_t buffer_size,
                        int32_t fatal_error_value)
-    : sink_(sink.Pass()),
+    : sink_(std::move(sink)),
       fatal_error_value_(fatal_error_value),
       shut_down_(false) {
   sink_.set_connection_error_handler(
@@ -166,7 +167,7 @@ void DataSender::PendingSend::SendData() {
   mojo::Array<uint8_t> bytes(num_bytes_to_send);
   memcpy(&bytes[0], data_.data(), num_bytes_to_send);
   sender_->sink_->OnData(
-      bytes.Pass(),
+      std::move(bytes),
       base::Bind(&DataSender::PendingSend::OnDataSent, base::Unretained(this)));
 }
 

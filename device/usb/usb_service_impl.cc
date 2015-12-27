@@ -5,9 +5,9 @@
 #include "device/usb/usb_service_impl.h"
 
 #include <stdint.h>
-
 #include <list>
 #include <set>
+#include <utility>
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
@@ -197,7 +197,7 @@ void OnReadWebUsbAllowedOrigins(scoped_refptr<UsbDevice> device,
   if (descriptors->Parse(
           std::vector<uint8_t>(buffer->data(), buffer->data() + length))) {
     UsbDeviceImpl* device_impl = static_cast<UsbDeviceImpl*>(device.get());
-    device_impl->set_webusb_allowed_origins(descriptors.Pass());
+    device_impl->set_webusb_allowed_origins(std::move(descriptors));
   }
   callback.Run();
 }

@@ -4,6 +4,8 @@
 
 #include "device/bluetooth/dbus/bluetooth_profile_service_provider.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -130,7 +132,7 @@ class BluetoothProfileServiceProviderImpl
         &BluetoothProfileServiceProviderImpl::OnConfirmation,
         weak_ptr_factory_.GetWeakPtr(), method_call, response_sender);
 
-    delegate_->NewConnection(device_path, fd.Pass(), options, callback);
+    delegate_->NewConnection(device_path, std::move(fd), options, callback);
   }
 
   // Called by dbus:: when the Bluetooth daemon is about to disconnect the

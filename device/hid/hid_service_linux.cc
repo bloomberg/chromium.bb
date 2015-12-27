@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <limits>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file.h"
@@ -310,7 +311,7 @@ void HidServiceLinux::OpenOnBlockingThread(scoped_ptr<ConnectParams> params) {
     return;
   }
 
-  FinishOpen(params.Pass());
+  FinishOpen(std::move(params));
 }
 
 #endif  // defined(OS_CHROMEOS)
@@ -334,9 +335,9 @@ void HidServiceLinux::FinishOpen(scoped_ptr<ConnectParams> params) {
 // static
 void HidServiceLinux::CreateConnection(scoped_ptr<ConnectParams> params) {
   DCHECK(params->device_file.IsValid());
-  params->callback.Run(make_scoped_refptr(
-      new HidConnectionLinux(params->device_info, params->device_file.Pass(),
-                             params->file_task_runner)));
+  params->callback.Run(make_scoped_refptr(new HidConnectionLinux(
+      params->device_info, std::move(params->device_file),
+      params->file_task_runner)));
 }
 
 }  // namespace device

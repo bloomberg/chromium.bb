@@ -5,6 +5,7 @@
 #include "device/serial/data_receiver.h"
 
 #include <limits>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -83,7 +84,7 @@ class DataReceiver::PendingReceive::Buffer : public ReadOnlyBuffer {
 struct DataReceiver::DataFrame {
   explicit DataFrame(mojo::Array<uint8_t> data)
       : is_error(false),
-        data(data.Pass()),
+        data(std::move(data)),
         offset(0),
         error(0),
         dispatched(false) {}
@@ -112,8 +113,8 @@ DataReceiver::DataReceiver(
     mojo::InterfaceRequest<serial::DataSourceClient> client,
     uint32_t buffer_size,
     int32_t fatal_error_value)
-    : source_(source.Pass()),
-      client_(this, client.Pass()),
+    : source_(std::move(source)),
+      client_(this, std::move(client)),
       fatal_error_value_(fatal_error_value),
       shut_down_(false),
       weak_factory_(this) {
@@ -159,7 +160,8 @@ void DataReceiver::OnError(int32_t error) {
 }
 
 void DataReceiver::OnData(mojo::Array<uint8_t> data) {
-  pending_data_frames_.push(linked_ptr<DataFrame>(new DataFrame(data.Pass())));
+  pending_data_frames_.push(
+      linked_ptr<DataFrame>(new DataFrame(std::move(data))));
   if (pending_receive_)
     ReceiveInternal();
 }

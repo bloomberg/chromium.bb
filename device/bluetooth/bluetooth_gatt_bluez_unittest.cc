@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
@@ -138,7 +139,7 @@ class BluetoothGattBlueZTest : public testing::Test {
 
   void GattConnectionCallback(scoped_ptr<BluetoothGattConnection> conn) {
     ++success_callback_count_;
-    gatt_conn_ = conn.Pass();
+    gatt_conn_ = std::move(conn);
   }
 
   void NotifySessionCallback(scoped_ptr<BluetoothGattNotifySession> session) {

@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
-
 #include "device/devices_app/usb/fake_permission_provider.h"
+
+#include <stddef.h>
+#include <utility>
 
 namespace device {
 namespace usb {
@@ -19,7 +20,7 @@ void FakePermissionProvider::HasDevicePermission(
   mojo::Array<mojo::String> allowed_guids(requested_devices.size());
   for (size_t i = 0; i < requested_devices.size(); ++i)
     allowed_guids[i] = requested_devices[i]->guid;
-  callback.Run(allowed_guids.Pass());
+  callback.Run(std::move(allowed_guids));
 }
 
 void FakePermissionProvider::HasConfigurationPermission(
@@ -38,7 +39,7 @@ void FakePermissionProvider::HasInterfacePermission(
 
 void FakePermissionProvider::Bind(
     mojo::InterfaceRequest<PermissionProvider> request) {
-  bindings_.AddBinding(this, request.Pass());
+  bindings_.AddBinding(this, std::move(request));
 }
 
 }  // namespace usb
