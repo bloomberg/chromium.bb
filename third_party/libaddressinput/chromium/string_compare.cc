@@ -4,9 +4,9 @@
 
 #include "third_party/libaddressinput/src/cpp/src/util/string_compare.h"
 
-#include "base/basictypes.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 

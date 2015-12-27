@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_LIBADDRESSINPUT_CHROMIUM_CHROME_ADDRESS_VALIDATOR_H_
 #define THIRD_PARTY_LIBADDRESSINPUT_CHROMIUM_CHROME_ADDRESS_VALIDATOR_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 #include <vector>

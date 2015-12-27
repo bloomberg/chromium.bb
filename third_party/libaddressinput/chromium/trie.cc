@@ -4,6 +4,8 @@
 
 #include "third_party/libaddressinput/chromium/trie.h"
 
+#include <stddef.h>
+
 #include <queue>
 #include <string>
 

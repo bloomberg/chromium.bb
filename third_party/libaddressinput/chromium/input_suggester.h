@@ -5,11 +5,13 @@
 #ifndef THIRD_PARTY_LIBADDRESSINPUT_CHROMIUM_INPUT_SUGGESTER_H_
 #define THIRD_PARTY_LIBADDRESSINPUT_CHROMIUM_INPUT_SUGGESTER_H_
 
+#include <stddef.h>
 #include <stdint.h>
+
 #include <map>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_field.h"

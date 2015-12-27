@@ -4,6 +4,8 @@
 
 #include "third_party/libaddressinput/src/cpp/src/rule.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"

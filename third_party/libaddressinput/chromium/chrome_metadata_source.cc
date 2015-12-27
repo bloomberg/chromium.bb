@@ -5,6 +5,7 @@
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "net/base/io_buffer.h"

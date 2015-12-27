@@ -4,7 +4,10 @@
 
 #include "third_party/libaddressinput/src/cpp/src/util/canonicalize_string.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "third_party/icu/source/common/unicode/errorcode.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
