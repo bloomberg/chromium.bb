@@ -48,12 +48,8 @@
 #include "nptypes.h"
 #endif
 
-#ifdef __native_client__
 #include <stdint.h>
 #include <sys/types.h>
-#else
-#include "base/basictypes.h"
-#endif  /* __native_client__ */
 
 /* END GOOGLE MODIFICATIONS */
 

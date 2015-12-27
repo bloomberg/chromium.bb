@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <fontconfig/fontconfig.h>
 #include <stddef.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
