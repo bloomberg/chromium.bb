@@ -82,7 +82,7 @@ MojoCdmService::MojoCdmService(
     mojo::ServiceProvider* service_provider,
     CdmFactory* cdm_factory,
     mojo::InterfaceRequest<interfaces::ContentDecryptionModule> request)
-    : binding_(this, request.Pass()),
+    : binding_(this, std::move(request)),
       context_(context),
       service_provider_(service_provider),
       cdm_factory_(cdm_factory),
@@ -101,7 +101,7 @@ MojoCdmService::~MojoCdmService() {
 
 void MojoCdmService::SetClient(
     interfaces::ContentDecryptionModuleClientPtr client) {
-  client_ = client.Pass();
+  client_ = std::move(client);
 }
 
 void MojoCdmService::Initialize(const mojo::String& key_system,
@@ -247,7 +247,7 @@ void MojoCdmService::OnSessionKeysChange(const std::string& session_id,
   for (const auto& key : keys_info)
     keys_data.push_back(interfaces::CdmKeyInformation::From(*key));
   client_->OnSessionKeysChange(session_id, has_additional_usable_key,
-                               keys_data.Pass());
+                               std::move(keys_data));
 }
 
 void MojoCdmService::OnSessionExpirationUpdate(

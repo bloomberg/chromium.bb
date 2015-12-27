@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
+#include "media/base/text_renderer.h"
 
+#include <stddef.h>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -15,7 +17,6 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/fake_text_track_stream.h"
-#include "media/base/text_renderer.h"
 #include "media/base/text_track_config.h"
 #include "media/base/video_decoder_config.h"
 #include "media/filters/webvtt_util.h"
@@ -100,7 +101,7 @@ class TextRendererTest : public testing::Test {
     // text renderer deallocates them.
     text_tracks_.push_back(new FakeTextTrack(destroy_cb, config));
     scoped_ptr<TextTrack> text_track(text_tracks_.back());
-    done_cb.Run(text_track.Pass());
+    done_cb.Run(std::move(text_track));
   }
 
   void RemoveTextTrack(unsigned idx) {

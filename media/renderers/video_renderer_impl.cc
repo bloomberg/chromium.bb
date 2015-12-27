@@ -4,6 +4,8 @@
 
 #include "media/renderers/video_renderer_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -35,8 +37,9 @@ VideoRendererImpl::VideoRendererImpl(
     : task_runner_(media_task_runner),
       sink_(sink),
       sink_started_(false),
-      video_frame_stream_(
-          new VideoFrameStream(media_task_runner, decoders.Pass(), media_log)),
+      video_frame_stream_(new VideoFrameStream(media_task_runner,
+                                               std::move(decoders),
+                                               media_log)),
       gpu_memory_buffer_pool_(nullptr),
       media_log_(media_log),
       low_delay_(false),

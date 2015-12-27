@@ -6,7 +6,7 @@
 #define MEDIA_MOJO_SERVICES_MOJO_CDM_H_
 
 #include <stdint.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -121,7 +121,7 @@ class MojoCdm : public MediaKeys,
     if (result->success)
       promise->resolve(args.template To<T>()...);  // See ISO C++03 14.2/4.
     else
-      RejectPromise(promise.Pass(), result.Pass());
+      RejectPromise(std::move(promise), std::move(result));
   }
 
   interfaces::ContentDecryptionModulePtr remote_cdm_;

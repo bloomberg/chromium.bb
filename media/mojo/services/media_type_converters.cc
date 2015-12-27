@@ -360,7 +360,7 @@ media::interfaces::SubsampleEntryPtr TypeConverter<
       media::interfaces::SubsampleEntry::New());
   mojo_subsample_entry->clear_bytes = input.clear_bytes;
   mojo_subsample_entry->cypher_bytes = input.cypher_bytes;
-  return mojo_subsample_entry.Pass();
+  return mojo_subsample_entry;
 }
 
 // static
@@ -380,7 +380,7 @@ media::interfaces::DecryptConfigPtr TypeConverter<
   mojo_decrypt_config->iv = input.iv();
   mojo_decrypt_config->subsamples =
       Array<media::interfaces::SubsampleEntryPtr>::From(input.subsamples());
-  return mojo_decrypt_config.Pass();
+  return mojo_decrypt_config;
 }
 
 // static
@@ -403,7 +403,7 @@ TypeConverter<media::interfaces::DecoderBufferPtr,
   media::interfaces::DecoderBufferPtr mojo_buffer(
       media::interfaces::DecoderBuffer::New());
   if (input->end_of_stream())
-    return mojo_buffer.Pass();
+    return mojo_buffer;
 
   mojo_buffer->timestamp_usec = input->timestamp().InMicroseconds();
   mojo_buffer->duration_usec = input->duration().InMicroseconds();
@@ -431,7 +431,7 @@ TypeConverter<media::interfaces::DecoderBufferPtr,
   // the DecoderBuffer here; this must instead be done by clients via their
   // own DataPipe.  See http://crbug.com/432960
 
-  return mojo_buffer.Pass();
+  return mojo_buffer;
 }
 
 // static
@@ -494,7 +494,7 @@ media::interfaces::AudioDecoderConfigPtr TypeConverter<
   config->seek_preroll_usec = input.seek_preroll().InMicroseconds();
   config->codec_delay = input.codec_delay();
   config->is_encrypted = input.is_encrypted();
-  return config.Pass();
+  return config;
 }
 
 // static
@@ -531,7 +531,7 @@ media::interfaces::VideoDecoderConfigPtr TypeConverter<
   config->natural_size = Size::From(input.natural_size());
   config->extra_data = mojo::Array<uint8_t>::From(input.extra_data());
   config->is_encrypted = input.is_encrypted();
-  return config.Pass();
+  return config;
 }
 
 // static
@@ -561,7 +561,7 @@ media::interfaces::CdmKeyInformationPtr TypeConverter<
   info->key_id.Swap(&key_id_copy);
   info->status = static_cast<media::interfaces::CdmKeyStatus>(input.status);
   info->system_code = input.system_code;
-  return info.Pass();
+  return info;
 }
 
 // static
@@ -583,7 +583,7 @@ TypeConverter<media::interfaces::CdmConfigPtr, media::CdmConfig>::Convert(
   config->allow_distinctive_identifier = input.allow_distinctive_identifier;
   config->allow_persistent_state = input.allow_persistent_state;
   config->use_hw_secure_codecs = input.use_hw_secure_codecs;
-  return config.Pass();
+  return config;
 }
 
 // static
@@ -620,7 +620,7 @@ TypeConverter<media::interfaces::AudioBufferPtr,
     buffer->data.Swap(&input_data);
   }
 
-  return buffer.Pass();
+  return buffer;
 }
 
 // static
@@ -657,7 +657,7 @@ TypeConverter<media::interfaces::VideoFramePtr,
   buffer->end_of_stream =
       input->metadata()->IsTrue(media::VideoFrameMetadata::END_OF_STREAM);
   if (buffer->end_of_stream)
-    return buffer.Pass();
+    return buffer;
 
   // handle non EOS buffer.
   buffer->format = static_cast<media::interfaces::VideoFormat>(input->format());
@@ -682,7 +682,7 @@ TypeConverter<media::interfaces::VideoFramePtr,
     buffer->v_data.Swap(&v_data);
   }
 
-  return buffer.Pass();
+  return buffer;
 }
 
 // static

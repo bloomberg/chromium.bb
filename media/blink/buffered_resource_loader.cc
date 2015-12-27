@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <limits>
+#include <utility>
 
 #include "base/bits.h"
 #include "base/callback_helpers.h"
@@ -183,7 +183,7 @@ void BufferedResourceLoader::Start(
   // Check for our test WebURLLoader.
   scoped_ptr<WebURLLoader> loader;
   if (test_loader_) {
-    loader = test_loader_.Pass();
+    loader = std::move(test_loader_);
   } else {
     WebURLLoaderOptions options;
     if (cors_mode_ == kUnspecified) {
@@ -204,7 +204,7 @@ void BufferedResourceLoader::Start(
 
   // Start the resource loading.
   loader->loadAsynchronously(request, this);
-  active_loader_.reset(new ActiveLoader(loader.Pass()));
+  active_loader_.reset(new ActiveLoader(std::move(loader)));
   loading_cb_.Run(kLoading);
 }
 
@@ -555,7 +555,7 @@ void BufferedResourceLoader::didFail(
   // We don't need to continue loading after failure.
   //
   // Keep it alive until we exit this method so that |error| remains valid.
-  scoped_ptr<ActiveLoader> active_loader = active_loader_.Pass();
+  scoped_ptr<ActiveLoader> active_loader = std::move(active_loader_);
   loader_failed_ = true;
   loading_cb_.Run(kLoadingFailed);
 

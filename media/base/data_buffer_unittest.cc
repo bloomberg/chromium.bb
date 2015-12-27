@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/base/data_buffer.h"
+
 #include <stdint.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/strings/string_util.h"
-#include "media/base/data_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -36,7 +38,7 @@ TEST(DataBufferTest, Constructor_ScopedArray) {
   scoped_ptr<uint8_t[]> data(new uint8_t[kSize]);
   const uint8_t* kData = data.get();
 
-  scoped_refptr<DataBuffer> buffer = new DataBuffer(data.Pass(), kSize);
+  scoped_refptr<DataBuffer> buffer = new DataBuffer(std::move(data), kSize);
   EXPECT_TRUE(buffer->data());
   EXPECT_TRUE(buffer->writable_data());
   EXPECT_EQ(kData, buffer->data());

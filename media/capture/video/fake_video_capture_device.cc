@@ -5,8 +5,8 @@
 #include "media/capture/video/fake_video_capture_device.h"
 
 #include <stddef.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
@@ -89,7 +89,7 @@ void FakeVideoCaptureDevice::AllocateAndStart(
     scoped_ptr<VideoCaptureDevice::Client> client) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  client_ = client.Pass();
+  client_ = std::move(client);
 
   // Incoming |params| can be none of the supported formats, so we get the
   // closest thing rounded up. TODO(mcasas): Use the |params|, if they belong to
@@ -214,7 +214,7 @@ void FakeVideoCaptureDevice::CaptureUsingClientBuffers(
   }
 
   // Give the captured frame to the client.
-  client_->OnIncomingCapturedBuffer(capture_buffer.Pass(), capture_format_,
+  client_->OnIncomingCapturedBuffer(std::move(capture_buffer), capture_format_,
                                     base::TimeTicks::Now());
 
   BeepAndScheduleNextCapture(

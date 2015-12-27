@@ -4,6 +4,8 @@
 
 #include "media/blink/multibuffer_data_source.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
@@ -383,14 +385,14 @@ void MultibufferDataSource::ReadTask() {
   int64_t available = reader_->Available();
   if (available < 0) {
     // A failure has occured.
-    ReadOperation::Run(read_op_.Pass(), kReadError);
+    ReadOperation::Run(std::move(read_op_), kReadError);
     return;
   }
   if (available) {
     bytes_read =
         static_cast<int>(std::min<int64_t>(available, read_op_->size()));
     bytes_read = reader_->TryRead(read_op_->data(), bytes_read);
-    ReadOperation::Run(read_op_.Pass(), bytes_read);
+    ReadOperation::Run(std::move(read_op_), bytes_read);
   } else {
     reader_->Wait(1, base::Bind(&MultibufferDataSource::ReadTask,
                                 weak_factory_.GetWeakPtr()));
@@ -410,7 +412,7 @@ void MultibufferDataSource::StopInternal_Locked() {
   init_cb_.Reset();
 
   if (read_op_)
-    ReadOperation::Run(read_op_.Pass(), kReadError);
+    ReadOperation::Run(std::move(read_op_), kReadError);
 }
 
 void MultibufferDataSource::StopLoader() {

@@ -4,6 +4,8 @@
 
 #include "media/blink/webcontentdecryptionmoduleaccess_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
@@ -29,7 +31,7 @@ static void CreateCdm(
     return;
   }
 
-  client->CreateCdm(key_system, security_origin, cdm_config, result.Pass());
+  client->CreateCdm(key_system, security_origin, cdm_config, std::move(result));
 }
 
 WebContentDecryptionModuleAccessImpl*

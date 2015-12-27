@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/callback_helpers.h"
 #include "base/macros.h"
@@ -51,7 +52,7 @@ AudioOutputDevice::AudioOutputDevice(
     const url::Origin& security_origin)
     : ScopedTaskRunnerObserver(io_task_runner),
       callback_(NULL),
-      ipc_(ipc.Pass()),
+      ipc_(std::move(ipc)),
       state_(IDLE),
       start_on_authorized_(false),
       play_on_start_(true),

@@ -4,6 +4,7 @@
 
 #include "media/formats/webm/webm_cluster_parser.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -504,7 +505,7 @@ bool WebMClusterParser::OnBlock(bool is_simple_block,
         is_keyframe, buffer_type, track_num);
 
     if (decrypt_config)
-      buffer->set_decrypt_config(decrypt_config.Pass());
+      buffer->set_decrypt_config(std::move(decrypt_config));
   } else {
     std::string id, settings, content;
     WebMWebVTTParser::Parse(data, size, &id, &settings, &content);

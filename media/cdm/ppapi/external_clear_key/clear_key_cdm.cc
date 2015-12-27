@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cstring>
 #include <sstream>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -112,7 +113,7 @@ static scoped_refptr<media::DecoderBuffer> CopyDecoderBufferFrom(
                   input_buffer.iv_size),
       subsamples));
 
-  output_buffer->set_decrypt_config(decrypt_config.Pass());
+  output_buffer->set_decrypt_config(std::move(decrypt_config));
   output_buffer->set_timestamp(
       base::TimeDelta::FromMicroseconds(input_buffer.timestamp));
 
@@ -306,7 +307,7 @@ void ClearKeyCdm::CreateSessionAndGenerateRequest(
   decryptor_->CreateSessionAndGenerateRequest(
       ConvertSessionType(session_type), ConvertInitDataType(init_data_type),
       std::vector<uint8_t>(init_data, init_data + init_data_size),
-      promise.Pass());
+      std::move(promise));
 
   if (key_system_ == kExternalClearKeyFileIOTestKeySystem)
     StartFileIOTest();
@@ -341,7 +342,7 @@ void ClearKeyCdm::LoadSession(uint32_t promise_id,
                      promise_id)));
   decryptor_->CreateSessionAndGenerateRequest(
       MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
-      std::vector<uint8_t>(), promise.Pass());
+      std::vector<uint8_t>(), std::move(promise));
 }
 
 void ClearKeyCdm::UpdateSession(uint32_t promise_id,
@@ -363,7 +364,7 @@ void ClearKeyCdm::UpdateSession(uint32_t promise_id,
                  promise_id)));
   decryptor_->UpdateSession(
       web_session_str, std::vector<uint8_t>(response, response + response_size),
-      promise.Pass());
+      std::move(promise));
 
   if (!renewal_timer_set_) {
     ScheduleNextRenewal();
@@ -386,7 +387,7 @@ void ClearKeyCdm::CloseSession(uint32_t promise_id,
           &ClearKeyCdm::OnPromiseResolved, base::Unretained(this), promise_id),
       base::Bind(
           &ClearKeyCdm::OnPromiseFailed, base::Unretained(this), promise_id)));
-  decryptor_->CloseSession(web_session_str, promise.Pass());
+  decryptor_->CloseSession(web_session_str, std::move(promise));
 }
 
 void ClearKeyCdm::RemoveSession(uint32_t promise_id,
@@ -415,7 +416,7 @@ void ClearKeyCdm::RemoveSession(uint32_t promise_id,
                  promise_id),
       base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
                  promise_id)));
-  decryptor_->RemoveSession(web_session_str, promise.Pass());
+  decryptor_->RemoveSession(web_session_str, std::move(promise));
 }
 
 void ClearKeyCdm::SetServerCertificate(uint32_t promise_id,
@@ -700,7 +701,7 @@ void ClearKeyCdm::LoadLoadableSession() {
                  promise_id_for_emulated_loadsession_)));
   decryptor_->UpdateSession(
       session_id_for_emulated_loadsession_,
-      std::vector<uint8_t>(jwk_set.begin(), jwk_set.end()), promise.Pass());
+      std::vector<uint8_t>(jwk_set.begin(), jwk_set.end()), std::move(promise));
 }
 
 void ClearKeyCdm::OnSessionMessage(const std::string& session_id,

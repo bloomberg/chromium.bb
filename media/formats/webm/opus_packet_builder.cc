@@ -83,7 +83,7 @@ ScopedVector<OpusPacket> BuildAllOpusPackets() {
     }
   }
 
-  return opus_packets.Pass();
+  return opus_packets;
 }
 
 }  // namespace media

@@ -4,6 +4,8 @@
 
 #include "media/mojo/services/mojo_cdm_factory.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -56,7 +58,7 @@ void MojoCdmFactory::Create(
   interfaces::ContentDecryptionModulePtr cdm_ptr;
   service_factory_->CreateCdm(mojo::GetProxy(&cdm_ptr));
 
-  MojoCdm::Create(key_system, security_origin, cdm_config, cdm_ptr.Pass(),
+  MojoCdm::Create(key_system, security_origin, cdm_config, std::move(cdm_ptr),
                   session_message_cb, session_closed_cb,
                   legacy_session_error_cb, session_keys_change_cb,
                   session_expiration_update_cb, cdm_created_cb);

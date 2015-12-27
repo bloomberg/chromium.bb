@@ -5,6 +5,8 @@
 #ifndef MEDIA_BLINK_VIDEO_FRAME_COMPOSITOR_H_
 #define MEDIA_BLINK_VIDEO_FRAME_COMPOSITOR_H_
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -110,7 +112,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor
   base::TimeDelta GetCurrentFrameTimestamp() const;
 
   void set_tick_clock_for_testing(scoped_ptr<base::TickClock> tick_clock) {
-    tick_clock_ = tick_clock.Pass();
+    tick_clock_ = std::move(tick_clock);
   }
 
   void clear_current_frame_for_testing() { current_frame_ = nullptr; }

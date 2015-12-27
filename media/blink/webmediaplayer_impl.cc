@@ -8,6 +8,7 @@
 #include <cmath>
 #include <limits>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -180,7 +181,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
                                base::Bind(&WebMediaPlayerImpl::SetCdm,
                                           AsWeakPtr(),
                                           base::Bind(&IgnoreCdmAttached))),
-      renderer_factory_(renderer_factory.Pass()) {
+      renderer_factory_(std::move(renderer_factory)) {
   DCHECK(!adjust_allocated_memory_cb_.is_null());
 
   if (delegate)
@@ -1023,9 +1024,9 @@ void WebMediaPlayerImpl::OnAddTextTrack(
       new WebInbandTextTrackImpl(web_kind, web_label, web_language, web_id));
 
   scoped_ptr<TextTrack> text_track(new TextTrackImpl(
-      main_task_runner_, client_, web_inband_text_track.Pass()));
+      main_task_runner_, client_, std::move(web_inband_text_track)));
 
-  done_cb.Run(text_track.Pass());
+  done_cb.Run(std::move(text_track));
 }
 
 void WebMediaPlayerImpl::OnHidden() {

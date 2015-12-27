@@ -4,6 +4,8 @@
 
 #include "media/capture/content/screen_capture_device_core.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -54,7 +56,7 @@ void ScreenCaptureDeviceCore::AllocateAndStart(
   }
 
   oracle_proxy_ = new ThreadSafeCaptureOracle(
-      client.Pass(), params, capture_machine_->IsAutoThrottlingEnabled());
+      std::move(client), params, capture_machine_->IsAutoThrottlingEnabled());
 
   capture_machine_->Start(
       oracle_proxy_, params,
@@ -85,7 +87,7 @@ void ScreenCaptureDeviceCore::CaptureStarted(bool success) {
 
 ScreenCaptureDeviceCore::ScreenCaptureDeviceCore(
     scoped_ptr<VideoCaptureMachine> capture_machine)
-    : state_(kIdle), capture_machine_(capture_machine.Pass()) {
+    : state_(kIdle), capture_machine_(std::move(capture_machine)) {
   DCHECK(capture_machine_.get());
 }
 

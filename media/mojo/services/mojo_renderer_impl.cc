@@ -4,6 +4,8 @@
 
 #include "media/mojo/services/mojo_renderer_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
@@ -20,7 +22,7 @@ MojoRendererImpl::MojoRendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     interfaces::RendererPtr remote_renderer)
     : task_runner_(task_runner),
-      remote_renderer_(remote_renderer.Pass()),
+      remote_renderer_(std::move(remote_renderer)),
       weak_factory_(this) {
   DVLOG(1) << __FUNCTION__;
 }
@@ -69,7 +71,7 @@ void MojoRendererImpl::Initialize(
   binding_.reset(
       new mojo::Binding<RendererClient>(this, GetProxy(&client_ptr)));
   remote_renderer_->Initialize(
-      client_ptr.Pass(), audio_stream.Pass(), video_stream.Pass(),
+      std::move(client_ptr), std::move(audio_stream), std::move(video_stream),
       BindToCurrentLoop(base::Bind(&MojoRendererImpl::OnInitialized,
                                    weak_factory_.GetWeakPtr())));
 }

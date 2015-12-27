@@ -4,9 +4,11 @@
 
 #include "media/renderers/default_renderer_factory.h"
 
+#include <utility>
+
 #include "base/bind.h"
-#include "build/build_config.h"
 #include "base/single_thread_task_runner.h"
+#include "build/build_config.h"
 #include "media/base/media_log.h"
 #include "media/filters/gpu_video_decoder.h"
 #include "media/filters/opus_audio_decoder.h"
@@ -57,7 +59,7 @@ scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
   audio_decoders.push_back(new OpusAudioDecoder(media_task_runner));
 
   scoped_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
-      media_task_runner, audio_renderer_sink, audio_decoders.Pass(),
+      media_task_runner, audio_renderer_sink, std::move(audio_decoders),
       audio_hardware_config_, media_log_));
 
   // Create our video decoders and renderer.
@@ -82,11 +84,11 @@ scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
 
   scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
       media_task_runner, worker_task_runner, video_renderer_sink,
-      video_decoders.Pass(), true, gpu_factories_, media_log_));
+      std::move(video_decoders), true, gpu_factories_, media_log_));
 
   // Create renderer.
   return scoped_ptr<Renderer>(new RendererImpl(
-      media_task_runner, audio_renderer.Pass(), video_renderer.Pass()));
+      media_task_runner, std::move(audio_renderer), std::move(video_renderer)));
 }
 
 }  // namespace media

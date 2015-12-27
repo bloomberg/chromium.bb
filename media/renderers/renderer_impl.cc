@@ -4,6 +4,8 @@
 
 #include "media/renderers/renderer_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -31,8 +33,8 @@ RendererImpl::RendererImpl(
     scoped_ptr<VideoRenderer> video_renderer)
     : state_(STATE_UNINITIALIZED),
       task_runner_(task_runner),
-      audio_renderer_(audio_renderer.Pass()),
-      video_renderer_(video_renderer.Pass()),
+      audio_renderer_(std::move(audio_renderer)),
+      video_renderer_(std::move(video_renderer)),
       time_source_(NULL),
       time_ticking_(false),
       playback_rate_(0.0),

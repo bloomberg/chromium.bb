@@ -5,6 +5,7 @@
 #include "media/filters/gpu_video_decoder.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -39,8 +40,7 @@ static const size_t kSharedMemorySegmentBytes = 100 << 10;
 
 GpuVideoDecoder::SHMBuffer::SHMBuffer(scoped_ptr<base::SharedMemory> m,
                                       size_t s)
-    : shm(m.Pass()), size(s) {
-}
+    : shm(std::move(m)), size(s) {}
 
 GpuVideoDecoder::SHMBuffer::~SHMBuffer() {}
 
@@ -184,7 +184,7 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  vda_ = factories_->CreateVideoDecodeAccelerator().Pass();
+  vda_ = factories_->CreateVideoDecodeAccelerator();
 
   VideoDecodeAccelerator::Config vda_config(config);
 
@@ -566,11 +566,11 @@ scoped_ptr<GpuVideoDecoder::SHMBuffer> GpuVideoDecoder::GetSHM(
     // CreateSharedMemory() can return NULL during Shutdown.
     if (!shm)
       return NULL;
-    return make_scoped_ptr(new SHMBuffer(shm.Pass(), size_to_allocate));
+    return make_scoped_ptr(new SHMBuffer(std::move(shm), size_to_allocate));
   }
   scoped_ptr<SHMBuffer> ret(available_shm_segments_.back());
   available_shm_segments_.pop_back();
-  return ret.Pass();
+  return ret;
 }
 
 void GpuVideoDecoder::PutSHM(scoped_ptr<SHMBuffer> shm_buffer) {

@@ -6,8 +6,8 @@
 
 #include <math.h>
 #include <stddef.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -55,7 +55,7 @@ AudioRendererImpl::AudioRendererImpl(
       expecting_config_changes_(false),
       sink_(sink),
       audio_buffer_stream_(
-          new AudioBufferStream(task_runner, decoders.Pass(), media_log)),
+          new AudioBufferStream(task_runner, std::move(decoders), media_log)),
       hardware_config_(hardware_config),
       media_log_(media_log),
       tick_clock_(new base::DefaultTickClock()),

@@ -92,7 +92,7 @@ StatsEventSubscriber::SimpleHistogram::GetHistogram() const {
                        buckets_.back());
     histo->Append(bucket.release());
   }
-  return histo.Pass();
+  return histo;
 }
 
 StatsEventSubscriber::StatsEventSubscriber(
@@ -247,7 +247,7 @@ scoped_ptr<base::DictionaryValue> StatsEventSubscriber::GetStats() const {
   ret->Set(event_media_type_ == AUDIO_EVENT ? "audio" : "video",
            stats.release());
 
-  return ret.Pass();
+  return ret;
 }
 
 void StatsEventSubscriber::Reset() {

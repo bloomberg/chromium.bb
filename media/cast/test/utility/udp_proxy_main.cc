@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
-
 #include <cstdio>
 #include <cstdlib>
 #include <deque>
 #include <string>
+#include <utility>
 
 #include "base/at_exit.h"
 #include "base/bind.h"
@@ -81,7 +81,7 @@ class ByteCounterPipe : public media::cast::test::PacketPipe {
   ByteCounterPipe(ByteCounter* counter) : counter_(counter) {}
   void Send(scoped_ptr<media::cast::Packet> packet) final {
     counter_->Increment(packet->size());
-    pipe_->Send(packet.Pass());
+    pipe_->Send(std::move(packet));
   }
  private:
   ByteCounter* counter_;
@@ -92,10 +92,9 @@ void SetupByteCounters(scoped_ptr<media::cast::test::PacketPipe>* pipe,
                        ByteCounter* pipe_output_counter) {
   media::cast::test::PacketPipe* new_pipe =
       new ByteCounterPipe(pipe_input_counter);
-  new_pipe->AppendToPipe(pipe->Pass());
-  new_pipe->AppendToPipe(
-      scoped_ptr<media::cast::test::PacketPipe>(
-          new ByteCounterPipe(pipe_output_counter)).Pass());
+  new_pipe->AppendToPipe(std::move(*pipe));
+  new_pipe->AppendToPipe(scoped_ptr<media::cast::test::PacketPipe>(
+      new ByteCounterPipe(pipe_output_counter)));
   pipe->reset(new_pipe);
 }
 
@@ -173,17 +172,17 @@ int main(int argc, char** argv) {
   if (network_type == "perfect") {
     // No action needed.
   } else if (network_type == "wifi") {
-    in_pipe = media::cast::test::WifiNetwork().Pass();
-    out_pipe = media::cast::test::WifiNetwork().Pass();
+    in_pipe = media::cast::test::WifiNetwork();
+    out_pipe = media::cast::test::WifiNetwork();
   } else if (network_type == "bad") {
-    in_pipe = media::cast::test::BadNetwork().Pass();
-    out_pipe = media::cast::test::BadNetwork().Pass();
+    in_pipe = media::cast::test::BadNetwork();
+    out_pipe = media::cast::test::BadNetwork();
   } else if (network_type == "evil") {
-    in_pipe = media::cast::test::EvilNetwork().Pass();
-    out_pipe = media::cast::test::EvilNetwork().Pass();
+    in_pipe = media::cast::test::EvilNetwork();
+    out_pipe = media::cast::test::EvilNetwork();
   } else if (network_type == "poisson-wifi") {
-    in_pipe = ipp->NewBuffer(128 * 1024).Pass();
-    out_pipe = ipp->NewBuffer(128 * 1024).Pass();
+    in_pipe = ipp->NewBuffer(128 * 1024);
+    out_pipe = ipp->NewBuffer(128 * 1024);
   } else {
     fprintf(stderr, "Unknown network type.\n");
     exit(1);
@@ -197,11 +196,9 @@ int main(int argc, char** argv) {
 
   printf("Press Ctrl-C when done.\n");
   scoped_ptr<media::cast::test::UDPProxy> proxy(
-      media::cast::test::UDPProxy::Create(local_endpoint,
-                                          remote_endpoint,
-                                          in_pipe.Pass(),
-                                          out_pipe.Pass(),
-                                          NULL));
+      media::cast::test::UDPProxy::Create(local_endpoint, remote_endpoint,
+                                          std::move(in_pipe),
+                                          std::move(out_pipe), NULL));
   base::MessageLoop message_loop;
   g_counter.Get().last_printout = base::TimeTicks::Now();
   CheckByteCounters();

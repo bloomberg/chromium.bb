@@ -91,7 +91,7 @@ scoped_ptr<SerialRunner> SerialRunner::Run(
     const Queue& bound_fns, const PipelineStatusCB& done_cb) {
   scoped_ptr<SerialRunner> callback_series(
       new SerialRunner(bound_fns, done_cb));
-  return callback_series.Pass();
+  return callback_series;
 }
 
 void SerialRunner::RunNextInSeries(PipelineStatus last_status) {

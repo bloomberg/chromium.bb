@@ -4,6 +4,8 @@
 
 #include "media/audio/audio_input_controller.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
@@ -730,7 +732,7 @@ void AudioInputController::WriteInputDataForDebugging(
     scoped_ptr<AudioBus> data) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (input_writer_)
-    input_writer_->Write(data.Pass());
+    input_writer_->Write(std::move(data));
 }
 
 }  // namespace media

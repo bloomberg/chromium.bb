@@ -5,9 +5,9 @@
 #include "media/base/audio_splicer.h"
 
 #include <stdint.h>
-
 #include <cstdlib>
 #include <deque>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -56,7 +56,7 @@ scoped_ptr<AudioBus> CreateAudioBufferWrapper(
     wrapper->SetChannelData(
         ch, reinterpret_cast<float*>(buffer->channel_data()[ch]));
   }
-  return wrapper.Pass();
+  return wrapper;
 }
 
 }  // namespace
@@ -380,7 +380,7 @@ bool AudioSplicer::AddInput(const scoped_refptr<AudioBuffer>& input) {
 
   // Crossfade the pre splice and post splice sections and transfer all relevant
   // buffers into |output_sanitizer_|.
-  CrossfadePostSplice(pre_splice.Pass(), crossfade_buffer);
+  CrossfadePostSplice(std::move(pre_splice), crossfade_buffer);
 
   // Clear the splice timestamp so new splices can be accepted.
   reset_splice_timestamps();
@@ -497,7 +497,7 @@ scoped_ptr<AudioBus> AudioSplicer::ExtractCrossfadeFromPreSplice(
   pre_splice_sanitizer_->Reset();
   DCHECK_EQ(output_bus->frames(), frames_read);
   DCHECK_EQ(output_ts_helper.GetFramesToTarget(splice_timestamp_), 0);
-  return output_bus.Pass();
+  return output_bus;
 }
 
 void AudioSplicer::CrossfadePostSplice(

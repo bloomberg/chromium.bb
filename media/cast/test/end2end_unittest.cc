@@ -12,10 +12,10 @@
 #include <math.h>
 #include <stddef.h>
 #include <stdint.h>
-
 #include <functional>
 #include <list>
 #include <map>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -168,7 +168,7 @@ class LoopBackPacketPipe : public test::PacketPipe {
 
   // PacketPipe implementations.
   void Send(scoped_ptr<Packet> packet) final {
-    packet_receiver_.Run(packet.Pass());
+    packet_receiver_.Run(std::move(packet));
   }
 
  private:
@@ -197,9 +197,9 @@ class LoopBackTransport : public PacketSender {
     scoped_ptr<test::PacketPipe> loopback_pipe(
         new LoopBackPacketPipe(packet_receiver));
     if (packet_pipe_) {
-      packet_pipe_->AppendToPipe(loopback_pipe.Pass());
+      packet_pipe_->AppendToPipe(std::move(loopback_pipe));
     } else {
-      packet_pipe_ = loopback_pipe.Pass();
+      packet_pipe_ = std::move(loopback_pipe);
     }
     packet_pipe_->InitOnIOThread(task_runner, clock);
   }
@@ -217,7 +217,7 @@ class LoopBackTransport : public PacketSender {
     }
 
     scoped_ptr<Packet> packet_copy(new Packet(packet->data));
-    packet_pipe_->Send(packet_copy.Pass());
+    packet_pipe_->Send(std::move(packet_copy));
     return true;
   }
 
@@ -231,8 +231,8 @@ class LoopBackTransport : public PacketSender {
 
   void SetPacketPipe(scoped_ptr<test::PacketPipe> pipe) {
     // Append the loopback pipe to the end.
-    pipe->AppendToPipe(packet_pipe_.Pass());
-    packet_pipe_ = pipe.Pass();
+    pipe->AppendToPipe(std::move(packet_pipe_));
+    packet_pipe_ = std::move(pipe);
   }
 
  private:
@@ -263,7 +263,7 @@ class TestReceiverAudioCallback
     scoped_ptr<ExpectedAudioFrame> expected_audio_frame(
         new ExpectedAudioFrame());
     expected_audio_frame->audio_bus =
-        AudioBus::Create(audio_bus.channels(), audio_bus.frames()).Pass();
+        AudioBus::Create(audio_bus.channels(), audio_bus.frames());
     audio_bus.CopyTo(expected_audio_frame->audio_bus.get());
     expected_audio_frame->playout_time = playout_time;
     expected_frames_.push_back(expected_audio_frame.release());
@@ -333,7 +333,7 @@ class TestReceiverAudioCallback
     audio_bus->FromInterleaved(pcm_data, audio_bus->frames(), sizeof(int16_t));
 
     // Delegate the checking from here...
-    CheckAudioFrame(audio_bus.Pass(), audio_frame->reference_time, true);
+    CheckAudioFrame(std::move(audio_bus), audio_frame->reference_time, true);
   }
 
   int number_times_called() const { return num_called_; }
@@ -439,12 +439,12 @@ class End2EndTest : public ::testing::Test {
         task_runner_receiver_(
             new test::SkewedSingleThreadTaskRunner(task_runner_)),
         cast_environment_sender_(new CastEnvironment(
-            scoped_ptr<base::TickClock>(testing_clock_sender_).Pass(),
+            scoped_ptr<base::TickClock>(testing_clock_sender_),
             task_runner_sender_,
             task_runner_sender_,
             task_runner_sender_)),
         cast_environment_receiver_(new CastEnvironment(
-            scoped_ptr<base::TickClock>(testing_clock_receiver_).Pass(),
+            scoped_ptr<base::TickClock>(testing_clock_receiver_),
             task_runner_receiver_,
             task_runner_receiver_,
             task_runner_receiver_)),
@@ -544,7 +544,7 @@ class End2EndTest : public ::testing::Test {
             reference_time +
                 base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs));
       }
-      audio_frame_input_->InsertAudio(audio_bus.Pass(), reference_time);
+      audio_frame_input_->InsertAudio(std::move(audio_bus), reference_time);
     }
   }
 
@@ -560,7 +560,7 @@ class End2EndTest : public ::testing::Test {
           *audio_bus,
           reference_time + delay +
               base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs));
-      audio_frame_input_->InsertAudio(audio_bus.Pass(), reference_time);
+      audio_frame_input_->InsertAudio(std::move(audio_bus), reference_time);
     }
   }
 
@@ -574,7 +574,7 @@ class End2EndTest : public ::testing::Test {
   }
 
   void ReceivePacket(scoped_ptr<Packet> packet) {
-    cast_receiver_->ReceivePacket(packet.Pass());
+    cast_receiver_->ReceivePacket(std::move(packet));
   }
 
   void Create() {
@@ -1330,8 +1330,8 @@ TEST_F(End2EndTest, SmoothPlayoutWithFivePercentClockRateSkew) {
 TEST_F(End2EndTest, EvilNetwork) {
   Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16, 32000,
             1);
-  receiver_to_sender_.SetPacketPipe(test::EvilNetwork().Pass());
-  sender_to_receiver_.SetPacketPipe(test::EvilNetwork().Pass());
+  receiver_to_sender_.SetPacketPipe(test::EvilNetwork());
+  sender_to_receiver_.SetPacketPipe(test::EvilNetwork());
   Create();
   StartBasicPlayer();
 
@@ -1353,8 +1353,8 @@ TEST_F(End2EndTest, EvilNetwork) {
 TEST_F(End2EndTest, ShoveHighFrameRateDownYerThroat) {
   Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16, 32000,
             1);
-  receiver_to_sender_.SetPacketPipe(test::EvilNetwork().Pass());
-  sender_to_receiver_.SetPacketPipe(test::EvilNetwork().Pass());
+  receiver_to_sender_.SetPacketPipe(test::EvilNetwork());
+  sender_to_receiver_.SetPacketPipe(test::EvilNetwork());
   Create();
   StartBasicPlayer();
 
@@ -1386,7 +1386,7 @@ TEST_F(End2EndTest, OldPacketNetwork) {
   echo_chamber->AppendToPipe(
       test::NewDuplicateAndDelay(1, 160 * kFrameTimerMs));
 
-  receiver_to_sender_.SetPacketPipe(echo_chamber.Pass());
+  receiver_to_sender_.SetPacketPipe(std::move(echo_chamber));
   Create();
   StartBasicPlayer();
 

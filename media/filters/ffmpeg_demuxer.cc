@@ -5,6 +5,7 @@
 #include "media/filters/ffmpeg_demuxer.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -221,7 +222,7 @@ scoped_ptr<FFmpegDemuxerStream> FFmpegDemuxerStream::Create(
   }
 
   return make_scoped_ptr(new FFmpegDemuxerStream(
-      demuxer, stream, audio_config.Pass(), video_config.Pass()));
+      demuxer, stream, std::move(audio_config), std::move(video_config)));
 }
 
 //
@@ -415,7 +416,7 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
     }
 
     if (decrypt_config)
-      buffer->set_decrypt_config(decrypt_config.Pass());
+      buffer->set_decrypt_config(std::move(decrypt_config));
   }
 
   if (packet->duration >= 0) {
@@ -1438,7 +1439,7 @@ void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {
     }
 
     FFmpegDemuxerStream* demuxer_stream = streams_[packet->stream_index];
-    demuxer_stream->EnqueuePacket(packet.Pass());
+    demuxer_stream->EnqueuePacket(std::move(packet));
   }
 
   // Keep reading until we've reached capacity.

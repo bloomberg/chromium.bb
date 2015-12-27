@@ -5,6 +5,7 @@
 #include "media/capture/content/thread_safe_capture_oracle.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bits.h"
@@ -35,7 +36,7 @@ ThreadSafeCaptureOracle::ThreadSafeCaptureOracle(
     scoped_ptr<VideoCaptureDevice::Client> client,
     const VideoCaptureParams& params,
     bool enable_auto_throttling)
-    : client_(client.Pass()),
+    : client_(std::move(client)),
       oracle_(base::TimeDelta::FromMicroseconds(static_cast<int64_t>(
                   1000000.0 / params.requested_format.frame_rate +
                   0.5 /* to round to nearest int */)),
@@ -185,7 +186,7 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
         base::Bind(&ThreadSafeCaptureOracle::DidConsumeFrame, this,
                    frame_number, frame->metadata()));
 
-    client_->OnIncomingCapturedVideoFrame(buffer.Pass(), frame, timestamp);
+    client_->OnIncomingCapturedVideoFrame(std::move(buffer), frame, timestamp);
   }
 }
 

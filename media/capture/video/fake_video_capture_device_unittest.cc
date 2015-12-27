@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/capture/video/fake_video_capture_device.h"
+
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -14,7 +17,6 @@
 #include "build/build_config.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_capture_types.h"
-#include "media/capture/video/fake_video_capture_device.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
 #include "media/capture/video/video_capture_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -212,7 +214,7 @@ TEST_P(FakeVideoCaptureDeviceTest, CaptureUsing) {
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(640, 480);
   capture_params.requested_format.frame_rate = testing::get<2>(GetParam());
-  device->AllocateAndStart(capture_params, client_.Pass());
+  device->AllocateAndStart(capture_params, std::move(client_));
 
   WaitForCapturedFrame();
   EXPECT_EQ(last_format().frame_size.width(), 640);
@@ -272,7 +274,7 @@ TEST_P(FakeVideoCaptureDeviceCommandLineTest, FrameRate) {
     VideoCaptureParams capture_params;
     capture_params.requested_format.frame_size.SetSize(1280, 720);
     capture_params.requested_format.frame_rate = GetParam().fps;
-    device->AllocateAndStart(capture_params, client_.Pass());
+    device->AllocateAndStart(capture_params, std::move(client_));
 
     WaitForCapturedFrame();
     EXPECT_EQ(last_format().frame_size.width(), 1280);

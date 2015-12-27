@@ -4,6 +4,8 @@
 
 #include "media/base/bind_to_current_loop.h"
 
+#include <utility>
+
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -81,7 +83,7 @@ TEST_F(BindToCurrentLoopTest, PassedScopedPtrBool) {
   scoped_ptr<bool> scoped_ptr_bool(new bool(true));
   base::Callback<void(scoped_ptr<bool>)> cb = BindToCurrentLoop(base::Bind(
       &BoundBoolSetFromScopedPtr, &bool_val));
-  cb.Run(scoped_ptr_bool.Pass());
+  cb.Run(std::move(scoped_ptr_bool));
   EXPECT_FALSE(bool_val);
   loop_.RunUntilIdle();
   EXPECT_TRUE(bool_val);
@@ -106,7 +108,7 @@ TEST_F(BindToCurrentLoopTest, PassedScopedArrayBool) {
   scoped_array_bool[0] = true;
   base::Callback<void(scoped_ptr<bool[]>)> cb = BindToCurrentLoop(base::Bind(
       &BoundBoolSetFromScopedArray, &bool_val));
-  cb.Run(scoped_array_bool.Pass());
+  cb.Run(std::move(scoped_array_bool));
   EXPECT_FALSE(bool_val);
   loop_.RunUntilIdle();
   EXPECT_TRUE(bool_val);
@@ -134,7 +136,7 @@ TEST_F(BindToCurrentLoopTest, PassedScopedPtrFreeDeleterBool) {
   base::Callback<void(scoped_ptr<bool, base::FreeDeleter>)> cb =
       BindToCurrentLoop(base::Bind(&BoundBoolSetFromScopedPtrFreeDeleter,
       &bool_val));
-  cb.Run(scoped_ptr_free_deleter_bool.Pass());
+  cb.Run(std::move(scoped_ptr_free_deleter_bool));
   EXPECT_FALSE(bool_val);
   loop_.RunUntilIdle();
   EXPECT_TRUE(bool_val);

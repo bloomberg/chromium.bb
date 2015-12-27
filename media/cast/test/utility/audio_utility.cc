@@ -37,7 +37,7 @@ scoped_ptr<AudioBus> TestAudioBusFactory::NextAudioBus(
   scoped_ptr<AudioBus> bus(AudioBus::Create(num_channels_, num_samples));
   source_.OnMoreData(bus.get(), 0, 0);
   bus->Scale(volume_);
-  return bus.Pass();
+  return bus;
 }
 
 int CountZeroCrossings(const float* samples, int length) {

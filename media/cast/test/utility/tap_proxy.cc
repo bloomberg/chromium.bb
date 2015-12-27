@@ -17,9 +17,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-
 #include <deque>
 #include <map>
+#include <utility>
 
 #include "base/at_exit.h"
 #include "base/bind.h"
@@ -70,21 +70,17 @@ class SendToFDPipe : public PacketPipe {
 
 class QueueManager : public base::MessageLoopForIO::Watcher {
  public:
-  QueueManager(int input_fd,
-               int output_fd,
-               scoped_ptr<PacketPipe> pipe) :
-      input_fd_(input_fd),
-      packet_pipe_(pipe.Pass()) {
-
+  QueueManager(int input_fd, int output_fd, scoped_ptr<PacketPipe> pipe)
+      : input_fd_(input_fd), packet_pipe_(std::move(pipe)) {
     CHECK(base::MessageLoopForIO::current()->WatchFileDescriptor(
         input_fd_, true, base::MessageLoopForIO::WATCH_READ,
         &read_socket_watcher_, this));
 
     scoped_ptr<PacketPipe> tmp(new SendToFDPipe(output_fd));
     if (packet_pipe_) {
-      packet_pipe_->AppendToPipe(tmp.Pass());
+      packet_pipe_->AppendToPipe(std::move(tmp));
     } else {
-      packet_pipe_ = tmp.Pass();
+      packet_pipe_ = std::move(tmp);
     }
     packet_pipe_->InitOnIOThread(base::ThreadTaskRunnerHandle::Get(),
                                  &tick_clock_);
@@ -105,7 +101,7 @@ class QueueManager : public base::MessageLoopForIO::Watcher {
     }
     if (nread == 0) return;
     packet->resize(nread);
-    packet_pipe_->Send(packet.Pass());
+    packet_pipe_->Send(std::move(packet));
   }
   void OnFileCanWriteWithoutBlocking(int fd) final { NOTREACHED(); }
 
@@ -176,7 +172,7 @@ class ByteCounterPipe : public media::cast::test::PacketPipe {
   ByteCounterPipe(ByteCounter* counter) : counter_(counter) {}
   void Send(scoped_ptr<media::cast::Packet> packet) final {
     counter_->Increment(packet->size());
-    pipe_->Send(packet.Pass());
+    pipe_->Send(std::move(packet));
   }
  private:
   ByteCounter* counter_;
@@ -187,10 +183,9 @@ void SetupByteCounters(scoped_ptr<media::cast::test::PacketPipe>* pipe,
                        ByteCounter* pipe_output_counter) {
   media::cast::test::PacketPipe* new_pipe =
       new ByteCounterPipe(pipe_input_counter);
-  new_pipe->AppendToPipe(pipe->Pass());
-  new_pipe->AppendToPipe(
-      scoped_ptr<media::cast::test::PacketPipe>(
-          new ByteCounterPipe(pipe_output_counter)).Pass());
+  new_pipe->AppendToPipe(std::move(*pipe));
+  new_pipe->AppendToPipe(scoped_ptr<media::cast::test::PacketPipe>(
+      new ByteCounterPipe(pipe_output_counter)));
   pipe->reset(new_pipe);
 }
 
@@ -286,17 +281,17 @@ int main(int argc, char **argv) {
   if (network_type == "perfect") {
     // No action needed.
   } else if (network_type == "good") {
-    in_pipe = media::cast::test::GoodNetwork().Pass();
-    out_pipe = media::cast::test::GoodNetwork().Pass();
+    in_pipe = media::cast::test::GoodNetwork();
+    out_pipe = media::cast::test::GoodNetwork();
   } else if (network_type == "wifi") {
-    in_pipe = media::cast::test::WifiNetwork().Pass();
-    out_pipe = media::cast::test::WifiNetwork().Pass();
+    in_pipe = media::cast::test::WifiNetwork();
+    out_pipe = media::cast::test::WifiNetwork();
   } else if (network_type == "bad") {
-    in_pipe = media::cast::test::BadNetwork().Pass();
-    out_pipe = media::cast::test::BadNetwork().Pass();
+    in_pipe = media::cast::test::BadNetwork();
+    out_pipe = media::cast::test::BadNetwork();
   } else if (network_type == "evil") {
-    in_pipe = media::cast::test::EvilNetwork().Pass();
-    out_pipe = media::cast::test::EvilNetwork().Pass();
+    in_pipe = media::cast::test::EvilNetwork();
+    out_pipe = media::cast::test::EvilNetwork();
   } else {
     fprintf(stderr, "Unknown network type.\n");
     exit(1);
@@ -311,8 +306,8 @@ int main(int argc, char **argv) {
 
   base::MessageLoopForIO message_loop;
   last_printout = base::TimeTicks::Now();
-  media::cast::test::QueueManager qm1(fd1, fd2, in_pipe.Pass());
-  media::cast::test::QueueManager qm2(fd2, fd1, out_pipe.Pass());
+  media::cast::test::QueueManager qm1(fd1, fd2, std::move(in_pipe));
+  media::cast::test::QueueManager qm2(fd2, fd1, std::move(out_pipe));
   CheckByteCounters();
   printf("Press Ctrl-C when done.\n");
   message_loop.Run();

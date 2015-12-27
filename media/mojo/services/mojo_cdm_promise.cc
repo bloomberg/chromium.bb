@@ -5,6 +5,7 @@
 #include "media/mojo/services/mojo_cdm_promise.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -25,7 +26,7 @@ static interfaces::CdmPromiseResultPtr GetRejectResult(
       static_cast<interfaces::CdmException>(exception);
   cdm_promise_result->system_code = system_code;
   cdm_promise_result->error_message = error_message;
-  return cdm_promise_result.Pass();
+  return cdm_promise_result;
 }
 
 template <typename... T>
@@ -47,7 +48,7 @@ void MojoCdmPromise<T...>::resolve(const T&... result) {
       interfaces::CdmPromiseResult::New());
   cdm_promise_result->success = true;
   callback_.Run(
-      cdm_promise_result.Pass(),
+      std::move(cdm_promise_result),
       mojo::TypeConverter<typename MojoTypeTrait<T>::MojoType, T>::Convert(
           result)...);
   callback_.reset();

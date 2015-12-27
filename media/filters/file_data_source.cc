@@ -5,6 +5,7 @@
 #include "media/filters/file_data_source.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/logging.h"
 
@@ -20,7 +21,7 @@ FileDataSource::FileDataSource(base::File file)
     : force_read_errors_(false),
       force_streaming_(false),
       bytes_read_(0) {
-  file_.Initialize(file.Pass());
+  file_.Initialize(std::move(file));
 }
 
 bool FileDataSource::Initialize(const base::FilePath& file_path) {

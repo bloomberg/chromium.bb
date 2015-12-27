@@ -4,6 +4,8 @@
 
 #include "media/midi/midi_manager_usb.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
@@ -14,8 +16,7 @@ namespace media {
 namespace midi {
 
 MidiManagerUsb::MidiManagerUsb(scoped_ptr<UsbMidiDevice::Factory> factory)
-    : device_factory_(factory.Pass()) {
-}
+    : device_factory_(std::move(factory)) {}
 
 MidiManagerUsb::~MidiManagerUsb() {
 }
@@ -69,7 +70,7 @@ void MidiManagerUsb::ReceiveUsbMidiData(UsbMidiDevice* device,
 
 void MidiManagerUsb::OnDeviceAttached(scoped_ptr<UsbMidiDevice> device) {
   int device_id = static_cast<int>(devices_.size());
-  devices_.push_back(device.Pass());
+  devices_.push_back(std::move(device));
   AddPorts(devices_.back(), device_id);
 }
 

@@ -4,6 +4,8 @@
 
 #include "media/cast/test/utility/in_process_receiver.h"
 
+#include <utility>
+
 #include "base/bind_helpers.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
@@ -104,7 +106,7 @@ void InProcessReceiver::GotAudioFrame(scoped_ptr<AudioBus> audio_frame,
                                       bool is_continuous) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   if (audio_frame.get())
-    OnAudioFrame(audio_frame.Pass(), playout_time, is_continuous);
+    OnAudioFrame(std::move(audio_frame), playout_time, is_continuous);
   PullNextAudioFrame();
 }
 
@@ -133,7 +135,7 @@ void InProcessReceiver::PullNextVideoFrame() {
 
 void InProcessReceiver::ReceivePacket(scoped_ptr<Packet> packet) {
   // TODO(Hubbe): Make an InsertPacket method instead.
-  cast_receiver_->ReceivePacket(packet.Pass());
+  cast_receiver_->ReceivePacket(std::move(packet));
 }
 
 }  // namespace cast

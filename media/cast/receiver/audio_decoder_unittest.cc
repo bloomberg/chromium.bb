@@ -90,7 +90,7 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
     last_frame_id_ = encoded_frame->frame_id;
 
     const scoped_ptr<AudioBus> audio_bus(
-        audio_bus_factory_->NextAudioBus(duration).Pass());
+        audio_bus_factory_->NextAudioBus(duration));
 
     // Encode |audio_bus| into |encoded_frame->data|.
     const int num_elements = audio_bus->channels() * audio_bus->frames();

@@ -36,6 +36,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/at_exit.h"
 #include "base/base_paths.h"
@@ -301,20 +302,12 @@ void RunSimulation(const base::FilePath& source_path,
   base::ThreadTaskRunnerHandle task_runner_handle(task_runner);
 
   // CastEnvironments.
-  scoped_refptr<CastEnvironment> sender_env =
-      new CastEnvironment(
-          scoped_ptr<base::TickClock>(
-              new test::SkewedTickClock(&testing_clock)).Pass(),
-          task_runner,
-          task_runner,
-          task_runner);
-  scoped_refptr<CastEnvironment> receiver_env =
-      new CastEnvironment(
-          scoped_ptr<base::TickClock>(
-              new test::SkewedTickClock(&testing_clock)).Pass(),
-          task_runner,
-          task_runner,
-          task_runner);
+  scoped_refptr<CastEnvironment> sender_env = new CastEnvironment(
+      scoped_ptr<base::TickClock>(new test::SkewedTickClock(&testing_clock)),
+      task_runner, task_runner, task_runner);
+  scoped_refptr<CastEnvironment> receiver_env = new CastEnvironment(
+      scoped_ptr<base::TickClock>(new test::SkewedTickClock(&testing_clock)),
+      task_runner, task_runner, task_runner);
 
   // Event subscriber. Store at most 1 hour of events.
   EncodingEventSubscriber audio_event_subscriber(AUDIO_EVENT,
@@ -360,7 +353,7 @@ void RunSimulation(const base::FilePath& source_path,
     PacketProxy() : receiver(NULL) {}
     void ReceivePacket(scoped_ptr<Packet> packet) {
       if (receiver)
-        receiver->ReceivePacket(packet.Pass());
+        receiver->ReceivePacket(std::move(packet));
     }
     CastReceiver* receiver;
   };
@@ -413,12 +406,11 @@ void RunSimulation(const base::FilePath& source_path,
     ipp.reset(new test::InterruptedPoissonProcess(
         average_rates,
         ipp_model.coef_burstiness(), ipp_model.coef_variance(), 0));
-    receiver_to_sender.Initialize(
-        ipp->NewBuffer(128 * 1024).Pass(),
-        transport_sender->PacketReceiverForTesting(),
-        task_runner, &testing_clock);
+    receiver_to_sender.Initialize(ipp->NewBuffer(128 * 1024),
+                                  transport_sender->PacketReceiverForTesting(),
+                                  task_runner, &testing_clock);
     sender_to_receiver.Initialize(
-        ipp->NewBuffer(128 * 1024).Pass(),
+        ipp->NewBuffer(128 * 1024),
         transport_receiver->PacketReceiverForTesting(), task_runner,
         &testing_clock);
   } else {

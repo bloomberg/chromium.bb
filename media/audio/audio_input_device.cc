@@ -5,6 +5,7 @@
 #include "media/audio/audio_input_device.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -56,7 +57,7 @@ AudioInputDevice::AudioInputDevice(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
     : ScopedTaskRunnerObserver(io_task_runner),
       callback_(NULL),
-      ipc_(ipc.Pass()),
+      ipc_(std::move(ipc)),
       state_(IDLE),
       session_id_(0),
       agc_is_enabled_(false),
@@ -296,7 +297,7 @@ void AudioInputDevice::AudioThreadCallback::MapSharedMemory() {
         reinterpret_cast<media::AudioInputBuffer*>(ptr);
     scoped_ptr<media::AudioBus> audio_bus =
         media::AudioBus::WrapMemory(audio_parameters_, buffer->audio);
-    audio_buses_.push_back(audio_bus.Pass());
+    audio_buses_.push_back(std::move(audio_bus));
     ptr += segment_length_;
   }
 }

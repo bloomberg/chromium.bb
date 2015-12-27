@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/base/audio_shifter.h"
+
 #include <algorithm>
 #include <cmath>
+#include <utility>
 
 #include "base/bind.h"
 #include "media/base/audio_bus.h"
-#include "media/base/audio_shifter.h"
 
 namespace media {
 
@@ -111,7 +113,7 @@ void AudioShifter::Push(scoped_ptr<AudioBus> input,
         playout_time,
         base::TimeDelta::FromSeconds(queue_.back().audio->frames()) / rate_);
   }
-  queue_.push_back(AudioQueueEntry(playout_time, input.Pass()));
+  queue_.push_back(AudioQueueEntry(playout_time, std::move(input)));
   while (!queue_.empty() &&
          queue_.back().target_playout_time -
          queue_.front().target_playout_time > max_buffer_size_) {

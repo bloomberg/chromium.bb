@@ -85,7 +85,7 @@ class RendererImplTest : public ::testing::Test {
       DemuxerStream::Type type) {
     scoped_ptr<StrictMock<MockDemuxerStream> > stream(
         new StrictMock<MockDemuxerStream>(type));
-    return stream.Pass();
+    return stream;
   }
 
   // Sets up expectations to allow the audio renderer to initialize.

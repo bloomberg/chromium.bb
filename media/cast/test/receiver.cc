@@ -345,7 +345,7 @@ class NaivePlayer : public InProcessReceiver,
         if (audio_playout_queue_.empty())
           break;
 
-        currently_playing_audio_frame_ = PopOneAudioFrame(false).Pass();
+        currently_playing_audio_frame_ = PopOneAudioFrame(false);
         currently_playing_audio_frame_start_ = 0;
       }
 
@@ -472,7 +472,7 @@ class NaivePlayer : public InProcessReceiver,
     scoped_ptr<AudioBus> ret(audio_playout_queue_.front().second);
     audio_playout_queue_.pop_front();
     ++num_audio_frames_processed_;
-    return ret.Pass();
+    return ret;
   }
 
   void CheckAVSync() {

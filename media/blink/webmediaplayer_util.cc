@@ -7,6 +7,7 @@
 #include <math.h>
 #include <stddef.h>
 #include <string>
+#include <utility>
 
 #include "base/metrics/histogram.h"
 #include "media/base/bind_to_current_loop.h"
@@ -197,7 +198,7 @@ class SetSinkIdCallback {
   explicit SetSinkIdCallback(blink::WebSetSinkIdCallbacks* web_callback)
       : web_callback_(web_callback) {}
   SetSinkIdCallback(const SetSinkIdCallback& other)
-      : web_callback_(other.web_callback_.Pass()) {}
+      : web_callback_(std::move(other.web_callback_)) {}
   ~SetSinkIdCallback() {}
   friend void RunSetSinkIdCallback(const SetSinkIdCallback& callback,
                                    OutputDeviceStatus result);

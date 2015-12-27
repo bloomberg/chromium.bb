@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -88,7 +88,7 @@ class VideoDecoderSelectorTest : public ::testing::Test {
       scoped_ptr<VideoDecoder> decoder,
       scoped_ptr<DecryptingDemuxerStream> stream) {
     OnDecoderSelected(decoder.get(), stream.get());
-    selected_decoder_ = decoder.Pass();
+    selected_decoder_ = std::move(decoder);
   }
 
   void UseClearStream() {
@@ -132,9 +132,8 @@ class VideoDecoderSelectorTest : public ::testing::Test {
     all_decoders_.erase(
         all_decoders_.begin() + num_decoders, all_decoders_.end());
 
-    decoder_selector_.reset(
-        new VideoDecoderSelector(message_loop_.task_runner(),
-                                 all_decoders_.Pass(), new MediaLog()));
+    decoder_selector_.reset(new VideoDecoderSelector(
+        message_loop_.task_runner(), std::move(all_decoders_), new MediaLog()));
   }
 
   void SelectDecoder() {

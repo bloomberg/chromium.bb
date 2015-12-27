@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/renderers/audio_renderer_impl.h"
+
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/format_macros.h"
@@ -17,7 +21,6 @@
 #include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
-#include "media/renderers/audio_renderer_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::base::TimeDelta;
@@ -97,10 +100,8 @@ class AudioRendererImplTest : public ::testing::Test {
     decoders.push_back(decoder_);
     sink_ = new FakeAudioRendererSink();
     renderer_.reset(new AudioRendererImpl(message_loop_.task_runner(),
-                                          sink_.get(),
-                                          decoders.Pass(),
-                                          hardware_config_,
-                                          new MediaLog()));
+                                          sink_.get(), std::move(decoders),
+                                          hardware_config_, new MediaLog()));
     renderer_->tick_clock_.reset(tick_clock_);
     tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
   }

@@ -24,8 +24,8 @@
 #include <math.h>
 #include <stddef.h>
 #include <stdint.h>
-
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/at_exit.h"
@@ -211,12 +211,12 @@ class RunOneBenchmark {
         task_runner_receiver_(
             new test::SkewedSingleThreadTaskRunner(task_runner_)),
         cast_environment_sender_(new CastEnvironment(
-            scoped_ptr<base::TickClock>(testing_clock_sender_).Pass(),
+            scoped_ptr<base::TickClock>(testing_clock_sender_),
             task_runner_sender_,
             task_runner_sender_,
             task_runner_sender_)),
         cast_environment_receiver_(new CastEnvironment(
-            scoped_ptr<base::TickClock>(testing_clock_receiver_).Pass(),
+            scoped_ptr<base::TickClock>(testing_clock_receiver_),
             task_runner_receiver_,
             task_runner_receiver_,
             task_runner_receiver_)),
@@ -318,20 +318,18 @@ class RunOneBenchmark {
         CreateDefaultVideoEncodeAcceleratorCallback(),
         CreateDefaultVideoEncodeMemoryCallback());
 
-    receiver_to_sender_.Initialize(
-        CreateSimplePipe(p).Pass(),
-        transport_sender_.PacketReceiverForTesting(),
-        task_runner_, &testing_clock_);
+    receiver_to_sender_.Initialize(CreateSimplePipe(p),
+                                   transport_sender_.PacketReceiverForTesting(),
+                                   task_runner_, &testing_clock_);
     sender_to_receiver_.Initialize(
-        CreateSimplePipe(p).Pass(),
-        transport_receiver_->PacketReceiverForTesting(),
+        CreateSimplePipe(p), transport_receiver_->PacketReceiverForTesting(),
         task_runner_, &testing_clock_);
 
     task_runner_->RunTasks();
   }
 
   void ReceivePacket(scoped_ptr<Packet> packet) {
-    cast_receiver_->ReceivePacket(packet.Pass());
+    cast_receiver_->ReceivePacket(std::move(packet));
   }
 
   virtual ~RunOneBenchmark() {
@@ -386,10 +384,9 @@ class RunOneBenchmark {
 
   scoped_ptr<test::PacketPipe> CreateSimplePipe(const MeasuringPoint& p) {
     scoped_ptr<test::PacketPipe> pipe = test::NewBuffer(65536, p.bitrate);
-    pipe->AppendToPipe(
-        test::NewRandomDrop(p.percent_packet_drop / 100.0).Pass());
+    pipe->AppendToPipe(test::NewRandomDrop(p.percent_packet_drop / 100.0));
     pipe->AppendToPipe(test::NewConstantDelay(p.latency / 1000.0));
-    return pipe.Pass();
+    return pipe;
   }
 
   void Run(const MeasuringPoint& p) {

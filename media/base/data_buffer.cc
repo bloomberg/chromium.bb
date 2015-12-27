@@ -4,6 +4,8 @@
 
 #include "media/base/data_buffer.h"
 
+#include <utility>
+
 namespace media {
 
 DataBuffer::DataBuffer(int buffer_size)
@@ -14,7 +16,9 @@ DataBuffer::DataBuffer(int buffer_size)
 }
 
 DataBuffer::DataBuffer(scoped_ptr<uint8_t[]> buffer, int buffer_size)
-    : data_(buffer.Pass()), buffer_size_(buffer_size), data_size_(buffer_size) {
+    : data_(std::move(buffer)),
+      buffer_size_(buffer_size),
+      data_size_(buffer_size) {
   CHECK(data_.get());
   CHECK_GE(buffer_size, 0);
 }

@@ -141,7 +141,7 @@ class MEDIA_EXPORT DecoderBuffer
 
   void set_decrypt_config(scoped_ptr<DecryptConfig> decrypt_config) {
     DCHECK(!end_of_stream());
-    decrypt_config_ = decrypt_config.Pass();
+    decrypt_config_ = std::move(decrypt_config);
   }
 
   // If there's no data in this buffer, it represents end of stream.

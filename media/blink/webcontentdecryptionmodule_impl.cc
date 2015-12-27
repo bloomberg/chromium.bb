@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webcontentdecryptionmodule_impl.h"
+#include "media/blink/webcontentdecryptionmodule_impl.h"
+
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -68,7 +70,7 @@ void WebContentDecryptionModuleImpl::Create(
   // be destructed.
   scoped_refptr<CdmSessionAdapter> adapter(new CdmSessionAdapter());
   adapter->CreateCdm(cdm_factory, key_system_ascii, security_origin_as_gurl,
-                     cdm_config, result.Pass());
+                     cdm_config, std::move(result));
 }
 
 WebContentDecryptionModuleImpl::WebContentDecryptionModuleImpl(

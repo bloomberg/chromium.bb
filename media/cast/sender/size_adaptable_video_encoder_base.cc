@@ -4,6 +4,8 @@
 
 #include "media/cast/sender/size_adaptable_video_encoder_base.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "media/base/video_frame.h"
@@ -132,7 +134,7 @@ void SizeAdaptableVideoEncoderBase::TrySpawningReplacementEncoder(
           << frame_size_.ToString() << " to "
           << size_needed.ToString() << ").";
   frame_size_ = size_needed;
-  encoder_ = CreateEncoder().Pass();
+  encoder_ = CreateEncoder();
   DCHECK(encoder_);
 }
 
@@ -155,7 +157,7 @@ void SizeAdaptableVideoEncoderBase::OnEncodedVideoFrame(
   --frames_in_encoder_;
   DCHECK_GE(frames_in_encoder_, 0);
   last_frame_id_ = encoded_frame->frame_id;
-  frame_encoded_callback.Run(encoded_frame.Pass());
+  frame_encoded_callback.Run(std::move(encoded_frame));
 }
 
 }  // namespace cast

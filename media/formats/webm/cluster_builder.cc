@@ -4,6 +4,8 @@
 
 #include "media/formats/webm/cluster_builder.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "media/base/data_buffer.h"
 #include "media/formats/webm/webm_constants.h"
@@ -55,7 +57,7 @@ enum {
 };
 
 Cluster::Cluster(scoped_ptr<uint8_t[]> data, int size)
-    : data_(data.Pass()), size_(size) {}
+    : data_(std::move(data)), size_(size) {}
 Cluster::~Cluster() {}
 
 ClusterBuilder::ClusterBuilder() { Reset(); }
@@ -189,9 +191,9 @@ scoped_ptr<Cluster> ClusterBuilder::Finish() {
 
   UpdateUInt64(kClusterSizeOffset, bytes_used_ - (kClusterSizeOffset + 8));
 
-  scoped_ptr<Cluster> ret(new Cluster(buffer_.Pass(), bytes_used_));
+  scoped_ptr<Cluster> ret(new Cluster(std::move(buffer_), bytes_used_));
   Reset();
-  return ret.Pass();
+  return ret;
 }
 
 scoped_ptr<Cluster> ClusterBuilder::FinishWithUnknownSize() {
@@ -199,9 +201,9 @@ scoped_ptr<Cluster> ClusterBuilder::FinishWithUnknownSize() {
 
   UpdateUInt64(kClusterSizeOffset, kWebMUnknownSize);
 
-  scoped_ptr<Cluster> ret(new Cluster(buffer_.Pass(), bytes_used_));
+  scoped_ptr<Cluster> ret(new Cluster(std::move(buffer_), bytes_used_));
   Reset();
-  return ret.Pass();
+  return ret;
 }
 
 void ClusterBuilder::Reset() {

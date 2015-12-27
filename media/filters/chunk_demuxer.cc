@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <limits>
 #include <list>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -1386,7 +1387,7 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
                          media_log_));
 
   scoped_ptr<SourceState> source_state(new SourceState(
-      stream_parser.Pass(), frame_processor.Pass(),
+      std::move(stream_parser), std::move(frame_processor),
       base::Bind(&ChunkDemuxer::CreateDemuxerStream, base::Unretained(this)),
       media_log_));
 

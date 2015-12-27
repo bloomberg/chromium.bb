@@ -5,6 +5,7 @@
 #include "media/blink/resource_multibuffer_data_provider.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bits.h"
@@ -82,7 +83,7 @@ void ResourceMultiBufferDataProvider::Start() {
   // Check for our test WebURLLoader.
   scoped_ptr<WebURLLoader> loader;
   if (test_loader_) {
-    loader = test_loader_.Pass();
+    loader = std::move(test_loader_);
   } else {
     WebURLLoaderOptions options;
     if (url_data_->cors_mode() == UrlData::CORS_UNSPECIFIED) {
@@ -103,7 +104,7 @@ void ResourceMultiBufferDataProvider::Start() {
 
   // Start the resource loading.
   loader->loadAsynchronously(request, this);
-  active_loader_.reset(new ActiveLoader(loader.Pass()));
+  active_loader_.reset(new ActiveLoader(std::move(loader)));
 }
 
 ResourceMultiBufferDataProvider::~ResourceMultiBufferDataProvider() {}
@@ -298,7 +299,7 @@ void ResourceMultiBufferDataProvider::didReceiveResponse(
         url_data_->multibuffer()->RemoveProvider(this));
     url_data_ = destination_url_data.get();
     // Give the ownership to our new owner.
-    url_data_->multibuffer()->AddProvider(self.Pass());
+    url_data_->multibuffer()->AddProvider(std::move(self));
 
     // Call callback to let upstream users know about the transfer.
     // This will merge the data from the two multibuffers and
@@ -381,7 +382,7 @@ void ResourceMultiBufferDataProvider::didFinishLoading(
           base::TimeDelta::FromMilliseconds(kLoaderPartialRetryDelayMs));
       return;
     } else {
-      scoped_ptr<ActiveLoader> active_loader = active_loader_.Pass();
+      scoped_ptr<ActiveLoader> active_loader = std::move(active_loader_);
       url_data_->Fail();
       return;
     }
@@ -415,7 +416,7 @@ void ResourceMultiBufferDataProvider::didFail(WebURLLoader* loader,
     // We don't need to continue loading after failure.
     //
     // Keep it alive until we exit this method so that |error| remains valid.
-    scoped_ptr<ActiveLoader> active_loader = active_loader_.Pass();
+    scoped_ptr<ActiveLoader> active_loader = std::move(active_loader_);
     url_data_->Fail();
   }
 }

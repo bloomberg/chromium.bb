@@ -4,6 +4,8 @@
 
 #include "media/blink/texttrack_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -20,7 +22,7 @@ TextTrackImpl::TextTrackImpl(
     scoped_ptr<WebInbandTextTrackImpl> text_track)
     : task_runner_(task_runner),
       client_(client),
-      text_track_(text_track.Pass()) {
+      text_track_(std::move(text_track)) {
   client_->addTextTrack(text_track_.get());
 }
 

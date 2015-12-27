@@ -42,7 +42,7 @@ void MojoCdm::Create(
     const media::SessionExpirationUpdateCB& session_expiration_update_cb,
     const media::CdmCreatedCB& cdm_created_cb) {
   scoped_refptr<MojoCdm> mojo_cdm(
-      new MojoCdm(remote_cdm.Pass(), session_message_cb, session_closed_cb,
+      new MojoCdm(std::move(remote_cdm), session_message_cb, session_closed_cb,
                   legacy_session_error_cb, session_keys_change_cb,
                   session_expiration_update_cb));
 
@@ -51,7 +51,7 @@ void MojoCdm::Create(
       new CdmInitializedPromise(cdm_created_cb, mojo_cdm));
 
   mojo_cdm->InitializeCdm(key_system, security_origin, cdm_config,
-                          promise.Pass());
+                          std::move(promise));
 }
 
 MojoCdm::MojoCdm(interfaces::ContentDecryptionModulePtr remote_cdm,
@@ -60,7 +60,7 @@ MojoCdm::MojoCdm(interfaces::ContentDecryptionModulePtr remote_cdm,
                  const LegacySessionErrorCB& legacy_session_error_cb,
                  const SessionKeysChangeCB& session_keys_change_cb,
                  const SessionExpirationUpdateCB& session_expiration_update_cb)
-    : remote_cdm_(remote_cdm.Pass()),
+    : remote_cdm_(std::move(remote_cdm)),
       binding_(this),
       cdm_id_(CdmContext::kInvalidCdmId),
       session_message_cb_(session_message_cb),
@@ -78,7 +78,7 @@ MojoCdm::MojoCdm(interfaces::ContentDecryptionModulePtr remote_cdm,
 
   interfaces::ContentDecryptionModuleClientPtr client_ptr;
   binding_.Bind(GetProxy(&client_ptr));
-  remote_cdm_->SetClient(client_ptr.Pass());
+  remote_cdm_->SetClient(std::move(client_ptr));
 }
 
 MojoCdm::~MojoCdm() {
@@ -229,7 +229,7 @@ void MojoCdm::OnSessionKeysChange(
         keys_info[i].To<scoped_ptr<media::CdmKeyInformation>>().release());
   }
   session_keys_change_cb_.Run(session_id, has_additional_usable_key,
-                              key_data.Pass());
+                              std::move(key_data));
 }
 
 void MojoCdm::OnSessionExpirationUpdate(const mojo::String& session_id,
@@ -245,7 +245,7 @@ void MojoCdm::OnCdmInitialized(scoped_ptr<CdmInitializedPromise> promise,
                                interfaces::DecryptorPtr decryptor) {
   DVLOG(2) << __FUNCTION__ << " cdm_id: " << cdm_id;
   if (!result->success) {
-    RejectPromise(promise.Pass(), result.Pass());
+    RejectPromise(std::move(promise), std::move(result));
     return;
   }
 

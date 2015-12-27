@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "decoder_selector.h"
+#include "media/filters/decoder_selector.h"
+
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -59,7 +61,7 @@ DecoderSelector<StreamType>::DecoderSelector(
     ScopedVector<Decoder> decoders,
     const scoped_refptr<MediaLog>& media_log)
     : task_runner_(task_runner),
-      decoders_(decoders.Pass()),
+      decoders_(std::move(decoders)),
       media_log_(media_log),
       input_stream_(nullptr),
       weak_ptr_factory_(this) {}
@@ -142,7 +144,7 @@ void DecoderSelector<StreamType>::DecryptingDecoderInitDone(bool success) {
 
   if (success) {
     base::ResetAndReturn(&select_decoder_cb_)
-        .Run(decoder_.Pass(), scoped_ptr<DecryptingDemuxerStream>());
+        .Run(std::move(decoder_), scoped_ptr<DecryptingDemuxerStream>());
     return;
   }
 
@@ -220,7 +222,7 @@ void DecoderSelector<StreamType>::DecoderInitDone(bool success) {
   }
 
   base::ResetAndReturn(&select_decoder_cb_)
-      .Run(decoder_.Pass(), decrypted_stream_.Pass());
+      .Run(std::move(decoder_), std::move(decrypted_stream_));
 }
 
 template <DemuxerStream::Type StreamType>

@@ -4,6 +4,8 @@
 
 #include "media/blink/cdm_session_adapter.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -45,7 +47,7 @@ void CdmSessionAdapter::CreateCdm(
   base::WeakPtr<CdmSessionAdapter> weak_this = weak_ptr_factory_.GetWeakPtr();
 
   DCHECK(!cdm_created_result_);
-  cdm_created_result_ = result.Pass();
+  cdm_created_result_ = std::move(result);
 
   cdm_factory->Create(
       key_system, security_origin, cdm_config,
@@ -61,7 +63,7 @@ void CdmSessionAdapter::CreateCdm(
 void CdmSessionAdapter::SetServerCertificate(
     const std::vector<uint8_t>& certificate,
     scoped_ptr<SimpleCdmPromise> promise) {
-  cdm_->SetServerCertificate(certificate, promise.Pass());
+  cdm_->SetServerCertificate(certificate, std::move(promise));
 }
 
 WebContentDecryptionModuleSessionImpl* CdmSessionAdapter::CreateSession() {
@@ -90,29 +92,29 @@ void CdmSessionAdapter::InitializeNewSession(
     MediaKeys::SessionType session_type,
     scoped_ptr<NewSessionCdmPromise> promise) {
   cdm_->CreateSessionAndGenerateRequest(session_type, init_data_type, init_data,
-                                        promise.Pass());
+                                        std::move(promise));
 }
 
 void CdmSessionAdapter::LoadSession(MediaKeys::SessionType session_type,
                                     const std::string& session_id,
                                     scoped_ptr<NewSessionCdmPromise> promise) {
-  cdm_->LoadSession(session_type, session_id, promise.Pass());
+  cdm_->LoadSession(session_type, session_id, std::move(promise));
 }
 
 void CdmSessionAdapter::UpdateSession(const std::string& session_id,
                                       const std::vector<uint8_t>& response,
                                       scoped_ptr<SimpleCdmPromise> promise) {
-  cdm_->UpdateSession(session_id, response, promise.Pass());
+  cdm_->UpdateSession(session_id, response, std::move(promise));
 }
 
 void CdmSessionAdapter::CloseSession(const std::string& session_id,
                                      scoped_ptr<SimpleCdmPromise> promise) {
-  cdm_->CloseSession(session_id, promise.Pass());
+  cdm_->CloseSession(session_id, std::move(promise));
 }
 
 void CdmSessionAdapter::RemoveSession(const std::string& session_id,
                                       scoped_ptr<SimpleCdmPromise> promise) {
-  cdm_->RemoveSession(session_id, promise.Pass());
+  cdm_->RemoveSession(session_id, std::move(promise));
 }
 
 CdmContext* CdmSessionAdapter::GetCdmContext() {
@@ -181,7 +183,8 @@ void CdmSessionAdapter::OnSessionKeysChange(const std::string& session_id,
   DLOG_IF(WARNING, !session) << __FUNCTION__ << " for unknown session "
                              << session_id;
   if (session)
-    session->OnSessionKeysChange(has_additional_usable_key, keys_info.Pass());
+    session->OnSessionKeysChange(has_additional_usable_key,
+                                 std::move(keys_info));
 }
 
 void CdmSessionAdapter::OnSessionExpirationUpdate(

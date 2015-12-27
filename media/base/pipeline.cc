@@ -5,6 +5,7 @@
 #include "media/base/pipeline.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -80,7 +81,7 @@ void Pipeline::Start(Demuxer* demuxer,
   running_ = true;
 
   demuxer_ = demuxer;
-  renderer_ = renderer.Pass();
+  renderer_ = std::move(renderer);
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
   seek_cb_ = seek_cb;
@@ -148,8 +149,9 @@ void Pipeline::Resume(scoped_ptr<Renderer> renderer,
                       base::TimeDelta timestamp,
                       const PipelineStatusCB& seek_cb) {
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Pipeline::ResumeTask, weak_factory_.GetWeakPtr(),
-                            base::Passed(renderer.Pass()), timestamp, seek_cb));
+      FROM_HERE,
+      base::Bind(&Pipeline::ResumeTask, weak_factory_.GetWeakPtr(),
+                 base::Passed(std::move(renderer)), timestamp, seek_cb));
 }
 
 float Pipeline::GetVolume() const {
@@ -707,7 +709,7 @@ void Pipeline::ResumeTask(scoped_ptr<Renderer> renderer,
   DCHECK(!pending_callbacks_.get());
 
   SetState(kResuming);
-  renderer_ = renderer.Pass();
+  renderer_ = std::move(renderer);
 
   // Set up for a seek. (Matches setup in SeekTask().)
   // TODO(sandersd): Share implementation with SeekTask().

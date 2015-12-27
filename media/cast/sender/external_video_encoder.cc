@@ -5,6 +5,7 @@
 #include "media/cast/sender/external_video_encoder.h"
 
 #include <cmath>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/debug/crash_logging.h"
@@ -88,7 +89,7 @@ class ExternalVideoEncoder::VEAClientImpl
         max_frame_rate_(max_frame_rate),
         status_change_cb_(status_change_cb),
         create_video_encode_memory_cb_(create_video_encode_memory_cb),
-        video_encode_accelerator_(vea.Pass()),
+        video_encode_accelerator_(std::move(vea)),
         encoder_active_(false),
         next_frame_id_(0u),
         key_frame_encountered_(false),
@@ -368,7 +369,7 @@ class ExternalVideoEncoder::VEAClientImpl
   void OnReceivedSharedMemory(scoped_ptr<base::SharedMemory> memory) {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
-    output_buffers_.push_back(memory.Pass());
+    output_buffers_.push_back(std::move(memory));
 
     // Wait until all requested buffers are received.
     if (output_buffers_.size() < kOutputBufferCount)
@@ -598,12 +599,9 @@ void ExternalVideoEncoder::OnCreateVideoEncodeAccelerator(
   }
 
   DCHECK(!client_);
-  client_ = new VEAClientImpl(cast_environment_,
-                              encoder_task_runner,
-                              vea.Pass(),
-                              video_config.max_frame_rate,
-                              status_change_cb,
-                              create_video_encode_memory_cb_);
+  client_ = new VEAClientImpl(cast_environment_, encoder_task_runner,
+                              std::move(vea), video_config.max_frame_rate,
+                              status_change_cb, create_video_encode_memory_cb_);
   client_->task_runner()->PostTask(FROM_HERE,
                                    base::Bind(&VEAClientImpl::Initialize,
                                               client_,

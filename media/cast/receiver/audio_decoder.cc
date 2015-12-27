@@ -5,6 +5,7 @@
 #include "media/cast/receiver/audio_decoder.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -69,7 +70,7 @@ class AudioDecoder::ImplBase
     event->media_type = AUDIO_EVENT;
     event->rtp_timestamp = encoded_frame->rtp_timestamp;
     event->frame_id = encoded_frame->frame_id;
-    cast_environment_->logger()->DispatchFrameEvent(event.Pass());
+    cast_environment_->logger()->DispatchFrameEvent(std::move(event));
 
     cast_environment_->PostTask(CastEnvironment::MAIN,
                                 FROM_HERE,
@@ -141,11 +142,11 @@ class AudioDecoder::OpusImpl : public AudioDecoder::ImplBase {
     const opus_int32 num_samples_decoded = opus_decode_float(
         opus_decoder_, data, len, buffer_.get(), max_samples_per_frame_, 0);
     if (num_samples_decoded <= 0)
-      return audio_bus.Pass();  // Decode error.
+      return audio_bus;  // Decode error.
 
     // Copy interleaved samples from |buffer_| into a new AudioBus (where
     // samples are stored in planar format, for each channel).
-    audio_bus = AudioBus::Create(num_channels_, num_samples_decoded).Pass();
+    audio_bus = AudioBus::Create(num_channels_, num_samples_decoded);
     // TODO(miu): This should be moved into AudioBus::FromInterleaved().
     for (int ch = 0; ch < num_channels_; ++ch) {
       const float* src = buffer_.get() + ch;
@@ -154,7 +155,7 @@ class AudioDecoder::OpusImpl : public AudioDecoder::ImplBase {
       for (; src < src_end; src += num_channels_, ++dest)
         *dest = *src;
     }
-    return audio_bus.Pass();
+    return audio_bus;
   }
 
   const scoped_ptr<uint8_t[]> decoder_memory_;
@@ -191,7 +192,7 @@ class AudioDecoder::Pcm16Impl : public AudioDecoder::ImplBase {
     scoped_ptr<AudioBus> audio_bus;
     const int num_samples = len / sizeof(int16_t) / num_channels_;
     if (num_samples <= 0)
-      return audio_bus.Pass();
+      return audio_bus;
 
     int16_t* const pcm_data = reinterpret_cast<int16_t*>(data);
 #if defined(ARCH_CPU_LITTLE_ENDIAN)
@@ -200,9 +201,9 @@ class AudioDecoder::Pcm16Impl : public AudioDecoder::ImplBase {
     for (int i = 0; i < num_elements; ++i)
       pcm_data[i] = static_cast<int16_t>(base::NetToHost16(pcm_data[i]));
 #endif
-    audio_bus = AudioBus::Create(num_channels_, num_samples).Pass();
+    audio_bus = AudioBus::Create(num_channels_, num_samples);
     audio_bus->FromInterleaved(pcm_data, num_samples, sizeof(int16_t));
-    return audio_bus.Pass();
+    return audio_bus;
   }
 
   DISALLOW_COPY_AND_ASSIGN(Pcm16Impl);

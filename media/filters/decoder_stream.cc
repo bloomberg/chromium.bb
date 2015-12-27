@@ -4,6 +4,8 @@
 
 #include "media/filters/decoder_stream.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
@@ -49,7 +51,7 @@ DecoderStream<StreamType>::DecoderStream(
       state_(STATE_UNINITIALIZED),
       stream_(NULL),
       decoder_selector_(new DecoderSelector<StreamType>(task_runner,
-                                                        decoders.Pass(),
+                                                        std::move(decoders),
                                                         media_log)),
       decoded_frames_since_fallback_(0),
       active_splice_(false),
@@ -251,11 +253,11 @@ void DecoderStream<StreamType>::OnDecoderSelected(
     DCHECK(decoder_);
   }
 
-  previous_decoder_ = decoder_.Pass();
+  previous_decoder_ = std::move(decoder_);
   decoded_frames_since_fallback_ = 0;
-  decoder_ = selected_decoder.Pass();
+  decoder_ = std::move(selected_decoder);
   if (decrypting_demuxer_stream) {
-    decrypting_demuxer_stream_ = decrypting_demuxer_stream.Pass();
+    decrypting_demuxer_stream_ = std::move(decrypting_demuxer_stream);
     stream_ = decrypting_demuxer_stream_.get();
   }
 

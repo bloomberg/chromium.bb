@@ -4,6 +4,8 @@
 
 #include "media/mojo/services/mojo_renderer_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "media/base/renderer.h"
 #include "media/mojo/services/demuxer_stream_provider_shim.h"
@@ -17,9 +19,9 @@ MojoRendererService::MojoRendererService(
     base::WeakPtr<CdmContextProvider> cdm_context_provider,
     scoped_ptr<media::Renderer> renderer,
     mojo::InterfaceRequest<interfaces::Renderer> request)
-    : binding_(this, request.Pass()),
+    : binding_(this, std::move(request)),
       cdm_context_provider_(cdm_context_provider),
-      renderer_(renderer.Pass()),
+      renderer_(std::move(renderer)),
       state_(STATE_UNINITIALIZED),
       last_media_time_usec_(0),
       weak_factory_(this) {
@@ -37,11 +39,10 @@ void MojoRendererService::Initialize(
     const mojo::Callback<void(bool)>& callback) {
   DVLOG(1) << __FUNCTION__;
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
-  client_ = client.Pass();
+  client_ = std::move(client);
   state_ = STATE_INITIALIZING;
   stream_provider_.reset(new DemuxerStreamProviderShim(
-      audio.Pass(),
-      video.Pass(),
+      std::move(audio), std::move(video),
       base::Bind(&MojoRendererService::OnStreamReady, weak_this_, callback)));
 }
 

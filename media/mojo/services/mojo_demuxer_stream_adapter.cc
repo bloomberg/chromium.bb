@@ -5,6 +5,7 @@
 #include "media/mojo/services/mojo_demuxer_stream_adapter.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -17,7 +18,7 @@ namespace media {
 MojoDemuxerStreamAdapter::MojoDemuxerStreamAdapter(
     interfaces::DemuxerStreamPtr demuxer_stream,
     const base::Closure& stream_ready_cb)
-    : demuxer_stream_(demuxer_stream.Pass()),
+    : demuxer_stream_(std::move(demuxer_stream)),
       stream_ready_cb_(stream_ready_cb),
       type_(DemuxerStream::UNKNOWN),
       weak_factory_(this) {
@@ -79,8 +80,8 @@ void MojoDemuxerStreamAdapter::OnStreamReady(
   DCHECK_EQ(DemuxerStream::UNKNOWN, type_);
 
   type_ = static_cast<DemuxerStream::Type>(type);
-  stream_pipe_ = pipe.Pass();
-  UpdateConfig(audio_config.Pass(), video_config.Pass());
+  stream_pipe_ = std::move(pipe);
+  UpdateConfig(std::move(audio_config), std::move(video_config));
 
   stream_ready_cb_.Run();
 }
@@ -96,7 +97,7 @@ void MojoDemuxerStreamAdapter::OnBufferReady(
   DCHECK(stream_pipe_.is_valid());
 
   if (status == interfaces::DemuxerStream::STATUS_CONFIG_CHANGED) {
-    UpdateConfig(audio_config.Pass(), video_config.Pass());
+    UpdateConfig(std::move(audio_config), std::move(video_config));
     base::ResetAndReturn(&read_cb_).Run(DemuxerStream::kConfigChanged, nullptr);
     return;
   }

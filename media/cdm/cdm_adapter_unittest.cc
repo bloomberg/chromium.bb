@@ -177,7 +177,7 @@ class CdmAdapterTest : public testing::Test {
     scoped_ptr<SimpleCdmPromise> promise(new CdmCallbackPromise<>(
         base::Bind(&CdmAdapterTest::OnResolve, base::Unretained(this)),
         base::Bind(&CdmAdapterTest::OnReject, base::Unretained(this))));
-    return promise.Pass();
+    return promise;
   }
 
   // Create a promise to be used when a new session is created.
@@ -196,7 +196,7 @@ class CdmAdapterTest : public testing::Test {
             base::Bind(&CdmAdapterTest::OnResolveWithSession,
                        base::Unretained(this)),
             base::Bind(&CdmAdapterTest::OnReject, base::Unretained(this))));
-    return promise.Pass();
+    return promise;
   }
 
   void RunUntilIdle() { message_loop_.RunUntilIdle(); }

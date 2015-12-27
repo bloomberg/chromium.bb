@@ -5,10 +5,10 @@
 #include "media/cast/sender/video_sender.h"
 
 #include <stdint.h>
-
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -70,8 +70,9 @@ void LogVideoCaptureTimestamps(CastEnvironment* cast_environment,
         cast_environment->Clock()->NowTicks();
   }
 
-  cast_environment->logger()->DispatchFrameEvent(capture_begin_event.Pass());
-  cast_environment->logger()->DispatchFrameEvent(capture_end_event.Pass());
+  cast_environment->logger()->DispatchFrameEvent(
+      std::move(capture_begin_event));
+  cast_environment->logger()->DispatchFrameEvent(std::move(capture_end_event));
 }
 
 }  // namespace
@@ -385,7 +386,7 @@ void VideoSender::OnEncodedVideoFrame(
             std::min(1.0, attenuated_utilization) : attenuated_utilization);
   }
 
-  SendEncodedFrame(encoder_bitrate, encoded_frame.Pass());
+  SendEncodedFrame(encoder_bitrate, std::move(encoded_frame));
 }
 
 }  // namespace cast

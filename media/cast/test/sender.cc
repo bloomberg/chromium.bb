@@ -6,8 +6,8 @@
 // or read from a file.
 
 #include <stdint.h>
-
 #include <queue>
+#include <utility>
 
 #include "base/at_exit.h"
 #include "base/base_paths.h"
@@ -127,19 +127,15 @@ void WriteLogsToFileAndDestroySubscribers(
   video_event_subscriber->GetEventsAndReset(
       &log_metadata, &frame_events, &packet_events);
 
-  DumpLoggingData(log_metadata,
-                  frame_events,
-                  packet_events,
-                  video_log_file.Pass());
+  DumpLoggingData(log_metadata, frame_events, packet_events,
+                  std::move(video_log_file));
 
   VLOG(0) << "Dumping logging data for audio stream.";
   audio_event_subscriber->GetEventsAndReset(
       &log_metadata, &frame_events, &packet_events);
 
-  DumpLoggingData(log_metadata,
-                  frame_events,
-                  packet_events,
-                  audio_log_file.Pass());
+  DumpLoggingData(log_metadata, frame_events, packet_events,
+                  std::move(audio_log_file));
 }
 
 void WriteStatsAndDestroySubscribers(

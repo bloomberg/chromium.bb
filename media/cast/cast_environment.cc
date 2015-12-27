@@ -4,6 +4,8 @@
 
 #include "media/cast/cast_environment.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -21,7 +23,7 @@ CastEnvironment::CastEnvironment(
     : main_thread_proxy_(main_thread_proxy),
       audio_thread_proxy_(audio_thread_proxy),
       video_thread_proxy_(video_thread_proxy),
-      clock_(clock.Pass()),
+      clock_(std::move(clock)),
       logger_(this) {}
 
 CastEnvironment::~CastEnvironment() {}

@@ -63,7 +63,7 @@ static scoped_ptr<base::DictionaryValue> CreateJSONDictionary(
   jwk->SetString(kKeyTypeTag, kKeyTypeOct);
   jwk->SetString(kKeyTag, key_string);
   jwk->SetString(kKeyIdTag, key_id_string);
-  return jwk.Pass();
+  return jwk;
 }
 
 std::string GenerateJWKSet(const uint8_t* key,

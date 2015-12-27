@@ -25,7 +25,7 @@ MojoDecryptorService::MojoDecryptorService(
     const scoped_refptr<MediaKeys>& cdm,
     mojo::InterfaceRequest<interfaces::Decryptor> request,
     const mojo::Closure& error_handler)
-    : binding_(this, request.Pass()), cdm_(cdm), weak_factory_(this) {
+    : binding_(this, std::move(request)), cdm_(cdm), weak_factory_(this) {
   decryptor_ = cdm->GetCdmContext()->GetDecryptor();
   DCHECK(decryptor_);
   weak_this_ = weak_factory_.GetWeakPtr();
@@ -148,9 +148,10 @@ void MojoDecryptorService::OnAudioDecoded(
                                                       << status << ")";
   mojo::Array<interfaces::AudioBufferPtr> audio_buffers;
   for (const auto& frame : frames)
-    audio_buffers.push_back(interfaces::AudioBuffer::From(frame).Pass());
+    audio_buffers.push_back(interfaces::AudioBuffer::From(frame));
 
-  callback.Run(static_cast<Decryptor::Status>(status), audio_buffers.Pass());
+  callback.Run(static_cast<Decryptor::Status>(status),
+               std::move(audio_buffers));
 }
 
 void MojoDecryptorService::OnVideoDecoded(
@@ -166,7 +167,7 @@ void MojoDecryptorService::OnVideoDecoded(
   }
 
   callback.Run(static_cast<Decryptor::Status>(status),
-               interfaces::VideoFrame::From(frame).Pass());
+               interfaces::VideoFrame::From(frame));
 }
 
 interfaces::DecoderBufferPtr MojoDecryptorService::TransferDecoderBuffer(

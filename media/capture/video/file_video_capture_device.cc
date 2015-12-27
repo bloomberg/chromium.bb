@@ -5,6 +5,7 @@
 #include "media/capture/video/file_video_capture_device.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -284,13 +285,13 @@ FileVideoCaptureDevice::GetVideoFileParser(
     file_parser.reset(new MjpegFileParser(file_path));
   } else {
     LOG(ERROR) << "Unsupported file format.";
-    return file_parser.Pass();
+    return file_parser;
   }
 
   if (!file_parser->Initialize(video_format)) {
     file_parser.reset();
   }
-  return file_parser.Pass();
+  return file_parser;
 }
 
 FileVideoCaptureDevice::FileVideoCaptureDevice(const base::FilePath& file_path)
@@ -331,7 +332,7 @@ void FileVideoCaptureDevice::OnAllocateAndStart(
     scoped_ptr<VideoCaptureDevice::Client> client) {
   DCHECK_EQ(capture_thread_.message_loop(), base::MessageLoop::current());
 
-  client_ = client.Pass();
+  client_ = std::move(client);
 
   DCHECK(!file_parser_);
   file_parser_ = GetVideoFileParser(file_path_, &capture_format_);

@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/cast/net/cast_transport_sender_impl.h"
+
 #include <gtest/gtest.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -12,7 +15,6 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/values.h"
 #include "media/cast/net/cast_transport_config.h"
-#include "media/cast/net/cast_transport_sender_impl.h"
 #include "media/cast/net/rtcp/rtcp.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -98,18 +100,11 @@ class CastTransportSenderImplTest : public ::testing::Test {
     options->SetBoolean("media_streaming_mode", true);
     options->SetInteger("pacer_target_burst_size", 20);
     options->SetInteger("pacer_max_burst_size", 100);
-    transport_sender_.reset(
-        new CastTransportSenderImpl(NULL,
-                                    &testing_clock_,
-                                    net::IPEndPoint(),
-                                    net::IPEndPoint(),
-                                    options.Pass(),
-                                    base::Bind(&UpdateCastTransportStatus),
-                                    BulkRawEventsCallback(),
-                                    base::TimeDelta(),
-                                    task_runner_,
-                                    PacketReceiverCallback(),
-                                    &transport_));
+    transport_sender_.reset(new CastTransportSenderImpl(
+        NULL, &testing_clock_, net::IPEndPoint(), net::IPEndPoint(),
+        std::move(options), base::Bind(&UpdateCastTransportStatus),
+        BulkRawEventsCallback(), base::TimeDelta(), task_runner_,
+        PacketReceiverCallback(), &transport_));
     task_runner_->RunTasks();
   }
 

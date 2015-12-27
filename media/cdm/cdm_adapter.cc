@@ -5,6 +5,7 @@
 #include "media/cdm/cdm_adapter.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -346,7 +347,7 @@ void CdmAdapter::Create(
   scoped_ptr<CdmInitializedPromise> cdm_created_promise(
       new CdmInitializedPromise(cdm_created_cb, cdm));
 
-  cdm->Initialize(cdm_path, cdm_created_promise.Pass());
+  cdm->Initialize(cdm_path, std::move(cdm_created_promise));
 }
 
 CdmAdapter::CdmAdapter(
@@ -433,7 +434,7 @@ void CdmAdapter::SetServerCertificate(const std::vector<uint8_t>& certificate,
     return;
   }
 
-  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   cdm_->SetServerCertificate(promise_id, certificate.data(),
                              certificate.size());
 }
@@ -445,7 +446,7 @@ void CdmAdapter::CreateSessionAndGenerateRequest(
     scoped_ptr<NewSessionCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   cdm_->CreateSessionAndGenerateRequest(
       promise_id, ToCdmSessionType(session_type),
       ToCdmInitDataType(init_data_type), init_data.data(), init_data.size());
@@ -456,7 +457,7 @@ void CdmAdapter::LoadSession(SessionType session_type,
                              scoped_ptr<NewSessionCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   cdm_->LoadSession(promise_id, ToCdmSessionType(session_type),
                     session_id.data(), session_id.size());
 }
@@ -468,7 +469,7 @@ void CdmAdapter::UpdateSession(const std::string& session_id,
   DCHECK(!session_id.empty());
   DCHECK(!response.empty());
 
-  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   cdm_->UpdateSession(promise_id, session_id.data(), session_id.size(),
                       response.data(), response.size());
 }
@@ -478,7 +479,7 @@ void CdmAdapter::CloseSession(const std::string& session_id,
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!session_id.empty());
 
-  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   cdm_->CloseSession(promise_id, session_id.data(), session_id.size());
 }
 
@@ -487,7 +488,7 @@ void CdmAdapter::RemoveSession(const std::string& session_id,
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!session_id.empty());
 
-  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   cdm_->RemoveSession(promise_id, session_id.data(), session_id.size());
 }
 
@@ -645,7 +646,8 @@ void CdmAdapter::DecryptAndDecodeAudio(
 
   Decryptor::AudioFrames audio_frame_list;
   DCHECK(audio_frames->FrameBuffer());
-  if (!AudioFramesDataToAudioFrames(audio_frames.Pass(), &audio_frame_list)) {
+  if (!AudioFramesDataToAudioFrames(std::move(audio_frames),
+                                    &audio_frame_list)) {
     DVLOG(1) << __FUNCTION__ << " unable to convert Audio Frames";
     audio_decode_cb.Run(Decryptor::kError, empty_frames);
     return;
@@ -808,7 +810,7 @@ void CdmAdapter::OnSessionKeysChange(const char* session_id,
   }
 
   session_keys_change_cb_.Run(std::string(session_id, session_id_size),
-                              has_additional_usable_key, keys.Pass());
+                              has_additional_usable_key, std::move(keys));
 }
 
 void CdmAdapter::OnExpirationChange(const char* session_id,

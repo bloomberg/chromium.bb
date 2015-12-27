@@ -301,7 +301,7 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
                                  base::Bind(&AesDecryptorTest::OnReject,
                                             base::Unretained(this),
                                             expected_result)));
-    return promise.Pass();
+    return promise;
   }
 
   scoped_ptr<NewSessionCdmPromise> CreateSessionPromise(
@@ -314,7 +314,7 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
             base::Bind(&AesDecryptorTest::OnReject,
                        base::Unretained(this),
                        expected_result)));
-    return promise.Pass();
+    return promise;
   }
 
   // Creates a new session using |key_id|. Returns the session ID.

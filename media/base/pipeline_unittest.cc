@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
+#include "media/base/pipeline.h"
 
+#include <stddef.h>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -17,7 +19,6 @@
 #include "media/base/gmock_callback_support.h"
 #include "media/base/media_log.h"
 #include "media/base/mock_filters.h"
-#include "media/base/pipeline.h"
 #include "media/base/test_helpers.h"
 #include "media/base/text_renderer.h"
 #include "media/base/text_track_config.h"
@@ -169,7 +170,7 @@ class PipelineTest : public ::testing::Test {
       DemuxerStream::Type type) {
     scoped_ptr<StrictMock<MockDemuxerStream> > stream(
         new StrictMock<MockDemuxerStream>(type));
-    return stream.Pass();
+    return stream;
   }
 
   // Sets up expectations to allow the video renderer to initialize.
@@ -193,7 +194,7 @@ class PipelineTest : public ::testing::Test {
   void StartPipeline() {
     EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
     pipeline_->Start(
-        demuxer_.get(), scoped_renderer_.Pass(),
+        demuxer_.get(), std::move(scoped_renderer_),
         base::Bind(&CallbackHelper::OnEnded, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)),
@@ -238,7 +239,7 @@ class PipelineTest : public ::testing::Test {
   void CreateTextStream() {
     scoped_ptr<FakeTextTrackStream> text_stream(new FakeTextTrackStream());
     EXPECT_CALL(*text_stream, OnRead()).Times(AnyNumber());
-    text_stream_ = text_stream.Pass();
+    text_stream_ = std::move(text_stream);
   }
 
   MockDemuxerStream* audio_stream() {
@@ -315,7 +316,7 @@ class PipelineTest : public ::testing::Test {
 
   void DoResume(const base::TimeDelta& seek_time) {
     pipeline_->Resume(
-        scoped_renderer_.Pass(), seek_time,
+        std::move(scoped_renderer_), seek_time,
         base::Bind(&CallbackHelper::OnResume, base::Unretained(&callbacks_)));
     message_loop_.RunUntilIdle();
   }
@@ -346,7 +347,7 @@ class PipelineTest : public ::testing::Test {
   void DoOnAddTextTrack(const TextTrackConfig& config,
                         const AddTextTrackDoneCB& done_cb) {
     scoped_ptr<TextTrack> text_track(new MockTextTrack);
-    done_cb.Run(text_track.Pass());
+    done_cb.Run(std::move(text_track));
   }
 
   // Fixture members.

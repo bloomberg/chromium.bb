@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -167,7 +167,7 @@ class MidiManagerUsbForTesting : public MidiManagerUsb {
  public:
   explicit MidiManagerUsbForTesting(
       scoped_ptr<UsbMidiDevice::Factory> device_factory)
-      : MidiManagerUsb(device_factory.Pass()) {}
+      : MidiManagerUsb(std::move(device_factory)) {}
   ~MidiManagerUsbForTesting() override {}
 
   void CallCompleteInitialization(Result result) {
@@ -185,7 +185,7 @@ class MidiManagerUsbTest : public ::testing::Test {
   MidiManagerUsbTest() : message_loop_(new base::MessageLoop) {
     scoped_ptr<TestUsbMidiDeviceFactory> factory(new TestUsbMidiDeviceFactory);
     factory_ = factory.get();
-    manager_.reset(new MidiManagerUsbForTesting(factory.Pass()));
+    manager_.reset(new MidiManagerUsbForTesting(std::move(factory)));
   }
   ~MidiManagerUsbTest() override {
     manager_->Shutdown();
@@ -262,7 +262,7 @@ TEST_F(MidiManagerUsbTest, Initialize) {
 
   Initialize();
   ScopedVector<UsbMidiDevice> devices;
-  devices.push_back(device.Pass());
+  devices.push_back(std::move(device));
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
   EXPECT_EQ(Result::OK, GetInitializationResult());
@@ -322,8 +322,8 @@ TEST_F(MidiManagerUsbTest, InitializeMultipleDevices) {
 
   Initialize();
   ScopedVector<UsbMidiDevice> devices;
-  devices.push_back(device1.Pass());
-  devices.push_back(device2.Pass());
+  devices.push_back(std::move(device1));
+  devices.push_back(std::move(device2));
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
   EXPECT_EQ(Result::OK, GetInitializationResult());
@@ -385,7 +385,7 @@ TEST_F(MidiManagerUsbTest, InitializeFailBecauseOfInvalidDescriptors) {
 
   Initialize();
   ScopedVector<UsbMidiDevice> devices;
-  devices.push_back(device.Pass());
+  devices.push_back(std::move(device));
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
   EXPECT_EQ(Result::INITIALIZATION_ERROR, GetInitializationResult());
@@ -416,7 +416,7 @@ TEST_F(MidiManagerUsbTest, Send) {
   };
 
   ScopedVector<UsbMidiDevice> devices;
-  devices.push_back(device.Pass());
+  devices.push_back(std::move(device));
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
   EXPECT_EQ(Result::OK, GetInitializationResult());
@@ -460,7 +460,7 @@ TEST_F(MidiManagerUsbTest, SendFromCompromizedRenderer) {
 
   Initialize();
   ScopedVector<UsbMidiDevice> devices;
-  devices.push_back(device.Pass());
+  devices.push_back(std::move(device));
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
   EXPECT_EQ(Result::OK, GetInitializationResult());
@@ -503,7 +503,7 @@ TEST_F(MidiManagerUsbTest, Receive) {
   Initialize();
   ScopedVector<UsbMidiDevice> devices;
   UsbMidiDevice* device_raw = device.get();
-  devices.push_back(device.Pass());
+  devices.push_back(std::move(device));
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
   EXPECT_EQ(Result::OK, GetInitializationResult());
@@ -554,7 +554,7 @@ TEST_F(MidiManagerUsbTest, AttachDevice) {
 
   scoped_ptr<FakeUsbMidiDevice> new_device(new FakeUsbMidiDevice(&logger_));
   new_device->SetDescriptors(ToVector(descriptors));
-  manager_->OnDeviceAttached(new_device.Pass());
+  manager_->OnDeviceAttached(std::move(new_device));
 
   ASSERT_EQ(1u, input_ports().size());
   ASSERT_EQ(2u, output_ports().size());

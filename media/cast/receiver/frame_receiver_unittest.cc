@@ -6,7 +6,6 @@
 #include <stdint.h>
 
 #include <deque>
-#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -76,10 +75,8 @@ class FrameReceiverTest : public ::testing::Test {
     task_runner_ = new test::FakeSingleThreadTaskRunner(testing_clock_);
 
     cast_environment_ =
-        new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_).Pass(),
-                            task_runner_,
-                            task_runner_,
-                            task_runner_);
+        new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_),
+                            task_runner_, task_runner_, task_runner_);
   }
 
   ~FrameReceiverTest() override {}
@@ -132,7 +129,7 @@ class FrameReceiverTest : public ::testing::Test {
     TestRtcpPacketBuilder rtcp_packet;
     rtcp_packet.AddSrWithNtp(config_.sender_ssrc, ntp_seconds, ntp_fraction,
                              static_cast<uint32_t>(rtp_timestamp));
-    ASSERT_TRUE(receiver_->ProcessPacket(rtcp_packet.GetPacket().Pass()));
+    ASSERT_TRUE(receiver_->ProcessPacket(rtcp_packet.GetPacket()));
   }
 
   FrameReceiverConfig config_;
@@ -160,7 +157,7 @@ TEST_F(FrameReceiverTest, RejectsUnparsablePackets) {
   cast_environment_->logger()->Subscribe(&event_subscriber);
 
   const bool success = receiver_->ProcessPacket(
-      scoped_ptr<Packet>(new Packet(kPacketSize, 0xff)).Pass());
+      scoped_ptr<Packet>(new Packet(kPacketSize, 0xff)));
   EXPECT_FALSE(success);
 
   // Confirm no log events.

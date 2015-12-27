@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -182,7 +183,7 @@ void UdpTransport::ReceiveNextPacket(int length_or_status) {
       VLOG(1) << "Setting remote address from first received packet: "
               << remote_addr_.ToString();
       next_packet_->resize(length_or_status);
-      if (!packet_receiver_.Run(next_packet_.Pass())) {
+      if (!packet_receiver_.Run(std::move(next_packet_))) {
         VLOG(1) << "Packet was not valid, resetting remote address.";
         remote_addr_ = net::IPEndPoint();
       }
@@ -191,7 +192,7 @@ void UdpTransport::ReceiveNextPacket(int length_or_status) {
               << recv_addr_.ToString() << ".";
     } else {
       next_packet_->resize(length_or_status);
-      packet_receiver_.Run(next_packet_.Pass());
+      packet_receiver_.Run(std::move(next_packet_));
     }
     length_or_status = net::ERR_IO_PENDING;
   }

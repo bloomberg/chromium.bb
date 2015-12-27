@@ -5,8 +5,8 @@
 #include "media/cdm/proxy_decryptor.h"
 
 #include <stddef.h>
-
 #include <cstring>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -185,7 +185,7 @@ void ProxyDecryptor::GenerateKeyRequestInternal(
         MediaKeys::PERSISTENT_LICENSE_SESSION,
         std::string(reinterpret_cast<const char*>(stripped_init_data.data()),
                     stripped_init_data.size()),
-        promise.Pass());
+        std::move(promise));
     return;
   }
 
@@ -199,7 +199,7 @@ void ProxyDecryptor::GenerateKeyRequestInternal(
   DCHECK(!key_system_.empty());
   if (CanUseAesDecryptor(key_system_) || IsExternalClearKey(key_system_)) {
     OnPermissionStatus(session_type, init_data_type, stripped_init_data,
-                       promise.Pass(), true /* granted */);
+                       std::move(promise), true /* granted */);
     return;
   }
 
@@ -211,7 +211,7 @@ void ProxyDecryptor::GenerateKeyRequestInternal(
                  stripped_init_data, base::Passed(&promise)));
 #else
   OnPermissionStatus(session_type, init_data_type, stripped_init_data,
-                     promise.Pass(), true /* granted */);
+                     std::move(promise), true /* granted */);
 #endif
 }
 
@@ -228,7 +228,7 @@ void ProxyDecryptor::OnPermissionStatus(
   DVLOG_IF(1, !granted) << "Permission request rejected.";
 
   media_keys_->CreateSessionAndGenerateRequest(session_type, init_data_type,
-                                               init_data, promise.Pass());
+                                               init_data, std::move(promise));
 }
 
 void ProxyDecryptor::AddKey(const uint8_t* key,
@@ -282,13 +282,13 @@ void ProxyDecryptor::AddKey(const uint8_t* key,
     DCHECK(!jwk.empty());
     media_keys_->UpdateSession(new_session_id,
                                std::vector<uint8_t>(jwk.begin(), jwk.end()),
-                               promise.Pass());
+                               std::move(promise));
     return;
   }
 
   media_keys_->UpdateSession(new_session_id,
                              std::vector<uint8_t>(key, key + key_length),
-                             promise.Pass());
+                             std::move(promise));
 }
 
 void ProxyDecryptor::CancelKeyRequest(const std::string& session_id) {
@@ -305,7 +305,7 @@ void ProxyDecryptor::CancelKeyRequest(const std::string& session_id) {
                  weak_ptr_factory_.GetWeakPtr(), session_id),
       base::Bind(&ProxyDecryptor::OnLegacySessionError,
                  weak_ptr_factory_.GetWeakPtr(), session_id)));
-  media_keys_->RemoveSession(session_id, promise.Pass());
+  media_keys_->RemoveSession(session_id, std::move(promise));
 }
 
 void ProxyDecryptor::OnSessionMessage(const std::string& session_id,

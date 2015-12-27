@@ -5,6 +5,7 @@
 #include "media/cast/logging/log_event_dispatcher.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -25,7 +26,7 @@ LogEventDispatcher::~LogEventDispatcher() {}
 void LogEventDispatcher::DispatchFrameEvent(
     scoped_ptr<FrameEvent> event) const {
   if (env_->CurrentlyOn(CastEnvironment::MAIN)) {
-    impl_->DispatchFrameEvent(event.Pass());
+    impl_->DispatchFrameEvent(std::move(event));
   } else {
     env_->PostTask(CastEnvironment::MAIN, FROM_HERE,
                    base::Bind(&LogEventDispatcher::Impl::DispatchFrameEvent,
@@ -36,7 +37,7 @@ void LogEventDispatcher::DispatchFrameEvent(
 void LogEventDispatcher::DispatchPacketEvent(
     scoped_ptr<PacketEvent> event) const {
   if (env_->CurrentlyOn(CastEnvironment::MAIN)) {
-    impl_->DispatchPacketEvent(event.Pass());
+    impl_->DispatchPacketEvent(std::move(event));
   } else {
     env_->PostTask(CastEnvironment::MAIN, FROM_HERE,
                    base::Bind(&LogEventDispatcher::Impl::DispatchPacketEvent,
@@ -48,7 +49,8 @@ void LogEventDispatcher::DispatchBatchOfEvents(
     scoped_ptr<std::vector<FrameEvent>> frame_events,
     scoped_ptr<std::vector<PacketEvent>> packet_events) const {
   if (env_->CurrentlyOn(CastEnvironment::MAIN)) {
-    impl_->DispatchBatchOfEvents(frame_events.Pass(), packet_events.Pass());
+    impl_->DispatchBatchOfEvents(std::move(frame_events),
+                                 std::move(packet_events));
   } else {
     env_->PostTask(
         CastEnvironment::MAIN, FROM_HERE,

@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/base/video_frame_metadata.h"
+
 #include <stdint.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "media/base/video_frame_metadata.h"
 
 namespace media {
 
@@ -72,7 +74,7 @@ void VideoFrameMetadata::SetTimeTicks(Key key, const base::TimeTicks& value) {
 }
 
 void VideoFrameMetadata::SetValue(Key key, scoped_ptr<base::Value> value) {
-  dictionary_.SetWithoutPathExpansion(ToInternalKey(key), value.Pass());
+  dictionary_.SetWithoutPathExpansion(ToInternalKey(key), std::move(value));
 }
 
 bool VideoFrameMetadata::GetBoolean(Key key, bool* value) const {

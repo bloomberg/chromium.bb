@@ -387,7 +387,7 @@ scoped_ptr<base::Value> MidiManagerAlsa::MidiPort::Value() const {
   SetStringIfNonEmpty(value.get(), "usbInterfaceNum", id_.usb_interface_num());
   SetStringIfNonEmpty(value.get(), "serial", id_.serial());
 
-  return value.Pass();
+  return std::move(value);
 }
 
 std::string MidiManagerAlsa::MidiPort::JSONValue() const {
@@ -578,7 +578,7 @@ uint32_t MidiManagerAlsa::MidiPortState::push_back(scoped_ptr<MidiPort> port) {
       break;
   }
   port->set_web_port_index(web_port_index);
-  MidiPortStateBase::push_back(port.Pass());
+  MidiPortStateBase::push_back(std::move(port));
   return web_port_index;
 }
 
@@ -705,7 +705,7 @@ MidiManagerAlsa::AlsaSeqState::ToMidiPortState(const AlsaCardMap& alsa_cards) {
     }
   }
 
-  return midi_ports.Pass();
+  return midi_ports;
 }
 
 MidiManagerAlsa::AlsaSeqState::Port::Port(
@@ -1176,7 +1176,7 @@ void MidiManagerAlsa::UpdatePortStateAndGenerateEvents() {
       const auto& client_id = new_port->client_id();
       const auto& port_id = new_port->port_id();
 
-      uint32_t web_port_index = port_state_.push_back(new_port.Pass());
+      uint32_t web_port_index = port_state_.push_back(std::move(new_port));
       it = new_port_state->erase(it);
 
       MidiPortInfo info(opaque_key, manufacturer, port_name, version,

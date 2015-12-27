@@ -52,7 +52,7 @@ class AudioShifterTest :
       tag_input_ = false;
       expect_smooth_output_ = false;
     }
-    return input.Pass();
+    return input;
   }
 
   void SetupOutput(int size, base::TimeDelta rate) {
@@ -165,7 +165,7 @@ TEST_P(AudioShifterTest, TestSync) {
 
 TEST_P(AudioShifterTest, TestSyncWithPush) {
   // Push some extra audio.
-  shifter_.Push(CreateTestInput().Pass(), now_ - base::TimeDelta(input_rate_));
+  shifter_.Push(CreateTestInput(), now_ - base::TimeDelta(input_rate_));
   RunAndCheckSync(1000);
   EXPECT_LE(skip_outputs_.size(), 2UL);
 }

@@ -4,6 +4,8 @@
 
 #include "media/blink/buffered_data_source.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
@@ -315,7 +317,7 @@ void BufferedDataSource::StopInternal_Locked() {
   init_cb_.Reset();
 
   if (read_op_)
-    ReadOperation::Run(read_op_.Pass(), kReadError);
+    ReadOperation::Run(std::move(read_op_), kReadError);
 }
 
 void BufferedDataSource::StopLoader() {
@@ -444,7 +446,7 @@ void BufferedDataSource::PartialReadStartCallback(
   base::AutoLock auto_lock(lock_);
   if (stop_signal_received_)
     return;
-  ReadOperation::Run(read_op_.Pass(), kReadError);
+  ReadOperation::Run(std::move(read_op_), kReadError);
 }
 
 bool BufferedDataSource::CheckPartialResponseURL(
@@ -510,7 +512,7 @@ void BufferedDataSource::ReadCallback(
       return;
     }
 
-    ReadOperation::Run(read_op_.Pass(), kReadError);
+    ReadOperation::Run(std::move(read_op_), kReadError);
     return;
   }
 
@@ -529,7 +531,7 @@ void BufferedDataSource::ReadCallback(
                                   total_bytes_);
     }
   }
-  ReadOperation::Run(read_op_.Pass(), bytes_read);
+  ReadOperation::Run(std::move(read_op_), bytes_read);
 }
 
 void BufferedDataSource::LoadingStateChangedCallback(

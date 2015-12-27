@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/filters/chunk_demuxer.h"
+
 #include <stddef.h>
 #include <stdint.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -21,7 +23,6 @@
 #include "media/base/test_data_util.h"
 #include "media/base/test_helpers.h"
 #include "media/base/timestamp_constants.h"
-#include "media/filters/chunk_demuxer.h"
 #include "media/formats/webm/cluster_builder.h"
 #include "media/formats/webm/webm_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -379,7 +380,7 @@ class ChunkDemuxerTest : public ::testing::Test {
   }
 
   void AppendCluster(scoped_ptr<Cluster> cluster) {
-    AppendCluster(kSourceId, cluster.Pass());
+    AppendCluster(kSourceId, std::move(cluster));
   }
 
   void AppendCluster(int timecode, int block_count) {

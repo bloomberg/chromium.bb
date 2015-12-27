@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/cast/net/rtcp/receiver_rtcp_event_subscriber.h"
+
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -11,7 +14,6 @@
 #include "base/time/tick_clock.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/logging/logging_defines.h"
-#include "media/cast/net/rtcp/receiver_rtcp_event_subscriber.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,11 +32,11 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
   ReceiverRtcpEventSubscriberTest()
       : testing_clock_(new base::SimpleTestTickClock()),
         task_runner_(new test::FakeSingleThreadTaskRunner(testing_clock_)),
-        cast_environment_(new CastEnvironment(
-            scoped_ptr<base::TickClock>(testing_clock_).Pass(),
-            task_runner_,
-            task_runner_,
-            task_runner_)) {}
+        cast_environment_(
+            new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_),
+                                task_runner_,
+                                task_runner_,
+                                task_runner_)) {}
 
   ~ReceiverRtcpEventSubscriberTest() override {}
 
@@ -60,7 +62,7 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
     playout_event->rtp_timestamp = 100u;
     playout_event->frame_id = 2u;
     playout_event->delay_delta = base::TimeDelta::FromMilliseconds(kDelayMs);
-    cast_environment_->logger()->DispatchFrameEvent(playout_event.Pass());
+    cast_environment_->logger()->DispatchFrameEvent(std::move(playout_event));
 
     scoped_ptr<FrameEvent> decode_event(new FrameEvent());
     decode_event->timestamp = testing_clock_->NowTicks();
@@ -68,7 +70,7 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
     decode_event->media_type = VIDEO_EVENT;
     decode_event->rtp_timestamp = 200u;
     decode_event->frame_id = 1u;
-    cast_environment_->logger()->DispatchFrameEvent(decode_event.Pass());
+    cast_environment_->logger()->DispatchFrameEvent(std::move(decode_event));
 
     scoped_ptr<PacketEvent> receive_event(new PacketEvent());
     receive_event->timestamp = testing_clock_->NowTicks();
@@ -79,7 +81,7 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
     receive_event->packet_id = 1u;
     receive_event->max_packet_id = 10u;
     receive_event->size = 1024u;
-    cast_environment_->logger()->DispatchPacketEvent(receive_event.Pass());
+    cast_environment_->logger()->DispatchPacketEvent(std::move(receive_event));
 
     // Audio events
     playout_event.reset(new FrameEvent());
@@ -89,7 +91,7 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
     playout_event->rtp_timestamp = 300u;
     playout_event->frame_id = 4u;
     playout_event->delay_delta = base::TimeDelta::FromMilliseconds(kDelayMs);
-    cast_environment_->logger()->DispatchFrameEvent(playout_event.Pass());
+    cast_environment_->logger()->DispatchFrameEvent(std::move(playout_event));
 
     decode_event.reset(new FrameEvent());
     decode_event->timestamp = testing_clock_->NowTicks();
@@ -97,7 +99,7 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
     decode_event->media_type = AUDIO_EVENT;
     decode_event->rtp_timestamp = 400u;
     decode_event->frame_id = 3u;
-    cast_environment_->logger()->DispatchFrameEvent(decode_event.Pass());
+    cast_environment_->logger()->DispatchFrameEvent(std::move(decode_event));
 
     receive_event.reset(new PacketEvent());
     receive_event->timestamp = testing_clock_->NowTicks();
@@ -108,7 +110,7 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
     receive_event->packet_id = 1u;
     receive_event->max_packet_id = 10u;
     receive_event->size = 128u;
-    cast_environment_->logger()->DispatchPacketEvent(receive_event.Pass());
+    cast_environment_->logger()->DispatchPacketEvent(std::move(receive_event));
 
     // Unrelated events
     scoped_ptr<FrameEvent> encode_event(new FrameEvent());
@@ -117,7 +119,7 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
     encode_event->media_type = VIDEO_EVENT;
     encode_event->rtp_timestamp = 100u;
     encode_event->frame_id = 1u;
-    cast_environment_->logger()->DispatchFrameEvent(encode_event.Pass());
+    cast_environment_->logger()->DispatchFrameEvent(std::move(encode_event));
 
     encode_event.reset(new FrameEvent());
     encode_event->timestamp = testing_clock_->NowTicks();
@@ -125,7 +127,7 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
     encode_event->media_type = AUDIO_EVENT;
     encode_event->rtp_timestamp = 100u;
     encode_event->frame_id = 1u;
-    cast_environment_->logger()->DispatchFrameEvent(encode_event.Pass());
+    cast_environment_->logger()->DispatchFrameEvent(std::move(encode_event));
   }
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
@@ -162,7 +164,7 @@ TEST_F(ReceiverRtcpEventSubscriberTest, DropEventsWhenSizeExceeded) {
     decode_event->media_type = VIDEO_EVENT;
     decode_event->rtp_timestamp = i * 10;
     decode_event->frame_id = i;
-    cast_environment_->logger()->DispatchFrameEvent(decode_event.Pass());
+    cast_environment_->logger()->DispatchFrameEvent(std::move(decode_event));
   }
 
   ReceiverRtcpEventSubscriber::RtcpEvents rtcp_events;

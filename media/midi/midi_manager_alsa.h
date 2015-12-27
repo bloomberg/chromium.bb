@@ -8,6 +8,7 @@
 #include <alsa/asoundlib.h>
 #include <stdint.h>
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -196,7 +197,9 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
    protected:
     MidiPortStateBase();
     iterator erase(iterator position) { return ports_.erase(position); }
-    void push_back(scoped_ptr<MidiPort> port) { ports_.push_back(port.Pass()); }
+    void push_back(scoped_ptr<MidiPort> port) {
+      ports_.push_back(std::move(port));
+    }
 
    private:
     std::vector<scoped_ptr<MidiPort>> ports_;
@@ -210,7 +213,7 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
       return MidiPortStateBase::erase(position);
     };
     void push_back(scoped_ptr<MidiPort> port) {
-      MidiPortStateBase::push_back(port.Pass());
+      MidiPortStateBase::push_back(std::move(port));
     }
   };
 

@@ -5,6 +5,7 @@
 #include "media/cast/receiver/frame_receiver.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/big_endian.h"
 #include "base/bind.h"
@@ -123,7 +124,7 @@ void FrameReceiver::ProcessParsedPacket(const RtpCastHeader& rtp_header,
   receive_event->packet_id = rtp_header.packet_id;
   receive_event->max_packet_id = rtp_header.max_packet_id;
   receive_event->size = payload_size;
-  cast_environment_->logger()->DispatchPacketEvent(receive_event.Pass());
+  cast_environment_->logger()->DispatchPacketEvent(std::move(receive_event));
 
   bool duplicate = false;
   const bool complete =
@@ -182,7 +183,7 @@ void FrameReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
   ack_sent_event->media_type = event_media_type_;
   ack_sent_event->rtp_timestamp = rtp_timestamp;
   ack_sent_event->frame_id = cast_message.ack_frame_id;
-  cast_environment_->logger()->DispatchFrameEvent(ack_sent_event.Pass());
+  cast_environment_->logger()->DispatchFrameEvent(std::move(ack_sent_event));
 
   ReceiverRtcpEventSubscriber::RtcpEvents rtcp_events;
   event_subscriber_.GetRtcpEventsWithRedundancy(&rtcp_events);
@@ -293,7 +294,7 @@ void FrameReceiver::EmitOneFrame(const ReceiveEncodedFrameCallback& callback,
                                  scoped_ptr<EncodedFrame> encoded_frame) const {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   if (!callback.is_null())
-    callback.Run(encoded_frame.Pass());
+    callback.Run(std::move(encoded_frame));
 }
 
 base::TimeTicks FrameReceiver::GetPlayoutTime(const EncodedFrame& frame) const {

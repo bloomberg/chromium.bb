@@ -435,7 +435,7 @@ scoped_ptr<StreamParser> StreamParserFactory::Create(
     stream_parser.reset(factory_function(codecs, media_log));
   }
 
-  return stream_parser.Pass();
+  return stream_parser;
 }
 
 }  // namespace media

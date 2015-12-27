@@ -4,6 +4,8 @@
 
 #include "media/base/media_log.h"
 
+#include <utility>
+
 #include "base/atomic_sequence_num.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
@@ -147,7 +149,7 @@ scoped_ptr<MediaLogEvent> MediaLog::CreateEvent(MediaLogEvent::Type type) {
   event->id = id_;
   event->type = type;
   event->time = base::TimeTicks::Now();
-  return event.Pass();
+  return event;
 }
 
 scoped_ptr<MediaLogEvent> MediaLog::CreateBooleanEvent(
@@ -156,7 +158,7 @@ scoped_ptr<MediaLogEvent> MediaLog::CreateBooleanEvent(
     bool value) {
   scoped_ptr<MediaLogEvent> event(CreateEvent(type));
   event->params.SetBoolean(property, value);
-  return event.Pass();
+  return event;
 }
 
 scoped_ptr<MediaLogEvent> MediaLog::CreateStringEvent(
@@ -165,7 +167,7 @@ scoped_ptr<MediaLogEvent> MediaLog::CreateStringEvent(
     const std::string& value) {
   scoped_ptr<MediaLogEvent> event(CreateEvent(type));
   event->params.SetString(property, value);
-  return event.Pass();
+  return event;
 }
 
 scoped_ptr<MediaLogEvent> MediaLog::CreateTimeEvent(
@@ -177,19 +179,19 @@ scoped_ptr<MediaLogEvent> MediaLog::CreateTimeEvent(
     event->params.SetString(property, "unknown");
   else
     event->params.SetDouble(property, value.InSecondsF());
-  return event.Pass();
+  return event;
 }
 
 scoped_ptr<MediaLogEvent> MediaLog::CreateLoadEvent(const std::string& url) {
   scoped_ptr<MediaLogEvent> event(CreateEvent(MediaLogEvent::LOAD));
   event->params.SetString("url", url);
-  return event.Pass();
+  return event;
 }
 
 scoped_ptr<MediaLogEvent> MediaLog::CreateSeekEvent(float seconds) {
   scoped_ptr<MediaLogEvent> event(CreateEvent(MediaLogEvent::SEEK));
   event->params.SetDouble("seek_target", seconds);
-  return event.Pass();
+  return event;
 }
 
 scoped_ptr<MediaLogEvent> MediaLog::CreatePipelineStateChangedEvent(
@@ -197,14 +199,14 @@ scoped_ptr<MediaLogEvent> MediaLog::CreatePipelineStateChangedEvent(
   scoped_ptr<MediaLogEvent> event(
       CreateEvent(MediaLogEvent::PIPELINE_STATE_CHANGED));
   event->params.SetString("pipeline_state", Pipeline::GetStateString(state));
-  return event.Pass();
+  return event;
 }
 
 scoped_ptr<MediaLogEvent> MediaLog::CreatePipelineErrorEvent(
     PipelineStatus error) {
   scoped_ptr<MediaLogEvent> event(CreateEvent(MediaLogEvent::PIPELINE_ERROR));
   event->params.SetInteger("pipeline_error", error);
-  return event.Pass();
+  return event;
 }
 
 scoped_ptr<MediaLogEvent> MediaLog::CreateVideoSizeSetEvent(
@@ -212,7 +214,7 @@ scoped_ptr<MediaLogEvent> MediaLog::CreateVideoSizeSetEvent(
   scoped_ptr<MediaLogEvent> event(CreateEvent(MediaLogEvent::VIDEO_SIZE_SET));
   event->params.SetInteger("width", width);
   event->params.SetInteger("height", height);
-  return event.Pass();
+  return event;
 }
 
 scoped_ptr<MediaLogEvent> MediaLog::CreateBufferedExtentsChangedEvent(
@@ -226,41 +228,41 @@ scoped_ptr<MediaLogEvent> MediaLog::CreateBufferedExtentsChangedEvent(
   event->params.SetDouble("buffer_start", start);
   event->params.SetDouble("buffer_current", current);
   event->params.SetDouble("buffer_end", end);
-  return event.Pass();
+  return event;
 }
 
 void MediaLog::AddLogEvent(MediaLogLevel level, const std::string& message) {
   scoped_ptr<MediaLogEvent> event(CreateEvent(MediaLogLevelToEventType(level)));
   event->params.SetString(MediaLogLevelToString(level), message);
-  AddEvent(event.Pass());
+  AddEvent(std::move(event));
 }
 
 void MediaLog::SetStringProperty(
     const std::string& key, const std::string& value) {
   scoped_ptr<MediaLogEvent> event(CreateEvent(MediaLogEvent::PROPERTY_CHANGE));
   event->params.SetString(key, value);
-  AddEvent(event.Pass());
+  AddEvent(std::move(event));
 }
 
 void MediaLog::SetIntegerProperty(
     const std::string& key, int value) {
   scoped_ptr<MediaLogEvent> event(CreateEvent(MediaLogEvent::PROPERTY_CHANGE));
   event->params.SetInteger(key, value);
-  AddEvent(event.Pass());
+  AddEvent(std::move(event));
 }
 
 void MediaLog::SetDoubleProperty(
     const std::string& key, double value) {
   scoped_ptr<MediaLogEvent> event(CreateEvent(MediaLogEvent::PROPERTY_CHANGE));
   event->params.SetDouble(key, value);
-  AddEvent(event.Pass());
+  AddEvent(std::move(event));
 }
 
 void MediaLog::SetBooleanProperty(
     const std::string& key, bool value) {
   scoped_ptr<MediaLogEvent> event(CreateEvent(MediaLogEvent::PROPERTY_CHANGE));
   event->params.SetBoolean(key, value);
-  AddEvent(event.Pass());
+  AddEvent(std::move(event));
 }
 
 void MediaLog::SetTimeProperty(
@@ -270,7 +272,7 @@ void MediaLog::SetTimeProperty(
     event->params.SetString(key, "unknown");
   else
     event->params.SetDouble(key, value.InSecondsF());
-  AddEvent(event.Pass());
+  AddEvent(std::move(event));
 }
 
 LogHelper::LogHelper(MediaLog::MediaLogLevel level,

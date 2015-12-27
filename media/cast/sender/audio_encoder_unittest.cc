@@ -110,10 +110,8 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
   void SetUp() final {
     task_runner_ = new test::FakeSingleThreadTaskRunner(testing_clock_);
     cast_environment_ =
-        new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_).Pass(),
-                            task_runner_,
-                            task_runner_,
-                            task_runner_);
+        new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_),
+                            task_runner_, task_runner_, task_runner_);
   }
 
   virtual ~AudioEncoderTest() {}

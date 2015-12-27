@@ -4,6 +4,8 @@
 
 #include "media/mojo/services/mojo_media_application.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "media/base/media_log.h"
 #include "media/mojo/services/mojo_media_client.h"
@@ -57,7 +59,7 @@ void MojoMediaApplication::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<interfaces::ServiceFactory> request) {
   // The created object is owned by the pipe.
-  new ServiceFactoryImpl(request.Pass(), connection->GetServiceProvider(),
+  new ServiceFactoryImpl(std::move(request), connection->GetServiceProvider(),
                          media_log_,
                          app_impl_->app_lifetime_helper()->CreateAppRefCount(),
                          mojo_media_client_.get());

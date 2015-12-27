@@ -5,8 +5,8 @@
 #include "media/cdm/aes_decryptor.h"
 
 #include <stddef.h>
-
 #include <list>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -396,7 +396,7 @@ void AesDecryptor::UpdateSession(const std::string& session_id,
     }
   }
 
-  session_keys_change_cb_.Run(session_id, key_added, keys_info.Pass());
+  session_keys_change_cb_.Run(session_id, key_added, std::move(keys_info));
 }
 
 void AesDecryptor::CloseSession(const std::string& session_id,
@@ -425,7 +425,7 @@ void AesDecryptor::RemoveSession(const std::string& session_id,
   // TODO(jrummell): Remove the close() call when prefixed EME is removed.
   // http://crbug.com/249976.
   if (valid_sessions_.find(session_id) != valid_sessions_.end()) {
-    CloseSession(session_id, promise.Pass());
+    CloseSession(session_id, std::move(promise));
     return;
   }
 
@@ -544,15 +544,15 @@ bool AesDecryptor::AddDecryptionKey(const std::string& session_id,
   base::AutoLock auto_lock(key_map_lock_);
   KeyIdToSessionKeysMap::iterator key_id_entry = key_map_.find(key_id);
   if (key_id_entry != key_map_.end()) {
-    key_id_entry->second->Insert(session_id, decryption_key.Pass());
+    key_id_entry->second->Insert(session_id, std::move(decryption_key));
     return true;
   }
 
   // |key_id| not found, so need to create new entry.
   scoped_ptr<SessionIdDecryptionKeyMap> inner_map(
       new SessionIdDecryptionKeyMap());
-  inner_map->Insert(session_id, decryption_key.Pass());
-  key_map_.add(key_id, inner_map.Pass());
+  inner_map->Insert(session_id, std::move(decryption_key));
+  key_map_.add(key_id, std::move(inner_map));
   return true;
 }
 

@@ -50,7 +50,7 @@ scoped_ptr<CdmVideoDecoder> CreateVideoDecoder(
 
 #endif  // CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER
 
-  return video_decoder.Pass();
+  return video_decoder;
 }
 
 }  // namespace media

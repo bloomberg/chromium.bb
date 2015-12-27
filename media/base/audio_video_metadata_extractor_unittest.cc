@@ -29,14 +29,14 @@ scoped_ptr<AudioVideoMetadataExtractor> GetExtractor(
   EXPECT_EQ(expected_result, extracted);
 
   if (!extracted)
-    return extractor.Pass();
+    return extractor;
 
   EXPECT_EQ(expected_duration, extractor->duration());
 
   EXPECT_EQ(expected_width, extractor->width());
   EXPECT_EQ(expected_height, extractor->height());
 
-  return extractor.Pass();
+  return extractor;
 }
 
 TEST(AudioVideoMetadataExtractorTest, InvalidFile) {

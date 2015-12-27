@@ -4,6 +4,8 @@
 
 #include "media/mojo/services/demuxer_stream_provider_shim.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
@@ -22,16 +24,14 @@ DemuxerStreamProviderShim::DemuxerStreamProviderShim(
 
   if (audio) {
     streams_.push_back(new MojoDemuxerStreamAdapter(
-        audio.Pass(),
-        base::Bind(&DemuxerStreamProviderShim::OnStreamReady,
-                   weak_factory_.GetWeakPtr())));
+        std::move(audio), base::Bind(&DemuxerStreamProviderShim::OnStreamReady,
+                                     weak_factory_.GetWeakPtr())));
   }
 
   if (video) {
     streams_.push_back(new MojoDemuxerStreamAdapter(
-        video.Pass(),
-        base::Bind(&DemuxerStreamProviderShim::OnStreamReady,
-                   weak_factory_.GetWeakPtr())));
+        std::move(video), base::Bind(&DemuxerStreamProviderShim::OnStreamReady,
+                                     weak_factory_.GetWeakPtr())));
   }
 }
 

@@ -5,6 +5,7 @@
 #include "media/cast/receiver/video_decoder.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -72,7 +73,7 @@ class VideoDecoder::ImplBase
     decode_event->media_type = VIDEO_EVENT;
     decode_event->rtp_timestamp = encoded_frame->rtp_timestamp;
     decode_event->frame_id = encoded_frame->frame_id;
-    cast_environment_->logger()->DispatchFrameEvent(decode_event.Pass());
+    cast_environment_->logger()->DispatchFrameEvent(std::move(decode_event));
 
     cast_environment_->PostTask(
         CastEnvironment::MAIN,

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -245,7 +246,7 @@ void FrameSender::SendEncodedFrame(
   encode_event->encoder_cpu_utilization = encoded_frame->deadline_utilization;
   encode_event->idealized_bitrate_utilization =
       encoded_frame->lossy_utilization;
-  cast_environment_->logger()->DispatchFrameEvent(encode_event.Pass());
+  cast_environment_->logger()->DispatchFrameEvent(std::move(encode_event));
 
   RecordLatestFrameTimestamps(frame_id,
                               encoded_frame->reference_time,
@@ -348,7 +349,7 @@ void FrameSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
   ack_event->rtp_timestamp =
       GetRecordedRtpTimestamp(cast_feedback.ack_frame_id);
   ack_event->frame_id = cast_feedback.ack_frame_id;
-  cast_environment_->logger()->DispatchFrameEvent(ack_event.Pass());
+  cast_environment_->logger()->DispatchFrameEvent(std::move(ack_event));
 
   const bool is_acked_out_of_order =
       static_cast<int32_t>(cast_feedback.ack_frame_id -

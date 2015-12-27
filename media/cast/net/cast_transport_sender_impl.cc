@@ -5,6 +5,7 @@
 #include "media/cast/net/cast_transport_sender_impl.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/single_thread_task_runner.h"
 #include "base/values.h"
@@ -66,18 +67,10 @@ scoped_ptr<CastTransportSender> CastTransportSender::Create(
     base::TimeDelta raw_events_callback_interval,
     const PacketReceiverCallback& packet_callback,
     const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner) {
-  return scoped_ptr<CastTransportSender>(
-      new CastTransportSenderImpl(net_log,
-                                  clock,
-                                  local_end_point,
-                                  remote_end_point,
-                                  options.Pass(),
-                                  status_callback,
-                                  raw_events_callback,
-                                  raw_events_callback_interval,
-                                  transport_task_runner.get(),
-                                  packet_callback,
-                                  NULL));
+  return scoped_ptr<CastTransportSender>(new CastTransportSenderImpl(
+      net_log, clock, local_end_point, remote_end_point, std::move(options),
+      status_callback, raw_events_callback, raw_events_callback_interval,
+      transport_task_runner.get(), packet_callback, NULL));
 }
 
 PacketReceiverCallback CastTransportSender::PacketReceiverForTesting() {
@@ -349,7 +342,7 @@ void CastTransportSenderImpl::SendRawEvents() {
     scoped_ptr<std::vector<PacketEvent>> packet_events(
         new std::vector<PacketEvent>());
     packet_events->swap(recent_packet_events_);
-    raw_events_callback_.Run(frame_events.Pass(), packet_events.Pass());
+    raw_events_callback_.Run(std::move(frame_events), std::move(packet_events));
   }
 
   transport_task_runner_->PostDelayedTask(
@@ -386,7 +379,7 @@ bool CastTransportSenderImpl::OnReceivedPacket(scoped_ptr<Packet> packet) {
     VLOG(1) << "Stale packet received.";
     return false;
   }
-  packet_callback_.Run(packet.Pass());
+  packet_callback_.Run(std::move(packet));
   return true;
 }
 

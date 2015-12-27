@@ -5,6 +5,7 @@
 #include "media/mojo/services/mojo_demuxer_stream_impl.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "media/base/audio_decoder_config.h"
@@ -18,7 +19,9 @@ namespace media {
 MojoDemuxerStreamImpl::MojoDemuxerStreamImpl(
     media::DemuxerStream* stream,
     mojo::InterfaceRequest<interfaces::DemuxerStream> request)
-    : binding_(this, request.Pass()), stream_(stream), weak_factory_(this) {}
+    : binding_(this, std::move(request)),
+      stream_(stream),
+      weak_factory_(this) {}
 
 MojoDemuxerStreamImpl::~MojoDemuxerStreamImpl() {
 }
@@ -45,7 +48,7 @@ void MojoDemuxerStreamImpl::Initialize(const InitializeCallback& callback) {
   }
 
   mojo::DataPipe data_pipe(options);
-  stream_pipe_ = data_pipe.producer_handle.Pass();
+  stream_pipe_ = std::move(data_pipe.producer_handle);
 
   // Prepare the initial config.
   interfaces::AudioDecoderConfigPtr audio_config;
@@ -62,8 +65,8 @@ void MojoDemuxerStreamImpl::Initialize(const InitializeCallback& callback) {
   }
 
   callback.Run(static_cast<interfaces::DemuxerStream::Type>(stream_->type()),
-               data_pipe.consumer_handle.Pass(), audio_config.Pass(),
-               video_config.Pass());
+               std::move(data_pipe.consumer_handle), std::move(audio_config),
+               std::move(video_config));
 }
 
 void MojoDemuxerStreamImpl::Read(const ReadCallback& callback)  {
@@ -94,15 +97,15 @@ void MojoDemuxerStreamImpl::OnBufferReady(
     }
 
     callback.Run(interfaces::DemuxerStream::STATUS_CONFIG_CHANGED,
-                 interfaces::DecoderBufferPtr(), audio_config.Pass(),
-                 video_config.Pass());
+                 interfaces::DecoderBufferPtr(), std::move(audio_config),
+                 std::move(video_config));
     return;
   }
 
   if (status == media::DemuxerStream::kAborted) {
     callback.Run(interfaces::DemuxerStream::STATUS_ABORTED,
-                 interfaces::DecoderBufferPtr(), audio_config.Pass(),
-                 video_config.Pass());
+                 interfaces::DecoderBufferPtr(), std::move(audio_config),
+                 std::move(video_config));
     return;
   }
 
@@ -121,8 +124,8 @@ void MojoDemuxerStreamImpl::OnBufferReady(
   // the producer handle and then read more to keep the pipe full.  Waiting for
   // space can be accomplished using an AsyncWaiter.
   callback.Run(static_cast<interfaces::DemuxerStream::Status>(status),
-               interfaces::DecoderBuffer::From(buffer), audio_config.Pass(),
-               video_config.Pass());
+               interfaces::DecoderBuffer::From(buffer), std::move(audio_config),
+               std::move(video_config));
 }
 
 }  // namespace media

@@ -4,6 +4,8 @@
 
 #include "media/cast/sender/audio_sender.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -90,7 +92,7 @@ void AudioSender::InsertAudio(scoped_ptr<AudioBus> audio_bus,
 
   samples_in_encoder_ += audio_bus->frames();
 
-  audio_encoder_->InsertAudio(audio_bus.Pass(), recorded_time);
+  audio_encoder_->InsertAudio(std::move(audio_bus), recorded_time);
 }
 
 int AudioSender::GetNumberOfFramesInEncoder() const {
@@ -114,7 +116,7 @@ void AudioSender::OnEncodedAudioFrame(
   samples_in_encoder_ -= audio_encoder_->GetSamplesPerFrame() + samples_skipped;
   DCHECK_GE(samples_in_encoder_, 0);
 
-  SendEncodedFrame(encoder_bitrate, encoded_frame.Pass());
+  SendEncodedFrame(encoder_bitrate, std::move(encoded_frame));
 }
 
 }  // namespace cast

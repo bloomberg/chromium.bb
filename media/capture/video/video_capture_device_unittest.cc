@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/capture/video/video_capture_device.h"
+
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -16,7 +19,6 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "media/base/video_capture_types.h"
-#include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/video_capture_device_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -323,7 +325,7 @@ TEST_P(VideoCaptureDeviceTest, CaptureWithSize) {
   capture_params.requested_format.frame_rate = 30.0f;
   capture_params.requested_format.pixel_format =
       PIXEL_FORMAT_I420;
-  device->AllocateAndStart(capture_params, client_.Pass());
+  device->AllocateAndStart(capture_params, std::move(client_));
   // Get captured video frames.
   WaitForCapturedFrame();
   EXPECT_EQ(last_format().frame_size.width(), width);
@@ -357,7 +359,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_AllocateBadSize) {
   capture_params.requested_format.frame_rate = 35;
   capture_params.requested_format.pixel_format =
       PIXEL_FORMAT_I420;
-  device->AllocateAndStart(capture_params, client_.Pass());
+  device->AllocateAndStart(capture_params, std::move(client_));
   WaitForCapturedFrame();
   device->StopAndDeAllocate();
   EXPECT_EQ(last_format().frame_size.width(), input_size.width());
@@ -389,7 +391,7 @@ TEST_F(VideoCaptureDeviceTest, DISABLED_ReAllocateCamera) {
     capture_params.requested_format.frame_size = resolution;
     capture_params.requested_format.frame_rate = 30;
     capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
-    device->AllocateAndStart(capture_params, client_.Pass());
+    device->AllocateAndStart(capture_params, std::move(client_));
     device->StopAndDeAllocate();
   }
 
@@ -403,7 +405,7 @@ TEST_F(VideoCaptureDeviceTest, DISABLED_ReAllocateCamera) {
   scoped_ptr<VideoCaptureDevice> device(
       video_capture_device_factory_->Create(names_->front()));
 
-  device->AllocateAndStart(capture_params, client_.Pass());
+  device->AllocateAndStart(capture_params, std::move(client_));
   WaitForCapturedFrame();
   device->StopAndDeAllocate();
   device.reset();
@@ -427,7 +429,7 @@ TEST_F(VideoCaptureDeviceTest, DeAllocateCameraWhileRunning) {
   capture_params.requested_format.frame_size.SetSize(640, 480);
   capture_params.requested_format.frame_rate = 30;
   capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
-  device->AllocateAndStart(capture_params, client_.Pass());
+  device->AllocateAndStart(capture_params, std::move(client_));
   // Get captured video frames.
   WaitForCapturedFrame();
   EXPECT_EQ(last_format().frame_size.width(), 640);
@@ -460,7 +462,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
   capture_params.requested_format.frame_size.SetSize(1280, 720);
   capture_params.requested_format.frame_rate = 30;
   capture_params.requested_format.pixel_format = PIXEL_FORMAT_MJPEG;
-  device->AllocateAndStart(capture_params, client_.Pass());
+  device->AllocateAndStart(capture_params, std::move(client_));
   // Get captured video frames.
   WaitForCapturedFrame();
   // Verify we get MJPEG from the device. Not all devices can capture 1280x720

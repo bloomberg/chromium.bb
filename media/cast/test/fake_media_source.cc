@@ -4,6 +4,8 @@
 
 #include "media/cast/test/fake_media_source.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
@@ -271,8 +273,7 @@ void FakeMediaSource::SendNextFakeFrame() {
       CHECK(!audio_bus_queue_.empty()) << "No audio decoded.";
       scoped_ptr<AudioBus> bus(audio_bus_queue_.front());
       audio_bus_queue_.pop();
-      audio_frame_input_->InsertAudio(
-          bus.Pass(), start_time_ + audio_time);
+      audio_frame_input_->InsertAudio(std::move(bus), start_time_ + audio_time);
     } else {
       audio_frame_input_->InsertAudio(
           audio_bus_factory_->NextAudioBus(
@@ -364,8 +365,7 @@ bool FakeMediaSource::SendNextTranscodedAudio(base::TimeDelta elapsed_time) {
   scoped_ptr<AudioBus> bus(audio_bus_queue_.front());
   audio_bus_queue_.pop();
   audio_sent_ts_->AddFrames(bus->frames());
-  audio_frame_input_->InsertAudio(
-      bus.Pass(), start_time_ + audio_time);
+  audio_frame_input_->InsertAudio(std::move(bus), start_time_ + audio_time);
 
   // Make sure queue is not empty.
   Decode(true);
@@ -419,7 +419,7 @@ ScopedAVPacket FakeMediaSource::DemuxOnePacket(bool* audio) {
   if (av_read_frame(av_format_context_, packet.get()) < 0) {
     VLOG(1) << "Failed to read one AVPacket.";
     packet.reset();
-    return packet.Pass();
+    return packet;
   }
 
   int stream_index = static_cast<int>(packet->stream_index);
@@ -432,7 +432,7 @@ ScopedAVPacket FakeMediaSource::DemuxOnePacket(bool* audio) {
     LOG(INFO) << "Unknown packet.";
     packet.reset();
   }
-  return packet.Pass();
+  return packet;
 }
 
 void FakeMediaSource::DecodeAudio(ScopedAVPacket packet) {
@@ -570,9 +570,9 @@ void FakeMediaSource::Decode(bool decode_audio) {
     }
 
     if (audio_packet)
-      DecodeAudio(packet.Pass());
+      DecodeAudio(std::move(packet));
     else
-      DecodeVideo(packet.Pass());
+      DecodeVideo(std::move(packet));
   }
 }
 

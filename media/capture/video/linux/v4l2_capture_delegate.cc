@@ -8,6 +8,7 @@
 #include <sys/fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
@@ -176,7 +177,7 @@ void V4L2CaptureDelegate::AllocateAndStart(
     scoped_ptr<VideoCaptureDevice::Client> client) {
   DCHECK(v4l2_task_runner_->BelongsToCurrentThread());
   DCHECK(client);
-  client_ = client.Pass();
+  client_ = std::move(client);
 
   // Need to open camera with O_RDWR after Linux kernel 3.3.
   device_fd_.reset(HANDLE_EINTR(open(device_name_.id().c_str(), O_RDWR)));

@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "key_system_config_selector.h"
+#include "media/blink/key_system_config_selector.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -705,7 +706,7 @@ void KeySystemConfigSelector::SelectConfig(
   request->are_secure_codecs_supported = are_secure_codecs_supported;
   request->succeeded_cb = succeeded_cb;
   request->not_supported_cb = not_supported_cb;
-  SelectConfigInternal(request.Pass());
+  SelectConfigInternal(std::move(request));
 }
 
 void KeySystemConfigSelector::SelectConfigInternal(
@@ -778,7 +779,7 @@ void KeySystemConfigSelector::OnPermissionResult(
     bool is_permission_granted) {
   request->was_permission_requested = true;
   request->is_permission_granted = is_permission_granted;
-  SelectConfigInternal(request.Pass());
+  SelectConfigInternal(std::move(request));
 }
 
 }  // namespace media

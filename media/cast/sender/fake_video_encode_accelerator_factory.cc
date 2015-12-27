@@ -4,6 +4,8 @@
 
 #include "media/cast/sender/fake_video_encode_accelerator_factory.h"
 
+#include <utility>
+
 #include "base/callback_helpers.h"
 
 namespace media {
@@ -66,15 +68,16 @@ void FakeVideoEncodeAcceleratorFactory::RespondWithVideoEncodeAccelerator() {
   DCHECK(next_response_vea_.get());
   last_response_vea_ = next_response_vea_.get();
   ++vea_response_count_;
-  base::ResetAndReturn(&vea_response_callback_).Run(
-      task_runner_, next_response_vea_.Pass());
+  base::ResetAndReturn(&vea_response_callback_)
+      .Run(task_runner_, std::move(next_response_vea_));
 }
 
 void FakeVideoEncodeAcceleratorFactory::RespondWithSharedMemory() {
   DCHECK(next_response_shm_.get());
   last_response_shm_ = next_response_shm_.get();
   ++shm_response_count_;
-  base::ResetAndReturn(&shm_response_callback_).Run(next_response_shm_.Pass());
+  base::ResetAndReturn(&shm_response_callback_)
+      .Run(std::move(next_response_shm_));
 }
 
 }  // namespace cast

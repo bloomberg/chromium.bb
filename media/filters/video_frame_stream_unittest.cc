@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
@@ -101,7 +103,7 @@ class VideoFrameStreamTest
     decoders.push_back(decoder3_);
 
     video_frame_stream_.reset(new VideoFrameStream(
-        message_loop_.task_runner(), decoders.Pass(), new MediaLog()));
+        message_loop_.task_runner(), std::move(decoders), new MediaLog()));
 
     EXPECT_CALL(*cdm_context_, GetDecryptor())
         .WillRepeatedly(Return(decryptor_.get()));

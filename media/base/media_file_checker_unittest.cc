@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/base/media_file_checker.h"
+
+#include <utility>
+
 #include "base/files/file.h"
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "media/base/media_file_checker.h"
 #include "media/base/test_data_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,7 +19,7 @@ static void RunMediaFileChecker(const std::string& filename, bool expectation) {
                   base::File::FLAG_OPEN | base::File::FLAG_READ);
   ASSERT_TRUE(file.IsValid());
 
-  MediaFileChecker checker(file.Pass());
+  MediaFileChecker checker(std::move(file));
   const base::TimeDelta check_time = base::TimeDelta::FromMilliseconds(100);
   bool result = checker.Start(check_time);
   EXPECT_EQ(expectation, result);

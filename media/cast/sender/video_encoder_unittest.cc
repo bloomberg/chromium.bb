@@ -36,11 +36,11 @@ class VideoEncoderTest
   VideoEncoderTest()
       : testing_clock_(new base::SimpleTestTickClock()),
         task_runner_(new test::FakeSingleThreadTaskRunner(testing_clock_)),
-        cast_environment_(new CastEnvironment(
-            scoped_ptr<base::TickClock>(testing_clock_).Pass(),
-            task_runner_,
-            task_runner_,
-            task_runner_)),
+        cast_environment_(
+            new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_),
+                                task_runner_,
+                                task_runner_,
+                                task_runner_)),
         video_config_(GetDefaultVideoSenderConfig()),
         operational_status_(STATUS_UNINITIALIZED),
         count_frames_delivered_(0) {
@@ -67,15 +67,14 @@ class VideoEncoderTest
     ASSERT_EQ(STATUS_UNINITIALIZED, operational_status_);
     video_config_.max_number_of_video_buffers_used = 1;
     video_encoder_ = VideoEncoder::Create(
-        cast_environment_,
-        video_config_,
+        cast_environment_, video_config_,
         base::Bind(&VideoEncoderTest::OnOperationalStatusChange,
                    base::Unretained(this)),
         base::Bind(
             &FakeVideoEncodeAcceleratorFactory::CreateVideoEncodeAccelerator,
             base::Unretained(vea_factory_.get())),
         base::Bind(&FakeVideoEncodeAcceleratorFactory::CreateSharedMemory,
-                   base::Unretained(vea_factory_.get()))).Pass();
+                   base::Unretained(vea_factory_.get())));
     RunTasksAndAdvanceClock();
     if (is_encoder_present())
       ASSERT_EQ(STATUS_INITIALIZED, operational_status_);
@@ -212,7 +211,7 @@ class VideoEncoderTest
     // Create the VideoFrameFactory the first time status changes to
     // STATUS_INITIALIZED.
     if (operational_status_ == STATUS_INITIALIZED && !video_frame_factory_)
-      video_frame_factory_ = video_encoder_->CreateVideoFrameFactory().Pass();
+      video_frame_factory_ = video_encoder_->CreateVideoFrameFactory();
   }
 
   // Checks that |encoded_frame| matches expected values.  This is the method

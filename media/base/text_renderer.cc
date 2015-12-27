@@ -5,6 +5,7 @@
 #include "media/base/text_renderer.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -296,7 +297,7 @@ void TextRenderer::OnAddTextTrackDone(DemuxerStream* text_stream,
   DCHECK(text_stream);
   DCHECK(text_track);
 
-  scoped_ptr<TextTrackState> state(new TextTrackState(text_track.Pass()));
+  scoped_ptr<TextTrackState> state(new TextTrackState(std::move(text_track)));
   text_track_state_map_[text_stream] = state.release();
   pending_eos_set_.insert(text_stream);
 
@@ -317,9 +318,7 @@ void TextRenderer::Read(
 }
 
 TextRenderer::TextTrackState::TextTrackState(scoped_ptr<TextTrack> tt)
-    : read_state(kReadIdle),
-      text_track(tt.Pass()) {
-}
+    : read_state(kReadIdle), text_track(std::move(tt)) {}
 
 TextRenderer::TextTrackState::~TextTrackState() {
 }
