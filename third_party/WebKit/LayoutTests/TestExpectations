@@ -226,8 +226,6 @@ crbug.com/542541 [ Debug ] fast/events/click-count.html [ Pass Failure ]
 crbug.com/542541 [ Debug ] virtual/trustedeventsdefaultaction/fast/events/click-count.html [ Pass Failure ]
 crbug.com/542541 [ Debug ] virtual/pointerevent/fast/events/click-count.html [ Pass Failure ]
 
-crbug.com/501543 fast/images/size-failure.html [ Crash Timeout Pass ]
-
 # FIXME issue 570401, FIXME dsf2 is an abbrv, fix the test name per style.
 crbug.com/495750 fast/hidpi/calendar-picker-appearance-dsf2-with-zoom.html [ Skip ]
 crbug.com/495750 fast/hidpi/calendar-picker-appearance-dsf2.html [ Skip ]
