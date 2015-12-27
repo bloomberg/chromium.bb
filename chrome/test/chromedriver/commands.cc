@@ -113,7 +113,7 @@ void ExecuteGetSessions(const Command& session_capabilities_command,
   scoped_ptr<base::ListValue> session_list(new base::ListValue());
 
   if (!get_remaining_count) {
-    callback.Run(Status(kOk), session_list.Pass(), session_id);
+    callback.Run(Status(kOk), std::move(session_list), session_id);
     return;
   }
 
@@ -135,7 +135,7 @@ void ExecuteGetSessions(const Command& session_capabilities_command,
   base::MessageLoop::current()->SetNestableTasksAllowed(true);
   run_loop.Run();
 
-  callback.Run(Status(kOk), session_list.Pass(), session_id);
+  callback.Run(Status(kOk), std::move(session_list), session_id);
 }
 
 namespace {

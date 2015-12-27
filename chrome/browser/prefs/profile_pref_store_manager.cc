@@ -4,6 +4,8 @@
 
 #include "chrome/browser/prefs/profile_pref_store_manager.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
@@ -136,17 +138,15 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
   PrefHashFilter* raw_protected_pref_hash_filter =
       protected_pref_hash_filter.get();
 
-  scoped_refptr<JsonPrefStore> unprotected_pref_store(
-      new JsonPrefStore(profile_path_.Append(chrome::kPreferencesFilename),
-                        io_task_runner.get(),
-                        unprotected_pref_hash_filter.Pass()));
+  scoped_refptr<JsonPrefStore> unprotected_pref_store(new JsonPrefStore(
+      profile_path_.Append(chrome::kPreferencesFilename), io_task_runner.get(),
+      std::move(unprotected_pref_hash_filter)));
   // TODO(gab): Remove kDeprecatedProtectedPreferencesFilename as an alternate
   // file in M40+.
   scoped_refptr<JsonPrefStore> protected_pref_store(new JsonPrefStore(
       profile_path_.Append(chrome::kSecurePreferencesFilename),
       profile_path_.Append(chrome::kProtectedPreferencesFilenameDeprecated),
-      io_task_runner.get(),
-      protected_pref_hash_filter.Pass()));
+      io_task_runner.get(), std::move(protected_pref_hash_filter)));
 
   SetupTrackedPreferencesMigration(
       unprotected_pref_names, protected_pref_names,
@@ -212,16 +212,12 @@ ProfilePrefStoreManager::CreateDeprecatedCombinedProfilePrefStore(
     pref_hash_store_impl->set_legacy_hash_store_contents(
         scoped_ptr<HashStoreContents>(new PrefServiceHashStoreContents(
             profile_path_.AsUTF8Unsafe(), local_state_)));
-    pref_filter.reset(new PrefHashFilter(pref_hash_store_impl.Pass(),
-                                         tracking_configuration_,
-                                         base::Closure(),
-                                         NULL,
-                                         reporting_ids_count_,
-                                         false));
+    pref_filter.reset(new PrefHashFilter(
+        std::move(pref_hash_store_impl), tracking_configuration_,
+        base::Closure(), NULL, reporting_ids_count_, false));
   }
   return new JsonPrefStore(profile_path_.Append(chrome::kPreferencesFilename),
-                           io_task_runner.get(),
-                           pref_filter.Pass());
+                           io_task_runner.get(), std::move(pref_filter));
 }
 
 scoped_ptr<PrefHashStore> ProfilePrefStoreManager::GetPrefHashStore(

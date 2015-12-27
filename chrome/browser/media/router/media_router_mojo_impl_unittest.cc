@@ -4,8 +4,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -87,7 +87,7 @@ interfaces::IssuePtr CreateMojoIssue(const std::string& title) {
   mojoIssue->severity = interfaces::Issue::Severity::SEVERITY_WARNING;
   mojoIssue->is_blocking = false;
   mojoIssue->help_url = "";
-  return mojoIssue.Pass();
+  return mojoIssue;
 }
 
 }  // namespace
@@ -110,7 +110,7 @@ class ListenForMessagesCallbackHandler {
   ListenForMessagesCallbackHandler(
       ScopedVector<content::PresentationSessionMessage> expected_messages,
       bool pass_ownership)
-      : expected_messages_(expected_messages.Pass()),
+      : expected_messages_(std::move(expected_messages)),
         pass_ownership_(pass_ownership) {}
   void Invoke(const ScopedVector<content::PresentationSessionMessage>& messages,
               bool pass_ownership) {
@@ -195,7 +195,7 @@ TEST_F(MediaRouterMojoImplTest, CreateRoute) {
           const mojo::String& presentation_id, const mojo::String& origin,
           int tab_id,
           const interfaces::MediaRouteProvider::CreateRouteCallback& cb) {
-        cb.Run(route.Pass(), mojo::String());
+        cb.Run(std::move(route), mojo::String());
       }));
 
   // MediaRouterMojoImpl will start observing local displayable routes as a
@@ -255,7 +255,7 @@ TEST_F(MediaRouterMojoImplTest, JoinRoute) {
           const mojo::String& source, const mojo::String& presentation_id,
           const mojo::String& origin, int tab_id,
           const interfaces::MediaRouteProvider::JoinRouteCallback& cb) {
-        cb.Run(route.Pass(), mojo::String());
+        cb.Run(std::move(route), mojo::String());
       }));
 
   // MediaRouterMojoImpl will start observing local displayable routes as a
@@ -321,7 +321,7 @@ TEST_F(MediaRouterMojoImplTest, HandleIssue) {
       .WillOnce(SaveArg<0>(&issue));
   EXPECT_CALL(issue_observer2,
               OnIssueUpdated(Pointee(EqualsIssue(expected_issue1))));
-  media_router_proxy_->OnIssue(mojo_issue1.Pass());
+  media_router_proxy_->OnIssue(std::move(mojo_issue1));
   ProcessEventLoop();
 
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&issue_observer1));
@@ -349,7 +349,7 @@ TEST_F(MediaRouterMojoImplTest, HandleIssue) {
 
   EXPECT_CALL(issue_observer2,
               OnIssueUpdated(Pointee(EqualsIssue(expected_issue2))));
-  media_router_proxy_->OnIssue(mojo_issue2.Pass());
+  media_router_proxy_->OnIssue(std::move(mojo_issue2));
   ProcessEventLoop();
 
   issue_observer1.UnregisterObserver();
@@ -398,7 +398,8 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaSinksObserver) {
   EXPECT_CALL(sinks_observer, OnSinksReceived(SequenceEquals(expected_sinks)));
   EXPECT_CALL(extra_sinks_observer,
               OnSinksReceived(SequenceEquals(expected_sinks)));
-  media_router_proxy_->OnSinksReceived(media_source.id(), mojo_sinks.Pass());
+  media_router_proxy_->OnSinksReceived(media_source.id(),
+                                       std::move(mojo_sinks));
   ProcessEventLoop();
 
   EXPECT_CALL(mock_media_route_provider_,
@@ -547,7 +548,7 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaRoutesObserver) {
               OnRoutesUpdated(SequenceEquals(expected_routes)));
   EXPECT_CALL(extra_routes_observer,
               OnRoutesUpdated(SequenceEquals(expected_routes)));
-  media_router_proxy_->OnRoutesUpdated(mojo_routes.Pass());
+  media_router_proxy_->OnRoutesUpdated(std::move(mojo_routes));
   ProcessEventLoop();
 
   EXPECT_CALL(mock_router, UnregisterMediaRoutesObserver(&routes_observer));
@@ -595,7 +596,7 @@ TEST_F(MediaRouterMojoImplTest, SendRouteBinaryMessage) {
   SendMessageCallbackHandler handler;
   EXPECT_CALL(handler, Invoke(true));
   router()->SendRouteBinaryMessage(
-      kRouteId, expected_binary_data.Pass(),
+      kRouteId, std::move(expected_binary_data),
       base::Bind(&SendMessageCallbackHandler::Invoke,
                  base::Unretained(&handler)));
   ProcessEventLoop();
@@ -615,12 +616,12 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesSingleObserver) {
   message.reset(new content::PresentationSessionMessage(
       content::PresentationMessageType::TEXT));
   message->message = "text";
-  expected_messages.push_back(message.Pass());
+  expected_messages.push_back(std::move(message));
 
   message.reset(new content::PresentationSessionMessage(
       content::PresentationMessageType::ARRAY_BUFFER));
   message->data.reset(new std::vector<uint8_t>(1, 1));
-  expected_messages.push_back(message.Pass());
+  expected_messages.push_back(std::move(message));
 
   MediaRoute::Id expected_route_id("foo");
   interfaces::MediaRouteProvider::ListenForRouteMessagesCallback mojo_callback;
@@ -629,7 +630,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesSingleObserver) {
       .WillOnce(SaveArg<1>(&mojo_callback));
 
   // |pass_ownership| param is "true" here because there is only one observer.
-  ListenForMessagesCallbackHandler handler(expected_messages.Pass(), true);
+  ListenForMessagesCallbackHandler handler(std::move(expected_messages), true);
 
   EXPECT_CALL(handler, InvokeObserver());
   // Creating PresentationSessionMessagesObserver will register itself to the
@@ -644,7 +645,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesSingleObserver) {
   // Simulate messages by invoking the saved mojo callback.
   // We expect one more ListenForRouteMessages call since |observer| was
   // still registered when the first set of messages arrived.
-  mojo_callback.Run(mojo_messages.Pass(), false);
+  mojo_callback.Run(std::move(mojo_messages), false);
   interfaces::MediaRouteProvider::ListenForRouteMessagesCallback
       mojo_callback_2;
   EXPECT_CALL(mock_media_route_provider_, ListenForRouteMessages(_, _))
@@ -658,7 +659,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesSingleObserver) {
   mojo_messages_2[0]->type = interfaces::RouteMessage::Type::TYPE_TEXT;
   mojo_messages_2[0]->message = "foo";
   observer.reset();
-  mojo_callback_2.Run(mojo_messages_2.Pass(), false);
+  mojo_callback_2.Run(std::move(mojo_messages_2), false);
   EXPECT_CALL(mock_media_route_provider_, StopListeningForRouteMessages(_));
   ProcessEventLoop();
 }
@@ -677,12 +678,12 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesMultipleObservers) {
   message.reset(new content::PresentationSessionMessage(
       content::PresentationMessageType::TEXT));
   message->message = "text";
-  expected_messages.push_back(message.Pass());
+  expected_messages.push_back(std::move(message));
 
   message.reset(new content::PresentationSessionMessage(
       content::PresentationMessageType::ARRAY_BUFFER));
   message->data.reset(new std::vector<uint8_t>(1, 1));
-  expected_messages.push_back(message.Pass());
+  expected_messages.push_back(std::move(message));
 
   MediaRoute::Id expected_route_id("foo");
   interfaces::MediaRouteProvider::ListenForRouteMessagesCallback mojo_callback;
@@ -692,7 +693,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesMultipleObservers) {
 
   // |pass_ownership| param is "false" here because there are more than one
   // observers.
-  ListenForMessagesCallbackHandler handler(expected_messages.Pass(), false);
+  ListenForMessagesCallbackHandler handler(std::move(expected_messages), false);
 
   EXPECT_CALL(handler, InvokeObserver()).Times(2);
   // Creating PresentationSessionMessagesObserver will register itself to the
@@ -712,7 +713,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesMultipleObservers) {
   // Simulate messages by invoking the saved mojo callback.
   // We expect one more ListenForRouteMessages call since |observer| was
   // still registered when the first set of messages arrived.
-  mojo_callback.Run(mojo_messages.Pass(), false);
+  mojo_callback.Run(std::move(mojo_messages), false);
   interfaces::MediaRouteProvider::ListenForRouteMessagesCallback
       mojo_callback_2;
   EXPECT_CALL(mock_media_route_provider_, ListenForRouteMessages(_, _))
@@ -727,7 +728,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesMultipleObservers) {
   mojo_messages_2[0]->message = "foo";
   observer1.reset();
   observer2.reset();
-  mojo_callback_2.Run(mojo_messages_2.Pass(), false);
+  mojo_callback_2.Run(std::move(mojo_messages_2), false);
   EXPECT_CALL(mock_media_route_provider_, StopListeningForRouteMessages(_));
   ProcessEventLoop();
 }
@@ -810,7 +811,7 @@ TEST_F(MediaRouterMojoImplTest, HasLocalRoute) {
   mojo_route1->for_display = false;
   router()->RouteResponseReceived("presentationId1",
                                   std::vector<MediaRouteResponseCallback>(),
-                                  mojo_route1.Pass(), "");
+                                  std::move(mojo_route1), "");
   EXPECT_FALSE(router()->HasLocalDisplayRoute());
 
   interfaces::MediaRoutePtr mojo_route2 = interfaces::MediaRoute::New();
@@ -820,7 +821,7 @@ TEST_F(MediaRouterMojoImplTest, HasLocalRoute) {
   mojo_route2->for_display = true;
   router()->RouteResponseReceived("presentationId2",
                                   std::vector<MediaRouteResponseCallback>(),
-                                  mojo_route2.Pass(), "");
+                                  std::move(mojo_route2), "");
   EXPECT_FALSE(router()->HasLocalDisplayRoute());
 
   interfaces::MediaRoutePtr mojo_route3 = interfaces::MediaRoute::New();
@@ -830,7 +831,7 @@ TEST_F(MediaRouterMojoImplTest, HasLocalRoute) {
   mojo_route3->for_display = false;
   router()->RouteResponseReceived("presentationId3",
                                   std::vector<MediaRouteResponseCallback>(),
-                                  mojo_route3.Pass(), "");
+                                  std::move(mojo_route3), "");
   EXPECT_FALSE(router()->HasLocalDisplayRoute());
 
   interfaces::MediaRoutePtr mojo_route4 = interfaces::MediaRoute::New();
@@ -840,7 +841,7 @@ TEST_F(MediaRouterMojoImplTest, HasLocalRoute) {
   mojo_route4->for_display = true;
   router()->RouteResponseReceived("presentationId4",
                                   std::vector<MediaRouteResponseCallback>(),
-                                  mojo_route4.Pass(), "");
+                                  std::move(mojo_route4), "");
   EXPECT_TRUE(router()->HasLocalDisplayRoute());
 }
 
@@ -914,9 +915,9 @@ class MediaRouterMojoExtensionTest : public ::testing::Test {
 
   void RegisterMediaRouteProvider() {
     media_router_proxy_->RegisterMediaRouteProvider(
-      media_route_provider_proxy_.Pass(),
-      base::Bind(&RegisterMediaRouteProviderHandler::Invoke,
-                 base::Unretained(&provide_handler_)));
+        std::move(media_route_provider_proxy_),
+        base::Bind(&RegisterMediaRouteProviderHandler::Invoke,
+                   base::Unretained(&provide_handler_)));
   }
 
   void ProcessEventLoop() {

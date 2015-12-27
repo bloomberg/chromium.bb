@@ -5,7 +5,7 @@
 #include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 
 #include <stddef.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/files/file_util.h"
@@ -87,8 +87,8 @@ class SpellcheckCustomDictionaryTest : public testing::Test {
   void UpdateDictionaryFile(
       scoped_ptr<SpellcheckCustomDictionary::Change> dictionary_change,
       const base::FilePath& path) {
-    SpellcheckCustomDictionary::UpdateDictionaryFile(dictionary_change.Pass(),
-                                                     path);
+    SpellcheckCustomDictionary::UpdateDictionaryFile(
+        std::move(dictionary_change), path);
   }
 
   // A wrapper around SpellcheckCustomDictionary::OnLoaded private method to
@@ -100,7 +100,7 @@ class SpellcheckCustomDictionaryTest : public testing::Test {
         new SpellcheckCustomDictionary::LoadFileResult);
     result->is_valid_file = true;
     result->words = *words;
-    dictionary.OnLoaded(result.Pass());
+    dictionary.OnLoaded(std::move(result));
   }
 
   // A wrapper around SpellcheckCustomDictionary::Apply private method to avoid
@@ -176,7 +176,7 @@ TEST_F(SpellcheckCustomDictionaryTest, SaveAndLoad) {
   change->AddWord("bar");
   change->AddWord("foo");
 
-  UpdateDictionaryFile(change.Pass(), path);
+  UpdateDictionaryFile(std::move(change), path);
   std::set<std::string> expected;
   expected.insert("bar");
   expected.insert("foo");
@@ -188,7 +188,7 @@ TEST_F(SpellcheckCustomDictionaryTest, SaveAndLoad) {
       new SpellcheckCustomDictionary::Change);
   change2->RemoveWord("bar");
   change2->RemoveWord("foo");
-  UpdateDictionaryFile(change2.Pass(), path);
+  UpdateDictionaryFile(std::move(change2), path);
   EXPECT_TRUE(LoadDictionaryFile(path)->words.empty());
 }
 
@@ -285,7 +285,7 @@ TEST_F(SpellcheckCustomDictionaryTest, CorruptedWriteShouldBeRecovered) {
   scoped_ptr<SpellcheckCustomDictionary::Change> change(
       new SpellcheckCustomDictionary::Change);
   change->AddWord("baz");
-  UpdateDictionaryFile(change.Pass(), path);
+  UpdateDictionaryFile(std::move(change), path);
   content.clear();
   base::ReadFileToString(path, &content);
   content.append("corruption");
@@ -500,7 +500,7 @@ TEST_F(SpellcheckCustomDictionaryTest, SyncBeforeLoadDoesNotDuplicateWords) {
 
   base::FilePath path =
       profile_.GetPath().Append(chrome::kCustomDictionaryFileName);
-  UpdateDictionaryFile(change.Pass(), path);
+  UpdateDictionaryFile(std::move(change), path);
   EXPECT_TRUE(custom_dictionary->GetWords().empty());
 
   int error_counter = 0;
@@ -834,7 +834,7 @@ TEST_F(SpellcheckCustomDictionaryTest, LoadAfterSyncStart) {
 
   scoped_ptr<std::set<std::string>> custom_words(new std::set<std::string>);
   custom_words->insert("bar");
-  OnLoaded(*custom_dictionary, custom_words.Pass());
+  OnLoaded(*custom_dictionary, std::move(custom_words));
   EXPECT_TRUE(custom_dictionary->IsSyncing());
 
   EXPECT_EQ(2UL, custom_dictionary->GetWords().size());
@@ -881,7 +881,7 @@ TEST_F(SpellcheckCustomDictionaryTest, LoadAfterSyncStartTooBigToSync) {
        ++i) {
     custom_words->insert(custom_words->end(), "foo" + base::Uint64ToString(i));
   }
-  OnLoaded(*custom_dictionary, custom_words.Pass());
+  OnLoaded(*custom_dictionary, std::move(custom_words));
   EXPECT_EQ(0, error_counter);
   EXPECT_FALSE(custom_dictionary->IsSyncing());
 
@@ -961,7 +961,7 @@ TEST_F(SpellcheckCustomDictionaryTest, DictionaryLoadNotification) {
   scoped_ptr<std::set<std::string>> custom_words(new std::set<std::string>);
   custom_words->insert("foo");
   custom_words->insert("bar");
-  OnLoaded(*custom_dictionary, custom_words.Pass());
+  OnLoaded(*custom_dictionary, std::move(custom_words));
 
   EXPECT_GE(observer.loads(), 1);
   EXPECT_LE(observer.loads(), 2);
@@ -1202,7 +1202,7 @@ TEST_F(SpellcheckCustomDictionaryTest, RecordSizeStatsCorrectly) {
       new SpellcheckCustomDictionary::Change);
   change->AddWord("bar");
   change->AddWord("foo");
-  UpdateDictionaryFile(change.Pass(), path);
+  UpdateDictionaryFile(std::move(change), path);
 
   // Load the dictionary again and it should have 2 entries.
   EXPECT_EQ(2u, LoadDictionaryFile(path)->words.size());

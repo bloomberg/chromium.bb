@@ -4,6 +4,8 @@
 
 #include "chrome/browser/supervised_user/legacy/permission_request_creator_sync.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/values.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service.h"
@@ -86,7 +88,7 @@ void PermissionRequestCreatorSync::CreateRequest(
   }
   dict->SetBoolean(kNotificationSetting, notifications_enabled);
 
-  settings_service_->UploadItem(key, dict.Pass());
+  settings_service_->UploadItem(key, std::move(dict));
 
   callback.Run(true);
 }

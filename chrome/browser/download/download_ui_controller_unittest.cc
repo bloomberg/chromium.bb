@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/download/download_ui_controller.h"
+
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -12,7 +16,6 @@
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_service_impl.h"
-#include "chrome/browser/download/download_ui_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/history/core/browser/download_row.h"
@@ -179,7 +182,7 @@ void DownloadUIControllerTest::SetUp() {
   scoped_ptr<HistoryAdapter> history_adapter(new HistoryAdapter);
   history_adapter_ = history_adapter.get();
   scoped_ptr<DownloadHistory> download_history(
-      new DownloadHistory(manager_.get(), history_adapter.Pass()));
+      new DownloadHistory(manager_.get(), std::move(history_adapter)));
   ASSERT_TRUE(download_history_manager_observer_);
 
   EXPECT_CALL(*manager_, AddObserver(_))
@@ -193,7 +196,7 @@ void DownloadUIControllerTest::SetUp() {
       DownloadServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           browser_context(), &TestingDownloadServiceFactory));
   ASSERT_TRUE(download_service);
-  download_service->set_download_history(download_history.Pass());
+  download_service->set_download_history(std::move(download_history));
 }
 
 scoped_ptr<MockDownloadItem>
@@ -231,14 +234,14 @@ DownloadUIControllerTest::CreateMockInProgressDownload() {
   EXPECT_CALL(*item, GetURL()).WillRepeatedly(testing::ReturnRefOfCopy(GURL()));
   EXPECT_CALL(*item, GetWebContents()).WillRepeatedly(Return(nullptr));
   EXPECT_CALL(*item, IsTemporary()).WillRepeatedly(Return(false));
-  return item.Pass();
+  return item;
 }
 
 scoped_ptr<DownloadUIController::Delegate>
 DownloadUIControllerTest::GetTestDelegate() {
   scoped_ptr<DownloadUIController::Delegate> delegate(
       new TestDelegate(notified_item_receiver_factory_.GetWeakPtr()));
-  return delegate.Pass();
+  return delegate;
 }
 
 // New downloads should be presented to the UI when GetTargetFilePath() returns
@@ -333,7 +336,7 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_HistoryDownload) {
                        Return(item.get())));
     EXPECT_CALL(mock_function, Call());
 
-    history_query_callback().Run(history_downloads.Pass());
+    history_query_callback().Run(std::move(history_downloads));
     mock_function.Call();
   }
 

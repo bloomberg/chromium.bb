@@ -5,6 +5,7 @@
 #include "chrome/browser/content_settings/content_settings_supervised_provider.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
@@ -57,7 +58,7 @@ scoped_ptr<RuleIterator> SupervisedProvider::GetRuleIterator(
     bool incognito) const {
   scoped_ptr<base::AutoLock> auto_lock(new base::AutoLock(lock_));
   return value_map_.GetRuleIterator(content_type, resource_identifier,
-                                    auto_lock.Pass());
+                                    std::move(auto_lock));
 }
 
 void SupervisedProvider::OnSupervisedSettingsAvailable(

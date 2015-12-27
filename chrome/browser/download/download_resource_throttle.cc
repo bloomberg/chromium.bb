@@ -4,6 +4,8 @@
 
 #include "chrome/browser/download/download_resource_throttle.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_stats.h"
@@ -58,7 +60,7 @@ void CanDownloadOnUIThread(
       contents, base::Bind(&OnAcquireFileAccessPermissionDone,
                            base::Passed(info.Pass())));
 #else
-  CanDownload(info.Pass());
+  CanDownload(std::move(info));
 #endif
 }
 

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/devtools/devtools_network_protocol_handler.h"
 
+#include <utility>
+
 #include "base/values.h"
 #include "chrome/browser/devtools/devtools_network_conditions.h"
 #include "chrome/browser/devtools/devtools_network_controller_handle.h"
@@ -45,7 +47,7 @@ DevToolsNetworkProtocolHandler::CanEmulateNetworkConditions(
     base::DictionaryValue* params) {
   scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   result->SetBoolean(chrome::devtools::kResult, true);
-  return DevToolsProtocol::CreateSuccessResponse(command_id, result.Pass());
+  return DevToolsProtocol::CreateSuccessResponse(command_id, std::move(result));
 }
 
 scoped_ptr<base::DictionaryValue>
@@ -89,7 +91,7 @@ DevToolsNetworkProtocolHandler::EmulateNetworkConditions(
       new DevToolsNetworkConditions(
           offline, latency, download_throughput, upload_throughput));
 
-  UpdateNetworkState(agent_host, conditions.Pass());
+  UpdateNetworkState(agent_host, std::move(conditions));
   return scoped_ptr<base::DictionaryValue>();
 }
 
@@ -101,7 +103,7 @@ void DevToolsNetworkProtocolHandler::UpdateNetworkState(
   if (!profile)
     return;
   profile->GetDevToolsNetworkControllerHandle()->SetNetworkState(
-      agent_host->GetId(), conditions.Pass());
+      agent_host->GetId(), std::move(conditions));
 }
 
 void DevToolsNetworkProtocolHandler::DevToolsAgentStateChanged(
@@ -110,5 +112,5 @@ void DevToolsNetworkProtocolHandler::DevToolsAgentStateChanged(
   scoped_ptr<DevToolsNetworkConditions> conditions;
   if (attached)
     conditions.reset(new DevToolsNetworkConditions());
-  UpdateNetworkState(agent_host, conditions.Pass());
+  UpdateNetworkState(agent_host, std::move(conditions));
 }

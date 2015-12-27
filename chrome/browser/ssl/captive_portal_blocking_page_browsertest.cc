@@ -5,6 +5,7 @@
 #include "chrome/browser/ssl/captive_portal_blocking_page.h"
 
 #include <string>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/logging.h"
@@ -70,7 +71,7 @@ class CaptivePortalBlockingPageForTesting : public CaptivePortalBlockingPage {
       : CaptivePortalBlockingPage(web_contents,
                                   request_url,
                                   login_url,
-                                  ssl_cert_reporter.Pass(),
+                                  std::move(ssl_cert_reporter),
                                   ssl_info,
                                   callback),
         is_wifi_(is_wifi),
@@ -136,7 +137,7 @@ void CaptivePortalBlockingPageTest::TestInterstitial(
   // Blocking page is owned by the interstitial.
   CaptivePortalBlockingPage* blocking_page =
       new CaptivePortalBlockingPageForTesting(
-          contents, GURL(kBrokenSSL), login_url, ssl_cert_reporter.Pass(),
+          contents, GURL(kBrokenSSL), login_url, std::move(ssl_cert_reporter),
           ssl_info, base::Callback<void(bool)>(), is_wifi_connection,
           wifi_ssid);
   blocking_page->Show();
@@ -181,8 +182,8 @@ void CaptivePortalBlockingPageTest::TestInterstitial(
     ExpectLoginURL expect_login_url,
     scoped_ptr<SSLCertReporter> ssl_cert_reporter) {
   TestInterstitial(is_wifi_connection, wifi_ssid, login_url, expect_wifi,
-                   expect_wifi_ssid, expect_login_url, ssl_cert_reporter.Pass(),
-                   login_url.host());
+                   expect_wifi_ssid, expect_login_url,
+                   std::move(ssl_cert_reporter), login_url.host());
 }
 
 void CaptivePortalBlockingPageTest::TestCertReporting(
@@ -201,7 +202,7 @@ void CaptivePortalBlockingPageTest::TestCertReporting(
   const GURL kLandingUrl(captive_portal::CaptivePortalDetector::kDefaultURL);
   TestInterstitial(true, std::string(), kLandingUrl, EXPECT_WIFI_YES,
                    EXPECT_WIFI_SSID_NO, EXPECT_LOGIN_URL_NO,
-                   ssl_cert_reporter.Pass());
+                   std::move(ssl_cert_reporter));
 
   EXPECT_EQ(std::string(), GetLatestHostnameReported());
 

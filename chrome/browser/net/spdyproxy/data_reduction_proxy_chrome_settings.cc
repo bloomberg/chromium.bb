@@ -5,6 +5,7 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 
 #include <string>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/memory/ref_counted.h"
@@ -201,13 +202,13 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
 
   scoped_ptr<data_reduction_proxy::DataReductionProxyService> service =
       make_scoped_ptr(new data_reduction_proxy::DataReductionProxyService(
-          this, profile_prefs, request_context_getter, store.Pass(),
+          this, profile_prefs, request_context_getter, std::move(store),
           ui_task_runner, io_data->io_task_runner(), db_task_runner,
           commit_delay));
   data_reduction_proxy::DataReductionProxySettings::
-      InitDataReductionProxySettings(
-          data_reduction_proxy_enabled_pref_name_, profile_prefs, io_data,
-          service.Pass());
+      InitDataReductionProxySettings(data_reduction_proxy_enabled_pref_name_,
+                                     profile_prefs, io_data,
+                                     std::move(service));
   io_data->SetDataReductionProxyService(
       data_reduction_proxy_service()->GetWeakPtr());
 

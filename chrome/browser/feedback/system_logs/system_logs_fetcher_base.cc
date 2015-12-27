@@ -4,6 +4,8 @@
 
 #include "chrome/browser/feedback/system_logs/system_logs_fetcher_base.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "content/public/browser/browser_thread.h"
@@ -58,7 +60,7 @@ void SystemLogsFetcherBase::AddResponse(const std::string& source_name,
   if (num_pending_requests_ > 0)
     return;
 
-  callback_.Run(response_.Pass());
+  callback_.Run(std::move(response_));
   BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
 }
 

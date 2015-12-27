@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <queue>
+#include <utility>
 
 #include "base/location.h"
 #include "base/macros.h"
@@ -425,7 +426,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
         new net::test_server::BasicHttpResponse);
     http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
     http_response->AddCustomHeader("Location", redirect_target.spec());
-    return http_response.Pass();
+    return std::move(http_response);
   }
 
   // Handles |request| by serving a redirect response.
@@ -441,7 +442,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
         new net::test_server::BasicHttpResponse);
     http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
     http_response->AddCustomHeader("Location", redirect_target.spec());
-    return http_response.Pass();
+    return std::move(http_response);
   }
 
   // Handles |request| by serving an empty response.
@@ -469,7 +470,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     http_response->AddCustomHeader("Cache-control", "max-age=3600");
     http_response->set_content_type("text/plain");
     http_response->set_content("dummy text");
-    return http_response.Pass();
+    return std::move(http_response);
   }
 
   // Shortcut to return the current MenuManager.

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/sandboxed_zip_analyzer.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -57,8 +59,9 @@ void SandboxedZipAnalyzer::CloseTemporaryFile() {
   // Close the temporary file in the blocking pool since doing so will delete
   // the file.
   if (!BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
-          FROM_HERE, base::Bind(&base::File::Close,
-                                base::Owned(new base::File(temp_file_.Pass()))),
+          FROM_HERE,
+          base::Bind(&base::File::Close,
+                     base::Owned(new base::File(std::move(temp_file_)))),
           base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)) {
     NOTREACHED();
   }
@@ -136,7 +139,7 @@ void SandboxedZipAnalyzer::OnUtilityProcessStarted() {
   }
   utility_process_host_->Send(
       new ChromeUtilityMsg_AnalyzeZipFileForDownloadProtection(
-          IPC::TakeFileHandleForProcess(zip_file_.Pass(), utility_process),
+          IPC::TakeFileHandleForProcess(std::move(zip_file_), utility_process),
           IPC::GetFileHandleForProcess(temp_file_.GetPlatformFile(),
                                        utility_process,
                                        false /* !close_source_handle */)));

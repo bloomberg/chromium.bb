@@ -4,6 +4,8 @@
 
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
@@ -63,10 +65,10 @@ DevToolsHttpClient::DevToolsHttpClient(
     : context_getter_(context_getter),
       socket_factory_(socket_factory),
       server_url_("http://" + address.ToString()),
-      web_socket_url_prefix_(base::StringPrintf(
-          "ws://%s/devtools/page/", address.ToString().c_str())),
-      device_metrics_(device_metrics.Pass()),
-      window_types_(window_types.Pass()) {
+      web_socket_url_prefix_(base::StringPrintf("ws://%s/devtools/page/",
+                                                address.ToString().c_str())),
+      device_metrics_(std::move(device_metrics)),
+      window_types_(std::move(window_types)) {
   window_types_->insert(WebViewInfo::kPage);
   window_types_->insert(WebViewInfo::kApp);
 }
@@ -191,7 +193,7 @@ Status DevToolsHttpClient::CloseFrontends(const std::string& for_client_id) {
         web_socket_url_prefix_ + *it,
         *it));
     scoped_ptr<WebViewImpl> web_view(
-        new WebViewImpl(*it, &browser_info_, client.Pass(), NULL));
+        new WebViewImpl(*it, &browser_info_, std::move(client), NULL));
 
     status = web_view->ConnectIfNecessary();
     // Ignore disconnected error, because the debugger might have closed when

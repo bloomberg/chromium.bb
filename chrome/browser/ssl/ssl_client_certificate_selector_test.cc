@@ -99,5 +99,5 @@ SSLClientCertificateSelectorTestBase::MakeURLRequest(
   scoped_ptr<net::URLRequest> request =
       context_getter->GetURLRequestContext()->CreateRequest(
           GURL("https://example"), net::DEFAULT_PRIORITY, NULL);
-  return request.Pass();
+  return request;
 }

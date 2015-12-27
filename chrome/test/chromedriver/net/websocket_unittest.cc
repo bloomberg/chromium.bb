@@ -97,7 +97,7 @@ class WebSocketTest : public testing::Test {
                                          base::TimeDelta::FromSeconds(10));
     run_loop.Run();
     if (error == net::OK)
-      return sock.Pass();
+      return sock;
     return scoped_ptr<WebSocket>();
   }
 

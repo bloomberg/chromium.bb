@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/media/webrtc_rtp_dump_handler.h"
+
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -14,7 +17,6 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/media/webrtc_rtp_dump_handler.h"
 #include "chrome/browser/media/webrtc_rtp_dump_writer.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -82,7 +84,7 @@ class WebRtcRtpDumpHandlerTest : public testing::Test {
                    base::Unretained(handler_.get())),
         end_dump_success));
 
-    handler_->SetDumpWriterForTesting(writer.Pass());
+    handler_->SetDumpWriterForTesting(std::move(writer));
   }
 
   void DeleteDumpHandler() { handler_.reset(); }

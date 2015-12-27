@@ -122,7 +122,7 @@ class DownloadMetadataManagerTestBase : public ::testing::Test {
     request->set_url(url);
     request->mutable_digests();
     request->set_length(kTestDownloadLength);
-    return request.Pass();
+    return request;
   }
 
   // Returns a new DownloadMetdata for the given download id.
@@ -133,7 +133,7 @@ class DownloadMetadataManagerTestBase : public ::testing::Test {
         metadata->mutable_download();
     details->set_download_time_msec(kTestDownloadTimeMsec);
     details->set_allocated_download(MakeTestRequest(kTestUrl).release());
-    return metadata.Pass();
+    return metadata;
   }
 
   // Writes a test DownloadMetadata file for the given download id to the
@@ -157,7 +157,7 @@ class DownloadMetadataManagerTestBase : public ::testing::Test {
       return scoped_ptr<DownloadMetadata>();
     scoped_ptr<DownloadMetadata> result(new DownloadMetadata);
     EXPECT_TRUE(result->ParseFromString(data));
-    return result.Pass();
+    return result;
   }
 
   // Runs all tasks posted to the test thread's message loop.

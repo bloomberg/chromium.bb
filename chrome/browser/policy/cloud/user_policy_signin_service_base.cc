@@ -4,6 +4,8 @@
 
 #include "chrome/browser/policy/cloud/user_policy_signin_service_base.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -64,7 +66,7 @@ void UserPolicySigninServiceBase::FetchPolicyForSignedInUser(
   UserCloudPolicyManager* manager = policy_manager();
   DCHECK(manager);
   DCHECK(!manager->core()->client());
-  InitializeUserCloudPolicyManager(username, client.Pass());
+  InitializeUserCloudPolicyManager(username, std::move(client));
   DCHECK(manager->IsClientRegistered());
 
   // Now initiate a policy fetch.
@@ -240,7 +242,7 @@ void UserPolicySigninServiceBase::InitializeUserCloudPolicyManager(
   DCHECK(!manager->core()->client());
   scoped_refptr<net::URLRequestContextGetter> context =
       client->GetRequestContext();
-  manager->Connect(local_state_, context, client.Pass());
+  manager->Connect(local_state_, context, std::move(client));
   DCHECK(manager->core()->service());
 
   // Observe the client to detect errors fetching policy.

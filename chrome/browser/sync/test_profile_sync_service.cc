@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/test_profile_sync_service.h"
 
+#include <utility>
+
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -99,7 +101,7 @@ void SyncBackendHostForProfileSyncTest::InitCore(
           factory_switches, InternalComponentsFactory::STORAGE_IN_MEMORY,
           NULL));
 
-  SyncBackendHostImpl::InitCore(options.Pass());
+  SyncBackendHostImpl::InitCore(std::move(options));
 }
 
 void SyncBackendHostForProfileSyncTest::RequestConfigureSyncer(

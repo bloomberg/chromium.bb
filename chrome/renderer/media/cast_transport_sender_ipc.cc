@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/media/cast_transport_sender_ipc.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/id_map.h"
 #include "chrome/common/cast_messages.h"
@@ -153,8 +155,8 @@ void CastTransportSenderIPC::OnRawEvents(
       new std::vector<media::cast::PacketEvent>());
   taken_packet_events->swap(
       const_cast<std::vector<media::cast::PacketEvent>&>(packet_events));
-  raw_events_callback_.Run(taken_frame_events.Pass(),
-                           taken_packet_events.Pass());
+  raw_events_callback_.Run(std::move(taken_frame_events),
+                           std::move(taken_packet_events));
 }
 
 void CastTransportSenderIPC::OnRtt(uint32_t ssrc, base::TimeDelta rtt) {
@@ -186,7 +188,7 @@ void CastTransportSenderIPC::OnReceivedPacket(
     // TODO(hubbe): Perhaps an non-ownership-transferring cb here?
     scoped_ptr<media::cast::Packet> packet_copy(
         new media::cast::Packet(packet));
-    packet_callback_.Run(packet_copy.Pass());
+    packet_callback_.Run(std::move(packet_copy));
   } else {
     DVLOG(1) << "CastIPCDispatcher::OnReceivedPacket no packet callback yet.";
   }

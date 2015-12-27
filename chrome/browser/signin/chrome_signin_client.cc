@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/chrome_signin_client.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
@@ -230,7 +231,7 @@ ChromeSigninClient::AddCookieChangedCallback(
   DCHECK(context_getter.get());
   scoped_ptr<SigninCookieChangedSubscription> subscription(
       new SigninCookieChangedSubscription(context_getter, url, name, callback));
-  return subscription.Pass();
+  return std::move(subscription);
 }
 
 void ChromeSigninClient::OnSignedIn(const std::string& account_id,

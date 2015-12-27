@@ -43,7 +43,7 @@ scoped_ptr<ServiceTxtRecordMap> ParseServiceTxtRecord(
       record_map->insert(std::make_pair(key, value));
     }
   }
-  return record_map.Pass();
+  return record_map;
 }
 
 AndroidDeviceManager::DeviceInfo ServiceDescriptionToDeviceInfo(

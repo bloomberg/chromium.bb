@@ -4,6 +4,8 @@
 
 #include "chrome/browser/status_icons/status_icon.h"
 
+#include <utility>
+
 #include "build/build_config.h"
 #include "chrome/browser/status_icons/status_icon_observer.h"
 
@@ -40,7 +42,7 @@ void StatusIcon::ForceVisible() {}
 void StatusIcon::SetContextMenu(scoped_ptr<StatusIconMenuModel> menu) {
   // The UI may been showing a menu for the current model, don't destroy it
   // until we've notified the UI of the change.
-  scoped_ptr<StatusIconMenuModel> old_menu = context_menu_contents_.Pass();
-  context_menu_contents_ = menu.Pass();
+  scoped_ptr<StatusIconMenuModel> old_menu = std::move(context_menu_contents_);
+  context_menu_contents_ = std::move(menu);
   UpdatePlatformContextMenu(context_menu_contents_.get());
 }

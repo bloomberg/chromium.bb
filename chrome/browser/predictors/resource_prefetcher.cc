@@ -5,6 +5,7 @@
 #include "chrome/browser/predictors/resource_prefetcher.h"
 
 #include <iterator>
+#include <utility>
 
 #include "base/stl_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -40,12 +41,12 @@ ResourcePrefetcher::ResourcePrefetcher(
     const NavigationID& navigation_id,
     PrefetchKeyType key_type,
     scoped_ptr<RequestVector> requests)
-        : state_(INITIALIZED),
-          delegate_(delegate),
-          config_(config),
-          navigation_id_(navigation_id),
-          key_type_(key_type),
-          request_vector_(requests.Pass()) {
+    : state_(INITIALIZED),
+      delegate_(delegate),
+      config_(config),
+      navigation_id_(navigation_id),
+      key_type_(key_type),
+      request_vector_(std::move(requests)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(request_vector_.get());
 

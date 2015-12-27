@@ -5,6 +5,7 @@
 #include "chrome/renderer/security_filter_peer.h"
 
 #include <string>
+#include <utility>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
@@ -147,8 +148,9 @@ void BufferedPeer::OnCompletedRequest(int error_code,
       data_.empty() ? nullptr : new content::FixedReceivedData(
                                     data_.data(), data_.size(), -1));
   original_peer_->OnReceivedCompletedResponse(
-      response_info_, data_to_pass.Pass(), error_code, was_ignored_by_handler,
-      stale_copy_in_cache, security_info, completion_time, total_transfer_size);
+      response_info_, std::move(data_to_pass), error_code,
+      was_ignored_by_handler, stale_copy_in_cache, security_info,
+      completion_time, total_transfer_size);
 }
 
 void BufferedPeer::OnReceivedCompletedResponse(
@@ -163,7 +165,7 @@ void BufferedPeer::OnReceivedCompletedResponse(
   // Make sure we delete ourselves at the end of this call.
   scoped_ptr<BufferedPeer> this_deleter(this);
   original_peer_->OnReceivedCompletedResponse(
-      info, data.Pass(), error_code, was_ignored_by_handler,
+      info, std::move(data), error_code, was_ignored_by_handler,
       stale_copy_in_cache, security_info, completion_time, total_transfer_size);
 }
 
@@ -208,8 +210,8 @@ void ReplaceContentPeer::OnCompletedRequest(
       data_.empty() ? nullptr : new content::FixedReceivedData(
                                     data_.data(), data_.size(), -1));
   original_peer_->OnReceivedCompletedResponse(
-      response_info_, data_to_pass.Pass(), net::OK, false, stale_copy_in_cache,
-      security_info, completion_time, total_transfer_size);
+      response_info_, std::move(data_to_pass), net::OK, false,
+      stale_copy_in_cache, security_info, completion_time, total_transfer_size);
 }
 
 void ReplaceContentPeer::OnReceivedCompletedResponse(
@@ -225,6 +227,6 @@ void ReplaceContentPeer::OnReceivedCompletedResponse(
   scoped_ptr<ReplaceContentPeer> this_deleter(this);
 
   original_peer_->OnReceivedCompletedResponse(
-      info, data.Pass(), error_code, was_ignored_by_handler,
+      info, std::move(data), error_code, was_ignored_by_handler,
       stale_copy_in_cache, security_info, completion_time, total_transfer_size);
 }

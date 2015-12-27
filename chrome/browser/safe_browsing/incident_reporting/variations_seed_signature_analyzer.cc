@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/incident_reporting/variations_seed_signature_analyzer.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -34,8 +35,9 @@ void VerifyVariationsSeedSignatureOnUIThread(
         variations_seed_signature(
             new ClientIncidentReport_IncidentData_VariationsSeedSignatureIncident());
     variations_seed_signature->set_variations_seed_signature(invalid_signature);
-    incident_receiver->AddIncidentForProcess(make_scoped_ptr(
-        new VariationsSeedSignatureIncident(variations_seed_signature.Pass())));
+    incident_receiver->AddIncidentForProcess(
+        make_scoped_ptr(new VariationsSeedSignatureIncident(
+            std::move(variations_seed_signature))));
   }
 }
 

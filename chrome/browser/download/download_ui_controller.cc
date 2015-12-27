@@ -4,6 +4,8 @@
 
 #include "chrome/browser/download/download_ui_controller.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
@@ -106,8 +108,7 @@ DownloadUIController::Delegate::~Delegate() {
 
 DownloadUIController::DownloadUIController(content::DownloadManager* manager,
                                            scoped_ptr<Delegate> delegate)
-    : download_notifier_(manager, this),
-      delegate_(delegate.Pass()) {
+    : download_notifier_(manager, this), delegate_(std::move(delegate)) {
 #if defined(OS_ANDROID)
   if (!delegate_)
     delegate_.reset(new AndroidUIControllerDelegate());

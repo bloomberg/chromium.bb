@@ -5,6 +5,7 @@
 #include "chrome/browser/permissions/permission_context_base.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
@@ -194,7 +195,7 @@ void PermissionContextBase::DecidePermission(
   PermissionBubbleRequest* request = request_ptr.get();
 
   bool inserted =
-      pending_bubbles_.add(id.ToString(), request_ptr.Pass()).second;
+      pending_bubbles_.add(id.ToString(), std::move(request_ptr)).second;
   DCHECK(inserted) << "Duplicate id " << id.ToString();
   bubble_manager->AddRequest(request);
 #else

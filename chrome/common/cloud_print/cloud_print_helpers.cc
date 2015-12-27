@@ -200,7 +200,7 @@ scoped_ptr<base::DictionaryValue> ParseResponseJSON(
   if (succeeded &&
       !response_dict->GetBoolean(kSuccessValue, succeeded))
     *succeeded = false;
-  return response_dict.Pass();
+  return response_dict;
 }
 
 std::string GetMultipartMimeType(const std::string& mime_boundary) {

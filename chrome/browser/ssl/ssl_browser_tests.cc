@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -483,7 +485,8 @@ class SSLUITest
     SSLBlockingPage* interstitial_page = static_cast<SSLBlockingPage*>(
         tab->GetInterstitialPage()->GetDelegateForTesting());
     ASSERT_TRUE(interstitial_page != nullptr);
-    interstitial_page->SetSSLCertReporterForTesting(ssl_cert_reporter.Pass());
+    interstitial_page->SetSSLCertReporterForTesting(
+        std::move(ssl_cert_reporter));
 
     EXPECT_EQ(std::string(), GetLatestHostnameReported());
 
@@ -544,7 +547,7 @@ class SSLUITest
               interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
     BadClockBlockingPage* clock_page = static_cast<BadClockBlockingPage*>(
         tab->GetInterstitialPage()->GetDelegateForTesting());
-    clock_page->SetSSLCertReporterForTesting(ssl_cert_reporter.Pass());
+    clock_page->SetSSLCertReporterForTesting(std::move(ssl_cert_reporter));
 
     EXPECT_EQ(std::string(), GetLatestHostnameReported());
 

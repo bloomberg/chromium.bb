@@ -4,6 +4,8 @@
 
 #include "chrome/browser/dom_distiller/lazy_dom_distiller_service.h"
 
+#include <utility>
+
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -58,7 +60,7 @@ const std::string LazyDomDistillerService::AddToList(
     const GURL& url,
     scoped_ptr<DistillerPage> distiller_page,
     const ArticleAvailableCallback& article_cb) {
-  return instance()->AddToList(url, distiller_page.Pass(), article_cb);
+  return instance()->AddToList(url, std::move(distiller_page), article_cb);
 }
 
 std::vector<ArticleEntry> LazyDomDistillerService::GetEntries() const {
@@ -74,14 +76,14 @@ scoped_ptr<ViewerHandle> LazyDomDistillerService::ViewEntry(
     ViewRequestDelegate* delegate,
     scoped_ptr<DistillerPage> distiller_page,
     const std::string& entry_id) {
-  return instance()->ViewEntry(delegate, distiller_page.Pass(), entry_id);
+  return instance()->ViewEntry(delegate, std::move(distiller_page), entry_id);
 }
 
 scoped_ptr<ViewerHandle> LazyDomDistillerService::ViewUrl(
     ViewRequestDelegate* delegate,
     scoped_ptr<DistillerPage> distiller_page,
     const GURL& url) {
-  return instance()->ViewUrl(delegate, distiller_page.Pass(), url);
+  return instance()->ViewUrl(delegate, std::move(distiller_page), url);
 }
 
 scoped_ptr<DistillerPage>
@@ -93,7 +95,7 @@ LazyDomDistillerService::CreateDefaultDistillerPage(
 scoped_ptr<DistillerPage>
 LazyDomDistillerService::CreateDefaultDistillerPageWithHandle(
     scoped_ptr<SourcePageHandle> handle) {
-  return instance()->CreateDefaultDistillerPageWithHandle(handle.Pass());
+  return instance()->CreateDefaultDistillerPageWithHandle(std::move(handle));
 }
 
 void LazyDomDistillerService::AddObserver(DomDistillerObserver* observer) {

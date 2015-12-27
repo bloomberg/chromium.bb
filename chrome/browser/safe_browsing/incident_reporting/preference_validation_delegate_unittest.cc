@@ -5,8 +5,8 @@
 #include "chrome/browser/safe_browsing/incident_reporting/preference_validation_delegate.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -44,7 +44,7 @@ class PreferenceValidationDelegateTest : public testing::Test {
     ON_CALL(*receiver, DoAddIncidentForProfile(IsNull(), _))
         .WillByDefault(WithArg<1>(TakeIncidentToVector(&incidents_)));
     instance_.reset(new safe_browsing::PreferenceValidationDelegate(
-        nullptr, receiver.Pass()));
+        nullptr, std::move(receiver)));
   }
 
   static void ExpectValueStatesEquate(
@@ -133,13 +133,13 @@ class PreferenceValidationDelegateValues
         scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
         value->SetInteger("twenty-two", 22);
         value->SetInteger("forty-seven", 47);
-        return value.Pass();
+        return std::move(value);
       }
       case Value::TYPE_LIST: {
         scoped_ptr<base::ListValue> value(new base::ListValue());
         value->AppendInteger(22);
         value->AppendInteger(47);
-        return value.Pass();
+        return std::move(value);
       }
       default:
         ADD_FAILURE() << "unsupported value type " << value_type;

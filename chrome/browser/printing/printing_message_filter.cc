@@ -5,6 +5,7 @@
 #include "chrome/browser/printing/printing_message_filter.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "build/build_config.h"
@@ -302,7 +303,7 @@ void PrintingMessageFilter::OnUpdatePrintSettings(
     printer_query = queue_->CreatePrinterQuery(host_id, routing_id);
   }
   printer_query->SetSettings(
-      new_settings.Pass(),
+      std::move(new_settings),
       base::Bind(&PrintingMessageFilter::OnUpdatePrintSettingsReply, this,
                  printer_query, reply_msg));
 }

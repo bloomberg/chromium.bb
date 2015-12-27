@@ -113,7 +113,7 @@ class IframeSourceTest : public testing::Test {
           false,   // is_async
           false);  // is_using_lofi
     }
-    return request.Pass();
+    return request;
   }
 
   void SendResource(int resource_id) {

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/power/process_power_collector.h"
 
+#include <utility>
+
 #include "base/process/process_handle.h"
 #include "base/process/process_metrics.h"
 #include "build/build_config.h"
@@ -33,12 +35,11 @@ ProcessPowerCollector::PerProcessData::PerProcessData(
     scoped_ptr<base::ProcessMetrics> metrics,
     const GURL& origin,
     Profile* profile)
-    : metrics_(metrics.Pass()),
+    : metrics_(std::move(metrics)),
       profile_(profile),
       last_origin_(origin),
       last_cpu_percent_(0),
-      seen_this_cycle_(true) {
-}
+      seen_this_cycle_(true) {}
 
 ProcessPowerCollector::PerProcessData::PerProcessData()
     : profile_(NULL),

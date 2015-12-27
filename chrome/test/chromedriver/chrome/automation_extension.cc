@@ -4,13 +4,15 @@
 
 #include "chrome/test/chromedriver/chrome/automation_extension.h"
 
+#include <utility>
+
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
 
 AutomationExtension::AutomationExtension(scoped_ptr<WebView> web_view)
-    : web_view_(web_view.Pass()) {}
+    : web_view_(std::move(web_view)) {}
 
 AutomationExtension::~AutomationExtension() {}
 

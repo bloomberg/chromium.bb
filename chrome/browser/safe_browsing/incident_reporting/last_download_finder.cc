@@ -238,7 +238,7 @@ scoped_ptr<LastDownloadFinder> LastDownloadFinder::Create(
   // Return NULL if there is no work to do.
   if (finder->profile_states_.empty())
     return scoped_ptr<LastDownloadFinder>();
-  return finder.Pass();
+  return finder;
 }
 
 LastDownloadFinder::LastDownloadFinder()
@@ -298,7 +298,7 @@ void LastDownloadFinder::OnMetadataQuery(
   if (details) {
     if (IsMostInterestingBinary(*details, details_.get(),
                                 most_recent_binary_row_)) {
-      details_ = details.Pass();
+      details_ = std::move(details);
       most_recent_binary_row_.end_time = base::Time();
     }
     iter->second = WAITING_FOR_NON_BINARY_HISTORY;
@@ -397,7 +397,7 @@ void LastDownloadFinder::ReportResults() {
                                     non_binary_details.get());
   }
 
-  callback_.Run(binary_details.Pass(), non_binary_details.Pass());
+  callback_.Run(std::move(binary_details), std::move(non_binary_details));
   // Do not touch this LastDownloadFinder after running the callback, since it
   // may have been deleted.
 }

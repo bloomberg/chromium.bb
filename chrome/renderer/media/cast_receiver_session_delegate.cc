@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/media/cast_receiver_session_delegate.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
@@ -23,10 +25,8 @@ void CastReceiverSessionDelegate::Start(
     const ErrorCallback& error_callback) {
   format_ = format;
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  CastSessionDelegateBase::StartUDP(local_endpoint,
-                                    remote_endpoint,
-                                    options.Pass(),
-                                    error_callback);
+  CastSessionDelegateBase::StartUDP(local_endpoint, remote_endpoint,
+                                    std::move(options), error_callback);
   cast_receiver_ = media::cast::CastReceiver::Create(cast_environment_,
                                                      audio_config,
                                                      video_config,
@@ -41,7 +41,7 @@ void CastReceiverSessionDelegate::Start(
 
 void CastReceiverSessionDelegate::ReceivePacket(
     scoped_ptr<media::cast::Packet> packet) {
-  cast_receiver_->ReceivePacket(packet.Pass());
+  cast_receiver_->ReceivePacket(std::move(packet));
 }
 
 void CastReceiverSessionDelegate::StartAudio(

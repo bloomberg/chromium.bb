@@ -5,6 +5,7 @@
 #include "chrome/browser/supervised_user/experimental/supervised_user_async_url_checker.h"
 
 #include <string>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/json/json_reader.h"
@@ -54,7 +55,7 @@ scoped_ptr<net::URLFetcher> CreateFetcher(URLFetcherDelegate* delegate,
   fetcher->SetRequestContext(context);
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                         net::LOAD_DO_NOT_SAVE_COOKIES);
-  return fetcher.Pass();
+  return fetcher;
 }
 
 // Parses a SafeSearch API |response| and stores the result in |is_porn|.
@@ -98,15 +99,13 @@ struct SupervisedUserAsyncURLChecker::Check {
   base::TimeTicks start_time;
 };
 
-SupervisedUserAsyncURLChecker::Check::Check(
-    const GURL& url,
-    scoped_ptr<net::URLFetcher> fetcher,
-    const CheckCallback& callback)
+SupervisedUserAsyncURLChecker::Check::Check(const GURL& url,
+                                            scoped_ptr<net::URLFetcher> fetcher,
+                                            const CheckCallback& callback)
     : url(url),
-      fetcher(fetcher.Pass()),
+      fetcher(std::move(fetcher)),
       callbacks(1, callback),
-      start_time(base::TimeTicks::Now()) {
-}
+      start_time(base::TimeTicks::Now()) {}
 
 SupervisedUserAsyncURLChecker::Check::~Check() {}
 
@@ -179,7 +178,7 @@ bool SupervisedUserAsyncURLChecker::CheckURL(const GURL& url,
   std::string api_key = google_apis::GetSafeSitesAPIKey();
   scoped_ptr<URLFetcher> fetcher(CreateFetcher(this, context_, api_key, url));
   fetcher->Start();
-  checks_in_progress_.push_back(new Check(url, fetcher.Pass(), callback));
+  checks_in_progress_.push_back(new Check(url, std::move(fetcher), callback));
   return false;
 }
 

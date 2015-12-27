@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
 
+#include <utility>
+
 #include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/common/features.h"
 #include "content/public/browser/browser_thread.h"
@@ -80,7 +82,7 @@ bool MediaRouterDialogController::ShowMediaRouterDialogForPresentation(
   if (IsShowingMediaRouterDialog())
     return false;
 
-  create_connection_request_ = request.Pass();
+  create_connection_request_ = std::move(request);
   initiator_observer_.reset(new InitiatorWebContentsObserver(initiator_, this));
   CreateMediaRouterDialog();
 
@@ -120,7 +122,7 @@ void MediaRouterDialogController::ActivateInitiatorWebContents() {
 
 scoped_ptr<CreatePresentationConnectionRequest>
 MediaRouterDialogController::TakeCreateConnectionRequest() {
-  return create_connection_request_.Pass();
+  return std::move(create_connection_request_);
 }
 
 void MediaRouterDialogController::Reset() {

@@ -166,7 +166,7 @@ scoped_ptr<ChromeMetricsServiceClient> ChromeMetricsServiceClient::Create(
       new ChromeMetricsServiceClient(state_manager));
   client->Initialize();
 
-  return client.Pass();
+  return client;
 }
 
 // static

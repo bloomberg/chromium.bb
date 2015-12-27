@@ -5,6 +5,7 @@
 #include "chrome/browser/devtools/devtools_ui_bindings.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -1093,7 +1094,7 @@ void DevToolsUIBindings::ShowDevToolsConfirmInfoBar(
   }
   scoped_ptr<DevToolsConfirmInfoBarDelegate> delegate(
       new DevToolsConfirmInfoBarDelegate(callback, message));
-  GlobalConfirmInfoBar::Show(delegate.Pass());
+  GlobalConfirmInfoBar::Show(std::move(delegate));
 }
 
 void DevToolsUIBindings::AddDevToolsExtensionsToClient() {

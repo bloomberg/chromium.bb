@@ -5,9 +5,9 @@
 #include "chrome/browser/browser_process_impl.h"
 
 #include <stddef.h>
-
 #include <algorithm>
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/atomic_ref_count.h"
@@ -870,7 +870,7 @@ BackgroundModeManager* BrowserProcessImpl::background_mode_manager() {
 void BrowserProcessImpl::set_background_mode_manager_for_test(
     scoped_ptr<BackgroundModeManager> manager) {
 #if defined(ENABLE_BACKGROUND)
-  background_mode_manager_ = manager.Pass();
+  background_mode_manager_ = std::move(manager);
 #endif
 }
 
@@ -1002,12 +1002,9 @@ void BrowserProcessImpl::CreateLocalState() {
   // Register local state preferences.
   chrome::RegisterLocalState(pref_registry.get());
 
-  local_state_ =
-      chrome_prefs::CreateLocalState(local_state_path,
-                                     local_state_task_runner_.get(),
-                                     policy_service(),
-                                     pref_registry,
-                                     false).Pass();
+  local_state_ = chrome_prefs::CreateLocalState(
+      local_state_path, local_state_task_runner_.get(), policy_service(),
+      pref_registry, false);
 
   pref_change_registrar_.Init(local_state_.get());
 

@@ -56,7 +56,7 @@ scoped_ptr<TestingProfileManager> CreateTestingProfileManager() {
   scoped_ptr<TestingProfileManager> profile_manager(
       new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
   EXPECT_TRUE(profile_manager->SetUp());
-  return profile_manager.Pass();
+  return profile_manager;
 }
 
 class FakeBackgroundTrigger : public BackgroundTrigger {

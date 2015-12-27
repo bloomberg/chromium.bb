@@ -4,6 +4,8 @@
 
 #include "chrome/browser/net/dns_probe_service.h"
 
+#include <utility>
+
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
@@ -126,12 +128,12 @@ void DnsProbeService::OnInitialDNSConfigRead() {
 
 void DnsProbeService::SetSystemClientForTesting(
     scoped_ptr<DnsClient> system_client) {
-  system_runner_.SetClient(system_client.Pass());
+  system_runner_.SetClient(std::move(system_client));
 }
 
 void DnsProbeService::SetPublicClientForTesting(
     scoped_ptr<DnsClient> public_client) {
-  public_runner_.SetClient(public_client.Pass());
+  public_runner_.SetClient(std::move(public_client));
 }
 
 void DnsProbeService::ClearCachedResultForTesting() {
@@ -148,7 +150,7 @@ void DnsProbeService::SetSystemClientToCurrentConfig() {
   scoped_ptr<DnsClient> system_client(DnsClient::CreateClient(NULL));
   system_client->SetConfig(system_config);
 
-  system_runner_.SetClient(system_client.Pass());
+  system_runner_.SetClient(std::move(system_client));
 }
 
 void DnsProbeService::SetPublicClientToGooglePublicDns() {
@@ -161,7 +163,7 @@ void DnsProbeService::SetPublicClientToGooglePublicDns() {
   scoped_ptr<DnsClient> public_client(DnsClient::CreateClient(NULL));
   public_client->SetConfig(public_config);
 
-  public_runner_.SetClient(public_client.Pass());
+  public_runner_.SetClient(std::move(public_client));
 }
 
 void DnsProbeService::StartProbes() {

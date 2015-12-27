@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/blacklist_load_incident.h"
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,7 +18,7 @@ scoped_ptr<Incident> MakeIncident(const char* digest) {
   scoped_ptr<ClientIncidentReport_IncidentData_BlacklistLoadIncident> incident(
       new ClientIncidentReport_IncidentData_BlacklistLoadIncident);
   incident->set_path("foo");
-  return make_scoped_ptr(new BlacklistLoadIncident(incident.Pass()));
+  return make_scoped_ptr(new BlacklistLoadIncident(std::move(incident)));
 }
 
 }  // namespace

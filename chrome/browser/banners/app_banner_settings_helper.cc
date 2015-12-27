@@ -5,9 +5,9 @@
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 
 #include <stddef.h>
-
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
@@ -336,7 +336,7 @@ void AppBannerSettingsHelper::RecordBannerCouldShowEvent(
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetDouble(kBannerTimeKey, time.ToInternalValue());
   value->SetDouble(kBannerEngagementKey, engagement);
-  could_show_list->Append(value.Pass());
+  could_show_list->Append(std::move(value));
 
   settings->SetWebsiteSettingDefaultScope(origin_url, GURL(),
                                           CONTENT_SETTINGS_TYPE_APP_BANNER,

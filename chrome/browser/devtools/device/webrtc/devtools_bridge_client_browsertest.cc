@@ -4,6 +4,8 @@
 
 #include "chrome/browser/devtools/device/webrtc/devtools_bridge_client_browsertest.h"
 
+#include <utility>
+
 #include "chrome/browser/devtools/device/webrtc/devtools_bridge_client.h"
 #include "chrome/browser/local_discovery/gcd_api_flow.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
@@ -33,7 +35,7 @@ class DevToolsBridgeClientBrowserTest::GCDApiFlowMock
   // Passes request's data to the JS test. Result will be passed back
   // in MessageHandler::Response.
   void Start(scoped_ptr<Request> request) override {
-    request_ = request.Pass();
+    request_ = std::move(request);
 
     std::string type;
     std::string data;

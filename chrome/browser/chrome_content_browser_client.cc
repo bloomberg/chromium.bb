@@ -664,7 +664,7 @@ void CreateUsbDeviceManager(
 
   UsbTabHelper* tab_helper =
       UsbTabHelper::GetOrCreateForWebContents(web_contents);
-  tab_helper->CreateDeviceManager(render_frame_host, request.Pass());
+  tab_helper->CreateDeviceManager(render_frame_host, std::move(request));
 }
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -680,7 +680,7 @@ void CreateWebUsbPermissionBubble(
 
   UsbTabHelper* tab_helper =
       UsbTabHelper::GetOrCreateForWebContents(web_contents);
-  tab_helper->CreatePermissionBubble(render_frame_host, request.Pass());
+  tab_helper->CreatePermissionBubble(render_frame_host, std::move(request));
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
@@ -1057,7 +1057,7 @@ ChromeContentBrowserClient::CreateRequestContext(
     content::URLRequestInterceptorScopedVector request_interceptors) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   return profile->CreateRequestContext(protocol_handlers,
-                                       request_interceptors.Pass());
+                                       std::move(request_interceptors));
 }
 
 net::URLRequestContextGetter*
@@ -1069,10 +1069,8 @@ ChromeContentBrowserClient::CreateRequestContextForStoragePartition(
     content::URLRequestInterceptorScopedVector request_interceptors) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   return profile->CreateRequestContextForStoragePartition(
-      partition_path,
-      in_memory,
-      protocol_handlers,
-      request_interceptors.Pass());
+      partition_path, in_memory, protocol_handlers,
+      std::move(request_interceptors));
 }
 
 bool ChromeContentBrowserClient::IsHandledURL(const GURL& url) {
@@ -2025,7 +2023,7 @@ void ChromeContentBrowserClient::AllowCertificateError(
                                           : nullptr));
   SSLErrorHandler::HandleSSLError(web_contents, cert_error, ssl_info,
                                   request_url, options_mask,
-                                  cert_reporter.Pass(), callback);
+                                  std::move(cert_reporter), callback);
 }
 
 void ChromeContentBrowserClient::SelectClientCertificate(
@@ -2076,7 +2074,7 @@ void ChromeContentBrowserClient::SelectClientCertificate(
   }
 
   chrome::ShowSSLClientCertificateSelector(web_contents, cert_request_info,
-                                           delegate.Pass());
+                                           std::move(delegate));
 }
 
 void ChromeContentBrowserClient::AddCertificate(
@@ -2708,7 +2706,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
     scoped_ptr<content::NavigationThrottle> url_to_app_throttle =
         AppUrlRedirector::MaybeCreateThrottleFor(handle);
     if (url_to_app_throttle)
-      throttles.push_back(url_to_app_throttle.Pass());
+      throttles.push_back(std::move(url_to_app_throttle));
   }
 #endif
 
@@ -2726,7 +2724,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   }
 #endif
 
-  return throttles.Pass();
+  return throttles;
 }
 
 content::DevToolsManagerDelegate*

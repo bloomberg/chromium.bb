@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string.h>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/guid.h"
@@ -145,7 +146,7 @@ class DomDistillerViewerSourceBrowserTest : public InProcessBrowserTest {
       EXPECT_CALL(*distiller_page_factory_, CreateDistillerPageImpl())
           .WillOnce(testing::Return(distiller_page));
     }
-    return service.Pass();
+    return std::move(service);
   }
 
   void ViewSingleDistilledPage(const GURL& url,
@@ -484,7 +485,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, MultiPageArticle) {
   }
 
   // Complete the load.
-  distiller->RunDistillerCallback(article.Pass());
+  distiller->RunDistillerCallback(std::move(article));
   base::RunLoop().RunUntilIdle();
 
   std::string result;

@@ -4,6 +4,8 @@
 
 #include "chrome/test/base/test_browser_window_aura.h"
 
+#include <utility>
+
 namespace chrome {
 
 scoped_ptr<Browser> CreateBrowserWithAuraTestWindowForParams(
@@ -18,7 +20,7 @@ scoped_ptr<Browser> CreateBrowserWithAuraTestWindowForParams(
   }
 
   TestBrowserWindowAura* browser_window =
-      new TestBrowserWindowAura(window.Pass());
+      new TestBrowserWindowAura(std::move(window));
   new TestBrowserWindowOwner(browser_window);
   return browser_window->CreateBrowser(params);
 }
@@ -27,7 +29,7 @@ scoped_ptr<Browser> CreateBrowserWithAuraTestWindowForParams(
 
 TestBrowserWindowAura::TestBrowserWindowAura(
     scoped_ptr<aura::Window> native_window)
-    : native_window_(native_window.Pass()) {}
+    : native_window_(std::move(native_window)) {}
 
 TestBrowserWindowAura::~TestBrowserWindowAura() {}
 

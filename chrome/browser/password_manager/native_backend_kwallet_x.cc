@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -223,7 +223,7 @@ bool DeserializeValueSize(const std::string& signon_realm,
       }
     }
 
-    converted_forms.push_back(form.Pass());
+    converted_forms.push_back(std::move(form));
   }
 
   forms->swap(converted_forms);
@@ -942,7 +942,7 @@ ScopedVector<autofill::PasswordForm> NativeBackendKWallet::DeserializeValue(
     success = DeserializeValueSize(
         signon_realm, iter, version, false, false, &forms);
     UMALogDeserializationStatus(success);
-    return forms.Pass();
+    return forms;
   }
 
   const bool size_32 = sizeof(size_t) == sizeof(uint32_t);
@@ -956,7 +956,7 @@ ScopedVector<autofill::PasswordForm> NativeBackendKWallet::DeserializeValue(
         signon_realm, iter, version, !size_32, false, &forms);
   }
   UMALogDeserializationStatus(success);
-  return forms.Pass();
+  return forms;
 }
 
 int NativeBackendKWallet::WalletHandle() {

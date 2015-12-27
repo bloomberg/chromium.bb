@@ -5,8 +5,8 @@
 #include "chrome/renderer/media/cast_rtp_stream.h"
 
 #include <stdint.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -437,7 +437,7 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
     sample_frames_in_ += input_params_.frames_per_buffer();
     sample_frames_out_ += audio_bus->frames();
 
-    frame_input_->InsertAudio(audio_bus.Pass(),
+    frame_input_->InsertAudio(std::move(audio_bus),
                               capture_time_of_first_converted_sample);
   }
 

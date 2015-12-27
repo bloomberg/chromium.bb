@@ -165,7 +165,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     sync_client->SetSyncApiComponentFactoryForTesting(
         make_scoped_ptr(new SyncApiComponentFactoryMock()));
     return make_scoped_ptr(new TestProfileSyncServiceNoBackup(
-        sync_client.Pass(), profile,
+        std::move(sync_client), profile,
         make_scoped_ptr(new SigninManagerWrapper(
             SigninManagerFactory::GetForProfile(profile))),
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
@@ -272,7 +272,7 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
     sync_client->SetSyncApiComponentFactoryForTesting(
         make_scoped_ptr(new SyncApiComponentFactoryMock()));
     return make_scoped_ptr(new TestProfileSyncServiceNoBackup(
-        sync_client.Pass(), profile,
+        std::move(sync_client), profile,
         make_scoped_ptr(new SigninManagerWrapper(signin)), oauth2_token_service,
         browser_sync::AUTO_START));
   }

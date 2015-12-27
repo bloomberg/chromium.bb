@@ -306,7 +306,7 @@ SpellcheckHunspellDictionary::OpenDictionaryFile(const base::FilePath& path) {
     base::DeleteFile(dictionary.path, false);
   }
 
-  return dictionary.Pass();
+  return dictionary;
 }
 
 // The default place where the spellcheck dictionary resides is
@@ -329,7 +329,7 @@ SpellcheckHunspellDictionary::InitializeDictionaryLocation(
 void SpellcheckHunspellDictionary::InitializeDictionaryLocationComplete(
     DictionaryFile file) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  dictionary_file_ = file.Pass();
+  dictionary_file_ = std::move(file);
 
   if (!dictionary_file_.file.IsValid()) {
     // Notify browser tests that this dictionary is corrupted. Skip downloading

@@ -5,6 +5,7 @@
 #include "chrome/browser/ssl/ssl_error_handler.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/callback_helpers.h"
 #include "base/macros.h"
@@ -160,7 +161,7 @@ void SSLErrorHandler::HandleSSLError(
   DCHECK(!FromWebContents(web_contents));
   SSLErrorHandler* error_handler =
       new SSLErrorHandler(web_contents, cert_error, ssl_info, request_url,
-                          options_mask, ssl_cert_reporter.Pass(), callback);
+                          options_mask, std::move(ssl_cert_reporter), callback);
   web_contents->SetUserData(UserDataKey(), error_handler);
   error_handler->StartHandlingError();
 }
@@ -197,7 +198,7 @@ SSLErrorHandler::SSLErrorHandler(content::WebContents* web_contents,
       options_mask_(options_mask),
       callback_(callback),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
-      ssl_cert_reporter_(ssl_cert_reporter.Pass()) {}
+      ssl_cert_reporter_(std::move(ssl_cert_reporter)) {}
 
 SSLErrorHandler::~SSLErrorHandler() {
 }
@@ -314,8 +315,9 @@ void SSLErrorHandler::ShowCaptivePortalInterstitial(const GURL& landing_url) {
                 ? SHOW_CAPTIVE_PORTAL_INTERSTITIAL_OVERRIDABLE
                 : SHOW_CAPTIVE_PORTAL_INTERSTITIAL_NONOVERRIDABLE);
   (new CaptivePortalBlockingPage(web_contents_, request_url_, landing_url,
-                                 ssl_cert_reporter_.Pass(), ssl_info_,
-                                 callback_))->Show();
+                                 std::move(ssl_cert_reporter_), ssl_info_,
+                                 callback_))
+      ->Show();
   // Once an interstitial is displayed, no need to keep the handler around.
   // This is the equivalent of "delete this". It also destroys the timer.
   web_contents_->RemoveUserData(UserDataKey());
@@ -331,7 +333,7 @@ void SSLErrorHandler::ShowSSLInterstitial() {
 
   (new SSLBlockingPage(web_contents_, cert_error_, ssl_info_, request_url_,
                        options_mask_, base::Time::NowFromSystemTime(),
-                       ssl_cert_reporter_.Pass(), callback_))
+                       std::move(ssl_cert_reporter_), callback_))
       ->Show();
   // Once an interstitial is displayed, no need to keep the handler around.
   // This is the equivalent of "delete this".
@@ -341,7 +343,7 @@ void SSLErrorHandler::ShowSSLInterstitial() {
 void SSLErrorHandler::ShowBadClockInterstitial(const base::Time& now) {
   RecordUMA(SHOW_BAD_CLOCK);
   (new BadClockBlockingPage(web_contents_, cert_error_, ssl_info_, request_url_,
-                            now, ssl_cert_reporter_.Pass(), callback_))
+                            now, std::move(ssl_cert_reporter_), callback_))
       ->Show();
   // Once an interstitial is displayed, no need to keep the handler around.
   // This is the equivalent of "delete this".

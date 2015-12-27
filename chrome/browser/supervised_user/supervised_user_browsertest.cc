@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -238,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest,
       SupervisedUserSettingsServiceFactory::GetForProfile(
           browser()->profile());
   supervised_user_settings_service->SetLocalSetting(
-      supervised_users::kContentPackManualBehaviorHosts, dict.Pass());
+      supervised_users::kContentPackManualBehaviorHosts, std::move(dict));
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
             filter->GetFilteringBehaviorForURL(allowed_url));
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
@@ -303,7 +305,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest, Unblock) {
       SupervisedUserSettingsServiceFactory::GetForProfile(
           browser()->profile());
   supervised_user_settings_service->SetLocalSetting(
-      supervised_users::kContentPackManualBehaviorHosts, dict.Pass());
+      supervised_users::kContentPackManualBehaviorHosts, std::move(dict));
 
   scoped_refptr<SupervisedUserURLFilter> filter =
       supervised_user_service_->GetURLFilterForUIThread();

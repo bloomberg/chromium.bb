@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/strings/string_util.h"
@@ -303,7 +304,7 @@ class SyncSessionsClientShim : public sync_sessions::SyncSessionsClient {
 
   scoped_ptr<browser_sync::LocalSessionEventRouter> GetLocalSessionEventRouter()
       override {
-    return sync_sessions_client_->GetLocalSessionEventRouter().Pass();
+    return sync_sessions_client_->GetLocalSessionEventRouter();
   }
 
   void set_synced_window_getter(
@@ -488,7 +489,7 @@ class SyncedTabDelegateFake : public SyncedTabDelegate {
   }
 
   void AppendEntry(scoped_ptr<content::NavigationEntry> entry) {
-    entries_.push_back(entry.Pass());
+    entries_.push_back(std::move(entry));
   }
 
   GURL GetVirtualURLAtIndex(int i) const override {
@@ -606,9 +607,9 @@ TEST_F(SessionsSyncManagerTest, SetSessionTabFromDelegate) {
   entry3->SetTimestamp(kTime3);
   entry3->SetHttpStatusCode(202);
 
-  tab.AppendEntry(entry1.Pass());
-  tab.AppendEntry(entry2.Pass());
-  tab.AppendEntry(entry3.Pass());
+  tab.AppendEntry(std::move(entry1));
+  tab.AppendEntry(std::move(entry2));
+  tab.AppendEntry(std::move(entry3));
   tab.set_current_entry_index(2);
 
   sessions::SessionTab session_tab;
@@ -718,16 +719,16 @@ TEST_F(SessionsSyncManagerTest, SetSessionTabFromDelegateNavigationIndex) {
   entry9->SetTimestamp(kTime9);
   entry9->SetHttpStatusCode(200);
 
-  tab.AppendEntry(entry0.Pass());
-  tab.AppendEntry(entry1.Pass());
-  tab.AppendEntry(entry2.Pass());
-  tab.AppendEntry(entry3.Pass());
-  tab.AppendEntry(entry4.Pass());
-  tab.AppendEntry(entry5.Pass());
-  tab.AppendEntry(entry6.Pass());
-  tab.AppendEntry(entry7.Pass());
-  tab.AppendEntry(entry8.Pass());
-  tab.AppendEntry(entry9.Pass());
+  tab.AppendEntry(std::move(entry0));
+  tab.AppendEntry(std::move(entry1));
+  tab.AppendEntry(std::move(entry2));
+  tab.AppendEntry(std::move(entry3));
+  tab.AppendEntry(std::move(entry4));
+  tab.AppendEntry(std::move(entry5));
+  tab.AppendEntry(std::move(entry6));
+  tab.AppendEntry(std::move(entry7));
+  tab.AppendEntry(std::move(entry8));
+  tab.AppendEntry(std::move(entry9));
   tab.set_current_entry_index(8);
 
   sessions::SessionTab session_tab;
@@ -765,10 +766,10 @@ TEST_F(SessionsSyncManagerTest, SetSessionTabFromDelegateCurrentInvalid) {
   entry3->SetTimestamp(kTime3);
   entry3->SetHttpStatusCode(200);
 
-  tab.AppendEntry(entry0.Pass());
-  tab.AppendEntry(entry1.Pass());
-  tab.AppendEntry(entry2.Pass());
-  tab.AppendEntry(entry3.Pass());
+  tab.AppendEntry(std::move(entry0));
+  tab.AppendEntry(std::move(entry1));
+  tab.AppendEntry(std::move(entry2));
+  tab.AppendEntry(std::move(entry3));
   tab.set_current_entry_index(1);
 
   sessions::SessionTab session_tab;
@@ -811,7 +812,7 @@ TEST_F(SessionsSyncManagerTest, BlockedNavigations) {
   GURL url1("http://www.google.com/");
   entry1->SetVirtualURL(url1);
   entry1->SetTimestamp(kTime1);
-  tab.AppendEntry(entry1.Pass());
+  tab.AppendEntry(std::move(entry1));
 
   scoped_ptr<content::NavigationEntry> entry2(
       content::NavigationEntry::Create());
@@ -824,8 +825,8 @@ TEST_F(SessionsSyncManagerTest, BlockedNavigations) {
   entry3->SetVirtualURL(url3);
   entry3->SetTimestamp(kTime3);
   ScopedVector<const content::NavigationEntry> blocked_navigations;
-  blocked_navigations.push_back(entry2.Pass());
-  blocked_navigations.push_back(entry3.Pass());
+  blocked_navigations.push_back(std::move(entry2));
+  blocked_navigations.push_back(std::move(entry3));
 
   tab.set_is_supervised(true);
   tab.set_blocked_navigations(&blocked_navigations.get());

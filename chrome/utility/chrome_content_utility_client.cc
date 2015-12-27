@@ -5,6 +5,7 @@
 #include "chrome/utility/chrome_content_utility_client.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -80,14 +81,14 @@ void CreateProxyResolverFactory(
   // is connected to. When that message pipe is closed, either explicitly on the
   // other end (in the browser process), or by a connection error, this object
   // will be destroyed.
-  new net::MojoProxyResolverFactoryImpl(request.Pass());
+  new net::MojoProxyResolverFactoryImpl(std::move(request));
 }
 
 class ResourceUsageReporterImpl : public ResourceUsageReporter {
  public:
   explicit ResourceUsageReporterImpl(
       mojo::InterfaceRequest<ResourceUsageReporter> req)
-      : binding_(this, req.Pass()) {}
+      : binding_(this, std::move(req)) {}
   ~ResourceUsageReporterImpl() override {}
 
  private:
@@ -100,7 +101,7 @@ class ResourceUsageReporterImpl : public ResourceUsageReporter {
       data->v8_bytes_allocated = total_heap_size;
       data->v8_bytes_used = net::ProxyResolverV8::GetUsedHeapSize();
     }
-    callback.Run(data.Pass());
+    callback.Run(std::move(data));
   }
 
   mojo::StrongBinding<ResourceUsageReporter> binding_;
@@ -108,7 +109,7 @@ class ResourceUsageReporterImpl : public ResourceUsageReporter {
 
 void CreateResourceUsageReporter(
     mojo::InterfaceRequest<ResourceUsageReporter> request) {
-  new ResourceUsageReporterImpl(request.Pass());
+  new ResourceUsageReporterImpl(std::move(request));
 }
 #endif  // OS_ANDROID
 
@@ -216,7 +217,7 @@ void ChromeContentUtilityClient::RegisterMojoServices(
 
 void ChromeContentUtilityClient::AddHandler(
     scoped_ptr<UtilityMessageHandler> handler) {
-  handlers_.push_back(handler.Pass());
+  handlers_.push_back(std::move(handler));
 }
 
 // static

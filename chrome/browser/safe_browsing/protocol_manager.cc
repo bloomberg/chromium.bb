@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 
+#include <utility>
+
 #include "base/environment.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -448,7 +450,7 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
 
       // Chunks to delete from our storage.
       if (!chunk_deletes->empty())
-        delegate_->DeleteChunks(chunk_deletes.Pass());
+        delegate_->DeleteChunks(std::move(chunk_deletes));
 
       break;
     }
@@ -468,7 +470,7 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
       if (!chunks->empty()) {
         chunk_pending_to_write_ = true;
         delegate_->AddChunks(
-            chunk_url.list_name, chunks.Pass(),
+            chunk_url.list_name, std::move(chunks),
             base::Bind(&SafeBrowsingProtocolManager::OnAddChunksComplete,
                        base::Unretained(this)));
       }

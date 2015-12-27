@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
@@ -150,7 +152,7 @@ SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
   controller_->set_metrics_helper(make_scoped_ptr(chrome_metrics_helper));
 
   cert_report_helper_.reset(new CertReportHelper(
-      ssl_cert_reporter.Pass(), web_contents, request_url, ssl_info,
+      std::move(ssl_cert_reporter), web_contents, request_url, ssl_info,
       certificate_reporting::ErrorReport::INTERSTITIAL_SSL, overridable_,
       controller_->metrics_helper()));
 
@@ -213,7 +215,8 @@ void SSLBlockingPage::OverrideEntry(NavigationEntry* entry) {
 
 void SSLBlockingPage::SetSSLCertReporterForTesting(
     scoped_ptr<SSLCertReporter> ssl_cert_reporter) {
-  cert_report_helper_->SetSSLCertReporterForTesting(ssl_cert_reporter.Pass());
+  cert_report_helper_->SetSSLCertReporterForTesting(
+      std::move(ssl_cert_reporter));
 }
 
 // This handles the commands sent from the interstitial JavaScript.

@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/chromedriver/chrome/mobile_device.h"
+
+#include <utility>
+
 #include "base/json/json_reader.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
-#include "chrome/test/chromedriver/chrome/mobile_device.h"
 #include "chrome/test/chromedriver/chrome/mobile_device_list.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 
@@ -65,7 +68,7 @@ Status FindMobileDevice(std::string device_name,
   tmp_mobile_device->device_metrics.reset(
       new DeviceMetrics(width, height, device_scale_factor, touch, mobile));
 
-  *mobile_device = tmp_mobile_device.Pass();
+  *mobile_device = std::move(tmp_mobile_device);
   return Status(kOk);
 
 }

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/engagement/site_engagement_helper.h"
 
+#include <utility>
+
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -51,7 +53,7 @@ bool SiteEngagementHelper::PeriodicTracker::IsTimerRunning() {
 
 void SiteEngagementHelper::PeriodicTracker::SetPauseTimerForTesting(
     scoped_ptr<base::Timer> timer) {
-  pause_timer_ = timer.Pass();
+  pause_timer_ = std::move(timer);
 }
 
 void SiteEngagementHelper::PeriodicTracker::StartTimer(

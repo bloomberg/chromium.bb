@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ssl/bad_clock_blocking_page.h"
 
+#include <utility>
+
 #include "base/callback_helpers.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -77,10 +79,10 @@ BadClockBlockingPage::BadClockBlockingPage(
   chrome_metrics_helper->StartRecordingCaptivePortalMetrics(false);
   scoped_ptr<security_interstitials::MetricsHelper> metrics_helper(
       chrome_metrics_helper);
-  controller_->set_metrics_helper(metrics_helper.Pass());
+  controller_->set_metrics_helper(std::move(metrics_helper));
 
   cert_report_helper_.reset(new CertReportHelper(
-      ssl_cert_reporter.Pass(), web_contents, request_url, ssl_info,
+      std::move(ssl_cert_reporter), web_contents, request_url, ssl_info,
       certificate_reporting::ErrorReport::INTERSTITIAL_CLOCK,
       false /* overridable */, controller_->metrics_helper()));
 
@@ -138,7 +140,8 @@ void BadClockBlockingPage::OverrideEntry(NavigationEntry* entry) {
 
 void BadClockBlockingPage::SetSSLCertReporterForTesting(
     scoped_ptr<SSLCertReporter> ssl_cert_reporter) {
-  cert_report_helper_->SetSSLCertReporterForTesting(ssl_cert_reporter.Pass());
+  cert_report_helper_->SetSSLCertReporterForTesting(
+      std::move(ssl_cert_reporter));
 }
 
 // This handles the commands sent from the interstitial JavaScript.

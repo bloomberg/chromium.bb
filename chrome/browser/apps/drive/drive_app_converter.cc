@@ -5,9 +5,9 @@
 #include "chrome/browser/apps/drive/drive_app_converter.h"
 
 #include <stddef.h>
-
 #include <algorithm>
 #include <set>
+#include <utility>
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
@@ -60,7 +60,7 @@ class DriveAppConverter::IconFetcher : public net::URLFetcherDelegate,
   // net::URLFetcherDelegate overrides:
   void OnURLFetchComplete(const net::URLFetcher* source) override {
     CHECK_EQ(fetcher_.get(), source);
-    scoped_ptr<net::URLFetcher> fetcher(fetcher_.Pass());
+    scoped_ptr<net::URLFetcher> fetcher(std::move(fetcher_));
 
     if (!fetcher->GetStatus().is_success() ||
         fetcher->GetResponseCode() != net::HTTP_OK) {

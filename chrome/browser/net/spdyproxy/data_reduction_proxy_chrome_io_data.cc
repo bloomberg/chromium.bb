@@ -84,5 +84,5 @@ CreateDataReductionProxyChromeIOData(
       data_reduction_proxy_ui_service.Pass());
 #endif
 
-  return data_reduction_proxy_io_data.Pass();
+  return data_reduction_proxy_io_data;
 }

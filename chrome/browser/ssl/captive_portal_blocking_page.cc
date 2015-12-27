@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ssl/captive_portal_blocking_page.h"
 
+#include <utility>
+
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
@@ -64,7 +66,7 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
 
   if (ssl_cert_reporter) {
     cert_report_helper_.reset(new CertReportHelper(
-        ssl_cert_reporter.Pass(), web_contents, request_url, ssl_info,
+        std::move(ssl_cert_reporter), web_contents, request_url, ssl_info,
         certificate_reporting::ErrorReport::INTERSTITIAL_CAPTIVE_PORTAL, false,
         nullptr));
   }

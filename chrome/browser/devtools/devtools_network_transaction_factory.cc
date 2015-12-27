@@ -6,6 +6,7 @@
 
 #include <set>
 #include <string>
+#include <utility>
 
 #include "chrome/browser/devtools/devtools_network_controller.h"
 #include "chrome/browser/devtools/devtools_network_transaction.h"
@@ -36,8 +37,8 @@ int DevToolsNetworkTransactionFactory::CreateTransaction(
   if (rv != net::OK) {
     return rv;
   }
-  trans->reset(
-      new DevToolsNetworkTransaction(controller_, network_transaction.Pass()));
+  trans->reset(new DevToolsNetworkTransaction(controller_,
+                                              std::move(network_transaction)));
   return net::OK;
 }
 

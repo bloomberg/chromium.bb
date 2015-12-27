@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -118,14 +119,14 @@ void OnImageLoaded(scoped_ptr<web_app::ShortcutInfo> shortcut_info,
     shortcut_info->favicon = image_family;
   }
 
-  callback.Run(shortcut_info.Pass(), file_handlers_info);
+  callback.Run(std::move(shortcut_info), file_handlers_info);
 }
 
 void IgnoreFileHandlersInfo(
     const web_app::ShortcutInfoCallback& shortcut_info_callback,
     scoped_ptr<web_app::ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
-  shortcut_info_callback.Run(shortcut_info.Pass());
+  shortcut_info_callback.Run(std::move(shortcut_info));
 }
 
 void ScheduleCreatePlatformShortcut(
@@ -411,14 +412,14 @@ void CreateShortcutsWithInfo(
       return;
   }
 
-  ScheduleCreatePlatformShortcut(reason, locations, shortcut_info.Pass(),
+  ScheduleCreatePlatformShortcut(reason, locations, std::move(shortcut_info),
                                  file_handlers_info);
 }
 
 void CreateNonAppShortcut(const ShortcutLocations& locations,
                           scoped_ptr<ShortcutInfo> shortcut_info) {
   ScheduleCreatePlatformShortcut(SHORTCUT_CREATION_AUTOMATED, locations,
-                                 shortcut_info.Pass(),
+                                 std::move(shortcut_info),
                                  extensions::FileHandlersInfo());
 }
 

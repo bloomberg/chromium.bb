@@ -5,6 +5,7 @@
 #include "chrome/test/chromedriver/chrome/chrome_impl.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
@@ -77,9 +78,7 @@ Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids) {
           // OnConnected will fire when DevToolsClient connects later.
         }
         web_views_.push_back(make_linked_ptr(new WebViewImpl(
-            view.id,
-            devtools_http_client_->browser_info(),
-            client.Pass(),
+            view.id, devtools_http_client_->browser_info(), std::move(client),
             devtools_http_client_->device_metrics())));
       }
     }
@@ -144,8 +143,8 @@ ChromeImpl::ChromeImpl(
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
     scoped_ptr<PortReservation> port_reservation)
     : quit_(false),
-      devtools_http_client_(http_client.Pass()),
-      devtools_websocket_client_(websocket_client.Pass()),
-      port_reservation_(port_reservation.Pass()) {
+      devtools_http_client_(std::move(http_client)),
+      devtools_websocket_client_(std::move(websocket_client)),
+      port_reservation_(std::move(port_reservation)) {
   devtools_event_listeners_.swap(devtools_event_listeners);
 }

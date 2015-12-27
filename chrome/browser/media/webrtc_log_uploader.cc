@@ -5,6 +5,7 @@
 #include "chrome/browser/media/webrtc_log_uploader.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -133,7 +134,7 @@ void WebRtcLogUploader::LoggingStoppedDoUpload(
 
   WebRtcLogUploadDoneData upload_done_data_with_log_id = upload_done_data;
   upload_done_data_with_log_id.local_log_id = local_log_id;
-  PrepareMultipartPostData(compressed_log, meta_data.Pass(),
+  PrepareMultipartPostData(compressed_log, std::move(meta_data),
                            upload_done_data_with_log_id);
 }
 
@@ -216,7 +217,7 @@ void WebRtcLogUploader::UploadStoredLog(
     }
   }
 
-  PrepareMultipartPostData(compressed_log, meta_data.Pass(),
+  PrepareMultipartPostData(compressed_log, std::move(meta_data),
                            upload_data_with_rtp);
 }
 

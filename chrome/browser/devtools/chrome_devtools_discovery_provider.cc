@@ -19,7 +19,7 @@ CreateNewChromeTab(const GURL& url) {
   chrome::Navigate(&params);
   if (!params.target_contents)
     return scoped_ptr<devtools_discovery::DevToolsTargetDescriptor>();
-  return DevToolsTargetImpl::CreateForTab(params.target_contents).Pass();
+  return DevToolsTargetImpl::CreateForTab(params.target_contents);
 }
 
 }  // namespace

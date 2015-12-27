@@ -6,6 +6,7 @@
 
 #include <limits>
 #include <queue>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -154,7 +155,7 @@ void RegisterHttpInterceptor(
     const std::string& hostname,
     scoped_ptr<net::URLRequestInterceptor> interceptor) {
   net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
-      "http", hostname, interceptor.Pass());
+      "http", hostname, std::move(interceptor));
 }
 
 void UnregisterHttpInterceptor(const std::string& hostname) {

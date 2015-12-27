@@ -4,6 +4,8 @@
 
 #include "chrome/browser/predictors/resource_prefetcher_manager.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
@@ -61,7 +63,7 @@ void ResourcePrefetcherManager::MaybeAddPrefetch(
     return;
 
   ResourcePrefetcher* prefetcher = new ResourcePrefetcher(
-      this, config_, navigation_id, key_type, requests.Pass());
+      this, config_, navigation_id, key_type, std::move(requests));
   prefetcher_map_.insert(std::make_pair(key, prefetcher));
   prefetcher->Start();
 }

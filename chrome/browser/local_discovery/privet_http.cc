@@ -4,6 +4,8 @@
 
 #include "chrome/browser/local_discovery/privet_http.h"
 
+#include <utility>
+
 #include "chrome/browser/local_discovery/privet_http_impl.h"
 
 namespace local_discovery {
@@ -14,7 +16,7 @@ scoped_ptr<PrivetV1HTTPClient> PrivetV1HTTPClient::CreateDefault(
   if (!info_client)
     return scoped_ptr<PrivetV1HTTPClient>();
   return make_scoped_ptr<PrivetV1HTTPClient>(
-      new PrivetV1HTTPClientImpl(info_client.Pass())).Pass();
+      new PrivetV1HTTPClientImpl(std::move(info_client)));
 }
 
 }  // namespace local_discovery

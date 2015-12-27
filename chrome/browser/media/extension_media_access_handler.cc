@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/extension_media_access_handler.h"
 
+#include <utility>
+
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/media/media_stream_device_permissions.h"
@@ -143,5 +145,5 @@ void ExtensionMediaAccessHandler::HandleRequest(
              ->RegisterMediaStream(web_contents, devices);
   }
 
-  callback.Run(devices, result, ui.Pass());
+  callback.Run(devices, result, std::move(ui));
 }

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/tab_capture_access_handler.h"
 
+#include <utility>
+
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_capture_indicator.h"
@@ -41,7 +43,8 @@ void TabCaptureAccessHandler::HandleRequest(
   scoped_ptr<content::MediaStreamUI> ui;
 
   if (!extension)
-    callback.Run(devices, content::MEDIA_DEVICE_TAB_CAPTURE_FAILURE, ui.Pass());
+    callback.Run(devices, content::MEDIA_DEVICE_TAB_CAPTURE_FAILURE,
+                 std::move(ui));
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -49,7 +52,7 @@ void TabCaptureAccessHandler::HandleRequest(
       extensions::TabCaptureRegistry::Get(profile);
   if (!tab_capture_registry) {
     NOTREACHED();
-    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, ui.Pass());
+    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, std::move(ui));
     return;
   }
   const bool tab_capture_allowed = tab_capture_registry->VerifyRequest(
@@ -78,5 +81,5 @@ void TabCaptureAccessHandler::HandleRequest(
   }
   callback.Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE
                                         : content::MEDIA_DEVICE_OK,
-               ui.Pass());
+               std::move(ui));
 }

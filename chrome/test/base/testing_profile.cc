@@ -4,6 +4,8 @@
 
 #include "chrome/test/base/testing_profile.h"
 
+#include <utility>
+
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -208,7 +210,7 @@ scoped_ptr<KeyedService> BuildInMemoryURLIndex(
       profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
       SchemeSet()));
   in_memory_url_index->Init();
-  return in_memory_url_index.Pass();
+  return std::move(in_memory_url_index);
 }
 
 scoped_ptr<KeyedService> BuildBookmarkModel(content::BrowserContext* context) {
@@ -223,7 +225,7 @@ scoped_ptr<KeyedService> BuildBookmarkModel(content::BrowserContext* context) {
                        profile->GetIOTaskRunner(),
                        content::BrowserThread::GetMessageLoopProxyForThread(
                            content::BrowserThread::UI));
-  return bookmark_model.Pass();
+  return std::move(bookmark_model);
 }
 
 void TestProfileErrorCallback(WebDataServiceWrapper::ErrorType error_type,
@@ -445,7 +447,7 @@ void TestingProfile::Init() {
           extensions_disabled,
           std::vector<extensions::ExtensionPrefsObserver*>()));
   extensions::ExtensionPrefsFactory::GetInstance()->SetInstanceForTesting(
-      this, extension_prefs.Pass());
+      this, std::move(extension_prefs));
 
   extensions::ExtensionSystemFactory::GetInstance()->SetTestingFactory(
       this, extensions::TestExtensionSystem::Build);
@@ -670,7 +672,7 @@ bool TestingProfile::IsOffTheRecord() const {
 void TestingProfile::SetOffTheRecordProfile(scoped_ptr<Profile> profile) {
   DCHECK(!IsOffTheRecord());
   DCHECK_EQ(this, profile->GetOriginalProfile());
-  incognito_profile_ = profile.Pass();
+  incognito_profile_ = std::move(profile);
 }
 
 Profile* TestingProfile::GetOffTheRecordProfile() {
@@ -776,7 +778,7 @@ if (!policy_service_) {
 #endif
   }
   profile_policy_connector_.reset(new policy::ProfilePolicyConnector());
-  profile_policy_connector_->InitForTesting(policy_service_.Pass());
+  profile_policy_connector_->InitForTesting(std::move(policy_service_));
   policy::ProfilePolicyConnectorFactory::GetInstance()->SetServiceForTesting(
       this, profile_policy_connector_.get());
   CHECK_EQ(profile_policy_connector_.get(),
@@ -1003,7 +1005,7 @@ void TestingProfile::Builder::SetExtensionSpecialStoragePolicy(
 
 void TestingProfile::Builder::SetPrefService(
     scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs) {
-  pref_service_ = prefs.Pass();
+  pref_service_ = std::move(prefs);
 }
 
 void TestingProfile::Builder::SetGuestSession() {
@@ -1017,7 +1019,7 @@ void TestingProfile::Builder::SetSupervisedUserId(
 
 void TestingProfile::Builder::SetPolicyService(
     scoped_ptr<policy::PolicyService> policy_service) {
-  policy_service_ = policy_service.Pass();
+  policy_service_ = std::move(policy_service);
 }
 
 void TestingProfile::Builder::AddTestingFactory(
@@ -1030,17 +1032,13 @@ scoped_ptr<TestingProfile> TestingProfile::Builder::Build() {
   DCHECK(!build_called_);
   build_called_ = true;
 
-  return scoped_ptr<TestingProfile>(new TestingProfile(path_,
-                                                       delegate_,
+  return scoped_ptr<TestingProfile>(new TestingProfile(
+      path_, delegate_,
 #if defined(ENABLE_EXTENSIONS)
-                                                       extension_policy_,
+      extension_policy_,
 #endif
-                                                       pref_service_.Pass(),
-                                                       NULL,
-                                                       guest_session_,
-                                                       supervised_user_id_,
-                                                       policy_service_.Pass(),
-                                                       testing_factories_));
+      std::move(pref_service_), NULL, guest_session_, supervised_user_id_,
+      std::move(policy_service_), testing_factories_));
 }
 
 TestingProfile* TestingProfile::Builder::BuildIncognito(
@@ -1050,15 +1048,11 @@ TestingProfile* TestingProfile::Builder::BuildIncognito(
   build_called_ = true;
 
   // Note: Owned by |original_profile|.
-  return new TestingProfile(path_,
-                            delegate_,
+  return new TestingProfile(path_, delegate_,
 #if defined(ENABLE_EXTENSIONS)
                             extension_policy_,
 #endif
-                            pref_service_.Pass(),
-                            original_profile,
-                            guest_session_,
-                            supervised_user_id_,
-                            policy_service_.Pass(),
-                            testing_factories_);
+                            std::move(pref_service_), original_profile,
+                            guest_session_, supervised_user_id_,
+                            std::move(policy_service_), testing_factories_);
 }

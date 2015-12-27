@@ -400,7 +400,7 @@ DownloadTargetDeterminerTest::RunDownloadTargetDeterminer(
                  &target_info));
   run_loop.Run();
   ::testing::Mock::VerifyAndClearExpectations(delegate());
-  return target_info.Pass();
+  return target_info;
 }
 
 void DownloadTargetDeterminerTest::RunTestCasesWithActiveItem(

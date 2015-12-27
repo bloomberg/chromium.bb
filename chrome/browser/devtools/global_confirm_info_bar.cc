@@ -4,6 +4,8 @@
 
 #include "chrome/browser/devtools/global_confirm_info_bar.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -124,7 +126,8 @@ void GlobalConfirmInfoBar::DelegateProxy::Detach() {
 // static
 base::WeakPtr<GlobalConfirmInfoBar> GlobalConfirmInfoBar::Show(
     scoped_ptr<ConfirmInfoBarDelegate> delegate) {
-  GlobalConfirmInfoBar* info_bar = new GlobalConfirmInfoBar(delegate.Pass());
+  GlobalConfirmInfoBar* info_bar =
+      new GlobalConfirmInfoBar(std::move(delegate));
   return info_bar->weak_factory_.GetWeakPtr();
 }
 
@@ -134,7 +137,7 @@ void GlobalConfirmInfoBar::Close() {
 
 GlobalConfirmInfoBar::GlobalConfirmInfoBar(
     scoped_ptr<ConfirmInfoBarDelegate> delegate)
-    : delegate_(delegate.Pass()),
+    : delegate_(std::move(delegate)),
       browser_tab_strip_tracker_(this, nullptr, nullptr),
       weak_factory_(this) {
    browser_tab_strip_tracker_.Init(
@@ -165,7 +168,7 @@ void GlobalConfirmInfoBar::TabInsertedAt(content::WebContents* web_contents,
       new GlobalConfirmInfoBar::DelegateProxy(weak_factory_.GetWeakPtr()));
   GlobalConfirmInfoBar::DelegateProxy* proxy_ptr = proxy.get();
   infobars::InfoBar* added_bar = infobar_service->AddInfoBar(
-      infobar_service->CreateConfirmInfoBar(proxy.Pass()));
+      infobar_service->CreateConfirmInfoBar(std::move(proxy)));
 
   proxy_ptr->info_bar_ = added_bar;
   DCHECK(added_bar);

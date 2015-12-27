@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_SESSIONS_SESSION_RESTORE_STATS_COLLECTOR_H_
 
 #include <stddef.h>
-
 #include <map>
+#include <utility>
 
 #include "base/callback_list.h"
 #include "base/macros.h"
@@ -187,7 +187,7 @@ class SessionRestoreStatsCollector
 
   // Testing seam for configuring the tick clock in use.
   void set_tick_clock(scoped_ptr<base::TickClock> tick_clock) {
-    tick_clock_ = tick_clock.Pass();
+    tick_clock_ = std::move(tick_clock);
   }
 
   // Has ReleaseIfDoneTracking determined that there are no non-deferred tabs to

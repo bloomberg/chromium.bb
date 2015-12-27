@@ -4,8 +4,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/location.h"
@@ -510,7 +510,7 @@ class MockUsbServiceForCheckingTraits : public MockUsbService {
 class TestDeviceClient : public DeviceClient {
  public:
   explicit TestDeviceClient(scoped_ptr<UsbService> service)
-      : DeviceClient(), usb_service_(service.Pass()) {}
+      : DeviceClient(), usb_service_(std::move(service)) {}
   ~TestDeviceClient() override {}
 
  private:

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/devtools/devtools_network_controller_handle.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "chrome/browser/devtools/devtools_network_conditions.h"
 #include "chrome/browser/devtools/devtools_network_controller.h"
@@ -48,5 +50,5 @@ void DevToolsNetworkControllerHandle::SetNetworkStateOnIO(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   LazyInitialize();
-  controller_->SetNetworkState(client_id, conditions.Pass());
+  controller_->SetNetworkState(client_id, std::move(conditions));
 }

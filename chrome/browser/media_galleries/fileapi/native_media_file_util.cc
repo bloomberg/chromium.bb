@@ -5,6 +5,7 @@
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -56,10 +57,10 @@ void DidOpenSnapshot(
     base::File file) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (!file.IsValid()) {
-    callback.Run(file.Pass(), base::Closure());
+    callback.Run(std::move(file), base::Closure());
     return;
   }
-  callback.Run(file.Pass(), base::Bind(&HoldFileRef, file_ref));
+  callback.Run(std::move(file), base::Bind(&HoldFileRef, file_ref));
 }
 
 }  // namespace
@@ -132,12 +133,9 @@ void NativeMediaFileUtil::CreateOrOpen(
   }
   scoped_refptr<base::SequencedTaskRunner> task_runner = context->task_runner();
   CreateSnapshotFile(
-      context.Pass(),
-      url,
+      std::move(context), url,
       base::Bind(&NativeMediaFileUtil::CreatedSnapshotFileForCreateOrOpen,
-                 task_runner,
-                 file_flags,
-                 callback));
+                 task_runner, file_flags, callback));
 }
 
 void NativeMediaFileUtil::EnsureFileExists(

@@ -8,9 +8,9 @@
 #include <gnome-keyring.h>
 #include <stddef.h>
 #include <stdint.h>
-
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -168,7 +168,7 @@ scoped_ptr<PasswordForm> FormFromAttributes(GnomeKeyringAttributeList* attrs) {
     FormDeserializationStatus status = success ? GNOME_SUCCESS : GNOME_FAILURE;
     LogFormDataDeserializationStatus(status);
   }
-  return form.Pass();
+  return form;
 }
 
 // Converts native credentials in |found| to PasswordForms. If not NULL,
@@ -205,7 +205,7 @@ ScopedVector<PasswordForm> ConvertFormList(GList* found,
       } else {
         LOG(WARNING) << "Unable to access password from list element!";
       }
-      forms.push_back(form.Pass());
+      forms.push_back(std::move(form));
     } else {
       LOG(WARNING) << "Could not initialize PasswordForm from attributes!";
     }
@@ -221,7 +221,7 @@ ScopedVector<PasswordForm> ConvertFormList(GList* found,
             : password_manager::PSL_DOMAIN_MATCH_NOT_USED,
         password_manager::PSL_DOMAIN_MATCH_COUNT);
   }
-  return forms.Pass();
+  return forms;
 }
 
 // Schema is analagous to the fields in PasswordForm.
@@ -469,7 +469,7 @@ GnomeKeyringResult GKRMethod::WaitResult() {
 GnomeKeyringResult GKRMethod::WaitResult(ScopedVector<PasswordForm>* forms) {
   DCHECK_CURRENTLY_ON(BrowserThread::DB);
   event_.Wait();
-  *forms = forms_.Pass();
+  *forms = std::move(forms_);
   return result_;
 }
 

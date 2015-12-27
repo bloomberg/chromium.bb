@@ -41,14 +41,14 @@ void UsbTabHelper::CreateDeviceManager(
   device::usb::PermissionProviderPtr permission_provider;
   GetPermissionProvider(render_frame_host,
                         mojo::GetProxy(&permission_provider));
-  device::usb::DeviceManagerImpl::Create(permission_provider.Pass(),
-                                         request.Pass());
+  device::usb::DeviceManagerImpl::Create(std::move(permission_provider),
+                                         std::move(request));
 }
 
 void UsbTabHelper::CreatePermissionBubble(
     content::RenderFrameHost* render_frame_host,
     mojo::InterfaceRequest<webusb::WebUsbPermissionBubble> request) {
-  GetPermissionBubble(render_frame_host, request.Pass());
+  GetPermissionBubble(render_frame_host, std::move(request));
 }
 
 UsbTabHelper::UsbTabHelper(WebContents* web_contents)
@@ -65,7 +65,7 @@ FrameUsbServices* UsbTabHelper::GetFrameUsbService(
   if (it == frame_usb_services_.end()) {
     scoped_ptr<FrameUsbServices> frame_usb_services(new FrameUsbServices());
     it = (frame_usb_services_.insert(
-              std::make_pair(render_frame_host, frame_usb_services.Pass())))
+              std::make_pair(render_frame_host, std::move(frame_usb_services))))
              .first;
   }
   return it->second.get();
@@ -79,7 +79,7 @@ void UsbTabHelper::GetPermissionProvider(
     frame_usb_services->permission_provider.reset(
         new WebUSBPermissionProvider(render_frame_host));
   }
-  frame_usb_services->permission_provider->Bind(request.Pass());
+  frame_usb_services->permission_provider->Bind(std::move(request));
 }
 
 void UsbTabHelper::GetPermissionBubble(
@@ -90,5 +90,5 @@ void UsbTabHelper::GetPermissionBubble(
     frame_usb_services->permission_bubble.reset(
         new ChromeWebUsbPermissionBubble(render_frame_host));
   }
-  frame_usb_services->permission_bubble->Bind(request.Pass());
+  frame_usb_services->permission_bubble->Bind(std::move(request));
 }

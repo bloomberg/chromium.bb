@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ssl/certificate_reporting_test_utils.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
@@ -37,7 +39,7 @@ void SetMockReporter(
     SafeBrowsingService* safe_browsing_service,
     scoped_ptr<certificate_reporting::ErrorReporter> reporter) {
   safe_browsing_service->ping_manager()->SetCertificateErrorReporterForTesting(
-      reporter.Pass());
+      std::move(reporter));
 }
 
 // This is a test implementation of the interface that blocking pages
@@ -168,7 +170,7 @@ scoped_ptr<SSLCertReporter> SetUpMockSSLCertReporter(
                                     ? run_loop->QuitClosure()
                                     : base::Bind(&base::DoNothing)));
   ssl_cert_reporter->set_expect_report(expect_report == CERT_REPORT_EXPECTED);
-  return ssl_cert_reporter.Pass();
+  return std::move(ssl_cert_reporter);
 }
 
 ExpectReport GetReportExpectedFromFinch() {

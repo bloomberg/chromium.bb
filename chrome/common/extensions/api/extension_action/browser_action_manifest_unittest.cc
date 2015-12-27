@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/constants.h"
@@ -122,7 +124,7 @@ TEST_F(BrowserActionManifestTest,
   base::string16 error = ErrorUtils::FormatErrorMessageUTF16(
       errors::kInvalidIconPath, "19");
   LoadAndExpectError(
-      ManifestData(manifest_value.Pass(), "Invalid default icon"),
+      ManifestData(std::move(manifest_value), "Invalid default icon"),
       errors::kInvalidIconPath);
 }
 

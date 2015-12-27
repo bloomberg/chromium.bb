@@ -4,6 +4,8 @@
 
 #include "chrome/browser/profiles/off_the_record_profile_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -318,7 +320,8 @@ net::URLRequestContextGetter* OffTheRecordProfileImpl::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
   return io_data_->CreateMainRequestContextGetter(
-      protocol_handlers, request_interceptors.Pass()).get();
+                     protocol_handlers, std::move(request_interceptors))
+      .get();
 }
 
 net::URLRequestContextGetter*
@@ -362,10 +365,9 @@ OffTheRecordProfileImpl::CreateRequestContextForStoragePartition(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
   return io_data_->CreateIsolatedAppRequestContextGetter(
-      partition_path,
-      in_memory,
-      protocol_handlers,
-      request_interceptors.Pass()).get();
+                     partition_path, in_memory, protocol_handlers,
+                     std::move(request_interceptors))
+      .get();
 }
 
 content::ResourceContext* OffTheRecordProfileImpl::GetResourceContext() {

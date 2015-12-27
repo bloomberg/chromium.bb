@@ -141,7 +141,7 @@ scoped_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
   if (is_google)
     AddGoogleSearchboxPlaceholderString(translated_strings.get());
 
-  return translated_strings.Pass();
+  return translated_strings;
 }
 
 // Returns a JS dictionary of configuration data for the local NTP.

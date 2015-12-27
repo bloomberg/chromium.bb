@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+
 #include <stddef.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -20,7 +23,6 @@
 #include "chrome/browser/supervised_user/legacy/custodian_profile_downloader_service.h"
 #include "chrome/browser/supervised_user/legacy/custodian_profile_downloader_service_factory.h"
 #include "chrome/browser/supervised_user/permission_request_creator.h"
-#include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_whitelist_service.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -393,7 +395,7 @@ class SupervisedUserServiceExtensionTestBase
     source->SetString(extensions::manifest_keys::kVersion, "1.0");
     extensions::ExtensionBuilder builder;
     scoped_refptr<extensions::Extension> extension =
-        builder.SetManifest(source.Pass()).Build();
+        builder.SetManifest(std::move(source)).Build();
     return extension;
   }
 
@@ -407,7 +409,9 @@ class SupervisedUserServiceExtensionTestBase
       creation_flags |= extensions::Extension::WAS_INSTALLED_BY_CUSTODIAN;
     extensions::ExtensionBuilder builder;
     scoped_refptr<extensions::Extension> extension =
-        builder.SetManifest(manifest.Pass()).AddFlags(creation_flags).Build();
+        builder.SetManifest(std::move(manifest))
+            .AddFlags(creation_flags)
+            .Build();
     return extension;
   }
 

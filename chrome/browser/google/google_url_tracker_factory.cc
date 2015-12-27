@@ -4,6 +4,8 @@
 
 #include "chrome/browser/google/google_url_tracker_factory.h"
 
+#include <utility>
+
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/google/chrome_google_url_tracker_client.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -41,7 +43,7 @@ KeyedService* GoogleURLTrackerFactory::BuildServiceInstanceFor(
 
   scoped_ptr<GoogleURLTrackerClient> client(
       new ChromeGoogleURLTrackerClient(Profile::FromBrowserContext(context)));
-  return new GoogleURLTracker(client.Pass(), GoogleURLTracker::NORMAL_MODE);
+  return new GoogleURLTracker(std::move(client), GoogleURLTracker::NORMAL_MODE);
 }
 
 void GoogleURLTrackerFactory::RegisterProfilePrefs(

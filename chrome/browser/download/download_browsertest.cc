@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdint.h>
+#include "chrome/browser/download/download_browsertest.h"
 
+#include <stdint.h>
 #include <sstream>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -31,7 +33,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
-#include "chrome/browser/download/download_browsertest.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_item_model.h"
@@ -271,7 +272,7 @@ class DownloadsHistoryDataCollector {
 
     content::RunMessageLoop();
     if (result_valid_) {
-      *results = results_.Pass();
+      *results = std::move(results_);
     }
     return result_valid_;
   }
@@ -280,7 +281,7 @@ class DownloadsHistoryDataCollector {
   void OnQueryDownloadsComplete(
       scoped_ptr<std::vector<history::DownloadRow> > entries) {
     result_valid_ = true;
-    results_ = entries.Pass();
+    results_ = std::move(entries);
     base::MessageLoopForUI::current()->QuitWhenIdle();
   }
 
@@ -874,7 +875,7 @@ class DownloadTest : public InProcessBrowserTest {
       scoped_ptr<DownloadUrlParameters> params(
           DownloadUrlParameters::FromWebContents(web_contents, url));
       params->set_callback(creation_observer->callback());
-      DownloadManagerForBrowser(browser())->DownloadUrl(params.Pass());
+      DownloadManagerForBrowser(browser())->DownloadUrl(std::move(params));
 
       // Wait until the item is created, or we have determined that it
       // won't be.
@@ -1190,7 +1191,7 @@ static scoped_ptr<net::test_server::HttpResponse> RespondWithContentTypeHandler(
   response->set_content_type(request.relative_url.substr(1));
   response->set_code(net::HTTP_OK);
   response->set_content("ooogaboogaboogabooga");
-  return response.Pass();
+  return std::move(response);
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, MimeTypesToShowNotDownload) {
@@ -1609,7 +1610,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab4) {
   scoped_ptr<DownloadUrlParameters> params(
       DownloadUrlParameters::FromWebContents(new_tab, slow_download_url));
   params->set_prompt(true);
-  manager->DownloadUrl(params.Pass());
+  manager->DownloadUrl(std::move(params));
   observer->WaitForFinished();
 
   DownloadManager::DownloadVector items;
@@ -1642,7 +1643,7 @@ static scoped_ptr<net::test_server::HttpResponse> ServerRedirectRequestHandler(
                               "https://request-had-no-query-string");
     response->set_content_type("text/plain");
     response->set_content("Error");
-    return response.Pass();
+    return std::move(response);
   }
 
   response->set_code(net::HTTP_PERMANENT_REDIRECT);
@@ -1650,7 +1651,7 @@ static scoped_ptr<net::test_server::HttpResponse> ServerRedirectRequestHandler(
                             request.relative_url.substr(query_position + 1));
   response->set_content_type("text/plain");
   response->set_content("It's gone!");
-  return response.Pass();
+  return std::move(response);
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
@@ -2082,7 +2083,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrl) {
   scoped_ptr<DownloadUrlParameters> params(
       DownloadUrlParameters::FromWebContents(web_contents, url));
   params->set_prompt(true);
-  DownloadManagerForBrowser(browser())->DownloadUrl(params.Pass());
+  DownloadManagerForBrowser(browser())->DownloadUrl(std::move(params));
   observer->WaitForFinished();
   EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
   CheckDownloadStates(1, DownloadItem::COMPLETE);
@@ -2110,7 +2111,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToPath) {
   scoped_ptr<DownloadUrlParameters> params(
       DownloadUrlParameters::FromWebContents(web_contents, url));
   params->set_file_path(target_file_full_path);
-  DownloadManagerForBrowser(browser())->DownloadUrl(params.Pass());
+  DownloadManagerForBrowser(browser())->DownloadUrl(std::move(params));
   observer->WaitForFinished();
   EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
 
@@ -2203,7 +2204,7 @@ static scoped_ptr<net::test_server::HttpResponse> FilterPostOnlyURLsHandler(
     response.reset(new net::test_server::BasicHttpResponse());
     response->set_code(net::HTTP_NOT_FOUND);
   }
-  return response.Pass();
+  return std::move(response);
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
@@ -2592,7 +2593,7 @@ static scoped_ptr<net::test_server::HttpResponse> EchoReferrerRequestHandler(
   auto referrer_header = request.headers.find(kReferrerHeader);
   if (referrer_header != request.headers.end())
     response->set_content(referrer_header->second);
-  return response.Pass();
+  return std::move(response);
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, LoadURLExternallyReferrerPolicy) {
@@ -3606,7 +3607,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTestWithShelf, HiddenDownload) {
   scoped_ptr<DownloadUrlParameters> params(
       DownloadUrlParameters::FromWebContents(web_contents, url));
   params->set_callback(base::Bind(&SetHiddenDownloadCallback));
-  download_manager->DownloadUrl(params.Pass());
+  download_manager->DownloadUrl(std::move(params));
   observer->WaitForFinished();
 
   // Verify that download shelf is not shown.

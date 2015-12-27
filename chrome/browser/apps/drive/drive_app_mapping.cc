@@ -30,7 +30,7 @@ scoped_ptr<base::DictionaryValue> CreateInfoDict(
   // Only writes non-default value.
   if (generated)
     dict->SetBooleanWithoutPathExpansion(kKeyGenerated, true);
-  return dict.Pass();
+  return dict;
 }
 
 }  // namespace

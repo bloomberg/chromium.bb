@@ -52,7 +52,7 @@ DevToolsProtocol::CreateInvalidParamsResponse(int command_id,
   error_object->SetString(kErrorMessageParam,
       base::StringPrintf("Missing or invalid '%s' parameter", param.c_str()));
 
-  return response.Pass();
+  return response;
 }
 
 // static
@@ -65,7 +65,7 @@ DevToolsProtocol::CreateSuccessResponse(
   response->Set(kResultParam,
                 result ? result.release() : new base::DictionaryValue());
 
-  return response.Pass();
+  return response;
 }
 
 // static

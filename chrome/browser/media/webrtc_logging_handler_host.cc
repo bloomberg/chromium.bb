@@ -5,6 +5,7 @@
 #include "chrome/browser/media/webrtc_logging_handler_host.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -179,7 +180,7 @@ void WebRtcLoggingHandlerHost::SetMetaData(
   std::string error_message;
   if (logging_state_ == CLOSED) {
     if (!meta_data_.get())
-      meta_data_ = meta_data.Pass();
+      meta_data_ = std::move(meta_data);
   } else if (logging_state_ == STARTED) {
     std::string meta_data_message;
     FormatMetaDataAsLogMessage(*meta_data.get(), &meta_data_message);

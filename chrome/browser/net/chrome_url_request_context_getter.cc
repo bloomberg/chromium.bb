@@ -4,6 +4,8 @@
 
 #include "chrome/browser/net/chrome_url_request_context_getter.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -45,12 +47,13 @@ class FactoryForMain : public ChromeURLRequestContextFactory {
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors)
       : profile_io_data_(profile_io_data),
-        request_interceptors_(request_interceptors.Pass()) {
+        request_interceptors_(std::move(request_interceptors)) {
     std::swap(protocol_handlers_, *protocol_handlers);
   }
 
   net::URLRequestContext* Create() override {
-    profile_io_data_->Init(&protocol_handlers_, request_interceptors_.Pass());
+    profile_io_data_->Init(&protocol_handlers_,
+                           std::move(request_interceptors_));
     return profile_io_data_->GetMainRequestContext();
   }
 
@@ -88,8 +91,8 @@ class FactoryForIsolatedApp : public ChromeURLRequestContextFactory {
       : profile_io_data_(profile_io_data),
         partition_descriptor_(partition_descriptor),
         main_request_context_getter_(main_context),
-        protocol_handler_interceptor_(protocol_handler_interceptor.Pass()),
-        request_interceptors_(request_interceptors.Pass()) {
+        protocol_handler_interceptor_(std::move(protocol_handler_interceptor)),
+        request_interceptors_(std::move(request_interceptors)) {
     std::swap(protocol_handlers_, *protocol_handlers);
   }
 
@@ -101,10 +104,8 @@ class FactoryForIsolatedApp : public ChromeURLRequestContextFactory {
     // state onwards.
     return profile_io_data_->GetIsolatedAppRequestContext(
         main_request_context_getter_->GetURLRequestContext(),
-        partition_descriptor_,
-        protocol_handler_interceptor_.Pass(),
-        &protocol_handlers_,
-        request_interceptors_.Pass());
+        partition_descriptor_, std::move(protocol_handler_interceptor_),
+        &protocol_handlers_, std::move(request_interceptors_));
   }
 
  private:
@@ -215,7 +216,7 @@ ChromeURLRequestContextGetter* ChromeURLRequestContextGetter::Create(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
   return new ChromeURLRequestContextGetter(new FactoryForMain(
-      profile_io_data, protocol_handlers, request_interceptors.Pass()));
+      profile_io_data, protocol_handlers, std::move(request_interceptors)));
 }
 
 // static
@@ -246,13 +247,10 @@ ChromeURLRequestContextGetter::CreateForIsolatedApp(
     content::URLRequestInterceptorScopedVector request_interceptors) {
   ChromeURLRequestContextGetter* main_context =
       static_cast<ChromeURLRequestContextGetter*>(profile->GetRequestContext());
-  return new ChromeURLRequestContextGetter(
-      new FactoryForIsolatedApp(profile_io_data,
-                                partition_descriptor,
-                                main_context,
-                                protocol_handler_interceptor.Pass(),
-                                protocol_handlers,
-                                request_interceptors.Pass()));
+  return new ChromeURLRequestContextGetter(new FactoryForIsolatedApp(
+      profile_io_data, partition_descriptor, main_context,
+      std::move(protocol_handler_interceptor), protocol_handlers,
+      std::move(request_interceptors)));
 }
 
 // static

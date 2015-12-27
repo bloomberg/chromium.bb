@@ -5,6 +5,7 @@
 #include "chrome/browser/component_updater/ev_whitelist_component_installer.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -135,7 +136,7 @@ void RegisterEVWhitelistComponent(ComponentUpdateService* cus,
       new EVWhitelistComponentInstallerTraits());
   // |cus| will take ownership of |installer| during installer->Register(cus).
   DefaultComponentInstaller* installer =
-      new DefaultComponentInstaller(traits.Pass());
+      new DefaultComponentInstaller(std::move(traits));
   installer->Register(cus, base::Closure());
 
   content::BrowserThread::PostAfterStartupTask(

@@ -5,6 +5,7 @@
 #include "chrome/test/chromedriver/server/http_handler.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -85,7 +86,7 @@ HttpHandler::HttpHandler(
   socket_factory_ = CreateSyncWebSocketFactory(context_getter_.get());
   adb_.reset(new AdbImpl(io_task_runner, adb_port));
   device_manager_.reset(new DeviceManager(adb_.get()));
-  port_server_ = port_server.Pass();
+  port_server_ = std::move(port_server);
   port_manager_.reset(new PortManager(12000, 13000));
 
   CommandMapping commands[] = {
@@ -590,7 +591,7 @@ void HttpHandler::Handle(const net::HttpServerRequestInfo& request,
     scoped_ptr<net::HttpServerResponseInfo> response(
         new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));
     response->SetBody("unhandled request", "text/plain");
-    send_response_func.Run(response.Pass());
+    send_response_func.Run(std::move(response));
     return;
   }
 
@@ -637,7 +638,7 @@ void HttpHandler::HandleCommand(
       scoped_ptr<net::HttpServerResponseInfo> response(
           new net::HttpServerResponseInfo(net::HTTP_NOT_FOUND));
       response->SetBody("unknown command: " + trimmed_path, "text/plain");
-      send_response_func.Run(response.Pass());
+      send_response_func.Run(std::move(response));
       return;
     }
     if (internal::MatchesCommand(
@@ -654,7 +655,7 @@ void HttpHandler::HandleCommand(
       scoped_ptr<net::HttpServerResponseInfo> response(
           new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));
       response->SetBody("missing command parameters", "text/plain");
-      send_response_func.Run(response.Pass());
+      send_response_func.Run(std::move(response));
       return;
     }
     params.MergeDictionary(body_params);
@@ -676,8 +677,8 @@ void HttpHandler::PrepareResponse(
     const std::string& session_id) {
   CHECK(thread_checker_.CalledOnValidThread());
   scoped_ptr<net::HttpServerResponseInfo> response =
-      PrepareResponseHelper(trimmed_path, status, value.Pass(), session_id);
-  send_response_func.Run(response.Pass());
+      PrepareResponseHelper(trimmed_path, status, std::move(value), session_id);
+  send_response_func.Run(std::move(response));
   if (trimmed_path == kShutdownPath)
     quit_func_.Run();
 }
@@ -691,7 +692,7 @@ scoped_ptr<net::HttpServerResponseInfo> HttpHandler::PrepareResponseHelper(
     scoped_ptr<net::HttpServerResponseInfo> response(
         new net::HttpServerResponseInfo(net::HTTP_NOT_IMPLEMENTED));
     response->SetBody("unimplemented command: " + trimmed_path, "text/plain");
-    return response.Pass();
+    return response;
   }
 
   if (status.IsError()) {
@@ -720,7 +721,7 @@ scoped_ptr<net::HttpServerResponseInfo> HttpHandler::PrepareResponseHelper(
   scoped_ptr<net::HttpServerResponseInfo> response(
       new net::HttpServerResponseInfo(net::HTTP_OK));
   response->SetBody(body, "application/json; charset=utf-8");
-  return response.Pass();
+  return response;
 }
 
 namespace internal {

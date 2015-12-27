@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -44,11 +45,10 @@ PasswordStoreX::PasswordStoreX(
     NativeBackend* backend)
     : PasswordStoreDefault(main_thread_runner,
                            db_thread_runner,
-                           login_db.Pass()),
+                           std::move(login_db)),
       backend_(backend),
       migration_checked_(!backend),
-      allow_fallback_(false) {
-}
+      allow_fallback_(false) {}
 
 PasswordStoreX::~PasswordStoreX() {}
 
@@ -147,7 +147,7 @@ ScopedVector<autofill::PasswordForm> PasswordStoreX::FillMatchingLogins(
     // until we perform a write operation, or until a read returns actual data.
     if (!matched_forms.empty())
       allow_fallback_ = false;
-    return matched_forms.Pass();
+    return matched_forms;
   }
   if (allow_default_store())
     return PasswordStoreDefault::FillMatchingLogins(form, prompt_policy);

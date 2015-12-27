@@ -182,7 +182,7 @@ scoped_ptr<base::CommandLine> CreateServiceProcessCommandLine() {
   command_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
                                  kSwitchesToCopy,
                                  arraysize(kSwitchesToCopy));
-  return command_line.Pass();
+  return command_line;
 }
 
 ServiceProcessState::ServiceProcessState() : state_(NULL) {

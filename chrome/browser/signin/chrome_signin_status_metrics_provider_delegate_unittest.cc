@@ -4,6 +4,8 @@
 
 #include "chrome/browser/signin/chrome_signin_status_metrics_provider_delegate.h"
 
+#include <utility>
+
 #include "build/build_config.h"
 #include "components/signin/core/browser/signin_status_metrics_provider.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -18,7 +20,7 @@ TEST(ChromeSigninStatusMetricsProviderDelegateTest,
       new ChromeSigninStatusMetricsProviderDelegate);
   ChromeSigninStatusMetricsProviderDelegate* raw_delegate = delegate.get();
   scoped_ptr<SigninStatusMetricsProvider> metrics_provider(
-      SigninStatusMetricsProvider::CreateInstance(delegate.Pass()));
+      SigninStatusMetricsProvider::CreateInstance(std::move(delegate)));
 
   // Initial status is all signed in and then a signed-in browser is opened.
   metrics_provider->UpdateInitialSigninStatusForTesting(2, 2);

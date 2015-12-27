@@ -4,8 +4,9 @@
 
 #include "chrome/browser/interstitials/security_interstitial_page.h"
 
-#include "base/i18n/rtl.h"
+#include <utility>
 
+#include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -113,5 +114,5 @@ SecurityInterstitialPage::metrics_helper() {
 
 void SecurityInterstitialPage::set_metrics_helper(
     scoped_ptr<security_interstitials::MetricsHelper> metrics_helper) {
-  controller_->set_metrics_helper(metrics_helper.Pass());
+  controller_->set_metrics_helper(std::move(metrics_helper));
 }

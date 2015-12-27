@@ -53,7 +53,7 @@ TrackedPreferenceIncident::TakePayload() {
     incident->clear_split_key();
   }
 
-  return payload.Pass();
+  return payload;
 }
 
 }  // namespace safe_browsing

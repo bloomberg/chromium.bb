@@ -18,7 +18,7 @@ ResourceTypeStatPtr StatToMojo(const blink::WebCache::ResourceTypeStat& obj) {
   stat->size = obj.size;
   stat->live_size = obj.liveSize;
   stat->decoded_size = obj.decodedSize;
-  return stat.Pass();
+  return stat;
 }
 
 blink::WebCache::ResourceTypeStat StatFromMojo(const ResourceTypeStat& obj) {
@@ -43,7 +43,7 @@ TypeConverter<ResourceTypeStatsPtr, blink::WebCache::ResourceTypeStats>::
   stats->xsl_style_sheets = StatToMojo(obj.xslStyleSheets);
   stats->fonts = StatToMojo(obj.fonts);
   stats->other = StatToMojo(obj.other);
-  return stats.Pass();
+  return stats;
 }
 
 // static

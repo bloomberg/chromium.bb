@@ -5,6 +5,7 @@
 #include "chrome/browser/media/router/presentation_service_delegate_impl.h"
 
 #include <string>
+#include <utility>
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/containers/small_map.h"
@@ -718,7 +719,7 @@ void PresentationServiceDelegateImpl::StartSession(
           error_cb));
   MediaRouterDialogController* controller =
       MediaRouterDialogController::GetOrCreateForWebContents(web_contents_);
-  if (!controller->ShowMediaRouterDialogForPresentation(request.Pass())) {
+  if (!controller->ShowMediaRouterDialogForPresentation(std::move(request))) {
     LOG(ERROR) << "Media router dialog already exists. Ignoring StartSession.";
     error_cb.Run(content::PresentationError(content::PRESENTATION_ERROR_UNKNOWN,
                                             "Unable to create dialog."));
@@ -807,7 +808,7 @@ void PresentationServiceDelegateImpl::SendMessage(
   }
 
   if (message->is_binary()) {
-    router_->SendRouteBinaryMessage(route_id, message->data.Pass(),
+    router_->SendRouteBinaryMessage(route_id, std::move(message->data),
                                     send_message_cb);
   } else {
     router_->SendRouteMessage(route_id, message->message, send_message_cb);

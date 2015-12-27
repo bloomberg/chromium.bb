@@ -5,6 +5,7 @@
 #include "chrome/browser/media_galleries/fileapi/device_media_async_file_util.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/files/file_util.h"
@@ -316,11 +317,9 @@ void DeviceMediaAsyncFileUtil::CreateOrOpen(
     return;
   }
   CreateSnapshotFile(
-      context.Pass(),
-      url,
+      std::move(context), url,
       base::Bind(&NativeMediaFileUtil::CreatedSnapshotFileForCreateOrOpen,
-                 make_scoped_refptr(context->task_runner()),
-                 file_flags,
+                 make_scoped_refptr(context->task_runner()), file_flags,
                  callback));
 }
 

@@ -6,9 +6,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <algorithm>
 #include <iterator>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -1411,8 +1411,8 @@ void SafeBrowsingDatabaseNew::UpdatePrefixSetUrlStore(
   }
 
   // Swap in the newly built filter.
-  state_manager_.BeginWriteTransaction()->SwapPrefixSet(prefix_set_id,
-                                                        new_prefix_set.Pass());
+  state_manager_.BeginWriteTransaction()->SwapPrefixSet(
+      prefix_set_id, std::move(new_prefix_set));
 
   UMA_HISTOGRAM_LONG_TIMES("SB2.BuildFilter", base::TimeTicks::Now() - before);
 
@@ -1520,7 +1520,7 @@ void SafeBrowsingDatabaseNew::LoadPrefixSet(const base::FilePath& db_filename,
       PrefixSet::LoadFile(PrefixSetForFilename(db_filename));
   if (!new_prefix_set.get())
     RecordFailure(read_failure_type);
-  txn->SwapPrefixSet(prefix_set_id, new_prefix_set.Pass());
+  txn->SwapPrefixSet(prefix_set_id, std::move(new_prefix_set));
   UMA_HISTOGRAM_TIMES("SB2.PrefixSetLoad", base::TimeTicks::Now() - before);
 }
 

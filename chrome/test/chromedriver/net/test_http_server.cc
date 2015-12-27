@@ -4,6 +4,8 @@
 
 #include "chrome/test/chromedriver/net/test_http_server.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
@@ -130,7 +132,7 @@ void TestHttpServer::StartOnServerThread(bool* success,
   scoped_ptr<net::ServerSocket> server_socket(
       new net::TCPServerSocket(NULL, net::NetLog::Source()));
   server_socket->ListenWithAddressAndPort("127.0.0.1", 0, 1);
-  server_.reset(new net::HttpServer(server_socket.Pass(), this));
+  server_.reset(new net::HttpServer(std::move(server_socket), this));
 
   net::IPEndPoint address;
   int error = server_->GetLocalAddress(&address);

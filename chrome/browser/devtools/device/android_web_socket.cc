@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -34,7 +36,7 @@ class AndroidDeviceManager::AndroidWebSocket::WebSocketImpl {
       scoped_ptr<net::StreamSocket> socket)
       : response_task_runner_(response_task_runner),
         weak_socket_(weak_socket),
-        socket_(socket.Pass()),
+        socket_(std::move(socket)),
         encoder_(net::WebSocketEncoder::CreateClient(extensions)),
         response_buffer_(body_head) {
     thread_checker_.DetachFromThread();
@@ -190,7 +192,7 @@ void AndroidDeviceManager::AndroidWebSocket::Connected(
   }
   socket_impl_ = new WebSocketImpl(base::ThreadTaskRunnerHandle::Get(),
                                    weak_factory_.GetWeakPtr(), extensions,
-                                   body_head, socket.Pass());
+                                   body_head, std::move(socket));
   device_->task_runner_->PostTask(FROM_HERE,
                                   base::Bind(&WebSocketImpl::StartListening,
                                              base::Unretained(socket_impl_)));

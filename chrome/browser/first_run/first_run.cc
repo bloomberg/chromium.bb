@@ -5,6 +5,7 @@
 #include "chrome/browser/first_run/first_run.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -797,7 +798,7 @@ void AutoImport(
     importer::LogImporterUseToMetrics(
         "AutoImport", importer_list->GetSourceProfileAt(0).importer_type);
 
-    ImportSettings(profile, importer_host, importer_list.Pass(), items);
+    ImportSettings(profile, importer_host, std::move(importer_list), items);
   }
 
   if (!import_bookmarks_path.empty()) {

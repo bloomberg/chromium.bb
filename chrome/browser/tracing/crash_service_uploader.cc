@@ -4,6 +4,8 @@
 
 #include "chrome/browser/tracing/crash_service_uploader.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -116,8 +118,8 @@ void TraceCrashServiceUploader::DoUpload(
       content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&TraceCrashServiceUploader::DoUploadOnFileThread,
                  base::Unretained(this), file_contents, upload_mode,
-                 upload_url_, base::Passed(metadata.Pass()), progress_callback,
-                 done_callback));
+                 upload_url_, base::Passed(std::move(metadata)),
+                 progress_callback, done_callback));
 }
 
 void TraceCrashServiceUploader::DoUploadOnFileThread(
@@ -190,7 +192,7 @@ void TraceCrashServiceUploader::DoUploadOnFileThread(
   }
 
   std::string post_data;
-  SetupMultipart(product, version, metadata.Pass(), "trace.json.gz",
+  SetupMultipart(product, version, std::move(metadata), "trace.json.gz",
                  compressed_contents, &post_data);
 
   content::BrowserThread::PostTask(

@@ -4,6 +4,8 @@
 
 #include "chrome/common/variations/variations_util.h"
 
+#include <utility>
+
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
@@ -96,7 +98,7 @@ TEST_F(VariationsUtilTest, AssociateFeaturesFromFieldTrialConfig) {
   base::FeatureList::ClearInstanceForTesting();
   scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
   AssociateParamsFromFieldTrialConfig(kConfig, feature_list.get());
-  base::FeatureList::SetInstance(feature_list.Pass());
+  base::FeatureList::SetInstance(std::move(feature_list));
 
   // Check the resulting feature and field trial states. Trials should not be
   // active until their associated features are queried.

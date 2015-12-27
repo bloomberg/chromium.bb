@@ -28,6 +28,8 @@
 
 #include "chrome/browser/download/download_history.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/download/download_crx_util.h"
@@ -208,11 +210,11 @@ bool DownloadHistory::IsPersisted(const content::DownloadItem* item) {
 
 DownloadHistory::DownloadHistory(content::DownloadManager* manager,
                                  scoped_ptr<HistoryAdapter> history)
-  : notifier_(manager, this),
-    history_(history.Pass()),
-    loading_id_(content::DownloadItem::kInvalidId),
-    history_size_(0),
-    weak_ptr_factory_(this) {
+    : notifier_(manager, this),
+      history_(std::move(history)),
+      loading_id_(content::DownloadItem::kInvalidId),
+      history_size_(0),
+      weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::DownloadManager::DownloadVector items;
   notifier_.GetManager()->GetAllDownloads(&items);

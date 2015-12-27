@@ -4,6 +4,8 @@
 
 #include "chrome/browser/policy/schema_registry_service_factory.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/browser/policy/schema_registry_service.h"
@@ -122,9 +124,9 @@ SchemaRegistryServiceFactory::CreateForContextInternal(
     registry.reset(new SchemaRegistry);
 
   scoped_ptr<SchemaRegistryService> service(new SchemaRegistryService(
-      registry.Pass(), chrome_schema, global_registry));
+      std::move(registry), chrome_schema, global_registry));
   registries_[context] = service.get();
-  return service.Pass();
+  return service;
 }
 
 void SchemaRegistryServiceFactory::BrowserContextShutdown(

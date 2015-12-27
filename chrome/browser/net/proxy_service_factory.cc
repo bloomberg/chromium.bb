@@ -5,8 +5,8 @@
 #include "chrome/browser/net/proxy_service_factory.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
@@ -86,7 +86,7 @@ ProxyServiceFactory::CreateProxyConfigService(PrefProxyConfigTracker* tracker) {
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
 #endif  // !defined(OS_CHROMEOS)
 
-  return tracker->CreateTrackingProxyConfigService(base_service.Pass());
+  return tracker->CreateTrackingProxyConfigService(std::move(base_service));
 }
 
 // static
@@ -173,28 +173,31 @@ scoped_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
     // should override other options.
     if (command_line.HasSwitch(switches::kV8PacMojoInProcess)) {
       proxy_service = net::CreateProxyServiceUsingMojoInProcess(
-          proxy_config_service.Pass(), new net::ProxyScriptFetcherImpl(context),
-          dhcp_proxy_script_fetcher.Pass(), context->host_resolver(), net_log,
-          network_delegate);
+          std::move(proxy_config_service),
+          new net::ProxyScriptFetcherImpl(context),
+          std::move(dhcp_proxy_script_fetcher), context->host_resolver(),
+          net_log, network_delegate);
     } else if (EnableOutOfProcessV8Pac(command_line)) {
       proxy_service = net::CreateProxyServiceUsingMojoFactory(
           UtilityProcessMojoProxyResolverFactory::GetInstance(),
-          proxy_config_service.Pass(), new net::ProxyScriptFetcherImpl(context),
-          dhcp_proxy_script_fetcher.Pass(), context->host_resolver(), net_log,
-          network_delegate);
+          std::move(proxy_config_service),
+          new net::ProxyScriptFetcherImpl(context),
+          std::move(dhcp_proxy_script_fetcher), context->host_resolver(),
+          net_log, network_delegate);
     }
 #endif  // !defined(OS_ANDROID)
 
     if (!proxy_service) {
       proxy_service = net::CreateProxyServiceUsingV8ProxyResolver(
-          proxy_config_service.Pass(), new net::ProxyScriptFetcherImpl(context),
-          dhcp_proxy_script_fetcher.Pass(), context->host_resolver(), net_log,
-          network_delegate);
+          std::move(proxy_config_service),
+          new net::ProxyScriptFetcherImpl(context),
+          std::move(dhcp_proxy_script_fetcher), context->host_resolver(),
+          net_log, network_delegate);
     }
 #endif  // defined(OS_IOS)
   } else {
     proxy_service = net::ProxyService::CreateUsingSystemProxyResolver(
-        proxy_config_service.Pass(), num_pac_threads, net_log);
+        std::move(proxy_config_service), num_pac_threads, net_log);
   }
 
   proxy_service->set_quick_check_enabled(quick_check_enabled);

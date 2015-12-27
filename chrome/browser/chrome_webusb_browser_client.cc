@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chrome_webusb_browser_client.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/net/referrer.h"
@@ -96,7 +98,8 @@ void ChromeWebUsbBrowserClient::OnDeviceAdded(
           new WebUsbNotificationDelegate(landing_page, notification_id)));
 
   notification->SetSystemPriority();
-  message_center::MessageCenter::Get()->AddNotification(notification.Pass());
+  message_center::MessageCenter::Get()->AddNotification(
+      std::move(notification));
 }
 
 void ChromeWebUsbBrowserClient::OnDeviceRemoved(

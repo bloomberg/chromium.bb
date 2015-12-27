@@ -5,6 +5,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/base_switches.h"
@@ -445,7 +446,7 @@ URLRequestMockCaptivePortalJobFactory::CreateInterceptor() {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
   scoped_ptr<Interceptor> interceptor(new Interceptor(behind_captive_portal_));
   interceptors_.push_back(interceptor.get());
-  return interceptor.Pass();
+  return std::move(interceptor);
 }
 
 void URLRequestMockCaptivePortalJobFactory::AddUrlHandlersOnIOThread() {

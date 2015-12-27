@@ -527,7 +527,7 @@ scoped_ptr<syncable_prefs::PrefServiceSyncable> CreateProfilePrefs(
 
   ConfigureDefaultSearchPrefMigrationToDictionaryValue(pref_service.get());
 
-  return pref_service.Pass();
+  return pref_service;
 }
 
 void DisableDomainCheckForTesting() {

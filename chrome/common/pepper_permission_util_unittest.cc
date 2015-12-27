@@ -36,7 +36,7 @@ scoped_refptr<Extension> CreateExtensionImportingModule(
           .Build();
 
   return ExtensionBuilder()
-      .SetManifest(manifest.Pass())
+      .SetManifest(std::move(manifest))
       .AddFlags(Extension::FROM_WEBSTORE)
       .SetID(id)
       .Build();
@@ -56,7 +56,7 @@ TEST(PepperPermissionUtilTest, ExtensionWhitelisting) {
           .Set("manifest_version", 2)
           .Build();
   scoped_refptr<Extension> ext = ExtensionBuilder()
-                                     .SetManifest(manifest.Pass())
+                                     .SetManifest(std::move(manifest))
                                      .SetID(whitelisted_id)
                                      .Build();
   extensions.Insert(ext);
@@ -101,7 +101,7 @@ TEST(PepperPermissionUtilTest, SharedModuleWhitelisting) {
                             std::move(ListBuilder().Append(whitelisted_id)))))
           .Build();
   scoped_refptr<Extension> shared_module =
-      ExtensionBuilder().SetManifest(shared_module_manifest.Pass()).Build();
+      ExtensionBuilder().SetManifest(std::move(shared_module_manifest)).Build();
 
   scoped_refptr<Extension> ext =
       CreateExtensionImportingModule(shared_module->id(), whitelisted_id);

@@ -5,8 +5,8 @@
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/values.h"
@@ -139,11 +139,11 @@ void TtsExtensionEventHandler::OnTtsEvent(Utterance* utterance,
 
   scoped_ptr<extensions::Event> event(
       new extensions::Event(::extensions::events::TTS_ON_EVENT,
-                            ::events::kOnEvent, arguments.Pass()));
+                            ::events::kOnEvent, std::move(arguments)));
   event->restrict_to_browser_context = utterance->browser_context();
   event->event_url = utterance->src_url();
   extensions::EventRouter::Get(utterance->browser_context())
-      ->DispatchEventToExtension(src_extension_id_, event.Pass());
+      ->DispatchEventToExtension(src_extension_id_, std::move(event));
 
   if (utterance->finished())
     delete this;

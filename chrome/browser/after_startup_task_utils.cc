@@ -4,6 +4,8 @@
 
 #include "chrome/browser/after_startup_task_utils.h"
 
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -68,7 +70,7 @@ void ScheduleTask(scoped_ptr<AfterStartupTask> queued_task) {
   scoped_refptr<base::TaskRunner> target_runner = queued_task->task_runner;
   tracked_objects::Location from_here = queued_task->from_here;
   target_runner->PostDelayedTask(
-      from_here, base::Bind(&RunTask, base::Passed(queued_task.Pass())),
+      from_here, base::Bind(&RunTask, base::Passed(std::move(queued_task))),
       base::TimeDelta::FromSeconds(base::RandInt(kMinDelaySec, kMaxDelaySec)));
 }
 
@@ -76,14 +78,14 @@ void QueueTask(scoped_ptr<AfterStartupTask> queued_task) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(QueueTask, base::Passed(queued_task.Pass())));
+        base::Bind(QueueTask, base::Passed(std::move(queued_task))));
     return;
   }
 
   // The flag may have been set while the task to invoke this method
   // on the UI thread was inflight.
   if (IsBrowserStartupComplete()) {
-    ScheduleTask(queued_task.Pass());
+    ScheduleTask(std::move(queued_task));
     return;
   }
   g_after_startup_tasks.Get().push_back(queued_task.release());
@@ -206,7 +208,7 @@ void AfterStartupTaskUtils::PostTask(
 
   scoped_ptr<AfterStartupTask> queued_task(
       new AfterStartupTask(from_here, task_runner, task));
-  QueueTask(queued_task.Pass());
+  QueueTask(std::move(queued_task));
 }
 
 void AfterStartupTaskUtils::SetBrowserStartupIsCompleteForTesting() {

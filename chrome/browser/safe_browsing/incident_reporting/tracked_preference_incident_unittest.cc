@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/tracked_preference_incident.h"
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,7 +25,7 @@ scoped_ptr<Incident> MakeIncident(bool changed, bool is_personal) {
           ? ClientIncidentReport_IncidentData_TrackedPreferenceIncident_ValueState_CHANGED
           : ClientIncidentReport_IncidentData_TrackedPreferenceIncident_ValueState_CLEARED);
   return make_scoped_ptr(
-      new TrackedPreferenceIncident(incident.Pass(), is_personal));
+      new TrackedPreferenceIncident(std::move(incident), is_personal));
 }
 
 }  // namespace

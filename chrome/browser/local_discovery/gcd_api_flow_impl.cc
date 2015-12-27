@@ -5,6 +5,7 @@
 #include "chrome/browser/local_discovery/gcd_api_flow_impl.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/strings/string_number_conversions.h"
@@ -34,7 +35,7 @@ GCDApiFlowImpl::~GCDApiFlowImpl() {
 }
 
 void GCDApiFlowImpl::Start(scoped_ptr<Request> request) {
-  request_ = request.Pass();
+  request_ = std::move(request);
   OAuth2TokenService::ScopeSet oauth_scopes;
   oauth_scopes.insert(request_->GetOAuthScope());
   oauth_request_ =

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -829,7 +831,7 @@ void SupervisedUserService::UpdateManualHosts() {
     DCHECK(result);
     (*host_map)[it.key()] = allow;
   }
-  url_filter_context_.SetManualHosts(host_map.Pass());
+  url_filter_context_.SetManualHosts(std::move(host_map));
 
   FOR_EACH_OBSERVER(
       SupervisedUserServiceObserver, observer_list_, OnURLFilterChanged());
@@ -845,7 +847,7 @@ void SupervisedUserService::UpdateManualURLs() {
     DCHECK(result);
     (*url_map)[GURL(it.key())] = allow;
   }
-  url_filter_context_.SetManualURLs(url_map.Pass());
+  url_filter_context_.SetManualURLs(std::move(url_map));
 
   FOR_EACH_OBSERVER(
       SupervisedUserServiceObserver, observer_list_, OnURLFilterChanged());

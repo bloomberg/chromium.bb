@@ -4,6 +4,7 @@
 
 #include "chrome/browser/io_thread.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/base64.h"
@@ -250,13 +251,13 @@ scoped_ptr<net::HostResolver> CreateGlobalHostResolver(net::NetLog* net_log) {
   // rules on top of the real host resolver. This allows forwarding all requests
   // through a designated test server.
   if (!command_line.HasSwitch(switches::kHostResolverRules))
-    return global_host_resolver.Pass();
+    return global_host_resolver;
 
   scoped_ptr<net::MappedHostResolver> remapped_resolver(
-      new net::MappedHostResolver(global_host_resolver.Pass()));
+      new net::MappedHostResolver(std::move(global_host_resolver)));
   remapped_resolver->SetRulesFromString(
       command_line.GetSwitchValueASCII(switches::kHostResolverRules));
-  return remapped_resolver.Pass();
+  return std::move(remapped_resolver);
 }
 
 int GetSwitchValueAsInt(const base::CommandLine& command_line,
@@ -644,7 +645,7 @@ void IOThread::Init() {
   globals_->data_use_aggregator.reset(new data_usage::DataUseAggregator(
       scoped_ptr<data_usage::DataUseAnnotator>(
           new chrome_browser_data_usage::TabIdAnnotator()),
-      data_use_amortizer.Pass()));
+      std::move(data_use_amortizer)));
 
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
   // is fixed.
@@ -672,7 +673,7 @@ void IOThread::Init() {
   tracked_objects::ScopedTracker tracking_profile4(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "466432 IOThread::InitAsync::CreateGlobalHostResolver"));
-  globals_->system_network_delegate = chrome_network_delegate.Pass();
+  globals_->system_network_delegate = std::move(chrome_network_delegate);
   globals_->host_resolver = CreateGlobalHostResolver(net_log_);
 
   std::map<std::string, std::string> network_quality_estimator_params;
@@ -686,7 +687,7 @@ void IOThread::Init() {
 #endif
   // Pass ownership.
   globals_->network_quality_estimator.reset(new net::NetworkQualityEstimator(
-      external_estimate_provider.Pass(), network_quality_estimator_params));
+      std::move(external_estimate_provider), network_quality_estimator_params));
 
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
   // is fixed.
@@ -1089,8 +1090,7 @@ void IOThread::CreateDefaultAuthHandlerFactory() {
 #endif
   globals_->http_auth_handler_factory =
       net::HttpAuthHandlerRegistryFactory::Create(
-          globals_->http_auth_preferences.get(), globals_->host_resolver.get())
-          .Pass();
+          globals_->http_auth_preferences.get(), globals_->host_resolver.get());
 }
 
 void IOThread::ClearHostCache() {
@@ -1225,7 +1225,7 @@ void IOThread::InitSystemRequestContextOnIOThread() {
   globals_->system_proxy_service = ProxyServiceFactory::CreateProxyService(
       net_log_, globals_->proxy_script_fetcher_context.get(),
       globals_->system_network_delegate.get(),
-      system_proxy_config_service_.Pass(), command_line,
+      std::move(system_proxy_config_service_), command_line,
       quick_check_enabled_.GetValue());
 
   globals_->system_request_context.reset(
@@ -1739,7 +1739,8 @@ net::URLRequestContext* IOThread::ConstructProxyScriptFetcherContext(
       make_scoped_ptr(new net::FtpProtocolHandler(
           globals->proxy_script_fetcher_ftp_transaction_factory.get())));
 #endif
-  globals->proxy_script_fetcher_url_request_job_factory = job_factory.Pass();
+  globals->proxy_script_fetcher_url_request_job_factory =
+      std::move(job_factory);
 
   context->set_job_factory(
       globals->proxy_script_fetcher_url_request_job_factory.get());

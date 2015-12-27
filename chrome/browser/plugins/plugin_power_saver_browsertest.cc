@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/stl_util.h"
@@ -154,7 +154,7 @@ scoped_ptr<net::test_server::HttpResponse> RespondWithHTML(
       new net::test_server::BasicHttpResponse());
   response->set_content_type("text/html");
   response->set_content(html);
-  return response.Pass();
+  return std::move(response);
 }
 
 void VerifyVisualStateUpdated(const base::Closure& done_cb,

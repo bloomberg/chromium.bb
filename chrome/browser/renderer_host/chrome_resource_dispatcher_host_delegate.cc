@@ -5,8 +5,8 @@
 #include "chrome/browser/renderer_host/chrome_resource_dispatcher_host_delegate.h"
 
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/base64.h"
@@ -211,8 +211,8 @@ void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamInfo> stream,
   if (!streams_private)
     return;
   streams_private->ExecuteMimeTypeHandler(
-      extension_id, web_contents, stream.Pass(), view_id, expected_content_size,
-      embedded, render_process_id, render_frame_id);
+      extension_id, web_contents, std::move(stream), view_id,
+      expected_content_size, embedded, render_process_id, render_frame_id);
 }
 #endif  // !defined(ENABLE_EXTENSIONS)
 

@@ -174,7 +174,7 @@ class CommandLinePrefStoreProxyTest
     PrefProxyConfigTrackerImpl::RegisterPrefs(registry.get());
     syncable_prefs::PrefServiceMockFactory factory;
     factory.set_command_line_prefs(new CommandLinePrefStore(&command_line_));
-    pref_service_ = factory.Create(registry.get()).Pass();
+    pref_service_ = factory.Create(registry.get());
     PrefProxyConfigTrackerImpl::ReadPrefConfig(pref_service_.get(),
                                                &proxy_config_);
   }

@@ -60,9 +60,8 @@ int InMBFromB(const TaskManagerModel* model, MemoryFn2 mfn, int index) {
 class TaskManagerDataDumper :
     public base::RefCountedThreadSafe<TaskManagerDataDumper> {
  public:
-  TaskManagerDataDumper(scoped_refptr<TaskManagerModel> model,
-                        base::File file)
-      : model_(model), file_(file.Pass()) {
+  TaskManagerDataDumper(scoped_refptr<TaskManagerModel> model, base::File file)
+      : model_(model), file_(std::move(file)) {
     model_->RegisterOnDataReadyCallback(
         base::Bind(&TaskManagerDataDumper::OnDataReady, this));
     model->StartListening();
@@ -203,7 +202,7 @@ namespace caps {
 
 void GenerateStateJSON(
     scoped_refptr<TaskManagerModel> model, base::File file) {
-  new TaskManagerDataDumper(model, file.Pass());
+  new TaskManagerDataDumper(model, std::move(file));
 }
 
 }

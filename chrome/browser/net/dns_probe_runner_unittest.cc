@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/net/dns_probe_runner.h"
+
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "chrome/browser/net/dns_probe_runner.h"
 #include "chrome/browser/net/dns_probe_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/dns/dns_client.h"
@@ -93,7 +96,7 @@ TEST_F(DnsProbeRunnerTest, InvalidDnsConfig) {
   DnsConfig empty_config;
   dns_client->SetConfig(empty_config);
   ASSERT_EQ(NULL, dns_client->GetTransactionFactory());
-  runner_.SetClient(dns_client.Pass());
+  runner_.SetClient(std::move(dns_client));
 
   TestDnsProbeRunnerCallback callback;
 

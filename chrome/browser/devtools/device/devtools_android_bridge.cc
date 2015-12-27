@@ -5,10 +5,10 @@
 #include "chrome/browser/devtools/device/devtools_android_bridge.h"
 
 #include <stddef.h>
-
 #include <algorithm>
 #include <map>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/base64.h"
@@ -656,7 +656,7 @@ void DevToolsAndroidBridge::SendProtocolCommand(
   }
   new ProtocolCommand(
       device, browser_id.second, target_path,
-      DevToolsProtocol::SerializeCommand(1, method, params.Pass()),
+      DevToolsProtocol::SerializeCommand(1, method, std::move(params)),
       callback);
 }
 

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/ping_manager.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -136,7 +138,7 @@ void SafeBrowsingPingManager::ReportInvalidCertificateChain(
 void SafeBrowsingPingManager::SetCertificateErrorReporterForTesting(
     scoped_ptr<certificate_reporting::ErrorReporter>
         certificate_error_reporter) {
-  certificate_error_reporter_ = certificate_error_reporter.Pass();
+  certificate_error_reporter_ = std::move(certificate_error_reporter);
 }
 
 GURL SafeBrowsingPingManager::SafeBrowsingHitUrl(

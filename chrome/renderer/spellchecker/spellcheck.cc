@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -264,7 +264,7 @@ void SpellCheck::OnRequestDocumentMarkers() {
 void SpellCheck::AddSpellcheckLanguage(base::File file,
                                        const std::string& language) {
   languages_.push_back(new SpellcheckLanguage());
-  languages_.back()->Init(file.Pass(), language);
+  languages_.back()->Init(std::move(file), language);
 }
 
 bool SpellCheck::SpellCheckWord(

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/local_discovery/privet_http.h"
 
+#include <utility>
+
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
@@ -762,7 +764,7 @@ class PrivetLocalPrintTest : public PrivetHTTPTest {
         new FakePWGRasterConverter);
     pwg_converter_ = pwg_converter.get();
     local_print_operation_->SetPWGRasterConverterForTesting(
-        pwg_converter.Pass());
+        std::move(pwg_converter));
   }
 
   scoped_refptr<base::RefCountedBytes> RefCountedBytesFromString(

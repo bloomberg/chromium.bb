@@ -300,7 +300,7 @@ SupervisedUserRefreshTokenFetcher::Create(
                                                 account_id,
                                                 device_id,
                                                 context));
-  return fetcher.Pass();
+  return fetcher;
 }
 
 SupervisedUserRefreshTokenFetcher::~SupervisedUserRefreshTokenFetcher() {}

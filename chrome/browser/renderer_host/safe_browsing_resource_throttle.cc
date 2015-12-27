@@ -4,6 +4,8 @@
 
 #include "chrome/browser/renderer_host/safe_browsing_resource_throttle.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/values.h"
@@ -49,7 +51,7 @@ scoped_ptr<base::Value> NetLogUrlCallback(
   if (name && value)
     event_params->SetString(name, value);
   request->net_log().source().AddToEventParameters(event_params.get());
-  return event_params.Pass();
+  return std::move(event_params);
 }
 
 // Return a dictionary with |name|=|value|, for netlogging.
@@ -60,7 +62,7 @@ scoped_ptr<base::Value> NetLogStringCallback(
   scoped_ptr<base::DictionaryValue> event_params(new base::DictionaryValue());
   if (name && value)
     event_params->SetString(name, value);
-  return event_params.Pass();
+  return std::move(event_params);
 }
 
 }  // namespace

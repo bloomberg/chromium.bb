@@ -5,6 +5,7 @@
 #include "chrome/browser/devtools/device/adb/adb_client_socket.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -73,7 +74,7 @@ class AdbTransportSocket : public AdbClientSocket {
   void OnSocketAvailable(int result, const std::string& response) {
     if (!CheckNetResultOrDie(result))
       return;
-    callback_.Run(net::OK, socket_.Pass());
+    callback_.Run(net::OK, std::move(socket_));
     delete this;
   }
 

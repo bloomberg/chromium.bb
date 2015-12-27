@@ -5,8 +5,8 @@
 #include "chrome/browser/safe_browsing/incident_reporting/last_download_finder.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -73,7 +73,7 @@ scoped_ptr<KeyedService> BuildHistoryService(content::BrowserContext* context) {
   if (history_service->Init(
           profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
           history::HistoryDatabaseParamsForPath(profile->GetPath()))) {
-    return history_service.Pass();
+    return std::move(history_service);
   }
 
   ADD_FAILURE() << "failed to initialize history service";
@@ -137,8 +137,8 @@ class LastDownloadFinderTest : public testing::Test {
                       scoped_ptr<ClientIncidentReport_DownloadDetails> download,
                       scoped_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
                           non_binary_download) {
-    *result = download.Pass();
-    *non_binary_result = non_binary_download.Pass();
+    *result = std::move(download);
+    *non_binary_result = std::move(non_binary_download);
     quit_closure.Run();
   }
 
@@ -197,8 +197,7 @@ class LastDownloadFinderTest : public testing::Test {
                       safe_browsing_opt_in == EXTENDED_REPORTING_OPT_IN);
 
     TestingProfile* profile = profile_manager_->CreateTestingProfile(
-        profile_name,
-        prefs.Pass(),
+        profile_name, std::move(prefs),
         base::UTF8ToUTF16(profile_name),  // user_name
         0,                                // avatar_id
         std::string(),                    // supervised_user_id

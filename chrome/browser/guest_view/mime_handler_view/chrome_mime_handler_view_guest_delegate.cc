@@ -4,6 +4,8 @@
 
 #include "chrome/browser/guest_view/mime_handler_view/chrome_mime_handler_view_guest_delegate.h"
 
+#include <utility>
+
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "components/renderer_context_menu/context_menu_delegate.h"
 
@@ -24,7 +26,7 @@ bool ChromeMimeHandlerViewGuestDelegate::HandleContextMenu(
 
   scoped_ptr<RenderViewContextMenuBase> menu =
       menu_delegate->BuildMenu(web_contents, params);
-  menu_delegate->ShowMenu(menu.Pass());
+  menu_delegate->ShowMenu(std::move(menu));
   return true;
 }
 

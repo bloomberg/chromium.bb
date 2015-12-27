@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
+
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -17,7 +20,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_window.h"
-#include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -783,8 +785,8 @@ class LoadImageBrowserTest : public InProcessBrowserTest {
   void AddInterceptorForURL(
       const GURL& url, scoped_ptr<net::URLRequestInterceptor> handler) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-        url, handler.Pass());
+    net::URLRequestFilter::GetInstance()->AddUrlInterceptor(url,
+                                                            std::move(handler));
   }
 
   LoadImageRequestInterceptor* interceptor_;

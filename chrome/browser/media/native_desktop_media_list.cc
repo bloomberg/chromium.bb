@@ -6,10 +6,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <map>
 #include <set>
 #include <sstream>
+#include <utility>
 
 #include "base/hash.h"
 #include "base/logging.h"
@@ -121,8 +121,8 @@ NativeDesktopMediaList::Worker::Worker(
     scoped_ptr<webrtc::ScreenCapturer> screen_capturer,
     scoped_ptr<webrtc::WindowCapturer> window_capturer)
     : media_list_(media_list),
-      screen_capturer_(screen_capturer.Pass()),
-      window_capturer_(window_capturer.Pass()) {
+      screen_capturer_(std::move(screen_capturer)),
+      window_capturer_(std::move(window_capturer)) {
   if (screen_capturer_)
     screen_capturer_->Start(this);
   if (window_capturer_)
@@ -209,7 +209,7 @@ void NativeDesktopMediaList::Worker::Refresh(
       ImageHashesMap::iterator it = image_hashes_.find(source.id);
       if (it == image_hashes_.end() || it->second != frame_hash) {
         gfx::ImageSkia thumbnail =
-            ScaleDesktopFrame(current_frame_.Pass(), thumbnail_size);
+            ScaleDesktopFrame(std::move(current_frame_), thumbnail_size);
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
             base::Bind(&NativeDesktopMediaList::OnSourceThumbnail,
@@ -238,8 +238,8 @@ void NativeDesktopMediaList::Worker::OnCaptureCompleted(
 NativeDesktopMediaList::NativeDesktopMediaList(
     scoped_ptr<webrtc::ScreenCapturer> screen_capturer,
     scoped_ptr<webrtc::WindowCapturer> window_capturer)
-    : screen_capturer_(screen_capturer.Pass()),
-      window_capturer_(window_capturer.Pass()),
+    : screen_capturer_(std::move(screen_capturer)),
+      window_capturer_(std::move(window_capturer)),
       update_period_(base::TimeDelta::FromMilliseconds(kDefaultUpdatePeriod)),
       thumbnail_size_(100, 100),
       view_dialog_id_(content::DesktopMediaID::TYPE_NONE, -1),
@@ -276,7 +276,8 @@ void NativeDesktopMediaList::StartUpdating(DesktopMediaListObserver* observer) {
   observer_ = observer;
 
   worker_.reset(new Worker(weak_factory_.GetWeakPtr(),
-                           screen_capturer_.Pass(), window_capturer_.Pass()));
+                           std::move(screen_capturer_),
+                           std::move(window_capturer_)));
   Refresh();
 }
 

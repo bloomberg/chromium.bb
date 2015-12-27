@@ -4,6 +4,8 @@
 
 #include "chrome/browser/certificate_manager_model.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
@@ -225,7 +227,7 @@ void CertificateManagerModel::DidGetCertDBOnUIThread(
 
   scoped_ptr<CertificateManagerModel> model(new CertificateManagerModel(
       cert_db, is_user_db_available, is_tpm_available, observer));
-  callback.Run(model.Pass());
+  callback.Run(std::move(model));
 }
 
 // static

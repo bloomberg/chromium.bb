@@ -5,6 +5,7 @@
 #include "chrome/browser/data_usage/tab_id_annotator.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -48,7 +49,7 @@ void AnnotateDataUse(
     int32_t tab_id) {
   DCHECK(data_use);
   data_use->tab_id = tab_id;
-  callback.Run(data_use.Pass());
+  callback.Run(std::move(data_use));
 }
 
 }  // namespace
@@ -75,7 +76,7 @@ void TabIdAnnotator::Annotate(net::URLRequest* request,
           request, &render_process_id, &render_frame_id)) {
     // Run the callback immediately with a tab ID of -1 if the request has no
     // render frame.
-    AnnotateDataUse(data_use.Pass(), callback, -1 /* tab_id */);
+    AnnotateDataUse(std::move(data_use), callback, -1 /* tab_id */);
     return;
   }
 

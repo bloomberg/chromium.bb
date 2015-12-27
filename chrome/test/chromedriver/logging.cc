@@ -150,7 +150,7 @@ WebDriverLog::~WebDriverLog() {
 scoped_ptr<base::ListValue> WebDriverLog::GetAndClearEntries() {
   scoped_ptr<base::ListValue> ret(entries_.release());
   entries_.reset(new base::ListValue());
-  return ret.Pass();
+  return ret;
 }
 
 std::string WebDriverLog::GetFirstErrorMessage() const {

@@ -27,11 +27,11 @@ ReadFromBinaryFileOnFileThread(const base::FilePath& path) {
   base::MemoryMappedFile file;
   file.Initialize(path);
   if (!file.IsValid())
-    return host_hashes.Pass();
+    return host_hashes;
 
   size_t size = file.length();
   if (size <= 0 || size % base::kSHA1Length != 0)
-    return host_hashes.Pass();
+    return host_hashes;
 
   size_t hash_count = size / base::kSHA1Length;
   host_hashes->resize(hash_count);
@@ -44,7 +44,7 @@ ReadFromBinaryFileOnFileThread(const base::FilePath& path) {
 
   std::sort(host_hashes->begin(), host_hashes->end());
 
-  return host_hashes.Pass();
+  return host_hashes;
 }
 
 } // namespace

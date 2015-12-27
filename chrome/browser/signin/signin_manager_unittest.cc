@@ -4,6 +4,7 @@
 
 #include "components/signin/core/browser/signin_manager.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -48,7 +49,6 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
-
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -62,7 +62,7 @@ scoped_ptr<KeyedService> SigninManagerBuild(content::BrowserContext* context) {
       AccountTrackerServiceFactory::GetForProfile(profile),
       GaiaCookieManagerServiceFactory::GetForProfile(profile)));
   service->Initialize(NULL);
-  return service.Pass();
+  return std::move(service);
 }
 
 class TestSigninManagerObserver : public SigninManagerBase::Observer {

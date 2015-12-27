@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/incident_reporting/preference_validation_delegate.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/json/json_writer.h"
@@ -43,9 +44,7 @@ TPIncident_ValueState MapValueState(
 PreferenceValidationDelegate::PreferenceValidationDelegate(
     Profile* profile,
     scoped_ptr<IncidentReceiver> incident_receiver)
-    : profile_(profile),
-      incident_receiver_(incident_receiver.Pass()) {
-}
+    : profile_(profile), incident_receiver_(std::move(incident_receiver)) {}
 
 PreferenceValidationDelegate::~PreferenceValidationDelegate() {
 }
@@ -67,8 +66,8 @@ void PreferenceValidationDelegate::OnAtomicPreferenceValidation(
     }
     incident->set_value_state(proto_value_state);
     incident_receiver_->AddIncidentForProfile(
-        profile_, make_scoped_ptr(new TrackedPreferenceIncident(incident.Pass(),
-                                                                is_personal)));
+        profile_, make_scoped_ptr(new TrackedPreferenceIncident(
+                      std::move(incident), is_personal)));
   }
 }
 
@@ -91,8 +90,8 @@ void PreferenceValidationDelegate::OnSplitPreferenceValidation(
     }
     incident->set_value_state(proto_value_state);
     incident_receiver_->AddIncidentForProfile(
-        profile_, make_scoped_ptr(new TrackedPreferenceIncident(incident.Pass(),
-                                                                is_personal)));
+        profile_, make_scoped_ptr(new TrackedPreferenceIncident(
+                      std::move(incident), is_personal)));
   }
 }
 

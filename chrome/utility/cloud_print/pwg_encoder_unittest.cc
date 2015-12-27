@@ -59,7 +59,7 @@ scoped_ptr<BitmapImage> MakeSampleBitmap() {
     }
   }
 
-  return bitmap_image.Pass();
+  return bitmap_image;
 }
 
 }  // namespace

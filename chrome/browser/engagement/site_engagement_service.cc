@@ -5,9 +5,9 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 
 #include <stddef.h>
-
 #include <algorithm>
 #include <cmath>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -63,7 +63,7 @@ scoped_ptr<ContentSettingsForOneType> GetEngagementContentSettings(
       new ContentSettingsForOneType);
   settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
                                       std::string(), engagement_settings.get());
-  return engagement_settings.Pass();
+  return engagement_settings;
 }
 
 bool DoublesConsideredDifferent(double value1, double value2, double delta) {
@@ -403,7 +403,7 @@ std::map<GURL, double> SiteEngagementService::GetScoreMap() {
 
 SiteEngagementService::SiteEngagementService(Profile* profile,
                                              scoped_ptr<base::Clock> clock)
-    : profile_(profile), clock_(clock.Pass()), weak_factory_(this) {
+    : profile_(profile), clock_(std::move(clock)), weak_factory_(this) {
   // May be null in tests.
   history::HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::IMPLICIT_ACCESS);

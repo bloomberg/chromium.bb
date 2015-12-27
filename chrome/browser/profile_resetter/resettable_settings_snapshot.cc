@@ -428,5 +428,5 @@ scoped_ptr<base::ListValue> GetReadableFeedbackForSnapshot(
             l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_EXTENSIONS),
             extension_names);
   }
-  return list.Pass();
+  return list;
 }

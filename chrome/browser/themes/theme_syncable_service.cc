@@ -5,6 +5,7 @@
 #include "chrome/browser/themes/theme_syncable_service.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/strings/stringprintf.h"
 #include "base/version.h"
@@ -66,8 +67,8 @@ syncer::SyncMergeResult ThemeSyncableService::MergeDataAndStartSyncing(
   DCHECK(error_handler.get());
 
   syncer::SyncMergeResult merge_result(type);
-  sync_processor_ = sync_processor.Pass();
-  sync_error_handler_ = error_handler.Pass();
+  sync_processor_ = std::move(sync_processor);
+  sync_error_handler_ = std::move(error_handler);
 
   if (initial_sync_data.size() > 1) {
     sync_error_handler_->CreateAndUploadError(

@@ -5,6 +5,7 @@
 #include "chrome/browser/supervised_user/legacy/supervised_user_registration_utility.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -205,11 +206,8 @@ SupervisedUserRegistrationUtilityTest::GetRegistrationUtility() {
 
   scoped_ptr<SupervisedUserRefreshTokenFetcher> token_fetcher(
       new MockSupervisedUserRefreshTokenFetcher);
-  registration_utility_.reset(
-      SupervisedUserRegistrationUtility::CreateImpl(prefs(),
-                                                    token_fetcher.Pass(),
-                                                    service(),
-                                                    shared_settings_service()));
+  registration_utility_.reset(SupervisedUserRegistrationUtility::CreateImpl(
+      prefs(), std::move(token_fetcher), service(), shared_settings_service()));
   return registration_utility_.get();
 }
 

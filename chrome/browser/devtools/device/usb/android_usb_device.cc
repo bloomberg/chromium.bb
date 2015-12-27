@@ -5,6 +5,7 @@
 #include "chrome/browser/devtools/device/usb/android_usb_device.h"
 
 #include <set>
+#include <utility>
 
 #include "base/barrier_closure.h"
 #include "base/base64.h"
@@ -377,7 +378,7 @@ void AndroidUsbDevice::Send(uint32_t command,
     pending_messages_.push_back(message.release());
     return;
   }
-  Queue(message.Pass());
+  Queue(std::move(message));
 }
 
 AndroidUsbDevice::~AndroidUsbDevice() {
@@ -605,7 +606,7 @@ void AndroidUsbDevice::HandleIncoming(scoped_ptr<AdbMessage> message) {
       {
         AndroidUsbSockets::iterator it = sockets_.find(message->arg1);
         if (it != sockets_.end())
-          it->second->HandleIncoming(message.Pass());
+          it->second->HandleIncoming(std::move(message));
       }
       break;
     default:

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/policy/cloud/policy_header_service_factory.h"
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -32,7 +34,7 @@ namespace {
 class PolicyHeaderServiceWrapper : public KeyedService {
  public:
   explicit PolicyHeaderServiceWrapper(scoped_ptr<PolicyHeaderService> service)
-      : policy_header_service_(service.Pass()) {}
+      : policy_header_service_(std::move(service)) {}
 
   PolicyHeaderService* policy_header_service() const {
     return policy_header_service_.get();
@@ -109,7 +111,7 @@ KeyedService* PolicyHeaderServiceFactory::BuildServiceInstanceFor(
                               kPolicyVerificationKeyHash,
                               user_store,
                               device_store));
-  return new PolicyHeaderServiceWrapper(service.Pass());
+  return new PolicyHeaderServiceWrapper(std::move(service));
 }
 
 // static

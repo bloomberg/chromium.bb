@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/resource_request_detector.h"
 
+#include <utility>
+
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/browser/safe_browsing/incident_reporting/resource_request_incident.h"
@@ -251,7 +253,7 @@ namespace safe_browsing {
 
 ResourceRequestDetector::ResourceRequestDetector(
     scoped_ptr<IncidentReceiver> incident_receiver)
-    : incident_receiver_(incident_receiver.Pass()),
+    : incident_receiver_(std::move(incident_receiver)),
       allow_null_profile_for_testing_(false),
       weak_ptr_factory_(this) {
   InitializeHashSets();
@@ -379,7 +381,7 @@ void ResourceRequestDetector::ReportIncidentOnUIThread(
 
     incident_receiver_->AddIncidentForProfile(
         profile,
-        make_scoped_ptr(new ResourceRequestIncident(incident_data.Pass())));
+        make_scoped_ptr(new ResourceRequestIncident(std::move(incident_data))));
   }
 }
 

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -30,5 +32,5 @@ TEST_F(ValidAppManifestTest, AllowUnrecognizedPermissions) {
   base::ListValue* permissions = NULL;
   ASSERT_TRUE(manifest->GetList("permissions", &permissions));
   permissions->Append(new base::StringValue("not-a-valid-permission"));
-  LoadAndExpectSuccess(ManifestData(manifest.Pass(), ""));
+  LoadAndExpectSuccess(ManifestData(std::move(manifest), ""));
 }

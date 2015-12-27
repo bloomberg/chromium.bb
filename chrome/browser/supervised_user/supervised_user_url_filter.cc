@@ -142,7 +142,7 @@ void FilterBuilder::AddSiteList(
 
 scoped_ptr<SupervisedUserURLFilter::Contents> FilterBuilder::Build() {
   contents_->url_matcher.AddConditionSets(all_conditions_);
-  return contents_.Pass();
+  return std::move(contents_);
 }
 
 scoped_ptr<SupervisedUserURLFilter::Contents>
@@ -449,7 +449,7 @@ void SupervisedUserURLFilter::SetBlockingTaskRunnerForTesting(
 
 void SupervisedUserURLFilter::SetContents(scoped_ptr<Contents> contents) {
   DCHECK(CalledOnValidThread());
-  contents_ = contents.Pass();
+  contents_ = std::move(contents);
   FOR_EACH_OBSERVER(Observer, observers_, OnSiteListUpdated());
 }
 

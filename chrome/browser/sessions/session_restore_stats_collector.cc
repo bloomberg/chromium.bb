@@ -5,6 +5,7 @@
 #include "chrome/browser/sessions/session_restore_stats_collector.h"
 
 #include <string>
+#include <utility>
 
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
@@ -119,7 +120,7 @@ SessionRestoreStatsCollector::SessionRestoreStatsCollector(
       loading_tab_count_(0u),
       deferred_tab_count_(0u),
       tick_clock_(new base::DefaultTickClock()),
-      reporting_delegate_(reporting_delegate.Pass()) {
+      reporting_delegate_(std::move(reporting_delegate)) {
   this_retainer_ = this;
 }
 

@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -230,7 +231,7 @@ class SdchResponseHandler {
          it != callbacks.end(); ++it) {
       it->Run();
     }
-    return response.Pass();
+    return std::move(response);
   }
 
   void WaitAndGetRequestVector(int num_requests,

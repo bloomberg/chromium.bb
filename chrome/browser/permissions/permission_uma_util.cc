@@ -4,6 +4,8 @@
 
 #include "chrome/browser/permissions/permission_uma_util.h"
 
+#include <utility>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
@@ -182,8 +184,8 @@ void RecordPermissionAction(PermissionType permission,
   sample->SetFlagsField("Actions",
                         1 << action,
                         PermissionAction::PERMISSION_ACTION_NUM);
-  rappor_service->RecordSampleObj("Permissions.Action." +
-      permission_str, sample.Pass());
+  rappor_service->RecordSampleObj("Permissions.Action." + permission_str,
+                                  std::move(sample));
 }
 
 std::string PermissionTypeToString(PermissionType permission_type) {

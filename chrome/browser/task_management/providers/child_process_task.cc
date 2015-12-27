@@ -4,6 +4,8 @@
 
 #include "chrome/browser/task_management/providers/child_process_task.h"
 
+#include <utility>
+
 #include "base/i18n/rtl.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -127,7 +129,7 @@ void ConnectResourceReporterOnIOThread(
   if (!registry)
     return;
 
-  registry->ConnectToRemoteService(resource_reporter.Pass());
+  registry->ConnectToRemoteService(std::move(resource_reporter));
 }
 
 // Creates the Mojo service wrapper that will be used to sample the V8 memory
@@ -146,7 +148,7 @@ ProcessResourceUsage* CreateProcessResourcesSampler(
                  unique_child_process_id,
                  base::Passed(&usage_reporter)));
 
-  return new ProcessResourceUsage(service.Pass());
+  return new ProcessResourceUsage(std::move(service));
 }
 
 bool UsesV8Memory(int process_type) {

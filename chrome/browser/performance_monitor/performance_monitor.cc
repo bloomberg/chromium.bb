@@ -5,6 +5,7 @@
 #include "chrome/browser/performance_monitor/performance_monitor.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/memory/singleton.h"
 #include "base/process/process_iterator.h"
@@ -169,7 +170,8 @@ void PerformanceMonitor::GatherMetricsMapOnIOThread(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&PerformanceMonitor::MarkProcessesAsAliveOnUIThread,
-                 base::Unretained(this), base::Passed(process_data_list.Pass()),
+                 base::Unretained(this),
+                 base::Passed(std::move(process_data_list)),
                  current_update_sequence));
 }
 

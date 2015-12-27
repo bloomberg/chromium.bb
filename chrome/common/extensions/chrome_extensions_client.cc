@@ -162,7 +162,7 @@ scoped_ptr<FeatureProvider> ChromeExtensionsClient::CreateFeatureProvider(
   } else {
     NOTREACHED();
   }
-  return provider.Pass();
+  return provider;
 }
 
 scoped_ptr<JSONFeatureProviderSource>
@@ -185,7 +185,7 @@ ChromeExtensionsClient::CreateFeatureProviderSource(
     NOTREACHED();
     source.reset();
   }
-  return source.Pass();
+  return source;
 }
 
 void ChromeExtensionsClient::FilterHostPermissions(

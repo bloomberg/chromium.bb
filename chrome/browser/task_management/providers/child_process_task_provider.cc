@@ -38,7 +38,7 @@ scoped_ptr<std::vector<ChildProcessData>> CollectChildProcessData() {
     child_processes->push_back(process_data);
   }
 
-  return child_processes.Pass();
+  return child_processes;
 }
 
 }  // namespace

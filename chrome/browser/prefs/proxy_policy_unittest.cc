@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -111,7 +113,7 @@ class ProxyPolicyTest : public testing::Test {
     scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs =
         factory.CreateSyncable(registry.get());
     chrome::RegisterUserProfilePrefs(registry.get());
-    return prefs.Pass();
+    return std::move(prefs);
   }
 
   content::TestBrowserThreadBundle thread_bundle_;

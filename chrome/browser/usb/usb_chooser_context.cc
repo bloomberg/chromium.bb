@@ -4,6 +4,7 @@
 
 #include "chrome/browser/usb/usb_chooser_context.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/stl_util.h"
@@ -78,7 +79,7 @@ UsbChooserContext::GetGrantedObjects(const GURL& requesting_origin,
       scoped_ptr<base::DictionaryValue> object(new base::DictionaryValue());
       object->SetString(kDeviceNameKey, device->product_string());
       object->SetString(kGuidKey, device->guid());
-      objects.push_back(object.Pass());
+      objects.push_back(std::move(object));
     }
   }
 
@@ -135,7 +136,7 @@ void UsbChooserContext::GrantDevicePermission(const GURL& requesting_origin,
     device_dict->SetInteger(kProductIdKey, device->product_id());
     device_dict->SetString(kSerialNumberKey, device->serial_number());
     GrantObjectPermission(requesting_origin, embedding_origin,
-                          device_dict.Pass());
+                          std::move(device_dict));
   } else {
     ephemeral_devices_[std::make_pair(requesting_origin, embedding_origin)]
         .insert(guid);

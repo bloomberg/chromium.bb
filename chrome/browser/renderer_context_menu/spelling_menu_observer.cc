@@ -4,6 +4,8 @@
 
 #include "chrome/browser/renderer_context_menu/spelling_menu_observer.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
@@ -293,7 +295,7 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
       chrome::ShowConfirmBubble(
           proxy_->GetWebContents()->GetTopLevelNativeWindow(),
           rvh->GetWidget()->GetView()->GetNativeView(),
-          gfx::Point(rect.CenterPoint().x(), rect.y()), model.Pass());
+          gfx::Point(rect.CenterPoint().x(), rect.y()), std::move(model));
     } else {
       if (profile) {
         profile->GetPrefs()->SetBoolean(prefs::kSpellCheckUseSpellingService,

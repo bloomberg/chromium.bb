@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/extensions/chrome_extensions_renderer_client.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
@@ -227,7 +229,7 @@ bool ChromeExtensionsRendererClient::WillSendRequest(
 
 void ChromeExtensionsRendererClient::SetExtensionDispatcherForTest(
     scoped_ptr<extensions::Dispatcher> extension_dispatcher) {
-  extension_dispatcher_ = extension_dispatcher.Pass();
+  extension_dispatcher_ = std::move(extension_dispatcher);
   permissions_policy_delegate_.reset(
       new extensions::RendererPermissionsPolicyDelegate(
           extension_dispatcher_.get()));

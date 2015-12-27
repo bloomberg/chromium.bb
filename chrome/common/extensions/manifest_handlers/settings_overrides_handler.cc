@@ -4,6 +4,8 @@
 
 #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -34,7 +36,7 @@ scoped_ptr<GURL> CreateManifestURL(const std::string& url) {
   if (!manifest_url->is_valid() ||
       !manifest_url->SchemeIsHTTPOrHTTPS())
     return scoped_ptr<GURL>();
-  return manifest_url.Pass();
+  return manifest_url;
 }
 
 scoped_ptr<GURL> ParseHomepage(const ChromeSettingsOverrides& overrides,
@@ -46,7 +48,7 @@ scoped_ptr<GURL> ParseHomepage(const ChromeSettingsOverrides& overrides,
     *error = extensions::ErrorUtils::FormatErrorMessageUTF16(
         manifest_errors::kInvalidHomepageOverrideURL, *overrides.homepage);
   }
-  return manifest_url.Pass();
+  return manifest_url;
 }
 
 std::vector<GURL> ParseStartupPage(const ChromeSettingsOverrides& overrides,
@@ -82,7 +84,7 @@ scoped_ptr<ChromeSettingsOverrides::Search_provider> ParseSearchEngine(
     return scoped_ptr<ChromeSettingsOverrides::Search_provider>();
   }
   if (overrides->search_provider->prepopulated_id)
-    return overrides->search_provider.Pass();
+    return std::move(overrides->search_provider);
   if (!overrides->search_provider->name ||
       !overrides->search_provider->keyword ||
       !overrides->search_provider->encoding ||
@@ -97,7 +99,7 @@ scoped_ptr<ChromeSettingsOverrides::Search_provider> ParseSearchEngine(
         *overrides->search_provider->favicon_url);
     return scoped_ptr<ChromeSettingsOverrides::Search_provider>();
   }
-  return overrides->search_provider.Pass();
+  return std::move(overrides->search_provider);
 }
 
 // A www. prefix is not informative and thus not worth the limited real estate

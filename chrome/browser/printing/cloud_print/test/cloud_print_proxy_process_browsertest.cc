@@ -7,6 +7,7 @@
 // line switch.
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -459,7 +460,7 @@ base::Process CloudPrintProxyPolicyStartupTest::Launch(
   base::Process process = SpawnChild(name);
 #endif
   EXPECT_TRUE(process.IsValid());
-  return process.Pass();
+  return process;
 }
 
 void CloudPrintProxyPolicyStartupTest::WaitForConnect() {
@@ -516,6 +517,6 @@ TEST_F(CloudPrintProxyPolicyStartupTest, StartAndShutdown) {
   base::Process process =
       Launch("CloudPrintMockService_StartEnabledWaitForQuit");
   WaitForConnect();
-  ShutdownAndWaitForExitWithTimeout(process.Pass());
+  ShutdownAndWaitForExitWithTimeout(std::move(process));
   content::RunAllPendingInMessageLoop();
 }

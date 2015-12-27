@@ -5,6 +5,7 @@
 #include "chrome/browser/sessions/session_restore_delegate.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
@@ -97,7 +98,7 @@ void SessionRestoreDelegate::RestoreTabs(
             new SessionRestoreStatsCollector::UmaStatsReportingDelegate());
     scoped_refptr<SessionRestoreStatsCollector> stats_collector =
         new SessionRestoreStatsCollector(restore_started,
-                                         reporting_delegate.Pass());
+                                         std::move(reporting_delegate));
     stats_collector->TrackTabs(tabs);
     for (const auto& restored_tab : tabs) {
       if (!restored_tab.is_active()) {

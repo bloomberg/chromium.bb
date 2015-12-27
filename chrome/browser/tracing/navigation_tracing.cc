@@ -4,6 +4,8 @@
 
 #include "chrome/browser/tracing/navigation_tracing.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
@@ -41,7 +43,7 @@ void UploadCallback(const scoped_refptr<base::RefCountedString>& file_contents,
 
   uploader->DoUpload(
       file_contents->data(), content::TraceUploader::UNCOMPRESSED_UPLOAD,
-      metadata.Pass(), content::TraceUploader::UploadProgressCallback(),
+      std::move(metadata), content::TraceUploader::UploadProgressCallback(),
       base::Bind(&OnUploadComplete, base::Owned(uploader), callback));
 }
 
@@ -65,16 +67,16 @@ void SetupNavigationTracing() {
     rules_dict->SetString("rule", "TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL");
     rules_dict->SetString("trigger_name", kNavigationTracingConfig);
     rules_dict->SetString("category", "BENCHMARK_DEEP");
-    rules_list->Append(rules_dict.Pass());
+    rules_list->Append(std::move(rules_dict));
   }
-  dict.Set("configs", rules_list.Pass());
+  dict.Set("configs", std::move(rules_list));
 
   scoped_ptr<content::BackgroundTracingConfig> config(
       content::BackgroundTracingConfig::FromDict(&dict));
   DCHECK(config);
 
   content::BackgroundTracingManager::GetInstance()->SetActiveScenario(
-      config.Pass(), base::Bind(&UploadCallback),
+      std::move(config), base::Bind(&UploadCallback),
       content::BackgroundTracingManager::NO_DATA_FILTERING);
 }
 

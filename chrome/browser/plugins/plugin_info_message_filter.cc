@@ -5,6 +5,7 @@
 #include "chrome/browser/plugins/plugin_info_message_filter.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
@@ -34,7 +35,6 @@
 #include "content/public/common/content_constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
-
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 #if defined(ENABLE_EXTENSIONS)
@@ -578,10 +578,10 @@ void PluginInfoMessageFilter::Context::GetPluginContentSetting(
         !legacy_ask_user;
     uses_plugin_specific_setting = specific_setting && !use_policy;
     if (uses_plugin_specific_setting) {
-      value = specific_setting.Pass();
+      value = std::move(specific_setting);
       info = specific_info;
     } else {
-      value = general_setting.Pass();
+      value = std::move(general_setting);
       info = general_info;
     }
   }

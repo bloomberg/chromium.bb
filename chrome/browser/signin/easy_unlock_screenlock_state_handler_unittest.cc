@@ -68,7 +68,7 @@ class TestLockHandler : public proximity_auth::ScreenlockBridge::LockHandler {
         << "account_id_=" << account_id_.Serialize()
         << " != account_id=" << account_id.Serialize();
     ++show_icon_count_;
-    last_custom_icon_ = icon.ToDictionaryValue().Pass();
+    last_custom_icon_ = icon.ToDictionaryValue();
     ValidateCustomIcon();
   }
 

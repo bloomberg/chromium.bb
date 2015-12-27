@@ -6,7 +6,10 @@
 // and a test protocol manager. It is used to test logics in safebrowsing
 // service.
 
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
+
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -36,7 +39,6 @@
 #include "chrome/browser/safe_browsing/metadata.pb.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -1615,7 +1617,7 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
     http_response->set_content_type("text/plain");
     http_response->AddCustomHeader(
         "Set-Cookie", "c=d; Expires=Fri, 01 Jan 2038 01:01:01 GMT");
-    return http_response.Pass();
+    return std::move(http_response);
   }
 
   scoped_ptr<TestSafeBrowsingServiceFactory> sb_factory_;

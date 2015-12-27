@@ -5,6 +5,7 @@
 #include "chrome/renderer/spellchecker/spellcheck.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -76,7 +77,7 @@ class SpellCheckTest : public testing::Test {
         new HunspellEngine);
     spell_check_->languages_.front()->Init(file.Pass(), language);
 #else
-    spell_check_->AddSpellcheckLanguage(file.Pass(), language);
+    spell_check_->AddSpellcheckLanguage(std::move(file), language);
 #endif
   }
 

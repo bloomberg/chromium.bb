@@ -4,6 +4,8 @@
 
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 
+#include <utility>
+
 #include "chrome/browser/profiles/off_the_record_profile_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -85,7 +87,7 @@ scoped_refptr<RefcountedKeyedService>
     scoped_ptr<content_settings::SupervisedProvider> supervised_provider(
         new content_settings::SupervisedProvider(supervised_service));
     settings_map->RegisterProvider(HostContentSettingsMap::SUPERVISED_PROVIDER,
-        supervised_provider.Pass());
+                                   std::move(supervised_provider));
   }
 #endif // defined(ENABLE_SUPERVISED_USERS)
 

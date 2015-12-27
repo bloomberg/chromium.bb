@@ -4,16 +4,16 @@
 
 #include "chrome/browser/media/test_license_server.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/process/launch.h"
 #include "chrome/browser/media/test_license_server_config.h"
 
-
 TestLicenseServer::TestLicenseServer(
-  scoped_ptr<TestLicenseServerConfig> server_config)
-    : server_config_(server_config.Pass()) {
-}
+    scoped_ptr<TestLicenseServerConfig> server_config)
+    : server_config_(std::move(server_config)) {}
 
 TestLicenseServer::~TestLicenseServer() {
   Stop();

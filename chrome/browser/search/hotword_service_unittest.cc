@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/search/hotword_service.h"
+
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
@@ -12,7 +16,6 @@
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/search/hotword_audio_history_handler.h"
-#include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -84,12 +87,13 @@ class MockHotwordService : public HotwordService {
         .Set("manifest_version", 2)
         .Build();
     scoped_refptr<extensions::Extension> extension =
-        extensions::ExtensionBuilder().SetManifest(manifest.Pass())
-        .AddFlags(extensions::Extension::FROM_WEBSTORE
-                  | extensions::Extension::WAS_INSTALLED_BY_DEFAULT)
-        .SetID(extension_id_)
-        .SetLocation(extensions::Manifest::EXTERNAL_COMPONENT)
-        .Build();
+        extensions::ExtensionBuilder()
+            .SetManifest(std::move(manifest))
+            .AddFlags(extensions::Extension::FROM_WEBSTORE |
+                      extensions::Extension::WAS_INSTALLED_BY_DEFAULT)
+            .SetID(extension_id_)
+            .SetLocation(extensions::Manifest::EXTERNAL_COMPONENT)
+            .Build();
     ASSERT_TRUE(extension.get());
     service_->OnExtensionInstalled(extension.get(), syncer::StringOrdinal());
   }

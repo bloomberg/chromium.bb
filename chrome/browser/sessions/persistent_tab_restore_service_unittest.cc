@@ -5,8 +5,8 @@
 #include "components/sessions/core/persistent_tab_restore_service.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -159,7 +159,8 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
   // tab is marked as pinned in the session service.
   void CreateSessionServiceWithOneWindow(bool pinned) {
     scoped_ptr<SessionService> session_service(new SessionService(profile()));
-    SessionServiceFactory::SetForTestProfile(profile(), session_service.Pass());
+    SessionServiceFactory::SetForTestProfile(profile(),
+                                             std::move(session_service));
 
     AddWindowWithOneTabToSessionService(pinned);
 

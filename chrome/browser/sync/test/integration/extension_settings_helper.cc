@@ -53,7 +53,7 @@ scoped_ptr<base::DictionaryValue> GetAllSettings(
       extensions::settings_namespace::SYNC,
       base::Bind(&GetAllSettingsOnFileThread, settings.get(), &signal));
   signal.Wait();
-  return settings.Pass();
+  return settings;
 }
 
 bool AreSettingsSame(Profile* expected_profile, Profile* actual_profile) {

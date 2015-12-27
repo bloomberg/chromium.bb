@@ -4,6 +4,8 @@
 
 #include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -81,11 +83,10 @@ InspectorCommandResponse::~InspectorCommandResponse() {}
 
 const char DevToolsClientImpl::kBrowserwideDevToolsClientId[] = "browser";
 
-DevToolsClientImpl::DevToolsClientImpl(
-    const SyncWebSocketFactory& factory,
-    const std::string& url,
-    const std::string& id)
-    : socket_(factory.Run().Pass()),
+DevToolsClientImpl::DevToolsClientImpl(const SyncWebSocketFactory& factory,
+                                       const std::string& url,
+                                       const std::string& id)
+    : socket_(factory.Run()),
       url_(url),
       crashed_(false),
       id_(id),
@@ -100,7 +101,7 @@ DevToolsClientImpl::DevToolsClientImpl(
     const std::string& url,
     const std::string& id,
     const FrontendCloserFunc& frontend_closer_func)
-    : socket_(factory.Run().Pass()),
+    : socket_(factory.Run()),
       url_(url),
       crashed_(false),
       id_(id),
@@ -116,7 +117,7 @@ DevToolsClientImpl::DevToolsClientImpl(
     const std::string& id,
     const FrontendCloserFunc& frontend_closer_func,
     const ParserFunc& parser_func)
-    : socket_(factory.Run().Pass()),
+    : socket_(factory.Run()),
       url_(url),
       crashed_(false),
       id_(id),
@@ -276,7 +277,7 @@ Status DevToolsClientImpl::SendCommandInternal(
     internal::InspectorCommandResponse& response = response_info->response;
     if (!response.result)
       return ParseInspectorError(response.error);
-    *result = response.result.Pass();
+    *result = std::move(response.result);
   }
   return Status(kOk);
 }

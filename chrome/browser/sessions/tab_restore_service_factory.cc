@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 
+#include <utility>
+
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/chrome_tab_restore_service_client.h"
@@ -62,6 +64,6 @@ KeyedService* TabRestoreServiceFactory::BuildServiceInstanceFor(
 #if defined(OS_ANDROID)
   return new sessions::InMemoryTabRestoreService(client.Pass(), nullptr);
 #else
-  return new sessions::PersistentTabRestoreService(client.Pass(), nullptr);
+  return new sessions::PersistentTabRestoreService(std::move(client), nullptr);
 #endif
 }

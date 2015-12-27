@@ -5,7 +5,7 @@
 #include "chrome/browser/local_discovery/service_discovery_client_mdns.h"
 
 #include <stddef.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/location.h"
@@ -167,7 +167,7 @@ class ProxyBase : public ServiceDiscoveryClientMdns::Proxy, public T {
 
  protected:
   void set_implementation(scoped_ptr<T> implementation) {
-    implementation_ = implementation.Pass();
+    implementation_ = std::move(implementation);
   }
 
   T* implementation()  const {

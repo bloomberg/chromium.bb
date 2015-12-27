@@ -4,6 +4,8 @@
 
 #include "chrome/browser/dom_distiller/profile_utils.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
@@ -55,9 +57,8 @@ void RegisterDomDistillerViewerSource(Profile* profile) {
     }
 
     content::URLDataSource::Add(
-        profile,
-        new dom_distiller::DomDistillerViewerSource(
-            lazy_service, dom_distiller::kDomDistillerScheme,
-            ui_handle.Pass()));
+        profile, new dom_distiller::DomDistillerViewerSource(
+                     lazy_service, dom_distiller::kDomDistillerScheme,
+                     std::move(ui_handle)));
   }
 }

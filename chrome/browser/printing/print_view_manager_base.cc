@@ -4,6 +4,8 @@
 
 #include "chrome/browser/printing/print_view_manager_base.h"
 
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/location.h"
@@ -191,9 +193,7 @@ void PrintViewManagerBase::OnDidPrintPage(
   }
 #else
   // Update the rendered document. It will send notifications to the listener.
-  document->SetPage(params.page_number,
-                    metafile.Pass(),
-                    params.page_size,
+  document->SetPage(params.page_number, std::move(metafile), params.page_size,
                     params.content_area);
 
   ShouldQuitFromInnerMessageLoop();

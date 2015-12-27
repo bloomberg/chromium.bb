@@ -5,6 +5,7 @@
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/json/json_reader.h"
@@ -189,8 +190,8 @@ SyncMergeResult SupervisedUserSettingsService::MergeDataAndStartSyncing(
     scoped_ptr<SyncChangeProcessor> sync_processor,
     scoped_ptr<SyncErrorFactory> error_handler) {
   DCHECK_EQ(SUPERVISED_USER_SETTINGS, type);
-  sync_processor_ = sync_processor.Pass();
-  error_handler_ = error_handler.Pass();
+  sync_processor_ = std::move(sync_processor);
+  error_handler_ = std::move(error_handler);
 
   // Clear all atomic and split settings, then recreate them from Sync data.
   Clear();
@@ -406,7 +407,7 @@ scoped_ptr<base::DictionaryValue> SupervisedUserSettingsService::GetSettings() {
     settings->Set(it.key(), it.value().DeepCopy());
   }
 
-  return settings.Pass();
+  return settings;
 }
 
 void SupervisedUserSettingsService::InformSubscribers() {

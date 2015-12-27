@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
-
 #include <deque>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -675,7 +675,7 @@ class TestPrerenderContentsFactory : public PrerenderContents::Factory {
     scoped_ptr<TestPrerender> handle(new TestPrerender());
     expected_contents_queue_.push_back(
         ExpectedContents(final_status, handle->AsWeakPtr()));
-    return handle.Pass();
+    return handle;
   }
 
   PrerenderContents* CreatePrerenderContents(
@@ -904,7 +904,7 @@ void CreateHangingFirstRequestInterceptorOnIO(
   scoped_ptr<net::URLRequestInterceptor> never_respond_handler(
       new HangingFirstRequestInterceptor(file, callback));
   net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-      url, never_respond_handler.Pass());
+      url, std::move(never_respond_handler));
 }
 
 // Wrapper over URLRequestMockHTTPJob that exposes extra callbacks.
@@ -1010,7 +1010,7 @@ void CreateCountingInterceptorOnIO(
   scoped_ptr<net::URLRequestInterceptor> request_interceptor(
       new CountingInterceptor(file, counter));
   net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-      url, request_interceptor.Pass());
+      url, std::move(request_interceptor));
 }
 
 // Makes |url| respond to requests with the contents of |file|.
@@ -1640,7 +1640,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     }
     EXPECT_FALSE(HadPrerenderEventErrors());
 
-    return prerenders.Pass();
+    return prerenders;
   }
 
   void NavigateToURLImpl(const content::OpenURLParams& params,
@@ -3897,7 +3897,7 @@ class PrerenderOmniboxBrowserTest : public PrerenderBrowserTest {
         web_contents->GetController().GetDefaultSessionStorageNamespace(),
         gfx::Size(50, 50));
     prerender->WaitForStart();
-    return prerender.Pass();
+    return prerender;
   }
 };
 

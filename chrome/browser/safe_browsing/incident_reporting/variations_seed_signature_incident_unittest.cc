@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/variations_seed_signature_incident.h"
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,7 +27,8 @@ scoped_ptr<Incident> MakeIncident(bool alternate) {
         "MEUCID+QmAfajh/kk4zZyv0IUisZ84sIddnjiW9yAXjFJIMFAiEAtVUHhFA/4M6Bff2Gaz"
         "L7tXVLhURxUQcpiMg9eMLWO0U=");
   }
-  return make_scoped_ptr(new VariationsSeedSignatureIncident(incident.Pass()));
+  return make_scoped_ptr(
+      new VariationsSeedSignatureIncident(std::move(incident)));
 }
 
 }  // namespace

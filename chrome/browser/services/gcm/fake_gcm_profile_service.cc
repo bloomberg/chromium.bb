@@ -4,6 +4,8 @@
 
 #include "chrome/browser/services/gcm/fake_gcm_profile_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/location.h"
@@ -122,7 +124,7 @@ scoped_ptr<KeyedService> FakeGCMProfileService::Build(
   Profile* profile = static_cast<Profile*>(context);
   scoped_ptr<FakeGCMProfileService> service(new FakeGCMProfileService(profile));
   service->SetDriverForTesting(new CustomFakeGCMDriver(service.get()));
-  return service.Pass();
+  return std::move(service);
 }
 
 FakeGCMProfileService::FakeGCMProfileService(Profile* profile)

@@ -930,9 +930,8 @@ TEST_F(SessionServiceTest, RestoreActivation1) {
       window2_id, tab1_id, tab2_id, &nav1, &nav2);
 
   service()->ScheduleCommand(
-      sessions::CreateSetActiveWindowCommand(window2_id).Pass());
-  service()->ScheduleCommand(
-      sessions::CreateSetActiveWindowCommand(window_id).Pass());
+      sessions::CreateSetActiveWindowCommand(window2_id));
+  service()->ScheduleCommand(sessions::CreateSetActiveWindowCommand(window_id));
 
   ScopedVector<sessions::SessionWindow> windows;
   SessionID::id_type active_window_id = 0;
@@ -953,11 +952,10 @@ TEST_F(SessionServiceTest, RestoreActivation2) {
       window2_id, tab1_id, tab2_id, &nav1, &nav2);
 
   service()->ScheduleCommand(
-      sessions::CreateSetActiveWindowCommand(window2_id).Pass());
+      sessions::CreateSetActiveWindowCommand(window2_id));
+  service()->ScheduleCommand(sessions::CreateSetActiveWindowCommand(window_id));
   service()->ScheduleCommand(
-      sessions::CreateSetActiveWindowCommand(window_id).Pass());
-  service()->ScheduleCommand(
-      sessions::CreateSetActiveWindowCommand(window2_id).Pass());
+      sessions::CreateSetActiveWindowCommand(window2_id));
 
   ScopedVector<sessions::SessionWindow> windows;
   SessionID::id_type active_window_id = 0;

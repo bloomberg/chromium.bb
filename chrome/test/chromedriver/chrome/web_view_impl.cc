@@ -5,6 +5,7 @@
 #include "chrome/test/chromedriver/chrome/web_view_impl.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -580,7 +581,7 @@ Status WebViewImpl::EndProfile(scoped_ptr<base::Value>* profile_data) {
     }
   }
 
-  *profile_data = profile_result.Pass();
+  *profile_data = std::move(profile_result);
   return status;
 }
 

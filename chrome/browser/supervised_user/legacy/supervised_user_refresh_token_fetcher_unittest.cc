@@ -137,10 +137,8 @@ void SupervisedUserRefreshTokenFetcherTest::StartFetchingWithDeviceId(
   device_id_ = device_id;
   oauth2_token_service_.UpdateCredentials("account_id", kOAuth2RefreshToken);
   token_fetcher_ = SupervisedUserRefreshTokenFetcher::Create(
-      &oauth2_token_service_,
-      kAccountId,
-      device_id_,
-      profile_.GetRequestContext()).Pass();
+      &oauth2_token_service_, kAccountId, device_id_,
+      profile_.GetRequestContext());
   token_fetcher_->Start(
       kSupervisedUserId,
       kDeviceName,

@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <list>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -203,7 +204,7 @@ scoped_ptr<PasswordForm> FormOutOfAttributes(GHashTable* attrs) {
                 : password_manager::metrics_util::GNOME_FAILURE;
     LogFormDataDeserializationStatus(status);
   }
-  return form.Pass();
+  return form;
 }
 
 class LibsecretAttributesBuilder {
@@ -625,7 +626,7 @@ ScopedVector<autofill::PasswordForm> NativeBackendLibsecret::ConvertFormList(
       } else {
         LOG(WARNING) << "Unable to access password from list element!";
       }
-      forms.push_back(form.Pass());
+      forms.push_back(std::move(form));
     } else {
       VLOG(1) << "Could not initialize PasswordForm from attributes!";
     }
@@ -643,5 +644,5 @@ ScopedVector<autofill::PasswordForm> NativeBackendLibsecret::ConvertFormList(
         password_manager::PSL_DOMAIN_MATCH_COUNT);
   }
   g_list_free(found);
-  return forms.Pass();
+  return forms;
 }

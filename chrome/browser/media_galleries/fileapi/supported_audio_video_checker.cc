@@ -5,8 +5,8 @@
 #include "chrome/browser/media_galleries/fileapi/supported_audio_video_checker.h"
 
 #include <stddef.h>
-
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -93,6 +93,6 @@ void SupportedAudioVideoChecker::OnFileOpen(base::File file) {
     return;
   }
 
-  safe_checker_ = new SafeAudioVideoChecker(file.Pass(), callback_);
+  safe_checker_ = new SafeAudioVideoChecker(std::move(file), callback_);
   safe_checker_->Start();
 }

@@ -5,6 +5,7 @@
 #include "chrome/browser/devtools/device/tcp_device_provider.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -25,7 +26,7 @@ static void RunSocketCallback(
     const AndroidDeviceManager::SocketCallback& callback,
     scoped_ptr<net::StreamSocket> socket,
     int result) {
-  callback.Run(result, socket.Pass());
+  callback.Run(result, std::move(socket));
 }
 
 class ResolveHostAndOpenSocket final {

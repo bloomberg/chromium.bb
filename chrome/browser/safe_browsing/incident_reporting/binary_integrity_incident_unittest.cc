@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_incident.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -37,7 +38,7 @@ scoped_ptr<Incident> MakeIncident(const char* file_basename) {
     element->set_certificate(certificates[i], arraysize(certificates[i]));
   }
 
-  return make_scoped_ptr(new BinaryIntegrityIncident(incident.Pass()));
+  return make_scoped_ptr(new BinaryIntegrityIncident(std::move(incident)));
 }
 
 }  // namespace

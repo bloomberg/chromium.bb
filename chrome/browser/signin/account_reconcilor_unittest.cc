@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -67,7 +69,7 @@ scoped_ptr<KeyedService> MockAccountReconcilor::Build(
       ChromeSigninClientFactory::GetForProfile(profile),
       GaiaCookieManagerServiceFactory::GetForProfile(profile)));
   reconcilor->Initialize(false /* start_reconcile_if_tokens_available */);
-  return reconcilor.Pass();
+  return std::move(reconcilor);
 }
 
 MockAccountReconcilor::MockAccountReconcilor(

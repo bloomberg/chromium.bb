@@ -4,6 +4,8 @@
 
 #include "chrome/browser/local_discovery/gcd_api_flow.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/thread_task_runner_handle.h"
@@ -65,7 +67,7 @@ class GCDApiFlowTest : public testing::Test {
             GURL("https://www.google.com/cloudprint/confirm?token=SomeToken")));
     gcd_flow_.reset(new GCDApiFlowImpl(
         request_context_.get(), &token_service_, account_id_));
-    gcd_flow_->Start(delegate.Pass());
+    gcd_flow_->Start(std::move(delegate));
   }
   base::MessageLoopForUI loop_;
   content::TestBrowserThread ui_thread_;

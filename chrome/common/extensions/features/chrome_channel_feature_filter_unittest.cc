@@ -246,7 +246,7 @@ TEST_F(ChromeChannelFeatureFilterTest, ComplexFeatureAvailability) {
           .Set("extension_types", std::move(ListBuilder().Append("extension")))
           .Build());
   simple_feature->Parse(rule.get());
-  features->push_back(simple_feature.Pass());
+  features->push_back(std::move(simple_feature));
 
   // Rule: "legacy_packaged_app", channel stable.
   simple_feature.reset(CreateFeature<SimpleFeature>());
@@ -256,9 +256,9 @@ TEST_F(ChromeChannelFeatureFilterTest, ComplexFeatureAvailability) {
                   std::move(ListBuilder().Append("legacy_packaged_app")))
              .Build();
   simple_feature->Parse(rule.get());
-  features->push_back(simple_feature.Pass());
+  features->push_back(std::move(simple_feature));
 
-  scoped_ptr<ComplexFeature> feature(new ComplexFeature(features.Pass()));
+  scoped_ptr<ComplexFeature> feature(new ComplexFeature(std::move(features)));
 
   // Test match 1st rule.
   {

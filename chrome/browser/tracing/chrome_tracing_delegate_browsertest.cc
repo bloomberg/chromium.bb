@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -53,9 +55,9 @@ class ChromeTracingDelegateBrowserTest : public InProcessBrowserTest {
       scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
       rules_dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
       rules_dict->SetString("trigger_name", "test");
-      rules_list->Append(rules_dict.Pass());
+      rules_list->Append(std::move(rules_dict));
     }
-    dict.Set("configs", rules_list.Pass());
+    dict.Set("configs", std::move(rules_list));
 
     scoped_ptr<content::BackgroundTracingConfig> config(
         content::BackgroundTracingConfig::FromDict(&dict));
@@ -66,7 +68,7 @@ class ChromeTracingDelegateBrowserTest : public InProcessBrowserTest {
                    base::Unretained(this));
 
     return content::BackgroundTracingManager::GetInstance()->SetActiveScenario(
-        config.Pass(), receive_callback, data_filtering);
+        std::move(config), receive_callback, data_filtering);
   }
 
   void TriggerPreemptiveScenario(

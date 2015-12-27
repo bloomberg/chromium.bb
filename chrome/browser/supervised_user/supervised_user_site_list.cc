@@ -36,7 +36,7 @@ scoped_ptr<base::Value> ReadFileOnBlockingThread(const base::FilePath& path) {
     LOG(ERROR) << "Couldn't load site list " << path.value() << ": "
                << error_msg;
   }
-  return value.Pass();
+  return value;
 }
 
 }  // namespace

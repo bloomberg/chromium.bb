@@ -51,7 +51,7 @@ class UIOverridesHandler::ManifestPermissionImpl : public ManifestPermission {
 
   scoped_ptr<base::Value> ToValue() const override {
     return scoped_ptr<base::Value>(
-        new base::FundamentalValue(override_bookmarks_ui_permission_)).Pass();
+        new base::FundamentalValue(override_bookmarks_ui_permission_));
   }
 
   ManifestPermission* Diff(const ManifestPermission* rhs) const override {

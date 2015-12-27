@@ -5,9 +5,9 @@
 #include "chrome/browser/devtools/devtools_network_interceptor.h"
 
 #include <stddef.h>
-
 #include <algorithm>
 #include <limits>
+#include <utility>
 
 #include "base/time/time.h"
 #include "chrome/browser/devtools/devtools_network_conditions.h"
@@ -69,7 +69,7 @@ void DevToolsNetworkInterceptor::UpdateConditions(
   if (conditions_->IsThrottling())
     UpdateThrottled(now);
 
-  conditions_ = conditions.Pass();
+  conditions_ = std::move(conditions);
 
   bool offline = conditions_->offline();
   if (offline || !conditions_->IsThrottling()) {

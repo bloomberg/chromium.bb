@@ -5,6 +5,7 @@
 #include "chrome/test/chromedriver/session_commands.h"
 
 #include <list>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -100,7 +101,7 @@ scoped_ptr<base::DictionaryValue> CreateCapabilities(Chrome* chrome) {
                     desktop->command().GetSwitchValueNative("user-data-dir"));
   }
 
-  return caps.Pass();
+  return caps;
 }
 
 Status CheckSessionCreated(Session* session) {
@@ -643,7 +644,7 @@ Status ExecuteGetAvailableLogTypes(
        ++log) {
     types->AppendString((*log)->type());
   }
-  *value = types.Pass();
+  *value = std::move(types);
   return Status(kOk);
 }
 

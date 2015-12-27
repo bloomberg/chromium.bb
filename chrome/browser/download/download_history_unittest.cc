@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/download/download_history.h"
+
 #include <stddef.h>
 #include <stdint.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
-#include "chrome/browser/download/download_history.h"
 #include "components/history/content/browser/download_constants_utils.h"
 #include "components/history/core/browser/download_constants.h"
 #include "components/history/core/browser/download_row.h"
@@ -89,7 +90,7 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
       const history::HistoryService::DownloadQueryCallback& callback) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     CHECK(expect_query_downloads_.get());
-    callback.Run(expect_query_downloads_.Pass());
+    callback.Run(std::move(expect_query_downloads_));
   }
 
   void set_slow_create_download(bool slow) { slow_create_download_ = slow; }
@@ -128,7 +129,7 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
 
   void ExpectWillQueryDownloads(scoped_ptr<InfoVector> infos) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    expect_query_downloads_ = infos.Pass();
+    expect_query_downloads_ = std::move(infos);
   }
 
   void ExpectQueryDownloadsDone() {
@@ -260,7 +261,7 @@ class DownloadHistoryTest : public testing::Test {
     }
     EXPECT_CALL(manager(), CheckForHistoryFilesRemoval());
     history_ = new FakeHistoryAdapter();
-    history_->ExpectWillQueryDownloads(infos.Pass());
+    history_->ExpectWillQueryDownloads(std::move(infos));
     EXPECT_CALL(*manager_.get(), GetAllDownloads(_)).WillRepeatedly(Return());
     download_history_.reset(new DownloadHistory(
         &manager(), scoped_ptr<DownloadHistory::HistoryAdapter>(history_)));
@@ -491,7 +492,7 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Load) {
   {
     scoped_ptr<InfoVector> infos(new InfoVector());
     infos->push_back(info);
-    CreateDownloadHistory(infos.Pass());
+    CreateDownloadHistory(std::move(infos));
     ExpectNoDownloadCreated();
   }
   EXPECT_TRUE(DownloadHistory::IsPersisted(&item(0)));
@@ -529,7 +530,7 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_WasRestoredFromHistory_True) {
                 &info);
   scoped_ptr<InfoVector> infos(new InfoVector());
   infos->push_back(info);
-  CreateDownloadHistory(infos.Pass());
+  CreateDownloadHistory(std::move(infos));
 
   EXPECT_TRUE(DownloadHistory::IsPersisted(&item(0)));
 }
@@ -785,7 +786,7 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Multiple) {
     scoped_ptr<InfoVector> infos(new InfoVector());
     infos->push_back(info0);
     infos->push_back(info1);
-    CreateDownloadHistory(infos.Pass());
+    CreateDownloadHistory(std::move(infos));
     ExpectNoDownloadCreated();
   }
 

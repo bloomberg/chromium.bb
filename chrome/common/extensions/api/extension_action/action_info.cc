@@ -174,7 +174,7 @@ scoped_ptr<ActionInfo> ActionInfo::Load(Extension* extension,
     }
   }
 
-  return result.Pass();
+  return result;
 }
 
 // static

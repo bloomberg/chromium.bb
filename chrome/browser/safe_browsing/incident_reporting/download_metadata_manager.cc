@@ -6,8 +6,8 @@
 
 #include <limits.h>
 #include <stdint.h>
-
 #include <list>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -72,7 +72,7 @@ class DownloadItemData : public base::SupportsUserData::Data {
   static const void* const kKey_;
 
   explicit DownloadItemData(scoped_ptr<ClientDownloadRequest> request)
-      : request_(request.Pass()) {}
+      : request_(std::move(request)) {}
   ~DownloadItemData() override {}
 
   scoped_ptr<ClientDownloadRequest> request_;
@@ -88,7 +88,7 @@ const void* const DownloadItemData::kKey_ = &DownloadItemData::kKey_;
 void DownloadItemData::SetRequestForDownload(
     content::DownloadItem* item,
     scoped_ptr<ClientDownloadRequest> request) {
-  item->SetUserData(&kKey_, new DownloadItemData(request.Pass()));
+  item->SetUserData(&kKey_, new DownloadItemData(std::move(request)));
 }
 
 // static
@@ -98,9 +98,9 @@ scoped_ptr<ClientDownloadRequest> DownloadItemData::TakeRequestForDownload(
       static_cast<DownloadItemData*>(item->GetUserData(&kKey_));
   if (!data)
     return nullptr;
-  scoped_ptr<ClientDownloadRequest> request = data->request_.Pass();
+  scoped_ptr<ClientDownloadRequest> request = std::move(data->request_);
   item->RemoveUserData(&kKey_);
-  return request.Pass();
+  return request;
 }
 
 
@@ -190,7 +190,7 @@ void ReturnResults(
   if (!download_metadata->has_download_id())
     callback.Run(scoped_ptr<ClientIncidentReport_DownloadDetails>());
   else
-    callback.Run(make_scoped_ptr(download_metadata->release_download()).Pass());
+    callback.Run(make_scoped_ptr(download_metadata->release_download()));
 }
 
 }  // namespace
@@ -482,9 +482,9 @@ void DownloadMetadataManager::ManagerContext::SetRequest(
   // Hold on to the request for completion time if the download is in progress.
   // Otherwise, commit the request.
   if (download->GetState() == content::DownloadItem::IN_PROGRESS)
-    DownloadItemData::SetRequestForDownload(download, request.Pass());
+    DownloadItemData::SetRequestForDownload(download, std::move(request));
   else
-    CommitRequest(download, request.Pass());
+    CommitRequest(download, std::move(request));
 }
 
 void DownloadMetadataManager::ManagerContext::GetDownloadDetails(
@@ -507,7 +507,7 @@ void DownloadMetadataManager::ManagerContext::OnDownloadUpdated(
     scoped_ptr<ClientDownloadRequest> request =
         DownloadItemData::TakeRequestForDownload(download);
     if (request)
-      CommitRequest(download, request.Pass());
+      CommitRequest(download, std::move(request));
   }
 }
 
@@ -627,7 +627,7 @@ void DownloadMetadataManager::ManagerContext::OnMetadataReady(
   // Note that any available data has been read.
   state_ = LOAD_COMPLETE;
   if (download_metadata->has_download_id())
-    download_metadata_ = download_metadata.Pass();
+    download_metadata_ = std::move(download_metadata);
   else
     download_metadata_.reset();
 

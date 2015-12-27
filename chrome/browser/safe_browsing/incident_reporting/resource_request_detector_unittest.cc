@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/safe_browsing/incident_reporting/resource_request_detector.h"
+
+#include <utility>
+
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/browser/safe_browsing/incident_reporting/mock_incident_receiver.h"
-#include "chrome/browser/safe_browsing/incident_reporting/resource_request_detector.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/resource_type.h"
@@ -47,7 +50,7 @@ class FakeResourceRequestDetector : public ResourceRequestDetector {
  public:
   explicit FakeResourceRequestDetector(
       scoped_ptr<IncidentReceiver> incident_receiver)
-      : ResourceRequestDetector(incident_receiver.Pass()) {
+      : ResourceRequestDetector(std::move(incident_receiver)) {
     FakeResourceRequestDetector::set_allow_null_profile_for_testing(true);
   }
 };
@@ -78,7 +81,7 @@ class ResourceRequestDetectorTest : public testing::Test {
         false,             // is_async
         false);            // is_using_lofi
 
-    return url_request.Pass();
+    return url_request;
   }
 
   void ExpectNoIncident(const std::string& url,

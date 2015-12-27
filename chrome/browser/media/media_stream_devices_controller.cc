@@ -5,6 +5,7 @@
 #include "chrome/browser/media/media_stream_devices_controller.h"
 
 #include <map>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/callback_helpers.h"
@@ -454,7 +455,7 @@ void MediaStreamDevicesController::RunCallback(
              ->GetMediaStreamCaptureIndicator()
              ->RegisterMediaStream(web_contents_, devices);
   }
-  base::ResetAndReturn(&callback_).Run(devices, request_result, ui.Pass());
+  base::ResetAndReturn(&callback_).Run(devices, request_result, std::move(ui));
 }
 
 void MediaStreamDevicesController::StorePermission(

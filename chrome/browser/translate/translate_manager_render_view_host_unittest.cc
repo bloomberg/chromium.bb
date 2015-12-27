@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
-
 #include <algorithm>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -396,7 +396,7 @@ class MockTranslateBubbleFactory : public TranslateBubbleFactory {
             chrome_translate_client->GetTranslateManager()->GetWeakPtr(),
             source_language,
             target_language));
-    model_.reset(new TranslateBubbleModelImpl(step, ui_delegate.Pass()));
+    model_.reset(new TranslateBubbleModelImpl(step, std::move(ui_delegate)));
   }
 
   TranslateBubbleModel* model() { return model_.get(); }

@@ -5,6 +5,7 @@
 #include "chrome/browser/tracing/background_tracing_field_trial.h"
 
 #include <string>
+#include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/metrics/field_trial.h"
@@ -47,7 +48,7 @@ void UploadCallback(const std::string& upload_url,
 
   uploader->DoUpload(
       file_contents->data(), content::TraceUploader::UNCOMPRESSED_UPLOAD,
-      metadata.Pass(), content::TraceUploader::UploadProgressCallback(),
+      std::move(metadata), content::TraceUploader::UploadProgressCallback(),
       base::Bind(&OnUploadComplete, base::Owned(uploader), callback));
 }
 
@@ -83,7 +84,7 @@ void SetupBackgroundTracingFieldTrial() {
     return;
 
   content::BackgroundTracingManager::GetInstance()->SetActiveScenario(
-      config.Pass(), base::Bind(&UploadCallback, upload_url),
+      std::move(config), base::Bind(&UploadCallback, upload_url),
       content::BackgroundTracingManager::ANONYMIZE_DATA);
 }
 

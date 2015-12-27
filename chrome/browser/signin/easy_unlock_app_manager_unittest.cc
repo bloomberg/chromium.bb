@@ -291,9 +291,8 @@ class EasyUnlockAppManagerTest : public testing::Test {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         proximity_auth::switches::kForceLoadEasyUnlockAppInTests);
     extensions::ExtensionSystem* extension_system = SetUpExtensionSystem();
-    app_manager_ =
-        EasyUnlockAppManager::Create(extension_system, IDR_EASY_UNLOCK_MANIFEST,
-                                     GetAppPath()).Pass();
+    app_manager_ = EasyUnlockAppManager::Create(
+        extension_system, IDR_EASY_UNLOCK_MANIFEST, GetAppPath());
   }
 
  protected:

@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/supervised_user/supervised_user_settings_service.h"
+
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/prefs/testing_pref_store.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/api/fake_sync_change_processor.h"
 #include "sync/api/sync_change.h"
@@ -71,10 +74,8 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
     scoped_ptr<syncer::SyncErrorFactory> error_handler(
         new MockSyncErrorFactory(syncer::SUPERVISED_USER_SETTINGS));
     syncer::SyncMergeResult result = settings_service_.MergeDataAndStartSyncing(
-        syncer::SUPERVISED_USER_SETTINGS,
-        initial_sync_data,
-        CreateSyncProcessor(),
-        error_handler.Pass());
+        syncer::SUPERVISED_USER_SETTINGS, initial_sync_data,
+        CreateSyncProcessor(), std::move(error_handler));
     EXPECT_FALSE(result.error().IsSet());
   }
 

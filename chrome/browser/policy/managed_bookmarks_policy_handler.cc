@@ -4,6 +4,8 @@
 
 #include "chrome/browser/policy/managed_bookmarks_policy_handler.h"
 
+#include <utility>
+
 #include "base/prefs/pref_value_map.h"
 #include "base/values.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
@@ -39,7 +41,7 @@ void ManagedBookmarksPolicyHandler::ApplyPolicySettings(
     return;
 
   FilterBookmarks(list);
-  prefs->SetValue(bookmarks::prefs::kManagedBookmarks, value.Pass());
+  prefs->SetValue(bookmarks::prefs::kManagedBookmarks, std::move(value));
 }
 
 void ManagedBookmarksPolicyHandler::FilterBookmarks(base::ListValue* list) {

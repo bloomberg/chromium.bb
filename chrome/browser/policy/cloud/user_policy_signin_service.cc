@@ -4,6 +4,8 @@
 
 #include "chrome/browser/policy/cloud/user_policy_signin_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -135,8 +137,8 @@ void UserPolicySigninService::OnRefreshTokenAvailable(
 void UserPolicySigninService::InitializeUserCloudPolicyManager(
     const std::string& username,
     scoped_ptr<CloudPolicyClient> client) {
-  UserPolicySigninServiceBase::InitializeUserCloudPolicyManager(username,
-                                                                client.Pass());
+  UserPolicySigninServiceBase::InitializeUserCloudPolicyManager(
+      username, std::move(client));
   ProhibitSignoutIfNeeded();
 }
 

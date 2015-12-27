@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <locale>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/at_exit.h"
@@ -64,7 +65,7 @@ class HttpServer : public net::HttpServer::Delegate {
     scoped_ptr<net::ServerSocket> server_socket(
         new net::TCPServerSocket(NULL, net::NetLog::Source()));
     server_socket->ListenWithAddressAndPort(binding_ip, port, 1);
-    server_.reset(new net::HttpServer(server_socket.Pass(), this));
+    server_.reset(new net::HttpServer(std::move(server_socket), this));
     net::IPEndPoint address;
     return server_->GetLocalAddress(&address) == net::OK;
   }
@@ -127,7 +128,7 @@ void HandleRequestOnCmdThread(
       scoped_ptr<net::HttpServerResponseInfo> response(
           new net::HttpServerResponseInfo(net::HTTP_UNAUTHORIZED));
       response->SetBody("Unauthorized access", "text/plain");
-      send_response_func.Run(response.Pass());
+      send_response_func.Run(std::move(response));
       return;
     }
   }
@@ -181,7 +182,7 @@ void RunServer(uint16_t port,
   base::MessageLoop cmd_loop;
   base::RunLoop cmd_run_loop;
   HttpHandler handler(cmd_run_loop.QuitClosure(), io_thread.task_runner(),
-                      url_base, adb_port, port_server.Pass());
+                      url_base, adb_port, std::move(port_server));
   HttpRequestHandlerFunc handle_request_func =
       base::Bind(&HandleRequestOnCmdThread, &handler, whitelisted_ips);
 
@@ -311,7 +312,7 @@ int main(int argc, char *argv[]) {
     printf("Unable to initialize logging. Exiting...\n");
     return 1;
   }
-  RunServer(port, allow_remote, whitelisted_ips,
-            url_base, adb_port, port_server.Pass());
+  RunServer(port, allow_remote, whitelisted_ips, url_base, adb_port,
+            std::move(port_server));
   return 0;
 }

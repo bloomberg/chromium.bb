@@ -4,6 +4,8 @@
 
 #include "chrome/browser/task_management/sampling/task_group_sampler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "build/build_config.h"
@@ -41,7 +43,7 @@ TaskGroupSampler::TaskGroupSampler(
     const OnOpenFdCountCallback& on_open_fd_count,
 #endif  // defined(OS_LINUX)
     const OnProcessPriorityCallback& on_process_priority)
-    : process_(process.Pass()),
+    : process_(std::move(process)),
       process_metrics_(CreateProcessMetrics(process_.Handle())),
       blocking_pool_runner_(blocking_pool_runner),
       on_cpu_refresh_callback_(on_cpu_refresh),

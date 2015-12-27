@@ -178,7 +178,7 @@ class ProfileBrowserTest : public InProcessBrowserTest {
     // Store the Profile's IO task runner so we can wind it down.
     profile_io_task_runner_ = profile->GetIOTaskRunner();
 
-    return profile.Pass();
+    return profile;
   }
 
   void FlushIoTaskRunnerAndSpinThreads() {

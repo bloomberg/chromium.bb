@@ -5,6 +5,7 @@
 #include "chrome/renderer/media/cast_session.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/single_thread_task_runner.h"
 #include "chrome/renderer/media/cast_session_delegate.h"
@@ -36,7 +37,7 @@ void CreateVideoEncodeMemory(
   if (!shm->Map(size)) {
     NOTREACHED() << "Map failed";
   }
-  callback.Run(shm.Pass());
+  callback.Run(std::move(shm));
 }
 
 }  // namespace

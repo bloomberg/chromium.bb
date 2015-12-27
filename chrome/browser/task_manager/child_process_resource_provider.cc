@@ -5,7 +5,7 @@
 #include "chrome/browser/task_manager/child_process_resource_provider.h"
 
 #include <stddef.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/i18n/rtl.h"
@@ -98,7 +98,7 @@ void ChildProcessResource::ConnectResourceReporterOnIOThread(
   if (!registry)
     return;
 
-  registry->ConnectToRemoteService(req.Pass());
+  registry->ConnectToRemoteService(std::move(req));
 }
 
 ChildProcessResource::ChildProcessResource(int process_type,
@@ -125,7 +125,7 @@ ChildProcessResource::ChildProcessResource(int process_type,
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ChildProcessResource::ConnectResourceReporterOnIOThread,
                  unique_process_id, base::Passed(&request)));
-  resource_usage_.reset(new ProcessResourceUsage(service.Pass()));
+  resource_usage_.reset(new ProcessResourceUsage(std::move(service)));
 }
 
 ChildProcessResource::~ChildProcessResource() {

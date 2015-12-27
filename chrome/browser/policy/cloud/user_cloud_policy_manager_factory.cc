@@ -4,6 +4,8 @@
 
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -153,16 +155,13 @@ UserCloudPolicyManagerFactory::CreateManagerForOriginalBrowserContext(
 
   scoped_ptr<UserCloudPolicyManager> manager;
   manager.reset(new UserCloudPolicyManager(
-      store.Pass(),
-      component_policy_cache_dir,
+      std::move(store), component_policy_cache_dir,
       scoped_ptr<CloudExternalDataManager>(),
-      base::ThreadTaskRunnerHandle::Get(),
-      file_task_runner,
-      io_task_runner));
+      base::ThreadTaskRunnerHandle::Get(), file_task_runner, io_task_runner));
   manager->Init(
       SchemaRegistryServiceFactory::GetForContext(context)->registry());
   manager_wrappers_[context] = new ManagerWrapper(manager.get());
-  return manager.Pass();
+  return manager;
 }
 
 UserCloudPolicyManager*

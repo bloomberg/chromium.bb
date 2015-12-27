@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
@@ -216,7 +218,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
     scoped_ptr<TestLicenseServerConfig> config = GetServerConfig(key_system);
     if (!config)
       return;
-    license_server_.reset(new TestLicenseServer(config.Pass()));
+    license_server_.reset(new TestLicenseServer(std::move(config)));
     EXPECT_TRUE(license_server_->Start());
     query_params->push_back(
         std::make_pair("licenseServerURL", license_server_->GetServerURL()));

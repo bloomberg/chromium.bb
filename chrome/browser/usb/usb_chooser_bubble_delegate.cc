@@ -5,6 +5,7 @@
 #include "chrome/browser/usb/usb_chooser_bubble_delegate.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/stl_util.h"
@@ -100,7 +101,7 @@ void UsbChooserBubbleDelegate::Select(int index) {
 
     device::usb::DeviceInfoPtr device_info_ptr =
         device::usb::DeviceInfo::From(*devices_[idx]);
-    callback_.Run(device_info_ptr.Pass());
+    callback_.Run(std::move(device_info_ptr));
   } else {
     callback_.Run(nullptr);
   }

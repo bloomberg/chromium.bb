@@ -5,6 +5,7 @@
 #include "chrome/service/net/service_url_request_context_getter.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/single_thread_task_runner.h"
@@ -111,9 +112,9 @@ ServiceURLRequestContextGetter::GetURLRequestContext() {
     net::URLRequestContextBuilder builder;
     builder.set_user_agent(user_agent_);
     builder.set_accept_language("en-us,fr");
-    builder.set_proxy_config_service(proxy_config_service_.Pass());
+    builder.set_proxy_config_service(std::move(proxy_config_service_));
     builder.set_throttling_enabled(true);
-    url_request_context_ = builder.Build().Pass();
+    url_request_context_ = builder.Build();
   }
   return url_request_context_.get();
 }

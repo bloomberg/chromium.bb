@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 
 #include <sstream>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -52,7 +53,7 @@ class PasswordStoreConsumerHelper
     base::MessageLoopForUI::current()->QuitWhenIdle();
   }
 
-  ScopedVector<PasswordForm> result() { return result_.Pass(); }
+  ScopedVector<PasswordForm> result() { return std::move(result_); }
 
  private:
   ScopedVector<PasswordForm> result_;

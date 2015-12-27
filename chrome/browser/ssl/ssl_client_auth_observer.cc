@@ -25,8 +25,7 @@ SSLClientAuthObserver::SSLClientAuthObserver(
     scoped_ptr<content::ClientCertificateDelegate> delegate)
     : browser_context_(browser_context),
       cert_request_info_(cert_request_info),
-      delegate_(delegate.Pass()) {
-}
+      delegate_(std::move(delegate)) {}
 
 SSLClientAuthObserver::~SSLClientAuthObserver() {
 }

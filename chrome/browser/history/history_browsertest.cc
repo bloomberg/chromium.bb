@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -102,7 +103,7 @@ class HistoryBrowserTest : public InProcessBrowserTest {
     scoped_ptr<history::HistoryDBTask> task(new WaitForHistoryTask());
     history::HistoryService* history = HistoryServiceFactory::GetForProfile(
         GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
-    history->ScheduleDBTask(task.Pass(), &task_tracker);
+    history->ScheduleDBTask(std::move(task), &task_tracker);
     content::RunMessageLoop();
   }
 

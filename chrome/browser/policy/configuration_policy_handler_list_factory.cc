@@ -821,7 +821,7 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       new chromeos::KeyPermissionsPolicyHandler(chrome_schema)));
 #endif  // defined(OS_CHROMEOS)
 
-  return handlers.Pass();
+  return handlers;
 }
 
 }  // namespace policy

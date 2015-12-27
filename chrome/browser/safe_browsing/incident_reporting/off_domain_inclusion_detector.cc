@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/incident_reporting/off_domain_inclusion_detector.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -178,7 +179,7 @@ void OffDomainInclusionDetector::BeginAnalysis(
     // requests). Consider adding the original referrer to ResourceRequestInfo
     // if that's an issue.
     DCHECK(off_domain_inclusion_info->main_frame_url.is_empty());
-    ReportAnalysisResult(off_domain_inclusion_info.Pass(),
+    ReportAnalysisResult(std::move(off_domain_inclusion_info),
                          AnalysisEvent::ABORT_EMPTY_MAIN_FRAME_URL);
     return;
   }
@@ -237,10 +238,10 @@ void OffDomainInclusionDetector::ContinueAnalysisOnWhitelistResult(
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
   if (request_url_is_on_inclusion_whitelist) {
-    ReportAnalysisResult(off_domain_inclusion_info.Pass(),
+    ReportAnalysisResult(std::move(off_domain_inclusion_info),
                          AnalysisEvent::OFF_DOMAIN_INCLUSION_WHITELISTED);
   } else {
-    ContinueAnalysisWithHistoryCheck(off_domain_inclusion_info.Pass());
+    ContinueAnalysisWithHistoryCheck(std::move(off_domain_inclusion_info));
   }
 }
 
@@ -255,11 +256,11 @@ void OffDomainInclusionDetector::ContinueAnalysisWithHistoryCheck(
   Profile* profile =
       ProfileFromRenderProcessId(off_domain_inclusion_info->render_process_id);
   if (!profile) {
-    ReportAnalysisResult(off_domain_inclusion_info.Pass(),
+    ReportAnalysisResult(std::move(off_domain_inclusion_info),
                          AnalysisEvent::ABORT_NO_PROFILE);
     return;
   } else if (profile->IsOffTheRecord()) {
-    ReportAnalysisResult(off_domain_inclusion_info.Pass(),
+    ReportAnalysisResult(std::move(off_domain_inclusion_info),
                          AnalysisEvent::ABORT_INCOGNITO);
     return;
   }
@@ -270,7 +271,7 @@ void OffDomainInclusionDetector::ContinueAnalysisWithHistoryCheck(
   if (!history_service) {
     // Should only happen very early during startup, receiving many such reports
     // relative to other report types would indicate that something is wrong.
-    ReportAnalysisResult(off_domain_inclusion_info.Pass(),
+    ReportAnalysisResult(std::move(off_domain_inclusion_info),
                          AnalysisEvent::ABORT_NO_HISTORY_SERVICE);
     return;
   }
@@ -293,16 +294,16 @@ void OffDomainInclusionDetector::ContinueAnalysisOnHistoryResult(
     int num_visits,
     base::Time /* first_visit_time */) {
   if (!success) {
-    ReportAnalysisResult(off_domain_inclusion_info.Pass(),
+    ReportAnalysisResult(std::move(off_domain_inclusion_info),
                          AnalysisEvent::ABORT_HISTORY_LOOKUP_FAILED);
     return;
   }
 
   if (num_visits > 0) {
-    ReportAnalysisResult(off_domain_inclusion_info.Pass(),
+    ReportAnalysisResult(std::move(off_domain_inclusion_info),
                          AnalysisEvent::OFF_DOMAIN_INCLUSION_IN_HISTORY);
   } else {
-    ReportAnalysisResult(off_domain_inclusion_info.Pass(),
+    ReportAnalysisResult(std::move(off_domain_inclusion_info),
                          AnalysisEvent::OFF_DOMAIN_INCLUSION_SUSPICIOUS);
   }
 }

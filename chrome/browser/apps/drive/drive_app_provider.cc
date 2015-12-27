@@ -5,7 +5,7 @@
 #include "chrome/browser/apps/drive/drive_app_provider.h"
 
 #include <stddef.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -44,7 +44,7 @@ DriveAppProvider::DriveAppProvider(
     DriveAppUninstallSyncService* uninstall_sync_service)
     : profile_(profile),
       uninstall_sync_service_(uninstall_sync_service),
-      service_bridge_(DriveServiceBridge::Create(profile).Pass()),
+      service_bridge_(DriveServiceBridge::Create(profile)),
       mapping_(new DriveAppMapping(profile->GetPrefs())),
       drive_app_registry_updated_(false),
       weak_ptr_factory_(this) {
@@ -67,7 +67,7 @@ void DriveAppProvider::AppendDependsOnFactories(
 void DriveAppProvider::SetDriveServiceBridgeForTest(
     scoped_ptr<DriveServiceBridge> test_bridge) {
   service_bridge_->GetAppRegistry()->RemoveObserver(this);
-  service_bridge_ = test_bridge.Pass();
+  service_bridge_ = std::move(test_bridge);
   service_bridge_->GetAppRegistry()->AddObserver(this);
 }
 

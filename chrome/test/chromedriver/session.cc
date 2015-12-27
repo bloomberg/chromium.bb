@@ -5,6 +5,7 @@
 #include "chrome/test/chromedriver/session.h"
 
 #include <list>
+#include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/threading/thread_local.h"
@@ -46,7 +47,7 @@ Session::Session(const std::string& id, scoped_ptr<Chrome> chrome)
       quit(false),
       detach(false),
       force_devtools_screenshot(false),
-      chrome(chrome.Pass()),
+      chrome(std::move(chrome)),
       sticky_modifiers(0),
       mouse_position(0, 0),
       page_load_timeout(kDefaultPageLoadTimeout),

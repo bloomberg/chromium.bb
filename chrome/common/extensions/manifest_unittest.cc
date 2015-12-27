@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
@@ -53,7 +54,8 @@ class ManifestUnitTest : public testing::Test {
       manifest_value->Set(key, value);
     else
       manifest_value->Remove(key, NULL);
-    manifest->reset(new Manifest(Manifest::INTERNAL, manifest_value.Pass()));
+    manifest->reset(
+        new Manifest(Manifest::INTERNAL, std::move(manifest_value)));
   }
 
   std::string default_value_;
@@ -69,7 +71,7 @@ TEST_F(ManifestUnitTest, Extension) {
   manifest_value->SetString("unknown_key", "foo");
 
   scoped_ptr<Manifest> manifest(
-      new Manifest(Manifest::INTERNAL, manifest_value.Pass()));
+      new Manifest(Manifest::INTERNAL, std::move(manifest_value)));
   std::string error;
   std::vector<InstallWarning> warnings;
   EXPECT_TRUE(manifest->ValidateManifest(&error, &warnings));
@@ -124,7 +126,7 @@ TEST_F(ManifestUnitTest, ExtensionTypes) {
   value->SetString(keys::kVersion, "1");
 
   scoped_ptr<Manifest> manifest(
-      new Manifest(Manifest::INTERNAL, value.Pass()));
+      new Manifest(Manifest::INTERNAL, std::move(value)));
   std::string error;
   std::vector<InstallWarning> warnings;
   EXPECT_TRUE(manifest->ValidateManifest(&error, &warnings));
@@ -180,7 +182,7 @@ TEST_F(ManifestUnitTest, RestrictedKeys) {
   value->SetString(keys::kVersion, "1");
 
   scoped_ptr<Manifest> manifest(
-      new Manifest(Manifest::INTERNAL, value.Pass()));
+      new Manifest(Manifest::INTERNAL, std::move(value)));
   std::string error;
   std::vector<InstallWarning> warnings;
   EXPECT_TRUE(manifest->ValidateManifest(&error, &warnings));

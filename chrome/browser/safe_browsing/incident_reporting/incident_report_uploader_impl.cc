@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/incident_report_uploader_impl.h"
 
+#include <utility>
+
 #include "base/metrics/histogram.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "google_apis/google_api_keys.h"
@@ -71,7 +73,7 @@ GURL IncidentReportUploaderImpl::GetIncidentReportUrl() {
 void IncidentReportUploaderImpl::OnURLFetchComplete(
     const net::URLFetcher* source) {
   // Take ownership of the fetcher in this scope (source == url_fetcher_).
-  scoped_ptr<net::URLFetcher> url_fetcher(url_fetcher_.Pass());
+  scoped_ptr<net::URLFetcher> url_fetcher(std::move(url_fetcher_));
 
   UMA_HISTOGRAM_TIMES("SBIRS.ReportUploadTime",
                       base::TimeTicks::Now() - time_begin_);
@@ -93,7 +95,7 @@ void IncidentReportUploaderImpl::OnURLFetchComplete(
   }
   // Callbacks have a tendency to delete the uploader, so no touching anything
   // after this.
-  callback_.Run(result, response.Pass());
+  callback_.Run(result, std::move(response));
 }
 
 }  // namespace safe_browsing

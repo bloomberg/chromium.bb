@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/chrome_content_renderer_client.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
@@ -790,7 +792,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         }
 
         return render_frame->CreatePlugin(frame, info, params,
-                                          throttler.Pass());
+                                          std::move(throttler));
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kNPAPINotSupported: {
         RenderThread::Get()->RecordAction(

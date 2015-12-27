@@ -5,8 +5,8 @@
 #include "chrome/browser/local_discovery/privet_http_impl.h"
 
 #include <stddef.h>
-
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -690,7 +690,7 @@ void PrivetLocalPrintOperationImpl::SetPageSize(const gfx::Size& page_size) {
 
 void PrivetLocalPrintOperationImpl::SetPWGRasterConverterForTesting(
     scoped_ptr<PWGRasterConverter> pwg_raster_converter) {
-  pwg_raster_converter_ = pwg_raster_converter.Pass();
+  pwg_raster_converter_ = std::move(pwg_raster_converter);
 }
 #endif  // ENABLE_PRINT_PREVIEW
 
@@ -761,8 +761,7 @@ void PrivetHTTPClientImpl::OnPrivetInfoDone(
 
 PrivetV1HTTPClientImpl::PrivetV1HTTPClientImpl(
     scoped_ptr<PrivetHTTPClient> info_client)
-    : info_client_(info_client.Pass()) {
-}
+    : info_client_(std::move(info_client)) {}
 
 PrivetV1HTTPClientImpl::~PrivetV1HTTPClientImpl() {
 }

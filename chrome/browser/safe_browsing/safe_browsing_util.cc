@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 
+#include <utility>
+
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/safe_browsing/chunk.pb.h"
@@ -23,7 +25,7 @@ SBChunkData::SBChunkData() {
 }
 
 SBChunkData::SBChunkData(scoped_ptr<ChunkData> data)
-    : chunk_data_(data.Pass()) {
+    : chunk_data_(std::move(data)) {
   DCHECK(chunk_data_.get());
 }
 

@@ -85,7 +85,7 @@ scoped_ptr<base::DictionaryValue> WebCryptoAlgorithmToBaseValue(
   }
   // Otherwise, |algorithm| is missing support here or no parameters were
   // required.
-  return dict.Pass();
+  return dict;
 }
 
 }  // namespace

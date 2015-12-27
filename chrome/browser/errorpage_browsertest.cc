@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -179,8 +181,8 @@ void AddInterceptorForURL(
     const GURL& url,
     scoped_ptr<net::URLRequestInterceptor> handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-      url, handler.Pass());
+  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(url,
+                                                          std::move(handler));
 }
 
 // An interceptor that fails a configurable number of requests, then succeeds
@@ -309,7 +311,7 @@ void InstallMockInterceptors(
   chrome_browser_net::SetUrlRequestMocksEnabled(true);
 
   AddInterceptorForURL(google_util::LinkDoctorBaseURL(),
-                       link_doctor_interceptor.Pass());
+                       std::move(link_doctor_interceptor));
 
   // Add a mock for the search engine the error page will use.
   base::FilePath root_http;
@@ -541,7 +543,7 @@ void InterceptNetworkTransactions(net::URLRequestContextGetter* getter,
       new net::FailingHttpTransactionFactory(cache->GetSession(), error));
   // Throw away old version; since this is a a browser test, we don't
   // need to restore the old state.
-  cache->SetHttpNetworkTransactionFactoryForTesting(factory.Pass());
+  cache->SetHttpNetworkTransactionFactoryForTesting(std::move(factory));
 }
 
 // Test an error with a file URL, and make sure it doesn't have a

@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -118,7 +119,7 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
         base, base::ThreadTaskRunnerHandle::Get().get()));
     file_system_context_ =
         content::CreateFileSystemContextWithAdditionalProvidersForTesting(
-            NULL, additional_providers.Pass(), base);
+            NULL, std::move(additional_providers), base);
 
     move_src_ = file_system_context_->CreateCrackedFileSystemURL(
         GURL(kOrigin),

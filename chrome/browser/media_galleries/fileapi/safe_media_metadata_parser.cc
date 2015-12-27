@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media_galleries/fileapi/safe_media_metadata_parser.h"
 
+#include <utility>
+
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/blob_reader.h"
@@ -119,10 +121,9 @@ void SafeMediaMetadataParser::OnBlobReaderDoneOnUIThread(
     int64_t /* blob_total_size */) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
+      BrowserThread::IO, FROM_HERE,
       base::Bind(&SafeMediaMetadataParser::FinishRequestBlobBytes, this,
-                 request_id, base::Passed(data.Pass())));
+                 request_id, base::Passed(std::move(data))));
 }
 
 void SafeMediaMetadataParser::FinishRequestBlobBytes(

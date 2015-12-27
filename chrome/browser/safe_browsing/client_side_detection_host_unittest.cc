@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/safe_browsing/client_side_detection_host.h"
+
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -10,7 +14,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/safe_browsing/browser_feature_extractor.h"
-#include "chrome/browser/safe_browsing/client_side_detection_host.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -97,13 +100,13 @@ ACTION(QuitUIMessageLoop) {
 ACTION_P(InvokeDoneCallback, verdict) {
   scoped_ptr<ClientPhishingRequest> request(::std::tr1::get<1>(args));
   request->CopyFrom(*verdict);
-  ::std::tr1::get<2>(args).Run(true, request.Pass());
+  ::std::tr1::get<2>(args).Run(true, std::move(request));
 }
 
 ACTION_P(InvokeMalwareCallback, verdict) {
   scoped_ptr<ClientMalwareRequest> request(::std::tr1::get<1>(args));
   request->CopyFrom(*verdict);
-  ::std::tr1::get<2>(args).Run(true, request.Pass());
+  ::std::tr1::get<2>(args).Run(true, std::move(request));
 }
 
 void EmptyUrlCheckCallback(bool processed) {

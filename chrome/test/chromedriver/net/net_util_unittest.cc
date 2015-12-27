@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/chromedriver/net/net_util.h"
+
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -13,7 +16,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
-#include "chrome/test/chromedriver/net/net_util.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -53,7 +55,7 @@ class FetchUrlTest : public testing::Test,
     scoped_ptr<net::ServerSocket> server_socket(
         new net::TCPServerSocket(NULL, net::NetLog::Source()));
     server_socket->ListenWithAddressAndPort("127.0.0.1", 0, 1);
-    server_.reset(new net::HttpServer(server_socket.Pass(), this));
+    server_.reset(new net::HttpServer(std::move(server_socket), this));
     net::IPEndPoint address;
     CHECK_EQ(net::OK, server_->GetLocalAddress(&address));
     server_url_ = base::StringPrintf("http://127.0.0.1:%d", address.port());

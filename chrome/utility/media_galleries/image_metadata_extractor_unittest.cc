@@ -43,7 +43,7 @@ scoped_ptr<ImageMetadataExtractor> GetExtractor(
   extractor->Extract(&source, base::Bind(&QuitLoop, &loop, &extracted));
   EXPECT_EQ(expected_result, extracted);
 
-  return extractor.Pass();
+  return extractor;
 }
 
 TEST(ImageMetadataExtractorTest, JPGFile) {

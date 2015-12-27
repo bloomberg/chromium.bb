@@ -215,7 +215,7 @@ class WebViewInteractiveTest
       return scoped_ptr<ExtensionTestMessageListener>();
     }
 
-    return done_listener.Pass();
+    return done_listener;
   }
 
   void TestHelper(const std::string& test_name,

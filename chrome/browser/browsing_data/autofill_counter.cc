@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data/autofill_counter.h"
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/memory/scoped_vector.h"
@@ -144,7 +145,7 @@ void AutofillCounter::OnWebDataServiceRequestDone(
 
   scoped_ptr<Result> reported_result(new AutofillResult(
        this, num_suggestions_, num_credit_cards_, num_addresses_));
-  ReportResult(reported_result.Pass());
+  ReportResult(std::move(reported_result));
 }
 
 void AutofillCounter::CancelAllRequests() {

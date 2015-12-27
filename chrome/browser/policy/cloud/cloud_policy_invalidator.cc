@@ -4,6 +4,8 @@
 
 #include "chrome/browser/policy/cloud/cloud_policy_invalidator.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/hash.h"
 #include "base/location.h"
@@ -40,7 +42,7 @@ CloudPolicyInvalidator::CloudPolicyInvalidator(
       type_(type),
       core_(core),
       task_runner_(task_runner),
-      clock_(clock.Pass()),
+      clock_(std::move(clock)),
       invalidation_service_(NULL),
       invalidations_enabled_(false),
       invalidation_service_enabled_(false),

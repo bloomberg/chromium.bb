@@ -5,8 +5,8 @@
 #include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 
 #include <stddef.h>
-
 #include <functional>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
@@ -230,7 +230,7 @@ bool SpellcheckCustomDictionary::AddWord(const std::string& word) {
   Apply(*dictionary_change);
   Notify(*dictionary_change);
   Sync(*dictionary_change);
-  Save(dictionary_change.Pass());
+  Save(std::move(dictionary_change));
   return result == VALID_CHANGE;
 }
 
@@ -242,7 +242,7 @@ bool SpellcheckCustomDictionary::RemoveWord(const std::string& word) {
   Apply(*dictionary_change);
   Notify(*dictionary_change);
   Sync(*dictionary_change);
-  Save(dictionary_change.Pass());
+  Save(std::move(dictionary_change));
   return result == VALID_CHANGE;
 }
 
@@ -294,8 +294,8 @@ syncer::SyncMergeResult SpellcheckCustomDictionary::MergeDataAndStartSyncing(
   DCHECK(sync_processor.get());
   DCHECK(sync_error_handler.get());
   DCHECK_EQ(syncer::DICTIONARY, type);
-  sync_processor_ = sync_processor.Pass();
-  sync_error_handler_ = sync_error_handler.Pass();
+  sync_processor_ = std::move(sync_processor);
+  sync_error_handler_ = std::move(sync_error_handler);
 
   // Build a list of words to add locally.
   scoped_ptr<Change> to_change_locally(new Change);
@@ -313,7 +313,7 @@ syncer::SyncMergeResult SpellcheckCustomDictionary::MergeDataAndStartSyncing(
   // Add remote words locally.
   Apply(*to_change_locally);
   Notify(*to_change_locally);
-  Save(to_change_locally.Pass());
+  Save(std::move(to_change_locally));
 
   // Send local changes to the sync server.
   syncer::SyncMergeResult result(type);
@@ -376,7 +376,7 @@ syncer::SyncError SpellcheckCustomDictionary::ProcessSyncChanges(
   dictionary_change->Sanitize(GetWords());
   Apply(*dictionary_change);
   Notify(*dictionary_change);
-  Save(dictionary_change.Pass());
+  Save(std::move(dictionary_change));
 
   return syncer::SyncError();
 }

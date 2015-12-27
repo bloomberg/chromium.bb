@@ -4,6 +4,8 @@
 
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
@@ -137,14 +139,14 @@ ProfilePolicyConnectorFactory::CreateForBrowserContextInternal(
     providers.push_back(test_providers_.front());
     test_providers_.pop_front();
     scoped_ptr<PolicyService> service(new PolicyServiceImpl(providers));
-    connector->InitForTesting(service.Pass());
+    connector->InitForTesting(std::move(service));
   }
 #else
   connector->Init(nullptr, nullptr);
 #endif
 
   connectors_[context] = connector.get();
-  return connector.Pass();
+  return connector;
 }
 
 void ProfilePolicyConnectorFactory::BrowserContextShutdown(

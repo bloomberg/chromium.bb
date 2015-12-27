@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/spellchecker/spellcheck_language.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "chrome/renderer/spellchecker/spellcheck_worditerator.h"
 #include "chrome/renderer/spellchecker/spelling_engine.h"
@@ -18,7 +20,7 @@ SpellcheckLanguage::~SpellcheckLanguage() {
 
 void SpellcheckLanguage::Init(base::File file, const std::string& language) {
   DCHECK(platform_spelling_engine_.get());
-  platform_spelling_engine_->Init(file.Pass());
+  platform_spelling_engine_->Init(std::move(file));
 
   character_attributes_.SetDefaultLanguage(language);
   text_iterator_.Reset();

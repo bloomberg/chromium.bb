@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
+#include "chrome/browser/media/webrtc_log_uploader.h"
 
+#include <stddef.h>
 #include <string>
+#include <utility>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -15,7 +17,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/time/time.h"
-#include "chrome/browser/media/webrtc_log_uploader.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -282,7 +283,7 @@ TEST_F(WebRtcLogUploaderTest, AddRtpDumpsToPostedData) {
   scoped_ptr<WebRtcLogBuffer> log(new WebRtcLogBuffer());
   log->SetComplete();
   webrtc_log_uploader->LoggingStoppedDoUpload(
-      log.Pass(), make_scoped_ptr(new MetaDataMap()), upload_done_data);
+      std::move(log), make_scoped_ptr(new MetaDataMap()), upload_done_data);
 
   VerifyRtpDumpInMultipart(post_data, "rtpdump_recv", incoming_dump_content);
   VerifyRtpDumpInMultipart(post_data, "rtpdump_send", outgoing_dump_content);

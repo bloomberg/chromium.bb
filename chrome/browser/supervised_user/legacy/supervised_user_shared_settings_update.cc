@@ -4,6 +4,8 @@
 
 #include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_update.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service.h"
@@ -17,7 +19,7 @@ SupervisedUserSharedSettingsUpdate::SupervisedUserSharedSettingsUpdate(
     : service_(service),
       su_id_(su_id),
       key_(key),
-      value_(value.Pass()),
+      value_(std::move(value)),
       callback_(success_callback) {
   service->SetValueInternal(su_id, key, *value_, false);
   subscription_ = service->Subscribe(

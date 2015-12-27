@@ -4,6 +4,8 @@
 
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 
+#include <utility>
+
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 
 // TODO(blundell): Should these be namespaced?
@@ -11,7 +13,7 @@ scoped_ptr<KeyedService> BuildFakeProfileOAuth2TokenService(
     content::BrowserContext* context) {
   scoped_ptr<FakeProfileOAuth2TokenService> service(
       new FakeProfileOAuth2TokenService());
-  return service.Pass();
+  return std::move(service);
 }
 
 scoped_ptr<KeyedService> BuildAutoIssuingFakeProfileOAuth2TokenService(
@@ -19,5 +21,5 @@ scoped_ptr<KeyedService> BuildAutoIssuingFakeProfileOAuth2TokenService(
   scoped_ptr<FakeProfileOAuth2TokenService> service(
       new FakeProfileOAuth2TokenService());
   service->set_auto_post_fetch_response_on_message_loop(true);
-  return service.Pass();
+  return std::move(service);
 }

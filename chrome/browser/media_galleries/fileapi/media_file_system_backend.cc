@@ -5,6 +5,7 @@
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -326,8 +327,8 @@ storage::FileSystemOperation* MediaFileSystemBackend::CreateFileSystemOperation(
   scoped_ptr<storage::FileSystemOperationContext> operation_context(
       new storage::FileSystemOperationContext(context,
                                               media_task_runner_.get()));
-  return storage::FileSystemOperation::Create(
-      url, context, operation_context.Pass());
+  return storage::FileSystemOperation::Create(url, context,
+                                              std::move(operation_context));
 }
 
 bool MediaFileSystemBackend::SupportsStreaming(
@@ -363,7 +364,7 @@ MediaFileSystemBackend::CreateFileStreamReader(
         device_media_async_file_util_->GetFileStreamReader(
             url, offset, expected_modification_time, context);
     DCHECK(reader);
-    return reader.Pass();
+    return reader;
   }
 
   return scoped_ptr<storage::FileStreamReader>(

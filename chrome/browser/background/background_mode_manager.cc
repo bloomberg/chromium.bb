@@ -5,9 +5,9 @@
 #include "chrome/browser/background/background_mode_manager.h"
 
 #include <stddef.h>
-
 #include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/base_paths.h"
@@ -988,7 +988,7 @@ void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
   menu->AddItemWithStringId(IDC_EXIT, IDS_EXIT);
 
   context_menu_ = menu.get();
-  status_icon_->SetContextMenu(menu.Pass());
+  status_icon_->SetContextMenu(std::move(menu));
 }
 
 void BackgroundModeManager::RemoveStatusTrayIcon() {

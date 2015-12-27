@@ -4,6 +4,8 @@
 
 #include "chrome/browser/web_applications/web_app.h"
 
+#include <utility>
+
 #include "base/environment.h"
 #include "base/logging.h"
 #include "build/build_config.h"
@@ -62,7 +64,7 @@ void UpdatePlatformShortcuts(
   if (creation_locations.applications_menu_location == APP_MENU_LOCATION_NONE)
     creation_locations.applications_menu_location = APP_MENU_LOCATION_HIDDEN;
 
-  CreatePlatformShortcuts(web_app_path, shortcut_info.Pass(),
+  CreatePlatformShortcuts(web_app_path, std::move(shortcut_info),
                           file_handlers_info, creation_locations,
                           SHORTCUT_CREATION_AUTOMATED);
 }

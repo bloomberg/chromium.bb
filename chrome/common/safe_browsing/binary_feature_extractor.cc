@@ -4,6 +4,8 @@
 
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 
+#include <utility>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
@@ -36,7 +38,7 @@ bool BinaryFeatureExtractor::ExtractImageFeaturesFromFile(
     ClientDownloadRequest_ImageHeaders* image_headers,
     google::protobuf::RepeatedPtrField<std::string>* signed_data) {
   base::MemoryMappedFile mapped_file;
-  if (!mapped_file.Initialize(file.Pass()))
+  if (!mapped_file.Initialize(std::move(file)))
     return false;
   return ExtractImageFeaturesFromData(mapped_file.data(), mapped_file.length(),
       options, image_headers, signed_data);

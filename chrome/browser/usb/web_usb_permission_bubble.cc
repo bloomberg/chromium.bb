@@ -46,5 +46,5 @@ void ChromeWebUsbPermissionBubble::GetPermission(
 void ChromeWebUsbPermissionBubble::Bind(
     mojo::InterfaceRequest<webusb::WebUsbPermissionBubble> request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  bindings_.AddBinding(this, request.Pass());
+  bindings_.AddBinding(this, std::move(request));
 }

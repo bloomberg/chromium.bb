@@ -4,6 +4,8 @@
 
 #include "chrome/browser/devtools/remote_debugging_server.h"
 
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/path_service.h"
@@ -67,7 +69,7 @@ class TCPServerSocketFactory
         net::OK) {
       return scoped_ptr<net::ServerSocket>();
     }
-    return socket.Pass();
+    return std::move(socket);
   }
 
   std::string address_;

@@ -4,6 +4,8 @@
 
 #include "chrome/utility/extensions/extensions_handler.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
@@ -144,7 +146,7 @@ void ExtensionsHandler::OnParseMediaMetadata(const std::string& mime_type,
       new metadata::IPCDataSource(total_size));
   metadata::MediaMetadataParser* parser = new metadata::MediaMetadataParser(
       source.get(), mime_type, get_attached_images);
-  utility_client_->AddHandler(source.Pass());
+  utility_client_->AddHandler(std::move(source));
   parser->Start(base::Bind(&FinishParseMediaMetadata, base::Owned(parser)));
 }
 

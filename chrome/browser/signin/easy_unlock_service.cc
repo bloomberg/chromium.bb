@@ -4,6 +4,8 @@
 
 #include "chrome/browser/signin/easy_unlock_service.h"
 
+#include <utility>
+
 #include "apps/app_lifetime_monitor.h"
 #include "apps/app_lifetime_monitor_factory.h"
 #include "base/bind.h"
@@ -363,7 +365,7 @@ std::string EasyUnlockService::GetDeviceId() {
 
 void EasyUnlockService::Initialize(
     scoped_ptr<EasyUnlockAppManager> app_manager) {
-  app_manager_ = app_manager.Pass();
+  app_manager_ = std::move(app_manager);
   app_manager_->EnsureReady(
       base::Bind(&EasyUnlockService::InitializeOnAppManagerReady,
                  weak_ptr_factory_.GetWeakPtr()));

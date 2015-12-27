@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
+#include "chrome/test/chromedriver/commands.h"
 
+#include <stddef.h>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -22,7 +24,6 @@
 #include "chrome/test/chromedriver/chrome/stub_web_view.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/command_listener_proxy.h"
-#include "chrome/test/chromedriver/commands.h"
 #include "chrome/test/chromedriver/element_commands.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/session_commands.h"
@@ -70,7 +71,7 @@ void ExecuteStubGetSession(int* count,
   capabilities->Set("capability1", new base::StringValue("test1"));
   capabilities->Set("capability2", new base::StringValue("test2"));
 
-  callback.Run(Status(kOk), capabilities.Pass(), session_id);
+  callback.Run(Status(kOk), std::move(capabilities), session_id);
 }
 
 void OnGetSessions(const Status& status,

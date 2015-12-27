@@ -4,6 +4,8 @@
 
 #include "chrome/browser/autocomplete/keyword_extensions_delegate_impl.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
@@ -83,7 +85,7 @@ void KeywordExtensionsDelegateImplTest::SetUp() {
 void KeywordExtensionsDelegateImplTest::RunTest(bool incognito) {
   scoped_ptr<TemplateURLService> empty_model(new TemplateURLService(NULL, 0));
   MockAutocompleteProviderClient client;
-  client.set_template_url_service(empty_model.Pass());
+  client.set_template_url_service(std::move(empty_model));
   scoped_refptr<KeywordProvider> keyword_provider =
       new KeywordProvider(&client, nullptr);
 

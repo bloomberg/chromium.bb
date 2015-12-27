@@ -5,6 +5,7 @@
 #include "chrome/browser/copresence/chrome_whispernet_client.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "chrome/browser/copresence/chrome_whispernet_config.h"
 #include "chrome/browser/extensions/api/copresence_private/copresence_private_api.h"
@@ -204,7 +205,7 @@ void ChromeWhispernetClient::SendEventIfLoaded(
 
   if (extension_loaded_) {
     event_router_->DispatchEventToExtension(kWhispernetProxyExtensionId,
-                                            event.Pass());
+                                            std::move(event));
   } else {
     DVLOG(2) << "Queueing event " << event->event_name
              << " for client " << client_id_;

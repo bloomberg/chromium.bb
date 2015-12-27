@@ -6,8 +6,11 @@
 
 // TODOv3(shess): Review these changes carefully.
 
+#include "chrome/browser/safe_browsing/protocol_parser.h"
+
 #include <stdint.h>
 #include <stdlib.h>
+#include <utility>
 
 #include "base/format_macros.h"
 #include "base/logging.h"
@@ -18,7 +21,6 @@
 #include "base/sys_byteorder.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 
 namespace safe_browsing {
@@ -368,7 +370,7 @@ bool ParseChunk(const char* data,
     if (!chunk->ParseFrom(reinterpret_cast<const unsigned char*>(p), l))
       return false;
 
-    chunks->push_back(chunk.Pass());
+    chunks->push_back(std::move(chunk));
   }
 
   DCHECK(reader.empty());

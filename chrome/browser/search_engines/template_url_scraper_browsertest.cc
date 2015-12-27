@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -62,7 +63,7 @@ scoped_ptr<net::test_server::HttpResponse> SendResponse(
   scoped_ptr<net::test_server::BasicHttpResponse> response(
       new net::test_server::BasicHttpResponse);
   response->set_content(file_contents);
-  return response.Pass();
+  return std::move(response);
 }
 
 }  // namespace

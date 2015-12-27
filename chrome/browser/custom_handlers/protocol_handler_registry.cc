@@ -175,7 +175,7 @@ ProtocolHandlerRegistry::JobInterceptorFactory::~JobInterceptorFactory() {
 
 void ProtocolHandlerRegistry::JobInterceptorFactory::Chain(
     scoped_ptr<net::URLRequestJobFactory> job_factory) {
-  job_factory_ = job_factory.Pass();
+  job_factory_ = std::move(job_factory);
 }
 
 net::URLRequestJob*

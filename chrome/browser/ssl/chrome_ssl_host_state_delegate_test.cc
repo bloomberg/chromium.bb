@@ -5,6 +5,7 @@
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
@@ -245,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, Migrate) {
       ContentSettingsPattern::FromURLNoWildcard(url),
       ContentSettingsPattern::FromURLNoWildcard(url),
       CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, std::string(),
-      new_format.Pass());
+      std::move(new_format));
 
   // Test that the old-format setting works.
   EXPECT_TRUE(state->HasAllowException(kWWWGoogleHost));

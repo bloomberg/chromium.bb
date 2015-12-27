@@ -5,6 +5,7 @@
 #include "chrome/browser/supervised_user/supervised_user_bookmarks_handler.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -152,7 +153,7 @@ scoped_ptr<base::ListValue> SupervisedUserBookmarksHandler::BuildTree() {
   root_.reset(new base::ListValue);
   AddFoldersToTree();
   AddLinksToTree();
-  return root_.Pass();
+  return std::move(root_);
 }
 
 void SupervisedUserBookmarksHandler::AddFoldersToTree() {
@@ -171,7 +172,7 @@ void SupervisedUserBookmarksHandler::AddFoldersToTree() {
       node->SetIntegerWithoutPathExpansion(kId, folder.id);
       node->SetStringWithoutPathExpansion(kName, folder.name);
       node->SetWithoutPathExpansion(kChildren, new base::ListValue);
-      if (!AddNodeToTree(folder.parent_id, node.Pass()))
+      if (!AddNodeToTree(folder.parent_id, std::move(node)))
         folders_failed.push_back(folder);
     }
     folders.swap(folders_failed);
@@ -196,7 +197,7 @@ void SupervisedUserBookmarksHandler::AddLinksToTree() {
     }
     node->SetStringWithoutPathExpansion(kUrl, url.spec());
     node->SetStringWithoutPathExpansion(kName, link.name);
-    if (!AddNodeToTree(link.parent_id, node.Pass())) {
+    if (!AddNodeToTree(link.parent_id, std::move(node))) {
       LOG(WARNING) << "SupervisedUserBookmarksHandler::AddLinksToTree"
                    << " failed to add link (url,name,parent): "
                    << link.url << ", " << link.name << ", " << link.parent_id;

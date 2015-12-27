@@ -4,6 +4,8 @@
 
 #include "chrome/browser/net/dns_probe_runner.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/address_list.h"
@@ -84,7 +86,7 @@ DnsProbeRunner::DnsProbeRunner() : result_(UNKNOWN), weak_factory_(this) {}
 DnsProbeRunner::~DnsProbeRunner() {}
 
 void DnsProbeRunner::SetClient(scoped_ptr<net::DnsClient> client) {
-  client_ = client.Pass();
+  client_ = std::move(client);
 }
 
 void DnsProbeRunner::RunProbe(const base::Closure& callback) {

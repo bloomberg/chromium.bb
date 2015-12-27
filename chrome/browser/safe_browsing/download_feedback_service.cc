@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util_proxy.h"
@@ -191,7 +193,7 @@ void DownloadFeedbackService::BeginFeedback(
                                path,
                                ping_request,
                                ping_response));
-  active_feedback_.push_back(feedback.Pass());
+  active_feedback_.push_back(std::move(feedback));
   UMA_HISTOGRAM_COUNTS_100("SBDownloadFeedback.ActiveFeedbacks",
                            active_feedback_.size());
 

@@ -6,11 +6,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <algorithm>
 #include <functional>
 #include <iterator>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/location.h"
@@ -819,7 +819,7 @@ void CastStreamingNativeHandler::StartCastRtpReceiver(
     scoped_ptr<base::Value> options_value(
         converter->FromV8Value(args[8], context()->v8_context()));
     if (!options_value->IsType(base::Value::TYPE_NULL)) {
-      options = base::DictionaryValue::From(options_value.Pass());
+      options = base::DictionaryValue::From(std::move(options_value));
       if (!options) {
         args.GetIsolate()->ThrowException(v8::Exception::TypeError(
             v8::String::NewFromUtf8(args.GetIsolate(), kUnableToConvertArgs)));
@@ -838,7 +838,7 @@ void CastStreamingNativeHandler::StartCastRtpReceiver(
 
   session->Start(
       audio_config, video_config, local_endpoint, remote_endpoint,
-      options.Pass(), capture_format,
+      std::move(options), capture_format,
       base::Bind(&CastStreamingNativeHandler::AddTracksToMediaStream,
                  weak_factory_.GetWeakPtr(), url, params),
       base::Bind(&CastStreamingNativeHandler::CallReceiverErrorCallback,
@@ -864,7 +864,7 @@ void CastStreamingNativeHandler::AddTracksToMediaStream(
     scoped_refptr<media::AudioCapturerSource> audio,
     scoped_ptr<media::VideoCapturerSource> video) {
   content::AddAudioTrackToMediaStream(audio, params, true, true, url);
-  content::AddVideoTrackToMediaStream(video.Pass(), true, true, url);
+  content::AddVideoTrackToMediaStream(std::move(video), true, true, url);
 }
 
 }  // namespace extensions

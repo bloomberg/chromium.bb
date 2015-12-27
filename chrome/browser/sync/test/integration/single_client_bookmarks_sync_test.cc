@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -352,7 +354,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
   std::string entity_id = server_bookmarks[0].id_string();
   scoped_ptr<fake_server::FakeServerEntity> tombstone(
       fake_server::TombstoneEntity::Create(entity_id));
-  GetFakeServer()->InjectEntity(tombstone.Pass());
+  GetFakeServer()->InjectEntity(std::move(tombstone));
 
   const syncer::ModelTypeSet kBookmarksType(syncer::BOOKMARKS);
   TriggerSyncForModelTypes(kSingleProfileIndex, kBookmarksType);

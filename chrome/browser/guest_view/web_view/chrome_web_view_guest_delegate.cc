@@ -5,6 +5,8 @@
 
 #include "chrome/browser/guest_view/web_view/chrome_web_view_guest_delegate.h"
 
+#include <utility>
+
 #include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/favicon/favicon_utils.h"
@@ -66,7 +68,7 @@ bool ChromeWebViewGuestDelegate::HandleContextMenu(
   args->Set(webview::kContextMenuItems, items.release());
   args->SetInteger(webview::kRequestId, request_id);
   web_view_guest()->DispatchEventToView(
-      new GuestViewEvent(webview::kEventContextMenuShow, args.Pass()));
+      new GuestViewEvent(webview::kEventContextMenuShow, std::move(args)));
   return true;
 }
 
@@ -94,7 +96,7 @@ scoped_ptr<base::ListValue> ChromeWebViewGuestDelegate::MenuModelToValue(
     item_value->SetString(webview::kMenuItemLabel, menu_model.GetLabelAt(i));
     items->Append(item_value);
   }
-  return items.Pass();
+  return items;
 }
 
 void ChromeWebViewGuestDelegate::OnShowContextMenu(
@@ -112,7 +114,7 @@ void ChromeWebViewGuestDelegate::OnShowContextMenu(
 
   ContextMenuDelegate* menu_delegate =
       ContextMenuDelegate::FromWebContents(guest_web_contents());
-  menu_delegate->ShowMenu(pending_menu_.Pass());
+  menu_delegate->ShowMenu(std::move(pending_menu_));
 }
 
 bool ChromeWebViewGuestDelegate::ShouldHandleFindRequestsForEmbedder() const {

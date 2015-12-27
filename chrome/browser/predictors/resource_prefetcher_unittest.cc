@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/predictors/resource_prefetcher.h"
+
 #include <stddef.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/predictors/resource_prefetcher.h"
 #include "chrome/browser/predictors/resource_prefetcher_manager.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -33,8 +35,11 @@ class TestResourcePrefetcher : public ResourcePrefetcher {
                          const NavigationID& navigation_id,
                          PrefetchKeyType key_type,
                          scoped_ptr<RequestVector> requests)
-      : ResourcePrefetcher(delegate, config, navigation_id,
-                           key_type, requests.Pass()) { }
+      : ResourcePrefetcher(delegate,
+                           config,
+                           navigation_id,
+                           key_type,
+                           std::move(requests)) {}
 
   ~TestResourcePrefetcher() override {}
 
@@ -191,11 +196,9 @@ TEST_F(ResourcePrefetcherTest, TestPrefetcherFinishes) {
   // Needed later for comparison.
   ResourcePrefetcher::RequestVector* requests_ptr = requests.get();
 
-  prefetcher_.reset(new TestResourcePrefetcher(&prefetcher_delegate_,
-                                               config_,
-                                               navigation_id,
-                                               PREFETCH_KEY_TYPE_URL,
-                                               requests.Pass()));
+  prefetcher_.reset(
+      new TestResourcePrefetcher(&prefetcher_delegate_, config_, navigation_id,
+                                 PREFETCH_KEY_TYPE_URL, std::move(requests)));
 
   // Starting the prefetcher maxes out the number of possible requests.
   AddStartUrlRequestExpectation("http://www.google.com/resource1.html");
@@ -314,11 +317,9 @@ TEST_F(ResourcePrefetcherTest, TestPrefetcherStopped) {
   // Needed later for comparison.
   ResourcePrefetcher::RequestVector* requests_ptr = requests.get();
 
-  prefetcher_.reset(new TestResourcePrefetcher(&prefetcher_delegate_,
-                                               config_,
-                                               navigation_id,
-                                               PREFETCH_KEY_TYPE_HOST,
-                                               requests.Pass()));
+  prefetcher_.reset(
+      new TestResourcePrefetcher(&prefetcher_delegate_, config_, navigation_id,
+                                 PREFETCH_KEY_TYPE_HOST, std::move(requests)));
 
   // Starting the prefetcher maxes out the number of possible requests.
   AddStartUrlRequestExpectation("http://www.google.com/resource1.html");

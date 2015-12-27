@@ -4,6 +4,8 @@
 
 #include "chrome/browser/permissions/chooser_context_base.h"
 
+#include <utility>
+
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 
@@ -45,7 +47,7 @@ ChooserContextBase::GetGrantedObjects(const GURL& requesting_origin,
     return results;
 
   scoped_ptr<base::ListValue> object_list =
-      base::ListValue::From(objects.Pass());
+      base::ListValue::From(std::move(objects));
   if (!object_list)
     return results;
 
@@ -56,9 +58,9 @@ ChooserContextBase::GetGrantedObjects(const GURL& requesting_origin,
     *it = nullptr;
 
     scoped_ptr<base::DictionaryValue> object_dict =
-        base::DictionaryValue::From(object.Pass());
+        base::DictionaryValue::From(std::move(object));
     if (object_dict && IsValidObject(*object_dict))
-      results.push_back(object_dict.Pass());
+      results.push_back(std::move(object_dict));
   }
   return results;
 }
@@ -112,7 +114,7 @@ void ChooserContextBase::GrantObjectPermission(
     setting->Set(kObjectListKey, object_list);
   }
   object_list->AppendIfNotPresent(object.release());
-  SetWebsiteSetting(requesting_origin, embedding_origin, setting.Pass());
+  SetWebsiteSetting(requesting_origin, embedding_origin, std::move(setting));
 }
 
 void ChooserContextBase::RevokeObjectPermission(
@@ -126,7 +128,7 @@ void ChooserContextBase::RevokeObjectPermission(
   if (!setting->GetList(kObjectListKey, &object_list))
     return;
   object_list->Remove(object, nullptr);
-  SetWebsiteSetting(requesting_origin, embedding_origin, setting.Pass());
+  SetWebsiteSetting(requesting_origin, embedding_origin, std::move(setting));
 }
 
 scoped_ptr<base::DictionaryValue> ChooserContextBase::GetWebsiteSetting(
@@ -139,7 +141,7 @@ scoped_ptr<base::DictionaryValue> ChooserContextBase::GetWebsiteSetting(
   if (!value)
     value.reset(new base::DictionaryValue());
 
-  return value.Pass();
+  return value;
 }
 
 void ChooserContextBase::SetWebsiteSetting(const GURL& requesting_origin,

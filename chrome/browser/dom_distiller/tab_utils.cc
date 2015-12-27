@@ -4,6 +4,8 @@
 
 #include "chrome/browser/dom_distiller/tab_utils.h"
 
+#include <utility>
+
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
@@ -97,7 +99,7 @@ void SelfDeletingRequestDelegate::OnArticleUpdated(
 
 void SelfDeletingRequestDelegate::TakeViewerHandle(
     scoped_ptr<ViewerHandle> viewer_handle) {
-  viewer_handle_ = viewer_handle.Pass();
+  viewer_handle_ = std::move(viewer_handle);
 }
 
 // Start loading the viewer URL of the current page in |web_contents|.
@@ -126,11 +128,11 @@ void MaybeStartDistillation(
           source_page_handle->web_contents()->GetBrowserContext());
   scoped_ptr<DistillerPage> distiller_page =
       dom_distiller_service->CreateDefaultDistillerPageWithHandle(
-                                 source_page_handle.Pass()).Pass();
+          std::move(source_page_handle));
 
   scoped_ptr<ViewerHandle> viewer_handle = dom_distiller_service->ViewUrl(
-      view_request_delegate, distiller_page.Pass(), last_committed_url);
-  view_request_delegate->TakeViewerHandle(viewer_handle.Pass());
+      view_request_delegate, std::move(distiller_page), last_committed_url);
+  view_request_delegate->TakeViewerHandle(std::move(viewer_handle));
 }
 
 }  // namespace
@@ -161,7 +163,7 @@ void DistillCurrentPageAndView(content::WebContents* old_web_contents) {
   scoped_ptr<SourcePageHandleWebContents> source_page_handle(
       new SourcePageHandleWebContents(old_web_contents, true));
 
-  MaybeStartDistillation(source_page_handle.Pass());
+  MaybeStartDistillation(std::move(source_page_handle));
 }
 
 void DistillAndView(content::WebContents* source_web_contents,
@@ -172,7 +174,7 @@ void DistillAndView(content::WebContents* source_web_contents,
   scoped_ptr<SourcePageHandleWebContents> source_page_handle(
       new SourcePageHandleWebContents(source_web_contents, false));
 
-  MaybeStartDistillation(source_page_handle.Pass());
+  MaybeStartDistillation(std::move(source_page_handle));
   StartNavigationToDistillerViewer(destination_web_contents,
                                    source_web_contents->GetLastCommittedURL());
 }

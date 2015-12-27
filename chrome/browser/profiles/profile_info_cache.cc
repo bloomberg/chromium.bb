@@ -4,6 +4,8 @@
 
 #include "chrome/browser/profiles/profile_info_cache.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
@@ -1372,7 +1374,7 @@ bool ProfileInfoCache::GetProfileAttributesWithPath(
     // The profile info is in the cache but its entry isn't created yet, insert
     // it in the map.
     scoped_ptr<ProfileAttributesEntry> new_entry(new ProfileAttributesEntry());
-    profile_attributes_entries_.add(path, new_entry.Pass());
+    profile_attributes_entries_.add(path, std::move(new_entry));
     profile_attributes_entries_.get(path)->Initialize(this, path);
   }
 

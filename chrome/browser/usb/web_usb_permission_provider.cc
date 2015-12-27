@@ -5,6 +5,7 @@
 #include "chrome/browser/usb/web_usb_permission_provider.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
@@ -92,7 +93,7 @@ void WebUSBPermissionProvider::HasDevicePermission(
                                              embedding_origin, device->guid))
       allowed_guids.push_back(device->guid);
   }
-  callback.Run(allowed_guids.Pass());
+  callback.Run(std::move(allowed_guids));
 }
 
 void WebUSBPermissionProvider::HasConfigurationPermission(
@@ -121,5 +122,5 @@ void WebUSBPermissionProvider::HasInterfacePermission(
 void WebUSBPermissionProvider::Bind(
     mojo::InterfaceRequest<device::usb::PermissionProvider> request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  bindings_.AddBinding(this, request.Pass());
+  bindings_.AddBinding(this, std::move(request));
 }

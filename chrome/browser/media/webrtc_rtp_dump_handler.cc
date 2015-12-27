@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/webrtc_rtp_dump_handler.h"
 
+#include <utility>
+
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -272,7 +274,7 @@ void WebRtcRtpDumpHandler::SetDumpWriterForTesting(
     scoped_ptr<WebRtcRtpDumpWriter> writer) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  dump_writer_ = writer.Pass();
+  dump_writer_ = std::move(writer);
   ++g_ongoing_rtp_dumps;
 
   incoming_dump_path_ = dump_dir_.AppendASCII("recv");

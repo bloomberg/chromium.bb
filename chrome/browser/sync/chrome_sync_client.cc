@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/chrome_sync_client.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -488,7 +490,7 @@ void ChromeSyncClient::SetBrowsingDataRemoverObserverForTesting(
 
 void ChromeSyncClient::SetSyncApiComponentFactoryForTesting(
     scoped_ptr<sync_driver::SyncApiComponentFactory> component_factory) {
-  component_factory_ = component_factory.Pass();
+  component_factory_ = std::move(component_factory);
 }
 
 void ChromeSyncClient::RegisterDesktopDataTypes(

@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/safe_browsing/incident_reporting/off_domain_inclusion_detector.h"
+
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -20,7 +24,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
-#include "chrome/browser/safe_browsing/incident_reporting/off_domain_inclusion_detector.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/test_database_manager.h"
 #include "chrome/common/pref_names.h"
@@ -78,7 +81,7 @@ scoped_ptr<KeyedService> BuildHistoryService(content::BrowserContext* context) {
   if (history_service->Init(
           profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
           history::HistoryDatabaseParamsForPath(profile->GetPath()))) {
-    return history_service.Pass();
+    return std::move(history_service);
   }
 
   ADD_FAILURE() << "failed to initialize history service";
@@ -335,8 +338,8 @@ class OffDomainInclusionDetectorTest : public testing::TestWithParam<TestCase> {
 
     // |testing_profile_| is owned by |profile_manager_|.
     testing_profile_ = profile_manager_->CreateTestingProfile(
-        "profile",                  // profile_name
-        prefs.Pass(),
+        "profile",  // profile_name
+        std::move(prefs),
         base::UTF8ToUTF16("user"),  // user_name
         0,                          // avatar_id
         std::string(),              // supervised_user_id

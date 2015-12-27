@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/desktop_capture_access_handler.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -120,7 +122,7 @@ scoped_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
     }
   }
 
-  return ui.Pass();
+  return ui;
 }
 
 #if !defined(OS_ANDROID)
@@ -267,7 +269,7 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
                              : content::MEDIA_DEVICE_OK;
   }
 
-  callback.Run(devices, result, ui.Pass());
+  callback.Run(devices, result, std::move(ui));
 }
 
 bool DesktopCaptureAccessHandler::SupportsStreamType(
@@ -294,7 +296,7 @@ void DesktopCaptureAccessHandler::HandleRequest(
   scoped_ptr<content::MediaStreamUI> ui;
 
   if (request.video_type != content::MEDIA_DESKTOP_VIDEO_CAPTURE) {
-    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, ui.Pass());
+    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, std::move(ui));
     return;
   }
 
@@ -331,7 +333,7 @@ void DesktopCaptureAccessHandler::HandleRequest(
 
   // Received invalid device id.
   if (media_id.type == content::DesktopMediaID::TYPE_NONE) {
-    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, ui.Pass());
+    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, std::move(ui));
     return;
   }
 
@@ -351,7 +353,7 @@ void DesktopCaptureAccessHandler::HandleRequest(
                                    GetApplicationTitle(web_contents, extension),
                                    base::UTF8ToUTF16(original_extension_name));
 
-  callback.Run(devices, content::MEDIA_DEVICE_OK, ui.Pass());
+  callback.Run(devices, content::MEDIA_DEVICE_OK, std::move(ui));
 }
 
 void DesktopCaptureAccessHandler::UpdateMediaRequestState(

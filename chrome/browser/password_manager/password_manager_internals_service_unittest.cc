@@ -42,7 +42,7 @@ scoped_ptr<TestingProfile> CreateProfile(ProfileType type) {
         ->MarkBrowserContextLiveForTesting(profile->GetOffTheRecordProfile());
   }
 #endif
-  return profile.Pass();
+  return profile;
 }
 
 }  // namespace

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
@@ -250,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(AppViewTest, KillGuestCommunicatingWithWrongAppView) {
                                        guest_instance_id);
   fake_embed_request_param->SetString(appview::kEmbedderID, host_app->id());
   extensions::AppRuntimeEventRouter::DispatchOnEmbedRequestedEvent(
-      browser()->profile(), fake_embed_request_param.Pass(), bad_app);
+      browser()->profile(), std::move(fake_embed_request_param), bad_app);
   bad_app_obs.WaitUntilRenderProcessHostKilled();
   // Now ask the guest to continue embedding.
   ASSERT_TRUE(

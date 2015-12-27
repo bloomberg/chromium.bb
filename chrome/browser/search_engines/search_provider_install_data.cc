@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -47,11 +48,10 @@ void LoadDataOnUIThread(TemplateURLService* template_url_service,
     if (*it == original_default_provider)
       default_provider_copy = template_url_copies.back();
   }
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(callback,
-                                     base::Passed(template_url_copies.Pass()),
-                                     base::Unretained(default_provider_copy)));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(callback, base::Passed(std::move(template_url_copies)),
+                 base::Unretained(default_provider_copy)));
 }
 
 // Implementation of SearchTermsData that may be used on the I/O thread.
@@ -262,7 +262,7 @@ void SearchProviderInstallData::OnTemplateURLsLoaded(
     TemplateURL* default_provider) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  template_urls_ = template_urls.Pass();
+  template_urls_ = std::move(template_urls);
 
   IOThreadSearchTermsData search_terms_data(google_base_url_);
   provider_map_.reset(new SearchHostToURLsMap());

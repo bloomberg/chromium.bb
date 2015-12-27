@@ -5,8 +5,8 @@
 #include "chrome/browser/local_discovery/privet_local_printer_lister.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 
 #include "chrome/browser/local_discovery/privet_constants.h"
 #include "chrome/browser/local_discovery/privet_device_lister_impl.h"
@@ -95,7 +95,7 @@ void PrivetLocalPrinterLister::OnPrivetResolved(
                  base::Unretained(this),
                  i->second.get(),
                  http_client->GetName()));
-  i->second->privet_client = http_client.Pass();
+  i->second->privet_client = std::move(http_client);
   i->second->info_operation->Start();
 }
 

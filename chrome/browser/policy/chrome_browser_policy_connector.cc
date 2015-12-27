@@ -5,6 +5,7 @@
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 
 #include <string>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -83,11 +84,11 @@ void ChromeBrowserPolicyConnector::Init(
       new DeviceManagementServiceConfiguration(
           BrowserPolicyConnector::GetDeviceManagementUrl()));
   scoped_ptr<DeviceManagementService> device_management_service(
-      new DeviceManagementService(configuration.Pass()));
+      new DeviceManagementService(std::move(configuration)));
   device_management_service->ScheduleInitialization(
       kServiceInitializationStartupDelay);
 
-  InitInternal(local_state, device_management_service.Pass());
+  InitInternal(local_state, std::move(device_management_service));
 }
 
 ConfigurationPolicyProvider*
@@ -110,7 +111,7 @@ ConfigurationPolicyProvider*
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
         config_dir_path,
         POLICY_SCOPE_MACHINE));
-    return new AsyncPolicyProvider(GetSchemaRegistry(), loader.Pass());
+    return new AsyncPolicyProvider(GetSchemaRegistry(), std::move(loader));
   } else {
     return NULL;
   }

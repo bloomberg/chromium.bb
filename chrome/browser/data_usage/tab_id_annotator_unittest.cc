@@ -5,8 +5,8 @@
 #include "chrome/browser/data_usage/tab_id_annotator.h"
 
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -70,7 +70,7 @@ void ExpectDataUseAndQuit(base::RunLoop* ui_run_loop,
                           scoped_ptr<DataUse> expected,
                           scoped_ptr<DataUse> actual) {
   DCHECK(ui_run_loop);
-  ExpectDataUse(expected.Pass(), actual.Pass());
+  ExpectDataUse(std::move(expected), std::move(actual));
 
   // This can't use run_loop->QuitClosure here because that uses WeakPtrs, which
   // aren't thread safe.

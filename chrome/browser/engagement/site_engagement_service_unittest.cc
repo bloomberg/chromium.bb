@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/engagement/site_engagement_service.h"
+
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -11,7 +15,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/site_engagement_helper.h"
 #include "chrome/browser/engagement/site_engagement_metrics.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -87,7 +90,7 @@ scoped_ptr<KeyedService> BuildTestHistoryService(
   scoped_ptr<history::HistoryService> service(new history::HistoryService());
   service->Init(std::string(),
                 history::TestHistoryDatabaseParamsForPath(g_temp_history_dir));
-  return service.Pass();
+  return std::move(service);
 }
 
 }  // namespace

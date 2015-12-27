@@ -5,6 +5,7 @@
 #include "chrome/renderer/safe_browsing/phishing_classifier.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -199,7 +200,7 @@ class PhishingClassifierTest : public InProcessBrowserTest {
     http_response->set_code(net::HTTP_OK);
     http_response->set_content_type("text/html");
     http_response->set_content(response_content_);
-    return http_response.Pass();
+    return std::move(http_response);
   }
 
   std::string response_content_;

@@ -308,7 +308,7 @@ void BrowserFeatureExtractor::StartExtractFeatures(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   history::HistoryService* history;
   if (!request || !request->IsInitialized() || !GetHistoryService(&history)) {
-    callback.Run(false, request.Pass());
+    callback.Run(false, std::move(request));
     return;
   }
   GURL request_url(request->url());
@@ -334,7 +334,7 @@ void BrowserFeatureExtractor::QueryUrlHistoryDone(
     // URL is not found in the history.  In practice this should not
     // happen (unless there is a real error) because we just visited
     // that URL.
-    callback.Run(false, request.Pass());
+    callback.Run(false, std::move(request));
     return;
   }
   AddFeature(features::kUrlHistoryVisitCount,
@@ -375,7 +375,7 @@ void BrowserFeatureExtractor::QueryUrlHistoryDone(
   // Issue next history lookup for host visits.
   history::HistoryService* history;
   if (!GetHistoryService(&history)) {
-    callback.Run(false, request.Pass());
+    callback.Run(false, std::move(request));
     return;
   }
   GURL request_url(request->url());
@@ -398,7 +398,7 @@ void BrowserFeatureExtractor::QueryHttpHostVisitsDone(
   DCHECK(request);
   DCHECK(!callback.is_null());
   if (!success) {
-    callback.Run(false, request.Pass());
+    callback.Run(false, std::move(request));
     return;
   }
   SetHostVisitsFeatures(num_visits, first_visit, true, request.get());
@@ -406,7 +406,7 @@ void BrowserFeatureExtractor::QueryHttpHostVisitsDone(
   // Same lookup but for the HTTPS URL.
   history::HistoryService* history;
   if (!GetHistoryService(&history)) {
-    callback.Run(false, request.Pass());
+    callback.Run(false, std::move(request));
     return;
   }
   std::string https_url = request->url();
@@ -429,11 +429,11 @@ void BrowserFeatureExtractor::QueryHttpsHostVisitsDone(
   DCHECK(request);
   DCHECK(!callback.is_null());
   if (!success) {
-    callback.Run(false, request.Pass());
+    callback.Run(false, std::move(request));
     return;
   }
   SetHostVisitsFeatures(num_visits, first_visit, false, request.get());
-  callback.Run(true, request.Pass());
+  callback.Run(true, std::move(request));
 }
 
 void BrowserFeatureExtractor::SetHostVisitsFeatures(
@@ -488,7 +488,7 @@ void BrowserFeatureExtractor::FinishExtractMalwareFeatures(
       break;
     }
   }
-  callback.Run(true, request.Pass());
+  callback.Run(true, std::move(request));
 }
 
 }  // namespace safe_browsing

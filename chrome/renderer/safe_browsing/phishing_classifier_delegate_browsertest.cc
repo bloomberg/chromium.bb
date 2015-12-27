@@ -5,6 +5,8 @@
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 
 #include <stdint.h>
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -208,7 +210,7 @@ class PhishingClassifierDelegateTest : public InProcessBrowserTest {
     http_response->set_code(net::HTTP_OK);
     http_response->set_content_type("text/html");
     http_response->set_content(response_content_);
-    return http_response.Pass();
+    return std::move(http_response);
   }
 
   content::WebContents* GetWebContents() {

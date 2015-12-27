@@ -5,6 +5,7 @@
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -353,7 +354,7 @@ void SupervisedUserWhitelistInstallerImpl::RegisterComponent(
           base::Bind(&SupervisedUserWhitelistInstallerImpl::OnRawWhitelistReady,
                      weak_ptr_factory_.GetWeakPtr(), crx_id)));
   scoped_refptr<DefaultComponentInstaller> installer(
-      new DefaultComponentInstaller(traits.Pass()));
+      new DefaultComponentInstaller(std::move(traits)));
   installer->Register(cus_, callback);
 }
 

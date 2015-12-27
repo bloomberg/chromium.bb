@@ -5,6 +5,7 @@
 #include "chrome/utility/printing_handler.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "build/build_config.h"
@@ -105,8 +106,8 @@ void PrintingHandler::OnRenderPDFPagesToPWGRaster(
     IPC::PlatformFileForTransit bitmap_transit) {
   base::File pdf = IPC::PlatformFileForTransitToFile(pdf_transit);
   base::File bitmap = IPC::PlatformFileForTransitToFile(bitmap_transit);
-  if (RenderPDFPagesToPWGRaster(pdf.Pass(), settings, bitmap_settings,
-                                bitmap.Pass())) {
+  if (RenderPDFPagesToPWGRaster(std::move(pdf), settings, bitmap_settings,
+                                std::move(bitmap))) {
     Send(new ChromeUtilityHostMsg_RenderPDFPagesToPWGRaster_Succeeded());
   } else {
     Send(new ChromeUtilityHostMsg_RenderPDFPagesToPWGRaster_Failed());

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/browsing_data/browsing_data_counter.h"
 
+#include <utility>
+
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -65,7 +67,7 @@ void BrowsingDataCounter::ReportResult(ResultInt value) {
 
 void BrowsingDataCounter::ReportResult(scoped_ptr<Result> result) {
   DCHECK(initialized_);
-  callback_.Run(result.Pass());
+  callback_.Run(std::move(result));
 }
 
 // BrowsingDataCounter::Result -------------------------------------------------

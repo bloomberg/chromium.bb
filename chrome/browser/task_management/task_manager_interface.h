@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -183,7 +184,7 @@ class TaskManagerInterface {
   int64_t enabled_resources_flags() const { return enabled_resources_flags_; }
 
   void set_timer_for_testing(scoped_ptr<base::Timer> timer) {
-    refresh_timer_ = timer.Pass();
+    refresh_timer_ = std::move(timer);
   }
 
  private:

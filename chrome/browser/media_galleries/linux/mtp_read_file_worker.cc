@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media_galleries/linux/mtp_read_file_worker.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -83,7 +85,7 @@ void MTPReadFileWorker::OnDidReadDataChunkFromDeviceFile(
   snapshot_file_details->set_error_occurred(
       error || (data.size() != snapshot_file_details->BytesToRead()));
   if (snapshot_file_details->error_occurred()) {
-    OnDidWriteIntoSnapshotFile(snapshot_file_details.Pass());
+    OnDidWriteIntoSnapshotFile(std::move(snapshot_file_details));
     return;
   }
 
@@ -108,13 +110,13 @@ void MTPReadFileWorker::OnDidWriteDataChunkIntoSnapshotFile(
   DCHECK(snapshot_file_details.get());
   if (snapshot_file_details->AddBytesWritten(bytes_written)) {
     if (!snapshot_file_details->IsSnapshotFileWriteComplete()) {
-      ReadDataChunkFromDeviceFile(snapshot_file_details.Pass());
+      ReadDataChunkFromDeviceFile(std::move(snapshot_file_details));
       return;
     }
   } else {
     snapshot_file_details->set_error_occurred(true);
   }
-  OnDidWriteIntoSnapshotFile(snapshot_file_details.Pass());
+  OnDidWriteIntoSnapshotFile(std::move(snapshot_file_details));
 }
 
 void MTPReadFileWorker::OnDidWriteIntoSnapshotFile(

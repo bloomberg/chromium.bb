@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdint.h>
+#include "chrome/browser/devtools/devtools_network_controller.h"
 
+#include <stdint.h>
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -12,7 +14,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/devtools/devtools_network_conditions.h"
-#include "chrome/browser/devtools/devtools_network_controller.h"
 #include "chrome/browser/devtools/devtools_network_interceptor.h"
 #include "chrome/browser/devtools/devtools_network_transaction.h"
 #include "chrome/browser/devtools/devtools_network_upload_data_stream.h"
@@ -66,19 +67,19 @@ class DevToolsNetworkControllerHelper {
     network_layer_.CreateTransaction(
         net::DEFAULT_PRIORITY, &network_transaction);
     transaction_.reset(new DevToolsNetworkTransaction(
-        &controller_, network_transaction.Pass()));
+        &controller_, std::move(network_transaction)));
   }
 
   void SetNetworkState(bool offline, double download, double upload) {
     scoped_ptr<DevToolsNetworkConditions> conditions(
         new DevToolsNetworkConditions(offline, 0, download, upload));
-    controller_.SetNetworkState(kClientId, conditions.Pass());
+    controller_.SetNetworkState(kClientId, std::move(conditions));
   }
 
   void SetNetworkState(const std::string& id, bool offline) {
     scoped_ptr<DevToolsNetworkConditions> conditions(
         new DevToolsNetworkConditions(offline));
-    controller_.SetNetworkState(id, conditions.Pass());
+    controller_.SetNetworkState(id, std::move(conditions));
   }
 
   int Start(bool with_upload) {

@@ -5,8 +5,8 @@
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service.h"
 
 #include <stddef.h>
-
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -228,7 +228,7 @@ scoped_ptr<base::DictionaryValue> SupervisedUserSyncService::CreateDictionary(
 #endif
   result->SetString(kChromeAvatar, chrome_avatar);
   result->SetString(kChromeOsAvatar, chromeos_avatar);
-  return result.Pass();
+  return result;
 }
 
 void SupervisedUserSyncService::AddSupervisedUser(
@@ -409,8 +409,8 @@ SyncMergeResult SupervisedUserSyncService::MergeDataAndStartSyncing(
     scoped_ptr<SyncChangeProcessor> sync_processor,
     scoped_ptr<SyncErrorFactory> error_handler) {
   DCHECK_EQ(SUPERVISED_USERS, type);
-  sync_processor_ = sync_processor.Pass();
-  error_handler_ = error_handler.Pass();
+  sync_processor_ = std::move(sync_processor);
+  error_handler_ = std::move(error_handler);
 
   SyncChangeList change_list;
   SyncMergeResult result(SUPERVISED_USERS);

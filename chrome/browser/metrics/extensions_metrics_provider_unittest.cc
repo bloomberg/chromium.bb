@@ -74,7 +74,7 @@ class TestExtensionsMetricsProvider : public ExtensionsMetricsProvider {
             .SetID("mdhofdjgenpkhlmddfaegdjddcecipmo")
             .Build();
     extensions->Insert(extension);
-    return extensions.Pass();
+    return extensions;
   }
 
   // Override GetClientID() to return a specific value on which test

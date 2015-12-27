@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/incident_reporting/incident_report_uploader_impl.h"
 
 #include <string>
+#include <utility>
 
 #include "base/test/test_simple_task_runner.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -22,7 +23,7 @@ class IncidentReportUploaderImplTest : public testing::Test {
       safe_browsing::IncidentReportUploader::Result result,
       scoped_ptr<safe_browsing::ClientIncidentResponse> response) {
     result_ = result;
-    response_ = response.Pass();
+    response_ = std::move(response);
   }
 
  protected:

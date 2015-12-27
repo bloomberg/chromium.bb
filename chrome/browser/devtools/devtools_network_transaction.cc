@@ -4,6 +4,8 @@
 
 #include "chrome/browser/devtools/devtools_network_transaction.h"
 
+#include <utility>
+
 #include "base/callback_helpers.h"
 #include "chrome/browser/devtools/devtools_network_controller.h"
 #include "chrome/browser/devtools/devtools_network_interceptor.h"
@@ -26,7 +28,7 @@ DevToolsNetworkTransaction::DevToolsNetworkTransaction(
     scoped_ptr<net::HttpTransaction> network_transaction)
     : throttled_byte_count_(0),
       controller_(controller),
-      network_transaction_(network_transaction.Pass()),
+      network_transaction_(std::move(network_transaction)),
       request_(nullptr),
       failed_(false) {
   DCHECK(controller);

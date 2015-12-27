@@ -6,6 +6,7 @@
 
 #include <list>
 #include <map>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -75,7 +76,7 @@ struct PhishingTermFeatureExtractor::ExtractionState {
             text, base::i18n::BreakIterator::BREAK_WORD));
 
     if (i->Init()) {
-      iterator = i.Pass();
+      iterator = std::move(i);
     } else {
       DLOG(ERROR) << "failed to open iterator";
     }

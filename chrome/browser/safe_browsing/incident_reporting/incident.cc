@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -14,7 +16,7 @@ Incident::~Incident() {
 }
 
 scoped_ptr<ClientIncidentReport_IncidentData> Incident::TakePayload() {
-  return payload_.Pass();
+  return std::move(payload_);
 }
 
 Incident::Incident() : payload_(new ClientIncidentReport_IncidentData) {

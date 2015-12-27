@@ -5,6 +5,7 @@
 #include "chrome/browser/media_galleries/fileapi/safe_audio_video_checker.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -26,7 +27,7 @@
 SafeAudioVideoChecker::SafeAudioVideoChecker(
     base::File file,
     const storage::CopyOrMoveFileValidator::ResultCallback& callback)
-    : state_(INITIAL_STATE), file_(file.Pass()), callback_(callback) {
+    : state_(INITIAL_STATE), file_(std::move(file)), callback_(callback) {
   DCHECK(!callback.is_null());
 }
 
@@ -59,9 +60,8 @@ void SafeAudioVideoChecker::OnProcessStarted() {
 
   if (utility_process_host_->GetData().handle == base::kNullProcessHandle)
     DLOG(ERROR) << "Child process handle is null";
-  IPC::PlatformFileForTransit file_for_transit =
-      IPC::TakeFileHandleForProcess(file_.Pass(),
-                                    utility_process_host_->GetData().handle);
+  IPC::PlatformFileForTransit file_for_transit = IPC::TakeFileHandleForProcess(
+      std::move(file_), utility_process_host_->GetData().handle);
   if (file_for_transit == IPC::InvalidPlatformFileForTransit()) {
     OnCheckingFinished(false /* valid? */);
     return;

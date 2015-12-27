@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/easy_unlock_service_regular.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/base64url.h"
 #include "base/bind.h"
@@ -399,9 +400,9 @@ void EasyUnlockServiceRegular::StartAutoPairing(
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::EASY_UNLOCK_PRIVATE_ON_START_AUTO_PAIRING,
       extensions::api::easy_unlock_private::OnStartAutoPairing::kEventName,
-      args.Pass()));
+      std::move(args)));
   extensions::EventRouter::Get(profile())->DispatchEventWithLazyListener(
-       extension_misc::kEasyUnlockAppId, event.Pass());
+      extension_misc::kEasyUnlockAppId, std::move(event));
 }
 
 void EasyUnlockServiceRegular::SetAutoPairingResult(
@@ -595,7 +596,7 @@ void EasyUnlockServiceRegular::SyncProfilePrefsToLocalState() {
   DictionaryPrefUpdate update(local_state,
                               prefs::kEasyUnlockLocalStateUserPrefs);
   update->SetWithoutPathExpansion(GetAccountId().GetUserEmail(),
-                                  user_prefs_dict.Pass());
+                                  std::move(user_prefs_dict));
 }
 
 cryptauth::GcmDeviceInfo EasyUnlockServiceRegular::GetGcmDeviceInfo() {

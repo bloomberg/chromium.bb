@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -62,7 +64,7 @@ class CacheMaxAgeHandler {
                                              request_count_));
     response->set_content_type("text/html");
     response->AddCustomHeader("Cache-Control", "max-age=99999");
-    return response.Pass();
+    return std::move(response);
   }
  private:
   std::string path_;

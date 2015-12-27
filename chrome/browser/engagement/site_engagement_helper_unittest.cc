@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/engagement/site_engagement_helper.h"
+
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/test/histogram_tester.h"
 #include "base/timer/mock_timer.h"
 #include "base/values.h"
-#include "chrome/browser/engagement/site_engagement_helper.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -26,7 +29,7 @@ class SiteEngagementHelperTest : public BrowserWithTestWindowTest {
         new SiteEngagementHelper(web_contents));
     DCHECK(helper.get());
 
-    return helper.Pass();
+    return helper;
   }
 
   void TrackingStarted(SiteEngagementHelper* helper) {
@@ -65,13 +68,13 @@ class SiteEngagementHelperTest : public BrowserWithTestWindowTest {
   // Set a pause timer on the input tracker for test purposes.
   void SetInputTrackerPauseTimer(SiteEngagementHelper* helper,
                                  scoped_ptr<base::Timer> timer) {
-    helper->input_tracker_.SetPauseTimerForTesting(timer.Pass());
+    helper->input_tracker_.SetPauseTimerForTesting(std::move(timer));
   }
 
   // Set a pause timer on the input tracker for test purposes.
   void SetMediaTrackerPauseTimer(SiteEngagementHelper* helper,
                                  scoped_ptr<base::Timer> timer) {
-    helper->media_tracker_.SetPauseTimerForTesting(timer.Pass());
+    helper->media_tracker_.SetPauseTimerForTesting(std::move(timer));
   }
 
   bool IsTrackingInput(SiteEngagementHelper* helper) {

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/extension_data_collection.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -26,7 +28,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_set.h"
-
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -150,7 +151,7 @@ class ExtensionDataCollectionTest : public testing::Test {
     prefs->SetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled,
                       safe_browsing_opt_in == SAFE_BROWSING_OPT_IN);
     TestingProfile* profile = profile_manager_->CreateTestingProfile(
-        profile_name, prefs.Pass(),
+        profile_name, std::move(prefs),
         base::UTF8ToUTF16(profile_name),  // user_name
         0,                                // avatar_id
         std::string(),                    // supervised_user_id

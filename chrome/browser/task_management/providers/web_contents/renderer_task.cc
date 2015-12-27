@@ -4,6 +4,8 @@
 
 #include "chrome/browser/task_management/providers/web_contents/renderer_task.h"
 
+#include <utility>
+
 #include "base/i18n/rtl.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -33,7 +35,7 @@ ProcessResourceUsage* CreateRendererResourcesSampler(
       render_process_host->GetServiceRegistry();
   if (service_registry)
     service_registry->ConnectToRemoteService(mojo::GetProxy(&service));
-  return new ProcessResourceUsage(service.Pass());
+  return new ProcessResourceUsage(std::move(service));
 }
 
 // Gets the profile name associated with the browser context of the given

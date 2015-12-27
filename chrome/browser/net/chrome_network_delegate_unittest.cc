@@ -5,6 +5,7 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -95,7 +96,7 @@ scoped_ptr<net::URLRequest> RequestURL(
   }
   request->Start();
   base::RunLoop().RunUntilIdle();
-  return request.Pass();
+  return request;
 }
 
 // A fake DataUseAggregator for testing that only counts how many times its
@@ -357,7 +358,7 @@ class ChromeNetworkDelegateSafeSearchTest : public testing::Test {
     network_delegate->set_force_google_safe_search(&force_google_safe_search_);
     network_delegate->set_force_youtube_safety_mode(
         &force_youtube_safety_mode_);
-    return network_delegate.Pass();
+    return std::move(network_delegate);
   }
 
   void SetSafeSearch(bool google_safe_search,
@@ -453,7 +454,7 @@ class ChromeNetworkDelegatePrivacyModeTest : public testing::Test {
     scoped_ptr<ChromeNetworkDelegate> network_delegate(
         new ChromeNetworkDelegate(forwarder(), &enable_referrers_));
     network_delegate->set_cookie_settings(cookie_settings_);
-    return network_delegate.Pass();
+    return network_delegate;
   }
 
   void SetDelegate(net::NetworkDelegate* delegate) {

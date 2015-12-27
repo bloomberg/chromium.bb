@@ -4,6 +4,8 @@
 
 #include "chrome/browser/download/download_test_file_activity_observer.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -75,7 +77,7 @@ DownloadTestFileActivityObserver::DownloadTestFileActivityObserver(
       new MockDownloadManagerDelegate(profile));
   test_delegate_ = mock_delegate->GetWeakPtr();
   DownloadServiceFactory::GetForBrowserContext(profile)
-      ->SetDownloadManagerDelegateForTesting(mock_delegate.Pass());
+      ->SetDownloadManagerDelegateForTesting(std::move(mock_delegate));
 }
 
 DownloadTestFileActivityObserver::~DownloadTestFileActivityObserver() {

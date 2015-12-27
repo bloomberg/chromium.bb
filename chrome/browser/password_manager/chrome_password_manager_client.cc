@@ -5,6 +5,7 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -226,9 +227,10 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
         PasswordsClientUIDelegateFromWebContents(web_contents());
     if (update_password && IsUpdatePasswordUIEnabled()) {
       manage_passwords_ui_controller->OnUpdatePasswordSubmitted(
-          form_to_save.Pass());
+          std::move(form_to_save));
     } else {
-      manage_passwords_ui_controller->OnPasswordSubmitted(form_to_save.Pass());
+      manage_passwords_ui_controller->OnPasswordSubmitted(
+          std::move(form_to_save));
     }
   } else {
 #if defined(OS_MACOSX) || BUILDFLAG(ANDROID_JAVA_UI)
@@ -262,8 +264,8 @@ bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
   return true;
 #else
   return PasswordsClientUIDelegateFromWebContents(web_contents())
-      ->OnChooseCredentials(local_forms.Pass(), federated_forms.Pass(), origin,
-                            callback);
+      ->OnChooseCredentials(std::move(local_forms), std::move(federated_forms),
+                            origin, callback);
 #endif
 }
 
@@ -280,7 +282,7 @@ void ChromePasswordManagerClient::NotifyUserAutoSignin(
   ShowAutoSigninPrompt(web_contents(), local_forms[0]->username_value);
 #else
   PasswordsClientUIDelegateFromWebContents(web_contents())
-      ->OnAutoSignin(local_forms.Pass());
+      ->OnAutoSignin(std::move(local_forms));
 
 #endif
 }
@@ -294,7 +296,7 @@ void ChromePasswordManagerClient::AutomaticPasswordSave(
     PasswordsClientUIDelegate* manage_passwords_ui_controller =
         PasswordsClientUIDelegateFromWebContents(web_contents());
     manage_passwords_ui_controller->OnAutomaticPasswordSave(
-        saved_form.Pass());
+        std::move(saved_form));
   }
 #endif
 }

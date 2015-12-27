@@ -4,6 +4,8 @@
 
 #include "chrome/browser/tracing/chrome_tracing_delegate.h"
 
+#include <utility>
+
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/time/time.h"
@@ -150,7 +152,7 @@ void ChromeTracingDelegate::GenerateMetadataDict(
   for (const auto& it : variations)
     variations_list->Append(new base::StringValue(it));
 
-  metadata_dict->Set("field-trials", variations_list.Pass());
+  metadata_dict->Set("field-trials", std::move(variations_list));
 }
 
 content::MetadataFilterPredicate

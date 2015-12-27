@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/spellchecker/spellcheck_provider_test.h"
-
 #include <stddef.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/path_service.h"
@@ -16,6 +14,7 @@
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_result.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
+#include "chrome/renderer/spellchecker/spellcheck_provider_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -63,7 +62,7 @@ class MultilingualSpellCheckTest : public testing::Test {
       base::File file(chrome::spellcheck_common::GetVersionedFileName(
                           language, hunspell_directory),
                       base::File::FLAG_OPEN | base::File::FLAG_READ);
-      spellcheck_->AddSpellcheckLanguage(file.Pass(), language);
+      spellcheck_->AddSpellcheckLanguage(std::move(file), language);
     }
   }
 

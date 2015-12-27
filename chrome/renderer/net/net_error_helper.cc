@@ -5,6 +5,7 @@
 #include "chrome/renderer/net/net_error_helper.h"
 
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
@@ -199,17 +200,11 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
   } else {
     base::DictionaryValue error_strings;
     LocalizedError::GetStrings(
-        error.reason,
-        error.domain.utf8(),
-        error.unreachableURL,
-        is_failed_post,
-        error.staleCopyInCache,
-        can_show_network_diagnostics_dialog,
-        offline_page_status,
-        RenderThread::Get()->GetLocale(),
+        error.reason, error.domain.utf8(), error.unreachableURL, is_failed_post,
+        error.staleCopyInCache, can_show_network_diagnostics_dialog,
+        offline_page_status, RenderThread::Get()->GetLocale(),
         render_frame()->GetRenderView()->GetAcceptLanguages(),
-        params.Pass(),
-        &error_strings);
+        std::move(params), &error_strings);
     *reload_button_shown = error_strings.Get("reloadButton", nullptr);
     *show_saved_copy_button_shown =
         error_strings.Get("showSavedCopyButton", nullptr);

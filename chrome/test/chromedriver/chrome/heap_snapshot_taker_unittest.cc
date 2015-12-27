@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
+#include "chrome/test/chromedriver/chrome/heap_snapshot_taker.h"
 
+#include <stddef.h>
 #include <list>
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/test/chromedriver/chrome/heap_snapshot_taker.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/stub_devtools_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,7 +24,7 @@ scoped_ptr<base::Value> GetSnapshotAsValue() {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("a", 1);
   dict->SetInteger("b", 2);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 class DummyDevToolsClient : public StubDevToolsClient {

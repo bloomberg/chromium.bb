@@ -5,6 +5,7 @@
 #include "chrome/browser/profile_resetter/profile_resetter.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
@@ -263,7 +264,7 @@ scoped_ptr<BrandcodeConfigFetcher> ConfigParserTest::WaitForRequest(
   EXPECT_FALSE(fetcher->IsActive());
   // Look for the brand code in the request.
   EXPECT_NE(std::string::npos, request_listener_.upload_data.find("ABCD"));
-  return fetcher.Pass();
+  return fetcher;
 }
 
 scoped_ptr<net::FakeURLFetcher> ConfigParserTest::CreateFakeURLFetcher(
@@ -280,7 +281,7 @@ scoped_ptr<net::FakeURLFetcher> ConfigParserTest::CreateFakeURLFetcher(
       new net::HttpResponseHeaders("");
   download_headers->AddHeader("Content-Type: text/xml");
   fetcher->set_response_headers(download_headers);
-  return fetcher.Pass();
+  return fetcher;
 }
 
 // A helper class to create/delete/check a Chrome desktop shortcut on Windows.
@@ -1037,7 +1038,7 @@ TEST_F(ProfileResetterTest, FeedbackSerializationAsProtoTest) {
 struct FeedbackCapture {
   void SetFeedback(Profile* profile,
                    const ResettableSettingsSnapshot& snapshot) {
-    list_ = GetReadableFeedbackForSnapshot(profile, snapshot).Pass();
+    list_ = GetReadableFeedbackForSnapshot(profile, snapshot);
     OnUpdatedList();
   }
 
@@ -1090,7 +1091,7 @@ TEST_F(ProfileResetterTest, GetReadableFeedback) {
   ::testing::Mock::VerifyAndClearExpectations(&capture);
   // The homepage and the startup page are in punycode. They are unreadable.
   // Trying to find the extension name.
-  scoped_ptr<base::ListValue> list = capture.list_.Pass();
+  scoped_ptr<base::ListValue> list = std::move(capture.list_);
   ASSERT_TRUE(list);
   bool checked_extensions = false;
   bool checked_shortcuts = false;

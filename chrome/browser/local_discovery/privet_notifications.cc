@@ -4,6 +4,8 @@
 
 #include "chrome/browser/local_discovery/privet_notifications.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -344,8 +346,8 @@ void PrivetNotificationService::StartLister() {
       PrivetHTTPAsynchronousFactory::CreateInstance(
           profile_->GetRequestContext()));
 
-  privet_notifications_listener_.reset(new PrivetNotificationsListener(
-      http_factory.Pass(), this));
+  privet_notifications_listener_.reset(
+      new PrivetNotificationsListener(std::move(http_factory), this));
 }
 
 PrivetNotificationDelegate::PrivetNotificationDelegate(
