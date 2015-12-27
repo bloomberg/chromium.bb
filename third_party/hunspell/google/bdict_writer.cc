@@ -4,6 +4,9 @@
 
 #include "third_party/hunspell/google/bdict_writer.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "third_party/hunspell/google/bdict.h"
@@ -445,8 +448,8 @@ std::string BDictWriter::GetBDict() const {
   header->signature = hunspell::BDict::SIGNATURE;
   header->major_version = hunspell::BDict::MAJOR_VERSION;
   header->minor_version = hunspell::BDict::MINOR_VERSION;
-  header->aff_offset = static_cast<uint32>(aff_offset);
-  header->dic_offset = static_cast<uint32>(dic_offset);
+  header->aff_offset = static_cast<uint32_t>(aff_offset);
+  header->dic_offset = static_cast<uint32_t>(dic_offset);
 
   // Write the MD5 digest of the affix information and the dictionary words at
   // the end of the BDic header.
@@ -485,10 +488,10 @@ void BDictWriter::SerializeAff(std::string* output) const {
   // Add the header now that we know the offsets.
   hunspell::BDict::AffHeader* header =
       reinterpret_cast<hunspell::BDict::AffHeader*>(&(*output)[header_offset]);
-  header->affix_group_offset = static_cast<uint32>(affix_group_offset);
-  header->affix_rule_offset = static_cast<uint32>(affix_rule_offset);
-  header->rep_offset = static_cast<uint32>(rep_offset);
-  header->other_offset = static_cast<uint32>(other_offset);
+  header->affix_group_offset = static_cast<uint32_t>(affix_group_offset);
+  header->affix_rule_offset = static_cast<uint32_t>(affix_rule_offset);
+  header->rep_offset = static_cast<uint32_t>(rep_offset);
+  header->other_offset = static_cast<uint32_t>(other_offset);
 }
 
 }  // namespace hunspell

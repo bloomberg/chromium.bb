@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_HUNSPELL_GOOGLE_BDICT_READER_H_
 #define THIRD_PARTY_HUNSPELL_GOOGLE_BDICT_READER_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

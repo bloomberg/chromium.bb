@@ -5,7 +5,9 @@
 #ifndef THIRD_PARTY_HUNSPELL_GOOGLE_BDICT_H_
 #define THIRD_PARTY_HUNSPELL_GOOGLE_BDICT_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/md5.h"
 
 // BDict (binary dictionary) format. All offsets are little endian.
@@ -107,15 +109,15 @@ class BDict {
     MINOR_VERSION = 0
   };
   struct Header {
-    uint32 signature;
+    uint32_t signature;
 
     // Major versions are incompatible with other major versions. Minor versions
     // should be readable by older programs expecting the same major version.
-    uint16 major_version;
-    uint16 minor_version;
+    uint16_t major_version;
+    uint16_t minor_version;
 
-    uint32 aff_offset;  // Offset of the aff data.
-    uint32 dic_offset;  // Offset of the dic data.
+    uint32_t aff_offset;  // Offset of the aff data.
+    uint32_t dic_offset;  // Offset of the dic data.
 
     // Added by version 2.0.
     base::MD5Digest digest;  // MD5 digest of the aff data and the dic data.
@@ -124,10 +126,10 @@ class BDict {
   // AFF section ===============================================================
 
   struct AffHeader {
-    uint32 affix_group_offset;
-    uint32 affix_rule_offset;
-    uint32 rep_offset;  // Replacements table.
-    uint32 other_offset;
+    uint32_t affix_group_offset;
+    uint32_t affix_rule_offset;
+    uint32_t rep_offset;  // Replacements table.
+    uint32_t other_offset;
   };
 
   // DIC section ===============================================================

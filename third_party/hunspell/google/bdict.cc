@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string.h>
+
 #include "third_party/hunspell/google/bdict.h"
 
 // static
@@ -24,7 +26,7 @@ bool hunspell::BDict::Verify(const char* bdict_data, size_t bdict_length) {
   const hunspell::BDict::AffHeader* aff_header =
       reinterpret_cast<const hunspell::BDict::AffHeader*>(
           &bdict_data[header->aff_offset]);
-  if (aff_header->affix_group_offset + sizeof(uint32) > bdict_length)
+  if (aff_header->affix_group_offset + sizeof(uint32_t) > bdict_length)
     return false;
 
   // The new BDICT header has a MD5 digest of the dictionary data. Compare the

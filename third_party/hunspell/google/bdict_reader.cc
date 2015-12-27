@@ -4,6 +4,8 @@
 
 #include "third_party/hunspell/google/bdict_reader.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 
 namespace hunspell {
@@ -332,11 +334,11 @@ int NodeReader::FillAffixesForLeafMatch(
 
   // Save the end pointer (accounting for an odd number of bytes).
   size_t array_start = node_offset_ + additional_bytes + 2;
-  const uint16* const bdict_short_end = reinterpret_cast<const uint16*>(
+  const uint16_t* const bdict_short_end = reinterpret_cast<const uint16_t*>(
       &bdict_data_[((bdict_length_ - array_start) & -2) + array_start]);
   // Process all remaining matches.
-  const uint16* following_array = reinterpret_cast<const uint16*>(
-      &bdict_data_[array_start]);
+  const uint16_t* following_array =
+      reinterpret_cast<const uint16_t*>(&bdict_data_[array_start]);
   for (int i = 0; i < BDict::MAX_AFFIXES_PER_WORD - list_offset; i++) {
     if (&following_array[i] >= bdict_short_end) {
       is_valid_ = false;
@@ -722,7 +724,7 @@ bool BDictReader::Init(const unsigned char* bdict_data, size_t bdict_length) {
       &bdict_data[header_->aff_offset]);
 
   // Make sure there is enough room for the affix group count dword.
-  if (aff_header_->affix_group_offset > bdict_length - sizeof(uint32))
+  if (aff_header_->affix_group_offset > bdict_length - sizeof(uint32_t))
     return false;
 
   // This function is called from SpellCheck::SpellCheckWord(), which blocks
