@@ -4,6 +4,8 @@
 
 #include "google_apis/drive/files_list_request_runner.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
@@ -73,7 +75,7 @@ void FilesListRequestRunner::OnCompleted(int max_results,
     return;
   }
 
-  callback.Run(error, entry.Pass());
+  callback.Run(error, std::move(entry));
 }
 
 void FilesListRequestRunner::SetRequestCompletedCallbackForTesting(

@@ -220,7 +220,7 @@ RequestCore::~RequestCore() {
 
 void RequestCore::StartOnTokenServiceThread() {
   DCHECK(token_service_task_runner()->BelongsToCurrentThread());
-  request_ = token_service()->StartRequest(account_id_, scopes_, this).Pass();
+  request_ = token_service()->StartRequest(account_id_, scopes_, this);
 }
 
 void RequestCore::StopOnTokenServiceThread() {
@@ -336,7 +336,7 @@ scoped_ptr<OAuth2TokenServiceRequest> OAuth2TokenServiceRequest::CreateAndStart(
   scoped_refptr<Core> core(
       new RequestCore(request.get(), provider, consumer, account_id, scopes));
   request->StartWithCore(core);
-  return request.Pass();
+  return request;
 }
 
 // static

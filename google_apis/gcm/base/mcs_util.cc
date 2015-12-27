@@ -81,7 +81,7 @@ scoped_ptr<mcs_proto::LoginRequest> BuildLoginRequest(
   login_request->add_setting();
   login_request->mutable_setting(0)->set_name(kLoginSettingDefaultName);
   login_request->mutable_setting(0)->set_value(kLoginSettingDefaultValue);
-  return login_request.Pass();
+  return login_request;
 }
 
 scoped_ptr<mcs_proto::IqStanza> BuildStreamAck() {
@@ -90,7 +90,7 @@ scoped_ptr<mcs_proto::IqStanza> BuildStreamAck() {
   stream_ack_iq->set_id("");
   stream_ack_iq->mutable_extension()->set_id(kStreamAck);
   stream_ack_iq->mutable_extension()->set_data("");
-  return stream_ack_iq.Pass();
+  return stream_ack_iq;
 }
 
 scoped_ptr<mcs_proto::IqStanza> BuildSelectiveAck(
@@ -104,7 +104,7 @@ scoped_ptr<mcs_proto::IqStanza> BuildSelectiveAck(
     selective_ack.add_id(acked_ids[i]);
   selective_ack_iq->mutable_extension()->set_data(
       selective_ack.SerializeAsString());
-  return selective_ack_iq.Pass();
+  return selective_ack_iq;
 }
 
 // Utility method to build a google::protobuf::MessageLite object from a MCS

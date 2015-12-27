@@ -5,6 +5,7 @@
 #include "google_apis/drive/base_requests.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
@@ -129,7 +130,7 @@ class BaseRequestsTest : public testing::Test {
     response->set_code(response_code_);
     response->set_content(response_body_);
     response->set_content_type("application/json");
-    return response.Pass();
+    return std::move(response);
   }
 
   base::MessageLoopForIO message_loop_;

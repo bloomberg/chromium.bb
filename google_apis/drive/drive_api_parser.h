@@ -6,8 +6,8 @@
 #define GOOGLE_APIS_DRIVE_DRIVE_API_PARSER_H_
 
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -234,22 +234,22 @@ class AppResource {
   void set_removable(bool removable) { removable_ = removable; }
   void set_primary_mimetypes(
       ScopedVector<std::string> primary_mimetypes) {
-    primary_mimetypes_ = primary_mimetypes.Pass();
+    primary_mimetypes_ = std::move(primary_mimetypes);
   }
   void set_secondary_mimetypes(
       ScopedVector<std::string> secondary_mimetypes) {
-    secondary_mimetypes_ = secondary_mimetypes.Pass();
+    secondary_mimetypes_ = std::move(secondary_mimetypes);
   }
   void set_primary_file_extensions(
       ScopedVector<std::string> primary_file_extensions) {
-    primary_file_extensions_ = primary_file_extensions.Pass();
+    primary_file_extensions_ = std::move(primary_file_extensions);
   }
   void set_secondary_file_extensions(
       ScopedVector<std::string> secondary_file_extensions) {
-    secondary_file_extensions_ = secondary_file_extensions.Pass();
+    secondary_file_extensions_ = std::move(secondary_file_extensions);
   }
   void set_icons(ScopedVector<DriveAppIcon> icons) {
-    icons_ = icons.Pass();
+    icons_ = std::move(icons);
   }
   void set_create_url(const GURL& url) {
     create_url_ = url;
@@ -303,9 +303,7 @@ class AppList {
   void set_etag(const std::string& etag) {
     etag_ = etag;
   }
-  void set_items(ScopedVector<AppResource> items) {
-    items_ = items.Pass();
-  }
+  void set_items(ScopedVector<AppResource> items) { items_ = std::move(items); }
 
  private:
   friend class DriveAPIParserTest;
@@ -675,9 +673,7 @@ class ChangeResource {
   void set_deleted(bool deleted) {
     deleted_ = deleted;
   }
-  void set_file(scoped_ptr<FileResource> file) {
-    file_ = file.Pass();
-  }
+  void set_file(scoped_ptr<FileResource> file) { file_ = std::move(file); }
   void set_modification_date(const base::Time& modification_date) {
     modification_date_ = modification_date;
   }

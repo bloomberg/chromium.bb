@@ -4,6 +4,7 @@
 
 #include "google_apis/gaia/fake_gaia.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/base_paths.h"
@@ -308,7 +309,7 @@ scoped_ptr<HttpResponse> FakeGaia::HandleRequest(const HttpRequest& request) {
     return scoped_ptr<HttpResponse>();      // Request not understood.
   }
 
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 void FakeGaia::IssueOAuthToken(const std::string& auth_token,

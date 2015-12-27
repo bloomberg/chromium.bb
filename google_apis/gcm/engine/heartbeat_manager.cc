@@ -4,6 +4,8 @@
 
 #include "google_apis/gcm/engine/heartbeat_manager.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
@@ -120,7 +122,7 @@ void HeartbeatManager::UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer) {
   base::Closure timer_task(heartbeat_timer_->user_task());
 
   heartbeat_timer_->Stop();
-  heartbeat_timer_ = timer.Pass();
+  heartbeat_timer_ = std::move(timer);
 
   if (was_running)
     heartbeat_timer_->Start(FROM_HERE, remaining_delay, timer_task);

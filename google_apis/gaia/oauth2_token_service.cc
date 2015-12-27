@@ -5,7 +5,7 @@
 #include "google_apis/gaia/oauth2_token_service.h"
 
 #include <stdint.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -507,7 +507,7 @@ OAuth2TokenService::StartRequestForClientWithContext(
         error,
         std::string(),
         base::Time()));
-    return request.Pass();
+    return std::move(request);
   }
 
   RequestParameters request_parameters(client_id,
@@ -529,7 +529,7 @@ OAuth2TokenService::StartRequestForClientWithContext(
                      client_secret,
                      scopes);
   }
-  return request.Pass();
+  return std::move(request);
 }
 
 void OAuth2TokenService::FetchOAuth2Token(RequestImpl* request,

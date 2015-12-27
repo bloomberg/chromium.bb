@@ -5,8 +5,8 @@
 #include "google_apis/gcm/engine/connection_handler_impl.h"
 
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
@@ -244,7 +244,7 @@ void GCMConnectionHandlerImplTest::Connect(
 void GCMConnectionHandlerImplTest::ReadContinuation(
     ScopedMessage* dst_proto,
     ScopedMessage new_proto) {
-  *dst_proto = new_proto.Pass();
+  *dst_proto = std::move(new_proto);
   run_loop_->Quit();
 }
 

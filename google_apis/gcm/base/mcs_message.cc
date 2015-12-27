@@ -4,6 +4,8 @@
 
 #include "google_apis/gcm/base/mcs_message.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "google_apis/gcm/base/mcs_util.h"
 
@@ -15,13 +17,13 @@ MCSMessage::Core::Core(uint8_t tag,
                        const google::protobuf::MessageLite& protobuf) {
   scoped_ptr<google::protobuf::MessageLite> owned_protobuf(protobuf.New());
   owned_protobuf->CheckTypeAndMergeFrom(protobuf);
-  protobuf_ = owned_protobuf.Pass();
+  protobuf_ = std::move(owned_protobuf);
 }
 
 MCSMessage::Core::Core(
     uint8_t tag,
     scoped_ptr<const google::protobuf::MessageLite> protobuf) {
-  protobuf_ = protobuf.Pass();
+  protobuf_ = std::move(protobuf);
 }
 
 MCSMessage::Core::~Core() {}
@@ -48,7 +50,7 @@ MCSMessage::MCSMessage(uint8_t tag,
                        scoped_ptr<const google::protobuf::MessageLite> protobuf)
     : tag_(tag),
       size_(protobuf->ByteSize()),
-      core_(new Core(tag_, protobuf.Pass())) {
+      core_(new Core(tag_, std::move(protobuf))) {
   DCHECK_EQ(tag, GetMCSProtoTag(core_->Get()));
 }
 
@@ -70,7 +72,7 @@ const google::protobuf::MessageLite& MCSMessage::GetProtobuf() const {
 scoped_ptr<google::protobuf::MessageLite> MCSMessage::CloneProtobuf() const {
   scoped_ptr<google::protobuf::MessageLite> clone(GetProtobuf().New());
   clone->CheckTypeAndMergeFrom(GetProtobuf());
-  return clone.Pass();
+  return clone;
 }
 
 }  // namespace gcm

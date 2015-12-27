@@ -30,7 +30,7 @@ scoped_ptr<base::DictionaryValue> CreateParentValue(
   scoped_ptr<base::DictionaryValue> parent(new base::DictionaryValue);
   parent->SetString("kind", kParentLinkKind);
   parent->SetString("id", file_id);
-  return parent.Pass();
+  return parent;
 }
 
 }  // namespace util

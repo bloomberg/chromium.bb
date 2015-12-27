@@ -85,7 +85,7 @@ scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path) {
   scoped_ptr<base::Value> value = deserializer.Deserialize(NULL, &error);
   LOG_IF(WARNING, !value.get()) << "Failed to parse " << path.value()
                                 << ": " << error;
-  return value.Pass();
+  return value;
 }
 
 // Returns a HttpResponse created from the given file path.
@@ -105,7 +105,7 @@ scoped_ptr<net::test_server::BasicHttpResponse> CreateHttpResponseFromFile(
   http_response->set_code(net::HTTP_OK);
   http_response->set_content(content);
   http_response->set_content_type(content_type);
-  return http_response.Pass();
+  return http_response;
 }
 
 scoped_ptr<net::test_server::HttpResponse> HandleDownloadFileRequest(

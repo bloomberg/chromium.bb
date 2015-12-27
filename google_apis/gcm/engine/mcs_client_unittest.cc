@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -251,7 +252,7 @@ void MCSClientTest::AddExpectedLoginRequest(
     setting->set_value(base::IntToString(heartbeat_interval_ms));
   }
   GetFakeHandler()->ExpectOutgoingMessage(
-      MCSMessage(kLoginRequestTag, login_request.Pass()));
+      MCSMessage(kLoginRequestTag, std::move(login_request)));
 }
 
 void MCSClientTest::StoreCredentials() {
@@ -429,7 +430,7 @@ TEST_F(MCSClientTest, SendMessageRMQWhileDisconnected) {
   // Receive the ack.
   scoped_ptr<mcs_proto::IqStanza> ack = BuildStreamAck();
   ack->set_last_stream_id_received(2);
-  GetFakeHandler()->ReceiveMessage(MCSMessage(kIqStanzaTag, ack.Pass()));
+  GetFakeHandler()->ReceiveMessage(MCSMessage(kIqStanzaTag, std::move(ack)));
   WaitForMCSEvent();
 
   EXPECT_EQ(MCSClient::SENT, message_send_status());
@@ -491,7 +492,7 @@ TEST_F(MCSClientTest, SendMessageRMQWithStreamAck) {
   // Receive the ack.
   scoped_ptr<mcs_proto::IqStanza> ack = BuildStreamAck();
   ack->set_last_stream_id_received(kMessageBatchSize + 1);
-  GetFakeHandler()->ReceiveMessage(MCSMessage(kIqStanzaTag, ack.Pass()));
+  GetFakeHandler()->ReceiveMessage(MCSMessage(kIqStanzaTag, std::move(ack)));
   WaitForMCSEvent();
 
   // Reconnect and ensure no messages are resent.
@@ -529,7 +530,7 @@ TEST_F(MCSClientTest, SendMessageRMQAckOnReconnect) {
   InitializeClient();
   LoginClient(std::vector<std::string>());
   scoped_ptr<mcs_proto::IqStanza> ack(BuildSelectiveAck(id_list));
-  GetFakeHandler()->ReceiveMessage(MCSMessage(kIqStanzaTag, ack.Pass()));
+  GetFakeHandler()->ReceiveMessage(MCSMessage(kIqStanzaTag, std::move(ack)));
   EXPECT_TRUE(GetFakeHandler()->AllOutgoingMessagesReceived());
 }
 
@@ -575,7 +576,7 @@ TEST_F(MCSClientTest, SendMessageRMQPartialAckOnReconnect) {
     GetFakeHandler()->ExpectOutgoingMessage(message);
   }
   scoped_ptr<mcs_proto::IqStanza> ack(BuildSelectiveAck(acked_ids));
-  GetFakeHandler()->ReceiveMessage(MCSMessage(kIqStanzaTag, ack.Pass()));
+  GetFakeHandler()->ReceiveMessage(MCSMessage(kIqStanzaTag, std::move(ack)));
   WaitForMCSEvent();
   PumpLoop();
   EXPECT_TRUE(GetFakeHandler()->AllOutgoingMessagesReceived());
@@ -638,7 +639,7 @@ TEST_F(MCSClientTest, SelectiveAckMidStream) {
   GetFakeHandler()->ExpectOutgoingMessage(cMessage3);
   std::vector<std::string> acked_ids(1, "1");
   scoped_ptr<mcs_proto::IqStanza> ack(BuildSelectiveAck(acked_ids));
-  GetFakeHandler()->ReceiveMessage(MCSMessage(kIqStanzaTag, ack.Pass()));
+  GetFakeHandler()->ReceiveMessage(MCSMessage(kIqStanzaTag, std::move(ack)));
   WaitForMCSEvent();
   PumpLoop();
   EXPECT_TRUE(GetFakeHandler()->AllOutgoingMessagesReceived());
@@ -725,7 +726,8 @@ TEST_F(MCSClientTest, AckWhenLimitReachedWithHeartbeat) {
   // The stream ack.
   scoped_ptr<mcs_proto::IqStanza> ack = BuildStreamAck();
   ack->set_last_stream_id_received(kAckLimitSize + 1);
-  GetFakeHandler()->ExpectOutgoingMessage(MCSMessage(kIqStanzaTag, ack.Pass()));
+  GetFakeHandler()->ExpectOutgoingMessage(
+      MCSMessage(kIqStanzaTag, std::move(ack)));
 
   // Receive some messages.
   std::vector<std::string> id_list;
@@ -749,10 +751,10 @@ TEST_F(MCSClientTest, AckWhenLimitReachedWithHeartbeat) {
       new mcs_proto::HeartbeatAck());
   heartbeat_ack->set_last_stream_id_received(kAckLimitSize + 2);
   GetFakeHandler()->ExpectOutgoingMessage(
-      MCSMessage(kHeartbeatAckTag, heartbeat_ack.Pass()));
+      MCSMessage(kHeartbeatAckTag, std::move(heartbeat_ack)));
 
   GetFakeHandler()->ReceiveMessage(
-      MCSMessage(kHeartbeatPingTag, heartbeat.Pass()));
+      MCSMessage(kHeartbeatPingTag, std::move(heartbeat)));
   PumpLoop();
   EXPECT_TRUE(GetFakeHandler()->AllOutgoingMessagesReceived());
 
@@ -1154,7 +1156,8 @@ TEST_F(MCSClientTest, AckWhenImmediateAckRequested) {
   // The stream ack.
   scoped_ptr<mcs_proto::IqStanza> ack = BuildStreamAck();
   ack->set_last_stream_id_received(kAckLimitSize - 1);
-  GetFakeHandler()->ExpectOutgoingMessage(MCSMessage(kIqStanzaTag, ack.Pass()));
+  GetFakeHandler()->ExpectOutgoingMessage(
+      MCSMessage(kIqStanzaTag, std::move(ack)));
 
   // Receive some messages.
   for (int i = 1; i < kAckLimitSize - 2; ++i) {

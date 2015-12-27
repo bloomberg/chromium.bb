@@ -5,6 +5,7 @@
 #include "google_apis/drive/base_requests.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
@@ -214,7 +215,7 @@ scoped_ptr<base::Value> ParseJson(const std::string& json) {
     LOG(WARNING) << "Error while parsing entry response: " << error_message
                  << ", code: " << error_code << ", json:\n" << trimmed_json;
   }
-  return value.Pass();
+  return value;
 }
 
 void GenerateMultipartBody(MultipartType multipart_type,
@@ -742,7 +743,7 @@ void UploadRangeRequestBase::OnDataParsed(DriveApiErrorCode code,
   DCHECK(CalledOnValidThread());
   DCHECK(code == HTTP_CREATED || code == HTTP_SUCCESS);
 
-  OnRangeRequestComplete(UploadRangeResponse(code, -1, -1), value.Pass());
+  OnRangeRequestComplete(UploadRangeResponse(code, -1, -1), std::move(value));
   OnProcessURLFetchResultsComplete();
 }
 

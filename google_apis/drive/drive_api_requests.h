@@ -6,8 +6,8 @@
 #define GOOGLE_APIS_DRIVE_DRIVE_API_REQUESTS_H_
 
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -169,7 +169,7 @@ class DriveApiDataRequest : public DriveApiPartialFieldRequest {
   void OnDataParsed(DriveApiErrorCode error, scoped_ptr<DataType> value) {
     if (!value)
       error = DRIVE_PARSE_ERROR;
-    callback_.Run(error, value.Pass());
+    callback_.Run(error, std::move(value));
     OnProcessURLFetchResultsComplete();
   }
 

@@ -5,6 +5,7 @@
 #include "google_apis/gcm/engine/connection_factory_impl.h"
 
 #include <cmath>
+#include <utility>
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -201,7 +202,7 @@ TestConnectionFactoryImpl::CreateConnectionHandler(
     const ConnectionHandler::ProtoReceivedCallback& read_callback,
     const ConnectionHandler::ProtoSentCallback& write_callback,
     const ConnectionHandler::ConnectionChangedCallback& connection_callback) {
-  return scoped_handler_.Pass();
+  return std::move(scoped_handler_);
 }
 
 base::TimeTicks TestConnectionFactoryImpl::NowTicks() {

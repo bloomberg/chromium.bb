@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "google_apis/drive/drive_api_requests.h"
+
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -16,7 +19,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "google_apis/drive/drive_api_parser.h"
-#include "google_apis/drive/drive_api_requests.h"
 #include "google_apis/drive/drive_api_url_generator.h"
 #include "google_apis/drive/dummy_auth_service.h"
 #include "google_apis/drive/request_sender.h"
@@ -244,7 +246,7 @@ class DriveApiRequestsTest : public testing::Test {
     scoped_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse);
     http_response->set_code(net::HTTP_NO_CONTENT);
-    return http_response.Pass();
+    return std::move(http_response);
   }
 
   // Reads the data file of |expected_data_file_path_| and returns its content
@@ -282,7 +284,7 @@ class DriveApiRequestsTest : public testing::Test {
         new net::test_server::BasicHttpResponse);
     response->set_code(net::HTTP_NO_CONTENT);
 
-    return response.Pass();
+    return std::move(response);
   }
 
   // Returns PRECONDITION_FAILED response for ETag mismatching with error JSON
@@ -309,7 +311,7 @@ class DriveApiRequestsTest : public testing::Test {
       response->set_content_type("application/json");
     }
 
-    return response.Pass();
+    return std::move(response);
   }
 
   // Returns the response based on set expected upload url.
@@ -344,7 +346,7 @@ class DriveApiRequestsTest : public testing::Test {
     response->AddCustomHeader(
         "Location",
         test_server_.base_url().Resolve(expected_upload_path_).spec());
-    return response.Pass();
+    return std::move(response);
   }
 
   scoped_ptr<net::test_server::HttpResponse> HandleResumeUploadRequest(
@@ -394,7 +396,7 @@ class DriveApiRequestsTest : public testing::Test {
             "Range", "bytes=0-" + base::Int64ToString(received_bytes_ - 1));
       }
 
-      return response.Pass();
+      return std::move(response);
     }
 
     // All bytes are received. Return the "success" response with the file's
@@ -408,7 +410,7 @@ class DriveApiRequestsTest : public testing::Test {
       response->set_code(net::HTTP_CREATED);
     }
 
-    return response.Pass();
+    return std::move(response);
   }
 
   // Returns the response based on set expected content and its type.
@@ -429,7 +431,7 @@ class DriveApiRequestsTest : public testing::Test {
     response->set_code(net::HTTP_OK);
     response->set_content_type(expected_content_type_);
     response->set_content(expected_content_);
-    return response.Pass();
+    return std::move(response);
   }
 
   // Handles a request for downloading a file.
@@ -451,7 +453,7 @@ class DriveApiRequestsTest : public testing::Test {
     response->set_code(net::HTTP_OK);
     response->set_content(id + id + id);
     response->set_content_type("text/plain");
-    return response.Pass();
+    return std::move(response);
   }
 
   scoped_ptr<net::test_server::HttpResponse> HandleBatchUploadRequest(
@@ -489,7 +491,7 @@ class DriveApiRequestsTest : public testing::Test {
         " {\"reason\": \"userRateLimitExceeded\"}]}}\r\n"
         "\r\n"
         "--BOUNDARY--\r\n");
-    return response.Pass();
+    return std::move(response);
   }
 
   // These are for the current upload file status.

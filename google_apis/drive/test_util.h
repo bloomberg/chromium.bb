@@ -155,7 +155,7 @@ template<bool IsMovable, typename T> struct MoveHelper {
   static const T& Move(const T* in) { return *in; }
 };
 template<typename T> struct MoveHelper<true, T> {
-  static T Move(T* in) { return in->Pass(); }
+  static T Move(T* in) { return std::move(*in); }
 };
 
 // Helper to handle Chrome's move semantics correctly.

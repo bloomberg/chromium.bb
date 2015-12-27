@@ -5,8 +5,8 @@
 #include "google_apis/gcm/engine/mcs_client.h"
 
 #include <stddef.h>
-
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -334,7 +334,7 @@ void MCSClient::SendMessage(const MCSMessage& message) {
       ReliablePacketInfo* original_packet = collapse_key_map_[collapse_key];
       DVLOG(1) << "Found matching collapse key, Reusing persistent id of "
                << original_packet->persistent_id;
-      original_packet->protobuf = packet_info->protobuf.Pass();
+      original_packet->protobuf = std::move(packet_info->protobuf);
       SetPersistentId(original_packet->persistent_id,
                       original_packet->protobuf.get());
       gcm_store_->OverwriteOutgoingMessage(
@@ -379,7 +379,7 @@ void MCSClient::SendMessage(const MCSMessage& message) {
 }
 
 void MCSClient::UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer) {
-  heartbeat_manager_.UpdateHeartbeatTimer(timer.Pass());
+  heartbeat_manager_.UpdateHeartbeatTimer(std::move(timer));
 }
 
 void MCSClient::AddHeartbeatInterval(const std::string& scope,
@@ -632,7 +632,7 @@ void MCSClient::HandleMCSDataMesssage(
   }
 
   if (send) {
-    SendMessage(MCSMessage(kDataMessageStanzaTag, response.Pass()));
+    SendMessage(MCSMessage(kDataMessageStanzaTag, std::move(response)));
   }
 }
 
@@ -721,9 +721,8 @@ void MCSClient::HandlePacketFromWire(
 
       // Pass the login response on up.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(message_received_callback_,
-                     MCSMessage(tag, protobuf.Pass())));
+          FROM_HERE, base::Bind(message_received_callback_,
+                                MCSMessage(tag, std::move(protobuf))));
 
       // If there are pending messages, attempt to send one.
       if (!to_send_.empty()) {
@@ -786,15 +785,14 @@ void MCSClient::HandlePacketFromWire(
       mcs_proto::DataMessageStanza* data_message =
           reinterpret_cast<mcs_proto::DataMessageStanza*>(protobuf.get());
       if (data_message->category() == kMCSCategory) {
-        HandleMCSDataMesssage(protobuf.Pass());
+        HandleMCSDataMesssage(std::move(protobuf));
         return;
       }
 
       DCHECK(protobuf.get());
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(message_received_callback_,
-                     MCSMessage(tag, protobuf.Pass())));
+          FROM_HERE, base::Bind(message_received_callback_,
+                                MCSMessage(tag, std::move(protobuf))));
       return;
     }
     default:

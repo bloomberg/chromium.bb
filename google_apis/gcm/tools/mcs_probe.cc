@@ -6,10 +6,10 @@
 // own.
 
 #include <stdint.h>
-
 #include <cstddef>
 #include <cstdio>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/at_exit.h"
@@ -356,9 +356,8 @@ void MCSProbe::LoadCallback(scoped_ptr<GCMStore::LoadResult> load_result) {
   }
   mcs_client_->Initialize(
       base::Bind(&MCSProbe::ErrorCallback, base::Unretained(this)),
-      base::Bind(&MessageReceivedCallback),
-      base::Bind(&MessageSentCallback),
-      load_result.Pass());
+      base::Bind(&MessageReceivedCallback), base::Bind(&MessageSentCallback),
+      std::move(load_result));
 
   if (!android_id_ || !secret_) {
     DVLOG(1) << "Checkin to generate new MCS credentials.";
@@ -386,7 +385,7 @@ void MCSProbe::InitializeNetworkState() {
     logger_.reset(new net::WriteToFileNetLogObserver());
     logger_->set_capture_mode(
         net::NetLogCaptureMode::IncludeCookiesAndCredentials());
-    logger_->StartObserving(&net_log_, log_file.Pass(), nullptr, nullptr);
+    logger_->StartObserving(&net_log_, std::move(log_file), nullptr, nullptr);
   }
 
   host_resolver_ = net::HostResolver::CreateDefaultResolver(&net_log_);
@@ -402,10 +401,8 @@ void MCSProbe::InitializeNetworkState() {
           base::WorkerPool::GetTaskRunner(true)));
 
   transport_security_state_.reset(new net::TransportSecurityState());
-  http_auth_handler_factory_ =
-      net::HttpAuthHandlerRegistryFactory::Create(&http_auth_preferences_,
-                                                  host_resolver_.get())
-          .Pass();
+  http_auth_handler_factory_ = net::HttpAuthHandlerRegistryFactory::Create(
+      &http_auth_preferences_, host_resolver_.get());
   http_server_properties_.reset(new net::HttpServerPropertiesImpl());
   host_mapping_rules_.reset(new net::HostMappingRules());
   proxy_service_ = net::ProxyService::CreateDirectWithNetLog(&net_log_);

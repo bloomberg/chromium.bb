@@ -4,6 +4,8 @@
 
 #include "google_apis/gcm/engine/connection_handler_impl.h"
 
+#include <utility>
+
 #include "base/location.h"
 #include "base/thread_task_runner_handle.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -388,7 +390,7 @@ void ConnectionHandlerImpl::OnGotMessageBytes() {
         FROM_HERE,
         base::Bind(&ConnectionHandlerImpl::GetNextMessage,
                    weak_ptr_factory_.GetWeakPtr()));
-    read_callback_.Run(protobuf.Pass());
+    read_callback_.Run(std::move(protobuf));
     return;
   }
 
@@ -470,7 +472,7 @@ void ConnectionHandlerImpl::OnGotMessageBytes() {
       connection_callback_.Run(net::OK);
     }
   }
-  read_callback_.Run(protobuf.Pass());
+  read_callback_.Run(std::move(protobuf));
 }
 
 void ConnectionHandlerImpl::OnTimeout() {

@@ -107,11 +107,10 @@ ConnectionHandler* ConnectionFactoryImpl::GetConnectionHandler() const {
 void ConnectionFactoryImpl::Connect() {
   if (!connection_handler_) {
     connection_handler_ = CreateConnectionHandler(
-        base::TimeDelta::FromMilliseconds(kReadTimeoutMs),
-        read_callback_,
+        base::TimeDelta::FromMilliseconds(kReadTimeoutMs), read_callback_,
         write_callback_,
         base::Bind(&ConnectionFactoryImpl::ConnectionHandlerCallback,
-                   weak_ptr_factory_.GetWeakPtr())).Pass();
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (connecting_ || waiting_for_backoff_)

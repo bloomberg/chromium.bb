@@ -222,7 +222,7 @@ scoped_ptr<AboutResource> AboutResource::CreateFrom(const base::Value& value) {
     LOG(ERROR) << "Unable to create: Invalid About resource JSON!";
     return scoped_ptr<AboutResource>();
   }
-  return resource.Pass();
+  return resource;
 }
 
 // static
@@ -277,7 +277,7 @@ scoped_ptr<DriveAppIcon> DriveAppIcon::CreateFrom(const base::Value& value) {
     LOG(ERROR) << "Unable to create: Invalid DriveAppIcon JSON!";
     return scoped_ptr<DriveAppIcon>();
   }
-  return resource.Pass();
+  return resource;
 }
 
 bool DriveAppIcon::Parse(const base::Value& value) {
@@ -342,7 +342,7 @@ scoped_ptr<AppResource> AppResource::CreateFrom(const base::Value& value) {
     LOG(ERROR) << "Unable to create: Invalid AppResource JSON!";
     return scoped_ptr<AppResource>();
   }
-  return resource.Pass();
+  return resource;
 }
 
 bool AppResource::Parse(const base::Value& value) {
@@ -376,7 +376,7 @@ scoped_ptr<AppList> AppList::CreateFrom(const base::Value& value) {
     LOG(ERROR) << "Unable to create: Invalid AppList JSON!";
     return scoped_ptr<AppList>();
   }
-  return resource.Pass();
+  return resource;
 }
 
 bool AppList::Parse(const base::Value& value) {
@@ -413,7 +413,7 @@ ParentReference::CreateFrom(const base::Value& value) {
     LOG(ERROR) << "Unable to create: Invalid ParentRefernce JSON!";
     return scoped_ptr<ParentReference>();
   }
-  return reference.Pass();
+  return reference;
 }
 
 bool ParentReference::Parse(const base::Value& value) {
@@ -485,7 +485,7 @@ scoped_ptr<FileResource> FileResource::CreateFrom(const base::Value& value) {
     LOG(ERROR) << "Unable to create: Invalid FileResource JSON!";
     return scoped_ptr<FileResource>();
   }
-  return resource.Pass();
+  return resource;
 }
 
 bool FileResource::IsDirectory() const {
@@ -536,7 +536,7 @@ scoped_ptr<FileList> FileList::CreateFrom(const base::Value& value) {
     LOG(ERROR) << "Unable to create: Invalid FileList JSON!";
     return scoped_ptr<FileList>();
   }
-  return resource.Pass();
+  return resource;
 }
 
 bool FileList::Parse(const base::Value& value) {
@@ -577,7 +577,7 @@ ChangeResource::CreateFrom(const base::Value& value) {
     LOG(ERROR) << "Unable to create: Invalid ChangeResource JSON!";
     return scoped_ptr<ChangeResource>();
   }
-  return resource.Pass();
+  return resource;
 }
 
 bool ChangeResource::Parse(const base::Value& value) {
@@ -620,7 +620,7 @@ scoped_ptr<ChangeList> ChangeList::CreateFrom(const base::Value& value) {
     LOG(ERROR) << "Unable to create: Invalid ChangeList JSON!";
     return scoped_ptr<ChangeList>();
   }
-  return resource.Pass();
+  return resource;
 }
 
 bool ChangeList::Parse(const base::Value& value) {
@@ -653,7 +653,7 @@ scoped_ptr<FileLabels> FileLabels::CreateFrom(const base::Value& value) {
     LOG(ERROR) << "Unable to create: Invalid FileLabels JSON!";
     return scoped_ptr<FileLabels>();
   }
-  return resource.Pass();
+  return resource;
 }
 
 bool FileLabels::Parse(const base::Value& value) {
@@ -694,7 +694,7 @@ scoped_ptr<ImageMediaMetadata> ImageMediaMetadata::CreateFrom(
     LOG(ERROR) << "Unable to create: Invalid ImageMediaMetadata JSON!";
     return scoped_ptr<ImageMediaMetadata>();
   }
-  return resource.Pass();
+  return resource;
 }
 
 bool ImageMediaMetadata::Parse(const base::Value& value) {

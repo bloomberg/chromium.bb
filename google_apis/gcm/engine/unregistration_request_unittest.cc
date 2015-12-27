@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
-
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/strings/string_number_conversions.h"
@@ -96,15 +96,11 @@ void GCMUnregistrationRequestTest::CreateRequest() {
   scoped_ptr<GCMUnregistrationRequestHandler> request_handler(
       new GCMUnregistrationRequestHandler(kAppId));
   request_.reset(new UnregistrationRequest(
-      GURL(kRegistrationURL),
-      request_info,
-      request_handler.Pass(),
+      GURL(kRegistrationURL), request_info, std::move(request_handler),
       GetBackoffPolicy(),
       base::Bind(&UnregistrationRequestTest::UnregistrationCallback,
                  base::Unretained(this)),
-      max_retry_count_,
-      url_request_context_getter(),
-      &recorder_,
+      max_retry_count_, url_request_context_getter(), &recorder_,
       std::string()));
 }
 
@@ -349,15 +345,11 @@ void InstaceIDDeleteTokenRequestTest::CreateRequest(
       new InstanceIDDeleteTokenRequestHandler(
           instance_id, authorized_entity, scope, kGCMVersion));
   request_.reset(new UnregistrationRequest(
-      GURL(kRegistrationURL),
-      request_info,
-      request_handler.Pass(),
+      GURL(kRegistrationURL), request_info, std::move(request_handler),
       GetBackoffPolicy(),
       base::Bind(&UnregistrationRequestTest::UnregistrationCallback,
                  base::Unretained(this)),
-      max_retry_count(),
-      url_request_context_getter(),
-      &recorder_,
+      max_retry_count(), url_request_context_getter(), &recorder_,
       std::string()));
 }
 

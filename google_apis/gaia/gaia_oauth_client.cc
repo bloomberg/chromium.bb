@@ -4,6 +4,8 @@
 
 #include "google_apis/gaia/gaia_oauth_client.h"
 
+#include <utility>
+
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -250,7 +252,7 @@ void GaiaOAuthClient::Core::HandleResponse(
   // Move ownership of the request fetcher into a local scoped_ptr which
   // will be nuked when we're done handling the request, unless we need
   // to retry, in which case ownership will be returned to request_.
-  scoped_ptr<net::URLFetcher> old_request = request_.Pass();
+  scoped_ptr<net::URLFetcher> old_request = std::move(request_);
   DCHECK_EQ(source, old_request.get());
 
   // HTTP_BAD_REQUEST means the arguments are invalid.  HTTP_UNAUTHORIZED means
@@ -283,7 +285,7 @@ void GaiaOAuthClient::Core::HandleResponse(
       // Retry limit reached. Give up.
       delegate_->OnNetworkError(source->GetResponseCode());
     } else {
-      request_ = old_request.Pass();
+      request_ = std::move(old_request);
       *should_retry_request = true;
     }
     return;
@@ -308,12 +310,12 @@ void GaiaOAuthClient::Core::HandleResponse(
     }
 
     case USER_INFO: {
-      delegate_->OnGetUserInfoResponse(response_dict.Pass());
+      delegate_->OnGetUserInfoResponse(std::move(response_dict));
       break;
     }
 
     case TOKEN_INFO: {
-      delegate_->OnGetTokenInfoResponse(response_dict.Pass());
+      delegate_->OnGetTokenInfoResponse(std::move(response_dict));
       break;
     }
 

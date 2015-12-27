@@ -5,6 +5,7 @@
 #include "google_apis/drive/drive_api_requests.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -77,7 +78,7 @@ void ParseFileResourceWithUploadRangeAndRun(const UploadRangeCallback& callback,
     }
   }
 
-  callback.Run(response, file_resource.Pass());
+  callback.Run(response, std::move(file_resource));
 }
 
 // Attaches |properties| to the |request_body| if |properties| is not empty.
@@ -949,7 +950,7 @@ void ResumeUploadRequest::OnRangeRequestComplete(
     const UploadRangeResponse& response,
     scoped_ptr<base::Value> value) {
   DCHECK(CalledOnValidThread());
-  ParseFileResourceWithUploadRangeAndRun(callback_, response, value.Pass());
+  ParseFileResourceWithUploadRangeAndRun(callback_, response, std::move(value));
 }
 
 void ResumeUploadRequest::OnURLFetchUploadProgress(
@@ -978,7 +979,7 @@ void GetUploadStatusRequest::OnRangeRequestComplete(
     const UploadRangeResponse& response,
     scoped_ptr<base::Value> value) {
   DCHECK(CalledOnValidThread());
-  ParseFileResourceWithUploadRangeAndRun(callback_, response, value.Pass());
+  ParseFileResourceWithUploadRangeAndRun(callback_, response, std::move(value));
 }
 
 //======================= MultipartUploadNewFileDelegate =======================

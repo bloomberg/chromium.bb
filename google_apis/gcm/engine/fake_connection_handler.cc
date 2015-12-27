@@ -4,6 +4,8 @@
 
 #include "google_apis/gcm/engine/fake_connection_handler.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "google_apis/gcm/base/mcs_util.h"
 #include "net/socket/stream_socket.h"
@@ -20,7 +22,7 @@ scoped_ptr<google::protobuf::MessageLite> BuildLoginResponse(bool fail_login) {
   login_response->set_id("id");
   if (fail_login)
     login_response->mutable_error()->set_code(1);
-  return login_response.Pass();
+  return std::move(login_response);
 }
 
 }  // namespace

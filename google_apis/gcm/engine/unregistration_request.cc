@@ -4,6 +4,8 @@
 
 #include "google_apis/gcm/engine/unregistration_request.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/strings/string_number_conversions.h"
@@ -61,7 +63,7 @@ UnregistrationRequest::UnregistrationRequest(
     const std::string& source_to_record)
     : callback_(callback),
       request_info_(request_info),
-      custom_request_handler_(custom_request_handler.Pass()),
+      custom_request_handler_(std::move(custom_request_handler)),
       registration_url_(registration_url),
       backoff_entry_(&backoff_policy),
       request_context_getter_(request_context_getter),

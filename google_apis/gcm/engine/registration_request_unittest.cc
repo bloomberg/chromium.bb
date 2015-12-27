@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
-
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/strings/string_number_conversions.h"
@@ -101,16 +101,11 @@ void GCMRegistrationRequestTest::CreateRequest(const std::string& sender_ids) {
   scoped_ptr<GCMRegistrationRequestHandler> request_handler(
       new GCMRegistrationRequestHandler(sender_ids));
   request_.reset(new RegistrationRequest(
-      GURL(kRegistrationURL),
-      request_info,
-      request_handler.Pass(),
+      GURL(kRegistrationURL), request_info, std::move(request_handler),
       GetBackoffPolicy(),
       base::Bind(&RegistrationRequestTest::RegistrationCallback,
                  base::Unretained(this)),
-      max_retry_count_,
-      url_request_context_getter(),
-      &recorder_,
-      sender_ids));
+      max_retry_count_, url_request_context_getter(), &recorder_, sender_ids));
 }
 
 TEST_F(GCMRegistrationRequestTest, RequestSuccessful) {
@@ -424,15 +419,11 @@ void InstanceIDGetTokenRequestTest::CreateRequest(
       new InstanceIDGetTokenRequestHandler(
           instance_id, authorized_entity, scope, kGCMVersion, options));
   request_.reset(new RegistrationRequest(
-      GURL(kRegistrationURL),
-      request_info,
-      request_handler.Pass(),
+      GURL(kRegistrationURL), request_info, std::move(request_handler),
       GetBackoffPolicy(),
       base::Bind(&RegistrationRequestTest::RegistrationCallback,
                  base::Unretained(this)),
-      max_retry_count_,
-      url_request_context_getter(),
-      &recorder_,
+      max_retry_count_, url_request_context_getter(), &recorder_,
       authorized_entity));
 }
 

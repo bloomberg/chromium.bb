@@ -4,6 +4,8 @@
 
 #include "google_apis/gcm/engine/gcm_store_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -271,8 +273,7 @@ GCMStoreImpl::Backend::Backend(
     scoped_ptr<Encryptor> encryptor)
     : path_(path),
       foreground_task_runner_(foreground_task_runner),
-      encryptor_(encryptor.Pass()) {
-}
+      encryptor_(std::move(encryptor)) {}
 
 GCMStoreImpl::Backend::~Backend() {}
 
@@ -1165,10 +1166,9 @@ GCMStoreImpl::GCMStoreImpl(
     scoped_ptr<Encryptor> encryptor)
     : backend_(new Backend(path,
                            base::ThreadTaskRunnerHandle::Get(),
-                           encryptor.Pass())),
+                           std::move(encryptor))),
       blocking_task_runner_(blocking_task_runner),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 GCMStoreImpl::~GCMStoreImpl() {}
 
@@ -1430,7 +1430,7 @@ void GCMStoreImpl::LoadContinuation(const LoadCallback& callback,
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "477117 GCMStoreImpl::LoadContinuation"));
   if (!result->success) {
-    callback.Run(result.Pass());
+    callback.Run(std::move(result));
     return;
   }
   int num_throttled_apps = 0;
@@ -1448,7 +1448,7 @@ void GCMStoreImpl::LoadContinuation(const LoadCallback& callback,
       num_throttled_apps++;
   }
   UMA_HISTOGRAM_COUNTS("GCM.NumThrottledApps", num_throttled_apps);
-  callback.Run(result.Pass());
+  callback.Run(std::move(result));
 }
 
 void GCMStoreImpl::AddOutgoingMessageContinuation(
