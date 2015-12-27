@@ -143,7 +143,7 @@ scoped_ptr<views::Widget> PhantomWindowController::CreatePhantomWidget(
       base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
   widget_layer->SetOpacity(1);
 
-  return phantom_widget.Pass();
+  return phantom_widget;
 }
 
 }  // namespace ash

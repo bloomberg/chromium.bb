@@ -4,6 +4,8 @@
 
 #include "ash/shelf/shelf_window_watcher.h"
 
+#include <utility>
+
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_item_delegate_manager.h"
@@ -136,7 +138,7 @@ void ShelfWindowWatcher::AddShelfItem(aura::Window* window) {
   scoped_ptr<ShelfItemDelegate> item_delegate(
       new ShelfWindowWatcherItemDelegate(window, model_));
   // |item_delegate| is owned by |item_delegate_manager_|.
-  item_delegate_manager_->SetShelfItemDelegate(id, item_delegate.Pass());
+  item_delegate_manager_->SetShelfItemDelegate(id, std::move(item_delegate));
   model_->Add(item);
 }
 

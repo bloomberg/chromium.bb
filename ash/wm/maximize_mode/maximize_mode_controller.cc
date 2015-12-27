@@ -4,6 +4,8 @@
 
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 
+#include <utility>
+
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/ash_switches.h"
@@ -406,7 +408,7 @@ bool MaximizeModeController::WasLidOpenedRecently() const {
 void MaximizeModeController::SetTickClockForTest(
     scoped_ptr<base::TickClock> tick_clock) {
   DCHECK(tick_clock_);
-  tick_clock_ = tick_clock.Pass();
+  tick_clock_ = std::move(tick_clock);
 }
 
 }  // namespace ash

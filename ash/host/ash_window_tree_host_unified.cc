@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "ash/host/ash_window_tree_host_unified.h"
+
+#include <utility>
+
 #include "ash/host/root_window_transformer.h"
 #include "ash/ime/input_method_event_handler.h"
 #include "base/logging.h"
@@ -91,7 +94,7 @@ void AshWindowTreeHostUnified::UnConfineCursor() {
 
 void AshWindowTreeHostUnified::SetRootWindowTransformer(
     scoped_ptr<RootWindowTransformer> transformer) {
-  transformer_helper_.SetRootWindowTransformer(transformer.Pass());
+  transformer_helper_.SetRootWindowTransformer(std::move(transformer));
 }
 
 gfx::Insets AshWindowTreeHostUnified::GetHostInsets() const {

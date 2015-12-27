@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_delegate.h"
@@ -588,7 +589,7 @@ ShelfDelegate* Shell::GetShelfDelegate() {
     ShelfID app_list_id = shelf_model_->items()[app_list_index].id;
     DCHECK(app_list_id);
     shelf_item_delegate_manager_->SetShelfItemDelegate(app_list_id,
-                                                       controller.Pass());
+                                                       std::move(controller));
     shelf_window_watcher_.reset(new ShelfWindowWatcher(
         shelf_model_.get(), shelf_item_delegate_manager_.get()));
   }
@@ -935,7 +936,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   AddShellObserver(overlay_filter_.get());
 
   accelerator_filter_.reset(new ::wm::AcceleratorFilter(
-      scoped_ptr< ::wm::AcceleratorDelegate>(new AcceleratorDelegate).Pass(),
+      scoped_ptr<::wm::AcceleratorDelegate>(new AcceleratorDelegate),
       accelerator_controller_->accelerator_history()));
   AddPreTargetHandler(accelerator_filter_.get());
 

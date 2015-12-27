@@ -4,9 +4,10 @@
 
 #include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.h"
 
-#include <set>
-#include <X11/extensions/XInput2.h>
 #include <X11/Xlib.h>
+#include <X11/extensions/XInput2.h>
+#include <set>
+#include <utility>
 
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/screen_util.h"
@@ -112,7 +113,7 @@ ScopedDisableInternalMouseAndKeyboardX11::
   excepted_keys->insert(ui::VKEY_VOLUME_DOWN);
   excepted_keys->insert(ui::VKEY_VOLUME_UP);
   excepted_keys->insert(ui::VKEY_POWER);
-  device_data_manager->SetDisabledKeyboardAllowedKeys(excepted_keys.Pass());
+  device_data_manager->SetDisabledKeyboardAllowedKeys(std::move(excepted_keys));
   ui::PlatformEventSource::GetInstance()->AddPlatformEventObserver(this);
 }
 

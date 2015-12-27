@@ -4,6 +4,8 @@
 
 #include "ash/shell/content/client/shell_content_browser_client.h"
 
+#include <utility>
+
 #include "ash/shell/content/client/shell_browser_main_parts.h"
 #include "base/command_line.h"
 #include "content/shell/browser/shell_browser_context.h"
@@ -30,7 +32,7 @@ net::URLRequestContextGetter* ShellContentBrowserClient::CreateRequestContext(
   content::ShellBrowserContext* shell_context =
       static_cast<content::ShellBrowserContext*>(content_browser_context);
   return shell_context->CreateRequestContext(protocol_handlers,
-                                             request_interceptors.Pass());
+                                             std::move(request_interceptors));
 }
 
 content::ShellBrowserContext* ShellContentBrowserClient::browser_context() {

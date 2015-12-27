@@ -4,6 +4,8 @@
 
 #include "ash/wm/lock_state_controller.h"
 
+#include <utility>
+
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -58,7 +60,8 @@ class LockStateControllerTest : public AshTestBase {
     test_animator_ = new TestSessionStateAnimator;
 
     lock_state_controller_ = Shell::GetInstance()->lock_state_controller();
-    lock_state_controller_->SetDelegate(lock_state_controller_delegate.Pass());
+    lock_state_controller_->SetDelegate(
+        std::move(lock_state_controller_delegate));
     lock_state_controller_->set_animator_for_test(test_animator_);
 
     test_api_.reset(new LockStateController::TestApi(lock_state_controller_));

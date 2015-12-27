@@ -4,6 +4,8 @@
 
 #include "ash/test/test_shelf_delegate.h"
 
+#include <utility>
+
 #include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_util.h"
@@ -54,7 +56,7 @@ void TestShelfDelegate::AddShelfItem(aura::Window* window,
       Shell::GetInstance()->shelf_item_delegate_manager();
   // |manager| owns TestShelfItemDelegate.
   scoped_ptr<ShelfItemDelegate> delegate(new TestShelfItemDelegate(window));
-  manager->SetShelfItemDelegate(id, delegate.Pass());
+  manager->SetShelfItemDelegate(id, std::move(delegate));
   SetShelfIDForWindow(id, window);
 }
 

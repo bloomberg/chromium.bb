@@ -4,6 +4,8 @@
 
 #include "ash/wm/workspace_controller.h"
 
+#include <utility>
+
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
@@ -133,7 +135,7 @@ void WorkspaceController::DoInitialAnimation() {
 
 void WorkspaceController::SetMaximizeBackdropDelegate(
     scoped_ptr<WorkspaceLayoutManagerDelegate> delegate) {
-  layout_manager_->SetMaximizeBackdropDelegate(delegate.Pass());
+  layout_manager_->SetMaximizeBackdropDelegate(std::move(delegate));
 }
 
 }  // namespace ash

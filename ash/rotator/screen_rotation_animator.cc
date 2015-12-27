@@ -5,6 +5,7 @@
 #include "ash/rotator/screen_rotation_animator.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/display/display_info.h"
@@ -98,8 +99,7 @@ class LayerCleanupObserver : public ui::LayerAnimationObserver {
 
 LayerCleanupObserver::LayerCleanupObserver(
     scoped_ptr<ui::LayerTreeOwner> layer_tree_owner)
-    : layer_tree_owner_(layer_tree_owner.Pass()), sequence_(nullptr) {
-}
+    : layer_tree_owner_(std::move(layer_tree_owner)), sequence_(nullptr) {}
 
 LayerCleanupObserver::~LayerCleanupObserver() {
   // We must eplicitly detach from |sequence_| because we return true from
@@ -176,7 +176,7 @@ void RotateScreen(int64_t display_id,
   root_window->layer()->StackAtTop(old_layer_tree->root());
 
   scoped_ptr<LayerCleanupObserver> layer_cleanup_observer(
-      new LayerCleanupObserver(old_layer_tree.Pass()));
+      new LayerCleanupObserver(std::move(old_layer_tree)));
 
   Shell::GetInstance()->display_manager()->SetDisplayRotation(
       display_id, new_rotation, source);

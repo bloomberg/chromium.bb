@@ -4,6 +4,8 @@
 
 #include "ash/magnifier/magnification_controller.h"
 
+#include <utility>
+
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accessibility_delegate.h"
 #include "ash/ash_switches.h"
@@ -373,8 +375,9 @@ bool MagnificationControllerImpl::RedrawDIP(const gfx::PointF& position_in_dip,
       Shell::GetScreen()->GetDisplayNearestWindow(root_window_);
   scoped_ptr<RootWindowTransformer> transformer(
       CreateRootWindowTransformerForDisplay(root_window_, display));
-  GetRootWindowController(root_window_)->ash_host()->SetRootWindowTransformer(
-      transformer.Pass());
+  GetRootWindowController(root_window_)
+      ->ash_host()
+      ->SetRootWindowTransformer(std::move(transformer));
 
   if (duration_in_ms > 0)
     is_on_animation_ = true;

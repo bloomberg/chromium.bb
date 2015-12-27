@@ -4,6 +4,8 @@
 
 #include "ash/system/locale/locale_notification_controller.h"
 
+#include <utility>
+
 #include "ash/shell.h"
 #include "ash/system/system_notifier.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -109,7 +111,8 @@ void LocaleNotificationController::OnLocaleChanged(
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  system_notifier::kNotifierLocale),
       optional, new LocaleNotificationDelegate(delegate)));
-  message_center::MessageCenter::Get()->AddNotification(notification.Pass());
+  message_center::MessageCenter::Get()->AddNotification(
+      std::move(notification));
 }
 
 }  // namespace ash

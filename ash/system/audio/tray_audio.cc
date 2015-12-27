@@ -5,6 +5,7 @@
 #include "ash/system/audio/tray_audio.h"
 
 #include <cmath>
+#include <utility>
 
 #include "ash/ash_constants.h"
 #include "ash/display/display_manager.h"
@@ -43,7 +44,7 @@ namespace ash {
 TrayAudio::TrayAudio(SystemTray* system_tray,
                      scoped_ptr<system::TrayAudioDelegate> audio_delegate)
     : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_VOLUME_MUTE),
-      audio_delegate_(audio_delegate.Pass()),
+      audio_delegate_(std::move(audio_delegate)),
       volume_view_(NULL),
       pop_up_volume_view_(false) {
   Shell::GetInstance()->system_tray_notifier()->AddAudioObserver(this);

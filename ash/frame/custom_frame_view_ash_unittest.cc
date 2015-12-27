@@ -108,7 +108,7 @@ class CustomFrameViewAshTest : public test::AshTestBase {
     params.bounds = gfx::Rect(0, 0, 100, 100);
     params.context = CurrentContext();
     widget->Init(params);
-    return widget.Pass();
+    return widget;
   }
 
   test::TestSessionStateDelegate* GetTestSessionStateDelegate() {

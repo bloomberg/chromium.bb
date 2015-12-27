@@ -4,6 +4,8 @@
 
 #include "ash/wm/window_state.h"
 
+#include <utility>
+
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -306,11 +308,11 @@ TEST_F(WindowStateTest, StateSwapRestore) {
   scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   WindowState* window_state = GetWindowState(window.get());
   EXPECT_FALSE(window_state->IsMaximized());
-  scoped_ptr<WindowState::State> old(window_state->SetStateObject(
-      scoped_ptr<WindowState::State> (new AlwaysMaximizeTestState(
-          window_state->GetStateType()))).Pass());
+  scoped_ptr<WindowState::State> old(
+      window_state->SetStateObject(scoped_ptr<WindowState::State>(
+          new AlwaysMaximizeTestState(window_state->GetStateType()))));
   EXPECT_TRUE(window_state->IsMaximized());
-  window_state->SetStateObject(old.Pass());
+  window_state->SetStateObject(std::move(old));
   EXPECT_FALSE(window_state->IsMaximized());
 }
 

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <map>
+#include <utility>
 
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
@@ -544,7 +545,7 @@ void PanelLayoutManager::WillChangeVisibilityState(
   if (!shelf_hidden) {
     if (restore_windows_on_shelf_visible_) {
       scoped_ptr<aura::WindowTracker> restore_windows(
-          restore_windows_on_shelf_visible_.Pass());
+          std::move(restore_windows_on_shelf_visible_));
       for (aura::Window::Windows::const_iterator iter =
                restore_windows->windows().begin();
            iter != restore_windows->windows().end(); ++iter) {
@@ -568,7 +569,7 @@ void PanelLayoutManager::WillChangeVisibilityState(
       wm::GetWindowState(window)->Minimize();
     }
   }
-  restore_windows_on_shelf_visible_ = minimized_windows.Pass();
+  restore_windows_on_shelf_visible_ = std::move(minimized_windows);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

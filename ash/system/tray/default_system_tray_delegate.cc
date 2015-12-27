@@ -5,6 +5,7 @@
 #include "ash/system/tray/default_system_tray_delegate.h"
 
 #include <string>
+#include <utility>
 
 #include "ash/networking_config_delegate.h"
 #include "ash/session/session_state_delegate.h"
@@ -82,7 +83,7 @@ VolumeControlDelegate* DefaultSystemTrayDelegate::GetVolumeControlDelegate()
 
 void DefaultSystemTrayDelegate::SetVolumeControlDelegate(
     scoped_ptr<VolumeControlDelegate> delegate) {
-  volume_control_delegate_ = delegate.Pass();
+  volume_control_delegate_ = std::move(delegate);
 }
 
 int DefaultSystemTrayDelegate::GetSystemTrayMenuWidth() {

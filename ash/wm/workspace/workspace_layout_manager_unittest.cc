@@ -5,6 +5,7 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 
 #include <string>
+#include <utility>
 
 #include "ash/display/display_layout.h"
 #include "ash/display/display_manager.h"
@@ -834,7 +835,7 @@ class WorkspaceLayoutManagerBackdropTest : public test::AshTestBase {
       backdrop.reset(new ash::WorkspaceBackdropDelegate(default_container_));
     }
     (static_cast<WorkspaceLayoutManager*>(default_container_->layout_manager()))
-        ->SetMaximizeBackdropDelegate(backdrop.Pass());
+        ->SetMaximizeBackdropDelegate(std::move(backdrop));
     // Closing and / or opening can be a delayed operation.
     base::MessageLoop::current()->RunUntilIdle();
   }

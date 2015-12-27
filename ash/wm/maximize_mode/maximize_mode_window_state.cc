@@ -4,6 +4,8 @@
 
 #include "ash/wm/maximize_mode/maximize_mode_window_state.h"
 
+#include <utility>
+
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -95,9 +97,9 @@ MaximizeModeWindowState::MaximizeModeWindowState(
       creator_(creator),
       current_state_type_(wm::GetWindowState(window)->GetStateType()),
       defer_bounds_updates_(false) {
-  old_state_.reset(
-      wm::GetWindowState(window)->SetStateObject(
-          scoped_ptr<State>(this).Pass()).release());
+  old_state_.reset(wm::GetWindowState(window)
+                       ->SetStateObject(scoped_ptr<State>(this))
+                       .release());
 }
 
 MaximizeModeWindowState::~MaximizeModeWindowState() {
@@ -107,7 +109,7 @@ MaximizeModeWindowState::~MaximizeModeWindowState() {
 void MaximizeModeWindowState::LeaveMaximizeMode(wm::WindowState* window_state) {
   // Note: When we return we will destroy ourselves with the |our_reference|.
   scoped_ptr<wm::WindowState::State> our_reference =
-      window_state->SetStateObject(old_state_.Pass());
+      window_state->SetStateObject(std::move(old_state_));
 }
 
 void MaximizeModeWindowState::SetDeferBoundsUpdates(bool defer_bounds_updates) {

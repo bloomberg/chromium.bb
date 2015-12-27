@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "ash/accessibility_delegate.h"
 #include "ash/ash_switches.h"
@@ -98,7 +99,7 @@ LockStateController::~LockStateController() {
 
 void LockStateController::SetDelegate(
     scoped_ptr<LockStateControllerDelegate> delegate) {
-  delegate_ = delegate.Pass();
+  delegate_ = std::move(delegate);
 }
 
 void LockStateController::AddObserver(LockStateObserver* observer) {

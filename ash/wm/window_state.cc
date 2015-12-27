@@ -4,6 +4,8 @@
 
 #include "ash/wm/window_state.h"
 
+#include <utility>
+
 #include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -95,7 +97,7 @@ bool WindowState::HasDelegate() const {
 
 void WindowState::SetDelegate(scoped_ptr<WindowStateDelegate> delegate) {
   DCHECK(!delegate_.get());
-  delegate_ = delegate.Pass();
+  delegate_ = std::move(delegate);
 }
 
 WindowStateType WindowState::GetStateType() const {
@@ -284,10 +286,10 @@ void WindowState::ClearRestoreBounds() {
 scoped_ptr<WindowState::State> WindowState::SetStateObject(
     scoped_ptr<WindowState::State> new_state) {
   current_state_->DetachState(this);
-  scoped_ptr<WindowState::State> old_object = current_state_.Pass();
-  current_state_ = new_state.Pass();
+  scoped_ptr<WindowState::State> old_object = std::move(current_state_);
+  current_state_ = std::move(new_state);
   current_state_->AttachState(this, old_object.get());
-  return old_object.Pass();
+  return old_object;
 }
 
 void WindowState::SetPreAutoManageWindowBounds(
@@ -477,7 +479,7 @@ void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds) {
   else
     old_layer->parent()->StackAbove(new_layer, old_layer);
 
-  CrossFadeAnimation(window_, old_layer_owner.Pass(), gfx::Tween::EASE_OUT);
+  CrossFadeAnimation(window_, std::move(old_layer_owner), gfx::Tween::EASE_OUT);
 }
 
 WindowState* GetActiveWindowState() {

@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "ash/shelf/shelf.h"
+
+#include <utility>
+
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_model.h"
@@ -120,7 +123,7 @@ TEST_F(ShelfTest, checkHoverAfterMenu) {
   scoped_ptr<ShelfItemDelegate> delegate(
       new test::TestShelfItemDelegate(NULL));
   item_manager()->SetShelfItemDelegate(shelf_model()->items()[index].id,
-                                       delegate.Pass());
+                                       std::move(delegate));
 
   ASSERT_EQ(++button_count, test_api()->GetButtonCount());
   ShelfButton* button = test_api()->GetButton(index);

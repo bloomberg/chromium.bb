@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 #include <string>
+#include <utility>
 
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/accelerators/debug_commands.h"
@@ -169,7 +170,8 @@ void ShowDeprecatedAcceleratorNotification(const char* const notification_id,
               system_notifier::kNotifierDeprecatedAccelerator),
           message_center::RichNotificationData(),
           new DeprecatedAcceleratorNotificationDelegate));
-  message_center::MessageCenter::Get()->AddNotification(notification.Pass());
+  message_center::MessageCenter::Get()->AddNotification(
+      std::move(notification));
 }
 
 void RecordUmaHistogram(const char* histogram_name,
@@ -831,17 +833,17 @@ AcceleratorController::GetCurrentAcceleratorRestriction() {
 
 void AcceleratorController::SetBrightnessControlDelegate(
     scoped_ptr<BrightnessControlDelegate> brightness_control_delegate) {
-  brightness_control_delegate_ = brightness_control_delegate.Pass();
+  brightness_control_delegate_ = std::move(brightness_control_delegate);
 }
 
 void AcceleratorController::SetImeControlDelegate(
     scoped_ptr<ImeControlDelegate> ime_control_delegate) {
-  ime_control_delegate_ = ime_control_delegate.Pass();
+  ime_control_delegate_ = std::move(ime_control_delegate);
 }
 
 void AcceleratorController::SetScreenshotDelegate(
     scoped_ptr<ScreenshotDelegate> screenshot_delegate) {
-  screenshot_delegate_ = screenshot_delegate.Pass();
+  screenshot_delegate_ = std::move(screenshot_delegate);
 }
 
 bool AcceleratorController::ShouldCloseMenuAndRepostAccelerator(
@@ -1454,7 +1456,7 @@ void AcceleratorController::SetKeyboardBrightnessControlDelegate(
     scoped_ptr<KeyboardBrightnessControlDelegate>
     keyboard_brightness_control_delegate) {
   keyboard_brightness_control_delegate_ =
-      keyboard_brightness_control_delegate.Pass();
+      std::move(keyboard_brightness_control_delegate);
 }
 
 }  // namespace ash

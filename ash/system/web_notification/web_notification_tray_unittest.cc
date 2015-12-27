@@ -4,6 +4,7 @@
 
 #include "ash/system/web_notification/web_notification_tray.h"
 
+#include <utility>
 #include <vector>
 
 #include "ash/display/display_manager.h"
@@ -107,7 +108,7 @@ class WebNotificationTrayTest : public test::AshTestBase {
         base::ASCIIToUTF16("www.test.org"), GURL(),
         message_center::NotifierId(), message_center::RichNotificationData(),
         NULL /* delegate */));
-    GetMessageCenter()->AddNotification(notification.Pass());
+    GetMessageCenter()->AddNotification(std::move(notification));
   }
 
   void UpdateNotification(const std::string& old_id,
@@ -120,7 +121,7 @@ class WebNotificationTrayTest : public test::AshTestBase {
         base::ASCIIToUTF16("www.test.org"), GURL(),
         message_center::NotifierId(), message_center::RichNotificationData(),
         NULL /* delegate */));
-    GetMessageCenter()->UpdateNotification(old_id, notification.Pass());
+    GetMessageCenter()->UpdateNotification(old_id, std::move(notification));
   }
 
   void RemoveNotification(const std::string& id) {

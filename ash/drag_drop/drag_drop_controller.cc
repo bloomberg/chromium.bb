@@ -4,6 +4,8 @@
 
 #include "ash/drag_drop/drag_drop_controller.h"
 
+#include <utility>
+
 #include "ash/drag_drop/drag_drop_tracker.h"
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/shell.h"
@@ -565,7 +567,7 @@ void DragDropController::Cleanup() {
   drag_data_ = NULL;
   // Cleanup can be called again while deleting DragDropTracker, so delete
   // the pointer with a local variable to avoid double free.
-  scoped_ptr<ash::DragDropTracker> holder = drag_drop_tracker_.Pass();
+  scoped_ptr<ash::DragDropTracker> holder = std::move(drag_drop_tracker_);
 }
 
 }  // namespace ash

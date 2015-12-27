@@ -4,6 +4,8 @@
 
 #include "ash/shelf/shelf_button_pressed_metric_tracker.h"
 
+#include <utility>
+
 #include "ash/shelf/shelf.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_button_pressed_metric_tracker_test_api.h"
@@ -118,7 +120,7 @@ void ShelfButtonPressedMetricTrackerTest::SetUp() {
 
   scoped_ptr<base::TickClock> test_tick_clock(new base::SimpleTestTickClock());
   tick_clock_ = static_cast<base::SimpleTestTickClock*>(test_tick_clock.get());
-  test_api.SetTickClock(test_tick_clock.Pass());
+  test_api.SetTickClock(std::move(test_tick_clock));
 
   // Ensure the TickClock->NowTicks() doesn't return base::TimeTicks because
   // ShelfButtonPressedMetricTracker interprets that value as unset.

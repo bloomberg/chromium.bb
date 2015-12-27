@@ -5,6 +5,7 @@
 #include "ash/system/user/user_view.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "ash/multi_profile_uma.h"
 #include "ash/popup_message.h"
@@ -351,7 +352,7 @@ void UserView::AddLogoutButton(user::LoginStatus login) {
                        views::Button::STATE_PRESSED,
                        views::Painter::CreateImageGridPainter(
                            kPublicAccountLogoutButtonBorderImagesHovered));
-    logout_button_->SetBorder(border.Pass());
+    logout_button_->SetBorder(std::move(border));
   }
   AddChildView(logout_button_);
 }

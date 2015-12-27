@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/session/session_state_delegate.h"
@@ -218,7 +219,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
       std::string id = base::IntToString(i);
       scoped_ptr<WindowTypeShelfItem> shelf_item(
           new WindowTypeShelfItem(id, type));
-      model_->AddItem(shelf_item.Pass());
+      model_->AddItem(std::move(shelf_item));
     }
   }
 

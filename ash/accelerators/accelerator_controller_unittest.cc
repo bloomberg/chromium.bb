@@ -1054,7 +1054,7 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
     EXPECT_FALSE(ProcessInController(hangul));
     DummyImeControlDelegate* delegate = new DummyImeControlDelegate;
     GetController()->SetImeControlDelegate(
-        scoped_ptr<ImeControlDelegate>(delegate).Pass());
+        scoped_ptr<ImeControlDelegate>(delegate));
     EXPECT_EQ(0, delegate->handle_previous_ime_count());
     EXPECT_TRUE(ProcessInController(control_space_down));
     EXPECT_EQ(1, delegate->handle_previous_ime_count());
@@ -1084,7 +1084,7 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
 
     DummyImeControlDelegate* delegate = new DummyImeControlDelegate;
     GetController()->SetImeControlDelegate(
-        scoped_ptr<ImeControlDelegate>(delegate).Pass());
+        scoped_ptr<ImeControlDelegate>(delegate));
     EXPECT_EQ(0, delegate->handle_next_ime_count());
     EXPECT_FALSE(ProcessInController(shift_alt_press));
     EXPECT_TRUE(ProcessInController(shift_alt));
@@ -1192,7 +1192,7 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAcceleratorsWorkaround139556) {
 TEST_F(AcceleratorControllerTest, ImeGlobalAcceleratorsNoConflict) {
   DummyImeControlDelegate* delegate = new DummyImeControlDelegate;
   GetController()->SetImeControlDelegate(
-      scoped_ptr<ImeControlDelegate>(delegate).Pass());
+      scoped_ptr<ImeControlDelegate>(delegate));
   ui::test::EventGenerator& generator = GetEventGenerator();
 
   // Correct sequence of a conflicting accelerator must not trigger next IME.

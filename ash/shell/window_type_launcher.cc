@@ -4,6 +4,8 @@
 
 #include "ash/shell/window_type_launcher.h"
 
+#include <utility>
+
 #include "ash/content/shell_content_state.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_state_delegate.h"
@@ -320,9 +322,12 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
                                    "test-id"),
         message_center::RichNotificationData(), NULL /* delegate */));
 
-    ash::Shell::GetPrimaryRootWindowController()->shelf()->status_area_widget()
-        ->web_notification_tray()->message_center()
-        ->AddNotification(notification.Pass());
+    ash::Shell::GetPrimaryRootWindowController()
+        ->shelf()
+        ->status_area_widget()
+        ->web_notification_tray()
+        ->message_center()
+        ->AddNotification(std::move(notification));
   } else if (sender == examples_button_) {
     views::examples::ShowExamplesWindowWithContent(
         views::examples::DO_NOTHING_ON_CLOSE,

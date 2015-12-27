@@ -4,12 +4,12 @@
 
 #include "ash/host/ash_window_tree_host_x11.h"
 
-#include <X11/extensions/Xfixes.h>
-#include <X11/extensions/XInput2.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
-
+#include <X11/extensions/XInput2.h>
+#include <X11/extensions/Xfixes.h>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/host/ash_window_tree_host_init_params.h"
@@ -112,7 +112,7 @@ void AshWindowTreeHostX11::UnConfineCursor() {
 
 void AshWindowTreeHostX11::SetRootWindowTransformer(
     scoped_ptr<RootWindowTransformer> transformer) {
-  transformer_helper_.SetRootWindowTransformer(transformer.Pass());
+  transformer_helper_.SetRootWindowTransformer(std::move(transformer));
   if (pointer_barriers_) {
     UnConfineCursor();
     ConfineCursorToRootWindow();

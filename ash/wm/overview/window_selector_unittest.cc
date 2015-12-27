@@ -124,7 +124,7 @@ class WindowSelectorTest : public test::AshTestBase {
     widget->Init(params);
     widget->Show();
     ParentWindowInPrimaryRootWindow(widget->GetNativeWindow());
-    return widget.Pass();
+    return widget;
   }
 
   aura::Window* CreatePanelWindow(const gfx::Rect& bounds) {

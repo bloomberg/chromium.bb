@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <functional>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "ash/ash_switches.h"
@@ -57,8 +58,7 @@ class CleanupWidgetAfterAnimationObserver
 
 CleanupWidgetAfterAnimationObserver::CleanupWidgetAfterAnimationObserver(
     scoped_ptr<views::Widget> widget)
-    : widget_(widget.Pass()) {
-}
+    : widget_(std::move(widget)) {}
 
 CleanupWidgetAfterAnimationObserver::~CleanupWidgetAfterAnimationObserver() {
 }
@@ -477,7 +477,7 @@ void WindowGrid::MoveSelectionWidget(WindowSelector::Direction direction,
     // CleanupWidgetAfterAnimationObserver will delete itself (and the
     // widget) when the movement animation is complete.
     animation_settings.AddObserver(
-        new CleanupWidgetAfterAnimationObserver(selection_widget_.Pass()));
+        new CleanupWidgetAfterAnimationObserver(std::move(selection_widget_)));
     old_selection->SetOpacity(0);
     old_selection->GetNativeWindow()->SetBounds(
         old_selection->GetNativeWindow()->bounds() + fade_out_direction);

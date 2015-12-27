@@ -4,6 +4,8 @@
 
 #include "ash/host/transformer_helper.h"
 
+#include <utility>
+
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/root_window_transformer.h"
 #include "ui/aura/window.h"
@@ -73,12 +75,12 @@ gfx::Insets TransformerHelper::GetHostInsets() const {
 void TransformerHelper::SetTransform(const gfx::Transform& transform) {
   scoped_ptr<RootWindowTransformer> transformer(new SimpleRootWindowTransformer(
       ash_host_->AsWindowTreeHost()->window(), transform));
-  SetRootWindowTransformer(transformer.Pass());
+  SetRootWindowTransformer(std::move(transformer));
 }
 
 void TransformerHelper::SetRootWindowTransformer(
     scoped_ptr<RootWindowTransformer> transformer) {
-  transformer_ = transformer.Pass();
+  transformer_ = std::move(transformer);
   aura::WindowTreeHost* host = ash_host_->AsWindowTreeHost();
   aura::Window* window = host->window();
   window->SetTransform(transformer_->GetTransform());

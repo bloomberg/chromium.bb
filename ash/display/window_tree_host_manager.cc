@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 #include <map>
+#include <utility>
 
 #include "ash/ash_switches.h"
 #include "ash/display/cursor_window_controller.h"
@@ -148,7 +149,7 @@ void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
 #endif
   scoped_ptr<RootWindowTransformer> transformer(
       CreateRootWindowTransformerForDisplay(host->window(), display));
-  ash_host->SetRootWindowTransformer(transformer.Pass());
+  ash_host->SetRootWindowTransformer(std::move(transformer));
 
   DisplayMode mode =
       GetDisplayManager()->GetActiveModeForDisplayId(display.id());

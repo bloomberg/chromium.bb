@@ -4,6 +4,7 @@
 
 #include "ash/system/web_notification/ash_popup_alignment_delegate.h"
 
+#include <utility>
 #include <vector>
 
 #include "ash/display/display_manager.h"
@@ -69,7 +70,7 @@ class AshPopupAlignmentDelegateTest : public test::AshTestBase {
       alignment_delegate_.reset();
       return;
     }
-    alignment_delegate_ = delegate.Pass();
+    alignment_delegate_ = std::move(delegate);
     UpdateWorkArea(alignment_delegate_.get(),
                    Shell::GetScreen()->GetPrimaryDisplay());
   }
