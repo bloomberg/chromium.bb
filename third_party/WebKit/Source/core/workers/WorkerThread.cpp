@@ -295,7 +295,6 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
         m_workerGlobalScope = createWorkerGlobalScope(startupData);
         m_workerGlobalScope->scriptLoaded(sourceCode.length(), cachedMetaData.get() ? cachedMetaData->size() : 0);
 
-        // The corresponding call to didStopRunLoop() is in ~WorkerScriptController().
         didStartRunLoop();
 
         // Notify proxy that a new WorkerGlobalScope has been created and started.
@@ -333,6 +332,10 @@ void WorkerThread::shutdown()
     workerReportingProxy().willDestroyWorkerGlobalScope();
 
     workerGlobalScope()->dispose();
+
+    // This should be called after the WorkerGlobalScope's disposed (which may
+    // trigger some last-minutes cleanups) and before the thread actually stops.
+    didStopRunLoop();
 
     backingThread().removeTaskObserver(m_microtaskRunner.get());
     postTask(BLINK_FROM_HERE, createSameThreadTask(&WorkerThread::performShutdownTask, this));

@@ -129,10 +129,6 @@ void WorkerScriptController::dispose()
 
     m_world->dispose();
 
-    // The corresponding call to didStartRunLoop() is in WorkerThread::initialize().
-    // See http://webkit.org/b/83104#c14 for why this is here.
-    m_workerGlobalScope->thread()->didStopRunLoop();
-
     if (isContextInitialized())
         m_scriptState->disposePerContextData();
 }
