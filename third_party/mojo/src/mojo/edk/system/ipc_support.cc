@@ -49,7 +49,7 @@ IPCSupport::IPCSupport(embedder::PlatformSupport* platform_support,
       static_cast<system::SlaveConnectionManager*>(connection_manager_.get())
           ->Init(
               static_cast<embedder::SlaveProcessDelegate*>(process_delegate_),
-              platform_handle.Pass());
+              std::move(platform_handle));
       break;
   }
 
@@ -96,10 +96,10 @@ scoped_refptr<system::MessagePipeDispatcher> IPCSupport::ConnectToSlave(
                 "ChannelId and ProcessIdentifier types don't match");
 
   embedder::ScopedPlatformHandle platform_connection_handle =
-      ConnectToSlaveInternal(connection_id, slave_info, platform_handle.Pass(),
-                             channel_id);
+      ConnectToSlaveInternal(connection_id, slave_info,
+                             std::move(platform_handle), channel_id);
   return channel_manager()->CreateChannel(
-      *channel_id, platform_connection_handle.Pass(), callback,
+      *channel_id, std::move(platform_connection_handle), callback,
       callback_thread_task_runner);
 }
 
@@ -117,7 +117,7 @@ scoped_refptr<system::MessagePipeDispatcher> IPCSupport::ConnectToMaster(
       ConnectToMasterInternal(connection_id);
   *channel_id = kMasterProcessIdentifier;
   return channel_manager()->CreateChannel(
-      *channel_id, platform_connection_handle.Pass(), callback,
+      *channel_id, std::move(platform_connection_handle), callback,
       callback_thread_task_runner);
 }
 
@@ -131,7 +131,7 @@ embedder::ScopedPlatformHandle IPCSupport::ConnectToSlaveInternal(
 
   *slave_process_identifier =
       static_cast<system::MasterConnectionManager*>(connection_manager())
-          ->AddSlaveAndBootstrap(slave_info, platform_handle.Pass(),
+          ->AddSlaveAndBootstrap(slave_info, std::move(platform_handle),
                                  connection_id);
 
   system::ProcessIdentifier peer_id = system::kInvalidProcessIdentifier;

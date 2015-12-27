@@ -4,6 +4,8 @@
 
 #include "third_party/mojo/src/mojo/edk/system/channel_endpoint.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/threading/platform_thread.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -33,10 +35,10 @@ bool ChannelEndpoint::EnqueueMessage(scoped_ptr<MessageInTransit> message) {
 
   switch (state_) {
     case State::PAUSED:
-      channel_message_queue_.AddMessage(message.Pass());
+      channel_message_queue_.AddMessage(std::move(message));
       return true;
     case State::RUNNING:
-      return WriteMessageNoLock(message.Pass());
+      return WriteMessageNoLock(std::move(message));
     case State::DEAD:
       return false;
   }
@@ -98,7 +100,7 @@ void ChannelEndpoint::AttachAndRun(Channel* channel,
 
 void ChannelEndpoint::OnReadMessage(scoped_ptr<MessageInTransit> message) {
   if (message->type() == MessageInTransit::Type::ENDPOINT_CLIENT) {
-    OnReadMessageForClient(message.Pass());
+    OnReadMessageForClient(std::move(message));
     return;
   }
 
@@ -160,7 +162,7 @@ bool ChannelEndpoint::WriteMessageNoLock(scoped_ptr<MessageInTransit> message) {
   message->SerializeAndCloseDispatchers(channel_);
   message->set_source_id(local_id_);
   message->set_destination_id(remote_id_);
-  return channel_->WriteMessage(message.Pass());
+  return channel_->WriteMessage(std::move(message));
 }
 
 void ChannelEndpoint::OnReadMessageForClient(

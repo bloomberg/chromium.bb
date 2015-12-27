@@ -11,8 +11,8 @@
 #include "third_party/mojo/src/mojo/edk/system/local_data_pipe_impl.h"
 
 #include <string.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -186,7 +186,7 @@ bool LocalDataPipeImpl::ProducerEndSerialize(
   // Note: Keep |*this| alive until the end of this method, to make things
   // slightly easier on ourselves.
   scoped_ptr<DataPipeImpl> self(owner()->ReplaceImplNoLock(make_scoped_ptr(
-      new RemoteProducerDataPipeImpl(channel_endpoint.get(), buffer_.Pass(),
+      new RemoteProducerDataPipeImpl(channel_endpoint.get(), std::move(buffer_),
                                      start_index_, current_num_bytes_))));
 
   *actual_size = sizeof(SerializedDataPipeProducerDispatcher) +
@@ -364,7 +364,7 @@ bool LocalDataPipeImpl::ConsumerEndSerialize(
   // slightly easier on ourselves.
   scoped_ptr<DataPipeImpl> self(owner()->ReplaceImplNoLock(make_scoped_ptr(
       new RemoteConsumerDataPipeImpl(channel_endpoint.get(), old_num_bytes,
-                                     buffer_.Pass(), start_index_))));
+                                     std::move(buffer_), start_index_))));
 
   *actual_size = sizeof(SerializedDataPipeConsumerDispatcher) +
                  channel->GetSerializedEndpointSize();

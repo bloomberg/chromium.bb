@@ -5,6 +5,7 @@
 #include "third_party/mojo/src/mojo/edk/system/local_message_pipe_endpoint.h"
 
 #include <string.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "third_party/mojo/src/mojo/edk/system/dispatcher.h"
@@ -49,7 +50,7 @@ void LocalMessagePipeEndpoint::EnqueueMessage(
   DCHECK(is_peer_open_);
 
   bool was_empty = message_queue_.IsEmpty();
-  message_queue_.AddMessage(message.Pass());
+  message_queue_.AddMessage(std::move(message));
   if (was_empty)
     awakable_list_.AwakeForStateChange(GetHandleSignalsState());
 }

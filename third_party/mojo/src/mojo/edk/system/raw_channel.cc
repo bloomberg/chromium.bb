@@ -5,8 +5,8 @@
 #include "third_party/mojo/src/mojo/edk/system/raw_channel.h"
 
 #include <string.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -217,7 +217,7 @@ void RawChannel::Shutdown() {
   write_stopped_ = true;
   weak_ptr_factory_.InvalidateWeakPtrs();
 
-  OnShutdownNoLock(read_buffer_.Pass(), write_buffer_.Pass());
+  OnShutdownNoLock(std::move(read_buffer_), std::move(write_buffer_));
 }
 
 // Reminder: This must be thread-safe.
@@ -229,11 +229,11 @@ bool RawChannel::WriteMessage(scoped_ptr<MessageInTransit> message) {
     return false;
 
   if (!write_buffer_->message_queue_.IsEmpty()) {
-    EnqueueMessageNoLock(message.Pass());
+    EnqueueMessageNoLock(std::move(message));
     return true;
   }
 
-  EnqueueMessageNoLock(message.Pass());
+  EnqueueMessageNoLock(std::move(message));
   DCHECK_EQ(write_buffer_->data_offset_, 0u);
 
   size_t platform_handles_written = 0;
@@ -332,9 +332,8 @@ void RawChannel::OnReadCompleted(IOResult io_result, size_t bytes_read) {
               &platform_handle_table);
 
           if (num_platform_handles > 0) {
-            platform_handles =
-                GetReadPlatformHandles(num_platform_handles,
-                                       platform_handle_table).Pass();
+            platform_handles = GetReadPlatformHandles(num_platform_handles,
+                                                      platform_handle_table);
             if (!platform_handles) {
               LOG(ERROR) << "Invalid number of platform handles received";
               CallOnError(Delegate::ERROR_READ_BAD_MESSAGE);
@@ -353,7 +352,7 @@ void RawChannel::OnReadCompleted(IOResult io_result, size_t bytes_read) {
         DCHECK(!set_on_shutdown_);
         set_on_shutdown_ = &shutdown_called;
         DCHECK(delegate_);
-        delegate_->OnReadMessage(message_view, platform_handles.Pass());
+        delegate_->OnReadMessage(message_view, std::move(platform_handles));
         if (shutdown_called)
           return;
         set_on_shutdown_ = nullptr;
@@ -432,7 +431,7 @@ void RawChannel::OnWriteCompleted(IOResult io_result,
 
 void RawChannel::EnqueueMessageNoLock(scoped_ptr<MessageInTransit> message) {
   write_lock_.AssertAcquired();
-  write_buffer_->message_queue_.AddMessage(message.Pass());
+  write_buffer_->message_queue_.AddMessage(std::move(message));
 }
 
 bool RawChannel::OnReadMessageForRawChannel(

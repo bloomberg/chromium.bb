@@ -5,6 +5,7 @@
 #include "third_party/mojo/src/mojo/edk/system/data_pipe_impl.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -38,7 +39,7 @@ void DataPipeImpl::ConvertDataToMessages(const char* buffer,
         MessageInTransit::Type::ENDPOINT_CLIENT,
         MessageInTransit::Subtype::ENDPOINT_CLIENT_DATA,
         static_cast<uint32_t>(message_num_bytes), buffer + *start_index));
-    message_queue->AddMessage(message.Pass());
+    message_queue->AddMessage(std::move(message));
 
     DCHECK_LE(message_num_bytes, *current_num_bytes);
     *start_index += message_num_bytes;

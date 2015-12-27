@@ -4,6 +4,8 @@
 
 #include "third_party/mojo/src/mojo/edk/system/endpoint_relayer.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "third_party/mojo/src/mojo/edk/system/channel_endpoint.h"
 #include "third_party/mojo/src/mojo/edk/system/message_in_transit.h"
@@ -32,7 +34,7 @@ void EndpointRelayer::Init(ChannelEndpoint* endpoint0,
 
 void EndpointRelayer::SetFilter(scoped_ptr<Filter> filter) {
   MutexLocker locker(&mutex_);
-  filter_ = filter.Pass();
+  filter_ = std::move(filter);
 }
 
 bool EndpointRelayer::OnReadMessage(unsigned port, MessageInTransit* message) {

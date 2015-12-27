@@ -43,7 +43,7 @@ void Channel::Init(scoped_ptr<RawChannel> raw_channel) {
   // No need to take |mutex_|, since this must be called before this object
   // becomes thread-safe.
   DCHECK(!is_running_);
-  raw_channel_ = raw_channel.Pass();
+  raw_channel_ = std::move(raw_channel);
   raw_channel_->Init(this);
   is_running_ = true;
 }
@@ -162,7 +162,7 @@ bool Channel::WriteMessage(scoped_ptr<MessageInTransit> message) {
   }
 
   DVLOG_IF(2, is_shutting_down_) << "WriteMessage() while shutting down";
-  return raw_channel_->WriteMessage(message.Pass());
+  return raw_channel_->WriteMessage(std::move(message));
 }
 
 bool Channel::IsWriteBufferEmpty() {
@@ -316,10 +316,10 @@ void Channel::OnReadMessage(
   switch (message_view.type()) {
     case MessageInTransit::Type::ENDPOINT_CLIENT:
     case MessageInTransit::Type::ENDPOINT:
-      OnReadMessageForEndpoint(message_view, platform_handles.Pass());
+      OnReadMessageForEndpoint(message_view, std::move(platform_handles));
       break;
     case MessageInTransit::Type::CHANNEL:
-      OnReadMessageForChannel(message_view, platform_handles.Pass());
+      OnReadMessageForChannel(message_view, std::move(platform_handles));
       break;
     default:
       HandleRemoteError(
@@ -416,11 +416,11 @@ void Channel::OnReadMessageForEndpoint(
     DCHECK(message_view.transport_data_buffer());
     message->SetDispatchers(TransportData::DeserializeDispatchers(
         message_view.transport_data_buffer(),
-        message_view.transport_data_buffer_size(), platform_handles.Pass(),
+        message_view.transport_data_buffer_size(), std::move(platform_handles),
         this));
   }
 
-  endpoint->OnReadMessage(message.Pass());
+  endpoint->OnReadMessage(std::move(message));
 }
 
 void Channel::OnReadMessageForChannel(
@@ -668,7 +668,7 @@ bool Channel::SendControlMessage(MessageInTransit::Subtype subtype,
       MessageInTransit::Type::CHANNEL, subtype, 0, nullptr));
   message->set_source_id(local_id);
   message->set_destination_id(remote_id);
-  return WriteMessage(message.Pass());
+  return WriteMessage(std::move(message));
 }
 
 }  // namespace system

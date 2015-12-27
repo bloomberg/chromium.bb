@@ -7,9 +7,9 @@
 #include <errno.h>
 #include <sys/uio.h>
 #include <unistd.h>
-
 #include <algorithm>
 #include <deque>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -91,7 +91,7 @@ class RawChannelPosix final : public RawChannel,
 };
 
 RawChannelPosix::RawChannelPosix(embedder::ScopedPlatformHandle handle)
-    : fd_(handle.Pass()),
+    : fd_(std::move(handle)),
       pending_read_(false),
       pending_write_(false),
       weak_ptr_factory_(this) {
@@ -142,9 +142,9 @@ void RawChannelPosix::EnqueueMessageNoLock(
                 platform_handles->begin() + i,
                 platform_handles->begin() + i +
                     embedder::kPlatformChannelMaxNumHandles));
-        fd_message->SetTransportData(make_scoped_ptr(
-            new TransportData(fds.Pass(), GetSerializedPlatformHandleSize())));
-        RawChannel::EnqueueMessageNoLock(fd_message.Pass());
+        fd_message->SetTransportData(make_scoped_ptr(new TransportData(
+            std::move(fds), GetSerializedPlatformHandleSize())));
+        RawChannel::EnqueueMessageNoLock(std::move(fd_message));
       }
 
       // Remove the handles that we "moved" into the other messages.
@@ -153,7 +153,7 @@ void RawChannelPosix::EnqueueMessageNoLock(
     }
   }
 
-  RawChannel::EnqueueMessageNoLock(message.Pass());
+  RawChannel::EnqueueMessageNoLock(std::move(message));
 }
 
 bool RawChannelPosix::OnReadMessageForRawChannel(
@@ -209,7 +209,7 @@ embedder::ScopedPlatformHandleVectorPtr RawChannelPosix::GetReadPlatformHandles(
   read_platform_handles_.erase(
       read_platform_handles_.begin(),
       read_platform_handles_.begin() + num_platform_handles);
-  return rv.Pass();
+  return rv;
 }
 
 RawChannel::IOResult RawChannelPosix::WriteNoLock(
@@ -472,7 +472,7 @@ void RawChannelPosix::WaitToWrite() {
 // static
 scoped_ptr<RawChannel> RawChannel::Create(
     embedder::ScopedPlatformHandle handle) {
-  return make_scoped_ptr(new RawChannelPosix(handle.Pass()));
+  return make_scoped_ptr(new RawChannelPosix(std::move(handle)));
 }
 
 }  // namespace system

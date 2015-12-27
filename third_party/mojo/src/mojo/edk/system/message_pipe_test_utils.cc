@@ -4,6 +4,8 @@
 
 #include "third_party/mojo/src/mojo/edk/system/message_pipe_test_utils.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "third_party/mojo/src/mojo/edk/system/channel.h"
 #include "third_party/mojo/src/mojo/edk/system/channel_endpoint.h"
@@ -74,7 +76,7 @@ void ChannelThread::InitChannelOnIOThread(
 
   // Create and initialize |Channel|.
   channel_ = new Channel(platform_support_);
-  channel_->Init(RawChannel::Create(platform_handle.Pass()));
+  channel_->Init(RawChannel::Create(std::move(platform_handle)));
 
   // Start the bootstrap endpoint.
   // Note: On the "server" (parent process) side, we need not attach/run the
@@ -100,7 +102,7 @@ MultiprocessMessagePipeTestBase::~MultiprocessMessagePipeTestBase() {
 }
 
 void MultiprocessMessagePipeTestBase::Init(scoped_refptr<ChannelEndpoint> ep) {
-  channel_thread_.Start(helper_.server_platform_handle.Pass(), ep);
+  channel_thread_.Start(std::move(helper_.server_platform_handle), ep);
 }
 #endif
 

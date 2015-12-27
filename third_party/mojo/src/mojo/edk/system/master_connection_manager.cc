@@ -4,6 +4,8 @@
 
 #include "third_party/mojo/src/mojo/edk/system/master_connection_manager.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -101,8 +103,7 @@ MasterConnectionManager::Helper::Helper(
     : owner_(owner),
       process_identifier_(process_identifier),
       slave_info_(slave_info),
-      raw_channel_(RawChannel::Create(platform_handle.Pass())) {
-}
+      raw_channel_(RawChannel::Create(std::move(platform_handle))) {}
 
 MasterConnectionManager::Helper::~Helper() {
   DCHECK(!raw_channel_);
@@ -194,13 +195,13 @@ void MasterConnectionManager::Helper::OnReadMessage(
         new embedder::PlatformHandleVector());
     platform_handles->push_back(platform_handle.release());
     response->SetTransportData(make_scoped_ptr(
-        new TransportData(platform_handles.Pass(),
+        new TransportData(std::move(platform_handles),
                           raw_channel_->GetSerializedPlatformHandleSize())));
   } else {
     DCHECK(!platform_handle.is_valid());
   }
 
-  if (!raw_channel_->WriteMessage(response.Pass())) {
+  if (!raw_channel_->WriteMessage(std::move(response))) {
     LOG(ERROR) << "WriteMessage failed";
     FatalError();  // WARNING: This destroys us.
     return;
@@ -382,7 +383,7 @@ ProcessIdentifier MasterConnectionManager::AddSlaveAndBootstrap(
     embedder::ScopedPlatformHandle platform_handle,
     const ConnectionIdentifier& connection_id) {
   ProcessIdentifier slave_process_identifier =
-      AddSlave(slave_info, platform_handle.Pass());
+      AddSlave(slave_info, std::move(platform_handle));
 
   MutexLocker locker(&mutex_);
   DCHECK(pending_connects_.find(connection_id) == pending_connects_.end());
@@ -671,7 +672,7 @@ void MasterConnectionManager::AddSlaveOnPrivateThread(
   AssertOnPrivateThread();
 
   scoped_ptr<Helper> helper(new Helper(this, slave_process_identifier,
-                                       slave_info, platform_handle.Pass()));
+                                       slave_info, std::move(platform_handle)));
   helper->Init();
 
   DCHECK(helpers_.find(slave_process_identifier) == helpers_.end());

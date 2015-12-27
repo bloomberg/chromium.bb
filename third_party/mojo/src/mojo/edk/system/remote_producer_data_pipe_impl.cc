@@ -5,8 +5,8 @@
 #include "third_party/mojo/src/mojo/edk/system/remote_producer_data_pipe_impl.h"
 
 #include <string.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -72,7 +72,7 @@ RemoteProducerDataPipeImpl::RemoteProducerDataPipeImpl(
     size_t start_index,
     size_t current_num_bytes)
     : channel_endpoint_(channel_endpoint),
-      buffer_(buffer.Pass()),
+      buffer_(std::move(buffer)),
       start_index_(start_index),
       current_num_bytes_(current_num_bytes) {
   DCHECK(buffer_ || !current_num_bytes);
@@ -109,7 +109,7 @@ bool RemoteProducerDataPipeImpl::ProcessMessagesFromIncomingEndpoint(
     }
   }
 
-  *buffer = new_buffer.Pass();
+  *buffer = std::move(new_buffer);
   *buffer_num_bytes = current_num_bytes;
   return true;
 }
@@ -444,7 +444,7 @@ void RemoteProducerDataPipeImpl::MarkDataAsConsumed(size_t num_bytes) {
       MessageInTransit::Type::ENDPOINT_CLIENT,
       MessageInTransit::Subtype::ENDPOINT_CLIENT_DATA_PIPE_ACK,
       static_cast<uint32_t>(sizeof(ack_data)), &ack_data));
-  if (!channel_endpoint_->EnqueueMessage(message.Pass()))
+  if (!channel_endpoint_->EnqueueMessage(std::move(message)))
     Disconnect();
 }
 

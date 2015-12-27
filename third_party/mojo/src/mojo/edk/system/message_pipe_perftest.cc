@@ -5,8 +5,8 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -95,11 +95,11 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(PingPongClient) {
   embedder::SimplePlatformSupport platform_support;
   test::ChannelThread channel_thread(&platform_support);
   embedder::ScopedPlatformHandle client_platform_handle =
-      mojo::test::MultiprocessTestHelper::client_platform_handle.Pass();
+      std::move(mojo::test::MultiprocessTestHelper::client_platform_handle);
   CHECK(client_platform_handle.is_valid());
   scoped_refptr<ChannelEndpoint> ep;
   scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy(&ep));
-  channel_thread.Start(client_platform_handle.Pass(), ep);
+  channel_thread.Start(std::move(client_platform_handle), ep);
 
   std::string buffer(1000000, '\0');
   int rv = 0;

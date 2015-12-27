@@ -10,8 +10,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>  // For |off_t|.
 #include <unistd.h>
-
 #include <limits>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -114,7 +114,7 @@ bool SimplePlatformSharedBuffer::InitFromPlatformHandle(
 
   // TODO(vtl): More checks?
 
-  handle_ = platform_handle.Pass();
+  handle_ = std::move(platform_handle);
   return true;
 }
 

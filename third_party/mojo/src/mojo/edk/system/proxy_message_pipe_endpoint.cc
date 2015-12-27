@@ -5,6 +5,7 @@
 #include "third_party/mojo/src/mojo/edk/system/proxy_message_pipe_endpoint.h"
 
 #include <string.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "third_party/mojo/src/mojo/edk/system/channel_endpoint.h"
@@ -46,7 +47,7 @@ bool ProxyMessagePipeEndpoint::OnPeerClose() {
 void ProxyMessagePipeEndpoint::EnqueueMessage(
     scoped_ptr<MessageInTransit> message) {
   DCHECK(channel_endpoint_);
-  bool ok = channel_endpoint_->EnqueueMessage(message.Pass());
+  bool ok = channel_endpoint_->EnqueueMessage(std::move(message));
   LOG_IF(WARNING, !ok) << "Failed to write enqueue message to channel";
 }
 

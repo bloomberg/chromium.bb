@@ -84,7 +84,7 @@ base::ScopedFILE FILEFromPlatformHandle(embedder::ScopedPlatformHandle h,
   CHECK(h.is_valid());
   base::ScopedFILE rv(fdopen(h.release().fd, mode));
   PCHECK(rv) << "fdopen";
-  return rv.Pass();
+  return rv;
 }
 
 }  // namespace test

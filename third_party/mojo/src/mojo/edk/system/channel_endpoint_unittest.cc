@@ -4,6 +4,8 @@
 
 #include "third_party/mojo/src/mojo/edk/system/channel_endpoint.h"
 
+#include <utility>
+
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -72,7 +74,7 @@ TEST_F(ChannelEndpointTest, Basic) {
   EXPECT_FALSE(read_event.IsSignaled());
 
   // Send it through channel/endpoint 1.
-  EXPECT_TRUE(endpoint1->EnqueueMessage(send_message.Pass()));
+  EXPECT_TRUE(endpoint1->EnqueueMessage(std::move(send_message)));
 
   // Wait to receive it.
   EXPECT_TRUE(read_event.TimedWait(TestTimeouts::tiny_timeout()));

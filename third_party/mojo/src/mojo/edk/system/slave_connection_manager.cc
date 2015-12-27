@@ -4,6 +4,8 @@
 
 #include "third_party/mojo/src/mojo/edk/system/slave_connection_manager.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -131,7 +133,7 @@ void SlaveConnectionManager::InitOnPrivateThread(
     embedder::ScopedPlatformHandle platform_handle) {
   AssertOnPrivateThread();
 
-  raw_channel_ = RawChannel::Create(platform_handle.Pass());
+  raw_channel_ = RawChannel::Create(std::move(platform_handle));
   raw_channel_->Init(this);
   event_.Signal();
 }

@@ -5,6 +5,7 @@
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 
 #include <string.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -55,7 +56,7 @@ class ScopedTestChannel {
         channel_info_(nullptr),
         wait_on_shutdown_(true) {
     bootstrap_message_pipe_ =
-        CreateChannel(platform_handle.Pass(),
+        CreateChannel(std::move(platform_handle),
                       base::Bind(&ScopedTestChannel::DidCreateChannel,
                                  base::Unretained(this)),
                       nullptr)
@@ -265,7 +266,7 @@ TEST_F(EmbedderTest, AsyncWait) {
 
   test_io_task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&CloseScopedHandle, base::Passed(server_mp.Pass())));
+      base::Bind(&CloseScopedHandle, base::Passed(std::move(server_mp))));
 
   EXPECT_TRUE(unsatisfiable_waiter.TryWait());
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
@@ -408,7 +409,7 @@ TEST_F(EmbedderTest, MAYBE_MultiprocessMasterSlave) {
   base::WaitableEvent event(true, false);
   ChannelInfo* channel_info = nullptr;
   ScopedMessagePipeHandle mp = ConnectToSlave(
-      nullptr, multiprocess_test_helper.server_platform_handle.Pass(),
+      nullptr, std::move(multiprocess_test_helper.server_platform_handle),
       base::Bind(&base::WaitableEvent::Signal, base::Unretained(&event)),
       nullptr, &connection_id, &channel_info);
   ASSERT_TRUE(mp.is_valid());
@@ -497,7 +498,7 @@ TEST_F(EmbedderTest, ChannelShutdownRace_MessagePipePassing) {
 MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessMasterSlave) {
   base::MessageLoop message_loop;
   ScopedPlatformHandle client_platform_handle =
-      mojo::test::MultiprocessTestHelper::client_platform_handle.Pass();
+      std::move(mojo::test::MultiprocessTestHelper::client_platform_handle);
   EXPECT_TRUE(client_platform_handle.is_valid());
 
   base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
@@ -505,7 +506,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessMasterSlave) {
 
   {
     mojo::test::ScopedSlaveIPCSupport ipc_support(
-        test_io_thread.task_runner(), client_platform_handle.Pass());
+        test_io_thread.task_runner(), std::move(client_platform_handle));
 
     const base::CommandLine& command_line =
         *base::CommandLine::ForCurrentProcess();
@@ -582,7 +583,7 @@ TEST_F(EmbedderTest, MAYBE_MultiprocessChannels) {
 
   {
     ScopedTestChannel server_channel(
-        multiprocess_test_helper.server_platform_handle.Pass());
+        std::move(multiprocess_test_helper.server_platform_handle));
     MojoHandle server_mp = server_channel.bootstrap_message_pipe();
     EXPECT_NE(server_mp, MOJO_HANDLE_INVALID);
     server_channel.WaitForChannelCreationCompletion();
@@ -693,7 +694,7 @@ TEST_F(EmbedderTest, MAYBE_MultiprocessChannels) {
 MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
   base::MessageLoop message_loop;
   ScopedPlatformHandle client_platform_handle =
-      mojo::test::MultiprocessTestHelper::client_platform_handle.Pass();
+      std::move(mojo::test::MultiprocessTestHelper::client_platform_handle);
   EXPECT_TRUE(client_platform_handle.is_valid());
 
   base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
@@ -704,7 +705,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
     // probably.
     mojo::test::ScopedIPCSupport ipc_support(test_io_thread.task_runner());
 
-    ScopedTestChannel client_channel(client_platform_handle.Pass());
+    ScopedTestChannel client_channel(std::move(client_platform_handle));
     MojoHandle client_mp = client_channel.bootstrap_message_pipe();
     EXPECT_NE(client_mp, MOJO_HANDLE_INVALID);
     client_channel.WaitForChannelCreationCompletion();

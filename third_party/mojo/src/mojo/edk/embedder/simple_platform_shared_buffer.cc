@@ -4,6 +4,8 @@
 
 #include "third_party/mojo/src/mojo/edk/embedder/simple_platform_shared_buffer.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_handle_utils.h"
 
@@ -34,7 +36,7 @@ SimplePlatformSharedBuffer::CreateFromPlatformHandle(
   DCHECK_GT(num_bytes, 0u);
 
   SimplePlatformSharedBuffer* rv = new SimplePlatformSharedBuffer(num_bytes);
-  if (!rv->InitFromPlatformHandle(platform_handle.Pass())) {
+  if (!rv->InitFromPlatformHandle(std::move(platform_handle))) {
     // We can't just delete it directly, due to the "in destructor" (debug)
     // check.
     scoped_refptr<SimplePlatformSharedBuffer> deleter(rv);
@@ -82,7 +84,7 @@ ScopedPlatformHandle SimplePlatformSharedBuffer::DuplicatePlatformHandle() {
 
 ScopedPlatformHandle SimplePlatformSharedBuffer::PassPlatformHandle() {
   DCHECK(HasOneRef());
-  return handle_.Pass();
+  return std::move(handle_);
 }
 
 SimplePlatformSharedBuffer::SimplePlatformSharedBuffer(size_t num_bytes)

@@ -5,8 +5,8 @@
 #include "third_party/mojo/src/mojo/edk/system/message_in_transit.h"
 
 #include <string.h>
-
 #include <ostream>
+#include <utility>
 
 #include "base/logging.h"
 #include "third_party/mojo/src/mojo/edk/system/configuration.h"
@@ -149,7 +149,7 @@ void MessageInTransit::SetDispatchers(
   DCHECK(!dispatchers_);
   DCHECK(!transport_data_);
 
-  dispatchers_ = dispatchers.Pass();
+  dispatchers_ = std::move(dispatchers);
 #ifndef NDEBUG
   for (size_t i = 0; i < dispatchers_->size(); i++)
     DCHECK(!(*dispatchers_)[i] || (*dispatchers_)[i]->HasOneRef());
@@ -162,7 +162,7 @@ void MessageInTransit::SetTransportData(
   DCHECK(!transport_data_);
   DCHECK(!dispatchers_);
 
-  transport_data_ = transport_data.Pass();
+  transport_data_ = std::move(transport_data);
   UpdateTotalSize();
 }
 
@@ -173,7 +173,7 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
   if (!dispatchers_ || !dispatchers_->size())
     return;
 
-  transport_data_.reset(new TransportData(dispatchers_.Pass(), channel));
+  transport_data_.reset(new TransportData(std::move(dispatchers_), channel));
 
   // Update the sizes in the message header.
   UpdateTotalSize();

@@ -608,7 +608,7 @@ MojoResult Core::MapBuffer(MojoHandle buffer_handle,
   void* address = mapping->GetBase();
   {
     MutexLocker locker(&mapping_table_mutex_);
-    result = mapping_table_.AddMapping(mapping.Pass());
+    result = mapping_table_.AddMapping(std::move(mapping));
   }
   if (result != MOJO_RESULT_OK)
     return result;

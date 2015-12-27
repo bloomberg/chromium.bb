@@ -5,9 +5,9 @@
 #include "third_party/mojo/src/mojo/edk/system/data_pipe.h"
 
 #include <string.h>
-
 #include <algorithm>
 #include <limits>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/memory/aligned_memory.h"
@@ -115,10 +115,10 @@ DataPipe* DataPipe::CreateRemoteProducerFromExisting(
   // ongoing call to |IncomingEndpoint::OnReadMessage()| return false. This will
   // make |ChannelEndpoint::OnReadMessage()| retry, until its |ReplaceClient()|
   // is called.
-  DataPipe* data_pipe =
-      new DataPipe(false, true, validated_options,
-                   make_scoped_ptr(new RemoteProducerDataPipeImpl(
-                       channel_endpoint, buffer.Pass(), 0, buffer_num_bytes)));
+  DataPipe* data_pipe = new DataPipe(
+      false, true, validated_options,
+      make_scoped_ptr(new RemoteProducerDataPipeImpl(
+          channel_endpoint, std::move(buffer), 0, buffer_num_bytes)));
   if (channel_endpoint) {
     if (!channel_endpoint->ReplaceClient(data_pipe, 0))
       data_pipe->OnDetachFromChannel(0);
@@ -659,7 +659,7 @@ DataPipe::DataPipe(bool has_local_producer,
                                                  : nullptr),
       producer_two_phase_max_num_bytes_written_(0),
       consumer_two_phase_max_num_bytes_read_(0),
-      impl_(impl.Pass()) {
+      impl_(std::move(impl)) {
   impl_->set_owner(this);
 
 #if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
@@ -683,10 +683,10 @@ scoped_ptr<DataPipeImpl> DataPipe::ReplaceImplNoLock(
   DCHECK(new_impl);
 
   impl_->set_owner(nullptr);
-  scoped_ptr<DataPipeImpl> rv(impl_.Pass());
-  impl_ = new_impl.Pass();
+  scoped_ptr<DataPipeImpl> rv(std::move(impl_));
+  impl_ = std::move(new_impl);
   impl_->set_owner(this);
-  return rv.Pass();
+  return rv;
 }
 
 void DataPipe::SetProducerClosedNoLock() {

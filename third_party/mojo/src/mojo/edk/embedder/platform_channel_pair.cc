@@ -4,6 +4,8 @@
 
 #include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
 
+#include <utility>
+
 #include "base/logging.h"
 
 namespace mojo {
@@ -16,11 +18,11 @@ PlatformChannelPair::~PlatformChannelPair() {
 }
 
 ScopedPlatformHandle PlatformChannelPair::PassServerHandle() {
-  return server_handle_.Pass();
+  return std::move(server_handle_);
 }
 
 ScopedPlatformHandle PlatformChannelPair::PassClientHandle() {
-  return client_handle_.Pass();
+  return std::move(client_handle_);
 }
 
 void PlatformChannelPair::ChildProcessLaunched() {

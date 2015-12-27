@@ -5,6 +5,7 @@
 #include "third_party/mojo/src/mojo/edk/system/platform_handle_dispatcher.h"
 
 #include <stdio.h>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -32,19 +33,19 @@ TEST(PlatformHandleDispatcherTest, Basic) {
             fwrite(kHelloWorld, 1, sizeof(kHelloWorld), fp.get()));
 
   embedder::ScopedPlatformHandle h(
-      mojo::test::PlatformHandleFromFILE(fp.Pass()));
+      mojo::test::PlatformHandleFromFILE(std::move(fp)));
   EXPECT_FALSE(fp);
   ASSERT_TRUE(h.is_valid());
 
   scoped_refptr<PlatformHandleDispatcher> dispatcher =
-      PlatformHandleDispatcher::Create(h.Pass());
+      PlatformHandleDispatcher::Create(std::move(h));
   EXPECT_FALSE(h.is_valid());
   EXPECT_EQ(Dispatcher::Type::PLATFORM_HANDLE, dispatcher->GetType());
 
-  h = dispatcher->PassPlatformHandle().Pass();
+  h = dispatcher->PassPlatformHandle();
   EXPECT_TRUE(h.is_valid());
 
-  fp = mojo::test::FILEFromPlatformHandle(h.Pass(), "rb").Pass();
+  fp = mojo::test::FILEFromPlatformHandle(std::move(h), "rb");
   EXPECT_FALSE(h.is_valid());
   EXPECT_TRUE(fp);
 
@@ -55,7 +56,7 @@ TEST(PlatformHandleDispatcherTest, Basic) {
   EXPECT_STREQ(kHelloWorld, read_buffer);
 
   // Try getting the handle again. (It should fail cleanly.)
-  h = dispatcher->PassPlatformHandle().Pass();
+  h = dispatcher->PassPlatformHandle();
   EXPECT_FALSE(h.is_valid());
 
   EXPECT_EQ(MOJO_RESULT_OK, dispatcher->Close());
@@ -74,7 +75,7 @@ TEST(PlatformHandleDispatcherTest, CreateEquivalentDispatcherAndClose) {
 
   scoped_refptr<PlatformHandleDispatcher> dispatcher =
       PlatformHandleDispatcher::Create(
-          mojo::test::PlatformHandleFromFILE(fp.Pass()));
+          mojo::test::PlatformHandleFromFILE(std::move(fp)));
 
   DispatcherTransport transport(
       test::DispatcherTryStartTransport(dispatcher.get()));
@@ -94,7 +95,7 @@ TEST(PlatformHandleDispatcherTest, CreateEquivalentDispatcherAndClose) {
   dispatcher = static_cast<PlatformHandleDispatcher*>(generic_dispatcher.get());
 
   fp = mojo::test::FILEFromPlatformHandle(dispatcher->PassPlatformHandle(),
-                                          "rb").Pass();
+                                          "rb");
   EXPECT_TRUE(fp);
 
   rewind(fp.get());

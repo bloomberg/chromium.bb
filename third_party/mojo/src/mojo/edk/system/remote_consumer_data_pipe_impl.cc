@@ -5,8 +5,8 @@
 #include "third_party/mojo/src/mojo/edk/system/remote_consumer_data_pipe_impl.h"
 
 #include <string.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -73,7 +73,7 @@ RemoteConsumerDataPipeImpl::RemoteConsumerDataPipeImpl(
     size_t start_index)
     : channel_endpoint_(channel_endpoint),
       consumer_num_bytes_(consumer_num_bytes),
-      buffer_(buffer.Pass()),
+      buffer_(std::move(buffer)),
       start_index_(start_index) {
   // Note: |buffer_| may be null (in which case it'll be lazily allocated).
 }
@@ -156,7 +156,7 @@ MojoResult RemoteConsumerDataPipeImpl::ProducerWriteData(
         MessageInTransit::Type::ENDPOINT_CLIENT,
         MessageInTransit::Subtype::ENDPOINT_CLIENT_DATA,
         static_cast<uint32_t>(message_num_bytes), elements.At(offset)));
-    if (!channel_endpoint_->EnqueueMessage(message.Pass())) {
+    if (!channel_endpoint_->EnqueueMessage(std::move(message))) {
       Disconnect();
       break;
     }
@@ -230,7 +230,7 @@ MojoResult RemoteConsumerDataPipeImpl::ProducerEndWriteData(
                              MessageInTransit::Subtype::ENDPOINT_CLIENT_DATA,
                              static_cast<uint32_t>(message_num_bytes),
                              buffer_.get() + start_index_ + offset));
-    if (!channel_endpoint_->EnqueueMessage(message.Pass())) {
+    if (!channel_endpoint_->EnqueueMessage(std::move(message))) {
       set_producer_two_phase_max_num_bytes_written(0);
       Disconnect();
       return MOJO_RESULT_OK;

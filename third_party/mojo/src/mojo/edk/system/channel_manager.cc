@@ -4,6 +4,8 @@
 
 #include "third_party/mojo/src/mojo/edk/system/channel_manager.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -70,7 +72,7 @@ scoped_refptr<MessagePipeDispatcher> ChannelManager::CreateChannelOnIOThread(
   scoped_refptr<system::MessagePipeDispatcher> dispatcher =
       system::MessagePipeDispatcher::CreateRemoteMessagePipe(
           &bootstrap_channel_endpoint);
-  CreateChannelOnIOThreadHelper(channel_id, platform_handle.Pass(),
+  CreateChannelOnIOThreadHelper(channel_id, std::move(platform_handle),
                                 bootstrap_channel_endpoint);
   return dispatcher;
 }
@@ -78,7 +80,7 @@ scoped_refptr<MessagePipeDispatcher> ChannelManager::CreateChannelOnIOThread(
 scoped_refptr<Channel> ChannelManager::CreateChannelWithoutBootstrapOnIOThread(
     ChannelId channel_id,
     embedder::ScopedPlatformHandle platform_handle) {
-  return CreateChannelOnIOThreadHelper(channel_id, platform_handle.Pass(),
+  return CreateChannelOnIOThreadHelper(channel_id, std::move(platform_handle),
                                        nullptr);
 }
 
@@ -174,7 +176,7 @@ scoped_refptr<Channel> ChannelManager::CreateChannelOnIOThreadHelper(
   // Create and initialize a |system::Channel|.
   scoped_refptr<system::Channel> channel =
       new system::Channel(platform_support_);
-  channel->Init(system::RawChannel::Create(platform_handle.Pass()));
+  channel->Init(system::RawChannel::Create(std::move(platform_handle)));
   if (bootstrap_channel_endpoint)
     channel->SetBootstrapEndpoint(bootstrap_channel_endpoint);
 
@@ -201,7 +203,7 @@ void ChannelManager::CreateChannelHelper(
   // uses of ChannelManager.
   CHECK(channel_manager);
   channel_manager->CreateChannelOnIOThreadHelper(
-      channel_id, platform_handle.Pass(), bootstrap_channel_endpoint);
+      channel_id, std::move(platform_handle), bootstrap_channel_endpoint);
   if (callback_thread_task_runner) {
     bool ok = callback_thread_task_runner->PostTask(FROM_HERE, callback);
     DCHECK(ok);

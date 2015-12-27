@@ -204,7 +204,7 @@ class TestSlaveConnection {
   }
 
   embedder::ScopedPlatformHandle PassSlavePlatformHandle() {
-    return slave_platform_handle_.Pass();
+    return std::move(slave_platform_handle_);
   }
 
   const ConnectionIdentifier& connection_id() const { return connection_id_; }
@@ -235,7 +235,7 @@ class TestSlave {
                            embedder::ProcessType::SLAVE,
                            &slave_process_delegate_,
                            test_io_thread->task_runner(),
-                           platform_handle.Pass()),
+                           std::move(platform_handle)),
         event_(true, false) {}
   ~TestSlave() {}
 

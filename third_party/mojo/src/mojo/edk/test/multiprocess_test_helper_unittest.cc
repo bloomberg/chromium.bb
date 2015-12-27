@@ -4,6 +4,8 @@
 
 #include "third_party/mojo/src/mojo/edk/test/multiprocess_test_helper.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -86,7 +88,8 @@ TEST_F(MultiprocessTestHelperTest, MAYBE_PassedChannel) {
   helper.StartChild("PassedChannel");
 
   // Take ownership of the handle.
-  embedder::ScopedPlatformHandle handle = helper.server_platform_handle.Pass();
+  embedder::ScopedPlatformHandle handle =
+      std::move(helper.server_platform_handle);
 
   // The handle should be non-blocking.
   EXPECT_TRUE(IsNonBlocking(handle.get()));
@@ -109,7 +112,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(PassedChannel) {
 
   // Take ownership of the handle.
   embedder::ScopedPlatformHandle handle =
-      MultiprocessTestHelper::client_platform_handle.Pass();
+      std::move(MultiprocessTestHelper::client_platform_handle);
 
   // The handle should be non-blocking.
   EXPECT_TRUE(IsNonBlocking(handle.get()));

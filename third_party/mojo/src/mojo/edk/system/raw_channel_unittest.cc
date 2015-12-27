@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -194,7 +194,7 @@ class TestMessageReaderAndChecker {
 // Tests writing (and verifies reading using our own custom reader).
 TEST_F(RawChannelTest, WriteMessage) {
   WriteOnlyRawChannelDelegate delegate;
-  scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass()));
+  scoped_ptr<RawChannel> rc(RawChannel::Create(std::move(handles[0])));
   TestMessageReaderAndChecker checker(handles[1].get());
   io_thread()->PostTaskAndWait(
       FROM_HERE,
@@ -280,7 +280,7 @@ class ReadCheckerRawChannelDelegate : public RawChannel::Delegate {
 // Tests reading (writing using our own custom writer).
 TEST_F(RawChannelTest, OnReadMessage) {
   ReadCheckerRawChannelDelegate delegate;
-  scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass()));
+  scoped_ptr<RawChannel> rc(RawChannel::Create(std::move(handles[0])));
   io_thread()->PostTaskAndWait(
       FROM_HERE,
       base::Bind(&InitOnIOThread, rc.get(), base::Unretained(&delegate)));
@@ -377,14 +377,14 @@ TEST_F(RawChannelTest, WriteMessageAndOnReadMessage) {
   static const size_t kNumWriteMessagesPerThread = 4000;
 
   WriteOnlyRawChannelDelegate writer_delegate;
-  scoped_ptr<RawChannel> writer_rc(RawChannel::Create(handles[0].Pass()));
+  scoped_ptr<RawChannel> writer_rc(RawChannel::Create(std::move(handles[0])));
   io_thread()->PostTaskAndWait(FROM_HERE,
                                base::Bind(&InitOnIOThread, writer_rc.get(),
                                           base::Unretained(&writer_delegate)));
 
   ReadCountdownRawChannelDelegate reader_delegate(kNumWriterThreads *
                                                   kNumWriteMessagesPerThread);
-  scoped_ptr<RawChannel> reader_rc(RawChannel::Create(handles[1].Pass()));
+  scoped_ptr<RawChannel> reader_rc(RawChannel::Create(std::move(handles[1])));
   io_thread()->PostTaskAndWait(FROM_HERE,
                                base::Bind(&InitOnIOThread, reader_rc.get(),
                                           base::Unretained(&reader_delegate)));
@@ -474,7 +474,7 @@ class ErrorRecordingRawChannelDelegate
 // Tests (fatal) errors.
 TEST_F(RawChannelTest, OnError) {
   ErrorRecordingRawChannelDelegate delegate(0, true, true);
-  scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass()));
+  scoped_ptr<RawChannel> rc(RawChannel::Create(std::move(handles[0])));
   io_thread()->PostTaskAndWait(
       FROM_HERE,
       base::Bind(&InitOnIOThread, rc.get(), base::Unretained(&delegate)));
@@ -517,7 +517,7 @@ TEST_F(RawChannelTest, ReadUnaffectedByWriteError) {
   // Only start up reading here. The system buffer should still contain the
   // messages that were written.
   ErrorRecordingRawChannelDelegate delegate(kMessageCount, true, true);
-  scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass()));
+  scoped_ptr<RawChannel> rc(RawChannel::Create(std::move(handles[0])));
   io_thread()->PostTaskAndWait(
       FROM_HERE,
       base::Bind(&InitOnIOThread, rc.get(), base::Unretained(&delegate)));
@@ -543,7 +543,7 @@ TEST_F(RawChannelTest, ReadUnaffectedByWriteError) {
 // correctly.
 TEST_F(RawChannelTest, WriteMessageAfterShutdown) {
   WriteOnlyRawChannelDelegate delegate;
-  scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass()));
+  scoped_ptr<RawChannel> rc(RawChannel::Create(std::move(handles[0])));
   io_thread()->PostTaskAndWait(
       FROM_HERE,
       base::Bind(&InitOnIOThread, rc.get(), base::Unretained(&delegate)));
@@ -603,7 +603,7 @@ TEST_F(RawChannelTest, ShutdownOnReadMessage) {
   for (size_t count = 0; count < 5; count++)
     EXPECT_TRUE(WriteTestMessageToHandle(handles[1].get(), 10));
 
-  scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass()));
+  scoped_ptr<RawChannel> rc(RawChannel::Create(std::move(handles[0])));
   ShutdownOnReadMessageRawChannelDelegate delegate(rc.get(), false);
   io_thread()->PostTaskAndWait(
       FROM_HERE,
@@ -618,7 +618,7 @@ TEST_F(RawChannelTest, ShutdownAndDestroyOnReadMessage) {
   EXPECT_TRUE(WriteTestMessageToHandle(handles[1].get(), 10));
 
   // The delegate will destroy |rc|.
-  RawChannel* rc = RawChannel::Create(handles[0].Pass()).release();
+  RawChannel* rc = RawChannel::Create(std::move(handles[0])).release();
   ShutdownOnReadMessageRawChannelDelegate delegate(rc, true);
   io_thread()->PostTaskAndWait(
       FROM_HERE, base::Bind(&InitOnIOThread, rc, base::Unretained(&delegate)));
@@ -675,7 +675,7 @@ class ShutdownOnErrorRawChannelDelegate : public RawChannel::Delegate {
 };
 
 TEST_F(RawChannelTest, ShutdownOnErrorRead) {
-  scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass()));
+  scoped_ptr<RawChannel> rc(RawChannel::Create(std::move(handles[0])));
   ShutdownOnErrorRawChannelDelegate delegate(
       rc.get(), false, RawChannel::Delegate::ERROR_READ_SHUTDOWN);
   io_thread()->PostTaskAndWait(
@@ -690,7 +690,7 @@ TEST_F(RawChannelTest, ShutdownOnErrorRead) {
 }
 
 TEST_F(RawChannelTest, ShutdownAndDestroyOnErrorRead) {
-  RawChannel* rc = RawChannel::Create(handles[0].Pass()).release();
+  RawChannel* rc = RawChannel::Create(std::move(handles[0])).release();
   ShutdownOnErrorRawChannelDelegate delegate(
       rc, true, RawChannel::Delegate::ERROR_READ_SHUTDOWN);
   io_thread()->PostTaskAndWait(
@@ -704,7 +704,7 @@ TEST_F(RawChannelTest, ShutdownAndDestroyOnErrorRead) {
 }
 
 TEST_F(RawChannelTest, ShutdownOnErrorWrite) {
-  scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass()));
+  scoped_ptr<RawChannel> rc(RawChannel::Create(std::move(handles[0])));
   ShutdownOnErrorRawChannelDelegate delegate(rc.get(), false,
                                              RawChannel::Delegate::ERROR_WRITE);
   io_thread()->PostTaskAndWait(
@@ -721,7 +721,7 @@ TEST_F(RawChannelTest, ShutdownOnErrorWrite) {
 }
 
 TEST_F(RawChannelTest, ShutdownAndDestroyOnErrorWrite) {
-  RawChannel* rc = RawChannel::Create(handles[0].Pass()).release();
+  RawChannel* rc = RawChannel::Create(std::move(handles[0])).release();
   ShutdownOnErrorRawChannelDelegate delegate(rc, true,
                                              RawChannel::Delegate::ERROR_WRITE);
   io_thread()->PostTaskAndWait(
@@ -764,7 +764,8 @@ class ReadPlatformHandlesCheckerRawChannelDelegate
     {
       char buffer[100] = {};
 
-      base::ScopedFILE fp(mojo::test::FILEFromPlatformHandle(h1.Pass(), "rb"));
+      base::ScopedFILE fp(
+          mojo::test::FILEFromPlatformHandle(std::move(h1), "rb"));
       EXPECT_TRUE(fp);
       rewind(fp.get());
       EXPECT_EQ(1u, fread(buffer, 1, sizeof(buffer), fp.get()));
@@ -773,7 +774,8 @@ class ReadPlatformHandlesCheckerRawChannelDelegate
 
     {
       char buffer[100] = {};
-      base::ScopedFILE fp(mojo::test::FILEFromPlatformHandle(h2.Pass(), "rb"));
+      base::ScopedFILE fp(
+          mojo::test::FILEFromPlatformHandle(std::move(h2), "rb"));
       EXPECT_TRUE(fp);
       rewind(fp.get());
       EXPECT_EQ(1u, fread(buffer, 1, sizeof(buffer), fp.get()));
@@ -806,13 +808,13 @@ TEST_F(RawChannelTest, MAYBE_ReadWritePlatformHandles) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   WriteOnlyRawChannelDelegate write_delegate;
-  scoped_ptr<RawChannel> rc_write(RawChannel::Create(handles[0].Pass()));
+  scoped_ptr<RawChannel> rc_write(RawChannel::Create(std::move(handles[0])));
   io_thread()->PostTaskAndWait(FROM_HERE,
                                base::Bind(&InitOnIOThread, rc_write.get(),
                                           base::Unretained(&write_delegate)));
 
   ReadPlatformHandlesCheckerRawChannelDelegate read_delegate;
-  scoped_ptr<RawChannel> rc_read(RawChannel::Create(handles[1].Pass()));
+  scoped_ptr<RawChannel> rc_read(RawChannel::Create(std::move(handles[1])));
   io_thread()->PostTaskAndWait(FROM_HERE,
                                base::Bind(&InitOnIOThread, rc_read.get(),
                                           base::Unretained(&read_delegate)));
@@ -830,17 +832,18 @@ TEST_F(RawChannelTest, MAYBE_ReadWritePlatformHandles) {
     embedder::ScopedPlatformHandleVectorPtr platform_handles(
         new embedder::PlatformHandleVector());
     platform_handles->push_back(
-        mojo::test::PlatformHandleFromFILE(fp1.Pass()).release());
+        mojo::test::PlatformHandleFromFILE(std::move(fp1)).release());
     platform_handles->push_back(
-        mojo::test::PlatformHandleFromFILE(fp2.Pass()).release());
+        mojo::test::PlatformHandleFromFILE(std::move(fp2)).release());
 
     scoped_ptr<MessageInTransit> message(
         new MessageInTransit(MessageInTransit::Type::ENDPOINT_CLIENT,
                              MessageInTransit::Subtype::ENDPOINT_CLIENT_DATA,
                              sizeof(kHello), kHello));
-    message->SetTransportData(make_scoped_ptr(new TransportData(
-        platform_handles.Pass(), rc_write->GetSerializedPlatformHandleSize())));
-    EXPECT_TRUE(rc_write->WriteMessage(message.Pass()));
+    message->SetTransportData(make_scoped_ptr(
+        new TransportData(std::move(platform_handles),
+                          rc_write->GetSerializedPlatformHandleSize())));
+    EXPECT_TRUE(rc_write->WriteMessage(std::move(message)));
   }
 
   read_delegate.Wait();

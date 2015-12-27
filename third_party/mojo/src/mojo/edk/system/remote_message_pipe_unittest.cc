@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -17,7 +17,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/test_io_thread.h"
-#include "build/build_config.h"              // TODO(vtl): Remove this.
+#include "build/build_config.h"  // TODO(vtl): Remove this.
 #include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
@@ -127,7 +127,7 @@ class RemoteMessagePipeTest : public testing::Test {
 
     channels_[channel_index] = new Channel(&platform_support_);
     channels_[channel_index]->Init(
-        RawChannel::Create(platform_handles_[channel_index].Pass()));
+        RawChannel::Create(std::move(platform_handles_[channel_index])));
   }
 
   void BootstrapChannelEndpointsOnIOThread(scoped_refptr<ChannelEndpoint> ep0,
@@ -1047,7 +1047,7 @@ TEST_F(RemoteMessagePipeTest, MAYBE_PlatformHandlePassing) {
   // be passed.
   scoped_refptr<PlatformHandleDispatcher> dispatcher =
       PlatformHandleDispatcher::Create(
-          mojo::test::PlatformHandleFromFILE(fp.Pass()));
+          mojo::test::PlatformHandleFromFILE(std::move(fp)));
 
   // Prepare to wait on MP 1, port 1. (Add the waiter now. Otherwise, if we do
   // it later, it might already be readable.)
@@ -1106,10 +1106,10 @@ TEST_F(RemoteMessagePipeTest, MAYBE_PlatformHandlePassing) {
   dispatcher =
       static_cast<PlatformHandleDispatcher*>(read_dispatchers[0].get());
 
-  embedder::ScopedPlatformHandle h = dispatcher->PassPlatformHandle().Pass();
+  embedder::ScopedPlatformHandle h = dispatcher->PassPlatformHandle();
   EXPECT_TRUE(h.is_valid());
 
-  fp = mojo::test::FILEFromPlatformHandle(h.Pass(), "rb").Pass();
+  fp = mojo::test::FILEFromPlatformHandle(std::move(h), "rb");
   EXPECT_FALSE(h.is_valid());
   EXPECT_TRUE(fp);
 
