@@ -7,7 +7,7 @@
 namespace content {
 
 namespace {
-const int kMaxSyncAttempts = 5;
+const int kMaxSyncAttempts = 3;
 const int kInitialRetryDelayMins = 5;
 const int kRetryDelayFactor = 3;
 const int64_t kMinSyncRecoveryTimeMs = 1000 * 60 * 6;  // 6 minutes
