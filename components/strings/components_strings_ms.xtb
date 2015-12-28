@@ -40,7 +40,7 @@
 <translation id="1413809658975081374">Ralat privasi</translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="1430915738399379752">Cetak</translation>
-<translation id="1452265419286795001">Tidak dapat memuatkan halaman web kerana komuter anda dalam mod tidur atau
+<translation id="1452265419286795001">Tidak dapat memuatkan halaman web kerana komputer anda dalam mod tidur atau
       atau tidak aktif.  Apabila ini berlaku, sambungan rangkaian dimatikan
       dan permintaan rangkaian baharu akan gagal.  Masalah ini dapat diselesaikan dengan memuatkan
       halaman ini.</translation>
@@ -95,7 +95,7 @@
       <ph name="BEGIN_BOLD" />
       Start &gt; Control Panel &gt; Network and Internet &gt; Network and Sharing Center &gt; Troubleshoot Problems (di sebelah bawah) &gt; Internet Connections.
       <ph name="END_BOLD" /></translation>
-<translation id="2166049586286450108">Akes Penuh Pentadbir</translation>
+<translation id="2166049586286450108">Akses Penuh Pentadbir</translation>
 <translation id="2171101176734966184">Anda cuba untuk mencapai <ph name="DOMAIN" />, tetapi pelayan memberikan sijil yang ditandatangani menggunakan algoritma tandatangan yang lemah. Ini bermakna bahawa bukti kelayakan keselamatan yang diberi pelayan mungkin dipalsukan dan pelayan tersebut bukan seperti yang anda jangkakan (anda mungkin berkomunikasi dengan penyerang).</translation>
 <translation id="2181821976797666341">Dasar</translation>
 <translation id="2212735316055980242">Dasar tidak dijumpai</translation>
@@ -307,7 +307,7 @@
     simpan fail yang dimuat turun kepada cakera secara sementara. Apabila
     <ph name="PRODUCT_NAME" />
     tidak ditutup dengan betul, fail ini boleh rosak, mengakibatkan
-    ralat ini.  Memuatkan semula halaman akan menyelesaikan isu ini dan
+    ralat ini.  Tindakan memuatkan semula halaman akan menyelesaikan isu ini dan
     menutup dengan betul akan mengelakkannya daripada berlaku pada masa hadapan.
     <ph name="LINE_BREAK" />
     Jika masalah berterusan, cuba kosongkan cache.  Dalam sesetengah keadaan, ini
@@ -321,7 +321,7 @@
     pentadbir rangkaian anda.</translation>
 <translation id="49215695600353191">Respons daripada pelayan mengandungi pengepala pendua.  Masalah ini
     biasanya merupakan akibat daripada kesilapan mengkonfigurasi tapak web atau proksi.  Hanya
-    pentadbir tapak web atau proksi boleh membetulkan isu ini.</translation>
+    pentadbir tapak web atau proksi boleh menyelesaikan isu ini.</translation>
 <translation id="4923417429809017348">Halaman ini diterjemahkan dari bahasa yang tidak diketahui ke <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Mesti ditentukan.</translation>
 <translation id="4980112683975062744">Pengatas pendua yang diterima dari pelayan</translation>
@@ -397,15 +397,15 @@
 <translation id="6093795393556121384">Kad anda disahkan</translation>
 <translation id="6099520380851856040">Berlaku <ph name="CRASH_TIME" /></translation>
 <translation id="6101917839110691420">Halaman web di <ph name="URL" /> telah menghasilkan
-      terlalu banyak ubah hala.  Masalah ini mungkin dapat dibetulkan dengan mengosongkan kuki anda untuk tapak ini atau membenarkan kuki pihak ketiga.  Jika
+      terlalu banyak ubah hala.  Masalah ini mungkin dapat diselesaikan dengan mengosongkan kuki anda untuk tapak ini atau membenarkan kuki pihak ketiga.  Jika
       tidak, mungkin terdapat masalah pada konfigurasi pelayan dan bukan pada
       komputer anda.</translation>
 <translation id="6130627560064345577">Pelayan yang menjadi hos halaman web ini mungkin telah sarat atau mengalami ralat.
-    Untuk mengelakkan daripada membiarkan sambungan menyebabkan trafik yang telalu tinggi dan menjadikan keadaan bertambah buruk,
+    Untuk mengelakkan daripada membiarkan sambungan menyebabkan trafik yang terlalu tinggi dan menjadikan keadaan bertambah buruk,
     <ph name="PRODUCT_NAME" />
     telah berhenti membenarkan permintaan oleh sambungan ke URL ini untuk sementara waktu.
     <ph name="LINE_BREAK" />
-    Jika anda berpendapat kelakuan ini tidak disenangi, contohnya, anda menyahpepijat tapak web anda sendiri, sila
+    Jika anda berpendapat gelagat ini tidak disenangi, contohnya, anda menyahpepijat tapak web anda sendiri, sila
     lawati <ph name="URL_FOR_MORE_INFO" />,
     supaya anda boleh mendapatkan maklumat lanjut termasuk cara untuk melumpuhkan ciri ini.</translation>
 <translation id="6146055958333702838">Periksa mana-mana kabel dan but semula mana-mana penghala, modem atau peranti
@@ -534,7 +534,7 @@
 <translation id="7592362899630581445">Sijil pelayan melanggar kekangan nama.</translation>
 <translation id="759809665464235306">Pelayan ini memerlukan sijil untuk pengesahan dan tidak menerima sijil yang dihantar oleh
     penyemak imbas. Sijil anda mungkin telah tamat tempoh atau pelayan mungkin tidak mempercayai pengeluarnya.
-    Anda boleh cuba semula dengan sijil lain, jika ada atau anda mungkin perlu
+    Anda boleh cuba semula dengan sijil lain, jika ada, atau anda mungkin perlu
     mendapatkan sijil yang sah dari tempat lain.</translation>
 <translation id="7600965453749440009">Jangan sekali-kali terjemahkan <ph name="LANGUAGE" /></translation>
 <translation id="7606563002701561706">Penanda Halaman Dipertingkatkan</translation>
@@ -613,14 +613,14 @@
 <translation id="8559762987265718583">Sambungan peribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak boleh diwujudkan kerana tarikh dan masa peranti anda (<ph name="DATE_AND_TIME" />) tidak betul.</translation>
 <translation id="8571890674111243710">Menterjemah halaman ke <ph name="LANGUAGE" />...</translation>
 <translation id="8629916158020966496">Menyemak imbas Internet dilumpuhkan sehingga semakan pengesahan pendaftaran perusahaan telah selesai.
-    Anda masih boleh menggunakan alat diagnostik yang diberikan di sini untuk menyelesaikan masalah dengan sambungan anda.</translation>
+    Anda masih boleh menggunakan alat diagnostik yang diberikan di sini untuk menyelesaikan masalah sambungan anda.</translation>
 <translation id="8647750283161643317">Tetapkan semula semua kepada lalai</translation>
 <translation id="8713130696108419660">Tandatangan parap tidak elok</translation>
 <translation id="8725066075913043281">Cuba lagi</translation>
 <translation id="8729518820755801792">Chrome tak blh buka URL ini.</translation>
 <translation id="8738058698779197622">Untuk mewujudkan sambungan yang selamat, jam anda perlu ditetapkan dengan betul. Ini kerana sijil yang digunakan oleh tapak web untuk mengenal pastinya hanya sah untuk tempoh masa yang tertentu. Memandangkan jam peranti anda tidak betul, Chromium tidak boleh mengesahkan sijil-sijil ini.</translation>
 <translation id="8776174617851537652">Halaman web di <ph name="URL" /> telah mengakibatkan
-      terlalu banyak ubah hala.  Masalah ini mungkin dapat dibetulkan dengan mengosongkan kuki anda untuk tapak ini atau membenarkan kuki pihak ketiga.  Jika
+      terlalu banyak ubah hala.  Masalah ini mungkin dapat diselesaikan dengan mengosongkan kuki anda untuk tapak ini atau membenarkan kuki pihak ketiga.  Jika
       tidak, perkara ini mungkin disebabkan oleh masalah konfigurasi pelayan
       dan bukan peranti anda.</translation>
 <translation id="8790007591277257123">&amp;Buat semula pemadaman</translation>

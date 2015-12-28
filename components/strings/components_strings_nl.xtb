@@ -4,7 +4,7 @@
 <translation id="1015255576907412255">Neem contact op met je systeembeheerder voor meer informatie.</translation>
 <translation id="1032854598605920125">Rechtsom draaien</translation>
 <translation id="1055184225775184556">&amp;Toevoegen ongedaan maken</translation>
-<translation id="1064422015032085147">Het is mogelijk dat de server waarop de webpagina wordt gehost, overbelast is of wordt onderhouden. Verzoeken naar deze URL zijn tijdelijk niet toegestaan om te voorkomen dat er te veel verkeer wordt gegenereerd en dat het probleem nog erger wordt.</translation>
+<translation id="1064422015032085147">Het is mogelijk dat de server waarop de webpagina wordt gehost, overbelast is of wordt onderhouden. Verzoeken naar deze URL zijn tijdelijk stopgezet, om te voorkomen dat er te veel verkeer wordt gegenereerd en dat het probleem nog erger wordt.</translation>
 <translation id="1066332784716773939">Een diagnose van fouten stellen...</translation>
 <translation id="106701514854093668">Desktopbladwijzers</translation>
 <translation id="1080116354587839789">Aanpassen aan breedte</translation>
@@ -134,7 +134,7 @@
 <translation id="2784949926578158345">De verbinding is opnieuw ingesteld.</translation>
 <translation id="2835170189407361413">Formulier leegmaken</translation>
 <translation id="2855922900409897335">Je <ph name="CREDIT_CARD" /> verifiëren</translation>
-<translation id="2887624244875325968">Deze fout kan optreden wanneer je verbinding maakt met een beveiligde server (HTTPS). Deze houdt in dat de server een beveiligde verbinding probeert in te stellen, maar dat de verbinding wegens een ernstige onjuiste configuratie helemaal niet beveiligd is. <ph name="LINE_BREAK" /> De server moet worden hersteld. Om je privacy te beschermen, maakt <ph name="PRODUCT_NAME" /> geen gebruik van niet-beveiligde verbindingen.</translation>
+<translation id="2887624244875325968">Deze fout kan optreden wanneer je verbinding maakt met een beveiligde server (HTTPS). Deze houdt in dat de server een beveiligde verbinding probeert in te stellen, maar dat de verbinding wegens een ernstige onjuiste configuratie helemaal niet beveiligd is. <ph name="LINE_BREAK" /> De server moet eerst worden hersteld. Om je privacy te beschermen, maakt <ph name="PRODUCT_NAME" /> geen gebruik van niet-beveiligde verbindingen.</translation>
 <translation id="2909946352844186028">Er is een netwerkwijziging gedetecteerd.</translation>
 <translation id="2915500479781995473">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server is verlopen. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept. De klok van je computer is momenteel ingesteld op <ph name="CURRENT_TIME" />. Klopt dat? Zo niet, dan moet je de klok van het systeem corrigeren en deze pagina vernieuwen.</translation>
 <translation id="2922350208395188000">Het servercertificaat kan niet worden gecontroleerd.</translation>
@@ -339,7 +339,7 @@
 <translation id="6093795393556121384">Je kaart is geverifieerd</translation>
 <translation id="6099520380851856040">Opgetreden op <ph name="CRASH_TIME" /></translation>
 <translation id="6101917839110691420">De webpagina op <ph name="URL" /> heeft geleid tot te veel omleidingen. Dit probleem wordt mogelijk opgelost als je je cookies voor deze site wist of cookies van derden toestaat. Zo niet, dan is het mogelijk een probleem met de serverconfiguratie en niet een probleem met de computer.</translation>
-<translation id="6130627560064345577">De server die de webpagina host, is waarschijnlijk overbelast geraakt of heeft een fout aangetroffen. <ph name="PRODUCT_NAME" /> heeft verzoeken van extensies naar deze URL tijdelijk stopgezet om te voorkomen dat extensies te veel verkeer genereren en de situatie verergeren. <ph name="LINE_BREAK" /> Als je van mening bent dat dit gedrag ongewenst is, bijvoorbeeld als je foutopsporing voor je eigen website uitvoert, ga je naar <ph name="URL_FOR_MORE_INFO" />, waar je meer informatie kunt vinden, inclusief hoe je de functie kunt uitschakelen.</translation>
+<translation id="6130627560064345577">De server die de webpagina host, is waarschijnlijk overbelast geraakt of heeft een fout aangetroffen. <ph name="PRODUCT_NAME" /> heeft verzoeken van extensies naar deze URL tijdelijk stopgezet om te voorkomen dat extensies te veel verkeer genereren en het probleem erger wordt. <ph name="LINE_BREAK" /> Als je van mening bent dat dit gedrag ongewenst is, bijvoorbeeld als je foutopsporing voor je eigen website uitvoert, ga je naar <ph name="URL_FOR_MORE_INFO" />, waar je meer informatie kunt vinden, inclusief hoe je de functie kunt uitschakelen.</translation>
 <translation id="6146055958333702838">Controleer alle kabels en start alle routers, modems of andere netwerkapparaten die je gebruikt, opnieuw op.</translation>
 <translation id="6151417162996330722">Het servercertificaat heeft een te lange geldigheidsperiode.</translation>
 <translation id="6154808779448689242">Geretourneerde beleidstoken komt niet overeen met huidige token</translation>
@@ -409,7 +409,7 @@
 <translation id="7087282848513945231">County</translation>
 <translation id="7108649287766967076">De vertaling naar het <ph name="TARGET_LANGUAGE" /> is mislukt.</translation>
 <translation id="7117303293717852287">Deze webpagina opnieuw laden</translation>
-<translation id="7117941875056403396">De verbindingspoging van <ph name="PRODUCT_NAME" /> met <ph name="HOST_NAME" /> is geweigerd. De website is mogelijk offline, of misschien is je netwerk niet correct geconfigureerd.</translation>
+<translation id="7117941875056403396">De poging van <ph name="PRODUCT_NAME" /> om verbinding te maken met <ph name="HOST_NAME" /> is geweigerd. De website is mogelijk offline, of misschien is je netwerk niet correct geconfigureerd.</translation>
 <translation id="7139724024395191329">Emiraat</translation>
 <translation id="7148804936871729015">Het duurt te lang voordat de server van <ph name="URL" /> reageert. De server is wellicht overbelast.</translation>
 <translation id="7179921470347911571">Nu opnieuw starten</translation>

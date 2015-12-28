@@ -2100,10 +2100,10 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Mẫu URL chung có định dạng 'scheme://host:port/path'.
       Nếu xuất hiện, chỉ giao thức truy cập được chỉ định mới bị chặn. Nếu tiền tố scheme:// không được chỉ định, tất cả giao thức truy cập sẽ bị chặn.
       Cần có máy chủ và máy chủ này có thể là tên máy chủ hoặc địa chỉ IP. Tên miền phụ của tên máy chủ cũng sẽ bị chặn. Để ngăn việc chặn tên miền phụ, hãy bao gồm '.' trước tên máy chủ. Tên máy chủ đặc biệt '*' sẽ chặn tất cả các miền.
-      Cổng tùy chọn là một số cổng hợp lệ từ 1 đến 65535. Nếu chưa chỉ định cổng nào, tất cả các cổng sẽ bị chặn.
+      Cổng tùy chọn là một số cổng hợp lệ từ 1 đến 65535. Nếu không chỉ định cổng nào, tất cả các cổng sẽ bị chặn.
       Nếu đường dẫn tùy chọn được chỉ định thì chỉ các đường dẫn có tiền tố đó mới bị chặn.
 
-      Có thể xác định các ngoại lệ trong chính sách về danh sách trắng URL. Các chính sách này chỉ áp dụng cho 1000 mục nhập, các mục tiếp theo sẽ bị bỏ qua.
+      Có thể xác định các ngoại lệ trong chính sách về danh sách URL cho phép. Các chính sách này chỉ áp dụng cho 1000 mục nhập, các mục tiếp theo sẽ bị bỏ qua.
 
       Lưu ý rằng không nên chặn các URL 'chrome://*' nội bộ vì điều này có thể dẫn đến các lỗi không mong muốn.
 

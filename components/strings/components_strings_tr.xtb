@@ -40,9 +40,9 @@
 <translation id="1413809658975081374">Gizlilik hatası</translation>
 <translation id="1426410128494586442">Evet</translation>
 <translation id="1430915738399379752">Yazdır</translation>
-<translation id="1452265419286795001">Bilgisayarınız uyku veya hazırda bekleme moduna girdiğinden Web sayfası
+<translation id="1452265419286795001">Bilgisayarınız uyku veya hazırda bekleme moduna girdiğinden web sayfası
     yüklenemiyor. Bu durumda, ağ bağlantılarınız kapatılır ve yeni ağ talepleri
-    başarısız olur. Sayfa yeniden yüklendiğinde sorun çözülecektir.</translation>
+    başarısız olur. Sayfayı yeniden yüklemek sorunu çözecektir.</translation>
 <translation id="1455235771979731432">Kartınız doğrulanırken bir sorun oluştu. İnternet bağlantınızı kontrol edin ve tekrar deneyin.</translation>
 <translation id="1491151370853475546">Bu Sayfayı Yeniden Yükle</translation>
 <translation id="1506687042165942984">Bu sayfanın kaydedilmiş (eski olduğu bilinen) bir kopyasını gösterin.</translation>
@@ -102,7 +102,7 @@
 <translation id="2221403025589790908"><ph name="HOST_NAME" />
     uzun süre yanıt vermediğinden
     <ph name="PRODUCT_NAME" />,
-    web sayfasını yükleyemedi.  Web sitesi kapalı olabilir veya İnternet
+    web sayfasını yükleyemedi. Web sitesi kapalı olabilir veya İnternet
     bağlantınızla ilgili sorun yaşıyor olabilirsiniz.</translation>
 <translation id="2223896507118749476"><ph name="URL" /> alınırken web sitesi bir hatayla karşılaştı.
     URL bakım için kapatılmış veya yanlış yapılandırılmış olabilir.</translation>
@@ -349,7 +349,7 @@
 <translation id="527200068854444456">Cihazınız uyku veya hazırda bekletme moduna geçtiğinden
       web sayfası yüklenemiyor. Bu durumda, ağ bağlantıları
       kapanır ve yeni ağ istekleri başarısız olur. Sayfayı yeniden
-      yüklemek sorunu çözebilir.</translation>
+      yüklemek sorunu çözecektir.</translation>
 <translation id="5295309862264981122">Gezintiyi Onayla</translation>
 <translation id="5299298092464848405">Politika ayrıştırma hatası</translation>
 <translation id="5303618139271450299">Bu web sayfası bulunamadı</translation>
@@ -396,7 +396,7 @@
       yeniden yönlendirmeye yol açtı. Bu siteyle ilgili çerezlerinizi temizlemeniz veya üçüncü taraf çerezlerine izin vermeniz sorunu giderebilir.
       Giderilmezse, sorun büyük olasılıkla bilgisayarınızdan değil sunucu
       yapılandırmasından kaynaklanmaktadır.</translation>
-<translation id="6130627560064345577">Büyük olasılıkla Web sayfasını barındıran sunucu aşırı yüklendi veya bir hatayla karşılaştı.
+<translation id="6130627560064345577">Büyük olasılıkla web sayfasını barındıran sunucu aşırı yüklendi veya bir hatayla karşılaştı.
     Uzantıların çok fazla trafiğe neden olmasını ve durumun daha da kötüleşmesini önlemek amacıyla,
     <ph name="PRODUCT_NAME" />
     uzantıların bu URL için yaptıkları isteklere izin vermeyi geçici olarak durdurdu.

@@ -379,7 +379,7 @@
 <translation id="1533920822694388968">Zarovnání televize</translation>
 <translation id="1535919895260326054">Romaja</translation>
 <translation id="15373452373711364">Velký kurzor myši</translation>
-<translation id="1543284117603151572">Importováno z aplikace Edge</translation>
+<translation id="1543284117603151572">Importováno z aplikace Edge</translation>
 <translation id="1545177026077493356">Automatický režim veřejného terminálu</translation>
 <translation id="1545786162090505744">URL se značkou %s místo dotazu</translation>
 <translation id="1546280085599573572">Toto rozšíření změnilo stránku, která se zobrazí po kliknutí na tlačítko Domovská stránka.</translation>
@@ -633,7 +633,7 @@ UPOZORNĚNÍ: Když toto pravidlo povolíte, Chrome bude zaznamenávat data o v
 <translation id="1921584744613111023"><ph name="DPI" /> dpi</translation>
 <translation id="1921986354447415460">Turecká klávesnice (typ F)</translation>
 <translation id="1926741348654461781">Povolit offline stránky</translation>
-<translation id="192810479200670759">Explicitně vynucuje směr uživatelského rozhraní zleva doprava nebo zprava doleva a přepisuje výchozí směr jazyka uživatelského rozhraní.</translation>
+<translation id="192810479200670759">Explicitně vynucuje směr uživatelského rozhraní zleva doprava nebo zprava doleva a přepisuje výchozí směr jazyka uživatelského rozhraní.</translation>
 <translation id="1929546189971853037">Čtení historie prohlížení ve všech přihlášených zařízeních</translation>
 <translation id="1931134289871235022">slovenština</translation>
 <translation id="1931152874660185993">Nebyly nainstalovány žádné komponenty.</translation>
@@ -3412,7 +3412,7 @@ Když je tato možnost aktivována, element document.scrollingElement odpovídá
 <translation id="5982621672636444458">Možnosti řazení</translation>
 <translation id="5984222099446776634">Nedávno navštívené</translation>
 <translation id="5984814259619230127">Vyhledávání zařízení pomocí rozhraní Bluetooth Low Energy pro Smart Lock</translation>
-<translation id="5986245990306121338">Je-li tento příznak aktivován, zobrazí se přepínač karet i v případě, že v nastavení bude zapnuta možnost Sloučit karty a aplikace.</translation>
+<translation id="5986245990306121338">Je-li tento příznak aktivován, zobrazí se přepínač karet i v případě, že v nastavení bude zapnuta možnost Sloučit karty a aplikace.</translation>
 <translation id="5990198433782424697">Rozšíření na adresách URL typu chrome://</translation>
 <translation id="5991049340509704927">Zvětšit</translation>
 <translation id="5991774521050363748">Bude povoleno vlastní rozvržení pro oznámení Web Notifications. Rozvržení oznámení bude nepatrně vylepšeno způsobem, který jinak není možný.</translation>
@@ -3815,7 +3815,7 @@ Některé funkce nemusí být dostupné. Zkontrolujte, zda profil existuje a zda
 <translation id="6629841649550503054">Vše je zálohováno na <ph name="BEGIN_LINK" />Disku Google<ph name="END_LINK" />!</translation>
 <translation id="6630452975878488444">Zástupce výběru</translation>
 <translation id="6630752851777525409">Rozšíření <ph name="EXTENSION_NAME" /> požaduje trvalý přístup k certifikátu, aby se vaším jménem mohlo ověřit.</translation>
-<translation id="6637362044401670482">Aktivuje u vertikální klávesnice podporu posouvání za okraj.</translation>
+<translation id="6637362044401670482">Aktivuje u vertikální klávesnice podporu posouvání za okraj.</translation>
 <translation id="6639554308659482635">Paměť SQLite</translation>
 <translation id="6644756108386233011">Obnovit změněná nastavení aplikace <ph name="IDS_SHORT_PRODUCT_NAME" />?</translation>
 <translation id="6647228709620733774">Adresa URL pro odvolání certifikační autority Netscape</translation>
@@ -4636,7 +4636,7 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="7912024687060120840">Ve složce:</translation>
 <translation id="7912145082919339430">Po dokončení instalace pluginu <ph name="PLUGIN_NAME" /> stránku znovu načtěte. Plugin se tím aktivuje.</translation>
 <translation id="7915471803647590281">Než nám odešlete zpětnou vazbu, sdělte nám prosím, co se děje.</translation>
-<translation id="7915679104416252393">Aktivovat přepínač karet v režimu dokumentů</translation>
+<translation id="7915679104416252393">Aktivovat přepínač karet v režimu dokumentů</translation>
 <translation id="7915857946435842056">Aktivuje experimentální funkce zobrazení zadávání v editoru IME.</translation>
 <translation id="7917972308273378936">Litevská klávesnice</translation>
 <translation id="7918257978052780342">Zaregistrovat</translation>

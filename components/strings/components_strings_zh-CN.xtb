@@ -10,7 +10,7 @@
 <translation id="106701514854093668">桌面书签</translation>
 <translation id="1080116354587839789">适合窗口宽度</translation>
 <translation id="108346963417674655">无法安全地连接到服务器。此网站之前可能是正常的，但现在服务器出现问题。对于所有用户而言，连接到此类网站都会导致安全性下降，因此系统已禁止连接到此类网站。</translation>
-<translation id="1090046120949329821">系统收到了多个不同的 Content-Disposition 标头。为了避免遭到 HTTP 响应拆分攻击，这种情况是不被允许的。</translation>
+<translation id="1090046120949329821">系统收到了多个不同的 Content-Disposition 标头。为了避免遭到 HTTP 响应拆分攻击，这种情况是不允许的。</translation>
 <translation id="1091911885099639251">正在验证信用卡</translation>
 <translation id="1103523840287552314">总是翻译<ph name="LANGUAGE" /></translation>
 <translation id="1105117579475534983">网页已被阻止</translation>
@@ -94,7 +94,7 @@
 <translation id="2214283295778284209">无法访问 <ph name="SITE" /></translation>
 <translation id="2221403025589790908"><ph name="HOST_NAME" /> 响应时间过长，<ph name="PRODUCT_NAME" /> 无法加载该网页。该网站或互联网连接可能出现了问题。</translation>
 <translation id="2223896507118749476">该网站在检索 <ph name="URL" /> 时遇到错误。
-    它可能已关停以进行维护或配置不正确。</translation>
+    服务器可能已关停以进行维护或配置不正确。</translation>
 <translation id="225207911366869382">适用于该政策的此值已弃用。</translation>
 <translation id="2262243747453050782">HTTP 错误</translation>
 <translation id="2271281383664374369">已暂时限制扩展程序对此网址发送请求。</translation>
@@ -138,7 +138,7 @@
 <translation id="2784949926578158345">连接已重置。</translation>
 <translation id="2835170189407361413">清除表单</translation>
 <translation id="2855922900409897335">验证您的 <ph name="CREDIT_CARD" /></translation>
-<translation id="2887624244875325968">在连接到安全的 (HTTPS) 服务器时，可能会出现此错误。这意味着服务器在尝试建立安全的连接，但由于严重的配置错误，连接会很不安全！
+<translation id="2887624244875325968">在连接到安全的 (HTTPS) 服务器时，可能会出现此错误。这意味着服务器在尝试建立安全的连接，但由于严重的配置错误，连接根本谈不上安全！
     <ph name="LINE_BREAK" />在这种情况下，服务器需要修复。
     为了保护您的隐私，<ph name="PRODUCT_NAME" /> 不会使用不安全的连接。</translation>
 <translation id="2909946352844186028">检测到了网络变化。</translation>
@@ -163,7 +163,7 @@
 <translation id="3150653042067488994">服务器临时错误</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">岛</translation>
-<translation id="3176929007561373547">请检查您的代理服务器设置或与网络管理员联系，以确保代理服务器运作正常。如果您认为自己不需要使用代理服务器，请执行以下操作：
+<translation id="3176929007561373547">请检查您的代理服务器设置或与网络管理员联系，以确保代理服务器正常运行。如果您认为自己不需要使用代理服务器，请执行以下操作：
       <ph name="PLATFORM_TEXT" /></translation>
 <translation id="3219579145727097045">输入信用卡正面显示的到期日期和 4 位数银行卡验证码 (CVC)</translation>
 <translation id="3225579507836276307">某个第三方扩展程序已阻止对此网页的访问。</translation>
@@ -274,7 +274,7 @@
 <translation id="4800132727771399293">请检查您的到期日期和银行卡验证码 (CVC)，然后重试</translation>
 <translation id="4813512666221746211">网络错误</translation>
 <translation id="4816492930507672669">适合页面大小</translation>
-<translation id="4841859178893814774">为了加快网页加载速度，<ph name="PRODUCT_NAME" /> 会将下载的文件暂时保存到磁盘。如果 <ph name="PRODUCT_NAME" /> 未正常关闭，这些文件可能会损坏，从而导致此错误。重新加载网页应该能够解决此问题，以正常方式关闭应该能够避免日后再出现此问题。
+<translation id="4841859178893814774">为了加快网页加载速度，<ph name="PRODUCT_NAME" /> 会将下载的文件暂时保存到磁盘。如果 <ph name="PRODUCT_NAME" /> 未正常关闭，这些文件可能会损坏，从而导致此错误。重新加载网页应该能够解决此问题，正常关闭应该能够避免日后再出现此问题。
     <ph name="LINE_BREAK" />
     如果此问题仍然存在，请尝试清空缓存。在某些情况下，这也可能是因为硬件出现问题。</translation>
 <translation id="4850886885716139402">视图</translation>
@@ -362,7 +362,7 @@
 <translation id="6232139169545176020">请求的 URI 方案不受支持。</translation>
 <translation id="6237614789842758826">请在Google上搜索</translation>
 <translation id="6259156558325130047">恢复顺序调整(&amp;R)</translation>
-<translation id="6262796033958342538">系统收到了多个不同的 Location 标头。为了避免遭到 HTTP 响应拆分攻击，这种情况是不被允许的。</translation>
+<translation id="6262796033958342538">系统收到了多个不同的 Location 标头。为了避免遭到 HTTP 响应拆分攻击，这种情况是不允许的。</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> 书签</translation>
 <translation id="6264485186158353794">返回安全连接</translation>
 <translation id="6268647269805730940">此设备尚未完成首次运行该浏览器时需要执行的步骤。</translation>
@@ -396,7 +396,7 @@
 <translation id="6646897916597483132">输入信用卡正面显示的 4 位数银行卡验证码 (CVC)</translation>
 <translation id="6671697161687535275">要从 Chromium 中移除表单填写建议吗？</translation>
 <translation id="674375294223700098">未知的服务器证书错误。</translation>
-<translation id="6746710319270251222">系统收到了多个不同的 Content-Length 标头。为了避免遭到 HTTP 响应拆分攻击，这种情况是不被允许的。</translation>
+<translation id="6746710319270251222">系统收到了多个不同的 Content-Length 标头。为了避免遭到 HTTP 响应拆分攻击，这种情况是不允许的。</translation>
 <translation id="6753269504797312559">政策值</translation>
 <translation id="6771079623344431310">无法连接到代理服务器</translation>
 <translation id="6781404225664080496">已暂时禁止向此网址发送请求。</translation>
@@ -422,7 +422,7 @@
 <translation id="7087282848513945231">县/郡</translation>
 <translation id="7108649287766967076">无法翻译成<ph name="TARGET_LANGUAGE" />。</translation>
 <translation id="7117303293717852287">请重新加载此网页</translation>
-<translation id="7117941875056403396"><ph name="PRODUCT_NAME" /> 连接到 <ph name="HOST_NAME" /> 的尝试遭到拒绝。原因可能是该网站出现了问题，也可能是您的网络配置不正确。</translation>
+<translation id="7117941875056403396"><ph name="PRODUCT_NAME" /> 尝试连接到 <ph name="HOST_NAME" /> 时遭到拒绝。原因可能是该网站出现了问题，也可能是您的网络配置不正确。</translation>
 <translation id="7139724024395191329">酋长国</translation>
 <translation id="7148804936871729015">网址为 <ph name="URL" /> 的服务器的响应等待时间过长。该服务器可能已超载。</translation>
 <translation id="7179921470347911571">立即重新启动</translation>
@@ -508,7 +508,7 @@
 <translation id="8204086856545141093">向服务器发送的请求已被某政策拦截。</translation>
 <translation id="820791781874064845">此网页已遭到某个扩展程序的阻止</translation>
 <translation id="8218327578424803826">分配的位置：</translation>
-<translation id="8240446052814166959">请检查您的代理服务器设置或与网络管理员联系，以确保代理服务器运作正常。
+<translation id="8240446052814166959">请检查您的代理服务器设置或与网络管理员联系，以确保代理服务器正常运行。
       <ph name="PLATFORM_TEXT" /></translation>
 <translation id="8241707690549784388">您所查找的网页要使用已输入的信息。返回此页可能需要重复已进行的所有操作。是否要继续操作？</translation>
 <translation id="8249320324621329438">最后一次抓取时间：</translation>

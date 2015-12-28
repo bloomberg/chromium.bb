@@ -2123,23 +2123,23 @@
 <translation id="8587229956764455752">Tillåt att nya användarkonton skapas</translation>
 <translation id="8614804915612153606">Inaktiverar automatisk uppdatering</translation>
 <translation id="8631434304112909927">till och med version <ph name="UNTIL_VERSION" /></translation>
-<translation id="863712305404093038">Blocks access to the listed URLs.
+<translation id="863712305404093038">Blockerar åtkomst till de angivna webbadresserna.
 
-      This policy prevents the user from loading web pages from blacklisted URLs. The blacklist provides a list of URL patterns that specify which URLs will be blacklisted.
+      Policyn förhindrar att användaren läser in webbsidor från svartlistade webbadresser. Svartlistan innehåller en lista med webbadressmönster som anger vilka webbadresser som ska svartlistas.
 
-      Each URL pattern can either be a pattern for local files or a generic URL pattern. Local file patterns are of the format 'file://path', where path should be an absolute path to block. All file system locations for which that path is a prefix will be blocked.
+      Varje webbadressmönster kan antingen vara ett mönster för lokala filer eller ett allmänt webbadressmönster. Mönster för lokala filer är i formatet fil://sökväg, där sökvägen ska vara en absolut sökväg som ska blockeras. Alla platser i filsystemet som den sökvägen är ett prefix för kommer att blockeras.
 
-      A generic URL pattern has the format 'scheme://host:port/path'.
-      If present, only the specified scheme will be blocked. If the scheme:// prefix is not specified, all schemes are blocked.
-      The host is required and can be a hostname or an IP address. Subdomains of a hostname will also be blocked. To prevent blocking subdomains, include a '.' before the hostname. The special hostname '*' will block all domains.
-      The optional port is a valid port number from 1 to 65535. If none is specified, all ports are blocked.
-      If the optional path is specified, only paths with that prefix will be blocked.
+      Ett allmänt webbadressmönster har formatet schema://värd:port/sökväg.
+      Om ett sådant mönster förekommer blockeras endast det angivna schemat. Om prefixet schema:// inte anges blockeras alla scheman.
+      Värden är obligatorisk och kan vara ett värdnamn eller en IP-adress. Underdomäner till ett värdnamn blockeras också. Om du vill förhindra att underdomäner blockeras inkluderar du en ”.” före värdnamnet. Det särskilda värdnamnet ”*” blockerar alla domäner.
+      Den valfria porten är ett giltigt portnummer från 1 till 65535. Om inget anges blockeras alla portar.
+      Om den valfria sökvägen anges blockeras bara sökvägar med det prefixet.
 
-      Exceptions can be defined in the URL whitelist policy. These policies are limited to 1000 entries; subsequent entries will be ignored.
+      Undantag kan anges i policyn för tillåtna webbadresser. Dessa policyer är begränsade till 1 000 poster. Efterföljande poster ignoreras.
 
-      Note that it is not recommended to block internal 'chrome://*' URLs since this may lead to unexpected errors.
+      Observera att vi inte rekommenderar att du blockerar interna Chrome-adresser (chrome://*) eftersom oväntade fel kan uppstå.
 
-      If this policy is not set no URL will be blacklisted in the browser.</translation>
+      Om den här policyn inte har angetts kommer ingen webbadress att svartlistas i webbläsaren.</translation>
 <translation id="8649763579836720255">Chrome OS-enheter kan använda fjärrstyrd attestering (verifierad åtkomst) för att få ett certifikat utfärdat av Chrome OS CA som intygar att enheten kvalificerar för att spela upp skyddat innehåll.  Processen innebär att skicka maskinvaruinformation till Chrome OS CA som unikt identifierar enheten.
 
           Om inställningen är Falskt kommer enheten inte att använda fjärrstyrd attestering för innehållsskydd och skyddat innehåll kanske inte kan spelas upp på enheten.

@@ -2065,19 +2065,19 @@ Pokud je tato zásada nastavena na hodnotu false, prohlížeč uvítací stránk
 <translation id="8587229956764455752">Povolit vytváření nových uživatelských účtů</translation>
 <translation id="8614804915612153606">Zakáže automatické aktualizace</translation>
 <translation id="8631434304112909927">naposledy ve verzi <ph name="UNTIL_VERSION" /></translation>
-<translation id="863712305404093038">Blokování přístupu k adresám URL uvedeným v seznamu.
+<translation id="863712305404093038">Blokování přístupu k adresám URL uvedeným v seznamu.
 
 Tato zásada zabraňuje uživatelům načítat webové stránky ze zakázaných adres URL. Seznam zakázaných položek obsahuje vzory adres URL. Ty určují, které adresy URL budou zakázány.
 
-Každý vzor adresy URL může být určen místním souborům nebo obecné adrese URL. Vzory místních souborů jsou ve formátu „file://cesta“, kde „cesta“ je absolutní cesta, kterou chcete zablokovat. Všechna umístění v systému souborů začínající touto cestou budou zablokována.
+Každý vzor adresy URL může být určen místním souborům nebo obecné adrese URL. Vzory místních souborů jsou ve formátu „file://cesta“, kde „cesta“ je absolutní cesta, kterou chcete zablokovat. Všechna umístění v systému souborů začínající touto cestou budou zablokována.
 
-Vzor obecné adresy URL má formát „schéma://hostitel:port/cesta“. Pokud je uvedeno schéma, budou zablokovány pouze adresy s daným schématem. Pokud předpona schéma:// není určena, budou zablokována všechna schémata. Jako povinnou položku hostitele lze zvolit název hostitele nebo IP adresu. Blokovány budou i subdomény názvu hostitele. Chcete-li blokování subdomén zamezit, přidejte před název hostitele tečku (.). Všechny domény lze zablokovat pomocí zvláštního názvu hostitele (*). Jako port lze zvolit platné číslo portu v rozmezí od 1 do 65535. Není-li uvedeno, budou zablokovány všechny porty. Je-li uvedena volitelná cesta, budou zablokovány pouze cesty s příslušnou předponou.
+Vzor obecné adresy URL má formát „schéma://hostitel:port/cesta“. Pokud je uvedeno schéma, budou zablokovány pouze adresy s daným schématem. Pokud předpona schéma:// není určena, budou zablokována všechna schémata. Jako povinnou položku hostitele lze zvolit název hostitele nebo IP adresu. Blokovány budou i subdomény názvu hostitele. Chcete-li blokování subdomén zamezit, přidejte před název hostitele tečku (.). Všechny domény lze zablokovat pomocí zvláštního názvu hostitele (*). Jako port lze zvolit platné číslo portu v rozmezí od 1 do 65535. Není-li uvedeno, budou zablokovány všechny porty. Je-li uvedena volitelná cesta, budou zablokovány pouze cesty s příslušnou předponou.
 
-Výjimky lze zadat v zásadě pro povolené adresy URL. Počet záznamů v těchto zásadách je omezen na 1000. Všechny další záznamy budou ignorovány.
+Výjimky lze zadat v zásadě pro povolené adresy URL. Počet záznamů v těchto zásadách je omezen na 1000. Všechny další záznamy budou ignorovány.
 
-Blokování interních adres URL s předponou „chrome://*“ nedoporučujeme, protože může docházet k neočekávaným chybám.
+Blokování interních adres URL s předponou „chrome://*“ nedoporučujeme, protože může docházet k neočekávaným chybám.
 
-Není-li zásada nastavena, nebude v prohlížeči zakázána žádná adresa URL.</translation>
+Není-li zásada nastavena, nebude v prohlížeči zakázána žádná adresa URL.</translation>
 <translation id="8649763579836720255">Zařízení se systémem Chrome OS mohou pomocí vzdáleného ověření identity (ověřeného přístupu) získat certifikát vydaný certifikační autoritou Chrome OS, který hodnotí, zda je zařízení vhodné k přehrání chráněného obsahu. Proces zahrnuje odeslání informací o podpoře hardwaru certifikační autoritě Chrome OS, která zařízení jedinečně identifikuje.
 
           Pokud zásadu nastavíte na hodnotu False, zařízení nebude u chráněného obsahu používat vzdálené ověření identity, a chráněný obsah proto nemusí být možné přehrát.

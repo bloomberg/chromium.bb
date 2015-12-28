@@ -6,12 +6,12 @@
 <translation id="1055184225775184556">復原新增(&amp;U)</translation>
 <translation id="1064422015032085147">代管這個網頁的伺服器可能已超載或正在進行維護。
     為了避免產生過多的流量，導致情況惡化，
-    目前已暫時禁止傳送要求至這個網址。</translation>
+    目前系統已暫時禁止傳送要求至這個網址。</translation>
 <translation id="1066332784716773939">診斷錯誤...</translation>
 <translation id="106701514854093668">電腦版書籤</translation>
 <translation id="1080116354587839789">符合視窗寬度</translation>
 <translation id="108346963417674655">無法與伺服器建立安全連線。這個網站先前可能可以正常運作，但現在伺服器發生問題。系統判定連線至該網站會讓所有使用者面臨安全性風險，因此已停用連線。</translation>
-<translation id="1090046120949329821">系統收到多個不同的 Content-Disposition 標頭。為了免於受到 HTTP 回應分割攻擊，
+<translation id="1090046120949329821">系統收到多個不同的 Content-Disposition 標頭。為了防止 HTTP 回應分割攻擊，
     上述情形是不允許的。</translation>
 <translation id="1091911885099639251">正在驗證信用卡</translation>
 <translation id="1103523840287552314">一律翻譯<ph name="LANGUAGE" /></translation>
@@ -107,7 +107,7 @@
     無法載入網頁。網站可能無法使用，或是您可能
     遇到網際網路連線的相關問題。</translation>
 <translation id="2223896507118749476">擷取 <ph name="URL" /> 時網站遇到錯誤。
-    網站可能為了維護而關閉或設定不正確。</translation>
+    這可能是因為網站已關閉進行維護，或是網站設定不正確。</translation>
 <translation id="225207911366869382">這個政策值已遭汰換。</translation>
 <translation id="2262243747453050782">HTTP 錯誤</translation>
 <translation id="2271281383664374369">已暫時禁止擴充功能向網址傳送要求。</translation>
@@ -168,7 +168,7 @@
       <ph name="BEGIN_BOLD" />
       [開始] &gt; [控制台] &gt; [網路連線] &gt; [新增連線精靈]
       <ph name="END_BOLD" />
-      以測試您的連線。</translation>
+      以測試您的連線設定。</translation>
 <translation id="2958431318199492670">網路設定未遵循 ONC 標準，系統可能無法匯入部分設定。</translation>
 <translation id="2969319727213777354">您必須正確設定時鐘，才能建立安全連線。這是因為網站驗證身分時所使用的憑證僅於特定一段時間內有效。由於您裝置的時鐘不正確，因此 Google Chrome 無法驗證這些憑證。</translation>
 <translation id="2972581237482394796">重做(&amp;R)</translation>
@@ -304,10 +304,10 @@
 <translation id="4816492930507672669">依頁面大小自動調整</translation>
 <translation id="4841859178893814774">為了加快網頁載入速度，
     <ph name="PRODUCT_NAME" />
-    會將已下載的檔案暫時儲存於磁碟中。如果
+    會將已下載的檔案暫存於磁碟中。如果
     <ph name="PRODUCT_NAME" />
-    未正確關閉，這些檔案便有可能損毀，進而導致
-    發生這個錯誤。重新載入網頁應能解決這個問題，
+    未正確關閉，這些檔案便有可能出錯，導致出現
+    這種情況。重新載入網頁應能解決這個問題，
     正確關閉程式可以避免日後再次發生這個問題。
     <ph name="LINE_BREAK" />
     如果您持續遇到這個問題，請嘗試清除快取。
@@ -466,7 +466,7 @@
       <ph name="BEGIN_BOLD" />
       [應用程式] &gt; [系統偏好設定] &gt; [網路] &gt; [協助我]
       <ph name="END_BOLD" />
-      以測試您的連線。</translation>
+      以測試您的連線設定。</translation>
 <translation id="6874604403660855544">重做新增(&amp;R)</translation>
 <translation id="6891596781022320156">系統不支援這項政策的層級。</translation>
 <translation id="6897140037006041989">使用者代理程式</translation>
@@ -509,8 +509,8 @@
     某些資源只能從快取中安全載入，
     例如由提交的資料產生的網頁。
     <ph name="LINE_BREAK" />
-    不正常關機引起快取毀損也可能會
-    導致這個錯誤。
+    不正常關機造成快取資料出錯時，
+    也可能會出現這種情況。
     <ph name="LINE_BREAK" />
     如果問題仍無法解決，請嘗試清除快取。</translation>
 <translation id="7353601530677266744">命令列</translation>
@@ -532,8 +532,8 @@
 <translation id="7569952961197462199">要從 Chrome 中移除信用卡嗎？</translation>
 <translation id="7578104083680115302">在不同的裝置上透過各個網站和應用程式消費時，使用您讓 Google 儲存的信用卡資料即可快速付款。</translation>
 <translation id="7592362899630581445">伺服器憑證的名稱不符合限制。</translation>
-<translation id="759809665464235306">這個伺服器不接受瀏覽器傳送的憑證，並要求提供憑證以進行驗證。
-    您的憑證可能已過期，或者伺服器不信任您的憑證核發單位。
+<translation id="759809665464235306">這個伺服器不接受瀏覽器傳送的憑證，並要求提供其他憑證以進行驗證。
+    這表示您的憑證可能已過期，或者伺服器不信任您的憑證核發單位。
     如果您有其他憑證，請使用不同的憑證再試一次。如果您沒有其他憑證，
     建議您從其他地方取得有效的憑證。</translation>
 <translation id="7600965453749440009">一律不翻譯<ph name="LANGUAGE" /></translation>
@@ -620,8 +620,8 @@
 <translation id="8738058698779197622">您必須正確設定時鐘，才能建立安全連線。這是因為網站驗證身分時所使用的憑證僅於特定一段時間內有效。由於您裝置的時鐘不正確，因此 Chromium 無法驗證這些憑證。</translation>
 <translation id="8776174617851537652">位於 <ph name="URL" /> 的網頁重新導向次數過多，
       清除該網站的 Cookie 或允許第三方 Cookie 應該可以解決這個問題。
-      如果仍然無法解決，可能是伺服器設定有誤，
-      而不是您的裝置出了問題。</translation>
+      如果仍然無法解決，可能是伺服器端設定有誤，
+      與您的裝置無關。</translation>
 <translation id="8790007591277257123">重做刪除(&amp;R)</translation>
 <translation id="8798099450830957504">預設</translation>
 <translation id="8804164990146287819">隱私權政策</translation>
@@ -651,8 +651,8 @@
     <ph name="HOST_NAME" />
     的伺服器。
     DNS 是將網站名稱轉譯成網際網路位址的網路服務。
-    這項錯誤最常見的原因是沒有連線至網際網路或網路設定錯誤，
-    也可能是因為 DNS 伺服器沒有回應，
+    這項錯誤最常見的原因是使用者並未連上網際網路，
+    或網路設定錯誤，也可能是因為 DNS 伺服器沒有回應，
     或是防火牆禁止
     <ph name="PRODUCT_NAME" />
     存取網路。</translation>

@@ -375,6 +375,7 @@
 <translation id="1533920822694388968">Alineación del televisor</translation>
 <translation id="1535919895260326054">Romaja</translation>
 <translation id="15373452373711364">Cursor del mouse grande</translation>
+<translation id="1543284117603151572">Importados desde Edge</translation>
 <translation id="1545177026077493356">Modo kiosco automático</translation>
 <translation id="1545786162090505744">URL con %s en el lugar de la consulta</translation>
 <translation id="1546280085599573572">Esta extensión cambió la página que se muestra al hacer clic en el botón Página principal.</translation>
@@ -628,6 +629,7 @@
 <translation id="1921584744613111023"><ph name="DPI" /> ppp</translation>
 <translation id="1921986354447415460">Teclado turco-F</translation>
 <translation id="1926741348654461781">Habilitar las páginas sin conexión</translation>
+<translation id="192810479200670759">Forzar explícitamente la interfaz de usuario de izquierda a derecha o de derecha a izquierda para anular la dirección predeterminada del idioma de la interfaz de usuario.</translation>
 <translation id="1929546189971853037">Leer el historial de navegación en todos los dispositivos registrados</translation>
 <translation id="1931134289871235022">Eslovaco</translation>
 <translation id="1931152874660185993">No hay componentes instalados.</translation>
@@ -866,6 +868,7 @@ Después de crear un usuario supervisado nuevo, puedes administrar las opciones 
 <translation id="2270484714375784793">Número de teléfono</translation>
 <translation id="2270627217422354837">Intercambiar datos con cualquier dispositivo de los siguientes dominios: <ph name="DOMAINS" /></translation>
 <translation id="2273562597641264981">Operador:</translation>
+<translation id="2275694568175246751">De derecha a izquierda</translation>
 <translation id="2276503375879033601">Agregar más aplicaciones</translation>
 <translation id="2278098630001018905">Usar otra dirección de envío</translation>
 <translation id="2278562042389100163">Abrir ventana del navegador</translation>
@@ -1167,6 +1170,7 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="2717703586989280043">Registro completo</translation>
 <translation id="2718998670920917754">El software antivirus detectó un virus.</translation>
 <translation id="2721037002783622288">Buscar imagen en <ph name="SEARCH_ENGINE" /></translation>
+<translation id="2721334646575696520">Microsoft Edge</translation>
 <translation id="2724841811573117416">Registros de WebRTC</translation>
 <translation id="2725200716980197196">Conexión de red restaurada</translation>
 <translation id="2726934403674109201">(<ph name="COUNT" /> en total)</translation>
@@ -1289,6 +1293,7 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="2856903399071202337">Excepciones de la cámara</translation>
 <translation id="2857421400871862029">Preguntarme cuando un sitio intenta inhabilitar el cursor del mouse (recomendado)</translation>
 <translation id="2859369953631715804">Seleccionar red para celulares</translation>
+<translation id="2859684393368940971">De izquierda a derecha</translation>
 <translation id="2861301611394761800">Se completó la actualización del sistema. Reinicie el sistema.</translation>
 <translation id="2861941300086904918">Administrador de seguridad NATIVE_CLIENT</translation>
 <translation id="2862043554446264826">Depurar todo excepto Secure Shell y el traductor PNaCl</translation>
@@ -2349,6 +2354,7 @@ Presiona cualquier tecla para seguir navegando.</translation>
 <translation id="4378154925671717803">Teléfono</translation>
 <translation id="4378551569595875038">Conectando…</translation>
 <translation id="4381091992796011497">Nombre de usuario:</translation>
+<translation id="438122767399415311">Forzar la dirección de la interfaz de usuario</translation>
 <translation id="4381849418013903196">Dos puntos</translation>
 <translation id="4384652540891215547">Activar la extensión</translation>
 <translation id="438503109373656455">Rocinante</translation>
@@ -2837,6 +2843,7 @@ Presiona cualquier tecla para seguir con navegando.</translation>
        <ph name="LINE_BREAKS" />
        Si retiras el dispositivo mientras está en uso, puedes perder datos. Espera hasta que la operación finalice y, luego, expulsa el dispositivo con la aplicación Archivos.</translation>
 <translation id="5159488553889181171">Se canceló la descarga de <ph name="PLUGIN_NAME" />.</translation>
+<translation id="5159628598068481063">Preferencia de redirección de la búsqueda de escritorio de Windows</translation>
 <translation id="5160857336552977725">Accede a tu <ph name="DEVICE_TYPE" />.</translation>
 <translation id="5163869187418756376">Se produjo un error al compartir el contenido. Comprueba tu conexión y vuelve a intentarlo.</translation>
 <translation id="516592729076796170">Programmer Dvorak, EE. UU.</translation>
@@ -3411,6 +3418,7 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5982621672636444458">Ordenar opciones</translation>
 <translation id="5984222099446776634">Visitados recientemente</translation>
 <translation id="5984814259619230127">Detección de Bluetooth de baja energía con Smart Lock</translation>
+<translation id="5986245990306121338">Si se habilita, un selector de pestañas se mostrará incluso cuando la opción "Combinar pestañas y aplicaciones" esté habilitada en la configuración.</translation>
 <translation id="5990198433782424697">Extensiones para las URL chrome://</translation>
 <translation id="5991049340509704927">Ampliar</translation>
 <translation id="5991774521050363748">Habilitar diseños personalizados para las notificaciones web. Tendrán mejoras de diseño sutiles que, de otro modo, no serían posibles.</translation>
@@ -3475,6 +3483,7 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="6089481419520884864">Filtrar página</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6093888419484831006">Cancelando actualización…</translation>
+<translation id="6095149522260432647">Habilita una preferencia que permite redireccionar las búsquedas de escritorio de Windows al motor de búsqueda predeterminado.</translation>
 <translation id="6095984072944024315">−</translation>
 <translation id="6096047740730590436">Abrir de forma maximizada</translation>
 <translation id="6096326118418049043">Nombre X 500</translation>
@@ -3667,6 +3676,7 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="6417515091412812850">No se pudo verificar si el certificado ha sido revocado.</translation>
 <translation id="6418160186546245112">Revirtiendo a la versión de <ph name="IDS_SHORT_PRODUCT_NAME" /> instalada previamente</translation>
 <translation id="6418481728190846787">Eliminar el acceso para todas las aplicaciones de forma permanente</translation>
+<translation id="6418505248408153264">Habilitar el historial de Material Design</translation>
 <translation id="6419902127459849040">Europa Central</translation>
 <translation id="6420676428473580225">Agregar al escritorio</translation>
 <translation id="6422329785618833949">Foto girada</translation>
@@ -3809,6 +3819,7 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="6629841649550503054">Todos los archivos están guardados en una copia de seguridad en <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />.</translation>
 <translation id="6630452975878488444">Acceso directo de selección</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> solicita acceso permanente a un certificado para autenticarse en tu nombre.</translation>
+<translation id="6637362044401670482">Habilita la compatibilidad con el sobredesplazamiento del teclado virtual.</translation>
 <translation id="6639554308659482635">Memoria SQLite</translation>
 <translation id="6644756108386233011">¿Quieres restablecer la configuración modificada de <ph name="IDS_SHORT_PRODUCT_NAME" />?</translation>
 <translation id="6647228709620733774">URL de revocación de entidad de certificación de Netscape</translation>
@@ -4631,6 +4642,7 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="7912024687060120840">En carpeta:</translation>
 <translation id="7912145082919339430">Una vez instalado <ph name="PLUGIN_NAME" />, vuelve a cargar la página para activarlo.</translation>
 <translation id="7915471803647590281">Comunícanos lo que está pasando antes de enviarnos tus comentarios</translation>
+<translation id="7915679104416252393">Activar el selector de pestañas en el modo de documento</translation>
 <translation id="7915857946435842056">Habilita funciones experimentales para las vistas de entrada de IME.</translation>
 <translation id="7917972308273378936">Teclado lituano</translation>
 <translation id="7918257978052780342">Inscribir</translation>
@@ -4930,6 +4942,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8339012082103782726">No permitir que los sitios accedan al micrófono</translation>
 <translation id="8342318071240498787">Ya existe un archivo o un directorio con el mismo nombre.</translation>
 <translation id="834457929814110454">Si comprendes los riesgos de seguridad, puedes <ph name="BEGIN_LINK" />visitar este sitio<ph name="END_LINK" /> antes de que se hayan eliminado los programas peligrosos.</translation>
+<translation id="8345553596530559351">Si está habilitada, la URL chrome://history/ carga la página del historial de Material Design.</translation>
 <translation id="8351419472474436977">Esta extensión tomó control de tu configuración de proxy, lo que significa que puede cambiar, dañar o espiar cualquier actividad que realices en línea. Si sabes con certeza por qué se produjo este cambio, probablemente no lo desees.</translation>
 <translation id="8352772353338965963">Agrega una cuenta para el acceso múltiple. Puedes acceder a todas las cuentas abiertas sin una contraseña, por lo que esta función solo debe utilizarse con cuentas de confianza.</translation>
 <translation id="8353683614194668312">Puede:</translation>

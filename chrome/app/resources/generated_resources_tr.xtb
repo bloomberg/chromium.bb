@@ -4648,7 +4648,7 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="7912024687060120840">Bulunduğu Klasör:</translation>
 <translation id="7912145082919339430"><ph name="PLUGIN_NAME" /> yüklemesi bittiğinde, etkinleştirmek için sayfayı yeniden yükleyin.</translation>
 <translation id="7915471803647590281">Geri bildirimi göndermeden önce lütfen bize ne olduğunu söyleyin.</translation>
-<translation id="7915679104416252393">Sekme değiştiriciyi doküman modunda etkinleştirir.</translation>
+<translation id="7915679104416252393">Sekme değiştiriciyi doküman modunda etkinleştir.</translation>
 <translation id="7915857946435842056">IME giriş görünümleri için deneme özelliklerini etkinleştirin.</translation>
 <translation id="7917972308273378936">Litvanca klavye</translation>
 <translation id="7918257978052780342">Kaydol</translation>
@@ -4813,7 +4813,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8145409227593688472">Wubi giriş yöntemi</translation>
 <translation id="8146177459103116374">Zaten bu cihazda kayıtlıysanız, <ph name="LINK2_START" />varolan kullanıcı olarak oturum açabilirsiniz<ph name="LINK2_END" />.</translation>
 <translation id="8148264977957212129">Pinyin giriş yöntemi</translation>
-<translation id="8148913456785123871">Başlatıcıda Google Asistan kartlarını göster</translation>
+<translation id="8148913456785123871">Başlatıcıda Google Now kartlarını göster</translation>
 <translation id="8151185429379586178">Geliştirici araçları</translation>
 <translation id="8151638057146502721">Yapılandır</translation>
 <translation id="8152091997436726702">Yazıcı kaydı zaman aşımına uğradı. Bir yazıcıyı kaydetmek için kaydı yazıcı üzerinde onaylamanız gerekir.</translation>
@@ -5518,7 +5518,7 @@ Dolana kadar geçecek süre hesaplanıyor</translation>
 <translation id="9188441292293901223">Bu <ph name="DEVICE_TYPE" /> cihazın kilidini açmak için lütfen telefonunuzu daha yeni bir Android sürümüne güncelleyin.</translation>
 <translation id="9189690067274055051">Giriş yapmak için telefonunuzun kilidini açın ve <ph name="DEVICE_TYPE" /> cihazınıza yaklaştırın.</translation>
 <translation id="9190063653747922532">L2TP/IPsec + önceden paylaşılan anahtar</translation>
-<translation id="9201305942933582053">Chrome için Google Asistan!</translation>
+<translation id="9201305942933582053">Chrome içinGoogle Now!</translation>
 <translation id="9203398526606335860">&amp;Profil oluşturma etkin</translation>
 <translation id="9203478404496196495">Sekmenin sesini aç</translation>
 <translation id="9203962528777363226">Bu cihazın yöneticisi yeni kullanıcıların eklenmesini devre dışı bıraktı</translation>

@@ -170,7 +170,7 @@
 <translation id="2958431318199492670">Nettverkskonfigurasjonen overholder ikke ONC-standarden. Deler av konfigurasjonen kan muligens ikke importeres.</translation>
 <translation id="2969319727213777354">Klokken må være riktig stilt før du kan opprette sikre tilkoblinger. Grunnen til dette er at sertifikatene nettsteder identifiserer seg med, bare er gyldige i visse tidsperioder. Ettersom klokken på enheten din er feil, kan ikke Google Chrome bekrefte disse sertifikatene.</translation>
 <translation id="2972581237482394796">Gjø&amp;r om</translation>
-<translation id="2991174974383378012">Deles med nettsteder</translation>
+<translation id="2991174974383378012">Deling med nettsteder</translation>
 <translation id="3005723025932146533">Vis lagret kopi</translation>
 <translation id="3010559122411665027">Listeoppføring «<ph name="ENTRY_INDEX" />»: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Feil type enhetsinnstillinger</translation>
@@ -191,7 +191,7 @@
 <translation id="3225919329040284222">Tjeneren oppga et sertifikat som ikke samsvarte med innebygde forventninger. Disse forventningene benyttes for visse nettsteder med høy sikkerhet, og brukes for å beskytte deg.</translation>
 <translation id="3226128629678568754">Trykk på knappen for å laste inn på nytt, for å sende inn dataene som trengs for å laste inn siden på nytt.</translation>
 <translation id="3228969707346345236">Oversettelsen mislyktes fordi siden allerede er på <ph name="LANGUAGE" />.</translation>
-<translation id="3230256772510102500">Proxy-tjenere er tjenere som fungerer som bindeledd mellom datamaskiner og andre tjenere. For øyeblikket er systemet konfigurert for å bruke en proxy-tjener, men
+<translation id="3230256772510102500">Proxy-tjenere er tjenere som fungerer som bindeledd mellom datamaskiner og andre tjenere. For øyeblikket er systemet ditt konfigurert for å bruke en proxy-tjener, men
       <ph name="PRODUCT_NAME" />
       kan ikke koble til den.</translation>
 <translation id="3270847123878663523">&amp;Angre omorganiseringen</translation>
@@ -280,7 +280,7 @@
 <translation id="4424024547088906515">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke klarert av Chrome. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="443673843213245140">Bruk av mellomtjener er deaktivert, men det er angitt en uttrykkelig mellomtjenerkonfigurasjon.</translation>
 <translation id="4506176782989081258">Valideringsfeil: <ph name="VALIDATION_ERROR" /></translation>
-<translation id="450710068430902550">Deles med administratoren</translation>
+<translation id="450710068430902550">Deling med administratoren</translation>
 <translation id="4522570452068850558">Detaljer</translation>
 <translation id="4535734014498033861">Tilkobling til mellomtjener mislyktes.</translation>
 <translation id="4587425331216688090">Vil du fjerne adressen fra Chrome?</translation>
@@ -306,8 +306,7 @@
     <ph name="PRODUCT_NAME" />
     avsluttes på riktig måte, kan det hende disse filene skades, noe som
     fører til denne feilen. Du skal kunne løse problemet ved å laste inn siden på
-    nytt, og du kan unngå at den oppstår igjen ved å bruke riktig avslåingsprosess
-    i fremtiden.
+    nytt, og du kan unngå at den oppstår igjen ved å slå av på riktig måte.
     <ph name="LINE_BREAK" />
     Hvis problemet fortsetter, kan du prøve å tømme bufferen. I enkelte tilfeller
     kan dette være et symptom på at maskinvaren er i ferd med å svikte.</translation>
@@ -396,21 +395,21 @@
 <translation id="6093795393556121384">Kortet er bekreftet</translation>
 <translation id="6099520380851856040">Oppstod <ph name="CRASH_TIME" /></translation>
 <translation id="6101917839110691420">Nettsiden på <ph name="URL" /> har forårsaket
-      for mange viderekoblinger. Du kan kanskje løse problemet ved å slette informasjonskapslene for dette nettstedet eller tillate informasjonskapsler fra tredjeparter. Hvis
-      ikke kan det hende problemet skyldes tjenerkonfigurasjonen og ikke
-      datamaskinen din.</translation>
+      for mange viderekoblinger. Du kan kanskje løse problemet ved å slette
+      informasjonskapslene for dette nettstedet eller tillate informasjonskapsler fra
+      tredjeparter. Hvis ikke kan det hende problemet skyldes 
+      tjenerkonfigurasjonen og ikke datamaskinen din.</translation>
 <translation id="6130627560064345577">Tjeneren som er vert for nettsiden, er sannsynligvis overbelastet, eller det har oppstått en feil.
     For å forhindre at utvidelser skaper for mye trafikk og gjør situasjonen verre,
-    har
-    <ph name="PRODUCT_NAME" />
+    har <ph name="PRODUCT_NAME" />
     midlertidig sluttet å tillate forespørsler fra utvidelser til denne nettadressen.
     <ph name="LINE_BREAK" />
     Hvis du ikke ønsker dette, f.eks. hvis du feilsøker ditt eget nettsted, kan du
-    gå til <ph name="URL_FOR_MORE_INFO" />
+    gå til <ph name="URL_FOR_MORE_INFO" />.
     Der finner du mer informasjon, blant annet om hvordan du slår av denne
     funksjonen.</translation>
-<translation id="6146055958333702838">Sjekk alle kabler, og start rutere, modemer eller andre nettverksenheter du bruker,
-    på nytt.</translation>
+<translation id="6146055958333702838">Sjekk alle kabler, og start rutere, modemer eller andre nettverksenheter
+     du bruker, på nytt.</translation>
 <translation id="6151417162996330722">Tjenersertifikatet har en gyldighetsperiode som er for lang.</translation>
 <translation id="6154808779448689242">Det returnerte tokenet for enhetsinnstillinger samsvarer ikke med det gjeldende tokenet</translation>
 <translation id="6165508094623778733">Les mer</translation>
@@ -419,8 +418,8 @@
 <translation id="6232139169545176020">Det forespurte URI-systemet støttes ikke.</translation>
 <translation id="6237614789842758826">Søk på Google</translation>
 <translation id="6259156558325130047">&amp;Omorganiser likevel</translation>
-<translation id="6262796033958342538">Mottok flere distinkte Location-overskrifter. Dette er forbudt, for å forhindre
-    angrep som splitter HTTP-svar.</translation>
+<translation id="6262796033958342538">Mottok flere distinkte Location-overskrifter. Dette er forbudt, for å beskytte
+    mot angrep som splitter HTTP-svar.</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" />-bokmerker</translation>
 <translation id="6264485186158353794">Tilbake til sikkerhet</translation>
 <translation id="6268647269805730940">Denne enheten har ikke fullført trinnene for første oppstart.</translation>
@@ -455,7 +454,7 @@
 <translation id="6671697161687535275">Vil du fjerne forslaget fra Chromium?</translation>
 <translation id="674375294223700098">Ukjent feil med tjenersertifikat.</translation>
 <translation id="6746710319270251222">Mottok flere distinkte Content-Length-overskrifter. Dette er forbudt, for
-    å hindre angrep som splitter HTTP-svar.</translation>
+    å beskytte mot angrep som splitter HTTP-svar.</translation>
 <translation id="6753269504797312559">Retningslinjeverdi</translation>
 <translation id="6771079623344431310">Kan ikke koble til mellomtjeneren</translation>
 <translation id="6781404225664080496">Forespørsler til denne nettadressen blir midlertidig stanset.</translation>
@@ -464,7 +463,7 @@
 <translation id="6831043979455480757">Oversett</translation>
 <translation id="6839929833149231406">Område</translation>
 <translation id="6851123334996048122">Gå til
-      <ph name="BEGIN_BOLD" />
+      <ph name="BEGIN_BOLD" />
       Programmer &gt; Systeminnstillinger &gt; Nettverk &gt; Hjelp meg
       <ph name="END_BOLD" />
       for å teste tilkoblingen.</translation>
@@ -534,8 +533,10 @@
 <translation id="7578104083680115302">Når du lagrer kort med Google, kan du bruke dem til å betale raskt på nettsteder og i apper – uansett hvilken enhet du bruker.</translation>
 <translation id="7592362899630581445">Tjenerens sertifikat bryter navnereglene.</translation>
 <translation id="759809665464235306">Denne tjeneren krever et sertifikat for autentisering og godkjente ikke det som ble
-    sendt av nettleseren. Det kan hende sertifikatet ditt er utløpt, eller at tjeneren      ikke stoler på utstederen. Hvis du har et annet sertifikat, kan du prøve å bruke     det. Ellers kan det hende du må skaffe deg et gyldig sertifikat fra et annet
-    sted.</translation>
+    sendt av nettleseren. Det kan hende sertifikatet ditt er utløpt, eller at tjeneren
+    ikke stoler på utstederen. Hvis du har et annet sertifikat, kan du prøve 
+    å bruke det. Ellers kan det hende du må skaffe deg et gyldig sertifikat fra
+    et annet sted.</translation>
 <translation id="7600965453749440009">Oversett aldri <ph name="LANGUAGE" /></translation>
 <translation id="7606563002701561706">Forbedrede bokmerker</translation>
 <translation id="7610193165460212391">Verdien er utenfor rekkevidden <ph name="VALUE" />.</translation>
@@ -581,8 +582,8 @@
 <translation id="8204086856545141093">Forespørsler til tjeneren har blitt blokkert av en innstilling.</translation>
 <translation id="820791781874064845">Denne nettsiden ble blokkert av en utvidelse</translation>
 <translation id="8218327578424803826">Tilordnet posisjon:</translation>
-<translation id="8240446052814166959">Sjekk innstillingene for proxy-tjeneren, eller kontakt nettverksadministratoren for å
-      forsikre deg om at den fungerer.
+<translation id="8240446052814166959">Sjekk innstillingene for proxy-tjeneren, eller kontakt nettverksadministratoren for
+      å forsikre deg om at den fungerer.
       <ph name="PLATFORM_TEXT" /></translation>
 <translation id="8241707690549784388">Siden du ser etter, brukte informasjon som du anga. Hvis du går tilbake til denne siden, kan det føre til at handlinger som er utført, blir gjentatt. Vil du fortsette?</translation>
 <translation id="8249320324621329438">Sist hentet:</translation>
@@ -591,7 +592,7 @@
       klikk på
       <ph name="BEGIN_BOLD" />Kjør<ph name="END_BOLD" />,
       skriv inn
-      <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />
+      <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />,
       og klikk deretter på
       <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
 <translation id="8289355894181816810">Kontakt nettverksadministratoren hvis du ikke er sikker på hva dette betyr.</translation>
@@ -622,9 +623,10 @@
 <translation id="8729518820755801792">Chrome kan ikke åpne adressen.</translation>
 <translation id="8738058698779197622">Klokken din må være riktig stilt for at du skal kunne opprette en sikker forbindelse. Sertifikatene som nettsteder bruker til å identifisere seg med, er nemlig bare gyldige i en viss tid. Siden enhetens klokke er feil, kan ikke Chromium kontrollere disse sertifikatene.</translation>
 <translation id="8776174617851537652">Nettsiden på <ph name="URL" /> har forårsaket
-      for mange viderekoblinger. Du kan kanskje løse problemet ved å slette informasjonskapslene for dette nettstedet eller tillate informasjonskapsler fra tredjeparter. Hvis
-      ikke kan det hende problemet skyldes tjenerkonfigurasjonen og ikke
-      datamaskinen din.</translation>
+      for mange viderekoblinger. Du kan kanskje løse problemet ved å slette
+      informasjonskapslene for dette nettstedet eller tillate informasjonskapsler
+      fra tredjeparter. Hvis ikke kan det hende problemet skyldes
+      tjenerkonfigurasjonen og ikke datamaskinen din.</translation>
 <translation id="8790007591277257123">&amp;Slett likevel</translation>
 <translation id="8798099450830957504">Standard</translation>
 <translation id="8804164990146287819">Personvernregler</translation>
@@ -633,7 +635,7 @@
 <translation id="8834246243508017242">Aktiver autofyll for Kontakter</translation>
 <translation id="883848425547221593">Andre bokmerker</translation>
 <translation id="884923133447025588">Finner ingen tilbakekallingsmekanisme.</translation>
-<translation id="885730110891505394">Deles med Google</translation>
+<translation id="885730110891505394">Deling med Google</translation>
 <translation id="8866481888320382733">Analysefeil i angivelsen av enhetrsinnstillinger</translation>
 <translation id="8866959479196209191">Denne siden sier:</translation>
 <translation id="8876793034577346603">Nettverkskonfigurasjon kunne ikke analyseres.</translation>
@@ -668,7 +670,7 @@
 <translation id="9168302918952546302"><ph name="PRODUCT_NAME" />
       har problemer med å få tilgang til nettverket.
       <ph name="LINE_BREAK" />
-      Dette kan skyldes at du har brannmur- eller antivirusprogramvare som tror at
+      Dette kan skyldes at du har et brannmur- eller antivirusprogram som feilaktig tror at
       <ph name="PRODUCT_NAME" />
       er en inntrenger på enheten din, og derfor hindrer den i å koble seg til
       Internett.</translation>
@@ -680,7 +682,7 @@
 <translation id="946368465353148168"><ph name="PRODUCT_NAME" />
       har problemer med å få tilgang til nettverket.
       <ph name="LINE_BREAK" />
-      Dette kan skyldes at du har brannmur- eller antivirusprogramvare som tror at
+      Dette kan skyldes at du har et brannmur- eller antivirusprogram som feilaktig tror at
       <ph name="PRODUCT_NAME" />
       er en inntrenger på datamaskinen, og derfor hindrer den i å koble seg til
       Internett.</translation>

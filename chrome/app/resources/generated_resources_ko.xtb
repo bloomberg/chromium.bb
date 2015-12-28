@@ -633,7 +633,7 @@
 <translation id="1921584744613111023"><ph name="DPI" />dpi</translation>
 <translation id="1921986354447415460">터키어-F 키보드</translation>
 <translation id="1926741348654461781">오프라인 페이지 사용</translation>
-<translation id="192810479200670759">UI를 왼쪽에서 오른쪽으로 모드 또는 오른쪽에서 왼쪽으로 모드로 명시적으로 설정하며 설정한 모드가 UI 언어의 기본 방향을 덮어씁니다.</translation>
+<translation id="192810479200670759">UI를 왼쪽에서 오른쪽으로 모드 또는 오른쪽에서 왼쪽으로 모드로 강제 설정하며 UI 언어의 기본 방향을 무시합니다.</translation>
 <translation id="1929546189971853037">로그인한 모든 기기의 인터넷 사용 기록 조회</translation>
 <translation id="1931134289871235022">슬로바키아어</translation>
 <translation id="1931152874660185993">설치된 구성요소가 없습니다.</translation>
@@ -3826,7 +3826,7 @@
 <translation id="6629841649550503054">모두 <ph name="BEGIN_LINK" />Google 드라이브<ph name="END_LINK" />에 백업했습니다.</translation>
 <translation id="6630452975878488444">선택 단축키</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" />에서 사용자를 대신하여 인증하기 위해 인증서에 대한 영구적인 액세스 권한을 요청합니다.</translation>
-<translation id="6637362044401670482">가상 키보드 오버스크롤 지원을 사용합니다.</translation>
+<translation id="6637362044401670482">가상 키보드 오버스크롤을 사용합니다.</translation>
 <translation id="6639554308659482635">SQLite 메모리</translation>
 <translation id="6644756108386233011">수정된 <ph name="IDS_SHORT_PRODUCT_NAME" /> 설정을 재설정하시겠습니까?</translation>
 <translation id="6647228709620733774">Netscape 인증 기관 취소 URL</translation>

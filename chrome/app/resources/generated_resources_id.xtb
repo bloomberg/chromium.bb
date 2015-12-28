@@ -632,7 +632,7 @@
 <translation id="1921584744613111023"><ph name="DPI" /> dpi</translation>
 <translation id="1921986354447415460">Keyboard Turki-F</translation>
 <translation id="1926741348654461781">Aktifkan laman offline</translation>
-<translation id="192810479200670759">Memaksa UI secara eksplisit untuk menggunakan mode kiri-ke-kanan atau kanan-ke-kiri, yang akan mengganti arah default bahasa UI.</translation>
+<translation id="192810479200670759">Memaksa antarmuka secara eksplisit untuk menggunakan mode kiri-ke-kanan atau kanan-ke-kiri, yang akan mengganti arah default bahasa antarmuka.</translation>
 <translation id="1929546189971853037">Baca riwayat penjelajahan Anda di semua perangkat tempat Anda masuk</translation>
 <translation id="1931134289871235022">Slovak</translation>
 <translation id="1931152874660185993">Tidak ada komponen yang dipasang.</translation>
@@ -2357,7 +2357,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="4378154925671717803">Telepon</translation>
 <translation id="4378551569595875038">Menyambung...</translation>
 <translation id="4381091992796011497">Nama Pengguna:</translation>
-<translation id="438122767399415311">Paksa arah UI</translation>
+<translation id="438122767399415311">Paksa arah antarmuka</translation>
 <translation id="4381849418013903196">Titik Dua</translation>
 <translation id="4384652540891215547">Aktifkan ekstensi</translation>
 <translation id="438503109373656455">Sembrani</translation>

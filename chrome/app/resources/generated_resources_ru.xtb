@@ -357,7 +357,7 @@
 <translation id="1511623662787566703">Вход выполнен через аккаунт <ph name="USER_EMAIL_ADDRESS" />. Синхронизация остановлена через Личный кабинет Google.</translation>
 <translation id="1514215615641002767">Добавить на рабочий стол</translation>
 <translation id="1514298457297359873">Позволяет приложениям задействовать возможности API NaCl Socket. Используйте эту функцию только при тестировании плагинов NaCl.</translation>
-<translation id="151501797353681931">Импортировано из Safari</translation>
+<translation id="151501797353681931">Импортированные из Safari</translation>
 <translation id="1515163294334130951">Запустить</translation>
 <translation id="1519008742749884982">Дополнительные методы ввода</translation>
 <translation id="151922265591345427">1024</translation>
@@ -2100,7 +2100,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3944266449990965865">Полноэкранный режим</translation>
 <translation id="3947376313153737208">Нет</translation>
 <translation id="3948116654032448504">&amp;Найти картинку (<ph name="SEARCH_ENGINE" />)</translation>
-<translation id="394984172568887996">Импортировано из IE</translation>
+<translation id="394984172568887996">Импортированные из IE</translation>
 <translation id="3950820424414687140">Вход</translation>
 <translation id="3951872452847539732">Настройки прокси-сервера контролируются расширением.</translation>
 <translation id="3952219531609536133">Некоторые веб-страницы используют устаревшие или нестандартные расширения JavaScript, которые могут конфликтовать с последними функциями JavaScript. Чтобы обеспечить корректную работу с такими страницами, флаг отключает эти функции.</translation>

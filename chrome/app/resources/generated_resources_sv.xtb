@@ -378,7 +378,7 @@
 <translation id="1533920822694388968">TV-justering</translation>
 <translation id="1535919895260326054">Romaja</translation>
 <translation id="15373452373711364">Stor muspekare</translation>
-<translation id="1543284117603151572">Imported From Edge</translation>
+<translation id="1543284117603151572">Importerade från Edge</translation>
 <translation id="1545177026077493356">Automatiskt kioskläge</translation>
 <translation id="1545786162090505744">Webbadress med %s istället för sökfråga</translation>
 <translation id="1546280085599573572">Det här tillägget har ändrat vilken sida som visas när du klickar på knappen Startsida.</translation>
@@ -631,7 +631,7 @@
 <translation id="1921584744613111023"><ph name="DPI" /> dpi</translation>
 <translation id="1921986354447415460">Tangentbord för turkiska F</translation>
 <translation id="1926741348654461781">Aktivera offline-sidor</translation>
-<translation id="192810479200670759">Explicitly force the UI to left-to-right or right-to-left mode, overriding the default direction of the UI language.</translation>
+<translation id="192810479200670759">Åsidosätt standardriktningen för gränssnittsspråket och tvinga gränssnittet till läget vänster till höger eller höger till vänster.</translation>
 <translation id="1929546189971853037">Läsa webbhistoriken på alla enheter där du är inloggad</translation>
 <translation id="1931134289871235022">Slovakiska</translation>
 <translation id="1931152874660185993">Det finns inga installerade komponenter.</translation>
@@ -2359,7 +2359,7 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4378551569595875038">Ansluter ...</translation>
 <translation id="4381091992796011497">Användarnamn:</translation>
-<translation id="438122767399415311">Force UI direction</translation>
+<translation id="438122767399415311">Tvinga gränssnittets riktning</translation>
 <translation id="4381849418013903196">Kolon</translation>
 <translation id="4384652540891215547">Aktivera tillägget</translation>
 <translation id="438503109373656455">Brunte</translation>
@@ -2849,7 +2849,7 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
    <ph name="LINE_BREAKS" />
    Om du tar bort enheten medan den används kan du förlora data. Vänta tills åtgärden är slutförd och koppla sedan från enheten med appen Files.</translation>
 <translation id="5159488553889181171">Nedladdningen av <ph name="PLUGIN_NAME" /> avbröts.</translation>
-<translation id="5159628598068481063">Windows desktop search redirection preference</translation>
+<translation id="5159628598068481063">Inställning för omdirigering av sökning på Windows-skrivbord</translation>
 <translation id="5160857336552977725">Logga in på din <ph name="DEVICE_TYPE" /></translation>
 <translation id="5163869187418756376">Delningen misslyckades. Kontrollera anslutningen och försök igen senare.</translation>
 <translation id="516592729076796170">Dvorak för programmerare i USA</translation>
@@ -3424,7 +3424,7 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="5982621672636444458">Sorteringsalternativ</translation>
 <translation id="5984222099446776634">Nyligen besökta</translation>
 <translation id="5984814259619230127">Identifiera mobiler via Bluetooth Low Energy med Smart Lock</translation>
-<translation id="5986245990306121338">If enabled, a tab switcher will show even when 'merge tabs and apps' option is on in the settings.</translation>
+<translation id="5986245990306121338">Om inställningen är aktiverad visas flikbytesikonen även när alternativet Sammanfoga flikar och appar är aktiverat i inställningarna.</translation>
 <translation id="5990198433782424697">Tillägg på chrome://-webbadresser</translation>
 <translation id="5991049340509704927">Förstora</translation>
 <translation id="5991774521050363748">Aktivera anpassade layouter för webbaviseringar. De får subtila layoutförbättringar som annars inte vore möjliga.</translation>
@@ -3491,7 +3491,7 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="6089481419520884864">Skapa Distiller-sida</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6093888419484831006">Avbryter uppdatering ...</translation>
-<translation id="6095149522260432647">Enables a preference that allows redirection of Windows desktop searches to the default search engine.</translation>
+<translation id="6095149522260432647">Aktiverar inställningen som gör att sökningar på Windows-skrivbordet kan omdirigeras till standardsökmotorn.</translation>
 <translation id="6095984072944024315">−</translation>
 <translation id="6096047740730590436">Öppna maximerad</translation>
 <translation id="6096326118418049043">X.500-namn</translation>
@@ -3684,7 +3684,7 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="6417515091412812850">Det gick inte att kontrollera om certifikatet har återkallats.</translation>
 <translation id="6418160186546245112">Återgå till den tidigare installerade versionen av <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="6418481728190846787">Ta bort tillgången till alla appar permanent</translation>
-<translation id="6418505248408153264">Enable Material Design history</translation>
+<translation id="6418505248408153264">Aktivera historiken för Material Design</translation>
 <translation id="6419902127459849040">Centraleuropeiskt</translation>
 <translation id="6420676428473580225">Lägg till på skrivbordet</translation>
 <translation id="6422329785618833949">Fotot har vänts</translation>
@@ -3827,7 +3827,7 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="6629841649550503054">Allt har säkerhetskopierats på <ph name="BEGIN_LINK" />Google Drive!<ph name="END_LINK" /></translation>
 <translation id="6630452975878488444">Genväg till val</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> vill få permanent tillgång till ett certifikat för att autentisera sig själv för din räkning.</translation>
-<translation id="6637362044401670482">Enables virtual keyboard overscroll support.</translation>
+<translation id="6637362044401670482">Aktiverar stöd för överrullning på virtuellt tangentbord.</translation>
 <translation id="6639554308659482635">SQLite-minne</translation>
 <translation id="6644756108386233011">Har återställningen ändrat inställningarna för <ph name="IDS_SHORT_PRODUCT_NAME" />?</translation>
 <translation id="6647228709620733774">Webbadress till Netscapes spärrlista för certifikatutfärdare</translation>
@@ -4649,7 +4649,7 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="7912024687060120840">I mappen:</translation>
 <translation id="7912145082919339430">När <ph name="PLUGIN_NAME" /> har installerats uppdaterar du sidan för att aktivera det.</translation>
 <translation id="7915471803647590281">Berätta för oss vad som händer innan du skickar feedback.</translation>
-<translation id="7915679104416252393">Enable tab switcher in document mode.</translation>
+<translation id="7915679104416252393">Aktiverar flikbyte i dokumentläge.</translation>
 <translation id="7915857946435842056">Aktivera experimentella funktioner för IME-inmatningsvyer.</translation>
 <translation id="7917972308273378936">Litauiskt tangentbord</translation>
 <translation id="7918257978052780342">Registrera</translation>
@@ -4949,7 +4949,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8339012082103782726">Tillåt inte att webbplatser använder mikrofonen</translation>
 <translation id="8342318071240498787">Det finns redan en fil eller en katalog med samma namn.</translation>
 <translation id="834457929814110454">Om du är medveten om säkerhetsriskerna kan du <ph name="BEGIN_LINK" />besöka den här osäkra webbplatsen<ph name="END_LINK" /> innan de skadliga programmen har tagits bort.</translation>
-<translation id="8345553596530559351">If enabled, the chrome://history/ URL loads the Material Design history page.</translation>
+<translation id="8345553596530559351">När detta alternativ är aktiverat öppnas historiksidan för Material Design på webbadressen chrome://history/.</translation>
 <translation id="8351419472474436977">Detta tillägg har tagit kontroll över dina proxyinställningar, vilket innebär att det kan ändra, knäcka eller tjuvlyssna på allt du gör på webben. Om du inte vet varför den här ändringen inträffade är den troligen inte önskvärd.</translation>
 <translation id="8352772353338965963">Lägg till ett konto för multiinloggning. Alla inloggade konton kan öppnas utan lösenord, så använd bara den här funktionen med konton du litar på.</translation>
 <translation id="8353683614194668312">Appen eller tillägget kan:</translation>

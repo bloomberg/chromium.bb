@@ -53,6 +53,7 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="2485422356828889247">Desinstalación</translation>
 <translation id="2576431527583832481">¡Chrome mejoró! Hay una nueva versión disponible.</translation>
 <translation id="2580411288591421699">No se puede instalar la misma versión de Google Chrome que se está ejecutando actualmente. Cierra Google Chrome e intenta nuevamente.</translation>
+<translation id="2582790009689336987">Esta computadora dejará de recibir actualizaciones de Google Chrome en breve porque este sistema Linux ya no se admitirá más.</translation>
 <translation id="2588322182880276190">Logo de Chrome</translation>
 <translation id="2664962310688259219">Licencias de código abierto del Sistema operativo Chrome</translation>
 <translation id="2665296953892887393">Envía a Google informes de fallos y <ph name="UMA_LINK" /> para ayudar a mejorar Google Chrome.</translation>
@@ -98,6 +99,7 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="4251615635259297716">¿Quieres vincular tus datos de Google Chrome con esta cuenta?</translation>
 <translation id="4309555186815777032">(Es necesario <ph name="BEGIN_BUTTON" />reiniciar<ph name="END_BUTTON" /> Chrome).</translation>
 <translation id="4331809312908958774">SO Chrome</translation>
+<translation id="437002079035561265">Esta computadora no recibirá más actualizaciones de Google Chrome porque este sistema Linux ya no se admite.</translation>
 <translation id="4407807842708586359">SO de Google Chrome</translation>
 <translation id="4458285410772214805">Cierra la sesión y vuelve a iniciarla para que se aplique el cambio.</translation>
 <translation id="4480040274068703980">El Sistema operativo Chrome no pudo sincronizar los datos porque se produjo un error de acceso.</translation>

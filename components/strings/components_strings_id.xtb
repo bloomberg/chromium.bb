@@ -95,7 +95,7 @@
           <ph name="BEGIN_BOLD" />
           Start &gt; Control Panel &gt; Network and Internet &gt; Network and Sharing Center &gt; Troubleshoot Problems (di bawah) &gt; Internet Connections.
           <ph name="END_BOLD" /></translation>
-<translation id="2166049586286450108">Akses Admin Penuh</translation>
+<translation id="2166049586286450108">Akses Penuh Admin</translation>
 <translation id="2171101176734966184">Anda berusaha menjangkau <ph name="DOMAIN" />, tetapi server menyajikan sertifikat yang ditandatangani menggunakan algoritme tanda tangan yang lemah. Artinya kredensial keamanan yang disajikan server mungkin telah dipalsukan, dan server tersebut mungkin bukan yang diharapkan (Anda mungkin sedang berkomunikasi dengan penyerang).</translation>
 <translation id="2181821976797666341">Kebijakan</translation>
 <translation id="2212735316055980242">Kebijakan tidak ditemukan</translation>
@@ -306,7 +306,7 @@
     <ph name="PRODUCT_NAME" />
     menyimpan file yang diunduh ke disk untuk sementara. Jika
     <ph name="PRODUCT_NAME" />
-    tidak dimatikan dengan benar, file ini mungkin rusak dan menyebabkan
+    tidak dimatikan dengan benar, file ini dapat rusak dan menyebabkan
     kesalahan ini.  Memuat ulang laman seharusnya menyelesaikan masalah ini,
     dan mematikan dengan benar seharusnya mencegah hal ini terjadi di masa mendatang.
     <ph name="LINE_BREAK" />
@@ -407,7 +407,7 @@
     <ph name="LINE_BREAK" />
     Jika merasa perilaku ini tidak diinginkan, misalnya Anda melakukan debug pada situs web Anda sendiri,
     kunjungi <ph name="URL_FOR_MORE_INFO" />,
-    tempat Anda dapat menemukan informasi selengkapnya termasuk cara menonaktifkan fitur.</translation>
+    di sana Anda dapat menemukan informasi selengkapnya termasuk cara menonaktifkan fitur.</translation>
 <translation id="6146055958333702838">Periksa semua kabel dan boot ulang router, modem, atau perangkat
     jaringan lain yang mungkin Anda gunakan.</translation>
 <translation id="6151417162996330722">Sertifikat server memiliki masa berlaku yang terlalu panjang.</translation>

@@ -153,7 +153,7 @@
 <translation id="2855922900409897335">Verifica tu <ph name="CREDIT_CARD" /></translation>
 <translation id="2887624244875325968">Este error se puede producir al establecer una conexión con un servidor seguro (HTTPS) si
     el servidor está intentando establecer una conexión segura, pero
-    una configuración incorrecta nefasta lo impide.
+    una configuración nefasta lo impide.
     <ph name="LINE_BREAK" /> En este caso,
     es necesario reparar el servidor.
     Para proteger la privacidad de los usuarios,
@@ -667,7 +667,7 @@
 <translation id="9168302918952546302"><ph name="PRODUCT_NAME" />
       no puede acceder a la red.
       <ph name="LINE_BREAK" />
-      Es posible que el cortafuegos o el software antivirus consideren erróneamente que
+      Esto puede deberse a que el cortafuegos o el software antivirus consideran erróneamente que
       <ph name="PRODUCT_NAME" />
       es un intruso e impiden que se conecte a Internet en tu dispositivo.</translation>
 <translation id="9170848237812810038">&amp;Deshacer</translation>
@@ -678,7 +678,7 @@
 <translation id="946368465353148168"><ph name="PRODUCT_NAME" />
       no puede acceder a la red.
       <ph name="LINE_BREAK" />
-      Es posible que el cortafuegos o el software antivirus consideren erróneamente que
+      Puede deberse a que el cortafuegos o el software antivirus consideran erróneamente que
       <ph name="PRODUCT_NAME" />
       es un intruso e impiden que se conecte a Internet en tu ordenador.</translation>
 <translation id="969892804517981540">Build oficial</translation>

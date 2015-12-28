@@ -37,7 +37,7 @@
 <translation id="1413809658975081374">Chyba v ochrane osobných údajov</translation>
 <translation id="1426410128494586442">Áno</translation>
 <translation id="1430915738399379752">Tlačiť</translation>
-<translation id="1452265419286795001">Webovú stránku sa nepodarilo načítať, pretože váš počítač prešiel do režimu spánku alebo dlhodobého spánku. V tomto režime totiž dôjde k vypnutiu sieťových pripojení a všetky nové sieťové žiadosti zlyhajú. Túto záležitosť by mohlo vyriešiť opätovné načítanie stránky.</translation>
+<translation id="1452265419286795001">Webovú stránku sa nepodarilo načítať, pretože váš počítač prešiel do režimu spánku alebo dlhodobého spánku. V tomto režime totiž dôjde k vypnutiu sieťových pripojení a všetky nové sieťové žiadosti zlyhajú. Riešením by mohlo byť opätovné načítanie stránky.</translation>
 <translation id="1455235771979731432">Pri overovaní karty sa vyskytol problém. Skontrolujte svoje pripojenie k internetu a skúste to znova.</translation>
 <translation id="1491151370853475546">Znova načítať stránku</translation>
 <translation id="1506687042165942984">Zobrazí sa uložená (t. j. neaktuálna) kópia tejto stránky.</translation>
@@ -267,7 +267,7 @@
 <translation id="4800132727771399293">Skontrolujte dátum vypršania platnosti aj kód CVC a skúste to znova</translation>
 <translation id="4813512666221746211">Chyba siete</translation>
 <translation id="4816492930507672669">Prispôsobiť stránke</translation>
-<translation id="4841859178893814774"><ph name="PRODUCT_NAME" /> zrýchľuje webové stránky tým, že dočasne ukladá stiahnuté súbory na disk. Ak sa <ph name="PRODUCT_NAME" /> nevypne správne, tieto súbory sa môžu poškodiť a spôsobiť túto chybu. Problém by sa mal vyriešiť opätovným načítaním stránky. Ak chcete, aby sa tento problém v budúcnosti nevyskytoval, vypínajte prehliadač správne.<ph name="LINE_BREAK" />Ak tento problém pretrváva, skúste vymazať vyrovnávaciu pamäť. Tento problém môže byť v niektorých prípadoch počiatočným prejavom zlyhania hardvéru.</translation>
+<translation id="4841859178893814774"><ph name="PRODUCT_NAME" /> zrýchľuje webové stránky tým, že dočasne ukladá stiahnuté súbory na disk. Ak sa <ph name="PRODUCT_NAME" /> nevypne správne, súbory sa môžu poškodiť a spôsobiť túto chybu. Problém by sa mal vyriešiť opätovným načítaním stránky. Ak chcete, aby sa tento problém v budúcnosti nevyskytoval, vypínajte prehliadač správne.<ph name="LINE_BREAK" />Ak tento problém pretrváva, skúste vymazať vyrovnávaciu pamäť. Tento problém môže byť v niektorých prípadoch počiatočným prejavom zlyhania hardvéru.</translation>
 <translation id="4850886885716139402">Zobraziť</translation>
 <translation id="4874648484377130814">Táto stránka používa <ph name="BEGIN_LINK" />novú všeobecnú doménu najvyššej úrovne<ph name="END_LINK" /> (gTLD). Ak ste v minulosti pristupovali na interné stránky pomocou domény <ph name="HOST_NAME" />, kontaktujte svojho správcu siete.</translation>
 <translation id="49215695600353191">Odpoveď zo servera obsahovala duplicitné hlavičky. Tento problém často spôsobuje nesprávna konfigurácia webových stránok alebo proxy servera. Môže ho vyriešiť len správca.</translation>
@@ -338,8 +338,8 @@
 <translation id="6066742401428748382">Prístup k danej webovej stránke bol odmietnutý</translation>
 <translation id="6093795393556121384">Vaša karta je overená</translation>
 <translation id="6099520380851856040">Výskyt <ph name="CRASH_TIME" /></translation>
-<translation id="6101917839110691420">Webová stránka na adrese <ph name="URL" /> spôsobila príliš mnoho presmerovaní. Problém je možné vyriešiť vymazaním súborov cookie pre tieto stránky alebo povolením súborov cookie tretích strán. Ak to nepomôže, ide pravdepodobne o chybu konfigurácie servera a nie o problém vo vašom počítači.</translation>
-<translation id="6130627560064345577">Server, ktorý hostí webovú stránku, bol pravdepodobne preťažený alebo sa na ňom vyskytla chyba. Z dôvodu zabránenia rozšíreniam zvyšovať návštevnosť a spôsobovať ďalšie ťažkosti aplikácia <ph name="PRODUCT_NAME" /> dočasne zastavila žiadosti rozšírení na danú webovú adresu.<ph name="LINE_BREAK" />Ak sa domnievate, že je toto správanie nežiaduce, napríklad pri ladení vlastných webových stránok, navštívte adresu <ph name="URL_FOR_MORE_INFO" />, na ktorej nájdete ďalšie informácie vrátane návodu na zakázanie tejto funkcie.</translation>
+<translation id="6101917839110691420">Webová stránka na adrese <ph name="URL" /> spôsobila príliš mnoho presmerovaní. Problém je možné vyriešiť vymazaním súborov cookie pre tieto stránky alebo povolením súborov cookie tretích strán. Ak to nepomôže, ide pravdepodobne o chybu konfigurácie servera, a nie o problém vo vašom počítači.</translation>
+<translation id="6130627560064345577">Server, ktorý hostí webovú stránku, bol pravdepodobne preťažený alebo sa na ňom vyskytla chyba. Aplikácia <ph name="PRODUCT_NAME" /> dočasne zastavila žiadosti rozšírení na danú webovú adresu, aby zabránila rozšíreniam zvyšovať návštevnosť a spôsobovať ďalšie ťažkosti.<ph name="LINE_BREAK" />Ak sa domnievate, že je toto správanie nežiaduce, napríklad pri ladení vlastných webových stránok, navštívte adresu <ph name="URL_FOR_MORE_INFO" />, na ktorej nájdete ďalšie informácie vrátane návodu na zakázanie tejto funkcie.</translation>
 <translation id="6146055958333702838">Skontrolujte všetky káble a reštartujte všetky používané smerovače, modemy alebo iné sieťové zariadenia.</translation>
 <translation id="6151417162996330722">Obdobie platnosti certifikátu servera je príliš dlhé</translation>
 <translation id="6154808779448689242">Vrátený token pravidla sa nezhoduje s aktuálnym tokenom</translation>
@@ -516,7 +516,7 @@
 <translation id="8725066075913043281">Skúsiť znova</translation>
 <translation id="8729518820755801792">Chrome nemôže otv. adr. URL.</translation>
 <translation id="8738058698779197622">Ak chcete nadviazať zabezpečené pripojenie, vaše hodiny musia byť nastavené správne. Je to preto, že certifikáty, ktoré webové stránky používajú na vlastnú identifikáciu, sú platné iba určitý čas. Keďže nie sú hodiny vášho zariadenia nastavené správne, Chromium nemôže tieto certifikáty overiť.</translation>
-<translation id="8776174617851537652">Webová stránka na adrese <ph name="URL" /> spôsobila príliš mnoho presmerovaní. Problém je možné vyriešiť vymazaním súborov cookie pre tieto stránky alebo povolením súborov cookie tretích strán. Ak to nepomôže, ide pravdepodobne o chybu konfigurácie servera a nie o problém vo vašom zariadení.</translation>
+<translation id="8776174617851537652">Webová stránka na adrese <ph name="URL" /> spôsobila príliš mnoho presmerovaní. Problém je možné vyriešiť vymazaním súborov cookie pre tieto stránky alebo povolením súborov cookie tretích strán. Ak to nepomôže, ide pravdepodobne o chybu konfigurácie servera, a nie o problém vo vašom zariadení.</translation>
 <translation id="8790007591277257123">&amp;Znova vymazať</translation>
 <translation id="8798099450830957504">Predvolené</translation>
 <translation id="8804164990146287819">Pravidlá ochrany súkromia</translation>

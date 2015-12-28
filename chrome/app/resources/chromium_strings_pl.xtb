@@ -147,7 +147,7 @@
 <translation id="6485906693002546646">Używasz adresu <ph name="PROFILE_EMAIL" /> do synchronizowania danych w Chromium. Aby zaktualizować ustawienia synchronizacji lub używać Chromium bez konta Google, wejdź na stronę <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Odinstaluj Chromium</translation>
 <translation id="6526111688217511984">Chromium musi mieć dostęp do pamięci, by pobierać pliki.</translation>
-<translation id="6593914713218535185">Chromium może działać nieprawidłowo, bo nie jest już zgodny z tym systemem Linux.</translation>
+<translation id="6593914713218535185">Chromium może działać nieprawidłowo, bo nie jest już obsługiwany na tym systemie Linux.</translation>
 <translation id="6637001341228460105">Chromium potrzebuje dostępu do mikrofonu, by móc go udostępnić tej stronie.</translation>
 <translation id="6638567566961868659">Zakładki są dostępne w menu Chromium i na pasku zakładek.</translation>
 <translation id="6676384891291319759">Skorzystaj z internetu</translation>

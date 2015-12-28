@@ -53,7 +53,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="2485422356828889247">Odinstaluj</translation>
 <translation id="2576431527583832481">Chrome jest teraz jeszcze lepszy! Dostępna jest nowa wersja.</translation>
 <translation id="2580411288591421699">Nie można zainstalować tej samej wersji przeglądarki Google Chrome co obecnie uruchomiona. Zamknij przeglądarkę Google Chrome i spróbuj ponownie.</translation>
-<translation id="2582790009689336987">Google Chrome wkrótce przestanie aktualizować się na tym komputerze, bo nie będzie już zgodny z tym systemem Linux.</translation>
+<translation id="2582790009689336987">Google Chrome wkrótce przestanie aktualizować się na tym komputerze, bo ten system Linux nie będzie już obsługiwany.</translation>
 <translation id="2588322182880276190">Logo Chrome</translation>
 <translation id="2664962310688259219">Licencje oprogramowania typu open source w Chrome OS</translation>
 <translation id="2665296953892887393">Pomóż nam ulepszyć Google Chrome, przesyłając do Google raporty o awariach i <ph name="UMA_LINK" /></translation>
@@ -100,7 +100,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="4309555186815777032">(wymaga <ph name="BEGIN_BUTTON" />ponownego uruchomienia<ph name="END_BUTTON" /> Chrome)</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
-<translation id="437002079035561265">Google Chrome nie będzie już aktualizować się na tym komputerze, bo nie jest już zgodny z tym systemem Linux.</translation>
+<translation id="437002079035561265">Google Chrome nie będzie już aktualizować się na tym komputerze, bo ten system Linux nie będzie już obsługiwany.</translation>
 <translation id="4407807842708586359">System operacyjny Google Chrome</translation>
 <translation id="4458285410772214805">Wyloguj się i zaloguj ponownie, by zmiana zaczęła obowiązywać.</translation>
 <translation id="4480040274068703980">System operacyjny Chrome nie może zsynchronizować danych z powodu błędu logowania.</translation>

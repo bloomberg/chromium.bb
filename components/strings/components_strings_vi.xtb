@@ -308,7 +308,7 @@
     <ph name="PRODUCT_NAME" />
     không được tắt đúng cách, các tệp này có thể bị lỗi, gây ra
     lỗi này.  Việc tải lại trang sẽ khắc phục được sự cố này và
-    tắt đúng cách sẽ ngăn không cho sự cố này xảy ra trong tương lai.
+    tắt đúng cách sẽ giúp ngăn sự cố này xảy ra trong tương lai.
     <ph name="LINE_BREAK" />
     Nếu sự cố vẫn tiếp diễn, hãy thử xóa bộ nhớ cache.  Trong một số trường hợp, đây
     cũng có thể là triệu chứng cho thấy phần cứng bắt đầu hỏng.</translation>
@@ -403,7 +403,7 @@
 <translation id="6130627560064345577">Có thể máy chủ lưu trữ trang web đã bị quá tải hoặc gặp lỗi.
     Để tránh cho phép các tiện ích gây ra quá nhiều lưu lượng và khiến tình trạng trở nên tồi tệ hơn,
     <ph name="PRODUCT_NAME" />
-    đã tạm thời ngừng cho phép các yêu cầu của tiện ích gửi tới URL này.
+    đã tạm thời ngừng cho phép các tiện ích gửi yêu cầu tới URL này.
     <ph name="LINE_BREAK" />
     Nếu bạn cho rằng điều này nằm ngoài mong muốn, chẳng hạn như bạn đang gỡ lỗi trang web của riêng mình, hãy
     truy cập <ph name="URL_FOR_MORE_INFO" />,
@@ -587,9 +587,9 @@
 <translation id="8241707690549784388">Trang mà bạn đang tìm sử dụng thông tin bạn đã nhập vào. Việc quay lại trang đó có thể lặp lại bất kỳ tác vụ nào bạn đã thực hiện. Bạn có muốn tiếp tục không?</translation>
 <translation id="8249320324621329438">Tìm nạp lần cuối:</translation>
 <translation id="8266098793847448402">Nhấp vào
-      <ph name="BEGIN_BOLD" />Bắt đầu<ph name="END_BOLD" />,
+      <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" />,
       nhấp vào
-      <ph name="BEGIN_BOLD" />Chạy<ph name="END_BOLD" />,
+      <ph name="BEGIN_BOLD" />Run<ph name="END_BOLD" />,
       nhập
       <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />,
       sau đó nhấp vào
