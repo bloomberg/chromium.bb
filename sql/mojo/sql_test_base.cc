@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/util/capture_util.h"
@@ -79,7 +80,7 @@ bool SQLTestBase::CorruptSizeInHeaderOfDB() {
   test::CorruptSizeInHeaderMemory(&header.front(), db_size);
 
   uint32_t num_bytes_written = 0;
-  file_ptr->Write(header.Pass(), 0, filesystem::WHENCE_FROM_BEGIN,
+  file_ptr->Write(std::move(header), 0, filesystem::WHENCE_FROM_BEGIN,
                   Capture(&error, &num_bytes_written));
   file_ptr.WaitForIncomingResponse();
   if (error != filesystem::FILE_ERROR_OK)
@@ -112,7 +113,7 @@ void SQLTestBase::WriteJunkToDatabase(WriteJunkType type) {
   memcpy(&data.front(), kJunk, strlen(kJunk));
 
   uint32_t num_bytes_written = 0;
-  file_ptr->Write(data.Pass(), 0, filesystem::WHENCE_FROM_BEGIN,
+  file_ptr->Write(std::move(data), 0, filesystem::WHENCE_FROM_BEGIN,
                   Capture(&error, &num_bytes_written));
   file_ptr.WaitForIncomingResponse();
 }
@@ -143,12 +144,12 @@ void SQLTestBase::SetUp() {
 
   filesystem::FileError error = filesystem::FILE_ERROR_FAILED;
   filesystem::DirectoryPtr directory;
-  files()->OpenFileSystem("temp", GetProxy(&directory), client.Pass(),
+  files()->OpenFileSystem("temp", GetProxy(&directory), std::move(client),
                           Capture(&error));
   ASSERT_TRUE(files().WaitForIncomingResponse());
   ASSERT_EQ(filesystem::FILE_ERROR_OK, error);
 
-  vfs_.reset(new ScopedMojoFilesystemVFS(directory.Pass()));
+  vfs_.reset(new ScopedMojoFilesystemVFS(std::move(directory)));
   ASSERT_TRUE(db_.Open(db_path()));
 }
 

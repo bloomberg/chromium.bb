@@ -300,10 +300,10 @@ scoped_ptr<PdfMetafileSkia> PdfMetafileSkia::GetMetafileForCurrentPage() {
   scoped_ptr<PdfMetafileSkia> metafile(new PdfMetafileSkia);
 
   if (data_->pages_.size() == 0)
-    return metafile.Pass();
+    return metafile;
 
   if (data_->recorder_.getRecordingCanvas())  // page outstanding
-    return metafile.Pass();
+    return metafile;
 
   const Page& page = data_->pages_.back();
 
@@ -312,7 +312,7 @@ scoped_ptr<PdfMetafileSkia> PdfMetafileSkia::GetMetafileForCurrentPage() {
   if (!metafile->FinishDocument())  // Generate PDF.
     metafile.reset();
 
-  return metafile.Pass();
+  return metafile;
 }
 
 }  // namespace printing

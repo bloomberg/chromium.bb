@@ -115,7 +115,7 @@ scoped_ptr<Recovery> Recovery::Begin(
     return scoped_ptr<Recovery>();
   }
 
-  return r.Pass();
+  return r;
 }
 
 // static

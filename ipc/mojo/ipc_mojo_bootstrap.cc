@@ -5,6 +5,7 @@
 #include "ipc/mojo/ipc_mojo_bootstrap.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -164,8 +165,8 @@ scoped_ptr<MojoBootstrap> MojoBootstrap::Create(ChannelHandle handle,
 
   scoped_ptr<Channel> bootstrap_channel =
       Channel::Create(handle, mode, self.get());
-  self->Init(bootstrap_channel.Pass(), delegate);
-  return self.Pass();
+  self->Init(std::move(bootstrap_channel), delegate);
+  return self;
 }
 
 MojoBootstrap::MojoBootstrap() : delegate_(NULL), state_(STATE_INITIALIZED) {
@@ -175,7 +176,7 @@ MojoBootstrap::~MojoBootstrap() {
 }
 
 void MojoBootstrap::Init(scoped_ptr<Channel> channel, Delegate* delegate) {
-  channel_ = channel.Pass();
+  channel_ = std::move(channel);
   delegate_ = delegate;
 }
 

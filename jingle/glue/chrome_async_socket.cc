@@ -5,10 +5,10 @@
 #include "jingle/glue/chrome_async_socket.h"
 
 #include <stddef.h>
-
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -405,10 +405,9 @@ bool ChromeAsyncSocket::StartTls(const std::string& domain_name) {
   DCHECK(transport_socket_.get());
   scoped_ptr<net::ClientSocketHandle> socket_handle(
       new net::ClientSocketHandle());
-  socket_handle->SetSocket(transport_socket_.Pass());
-  transport_socket_ =
-      resolving_client_socket_factory_->CreateSSLClientSocket(
-          socket_handle.Pass(), net::HostPortPair(domain_name, 443));
+  socket_handle->SetSocket(std::move(transport_socket_));
+  transport_socket_ = resolving_client_socket_factory_->CreateSSLClientSocket(
+      std::move(socket_handle), net::HostPortPair(domain_name, 443));
   int status = transport_socket_->Connect(
       base::Bind(&ChromeAsyncSocket::ProcessSSLConnectDone,
                  weak_ptr_factory_.GetWeakPtr()));

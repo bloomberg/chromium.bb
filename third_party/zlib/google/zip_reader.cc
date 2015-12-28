@@ -4,6 +4,8 @@
 
 #include "third_party/zlib/google/zip_reader.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/logging.h"
@@ -394,13 +396,9 @@ void ZipReader::ExtractCurrentEntryToFilePathAsync(
 
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&ZipReader::ExtractChunk,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 Passed(output_file.Pass()),
-                 success_callback,
-                 failure_callback,
-                 progress_callback,
-                 0 /* initial offset */));
+      base::Bind(&ZipReader::ExtractChunk, weak_ptr_factory_.GetWeakPtr(),
+                 Passed(std::move(output_file)), success_callback,
+                 failure_callback, progress_callback, 0 /* initial offset */));
 }
 
 bool ZipReader::ExtractCurrentEntryIntoDirectory(
@@ -505,14 +503,9 @@ void ZipReader::ExtractChunk(base::File output_file,
 
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&ZipReader::ExtractChunk,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   Passed(output_file.Pass()),
-                   success_callback,
-                   failure_callback,
-                   progress_callback,
-                   current_progress));
-
+        base::Bind(&ZipReader::ExtractChunk, weak_ptr_factory_.GetWeakPtr(),
+                   Passed(std::move(output_file)), success_callback,
+                   failure_callback, progress_callback, current_progress));
   }
 }
 

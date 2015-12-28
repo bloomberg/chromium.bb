@@ -4,6 +4,8 @@
 
 #include "printing/printed_page.h"
 
+#include <utility>
+
 namespace printing {
 
 PrintedPage::PrintedPage(int page_number,
@@ -11,7 +13,7 @@ PrintedPage::PrintedPage(int page_number,
                          const gfx::Size& page_size,
                          const gfx::Rect& page_content_rect)
     : page_number_(page_number),
-      metafile_(metafile.Pass()),
+      metafile_(std::move(metafile)),
 #if defined(OS_WIN)
       shrink_factor_(0.0f),
 #endif  // OS_WIN

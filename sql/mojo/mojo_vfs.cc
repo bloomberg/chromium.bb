@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/rand_util.h"
@@ -116,7 +117,7 @@ int MojoVFSWrite(sqlite3_file* sql_file,
 
   filesystem::FileError error = filesystem::FILE_ERROR_FAILED;
   uint32_t num_bytes_written = 0;
-  GetFSFile(sql_file)->Write(mojo_data.Pass(), offset,
+  GetFSFile(sql_file)->Write(std::move(mojo_data), offset,
                              filesystem::WHENCE_FROM_BEGIN,
                              Capture(&error, &num_bytes_written));
   GetFSFile(sql_file).WaitForIncomingResponse();
@@ -299,7 +300,7 @@ int MojoVFSOpen(sqlite3_vfs* mojo_vfs,
   // |file| is actually a malloced buffer of size szOsFile. This means that we
   // need to manually use placement new to construct the C++ object which owns
   // the pipe to our file.
-  new (&GetFSFile(file)) filesystem::FilePtr(file_ptr.Pass());
+  new (&GetFSFile(file)) filesystem::FilePtr(std::move(file_ptr));
 
   return SQLITE_OK;
 }
@@ -431,7 +432,7 @@ static sqlite3_vfs mojo_vfs = {
 ScopedMojoFilesystemVFS::ScopedMojoFilesystemVFS(
     filesystem::DirectoryPtr root_directory)
     : parent_(sqlite3_vfs_find(NULL)),
-      root_directory_(root_directory.Pass()) {
+      root_directory_(std::move(root_directory)) {
   CHECK(!mojo_vfs.pAppData);
   mojo_vfs.pAppData = this;
   mojo_vfs.mxPathname = parent_->mxPathname;

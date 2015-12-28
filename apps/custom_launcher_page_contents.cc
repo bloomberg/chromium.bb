@@ -5,6 +5,7 @@
 #include "apps/custom_launcher_page_contents.h"
 
 #include <string>
+#include <utility>
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
@@ -22,8 +23,7 @@ namespace apps {
 CustomLauncherPageContents::CustomLauncherPageContents(
     scoped_ptr<extensions::AppDelegate> app_delegate,
     const std::string& extension_id)
-    : app_delegate_(app_delegate.Pass()), extension_id_(extension_id) {
-}
+    : app_delegate_(std::move(app_delegate)), extension_id_(extension_id) {}
 
 CustomLauncherPageContents::~CustomLauncherPageContents() {
 }

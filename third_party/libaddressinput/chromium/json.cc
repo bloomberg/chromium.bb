@@ -36,7 +36,7 @@ namespace {
   else
     result.reset(static_cast<const base::DictionaryValue*>(parsed.release()));
 
-  return result.Pass();
+  return std::move(result);
 }
 
 }  // namespace

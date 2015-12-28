@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -359,7 +360,7 @@ scoped_ptr<ChannelProxy> ChannelProxy::Create(
     const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner) {
   scoped_ptr<ChannelProxy> channel(new ChannelProxy(listener, ipc_task_runner));
   channel->Init(channel_handle, mode, true);
-  return channel.Pass();
+  return channel;
 }
 
 // static
@@ -368,8 +369,8 @@ scoped_ptr<ChannelProxy> ChannelProxy::Create(
     Listener* listener,
     const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner) {
   scoped_ptr<ChannelProxy> channel(new ChannelProxy(listener, ipc_task_runner));
-  channel->Init(factory.Pass(), true);
-  return channel.Pass();
+  channel->Init(std::move(factory), true);
+  return channel;
 }
 
 ChannelProxy::ChannelProxy(Context* context)
@@ -420,7 +421,7 @@ void ChannelProxy::Init(scoped_ptr<ChannelFactory> factory,
     // low-level pipe so that the client can connect.  Without creating
     // the pipe immediately, it is possible for a listener to attempt
     // to connect and get an error since the pipe doesn't exist yet.
-    context_->CreateChannel(factory.Pass());
+    context_->CreateChannel(std::move(factory));
   } else {
     context_->ipc_task_runner()->PostTask(
         FROM_HERE, base::Bind(&Context::CreateChannel, context_.get(),

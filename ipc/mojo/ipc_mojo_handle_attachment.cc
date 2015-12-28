@@ -4,6 +4,8 @@
 
 #include "ipc/mojo/ipc_mojo_handle_attachment.h"
 
+#include <utility>
+
 #include "build/build_config.h"
 #include "ipc/ipc_message_attachment_set.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
@@ -12,8 +14,7 @@ namespace IPC {
 namespace internal {
 
 MojoHandleAttachment::MojoHandleAttachment(mojo::ScopedHandle handle)
-    : handle_(handle.Pass()) {
-}
+    : handle_(std::move(handle)) {}
 
 MojoHandleAttachment::~MojoHandleAttachment() {
 }
@@ -38,7 +39,7 @@ base::PlatformFile MojoHandleAttachment::TakePlatformFile() {
 #endif  // OS_POSIX
 
 mojo::ScopedHandle MojoHandleAttachment::TakeHandle() {
-  return handle_.Pass();
+  return std::move(handle_);
 }
 
 }  // namespace internal

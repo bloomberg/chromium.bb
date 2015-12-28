@@ -5,6 +5,7 @@
 #include "ipc/mojo/ipc_message_pipe_reader.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -20,14 +21,12 @@ namespace internal {
 
 MessagePipeReader::MessagePipeReader(mojo::ScopedMessagePipeHandle handle,
                                      MessagePipeReader::Delegate* delegate)
-    : pipe_(handle.Pass()),
+    : pipe_(std::move(handle)),
       handle_copy_(pipe_.get().value()),
       delegate_(delegate),
-      async_waiter_(
-          new AsyncHandleWaiter(base::Bind(&MessagePipeReader::PipeIsReady,
-                                           base::Unretained(this)))),
-      pending_send_error_(MOJO_RESULT_OK) {
-}
+      async_waiter_(new AsyncHandleWaiter(
+          base::Bind(&MessagePipeReader::PipeIsReady, base::Unretained(this)))),
+      pending_send_error_(MOJO_RESULT_OK) {}
 
 MessagePipeReader::~MessagePipeReader() {
   DCHECK(thread_checker_.CalledOnValidThread());

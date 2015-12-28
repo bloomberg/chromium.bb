@@ -5,6 +5,7 @@
 #include "mash/wm/accelerator_registrar_impl.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
@@ -22,7 +23,7 @@ AcceleratorRegistrarImpl::AcceleratorRegistrarImpl(
     mojo::InterfaceRequest<AcceleratorRegistrar> request,
     const DestroyCallback& destroy_callback)
     : host_(host),
-      binding_(this, request.Pass()),
+      binding_(this, std::move(request)),
       accelerator_namespace_(accelerator_namespace & 0xffff),
       destroy_callback_(destroy_callback) {
   binding_.set_connection_error_handler(base::Bind(
@@ -43,7 +44,7 @@ void AcceleratorRegistrarImpl::ProcessAccelerator(uint32_t accelerator_id,
                                                   mus::mojom::EventPtr event) {
   DCHECK(OwnsAccelerator(accelerator_id));
   accelerator_handler_->OnAccelerator(accelerator_id & kAcceleratorIdMask,
-                                      event.Pass());
+                                      std::move(event));
 }
 
 uint32_t AcceleratorRegistrarImpl::ComputeAcceleratorId(
@@ -75,7 +76,7 @@ void AcceleratorRegistrarImpl::OnHandlerGone() {
 
 void AcceleratorRegistrarImpl::SetHandler(
     mus::mojom::AcceleratorHandlerPtr handler) {
-  accelerator_handler_ = handler.Pass();
+  accelerator_handler_ = std::move(handler);
   accelerator_handler_.set_connection_error_handler(base::Bind(
       &AcceleratorRegistrarImpl::OnHandlerGone, base::Unretained(this)));
 }
@@ -92,7 +93,8 @@ void AcceleratorRegistrarImpl::AddAccelerator(
   }
   uint32_t namespaced_accelerator_id = ComputeAcceleratorId(accelerator_id);
   accelerator_ids_.insert(namespaced_accelerator_id);
-  host_->AddAccelerator(namespaced_accelerator_id, matcher.Pass(), callback);
+  host_->AddAccelerator(namespaced_accelerator_id, std::move(matcher),
+                        callback);
 }
 
 void AcceleratorRegistrarImpl::RemoveAccelerator(uint32_t accelerator_id) {

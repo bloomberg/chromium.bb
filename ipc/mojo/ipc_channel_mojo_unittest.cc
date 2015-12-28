@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/base_paths.h"
 #include "base/files/file.h"
@@ -316,8 +317,8 @@ class HandleSendingHelper {
               mojo::WriteMessageRaw(pipe->self.get(), &content[0],
                                     static_cast<uint32_t>(content.size()),
                                     nullptr, 0, 0));
-    EXPECT_TRUE(
-        IPC::MojoMessageHelper::WriteMessagePipeTo(message, pipe->peer.Pass()));
+    EXPECT_TRUE(IPC::MojoMessageHelper::WriteMessagePipeTo(
+        message, std::move(pipe->peer)));
   }
 
   static void WritePipeThenSend(IPC::Sender* sender, TestingMessagePipe* pipe) {

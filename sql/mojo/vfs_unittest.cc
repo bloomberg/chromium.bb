@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
-
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
@@ -60,12 +60,12 @@ class VFSTest : public mojo::test::ApplicationTestBase,
 
     filesystem::FileError error = filesystem::FILE_ERROR_FAILED;
     filesystem::DirectoryPtr directory;
-    files_->OpenFileSystem("temp", GetProxy(&directory), client.Pass(),
+    files_->OpenFileSystem("temp", GetProxy(&directory), std::move(client),
                            mojo::Capture(&error));
     ASSERT_TRUE(files_.WaitForIncomingResponse());
     ASSERT_EQ(filesystem::FILE_ERROR_OK, error);
 
-    vfs_.reset(new ScopedMojoFilesystemVFS(directory.Pass()));
+    vfs_.reset(new ScopedMojoFilesystemVFS(std::move(directory)));
   }
 
   void TearDown() override {

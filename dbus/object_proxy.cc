@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "dbus/bus.h"
+#include "dbus/object_proxy.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -15,10 +16,10 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "dbus/bus.h"
 #include "dbus/dbus_statistics.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
-#include "dbus/object_proxy.h"
 #include "dbus/scoped_dbus_error.h"
 #include "dbus/util.h"
 
@@ -476,7 +477,7 @@ DBusHandlerResult ObjectProxy::HandleMessage(
     if (path.value() == kDBusSystemObjectPath &&
         signal->GetMember() == kNameOwnerChangedMember) {
       // Handle NameOwnerChanged separately
-      return HandleNameOwnerChanged(signal.Pass());
+      return HandleNameOwnerChanged(std::move(signal));
     }
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
   }

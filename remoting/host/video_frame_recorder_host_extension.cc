@@ -4,6 +4,8 @@
 
 #include "remoting/host/video_frame_recorder_host_extension.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -64,7 +66,7 @@ VideoFrameRecorderHostExtensionSession::
 void VideoFrameRecorderHostExtensionSession::OnCreateVideoEncoder(
     scoped_ptr<VideoEncoder>* encoder) {
   video_frame_recorder_.DetachVideoEncoderWrapper();
-  *encoder = video_frame_recorder_.WrapVideoEncoder(encoder->Pass());
+  *encoder = video_frame_recorder_.WrapVideoEncoder(std::move(*encoder));
 }
 
 bool VideoFrameRecorderHostExtensionSession::ModifiesVideoPipeline() const {

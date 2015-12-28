@@ -5,8 +5,8 @@
 #include "dbus/test_service.h"
 
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -311,7 +311,7 @@ void TestService::Echo(MethodCall* method_call,
   scoped_ptr<Response> response = Response::FromMethodCall(method_call);
   MessageWriter writer(response.get());
   writer.AppendString(text_message);
-  response_sender.Run(response.Pass());
+  response_sender.Run(std::move(response));
 }
 
 void TestService::SlowEcho(MethodCall* method_call,
@@ -352,7 +352,7 @@ void TestService::GetAllProperties(
 
   AddPropertiesToWriter(&writer);
 
-  response_sender.Run(response.Pass());
+  response_sender.Run(std::move(response));
 }
 
 void TestService::GetProperty(MethodCall* method_call,
@@ -378,7 +378,7 @@ void TestService::GetProperty(MethodCall* method_call,
 
     writer.AppendVariantOfString("TestService");
 
-    response_sender.Run(response.Pass());
+    response_sender.Run(std::move(response));
   } else if (name == "Version") {
     // Return a new value for the "Version" property:
     // Variant<20>
@@ -387,7 +387,7 @@ void TestService::GetProperty(MethodCall* method_call,
 
     writer.AppendVariantOfInt16(20);
 
-    response_sender.Run(response.Pass());
+    response_sender.Run(std::move(response));
   } else if (name == "Methods") {
     // Return the previous value for the "Methods" property:
     // Variant<["Echo", "SlowEcho", "AsyncEcho", "BrokenMethod"]>
@@ -405,7 +405,7 @@ void TestService::GetProperty(MethodCall* method_call,
     variant_writer.CloseContainer(&variant_array_writer);
     writer.CloseContainer(&variant_writer);
 
-    response_sender.Run(response.Pass());
+    response_sender.Run(std::move(response));
   } else if (name == "Objects") {
     // Return the previous value for the "Objects" property:
     // Variant<[objectpath:"/TestObjectPath"]>
@@ -420,7 +420,7 @@ void TestService::GetProperty(MethodCall* method_call,
     variant_writer.CloseContainer(&variant_array_writer);
     writer.CloseContainer(&variant_writer);
 
-    response_sender.Run(response.Pass());
+    response_sender.Run(std::move(response));
   } else if (name == "Bytes") {
     // Return the previous value for the "Bytes" property:
     // Variant<[0x54, 0x65, 0x73, 0x74]>
@@ -434,7 +434,7 @@ void TestService::GetProperty(MethodCall* method_call,
     variant_writer.AppendArrayOfBytes(bytes, sizeof(bytes));
     writer.CloseContainer(&variant_writer);
 
-    response_sender.Run(response.Pass());
+    response_sender.Run(std::move(response));
   } else {
     // Return error.
     response_sender.Run(scoped_ptr<Response>());
@@ -505,14 +505,14 @@ void TestService::PerformAction(
   }
 
   scoped_ptr<Response> response = Response::FromMethodCall(method_call);
-  response_sender.Run(response.Pass());
+  response_sender.Run(std::move(response));
 }
 
 void TestService::PerformActionResponse(
     MethodCall* method_call,
     ExportedObject::ResponseSender response_sender) {
   scoped_ptr<Response> response = Response::FromMethodCall(method_call);
-  response_sender.Run(response.Pass());
+  response_sender.Run(std::move(response));
 }
 
 void TestService::OwnershipReleased(
@@ -572,7 +572,7 @@ void TestService::GetManagedObjects(
   array_writer.CloseContainer(&dict_entry_writer);
   writer.CloseContainer(&array_writer);
 
-  response_sender.Run(response.Pass());
+  response_sender.Run(std::move(response));
 
   if (send_immediate_properties_changed_)
     SendPropertyChangedSignal("ChangedTestServiceName");

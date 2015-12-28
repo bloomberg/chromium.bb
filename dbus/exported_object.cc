@@ -5,6 +5,7 @@
 #include "dbus/exported_object.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -264,7 +265,7 @@ void ExportedObject::SendResponse(base::TimeTicks start_time,
                    base::Passed(&response),
                    start_time));
   } else {
-    OnMethodCompleted(method_call.Pass(), response.Pass(), start_time);
+    OnMethodCompleted(std::move(method_call), std::move(response), start_time);
   }
 }
 

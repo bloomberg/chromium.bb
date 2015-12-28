@@ -5,6 +5,7 @@
 #include "jingle/notifier/base/xmpp_connection.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
@@ -76,7 +77,7 @@ class XmppConnectionTest : public testing::Test {
   XmppConnectionTest()
       : mock_pre_xmpp_auth_(new MockPreXmppAuth()) {
     scoped_ptr<base::MessagePump> pump(new base::MessagePumpDefault());
-    message_loop_.reset(new base::MessageLoop(pump.Pass()));
+    message_loop_.reset(new base::MessageLoop(std::move(pump)));
 
     url_request_context_getter_ = new net::TestURLRequestContextGetter(
         message_loop_->task_runner());

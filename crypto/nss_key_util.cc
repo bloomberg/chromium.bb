@@ -137,7 +137,7 @@ ScopedSECKEYPrivateKey FindNSSKeyFromPublicKeyInfo(
       ScopedSECKEYPrivateKey key(
           PK11_FindKeyByKeyID(item->module->slots[i], cka_id.get(), nullptr));
       if (key)
-        return key.Pass();
+        return key;
     }
   }
 

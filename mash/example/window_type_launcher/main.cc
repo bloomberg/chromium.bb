@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug/stack_trace.h"
@@ -69,7 +71,7 @@ int main(int argc, char** argv) {
             &application_request, mojo::ScopedMessagePipeHandle()));
     base::MessageLoop loop(mojo::common::MessagePumpMojo::Create());
     WindowTypeLauncher delegate;
-    mojo::ApplicationImpl impl(&delegate, application_request.Pass());
+    mojo::ApplicationImpl impl(&delegate, std::move(application_request));
     loop.Run();
 
     mojo::embedder::ShutdownIPCSupport();

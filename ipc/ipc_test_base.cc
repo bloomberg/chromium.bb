@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
-
-#include "base/single_thread_task_runner.h"
 #include "ipc/ipc_test_base.h"
+
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/process/kill.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "ipc/ipc_descriptors.h"
 
 #if defined(OS_POSIX)
@@ -48,7 +49,7 @@ void IPCTestBase::InitWithCustomMessageLoop(
   DCHECK(!message_loop_);
 
   test_client_name_ = test_client_name;
-  message_loop_ = message_loop.Pass();
+  message_loop_ = std::move(message_loop);
 }
 
 void IPCTestBase::CreateChannel(IPC::Listener* listener) {
@@ -61,11 +62,11 @@ bool IPCTestBase::ConnectChannel() {
 }
 
 scoped_ptr<IPC::Channel> IPCTestBase::ReleaseChannel() {
-  return channel_.Pass();
+  return std::move(channel_);
 }
 
 void IPCTestBase::SetChannel(scoped_ptr<IPC::Channel> channel) {
-  channel_ = channel.Pass();
+  channel_ = std::move(channel);
 }
 
 

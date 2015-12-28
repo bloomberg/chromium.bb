@@ -4,6 +4,8 @@
 
 #include "ipc/mojo/ipc_mojo_message_helper.h"
 
+#include <utility>
+
 #include "ipc/mojo/ipc_mojo_handle_attachment.h"
 
 namespace IPC {
@@ -13,7 +15,7 @@ bool MojoMessageHelper::WriteMessagePipeTo(
     Message* message,
     mojo::ScopedMessagePipeHandle handle) {
   message->WriteAttachment(new internal::MojoHandleAttachment(
-      mojo::ScopedHandle::From(handle.Pass())));
+      mojo::ScopedHandle::From(std::move(handle))));
   return true;
 }
 

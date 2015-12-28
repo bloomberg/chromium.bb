@@ -404,19 +404,19 @@ scoped_ptr<Response> Response::FromRawMessage(DBusMessage* raw_message) {
 
   scoped_ptr<Response> response(new Response);
   response->Init(raw_message);
-  return response.Pass();
+  return response;
 }
 
 scoped_ptr<Response> Response::FromMethodCall(MethodCall* method_call) {
   scoped_ptr<Response> response(new Response);
   response->Init(dbus_message_new_method_return(method_call->raw_message()));
-  return response.Pass();
+  return response;
 }
 
 scoped_ptr<Response> Response::CreateEmpty() {
   scoped_ptr<Response> response(new Response);
   response->Init(dbus_message_new(DBUS_MESSAGE_TYPE_METHOD_RETURN));
-  return response.Pass();
+  return response;
 }
 
 //
@@ -432,7 +432,7 @@ scoped_ptr<ErrorResponse> ErrorResponse::FromRawMessage(
 
   scoped_ptr<ErrorResponse> response(new ErrorResponse);
   response->Init(raw_message);
-  return response.Pass();
+  return response;
 }
 
 scoped_ptr<ErrorResponse> ErrorResponse::FromMethodCall(
@@ -443,7 +443,7 @@ scoped_ptr<ErrorResponse> ErrorResponse::FromMethodCall(
   response->Init(dbus_message_new_error(method_call->raw_message(),
                                         error_name.c_str(),
                                         error_message.c_str()));
-  return response.Pass();
+  return response;
 }
 
 //

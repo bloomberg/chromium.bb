@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <cstdlib>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -81,7 +81,7 @@ base::StringPiece FakeSSLClientSocket::GetSslServerHello() {
 
 FakeSSLClientSocket::FakeSSLClientSocket(
     scoped_ptr<net::StreamSocket> transport_socket)
-    : transport_socket_(transport_socket.Pass()),
+    : transport_socket_(std::move(transport_socket)),
       next_handshake_state_(STATE_NONE),
       handshake_completed_(false),
       write_buf_(NewDrainableIOBufferWithSize(arraysize(kSslClientHello))),

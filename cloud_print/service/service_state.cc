@@ -5,6 +5,7 @@
 #include "cloud_print/service/service_state.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -149,7 +150,7 @@ std::string ServiceState::ToString() {
                         xmpp_auth_token_);
 
   base::DictionaryValue services;
-  services.Set(kCloudPrintJsonName, cloud_print.Pass());
+  services.Set(kCloudPrintJsonName, std::move(cloud_print));
 
   std::string json;
   base::JSONWriter::WriteWithOptions(
@@ -185,7 +186,7 @@ std::string ServiceState::LoginToGoogle(const std::string& service,
   scoped_ptr<net::UploadElementReader> reader(
       net::UploadOwnedBytesElementReader::CreateWithString(post_body));
   request->set_upload(
-      net::ElementsUploadDataStream::CreateWithReader(reader.Pass(), 0));
+      net::ElementsUploadDataStream::CreateWithReader(std::move(reader), 0));
   request->SetExtraRequestHeaderByName(
       "Content-Type", "application/x-www-form-urlencoded", true);
   request->set_method("POST");

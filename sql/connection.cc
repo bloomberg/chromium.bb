@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/debug/dump_without_crashing.h"
@@ -695,9 +696,9 @@ bool Connection::RegisterIntentToUpload() const {
 
     scoped_ptr<base::ListValue> dumps(new base::ListValue);
     dumps->AppendString(histogram_tag_);
-    root_dict->Set(kDiagnosticDumpsKey, dumps.Pass());
+    root_dict->Set(kDiagnosticDumpsKey, std::move(dumps));
 
-    root = root_dict.Pass();
+    root = std::move(root_dict);
   } else {
     // Failure to read a valid dictionary implies that something is going wrong
     // on the system.
@@ -707,7 +708,7 @@ bool Connection::RegisterIntentToUpload() const {
     if (!read_root.get())
       return false;
     scoped_ptr<base::DictionaryValue> root_dict =
-        base::DictionaryValue::From(read_root.Pass());
+        base::DictionaryValue::From(std::move(read_root));
     if (!root_dict)
       return false;
 
@@ -731,7 +732,7 @@ bool Connection::RegisterIntentToUpload() const {
 
     // Record intention to proceed with upload.
     dumps->AppendString(histogram_tag_);
-    root = root_dict.Pass();
+    root = std::move(root_dict);
   }
 
   const base::FilePath breadcrumb_new =

@@ -5,6 +5,7 @@
 #include "mash/wm/window_manager_impl.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "components/mus/common/types.h"
 #include "components/mus/public/cpp/property_type_converters.h"
@@ -115,7 +116,7 @@ void WindowManagerImpl::OpenWindow(
 
   mojom::Container container = GetRequestedContainer(child_window);
   state_->GetWindowForContainer(container)->AddChild(child_window);
-  child_window->Embed(client.Pass());
+  child_window->Embed(std::move(client));
 
   if (provide_non_client_frame) {
     // NonClientFrameController deletes itself when |child_window| is destroyed.
@@ -153,7 +154,7 @@ void WindowManagerImpl::GetConfig(const GetConfigCallback& callback) {
   config->max_title_bar_button_width =
       NonClientFrameController::GetMaxTitleBarButtonWidth();
 
-  callback.Run(config.Pass());
+  callback.Run(std::move(config));
 }
 
 bool WindowManagerImpl::OnWmSetBounds(mus::Window* window, gfx::Rect* bounds) {

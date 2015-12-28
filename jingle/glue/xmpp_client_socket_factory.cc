@@ -4,6 +4,8 @@
 
 #include "jingle/glue/xmpp_client_socket_factory.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "jingle/glue/fake_ssl_client_socket.h"
 #include "jingle/glue/proxy_resolving_client_socket.h"
@@ -39,10 +41,10 @@ XmppClientSocketFactory::CreateTransportClientSocket(
           request_context_getter_,
           ssl_config_,
           host_and_port));
-  return (use_fake_ssl_client_socket_ ?
-          scoped_ptr<net::StreamSocket>(
-              new FakeSSLClientSocket(transport_socket.Pass())) :
-          transport_socket.Pass());
+  return (use_fake_ssl_client_socket_
+              ? scoped_ptr<net::StreamSocket>(
+                    new FakeSSLClientSocket(std::move(transport_socket)))
+              : std::move(transport_socket));
 }
 
 scoped_ptr<net::SSLClientSocket>
@@ -58,7 +60,7 @@ XmppClientSocketFactory::CreateSSLClientSocket(
   // TODO(rkn): context.channel_id_service is NULL because the
   // ChannelIDService class is not thread safe.
   return client_socket_factory_->CreateSSLClientSocket(
-      transport_socket.Pass(), host_and_port, ssl_config_, context);
+      std::move(transport_socket), host_and_port, ssl_config_, context);
 }
 
 

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -34,9 +35,10 @@ class WindowManagerAppTest : public mojo::test::ApplicationTestBase,
         window_tree_client_request = GetProxy(&window_tree_client);
     mojo::Map<mojo::String, mojo::Array<uint8_t>> properties;
     properties.mark_non_null();
-    window_manager->OpenWindow(window_tree_client.Pass(), properties.Pass());
+    window_manager->OpenWindow(std::move(window_tree_client),
+                               std::move(properties));
     mus::WindowTreeConnection* connection = mus::WindowTreeConnection::Create(
-        this, window_tree_client_request.Pass(),
+        this, std::move(window_tree_client_request),
         mus::WindowTreeConnection::CreateType::WAIT_FOR_EMBED);
     return connection->GetRoot();
   }

@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -291,7 +291,7 @@ TEST_F(FakeSSLClientSocketTest, PassThroughMethods) {
   EXPECT_CALL(*mock_client_socket, SetOmniboxSpeculation());
 
   // Takes ownership of |mock_client_socket|.
-  FakeSSLClientSocket fake_ssl_client_socket(mock_client_socket.Pass());
+  FakeSSLClientSocket fake_ssl_client_socket(std::move(mock_client_socket));
   fake_ssl_client_socket.SetReceiveBufferSize(kReceiveBufferSize);
   fake_ssl_client_socket.SetSendBufferSize(kSendBufferSize);
   EXPECT_EQ(kPeerAddress,

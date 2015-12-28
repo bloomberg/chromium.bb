@@ -51,7 +51,7 @@ scoped_ptr<JingleThreadWrapper> JingleThreadWrapper::WrapTaskRunner(
 
   scoped_ptr<JingleThreadWrapper> result(new JingleThreadWrapper(task_runner));
   g_jingle_thread_wrapper.Get().Set(result.get());
-  return result.Pass();
+  return result;
 }
 
 // static

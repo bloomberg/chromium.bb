@@ -4,6 +4,8 @@
 
 #include "third_party/leveldatabase/env_chromium.h"
 
+#include <utility>
+
 #if defined(OS_POSIX)
 #include <dirent.h>
 #include <sys/types.h>
@@ -188,7 +190,7 @@ class ChromiumRandomAccessFile : public leveldb::RandomAccessFile {
   ChromiumRandomAccessFile(const std::string& fname,
                            base::File file,
                            const UMALogger* uma_logger)
-      : filename_(fname), file_(file.Pass()), uma_logger_(uma_logger) {}
+      : filename_(fname), file_(std::move(file)), uma_logger_(uma_logger) {}
   virtual ~ChromiumRandomAccessFile() {}
 
   Status Read(uint64_t offset,
@@ -766,7 +768,7 @@ Status ChromiumEnv::LockFile(const std::string& fname, FileLock** lock) {
   }
 
   ChromiumFileLock* my_lock = new ChromiumFileLock;
-  my_lock->file_ = file.Pass();
+  my_lock->file_ = std::move(file);
   my_lock->name_ = fname;
   *lock = my_lock;
   return result;
@@ -851,7 +853,7 @@ Status ChromiumEnv::NewRandomAccessFile(const std::string& fname,
   int flags = base::File::FLAG_READ | base::File::FLAG_OPEN;
   base::File file(FilePath::FromUTF8Unsafe(fname), flags);
   if (file.IsValid()) {
-    *result = new ChromiumRandomAccessFile(fname, file.Pass(), this);
+    *result = new ChromiumRandomAccessFile(fname, std::move(file), this);
     RecordOpenFilesLimit("Success");
     return Status::OK();
   }

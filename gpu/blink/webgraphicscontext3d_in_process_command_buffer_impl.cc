@@ -5,6 +5,7 @@
 #include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 #include <GLES2/gl2.h>
+#include <utility>
 #ifndef GL_GLEXT_PROTOTYPES
 #define GL_GLEXT_PROTOTYPES 1
 #endif
@@ -68,16 +69,13 @@ WebGraphicsContext3DInProcessCommandBufferImpl::WrapContext(
   bool lose_context_when_out_of_memory = false;  // Not used.
   bool is_offscreen = true;                      // Not used.
   return make_scoped_ptr(new WebGraphicsContext3DInProcessCommandBufferImpl(
-      context.Pass(),
-      attributes,
-      lose_context_when_out_of_memory,
-      is_offscreen,
-      gfx::kNullAcceleratedWidget /* window. Not used. */));
+      std::move(context), attributes, lose_context_when_out_of_memory,
+      is_offscreen, gfx::kNullAcceleratedWidget /* window. Not used. */));
 }
 
 WebGraphicsContext3DInProcessCommandBufferImpl::
     WebGraphicsContext3DInProcessCommandBufferImpl(
-        scoped_ptr< ::gpu::GLInProcessContext> context,
+        scoped_ptr<::gpu::GLInProcessContext> context,
         const blink::WebGraphicsContext3D::Attributes& attributes,
         bool lose_context_when_out_of_memory,
         bool is_offscreen,
@@ -85,7 +83,7 @@ WebGraphicsContext3DInProcessCommandBufferImpl::
     : share_resources_(attributes.shareResources),
       is_offscreen_(is_offscreen),
       window_(window),
-      context_(context.Pass()) {
+      context_(std::move(context)) {
   ConvertAttributes(attributes, &attribs_);
   attribs_.lose_context_when_out_of_memory = lose_context_when_out_of_memory;
 }

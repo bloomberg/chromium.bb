@@ -4,6 +4,8 @@
 
 #include "gin/per_isolate_data.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -113,7 +115,7 @@ NamedPropertyInterceptor* PerIsolateData::GetNamedPropertyInterceptor(
 
 void PerIsolateData::EnableIdleTasks(
     scoped_ptr<V8IdleTaskRunner> idle_task_runner) {
-  idle_task_runner_ = idle_task_runner.Pass();
+  idle_task_runner_ = std::move(idle_task_runner);
 }
 
 }  // namespace gin

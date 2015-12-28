@@ -5,9 +5,9 @@
 #include "apps/saved_files_service.h"
 
 #include <stdint.h>
-
 #include <algorithm>
 #include <map>
+#include <utility>
 
 #include "apps/saved_files_service_factory.h"
 #include "base/containers/scoped_ptr_hash_map.h"
@@ -423,7 +423,7 @@ void SavedFilesService::SavedFiles::LoadSavedFileEntriesFromPreferences() {
     const std::string& id = file_entry->id;
     saved_file_lru_.insert(
         std::make_pair(file_entry->sequence_number, file_entry.get()));
-    registered_file_entries_.add(id, file_entry.Pass());
+    registered_file_entries_.add(id, std::move(file_entry));
   }
 }
 
