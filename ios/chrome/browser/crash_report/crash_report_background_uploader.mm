@@ -177,12 +177,8 @@ NSString* CreateSessionIdentifierFromTask(NSURLSessionTask* task) {
   static NSURLSession* session = nil;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-
-    // TODO(olivierrobin) When all bots compile with iOS8 release SDK, use
-    // only backgroundSessionConfigurationWithIdentifier.
     NSURLSessionConfiguration* sessionConfig = [NSURLSessionConfiguration
-        backgroundSessionConfiguration:kBackgroundReportUploader];
-
+        backgroundSessionConfigurationWithIdentifier:kBackgroundReportUploader];
     session = [NSURLSession
         sessionWithConfiguration:sessionConfig
                         delegate:[UrlSessionDelegate sharedInstance]
