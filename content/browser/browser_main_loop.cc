@@ -208,7 +208,7 @@ void SetupSandbox(const base::CommandLine& parsed_command_line) {
 
   static const char no_suid_error[] =
       "Running without the SUID sandbox! See "
-      "https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment "
+      "https://chromium.googlesource.com/chromium/src/+/master/docs/linux_suid_sandbox_development.md "
       "for more information on developing with the sandbox on.";
   if (want_setuid_sandbox) {
     sandbox_binary = setuid_sandbox_host->GetSandboxBinaryPath();

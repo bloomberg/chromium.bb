@@ -23,7 +23,7 @@ SandboxStatusUITest.prototype = {
 // - If failures of this test are a problem on a bot under your care,
 //   the proper way to address such failures is to install the SUID
 //   sandbox. See:
-//     http://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment
+//     https://chromium.googlesource.com/chromium/src/+/master/docs/linux_suid_sandbox_development.md
 // - PLEASE DO NOT GLOBALLY DISABLE THIS TEST.
 // SUID sandbox is currently incompatible with AddressSanitizer,
 // see http://crbug.com/137653.
