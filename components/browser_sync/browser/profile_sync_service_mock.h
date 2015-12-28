@@ -86,7 +86,6 @@ class ProfileSyncServiceMock : public ProfileSyncService {
 
   MOCK_CONST_METHOD0(CanSyncStart, bool());
   MOCK_CONST_METHOD0(IsManaged, bool());
-  MOCK_METHOD0(IsOAuthRefreshTokenAvailable, bool());
 
   MOCK_CONST_METHOD0(IsPassphraseRequired, bool());
   MOCK_CONST_METHOD0(IsPassphraseRequiredForDecryption, bool());

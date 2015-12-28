@@ -344,10 +344,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   void RegisterAuthNotifications();
   void UnregisterAuthNotifications();
 
-  // Return whether OAuth2 refresh token is loaded and available for the backend
-  // to start up. Virtual to enable mocking in tests.
-  virtual bool IsOAuthRefreshTokenAvailable();
-
   // Returns the SyncableService for syncer::SESSIONS.
   virtual syncer::SyncableService* GetSessionsSyncableService();
 

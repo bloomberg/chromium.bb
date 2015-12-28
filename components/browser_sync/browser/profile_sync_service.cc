@@ -253,14 +253,6 @@ bool ProfileSyncService::CanSyncStart() const {
   return IsSyncAllowed() && IsSyncRequested() && IsSignedIn();
 }
 
-bool ProfileSyncService::IsOAuthRefreshTokenAvailable() {
-  if (!oauth2_token_service_)
-    return false;
-
-  return oauth2_token_service_->RefreshTokenIsAvailable(
-      signin_->GetAccountIdToUse());
-}
-
 void ProfileSyncService::Initialize() {
   sync_client_->Initialize(this);
 
