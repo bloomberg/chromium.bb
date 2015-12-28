@@ -22,15 +22,15 @@ int GetLayoutConstant(LayoutConstant constant) {
   const int kOmniboxFontPixelSize[] = {16, 14, 14};
   const int kTabCloseButtonTrailingPaddingOverlap[] = {2, 0, 0};
   const int kTabFaviconTitleSpacing[] = {4, 6, 6};
-  const int kTabHeight[] = {29, 29, 29};
+  const int kTabHeight[] = {29, 29, 33};
   const int kTabPinnedContentWidth[] = {25, 23, 23};
 #if defined(OS_MACOSX)
   const int kTabTopExclusionHeight[] = {0, 0, 0};
-  const int kTabstripNewTabButtonOverlap[] = {8, 5, 5};
+  const int kTabstripNewTabButtonOverlap[] = {8, 5, 6};
   const int kTabstripTabOverlap[] = {19, 16, 16};
 #else
   const int kTabTopExclusionHeight[] = {2, 0, 0};
-  const int kTabstripNewTabButtonOverlap[] = {11, 5, 5};
+  const int kTabstripNewTabButtonOverlap[] = {11, 5, 6};
   const int kTabstripTabOverlap[] = {26, 16, 16};
 #endif
   const int kTabstripToolbarOverlap[] = {3, 0, 0};
@@ -103,8 +103,8 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
   const int kOmniboxDropdownPadding[] = {3, 4, 4};
   const int kOmniboxDropdownTextPadding[] = {3, 3, 3};
   const int kTabBottomPadding[] = {2, 1, 1};
-  const int kTabLeftPadding[] = {20, 16, 16};
-  const int kTabRightPadding[] = {20, 16, 16};
+  const int kTabLeftPadding[] = {20, 16, 18};
+  const int kTabRightPadding[] = {20, 16, 18};
   const int kTabTopPadding[] = {4, 1, 1};
   const int kToolbarBottomPadding[] = {5, 5, 5};
   const int kToolbarButtonPadding[] = {2, 6, 6};
@@ -146,8 +146,8 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
 }
 
 gfx::Size GetLayoutSize(LayoutSize size) {
-  const int kNewTabButtonWidth[] = {34, 36, 36};
-  const int kNewTabButtonHeight[] = {18, 18, 18};
+  const int kNewTabButtonWidth[] = {34, 36, 39};
+  const int kNewTabButtonHeight[] = {18, 18, 21};
 
   const int mode = ui::MaterialDesignController::GetMode();
   switch (size) {

@@ -133,6 +133,15 @@ const int kImmersiveLoadingStepCount = 32;
 const char kTabCloseButtonName[] = "TabCloseButton";
 const int kTabCloseButtonSize = 16;
 
+// Returns the width of the tab endcap at scale 1.  More precisely, this is the
+// width of the curve making up either the outer or inner edge of the stroke;
+// since these two curves are horizontally offset by 1 px (regardless of scale),
+// the total width of the endcap from tab outer edge to the inside end of the
+// stroke inner edge is (GetUnscaledEndcapWidth() * scale) + 1.
+float GetUnscaledEndcapWidth() {
+  return GetLayoutInsets(TAB).left() - 0.5f;
+}
+
 chrome::HostDesktopType GetHostDesktopType(views::View* view) {
   // Widget is NULL when tabs are detached.
   views::Widget* widget = view->GetWidget();
@@ -699,6 +708,22 @@ int Tab::GetYInsetForActiveTabBackground() {
   // was painted, and theme authors compensated; now we're stuck perpetuating it
   // as a result.
   return GetLayoutConstant(TAB_TOP_EXCLUSION_HEIGHT) + 1;
+}
+
+// static
+float Tab::GetInverseDiagonalSlope() {
+  // This is computed from the border path as follows:
+  // * The unscaled endcap width is enough for the whole stroke outer curve,
+  //   i.e. the side diagonal plus the curves on both its ends.
+  // * The bottom and top curve are each (2 * scale) px wide, so the diagonal is
+  //   (unscaled endcap width - 2 - 2) * scale px wide.
+  // * The bottom and top curve are each 1.5 px high.  Additionally, there is an
+  //   extra 1 px below the bottom curve and (scale - 1) px above the top curve,
+  //   so the diagonal is ((height - 1.5 - 1.5) * scale - 1 - (scale - 1)) px
+  //   high.
+  // Simplifying these gives the expression below.
+  return (GetUnscaledEndcapWidth() - 4) /
+      (GetMinimumInactiveSize().height() - 4);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1611,23 +1636,24 @@ void Tab::ScheduleIconPaint() {
 void Tab::GetFillPath(float scale, SkPath* fill) const {
   const float right = width() * scale;
   const float bottom = height() * scale;
+  const float unscaled_endcap_width = GetUnscaledEndcapWidth();
 
   fill->moveTo(right - 1, bottom);
   fill->rCubicTo(-0.75 * scale, 0, -1.625 * scale, -0.5 * scale, -2 * scale,
                  -1.5 * scale);
-  fill->lineTo(right - 1 - 13.5 * scale, 2.5 * scale);
+  fill->lineTo(right - 1 - (unscaled_endcap_width - 2) * scale, 2.5 * scale);
   // Prevent overdraw in the center near minimum width (only happens if
   // scale < 2).  We could instead avoid this by increasing the tab inset
   // values, but that would shift all the content inward as well, unless we
   // then overlapped the content on the endcaps, by which point we'd have a
   // huge mess.
-  const float total_endcap_width = 31 * scale + 2;
-  const float overlap = total_endcap_width - right;
+  const float scaled_endcap_width = 1 + unscaled_endcap_width * scale;
+  const float overlap = scaled_endcap_width * 2 - right;
   const float offset = (overlap > 0) ? (overlap / 2) : 0;
   fill->rCubicTo(-0.375 * scale, -1 * scale, -1.25 * scale + offset,
                  -1.5 * scale, -2 * scale + offset, -1.5 * scale);
   if (overlap < 0)
-    fill->lineTo(1 + 15.5 * scale, scale);
+    fill->lineTo(scaled_endcap_width, scale);
   fill->rCubicTo(-0.75 * scale, 0, -1.625 * scale - offset, 0.5 * scale,
                  -2 * scale - offset, 1.5 * scale);
   fill->lineTo(1 + 2 * scale, bottom - 1.5 * scale);
@@ -1640,24 +1666,25 @@ void Tab::GetBorderPath(float scale, bool extend_to_top, SkPath* path) const {
   const float top = scale - 1;
   const float right = width() * scale;
   const float bottom = height() * scale;
+  const float unscaled_endcap_width = GetUnscaledEndcapWidth();
 
   path->moveTo(0, bottom);
   path->rLineTo(0, -1);
   path->rCubicTo(0.75 * scale, 0, 1.625 * scale, -0.5 * scale, 2 * scale,
                  -1.5 * scale);
-  path->lineTo(13.5 * scale, top + 1.5 * scale);
+  path->lineTo((unscaled_endcap_width - 2) * scale, top + 1.5 * scale);
   if (extend_to_top) {
     // Create the vertical extension by extending the side diagonals until they
     // reach the top of the bounds.
     const float dy = 2.5 * scale - 1;
-    const float dx = 11.5 / 25 * dy;
+    const float dx = GetInverseDiagonalSlope() * dy;
     path->rLineTo(dx, -dy);
-    path->lineTo(right - 13.5 * scale - dx, 0);
+    path->lineTo(right - (unscaled_endcap_width - 2) * scale - dx, 0);
     path->rLineTo(dx, dy);
   } else {
     path->rCubicTo(0.375 * scale, -scale, 1.25 * scale, -1.5 * scale, 2 * scale,
                    -1.5 * scale);
-    path->lineTo(right - 15.5 * scale, top);
+    path->lineTo(right - unscaled_endcap_width * scale, top);
     path->rCubicTo(0.75 * scale, 0, 1.625 * scale, 0.5 * scale, 2 * scale,
                    1.5 * scale);
   }

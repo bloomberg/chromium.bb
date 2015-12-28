@@ -121,8 +121,15 @@ const int kPinnedToNonPinnedOffset = 2;
 const int kPinnedToNonPinnedOffset = 3;
 #endif
 
-// The vertical offset of the tab strip button.
-const int kNewTabButtonVerticalOffset = 7;
+// Returns the offset from the top of the tabstrip at which the new tab button's
+// visible region begins.
+int GetNewTabButtonTopOffset() {
+  // The vertical distance between the bottom of the new tab button and the
+  // bottom of the tabstrip.
+  const int kNewTabButtonBottomOffset = 4;
+  return Tab::GetMinimumInactiveSize().height() - kNewTabButtonBottomOffset -
+      GetLayoutSize(NEW_TAB_BUTTON).height();
+}
 
 // Returns the width needed for the new tab button (and padding).
 int GetNewTabButtonWidth() {
@@ -380,15 +387,18 @@ void NewTabButton::OnPaint(gfx::Canvas* canvas) {
   SkPath fill;
   if (ui::MaterialDesignController::IsModeMaterial()) {
     // Fill.
-    fill.moveTo(9.75 * scale, 16 * scale);
+    const float fill_bottom = (visible_height - 2) * scale;
+    const float diag_height = fill_bottom - 3.5 * scale;
+    const float diag_width = diag_height * Tab::GetInverseDiagonalSlope();
+    fill.moveTo(diag_width + 4 * scale, fill_bottom);
     fill.rCubicTo(-0.75 * scale, 0, -1.625 * scale, -0.5 * scale, -2 * scale,
                   -1.5 * scale);
-    fill.rLineTo(-5.75 * scale, -12.5 * scale);
+    fill.rLineTo(-diag_width, -diag_height);
     fill.rCubicTo(0, -0.5 * scale, 0.25 * scale, -scale, scale, -scale);
-    fill.rLineTo(23.25 * scale, 0);
+    fill.lineTo((width() - 4) * scale - diag_width, scale);
     fill.rCubicTo(0.75 * scale, 0, 1.625 * scale, 0.5 * scale, 2 * scale,
                   1.5 * scale);
-    fill.rLineTo(5.75 * scale, 12.5 * scale);
+    fill.rLineTo(diag_width, diag_height);
     fill.rCubicTo(0, 0.5 * scale, -0.25 * scale, scale, -scale, scale);
     fill.close();
     PaintFill(pressed, hover_value, scale, fill, canvas);
@@ -445,7 +455,7 @@ bool NewTabButton::GetHitTestMask(gfx::Path* mask) const {
   if (ui::MaterialDesignController::IsModeMaterial()) {
     SkPath border;
     const float scale = GetWidget()->GetCompositor()->device_scale_factor();
-    GetBorderPath(kNewTabButtonVerticalOffset * scale, scale,
+    GetBorderPath(GetNewTabButtonTopOffset() * scale, scale,
                   tab_strip_->SizeTabButtonToTopOfTabStrip(), &border);
     mask->addPath(border, SkMatrix::MakeScale(1 / scale));
   } else if (tab_strip_->SizeTabButtonToTopOfTabStrip()) {
@@ -457,7 +467,7 @@ bool NewTabButton::GetHitTestMask(gfx::Path* mask) const {
     mask->addRect(RectToSkRect(button_bounds));
   } else {
     SkScalar w = SkIntToScalar(width());
-    SkScalar v_offset = SkIntToScalar(kNewTabButtonVerticalOffset);
+    SkScalar v_offset = SkIntToScalar(GetNewTabButtonTopOffset());
 
     // These values are defined by the shape of the new tab image. Should that
     // image ever change, these values will need to be updated. They're so
@@ -481,10 +491,16 @@ void NewTabButton::GetBorderPath(float button_y,
                                  float scale,
                                  bool extend_to_top,
                                  SkPath* path) const {
-  path->moveTo(9.75 * scale - 1, button_y + 16 * scale + 1);
+  const float inverse_slope = Tab::GetInverseDiagonalSlope();
+  const float fill_bottom =
+      (GetLayoutSize(NEW_TAB_BUTTON).height() - 2) * scale;
+  const float stroke_bottom = button_y + fill_bottom + 1;
+  const float diag_height = fill_bottom - 3.5 * scale;
+  const float diag_width = diag_height * inverse_slope;
+  path->moveTo(diag_width + 4 * scale - 1, stroke_bottom);
   path->rCubicTo(-0.75 * scale, 0, -1.625 * scale, -0.5 * scale, -2 * scale,
                  -1.5 * scale);
-  path->rLineTo(-5.75 * scale, -12.5 * scale);
+  path->rLineTo(-diag_width, -diag_height);
   if (extend_to_top) {
     // Create the vertical extension by extending the side diagonals at the
     // upper left and lower right corners until they reach the top and bottom of
@@ -492,18 +508,18 @@ void NewTabButton::GetBorderPath(float button_y,
     // and turn them into sharp points).  Then extend upward from the corner
     // points to the top of the bounds.
     const float dy = scale + 2;
-    const float dx = 11.5 / 25 * dy;
+    const float dx = inverse_slope * dy;
     path->rLineTo(-dx, -dy);
     path->rLineTo(0, -button_y - scale + 1);
-    path->lineTo(34 * scale + 1 + dx, 0);
-    path->rLineTo(0, button_y + 16 * scale + 1);
+    path->lineTo((width() - 2) * scale + 1 + dx, 0);
+    path->rLineTo(0, stroke_bottom);
   } else {
     path->rCubicTo(-0.5 * scale, -1.125 * scale, 0.5 * scale, -scale - 2, scale,
                    -scale - 2);
-    path->rLineTo(23.25 * scale + 2, 0);
+    path->lineTo((width() - 4) * scale - diag_width + 1, scale - 1);
     path->rCubicTo(0.75 * scale, 0, 1.625 * scale, 0.5 * scale, 2 * scale,
                    1.5 * scale);
-    path->rLineTo(5.75 * scale, 12.5 * scale);
+    path->rLineTo(diag_width, diag_height);
     path->rCubicTo(0.5 * scale, 1.125 * scale, -0.5 * scale, scale + 2, -scale,
                    scale + 2);
   }
@@ -568,7 +584,7 @@ void NewTabButton::PaintFill(bool pressed,
       // no flip.
       x += size.width();
     }
-    canvas->TileImageInt(*background, x, kNewTabButtonVerticalOffset + offset_y,
+    canvas->TileImageInt(*background, x, GetNewTabButtonTopOffset() + offset_y,
                          x_scale, 1.0f, 0, 0, size.width(), size.height());
 
     // For non-MD, adjust the alpha of the fill to match that of inactive tabs
@@ -1666,7 +1682,7 @@ void TabStrip::Init() {
   set_notify_enter_exit_on_child(true);
 
   newtab_button_bounds_.set_size(GetLayoutSize(NEW_TAB_BUTTON));
-  newtab_button_bounds_.Inset(0, 0, 0, -kNewTabButtonVerticalOffset);
+  newtab_button_bounds_.Inset(0, 0, 0, -GetNewTabButtonTopOffset());
   newtab_button_ = new NewTabButton(this, this);
   newtab_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_TOOLTIP_NEW_TAB));
