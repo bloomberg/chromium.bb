@@ -59,9 +59,6 @@ crbug.com/522376 [ Linux ] virtual/gpu/fast/canvas/canvas-filter-shadow.html [ C
 crbug.com/522376 [ Linux ] virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Crash ]
 crbug.com/522376 [ Linux ] virtual/gpu/fast/canvas/canvas-scale-drawImage-shadow.html [ Crash ]
 
-# Flaky under MSAN (hang forever)
-crbug.com/456525 [ Linux ] inspector/sources/debugger [ Skip ]
-
 crbug.com/517704 [ Linux ] imported/web-platform-tests/encoding/api-invalid-label.html [ Timeout Pass ]
 
 # Times out on MSAN
