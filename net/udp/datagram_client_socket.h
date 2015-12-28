@@ -32,7 +32,7 @@ class NET_EXPORT_PRIVATE DatagramClientSocket : public DatagramSocket,
   // Returns the network that either BindToNetwork() or BindToDefaultNetwork()
   // bound this socket to. Returns NetworkChangeNotifier::kInvalidNetworkHandle
   // if not explicitly bound via BindToNetwork() or BindToDefaultNetwork().
-  virtual NetworkChangeNotifier::NetworkHandle GetBoundNetwork() = 0;
+  virtual NetworkChangeNotifier::NetworkHandle GetBoundNetwork() const = 0;
 
   // Initialize this socket as a client socket to server at |address|.
   // Returns a network error code.

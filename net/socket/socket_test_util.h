@@ -736,7 +736,7 @@ class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
   // DatagramClientSocket implementation.
   int BindToNetwork(NetworkChangeNotifier::NetworkHandle network) override;
   int BindToDefaultNetwork() override;
-  NetworkChangeNotifier::NetworkHandle GetBoundNetwork() override;
+  NetworkChangeNotifier::NetworkHandle GetBoundNetwork() const override;
   int Connect(const IPEndPoint& address) override;
 
   // AsyncSocket implementation.

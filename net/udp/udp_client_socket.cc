@@ -53,7 +53,7 @@ int UDPClientSocket::BindToDefaultNetwork() {
   return rv;
 }
 
-NetworkChangeNotifier::NetworkHandle UDPClientSocket::GetBoundNetwork() {
+NetworkChangeNotifier::NetworkHandle UDPClientSocket::GetBoundNetwork() const {
   return network_;
 }
 

@@ -66,7 +66,7 @@ class TestUDPClientSocket : public DatagramClientSocket {
     NOTIMPLEMENTED();
     return ERR_NOT_IMPLEMENTED;
   }
-  NetworkChangeNotifier::NetworkHandle GetBoundNetwork() override {
+  NetworkChangeNotifier::NetworkHandle GetBoundNetwork() const override {
     return NetworkChangeNotifier::kInvalidNetworkHandle;
   }
 

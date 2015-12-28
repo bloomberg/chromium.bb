@@ -1350,7 +1350,8 @@ int MockUDPClientSocket::BindToDefaultNetwork() {
   return ERR_NOT_IMPLEMENTED;
 }
 
-NetworkChangeNotifier::NetworkHandle MockUDPClientSocket::GetBoundNetwork() {
+NetworkChangeNotifier::NetworkHandle MockUDPClientSocket::GetBoundNetwork()
+    const {
   return NetworkChangeNotifier::kInvalidNetworkHandle;
 }
 
