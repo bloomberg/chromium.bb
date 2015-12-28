@@ -146,13 +146,13 @@ class DefaultSearchManager {
   // search engine has been selected.
   scoped_ptr<TemplateURLData> fallback_default_search_;
 
-  // Default search engine provided by prefs (either user prefs or policy
-  // prefs). This will be null if no value was set in the pref store.
-  scoped_ptr<TemplateURLData> extension_default_search_;
-
   // Default search engine provided by extension (usings Settings Override API).
   // This will be null if there are no extensions installed which provide
   // default search engines.
+  scoped_ptr<TemplateURLData> extension_default_search_;
+
+  // Default search engine provided by prefs (either user prefs or policy
+  // prefs). This will be null if no value was set in the pref store.
   scoped_ptr<TemplateURLData> prefs_default_search_;
 
   // True if the default search is currently enforced by policy.
