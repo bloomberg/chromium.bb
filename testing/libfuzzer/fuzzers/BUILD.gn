@@ -246,3 +246,12 @@ fuzzer_test("quic_crypto_framer_parse_message_fuzzer") {
     "//net",
   ]
 }
+
+fuzzer_test("sqlite3_prepare_v2_fuzzer") {
+  sources = [
+    "sqlite3_prepare_v2_fuzzer.cc",
+  ]
+  deps = [
+    "//third_party/sqlite",
+  ]
+}
