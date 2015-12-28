@@ -14,8 +14,11 @@
 
 #include "util/thread/thread_log_messages.h"
 
+#include <stddef.h>
+
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/threading/thread_local_storage.h"
 
 namespace crashpad {

@@ -16,6 +16,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 
 namespace {

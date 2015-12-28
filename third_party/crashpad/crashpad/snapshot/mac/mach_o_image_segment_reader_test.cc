@@ -15,8 +15,9 @@
 #include "snapshot/mac/mach_o_image_segment_reader.h"
 
 #include <mach-o/loader.h>
+#include <stddef.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "gtest/gtest.h"
 

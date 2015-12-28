@@ -14,6 +14,8 @@
 
 #include "client/settings.h"
 
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "gtest/gtest.h"
 #include "test/errors.h"
 #include "test/scoped_temp_dir.h"

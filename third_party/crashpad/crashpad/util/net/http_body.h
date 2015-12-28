@@ -15,14 +15,15 @@
 #ifndef CRASHPAD_UTIL_NET_HTTP_BODY_H_
 #define CRASHPAD_UTIL_NET_HTTP_BODY_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <sys/types.h>
 
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "util/file/file_io.h"
 
 namespace crashpad {

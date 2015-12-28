@@ -19,6 +19,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "gtest/gtest.h"
 #include "snapshot/win/process_reader_win.h"

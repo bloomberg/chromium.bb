@@ -14,6 +14,8 @@
 
 #include "minidump/minidump_memory_info_writer.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <utility>
 

@@ -19,6 +19,8 @@
 #include <mach-o/dyld_images.h>
 #include <mach/mach.h>
 #include <OpenCL/opencl.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 #include <sys/stat.h>
 
@@ -28,6 +30,7 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_mach_port.h"
+#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"

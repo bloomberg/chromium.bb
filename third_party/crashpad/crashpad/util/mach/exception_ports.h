@@ -16,10 +16,11 @@
 #define CRASHPAD_UTIL_MACH_EXCEPTION_PORTS_H_
 
 #include <mach/mach.h>
+#include <stddef.h>
 
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace crashpad {
 

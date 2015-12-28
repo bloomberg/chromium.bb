@@ -15,8 +15,9 @@
 #include "util/mach/notify_server.h"
 
 #include "base/logging.h"
-#include "util/mach/notifyServer.h"
+#include "base/macros.h"
 #include "util/mach/mach_message.h"
+#include "util/mach/notifyServer.h"
 
 extern "C" {
 

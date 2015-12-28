@@ -14,9 +14,11 @@
 
 #include "snapshot/win/cpu_context_win.h"
 
+#include <stdint.h>
 #include <string.h>
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "snapshot/cpu_context.h"
 
 namespace crashpad {

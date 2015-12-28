@@ -16,12 +16,13 @@
 
 #include <windows.h>
 #include <dbghelp.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "gtest/gtest.h"
 #include "minidump/minidump_extensions.h"

@@ -14,6 +14,8 @@
 
 #include "util/net/http_multipart_builder.h"
 
+#include <stddef.h>
+
 #include <utility>
 #include <vector>
 

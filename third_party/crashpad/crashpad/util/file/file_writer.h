@@ -15,12 +15,13 @@
 #ifndef CRASHPAD_UTIL_FILE_FILE_WRITER_H_
 #define CRASHPAD_UTIL_FILE_FILE_WRITER_H_
 
+#include <stddef.h>
 #include <sys/types.h>
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "util/file/file_io.h"
 #include "util/file/file_seeker.h"
 

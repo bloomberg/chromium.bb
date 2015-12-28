@@ -25,6 +25,7 @@
 #include "base/mac/scoped_mach_port.h"
 #include "base/mac/scoped_mach_vm.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "snapshot/mac/mach_o_image_reader.h"
 #include "snapshot/mac/process_types.h"
 #include "util/misc/scoped_forbid_return.h"

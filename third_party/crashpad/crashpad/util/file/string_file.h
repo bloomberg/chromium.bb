@@ -15,11 +15,12 @@
 #ifndef CRASHPAD_UTIL_FILE_STRING_FILE_H_
 #define CRASHPAD_UTIL_FILE_STRING_FILE_H_
 
+#include <stddef.h>
 #include <sys/types.h>
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/numerics/safe_math.h"
 #include "util/file/file_io.h"
 #include "util/file/file_reader.h"

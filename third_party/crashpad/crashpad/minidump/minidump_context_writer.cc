@@ -14,10 +14,12 @@
 
 #include "minidump/minidump_context_writer.h"
 
+#include <stdint.h>
 #include <string.h>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "snapshot/cpu_context.h"
 #include "util/file/file_writer.h"
 

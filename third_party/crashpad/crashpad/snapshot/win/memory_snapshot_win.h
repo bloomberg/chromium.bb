@@ -15,10 +15,11 @@
 #ifndef CRASHPAD_SNAPSHOT_WIN_MEMORY_SNAPSHOT_WIN_H_
 #define CRASHPAD_SNAPSHOT_WIN_MEMORY_SNAPSHOT_WIN_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <sys/types.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "snapshot/memory_snapshot.h"
 #include "snapshot/win/process_reader_win.h"
 #include "util/misc/initialization_state_dcheck.h"

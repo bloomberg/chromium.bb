@@ -15,9 +15,13 @@
 #include "util/mach/exc_server_variants.h"
 
 #include <mach/mach.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "test/mac/mach_errors.h"

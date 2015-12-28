@@ -14,6 +14,7 @@
 
 #include "util/misc/clock.h"
 
+#include <stdint.h>
 #include <time.h>
 
 #include "base/logging.h"

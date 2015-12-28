@@ -14,6 +14,7 @@
 
 #include "snapshot/win/pe_image_annotations_reader.h"
 
+#include <stddef.h>
 #include <string.h>
 
 #include "base/strings/utf_string_conversions.h"

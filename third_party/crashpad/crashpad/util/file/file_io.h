@@ -15,6 +15,7 @@
 #ifndef CRASHPAD_UTIL_FILE_FILE_IO_H_
 #define CRASHPAD_UTIL_FILE_FILE_IO_H_
 
+#include <stddef.h>
 #include <sys/types.h>
 
 #include "build/build_config.h"

@@ -14,9 +14,13 @@
 
 #include "minidump/minidump_rva_list_writer.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "gtest/gtest.h"
 #include "minidump/test/minidump_rva_list_test_util.h"

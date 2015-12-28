@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "snapshot/win/cpu_context_win.h"
 #include "snapshot/win/process_reader_win.h"
 

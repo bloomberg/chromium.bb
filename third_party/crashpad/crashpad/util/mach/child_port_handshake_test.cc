@@ -15,6 +15,7 @@
 #include "util/mach/child_port_handshake.h"
 
 #include "base/mac/scoped_mach_port.h"
+#include "base/macros.h"
 #include "gtest/gtest.h"
 #include "test/multiprocess.h"
 #include "util/mach/child_port_types.h"

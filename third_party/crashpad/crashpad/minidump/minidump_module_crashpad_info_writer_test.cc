@@ -16,9 +16,12 @@
 
 #include <windows.h>
 #include <dbghelp.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <utility>
 
+#include "base/macros.h"
 #include "gtest/gtest.h"
 #include "minidump/minidump_extensions.h"
 #include "minidump/minidump_simple_string_dictionary_writer.h"

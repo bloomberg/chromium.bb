@@ -16,10 +16,11 @@
 #define CRASHPAD_UTIL_MACH_CHILD_PORT_SERVER_H_
 
 #include <mach/mach.h>
+#include <stddef.h>
 
 #include <set>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "util/mach/child_port_types.h"
 #include "util/mach/mach_message_server.h"
 

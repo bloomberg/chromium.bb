@@ -18,6 +18,7 @@
 
 #include "base/logging.h"
 #include "base/mac/mach_logging.h"
+#include "base/macros.h"
 #include "util/mach/composite_mach_message_server.h"
 #include "util/mach/mach_extensions.h"
 #include "util/mach/mach_message.h"

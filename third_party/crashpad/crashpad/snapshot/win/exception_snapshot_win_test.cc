@@ -14,11 +14,15 @@
 
 #include "snapshot/win/exception_snapshot_win.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "client/crashpad_client.h"
 #include "gtest/gtest.h"
 #include "snapshot/win/process_snapshot_win.h"

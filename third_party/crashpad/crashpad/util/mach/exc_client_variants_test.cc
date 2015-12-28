@@ -16,9 +16,10 @@
 
 #include <mach/mach.h>
 #include <pthread.h>
+#include <stddef.h>
 #include <string.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "gtest/gtest.h"
 #include "test/mac/mach_errors.h"

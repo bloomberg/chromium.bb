@@ -14,6 +14,7 @@
 
 #include "client/crashpad_client.h"
 
+#include <stdint.h>
 #include <string.h>
 #include <windows.h>
 
@@ -25,6 +26,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "build/build_config.h"
 #include "util/file/file_io.h"
 #include "util/win/command_line.h"
 #include "util/win/critical_section_with_debug_info.h"

@@ -21,6 +21,7 @@
 #include "base/logging.h"
 #include "base/mac/mach_logging.h"
 #include "base/mac/scoped_mach_vm.h"
+#include "base/macros.h"
 #include "util/mach/mach_message.h"
 
 namespace crashpad {

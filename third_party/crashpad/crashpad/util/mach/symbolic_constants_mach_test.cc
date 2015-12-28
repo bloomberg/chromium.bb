@@ -15,9 +15,10 @@
 #include "util/mach/symbolic_constants_mach.h"
 
 #include <mach/mach.h>
+#include <stddef.h>
 #include <string.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "gtest/gtest.h"

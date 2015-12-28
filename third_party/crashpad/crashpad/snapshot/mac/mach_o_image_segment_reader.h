@@ -16,6 +16,7 @@
 #define CRASHPAD_SNAPSHOT_MAC_MACH_O_IMAGE_SEGMENT_READER_H_
 
 #include <mach/mach.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <sys/types.h>
 
@@ -23,7 +24,7 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "snapshot/mac/process_types.h"
 #include "util/misc/initialization_state_dcheck.h"
 

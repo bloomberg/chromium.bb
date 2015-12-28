@@ -16,6 +16,7 @@
 #define CRASHPAD_CLIENT_CAPTURE_CONTEXT_MAC_H_
 
 #include <mach/mach.h>
+#include <stdint.h>
 
 #include "build/build_config.h"
 

@@ -14,6 +14,8 @@
 
 #include "util/mach/exc_client_variants.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/logging.h"

@@ -17,6 +17,7 @@
 #include <errno.h>
 #include <mach/mach.h>
 #include <pthread.h>
+#include <stdint.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -24,6 +25,7 @@
 
 #include "base/logging.h"
 #include "base/mac/mach_logging.h"
+#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/stringprintf.h"
 #include "util/mac/mac_util.h"

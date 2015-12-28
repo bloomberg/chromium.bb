@@ -14,6 +14,7 @@
 
 #include "client/crash_report_database.h"
 
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "client/settings.h"
 #include "gtest/gtest.h"

@@ -17,11 +17,12 @@
 
 #include <windows.h>
 #include <dbghelp.h>
+#include <stddef.h>
 #include <sys/types.h>
 
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "util/file/file_io.h"
 
 namespace crashpad {

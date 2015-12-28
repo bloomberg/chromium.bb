@@ -14,10 +14,13 @@
 
 #include "util/numeric/checked_address_range.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 
-#include "base/basictypes.h"
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "gtest/gtest.h"

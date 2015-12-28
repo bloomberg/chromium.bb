@@ -16,6 +16,8 @@
 
 #include <windows.h>
 #include <dbghelp.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/types.h>
 
 #include <string>
@@ -23,15 +25,16 @@
 
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "gtest/gtest.h"
 #include "minidump/minidump_context_writer.h"
-#include "minidump/minidump_memory_writer.h"
 #include "minidump/minidump_file_writer.h"
+#include "minidump/minidump_memory_writer.h"
 #include "minidump/minidump_thread_id_map.h"
 #include "minidump/test/minidump_context_test_util.h"
-#include "minidump/test/minidump_memory_writer_test_util.h"
 #include "minidump/test/minidump_file_writer_test_util.h"
+#include "minidump/test/minidump_memory_writer_test_util.h"
 #include "minidump/test/minidump_writable_test_util.h"
 #include "snapshot/test/test_cpu_context.h"
 #include "snapshot/test/test_memory_snapshot.h"

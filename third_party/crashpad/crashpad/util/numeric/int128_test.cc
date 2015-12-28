@@ -14,7 +14,9 @@
 
 #include "util/numeric/int128.h"
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "build/build_config.h"
 #include "gtest/gtest.h"
 
 namespace crashpad {

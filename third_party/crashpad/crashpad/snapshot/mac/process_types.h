@@ -18,6 +18,7 @@
 #include <mach/mach.h>
 #include <mach-o/dyld_images.h>
 #include <mach-o/loader.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <sys/types.h>
 

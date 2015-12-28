@@ -35,4 +35,5 @@ $ cd "${CRASHPAD_DIR}"
 $ git am --3way --message-id -p4 /tmp/patchdir
 
 Local Modifications:
-None.
+- Removed references to "base/basictypes.h" and replaced them with appropriate
+  headers.

@@ -15,9 +15,12 @@
 #include "util/net/http_transport.h"
 
 #include <windows.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <winhttp.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/scoped_generic.h"
 #include "base/strings/stringprintf.h"

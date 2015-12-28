@@ -20,6 +20,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "package.h"
 
 namespace crashpad {

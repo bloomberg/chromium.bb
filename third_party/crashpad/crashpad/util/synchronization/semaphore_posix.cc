@@ -20,6 +20,7 @@
 
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
+#include "build/build_config.h"
 
 namespace crashpad {
 

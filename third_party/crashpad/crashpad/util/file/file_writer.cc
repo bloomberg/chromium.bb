@@ -17,6 +17,7 @@
 #include <algorithm>
 
 #include <limits.h>
+#include <string.h>
 
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"

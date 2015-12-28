@@ -14,10 +14,12 @@
 
 #include "minidump/minidump_system_info_writer.h"
 
+#include <stdint.h>
 #include <string.h>
 #include <sys/types.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "minidump/minidump_string_writer.h"
 #include "snapshot/system_snapshot.h"
 #include "util/file/file_writer.h"

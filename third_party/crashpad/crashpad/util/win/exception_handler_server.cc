@@ -15,11 +15,14 @@
 #include "util/win/exception_handler_server.h"
 
 #include <sddl.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 #include <utility>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"

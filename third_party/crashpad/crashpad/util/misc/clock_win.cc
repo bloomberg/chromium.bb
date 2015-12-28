@@ -14,8 +14,9 @@
 
 #include "util/misc/clock.h"
 
-#include <sys/types.h>
 #include <windows.h>
+#include <stdint.h>
+#include <sys/types.h>
 
 namespace {
 

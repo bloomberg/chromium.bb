@@ -15,6 +15,7 @@
 #include "util/mach/task_memory.h"
 
 #include <mach/mach.h>
+#include <stddef.h>
 #include <string.h>
 
 #include <algorithm>
@@ -22,6 +23,7 @@
 
 #include "base/mac/scoped_mach_port.h"
 #include "base/mac/scoped_mach_vm.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "gtest/gtest.h"
 #include "test/mac/mach_errors.h"

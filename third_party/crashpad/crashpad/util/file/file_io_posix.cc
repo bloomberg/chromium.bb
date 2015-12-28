@@ -15,6 +15,7 @@
 #include "util/file/file_io.h"
 
 #include <fcntl.h>
+#include <stddef.h>
 #include <sys/file.h>
 #include <unistd.h>
 

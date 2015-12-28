@@ -15,8 +15,6 @@
 #ifndef CRASHPAD_HANDLER_CRASH_REPORT_UPLOAD_THREAD_H_
 #define CRASHPAD_HANDLER_CRASH_REPORT_UPLOAD_THREAD_H_
 
-#include "base/basictypes.h"
-
 #include <string>
 
 #include "base/memory/scoped_ptr.h"

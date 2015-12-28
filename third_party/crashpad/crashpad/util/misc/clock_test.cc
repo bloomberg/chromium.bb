@@ -14,13 +14,15 @@
 
 #include "util/misc/clock.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <algorithm>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "gtest/gtest.h"
 
 namespace crashpad {

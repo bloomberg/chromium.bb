@@ -16,6 +16,7 @@
 
 #include <dbghelp.h>
 #include <intrin.h>
+#include <stddef.h>
 #include <wchar.h>
 
 #include "base/files/file_path.h"
@@ -25,8 +26,8 @@
 #include "build/build_config.h"
 #include "gtest/gtest.h"
 #include "test/errors.h"
-#include "test/scoped_temp_dir.h"
 #include "test/paths.h"
+#include "test/scoped_temp_dir.h"
 #include "test/win/child_launcher.h"
 #include "util/file/file_io.h"
 #include "util/misc/random_string.h"

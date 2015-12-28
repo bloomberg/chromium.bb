@@ -14,9 +14,12 @@
 
 #include "minidump/minidump_thread_id_map.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "gtest/gtest.h"
 #include "snapshot/test/test_thread_snapshot.h"
 

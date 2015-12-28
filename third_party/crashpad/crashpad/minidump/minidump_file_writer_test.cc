@@ -16,12 +16,15 @@
 
 #include <windows.h>
 #include <dbghelp.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
 
 #include <string>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "gtest/gtest.h"
 #include "minidump/minidump_stream_writer.h"
 #include "minidump/minidump_writable.h"

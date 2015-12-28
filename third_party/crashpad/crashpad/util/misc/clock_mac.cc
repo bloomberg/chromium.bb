@@ -15,6 +15,7 @@
 #include "util/misc/clock.h"
 
 #include <mach/mach_time.h>
+#include <stdint.h>
 
 #include "base/mac/mach_logging.h"
 

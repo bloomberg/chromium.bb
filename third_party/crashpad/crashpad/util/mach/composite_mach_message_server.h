@@ -16,11 +16,12 @@
 #define CRASHPAD_UTIL_MACH_COMPOSITE_MACH_MESSAGE_SERVER_H_
 
 #include <mach/mach.h>
+#include <stddef.h>
 
 #include <map>
 #include <set>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "util/mach/mach_message_server.h"
 
 namespace crashpad {

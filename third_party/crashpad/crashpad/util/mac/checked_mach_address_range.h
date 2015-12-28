@@ -16,6 +16,7 @@
 #define CRASHPAD_UTIL_MAC_CHECKED_MACH_ADDRESS_RANGE_H_
 
 #include <mach/mach.h>
+#include <stddef.h>
 
 #include "util/numeric/checked_address_range.h"
 

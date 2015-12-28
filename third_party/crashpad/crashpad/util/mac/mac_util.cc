@@ -16,6 +16,7 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>
+#include <stddef.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/utsname.h>

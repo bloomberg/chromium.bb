@@ -15,10 +15,11 @@
 #ifndef CRASHPAD_SNAPSHOT_TEST_TEST_MEMORY_SNAPSHOT_H_
 #define CRASHPAD_SNAPSHOT_TEST_TEST_MEMORY_SNAPSHOT_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <sys/types.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "snapshot/memory_snapshot.h"
 
 namespace crashpad {

@@ -14,12 +14,14 @@
 
 #include "client/prune_crash_reports.h"
 
+#include <stddef.h>
 #include <stdlib.h>
 
 #include <algorithm>
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/rand_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"

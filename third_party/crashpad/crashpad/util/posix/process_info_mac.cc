@@ -14,10 +14,12 @@
 
 #include "util/posix/process_info.h"
 
+#include <stddef.h>
 #include <string.h>
 
 #include "base/logging.h"
 #include "base/mac/mach_logging.h"
+#include "base/macros.h"
 
 namespace crashpad {
 

@@ -17,12 +17,13 @@
 
 #include <windows.h>
 #include <dbghelp.h>
+#include <stddef.h>
 #include <sys/types.h>
 
 #include <set>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "minidump/minidump_extensions.h"
 #include "minidump/minidump_stream_writer.h"

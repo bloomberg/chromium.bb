@@ -15,6 +15,7 @@
 #include "util/mach/child_port_server.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "util/mach/child_portServer.h"
 #include "util/mach/mach_message.h"
 

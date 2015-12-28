@@ -14,12 +14,15 @@
 
 #include "snapshot/mac/system_snapshot_mac.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/sysctl.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
 #include <time.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "snapshot/cpu_context.h"

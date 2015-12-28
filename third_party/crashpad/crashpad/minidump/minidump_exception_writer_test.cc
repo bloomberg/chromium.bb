@@ -16,6 +16,7 @@
 
 #include <windows.h>
 #include <dbghelp.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <sys/types.h>
 
@@ -23,6 +24,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "gtest/gtest.h"
 #include "minidump/minidump_context.h"
 #include "minidump/minidump_context_writer.h"

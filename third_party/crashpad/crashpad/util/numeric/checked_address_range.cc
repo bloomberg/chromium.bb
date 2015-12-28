@@ -14,7 +14,10 @@
 
 #include "util/numeric/checked_address_range.h"
 
+#include <stddef.h>
+
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 
 #if defined(OS_MACOSX)
 #include <mach/mach.h>

@@ -16,6 +16,7 @@
 
 #include <windows.h>
 #include <dbghelp.h>
+#include <stdint.h>
 
 #include <map>
 #include <string>

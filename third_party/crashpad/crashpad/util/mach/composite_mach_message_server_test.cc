@@ -14,6 +14,9 @@
 
 #include "util/mach/composite_mach_message_server.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "gtest/gtest.h"
 #include "test/gtest_death_check.h"

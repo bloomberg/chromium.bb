@@ -16,9 +16,10 @@
 
 #include <windows.h>
 #include <shellapi.h>
+#include <stddef.h>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/scoped_generic.h"
 #include "gtest/gtest.h"
 #include "test/errors.h"

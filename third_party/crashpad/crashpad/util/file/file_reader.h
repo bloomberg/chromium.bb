@@ -15,11 +15,12 @@
 #ifndef CRASHPAD_UTIL_FILE_FILE_READER_H_
 #define CRASHPAD_UTIL_FILE_FILE_READER_H_
 
+#include <stddef.h>
 #include <stdio.h>
 #include <sys/types.h>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "util/file/file_io.h"
 #include "util/file/file_seeker.h"
 

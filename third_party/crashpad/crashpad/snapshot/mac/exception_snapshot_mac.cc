@@ -16,6 +16,7 @@
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "snapshot/mac/cpu_context_mac.h"
 #include "snapshot/mac/process_reader.h"
 #include "util/mach/exception_behaviors.h"

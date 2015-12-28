@@ -14,6 +14,9 @@
 
 #include "client/simple_string_dictionary.h"
 
+#include <stddef.h>
+#include <string.h>
+
 #include "base/logging.h"
 #include "gtest/gtest.h"
 #include "test/gtest_death_check.h"

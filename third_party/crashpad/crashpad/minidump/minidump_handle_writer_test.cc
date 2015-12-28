@@ -14,6 +14,8 @@
 
 #include "minidump/minidump_handle_writer.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <utility>
 

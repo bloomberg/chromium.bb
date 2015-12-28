@@ -15,12 +15,14 @@
 #include "util/mach/mach_message_server.h"
 
 #include <mach/mach.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/mac/scoped_mach_port.h"
+#include "base/macros.h"
 #include "gtest/gtest.h"
 #include "test/mac/mach_errors.h"
 #include "test/mac/mach_multiprocess.h"

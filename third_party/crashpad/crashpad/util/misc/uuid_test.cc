@@ -14,14 +14,17 @@
 
 #include "util/misc/uuid.h"
 
+#include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/scoped_generic.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "gtest/gtest.h"
 
 namespace crashpad {

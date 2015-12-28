@@ -15,6 +15,7 @@
 #ifndef CRASHPAD_MINIDUMP_TEST_MINIDUMP_RVA_LIST_TEST_UTIL_H_
 #define CRASHPAD_MINIDUMP_TEST_MINIDUMP_RVA_LIST_TEST_UTIL_H_
 
+#include <stddef.h>
 #include <sys/types.h>
 
 #include <string>

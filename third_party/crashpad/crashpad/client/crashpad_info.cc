@@ -14,6 +14,7 @@
 
 #include "client/crashpad_info.h"
 
+#include "build/build_config.h"
 #include "util/stdlib/cxx.h"
 
 #if defined(OS_MACOSX)
