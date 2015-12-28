@@ -16,4 +16,4 @@ function test()
     }
 }
 
-window.addEventListener("load", runTest);
+window.addEventListener("load", runTest.bind(null, false));
