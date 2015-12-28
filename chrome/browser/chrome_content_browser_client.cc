@@ -2269,8 +2269,21 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 
   if (!prefs->GetBoolean(prefs::kWebKitJavascriptEnabled))
     web_prefs->javascript_enabled = false;
-  if (!prefs->GetBoolean(prefs::kWebKitWebSecurityEnabled))
+
+  // Only allow disabling web security via the command-line flag if the user
+  // has specified a distinct profile directory. This still enables tests to
+  // disable web security by setting the pref directly.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (!prefs->GetBoolean(prefs::kWebKitWebSecurityEnabled)) {
     web_prefs->web_security_enabled = false;
+  } else if (!web_prefs->web_security_enabled &&
+             command_line->HasSwitch(switches::kDisableWebSecurity) &&
+             !command_line->HasSwitch(switches::kUserDataDir)) {
+    LOG(ERROR) << "Web security may only be disabled if '--user-data-dir' is "
+               "also specified.";
+    web_prefs->web_security_enabled = true;
+  }
+
   if (!prefs->GetBoolean(prefs::kWebKitPluginsEnabled))
     web_prefs->plugins_enabled = false;
   web_prefs->loads_images_automatically =
