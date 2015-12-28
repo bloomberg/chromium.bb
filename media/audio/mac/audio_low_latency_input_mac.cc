@@ -79,7 +79,7 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
   format_.mBytesPerFrame = format_.mBytesPerPacket;
   format_.mReserved = 0;
 
-  DVLOG(1) << "Desired ouput format: " << format_;
+  DVLOG(1) << "Desired output (client side) format: " << format_;
 
   // Derive size (in bytes) of the buffers that we will render to.
   UInt32 data_byte_size = number_of_frames_ * format_.mBytesPerFrame;
@@ -134,6 +134,10 @@ bool AUAudioInputStream::Open() {
   // Obtain an AudioOuputUnit using an AUHAL component description.
 
   // Description for the Audio Unit we want to use (AUHAL in this case).
+  // The kAudioUnitSubType_HALOutput audio unit interfaces to any audio device.
+  // The user specifies which  audio device to track. The audio unit can do
+  // input from the device as well as output to the device. Bus 0 is used for
+  // the output side, bus 1 is used to get audio input from the device.
   AudioComponentDescription desc = {
       kAudioUnitType_Output,
       kAudioUnitSubType_HALOutput,
@@ -142,12 +146,19 @@ bool AUAudioInputStream::Open() {
       0
   };
 
-  AudioComponent comp = AudioComponentFindNext(0, &desc);
+  AudioComponent comp = AudioComponentFindNext(NULL, &desc);
   DCHECK(comp);
 
   // Get access to the service provided by the specified Audio Unit.
   result = AudioComponentInstanceNew(comp, &audio_unit_);
   if (result) {
+    HandleError(result);
+    return false;
+  }
+
+  // Initialize the AUHAL before making any changes or using it.
+  result = AudioUnitInitialize(audio_unit_);
+  if (result != noErr) {
     HandleError(result);
     return false;
   }
