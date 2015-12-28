@@ -430,22 +430,23 @@ std::string AXNodeData::ToString() const {
             result += " text_direction=btt";
             break;
         }
-        case AX_ATTR_TEXT_STYLE: {
-          unsigned int text_style = int_attributes[i].second;
-          if (text_style == AX_TEXT_STYLE_NONE)
-            break;
-          std::string text_style_value(" text_style=");
-          if (text_style & AX_TEXT_STYLE_BOLD)
-            text_style_value += "bold,";
-          if (text_style & AX_TEXT_STYLE_ITALIC)
-            text_style_value += "italic,";
-          if (text_style & AX_TEXT_STYLE_UNDERLINE)
-            text_style_value += "underline,";
-          if (text_style & AX_TEXT_STYLE_LINE_THROUGH)
-            text_style_value += "line-through,";
-          result += text_style_value.substr(0, text_style_value.size() - 1);;
-        }
         break;
+      case AX_ATTR_TEXT_STYLE: {
+        unsigned int text_style = int_attributes[i].second;
+        if (text_style == AX_TEXT_STYLE_NONE)
+          break;
+        std::string text_style_value(" text_style=");
+        if (text_style & AX_TEXT_STYLE_BOLD)
+          text_style_value += "bold,";
+        if (text_style & AX_TEXT_STYLE_ITALIC)
+          text_style_value += "italic,";
+        if (text_style & AX_TEXT_STYLE_UNDERLINE)
+          text_style_value += "underline,";
+        if (text_style & AX_TEXT_STYLE_LINE_THROUGH)
+          text_style_value += "line-through,";
+        result += text_style_value.substr(0, text_style_value.size() - 1);
+        break;
+      }
       case AX_ATTR_SET_SIZE:
         result += " setsize=" + value;
         break;
