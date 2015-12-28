@@ -189,7 +189,6 @@ TEST(VectorTest, OwnPtr)
     for (index = 0; index < vector.size(); index++) {
         OwnPtr<DestructCounter>& refCounter = vector[index];
         EXPECT_EQ(index, static_cast<size_t>(refCounter->get()));
-        index++;
     }
     EXPECT_EQ(0, destructNumber);
 
@@ -226,6 +225,71 @@ TEST(VectorTest, OwnPtr)
 
     copyVector.clear();
     EXPECT_EQ(count, static_cast<size_t>(destructNumber));
+}
+
+class MoveOnly {
+public:
+    explicit MoveOnly(int i = 0)
+        : m_i(i)
+    { }
+
+    MoveOnly(MoveOnly&& other)
+        : m_i(other.m_i)
+    {
+        other.m_i = 0;
+    }
+
+    MoveOnly& operator=(MoveOnly&& other)
+    {
+        if (this != &other) {
+            m_i = other.m_i;
+            other.m_i = 0;
+        }
+        return *this;
+    }
+
+    int value() const { return m_i; }
+
+private:
+    WTF_MAKE_NONCOPYABLE(MoveOnly);
+    int m_i;
+};
+
+TEST(VectorTest, MoveOnlyType)
+{
+    WTF::Vector<MoveOnly> vector;
+    vector.append(MoveOnly(1));
+    vector.append(MoveOnly(2));
+    EXPECT_EQ(2u, vector.size());
+
+    ASSERT_EQ(1, vector.first().value());
+    ASSERT_EQ(2, vector.last().value());
+
+    vector.remove(0);
+    EXPECT_EQ(2, vector[0].value());
+    EXPECT_EQ(1u, vector.size());
+
+    MoveOnly moveOnly(std::move(vector[0]));
+    vector.remove(0);
+    ASSERT_EQ(2, moveOnly.value());
+    ASSERT_EQ(0u, vector.size());
+
+    size_t count = vector.capacity() + 1;
+    for (size_t i = 0; i < count; i++)
+        vector.append(MoveOnly(i + 1)); // +1 to distinguish from default-constructed.
+
+    // Reallocation did not affect the vector's content.
+    EXPECT_EQ(count, vector.size());
+    for (size_t i = 0; i < vector.size(); i++)
+        EXPECT_EQ(static_cast<int>(i + 1), vector[i].value());
+
+    WTF::Vector<MoveOnly> otherVector;
+    vector.swap(otherVector);
+    EXPECT_EQ(count, otherVector.size());
+    EXPECT_EQ(0u, vector.size());
+
+    vector = std::move(otherVector);
+    EXPECT_EQ(count, vector.size());
 }
 
 // WrappedInt class will fail if it was memmoved or memcpyed.
@@ -378,6 +442,21 @@ TEST(VectorTest, Compare)
     compare<int>();
     compare<Comparable>();
     compare<WTF::String>();
+}
+
+TEST(VectorTest, AppendFirst)
+{
+    Vector<WTF::String> vector;
+    vector.append("string");
+    // Test passes if it does not crash (reallocation did not make
+    // the input reference stale).
+    size_t limit = vector.capacity() + 1;
+    for (size_t i = 0; i < limit; i++)
+        vector.append(vector.first());
+
+    limit = vector.capacity() + 1;
+    for (size_t i = 0; i < limit; i++)
+        vector.append(const_cast<const WTF::String&>(vector.first()));
 }
 
 } // anonymous namespace
