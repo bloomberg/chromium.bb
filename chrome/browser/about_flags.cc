@@ -67,7 +67,9 @@
 #include "ui/native_theme/native_theme_switches.h"
 #include "ui/views/views_switches.h"
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/chrome_feature_list.h"
+#else
 #include "ui/message_center/message_center_switches.h"
 #endif
 
@@ -1328,7 +1330,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_PHYSICAL_WEB_NAME,
      IDS_FLAGS_ENABLE_PHYSICAL_WEB_DESCRIPTION,
      kOsAndroid,
-     SINGLE_VALUE_TYPE(switches::kEnablePhysicalWeb)},
+     FEATURE_VALUE_TYPE(chrome::android::kPhysicalWebFeature)},
 #endif
     {"enable-zero-copy",
      IDS_FLAGS_ZERO_COPY_NAME,

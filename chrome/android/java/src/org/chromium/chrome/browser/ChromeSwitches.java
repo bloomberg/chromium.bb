@@ -204,12 +204,6 @@ public abstract class ChromeSwitches {
     public static final String ENABLE_HUNG_RENDERER_INFOBAR = "enable-hung-renderer-infobar";
 
     /**
-     * Enable Physical Web feature.
-     * Native switch - switches::kEnablePhysicalWeb
-     */
-    public static final String ENABLE_PHYSICAL_WEB = "enable-physical-web";
-
-    /**
      * Enables Web Notification custom layouts.
      * Native switch - switches::kEnableWebNotificationCustomLayouts
      */

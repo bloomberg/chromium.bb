@@ -7,8 +7,12 @@
 
 #include <jni.h>
 
+#include "base/feature_list.h"
+
 namespace chrome {
 namespace android {
+
+extern const base::Feature kPhysicalWebFeature;
 
 bool RegisterChromeFeatureListJni(JNIEnv* env);
 

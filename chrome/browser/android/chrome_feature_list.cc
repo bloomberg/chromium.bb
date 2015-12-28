@@ -20,10 +20,6 @@ namespace android {
 
 namespace {
 
-const base::Feature kPhysicalWebFeature {
-  "PhysicalWeb", base::FEATURE_DISABLED_BY_DEFAULT
-};
-
 // Array of features exposed through the Java ChromeFeatureList API. Entries in
 // this array may either refer to features defined in this file (above) or in
 // other locations in the code base (e.g. chrome/, components/, etc).
@@ -32,6 +28,10 @@ const base::Feature* kFeaturesExposedToJava[] = {
 };
 
 }  // namespace
+
+const base::Feature kPhysicalWebFeature {
+  "PhysicalWeb", base::FEATURE_DISABLED_BY_DEFAULT
+};
 
 static jboolean IsEnabled(JNIEnv* env,
                           const JavaParamRef<jclass>& clazz,

@@ -310,7 +310,6 @@ extern const char kEnableContextualSearch[];
 extern const char kEnableDomDistillerButtonAnimation[];
 extern const char kEnableHostedMode[];
 extern const char kEnableHungRendererInfoBar[];
-extern const char kEnablePhysicalWeb[];
 extern const char kProgressBarAnimation[];
 extern const char kEnableThemeColorInTabbedMode[];
 extern const char kDisableAutoHidingToolbarThreshold[];

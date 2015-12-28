@@ -9,10 +9,8 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 
-import org.chromium.base.CommandLine;
 import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.ChromeVersionInfo;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 
 /**
@@ -21,6 +19,7 @@ import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager
 public class PhysicalWeb {
     public static final int OPTIN_NOTIFY_MAX_TRIES = 1;
     private static final String PREF_PHYSICAL_WEB_NOTIFY_COUNT = "physical_web_notify_count";
+    private static final String FEATURE_NAME = "PhysicalWeb";
 
     /**
      * Evaluate whether the environment is one in which the Physical Web should
@@ -28,11 +27,7 @@ public class PhysicalWeb {
      * @return true if the PhysicalWeb should be enabled
      */
     public static boolean featureIsEnabled() {
-        boolean allowedChannel =
-                ChromeVersionInfo.isLocalBuild() || ChromeVersionInfo.isDevBuild();
-        boolean switchEnabled =
-                CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_PHYSICAL_WEB);
-        return allowedChannel && switchEnabled;
+        return ChromeFeatureList.isEnabled(FEATURE_NAME);
     }
 
     /**
