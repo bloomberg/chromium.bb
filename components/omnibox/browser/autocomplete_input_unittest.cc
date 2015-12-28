@@ -85,7 +85,6 @@ TEST(AutocompleteInputTest, InputType) {
     { ASCIIToUTF16("user@foo:45"), metrics::OmniboxInputType::URL },
     { ASCIIToUTF16("user:pass@1.2:45"), metrics::OmniboxInputType::URL },
     { ASCIIToUTF16("host?query"), metrics::OmniboxInputType::UNKNOWN },
-    { ASCIIToUTF16("host#ref"), metrics::OmniboxInputType::QUERY },
     { ASCIIToUTF16("host#"), metrics::OmniboxInputType::QUERY },
     { ASCIIToUTF16("host#ref"), metrics::OmniboxInputType::QUERY },
     { ASCIIToUTF16("host# ref"), metrics::OmniboxInputType::QUERY },
