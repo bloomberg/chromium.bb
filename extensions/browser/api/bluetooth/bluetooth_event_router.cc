@@ -241,21 +241,22 @@ void BluetoothEventRouter::AddPairingDelegate(const std::string& extension_id) {
 void BluetoothEventRouter::AddPairingDelegateImpl(
     const std::string& extension_id) {
   if (!adapter_.get()) {
-    LOG(ERROR) << "Unable to get adatper.";
+    LOG(ERROR) << "Unable to get adapter for extension_id: " << extension_id;
     return;
   }
-  if (!ContainsKey(pairing_delegate_map_, extension_id)) {
-    BluetoothApiPairingDelegate* delegate =
-        new BluetoothApiPairingDelegate(browser_context_);
-    DCHECK(adapter_.get());
-    adapter_->AddPairingDelegate(
-        delegate, device::BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH);
-    pairing_delegate_map_[extension_id] = delegate;
-  } else {
-    LOG(ERROR) << "Pairing delegate already exists for extension. "
-               << "There should be at most one onPairing listener.";
-    NOTREACHED();
+  if (ContainsKey(pairing_delegate_map_, extension_id)) {
+    // For WebUI there may be more than one page open to the same url
+    // (e.g. chrome://settings). These will share the same pairing delegate.
+    VLOG(1) << "Pairing delegate already exists for extension_id: "
+            << extension_id;
+    return;
   }
+  BluetoothApiPairingDelegate* delegate =
+      new BluetoothApiPairingDelegate(browser_context_);
+  DCHECK(adapter_.get());
+  adapter_->AddPairingDelegate(
+      delegate, device::BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH);
+  pairing_delegate_map_[extension_id] = delegate;
 }
 
 void BluetoothEventRouter::RemovePairingDelegate(
