@@ -14,6 +14,7 @@ import argparse
 import errno
 import os
 import subprocess
+import sys
 import tarfile
 
 def ReadDependencies(manifest):
@@ -60,9 +61,8 @@ def main():
         tarball.add(dep)
       except OSError as e:
         if e.errno == errno.ENOENT:
-          print dep + " not found (did you build the engine?)"
+          print >> sys.stderr, dep + " not found (did you build the engine?)"
           exit(1)
-  print 'Created ' + args.output
 
 if __name__ == "__main__":
   main()
