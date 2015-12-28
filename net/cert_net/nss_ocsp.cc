@@ -171,7 +171,7 @@ class OCSPNSSInitialization {
   DISALLOW_COPY_AND_ASSIGN(OCSPNSSInitialization);
 };
 
-base::LazyInstance<OCSPNSSInitialization> g_ocsp_nss_initialization =
+base::LazyInstance<OCSPNSSInitialization>::Leaky g_ocsp_nss_initialization =
     LAZY_INSTANCE_INITIALIZER;
 
 // Concrete class for SEC_HTTP_REQUEST_SESSION.
@@ -594,10 +594,6 @@ OCSPNSSInitialization::OCSPNSSInitialization() {
 }
 
 OCSPNSSInitialization::~OCSPNSSInitialization() {
-  SECStatus status = CERT_RegisterAlternateOCSPAIAInfoCallBack(NULL, NULL);
-  if (status != SECSuccess) {
-    LOG(ERROR) << "Error unregistering OCSP: " << PR_GetError();
-  }
 }
 
 
