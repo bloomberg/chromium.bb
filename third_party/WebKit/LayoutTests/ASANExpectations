@@ -105,3 +105,8 @@ crbug.com/446661 [Linux ] fast/dom/Geolocation/success-clear-watch.html [ Timeou
 crbug.com/464065 [ Linux ] media/track/css-cue-for-video-in-shadow.html [ Timeout ]
 crbug.com/464065 [ Linux ] media/track/css-cue-for-video-in-shadow-2.html [ Timeout ]
 crbug.com/525975 [ Linux ] http/tests/websocket/workers/close-before-open.html [ Timeout Pass ]
+
+crbug.com/451577 [ Linux ] inspector/elements/user-properties.html [ Slow ]
+crbug.com/451577 [ Linux ] inspector/extensions/extensions-reload.html [ Slow ]
+crbug.com/451577 [ Linux ] inspector/extensions/extensions-resources.html [ Slow ]
+crbug.com/451577 [ Linux ] inspector/extensions/extensions-sidebar.html [ Slow ]

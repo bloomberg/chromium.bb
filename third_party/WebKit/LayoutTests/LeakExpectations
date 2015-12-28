@@ -143,3 +143,7 @@ crbug.com/506757 webaudio/mediastreamaudiodestinationnode.html [ Leak ]
 
 crbug.com/538524 editing/selection/modify-crash.html [ Leak ]
 crbug.com/546132 editing/execCommand/insert-html-to-document-element-crash.html [ Leak ]
+
+crbug.com/451577 [ Linux ] inspector/elements/user-properties.html [ Slow ]
+crbug.com/451577 [ Linux ] inspector/extensions/extensions-reload.html [ Slow ]
+crbug.com/451577 [ Linux ] inspector/extensions/extensions-sidebar.html [ Slow ]
