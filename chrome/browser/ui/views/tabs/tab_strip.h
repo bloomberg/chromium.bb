@@ -58,10 +58,6 @@ class TabStrip : public views::View,
                  public views::ViewTargeterDelegate,
                  public TabController {
  public:
-  // The vertical offset of the tab strip button. This offset applies only to
-  // restored windows.
-  static const int kNewTabButtonVerticalOffset;
-
   explicit TabStrip(TabStripController* controller);
   ~TabStrip() override;
 

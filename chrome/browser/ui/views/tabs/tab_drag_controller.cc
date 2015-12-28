@@ -1689,11 +1689,14 @@ gfx::Rect TabDragController::CalculateDraggedBrowserBounds(
       break; // Nothing to do for DETACH_ABOVE_OR_BELOW.
   }
 
-  // To account for the extra vertical on restored windows that is absent on
-  // maximized windows, add an additional vertical offset extracted from the tab
-  // strip.
-  if (source->GetWidget()->IsMaximized())
-    new_bounds.Offset(0, -source->kNewTabButtonVerticalOffset);
+  // Account for the extra space above the tabstrip on restored windows versus
+  // maximized windows.
+  if (source->GetWidget()->IsMaximized()) {
+    const auto* frame_view = static_cast<BrowserNonClientFrameView*>(
+        source->GetWidget()->non_client_view()->frame_view());
+    new_bounds.Offset(
+        0, frame_view->GetTopInset(false) - frame_view->GetTopInset(true));
+  }
   return new_bounds;
 }
 

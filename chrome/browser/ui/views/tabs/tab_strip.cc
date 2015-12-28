@@ -123,6 +123,9 @@ const int kPinnedToNonPinnedOffset = 2;
 const int kPinnedToNonPinnedOffset = 3;
 #endif
 
+// The vertical offset of the tab strip button.
+const int kNewTabButtonVerticalOffset = 7;
+
 // Returns the size of the new tab button, not including any bounds extension to
 // enlarge the clickable area.
 gfx::Size GetNewTabButtonSize() {
@@ -449,7 +452,7 @@ bool NewTabButton::GetHitTestMask(gfx::Path* mask) const {
   if (ui::MaterialDesignController::IsModeMaterial()) {
     SkPath border;
     const float scale = GetWidget()->GetCompositor()->device_scale_factor();
-    GetBorderPath(TabStrip::kNewTabButtonVerticalOffset * scale, scale,
+    GetBorderPath(kNewTabButtonVerticalOffset * scale, scale,
                   tab_strip_->SizeTabButtonToTopOfTabStrip(), &border);
     mask->addPath(border, SkMatrix::MakeScale(1 / scale));
   } else if (tab_strip_->SizeTabButtonToTopOfTabStrip()) {
@@ -461,7 +464,7 @@ bool NewTabButton::GetHitTestMask(gfx::Path* mask) const {
     mask->addRect(RectToSkRect(button_bounds));
   } else {
     SkScalar w = SkIntToScalar(width());
-    SkScalar v_offset = SkIntToScalar(TabStrip::kNewTabButtonVerticalOffset);
+    SkScalar v_offset = SkIntToScalar(kNewTabButtonVerticalOffset);
 
     // These values are defined by the shape of the new tab image. Should that
     // image ever change, these values will need to be updated. They're so
@@ -572,8 +575,7 @@ void NewTabButton::PaintFill(bool pressed,
       // no flip.
       x += size.width();
     }
-    canvas->TileImageInt(*background, x,
-                         TabStrip::kNewTabButtonVerticalOffset + offset_y,
+    canvas->TileImageInt(*background, x, kNewTabButtonVerticalOffset + offset_y,
                          x_scale, 1.0f, 0, 0, size.width(), size.height());
 
     // For non-MD, adjust the alpha of the fill to match that of inactive tabs
@@ -658,9 +660,6 @@ void TabStrip::RemoveTabDelegate::AnimationCanceled(
 
 ///////////////////////////////////////////////////////////////////////////////
 // TabStrip, public:
-
-// static
-const int TabStrip::kNewTabButtonVerticalOffset = 7;
 
 TabStrip::TabStrip(TabStripController* controller)
     : controller_(controller),
