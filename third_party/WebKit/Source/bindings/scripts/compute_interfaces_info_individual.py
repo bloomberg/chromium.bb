@@ -54,6 +54,7 @@ from utilities import get_file_contents, read_file_to_list, idl_filename_to_inte
 
 module_path = os.path.dirname(__file__)
 source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir))
+gen_path = os.path.join('gen', 'blink')
 
 
 class IdlBadFilenameError(Exception):
@@ -85,9 +86,9 @@ def parse_options():
 # Computations
 ################################################################################
 
-def relative_dir_posix(idl_filename):
+def relative_dir_posix(idl_filename, base_path):
     """Returns relative path to the directory of idl_file in POSIX format."""
-    relative_path_local = os.path.relpath(idl_filename, source_path)
+    relative_path_local = os.path.relpath(idl_filename, base_path)
     relative_dir_local = os.path.dirname(relative_path_local)
     return relative_dir_local.replace(os.path.sep, posixpath.sep)
 
@@ -98,7 +99,10 @@ def include_path(idl_filename, implemented_as=None):
     POSIX format is used for consistency of output, so reference tests are
     platform-independent.
     """
-    relative_dir = relative_dir_posix(idl_filename)
+    if idl_filename.startswith(gen_path):
+        relative_dir = relative_dir_posix(idl_filename, gen_path)
+    else:
+        relative_dir = relative_dir_posix(idl_filename, source_path)
 
     # IDL file basename is used even if only a partial interface file
     cpp_class_name = implemented_as or idl_filename_to_interface_name(idl_filename)
@@ -300,7 +304,7 @@ class InterfaceInfoCollector(object):
             # 'implements': http://crbug.com/360435
             'is_legacy_treat_as_partial_interface': 'LegacyTreatAsPartialInterface' in extended_attributes,
             'parent': definition.parent,
-            'relative_dir': relative_dir_posix(idl_filename),
+            'relative_dir': relative_dir_posix(idl_filename, source_path),
         })
         merge_dict_recursively(self.interfaces_info[definition.name], interface_info)
 
