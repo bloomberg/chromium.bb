@@ -1498,10 +1498,10 @@ wl_display_dispatch_queue(struct wl_display *display,
 		return ret;
 	}
 
-	/* We ignore EPIPE here, so that we try to read events before
-	 * returning an error.  When the compositor sends an error it
-	 * will close the socket, and if we bail out here we don't get
-	 * a chance to process the error. */
+       /* We ignore EPIPE here, so that we try to read events before
+        * returning an error.  When the compositor sends an error it
+        * will close the socket, and if we bail out here we don't get
+        * a chance to process the error. */
 	ret = wl_connection_flush(display->connection);
 	if (ret < 0 && errno != EAGAIN && errno != EPIPE) {
 		display_fatal_error(display, errno);
@@ -1727,8 +1727,12 @@ wl_display_flush(struct wl_display *display)
 		errno = display->last_error;
 		ret = -1;
 	} else {
+		/* We don't make EPIPE a fatal error here, so that we may try to
+		 * read events after the failed flush. When the compositor sends
+		 * an error it will close the socket, and if we make EPIPE fatal
+		 * here we don't get a chance to process the error. */
 		ret = wl_connection_flush(display->connection);
-		if (ret < 0 && errno != EAGAIN)
+		if (ret < 0 && errno != EAGAIN && errno != EPIPE)
 			display_fatal_error(display, errno);
 	}
 
