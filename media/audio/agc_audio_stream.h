@@ -133,6 +133,12 @@ class MEDIA_EXPORT AgcAudioStream : public AudioInterface {
     *normalized_volume = normalized_volume_;
   }
 
+  // Gets the current automatic gain control state.
+  bool GetAutomaticGainControl() override {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    return agc_is_enabled_;
+  }
+
  private:
   // Sets the automatic gain control (AGC) to on or off. When AGC is enabled,
   // the microphone volume is queried periodically and the volume level can
@@ -144,12 +150,6 @@ class MEDIA_EXPORT AgcAudioStream : public AudioInterface {
     DCHECK(thread_checker_.CalledOnValidThread());
     agc_is_enabled_ = enabled;
     return true;
-  }
-
-  // Gets the current automatic gain control state.
-  bool GetAutomaticGainControl() override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    return agc_is_enabled_;
   }
 
   // Takes a new microphone volume sample and stores it in |normalized_volume_|.

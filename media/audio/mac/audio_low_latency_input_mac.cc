@@ -806,6 +806,8 @@ void AUAudioInputStream::AddHistogramsForFailedStartup() {
                             manager_->low_latency_input_streams());
   UMA_HISTOGRAM_COUNTS_1000("Media.Audio.NumberOfBasicInputStreamsMac",
                             manager_->basic_input_streams());
+  UMA_HISTOGRAM_BOOLEAN("Media.Audio.AutomaticGainControlMac",
+                        GetAutomaticGainControl());
 }
 
 }  // namespace media

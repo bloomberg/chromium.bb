@@ -18144,6 +18144,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Audio.AutomaticGainControlMac" enum="BooleanEnabled">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    Indicates if the Automatic Gain Control (AGC) is enabled or not. Only
+    sampled when Media.Audio.InputStartupSuccessMac reports 'Failure'.
+  </summary>
+</histogram>
+
 <histogram name="Media.Audio.InputBufferSizeWasChangedMac"
     enum="BooleanSuccess">
   <owner>henrika@chromium.org</owner>
