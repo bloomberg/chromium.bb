@@ -679,27 +679,17 @@ class TestExpectationsModel(object):
 
     def add_expectation_line(self, expectation_line,
                              model_all_expectations=False):
+        """Returns a list of warnings encountered while matching specifiers."""
+
         if expectation_line.is_invalid():
             return
 
         for test in expectation_line.matching_tests:
-            lines_involve_rebaseline = False
-            prev_expectation_line = self.get_expectation_line(test)
+            if self._already_seen_better_match(test, expectation_line):
+                continue
 
-            if prev_expectation_line:
-                # The previous path matched more of the test.
-                if len(prev_expectation_line.path) > len(expectation_line.path):
-                    continue
-
-                if self._lines_conflict(prev_expectation_line, expectation_line):
-                    continue
-
-                lines_involve_rebaseline = self._expects_rebaseline(prev_expectation_line) or self._expects_rebaseline(expectation_line)
-
-            # Exact path matches that conflict should be merged, e.g.
-            # [ Pass Timeout ] + [ NeedsRebaseline ] ==> [ Pass Timeout NeedsRebaseline ].
-            if model_all_expectations or lines_involve_rebaseline:
-                expectation_line = TestExpectationLine.merge_expectation_lines(prev_expectation_line, expectation_line, model_all_expectations)
+            if model_all_expectations:
+                expectation_line = TestExpectationLine.merge_expectation_lines(self.get_expectation_line(test), expectation_line, model_all_expectations)
 
             self._clear_expectations_for_test(test)
             self._test_to_expectation_line[test] = expectation_line
@@ -753,19 +743,40 @@ class TestExpectationsModel(object):
             if test in set_of_tests:
                 set_of_tests.remove(test)
 
-    def _expects_rebaseline(self, expectation_line):
-        expectations = expectation_line.parsed_expectations
-        return REBASELINE in expectations or NEEDS_REBASELINE in expectations or NEEDS_MANUAL_REBASELINE in expectations
+    def _already_seen_better_match(self, test, expectation_line):
+        """Returns whether we've seen a better match already in the file.
 
-    def _lines_conflict(self, prev_expectation_line, expectation_line):
-        if prev_expectation_line.path != expectation_line.path:
+        Returns True if we've already seen a expectation_line.name that matches more of the test
+            than this path does
+        """
+        # FIXME: See comment below about matching test configs and specificity.
+        if not self.has_test(test):
+            # We've never seen this test before.
             return False
 
-        if PASS in expectation_line.parsed_expectations and self._expects_rebaseline(prev_expectation_line):
+        prev_expectation_line = self._test_to_expectation_line[test]
+
+        if prev_expectation_line.filename != expectation_line.filename:
+            # We've moved on to a new expectation file, which overrides older ones.
             return False
 
-        if PASS in prev_expectation_line.parsed_expectations and self._expects_rebaseline(expectation_line):
+        if len(prev_expectation_line.path) > len(expectation_line.path):
+            # The previous path matched more of the test.
+            return True
+
+        if len(prev_expectation_line.path) < len(expectation_line.path):
+            # This path matches more of the test.
             return False
+
+        # At this point we know we have seen a previous exact match on this
+        # base path, so we need to check the two sets of specifiers.
+
+        # FIXME: This code was originally designed to allow lines that matched
+        # more specifiers to override lines that matched fewer specifiers.
+        # However, we currently view these as errors.
+        #
+        # To use the "more specifiers wins" policy, change the errors for overrides
+        # to be warnings and return False".
 
         if prev_expectation_line.matching_configurations == expectation_line.matching_configurations:
             expectation_line.warnings.append('Duplicate or ambiguous entry lines %s:%s and %s:%s.' % (

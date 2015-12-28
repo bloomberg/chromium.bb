@@ -480,10 +480,6 @@ class SemanticTests(Base):
 Bug(exp) failures/expected/text.html [ Failure ]
 Bug(exp) failures/expected/text.html [ Timeout ]""", is_lint_mode=True)
 
-        self.assertRaises(ParseError, self.parse_exp, """
-Bug(exp) failures/expected/text.html [ Failure ]
-Bug(exp) failures/expected/text.html [ NeedsRebaseline ]""", is_lint_mode=True)
-
         self.assertRaises(ParseError, self.parse_exp,
             self.get_basic_expectations(), overrides="""
 Bug(override) failures/expected/text.html [ Failure ]
@@ -494,51 +490,6 @@ Bug(override) failures/expected/text.html [ Timeout ]""", is_lint_mode=True)
 Bug(exp) [ Release ] failures/expected/text.html [ Failure ]
 Bug(exp) [ Debug ] failures/expected/text.html [ Failure ]
 """)
-
-    def test_duplicates_rebaseline_no_conflict(self):
-        # Rebaseline throws in lint mode, so only test it in non-lint mode.
-        # Check Rebaseline
-        self.parse_exp("""
-Bug(exp) failures/expected/text.html [ Rebaseline ]
-Bug(exp) failures/expected/text.html [ Pass Failure ]
-""", is_lint_mode=False)
-        self.assert_exp_list('failures/expected/text.html', [PASS, FAIL, REBASELINE])
-
-        # Check NeedsRebaseline.
-        self.parse_exp("""
-Bug(exp) failures/expected/text.html [ Pass Failure ]
-Bug(exp) failures/expected/text.html [ NeedsRebaseline ]
-""", is_lint_mode=False)
-        self.assert_exp_list('failures/expected/text.html', [PASS, FAIL, NEEDS_REBASELINE])
-
-        # Check NeedsManualRebaseline
-        self.parse_exp("""
-Bug(exp) failures/expected/text.html [ Pass Failure ]
-Bug(exp) failures/expected/text.html [ NeedsManualRebaseline ]
-""", is_lint_mode=False)
-        self.assert_exp_list('failures/expected/text.html', [PASS, FAIL, NEEDS_MANUAL_REBASELINE])
-
-    def test_duplicates_rebaseline_no_conflict_linting(self):
-        # Check NeedsRebaseline
-        self.parse_exp("""
-Bug(exp) failures/expected/text.html [ NeedsRebaseline ]
-Bug(exp) failures/expected/text.html [ Pass Failure ]
-""", is_lint_mode=True)
-        self.assert_exp_list('failures/expected/text.html', [PASS, FAIL, NEEDS_REBASELINE])
-
-        # Check lines in reverse order.
-        self.parse_exp("""
-Bug(exp) failures/expected/text.html [ Pass Failure ]
-Bug(exp) failures/expected/text.html [ NeedsRebaseline ]
-""", is_lint_mode=True)
-        self.assert_exp_list('failures/expected/text.html', [PASS, FAIL, NEEDS_REBASELINE])
-
-        # Check NeedsManualRebaseline
-        self.parse_exp("""
-Bug(exp) failures/expected/text.html [ Pass Failure ]
-Bug(exp) failures/expected/text.html [ NeedsManualRebaseline ]
-""", is_lint_mode=True)
-        self.assert_exp_list('failures/expected/text.html', [PASS, FAIL, NEEDS_MANUAL_REBASELINE])
 
     def test_missing_file(self):
         self.parse_exp('Bug(test) missing_file.html [ Failure ]')
