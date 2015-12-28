@@ -1345,3 +1345,5 @@ crbug.com/571773 inspector/console/worker-exception-message-contains-stack.html 
 crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
 
 crbug.com/572710 [ Mac10.7 Debug ] inspector/extensions/extensions-sidebar.html [ Timeout Pass ]
+
+crbug.com/572714 [ Linux XP ] inspector/sources/debugger/debug-inlined-scripts.html [ Timeout Crash Pass ]
