@@ -81,7 +81,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/glsl3/forbidden-operators.html', bug=483282)
     self.Fail('conformance2/extensions/promoted-extensions-in-shaders.html',
         bug=295792)
-    self.Fail('conformance2/reading/read-pixels-pack-parameters.html',
+    self.Skip('conformance2/reading/read-pixels-pack-parameters.html',
         bug=483282)
     self.Fail('conformance2/samplers/sampler-drawing-test.html', bug=483282)
     self.Skip('conformance2/textures/webgl_canvas/*', bug=483282)
