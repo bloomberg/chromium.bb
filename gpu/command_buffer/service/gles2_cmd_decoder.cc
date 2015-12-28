@@ -9466,9 +9466,6 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(uint32_t immediate_data_size,
     case GL_PACK_ALIGNMENT:
       state_.pack_alignment = param;
       break;
-    case GL_PACK_REVERSE_ROW_ORDER_ANGLE:
-      state_.pack_reverse_row_order = (param != 0);
-      break;
     case GL_PACK_ROW_LENGTH:
       state_.pack_row_length = param;
       break;

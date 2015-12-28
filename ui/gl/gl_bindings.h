@@ -74,9 +74,6 @@
 #define GL_UNPACK_COLORSPACE_CONVERSION_CHROMIUM         0x9243
 #define GL_BIND_GENERATES_RESOURCE_CHROMIUM              0x9244
 
-// GL_ANGLE_pack_reverse_row_order
-#define GL_PACK_REVERSE_ROW_ORDER_ANGLE                  0x93A4
-
 // GL_ANGLE_texture_usage
 #define GL_TEXTURE_USAGE_ANGLE                           0x93A2
 #define GL_FRAMEBUFFER_ATTACHMENT_ANGLE                  0x93A3

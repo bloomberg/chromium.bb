@@ -3025,41 +3025,6 @@ TEST_F(GLES2ImplementationTest, GetString) {
   EXPECT_STREQ(expected_str, reinterpret_cast<const char*>(result));
 }
 
-TEST_F(GLES2ImplementationTest, PixelStoreiGLPackReverseRowOrderANGLE) {
-  const uint32_t kBucketId = GLES2Implementation::kResultBucketId;
-  const Str7 kString = {"foobar"};
-  struct Cmds {
-    cmd::SetBucketSize set_bucket_size1;
-    cmds::GetString get_string;
-    cmd::GetBucketStart get_bucket_start;
-    cmd::SetToken set_token1;
-    cmd::SetBucketSize set_bucket_size2;
-    cmds::PixelStorei pixel_store;
-  };
-
-  ExpectedMemoryInfo mem1 = GetExpectedMemory(MaxTransferBufferSize());
-  ExpectedMemoryInfo result1 =
-      GetExpectedResultMemory(sizeof(cmd::GetBucketStart::Result));
-
-  Cmds expected;
-  expected.set_bucket_size1.Init(kBucketId, 0);
-  expected.get_string.Init(GL_EXTENSIONS, kBucketId);
-  expected.get_bucket_start.Init(
-      kBucketId, result1.id, result1.offset,
-      MaxTransferBufferSize(), mem1.id, mem1.offset);
-  expected.set_token1.Init(GetNextToken());
-  expected.set_bucket_size2.Init(kBucketId, 0);
-  expected.pixel_store.Init(GL_PACK_REVERSE_ROW_ORDER_ANGLE, 1);
-
-  EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(DoAll(SetMemory(result1.ptr, uint32_t(sizeof(kString))),
-                      SetMemory(mem1.ptr, kString)))
-      .RetiresOnSaturation();
-
-  gl_->PixelStorei(GL_PACK_REVERSE_ROW_ORDER_ANGLE, 1);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
-
 TEST_F(GLES2ImplementationTest, CreateProgram) {
   struct Cmds {
     cmds::CreateProgram cmd;

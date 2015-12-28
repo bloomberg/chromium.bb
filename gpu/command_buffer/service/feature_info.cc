@@ -925,13 +925,6 @@ void FeatureInfo::InitializeFeatures() {
   feature_flags_.enable_texture_half_float_linear |=
       enable_texture_half_float_linear;
 
-  if (extensions.Contains("GL_ANGLE_pack_reverse_row_order")) {
-    AddExtensionString("GL_ANGLE_pack_reverse_row_order");
-    feature_flags_.angle_pack_reverse_row_order = true;
-    validators_.pixel_store.AddValue(GL_PACK_REVERSE_ROW_ORDER_ANGLE);
-    validators_.g_l_state.AddValue(GL_PACK_REVERSE_ROW_ORDER_ANGLE);
-  }
-
   if (extensions.Contains("GL_ANGLE_texture_usage")) {
     feature_flags_.angle_texture_usage = true;
     AddExtensionString("GL_ANGLE_texture_usage");

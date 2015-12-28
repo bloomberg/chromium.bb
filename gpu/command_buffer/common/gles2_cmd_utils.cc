@@ -131,8 +131,6 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
       return 1;
     case GL_PACK_ALIGNMENT:
       return 1;
-    case GL_PACK_REVERSE_ROW_ORDER_ANGLE:
-      return 1;
     case GL_POLYGON_OFFSET_FACTOR:
       return 1;
     case GL_POLYGON_OFFSET_FILL:

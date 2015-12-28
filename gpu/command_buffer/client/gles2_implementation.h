@@ -420,8 +420,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   int32_t GetResultShmId();
   uint32_t GetResultShmOffset();
 
-  // Lazily determines if GL_ANGLE_pack_reverse_row_order is available
-  bool IsAnglePackReverseRowOrderAvailable();
   bool IsChromiumFramebufferMultisampleAvailable();
 
   bool IsExtensionAvailableHelper(
@@ -707,7 +705,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   std::queue<int32_t> swap_buffers_tokens_;
   std::queue<int32_t> rate_limit_tokens_;
 
-  ExtensionStatus angle_pack_reverse_row_order_status_;
   ExtensionStatus chromium_framebuffer_multisample_;
 
   GLStaticState static_state_;
@@ -742,9 +739,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
 
   // unpack skip images as last set by glPixelStorei
   GLint unpack_skip_images_;
-
-  // pack reverse row order as last set by glPixelstorei
-  bool pack_reverse_row_order_;
 
   scoped_ptr<TextureUnit[]> texture_units_;
 

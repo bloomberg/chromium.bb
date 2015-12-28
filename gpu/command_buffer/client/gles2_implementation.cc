@@ -84,7 +84,6 @@ GLES2Implementation::GLES2Implementation(
     GpuControl* gpu_control)
     : helper_(helper),
       transfer_buffer_(transfer_buffer),
-      angle_pack_reverse_row_order_status_(kUnknownExtensionStatus),
       chromium_framebuffer_multisample_(kUnknownExtensionStatus),
       pack_alignment_(4),
       pack_row_length_(0),
@@ -96,7 +95,6 @@ GLES2Implementation::GLES2Implementation(
       unpack_skip_rows_(0),
       unpack_skip_pixels_(0),
       unpack_skip_images_(0),
-      pack_reverse_row_order_(false),
       active_texture_unit_(0),
       bound_framebuffer_(0),
       bound_read_framebuffer_(0),
@@ -443,12 +441,6 @@ bool GLES2Implementation::IsExtensionAvailableHelper(
       return available;
     }
   }
-}
-
-bool GLES2Implementation::IsAnglePackReverseRowOrderAvailable() {
-  return IsExtensionAvailableHelper(
-      "GL_ANGLE_pack_reverse_row_order",
-      &angle_pack_reverse_row_order_status_);
 }
 
 bool GLES2Implementation::IsChromiumFramebufferMultisampleAvailable() {
@@ -1807,10 +1799,6 @@ void GLES2Implementation::PixelStorei(GLenum pname, GLint param) {
       break;
     case GL_UNPACK_SKIP_IMAGES:
       unpack_skip_images_ = param;
-      break;
-    case GL_PACK_REVERSE_ROW_ORDER_ANGLE:
-      pack_reverse_row_order_ =
-          IsAnglePackReverseRowOrderAvailable() ? (param != 0) : false;
       break;
     default:
       break;
@@ -3637,24 +3625,12 @@ void GLES2Implementation::ReadPixels(
         false);
     WaitForCmd();
     if (*result != 0) {
-      // when doing a y-flip we have to iterate through top-to-bottom chunks
-      // of the dst. The service side handles reversing the rows within a
-      // chunk.
-      int8_t* rows_dst;
-      if (pack_reverse_row_order_) {
-          rows_dst = dest + (height - num_rows) * dst_padded_row_size;
-      } else {
-          rows_dst = dest;
-      }
       // We have to copy 1 row at a time to avoid writing pad bytes.
       const int8_t* src = static_cast<const int8_t*>(buffer.address());
       for (GLint yy = 0; yy < num_rows; ++yy) {
-        memcpy(rows_dst, src, unpadded_row_size);
-        rows_dst += dst_padded_row_size;
+        memcpy(dest, src, unpadded_row_size);
+        dest += dst_padded_row_size;
         src += padded_row_size;
-      }
-      if (!pack_reverse_row_order_) {
-        dest = rows_dst;
       }
     }
     // If it was not marked as successful exit.
@@ -4835,10 +4811,6 @@ void GLES2Implementation::RequestExtensionCHROMIUM(const char* extension) {
     ExtensionStatus* status;
   };
   const ExtensionCheck checks[] = {
-    {
-      "GL_ANGLE_pack_reverse_row_order",
-      &angle_pack_reverse_row_order_status_,
-    },
     {
       "GL_CHROMIUM_framebuffer_multisample",
        &chromium_framebuffer_multisample_,
