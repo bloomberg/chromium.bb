@@ -40,8 +40,8 @@ void QuicPacketReader::Initialize() {
   memset(mmsg_hdr_, 0, sizeof(mmsg_hdr_));
 
   for (int i = 0; i < kNumPacketsPerReadMmsgCall; ++i) {
-    iov_[i].iov_base = buf_ + (2 * kMaxPacketSize * i);
-    iov_[i].iov_len = 2 * kMaxPacketSize;
+    iov_[i].iov_base = buf_ + (kMaxPacketSize * i);
+    iov_[i].iov_len = kMaxPacketSize;
 
     msghdr* hdr = &mmsg_hdr_[i].msg_hdr;
     hdr->msg_name = &raw_address_[i];
@@ -64,7 +64,7 @@ bool QuicPacketReader::ReadAndDispatchPackets(
 #if MMSG_MORE
   // Re-set the length fields in case recvmmsg has changed them.
   for (int i = 0; i < kNumPacketsPerReadMmsgCall; ++i) {
-    iov_[i].iov_len = 2 * kMaxPacketSize;
+    iov_[i].iov_len = kMaxPacketSize;
     mmsg_hdr_[i].msg_len = 0;
     msghdr* hdr = &mmsg_hdr_[i].msg_hdr;
     hdr->msg_namelen = sizeof(sockaddr_storage);
@@ -117,9 +117,7 @@ bool QuicPacketReader::ReadAndDispatchSinglePacket(
     int port,
     ProcessPacketInterface* processor,
     QuicPacketCount* packets_dropped) {
-  // Allocate some extra space so we can send an error if the packet is larger
-  // than kMaxPacketSize.
-  char buf[2 * kMaxPacketSize];
+  char buf[kMaxPacketSize];
 
   IPEndPoint client_address;
   IPAddressNumber server_ip;

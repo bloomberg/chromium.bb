@@ -4,6 +4,7 @@
 
 #include "net/quic/quic_flow_controller.h"
 
+#include "base/strings/stringprintf.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
@@ -72,7 +73,13 @@ void QuicFlowController::AddBytesSent(QuicByteCount bytes_sent) {
     bytes_sent_ = send_window_offset_;
 
     // This is an error on our side, close the connection as soon as possible.
-    connection_->SendConnectionClose(QUIC_FLOW_CONTROL_SENT_TOO_MUCH_DATA);
+    connection_->SendConnectionCloseWithDetails(
+        QUIC_FLOW_CONTROL_SENT_TOO_MUCH_DATA,
+        base::StringPrintf(
+            "%llu bytes over send window offset",
+            static_cast<unsigned long long>(send_window_offset_ -
+                                            (bytes_sent_ + bytes_sent)))
+            .c_str());
     return;
   }
 

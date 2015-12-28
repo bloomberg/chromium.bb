@@ -190,7 +190,8 @@ bool QuicServerSession::ShouldCreateIncomingDynamicStream(QuicStreamId id) {
 
   if (id % 2 == 0) {
     DVLOG(1) << "Invalid incoming even stream_id:" << id;
-    connection()->SendConnectionClose(QUIC_INVALID_STREAM_ID);
+    connection()->SendConnectionCloseWithDetails(
+        QUIC_INVALID_STREAM_ID, "Client created even numbered stream");
     return false;
   }
   return true;

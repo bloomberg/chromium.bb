@@ -52,7 +52,8 @@ void QuicCryptoStream::OnDataAvailable() {
     }
     StringPiece data(static_cast<char*>(iov.iov_base), iov.iov_len);
     if (!crypto_framer_.ProcessInput(data)) {
-      CloseConnection(crypto_framer_.error());
+      CloseConnectionWithDetails(crypto_framer_.error(),
+                                 crypto_framer_.error_detail());
       return;
     }
     sequencer()->MarkConsumed(iov.iov_len);

@@ -13,6 +13,7 @@
 #include "net/quic/spdy_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/reliable_quic_stream_peer.h"
+#include "net/test/gtest_util.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
 #include "net/tools/quic/spdy_balsa_utils.h"
@@ -68,7 +69,7 @@ class QuicSimpleServerStreamPeer : public QuicSimpleServerStream {
     return stream->content_length_;
   }
 
-  static const SpdyHeaderBlock& headers(QuicSimpleServerStream* stream) {
+  static SpdyHeaderBlock& headers(QuicSimpleServerStream* stream) {
     return stream->request_headers_;
   }
 };
@@ -87,7 +88,7 @@ class QuicSimpleServerStreamTest
         body_("hello world") {
     SpdyHeaderBlock request_headers;
     request_headers[":host"] = "";
-    request_headers[":authority"] = "";
+    request_headers[":authority"] = "www.google.com";
     request_headers[":path"] = "/";
     request_headers[":method"] = "POST";
     request_headers[":version"] = "HTTP/1.1";
@@ -209,7 +210,7 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithIllegalResponseStatus) {
   // Send a illegal response with response status not supported by HTTP/2.
   SpdyHeaderBlock* request_headers = stream_->mutable_headers();
   (*request_headers)[":path"] = "/bar";
-  (*request_headers)[":authority"] = "";
+  (*request_headers)[":authority"] = "www.google.com";
   (*request_headers)[":version"] = "HTTP/1.1";
   (*request_headers)[":method"] = "GET";
 
@@ -218,8 +219,8 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithIllegalResponseStatus) {
   response_headers_[":status"] = "200 OK";
   response_headers_["content-length"] = "5";
   string body = "Yummm";
-  QuicInMemoryCache::GetInstance()->AddResponse("", "/bar", response_headers_,
-                                                body);
+  QuicInMemoryCache::GetInstance()->AddResponse("www.google.com", "/bar",
+                                                response_headers_, body);
 
   stream_->set_fin_received(true);
 
@@ -246,7 +247,7 @@ TEST_P(QuicSimpleServerStreamTest, SendPushResponseWith404Response) {
   // invalid server push response.
   SpdyHeaderBlock* request_headers = promised_stream->mutable_headers();
   (*request_headers)[":path"] = "/bar";
-  (*request_headers)[":authority"] = "";
+  (*request_headers)[":authority"] = "www.google.com";
   (*request_headers)[":version"] = "HTTP/1.1";
   (*request_headers)[":method"] = "GET";
 
@@ -254,8 +255,8 @@ TEST_P(QuicSimpleServerStreamTest, SendPushResponseWith404Response) {
   response_headers_[":status"] = "404";
   response_headers_["content-length"] = "8";
   string body = "NotFound";
-  QuicInMemoryCache::GetInstance()->AddResponse("", "/bar", response_headers_,
-                                                body);
+  QuicInMemoryCache::GetInstance()->AddResponse("www.google.com", "/bar",
+                                                response_headers_, body);
 
   InSequence s;
   EXPECT_CALL(session_,
@@ -268,7 +269,7 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithValidHeaders) {
   // Add a request and response with valid headers.
   SpdyHeaderBlock* request_headers = stream_->mutable_headers();
   (*request_headers)[":path"] = "/bar";
-  (*request_headers)[":authority"] = "";
+  (*request_headers)[":authority"] = "www.google.com";
   (*request_headers)[":version"] = "HTTP/1.1";
   (*request_headers)[":method"] = "GET";
 
@@ -276,8 +277,8 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithValidHeaders) {
   response_headers_[":status"] = "200";
   response_headers_["content-length"] = "5";
   string body = "Yummm";
-  QuicInMemoryCache::GetInstance()->AddResponse("", "/bar", response_headers_,
-                                                body);
+  QuicInMemoryCache::GetInstance()->AddResponse("www.google.com", "/bar",
+                                                response_headers_, body);
   stream_->set_fin_received(true);
 
   InSequence s;
@@ -290,6 +291,58 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithValidHeaders) {
   EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_));
   EXPECT_TRUE(stream_->reading_stopped());
   EXPECT_TRUE(stream_->write_side_closed());
+}
+
+TEST_P(QuicSimpleServerStreamTest, PushResponseOnClientInitiatedStream) {
+  // Calling PushResponse() on a client initialted stream is never supposed to
+  // happen.
+  SpdyHeaderBlock headers;
+  EXPECT_DFATAL(stream_->PushResponse(headers),
+                "Client initiated stream"
+                " shouldn't be used as promised stream.");
+}
+
+TEST_P(QuicSimpleServerStreamTest, PushResponseOnServerInitiatedStream) {
+  // Tests that PushResponse() should take the given headers as request headers
+  // and fetch response from cache, and send it out.
+
+  // Create a stream with even stream id and test against this stream.
+  const QuicStreamId kServerInitiatedStreamId = 2;
+  // Create a server initiated stream and pass it to session_.
+  QuicSimpleServerStreamPeer* server_initiated_stream =
+      new QuicSimpleServerStreamPeer(kServerInitiatedStreamId, &session_);
+  session_.ActivateStream(server_initiated_stream);
+
+  const string kHost = "www.foo.com";
+  const string kPath = "/bar";
+  SpdyHeaderBlock headers;
+  headers[":path"] = kPath;
+  headers[":authority"] = kHost;
+  headers[":version"] = "HTTP/1.1";
+  headers[":method"] = "GET";
+
+  response_headers_[":version"] = "HTTP/1.1";
+  response_headers_[":status"] = "200";
+  response_headers_["content-length"] = "5";
+  const string kBody = "Hello";
+  QuicInMemoryCache::GetInstance()->AddResponse(kHost, kPath, response_headers_,
+                                                kBody);
+
+  // Call PushResponse() should trigger stream to fetch response from cache
+  // and send it back.
+  EXPECT_CALL(session_,
+              WriteHeaders(kServerInitiatedStreamId, _, false,
+                           server_initiated_stream->Priority(), nullptr));
+  EXPECT_CALL(session_, WritevData(kServerInitiatedStreamId, _, _, _, _, _))
+      .Times(1)
+      .WillOnce(Return(QuicConsumedData(kBody.size(), true)));
+  server_initiated_stream->PushResponse(headers);
+  EXPECT_EQ(kPath, QuicSimpleServerStreamPeer::headers(
+                       server_initiated_stream)[":path"]
+                       .as_string());
+  EXPECT_EQ("GET", QuicSimpleServerStreamPeer::headers(
+                       server_initiated_stream)[":method"]
+                       .as_string());
 }
 
 TEST_P(QuicSimpleServerStreamTest, TestSendErrorResponse) {

@@ -294,4 +294,8 @@ size_t QuicReceivedPacketManager::NumTrackedPackets() const {
   return entropy_tracker_.size();
 }
 
+bool QuicReceivedPacketManager::ack_frame_updated() const {
+  return ack_frame_updated_;
+}
+
 }  // namespace net

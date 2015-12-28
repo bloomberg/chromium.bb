@@ -96,6 +96,22 @@ void QuicSimpleServerStream::OnDataAvailable() {
   SendResponse();
 }
 
+void QuicSimpleServerStream::PushResponse(
+    SpdyHeaderBlock push_request_headers) {
+  if (id() % 2 != 0) {
+    LOG(DFATAL) << "Client initiated stream shouldn't be used "
+                << "as promised stream.";
+    return;
+  }
+  // Change the stream state to emulate a client request.
+  request_headers_ = push_request_headers;
+  content_length_ = 0;
+  DVLOG(1) << "Stream " << id() << ": Ready to receive server push response.";
+
+  // Set as if stream decompresed the headers and received fin.
+  QuicSpdyStream::OnInitialHeadersComplete(/*fin=*/true, 0);
+}
+
 void QuicSimpleServerStream::SendResponse() {
   if (!ContainsKey(request_headers_, ":authority") ||
       !ContainsKey(request_headers_, ":path")) {
@@ -116,7 +132,7 @@ void QuicSimpleServerStream::SendResponse() {
 
   if (response->response_type() == QuicInMemoryCache::CLOSE_CONNECTION) {
     DVLOG(1) << "Special response: closing connection.";
-    CloseConnection(QUIC_NO_ERROR);
+    CloseConnectionWithDetails(QUIC_NO_ERROR, "Toy server forcing close");
     return;
   }
 

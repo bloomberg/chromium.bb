@@ -643,12 +643,13 @@ SerializedPacket QuicPacketCreator::SerializePacket(
   packet_size_ = 0;
   queued_frames_.clear();
   needs_padding_ = false;
-  return SerializedPacket(
-      header.packet_number, header.public_header.packet_number_length,
-      encrypted_buffer, encrypted_length, /* owns_buffer*/ false,
-      QuicFramer::GetPacketEntropyHash(header),
-      queued_retransmittable_frames_.release(), has_ack_, has_stop_waiting_,
-      encryption_level_);
+  return SerializedPacket(current_path_, header.packet_number,
+                          header.public_header.packet_number_length,
+                          encrypted_buffer, encrypted_length,
+                          /* owns_buffer*/ false,
+                          QuicFramer::GetPacketEntropyHash(header),
+                          queued_retransmittable_frames_.release(), has_ack_,
+                          has_stop_waiting_, encryption_level_);
 }
 
 SerializedPacket QuicPacketCreator::SerializeFec(char* buffer,
@@ -678,7 +679,7 @@ SerializedPacket QuicPacketCreator::SerializeFec(char* buffer,
     LOG(DFATAL) << "Failed to encrypt packet number " << packet_number_;
     return NoPacket();
   }
-  SerializedPacket serialized(header.packet_number,
+  SerializedPacket serialized(current_path_, header.packet_number,
                               header.public_header.packet_number_length, buffer,
                               encrypted_length, /* owns_buffer */ false,
                               QuicFramer::GetPacketEntropyHash(header), nullptr,
@@ -698,8 +699,8 @@ QuicEncryptedPacket* QuicPacketCreator::SerializeVersionNegotiationPacket(
 }
 
 SerializedPacket QuicPacketCreator::NoPacket() {
-  return SerializedPacket(0, PACKET_1BYTE_PACKET_NUMBER, nullptr, 0, nullptr,
-                          false, false);
+  return SerializedPacket(kInvalidPathId, 0, PACKET_1BYTE_PACKET_NUMBER,
+                          nullptr, 0, nullptr, false, false);
 }
 
 void QuicPacketCreator::FillPacketHeader(QuicFecGroupNumber fec_group,

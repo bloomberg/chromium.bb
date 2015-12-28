@@ -274,14 +274,14 @@ class SourceAddressTokenTest : public ::testing::Test {
   }
 
   string NewSourceAddressToken(string config_id, const IPAddressNumber& ip) {
-    return NewSourceAddressToken(config_id, ip, NULL);
+    return NewSourceAddressToken(config_id, ip, nullptr);
   }
 
   string NewSourceAddressToken(string config_id,
                                const IPAddressNumber& ip,
                                const SourceAddressTokens& previous_tokens) {
     return peer_.NewSourceAddressToken(config_id, previous_tokens, ip, rand_,
-                                       clock_.WallNow(), NULL);
+                                       clock_.WallNow(), nullptr);
   }
 
   string NewSourceAddressToken(string config_id,
@@ -296,7 +296,7 @@ class SourceAddressTokenTest : public ::testing::Test {
       string config_id,
       StringPiece srct,
       const IPAddressNumber& ip) {
-    return ValidateSourceAddressTokens(config_id, srct, ip, NULL);
+    return ValidateSourceAddressTokens(config_id, srct, ip, nullptr);
   }
 
   HandshakeFailureReason ValidateSourceAddressTokens(

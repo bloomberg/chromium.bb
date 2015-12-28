@@ -253,6 +253,10 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
       headers->GetAllOfHeaderAsString("transfer-encoding", &encoding);
       spdy_headers.insert(std::make_pair("transfer-encoding", encoding));
     }
+    if (static_cast<StringPiece>(spdy_headers[":authority"]).empty()) {
+      // HTTP/2 requests should include the :authority pseudo hader.
+      spdy_headers[":authority"] = client_->server_id().host();
+    }
     ret = stream->SendRequest(spdy_headers, body, fin);
   } else {
     stream->SendBody(body.as_string(), fin, delegate);

@@ -77,17 +77,20 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Struct to store the pending retransmission information.
   struct PendingRetransmission {
-    PendingRetransmission(QuicPacketNumber packet_number,
+    PendingRetransmission(QuicPathId path_id,
+                          QuicPacketNumber packet_number,
                           TransmissionType transmission_type,
                           const RetransmittableFrames& retransmittable_frames,
                           EncryptionLevel encryption_level,
                           QuicPacketNumberLength packet_number_length)
-        : packet_number(packet_number),
+        : path_id(path_id),
+          packet_number(packet_number),
           transmission_type(transmission_type),
           retransmittable_frames(retransmittable_frames),
           encryption_level(encryption_level),
           packet_number_length(packet_number_length) {}
 
+    QuicPathId path_id;
     QuicPacketNumber packet_number;
     TransmissionType transmission_type;
     const RetransmittableFrames& retransmittable_frames;
@@ -96,6 +99,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   };
 
   QuicSentPacketManager(Perspective perspective,
+                        QuicPathId path_id,
                         const QuicClock* clock,
                         QuicConnectionStats* stats,
                         CongestionControlType congestion_control_type,
@@ -355,6 +359,8 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Tracks if the connection was created by the server or the client.
   Perspective perspective_;
+
+  QuicPathId path_id_;
 
   const QuicClock* clock_;
   QuicConnectionStats* stats_;

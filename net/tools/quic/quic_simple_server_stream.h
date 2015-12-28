@@ -39,6 +39,11 @@ class QuicSimpleServerStream : public QuicSpdyStream {
   // data (or a FIN) to be read.
   void OnDataAvailable() override;
 
+  // Make this stream start from as if it just finished parsing an incoming
+  // request whose headers are equivalent to |push_request_headers|.
+  // Doing so will trigger this toy stream to fetch response and send it back.
+  virtual void PushResponse(SpdyHeaderBlock push_request_headers);
+
   // The response body of error responses.
   static const char* const kErrorResponseBody;
 

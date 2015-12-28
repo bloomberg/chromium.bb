@@ -536,8 +536,8 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlViolation) {
   string body;
   GenerateBody(&body, kWindow + 1);
   QuicStreamFrame frame(kClientDataStreamId1, false, 0, StringPiece(body));
-  EXPECT_CALL(*connection_,
-              SendConnectionClose(QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA));
+  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
+                                QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA, _));
   stream_->OnStreamFrame(frame);
 }
 
@@ -587,8 +587,8 @@ TEST_P(QuicSpdyStreamTest, ConnectionFlowControlViolation) {
   EXPECT_LT(body.size(), kStreamWindow);
   QuicStreamFrame frame(kClientDataStreamId1, false, 0, StringPiece(body));
 
-  EXPECT_CALL(*connection_,
-              SendConnectionClose(QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA));
+  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
+                                QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA, _));
   stream_->OnStreamFrame(frame);
 }
 
@@ -660,8 +660,8 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersWithoutFin) {
   string trailers = SpdyUtils::SerializeUncompressedHeaders(trailers_block);
   stream_->OnStreamHeaders(trailers);
 
-  EXPECT_CALL(*connection_,
-              SendConnectionClose(QUIC_INVALID_HEADERS_STREAM_DATA))
+  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
+                                QUIC_INVALID_HEADERS_STREAM_DATA, _))
       .Times(1);
   stream_->OnStreamHeadersComplete(/*fin=*/false, trailers.size());
 }
@@ -681,8 +681,8 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersAfterFin) {
   string trailers = SpdyUtils::SerializeUncompressedHeaders(trailers_block);
   stream_->OnStreamHeaders(trailers);
 
-  EXPECT_CALL(*connection_,
-              SendConnectionClose(QUIC_INVALID_HEADERS_STREAM_DATA))
+  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
+                                QUIC_INVALID_HEADERS_STREAM_DATA, _))
       .Times(1);
   stream_->OnStreamHeadersComplete(/*fin=*/true, trailers.size());
 }
@@ -706,8 +706,8 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersAfterBodyWithFin) {
   string trailers = SpdyUtils::SerializeUncompressedHeaders(trailers_block);
   stream_->OnStreamHeaders(trailers);
 
-  EXPECT_CALL(*connection_,
-              SendConnectionClose(QUIC_INVALID_HEADERS_STREAM_DATA))
+  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
+                                QUIC_INVALID_HEADERS_STREAM_DATA, _))
       .Times(1);
   stream_->OnStreamHeadersComplete(/*fin=*/true, trailers.size());
 }

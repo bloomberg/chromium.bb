@@ -202,6 +202,7 @@ void QuicInMemoryCache::AddResponseImpl(
     const SpdyHeaderBlock& response_headers,
     StringPiece response_body,
     const SpdyHeaderBlock& response_trailers) {
+  DCHECK(!host.empty()) << "Host must be populated, e.g. \"www.google.com\"";
   string key = GetKey(host, path);
   if (ContainsKey(responses_, key)) {
     LOG(DFATAL) << "Response for '" << key << "' already exists!";

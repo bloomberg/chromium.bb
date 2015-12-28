@@ -21,6 +21,8 @@
 using std::string;
 using std::vector;
 
+using testing::_;
+
 namespace net {
 namespace test {
 namespace {
@@ -82,8 +84,9 @@ TEST_F(QuicCryptoClientStreamTest, ConnectedAfterSHLO) {
 TEST_F(QuicCryptoClientStreamTest, MessageAfterHandshake) {
   CompleteCryptoHandshake();
 
-  EXPECT_CALL(*connection_, SendConnectionClose(
-                                QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE));
+  EXPECT_CALL(*connection_,
+              SendConnectionCloseWithDetails(
+                  QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE, _));
   message_.set_tag(kCHLO);
   ConstructHandshakeMessage();
   stream()->OnStreamFrame(QuicStreamFrame(kCryptoStreamId, /*fin=*/false,
@@ -206,8 +209,9 @@ TEST_F(QuicCryptoClientStreamTest, ServerConfigUpdate) {
 }
 
 TEST_F(QuicCryptoClientStreamTest, ServerConfigUpdateBeforeHandshake) {
-  EXPECT_CALL(*connection_, SendConnectionClose(
-                                QUIC_CRYPTO_UPDATE_BEFORE_HANDSHAKE_COMPLETE));
+  EXPECT_CALL(*connection_,
+              SendConnectionCloseWithDetails(
+                  QUIC_CRYPTO_UPDATE_BEFORE_HANDSHAKE_COMPLETE, _));
   CryptoHandshakeMessage server_config_update;
   server_config_update.set_tag(kSCUP);
   scoped_ptr<QuicData> data(

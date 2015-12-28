@@ -105,17 +105,17 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager
   // bytes: the packet size in bytes including Quic Headers.
   // header: the packet header.
   // timestamp: the arrival time of the packet.
-  void RecordPacketReceived(QuicByteCount bytes,
-                            const QuicPacketHeader& header,
-                            QuicTime receipt_time);
+  virtual void RecordPacketReceived(QuicByteCount bytes,
+                                    const QuicPacketHeader& header,
+                                    QuicTime receipt_time);
 
-  void RecordPacketRevived(QuicPacketNumber packet_number);
+  virtual void RecordPacketRevived(QuicPacketNumber packet_number);
 
   // Checks whether |packet_number| is missing and less than largest observed.
-  bool IsMissing(QuicPacketNumber packet_number);
+  virtual bool IsMissing(QuicPacketNumber packet_number);
 
   // Checks if we're still waiting for the packet with |packet_number|.
-  bool IsAwaitingPacket(QuicPacketNumber packet_number);
+  virtual bool IsAwaitingPacket(QuicPacketNumber packet_number);
 
   // Update the |ack_frame| for an outgoing ack.
   void UpdateReceivedPacketInfo(QuicAckFrame* ack_frame,
@@ -128,12 +128,12 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager
       QuicPacketNumber packet_number) const override;
 
   // Updates internal state based on |stop_waiting|.
-  void UpdatePacketInformationSentByPeer(
+  virtual void UpdatePacketInformationSentByPeer(
       const QuicStopWaitingFrame& stop_waiting);
 
   // Returns true when there are new missing packets to be reported within 3
   // packets of the largest observed.
-  bool HasNewMissingPackets() const;
+  virtual bool HasNewMissingPackets() const;
 
   // Returns the number of packets being tracked in the EntropyTracker.
   size_t NumTrackedPackets() const;
@@ -142,7 +142,7 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager
     return peer_least_packet_awaiting_ack_;
   }
 
-  bool ack_frame_updated() const { return ack_frame_updated_; }
+  virtual bool ack_frame_updated() const;
 
  private:
   friend class test::QuicConnectionPeer;

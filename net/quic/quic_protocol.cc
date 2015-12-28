@@ -768,6 +768,7 @@ AckListenerWrapper::AckListenerWrapper(QuicAckListenerInterface* listener,
 AckListenerWrapper::~AckListenerWrapper() {}
 
 SerializedPacket::SerializedPacket(
+    QuicPathId path_id,
     QuicPacketNumber packet_number,
     QuicPacketNumberLength packet_number_length,
     QuicEncryptedPacket* packet,
@@ -777,6 +778,7 @@ SerializedPacket::SerializedPacket(
     bool has_stop_waiting)
     : packet(packet),
       retransmittable_frames(retransmittable_frames),
+      path_id(path_id),
       packet_number(packet_number),
       packet_number_length(packet_number_length),
       encryption_level(ENCRYPTION_NONE),
@@ -786,6 +788,7 @@ SerializedPacket::SerializedPacket(
       has_stop_waiting(has_stop_waiting) {}
 
 SerializedPacket::SerializedPacket(
+    QuicPathId path_id,
     QuicPacketNumber packet_number,
     QuicPacketNumberLength packet_number_length,
     char* encrypted_buffer,
@@ -796,7 +799,8 @@ SerializedPacket::SerializedPacket(
     bool has_ack,
     bool has_stop_waiting,
     EncryptionLevel level)
-    : SerializedPacket(packet_number,
+    : SerializedPacket(path_id,
+                       packet_number,
                        packet_number_length,
                        new QuicEncryptedPacket(encrypted_buffer,
                                                encrypted_length,

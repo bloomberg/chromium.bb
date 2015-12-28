@@ -58,7 +58,7 @@ const QuicByteCount kDefaultMaxPacketSize = 1350;
 // Default initial maximum size in bytes of a QUIC packet for servers.
 const QuicByteCount kDefaultServerMaxPacketSize = 1000;
 // The maximum packet size of any QUIC packet, based on ethernet's max size,
-// minus the IP and UDP headers. IPv6 has a 40 byte header, UPD adds an
+// minus the IP and UDP headers. IPv6 has a 40 byte header, UDP adds an
 // additional 8 bytes.  This is a total overhead of 48 bytes.  Ethernet's
 // max packet size is 1500 bytes,  1500 - 48 = 1452.
 const QuicByteCount kMaxPacketSize = 1452;
@@ -195,6 +195,8 @@ const uint64_t kUFloat16MaxValue =  // 0x3FFC0000000
 
 // Default path ID.
 const QuicPathId kDefaultPathId = 0;
+// Invalid path ID.
+const QuicPathId kInvalidPathId = 0xff;
 
 enum TransmissionType {
   NOT_RETRANSMISSION,
@@ -1197,14 +1199,16 @@ struct NET_EXPORT_PRIVATE AckListenerWrapper {
 };
 
 struct NET_EXPORT_PRIVATE SerializedPacket {
-  SerializedPacket(QuicPacketNumber packet_number,
+  SerializedPacket(QuicPathId path_id,
+                   QuicPacketNumber packet_number,
                    QuicPacketNumberLength packet_number_length,
                    QuicEncryptedPacket* packet,
                    QuicPacketEntropyHash entropy_hash,
                    RetransmittableFrames* retransmittable_frames,
                    bool has_ack,
                    bool has_stop_waiting);
-  SerializedPacket(QuicPacketNumber packet_number,
+  SerializedPacket(QuicPathId path_id,
+                   QuicPacketNumber packet_number,
                    QuicPacketNumberLength packet_number_length,
                    char* encrypted_buffer,
                    size_t encrypted_length,
@@ -1218,6 +1222,7 @@ struct NET_EXPORT_PRIVATE SerializedPacket {
 
   QuicEncryptedPacket* packet;
   RetransmittableFrames* retransmittable_frames;
+  QuicPathId path_id;
   QuicPacketNumber packet_number;
   QuicPacketNumberLength packet_number_length;
   EncryptionLevel encryption_level;

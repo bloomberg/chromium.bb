@@ -208,7 +208,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   void StreamDraining(QuicStreamId id);
 
   // Close the connection, if it is not already closed.
-  void CloseConnection(QuicErrorCode error);
+  void CloseConnectionWithDetails(QuicErrorCode error, const char* details);
 
  protected:
   typedef base::hash_map<QuicStreamId, ReliableQuicStream*> StreamMap;

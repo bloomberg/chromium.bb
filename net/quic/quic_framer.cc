@@ -601,7 +601,8 @@ bool QuicFramer::ProcessDataPacket(QuicDataReader* encrypted_reader,
   }
 
   if (packet.length() > kMaxPacketSize) {
-    DLOG(WARNING) << "Packet too large: " << packet.length();
+    // If the packet has gotten this far, it should not be too large.
+    LOG(DFATAL) << "Packet too large:" << packet.length();
     return RaiseError(QUIC_PACKET_TOO_LARGE);
   }
 

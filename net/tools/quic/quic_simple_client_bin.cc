@@ -47,6 +47,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/privacy_mode.h"
@@ -132,6 +133,22 @@ static bool DecodeHexString(const base::StringPiece& hex, std::string* bytes) {
     bytes->assign(reinterpret_cast<const char*>(&v[0]), v.size());
   return true;
 };
+
+// Converts binary data into an ASCII string. Each character in the resulting
+// string is preceeded by a space, and replaced with a '.' if not printable.
+string BinaryToAscii(const string& binary) {
+  string out = "";
+  for (const unsigned char c : binary) {
+    // Leading space.
+    out += " ";
+    if (isprint(c)) {
+      out += c;
+    } else {
+      out += '.';
+    }
+  }
+  return out;
+}
 
 int main(int argc, char* argv[]) {
   base::CommandLine::Init(argc, argv);
@@ -337,11 +354,28 @@ int main(int argc, char* argv[]) {
   if (!FLAGS_quiet) {
     cout << "Request:" << endl;
     cout << "headers:" << header_block.DebugString();
-    cout << "body: " << body << endl;
+    if (!FLAGS_body_hex.empty()) {
+      // Print the user provided hex, rather than binary body.
+      cout << "body hex:   " << FLAGS_body_hex << endl;
+      string bytes;
+      DecodeHexString(FLAGS_body_hex, &bytes);
+      cout << "body ascii: " << BinaryToAscii(bytes) << endl;
+    } else {
+      cout << "body: " << body << endl;
+    }
     cout << endl;
     cout << "Response:" << endl;
     cout << "headers: " << client.latest_response_headers() << endl;
-    cout << "body: " << client.latest_response_body() << endl;
+    string response_body = client.latest_response_body();
+    if (!FLAGS_body_hex.empty()) {
+      // Assume response is binary data.
+      string bytes;
+      DecodeHexString(response_body, &bytes);
+      cout << "body hex:   " << bytes << endl;
+      cout << "body ascii: " << BinaryToAscii(response_body) << endl;
+    } else {
+      cout << "body: " << response_body << endl;
+    }
   }
 
   size_t response_code = client.latest_response_code();

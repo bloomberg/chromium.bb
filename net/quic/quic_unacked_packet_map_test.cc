@@ -31,9 +31,9 @@ class QuicUnackedPacketMapTest : public ::testing::Test {
 
   SerializedPacket CreateRetransmittablePacket(QuicPacketNumber packet_number) {
     packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
-    return SerializedPacket(packet_number, PACKET_1BYTE_PACKET_NUMBER,
-                            packets_.back(), 0, new RetransmittableFrames(),
-                            false, false);
+    return SerializedPacket(kDefaultPathId, packet_number,
+                            PACKET_1BYTE_PACKET_NUMBER, packets_.back(), 0,
+                            new RetransmittableFrames(), false, false);
   }
 
   SerializedPacket CreateRetransmittablePacketForStream(
@@ -44,15 +44,17 @@ class QuicUnackedPacketMapTest : public ::testing::Test {
     QuicStreamFrame* frame = new QuicStreamFrame();
     frame->stream_id = stream_id;
     frames->AddFrame(QuicFrame(frame));
-    return SerializedPacket(packet_number, PACKET_1BYTE_PACKET_NUMBER,
-                            packets_.back(), 0, frames, false, false);
+    return SerializedPacket(kDefaultPathId, packet_number,
+                            PACKET_1BYTE_PACKET_NUMBER, packets_.back(), 0,
+                            frames, false, false);
   }
 
   SerializedPacket CreateNonRetransmittablePacket(
       QuicPacketNumber packet_number) {
     packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
-    return SerializedPacket(packet_number, PACKET_1BYTE_PACKET_NUMBER,
-                            packets_.back(), 0, nullptr, false, false);
+    return SerializedPacket(kDefaultPathId, packet_number,
+                            PACKET_1BYTE_PACKET_NUMBER, packets_.back(), 0,
+                            nullptr, false, false);
   }
 
   void VerifyInFlightPackets(QuicPacketNumber* packets, size_t num_packets) {

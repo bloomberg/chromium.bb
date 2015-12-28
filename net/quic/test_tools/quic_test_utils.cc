@@ -758,6 +758,11 @@ MockQuicConnectionDebugVisitor::MockQuicConnectionDebugVisitor() {}
 
 MockQuicConnectionDebugVisitor::~MockQuicConnectionDebugVisitor() {}
 
+MockReceivedPacketManager::MockReceivedPacketManager(QuicConnectionStats* stats)
+    : QuicReceivedPacketManager(stats) {}
+
+MockReceivedPacketManager::~MockReceivedPacketManager() {}
+
 void CreateClientSessionForTest(QuicServerId server_id,
                                 bool supports_stateless_rejects,
                                 QuicTime::Delta connection_start_time,

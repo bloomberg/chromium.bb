@@ -388,7 +388,8 @@ bool QuicDispatcher::HasPendingWrites() const {
 void QuicDispatcher::Shutdown() {
   while (!session_map_.empty()) {
     QuicServerSession* session = session_map_.begin()->second;
-    session->connection()->SendConnectionClose(QUIC_PEER_GOING_AWAY);
+    session->connection()->SendConnectionCloseWithDetails(
+        QUIC_PEER_GOING_AWAY, "Server shutdown imminent");
     // Validate that the session removes itself from the session map on close.
     DCHECK(session_map_.empty() || session_map_.begin()->second != session);
   }

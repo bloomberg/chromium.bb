@@ -305,6 +305,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       packet_number_of_last_sent_packet_(0),
       sent_packet_manager_(
           perspective,
+          kDefaultPathId,
           clock_,
           &stats_,
           FLAGS_quic_use_bbr_congestion_control ? kBBR : kCubic,
@@ -614,7 +615,8 @@ bool QuicConnection::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
 
   // If this packet has already been seen, or the sender has told us that it
   // will not be retransmitted, then stop processing the packet.
-  if (!received_packet_manager_.IsAwaitingPacket(header.packet_number)) {
+  if (FLAGS_quic_drop_non_awaited_packets &&
+      !received_packet_manager_.IsAwaitingPacket(header.packet_number)) {
     DVLOG(1) << ENDPOINT << "Packet " << header.packet_number
              << " no longer being waited for.  Discarding.";
     if (debug_visitor_ != nullptr) {
@@ -675,7 +677,8 @@ bool QuicConnection::OnStreamFrame(const QuicStreamFrame& frame) {
       last_decrypted_packet_level_ == ENCRYPTION_NONE) {
     DLOG(WARNING) << ENDPOINT
                   << "Received an unencrypted data frame: closing connection";
-    SendConnectionClose(QUIC_UNENCRYPTED_STREAM_DATA);
+    SendConnectionCloseWithDetails(QUIC_UNENCRYPTED_STREAM_DATA,
+                                   "Unencrypted stream data seen");
     return false;
   }
   visitor_->OnStreamFrame(frame);
@@ -696,8 +699,9 @@ bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
     return true;
   }
 
-  if (!ValidateAckFrame(incoming_ack)) {
-    SendConnectionClose(QUIC_INVALID_ACK_DATA);
+  const char* error = ValidateAckFrame(incoming_ack);
+  if (error != nullptr) {
+    SendConnectionCloseWithDetails(QUIC_INVALID_ACK_DATA, error);
     return false;
   }
 
@@ -748,8 +752,9 @@ bool QuicConnection::OnStopWaitingFrame(const QuicStopWaitingFrame& frame) {
     return true;
   }
 
-  if (!ValidateStopWaitingFrame(frame)) {
-    SendConnectionClose(QUIC_INVALID_STOP_WAITING_DATA);
+  const char* error = ValidateStopWaitingFrame(frame);
+  if (error != nullptr) {
+    SendConnectionCloseWithDetails(QUIC_INVALID_STOP_WAITING_DATA, error);
     return false;
   }
 
@@ -770,13 +775,13 @@ bool QuicConnection::OnPingFrame(const QuicPingFrame& frame) {
   return true;
 }
 
-bool QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
+const char* QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
   if (incoming_ack.largest_observed > packet_generator_.packet_number()) {
     LOG(WARNING) << ENDPOINT << "Peer's observed unsent packet:"
                  << incoming_ack.largest_observed << " vs "
                  << packet_generator_.packet_number();
     // We got an error for data we have not sent.  Error out.
-    return false;
+    return "Largest observed too high";
   }
 
   if (incoming_ack.largest_observed < sent_packet_manager_.largest_observed()) {
@@ -785,7 +790,7 @@ bool QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
                  << sent_packet_manager_.largest_observed();
     // A new ack has a diminished largest_observed value.  Error out.
     // If this was an old packet, we wouldn't even have checked.
-    return false;
+    return "Largest observed too low";
   }
 
   if (!incoming_ack.missing_packets.Empty() &&
@@ -794,7 +799,7 @@ bool QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
                  << incoming_ack.missing_packets.Max()
                  << " which is greater than largest observed: "
                  << incoming_ack.largest_observed;
-    return false;
+    return "Missing packet higher than largest observed";
   }
 
   if (!incoming_ack.missing_packets.Empty() &&
@@ -804,14 +809,14 @@ bool QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
                  << incoming_ack.missing_packets.Min()
                  << " which is smaller than least_packet_awaited_by_peer_: "
                  << sent_packet_manager_.least_packet_awaited_by_peer();
-    return false;
+    return "Missing packet smaller than least awaited";
   }
 
   if (!sent_entropy_manager_.IsValidEntropy(incoming_ack.largest_observed,
                                             incoming_ack.missing_packets,
                                             incoming_ack.entropy_hash)) {
     LOG(WARNING) << ENDPOINT << "Peer sent invalid entropy.";
-    return false;
+    return "Invalid entropy";
   }
 
   if (incoming_ack.latest_revived_packet != 0 &&
@@ -819,12 +824,12 @@ bool QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
           incoming_ack.latest_revived_packet)) {
     LOG(WARNING) << ENDPOINT
                  << "Peer specified revived packet which was not missing.";
-    return false;
+    return "Invalid revived packet";
   }
-  return true;
+  return nullptr;
 }
 
-bool QuicConnection::ValidateStopWaitingFrame(
+const char* QuicConnection::ValidateStopWaitingFrame(
     const QuicStopWaitingFrame& stop_waiting) {
   if (stop_waiting.least_unacked <
       received_packet_manager_.peer_least_packet_awaiting_ack()) {
@@ -832,7 +837,7 @@ bool QuicConnection::ValidateStopWaitingFrame(
                 << stop_waiting.least_unacked << " vs "
                 << received_packet_manager_.peer_least_packet_awaiting_ack();
     // We never process old ack frames, so this number should only increase.
-    return false;
+    return "Least unacked too small";
   }
 
   if (stop_waiting.least_unacked > last_header_.packet_number) {
@@ -840,10 +845,10 @@ bool QuicConnection::ValidateStopWaitingFrame(
                 << "Peer sent least_unacked:" << stop_waiting.least_unacked
                 << " greater than the enclosing packet number:"
                 << last_header_.packet_number;
-    return false;
+    return "Least unacked too large";
   }
 
-  return true;
+  return nullptr;
 }
 
 void QuicConnection::OnFecData(StringPiece redundancy) {
@@ -1352,6 +1357,18 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
     return false;
   }
 
+  // If this packet has already been seen, or the sender has told us that it
+  // will not be retransmitted, then stop processing the packet.
+  if (!FLAGS_quic_drop_non_awaited_packets &&
+      !received_packet_manager_.IsAwaitingPacket(header.packet_number)) {
+    DVLOG(1) << ENDPOINT << "Packet " << header.packet_number
+             << " no longer being waited for.  Discarding.";
+    if (debug_visitor_ != nullptr) {
+      debug_visitor_->OnDuplicatePacket(header.packet_number);
+    }
+    return false;
+  }
+
   if (version_negotiation_state_ != NEGOTIATED_VERSION) {
     if (perspective_ == Perspective::IS_SERVER) {
       if (!header.public_header.version_flag) {
@@ -1717,6 +1734,7 @@ void QuicConnection::OnWriteError(int error_code) {
 }
 
 void QuicConnection::OnSerializedPacket(SerializedPacket* serialized_packet) {
+  DCHECK_NE(kInvalidPathId, serialized_packet->path_id);
   if (serialized_packet->packet == nullptr) {
     // We failed to serialize the packet, so close the connection.
     // CloseConnection does not send close packet, so no infinite loop here.
@@ -1970,7 +1988,15 @@ void QuicConnection::MaybeProcessRevivedPacket() {
 
 QuicFecGroup* QuicConnection::GetFecGroup() {
   QuicFecGroupNumber fec_group_num = last_header_.fec_group;
-  if (fec_group_num == 0) {
+  if (fec_group_num == 0 ||
+      (FLAGS_quic_drop_non_awaited_packets &&
+       fec_group_num <
+           received_packet_manager_.peer_least_packet_awaiting_ack() &&
+       !ContainsKey(group_map_, fec_group_num))) {
+    // If the group number is below peer_least_packet_awaiting_ack and this
+    // group does not exist, which means this group has missing packets below
+    // |peer_least_packet_awaiting_ack| which we would never receive, so return
+    // nullptr.
     return nullptr;
   }
   if (!ContainsKey(group_map_, fec_group_num)) {
@@ -2064,9 +2090,9 @@ void QuicConnection::SendGoAway(QuicErrorCode error,
 void QuicConnection::CloseFecGroupsBefore(QuicPacketNumber packet_number) {
   FecGroupMap::iterator it = group_map_.begin();
   while (it != group_map_.end()) {
-    // If this is the current group or the group doesn't protect this packet
-    // we can ignore it.
-    if (last_header_.fec_group == it->first ||
+    // If the group doesn't protect this packet we can ignore it.
+    if ((!FLAGS_quic_drop_non_awaited_packets &&
+         last_header_.fec_group == it->first) ||
         !it->second->IsWaitingForPacketBefore(packet_number)) {
       ++it;
       continue;
@@ -2156,7 +2182,8 @@ void QuicConnection::CheckForTimeout() {
            << idle_network_timeout_.ToMicroseconds();
   if (idle_duration >= idle_network_timeout_) {
     DVLOG(1) << ENDPOINT << "Connection timedout due to no network activity.";
-    SendConnectionClose(QUIC_CONNECTION_TIMED_OUT);
+    SendConnectionCloseWithDetails(QUIC_CONNECTION_TIMED_OUT,
+                                   "No recent network activity");
     return;
   }
 
@@ -2170,7 +2197,8 @@ void QuicConnection::CheckForTimeout() {
     if (connected_duration >= overall_connection_timeout_) {
       DVLOG(1) << ENDPOINT
                << "Connection timedout due to overall connection timeout.";
-      SendConnectionClose(QUIC_CONNECTION_OVERALL_TIMED_OUT);
+      SendConnectionCloseWithDetails(QUIC_CONNECTION_OVERALL_TIMED_OUT,
+                                     "Overall timeout expired");
       return;
     }
   }

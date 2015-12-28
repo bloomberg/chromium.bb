@@ -696,10 +696,14 @@ class NET_EXPORT_PRIVATE QuicConnection
   bool WritePacketInner(QueuedPacket* packet);
 
   // Make sure an ack we got from our peer is sane.
-  bool ValidateAckFrame(const QuicAckFrame& incoming_ack);
+  // Returns nullptr for valid acks or an error std::string if it was invalid.
+  const char* ValidateAckFrame(const QuicAckFrame& incoming_ack);
 
   // Make sure a stop waiting we got from our peer is sane.
-  bool ValidateStopWaitingFrame(const QuicStopWaitingFrame& stop_waiting);
+  // Returns nullptr if the frame is valid or an error std::string if it was
+  // invalid.
+  const char* ValidateStopWaitingFrame(
+      const QuicStopWaitingFrame& stop_waiting);
 
   // Sends a version negotiation packet to the peer.
   void SendVersionNegotiationPacket();

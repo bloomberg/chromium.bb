@@ -15,6 +15,8 @@
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using testing::_;
+
 namespace net {
 namespace test {
 
@@ -75,8 +77,8 @@ TEST_F(QuicFlowControllerTest, SendingBytes) {
   EXPECT_EQ(send_window_, flow_controller_->SendWindowSize());
 
   // Try to send more bytes, violating flow control.
-  EXPECT_CALL(connection_,
-              SendConnectionClose(QUIC_FLOW_CONTROL_SENT_TOO_MUCH_DATA));
+  EXPECT_CALL(connection_, SendConnectionCloseWithDetails(
+                               QUIC_FLOW_CONTROL_SENT_TOO_MUCH_DATA, _));
   EXPECT_DFATAL(flow_controller_->AddBytesSent(send_window_ * 10),
                 base::StringPrintf("Trying to send an extra %" PRIu64 " bytes",
                                    send_window_ * 10));

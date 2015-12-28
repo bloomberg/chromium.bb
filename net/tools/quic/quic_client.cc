@@ -74,7 +74,8 @@ QuicClient::QuicClient(IPEndPoint server_address,
 
 QuicClient::~QuicClient() {
   if (connected()) {
-    session()->connection()->SendConnectionClose(QUIC_PEER_GOING_AWAY);
+    session()->connection()->SendConnectionCloseWithDetails(
+        QUIC_PEER_GOING_AWAY, "Client being torn down");
   }
 
   STLDeleteElements(&data_to_resend_on_connect_);
@@ -259,7 +260,8 @@ void QuicClient::Disconnect() {
   DCHECK(initialized_);
 
   if (connected()) {
-    session()->connection()->SendConnectionClose(QUIC_PEER_GOING_AWAY);
+    session()->connection()->SendConnectionCloseWithDetails(
+        QUIC_PEER_GOING_AWAY, "Client disconnecting");
   }
   STLDeleteElements(&data_to_resend_on_connect_);
   STLDeleteElements(&data_sent_before_handshake_);

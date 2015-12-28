@@ -14,7 +14,7 @@ namespace {
 // The test vectors come from draft-agl-tls-chacha20poly1305-04 Section 7.
 
 // Each test vector consists of five strings of lowercase hexadecimal digits.
-// The strings may be empty (zero length). A test vector with a NULL |key|
+// The strings may be empty (zero length). A test vector with a nullptr |key|
 // marks the end of an array of test vectors.
 struct TestVector {
   const char* key;
@@ -31,7 +31,7 @@ const TestVector test_vectors[] = {
         "86d09974840bded2a5ca", "cd7cf67be39c794a", "87e229d4500845a079c0",
         "e3e446f7ede9a19b62a4677dabf4e3d24b876bb28475"  // "3896e1d6" truncated.
     },
-    {NULL}};
+    {nullptr}};
 
 }  // namespace
 

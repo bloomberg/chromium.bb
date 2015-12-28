@@ -49,7 +49,12 @@ class MockDebugDelegate : public QuicSentPacketManager::DebugDelegate {
 class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
  protected:
   QuicSentPacketManagerTest()
-      : manager_(Perspective::IS_SERVER, &clock_, &stats_, kCubic, kNack),
+      : manager_(Perspective::IS_SERVER,
+                 kDefaultPathId,
+                 &clock_,
+                 &stats_,
+                 kCubic,
+                 kNack),
         send_algorithm_(new StrictMock<MockSendAlgorithm>),
         network_change_visitor_(new StrictMock<MockNetworkChangeVisitor>) {
     // These tests only work with pacing enabled.
@@ -191,14 +196,16 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
       frames->AddFrame(
           QuicFrame(new QuicStreamFrame(kStreamId, false, 0, StringPiece())));
     }
-    return SerializedPacket(packet_number, PACKET_6BYTE_PACKET_NUMBER,
-                            packets_.back(), 0u, frames, false, false);
+    return SerializedPacket(kDefaultPathId, packet_number,
+                            PACKET_6BYTE_PACKET_NUMBER, packets_.back(), 0u,
+                            frames, false, false);
   }
 
   SerializedPacket CreateFecPacket(QuicPacketNumber packet_number) {
     packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
-    SerializedPacket serialized(packet_number, PACKET_6BYTE_PACKET_NUMBER,
-                                packets_.back(), 0u, nullptr, false, false);
+    SerializedPacket serialized(kDefaultPathId, packet_number,
+                                PACKET_6BYTE_PACKET_NUMBER, packets_.back(), 0u,
+                                nullptr, false, false);
     serialized.is_fec_packet = true;
     return serialized;
   }

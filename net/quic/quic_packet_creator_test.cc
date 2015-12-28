@@ -1524,6 +1524,52 @@ TEST_P(QuicPacketCreatorTest,
             QuicPacketCreatorPeer::NextPacketNumberLength(&creator_));
 }
 
+TEST_P(QuicPacketCreatorTest, SerializePacketOnDifferentPath) {
+  // Current path is the default path.
+  EXPECT_EQ(kDefaultPathId, QuicPacketCreatorPeer::GetCurrentPath(&creator_));
+  EXPECT_EQ(0u, creator_.packet_number());
+  // Add a stream frame to the creator and flush the packet.
+  QuicFrame frame;
+  QuicIOVector io_vector(MakeIOVector("test"));
+  ASSERT_TRUE(creator_.ConsumeData(1u, io_vector, 0u, 0u, false, false, &frame,
+                                   MAY_FEC_PROTECT));
+  ASSERT_TRUE(frame.stream_frame);
+  size_t consumed = frame.stream_frame->frame_length;
+  EXPECT_EQ(4u, consumed);
+  EXPECT_TRUE(creator_.HasPendingFrames());
+  EXPECT_EQ(0u, creator_.packet_number());
+  EXPECT_CALL(delegate_, OnSerializedPacket(_))
+      .WillRepeatedly(
+          Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
+  creator_.Flush();
+  EXPECT_FALSE(creator_.HasPendingFrames());
+  EXPECT_EQ(1u, creator_.packet_number());
+  // Verify serialized data packet's path id.
+  EXPECT_EQ(kDefaultPathId, serialized_packet_.path_id);
+  ClearSerializedPacket(&serialized_packet_);
+
+  // Change to path 1.
+  QuicPathId kPathId1 = 1;
+  creator_.SetCurrentPath(kPathId1, 1, 0);
+  EXPECT_EQ(kPathId1, QuicPacketCreatorPeer::GetCurrentPath(&creator_));
+  EXPECT_FALSE(creator_.HasPendingFrames());
+  EXPECT_EQ(0u, creator_.packet_number());
+  EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
+            QuicPacketCreatorPeer::NextPacketNumberLength(&creator_));
+
+  // Add a stream frame to the creator and flush the packet.
+  ASSERT_TRUE(creator_.ConsumeData(1u, io_vector, 0u, 0u, false, false, &frame,
+                                   MAY_FEC_PROTECT));
+  ASSERT_TRUE(frame.stream_frame);
+  consumed = frame.stream_frame->frame_length;
+  EXPECT_EQ(4u, consumed);
+  EXPECT_TRUE(creator_.HasPendingFrames());
+  creator_.Flush();
+  // Verify serialized data packet's path id.
+  EXPECT_EQ(kPathId1, serialized_packet_.path_id);
+  ClearSerializedPacket(&serialized_packet_);
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

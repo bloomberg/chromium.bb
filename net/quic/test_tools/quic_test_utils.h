@@ -752,6 +752,24 @@ class MockQuicConnectionDebugVisitor : public QuicConnectionDebugVisitor {
                void(const QuicPacketHeader&, StringPiece payload));
 };
 
+class MockReceivedPacketManager : public QuicReceivedPacketManager {
+ public:
+  explicit MockReceivedPacketManager(QuicConnectionStats* stats);
+  ~MockReceivedPacketManager() override;
+
+  MOCK_METHOD3(RecordPacketReceived,
+               void(QuicByteCount bytes,
+                    const QuicPacketHeader& header,
+                    QuicTime receipt_time));
+  MOCK_METHOD1(RecordPacketRevived, void(QuicPacketNumber packet_number));
+  MOCK_METHOD1(IsMissing, bool(QuicPacketNumber packet_number));
+  MOCK_METHOD1(IsAwaitingPacket, bool(QuicPacketNumber packet_number));
+  MOCK_METHOD1(UpdatePacketInformationSentByPeer,
+               void(const QuicStopWaitingFrame& stop_waiting));
+  MOCK_CONST_METHOD0(HasNewMissingPackets, bool(void));
+  MOCK_CONST_METHOD0(ack_frame_updated, bool(void));
+};
+
 // Creates a client session for testing.
 //
 // server_id: The server id associated with this stream.

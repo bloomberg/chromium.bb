@@ -233,10 +233,11 @@ TEST_P(QuicServerSessionTest, MaxOpenStreams) {
   // Now violate the server's internal stream limit.
   stream_id += 2;
   if (connection_->version() <= QUIC_VERSION_27) {
-    EXPECT_CALL(*connection_, SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS));
+    EXPECT_CALL(*connection_,
+                SendConnectionCloseWithDetails(QUIC_TOO_MANY_OPEN_STREAMS, _));
     EXPECT_CALL(*connection_, SendRstStream(_, _, _)).Times(0);
   } else {
-    EXPECT_CALL(*connection_, SendConnectionClose(_)).Times(0);
+    EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(_, _)).Times(0);
     EXPECT_CALL(*connection_, SendRstStream(stream_id, QUIC_REFUSED_STREAM, 0));
   }
   // Even if the connection remains open, the stream creation should fail.
@@ -270,8 +271,8 @@ TEST_P(QuicServerSessionTest, MaxAvailableStreams) {
       session_.get(), kLimitingStreamId));
 
   // A further available stream will result in connection close.
-  EXPECT_CALL(*connection_,
-              SendConnectionClose(QUIC_TOO_MANY_AVAILABLE_STREAMS));
+  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
+                                QUIC_TOO_MANY_AVAILABLE_STREAMS, _));
   // This forces stream kLimitingStreamId + 2 to become available, which
   // violates the quota.
   EXPECT_FALSE(QuicServerSessionPeer::GetOrCreateDynamicStream(
@@ -280,7 +281,8 @@ TEST_P(QuicServerSessionTest, MaxAvailableStreams) {
 
 TEST_P(QuicServerSessionTest, GetEvenIncomingError) {
   // Incoming streams on the server session must be odd.
-  EXPECT_CALL(*connection_, SendConnectionClose(QUIC_INVALID_STREAM_ID));
+  EXPECT_CALL(*connection_,
+              SendConnectionCloseWithDetails(QUIC_INVALID_STREAM_ID, _));
   EXPECT_EQ(nullptr,
             QuicServerSessionPeer::GetOrCreateDynamicStream(session_.get(), 4));
 }

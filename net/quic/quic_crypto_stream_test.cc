@@ -95,7 +95,8 @@ TEST_F(QuicCryptoStreamTest, ProcessBadData) {
   EXPECT_EQ(1, bad[kFirstTagIndex]);
   bad[kFirstTagIndex] = 0x7F;  // out of order tag
 
-  EXPECT_CALL(*connection_, SendConnectionClose(QUIC_CRYPTO_TAGS_OUT_OF_ORDER));
+  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
+                                QUIC_CRYPTO_TAGS_OUT_OF_ORDER, testing::_));
   stream_.OnStreamFrame(
       QuicStreamFrame(kCryptoStreamId, /*fin=*/false, /*offset=*/0, bad));
 }

@@ -127,7 +127,7 @@ QuicServerSession* CreateSession(QuicDispatcher* dispatcher,
       new MockServerConnection(connection_id, helper, dispatcher);
   *session = new TestQuicSpdyServerSession(config, connection, crypto_config);
   connection->set_visitor(*session);
-  ON_CALL(*connection, SendConnectionClose(_))
+  ON_CALL(*connection, SendConnectionCloseWithDetails(_, _))
       .WillByDefault(WithoutArgs(Invoke(
           connection, &MockServerConnection::UnregisterOnConnectionClosed)));
   EXPECT_CALL(*reinterpret_cast<MockConnection*>((*session)->connection()),
@@ -255,7 +255,7 @@ TEST_F(QuicDispatcherTest, Shutdown) {
   ProcessPacket(client_address, 1, true, "foo");
 
   EXPECT_CALL(*reinterpret_cast<MockConnection*>(session1_->connection()),
-              SendConnectionClose(QUIC_PEER_GOING_AWAY));
+              SendConnectionCloseWithDetails(QUIC_PEER_GOING_AWAY, _));
 
   dispatcher_.Shutdown();
 }
@@ -605,8 +605,10 @@ class QuicDispatcherWriteBlockedListTest : public QuicDispatcherTest {
   }
 
   void TearDown() override {
-    EXPECT_CALL(*connection1(), SendConnectionClose(QUIC_PEER_GOING_AWAY));
-    EXPECT_CALL(*connection2(), SendConnectionClose(QUIC_PEER_GOING_AWAY));
+    EXPECT_CALL(*connection1(),
+                SendConnectionCloseWithDetails(QUIC_PEER_GOING_AWAY, _));
+    EXPECT_CALL(*connection2(),
+                SendConnectionCloseWithDetails(QUIC_PEER_GOING_AWAY, _));
     dispatcher_.Shutdown();
   }
 

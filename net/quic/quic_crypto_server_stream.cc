@@ -83,18 +83,21 @@ void QuicCryptoServerStream::OnHandshakeMessage(
 
   // This block should be removed with support for QUIC_VERSION_25.
   if (FLAGS_quic_require_fix && !HasFixedTag(message)) {
-    CloseConnection(QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND);
+    CloseConnectionWithDetails(QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND,
+                               "Missing kFIXD");
     return;
   }
 
   // Do not process handshake messages after the handshake is confirmed.
   if (handshake_confirmed_) {
-    CloseConnection(QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE);
+    CloseConnectionWithDetails(QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE,
+                               "Unexpected handshake message from client");
     return;
   }
 
   if (message.tag() != kCHLO) {
-    CloseConnection(QUIC_INVALID_CRYPTO_MESSAGE_TYPE);
+    CloseConnectionWithDetails(QUIC_INVALID_CRYPTO_MESSAGE_TYPE,
+                               "Handshake packet not CHLO");
     return;
   }
 
@@ -102,7 +105,9 @@ void QuicCryptoServerStream::OnHandshakeMessage(
     // Already processing some other handshake message.  The protocol
     // does not allow for clients to send multiple handshake messages
     // before the server has a chance to respond.
-    CloseConnection(QUIC_CRYPTO_MESSAGE_WHILE_VALIDATING_CLIENT_HELLO);
+    CloseConnectionWithDetails(
+        QUIC_CRYPTO_MESSAGE_WHILE_VALIDATING_CLIENT_HELLO,
+        "Unexpected handshake message while processing CHLO");
     return;
   }
 

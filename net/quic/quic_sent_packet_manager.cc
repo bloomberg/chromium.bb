@@ -63,12 +63,14 @@ bool HasCryptoHandshake(const TransmissionInfo& transmission_info) {
 
 QuicSentPacketManager::QuicSentPacketManager(
     Perspective perspective,
+    QuicPathId path_id,
     const QuicClock* clock,
     QuicConnectionStats* stats,
     CongestionControlType congestion_control_type,
     LossDetectionType loss_type)
     : unacked_packets_(),
       perspective_(perspective),
+      path_id_(path_id),
       clock_(clock),
       stats_(stats),
       debug_delegate_(nullptr),
@@ -459,7 +461,7 @@ QuicSentPacketManager::NextPendingRetransmission() {
       unacked_packets_.GetTransmissionInfo(packet_number);
   DCHECK(transmission_info.retransmittable_frames);
 
-  return PendingRetransmission(packet_number, transmission_type,
+  return PendingRetransmission(path_id_, packet_number, transmission_type,
                                *transmission_info.retransmittable_frames,
                                transmission_info.encryption_level,
                                transmission_info.packet_number_length);

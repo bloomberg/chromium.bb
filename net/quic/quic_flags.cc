@@ -133,3 +133,6 @@ bool FLAGS_quic_inplace_encryption = true;
 
 // If true, QUIC will support RFC 7539 variants of ChaCha20 Poly1305.
 bool FLAGS_quic_use_rfc7539 = true;
+
+// If true, drop not awaited QUIC packets before decrypting them.
+bool FLAGS_quic_drop_non_awaited_packets = false;

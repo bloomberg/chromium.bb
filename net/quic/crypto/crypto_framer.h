@@ -57,6 +57,7 @@ class NET_EXPORT_PRIVATE CryptoFramer {
   }
 
   QuicErrorCode error() const { return error_; }
+  const std::string& error_detail() const { return error_detail_; }
 
   // Processes input data, which must be delivered in order. Returns
   // false if there was an error, and true otherwise.
@@ -101,6 +102,8 @@ class NET_EXPORT_PRIVATE CryptoFramer {
   CryptoFramerState state_;
   // The message currently being parsed.
   CryptoHandshakeMessage message_;
+  // The issue which caused |error_|
+  std::string error_detail_;
   // Number of entires in the message currently being parsed.
   uint16_t num_entries_;
   // tags_and_lengths_ contains the tags that are currently being parsed and

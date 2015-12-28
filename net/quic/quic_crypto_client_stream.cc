@@ -8,6 +8,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/strings/stringprintf.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/crypto/null_encrypter.h"
@@ -135,7 +136,8 @@ void QuicCryptoClientStream::OnHandshakeMessage(
 
   if (message.tag() == kSCUP) {
     if (!handshake_confirmed()) {
-      CloseConnection(QUIC_CRYPTO_UPDATE_BEFORE_HANDSHAKE_COMPLETE);
+      CloseConnectionWithDetails(QUIC_CRYPTO_UPDATE_BEFORE_HANDSHAKE_COMPLETE,
+                                 "Early SCUP disallowed");
       return;
     }
 
@@ -147,7 +149,8 @@ void QuicCryptoClientStream::OnHandshakeMessage(
 
   // Do not process handshake messages after the handshake is confirmed.
   if (handshake_confirmed()) {
-    CloseConnection(QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE);
+    CloseConnectionWithDetails(QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE,
+                               "Unexpected handshake message");
     return;
   }
 
@@ -234,7 +237,8 @@ void QuicCryptoClientStream::DoHandshakeLoop(const CryptoHandshakeMessage* in) {
         break;
       case STATE_IDLE:
         // This means that the peer sent us a message that we weren't expecting.
-        CloseConnection(QUIC_INVALID_CRYPTO_MESSAGE_TYPE);
+        CloseConnectionWithDetails(QUIC_INVALID_CRYPTO_MESSAGE_TYPE,
+                                   "Handshake in idle state");
         return;
       case STATE_INITIALIZE_SCUP:
         DoInitializeServerConfigUpdate(cached);
@@ -280,7 +284,9 @@ void QuicCryptoClientStream::DoSendCHLO(
   session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_NONE);
   encryption_established_ = false;
   if (num_client_hellos_ > kMaxClientHellos) {
-    CloseConnection(QUIC_CRYPTO_TOO_MANY_REJECTS);
+    CloseConnectionWithDetails(
+        QUIC_CRYPTO_TOO_MANY_REJECTS,
+        base::StringPrintf("More than %u rejects", kMaxClientHellos).c_str());
     return;
   }
   num_client_hellos_++;
@@ -308,12 +314,13 @@ void QuicCryptoClientStream::DoSendCHLO(
     if (max_packet_size <= kFramingOverhead) {
       DLOG(DFATAL) << "max_packet_length (" << max_packet_size
                    << ") has no room for framing overhead.";
-      CloseConnection(QUIC_INTERNAL_ERROR);
+      CloseConnectionWithDetails(QUIC_INTERNAL_ERROR,
+                                 "max_packet_size too smalll");
       return;
     }
     if (kClientHelloMinimumSize > max_packet_size - kFramingOverhead) {
       DLOG(DFATAL) << "Client hello won't fit in a single packet.";
-      CloseConnection(QUIC_INTERNAL_ERROR);
+      CloseConnectionWithDetails(QUIC_INTERNAL_ERROR, "CHLO too large");
       return;
     }
     out.set_minimum_size(

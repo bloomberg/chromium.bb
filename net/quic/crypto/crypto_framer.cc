@@ -4,6 +4,7 @@
 
 #include "net/quic/crypto/crypto_framer.h"
 
+#include "base/strings/stringprintf.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_data_reader.h"
 #include "net/quic/quic_data_writer.h"
@@ -43,7 +44,7 @@ class OneShotVisitor : public CryptoFramerVisitorInterface {
 }  // namespace
 
 CryptoFramer::CryptoFramer()
-    : visitor_(nullptr), num_entries_(0), values_len_(0) {
+    : visitor_(nullptr), error_detail_(""), num_entries_(0), values_len_(0) {
   Clear();
 }
 
@@ -70,6 +71,7 @@ bool CryptoFramer::ProcessInput(StringPiece input) {
   }
   error_ = Process(input);
   if (error_ != QUIC_NO_ERROR) {
+    DCHECK(!error_detail_.empty());
     visitor_->OnError(this);
     return false;
   }
@@ -185,6 +187,7 @@ void CryptoFramer::Clear() {
   message_.Clear();
   tags_and_lengths_.clear();
   error_ = QUIC_NO_ERROR;
+  error_detail_ = "";
   state_ = STATE_READING_TAG;
 }
 
@@ -208,6 +211,7 @@ QuicErrorCode CryptoFramer::Process(StringPiece input) {
       }
       reader.ReadUInt16(&num_entries_);
       if (num_entries_ > kMaxEntries) {
+        error_detail_ = base::StringPrintf("%u entries", num_entries_);
         return QUIC_CRYPTO_TOO_MANY_ENTRIES;
       }
       uint16_t padding;
@@ -228,8 +232,10 @@ QuicErrorCode CryptoFramer::Process(StringPiece input) {
         reader.ReadUInt32(&tag);
         if (i > 0 && tag <= tags_and_lengths_[i - 1].first) {
           if (tag == tags_and_lengths_[i - 1].first) {
+            error_detail_ = base::StringPrintf("Duplicate tag:%u", tag);
             return QUIC_CRYPTO_DUPLICATE_TAG;
           }
+          error_detail_ = base::StringPrintf("Tag %u out of order", tag);
           return QUIC_CRYPTO_TAGS_OUT_OF_ORDER;
         }
 
@@ -237,6 +243,8 @@ QuicErrorCode CryptoFramer::Process(StringPiece input) {
         reader.ReadUInt32(&end_offset);
 
         if (end_offset < last_end_offset) {
+          error_detail_ = base::StringPrintf("End offset: %u vs %u", end_offset,
+                                             last_end_offset);
           return QUIC_CRYPTO_TAGS_OUT_OF_ORDER;
         }
         tags_and_lengths_.push_back(std::make_pair(
