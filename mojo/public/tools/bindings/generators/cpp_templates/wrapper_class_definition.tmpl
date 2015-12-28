@@ -9,7 +9,7 @@
 {{struct.name}}Ptr {{struct.name}}::New() {
   {{struct.name}}Ptr rv;
   mojo::internal::StructHelper<{{struct.name}}>::Initialize(&rv);
-  return rv.Pass();
+  return rv;
 }
 
 {{struct.name}}::{{struct.name}}()
@@ -31,7 +31,7 @@
   rv->{{field.name}} = {{field.name}};
 {%-     endif %}
 {%-   endfor %}
-  return rv.Pass();
+  return rv;
 }
 {%  endif %}
 

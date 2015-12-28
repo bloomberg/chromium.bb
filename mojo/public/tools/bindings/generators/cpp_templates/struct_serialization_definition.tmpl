@@ -23,7 +23,7 @@ bool Deserialize_(internal::{{struct.name}}_Data* input,
   if (input) {
     {{struct.name}}Ptr result({{struct.name}}::New());
     {{struct_macros.deserialize(struct, "input", "result->%s", "context", "success")|indent(2)}}
-    *output = result.Pass();
+    *output = std::move(result);
   } else {
     output->reset();
   }

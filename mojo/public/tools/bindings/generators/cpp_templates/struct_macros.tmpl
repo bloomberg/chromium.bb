@@ -87,7 +87,7 @@
 {%-     endif %}
 {%-   elif kind|is_any_handle_kind or kind|is_interface_kind %}
 {%-     if kind|is_interface_kind %}
-  mojo::internal::InterfacePointerToData({{input_field}}.Pass(), &{{output}}->{{name}});
+  mojo::internal::InterfacePointerToData(std::move({{input_field}}), &{{output}}->{{name}});
 {%-     elif kind|is_interface_request_kind %}
   {{output}}->{{name}} = {{input_field}}.PassMessagePipe().release();
 {%-     else %}
@@ -106,7 +106,7 @@
 {%-   elif kind|is_associated_kind %}
   // TODO(yzshen): add some DCHECKs for non-nullable, is_local, correct router, etc.
 {%-     if kind|is_associated_interface_kind %}
-  mojo::internal::AssociatedInterfacePtrInfoToData({{input_field}}.Pass(), &{{output}}->{{name}});
+  mojo::internal::AssociatedInterfacePtrInfoToData(std::move({{input_field}}), &{{output}}->{{name}});
 {%-     else %}
   {{output}}->{{name}} = mojo::internal::AssociatedInterfaceRequestHelper::PassHandle(&{{input_field}}).release();
 {%-     endif %}

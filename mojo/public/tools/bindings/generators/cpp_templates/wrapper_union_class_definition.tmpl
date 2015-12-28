@@ -2,7 +2,7 @@
 {{union.name}}Ptr {{union.name}}::New() {
   {{union.name}}Ptr rv;
   mojo::internal::StructHelper<{{union.name}}>::Initialize(&rv);
-  return rv.Pass();
+  return rv;
 }
 
 {{union.name}}::{{union.name}}() {
@@ -31,7 +31,7 @@
       break;
 {%-   endfor %}
   };
-  return rv.Pass();
+  return rv;
 }
 {%- endif %}
 
@@ -76,7 +76,7 @@ void {{union.name}}::set_{{field.name}}({{field.kind|cpp_const_wrapper_type}} {{
   *(data_.{{field.name}}) = {{field.name}};
 {%    elif field.kind|is_object_kind or field.kind|is_interface_kind or
            field.kind|is_associated_kind %}
-  *(data_.{{field.name}}) = {{field.name}}.Pass();
+  *(data_.{{field.name}}) = std::move({{field.name}});
 {%    elif field.kind|is_any_handle_kind %}
   data_.{{field.name}}->reset({{field.name}}.release());
 {%-   else %}
