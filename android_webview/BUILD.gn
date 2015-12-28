@@ -563,6 +563,7 @@ source_set("common") {
 }
 
 android_library("android_webview_java") {
+  DEPRECATED_java_in_dir = "java/src"
   deps = [
     ":resources",
     ":strings_grd",
@@ -580,63 +581,6 @@ android_library("android_webview_java") {
   }
 
   srcjar_deps = [ "//android_webview/native:aw_permission_request_resource" ]
-
-  java_files = [
-    "java/src/org/chromium/android_webview/AndroidProtocolHandler.java",
-    "java/src/org/chromium/android_webview/AwAutofillClient.java",
-    "java/src/org/chromium/android_webview/AwBrowserContext.java",
-    "java/src/org/chromium/android_webview/AwBrowserProcess.java",
-    "java/src/org/chromium/android_webview/AwContentsBackgroundThreadClient.java",
-    "java/src/org/chromium/android_webview/AwContentsClientBridge.java",
-    "java/src/org/chromium/android_webview/AwContentsClientCallbackHelper.java",
-    "java/src/org/chromium/android_webview/AwContentsClient.java",
-    "java/src/org/chromium/android_webview/AwContentsIoThreadClient.java",
-    "java/src/org/chromium/android_webview/AwContents.java",
-    "java/src/org/chromium/android_webview/AwContentsStatics.java",
-    "java/src/org/chromium/android_webview/AwContentViewClient.java",
-    "java/src/org/chromium/android_webview/AwCookieManager.java",
-    "java/src/org/chromium/android_webview/AwDataReductionProxyManager.java",
-    "java/src/org/chromium/android_webview/AwDebug.java",
-    "java/src/org/chromium/android_webview/AwDevToolsServer.java",
-    "java/src/org/chromium/android_webview/AwFormDatabase.java",
-    "java/src/org/chromium/android_webview/AwGeolocationPermissions.java",
-    "java/src/org/chromium/android_webview/AwHttpAuthHandler.java",
-    "java/src/org/chromium/android_webview/AwLayoutSizer.java",
-    "java/src/org/chromium/android_webview/AwMessagePort.java",
-    "java/src/org/chromium/android_webview/AwMessagePortService.java",
-    "java/src/org/chromium/android_webview/AwPdfExporter.java",
-    "java/src/org/chromium/android_webview/AwPicture.java",
-    "java/src/org/chromium/android_webview/AwPrintDocumentAdapter.java",
-    "java/src/org/chromium/android_webview/AwQuotaManagerBridge.java",
-    "java/src/org/chromium/android_webview/AwResource.java",
-    "java/src/org/chromium/android_webview/AwScrollOffsetManager.java",
-    "java/src/org/chromium/android_webview/AwSettings.java",
-    "java/src/org/chromium/android_webview/AwSwitches.java",
-    "java/src/org/chromium/android_webview/AwViewMethods.java",
-    "java/src/org/chromium/android_webview/AwWebContentsDelegateAdapter.java",
-    "java/src/org/chromium/android_webview/AwWebContentsDelegate.java",
-    "java/src/org/chromium/android_webview/AwWebContentsObserver.java",
-    "java/src/org/chromium/android_webview/AwWebResourceResponse.java",
-    "java/src/org/chromium/android_webview/AwZoomControls.java",
-    "java/src/org/chromium/android_webview/ClientCertLookupTable.java",
-    "java/src/org/chromium/android_webview/DefaultVideoPosterRequestHandler.java",
-    "java/src/org/chromium/android_webview/ErrorCodeConversionHelper.java",
-    "java/src/org/chromium/android_webview/FullScreenView.java",
-    "java/src/org/chromium/android_webview/HttpAuthDatabase.java",
-    "java/src/org/chromium/android_webview/InputStreamUtil.java",
-    "java/src/org/chromium/android_webview/JavaBrowserViewRendererHelper.java",
-    "java/src/org/chromium/android_webview/JsPromptResultReceiver.java",
-    "java/src/org/chromium/android_webview/JsResultHandler.java",
-    "java/src/org/chromium/android_webview/JsResultReceiver.java",
-    "java/src/org/chromium/android_webview/NullAwViewMethods.java",
-    "java/src/org/chromium/android_webview/OverScrollGlow.java",
-    "java/src/org/chromium/android_webview/permission/AwGeolocationCallback.java",
-    "java/src/org/chromium/android_webview/permission/AwPermissionRequest.java",
-    "java/src/org/chromium/android_webview/policy/AwPolicyProvider.java",
-    "java/src/org/chromium/android_webview/PostMessageSender.java",
-    "java/src/org/chromium/android_webview/ScrollAccessibilityHelper.java",
-    "java/src/org/chromium/android_webview/SslUtil.java",
-  ]
 }
 
 java_strings_grd("strings_grd") {
