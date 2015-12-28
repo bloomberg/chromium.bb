@@ -78,8 +78,8 @@ int stop_display(struct client *, int);
  *    wl_global_create(d->wl_display, ...);
  *    ... other setups ...
  *
- *    client_create(d, client_main);
- *    client_create(d, client_main2);
+ *    client_create(d, client_main, data);
+ *    client_create(d, client_main2, data);
  *
  *    display_run(d);
  *    display_destroy(d);
@@ -95,6 +95,9 @@ void display_run(struct display *d);
 void display_resume(struct display *d);
 
 struct client_info *client_create_with_name(struct display *d,
-					    void (*client_main)(void),
+					    void (*client_main)(void *data),
+					    void *data,
 					    const char *name);
-#define client_create(d, c) client_create_with_name((d), (c), (#c))
+#define client_create(d, c, data) client_create_with_name((d), (c), data, (#c))
+#define client_create_noarg(d, c) \
+	client_create_with_name((d), (void(*)(void *)) (c), NULL, (#c))

@@ -95,7 +95,7 @@ empty_client(void)
 TEST(tc_leaks_tests)
 {
 	struct display *d = display_create();
-	client_create(d, empty_client);
+	client_create_noarg(d, empty_client);
 	display_run(d);
 	display_destroy(d);
 }
@@ -209,7 +209,7 @@ TEST(post_error_to_one_client)
 	wl_global_create(d->wl_display, &wl_seat_interface,
 			 1, d, bind_seat);
 
-	cl = client_create(d, post_error_main);
+	cl = client_create_noarg(d, post_error_main);
 	display_run(d);
 
 	/* the display was stopped by client, so it can
@@ -264,8 +264,8 @@ TEST(post_error_to_one_from_two_clients)
 	wl_global_create(d->wl_display, &wl_seat_interface,
 			 1, d, bind_seat);
 
-	client_create(d, post_error_main2);
-	cl = client_create(d, post_error_main3);
+	client_create_noarg(d, post_error_main2);
+	cl = client_create_noarg(d, post_error_main3);
 	display_run(d);
 
 	/* post error only to the second client */
@@ -289,8 +289,8 @@ TEST(post_error_to_two_clients)
 	wl_global_create(d->wl_display, &wl_seat_interface,
 			 1, d, bind_seat);
 
-	cl = client_create(d, post_error_main3);
-	cl2 = client_create(d, post_error_main3);
+	cl = client_create_noarg(d, post_error_main3);
+	cl2 = client_create_noarg(d, post_error_main3);
 
 	display_run(d);
 
@@ -331,7 +331,7 @@ TEST(post_nomem_tst)
 	wl_global_create(d->wl_display, &wl_seat_interface,
 			 1, d, bind_seat);
 
-	cl = client_create(d, post_nomem_main);
+	cl = client_create_noarg(d, post_nomem_main);
 	display_run(d);
 
 	assert(cl->data);
@@ -340,7 +340,7 @@ TEST(post_nomem_tst)
 
 	/* first client terminated. Run it again,
 	 * but post no memory to client */
-	cl = client_create(d, post_nomem_main);
+	cl = client_create_noarg(d, post_nomem_main);
 	display_run(d);
 
 	assert(cl->data);
@@ -447,7 +447,7 @@ TEST(threading_errors_tst)
 {
 	struct display *d = display_create();
 
-	client_create(d, threading_post_err);
+	client_create_noarg(d, threading_post_err);
 	display_run(d);
 
 	display_destroy(d);
@@ -502,7 +502,7 @@ TEST(threading_cancel_read_tst)
 {
 	struct display *d = display_create();
 
-	client_create(d, threading_cancel_read);
+	client_create_noarg(d, threading_cancel_read);
 	display_run(d);
 
 	display_destroy(d);
@@ -542,7 +542,7 @@ threading_read_eagain(void)
 TEST(threading_read_eagain_tst)
 {
 	struct display *d = display_create();
-	client_create(d, threading_read_eagain);
+	client_create_noarg(d, threading_read_eagain);
 
 	display_run(d);
 
@@ -604,7 +604,7 @@ TEST(threading_read_after_error_tst)
 {
 	struct display *d = display_create();
 
-	client_create(d, threading_read_after_error);
+	client_create_noarg(d, threading_read_after_error);
 	display_run(d);
 
 	display_destroy(d);

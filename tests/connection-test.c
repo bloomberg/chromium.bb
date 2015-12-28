@@ -614,7 +614,7 @@ TEST(closure_leaks)
 {
 	struct display *d = display_create();
 
-	client_create(d, leak_closure);
+	client_create_noarg(d, leak_closure);
 	display_run(d);
 
 	display_destroy(d);
@@ -645,7 +645,7 @@ TEST(closure_leaks_after_error)
 	struct display *d = display_create();
 	struct client_info *cl;
 
-	cl = client_create(d, leak_after_error);
+	cl = client_create_noarg(d, leak_after_error);
 	display_run(d);
 
 	wl_client_post_no_memory(cl->wl_client);

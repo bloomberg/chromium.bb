@@ -230,7 +230,7 @@ TEST(queue_proxy_destroy)
 
 	test_set_timeout(2);
 
-	client_create(d, client_test_proxy_destroy);
+	client_create_noarg(d, client_test_proxy_destroy);
 	display_run(d);
 
 	display_destroy(d);
@@ -242,7 +242,7 @@ TEST(queue_multiple_queues)
 
 	test_set_timeout(2);
 
-	client_create(d, client_test_multiple_queues);
+	client_create_noarg(d, client_test_multiple_queues);
 	display_run(d);
 
 	display_destroy(d);
@@ -254,7 +254,7 @@ TEST(queue_roundtrip)
 
 	test_set_timeout(2);
 
-	client_create(d, client_test_queue_roundtrip);
+	client_create_noarg(d, client_test_queue_roundtrip);
 	display_run(d);
 
 	display_destroy(d);

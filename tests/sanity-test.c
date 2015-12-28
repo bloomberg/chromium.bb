@@ -119,7 +119,7 @@ FAIL_TEST(sanity_malloc_indirect)
 FAIL_TEST(tc_client_memory_leaks)
 {
 	struct display *d = display_create();
-	client_create(d, sanity_malloc_direct);
+	client_create_noarg(d, sanity_malloc_direct);
 	display_run(d);
 	display_destroy(d);
 }
@@ -127,7 +127,7 @@ FAIL_TEST(tc_client_memory_leaks)
 FAIL_TEST(tc_client_memory_leaks2)
 {
 	struct display *d = display_create();
-	client_create(d, sanity_malloc_indirect);
+	client_create_noarg(d, sanity_malloc_indirect);
 	display_run(d);
 	display_destroy(d);
 }
@@ -195,11 +195,11 @@ TEST(tc_client_no_fd_leaks)
 	struct display *d = display_create();
 
 	/* Client which does not consume the WAYLAND_DISPLAY socket. */
-	client_create(d, sanity_fd_no_leak);
+	client_create_noarg(d, sanity_fd_no_leak);
 	display_run(d);
 
 	/* Client which does consume the WAYLAND_DISPLAY socket. */
-	client_create(d, sanity_client_no_leak);
+	client_create_noarg(d, sanity_client_no_leak);
 	display_run(d);
 
 	display_destroy(d);
@@ -209,7 +209,7 @@ FAIL_TEST(tc_client_fd_leaks)
 {
 	struct display *d = display_create();
 
-	client_create(d, sanity_fd_leak);
+	client_create_noarg(d, sanity_fd_leak);
 	display_run(d);
 
 	display_destroy(d);
@@ -219,7 +219,7 @@ FAIL_TEST(tc_client_fd_leaks_exec)
 {
 	struct display *d = display_create();
 
-	client_create(d, sanity_fd_leak);
+	client_create_noarg(d, sanity_fd_leak);
 	display_run(d);
 
 	display_destroy(d);
@@ -263,7 +263,7 @@ TEST(timeout_turnoff)
 FAIL_TEST(tc_timeout_tst)
 {
 	struct display *d = display_create();
-	client_create(d, timeout_tst);
+	client_create_noarg(d, timeout_tst);
 	display_run(d);
 	display_destroy(d);
 }
@@ -271,7 +271,7 @@ FAIL_TEST(tc_timeout_tst)
 FAIL_TEST(tc_timeout2_tst)
 {
 	struct display *d = display_create();
-	client_create(d, timeout_reset_tst);
+	client_create_noarg(d, timeout_reset_tst);
 	display_run(d);
 	display_destroy(d);
 }
@@ -280,10 +280,10 @@ TEST(tc_timeout3_tst)
 {
 	struct display *d = display_create();
 
-	client_create(d, timeout2_tst);
+	client_create_noarg(d, timeout2_tst);
 	display_run(d);
 
-	client_create(d, timeout_turnoff);
+	client_create_noarg(d, timeout_turnoff);
 	display_run(d);
 
 	display_destroy(d);

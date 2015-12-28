@@ -151,7 +151,8 @@ client_destroyed(struct wl_listener *listener, void *data)
 }
 
 static void
-run_client(void (*client_main)(void), int wayland_sock, int client_pipe)
+run_client(void (*client_main)(void *data), void *data,
+	   int wayland_sock, int client_pipe)
 {
 	char s[8];
 	int cur_alloc, cur_fds;
@@ -170,7 +171,7 @@ run_client(void (*client_main)(void), int wayland_sock, int client_pipe)
 	cur_alloc = get_current_alloc_num();
 	cur_fds = count_open_fds();
 
-	client_main();
+	client_main(data);
 
 	/* Clients using wl_display_connect() will end up closing the socket
 	 * passed in through the WAYLAND_SOCKET environment variable. When
@@ -185,7 +186,8 @@ run_client(void (*client_main)(void), int wayland_sock, int client_pipe)
 
 static struct client_info *
 display_create_client(struct display *d,
-		      void (*client_main)(void),
+		      void (*client_main)(void *data),
+		      void *data,
 		      const char *name)
 {
 	int pipe_cli[2];
@@ -205,7 +207,7 @@ display_create_client(struct display *d,
 		close(sock_wayl[1]);
 		close(pipe_cli[1]);
 
-		run_client(client_main, sock_wayl[0], pipe_cli[0]);
+		run_client(client_main, data, sock_wayl[0], pipe_cli[0]);
 
 		close(sock_wayl[0]);
 		close(pipe_cli[0]);
@@ -246,11 +248,14 @@ display_create_client(struct display *d,
 }
 
 struct client_info *
-client_create_with_name(struct display *d, void (*client_main)(void),
+client_create_with_name(struct display *d,
+			void (*client_main)(void *data), void *data,
 			const char *name)
 {
 	int can_continue = 1;
-	struct client_info *cl = display_create_client(d, client_main, name);
+	struct client_info *cl = display_create_client(d,
+						       client_main, data,
+						       name);
 
 	/* let the show begin! */
 	assert(write(cl->pipe, &can_continue, sizeof(int)) == sizeof(int));
