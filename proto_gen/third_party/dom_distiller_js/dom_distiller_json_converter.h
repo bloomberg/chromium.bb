@@ -31,12 +31,12 @@ namespace dom_distiller {
           return false;
         }
 
-        static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::DistilledContent& message) {
+        static scoped_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::DistilledContent& message) {
           scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
           if (message.has_html()) {
             dict->SetString("1", message.html());
           }
-          return dict.Pass();
+          return dict;
         }
       };
 
@@ -72,7 +72,7 @@ namespace dom_distiller {
           return false;
         }
 
-        static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::PaginationInfo& message) {
+        static scoped_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::PaginationInfo& message) {
           scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
           if (message.has_next_page()) {
             dict->SetString("1", message.next_page());
@@ -83,7 +83,7 @@ namespace dom_distiller {
           if (message.has_canonical_page()) {
             dict->SetString("3", message.canonical_page());
           }
-          return dict.Pass();
+          return dict;
         }
       };
 
@@ -139,7 +139,7 @@ namespace dom_distiller {
           return false;
         }
 
-        static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::MarkupArticle& message) {
+        static scoped_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::MarkupArticle& message) {
           scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
           if (message.has_published_time()) {
             dict->SetString("1", message.published_time());
@@ -160,7 +160,7 @@ namespace dom_distiller {
               field_list->AppendString(message.authors(i));
             }
           }
-          return dict.Pass();
+          return dict;
         }
       };
 
@@ -217,7 +217,7 @@ namespace dom_distiller {
           return false;
         }
 
-        static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::MarkupImage& message) {
+        static scoped_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::MarkupImage& message) {
           scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
           if (message.has_url()) {
             dict->SetString("1", message.url());
@@ -237,7 +237,7 @@ namespace dom_distiller {
           if (message.has_height()) {
             dict->SetInteger("6", message.height());
           }
-          return dict.Pass();
+          return dict;
         }
       };
 
@@ -325,7 +325,7 @@ namespace dom_distiller {
           return false;
         }
 
-        static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::MarkupInfo& message) {
+        static scoped_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::MarkupInfo& message) {
           scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
           if (message.has_title()) {
             dict->SetString("1", message.title());
@@ -362,7 +362,7 @@ namespace dom_distiller {
               field_list->Append(inner_message_value.release());
             }
           }
-          return dict.Pass();
+          return dict;
         }
       };
 
@@ -391,7 +391,7 @@ namespace dom_distiller {
           return false;
         }
 
-        static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::TimingEntry& message) {
+        static scoped_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::TimingEntry& message) {
           scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
           if (message.has_name()) {
             dict->SetString("1", message.name());
@@ -399,7 +399,7 @@ namespace dom_distiller {
           if (message.has_time()) {
             dict->SetDouble("2", message.time());
           }
-          return dict.Pass();
+          return dict;
         }
       };
 
@@ -464,7 +464,7 @@ namespace dom_distiller {
           return false;
         }
 
-        static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::TimingInfo& message) {
+        static scoped_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::TimingInfo& message) {
           scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
           if (message.has_markup_parsing_time()) {
             dict->SetDouble("1", message.markup_parsing_time());
@@ -490,7 +490,7 @@ namespace dom_distiller {
               field_list->Append(inner_message_value.release());
             }
           }
-          return dict.Pass();
+          return dict;
         }
       };
 
@@ -512,12 +512,12 @@ namespace dom_distiller {
           return false;
         }
 
-        static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::DebugInfo& message) {
+        static scoped_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::DebugInfo& message) {
           scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
           if (message.has_log()) {
             dict->SetString("1", message.log());
           }
-          return dict.Pass();
+          return dict;
         }
       };
 
@@ -539,12 +539,12 @@ namespace dom_distiller {
           return false;
         }
 
-        static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::StatisticsInfo& message) {
+        static scoped_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::StatisticsInfo& message) {
           scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
           if (message.has_word_count()) {
             dict->SetInteger("1", message.word_count());
           }
-          return dict.Pass();
+          return dict;
         }
       };
 
@@ -568,12 +568,12 @@ namespace dom_distiller {
             return false;
           }
 
-          static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::DomDistillerResult::ContentImage& message) {
+          static scoped_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::DomDistillerResult::ContentImage& message) {
             scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
             if (message.has_url()) {
               dict->SetString("1", message.url());
             }
-            return dict.Pass();
+            return dict;
           }
         };
 
@@ -669,7 +669,7 @@ namespace dom_distiller {
           return false;
         }
 
-        static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::DomDistillerResult& message) {
+        static scoped_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::DomDistillerResult& message) {
           scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
           if (message.has_title()) {
             dict->SetString("1", message.title());
@@ -716,7 +716,7 @@ namespace dom_distiller {
               field_list->Append(inner_message_value.release());
             }
           }
-          return dict.Pass();
+          return dict;
         }
       };
 
@@ -759,7 +759,7 @@ namespace dom_distiller {
           return false;
         }
 
-        static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::DomDistillerOptions& message) {
+        static scoped_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::DomDistillerOptions& message) {
           scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
           if (message.has_extract_text_only()) {
             dict->SetBoolean("1", message.extract_text_only());
@@ -773,7 +773,7 @@ namespace dom_distiller {
           if (message.has_pagination_algo()) {
             dict->SetString("4", message.pagination_algo());
           }
-          return dict.Pass();
+          return dict;
         }
       };
 
