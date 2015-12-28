@@ -30,6 +30,13 @@
           ],
           'link_settings': {
           },
+          # TODO(crbug.com/571217): Disabled warning-as-error option until
+          # this bug is fixed.
+          'xcode_settings': {
+            'WARNING_CFLAGS': [
+              '-Wno-deprecated-declarations',
+            ],
+          },
         },
       ],
     }],

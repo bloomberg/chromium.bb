@@ -660,6 +660,14 @@
           ],
         }]
       ],
+      # TODO(crbug.com/569158): Suppresses warnings that are treated as errors
+      # when minimum iOS version support is increased to iOS 9 and up.
+      # This should be removed once all deprecation violations have been fixed.
+      'xcode_settings': {
+        'WARNING_CFLAGS': [
+          '-Wno-deprecated-declarations',
+        ],
+      },
     },
     {
       # GN version: //ios/chrome/browser:about_flags
