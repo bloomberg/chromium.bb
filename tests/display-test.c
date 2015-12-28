@@ -24,6 +24,7 @@
  * SOFTWARE.
  */
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -35,6 +36,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <pthread.h>
+#include <poll.h>
 
 #include "wayland-private.h"
 #include "wayland-server.h"
@@ -135,14 +137,11 @@ client_get_seat(struct client *c)
 }
 
 static void
-check_for_error(struct client *c, struct wl_proxy *proxy)
+check_pending_error(struct client *c, struct wl_proxy *proxy)
 {
 	uint32_t ec, id;
 	int err;
 	const struct wl_interface *intf;
-
-	/* client should be disconnected */
-	assert(wl_display_roundtrip(c->wl_display) == -1);
 
 	err = wl_display_get_error(c->wl_display);
 	assert(err == EPROTO);
@@ -154,6 +153,30 @@ check_for_error(struct client *c, struct wl_proxy *proxy)
 }
 
 static void
+check_for_error(struct client *c, struct wl_proxy *proxy)
+{
+	/* client should be disconnected */
+	assert(wl_display_roundtrip(c->wl_display) == -1);
+
+	check_pending_error(c, proxy);
+}
+
+static struct client_info *
+find_client_info(struct display *d, struct wl_client *client)
+{
+	struct client_info *ci;
+
+	/* find the right client_info struct and save the
+	 * resource as its data, so that we can use it later */
+	wl_list_for_each(ci, &d->clients, link) {
+		if (ci->wl_client == client)
+			return ci;
+	}
+
+	return NULL;
+}
+
+static void
 bind_seat(struct wl_client *client, void *data,
 	  uint32_t vers, uint32_t id)
 {
@@ -161,12 +184,8 @@ bind_seat(struct wl_client *client, void *data,
 	struct client_info *ci;
 	struct wl_resource *res;
 
-	/* find the right client_info struct and save the
-	 * resource as its data, so that we can use it later */
-	wl_list_for_each(ci, &d->clients, link) {
-		if (ci->wl_client == client)
-			break;
-	}
+	ci = find_client_info(d, client);
+	assert(ci);
 
 	res = wl_resource_create(client, &wl_seat_interface, vers, id);
 	assert(res);
@@ -605,6 +624,147 @@ TEST(threading_read_after_error_tst)
 	struct display *d = display_create();
 
 	client_create_noarg(d, threading_read_after_error);
+	display_run(d);
+
+	display_destroy(d);
+}
+
+static void
+wait_for_error_using_dispatch(struct client *c, struct wl_proxy *proxy)
+{
+	int ret;
+
+	while (true) {
+		/* Dispatching should eventually hit the protocol error before
+		 * any other error. */
+		ret = wl_display_dispatch(c->wl_display);
+		if (ret == 0) {
+			continue;
+		} else {
+			assert(errno == EPROTO);
+			break;
+		}
+	}
+
+	check_pending_error(c, proxy);
+}
+
+static void
+wait_for_error_using_prepare_read(struct client *c, struct wl_proxy *proxy)
+{
+	int ret = 0;
+	struct pollfd pfd[2];
+
+	while (true) {
+		while (wl_display_prepare_read(c->wl_display) != 0 &&
+		      errno == EAGAIN) {
+			assert(wl_display_dispatch_pending(c->wl_display) >= 0);
+		}
+
+		/* Flush may fail due to EPIPE if the connection is broken, but
+		 * this must not set a fatal display error because that would
+		 * result in it being impossible to read a potential protocol
+		 * error. */
+		do {
+			ret = wl_display_flush(c->wl_display);
+		} while (ret == -1 && (errno == EINTR || errno == EAGAIN));
+		assert(ret >= 0 || errno == EPIPE);
+		assert(wl_display_get_error(c->wl_display) == 0);
+
+		pfd[0].fd = wl_display_get_fd(c->wl_display);
+		pfd[0].events = POLLIN;
+		do {
+			ret = poll(pfd, 1, -1);
+		} while (ret == -1 && errno == EINTR);
+		assert(ret != -1);
+
+		/* We should always manage to read the error before the EPIPE
+		 * comes this way. */
+		assert(wl_display_read_events(c->wl_display) == 0);
+
+		/* Dispatching should eventually hit the protocol error before
+		 * any other error. */
+		ret = wl_display_dispatch_pending(c->wl_display);
+		if (ret == 0) {
+			continue;
+		} else {
+			assert(errno == EPROTO);
+			break;
+		}
+	}
+
+	check_pending_error(c, proxy);
+}
+
+static void
+check_error_after_epipe(void *data)
+{
+	bool use_dispatch_helpers = *(bool *) data;
+	struct client *client;
+	struct wl_seat *seat;
+	struct wl_callback *callback;
+
+	client = client_connect();
+
+	/* This will, according to the implementation below, cause the server
+	 * to post an error. */
+	seat = client_get_seat(client);
+	wl_display_flush(client->wl_display);
+
+	/* The server will not actually destroy the client until it receives
+	 * input, so send something to trigger the client destruction. */
+	callback = wl_display_sync(client->wl_display);
+	wl_callback_destroy(callback);
+
+	/* Sleep some to give the server a chance to react and destroy the
+	 * client. */
+	test_usleep(200000);
+
+	/* Wait for the protocol error and check that we reached it before
+	 * EPIPE. */
+	if (use_dispatch_helpers) {
+		wait_for_error_using_dispatch(client, (struct wl_proxy *) seat);
+	} else {
+		wait_for_error_using_prepare_read(client,
+						  (struct wl_proxy *) seat);
+	}
+
+	wl_seat_destroy(seat);
+	client_disconnect_nocheck(client);
+}
+
+static void
+bind_seat_and_post_error(struct wl_client *client, void *data,
+			 uint32_t version, uint32_t id)
+{
+	struct display *d = data;
+	struct client_info *ci;
+	struct wl_resource *resource;
+
+	ci = find_client_info(d, client);
+	assert(ci);
+
+	resource = wl_resource_create(client, &wl_seat_interface, version, id);
+	assert(resource);
+	ci->data = resource;
+
+	wl_resource_post_error(ci->data, 23, "Dummy error");
+}
+
+TEST(error_code_after_epipe)
+{
+	struct display *d = display_create();
+	bool use_dispatch_helpers;
+
+	wl_global_create(d->wl_display, &wl_seat_interface,
+			 1, d, bind_seat_and_post_error);
+
+	use_dispatch_helpers = true;
+	client_create(d, check_error_after_epipe, &use_dispatch_helpers);
+	display_run(d);
+
+	use_dispatch_helpers = false;
+	client_create(d, check_error_after_epipe, &use_dispatch_helpers);
 	display_run(d);
 
 	display_destroy(d);
