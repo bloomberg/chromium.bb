@@ -199,7 +199,8 @@ def _CreateBisectOptionsFromConfig(config):
     opts_dict['truncate_percent'] = int(config['truncate_percent'])
 
   if config['max_time_minutes']:
-    opts_dict['max_time_minutes'] = int(config['max_time_minutes'])
+    opts_dict['max_time_minutes'] = _Clamp(
+        int(config['max_time_minutes']), low=1, high=60)
 
   if config.has_key('use_goma'):
     opts_dict['use_goma'] = config['use_goma']
@@ -240,6 +241,11 @@ def _CreateBisectOptionsFromConfig(config):
       opts_dict['target_platform'] = 'android'
 
   return bisect_perf_regression.BisectOptions.FromDict(opts_dict)
+
+
+def _Clamp(n, low, high):
+  """Clamps a value to a range."""
+  return min(high, max(low, n))
 
 
 def _ParseCloudLinksFromOutput(output):
