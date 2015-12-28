@@ -75,6 +75,7 @@ crbug.com/24182 http/tests/perf/large-inlined-script.html [ Slow ]
 crbug.com/451577 [ Debug ] fast/dom/gc-treescope.html  [ Slow ]
 crbug.com/451577 [ Debug ] fast/frames/calculate-round.html [ Slow ]
 crbug.com/451577 imported/web-platform-tests/IndexedDB/idbindex-multientry-big.htm [ Slow ]
+crbug.com/451577 [ Mac10.7 Mac10.8 ] inspector/elements/user-properties.html [ Slow ]
 
 crbug.com/474121 editing/deleting/password-delete-performance.html [ Slow ]
 crbug.com/237245 [ Debug Win7 ] editing/selection/programmatic-selection-on-mac-is-directionless.html [ Slow ]
