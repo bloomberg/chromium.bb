@@ -111,3 +111,5 @@ crbug.com/451577 [ Linux ] inspector/extensions/extensions-reload.html [ Slow ]
 crbug.com/451577 [ Linux ] inspector/extensions/extensions-resources.html [ Slow ]
 crbug.com/451577 [ Linux ] inspector/extensions/extensions-sidebar.html [ Slow ]
 crbug.com/451577 [ Linux ] inspector/layers/layer-canvas-log.html [ Slow ]
+
+crbug.com/572723 [ Linux ] inspector/sources/debugger/debugger-completions-on-call-frame.html [ Timeout Pass ]

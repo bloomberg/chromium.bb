@@ -57,3 +57,6 @@ crbug.com/518993 imported/web-platform-tests/user-timing/test_user_timing_measur
 crbug.com/420008 inspector/tracing/worker-js-frames.html [ Pass Timeout Slow Failure ]
 
 crbug.com/572710 [ Linux Debug ] inspector/extensions/extensions-sidebar.html [ Pass Timeout ]
+
+crbug.com/572723 inspector/sources/debugger/debugger-autocontinue-on-syntax-error.html [ Pass Failure ]
+crbug.com/572723 inspector/sources/debugger/debugger-uncaught-promise-on-pause.html [ Timeout Pass ]
