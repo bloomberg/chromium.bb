@@ -342,16 +342,6 @@ bool Character::isCJKIdeographOrSymbol(UChar32 c)
     if (c < 0x2C7)
         return false;
 
-    // Hash lookup for isolated symbols (those not part of a contiguous range)
-    static HashSet<UChar32>* cjkIsolatedSymbols = 0;
-    if (!cjkIsolatedSymbols) {
-        cjkIsolatedSymbols = new HashSet<UChar32>();
-        for (size_t i = 0; i < WTF_ARRAY_LENGTH(cjkIsolatedSymbolsArray); ++i)
-            cjkIsolatedSymbols->add(cjkIsolatedSymbolsArray[i]);
-    }
-    if (cjkIsolatedSymbols->contains(c))
-        return true;
-
     if (isCJKIdeograph(c))
         return true;
 
@@ -393,7 +383,23 @@ bool Character::isCJKIdeographOrSymbol(UChar32 c)
         0x1F200, 0x1F6FF
     };
 
-    return valueInIntervalList(cjkSymbolRanges, c);
+    if (c >= cjkSymbolRanges[0]
+        && c <= cjkSymbolRanges[WTF_ARRAY_LENGTH(cjkSymbolRanges) - 1]
+        && valueInIntervalList(cjkSymbolRanges, c)) {
+        return true;
+    }
+
+    if (c < 0x2020 && c > 0x2D9)
+        return false;
+
+    // Hash lookup for isolated symbols (those not part of a contiguous range)
+    static HashSet<UChar32>* cjkIsolatedSymbols = 0;
+    if (!cjkIsolatedSymbols) {
+        cjkIsolatedSymbols = new HashSet<UChar32>();
+        for (size_t i = 0; i < WTF_ARRAY_LENGTH(cjkIsolatedSymbolsArray); ++i)
+            cjkIsolatedSymbols->add(cjkIsolatedSymbolsArray[i]);
+    }
+    return cjkIsolatedSymbols->contains(c);
 }
 
 unsigned Character::expansionOpportunityCount(const LChar* characters, size_t length, TextDirection direction, bool& isAfterExpansion, const TextJustify textJustify)
