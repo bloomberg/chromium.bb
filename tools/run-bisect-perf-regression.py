@@ -210,7 +210,7 @@ def _CreateBisectOptionsFromConfig(config):
     opts_dict['improvement_direction'] = int(config['improvement_direction'])
 
   if config.has_key('required_initial_confidence'):
-    opts_dict['required_initial_confidence'] = int(
+    opts_dict['required_initial_confidence'] = float(
         config['required_initial_confidence'])
 
   if config.has_key('target_arch'):
@@ -523,6 +523,7 @@ def _RunBisectionScript(
       ('bug_id', '--bug_id'),
       ('builder_type', '--builder_type'),
       ('target_arch', '--target_arch'),
+      ('required_initial_confidence', '--required_initial_confidence'),
   ]
   for config_key, flag in options:
     if config.has_key(config_key):
