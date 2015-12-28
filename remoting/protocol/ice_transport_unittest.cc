@@ -21,7 +21,6 @@
 #include "remoting/protocol/p2p_stream_socket.h"
 #include "remoting/protocol/stream_channel_factory.h"
 #include "remoting/protocol/transport_context.h"
-#include "remoting/signaling/fake_signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
@@ -55,43 +54,25 @@ class MockChannelCreatedCallback {
   MOCK_METHOD1(OnDone, void(P2PStreamSocket* socket));
 };
 
-class TestTransportEventHandler : public Transport::EventHandler {
+class TestTransportEventHandler : public IceTransport::EventHandler {
  public:
-  typedef base::Callback<void(scoped_ptr<buzz::XmlElement> message)>
-      TransportInfoCallback;
   typedef base::Callback<void(ErrorCode error)> ErrorCallback;
 
   TestTransportEventHandler() {}
   ~TestTransportEventHandler() {}
 
-  // Both callback must be set before the test handler is passed to a Transport
-  // object.
-  void set_transport_info_callback(const TransportInfoCallback& callback) {
-    transport_info_callback_ = callback;
-  }
-  void set_connected_callback(const base::Closure& callback) {
-    connected_callback_ = callback;
-  }
   void set_error_callback(const ErrorCallback& callback) {
     error_callback_ = callback;
   }
 
-  // Transport::EventHandler interface.
-  void OnOutgoingTransportInfo(scoped_ptr<buzz::XmlElement> message) override {
-    transport_info_callback_.Run(std::move(message));
-  }
-  void OnTransportRouteChange(const std::string& channel_name,
+  // IceTransport::EventHandler interface.
+  void OnIceTransportRouteChange(const std::string& channel_name,
                               const TransportRoute& route) override {}
-  void OnTransportConnected() override {
-    connected_callback_.Run();
-  }
-  void OnTransportError(ErrorCode error) override {
+  void OnIceTransportError(ErrorCode error) override {
     error_callback_.Run(error);
   }
 
  private:
-  TransportInfoCallback transport_info_callback_;
-  base::Closure connected_callback_;
   ErrorCallback error_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTransportEventHandler);
@@ -132,43 +113,36 @@ class IceTransportTest : public testing::Test {
   }
 
   void InitializeConnection() {
-    host_transport_.reset(new IceTransport(new TransportContext(
-        signal_strategy_.get(),
-        make_scoped_ptr(new ChromiumPortAllocatorFactory(nullptr)),
-        network_settings_, TransportRole::SERVER)));
+    host_transport_.reset(
+        new IceTransport(TransportContext::ForTests(TransportRole::SERVER),
+                         &host_event_handler_));
     if (!host_authenticator_) {
       host_authenticator_.reset(new FakeAuthenticator(
           FakeAuthenticator::HOST, 0, FakeAuthenticator::ACCEPT, true));
     }
 
-    client_transport_.reset(new IceTransport(new TransportContext(
-        signal_strategy_.get(),
-        make_scoped_ptr(new ChromiumPortAllocatorFactory(nullptr)),
-        network_settings_, TransportRole::CLIENT)));
+    client_transport_.reset(
+        new IceTransport(TransportContext::ForTests(TransportRole::CLIENT),
+                         &client_event_handler_));
     if (!client_authenticator_) {
       client_authenticator_.reset(new FakeAuthenticator(
           FakeAuthenticator::CLIENT, 0, FakeAuthenticator::ACCEPT, true));
     }
 
-    // Connect signaling between the two IceTransport objects.
-    host_event_handler_.set_transport_info_callback(
-        base::Bind(&IceTransportTest::ProcessTransportInfo,
-                   base::Unretained(this), &client_transport_));
-    client_event_handler_.set_transport_info_callback(
-        base::Bind(&IceTransportTest::ProcessTransportInfo,
-                   base::Unretained(this), &host_transport_));
-
-    host_event_handler_.set_connected_callback(base::Bind(&base::DoNothing));
     host_event_handler_.set_error_callback(base::Bind(
         &IceTransportTest::OnTransportError, base::Unretained(this)));
-
-    client_event_handler_.set_connected_callback(base::Bind(&base::DoNothing));
     client_event_handler_.set_error_callback(base::Bind(
         &IceTransportTest::OnTransportError, base::Unretained(this)));
 
-    host_transport_->Start(&host_event_handler_, host_authenticator_.get());
-    client_transport_->Start(&client_event_handler_,
-                             client_authenticator_.get());
+    // Start both transports.
+    host_transport_->Start(
+        host_authenticator_.get(),
+        base::Bind(&IceTransportTest::ProcessTransportInfo,
+                   base::Unretained(this), &client_transport_));
+    client_transport_->Start(
+        client_authenticator_.get(),
+        base::Bind(&IceTransportTest::ProcessTransportInfo,
+                   base::Unretained(this), &host_transport_));
   }
 
   void WaitUntilConnected() {
@@ -206,8 +180,6 @@ class IceTransportTest : public testing::Test {
   scoped_ptr<base::RunLoop> run_loop_;
 
   NetworkSettings network_settings_;
-
-  scoped_ptr<FakeSignalStrategy> signal_strategy_;
 
   base::TimeDelta transport_info_delay_;
 

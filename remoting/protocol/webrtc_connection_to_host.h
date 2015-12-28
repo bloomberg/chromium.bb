@@ -15,6 +15,7 @@
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/input_filter.h"
 #include "remoting/protocol/session.h"
+#include "remoting/protocol/webrtc_transport.h"
 
 namespace remoting {
 namespace protocol {
@@ -25,6 +26,7 @@ class SessionConfig;
 
 class WebrtcConnectionToHost : public ConnectionToHost,
                                public Session::EventHandler,
+                               public WebrtcTransport::EventHandler,
                                public ChannelDispatcherBase::EventHandler {
  public:
   WebrtcConnectionToHost();
@@ -36,6 +38,7 @@ class WebrtcConnectionToHost : public ConnectionToHost,
   void set_video_stub(VideoStub* video_stub) override;
   void set_audio_stub(AudioStub* audio_stub) override;
   void Connect(scoped_ptr<Session> session,
+               scoped_refptr<TransportContext> transport_context,
                HostEventCallback* event_callback) override;
   const SessionConfig& config() override;
   ClipboardStub* clipboard_forwarder() override;
@@ -46,8 +49,10 @@ class WebrtcConnectionToHost : public ConnectionToHost,
  private:
   // Session::EventHandler interface.
   void OnSessionStateChange(Session::State state) override;
-  void OnSessionRouteChange(const std::string& channel_name,
-                            const TransportRoute& route) override;
+
+  // WebrtcTransport::EventHandler interface.
+  void OnWebrtcTransportConnected() override;
+  void OnWebrtcTransportError(ErrorCode error) override;
 
   // ChannelDispatcherBase::EventHandler interface.
   void OnChannelInitialized(ChannelDispatcherBase* channel_dispatcher) override;
@@ -67,6 +72,7 @@ class WebrtcConnectionToHost : public ConnectionToHost,
   ClipboardStub* clipboard_stub_ = nullptr;
 
   scoped_ptr<Session> session_;
+  scoped_ptr<WebrtcTransport> transport_;
 
   scoped_ptr<ClientControlDispatcher> control_dispatcher_;
   scoped_ptr<ClientEventDispatcher> event_dispatcher_;

@@ -37,26 +37,26 @@ class IceTransportChannel : public sigslot::has_slots<> {
 
     // Called to pass ICE credentials to the session. Used only for STANDARD
     // version of ICE, see SetIceVersion().
-    virtual void OnTransportIceCredentials(IceTransportChannel* transport,
+    virtual void OnChannelIceCredentials(IceTransportChannel* transport,
                                            const std::string& ufrag,
                                            const std::string& password) = 0;
 
     // Called when the transport generates a new candidate that needs
     // to be passed to the AddRemoteCandidate() method on the remote
     // end of the connection.
-    virtual void OnTransportCandidate(IceTransportChannel* transport,
+    virtual void OnChannelCandidate(IceTransportChannel* transport,
                                       const cricket::Candidate& candidate) = 0;
 
     // Called when transport route changes. Can be called even before
     // the transport is connected.
-    virtual void OnTransportRouteChange(IceTransportChannel* transport,
+    virtual void OnChannelRouteChange(IceTransportChannel* transport,
                                         const TransportRoute& route) = 0;
 
-    // Called when when the transport has failed to connect or reconnect.
-    virtual void OnTransportFailed(IceTransportChannel* transport) = 0;
+    // Called when when the channel has failed to connect or reconnect.
+    virtual void OnChannelFailed(IceTransportChannel* transport) = 0;
 
-    // Called when the transport is about to be deleted.
-    virtual void OnTransportDeleted(IceTransportChannel* transport) = 0;
+    // Called when the channel is about to be deleted.
+    virtual void OnChannelDeleted(IceTransportChannel* transport) = 0;
   };
 
   typedef base::Callback<void(scoped_ptr<P2PDatagramSocket>)> ConnectedCallback;

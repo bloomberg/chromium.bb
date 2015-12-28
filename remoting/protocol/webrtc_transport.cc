@@ -105,18 +105,23 @@ class SetSessionDescriptionObserver
 
 WebrtcTransport::WebrtcTransport(
     rtc::Thread* worker_thread,
-    scoped_refptr<TransportContext> transport_context)
-    : transport_context_(transport_context),
-      worker_thread_(worker_thread),
+    scoped_refptr<TransportContext> transport_context,
+    EventHandler* event_handler)
+    : worker_thread_(worker_thread),
+      transport_context_(transport_context),
+      event_handler_(event_handler),
       weak_factory_(this) {}
 
 WebrtcTransport::~WebrtcTransport() {}
 
-void WebrtcTransport::Start(EventHandler* event_handler,
-                            Authenticator* authenticator) {
+void WebrtcTransport::Start(
+    Authenticator* authenticator,
+    SendTransportInfoCallback send_transport_info_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(send_transport_info_callback_.is_null());
 
-  event_handler_ = event_handler;
+  send_transport_info_callback_ = std::move(send_transport_info_callback);
+
   // TODO(sergeyu): Use the |authenticator| to authenticate PeerConnection.
 
   transport_context_->CreatePortAllocator(base::Bind(
@@ -248,15 +253,6 @@ StreamChannelFactory* WebrtcTransport::GetStreamChannelFactory() {
   return &data_stream_adapter_;
 }
 
-StreamChannelFactory* WebrtcTransport::GetMultiplexedChannelFactory() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return GetStreamChannelFactory();
-}
-
-WebrtcTransport* WebrtcTransport::AsWebrtcTransport() {
-  return this;
-}
-
 void WebrtcTransport::OnLocalSessionDescriptionCreated(
     scoped_ptr<webrtc::SessionDescriptionInterface> description,
     const std::string& error) {
@@ -287,7 +283,7 @@ void WebrtcTransport::OnLocalSessionDescriptionCreated(
   offer_tag->SetAttr(QName(std::string(), "type"), description->type());
   offer_tag->SetBodyText(description_sdp);
 
-  event_handler_->OnOutgoingTransportInfo(std::move(transport_info));
+  send_transport_info_callback_.Run(std::move(transport_info));
 
   peer_connection_->SetLocalDescription(
       SetSessionDescriptionObserver::Create(base::Bind(
@@ -346,7 +342,7 @@ void WebrtcTransport::Close(ErrorCode error) {
   peer_connection_factory_ = nullptr;
 
   if (error != OK)
-    event_handler_->OnTransportError(error);
+    event_handler_->OnWebrtcTransportError(error);
 }
 
 void WebrtcTransport::OnSignalingChange(
@@ -398,7 +394,7 @@ void WebrtcTransport::OnIceConnectionChange(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (new_state == webrtc::PeerConnectionInterface::kIceConnectionConnected)
-    event_handler_->OnTransportConnected();
+    event_handler_->OnWebrtcTransportConnected();
 }
 
 void WebrtcTransport::OnIceGatheringChange(
@@ -473,9 +469,7 @@ void WebrtcTransport::SendTransportInfo() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(pending_transport_info_message_);
 
-  event_handler_->OnOutgoingTransportInfo(
-      std::move(pending_transport_info_message_));
-  pending_transport_info_message_.reset();
+  send_transport_info_callback_.Run(std::move(pending_transport_info_message_));
 }
 
 void WebrtcTransport::AddPendingCandidatesIfPossible() {
@@ -492,19 +486,6 @@ void WebrtcTransport::AddPendingCandidatesIfPossible() {
     }
     pending_incoming_candidates_.clear();
   }
-}
-
-WebrtcTransportFactory::WebrtcTransportFactory(
-    rtc::Thread* worker_thread,
-    scoped_refptr<TransportContext> transport_context)
-    : worker_thread_(worker_thread),
-      transport_context_(transport_context) {}
-
-WebrtcTransportFactory::~WebrtcTransportFactory() {}
-
-scoped_ptr<Transport> WebrtcTransportFactory::CreateTransport() {
-  return make_scoped_ptr(
-      new WebrtcTransport(worker_thread_, transport_context_.get()));
 }
 
 }  // namespace protocol

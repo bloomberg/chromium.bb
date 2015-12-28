@@ -6,10 +6,12 @@
 
 #include <utility>
 
+#include "jingle/glue/thread_wrapper.h"
 #include "remoting/protocol/client_control_dispatcher.h"
 #include "remoting/protocol/client_event_dispatcher.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/clipboard_stub.h"
+#include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/webrtc_transport.h"
 
 namespace remoting {
@@ -18,13 +20,19 @@ namespace protocol {
 WebrtcConnectionToHost::WebrtcConnectionToHost() {}
 WebrtcConnectionToHost::~WebrtcConnectionToHost() {}
 
-void WebrtcConnectionToHost::Connect(scoped_ptr<Session> session,
-                                     HostEventCallback* event_callback) {
+void WebrtcConnectionToHost::Connect(
+    scoped_ptr<Session> session,
+    scoped_refptr<TransportContext> transport_context,
+    HostEventCallback* event_callback) {
   DCHECK(client_stub_);
   DCHECK(clipboard_stub_);
 
+  transport_.reset(new WebrtcTransport(
+      jingle_glue::JingleThreadWrapper::current(), transport_context, this));
+
   session_ = std::move(session);
   session_->SetEventHandler(this);
+  session_->SetTransport(transport_.get());
 
   event_callback_ = event_callback;
 
@@ -72,7 +80,6 @@ void WebrtcConnectionToHost::OnSessionStateChange(Session::State state) {
     case Session::ACCEPTING:
     case Session::ACCEPTED:
     case Session::AUTHENTICATING:
-    case Session::CONNECTED:
       // Don't care about these events.
       break;
 
@@ -80,14 +87,12 @@ void WebrtcConnectionToHost::OnSessionStateChange(Session::State state) {
       SetState(AUTHENTICATED, OK);
 
       control_dispatcher_.reset(new ClientControlDispatcher());
-      control_dispatcher_->Init(
-          session_->GetTransport()->GetStreamChannelFactory(), this);
+      control_dispatcher_->Init(transport_->GetStreamChannelFactory(), this);
       control_dispatcher_->set_client_stub(client_stub_);
       control_dispatcher_->set_clipboard_stub(clipboard_stub_);
 
       event_dispatcher_.reset(new ClientEventDispatcher());
-      event_dispatcher_->Init(
-          session_->GetTransport()->GetStreamChannelFactory(), this);
+      event_dispatcher_->Init(transport_->GetStreamChannelFactory(), this);
       break;
 
     case Session::CLOSED:
@@ -98,10 +103,11 @@ void WebrtcConnectionToHost::OnSessionStateChange(Session::State state) {
   }
 }
 
-void WebrtcConnectionToHost::OnSessionRouteChange(
-    const std::string& channel_name,
-    const TransportRoute& route) {
-  event_callback_->OnRouteChanged(channel_name, route);
+void WebrtcConnectionToHost::OnWebrtcTransportConnected() {}
+
+void WebrtcConnectionToHost::OnWebrtcTransportError(ErrorCode error) {
+  CloseChannels();
+  SetState(FAILED, error);
 }
 
 void WebrtcConnectionToHost::OnChannelInitialized(
@@ -115,7 +121,6 @@ void WebrtcConnectionToHost::OnChannelError(
   LOG(ERROR) << "Failed to connect channel " << channel_dispatcher;
   CloseChannels();
   SetState(FAILED, CHANNEL_CONNECTION_ERROR);
-  return;
 }
 
 ConnectionToHost::State WebrtcConnectionToHost::state() const {

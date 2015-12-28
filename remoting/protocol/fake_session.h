@@ -21,24 +21,8 @@ namespace protocol {
 
 extern const char kTestJid[];
 
-class FakeTransport : public Transport {
- public:
-  FakeTransport();
-  ~FakeTransport() override;
+class FakeAuthenticator;
 
-  // Transport interface.
-  void Start(EventHandler* event_handler,
-             Authenticator* authenticator) override;
-  bool ProcessTransportInfo(buzz::XmlElement* transport_info) override;
-  FakeStreamChannelFactory* GetStreamChannelFactory() override;
-  FakeStreamChannelFactory* GetMultiplexedChannelFactory() override;
-
- private:
-  FakeStreamChannelFactory channel_factory_;
-};
-
-// FakeSession is a dummy protocol::Session that uses FakeStreamSocket for all
-// channels.
 class FakeSession : public Session {
  public:
   FakeSession();
@@ -55,16 +39,20 @@ class FakeSession : public Session {
   ErrorCode error() override;
   const std::string& jid() override;
   const SessionConfig& config() override;
-  FakeTransport* GetTransport() override;
+  void SetTransport(Transport* transport) override;
   void Close(ErrorCode error) override;
 
  private:
+  // Callback provided to the |transport_|.
+  void SendTransportInfo(scoped_ptr<buzz::XmlElement> transport_info);
+
   EventHandler* event_handler_ = nullptr;
   scoped_ptr<SessionConfig> config_;
 
   std::string jid_;
 
-  FakeTransport transport_;
+  scoped_ptr<FakeAuthenticator> authenticator_;
+  Transport* transport_;
 
   ErrorCode error_ = OK;
   bool closed_ = false;

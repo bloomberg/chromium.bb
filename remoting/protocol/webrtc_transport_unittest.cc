@@ -27,23 +27,17 @@ namespace protocol {
 
 namespace {
 
-const char kTestJid[] = "client@gmail.com/321";
 const char kChannelName[] = "test_channel";
 
-class TestTransportEventHandler : public Transport::EventHandler {
+class TestTransportEventHandler : public WebrtcTransport::EventHandler {
  public:
-  typedef base::Callback<void(scoped_ptr<buzz::XmlElement> message)>
-      TransportInfoCallback;
   typedef base::Callback<void(ErrorCode error)> ErrorCallback;
 
   TestTransportEventHandler() {}
   ~TestTransportEventHandler() {}
 
-  // Both callback must be set before the test handler is passed to a Transport
+  // Both callbacks must be set before the test handler is passed to a Transport
   // object.
-  void set_transport_info_callback(const TransportInfoCallback& callback) {
-    transport_info_callback_ = callback;
-  }
   void set_connected_callback(const base::Closure& callback) {
     connected_callback_ = callback;
   }
@@ -51,21 +45,15 @@ class TestTransportEventHandler : public Transport::EventHandler {
     error_callback_ = callback;
   }
 
-  // Transport::EventHandler interface.
-  void OnOutgoingTransportInfo(scoped_ptr<buzz::XmlElement> message) override {
-    transport_info_callback_.Run(std::move(message));
-  }
-  void OnTransportRouteChange(const std::string& channel_name,
-                              const TransportRoute& route) override {}
-  void OnTransportConnected() override {
+  // WebrtcTransport::EventHandler interface.
+  void OnWebrtcTransportConnected() override {
     connected_callback_.Run();
   }
-  void OnTransportError(ErrorCode error) override {
+  void OnWebrtcTransportError(ErrorCode error) override {
     error_callback_.Run(error);
   }
 
  private:
-  TransportInfoCallback transport_info_callback_;
   base::Closure connected_callback_;
   ErrorCallback error_callback_;
 
@@ -82,7 +70,7 @@ class WebrtcTransportTest : public testing::Test {
         NetworkSettings(NetworkSettings::NAT_TRAVERSAL_OUTGOING);
   }
 
-  void ProcessTransportInfo(scoped_ptr<Transport>* target_transport,
+  void ProcessTransportInfo(scoped_ptr<WebrtcTransport>* target_transport,
                             scoped_ptr<buzz::XmlElement> transport_info) {
     ASSERT_TRUE(target_transport);
     EXPECT_TRUE((*target_transport)
@@ -91,35 +79,19 @@ class WebrtcTransportTest : public testing::Test {
 
  protected:
   void InitializeConnection() {
-    signal_strategy_.reset(new FakeSignalStrategy(kTestJid));
-
-    host_transport_factory_.reset(new WebrtcTransportFactory(
-        jingle_glue::JingleThreadWrapper::current(),
-        new TransportContext(
-            signal_strategy_.get(),
-            make_scoped_ptr(new ChromiumPortAllocatorFactory(nullptr)),
-            network_settings_, TransportRole::SERVER)));
-    host_transport_ = host_transport_factory_->CreateTransport();
+    host_transport_.reset(
+        new WebrtcTransport(jingle_glue::JingleThreadWrapper::current(),
+                            TransportContext::ForTests(TransportRole::SERVER),
+                            &host_event_handler_));
     host_authenticator_.reset(new FakeAuthenticator(
         FakeAuthenticator::HOST, 0, FakeAuthenticator::ACCEPT, false));
 
-    client_transport_factory_.reset(new WebrtcTransportFactory(
-        jingle_glue::JingleThreadWrapper::current(),
-        new TransportContext(
-            signal_strategy_.get(),
-            make_scoped_ptr(new ChromiumPortAllocatorFactory(nullptr)),
-            network_settings_, TransportRole::CLIENT)));
-    client_transport_ = client_transport_factory_->CreateTransport();
-    host_authenticator_.reset(new FakeAuthenticator(
+    client_transport_.reset(
+        new WebrtcTransport(jingle_glue::JingleThreadWrapper::current(),
+                            TransportContext::ForTests(TransportRole::CLIENT),
+                            &client_event_handler_));
+    client_authenticator_.reset(new FakeAuthenticator(
         FakeAuthenticator::CLIENT, 0, FakeAuthenticator::ACCEPT, false));
-
-    // Connect signaling between the two WebrtcTransport objects.
-    host_event_handler_.set_transport_info_callback(
-        base::Bind(&WebrtcTransportTest::ProcessTransportInfo,
-                   base::Unretained(this), &client_transport_));
-    client_event_handler_.set_transport_info_callback(
-        base::Bind(&WebrtcTransportTest::ProcessTransportInfo,
-                   base::Unretained(this), &host_transport_));
   }
 
   void StartConnection() {
@@ -131,9 +103,15 @@ class WebrtcTransportTest : public testing::Test {
     client_event_handler_.set_error_callback(base::Bind(
         &WebrtcTransportTest::OnSessionError, base::Unretained(this)));
 
-    host_transport_->Start(&host_event_handler_, host_authenticator_.get());
-    client_transport_->Start(&client_event_handler_,
-                             client_authenticator_.get());
+    // Start both transports.
+    host_transport_->Start(
+        host_authenticator_.get(),
+        base::Bind(&WebrtcTransportTest::ProcessTransportInfo,
+                   base::Unretained(this), &client_transport_));
+    client_transport_->Start(
+        client_authenticator_.get(),
+        base::Bind(&WebrtcTransportTest::ProcessTransportInfo,
+                   base::Unretained(this), &host_transport_));
   }
 
   void WaitUntilConnected() {
@@ -189,15 +167,11 @@ class WebrtcTransportTest : public testing::Test {
 
   NetworkSettings network_settings_;
 
-  scoped_ptr< FakeSignalStrategy> signal_strategy_;
-
-  scoped_ptr<WebrtcTransportFactory> host_transport_factory_;
-  scoped_ptr<Transport> host_transport_;
+  scoped_ptr<WebrtcTransport> host_transport_;
   TestTransportEventHandler host_event_handler_;
   scoped_ptr<FakeAuthenticator> host_authenticator_;
 
-  scoped_ptr<WebrtcTransportFactory> client_transport_factory_;
-  scoped_ptr<Transport> client_transport_;
+  scoped_ptr<WebrtcTransport> client_transport_;
   TestTransportEventHandler client_event_handler_;
   scoped_ptr<FakeAuthenticator> client_authenticator_;
 

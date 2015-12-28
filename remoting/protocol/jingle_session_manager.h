@@ -33,8 +33,7 @@ class TransportFactory;
 class JingleSessionManager : public SessionManager,
                              public SignalStrategy::Listener {
  public:
-  JingleSessionManager(scoped_ptr<TransportFactory> transport_factory,
-                       SignalStrategy* signal_strategy);
+  explicit JingleSessionManager(SignalStrategy* signal_strategy);
   ~JingleSessionManager() override;
 
   // SessionManager interface.
@@ -63,8 +62,7 @@ class JingleSessionManager : public SessionManager,
   // Called by JingleSession when it is being destroyed.
   void SessionDestroyed(JingleSession* session);
 
-  scoped_ptr<TransportFactory> transport_factory_;
-  SignalStrategy* signal_strategy_;
+  SignalStrategy* signal_strategy_ = nullptr;
   IncomingSessionCallback incoming_session_callback_;
   scoped_ptr<CandidateSessionConfig> protocol_config_;
 

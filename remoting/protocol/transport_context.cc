@@ -13,11 +13,30 @@
 #include "remoting/protocol/port_allocator_factory.h"
 #include "third_party/webrtc/p2p/client/httpportallocator.h"
 
+#if !defined(OS_NACL)
+#include "jingle/glue/thread_wrapper.h"
+#include "net/url_request/url_request_context_getter.h"
+#include "remoting/protocol/chromium_port_allocator.h"
+#endif  // !defined(OS_NACL)
+
 namespace remoting {
 namespace protocol {
 
 // Get fresh STUN/Relay configuration every hour.
 static const int kJingleInfoUpdatePeriodSeconds = 3600;
+
+#if !defined(OS_NACL)
+// static
+scoped_refptr<TransportContext> TransportContext::ForTests(TransportRole role) {
+  jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
+  return new protocol::TransportContext(
+             nullptr, make_scoped_ptr(
+                          new protocol::ChromiumPortAllocatorFactory(nullptr)),
+             protocol::NetworkSettings(
+                 protocol::NetworkSettings::NAT_TRAVERSAL_OUTGOING),
+             role);
+}
+#endif  // !defined(OS_NACL)
 
 TransportContext::TransportContext(
     SignalStrategy* signal_strategy,

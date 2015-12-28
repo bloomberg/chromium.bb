@@ -19,6 +19,7 @@
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/host_video_dispatcher.h"
 #include "remoting/protocol/input_stub.h"
+#include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/video_frame_pump.h"
 
 namespace remoting {
@@ -46,14 +47,17 @@ scoped_ptr<VideoEncoder> CreateVideoEncoder(
 
 IceConnectionToClient::IceConnectionToClient(
     scoped_ptr<protocol::Session> session,
+    scoped_refptr<TransportContext> transport_context,
     scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner)
     : event_handler_(nullptr),
       session_(std::move(session)),
       video_encode_task_runner_(video_encode_task_runner),
+      transport_(transport_context, this),
       control_dispatcher_(new HostControlDispatcher()),
       event_dispatcher_(new HostEventDispatcher()),
       video_dispatcher_(new HostVideoDispatcher()) {
   session_->SetEventHandler(this);
+  session_->SetTransport(&transport_);
 }
 
 IceConnectionToClient::~IceConnectionToClient() {}
@@ -71,8 +75,6 @@ protocol::Session* IceConnectionToClient::session() {
 
 void IceConnectionToClient::Disconnect(ErrorCode error) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  CloseChannels();
 
   // This should trigger OnConnectionClosed() event and this object
   // may be destroyed as the result.
@@ -136,7 +138,6 @@ void IceConnectionToClient::OnSessionStateChange(Session::State state) {
     case Session::CONNECTING:
     case Session::ACCEPTING:
     case Session::ACCEPTED:
-    case Session::CONNECTED:
       // Don't care about these events.
       break;
     case Session::AUTHENTICATING:
@@ -144,23 +145,19 @@ void IceConnectionToClient::OnSessionStateChange(Session::State state) {
       break;
     case Session::AUTHENTICATED:
       // Initialize channels.
-      control_dispatcher_->Init(
-          session_->GetTransport()->GetMultiplexedChannelFactory(), this);
+      control_dispatcher_->Init(transport_.GetMultiplexedChannelFactory(),
+                                this);
 
-      event_dispatcher_->Init(
-          session_->GetTransport()->GetMultiplexedChannelFactory(), this);
+      event_dispatcher_->Init(transport_.GetMultiplexedChannelFactory(), this);
       event_dispatcher_->set_on_input_event_callback(
           base::Bind(&IceConnectionToClient::OnInputEventReceived,
                      base::Unretained(this)));
 
-      video_dispatcher_->Init(
-          session_->GetTransport()->GetStreamChannelFactory(), this);
+      video_dispatcher_->Init(transport_.GetStreamChannelFactory(), this);
 
       audio_writer_ = AudioWriter::Create(session_->config());
-      if (audio_writer_.get()) {
-        audio_writer_->Init(
-            session_->GetTransport()->GetMultiplexedChannelFactory(), this);
-      }
+      if (audio_writer_)
+        audio_writer_->Init(transport_.GetMultiplexedChannelFactory(), this);
 
       // Notify the handler after initializing the channels, so that
       // ClientSession can get a client clipboard stub.
@@ -168,19 +165,25 @@ void IceConnectionToClient::OnSessionStateChange(Session::State state) {
       break;
 
     case Session::CLOSED:
-      Close(OK);
-      break;
-
     case Session::FAILED:
-      Close(session_->error());
+      CloseChannels();
+      event_handler_->OnConnectionClosed(
+          this, state == Session::FAILED ? session_->error() : OK);
       break;
   }
 }
 
-void IceConnectionToClient::OnSessionRouteChange(
+
+void IceConnectionToClient::OnIceTransportRouteChange(
     const std::string& channel_name,
     const TransportRoute& route) {
   event_handler_->OnRouteChange(this, channel_name, route);
+}
+
+void IceConnectionToClient::OnIceTransportError(ErrorCode error) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  Disconnect(error);
 }
 
 void IceConnectionToClient::OnChannelInitialized(
@@ -197,7 +200,7 @@ void IceConnectionToClient::OnChannelError(
 
   LOG(ERROR) << "Failed to connect channel "
              << channel_dispatcher->channel_name();
-  Close(CHANNEL_CONNECTION_ERROR);
+  Disconnect(error);
 }
 
 void IceConnectionToClient::NotifyIfChannelsReady() {
@@ -214,11 +217,6 @@ void IceConnectionToClient::NotifyIfChannelsReady() {
     return;
   }
   event_handler_->OnConnectionChannelsConnected(this);
-}
-
-void IceConnectionToClient::Close(ErrorCode error) {
-  CloseChannels();
-  event_handler_->OnConnectionClosed(this, error);
 }
 
 void IceConnectionToClient::CloseChannels() {

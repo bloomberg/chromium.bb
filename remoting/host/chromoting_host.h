@@ -34,6 +34,7 @@ namespace remoting {
 
 namespace protocol {
 class InputStub;
+class TransportContext;
 }  // namespace protocol
 
 class DesktopEnvironmentFactory;
@@ -69,6 +70,7 @@ class ChromotingHost : public base::NonThreadSafe,
   ChromotingHost(
       DesktopEnvironmentFactory* desktop_environment_factory,
       scoped_ptr<protocol::SessionManager> session_manager,
+      scoped_refptr<protocol::TransportContext> transport_context,
       scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
@@ -156,6 +158,7 @@ class ChromotingHost : public base::NonThreadSafe,
   // Parameters specified when the host was created.
   DesktopEnvironmentFactory* desktop_environment_factory_;
   scoped_ptr<protocol::SessionManager> session_manager_;
+  scoped_refptr<protocol::TransportContext> transport_context_;
   scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner_;

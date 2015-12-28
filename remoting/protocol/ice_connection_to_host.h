@@ -18,6 +18,7 @@
 #include "remoting/protocol/clipboard_filter.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/errors.h"
+#include "remoting/protocol/ice_transport.h"
 #include "remoting/protocol/input_filter.h"
 #include "remoting/protocol/message_reader.h"
 #include "remoting/protocol/monitored_video_stub.h"
@@ -34,6 +35,7 @@ class ClientVideoDispatcher;
 
 class IceConnectionToHost : public ConnectionToHost,
                             public Session::EventHandler,
+                            public IceTransport::EventHandler,
                             public ChannelDispatcherBase::EventHandler,
                             public base::NonThreadSafe {
  public:
@@ -46,6 +48,7 @@ class IceConnectionToHost : public ConnectionToHost,
   void set_video_stub(VideoStub* video_stub) override;
   void set_audio_stub(AudioStub* audio_stub) override;
   void Connect(scoped_ptr<Session> session,
+               scoped_refptr<TransportContext> transport_context,
                HostEventCallback* event_callback) override;
   const SessionConfig& config() override;
   ClipboardStub* clipboard_forwarder() override;
@@ -56,8 +59,11 @@ class IceConnectionToHost : public ConnectionToHost,
  private:
   // Session::EventHandler interface.
   void OnSessionStateChange(Session::State state) override;
-  void OnSessionRouteChange(const std::string& channel_name,
-                            const TransportRoute& route) override;
+
+  // IceTransport::EventHandler interface.
+  void OnIceTransportRouteChange(const std::string& channel_name,
+                              const TransportRoute& route) override;
+  void OnIceTransportError(ErrorCode error) override;
 
   // ChannelDispatcherBase::EventHandler interface.
   void OnChannelInitialized(ChannelDispatcherBase* channel_dispatcher) override;
@@ -71,7 +77,7 @@ class IceConnectionToHost : public ConnectionToHost,
 
   void CloseOnError(ErrorCode error);
 
-  // Stops writing in the channels.
+  // Closes the P2P connection.
   void CloseChannels();
 
   void SetState(State state, ErrorCode error);
@@ -84,8 +90,9 @@ class IceConnectionToHost : public ConnectionToHost,
   AudioStub* audio_stub_ = nullptr;
 
   scoped_ptr<Session> session_;
-  scoped_ptr<MonitoredVideoStub> monitored_video_stub_;
+  scoped_ptr<IceTransport> transport_;
 
+  scoped_ptr<MonitoredVideoStub> monitored_video_stub_;
   scoped_ptr<ClientVideoDispatcher> video_dispatcher_;
   scoped_ptr<AudioReader> audio_reader_;
   scoped_ptr<ClientControlDispatcher> control_dispatcher_;

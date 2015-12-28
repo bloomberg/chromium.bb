@@ -21,6 +21,7 @@
 #include "remoting/protocol/fake_desktop_capturer.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "remoting/protocol/session_config.h"
+#include "remoting/protocol/transport_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,8 +54,7 @@ namespace remoting {
 
 class ChromotingHostTest : public testing::Test {
  public:
-  ChromotingHostTest() {
-  }
+  ChromotingHostTest() {}
 
   void SetUp() override {
     task_runner_ = new AutoThreadTaskRunner(message_loop_.task_runner(),
@@ -63,14 +63,15 @@ class ChromotingHostTest : public testing::Test {
     desktop_environment_factory_.reset(new FakeDesktopEnvironmentFactory());
     session_manager_ = new protocol::MockSessionManager();
 
-    host_.reset(new ChromotingHost(desktop_environment_factory_.get(),
-                                   make_scoped_ptr(session_manager_),
-                                   task_runner_,    // Audio
-                                   task_runner_,    // Input
-                                   task_runner_,    // Video capture
-                                   task_runner_,    // Video encode
-                                   task_runner_,    // Network
-                                   task_runner_));  // UI
+    host_.reset(new ChromotingHost(
+        desktop_environment_factory_.get(), make_scoped_ptr(session_manager_),
+        protocol::TransportContext::ForTests(protocol::TransportRole::SERVER),
+        task_runner_,    // Audio
+        task_runner_,    // Input
+        task_runner_,    // Video capture
+        task_runner_,    // Video encode
+        task_runner_,    // Network
+        task_runner_));  // UI
     host_->AddStatusObserver(&host_status_observer_);
 
     xmpp_login_ = "host@domain";

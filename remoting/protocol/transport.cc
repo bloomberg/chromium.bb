@@ -26,9 +26,5 @@ std::string TransportRoute::GetTypeString(RouteType type) {
 TransportRoute::TransportRoute() : type(DIRECT) {}
 TransportRoute::~TransportRoute() {}
 
-WebrtcTransport* Transport::AsWebrtcTransport() {
-  return nullptr;
-}
-
 }  // namespace protocol
 }  // namespace remoting

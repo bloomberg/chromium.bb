@@ -168,17 +168,9 @@ class MockSession : public Session {
 
   MOCK_METHOD1(SetEventHandler, void(Session::EventHandler* event_handler));
   MOCK_METHOD0(error, ErrorCode());
-  MOCK_METHOD0(GetTransport, Transport*());
-  MOCK_METHOD0(GetQuicChannelFactory, StreamChannelFactory*());
+  MOCK_METHOD1(SetTransport, void(Transport*));
   MOCK_METHOD0(jid, const std::string&());
-  MOCK_METHOD0(candidate_config, const CandidateSessionConfig*());
   MOCK_METHOD0(config, const SessionConfig&());
-  MOCK_METHOD0(initiator_token, const std::string&());
-  MOCK_METHOD1(set_initiator_token, void(const std::string& initiator_token));
-  MOCK_METHOD0(receiver_token, const std::string&());
-  MOCK_METHOD1(set_receiver_token, void(const std::string& receiver_token));
-  MOCK_METHOD1(set_shared_secret, void(const std::string& secret));
-  MOCK_METHOD0(shared_secret, const std::string&());
   MOCK_METHOD1(Close, void(ErrorCode error));
 
  private:

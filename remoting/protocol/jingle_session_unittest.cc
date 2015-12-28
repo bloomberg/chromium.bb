@@ -11,7 +11,6 @@
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
-#include "jingle/glue/thread_wrapper.h"
 #include "net/socket/socket.h"
 #include "net/socket/stream_socket.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -21,9 +20,9 @@
 #include "remoting/protocol/chromium_port_allocator.h"
 #include "remoting/protocol/connection_tester.h"
 #include "remoting/protocol/fake_authenticator.h"
-#include "remoting/protocol/ice_transport.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/network_settings.h"
+#include "remoting/protocol/transport.h"
 #include "remoting/protocol/transport_context.h"
 #include "remoting/signaling/fake_signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -64,13 +63,20 @@ class MockSessionEventHandler : public Session::EventHandler {
                                           const TransportRoute& route));
 };
 
+class MockTransport : public Transport {
+ public:
+  MOCK_METHOD2(Start,
+               void(Authenticator* authenticator,
+                    SendTransportInfoCallback send_transport_info_callback));
+  MOCK_METHOD1(ProcessTransportInfo, bool(buzz::XmlElement* transport_info));
+};
+
 }  // namespace
 
 class JingleSessionTest : public testing::Test {
  public:
   JingleSessionTest() {
     message_loop_.reset(new base::MessageLoopForIO());
-    jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
     network_settings_ =
         NetworkSettings(NetworkSettings::NAT_TRAVERSAL_OUTGOING);
   }
@@ -80,6 +86,7 @@ class JingleSessionTest : public testing::Test {
     DCHECK(session);
     host_session_.reset(session);
     host_session_->SetEventHandler(&host_session_event_handler_);
+    host_session_->SetTransport(&host_transport_);
   }
 
   void DeleteSession() {
@@ -105,11 +112,7 @@ class JingleSessionTest : public testing::Test {
     FakeSignalStrategy::Connect(host_signal_strategy_.get(),
                                 client_signal_strategy_.get());
 
-    host_server_.reset(new JingleSessionManager(
-        make_scoped_ptr(new IceTransportFactory(new TransportContext(
-            nullptr, make_scoped_ptr(new ChromiumPortAllocatorFactory(nullptr)),
-            network_settings_, TransportRole::SERVER))),
-        host_signal_strategy_.get()));
+    host_server_.reset(new JingleSessionManager(host_signal_strategy_.get()));
     host_server_->AcceptIncoming(
         base::Bind(&MockSessionManagerListener::OnIncomingSession,
                    base::Unretained(&host_server_listener_)));
@@ -119,11 +122,8 @@ class JingleSessionTest : public testing::Test {
           messages_till_start, auth_action, true));
     host_server_->set_authenticator_factory(std::move(factory));
 
-    client_server_.reset(new JingleSessionManager(
-        make_scoped_ptr(new IceTransportFactory(new TransportContext(
-            nullptr, make_scoped_ptr(new ChromiumPortAllocatorFactory(nullptr)),
-            network_settings_, TransportRole::CLIENT))),
-        client_signal_strategy_.get()));
+    client_server_.reset(
+        new JingleSessionManager(client_signal_strategy_.get()));
   }
 
   void CreateSessionManagers(int auth_round_trips,
@@ -160,9 +160,11 @@ class JingleSessionTest : public testing::Test {
                     OnSessionStateChange(Session::FAILED))
             .Times(1);
       } else {
+        EXPECT_CALL(host_transport_, Start(_, _)).Times(1);
         EXPECT_CALL(host_session_event_handler_,
                     OnSessionStateChange(Session::AUTHENTICATED))
             .Times(1);
+
         // Expect that the connection will be closed eventually.
         EXPECT_CALL(host_session_event_handler_,
                     OnSessionStateChange(Session::CLOSED))
@@ -184,9 +186,11 @@ class JingleSessionTest : public testing::Test {
                     OnSessionStateChange(Session::FAILED))
             .Times(1);
       } else {
+        EXPECT_CALL(client_transport_, Start(_, _)).Times(1);
         EXPECT_CALL(client_session_event_handler_,
                     OnSessionStateChange(Session::AUTHENTICATED))
             .Times(1);
+
         // Expect that the connection will be closed eventually.
         EXPECT_CALL(client_session_event_handler_,
                     OnSessionStateChange(Session::CLOSED))
@@ -200,6 +204,7 @@ class JingleSessionTest : public testing::Test {
     client_session_ =
         client_server_->Connect(kHostJid, std::move(authenticator));
     client_session_->SetEventHandler(&client_session_event_handler_);
+    client_session_->SetTransport(&client_transport_);
 
     base::RunLoop().RunUntilIdle();
   }
@@ -226,8 +231,10 @@ class JingleSessionTest : public testing::Test {
 
   scoped_ptr<Session> host_session_;
   MockSessionEventHandler host_session_event_handler_;
+  MockTransport host_transport_;
   scoped_ptr<Session> client_session_;
   MockSessionEventHandler client_session_event_handler_;
+  MockTransport client_transport_;
 };
 
 

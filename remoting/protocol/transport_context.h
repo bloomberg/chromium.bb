@@ -37,6 +37,8 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
   typedef base::Callback<void(scoped_ptr<cricket::PortAllocator>
                                   port_allocator)> CreatePortAllocatorCallback;
 
+  static scoped_refptr<TransportContext> ForTests(TransportRole role);
+
   TransportContext(
       SignalStrategy* signal_strategy,
       scoped_ptr<PortAllocatorFactory> port_allocator_factory,

@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "crypto/rsa_private_key.h"
 #include "net/base/completion_callback.h"
@@ -20,20 +20,18 @@
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_config.h"
-#include "remoting/protocol/transport.h"
 #include "remoting/signaling/iq_sender.h"
 
 namespace remoting {
 namespace protocol {
 
 class JingleSessionManager;
+class Transport;
 
 // JingleSessionManager and JingleSession implement the subset of the
 // Jingle protocol used in Chromoting. Instances of this class are
 // created by the JingleSessionManager.
-class JingleSession : public base::NonThreadSafe,
-                      public Session,
-                      public Transport::EventHandler {
+class JingleSession : public Session {
  public:
   ~JingleSession() override;
 
@@ -42,7 +40,7 @@ class JingleSession : public base::NonThreadSafe,
   ErrorCode error() override;
   const std::string& jid() override;
   const SessionConfig& config() override;
-  Transport* GetTransport() override;
+  void SetTransport(Transport* transport) override;
   void Close(protocol::ErrorCode error) override;
 
  private:
@@ -61,6 +59,9 @@ class JingleSession : public base::NonThreadSafe,
                                     scoped_ptr<Authenticator> authenticator);
   void AcceptIncomingConnection(const JingleMessage& initiate_message);
 
+  // Callback for Transport interface to send transport-info messages.
+  void SendTransportInfo(scoped_ptr<buzz::XmlElement> transport_info);
+
   // Sends |message| to the peer. The session is closed if the send fails or no
   // response is received within a reasonable time. All other responses are
   // ignored.
@@ -70,14 +71,6 @@ class JingleSession : public base::NonThreadSafe,
   void OnMessageResponse(JingleMessage::ActionType request_type,
                          IqRequest* request,
                          const buzz::XmlElement* response);
-
-  // Transport::EventHandler interface.
-  void OnOutgoingTransportInfo(
-    scoped_ptr<buzz::XmlElement> transport_info) override;
-  void OnTransportRouteChange(const std::string& component,
-                              const TransportRoute& route) override;
-  void OnTransportConnected() override;
-  void OnTransportError(ErrorCode error) override;
 
   // Response handler for transport-info responses. Transport-info timeouts are
   // ignored and don't terminate connection.
@@ -119,6 +112,8 @@ class JingleSession : public base::NonThreadSafe,
   // Returns true if the state of the session is not CLOSED or FAILED
   bool is_session_active();
 
+  base::ThreadChecker thread_checker_;
+
   JingleSessionManager* session_manager_;
   std::string peer_jid_;
   Session::EventHandler* event_handler_;
@@ -131,7 +126,7 @@ class JingleSession : public base::NonThreadSafe,
 
   scoped_ptr<Authenticator> authenticator_;
 
-  scoped_ptr<Transport> transport_;
+  Transport* transport_ = nullptr;
 
   // Pending Iq requests. Used for all messages except transport-info.
   std::set<IqRequest*> pending_requests_;

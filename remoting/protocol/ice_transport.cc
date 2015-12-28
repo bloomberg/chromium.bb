@@ -23,8 +23,11 @@ const int kTransportInfoSendDelayMs = 20;
 // Name of the multiplexed channel.
 static const char kMuxChannelName[] = "mux";
 
-IceTransport::IceTransport(scoped_refptr<TransportContext> transport_context)
-    : transport_context_(transport_context), weak_factory_(this) {
+IceTransport::IceTransport(scoped_refptr<TransportContext> transport_context,
+                           EventHandler* event_handler)
+    : transport_context_(transport_context),
+      event_handler_(event_handler),
+      weak_factory_(this) {
   transport_context->Prepare();
 }
 
@@ -33,12 +36,12 @@ IceTransport::~IceTransport() {
   DCHECK(channels_.empty());
 }
 
-void IceTransport::Start(Transport::EventHandler* event_handler,
-                         Authenticator* authenticator) {
-  DCHECK(event_handler);
-  DCHECK(!event_handler_);
+void IceTransport::Start(
+    Authenticator* authenticator,
+    SendTransportInfoCallback send_transport_info_callback) {
+  DCHECK(!pseudotcp_channel_factory_);
 
-  event_handler_ = event_handler;
+  send_transport_info_callback_ = std::move(send_transport_info_callback);
   pseudotcp_channel_factory_.reset(new PseudoTcpChannelFactory(this));
   secure_channel_factory_.reset(new SecureChannelFactory(
       pseudotcp_channel_factory_.get(), authenticator));
@@ -132,32 +135,32 @@ void IceTransport::AddPendingRemoteTransportInfo(IceTransportChannel* channel) {
   }
 }
 
-void IceTransport::OnTransportIceCredentials(IceTransportChannel* channel,
-                                             const std::string& ufrag,
-                                             const std::string& password) {
+void IceTransport::OnChannelIceCredentials(IceTransportChannel* channel,
+                                           const std::string& ufrag,
+                                           const std::string& password) {
   EnsurePendingTransportInfoMessage();
   pending_transport_info_message_->ice_credentials.push_back(
       IceTransportInfo::IceCredentials(channel->name(), ufrag, password));
 }
 
-void IceTransport::OnTransportCandidate(IceTransportChannel* channel,
-                                        const cricket::Candidate& candidate) {
+void IceTransport::OnChannelCandidate(IceTransportChannel* channel,
+                                      const cricket::Candidate& candidate) {
   EnsurePendingTransportInfoMessage();
   pending_transport_info_message_->candidates.push_back(
       IceTransportInfo::NamedCandidate(channel->name(), candidate));
 }
 
-void IceTransport::OnTransportRouteChange(IceTransportChannel* channel,
-                                          const TransportRoute& route) {
+void IceTransport::OnChannelRouteChange(IceTransportChannel* channel,
+                                        const TransportRoute& route) {
   if (event_handler_)
-    event_handler_->OnTransportRouteChange(channel->name(), route);
+    event_handler_->OnIceTransportRouteChange(channel->name(), route);
 }
 
-void IceTransport::OnTransportFailed(IceTransportChannel* channel) {
-  event_handler_->OnTransportError(CHANNEL_CONNECTION_ERROR);
+void IceTransport::OnChannelFailed(IceTransportChannel* channel) {
+  event_handler_->OnIceTransportError(CHANNEL_CONNECTION_ERROR);
 }
 
-void IceTransport::OnTransportDeleted(IceTransportChannel* channel) {
+void IceTransport::OnChannelDeleted(IceTransportChannel* channel) {
   ChannelsMap::iterator it = channels_.find(channel->name());
   DCHECK_EQ(it->second, channel);
   channels_.erase(it);
@@ -181,19 +184,11 @@ void IceTransport::EnsurePendingTransportInfoMessage() {
 
 void IceTransport::SendTransportInfo() {
   DCHECK(pending_transport_info_message_);
-  event_handler_->OnOutgoingTransportInfo(
-      pending_transport_info_message_->ToXml());
+
+  scoped_ptr<buzz::XmlElement> transport_info_xml =
+      pending_transport_info_message_->ToXml();
   pending_transport_info_message_.reset();
-}
-
-IceTransportFactory::IceTransportFactory(
-    scoped_refptr<TransportContext> transport_context)
-    : transport_context_(transport_context) {}
-
-IceTransportFactory::~IceTransportFactory() {}
-
-scoped_ptr<Transport> IceTransportFactory::CreateTransport() {
-  return make_scoped_ptr(new IceTransport(transport_context_.get()));
+  send_transport_info_callback_.Run(std::move(transport_info_xml));
 }
 
 }  // namespace protocol

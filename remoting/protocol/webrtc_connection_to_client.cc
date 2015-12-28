@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "jingle/glue/thread_wrapper.h"
 #include "net/base/io_buffer.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/codec/video_encoder_verbatim.h"
@@ -18,6 +19,7 @@
 #include "remoting/protocol/host_event_dispatcher.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_stub.h"
+#include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/webrtc_transport.h"
 #include "remoting/protocol/webrtc_video_capturer_adapter.h"
 #include "remoting/protocol/webrtc_video_stream.h"
@@ -32,12 +34,21 @@ namespace protocol {
 const char kStreamLabel[] = "screen_stream";
 const char kVideoLabel[] = "screen_video";
 
+// Currently the network thread is also used as worker thread for webrtc.
+//
+// TODO(sergeyu): Figure out if we would benefit from using a separate
+// thread as a worker thread.
 WebrtcConnectionToClient::WebrtcConnectionToClient(
-    scoped_ptr<protocol::Session> session)
-    : session_(std::move(session)),
+    scoped_ptr<protocol::Session> session,
+    scoped_refptr<protocol::TransportContext> transport_context)
+    : transport_(jingle_glue::JingleThreadWrapper::current(),
+                 transport_context,
+                 this),
+      session_(std::move(session)),
       control_dispatcher_(new HostControlDispatcher()),
       event_dispatcher_(new HostEventDispatcher()) {
   session_->SetEventHandler(this);
+  session_->SetTransport(&transport_);
 }
 
 WebrtcConnectionToClient::~WebrtcConnectionToClient() {}
@@ -56,9 +67,6 @@ protocol::Session* WebrtcConnectionToClient::session() {
 void WebrtcConnectionToClient::Disconnect(ErrorCode error) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  control_dispatcher_.reset();
-  event_dispatcher_.reset();
-
   // This should trigger OnConnectionClosed() event and this object
   // may be destroyed as the result.
   session_->Close(error);
@@ -71,10 +79,6 @@ void WebrtcConnectionToClient::OnInputEventReceived(int64_t timestamp) {
 
 scoped_ptr<VideoStream> WebrtcConnectionToClient::StartVideoStream(
     scoped_ptr<webrtc::DesktopCapturer> desktop_capturer) {
-  // TODO(sergeyu): Reconsider Transport interface and how it's used here.
-  WebrtcTransport* transport = session_->GetTransport()->AsWebrtcTransport();
-  CHECK(transport);
-
   scoped_ptr<WebrtcVideoCapturerAdapter> video_capturer_adapter(
       new WebrtcVideoCapturerAdapter(std::move(desktop_capturer)));
 
@@ -84,22 +88,22 @@ scoped_ptr<VideoStream> WebrtcConnectionToClient::StartVideoStream(
       webrtc::MediaConstraintsInterface::kMinFrameRate, 5);
 
   rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track =
-      transport->peer_connection_factory()->CreateVideoTrack(
+      transport_.peer_connection_factory()->CreateVideoTrack(
           kVideoLabel,
-          transport->peer_connection_factory()->CreateVideoSource(
+          transport_.peer_connection_factory()->CreateVideoSource(
               video_capturer_adapter.release(), &video_constraints));
 
   rtc::scoped_refptr<webrtc::MediaStreamInterface> video_stream =
-      transport->peer_connection_factory()->CreateLocalMediaStream(
+      transport_.peer_connection_factory()->CreateLocalMediaStream(
           kStreamLabel);
 
   if (!video_stream->AddTrack(video_track) ||
-      !transport->peer_connection()->AddStream(video_stream)) {
+      !transport_.peer_connection()->AddStream(video_stream)) {
     return nullptr;
   }
 
   return make_scoped_ptr(
-      new WebrtcVideoStream(transport->peer_connection(), video_stream));
+      new WebrtcVideoStream(transport_.peer_connection(), video_stream));
 }
 
 AudioStub* WebrtcConnectionToClient::audio_stub() {
@@ -145,12 +149,9 @@ void WebrtcConnectionToClient::OnSessionStateChange(Session::State state) {
       break;
     case Session::AUTHENTICATED: {
       // Initialize channels.
-      control_dispatcher_->Init(
-          session_->GetTransport()->GetStreamChannelFactory(),
-          this);
+      control_dispatcher_->Init(transport_.GetStreamChannelFactory(), this);
 
-      event_dispatcher_->Init(
-          session_->GetTransport()->GetStreamChannelFactory(), this);
+      event_dispatcher_->Init(transport_.GetStreamChannelFactory(), this);
       event_dispatcher_->set_on_input_event_callback(base::Bind(
           &ConnectionToClient::OnInputEventReceived, base::Unretained(this)));
 
@@ -159,10 +160,6 @@ void WebrtcConnectionToClient::OnSessionStateChange(Session::State state) {
       event_handler_->OnConnectionAuthenticated(this);
       break;
     }
-
-    case Session::CONNECTED:
-      event_handler_->OnConnectionChannelsConnected(this);
-      break;
 
     case Session::CLOSED:
     case Session::FAILED:
@@ -174,10 +171,13 @@ void WebrtcConnectionToClient::OnSessionStateChange(Session::State state) {
   }
 }
 
-void WebrtcConnectionToClient::OnSessionRouteChange(
-    const std::string& channel_name,
-    const TransportRoute& route) {
-  event_handler_->OnRouteChange(this, channel_name, route);
+void WebrtcConnectionToClient::OnWebrtcTransportConnected() {
+  event_handler_->OnConnectionChannelsConnected(this);
+}
+
+void WebrtcConnectionToClient::OnWebrtcTransportError(ErrorCode error) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  Disconnect(error);
 }
 
 void WebrtcConnectionToClient::OnChannelInitialized(
@@ -192,7 +192,7 @@ void WebrtcConnectionToClient::OnChannelError(
 
   LOG(ERROR) << "Failed to connect channel "
              << channel_dispatcher->channel_name();
-  session_->Close(CHANNEL_CONNECTION_ERROR);
+  Disconnect(error);
 }
 
 }  // namespace protocol

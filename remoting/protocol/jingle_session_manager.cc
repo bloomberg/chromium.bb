@@ -22,11 +22,8 @@ using buzz::QName;
 namespace remoting {
 namespace protocol {
 
-JingleSessionManager::JingleSessionManager(
-    scoped_ptr<TransportFactory> transport_factory,
-    SignalStrategy* signal_strategy)
-    : transport_factory_(std::move(transport_factory)),
-      signal_strategy_(signal_strategy),
+JingleSessionManager::JingleSessionManager(SignalStrategy* signal_strategy)
+    : signal_strategy_(signal_strategy),
       protocol_config_(CandidateSessionConfig::CreateDefault()),
       iq_sender_(new IqSender(signal_strategy_)) {
   signal_strategy_->AddListener(this);
@@ -40,7 +37,6 @@ JingleSessionManager::~JingleSessionManager() {
 void JingleSessionManager::AcceptIncoming(
     const IncomingSessionCallback& incoming_session_callback) {
   incoming_session_callback_ = incoming_session_callback;
-
 }
 
 void JingleSessionManager::set_protocol_config(

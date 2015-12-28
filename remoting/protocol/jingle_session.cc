@@ -22,6 +22,7 @@
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/session_config.h"
+#include "remoting/protocol/transport.h"
 #include "remoting/signaling/iq_sender.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 #include "third_party/webrtc/p2p/base/candidate.h"
@@ -69,8 +70,6 @@ JingleSession::JingleSession(JingleSessionManager* session_manager)
 }
 
 JingleSession::~JingleSession() {
-  transport_.reset();
-
   STLDeleteContainerPointers(pending_requests_.begin(),
                              pending_requests_.end());
   STLDeleteContainerPointers(transport_info_requests_.begin(),
@@ -80,19 +79,19 @@ JingleSession::~JingleSession() {
 }
 
 void JingleSession::SetEventHandler(Session::EventHandler* event_handler) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(event_handler);
   event_handler_ = event_handler;
 }
 
 ErrorCode JingleSession::error() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   return error_;
 }
 
 void JingleSession::StartConnection(const std::string& peer_jid,
                                     scoped_ptr<Authenticator> authenticator) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(authenticator.get());
   DCHECK_EQ(authenticator->state(), Authenticator::MESSAGE_READY);
 
@@ -105,8 +104,6 @@ void JingleSession::StartConnection(const std::string& peer_jid,
   // clients generate the same session ID concurrently.
   session_id_ = base::Uint64ToString(
       base::RandGenerator(std::numeric_limits<uint64_t>::max()));
-
-  transport_ = session_manager_->transport_factory_->CreateTransport();
 
   // Send session-initiate message.
   JingleMessage message(peer_jid_, JingleMessage::SESSION_INITIATE,
@@ -123,7 +120,7 @@ void JingleSession::StartConnection(const std::string& peer_jid,
 void JingleSession::InitializeIncomingConnection(
     const JingleMessage& initiate_message,
     scoped_ptr<Authenticator> authenticator) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(initiate_message.description.get());
   DCHECK(authenticator.get());
   DCHECK_EQ(authenticator->state(), Authenticator::WAITING_MESSAGE);
@@ -143,8 +140,6 @@ void JingleSession::InitializeIncomingConnection(
     Close(INCOMPATIBLE_PROTOCOL);
     return;
   }
-
-  transport_ = session_manager_->transport_factory_->CreateTransport();
 }
 
 void JingleSession::AcceptIncomingConnection(
@@ -200,24 +195,43 @@ void JingleSession::ContinueAcceptIncomingConnection() {
 }
 
 const std::string& JingleSession::jid() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   return peer_jid_;
 }
 
 const SessionConfig& JingleSession::config() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   return *config_;
 }
 
-Transport* JingleSession::GetTransport() {
-  DCHECK(CalledOnValidThread());
-  return transport_.get();
+void JingleSession::SetTransport(Transport* transport) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!transport_);
+  DCHECK(transport);
+  transport_ = transport;
+}
+
+void JingleSession::SendTransportInfo(
+    scoped_ptr<buzz::XmlElement> transport_info) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(state_, AUTHENTICATED);
+
+  JingleMessage message(peer_jid_, JingleMessage::TRANSPORT_INFO, session_id_);
+  message.transport_info = std::move(transport_info);
+
+  scoped_ptr<IqRequest> request = session_manager_->iq_sender()->SendIq(
+      message.ToXml(), base::Bind(&JingleSession::OnTransportInfoResponse,
+                                  base::Unretained(this)));
+  if (request) {
+    request->SetTimeout(base::TimeDelta::FromSeconds(kTransportInfoTimeout));
+    transport_info_requests_.push_back(request.release());
+  } else {
+    LOG(ERROR) << "Failed to send a transport-info message";
+  }
 }
 
 void JingleSession::Close(protocol::ErrorCode error) {
-  DCHECK(CalledOnValidThread());
-
-  transport_.reset();
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (is_session_active()) {
     // Send session-terminate message with the appropriate error code.
@@ -264,7 +278,7 @@ void JingleSession::Close(protocol::ErrorCode error) {
 }
 
 void JingleSession::SendMessage(const JingleMessage& message) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   scoped_ptr<IqRequest> request = session_manager_->iq_sender()->SendIq(
       message.ToXml(),
@@ -290,7 +304,7 @@ void JingleSession::OnMessageResponse(
     JingleMessage::ActionType request_type,
     IqRequest* request,
     const buzz::XmlElement* response) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // Delete the request from the list of pending requests.
   pending_requests_.erase(request);
@@ -322,46 +336,9 @@ void JingleSession::OnMessageResponse(
   }
 }
 
-void JingleSession::OnOutgoingTransportInfo(
-    scoped_ptr<XmlElement> transport_info) {
-  DCHECK(CalledOnValidThread());
-
-  JingleMessage message(peer_jid_, JingleMessage::TRANSPORT_INFO, session_id_);
-  message.transport_info = std::move(transport_info);
-
-  scoped_ptr<IqRequest> request = session_manager_->iq_sender()->SendIq(
-      message.ToXml(), base::Bind(&JingleSession::OnTransportInfoResponse,
-                                  base::Unretained(this)));
-  if (request) {
-    request->SetTimeout(base::TimeDelta::FromSeconds(kTransportInfoTimeout));
-    transport_info_requests_.push_back(request.release());
-  } else {
-    LOG(ERROR) << "Failed to send a transport-info message";
-  }
-}
-
-void JingleSession::OnTransportRouteChange(const std::string& channel_name,
-                                           const TransportRoute& route) {
-  DCHECK(CalledOnValidThread());
-
-  event_handler_->OnSessionRouteChange(channel_name, route);
-}
-
-void JingleSession::OnTransportConnected() {
-  DCHECK(CalledOnValidThread());
-  DCHECK_EQ(state_, AUTHENTICATED);
-  SetState(CONNECTED);
-}
-
-void JingleSession::OnTransportError(ErrorCode error) {
-  DCHECK(CalledOnValidThread());
-
-  Close(error);
-}
-
 void JingleSession::OnTransportInfoResponse(IqRequest* request,
                                             const buzz::XmlElement* response) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!transport_info_requests_.empty());
 
   // Consider transport-info requests sent before this one lost and delete
@@ -392,7 +369,7 @@ void JingleSession::OnTransportInfoResponse(IqRequest* request,
 
 void JingleSession::OnIncomingMessage(const JingleMessage& message,
                                       const ReplyCallback& reply_callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (message.from != peer_jid_) {
     // Ignore messages received from a different Jid.
@@ -410,12 +387,20 @@ void JingleSession::OnIncomingMessage(const JingleMessage& message,
       break;
 
     case JingleMessage::TRANSPORT_INFO:
-      if (message.transport_info &&
-          transport_->ProcessTransportInfo(message.transport_info.get())) {
+      if (!transport_) {
+        LOG(ERROR) << "Received unexpected transport-info message.";
         reply_callback.Run(JingleMessageReply::NONE);
-      } else {
-        reply_callback.Run(JingleMessageReply::BAD_REQUEST);
+        return;
       }
+
+      if (!message.transport_info ||
+          !transport_->ProcessTransportInfo(
+              message.transport_info.get())) {
+        reply_callback.Run(JingleMessageReply::BAD_REQUEST);
+        return;
+      }
+
+      reply_callback.Run(JingleMessageReply::NONE);
       break;
 
     case JingleMessage::SESSION_TERMINATE:
@@ -543,7 +528,7 @@ bool JingleSession::InitializeConfigFromDescription(
 }
 
 void JingleSession::ProcessAuthenticationStep() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(authenticator_->state(), Authenticator::PROCESSING_MESSAGE);
 
   if (state_ != ACCEPTED && state_ != AUTHENTICATING) {
@@ -585,13 +570,15 @@ void JingleSession::ContinueAuthenticationStep() {
 }
 
 void JingleSession::OnAuthenticated() {
-  transport_->Start(this, authenticator_.get());
+  transport_->Start(authenticator_.get(),
+                    base::Bind(&JingleSession::SendTransportInfo,
+                               weak_factory_.GetWeakPtr()));
 
   SetState(AUTHENTICATED);
 }
 
 void JingleSession::SetState(State new_state) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (new_state != state_) {
     DCHECK_NE(state_, CLOSED);

@@ -37,9 +37,9 @@ void FakeChannelAuthenticator::SecureAndAuthenticate(
     const DoneCallback& done_callback) {
   socket_ = std::move(socket);
 
-  if (async_) {
-    done_callback_ = done_callback;
+  done_callback_ = done_callback;
 
+  if (async_) {
     if (result_ != net::OK) {
       // Don't write anything if we are going to reject auth to make test
       // ordering deterministic.

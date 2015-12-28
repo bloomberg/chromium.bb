@@ -25,6 +25,7 @@ class FakeConnectionToHost : public protocol::ConnectionToHost {
   void set_video_stub(protocol::VideoStub* video_stub) override;
   void set_audio_stub(protocol::AudioStub* audio_stub) override;
   void Connect(scoped_ptr<protocol::Session> session,
+               scoped_refptr<protocol::TransportContext> transport_context,
                HostEventCallback* event_callback) override;
   const protocol::SessionConfig& config() override;
   protocol::ClipboardStub* clipboard_forwarder() override;

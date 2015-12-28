@@ -235,16 +235,15 @@ void It2MeHost::FinishConnect() {
         protocol::NetworkSettings::kDefaultMaxPort;
   }
 
-  scoped_ptr<protocol::TransportFactory> transport_factory(
-      new protocol::IceTransportFactory(new protocol::TransportContext(
+  scoped_refptr<protocol::TransportContext> transport_context =
+      new protocol::TransportContext(
           signal_strategy_.get(),
           make_scoped_ptr(new protocol::ChromiumPortAllocatorFactory(
               host_context_->url_request_context_getter())),
-          network_settings, protocol::TransportRole::SERVER)));
+          network_settings, protocol::TransportRole::SERVER);
 
   scoped_ptr<protocol::SessionManager> session_manager(
-      new protocol::JingleSessionManager(std::move(transport_factory),
-                                         signal_strategy.get()));
+      new protocol::JingleSessionManager(signal_strategy.get()));
 
   scoped_ptr<protocol::CandidateSessionConfig> protocol_config =
       protocol::CandidateSessionConfig::CreateDefault();
@@ -256,7 +255,8 @@ void It2MeHost::FinishConnect() {
   // Create the host.
   host_.reset(new ChromotingHost(
       desktop_environment_factory_.get(), std::move(session_manager),
-      host_context_->audio_task_runner(), host_context_->input_task_runner(),
+      transport_context, host_context_->audio_task_runner(),
+      host_context_->input_task_runner(),
       host_context_->video_capture_task_runner(),
       host_context_->video_encode_task_runner(),
       host_context_->network_task_runner(), host_context_->ui_task_runner()));

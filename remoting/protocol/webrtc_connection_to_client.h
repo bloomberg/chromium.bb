@@ -15,6 +15,7 @@
 #include "remoting/protocol/channel_dispatcher_base.h"
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/session.h"
+#include "remoting/protocol/webrtc_transport.h"
 
 namespace remoting {
 namespace protocol {
@@ -24,9 +25,12 @@ class HostEventDispatcher;
 
 class WebrtcConnectionToClient : public ConnectionToClient,
                                  public Session::EventHandler,
+                                 public WebrtcTransport::EventHandler,
                                  public ChannelDispatcherBase::EventHandler {
  public:
-  explicit WebrtcConnectionToClient(scoped_ptr<Session> session);
+  WebrtcConnectionToClient(
+      scoped_ptr<Session> session,
+      scoped_refptr<protocol::TransportContext> transport_context);
   ~WebrtcConnectionToClient() override;
 
   // ConnectionToClient interface.
@@ -45,8 +49,10 @@ class WebrtcConnectionToClient : public ConnectionToClient,
 
   // Session::EventHandler interface.
   void OnSessionStateChange(Session::State state) override;
-  void OnSessionRouteChange(const std::string& channel_name,
-                            const TransportRoute& route) override;
+
+  // WebrtcTransport::EventHandler interface
+  void OnWebrtcTransportConnected() override;
+  void OnWebrtcTransportError(ErrorCode error) override;
 
   // ChannelDispatcherBase::EventHandler interface.
   void OnChannelInitialized(ChannelDispatcherBase* channel_dispatcher) override;
@@ -58,6 +64,8 @@ class WebrtcConnectionToClient : public ConnectionToClient,
 
   // Event handler for handling events sent from this object.
   ConnectionToClient::EventHandler* event_handler_ = nullptr;
+
+  WebrtcTransport transport_;
 
   scoped_ptr<Session> session_;
 

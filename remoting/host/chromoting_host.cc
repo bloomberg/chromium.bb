@@ -25,6 +25,7 @@
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/ice_connection_to_client.h"
 #include "remoting/protocol/input_stub.h"
+#include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/webrtc_connection_to_client.h"
 
 using remoting::protocol::ConnectionToClient;
@@ -65,6 +66,7 @@ const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
 ChromotingHost::ChromotingHost(
     DesktopEnvironmentFactory* desktop_environment_factory,
     scoped_ptr<protocol::SessionManager> session_manager,
+    scoped_refptr<protocol::TransportContext> transport_context,
     scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
@@ -73,6 +75,7 @@ ChromotingHost::ChromotingHost(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
     : desktop_environment_factory_(desktop_environment_factory),
       session_manager_(std::move(session_manager)),
+      transport_context_(transport_context),
       audio_task_runner_(audio_task_runner),
       input_task_runner_(input_task_runner),
       video_capture_task_runner_(video_capture_task_runner),
@@ -273,11 +276,12 @@ void ChromotingHost::OnIncomingSession(
   scoped_ptr<protocol::ConnectionToClient> connection;
   if (session->config().protocol() ==
       protocol::SessionConfig::Protocol::WEBRTC) {
-    connection.reset(
-        new protocol::WebrtcConnectionToClient(make_scoped_ptr(session)));
+    connection.reset(new protocol::WebrtcConnectionToClient(
+        make_scoped_ptr(session), transport_context_));
   } else {
     connection.reset(new protocol::IceConnectionToClient(
-        make_scoped_ptr(session), video_encode_task_runner_));
+        make_scoped_ptr(session), transport_context_,
+        video_encode_task_runner_));
   }
 
   // Create a ClientSession object.

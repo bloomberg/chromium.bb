@@ -61,7 +61,7 @@ IceTransportChannel::IceTransportChannel(
 IceTransportChannel::~IceTransportChannel() {
   DCHECK(delegate_);
 
-  delegate_->OnTransportDeleted(this);
+  delegate_->OnChannelDeleted(this);
 
   auto task_runner = base::ThreadTaskRunnerHandle::Get();
   if (channel_)
@@ -103,8 +103,8 @@ void IceTransportChannel::OnPortAllocatorCreated(
   channel_->SetIceRole((transport_context_->role() == TransportRole::CLIENT)
                            ? cricket::ICEROLE_CONTROLLING
                            : cricket::ICEROLE_CONTROLLED);
-  delegate_->OnTransportIceCredentials(this, ice_username_fragment_,
-                                            ice_password);
+  delegate_->OnChannelIceCredentials(this, ice_username_fragment_,
+                                     ice_password);
   channel_->SetIceCredentials(ice_username_fragment_, ice_password);
   channel_->SignalCandidateGathered.connect(
       this, &IceTransportChannel::OnCandidateGathered);
@@ -191,7 +191,7 @@ void IceTransportChannel::OnCandidateGathered(
     cricket::TransportChannelImpl* channel,
     const cricket::Candidate& candidate) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  delegate_->OnTransportCandidate(this, candidate);
+  delegate_->OnChannelCandidate(this, candidate);
 }
 
 void IceTransportChannel::OnRouteChange(
@@ -261,7 +261,7 @@ void IceTransportChannel::NotifyRouteChanged() {
     LOG(FATAL) << "Failed to convert local IP address.";
   }
 
-  delegate_->OnTransportRouteChange(this, route);
+  delegate_->OnChannelRouteChange(this, route);
 }
 
 void IceTransportChannel::TryReconnect() {
@@ -272,15 +272,15 @@ void IceTransportChannel::TryReconnect() {
 
     // Notify the caller that ICE connection has failed - normally that will
     // terminate Jingle connection (i.e. the transport will be destroyed).
-    delegate_->OnTransportFailed(this);
+    delegate_->OnChannelFailed(this);
     return;
   }
   --connect_attempts_left_;
 
   // Restart ICE by resetting ICE password.
   std::string ice_password = rtc::CreateRandomString(cricket::ICE_PWD_LENGTH);
-  delegate_->OnTransportIceCredentials(this, ice_username_fragment_,
-                                            ice_password);
+  delegate_->OnChannelIceCredentials(this, ice_username_fragment_,
+                                     ice_password);
   channel_->SetIceCredentials(ice_username_fragment_, ice_password);
 }
 

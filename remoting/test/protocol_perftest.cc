@@ -25,7 +25,6 @@
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/fake_desktop_environment.h"
-#include "remoting/protocol/ice_transport.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 #include "remoting/protocol/negotiating_client_authenticator.h"
@@ -240,21 +239,18 @@ class ProtocolPerfTest
         new protocol::TransportContext(
             host_signaling_.get(), std::move(port_allocator_factory),
             network_settings, protocol::TransportRole::SERVER));
-
     scoped_ptr<protocol::SessionManager> session_manager(
-        new protocol::JingleSessionManager(
-            make_scoped_ptr(
-                new protocol::IceTransportFactory(transport_context)),
-            host_signaling_.get()));
+        new protocol::JingleSessionManager(host_signaling_.get()));
     session_manager->set_protocol_config(protocol_config_->Clone());
 
     // Encoder runs on a separate thread, main thread is used for everything
     // else.
     host_.reset(new ChromotingHost(
         &desktop_environment_factory_, std::move(session_manager),
-        host_thread_.task_runner(), host_thread_.task_runner(),
-        capture_thread_.task_runner(), encode_thread_.task_runner(),
-        host_thread_.task_runner(), host_thread_.task_runner()));
+        transport_context, host_thread_.task_runner(),
+        host_thread_.task_runner(), capture_thread_.task_runner(),
+        encode_thread_.task_runner(), host_thread_.task_runner(),
+        host_thread_.task_runner()));
 
     base::FilePath certs_dir(net::GetTestCertsDirectory());
 

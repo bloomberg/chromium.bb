@@ -14,10 +14,6 @@
 #include "net/base/ip_endpoint.h"
 #include "remoting/protocol/errors.h"
 
-namespace cricket {
-class Candidate;
-}  // namespace cricket
-
 namespace buzz {
 class XmlElement;
 }  // namespace buzz
@@ -33,7 +29,6 @@ class Authenticator;
 class DatagramChannelFactory;
 class P2PDatagramSocket;
 class StreamChannelFactory;
-class WebrtcTransport;
 
 enum class TransportRole {
   SERVER,
@@ -58,68 +53,22 @@ struct TransportRoute {
   net::IPEndPoint local_address;
 };
 
-// Transport represents a P2P connection that consists of one or more
-// channels.
+// Transport represents a P2P connection that consists of one or more channels.
+// This interface is used just to send and receive transport-info messages.
+// Implementations should provide other methods to send and receive data.
 class Transport {
  public:
-  class EventHandler {
-   public:
-    // Called to send a transport-info message.
-    virtual void OnOutgoingTransportInfo(
-        scoped_ptr<buzz::XmlElement> message) = 0;
+  typedef base::Callback<void(scoped_ptr<buzz::XmlElement> transport_info)>
+      SendTransportInfoCallback;
 
-    // Called when transport route changes.
-    virtual void OnTransportRouteChange(const std::string& channel_name,
-                                        const TransportRoute& route) = 0;
-
-    // Called when the transport is connected.
-    virtual void OnTransportConnected() = 0;
-
-    // Called when there is an error connecting the session.
-    virtual void OnTransportError(ErrorCode error) = 0;
-  };
-
-  Transport() {}
   virtual ~Transport() {}
 
-  // Starts transport session. Both parameters must outlive Transport.
-  virtual void Start(EventHandler* event_handler,
-                     Authenticator* authenticator) = 0;
-
-  // Called to process incoming transport message. Returns false if
-  // |transport_info| is in invalid format.
+  // Sets the object responsible for delivering outgoing transport-info messages
+  // to the peer.
+  virtual void Start(
+      Authenticator* authenticator,
+      SendTransportInfoCallback send_transport_info_callback) = 0;
   virtual bool ProcessTransportInfo(buzz::XmlElement* transport_info) = 0;
-
-  // Channel factory for the session that creates stream channels.
-  virtual StreamChannelFactory* GetStreamChannelFactory() = 0;
-
-  // Returns a factory that creates multiplexed channels over a single stream
-  // channel.
-  virtual StreamChannelFactory* GetMultiplexedChannelFactory() = 0;
-
-  // Returns the transport as WebrtcTransport or nullptr if this is not a
-  // WebrtcTransport.
-  //
-  // TODO(sergeyu): Move creation and ownership of Transport objects to the
-  // Connection classes. That way the Connection classes will be able to ensure
-  // that correct transport implementation is used for the connection and this
-  // method will not be necessary.
-  virtual WebrtcTransport* AsWebrtcTransport();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(Transport);
-};
-
-class TransportFactory {
- public:
-  TransportFactory() { }
-  virtual ~TransportFactory() { }
-
-  // Creates a new Transport. The factory must outlive the session.
-  virtual scoped_ptr<Transport> CreateTransport() = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TransportFactory);
 };
 
 }  // namespace protocol

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/errors.h"
 
@@ -21,6 +22,7 @@ class HostStub;
 class InputStub;
 class Session;
 class SessionConfig;
+class TransportContext;
 struct TransportRoute;
 class VideoStub;
 
@@ -76,6 +78,7 @@ class ConnectionToHost {
   // of changes in the state of the connection and must outlive the
   // ConnectionToHost. Caller must set stubs (see below) before calling Connect.
   virtual void Connect(scoped_ptr<Session> session,
+                       scoped_refptr<TransportContext> transport_context,
                        HostEventCallback* event_callback) = 0;
 
   // Returns the session configuration that was negotiated with the host.

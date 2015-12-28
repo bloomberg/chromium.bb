@@ -23,8 +23,10 @@ void FakeConnectionToHost::set_video_stub(protocol::VideoStub* video_stub) {}
 
 void FakeConnectionToHost::set_audio_stub(protocol::AudioStub* audio_stub) {}
 
-void FakeConnectionToHost::Connect(scoped_ptr<protocol::Session> session,
-                                   HostEventCallback* event_callback) {
+void FakeConnectionToHost::Connect(
+    scoped_ptr<protocol::Session> session,
+    scoped_refptr<protocol::TransportContext> transport_context,
+    HostEventCallback* event_callback) {
   DCHECK(event_callback);
 
   event_callback_ = event_callback;
@@ -41,7 +43,6 @@ void FakeConnectionToHost::SignalStateChange(protocol::Session::State state,
     case protocol::Session::CONNECTING:
     case protocol::Session::ACCEPTING:
     case protocol::Session::AUTHENTICATING:
-    case protocol::Session::CONNECTED:
       // No updates for these events.
       break;
 

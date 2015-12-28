@@ -20,7 +20,7 @@
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/ice_transport.h"
-#include "remoting/protocol/transport.h"
+#include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/video_stub.h"
 
 namespace remoting {
@@ -29,14 +29,19 @@ namespace protocol {
 IceConnectionToHost::IceConnectionToHost() {}
 IceConnectionToHost::~IceConnectionToHost() {}
 
-void IceConnectionToHost::Connect(scoped_ptr<Session> session,
-                                  HostEventCallback* event_callback) {
+void IceConnectionToHost::Connect(
+    scoped_ptr<Session> session,
+    scoped_refptr<TransportContext> transport_context,
+    HostEventCallback* event_callback) {
   DCHECK(client_stub_);
   DCHECK(clipboard_stub_);
   DCHECK(monitored_video_stub_);
 
+  transport_.reset(new IceTransport(transport_context, this));
+
   session_ = std::move(session);
   session_->SetEventHandler(this);
+  session_->SetTransport(transport_.get());
 
   event_callback_ = event_callback;
 
@@ -91,32 +96,27 @@ void IceConnectionToHost::OnSessionStateChange(Session::State state) {
     case Session::ACCEPTING:
     case Session::ACCEPTED:
     case Session::AUTHENTICATING:
-    case Session::CONNECTED:
       // Don't care about these events.
       break;
 
     case Session::AUTHENTICATED:
       SetState(AUTHENTICATED, OK);
-
       control_dispatcher_.reset(new ClientControlDispatcher());
-      control_dispatcher_->Init(
-          session_->GetTransport()->GetMultiplexedChannelFactory(), this);
+      control_dispatcher_->Init(transport_->GetMultiplexedChannelFactory(),
+                                this);
       control_dispatcher_->set_client_stub(client_stub_);
       control_dispatcher_->set_clipboard_stub(clipboard_stub_);
 
       event_dispatcher_.reset(new ClientEventDispatcher());
-      event_dispatcher_->Init(
-          session_->GetTransport()->GetMultiplexedChannelFactory(), this);
+      event_dispatcher_->Init(transport_->GetMultiplexedChannelFactory(), this);
 
       video_dispatcher_.reset(
           new ClientVideoDispatcher(monitored_video_stub_.get()));
-      video_dispatcher_->Init(
-          session_->GetTransport()->GetStreamChannelFactory(), this);
+      video_dispatcher_->Init(transport_->GetStreamChannelFactory(), this);
 
       if (session_->config().is_audio_enabled()) {
         audio_reader_.reset(new AudioReader(audio_stub_));
-        audio_reader_->Init(
-            session_->GetTransport()->GetMultiplexedChannelFactory(), this);
+        audio_reader_->Init(transport_->GetMultiplexedChannelFactory(), this);
       }
       break;
 
@@ -144,9 +144,14 @@ void IceConnectionToHost::OnSessionStateChange(Session::State state) {
   }
 }
 
-void IceConnectionToHost::OnSessionRouteChange(const std::string& channel_name,
-                                               const TransportRoute& route) {
+void IceConnectionToHost::OnIceTransportRouteChange(
+    const std::string& channel_name,
+    const TransportRoute& route) {
   event_callback_->OnRouteChanged(channel_name, route);
+}
+
+void IceConnectionToHost::OnIceTransportError(ErrorCode error) {
+  session_->Close(error);
 }
 
 void IceConnectionToHost::OnChannelInitialized(
@@ -157,9 +162,9 @@ void IceConnectionToHost::OnChannelInitialized(
 void IceConnectionToHost::OnChannelError(
     ChannelDispatcherBase* channel_dispatcher,
     ErrorCode error) {
-  LOG(ERROR) << "Failed to connect channel " << channel_dispatcher;
+  LOG(ERROR) << "Failed to connect channel "
+             << channel_dispatcher->channel_name();
   CloseOnError(CHANNEL_CONNECTION_ERROR);
-  return;
 }
 
 void IceConnectionToHost::OnVideoChannelStatus(bool active) {

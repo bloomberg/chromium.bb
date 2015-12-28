@@ -80,7 +80,6 @@
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/chromium_port_allocator.h"
-#include "remoting/protocol/ice_transport.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 #include "remoting/protocol/network_settings.h"
@@ -88,7 +87,6 @@
 #include "remoting/protocol/port_range.h"
 #include "remoting/protocol/token_validator.h"
 #include "remoting/protocol/transport_context.h"
-#include "remoting/protocol/webrtc_transport.h"
 #include "remoting/signaling/push_notification_subscriber.h"
 #include "remoting/signaling/xmpp_signal_strategy.h"
 #include "third_party/webrtc/base/scoped_ref_ptr.h"
@@ -885,6 +883,14 @@ void HostProcess::StartOnUiThread() {
     remoting::GnubbyAuthHandler::SetGnubbySocketName(gnubby_socket_name);
 #endif  // defined(OS_LINUX)
 
+#if defined(NDEBUG)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableWebrtc)) {
+    LOG(ERROR) << "WebRTC is enabled only in debug builds.";
+    ShutdownHost(kUsageExitCode);
+    return;
+  }
+#endif  // defined(NDEBUG)
+
   // Create a desktop environment factory appropriate to the build type &
   // platform.
 #if defined(OS_WIN)
@@ -1507,29 +1513,9 @@ void HostProcess::StartHost() {
           make_scoped_ptr(new protocol::ChromiumPortAllocatorFactory(
               context_->url_request_context_getter())),
           network_settings, protocol::TransportRole::SERVER);
-  scoped_ptr<protocol::TransportFactory> transport_factory;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableWebrtc)) {
-#if !defined(NDEBUG)
-    jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 
-    // The network thread is also used as worker thread for webrtc.
-    //
-    // TODO(sergeyu): Figure out if we would benefit from using a separate
-    // thread as a worker thread.
-    transport_factory.reset(new protocol::WebrtcTransportFactory(
-        jingle_glue::JingleThreadWrapper::current(), transport_context));
-#else  // !defined(NDEBUG)
-    LOG(ERROR) << "WebRTC is enabled only in debug builds.";
-    ShutdownHost(kUsageExitCode);
-    return;
-#endif  // defined(NDEBUG)
-  } else {
-    transport_factory.reset(
-        new protocol::IceTransportFactory(transport_context));
-  }
   scoped_ptr<protocol::SessionManager> session_manager(
-      new protocol::JingleSessionManager(std::move(transport_factory),
-                                         signal_strategy_.get()));
+      new protocol::JingleSessionManager(signal_strategy_.get()));
 
   scoped_ptr<protocol::CandidateSessionConfig> protocol_config =
       protocol::CandidateSessionConfig::CreateDefault();
@@ -1546,8 +1532,8 @@ void HostProcess::StartHost() {
 
   host_.reset(new ChromotingHost(
       desktop_environment_factory_.get(), std::move(session_manager),
-      context_->audio_task_runner(), context_->input_task_runner(),
-      context_->video_capture_task_runner(),
+      transport_context, context_->audio_task_runner(),
+      context_->input_task_runner(), context_->video_capture_task_runner(),
       context_->video_encode_task_runner(), context_->network_task_runner(),
       context_->ui_task_runner()));
 

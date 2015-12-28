@@ -13,6 +13,7 @@
 #include "remoting/protocol/ice_connection_to_client.h"
 #include "remoting/protocol/ice_connection_to_host.h"
 #include "remoting/protocol/protocol_mock_objects.h"
+#include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/webrtc_connection_to_client.h"
 #include "remoting/protocol/webrtc_connection_to_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -67,13 +68,16 @@ class ConnectionTest : public testing::Test,
 
     // Create Connection objects
     if (GetParam()) {
-      host_connection_.reset(
-          new WebrtcConnectionToClient(make_scoped_ptr(host_session_)));
+      host_connection_.reset(new WebrtcConnectionToClient(
+          make_scoped_ptr(host_session_),
+          TransportContext::ForTests(protocol::TransportRole::SERVER)));
       client_connection_.reset(new WebrtcConnectionToHost());
 
     } else {
       host_connection_.reset(new IceConnectionToClient(
-          make_scoped_ptr(host_session_), message_loop_.task_runner()));
+          make_scoped_ptr(host_session_),
+          TransportContext::ForTests(protocol::TransportRole::SERVER),
+          message_loop_.task_runner()));
       client_connection_.reset(new IceConnectionToHost());
     }
 
@@ -98,7 +102,11 @@ class ConnectionTest : public testing::Test,
                   OnConnectionAuthenticated(host_connection_.get()));
     }
     EXPECT_CALL(host_event_handler_,
-                OnConnectionChannelsConnected(host_connection_.get()));
+                OnConnectionChannelsConnected(host_connection_.get()))
+        .WillOnce(
+            InvokeWithoutArgs(this, &ConnectionTest::OnHostConnected));
+    EXPECT_CALL(host_event_handler_, OnRouteChange(_, _, _))
+        .Times(testing::AnyNumber());
 
     {
       testing::InSequence sequence;
@@ -107,13 +115,24 @@ class ConnectionTest : public testing::Test,
       EXPECT_CALL(client_event_handler_,
                   OnConnectionState(ConnectionToHost::AUTHENTICATED, OK));
       EXPECT_CALL(client_event_handler_,
-                  OnConnectionState(ConnectionToHost::CONNECTED, OK));
+                  OnConnectionState(ConnectionToHost::CONNECTED, OK))
+          .WillOnce(InvokeWithoutArgs(
+              this, &ConnectionTest::OnClientConnected));
     }
+    EXPECT_CALL(client_event_handler_, OnRouteChanged(_, _))
+        .Times(testing::AnyNumber());
 
-    client_connection_->Connect(std::move(owned_client_session_),
-                                &client_event_handler_);
+    client_connection_->Connect(
+        std::move(owned_client_session_),
+        TransportContext::ForTests(protocol::TransportRole::CLIENT),
+        &client_event_handler_);
     client_session_->SimulateConnection(host_session_);
-    base::RunLoop().RunUntilIdle();
+
+    run_loop_.reset(new base::RunLoop());
+    run_loop_->Run();
+
+    EXPECT_TRUE(client_connected_);
+    EXPECT_TRUE(host_connected_);
   }
 
   void TearDown() override {
@@ -122,7 +141,20 @@ class ConnectionTest : public testing::Test,
     base::RunLoop().RunUntilIdle();
   }
 
-  base::MessageLoop message_loop_;
+  void OnHostConnected() {
+    host_connected_ = true;
+    if (client_connected_ && run_loop_)
+      run_loop_->Quit();
+  }
+
+  void OnClientConnected() {
+    client_connected_ = true;
+    if (host_connected_ && run_loop_)
+      run_loop_->Quit();
+  }
+
+  base::MessageLoopForIO message_loop_;
+  scoped_ptr<base::RunLoop> run_loop_;
 
   MockConnectionToClientEventHandler host_event_handler_;
   MockClipboardStub host_clipboard_stub_;
@@ -130,6 +162,7 @@ class ConnectionTest : public testing::Test,
   MockInputStub host_input_stub_;
   scoped_ptr<ConnectionToClient> host_connection_;
   FakeSession* host_session_;  // Owned by |host_connection_|.
+  bool host_connected_ = false;
 
   MockConnectionToHostEventCallback client_event_handler_;
   MockClientStub client_stub_;
@@ -138,6 +171,7 @@ class ConnectionTest : public testing::Test,
   scoped_ptr<ConnectionToHost> client_connection_;
   FakeSession* client_session_;  // Owned by |client_connection_|.
   scoped_ptr<FakeSession> owned_client_session_;
+  bool client_connected_ = false;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConnectionTest);
@@ -152,8 +186,10 @@ TEST_P(ConnectionTest, RejectConnection) {
   EXPECT_CALL(client_event_handler_,
               OnConnectionState(ConnectionToHost::CLOSED, OK));
 
-  client_connection_->Connect(std::move(owned_client_session_),
-                              &client_event_handler_);
+  client_connection_->Connect(
+      std::move(owned_client_session_),
+      TransportContext::ForTests(protocol::TransportRole::CLIENT),
+      &client_event_handler_);
   client_session_->event_handler()->OnSessionStateChange(Session::CLOSED);
 }
 

@@ -123,6 +123,7 @@ class ChromotingClient : public SignalStrategy::Listener,
 
   std::string host_jid_;
   scoped_ptr<protocol::Authenticator> authenticator_;
+  scoped_refptr<protocol::TransportContext> transport_context_;
 
   scoped_ptr<protocol::SessionManager> session_manager_;
   scoped_ptr<protocol::ConnectionToHost> connection_;

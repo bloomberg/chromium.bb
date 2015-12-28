@@ -70,9 +70,7 @@ void ChromotingClient::Start(
   connection_->set_video_stub(video_renderer_->GetVideoStub());
   connection_->set_audio_stub(audio_decode_scheduler_.get());
 
-  session_manager_.reset(new protocol::JingleSessionManager(
-      make_scoped_ptr(new protocol::IceTransportFactory(transport_context)),
-      signal_strategy));
+  session_manager_.reset(new protocol::JingleSessionManager(signal_strategy));
 
   if (!protocol_config_)
     protocol_config_ = protocol::CandidateSessionConfig::CreateDefault();
@@ -81,6 +79,7 @@ void ChromotingClient::Start(
   session_manager_->set_protocol_config(std::move(protocol_config_));
 
   authenticator_ = std::move(authenticator);
+  transport_context_ = transport_context;
 
   signal_strategy_ = signal_strategy;
   signal_strategy_->AddListener(this);
@@ -202,7 +201,8 @@ bool ChromotingClient::OnSignalStrategyIncomingStanza(
 void ChromotingClient::StartConnection() {
   DCHECK(thread_checker_.CalledOnValidThread());
   connection_->Connect(
-      session_manager_->Connect(host_jid_, std::move(authenticator_)), this);
+      session_manager_->Connect(host_jid_, std::move(authenticator_)),
+      transport_context_, this);
 }
 
 void ChromotingClient::OnAuthenticated() {

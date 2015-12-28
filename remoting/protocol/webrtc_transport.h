@@ -30,8 +30,18 @@ class TransportContext;
 class WebrtcTransport : public Transport,
                         public webrtc::PeerConnectionObserver {
  public:
+  class EventHandler {
+   public:
+    // Called when the transport is connected.
+    virtual void OnWebrtcTransportConnected() = 0;
+
+    // Called when there is an error connecting the session.
+    virtual void OnWebrtcTransportError(ErrorCode error) = 0;
+  };
+
   WebrtcTransport(rtc::Thread* worker_thread,
-                  scoped_refptr<TransportContext> transport_context);
+                  scoped_refptr<TransportContext> transport_context,
+                  EventHandler* event_handler);
   ~WebrtcTransport() override;
 
   webrtc::PeerConnectionInterface* peer_connection() {
@@ -41,13 +51,12 @@ class WebrtcTransport : public Transport,
     return peer_connection_factory_;
   }
 
+  StreamChannelFactory* GetStreamChannelFactory();
+
   // Transport interface.
-  void Start(EventHandler* event_handler,
-             Authenticator* authenticator) override;
+  void Start(Authenticator* authenticator,
+             SendTransportInfoCallback send_transport_info_callback) override;
   bool ProcessTransportInfo(buzz::XmlElement* transport_info) override;
-  StreamChannelFactory* GetStreamChannelFactory() override;
-  StreamChannelFactory* GetMultiplexedChannelFactory() override;
-  WebrtcTransport* AsWebrtcTransport() override;
 
  private:
   void OnPortAllocatorCreated(
@@ -84,9 +93,10 @@ class WebrtcTransport : public Transport,
 
   base::ThreadChecker thread_checker_;
 
+  rtc::Thread* worker_thread_;
   scoped_refptr<TransportContext> transport_context_;
   EventHandler* event_handler_ = nullptr;
-  rtc::Thread* worker_thread_;
+  SendTransportInfoCallback send_transport_info_callback_;
 
   scoped_ptr<webrtc::FakeAudioDeviceModule> fake_audio_device_module_;
 
@@ -109,22 +119,6 @@ class WebrtcTransport : public Transport,
   base::WeakPtrFactory<WebrtcTransport> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebrtcTransport);
-};
-
-class WebrtcTransportFactory : public TransportFactory {
- public:
-  WebrtcTransportFactory(rtc::Thread* worker_thread,
-                         scoped_refptr<TransportContext> transport_context);
-  ~WebrtcTransportFactory() override;
-
-  // TransportFactory interface.
-  scoped_ptr<Transport> CreateTransport() override;
-
- private:
-  rtc::Thread* worker_thread_;
-  scoped_refptr<TransportContext> transport_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebrtcTransportFactory);
 };
 
 }  // namespace protocol
