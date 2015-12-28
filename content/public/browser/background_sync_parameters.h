@@ -35,6 +35,9 @@ struct CONTENT_EXPORT BackgroundSyncParameters {
   // The minimum time to wait before waking the browser in case the browser
   // closes mid-sync.
   base::TimeDelta min_sync_recovery_time;
+
+  // The maximum amount of time that a sync event can run for.
+  base::TimeDelta max_sync_event_duration;
 };
 
 }  // namespace content

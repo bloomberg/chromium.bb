@@ -1755,6 +1755,7 @@ TEST_F(BackgroundSyncManagerTest, OverrideParameters) {
   parameters->initial_retry_delay = base::TimeDelta::FromMinutes(200);
   parameters->retry_delay_factor = 300;
   parameters->min_sync_recovery_time = base::TimeDelta::FromMinutes(400);
+  parameters->max_sync_event_duration = base::TimeDelta::FromMinutes(500);
 
   // Restart the BackgroundSyncManager so that it updates its parameters.
   SetupBackgroundSyncManager();

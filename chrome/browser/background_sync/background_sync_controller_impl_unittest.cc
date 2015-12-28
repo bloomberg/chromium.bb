@@ -98,7 +98,8 @@ TEST_F(BackgroundSyncControllerImplTest, SomeParamsSet) {
   std::map<std::string, std::string> field_parameters;
   field_parameters[BackgroundSyncControllerImpl::kDisabledParameterName] =
       "TrUe";
-  field_parameters["initial_retry_delay_mins"] = "100";
+  field_parameters[BackgroundSyncControllerImpl::kInitialRetryParameterName] =
+      "100";
   ASSERT_TRUE(variations::AssociateVariationParams(
       BackgroundSyncControllerImpl::kFieldTrialName, kFieldTrialGroup,
       field_parameters));
@@ -107,13 +108,15 @@ TEST_F(BackgroundSyncControllerImplTest, SomeParamsSet) {
   content::BackgroundSyncParameters sync_parameters;
   controller_->GetParameterOverrides(&sync_parameters);
   EXPECT_TRUE(sync_parameters.disable);
-  EXPECT_EQ(base::TimeDelta::FromMinutes(100),
+  EXPECT_EQ(base::TimeDelta::FromSeconds(100),
             sync_parameters.initial_retry_delay);
 
   EXPECT_EQ(original.max_sync_attempts, sync_parameters.max_sync_attempts);
   EXPECT_EQ(original.retry_delay_factor, sync_parameters.retry_delay_factor);
   EXPECT_EQ(original.min_sync_recovery_time,
             sync_parameters.min_sync_recovery_time);
+  EXPECT_EQ(original.max_sync_event_duration,
+            sync_parameters.max_sync_event_duration);
 }
 
 TEST_F(BackgroundSyncControllerImplTest, AllParamsSet) {
@@ -127,7 +130,9 @@ TEST_F(BackgroundSyncControllerImplTest, AllParamsSet) {
   field_parameters
       [BackgroundSyncControllerImpl::kRetryDelayFactorParameterName] = "300";
   field_parameters[BackgroundSyncControllerImpl::kMinSyncRecoveryTimeName] =
-      "8000000000000";  // something larger than int32_t.
+      "400";
+  field_parameters[BackgroundSyncControllerImpl::kMaxSyncEventDurationName] =
+      "500";
   ASSERT_TRUE(variations::AssociateVariationParams(
       BackgroundSyncControllerImpl::kFieldTrialName, kFieldTrialGroup,
       field_parameters));
@@ -136,12 +141,14 @@ TEST_F(BackgroundSyncControllerImplTest, AllParamsSet) {
   controller_->GetParameterOverrides(&sync_parameters);
 
   EXPECT_FALSE(sync_parameters.disable);
-  EXPECT_EQ(base::TimeDelta::FromMinutes(100),
+  EXPECT_EQ(base::TimeDelta::FromSeconds(100),
             sync_parameters.initial_retry_delay);
   EXPECT_EQ(200, sync_parameters.max_sync_attempts);
   EXPECT_EQ(300, sync_parameters.retry_delay_factor);
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(8000000000000),
+  EXPECT_EQ(base::TimeDelta::FromSeconds(400),
             sync_parameters.min_sync_recovery_time);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(500),
+            sync_parameters.max_sync_event_duration);
 }
 
 }  // namespace

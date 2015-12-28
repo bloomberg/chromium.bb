@@ -32,6 +32,7 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
   static const char kInitialRetryParameterName[];
   static const char kRetryDelayFactorParameterName[];
   static const char kMinSyncRecoveryTimeName[];
+  static const char kMaxSyncEventDurationName[];
 
   explicit BackgroundSyncControllerImpl(Profile* profile);
   ~BackgroundSyncControllerImpl() override;

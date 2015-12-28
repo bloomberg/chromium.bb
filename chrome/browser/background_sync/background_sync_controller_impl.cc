@@ -23,11 +23,13 @@ const char BackgroundSyncControllerImpl::kDisabledParameterName[] = "disabled";
 const char BackgroundSyncControllerImpl::kMaxAttemptsParameterName[] =
     "max_sync_attempts";
 const char BackgroundSyncControllerImpl::kInitialRetryParameterName[] =
-    "initial_retry_delay_mins";
+    "initial_retry_delay_sec";
 const char BackgroundSyncControllerImpl::kRetryDelayFactorParameterName[] =
     "retry_delay_factor";
 const char BackgroundSyncControllerImpl::kMinSyncRecoveryTimeName[] =
-    "min_recovery_time_ms";
+    "min_recovery_time_sec";
+const char BackgroundSyncControllerImpl::kMaxSyncEventDurationName[] =
+    "max_sync_event_duration_sec";
 
 BackgroundSyncControllerImpl::BackgroundSyncControllerImpl(Profile* profile)
     : profile_(profile) {}
@@ -56,11 +58,11 @@ void BackgroundSyncControllerImpl::GetParameterOverrides(
   }
 
   if (ContainsKey(field_params, kInitialRetryParameterName)) {
-    int initial_retry_delay_min;
+    int initial_retry_delay_sec;
     if (base::StringToInt(field_params[kInitialRetryParameterName],
-                          &initial_retry_delay_min)) {
+                          &initial_retry_delay_sec)) {
       parameters->initial_retry_delay =
-          base::TimeDelta::FromMinutes(initial_retry_delay_min);
+          base::TimeDelta::FromSeconds(initial_retry_delay_sec);
     }
   }
 
@@ -73,11 +75,20 @@ void BackgroundSyncControllerImpl::GetParameterOverrides(
   }
 
   if (ContainsKey(field_params, kMinSyncRecoveryTimeName)) {
-    int64_t min_sync_recovery_time_ms;
-    if (base::StringToInt64(field_params[kMinSyncRecoveryTimeName],
-                            &min_sync_recovery_time_ms)) {
+    int min_sync_recovery_time_sec;
+    if (base::StringToInt(field_params[kMinSyncRecoveryTimeName],
+                          &min_sync_recovery_time_sec)) {
       parameters->min_sync_recovery_time =
-          base::TimeDelta::FromMilliseconds(min_sync_recovery_time_ms);
+          base::TimeDelta::FromSeconds(min_sync_recovery_time_sec);
+    }
+  }
+
+  if (ContainsKey(field_params, kMaxSyncEventDurationName)) {
+    int max_sync_event_duration_sec;
+    if (base::StringToInt(field_params[kMaxSyncEventDurationName],
+                          &max_sync_event_duration_sec)) {
+      parameters->max_sync_event_duration =
+          base::TimeDelta::FromSeconds(max_sync_event_duration_sec);
     }
   }
 
