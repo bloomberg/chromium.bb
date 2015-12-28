@@ -5,7 +5,7 @@ layer at (0,0) size 480x360
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGContainer {g} at (120,60) size 150x150
       LayoutSVGContainer {g} at (120,60) size 150x150
-        LayoutSVGRect {rect} at (120,60) size 150x150 [fill={[type=SOLID] [color=#00FF00]}] [x=120.00] [y=60.00] [width=150.00] [height=150.00]
+        LayoutSVGRect {rect} at (120,60) size 150x150 [fill={[type=SOLID] [color=#FF0000]}] [x=120.00] [y=60.00] [width=150.00] [height=150.00]
     LayoutSVGContainer {g} at (10,310) size 230x37
       LayoutSVGText {text} at (10,310) size 230x37 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 230x37
