@@ -638,7 +638,10 @@ if (!is_android) {
       sources -= [ "data/webui/accessibility_audit_browsertest.js" ]
     }
     if (!is_chromeos) {
-      sources -= [ "data/webui/certificate_viewer_dialog_test.js" ]
+      sources -= [
+        "data/webui/certificate_viewer_dialog_test.js",
+        "data/webui/settings/bluetooth_page_browsertest_chromeos.js",
+      ]
     }
     if (!enable_app_list) {
       sources -= [ "../browser/ui/webui/app_list/start_page_browsertest.js" ]

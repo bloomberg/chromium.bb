@@ -17,6 +17,21 @@
  * @group Chrome Settings Elements
  * @element settings-bluetooth-page
  */
+
+var bluetoothPage = bluetoothPage || {
+  /**
+   * Set this to provide a fake implementation for testing.
+   * @type {Bluetooth}
+   */
+  bluetoothApiForTest: null,
+
+  /**
+   * Set this to provide a fake implementation for testing.
+   * @type {BluetoothPrivate}
+   */
+  bluetoothPrivateApiForTest: null,
+};
+
 Polymer({
   is: 'settings-bluetooth-page',
 
@@ -83,6 +98,13 @@ Polymer({
    */
   bluetoothDeviceRemovedListener_: undefined,
 
+  /** @override */
+  ready: function() {
+    if (bluetoothPage.bluetoothApiForTest)
+      this.bluetooth = bluetoothPage.bluetoothApiForTest;
+    if (bluetoothPage.bluetoothPrivateApiForTest)
+      this.bluetoothPrivate = bluetoothPage.bluetoothPrivateApiForTest;
+  },
 
   /** @override */
   attached: function() {
@@ -231,11 +253,13 @@ Polymer({
   },
 
   /**
-   * @param {!Array<!chrome.bluetooth.Device>} deviceList
+   * @param {Object} deviceListChanges
    * @return {boolean} True if deviceList is not empty.
    * @private
    */
-  haveDevices_: function(deviceList) { return !!deviceList.length; },
+  haveDevices_: function(deviceListChanges) {
+    return !!this.deviceList.length;
+  },
 
   /**
    * @param {number} selectedDevice

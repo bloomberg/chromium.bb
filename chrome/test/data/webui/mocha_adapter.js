@@ -7,6 +7,11 @@
  * mocha_adapter.js in a WebUIBrowserTest's extraLibraries array.
  */
 
+// NOTE: When defining TEST_F() functions that use Mocha, use 'var self = this'
+// for referencing the Test object within suite() and test() function objects
+// (instead of binding |this|), since |this| within those objects will reference
+// the Mocha Suite or Test instance.
+
 /**
  * Initializes a mocha reporter for the BrowserTest framework, which registers
  * event listeners on the given Runner.

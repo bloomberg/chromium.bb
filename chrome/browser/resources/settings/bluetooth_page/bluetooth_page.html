@@ -21,13 +21,14 @@
           <div class="layout horizontal center">
             <iron-icon icon="device:bluetooth"></iron-icon>
             <span class="flex" i18n-content="bluetoothEnable"></span>
-            <paper-toggle-button checked="{{bluetoothEnabled}}"
+            <paper-toggle-button id="enableBluetooth"
+                checked="{{bluetoothEnabled}}"
                 on-change="onBluetoothEnabledChange_">
             </paper-toggle-button>
           </div>
           <cr-collapse opened="[[bluetoothEnabled]]">
             <div id="deviceList" class="layout vertical flex">
-              <span hidden$="[[haveDevices_(deviceList)]]"
+              <span hidden$="[[haveDevices_(deviceList.splices)]]"
                   i18n-content="bluetoothNoDevices">
               </span>
               <iron-selector selected="{{selectedDevice}}">
