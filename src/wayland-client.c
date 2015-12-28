@@ -1442,6 +1442,21 @@ wl_display_cancel_read(struct wl_display *display)
 	pthread_mutex_unlock(&display->mutex);
 }
 
+static int
+wl_display_poll(struct wl_display *display, short int events)
+{
+	int ret;
+	struct pollfd pfd[1];
+
+	pfd[0].fd = display->fd;
+	pfd[0].events = events;
+	do {
+		ret = poll(pfd, 1, -1);
+	} while (ret == -1 && errno == EINTR);
+
+	return ret;
+}
+
 /** Dispatch events in an event queue
  *
  * \param display The display context object
@@ -1485,27 +1500,31 @@ WL_EXPORT int
 wl_display_dispatch_queue(struct wl_display *display,
 			  struct wl_event_queue *queue)
 {
-	struct pollfd pfd[2];
 	int ret;
 
 	if (wl_display_prepare_read_queue(display, queue) == -1)
 		return wl_display_dispatch_queue_pending(display, queue);
 
+	while (true) {
+		ret = wl_display_flush(display);
+
+		if (ret != -1 || errno != EAGAIN)
+			break;
+
+		if (wl_display_poll(display, POLLOUT) == -1) {
+			wl_display_cancel_read(display);
+			return -1;
+		}
+	}
+
 	/* Don't stop if flushing hits an EPIPE; continue so we can read any
 	 * protocol error that may have triggered it. */
-	ret = wl_display_flush(display);
-	if (ret < 0 && errno != EAGAIN && errno != EPIPE) {
+	if (ret < 0 && errno != EPIPE) {
 		wl_display_cancel_read(display);
 		return -1;
 	}
 
-	pfd[0].fd = display->fd;
-	pfd[0].events = POLLIN;
-	do {
-		ret = poll(pfd, 1, -1);
-	} while (ret == -1 && errno == EINTR);
-
-	if (ret == -1) {
+	if (wl_display_poll(display, POLLIN) == -1) {
 		wl_display_cancel_read(display);
 		return -1;
 	}
