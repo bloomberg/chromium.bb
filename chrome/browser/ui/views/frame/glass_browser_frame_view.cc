@@ -124,7 +124,7 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
       // In non-maximized mode, allow the new tab button to slide completely
       // under the avatar button.
       if (!frame()->IsMaximized()) {
-        end_x = std::min(end_x + GetLayoutConstant(NEW_TAB_BUTTON_WIDTH) +
+        end_x = std::min(end_x + GetLayoutSize(NEW_TAB_BUTTON).width() +
                              kNewTabCaptionRestoredSpacing,
                          old_end_x);
       }

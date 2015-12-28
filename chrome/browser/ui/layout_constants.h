@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_LAYOUT_CONSTANTS_H_
 
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/size.h"
 
 enum LayoutConstant {
   // Vertical offset from top of content to the top of find bar.
@@ -39,9 +40,6 @@ enum LayoutConstant {
   // The vertical padding of items in the location bar.
   LOCATION_BAR_VERTICAL_PADDING,
 
-  // The width of the New Tab button.
-  NEW_TAB_BUTTON_WIDTH,
-
   // The number of pixels in the omnibox dropdown border image interior to
   // the actual border.
   OMNIBOX_DROPDOWN_BORDER_INTERIOR,
@@ -65,9 +63,10 @@ enum LayoutConstant {
   // The horizontal space between a tab's favicon and its title.
   TAB_FAVICON_TITLE_SPACING,
 
-  // The maximum width we'll allow for a tab's title, when the tabstrip is wide
-  // enough for tabs to take as much space as they want.
-  TAB_MAXIMUM_TITLE_WIDTH,
+  // The height of a tab, including outer strokes.  In non-100% scales this is
+  // slightly larger than the apparent height of the tab, as the top stroke is
+  // drawn as a 1-px line flush with the bottom of the tab's topmost DIP.
+  TAB_HEIGHT,
 
   // Width available for content inside a pinned tab.
   TAB_PINNED_CONTENT_WIDTH,
@@ -124,7 +123,14 @@ enum LayoutInset {
   TOOLBAR_BUTTON,
 };
 
+enum LayoutSize {
+  // The visible size of the new tab button; does not include any Fitts' Law
+  // extensions.
+  NEW_TAB_BUTTON,
+};
+
 int GetLayoutConstant(LayoutConstant constant);
 gfx::Insets GetLayoutInsets(LayoutInset inset);
+gfx::Size GetLayoutSize(LayoutSize size);
 
 #endif  // CHROME_BROWSER_UI_LAYOUT_CONSTANTS_H_

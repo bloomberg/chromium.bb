@@ -83,8 +83,6 @@ using ui::DropTargetEvent;
 
 namespace {
 
-const int kNewTabButtonHeight = 18;
-
 const int kTabStripAnimationVSlop = 40;
 
 // Inverse ratio of the width of a tab edge to the width of the tab. When
@@ -126,16 +124,9 @@ const int kPinnedToNonPinnedOffset = 3;
 // The vertical offset of the tab strip button.
 const int kNewTabButtonVerticalOffset = 7;
 
-// Returns the size of the new tab button, not including any bounds extension to
-// enlarge the clickable area.
-gfx::Size GetNewTabButtonSize() {
-  return gfx::Size(GetLayoutConstant(NEW_TAB_BUTTON_WIDTH),
-                   kNewTabButtonHeight);
-}
-
 // Returns the width needed for the new tab button (and padding).
 int GetNewTabButtonWidth() {
-  return GetLayoutConstant(NEW_TAB_BUTTON_WIDTH) -
+  return GetLayoutSize(NEW_TAB_BUTTON).width() -
       GetLayoutConstant(TABSTRIP_NEW_TAB_BUTTON_OVERLAP);
 }
 
@@ -376,7 +367,8 @@ void NewTabButton::OnGestureEvent(ui::GestureEvent* event) {
 
 void NewTabButton::OnPaint(gfx::Canvas* canvas) {
   gfx::ScopedCanvas scoped_canvas(canvas);
-  canvas->Translate(gfx::Vector2d(0, height() - kNewTabButtonHeight));
+  const int visible_height = GetLayoutSize(NEW_TAB_BUTTON).height();
+  canvas->Translate(gfx::Vector2d(0, height() - visible_height));
 
   const bool pressed = state() == views::CustomButton::STATE_PRESSED;
   double hover_value =
@@ -429,7 +421,8 @@ void NewTabButton::OnPaint(gfx::Canvas* canvas) {
     // The canvas and mask have to use the same scale factor.
     const float fill_canvas_scale = mask->HasRepresentation(scale) ?
         scale : ui::GetScaleForScaleFactor(ui::SCALE_FACTOR_100P);
-    gfx::Canvas fill_canvas(GetNewTabButtonSize(), fill_canvas_scale, false);
+    gfx::Canvas fill_canvas(GetLayoutSize(NEW_TAB_BUTTON), fill_canvas_scale,
+                            false);
     PaintFill(pressed, hover_value, fill_canvas_scale, fill, &fill_canvas);
     gfx::ImageSkia image(fill_canvas.ExtractImageRep());
     canvas->DrawImageInt(
@@ -556,7 +549,7 @@ void NewTabButton::PaintFill(bool pressed,
   }
 
   // Draw the fill background image.
-  const gfx::Size size(GetNewTabButtonSize());
+  const gfx::Size size(GetLayoutSize(NEW_TAB_BUTTON));
   if (custom_image || !md) {
     const ui::ThemeProvider* theme_provider = GetThemeProvider();
     gfx::ImageSkia* background = theme_provider->GetImageSkiaNamed(bg_id);
@@ -1672,7 +1665,7 @@ void TabStrip::Init() {
   // So we get enter/exit on children to switch stacked layout on and off.
   set_notify_enter_exit_on_child(true);
 
-  newtab_button_bounds_.set_size(GetNewTabButtonSize());
+  newtab_button_bounds_.set_size(GetLayoutSize(NEW_TAB_BUTTON));
   newtab_button_bounds_.Inset(0, 0, 0, -kNewTabButtonVerticalOffset);
   newtab_button_ = new NewTabButton(this, this);
   newtab_button_->SetTooltipText(

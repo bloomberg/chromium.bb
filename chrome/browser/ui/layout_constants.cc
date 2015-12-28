@@ -18,12 +18,11 @@ int GetLayoutConstant(LayoutConstant constant) {
   const int kLocationBarHeight[] = {27, 28, 32};
   const int kLocationBarHorizontalPadding[] = {3, 6, 6};
   const int kLocationBarVerticalPadding[] = {2, 2, 2};
-  const int kNewTabButtonWidth[] = {34, 36, 36};
   const int kOmniboxDropdownBorderInterior[] = {6, 0, 0};
   const int kOmniboxFontPixelSize[] = {16, 14, 14};
   const int kTabCloseButtonTrailingPaddingOverlap[] = {2, 0, 0};
   const int kTabFaviconTitleSpacing[] = {4, 6, 6};
-  const int kTabMaximumTitleWidth[] = {175, 171, 171};
+  const int kTabHeight[] = {29, 29, 29};
   const int kTabPinnedContentWidth[] = {25, 23, 23};
 #if defined(OS_MACOSX)
   const int kTabTopExclusionHeight[] = {0, 0, 0};
@@ -61,8 +60,6 @@ int GetLayoutConstant(LayoutConstant constant) {
       return kLocationBarHorizontalPadding[mode];
     case LOCATION_BAR_VERTICAL_PADDING:
       return kLocationBarVerticalPadding[mode];
-    case NEW_TAB_BUTTON_WIDTH:
-      return kNewTabButtonWidth[mode];
     case OMNIBOX_DROPDOWN_BORDER_INTERIOR:
       return kOmniboxDropdownBorderInterior[mode];
     case OMNIBOX_FONT_PIXEL_SIZE:
@@ -77,8 +74,8 @@ int GetLayoutConstant(LayoutConstant constant) {
       return kTabCloseButtonTrailingPaddingOverlap[mode];
     case TAB_FAVICON_TITLE_SPACING:
       return kTabFaviconTitleSpacing[mode];
-    case TAB_MAXIMUM_TITLE_WIDTH:
-      return kTabMaximumTitleWidth[mode];
+    case TAB_HEIGHT:
+      return kTabHeight[mode];
     case TAB_PINNED_CONTENT_WIDTH:
       return kTabPinnedContentWidth[mode];
     case TAB_TOP_EXCLUSION_HEIGHT:
@@ -117,10 +114,9 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
 
   const int mode = ui::MaterialDesignController::GetMode();
   switch (inset) {
-    case AVATAR_ICON: {
+    case AVATAR_ICON:
       return gfx::Insets(0, kAvatarLeftPadding[mode],
                          kAvatarBottomPadding[mode], kAvatarRightPadding[mode]);
-    }
     case OMNIBOX_DROPDOWN: {
       const int padding = kOmniboxDropdownPadding[mode];
       return gfx::Insets(padding, 0, padding, 0);
@@ -147,4 +143,17 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
   }
   NOTREACHED();
   return gfx::Insets();
+}
+
+gfx::Size GetLayoutSize(LayoutSize size) {
+  const int kNewTabButtonWidth[] = {34, 36, 36};
+  const int kNewTabButtonHeight[] = {18, 18, 18};
+
+  const int mode = ui::MaterialDesignController::GetMode();
+  switch (size) {
+    case NEW_TAB_BUTTON:
+      return gfx::Size(kNewTabButtonWidth[mode], kNewTabButtonHeight[mode]);
+  }
+  NOTREACHED();
+  return gfx::Size();
 }

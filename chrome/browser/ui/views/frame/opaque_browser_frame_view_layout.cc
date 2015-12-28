@@ -416,7 +416,7 @@ void OpaqueBrowserFrameViewLayout::LayoutNewStyleAvatar(views::View* host) {
   // the avatar button.
   if (!IsTitleBarCondensed()) {
     trailing_button_start_ -=
-        GetLayoutConstant(NEW_TAB_BUTTON_WIDTH) + kNewTabCaptionNormalSpacing;
+        GetLayoutSize(NEW_TAB_BUTTON).width() + kNewTabCaptionNormalSpacing;
   }
 
   new_avatar_button_->SetBounds(button_x, button_y, button_width,

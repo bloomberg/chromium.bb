@@ -655,19 +655,9 @@ int Tab::GetWidthOfLargestSelectableRegion() const {
   return std::min(indicator_left, close_button_left);
 }
 
+// static
 gfx::Size Tab::GetMinimumInactiveSize() {
-  int height;
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    const int kTabHeight = 29;
-    height = kTabHeight;
-  } else {
-    // Since we use images, the real minimum height of the image is
-    // defined most accurately by the height of the end cap images.
-    InitTabResources();
-    height = active_images_.image_l->height();
-  }
-
-  return gfx::Size(GetLayoutInsets(TAB).width(), height);
+  return gfx::Size(GetLayoutInsets(TAB).width(), GetLayoutConstant(TAB_HEIGHT));
 }
 
 // static
@@ -679,11 +669,9 @@ gfx::Size Tab::GetMinimumActiveSize() {
 
 // static
 gfx::Size Tab::GetStandardSize() {
-  gfx::Size standard_size = GetMinimumInactiveSize();
-  const int title_spacing = GetLayoutConstant(TAB_FAVICON_TITLE_SPACING);
-  const int title_width = GetLayoutConstant(TAB_MAXIMUM_TITLE_WIDTH);
-  standard_size.Enlarge(title_spacing + title_width, 0);
-  return standard_size;
+  const int kNetTabWidth = 193;
+  return gfx::Size(kNetTabWidth + GetLayoutConstant(TABSTRIP_TAB_OVERLAP),
+                   GetMinimumInactiveSize().height());
 }
 
 // static
