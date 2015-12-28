@@ -15,7 +15,7 @@
 #ifndef LIBLOUIS_NACL_LIBLOUIS_MODULE_H_
 #define LIBLOUIS_NACL_LIBLOUIS_MODULE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"

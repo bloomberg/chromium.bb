@@ -15,9 +15,11 @@
 #ifndef LIBLOUIS_NACL_LIBLOUIS_INSTANCE_H_
 #define LIBLOUIS_NACL_LIBLOUIS_INSTANCE_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "liblouis_wrapper.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/cpp/completion_callback.h"

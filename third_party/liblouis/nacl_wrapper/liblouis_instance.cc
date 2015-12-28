@@ -14,9 +14,11 @@
 
 #include "liblouis_instance.h"
 
+#include <stddef.h>
+#include <sys/mount.h>
+
 #include <cstdio>
 #include <cstring>
-#include <sys/mount.h>
 #include <vector>
 
 #include "native_client_sdk/src/libraries/nacl_io/nacl_io.h"

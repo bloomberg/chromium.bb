@@ -17,7 +17,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "translation_params.h"
 #include "translation_result.h"
 
