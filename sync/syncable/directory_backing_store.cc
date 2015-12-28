@@ -656,7 +656,7 @@ bool DirectoryBackingStore::LoadEntries(Directory::MetahandlesMap* handles_map,
   select.append(" FROM metas");
   int total_specifics_copies = 0;
   int model_type_entry_count[MODEL_TYPE_COUNT];
-  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+  for (int i = 0; i < MODEL_TYPE_COUNT; ++i) {
     model_type_entry_count[i] = 0;
   }
 
@@ -672,7 +672,11 @@ bool DirectoryBackingStore::LoadEntries(Directory::MetahandlesMap* handles_map,
     if (SafeToPurgeOnLoading(*kernel)) {
       metahandles_to_purge->insert(handle);
     } else {
-      ++model_type_entry_count[kernel->GetModelType()];
+      ModelType model_type = kernel->GetModelType();
+      if (!IsRealDataType(model_type)) {
+        model_type = kernel->GetServerModelType();
+      }
+      ++model_type_entry_count[model_type];
       (*handles_map)[handle] = kernel.release();
     }
   }
