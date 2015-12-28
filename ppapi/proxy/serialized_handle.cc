@@ -127,6 +127,7 @@ bool SerializedHandle::ReadHeader(base::PickleIterator* iter, Header* hdr) {
       hdr->open_flags = open_flags;
       hdr->file_io = file_io;
       valid_type = true;
+      break;
     }
     case SOCKET:
     case INVALID:
