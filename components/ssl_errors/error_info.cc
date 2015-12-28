@@ -136,6 +136,7 @@ ErrorInfo ErrorInfo::CreateError(ErrorType error_type,
                                            UTF8ToUTF16(request_url.host()));
       short_description =
           l10n_util::GetStringUTF16(IDS_CERT_ERROR_WEAK_KEY_DESCRIPTION);
+      break;
     case CERT_NAME_CONSTRAINT_VIOLATION:
       details = l10n_util::GetStringFUTF16(
           IDS_CERT_ERROR_NAME_CONSTRAINT_VIOLATION_DETAILS,
