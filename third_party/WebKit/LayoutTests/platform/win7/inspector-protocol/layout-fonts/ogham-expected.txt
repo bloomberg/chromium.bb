@@ -1,9 +1,9 @@
  ᚁᚂᚃᚄᚅᚆᚇᚈᚉᚊᚋᚌᚍᚎᚏᚐᚑᚒᚓᚔᚕᚖᚗᚘᚙᚚ᚛᚜
 #oghammonofont:
-"Arial" : 29
+"Segoe UI Symbol" : 29
 
  ᚁᚂᚃᚄᚅᚆᚇᚈᚉᚊᚋᚌᚍᚎᚏᚐᚑᚒᚓᚔᚕᚖᚗᚘᚙᚚ᚛᚜
 #oghamdefaultfont:
-"Arial" : 29
+"Segoe UI Symbol" : 29
 
 There should be two lines of Ogham above.

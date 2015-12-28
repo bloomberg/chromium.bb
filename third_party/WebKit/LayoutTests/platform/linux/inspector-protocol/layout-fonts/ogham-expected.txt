@@ -1,9 +1,9 @@
  ᚁᚂᚃᚄᚅᚆᚇᚈᚉᚊᚋᚌᚍᚎᚏᚐᚑᚒᚓᚔᚕᚖᚗᚘᚙᚚ᚛᚜
 #oghammonofont:
-"Arial" : 29
+"DejaVu Sans" : 29
 
  ᚁᚂᚃᚄᚅᚆᚇᚈᚉᚊᚋᚌᚍᚎᚏᚐᚑᚒᚓᚔᚕᚖᚗᚘᚙᚚ᚛᚜
 #oghamdefaultfont:
-"Arial" : 29
+"DejaVu Sans" : 29
 
 There should be two lines of Ogham above.
