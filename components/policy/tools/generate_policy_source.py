@@ -298,7 +298,6 @@ def _WritePolicyConstantHeader(policies, os, f, riskTags):
           '\n'
           '#include <string>\n'
           '\n'
-          '#include "base/basictypes.h"\n'
           '#include "base/values.h"\n'
           '#include "components/policy/core/common/policy_details.h"\n'
           '#include "components/policy/core/common/policy_map.h"\n'
@@ -858,7 +857,7 @@ def _WritePolicyRiskTagHeader(policies, os, f, riskTags):
   f.write('#ifndef CHROME_COMMON_POLICY_RISK_TAG_H_\n'
           '#define CHROME_COMMON_POLICY_RISK_TAG_H_\n'
           '\n'
-          '#include "base/basictypes.h"\n'
+          '#include <stddef.h>\n'
           '\n'
           'namespace policy {\n'
           '\n' + \
@@ -1000,7 +999,6 @@ CPP_HEAD = '''
 #include <limits>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
@@ -1025,7 +1023,7 @@ base::Value* DecodeIntegerValue(google::protobuf::int64 value) {
       value > std::numeric_limits<int>::max()) {
     LOG(WARNING) << "Integer value " << value
                  << " out of numeric limits, ignoring.";
-    return NULL;
+    return nullptr;
   }
 
   return new base::FundamentalValue(static_cast<int>(value));

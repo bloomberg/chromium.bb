@@ -211,7 +211,6 @@ target(base_target_type, "base") {
     "base64url.h",
     "base_export.h",
     "base_switches.h",
-    "basictypes.h",
     "big_endian.cc",
     "big_endian.h",
     "bind.h",

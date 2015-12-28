@@ -126,7 +126,6 @@ if (use_allocator == "tcmalloc") {
       "$tcmalloc_dir/src/base/atomicops-internals-windows.h",
       "$tcmalloc_dir/src/base/atomicops.h",
       "$tcmalloc_dir/src/base/atomicops_internals_portable.h",
-      "$tcmalloc_dir/src/base/basictypes.h",
       "$tcmalloc_dir/src/base/commandlineflags.h",
       "$tcmalloc_dir/src/base/cycleclock.h",
 

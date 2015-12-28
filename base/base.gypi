@@ -111,7 +111,6 @@
           'base_paths_win.cc',
           'base_paths_win.h',
           'base_switches.h',
-          'basictypes.h',
           'big_endian.cc',
           'big_endian.h',
           'bind.h',
