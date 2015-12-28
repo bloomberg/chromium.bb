@@ -793,13 +793,6 @@ crbug.com/368946 virtual/stable/web-animations-api/eased-keyframes.html [ Pass ]
 crbug.com/441559 virtual/stable/web-animations-api/partial-keyframes-unsupported.html [ Pass ]
 crbug.com/437696 virtual/stable/web-animations-api/additive-animations-unsupported.html [ Pass ]
 
-crbug.com/571905 css3/filters/effect-reference-hidpi-hw.html [ NeedsRebaseline ]
-crbug.com/571905 css3/filters/effect-reference-hw.html [ NeedsRebaseline ]
-crbug.com/571905 css3/filters/effect-reference-ordering-hw.html [ NeedsRebaseline ]
-crbug.com/571905 css3/filters/effect-reference-subregion-hw.html [ NeedsRebaseline ]
-crbug.com/571905 css3/filters/effect-reference-zoom-hw.html [ NeedsRebaseline ]
-crbug.com/571905 svg/filters/feDropShadow.svg [ NeedsRebaseline ]
-
 # switching to apache-win32: needs triaging.
 crbug.com/528062 [ Win ] http/tests/css/missing-repaint-after-slow-style-sheet.pl [ Failure ]
 crbug.com/528062 [ Win ] http/tests/local/blob/send-data-blob.html [ Failure ]
