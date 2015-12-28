@@ -6453,6 +6453,7 @@ void GLES2DecoderImpl::DoGetRenderbufferParameteriv(
         glGetRenderbufferParameterivEXT(target, GL_RENDERBUFFER_SAMPLES_EXT,
             params);
       }
+      break;
     default:
       glGetRenderbufferParameterivEXT(target, pname, params);
       break;
