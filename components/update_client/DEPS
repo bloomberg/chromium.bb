@@ -4,7 +4,6 @@ include_rules = [
   "+crypto",
   "+libxml",
   "+net",
-  "+ui/base/win",
   "+third_party/libxml",
   "+third_party/zlib",
 ]
