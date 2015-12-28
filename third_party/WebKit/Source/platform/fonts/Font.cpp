@@ -637,45 +637,19 @@ int Font::emphasisMarkHeight(const AtomicString& mark) const
     return markFontData->fontMetrics().height();
 }
 
-void Font::paintGlyphs(SkCanvas* canvas, const SkPaint& paint, const SimpleFontData* font,
-    const Glyph glyphs[], unsigned numGlyphs,
-    const SkPoint pos[], const FloatRect& textRect, float deviceScaleFactor) const
-{
-    SkPaint fontPaint(paint);
-    font->platformData().setupPaint(&fontPaint, deviceScaleFactor, this);
-    fontPaint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-    canvas->drawPosText(glyphs, numGlyphs * sizeof(Glyph), pos, fontPaint);
-}
-
-void Font::paintGlyphsHorizontal(SkCanvas* canvas, const SkPaint& paint, const SimpleFontData* font,
-    const Glyph glyphs[], unsigned numGlyphs,
-    const SkScalar xpos[], SkScalar constY, const FloatRect& textRect, float deviceScaleFactor) const
-{
-    SkPaint fontPaint(paint);
-    font->platformData().setupPaint(&fontPaint, deviceScaleFactor, this);
-    fontPaint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-    canvas->drawPosTextH(glyphs, numGlyphs * sizeof(Glyph), xpos, constY, fontPaint);
-}
-
 void Font::drawGlyphs(SkCanvas* canvas, const SkPaint& paint, const SimpleFontData* font,
     const GlyphBuffer& glyphBuffer, unsigned from, unsigned numGlyphs,
-    const FloatPoint& point, const FloatRect& textRect, float deviceScaleFactor) const
+    const FloatPoint& point, float deviceScaleFactor) const
 {
     ASSERT(glyphBuffer.size() >= from + numGlyphs);
 
-    if (!glyphBuffer.hasVerticalOffsets()) {
-        Vector<SkScalar, 64> xpos(numGlyphs);
-        for (unsigned i = 0; i < numGlyphs; i++)
-            xpos[i] = SkFloatToScalar(point.x() + glyphBuffer.xOffsetAt(from + i));
-
-        paintGlyphsHorizontal(canvas, paint, font, glyphBuffer.glyphs(from), numGlyphs, xpos.data(),
-            SkFloatToScalar(point.y()), textRect, deviceScaleFactor);
-        return;
-    }
+    // We only ever reach this fallback code path when failing to build a text blob due to
+    // verticalAnyUpright text in the buffer => the buffer is guaranteed to store vertical offsets.
+    ASSERT(glyphBuffer.hasVerticalOffsets());
 
     bool drawVertically = font->platformData().isVerticalAnyUpright() && font->verticalData();
 
-    int canvasStackLevel = canvas->getSaveCount();
+    SkAutoCanvasRestore autoRestore(canvas, false);
     if (drawVertically) {
         canvas->save();
         canvas->concat(affineTransformToSkMatrix(AffineTransform(0, -1, 1, 0, point.x(), point.y())));
@@ -684,7 +658,6 @@ void Font::drawGlyphs(SkCanvas* canvas, const SkPaint& paint, const SimpleFontDa
 
     const float verticalBaselineXOffset = drawVertically ? SkFloatToScalar(font->fontMetrics().floatAscent() - font->fontMetrics().floatAscent(IdeographicBaseline)) : 0;
 
-    ASSERT(glyphBuffer.hasVerticalOffsets());
     Vector<SkPoint, 32> pos(numGlyphs);
     for (unsigned i = 0; i < numGlyphs; i++) {
         pos[i].set(
@@ -692,8 +665,10 @@ void Font::drawGlyphs(SkCanvas* canvas, const SkPaint& paint, const SimpleFontDa
             SkFloatToScalar(point.y() + glyphBuffer.yOffsetAt(from + i)));
     }
 
-    paintGlyphs(canvas, paint, font, glyphBuffer.glyphs(from), numGlyphs, pos.data(), textRect, deviceScaleFactor);
-    canvas->restoreToCount(canvasStackLevel);
+    SkPaint fontPaint(paint);
+    font->platformData().setupPaint(&fontPaint, deviceScaleFactor, this);
+    fontPaint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+    canvas->drawPosText(glyphBuffer.glyphs(from), numGlyphs * sizeof(Glyph), pos.data(), fontPaint);
 }
 
 void Font::drawTextBlob(SkCanvas* canvas, const SkPaint& paint, const SkTextBlob* blob, const SkPoint& origin) const
@@ -747,13 +722,13 @@ void Font::drawGlyphBuffer(SkCanvas* canvas, const SkPaint& paint, const TextRun
         const SimpleFontData* nextFontData = glyphBuffer.fontDataAt(nextGlyph);
 
         if (nextFontData != fontData) {
-            drawGlyphs(canvas, paint, fontData, glyphBuffer, lastFrom, nextGlyph - lastFrom, point, runInfo.bounds, deviceScaleFactor);
+            drawGlyphs(canvas, paint, fontData, glyphBuffer, lastFrom, nextGlyph - lastFrom, point, deviceScaleFactor);
             lastFrom = nextGlyph;
             fontData = nextFontData;
         }
     }
 
-    drawGlyphs(canvas, paint, fontData, glyphBuffer, lastFrom, nextGlyph - lastFrom, point, runInfo.bounds, deviceScaleFactor);
+    drawGlyphs(canvas, paint, fontData, glyphBuffer, lastFrom, nextGlyph - lastFrom, point, deviceScaleFactor);
 }
 
 float Font::floatWidthForSimpleText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* glyphBounds) const
