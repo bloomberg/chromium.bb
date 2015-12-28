@@ -219,9 +219,6 @@ crbug.com/352405 virtual/threaded/animations/transition-and-animation-1.html [ P
 
 crbug.com/461179 virtual/spv2/paint/invalidation/invalidate-when-receiving-paint-layer.html [ Failure ]
 
-crbug.com/327832 tables/mozilla/bugs/bug3037-1.html [ NeedsRebaseline ]
-crbug.com/327832 fast/dynamic/insert-before-table-part-in-continuation.html [ NeedsRebaseline ]
-
 crbug.com/542541 [ Debug ] fast/events/click-count.html [ Pass Failure ]
 crbug.com/542541 [ Debug ] virtual/trustedeventsdefaultaction/fast/events/click-count.html [ Pass Failure ]
 crbug.com/542541 [ Debug ] virtual/pointerevent/fast/events/click-count.html [ Pass Failure ]
