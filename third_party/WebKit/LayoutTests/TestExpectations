@@ -244,6 +244,8 @@ crbug.com/524859 transforms/2d/hindi-rotated.html [ NeedsManualRebaseline ]
 crbug.com/569139 fast/js/string-replace-2.html [ NeedsManualRebaseline ]
 crbug.com/569139 fast/js/regexp-caching.html [ NeedsManualRebaseline ]
 
+crbug.com/322039 fast/block/float/remove-div-after-float-and-before-anonymous-block-container.html [ NeedsRebaseline ]
+
 crbug.com/498539 http/tests/inspector/elements/styles/selector-line.html [ Pass Timeout ]
 crbug.com/498539 http/tests/inspector/network/network-datareceived.html [ Pass Timeout ]
 crbug.com/498539 [ Win ] inspector/tracing/decode-resize.html [ Failure Timeout ]
