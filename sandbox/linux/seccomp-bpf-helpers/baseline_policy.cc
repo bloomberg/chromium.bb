@@ -231,7 +231,7 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
     return RestrictSocketcallCommand();
 #endif
 
-#if defined(__x86_64__)
+#if !defined(__i386__)
   if (sysno == __NR_getsockopt || sysno ==__NR_setsockopt) {
     // Used by Mojo EDK to catch a message pipe being sent over itself.
     const Arg<int> level(1);
