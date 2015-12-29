@@ -317,7 +317,7 @@ scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessCreateJob(
       response.reset(new base::DictionaryValue);
       response->SetString("job_id", job_id);
       response->SetInteger("expires_in", expires_in);
-      return std::move(response);
+      return response;
 
     case LocalPrintJob::CREATE_INVALID_TICKET:
       return CreateError("invalid_ticket");
