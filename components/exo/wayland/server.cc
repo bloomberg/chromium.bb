@@ -10,8 +10,8 @@
 #include <wayland-server-core.h>
 #include <wayland-server-protocol-core.h>
 #include <xdg-shell-unstable-v5-server-protocol.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
@@ -57,7 +57,7 @@ template <class T>
 scoped_ptr<T> TakeUserDataAs(wl_resource* resource) {
   scoped_ptr<T> user_data = make_scoped_ptr(GetUserDataAs<T>(resource));
   wl_resource_set_user_data(resource, nullptr);
-  return user_data.Pass();
+  return user_data;
 }
 
 template <class T>
@@ -148,7 +148,7 @@ void surface_frame(wl_client* client,
   GetUserDataAs<Surface>(resource)
       ->RequestFrameCallback(cancelable_callback->callback());
 
-  SetImplementation(callback_resource, nullptr, cancelable_callback.Pass());
+  SetImplementation(callback_resource, nullptr, std::move(cancelable_callback));
 }
 
 void surface_set_opaque_region(wl_client* client,
@@ -242,7 +242,8 @@ void compositor_create_surface(wl_client* client,
   // Set the surface resource property for type-checking downcast support.
   surface->SetProperty(kSurfaceResourceKey, surface_resource);
 
-  SetImplementation(surface_resource, &surface_implementation, surface.Pass());
+  SetImplementation(surface_resource, &surface_implementation,
+                    std::move(surface));
 }
 
 void compositor_create_region(wl_client* client,
@@ -257,7 +258,7 @@ void compositor_create_region(wl_client* client,
     return;
   }
 
-  SetImplementation(region_resource, &region_implementation, region.Pass());
+  SetImplementation(region_resource, &region_implementation, std::move(region));
 }
 
 const struct wl_compositor_interface compositor_implementation = {
@@ -339,7 +340,7 @@ void shm_pool_create_buffer(wl_client* client,
   buffer->set_release_callback(
       base::Bind(&wl_buffer_send_release, base::Unretained(buffer_resource)));
 
-  SetImplementation(buffer_resource, &buffer_implementation, buffer.Pass());
+  SetImplementation(buffer_resource, &buffer_implementation, std::move(buffer));
 }
 
 void shm_pool_destroy(wl_client* client, wl_resource* resource) {
@@ -377,7 +378,7 @@ void shm_create_pool(wl_client* client,
   }
 
   SetImplementation(shm_pool_resource, &shm_pool_implementation,
-                    shared_memory.Pass());
+                    std::move(shared_memory));
 }
 
 const struct wl_shm_interface shm_implementation = {shm_create_pool};
@@ -581,7 +582,7 @@ void subcompositor_get_subsurface(wl_client* client,
   }
 
   SetImplementation(subsurface_resource, &subsurface_implementation,
-                    subsurface.Pass());
+                    std::move(subsurface));
 }
 
 const struct wl_subcompositor_interface subcompositor_implementation = {
@@ -706,7 +707,7 @@ void shell_get_shell_surface(wl_client* client,
   }
 
   SetImplementation(shell_surface_resource, &shell_surface_implementation,
-                    shell_surface.Pass());
+                    std::move(shell_surface));
 }
 
 const struct wl_shell_interface shell_implementation = {
@@ -871,7 +872,7 @@ void xdg_shell_get_xdg_surface(wl_client* client,
   shell_surface->SetToplevel();
 
   SetImplementation(xdg_surface_resource, &xdg_surface_implementation,
-                    shell_surface.Pass());
+                    std::move(shell_surface));
 }
 
 void xdg_shell_get_xdg_popup(wl_client* client,

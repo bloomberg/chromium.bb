@@ -4,6 +4,8 @@
 
 #include "components/exo/surface.h"
 
+#include <utility>
+
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -269,7 +271,7 @@ void Surface::CommitSurfaceHierarchy() {
     if (texture_mailbox_release_callback) {
       // Update layer with the new contents.
       layer()->SetTextureMailbox(texture_mailbox,
-                                 texture_mailbox_release_callback.Pass(),
+                                 std::move(texture_mailbox_release_callback),
                                  texture_mailbox.size_in_pixels());
       layer()->SetTextureFlipped(false);
       layer()->SetBounds(gfx::Rect(layer()->bounds().origin(),
@@ -402,7 +404,7 @@ void Surface::OnCompositingEnded(ui::Compositor* compositor) {
       current_buffer_->ProduceTextureMailbox(&texture_mailbox);
   if (texture_mailbox_release_callback) {
     layer()->SetTextureMailbox(texture_mailbox,
-                               texture_mailbox_release_callback.Pass(),
+                               std::move(texture_mailbox_release_callback),
                                texture_mailbox.size_in_pixels());
     layer()->SetTextureFlipped(false);
     layer()->SchedulePaint(gfx::Rect(texture_mailbox.size_in_pixels()));

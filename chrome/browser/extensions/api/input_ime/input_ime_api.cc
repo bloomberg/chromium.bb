@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 
+#include <utility>
+
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/extensions/api/input_ime.h"
 #include "chrome/common/extensions/api/input_ime/input_components_handler.h"
@@ -34,7 +36,7 @@ void ImeObserver::OnFocus(
   scoped_ptr<base::ListValue> args(input_ime::OnFocus::Create(context_value));
 
   DispatchEventToExtension(extensions::events::INPUT_IME_ON_FOCUS,
-                           input_ime::OnFocus::kEventName, args.Pass());
+                           input_ime::OnFocus::kEventName, std::move(args));
 }
 
 void ImeObserver::OnBlur(int context_id) {
@@ -44,7 +46,7 @@ void ImeObserver::OnBlur(int context_id) {
   scoped_ptr<base::ListValue> args(input_ime::OnBlur::Create(context_id));
 
   DispatchEventToExtension(extensions::events::INPUT_IME_ON_BLUR,
-                           input_ime::OnBlur::kEventName, args.Pass());
+                           input_ime::OnBlur::kEventName, std::move(args));
 }
 
 void ImeObserver::OnKeyEvent(
@@ -82,7 +84,7 @@ void ImeObserver::OnKeyEvent(
       input_ime::OnKeyEvent::Create(component_id, key_data_value));
 
   DispatchEventToExtension(extensions::events::INPUT_IME_ON_KEY_EVENT,
-                           input_ime::OnKeyEvent::kEventName, args.Pass());
+                           input_ime::OnKeyEvent::kEventName, std::move(args));
 }
 
 void ImeObserver::OnReset(const std::string& component_id) {
@@ -92,7 +94,7 @@ void ImeObserver::OnReset(const std::string& component_id) {
   scoped_ptr<base::ListValue> args(input_ime::OnReset::Create(component_id));
 
   DispatchEventToExtension(extensions::events::INPUT_IME_ON_RESET,
-                           input_ime::OnReset::kEventName, args.Pass());
+                           input_ime::OnReset::kEventName, std::move(args));
 }
 
 void ImeObserver::OnDeactivated(const std::string& component_id) {
@@ -104,7 +106,8 @@ void ImeObserver::OnDeactivated(const std::string& component_id) {
       input_ime::OnDeactivated::Create(component_id));
 
   DispatchEventToExtension(extensions::events::INPUT_IME_ON_DEACTIVATED,
-                           input_ime::OnDeactivated::kEventName, args.Pass());
+                           input_ime::OnDeactivated::kEventName,
+                           std::move(args));
 }
 
 // TODO(azurewei): This function implementation should be shared on all

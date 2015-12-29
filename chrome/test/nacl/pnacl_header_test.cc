@@ -4,6 +4,8 @@
 
 #include "chrome/test/nacl/pnacl_header_test.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/path_service.h"
 #include "base/test/scoped_path_override.h"
@@ -98,7 +100,7 @@ scoped_ptr<HttpResponse> PnaclHeaderTest::WatchForPexeFetch(
     http_response->set_code(net::HTTP_OK);
     http_response->set_content("");
     http_response->set_content_type("application/octet-stream");
-    return http_response.Pass();
+    return std::move(http_response);
   }
 
   // Skip other non-pexe files and let ServeFilesFromDirectory handle it.
@@ -130,7 +132,7 @@ scoped_ptr<HttpResponse> PnaclHeaderTest::WatchForPexeFetch(
   http_response->set_code(net::HTTP_NOT_FOUND);
   http_response->set_content("PEXE ... not found");
   http_response->set_content_type("application/octet-stream");
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 IN_PROC_BROWSER_TEST_F(PnaclHeaderTest, TestHasPnaclHeader) {

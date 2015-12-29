@@ -5,6 +5,7 @@
 #include "components/exo/shared_memory.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
@@ -75,7 +76,8 @@ scoped_ptr<Buffer> SharedMemory::CreateBuffer(const gfx::Size& size,
     return nullptr;
   }
 
-  return make_scoped_ptr(new Buffer(gpu_memory_buffer.Pass(), GL_TEXTURE_2D));
+  return make_scoped_ptr(
+      new Buffer(std::move(gpu_memory_buffer), GL_TEXTURE_2D));
 }
 
 }  // namespace exo

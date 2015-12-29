@@ -8,8 +8,8 @@
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
 #include <stdint.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -154,7 +154,7 @@ void Buffer::Texture::ReleaseTexImage(const gpu::SyncToken& sync_token) {
 
 Buffer::Buffer(scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer,
                unsigned texture_target)
-    : gpu_memory_buffer_(gpu_memory_buffer.Pass()),
+    : gpu_memory_buffer_(std::move(gpu_memory_buffer)),
       texture_target_(texture_target),
       use_count_(0) {}
 
@@ -170,7 +170,7 @@ scoped_ptr<cc::SingleReleaseCallback> Buffer::ProduceTextureMailbox(
 
   // Creating a new texture is relatively expensive so we reuse the last
   // texture whenever possible.
-  scoped_ptr<Texture> texture = last_texture_.Pass();
+  scoped_ptr<Texture> texture = std::move(last_texture_);
 
   // If texture is lost, destroy it to ensure that we create a new one below.
   if (texture && texture->IsLost())
@@ -251,7 +251,7 @@ void Buffer::ReleaseTexture(base::WeakPtr<Buffer> buffer,
 
   // Allow buffer to reused texture if it's not lost.
   if (!is_lost)
-    buffer->last_texture_ = texture.Pass();
+    buffer->last_texture_ = std::move(texture);
 
   buffer->Release();
 }

@@ -10,6 +10,8 @@
 
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "chrome/common/chrome_switches.h"
@@ -39,10 +41,10 @@ class ImeObserverNonChromeOS : public ui::ImeObserver {
     }
 
     scoped_ptr<extensions::Event> event(
-        new extensions::Event(histogram_value, event_name, args.Pass()));
+        new extensions::Event(histogram_value, event_name, std::move(args)));
     event->restrict_to_browser_context = profile_;
     extensions::EventRouter::Get(profile_)
-        ->DispatchEventToExtension(extension_id_, event.Pass());
+        ->DispatchEventToExtension(extension_id_, std::move(event));
   }
 
   DISALLOW_COPY_AND_ASSIGN(ImeObserverNonChromeOS);
