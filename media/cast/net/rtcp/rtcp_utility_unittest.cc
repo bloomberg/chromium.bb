@@ -43,7 +43,8 @@ class RtcpParserTest : public ::testing::Test {
     EXPECT_TRUE(parser.has_sender_report());
     EXPECT_EQ(kNtpHigh, parser.sender_report().ntp_seconds);
     EXPECT_EQ(kNtpLow, parser.sender_report().ntp_fraction);
-    EXPECT_EQ(kRtpTimestamp, parser.sender_report().rtp_timestamp);
+    EXPECT_EQ(kRtpTimestamp,
+              parser.sender_report().rtp_timestamp.lower_32_bits());
     EXPECT_EQ(kSendPacketCount, parser.sender_report().send_packet_count);
     EXPECT_EQ(kSendOctetCount, parser.sender_report().send_octet_count);
   }
@@ -332,7 +333,7 @@ TEST_F(RtcpParserTest, InjectReceiverReportWithReceiverLogVerificationBase) {
   testing_clock.Advance(base::TimeDelta::FromMilliseconds(kTimeBaseMs));
 
   RtcpReceiverLogMessage receiver_log;
-  RtcpReceiverFrameLogMessage frame_log(kRtpTimestamp);
+  RtcpReceiverFrameLogMessage frame_log(RtpTimeTicks().Expand(kRtpTimestamp));
   RtcpReceiverEventLogMessage event_log;
 
   event_log.type = FRAME_ACK_SENT;
@@ -377,7 +378,7 @@ TEST_F(RtcpParserTest, InjectReceiverReportWithReceiverLogVerificationMulti) {
   RtcpReceiverLogMessage receiver_log;
 
   for (int j = 0; j < 100; ++j) {
-    RtcpReceiverFrameLogMessage frame_log(kRtpTimestamp);
+    RtcpReceiverFrameLogMessage frame_log(RtpTimeTicks().Expand(kRtpTimestamp));
     RtcpReceiverEventLogMessage event_log;
     event_log.type = FRAME_ACK_SENT;
     event_log.event_timestamp = testing_clock.NowTicks();

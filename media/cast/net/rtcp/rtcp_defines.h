@@ -66,15 +66,11 @@ struct RtcpReceiverEventLogMessage {
 typedef std::list<RtcpReceiverEventLogMessage> RtcpReceiverEventLogMessages;
 
 struct RtcpReceiverFrameLogMessage {
-  explicit RtcpReceiverFrameLogMessage(uint32_t rtp_timestamp);
+  explicit RtcpReceiverFrameLogMessage(RtpTimeTicks rtp_timestamp);
   ~RtcpReceiverFrameLogMessage();
 
-  uint32_t rtp_timestamp_;
+  const RtpTimeTicks rtp_timestamp_;
   RtcpReceiverEventLogMessages event_log_messages_;
-
-  // TODO(mikhal): Investigate what's the best way to allow adding
-  // DISALLOW_COPY_AND_ASSIGN, as currently it contradicts the implementation
-  // and possible changes have a big impact on design.
 };
 
 typedef std::list<RtcpReceiverFrameLogMessage> RtcpReceiverLogMessage;
@@ -145,7 +141,7 @@ struct SendRtcpFromRtpReceiver_Params {
   RtcpTimeData time_data;
   scoped_ptr<RtcpCastMessage> cast_message;
   base::TimeDelta target_delay;
-  scoped_ptr<std::vector<std::pair<RtpTimestamp, RtcpEvent> > > rtcp_events;
+  scoped_ptr<std::vector<std::pair<RtpTimeTicks, RtcpEvent>>> rtcp_events;
   scoped_ptr<RtpReceiverStatistics> rtp_receiver_statistics;
 };
 

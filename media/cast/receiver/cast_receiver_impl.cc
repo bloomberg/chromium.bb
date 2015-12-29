@@ -127,7 +127,7 @@ void CastReceiverImpl::DecodeEncodedAudioFrame(
                                           audio_codec_));
   }
   const uint32_t frame_id = encoded_frame->frame_id;
-  const uint32_t rtp_timestamp = encoded_frame->rtp_timestamp;
+  const RtpTimeTicks rtp_timestamp = encoded_frame->rtp_timestamp;
   const base::TimeTicks playout_time = encoded_frame->reference_time;
   audio_decoder_->DecodeFrame(
       std::move(encoded_frame),
@@ -149,13 +149,13 @@ void CastReceiverImpl::DecodeEncodedVideoFrame(
   TRACE_EVENT_INSTANT2(
       "cast_perf_test", "PullEncodedVideoFrame",
       TRACE_EVENT_SCOPE_THREAD,
-      "rtp_timestamp", encoded_frame->rtp_timestamp,
+      "rtp_timestamp", encoded_frame->rtp_timestamp.lower_32_bits(),
       "render_time", encoded_frame->reference_time.ToInternalValue());
 
   if (!video_decoder_)
     video_decoder_.reset(new VideoDecoder(cast_environment_, video_codec_));
   const uint32_t frame_id = encoded_frame->frame_id;
-  const uint32_t rtp_timestamp = encoded_frame->rtp_timestamp;
+  const RtpTimeTicks rtp_timestamp = encoded_frame->rtp_timestamp;
   const base::TimeTicks playout_time = encoded_frame->reference_time;
   video_decoder_->DecodeFrame(
       std::move(encoded_frame),
@@ -168,7 +168,7 @@ void CastReceiverImpl::EmitDecodedAudioFrame(
     const scoped_refptr<CastEnvironment>& cast_environment,
     const AudioFrameDecodedCallback& callback,
     uint32_t frame_id,
-    uint32_t rtp_timestamp,
+    RtpTimeTicks rtp_timestamp,
     const base::TimeTicks& playout_time,
     scoped_ptr<AudioBus> audio_bus,
     bool is_continuous) {
@@ -195,7 +195,7 @@ void CastReceiverImpl::EmitDecodedVideoFrame(
     const scoped_refptr<CastEnvironment>& cast_environment,
     const VideoFrameDecodedCallback& callback,
     uint32_t frame_id,
-    uint32_t rtp_timestamp,
+    RtpTimeTicks rtp_timestamp,
     const base::TimeTicks& playout_time,
     const scoped_refptr<VideoFrame>& video_frame,
     bool is_continuous) {
@@ -217,7 +217,7 @@ void CastReceiverImpl::EmitDecodedVideoFrame(
     TRACE_EVENT_INSTANT1(
         "cast_perf_test", "FrameDecoded",
         TRACE_EVENT_SCOPE_THREAD,
-        "rtp_timestamp", rtp_timestamp);
+        "rtp_timestamp", rtp_timestamp.lower_32_bits());
   }
 
   callback.Run(video_frame, playout_time, is_continuous);

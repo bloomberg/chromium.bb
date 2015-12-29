@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "media/cast/common/rtp_time.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/sender/audio_encoder.h"
 
@@ -86,7 +87,7 @@ void AudioSender::InsertAudio(scoped_ptr<AudioBus> audio_bus,
   }
 
   const base::TimeDelta next_frame_duration =
-      RtpDeltaToTimeDelta(audio_bus->frames(), rtp_timebase());
+      RtpTimeDelta::FromTicks(audio_bus->frames()).ToTimeDelta(rtp_timebase());
   if (ShouldDropNextFrame(next_frame_duration))
     return;
 
@@ -104,7 +105,7 @@ int AudioSender::GetNumberOfFramesInEncoder() const {
 base::TimeDelta AudioSender::GetInFlightMediaDuration() const {
   const int samples_in_flight = samples_in_encoder_ +
       GetUnacknowledgedFrameCount() * audio_encoder_->GetSamplesPerFrame();
-  return RtpDeltaToTimeDelta(samples_in_flight, rtp_timebase());
+  return RtpTimeDelta::FromTicks(samples_in_flight).ToTimeDelta(rtp_timebase());
 }
 
 void AudioSender::OnEncodedAudioFrame(

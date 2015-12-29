@@ -11,7 +11,6 @@ RtpCastHeader::RtpCastHeader()
     : marker(false),
       payload_type(0),
       sequence_number(0),
-      rtp_timestamp(0),
       sender_ssrc(0),
       is_key_frame(false),
       frame_id(0),

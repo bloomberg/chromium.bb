@@ -36,8 +36,7 @@ class TestRtpPacketTransport : public PacketSender {
         packets_sent_(0),
         expected_number_of_packets_(0),
         expected_packet_id_(0),
-        expected_frame_id_(0),
-        expected_rtp_timestamp_(0) {}
+        expected_frame_id_(0) {}
 
   void VerifyRtpHeader(const RtpCastHeader& rtp_header) {
     VerifyCommonRtpHeader(rtp_header);
@@ -87,7 +86,7 @@ class TestRtpPacketTransport : public PacketSender {
     expected_number_of_packets_ = expected_number_of_packets;
   }
 
-  void set_rtp_timestamp(uint32_t rtp_timestamp) {
+  void set_rtp_timestamp(RtpTimeTicks rtp_timestamp) {
     expected_rtp_timestamp_ = rtp_timestamp;
   }
 
@@ -99,7 +98,7 @@ class TestRtpPacketTransport : public PacketSender {
   // Assuming packets arrive in sequence.
   int expected_packet_id_;
   uint32_t expected_frame_id_;
-  uint32_t expected_rtp_timestamp_;
+  RtpTimeTicks expected_rtp_timestamp_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestRtpPacketTransport);
@@ -124,7 +123,7 @@ class RtpPacketizerTest : public ::testing::Test {
     video_frame_.frame_id = 0;
     video_frame_.referenced_frame_id = video_frame_.frame_id - 1;
     video_frame_.data.assign(kFrameSize, 123);
-    video_frame_.rtp_timestamp = 0x0055aa11;
+    video_frame_.rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(0x0055aa11));
   }
 
   void RunTasks(int during_ms) {

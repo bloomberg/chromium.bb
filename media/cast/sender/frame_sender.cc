@@ -72,7 +72,6 @@ FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
           << animated_playout_delay.InMilliseconds();
   SetTargetPlayoutDelay(animated_playout_delay_);
   send_target_playout_delay_ = false;
-  memset(frame_rtp_timestamps_, 0, sizeof(frame_rtp_timestamps_));
 }
 
 FrameSender::~FrameSender() {
@@ -103,10 +102,10 @@ void FrameSender::SendRtcpReport(bool schedule_future_reports) {
   const base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   const base::TimeDelta time_delta =
       now - GetRecordedReferenceTime(last_sent_frame_id_);
-  const int64_t rtp_delta = TimeDeltaToRtpDelta(time_delta, rtp_timebase_);
-  const uint32_t now_as_rtp_timestamp =
-      GetRecordedRtpTimestamp(last_sent_frame_id_) +
-      static_cast<uint32_t>(rtp_delta);
+  const RtpTimeDelta rtp_delta =
+      RtpTimeDelta::FromTimeDelta(time_delta, rtp_timebase_);
+  const RtpTimeTicks now_as_rtp_timestamp =
+      GetRecordedRtpTimestamp(last_sent_frame_id_) + rtp_delta;
   transport_sender_->SendSenderReport(ssrc_, now, now_as_rtp_timestamp);
 
   if (schedule_future_reports)
@@ -179,7 +178,7 @@ void FrameSender::ResendForKickstart() {
 
 void FrameSender::RecordLatestFrameTimestamps(uint32_t frame_id,
                                               base::TimeTicks reference_time,
-                                              RtpTimestamp rtp_timestamp) {
+                                              RtpTimeTicks rtp_timestamp) {
   DCHECK(!reference_time.is_null());
   frame_reference_times_[frame_id % arraysize(frame_reference_times_)] =
       reference_time;
@@ -191,7 +190,7 @@ base::TimeTicks FrameSender::GetRecordedReferenceTime(uint32_t frame_id) const {
   return frame_reference_times_[frame_id % arraysize(frame_reference_times_)];
 }
 
-RtpTimestamp FrameSender::GetRecordedRtpTimestamp(uint32_t frame_id) const {
+RtpTimeTicks FrameSender::GetRecordedRtpTimestamp(uint32_t frame_id) const {
   return frame_rtp_timestamps_[frame_id % arraysize(frame_rtp_timestamps_)];
 }
 
@@ -257,7 +256,7 @@ void FrameSender::SendEncodedFrame(
     TRACE_EVENT_INSTANT1(
         "cast_perf_test", "VideoFrameEncoded",
         TRACE_EVENT_SCOPE_THREAD,
-        "rtp_timestamp", encoded_frame->rtp_timestamp);
+        "rtp_timestamp", encoded_frame->rtp_timestamp.lower_32_bits());
   }
 
   // At the start of the session, it's important to send reports before each
@@ -287,7 +286,7 @@ void FrameSender::SendEncodedFrame(
   TRACE_EVENT_ASYNC_BEGIN1("cast.stream",
       is_audio_ ? "Audio Transport" : "Video Transport",
       frame_id,
-      "rtp_timestamp", encoded_frame->rtp_timestamp);
+      "rtp_timestamp", encoded_frame->rtp_timestamp.lower_32_bits());
   transport_sender_->InsertFrame(ssrc_, *encoded_frame);
 }
 

@@ -34,7 +34,7 @@ struct RtpCastHeader {
   bool marker;
   uint8_t payload_type;
   uint16_t sequence_number;
-  uint32_t rtp_timestamp;
+  RtpTimeTicks rtp_timestamp;
   uint32_t sender_ssrc;
   uint8_t num_csrcs;
 

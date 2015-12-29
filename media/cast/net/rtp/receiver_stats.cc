@@ -74,7 +74,8 @@ RtpReceiverStatistics ReceiverStats::GetStatistics() {
   return ret;
 }
 
-void ReceiverStats::UpdateStatistics(const RtpCastHeader& header) {
+void ReceiverStats::UpdateStatistics(const RtpCastHeader& header,
+                                     int rtp_timebase) {
   const uint16_t new_seq_num = header.sequence_number;
 
   if (interval_number_packets_ == 0) {
@@ -97,17 +98,19 @@ void ReceiverStats::UpdateStatistics(const RtpCastHeader& header) {
   }
 
   // Compute Jitter.
-  base::TimeTicks now = clock_->NowTicks();
-  base::TimeDelta delta_new_timestamp =
-      base::TimeDelta::FromMilliseconds(header.rtp_timestamp);
+  const base::TimeTicks now = clock_->NowTicks();
   if (total_number_packets_ > 0) {
+    const base::TimeDelta packet_time_difference =
+        now - last_received_packet_time_;
+    const base::TimeDelta media_time_differerence =
+        (header.rtp_timestamp - last_received_rtp_timestamp_)
+            .ToTimeDelta(rtp_timebase);
+    const base::TimeDelta delta =
+        packet_time_difference - media_time_differerence;
     // Update jitter.
-    base::TimeDelta delta =
-        (now - last_received_packet_time_) -
-        ((delta_new_timestamp - last_received_timestamp_) / 90);
     jitter_ += (delta - jitter_) / 16;
   }
-  last_received_timestamp_ = delta_new_timestamp;
+  last_received_rtp_timestamp_ = header.rtp_timestamp;
   last_received_packet_time_ = now;
 
   // Increment counters.

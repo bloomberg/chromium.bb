@@ -45,7 +45,7 @@ const int kTargetUtilizationPercentage = 75;
 // it.
 void LogVideoCaptureTimestamps(CastEnvironment* cast_environment,
                                const media::VideoFrame& video_frame,
-                               RtpTimestamp rtp_timestamp) {
+                               RtpTimeTicks rtp_timestamp) {
   scoped_ptr<FrameEvent> capture_begin_event(new FrameEvent());
   capture_begin_event->type = FRAME_CAPTURE_BEGIN;
   capture_begin_event->media_type = VIDEO_EVENT;
@@ -154,8 +154,8 @@ void VideoSender::InsertRawVideoFrame(
     return;
   }
 
-  const RtpTimestamp rtp_timestamp =
-      TimeDeltaToRtpDelta(video_frame->timestamp(), kVideoFrequency);
+  const RtpTimeTicks rtp_timestamp =
+      RtpTimeTicks::FromTimeDelta(video_frame->timestamp(), kVideoFrequency);
   LogVideoCaptureTimestamps(cast_environment_.get(), *video_frame,
                             rtp_timestamp);
 
@@ -164,7 +164,7 @@ void VideoSender::InsertRawVideoFrame(
       "cast_perf_test", "InsertRawVideoFrame",
       TRACE_EVENT_SCOPE_THREAD,
       "timestamp", reference_time.ToInternalValue(),
-      "rtp_timestamp", rtp_timestamp);
+      "rtp_timestamp", rtp_timestamp.lower_32_bits());
 
   bool low_latency_mode;
   if (video_frame->metadata()->GetBoolean(
@@ -182,14 +182,13 @@ void VideoSender::InsertRawVideoFrame(
   // deeper in the implementation where each frame's RTP timestamp needs to be
   // unique.
   if (!last_enqueued_frame_reference_time_.is_null() &&
-      (!IsNewerRtpTimestamp(rtp_timestamp,
-                            last_enqueued_frame_rtp_timestamp_) ||
+      (rtp_timestamp <= last_enqueued_frame_rtp_timestamp_ ||
        reference_time <= last_enqueued_frame_reference_time_)) {
     VLOG(1) << "Dropping video frame: RTP or reference time did not increase.";
     TRACE_EVENT_INSTANT2("cast.stream", "Video Frame Drop",
-                        TRACE_EVENT_SCOPE_THREAD,
-                        "rtp_timestamp", rtp_timestamp,
-                        "reason", "time did not increase");
+                         TRACE_EVENT_SCOPE_THREAD,
+                         "rtp_timestamp", rtp_timestamp.lower_32_bits(),
+                         "reason", "time did not increase");
     return;
   }
 
@@ -231,9 +230,9 @@ void VideoSender::InsertRawVideoFrame(
     video_encoder_->EmitFrames();
 
     TRACE_EVENT_INSTANT2("cast.stream", "Video Frame Drop",
-                        TRACE_EVENT_SCOPE_THREAD,
-                        "rtp_timestamp", rtp_timestamp,
-                        "reason", "too much in flight");
+                         TRACE_EVENT_SCOPE_THREAD,
+                         "rtp_timestamp", rtp_timestamp.lower_32_bits(),
+                         "reason", "too much in flight");
     return;
   }
 
@@ -268,7 +267,7 @@ void VideoSender::InsertRawVideoFrame(
                      video_frame,
                      bitrate))) {
     TRACE_EVENT_ASYNC_BEGIN1("cast.stream", "Video Encode", video_frame.get(),
-                             "rtp_timestamp", rtp_timestamp);
+                             "rtp_timestamp", rtp_timestamp.lower_32_bits());
     frames_in_encoder_++;
     duration_in_encoder_ += duration_added_by_next_frame;
     last_enqueued_frame_rtp_timestamp_ = rtp_timestamp;
@@ -276,8 +275,8 @@ void VideoSender::InsertRawVideoFrame(
   } else {
     VLOG(1) << "Encoder rejected a frame.  Skipping...";
     TRACE_EVENT_INSTANT1("cast.stream", "Video Encode Reject",
-                        TRACE_EVENT_SCOPE_THREAD,
-                        "rtp_timestamp", rtp_timestamp);
+                         TRACE_EVENT_SCOPE_THREAD,
+                         "rtp_timestamp", rtp_timestamp.lower_32_bits());
   }
 }
 

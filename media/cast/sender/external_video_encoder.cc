@@ -24,6 +24,7 @@
 #include "media/base/video_util.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
+#include "media/cast/common/rtp_time.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/sender/vp8_quantizer_parser.h"
@@ -230,7 +231,7 @@ class ExternalVideoEncoder::VEAClientImpl
         encoded_frame->referenced_frame_id = encoded_frame->frame_id;
       else
         encoded_frame->referenced_frame_id = encoded_frame->frame_id - 1;
-      encoded_frame->rtp_timestamp = TimeDeltaToRtpDelta(
+      encoded_frame->rtp_timestamp = RtpTimeTicks::FromTimeDelta(
           request.video_frame->timestamp(), kVideoFrequency);
       encoded_frame->reference_time = request.reference_time;
       if (!stream_header_.empty()) {
@@ -316,8 +317,9 @@ class ExternalVideoEncoder::VEAClientImpl
              ",act=%c,ref=%d"),
             codec_profile_ == media::VP8PROFILE_ANY ? 'V' : 'H',
             key_frame ? 'K' : 'D', encoded_frame->frame_id,
-            encoded_frame->rtp_timestamp, request.target_bit_rate / 1000,
-            in_progress_frame_encodes_.size(), encoder_active_ ? 'Y' : 'N',
+            encoded_frame->rtp_timestamp.lower_32_bits(),
+            request.target_bit_rate / 1000, in_progress_frame_encodes_.size(),
+            encoder_active_ ? 'Y' : 'N',
             static_cast<int>(encoded_frame->referenced_frame_id % 1000));
         base::debug::SetCrashKeyValue(kZeroEncodeDetails, details);
         // Please forward crash reports to http://crbug.com/519022:

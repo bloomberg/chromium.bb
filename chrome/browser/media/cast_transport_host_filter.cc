@@ -220,7 +220,7 @@ void CastTransportHostFilter::OnSendSenderReport(
     int32_t channel_id,
     uint32_t ssrc,
     base::TimeTicks current_time,
-    uint32_t current_time_as_rtp_timestamp) {
+    media::cast::RtpTimeTicks current_time_as_rtp_timestamp) {
   media::cast::CastTransportSender* sender = id_map_.Lookup(channel_id);
   if (sender) {
     sender->SendSenderReport(ssrc,

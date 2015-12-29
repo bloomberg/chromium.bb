@@ -20,7 +20,7 @@
 #include "build/build_config.h"
 #include "media/base/mac/corevideo_glue.h"
 #include "media/base/mac/video_frame_mac.h"
-#include "media/cast/cast_defines.h"
+#include "media/cast/common/rtp_time.h"
 #include "media/cast/constants.h"
 #include "media/cast/sender/video_frame_factory.h"
 
@@ -31,11 +31,11 @@ namespace {
 
 // Container for the associated data of a video frame being processed.
 struct InProgressFrameEncode {
-  const RtpTimestamp rtp_timestamp;
+  const RtpTimeTicks rtp_timestamp;
   const base::TimeTicks reference_time;
   const VideoEncoder::FrameEncodedCallback frame_encoded_callback;
 
-  InProgressFrameEncode(RtpTimestamp rtp,
+  InProgressFrameEncode(RtpTimeTicks rtp,
                         base::TimeTicks r_time,
                         VideoEncoder::FrameEncodedCallback callback)
       : rtp_timestamp(rtp),
@@ -571,7 +571,7 @@ bool H264VideoToolboxEncoder::EncodeVideoFrame(
   // Wrap information we'll need after the frame is encoded in a heap object.
   // We'll get the pointer back from the VideoToolbox completion callback.
   scoped_ptr<InProgressFrameEncode> request(new InProgressFrameEncode(
-      TimeDeltaToRtpDelta(video_frame->timestamp(), kVideoFrequency),
+      RtpTimeTicks::FromTimeDelta(video_frame->timestamp(), kVideoFrequency),
       reference_time, frame_encoded_callback));
 
   // Build a suitable frame properties dictionary for keyframes.

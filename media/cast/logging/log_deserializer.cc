@@ -14,7 +14,8 @@
 
 using media::cast::FrameEventMap;
 using media::cast::PacketEventMap;
-using media::cast::RtpTimestamp;
+using media::cast::RtpTimeDelta;
+using media::cast::RtpTimeTicks;
 using media::cast::proto::AggregatedFrameEvent;
 using media::cast::proto::AggregatedPacketEvent;
 using media::cast::proto::BasePacketEvent;
@@ -73,7 +74,7 @@ bool PopulateDeserializedLog(base::BigEndianReader* reader,
   PacketEventMap packet_event_map;
 
   int num_frame_events = log->metadata.num_frame_events();
-  RtpTimestamp relative_rtp_timestamp = 0;
+  RtpTimeTicks relative_rtp_timestamp;
   uint16_t proto_size = 0;
   for (int i = 0; i < num_frame_events; i++) {
     if (!reader->ReadU16(&proto_size))
@@ -88,15 +89,15 @@ bool PopulateDeserializedLog(base::BigEndianReader* reader,
     // During serialization the RTP timestamp in proto is relative to previous
     // frame.
     // Adjust RTP timestamp back to value relative to first RTP timestamp.
+    relative_rtp_timestamp +=
+        RtpTimeDelta::FromTicks(frame_event->relative_rtp_timestamp());
     frame_event->set_relative_rtp_timestamp(
-        frame_event->relative_rtp_timestamp() + relative_rtp_timestamp);
-    relative_rtp_timestamp = frame_event->relative_rtp_timestamp();
+        relative_rtp_timestamp.lower_32_bits());
 
-    FrameEventMap::iterator it = frame_event_map.find(
-        frame_event->relative_rtp_timestamp());
+    FrameEventMap::iterator it = frame_event_map.find(relative_rtp_timestamp);
     if (it == frame_event_map.end()) {
       frame_event_map.insert(
-          std::make_pair(frame_event->relative_rtp_timestamp(), frame_event));
+          std::make_pair(relative_rtp_timestamp, frame_event));
     } else {
       // Events for the same frame might have been split into more than one
       // proto. Merge them.
@@ -107,7 +108,7 @@ bool PopulateDeserializedLog(base::BigEndianReader* reader,
   log->frame_events.swap(frame_event_map);
 
   int num_packet_events = log->metadata.num_packet_events();
-  relative_rtp_timestamp = 0;
+  relative_rtp_timestamp = RtpTimeTicks();
   for (int i = 0; i < num_packet_events; i++) {
     if (!reader->ReadU16(&proto_size))
       return false;
@@ -118,15 +119,15 @@ bool PopulateDeserializedLog(base::BigEndianReader* reader,
     if (!reader->Skip(proto_size))
       return false;
 
+    relative_rtp_timestamp +=
+        RtpTimeDelta::FromTicks(packet_event->relative_rtp_timestamp());
     packet_event->set_relative_rtp_timestamp(
-        packet_event->relative_rtp_timestamp() + relative_rtp_timestamp);
-    relative_rtp_timestamp = packet_event->relative_rtp_timestamp();
+        relative_rtp_timestamp.lower_32_bits());
 
-    PacketEventMap::iterator it = packet_event_map.find(
-        packet_event->relative_rtp_timestamp());
+    PacketEventMap::iterator it = packet_event_map.find(relative_rtp_timestamp);
     if (it == packet_event_map.end()) {
       packet_event_map.insert(
-          std::make_pair(packet_event->relative_rtp_timestamp(), packet_event));
+          std::make_pair(relative_rtp_timestamp, packet_event));
     } else {
       // Events for the same frame might have been split into more than one
       // proto. Merge them.

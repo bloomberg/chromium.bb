@@ -89,6 +89,8 @@
         '<(DEPTH)/testing/gtest.gyp:gtest',
       ],
       'sources': [
+        'common/expanded_value_base_unittest.cc',
+        'common/rtp_time_unittest.cc',
         'logging/encoding_event_subscriber_unittest.cc',
         'logging/receiver_time_offset_estimator_impl_unittest.cc',
         'logging/serialize_deserialize_test.cc',

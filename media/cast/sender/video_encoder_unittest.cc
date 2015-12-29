@@ -15,6 +15,7 @@
 #include "media/base/video_frame.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/common/rtp_time.h"
 #include "media/cast/sender/fake_video_encode_accelerator_factory.h"
 #include "media/cast/sender/video_encoder.h"
 #include "media/cast/sender/video_frame_factory.h"
@@ -171,14 +172,11 @@ class VideoEncoderTest
       uint32_t frame_id,
       uint32_t reference_frame_id) {
     return video_encoder_->EncodeVideoFrame(
-        video_frame,
-        Now(),
+        video_frame, Now(),
         base::Bind(&VideoEncoderTest::DeliverEncodedVideoFrame,
-                   base::Unretained(this),
-                   frame_id,
-                   reference_frame_id,
-                   TimeDeltaToRtpDelta(video_frame->timestamp(),
-                                       kVideoFrequency),
+                   base::Unretained(this), frame_id, reference_frame_id,
+                   RtpTimeTicks::FromTimeDelta(video_frame->timestamp(),
+                                               kVideoFrequency),
                    Now()));
   }
 
@@ -218,7 +216,7 @@ class VideoEncoderTest
   // bound in the callback returned from EncodeAndCheckDelivery().
   void DeliverEncodedVideoFrame(uint32_t expected_frame_id,
                                 uint32_t expected_last_referenced_frame_id,
-                                uint32_t expected_rtp_timestamp,
+                                RtpTimeTicks expected_rtp_timestamp,
                                 const base::TimeTicks& expected_reference_time,
                                 scoped_ptr<SenderEncodedFrame> encoded_frame) {
     EXPECT_TRUE(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));

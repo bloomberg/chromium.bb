@@ -101,9 +101,9 @@ class FrameSender {
   // media::cast::kMaxUnackedFrames.
   void RecordLatestFrameTimestamps(uint32_t frame_id,
                                    base::TimeTicks reference_time,
-                                   RtpTimestamp rtp_timestamp);
+                                   RtpTimeTicks rtp_timestamp);
   base::TimeTicks GetRecordedReferenceTime(uint32_t frame_id) const;
-  RtpTimestamp GetRecordedRtpTimestamp(uint32_t frame_id) const;
+  RtpTimeTicks GetRecordedRtpTimestamp(uint32_t frame_id) const;
 
   // Returns the number of frames that were sent but not yet acknowledged.
   int GetUnacknowledgedFrameCount() const;
@@ -179,7 +179,7 @@ class FrameSender {
   // local reference time and RTP media time).  These should only be accessed
   // through the Record/GetXXX() methods.
   base::TimeTicks frame_reference_times_[256];
-  RtpTimestamp frame_rtp_timestamps_[256];
+  RtpTimeTicks frame_rtp_timestamps_[256];
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<FrameSender> weak_factory_;

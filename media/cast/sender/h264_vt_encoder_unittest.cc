@@ -20,7 +20,7 @@
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
 #include "media/base/media_util.h"
-#include "media/cast/cast_defines.h"
+#include "media/cast/common/rtp_time.h"
 #include "media/cast/constants.h"
 #include "media/cast/sender/h264_vt_encoder.h"
 #include "media/cast/sender/video_frame_factory.h"
@@ -89,7 +89,7 @@ class MetadataRecorder : public base::RefCountedThreadSafe<MetadataRecorder> {
 
   void PushExpectation(uint32_t expected_frame_id,
                        uint32_t expected_last_referenced_frame_id,
-                       uint32_t expected_rtp_timestamp,
+                       RtpTimeTicks expected_rtp_timestamp,
                        const base::TimeTicks& expected_reference_time) {
     expectations_.push(Expectation{expected_frame_id,
                                    expected_last_referenced_frame_id,
@@ -125,7 +125,7 @@ class MetadataRecorder : public base::RefCountedThreadSafe<MetadataRecorder> {
   struct Expectation {
     uint32_t expected_frame_id;
     uint32_t expected_last_referenced_frame_id;
-    uint32_t expected_rtp_timestamp;
+    RtpTimeTicks expected_rtp_timestamp;
     base::TimeTicks expected_reference_time;
   };
   std::queue<Expectation> expectations_;
@@ -290,7 +290,7 @@ TEST_F(H264VideoToolboxEncoderTest, CheckFrameMetadataSequence) {
       &MetadataRecorder::CompareFrameWithExpected, metadata_recorder.get());
 
   metadata_recorder->PushExpectation(
-      0, 0, TimeDeltaToRtpDelta(frame_->timestamp(), kVideoFrequency),
+      0, 0, RtpTimeTicks::FromTimeDelta(frame_->timestamp(), kVideoFrequency),
       clock_->NowTicks());
   EXPECT_TRUE(encoder_->EncodeVideoFrame(frame_, clock_->NowTicks(), cb));
   message_loop_.RunUntilIdle();
@@ -299,7 +299,7 @@ TEST_F(H264VideoToolboxEncoderTest, CheckFrameMetadataSequence) {
     AdvanceClockAndVideoFrameTimestamp();
     metadata_recorder->PushExpectation(
         frame_id, frame_id - 1,
-        TimeDeltaToRtpDelta(frame_->timestamp(), kVideoFrequency),
+        RtpTimeTicks::FromTimeDelta(frame_->timestamp(), kVideoFrequency),
         clock_->NowTicks());
     EXPECT_TRUE(encoder_->EncodeVideoFrame(frame_, clock_->NowTicks(), cb));
   }

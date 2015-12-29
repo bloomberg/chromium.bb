@@ -26,6 +26,7 @@
 #include "media/cast/net/rtcp/receiver_rtcp_event_subscriber.h"
 #include "media/cast/net/rtcp/rtcp_builder.h"
 #include "media/cast/net/rtcp/rtcp_defines.h"
+#include "media/cast/net/rtcp/rtcp_utility.h"
 
 namespace media {
 namespace cast {
@@ -58,7 +59,7 @@ class Rtcp {
   // |send_packet_count| is the number of packets sent.
   // |send_octet_count| is the number of octets sent.
   void SendRtcpFromRtpSender(base::TimeTicks current_time,
-                             uint32_t current_time_as_rtp_timestamp,
+                             RtpTimeTicks current_time_as_rtp_timestamp,
                              uint32_t send_packet_count,
                              size_t send_octet_count);
 
@@ -93,7 +94,7 @@ class Rtcp {
   // provides reference NTP times relative to its own wall clock, the
   // |reference_time| returned here has been translated to the local
   // CastEnvironment clock.
-  bool GetLatestLipSyncTimes(uint32_t* rtp_timestamp,
+  bool GetLatestLipSyncTimes(RtpTimeTicks* rtp_timestamp,
                              base::TimeTicks* reference_time) const;
 
   void OnReceivedReceiverLog(const RtcpReceiverLogMessage& receiver_log);
@@ -111,7 +112,7 @@ class Rtcp {
 
  protected:
   void OnReceivedNtp(uint32_t ntp_seconds, uint32_t ntp_fraction);
-  void OnReceivedLipSyncInfo(uint32_t rtp_timestamp,
+  void OnReceivedLipSyncInfo(RtpTimeTicks rtp_timestamp,
                              uint32_t ntp_seconds,
                              uint32_t ntp_fraction);
 
@@ -138,6 +139,11 @@ class Rtcp {
   const uint32_t local_ssrc_;
   const uint32_t remote_ssrc_;
 
+  // The RTCP packet parser is re-used when parsing each RTCP packet.  It
+  // remembers state about prior RTP timestamps and other sequence values to
+  // re-construct "expanded" values.
+  RtcpParser parser_;
+
   RtcpSendTimeMap last_reports_sent_map_;
   RtcpSendTimeQueue last_reports_sent_queue_;
 
@@ -158,7 +164,7 @@ class Rtcp {
   // NTP timestamp sampled from a clock common to all media streams.  It is
   // expected that the sender will update this data regularly and in a timely
   // manner (e.g., about once per second).
-  uint32_t lip_sync_rtp_timestamp_;
+  RtpTimeTicks lip_sync_rtp_timestamp_;
   uint64_t lip_sync_ntp_timestamp_;
 
   // The last measured network round trip time.  This is updated with each

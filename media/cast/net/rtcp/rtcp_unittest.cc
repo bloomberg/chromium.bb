@@ -145,13 +145,14 @@ TEST_F(RtcpTest, LipSyncGleanedFromSenderReport) {
   // Initially, expect no lip-sync info receiver-side without having first
   // received a RTCP packet.
   base::TimeTicks reference_time;
-  uint32_t rtp_timestamp;
+  RtpTimeTicks rtp_timestamp;
   ASSERT_FALSE(rtcp_for_receiver_.GetLatestLipSyncTimes(&rtp_timestamp,
                                                         &reference_time));
 
   // Send a Sender Report to the receiver.
   const base::TimeTicks reference_time_sent = sender_clock_->NowTicks();
-  const uint32_t rtp_timestamp_sent = 0xbee5;
+  const RtpTimeTicks rtp_timestamp_sent =
+      RtpTimeTicks().Expand(UINT32_C(0xbee5));
   rtcp_for_sender_.SendRtcpFromRtpSender(
       reference_time_sent, rtp_timestamp_sent, 1, 1);
 
@@ -195,7 +196,8 @@ TEST_F(RtcpTest, RoundTripTimesDeterminedFromReportPingPong) {
 
     // Sender --> Receiver
     base::TimeTicks reference_time_sent = sender_clock_->NowTicks();
-    uint32_t rtp_timestamp_sent = 0xbee5 + i;
+    const RtpTimeTicks rtp_timestamp_sent =
+        RtpTimeTicks().Expand<uint32_t>(0xbee5) + RtpTimeDelta::FromTicks(i);
     rtcp_for_sender_.SendRtcpFromRtpSender(
         reference_time_sent, rtp_timestamp_sent, 1, 1);
     EXPECT_EQ(expected_rtt_according_to_sender,

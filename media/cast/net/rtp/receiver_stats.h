@@ -10,18 +10,20 @@
 #include "base/macros.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "media/cast/common/rtp_time.h"
 #include "media/cast/net/rtcp/rtcp.h"
 #include "media/cast/net/rtp/rtp_defines.h"
 
 namespace media {
 namespace cast {
 
+// TODO(miu): Document this class.
 class ReceiverStats {
  public:
   explicit ReceiverStats(base::TickClock* clock);
 
   RtpReceiverStatistics GetStatistics();
-  void UpdateStatistics(const RtpCastHeader& header);
+  void UpdateStatistics(const RtpCastHeader& header, int rtp_timebase);
 
  private:
   base::TickClock* const clock_;  // Not owned by this class.
@@ -31,7 +33,7 @@ class ReceiverStats {
   uint16_t max_sequence_number_;
   uint32_t total_number_packets_;
   uint16_t sequence_number_cycles_;
-  base::TimeDelta last_received_timestamp_;
+  RtpTimeTicks last_received_rtp_timestamp_;
   base::TimeTicks last_received_packet_time_;
   base::TimeDelta jitter_;
 

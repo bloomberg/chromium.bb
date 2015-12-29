@@ -91,7 +91,7 @@ class CastTransportSender : public base::NonThreadSafe {
   // |current_time_as_rtp_timestamp| is the corresponding RTP timestamp.
   virtual void SendSenderReport(uint32_t ssrc,
                                 base::TimeTicks current_time,
-                                uint32_t current_time_as_rtp_timestamp) = 0;
+                                RtpTimeTicks current_time_as_rtp_timestamp) = 0;
 
   // Cancels sending packets for the frames in the set.
   // |ssrc| is the SSRC for the stream.

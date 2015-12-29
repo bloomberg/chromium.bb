@@ -64,7 +64,7 @@ base::TimeDelta ConvertFromNtpDiff(uint32_t ntp_delay) {
 // Second uint64_t:
 //   bits 0-63: event TimeTicks internal value.
 std::pair<uint64_t, uint64_t> GetReceiverEventKey(
-    uint32_t frame_rtp_timestamp,
+    RtpTimeTicks frame_rtp_timestamp,
     const base::TimeTicks& event_timestamp,
     uint8_t event_type,
     uint16_t packet_id_or_zero) {
@@ -72,7 +72,7 @@ std::pair<uint64_t, uint64_t> GetReceiverEventKey(
   value1 <<= 16;
   value1 |= packet_id_or_zero;
   value1 <<= 32;
-  value1 |= frame_rtp_timestamp;
+  value1 |= frame_rtp_timestamp.lower_32_bits();
   return std::make_pair(
       value1, static_cast<uint64_t>(event_timestamp.ToInternalValue()));
 }
@@ -94,9 +94,9 @@ Rtcp::Rtcp(const RtcpCastMessageCallback& cast_callback,
       packet_sender_(packet_sender),
       local_ssrc_(local_ssrc),
       remote_ssrc_(remote_ssrc),
+      parser_(local_ssrc_, remote_ssrc_),
       last_report_truncated_ntp_(0),
       local_clock_ahead_by_(ClockDriftSmoother::GetDefaultTimeConstant()),
-      lip_sync_rtp_timestamp_(0),
       lip_sync_ntp_timestamp_(0),
       largest_seen_timestamp_(base::TimeTicks::FromInternalValue(
           std::numeric_limits<int64_t>::min())),
@@ -140,13 +140,12 @@ bool Rtcp::IncomingRtcpPacket(const uint8_t* data, size_t length) {
   }
 
   // Parse this packet.
-  RtcpParser parser(local_ssrc_, remote_ssrc_);
   base::BigEndianReader reader(reinterpret_cast<const char*>(data), length);
-  if (parser.Parse(&reader)) {
-    if (parser.has_receiver_reference_time_report()) {
+  if (parser_.Parse(&reader)) {
+    if (parser_.has_receiver_reference_time_report()) {
       base::TimeTicks t = ConvertNtpToTimeTicks(
-          parser.receiver_reference_time_report().ntp_seconds,
-          parser.receiver_reference_time_report().ntp_fraction);
+          parser_.receiver_reference_time_report().ntp_seconds,
+          parser_.receiver_reference_time_report().ntp_fraction);
       if (t > largest_seen_timestamp_) {
         largest_seen_timestamp_ = t;
       } else if ((largest_seen_timestamp_ - t).InMilliseconds() >
@@ -158,30 +157,30 @@ bool Rtcp::IncomingRtcpPacket(const uint8_t* data, size_t length) {
         return true;
       }
 
-      OnReceivedNtp(parser.receiver_reference_time_report().ntp_seconds,
-                    parser.receiver_reference_time_report().ntp_fraction);
+      OnReceivedNtp(parser_.receiver_reference_time_report().ntp_seconds,
+                    parser_.receiver_reference_time_report().ntp_fraction);
     }
-    if (parser.has_sender_report()) {
-      OnReceivedNtp(parser.sender_report().ntp_seconds,
-                    parser.sender_report().ntp_fraction);
-      OnReceivedLipSyncInfo(parser.sender_report().rtp_timestamp,
-                            parser.sender_report().ntp_seconds,
-                            parser.sender_report().ntp_fraction);
+    if (parser_.has_sender_report()) {
+      OnReceivedNtp(parser_.sender_report().ntp_seconds,
+                    parser_.sender_report().ntp_fraction);
+      OnReceivedLipSyncInfo(parser_.sender_report().rtp_timestamp,
+                            parser_.sender_report().ntp_seconds,
+                            parser_.sender_report().ntp_fraction);
     }
-    if (parser.has_receiver_log()) {
-      if (DedupeReceiverLog(parser.mutable_receiver_log())) {
-        OnReceivedReceiverLog(parser.receiver_log());
+    if (parser_.has_receiver_log()) {
+      if (DedupeReceiverLog(parser_.mutable_receiver_log())) {
+        OnReceivedReceiverLog(parser_.receiver_log());
       }
     }
-    if (parser.has_last_report()) {
-      OnReceivedDelaySinceLastReport(parser.last_report(),
-                                     parser.delay_since_last_report());
+    if (parser_.has_last_report()) {
+      OnReceivedDelaySinceLastReport(parser_.last_report(),
+                                     parser_.delay_since_last_report());
     }
-    if (parser.has_cast_message()) {
-      parser.mutable_cast_message()->ack_frame_id =
+    if (parser_.has_cast_message()) {
+      parser_.mutable_cast_message()->ack_frame_id =
           ack_frame_id_wrap_helper_.MapTo32bitsFrameId(
-              parser.mutable_cast_message()->ack_frame_id);
-      OnReceivedCastFeedback(parser.cast_message());
+              parser_.mutable_cast_message()->ack_frame_id);
+      OnReceivedCastFeedback(parser_.cast_message());
     }
   }
   return true;
@@ -274,7 +273,7 @@ void Rtcp::SendRtcpFromRtpReceiver(
 }
 
 void Rtcp::SendRtcpFromRtpSender(base::TimeTicks current_time,
-                                 uint32_t current_time_as_rtp_timestamp,
+                                 RtpTimeTicks current_time_as_rtp_timestamp,
                                  uint32_t send_packet_count,
                                  size_t send_octet_count) {
   uint32_t current_ntp_seconds = 0;
@@ -323,7 +322,7 @@ void Rtcp::OnReceivedNtp(uint32_t ntp_seconds, uint32_t ntp_fraction) {
           << " usec.";
 }
 
-void Rtcp::OnReceivedLipSyncInfo(uint32_t rtp_timestamp,
+void Rtcp::OnReceivedLipSyncInfo(RtpTimeTicks rtp_timestamp,
                                  uint32_t ntp_seconds,
                                  uint32_t ntp_fraction) {
   if (ntp_seconds == 0) {
@@ -335,7 +334,7 @@ void Rtcp::OnReceivedLipSyncInfo(uint32_t rtp_timestamp,
       (static_cast<uint64_t>(ntp_seconds) << 32) | ntp_fraction;
 }
 
-bool Rtcp::GetLatestLipSyncTimes(uint32_t* rtp_timestamp,
+bool Rtcp::GetLatestLipSyncTimes(RtpTimeTicks* rtp_timestamp,
                                  base::TimeTicks* reference_time) const {
   if (!lip_sync_ntp_timestamp_)
     return false;

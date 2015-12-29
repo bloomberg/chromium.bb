@@ -13,6 +13,7 @@
 #include <map>
 
 #include "base/time/time.h"
+#include "media/cast/common/rtp_time.h"
 #include "media/cast/net/rtp/packet_storage.h"
 
 namespace base {
@@ -59,15 +60,13 @@ class RtpPacketizer {
  private:
   void BuildCommonRTPheader(Packet* packet,
                             bool marker_bit,
-                            uint32_t time_stamp);
+                            RtpTimeTicks rtp_timestamp);
 
   RtpPacketizerConfig config_;
   PacedSender* const transport_;  // Not owned by this class.
   PacketStorage* packet_storage_;
 
   uint16_t sequence_number_;
-  uint32_t rtp_timestamp_;
-  uint16_t packet_id_;
 
   size_t send_packet_count_;
   size_t send_octet_count_;

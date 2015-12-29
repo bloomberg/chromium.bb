@@ -56,7 +56,7 @@ bool DoSerializeEvents(const LogMetadata& metadata,
   if (!writer.Skip(proto_size))
     return false;
 
-  RtpTimestamp prev_rtp_timestamp = 0;
+  RtpTimeTicks prev_rtp_timestamp;
   for (media::cast::FrameEventList::const_iterator it = frame_events.begin();
        it != frame_events.end();
        ++it) {
@@ -65,11 +65,11 @@ bool DoSerializeEvents(const LogMetadata& metadata,
     // Adjust relative RTP timestamp so that it is relative to previous frame,
     // rather than relative to first RTP timestamp.
     // This is done to improve encoding size.
-    RtpTimestamp old_relative_rtp_timestamp =
-        frame_event.relative_rtp_timestamp();
+    const RtpTimeTicks rtp_timestamp =
+        prev_rtp_timestamp.Expand(frame_event.relative_rtp_timestamp());
     frame_event.set_relative_rtp_timestamp(
-        old_relative_rtp_timestamp - prev_rtp_timestamp);
-    prev_rtp_timestamp = old_relative_rtp_timestamp;
+        (rtp_timestamp - prev_rtp_timestamp).lower_32_bits());
+    prev_rtp_timestamp = rtp_timestamp;
 
     proto_size = frame_event.ByteSize();
     DCHECK(proto_size <= kMaxSerializedProtoBytes);
@@ -84,16 +84,17 @@ bool DoSerializeEvents(const LogMetadata& metadata,
   }
 
   // Write packet events.
-  prev_rtp_timestamp = 0;
+  prev_rtp_timestamp = RtpTimeTicks();
   for (media::cast::PacketEventList::const_iterator it = packet_events.begin();
        it != packet_events.end();
        ++it) {
     media::cast::proto::AggregatedPacketEvent packet_event(**it);
-    RtpTimestamp old_relative_rtp_timestamp =
-        packet_event.relative_rtp_timestamp();
+
+    const RtpTimeTicks rtp_timestamp =
+        prev_rtp_timestamp.Expand(packet_event.relative_rtp_timestamp());
     packet_event.set_relative_rtp_timestamp(
-        old_relative_rtp_timestamp - prev_rtp_timestamp);
-    prev_rtp_timestamp = old_relative_rtp_timestamp;
+        (rtp_timestamp - prev_rtp_timestamp).lower_32_bits());
+    prev_rtp_timestamp = rtp_timestamp;
 
     proto_size = packet_event.ByteSize();
     DCHECK(proto_size <= kMaxSerializedProtoBytes);

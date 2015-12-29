@@ -70,8 +70,8 @@ void ReceiverRtcpEventSubscriber::OnReceivePacketEvent(
 }
 
 struct CompareByFirst {
-  bool operator()(const std::pair<RtpTimestamp, RtcpEvent>& a,
-                  const std::pair<RtpTimestamp, RtcpEvent>& b) {
+  bool operator()(const std::pair<RtpTimeTicks, RtcpEvent>& a,
+                  const std::pair<RtpTimeTicks, RtcpEvent>& b) {
     return a.first < b.first;
   }
 };

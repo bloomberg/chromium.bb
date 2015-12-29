@@ -51,12 +51,9 @@ namespace cast {
 EncodingEventSubscriber::EncodingEventSubscriber(
     EventMediaType event_media_type,
     size_t max_frames)
-    : event_media_type_(event_media_type),
-      max_frames_(max_frames),
-      frame_event_storage_index_(0),
-      packet_event_storage_index_(0),
-      seen_first_rtp_timestamp_(false),
-      first_rtp_timestamp_(0u) {}
+    : event_media_type_(event_media_type), max_frames_(max_frames) {
+  Reset();
+}
 
 EncodingEventSubscriber::~EncodingEventSubscriber() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -69,7 +66,7 @@ void EncodingEventSubscriber::OnReceiveFrameEvent(
   if (event_media_type_ != frame_event.media_type)
     return;
 
-  RtpTimestamp relative_rtp_timestamp =
+  const RtpTimeDelta relative_rtp_timestamp =
       GetRelativeRtpTimestamp(frame_event.rtp_timestamp);
   FrameEventMap::iterator it = frame_event_map_.find(relative_rtp_timestamp);
   linked_ptr<AggregatedFrameEvent> event_proto;
@@ -77,7 +74,8 @@ void EncodingEventSubscriber::OnReceiveFrameEvent(
   // Look up existing entry. If not found, create a new entry and add to map.
   if (it == frame_event_map_.end()) {
     event_proto.reset(new AggregatedFrameEvent);
-    event_proto->set_relative_rtp_timestamp(relative_rtp_timestamp);
+    event_proto->set_relative_rtp_timestamp(
+        relative_rtp_timestamp.lower_32_bits());
     frame_event_map_.insert(
         std::make_pair(relative_rtp_timestamp, event_proto));
   } else {
@@ -87,7 +85,8 @@ void EncodingEventSubscriber::OnReceiveFrameEvent(
                << ". Using new frame event proto.";
       AddFrameEventToStorage(event_proto);
       event_proto.reset(new AggregatedFrameEvent);
-      event_proto->set_relative_rtp_timestamp(relative_rtp_timestamp);
+      event_proto->set_relative_rtp_timestamp(
+          relative_rtp_timestamp.lower_32_bits());
       it->second = event_proto;
     }
   }
@@ -136,7 +135,7 @@ void EncodingEventSubscriber::OnReceivePacketEvent(
   if (event_media_type_ != packet_event.media_type)
     return;
 
-  RtpTimestamp relative_rtp_timestamp =
+  const RtpTimeDelta relative_rtp_timestamp =
       GetRelativeRtpTimestamp(packet_event.rtp_timestamp);
   PacketEventMap::iterator it =
       packet_event_map_.find(relative_rtp_timestamp);
@@ -146,7 +145,8 @@ void EncodingEventSubscriber::OnReceivePacketEvent(
   // Look up existing entry. If not found, create a new entry and add to map.
   if (it == packet_event_map_.end()) {
     event_proto.reset(new AggregatedPacketEvent);
-    event_proto->set_relative_rtp_timestamp(relative_rtp_timestamp);
+    event_proto->set_relative_rtp_timestamp(
+        relative_rtp_timestamp.lower_32_bits());
     packet_event_map_.insert(
         std::make_pair(relative_rtp_timestamp, event_proto));
     base_packet_event_proto = GetNewBasePacketEvent(
@@ -173,7 +173,8 @@ void EncodingEventSubscriber::OnReceivePacketEvent(
                  << "Using new packet event proto.";
         AddPacketEventToStorage(event_proto);
         event_proto.reset(new AggregatedPacketEvent);
-        event_proto->set_relative_rtp_timestamp(relative_rtp_timestamp);
+        event_proto->set_relative_rtp_timestamp(
+            relative_rtp_timestamp.lower_32_bits());
         it->second = event_proto;
       }
 
@@ -186,7 +187,8 @@ void EncodingEventSubscriber::OnReceivePacketEvent(
                << packet_event.packet_id << ". Using new packet event proto.";
       AddPacketEventToStorage(event_proto);
       event_proto.reset(new AggregatedPacketEvent);
-      event_proto->set_relative_rtp_timestamp(relative_rtp_timestamp);
+      event_proto->set_relative_rtp_timestamp(
+          relative_rtp_timestamp.lower_32_bits());
       it->second = event_proto;
       base_packet_event_proto = GetNewBasePacketEvent(
           event_proto.get(), packet_event.packet_id, packet_event.size);
@@ -225,7 +227,7 @@ void EncodingEventSubscriber::GetEventsAndReset(LogMetadata* metadata,
             &IsRtpTimestampLessThan<linked_ptr<AggregatedPacketEvent> >);
 
   metadata->set_is_audio(event_media_type_ == AUDIO_EVENT);
-  metadata->set_first_rtp_timestamp(first_rtp_timestamp_);
+  metadata->set_first_rtp_timestamp(first_rtp_timestamp_.lower_32_bits());
   metadata->set_num_frame_events(frame_event_storage_.size());
   metadata->set_num_packet_events(packet_event_storage_.size());
   metadata->set_reference_timestamp_ms_at_unix_epoch(
@@ -280,8 +282,8 @@ void EncodingEventSubscriber::AddPacketEventToStorage(
   packet_event_storage_index_ = (packet_event_storage_index_ + 1) % max_frames_;
 }
 
-RtpTimestamp EncodingEventSubscriber::GetRelativeRtpTimestamp(
-    RtpTimestamp rtp_timestamp) {
+RtpTimeDelta EncodingEventSubscriber::GetRelativeRtpTimestamp(
+    RtpTimeTicks rtp_timestamp) {
   if (!seen_first_rtp_timestamp_) {
     seen_first_rtp_timestamp_ = true;
     first_rtp_timestamp_ = rtp_timestamp;
@@ -298,7 +300,7 @@ void EncodingEventSubscriber::Reset() {
   packet_event_storage_.clear();
   packet_event_storage_index_ = 0;
   seen_first_rtp_timestamp_ = false;
-  first_rtp_timestamp_ = 0u;
+  first_rtp_timestamp_ = RtpTimeTicks();
 }
 
 }  // namespace cast

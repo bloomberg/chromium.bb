@@ -42,6 +42,11 @@ class RtpParser {
  private:
   const uint32_t expected_sender_ssrc_;
   const uint8_t expected_payload_type_;
+
+  // Tracks recently-parsed RTP timestamps so that it can expand the truncated
+  // values found in packets.
+  RtpTimeTicks last_parsed_rtp_timestamp_;
+
   FrameIdWrapHelper frame_id_wrap_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(RtpParser);

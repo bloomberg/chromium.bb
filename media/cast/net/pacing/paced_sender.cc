@@ -335,12 +335,17 @@ void PacedSender::LogPacketEvent(const Packet& packet, CastLoggingEvent type) {
   base::BigEndianReader reader(reinterpret_cast<const char*>(&packet[0]),
                                packet.size());
   bool success = reader.Skip(4);
-  success &= reader.ReadU32(&event.rtp_timestamp);
+  uint32_t truncated_rtp_timestamp;
+  success &= reader.ReadU32(&truncated_rtp_timestamp);
   uint32_t ssrc;
   success &= reader.ReadU32(&ssrc);
   if (ssrc == audio_ssrc_) {
+    event.rtp_timestamp = last_logged_audio_rtp_timestamp_ =
+        last_logged_audio_rtp_timestamp_.Expand(truncated_rtp_timestamp);
     event.media_type = AUDIO_EVENT;
   } else if (ssrc == video_ssrc_) {
+    event.rtp_timestamp = last_logged_video_rtp_timestamp_ =
+        last_logged_video_rtp_timestamp_.Expand(truncated_rtp_timestamp);
     event.media_type = VIDEO_EVENT;
   } else {
     DVLOG(3) << "Got unknown ssrc " << ssrc << " when logging packet event";

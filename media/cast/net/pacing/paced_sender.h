@@ -228,6 +228,11 @@ class PacedSender : public PacedPacketSender,
 
   bool has_reached_upper_bound_once_;
 
+  // Tracks recently-logged RTP timestamps so that it can expand the truncated
+  // values found in packets.
+  RtpTimeTicks last_logged_audio_rtp_timestamp_;
+  RtpTimeTicks last_logged_video_rtp_timestamp_;
+
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<PacedSender> weak_factory_;
 

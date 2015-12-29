@@ -28,7 +28,7 @@ class FrameBufferTest : public ::testing::Test {
 };
 
 TEST_F(FrameBufferTest, OnePacketInsertSanity) {
-  rtp_header_.rtp_timestamp = 3000;
+  rtp_header_.rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(3000));
   rtp_header_.is_key_frame = true;
   rtp_header_.frame_id = 5;
   rtp_header_.reference_frame_id = 5;
@@ -38,7 +38,7 @@ TEST_F(FrameBufferTest, OnePacketInsertSanity) {
   EXPECT_EQ(EncodedFrame::KEY, frame.dependency);
   EXPECT_EQ(5u, frame.frame_id);
   EXPECT_EQ(5u, frame.referenced_frame_id);
-  EXPECT_EQ(3000u, frame.rtp_timestamp);
+  EXPECT_EQ(3000u, frame.rtp_timestamp.lower_32_bits());
 }
 
 TEST_F(FrameBufferTest, EmptyBuffer) {

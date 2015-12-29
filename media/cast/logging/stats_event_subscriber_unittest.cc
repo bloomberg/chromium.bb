@@ -72,7 +72,7 @@ class StatsEventSubscriberTest : public ::testing::Test {
 TEST_F(StatsEventSubscriberTest, CaptureEncode) {
   Init(VIDEO_EVENT);
 
-  uint32_t rtp_timestamp = 0;
+  RtpTimeTicks rtp_timestamp;
   uint32_t frame_id = 0;
   int extra_frames = 50;
   // Only the first |extra_frames| frames logged will be taken into account
@@ -117,7 +117,7 @@ TEST_F(StatsEventSubscriberTest, CaptureEncode) {
       dropped_frames++;
     }
     AdvanceClocks(base::TimeDelta::FromMicroseconds(34567));
-    rtp_timestamp += 90;
+    rtp_timestamp += RtpTimeDelta::FromTicks(90);
     frame_id++;
   }
 
@@ -154,7 +154,7 @@ TEST_F(StatsEventSubscriberTest, CaptureEncode) {
 TEST_F(StatsEventSubscriberTest, Encode) {
   Init(VIDEO_EVENT);
 
-  uint32_t rtp_timestamp = 0;
+  RtpTimeTicks rtp_timestamp;
   uint32_t frame_id = 0;
   int num_frames = 10;
   base::TimeTicks start_time = sender_clock_->NowTicks();
@@ -180,7 +180,7 @@ TEST_F(StatsEventSubscriberTest, Encode) {
     last_event_time = sender_clock_->NowTicks();
 
     AdvanceClocks(base::TimeDelta::FromMicroseconds(35678));
-    rtp_timestamp += 90;
+    rtp_timestamp += RtpTimeDelta::FromTicks(90);
     frame_id++;
   }
 
@@ -222,7 +222,7 @@ TEST_F(StatsEventSubscriberTest, Encode) {
 TEST_F(StatsEventSubscriberTest, Decode) {
   Init(VIDEO_EVENT);
 
-  uint32_t rtp_timestamp = 0;
+  RtpTimeTicks rtp_timestamp;
   uint32_t frame_id = 0;
   int num_frames = 10;
   base::TimeTicks start_time = sender_clock_->NowTicks();
@@ -236,7 +236,7 @@ TEST_F(StatsEventSubscriberTest, Decode) {
     cast_environment_->logger()->DispatchFrameEvent(std::move(decode_event));
 
     AdvanceClocks(base::TimeDelta::FromMicroseconds(36789));
-    rtp_timestamp += 90;
+    rtp_timestamp += RtpTimeDelta::FromTicks(90);
     frame_id++;
   }
 
@@ -258,7 +258,7 @@ TEST_F(StatsEventSubscriberTest, Decode) {
 TEST_F(StatsEventSubscriberTest, PlayoutDelay) {
   Init(VIDEO_EVENT);
 
-  uint32_t rtp_timestamp = 0;
+  RtpTimeTicks rtp_timestamp;
   uint32_t frame_id = 0;
   int num_frames = 10;
   int late_frames = 0;
@@ -276,7 +276,7 @@ TEST_F(StatsEventSubscriberTest, PlayoutDelay) {
     cast_environment_->logger()->DispatchFrameEvent(std::move(playout_event));
 
     AdvanceClocks(base::TimeDelta::FromMicroseconds(37890));
-    rtp_timestamp += 90;
+    rtp_timestamp += RtpTimeDelta::FromTicks(90);
     frame_id++;
   }
 
@@ -293,7 +293,7 @@ TEST_F(StatsEventSubscriberTest, PlayoutDelay) {
 TEST_F(StatsEventSubscriberTest, E2ELatency) {
   Init(VIDEO_EVENT);
 
-  uint32_t rtp_timestamp = 0;
+  RtpTimeTicks rtp_timestamp;
   uint32_t frame_id = 0;
   int num_frames = 10;
   base::TimeDelta total_latency;
@@ -323,7 +323,7 @@ TEST_F(StatsEventSubscriberTest, E2ELatency) {
     playout_event->delay_delta = delay;
     cast_environment_->logger()->DispatchFrameEvent(std::move(playout_event));
 
-    rtp_timestamp += 90;
+    rtp_timestamp += RtpTimeDelta::FromTicks(90);
     frame_id++;
   }
 
@@ -341,7 +341,7 @@ TEST_F(StatsEventSubscriberTest, E2ELatency) {
 TEST_F(StatsEventSubscriberTest, Packets) {
   Init(VIDEO_EVENT);
 
-  uint32_t rtp_timestamp = 0;
+  RtpTimeTicks rtp_timestamp;
   int num_packets = 10;
   int num_latency_recorded_packets = 0;
   base::TimeTicks start_time = sender_clock_->NowTicks();
@@ -568,14 +568,14 @@ TEST_F(StatsEventSubscriberTest, Histograms) {
   Init(VIDEO_EVENT);
   AdvanceClocks(base::TimeDelta::FromMilliseconds(123));
 
-  uint32_t rtp_timestamp = 123;
+  RtpTimeTicks rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(123));
   uint32_t frame_id = 0;
 
   // 10 Frames with capture latency in the bucket of "10-14"ms.
   // 10 Frames with encode time in the bucket of "15-19"ms.
   for (int i = 0; i < 10; ++i) {
     ++frame_id;
-    ++rtp_timestamp;
+    rtp_timestamp += RtpTimeDelta::FromTicks(1);
 
     scoped_ptr<FrameEvent> capture_begin_event(new FrameEvent());
     capture_begin_event->timestamp = sender_clock_->NowTicks();

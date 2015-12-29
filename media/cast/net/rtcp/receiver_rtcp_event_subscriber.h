@@ -35,8 +35,8 @@ static const size_t kMaxEventsPerRTCP = 20;
 //   timestamp) up to the size limit.
 class ReceiverRtcpEventSubscriber : public RawEventSubscriber {
  public:
-  typedef std::pair<RtpTimestamp, RtcpEvent> RtcpEventPair;
-  typedef std::vector<std::pair<RtpTimestamp, RtcpEvent> > RtcpEvents;
+  typedef std::pair<RtpTimeTicks, RtcpEvent> RtcpEventPair;
+  typedef std::vector<std::pair<RtpTimeTicks, RtcpEvent>> RtcpEvents;
 
   // |max_size_to_retain|: The object will keep up to |max_size_to_retain|
   // events

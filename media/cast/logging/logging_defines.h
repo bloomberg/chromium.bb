@@ -13,13 +13,12 @@
 #include <vector>
 
 #include "base/time/time.h"
+#include "media/cast/common/rtp_time.h"
 
 namespace media {
 namespace cast {
 
 static const uint32_t kFrameIdUnknown = 0xFFFFFFFF;
-
-typedef uint32_t RtpTimestamp;
 
 enum CastLoggingEvent {
   UNKNOWN,
@@ -55,7 +54,7 @@ struct FrameEvent {
   FrameEvent();
   ~FrameEvent();
 
-  RtpTimestamp rtp_timestamp;
+  RtpTimeTicks rtp_timestamp;
   uint32_t frame_id;
 
   // Resolution of the frame. Only set for video FRAME_CAPTURE_END events.
@@ -95,7 +94,7 @@ struct PacketEvent {
   PacketEvent();
   ~PacketEvent();
 
-  RtpTimestamp rtp_timestamp;
+  RtpTimeTicks rtp_timestamp;
   uint32_t frame_id;
   uint16_t max_packet_id;
   uint16_t packet_id;

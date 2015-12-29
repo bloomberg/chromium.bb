@@ -69,7 +69,7 @@ void CastTransportSenderIPC::InsertFrame(
 void CastTransportSenderIPC::SendSenderReport(
     uint32_t ssrc,
     base::TimeTicks current_time,
-    uint32_t current_time_as_rtp_timestamp) {
+    media::cast::RtpTimeTicks current_time_as_rtp_timestamp) {
   Send(new CastHostMsg_SendSenderReport(channel_id_,
                                         ssrc,
                                         current_time,

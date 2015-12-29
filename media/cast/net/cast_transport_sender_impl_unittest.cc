@@ -181,7 +181,7 @@ TEST_F(CastTransportSenderImplTest, NacksCancelRetransmits) {
   // A fake frame that will be decomposed into 4 packets.
   EncodedFrame fake_frame;
   fake_frame.frame_id = 1;
-  fake_frame.rtp_timestamp = 1;
+  fake_frame.rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(1));
   fake_frame.dependency = EncodedFrame::KEY;
   fake_frame.data.resize(5000, ' ');
 
@@ -230,7 +230,7 @@ TEST_F(CastTransportSenderImplTest, CancelRetransmits) {
   // A fake frame that will be decomposed into 4 packets.
   EncodedFrame fake_frame;
   fake_frame.frame_id = 1;
-  fake_frame.rtp_timestamp = 1;
+  fake_frame.rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(1));
   fake_frame.dependency = EncodedFrame::KEY;
   fake_frame.data.resize(5000, ' ');
 
@@ -273,7 +273,7 @@ TEST_F(CastTransportSenderImplTest, Kickstart) {
   // A fake frame that will be decomposed into 4 packets.
   EncodedFrame fake_frame;
   fake_frame.frame_id = 1;
-  fake_frame.rtp_timestamp = 1;
+  fake_frame.rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(1));
   fake_frame.dependency = EncodedFrame::KEY;
   fake_frame.data.resize(5000, ' ');
 

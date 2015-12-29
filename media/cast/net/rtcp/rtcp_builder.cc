@@ -300,7 +300,7 @@ void RtcpBuilder::AddSR(const RtcpSenderInfo& sender_info) {
   writer_.WriteU32(ssrc_);
   writer_.WriteU32(sender_info.ntp_seconds);
   writer_.WriteU32(sender_info.ntp_fraction);
-  writer_.WriteU32(sender_info.rtp_timestamp);
+  writer_.WriteU32(sender_info.rtp_timestamp.lower_32_bits());
   writer_.WriteU32(sender_info.send_packet_count);
   writer_.WriteU32(static_cast<uint32_t>(sender_info.send_octet_count));
 }
@@ -354,7 +354,7 @@ void RtcpBuilder::AddReceiverLog(
         receiver_log_message.front());
 
     // Add our frame header.
-    writer_.WriteU32(frame_log_messages.rtp_timestamp_);
+    writer_.WriteU32(frame_log_messages.rtp_timestamp_.lower_32_bits());
     size_t messages_in_frame = frame_log_messages.event_log_messages_.size();
     if (messages_in_frame > total_number_of_messages_to_send) {
       // We are running out of space.
@@ -432,7 +432,7 @@ bool RtcpBuilder::GetRtcpReceiverLogMessage(
   while (rit != rtcp_events.rend() &&
          remaining_space >=
              kRtcpReceiverFrameLogSize + kRtcpReceiverEventLogSize) {
-    const RtpTimestamp rtp_timestamp = rit->first;
+    const RtpTimeTicks rtp_timestamp = rit->first;
     RtcpReceiverFrameLogMessage frame_log(rtp_timestamp);
     remaining_space -= kRtcpReceiverFrameLogSize;
     ++number_of_frames;

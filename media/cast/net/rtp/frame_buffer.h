@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "media/cast/common/rtp_time.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/rtp/rtp_defines.h"
 
@@ -52,7 +53,7 @@ class FrameBuffer {
   bool is_key_frame_;
   size_t total_data_size_;
   uint32_t last_referenced_frame_id_;
-  uint32_t rtp_timestamp_;
+  RtpTimeTicks rtp_timestamp_;
   PacketMap packets_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameBuffer);

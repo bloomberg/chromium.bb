@@ -226,7 +226,7 @@ void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
       encoded_frame->referenced_frame_id = last_encoded_frame_id_ - 1;
     }
     encoded_frame->rtp_timestamp =
-        TimeDeltaToRtpDelta(video_frame->timestamp(), kVideoFrequency);
+        RtpTimeTicks::FromTimeDelta(video_frame->timestamp(), kVideoFrequency);
     encoded_frame->reference_time = reference_time;
     encoded_frame->data.assign(
         static_cast<const uint8_t*>(pkt->data.frame.buf),
@@ -245,7 +245,7 @@ void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
     const std::string details = base::StringPrintf(
         "SV/%c,id=%" PRIu32 ",rtp=%" PRIu32 ",br=%d,kfr=%c",
         encoded_frame->dependency == EncodedFrame::KEY ? 'K' : 'D',
-        encoded_frame->frame_id, encoded_frame->rtp_timestamp,
+        encoded_frame->frame_id, encoded_frame->rtp_timestamp.lower_32_bits(),
         static_cast<int>(config_.rc_target_bitrate),
         key_frame_requested_ ? 'Y' : 'N');
     base::debug::SetCrashKeyValue(kZeroEncodeDetails, details);

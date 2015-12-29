@@ -15,11 +15,11 @@
 namespace media {
 namespace cast {
 
-typedef std::map<RtpTimestamp,
-                 linked_ptr<media::cast::proto::AggregatedFrameEvent> >
+typedef std::map<RtpTimeTicks,
+                 linked_ptr<media::cast::proto::AggregatedFrameEvent>>
     FrameEventMap;
-typedef std::map<RtpTimestamp,
-                 linked_ptr<media::cast::proto::AggregatedPacketEvent> >
+typedef std::map<RtpTimeTicks,
+                 linked_ptr<media::cast::proto::AggregatedPacketEvent>>
     PacketEventMap;
 
 // Represents deserialized raw event logs for a particular stream.

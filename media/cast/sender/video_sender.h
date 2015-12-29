@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_sender.h"
+#include "media/cast/common/rtp_time.h"
 #include "media/cast/sender/congestion_control.h"
 #include "media/cast/sender/frame_sender.h"
 
@@ -90,7 +91,7 @@ class VideoSender : public FrameSender,
   base::TimeDelta duration_in_encoder_;
 
   // The timestamp of the frame that was last enqueued in |video_encoder_|.
-  RtpTimestamp last_enqueued_frame_rtp_timestamp_;
+  RtpTimeTicks last_enqueued_frame_rtp_timestamp_;
   base::TimeTicks last_enqueued_frame_reference_time_;
 
   // Remember what we set the bitrate to before, no need to set it again if

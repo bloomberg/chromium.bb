@@ -32,7 +32,7 @@ class RtpParserTest : public ::testing::Test {
     packet_builder_.SetMarkerBit(true);  // Only one packet.
     cast_header_.sender_ssrc = kTestSsrc;
     cast_header_.sequence_number = kTestSeqNum;
-    cast_header_.rtp_timestamp = kTestTimestamp;
+    cast_header_.rtp_timestamp = RtpTimeTicks().Expand(kTestTimestamp);
     cast_header_.payload_type = kTestPayloadType;
     cast_header_.marker = true;
   }

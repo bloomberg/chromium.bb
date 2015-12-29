@@ -32,7 +32,8 @@ TEST_F(CastIPCDispatcherTest, RawEvents) {
   const int kChannelId = 17;
 
   media::cast::PacketEvent packet_event;
-  packet_event.rtp_timestamp = 100;
+  packet_event.rtp_timestamp =
+      media::cast::RtpTimeTicks().Expand(UINT32_C(100));
   packet_event.max_packet_id = 10;
   packet_event.packet_id = 5;
   packet_event.size = 512;
@@ -43,7 +44,7 @@ TEST_F(CastIPCDispatcherTest, RawEvents) {
   packet_events.push_back(packet_event);
 
   media::cast::FrameEvent frame_event;
-  frame_event.rtp_timestamp = 100;
+  frame_event.rtp_timestamp = media::cast::RtpTimeTicks().Expand(UINT32_C(100));
   frame_event.frame_id = 5;
   frame_event.size = 512;
   frame_event.timestamp = base::SimpleTestTickClock().NowTicks();

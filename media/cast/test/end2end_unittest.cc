@@ -113,22 +113,19 @@ typedef struct {
 
 // Constructs a map from each frame (RTP timestamp) to counts of each event
 // type logged for that frame.
-std::map<RtpTimestamp, LoggingEventCounts> GetEventCountForFrameEvents(
+std::map<RtpTimeTicks, LoggingEventCounts> GetEventCountForFrameEvents(
     const std::vector<FrameEvent>& frame_events) {
-  std::map<RtpTimestamp, LoggingEventCounts> event_counter_for_frame;
-  for (std::vector<FrameEvent>::const_iterator it = frame_events.begin();
-       it != frame_events.end();
-       ++it) {
-    std::map<RtpTimestamp, LoggingEventCounts>::iterator map_it =
-        event_counter_for_frame.find(it->rtp_timestamp);
+  std::map<RtpTimeTicks, LoggingEventCounts> event_counter_for_frame;
+  for (const FrameEvent& frame_event : frame_events) {
+    auto map_it = event_counter_for_frame.find(frame_event.rtp_timestamp);
     if (map_it == event_counter_for_frame.end()) {
       LoggingEventCounts new_counter;
       memset(&new_counter, 0, sizeof(new_counter));
-      ++(new_counter.counter[it->type]);
+      ++(new_counter.counter[frame_event.type]);
       event_counter_for_frame.insert(
-          std::make_pair(it->rtp_timestamp, new_counter));
+          std::make_pair(frame_event.rtp_timestamp, new_counter));
     } else {
-      ++(map_it->second.counter[it->type]);
+      ++(map_it->second.counter[frame_event.type]);
     }
   }
   return event_counter_for_frame;
@@ -139,19 +136,16 @@ std::map<RtpTimestamp, LoggingEventCounts> GetEventCountForFrameEvents(
 std::map<uint16_t, LoggingEventCounts> GetEventCountForPacketEvents(
     const std::vector<PacketEvent>& packet_events) {
   std::map<uint16_t, LoggingEventCounts> event_counter_for_packet;
-  for (std::vector<PacketEvent>::const_iterator it = packet_events.begin();
-       it != packet_events.end();
-       ++it) {
-    std::map<uint16_t, LoggingEventCounts>::iterator map_it =
-        event_counter_for_packet.find(it->packet_id);
+  for (const PacketEvent& packet_event : packet_events) {
+    auto map_it = event_counter_for_packet.find(packet_event.packet_id);
     if (map_it == event_counter_for_packet.end()) {
       LoggingEventCounts new_counter;
       memset(&new_counter, 0, sizeof(new_counter));
-      ++(new_counter.counter[it->type]);
+      ++(new_counter.counter[packet_event.type]);
       event_counter_for_packet.insert(
-          std::make_pair(it->packet_id, new_counter));
+          std::make_pair(packet_event.packet_id, new_counter));
     } else {
-      ++(map_it->second.counter[it->type]);
+      ++(map_it->second.counter[packet_event.type]);
     }
   }
   return event_counter_for_packet;
@@ -1072,17 +1066,16 @@ TEST_F(End2EndTest, VideoLogging) {
 
   // For each frame, count the number of events that occurred for each event
   // for that frame.
-  std::map<RtpTimestamp, LoggingEventCounts> event_counter_for_frame =
+  std::map<RtpTimeTicks, LoggingEventCounts> event_counter_for_frame =
       GetEventCountForFrameEvents(frame_events_);
 
   // Verify that there are logs for expected number of frames.
   EXPECT_EQ(num_frames, static_cast<int>(event_counter_for_frame.size()));
 
   // Verify that each frame have the expected types of events logged.
-  for (std::map<RtpTimestamp, LoggingEventCounts>::iterator map_it =
+  for (std::map<RtpTimeTicks, LoggingEventCounts>::iterator map_it =
            event_counter_for_frame.begin();
-       map_it != event_counter_for_frame.end();
-       ++map_it) {
+       map_it != event_counter_for_frame.end(); ++map_it) {
     int total_event_count_for_frame = 0;
     for (int i = 0; i <= kNumOfLoggingEvents; ++i) {
       total_event_count_for_frame += map_it->second.counter[i];
@@ -1189,23 +1182,22 @@ TEST_F(End2EndTest, AudioLogging) {
 
   // Construct a map from each frame (RTP timestamp) to a count of each event
   // type logged for that frame.
-  std::map<RtpTimestamp, LoggingEventCounts> event_counter_for_frame =
+  std::map<RtpTimeTicks, LoggingEventCounts> event_counter_for_frame =
       GetEventCountForFrameEvents(frame_events_);
 
   int encoded_count = 0;
 
   // Verify the right number of events were logged for each event type.
-  for (std::map<RtpTimestamp, LoggingEventCounts>::iterator it =
+  for (std::map<RtpTimeTicks, LoggingEventCounts>::iterator it =
            event_counter_for_frame.begin();
-       it != event_counter_for_frame.end();
-       ++it) {
+       it != event_counter_for_frame.end(); ++it) {
     encoded_count += it->second.counter[FRAME_ENCODED];
   }
 
   EXPECT_EQ(num_audio_frames_requested, encoded_count);
 
   // Verify that each frame have the expected types of events logged.
-  for (std::map<RtpTimestamp, LoggingEventCounts>::const_iterator map_it =
+  for (std::map<RtpTimeTicks, LoggingEventCounts>::const_iterator map_it =
            event_counter_for_frame.begin();
        map_it != event_counter_for_frame.end(); ++map_it) {
     int total_event_count_for_frame = 0;

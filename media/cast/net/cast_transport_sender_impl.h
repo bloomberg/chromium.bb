@@ -106,7 +106,7 @@ class CastTransportSenderImpl : public CastTransportSender {
 
   void SendSenderReport(uint32_t ssrc,
                         base::TimeTicks current_time,
-                        uint32_t current_time_as_rtp_timestamp) final;
+                        RtpTimeTicks current_time_as_rtp_timestamp) final;
 
   void CancelSendingFrames(uint32_t ssrc,
                            const std::vector<uint32_t>& frame_ids) final;

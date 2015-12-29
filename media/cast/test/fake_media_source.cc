@@ -21,11 +21,23 @@
 #include "media/cast/cast_sender.h"
 #include "media/cast/test/utility/audio_utility.h"
 #include "media/cast/test/utility/video_utility.h"
+#include "ui/gfx/geometry/size.h"
+
+// TODO(miu): Figure out why _mkdir() and _rmdir() are missing when compiling
+// third_party/ffmpeg/libavformat/os_support.h (lines 182, 183).
+// http://crbug.com/572986
+#if defined(OS_WIN)
+#include <direct.h>
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/ffmpeg/ffmpeg_deleters.h"
 #include "media/filters/ffmpeg_glue.h"
 #include "media/filters/in_memory_url_protocol.h"
-#include "ui/gfx/geometry/size.h"
+#else
+#include "media/ffmpeg/ffmpeg_common.h"
+#include "media/ffmpeg/ffmpeg_deleters.h"
+#include "media/filters/ffmpeg_glue.h"
+#include "media/filters/in_memory_url_protocol.h"
+#endif  // defined(OS_WIN)
 
 namespace {
 

@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/stl_util.h"
+#include "media/cast/common/rtp_time.h"
 #include "media/cast/net/cast_transport_defines.h"
 
 namespace media {
@@ -102,7 +103,7 @@ struct EncodedFrame {
   // samples encoded in all prior frames.  A playback system uses this value to
   // detect gaps in the stream, and otherwise stretch the signal to match
   // playout targets.
-  uint32_t rtp_timestamp;
+  RtpTimeTicks rtp_timestamp;
 
   // The common reference clock timestamp for this frame.  This value originates
   // from a sender and is used to provide lip synchronization between streams in
@@ -147,7 +148,7 @@ struct RtcpSenderInfo {
   // First two members are used for rtt.
   uint32_t ntp_seconds;
   uint32_t ntp_fraction;
-  uint32_t rtp_timestamp;
+  RtpTimeTicks rtp_timestamp;
   uint32_t send_packet_count;
   size_t send_octet_count;
 };

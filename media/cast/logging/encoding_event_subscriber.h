@@ -68,11 +68,11 @@ class EncodingEventSubscriber : public RawEventSubscriber {
                          PacketEventList* packet_events);
 
  private:
-  typedef std::map<RtpTimestamp,
-                   linked_ptr<media::cast::proto::AggregatedFrameEvent> >
+  typedef std::map<RtpTimeDelta,
+                   linked_ptr<media::cast::proto::AggregatedFrameEvent>>
       FrameEventMap;
-  typedef std::map<RtpTimestamp,
-                   linked_ptr<media::cast::proto::AggregatedPacketEvent> >
+  typedef std::map<RtpTimeDelta,
+                   linked_ptr<media::cast::proto::AggregatedPacketEvent>>
       PacketEventMap;
 
   // Transfer up to |max_num_entries| smallest entries from |frame_event_map_|
@@ -91,7 +91,7 @@ class EncodingEventSubscriber : public RawEventSubscriber {
 
   // Returns the difference between |rtp_timestamp| and |first_rtp_timestamp_|.
   // Sets |first_rtp_timestamp_| if it is not already set.
-  RtpTimestamp GetRelativeRtpTimestamp(RtpTimestamp rtp_timestamp);
+  RtpTimeDelta GetRelativeRtpTimestamp(RtpTimeTicks rtp_timestamp);
 
   // Clears the maps and first RTP timestamp seen.
   void Reset();
@@ -114,7 +114,7 @@ class EncodingEventSubscriber : public RawEventSubscriber {
   bool seen_first_rtp_timestamp_;
 
   // Set to RTP timestamp of first event encountered after a |Reset()|.
-  RtpTimestamp first_rtp_timestamp_;
+  RtpTimeTicks first_rtp_timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(EncodingEventSubscriber);
 };

@@ -54,10 +54,11 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
   void OnInsertFrame(int32_t channel_id,
                      uint32_t ssrc,
                      const media::cast::EncodedFrame& frame);
-  void OnSendSenderReport(int32_t channel_id,
-                          uint32_t ssrc,
-                          base::TimeTicks current_time,
-                          uint32_t current_time_as_rtp_timestamp);
+  void OnSendSenderReport(
+      int32_t channel_id,
+      uint32_t ssrc,
+      base::TimeTicks current_time,
+      media::cast::RtpTimeTicks current_time_as_rtp_timestamp);
   void OnCancelSendingFrames(int32_t channel_id,
                              uint32_t ssrc,
                              const std::vector<uint32_t>& frame_ids);

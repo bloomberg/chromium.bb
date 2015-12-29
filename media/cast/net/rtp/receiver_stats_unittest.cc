@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
+#include "media/cast/constants.h"
 #include "media/cast/net/rtp/receiver_stats.h"
 #include "media/cast/net/rtp/rtp_defines.h"
 
@@ -61,9 +62,10 @@ TEST_F(ReceiverStatsTest, ResetState) {
 TEST_F(ReceiverStatsTest, LossCount) {
   for (int i = 0; i < 300; ++i) {
     if (i % 4)
-      stats_.UpdateStatistics(rtp_header_);
+      stats_.UpdateStatistics(rtp_header_, kVideoFrequency);
     if (i % 3) {
-      rtp_header_.rtp_timestamp += 33 * 90;
+      rtp_header_.rtp_timestamp += RtpTimeDelta::FromTimeDelta(
+          base::TimeDelta::FromMilliseconds(33), kVideoFrequency);
     }
     ++rtp_header_.sequence_number;
     testing_clock_.Advance(delta_increments_);
@@ -79,9 +81,10 @@ TEST_F(ReceiverStatsTest, LossCount) {
 TEST_F(ReceiverStatsTest, NoLossWrap) {
   rtp_header_.sequence_number = 65500;
   for (int i = 0; i < 300; ++i) {
-    stats_.UpdateStatistics(rtp_header_);
+    stats_.UpdateStatistics(rtp_header_, kVideoFrequency);
     if (i % 3) {
-      rtp_header_.rtp_timestamp += 33 * 90;
+      rtp_header_.rtp_timestamp += RtpTimeDelta::FromTimeDelta(
+          base::TimeDelta::FromMilliseconds(33), kVideoFrequency);
     }
     ++rtp_header_.sequence_number;
     testing_clock_.Advance(delta_increments_);
@@ -99,10 +102,9 @@ TEST_F(ReceiverStatsTest, LossCountWrap) {
   rtp_header_.sequence_number = kStartSequenceNumber;
   for (int i = 0; i < 300; ++i) {
     if (i % 4)
-      stats_.UpdateStatistics(rtp_header_);
+      stats_.UpdateStatistics(rtp_header_, kVideoFrequency);
     if (i % 3)
-      // Update timestamp.
-      ++rtp_header_.rtp_timestamp;
+      rtp_header_.rtp_timestamp += RtpTimeDelta::FromTicks(1);
     ++rtp_header_.sequence_number;
     testing_clock_.Advance(delta_increments_);
   }
@@ -116,9 +118,10 @@ TEST_F(ReceiverStatsTest, LossCountWrap) {
 
 TEST_F(ReceiverStatsTest, BasicJitter) {
   for (int i = 0; i < 300; ++i) {
-    stats_.UpdateStatistics(rtp_header_);
+    stats_.UpdateStatistics(rtp_header_, kVideoFrequency);
     ++rtp_header_.sequence_number;
-    rtp_header_.rtp_timestamp += 33 * 90;
+    rtp_header_.rtp_timestamp += RtpTimeDelta::FromTimeDelta(
+        base::TimeDelta::FromMilliseconds(33), kVideoFrequency);
     testing_clock_.Advance(delta_increments_);
   }
   RtpReceiverStatistics s = stats_.GetStatistics();
@@ -133,9 +136,10 @@ TEST_F(ReceiverStatsTest, BasicJitter) {
 TEST_F(ReceiverStatsTest, NonTrivialJitter) {
   const int kAdditionalIncrement = 5;
   for (int i = 0; i < 300; ++i) {
-    stats_.UpdateStatistics(rtp_header_);
+    stats_.UpdateStatistics(rtp_header_, kVideoFrequency);
     ++rtp_header_.sequence_number;
-    rtp_header_.rtp_timestamp += 33 * 90;
+    rtp_header_.rtp_timestamp += RtpTimeDelta::FromTimeDelta(
+        base::TimeDelta::FromMilliseconds(33), kVideoFrequency);
     base::TimeDelta additional_delta =
         base::TimeDelta::FromMilliseconds(kAdditionalIncrement);
     testing_clock_.Advance(delta_increments_ + additional_delta);

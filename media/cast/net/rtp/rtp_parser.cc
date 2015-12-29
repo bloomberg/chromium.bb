@@ -62,13 +62,15 @@ bool RtpParser::ParsePacket(const uint8_t* packet,
   header->payload_type = bits & ~kRtpMarkerBitMask;
   if (header->payload_type != expected_payload_type_)
     return false;  // Punt: Unexpected payload type.
+  uint32_t truncated_rtp_timestamp;
   if (!reader.ReadU16(&header->sequence_number) ||
-      !reader.ReadU32(&header->rtp_timestamp) ||
-      !reader.ReadU32(&header->sender_ssrc)) {
+      !reader.ReadU32(&truncated_rtp_timestamp) ||
+      !reader.ReadU32(&header->sender_ssrc) ||
+      header->sender_ssrc != expected_sender_ssrc_) {
     return false;
   }
-  if (header->sender_ssrc != expected_sender_ssrc_)
-    return false;  // Punt: Sender's SSRC does not match the expected one.
+  header->rtp_timestamp =
+      last_parsed_rtp_timestamp_.Expand(truncated_rtp_timestamp);
 
   // Parse the Cast header.  Note that, from the RTP protocol's perspective, the
   // Cast header is part of the payload (and not meant to be an extension
@@ -112,6 +114,8 @@ bool RtpParser::ParsePacket(const uint8_t* packet,
           return false;
     }
   }
+
+  last_parsed_rtp_timestamp_ = header->rtp_timestamp;
 
   // Only the lower 8 bits of the |frame_id| were serialized, so do some magic
   // to restore the upper 24 bits.

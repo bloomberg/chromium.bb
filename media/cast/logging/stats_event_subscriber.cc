@@ -484,7 +484,7 @@ bool StatsEventSubscriber::GetReceiverOffset(base::TimeDelta* offset) {
   return true;
 }
 
-void StatsEventSubscriber::MaybeInsertFrameInfo(RtpTimestamp rtp_timestamp,
+void StatsEventSubscriber::MaybeInsertFrameInfo(RtpTimeTicks rtp_timestamp,
                                                 const FrameInfo& frame_info) {
   // No need to insert if |rtp_timestamp| is the smaller than every key in the
   // map as it is just going to get erased anyway.
@@ -596,7 +596,7 @@ void StatsEventSubscriber::UpdateLastResponseTime(
 
 void StatsEventSubscriber::ErasePacketSentTime(
     const PacketEvent& packet_event) {
-  std::pair<RtpTimestamp, uint16_t> key(
+  std::pair<RtpTimeTicks, uint16_t> key(
       std::make_pair(packet_event.rtp_timestamp, packet_event.packet_id));
   packet_sent_times_.erase(key);
 }
@@ -622,7 +622,7 @@ void StatsEventSubscriber::RecordPacketRelatedLatencies(
   if (!GetReceiverOffset(&receiver_offset))
     return;
 
-  std::pair<RtpTimestamp, uint16_t> key(
+  std::pair<RtpTimeTicks, uint16_t> key(
       std::make_pair(packet_event.rtp_timestamp, packet_event.packet_id));
   PacketEventTimeMap::iterator it = packet_sent_times_.find(key);
   if (it == packet_sent_times_.end()) {

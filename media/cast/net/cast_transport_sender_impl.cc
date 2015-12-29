@@ -265,7 +265,7 @@ void CastTransportSenderImpl::InsertFrame(uint32_t ssrc,
 void CastTransportSenderImpl::SendSenderReport(
     uint32_t ssrc,
     base::TimeTicks current_time,
-    uint32_t current_time_as_rtp_timestamp) {
+    RtpTimeTicks current_time_as_rtp_timestamp) {
   if (audio_sender_ && ssrc == audio_sender_->ssrc()) {
     audio_rtcp_session_->SendRtcpFromRtpSender(
         current_time, current_time_as_rtp_timestamp,

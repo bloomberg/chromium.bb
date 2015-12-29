@@ -37,6 +37,14 @@ RtcpParser::RtcpParser(uint32_t local_ssrc, uint32_t remote_ssrc)
 RtcpParser::~RtcpParser() {}
 
 bool RtcpParser::Parse(base::BigEndianReader* reader) {
+  // Reset.
+  has_sender_report_ = false;
+  sender_report_ = RtcpSenderInfo();
+  has_last_report_ = false;
+  receiver_log_.clear();
+  has_cast_message_ = false;
+  has_receiver_reference_time_report_ = false;
+
   while (reader->remaining()) {
     RtcpCommonHeader header;
     if (!ParseCommonHeader(reader, &header))
@@ -122,14 +130,17 @@ bool RtcpParser::ParseSR(base::BigEndianReader* reader,
   if (sender_ssrc != remote_ssrc_)
     return true;
 
-  uint32_t tmp;
+  uint32_t truncated_rtp_timestamp;
+  uint32_t send_octet_count;
   if (!reader->ReadU32(&sender_report_.ntp_seconds) ||
       !reader->ReadU32(&sender_report_.ntp_fraction) ||
-      !reader->ReadU32(&sender_report_.rtp_timestamp) ||
+      !reader->ReadU32(&truncated_rtp_timestamp) ||
       !reader->ReadU32(&sender_report_.send_packet_count) ||
-      !reader->ReadU32(&tmp))
+      !reader->ReadU32(&send_octet_count))
     return false;
-  sender_report_.send_octet_count = tmp;
+  sender_report_.rtp_timestamp = last_parsed_sr_rtp_timestamp_ =
+      last_parsed_sr_rtp_timestamp_.Expand(truncated_rtp_timestamp);
+  sender_report_.send_octet_count = send_octet_count;
   has_sender_report_ = true;
 
   for (size_t block = 0; block < header.IC; block++)
@@ -199,10 +210,9 @@ bool RtcpParser::ParseCastReceiverLogFrameItem(
     base::BigEndianReader* reader) {
 
   while (reader->remaining()) {
-    uint32_t rtp_timestamp;
+    uint32_t truncated_rtp_timestamp;
     uint32_t data;
-    if (!reader->ReadU32(&rtp_timestamp) ||
-        !reader->ReadU32(&data))
+    if (!reader->ReadU32(&truncated_rtp_timestamp) || !reader->ReadU32(&data))
       return false;
 
     // We have 24 LSB of the event timestamp base on the wire.
@@ -211,7 +221,9 @@ bool RtcpParser::ParseCastReceiverLogFrameItem(
 
     size_t num_events = 1 + static_cast<uint8_t>(data >> 24);
 
-    RtcpReceiverFrameLogMessage frame_log(rtp_timestamp);
+    const RtpTimeTicks frame_log_rtp_timestamp =
+        last_parsed_frame_log_rtp_timestamp_.Expand(truncated_rtp_timestamp);
+    RtcpReceiverFrameLogMessage frame_log(frame_log_rtp_timestamp);
     for (size_t event = 0; event < num_events; event++) {
       uint16_t delay_delta_or_packet_id;
       uint16_t event_type_and_timestamp_delta;
@@ -235,6 +247,7 @@ bool RtcpParser::ParseCastReceiverLogFrameItem(
       frame_log.event_log_messages_.push_back(event_log);
     }
 
+    last_parsed_frame_log_rtp_timestamp_ = frame_log_rtp_timestamp;
     receiver_log_.push_back(frame_log);
   }
 

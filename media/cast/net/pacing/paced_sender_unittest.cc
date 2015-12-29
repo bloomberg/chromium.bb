@@ -27,7 +27,8 @@ static const size_t kNackSize = 105;
 static const int64_t kStartMillisecond = INT64_C(12345678900000);
 static const uint32_t kVideoSsrc = 0x1234;
 static const uint32_t kAudioSsrc = 0x5678;
-static const uint32_t kFrameRtpTimestamp = 12345;
+static const uint32_t kVideoFrameRtpTimestamp = 12345;
+static const uint32_t kAudioFrameRtpTimestamp = 23456;
 
 class TestPacketSender : public PacketSender {
  public:
@@ -92,7 +93,8 @@ class PacedSenderTest : public ::testing::Test {
       base::BigEndianWriter writer(reinterpret_cast<char*>(&packet->data[0]),
                                    packet_size);
       bool success = writer.Skip(4);
-      success &= writer.WriteU32(kFrameRtpTimestamp);
+      success &= writer.WriteU32(audio ? kAudioFrameRtpTimestamp
+                                       : kVideoFrameRtpTimestamp);
       success &= writer.WriteU32(audio ? kAudioSsrc : kVideoSsrc);
       success &= writer.Skip(2);
       success &= writer.WriteU16(i);
@@ -185,7 +187,7 @@ TEST_F(PacedSenderTest, BasicPace) {
     ASSERT_GE(latest_event_timestamp, e.timestamp);
     ASSERT_EQ(PACKET_SENT_TO_NETWORK, e.type);
     ASSERT_EQ(VIDEO_EVENT, e.media_type);
-    ASSERT_EQ(kFrameRtpTimestamp, e.rtp_timestamp);
+    ASSERT_EQ(kVideoFrameRtpTimestamp, e.rtp_timestamp.lower_32_bits());
     ASSERT_EQ(num_of_packets - 1, e.max_packet_id);
     ASSERT_EQ(expected_packet_id++, e.packet_id);
     ASSERT_EQ(kSize1, e.size);

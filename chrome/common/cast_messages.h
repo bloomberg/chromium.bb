@@ -3,16 +3,34 @@
 // found in the LICENSE file.
 
 // IPC messages for the Cast transport API.
-// Multiply-included message file, hence no include guard.
 
 #include <stdint.h>
 
 #include "ipc/ipc_message_macros.h"
-#include "media/cast/cast_sender.h"
+#include "media/cast/common/rtp_time.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/net/cast_transport_sender.h"
 #include "media/cast/net/rtcp/rtcp_defines.h"
 #include "net/base/ip_endpoint.h"
+
+#ifndef CHROME_COMMON_CAST_MESSAGES_H_
+#define CHROME_COMMON_CAST_MESSAGES_H_
+
+namespace IPC {
+
+template<>
+struct ParamTraits<media::cast::RtpTimeTicks> {
+  using param_type = media::cast::RtpTimeTicks;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+}  // namespace IPC
+
+#endif  // CHROME_COMMON_CAST_MESSAGES_H_
+
+// Multiply-included message file, hence no include guard from here.
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT
@@ -158,7 +176,7 @@ IPC_MESSAGE_CONTROL4(CastHostMsg_SendSenderReport,
                      int32_t /* channel_id */,
                      uint32_t /* ssrc */,
                      base::TimeTicks /* current_time */,
-                     uint32_t /* current_time_as_rtp_timestamp */)
+                     media::cast::RtpTimeTicks /* cur_time_as_rtp_timestamp */)
 
 IPC_MESSAGE_CONTROL3(CastHostMsg_CancelSendingFrames,
                      int32_t /* channel_id */,

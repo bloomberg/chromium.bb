@@ -24,6 +24,9 @@ source_set("common") {
     "cast_environment.h",
     "common/clock_drift_smoother.cc",
     "common/clock_drift_smoother.h",
+    "common/expanded_value_base.h",
+    "common/rtp_time.cc",
+    "common/rtp_time.h",
     "common/transport_encryption_handler.cc",
     "common/transport_encryption_handler.h",
     "constants.h",
@@ -99,6 +102,10 @@ source_set("net") {
   ]
 
   deps = [
+    ":common",
+  ]
+
+  public_deps = [
     ":common",
   ]
 }
@@ -301,6 +308,8 @@ group("cast_unittests_run") {
 
 test("cast_unittests") {
   sources = [
+    "common/expanded_value_base_unittest.cc",
+    "common/rtp_time_unittest.cc",
     "logging/encoding_event_subscriber_unittest.cc",
     "logging/receiver_time_offset_estimator_impl_unittest.cc",
     "logging/serialize_deserialize_test.cc",

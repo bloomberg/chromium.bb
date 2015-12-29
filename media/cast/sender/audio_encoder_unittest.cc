@@ -17,6 +17,7 @@
 #include "media/base/media.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/common/rtp_time.h"
 #include "media/cast/sender/audio_encoder.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/test/utility/audio_utility.h"
@@ -31,7 +32,7 @@ namespace {
 
 class TestEncodedAudioFrameReceiver {
  public:
-  TestEncodedAudioFrameReceiver() : frames_received_(0), rtp_lower_bound_(0) {}
+  TestEncodedAudioFrameReceiver() : frames_received_(0) {}
   virtual ~TestEncodedAudioFrameReceiver() {}
 
   int frames_received() const { return frames_received_; }
@@ -56,7 +57,8 @@ class TestEncodedAudioFrameReceiver {
     // of the fixed frame size.
     EXPECT_LE(rtp_lower_bound_, encoded_frame->rtp_timestamp);
     rtp_lower_bound_ = encoded_frame->rtp_timestamp;
-    EXPECT_EQ(0u, encoded_frame->rtp_timestamp % samples_per_frame_);
+    EXPECT_EQ(RtpTimeDelta(), (encoded_frame->rtp_timestamp - RtpTimeTicks()) %
+                                  RtpTimeDelta::FromTicks(samples_per_frame_));
     EXPECT_TRUE(!encoded_frame->data.empty());
 
     EXPECT_LE(lower_bound_, encoded_frame->reference_time);
@@ -71,7 +73,7 @@ class TestEncodedAudioFrameReceiver {
 
  private:
   int frames_received_;
-  uint32_t rtp_lower_bound_;
+  RtpTimeTicks rtp_lower_bound_;
   int samples_per_frame_;
   base::TimeTicks lower_bound_;
   base::TimeTicks upper_bound_;

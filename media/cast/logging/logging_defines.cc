@@ -33,15 +33,20 @@ const char* CastLoggingToString(CastLoggingEvent event) {
 }
 
 FrameEvent::FrameEvent()
-    : rtp_timestamp(0u), frame_id(kFrameIdUnknown), width(0), height(0),
-      size(0u), type(UNKNOWN), media_type(UNKNOWN_EVENT), key_frame(false),
-      target_bitrate(0), encoder_cpu_utilization(-1.0),
+    : frame_id(kFrameIdUnknown),
+      width(0),
+      height(0),
+      size(0u),
+      type(UNKNOWN),
+      media_type(UNKNOWN_EVENT),
+      key_frame(false),
+      target_bitrate(0),
+      encoder_cpu_utilization(-1.0),
       idealized_bitrate_utilization(-1.0) {}
 FrameEvent::~FrameEvent() {}
 
 PacketEvent::PacketEvent()
-    : rtp_timestamp(0),
-      frame_id(kFrameIdUnknown),
+    : frame_id(kFrameIdUnknown),
       max_packet_id(0),
       packet_id(0),
       size(0),

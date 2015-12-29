@@ -69,12 +69,12 @@ class ReceiverTimeOffsetEstimatorImpl : public ReceiverTimeOffsetEstimator {
     bool has_bound() const { return has_bound_; }
     base::TimeDelta bound() const { return bound_; }
 
-    void SetSent(uint32_t rtp,
-                 uint32_t packet_id,
+    void SetSent(RtpTimeTicks rtp,
+                 uint16_t packet_id,
                  bool audio,
                  base::TimeTicks t);
 
-    void SetReceived(uint32_t rtp,
+    void SetReceived(RtpTimeTicks rtp,
                      uint16_t packet_id,
                      bool audio,
                      base::TimeTicks t);

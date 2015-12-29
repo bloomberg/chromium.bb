@@ -60,7 +60,6 @@ FrameReceiver::FrameReceiver(
   DCHECK_GT(config.target_frame_rate, 0);
   decryptor_.Initialize(config.aes_key, config.aes_iv_mask);
   cast_environment_->logger()->Subscribe(&event_subscriber_);
-  memset(frame_id_to_rtp_timestamp_, 0, sizeof(frame_id_to_rtp_timestamp_));
 }
 
 FrameReceiver::~FrameReceiver() {
@@ -93,7 +92,7 @@ bool FrameReceiver::ProcessPacket(scoped_ptr<Packet> packet) {
     }
 
     ProcessParsedPacket(rtp_header, payload_data, payload_size);
-    stats_.UpdateStatistics(rtp_header);
+    stats_.UpdateStatistics(rtp_header, rtp_timebase_);
   }
 
   if (!reports_are_scheduled_) {
@@ -137,7 +136,7 @@ void FrameReceiver::ProcessParsedPacket(const RtpCastHeader& rtp_header,
   // Update lip-sync values upon receiving the first packet of each frame, or if
   // they have never been set yet.
   if (rtp_header.packet_id == 0 || lip_sync_reference_time_.is_null()) {
-    RtpTimestamp fresh_sync_rtp;
+    RtpTimeTicks fresh_sync_rtp;
     base::TimeTicks fresh_sync_reference;
     if (!rtcp_.GetLatestLipSyncTimes(&fresh_sync_rtp, &fresh_sync_reference)) {
       // HACK: The sender should have provided Sender Reports before the first
@@ -155,9 +154,10 @@ void FrameReceiver::ProcessParsedPacket(const RtpCastHeader& rtp_header,
     if (lip_sync_reference_time_.is_null()) {
       lip_sync_reference_time_ = fresh_sync_reference;
     } else {
-      lip_sync_reference_time_ += RtpDeltaToTimeDelta(
-          static_cast<int32_t>(fresh_sync_rtp - lip_sync_rtp_timestamp_),
-          rtp_timebase_);
+      // Note: It's okay for the conversion ToTimeDelta() to be approximate
+      // because |lip_sync_drift_| will account for accumulated errors.
+      lip_sync_reference_time_ +=
+          (fresh_sync_rtp - lip_sync_rtp_timestamp_).ToTimeDelta(rtp_timebase_);
     }
     lip_sync_rtp_timestamp_ = fresh_sync_rtp;
     lip_sync_drift_.Update(
@@ -174,7 +174,7 @@ void FrameReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
-  RtpTimestamp rtp_timestamp =
+  RtpTimeTicks rtp_timestamp =
       frame_id_to_rtp_timestamp_[cast_message.ack_frame_id & 0xff];
 
   scoped_ptr<FrameEvent> ack_sent_event(new FrameEvent());
@@ -304,9 +304,8 @@ base::TimeTicks FrameReceiver::GetPlayoutTime(const EncodedFrame& frame) const {
         frame.new_playout_delay_ms);
   }
   return lip_sync_reference_time_ + lip_sync_drift_.Current() +
-         RtpDeltaToTimeDelta(static_cast<int32_t>(frame.rtp_timestamp -
-                                                  lip_sync_rtp_timestamp_),
-                             rtp_timebase_) +
+         (frame.rtp_timestamp - lip_sync_rtp_timestamp_)
+             .ToTimeDelta(rtp_timebase_) +
          target_playout_delay;
 }
 

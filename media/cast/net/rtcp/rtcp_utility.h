@@ -88,8 +88,8 @@ class RtcpParser {
   bool ParseExtendedReportDelaySinceLastReceiverReport(
       base::BigEndianReader* reader);
 
-  uint32_t local_ssrc_;
-  uint32_t remote_ssrc_;
+  const uint32_t local_ssrc_;
+  const uint32_t remote_ssrc_;
 
   bool has_sender_report_;
   RtcpSenderInfo sender_report_;
@@ -106,6 +106,11 @@ class RtcpParser {
 
   bool has_receiver_reference_time_report_;
   RtcpReceiverReferenceTimeReport receiver_reference_time_report_;
+
+  // Tracks recently-parsed RTP timestamps so that the truncated values can be
+  // re-expanded into full-form.
+  RtpTimeTicks last_parsed_sr_rtp_timestamp_;
+  RtpTimeTicks last_parsed_frame_log_rtp_timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(RtcpParser);
 };

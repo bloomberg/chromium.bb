@@ -9,7 +9,7 @@
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "media/base/video_frame.h"
-#include "media/cast/cast_defines.h"
+#include "media/cast/common/rtp_time.h"
 #include "media/cast/constants.h"
 
 #ifndef OFFICIAL_BUILD
@@ -50,7 +50,7 @@ void FakeSoftwareVideoEncoder::Encode(
     encoded_frame->referenced_frame_id = encoded_frame->frame_id - 1;
   }
   encoded_frame->rtp_timestamp =
-      TimeDeltaToRtpDelta(video_frame->timestamp(), kVideoFrequency);
+      RtpTimeTicks::FromTimeDelta(video_frame->timestamp(), kVideoFrequency);
   encoded_frame->reference_time = reference_time;
 
   base::DictionaryValue values;

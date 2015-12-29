@@ -59,7 +59,7 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
     playout_event->timestamp = testing_clock_->NowTicks();
     playout_event->type = FRAME_PLAYOUT;
     playout_event->media_type = VIDEO_EVENT;
-    playout_event->rtp_timestamp = 100u;
+    playout_event->rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(100));
     playout_event->frame_id = 2u;
     playout_event->delay_delta = base::TimeDelta::FromMilliseconds(kDelayMs);
     cast_environment_->logger()->DispatchFrameEvent(std::move(playout_event));
@@ -68,7 +68,7 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
     decode_event->timestamp = testing_clock_->NowTicks();
     decode_event->type = FRAME_DECODED;
     decode_event->media_type = VIDEO_EVENT;
-    decode_event->rtp_timestamp = 200u;
+    decode_event->rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(200));
     decode_event->frame_id = 1u;
     cast_environment_->logger()->DispatchFrameEvent(std::move(decode_event));
 
@@ -76,7 +76,7 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
     receive_event->timestamp = testing_clock_->NowTicks();
     receive_event->type = PACKET_RECEIVED;
     receive_event->media_type = VIDEO_EVENT;
-    receive_event->rtp_timestamp = 200u;
+    receive_event->rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(200));
     receive_event->frame_id = 2u;
     receive_event->packet_id = 1u;
     receive_event->max_packet_id = 10u;
@@ -88,7 +88,7 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
     playout_event->timestamp = testing_clock_->NowTicks();
     playout_event->type = FRAME_PLAYOUT;
     playout_event->media_type = AUDIO_EVENT;
-    playout_event->rtp_timestamp = 300u;
+    playout_event->rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(300));
     playout_event->frame_id = 4u;
     playout_event->delay_delta = base::TimeDelta::FromMilliseconds(kDelayMs);
     cast_environment_->logger()->DispatchFrameEvent(std::move(playout_event));
@@ -97,7 +97,7 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
     decode_event->timestamp = testing_clock_->NowTicks();
     decode_event->type = FRAME_DECODED;
     decode_event->media_type = AUDIO_EVENT;
-    decode_event->rtp_timestamp = 400u;
+    decode_event->rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(400));
     decode_event->frame_id = 3u;
     cast_environment_->logger()->DispatchFrameEvent(std::move(decode_event));
 
@@ -105,7 +105,7 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
     receive_event->timestamp = testing_clock_->NowTicks();
     receive_event->type = PACKET_RECEIVED;
     receive_event->media_type = AUDIO_EVENT;
-    receive_event->rtp_timestamp = 400u;
+    receive_event->rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(400));
     receive_event->frame_id = 5u;
     receive_event->packet_id = 1u;
     receive_event->max_packet_id = 10u;
@@ -117,7 +117,7 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
     encode_event->timestamp = testing_clock_->NowTicks();
     encode_event->type = FRAME_ENCODED;
     encode_event->media_type = VIDEO_EVENT;
-    encode_event->rtp_timestamp = 100u;
+    encode_event->rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(100));
     encode_event->frame_id = 1u;
     cast_environment_->logger()->DispatchFrameEvent(std::move(encode_event));
 
@@ -125,7 +125,7 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
     encode_event->timestamp = testing_clock_->NowTicks();
     encode_event->type = FRAME_ENCODED;
     encode_event->media_type = AUDIO_EVENT;
-    encode_event->rtp_timestamp = 100u;
+    encode_event->rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(100));
     encode_event->frame_id = 1u;
     cast_environment_->logger()->DispatchFrameEvent(std::move(encode_event));
   }
@@ -162,7 +162,7 @@ TEST_F(ReceiverRtcpEventSubscriberTest, DropEventsWhenSizeExceeded) {
     decode_event->timestamp = testing_clock_->NowTicks();
     decode_event->type = FRAME_DECODED;
     decode_event->media_type = VIDEO_EVENT;
-    decode_event->rtp_timestamp = i * 10;
+    decode_event->rtp_timestamp = RtpTimeTicks().Expand(i * 10);
     decode_event->frame_id = i;
     cast_environment_->logger()->DispatchFrameEvent(std::move(decode_event));
   }

@@ -19,7 +19,7 @@ RtcpReceiverEventLogMessage::RtcpReceiverEventLogMessage()
     : type(UNKNOWN), packet_id(0u) {}
 RtcpReceiverEventLogMessage::~RtcpReceiverEventLogMessage() {}
 
-RtcpReceiverFrameLogMessage::RtcpReceiverFrameLogMessage(uint32_t timestamp)
+RtcpReceiverFrameLogMessage::RtcpReceiverFrameLogMessage(RtpTimeTicks timestamp)
     : rtp_timestamp_(timestamp) {}
 RtcpReceiverFrameLogMessage::~RtcpReceiverFrameLogMessage() {}
 

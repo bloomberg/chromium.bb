@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
+#include "media/cast/common/rtp_time.h"
 #include "media/cast/net/pacing/paced_sender.h"
 #include "media/cast/receiver/frame_receiver.h"
 
@@ -66,7 +67,7 @@ class CastReceiverImpl : public CastReceiver {
       const scoped_refptr<CastEnvironment>& cast_environment,
       const AudioFrameDecodedCallback& callback,
       uint32_t frame_id,
-      uint32_t rtp_timestamp,
+      RtpTimeTicks rtp_timestamp,
       const base::TimeTicks& playout_time,
       scoped_ptr<AudioBus> audio_bus,
       bool is_continuous);
@@ -80,7 +81,7 @@ class CastReceiverImpl : public CastReceiver {
       const scoped_refptr<CastEnvironment>& cast_environment,
       const VideoFrameDecodedCallback& callback,
       uint32_t frame_id,
-      uint32_t rtp_timestamp,
+      RtpTimeTicks rtp_timestamp,
       const base::TimeTicks& playout_time,
       const scoped_refptr<VideoFrame>& video_frame,
       bool is_continuous);

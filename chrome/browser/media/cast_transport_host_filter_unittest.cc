@@ -108,8 +108,9 @@ TEST_F(CastTransportHostFilterTest, SimpleMessages) {
   audio_frame.dependency = media::cast::EncodedFrame::KEY;
   audio_frame.frame_id = 1;
   audio_frame.referenced_frame_id = 1;
-  audio_frame.rtp_timestamp = 47;
   const int kSamples = 47;
+  audio_frame.rtp_timestamp = media::cast::RtpTimeTicks() +
+      media::cast::RtpTimeDelta::FromTicks(kSamples);
   const int kBytesPerSample = 2;
   const int kChannels = 2;
   audio_frame.data = std::string(kSamples * kBytesPerSample * kChannels, 'q');
@@ -128,7 +129,8 @@ TEST_F(CastTransportHostFilterTest, SimpleMessages) {
   FakeSend(insert_video_frame);
 
   CastHostMsg_SendSenderReport rtcp_msg(
-      kChannelId, 1, base::TimeTicks(), 2);
+      kChannelId, 1, base::TimeTicks(),
+      media::cast::RtpTimeTicks().Expand(UINT32_C(2)));
   FakeSend(rtcp_msg);
 
   std::vector<uint32_t> frame_ids;

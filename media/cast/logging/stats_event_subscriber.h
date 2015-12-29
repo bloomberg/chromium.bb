@@ -186,8 +186,8 @@ class StatsEventSubscriber : public RawEventSubscriber {
 
   typedef std::map<CastStat, double> StatsMap;
   typedef std::map<CastStat, linked_ptr<SimpleHistogram> > HistogramMap;
-  typedef std::map<RtpTimestamp, FrameInfo> FrameInfoMap;
-  typedef std::map<std::pair<RtpTimestamp, uint16_t>,
+  typedef std::map<RtpTimeTicks, FrameInfo> FrameInfoMap;
+  typedef std::map<std::pair<RtpTimeTicks, uint16_t>,
                    std::pair<base::TimeTicks, CastLoggingEvent>>
       PacketEventTimeMap;
   typedef std::map<CastLoggingEvent, FrameLogStats> FrameStatsMap;
@@ -206,7 +206,7 @@ class StatsEventSubscriber : public RawEventSubscriber {
   void UpdateFirstLastEventTime(base::TimeTicks timestamp,
                                 bool is_receiver_event);
   bool GetReceiverOffset(base::TimeDelta* offset);
-  void MaybeInsertFrameInfo(RtpTimestamp rtp_timestamp,
+  void MaybeInsertFrameInfo(RtpTimeTicks rtp_timestamp,
                             const FrameInfo& frame_info);
   void RecordFrameCaptureTime(const FrameEvent& frame_event);
   void RecordCaptureLatency(const FrameEvent& frame_event);
