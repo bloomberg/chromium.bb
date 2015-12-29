@@ -889,7 +889,6 @@ bool ReadSymbolDataElfClass(const typename ElfClass::Ehdr* elf_header,
                             const DumpOptions& options,
                             Module** out_module) {
   typedef typename ElfClass::Ehdr Ehdr;
-  typedef typename ElfClass::Shdr Shdr;
 
   *out_module = NULL;
 

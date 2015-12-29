@@ -140,7 +140,9 @@ class LineInfo {
   // the line info to read is.  after_header is the place right after
   // the end of the line information header.
   const char* buffer_;
+#ifndef NDEBUG
   uint64 buffer_length_;
+#endif
   const char* after_header_;
 };
 

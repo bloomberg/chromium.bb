@@ -165,18 +165,9 @@ static void Swap(uint128_struct* value) {
 }
 
 // Swapping signed integers
-static inline void Swap(int16_t* value) {
-  Swap(reinterpret_cast<uint16_t*>(value));
-}
-
 static inline void Swap(int32_t* value) {
   Swap(reinterpret_cast<uint32_t*>(value));
 }
-
-static inline void Swap(int64_t* value) {
-  Swap(reinterpret_cast<uint64_t*>(value));
-}
-
 
 static inline void Swap(MDLocationDescriptor* location_descriptor) {
   Swap(&location_descriptor->data_size);

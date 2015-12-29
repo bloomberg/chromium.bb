@@ -517,8 +517,10 @@ void CompilationUnit::ProcessDIEs() {
 
 LineInfo::LineInfo(const char* buffer, uint64 buffer_length,
                    ByteReader* reader, LineInfoHandler* handler):
-    handler_(handler), reader_(reader), buffer_(buffer),
-    buffer_length_(buffer_length) {
+    handler_(handler), reader_(reader), buffer_(buffer) {
+#ifndef NDEBUG
+  buffer_length_ = buffer_length;
+#endif
   header_.std_opcode_lengths = NULL;
 }
 
