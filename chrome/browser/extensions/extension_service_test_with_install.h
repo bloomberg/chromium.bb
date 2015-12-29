@@ -58,6 +58,9 @@ class ExtensionServiceTestWithInstall : public ExtensionServiceTestBase,
                                      InstallState install_state);
   const Extension* PackAndInstallCRX(const base::FilePath& dir_path,
                                      InstallState install_state);
+  const Extension* PackAndInstallCRXWithLocation(const base::FilePath& dir_path,
+                                                 Manifest::Location location,
+                                                 InstallState install_state);
 
   const Extension* InstallCRX(const base::FilePath& path,
                               InstallState install_state,

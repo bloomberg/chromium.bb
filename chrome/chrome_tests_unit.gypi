@@ -433,6 +433,7 @@
       'browser/extensions/api/dial/dial_service_unittest.cc',
       'browser/extensions/api/easy_unlock_private/easy_unlock_private_api_chromeos_unittest.cc',
       'browser/extensions/api/experience_sampling_private/experience_sampling_private_api_unittest.cc',
+      'browser/extensions/api/extension_action/browser_action_unittest.cc',
       'browser/extensions/api/extension_action/extension_action_prefs_unittest.cc',
       'browser/extensions/api/file_handlers/api_file_handler_util_unittest.cc',
       'browser/extensions/api/file_handlers/mime_util_unittest.cc',
