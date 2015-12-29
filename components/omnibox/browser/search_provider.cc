@@ -928,9 +928,12 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
     base::string16 answer_contents;
     base::string16 answer_type;
     scoped_ptr<SuggestionAnswer> answer;
+    base::string16 trimmed_verbatim_lower =
+        base::i18n::ToLower(trimmed_verbatim);
     for (ACMatches::iterator it = matches_.begin(); it != matches_.end();
          ++it) {
-      if (it->answer && it->fill_into_edit == trimmed_verbatim) {
+      if (it->answer &&
+          base::i18n::ToLower(it->fill_into_edit) == trimmed_verbatim_lower) {
         answer_contents = it->answer_contents;
         answer_type = it->answer_type;
         answer = SuggestionAnswer::copy(it->answer.get());
