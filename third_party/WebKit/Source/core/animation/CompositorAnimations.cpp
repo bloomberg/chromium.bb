@@ -383,8 +383,8 @@ void CompositorAnimations::cancelAnimationOnCompositor(const Element& element, c
     }
     if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled()) {
         WebCompositorAnimationPlayer* compositorPlayer = animation.compositorPlayer();
-        ASSERT(compositorPlayer);
-        compositorPlayer->removeAnimation(id);
+        if (compositorPlayer)
+            compositorPlayer->removeAnimation(id);
     } else {
         toLayoutBoxModelObject(element.layoutObject())->layer()->compositedLayerMapping()->mainGraphicsLayer()->removeAnimation(id);
     }
