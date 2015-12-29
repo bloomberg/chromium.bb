@@ -114,13 +114,11 @@ class MemCacheIter {
 
 class MemoryCache {
  public:
-  typedef std::map<std::string, FileData*> Files;
+  using Files = std::map<std::string, scoped_ptr<FileData>>;
 
  public:
   MemoryCache();
   virtual ~MemoryCache();
-
-  void CloneFrom(const MemoryCache& mc);
 
   void AddFiles();
 
@@ -140,7 +138,6 @@ class MemoryCache {
 
  private:
   void InsertFile(FileData* file_data);
-  void ClearFiles();
 
   Files files_;
   std::string cwd_;

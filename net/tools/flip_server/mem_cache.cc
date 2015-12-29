@@ -65,15 +65,7 @@ FileData::FileData() {}
 FileData::~FileData() {}
 
 MemoryCache::MemoryCache() : cwd_(FLAGS_cache_base_dir) {}
-
-MemoryCache::~MemoryCache() { ClearFiles(); }
-
-void MemoryCache::CloneFrom(const MemoryCache& mc) {
-  DCHECK_NE(this, &mc);
-  ClearFiles();
-  files_ = mc.files_;
-  cwd_ = mc.cwd_;
-}
+MemoryCache::~MemoryCache() {}
 
 void MemoryCache::AddFiles() {
   std::deque<std::string> paths;
@@ -213,7 +205,8 @@ FileData* MemoryCache::GetFileData(const std::string& filename) {
   if (fi == files_.end()) {
     return NULL;
   }
-  return fi->second;
+  return fi->second.get();
+  ;
 }
 
 bool MemoryCache::AssignFileData(const std::string& filename,
@@ -235,18 +228,11 @@ void MemoryCache::InsertFile(const BalsaHeaders* headers,
 void MemoryCache::InsertFile(FileData* file_data) {
   Files::iterator it = files_.find(file_data->filename());
   if (it != files_.end()) {
-    delete it->second;
-    it->second = file_data;
+    it->second.reset(file_data);
   } else {
-    files_.insert(std::make_pair(file_data->filename(), file_data));
+    files_.insert(
+        std::make_pair(file_data->filename(), make_scoped_ptr(file_data)));
   }
-}
-
-void MemoryCache::ClearFiles() {
-  for (Files::const_iterator i = files_.begin(); i != files_.end(); ++i) {
-    delete i->second;
-  }
-  files_.clear();
 }
 
 }  // namespace net
