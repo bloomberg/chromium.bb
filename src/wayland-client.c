@@ -309,7 +309,7 @@ wl_event_queue_destroy(struct wl_event_queue *queue)
  * \return A new event queue associated with this display or NULL on
  * failure.
  *
- * \memberof wl_event_queue
+ * \memberof wl_display
  */
 WL_EXPORT struct wl_event_queue *
 wl_display_create_queue(struct wl_display *display)
@@ -965,7 +965,7 @@ static const struct wl_callback_listener sync_listener = {
  * with calling wl_display_prepare_read() and wl_display_read_events())
  *
  * \sa wl_display_roundtrip()
- * \memberof wl_event_queue
+ * \memberof wl_display
  */
 WL_EXPORT int
 wl_display_roundtrip_queue(struct wl_display *display, struct wl_event_queue *queue)
@@ -1465,7 +1465,7 @@ wl_display_prepare_read_queue(struct wl_display *display,
  * with the default queue passed as the queue.
  *
  * \sa wl_display_prepare_read_queue
- * \memberof wl_event_queue
+ * \memberof wl_display
  */
 WL_EXPORT int
 wl_display_prepare_read(struct wl_display *display)
@@ -1527,7 +1527,7 @@ wl_display_cancel_read(struct wl_display *display)
  * \sa wl_display_dispatch(), wl_display_dispatch_pending(),
  * wl_display_dispatch_queue_pending()
  *
- * \memberof wl_event_queue
+ * \memberof wl_display
  */
 WL_EXPORT int
 wl_display_dispatch_queue(struct wl_display *display,
@@ -1599,7 +1599,7 @@ wl_display_dispatch_queue(struct wl_display *display,
  * event queue. On failure -1 is returned and errno set appropriately.
  * If there are no events queued, this function returns immediately.
  *
- * \memberof wl_event_queue
+ * \memberof wl_display
  * \since 1.0.2
  */
 WL_EXPORT int

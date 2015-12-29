@@ -103,8 +103,8 @@ struct wl_proxy;
  * queue, reading all the data from the display fd. If the application
  * would call \em poll(2) after that it would block, even though there
  * might be events queued on the default queue. Those events should be
- * dispatched with \ref wl_display_dispatch_(queue_)pending() before
- * flushing and blocking.
+ * dispatched with \ref wl_display_dispatch_pending() or \ref
+ * wl_display_dispatch_queue_pending() before flushing and blocking.
  */
 struct wl_display;
 
