@@ -5,6 +5,7 @@
 #include "media/formats/mp4/avc.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/logging.h"
 #include "media/base/decrypt_config.h"
@@ -311,7 +312,7 @@ bool AVC::IsValidAnnexB(const uint8_t* buffer,
 
 AVCBitstreamConverter::AVCBitstreamConverter(
     scoped_ptr<AVCDecoderConfigurationRecord> avc_config)
-  : avc_config_(avc_config.Pass()) {
+    : avc_config_(std::move(avc_config)) {
     DCHECK(avc_config_);
 }
 

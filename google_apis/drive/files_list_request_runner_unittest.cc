@@ -4,6 +4,8 @@
 
 #include "google_apis/drive/files_list_request_runner.h"
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -93,7 +95,7 @@ class FilesListRequestRunnerTest : public testing::Test {
   // happen.
   void OnCompleted(DriveApiErrorCode error, scoped_ptr<FileList> entry) {
     response_error_.reset(new DriveApiErrorCode(error));
-    response_entry_ = entry.Pass();
+    response_entry_ = std::move(entry);
     on_completed_callback_.Run();
   }
 
@@ -113,7 +115,7 @@ class FilesListRequestRunnerTest : public testing::Test {
       const GURL& base_url,
       const net::test_server::HttpRequest& request) {
     http_request_.reset(new net::test_server::HttpRequest(request));
-    return fake_server_response_.Pass();
+    return std::move(fake_server_response_);
   }
 
   base::MessageLoopForIO message_loop_;  // Test server needs IO thread.

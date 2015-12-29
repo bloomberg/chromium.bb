@@ -176,7 +176,7 @@ CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
       (command_line->HasSwitch(switches::kEnableHardwareOverlays) ||
        command_line->HasSwitch(switches::kOzoneTestSingleOverlaySupport))) {
     validator.reset(new BrowserCompositorOverlayCandidateValidatorOzone(
-        widget, overlay_candidates.Pass()));
+        widget, std::move(overlay_candidates)));
   }
 #elif defined(OS_MACOSX)
   // Overlays are only supported through the remote layer API.

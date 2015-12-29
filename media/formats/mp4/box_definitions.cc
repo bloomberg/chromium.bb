@@ -4,6 +4,8 @@
 
 #include "media/formats/mp4/box_definitions.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "media/base/video_types.h"
 #include "media/base/video_util.h"
@@ -520,8 +522,8 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
     scoped_ptr<AVCDecoderConfigurationRecord> avcConfig(
         new AVCDecoderConfigurationRecord());
     RCHECK(reader->ReadChild(avcConfig.get()));
-    frame_bitstream_converter = make_scoped_refptr(
-        new AVCBitstreamConverter(avcConfig.Pass()));
+    frame_bitstream_converter =
+        make_scoped_refptr(new AVCBitstreamConverter(std::move(avcConfig)));
     video_codec = kCodecH264;
     video_codec_profile = H264PROFILE_MAIN;
 #if defined(ENABLE_HEVC_DEMUXING)
@@ -531,8 +533,8 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
     scoped_ptr<HEVCDecoderConfigurationRecord> hevcConfig(
         new HEVCDecoderConfigurationRecord());
     RCHECK(reader->ReadChild(hevcConfig.get()));
-    frame_bitstream_converter = make_scoped_refptr(
-        new HEVCBitstreamConverter(hevcConfig.Pass()));
+    frame_bitstream_converter =
+        make_scoped_refptr(new HEVCBitstreamConverter(std::move(hevcConfig)));
     video_codec = kCodecHEVC;
 #endif
   } else {

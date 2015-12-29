@@ -5,8 +5,8 @@
 #include "cloud_print/gcp20/prototype/cloud_print_requester.h"
 
 #include <stdint.h>
-
 #include <limits>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
@@ -90,7 +90,7 @@ std::string LocalSettingsToJson(const LocalSettings& settings) {
   current->SetBoolean("printer/local_printing_enabled",
                          settings.local_printing_enabled);
   current->SetInteger("xmpp_timeout_value", settings.xmpp_timeout_value);
-  dictionary.Set("current", current.Pass());
+  dictionary.Set("current", std::move(current));
 
   std::string local_settings;
   base::JSONWriter::Write(dictionary, &local_settings);

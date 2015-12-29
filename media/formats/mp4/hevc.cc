@@ -5,6 +5,7 @@
 #include "media/formats/mp4/hevc.h"
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -209,7 +210,7 @@ bool HEVC::IsValidAnnexB(const uint8_t* buffer,
 
 HEVCBitstreamConverter::HEVCBitstreamConverter(
     scoped_ptr<HEVCDecoderConfigurationRecord> hevc_config)
-  : hevc_config_(hevc_config.Pass()) {
+    : hevc_config_(std::move(hevc_config)) {
     DCHECK(hevc_config_);
 }
 

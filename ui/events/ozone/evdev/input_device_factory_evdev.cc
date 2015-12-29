@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <linux/input.h>
 #include <stddef.h>
+#include <utility>
 
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -103,7 +104,7 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
     scoped_ptr<TouchEventConverterEvdev> converter(new TouchEventConverterEvdev(
         fd, params.path, params.id, devinfo, params.dispatcher));
     converter->Initialize(devinfo);
-    return converter.Pass();
+    return std::move(converter);
   }
 
   // Graphics tablet
@@ -180,7 +181,7 @@ InputDeviceFactoryEvdev::InputDeviceFactoryEvdev(
 #if defined(USE_EVDEV_GESTURES)
       gesture_property_provider_(new GesturePropertyProvider),
 #endif
-      dispatcher_(dispatcher.Pass()),
+      dispatcher_(std::move(dispatcher)),
       weak_ptr_factory_(this) {
 }
 
@@ -292,7 +293,7 @@ void InputDeviceFactoryEvdev::GetTouchDeviceStatus(
 #if defined(USE_EVDEV_GESTURES)
   DumpTouchDeviceStatus(gesture_property_provider_.get(), status.get());
 #endif
-  reply.Run(status.Pass());
+  reply.Run(std::move(status));
 }
 
 void InputDeviceFactoryEvdev::GetTouchEventLog(
@@ -304,7 +305,7 @@ void InputDeviceFactoryEvdev::GetTouchEventLog(
   DumpTouchEventLog(converters_, gesture_property_provider_.get(), out_dir,
                     log_paths.Pass(), reply);
 #else
-  reply.Run(log_paths.Pass());
+  reply.Run(std::move(log_paths));
 #endif
 }
 

@@ -4,6 +4,8 @@
 
 #include "content/common/gpu/client/gpu_memory_buffer_impl_ozone_native_pixmap.h"
 
+#include <utility>
+
 #include "content/common/gpu/gpu_memory_buffer_factory_ozone_native_pixmap.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/ozone/public/client_native_pixmap_factory.h"
@@ -27,7 +29,8 @@ GpuMemoryBufferImplOzoneNativePixmap::GpuMemoryBufferImplOzoneNativePixmap(
     gfx::BufferFormat format,
     const DestructionCallback& callback,
     scoped_ptr<ui::ClientNativePixmap> pixmap)
-    : GpuMemoryBufferImpl(id, size, format, callback), pixmap_(pixmap.Pass()) {}
+    : GpuMemoryBufferImpl(id, size, format, callback),
+      pixmap_(std::move(pixmap)) {}
 
 GpuMemoryBufferImplOzoneNativePixmap::~GpuMemoryBufferImplOzoneNativePixmap() {}
 
@@ -44,7 +47,7 @@ GpuMemoryBufferImplOzoneNativePixmap::CreateFromHandle(
           handle.native_pixmap_handle, size, usage);
   DCHECK(native_pixmap);
   return make_scoped_ptr(new GpuMemoryBufferImplOzoneNativePixmap(
-      handle.id, size, format, callback, native_pixmap.Pass()));
+      handle.id, size, format, callback, std::move(native_pixmap)));
 }
 
 // static

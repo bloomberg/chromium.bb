@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/events/ozone/evdev/tablet_event_converter_evdev.h"
+
 #include <errno.h>
 #include <fcntl.h>
 #include <linux/input.h>
 #include <unistd.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -23,7 +25,6 @@
 #include "ui/events/ozone/evdev/event_converter_test_util.h"
 #include "ui/events/ozone/evdev/event_device_test_util.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
-#include "ui/events/ozone/evdev/tablet_event_converter_evdev.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_source.h"
@@ -213,7 +214,7 @@ class TabletEventConverterEvdevTest : public testing::Test {
 
   void DispatchEventForTest(ui::Event* event) {
     scoped_ptr<ui::Event> cloned_event = ui::Event::Clone(*event);
-    dispatched_events_.push_back(cloned_event.Pass());
+    dispatched_events_.push_back(std::move(cloned_event));
   }
 
  private:

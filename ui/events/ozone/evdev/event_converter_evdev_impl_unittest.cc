@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -13,12 +15,17 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
+// Note: This should normally be the first include in the list, but it
+// transitively includes <linux/input.h>, which breaks dom_code.h due to macros
+// that conflict with enumerator names.
 #include "ui/events/ozone/evdev/event_converter_evdev_impl.h"
 #include "ui/events/ozone/evdev/event_converter_test_util.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 
+// This is not ordered with the normal #includes, due to the aforementioned
+// macro conflict.
 #include <linux/input.h>
 
 namespace ui {
@@ -141,7 +148,7 @@ class EventConverterEvdevImplTest : public testing::Test {
  private:
   void DispatchEventForTest(ui::Event* event) {
     scoped_ptr<ui::Event> cloned_event = ui::Event::Clone(*event);
-    dispatched_events_.push_back(cloned_event.Pass());
+    dispatched_events_.push_back(std::move(cloned_event));
   }
 
   base::MessageLoopForUI ui_loop_;

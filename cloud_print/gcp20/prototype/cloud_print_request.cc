@@ -5,6 +5,7 @@
 #include "cloud_print/gcp20/prototype/cloud_print_request.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -56,7 +57,7 @@ scoped_ptr<CloudPrintRequest> CloudPrintRequest::CreatePost(
   scoped_ptr<CloudPrintRequest> request(
       new CloudPrintRequest(url, URLFetcher::POST, delegate));
   request->fetcher_->SetUploadData(mimetype, content);
-  return request.Pass();
+  return std::move(request);
 }
 
 void CloudPrintRequest::Run(

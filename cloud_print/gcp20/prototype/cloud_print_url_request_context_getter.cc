@@ -4,6 +4,8 @@
 
 #include "cloud_print/gcp20/prototype/cloud_print_url_request_context_getter.h"
 
+#include <utility>
+
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -25,7 +27,7 @@ CloudPrintURLRequestContextGetter::GetURLRequestContext() {
     builder.set_proxy_config_service(
         make_scoped_ptr(new net::ProxyConfigServiceFixed(net::ProxyConfig())));
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
-    context_ = builder.Build().Pass();
+    context_ = std::move(builder.Build());
   }
   return context_.get();
 }

@@ -4,6 +4,8 @@
 
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -155,7 +157,7 @@ scoped_ptr<SystemInputInjector> EventFactoryEvdev::CreateSystemInputInjector() {
       new ProxyDeviceEventDispatcher(base::ThreadTaskRunnerHandle::Get(),
                                      weak_ptr_factory_.GetWeakPtr()));
   return make_scoped_ptr(
-      new InputInjectorEvdev(proxy_dispatcher.Pass(), cursor_));
+      new InputInjectorEvdev(std::move(proxy_dispatcher), cursor_));
 }
 
 void EventFactoryEvdev::DispatchKeyEvent(const KeyEventParams& params) {
@@ -400,7 +402,7 @@ void EventFactoryEvdev::StartThread() {
   scoped_ptr<DeviceEventDispatcherEvdev> proxy_dispatcher(
       new ProxyDeviceEventDispatcher(base::ThreadTaskRunnerHandle::Get(),
                                      weak_ptr_factory_.GetWeakPtr()));
-  thread_.Start(proxy_dispatcher.Pass(), cursor_,
+  thread_.Start(std::move(proxy_dispatcher), cursor_,
                 base::Bind(&EventFactoryEvdev::OnThreadStarted,
                            weak_ptr_factory_.GetWeakPtr()));
 }
@@ -408,7 +410,7 @@ void EventFactoryEvdev::StartThread() {
 void EventFactoryEvdev::OnThreadStarted(
     scoped_ptr<InputDeviceFactoryEvdevProxy> input_device_factory) {
   TRACE_EVENT0("evdev", "EventFactoryEvdev::OnThreadStarted");
-  input_device_factory_proxy_ = input_device_factory.Pass();
+  input_device_factory_proxy_ = std::move(input_device_factory);
 
   // Hook up device configuration.
   input_controller_.SetInputDeviceFactory(input_device_factory_proxy_.get());

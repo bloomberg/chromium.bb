@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
@@ -34,7 +35,7 @@ scoped_ptr<base::DictionaryValue> CreateError(const std::string& error_type) {
   scoped_ptr<base::DictionaryValue> error(new base::DictionaryValue);
   error->SetString("error", error_type);
 
-  return error.Pass();
+  return std::move(error);
 }
 
 // {"error":|error_type|, "description":|description|}
@@ -43,7 +44,7 @@ scoped_ptr<base::DictionaryValue> CreateErrorWithDescription(
     const std::string& description) {
   scoped_ptr<base::DictionaryValue> error(CreateError(error_type));
   error->SetString("description", description);
-  return error.Pass();
+  return std::move(error);
 }
 
 // {"error":|error_type|, "timeout":|timeout|}
@@ -52,7 +53,7 @@ scoped_ptr<base::DictionaryValue> CreateErrorWithTimeout(
     int timeout) {
   scoped_ptr<base::DictionaryValue> error(CreateError(error_type));
   error->SetInteger("timeout", timeout);
-  return error.Pass();
+  return std::move(error);
 }
 
 // Converts state to string.
@@ -115,7 +116,7 @@ bool PrivetHttpServer::Start(uint16_t port) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableIpv6))
     listen_address = "0.0.0.0";
   server_socket->ListenWithAddressAndPort(listen_address, port, 1);
-  server_.reset(new net::HttpServer(server_socket.Pass(), this));
+  server_.reset(new net::HttpServer(std::move(server_socket), this));
 
   net::IPEndPoint address;
   if (server_->GetLocalAddress(&address) != net::OK) {
@@ -277,7 +278,7 @@ scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessInfo(
   response->Set("type", type.DeepCopy());
 
   *status_code = net::HTTP_OK;
-  return response.Pass();
+  return std::move(response);
 }
 
 scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessCapabilities(
@@ -316,7 +317,7 @@ scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessCreateJob(
       response.reset(new base::DictionaryValue);
       response->SetString("job_id", job_id);
       response->SetInteger("expires_in", expires_in);
-      return response.Pass();
+      return std::move(response);
 
     case LocalPrintJob::CREATE_INVALID_TICKET:
       return CreateError("invalid_ticket");
@@ -376,7 +377,7 @@ scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessSubmitDoc(
           base::StringPrintf("%u", static_cast<uint32_t>(job.content.size())));
       if (job_name_present)
         response->SetString("job_name", job.job_name);
-      return response.Pass();
+      return std::move(response);
 
     case LocalPrintJob::SAVE_INVALID_PRINT_JOB:
       return CreateErrorWithTimeout("invalid_print_job", timeout);
@@ -414,7 +415,7 @@ scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessJobState(
   response->SetString("job_id", job_id);
   response->SetString("state", LocalPrintJobStateToString(info.state));
   response->SetInteger("expires_in", info.expires_in);
-  return response.Pass();
+  return std::move(response);
 }
 
 scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessRegister(
@@ -465,7 +466,7 @@ scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessRegister(
 
   ProcessRegistrationStatus(status, &response);
   *status_code = net::HTTP_OK;
-  return response.Pass();
+  return std::move(response);
 }
 
 void PrivetHttpServer::ProcessRegistrationStatus(

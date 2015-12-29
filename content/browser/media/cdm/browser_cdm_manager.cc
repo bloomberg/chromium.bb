@@ -5,8 +5,8 @@
 #include "content/browser/media/cdm/browser_cdm_manager.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -426,7 +426,7 @@ void BrowserCdmManager::OnSetServerCertificate(
     return;
   }
 
-  cdm->SetServerCertificate(certificate, promise.Pass());
+  cdm->SetServerCertificate(certificate, std::move(promise));
 }
 
 void BrowserCdmManager::OnCreateSessionAndGenerateRequest(
@@ -540,7 +540,7 @@ void BrowserCdmManager::OnUpdateSession(int render_frame_id,
     return;
   }
 
-  cdm->UpdateSession(session_id, response, promise.Pass());
+  cdm->UpdateSession(session_id, response, std::move(promise));
 }
 
 void BrowserCdmManager::OnCloseSession(int render_frame_id,
@@ -558,7 +558,7 @@ void BrowserCdmManager::OnCloseSession(int render_frame_id,
     return;
   }
 
-  cdm->CloseSession(session_id, promise.Pass());
+  cdm->CloseSession(session_id, std::move(promise));
 }
 
 void BrowserCdmManager::OnRemoveSession(int render_frame_id,
@@ -576,7 +576,7 @@ void BrowserCdmManager::OnRemoveSession(int render_frame_id,
     return;
   }
 
-  cdm->RemoveSession(session_id, promise.Pass());
+  cdm->RemoveSession(session_id, std::move(promise));
 }
 
 void BrowserCdmManager::OnDestroyCdm(int render_frame_id, int cdm_id) {
@@ -700,8 +700,8 @@ void BrowserCdmManager::CreateSessionAndGenerateRequestIfPermitted(
     return;
   }
 
-  cdm->CreateSessionAndGenerateRequest(session_type, init_data_type,
-                                       init_data, promise.Pass());
+  cdm->CreateSessionAndGenerateRequest(session_type, init_data_type, init_data,
+                                       std::move(promise));
 }
 
 void BrowserCdmManager::LoadSessionIfPermitted(
@@ -725,7 +725,7 @@ void BrowserCdmManager::LoadSessionIfPermitted(
     return;
   }
 
-  cdm->LoadSession(session_type, session_id, promise.Pass());
+  cdm->LoadSession(session_type, session_id, std::move(promise));
 }
 
 }  // namespace content

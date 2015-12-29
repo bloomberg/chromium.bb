@@ -5,6 +5,7 @@
 #include "content/renderer/media/cdm/renderer_cdm_manager.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/stl_util.h"
 #include "content/common/media/cdm_messages.h"
@@ -180,7 +181,7 @@ void RendererCdmManager::OnSessionKeysChange(
     keys_info.push_back(new media::CdmKeyInformation(key_info));
 
   media_keys->OnSessionKeysChange(session_id, has_additional_usable_key,
-                                  keys_info.Pass());
+                                  std::move(keys_info));
 }
 
 void RendererCdmManager::OnSessionExpirationUpdate(

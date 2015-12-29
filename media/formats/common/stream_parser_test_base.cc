@@ -4,6 +4,8 @@
 
 #include "media/formats/common/stream_parser_test_base.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "media/base/test_data_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,7 +31,7 @@ static std::string BufferQueueToString(
 
 StreamParserTestBase::StreamParserTestBase(
     scoped_ptr<StreamParser> stream_parser)
-    : parser_(stream_parser.Pass()) {
+    : parser_(std::move(stream_parser)) {
   parser_->Init(
       base::Bind(&StreamParserTestBase::OnInitDone, base::Unretained(this)),
       base::Bind(&StreamParserTestBase::OnNewConfig, base::Unretained(this)),

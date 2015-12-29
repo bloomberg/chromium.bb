@@ -5,10 +5,10 @@
 #include "content/common/discardable_shared_memory_heap.h"
 
 #include <stddef.h>
-
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -40,9 +40,9 @@ TEST(DiscardableSharedMemoryHeapTest, SearchFreeLists) {
     scoped_ptr<base::DiscardableSharedMemory> memory(
         new base::DiscardableSharedMemory);
     ASSERT_TRUE(memory->CreateAndMap(segment_size));
-    heap.MergeIntoFreeLists(heap.Grow(memory.Pass(), segment_size,
+    heap.MergeIntoFreeLists(heap.Grow(std::move(memory), segment_size,
                                       next_discardable_shared_memory_id++,
-                                      base::Bind(NullTask)).Pass());
+                                      base::Bind(NullTask)));
   }
 
   unsigned kSeed = 1;

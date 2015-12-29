@@ -4,6 +4,8 @@
 
 #include "media/formats/mp2t/mp2t_stream_parser.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/stl_util.h"
@@ -72,13 +74,14 @@ class PidState {
   int continuity_counter_;
 };
 
-PidState::PidState(int pid, PidType pid_type,
+PidState::PidState(int pid,
+                   PidType pid_type,
                    scoped_ptr<TsSection> section_parser)
-  : pid_(pid),
-    pid_type_(pid_type),
-    section_parser_(section_parser.Pass()),
-    enable_(false),
-    continuity_counter_(-1) {
+    : pid_(pid),
+      pid_type_(pid_type),
+      section_parser_(std::move(section_parser)),
+      enable_(false),
+      continuity_counter_(-1) {
   DCHECK(section_parser_);
 }
 
@@ -281,9 +284,8 @@ bool Mp2tStreamParser::Parse(const uint8_t* buf, int size) {
           new TsSectionPat(
               base::Bind(&Mp2tStreamParser::RegisterPmt,
                          base::Unretained(this))));
-      scoped_ptr<PidState> pat_pid_state(
-          new PidState(ts_packet->pid(), PidState::kPidPat,
-                       pat_section_parser.Pass()));
+      scoped_ptr<PidState> pat_pid_state(new PidState(
+          ts_packet->pid(), PidState::kPidPat, std::move(pat_section_parser)));
       pat_pid_state->Enable();
       it = pids_.insert(
           std::pair<int, PidState*>(ts_packet->pid(),
@@ -330,7 +332,7 @@ void Mp2tStreamParser::RegisterPmt(int program_number, int pmt_pid) {
           base::Bind(&Mp2tStreamParser::RegisterPes,
                      base::Unretained(this), pmt_pid)));
   scoped_ptr<PidState> pmt_pid_state(
-      new PidState(pmt_pid, PidState::kPidPmt, pmt_section_parser.Pass()));
+      new PidState(pmt_pid, PidState::kPidPmt, std::move(pmt_section_parser)));
   pmt_pid_state->Enable();
   pids_.insert(std::pair<int, PidState*>(pmt_pid, pmt_pid_state.release()));
 }
@@ -384,11 +386,11 @@ void Mp2tStreamParser::RegisterPes(int pmt_pid,
   // Create the PES state here.
   DVLOG(1) << "Create a new PES state";
   scoped_ptr<TsSection> pes_section_parser(
-      new TsSectionPes(es_parser.Pass(), &timestamp_unroller_));
+      new TsSectionPes(std::move(es_parser), &timestamp_unroller_));
   PidState::PidType pid_type =
       is_audio ? PidState::kPidAudioPes : PidState::kPidVideoPes;
   scoped_ptr<PidState> pes_pid_state(
-      new PidState(pes_pid, pid_type, pes_section_parser.Pass()));
+      new PidState(pes_pid, pid_type, std::move(pes_section_parser)));
   pids_.insert(std::pair<int, PidState*>(pes_pid, pes_pid_state.release()));
 
   // A new PES pid has been added, the PID filter might change.

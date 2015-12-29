@@ -5,8 +5,8 @@
 #include "media/formats/mp4/mp4_stream_parser.h"
 
 #include <stddef.h>
-
 #include <limits>
+#include <utility>
 #include <vector>
 
 #include "base/callback_helpers.h"
@@ -530,7 +530,7 @@ bool MP4StreamParser::EnqueueSample(BufferQueue* audio_buffers,
                                    buffer_type, 0);
 
   if (decrypt_config)
-    stream_buf->set_decrypt_config(decrypt_config.Pass());
+    stream_buf->set_decrypt_config(std::move(decrypt_config));
 
   stream_buf->set_duration(runs_->duration());
   stream_buf->set_timestamp(runs_->cts());

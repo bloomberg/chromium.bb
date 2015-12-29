@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdint.h>
+#include "media/blink/resource_multibuffer_data_provider.h"
 
+#include <stdint.h>
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/format_macros.h"
@@ -16,7 +18,6 @@
 #include "media/base/seekable_buffer.h"
 #include "media/blink/mock_webframeclient.h"
 #include "media/blink/mock_weburlloader.h"
-#include "media/blink/resource_multibuffer_data_provider.h"
 #include "media/blink/url_index.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
@@ -94,7 +95,7 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
     scoped_ptr<ResourceMultiBufferDataProvider> loader(
         new ResourceMultiBufferDataProvider(url_data_.get(), first_position_));
     loader_ = loader.get();
-    url_data_->multibuffer()->AddProvider(loader.Pass());
+    url_data_->multibuffer()->AddProvider(std::move(loader));
 
     // |test_loader_| will be used when Start() is called.
     url_loader_ = new NiceMock<MockWebURLLoader>();
