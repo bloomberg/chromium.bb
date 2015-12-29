@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "10.16",
+  "version": "10.17",
   "entries": [
     {
       "id": 1,
@@ -369,16 +369,12 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "linux"
       },
       "multi_gpu_style": "optimus",
-      "exceptions": [
-        {
-          "driver_vendor": "Mesa",
-          "driver_version": {
-            "op": ">=",
-            "value": "10.1"
-          },
-          "gl_vendor": "Intel.*"
-        }
-      ],
+      "driver_vendor": "Mesa",
+      "driver_version": {
+        "op": "<",
+        "value": "10.1"
+      },
+      "gl_vendor": "Intel.*",
       "features": [
         "all"
       ]
