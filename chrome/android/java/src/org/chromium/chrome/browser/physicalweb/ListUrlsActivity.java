@@ -99,7 +99,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
     protected void onResume() {
         super.onResume();
         mAdapter.clear();
-        Collection<String> urls = UrlManager.getInstance(this).getUrls();
+        Collection<String> urls = UrlManager.getInstance(this).getUrls(true);
         final long timestamp = SystemClock.elapsedRealtime();
         mPwsClient.resolve(urls, new PwsClient.ResolveScanCallback() {
             @Override
