@@ -1253,6 +1253,17 @@ void FrameView::removeViewportConstrainedObject(LayoutObject* object)
 
 void FrameView::viewportSizeChanged(bool widthChanged, bool heightChanged)
 {
+    if (m_frame->settings() && m_frame->settings()->rootLayerScrolls()) {
+        // The background must be repainted when the FrameView is resized, even if the initial
+        // containing block does not change (so we can't rely on layout to issue the invalidation).
+        // This is because the background fills the main GraphicsLayer, which takes the size of the
+        // layout viewport.
+        // TODO(skobes): Paint non-fixed backgrounds into the scrolling contents layer and avoid
+        // this invalidation (http://crbug.com/568847).
+        if (LayoutView* lv = layoutView())
+            lv->setShouldDoFullPaintInvalidation();
+    }
+
     if (!hasViewportConstrainedObjects())
         return;
 

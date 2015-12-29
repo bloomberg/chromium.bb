@@ -51,6 +51,7 @@
 #include "core/frame/DeprecatedScheduleStyleRecalcDuringLayout.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLFrameElement.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
@@ -2212,8 +2213,8 @@ LayoutRect PaintLayer::boundingBoxForCompositing(const PaintLayer* ancestorLayer
     if (this != ancestorLayer && !hasVisibleContent() && !hasVisibleDescendant())
         return LayoutRect();
 
-    // The root layer is always just the size of the document.
-    if (isRootLayer())
+    // Without composited scrolling, the root layer is the size of the document.
+    if (isRootLayer() && !needsCompositedScrolling())
         return LayoutRect(m_layoutObject->view()->documentRect());
 
     // The layer created for the LayoutFlowThread is just a helper for painting and hit-testing,
