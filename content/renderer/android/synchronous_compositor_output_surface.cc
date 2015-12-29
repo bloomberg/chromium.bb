@@ -45,7 +45,7 @@ class SynchronousCompositorOutputSurface::SoftwareDevice
       NOTREACHED() << "BeginPaint with no canvas set";
       return &null_canvas_;
     }
-    LOG_IF(WARNING, surface_->frame_holder_.get())
+    LOG_IF(WARNING, surface_->did_swap_)
         << "Mutliple calls to BeginPaint per frame";
     return surface_->current_sw_canvas_;
   }
@@ -74,6 +74,7 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
       sync_client_(nullptr),
       current_sw_canvas_(nullptr),
       memory_policy_(0u),
+      did_swap_(false),
       frame_swap_message_queue_(frame_swap_message_queue) {
   thread_checker_.DetachFromThread();
   DCHECK(registry_);
@@ -120,9 +121,10 @@ void SynchronousCompositorOutputSurface::Reshape(const gfx::Size& size,
 void SynchronousCompositorOutputSurface::SwapBuffers(
     cc::CompositorFrame* frame) {
   DCHECK(CalledOnValidThread());
-  frame_holder_.reset(new cc::CompositorFrame);
-  frame->AssignTo(frame_holder_.get());
+  DCHECK(sync_client_);
+  sync_client_->SwapBuffers(frame);
   client_->DidSwapBuffers();
+  did_swap_ = true;
 }
 
 void SynchronousCompositorOutputSurface::Invalidate() {
@@ -131,8 +133,7 @@ void SynchronousCompositorOutputSurface::Invalidate() {
     sync_client_->Invalidate();
 }
 
-scoped_ptr<cc::CompositorFrame>
-SynchronousCompositorOutputSurface::DemandDrawHw(
+void SynchronousCompositorOutputSurface::DemandDrawHw(
     const gfx::Size& surface_size,
     const gfx::Transform& transform,
     const gfx::Rect& viewport,
@@ -148,12 +149,9 @@ SynchronousCompositorOutputSurface::DemandDrawHw(
                                               transform_for_tile_priority);
   const bool software_draw = false;
   InvokeComposite(transform, viewport, clip, software_draw);
-
-  return frame_holder_.Pass();
 }
 
-scoped_ptr<cc::CompositorFrame>
-SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
+void SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
   DCHECK(CalledOnValidThread());
   DCHECK(canvas);
   DCHECK(!current_sw_canvas_);
@@ -171,8 +169,6 @@ SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
                             canvas->getBaseLayerSize().height());
   const bool software_draw = true;
   InvokeComposite(transform, clip, clip, software_draw);
-
-  return frame_holder_.Pass();
 }
 
 void SynchronousCompositorOutputSurface::InvokeComposite(
@@ -180,13 +176,12 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
     const gfx::Rect& viewport,
     const gfx::Rect& clip,
     bool software_draw) {
-  DCHECK(!frame_holder_.get());
-
   gfx::Transform adjusted_transform = transform;
   adjusted_transform.matrix().postTranslate(-viewport.x(), -viewport.y(), 0);
+  did_swap_ = false;
   client_->OnDraw(adjusted_transform, viewport, clip, software_draw);
 
-  if (frame_holder_.get())
+  if (did_swap_)
     client_->DidSwapBuffersComplete();
 }
 

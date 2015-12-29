@@ -39,6 +39,7 @@ class WebGraphicsContext3DCommandBufferImpl;
 class SynchronousCompositorOutputSurfaceClient {
  public:
   virtual void Invalidate() = 0;
+  virtual void SwapBuffers(cc::CompositorFrame* frame) = 0;
 
  protected:
   virtual ~SynchronousCompositorOutputSurfaceClient() {}
@@ -75,15 +76,14 @@ class SynchronousCompositorOutputSurface
   void Invalidate() override;
 
   // Partial SynchronousCompositor API implementation.
-  scoped_ptr<cc::CompositorFrame> DemandDrawHw(
-      const gfx::Size& surface_size,
-      const gfx::Transform& transform,
-      const gfx::Rect& viewport,
-      const gfx::Rect& clip,
-      const gfx::Rect& viewport_rect_for_tile_priority,
-      const gfx::Transform& transform_for_tile_priority);
+  void DemandDrawHw(const gfx::Size& surface_size,
+                    const gfx::Transform& transform,
+                    const gfx::Rect& viewport,
+                    const gfx::Rect& clip,
+                    const gfx::Rect& viewport_rect_for_tile_priority,
+                    const gfx::Transform& transform_for_tile_priority);
   void ReturnResources(const cc::CompositorFrameAck& frame_ack);
-  scoped_ptr<cc::CompositorFrame> DemandDrawSw(SkCanvas* canvas);
+  void DemandDrawSw(SkCanvas* canvas);
   void SetMemoryPolicy(size_t bytes_limit);
   void SetTreeActivationCallback(const base::Closure& callback);
   void GetMessagesToDeliver(std::vector<scoped_ptr<IPC::Message>>* messages);
@@ -113,9 +113,7 @@ class SynchronousCompositorOutputSurface
   SkCanvas* current_sw_canvas_;
 
   cc::ManagedMemoryPolicy memory_policy_;
-
-  scoped_ptr<cc::CompositorFrame> frame_holder_;
-
+  bool did_swap_;
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
 
   base::ThreadChecker thread_checker_;

@@ -67,6 +67,7 @@ class SynchronousCompositorProxy
 
   // SynchronousCompositorOutputSurfaceClient overrides.
   void Invalidate() override;
+  void SwapBuffers(cc::CompositorFrame* frame) override;
 
   void OnMessageReceived(const IPC::Message& message);
   bool Send(IPC::Message* message);
@@ -94,8 +95,7 @@ class SynchronousCompositorProxy
       SyncCompositorCommonRendererParams* common_renderer_params);
   void DemandDrawHw(const SyncCompositorCommonBrowserParams& common_params,
                     const SyncCompositorDemandDrawHwParams& params,
-                    SyncCompositorCommonRendererParams* common_renderer_params,
-                    cc::CompositorFrame* frame);
+                    IPC::Message* reply_message);
   void SetSharedMemory(
       const SyncCompositorCommonBrowserParams& common_params,
       const SyncCompositorSetSharedMemoryParams& params,
@@ -108,6 +108,9 @@ class SynchronousCompositorProxy
                     SyncCompositorCommonRendererParams* common_renderer_params,
                     cc::CompositorFrame* frame);
 
+  void SwapBuffersHw(cc::CompositorFrame* frame);
+  void SendDemandDrawHwReply(cc::CompositorFrame* frame,
+                             IPC::Message* reply_message);
   void DidActivatePendingTree();
   void DeliverMessages();
   void SendAsyncRendererStateIfNeeded();
@@ -119,6 +122,8 @@ class SynchronousCompositorProxy
   ui::SynchronousInputHandlerProxy* const input_handler_proxy_;
   InputHandlerManagerClient::Handler* const input_handler_;
   bool inside_receive_;
+  IPC::Message* hardware_draw_reply_;
+  scoped_ptr<cc::CompositorFrame> software_frame_holder_;
 
   // From browser.
   size_t bytes_limit_;

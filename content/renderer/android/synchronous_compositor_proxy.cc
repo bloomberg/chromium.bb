@@ -33,6 +33,7 @@ SynchronousCompositorProxy::SynchronousCompositorProxy(
       input_handler_proxy_(input_handler_proxy),
       input_handler_(handler),
       inside_receive_(false),
+      hardware_draw_reply_(nullptr),
       bytes_limit_(0u),
       version_(0u),
       page_scale_factor_(0.f),
@@ -145,13 +146,12 @@ void SynchronousCompositorProxy::PopulateCommonParams(
 
 void SynchronousCompositorProxy::OnMessageReceived(
     const IPC::Message& message) {
-  DCHECK(!inside_receive_);
-  base::AutoReset<bool> scoped_inside_receive(&inside_receive_, true);
   IPC_BEGIN_MESSAGE_MAP(SynchronousCompositorProxy, message)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_HandleInputEvent, HandleInputEvent)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_BeginFrame, BeginFrame)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_ComputeScroll, OnComputeScroll)
-    IPC_MESSAGE_HANDLER(SyncCompositorMsg_DemandDrawHw, DemandDrawHw)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(SyncCompositorMsg_DemandDrawHw,
+                                    DemandDrawHw)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_SetSharedMemory, SetSharedMemory)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_ZeroSharedMemory, ZeroSharedMemory)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_DemandDrawSw, DemandDrawSw)
@@ -168,6 +168,9 @@ void SynchronousCompositorProxy::HandleInputEvent(
     const blink::WebInputEvent* event,
     SyncCompositorCommonRendererParams* common_renderer_params,
     InputEventAckState* ack) {
+  DCHECK(!inside_receive_);
+  base::AutoReset<bool> scoped_inside_receive(&inside_receive_, true);
+
   ProcessCommonParams(common_params);
   DCHECK(!input_handler_->is_null());
   ui::LatencyInfo latency;
@@ -179,6 +182,9 @@ void SynchronousCompositorProxy::BeginFrame(
     const SyncCompositorCommonBrowserParams& common_params,
     const cc::BeginFrameArgs& args,
     SyncCompositorCommonRendererParams* common_renderer_params) {
+  DCHECK(!inside_receive_);
+  base::AutoReset<bool> scoped_inside_receive(&inside_receive_, true);
+
   ProcessCommonParams(common_params);
   if (need_begin_frame_) {
     begin_frame_source_->BeginFrame(args);
@@ -189,19 +195,50 @@ void SynchronousCompositorProxy::BeginFrame(
 void SynchronousCompositorProxy::DemandDrawHw(
     const SyncCompositorCommonBrowserParams& common_params,
     const SyncCompositorDemandDrawHwParams& params,
-    SyncCompositorCommonRendererParams* common_renderer_params,
-    cc::CompositorFrame* frame) {
-  DCHECK(frame);
+    IPC::Message* reply_message) {
+  DCHECK(!inside_receive_);
+  DCHECK(reply_message);
+
+  inside_receive_ = true;
   ProcessCommonParams(common_params);
-  scoped_ptr<cc::CompositorFrame> frame_ptr = output_surface_->DemandDrawHw(
-      params.surface_size, params.transform, params.viewport, params.clip,
-      params.viewport_rect_for_tile_priority,
-      params.transform_for_tile_priority);
-  if (frame_ptr) {
-    frame_ptr->AssignTo(frame);
+
+  {
+    base::AutoReset<IPC::Message*> scoped_hardware_draw_reply(
+        &hardware_draw_reply_, reply_message);
+    output_surface_->DemandDrawHw(params.surface_size, params.transform,
+                                  params.viewport, params.clip,
+                                  params.viewport_rect_for_tile_priority,
+                                  params.transform_for_tile_priority);
+  }
+
+  if (inside_receive_) {
+    // Did not swap.
+    cc::CompositorFrame empty_frame;
+    SendDemandDrawHwReply(&empty_frame, reply_message);
+    inside_receive_ = false;
+  } else {
     DeliverMessages();
   }
-  PopulateCommonParams(common_renderer_params);
+}
+
+void SynchronousCompositorProxy::SwapBuffersHw(cc::CompositorFrame* frame) {
+  DCHECK(inside_receive_);
+  DCHECK(hardware_draw_reply_);
+  DCHECK(frame);
+  SendDemandDrawHwReply(frame, hardware_draw_reply_);
+  inside_receive_ = false;
+}
+
+void SynchronousCompositorProxy::SendDemandDrawHwReply(
+    cc::CompositorFrame* frame,
+    IPC::Message* reply_message) {
+  SyncCompositorCommonRendererParams common_renderer_params;
+  PopulateCommonParams(&common_renderer_params);
+  // Not using WriteParams because cc::CompositorFrame is not copy-able.
+  IPC::ParamTraits<SyncCompositorCommonRendererParams>::Write(
+      reply_message, common_renderer_params);
+  IPC::ParamTraits<cc::CompositorFrame>::Write(reply_message, *frame);
+  Send(reply_message);
 }
 
 struct SynchronousCompositorProxy::SharedMemoryWithSize {
@@ -218,6 +255,9 @@ void SynchronousCompositorProxy::SetSharedMemory(
     const SyncCompositorSetSharedMemoryParams& params,
     bool* success,
     SyncCompositorCommonRendererParams* common_renderer_params) {
+  DCHECK(!inside_receive_);
+  base::AutoReset<bool> scoped_inside_receive(&inside_receive_, true);
+
   *success = false;
   ProcessCommonParams(common_params);
   if (!base::SharedMemory::IsHandleValid(params.shm_handle))
@@ -244,6 +284,9 @@ void SynchronousCompositorProxy::DemandDrawSw(
     bool* result,
     SyncCompositorCommonRendererParams* common_renderer_params,
     cc::CompositorFrame* frame) {
+  DCHECK(!inside_receive_);
+  base::AutoReset<bool> scoped_inside_receive(&inside_receive_, true);
+
   DCHECK(frame);
   ProcessCommonParams(common_params);
   *result = false;  // Early out ok.
@@ -264,20 +307,34 @@ void SynchronousCompositorProxy::DemandDrawSw(
   canvas.setMatrix(params.transform.matrix());
   canvas.setClipRegion(SkRegion(gfx::RectToSkIRect(params.clip)));
 
-  scoped_ptr<cc::CompositorFrame> frame_ptr =
-      output_surface_->DemandDrawSw(&canvas);
-  if (frame_ptr) {
+  output_surface_->DemandDrawSw(&canvas);
+  if (software_frame_holder_) {
     *result = true;
-    frame_ptr->AssignTo(frame);
+    software_frame_holder_->AssignTo(frame);
+    software_frame_holder_.reset();
     DeliverMessages();
   }
   PopulateCommonParams(common_renderer_params);
+}
+
+void SynchronousCompositorProxy::SwapBuffers(cc::CompositorFrame* frame) {
+  if (hardware_draw_reply_) {
+    SwapBuffersHw(frame);
+    return;
+  }
+
+  DCHECK(!software_frame_holder_);
+  software_frame_holder_.reset(new cc::CompositorFrame);
+  frame->AssignTo(software_frame_holder_.get());
 }
 
 void SynchronousCompositorProxy::OnComputeScroll(
     const SyncCompositorCommonBrowserParams& common_params,
     base::TimeTicks animation_time,
     SyncCompositorCommonRendererParams* common_renderer_params) {
+  DCHECK(!inside_receive_);
+  base::AutoReset<bool> scoped_inside_receive(&inside_receive_, true);
+
   ProcessCommonParams(common_params);
   if (need_animate_scroll_) {
     need_animate_scroll_ = false;

@@ -60,6 +60,7 @@ class SynchronousCompositorImpl
 
   // SynchronousCompositorOutputSurfaceClient overrides.
   void Invalidate() override;
+  void SwapBuffers(cc::CompositorFrame* frame) override;
 
   // SynchronousCompositor overrides.
   scoped_ptr<cc::CompositorFrame> DemandDrawHw(
@@ -117,6 +118,7 @@ class SynchronousCompositorImpl
   bool is_active_;
   bool renderer_needs_begin_frames_;
   bool need_animate_input_;
+  scoped_ptr<cc::CompositorFrame> frame_holder_;
 
   base::WeakPtrFactory<SynchronousCompositorImpl> weak_ptr_factory_;
 
