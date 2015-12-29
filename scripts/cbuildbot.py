@@ -45,6 +45,7 @@ from chromite.lib import parallel
 from chromite.lib import retry_stats
 from chromite.lib import sudo
 from chromite.lib import timeout_util
+from chromite.lib import ts_mon_config
 
 
 _DEFAULT_LOG_DIR = 'cbuildbot_logs'
@@ -1012,6 +1013,7 @@ def _SetupConnections(options, build_config):
 
   if run_type == _ENVIRONMENT_PROD:
     cidb.CIDBConnectionFactory.SetupProdCidb()
+    ts_mon_config.setup_ts_mon_global_state()
   elif run_type == _ENVIRONMENT_DEBUG:
     cidb.CIDBConnectionFactory.SetupDebugCidb()
   else:
