@@ -5,6 +5,7 @@
 #include "chromecast/browser/cast_browser_main_parts.h"
 
 #include <stddef.h>
+#include <string.h>
 
 #include <string>
 
@@ -76,15 +77,21 @@ namespace {
 
 #if !defined(OS_ANDROID)
 int kSignalsToRunClosure[] = { SIGTERM, SIGINT, };
-
 // Closure to run on SIGTERM and SIGINT.
-base::Closure* g_signal_closure = NULL;
+base::Closure* g_signal_closure = nullptr;
+base::PlatformThreadId g_main_thread_id;
 
 void RunClosureOnSignal(int signum) {
-  LOG(ERROR) << "Got signal " << signum;
+  if (base::PlatformThread::CurrentId() != g_main_thread_id) {
+    RAW_LOG(INFO, "Received signal on non-main thread\n");
+    return;
+  }
+
+  char message[48] = "Received close signal: ";
+  strncat(message, sys_siglist[signum], sizeof(message) - strlen(message) - 1);
+  RAW_LOG(INFO, message);
+
   DCHECK(g_signal_closure);
-  // Expect main thread got this signal. Otherwise, weak_ptr of run_loop will
-  // crash the process.
   g_signal_closure->Run();
 }
 
@@ -92,8 +99,10 @@ void RegisterClosureOnSignal(const base::Closure& closure) {
   DCHECK(!g_signal_closure);
   DCHECK_GT(arraysize(kSignalsToRunClosure), 0U);
 
-  // Allow memory leak by intention.
+  // Memory leak on purpose, since |g_signal_closure| should live until
+  // process exit.
   g_signal_closure = new base::Closure(closure);
+  g_main_thread_id = base::PlatformThread::CurrentId();
 
   struct sigaction sa_new;
   memset(&sa_new, 0, sizeof(sa_new));
@@ -101,9 +110,9 @@ void RegisterClosureOnSignal(const base::Closure& closure) {
   sigfillset(&sa_new.sa_mask);
   sa_new.sa_flags = SA_RESTART;
 
-  for (size_t i = 0; i < arraysize(kSignalsToRunClosure); i++) {
+  for (int sig : kSignalsToRunClosure) {
     struct sigaction sa_old;
-    if (sigaction(kSignalsToRunClosure[i], &sa_new, &sa_old) == -1) {
+    if (sigaction(sig, &sa_new, &sa_old) == -1) {
       NOTREACHED();
     } else {
       DCHECK_EQ(sa_old.sa_handler, SIG_DFL);
