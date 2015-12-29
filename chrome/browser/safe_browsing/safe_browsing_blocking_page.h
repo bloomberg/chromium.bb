@@ -138,11 +138,6 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   // milliseconds), in order to get data from the blocked resource itself.
   int64_t malware_details_proceed_delay_ms_;
 
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
-      MalwareReportsTransitionDisabled);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
-      MalwareReportsToggling);
-
   // Checks if we should even show the threat details option. For example, we
   // don't show it in incognito mode.
   bool CanShowThreatDetailsOption();
