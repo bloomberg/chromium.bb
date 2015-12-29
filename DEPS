@@ -267,7 +267,7 @@ deps = {
     Var('chromium_git') + '/external/py_trace_event.git' + '@' + 'dd463ea9e2c430de2b9e53dea57a77b4c3ac9b30',
 
   'src/third_party/dom_distiller_js/dist':
-    Var('chromium_git') + '/external/github.com/chromium/dom-distiller-dist.git' + '@' + '7e5e3db1b6ddecee66fc5f643729fda40976fd39',
+    Var('chromium_git') + '/external/github.com/chromium/dom-distiller-dist.git' + '@' + 'e21fe06cb71327ec62431f823e783d7b02f97b26',
 
   'src/third_party/catapult':
     Var('chromium_git') + '/external/github.com/catapult-project/catapult.git' + '@' +
