@@ -16,14 +16,10 @@ class AutoCanvasDrawListener final : public GarbageCollectedFinalized<AutoCanvas
 public:
     static AutoCanvasDrawListener* create(const PassOwnPtr<WebCanvasCaptureHandler>&);
     ~AutoCanvasDrawListener() {}
-    bool needsNewFrame() const override;
-    void sendNewFrame(const WTF::PassRefPtr<SkImage>&) override;
 
     DEFINE_INLINE_TRACE() {}
 private:
     AutoCanvasDrawListener(const PassOwnPtr<WebCanvasCaptureHandler>&);
-
-    OwnPtr<WebCanvasCaptureHandler> m_handler;
 };
 
 } // namespace blink

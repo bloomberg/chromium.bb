@@ -1139,6 +1139,8 @@
       'mediacapturefromelement/CanvasCaptureMediaStreamTrack.h',
       'mediacapturefromelement/HTMLCanvasElementCapture.cpp',
       'mediacapturefromelement/HTMLCanvasElementCapture.h',
+      'mediacapturefromelement/TimedCanvasDrawListener.cpp',
+      'mediacapturefromelement/TimedCanvasDrawListener.h',
       'mediarecorder/BlobEvent.cpp',
       'mediarecorder/BlobEvent.h',
       'mediarecorder/MediaRecorder.cpp',

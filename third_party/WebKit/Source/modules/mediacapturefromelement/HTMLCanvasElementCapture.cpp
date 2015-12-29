@@ -21,6 +21,16 @@ namespace blink {
 
 MediaStream* HTMLCanvasElementCapture::captureStream(HTMLCanvasElement& element, ExceptionState& exceptionState)
 {
+    return HTMLCanvasElementCapture::captureStream(element, false, 0, exceptionState);
+}
+
+MediaStream* HTMLCanvasElementCapture::captureStream(HTMLCanvasElement& element, double frameRate, ExceptionState& exceptionState)
+{
+    return HTMLCanvasElementCapture::captureStream(element, true, frameRate, exceptionState);
+}
+
+MediaStream* HTMLCanvasElementCapture::captureStream(HTMLCanvasElement& element, bool givenFrameRate, double frameRate, ExceptionState& exceptionState)
+{
     if (!element.originClean()) {
         exceptionState.throwDOMException(SecurityError, "Canvas is not origin-clean.");
         return MediaStream::create(element.executionContext());
@@ -28,7 +38,11 @@ MediaStream* HTMLCanvasElementCapture::captureStream(HTMLCanvasElement& element,
 
     WebMediaStreamTrack track;
     WebSize size(element.width(), element.height());
-    OwnPtr<WebCanvasCaptureHandler> handler = adoptPtr(Platform::current()->createCanvasCaptureHandler(size, kDefaultFrameRate, &track));
+    OwnPtr<WebCanvasCaptureHandler> handler;
+    if (givenFrameRate)
+        handler = adoptPtr(Platform::current()->createCanvasCaptureHandler(size, frameRate, &track));
+    else
+        handler = adoptPtr(Platform::current()->createCanvasCaptureHandler(size, kDefaultFrameRate, &track));
     ASSERT(handler);
     if (!handler) {
         exceptionState.throwDOMException(NotSupportedError, "No CanvasCapture handler can be created.");
@@ -36,7 +50,10 @@ MediaStream* HTMLCanvasElementCapture::captureStream(HTMLCanvasElement& element,
     }
 
     MediaStreamTrackVector tracks;
-    tracks.append(CanvasCaptureMediaStreamTrack::create(track, &element, handler.release()));
+    if (givenFrameRate)
+        tracks.append(CanvasCaptureMediaStreamTrack::create(track, &element, handler.release(), frameRate));
+    else
+        tracks.append(CanvasCaptureMediaStreamTrack::create(track, &element, handler.release()));
     return MediaStream::create(element.executionContext(), tracks);
 }
 

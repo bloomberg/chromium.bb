@@ -14,19 +14,9 @@ AutoCanvasDrawListener* AutoCanvasDrawListener::create(const PassOwnPtr<WebCanva
     return new AutoCanvasDrawListener(handler);
 }
 
-bool AutoCanvasDrawListener::needsNewFrame() const
-{
-    return m_handler->needsNewFrame();
-}
-
-void AutoCanvasDrawListener::sendNewFrame(const WTF::PassRefPtr<SkImage>& image)
-{
-    m_handler->sendNewFrame(WebSkImage(image));
-}
-
 AutoCanvasDrawListener::AutoCanvasDrawListener(const PassOwnPtr<WebCanvasCaptureHandler>& handler)
+    : CanvasDrawListener(handler)
 {
-    m_handler = handler;
 }
 
 } // namespace blink

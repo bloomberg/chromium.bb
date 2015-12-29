@@ -6,6 +6,7 @@
 
 #include "core/html/HTMLCanvasElement.h"
 #include "modules/mediacapturefromelement/AutoCanvasDrawListener.h"
+#include "modules/mediacapturefromelement/TimedCanvasDrawListener.h"
 #include "platform/NotImplemented.h"
 #include "platform/mediastream/MediaStreamCenter.h"
 
@@ -14,6 +15,11 @@ namespace blink {
 CanvasCaptureMediaStreamTrack* CanvasCaptureMediaStreamTrack::create(MediaStreamComponent* component, PassRefPtrWillBeRawPtr<HTMLCanvasElement> element, const PassOwnPtr<WebCanvasCaptureHandler> handler)
 {
     return new CanvasCaptureMediaStreamTrack(component, element, handler);
+}
+
+CanvasCaptureMediaStreamTrack* CanvasCaptureMediaStreamTrack::create(MediaStreamComponent* component, PassRefPtrWillBeRawPtr<HTMLCanvasElement> element, const PassOwnPtr<WebCanvasCaptureHandler> handler, double frameRate)
+{
+    return new CanvasCaptureMediaStreamTrack(component, element, handler, frameRate);
 }
 
 HTMLCanvasElement* CanvasCaptureMediaStreamTrack::canvas() const
@@ -58,6 +64,17 @@ CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(MediaStreamComponen
     suspendIfNeeded();
     m_drawListener = AutoCanvasDrawListener::create(handler);
     m_canvasElement->addListener(m_drawListener.get());
+}
+
+CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(MediaStreamComponent* component, PassRefPtrWillBeRawPtr<HTMLCanvasElement> element, const PassOwnPtr<WebCanvasCaptureHandler> handler, double frameRate)
+    : MediaStreamTrack(element->executionContext(), component)
+    , m_canvasElement(element)
+{
+    suspendIfNeeded();
+    TimedCanvasDrawListener* listener = TimedCanvasDrawListener::create(handler, frameRate);
+    m_drawListener = listener;
+    m_canvasElement->addListener(m_drawListener.get());
+    listener->requestNewFrame();
 }
 
 } // namespace blink

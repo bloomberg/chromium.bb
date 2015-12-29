@@ -2928,6 +2928,7 @@
             'html/WindowNameCollection.h',
             'html/canvas/CanvasAsyncBlobCreator.cpp',
             'html/canvas/CanvasAsyncBlobCreator.h',
+            'html/canvas/CanvasDrawListener.cpp',
             'html/canvas/CanvasDrawListener.h',
             'html/canvas/CanvasFontCache.cpp',
             'html/canvas/CanvasFontCache.h',

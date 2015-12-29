@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebCanvasCaptureHandler.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "wtf/PassRefPtr.h"
 
@@ -14,9 +15,14 @@ namespace blink {
 
 class CORE_EXPORT CanvasDrawListener : public GarbageCollectedMixin {
 public:
-    virtual ~CanvasDrawListener() {}
-    virtual bool needsNewFrame() const = 0;
-    virtual void sendNewFrame(const WTF::PassRefPtr<SkImage>&) = 0;
+    virtual ~CanvasDrawListener();
+    virtual bool needsNewFrame() const;
+    virtual void sendNewFrame(const WTF::PassRefPtr<SkImage>&);
+
+protected:
+    explicit CanvasDrawListener(const PassOwnPtr<WebCanvasCaptureHandler>);
+
+    OwnPtr<WebCanvasCaptureHandler> m_handler;
 };
 
 } // namespace blink
