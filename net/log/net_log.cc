@@ -162,10 +162,10 @@ base::Value* NetLog::Entry::ToValue() const {
   return entry_dict.release();
 }
 
-base::Value* NetLog::Entry::ParametersToValue() const {
+scoped_ptr<base::Value> NetLog::Entry::ParametersToValue() const {
   if (data_->parameters_callback)
-    return data_->parameters_callback->Run(capture_mode_).release();
-  return NULL;
+    return data_->parameters_callback->Run(capture_mode_);
+  return nullptr;
 }
 
 NetLog::EntryData::EntryData(EventType type,

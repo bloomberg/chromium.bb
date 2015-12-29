@@ -50,16 +50,14 @@ class TestNetLog::Observer : public NetLog::ThreadSafeObserver {
   void OnAddEntry(const NetLog::Entry& entry) override {
     // Using Dictionaries instead of Values makes checking values a little
     // simpler.
-    base::DictionaryValue* param_dict = nullptr;
-    base::Value* param_value = entry.ParametersToValue();
-    if (param_value && !param_value->GetAsDictionary(&param_dict))
-      delete param_value;
+    scoped_ptr<base::DictionaryValue> param_dict =
+        base::DictionaryValue::From(entry.ParametersToValue());
 
     // Only need to acquire the lock when accessing class variables.
     base::AutoLock lock(lock_);
-    entry_list_.push_back(TestNetLogEntry(
-        entry.type(), base::TimeTicks::Now(), entry.source(), entry.phase(),
-        scoped_ptr<base::DictionaryValue>(param_dict)));
+    entry_list_.push_back(TestNetLogEntry(entry.type(), base::TimeTicks::Now(),
+                                          entry.source(), entry.phase(),
+                                          std::move(param_dict)));
   }
 
   // Needs to be "mutable" to use it in GetEntries().

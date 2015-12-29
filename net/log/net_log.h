@@ -15,6 +15,7 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
@@ -138,7 +139,7 @@ class NET_EXPORT NetLog {
 
     // Returns the parameters as a Value.  Returns NULL if there are no
     // parameters.  Caller takes ownership of returned Value.
-    base::Value* ParametersToValue() const;
+    scoped_ptr<base::Value> ParametersToValue() const;
 
    private:
     const EntryData* const data_;
