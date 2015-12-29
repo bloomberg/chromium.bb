@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 {
   'targets': [
+    # GN: //android_webview/tools:system_webview_shell_apk
     {
       'target_name': 'system_webview_shell_apk',
       'type': 'none',
@@ -27,6 +28,7 @@
       ],
       'includes': [ '../build/apk_fake_jar.gypi' ],
     },
+    # GN: //android_webview/tools:system_webview_shell_page_cycler_apk
     {
       'target_name': 'system_webview_shell_page_cycler_apk',
       'type': 'none',
@@ -49,6 +51,7 @@
         '../build/android/test_runner.gypi',
       ],
     },
+    # GN: //android_webview/tools:system_webview_shell_layout_test_apk
     {
       'target_name': 'system_webview_shell_layout_test_apk',
       'type': 'none',
