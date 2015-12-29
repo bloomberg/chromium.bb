@@ -1156,6 +1156,12 @@ void PDFiumEngine::OnDocumentComplete() {
     return;
   }
 
+  FinishLoadingDocument();
+}
+
+void PDFiumEngine::FinishLoadingDocument() {
+  DCHECK(doc_loader_.IsDocumentComplete() && doc_);
+
   bool need_update = false;
   for (size_t i = 0; i < pages_.size(); ++i) {
     if (pages_[i]->available())
@@ -1172,11 +1178,6 @@ void PDFiumEngine::OnDocumentComplete() {
   if (need_update)
     LoadPageInfo(true);
 
-  FinishLoadingDocument();
-}
-
-void PDFiumEngine::FinishLoadingDocument() {
-  DCHECK(doc_loader_.IsDocumentComplete() && doc_);
   if (called_do_document_action_)
     return;
   called_do_document_action_ = true;
@@ -2667,7 +2668,10 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
     if (reload) {
       pages_[i]->set_rect(page_rect);
     } else {
-      pages_.push_back(new PDFiumPage(this, i, page_rect, doc_complete));
+      // The page is marked as not being available even if |doc_complete| is
+      // true because FPDFAvail_IsPageAvail() still has to be called for this
+      // page, which will be done in FinishLoadingDocument().
+      pages_.push_back(new PDFiumPage(this, i, page_rect, false));
     }
   }
 
