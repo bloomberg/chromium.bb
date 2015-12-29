@@ -4,11 +4,15 @@
 
 package org.chromium.chrome.browser.preferences.privacy;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
 
+import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 
@@ -16,8 +20,9 @@ import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
  * Fragment to manage the Physical Web preference and to explain to the user what it does.
  */
 public class PhysicalWebPreferenceFragment extends PreferenceFragment {
-
+    private static final String TAG = "PhysicalWeb";
     private static final String PREF_PHYSICAL_WEB_SWITCH = "physical_web_switch";
+    private static final int REQUEST_ID = 0;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -25,6 +30,46 @@ public class PhysicalWebPreferenceFragment extends PreferenceFragment {
         addPreferencesFromResource(R.xml.physical_web_preferences);
         getActivity().setTitle(R.string.physical_web_pref_title);
         initPhysicalWebSwitch();
+    }
+
+    private void ensureLocationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (getActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) {
+                Log.d(TAG, "Location permission already granted");
+                setPhysicalWebEnabled(true);
+                return;
+            }
+
+            Log.d(TAG, "Requesting location permission");
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_ID);
+            return;
+        }
+
+        setPhysicalWebEnabled(true);
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[],
+                                           int[] grantResults) {
+        // TODO(cco3): Add UMA here.
+        switch (requestCode) {
+            case REQUEST_ID:
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d(TAG, "Location permission granted");
+                } else {
+                    Log.d(TAG, "Location permission rejected");
+                }
+                break;
+            default:
+        }
+
+        // It doesn't matter whether we were given the location permission or not.  We will flip
+        // the setting to true and let the PreferenceManager figure out what to do with the
+        // location permission or lack thereof.
+        setPhysicalWebEnabled(true);
     }
 
     private void initPhysicalWebSwitch() {
@@ -38,11 +83,17 @@ public class PhysicalWebPreferenceFragment extends PreferenceFragment {
         physicalWebSwitch.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-                PrivacyPreferencesManager.getInstance(getActivity()).setPhysicalWebEnabled(
-                        (boolean) newValue);
+                if ((boolean) newValue) {
+                    ensureLocationPermission();
+                } else {
+                    setPhysicalWebEnabled(false);
+                }
                 return true;
             }
         });
     }
 
+    private void setPhysicalWebEnabled(boolean value) {
+        PrivacyPreferencesManager.getInstance(getActivity()).setPhysicalWebEnabled(value);
+    }
 }
