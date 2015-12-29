@@ -404,7 +404,7 @@ wl_shm_buffer_ref_pool(struct wl_shm_buffer *buffer)
 
 /** Unreference a shm_pool
  *
- * \param buffer The pool object
+ * \param pool The pool object
  *
  * Drops a reference to a wl_shm_pool object.
  *
