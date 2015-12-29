@@ -46,6 +46,11 @@ class BLIMP_CLIENT_EXPORT BlimpCompositor
       public RenderWidgetFeature::RenderWidgetFeatureDelegate,
       public BlimpInputManagerClient {
  public:
+  // |dp_to_px| is the scale factor required to move from dp (device pixels) to
+  // px.  See https://developer.android.com/guide/practices/screens_support.html
+  // for more details.
+  BlimpCompositor(float dp_to_px, RenderWidgetFeature* render_widget_feature);
+
   ~BlimpCompositor() override;
 
   // Default layer settings for all Blimp layer instances.
@@ -78,11 +83,6 @@ class BLIMP_CLIENT_EXPORT BlimpCompositor
   bool OnTouchEvent(const ui::MotionEvent& motion_event);
 
  protected:
-  // |dp_to_px| is the scale factor required to move from dp (device pixels) to
-  // px.  See https://developer.android.com/guide/practices/screens_support.html
-  // for more details.
-  BlimpCompositor(float dp_to_px, RenderWidgetFeature* render_widget_feature);
-
   // Populates the cc::LayerTreeSettings used by the cc::LayerTreeHost.  Can be
   // overridden to provide custom settings parameters.
   virtual void GenerateLayerTreeSettings(cc::LayerTreeSettings* settings);

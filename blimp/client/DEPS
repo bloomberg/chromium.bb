@@ -10,12 +10,14 @@ include_rules = [
   "+skia",
   "+third_party/skia",
   "+third_party/WebKit/public/web/WebInputEvent.h",
+  "+ui/events",
   "+ui/events/android",
   "+ui/events/blink",
   "+ui/events/gesture_detection",
   "+ui/events/gestures/blink",
   "+ui/gfx",
   "+ui/gl",
+  "+ui/platform_window",
   "+url",
 
   # TODO(dtrainor): Remove this once Toast uses are removed from Java.

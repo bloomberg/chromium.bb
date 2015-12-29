@@ -92,12 +92,11 @@ public final class BlimpLibraryLoader {
             @Override
             public void run() {
                 ContextUtils.initApplicationContext(context.getApplicationContext());
-                final boolean initResult = nativeInitializeBlimp();
                 new Handler().post(new Runnable() {
                     @Override
                     public void run() {
                         // Only run nativeStartBlimp if we properly initialized native.
-                        boolean startResult = initResult && nativeStartBlimp();
+                        boolean startResult = nativeStartBlimp();
                         sLibraryLoadResult = new Boolean(startResult);
 
                         // Notify any oustanding callers to #startAsync().
@@ -128,6 +127,5 @@ public final class BlimpLibraryLoader {
     }
 
     // Native methods.
-    private static native boolean nativeInitializeBlimp();
     private static native boolean nativeStartBlimp();
 }

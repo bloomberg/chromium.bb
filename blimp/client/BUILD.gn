@@ -10,6 +10,8 @@ if (is_android) {
 component("blimp_client") {
   sources = [
     "blimp_client_export.h",
+    "blimp_startup.cc",
+    "blimp_startup.h",
     "compositor/blimp_compositor.cc",
     "compositor/blimp_compositor.h",
     "compositor/blimp_context_provider.cc",
@@ -81,6 +83,30 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+}
+
+if (is_linux && !is_chromeos) {
+  executable("blimp_shell") {
+    sources = [
+      "linux/blimp_display_manager.cc",
+      "linux/blimp_display_manager.h",
+      "linux/blimp_main.cc",
+      "session/blimp_client_session_linux.cc",
+      "session/blimp_client_session_linux.h",
+    ]
+
+    deps = [
+      ":blimp_client",
+      "//base",
+      "//ui/events/platform/x11",
+      "//ui/platform_window/x11",
+    ]
+
+    public_configs = [ "//build/config/linux:x11" ]
+    public_deps = [
+      "//ui/events/platform/x11",
+    ]
+  }
 }
 
 if (is_android) {

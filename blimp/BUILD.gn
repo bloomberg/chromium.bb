@@ -27,6 +27,10 @@ group("blimp") {
       "//blimp/engine:blimp_engine_bundle",
     ]
   }
+
+  if (is_linux && !is_chromeos) {
+    deps += [ "//blimp/client:blimp_shell" ]
+  }
 }
 
 # Builds all Blimp test code (unit tests, APKs).
