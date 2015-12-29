@@ -11165,13 +11165,57 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PhysicalWeb.NotificationPressed">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of the metric.</description>
+  <owner>cco3@chromium.org</owner>
+  <owner>mattreynolds@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <description>
+    A notification advertising nearby Physical Web URLs was pressed.
+  </description>
+</action>
+
+<action name="PhysicalWeb.Prefs.FeatureDisabled">
+  <owner>cco3@chromium.org</owner>
+  <owner>mattreynolds@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <description>
+    The user has disabled the Physical Web feature via the settings.
+  </description>
+</action>
+
+<action name="PhysicalWeb.Prefs.FeatureEnabled">
+  <owner>cco3@chromium.org</owner>
+  <owner>mattreynolds@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <description>
+    The user has enabled the Physical Web feature via the settings.
+  </description>
+</action>
+
+<action name="PhysicalWeb.Prefs.LocationDenied">
+  <owner>cco3@chromium.org</owner>
+  <owner>mattreynolds@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <description>
+    The user denied location permission when enabling the Physical Web feature
+    via the settings.
+  </description>
+</action>
+
+<action name="PhysicalWeb.Prefs.LocationGranted">
+  <owner>cco3@chromium.org</owner>
+  <owner>mattreynolds@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <description>
+    The user granted location permission when enabling the Physical Web feature
+    via the settings.
+  </description>
 </action>
 
 <action name="PhysicalWeb.UrlSelected">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of the metric.</description>
+  <owner>cco3@chromium.org</owner>
+  <owner>mattreynolds@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <description>A Physical Web URL was selected.</description>
 </action>
 
 <action name="PlatformVerificationAccepted">

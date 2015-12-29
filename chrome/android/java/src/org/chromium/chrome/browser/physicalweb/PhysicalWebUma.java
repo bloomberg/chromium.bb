@@ -24,9 +24,13 @@ import javax.annotation.concurrent.ThreadSafe;
  * Centralizes UMA data collection for the Physical Web feature.
  */
 @ThreadSafe
-class PhysicalWebUma {
+public class PhysicalWebUma {
     private static final String TAG = "PhysicalWeb";
     private static final String NOTIFICATION_PRESS_COUNT = "PhysicalWeb.NotificationPressed";
+    private static final String PREFS_FEATURE_DISABLED_COUNT = "PhysicalWeb.Prefs.FeatureDisabled";
+    private static final String PREFS_FEATURE_ENABLED_COUNT = "PhysicalWeb.Prefs.FeatureEnabled";
+    private static final String PREFS_LOCATION_DENIED_COUNT = "PhysicalWeb.Prefs.LocationDenied";
+    private static final String PREFS_LOCATION_GRANTED_COUNT = "PhysicalWeb.Prefs.LocationGranted";
     private static final String PWS_BACKGROUND_RESOLVE_TIMES = "PhysicalWeb.ResolveTime.Background";
     private static final String PWS_FOREGROUND_RESOLVE_TIMES = "PhysicalWeb.ResolveTime.Foreground";
     private static final String URL_SELECTED_COUNT = "PhysicalWeb.UrlSelected";
@@ -45,6 +49,36 @@ class PhysicalWebUma {
      */
     public static void onUrlSelected(Context context) {
         handleAction(context, URL_SELECTED_COUNT);
+    }
+
+    /**
+     * Records when the user disables the Physical Web fetaure.
+     */
+    public static void onPrefsFeatureDisabled(Context context) {
+        handleAction(context, PREFS_FEATURE_DISABLED_COUNT);
+    }
+
+    /**
+     * Records when the user enables the Physical Web fetaure.
+     */
+    public static void onPrefsFeatureEnabled(Context context) {
+        handleAction(context, PREFS_FEATURE_ENABLED_COUNT);
+    }
+
+    /**
+     * Records when the user denies the location permission when enabling the Physical Web from the
+     * privacy settings menu.
+     */
+    public static void onPrefsLocationDenied(Context context) {
+        handleAction(context, PREFS_LOCATION_DENIED_COUNT);
+    }
+
+    /**
+     * Records when the user grants the location permission when enabling the Physical Web from the
+     * privacy settings menu.
+     */
+    public static void onPrefsLocationGranted(Context context) {
+        handleAction(context, PREFS_LOCATION_GRANTED_COUNT);
     }
 
     /**
@@ -89,6 +123,10 @@ class PhysicalWebUma {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         uploader.notificationPressCount = prefs.getInt(NOTIFICATION_PRESS_COUNT, 0);
         uploader.urlSelectedCount = prefs.getInt(URL_SELECTED_COUNT, 0);
+        uploader.prefsFeatureDisabledCount = prefs.getInt(PREFS_FEATURE_DISABLED_COUNT, 0);
+        uploader.prefsFeatureEnabledCount = prefs.getInt(PREFS_FEATURE_ENABLED_COUNT, 0);
+        uploader.prefsLocationDeniedCount = prefs.getInt(PREFS_LOCATION_DENIED_COUNT, 0);
+        uploader.prefsLocationGrantedCount = prefs.getInt(PREFS_LOCATION_GRANTED_COUNT, 0);
         uploader.pwsBackgroundResolveTimes = prefs.getString(PWS_BACKGROUND_RESOLVE_TIMES, "[]");
         uploader.pwsForegroundResolveTimes = prefs.getString(PWS_FOREGROUND_RESOLVE_TIMES, "[]");
         uploader.urlsDisplayedCounts = prefs.getString(URLS_DISPLAYED_COUNTS, "[]");
@@ -102,6 +140,10 @@ class PhysicalWebUma {
         prefs.edit()
                 .remove(NOTIFICATION_PRESS_COUNT)
                 .remove(URL_SELECTED_COUNT)
+                .remove(PREFS_FEATURE_DISABLED_COUNT)
+                .remove(PREFS_FEATURE_ENABLED_COUNT)
+                .remove(PREFS_LOCATION_DENIED_COUNT)
+                .remove(PREFS_LOCATION_GRANTED_COUNT)
                 .remove(PWS_BACKGROUND_RESOLVE_TIMES)
                 .remove(PWS_FOREGROUND_RESOLVE_TIMES)
                 .remove(URLS_DISPLAYED_COUNTS)
@@ -152,6 +194,10 @@ class PhysicalWebUma {
     private static class UmaUploader implements Runnable {
         public int notificationPressCount;
         public int urlSelectedCount;
+        public int prefsFeatureDisabledCount;
+        public int prefsFeatureEnabledCount;
+        public int prefsLocationDeniedCount;
+        public int prefsLocationGrantedCount;
         public String pwsBackgroundResolveTimes;
         public String pwsForegroundResolveTimes;
         public String urlsDisplayedCounts;
@@ -159,6 +205,10 @@ class PhysicalWebUma {
         public boolean isEmpty() {
             return notificationPressCount == 0
                     && urlSelectedCount == 0
+                    && prefsFeatureDisabledCount == 0
+                    && prefsFeatureEnabledCount == 0
+                    && prefsLocationDeniedCount == 0
+                    && prefsLocationGrantedCount == 0
                     && pwsBackgroundResolveTimes.equals("[]")
                     && pwsForegroundResolveTimes.equals("[]")
                     && urlsDisplayedCounts.equals("[]");
@@ -171,6 +221,10 @@ class PhysicalWebUma {
         public void run() {
             uploadActions(notificationPressCount, NOTIFICATION_PRESS_COUNT);
             uploadActions(urlSelectedCount, URL_SELECTED_COUNT);
+            uploadActions(prefsFeatureDisabledCount, PREFS_FEATURE_DISABLED_COUNT);
+            uploadActions(prefsFeatureEnabledCount, PREFS_FEATURE_ENABLED_COUNT);
+            uploadActions(prefsLocationDeniedCount, PREFS_LOCATION_DENIED_COUNT);
+            uploadActions(prefsLocationGrantedCount, PREFS_LOCATION_GRANTED_COUNT);
             uploadTimes(pwsBackgroundResolveTimes, PWS_BACKGROUND_RESOLVE_TIMES,
                     TimeUnit.MILLISECONDS);
             uploadTimes(pwsForegroundResolveTimes, PWS_FOREGROUND_RESOLVE_TIMES,

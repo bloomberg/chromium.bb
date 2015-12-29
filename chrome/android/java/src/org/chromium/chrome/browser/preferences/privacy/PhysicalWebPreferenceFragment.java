@@ -14,6 +14,7 @@ import android.preference.PreferenceFragment;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.physicalweb.PhysicalWebUma;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 
 /**
@@ -53,14 +54,15 @@ public class PhysicalWebPreferenceFragment extends PreferenceFragment {
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[],
                                            int[] grantResults) {
-        // TODO(cco3): Add UMA here.
         switch (requestCode) {
             case REQUEST_ID:
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    PhysicalWebUma.onPrefsLocationGranted(getActivity());
                     Log.d(TAG, "Location permission granted");
                 } else {
-                    Log.d(TAG, "Location permission rejected");
+                    PhysicalWebUma.onPrefsLocationDenied(getActivity());
+                    Log.d(TAG, "Location permission denied");
                 }
                 break;
             default:
@@ -84,8 +86,10 @@ public class PhysicalWebPreferenceFragment extends PreferenceFragment {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 if ((boolean) newValue) {
+                    PhysicalWebUma.onPrefsFeatureEnabled(getActivity());
                     ensureLocationPermission();
                 } else {
+                    PhysicalWebUma.onPrefsFeatureDisabled(getActivity());
                     setPhysicalWebEnabled(false);
                 }
                 return true;
