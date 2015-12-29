@@ -40,6 +40,7 @@ namespace blink {
 class PLATFORM_EXPORT ScrollbarThemeMacOverlayAPI : public ScrollbarThemeMacCommon {
 public:
     bool shouldRepaintAllPartsOnInvalidation() const override { return false; }
+    ScrollbarPart invalidateOnThumbPositionChange(const ScrollbarThemeClient&, float oldPosiiton, float newPosition) const override;
     void updateEnabledState(const ScrollbarThemeClient&) override;
     int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) override;
     bool usesOverlayScrollbars() const override;

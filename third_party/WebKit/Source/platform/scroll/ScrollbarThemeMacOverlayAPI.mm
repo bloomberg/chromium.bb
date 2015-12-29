@@ -274,5 +274,11 @@ float ScrollbarThemeMacOverlayAPI::thumbOpacity(const ScrollbarThemeClient& scro
     return [scrollbarPainter knobAlpha];
 }
 
+ScrollbarPart ScrollbarThemeMacOverlayAPI::invalidateOnThumbPositionChange(const ScrollbarThemeClient& scrollbar, float oldPosition, float newPosition) const
+{
+    // ScrollAnimatorMac will invalidate the thumb when appropriate.
+    return NoPart;
+}
+
 } // namespace blink
 

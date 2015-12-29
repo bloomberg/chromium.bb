@@ -2084,10 +2084,8 @@ void FrameView::scrollTo(const DoublePoint& newPosition)
 
 void FrameView::invalidatePaintForTickmarks()
 {
-    if (Scrollbar* scrollbar = verticalScrollbar()) {
-        scrollbar->setTrackNeedsRepaint(true);
-        setScrollbarNeedsPaintInvalidation(VerticalScrollbar);
-    }
+    if (Scrollbar* scrollbar = verticalScrollbar())
+        scrollbar->setNeedsPaintInvalidation(static_cast<ScrollbarPart>(~ThumbPart));
 }
 
 void FrameView::getTickmarks(Vector<IntRect>& tickmarks) const
