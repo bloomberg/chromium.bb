@@ -37,20 +37,30 @@ class BookmarkMenuDelegateTest : public BrowserWithTestWindowTest {
   }
 
   void TearDown() override {
-    if (bookmark_menu_delegate_.get()) {
-      // Since we never show the menu we need to pass the MenuItemView to
-      // MenuRunner so that the MenuItemView is destroyed.
-      views::MenuRunner menu_runner(bookmark_menu_delegate_->menu(), 0);
-      bookmark_menu_delegate_.reset();
-    }
+    DestroyDelegate();
+
     BrowserWithTestWindowTest::TearDown();
   }
 
  protected:
+  bool ShouldCloseOnRemove(const bookmarks::BookmarkNode* node) const {
+    return bookmark_menu_delegate_->ShouldCloseOnRemove(node);
+  }
+
+  // Destroys the delegate. Do this rather than directly deleting
+  // |bookmark_menu_delegate_| as otherwise the menu is leaked.
+  void DestroyDelegate() {
+    if (!bookmark_menu_delegate_.get())
+      return;
+
+    // Since we never show the menu we need to pass the MenuItemView to
+    // MenuRunner so that the MenuItemView is destroyed.
+    views::MenuRunner menu_runner(bookmark_menu_delegate_->menu(), 0);
+    bookmark_menu_delegate_.reset();
+  }
+
   void NewDelegate() {
-    // Destroy current menu if available, see comments in TearDown().
-    if (bookmark_menu_delegate_.get())
-      views::MenuRunner menu_runner(bookmark_menu_delegate_->menu(), 0);
+    DestroyDelegate();
 
     bookmark_menu_delegate_.reset(
         new BookmarkMenuDelegate(browser(), nullptr, nullptr));
@@ -186,4 +196,37 @@ TEST_F(BookmarkMenuDelegateTest, RemoveBookmarks) {
   bookmark_menu_delegate_->WillRemoveBookmarks(nodes_to_remove);
   nodes_to_remove.clear();
   bookmark_menu_delegate_->DidRemoveBookmarks();
+}
+
+// Verifies WillRemoveBookmarks() doesn't attempt to access MenuItemViews that
+// have since been deleted.
+TEST_F(BookmarkMenuDelegateTest, CloseOnRemove) {
+  views::MenuDelegate test_delegate;
+  const BookmarkNode* node = model_->bookmark_bar_node()->GetChild(1);
+  NewDelegate();
+  bookmark_menu_delegate_->Init(&test_delegate, nullptr, node, 0,
+                                BookmarkMenuDelegate::HIDE_PERMANENT_FOLDERS,
+                                BOOKMARK_LAUNCH_LOCATION_NONE);
+  // Any nodes on the bookmark bar should close on remove.
+  EXPECT_TRUE(ShouldCloseOnRemove(model_->bookmark_bar_node()->GetChild(2)));
+
+  // Descendants of the bookmark should not close on remove.
+  EXPECT_FALSE(ShouldCloseOnRemove(
+      model_->bookmark_bar_node()->GetChild(1)->GetChild(0)));
+
+  EXPECT_FALSE(ShouldCloseOnRemove(model_->other_node()->GetChild(0)));
+
+  // Make it so the other node only has one child.
+  // Destroy the current delegate so that it doesn't have any references to
+  // deleted nodes.
+  DestroyDelegate();
+  while (model_->other_node()->child_count() > 1)
+    model_->Remove(model_->other_node()->GetChild(1));
+
+  NewDelegate();
+  bookmark_menu_delegate_->Init(&test_delegate, nullptr, node, 0,
+                                BookmarkMenuDelegate::HIDE_PERMANENT_FOLDERS,
+                                BOOKMARK_LAUNCH_LOCATION_NONE);
+  // Any nodes on the bookmark bar should close on remove.
+  EXPECT_TRUE(ShouldCloseOnRemove(model_->other_node()->GetChild(0)));
 }

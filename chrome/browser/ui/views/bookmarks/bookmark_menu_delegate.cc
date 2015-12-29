@@ -117,7 +117,7 @@ void BookmarkMenuDelegate::SetPageNavigator(PageNavigator* navigator) {
     context_menu_->SetPageNavigator(navigator);
 }
 
-BookmarkModel* BookmarkMenuDelegate::GetBookmarkModel() {
+const BookmarkModel* BookmarkMenuDelegate::GetBookmarkModel() const {
   return BookmarkModelFactory::GetForProfile(profile_);
 }
 
@@ -313,23 +313,14 @@ bool BookmarkMenuDelegate::ShowContextMenu(MenuItemView* source,
                                            const gfx::Point& p,
                                            ui::MenuSourceType source_type) {
   DCHECK(menu_id_to_node_map_.find(id) != menu_id_to_node_map_.end());
-  std::vector<const BookmarkNode*> nodes;
-  nodes.push_back(menu_id_to_node_map_[id]);
-  bool close_on_delete = !parent_menu_item_ &&
-      (nodes[0]->parent() == GetBookmarkModel()->other_node() &&
-       nodes[0]->parent()->child_count() == 1);
-  context_menu_.reset(
-      new BookmarkContextMenu(
-          parent_,
-          browser_,
-          profile_,
-          page_navigator_,
-          nodes[0]->parent(),
-          nodes,
-          close_on_delete));
+  const BookmarkNode* node = menu_id_to_node_map_[id];
+  std::vector<const BookmarkNode*> nodes(1, node);
+  context_menu_.reset(new BookmarkContextMenu(
+      parent_, browser_, profile_, page_navigator_, node->parent(), nodes,
+      ShouldCloseOnRemove(node)));
   context_menu_->set_observer(this);
   context_menu_->RunMenuAt(p, source_type);
-  context_menu_.reset(NULL);
+  context_menu_.reset(nullptr);
   return true;
 }
 
@@ -441,6 +432,25 @@ void BookmarkMenuDelegate::DidRemoveBookmarks() {
   GetBookmarkModel()->AddObserver(this);
   DCHECK(is_mutating_model_);
   is_mutating_model_ = false;
+}
+
+bool BookmarkMenuDelegate::ShouldCloseOnRemove(const BookmarkNode* node) const {
+  // We never need to close when embedded in the app menu.
+  const bool is_shown_from_app_menu = parent_menu_item_ != nullptr;
+  if (is_shown_from_app_menu)
+    return false;
+
+  const bool is_only_child_of_other_folder =
+      (node->parent() == GetBookmarkModel()->other_node() &&
+       node->parent()->child_count() == 1);
+  const bool is_child_of_bookmark_bar =
+      node->parent() == GetBookmarkModel()->bookmark_bar_node();
+  // The 'other' bookmarks folder hides when it has no more items, so we need
+  // to exit the menu when the last node is removed.
+  // If the parent is the bookmark bar, then the menu is showing for an item on
+  // the bookmark bar. When removing this item we need to close the menu (as
+  // there is no longer anything to anchor the menu to).
+  return is_only_child_of_other_folder || is_child_of_bookmark_bar;
 }
 
 MenuItemView* BookmarkMenuDelegate::CreateMenu(const BookmarkNode* parent,

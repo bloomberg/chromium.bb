@@ -1503,7 +1503,7 @@ void BookmarkBarView::ShowContextMenuForView(views::View* source,
     return;
   }
 
-  const BookmarkNode* parent = NULL;
+  const BookmarkNode* parent = nullptr;
   std::vector<const BookmarkNode*> nodes;
   if (source == other_bookmarks_button_) {
     parent = model_->other_node();
@@ -1531,8 +1531,9 @@ void BookmarkBarView::ShowContextMenuForView(views::View* source,
     parent = model_->bookmark_bar_node();
     nodes.push_back(parent);
   }
-  bool close_on_remove =
-      (parent == model_->other_node()) && (parent->child_count() == 1);
+  // |close_on_remove| only matters for nested menus. We're not nested at this
+  // point, so this value has no effect.
+  const bool close_on_remove = true;
 
   context_menu_.reset(new BookmarkContextMenu(
       GetWidget(), browser_, browser_->profile(),
