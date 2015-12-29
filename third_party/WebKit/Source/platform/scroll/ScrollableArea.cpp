@@ -244,17 +244,18 @@ void ScrollableArea::scrollPositionChanged(const DoublePoint& position, ScrollTy
     // Tell the derived class to scroll its contents.
     setScrollOffset(truncatedPosition, scrollType);
 
-    Scrollbar* verticalScrollbar = this->verticalScrollbar();
-
     // Tell the scrollbars to update their thumb postions.
+    // If a scrollbar does not have its own layer, it must always be invalidated
+    // to reflect the new thumb position, even if the theme would not otherwise
+    // require invalidation of any part.
     if (Scrollbar* horizontalScrollbar = this->horizontalScrollbar()) {
-        horizontalScrollbar->offsetDidChange();
-        if (horizontalScrollbar->isOverlayScrollbar() && !hasLayerForHorizontalScrollbar())
+        bool offsetChanged = horizontalScrollbar->offsetDidChange();
+        if (offsetChanged && !hasLayerForHorizontalScrollbar())
             setScrollbarNeedsPaintInvalidation(HorizontalScrollbar);
     }
-    if (verticalScrollbar) {
-        verticalScrollbar->offsetDidChange();
-        if (verticalScrollbar->isOverlayScrollbar() && !hasLayerForVerticalScrollbar())
+    if (Scrollbar* verticalScrollbar = this->verticalScrollbar()) {
+        bool offsetChanged = verticalScrollbar->offsetDidChange();
+        if (offsetChanged && !hasLayerForVerticalScrollbar())
             setScrollbarNeedsPaintInvalidation(VerticalScrollbar);
     }
 

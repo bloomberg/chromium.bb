@@ -307,6 +307,10 @@ crbug.com/571478 [ Win10 XP ] svg/custom/text-match-highlight.html [ Failure Pas
 
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/transition-and-animation-2.html [ Timeout ]
 
+crbug.com/549277 fast/repaint/overflow-move-after-scroll.html [ NeedsRebaseline ]
+crbug.com/549277 fast/repaint/overflow-scroll-after-move.html [ NeedsRebaseline ]
+crbug.com/549277 paint/invalidation/invalidate-after-composited-scroll.html [ NeedsRebaseline ]
+
 crbug.com/487281 [ Mac ] fast/forms/select/menulist-narrow-width.html [ Failure ]
 
 crbug.com/572094 [ Win Mac Debug ] fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom200.html [ Timeout Failure Pass ]
