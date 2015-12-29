@@ -279,10 +279,11 @@ def MaybeDownloadHostGcc(args):
 
   if subprocess.check_output(['gcc', '-dumpversion']).rstrip() < '4.7.0':
     # We need a newer gcc version.
-    gcc_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'gcc482')
+    gcc_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'gcc482precise')
     if not os.path.exists(gcc_dir):
       print 'Downloading pre-built GCC 4.8.2...'
-      DownloadAndUnpack(CDS_URL + '/tools/gcc482.tgz', LLVM_BUILD_TOOLS_DIR)
+      DownloadAndUnpack(
+          CDS_URL + '/tools/gcc482precise.tgz', LLVM_BUILD_TOOLS_DIR)
     args.gcc_toolchain = gcc_dir
   else:
     # Always set gcc_toolchain; llvm-symbolizer needs the bundled libstdc++.
