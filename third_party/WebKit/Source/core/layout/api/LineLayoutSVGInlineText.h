@@ -63,12 +63,12 @@ private:
 class SVGInlineTextMetricsIterator {
     DISALLOW_NEW();
 public:
-    SVGInlineTextMetricsIterator() { reset(nullptr); }
+    SVGInlineTextMetricsIterator() { reset(LineLayoutSVGInlineText()); }
 
-    void advanceToTextStart(LineLayoutSVGInlineText* textLineLayout, unsigned startCharacterOffset)
+    void advanceToTextStart(LineLayoutSVGInlineText textLineLayout, unsigned startCharacterOffset)
     {
         ASSERT(textLineLayout);
-        if (m_textLineLayout != textLineLayout) {
+        if (!m_textLineLayout || !m_textLineLayout.isEqual(textLineLayout)) {
             reset(textLineLayout);
             ASSERT(!metricsList().isEmpty());
         }
@@ -82,11 +82,14 @@ public:
 
         while (m_characterOffset < startCharacterOffset)
             next();
+        ASSERT(m_characterOffset == startCharacterOffset);
     }
 
     void next()
     {
         m_characterOffset += metrics().length();
+        ASSERT(m_characterOffset <= m_textLineLayout.length());
+        ASSERT(m_metricsListOffset < metricsList().size());
         ++m_metricsListOffset;
     }
 
@@ -95,20 +98,20 @@ public:
         ASSERT(m_textLineLayout && m_metricsListOffset < metricsList().size());
         return metricsList()[m_metricsListOffset];
     }
-    const Vector<SVGTextMetrics>& metricsList() const { return m_textLineLayout->layoutAttributes()->textMetricsValues(); }
+    const Vector<SVGTextMetrics>& metricsList() const { return m_textLineLayout.layoutAttributes()->textMetricsValues(); }
     unsigned metricsListOffset() const { return m_metricsListOffset; }
     unsigned characterOffset() const { return m_characterOffset; }
     bool isAtEnd() const { return m_metricsListOffset == metricsList().size(); }
 
 private:
-    void reset(LineLayoutSVGInlineText* textLineLayout)
+    void reset(LineLayoutSVGInlineText textLineLayout)
     {
         m_textLineLayout = textLineLayout;
         m_characterOffset = 0;
         m_metricsListOffset = 0;
     }
 
-    LineLayoutSVGInlineText* m_textLineLayout;
+    LineLayoutSVGInlineText m_textLineLayout;
     unsigned m_metricsListOffset;
     unsigned m_characterOffset;
 };

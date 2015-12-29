@@ -357,7 +357,7 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Line
         return;
 
     // Find the start of the current text box in the metrics list.
-    m_visualMetricsIterator.advanceToTextStart(&textLineLayout, textBox->start());
+    m_visualMetricsIterator.advanceToTextStart(textLineLayout, textBox->start());
 
     const Font& font = style.font();
 
