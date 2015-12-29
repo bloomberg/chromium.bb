@@ -22,6 +22,16 @@ EVENT_HTML_DIRECT = network_unittest.NetworkMetricTest.MakeNetworkTimelineEvent(
         },
     body=network_unittest.HTML_BODY)
 
+# A BlockOnce response not via proxy.
+EVENT_HTML_BLOCKONCE = (
+    network_unittest.NetworkMetricTest.MakeNetworkTimelineEvent(
+    url='http://check.googlezip.net/blocksingle/',
+    response_headers={
+        'Content-Type': 'text/html',
+        'Content-Length': str(len(network_unittest.HTML_BODY)),
+        },
+    body=network_unittest.HTML_BODY))
+
 # An HTML via proxy.
 EVENT_HTML_PROXY_VIA = (
     network_unittest.NetworkMetricTest.MakeNetworkTimelineEvent(
@@ -264,14 +274,15 @@ class ChromeProxyMetricTest(unittest.TestCase):
 
   def testChromeProxyMetricForBlockOnce(self):
     metric = metrics.ChromeProxyMetric()
-    metric.SetEvents([EVENT_HTML_DIRECT,
+    metric.SetEvents([EVENT_HTML_BLOCKONCE,
+                      EVENT_HTML_BLOCKONCE,
                       EVENT_IMAGE_PROXY_VIA])
     results = test_page_test_results.TestPageTestResults(self)
     metric.AddResultsForBlockOnce(None, results)
     results.AssertHasPageSpecificScalarValue('eligible_responses', 'count', 2)
-    results.AssertHasPageSpecificScalarValue('bypass', 'count', 1)
 
-    metric.SetEvents([EVENT_HTML_DIRECT,
+    metric.SetEvents([EVENT_HTML_BLOCKONCE,
+                      EVENT_HTML_BLOCKONCE,
                       EVENT_IMAGE_DIRECT])
     exception_occurred = False
     try:

@@ -417,7 +417,7 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
           ' test URLs. Expected: 2, Actual: ' + str(eligible_response_count))
 
     results.AddValue(scalar.ScalarValue(results.current_page,
-        'BlockOnce_success', 'num_eligible_response', 2))
+        'eligible_responses', 'count', 2))
 
 
   def AddResultsForSafebrowsingOn(self, tab, results):

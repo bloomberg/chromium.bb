@@ -20,6 +20,12 @@ class InspectorNetworkTabTest(tab_test_case.TabTestCase):
   def __init__(self, *args):
     super(InspectorNetworkTabTest, self).__init__(*args)
 
+  def _FilterFaviconEvents(self, events):
+    for event in events:
+      if 'favicon.ico' in event.args['response']['url']:
+        events.remove(event)
+    return events
+
   def _NavigateAndGetHTTPResponseEvents(self, page):
     network = inspector_network.InspectorNetwork(
         self._tab._inspector_backend._websocket)
@@ -29,8 +35,6 @@ class InspectorNetworkTabTest(tab_test_case.TabTestCase):
     self.assertTrue(timeline_model)
     return timeline_model.GetAllEventsOfName('HTTPResponse')
 
-  # crbug.com/449979, crbug.com/452279, crbug.com/455269, crbug.com/483212
-  @decorators.Disabled('mac', 'android', 'win', 'linux', 'chromeos')
   def testHTTPResponseTimelineRecorder(self):
     tests = {
         'blank.html': InspectorNetworkTabTest.TestCase(responses_count=1),
@@ -39,7 +43,8 @@ class InspectorNetworkTabTest(tab_test_case.TabTestCase):
             responses_count=2, subresources=['image.png']),
         }
     for page, test in tests.iteritems():
-      events = self._NavigateAndGetHTTPResponseEvents(page)
+      events = self._FilterFaviconEvents(
+          self._NavigateAndGetHTTPResponseEvents(page))
       self.assertEqual(test.responses_count, len(events))
 
       # Verify required event fields
