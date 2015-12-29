@@ -52,16 +52,6 @@ TEST(RefCountedMemoryUnitTest, RefCountedString) {
   EXPECT_EQ('e', mem->front()[1]);
 }
 
-TEST(RefCountedMemoryUnitTest, RefCountedMallocedMemory) {
-  void* data = malloc(6);
-  memcpy(data, "hello", 6);
-
-  scoped_refptr<RefCountedMemory> mem = new RefCountedMallocedMemory(data, 6);
-
-  EXPECT_EQ(6U, mem->size());
-  EXPECT_EQ(0, memcmp("hello", mem->front(), 6));
-}
-
 TEST(RefCountedMemoryUnitTest, Equals) {
   std::string s1("same");
   scoped_refptr<RefCountedMemory> mem1 = RefCountedString::TakeString(&s1);
