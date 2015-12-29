@@ -124,13 +124,19 @@ bool V4L2VideoEncodeAccelerator::Initialize(
 
   struct v4l2_capability caps;
   memset(&caps, 0, sizeof(caps));
-  const __u32 kCapsRequired = V4L2_CAP_VIDEO_CAPTURE_MPLANE |
-                              V4L2_CAP_VIDEO_OUTPUT_MPLANE | V4L2_CAP_STREAMING;
+  const __u32 kCapsRequired = V4L2_CAP_VIDEO_M2M_MPLANE | V4L2_CAP_STREAMING;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYCAP, &caps);
   if ((caps.capabilities & kCapsRequired) != kCapsRequired) {
-    LOG(ERROR) << "Initialize(): ioctl() failed: VIDIOC_QUERYCAP: "
-                  "caps check failed: 0x" << std::hex << caps.capabilities;
-    return false;
+    // This cap combination is deprecated, but some older drivers may still be
+    // returning it.
+    const __u32 kCapsRequiredCompat = V4L2_CAP_VIDEO_CAPTURE_MPLANE |
+                                      V4L2_CAP_VIDEO_OUTPUT_MPLANE |
+                                      V4L2_CAP_STREAMING;
+    if ((caps.capabilities & kCapsRequiredCompat) != kCapsRequiredCompat) {
+      LOG(ERROR) << "Initialize(): ioctl() failed: VIDIOC_QUERYCAP: "
+                    "caps check failed: 0x" << std::hex << caps.capabilities;
+      return false;
+    }
   }
 
   if (!SetFormats(input_format, output_profile)) {

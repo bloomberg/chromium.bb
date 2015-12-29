@@ -485,14 +485,11 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
 
   // Capabilities check.
   struct v4l2_capability caps;
-  const __u32 kCapsRequired =
-      V4L2_CAP_VIDEO_CAPTURE_MPLANE |
-      V4L2_CAP_VIDEO_OUTPUT_MPLANE |
-      V4L2_CAP_STREAMING;
+  const __u32 kCapsRequired = V4L2_CAP_VIDEO_M2M_MPLANE | V4L2_CAP_STREAMING;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYCAP, &caps);
   if ((caps.capabilities & kCapsRequired) != kCapsRequired) {
-    DLOG(ERROR) << "Initialize(): ioctl() failed: VIDIOC_QUERYCAP"
-                   ", caps check failed: 0x" << std::hex << caps.capabilities;
+    LOG(ERROR) << "Initialize(): ioctl() failed: VIDIOC_QUERYCAP"
+                  ", caps check failed: 0x" << std::hex << caps.capabilities;
     return false;
   }
 
