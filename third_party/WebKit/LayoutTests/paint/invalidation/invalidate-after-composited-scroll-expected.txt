@@ -39,10 +39,7 @@
               "children": [
                 {
                   "position": [185, 0],
-                  "bounds": [15, 200],
-                  "repaintRects": [
-                    [0, 0, 15, 200]
-                  ]
+                  "bounds": [15, 200]
                 }
               ]
             }

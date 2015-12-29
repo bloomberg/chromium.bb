@@ -45,10 +45,7 @@
                 },
                 {
                   "position": [285, 0],
-                  "bounds": [15, 385],
-                  "repaintRects": [
-                    [0, 0, 15, 385]
-                  ]
+                  "bounds": [15, 385]
                 },
                 {
                   "position": [285, 385],
