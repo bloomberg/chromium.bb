@@ -4,6 +4,8 @@
 
 #include "content/browser/android/synchronous_compositor_host.h"
 
+#include <utility>
+
 #include "base/containers/hash_tables.h"
 #include "base/memory/shared_memory.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -96,6 +98,29 @@ void SynchronousCompositorHost::UpdateFrameMetaData(
   rwhva_->SynchronousFrameMetadata(frame_metadata);
 }
 
+class SynchronousCompositorHost::ScopedSendZeroMemory {
+ public:
+  ScopedSendZeroMemory(SynchronousCompositorHost* host) : host_(host) {}
+  ~ScopedSendZeroMemory() { host_->SendZeroMemory(); }
+
+ private:
+  SynchronousCompositorHost* const host_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedSendZeroMemory);
+};
+
+struct SynchronousCompositorHost::SharedMemoryWithSize {
+  base::SharedMemory shm;
+  const size_t stride;
+  const size_t buffer_size;
+
+  SharedMemoryWithSize(size_t stride, size_t buffer_size)
+      : stride(stride), buffer_size(buffer_size) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SharedMemoryWithSize);
+};
+
 bool SynchronousCompositorHost::DemandDrawSw(SkCanvas* canvas) {
   SyncCompositorDemandDrawSwParams params;
   params.size = gfx::Size(canvas->getBaseLayerSize().width(),
@@ -115,15 +140,8 @@ bool SynchronousCompositorHost::DemandDrawSw(SkCanvas* canvas) {
   if (!buffer_size)
     return false;  // Overflow.
 
-  base::SharedMemory shm;
-  {
-    TRACE_EVENT1("browser", "AllocateSharedMemory", "buffer_size", buffer_size);
-    if (!shm.CreateAndMapAnonymous(buffer_size))
-      return false;
-  }
-  base::ProcessHandle renderer_process_handle =
-      rwhva_->GetRenderWidgetHost()->GetProcess()->GetHandle();
-  if (!shm.ShareToProcess(renderer_process_handle, &params.shm_handle))
+  SetSoftwareDrawSharedMemoryIfNeeded(stride, buffer_size);
+  if (!software_draw_shm_)
     return false;
 
   scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
@@ -136,6 +154,7 @@ bool SynchronousCompositorHost::DemandDrawSw(SkCanvas* canvas) {
           &common_renderer_params, frame.get()))) {
     return false;
   }
+  ScopedSendZeroMemory send_zero_memory(this);
   if (!success)
     return false;
 
@@ -143,7 +162,7 @@ bool SynchronousCompositorHost::DemandDrawSw(SkCanvas* canvas) {
   UpdateFrameMetaData(frame->metadata);
 
   SkBitmap bitmap;
-  if (!bitmap.installPixels(info, shm.memory(), stride))
+  if (!bitmap.installPixels(info, software_draw_shm_->shm.memory(), stride))
     return false;
 
   {
@@ -155,6 +174,49 @@ bool SynchronousCompositorHost::DemandDrawSw(SkCanvas* canvas) {
   }
 
   return true;
+}
+
+void SynchronousCompositorHost::SetSoftwareDrawSharedMemoryIfNeeded(
+    size_t stride,
+    size_t buffer_size) {
+  if (software_draw_shm_ && software_draw_shm_->stride == stride &&
+      software_draw_shm_->buffer_size == buffer_size)
+    return;
+  software_draw_shm_.reset();
+  scoped_ptr<SharedMemoryWithSize> software_draw_shm(
+      new SharedMemoryWithSize(stride, buffer_size));
+  {
+    TRACE_EVENT1("browser", "AllocateSharedMemory", "buffer_size", buffer_size);
+    if (!software_draw_shm->shm.CreateAndMapAnonymous(buffer_size))
+      return;
+  }
+
+  SyncCompositorSetSharedMemoryParams set_shm_params;
+  set_shm_params.buffer_size = buffer_size;
+  base::ProcessHandle renderer_process_handle =
+      rwhva_->GetRenderWidgetHost()->GetProcess()->GetHandle();
+  if (!software_draw_shm->shm.ShareToProcess(renderer_process_handle,
+                                             &set_shm_params.shm_handle)) {
+    return;
+  }
+
+  SyncCompositorCommonBrowserParams common_browser_params;
+  PopulateCommonParams(&common_browser_params);
+  bool success = false;
+  SyncCompositorCommonRendererParams common_renderer_params;
+  if (!sender_->Send(new SyncCompositorMsg_SetSharedMemory(
+          routing_id_, common_browser_params, set_shm_params, &success,
+          &common_renderer_params)) ||
+      !success) {
+    return;
+  }
+  software_draw_shm_ = std::move(software_draw_shm);
+  ProcessCommonParams(common_renderer_params);
+}
+
+void SynchronousCompositorHost::SendZeroMemory() {
+  // No need to check return value.
+  sender_->Send(new SyncCompositorMsg_ZeroSharedMemory(routing_id_));
 }
 
 void SynchronousCompositorHost::ReturnResources(

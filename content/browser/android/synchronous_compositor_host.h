@@ -56,7 +56,11 @@ class SynchronousCompositorHost : public SynchronousCompositorBase {
   void DidBecomeCurrent() override;
 
  private:
+  class ScopedSendZeroMemory;
+  struct SharedMemoryWithSize;
+  friend class ScopedSetZeroMemory;
   friend class SynchronousCompositorBase;
+
   SynchronousCompositorHost(RenderWidgetHostViewAndroid* rwhva,
                             SynchronousCompositorClient* client);
   void PopulateCommonParams(SyncCompositorCommonBrowserParams* params);
@@ -67,6 +71,8 @@ class SynchronousCompositorHost : public SynchronousCompositorBase {
                     const DidOverscrollParams& over_scroll_params);
   void SendAsyncCompositorStateIfNeeded();
   void UpdateStateTask();
+  void SetSoftwareDrawSharedMemoryIfNeeded(size_t stride, size_t buffer_size);
+  void SendZeroMemory();
 
   RenderWidgetHostViewAndroid* const rwhva_;
   SynchronousCompositorClient* const client_;
@@ -77,6 +83,7 @@ class SynchronousCompositorHost : public SynchronousCompositorBase {
   bool is_active_;
   size_t bytes_limit_;
   cc::ReturnedResourceArray returned_resources_;
+  scoped_ptr<SharedMemoryWithSize> software_draw_shm_;
 
   // Updated by both renderer and browser.
   gfx::ScrollOffset root_scroll_offset_;

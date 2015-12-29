@@ -37,6 +37,7 @@ struct SyncCompositorCommonBrowserParams;
 struct SyncCompositorCommonRendererParams;
 struct SyncCompositorDemandDrawHwParams;
 struct SyncCompositorDemandDrawSwParams;
+struct SyncCompositorSetSharedMemoryParams;
 
 class SynchronousCompositorProxy
     : public ui::SynchronousInputHandler,
@@ -72,6 +73,8 @@ class SynchronousCompositorProxy
   void DidOverscroll(const DidOverscrollParams& did_overscroll_params);
 
  private:
+  struct SharedMemoryWithSize;
+
   void ProcessCommonParams(
       const SyncCompositorCommonBrowserParams& common_params);
   void PopulateCommonParams(SyncCompositorCommonRendererParams* params);
@@ -93,6 +96,12 @@ class SynchronousCompositorProxy
                     const SyncCompositorDemandDrawHwParams& params,
                     SyncCompositorCommonRendererParams* common_renderer_params,
                     cc::CompositorFrame* frame);
+  void SetSharedMemory(
+      const SyncCompositorCommonBrowserParams& common_params,
+      const SyncCompositorSetSharedMemoryParams& params,
+      bool* success,
+      SyncCompositorCommonRendererParams* common_renderer_params);
+  void ZeroSharedMemory();
   void DemandDrawSw(const SyncCompositorCommonBrowserParams& common_params,
                     const SyncCompositorDemandDrawSwParams& params,
                     bool* result,
@@ -113,7 +122,9 @@ class SynchronousCompositorProxy
 
   // From browser.
   size_t bytes_limit_;
+  scoped_ptr<SharedMemoryWithSize> software_draw_shm_;
 
+  // To browser.
   uint32_t version_;
   gfx::ScrollOffset total_scroll_offset_;  // Modified by both.
   gfx::ScrollOffset max_scroll_offset_;

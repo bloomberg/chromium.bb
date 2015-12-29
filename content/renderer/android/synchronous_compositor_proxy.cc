@@ -152,6 +152,8 @@ void SynchronousCompositorProxy::OnMessageReceived(
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_BeginFrame, BeginFrame)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_ComputeScroll, OnComputeScroll)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_DemandDrawHw, DemandDrawHw)
+    IPC_MESSAGE_HANDLER(SyncCompositorMsg_SetSharedMemory, SetSharedMemory)
+    IPC_MESSAGE_HANDLER(SyncCompositorMsg_ZeroSharedMemory, ZeroSharedMemory)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_DemandDrawSw, DemandDrawSw)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_UpdateState, ProcessCommonParams)
   IPC_END_MESSAGE_MAP()
@@ -202,6 +204,40 @@ void SynchronousCompositorProxy::DemandDrawHw(
   PopulateCommonParams(common_renderer_params);
 }
 
+struct SynchronousCompositorProxy::SharedMemoryWithSize {
+  base::SharedMemory shm;
+  const size_t buffer_size;
+  bool zeroed;
+
+  SharedMemoryWithSize(base::SharedMemoryHandle shm_handle, size_t buffer_size)
+      : shm(shm_handle, false), buffer_size(buffer_size), zeroed(true) {}
+};
+
+void SynchronousCompositorProxy::SetSharedMemory(
+    const SyncCompositorCommonBrowserParams& common_params,
+    const SyncCompositorSetSharedMemoryParams& params,
+    bool* success,
+    SyncCompositorCommonRendererParams* common_renderer_params) {
+  *success = false;
+  ProcessCommonParams(common_params);
+  if (!base::SharedMemory::IsHandleValid(params.shm_handle))
+    return;
+
+  software_draw_shm_.reset(
+      new SharedMemoryWithSize(params.shm_handle, params.buffer_size));
+  if (!software_draw_shm_->shm.Map(params.buffer_size))
+    return;
+  DCHECK(software_draw_shm_->shm.memory());
+  PopulateCommonParams(common_renderer_params);
+  *success = true;
+}
+
+void SynchronousCompositorProxy::ZeroSharedMemory() {
+  DCHECK(!software_draw_shm_->zeroed);
+  memset(software_draw_shm_->shm.memory(), 0, software_draw_shm_->buffer_size);
+  software_draw_shm_->zeroed = true;
+}
+
 void SynchronousCompositorProxy::DemandDrawSw(
     const SyncCompositorCommonBrowserParams& common_params,
     const SyncCompositorDemandDrawSwParams& params,
@@ -211,22 +247,18 @@ void SynchronousCompositorProxy::DemandDrawSw(
   DCHECK(frame);
   ProcessCommonParams(common_params);
   *result = false;  // Early out ok.
-  if (!base::SharedMemory::IsHandleValid(params.shm_handle))
-    return;
+
+  DCHECK(software_draw_shm_->zeroed);
+  software_draw_shm_->zeroed = false;
 
   SkImageInfo info =
       SkImageInfo::MakeN32Premul(params.size.width(), params.size.height());
   size_t stride = info.minRowBytes();
   size_t buffer_size = info.getSafeSize(stride);
-  DCHECK(buffer_size);
-
-  base::SharedMemory shm(params.shm_handle, false);
-  if (!shm.Map(buffer_size))
-    return;
-  DCHECK(shm.memory());
+  DCHECK_EQ(software_draw_shm_->buffer_size, buffer_size);
 
   SkBitmap bitmap;
-  if (!bitmap.installPixels(info, shm.memory(), stride))
+  if (!bitmap.installPixels(info, software_draw_shm_->shm.memory(), stride))
     return;
   SkCanvas canvas(bitmap);
   canvas.setMatrix(params.transform.matrix());
