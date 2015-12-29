@@ -34,6 +34,7 @@ import java.util.HashSet;
 public class ListUrlsActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
     public static final String REFERER_KEY = "referer";
     public static final int NOTIFICATION_REFERER = 1;
+    public static final int OPTIN_REFERER = 2;
     private static final String TAG = "PhysicalWeb";
     private static final long SCAN_TIMEOUT_MILLIS = 5000; // 5 seconds
     private NearbyUrlsAdapter mAdapter;

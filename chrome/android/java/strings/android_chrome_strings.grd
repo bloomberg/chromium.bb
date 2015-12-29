@@ -161,6 +161,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_NO_THANKS" desc="Generic label to say no thanks for a feature. [CHAR-LIMIT=32]">
         No Thanks
       </message>
+      <message name="IDS_ENABLE" desc="Generic label to enable a feature. [CHAR-LIMIT=32]">
+        Enable
+      </message>
       <message name="IDS_NEXT" desc="Generic label for a button to advance to the next item. [CHAR-LIMIT=20]">
         Next
       </message>
@@ -2303,6 +2306,14 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
         Discover web pages sent by nearby objects. Chrome gathers web pages associated with objects around you, sends them anonymously to a Google service to find the ones most useful to you, then displays them.
 
 You must have Bluetooth and Location turned on in order to use the Physical Web.
+      </message>
+      <message name="IDS_PHYSICAL_WEB_OPTIN_TITLE" desc="The title for a dialog inviting the user to opt-in to the Physical Web.">
+        The Physical Web
+      </message>
+      <message name="IDS_PHYSICAL_WEB_OPTIN_DESCRIPTION" desc="Description of the Physical Web displayed in the opt-in dialog">
+        Discover web pages sent by nearby objects.
+
+Chrome will scan for nearby pages when your device is unlocked. These pages will go through a Google service to improve the quality of page results.
       </message>
       <message name="IDS_PHYSICAL_WEB_LIST_URLS_ACTIVITY_TITLE" desc="The title for a dialog that shows a list of URLs broadcasted from nearby devices.">
         The Physical Web

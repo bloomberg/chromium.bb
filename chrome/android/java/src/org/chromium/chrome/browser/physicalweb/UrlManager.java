@@ -245,8 +245,7 @@ class UrlManager {
     }
 
     private PendingIntent createOptInIntent() {
-        // TODO(mattreynolds): navigate to PhysicalWebOptInActivity
-        Intent intent = new Intent(mContext, ListUrlsActivity.class);
+        Intent intent = new Intent(mContext, PhysicalWebOptInActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, intent, 0);
         return pendingIntent;
     }
