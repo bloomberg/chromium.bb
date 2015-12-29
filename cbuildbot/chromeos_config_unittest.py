@@ -270,7 +270,7 @@ class CBuildBotTest(GenerateChromeosConfigTestBase):
     """Make sure all release configs run hw tests."""
     for build_name, config in self.all_configs.iteritems():
       if (config.build_type == 'canary' and 'test' in config.images and
-          config.upload_hw_test_artifacts):
+          config.upload_hw_test_artifacts and config.hwqual):
         self.assertTrue(
             config.hw_tests,
             "Release builder %s must run hw tests." % build_name)

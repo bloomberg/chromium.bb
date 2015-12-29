@@ -894,6 +894,7 @@ def GetConfig():
       dev_installer_prebuilts=False,
       vm_tests=[],
       vm_tests_override=None,
+      hw_tests=[],
   )
 
   moblab = config_lib.BuildConfig(
