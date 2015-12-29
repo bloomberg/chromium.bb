@@ -112,7 +112,7 @@ repack("repack_pack") {
 
 webview_license_path = "$target_gen_dir/webview_licenses.notice"
 
-android_assets("uncompressed_assets") {
+android_assets("pak_file_assets") {
   sources = [
     "$target_gen_dir/webviewchromium.pak",
   ]
@@ -128,7 +128,7 @@ android_assets("assets") {
   ]
   deps = [
     ":generate_webview_license_notice",
-    ":uncompressed_assets",
+    ":pak_file_assets",
     "//third_party/icu:icu_assets",
     "//v8:v8_external_startup_data_assets",
   ]
