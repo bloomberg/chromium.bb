@@ -57,11 +57,9 @@
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {
-
 // Dummy flag because iOS does not support disabling background networking.
 extern const char kDummyDisableBackgroundNetworking[] =
     "dummy-disable-background-networking";
-
 }
 
 ApplicationContextImpl::ApplicationContextImpl(
@@ -135,9 +133,12 @@ void ApplicationContextImpl::StartTearDown() {
   metrics_services_manager_.reset();
 
   // Need to clear browser states before the IO thread.
-  // TODO(crbug.com/560854): the ShutDown() method can be folded into the
-  // destructor once ApplicationContextImpl owns ChromeBrowserStateManager.
-  GetChromeBrowserStateManager()->ShutDown();
+  if (chrome_browser_state_manager_) {
+    // TODO(crbug.com/560854): the ShutDown() method can be folded into the
+    // destructor once ApplicationContextImpl owns ChromeBrowserStateManager.
+    chrome_browser_state_manager_->ShutDown();
+    chrome_browser_state_manager_.reset();
+  }
 
   // PromoResourceService must be destroyed after the keyed services and before
   // the IO thread.
@@ -240,7 +241,12 @@ const std::string& ApplicationContextImpl::GetApplicationLocale() {
 ios::ChromeBrowserStateManager*
 ApplicationContextImpl::GetChromeBrowserStateManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return ios::GetChromeBrowserProvider()->GetChromeBrowserStateManager();
+  if (!chrome_browser_state_manager_) {
+    chrome_browser_state_manager_ =
+        ios::GetChromeBrowserProvider()->CreateChromeBrowserStateManager();
+    DCHECK(chrome_browser_state_manager_.get());
+  }
+  return chrome_browser_state_manager_.get();
 }
 
 metrics_services_manager::MetricsServicesManager*

@@ -10,6 +10,7 @@
 #include "components/metrics/metrics_provider.h"
 #include "components/sync_sessions/local_session_event_router.h"
 #include "components/sync_sessions/synced_window_delegates_getter.h"
+#include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state_manager.h"
 
 namespace ios {
 
@@ -25,20 +26,16 @@ ChromeBrowserProvider* GetChromeBrowserProvider() {
   return g_chrome_browser_provider;
 }
 
-ChromeBrowserProvider::~ChromeBrowserProvider() {
-}
+ChromeBrowserProvider::~ChromeBrowserProvider() {}
 
 // A dummy implementation of ChromeBrowserProvider.
 
-ChromeBrowserProvider::ChromeBrowserProvider() {
-}
+ChromeBrowserProvider::ChromeBrowserProvider() {}
 
-void ChromeBrowserProvider::AssertBrowserContextKeyedFactoriesBuilt() {
-}
+void ChromeBrowserProvider::AssertBrowserContextKeyedFactoriesBuilt() {}
 
 void ChromeBrowserProvider::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-}
+    user_prefs::PrefRegistrySyncable* registry) {}
 
 ProfileOAuth2TokenServiceIOSProvider*
 ChromeBrowserProvider::GetProfileOAuth2TokenServiceIOSProvider() {
@@ -50,9 +47,9 @@ ChromeBrowserProvider::GetUpdatableResourceProvider() {
   return nullptr;
 }
 
-ChromeBrowserStateManager*
-ChromeBrowserProvider::GetChromeBrowserStateManager() {
-  return nullptr;
+scoped_ptr<ChromeBrowserStateManager>
+ChromeBrowserProvider::CreateChromeBrowserStateManager() {
+  return scoped_ptr<ChromeBrowserStateManager>();
 }
 
 InfoBarViewPlaceholder ChromeBrowserProvider::CreateInfoBarView(
@@ -91,8 +88,7 @@ std::string ChromeBrowserProvider::GetDistributionBrandCode() {
 }
 
 void ChromeBrowserProvider::SetUIViewAlphaWithAnimation(UIView* view,
-                                                        float alpha) {
-}
+                                                        float alpha) {}
 
 autofill::CardUnmaskPromptView*
 ChromeBrowserProvider::CreateCardUnmaskPromptView(

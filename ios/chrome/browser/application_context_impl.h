@@ -89,6 +89,7 @@ class ApplicationContextImpl : public ApplicationContext {
   scoped_ptr<component_updater::ComponentUpdateService> component_updater_;
   scoped_refptr<CRLSetFetcher> crl_set_fetcher_;
   scoped_refptr<safe_browsing::SafeBrowsingService> safe_browsing_service_;
+  scoped_ptr<ios::ChromeBrowserStateManager> chrome_browser_state_manager_;
   std::string application_locale_;
 
   // Sequenced task runner for local state related I/O tasks.

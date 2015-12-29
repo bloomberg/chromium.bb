@@ -79,15 +79,15 @@ class ChromeBrowserProvider {
   virtual void AssertBrowserContextKeyedFactoriesBuilt();
   // Registers all prefs that will be used via a PrefService attached to a
   // Profile.
-  virtual void RegisterProfilePrefs(
-      user_prefs::PrefRegistrySyncable* registry);
+  virtual void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
   // Returns an instance of profile OAuth2 token service provider.
   virtual ProfileOAuth2TokenServiceIOSProvider*
   GetProfileOAuth2TokenServiceIOSProvider();
   // Returns an UpdatableResourceProvider instance.
   virtual UpdatableResourceProvider* GetUpdatableResourceProvider();
-  // Returns a ChromeBrowserStateManager instance.
-  virtual ChromeBrowserStateManager* GetChromeBrowserStateManager();
+  // Creates a new ChromeBrowserStateManager instance.
+  virtual scoped_ptr<ChromeBrowserStateManager>
+  CreateChromeBrowserStateManager();
   // Returns an infobar view conforming to the InfoBarViewProtocol. The returned
   // object is retained.
   virtual InfoBarViewPlaceholder CreateInfoBarView(
