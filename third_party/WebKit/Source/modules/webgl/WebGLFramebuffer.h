@@ -43,6 +43,7 @@ public:
 
         virtual GLsizei width() const = 0;
         virtual GLsizei height() const = 0;
+        virtual GLsizei depth() const = 0;
         virtual GLenum format() const = 0;
         // For texture attachment, type() returns the type of the attached texture.
         // For renderbuffer attachment, the type of the renderbuffer may vary with GL implementation.
