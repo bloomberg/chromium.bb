@@ -1,0 +1,116 @@
+{
+  "GPU NextGen Linux Builder": {},
+  "GPU NextGen Linux Builder (dbg)": {},
+  "GPU NextGen Mac Builder": {},
+  "GPU NextGen Mac Builder (dbg)": {},
+  "Linux NextGen Debug (NVIDIA)": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=debug",
+          "-v",
+          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+        ],
+        "isolate_name": "telemetry_gpu_test",
+        "name": "webgl_conformance",
+        "override_compile_targets": [
+          "telemetry_gpu_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Linux"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "Linux NextGen Release (NVIDIA)": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "-v",
+          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+        ],
+        "isolate_name": "telemetry_gpu_test",
+        "name": "webgl_conformance",
+        "override_compile_targets": [
+          "telemetry_gpu_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Linux"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "Mac NextGen 10.10 Retina Debug (AMD)": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=debug",
+          "-v",
+          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+        ],
+        "isolate_name": "telemetry_gpu_test",
+        "name": "webgl_conformance",
+        "override_compile_targets": [
+          "telemetry_gpu_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "Mac-10.10"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "Mac NextGen 10.10 Retina Release (AMD)": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "-v",
+          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+        ],
+        "isolate_name": "telemetry_gpu_test",
+        "name": "webgl_conformance",
+        "override_compile_targets": [
+          "telemetry_gpu_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "Mac-10.10"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
