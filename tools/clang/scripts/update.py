@@ -483,6 +483,10 @@ def UpdateClang(args):
       cxxflags = ['--gcc-toolchain=' + args.gcc_toolchain]
     print 'Building final compiler'
 
+  # TODO(thakis): Remove this after a few hours.
+  if os.path.exists(LLVM_BUILD_DIR):
+    RmTree(LLVM_BUILD_DIR)
+
   if sys.platform == 'darwin':
     # Build libc++.dylib while some bots are still on OS X 10.6.
     libcxxbuild = os.path.join(LLVM_BUILD_DIR, 'libcxxbuild')
