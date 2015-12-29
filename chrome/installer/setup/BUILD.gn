@@ -54,7 +54,7 @@ if (is_win) {
       "//base",
       "//chrome/common:constants",
       "//chrome/common:version_header",
-      "//chrome/installer/util",
+      "//chrome/installer/util:with_rc_strings",
       "//chrome_elf:constants",
       "//components/crash/content/app:app_breakpad_mac_win_to_be_deleted",
       "//components/crash/content/app:lib",
@@ -86,8 +86,6 @@ if (is_win) {
       "//base/allocator",
       "//base/test:test_support",
       "//chrome/installer/mini_installer:unit_tests",
-      "//chrome/installer/util:strings",
-      "//chrome/installer/util:util",
       "//testing/gmock",
       "//testing/gtest",
     ]

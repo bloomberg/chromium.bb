@@ -68,7 +68,7 @@ static_library("common") {
     "//chrome/common:constants",
     "//chrome/common/safe_browsing:proto",
     "//chrome/common/variations:fieldtrial_testing_config",
-    "//chrome/installer/util",
+    "//chrome/installer/util:with_no_strings",
     "//components/cloud_devices/common",
     "//components/component_updater",
     "//components/content_settings/core/common",

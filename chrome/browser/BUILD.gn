@@ -313,7 +313,7 @@ source_set("browser") {
       "//chrome/browser/metrics/variations:chrome_ui_string_overrider_factory",
       "//chrome/browser/resources:component_extension_resources",
       "//chrome/common/net",
-      "//chrome/installer/util",
+      "//chrome/installer/util:with_no_strings",
       "//components/about_handler",
       "//components/app_modal",
       "//components/autofill/content/browser",

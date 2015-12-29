@@ -35,7 +35,7 @@ shared_library("chrome_watcher") {
     "//base",
     "//base:base_static",
     "//build/config/sanitizers:deps",
-    "//chrome/installer/util:with_no_strings_some_things_wont_work",
+    "//chrome/installer/util:with_no_strings",
     "//components/browser_watcher",
   ]
   ldflags = [ "/DEF:" + rebase_path("chrome_watcher.def", root_build_dir) ]

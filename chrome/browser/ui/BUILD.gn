@@ -99,7 +99,7 @@ source_set("ui") {
       "//chrome/browser/ui/webui/engagement:mojo_bindings",
       "//chrome/browser/ui/webui/omnibox:mojo_bindings",
       "//chrome/common/net",
-      "//chrome/installer/util",
+      "//chrome/installer/util:with_no_strings",
       "//components/autofill/content/browser:risk_proto",
       "//components/bubble:bubble",
       "//components/crash/core/browser",

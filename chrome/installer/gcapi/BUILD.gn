@@ -33,7 +33,7 @@ source_set("lib") {
   deps = [
     "//base",
     "//chrome/installer/launcher_support",
-    "//chrome/installer/util",
+    "//chrome/installer/util:with_no_strings",
     "//components/variations",
     "//google_update",
   ]
@@ -54,7 +54,7 @@ test("gcapi_test") {
   deps = [
     ":lib",
     "//base/test:test_support",
-    "//chrome/installer/util",
+    "//chrome/installer/util:with_no_strings",
     "//components/variations",
     "//testing/gtest",
   ]

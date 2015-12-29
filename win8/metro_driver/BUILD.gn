@@ -23,7 +23,7 @@ shared_library("metro_driver") {
     ":version_resources",
     "//base",
     "//chrome/common:constants",
-    "//chrome/installer/util:with_no_strings_some_things_wont_work",
+    "//chrome/installer/util:with_no_strings",
     "//crypto",
     "//ipc",
     "//sandbox",
@@ -122,7 +122,7 @@ test("metro_driver_unittests") {
   deps = [
     ":metro_driver",
     "//base",
-    "//chrome/installer/util",
+    "//chrome/installer/util:with_rc_strings",
     "//testing/gtest",
   ]
 }

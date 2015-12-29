@@ -15,7 +15,7 @@ executable("crash_service") {
   deps = [
     "//base",
     "//chrome/common:constants",
-    "//chrome/installer/util",
+    "//chrome/installer/util:with_no_strings",
     "//components/crash/content/tools:crash_service",
     "//content/public/common:static_switches",
   ]

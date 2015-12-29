@@ -50,7 +50,7 @@ source_set("chromeos") {
     "//chrome/common/extensions/api:api_registration",
     "//chrome/common/net",
     "//chrome/common/safe_browsing:proto",
-    "//chrome/installer/util",
+    "//chrome/installer/util:with_no_strings",
     "//chromeos",
     "//chromeos:cryptohome_proto",
     "//chromeos:cryptohome_signkey_proto",

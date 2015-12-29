@@ -44,7 +44,7 @@ source_set("lib") {
     "//base",
     "//breakpad:breakpad_handler",
     "//chrome/common:constants",
-    "//chrome/installer/util:with_no_strings_some_things_wont_work",
+    "//chrome/installer/util:with_no_strings",
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",
