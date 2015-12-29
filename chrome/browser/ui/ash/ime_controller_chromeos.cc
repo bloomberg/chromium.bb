@@ -59,8 +59,16 @@ ui::Accelerator ImeController::RemapAccelerator(
 bool ImeController::UsingFrenchInputMethod() const {
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::Get();
+  const chromeos::input_method::InputMethodManager::State* state =
+      manager->GetActiveIMEState().get();
+
+  // KeyEvent can come before default user profile is initialized, so IM is
+  // still in global default state "en_US".
+  if (!state)
+    return false;
+
   const chromeos::input_method::InputMethodDescriptor& descriptor =
-      manager->GetActiveIMEState()->GetCurrentInputMethod();
+      state->GetCurrentInputMethod();
   const std::string& layout = descriptor.id();
   return (layout == "xkb:fr::fra" || layout == "xkb:be::fra");
 }
