@@ -547,6 +547,7 @@ BookmarkBarView::BookmarkBarView(Browser* browser, BrowserView* browser_view)
       browser_(browser),
       browser_view_(browser_view),
       infobar_visible_(false),
+      size_animation_(this),
       throbbing_view_(NULL),
       bookmark_bar_state_(BookmarkBar::SHOW),
       animating_detached_(false),
@@ -554,7 +555,7 @@ BookmarkBarView::BookmarkBarView(Browser* browser, BrowserView* browser_view)
   set_id(VIEW_ID_BOOKMARK_BAR);
   Init();
 
-  size_animation_->Reset(1);
+  size_animation_.Reset(1);
 }
 
 BookmarkBarView::~BookmarkBarView() {
@@ -603,17 +604,13 @@ void BookmarkBarView::SetBookmarkBarState(
     animating_detached_ = (state == BookmarkBar::DETACHED ||
                            bookmark_bar_state_ == BookmarkBar::DETACHED);
     if (state == BookmarkBar::SHOW)
-      size_animation_->Show();
+      size_animation_.Show();
     else
-      size_animation_->Hide();
+      size_animation_.Hide();
   } else {
-    size_animation_->Reset(state == BookmarkBar::SHOW ? 1 : 0);
+    size_animation_.Reset(state == BookmarkBar::SHOW ? 1 : 0);
   }
   bookmark_bar_state_ = state;
-}
-
-bool BookmarkBarView::is_animating() {
-  return size_animation_->is_animating();
 }
 
 const BookmarkNode* BookmarkBarView::GetNodeForButtonAtModelIndex(
@@ -753,11 +750,7 @@ base::string16 BookmarkBarView::CreateToolTipForURLAndTitle(
 
 bool BookmarkBarView::IsDetached() const {
   return (bookmark_bar_state_ == BookmarkBar::DETACHED) ||
-      (animating_detached_ && size_animation_->is_animating());
-}
-
-double BookmarkBarView::GetAnimationValue() const {
-  return size_animation_->GetCurrentValue();
+      (animating_detached_ && size_animation_.is_animating());
 }
 
 int BookmarkBarView::GetToolbarOverlap() const {
@@ -777,7 +770,7 @@ int BookmarkBarView::GetToolbarOverlap() const {
   // detached states.
   return detached_overlap + static_cast<int>(
       (attached_overlap - detached_overlap) *
-          size_animation_->GetCurrentValue());
+          size_animation_.GetCurrentValue());
 }
 
 gfx::Size BookmarkBarView::GetPreferredSize() const {
@@ -787,10 +780,10 @@ gfx::Size BookmarkBarView::GetPreferredSize() const {
         chrome::kBookmarkBarHeight +
         static_cast<int>(
             (chrome::kNTPBookmarkBarHeight - chrome::kBookmarkBarHeight) *
-            (1 - size_animation_->GetCurrentValue())));
+            (1 - size_animation_.GetCurrentValue())));
   } else {
     prefsize.set_height(static_cast<int>(chrome::kBookmarkBarHeight *
-                                         size_animation_->GetCurrentValue()));
+                                         size_animation_.GetCurrentValue()));
   }
   return prefsize;
 }
@@ -818,7 +811,7 @@ gfx::Size BookmarkBarView::GetMinimumSize() const {
 
   int height = chrome::kBookmarkBarHeight;
   if (IsDetached()) {
-    double current_state = 1 - size_animation_->GetCurrentValue();
+    double current_state = 1 - size_animation_.GetCurrentValue();
     width += 2 * static_cast<int>(kNewTabHorizontalPadding * current_state);
     height += static_cast<int>(
         (chrome::kNTPBookmarkBarHeight - chrome::kBookmarkBarHeight) *
@@ -866,7 +859,7 @@ void BookmarkBarView::Layout() {
   int separator_margin = kSeparatorMargin;
 
   if (IsDetached()) {
-    double current_state = 1 - size_animation_->GetCurrentValue();
+    double current_state = 1 - size_animation_.GetCurrentValue();
     x += static_cast<int>(kNewTabHorizontalPadding * current_state);
     y += (View::height() - chrome::kBookmarkBarHeight) / 2;
     width -= static_cast<int>(kNewTabHorizontalPadding * current_state);
@@ -1386,8 +1379,8 @@ void BookmarkBarView::WriteDragDataForView(View* sender,
 
 int BookmarkBarView::GetDragOperationsForView(View* sender,
                                               const gfx::Point& p) {
-  if (size_animation_->is_animating() ||
-      (size_animation_->GetCurrentValue() == 0 &&
+  if (size_animation_.is_animating() ||
+      (size_animation_.GetCurrentValue() == 0 &&
        bookmark_bar_state_ != BookmarkBar::DETACHED)) {
     // Don't let the user drag while animating open or we're closed (and not
     // detached, when detached size_animation_ is always 0). This typically is
@@ -1598,8 +1591,6 @@ void BookmarkBarView::Init() {
   AddChildView(instructions_);
 
   set_context_menu_controller(this);
-
-  size_animation_.reset(new gfx::SlideAnimation(this));
 
   model_ = BookmarkModelFactory::GetForProfile(browser_->profile());
   managed_ = ManagedBookmarkServiceFactory::GetForProfile(browser_->profile());

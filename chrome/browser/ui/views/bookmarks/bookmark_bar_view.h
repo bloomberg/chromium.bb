@@ -20,6 +20,7 @@
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
@@ -41,10 +42,6 @@ class ManagedBookmarkService;
 
 namespace content {
 class PageNavigator;
-}
-
-namespace gfx {
-class SlideAnimation;
 }
 
 namespace views {
@@ -101,9 +98,6 @@ class BookmarkBarView : public views::AccessiblePaneView,
   void SetBookmarkBarState(BookmarkBar::State state,
                            BookmarkBar::AnimateChangeType animate_type);
 
-  // Whether or not we are animating.
-  bool is_animating();
-
   // If |loc| is over a bookmark button the node is returned corresponding to
   // the button and |model_start_index| is set to 0. If a overflow button is
   // showing and |loc| is over the overflow button, the bookmark bar node is
@@ -128,6 +122,10 @@ class BookmarkBarView : public views::AccessiblePaneView,
 
   // Returns the button used when not all the items on the bookmark bar fit.
   views::MenuButton* overflow_button() const { return overflow_button_; }
+
+  const gfx::Animation& size_animation() {
+    return size_animation_;
+  }
 
   // Returns the active MenuItemView, or NULL if a menu isn't showing.
   views::MenuItemView* GetMenu();
@@ -157,9 +155,6 @@ class BookmarkBarView : public views::AccessiblePaneView,
 
   // Returns true if Bookmarks Bar is currently detached from the Toolbar.
   bool IsDetached() const;
-
-  // Returns the current state of the resize animation (show/hide).
-  double GetAnimationValue() const;
 
   // Returns the current amount of overlap atop the browser toolbar.
   int GetToolbarOverlap() const;
@@ -446,7 +441,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
   bool infobar_visible_;
 
   // Animation controlling showing and hiding of the bar.
-  scoped_ptr<gfx::SlideAnimation> size_animation_;
+  gfx::SlideAnimation size_animation_;
 
   // If the bookmark bubble is showing, this is the visible ancestor of the URL.
   // The visible ancestor is either the |other_bookmarks_button_|,
