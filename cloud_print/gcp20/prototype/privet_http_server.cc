@@ -35,7 +35,7 @@ scoped_ptr<base::DictionaryValue> CreateError(const std::string& error_type) {
   scoped_ptr<base::DictionaryValue> error(new base::DictionaryValue);
   error->SetString("error", error_type);
 
-  return std::move(error);
+  return error;
 }
 
 // {"error":|error_type|, "description":|description|}
@@ -44,7 +44,7 @@ scoped_ptr<base::DictionaryValue> CreateErrorWithDescription(
     const std::string& description) {
   scoped_ptr<base::DictionaryValue> error(CreateError(error_type));
   error->SetString("description", description);
-  return std::move(error);
+  return error;
 }
 
 // {"error":|error_type|, "timeout":|timeout|}
@@ -53,7 +53,7 @@ scoped_ptr<base::DictionaryValue> CreateErrorWithTimeout(
     int timeout) {
   scoped_ptr<base::DictionaryValue> error(CreateError(error_type));
   error->SetInteger("timeout", timeout);
-  return std::move(error);
+  return error;
 }
 
 // Converts state to string.
@@ -278,7 +278,7 @@ scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessInfo(
   response->Set("type", type.DeepCopy());
 
   *status_code = net::HTTP_OK;
-  return std::move(response);
+  return response;
 }
 
 scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessCapabilities(
@@ -377,7 +377,7 @@ scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessSubmitDoc(
           base::StringPrintf("%u", static_cast<uint32_t>(job.content.size())));
       if (job_name_present)
         response->SetString("job_name", job.job_name);
-      return std::move(response);
+      return response;
 
     case LocalPrintJob::SAVE_INVALID_PRINT_JOB:
       return CreateErrorWithTimeout("invalid_print_job", timeout);
@@ -415,7 +415,7 @@ scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessJobState(
   response->SetString("job_id", job_id);
   response->SetString("state", LocalPrintJobStateToString(info.state));
   response->SetInteger("expires_in", info.expires_in);
-  return std::move(response);
+  return response;
 }
 
 scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessRegister(
@@ -466,7 +466,7 @@ scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessRegister(
 
   ProcessRegistrationStatus(status, &response);
   *status_code = net::HTTP_OK;
-  return std::move(response);
+  return response;
 }
 
 void PrivetHttpServer::ProcessRegistrationStatus(

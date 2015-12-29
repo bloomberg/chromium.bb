@@ -27,7 +27,7 @@ CloudPrintURLRequestContextGetter::GetURLRequestContext() {
     builder.set_proxy_config_service(
         make_scoped_ptr(new net::ProxyConfigServiceFixed(net::ProxyConfig())));
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
-    context_ = std::move(builder.Build());
+    context_ = builder.Build();
   }
   return context_.get();
 }

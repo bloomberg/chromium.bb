@@ -57,7 +57,7 @@ scoped_ptr<CloudPrintRequest> CloudPrintRequest::CreatePost(
   scoped_ptr<CloudPrintRequest> request(
       new CloudPrintRequest(url, URLFetcher::POST, delegate));
   request->fetcher_->SetUploadData(mimetype, content);
-  return std::move(request);
+  return request;
 }
 
 void CloudPrintRequest::Run(
