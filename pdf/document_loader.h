@@ -101,7 +101,7 @@ class DocumentLoader {
   // Number was chosen in crbug.com/78264#c8
   enum { kDefaultRequestSize = 65536 };
 
-  Client* client_;
+  Client* const client_;
   std::string url_;
   pp::URLLoader loader_;
   pp::CompletionCallbackFactory<DocumentLoader> loader_factory_;

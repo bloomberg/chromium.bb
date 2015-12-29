@@ -47,71 +47,70 @@ class PDFiumEngine : public PDFEngine,
                      public IFSDK_PAUSE {
  public:
   explicit PDFiumEngine(PDFEngine::Client* client);
-  virtual ~PDFiumEngine();
+  ~PDFiumEngine() override;
 
   // PDFEngine implementation.
-  virtual bool New(const char* url, const char* headers);
-  virtual void PageOffsetUpdated(const pp::Point& page_offset);
-  virtual void PluginSizeUpdated(const pp::Size& size);
-  virtual void ScrolledToXPosition(int position);
-  virtual void ScrolledToYPosition(int position);
-  virtual void PrePaint();
-  virtual void Paint(const pp::Rect& rect,
-                     pp::ImageData* image_data,
-                     std::vector<pp::Rect>* ready,
-                     std::vector<pp::Rect>* pending);
-  virtual void PostPaint();
-  virtual bool HandleDocumentLoad(const pp::URLLoader& loader);
-  virtual bool HandleEvent(const pp::InputEvent& event);
-  virtual uint32_t QuerySupportedPrintOutputFormats();
-  virtual void PrintBegin();
-  virtual pp::Resource PrintPages(
-      const PP_PrintPageNumberRange_Dev* page_ranges,
-      uint32_t page_range_count,
-      const PP_PrintSettings_Dev& print_settings);
-  virtual void PrintEnd();
-  virtual void StartFind(const std::string& text, bool case_sensitive);
-  virtual bool SelectFindResult(bool forward);
-  virtual void StopFind();
-  virtual void ZoomUpdated(double new_zoom_level);
-  virtual void RotateClockwise();
-  virtual void RotateCounterclockwise();
-  virtual std::string GetSelectedText();
-  virtual std::string GetLinkAtPosition(const pp::Point& point);
-  virtual bool IsSelecting();
-  virtual bool HasPermission(DocumentPermission permission) const;
-  virtual void SelectAll();
-  virtual int GetNumberOfPages();
-  virtual pp::VarArray GetBookmarks();
-  virtual int GetNamedDestinationPage(const std::string& destination);
-  virtual int GetFirstVisiblePage();
-  virtual int GetMostVisiblePage();
-  virtual pp::Rect GetPageRect(int index);
-  virtual pp::Rect GetPageContentsRect(int index);
-  virtual pp::Rect GetPageScreenRect(int page_index) const;
-  virtual int GetVerticalScrollbarYPosition() { return position_.y(); }
-  virtual void PaintThumbnail(pp::ImageData* image_data, int index);
-  virtual void SetGrayscale(bool grayscale);
-  virtual void OnCallback(int id);
-  virtual std::string GetPageAsJSON(int index);
-  virtual bool GetPrintScaling();
-  virtual int GetCopiesToPrint();
-  virtual int GetDuplexType();
-  virtual bool GetPageSizeAndUniformity(pp::Size* size);
-  virtual void AppendBlankPages(int num_pages);
-  virtual void AppendPage(PDFEngine* engine, int index);
-  virtual pp::Point GetScrollPosition();
-  virtual void SetScrollPosition(const pp::Point& position);
-  virtual bool IsProgressiveLoad();
-  virtual std::string GetMetadata(const std::string& key);
+  bool New(const char* url, const char* headers) override;
+  void PageOffsetUpdated(const pp::Point& page_offset) override;
+  void PluginSizeUpdated(const pp::Size& size) override;
+  void ScrolledToXPosition(int position) override;
+  void ScrolledToYPosition(int position) override;
+  void PrePaint() override;
+  void Paint(const pp::Rect& rect,
+             pp::ImageData* image_data,
+             std::vector<pp::Rect>* ready,
+             std::vector<pp::Rect>* pending) override;
+  void PostPaint() override;
+  bool HandleDocumentLoad(const pp::URLLoader& loader) override;
+  bool HandleEvent(const pp::InputEvent& event) override;
+  uint32_t QuerySupportedPrintOutputFormats() override;
+  void PrintBegin() override;
+  pp::Resource PrintPages(const PP_PrintPageNumberRange_Dev* page_ranges,
+                          uint32_t page_range_count,
+                          const PP_PrintSettings_Dev& print_settings) override;
+  void PrintEnd() override;
+  void StartFind(const std::string& text, bool case_sensitive) override;
+  bool SelectFindResult(bool forward) override;
+  void StopFind() override;
+  void ZoomUpdated(double new_zoom_level) override;
+  void RotateClockwise() override;
+  void RotateCounterclockwise() override;
+  std::string GetSelectedText() override;
+  std::string GetLinkAtPosition(const pp::Point& point) override;
+  bool IsSelecting() override;
+  bool HasPermission(DocumentPermission permission) const override;
+  void SelectAll() override;
+  int GetNumberOfPages() override;
+  pp::VarArray GetBookmarks() override;
+  int GetNamedDestinationPage(const std::string& destination) override;
+  int GetFirstVisiblePage() override;
+  int GetMostVisiblePage() override;
+  pp::Rect GetPageRect(int index) override;
+  pp::Rect GetPageContentsRect(int index) override;
+  pp::Rect GetPageScreenRect(int page_index) const override;
+  int GetVerticalScrollbarYPosition() override { return position_.y(); }
+  void PaintThumbnail(pp::ImageData* image_data, int index) override;
+  void SetGrayscale(bool grayscale) override;
+  void OnCallback(int id) override;
+  std::string GetPageAsJSON(int index) override;
+  bool GetPrintScaling() override;
+  int GetCopiesToPrint() override;
+  int GetDuplexType() override;
+  bool GetPageSizeAndUniformity(pp::Size* size) override;
+  void AppendBlankPages(int num_pages) override;
+  void AppendPage(PDFEngine* engine, int index) override;
+  pp::Point GetScrollPosition() override;
+  void SetScrollPosition(const pp::Point& position) override;
+  bool IsProgressiveLoad() override;
+  std::string GetMetadata(const std::string& key) override;
 
   // DocumentLoader::Client implementation.
-  virtual pp::Instance* GetPluginInstance();
-  virtual pp::URLLoader CreateURLLoader();
-  virtual void OnPartialDocumentLoaded();
-  virtual void OnPendingRequestComplete();
-  virtual void OnNewDataAvailable();
-  virtual void OnDocumentComplete();
+  pp::Instance* GetPluginInstance() override;
+  pp::URLLoader CreateURLLoader() override;
+  void OnPartialDocumentLoaded() override;
+  void OnPendingRequestComplete() override;
+  void OnNewDataAvailable() override;
+  void OnDocumentComplete() override;
 
   void UnsupportedFeature(int type);
 
@@ -578,7 +577,7 @@ class PDFiumEngine : public PDFEngine,
   // IFSDK_PAUSE callbacks
   static FPDF_BOOL Pause_NeedToPauseNow(IFSDK_PAUSE* param);
 
-  PDFEngine::Client* client_;
+  PDFEngine::Client* const client_;
   pp::Size document_size_;  // Size of document in pixels.
 
   // The scroll position in screen coordinates.
@@ -735,29 +734,29 @@ class ScopedUnsupportedFeature {
 class PDFiumEngineExports : public PDFEngineExports {
  public:
   PDFiumEngineExports() {}
+
+// PDFEngineExports:
 #if defined(OS_WIN)
-  // See the definition of RenderPDFPageToDC in pdf.cc for details.
-  virtual bool RenderPDFPageToDC(const void* pdf_buffer,
-                                 int buffer_size,
-                                 int page_number,
-                                 const RenderingSettings& settings,
-                                 HDC dc);
-#endif  // OS_WIN
-  virtual bool RenderPDFPageToBitmap(const void* pdf_buffer,
-                                     int pdf_buffer_size,
-                                     int page_number,
-                                     const RenderingSettings& settings,
-                                     void* bitmap_buffer);
-
-  virtual bool GetPDFDocInfo(const void* pdf_buffer,
-                             int buffer_size,
-                             int* page_count,
-                             double* max_page_width);
-
-  // See the definition of GetPDFPageSizeByIndex in pdf.cc for details.
-  virtual bool GetPDFPageSizeByIndex(const void* pdf_buffer,
-                                     int pdf_buffer_size, int page_number,
-                                     double* width, double* height);
+  bool RenderPDFPageToDC(const void* pdf_buffer,
+                         int buffer_size,
+                         int page_number,
+                         const RenderingSettings& settings,
+                         HDC dc) override;
+#endif  // defined(OS_WIN)
+  bool RenderPDFPageToBitmap(const void* pdf_buffer,
+                             int pdf_buffer_size,
+                             int page_number,
+                             const RenderingSettings& settings,
+                             void* bitmap_buffer) override;
+  bool GetPDFDocInfo(const void* pdf_buffer,
+                     int buffer_size,
+                     int* page_count,
+                     double* max_page_width) override;
+  bool GetPDFPageSizeByIndex(const void* pdf_buffer,
+                             int pdf_buffer_size,
+                             int page_number,
+                             double* width,
+                             double* height) override;
 };
 
 }  // namespace chrome_pdf

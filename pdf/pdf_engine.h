@@ -61,6 +61,8 @@ class PDFEngine {
   // The interface that's provided to the rendering engine.
   class Client {
    public:
+    virtual ~Client() {}
+
     // Informs the client about the document's size in pixels.
     virtual void DocumentSizeUpdated(const pp::Size& size) = 0;
 
@@ -315,7 +317,8 @@ class PDFEngineExports {
 
   PDFEngineExports() {}
   virtual ~PDFEngineExports() {}
-  static PDFEngineExports* Create();
+  static PDFEngineExports* Get();
+
 #if defined(OS_WIN)
   // See the definition of RenderPDFPageToDC in pdf.cc for details.
   virtual bool RenderPDFPageToDC(const void* pdf_buffer,

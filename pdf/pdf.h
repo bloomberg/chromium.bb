@@ -13,11 +13,11 @@ namespace chrome_pdf {
 class PDFModule : public pp::Module {
  public:
   PDFModule();
-  virtual ~PDFModule();
+  ~PDFModule() override;
 
   // pp::Module implementation.
-  virtual bool Init();
-  virtual pp::Instance* CreateInstance(PP_Instance instance);
+  bool Init() override;
+  pp::Instance* CreateInstance(PP_Instance instance) override;
 };
 
 int PPP_InitializeModule(PP_Module module_id,

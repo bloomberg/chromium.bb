@@ -11,6 +11,7 @@
 #include "base/i18n/icu_encoding_detection.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/json/json_writer.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -3777,11 +3778,10 @@ ScopedUnsupportedFeature::~ScopedUnsupportedFeature() {
   g_engine_for_unsupported = old_engine_;
 }
 
-PDFEngineExports* PDFEngineExports::Create() {
-  return new PDFiumEngineExports;
-}
-
 namespace {
+
+base::LazyInstance<PDFiumEngineExports>::Leaky g_pdf_engine_exports =
+    LAZY_INSTANCE_INITIALIZER;
 
 int CalculatePosition(FPDF_PAGE page,
                       const PDFiumEngineExports::RenderingSettings& settings,
@@ -3847,6 +3847,10 @@ int CalculatePosition(FPDF_PAGE page,
 }
 
 }  // namespace
+
+PDFEngineExports* PDFEngineExports::Get() {
+  return g_pdf_engine_exports.Pointer();
+}
 
 #if defined(OS_WIN)
 bool PDFiumEngineExports::RenderPDFPageToDC(const void* pdf_buffer,
@@ -3931,7 +3935,7 @@ bool PDFiumEngineExports::RenderPDFPageToDC(const void* pdf_buffer,
   FPDF_CloseDocument(doc);
   return true;
 }
-#endif  // OS_WIN
+#endif  // defined(OS_WIN)
 
 bool PDFiumEngineExports::RenderPDFPageToBitmap(
     const void* pdf_buffer,

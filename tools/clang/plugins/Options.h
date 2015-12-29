@@ -10,12 +10,14 @@ namespace chrome_checker {
 struct Options {
   Options()
       : check_base_classes(false),
+        enforce_in_pdf(false),
         enforce_in_thirdparty_webkit(false),
         check_enum_last_value(false),
         with_ast_visitor(false),
         check_templates(false) {}
 
   bool check_base_classes;
+  bool enforce_in_pdf;
   bool enforce_in_thirdparty_webkit;  // Use in Blink code itself
   bool check_enum_last_value;
   bool with_ast_visitor;

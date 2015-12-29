@@ -74,9 +74,8 @@ class OutOfProcessInstance : public pp::Instance,
   bool IsPrintScalingDisabled() override;
 
   // pp::Private implementation.
-  virtual pp::Var GetLinkAtPosition(const pp::Point& point);
-  virtual void GetPrintPresetOptionsFromDocument(
-      PP_PdfPrintPresetOptions_Dev* options);
+  pp::Var GetLinkAtPosition(const pp::Point& point);
+  void GetPrintPresetOptionsFromDocument(PP_PdfPrintPresetOptions_Dev* options);
 
   void FlushCallback(int32_t result);
   void DidOpen(int32_t result);
