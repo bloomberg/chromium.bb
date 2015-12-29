@@ -4,18 +4,13 @@
 
 package org.chromium.chrome.browser.snackbar;
 
-import android.annotation.TargetApi;
-import android.app.Activity;
-import android.content.Context;
 import android.graphics.Rect;
-import android.os.Build;
 import android.os.Handler;
-import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
-import android.widget.LinearLayout;
+import android.view.Window;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
@@ -42,29 +37,6 @@ import java.util.Stack;
  * {@link SnackbarController#onDismissNoAction(Object)} to all listeners.
  */
 public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener {
-
-    private static RuntimeException sWindowDetachTrace;
-
-    /**
-     * A {@link LinearLayout} that logs the stack trace when {@link #onDetachedFromWindow()} is
-     * called.
-     */
-    public static class WindowDismissalAwareLayout extends LinearLayout {
-        // TODO(ianwen): remove this class after crbug.com/553569 is fixed.
-        /**
-         * Constructor for XML inflation.
-         */
-        public WindowDismissalAwareLayout(Context context, AttributeSet attrs) {
-            super(context, attrs);
-        }
-
-        @Override
-        protected void onDetachedFromWindow() {
-            super.onDetachedFromWindow();
-            sWindowDetachTrace = new RuntimeException(
-                    "Stacktrace for Snackbar view to be detached from window");
-        }
-    }
 
     /**
      * Interface that shows the ability to provide a snackbar manager. Activities implementing this
@@ -112,7 +84,6 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
 
     private static final int DEFAULT_SNACKBAR_DURATION_MS = 3000;
     private static final int ACCESSIBILITY_MODE_SNACKBAR_DURATION_MS = 6000;
-    private static final String TAG = "snackbar";
 
     // Used instead of the constant so tests can override the value.
     private static int sSnackbarDurationMs = DEFAULT_SNACKBAR_DURATION_MS;
@@ -120,7 +91,6 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
 
     private final boolean mIsTablet;
 
-    private Activity mActivity;
     private View mDecor;
     private final Handler mUIThreadHandler;
     private Stack<Snackbar> mStack = new Stack<Snackbar>();
@@ -140,9 +110,8 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
     /**
      * Constructs a SnackbarManager to show snackbars in the given window.
      */
-    public SnackbarManager(Activity activity) {
-        mActivity = activity;
-        mDecor = activity.getWindow().getDecorView();
+    public SnackbarManager(Window window) {
+        mDecor = window.getDecorView();
         mUIThreadHandler = new Handler();
         mIsTablet = DeviceFormFactor.isTablet(mDecor.getContext());
     }
@@ -201,30 +170,13 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
      *
      * @param isTimeout Whether dismissal was triggered by timeout.
      */
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     public void dismissAllSnackbars(boolean isTimeout) {
         mUIThreadHandler.removeCallbacks(mHideRunnable);
 
         if (!mActivityInForeground) return;
 
         if (mPopup != null) {
-            // TODO(ianwen): remove the try catch after crbug.com/553569 is fixed.
-            try {
-                mPopup.dismiss();
-            } catch (IllegalArgumentException ex) {
-                if (mActivity != null) {
-                    android.util.Log.d(TAG, "Activity.toString()? " + mActivity);
-                    android.util.Log.d(TAG, "Activity is finishing? " + mActivity.isFinishing());
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        android.util.Log.d(TAG, "Activity is destroyed?" + mActivity.isDestroyed());
-                    }
-                }
-                if (sWindowDetachTrace != null) {
-                    android.util.Log.d(TAG, "Window detach stack trace", sWindowDetachTrace);
-                }
-                throw ex;
-            }
-
+            mPopup.dismiss();
             mPopup = null;
         }
 

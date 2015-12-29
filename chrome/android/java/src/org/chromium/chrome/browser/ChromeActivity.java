@@ -259,7 +259,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         mWindowAndroid = ((ChromeApplication) getApplicationContext())
                 .createActivityWindowAndroid(this);
         mWindowAndroid.restoreInstanceState(getSavedInstanceState());
-        mSnackbarManager = new SnackbarManager(this);
+        mSnackbarManager = new SnackbarManager(getWindow());
         mLoFiBarPopupController = new LoFiBarPopupController(this, getSnackbarManager());
         mDataUseSnackbarController = new DataUseSnackbarController(this, getSnackbarManager());
 

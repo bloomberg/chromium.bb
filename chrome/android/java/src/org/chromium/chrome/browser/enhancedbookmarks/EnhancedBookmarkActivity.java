@@ -35,7 +35,7 @@ public class EnhancedBookmarkActivity extends EnhancedBookmarkActivityBase imple
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        mSnackbarManager = new SnackbarManager(this);
+        mSnackbarManager = new SnackbarManager(getWindow());
         mBookmarkManager = new EnhancedBookmarkManager(this);
         String url = getIntent().getDataString();
         if (TextUtils.isEmpty(url)) url = UrlConstants.BOOKMARKS_URL;
