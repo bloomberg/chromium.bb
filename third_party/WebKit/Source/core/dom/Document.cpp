@@ -2312,22 +2312,25 @@ Document& Document::axObjectCacheOwner() const
     // of the AXObjectCache (http://crbug.com/510410), but the proper fix
     // will be for each Document to  have its own AXObjectCache
     // (http://crbug.com/532249).
-
+    Document* top = const_cast<Document*>(this);
     LocalFrame* frame = this->frame();
     if (!frame)
-        return *const_cast<Document*>(this);
+        return *top;
 
-    frame = frame->localFrameRoot();
-    if (!frame || !frame->document())
-        return *const_cast<Document*>(this);
-
-    Document* owner = frame->document();
-    if (frame->pagePopupOwner()) {
-        ASSERT(!owner->m_axObjectCache);
-        return frame->pagePopupOwner()->document().axObjectCacheOwner();
+    // This loop is more efficient than calling localFrameRoot.
+    while (frame && frame->owner() && frame->owner()->isLocal()) {
+        HTMLFrameOwnerElement* owner = toHTMLFrameOwnerElement(frame->owner());
+        top = &owner->document();
+        frame = top->frame();
     }
 
-    return *owner;
+    if (top->frame() && top->frame()->pagePopupOwner()) {
+        ASSERT(!top->m_axObjectCache);
+        return top->frame()->pagePopupOwner()->document().axObjectCacheOwner();
+    }
+
+    ASSERT(top);
+    return *top;
 }
 
 void Document::clearAXObjectCache()
