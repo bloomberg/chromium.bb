@@ -4,17 +4,16 @@
 
 #include "chromecast/common/media/shared_memory_chunk.h"
 
+#include <utility>
+
 #include "base/memory/shared_memory.h"
 
 namespace chromecast {
 namespace media {
 
-SharedMemoryChunk::SharedMemoryChunk(
-    scoped_ptr<base::SharedMemory> shared_mem,
-    size_t size)
-    : shared_mem_(shared_mem.Pass()),
-      size_(size) {
-}
+SharedMemoryChunk::SharedMemoryChunk(scoped_ptr<base::SharedMemory> shared_mem,
+                                     size_t size)
+    : shared_mem_(std::move(shared_mem)), size_(size) {}
 
 SharedMemoryChunk::~SharedMemoryChunk() {
 }

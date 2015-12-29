@@ -4,6 +4,8 @@
 
 #include "chromecast/renderer/media/chromecast_media_renderer_factory.h"
 
+#include <utility>
+
 #include "chromecast/renderer/media/cma_renderer.h"
 #include "chromecast/renderer/media/media_pipeline_proxy.h"
 #include "content/public/renderer/render_thread.h"
@@ -32,8 +34,8 @@ scoped_ptr<::media::Renderer> ChromecastMediaRendererFactory::CreateRenderer(
       content::RenderThread::Get()->GetIOMessageLoopProxy(),
       cma_load_type));
   scoped_ptr<CmaRenderer> cma_renderer(new CmaRenderer(
-      cma_media_pipeline.Pass(), video_renderer_sink, gpu_factories_));
-  return cma_renderer.Pass();
+      std::move(cma_media_pipeline), video_renderer_sink, gpu_factories_));
+  return std::move(cma_renderer);
 }
 
 }  // namespace media

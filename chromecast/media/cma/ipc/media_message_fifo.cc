@@ -4,6 +4,8 @@
 
 #include "chromecast/media/cma/ipc/media_message_fifo.h"
 
+#include <utility>
+
 #include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/location.h"
@@ -103,10 +105,8 @@ FifoOwnedMemory::~FifoOwnedMemory() {
   }
 }
 
-MediaMessageFifo::MediaMessageFifo(
-    scoped_ptr<MediaMemoryChunk> mem, bool init)
-  : mem_(mem.Pass()),
-    weak_factory_(this) {
+MediaMessageFifo::MediaMessageFifo(scoped_ptr<MediaMemoryChunk> mem, bool init)
+    : mem_(std::move(mem)), weak_factory_(this) {
   CHECK_EQ(reinterpret_cast<uintptr_t>(mem_->data()) % ALIGNOF(Descriptor),
            0u);
   CHECK_GE(mem_->size(), sizeof(Descriptor));
@@ -190,7 +190,7 @@ scoped_ptr<MediaMemoryChunk> MediaMessageFifo::ReserveMemory(
     scoped_ptr<MediaMemoryChunk> mem(
         ReserveMemoryNoCheck(trailing_byte_count));
     scoped_ptr<MediaMessage> padding_message(
-        MediaMessage::CreateMessage(PaddingMediaMsg, mem.Pass()));
+        MediaMessage::CreateMessage(PaddingMediaMsg, std::move(mem)));
   }
 
   // Recalculate the free size and exit if not enough free space.
@@ -245,14 +245,14 @@ scoped_ptr<MediaMessage> MediaMessageFifo::Pop() {
           base::Bind(&MediaMessageFifo::OnRdMemoryReleased, weak_this_)));
 
   // Create the message which wraps its the serialized structure.
-  scoped_ptr<MediaMessage> message(MediaMessage::MapMessage(mem.Pass()));
+  scoped_ptr<MediaMessage> message(MediaMessage::MapMessage(std::move(mem)));
   CHECK(message);
 
   // Update the internal read pointer.
   rd_offset = (rd_offset + message->size()) % size_;
   CommitInternalRead(rd_offset);
 
-  return message.Pass();
+  return message;
 }
 
 void MediaMessageFifo::Flush() {
@@ -290,7 +290,7 @@ scoped_ptr<MediaMemoryChunk> MediaMessageFifo::ReserveMemoryNoCheck(
   wr_offset = (wr_offset + size_to_reserve) % size_;
   CommitInternalWrite(wr_offset);
 
-  return mem.Pass();
+  return mem;
 }
 
 void MediaMessageFifo::OnWrMemoryReleased() {

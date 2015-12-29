@@ -6,6 +6,7 @@
 #define CHROMECAST_MEDIA_CMA_BASE_DECODER_BUFFER_BASE_H_
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -31,7 +32,7 @@ class DecoderBufferBase : public CastDecoderBuffer,
   DecryptContext* decrypt_context() const override;
 
   void set_decrypt_context(scoped_ptr<DecryptContext> context) {
-    decrypt_context_ = context.Pass();
+    decrypt_context_ = std::move(context);
   }
 
   // Sets the PTS of the frame.

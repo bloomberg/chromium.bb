@@ -20,7 +20,7 @@ scoped_ptr<base::Value> DeserializeFromJson(const std::string& text) {
   DLOG_IF(ERROR, !value) << "JSON error " << error_code << ":" << error_msg;
 
   // Value will hold the nullptr in case of an error.
-  return value.Pass();
+  return value;
 }
 
 scoped_ptr<std::string> SerializeToJson(const base::Value& value) {
@@ -28,7 +28,7 @@ scoped_ptr<std::string> SerializeToJson(const base::Value& value) {
   JSONStringValueSerializer serializer(json_str.get());
   if (!serializer.Serialize(value))
     json_str.reset(nullptr);
-  return json_str.Pass();
+  return json_str;
 }
 
 scoped_ptr<base::Value> DeserializeJsonFromFile(const base::FilePath& path) {
@@ -41,7 +41,7 @@ scoped_ptr<base::Value> DeserializeJsonFromFile(const base::FilePath& path) {
   DLOG_IF(ERROR, !value) << "JSON error " << error_code << ":" << error_msg;
 
   // Value will hold the nullptr in case of an error.
-  return value.Pass();
+  return value;
 }
 
 bool SerializeJsonToFile(const base::FilePath& path, const base::Value& value) {

@@ -15,6 +15,7 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
+#include <utility>
 
 #include "base/files/dir_reader_posix.h"
 #include "base/files/file_util.h"
@@ -270,15 +271,15 @@ int SynchronizedMinidumpManager::ParseFiles() {
     scoped_ptr<base::Value> dump_info = DeserializeFromJson(line);
     DumpInfo info(dump_info.get());
     RCHECK(info.valid(), -1);
-    dumps->Append(dump_info.Pass());
+    dumps->Append(std::move(dump_info));
   }
 
   scoped_ptr<base::Value> metadata =
       DeserializeJsonFromFile(base::FilePath(metadata_path_));
   RCHECK(ValidateMetadata(metadata.get()), -1);
 
-  dumps_ = dumps.Pass();
-  metadata_ = metadata.Pass();
+  dumps_ = std::move(dumps);
+  metadata_ = std::move(metadata);
   return 0;
 }
 
@@ -363,7 +364,7 @@ ScopedVector<DumpInfo> SynchronizedMinidumpManager::GetDumps() {
     dumps.push_back(new DumpInfo(elem));
   }
 
-  return dumps.Pass();
+  return dumps;
 }
 
 int SynchronizedMinidumpManager::SetCurrentDumps(

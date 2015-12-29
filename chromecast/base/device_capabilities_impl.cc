@@ -5,6 +5,7 @@
 #include "chromecast/base/device_capabilities_impl.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -70,7 +71,7 @@ scoped_refptr<DeviceCapabilities::Data> DeviceCapabilities::CreateData() {
 scoped_refptr<DeviceCapabilities::Data> DeviceCapabilities::CreateData(
     scoped_ptr<const base::DictionaryValue> dictionary) {
   DCHECK(dictionary.get());
-  return make_scoped_refptr(new Data(dictionary.Pass()));
+  return make_scoped_refptr(new Data(std::move(dictionary)));
 }
 
 DeviceCapabilities::Validator::Validator(DeviceCapabilities* capabilities)
@@ -81,7 +82,7 @@ DeviceCapabilities::Validator::Validator(DeviceCapabilities* capabilities)
 void DeviceCapabilities::Validator::SetValidatedValue(
     const std::string& path,
     scoped_ptr<base::Value> new_value) const {
-  capabilities_->SetValidatedValue(path, new_value.Pass());
+  capabilities_->SetValidatedValue(path, std::move(new_value));
 }
 
 DeviceCapabilities::Data::Data()
@@ -92,7 +93,7 @@ DeviceCapabilities::Data::Data()
 
 DeviceCapabilities::Data::Data(
     scoped_ptr<const base::DictionaryValue> dictionary)
-    : dictionary_(dictionary.Pass()),
+    : dictionary_(std::move(dictionary)),
       json_string_(SerializeToJson(*dictionary_)) {
   DCHECK(dictionary_.get());
   DCHECK(json_string_.get());
@@ -118,7 +119,7 @@ void DeviceCapabilitiesImpl::ValidatorInfo::Validate(
   // Check that we are running Validate on the same thread that ValidatorInfo
   // was constructed on.
   DCHECK(task_runner_->BelongsToCurrentThread());
-  validator_->Validate(path, proposed_value.Pass());
+  validator_->Validate(path, std::move(proposed_value));
 }
 
 DeviceCapabilitiesImpl::DeviceCapabilitiesImpl()
@@ -238,7 +239,7 @@ void DeviceCapabilitiesImpl::SetCapability(
   }
   // Since we are done checking for a registered Validator at this point, we
   // can release the lock. All further member access will be for capabilities.
-  SetValidatedValue(path, proposed_value.Pass());
+  SetValidatedValue(path, std::move(proposed_value));
 }
 
 void DeviceCapabilitiesImpl::MergeDictionary(
@@ -292,8 +293,8 @@ void DeviceCapabilitiesImpl::SetValidatedValue(
   // threads.
   scoped_ptr<base::DictionaryValue> dictionary_deep_copy(
       data_->dictionary().CreateDeepCopy());
-  dictionary_deep_copy->Set(path, new_value.Pass());
-  scoped_refptr<Data> new_data(CreateData(dictionary_deep_copy.Pass()));
+  dictionary_deep_copy->Set(path, std::move(new_value));
+  scoped_refptr<Data> new_data(CreateData(std::move(dictionary_deep_copy)));
 
   {
     base::AutoLock auto_lock(data_lock_);

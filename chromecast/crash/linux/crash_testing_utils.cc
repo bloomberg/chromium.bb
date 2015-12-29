@@ -4,6 +4,8 @@
 
 #include "chromecast/crash/linux/crash_testing_utils.h"
 
+#include <utility>
+
 #include "base/files/file_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -45,7 +47,7 @@ scoped_ptr<base::ListValue> ParseLockFile(const std::string& path) {
     scoped_ptr<base::Value> dump_info = DeserializeFromJson(line);
     DumpInfo info(dump_info.get());
     RCHECK(info.valid(), nullptr, "Invalid DumpInfo");
-    dumps->Append(dump_info.Pass());
+    dumps->Append(std::move(dump_info));
   }
 
   return dumps;
@@ -94,7 +96,7 @@ bool FetchDumps(const std::string& lockfile_path,
   for (base::Value* elem : *dump_list) {
     scoped_ptr<DumpInfo> dump = make_scoped_ptr(new DumpInfo(elem));
     RCHECK(dump->valid(), false, "Invalid DumpInfo");
-    dumps->push_back(dump.Pass());
+    dumps->push_back(std::move(dump));
   }
 
   return true;

@@ -4,6 +4,8 @@
 
 #include "chromecast/media/cma/base/buffering_frame_provider.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "chromecast/media/cma/base/buffering_state.h"
@@ -30,7 +32,7 @@ BufferingFrameProvider::BufferingFrameProvider(
     size_t max_buffer_size,
     size_t max_frame_size,
     const FrameBufferedCB& frame_buffered_cb)
-    : coded_frame_provider_(coded_frame_provider.Pass()),
+    : coded_frame_provider_(std::move(coded_frame_provider)),
       is_pending_request_(false),
       is_eos_(false),
       total_buffer_size_(0),

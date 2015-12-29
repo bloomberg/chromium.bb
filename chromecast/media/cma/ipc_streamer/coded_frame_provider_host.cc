@@ -4,6 +4,8 @@
 
 #include "chromecast/media/cma/ipc_streamer/coded_frame_provider_host.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
@@ -20,8 +22,7 @@ namespace media {
 
 CodedFrameProviderHost::CodedFrameProviderHost(
     scoped_ptr<MediaMessageFifo> media_message_fifo)
-  : fifo_(media_message_fifo.Pass()),
-    weak_factory_(this) {
+    : fifo_(std::move(media_message_fifo)), weak_factory_(this) {
   weak_this_ = weak_factory_.GetWeakPtr();
   thread_checker_.DetachFromThread();
 }
@@ -74,7 +75,7 @@ void CodedFrameProviderHost::ReadMessages() {
       video_config_ = VideoDecoderConfigMarshaller::Read(msg.get());
     } else if (msg->type() == FrameMediaMsg) {
       scoped_refptr<DecoderBufferBase> buffer =
-          DecoderBufferBaseMarshaller::Read(msg.Pass());
+          DecoderBufferBaseMarshaller::Read(std::move(msg));
       base::ResetAndReturn(&read_cb_).Run(
           buffer, audio_config_, video_config_);
       audio_config_ = ::media::AudioDecoderConfig();

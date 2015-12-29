@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
+#include "chromecast/media/cma/base/buffering_frame_provider.h"
 
+#include <stddef.h>
 #include <list>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -13,7 +15,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
-#include "chromecast/media/cma/base/buffering_frame_provider.h"
 #include "chromecast/media/cma/test/frame_generator_for_test.h"
 #include "chromecast/media/cma/test/mock_frame_consumer.h"
 #include "chromecast/media/cma/test/mock_frame_provider.h"
@@ -80,7 +81,7 @@ void BufferingFrameProviderTest::Configure(
 
   scoped_ptr<MockFrameProvider> frame_provider(new MockFrameProvider());
   frame_provider->Configure(provider_delayed_pattern,
-                            frame_generator_provider.Pass());
+                            std::move(frame_generator_provider));
 
   size_t max_frame_size = 10 * 1024;
   size_t buffer_size = 10 * max_frame_size;
@@ -93,10 +94,8 @@ void BufferingFrameProviderTest::Configure(
 
   frame_consumer_.reset(
       new MockFrameConsumer(buffering_frame_provider_.get()));
-  frame_consumer_->Configure(
-      consumer_delayed_pattern,
-      false,
-      frame_generator_consumer.Pass());
+  frame_consumer_->Configure(consumer_delayed_pattern, false,
+                             std::move(frame_generator_consumer));
 }
 
 void BufferingFrameProviderTest::Start() {

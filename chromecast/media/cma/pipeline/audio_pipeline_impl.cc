@@ -5,6 +5,7 @@
 #include "chromecast/media/cma/pipeline/audio_pipeline_impl.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "chromecast/media/cma/base/buffering_defs.h"
@@ -37,7 +38,7 @@ void AudioPipelineImpl::Initialize(
   CMALOG(kLogControl) << __FUNCTION__ << " "
                       << audio_config.AsHumanReadableString();
   if (frame_provider) {
-    SetCodedFrameProvider(frame_provider.Pass(), kAppAudioBufferSize,
+    SetCodedFrameProvider(std::move(frame_provider), kAppAudioBufferSize,
                           kMaxAudioFrameSize);
   }
 

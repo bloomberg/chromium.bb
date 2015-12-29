@@ -4,8 +4,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <list>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -122,7 +122,7 @@ void AvStreamerTest::Configure(
 
   scoped_ptr<MockFrameProvider> frame_provider(new MockFrameProvider());
   frame_provider->Configure(provider_delayed_pattern,
-                            frame_generator_provider.Pass());
+                            std::move(frame_generator_provider));
   frame_provider->SetDelayFlush(delay_flush);
 
   size_t fifo_size_div_8 = 512;
@@ -146,17 +146,15 @@ void AvStreamerTest::Configure(
       new AvStreamerProxy());
   av_buffer_proxy_->SetCodedFrameProvider(
       scoped_ptr<CodedFrameProvider>(frame_provider.release()));
-  av_buffer_proxy_->SetMediaMessageFifo(producer_fifo.Pass());
+  av_buffer_proxy_->SetMediaMessageFifo(std::move(producer_fifo));
 
   coded_frame_provider_host_.reset(
-      new CodedFrameProviderHost(consumer_fifo.Pass()));
+      new CodedFrameProviderHost(std::move(consumer_fifo)));
 
   frame_consumer_.reset(
       new MockFrameConsumer(coded_frame_provider_host_.get()));
-  frame_consumer_->Configure(
-      consumer_delayed_pattern,
-      false,
-      frame_generator_consumer.Pass());
+  frame_consumer_->Configure(consumer_delayed_pattern, false,
+                             std::move(frame_generator_consumer));
 
   stop_and_flush_cb_count_ = 0;
 }

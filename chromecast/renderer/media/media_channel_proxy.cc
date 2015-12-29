@@ -4,6 +4,8 @@
 
 #include "chromecast/renderer/media/media_channel_proxy.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "chromecast/common/media/cma_messages.h"
 
@@ -72,7 +74,7 @@ bool MediaChannelProxy::SetVideoDelegate(
 bool MediaChannelProxy::Send(scoped_ptr<IPC::Message> message) {
   if (!is_open_)
     return false;
-  return filter_->Send(message.Pass());
+  return filter_->Send(std::move(message));
 }
 
 }  // namespace media

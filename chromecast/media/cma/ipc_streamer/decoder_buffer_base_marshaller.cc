@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -66,12 +67,8 @@ class DecoderBufferFromMsg : public DecoderBufferBase {
   DISALLOW_COPY_AND_ASSIGN(DecoderBufferFromMsg);
 };
 
-DecoderBufferFromMsg::DecoderBufferFromMsg(
-    scoped_ptr<MediaMessage> msg)
-    : is_eos_(true),
-      stream_id_(kPrimary),
-      msg_(msg.Pass()),
-      data_(NULL) {
+DecoderBufferFromMsg::DecoderBufferFromMsg(scoped_ptr<MediaMessage> msg)
+    : is_eos_(true), stream_id_(kPrimary), msg_(std::move(msg)), data_(NULL) {
   CHECK(msg_);
 }
 
@@ -203,7 +200,7 @@ void DecoderBufferBaseMarshaller::Write(
 scoped_refptr<DecoderBufferBase> DecoderBufferBaseMarshaller::Read(
     scoped_ptr<MediaMessage> msg) {
   scoped_refptr<DecoderBufferFromMsg> buffer(
-      new DecoderBufferFromMsg(msg.Pass()));
+      new DecoderBufferFromMsg(std::move(msg)));
   buffer->Initialize();
   return buffer;
 }

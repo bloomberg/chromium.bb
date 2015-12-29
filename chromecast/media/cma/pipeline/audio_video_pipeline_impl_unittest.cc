@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -67,7 +67,7 @@ AudioVideoPipelineImplTest::AudioVideoPipelineImplTest()
   scoped_ptr<MediaPipelineBackend> backend =
       make_scoped_ptr(new MediaPipelineBackendDefault());
 
-  media_pipeline_->Initialize(kLoadTypeURL, backend.Pass());
+  media_pipeline_->Initialize(kLoadTypeURL, std::move(backend));
   media_pipeline_->SetPlaybackRate(1.0);
 }
 
@@ -110,7 +110,7 @@ void AudioVideoPipelineImplTest::Initialize(
       std::vector<bool>(
           provider_delayed_pattern,
           provider_delayed_pattern + arraysize(provider_delayed_pattern)),
-      frame_generator_provider.Pass());
+      std::move(frame_generator_provider));
 
   ::media::PipelineStatusCB next_task =
       base::Bind(&AudioVideoPipelineImplTest::StartPlaying,

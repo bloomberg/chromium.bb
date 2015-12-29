@@ -5,6 +5,7 @@
 #include "chromecast/media/cma/ipc/media_message.h"
 
 #include <limits>
+#include <utility>
 
 #include "base/logging.h"
 #include "chromecast/media/cma/ipc/media_memory_chunk.h"
@@ -35,20 +36,20 @@ scoped_ptr<MediaMessage> MediaMessage::CreateMessage(
   if (!memory)
     return scoped_ptr<MediaMessage>();
 
-  return scoped_ptr<MediaMessage>(new MediaMessage(type, memory.Pass()));
+  return scoped_ptr<MediaMessage>(new MediaMessage(type, std::move(memory)));
 }
 
 // static
 scoped_ptr<MediaMessage> MediaMessage::CreateMessage(
     uint32_t type,
     scoped_ptr<MediaMemoryChunk> memory) {
-  return scoped_ptr<MediaMessage>(new MediaMessage(type, memory.Pass()));
+  return scoped_ptr<MediaMessage>(new MediaMessage(type, std::move(memory)));
 }
 
 // static
 scoped_ptr<MediaMessage> MediaMessage::MapMessage(
     scoped_ptr<MediaMemoryChunk> memory) {
-  return scoped_ptr<MediaMessage>(new MediaMessage(memory.Pass()));
+  return scoped_ptr<MediaMessage>(new MediaMessage(std::move(memory)));
 }
 
 MediaMessage::MediaMessage(uint32_t type, size_t msg_size)
@@ -67,7 +68,7 @@ MediaMessage::MediaMessage(uint32_t type, scoped_ptr<MediaMemoryChunk> memory)
       cached_header_(&cached_msg_.header),
       msg_(static_cast<SerializedMsg*>(memory->data())),
       msg_read_only_(msg_),
-      mem_(memory.Pass()),
+      mem_(std::move(memory)),
       rd_offset_(0) {
   CHECK(mem_->valid());
   CHECK_GE(mem_->size(), minimum_msg_size());
@@ -90,12 +91,12 @@ MediaMessage::MediaMessage(uint32_t type, scoped_ptr<MediaMemoryChunk> memory)
 }
 
 MediaMessage::MediaMessage(scoped_ptr<MediaMemoryChunk> memory)
-  : is_dummy_msg_(false),
-    cached_header_(&cached_msg_.header),
-    msg_(NULL),
-    msg_read_only_(static_cast<SerializedMsg*>(memory->data())),
-    mem_(memory.Pass()),
-    rd_offset_(0) {
+    : is_dummy_msg_(false),
+      cached_header_(&cached_msg_.header),
+      msg_(NULL),
+      msg_read_only_(static_cast<SerializedMsg*>(memory->data())),
+      mem_(std::move(memory)),
+      rd_offset_(0) {
   CHECK(mem_->valid());
 
   // Check memory alignment.

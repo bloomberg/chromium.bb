@@ -60,7 +60,7 @@ void ConnectivityCheckerImpl::Initialize() {
   builder.set_proxy_config_service(make_scoped_ptr(
       new net::ProxyConfigServiceFixed(net::ProxyConfig::CreateDirect())));
   builder.DisableHttpCache();
-  url_request_context_ = builder.Build().Pass();
+  url_request_context_ = builder.Build();
 
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   task_runner_->PostTask(FROM_HERE,

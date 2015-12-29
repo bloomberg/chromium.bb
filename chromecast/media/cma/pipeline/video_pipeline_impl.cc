@@ -5,6 +5,7 @@
 #include "chromecast/media/cma/pipeline/video_pipeline_impl.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "chromecast/media/cdm/browser_cdm_cast.h"
@@ -47,7 +48,7 @@ void VideoPipelineImpl::Initialize(
   }
 
   if (frame_provider) {
-    SetCodedFrameProvider(frame_provider.Pass(), kAppVideoBufferSize,
+    SetCodedFrameProvider(std::move(frame_provider), kAppVideoBufferSize,
                           kMaxVideoFrameSize);
   }
 

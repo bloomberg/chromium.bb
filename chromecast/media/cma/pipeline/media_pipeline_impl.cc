@@ -5,6 +5,7 @@
 #include "chromecast/media/cma/pipeline/media_pipeline_impl.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -155,7 +156,7 @@ void MediaPipelineImpl::InitializeAudio(
   audio_pipeline_.reset(new AudioPipelineImpl(audio_decoder_.get(), client));
   if (cdm_)
     audio_pipeline_->SetCdm(cdm_);
-  audio_pipeline_->Initialize(config, frame_provider.Pass(), status_cb);
+  audio_pipeline_->Initialize(config, std::move(frame_provider), status_cb);
 }
 
 void MediaPipelineImpl::InitializeVideo(
@@ -174,7 +175,7 @@ void MediaPipelineImpl::InitializeVideo(
   video_pipeline_.reset(new VideoPipelineImpl(video_decoder_, client));
   if (cdm_)
     video_pipeline_->SetCdm(cdm_);
-  video_pipeline_->Initialize(configs, frame_provider.Pass(), status_cb);
+  video_pipeline_->Initialize(configs, std::move(frame_provider), status_cb);
 }
 
 void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {

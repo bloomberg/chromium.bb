@@ -4,6 +4,8 @@
 
 #include "chromecast/media/cma/pipeline/av_pipeline_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -81,9 +83,7 @@ void AvPipelineImpl::SetCodedFrameProvider(
 
   // Wrap the incoming frame provider to add some buffering capabilities.
   frame_provider_.reset(new BufferingFrameProvider(
-      frame_provider.Pass(),
-      max_buffer_size,
-      max_frame_size,
+      std::move(frame_provider), max_buffer_size, max_frame_size,
       base::Bind(&AvPipelineImpl::OnDataBuffered, weak_this_)));
 }
 
@@ -274,7 +274,7 @@ void AvPipelineImpl::ProcessPendingBuffer() {
   DCHECK(!pushed_buffer_);
   pushed_buffer_ = pending_buffer_;
   if (decrypt_context && decrypt_context->GetKeySystem() != KEY_SYSTEM_NONE)
-    pushed_buffer_->set_decrypt_context(decrypt_context.Pass());
+    pushed_buffer_->set_decrypt_context(std::move(decrypt_context));
   pending_buffer_ = nullptr;
   MediaPipelineBackend::BufferStatus status =
       decoder_->PushBuffer(pushed_buffer_.get());

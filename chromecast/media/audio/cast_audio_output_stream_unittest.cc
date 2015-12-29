@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chromecast/media/audio/cast_audio_output_stream.h"
+
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "chromecast/base/metrics/cast_metrics_test_helper.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
-#include "chromecast/media/audio/cast_audio_output_stream.h"
 #include "chromecast/media/base/media_message_loop.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_default.h"
 #include "chromecast/public/media/cast_decoder_buffer.h"
@@ -196,7 +198,7 @@ class FakeAudioManager : public CastAudioManager {
         new FakeMediaPipelineBackend());
     // Cache the backend locally to be used by tests.
     media_pipeline_backend_ = backend.get();
-    return backend.Pass();
+    return std::move(backend);
   }
   void ReleaseOutputStream(::media::AudioOutputStream* stream) override {
     DCHECK(media_pipeline_backend_);

@@ -5,9 +5,9 @@
 #include "chromecast/media/cma/decoder/cast_audio_decoder.h"
 
 #include <stdint.h>
-
 #include <limits>
 #include <queue>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -276,7 +276,7 @@ scoped_ptr<CastAudioDecoder> CastAudioDecoder::Create(
   scoped_ptr<CastAudioDecoderImpl> decoder(new CastAudioDecoderImpl(
       task_runner, initialized_callback, output_format));
   decoder->Initialize(config);
-  return decoder.Pass();
+  return std::move(decoder);
 }
 
 // static

@@ -77,7 +77,7 @@ scoped_ptr<PrefService> PrefServiceHelper::CreatePrefService(
   }
 
   OnPrefsLoaded(pref_service.get());
-  return pref_service.Pass();
+  return pref_service;
 }
 
 }  // namespace shell

@@ -5,8 +5,8 @@
 #include "chromecast/browser/cast_content_browser_client.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -163,9 +163,7 @@ net::URLRequestContextGetter* CastContentBrowserClient::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
   return url_request_context_factory_->CreateMainGetter(
-      browser_context,
-      protocol_handlers,
-      request_interceptors.Pass());
+      browser_context, protocol_handlers, std::move(request_interceptors));
 }
 
 bool CastContentBrowserClient::IsHandledURL(const GURL& url) {

@@ -5,6 +5,7 @@
 #include "chromecast/media/cma/test/frame_generator_for_test.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
@@ -101,7 +102,7 @@ scoped_refptr<DecoderBufferBase> FrameGeneratorForTest::Generate() {
             std::string(key_id, arraysize(key_id)),
             std::string(iv, arraysize(iv)),
             subsamples));
-    buffer->set_decrypt_config(decrypt_config.Pass());
+    buffer->set_decrypt_config(std::move(decrypt_config));
   }
 
   return scoped_refptr<DecoderBufferBase>(new DecoderBufferAdapter(buffer));

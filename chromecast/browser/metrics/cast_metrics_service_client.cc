@@ -138,7 +138,7 @@ scoped_ptr< ::metrics::ClientInfo> CastMetricsServiceClient::LoadClientInfo() {
       // Force old client id to be regenerated. See b/9487011.
       client_info->client_id = base::GenerateGUID();
       pref_service_->SetBoolean(prefs::kMetricsIsNewClientID, true);
-      return client_info.Pass();
+      return client_info;
     }
     // else the device was just FDR'ed, pass through.
   }
@@ -146,7 +146,7 @@ scoped_ptr< ::metrics::ClientInfo> CastMetricsServiceClient::LoadClientInfo() {
   // Use "forced" client ID if available.
   if (!force_client_id_.empty() && base::IsValidGUID(force_client_id_)) {
     client_info->client_id = force_client_id_;
-    return client_info.Pass();
+    return client_info;
   }
 
   if (force_client_id_.empty()) {

@@ -4,6 +4,8 @@
 
 #include "chromecast/renderer/media/video_pipeline_proxy.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
@@ -229,7 +231,7 @@ void VideoPipelineProxy::Initialize(
     const ::media::PipelineStatusCB& status_cb) {
   CMALOG(kLogControl) << "VideoPipelineProxy::Initialize";
   DCHECK(thread_checker_.CalledOnValidThread());
-  video_streamer_->SetCodedFrameProvider(frame_provider.Pass());
+  video_streamer_->SetCodedFrameProvider(std::move(frame_provider));
 
   VideoPipelineProxyInternal::SharedMemCB shared_mem_cb =
       ::media::BindToCurrentLoop(base::Bind(
@@ -252,13 +254,13 @@ void VideoPipelineProxy::OnAvPipeCreated(
   CHECK(shared_memory->memory());
 
   scoped_ptr<MediaMemoryChunk> shared_memory_chunk(
-      new SharedMemoryChunk(shared_memory.Pass(), kAppVideoBufferSize));
+      new SharedMemoryChunk(std::move(shared_memory), kAppVideoBufferSize));
   scoped_ptr<MediaMessageFifo> video_pipe(
-      new MediaMessageFifo(shared_memory_chunk.Pass(), false));
+      new MediaMessageFifo(std::move(shared_memory_chunk), false));
   video_pipe->ObserveWriteActivity(
       base::Bind(&VideoPipelineProxy::OnPipeWrite, weak_this_));
 
-  video_streamer_->SetMediaMessageFifo(video_pipe.Pass());
+  video_streamer_->SetMediaMessageFifo(std::move(video_pipe));
 
   // Now proceed to the decoder/renderer initialization.
   FORWARD_ON_IO_THREAD(Initialize, configs, status_cb);

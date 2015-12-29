@@ -4,6 +4,8 @@
 
 #include "chromecast/renderer/media/cma_renderer.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
@@ -46,7 +48,7 @@ CmaRenderer::CmaRenderer(scoped_ptr<MediaPipelineProxy> media_pipeline,
                          ::media::GpuVideoAcceleratorFactories* gpu_factories)
     : media_task_runner_factory_(
           new BalancedMediaTaskRunnerFactory(kMaxDeltaFetcher)),
-      media_pipeline_(media_pipeline.Pass()),
+      media_pipeline_(std::move(media_pipeline)),
       audio_pipeline_(media_pipeline_->GetAudioPipeline()),
       video_pipeline_(media_pipeline_->GetVideoPipeline()),
       video_renderer_sink_(video_renderer_sink),
@@ -273,8 +275,8 @@ void CmaRenderer::InitializeAudioPipeline() {
   if (config.codec() == ::media::kCodecAAC)
     stream->EnableBitstreamConverter();
 
-  media_pipeline_->InitializeAudio(
-      config, frame_provider.Pass(), audio_initialization_done_cb);
+  media_pipeline_->InitializeAudio(config, std::move(frame_provider),
+                                   audio_initialization_done_cb);
 }
 
 void CmaRenderer::OnAudioPipelineInitializeDone(
@@ -341,8 +343,8 @@ void CmaRenderer::InitializeVideoPipeline() {
 
   std::vector<::media::VideoDecoderConfig> configs;
   configs.push_back(config);
-  media_pipeline_->InitializeVideo(
-      configs, frame_provider.Pass(), video_initialization_done_cb);
+  media_pipeline_->InitializeVideo(configs, std::move(frame_provider),
+                                   video_initialization_done_cb);
 }
 
 void CmaRenderer::OnVideoPipelineInitializeDone(

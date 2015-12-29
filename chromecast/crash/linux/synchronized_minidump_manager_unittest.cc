@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chromecast/crash/linux/synchronized_minidump_manager.h"
+
 #include <fcntl.h>
 #include <stdint.h>
 #include <stdio.h>  // perror
 #include <stdlib.h>
 #include <sys/file.h>
-#include <sys/stat.h>   // mkdir
-#include <sys/types.h>  //
+#include <sys/stat.h>  // mkdir
+#include <sys/types.h>
 #include <time.h>
-
 #include <fstream>
+#include <utility>
 
 #include "base/base_paths.h"
 #include "base/bind.h"
@@ -27,7 +29,6 @@
 #include "chromecast/base/scoped_temp_file.h"
 #include "chromecast/crash/linux/crash_testing_utils.h"
 #include "chromecast/crash/linux/dump_info.h"
-#include "chromecast/crash/linux/synchronized_minidump_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromecast {
@@ -50,7 +51,7 @@ class SynchronizedMinidumpManagerSimple : public SynchronizedMinidumpManager {
   ~SynchronizedMinidumpManagerSimple() override {}
 
   void SetDumpInfoToWrite(scoped_ptr<DumpInfo> dump_info) {
-    dump_info_ = dump_info.Pass();
+    dump_info_ = std::move(dump_info);
   }
 
   int DoWorkLocked() { return AcquireLockAndDoWork(); }
