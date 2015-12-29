@@ -52,6 +52,12 @@ scoped_refptr<CertificatePolicyCache> BrowserState::GetCertificatePolicyCache(
 }
 
 // static
+bool BrowserState::HasActiveStateManager(BrowserState* browser_state) {
+  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  return browser_state->GetUserData(kActiveStateManagerKeyName) != nullptr;
+}
+
+// static
 ActiveStateManager* BrowserState::GetActiveStateManager(
     BrowserState* browser_state) {
   DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);

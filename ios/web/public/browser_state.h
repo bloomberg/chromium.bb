@@ -34,6 +34,10 @@ class BrowserState : public base::SupportsUserData {
   static scoped_refptr<CertificatePolicyCache> GetCertificatePolicyCache(
       BrowserState* browser_state);
 
+  // Returns whether |browser_state| has an associated ActiveStateManager.
+  // Must only be accessed from main thread.
+  static bool HasActiveStateManager(BrowserState* browser_state);
+
   // Returns the ActiveStateManager associated with |browser_state.|
   // Lazily creates one if an ActiveStateManager is not already associated with
   // the |browser_state|. |browser_state| cannot be a nullptr.  Must be accessed
