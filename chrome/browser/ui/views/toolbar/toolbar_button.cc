@@ -142,7 +142,7 @@ void ToolbarButton::OnMouseExited(const ui::MouseEvent& event) {
   // Starting a drag results in a MouseExited, we need to ignore it.
   // A right click release triggers an exit event. We want to
   // remain in a PUSHED state until the drop down menu closes.
-  if (state_ != STATE_DISABLED && !InDrag() && state_ != STATE_PRESSED)
+  if (state() != STATE_DISABLED && !InDrag() && state() != STATE_PRESSED)
     SetState(STATE_NORMAL);
 }
 
@@ -295,7 +295,7 @@ void ToolbarButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
   SetMouseHandler(nullptr);
 
   // Set the state back to normal after the drop down menu is closed.
-  if (state_ != STATE_DISABLED)
+  if (state() != STATE_DISABLED)
     SetState(STATE_NORMAL);
 }
 

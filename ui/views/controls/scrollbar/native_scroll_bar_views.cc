@@ -96,7 +96,7 @@ ui::NativeTheme::ExtraParams
     ScrollBarButton::GetNativeThemeParams() const {
   ui::NativeTheme::ExtraParams params;
 
-  switch (state_) {
+  switch (state()) {
     case CustomButton::STATE_HOVERED:
       params.scrollbar_arrow.is_hovering = true;
       break;
@@ -119,32 +119,29 @@ ui::NativeTheme::Part
       return ui::NativeTheme::kScrollbarLeftArrow;
     case RIGHT:
       return ui::NativeTheme::kScrollbarRightArrow;
-    default:
-      return ui::NativeTheme::kScrollbarUpArrow;
   }
+
+  NOTREACHED();
+  return ui::NativeTheme::kScrollbarUpArrow;
 }
 
 ui::NativeTheme::State
     ScrollBarButton::GetNativeThemeState() const {
-  ui::NativeTheme::State state;
-
-  switch (state_) {
+  switch (state()) {
     case CustomButton::STATE_HOVERED:
-      state = ui::NativeTheme::kHovered;
-      break;
+      return ui::NativeTheme::kHovered;
     case CustomButton::STATE_PRESSED:
-      state = ui::NativeTheme::kPressed;
-      break;
+      return ui::NativeTheme::kPressed;
     case CustomButton::STATE_DISABLED:
-      state = ui::NativeTheme::kDisabled;
-      break;
+      return ui::NativeTheme::kDisabled;
     case CustomButton::STATE_NORMAL:
-    default:
-      state = ui::NativeTheme::kNormal;
+      return ui::NativeTheme::kNormal;
+    case CustomButton::STATE_COUNT:
       break;
   }
 
-  return state;
+  NOTREACHED();
+  return ui::NativeTheme::kNormal;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -197,25 +194,21 @@ ui::NativeTheme::Part ScrollBarThumb::GetNativeThemePart() const {
 }
 
 ui::NativeTheme::State ScrollBarThumb::GetNativeThemeState() const {
-  ui::NativeTheme::State state;
-
   switch (GetState()) {
     case CustomButton::STATE_HOVERED:
-      state = ui::NativeTheme::kHovered;
-      break;
+      return ui::NativeTheme::kHovered;
     case CustomButton::STATE_PRESSED:
-      state = ui::NativeTheme::kPressed;
-      break;
+      return ui::NativeTheme::kPressed;
     case CustomButton::STATE_DISABLED:
-      state = ui::NativeTheme::kDisabled;
-      break;
+      return ui::NativeTheme::kDisabled;
     case CustomButton::STATE_NORMAL:
-    default:
-      state = ui::NativeTheme::kNormal;
+      return ui::NativeTheme::kNormal;
+    case CustomButton::STATE_COUNT:
       break;
   }
 
-  return state;
+  NOTREACHED();
+  return ui::NativeTheme::kNormal;
 }
 
 }  // namespace

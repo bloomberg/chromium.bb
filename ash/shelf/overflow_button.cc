@@ -71,9 +71,9 @@ void OverflowButton::PaintBackground(gfx::Canvas* canvas, int alpha) {
   SkPaint paint;
   paint.setAntiAlias(true);
   paint.setStyle(SkPaint::kFill_Style);
-  paint.setColor(SkColorSetARGB(
-      kButtonHoverAlpha * hover_animation_->GetCurrentValue(),
-      0, 0, 0));
+  paint.setColor(
+      SkColorSetA(SK_ColorBLACK,
+                  hover_animation().CurrentValueBetween(0, kButtonHoverAlpha)));
 
   const SkScalar radius = SkIntToScalar(kButtonCornerRadius);
   SkPath path;

@@ -110,9 +110,11 @@ const char* FrameCaptionButton::GetClassName() const {
 }
 
 void FrameCaptionButton::OnPaint(gfx::Canvas* canvas) {
-  if (hover_animation_->is_animating() || state() == STATE_HOVERED) {
-    int hovered_background_alpha = hover_animation_->is_animating() ?
-        hover_animation_->CurrentValueBetween(0, 255) : 255;
+  if (hover_animation().is_animating() || state() == STATE_HOVERED) {
+    int hovered_background_alpha =
+        hover_animation().is_animating()
+            ? hover_animation().CurrentValueBetween(0, 255)
+            : 255;
     SkPaint paint;
     paint.setAlpha(hovered_background_alpha);
     canvas->DrawImageInt(hovered_background_image_, 0, 0, paint);
@@ -173,9 +175,9 @@ void FrameCaptionButton::PaintCentered(gfx::Canvas* canvas,
   if (!paint_as_active_) {
     // Paint icons as active when they are hovered over or pressed.
     double inactive_alpha = kInactiveIconAlpha;
-    if (hover_animation_->is_animating()) {
+    if (hover_animation().is_animating()) {
       inactive_alpha =
-          hover_animation_->CurrentValueBetween(inactive_alpha, 1.0f);
+          hover_animation().CurrentValueBetween(inactive_alpha, 1.0f);
     } else if (state() == STATE_PRESSED || state() == STATE_HOVERED) {
       inactive_alpha = 1.0f;
     }

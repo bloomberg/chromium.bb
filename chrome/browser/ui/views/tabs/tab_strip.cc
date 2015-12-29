@@ -313,7 +313,6 @@ class NewTabButton : public views::ImageButton,
   // Paints the fill region of the button into |canvas|, according to the
   // supplied values from GetImage() and the given |fill| path.
   void PaintFill(bool pressed,
-                 double hover_value,
                  float scale,
                  const SkPath& fill,
                  gfx::Canvas* canvas) const;
@@ -378,10 +377,6 @@ void NewTabButton::OnPaint(gfx::Canvas* canvas) {
   canvas->Translate(gfx::Vector2d(0, height() - visible_height));
 
   const bool pressed = state() == views::CustomButton::STATE_PRESSED;
-  double hover_value =
-      (state() == views::CustomButton::STATE_HOVERED) ? 1 : 0;
-  if (hover_animation_->is_animating())
-    hover_value = hover_animation_->GetCurrentValue();
   const float scale = canvas->image_scale();
 
   SkPath fill;
@@ -401,7 +396,7 @@ void NewTabButton::OnPaint(gfx::Canvas* canvas) {
     fill.rLineTo(diag_width, diag_height);
     fill.rCubicTo(0, 0.5 * scale, -0.25 * scale, scale, -scale, scale);
     fill.close();
-    PaintFill(pressed, hover_value, scale, fill, canvas);
+    PaintFill(pressed, scale, fill, canvas);
 
     // Stroke.
     gfx::ScopedCanvas scoped_canvas(canvas);
@@ -433,7 +428,7 @@ void NewTabButton::OnPaint(gfx::Canvas* canvas) {
         scale : ui::GetScaleForScaleFactor(ui::SCALE_FACTOR_100P);
     gfx::Canvas fill_canvas(GetLayoutSize(NEW_TAB_BUTTON), fill_canvas_scale,
                             false);
-    PaintFill(pressed, hover_value, fill_canvas_scale, fill, &fill_canvas);
+    PaintFill(pressed, fill_canvas_scale, fill, &fill_canvas);
     gfx::ImageSkia image(fill_canvas.ExtractImageRep());
     canvas->DrawImageInt(
         gfx::ImageSkiaOperations::CreateMaskedImage(image, *mask), 0, 0);
@@ -527,7 +522,6 @@ void NewTabButton::GetBorderPath(float button_y,
 }
 
 void NewTabButton::PaintFill(bool pressed,
-                             double hover_value,
                              float scale,
                              const SkPath& fill,
                              gfx::Canvas* canvas) const {
@@ -606,12 +600,10 @@ void NewTabButton::PaintFill(bool pressed,
   }
 
   // White highlight on hover.
-  if (hover_value) {
-    const int alpha =
-        gfx::Tween::LinearIntValueBetween(hover_value, 0x00, md ? 0x4D : 0x40);
-    canvas->FillRect(GetLocalBounds(),
-                     SkColorSetA(SK_ColorWHITE, static_cast<SkAlpha>(alpha)));
-  }
+  const SkAlpha alpha = static_cast<SkAlpha>(
+      hover_animation().CurrentValueBetween(0x00, md ? 0x4D : 0x40));
+  if (alpha != SK_AlphaTRANSPARENT)
+    canvas->FillRect(GetLocalBounds(), SkColorSetA(SK_ColorWHITE, alpha));
 
   // For MD, most states' opacities are adjusted using an opacity recorder in
   // TabStrip::PaintChildren(), but the pressed state is excluded there and

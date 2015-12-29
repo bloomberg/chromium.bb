@@ -149,7 +149,7 @@ bool MediaIndicatorButton::OnMousePressed(const ui::MouseEvent& event) {
   // pressed or when any modifier keys are being held down.  Instead, the Tab
   // should react (e.g., middle-click for close, right-click for context menu).
   if (event.flags() != ui::EF_LEFT_MOUSE_BUTTON) {
-    if (state_ != views::CustomButton::STATE_DISABLED)
+    if (state() != views::CustomButton::STATE_DISABLED)
       SetState(views::CustomButton::STATE_NORMAL);  // Turn off hover.
     return false;  // Event to be handled by Tab.
   }
@@ -167,7 +167,7 @@ bool MediaIndicatorButton::OnMouseDragged(const ui::MouseEvent& event) {
 
 void MediaIndicatorButton::OnMouseEntered(const ui::MouseEvent& event) {
   // If any modifier keys are being held down, do not turn on hover.
-  if (state_ != views::CustomButton::STATE_DISABLED &&
+  if (state() != views::CustomButton::STATE_DISABLED &&
       event.flags() != ui::EF_NONE) {
     SetState(views::CustomButton::STATE_NORMAL);
     return;
@@ -177,7 +177,7 @@ void MediaIndicatorButton::OnMouseEntered(const ui::MouseEvent& event) {
 
 void MediaIndicatorButton::OnMouseMoved(const ui::MouseEvent& event) {
   // If any modifier keys are being held down, turn off hover.
-  if (state_ != views::CustomButton::STATE_DISABLED &&
+  if (state() != views::CustomButton::STATE_DISABLED &&
       event.flags() != ui::EF_NONE) {
     SetState(views::CustomButton::STATE_NORMAL);
     return;

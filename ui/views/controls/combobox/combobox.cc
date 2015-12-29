@@ -101,7 +101,7 @@ class TransparentButton : public CustomButton {
   }
 
   double GetAnimationValue() const {
-    return hover_animation_->GetCurrentValue();
+    return hover_animation().GetCurrentValue();
   }
 
  private:

@@ -501,7 +501,7 @@ ui::NativeTheme::State LabelButton::GetThemeState(
 }
 
 const gfx::Animation* LabelButton::GetThemeAnimation() const {
-  return hover_animation_.get();
+  return &hover_animation();
 }
 
 ui::NativeTheme::State LabelButton::GetBackgroundThemeState(

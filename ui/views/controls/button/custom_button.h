@@ -9,12 +9,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/throb_animation.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/controls/button/button.h"
-
-namespace gfx {
-class ThrobAnimation;
-}
 
 namespace views {
 
@@ -147,17 +144,19 @@ class VIEWS_EXPORT CustomButton : public Button,
   void NotifyClick(const ui::Event& event) override;
   void OnClickCanceled(const ui::Event& event) override;
 
-  // The button state (defined in implementation)
-  ButtonState state_;
-
-  // Hover animation.
-  scoped_ptr<gfx::ThrobAnimation> hover_animation_;
+  const gfx::ThrobAnimation& hover_animation() const {
+    return hover_animation_;
+  }
 
  private:
   // Returns true if this is not a top level widget. Virtual for tests.
   virtual bool IsChildWidget() const;
   // Returns true if the focus is not in a top level widget. Virtual for tests.
   virtual bool FocusInChildWidget() const;
+
+  ButtonState state_;
+
+  gfx::ThrobAnimation hover_animation_;
 
   // Should we animate when the state changes? Defaults to true.
   bool animate_on_state_change_;

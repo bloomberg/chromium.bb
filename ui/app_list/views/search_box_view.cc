@@ -105,7 +105,7 @@ class SearchBoxImageButton : public views::ImageButton {
  private:
   // views::View overrides:
   void OnPaintBackground(gfx::Canvas* canvas) override {
-    if (state_ == STATE_HOVERED || state_ == STATE_PRESSED || selected_)
+    if (state() == STATE_HOVERED || state() == STATE_PRESSED || selected_)
       canvas->FillRect(gfx::Rect(size()), kSelectedColor);
   }
 

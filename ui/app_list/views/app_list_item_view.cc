@@ -144,11 +144,11 @@ void AppListItemView::SetIcon(const gfx::ImageSkia& icon) {
   shadow_animator_.SetOriginalImage(resized);
 }
 
-void AppListItemView::SetUIState(UIState state) {
-  if (ui_state_ == state)
+void AppListItemView::SetUIState(UIState ui_state) {
+  if (ui_state_ == ui_state)
     return;
 
-  ui_state_ = state;
+  ui_state_ = ui_state;
 
   switch (ui_state_) {
     case UI_STATE_NORMAL:
@@ -467,14 +467,14 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
       }
       break;
     case ui::ET_GESTURE_TAP_DOWN:
-      if (::switches::IsTouchFeedbackEnabled() && state_ != STATE_DISABLED) {
+      if (::switches::IsTouchFeedbackEnabled() && state() != STATE_DISABLED) {
         SetState(STATE_PRESSED);
         event->SetHandled();
       }
       break;
     case ui::ET_GESTURE_TAP:
     case ui::ET_GESTURE_TAP_CANCEL:
-      if (::switches::IsTouchFeedbackEnabled() && state_ != STATE_DISABLED)
+      if (::switches::IsTouchFeedbackEnabled() && state() != STATE_DISABLED)
         SetState(STATE_NORMAL);
       break;
     case ui::ET_GESTURE_LONG_PRESS:
