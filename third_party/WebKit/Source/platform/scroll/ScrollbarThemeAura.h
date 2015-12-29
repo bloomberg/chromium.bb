@@ -40,8 +40,6 @@ public:
     int scrollbarThickness(ScrollbarControlSize) override;
 
 protected:
-    bool shouldRepaintAllPartsOnInvalidation() const override;
-    ScrollbarPart invalidateOnThumbPositionChange(const ScrollbarThemeClient&, float oldPosition, float newPosition) const override;
     void paintTrackPiece(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&, ScrollbarPart) override;
     void paintButton(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&, ScrollbarPart) override;
     void paintThumb(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) override;

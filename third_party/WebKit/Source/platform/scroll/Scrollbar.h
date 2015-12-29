@@ -94,15 +94,7 @@ public:
     void setEnabled(bool) override;
 
     // Called by the ScrollableArea when the scroll offset changes.
-    //
-    // Will invalidate the scrollbar if either the track or the thumb is
-    // invalidated. The caller is responsible for issuing paint invalidations
-    // when only the thumb position changes, as the scrollbar is unaware of
-    // whether the thumb can be moved without repainting.
-    //
-    // Returns true if the scrollbar's offset was actually updated, so that the
-    // caller can issue additional invalidations as needed.
-    bool offsetDidChange();
+    void offsetDidChange();
 
     void disconnectFromScrollableArea();
     ScrollableArea* scrollableArea() const { return m_scrollableArea; }
@@ -149,7 +141,6 @@ public:
     float elasticOverscroll() const override { return m_elasticOverscroll; }
     void setElasticOverscroll(float elasticOverscroll) override { m_elasticOverscroll = elasticOverscroll; }
 
-    // Use setNeedsPaintInvalidation to cause scrollbar parts to repaint.
     bool trackNeedsRepaint() const { return m_trackNeedsRepaint; }
     void setTrackNeedsRepaint(bool trackNeedsRepaint) { m_trackNeedsRepaint = trackNeedsRepaint; }
     bool thumbNeedsRepaint() const { return m_thumbNeedsRepaint; }
@@ -163,9 +154,7 @@ public:
     // TODO(chrishtr): fix this.
     IntRect visualRect() const override { return IntRect(); }
 
-    // Marks the specified parts of the scrollbar as needing paint invalidation.
-    // Uses the associated ScrollableArea to cause invalidation.
-    void setNeedsPaintInvalidation(ScrollbarPart = AllParts);
+    void setNeedsPaintInvalidation();
 
     // Promptly unregister from the theme manager + run finalizers of derived Scrollbars.
     EAGERLY_FINALIZE();
@@ -177,6 +166,7 @@ public:
 protected:
     Scrollbar(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize, ScrollbarTheme* = 0);
 
+    void updateThumb();
 
     void autoscrollTimerFired(Timer<Scrollbar>*);
     void startTimerIfNeeded(double delay);
@@ -216,6 +206,9 @@ private:
     void invalidateRect(const IntRect&) override { setNeedsPaintInvalidation(); }
 
     float scrollableAreaCurrentPos() const;
+
+    void updateThumbPosition();
+    void updateThumbProportion();
 
     bool m_trackNeedsRepaint;
     bool m_thumbNeedsRepaint;

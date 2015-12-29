@@ -70,7 +70,6 @@ public:
 
     virtual bool invalidateOnMouseEnterExit() { return false; }
     virtual bool invalidateOnWindowActiveChange() const { return false; }
-    virtual ScrollbarPart invalidateOnThumbPositionChange(const ScrollbarThemeClient&, float oldPosition, float newPosition) const { return AllParts; }
 
     virtual void paintScrollCorner(GraphicsContext&, const DisplayItemClient&, const IntRect& cornerRect);
     virtual void paintTickmarks(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) { }

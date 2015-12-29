@@ -43,88 +43,10 @@
 
 namespace blink {
 
-namespace {
-
 static bool useMockTheme()
 {
     return LayoutTestSupport::isRunningLayoutTest();
 }
-
-// Contains a flag indicating whether WebThemeEngine should paint a UI widget
-// for a scrollbar part, and if so, what part and state apply.
-//
-// If the PartPaintingParams are not affected by a change in the scrollbar
-// state, then the corresponding scrollbar part does not need to be repainted.
-struct PartPaintingParams {
-    PartPaintingParams()
-        : shouldPaint(false)
-        , part(WebThemeEngine::PartScrollbarDownArrow)
-        , state(WebThemeEngine::StateNormal) {}
-    PartPaintingParams(WebThemeEngine::Part part, WebThemeEngine::State state)
-        : shouldPaint(true)
-        , part(part)
-        , state(state) {}
-
-    bool shouldPaint;
-    WebThemeEngine::Part part;
-    WebThemeEngine::State state;
-};
-
-bool operator==(const PartPaintingParams& a, const PartPaintingParams& b)
-{
-    return (!a.shouldPaint && !b.shouldPaint) || std::tie(a.shouldPaint, a.part, a.state) == std::tie(b.shouldPaint, b.part, b.state);
-}
-
-bool operator!=(const PartPaintingParams& a, const PartPaintingParams& b)
-{
-    return !(a == b);
-}
-
-PartPaintingParams buttonPartPaintingParams(const ScrollbarThemeClient& scrollbar, float position, ScrollbarPart part)
-{
-    WebThemeEngine::Part paintPart;
-    WebThemeEngine::State state = WebThemeEngine::StateNormal;
-    bool checkMin = false;
-    bool checkMax = false;
-
-    if (scrollbar.orientation() == HorizontalScrollbar) {
-        if (part == BackButtonStartPart) {
-            paintPart = WebThemeEngine::PartScrollbarLeftArrow;
-            checkMin = true;
-        } else if (useMockTheme() && part != ForwardButtonEndPart) {
-            return PartPaintingParams();
-        } else {
-            paintPart = WebThemeEngine::PartScrollbarRightArrow;
-            checkMax = true;
-        }
-    } else {
-        if (part == BackButtonStartPart) {
-            paintPart = WebThemeEngine::PartScrollbarUpArrow;
-            checkMin = true;
-        } else if (useMockTheme() && part != ForwardButtonEndPart) {
-            return PartPaintingParams();
-        } else {
-            paintPart = WebThemeEngine::PartScrollbarDownArrow;
-            checkMax = true;
-        }
-    }
-
-    if (useMockTheme() && !scrollbar.enabled()) {
-        state = WebThemeEngine::StateDisabled;
-    } else if (!useMockTheme() && ((checkMin && (position <= 0))
-        || (checkMax && position >= scrollbar.maximum()))) {
-        state = WebThemeEngine::StateDisabled;
-    } else {
-        if (part == scrollbar.pressedPart())
-            state = WebThemeEngine::StatePressed;
-        else if (part == scrollbar.hoveredPart())
-            state = WebThemeEngine::StateHover;
-    }
-
-    return PartPaintingParams(paintPart, state);
-}
-
-} // namespace
 
 ScrollbarTheme& ScrollbarTheme::nativeTheme()
 {
@@ -145,24 +67,6 @@ int ScrollbarThemeAura::scrollbarThickness(ScrollbarControlSize controlSize)
         return 15;
     IntSize scrollbarSize = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartScrollbarVerticalTrack);
     return scrollbarSize.width();
-}
-
-bool ScrollbarThemeAura::shouldRepaintAllPartsOnInvalidation() const
-{
-    // This theme can separately handle thumb invalidation.
-    return false;
-}
-
-ScrollbarPart ScrollbarThemeAura::invalidateOnThumbPositionChange(const ScrollbarThemeClient& scrollbar, float oldPosition, float newPosition) const
-{
-    ScrollbarPart invalidParts = NoPart;
-    ASSERT(buttonsPlacement() == WebScrollbarButtonsPlacementSingle);
-    static const ScrollbarPart kButtonParts[] = {BackButtonStartPart, ForwardButtonEndPart};
-    for (ScrollbarPart part : kButtonParts) {
-        if (buttonPartPaintingParams(scrollbar, oldPosition, part) != buttonPartPaintingParams(scrollbar, newPosition, part))
-            invalidParts = static_cast<ScrollbarPart>(invalidParts | part);
-    }
-    return invalidParts;
 }
 
 void ScrollbarThemeAura::paintTrackPiece(GraphicsContext& gc, const ScrollbarThemeClient& scrollbar, const IntRect& rect, ScrollbarPart partType)
@@ -190,14 +94,51 @@ void ScrollbarThemeAura::paintTrackPiece(GraphicsContext& gc, const ScrollbarThe
 
 void ScrollbarThemeAura::paintButton(GraphicsContext& gc, const ScrollbarThemeClient& scrollbar, const IntRect& rect, ScrollbarPart part)
 {
+    WebThemeEngine::Part paintPart;
+    WebThemeEngine::State state = WebThemeEngine::StateNormal;
+    bool checkMin = false;
+    bool checkMax = false;
+
+    if (scrollbar.orientation() == HorizontalScrollbar) {
+        if (part == BackButtonStartPart) {
+            paintPart = WebThemeEngine::PartScrollbarLeftArrow;
+            checkMin = true;
+        } else if (useMockTheme() && part != ForwardButtonEndPart) {
+            return;
+        } else {
+            paintPart = WebThemeEngine::PartScrollbarRightArrow;
+            checkMax = true;
+        }
+    } else {
+        if (part == BackButtonStartPart) {
+            paintPart = WebThemeEngine::PartScrollbarUpArrow;
+            checkMin = true;
+        } else if (useMockTheme() && part != ForwardButtonEndPart) {
+            return;
+        } else {
+            paintPart = WebThemeEngine::PartScrollbarDownArrow;
+            checkMax = true;
+        }
+    }
+
     DisplayItem::Type displayItemType = buttonPartToDisplayItemType(part);
     if (DrawingRecorder::useCachedDrawingIfPossible(gc, scrollbar, displayItemType))
         return;
-    PartPaintingParams params = buttonPartPaintingParams(scrollbar, scrollbar.currentPos(), part);
-    if (!params.shouldPaint)
-        return;
+
     DrawingRecorder recorder(gc, scrollbar, displayItemType, rect);
-    Platform::current()->themeEngine()->paint(gc.canvas(), params.part, params.state, WebRect(rect), 0);
+
+    if (useMockTheme() && !scrollbar.enabled()) {
+        state = WebThemeEngine::StateDisabled;
+    } else if (!useMockTheme() && ((checkMin && (scrollbar.currentPos() <= 0))
+        || (checkMax && scrollbar.currentPos() >= scrollbar.maximum()))) {
+        state = WebThemeEngine::StateDisabled;
+    } else {
+        if (part == scrollbar.pressedPart())
+            state = WebThemeEngine::StatePressed;
+        else if (part == scrollbar.hoveredPart())
+            state = WebThemeEngine::StateHover;
+    }
+    Platform::current()->themeEngine()->paint(gc.canvas(), paintPart, state, WebRect(rect), 0);
 }
 
 void ScrollbarThemeAura::paintThumb(GraphicsContext& gc, const ScrollbarThemeClient& scrollbar, const IntRect& rect)
