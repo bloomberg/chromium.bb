@@ -376,6 +376,7 @@ cr.define('media_router_container', function() {
       test('initial view with one local route', function() {
         container.allSinks = fakeSinkList;
         container.routeList = fakeRouteList;
+        container.maybeShowRouteDetailsOnOpen();
 
         checkCurrentView(media_router.MediaRouterView.ROUTE_DETAILS);
       });
@@ -403,6 +404,7 @@ cr.define('media_router_container', function() {
       test('view after route is closed remotely', function() {
         container.allSinks = fakeSinkList;
         container.routeList = fakeRouteList;
+        container.maybeShowRouteDetailsOnOpen();
         checkCurrentView(media_router.MediaRouterView.ROUTE_DETAILS);
 
         container.routeList = [];

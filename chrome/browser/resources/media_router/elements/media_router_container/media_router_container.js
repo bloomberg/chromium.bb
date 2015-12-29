@@ -123,15 +123,6 @@ Polymer({
     },
 
     /**
-     * The number of current local routes.
-     * @private {number}
-     */
-    localRouteCount_: {
-      type: Number,
-      value: 0,
-    },
-
-    /**
      * The list of current routes.
      * @type {!Array<!media_router.Route>}
      */
@@ -583,13 +574,24 @@ Polymer({
   /**
    * Updates |currentView_| if the dialog had just opened and there's
    * only one local route.
-   *
-   * @param {?media_router.Route} route A local route.
-   * @private
    */
-  maybeShowRouteDetailsOnOpen_: function(route) {
-    if (this.localRouteCount_ == 1 && this.justOpened_ && route)
-      this.showRouteDetails_(route);
+  maybeShowRouteDetailsOnOpen: function() {
+    var localRoute = null;
+    for (var i = 0; i < this.routeList.length; i++) {
+      var route = this.routeList[i];
+      if (!route.isLocal)
+        continue;
+      if (!localRoute) {
+        localRoute = route;
+      } else {
+        // Don't show route details if there are more than one local route.
+        localRoute = null;
+        break;
+      }
+    }
+
+    if (localRoute)
+      this.showRouteDetails_(localRoute);
   },
 
   /**
@@ -711,12 +713,6 @@ Polymer({
    */
   rebuildRouteMaps_: function() {
     this.routeMap_ = {};
-    this.localRouteCount_ = 0;
-
-    // Keeps track of the last local route we find in |routeList|. If
-    // |localRouteCount_| is eventually equal to one, |localRoute| would be the
-    // only current local route.
-    var localRoute = null;
 
     // Rebuild |sinkToRouteMap_| with a temporary map to avoid firing the
     // computed functions prematurely.
@@ -726,14 +722,6 @@ Polymer({
     this.routeList.forEach(function(route) {
       this.routeMap_[route.id] = route;
       tempSinkToRouteMap[route.sinkId] = route;
-
-      if (route.isLocal) {
-        this.localRouteCount_++;
-
-        // It's OK if localRoute is updated multiple times; it is only used if
-        // |localRouteCount_| == 1, which implies it was only set once.
-        localRoute = route;
-      }
     }, this);
 
     // If |currentRoute_| is no longer active, clear |currentRoute_|. Also
@@ -747,7 +735,6 @@ Polymer({
     }
 
     this.sinkToRouteMap_ = tempSinkToRouteMap;
-    this.maybeShowRouteDetailsOnOpen_(localRoute);
     this.rebuildSinksToShow_();
   },
 

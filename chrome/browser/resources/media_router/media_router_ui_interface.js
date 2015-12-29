@@ -65,6 +65,7 @@ cr.define('media_router.ui', function() {
     container.castModeList = data['castModes'];
     container.allSinks = data['sinks'];
     container.routeList = data['routes'];
+    container.maybeShowRouteDetailsOnOpen();
     media_router.browserApi.onInitialDataReceived();
   }
 
