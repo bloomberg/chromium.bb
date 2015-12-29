@@ -16,7 +16,6 @@
 
 #if !defined(OS_NACL)
 #include <pthread.h>
-#include <sys/prctl.h>
 #include <sys/types.h>
 #include <unistd.h>
 #endif
@@ -36,7 +35,7 @@ const ThreadPriorityToNiceValuePair kThreadPriorityToNiceValueMap[4] = {
     {ThreadPriority::NORMAL, 0},
     {ThreadPriority::DISPLAY, -6},
     {ThreadPriority::REALTIME_AUDIO, -10},
-}
+};
 
 bool SetCurrentThreadPriorityForPlatform(ThreadPriority priority) {
 #if !defined(OS_NACL)
