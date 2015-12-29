@@ -1150,18 +1150,18 @@ void RenderThreadImpl::InitializeCompositorThread() {
   }
 #endif
   if (!compositor_task_runner_.get()) {
-    base::Thread::Options options;
+
+    compositor_thread_.reset(new base::Thread("Compositor"));
+    base::Thread::Options compositor_thread_options;
 #if defined(OS_ANDROID)
-    options.priority = base::ThreadPriority::DISPLAY;
+    compositor_thread_options.priority = base::ThreadPriority::DISPLAY;
 #endif
-    compositor_thread_ =
-        blink_platform_impl_->createThreadWithOptions("Compositor", options);
-    compositor_task_runner_ = compositor_thread_->TaskRunner();
+    compositor_thread_->StartWithOptions(compositor_thread_options);
+    compositor_task_runner_ = compositor_thread_->task_runner();
     compositor_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(base::IgnoreResult(&ThreadRestrictions::SetIOAllowed),
                    false));
-    blink_platform_impl_->set_compositor_thread(compositor_thread_.get());
   }
 
   InputHandlerManagerClient* input_handler_manager_client = NULL;

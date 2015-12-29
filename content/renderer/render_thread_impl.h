@@ -600,7 +600,7 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_ptr<base::Thread> file_thread_;
 
   // May be null if overridden by ContentRendererClient.
-  scoped_ptr<scheduler::WebThreadBase> compositor_thread_;
+  scoped_ptr<base::Thread> compositor_thread_;
 
   // Utility class to provide GPU functionalities to media.
   scoped_ptr<content::RendererGpuVideoAcceleratorFactories> gpu_factories_;
