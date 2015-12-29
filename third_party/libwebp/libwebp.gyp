@@ -43,31 +43,110 @@
       'include_dirs': ['.'],
       'sources': [
         'dsp/alpha_processing.c',
-        'dsp/alpha_processing_sse2.c',
+        'dsp/alpha_processing_mips_dsp_r2.c',
+        'dsp/argb.c',
+        'dsp/argb_mips_dsp_r2.c',
+        'dsp/cost.c',
+        'dsp/cost_mips32.c',
+        'dsp/cost_mips_dsp_r2.c',
         'dsp/cpu.c',
         'dsp/dec.c',
         'dsp/dec_clip_tables.c',
         'dsp/dec_mips32.c',
-        'dsp/dec_sse2.c',
+        'dsp/dec_mips_dsp_r2.c',
         'dsp/enc.c',
         'dsp/enc_avx2.c',
         'dsp/enc_mips32.c',
-        'dsp/enc_sse2.c',
+        'dsp/enc_mips_dsp_r2.c',
+        'dsp/filters.c',
+        'dsp/filters_mips_dsp_r2.c',
         'dsp/lossless.c',
-        'dsp/lossless_mips32.c',
-        'dsp/lossless_sse2.c',
+        'dsp/lossless_enc.c',
+        'dsp/lossless_enc_mips32.c',
+        'dsp/lossless_enc_mips_dsp_r2.c',
+        'dsp/lossless_mips_dsp_r2.c',
+        'dsp/rescaler.c',
+        'dsp/rescaler_mips32.c',
+        'dsp/rescaler_mips_dsp_r2.c',
         'dsp/upsampling.c',
-        'dsp/upsampling_sse2.c',
+        'dsp/upsampling_mips_dsp_r2.c',
         'dsp/yuv.c',
         'dsp/yuv_mips32.c',
-        'dsp/yuv_sse2.c',
+        'dsp/yuv_mips_dsp_r2.c',
       ],
       'dependencies' : [
+        'libwebp_dsp_sse2',
+        'libwebp_dsp_sse41',
         'libwebp_utils',
       ],
       'conditions': [
         ['OS == "android"', {
           'dependencies': [ '../../build/android/ndk.gyp:cpu_features' ],
+        }],
+        ['target_arch=="ia32" or target_arch=="x64"', {
+          'defines': [ 'WEBP_HAVE_SSE2', 'WEBP_HAVE_SSE41' ],
+        }],
+        ['order_profiling != 0', {
+          'target_conditions' : [
+            ['_toolset=="target"', {
+              'cflags!': [ '-finstrument-functions' ],
+            }],
+          ],
+        }],
+      ],
+    },
+    {
+      'target_name': 'libwebp_dsp_sse2',
+      'type': 'static_library',
+      'include_dirs': ['.'],
+      'sources': [
+        'dsp/alpha_processing_sse2.c',
+        'dsp/argb_sse2.c',
+        'dsp/cost_sse2.c',
+        'dsp/dec_sse2.c',
+        'dsp/enc_sse2.c',
+        'dsp/filters_sse2.c',
+        'dsp/lossless_enc_sse2.c',
+        'dsp/lossless_sse2.c',
+        'dsp/rescaler_sse2.c',
+        'dsp/upsampling_sse2.c',
+        'dsp/yuv_sse2.c',
+      ],
+      'conditions': [
+        ['(target_arch=="ia32" or target_arch=="x64") and msan==0', {
+          'cflags': [ '-msse2', ],
+          'xcode_settings': { 'OTHER_CFLAGS': [ '-msse2' ] },
+        }],
+        ['order_profiling != 0', {
+          'target_conditions' : [
+            ['_toolset=="target"', {
+              'cflags!': [ '-finstrument-functions' ],
+            }],
+          ],
+        }],
+      ],
+    },
+    {
+      'target_name': 'libwebp_dsp_sse41',
+      'type': 'static_library',
+      'include_dirs': ['.'],
+      'sources': [
+        'dsp/alpha_processing_sse41.c',
+        'dsp/dec_sse41.c',
+        'dsp/enc_sse41.c',
+        'dsp/lossless_enc_sse41.c',
+      ],
+      'conditions': [
+        ['OS=="win" and clang==1', {
+          # cl.exe's /arch flag doesn't have a setting for SSSE3/4, and cl.exe
+          # doesn't need it for intrinsics. clang-cl does need it, though.
+          'msvs_settings': {
+            'VCCLCompilerTool': { 'AdditionalOptions': [ '-msse4.1' ] },
+          },
+        }],
+        ['(target_arch=="ia32" or target_arch=="x64") and msan==0', {
+          'cflags': [ '-msse4.1', ],
+          'xcode_settings': { 'OTHER_CFLAGS': [ '-msse4.1' ] },
         }],
         ['order_profiling != 0', {
           'target_conditions' : [
@@ -95,7 +174,9 @@
           'sources': [
             'dsp/dec_neon.c',
             'dsp/enc_neon.c',
+            'dsp/lossless_enc_neon.c',
             'dsp/lossless_neon.c',
+            'dsp/rescaler_neon.c',
             'dsp/upsampling_neon.c',
           ],
           'conditions': [
@@ -131,10 +212,12 @@
         'enc/backward_references.c',
         'enc/config.c',
         'enc/cost.c',
+        'enc/delta_palettization.c',
         'enc/filter.c',
         'enc/frame.c',
         'enc/histogram.c',
         'enc/iterator.c',
+        'enc/near_lossless.c',
         'enc/picture.c',
         'enc/picture_csp.c',
         'enc/picture_psnr.c',
@@ -174,14 +257,6 @@
           # See https://code.google.com/p/webp/issues/detail?id=253.
           '-Wno-incompatible-pointer-types',
         ]
-      },
-      'direct_dependent_settings': {
-        'variables': {
-          'clang_warning_flags': [
-            # See https://code.google.com/p/webp/issues/detail?id=253.
-            '-Wno-incompatible-pointer-types',
-          ]
-        },
       },
     },
     {

@@ -1,4 +1,4 @@
-// Copyright 2014 Google Inc. All Rights Reserved.
+// Copyright 2015 Google Inc. All Rights Reserved.
 //
 // Use of this source code is governed by a BSD-style license
 // that can be found in the COPYING file in the root of the source
@@ -21,10 +21,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define APPROX_LOG_WITH_CORRECTION_MAX  65536
-#define APPROX_LOG_MAX                   4096
-#define LOG_2_RECIPROCAL 1.44269504088896338700465094007086
 
 static float FastSLog2Slow(uint32_t v) {
   assert(v >= LOG_LOOKUP_IDX_MAX);
@@ -217,58 +213,31 @@ static double ExtraCostCombined(const uint32_t* const X,
   );
 
 // Returns the various RLE counts
-static VP8LStreaks HuffmanCostCount(const uint32_t* population, int length) {
-  int i;
-  int streak = 0;
-  VP8LStreaks stats;
-  int* const pstreaks = &stats.streaks[0][0];
-  int* const pcnts = &stats.counts[0];
+static WEBP_INLINE void GetEntropyUnrefinedHelper(
+    uint32_t val, int i, uint32_t* const val_prev, int* const i_prev,
+    VP8LBitEntropy* const bit_entropy, VP8LStreaks* const stats) {
+  int* const pstreaks = &stats->streaks[0][0];
+  int* const pcnts = &stats->counts[0];
   int temp0, temp1, temp2, temp3;
-  memset(&stats, 0, sizeof(stats));
-  for (i = 0; i < length - 1; ++i) {
-    ++streak;
-    if (population[i] == population[i + 1]) {
-      continue;
+  const int streak = i - *i_prev;
+
+  // Gather info for the bit entropy.
+  if (*val_prev != 0) {
+    bit_entropy->sum += (*val_prev) * streak;
+    bit_entropy->nonzeros += streak;
+    bit_entropy->nonzero_code = *i_prev;
+    bit_entropy->entropy -= VP8LFastSLog2(*val_prev) * streak;
+    if (bit_entropy->max_val < *val_prev) {
+      bit_entropy->max_val = *val_prev;
     }
-    temp0 = (population[i] != 0);
-    HUFFMAN_COST_PASS
-    streak = 0;
   }
-  ++streak;
-  temp0 = (population[i] != 0);
+
+  // Gather info for the Huffman cost.
+  temp0 = (*val_prev != 0);
   HUFFMAN_COST_PASS
 
-  return stats;
-}
-
-static VP8LStreaks HuffmanCostCombinedCount(const uint32_t* X,
-                                            const uint32_t* Y, int length) {
-  int i;
-  int streak = 0;
-  VP8LStreaks stats;
-  int* const pstreaks = &stats.streaks[0][0];
-  int* const pcnts = &stats.counts[0];
-  int temp0, temp1, temp2, temp3;
-  memset(&stats, 0, sizeof(stats));
-  for (i = 0; i < length - 1; ++i) {
-    const uint32_t xy = X[i] + Y[i];
-    const uint32_t xy_next = X[i + 1] + Y[i + 1];
-    ++streak;
-    if (xy == xy_next) {
-      continue;
-    }
-    temp0 = (xy != 0);
-    HUFFMAN_COST_PASS
-    streak = 0;
-  }
-  {
-    const uint32_t xy = X[i] + Y[i];
-    ++streak;
-    temp0 = (xy != 0);
-    HUFFMAN_COST_PASS
-  }
-
-  return stats;
+  *val_prev = val;
+  *i_prev = i;
 }
 
 #define ASM_START                                       \
@@ -396,21 +365,22 @@ static void HistogramAdd(const VP8LHistogram* const a,
 #undef ADD_TO_OUT
 #undef ASM_START
 
-#endif  // WEBP_USE_MIPS32
-
 //------------------------------------------------------------------------------
 // Entry point
 
-extern void VP8LDspInitMIPS32(void);
+extern void VP8LEncDspInitMIPS32(void);
 
-void VP8LDspInitMIPS32(void) {
-#if defined(WEBP_USE_MIPS32)
+WEBP_TSAN_IGNORE_FUNCTION void VP8LEncDspInitMIPS32(void) {
   VP8LFastSLog2Slow = FastSLog2Slow;
   VP8LFastLog2Slow = FastLog2Slow;
   VP8LExtraCost = ExtraCost;
   VP8LExtraCostCombined = ExtraCostCombined;
-  VP8LHuffmanCostCount = HuffmanCostCount;
-  VP8LHuffmanCostCombinedCount = HuffmanCostCombinedCount;
+  VP8LGetEntropyUnrefinedHelper = GetEntropyUnrefinedHelper;
   VP8LHistogramAdd = HistogramAdd;
-#endif  // WEBP_USE_MIPS32
 }
+
+#else  // !WEBP_USE_MIPS32
+
+WEBP_DSP_INIT_STUB(VP8LEncDspInitMIPS32)
+
+#endif  // WEBP_USE_MIPS32

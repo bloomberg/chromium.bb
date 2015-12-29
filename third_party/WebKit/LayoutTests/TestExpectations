@@ -1351,3 +1351,13 @@ crbug.com/572723 [ Linux Mac10.9 ] inspector/sources/debugger/debugger-disable-e
 crbug.com/572723 [ Mac Release ] inspector/sources/debugger/debugger-uncaught-promise-on-pause.html [ Timeout Pass ]
 
 crbug.com/572726 inspector/tracing/timeline-node-reference.html [ Timeout Pass Crash ]
+
+crbug.com/571248 fast/canvas/canvas-toDataURL-webp.html [ NeedsRebaseline ]
+crbug.com/571248 fast/images/webp-color-profile-lossy-alpha.html [ NeedsRebaseline ]
+crbug.com/571248 fast/images/webp-color-profile-lossy.html [ NeedsRebaseline ]
+crbug.com/571248 http/tests/images/webp-partial-load.html [ NeedsRebaseline ]
+crbug.com/571248 http/tests/images/webp-progressive-load.html [ NeedsRebaseline ]
+crbug.com/571248 virtual/display_list_2d_canvas/fast/canvas/canvas-toBlob-webp-maximum-quality.html [ NeedsRebaseline ]
+crbug.com/571248 virtual/display_list_2d_canvas/fast/canvas/canvas-toDataURL-webp.html [ NeedsRebaseline ]
+crbug.com/571248 virtual/gpu/fast/canvas/canvas-toBlob-webp-maximum-quality.html [ NeedsRebaseline ]
+crbug.com/571248 virtual/gpu/fast/canvas/canvas-toDataURL-webp.html [ NeedsRebaseline ]
