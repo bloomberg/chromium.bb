@@ -1352,11 +1352,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
     frame_timing_requests_dirty_ = false;
   }
 
-  bool is_page_scale_layer = this == layer_tree_host()->page_scale_layer();
-  bool parent_affected =
-      layer->parent() && layer->parent()->IsAffectedByPageScale();
-  layer->SetIsAffectedByPageScale(is_page_scale_layer || parent_affected);
-
   // Reset any state that should be cleared for the next update.
   stacking_order_changed_ = false;
   update_rect_ = gfx::Rect();

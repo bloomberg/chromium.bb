@@ -318,6 +318,9 @@ bool AddTransformNodeIfNeeded(
 
   node->data.scrolls = is_scrollable;
   node->data.flattens_inherited_transform = data_for_children->should_flatten;
+
+  if (layer == data_from_ancestor.page_scale_layer)
+    data_for_children->in_subtree_of_page_scale_layer = true;
   node->data.in_subtree_of_page_scale_layer =
       data_for_children->in_subtree_of_page_scale_layer;
 
@@ -628,6 +631,10 @@ void BuildPropertyTreesInternal(
     LayerType* layer,
     const DataForRecursion<LayerType>& data_from_parent) {
   layer->set_property_tree_sequence_number(data_from_parent.sequence_number);
+  if (layer->mask_layer())
+    layer->mask_layer()->set_property_tree_sequence_number(
+        data_from_parent.sequence_number);
+
   DataForRecursion<LayerType> data_for_children(data_from_parent);
 
   bool created_render_surface =
@@ -644,9 +651,6 @@ void BuildPropertyTreesInternal(
       data_from_parent, layer, created_render_surface, &data_for_children);
   AddClipNodeIfNeeded(data_from_parent, layer, created_render_surface,
                       created_transform_node, &data_for_children);
-
-  if (layer == data_from_parent.page_scale_layer)
-    data_for_children.in_subtree_of_page_scale_layer = true;
 
   data_for_children.is_hidden =
       layer->hide_layer_and_subtree() || data_from_parent.is_hidden;
