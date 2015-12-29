@@ -24,7 +24,8 @@
   COLLAPSE_SESSION: 6,
   EXPAND_SESSION: 7,
   OPEN_ALL: 8,
-  LIMIT: 9  // Should always be the last one.
+  HAS_FOREIGN_DATA: 9,
+  LIMIT: 10  // Should always be the last one.
 };
 
 /**
@@ -353,6 +354,7 @@ function DevicesView() {
   this.rowHeights_ = [NB_ENTRIES_FIRST_ROW_COLUMN];
   this.focusGrids_ = [];
   this.updateSignInState(loadTimeData.getBoolean('isUserSignedIn'));
+  this.hasSeenForeignData_ = false;
   recordUmaEvent_(HISTOGRAM_EVENT.INITIALIZED);
 }
 
@@ -379,6 +381,14 @@ DevicesView.prototype.setSessionList = function(sessionList) {
   for (var i = 0; i < sessionList.length; i++)
     this.devices_.push(new Device(sessionList[i], this));
   this.displayResults_();
+
+  // This metric should only be emitted if we see foreign data, and it should
+  // only be emitted once per page refresh. Flip flag to remember because this
+  // method is called upon any update.
+  if (!this.hasSeenForeignData_ && sessionList.length > 0) {
+    this.hasSeenForeignData_ = true;
+    recordUmaEvent_(HISTOGRAM_EVENT.HAS_FOREIGN_DATA);
+  }
 };
 
 

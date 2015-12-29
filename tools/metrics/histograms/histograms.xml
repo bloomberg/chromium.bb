@@ -72159,6 +72159,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="6" label="Collapse Session"/>
   <int value="7" label="Expand Session"/>
   <int value="8" label="Open All"/>
+  <int value="9" label="Has foreign data"/>
 </enum>
 
 <enum name="OverscrollMode" type="int">
