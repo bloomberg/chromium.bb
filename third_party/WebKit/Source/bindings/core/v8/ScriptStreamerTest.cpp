@@ -142,7 +142,13 @@ private:
     bool m_finished;
 };
 
-TEST_F(ScriptStreamingTest, CompilingStreamedScript)
+#if OS(MACOSX) && defined(ADDRESS_SANITIZER)
+// TODO(marja): Fix this test, http://crbug.com/572987
+#define MAYBE_CompilingStreamedScript DISABLED_CompilingStreamedScript
+#else
+#define MAYBE_CompilingStreamedScript CompilingStreamedScript
+#endif
+TEST_F(ScriptStreamingTest, MAYBE_CompilingStreamedScript)
 {
     // Test that we can successfully compile a streamed script.
     ScriptStreamer::startStreaming(pendingScript(), PendingScript::ParsingBlocking, m_settings.get(), m_scope.scriptState(), m_loadingTaskRunner);
@@ -305,7 +311,13 @@ TEST_F(ScriptStreamingTest, SmallScripts)
     EXPECT_FALSE(sourceCode.streamer());
 }
 
-TEST_F(ScriptStreamingTest, ScriptsWithSmallFirstChunk)
+#if OS(MACOSX) && defined(ADDRESS_SANITIZER)
+// TODO(marja): Fix this test, http://crbug.com/572987
+#define MAYBE_ScriptsWithSmallFirstChunk DISABLED_ScriptsWithSmallFirstChunk
+#else
+#define MAYBE_ScriptsWithSmallFirstChunk ScriptsWithSmallFirstChunk
+#endif
+TEST_F(ScriptStreamingTest, MAYBE_ScriptsWithSmallFirstChunk)
 {
     // If a script is long enough, if should be streamed, even if the first data
     // chunk is small.
@@ -335,7 +347,13 @@ TEST_F(ScriptStreamingTest, ScriptsWithSmallFirstChunk)
     EXPECT_FALSE(tryCatch.HasCaught());
 }
 
-TEST_F(ScriptStreamingTest, EncodingChanges)
+#if OS(MACOSX) && defined(ADDRESS_SANITIZER)
+// TODO(marja): Fix this test, http://crbug.com/572987
+#define MAYBE_EncodingChanges DISABLED_EncodingChanges
+#else
+#define MAYBE_EncodingChanges EncodingChanges
+#endif
+TEST_F(ScriptStreamingTest, MAYBE_EncodingChanges)
 {
     // It's possible that the encoding of the Resource changes after we start
     // loading it.
@@ -364,7 +382,13 @@ TEST_F(ScriptStreamingTest, EncodingChanges)
 }
 
 
-TEST_F(ScriptStreamingTest, EncodingFromBOM)
+#if OS(MACOSX) && defined(ADDRESS_SANITIZER)
+// TODO(marja): Fix this test, http://crbug.com/572987
+#define MAYBE_EncodingFromBOM DISABLED_EncodingFromBOM
+#else
+#define MAYBE_EncodingFromBOM EncodingFromBOM
+#endif
+TEST_F(ScriptStreamingTest, MAYBE_EncodingFromBOM)
 {
     // Byte order marks should be removed before giving the data to V8. They
     // will also affect encoding detection.
