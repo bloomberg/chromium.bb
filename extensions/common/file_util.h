@@ -72,9 +72,6 @@ scoped_ptr<base::DictionaryValue> LoadManifest(
     const base::FilePath::CharType* manifest_filename,
     std::string* error);
 
-// Returns true if the given file path exists and is not zero-length.
-bool ValidateFilePath(const base::FilePath& path);
-
 // Returns true if the given extension object is valid and consistent.
 // May also append a series of warning messages to |warnings|, but they
 // should not prevent the extension from running.

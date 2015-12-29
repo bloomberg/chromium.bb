@@ -13,10 +13,7 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
-#include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
-#include "grit/extensions_strings.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {
 
@@ -35,8 +32,7 @@ bool NormalizeAndValidatePath(std::string* path) {
   return true;
 }
 
-bool LoadIconsFromDictionary(Extension* extension,
-                             const base::DictionaryValue* icons_value,
+bool LoadIconsFromDictionary(const base::DictionaryValue* icons_value,
                              ExtensionIconSet* icons,
                              base::string16* error) {
   DCHECK(icons);
@@ -53,23 +49,7 @@ bool LoadIconsFromDictionary(Extension* extension,
       return false;
     }
 
-    // For backwards compatibility, only warn (don't error out) if an icon is
-    // missing. Component extensions can skip this check as their icons are not
-    // located on disk. Unpacked extensions skip this check and fail later
-    // during validation if the file isn't present. See crbug.com/570249
-    // TODO(estade|devlin): remove this workaround and let install fail in the
-    // validate step a few releases after M49. See http://crbug.com/571193
-    if (Manifest::IsComponentLocation(extension->location()) ||
-        Manifest::IsUnpackedLocation(extension->location()) ||
-        file_util::ValidateFilePath(
-            extension->GetResource(icon_path).GetFilePath())) {
-      icons->Add(size, icon_path);
-    } else {
-      extension->AddInstallWarning(InstallWarning(
-          l10n_util::GetStringFUTF8(IDS_EXTENSION_LOAD_ICON_FAILED,
-                                    base::UTF8ToUTF16(icon_path)),
-          std::string()));
-    }
+    icons->Add(size, icon_path);
   }
   return true;
 }

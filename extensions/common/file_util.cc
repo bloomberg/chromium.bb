@@ -56,6 +56,16 @@ enum SafeInstallationFlag {
 };
 SafeInstallationFlag g_use_safe_installation = DEFAULT;
 
+// Returns true if the given file path exists and is not zero-length.
+bool ValidateFilePath(const base::FilePath& path) {
+  int64 size = 0;
+  if (!base::PathExists(path) || !base::GetFileSize(path, &size) || size == 0) {
+    return false;
+  }
+
+  return true;
+}
+
 // Returns true if the extension installation should flush all files and the
 // directory.
 bool UseSafeInstallation() {

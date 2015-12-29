@@ -419,39 +419,19 @@ TEST_F(FileUtilTest, WarnOnPrivateKey) {
                   "extension includes the key file.*ext_root.a_key.pem"));
 }
 
-// Try to install an extension with a zero-length icon file.
-TEST_F(FileUtilTest, CheckZeroLengthAndMissingIconFile) {
+TEST_F(FileUtilTest, CheckZeroLengthIconFile) {
   base::FilePath install_dir;
   ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &install_dir));
 
-  base::FilePath ext_dir =
-      install_dir.AppendASCII("file_util").AppendASCII("bad_icon");
-
-  std::string error;
-  scoped_refptr<Extension> extension(file_util::LoadExtension(
-      ext_dir, Manifest::INTERNAL, Extension::NO_FLAGS, &error));
-  EXPECT_TRUE(extension);
-  ASSERT_EQ(2U, extension->install_warnings().size());
-
-  EXPECT_EQ("Could not load extension icon 'missing-icon.png'.",
-            extension->install_warnings()[0].message);
-  EXPECT_EQ("Could not load extension icon 'icon.png'.",
-            extension->install_warnings()[1].message);
-}
-
-// Try to install an unpacked extension with a zero-length icon file.
-TEST_F(FileUtilTest, CheckZeroLengthAndMissingIconFileUnpacked) {
-  base::FilePath install_dir;
-  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &install_dir));
-
+  // Try to install an extension with a zero-length icon file.
   base::FilePath ext_dir =
       install_dir.AppendASCII("file_util").AppendASCII("bad_icon");
 
   std::string error;
   scoped_refptr<Extension> extension(file_util::LoadExtension(
       ext_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
-  EXPECT_FALSE(extension);
-  EXPECT_EQ("Could not load extension icon 'missing-icon.png'.", error);
+  EXPECT_TRUE(extension.get() == NULL);
+  EXPECT_STREQ("Could not load extension icon 'icon.png'.", error.c_str());
 }
 
 TEST_F(FileUtilTest, ExtensionURLToRelativeFilePath) {

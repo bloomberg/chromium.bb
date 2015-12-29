@@ -6,11 +6,9 @@
 #define EXTENSIONS_COMMON_MANIFEST_HANDLER_HELPERS_H_
 
 #include <string>
-#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "extensions/common/install_warning.h"
 
 class ExtensionIconSet;
 
@@ -19,9 +17,6 @@ class DictionaryValue;
 }
 
 namespace extensions {
-
-class Extension;
-
 namespace manifest_handler_helpers {
 
 // Strips leading slashes from the file path. Returns true iff the final path is
@@ -30,10 +25,8 @@ bool NormalizeAndValidatePath(std::string* path);
 
 // Loads icon paths defined in dictionary |icons_value| into ExtensionIconSet
 // |icons|. |icons_value| is a dictionary value {icon size -> icon path}.
-// Returns success. If load fails, |error| will be set. Non-failure warnings may
-// be added to |extension|.
-bool LoadIconsFromDictionary(Extension* extension,
-                             const base::DictionaryValue* icons_value,
+// Returns success. If load fails, |error| will be set.
+bool LoadIconsFromDictionary(const base::DictionaryValue* icons_value,
                              ExtensionIconSet* icons,
                              base::string16* error);
 

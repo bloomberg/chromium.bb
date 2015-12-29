@@ -86,8 +86,6 @@ TEST_F(BrowserActionManifestTest,
                                          .Set("19", "icon19.png")
                                          .Set("24", "icon24.png")
                                          .Set("38", "icon38.png")))))))
-          // Don't check for existence of icons during parsing.
-          .SetLocation(Manifest::UNPACKED)
           .Build();
 
   ASSERT_TRUE(extension.get());

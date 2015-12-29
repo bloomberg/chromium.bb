@@ -126,20 +126,6 @@ const Extension* ExtensionServiceTestWithInstall::PackAndInstallCRX(
                            Extension::NO_FLAGS);
 }
 
-const Extension* ExtensionServiceTestWithInstall::PackAndInstallCRXWithLocation(
-    const base::FilePath& dir_path,
-    Manifest::Location location,
-    InstallState install_state) {
-  // TODO(devlin): reuse another function instead of reimplementing here.
-  base::FilePath crx_path;
-  base::ScopedTempDir temp_dir;
-  EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
-  crx_path = temp_dir.path().AppendASCII("temp.crx");
-
-  PackCRX(dir_path, base::FilePath(), crx_path);
-  return InstallCRXWithLocation(crx_path, location, install_state);
-}
-
 // Attempts to install an extension. Use INSTALL_FAILED if the installation
 // is expected to fail.
 // If |install_state| is INSTALL_UPDATED, and |expected_old_name| is

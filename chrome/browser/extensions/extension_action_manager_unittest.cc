@@ -84,7 +84,6 @@ scoped_refptr<Extension> ExtensionActionManagerTest::BuildExtension(
                   .Set("icons", std::move(extension_icons))
                   .Set(action_type, std::move(action))
                   .Set("name", std::string("Test Extension").append(id))))
-          .SetLocation(Manifest::UNPACKED)
           .SetID(id)
           .Build();
   registry_->AddEnabled(extension);
