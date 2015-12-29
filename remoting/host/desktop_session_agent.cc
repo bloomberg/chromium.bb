@@ -78,16 +78,8 @@ class DesktopSessionAgent::SharedBuffer : public webrtc::SharedMemory {
                                          size_t size,
                                          int id) {
     scoped_ptr<base::SharedMemory> memory(new base::SharedMemory());
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-    // Remoting does not yet support Mach primitive backed SharedMemory, so
-    // force the underlying primitive to be a POSIX fd.
-    // https://crbug.com/547247.
-    if (!memory->CreateAndMapAnonymousPosix(size))
-      return nullptr;
-#else
     if (!memory->CreateAndMapAnonymous(size))
       return nullptr;
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
     return make_scoped_ptr(
         new SharedBuffer(agent, std::move(memory), size, id));
   }
@@ -204,16 +196,8 @@ webrtc::SharedMemory* DesktopSessionAgent::CreateSharedMemory(size_t size) {
     // speaking it never happens.
     next_shared_buffer_id_ += 2;
 
-    IPC::PlatformFileForTransit handle;
-#if defined(OS_WIN)
-    handle = buffer->shared_memory()->handle().GetHandle(),
-#else
-    handle =
-        base::FileDescriptor(base::SharedMemory::GetFdFromSharedMemoryHandle(
-            buffer->shared_memory()->handle()), false);
-#endif
     SendToNetwork(new ChromotingDesktopNetworkMsg_CreateSharedBuffer(
-        buffer->id(), handle, buffer->size()));
+        buffer->id(), buffer->shared_memory()->handle(), buffer->size()));
   }
 
   return buffer.release();

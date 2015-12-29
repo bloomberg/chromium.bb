@@ -60,12 +60,6 @@ class DesktopSessionProxy::IpcSharedBufferCore
         size_(size) {
     if (!shared_memory_.Map(size)) {
       LOG(ERROR) << "Failed to map a shared buffer: id=" << id
-#if defined(OS_WIN)
-                 << ", handle=" << handle.GetHandle()
-#else
-                 << ", handle.fd="
-                 << base::SharedMemory::GetFdFromSharedMemoryHandle(handle)
-#endif
                  << ", size=" << size;
     }
   }
@@ -476,18 +470,12 @@ void DesktopSessionProxy::OnAudioPacket(const std::string& serialized_packet) {
 
 void DesktopSessionProxy::OnCreateSharedBuffer(
     int id,
-    IPC::PlatformFileForTransit handle,
+    base::SharedMemoryHandle handle,
     uint32_t size) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-#if defined(OS_WIN)
-  base::SharedMemoryHandle shm_handle =
-      base::SharedMemoryHandle(handle, base::GetCurrentProcId());
-#else
-  base::SharedMemoryHandle shm_handle = base::SharedMemoryHandle(handle);
-#endif
   scoped_refptr<IpcSharedBufferCore> shared_buffer =
-      new IpcSharedBufferCore(id, shm_handle, desktop_process_.Handle(), size);
+      new IpcSharedBufferCore(id, handle, desktop_process_.Handle(), size);
 
   if (shared_buffer->memory() != nullptr &&
       !shared_buffers_.insert(std::make_pair(id, shared_buffer)).second) {

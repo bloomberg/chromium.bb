@@ -17,6 +17,7 @@
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "ipc/attachment_broker_privileged.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
@@ -240,6 +241,7 @@ IpcDesktopEnvironmentTest::IpcDesktopEnvironmentTest()
       remote_input_injector_(nullptr),
       terminal_id_(-1),
       client_session_control_factory_(&client_session_control_) {
+  IPC::AttachmentBrokerPrivileged::CreateBrokerForSingleProcessTests();
 }
 
 IpcDesktopEnvironmentTest::~IpcDesktopEnvironmentTest() {

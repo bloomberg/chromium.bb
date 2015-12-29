@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/memory/shared_memory_handle.h"
 #include "ipc/ipc_platform_file.h"
 #include "net/base/ip_endpoint.h"
 #include "remoting/host/chromoting_param_traits.h"
@@ -139,7 +140,7 @@ IPC_MESSAGE_CONTROL0(ChromotingDesktopDaemonMsg_InjectSas)
 // Notifies the network process that a shared buffer has been created.
 IPC_MESSAGE_CONTROL3(ChromotingDesktopNetworkMsg_CreateSharedBuffer,
                      int /* id */,
-                     IPC::PlatformFileForTransit /* handle */,
+                     base::SharedMemoryHandle /* handle */,
                      uint32_t /* size */)
 
 // Request the network process to stop using a shared buffer.

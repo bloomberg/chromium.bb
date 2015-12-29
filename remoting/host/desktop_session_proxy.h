@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/shared_memory_handle.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/sequenced_task_runner_helpers.h"
@@ -153,7 +154,7 @@ class DesktopSessionProxy
 
   // Registers a new shared buffer created by the desktop process.
   void OnCreateSharedBuffer(int id,
-                            IPC::PlatformFileForTransit handle,
+                            base::SharedMemoryHandle handle,
                             uint32_t size);
 
   // Drops a cached reference to the shared buffer.

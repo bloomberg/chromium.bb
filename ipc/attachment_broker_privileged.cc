@@ -16,6 +16,9 @@
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
+#include <mach/mach.h>
+
+#include "base/process/port_provider_mac.h"
 #include "ipc/attachment_broker_privileged_mac.h"
 #endif
 
@@ -24,6 +27,19 @@ namespace IPC {
 namespace {
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
+
+// A fake port provider that does nothing. Intended for single process unit
+// tests.
+class FakePortProvider : public base::PortProvider {
+  mach_port_t TaskForPid(base::ProcessHandle process) const override {
+    DCHECK_EQ(process, getpid());
+    return mach_task_self();
+  }
+};
+
+base::LazyInstance<FakePortProvider>::Leaky
+    g_fake_port_provider = LAZY_INSTANCE_INITIALIZER;
+
 // Passed as a constructor parameter to AttachmentBrokerPrivilegedMac.
 base::PortProvider* g_port_provider = nullptr;
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
@@ -85,6 +101,15 @@ void AttachmentBrokerPrivileged::CreateBrokerIfNeeded() {
   g_attachment_broker_make_once.Get();
 }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
+// static
+void AttachmentBrokerPrivileged::CreateBrokerForSingleProcessTests() {
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  CreateBrokerIfNeeded(&g_fake_port_provider.Get());
+#else
+  CreateBrokerIfNeeded();
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+}
 
 void AttachmentBrokerPrivileged::RegisterCommunicationChannel(
     Endpoint* endpoint) {
