@@ -19666,8 +19666,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="MediaRouter.Ui.Dialog.Paint" units="milliseconds">
   <owner>apacible@chromium.org</owner>
   <summary>
-    Duration in milliseconds taken from a user click to open the dialog to the
-    initial paint.
+    Duration in milliseconds taken from a user click to open the Media Router
+    dialog to the initial paint.
   </summary>
 </histogram>
 
