@@ -352,10 +352,7 @@ crbug.com/475984 [ Mac Debug ] css2.1/t100801-c544-valgn-03-d-agi.html [ Failure
 # But consistently passes on release builds.
 crbug.com/518005 crbug.com/463358 [ Mac ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ Pass Failure ]
 
-crbug.com/510337 cssom/cssvalue-comparison.html [ Slow ]
-crbug.com/510337 inspector/console/console-format.html [ Slow ]
-crbug.com/510337 inspector/elements/edit/edit-dom-actions.html [ Slow Timeout ]
-crbug.com/510337 inspector/elements/styles-1/edit-value-url-with-color.html [ Slow ]
+crbug.com/510337 inspector/elements/edit/edit-dom-actions.html [ Timeout ]
 
 # SPv2 paint properties are still being implemented.
 crbug.com/537409 virtual/spv2/ [ Skip ]
@@ -1255,6 +1252,10 @@ crbug.com/570391 inspector/sources/debugger/promise-events.html [ NeedsManualReb
 
 crbug.com/548765 http/tests/inspector/console-fetch-logging.html [ Failure Pass Slow ]
 crbug.com/549314 [ XP ] inspector-protocol/layout-fonts/unicode-range-combining-chars-fallback.html [ Failure ]
+
+crbug.com/573287 inspector/console/console-dir.html [ NeedsManualRebaseline ]
+crbug.com/573287 inspector/console/console-big-array.html [ NeedsManualRebaseline ]
+crbug.com/573287 inspector/console/console-format.html [ NeedsManualRebaseline ]
 
 crbug.com/563694 [ Linux Mac Debug ] svg/hixie/perf/005.xml [ Failure ]
 
