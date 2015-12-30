@@ -6,6 +6,7 @@
 
 #include <openssl/digest.h>
 #include <openssl/evp.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -23,7 +24,7 @@ namespace {
 class SSLPlatformKeyAndroid : public ThreadedSSLPrivateKey::Delegate {
  public:
   SSLPlatformKeyAndroid(crypto::ScopedEVP_PKEY key, SSLPrivateKey::Type type)
-      : key_(key.Pass()), type_(type) {}
+      : key_(std::move(key)), type_(type) {}
 
   ~SSLPlatformKeyAndroid() override {}
 
@@ -119,7 +120,7 @@ scoped_refptr<SSLPrivateKey> WrapOpenSSLPrivateKey(crypto::ScopedEVP_PKEY key) {
       return nullptr;
   }
   return make_scoped_refptr(new ThreadedSSLPrivateKey(
-      make_scoped_ptr(new SSLPlatformKeyAndroid(key.Pass(), type)),
+      make_scoped_ptr(new SSLPlatformKeyAndroid(std::move(key), type)),
       GetSSLPlatformKeyTaskRunner()));
 }
 
@@ -130,7 +131,7 @@ scoped_refptr<SSLPrivateKey> FetchClientCertPrivateKey(
   crypto::ScopedEVP_PKEY key =
       OpenSSLClientKeyStore::GetInstance()->FetchClientCertPrivateKey(
           certificate);
-  return WrapOpenSSLPrivateKey(key.Pass());
+  return WrapOpenSSLPrivateKey(std::move(key));
 }
 
 }  // namespace net

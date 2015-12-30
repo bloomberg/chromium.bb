@@ -40,7 +40,7 @@ scoped_ptr<GestureCurve> CreateDefaultPlatformCurve(
                   INT_MIN,
                   INT_MAX,
                   base::TimeTicks());
-  return scroller.Pass();
+  return std::move(scroller);
 #else
   return make_scoped_ptr(
       new FlingCurve(initial_velocity, base::TimeTicks()));

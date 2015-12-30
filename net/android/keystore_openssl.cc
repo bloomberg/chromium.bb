@@ -351,7 +351,7 @@ crypto::ScopedEVP_PKEY CreateRsaPkeyWrapper(
       !EVP_PKEY_set1_RSA(pkey.get(), rsa.get())) {
     return crypto::ScopedEVP_PKEY();
   }
-  return pkey.Pass();
+  return pkey;
 }
 
 // On Android < 4.2, the libkeystore.so ENGINE uses CRYPTO_EX_DATA and is not
@@ -526,7 +526,7 @@ crypto::ScopedEVP_PKEY GetEcdsaPkeyWrapper(jobject private_key) {
       !EVP_PKEY_set1_EC_KEY(pkey.get(), ec_key.get())) {
     return crypto::ScopedEVP_PKEY();
   }
-  return pkey.Pass();
+  return pkey;
 }
 
 const ECDSA_METHOD android_ecdsa_method = {

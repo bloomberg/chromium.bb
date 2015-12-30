@@ -4,6 +4,8 @@
 
 #include "ui/snapshot/snapshot.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "cc/output/copy_output_request.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -53,7 +55,7 @@ static void MakeAsyncCopyRequest(
       source_rect_in_pixel.size());
 
   request->set_area(adjusted_source_rect);
-  window->GetCompositor()->RequestCopyOfOutputOnRootLayer(request.Pass());
+  window->GetCompositor()->RequestCopyOfOutputOnRootLayer(std::move(request));
 }
 
 void GrabWindowSnapshotAndScaleAsync(

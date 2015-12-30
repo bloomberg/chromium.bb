@@ -8,8 +8,8 @@
 #include <stdint.h>
 #include <sys/mman.h>   // For |PROT_...|.
 #include <sys/types.h>  // For |off_t|.
-
 #include <limits>
+#include <utility>
 
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
@@ -65,7 +65,7 @@ bool SimplePlatformSharedBuffer::InitFromPlatformHandle(
     return false;
   }
 
-  handle_ = platform_handle.Pass();
+  handle_ = std::move(platform_handle);
   return true;
 }
 

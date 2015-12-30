@@ -5,13 +5,13 @@
 #include "net/socket/ssl_client_socket.h"
 
 #include <errno.h>
-#include <string.h>
-
 #include <openssl/bio.h>
 #include <openssl/bn.h>
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
+#include <string.h>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -99,11 +99,9 @@ class SSLClientSocketOpenSSLClientAuthTest : public PlatformTest {
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config) {
     scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
-    connection->SetSocket(transport_socket.Pass());
-    return socket_factory_->CreateSSLClientSocket(connection.Pass(),
-                                                  host_and_port,
-                                                  ssl_config,
-                                                  context_);
+    connection->SetSocket(std::move(transport_socket));
+    return socket_factory_->CreateSSLClientSocket(
+        std::move(connection), host_and_port, ssl_config, context_);
   }
 
   // Connect to a HTTPS test server.
@@ -153,9 +151,8 @@ class SSLClientSocketOpenSSLClientAuthTest : public PlatformTest {
   // itself was a success.
   bool CreateAndConnectSSLClientSocket(const SSLConfig& ssl_config,
                                        int* result) {
-    sock_ = CreateSSLClientSocket(transport_.Pass(),
-                                  test_server_->host_port_pair(),
-                                  ssl_config);
+    sock_ = CreateSSLClientSocket(std::move(transport_),
+                                  test_server_->host_port_pair(), ssl_config);
 
     if (sock_->IsConnected()) {
       LOG(ERROR) << "SSL Socket prematurely connected";
