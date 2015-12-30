@@ -74,17 +74,6 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     case kColorId_ResultsTableSelectedUrl:
       return NativeThemeAura::GetSystemColor(color_id);
 
-    // Temporary pass-throughs to NativeThemeAura, for colors not yet defined
-    // for dark themes. TODO(estade): define colors for these and remove this
-    // block.
-    case kColorId_ResultsTablePositiveText:
-    case kColorId_ResultsTablePositiveHoveredText:
-    case kColorId_ResultsTablePositiveSelectedText:
-    case kColorId_ResultsTableNegativeText:
-    case kColorId_ResultsTableNegativeHoveredText:
-    case kColorId_ResultsTableNegativeSelectedText:
-      return NativeThemeAura::GetSystemColor(color_id);
-
     // Any other color is not defined and shouldn't be used in a dark theme.
     default:
       return gfx::kPlaceholderColor;
