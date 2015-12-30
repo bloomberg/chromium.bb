@@ -13,6 +13,7 @@ source_set("base") {
     "android/dumpstate_writer.h",
     "android/system_time_change_notifier_android.cc",
     "android/system_time_change_notifier_android.h",
+    "bind_to_task_runner.h",
     "cast_paths.cc",
     "cast_paths.h",
     "cast_resource.cc",
@@ -64,6 +65,7 @@ source_set("test_support") {
 # GYP target: chromecast_tests.gypi:cast_base_unittests
 test("cast_base_unittests") {
   sources = [
+    "bind_to_task_runner_unittest.cc",
     "device_capabilities_impl_unittest.cc",
     "error_codes_unittest.cc",
     "path_utils_unittest.cc",
