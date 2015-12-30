@@ -629,6 +629,9 @@ void PaintLayerScrollableArea::updateScrollDimensions(DoubleSize& scrollOffset, 
             setHasVerticalScrollbar(hasVerticalOverflow);
         else if (box().style()->overflowY() == OSCROLL)
             setHasVerticalScrollbar(true);
+        // If vertical scrollbar existence has changed, LTR blocks need to update scroll origin to account
+        // for left-hand vertical scrollbar width.
+        computeScrollDimensions();
     }
 }
 
