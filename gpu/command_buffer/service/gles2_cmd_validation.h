@@ -9,7 +9,6 @@
 
 #include <algorithm>
 #include <vector>
-#define GLES2_GPU_SERVICE 1
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 
 namespace gpu {
