@@ -4,6 +4,7 @@
 
 {
   'targets': [
+    # GYP: //base/android/jni_generator:jni_generator_tests
     {
       'target_name': 'jni_generator_py_tests',
       'type': 'none',
@@ -29,6 +30,7 @@
         },
       ],
     },
+    # GYP: //base/android/jni_generator:jni_sample_header
     {
       'target_name': 'jni_sample_header',
       'type': 'none',
@@ -40,6 +42,7 @@
       },
       'includes': [ '../../../build/jni_generator.gypi' ],
     },
+    # GYP: //base/android/jni_generator:jni_sample_java
     {
       'target_name': 'jni_sample_java',
       'type': 'none',
@@ -51,6 +54,7 @@
       ],
       'includes': [ '../../../build/java.gypi' ],
     },
+    # GYP: //base/android/jni_generator:jni_generator_tests
     {
       'target_name': 'jni_generator_tests',
       'type': 'executable',

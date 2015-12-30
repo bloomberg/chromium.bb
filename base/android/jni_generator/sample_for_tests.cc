@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <iostream>
+
 #include "base/android/jni_generator/sample_for_tests.h"
 
 #include "base/android/jni_android.h"
@@ -62,6 +64,7 @@ void CPPClass::IterateAndDoSomethingWithStructB(
        it != map_.end(); ++it) {
     long key = it->first;
     std::string value = it->second;
+    std::cout << key << value;
   }
   map_.clear();
 }
@@ -97,10 +100,6 @@ static ScopedJavaLocalRef<jobject> GetNonPODDatatype(
   return ScopedJavaLocalRef<jobject>();
 }
 
-static jint InnerFunction(JNIEnv*, jclass) {
-  return 0;
-}
-
 } // namespace android
 } // namespace base
 
@@ -118,6 +117,8 @@ int main() {
   int bar = base::android::Java_SampleForTests_javaMethod(
       env, my_java_object, 1, 2);
 
+  std::cout << foo << bar;
+
   for (int i = 0; i < 10; ++i) {
     // Creates a "struct" that will then be used by the java side.
     ScopedJavaLocalRef<jobject> struct_a =
@@ -127,5 +128,9 @@ int main() {
         env, my_java_object, struct_a.obj());
   }
   base::android::Java_SampleForTests_iterateAndDoSomething(env, my_java_object);
+  base::android::Java_SampleForTests_packagePrivateJavaMethod(env,
+                                                              my_java_object);
+  base::android::Java_SampleForTests_methodThatThrowsException(env,
+                                                               my_java_object);
   return 0;
 }
