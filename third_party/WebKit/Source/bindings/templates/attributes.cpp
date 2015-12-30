@@ -1,4 +1,4 @@
-{% from 'conversions.cpp' import declare_enum_validation_variable, v8_value_to_local_cpp_value %}
+{% from 'utilities.cpp' import declare_enum_validation_variable, v8_value_to_local_cpp_value %}
 
 
 {##############################################################################}
@@ -457,7 +457,7 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeSetter(LocalFrame* 
 
 {##############################################################################}
 {% macro attribute_configuration(attribute) %}
-{% from 'conversions.cpp' import property_location %}
+{% from 'utilities.cpp' import property_location %}
 {% if attribute.constructor_type %}
 {% set getter_callback =
        '%sV8Internal::%sConstructorGetterCallback' % (cpp_class_or_partial, attribute.name)

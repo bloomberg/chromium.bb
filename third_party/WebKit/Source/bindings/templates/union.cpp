@@ -1,8 +1,8 @@
-{% from 'conversions.cpp' import declare_enum_validation_variable %}
+{% from 'utilities.cpp' import declare_enum_validation_variable %}
 {% include 'copyright_block.txt' %}
 #include "{{header_filename}}"
 
-{% from 'conversions.cpp' import v8_value_to_local_cpp_value %}
+{% from 'utilities.cpp' import v8_value_to_local_cpp_value %}
 {% macro assign_and_return_if_hasinstance(member) %}
 if (V8{{member.type_name}}::hasInstance(v8Value, isolate)) {
     {{member.cpp_local_type}} cppValue = V8{{member.type_name}}::toImpl(v8::Local<v8::Object>::Cast(v8Value));

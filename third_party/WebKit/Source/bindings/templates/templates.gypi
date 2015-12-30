@@ -9,7 +9,7 @@
       'callback_interface.cpp',
       'callback_interface.h',
       'constants.cpp',
-      'conversions.cpp',
+      'utilities.cpp',
       'copyright_block.txt',
       'dictionary_impl.cpp',
       'dictionary_impl.h',

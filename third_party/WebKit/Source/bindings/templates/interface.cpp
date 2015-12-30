@@ -55,7 +55,7 @@ static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCall
 
 {##############################################################################}
 {% block indexed_property_setter %}
-{% from 'conversions.cpp' import v8_value_to_local_cpp_value %}
+{% from 'utilities.cpp' import v8_value_to_local_cpp_value %}
 {% if indexed_property_setter and not indexed_property_setter.is_custom %}
 {% set setter = indexed_property_setter %}
 static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -223,7 +223,7 @@ static void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::Prop
 
 {##############################################################################}
 {% block named_property_setter %}
-{% from 'conversions.cpp' import v8_value_to_local_cpp_value %}
+{% from 'utilities.cpp' import v8_value_to_local_cpp_value %}
 {% if named_property_setter and not named_property_setter.is_custom %}
 {% set setter = named_property_setter %}
 static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -614,7 +614,7 @@ void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
 
 {##############################################################################}
 {% macro install_do_not_check_security_method(method, world_suffix, instance_template, prototype_template) %}
-{% from 'conversions.cpp' import property_location %}
+{% from 'utilities.cpp' import property_location %}
 {# Methods that are [DoNotCheckSecurity] are always readable, but if they are
    changed and then accessed from a different origin, we do not return the
    underlying value, but instead return a new copy of the original function.

@@ -1,4 +1,4 @@
-{% from 'conversions.cpp' import declare_enum_validation_variable, v8_value_to_local_cpp_value %}
+{% from 'utilities.cpp' import declare_enum_validation_variable, v8_value_to_local_cpp_value %}
 
 
 {##############################################################################}
@@ -673,7 +673,7 @@ v8SetReturnValue(info, wrapper);
 
 {##############################################################################}
 {% macro method_configuration(method) %}
-{% from 'conversions.cpp' import property_location %}
+{% from 'utilities.cpp' import property_location %}
 {% set method_callback =
        '%sV8Internal::%sMethodCallback' % (cpp_class_or_partial, method.name) %}
 {% set method_callback_for_main_world =
