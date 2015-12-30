@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -156,7 +158,7 @@ class MediaCodecDecoderTest : public testing::Test {
                         const base::TimeDelta& timeout = kDefaultTimeout);
 
   void SetDataFactory(scoped_ptr<TestDataFactory> factory) {
-    data_factory_ = factory.Pass();
+    data_factory_ = std::move(factory);
   }
 
   DemuxerConfigs GetConfigs() const {
@@ -320,7 +322,7 @@ void MediaCodecDecoderTest::SetVideoSurface() {
   ASSERT_NE(nullptr, decoder_.get());
   MediaCodecVideoDecoder* video_decoder =
       static_cast<MediaCodecVideoDecoder*>(decoder_.get());
-  video_decoder->SetVideoSurface(surface.Pass());
+  video_decoder->SetVideoSurface(std::move(surface));
 }
 
 TEST_F(MediaCodecDecoderTest, AudioPrefetch) {
@@ -446,7 +448,7 @@ TEST_F(MediaCodecDecoderTest, VideoConfigureInvalidSurface) {
 
   MediaCodecVideoDecoder* video_decoder =
       static_cast<MediaCodecVideoDecoder*>(decoder_.get());
-  video_decoder->SetVideoSurface(surface.Pass());
+  video_decoder->SetVideoSurface(std::move(surface));
 
   EXPECT_EQ(MediaCodecDecoder::kConfigFailure, decoder_->Configure(nullptr));
 }

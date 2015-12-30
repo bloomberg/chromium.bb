@@ -4,6 +4,8 @@
 
 #include "media/base/android/media_codec_video_decoder.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "media/base/android/media_statistics.h"
@@ -100,7 +102,7 @@ void MediaCodecVideoDecoder::SetVideoSurface(gfx::ScopedJavaSurface surface) {
   DVLOG(1) << class_name() << "::" << __FUNCTION__
            << (surface.IsEmpty() ? " empty" : " non-empty");
 
-  surface_ = surface.Pass();
+  surface_ = std::move(surface);
 
   needs_reconfigure_ = true;
 }

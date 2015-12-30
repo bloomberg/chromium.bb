@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <utility>
 
 #include "base/android/build_info.h"
 #include "base/android/jni_android.h"
@@ -196,9 +197,9 @@ MediaCodecStatus SdkMediaCodecBridge::QueueSecureInputBuffer(
   }
 
   ScopedJavaLocalRef<jintArray> clear_array =
-      ToJavaIntArray(env, native_clear_array.Pass(), new_subsamples_size);
+      ToJavaIntArray(env, std::move(native_clear_array), new_subsamples_size);
   ScopedJavaLocalRef<jintArray> cypher_array =
-      ToJavaIntArray(env, native_cypher_array.Pass(), new_subsamples_size);
+      ToJavaIntArray(env, std::move(native_cypher_array), new_subsamples_size);
 
   return static_cast<MediaCodecStatus>(
       Java_MediaCodecBridge_queueSecureInputBuffer(

@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdint.h>
+#include "media/base/android/media_source_player.h"
 
+#include <stdint.h>
 #include <string>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -15,7 +17,6 @@
 #include "media/base/android/media_codec_util.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_manager.h"
-#include "media/base/android/media_source_player.h"
 #include "media/base/android/media_url_interceptor.h"
 #include "media/base/android/sdk_media_codec_bridge.h"
 #include "media/base/android/video_decoder_job.h"
@@ -710,7 +711,7 @@ class MediaSourcePlayerTest : public testing::Test {
 
     surface_texture_a_is_next_ = !surface_texture_a_is_next_;
     gfx::ScopedJavaSurface surface = gfx::ScopedJavaSurface(surface_texture);
-    player_.SetVideoSurface(surface.Pass());
+    player_.SetVideoSurface(std::move(surface));
   }
 
   // Wait for one or both of the jobs to complete decoding. Media codec bridges
@@ -917,7 +918,7 @@ TEST_F(MediaSourcePlayerTest, StartVideoCodecWithInvalidSurface) {
 
   // Release the surface texture.
   surface_texture = NULL;
-  player_.SetVideoSurface(surface.Pass());
+  player_.SetVideoSurface(std::move(surface));
 
   // Player should not seek the demuxer on setting initial surface.
   EXPECT_EQ(0, demuxer_->num_seek_requests());
@@ -980,7 +981,7 @@ TEST_F(MediaSourcePlayerTest, ChangeMultipleSurfaceWhileDecoding) {
   // While the decoder is decoding, change multiple surfaces. Pass an empty
   // surface first.
   gfx::ScopedJavaSurface empty_surface;
-  player_.SetVideoSurface(empty_surface.Pass());
+  player_.SetVideoSurface(std::move(empty_surface));
   // Next, pass a new non-empty surface.
   CreateNextTextureAndSetVideoSurface();
 
@@ -1020,7 +1021,7 @@ TEST_F(MediaSourcePlayerTest, SetEmptySurfaceAndStarveWhileDecoding) {
 
   // While the decoder is decoding, pass an empty surface.
   gfx::ScopedJavaSurface empty_surface;
-  player_.SetVideoSurface(empty_surface.Pass());
+  player_.SetVideoSurface(std::move(empty_surface));
   // Let the player starve. However, it should not issue any new data request in
   // this case.
   TriggerPlayerStarvation();

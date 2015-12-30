@@ -4,6 +4,8 @@
 
 #include "media/capture/video/android/video_capture_device_factory_android.h"
 
+#include <utility>
+
 #include "base/android/context_utils.h"
 #include "base/android/jni_string.h"
 #include "base/strings/string_number_conversions.h"
@@ -43,7 +45,7 @@ scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryAndroid::Create(
       new VideoCaptureDeviceAndroid(device_name));
 
   if (video_capture_device->Init())
-    return video_capture_device.Pass();
+    return std::move(video_capture_device);
 
   DLOG(ERROR) << "Error creating Video Capture Device.";
   return scoped_ptr<VideoCaptureDevice>();

@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <limits>
+#include <utility>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -37,7 +37,7 @@ MediaSourcePlayer::MediaSourcePlayer(
                          manager,
                          on_decoder_resources_released_cb,
                          frame_url),
-      demuxer_(demuxer.Pass()),
+      demuxer_(std::move(demuxer)),
       pending_event_(NO_EVENT_PENDING),
       playing_(false),
       interpolator_(&default_tick_clock_),
@@ -82,7 +82,7 @@ MediaSourcePlayer::~MediaSourcePlayer() {
 
 void MediaSourcePlayer::SetVideoSurface(gfx::ScopedJavaSurface surface) {
   DVLOG(1) << __FUNCTION__;
-  if (!video_decoder_job_->SetVideoSurface(surface.Pass()))
+  if (!video_decoder_job_->SetVideoSurface(std::move(surface)))
     return;
   // Retry video decoder creation.
   RetryDecoderCreation(false, true);

@@ -4,6 +4,8 @@
 
 #include "media/base/android/video_decoder_job.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/threading/thread.h"
@@ -49,7 +51,7 @@ bool VideoDecoderJob::SetVideoSurface(gfx::ScopedJavaSurface surface) {
     return false;
   }
 
-  surface_ =  surface.Pass();
+  surface_ = std::move(surface);
   need_to_reconfig_decoder_job_ = true;
   return true;
 }

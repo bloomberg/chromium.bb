@@ -4,6 +4,8 @@
 
 #include "media/base/android/media_codec_player.h"
 
+#include <utility>
+
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -45,7 +47,7 @@ MediaCodecPlayer::MediaCodecPlayer(
                          on_decoder_resources_released_cb,
                          frame_url),
       ui_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      demuxer_(demuxer.Pass()),
+      demuxer_(std::move(demuxer)),
       state_(kStatePaused),
       interpolator_(&default_tick_clock_),
       pending_start_(false),
@@ -159,7 +161,7 @@ void MediaCodecPlayer::SetVideoSurface(gfx::ScopedJavaSurface surface) {
     return;
   }
 
-  video_decoder_->SetVideoSurface(surface.Pass());
+  video_decoder_->SetVideoSurface(std::move(surface));
 
   if (surface_is_empty) {
     // Remove video surface.
@@ -957,7 +959,7 @@ void MediaCodecPlayer::OnMediaCryptoReady(
     return;
   }
 
-  media_crypto_ = media_crypto.Pass();
+  media_crypto_ = std::move(media_crypto);
 
   if (audio_decoder_) {
     audio_decoder_->SetNeedsReconfigure();

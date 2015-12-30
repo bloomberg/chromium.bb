@@ -4,6 +4,8 @@
 
 #include "media/base/android/media_player_bridge.h"
 
+#include <utility>
+
 #include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -109,7 +111,7 @@ void MediaPlayerBridge::SetDuration(base::TimeDelta duration) {
 }
 
 void MediaPlayerBridge::SetVideoSurface(gfx::ScopedJavaSurface surface) {
-  surface_ =  surface.Pass();
+  surface_ = std::move(surface);
 
   if (j_media_player_bridge_.is_null())
     return;
@@ -417,7 +419,7 @@ void MediaPlayerBridge::OnMediaPrepared() {
   }
 
   if (!surface_.IsEmpty())
-    SetVideoSurface(surface_.Pass());
+    SetVideoSurface(std::move(surface_));
 
   if (pending_play_) {
     StartInternal();

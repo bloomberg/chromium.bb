@@ -5,6 +5,7 @@
 #include "media/capture/video/android/video_capture_device_android.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -59,7 +60,7 @@ void VideoCaptureDeviceAndroid::AllocateAndStart(
     base::AutoLock lock(lock_);
     if (state_ != kIdle)
       return;
-    client_ = client.Pass();
+    client_ = std::move(client);
     got_first_frame_ = false;
   }
 
