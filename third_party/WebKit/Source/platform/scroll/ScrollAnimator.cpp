@@ -50,7 +50,6 @@ PassOwnPtrWillBeRawPtr<ScrollAnimatorBase> ScrollAnimatorBase::create(Scrollable
 
 ScrollAnimator::ScrollAnimator(ScrollableArea* scrollableArea, WTF::TimeFunction timeFunction)
     : ScrollAnimatorBase(scrollableArea)
-    , m_lastTickTime(0.0)
     , m_timeFunction(timeFunction)
 {
 }
@@ -114,7 +113,8 @@ ScrollResultOneDimensional ScrollAnimator::userScroll(
 
         if (m_runState == RunState::RunningOnCompositor
             || m_runState == RunState::RunningOnCompositorButNeedsUpdate) {
-            m_runState = RunState::RunningOnCompositorButNeedsUpdate;
+            if (registerAndScheduleAnimation())
+                m_runState = RunState::RunningOnCompositorButNeedsUpdate;
             return ScrollResultOneDimensional(/* didScroll */ true, /* unusedScrollDelta */ 0);
         }
 
@@ -134,14 +134,9 @@ ScrollResultOneDimensional ScrollAnimator::userScroll(
     m_targetOffset = targetPos;
     m_startTime = m_timeFunction();
 
-    scrollableArea()->registerForAnimation();
-    if (!m_scrollableArea->scheduleAnimation()) {
-        scrollToOffsetWithoutAnimation(targetPos);
-        resetAnimationState();
-        return ScrollResultOneDimensional(/* didScroll */ true, /* unusedScrollDelta */ 0);
-    }
+    if (registerAndScheduleAnimation())
+        m_runState = RunState::WaitingToSendToCompositor;
 
-    m_runState = RunState::WaitingToSendToCompositor;
     return ScrollResultOneDimensional(/* didScroll */ true, /* unusedScrollDelta */ 0);
 }
 
@@ -156,8 +151,6 @@ void ScrollAnimator::scrollToOffsetWithoutAnimation(const FloatPoint& offset)
 
 void ScrollAnimator::tickAnimation(double monotonicTime)
 {
-    m_lastTickTime = monotonicTime;
-
     if (m_runState != RunState::RunningOnMainThread)
         return;
 
@@ -213,7 +206,7 @@ void ScrollAnimator::updateCompositorAnimations()
             m_compositorAnimationId = 0;
             m_compositorAnimationGroupId = 0;
 
-            m_animationCurve->updateTarget(m_lastTickTime - m_startTime,
+            m_animationCurve->updateTarget(m_timeFunction() - m_startTime,
                 m_targetOffset);
             m_runState = RunState::WaitingToSendToCompositor;
         }
@@ -256,11 +249,8 @@ void ScrollAnimator::updateCompositorAnimations()
         }
 
         if (!sentToCompositor) {
-            m_runState = RunState::RunningOnMainThread;
-            if (!m_scrollableArea->scheduleAnimation()) {
-                scrollToOffsetWithoutAnimation(m_targetOffset);
-                resetAnimationState();
-            }
+            if (registerAndScheduleAnimation())
+                m_runState = RunState::RunningOnMainThread;
         }
     }
 }
@@ -279,6 +269,17 @@ void ScrollAnimator::layerForCompositedScrollingDidChange(
     WebCompositorAnimationTimeline* timeline)
 {
     reattachCompositorPlayerIfNeeded(timeline);
+}
+
+bool ScrollAnimator::registerAndScheduleAnimation()
+{
+    scrollableArea()->registerForAnimation();
+    if (!m_scrollableArea->scheduleAnimation()) {
+        scrollToOffsetWithoutAnimation(m_targetOffset);
+        resetAnimationState();
+        return false;
+    }
+    return true;
 }
 
 DEFINE_TRACE(ScrollAnimator)

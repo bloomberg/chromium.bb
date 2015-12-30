@@ -101,6 +101,8 @@ static void reset(ScrollAnimator& scrollAnimator)
     scrollAnimator.scrollToOffsetWithoutAnimation(FloatPoint());
 }
 
+// TODO(skobes): Add unit tests for composited scrolling paths.
+
 TEST(ScrollAnimatorTest, MainThreadEnabled)
 {
     OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(true);
@@ -109,7 +111,7 @@ TEST(ScrollAnimatorTest, MainThreadEnabled)
     EXPECT_CALL(*scrollableArea, minimumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint()));
     EXPECT_CALL(*scrollableArea, maximumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint(1000, 1000)));
     EXPECT_CALL(*scrollableArea, setScrollOffset(_, _)).Times(9);
-    EXPECT_CALL(*scrollableArea, registerForAnimation()).Times(3);
+    EXPECT_CALL(*scrollableArea, registerForAnimation()).Times(6);
     EXPECT_CALL(*scrollableArea, scheduleAnimation()).Times(AtLeast(1)).WillRepeatedly(Return(true));
 
     EXPECT_FALSE(scrollAnimator->hasAnimationThatRequiresService());

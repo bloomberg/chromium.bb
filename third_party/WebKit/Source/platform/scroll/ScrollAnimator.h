@@ -65,12 +65,16 @@ public:
 
 protected:
     OwnPtr<WebScrollOffsetAnimationCurve> m_animationCurve;
-    double m_lastTickTime;
     double m_startTime;
     WTF::TimeFunction m_timeFunction;
 
 private:
     FloatPoint desiredTargetPosition() const;
+
+    // Returns true if the animation was scheduled successfully. If animation
+    // could not be scheduled (e.g. because the frame is detached), scrolls
+    // immediately to the target and returns false.
+    bool registerAndScheduleAnimation();
 
     FloatPoint m_targetOffset;
 };
