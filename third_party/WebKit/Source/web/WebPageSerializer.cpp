@@ -69,28 +69,21 @@ namespace blink {
 
 namespace {
 
-using ContentIDMap = WillBeHeapHashMap<RawPtrWillBeMember<Frame>, String>;
-
-class MHTMLPageSerializerDelegate final :
-    public NoBaseWillBeGarbageCollected<MHTMLPageSerializerDelegate>,
-    public PageSerializer::Delegate {
+class MHTMLPageSerializerDelegate final : public PageSerializer::Delegate {
     WTF_MAKE_NONCOPYABLE(MHTMLPageSerializerDelegate);
 public:
-    MHTMLPageSerializerDelegate(const ContentIDMap& frameToContentID);
+    explicit MHTMLPageSerializerDelegate(WebPageSerializer::MHTMLPartsGenerationDelegate&);
     bool shouldIgnoreAttribute(const Attribute&) override;
     bool rewriteLink(const Element&, String& rewrittenLink) override;
-
-#if ENABLE(OILPAN)
-    void trace(Visitor* visitor) { visitor->trace(m_frameToContentID); }
-#endif
+    bool shouldSkipResource(const KURL&) override;
 
 private:
-    const ContentIDMap& m_frameToContentID;
+    WebPageSerializer::MHTMLPartsGenerationDelegate& m_webDelegate;
 };
 
 MHTMLPageSerializerDelegate::MHTMLPageSerializerDelegate(
-    const ContentIDMap& frameToContentID)
-    : m_frameToContentID(frameToContentID)
+    WebPageSerializer::MHTMLPartsGenerationDelegate& webDelegate)
+    : m_webDelegate(webDelegate)
 {
 }
 
@@ -114,7 +107,8 @@ bool MHTMLPageSerializerDelegate::rewriteLink(
     if (!frame)
         return false;
 
-    KURL cidURI = MHTMLParser::convertContentIDToURI(m_frameToContentID.get(frame));
+    WebString contentID = m_webDelegate.getContentID(*WebFrame::fromFrame(frame));
+    KURL cidURI = MHTMLParser::convertContentIDToURI(contentID);
     ASSERT(cidURI.isValid());
 
     if (isHTMLFrameElementBase(&element)) {
@@ -135,20 +129,9 @@ bool MHTMLPageSerializerDelegate::rewriteLink(
     return false;
 }
 
-ContentIDMap createFrameToContentIDMap(
-    const WebVector<std::pair<WebFrame*, WebString>>& webFrameToContentID)
+bool MHTMLPageSerializerDelegate::shouldSkipResource(const KURL& url)
 {
-    ContentIDMap result;
-    for (const auto& it : webFrameToContentID) {
-        WebFrame* webFrame = it.first;
-        const WebString& webContentID = it.second;
-
-        Frame* frame = webFrame->toImplBase()->frame();
-        String contentID(webContentID);
-
-        result.add(frame, contentID);
-    }
-    return result;
+    return m_webDelegate.shouldSkipResource(url);
 }
 
 } // namespace
@@ -167,28 +150,34 @@ WebData WebPageSerializer::generateMHTMLHeader(
 
 WebData WebPageSerializer::generateMHTMLParts(
     const WebString& boundary, WebLocalFrame* webFrame, bool useBinaryEncoding,
-    const WebVector<std::pair<WebFrame*, WebString>>& webFrameToContentID)
+    MHTMLPartsGenerationDelegate* webDelegate)
 {
+    ASSERT(webFrame);
+    ASSERT(webDelegate);
+
     // Translate arguments from public to internal blink APIs.
     LocalFrame* frame = toWebLocalFrameImpl(webFrame)->frame();
     MHTMLArchive::EncodingPolicy encodingPolicy = useBinaryEncoding
         ? MHTMLArchive::EncodingPolicy::UseBinaryEncoding
         : MHTMLArchive::EncodingPolicy::UseDefaultEncoding;
-    ContentIDMap frameToContentID = createFrameToContentIDMap(webFrameToContentID);
 
     // Serialize.
     Vector<SerializedResource> resources;
-    MHTMLPageSerializerDelegate delegate(frameToContentID);
-    PageSerializer serializer(resources, &delegate);
+    MHTMLPageSerializerDelegate coreDelegate(*webDelegate);
+    PageSerializer serializer(resources, coreDelegate);
     serializer.serializeFrame(*frame);
+
+    // Get Content-ID for the frame being serialized.
+    String frameContentID = webDelegate->getContentID(*webFrame);
+    ASSERT(!frameContentID.isEmpty());
 
     // Encode serializer's output as MHTML.
     RefPtr<SharedBuffer> output = SharedBuffer::create();
     bool isFirstResource = true;
     for (const SerializedResource& resource : resources) {
         // Frame is the 1st resource (see PageSerializer::serializeFrame doc
-        // comment). Frames need a Content-ID header.
-        String contentID = isFirstResource ? frameToContentID.get(frame) : String();
+        // comment). Frames get a Content-ID header.
+        String contentID = isFirstResource ? frameContentID : String();
 
         MHTMLArchive::generateMHTMLPart(
             boundary, contentID, encodingPolicy, resource, *output);

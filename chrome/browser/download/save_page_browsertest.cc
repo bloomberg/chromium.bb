@@ -908,10 +908,7 @@ IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest, SaveAsMHTML) {
     count++;
     pos++;
   }
-  // TODO(lukasza): Need to dedupe savable resources (i.e. 1.png) across frames.
-  // This will be fixed by crrev.com/1417323006.
-  // EXPECT_EQ(1, count)
-  //     << "Verify number of image/png parts in the mhtml output";
+  EXPECT_EQ(1, count) << "Verify number of image/png parts in the mhtml output";
 }
 
 // Test suite that verifies that the frame tree "looks" the same before

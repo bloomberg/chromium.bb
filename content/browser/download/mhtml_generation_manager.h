@@ -8,12 +8,15 @@
 #include <stdint.h>
 
 #include <map>
+#include <set>
+#include <string>
 
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/process/process.h"
 #include "ipc/ipc_platform_file.h"
+#include "url/gurl.h"
 
 namespace base {
 class FilePath;
@@ -21,6 +24,7 @@ class FilePath;
 
 namespace content {
 
+class RenderFrameHostImpl;
 class WebContents;
 
 // The class and all of its members live on the UI thread.  Only static methods
@@ -42,8 +46,11 @@ class MHTMLGenerationManager {
 
   // Handler for FrameHostMsg_SerializeAsMHTMLResponse (a notification from the
   // renderer that the MHTML generation finished for a single frame).
-  void OnSavedFrameAsMHTML(int job_id,
-                           bool mhtml_generation_in_renderer_succeeded);
+  void OnSerializeAsMHTMLResponse(
+      RenderFrameHostImpl* sender,
+      int job_id,
+      bool mhtml_generation_in_renderer_succeeded,
+      const std::set<std::string>& digests_of_uris_of_serialized_resources);
 
  private:
   friend struct base::DefaultSingletonTraits<MHTMLGenerationManager>;

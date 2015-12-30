@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -620,7 +621,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDidStartLoading(bool to_different_document);
   void OnDidStopLoading();
   void OnDidChangeLoadProgress(double load_progress);
-  void OnSerializeAsMHTMLResponse(int job_id, bool success);
+  void OnSerializeAsMHTMLResponse(
+      int job_id,
+      bool success,
+      const std::set<std::string>& digests_of_uris_of_serialized_resources);
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
   void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params);

@@ -8,6 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <map>
+#include <set>
+#include <string>
+#include <vector>
+
 #include "build/build_config.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_sequence.h"
@@ -453,6 +458,38 @@ IPC_STRUCT_TRAITS_BEGIN(content::SavableSubframe)
   IPC_STRUCT_TRAITS_MEMBER(routing_id)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_BEGIN(FrameMsg_SerializeAsMHTML_Params)
+  // Job id - used to match responses to requests.
+  IPC_STRUCT_MEMBER(int, job_id)
+
+  // Destination file handle.
+  IPC_STRUCT_MEMBER(IPC::PlatformFileForTransit, destination_file)
+
+  // MHTML boundary marker / MIME multipart boundary maker.  The same
+  // |mhtml_boundary_marker| should be used for serialization of each frame.
+  IPC_STRUCT_MEMBER(std::string, mhtml_boundary_marker)
+
+  // Frame to content-id map.
+  // Keys are routing ids of either RenderFrames or RenderFrameProxies.
+  // Values are MHTML content-ids - see WebPageSerializer::generateMHTMLParts.
+  IPC_STRUCT_MEMBER(FrameMsg_SerializeAsMHTML_FrameRoutingIdToContentIdMap,
+                    frame_routing_id_to_content_id)
+
+  // |digests_of_uris_to_skip| contains digests of uris of MHTML parts that
+  // should be skipped.  This helps deduplicate mhtml parts across frames.
+  // SECURITY NOTE: Sha256 digests (rather than uris) are used to prevent
+  // disclosing uris to other renderer processes;  the digests should be
+  // generated using SHA256HashString function from crypto/sha2.h and hashing
+  // |salt + url.spec()|.
+  IPC_STRUCT_MEMBER(std::set<std::string>, digests_of_uris_to_skip)
+
+  // Salt used for |digests_of_uris_to_skip|.
+  IPC_STRUCT_MEMBER(std::string, salt)
+
+  // If |is_last_frame| is true, then an MHTML footer will be generated.
+  IPC_STRUCT_MEMBER(bool, is_last_frame)
+IPC_STRUCT_END()
+
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
 // This message is used for supporting popup menus on Mac OS X and Android using
 // native controls. See the FrameHostMsg_ShowPopup message.
@@ -752,28 +789,11 @@ IPC_MESSAGE_ROUTED1(FrameMsg_GetSerializedHtmlWithLocalLinks,
                     FrameMsg_GetSerializedHtmlWithLocalLinks_Map)
 
 // Serialize target frame and its resources into MHTML and write it into the
-// provided destination file handle.
-//
-// When starting generation of a new MHTML document, one needs to start by
-// sending FrameMsg_SerializeAsMHTML for the *main* frame (main frame needs to
-// be the first part in the MHTML document + main frame will trigger generation
-// of the MHTML header).
-//
-// The same |mhtml_boundary_marker| should be used for serialization of each
-// frame (this string will be used as a mime multipart boundary within the mhtml
-// document).
-//
-// For more details about frame to content id map please see
-// WebPageSerializer::generateMHTMLParts method.
-//
-// |is_last_frame| controls whether the serializer in the renderer will
-// emit the MHTML footer.
-IPC_MESSAGE_ROUTED5(FrameMsg_SerializeAsMHTML,
-                    int /* job_id (used to match responses to requests) */,
-                    IPC::PlatformFileForTransit /* destination file handle */,
-                    std::string /* mhtml boundary marker */,
-                    FrameMsg_SerializeAsMHTML_FrameRoutingIdToContentIdMap,
-                    bool /* is last frame */)
+// provided destination file handle.  Note that when serializing multiple
+// frames, one needs to serialize the *main* frame first (the main frame
+// needs to go first according to RFC2557 + the main frame will trigger
+// generation of the MHTML header).
+IPC_MESSAGE_ROUTED1(FrameMsg_SerializeAsMHTML, FrameMsg_SerializeAsMHTML_Params)
 
 IPC_MESSAGE_ROUTED1(FrameMsg_SetFrameOwnerProperties,
                     blink::WebFrameOwnerProperties /* frame_owner_properties */)
@@ -1319,9 +1339,11 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_SerializedHtmlWithLocalLinksResponse,
                     bool /* end of data? */)
 
 // Response to FrameMsg_SerializeAsMHTML.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_SerializeAsMHTMLResponse,
-                    int /* job_id (used to match responses to requests) */,
-                    bool /* true if success, false if error */)
+IPC_MESSAGE_ROUTED3(
+    FrameHostMsg_SerializeAsMHTMLResponse,
+    int /* job_id (used to match responses to requests) */,
+    bool /* true if success, false if error */,
+    std::set<std::string> /* digests of uris of serialized resources */)
 
 // Sent when the renderer updates hint for importance of a tab.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdatePageImportanceSignals,

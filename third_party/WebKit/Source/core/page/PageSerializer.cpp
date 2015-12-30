@@ -84,7 +84,7 @@ static bool shouldIgnoreElement(const Element& element)
 class SerializerMarkupAccumulator : public MarkupAccumulator {
     STACK_ALLOCATED();
 public:
-    SerializerMarkupAccumulator(PageSerializer*, const Document&, WillBeHeapVector<RawPtrWillBeMember<Node>>&);
+    SerializerMarkupAccumulator(PageSerializer::Delegate&, const Document&, WillBeHeapVector<RawPtrWillBeMember<Node>>&);
     ~SerializerMarkupAccumulator() override;
 
 protected:
@@ -103,7 +103,7 @@ private:
         const String& attributeName,
         const String& attributeValue);
 
-    PageSerializer* m_serializer;
+    PageSerializer::Delegate& m_delegate;
     RawPtrWillBeMember<const Document> m_document;
 
     // FIXME: |PageSerializer| uses |m_nodes| for collecting nodes in document
@@ -116,9 +116,9 @@ private:
     WillBeHeapHashSet<RawPtrWillBeMember<const Element>> m_elementsWithRewrittenLinks;
 };
 
-SerializerMarkupAccumulator::SerializerMarkupAccumulator(PageSerializer* serializer, const Document& document, WillBeHeapVector<RawPtrWillBeMember<Node>>& nodes)
+SerializerMarkupAccumulator::SerializerMarkupAccumulator(PageSerializer::Delegate& delegate, const Document& document, WillBeHeapVector<RawPtrWillBeMember<Node>>& nodes)
     : MarkupAccumulator(ResolveAllURLs)
-    , m_serializer(serializer)
+    , m_delegate(delegate)
     , m_document(&document)
     , m_nodes(nodes)
 {
@@ -137,11 +137,7 @@ void SerializerMarkupAccumulator::appendText(StringBuilder& result, Text& text)
 
 bool SerializerMarkupAccumulator::shouldIgnoreAttribute(const Attribute& attribute)
 {
-    PageSerializer::Delegate* delegate = m_serializer->delegate();
-    if (delegate)
-        return delegate->shouldIgnoreAttribute(attribute);
-
-    return MarkupAccumulator::shouldIgnoreAttribute(attribute);
+    return m_delegate.shouldIgnoreAttribute(attribute);
 }
 
 void SerializerMarkupAccumulator::appendElement(StringBuilder& result, Element& element, Namespaces* namespaces)
@@ -176,9 +172,8 @@ void SerializerMarkupAccumulator::appendAttribute(
         && attribute.name() == HTMLNames::srcdocAttr;
     if (isLinkAttribute || isSrcDocAttribute) {
         // Check if the delegate wants to do link rewriting for the element.
-        PageSerializer::Delegate* delegate = m_serializer->delegate();
         String newLinkForTheElement;
-        if (delegate && delegate->rewriteLink(element, newLinkForTheElement)) {
+        if (m_delegate.rewriteLink(element, newLinkForTheElement)) {
             if (isLinkAttribute) {
                 // Rewrite element links.
                 appendRewrittenAttribute(
@@ -247,7 +242,7 @@ void SerializerMarkupAccumulator::appendRewrittenAttribute(
 
 PageSerializer::PageSerializer(
     Vector<SerializedResource>& resources,
-    Delegate* delegate)
+    Delegate& delegate)
     : m_resources(&resources)
     , m_delegate(delegate)
 {
@@ -267,7 +262,7 @@ void PageSerializer::serializeFrame(const LocalFrame& frame)
     }
 
     WillBeHeapVector<RawPtrWillBeMember<Node>> serializedNodes;
-    SerializerMarkupAccumulator accumulator(this, document, serializedNodes);
+    SerializerMarkupAccumulator accumulator(m_delegate, document, serializedNodes);
     String text = serializeNodes<EditingStrategy>(accumulator, document, IncludeNode);
 
     CString frameHTML = document.encoding().encode(text, WTF::EntitiesForUnencodables);
@@ -302,7 +297,6 @@ void PageSerializer::serializeFrame(const LocalFrame& frame)
             if (CSSStyleSheet* sheet = linkElement.sheet()) {
                 KURL url = document.completeURL(linkElement.getAttribute(HTMLNames::hrefAttr));
                 serializeCSSStyleSheet(*sheet, url);
-                ASSERT(m_resourceURLs.contains(url));
             }
         } else if (isHTMLStyleElement(element)) {
             HTMLStyleElement& styleElement = toHTMLStyleElement(element);
@@ -332,7 +326,7 @@ void PageSerializer::serializeCSSStyleSheet(CSSStyleSheet& styleSheet, const KUR
         serializeCSSRule(rule);
     }
 
-    if (url.isValid() && !m_resourceURLs.contains(url)) {
+    if (shouldAddURL(url)) {
         WTF::TextEncoding textEncoding(styleSheet.contents()->charset());
         ASSERT(textEncoding.isValid());
         String textString = cssText.toString();
@@ -392,7 +386,8 @@ void PageSerializer::serializeCSSRule(CSSRule* rule)
 
 bool PageSerializer::shouldAddURL(const KURL& url)
 {
-    return url.isValid() && !m_resourceURLs.contains(url) && !url.protocolIsData();
+    return url.isValid() && !m_resourceURLs.contains(url) && !url.protocolIsData()
+        && !m_delegate.shouldSkipResource(url);
 }
 
 void PageSerializer::addToResources(Resource* resource, PassRefPtr<SharedBuffer> data, const KURL& url)
@@ -467,11 +462,6 @@ void PageSerializer::retrieveResourcesForCSSValue(CSSValue* cssValue, Document& 
         for (unsigned i = 0; i < cssValueList->length(); i++)
             retrieveResourcesForCSSValue(cssValueList->item(i), document);
     }
-}
-
-PageSerializer::Delegate* PageSerializer::delegate()
-{
-    return m_delegate;
 }
 
 // Returns MOTW (Mark of the Web) declaration before html tag which is in

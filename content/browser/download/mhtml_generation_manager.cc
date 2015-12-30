@@ -18,12 +18,14 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -38,14 +40,25 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
 
   GenerateMHTMLCallback callback() const { return callback_; }
 
+  // Handler for FrameHostMsg_SerializeAsMHTMLResponse (a notification from the
+  // renderer that the MHTML generation for previous frame has finished).
+  // Returns |true| upon success; |false| otherwise.
+  bool OnSerializeAsMHTMLResponse(
+      RenderFrameHostImpl* sender,
+      const std::set<std::string>& digests_of_uris_of_serialized_resources);
+
   // Sends IPC to the renderer, asking for MHTML generation of the next frame.
   //
   // Returns true if the message was sent successfully; false otherwise.
   bool SendToNextRenderFrame();
 
   // Indicates if more calls to SendToNextRenderFrame are needed.
-  bool HasMoreFramesToProcess() const {
-    return !pending_frame_tree_node_ids_.empty();
+  bool IsDone() const {
+    bool waiting_for_response_from_renderer =
+        frame_tree_node_id_of_busy_frame_ !=
+        FrameTreeNode::kFrameTreeNodeInvalidId;
+    bool no_more_requests_to_send = pending_frame_tree_node_ids_.empty();
+    return !waiting_for_response_from_renderer && no_more_requests_to_send;
   }
 
   // Close the file on the file thread and respond back on the UI thread with
@@ -73,11 +86,16 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
   // See also MHTMLGenerationManager::id_to_job_ map.
   int job_id_;
 
+  // The IDs of frames that still need to be processed.
+  std::queue<int> pending_frame_tree_node_ids_;
+
+  // Identifies a frame to which we've sent FrameMsg_SerializeAsMHTML but for
+  // which we didn't yet process FrameHostMsg_SerializeAsMHTMLResponse via
+  // OnSerializeAsMHTMLResponse.
+  int frame_tree_node_id_of_busy_frame_;
+
   // The handle to the file the MHTML is saved to for the browser process.
   base::File browser_file_;
-
-  // The IDs of frames we still need to process.
-  std::queue<int> pending_frame_tree_node_ids_;
 
   // Map from frames into content ids (see WebPageSerializer::generateMHTMLParts
   // for more details about what "content ids" are and how they are used).
@@ -85,6 +103,10 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
 
   // MIME multipart boundary to use in the MHTML doc.
   std::string mhtml_boundary_marker_;
+
+  // Digests of URIs of already generated MHTML parts.
+  std::set<std::string> digests_of_already_serialized_uris_;
+  std::string salt_;
 
   // The callback to call once generation is complete.
   GenerateMHTMLCallback callback_;
@@ -100,7 +122,9 @@ MHTMLGenerationManager::Job::Job(int job_id,
                                  WebContents* web_contents,
                                  GenerateMHTMLCallback callback)
     : job_id_(job_id),
+      frame_tree_node_id_of_busy_frame_(FrameTreeNode::kFrameTreeNodeInvalidId),
       mhtml_boundary_marker_(GenerateMHTMLBoundaryMarker()),
+      salt_(base::GenerateGUID()),
       callback_(callback),
       observed_renderer_process_host_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -144,9 +168,13 @@ bool MHTMLGenerationManager::Job::SendToNextRenderFrame() {
   DCHECK(browser_file_.IsValid());
   DCHECK_LT(0u, pending_frame_tree_node_ids_.size());
 
+  FrameMsg_SerializeAsMHTML_Params ipc_params;
+  ipc_params.job_id = job_id_;
+  ipc_params.mhtml_boundary_marker = mhtml_boundary_marker_;
+
   int frame_tree_node_id = pending_frame_tree_node_ids_.front();
   pending_frame_tree_node_ids_.pop();
-  bool is_last_frame = pending_frame_tree_node_ids_.empty();
+  ipc_params.is_last_frame = pending_frame_tree_node_ids_.empty();
 
   FrameTreeNode* ftn = FrameTreeNode::GloballyFindByID(frame_tree_node_id);
   if (!ftn)  // The contents went away.
@@ -157,12 +185,21 @@ bool MHTMLGenerationManager::Job::SendToNextRenderFrame() {
   observed_renderer_process_host_.RemoveAll();
   observed_renderer_process_host_.Add(rfh->GetProcess());
 
-  IPC::PlatformFileForTransit renderer_file = IPC::GetFileHandleForProcess(
+  // Tell the renderer to skip (= deduplicate) already covered MHTML parts.
+  ipc_params.salt = salt_;
+  ipc_params.digests_of_uris_to_skip = digests_of_already_serialized_uris_;
+
+  ipc_params.destination_file = IPC::GetFileHandleForProcess(
       browser_file_.GetPlatformFile(), rfh->GetProcess()->GetHandle(),
       false);  // |close_source_handle|.
-  rfh->Send(new FrameMsg_SerializeAsMHTML(
-      rfh->GetRoutingID(), job_id_, renderer_file, mhtml_boundary_marker_,
-      CreateFrameRoutingIdToContentId(rfh->GetSiteInstance()), is_last_frame));
+  ipc_params.frame_routing_id_to_content_id =
+      CreateFrameRoutingIdToContentId(rfh->GetSiteInstance());
+
+  // Send the IPC asking the renderer to serialize the frame.
+  DCHECK_EQ(FrameTreeNode::kFrameTreeNodeInvalidId,
+            frame_tree_node_id_of_busy_frame_);
+  frame_tree_node_id_of_busy_frame_ = frame_tree_node_id;
+  rfh->Send(new FrameMsg_SerializeAsMHTML(rfh->GetRoutingID(), ipc_params));
   return true;
 }
 
@@ -205,6 +242,31 @@ void MHTMLGenerationManager::Job::CloseFile(
       base::Bind(&MHTMLGenerationManager::Job::CloseFileOnFileThread,
                  base::Passed(std::move(browser_file_))),
       callback);
+}
+
+bool MHTMLGenerationManager::Job::OnSerializeAsMHTMLResponse(
+    RenderFrameHostImpl* sender,
+    const std::set<std::string>& digests_of_uris_of_serialized_resources) {
+  // Sanitize renderer input / reject unexpected messages.
+  int sender_id = sender->frame_tree_node()->frame_tree_node_id();
+  if (sender_id != frame_tree_node_id_of_busy_frame_) {
+    NOTREACHED();
+    return false;  // Report failure.
+  }
+  frame_tree_node_id_of_busy_frame_ = FrameTreeNode::kFrameTreeNodeInvalidId;
+
+  // Renderer should be deduping resources with the same uris.
+  DCHECK_EQ(0u, base::STLSetIntersection<std::set<std::string>>(
+                    digests_of_already_serialized_uris_,
+                    digests_of_uris_of_serialized_resources).size());
+  digests_of_already_serialized_uris_.insert(
+      digests_of_uris_of_serialized_resources.begin(),
+      digests_of_uris_of_serialized_resources.end());
+
+  if (pending_frame_tree_node_ids_.empty())
+    return true;  // Report success.
+
+  return SendToNextRenderFrame();
 }
 
 // static
@@ -260,9 +322,11 @@ void MHTMLGenerationManager::SaveMHTML(WebContents* web_contents,
                  job_id));
 }
 
-void MHTMLGenerationManager::OnSavedFrameAsMHTML(
+void MHTMLGenerationManager::OnSerializeAsMHTMLResponse(
+    RenderFrameHostImpl* sender,
     int job_id,
-    bool mhtml_generation_in_renderer_succeeded) {
+    bool mhtml_generation_in_renderer_succeeded,
+    const std::set<std::string>& digests_of_uris_of_serialized_resources) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!mhtml_generation_in_renderer_succeeded) {
@@ -274,14 +338,14 @@ void MHTMLGenerationManager::OnSavedFrameAsMHTML(
   if (!job)
     return;
 
-  if (job->HasMoreFramesToProcess()) {
-    if (!job->SendToNextRenderFrame()) {
-      JobFinished(job_id, JobStatus::FAILURE);
-    }
+  if (!job->OnSerializeAsMHTMLResponse(
+          sender, digests_of_uris_of_serialized_resources)) {
+    JobFinished(job_id, JobStatus::FAILURE);
     return;
   }
 
-  JobFinished(job_id, JobStatus::SUCCESS);
+  if (job->IsDone())
+    JobFinished(job_id, JobStatus::SUCCESS);
 }
 
 // static

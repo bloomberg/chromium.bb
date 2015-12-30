@@ -48,6 +48,7 @@
 #include "third_party/WebKit/public/web/WebPageSerializerClient.h"
 #include "third_party/WebKit/public/web/WebScriptExecutionCallback.h"
 #include "ui/gfx/range/range.h"
+#include "url/gurl.h"
 
 #if defined(ENABLE_PLUGINS)
 #include "content/renderer/pepper/plugin_power_saver_helper.h"
@@ -61,10 +62,10 @@
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #endif
 
-class GURL;
 class TransportDIB;
 struct FrameMsg_NewFrame_WidgetParams;
 struct FrameMsg_PostMessage_Params;
+struct FrameMsg_SerializeAsMHTML_Params;
 struct FrameMsg_TextTrackSettings_Params;
 
 namespace blink {
@@ -790,12 +791,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnGetSavableResourceLinks();
   void OnGetSerializedHtmlWithLocalLinks(
       const std::map<GURL, base::FilePath>& url_to_local_path);
-  void OnSerializeAsMHTML(
-      int job_id,
-      IPC::PlatformFileForTransit file_for_transit,
-      const std::string& mhtml_boundary_marker,
-      const std::map<int, std::string>& frame_routing_id_to_content_id,
-      bool is_last_frame);
+  void OnSerializeAsMHTML(const FrameMsg_SerializeAsMHTML_Params& params);
 
   // Requests that the browser process navigates to |url|. If
   // |is_history_navigation_in_new_child| is true, the browser process should

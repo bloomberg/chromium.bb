@@ -68,7 +68,11 @@ class CORE_EXPORT PageSerializer final {
 public:
     class Delegate {
     public:
-        virtual bool shouldIgnoreAttribute(const Attribute&) = 0;
+        // Controls whether HTML serialization should skip the given attribute.
+        virtual bool shouldIgnoreAttribute(const Attribute&)
+        {
+            return false;
+        }
 
         // Method allowing the Delegate control which URLs are written into the
         // generated html document.
@@ -79,22 +83,30 @@ public:
         // (i.e. in place of img.src or iframe.src or object.data).
         //
         // If no link rewriting is desired, this method should return false.
-        virtual bool rewriteLink(const Element&, String& rewrittenLink) = 0;
+        virtual bool rewriteLink(const Element&, String& rewrittenLink)
+        {
+            return false;
+        }
+
+        // Tells whether to skip serialization of a subresource with a given URI.
+        // Used to deduplicate resources across multiple frames.
+        virtual bool shouldSkipResource(const KURL&)
+        {
+            return false;
+        }
     };
 
     // Constructs a serializer that will write output to the given vector of
-    // SerializedResources and use the optional Delegate for controlling some
-    // serialization aspects.  Callers need to ensure that the Delegate stays
+    // SerializedResources and uses the Delegate for controlling some
+    // serialization aspects.  Callers need to ensure that both arguments stay
     // alive until the PageSerializer gets destroyed.
-    PageSerializer(Vector<SerializedResource>&, Delegate*);
+    PageSerializer(Vector<SerializedResource>&, Delegate&);
 
     // Initiates the serialization of the frame. All serialized content and
     // retrieved resources are added to the Vector passed to the constructor.
     // The first resource in that vector is the frame's serialized content.
     // Subsequent resources are images, css, etc.
     void serializeFrame(const LocalFrame&);
-
-    Delegate* delegate();
 
     static String markOfTheWebDeclaration(const KURL&);
 
@@ -118,7 +130,7 @@ private:
     Vector<SerializedResource>* m_resources;
     ListHashSet<KURL> m_resourceURLs;
 
-    Delegate* m_delegate;
+    Delegate& m_delegate;
 };
 
 } // namespace blink

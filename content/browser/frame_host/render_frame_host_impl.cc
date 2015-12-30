@@ -1714,8 +1714,12 @@ void RenderFrameHostImpl::OnDidChangeLoadProgress(double load_progress) {
   frame_tree_node_->DidChangeLoadProgress(load_progress);
 }
 
-void RenderFrameHostImpl::OnSerializeAsMHTMLResponse(int job_id, bool success) {
-  MHTMLGenerationManager::GetInstance()->OnSavedFrameAsMHTML(job_id, success);
+void RenderFrameHostImpl::OnSerializeAsMHTMLResponse(
+    int job_id,
+    bool success,
+    const std::set<std::string>& digests_of_uris_of_serialized_resources) {
+  MHTMLGenerationManager::GetInstance()->OnSerializeAsMHTMLResponse(
+      this, job_id, success, digests_of_uris_of_serialized_resources);
 }
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)

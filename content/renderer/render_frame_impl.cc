@@ -17,10 +17,12 @@
 #include "base/files/file.h"
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/process/process.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
@@ -127,6 +129,7 @@
 #include "content/renderer/web_frame_utils.h"
 #include "content/renderer/web_ui_extension.h"
 #include "content/renderer/websharedworker_proxy.h"
+#include "crypto/sha2.h"
 #include "gin/modules/module_registry.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/audio_renderer_mixer_input.h"
@@ -579,6 +582,55 @@ WebString ConvertRelativePathToHtmlAttribute(const base::FilePath& path) {
       std::string("./") +
       path.NormalizePathSeparatorsTo(FILE_PATH_LITERAL('/')).AsUTF8Unsafe());
 }
+
+// Implementation of WebPageSerializer::MHTMLPartsGenerationDelegate that
+// 1. Bases shouldSkipResource and getContentID responses on contents of
+//    FrameMsg_SerializeAsMHTML_Params.
+// 2. Stores digests of urls of serialized resources (i.e. urls reported via
+//    shouldSkipResource) into |digests_of_uris_of_serialized_resources| passed
+//    to the constructor.
+class MHTMLPartsGenerationDelegate
+    : public WebPageSerializer::MHTMLPartsGenerationDelegate {
+ public:
+  MHTMLPartsGenerationDelegate(
+      const FrameMsg_SerializeAsMHTML_Params& params,
+      std::set<std::string>* digests_of_uris_of_serialized_resources)
+      : params_(params),
+        digests_of_uris_of_serialized_resources_(
+            digests_of_uris_of_serialized_resources) {
+    DCHECK(digests_of_uris_of_serialized_resources_);
+  }
+
+  bool shouldSkipResource(const WebURL& url) override {
+    std::string digest =
+        crypto::SHA256HashString(params_.salt + GURL(url).spec());
+
+    // Skip if the |url| already covered by serialization of an *earlier* frame.
+    if (ContainsKey(params_.digests_of_uris_to_skip, digest))
+      return true;
+
+    // Let's record |url| as being serialized for the *current* frame.
+    auto pair = digests_of_uris_of_serialized_resources_->insert(digest);
+    bool insertion_took_place = pair.second;
+    DCHECK(insertion_took_place);  // Blink should dedupe within a frame.
+
+    return false;
+  }
+
+  WebString getContentID(const WebFrame& frame) override {
+    int routing_id = GetRoutingIdForFrameOrProxy(const_cast<WebFrame*>(&frame));
+    auto it = params_.frame_routing_id_to_content_id.find(routing_id);
+    DCHECK(it != params_.frame_routing_id_to_content_id.end());
+    const std::string& content_id = it->second;
+    return WebString::fromUTF8(content_id);
+  }
+
+ private:
+  const FrameMsg_SerializeAsMHTML_Params& params_;
+  std::set<std::string>* digests_of_uris_of_serialized_resources_;
+
+  DISALLOW_COPY_AND_ASSIGN(MHTMLPartsGenerationDelegate);
+};
 
 bool IsContentWithCertificateErrorsRelevantToUI(
     const blink::WebURL& url,
@@ -4766,28 +4818,18 @@ void RenderFrameImpl::OnGetSerializedHtmlWithLocalLinks(
 }
 
 void RenderFrameImpl::OnSerializeAsMHTML(
-    int job_id,
-    IPC::PlatformFileForTransit file_for_transit,
-    const std::string& std_mhtml_boundary,
-    const std::map<int, std::string>& frame_routing_id_to_content_id,
-    bool is_last_frame) {
+    const FrameMsg_SerializeAsMHTML_Params& params) {
   // Unpack IPC payload.
-  base::File file = IPC::PlatformFileForTransitToFile(file_for_transit);
-  const WebString mhtml_boundary = WebString::fromUTF8(std_mhtml_boundary);
+  base::File file = IPC::PlatformFileForTransitToFile(params.destination_file);
+  const WebString mhtml_boundary =
+      WebString::fromUTF8(params.mhtml_boundary_marker);
   DCHECK(!mhtml_boundary.isEmpty());
-  std::vector<std::pair<WebFrame*, WebString>> web_frame_to_content_id;
-  for (const auto& it : frame_routing_id_to_content_id) {
-    const std::string& content_id = it.second;
-    WebFrame* web_frame = GetWebFrameFromRoutingIdForFrameOrProxy(it.first);
-    if (!web_frame)
-      continue;
-
-    web_frame_to_content_id.push_back(
-        std::make_pair(web_frame, WebString::fromUTF8(content_id)));
-  }
 
   WebData data;
   bool success = true;
+  std::set<std::string> digests_of_uris_of_serialized_resources;
+  MHTMLPartsGenerationDelegate delegate(
+      params, &digests_of_uris_of_serialized_resources);
 
   // Generate MHTML header if needed.
   if (IsMainFrame()) {
@@ -4800,8 +4842,8 @@ void RenderFrameImpl::OnSerializeAsMHTML(
 
   // Generate MHTML parts.
   if (success) {
-    data = WebPageSerializer::generateMHTMLParts(
-        mhtml_boundary, GetWebFrame(), false, web_frame_to_content_id);
+    data = WebPageSerializer::generateMHTMLParts(mhtml_boundary, GetWebFrame(),
+                                                 false, &delegate);
     // TODO(jcivelli): write the chunks in deferred tasks to give a chance to
     //                 the message loop to process other events.
     if (file.WriteAtCurrentPos(data.data(), data.size()) < 0) {
@@ -4810,7 +4852,7 @@ void RenderFrameImpl::OnSerializeAsMHTML(
   }
 
   // Generate MHTML footer if needed.
-  if (success && is_last_frame) {
+  if (success && params.is_last_frame) {
     data = WebPageSerializer::generateMHTMLFooter(mhtml_boundary);
     if (file.WriteAtCurrentPos(data.data(), data.size()) < 0) {
       success = false;
@@ -4819,7 +4861,9 @@ void RenderFrameImpl::OnSerializeAsMHTML(
 
   // Cleanup and notify the browser process about completion.
   file.Close();  // Need to flush file contents before sending IPC response.
-  Send(new FrameHostMsg_SerializeAsMHTMLResponse(routing_id_, job_id, success));
+  Send(new FrameHostMsg_SerializeAsMHTMLResponse(
+      routing_id_, params.job_id, success,
+      digests_of_uris_of_serialized_resources));
 }
 
 void RenderFrameImpl::OpenURL(const GURL& url,

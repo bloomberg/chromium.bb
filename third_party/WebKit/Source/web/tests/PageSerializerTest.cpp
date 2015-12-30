@@ -119,7 +119,7 @@ protected:
     void serialize(const char* url)
     {
         FrameTestHelpers::loadFrame(m_helper.webView()->mainFrame(), KURL(m_baseUrl, url).string().utf8().data());
-        PageSerializer serializer(m_resources, this);
+        PageSerializer serializer(m_resources, *this);
         Frame* frame = m_helper.webViewImpl()->mainFrameImpl()->frame();
         for (; frame; frame = frame->tree().traverseNext()) {
             // This is safe, because tests do not do cross-site navigation
@@ -165,12 +165,6 @@ private:
         settings->setImagesEnabled(true);
         settings->setLoadsImagesAutomatically(true);
         settings->setJavaScriptEnabled(true);
-    }
-
-    // PageSerializer::Delegate implementation.
-    bool shouldIgnoreAttribute(const Attribute&) override
-    {
-        return false;
     }
 
     // PageSerializer::Delegate implementation.

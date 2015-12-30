@@ -63,21 +63,29 @@ public:
     BLINK_EXPORT static WebData generateMHTMLHeader(
         const WebString& boundary, WebLocalFrame*);
 
-    // Generates and returns MHTML parts for the given frame and all the
+    // Delegate for controling the behavior of generateMHTMLParts method.
+    class MHTMLPartsGenerationDelegate {
+    public:
+        // Tells whether to skip serialization of a subresource with a given URI.
+        // Used to deduplicate resources across multiple frames.
+        virtual bool shouldSkipResource(const WebURL&) = 0;
+
+        // Returns a Content-ID to be used for the given frame.
+        // See rfc2557 - section 8.3 - "Use of the Content-ID header and CID URLs".
+        // Format note - the returned string should be of the form "<foo@bar.com>"
+        // (i.e. the strings should include the angle brackets).
+        virtual WebString getContentID(const WebFrame&) = 0;
+    };
+
+    // Generates and returns MHTML parts for the given frame and the
     // savable resources underneath.
     //
     // Same |boundary| needs to used for all generateMHTMLHeader and
     // generateMHTMLParts and generateMHTMLFooter calls that belong to the same
     // MHTML document (see also rfc1341, section 7.2.1, "boundary" description).
-    //
-    // |frameToContentID| is used for 1) emitting cid: scheme uri links for
-    // subframes and 2) emitting MIME Content-ID headers.
-    // See rfc2557 - section 8.3 - "Use of the Content-ID header and CID URLs".
-    // Format note - |frameToContentID| should contain strings of the form
-    // "<foo@bar.com>" (i.e. the strings should include the angle brackets).
     BLINK_EXPORT static WebData generateMHTMLParts(
         const WebString& boundary, WebLocalFrame*, bool useBinaryEncoding,
-        const WebVector<std::pair<WebFrame*, WebString>>& frameToContentID);
+        MHTMLPartsGenerationDelegate*);
 
     // Generates and returns an MHTML footer.
     //
@@ -92,7 +100,7 @@ public:
 
     // This function will serialize the specified frame to HTML data.
     // We have a data buffer to temporary saving generated html data. We will
-    // sequentially call WebPageSeriazlierClient once the data buffer is full.
+    // sequentially call WebPageSerializerClient once the data buffer is full.
     //
     // Return false means if no data has been serialized (i.e. because
     // the target frame didn't have a valid url).
