@@ -49,5 +49,10 @@
              android:exported="false" />
     <meta-data android:name="org.chromium.content.browser.NUM_PRIVILEGED_SERVICES"
                android:value="0"/>
+    <!-- See AwSecondBrowserProcessTest -->
+    <service android:name="org.chromium.android_webview.test.SecondBrowserProcess"
+             android:process=":second_browser_process"
+             android:isolatedProcess="false"
+             android:exported="false" />
   </application>
 </manifest>

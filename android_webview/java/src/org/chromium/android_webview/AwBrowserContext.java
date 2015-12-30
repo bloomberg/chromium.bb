@@ -12,9 +12,10 @@ import org.chromium.content.browser.ContentViewStatics;
 /**
  * Java side of the Browser Context: contains all the java side objects needed to host one
  * browing session (i.e. profile).
- * Note that due to running in single process mode, and limitations on renderer process only
- * being able to use a single browser context, currently there can only be one AwBrowserContext
- * instance, so at this point the class mostly exists for conceptual clarity.
+ *
+ * Note that historically WebView was running in single process mode, and limitations on renderer
+ * process only being able to use a single browser context, currently there can only be one
+ * AwBrowserContext instance, so at this point the class mostly exists for conceptual clarity.
  */
 public class AwBrowserContext {
     private static final String HTTP_AUTH_DATABASE_FILE = "http_auth.db";

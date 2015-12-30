@@ -8,6 +8,7 @@ import android.content.Context;
 
 import org.chromium.android_webview.policy.AwPolicyProvider;
 import org.chromium.base.CommandLine;
+import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -16,6 +17,11 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.policy.CombinedPolicyProvider;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.channels.FileLock;
+
 /**
  * Wrapper for the steps needed to initialize the java and native sides of webview chromium.
  */
@@ -23,6 +29,8 @@ public abstract class AwBrowserProcess {
     public static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "webview";
 
     private static final String TAG = "AwBrowserProcess";
+    private static final String EXCLUSIVE_LOCK_FILE = "webview_data.lock";
+    private static FileLock sExclusiveFileLock;
 
     /**
      * Loads the native library, and performs basic static construction of objects needed
@@ -50,6 +58,7 @@ public abstract class AwBrowserProcess {
      * @param context The Android application context
      */
     public static void start(final Context context) {
+        tryObtainingDataDirLockOrDie(context);
         // We must post to the UI thread to cover the case that the user
         // has invoked Chromium startup by using the (thread-safe)
         // CookieManager rather than creating a WebView.
@@ -70,5 +79,24 @@ public abstract class AwBrowserProcess {
                 }
             }
         });
+    }
+
+    private static void tryObtainingDataDirLockOrDie(Context context) {
+        String dataPath = PathUtils.getDataDirectory(context);
+        File lockFile = new File(dataPath, EXCLUSIVE_LOCK_FILE);
+        boolean success = false;
+        try {
+            // Note that the file is not closed intentionally.
+            RandomAccessFile file = new RandomAccessFile(lockFile, "rw");
+            sExclusiveFileLock = file.getChannel().tryLock();
+            success = sExclusiveFileLock != null;
+        } catch (IOException e) {
+            Log.w(TAG, "Failed to create lock file " + lockFile, e);
+        }
+        if (!success) {
+            throw new RuntimeException(
+                    "Could not obtain an exclusive lock on the data dir. The app may have "
+                    + "another WebView opened in a separate process");
+        }
     }
 }
