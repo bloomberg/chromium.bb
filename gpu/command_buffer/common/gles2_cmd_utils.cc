@@ -802,6 +802,12 @@ size_t GLES2Util::GetGLTypeSizeForTexturesAndBuffers(uint32_t type) {
       return sizeof(GLfloat);  // NOLINT
     case GL_FIXED:
       return sizeof(GLfixed);  // NOLINT
+    case GL_HALF_FLOAT:
+      return sizeof(GLushort);  // NOLINT
+    case GL_INT_2_10_10_10_REV:
+      return sizeof(GLint);  // NOLINT
+    case GL_UNSIGNED_INT_2_10_10_10_REV:
+      return sizeof(GLuint);  // NOLINT
     default:
       return 0;
   }
