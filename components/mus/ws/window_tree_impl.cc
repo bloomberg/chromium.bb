@@ -64,12 +64,10 @@ class TargetedEvent : public ServerWindowObserver {
 };
 
 WindowTreeImpl::WindowTreeImpl(ConnectionManager* connection_manager,
-                               ConnectionSpecificId creator_id,
                                const WindowId& root_id,
                                uint32_t policy_bitmask)
     : connection_manager_(connection_manager),
       id_(connection_manager_->GetAndAdvanceNextConnectionId()),
-      creator_id_(creator_id),
       client_(nullptr),
       event_ack_id_(0),
       is_embed_root_(false),
@@ -133,8 +131,6 @@ WindowTreeHostImpl* WindowTreeImpl::GetHost() const {
 }
 
 void WindowTreeImpl::OnWillDestroyWindowTreeImpl(WindowTreeImpl* connection) {
-  if (creator_id_ == connection->id())
-    creator_id_ = kInvalidConnectionId;
   const ServerWindow* connection_root =
       connection->root_ ? connection->GetWindow(*connection->root_) : nullptr;
   if (connection_root &&
@@ -225,7 +221,7 @@ bool WindowTreeImpl::Embed(const WindowId& window_id,
     return false;
   PrepareForEmbed(window_id);
   WindowTreeImpl* new_connection = connection_manager_->EmbedAtWindow(
-      id_, window_id, policy_bitmask, std::move(client));
+      window_id, policy_bitmask, std::move(client));
   if (is_embed_root_)
     *connection_id = new_connection->id();
   return true;

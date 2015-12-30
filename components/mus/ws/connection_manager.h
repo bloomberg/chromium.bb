@@ -70,8 +70,7 @@ class ConnectionManager : public ServerWindowDelegate,
 
   // See description of WindowTree::Embed() for details. This assumes
   // |transport_window_id| is valid.
-  WindowTreeImpl* EmbedAtWindow(ConnectionSpecificId creator_id,
-                                const WindowId& window_id,
+  WindowTreeImpl* EmbedAtWindow(const WindowId& window_id,
                                 uint32_t policy_bitmask,
                                 mojom::WindowTreeClientPtr client);
 

@@ -192,13 +192,12 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
   ClientConnection* CreateClientConnectionForEmbedAtWindow(
       ConnectionManager* connection_manager,
       mojo::InterfaceRequest<mus::mojom::WindowTree> service_request,
-      ConnectionSpecificId creator_id,
       const WindowId& root_id,
       uint32_t policy_bitmask,
       mus::mojom::WindowTreeClientPtr client) override {
     // Used by ConnectionManager::AddRoot.
-    scoped_ptr<WindowTreeImpl> service(new WindowTreeImpl(
-        connection_manager, creator_id, root_id, policy_bitmask));
+    scoped_ptr<WindowTreeImpl> service(
+        new WindowTreeImpl(connection_manager, root_id, policy_bitmask));
     last_connection_ = new TestClientConnection(std::move(service));
     return last_connection_;
   }
@@ -222,7 +221,7 @@ class TestWindowTreeHostConnection : public WindowTreeHostConnection {
   void OnDisplayInitialized() override {
     connection_manager()->AddHost(this);
     set_window_tree(connection_manager()->EmbedAtWindow(
-        kInvalidConnectionId, window_tree_host()->root_window()->id(),
+        window_tree_host()->root_window()->id(),
         mus::mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT,
         mus::mojom::WindowTreeClientPtr()));
   }

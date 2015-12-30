@@ -141,14 +141,13 @@ void ConnectionManager::OnHostConnectionClosed(
 }
 
 WindowTreeImpl* ConnectionManager::EmbedAtWindow(
-    ConnectionSpecificId creator_id,
     const WindowId& window_id,
     uint32_t policy_bitmask,
     mojom::WindowTreeClientPtr client) {
   mojom::WindowTreePtr service_ptr;
   ClientConnection* client_connection =
       delegate_->CreateClientConnectionForEmbedAtWindow(
-          this, GetProxy(&service_ptr), creator_id, window_id, policy_bitmask,
+          this, GetProxy(&service_ptr), window_id, policy_bitmask,
           std::move(client));
   AddConnection(client_connection);
   client_connection->service()->Init(client_connection->client(),

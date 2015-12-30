@@ -45,7 +45,6 @@ class WindowTreeImpl : public mojom::WindowTree,
                        public mojom::WindowManagerInternalClient {
  public:
   WindowTreeImpl(ConnectionManager* connection_manager,
-                 ConnectionSpecificId creator_id,
                  const WindowId& root_id,
                  uint32_t policy_bitmask);
   ~WindowTreeImpl() override;
@@ -53,7 +52,6 @@ class WindowTreeImpl : public mojom::WindowTree,
   void Init(mojom::WindowTreeClient* client, mojom::WindowTreePtr tree);
 
   ConnectionSpecificId id() const { return id_; }
-  ConnectionSpecificId creator_id() const { return creator_id_; }
 
   mojom::WindowTreeClient* client() { return client_; }
 
@@ -276,10 +274,6 @@ class WindowTreeImpl : public mojom::WindowTree,
 
   // Id of this connection as assigned by ConnectionManager.
   const ConnectionSpecificId id_;
-
-  // ID of the connection that created us. If 0 it indicates either we were
-  // created by the root, or the connection that created us has been destroyed.
-  ConnectionSpecificId creator_id_;
 
   mojom::WindowTreeClient* client_;
 

@@ -62,7 +62,7 @@ WindowTreeHostConnectionImpl::~WindowTreeHostConnectionImpl() {}
 void WindowTreeHostConnectionImpl::OnDisplayInitialized() {
   connection_manager()->AddHost(this);
   set_window_tree(connection_manager()->EmbedAtWindow(
-      kInvalidConnectionId, window_tree_host()->root_window()->id(),
+      window_tree_host()->root_window()->id(),
       mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT, std::move(client_)));
 }
 

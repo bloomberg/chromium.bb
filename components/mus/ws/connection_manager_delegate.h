@@ -32,7 +32,6 @@ class ConnectionManagerDelegate {
   virtual ClientConnection* CreateClientConnectionForEmbedAtWindow(
       ConnectionManager* connection_manager,
       mojo::InterfaceRequest<mojom::WindowTree> tree_request,
-      ConnectionSpecificId creator_id,
       const WindowId& root_id,
       uint32_t policy_bitmask,
       mojom::WindowTreeClientPtr client) = 0;
