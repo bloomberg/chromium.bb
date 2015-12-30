@@ -6,6 +6,7 @@
 
 #include "core/html/HTMLCanvasElement.h"
 #include "modules/mediacapturefromelement/AutoCanvasDrawListener.h"
+#include "modules/mediacapturefromelement/OnRequestCanvasDrawListener.h"
 #include "modules/mediacapturefromelement/TimedCanvasDrawListener.h"
 #include "platform/NotImplemented.h"
 #include "platform/mediastream/MediaStreamCenter.h"
@@ -29,8 +30,7 @@ HTMLCanvasElement* CanvasCaptureMediaStreamTrack::canvas() const
 
 void CanvasCaptureMediaStreamTrack::requestFrame()
 {
-    notImplemented();
-    return;
+    m_drawListener->requestFrame();
 }
 
 CanvasCaptureMediaStreamTrack* CanvasCaptureMediaStreamTrack::clone(ExecutionContext* context)
@@ -71,10 +71,14 @@ CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(MediaStreamComponen
     , m_canvasElement(element)
 {
     suspendIfNeeded();
-    TimedCanvasDrawListener* listener = TimedCanvasDrawListener::create(handler, frameRate);
-    m_drawListener = listener;
+    if (frameRate == 0) {
+        m_drawListener = OnRequestCanvasDrawListener::create(handler);
+    } else {
+        TimedCanvasDrawListener* listener = TimedCanvasDrawListener::create(handler, frameRate);
+        listener->requestNewFrame();
+        m_drawListener = listener;
+    }
     m_canvasElement->addListener(m_drawListener.get());
-    listener->requestNewFrame();
 }
 
 } // namespace blink

@@ -20,6 +20,10 @@ void CanvasDrawListener::sendNewFrame(const WTF::PassRefPtr<SkImage>& image)
     m_handler->sendNewFrame(WebSkImage(image));
 }
 
+void CanvasDrawListener::requestFrame()
+{
+}
+
 CanvasDrawListener::CanvasDrawListener(const PassOwnPtr<WebCanvasCaptureHandler> handler)
     : m_handler(handler)
 {

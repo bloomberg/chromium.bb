@@ -18,6 +18,7 @@ public:
     virtual ~CanvasDrawListener();
     virtual bool needsNewFrame() const;
     virtual void sendNewFrame(const WTF::PassRefPtr<SkImage>&);
+    virtual void requestFrame();
 
 protected:
     explicit CanvasDrawListener(const PassOwnPtr<WebCanvasCaptureHandler>);
