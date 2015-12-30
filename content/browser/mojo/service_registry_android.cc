@@ -4,6 +4,8 @@
 
 #include "content/browser/mojo/service_registry_android.h"
 
+#include <utility>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/callback.h"
@@ -94,7 +96,7 @@ void ServiceRegistryAndroid::ConnectToRemoteService(
     jint j_handle) {
   std::string name(ConvertJavaStringToUTF8(env, j_name));
   mojo::ScopedMessagePipeHandle handle((mojo::MessagePipeHandle(j_handle)));
-  service_registry_->ConnectToRemoteService(name, handle.Pass());
+  service_registry_->ConnectToRemoteService(name, std::move(handle));
 }
 
 }  // namespace content

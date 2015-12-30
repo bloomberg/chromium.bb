@@ -267,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, DISABLED_SynthesizePinchGesture) {
   params->SetInteger("x", old_width / 2);
   params->SetInteger("y", old_height / 2);
   params->SetDouble("scaleFactor", 2.0);
-  SendCommand("Input.synthesizePinchGesture", params.Pass());
+  SendCommand("Input.synthesizePinchGesture", std::move(params));
 
   int new_width;
   ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
@@ -298,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, SynthesizeScrollGesture) {
   params->SetInteger("y", 0);
   params->SetInteger("xDistance", 0);
   params->SetInteger("yDistance", -100);
-  SendCommand("Input.synthesizeScrollGesture", params.Pass());
+  SendCommand("Input.synthesizeScrollGesture", std::move(params));
 
   ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
       shell()->web_contents(),
@@ -321,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, SynthesizeTapGesture) {
   params->SetInteger("x", 16);
   params->SetInteger("y", 16);
   params->SetString("gestureSourceType", "touch");
-  SendCommand("Input.synthesizeTapGesture", params.Pass());
+  SendCommand("Input.synthesizeTapGesture", std::move(params));
 
   // The link that we just tapped should take us to the bottom of the page. The
   // new value of |document.body.scrollTop| will depend on the screen dimensions

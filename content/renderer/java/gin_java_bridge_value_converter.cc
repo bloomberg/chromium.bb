@@ -105,15 +105,15 @@ scoped_ptr<TypedArraySerializer> TypedArraySerializer::Create(
   if (typed_array->IsInt8Array() ||
       typed_array->IsUint8Array() ||
       typed_array->IsUint8ClampedArray()) {
-    return TypedArraySerializerImpl<char, int>::Create(typed_array).Pass();
+    return TypedArraySerializerImpl<char, int>::Create(typed_array);
   } else if (typed_array->IsInt16Array() || typed_array->IsUint16Array()) {
-    return TypedArraySerializerImpl<int16_t, int>::Create(typed_array).Pass();
+    return TypedArraySerializerImpl<int16_t, int>::Create(typed_array);
   } else if (typed_array->IsInt32Array() || typed_array->IsUint32Array()) {
-    return TypedArraySerializerImpl<int32_t, int>::Create(typed_array).Pass();
+    return TypedArraySerializerImpl<int32_t, int>::Create(typed_array);
   } else if (typed_array->IsFloat32Array()) {
-    return TypedArraySerializerImpl<float, double>::Create(typed_array).Pass();
+    return TypedArraySerializerImpl<float, double>::Create(typed_array);
   } else if (typed_array->IsFloat64Array()) {
-    return TypedArraySerializerImpl<double, double>::Create(typed_array).Pass();
+    return TypedArraySerializerImpl<double, double>::Create(typed_array);
   }
   NOTREACHED();
   return scoped_ptr<TypedArraySerializer>();

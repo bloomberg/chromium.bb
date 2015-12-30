@@ -61,7 +61,7 @@ scoped_ptr<JavaType> CreateFromArrayComponentTypeName(
       // Includes void (V).
       NOTREACHED();
   }
-  return result.Pass();
+  return result;
 }
 
 }  // namespace

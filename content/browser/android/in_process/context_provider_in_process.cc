@@ -5,6 +5,7 @@
 #include "content/browser/android/in_process/context_provider_in_process.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -45,7 +46,7 @@ scoped_refptr<ContextProviderInProcess> ContextProviderInProcess::Create(
     const std::string& debug_name) {
   if (!context3d)
     return NULL;
-  return new ContextProviderInProcess(context3d.Pass(), debug_name);
+  return new ContextProviderInProcess(std::move(context3d), debug_name);
 }
 
 ContextProviderInProcess::ContextProviderInProcess(
@@ -54,8 +55,8 @@ ContextProviderInProcess::ContextProviderInProcess(
     : debug_name_(debug_name) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(context3d);
-  gr_interface_ = skia::AdoptRef(new GrGLInterfaceForWebGraphicsContext3D(
-      context3d.Pass()));
+  gr_interface_ = skia::AdoptRef(
+      new GrGLInterfaceForWebGraphicsContext3D(std::move(context3d)));
   DCHECK(gr_interface_->WebContext3D());
   context_thread_checker_.DetachFromThread();
 }

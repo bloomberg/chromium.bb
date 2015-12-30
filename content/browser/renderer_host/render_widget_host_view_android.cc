@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 
 #include <android/bitmap.h>
+#include <utility>
 
 #include "base/android/build_info.h"
 #include "base/bind.h"
@@ -216,7 +217,7 @@ GLHelperHolder::CreateContext3D() {
     context.reset();
   }
 
-  return context.Pass();
+  return context;
 }
 
 // This can only be used for readback postprocessing. It may return null if the
@@ -298,7 +299,7 @@ gfx::RectF GetSelectionRect(const ui::TouchSelectionController& controller) {
 RenderWidgetHostViewAndroid::LastFrameInfo::LastFrameInfo(
     uint32_t output_id,
     scoped_ptr<cc::CompositorFrame> output_frame)
-    : output_surface_id(output_id), frame(output_frame.Pass()) {}
+    : output_surface_id(output_id), frame(std::move(output_frame)) {}
 
 RenderWidgetHostViewAndroid::LastFrameInfo::~LastFrameInfo() {}
 
@@ -571,7 +572,7 @@ void RenderWidgetHostViewAndroid::UnlockCompositingSurface() {
   if (locks_on_frame_count_ == 0) {
     if (last_frame_info_) {
       InternalSwapCompositorFrame(last_frame_info_->output_surface_id,
-                                  last_frame_info_->frame.Pass());
+                                  std::move(last_frame_info_->frame));
       last_frame_info_.reset();
     }
 
@@ -920,7 +921,7 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
                  readback_layer, callback));
   if (!src_subrect_in_pixel.IsEmpty())
     request->set_area(src_subrect_in_pixel);
-  readback_layer->RequestCopyOfOutput(request.Pass());
+  readback_layer->RequestCopyOfOutput(std::move(request));
 }
 
 void RenderWidgetHostViewAndroid::CopyFromCompositingSurfaceToVideoFrame(
@@ -1061,7 +1062,7 @@ void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
     cc::SurfaceFactory::DrawCallback ack_callback =
         base::Bind(&RenderWidgetHostViewAndroid::RunAckCallbacks,
                    weak_ptr_factory_.GetWeakPtr());
-    surface_factory_->SubmitCompositorFrame(surface_id_, frame.Pass(),
+    surface_factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
                                             ack_callback);
   } else {
     if (!resource_collection_.get()) {
@@ -1072,12 +1073,12 @@ void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
         texture_size_in_layer_ != frame_provider_->frame_size()) {
       RemoveLayers();
       frame_provider_ = new cc::DelegatedFrameProvider(
-          resource_collection_.get(), frame->delegated_frame_data.Pass());
+          resource_collection_.get(), std::move(frame->delegated_frame_data));
       layer_ = cc::DelegatedRendererLayer::Create(Compositor::LayerSettings(),
                                                   frame_provider_);
       AttachLayers();
     } else {
-      frame_provider_->SetFrameData(frame->delegated_frame_data.Pass());
+      frame_provider_->SetFrameData(std::move(frame->delegated_frame_data));
     }
   }
 }
@@ -1106,7 +1107,7 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
   if (!has_content) {
     DestroyDelegatedContent();
   } else {
-    SubmitCompositorFrame(frame.Pass());
+    SubmitCompositorFrame(std::move(frame));
   }
 
   if (layer_.get()) {
@@ -1130,7 +1131,7 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
 
   if (locks_on_frame_count_ > 0) {
     DCHECK(HasValidFrame());
-    RetainFrame(output_surface_id, frame.Pass());
+    RetainFrame(output_surface_id, std::move(frame));
     return;
   }
 
@@ -1139,7 +1140,7 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
     for (size_t i = 0; i < frame->metadata.latency_info.size(); i++) {
       scoped_ptr<cc::SwapPromise> swap_promise(
           new cc::LatencyInfoSwapPromise(frame->metadata.latency_info[i]));
-      layer_->layer_tree_host()->QueueSwapPromise(swap_promise.Pass());
+      layer_->layer_tree_host()->QueueSwapPromise(std::move(swap_promise));
     }
   }
 
@@ -1151,7 +1152,7 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
 
   cc::CompositorFrameMetadata metadata = frame->metadata;
 
-  SwapDelegatedFrame(output_surface_id, frame.Pass());
+  SwapDelegatedFrame(output_surface_id, std::move(frame));
   frame_evictor_->SwappedFrame(!host_->is_hidden());
 
   // As the metadata update may trigger view invalidation, always call it after
@@ -1162,7 +1163,7 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
 void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
     uint32_t output_surface_id,
     scoped_ptr<cc::CompositorFrame> frame) {
-  InternalSwapCompositorFrame(output_surface_id, frame.Pass());
+  InternalSwapCompositorFrame(output_surface_id, std::move(frame));
 }
 
 void RenderWidgetHostViewAndroid::ClearCompositorFrame() {
@@ -1187,7 +1188,8 @@ void RenderWidgetHostViewAndroid::RetainFrame(
     ack_callbacks_.push(ack_callback);
   }
 
-  last_frame_info_.reset(new LastFrameInfo(output_surface_id, frame.Pass()));
+  last_frame_info_.reset(
+      new LastFrameInfo(output_surface_id, std::move(frame)));
 }
 
 SynchronousCompositorBase*
@@ -1957,8 +1959,8 @@ void RenderWidgetHostViewAndroid::
         const ReadbackRequestCallback& callback,
         scoped_ptr<cc::CopyOutputResult> result) {
   readback_layer->RemoveFromParent();
-  PrepareTextureCopyOutputResult(
-      dst_size_in_pixel, color_type, start_time, callback, result.Pass());
+  PrepareTextureCopyOutputResult(dst_size_in_pixel, color_type, start_time,
+                                 callback, std::move(result));
 }
 
 // static

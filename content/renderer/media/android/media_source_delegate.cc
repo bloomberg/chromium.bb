@@ -6,6 +6,7 @@
 
 #include <limits>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/strings/string_number_conversions.h"
@@ -342,7 +343,7 @@ void MediaSourceDelegate::OnReadFromDemuxer(media::DemuxerStream::Type type) {
   scoped_ptr<DemuxerData> data(new DemuxerData());
   data->type = type;
   data->access_units.resize(access_unit_size_);
-  ReadFromDemuxerStream(type, data.Pass(), 0);
+  ReadFromDemuxerStream(type, std::move(data), 0);
 }
 
 void MediaSourceDelegate::ReadFromDemuxerStream(media::DemuxerStream::Type type,
@@ -449,7 +450,7 @@ void MediaSourceDelegate::OnBufferReady(
             buffer->decrypt_config()->subsamples();
       }
       if (++index < data->access_units.size()) {
-        ReadFromDemuxerStream(type, data.Pass(), index);
+        ReadFromDemuxerStream(type, std::move(data), index);
         return;
       }
       break;

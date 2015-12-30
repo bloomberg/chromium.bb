@@ -5,6 +5,7 @@
 #include "content/browser/android/in_process/synchronous_compositor_factory_impl.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -77,7 +78,7 @@ ContextHolder CreateContextHolder(
   holder.command_buffer =
       scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>(
           WebGraphicsContext3DInProcessCommandBufferImpl::WrapContext(
-              context.Pass(), attributes));
+              std::move(context), attributes));
   holder.gl_in_process_context = context_ptr;
 
   return holder;
@@ -240,7 +241,7 @@ SynchronousCompositorFactoryImpl::TryCreateStreamTextureFactory() {
         CreateContextHolder(attributes, android_view_service_,
                             gpu::GLInProcessContextSharedMemoryLimits(), false);
     video_context_provider_ = new VideoContextProvider(
-        ContextProviderInProcess::Create(holder.command_buffer.Pass(),
+        ContextProviderInProcess::Create(std::move(holder.command_buffer),
                                          "Video-Offscreen-main-thread"),
         holder.gl_in_process_context);
   }

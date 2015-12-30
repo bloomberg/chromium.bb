@@ -118,7 +118,7 @@ VRDeviceInfoPtr CardboardVRDevice::GetVRDevice() {
   right_eye->renderRect->width = screen_size[0] / 2.0;
   right_eye->renderRect->height = screen_size[1];
 
-  return device.Pass();
+  return device;
 }
 
 VRSensorStatePtr CardboardVRDevice::GetSensorState() {
@@ -156,7 +156,7 @@ VRSensorStatePtr CardboardVRDevice::GetSensorState() {
   state->position->y = decomposed_transform.translate[1];
   state->position->z = decomposed_transform.translate[2];
 
-  return state.Pass();
+  return state;
 }
 
 void CardboardVRDevice::ResetSensor() {

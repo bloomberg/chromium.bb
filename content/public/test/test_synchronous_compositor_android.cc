@@ -4,6 +4,8 @@
 
 #include "content/public/test/test_synchronous_compositor_android.h"
 
+#include <utility>
+
 #include "cc/output/compositor_frame.h"
 
 namespace content {
@@ -32,7 +34,7 @@ scoped_ptr<cc::CompositorFrame> TestSynchronousCompositor::DemandDrawHw(
     const gfx::Rect& clip,
     const gfx::Rect& viewport_rect_for_tile_priority,
     const gfx::Transform& transform_for_tile_priority) {
-  return hardware_frame_.Pass();
+  return std::move(hardware_frame_);
 }
 
 bool TestSynchronousCompositor::DemandDrawSw(SkCanvas* canvas) {
@@ -42,7 +44,7 @@ bool TestSynchronousCompositor::DemandDrawSw(SkCanvas* canvas) {
 
 void TestSynchronousCompositor::SetHardwareFrame(
     scoped_ptr<cc::CompositorFrame> frame) {
-  hardware_frame_ = frame.Pass();
+  hardware_frame_ = std::move(frame);
 }
 
 }  // namespace content

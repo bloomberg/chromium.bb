@@ -7,6 +7,7 @@
 #include <android/bitmap.h>
 #include <android/native_window_jni.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
@@ -223,7 +224,7 @@ scoped_ptr<cc::SurfaceIdAllocator> CompositorImpl::CreateSurfaceIdAllocator() {
   cc::SurfaceManager* manager = GetSurfaceManager();
   DCHECK(manager);
   allocator->RegisterSurfaceIdNamespace(manager);
-  return allocator.Pass();
+  return allocator;
 }
 
 CompositorImpl::CompositorImpl(CompositorClient* client,
@@ -663,11 +664,12 @@ void CompositorImpl::CreateOutputSurface() {
 
   cc::SurfaceManager* manager = GetSurfaceManager();
   if (manager) {
-    display_client_.reset(new cc::OnscreenDisplayClient(
-        real_output_surface.Pass(), manager, HostSharedBitmapManager::current(),
-        BrowserGpuMemoryBufferManager::current(),
-        host_->settings().renderer_settings,
-        base::ThreadTaskRunnerHandle::Get()));
+    display_client_.reset(
+        new cc::OnscreenDisplayClient(std::move(real_output_surface), manager,
+                                      HostSharedBitmapManager::current(),
+                                      BrowserGpuMemoryBufferManager::current(),
+                                      host_->settings().renderer_settings,
+                                      base::ThreadTaskRunnerHandle::Get()));
     scoped_ptr<cc::SurfaceDisplayOutputSurface> surface_output_surface(
         new cc::SurfaceDisplayOutputSurface(
             manager, surface_id_allocator_.get(), context_provider, nullptr));
@@ -675,9 +677,9 @@ void CompositorImpl::CreateOutputSurface() {
     display_client_->set_surface_output_surface(surface_output_surface.get());
     surface_output_surface->set_display_client(display_client_.get());
     display_client_->display()->Resize(size_);
-    host_->SetOutputSurface(surface_output_surface.Pass());
+    host_->SetOutputSurface(std::move(surface_output_surface));
   } else {
-    host_->SetOutputSurface(real_output_surface.Pass());
+    host_->SetOutputSurface(std::move(real_output_surface));
   }
 }
 
@@ -767,7 +769,7 @@ void CompositorImpl::AttachLayerForReadback(scoped_refptr<cc::Layer> layer) {
 
 void CompositorImpl::RequestCopyOfOutputOnRootLayer(
     scoped_ptr<cc::CopyOutputRequest> request) {
-  root_layer_->RequestCopyOfOutput(request.Pass());
+  root_layer_->RequestCopyOfOutput(std::move(request));
 }
 
 void CompositorImpl::OnVSync(base::TimeTicks frame_time,

@@ -42,7 +42,7 @@ scoped_ptr<base::BinaryValue> GinJavaBridgeValue::CreateNonFiniteValue(
 // static
 scoped_ptr<base::BinaryValue> GinJavaBridgeValue::CreateNonFiniteValue(
     double in_value) {
-  return CreateNonFiniteValue(static_cast<float>(in_value)).Pass();
+  return CreateNonFiniteValue(static_cast<float>(in_value));
 }
 
 // static

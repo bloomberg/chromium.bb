@@ -5,8 +5,8 @@
 #include "content/browser/android/java/gin_java_method_invocation_helper.h"
 
 #include <unistd.h>
-
 #include <cmath>
+#include <utility>
 
 #include "base/android/event_log.h"
 #include "base/android/jni_android.h"
@@ -33,11 +33,10 @@ GinJavaMethodInvocationHelper::GinJavaMethodInvocationHelper(
     scoped_ptr<ObjectDelegate> object,
     const std::string& method_name,
     const base::ListValue& arguments)
-    : object_(object.Pass()),
+    : object_(std::move(object)),
       method_name_(method_name),
       arguments_(arguments.DeepCopy()),
-      invocation_error_(kGinJavaBridgeNoError) {
-}
+      invocation_error_(kGinJavaBridgeNoError) {}
 
 GinJavaMethodInvocationHelper::~GinJavaMethodInvocationHelper() {}
 

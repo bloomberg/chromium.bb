@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/android/media_info_loader.h"
 
+#include <utility>
+
 #include "base/bits.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram.h"
@@ -59,7 +61,7 @@ void MediaInfoLoader::Start(blink::WebFrame* frame) {
 
   scoped_ptr<WebURLLoader> loader;
   if (test_loader_) {
-    loader = test_loader_.Pass();
+    loader = std::move(test_loader_);
   } else {
     WebURLLoaderOptions options;
     if (cors_mode_ == blink::WebMediaPlayer::CORSModeUnspecified) {
@@ -83,7 +85,7 @@ void MediaInfoLoader::Start(blink::WebFrame* frame) {
 
   // Start the resource loading.
   loader->loadAsynchronously(request, this);
-  active_loader_.reset(new media::ActiveLoader(loader.Pass()));
+  active_loader_.reset(new media::ActiveLoader(std::move(loader)));
 }
 
 /////////////////////////////////////////////////////////////////////////////

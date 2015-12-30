@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
@@ -80,7 +81,7 @@ static void SetSurfacePeer(
 
   if (player != player_manager->GetFullscreenPlayer()) {
     gfx::ScopedJavaSurface scoped_surface(surface);
-    player->SetVideoSurface(scoped_surface.Pass());
+    player->SetVideoSurface(std::move(scoped_surface));
   }
 #else
   NOTREACHED();

@@ -4,6 +4,8 @@
 
 #include "content/browser/android/download_controller_android_impl.h"
 
+#include <utility>
+
 #include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -92,7 +94,7 @@ void CreateContextMenuDownload(int render_process_id,
   if (!is_link && extra_headers.empty())
     dl_params->set_prefer_cache(true);
   dl_params->set_prompt(false);
-  dlm->DownloadUrl(dl_params.Pass());
+  dlm->DownloadUrl(std::move(dl_params));
 }
 
 }  // namespace

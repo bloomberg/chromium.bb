@@ -4,6 +4,8 @@
 
 #include "content/browser/media/android/browser_media_player_manager.h"
 
+#include <utility>
+
 #include "base/android/scoped_java_ref.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/media/android/browser_demuxer_android.h"
@@ -118,7 +120,7 @@ void BrowserMediaPlayerManager::SetSurfacePeer(
 
   if (player != player_manager->GetFullscreenPlayer()) {
     gfx::ScopedJavaSurface scoped_surface(surface_texture.get());
-    player->SetVideoSurface(scoped_surface.Pass());
+    player->SetVideoSurface(std::move(scoped_surface));
   }
 }
 
@@ -279,7 +281,7 @@ void BrowserMediaPlayerManager::SetVideoSurface(
     return;
 
   bool empty_surface = surface.IsEmpty();
-  player->SetVideoSurface(surface.Pass());
+  player->SetVideoSurface(std::move(surface));
   if (empty_surface)
     return;
 
