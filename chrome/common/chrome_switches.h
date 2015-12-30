@@ -315,6 +315,11 @@ extern const char kEnableThemeColorInTabbedMode[];
 extern const char kDisableAutoHidingToolbarThreshold[];
 extern const char kEnableTabSwitcherInDocumentMode[];
 extern const char kNtpSwitchToExistingTab[];
+extern const char kForceShowUpdateMenuItem[];
+extern const char kForceShowUpdateMenuItemSummary[];
+extern const char kForceShowUpdateMenuItemCustomSummary[];
+extern const char kForceShowUpdateMenuBadge[];
+extern const char kMarketUrlForTesting[];
 #endif  // defined(OS_ANDROID)
 
 #if defined(USE_ASH)

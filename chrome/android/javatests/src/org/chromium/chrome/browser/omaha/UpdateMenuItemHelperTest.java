@@ -114,7 +114,7 @@ public class UpdateMenuItemHelperTest extends ChromeTabbedActivityTestBase {
 
         // Report a dummy URL to Omaha.
         mMockMarketURLGetter = new MockMarketURLGetter(
-                "https://market.android.com/details?id=com.google.android.apps.chrome");
+                "https://play.google.com/store/apps/details?id=com.android.chrome");
         OmahaClient.setMarketURLGetterForTests(mMockMarketURLGetter);
 
         // Start up main.

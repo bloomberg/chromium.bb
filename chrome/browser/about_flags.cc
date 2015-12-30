@@ -490,6 +490,16 @@ const FeatureEntry::Choice kNtpSwitchToExistingTabChoices[] = {
 };
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_ANDROID)
+const FeatureEntry::Choice kUpdateMenuItemSummaryChoices[] = {
+    {IDS_FLAGS_UPDATE_MENU_ITEM_NO_SUMMARY, "", ""},
+    {IDS_FLAGS_UPDATE_MENU_ITEM_DEFAULT_SUMMARY,
+        switches::kForceShowUpdateMenuItemSummary, ""},
+    {IDS_FLAGS_UPDATE_MENU_ITEM_CUSTOM_SUMMARY,
+        switches::kForceShowUpdateMenuItemCustomSummary, "Custom summary"},
+};
+#endif  // defined(OS_ANDROID)
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name. If you'd like to gather
@@ -2095,6 +2105,30 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_UNIFIED_MEDIA_PIPELINE_NAME,
      IDS_FLAGS_ENABLE_UNIFIED_MEDIA_PIPELINE_DESCRIPTION, kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kEnableUnifiedMediaPipeline)},
+#endif  // OS_ANDROID
+#if defined(OS_ANDROID)
+    {"force-show-update-menu-item",
+     IDS_FLAGS_UPDATE_MENU_ITEM_NAME,
+     IDS_FLAGS_UPDATE_MENU_ITEM_DESCRIPTION,
+     kOsAndroid,
+     SINGLE_VALUE_TYPE(switches::kForceShowUpdateMenuItem)},
+    {"update-menu-item-summary",
+     IDS_FLAGS_UPDATE_MENU_ITEM_SUMMARY_NAME,
+     IDS_FLAGS_UPDATE_MENU_ITEM_SUMMARY_DESCRIPTION,
+     kOsAndroid,
+     MULTI_VALUE_TYPE(kUpdateMenuItemSummaryChoices)},
+    {"force-show-update-menu-badge",
+     IDS_FLAGS_UPDATE_MENU_BADGE_NAME,
+     IDS_FLAGS_UPDATE_MENU_BADGE_DESCRIPTION,
+     kOsAndroid,
+     SINGLE_VALUE_TYPE(switches::kForceShowUpdateMenuBadge)},
+    {"set-market-url-for-testing",
+     IDS_FLAGS_SET_MARKET_URL_FOR_TESTING_NAME,
+     IDS_FLAGS_SET_MARKET_URL_FOR_TESTING_DESCRIPTION,
+     kOsAndroid,
+     SINGLE_VALUE_TYPE_AND_VALUE(
+         switches::kMarketUrlForTesting,
+         "https://play.google.com/store/apps/details?id=com.android.chrome")},
 #endif  // OS_ANDROID
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in

@@ -14734,6 +14734,41 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_DISABLE_AUTO_HIDING_TOOLBAR_DESCRIPTION" desc="Description of the flag to disable auto-hiding the toolbar.">
         When enabled, the toolbar will never be hidden due to scrolling on devices with a minimum screen dp >= 800. It will still be hidden if page contents go fullscreen.
       </message>
+
+      <!-- Update Menu Item Flags -->
+      <message name="IDS_FLAGS_UPDATE_MENU_ITEM_NAME" desc="Name of the flag to force show the update menu item.">
+        Force show update menu item
+      </message>
+      <message name="IDS_FLAGS_UPDATE_MENU_ITEM_DESCRIPTION" desc="Description of the flag to force show the update menu item.">
+        When enabled, an "Update Chrome" item will be shown in the app menu.
+      </message>
+      <message name="IDS_FLAGS_UPDATE_MENU_ITEM_SUMMARY_NAME" desc="Name of the flag to show a summary below the update menu item.">
+        Update menu item summary
+      </message>
+      <message name="IDS_FLAGS_UPDATE_MENU_ITEM_SUMMARY_DESCRIPTION" desc="Description of the flag to show a summary below the update menu item.">
+        When this flag and the force show update menu item flag are enabled, a summary will be displayed below the update menu item.
+      </message>
+      <message name="IDS_FLAGS_UPDATE_MENU_ITEM_NO_SUMMARY" desc="Option to not show a summary for the update menu item.">
+        No summary
+      </message>
+      <message name="IDS_FLAGS_UPDATE_MENU_ITEM_DEFAULT_SUMMARY" desc="Option to show the default summary for the update menu item.">
+        Default summary
+      </message>
+      <message name="IDS_FLAGS_UPDATE_MENU_ITEM_CUSTOM_SUMMARY" desc="Option to show a custom summary for the update menu item.">
+        Custom summary
+      </message>
+      <message name="IDS_FLAGS_UPDATE_MENU_BADGE_NAME" desc="Name of the flag to force show the update menu badge.">
+        Force show update menu badge
+      </message>
+      <message name="IDS_FLAGS_UPDATE_MENU_BADGE_DESCRIPTION" desc="Description of the flag to force show the update menu badge.">
+        When enabled, an update badge will be shown on the app menu button.
+      </message>
+      <message name="IDS_FLAGS_SET_MARKET_URL_FOR_TESTING_NAME" desc="Name of the flag to set a market URL for testing the update menu item.">
+        Set market URL for testing
+      </message>
+      <message name="IDS_FLAGS_SET_MARKET_URL_FOR_TESTING_DESCRIPTION" desc="Description of the flag to set a market URL for testing the update menu item.">
+        When enabled, sets the market URL for use in testing the update menu item.
+      </message>
     </if>
 
     <if expr="not is_android and not is_ios">

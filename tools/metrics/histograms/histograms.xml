@@ -68794,6 +68794,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-2067166422" label="enable-slimming-paint-v2"/>
   <int value="-2063352474" label="enable-new-task-manager"/>
   <int value="-2063014275" label="enable-web-bluetooth"/>
+  <int value="-2062872298" label="market-url-for-testing"/>
   <int value="-2048732429" label="enable-alternative-services"/>
   <int value="-2047822258" label="enable-avfoundation"/>
   <int value="-2043128632" label="enable-tab-switcher-in-document-mode"/>
@@ -68810,6 +68811,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1980328793" label="trace-upload-url"/>
   <int value="-1972383451" label="disable-pinch"/>
   <int value="-1963402827" label="enable-topchrome-md"/>
+  <int value="-1961648833" label="show_summary"/>
   <int value="-1946595906" label="enable-push-api-background-mode"/>
   <int value="-1943507605" label="enable-new-video-renderer"/>
   <int value="-1941852572" label="floating-virtual-keyboard"/>
@@ -68829,6 +68831,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1874908826" label="enable-instant-search-clicks"/>
   <int value="-1872989945" label="enable-webview-based-signin"/>
   <int value="-1870961970" label="enable-filemanager-mtp"/>
+  <int value="-1869845022" label="force-show-update-menu-item"/>
   <int value="-1847835522" label="disable-touch-adjustment"/>
   <int value="-1838482444" label="disable-settings-window"/>
   <int value="-1835975804" label="disable-offline-auto-reload"/>
@@ -69045,6 +69048,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-88822940" label="ssl-version-min"/>
   <int value="-86788587" label="allow-autofill-sync-credential"/>
   <int value="-80353187" label="disable-display-color-calibration"/>
+  <int value="-78035185" label="custom_summary"/>
   <int value="-76631048" label="disable-offline-auto-reload-visible-only"/>
   <int value="-70595606" label="ash-enable-unified-desktop"/>
   <int value="-68225452" label="enable-translate-new-ux"/>
@@ -69336,6 +69340,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2121776031" label="auto-virtual-keyboard"/>
   <int value="2122023503" label="enable-win32k-lockdown-mimetypes"/>
   <int value="2122876605" label="enable-bleeding-edge-rendering-fast-paths"/>
+  <int value="2126203058" label="force-show-update-menu-badge"/>
   <int value="2129929643" label="enable-use-zoom-for-dsf"/>
   <int value="2137347307" label="enable-drive-apps-in-app-list"/>
   <int value="2137599770" label="enable-win32k-renderer-lockdown"/>

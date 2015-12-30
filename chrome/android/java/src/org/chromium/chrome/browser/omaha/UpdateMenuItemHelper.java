@@ -158,7 +158,7 @@ public class UpdateMenuItemHelper {
      * @return The string to use for summary text or the empty string if no summary should be shown.
      */
     public String getMenuItemSummaryText(Context context) {
-        if (!getBooleanParam(SHOW_SUMMARY)) {
+        if (!getBooleanParam(SHOW_SUMMARY) && !getBooleanParam(CUSTOM_SUMMARY)) {
             return "";
         }
 

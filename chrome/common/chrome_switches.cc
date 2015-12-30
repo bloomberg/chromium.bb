@@ -1325,6 +1325,21 @@ const char kEnableWaylandServer[] = "enable-wayland-server";
 // fullscreen.
 const char kDisableAutoHidingToolbarThreshold[] =
     "disable-auto-hiding-toolbar-threshold";
+
+// Forces the update menu item to show.
+const char kForceShowUpdateMenuItem[] = "force-show-update-menu-item";
+
+// Forces a summary to be displayed below the update menu item.
+const char kForceShowUpdateMenuItemSummary[] = "show_summary";
+
+// Forces a custom summary to be displayed below the update menu item.
+const char kForceShowUpdateMenuItemCustomSummary[] = "custom_summary";
+
+// Forces the update menu badge to show.
+const char kForceShowUpdateMenuBadge[] = "force-show-update-menu-badge";
+
+// Sets the market URL for Chrome for use in testing.
+const char kMarketUrlForTesting[] = "market-url-for-testing";
 #endif // defined(OS_ANDROID)
 
 #if defined(OS_WIN) || defined(OS_LINUX)
