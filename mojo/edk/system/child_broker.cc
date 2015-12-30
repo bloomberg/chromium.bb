@@ -220,6 +220,17 @@ void ChildBroker::OnReadMessage(
       CHECK(connected_pipes_.find(pipe) == connected_pipes_.end());
       AttachMessagePipe(pipe, pipe_id, channels_[peer_pid]);
     }
+  } else if (type == PEER_DIED) {
+    DCHECK(!platform_handles);
+    const PeerDiedMessage* message =
+        static_cast<const PeerDiedMessage*>(message_view.bytes());
+
+    uint64_t pipe_id = message->pipe_id;
+
+    CHECK(pending_connects_.find(pipe_id) != pending_connects_.end());
+    MessagePipeDispatcher* pipe = pending_connects_[pipe_id];
+    pending_connects_.erase(pipe_id);
+    pipe->OnError(ERROR_READ_SHUTDOWN);
   } else {
     NOTREACHED();
   }

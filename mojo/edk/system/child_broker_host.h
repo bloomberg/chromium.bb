@@ -48,6 +48,10 @@ class MOJO_SYSTEM_IMPL_EXPORT ChildBrokerHost
   // be 0.
   void ConnectMessagePipe(uint64_t pipe_id, base::ProcessId process_id);
 
+  // Sends a message to the child process informing it that the peer process has
+  // died before it could connect.
+  void PeerDied(uint64_t pipe_id);
+
   RoutedRawChannel* channel() { return child_channel_; }
 
  private:

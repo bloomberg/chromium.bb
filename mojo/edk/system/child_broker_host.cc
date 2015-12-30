@@ -105,6 +105,19 @@ void ChildBrokerHost::ConnectMessagePipe(uint64_t pipe_id,
   child_channel_->channel()->WriteMessage(std::move(message));
 }
 
+void ChildBrokerHost::PeerDied(uint64_t pipe_id) {
+  if (!child_channel_)
+    return;  // Can happen at process shutdown on Windows.
+  PeerDiedMessage data;
+  memset(&data, 0, sizeof(data));
+  data.type = PEER_DIED;
+  data.pipe_id = pipe_id;
+  scoped_ptr<MessageInTransit> message(new MessageInTransit(
+      MessageInTransit::Type::MESSAGE, sizeof(data), &data));
+  message->set_route_id(kBrokerRouteId);
+  child_channel_->channel()->WriteMessage(std::move(message));
+}
+
 ChildBrokerHost::~ChildBrokerHost() {
   DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
   BrokerState::GetInstance()->ChildBrokerHostDestructed(this);

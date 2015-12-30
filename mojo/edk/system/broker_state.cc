@@ -93,8 +93,13 @@ void BrokerState::ConnectMessagePipe(uint64_t pipe_id,
   if (pending_child_connects_.find(pipe_id) != pending_child_connects_.end()) {
     // A child process has already tried to connect.
     ChildBrokerHost* child_host = pending_child_connects_[pipe_id];
-    AttachMessagePipe(message_pipe, pipe_id, child_host->channel());
-    child_host->ConnectMessagePipe(pipe_id, 0);
+    if (child_host && child_host->channel()) {
+      AttachMessagePipe(message_pipe, pipe_id, child_host->channel());
+      child_host->ConnectMessagePipe(pipe_id, 0);
+    } else {
+      message_pipe->OnError(RawChannel::Delegate::ERROR_READ_SHUTDOWN);
+    }
+
     pending_child_connects_.erase(pipe_id);
     return;
   }
@@ -124,14 +129,12 @@ void BrokerState::ChildBrokerHostDestructed(
   base::AutoLock auto_lock(lock_);
 
   for (auto it = pending_child_connects_.begin();
-       it != pending_child_connects_.end();) {
+       it != pending_child_connects_.end(); ++it) {
     if (it->second == child_broker_host) {
-      // Since we can't do it = pending_child_connects_.erase(it); until
-      // hash_map uses unordered_map on posix.
-      auto cur = it++;
-      pending_child_connects_.erase(cur);
-    } else {
-      it++;
+      // Signify that the process has died. When another process tries to
+      // connect to the message pipe, we will tell it that the peer has died so
+      // that it can fire a peer closed notification.
+      it->second = nullptr;
     }
   }
 
@@ -139,8 +142,8 @@ void BrokerState::ChildBrokerHostDestructed(
   for (auto it = connected_processes_.begin();
        it != connected_processes_.end();) {
     if ((*it).first == pid || (*it).second == pid) {
-      // Since we can't do it = pending_child_connects_.erase(it); until
-      // hash_map uses unordered_map on posix.
+      // Since we can't do it = connected_processes_.erase(it); until hash_map
+      // uses unordered_map on posix.
       auto cur = it++;
       connected_processes_.erase(cur);
     } else {
@@ -159,12 +162,16 @@ void BrokerState::HandleConnectMessagePipe(ChildBrokerHost* pipe_process,
   if (pending_child_connects_.find(pipe_id) != pending_child_connects_.end()) {
     // Another child process is waiting to connect to the given pipe.
     ChildBrokerHost* pending_pipe_process = pending_child_connects_[pipe_id];
-    EnsureProcessesConnected(pipe_process->GetProcessId(),
-                             pending_pipe_process->GetProcessId());
-    pending_pipe_process->ConnectMessagePipe(
-        pipe_id, pipe_process->GetProcessId());
-    pipe_process->ConnectMessagePipe(
-        pipe_id, pending_pipe_process->GetProcessId());
+    if (pending_pipe_process && pending_pipe_process->channel()) {
+      EnsureProcessesConnected(pipe_process->GetProcessId(),
+                               pending_pipe_process->GetProcessId());
+      pending_pipe_process->ConnectMessagePipe(
+          pipe_id, pipe_process->GetProcessId());
+      pipe_process->ConnectMessagePipe(
+          pipe_id, pending_pipe_process->GetProcessId());
+    } else {
+      pipe_process->PeerDied(pipe_id);
+    }
     pending_child_connects_.erase(pipe_id);
     return;
   }

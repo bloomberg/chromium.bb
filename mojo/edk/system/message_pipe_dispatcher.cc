@@ -986,6 +986,10 @@ void MessagePipeDispatcher::OnError(Error error) {
         // Balance AddRef in CloseOnIO.
         call_release = true;
       }
+    } else if (!channel_ && !transferable_ &&
+               non_transferable_state_ == WAITING_FOR_CONNECT_TO_CLOSE) {
+      // Balance AddRef in CloseOnIO.
+      call_release = true;
     }
     awakable_list_.AwakeForStateChange(GetHandleSignalsStateImplNoLock());
     started_transport_.Release();

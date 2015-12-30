@@ -53,12 +53,31 @@ const uint64_t kBrokerRouteId = 1;
 // They are sent over RawChannel.
 enum MultiplexMessages {
   // Messages from child to parent.
+
+  // Tells the parent that the given pipe id has been bound to a
+  // MessagePipeDispatcher in the child process. The parent will then respond
+  // with either PEER_PIPE_CONNECTED or PEER_DIED when the other side is also
+  // bound.
   CONNECT_MESSAGE_PIPE = 0,
+  // Tells the parent to remove its bookkeeping for the given peer id since
+  // another MessagePipeDispatcher has connected to the pipe in the same
+  // process.
   CANCEL_CONNECT_MESSAGE_PIPE,
 
+
   // Messages from parent to child.
+
+  // Tells the child to open a channel to a given process. This will be followed
+  // by a PEER_PIPE_CONNECTED connecting a message pipe from the child process
+  // to the given process over the new channel.
   CONNECT_TO_PROCESS,
+
+  // Connect a given message pipe to another process.
   PEER_PIPE_CONNECTED,
+
+  // Informs the child that the other end of the message pipe is in a process
+  // that died.
+  PEER_DIED,
 };
 
 struct ConnectMessagePipeMessage {
@@ -77,6 +96,11 @@ struct PeerPipeConnectedMessage {
   MultiplexMessages type;  // PEER_PIPE_CONNECTED
   uint64_t pipe_id;
   base::ProcessId process_id;
+};
+
+struct PeerDiedMessage {
+  MultiplexMessages type;  // PEER_DIED
+  uint64_t pipe_id;
 };
 
 }  // namespace edk
