@@ -57,6 +57,7 @@
       ],
       'sources': [
         'trunk/src/algorithm.cpp',
+        'trunk/src/any.cpp',
         'trunk/src/bind.cpp',
         'trunk/src/chrono.cpp',
         'trunk/src/condition_variable.cpp',

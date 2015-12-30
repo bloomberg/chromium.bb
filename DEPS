@@ -5,8 +5,8 @@ vars = {
   "git_url": "https://chromium.googlesource.com",
 
   "clang_format_rev": "81edd558fea5dd7855d67a1dc61db34ae8c1fd63", # r223685
-  "libcxx_revision": "48198f9110397fff47fe7c37cbfa296be7d44d3d",
-  "libcxxabi_revision": "4ad1009ab3a59fa7a6896d74d5e4de5885697f95",
+  "libcxx_revision": "aad34a13af010898f54c1bb2069194cb083cea4b",
+  "libcxxabi_revision": "9a39e428d018b723d7d187181fd08908b1cb6bd0",
 }
 
 deps = {
