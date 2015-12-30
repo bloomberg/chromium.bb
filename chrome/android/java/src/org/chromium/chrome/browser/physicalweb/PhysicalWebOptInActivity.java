@@ -22,11 +22,13 @@ public class PhysicalWebOptInActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.physical_web_optin);
+        PhysicalWebUma.onOptInNotificationPressed(this);
 
         Button declineButton = (Button) findViewById(R.id.physical_web_decline);
         declineButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                PhysicalWebUma.onOptInDeclineButtonPressed(PhysicalWebOptInActivity.this);
                 PrivacyPreferencesManager privacyPrefManager =
                         PrivacyPreferencesManager.getInstance(PhysicalWebOptInActivity.this);
                 privacyPrefManager.setPhysicalWebEnabled(false);
@@ -38,6 +40,7 @@ public class PhysicalWebOptInActivity extends AppCompatActivity {
         enableButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                PhysicalWebUma.onOptInEnableButtonPressed(PhysicalWebOptInActivity.this);
                 PrivacyPreferencesManager privacyPrefManager =
                         PrivacyPreferencesManager.getInstance(PhysicalWebOptInActivity.this);
                 privacyPrefManager.setPhysicalWebEnabled(true);

@@ -277,9 +277,11 @@ class UrlManager {
                 // high priority notification
                 createOptInNotification(true);
                 PhysicalWeb.recordOptInNotification(mContext);
+                PhysicalWebUma.onOptInHighPriorityNotificationShown(mContext);
             } else {
                 // min priority notification
                 createOptInNotification(false);
+                PhysicalWebUma.onOptInMinPriorityNotificationShown(mContext);
             }
             return;
         }

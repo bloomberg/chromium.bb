@@ -11173,6 +11173,51 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="PhysicalWeb.OptIn.DeclineButtonPressed">
+  <owner>cco3@chromium.org</owner>
+  <owner>mattreynolds@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <description>
+    The user has disabled the Physical Web feature via the settings.
+  </description>
+</action>
+
+<action name="PhysicalWeb.OptIn.EnableButtonPressed">
+  <owner>cco3@chromium.org</owner>
+  <owner>mattreynolds@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <description>
+    The enable button was pressed in the Physical Web opt-in activity.
+  </description>
+</action>
+
+<action name="PhysicalWeb.OptIn.HighPriorityNotificationShown">
+  <owner>cco3@chromium.org</owner>
+  <owner>mattreynolds@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <description>
+    A high priority Physical Web opt-in notification was displayed.
+  </description>
+</action>
+
+<action name="PhysicalWeb.OptIn.MinPriorityNotificationShown">
+  <owner>cco3@chromium.org</owner>
+  <owner>mattreynolds@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <description>
+    A min priority Physical Web opt-in notification was displayed.
+  </description>
+</action>
+
+<action name="PhysicalWeb.OptIn.NotificationPressed">
+  <owner>cco3@chromium.org</owner>
+  <owner>mattreynolds@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <description>
+    The user pressed the Physical Web opt-in notification.
+  </description>
+</action>
+
 <action name="PhysicalWeb.Prefs.FeatureDisabled">
   <owner>cco3@chromium.org</owner>
   <owner>mattreynolds@chromium.org</owner>

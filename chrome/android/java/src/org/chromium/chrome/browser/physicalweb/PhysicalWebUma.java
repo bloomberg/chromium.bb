@@ -27,6 +27,16 @@ import javax.annotation.concurrent.ThreadSafe;
 public class PhysicalWebUma {
     private static final String TAG = "PhysicalWeb";
     private static final String NOTIFICATION_PRESS_COUNT = "PhysicalWeb.NotificationPressed";
+    private static final String OPT_IN_DECLINE_BUTTON_PRESS_COUNT =
+            "PhysicalWeb.OptIn.DeclineButtonPressed";
+    private static final String OPT_IN_ENABLE_BUTTON_PRESS_COUNT =
+            "PhysicalWeb.OptIn.EnableButtonPressed";
+    private static final String OPT_IN_HIGH_PRIORITY_NOTIFICATION_COUNT =
+            "PhysicalWeb.OptIn.HighPriorityNotificationShown";
+    private static final String OPT_IN_MIN_PRIORITY_NOTIFICATION_COUNT =
+            "PhysicalWeb.OptIn.MinPriorityNotificationShown";
+    private static final String OPT_IN_NOTIFICATION_PRESS_COUNT =
+            "PhysicalWeb.OptIn.NotificationPressed";
     private static final String PREFS_FEATURE_DISABLED_COUNT = "PhysicalWeb.Prefs.FeatureDisabled";
     private static final String PREFS_FEATURE_ENABLED_COUNT = "PhysicalWeb.Prefs.FeatureEnabled";
     private static final String PREFS_LOCATION_DENIED_COUNT = "PhysicalWeb.Prefs.LocationDenied";
@@ -52,6 +62,41 @@ public class PhysicalWebUma {
     }
 
     /**
+     * Records a tap on the opt-in decline button.
+     */
+    public static void onOptInDeclineButtonPressed(Context context) {
+        handleAction(context, OPT_IN_DECLINE_BUTTON_PRESS_COUNT);
+    }
+
+    /**
+     * Records a tap on the opt-in enable button.
+     */
+    public static void onOptInEnableButtonPressed(Context context) {
+        handleAction(context, OPT_IN_ENABLE_BUTTON_PRESS_COUNT);
+    }
+
+    /**
+     * Records a display of a high priority opt-in notification.
+     */
+    public static void onOptInHighPriorityNotificationShown(Context context) {
+        handleAction(context, OPT_IN_HIGH_PRIORITY_NOTIFICATION_COUNT);
+    }
+
+    /**
+     * Records a display of a min priority opt-in notification.
+     */
+    public static void onOptInMinPriorityNotificationShown(Context context) {
+        handleAction(context, OPT_IN_MIN_PRIORITY_NOTIFICATION_COUNT);
+    }
+
+    /**
+     * Records a display of the opt-in activity.
+     */
+    public static void onOptInNotificationPressed(Context context) {
+        handleAction(context, OPT_IN_NOTIFICATION_PRESS_COUNT);
+    }
+
+    /*
      * Records when the user disables the Physical Web fetaure.
      */
     public static void onPrefsFeatureDisabled(Context context) {
@@ -123,6 +168,13 @@ public class PhysicalWebUma {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         uploader.notificationPressCount = prefs.getInt(NOTIFICATION_PRESS_COUNT, 0);
         uploader.urlSelectedCount = prefs.getInt(URL_SELECTED_COUNT, 0);
+        uploader.optInDeclineButtonTapCount = prefs.getInt(OPT_IN_DECLINE_BUTTON_PRESS_COUNT, 0);
+        uploader.optInEnableButtonTapCount = prefs.getInt(OPT_IN_ENABLE_BUTTON_PRESS_COUNT, 0);
+        uploader.optInHighPriorityNotificationCount =
+                prefs.getInt(OPT_IN_HIGH_PRIORITY_NOTIFICATION_COUNT, 0);
+        uploader.optInMinPriorityNotificationCount =
+                prefs.getInt(OPT_IN_MIN_PRIORITY_NOTIFICATION_COUNT, 0);
+        uploader.optInNotificationPressCount = prefs.getInt(OPT_IN_NOTIFICATION_PRESS_COUNT, 0);
         uploader.prefsFeatureDisabledCount = prefs.getInt(PREFS_FEATURE_DISABLED_COUNT, 0);
         uploader.prefsFeatureEnabledCount = prefs.getInt(PREFS_FEATURE_ENABLED_COUNT, 0);
         uploader.prefsLocationDeniedCount = prefs.getInt(PREFS_LOCATION_DENIED_COUNT, 0);
@@ -140,6 +192,11 @@ public class PhysicalWebUma {
         prefs.edit()
                 .remove(NOTIFICATION_PRESS_COUNT)
                 .remove(URL_SELECTED_COUNT)
+                .remove(OPT_IN_DECLINE_BUTTON_PRESS_COUNT)
+                .remove(OPT_IN_ENABLE_BUTTON_PRESS_COUNT)
+                .remove(OPT_IN_HIGH_PRIORITY_NOTIFICATION_COUNT)
+                .remove(OPT_IN_MIN_PRIORITY_NOTIFICATION_COUNT)
+                .remove(OPT_IN_NOTIFICATION_PRESS_COUNT)
                 .remove(PREFS_FEATURE_DISABLED_COUNT)
                 .remove(PREFS_FEATURE_ENABLED_COUNT)
                 .remove(PREFS_LOCATION_DENIED_COUNT)
@@ -194,6 +251,11 @@ public class PhysicalWebUma {
     private static class UmaUploader implements Runnable {
         public int notificationPressCount;
         public int urlSelectedCount;
+        public int optInDeclineButtonTapCount;
+        public int optInEnableButtonTapCount;
+        public int optInHighPriorityNotificationCount;
+        public int optInMinPriorityNotificationCount;
+        public int optInNotificationPressCount;
         public int prefsFeatureDisabledCount;
         public int prefsFeatureEnabledCount;
         public int prefsLocationDeniedCount;
@@ -205,6 +267,11 @@ public class PhysicalWebUma {
         public boolean isEmpty() {
             return notificationPressCount == 0
                     && urlSelectedCount == 0
+                    && optInDeclineButtonTapCount == 0
+                    && optInEnableButtonTapCount == 0
+                    && optInHighPriorityNotificationCount == 0
+                    && optInMinPriorityNotificationCount == 0
+                    && optInNotificationPressCount == 0
                     && prefsFeatureDisabledCount == 0
                     && prefsFeatureEnabledCount == 0
                     && prefsLocationDeniedCount == 0
@@ -221,6 +288,13 @@ public class PhysicalWebUma {
         public void run() {
             uploadActions(notificationPressCount, NOTIFICATION_PRESS_COUNT);
             uploadActions(urlSelectedCount, URL_SELECTED_COUNT);
+            uploadActions(optInDeclineButtonTapCount, OPT_IN_DECLINE_BUTTON_PRESS_COUNT);
+            uploadActions(optInEnableButtonTapCount, OPT_IN_ENABLE_BUTTON_PRESS_COUNT);
+            uploadActions(optInHighPriorityNotificationCount,
+                    OPT_IN_HIGH_PRIORITY_NOTIFICATION_COUNT);
+            uploadActions(optInMinPriorityNotificationCount,
+                    OPT_IN_MIN_PRIORITY_NOTIFICATION_COUNT);
+            uploadActions(optInNotificationPressCount, OPT_IN_NOTIFICATION_PRESS_COUNT);
             uploadActions(prefsFeatureDisabledCount, PREFS_FEATURE_DISABLED_COUNT);
             uploadActions(prefsFeatureEnabledCount, PREFS_FEATURE_ENABLED_COUNT);
             uploadActions(prefsLocationDeniedCount, PREFS_LOCATION_DENIED_COUNT);
