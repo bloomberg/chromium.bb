@@ -14795,7 +14795,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>khushalsagar@chromium.org</owner>
   <summary>
     (Android-only) The amount of internal memory storage available on the user's
-    device when the InfoBar is shown.
+    device when the InfoBar or update menu item is shown.
   </summary>
 </histogram>
 
