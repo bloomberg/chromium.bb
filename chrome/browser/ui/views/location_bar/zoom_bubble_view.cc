@@ -191,7 +191,6 @@ void ZoomBubbleView::Init() {
   views::LabelButton* set_default_button = new views::LabelButton(
       this, l10n_util::GetStringUTF16(IDS_ZOOM_SET_DEFAULT));
   set_default_button->SetStyle(views::Button::STYLE_BUTTON);
-  set_default_button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   grid_layout->AddView(set_default_button);
 
   StartTimerIfNecessary();
