@@ -519,13 +519,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             @Override
             public void onLoadStopped(Tab tab, boolean toDifferentDocument) {
                 postDeferredStartupIfNeeded();
-                showUpdateInfoBarIfNecessary();
             }
 
             @Override
             public void onPageLoadFinished(Tab tab) {
                 postDeferredStartupIfNeeded();
-                showUpdateInfoBarIfNecessary();
                 OfflinePageUtils.showOfflineSnackbarIfNecessary(ChromeActivity.this, tab);
             }
 
@@ -695,7 +693,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             }
         });
 
-        getChromeApplication().getUpdateInfoBarHelper().checkForUpdateOnBackgroundThread(this);
         UpdateMenuItemHelper.getInstance().checkForUpdateOnBackgroundThread(this);
 
         removeSnapshotDatabase();
@@ -1009,13 +1006,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      */
     public ChromeApplication getChromeApplication() {
         return (ChromeApplication) getApplication();
-    }
-
-    /**
-     * @return Whether the update infobar may be shown.
-     */
-    public boolean mayShowUpdateInfoBar() {
-        return true;
     }
 
     /**
@@ -1522,10 +1512,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 }
             }, DEFERRED_STARTUP_DELAY_MS);
         }
-    }
-
-    private void showUpdateInfoBarIfNecessary() {
-        getChromeApplication().getUpdateInfoBarHelper().showUpdateInfobarIfNecessary(this);
     }
 
     /**

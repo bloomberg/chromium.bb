@@ -1216,11 +1216,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         return getCompositorViewHolder() != null && !getCompositorViewHolder().isTabInteractive();
     }
 
-    @Override
-    public boolean mayShowUpdateInfoBar() {
-        return !isOverlayVisible();
-    }
-
     // App Menu related code -----------------------------------------------------------------------
 
     @Override

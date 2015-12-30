@@ -14781,6 +14781,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="GoogleUpdate.InfoBar.ActionTaken"
     enum="GoogleUpdateInfoBarActions">
+  <obsolete>
+    Deprecated 12/2015 in Issue 566085.
+  </obsolete>
   <owner>yfriedman@chromium.org</owner>
   <owner>dfalcantara@chromium.org</owner>
   <summary>
@@ -14800,6 +14803,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="GoogleUpdate.InfoBar.TimeShown" units="milliseconds">
+  <obsolete>
+    Deprecated 12/2015 in Issue 566085.
+  </obsolete>
   <owner>yfriedman@chromium.org</owner>
   <owner>dfalcantara@chromium.org</owner>
   <summary>

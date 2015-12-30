@@ -61,7 +61,6 @@ import org.chromium.chrome.browser.net.qualityprovider.ExternalEstimateProviderA
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.notifications.NotificationUIManager;
 import org.chromium.chrome.browser.omaha.RequestGenerator;
-import org.chromium.chrome.browser.omaha.UpdateInfoBarHelper;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.physicalweb.PhysicalWebBleClient;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
@@ -176,7 +175,6 @@ public class ChromeApplication extends ContentApplication {
 
     private final BackgroundProcessing mBackgroundProcessing = new BackgroundProcessing();
     private final PowerBroadcastReceiver mPowerBroadcastReceiver = new PowerBroadcastReceiver();
-    private final UpdateInfoBarHelper mUpdateInfoBarHelper = new UpdateInfoBarHelper();
 
     // Used to trigger variation changes (such as seed fetches) upon application foregrounding.
     private VariationsSession mVariationsSession;
@@ -669,14 +667,6 @@ public class ChromeApplication extends ContentApplication {
      */
     public PrintingController getPrintingController() {
         return mPrintingController;
-    }
-
-    /**
-     * @return The UpdateInfoBarHelper used to inform the user about updates.
-     */
-    public UpdateInfoBarHelper getUpdateInfoBarHelper() {
-        // TODO(aurimas): make UpdateInfoBarHelper have its own static instance.
-        return mUpdateInfoBarHelper;
     }
 
     /**

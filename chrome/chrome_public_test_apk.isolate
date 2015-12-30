@@ -14,7 +14,6 @@
           '<(DEPTH)/chrome/test/data/android/media/',
           '<(DEPTH)/chrome/test/data/android/navigate/',
           '<(DEPTH)/chrome/test/data/android/ok.txt',
-          '<(DEPTH)/chrome/test/data/android/omahaupdateinfobar/',
           '<(DEPTH)/chrome/test/data/android/prerender/',
           '<(DEPTH)/chrome/test/data/android/redirect/about.html',
           '<(DEPTH)/chrome/test/data/android/simple.html',

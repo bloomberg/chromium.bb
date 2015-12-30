@@ -2101,12 +2101,6 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_READER_MODE_EXPANDED_TITLE" desc="Message shown on the reader mode button bar when it is opened to show reader mode. Reader mode extracts content and removes clutter from a web page and puts the result in a panel making it easier to read.">
         Mobile-friendly view
       </message>
-      <message name="IDS_UPDATE_AVAILABLE_INFOBAR" desc="Text to display when a new update is detected.">
-        Chrome is out of date. Important security improvements and new features are available in the latest version.
-      </message>
-      <message name="IDS_UPDATE_AVAILABLE_INFOBAR_BUTTON" desc="Open market button. [CHAR-LIMIT=32]">
-        Update
-      </message>
       <message name="IDS_FRE_LABEL" desc="First Run Experience Strings">
         First Run Experience
       </message>
