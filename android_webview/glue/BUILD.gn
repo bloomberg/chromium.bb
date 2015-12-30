@@ -11,7 +11,7 @@ webview_framework_ijar =
     "$root_out_dir/lib.java/webview/frameworks.interface.jar"
 
 generate_interface_jar("framework_ijar") {
-  input_jar = "../../third_party/android_platform/webview/frameworks_6.0.jar"
+  input_jar = webview_framework_jar
   output_jar = webview_framework_ijar
 }
 
