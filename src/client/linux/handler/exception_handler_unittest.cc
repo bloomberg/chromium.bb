@@ -262,8 +262,6 @@ TEST(ExceptionHandlerTest, ChildCrashWithFD) {
   ASSERT_NO_FATAL_FAILURE(ChildCrash(true));
 }
 
-#endif  // !ADDRESS_SANITIZER
-
 static bool DoneCallbackReturnFalse(const MinidumpDescriptor& descriptor,
                                     void* context,
                                     bool succeeded) {
@@ -304,8 +302,6 @@ static bool InstallRaiseSIGKILL() {
   sa.sa_handler = RaiseSIGKILL;
   return sigaction(SIGSEGV, &sa, NULL) != -1;
 }
-
-#ifndef ADDRESS_SANITIZER
 
 static void CrashWithCallbacks(ExceptionHandler::FilterCallback filter,
                                ExceptionHandler::MinidumpCallback done,
@@ -878,6 +874,8 @@ TEST(ExceptionHandlerTest, ModuleInfo) {
   unlink(minidump_desc.path());
 }
 
+#ifndef ADDRESS_SANITIZER
+
 static const unsigned kControlMsgSize =
     CMSG_SPACE(sizeof(int)) + CMSG_SPACE(sizeof(struct ucred));
 
@@ -929,8 +927,6 @@ CrashHandler(const void* crash_context, size_t crash_context_size,
 
   return true;
 }
-
-#ifndef ADDRESS_SANITIZER
 
 TEST(ExceptionHandlerTest, ExternalDumper) {
   int fds[2];
