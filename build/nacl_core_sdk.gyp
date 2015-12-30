@@ -13,15 +13,6 @@
     {
       'target_name': 'nacl_core_sdk',
       'type': 'none',
-      'dependencies': [
-        '../src/untrusted/minidump_generator/minidump_generator.gyp:minidump_lib',
-        '../src/untrusted/nacl/nacl.gyp:nacl_dynacode_lib',
-        '../src/untrusted/nacl/nacl.gyp:nacl_exception_lib',
-        '../src/untrusted/nacl/nacl.gyp:nacl_lib',
-        '../src/untrusted/nacl/nacl.gyp:nacl_list_mappings_lib',
-        '../src/untrusted/nosys/nosys.gyp:nosys_lib',
-        '../src/untrusted/pthread/pthread.gyp:pthread_lib',
-      ],
       'conditions': [
         ['target_arch=="arm"', {
           'dependencies': [
@@ -48,13 +39,6 @@
           # https://code.google.com/p/nativeclient/issues/detail?id=3810
           'dependencies': [
             '../src/untrusted/irt/irt.gyp:irt_core_nexe',
-          ],
-        }],
-        ['target_arch!="arm" and target_arch!="mipsel"', {
-          'dependencies': [
-            # these libraries don't currently exist on arm and mips
-            '../src/untrusted/valgrind/valgrind.gyp:dynamic_annotations_lib',
-            '../src/untrusted/valgrind/valgrind.gyp:valgrind_lib',
           ],
         }],
       ],
