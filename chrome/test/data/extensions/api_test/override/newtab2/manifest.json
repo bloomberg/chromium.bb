@@ -1,5 +1,5 @@
 {
-  "name": "New tab override test, number 1",
+  "name": "New tab override test, number 2",
   "version": "0.1",
   "manifest_version": 2,
   "description": "Test chrome://newtab override",
@@ -7,6 +7,6 @@
     "tabs"
   ],
   "chrome_url_overrides": {
-    "newtab": "newtab.html"
+    "newtab": "override.html"
   }
 }

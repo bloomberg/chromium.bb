@@ -49,23 +49,96 @@ using extensions::URLOverrides;
 
 namespace {
 
-// De-dupes the items in |list|. Assumes the values are strings.
-void CleanUpDuplicates(base::ListValue* list) {
-  std::set<std::string> seen_values;
+// The key to the override value for a page.
+const char kEntry[] = "entry";
+// The key to whether or not the override is active (i.e., can be used).
+// Overrides may be inactive e.g. when an extension is disabled.
+const char kActive[] = "active";
 
-  // Loop backwards as we may be removing items.
-  for (size_t i = list->GetSize() - 1; (i + 1) > 0; --i) {
-    std::string value;
-    if (!list->GetString(i, &value)) {
+// Iterates over |list| and:
+// - Converts any entries of the form <entry> to
+//   { 'entry': <entry>, 'active': true }.
+// - Removes any duplicate entries.
+// We do the conversion because we previously stored these values as strings
+// rather than objects.
+// TODO(devlin): Remove the conversion once everyone's updated.
+void InitializeOverridesList(base::ListValue* list) {
+  base::ListValue migrated;
+  std::set<std::string> seen_entries;
+  for (base::Value* val : *list) {
+    scoped_ptr<base::DictionaryValue> new_dict(new base::DictionaryValue());
+    std::string entry_name;
+    base::DictionaryValue* existing_dict = nullptr;
+    if (val->GetAsDictionary(&existing_dict)) {
+      bool success = existing_dict->GetString(kEntry, &entry_name);
+      CHECK(success);
+      new_dict->Swap(existing_dict);
+    } else if (val->GetAsString(&entry_name)) {
+      new_dict->SetString(kEntry, entry_name);
+      new_dict->SetBoolean(kActive, true);
+    } else {
       NOTREACHED();
       continue;
     }
 
-    if (seen_values.find(value) == seen_values.end())
-      seen_values.insert(value);
-    else
-      list->Remove(i, NULL);
+    if (seen_entries.count(entry_name) == 0) {
+      seen_entries.insert(entry_name);
+      migrated.Append(std::move(new_dict));
+    }
   }
+
+  list->Swap(&migrated);
+}
+
+// Adds |override| to |list|, or, if there's already an entry for the override,
+// marks it as active.
+void AddOverridesToList(base::ListValue* list,
+                        const std::string& override) {
+  for (base::Value* val : *list) {
+    base::DictionaryValue* dict = nullptr;
+    std::string entry;
+    if (!val->GetAsDictionary(&dict) || !dict->GetString(kEntry, &entry)) {
+      NOTREACHED();
+      continue;
+    }
+    if (entry == override) {
+      dict->SetBoolean(kActive, true);
+      return;  // All done!
+    }
+  }
+
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->SetString(kEntry, override);
+  dict->SetBoolean(kActive, true);
+  // Add the entry to the front of the list.
+  list->Insert(0, dict.release());
+}
+
+// Validates that each entry in |list| contains a valid url and points to an
+// extension contained in |all_extensions| (and, if not, removes it).
+void ValidateOverridesList(base::ListValue* list,
+                           const extensions::ExtensionSet& all_extensions) {
+  base::ListValue migrated;
+  for (base::Value* val : *list) {
+    base::DictionaryValue* dict = nullptr;
+    std::string entry;
+    if (!val->GetAsDictionary(&dict) || !dict->GetString(kEntry, &entry)) {
+      NOTREACHED();
+      continue;
+    }
+    scoped_ptr<base::DictionaryValue> new_dict(new base::DictionaryValue());
+    new_dict->Swap(dict);
+    GURL override_url(entry);
+    if (!override_url.is_valid())
+      continue;
+
+    if (!all_extensions.GetByID(override_url.host()))
+      continue;
+
+    migrated.Append(std::move(new_dict));
+  }
+
+  list->Swap(&migrated);
 }
 
 // Reloads the page in |web_contents| if it uses the same profile as |profile|
@@ -86,6 +159,71 @@ void UnregisterAndReplaceOverrideForWebContents(const std::string& page,
       url, content::Referrer::SanitizeForRequest(
                url, content::Referrer(url, blink::WebReferrerPolicyDefault)),
       ui::PAGE_TRANSITION_RELOAD, std::string());
+}
+
+enum UpdateBehavior {
+  UPDATE_DEACTIVATE,  // Mark 'active' as false.
+  UPDATE_REMOVE,      // Remove the entry from the list.
+};
+
+// Updates the entry (if any) for |override_url| in |overrides_list| according
+// to |behavior|. Returns true if anything changed.
+bool UpdateOverridesList(base::ListValue* overrides_list,
+                         const std::string& override_url,
+                         UpdateBehavior behavior) {
+  base::ListValue::iterator iter =
+      std::find_if(overrides_list->begin(), overrides_list->end(),
+                   [&override_url](const base::Value* value) {
+                     std::string entry;
+                     const base::DictionaryValue* dict = nullptr;
+                     return value->GetAsDictionary(&dict) &&
+                            dict->GetString(kEntry, &entry) &&
+                            entry == override_url;
+                   });
+  if (iter != overrides_list->end()) {
+    switch (behavior) {
+      case UPDATE_DEACTIVATE: {
+        base::DictionaryValue* dict = nullptr;
+        bool success = (*iter)->GetAsDictionary(&dict);
+        CHECK(success);
+        dict->SetBoolean(kActive, false);
+        break;
+      }
+      case UPDATE_REMOVE:
+        overrides_list->Erase(iter, nullptr);
+        break;
+    }
+    return true;
+  }
+  return false;
+}
+
+// Updates each list referenced in |overrides| according to |behavior|.
+void UpdateOverridesLists(Profile* profile,
+                          const URLOverrides::URLOverrideMap& overrides,
+                          UpdateBehavior behavior) {
+  if (overrides.empty())
+    return;
+  PrefService* prefs = profile->GetPrefs();
+  DictionaryPrefUpdate update(prefs, ExtensionWebUI::kExtensionURLOverrides);
+  base::DictionaryValue* all_overrides = update.Get();
+  for (const auto& page_override_pair : overrides) {
+    base::ListValue* page_overrides = nullptr;
+    // If it's being unregistered, it should already be in the list.
+    if (!all_overrides->GetList(page_override_pair.first, &page_overrides)) {
+      NOTREACHED();
+      continue;
+    }
+    if (UpdateOverridesList(page_overrides, page_override_pair.second.spec(),
+                            behavior)) {
+      // This is the active override, so we need to find all existing
+      // tabs for this override and get them to reload the original URL.
+      base::Callback<void(WebContents*)> callback =
+          base::Bind(&UnregisterAndReplaceOverrideForWebContents,
+                     page_override_pair.first, profile);
+      extensions::ExtensionTabUtil::ForEachTab(callback);
+    }
+  }
 }
 
 // Run favicon callbck with image result. If no favicon was available then
@@ -129,8 +267,12 @@ bool ValidateOverrideURL(const base::Value* override_url_value,
                          const extensions::ExtensionSet& extensions,
                          GURL* override_url,
                          const Extension** extension) {
+  const base::DictionaryValue* dict = nullptr;
   std::string override;
-  if (!override_url_value || !override_url_value->GetAsString(&override)) {
+  bool is_active = false;
+  if (!override_url_value || !override_url_value->GetAsDictionary(&dict) ||
+      !dict->GetBoolean(kActive, &is_active) || !is_active ||
+      !dict->GetString(kEntry, &override)) {
     return false;
   }
   if (!source_url.query().empty())
@@ -226,10 +368,7 @@ bool ExtensionWebUI::HandleChromeURLOverride(
     const Extension* extension;
     if (!ValidateOverrideURL(
             val, *url, extensions, &override_url, &extension)) {
-      LOG(WARNING) << "Invalid chrome URL override";
-      UnregisterChromeURLOverride(url_host, profile, val);
-      // The above Unregister call will remove this item from url_list.
-      --i;
+      // Invalid overrides are cleaned up on startup.
       continue;
     }
 
@@ -301,105 +440,82 @@ bool ExtensionWebUI::HandleChromeURLOverrideReverse(
 }
 
 // static
-void ExtensionWebUI::RegisterChromeURLOverrides(
-    Profile* profile, const URLOverrides::URLOverrideMap& overrides) {
+void ExtensionWebUI::InitializeChromeURLOverrides(Profile* profile) {
+  PrefService* prefs = profile->GetPrefs();
+  DictionaryPrefUpdate update(prefs, kExtensionURLOverrides);
+  base::DictionaryValue* all_overrides = update.Get();
+
+  // DictionaryValue::Iterator cannot be used to modify the list. Generate the
+  // set of keys instead.
+  std::vector<std::string> keys;
+  for (base::DictionaryValue::Iterator iter(*all_overrides);
+       !iter.IsAtEnd(); iter.Advance()) {
+    keys.push_back(iter.key());
+  }
+  for (const std::string& key : keys) {
+    base::ListValue* list = nullptr;
+    bool success = all_overrides->GetList(key, &list);
+    CHECK(success);
+    InitializeOverridesList(list);
+  }
+}
+
+// static
+void ExtensionWebUI::ValidateChromeURLOverrides(Profile* profile) {
+  scoped_ptr<extensions::ExtensionSet> all_extensions =
+      extensions::ExtensionRegistry::Get(profile)->
+          GenerateInstalledExtensionsSet();
+
+  PrefService* prefs = profile->GetPrefs();
+  DictionaryPrefUpdate update(prefs, kExtensionURLOverrides);
+  base::DictionaryValue* all_overrides = update.Get();
+
+  // DictionaryValue::Iterator cannot be used to modify the list. Generate the
+  // set of keys instead.
+  std::vector<std::string> keys;
+  for (base::DictionaryValue::Iterator iter(*all_overrides);
+       !iter.IsAtEnd(); iter.Advance()) {
+    keys.push_back(iter.key());
+  }
+  for (const std::string& key : keys) {
+    base::ListValue* list = nullptr;
+    bool success = all_overrides->GetList(key, &list);
+    CHECK(success);
+    ValidateOverridesList(list, *all_extensions);
+  }
+}
+
+// static
+void ExtensionWebUI::RegisterOrActivateChromeURLOverrides(
+    Profile* profile,
+    const URLOverrides::URLOverrideMap& overrides) {
   if (overrides.empty())
     return;
-
   PrefService* prefs = profile->GetPrefs();
   DictionaryPrefUpdate update(prefs, kExtensionURLOverrides);
   base::DictionaryValue* all_overrides = update.Get();
-
-  // For each override provided by the extension, add it to the front of
-  // the override list if it's not already in the list.
-  URLOverrides::URLOverrideMap::const_iterator iter = overrides.begin();
-  for (; iter != overrides.end(); ++iter) {
-    const std::string& key = iter->first;
-    base::ListValue* page_overrides = NULL;
-    if (!all_overrides->GetList(key, &page_overrides)) {
+  for (const auto& page_override_pair : overrides) {
+    base::ListValue* page_overrides = nullptr;
+    if (!all_overrides->GetList(page_override_pair.first, &page_overrides)) {
       page_overrides = new base::ListValue();
-      all_overrides->Set(key, page_overrides);
-    } else {
-      CleanUpDuplicates(page_overrides);
-
-      // Verify that the override isn't already in the list.
-      base::ListValue::iterator i = page_overrides->begin();
-      for (; i != page_overrides->end(); ++i) {
-        std::string override_val;
-        if (!(*i)->GetAsString(&override_val)) {
-          NOTREACHED();
-          continue;
-        }
-        if (override_val == iter->second.spec())
-          break;
-      }
-      // This value is already in the list, leave it alone.
-      if (i != page_overrides->end())
-        continue;
+      all_overrides->Set(page_override_pair.first, page_overrides);
     }
-    // Insert the override at the front of the list.  Last registered override
-    // wins.
-    page_overrides->Insert(0, new base::StringValue(iter->second.spec()));
+    AddOverridesToList(page_overrides, page_override_pair.second.spec());
   }
 }
 
 // static
-void ExtensionWebUI::UnregisterAndReplaceOverride(const std::string& page,
-                                                  Profile* profile,
-                                                  base::ListValue* list,
-                                                  const base::Value* override) {
-  size_t index = 0;
-  bool found = list->Remove(*override, &index);
-  if (found && index == 0) {
-    // This is the active override, so we need to find all existing
-    // tabs for this override and get them to reload the original URL.
-    base::Callback<void(WebContents*)> callback =
-        base::Bind(&UnregisterAndReplaceOverrideForWebContents, page, profile);
-    extensions::ExtensionTabUtil::ForEachTab(callback);
-  }
-}
-
-// static
-void ExtensionWebUI::UnregisterChromeURLOverride(const std::string& page,
-                                                 Profile* profile,
-                                                 const base::Value* override) {
-  if (!override)
-    return;
-  PrefService* prefs = profile->GetPrefs();
-  DictionaryPrefUpdate update(prefs, kExtensionURLOverrides);
-  base::DictionaryValue* all_overrides = update.Get();
-  base::ListValue* page_overrides = NULL;
-  if (!all_overrides->GetList(page, &page_overrides)) {
-    // If it's being unregistered, it should already be in the list.
-    NOTREACHED();
-    return;
-  } else {
-    UnregisterAndReplaceOverride(page, profile, page_overrides, override);
-  }
+void ExtensionWebUI::DeactivateChromeURLOverrides(
+    Profile* profile,
+    const URLOverrides::URLOverrideMap& overrides) {
+  UpdateOverridesLists(profile, overrides, UPDATE_DEACTIVATE);
 }
 
 // static
 void ExtensionWebUI::UnregisterChromeURLOverrides(
-    Profile* profile, const URLOverrides::URLOverrideMap& overrides) {
-  if (overrides.empty())
-    return;
-  PrefService* prefs = profile->GetPrefs();
-  DictionaryPrefUpdate update(prefs, kExtensionURLOverrides);
-  base::DictionaryValue* all_overrides = update.Get();
-  URLOverrides::URLOverrideMap::const_iterator iter = overrides.begin();
-  for (; iter != overrides.end(); ++iter) {
-    const std::string& page = iter->first;
-    base::ListValue* page_overrides = NULL;
-    if (!all_overrides->GetList(page, &page_overrides)) {
-      // If it's being unregistered, it should already be in the list.
-      NOTREACHED();
-      continue;
-    } else {
-      base::StringValue override(iter->second.spec());
-      UnregisterAndReplaceOverride(iter->first, profile,
-                                   page_overrides, &override);
-    }
-  }
+    Profile* profile,
+    const URLOverrides::URLOverrideMap& overrides) {
+  UpdateOverridesLists(profile, overrides, UPDATE_REMOVE);
 }
 
 // static

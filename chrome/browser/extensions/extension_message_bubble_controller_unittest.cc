@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/dev_mode_bubble_delegate.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_web_ui_override_registrar.h"
 #include "chrome/browser/extensions/ntp_overridden_bubble_delegate.h"
 #include "chrome/browser/extensions/proxy_overridden_bubble_delegate.h"
 #include "chrome/browser/extensions/settings_api_bubble_delegate.h"
@@ -44,6 +45,12 @@ namespace {
 const char kId1[] = "iccfkkhkfiphcjdakkmcjmkfboccmndk";
 const char kId2[] = "ajjhifimiemdpmophmkkkcijegphclbl";
 const char kId3[] = "ioibbbfddncmmabjmpokikkeiofalaek";
+
+scoped_ptr<KeyedService> BuildOverrideRegistrar(
+    content::BrowserContext* context) {
+  return make_scoped_ptr(
+      new extensions::ExtensionWebUIOverrideRegistrar(context));
+}
 
 }  // namespace
 
@@ -289,6 +296,11 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
                                  base::FilePath(), false);
     service_ = ExtensionSystem::Get(profile())->extension_service();
     service_->Init();
+
+    extensions::ExtensionWebUIOverrideRegistrar::GetFactoryInstance()->
+        SetTestingFactory(profile(), &BuildOverrideRegistrar);
+    extensions::ExtensionWebUIOverrideRegistrar::GetFactoryInstance()->Get(
+        profile());
   }
 
   ~ExtensionMessageBubbleTest() override {}

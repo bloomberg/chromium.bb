@@ -48,16 +48,31 @@ class ExtensionWebUI : public content::WebUIController {
   static bool HandleChromeURLOverrideReverse(
       GURL* url, content::BrowserContext* browser_context);
 
-  // Register and unregister a dictionary of one or more overrides.
-  // Page names are the keys, and chrome-extension: URLs are the values.
-  // (e.g. { "newtab": "chrome-extension://<id>/my_new_tab.html" }
-  static void RegisterChromeURLOverrides(Profile* profile,
+  // Initialize the Chrome URL overrides. This must happen *before* any further
+  // calls for URL overrides!
+  static void InitializeChromeURLOverrides(Profile* profile);
+
+  // Validate the Chrome URL overrides, ensuring that each is valid and points
+  // to an existing extension. To be called once all extensions are loaded.
+  static void ValidateChromeURLOverrides(Profile* profile);
+
+  // Add new Chrome URL overrides. If an entry exists, it is marked as active.
+  // If one doesn't exist, it is added at the beginning of the list of
+  // overrides (meaning it has priority).
+  static void RegisterOrActivateChromeURLOverrides(
+      Profile* profile,
       const extensions::URLOverrides::URLOverrideMap& overrides);
-  static void UnregisterChromeURLOverrides(Profile* profile,
+
+  // Deactivate overrides without removing them from the list or modifying their
+  // positions in the list.
+  static void DeactivateChromeURLOverrides(
+      Profile* profile,
       const extensions::URLOverrides::URLOverrideMap& overrides);
-  static void UnregisterChromeURLOverride(const std::string& page,
-                                          Profile* profile,
-                                          const base::Value* override);
+
+  // Completely unregister overrides, removing them from the list.
+  static void UnregisterChromeURLOverrides(
+      Profile* profile,
+      const extensions::URLOverrides::URLOverrideMap& overrides);
 
   // Called from BrowserPrefs
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);

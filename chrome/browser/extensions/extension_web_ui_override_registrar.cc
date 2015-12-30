@@ -8,13 +8,23 @@
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/common/one_shot_event.h"
 
 namespace extensions {
 
 ExtensionWebUIOverrideRegistrar::ExtensionWebUIOverrideRegistrar(
     content::BrowserContext* context)
-    : extension_registry_observer_(this) {
+    : extension_registry_observer_(this),
+      weak_factory_(this) {
+  ExtensionWebUI::InitializeChromeURLOverrides(
+      Profile::FromBrowserContext(context));
   extension_registry_observer_.Add(ExtensionRegistry::Get(context));
+  ExtensionSystem::Get(context)->ready().Post(
+      FROM_HERE,
+      base::Bind(&ExtensionWebUIOverrideRegistrar::OnExtensionSystemReady,
+                 weak_factory_.GetWeakPtr(),
+                 context));
 }
 
 ExtensionWebUIOverrideRegistrar::~ExtensionWebUIOverrideRegistrar() {
@@ -23,7 +33,7 @@ ExtensionWebUIOverrideRegistrar::~ExtensionWebUIOverrideRegistrar() {
 void ExtensionWebUIOverrideRegistrar::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
-  ExtensionWebUI::RegisterChromeURLOverrides(
+  ExtensionWebUI::RegisterOrActivateChromeURLOverrides(
       Profile::FromBrowserContext(browser_context),
       URLOverrides::GetChromeURLOverrides(extension));
 }
@@ -32,9 +42,24 @@ void ExtensionWebUIOverrideRegistrar::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
     UnloadedExtensionInfo::Reason reason) {
+  ExtensionWebUI::DeactivateChromeURLOverrides(
+      Profile::FromBrowserContext(browser_context),
+      URLOverrides::GetChromeURLOverrides(extension));
+}
+
+void ExtensionWebUIOverrideRegistrar::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UninstallReason reason) {
   ExtensionWebUI::UnregisterChromeURLOverrides(
       Profile::FromBrowserContext(browser_context),
       URLOverrides::GetChromeURLOverrides(extension));
+}
+
+void ExtensionWebUIOverrideRegistrar::OnExtensionSystemReady(
+    content::BrowserContext* context) {
+  ExtensionWebUI::ValidateChromeURLOverrides(
+      Profile::FromBrowserContext(context));
 }
 
 static base::LazyInstance<

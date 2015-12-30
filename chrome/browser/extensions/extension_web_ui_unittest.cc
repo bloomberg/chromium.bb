@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
+#include "chrome/browser/extensions/extension_web_ui_override_registrar.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -24,6 +25,15 @@
 
 namespace extensions {
 
+namespace {
+
+scoped_ptr<KeyedService> BuildOverrideRegistrar(
+    content::BrowserContext* context) {
+  return make_scoped_ptr(new ExtensionWebUIOverrideRegistrar(context));
+}
+
+}  // namespace
+
 class ExtensionWebUITest : public testing::Test {
  public:
   ExtensionWebUITest()
@@ -36,6 +46,9 @@ class ExtensionWebUITest : public testing::Test {
         static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile_.get()));
     extension_service_ = system->CreateExtensionService(
         base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
+    ExtensionWebUIOverrideRegistrar::GetFactoryInstance()->SetTestingFactory(
+        profile_.get(), &BuildOverrideRegistrar);
+    ExtensionWebUIOverrideRegistrar::GetFactoryInstance()->Get(profile_.get());
   }
 
   void TearDown() override {
@@ -110,7 +123,7 @@ TEST_F(ExtensionWebUITest, ExtensionURLOverride) {
 
   // This time the non-component extension was registered more recently and
   // should still take precedence.
-  ExtensionWebUI::RegisterChromeURLOverrides(
+  ExtensionWebUI::RegisterOrActivateChromeURLOverrides(
       profile_.get(), URLOverrides::GetChromeURLOverrides(ext_unpacked.get()));
   url = GURL("chrome://bookmarks");
   EXPECT_TRUE(ExtensionWebUI::HandleChromeURLOverride(&url, profile_.get()));
