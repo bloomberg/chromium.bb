@@ -1136,8 +1136,9 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
     bool proceed,
     const base::TimeTicks& renderer_before_unload_start_time,
     const base::TimeTicks& renderer_before_unload_end_time) {
-  TRACE_EVENT_ASYNC_END0(
-      "navigation", "RenderFrameHostImpl::BeforeUnload", this);
+  TRACE_EVENT_ASYNC_END1("navigation", "RenderFrameHostImpl BeforeUnload", this,
+                         "FrameTreeNode id",
+                         frame_tree_node_->frame_tree_node_id());
   DCHECK(!GetParent());
   // If this renderer navigated while the beforeunload request was in flight, we
   // may have cleared this state in OnDidCommitProvisionalLoad, in which case we
@@ -1926,8 +1927,8 @@ void RenderFrameHostImpl::DispatchBeforeUnload(bool for_navigation) {
         for_navigation, true, base::TimeTicks::Now());
     return;
   }
-  TRACE_EVENT_ASYNC_BEGIN0(
-      "navigation", "RenderFrameHostImpl::BeforeUnload", this);
+  TRACE_EVENT_ASYNC_BEGIN1("navigation", "RenderFrameHostImpl BeforeUnload",
+                           this, "&RenderFrameHostImpl", (void*)this);
 
   // This may be called more than once (if the user clicks the tab close button
   // several times, or if she clicks the tab close button then the browser close

@@ -438,7 +438,7 @@ void LogResourceRequestTimeOnUI(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* host =
       RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
-  if (host != NULL) {
+  if (host != nullptr) {
     DCHECK(host->frame_tree_node()->IsMainFrame());
     host->frame_tree_node()->navigator()->LogResourceRequestTime(
         timestamp, url);
@@ -1121,6 +1121,8 @@ void ResourceDispatcherHostImpl::OnRequestResource(
           "477117 ResourceDispatcherHostImpl::OnRequestResource"));
   // When logging time-to-network only care about main frame and non-transfer
   // navigations.
+  // PlzNavigate: this log happens from NavigationRequest::OnRequestStarted
+  // instead.
   if (request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME &&
       request_data.transferred_request_request_id == -1 &&
       !IsBrowserSideNavigationEnabled()) {

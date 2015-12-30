@@ -283,8 +283,9 @@ bool NavigatorImpl::NavigateToEntry(
   // "Open link in new tab"). We need to keep it above RFHM::Navigate() call to
   // capture the time needed for the RenderFrameHost initialization.
   base::TimeTicks navigation_start = base::TimeTicks::Now();
-
-  RenderFrameHostManager* manager = frame_tree_node->render_manager();
+  TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(
+      "navigation", "NavigationTiming navigationStart",
+      TRACE_EVENT_SCOPE_GLOBAL, navigation_start.ToInternalValue());
 
   // PlzNavigate: the RenderFrameHosts are no longer asked to navigate.
   if (IsBrowserSideNavigationEnabled()) {
@@ -293,6 +294,26 @@ bool NavigatorImpl::NavigateToEntry(
     RequestNavigation(frame_tree_node, dest_url, dest_referrer, frame_entry,
                       entry, reload_type, is_same_document_history_load,
                       navigation_start);
+    if (frame_tree_node->IsMainFrame() &&
+        frame_tree_node->navigation_request()) {
+      // TODO(carlosk): extend these traces to support subframes and
+      // non-PlzNavigate navigations.
+      // For these traces below we're using the navigation handle as the async
+      // trace id, |navigation_start| as the timestamp and reporting the
+      // FrameTreeNode id as a parameter. For navigations where no network
+      // request is made (data URLs, JavaScript URLs, etc) there is no handle
+      // and so no tracing is done.
+      TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
+          "navigation", "Navigation timeToNetworkStack",
+          frame_tree_node->navigation_request()->navigation_handle(),
+          navigation_start.ToInternalValue(),
+          "FrameTreeNode id", frame_tree_node->frame_tree_node_id());
+      TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
+          "navigation", "Navigation timeToCommit",
+          frame_tree_node->navigation_request()->navigation_handle(),
+          navigation_start.ToInternalValue(),
+          "FrameTreeNode id", frame_tree_node->frame_tree_node_id());
+    }
 
     // Notify observers about navigation if this is for the pending entry.
     if (delegate_ && is_pending_entry)
@@ -302,7 +323,7 @@ bool NavigatorImpl::NavigateToEntry(
   }
 
   RenderFrameHostImpl* dest_render_frame_host =
-      manager->Navigate(dest_url, frame_entry, entry);
+      frame_tree_node->render_manager()->Navigate(dest_url, frame_entry, entry);
   if (!dest_render_frame_host)
     return false;  // Unable to create the desired RenderFrameHost.
 
@@ -492,6 +513,12 @@ void NavigatorImpl::DidNavigate(
 
   // Keep track of each frame's URL in its FrameTreeNode.
   render_frame_host->frame_tree_node()->SetCurrentURL(params.url);
+
+  if (did_navigate && render_frame_host->frame_tree_node()->IsMainFrame() &&
+      IsBrowserSideNavigationEnabled()) {
+    TRACE_EVENT_ASYNC_END0("navigation", "Navigation timeToCommit",
+                           render_frame_host->navigation_handle());
+  }
 
   // Send notification about committed provisional loads. This notification is
   // different from the NAV_ENTRY_COMMITTED notification which doesn't include

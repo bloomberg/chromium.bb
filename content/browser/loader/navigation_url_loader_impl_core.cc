@@ -65,6 +65,7 @@ void NavigationURLLoaderImplCore::NotifyRequestRedirected(
     const net::RedirectInfo& redirect_info,
     ResourceResponse* response) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  TRACE_EVENT_ASYNC_END0("navigation", "Navigation redirectDelay", this);
 
   // Make a copy of the ResourceResponse before it is passed to another thread.
   //
@@ -75,12 +76,22 @@ void NavigationURLLoaderImplCore::NotifyRequestRedirected(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&NavigationURLLoaderImpl::NotifyRequestRedirected, loader_,
                  redirect_info, response->DeepCopy()));
+
+  // TODO(carlosk): extend this trace to support non-PlzNavigate navigations.
+  // For the trace below we're using the NavigationURLLoaderImplCore as the
+  // async trace id and reporting the new redirect URL as a parameter.
+  TRACE_EVENT_ASYNC_BEGIN2("navigation", "Navigation redirectDelay", this,
+                           "&NavigationURLLoaderImplCore", this, "New URL",
+                           redirect_info.new_url.spec());
 }
 
 void NavigationURLLoaderImplCore::NotifyResponseStarted(
     ResourceResponse* response,
     scoped_ptr<StreamHandle> body) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  TRACE_EVENT_ASYNC_END0("navigation", "Navigation redirectDelay", this);
+  TRACE_EVENT_ASYNC_END2("navigation", "Navigation timeToResponseStarted", this,
+                         "&NavigationURLLoaderImplCore", this, "success", true);
 
   // If, by the time the task reaches the UI thread, |loader_| has already been
   // destroyed, NotifyResponseStarted will not run. |body| will be destructed
@@ -100,6 +111,10 @@ void NavigationURLLoaderImplCore::NotifyResponseStarted(
 void NavigationURLLoaderImplCore::NotifyRequestFailed(bool in_cache,
                                                       int net_error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  TRACE_EVENT_ASYNC_END0("navigation", "Navigation redirectDelay", this);
+  TRACE_EVENT_ASYNC_END2("navigation", "Navigation timeToResponseStarted", this,
+                         "&NavigationURLLoaderImplCore", this, "success",
+                         false);
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

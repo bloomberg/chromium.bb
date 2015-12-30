@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/trace_event/trace_event.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/loader/navigation_url_loader_impl_core.h"
@@ -27,6 +28,15 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   core_ = new NavigationURLLoaderImplCore(weak_factory_.GetWeakPtr());
+
+  // TODO(carlosk): extend this trace to support non-PlzNavigate navigations.
+  // For the trace below we're using the NavigationURLLoaderImplCore as the
+  // async trace id, |navigation_start| as the timestamp and reporting the
+  // FrameTreeNode id as a parameter.
+  TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
+      "navigation", "Navigation timeToResponseStarted", core_,
+      request_info->common_params.navigation_start.ToInternalValue(),
+      "FrameTreeNode id", request_info->frame_tree_node_id);
   ServiceWorkerNavigationHandleCore* service_worker_handle_core =
       service_worker_handle ? service_worker_handle->core() : nullptr;
   BrowserThread::PostTask(
