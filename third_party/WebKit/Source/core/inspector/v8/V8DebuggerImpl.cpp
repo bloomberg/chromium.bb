@@ -38,6 +38,7 @@
 #include "core/inspector/v8/V8DebuggerClient.h"
 #include "core/inspector/v8/V8JavaScriptCallFrame.h"
 #include "platform/JSONValues.h"
+#include "wtf/Atomics.h"
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
 
@@ -46,6 +47,7 @@ namespace blink {
 namespace {
 const char stepIntoV8MethodName[] = "stepIntoStatement";
 const char stepOutV8MethodName[] = "stepOutOfFunction";
+volatile int s_lastContextId = 0;
 }
 
 static bool inLiveEditScope = false;
@@ -102,8 +104,7 @@ bool V8DebuggerImpl::enabled() const
 
 void V8Debugger::setContextDebugData(v8::Local<v8::Context> context, const String& type, int contextGroupId)
 {
-    static int contextIdCounter = 0;
-    int contextId = ++contextIdCounter;
+    int contextId = atomicIncrement(&s_lastContextId);
     String debugData = String::number(contextGroupId) + "," + String::number(contextId) + "," + type;
     v8::HandleScope scope(context->GetIsolate());
     v8::Context::Scope contextScope(context);
