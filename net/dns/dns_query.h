@@ -16,6 +16,10 @@
 
 namespace net {
 
+namespace dns_protocol {
+struct Header;
+}
+
 class IOBufferWithSize;
 
 // Represents on-the-wire DNS query message as an object.
@@ -46,6 +50,9 @@ class NET_EXPORT_PRIVATE DnsQuery {
 
  private:
   DnsQuery(const DnsQuery& orig, uint16_t id);
+
+  // Convenience for header access.
+  dns_protocol::Header* header();
 
   // Size of the DNS name (*NOT* hostname) we are trying to resolve; used
   // to calculate offsets.

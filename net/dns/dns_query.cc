@@ -4,8 +4,6 @@
 
 #include "net/dns/dns_query.h"
 
-#include <limits>
-
 #include "base/big_endian.h"
 #include "base/sys_byteorder.h"
 #include "net/base/io_buffer.h"
@@ -25,15 +23,13 @@ DnsQuery::DnsQuery(uint16_t id, const base::StringPiece& qname, uint16_t qtype)
   size_t question_size = qname_size_ + sizeof(uint16_t) + sizeof(uint16_t);
   io_buffer_ = new IOBufferWithSize(sizeof(dns_protocol::Header) +
                                     question_size);
-  dns_protocol::Header* header =
-      reinterpret_cast<dns_protocol::Header*>(io_buffer_->data());
-  memset(header, 0, sizeof(dns_protocol::Header));
-  header->id = base::HostToNet16(id);
-  header->flags = base::HostToNet16(dns_protocol::kFlagRD);
-  header->qdcount = base::HostToNet16(1);
+  *header() = {};
+  header()->id = base::HostToNet16(id);
+  header()->flags = base::HostToNet16(dns_protocol::kFlagRD);
+  header()->qdcount = base::HostToNet16(1);
 
   // Write question section after the header.
-  base::BigEndianWriter writer(reinterpret_cast<char*>(header + 1),
+  base::BigEndianWriter writer(reinterpret_cast<char*>(header() + 1),
                                question_size);
   writer.WriteBytes(qname.data(), qname.size());
   writer.WriteU16(qtype);
@@ -70,20 +66,20 @@ base::StringPiece DnsQuery::question() const {
                            qname_size_ + sizeof(uint16_t) + sizeof(uint16_t));
 }
 
+void DnsQuery::set_flags(uint16_t flags) {
+  header()->flags = flags;
+}
+
 DnsQuery::DnsQuery(const DnsQuery& orig, uint16_t id) {
   qname_size_ = orig.qname_size_;
   io_buffer_ = new IOBufferWithSize(orig.io_buffer()->size());
   memcpy(io_buffer_.get()->data(), orig.io_buffer()->data(),
          io_buffer_.get()->size());
-  dns_protocol::Header* header =
-      reinterpret_cast<dns_protocol::Header*>(io_buffer_->data());
-  header->id = base::HostToNet16(id);
+  header()->id = base::HostToNet16(id);
 }
 
-void DnsQuery::set_flags(uint16_t flags) {
-  dns_protocol::Header* header =
-      reinterpret_cast<dns_protocol::Header*>(io_buffer_->data());
-  header->flags = flags;
+dns_protocol::Header* DnsQuery::header() {
+  return reinterpret_cast<dns_protocol::Header*>(io_buffer_->data());
 }
 
 }  // namespace net
