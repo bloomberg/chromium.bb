@@ -158,6 +158,15 @@ cr.define('media_router.browserApi', function() {
   }
 
   /**
+   * Reports the navigation to the specified view.
+   *
+   * @param {string} view
+   */
+  function reportNavigateToView(view) {
+    chrome.send('reportNavigateToView', [view]);
+  }
+
+  /**
    * Reports the cast mode that the user selected.
    *
    * @param {number} castModeType
@@ -201,6 +210,7 @@ cr.define('media_router.browserApi', function() {
     closeRoute: closeRoute,
     onInitialDataReceived: onInitialDataReceived,
     reportClickedSinkIndex: reportClickedSinkIndex,
+    reportNavigateToView: reportNavigateToView,
     reportSelectedCastMode: reportSelectedCastMode,
     reportSinkCount: reportSinkCount,
     requestInitialData: requestInitialData,

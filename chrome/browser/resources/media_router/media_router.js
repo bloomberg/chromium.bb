@@ -22,12 +22,17 @@ cr.define('media_router', function() {
     container = $('media-router-container');
     media_router.ui.setContainer(container);
 
+    container.addEventListener('back-click', onNavigateToSinkList);
     container.addEventListener('cast-mode-selected', onCastModeSelected);
     container.addEventListener('close-button-click', onCloseDialogEvent);
     container.addEventListener('close-dialog', onCloseDialogEvent);
     container.addEventListener('close-route-click', onCloseRouteClick);
     container.addEventListener('create-route', onCreateRoute);
     container.addEventListener('issue-action-click', onIssueActionClick);
+    container.addEventListener('navigate-sink-list-to-details',
+                               onNavigateToDetails);
+    container.addEventListener('navigate-to-cast-mode-list',
+                               onNavigateToCastMode);
     container.addEventListener('report-sink-count', onSinkCountReported);
     container.addEventListener('sink-click', onSinkClick);
   }
@@ -106,6 +111,36 @@ cr.define('media_router', function() {
    */
   function onSinkClick(data) {
     media_router.browserApi.reportClickedSinkIndex(data.detail.index);
+  }
+
+  /**
+   * Reports the user navigation to the cast mode view.
+   * Called when the user clicks the drop arrow to navigate to the cast mode
+   * view on the dialog.
+   */
+  function onNavigateToCastMode() {
+    media_router.browserApi.reportNavigateToView(
+        media_router.MediaRouterView.CAST_MODE_LIST);
+  }
+
+  /**
+   * Reports the user navigation the route details view.
+   * Called when the user clicks on a sink to navigate to the route details
+   * view.
+   */
+  function onNavigateToDetails() {
+    media_router.browserApi.reportNavigateToView(
+        media_router.MediaRouterView.ROUTE_DETAILS);
+  }
+
+  /**
+   * Reports the user navigation the sink list view.
+   * Called when the user clicks on the back button from the route details view
+   * to the sink list view.
+   */
+  function onNavigateToSinkList() {
+    media_router.browserApi.reportNavigateToView(
+        media_router.MediaRouterView.SINK_LIST);
   }
 
   /**

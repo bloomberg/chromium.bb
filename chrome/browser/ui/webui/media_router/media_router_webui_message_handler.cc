@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
@@ -30,6 +31,7 @@ const char kActOnIssue[] = "actOnIssue";
 const char kCloseRoute[] = "closeRoute";
 const char kCloseDialog[] = "closeDialog";
 const char kReportClickedSinkIndex[] = "reportClickedSinkIndex";
+const char kReportNavigateToView[] = "reportNavigateToView";
 const char kReportSelectedCastMode[] = "reportSelectedCastMode";
 const char kReportSinkCount[] = "reportSinkCount";
 const char kOnInitialDataReceived[] = "onInitialDataReceived";
@@ -260,6 +262,10 @@ void MediaRouterWebUIMessageHandler::RegisterMessages() {
       base::Bind(&MediaRouterWebUIMessageHandler::OnReportSelectedCastMode,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      kReportNavigateToView,
+      base::Bind(&MediaRouterWebUIMessageHandler::OnReportNavigateToView,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       kReportSinkCount,
       base::Bind(&MediaRouterWebUIMessageHandler::OnReportSinkCount,
                  base::Unretained(this)));
@@ -406,6 +412,27 @@ void MediaRouterWebUIMessageHandler::OnReportClickedSinkIndex(
   }
   UMA_HISTOGRAM_SPARSE_SLOWLY("MediaRouter.Ui.Action.StartLocalPosition",
                               std::min(index, 100));
+}
+
+void MediaRouterWebUIMessageHandler::OnReportNavigateToView(
+  const base::ListValue* args) {
+  DVLOG(1) << "OnReportNavigateToView";
+  std::string view;
+  if (!args->GetString(0, &view)) {
+    DVLOG(1) << "Unable to extract args.";
+    return;
+  }
+
+  if (view == "cast-mode-list") {
+    base::RecordAction(base::UserMetricsAction(
+        "MediaRouter_Ui_Navigate_SinkListToSource"));
+  } else if (view == "route-details") {
+    base::RecordAction(base::UserMetricsAction(
+        "MediaRouter_Ui_Navigate_SinkListToRouteDetails"));
+  } else if (view == "sink-list") {
+    base::RecordAction(base::UserMetricsAction(
+        "MediaRouter_Ui_Navigate_RouteDetailsToSinkList"));
+  }
 }
 
 void MediaRouterWebUIMessageHandler::OnReportSelectedCastMode(

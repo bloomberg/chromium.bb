@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_mojo_impl.h"
@@ -86,6 +87,8 @@ void MediaRouterContextualMenu::ExecuteCommand(int command_id,
       break;
     case IDC_MEDIA_ROUTER_HELP:
       chrome::ShowSingletonTab(browser_, GURL(kCastHelpCenterPageUrl));
+      base::RecordAction(base::UserMetricsAction(
+          "MediaRouter_Ui_Navigate_Help"));
       break;
     case IDC_MEDIA_ROUTER_LEARN_MORE:
       chrome::ShowSingletonTab(browser_, GURL(kCastLearnMorePageUrl));

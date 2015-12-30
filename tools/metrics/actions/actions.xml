@@ -7770,6 +7770,38 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MediaRouter_Ui_Navigate_Help">
+  <owner>apacible@chromium.org</owner>
+  <description>
+    User clicked the Media Router help menu item, located on the Media Router
+    contextual menu, to open the Cast help page.
+  </description>
+</action>
+
+<action name="MediaRouter_Ui_Navigate_RouteDetailsToSinkList">
+  <owner>apacible@chromium.org</owner>
+  <description>
+    User explicitly clicked the back button from the route details view to
+    navigate to the sink list view.
+  </description>
+</action>
+
+<action name="MediaRouter_Ui_Navigate_SinkListToRouteDetails">
+  <owner>apacible@chromium.org</owner>
+  <description>
+    User explicitly clicked a sink to navigate to the route details view from
+    the sink list view.
+  </description>
+</action>
+
+<action name="MediaRouter_Ui_Navigate_SinkListToSource">
+  <owner>apacible@chromium.org</owner>
+  <description>
+    User explicitly clicked to navigate from the sink view to the cast mode
+    view.
+  </description>
+</action>
+
 <action name="Menu_Take_Screenshot">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

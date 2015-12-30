@@ -821,6 +821,7 @@ Polymer({
     var route = this.sinkToRouteMap_[sink.id];
     if (route) {
       this.showRouteDetails_(route);
+      this.fire('navigate-sink-list-to-details');
     } else if (this.currentLaunchingSinkId_ == '') {
       // Allow one launch at a time.
       this.fire('create-route', {
@@ -877,9 +878,11 @@ Polymer({
    * @private
    */
   toggleCastModeHidden_: function() {
-    if (this.currentView_ == media_router.MediaRouterView.CAST_MODE_LIST)
+    if (this.currentView_ == media_router.MediaRouterView.CAST_MODE_LIST) {
       this.showSinkList_();
-    else
+    } else {
       this.showCastModeList_();
+      this.fire('navigate-to-cast-mode-list');
+    }
   },
 });
