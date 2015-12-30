@@ -127,6 +127,7 @@ class RtcpParserTest : public ::testing::Test {
   scoped_ptr<base::SimpleTestTickClock> testing_clock_;
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(RtcpParserTest);
 };
 
@@ -402,6 +403,52 @@ TEST_F(RtcpParserTest, InjectReceiverReportWithReceiverLogVerificationMulti) {
   RtcpParser parser(kSourceSsrc, kSenderSsrc);
   EXPECT_TRUE(parser.Parse(p.Reader()));
   ExpectReceiverLog(parser, receiver_log);
+}
+
+TEST(RtcpUtilityTest, NtpAndTime) {
+  const int64_t kSecondsbetweenYear1900and2010 = INT64_C(40176 * 24 * 60 * 60);
+  const int64_t kSecondsbetweenYear1900and2030 = INT64_C(47481 * 24 * 60 * 60);
+
+  uint32_t ntp_seconds_1 = 0;
+  uint32_t ntp_fraction_1 = 0;
+  base::TimeTicks input_time = base::TimeTicks::Now();
+  ConvertTimeTicksToNtp(input_time, &ntp_seconds_1, &ntp_fraction_1);
+
+  // Verify absolute value.
+  EXPECT_GT(ntp_seconds_1, kSecondsbetweenYear1900and2010);
+  EXPECT_LT(ntp_seconds_1, kSecondsbetweenYear1900and2030);
+
+  base::TimeTicks out_1 = ConvertNtpToTimeTicks(ntp_seconds_1, ntp_fraction_1);
+  EXPECT_EQ(input_time, out_1);  // Verify inverse.
+
+  base::TimeDelta time_delta = base::TimeDelta::FromMilliseconds(1000);
+  input_time += time_delta;
+
+  uint32_t ntp_seconds_2 = 0;
+  uint32_t ntp_fraction_2 = 0;
+
+  ConvertTimeTicksToNtp(input_time, &ntp_seconds_2, &ntp_fraction_2);
+  base::TimeTicks out_2 = ConvertNtpToTimeTicks(ntp_seconds_2, ntp_fraction_2);
+  EXPECT_EQ(input_time, out_2);  // Verify inverse.
+
+  // Verify delta.
+  EXPECT_EQ((out_2 - out_1), time_delta);
+  EXPECT_EQ((ntp_seconds_2 - ntp_seconds_1), UINT32_C(1));
+  EXPECT_NEAR(ntp_fraction_2, ntp_fraction_1, 1);
+
+  time_delta = base::TimeDelta::FromMilliseconds(500);
+  input_time += time_delta;
+
+  uint32_t ntp_seconds_3 = 0;
+  uint32_t ntp_fraction_3 = 0;
+
+  ConvertTimeTicksToNtp(input_time, &ntp_seconds_3, &ntp_fraction_3);
+  base::TimeTicks out_3 = ConvertNtpToTimeTicks(ntp_seconds_3, ntp_fraction_3);
+  EXPECT_EQ(input_time, out_3);  // Verify inverse.
+
+  // Verify delta.
+  EXPECT_EQ((out_3 - out_2), time_delta);
+  EXPECT_NEAR((ntp_fraction_3 - ntp_fraction_2), 0xffffffff / 2, 1);
 }
 
 }  // namespace cast
