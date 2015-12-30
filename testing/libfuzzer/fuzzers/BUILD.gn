@@ -255,3 +255,12 @@ fuzzer_test("sqlite3_prepare_v2_fuzzer") {
     "//third_party/sqlite",
   ]
 }
+
+fuzzer_test("libxml_xml_read_memory_fuzzer") {
+  sources = [
+    "libxml_xml_read_memory_fuzzer.cc",
+  ]
+  deps = [
+    "//third_party/libxml:libxml",
+  ]
+}
