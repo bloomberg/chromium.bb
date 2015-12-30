@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/cast/receiver/frame_receiver.h"
+
 #include <stddef.h>
 #include <stdint.h>
-
 #include <deque>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -18,7 +20,6 @@
 #include "media/cast/net/mock_cast_transport_sender.h"
 #include "media/cast/net/rtcp/rtcp_utility.h"
 #include "media/cast/net/rtcp/test_rtcp_packet_builder.h"
-#include "media/cast/receiver/frame_receiver.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/test/utility/default_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -129,7 +130,7 @@ class FrameReceiverTest : public ::testing::Test {
     TestRtcpPacketBuilder rtcp_packet;
     rtcp_packet.AddSrWithNtp(config_.sender_ssrc, ntp_seconds, ntp_fraction,
                              rtp_timestamp.lower_32_bits());
-    ASSERT_TRUE(receiver_->ProcessPacket(rtcp_packet.GetPacket().Pass()));
+    ASSERT_TRUE(receiver_->ProcessPacket(rtcp_packet.GetPacket()));
   }
 
   FrameReceiverConfig config_;

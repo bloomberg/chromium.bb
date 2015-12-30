@@ -4,11 +4,13 @@
 
 #include "components/devtools_service/devtools_agent_host.h"
 
+#include <utility>
+
 namespace devtools_service {
 
 DevToolsAgentHost::DevToolsAgentHost(const std::string& id,
                                      DevToolsAgentPtr agent)
-    : id_(id), agent_(agent.Pass()), binding_(this), delegate_(nullptr) {}
+    : id_(id), agent_(std::move(agent)), binding_(this), delegate_(nullptr) {}
 
 DevToolsAgentHost::~DevToolsAgentHost() {
   if (delegate_)
@@ -23,7 +25,7 @@ void DevToolsAgentHost::SetDelegate(Delegate* delegate) {
 
     DevToolsAgentClientPtr client;
     binding_.Bind(&client);
-    agent_->SetClient(client.Pass());
+    agent_->SetClient(std::move(client));
   } else {
     if (!binding_.is_bound())
       return;

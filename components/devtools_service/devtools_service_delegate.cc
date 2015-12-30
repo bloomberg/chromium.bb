@@ -4,6 +4,8 @@
 
 #include "components/devtools_service/devtools_service_delegate.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "components/devtools_service/devtools_registry_impl.h"
 #include "components/devtools_service/devtools_service.h"
@@ -52,13 +54,13 @@ void DevToolsServiceDelegate::Quit() {
 void DevToolsServiceDelegate::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<DevToolsRegistry> request) {
-  service_->registry()->BindToRegistryRequest(request.Pass());
+  service_->registry()->BindToRegistryRequest(std::move(request));
 }
 
 void DevToolsServiceDelegate::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<DevToolsCoordinator> request) {
-  service_->BindToCoordinatorRequest(request.Pass());
+  service_->BindToCoordinatorRequest(std::move(request));
 }
 
 }  // namespace devtools_service

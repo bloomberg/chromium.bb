@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -47,7 +49,7 @@ TEST_F(DevicesAppTest, GetUSBDevices) {
   options->filters = mojo::Array<usb::DeviceFilterPtr>(1);
   options->filters[0] = usb::DeviceFilter::New();
   usb_device_manager()->GetDevices(
-      options.Pass(), base::Bind(&OnGetDevices, loop.QuitClosure()));
+      std::move(options), base::Bind(&OnGetDevices, loop.QuitClosure()));
   loop.Run();
 }
 
