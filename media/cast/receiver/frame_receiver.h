@@ -21,7 +21,7 @@
 #include "media/cast/common/transport_encryption_handler.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/net/rtcp/receiver_rtcp_event_subscriber.h"
-#include "media/cast/net/rtcp/rtcp.h"
+#include "media/cast/net/rtcp/receiver_rtcp_session.h"
 #include "media/cast/net/rtp/framer.h"
 #include "media/cast/net/rtp/receiver_stats.h"
 #include "media/cast/net/rtp/rtp_defines.h"
@@ -161,7 +161,7 @@ class FrameReceiver : public RtpPayloadFeedback,
 
   // Manages sending/receiving of RTCP packets, including sender/receiver
   // reports.
-  Rtcp rtcp_;
+  ReceiverRtcpSession rtcp_;
 
   // Decrypts encrypted frames.
   TransportEncryptionHandler decryptor_;

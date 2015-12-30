@@ -61,7 +61,7 @@ class TestPacketSender : public PacketSender {
       callback_ = cb;
       return false;
     }
-    if (Rtcp::IsRtcpPacket(&packet->data[0], packet->data.size())) {
+    if (IsRtcpPacket(&packet->data[0], packet->data.size())) {
       ++number_of_rtcp_packets_;
     } else {
       // Check that at least one RTCP packet was sent before the first RTP

@@ -12,8 +12,7 @@
 #include <deque>
 #include <map>
 
-#include "base/macros.h"
-#include "media/cast/net/rtcp/rtcp.h"
+#include "base/time/tick_clock.h"
 #include "media/cast/net/rtp/rtp_defines.h"
 
 namespace media {

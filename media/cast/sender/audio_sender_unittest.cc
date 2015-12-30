@@ -42,7 +42,7 @@ class TestPacketSender : public PacketSender {
   TestPacketSender() : number_of_rtp_packets_(0), number_of_rtcp_packets_(0) {}
 
   bool SendPacket(PacketRef packet, const base::Closure& cb) final {
-    if (Rtcp::IsRtcpPacket(&packet->data[0], packet->data.size())) {
+    if (IsRtcpPacket(&packet->data[0], packet->data.size())) {
       ++number_of_rtcp_packets_;
     } else {
       // Check that at least one RTCP packet was sent before the first RTP

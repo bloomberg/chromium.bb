@@ -145,7 +145,7 @@ struct RtcpSenderInfo {
   RtcpSenderInfo();
   ~RtcpSenderInfo();
   // First three members are used for lipsync.
-  // First two members are used for rtt.
+  // Last two members are used for rtt.
   uint32_t ntp_seconds;
   uint32_t ntp_fraction;
   RtpTimeTicks rtp_timestamp;

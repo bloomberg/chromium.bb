@@ -42,7 +42,7 @@
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/cast_transport_sender.h"
 #include "media/cast/net/pacing/paced_sender.h"
-#include "media/cast/net/rtcp/rtcp.h"
+#include "media/cast/net/rtcp/sender_rtcp_session.h"
 #include "media/cast/net/rtp/rtp_parser.h"
 #include "media/cast/net/rtp/rtp_sender.h"
 #include "net/base/network_interfaces.h"
@@ -179,8 +179,8 @@ class CastTransportSenderImpl : public CastTransportSender {
   scoped_ptr<RtpSender> video_sender_;
 
   // Maintains RTCP session for audio and video.
-  scoped_ptr<Rtcp> audio_rtcp_session_;
-  scoped_ptr<Rtcp> video_rtcp_session_;
+  scoped_ptr<SenderRtcpSession> audio_rtcp_session_;
+  scoped_ptr<SenderRtcpSession> video_rtcp_session_;
 
   // Encrypts data in EncodedFrames before they are sent.  Note that it's
   // important for the encryption to happen here, in code that would execute in

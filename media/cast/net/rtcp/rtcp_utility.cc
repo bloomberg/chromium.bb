@@ -24,7 +24,8 @@ const int64_t kUnixEpochInNtpSeconds = INT64_C(2208988800);
 // Magic fractional unit. Used to convert time (in microseconds) to/from
 // fractional NTP seconds.
 const double kMagicFractionalUnit = 4.294967296E3;
-}
+
+}  // namespace
 
 RtcpParser::RtcpParser(uint32_t local_ssrc, uint32_t remote_ssrc)
     : local_ssrc_(local_ssrc),
@@ -197,7 +198,7 @@ bool RtcpParser::ParseApplicationDefined(base::BigEndianReader* reader,
   if (name != kCast)
     return false;
 
-  switch (header.IC /* subtype */ ) {
+  switch (header.IC) {  // subtype
     case kReceiverLogSubtype:
       if (!ParseCastReceiverLogFrameItem(reader))
         return false;
@@ -354,8 +355,8 @@ bool RtcpParser::ParseExtendedReportReceiverReferenceTimeReport(
     base::BigEndianReader* reader,
     uint32_t remote_ssrc) {
   receiver_reference_time_report_.remote_ssrc = remote_ssrc;
-  if(!reader->ReadU32(&receiver_reference_time_report_.ntp_seconds) ||
-     !reader->ReadU32(&receiver_reference_time_report_.ntp_fraction))
+  if (!reader->ReadU32(&receiver_reference_time_report_.ntp_seconds) ||
+      !reader->ReadU32(&receiver_reference_time_report_.ntp_fraction))
     return false;
 
   has_receiver_reference_time_report_ = true;
@@ -452,6 +453,34 @@ base::TimeTicks ConvertNtpToTimeTicks(uint32_t ntp_seconds,
       ntp_time_us -
       (kUnixEpochInNtpSeconds * base::Time::kMicrosecondsPerSecond));
   return base::TimeTicks::UnixEpoch() + elapsed_since_unix_epoch;
+}
+
+namespace {
+enum {
+  // Minimum number of bytes required to make a valid RTCP packet.
+  kMinLengthOfRtcp = 8,
+};
+}  // namespace
+
+bool IsRtcpPacket(const uint8_t* packet, size_t length) {
+  if (length < kMinLengthOfRtcp) {
+    LOG(ERROR) << "Invalid RTCP packet received.";
+    return false;
+  }
+
+  uint8_t packet_type = packet[1];
+  return packet_type >= kPacketTypeLow && packet_type <= kPacketTypeHigh;
+}
+
+uint32_t GetSsrcOfSender(const uint8_t* rtcp_buffer, size_t length) {
+  if (length < kMinLengthOfRtcp)
+    return 0;
+  uint32_t ssrc_of_sender;
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(rtcp_buffer), length);
+  big_endian_reader.Skip(4);  // Skip header.
+  big_endian_reader.ReadU32(&ssrc_of_sender);
+  return ssrc_of_sender;
 }
 
 }  // namespace cast

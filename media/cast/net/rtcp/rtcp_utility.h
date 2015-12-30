@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_RTCP_RTCP_UTILITY_H_
-#define MEDIA_CAST_RTCP_RTCP_UTILITY_H_
+#ifndef MEDIA_CAST_NET_RTCP_RTCP_UTILITY_H_
+#define MEDIA_CAST_NET_RTCP_RTCP_UTILITY_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -139,7 +139,11 @@ void ConvertTimeTicksToNtp(const base::TimeTicks& time,
 base::TimeTicks ConvertNtpToTimeTicks(uint32_t ntp_seconds,
                                       uint32_t ntp_fractions);
 
+bool IsRtcpPacket(const uint8_t* packet, size_t length);
+
+uint32_t GetSsrcOfSender(const uint8_t* rtcp_buffer, size_t length);
+
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_RTCP_RTCP_UTILITY_H_
+#endif  // MEDIA_CAST_NET_RTCP_RTCP_UTILITY_H_

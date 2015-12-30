@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_RTCP_RTCP_DEFINES_H_
-#define MEDIA_CAST_RTCP_RTCP_DEFINES_H_
+#ifndef MEDIA_CAST_NET_RTCP_RTCP_DEFINES_H_
+#define MEDIA_CAST_NET_RTCP_RTCP_DEFINES_H_
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include <list>
+#include <utility>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -124,7 +126,7 @@ struct RtpReceiverStatistics {
   uint32_t jitter;
 };
 
-// These are intended to only be created using Rtcp::ConvertToNTPAndSave.
+// Created on a RTP receiver to be passed over IPC.
 struct RtcpTimeData {
   uint32_t ntp_seconds;
   uint32_t ntp_fraction;
@@ -149,4 +151,4 @@ struct SendRtcpFromRtpReceiver_Params {
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_RTCP_RTCP_DEFINES_H_
+#endif  // MEDIA_CAST_NET_RTCP_RTCP_DEFINES_H_
