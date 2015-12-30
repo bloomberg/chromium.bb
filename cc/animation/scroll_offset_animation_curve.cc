@@ -19,6 +19,8 @@ namespace cc {
 
 namespace {
 
+const double kEpsilon = 0.01f;
+
 static float MaximumDimension(const gfx::Vector2dF& delta) {
   return std::abs(delta.x()) > std::abs(delta.y()) ? delta.x() : delta.y();
 }
@@ -125,6 +127,33 @@ scoped_ptr<AnimationCurve> ScrollOffsetAnimationCurve::Clone() const {
   return std::move(curve_clone);
 }
 
+static double VelocityBasedDurationBound(gfx::Vector2dF old_delta,
+                                         double old_normalized_velocity,
+                                         double old_duration,
+                                         gfx::Vector2dF new_delta) {
+  double old_delta_max_dimension = MaximumDimension(old_delta);
+  double new_delta_max_dimension = MaximumDimension(new_delta);
+
+  // If we are already at the target, stop animating.
+  if (std::abs(new_delta_max_dimension) < kEpsilon)
+    return 0;
+
+  // Guard against division by zero.
+  if (std::abs(old_delta_max_dimension) < kEpsilon ||
+      std::abs(old_normalized_velocity) < kEpsilon) {
+    return std::numeric_limits<double>::infinity();
+  }
+
+  // Estimate how long it will take to reach the new target at our present
+  // velocity, with some fudge factor to account for the "ease out".
+  double old_true_velocity =
+      old_normalized_velocity * old_delta_max_dimension / old_duration;
+  double bound = (new_delta_max_dimension / old_true_velocity) * 2.5f;
+
+  // If bound < 0 we are moving in the opposite direction.
+  return bound < 0 ? std::numeric_limits<double>::infinity() : bound;
+}
+
 void ScrollOffsetAnimationCurve::UpdateTarget(
     double t,
     const gfx::ScrollOffset& new_target) {
@@ -135,28 +164,36 @@ void ScrollOffsetAnimationCurve::UpdateTarget(
 
   double old_duration =
       (total_animation_duration_ - last_retarget_).InSecondsF();
-  double new_duration =
-      SegmentDuration(new_delta, duration_behavior_).InSecondsF();
-
-  double old_velocity = timing_function_->Velocity(
+  double old_normalized_velocity = timing_function_->Velocity(
       (t - last_retarget_.InSecondsF()) / old_duration);
+
+  // Use the velocity-based duration bound when it is less than the constant
+  // segment duration. This minimizes the "rubber-band" bouncing effect when
+  // old_normalized_velocity is large and new_delta is small.
+  double new_duration =
+      std::min(SegmentDuration(new_delta, duration_behavior_).InSecondsF(),
+               VelocityBasedDurationBound(old_delta, old_normalized_velocity,
+                                          old_duration, new_delta));
+
+  if (new_duration < kEpsilon) {
+    // We are already at or very close to the new target. Stop animating.
+    target_value_ = new_target;
+    total_animation_duration_ = base::TimeDelta::FromSecondsD(t);
+    return;
+  }
 
   // TimingFunction::Velocity gives the slope of the curve from 0 to 1.
   // To match the "true" velocity in px/sec we must adjust this slope for
   // differences in duration and scroll delta between old and new curves.
-  const double kEpsilon = 0.01f;
-  double new_delta_max_dimension = MaximumDimension(new_delta);
-  double new_velocity =
-      new_delta_max_dimension < kEpsilon  // Guard against division by 0.
-          ? old_velocity
-          : old_velocity * (new_duration / old_duration) *
-                (MaximumDimension(old_delta) / new_delta_max_dimension);
+  double new_normalized_velocity =
+      old_normalized_velocity * (new_duration / old_duration) *
+      (MaximumDimension(old_delta) / MaximumDimension(new_delta));
 
   initial_value_ = current_position;
   target_value_ = new_target;
   total_animation_duration_ = base::TimeDelta::FromSecondsD(t + new_duration);
   last_retarget_ = base::TimeDelta::FromSecondsD(t);
-  timing_function_ = EaseOutWithInitialVelocity(new_velocity);
+  timing_function_ = EaseOutWithInitialVelocity(new_normalized_velocity);
 }
 
 }  // namespace cc
