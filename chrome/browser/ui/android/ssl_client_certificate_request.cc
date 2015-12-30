@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/android/ssl_client_certificate_request.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -208,7 +209,7 @@ void ShowSSLClientCertificateSelector(
       ->GetViewAndroid()->GetWindowAndroid();
   DCHECK(window);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  StartClientCertificateRequest(cert_request_info, window, delegate.Pass());
+  StartClientCertificateRequest(cert_request_info, window, std::move(delegate));
 }
 
 }  // namespace chrome

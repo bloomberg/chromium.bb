@@ -5,6 +5,7 @@
 #include "chrome/browser/android/net/external_estimate_provider_android.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/at_exit.h"
 #include "base/test/histogram_tester.h"
@@ -38,7 +39,7 @@ class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
       scoped_ptr<chrome::android::ExternalEstimateProviderAndroid>
           external_estimate_provider,
       const std::map<std::string, std::string>& variation_params)
-      : NetworkQualityEstimator(external_estimate_provider.Pass(),
+      : NetworkQualityEstimator(std::move(external_estimate_provider),
                                 variation_params),
         notified_(false) {}
 
@@ -81,7 +82,7 @@ TEST(ExternalEstimateProviderAndroidTest, DelegateTest) {
   TestExternalEstimateProviderAndroid* ptr = external_estimate_provider.get();
   std::map<std::string, std::string> variation_params;
   TestNetworkQualityEstimator network_quality_estimator(
-      external_estimate_provider.Pass(), variation_params);
+      std::move(external_estimate_provider), variation_params);
   ptr->NotifyUpdatedEstimateAvailable();
   DCHECK(network_quality_estimator.IsNotified());
 

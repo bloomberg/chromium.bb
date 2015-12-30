@@ -5,6 +5,7 @@
 #include "chrome/browser/android/offline_pages/offline_page_utils.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -121,21 +122,18 @@ void OfflinePageUtilsTest::CreateOfflinePages() {
       OfflinePageModelFactory::GetForBrowserContext(profile());
 
   // Create page 1.
-  scoped_ptr<OfflinePageTestArchiver> archiver(
-      BuildArchiver(kTestPage1Url,
-                    base::FilePath(FILE_PATH_LITERAL("page1.mhtml")))
-          .Pass());
+  scoped_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
+      kTestPage1Url, base::FilePath(FILE_PATH_LITERAL("page1.mhtml"))));
   model->SavePage(
-      kTestPage1Url, kTestPage1BookmarkId, archiver.Pass(),
+      kTestPage1Url, kTestPage1BookmarkId, std::move(archiver),
       base::Bind(&OfflinePageUtilsTest::OnSavePageDone, AsWeakPtr()));
   RunUntilIdle();
 
   // Create page 2.
   archiver = BuildArchiver(kTestPage2Url,
-                           base::FilePath(FILE_PATH_LITERAL("page2.mhtml")))
-                 .Pass();
+                           base::FilePath(FILE_PATH_LITERAL("page2.mhtml")));
   model->SavePage(
-      kTestPage2Url, kTestPage2BookmarkId, archiver.Pass(),
+      kTestPage2Url, kTestPage2BookmarkId, std::move(archiver),
       base::Bind(&OfflinePageUtilsTest::OnSavePageDone, AsWeakPtr()));
   RunUntilIdle();
 
@@ -159,7 +157,7 @@ scoped_ptr<OfflinePageTestArchiver> OfflinePageUtilsTest::BuildArchiver(
       this, url, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED,
       kTestFileSize, base::ThreadTaskRunnerHandle::Get()));
   archiver->set_filename(file_name);
-  return archiver.Pass();
+  return archiver;
 }
 
 // Simple test for offline page model having any pages loaded.

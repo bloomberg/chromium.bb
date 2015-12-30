@@ -169,7 +169,8 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
   }
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
-  MediaStreamInfoBarDelegateAndroid::Create(web_contents, controller.Pass());
+  MediaStreamInfoBarDelegateAndroid::Create(web_contents,
+                                            std::move(controller));
 #else
   PermissionBubbleManager* bubble_manager =
       PermissionBubbleManager::FromWebContents(web_contents);

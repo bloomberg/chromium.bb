@@ -210,7 +210,7 @@ scoped_ptr<std::vector<DeltaFileEntryWithData>> DeltaFileBackend::Query(
     result->push_back(DeltaFileEntryWithData(entry));
     ++count;
   }
-  return result.Pass();
+  return result;
 }
 
 void DeltaFileBackend::Clear() {

@@ -156,7 +156,7 @@ DataUseMatcher::MatchingRule::MatchingRule(const std::string& app_package_name,
                                            const std::string& label,
                                            const base::TimeTicks& expiration)
     : app_package_name_(app_package_name),
-      pattern_(pattern.Pass()),
+      pattern_(std::move(pattern)),
       label_(label),
       expiration_(expiration) {}
 

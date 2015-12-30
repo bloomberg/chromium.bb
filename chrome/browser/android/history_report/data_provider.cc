@@ -151,7 +151,7 @@ scoped_ptr<std::vector<DeltaFileEntryWithData>> DataProvider::Query(
       if (entry.SeqNo() > last_seq_no) last_seq_no = entry.SeqNo();
     }
   } while (!entries->empty() && valid_entries->empty());
-  return valid_entries.Pass();
+  return valid_entries;
 }
 
 void DataProvider::StartVisitMigrationToUsageBuffer(

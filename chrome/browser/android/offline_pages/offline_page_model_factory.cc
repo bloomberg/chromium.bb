@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
@@ -52,7 +54,7 @@ KeyedService* OfflinePageModelFactory::BuildServiceInstanceFor(
   base::FilePath archives_dir =
       profile->GetPath().Append(chrome::kOfflinePageArchviesDirname);
 
-  return new OfflinePageModel(metadata_store.Pass(), archives_dir,
+  return new OfflinePageModel(std::move(metadata_store), archives_dir,
                               background_task_runner);
 }
 

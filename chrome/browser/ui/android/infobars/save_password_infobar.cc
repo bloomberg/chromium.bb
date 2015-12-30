@@ -4,14 +4,15 @@
 
 #include "chrome/browser/ui/android/infobars/save_password_infobar.h"
 
+#include <utility>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "jni/SavePasswordInfoBar_jni.h"
 
 SavePasswordInfoBar::SavePasswordInfoBar(
     scoped_ptr<SavePasswordInfoBarDelegate> delegate)
-    : ConfirmInfoBar(delegate.Pass()) {
-}
+    : ConfirmInfoBar(std::move(delegate)) {}
 
 SavePasswordInfoBar::~SavePasswordInfoBar() {
 }
@@ -50,5 +51,5 @@ bool SavePasswordInfoBar::Register(JNIEnv* env) {
 
 scoped_ptr<infobars::InfoBar> CreateSavePasswordInfoBar(
     scoped_ptr<SavePasswordInfoBarDelegate> delegate) {
-  return make_scoped_ptr(new SavePasswordInfoBar(delegate.Pass()));
+  return make_scoped_ptr(new SavePasswordInfoBar(std::move(delegate)));
 }

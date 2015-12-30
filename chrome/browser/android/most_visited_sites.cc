@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/most_visited_sites.h"
 
+#include <utility>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -93,7 +95,7 @@ scoped_ptr<SkBitmap> MaybeFetchLocalThumbnail(
   scoped_ptr<SkBitmap> bitmap;
   if (top_sites && top_sites->GetPageThumbnail(url, false, &image))
     bitmap.reset(gfx::JPEGCodec::Decode(image->front(), image->size()));
-  return bitmap.Pass();
+  return bitmap;
 }
 
 // Log an event for a given |histogram| at a given element |position|. This
@@ -331,7 +333,7 @@ void MostVisitedSites::OnLocalThumbnailFetched(
       }
     }
   }
-  OnObtainedThumbnail(true, j_callback.Pass(), url, bitmap.get());
+  OnObtainedThumbnail(true, std::move(j_callback), url, bitmap.get());
 }
 
 void MostVisitedSites::OnObtainedThumbnail(
@@ -588,7 +590,7 @@ ScopedVector<MostVisitedSites::Suggestion> MostVisitedSites::MergeSuggestions(
   // Insert leftover popular suggestions.
   InsertAllSuggestions(filled_so_far, new_popular_suggestions,
                        popular_suggestions, &merged_suggestions);
-  return merged_suggestions.Pass();
+  return merged_suggestions;
 }
 
 void MostVisitedSites::GetPreviousNTPSites(

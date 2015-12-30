@@ -62,7 +62,7 @@ KeyedService* TabRestoreServiceFactory::BuildServiceInstanceFor(
       new ChromeTabRestoreServiceClient(profile));
 
 #if defined(OS_ANDROID)
-  return new sessions::InMemoryTabRestoreService(client.Pass(), nullptr);
+  return new sessions::InMemoryTabRestoreService(std::move(client), nullptr);
 #else
   return new sessions::PersistentTabRestoreService(std::move(client), nullptr);
 #endif

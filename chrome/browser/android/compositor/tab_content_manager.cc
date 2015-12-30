@@ -6,6 +6,7 @@
 
 #include <android/bitmap.h>
 #include <stddef.h>
+#include <utility>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -273,7 +274,7 @@ void TabContentManager::CacheTab(JNIEnv* env,
     scoped_ptr<TabReadbackRequest> readback_request =
         make_scoped_ptr(new TabReadbackRequest(
             content_view_core, thumbnail_scale, readback_done_callback));
-    pending_tab_readbacks_.set(tab_id, readback_request.Pass());
+    pending_tab_readbacks_.set(tab_id, std::move(readback_request));
     pending_tab_readbacks_.get(tab_id)->Run();
   }
 }

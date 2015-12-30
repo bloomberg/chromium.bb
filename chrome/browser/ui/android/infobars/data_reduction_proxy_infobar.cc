@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/android/infobars/data_reduction_proxy_infobar.h"
 
+#include <utility>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
@@ -31,7 +33,8 @@ bool DataReductionProxyInfoBar::Register(JNIEnv* env) {
 
 DataReductionProxyInfoBar::DataReductionProxyInfoBar(
     scoped_ptr<DataReductionProxyInfoBarDelegateAndroid> delegate)
-    : ConfirmInfoBar(delegate.Pass()), java_data_reduction_proxy_delegate_() {}
+    : ConfirmInfoBar(std::move(delegate)),
+      java_data_reduction_proxy_delegate_() {}
 
 DataReductionProxyInfoBar::~DataReductionProxyInfoBar() {
 }
@@ -58,7 +61,7 @@ DataReductionProxyInfoBarDelegateAndroid::CreateInfoBar(
     infobars::InfoBarManager* infobar_manager,
     scoped_ptr<DataReductionProxyInfoBarDelegateAndroid> delegate) {
   return scoped_ptr<infobars::InfoBar>(
-      new DataReductionProxyInfoBar(delegate.Pass()));
+      new DataReductionProxyInfoBar(std::move(delegate)));
 }
 
 // JNI for DataReductionProxyInfoBarDelegate.

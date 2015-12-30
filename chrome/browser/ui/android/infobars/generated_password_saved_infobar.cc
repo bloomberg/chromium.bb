@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/android/infobars/generated_password_saved_infobar.h"
 
+#include <utility>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -21,8 +23,7 @@ void GeneratedPasswordSavedInfoBarDelegateAndroid::Create(
 
 GeneratedPasswordSavedInfoBar::GeneratedPasswordSavedInfoBar(
     scoped_ptr<GeneratedPasswordSavedInfoBarDelegateAndroid> delegate)
-    : InfoBarAndroid(delegate.Pass()) {
-}
+    : InfoBarAndroid(std::move(delegate)) {}
 
 GeneratedPasswordSavedInfoBar::~GeneratedPasswordSavedInfoBar() {
 }

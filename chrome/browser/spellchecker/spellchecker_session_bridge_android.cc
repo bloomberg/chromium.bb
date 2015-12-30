@@ -5,6 +5,7 @@
 #include "chrome/browser/spellchecker/spellchecker_session_bridge_android.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -88,7 +89,7 @@ void SpellCheckerSessionBridge::ProcessSpellCheckResults(
         active_request_->text, results));
   }
 
-  active_request_ = pending_request_.Pass();
+  active_request_ = std::move(pending_request_);
   if (active_request_) {
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_SpellCheckerSessionBridge_requestTextCheck(

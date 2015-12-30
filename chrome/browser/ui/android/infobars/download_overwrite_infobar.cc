@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/android/infobars/download_overwrite_infobar.h"
 
+#include <utility>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -17,7 +19,7 @@ using chrome::android::DownloadOverwriteInfoBarDelegate;
 // static
 scoped_ptr<infobars::InfoBar> DownloadOverwriteInfoBar::CreateInfoBar(
     scoped_ptr<DownloadOverwriteInfoBarDelegate> delegate) {
-  return make_scoped_ptr(new DownloadOverwriteInfoBar(delegate.Pass()));
+  return make_scoped_ptr(new DownloadOverwriteInfoBar(std::move(delegate)));
 }
 
 DownloadOverwriteInfoBar::~DownloadOverwriteInfoBar() {
@@ -25,8 +27,7 @@ DownloadOverwriteInfoBar::~DownloadOverwriteInfoBar() {
 
 DownloadOverwriteInfoBar::DownloadOverwriteInfoBar(
     scoped_ptr<DownloadOverwriteInfoBarDelegate> delegate)
-    : InfoBarAndroid(delegate.Pass()) {
-}
+    : InfoBarAndroid(std::move(delegate)) {}
 
 base::android::ScopedJavaLocalRef<jobject>
 DownloadOverwriteInfoBar::CreateRenderInfoBar(JNIEnv* env) {

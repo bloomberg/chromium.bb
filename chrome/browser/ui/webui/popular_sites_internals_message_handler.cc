@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/popular_sites_internals_message_handler.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
@@ -76,11 +77,11 @@ void PopularSitesInternalsMessageHandler::SendSites() {
     scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
     entry->SetString("title", site.title);
     entry->SetString("url", site.url.spec());
-    sites_list->Append(entry.Pass());
+    sites_list->Append(std::move(entry));
   }
 
   base::DictionaryValue result;
-  result.Set("sites", sites_list.Pass());
+  result.Set("sites", std::move(sites_list));
   web_ui()->CallJavascriptFunction(
       "chrome.popular_sites_internals.receiveSites", result);
 }

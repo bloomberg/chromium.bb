@@ -136,8 +136,7 @@ ConnectivityChecker::ConnectivityChecker(
 }
 
 void ConnectivityChecker::StartAsyncCheck() {
-  url_fetcher_ =
-      net::URLFetcher::Create(url_, net::URLFetcher::GET, this).Pass();
+  url_fetcher_ = net::URLFetcher::Create(url_, net::URLFetcher::GET, this);
   url_fetcher_->SetRequestContext(request_context_);
   url_fetcher_->SetStopOnRedirect(true);
   url_fetcher_->SetAutomaticallyRetryOn5xx(false);

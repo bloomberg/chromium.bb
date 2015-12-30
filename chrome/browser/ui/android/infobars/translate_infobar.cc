@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/android/infobars/translate_infobar.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
@@ -19,7 +20,7 @@
 
 scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
     scoped_ptr<translate::TranslateInfoBarDelegate> delegate) const {
-  return make_scoped_ptr(new TranslateInfoBar(delegate.Pass()));
+  return make_scoped_ptr(new TranslateInfoBar(std::move(delegate)));
 }
 
 
@@ -27,8 +28,7 @@ scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
 
 TranslateInfoBar::TranslateInfoBar(
     scoped_ptr<translate::TranslateInfoBarDelegate> delegate)
-    : InfoBarAndroid(delegate.Pass()) {
-}
+    : InfoBarAndroid(std::move(delegate)) {}
 
 TranslateInfoBar::~TranslateInfoBar() {
 }

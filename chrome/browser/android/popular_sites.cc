@@ -174,7 +174,7 @@ scoped_ptr<std::vector<PopularSites::Site>> ReadAndParseJsonFile(
                                         GURL(thumbnail_url)));
   }
 
-  return sites.Pass();
+  return sites;
 }
 
 }  // namespace

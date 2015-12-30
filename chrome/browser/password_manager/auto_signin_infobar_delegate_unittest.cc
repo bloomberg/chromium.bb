@@ -48,7 +48,7 @@ scoped_ptr<ConfirmInfoBarDelegate>
 AutoSigninFirstRunInfoBarDelegateTest::CreateDelegate() {
   scoped_ptr<ConfirmInfoBarDelegate> delegate(
       new TestAutoSigninFirstRunInfoBarDelegate(web_contents()));
-  return delegate.Pass();
+  return delegate;
 }
 
 PrefService* AutoSigninFirstRunInfoBarDelegateTest::prefs() {

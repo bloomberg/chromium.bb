@@ -6,6 +6,7 @@
 
 #include <pwd.h>
 #include <cstring>
+#include <utility>
 
 #include "base/android/context_utils.h"
 #include "base/android/jni_string.h"
@@ -155,14 +156,14 @@ class UnixDomainServerSocketFactory
                                         true /* use_abstract_namespace */));
 
     if (socket->ListenWithAddressAndPort(socket_name_, 0, kBackLog) == net::OK)
-      return socket.Pass();
+      return socket;
 
     // Try a fallback socket name.
     const std::string fallback_address(
         base::StringPrintf("%s_%d", socket_name_.c_str(), getpid()));
     if (socket->ListenWithAddressAndPort(fallback_address, 0, kBackLog)
         == net::OK)
-      return socket.Pass();
+      return socket;
 
     return scoped_ptr<net::ServerSocket>();
   }
@@ -170,12 +171,12 @@ class UnixDomainServerSocketFactory
   scoped_ptr<net::ServerSocket> CreateForTethering(std::string* name) override {
     *name = base::StringPrintf(
         kTetheringSocketName, getpid(), ++last_tethering_socket_);
-    scoped_ptr<net::UnixDomainServerSocket> socket(
+    scoped_ptr<net::ServerSocket> socket(
         new net::UnixDomainServerSocket(auth_callback_, true));
     if (socket->ListenWithAddressAndPort(*name, 0, kBackLog) != net::OK)
       return scoped_ptr<net::ServerSocket>();
 
-    return socket.Pass();
+    return socket;
   }
 
   std::string socket_name_;
@@ -214,13 +215,10 @@ void DevToolsServer::Start(bool allow_debug_permission) {
   scoped_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(
       new UnixDomainServerSocketFactory(socket_name_, auth_callback));
   devtools_http_handler_.reset(new DevToolsHttpHandler(
-      factory.Pass(),
+      std::move(factory),
       base::StringPrintf(kFrontEndURL, content::GetWebKitRevision().c_str()),
-      new DevToolsServerDelegate(),
-      base::FilePath(),
-      base::FilePath(),
-      version_info::GetProductNameAndVersionForUserAgent(),
-      ::GetUserAgent()));
+      new DevToolsServerDelegate(), base::FilePath(), base::FilePath(),
+      version_info::GetProductNameAndVersionForUserAgent(), ::GetUserAgent()));
 }
 
 void DevToolsServer::Stop() {

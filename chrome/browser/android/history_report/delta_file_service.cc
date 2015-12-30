@@ -36,7 +36,7 @@ void DoQuery(
     int32_t limit,
     base::WaitableEvent* finished,
     scoped_ptr<std::vector<history_report::DeltaFileEntryWithData>>* result) {
-  *result = backend->Query(last_seq_no, limit).Pass();
+  *result = backend->Query(last_seq_no, limit);
   finished->Signal();
 }
 
@@ -128,7 +128,7 @@ scoped_ptr<std::vector<DeltaFileEntryWithData>> DeltaFileService::Query(
                  base::Unretained(&result)),
       base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   finished.Wait();
-  return result.Pass();
+  return result;
 }
 
 bool DeltaFileService::Recreate(const std::vector<std::string>& urls) {

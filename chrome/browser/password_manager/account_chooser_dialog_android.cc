@@ -4,6 +4,8 @@
 
 #include "chrome/browser/password_manager/account_chooser_dialog_android.h"
 
+#include <utility>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
@@ -110,8 +112,8 @@ AccountChooserDialogAndroid::AccountChooserDialogAndroid(
     : web_contents_(web_contents) {
   passwords_data_.set_client(
       ChromePasswordManagerClient::FromWebContents(web_contents_));
-  passwords_data_.OnRequestCredentials(local_credentials.Pass(),
-                                       federated_credentials.Pass(), origin);
+  passwords_data_.OnRequestCredentials(
+      std::move(local_credentials), std::move(federated_credentials), origin);
   passwords_data_.set_credentials_callback(callback);
 }
 

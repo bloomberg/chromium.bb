@@ -4,6 +4,8 @@
 
 #include "chrome/browser/password_manager/save_password_infobar_delegate.h"
 
+#include <utility>
+
 #include "base/metrics/histogram.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -45,7 +47,7 @@ void SavePasswordInfoBarDelegate::Create(
   InfoBarService::FromWebContents(web_contents)
       ->AddInfoBar(CreateSavePasswordInfoBar(
           make_scoped_ptr(new SavePasswordInfoBarDelegate(
-              web_contents, form_to_save.Pass(), uma_histogram_suffix,
+              web_contents, std::move(form_to_save), uma_histogram_suffix,
               source_type, is_smartlock_branding_enabled,
               should_show_first_run_experience))));
 }
@@ -89,7 +91,7 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
     bool is_smartlock_branding_enabled,
     bool should_show_first_run_experience)
     : PasswordManagerInfoBarDelegate(),
-      form_to_save_(form_to_save.Pass()),
+      form_to_save_(std::move(form_to_save)),
       infobar_response_(password_manager::metrics_util::NO_RESPONSE),
       uma_histogram_suffix_(uma_histogram_suffix),
       source_type_(source_type),

@@ -240,8 +240,8 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
         password_manager::metrics_util::GroupIdToString(
             password_manager::metrics_util::MonitoredDomainGroupId(
                 form_to_save->pending_credentials().signon_realm, GetPrefs())));
-    SavePasswordInfoBarDelegate::Create(
-        web_contents(), form_to_save.Pass(), uma_histogram_suffix, type);
+    SavePasswordInfoBarDelegate::Create(web_contents(), std::move(form_to_save),
+                                        uma_histogram_suffix, type);
 #else
     NOTREACHED() << "Aura platforms should always use the bubble";
 #endif
@@ -258,8 +258,9 @@ bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
   // Deletes itself on the event from Java counterpart, when user interacts with
   // dialog.
   AccountChooserDialogAndroid* acccount_chooser_dialog =
-      new AccountChooserDialogAndroid(web_contents(), local_forms.Pass(),
-                                      federated_forms.Pass(), origin, callback);
+      new AccountChooserDialogAndroid(web_contents(), std::move(local_forms),
+                                      std::move(federated_forms), origin,
+                                      callback);
   acccount_chooser_dialog->ShowDialog();
   return true;
 #else

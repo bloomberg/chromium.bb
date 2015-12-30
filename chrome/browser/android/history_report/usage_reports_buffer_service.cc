@@ -37,7 +37,7 @@ void DoGetUsageReportsBatch(
     int32_t batch_size,
     base::WaitableEvent* finished,
     scoped_ptr<std::vector<history_report::UsageReport>>* result) {
-  *result = backend->GetUsageReportsBatch(batch_size).Pass();
+  *result = backend->GetUsageReportsBatch(batch_size);
   finished->Signal();
 }
 
@@ -110,7 +110,7 @@ UsageReportsBufferService::GetUsageReportsBatch(int32_t batch_size) {
                  base::Unretained(&result)),
       base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   finished.Wait();
-  return result.Pass();
+  return result;
 }
 
 void UsageReportsBufferService::Remove(

@@ -5,6 +5,7 @@
 #include "chrome/browser/interests/android/interests_service.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
@@ -68,10 +69,8 @@ void InterestsService::GetInterests(
   InterestsFetcher* fetcher_raw_ptr = fetcher.get();
 
   InterestsFetcher::InterestsCallback callback = base::Bind(
-      &InterestsService::OnObtainedInterests,
-      weak_ptr_factory_.GetWeakPtr(),
-      base::Passed(fetcher.Pass()),
-      j_callback);
+      &InterestsService::OnObtainedInterests, weak_ptr_factory_.GetWeakPtr(),
+      base::Passed(std::move(fetcher)), j_callback);
 
   fetcher_raw_ptr->FetchInterests(callback);
 }
@@ -87,7 +86,7 @@ void InterestsService::OnObtainedInterests(
     scoped_ptr<std::vector<InterestsFetcher::Interest>> interests) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> j_interests =
-      ConvertInterestsToJava(env, interests.Pass());
+      ConvertInterestsToJava(env, std::move(interests));
   Java_GetInterestsCallback_onInterestsAvailable(env,
                                                  j_callback.obj(),
                                                  j_interests.obj());

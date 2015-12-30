@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/offline_pages/test_offline_page_model_builder.h"
 
+#include <utility>
+
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -25,8 +27,8 @@ scoped_ptr<KeyedService> BuildTestOfflinePageModel(
   base::FilePath archives_dir =
       context->GetPath().Append(chrome::kOfflinePageArchviesDirname);
 
-  return scoped_ptr<KeyedService>(
-      new OfflinePageModel(metadata_store.Pass(), archives_dir, task_runner));
+  return scoped_ptr<KeyedService>(new OfflinePageModel(
+      std::move(metadata_store), archives_dir, task_runner));
 }
 
 }  // namespace offline_pages

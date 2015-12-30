@@ -4,6 +4,8 @@
 
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_io_data.h"
 
+#include <utility>
+
 #include "base/prefs/pref_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
@@ -81,7 +83,7 @@ CreateDataReductionProxyChromeIOData(
               ui_task_runner, io_task_runner,
               g_browser_process->GetApplicationLocale()));
   data_reduction_proxy_io_data->set_debug_ui_service(
-      data_reduction_proxy_ui_service.Pass());
+      std::move(data_reduction_proxy_ui_service));
 #endif
 
   return data_reduction_proxy_io_data;

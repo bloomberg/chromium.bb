@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/android/infobars/auto_signin_first_run_infobar.h"
 
+#include <utility>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -12,7 +14,7 @@
 
 AutoSigninFirstRunInfoBar::AutoSigninFirstRunInfoBar(
     scoped_ptr<AutoSigninFirstRunInfoBarDelegate> delegate)
-    : ConfirmInfoBar(delegate.Pass()) {}
+    : ConfirmInfoBar(std::move(delegate)) {}
 
 AutoSigninFirstRunInfoBar::~AutoSigninFirstRunInfoBar() {}
 
@@ -49,5 +51,5 @@ bool AutoSigninFirstRunInfoBar::Register(JNIEnv* env) {
 
 scoped_ptr<infobars::InfoBar> CreateAutoSigninFirstRunInfoBar(
     scoped_ptr<AutoSigninFirstRunInfoBarDelegate> delegate) {
-  return make_scoped_ptr(new AutoSigninFirstRunInfoBar(delegate.Pass()));
+  return make_scoped_ptr(new AutoSigninFirstRunInfoBar(std::move(delegate)));
 }

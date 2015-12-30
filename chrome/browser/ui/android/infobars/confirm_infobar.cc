@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/android/jni_android.h"
@@ -31,15 +32,14 @@
 
 scoped_ptr<infobars::InfoBar> InfoBarService::CreateConfirmInfoBar(
     scoped_ptr<ConfirmInfoBarDelegate> delegate) {
-  return make_scoped_ptr(new ConfirmInfoBar(delegate.Pass()));
+  return make_scoped_ptr(new ConfirmInfoBar(std::move(delegate)));
 }
 
 
 // ConfirmInfoBar -------------------------------------------------------------
 
 ConfirmInfoBar::ConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate> delegate)
-    : InfoBarAndroid(delegate.Pass()), java_confirm_delegate_() {
-}
+    : InfoBarAndroid(std::move(delegate)), java_confirm_delegate_() {}
 
 ConfirmInfoBar::~ConfirmInfoBar() {
 }

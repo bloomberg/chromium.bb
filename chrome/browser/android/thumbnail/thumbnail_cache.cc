@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <utility>
 
 #include "base/android/path_utils.h"
 #include "base/big_endian.h"
@@ -173,7 +174,7 @@ void ThumbnailCache::Put(TabId tab_id,
 
   RemoveFromReadQueue(tab_id);
   MakeSpaceForNewItemIfNecessary(tab_id);
-  cache_.Put(tab_id, thumbnail.Pass());
+  cache_.Put(tab_id, std::move(thumbnail));
 
   if (use_approximation_thumbnail_) {
     std::pair<SkBitmap, float> approximation =
@@ -181,7 +182,7 @@ void ThumbnailCache::Put(TabId tab_id,
     scoped_ptr<Thumbnail> approx_thumbnail = Thumbnail::Create(
         tab_id, time_stamp, approximation.second, ui_resource_provider_, this);
     approx_thumbnail->SetBitmap(approximation.first);
-    approximation_cache_.Put(tab_id, approx_thumbnail.Pass());
+    approximation_cache_.Put(tab_id, std::move(approx_thumbnail));
   }
   CompressThumbnailIfNecessary(tab_id, time_stamp, bitmap, thumbnail_scale);
 }
@@ -824,7 +825,7 @@ void ThumbnailCache::PostReadTask(TabId tab_id,
     if (kPreferCPUMemory)
       thumbnail->CreateUIResource();
 
-    cache_.Put(tab_id, thumbnail.Pass());
+    cache_.Put(tab_id, std::move(thumbnail));
     NotifyObserversOfThumbnailRead(tab_id);
   }
 

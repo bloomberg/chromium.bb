@@ -2709,8 +2709,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   if (!prerender_contents && handle->IsInMainFrame()) {
     throttles.push_back(
         navigation_interception::InterceptNavigationDelegate::CreateThrottleFor(
-            handle)
-            .Pass());
+            handle));
   }
 #else
   if (handle->IsInMainFrame()) {

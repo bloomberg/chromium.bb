@@ -5,6 +5,7 @@
 #include "chrome/browser/android/media/media_throttle_infobar_delegate.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -31,12 +32,12 @@ void MediaThrottleInfoBarDelegate::Create(
     MediaThrottleInfoBarDelegate* delegate =
         old_infobar->delegate()->AsMediaThrottleInfoBarDelegate();
     if (delegate != nullptr) {
-      infobar_service->ReplaceInfoBar(old_infobar, new_infobar.Pass());
+      infobar_service->ReplaceInfoBar(old_infobar, std::move(new_infobar));
       return;
     }
   }
 
-  infobar_service->AddInfoBar(new_infobar.Pass());
+  infobar_service->AddInfoBar(std::move(new_infobar));
 }
 
 MediaThrottleInfoBarDelegate::MediaThrottleInfoBarDelegate(

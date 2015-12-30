@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/android/remote/remote_media_player_bridge.h"
 
+#include <utility>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "chrome/browser/media/android/remote/record_cast_action.h"
@@ -170,7 +172,7 @@ void RemoteMediaPlayerBridge::SetVideoSurface(gfx::ScopedJavaSurface surface) {
   // Since the remote player doesn't use it, we forward it to the local player
   // for the time when user disconnects and resumes local playback
   // (see crbug.com/420690).
-  local_player_->SetVideoSurface(surface.Pass());
+  local_player_->SetVideoSurface(std::move(surface));
 }
 
 base::android::ScopedJavaLocalRef<jstring> RemoteMediaPlayerBridge::GetFrameUrl(

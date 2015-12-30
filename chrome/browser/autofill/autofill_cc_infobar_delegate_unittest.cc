@@ -96,7 +96,7 @@ AutofillCCInfobarDelegateTest::CreateDelegate() {
           base::Unretained(personal_data_.get()), credit_card)));
   histogram_tester.ExpectUniqueSample("Autofill.CreditCardInfoBar",
                                       AutofillMetrics::INFOBAR_SHOWN, 1);
-  return delegate.Pass();
+  return delegate;
 }
 
 // Test that credit card infobar metrics are logged correctly.

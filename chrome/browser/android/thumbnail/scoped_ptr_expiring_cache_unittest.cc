@@ -48,7 +48,7 @@ TEST_F(ScopedPtrExpiringCacheTest, SimplePutAndGet) {
   EXPECT_EQ(0u, cache.size());
 
   for (unsigned int i = 0; i < MAX_CACHE_SIZE; i++) {
-    cache.Put(i, MockObject::Create(i).Pass());
+    cache.Put(i, MockObject::Create(i));
   }
 
   EXPECT_EQ(MAX_CACHE_SIZE, cache.size());
@@ -56,7 +56,7 @@ TEST_F(ScopedPtrExpiringCacheTest, SimplePutAndGet) {
   unsigned int next_key = MAX_CACHE_SIZE;
 
   // One cache entry should have been evicted.
-  cache.Put(next_key, MockObject::Create(next_key).Pass());
+  cache.Put(next_key, MockObject::Create(next_key));
   EXPECT_EQ(MAX_CACHE_SIZE, cache.size());
 
   size_t cached_count = 0;
@@ -91,11 +91,11 @@ TEST_F(ScopedPtrExpiringCacheTest, SimplePutAndGet) {
 TEST_F(ScopedPtrExpiringCacheTest, EvictedEntry) {
   TestScopedPtrExpiringCache cache(MAX_CACHE_SIZE);
   for (unsigned int i = 0; i < MAX_CACHE_SIZE; i++) {
-    cache.Put(i, MockObject::Create(i).Pass());
+    cache.Put(i, MockObject::Create(i));
   }
 
   unsigned int next_key = MAX_CACHE_SIZE;
-  cache.Put(next_key, MockObject::Create(next_key).Pass());
+  cache.Put(next_key, MockObject::Create(next_key));
   EXPECT_EQ(MAX_CACHE_SIZE, cache.size());
   EXPECT_EQ(GenerateValue(next_key), cache.Get(next_key)->value());
 
@@ -112,7 +112,7 @@ TEST_F(ScopedPtrExpiringCacheTest, EvictedEntry) {
   // The first candidate to be evicted is the head of the iterator.
   unsigned int head_key = cache.begin()->first;
   EXPECT_TRUE(cache.Get(head_key) != NULL);
-  cache.Put(next_key, MockObject::Create(next_key).Pass());
+  cache.Put(next_key, MockObject::Create(next_key));
 
   EXPECT_NE(cache.begin()->first, head_key);
   EXPECT_EQ(NULL, cache.Get(head_key));
@@ -121,7 +121,7 @@ TEST_F(ScopedPtrExpiringCacheTest, EvictedEntry) {
 TEST_F(ScopedPtrExpiringCacheTest, RetainedEntry) {
   TestScopedPtrExpiringCache cache(MAX_CACHE_SIZE);
   for (unsigned int i = 0; i < MAX_CACHE_SIZE; i++) {
-    cache.Put(i, MockObject::Create(i).Pass());
+    cache.Put(i, MockObject::Create(i));
   }
 
   // Add (cache size - 1)-entries.
@@ -130,7 +130,7 @@ TEST_F(ScopedPtrExpiringCacheTest, RetainedEntry) {
   }
 
   for (unsigned int i = MAX_CACHE_SIZE; i < 2 * MAX_CACHE_SIZE - 1; i++) {
-    cache.Put(i, MockObject::Create(i).Pass());
+    cache.Put(i, MockObject::Create(i));
   }
 
   EXPECT_EQ(MAX_CACHE_SIZE, cache.size());
@@ -155,7 +155,7 @@ TEST_F(ScopedPtrExpiringCacheTest, Iterator) {
   std::random_shuffle(test_keys.begin(), test_keys.end());
 
   for (unsigned int i = 0; i < MAX_CACHE_SIZE; i++) {
-    cache.Put(test_keys[i], MockObject::Create(test_keys[i]).Pass());
+    cache.Put(test_keys[i], MockObject::Create(test_keys[i]));
   }
 
   TestScopedPtrExpiringCache::iterator cache_iter = cache.begin();

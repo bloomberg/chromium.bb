@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/android/infobars/app_banner_infobar_android.h"
 
+#include <utility>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
@@ -13,20 +15,15 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
 
-
 AppBannerInfoBarAndroid::AppBannerInfoBarAndroid(
     scoped_ptr<banners::AppBannerInfoBarDelegateAndroid> delegate,
     const base::android::ScopedJavaGlobalRef<jobject>& japp_data)
-    : ConfirmInfoBar(delegate.Pass()),
-      japp_data_(japp_data) {
-}
+    : ConfirmInfoBar(std::move(delegate)), japp_data_(japp_data) {}
 
 AppBannerInfoBarAndroid::AppBannerInfoBarAndroid(
     scoped_ptr<banners::AppBannerInfoBarDelegateAndroid> delegate,
     const GURL& app_url)
-    : ConfirmInfoBar(delegate.Pass()),
-      app_url_(app_url) {
-}
+    : ConfirmInfoBar(std::move(delegate)), app_url_(app_url) {}
 
 AppBannerInfoBarAndroid::~AppBannerInfoBarAndroid() {
 }

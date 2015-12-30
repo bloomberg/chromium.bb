@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/offline_pages/offline_page_bridge.h"
 
+#include <utility>
+
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
@@ -175,7 +177,7 @@ void OfflinePageBridge::SavePage(JNIEnv* env,
       new OfflinePageMHTMLArchiver(web_contents));
 
   offline_page_model_->SavePage(
-      url, bookmark_id, archiver.Pass(),
+      url, bookmark_id, std::move(archiver),
       base::Bind(&SavePageCallback, j_callback_ref, url));
 }
 

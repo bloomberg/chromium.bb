@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/android/router/media_router_android.h"
 
+#include <utility>
+
 #include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
@@ -431,7 +433,7 @@ void MediaRouterAndroid::OnMessage(JNIEnv* env,
   scoped_ptr<content::PresentationSessionMessage> message(
       new content::PresentationSessionMessage(content::TEXT));
   message->message = ConvertJavaStringToUTF8(env, jmessage);
-  session_messages.push_back(message.Pass());
+  session_messages.push_back(std::move(message));
 
   FOR_EACH_OBSERVER(PresentationSessionMessagesObserver, *observer_list,
                     OnMessagesReceived(session_messages, true));

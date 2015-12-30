@@ -177,7 +177,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   // For now, we use PasswordStoreDefault. We might want to make a native
   // backend for PasswordStoreX (see below) in the future though.
   ps = new password_manager::PasswordStoreDefault(
-      main_thread_runner, db_thread_runner, login_db.Pass());
+      main_thread_runner, db_thread_runner, std::move(login_db));
 #elif defined(USE_X11)
   // On POSIX systems, we try to use the "native" password management system of
   // the desktop environment currently running, allowing GNOME Keyring in XFCE.

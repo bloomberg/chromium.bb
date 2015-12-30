@@ -513,7 +513,7 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
           MaybeCreate(
               request, resource_type, io_data->data_reduction_proxy_io_data());
   if (data_reduction_proxy_throttle)
-    throttles->push_back(data_reduction_proxy_throttle.Pass());
+    throttles->push_back(std::move(data_reduction_proxy_throttle));
 #endif
 
 #if defined(ENABLE_SUPERVISED_USERS)

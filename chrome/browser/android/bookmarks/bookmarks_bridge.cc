@@ -89,7 +89,7 @@ scoped_ptr<icu::Collator> GetICUCollator() {
   if (U_FAILURE(error))
     collator_.reset(NULL);
 
-  return collator_.Pass();
+  return collator_;
 }
 
 }  // namespace

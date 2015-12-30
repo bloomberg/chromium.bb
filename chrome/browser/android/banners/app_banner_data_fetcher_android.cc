@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/banners/app_banner_data_fetcher_android.h"
 
+#include <utility>
+
 #include "chrome/browser/android/banners/app_banner_infobar_delegate_android.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
@@ -86,8 +88,8 @@ void AppBannerDataFetcherAndroid::ShowBanner(const SkBitmap* icon,
             event_request_id(), this, title, new SkBitmap(*icon),
             web_app_data()));
 
-    infobar =
-        new AppBannerInfoBarAndroid(delegate.Pass(), web_app_data().start_url);
+    infobar = new AppBannerInfoBarAndroid(std::move(delegate),
+                                          web_app_data().start_url);
     if (infobar) {
       RecordDidShowBanner("AppBanner.WebApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
@@ -97,7 +99,8 @@ void AppBannerDataFetcherAndroid::ShowBanner(const SkBitmap* icon,
         new AppBannerInfoBarDelegateAndroid(
             event_request_id(), title, new SkBitmap(*icon), native_app_data_,
             native_app_package_, referrer));
-    infobar = new AppBannerInfoBarAndroid(delegate.Pass(), native_app_data_);
+    infobar =
+        new AppBannerInfoBarAndroid(std::move(delegate), native_app_data_);
     if (infobar) {
       RecordDidShowBanner("AppBanner.NativeApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_NATIVE_APP_BANNER_CREATED);

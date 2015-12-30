@@ -4,6 +4,7 @@
 
 #include "chrome/browser/geolocation/geolocation_permission_context_android.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -77,5 +78,5 @@ void GeolocationPermissionContextAndroid::HandleUpdateAndroidPermissions(
 
 void GeolocationPermissionContextAndroid::SetLocationSettingsForTesting(
     scoped_ptr<LocationSettings> settings) {
-  location_settings_ = settings.Pass();
+  location_settings_ = std::move(settings);
 }

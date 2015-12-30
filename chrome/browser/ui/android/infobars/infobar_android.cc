@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
 
+#include <utility>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/strings/string_util.h"
@@ -17,8 +19,7 @@
 // InfoBarAndroid -------------------------------------------------------------
 
 InfoBarAndroid::InfoBarAndroid(scoped_ptr<infobars::InfoBarDelegate> delegate)
-    : infobars::InfoBar(delegate.Pass()) {
-}
+    : infobars::InfoBar(std::move(delegate)) {}
 
 InfoBarAndroid::~InfoBarAndroid() {
   if (!java_info_bar_.is_null()) {
