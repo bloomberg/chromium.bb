@@ -327,6 +327,10 @@ public class ChromeApplication extends ContentApplication {
     private void onForegroundActivityDestroyed() {
         if (ApplicationStatus.isEveryActivityDestroyed()) {
             mBackgroundProcessing.onDestroy();
+            if (mDevToolsServer != null) {
+                mDevToolsServer.destroy();
+                mDevToolsServer = null;
+            }
             stopApplicationActivityTracker();
             PartnerBrowserCustomizations.destroy();
             ShareHelper.clearSharedImages(this);

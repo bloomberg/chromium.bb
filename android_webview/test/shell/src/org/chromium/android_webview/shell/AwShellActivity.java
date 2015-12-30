@@ -119,6 +119,15 @@ public class AwShellActivity extends Activity {
         }
     }
 
+    @Override
+    public void onDestroy() {
+        if (mDevToolsServer != null) {
+            mDevToolsServer.destroy();
+            mDevToolsServer = null;
+        }
+        super.onDestroy();
+    }
+
     private AwTestContainerView createAwTestContainerView() {
         AwBrowserProcess.start(this);
         AwTestContainerView testContainerView = new AwTestContainerView(this, true);
