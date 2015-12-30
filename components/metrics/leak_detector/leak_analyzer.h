@@ -66,7 +66,8 @@ class LeakAnalyzer {
   std::map<ValueType,
            uint32_t,
            std::less<ValueType>,
-           Allocator<std::pair<ValueType, uint32_t>>> suspected_histogram_;
+           Allocator<std::pair<const ValueType, uint32_t>>>
+      suspected_histogram_;
 
   // Array of allocated values that passed the suspicion threshold and are being
   // reported.
