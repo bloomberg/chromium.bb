@@ -104,12 +104,15 @@ class SynchronousCompositorProxy
   void ZeroSharedMemory();
   void DemandDrawSw(const SyncCompositorCommonBrowserParams& common_params,
                     const SyncCompositorDemandDrawSwParams& params,
-                    bool* result,
-                    SyncCompositorCommonRendererParams* common_renderer_params,
-                    cc::CompositorFrame* frame);
+                    IPC::Message* reply_message);
 
   void SwapBuffersHw(cc::CompositorFrame* frame);
   void SendDemandDrawHwReply(cc::CompositorFrame* frame,
+                             IPC::Message* reply_message);
+  void DoDemandDrawSw(const SyncCompositorDemandDrawSwParams& params);
+  void SwapBuffersSw(cc::CompositorFrame* frame);
+  void SendDemandDrawSwReply(bool success,
+                             cc::CompositorFrame* frame,
                              IPC::Message* reply_message);
   void DidActivatePendingTree();
   void DeliverMessages();
@@ -123,7 +126,7 @@ class SynchronousCompositorProxy
   InputHandlerManagerClient::Handler* const input_handler_;
   bool inside_receive_;
   IPC::Message* hardware_draw_reply_;
-  scoped_ptr<cc::CompositorFrame> software_frame_holder_;
+  IPC::Message* software_draw_reply_;
 
   // From browser.
   size_t bytes_limit_;
