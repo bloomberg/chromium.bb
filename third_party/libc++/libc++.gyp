@@ -102,6 +102,9 @@
       'cflags!': [
         '-fvisibility=hidden',
       ],
+      'defines': [
+        'LIBCXX_BUILDING_LIBCXXABI',
+      ],
       'ldflags': [
         '-nodefaultlibs',
       ],

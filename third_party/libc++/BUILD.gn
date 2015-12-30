@@ -60,6 +60,7 @@ shared_library("libc++") {
     "//build/config/sanitizers:sanitizer_options_link_helper",
   ]
 
+  defines = [ "LIBCXX_BUILDING_LIBCXXABI" ]
   ldflags = [ "-nodefaultlibs" ]
 
   # TODO(GYP): Remove "-pthread" from ldflags.
