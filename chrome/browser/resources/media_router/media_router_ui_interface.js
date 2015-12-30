@@ -138,7 +138,7 @@ cr.define('media_router.browserApi', function() {
    * @param {!media_router.Route} route
    */
   function closeRoute(route) {
-    chrome.send('closeRoute', [{routeId: route.id}]);
+    chrome.send('closeRoute', [{routeId: route.id, isLocal: route.isLocal}]);
   }
 
   /**
@@ -146,6 +146,24 @@ cr.define('media_router.browserApi', function() {
    */
   function onInitialDataReceived() {
     chrome.send('onInitialDataReceived');
+  }
+
+  /**
+   * Reports the index of the selected sink.
+   *
+   * @param {number} sinkIndex
+   */
+  function reportClickedSinkIndex(sinkIndex) {
+    chrome.send('reportClickedSinkIndex', [sinkIndex]);
+  }
+
+  /**
+   * Reports the cast mode that the user selected.
+   *
+   * @param {number} castModeType
+   */
+  function reportSelectedCastMode(castModeType) {
+    chrome.send('reportSelectedCastMode', [castModeType]);
   }
 
   /**
@@ -182,6 +200,8 @@ cr.define('media_router.browserApi', function() {
     closeDialog: closeDialog,
     closeRoute: closeRoute,
     onInitialDataReceived: onInitialDataReceived,
+    reportClickedSinkIndex: reportClickedSinkIndex,
+    reportSelectedCastMode: reportSelectedCastMode,
     reportSinkCount: reportSinkCount,
     requestInitialData: requestInitialData,
     requestRoute: requestRoute,

@@ -22,12 +22,14 @@ cr.define('media_router', function() {
     container = $('media-router-container');
     media_router.ui.setContainer(container);
 
+    container.addEventListener('cast-mode-selected', onCastModeSelected);
     container.addEventListener('close-button-click', onCloseDialogEvent);
     container.addEventListener('close-dialog', onCloseDialogEvent);
     container.addEventListener('close-route-click', onCloseRouteClick);
     container.addEventListener('create-route', onCreateRoute);
     container.addEventListener('issue-action-click', onIssueActionClick);
     container.addEventListener('report-sink-count', onSinkCountReported);
+    container.addEventListener('sink-click', onSinkClick);
   }
 
   /**
@@ -57,6 +59,18 @@ cr.define('media_router', function() {
   }
 
   /**
+   * Reports the selected cast mode.
+   * Called when the user selects a cast mode from the picker.
+   *
+   * @param {{detail: {castModeType: number}}} data
+   * Parameters in |data|.detail:
+   *   castModeType - type of cast mode selected by the user.
+   */
+  function onCastModeSelected(data) {
+    media_router.browserApi.reportSelectedCastMode(data.detail.castModeType);
+  }
+
+  /**
    * Creates a media route.
    * Called when the user requests to create a media route.
    *
@@ -80,6 +94,18 @@ cr.define('media_router', function() {
    */
   function onCloseRouteClick(data) {
     media_router.browserApi.closeRoute(data.detail.route);
+  }
+
+  /**
+   * Reports the index of the sink that was clicked.
+   * Called when the user selects a sink on the sink list.
+   *
+   * @param {{detail: {index: number}}} data
+   * Paramters in |data|.detail:
+   *   index - the index of the clicked sink.
+   */
+  function onSinkClick(data) {
+    media_router.browserApi.reportClickedSinkIndex(data.detail.index);
   }
 
   /**

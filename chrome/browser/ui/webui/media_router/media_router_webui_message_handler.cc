@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
@@ -28,6 +29,8 @@ const char kCreateRoute[] = "requestRoute";
 const char kActOnIssue[] = "actOnIssue";
 const char kCloseRoute[] = "closeRoute";
 const char kCloseDialog[] = "closeDialog";
+const char kReportClickedSinkIndex[] = "reportClickedSinkIndex";
+const char kReportSelectedCastMode[] = "reportSelectedCastMode";
 const char kReportSinkCount[] = "reportSinkCount";
 const char kOnInitialDataReceived[] = "onInitialDataReceived";
 
@@ -249,6 +252,14 @@ void MediaRouterWebUIMessageHandler::RegisterMessages() {
       base::Bind(&MediaRouterWebUIMessageHandler::OnCloseDialog,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      kReportClickedSinkIndex,
+      base::Bind(&MediaRouterWebUIMessageHandler::OnReportClickedSinkIndex,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kReportSelectedCastMode,
+      base::Bind(&MediaRouterWebUIMessageHandler::OnReportSelectedCastMode,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       kReportSinkCount,
       base::Bind(&MediaRouterWebUIMessageHandler::OnReportSinkCount,
                  base::Unretained(this)));
@@ -364,12 +375,15 @@ void MediaRouterWebUIMessageHandler::OnCloseRoute(
   DVLOG(1) << "OnCloseRoute";
   const base::DictionaryValue* args_dict = nullptr;
   std::string route_id;
+  bool is_local = false;
   if (!args->GetDictionary(0, &args_dict) ||
-      !args_dict->GetString("routeId", &route_id)) {
+      !args_dict->GetString("routeId", &route_id) ||
+      !args_dict->GetBoolean("isLocal", &is_local)) {
     DVLOG(1) << "Unable to extract args.";
     return;
   }
   media_router_ui_->CloseRoute(route_id);
+  UMA_HISTOGRAM_BOOLEAN("MediaRouter.Ui.Action.StopRoute", !is_local);
 }
 
 void MediaRouterWebUIMessageHandler::OnCloseDialog(
@@ -380,6 +394,30 @@ void MediaRouterWebUIMessageHandler::OnCloseDialog(
 
   dialog_closing_ = true;
   media_router_ui_->Close();
+}
+
+void MediaRouterWebUIMessageHandler::OnReportClickedSinkIndex(
+    const base::ListValue* args) {
+  DVLOG(1) << "OnReportClickedSinkIndex";
+  int index;
+  if (!args->GetInteger(0, &index)) {
+    DVLOG(1) << "Unable to extract args.";
+    return;
+  }
+  UMA_HISTOGRAM_SPARSE_SLOWLY("MediaRouter.Ui.Action.StartLocalPosition",
+                              std::min(index, 100));
+}
+
+void MediaRouterWebUIMessageHandler::OnReportSelectedCastMode(
+    const base::ListValue* args) {
+  DVLOG(1) << "OnReportSelectedCastMode";
+  int cast_mode_type;
+  if (!args->GetInteger(0, &cast_mode_type)) {
+    DVLOG(1) << "Unable to extract args.";
+    return;
+  }
+  UMA_HISTOGRAM_SPARSE_SLOWLY("MediaRouter.Ui.Navigate.SourceSelection",
+                              cast_mode_type);
 }
 
 void MediaRouterWebUIMessageHandler::OnReportSinkCount(

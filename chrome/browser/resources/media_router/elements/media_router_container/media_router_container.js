@@ -623,6 +623,7 @@ Polymer({
       return;
 
     this.userHasSelectedCastMode_ = true;
+    this.fire('cast-mode-selected', {castModeType: clickedMode.type});
 
     // The list of sinks to show will be the same if the shown cast mode did
     // not change, regardless of whether the user selected it explicitly.
@@ -685,6 +686,7 @@ Polymer({
    */
   onSinkClick_: function(event) {
     this.showOrCreateRoute_(this.$.sinkList.itemForElement(event.target));
+    this.fire('sink-click', {index: event.model.index});
   },
 
   /**
