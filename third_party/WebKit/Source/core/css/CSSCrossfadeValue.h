@@ -41,6 +41,7 @@ class LayoutObject;
 
 class CSSCrossfadeValue final : public CSSImageGeneratorValue {
     friend class CrossfadeSubimageObserverProxy;
+    WILL_BE_USING_PRE_FINALIZER(CSSCrossfadeValue, dispose);
 public:
     static PassRefPtrWillBeRawPtr<CSSCrossfadeValue> create(PassRefPtrWillBeRawPtr<CSSValue> fromValue, PassRefPtrWillBeRawPtr<CSSValue> toValue, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> percentageValue)
     {
@@ -66,22 +67,12 @@ public:
 
     PassRefPtrWillBeRawPtr<CSSCrossfadeValue> valueWithURLsMadeAbsolute();
 
-    // Promptly remove as a ImageResource client.
-    EAGERLY_FINALIZE();
-#if ENABLE(OILPAN)
-    DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
-#endif
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    CSSCrossfadeValue(PassRefPtrWillBeRawPtr<CSSValue> fromValue, PassRefPtrWillBeRawPtr<CSSValue> toValue, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> percentageValue)
-        : CSSImageGeneratorValue(CrossfadeClass)
-        , m_fromValue(fromValue)
-        , m_toValue(toValue)
-        , m_percentageValue(percentageValue)
-        , m_cachedFromImage(nullptr)
-        , m_cachedToImage(nullptr)
-        , m_crossfadeSubimageObserver(this) { }
+    CSSCrossfadeValue(PassRefPtrWillBeRawPtr<CSSValue> fromValue, PassRefPtrWillBeRawPtr<CSSValue> toValue, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> percentageValue);
+
+    void dispose();
 
     class CrossfadeSubimageObserverProxy final : public ImageResourceClient {
         DISALLOW_NEW();

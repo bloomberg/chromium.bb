@@ -93,7 +93,28 @@ static Image* renderableImageForCSSValue(CSSValue* value, const LayoutObject* la
     return cachedImage->image();
 }
 
+CSSCrossfadeValue::CSSCrossfadeValue(PassRefPtrWillBeRawPtr<CSSValue> fromValue, PassRefPtrWillBeRawPtr<CSSValue> toValue, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> percentageValue)
+    : CSSImageGeneratorValue(CrossfadeClass)
+    , m_fromValue(fromValue)
+    , m_toValue(toValue)
+    , m_percentageValue(percentageValue)
+    , m_cachedFromImage(nullptr)
+    , m_cachedToImage(nullptr)
+    , m_crossfadeSubimageObserver(this)
+{
+#if ENABLE(OILPAN)
+    ThreadState::current()->registerPreFinalizer(this);
+#endif
+}
+
 CSSCrossfadeValue::~CSSCrossfadeValue()
+{
+#if !ENABLE(OILPAN)
+    dispose();
+#endif
+}
+
+void CSSCrossfadeValue::dispose()
 {
     if (m_cachedFromImage)
         m_cachedFromImage->removeClient(&m_crossfadeSubimageObserver);
