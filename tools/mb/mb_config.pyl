@@ -523,6 +523,12 @@
       'Site Isolation Win': 'gyp_release_trybot_x64',
       'Linux ARM': 'swarming_gyp_release_bot_arm',
     },
+    'chromium.gpu.fyi': {
+      'GPU NextGen Linux Builder': 'swarming_gn_release_bot',
+      'GPU NextGen Linux Builder (dbg)': 'swarming_gn_debug_bot',
+      'Linux NextGen Release (NVIDIA)': 'none',
+      'Linux NextGen Debug (NVIDIA)': 'none',
+    },
     'chromium.webrtc.fyi': {
       'Android GN': 'android_gn_release_bot',
       'Android GN (dbg)': 'android_gn_debug_bot',
