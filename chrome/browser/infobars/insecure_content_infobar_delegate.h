@@ -31,6 +31,7 @@ class InsecureContentInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~InsecureContentInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   void InfoBarDismissed() override;
   InsecureContentInfoBarDelegate* AsInsecureContentInfoBarDelegate() override;
   base::string16 GetMessageText() const override;

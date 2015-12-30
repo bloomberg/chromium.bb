@@ -126,6 +126,7 @@ class DevToolsConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~DevToolsConfirmInfoBarDelegate() override;
 
  private:
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
@@ -148,6 +149,11 @@ DevToolsConfirmInfoBarDelegate::DevToolsConfirmInfoBarDelegate(
 DevToolsConfirmInfoBarDelegate::~DevToolsConfirmInfoBarDelegate() {
   if (!callback_.is_null())
     callback_.Run(false);
+}
+
+infobars::InfoBarDelegate::InfoBarIdentifier
+DevToolsConfirmInfoBarDelegate::GetIdentifier() const {
+  return DEV_TOOLS_CONFIRM_INFOBAR_DELEGATE;
 }
 
 base::string16 DevToolsConfirmInfoBarDelegate::GetMessageText() const {

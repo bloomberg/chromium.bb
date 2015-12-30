@@ -29,6 +29,11 @@ GoogleApiKeysInfoBarDelegate::GoogleApiKeysInfoBarDelegate()
 GoogleApiKeysInfoBarDelegate::~GoogleApiKeysInfoBarDelegate() {
 }
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+GoogleApiKeysInfoBarDelegate::GetIdentifier() const {
+  return GOOGLE_API_KEYS_INFOBAR_DELEGATE;
+}
+
 base::string16 GoogleApiKeysInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_MISSING_GOOGLE_API_KEYS);
 }

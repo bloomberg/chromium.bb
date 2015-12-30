@@ -48,6 +48,7 @@ class HungRendererInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~HungRendererInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   void InfoBarDismissed() override;
   HungRendererInfoBarDelegate* AsHungRendererInfoBarDelegate() override;
   int GetIconId() const override;

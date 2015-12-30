@@ -29,6 +29,7 @@ class PopupBlockedInfoBarDelegate : public ConfirmInfoBarDelegate {
                               HostContentSettingsMap* map);
 
   // ConfirmInfoBarDelegate:
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   int GetIconId() const override;
   PopupBlockedInfoBarDelegate* AsPopupBlockedInfoBarDelegate() override;
   base::string16 GetMessageText() const override;

@@ -172,6 +172,7 @@ class RequestQuotaInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~RequestQuotaInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   base::string16 GetMessageText() const override;
   bool Accept() override;
   bool Cancel() override;
@@ -217,6 +218,11 @@ RequestQuotaInfoBarDelegate::~RequestQuotaInfoBarDelegate() {
         callback_,
         content::QuotaPermissionContext::QUOTA_PERMISSION_RESPONSE_CANCELLED);
   }
+}
+
+infobars::InfoBarDelegate::InfoBarIdentifier
+RequestQuotaInfoBarDelegate::GetIdentifier() const {
+  return REQUEST_QUOTA_INFOBAR_DELEGATE;
 }
 
 base::string16 RequestQuotaInfoBarDelegate::GetMessageText() const {

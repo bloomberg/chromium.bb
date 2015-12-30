@@ -47,6 +47,7 @@ class SavePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
   base::string16 GetFirstRunExperienceMessage();
 
   // ConfirmInfoBarDelegate:
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   void InfoBarDismissed() override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;

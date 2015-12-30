@@ -53,6 +53,11 @@ AndroidDownloadManagerOverwriteInfoBarDelegate::
   download_info_.Reset(env, download_info);
 }
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+AndroidDownloadManagerOverwriteInfoBarDelegate::GetIdentifier() const {
+  return ANDROID_DOWNLOAD_MANAGER_OVERWRITE_INFOBAR_DELEGATE;
+}
+
 bool AndroidDownloadManagerOverwriteInfoBarDelegate::OverwriteExistingFile() {
   bool tab_closed = ChromeDownloadDelegate::EnqueueDownloadManagerRequest(
       chrome_download_delegate_.obj(), true, download_info_.obj());

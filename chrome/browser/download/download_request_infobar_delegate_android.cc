@@ -54,6 +54,11 @@ DownloadRequestInfoBarDelegateAndroid::DownloadRequestInfoBarDelegateAndroid(
     base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host)
     : ConfirmInfoBarDelegate(), responded_(false), host_(host) {}
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+DownloadRequestInfoBarDelegateAndroid::GetIdentifier() const {
+  return DOWNLOAD_REQUEST_INFOBAR_DELEGATE_ANDROID;
+}
+
 int DownloadRequestInfoBarDelegateAndroid::GetIconId() const {
   return IDR_INFOBAR_MULTIPLE_DOWNLOADS;
 }

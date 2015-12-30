@@ -162,6 +162,11 @@ void AppBannerInfoBarDelegateAndroid::SendBannerAccepted(
           platform));
 }
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+AppBannerInfoBarDelegateAndroid::GetIdentifier() const {
+  return APP_BANNER_INFOBAR_DELEGATE_ANDROID;
+}
+
 gfx::Image AppBannerInfoBarDelegateAndroid::GetIcon() const {
   return gfx::Image::CreateFrom1xBitmap(*app_icon_.get());
 }

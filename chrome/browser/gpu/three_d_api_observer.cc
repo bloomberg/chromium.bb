@@ -39,6 +39,7 @@ class ThreeDAPIInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~ThreeDAPIInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   int GetIconId() const override;
   bool EqualsDelegate(infobars::InfoBarDelegate* delegate) const override;
   ThreeDAPIInfoBarDelegate* AsThreeDAPIInfoBarDelegate() override;
@@ -85,6 +86,11 @@ ThreeDAPIInfoBarDelegate::~ThreeDAPIInfoBarDelegate() {
     UMA_HISTOGRAM_ENUMERATION("GPU.ThreeDAPIInfoBarDismissal",
                               CLOSED_WITHOUT_ACTION, DISMISSAL_MAX);
   }
+}
+
+infobars::InfoBarDelegate::InfoBarIdentifier
+ThreeDAPIInfoBarDelegate::GetIdentifier() const {
+  return THREE_D_API_INFOBAR_DELEGATE;
 }
 
 int ThreeDAPIInfoBarDelegate::GetIconId() const {

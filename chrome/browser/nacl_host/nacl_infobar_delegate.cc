@@ -38,6 +38,11 @@ NaClInfoBarDelegate::NaClInfoBarDelegate() : ConfirmInfoBarDelegate() {
 NaClInfoBarDelegate::~NaClInfoBarDelegate() {
 }
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+NaClInfoBarDelegate::GetIdentifier() const {
+  return NACL_INFOBAR_DELEGATE;
+}
+
 base::string16 NaClInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_NACL_APP_MISSING_ARCH_MESSAGE);
 }

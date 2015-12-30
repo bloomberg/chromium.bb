@@ -48,6 +48,7 @@ class AppBannerInfoBarDelegateDesktop : public ConfirmInfoBarDelegate {
   bool Accept() override;
 
   // InfoBarDelegate override.
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   void InfoBarDismissed() override;
 
  protected:

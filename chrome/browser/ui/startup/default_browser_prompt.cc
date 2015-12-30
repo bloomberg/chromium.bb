@@ -66,6 +66,7 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   Type GetInfoBarType() const override;
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   int GetIconId() const override;
   gfx::VectorIconId GetVectorIconId() const override;
   bool ShouldExpire(const NavigationDetails& details) const override;
@@ -126,6 +127,11 @@ infobars::InfoBarDelegate::Type DefaultBrowserInfoBarDelegate::GetInfoBarType()
 #else
   return PAGE_ACTION_TYPE;
 #endif
+}
+
+infobars::InfoBarDelegate::InfoBarIdentifier
+DefaultBrowserInfoBarDelegate::GetIdentifier() const {
+  return DEFAULT_BROWSER_INFOBAR_DELEGATE;
 }
 
 int DefaultBrowserInfoBarDelegate::GetIconId() const {

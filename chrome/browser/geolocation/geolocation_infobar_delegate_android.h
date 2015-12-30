@@ -29,6 +29,7 @@ class GeolocationInfoBarDelegateAndroid : public PermissionInfobarDelegate {
   ~GeolocationInfoBarDelegateAndroid() override;
 
   // PermissionInfoBarDelegate:
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   int GetIconId() const override;
   base::string16 GetMessageText() const override;
 

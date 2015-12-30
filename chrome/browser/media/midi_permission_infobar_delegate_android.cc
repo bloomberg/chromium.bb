@@ -36,6 +36,11 @@ MidiPermissionInfoBarDelegateAndroid::MidiPermissionInfoBarDelegateAndroid(
 
 MidiPermissionInfoBarDelegateAndroid::~MidiPermissionInfoBarDelegateAndroid() {}
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+MidiPermissionInfoBarDelegateAndroid::GetIdentifier() const {
+  return MIDI_PERMISSION_INFOBAR_DELEGATE_ANDROID;
+}
+
 int MidiPermissionInfoBarDelegateAndroid::GetIconId() const {
   return IDR_INFOBAR_MIDI;
 }

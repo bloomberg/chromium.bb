@@ -94,6 +94,11 @@ bool AppBannerInfoBarDelegateDesktop::Accept() {
   return true;
 }
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+AppBannerInfoBarDelegateDesktop::GetIdentifier() const {
+  return APP_BANNER_INFOBAR_DELEGATE_DESKTOP;
+}
+
 void AppBannerInfoBarDelegateDesktop::InfoBarDismissed() {
   TrackUserResponse(USER_RESPONSE_WEB_APP_DISMISSED);
   has_user_interaction_ = true;

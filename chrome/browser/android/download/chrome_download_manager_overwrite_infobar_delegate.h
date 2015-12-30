@@ -38,6 +38,7 @@ class ChromeDownloadManagerOverwriteInfoBarDelegate
       const DownloadTargetDeterminerDelegate::FileSelectedCallback& callback);
 
   // DownloadOverwriteInfoBarDelegate:
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   bool OverwriteExistingFile() override;
   bool CreateNewFile() override;
   std::string GetFileName() const override;

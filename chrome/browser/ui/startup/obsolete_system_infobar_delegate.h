@@ -25,6 +25,7 @@ class ObsoleteSystemInfoBarDelegate : public ConfirmInfoBarDelegate {
   ObsoleteSystemInfoBarDelegate();
   ~ObsoleteSystemInfoBarDelegate() override;
 
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
   base::string16 GetLinkText() const override;

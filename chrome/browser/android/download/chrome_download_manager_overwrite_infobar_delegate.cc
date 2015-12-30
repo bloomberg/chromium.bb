@@ -41,6 +41,11 @@ ChromeDownloadManagerOverwriteInfoBarDelegate::
       file_selected_callback_(file_selected_callback) {
 }
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+ChromeDownloadManagerOverwriteInfoBarDelegate::GetIdentifier() const {
+  return CHROME_DOWNLOAD_MANAGER_OVERWRITE_INFOBAR_DELEGATE;
+}
+
 bool ChromeDownloadManagerOverwriteInfoBarDelegate::OverwriteExistingFile() {
   file_selected_callback_.Run(suggested_download_path_);
   return true;

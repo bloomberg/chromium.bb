@@ -55,6 +55,11 @@ IOSChromeSavePasswordInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+IOSChromeSavePasswordInfoBarDelegate::GetIdentifier() const {
+  return IOS_CHROME_SAVE_PASSWORD_INFOBAR_DELEGATE;
+}
+
 base::string16 IOSChromeSavePasswordInfoBarDelegate::GetMessageText() const {
   if (is_smart_lock_branding_enabled_) {
     return l10n_util::GetStringUTF16(

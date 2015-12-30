@@ -103,6 +103,11 @@ OutdatedPluginInfoBarDelegate::~OutdatedPluginInfoBarDelegate() {
   content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Closed"));
 }
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+OutdatedPluginInfoBarDelegate::GetIdentifier() const {
+  return OUTDATED_PLUGIN_INFOBAR_DELEGATE;
+}
+
 void OutdatedPluginInfoBarDelegate::InfoBarDismissed() {
   content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Dismissed"));
 }
@@ -232,6 +237,11 @@ PluginMetroModeInfoBarDelegate::PluginMetroModeInfoBarDelegate(
 }
 
 PluginMetroModeInfoBarDelegate::~PluginMetroModeInfoBarDelegate() {
+}
+
+infobars::InfoBarDelegate::InfoBarIdentifier
+PluginMetroModeInfoBarDelegate::GetIdentifier() const {
+  return PLUGIN_METRO_MODE_INFOBAR_DELEGATE;
 }
 
 int PluginMetroModeInfoBarDelegate::GetIconId() const {

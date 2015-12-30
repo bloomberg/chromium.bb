@@ -93,6 +93,11 @@ PepperBrokerInfoBarDelegate::~PepperBrokerInfoBarDelegate() {
     callback_.Run(false);
 }
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+PepperBrokerInfoBarDelegate::GetIdentifier() const {
+  return PEPPER_BROKER_INFOBAR_DELEGATE;
+}
+
 int PepperBrokerInfoBarDelegate::GetIconId() const {
   return IDR_INFOBAR_PLUGIN_INSTALL;
 }

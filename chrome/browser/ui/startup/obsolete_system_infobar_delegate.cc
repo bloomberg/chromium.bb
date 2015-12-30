@@ -28,6 +28,11 @@ ObsoleteSystemInfoBarDelegate::ObsoleteSystemInfoBarDelegate()
 ObsoleteSystemInfoBarDelegate::~ObsoleteSystemInfoBarDelegate() {
 }
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+ObsoleteSystemInfoBarDelegate::GetIdentifier() const {
+  return OBSOLETE_SYSTEM_INFOBAR_DELEGATE;
+}
+
 base::string16 ObsoleteSystemInfoBarDelegate::GetMessageText() const {
   return ObsoleteSystem::LocalizedObsoleteString();
 }

@@ -36,6 +36,11 @@ GeolocationInfoBarDelegateAndroid::GeolocationInfoBarDelegateAndroid(
 
 GeolocationInfoBarDelegateAndroid::~GeolocationInfoBarDelegateAndroid() {}
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+GeolocationInfoBarDelegateAndroid::GetIdentifier() const {
+  return GEOLOCATION_INFOBAR_DELEGATE_ANDROID;
+}
+
 int GeolocationInfoBarDelegateAndroid::GetIconId() const {
   return IDR_ANDROID_INFOBAR_GEOLOCATION;
 }

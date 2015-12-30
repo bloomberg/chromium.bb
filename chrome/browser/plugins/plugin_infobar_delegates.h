@@ -48,6 +48,7 @@ class OutdatedPluginInfoBarDelegate : public ConfirmInfoBarDelegate,
   ~OutdatedPluginInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   void InfoBarDismissed() override;
   int GetIconId() const override;
   base::string16 GetMessageText() const override;
@@ -102,6 +103,7 @@ class PluginMetroModeInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~PluginMetroModeInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   int GetIconId() const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;

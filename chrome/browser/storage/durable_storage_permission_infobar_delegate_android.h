@@ -32,6 +32,7 @@ class DurableStoragePermissionInfoBarDelegateAndroid
       const PermissionSetCallback& callback);
   ~DurableStoragePermissionInfoBarDelegateAndroid() override = default;
 
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   base::string16 GetMessageText() const override;
 
   GURL requesting_frame_;

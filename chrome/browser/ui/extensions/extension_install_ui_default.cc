@@ -86,6 +86,7 @@ class ErrorInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~ErrorInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
   base::string16 GetLinkText() const override;
@@ -109,6 +110,11 @@ ErrorInfoBarDelegate::ErrorInfoBarDelegate(
 }
 
 ErrorInfoBarDelegate::~ErrorInfoBarDelegate() {
+}
+
+infobars::InfoBarDelegate::InfoBarIdentifier
+ErrorInfoBarDelegate::GetIdentifier() const {
+  return INSTALLATION_ERROR_INFOBAR_DELEGATE;
 }
 
 base::string16 ErrorInfoBarDelegate::GetMessageText() const {

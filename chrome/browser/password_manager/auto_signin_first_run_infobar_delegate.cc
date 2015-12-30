@@ -51,6 +51,11 @@ AutoSigninFirstRunInfoBarDelegate::~AutoSigninFirstRunInfoBarDelegate() {
       profile->GetPrefs());
 }
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+AutoSigninFirstRunInfoBarDelegate::GetIdentifier() const {
+  return AUTO_SIGNIN_FIRST_RUN_INFOBAR_DELEGATE;
+}
+
 base::string16 AutoSigninFirstRunInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_OK_BUTTON);

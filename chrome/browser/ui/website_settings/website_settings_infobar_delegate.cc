@@ -34,6 +34,11 @@ WebsiteSettingsInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+WebsiteSettingsInfoBarDelegate::GetIdentifier() const {
+  return WEBSITE_SETTINGS_INFOBAR_DELEGATE;
+}
+
 int WebsiteSettingsInfoBarDelegate::GetIconId() const {
   return IDR_INFOBAR_ALT_NAV_URL;
 }

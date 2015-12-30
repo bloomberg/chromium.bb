@@ -37,6 +37,11 @@ DurableStoragePermissionInfoBarDelegateAndroid::
       requesting_frame_(requesting_frame),
       display_languages_(display_languages) {}
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+DurableStoragePermissionInfoBarDelegateAndroid::GetIdentifier() const {
+  return DURABLE_STORAGE_PERMISSION_INFOBAR_DELEGATE_ANDROID;
+}
+
 base::string16 DurableStoragePermissionInfoBarDelegateAndroid::GetMessageText()
     const {
   return l10n_util::GetStringFUTF16(

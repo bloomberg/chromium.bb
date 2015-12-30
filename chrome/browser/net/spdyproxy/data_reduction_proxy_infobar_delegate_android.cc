@@ -33,6 +33,11 @@ DataReductionProxyInfoBarDelegateAndroid::
     DataReductionProxyInfoBarDelegateAndroid(const std::string& link_url)
     : ConfirmInfoBarDelegate(), link_url_(link_url) {}
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+DataReductionProxyInfoBarDelegateAndroid::GetIdentifier() const {
+  return DATA_REDUCTION_PROXY_INFOBAR_DELEGATE_ANDROID;
+}
+
 bool DataReductionProxyInfoBarDelegateAndroid::ShouldExpire(
     const NavigationDetails& details) const {
   return false;

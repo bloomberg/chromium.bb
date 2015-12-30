@@ -56,6 +56,11 @@ SessionCrashedInfoBarDelegate::~SessionCrashedInfoBarDelegate() {
   }
 }
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+SessionCrashedInfoBarDelegate::GetIdentifier() const {
+  return SESSION_CRASHED_INFOBAR_DELEGATE;
+}
+
 int SessionCrashedInfoBarDelegate::GetIconId() const {
   return IDR_INFOBAR_RESTORE_SESSION;
 }

@@ -71,6 +71,11 @@ bool MediaStreamInfoBarDelegateAndroid::IsRequestingMicrophoneAccess() const {
   return controller_->IsAskingForAudio();
 }
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+MediaStreamInfoBarDelegateAndroid::GetIdentifier() const {
+  return MEDIA_STREAM_INFOBAR_DELEGATE_ANDROID;
+}
+
 MediaStreamInfoBarDelegateAndroid::MediaStreamInfoBarDelegateAndroid(
     scoped_ptr<MediaStreamDevicesController> controller)
     : ConfirmInfoBarDelegate(), controller_(std::move(controller)) {

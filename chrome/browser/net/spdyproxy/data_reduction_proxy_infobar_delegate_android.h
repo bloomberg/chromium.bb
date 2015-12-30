@@ -39,6 +39,7 @@ class DataReductionProxyInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
       scoped_ptr<DataReductionProxyInfoBarDelegateAndroid> delegate);
 
   // ConfirmInfoBarDelegate
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   bool ShouldExpire(const NavigationDetails& details) const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;

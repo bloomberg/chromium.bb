@@ -123,6 +123,11 @@ base::string16 SavePasswordInfoBarDelegate::GetFirstRunExperienceMessage() {
              : base::string16();
 }
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+SavePasswordInfoBarDelegate::GetIdentifier() const {
+  return SAVE_PASSWORD_INFOBAR_DELEGATE;
+}
+
 void SavePasswordInfoBarDelegate::InfoBarDismissed() {
   DCHECK(form_to_save_.get());
   infobar_response_ = password_manager::metrics_util::INFOBAR_DISMISSED;

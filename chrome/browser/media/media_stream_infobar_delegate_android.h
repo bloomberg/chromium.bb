@@ -38,6 +38,7 @@ class MediaStreamInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
       scoped_ptr<MediaStreamDevicesController> controller);
 
   // ConfirmInfoBarDelegate:
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   Type GetInfoBarType() const override;
   int GetIconId() const override;
   void InfoBarDismissed() override;

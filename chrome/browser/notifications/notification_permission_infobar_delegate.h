@@ -28,6 +28,7 @@ class NotificationPermissionInfobarDelegate : public PermissionInfobarDelegate {
   ~NotificationPermissionInfobarDelegate() override;
 
   // PermissionInfoBarDelegate:
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   int GetIconId() const override;
   base::string16 GetMessageText() const override;
 

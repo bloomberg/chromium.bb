@@ -20,26 +20,33 @@ class SimpleAlertInfoBarDelegate : public ConfirmInfoBarDelegate {
   // Creates a simple alert infobar and delegate and adds the infobar to
   // |infobar_manager|. If |vector_icon_id| is not VECTOR_ICON_NONE, it will be
   // shown; otherwise, |icon_id| (if present) will be used as the icon.
-  static void Create(infobars::InfoBarManager* infobar_manager,
-                     int icon_id,
-                     gfx::VectorIconId vector_icon_id,
-                     const base::string16& message,
-                     bool auto_expire);
+  // |infobar_identifier| names what class triggered the infobar for metrics.
+  static void Create(
+      infobars::InfoBarManager* infobar_manager,
+      infobars::InfoBarDelegate::InfoBarIdentifier infobar_identifier,
+      int icon_id,
+      gfx::VectorIconId vector_icon_id,
+      const base::string16& message,
+      bool auto_expire);
 
  private:
-  SimpleAlertInfoBarDelegate(int icon_id,
-                             gfx::VectorIconId vector_icon_id,
-                             const base::string16& message,
-                             bool auto_expire);
+  SimpleAlertInfoBarDelegate(
+      infobars::InfoBarDelegate::InfoBarIdentifier infobar_identifier,
+      int icon_id,
+      gfx::VectorIconId vector_icon_id,
+      const base::string16& message,
+      bool auto_expire);
   ~SimpleAlertInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   int GetIconId() const override;
   gfx::VectorIconId GetVectorIconId() const override;
   bool ShouldExpire(const NavigationDetails& details) const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
 
+  infobars::InfoBarDelegate::InfoBarIdentifier infobar_identifier_;
   const int icon_id_;
   gfx::VectorIconId vector_icon_id_;
   base::string16 message_;

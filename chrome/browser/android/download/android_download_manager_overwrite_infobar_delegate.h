@@ -40,6 +40,7 @@ class AndroidDownloadManagerOverwriteInfoBarDelegate
       jobject download_info);
 
   // DownloadOverwriteInfoBarDelegate:
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   bool OverwriteExistingFile() override;
   bool CreateNewFile() override;
   std::string GetFileName() const override;

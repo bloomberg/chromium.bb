@@ -52,6 +52,11 @@ MediaThrottleInfoBarDelegate::~MediaThrottleInfoBarDelegate() {
                             UMA_THROTTLE_INFOBAR_RESPONSE_COUNT);
 }
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+MediaThrottleInfoBarDelegate::GetIdentifier() const {
+  return MEDIA_THROTTLE_INFOBAR_DELEGATE;
+}
+
 MediaThrottleInfoBarDelegate*
     MediaThrottleInfoBarDelegate::AsMediaThrottleInfoBarDelegate() {
   return this;

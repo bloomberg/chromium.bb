@@ -147,6 +147,7 @@ class HungPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~HungPluginInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   int GetIconId() const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
@@ -185,6 +186,11 @@ HungPluginInfoBarDelegate::HungPluginInfoBarDelegate(
 }
 
 HungPluginInfoBarDelegate::~HungPluginInfoBarDelegate() {
+}
+
+infobars::InfoBarDelegate::InfoBarIdentifier
+HungPluginInfoBarDelegate::GetIdentifier() const {
+  return HUNG_PLUGIN_INFOBAR_DELEGATE;
 }
 
 int HungPluginInfoBarDelegate::GetIconId() const {

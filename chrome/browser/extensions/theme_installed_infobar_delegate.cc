@@ -111,6 +111,11 @@ ThemeInstalledInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+ThemeInstalledInfoBarDelegate::GetIdentifier() const {
+  return THEME_INSTALLED_INFOBAR_DELEGATE;
+}
+
 int ThemeInstalledInfoBarDelegate::GetIconId() const {
   return IDR_INFOBAR_THEME;
 }

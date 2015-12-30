@@ -60,6 +60,11 @@ void AutofillCCInfoBarDelegate::LogUserAction(
   had_user_interaction_ = true;
 }
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+AutofillCCInfoBarDelegate::GetIdentifier() const {
+  return AUTOFILL_CC_INFOBAR_DELEGATE;
+}
+
 infobars::InfoBarDelegate::Type
 AutofillCCInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;

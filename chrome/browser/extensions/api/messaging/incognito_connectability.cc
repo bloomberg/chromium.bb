@@ -50,6 +50,7 @@ class IncognitoConnectabilityInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   Type GetInfoBarType() const override;
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
@@ -89,6 +90,11 @@ IncognitoConnectabilityInfoBarDelegate::
 infobars::InfoBarDelegate::Type
 IncognitoConnectabilityInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
+}
+
+infobars::InfoBarDelegate::InfoBarIdentifier
+IncognitoConnectabilityInfoBarDelegate::GetIdentifier() const {
+  return INCOGNITO_CONNECTABILITY_INFOBAR_DELEGATE;
 }
 
 base::string16 IncognitoConnectabilityInfoBarDelegate::GetMessageText() const {

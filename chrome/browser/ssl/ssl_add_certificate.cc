@@ -13,6 +13,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
+#include "components/infobars/core/infobar_delegate.h"
 #include "components/infobars/core/simple_alert_infobar_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -45,6 +46,7 @@ class SSLAddCertificateInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   Type GetInfoBarType() const override;
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   int GetIconId() const override;
   gfx::VectorIconId GetVectorIconId() const override;
   base::string16 GetMessageText() const override;
@@ -77,6 +79,11 @@ SSLAddCertificateInfoBarDelegate::~SSLAddCertificateInfoBarDelegate() {
 infobars::InfoBarDelegate::Type
 SSLAddCertificateInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
+}
+
+infobars::InfoBarDelegate::InfoBarIdentifier
+SSLAddCertificateInfoBarDelegate::GetIdentifier() const {
+  return SSL_ADD_CERTIFICATE_INFOBAR_DELEGATE;
 }
 
 int SSLAddCertificateInfoBarDelegate::GetIconId() const {
@@ -131,7 +138,9 @@ void ShowErrorInfoBar(int message_id,
   // TODO(davidben): Use a more appropriate icon.
   // TODO(davidben): Display a more user-friendly error string.
   SimpleAlertInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents), IDR_INFOBAR_SAVE_PASSWORD,
+      InfoBarService::FromWebContents(web_contents),
+      infobars::InfoBarDelegate::SSL_ADD_CERTIFICATE,
+      IDR_INFOBAR_SAVE_PASSWORD,
 #if !defined(OS_MACOSX)
       gfx::VectorIconId::AUTOLOGIN,
 #else

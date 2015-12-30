@@ -38,6 +38,11 @@ HungRendererInfoBarDelegate::~HungRendererInfoBarDelegate() {
     LogEvent(TAB_CLOSED);
 }
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+HungRendererInfoBarDelegate::GetIdentifier() const {
+  return HUNG_RENDERER_INFOBAR_DELEGATE;
+}
+
 void HungRendererInfoBarDelegate::InfoBarDismissed() {
   LogEvent(CLOSE_CLICKED);
 }

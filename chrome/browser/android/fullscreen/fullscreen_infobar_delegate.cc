@@ -60,6 +60,11 @@ void FullscreenInfoBarDelegate::CloseFullscreenInfoBar(
     infobar()->owner()->RemoveInfoBar(infobar());
 }
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+FullscreenInfoBarDelegate::GetIdentifier() const {
+  return FULLSCREEN_INFOBAR_DELEGATE;
+}
+
 int FullscreenInfoBarDelegate::GetIconId() const {
   return IDR_ANDROID_INFOBAR_FULLSCREEN;
 }

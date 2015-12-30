@@ -51,6 +51,11 @@ InsecureContentInfoBarDelegate::InsecureContentInfoBarDelegate()
 InsecureContentInfoBarDelegate::~InsecureContentInfoBarDelegate() {
 }
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+InsecureContentInfoBarDelegate::GetIdentifier() const {
+  return INSECURE_CONTENT_INFOBAR_DELEGATE;
+}
+
 void InsecureContentInfoBarDelegate::InfoBarDismissed() {
   UMA_HISTOGRAM_ENUMERATION("InsecureContentInfoBarDelegateV2",
                             DISPLAY_INFOBAR_DISMISSED, NUM_EVENTS);

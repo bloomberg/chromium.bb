@@ -16161,6 +16161,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="InfoBar.Shown" enum="InfoBarIdentifier">
+  <owner>dfalcantara@chromium.org</owner>
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    Records how many times a particular infobar was shown to the user. On
+    Android, the infobar may be partially hidden due to stacking.
+  </summary>
+</histogram>
+
 <histogram name="InputMethod.ActiveCount">
   <owner>shuchen@chromium.org</owner>
   <summary>
@@ -67149,6 +67158,62 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="Transaction()"/>
   <int value="3" label="DeleteDatabase()"/>
   <int value="4" label="Open()"/>
+</enum>
+
+<enum name="InfoBarIdentifier" type="int">
+  <int value="-1" label="INVALID"/>
+  <int value="0" label="TEST_INFOBAR"/>
+  <int value="1" label="APP_BANNER_INFOBAR_DELEGATE_ANDROID"/>
+  <int value="2" label="APP_BANNER_INFOBAR_DELEGATE_DESKTOP"/>
+  <int value="3" label="ANDROID_DOWNLOAD_MANAGER_OVERWRITE_INFOBAR_DELEGATE"/>
+  <int value="4" label="CHROME_DOWNLOAD_MANAGER_OVERWRITE_INFOBAR_DELEGATE"/>
+  <int value="5" label="DOWNLOAD_REQUEST_INFOBAR_DELEGATE_ANDROID"/>
+  <int value="6" label="FULLSCREEN_INFOBAR_DELEGATE"/>
+  <int value="7" label="HUNG_PLUGIN_INFOBAR_DELEGATE"/>
+  <int value="8" label="HUNG_RENDERER_INFOBAR_DELEGATE"/>
+  <int value="9" label="MEDIA_STREAM_INFOBAR_DELEGATE_ANDROID"/>
+  <int value="10" label="MEDIA_THROTTLE_INFOBAR_DELEGATE"/>
+  <int value="11" label="REQUEST_QUOTA_INFOBAR_DELEGATE"/>
+  <int value="12" label="DEV_TOOLS_CONFIRM_INFOBAR_DELEGATE"/>
+  <int value="13" label="EXTENSION_DEV_TOOLS_INFOBAR_DELEGATE"/>
+  <int value="14" label="INCOGNITO_CONNECTABILITY_INFOBAR_DELEGATE"/>
+  <int value="15" label="THEME_INSTALLED_INFOBAR_DELEGATE"/>
+  <int value="16" label="GEOLOCATION_INFOBAR_DELEGATE_ANDROID"/>
+  <int value="17" label="THREE_D_API_INFOBAR_DELEGATE"/>
+  <int value="18" label="INSECURE_CONTENT_INFOBAR_DELEGATE"/>
+  <int value="19" label="MIDI_PERMISSION_INFOBAR_DELEGATE_ANDROID"/>
+  <int value="20" label="PROTECTED_MEDIA_IDENTIFIER_INFOBAR_DELEGATE_ANDROID"/>
+  <int value="21" label="NACL_INFOBAR_DELEGATE"/>
+  <int value="22" label="DATA_REDUCTION_PROXY_INFOBAR_DELEGATE_ANDROID"/>
+  <int value="23" label="NOTIFICATION_PERMISSION_INFOBAR_DELEGATE"/>
+  <int value="24" label="AUTO_SIGNIN_FIRST_RUN_INFOBAR_DELEGATE"/>
+  <int value="25" label="GENERATED_PASSWORD_SAVED_INFOBAR_DELEGATE_ANDROID"/>
+  <int value="26" label="SAVE_PASSWORD_INFOBAR_DELEGATE"/>
+  <int value="27" label="PEPPER_BROKER_INFOBAR_DELEGATE"/>
+  <int value="28" label="PERMISSION_UPDATE_INFOBAR_DELEGATE"/>
+  <int value="29" label="DURABLE_STORAGE_PERMISSION_INFOBAR_DELEGATE_ANDROID"/>
+  <int value="30" label="NPAPI_REMOVAL_INFOBAR_DELEGATE"/>
+  <int value="31" label="OUTDATED_PLUGIN_INFOBAR_DELEGATE"/>
+  <int value="32" label="PLUGIN_METRO_MODE_INFOBAR_DELEGATE"/>
+  <int value="33" label="RELOAD_PLUGIN_INFOBAR_DELEGATE"/>
+  <int value="34" label="PLUGIN_OBSERVER"/>
+  <int value="35" label="SSL_ADD_CERTIFICATE"/>
+  <int value="36" label="SSL_ADD_CERTIFICATE_INFOBAR_DELEGATE"/>
+  <int value="37" label="POPUP_BLOCKED_INFOBAR_DELEGATE"/>
+  <int value="38" label="CHROME_SELECT_FILE_POLICY"/>
+  <int value="39" label="KEYSTONE_PROMOTION_INFOBAR_DELEGATE"/>
+  <int value="40" label="COLLECTED_COOKIES_INFOBAR_DELEGATE"/>
+  <int value="41" label="INSTALLATION_ERROR_INFOBAR_DELEGATE"/>
+  <int value="42" label="ALTERNATE_NAV_INFOBAR_DELEGATE"/>
+  <int value="43" label="BAD_FLAGS_PROMPT"/>
+  <int value="44" label="DEFAULT_BROWSER_INFOBAR_DELEGATE"/>
+  <int value="45" label="GOOGLE_API_KEYS_INFOBAR_DELEGATE"/>
+  <int value="46" label="OBSOLETE_SYSTEM_INFOBAR_DELEGATE"/>
+  <int value="47" label="SESSION_CRASHED_INFOBAR_DELEGATE"/>
+  <int value="48" label="WEBSITE_SETTINGS_INFOBAR_DELEGATE"/>
+  <int value="49" label="AUTOFILL_CC_INFOBAR_DELEGATE"/>
+  <int value="50" label="TRANSLATE_INFOBAR_DELEGATE"/>
+  <int value="51" label="IOS_CHROME_SAVE_PASSWORD_INFOBAR_DELEGATE"/>
 </enum>
 
 <enum name="InfoBarResponse" type="int">

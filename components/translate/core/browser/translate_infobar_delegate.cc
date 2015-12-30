@@ -51,6 +51,11 @@ const size_t TranslateInfoBarDelegate::kNoIndex = TranslateUIDelegate::kNoIndex;
 TranslateInfoBarDelegate::~TranslateInfoBarDelegate() {
 }
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+TranslateInfoBarDelegate::GetIdentifier() const {
+  return TRANSLATE_INFOBAR_DELEGATE;
+}
+
 // static
 void TranslateInfoBarDelegate::Create(
     bool replace_existing_infobar,

@@ -69,6 +69,7 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
                           const std::string& platform);
 
   // ConfirmInfoBarDelegate:
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   gfx::Image GetIcon() const override;
   void InfoBarDismissed() override;
   base::string16 GetMessageText() const override;

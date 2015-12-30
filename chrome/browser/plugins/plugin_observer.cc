@@ -25,6 +25,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
+#include "components/infobars/core/infobar_delegate.h"
 #include "components/infobars/core/simple_alert_infobar_delegate.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "content/public/browser/plugin_service.h"
@@ -137,6 +138,7 @@ class ReloadPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~ReloadPluginInfoBarDelegate() override;
 
   // ConfirmInfobarDelegate:
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   int GetIconId() const override;
   gfx::VectorIconId GetVectorIconId() const override;
   base::string16 GetMessageText() const override;
@@ -165,6 +167,11 @@ ReloadPluginInfoBarDelegate::ReloadPluginInfoBarDelegate(
       message_(message) {}
 
 ReloadPluginInfoBarDelegate::~ReloadPluginInfoBarDelegate(){ }
+
+infobars::InfoBarDelegate::InfoBarIdentifier
+ReloadPluginInfoBarDelegate::GetIdentifier() const {
+  return RELOAD_PLUGIN_INFOBAR_DELEGATE;
+}
 
 int ReloadPluginInfoBarDelegate::GetIconId() const {
   return IDR_INFOBAR_PLUGIN_CRASHED;
@@ -417,6 +424,7 @@ void PluginObserver::OnCouldNotLoadPlugin(const base::FilePath& plugin_path) {
       PluginService::GetInstance()->GetPluginDisplayNameByPath(plugin_path);
   SimpleAlertInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents()),
+      infobars::InfoBarDelegate::PLUGIN_OBSERVER,
       IDR_INFOBAR_PLUGIN_CRASHED,
 #if !defined(OS_MACOSX) && !defined(OS_IOS) && !defined(OS_ANDROID)
       gfx::VectorIconId::EXTENSION_CRASHED,

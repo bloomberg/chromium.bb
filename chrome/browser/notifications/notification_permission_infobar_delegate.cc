@@ -39,6 +39,11 @@ NotificationPermissionInfobarDelegate::NotificationPermissionInfobarDelegate(
 NotificationPermissionInfobarDelegate::~NotificationPermissionInfobarDelegate()
     {}
 
+infobars::InfoBarDelegate::InfoBarIdentifier
+NotificationPermissionInfobarDelegate::GetIdentifier() const {
+  return NOTIFICATION_PERMISSION_INFOBAR_DELEGATE;
+}
+
 int NotificationPermissionInfobarDelegate::GetIconId() const {
   return IDR_ANDROID_INFOBAR_NOTIFICATIONS;
 }

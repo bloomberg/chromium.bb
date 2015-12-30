@@ -101,6 +101,7 @@ class ExtensionDevToolsInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   Type GetInfoBarType() const override;
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   bool ShouldExpire(const NavigationDetails& details) const override;
   void InfoBarDismissed() override;
   base::string16 GetMessageText() const override;
@@ -126,6 +127,11 @@ ExtensionDevToolsInfoBarDelegate::~ExtensionDevToolsInfoBarDelegate() {
 infobars::InfoBarDelegate::Type
 ExtensionDevToolsInfoBarDelegate::GetInfoBarType() const {
   return WARNING_TYPE;
+}
+
+infobars::InfoBarDelegate::InfoBarIdentifier
+ExtensionDevToolsInfoBarDelegate::GetIdentifier() const {
+  return EXTENSION_DEV_TOOLS_INFOBAR_DELEGATE;
 }
 
 bool ExtensionDevToolsInfoBarDelegate::ShouldExpire(

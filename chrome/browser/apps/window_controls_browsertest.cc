@@ -4,6 +4,7 @@
 
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/infobars/core/infobar_delegate.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/switches.h"
