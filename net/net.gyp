@@ -289,7 +289,11 @@
             'sources!': [
               'http/bidirectional_stream_unittest.cc',
             ],
-          },
+          }, { # else
+           'defines': [
+              'ENABLE_BIDIRECTIONAL_STREAM',
+            ],
+          }
         ],
         [ 'enable_built_in_dns!=1', {
             'sources!': [

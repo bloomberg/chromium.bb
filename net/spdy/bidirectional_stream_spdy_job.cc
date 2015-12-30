@@ -22,7 +22,7 @@ namespace {
 // Time to wait in millisecond to notify |delegate_| of data received.
 // Handing small chunks of data to the caller creates measurable overhead.
 // So buffer data in short time-spans and send a single read notification.
-const int64 kBufferTimeMs = 1;
+const int kBufferTimeMs = 1;
 
 }  // namespace
 
