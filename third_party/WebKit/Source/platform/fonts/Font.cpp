@@ -39,13 +39,13 @@
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
 #include "platform/fonts/shaping/SimpleShaper.h"
 #include "platform/geometry/FloatRect.h"
-#include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/TextRun.h"
 #include "platform/text/TextRunIterator.h"
 #include "platform/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkTextBlob.h"
 #include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CharacterNames.h"
@@ -147,7 +147,7 @@ bool Font::drawText(SkCanvas* canvas, const TextRunPaintInfo& runInfo,
 
     if (runInfo.cachedTextBlob && runInfo.cachedTextBlob->get()) {
         // we have a pre-cached blob -- happy joy!
-        drawTextBlob(canvas, paint, runInfo.cachedTextBlob->get(), point.data());
+        canvas->drawTextBlob(runInfo.cachedTextBlob->get(), point.x(), point.y(), paint);
         return true;
     }
 
@@ -238,43 +238,140 @@ float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFo
     return floatWidthForSimpleText(run, fallbackFonts, glyphBounds);
 }
 
-PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer) const
-{
-    SkTextBlobBuilder builder;
-    bool hasVerticalOffsets = glyphBuffer.hasVerticalOffsets();
+namespace {
 
-    unsigned i = 0;
-    while (i < glyphBuffer.size()) {
-        const SimpleFontData* fontData = glyphBuffer.fontDataAt(i);
+enum BlobRotation {
+    NoRotation,
+    CCWRotation,
+};
 
-        // FIXME: Handle vertical text.
-        if (fontData->platformData().isVerticalAnyUpright())
-            return nullptr;
+class GlyphBufferBloberizer {
+    STACK_ALLOCATED()
+public:
+    GlyphBufferBloberizer(const GlyphBuffer& buffer, const Font* font, float deviceScaleFactor)
+        : m_buffer(buffer)
+        , m_font(font)
+        , m_deviceScaleFactor(deviceScaleFactor)
+        , m_hasVerticalOffsets(buffer.hasVerticalOffsets())
+        , m_index(0)
+        , m_blobCount(0)
+        , m_rotation(buffer.isEmpty() ? NoRotation : blobRotation(buffer.fontDataAt(0)))
+    { }
 
-        SkPaint paint;
-        // FIXME: FontPlatformData makes some decisions on the device scale
-        // factor, which is found via the GraphicsContext. This should be fixed
-        // to avoid correctness problems here.
-        float deviceScaleFactor = 1.0f;
-        fontData->platformData().setupPaint(&paint, deviceScaleFactor, this);
-        paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+    bool done() const { return m_index >= m_buffer.size(); }
+    unsigned blobCount() const { return m_blobCount; }
 
-        unsigned start = i++;
-        while (i < glyphBuffer.size() && glyphBuffer.fontDataAt(i) == fontData)
-            i++;
-        unsigned count = i - start;
+    std::pair<RefPtr<const SkTextBlob>, BlobRotation> next()
+    {
+        ASSERT(!done());
+        const BlobRotation currentRotation = m_rotation;
 
-        const SkTextBlobBuilder::RunBuffer& buffer = hasVerticalOffsets
-            ? builder.allocRunPos(paint, count)
-            : builder.allocRunPosH(paint, count, 0);
+        while (m_index < m_buffer.size()) {
+            const SimpleFontData* fontData = m_buffer.fontDataAt(m_index);
+            ASSERT(fontData);
 
-        const uint16_t* glyphs = glyphBuffer.glyphs(start);
-        const float* offsets = glyphBuffer.offsets(start);
-        std::copy(glyphs, glyphs + count, buffer.glyphs);
-        std::copy(offsets, offsets + (hasVerticalOffsets ? 2 * count : count), buffer.pos);
+            const BlobRotation newRotation = blobRotation(fontData);
+            if (newRotation != m_rotation) {
+                // We're switching to an orientation which requires a different rotation
+                //   => emit the pending blob (and start a new one with the new rotation).
+                m_rotation = newRotation;
+                break;
+            }
+
+            const unsigned start = m_index++;
+            while (m_index < m_buffer.size() && m_buffer.fontDataAt(m_index) == fontData)
+                m_index++;
+
+            appendRun(start, m_index - start, fontData);
+        }
+
+        m_blobCount++;
+        return std::make_pair(adoptRef(m_builder.build()), currentRotation);
     }
 
-    return adoptRef(builder.build());
+private:
+    static BlobRotation blobRotation(const SimpleFontData* font)
+    {
+        // For vertical upright text we need to compensate the inherited 90deg CW rotation
+        // (using a 90deg CCW rotation).
+        return (font->platformData().isVerticalAnyUpright() && font->verticalData()) ?
+            CCWRotation : NoRotation;
+    }
+
+    void appendRun(unsigned start, unsigned count, const SimpleFontData* fontData)
+    {
+        SkPaint paint;
+        fontData->platformData().setupPaint(&paint, m_deviceScaleFactor, m_font);
+        paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+
+        const SkTextBlobBuilder::RunBuffer& buffer = m_hasVerticalOffsets
+            ? m_builder.allocRunPos(paint, count)
+            : m_builder.allocRunPosH(paint, count, 0);
+
+        const uint16_t* glyphs = m_buffer.glyphs(start);
+        const float* offsets = m_buffer.offsets(start);
+        std::copy(glyphs, glyphs + count, buffer.glyphs);
+
+        if (m_rotation == NoRotation) {
+            std::copy(offsets, offsets + (m_hasVerticalOffsets ? 2 * count : count), buffer.pos);
+        } else {
+            ASSERT(m_hasVerticalOffsets);
+
+            const float verticalBaselineXOffset = fontData->fontMetrics().floatAscent()
+                - fontData->fontMetrics().floatAscent(IdeographicBaseline);
+
+            // TODO(fmalita): why don't we apply this adjustment when building the glyph buffer?
+            for (unsigned i = 0; i < 2 * count; i += 2) {
+                buffer.pos[i] = SkFloatToScalar(offsets[i] + verticalBaselineXOffset);
+                buffer.pos[i + 1] = SkFloatToScalar(offsets[i + 1]);
+            }
+        }
+    }
+
+    const GlyphBuffer& m_buffer;
+    const Font* m_font;
+    const float m_deviceScaleFactor;
+    const bool m_hasVerticalOffsets;
+
+    SkTextBlobBuilder m_builder;
+    unsigned m_index;
+    unsigned m_blobCount;
+    BlobRotation m_rotation;
+};
+
+} // anonymous namespace
+
+void Font::drawGlyphBuffer(SkCanvas* canvas, const SkPaint& paint, const TextRunPaintInfo& runInfo,
+    const GlyphBuffer& glyphBuffer, const FloatPoint& point, float deviceScaleFactor) const
+{
+    GlyphBufferBloberizer bloberizer(glyphBuffer, this, deviceScaleFactor);
+    std::pair<RefPtr<const SkTextBlob>, BlobRotation> blob;
+
+    while (!bloberizer.done()) {
+        blob = bloberizer.next();
+        ASSERT(blob.first);
+
+        SkAutoCanvasRestore autoRestore(canvas, false);
+        if (blob.second == CCWRotation) {
+            canvas->save();
+
+            SkMatrix m;
+            m.setSinCos(-1, 0, point.x(), point.y());
+            canvas->concat(m);
+        }
+
+        canvas->drawTextBlob(blob.first.get(), point.x(), point.y(), paint);
+    }
+
+    // Cache results when
+    //   1) requested by clients, and
+    //   2) the glyph buffer is encoded as a single blob, and
+    //   3) the blob is not upright/rotated
+    if (runInfo.cachedTextBlob && bloberizer.blobCount() == 1 && blob.second == NoRotation) {
+        ASSERT(!*runInfo.cachedTextBlob);
+        *runInfo.cachedTextBlob = blob.first.release();
+        ASSERT(*runInfo.cachedTextBlob);
+    }
 }
 
 static inline FloatRect pixelSnappedSelectionRect(FloatRect rect)
@@ -637,45 +734,6 @@ int Font::emphasisMarkHeight(const AtomicString& mark) const
     return markFontData->fontMetrics().height();
 }
 
-void Font::drawGlyphs(SkCanvas* canvas, const SkPaint& paint, const SimpleFontData* font,
-    const GlyphBuffer& glyphBuffer, unsigned from, unsigned numGlyphs,
-    const FloatPoint& point, float deviceScaleFactor) const
-{
-    ASSERT(glyphBuffer.size() >= from + numGlyphs);
-
-    // We only ever reach this fallback code path when failing to build a text blob due to
-    // verticalAnyUpright text in the buffer => the buffer is guaranteed to store vertical offsets.
-    ASSERT(glyphBuffer.hasVerticalOffsets());
-
-    bool drawVertically = font->platformData().isVerticalAnyUpright() && font->verticalData();
-
-    SkAutoCanvasRestore autoRestore(canvas, false);
-    if (drawVertically) {
-        canvas->save();
-        canvas->concat(affineTransformToSkMatrix(AffineTransform(0, -1, 1, 0, point.x(), point.y())));
-        canvas->concat(affineTransformToSkMatrix(AffineTransform(1, 0, 0, 1, -point.x(), -point.y())));
-    }
-
-    const float verticalBaselineXOffset = drawVertically ? SkFloatToScalar(font->fontMetrics().floatAscent() - font->fontMetrics().floatAscent(IdeographicBaseline)) : 0;
-
-    Vector<SkPoint, 32> pos(numGlyphs);
-    for (unsigned i = 0; i < numGlyphs; i++) {
-        pos[i].set(
-            SkFloatToScalar(point.x() + verticalBaselineXOffset + glyphBuffer.xOffsetAt(from + i)),
-            SkFloatToScalar(point.y() + glyphBuffer.yOffsetAt(from + i)));
-    }
-
-    SkPaint fontPaint(paint);
-    font->platformData().setupPaint(&fontPaint, deviceScaleFactor, this);
-    fontPaint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-    canvas->drawPosText(glyphBuffer.glyphs(from), numGlyphs * sizeof(Glyph), pos.data(), fontPaint);
-}
-
-void Font::drawTextBlob(SkCanvas* canvas, const SkPaint& paint, const SkTextBlob* blob, const SkPoint& origin) const
-{
-    canvas->drawTextBlob(blob, origin.x(), origin.y(), paint);
-}
-
 float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* glyphBounds) const
 {
     CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
@@ -697,38 +755,6 @@ FloatRect Font::selectionRectForComplexText(const TextRun& run,
 {
     CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
     return shaper.selectionRect(this, run, point, height, from, to);
-}
-
-void Font::drawGlyphBuffer(SkCanvas* canvas, const SkPaint& paint, const TextRunPaintInfo& runInfo, const GlyphBuffer& glyphBuffer, const FloatPoint& point, float deviceScaleFactor) const
-{
-    if (glyphBuffer.isEmpty())
-        return;
-
-    // Always try to draw a text blob, even for uncacheable blobs.
-    TextBlobPtr uncacheableTextBlob;
-    TextBlobPtr& textBlob = runInfo.cachedTextBlob ? *runInfo.cachedTextBlob : uncacheableTextBlob;
-    textBlob = buildTextBlob(glyphBuffer);
-    if (textBlob) {
-        drawTextBlob(canvas, paint, textBlob.get(), point.data());
-        return;
-    }
-
-    // Draw each contiguous run of glyphs that use the same font data.
-    const SimpleFontData* fontData = glyphBuffer.fontDataAt(0);
-    unsigned lastFrom = 0;
-    unsigned nextGlyph;
-
-    for (nextGlyph = 0; nextGlyph < glyphBuffer.size(); ++nextGlyph) {
-        const SimpleFontData* nextFontData = glyphBuffer.fontDataAt(nextGlyph);
-
-        if (nextFontData != fontData) {
-            drawGlyphs(canvas, paint, fontData, glyphBuffer, lastFrom, nextGlyph - lastFrom, point, deviceScaleFactor);
-            lastFrom = nextGlyph;
-            fontData = nextFontData;
-        }
-    }
-
-    drawGlyphs(canvas, paint, fontData, glyphBuffer, lastFrom, nextGlyph - lastFrom, point, deviceScaleFactor);
 }
 
 float Font::floatWidthForSimpleText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* glyphBounds) const

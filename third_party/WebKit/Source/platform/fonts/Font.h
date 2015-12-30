@@ -30,7 +30,6 @@
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFallbackList.h"
 #include "platform/fonts/SimpleFontData.h"
-#include "platform/fonts/TextBlob.h"
 #include "platform/text/TabSize.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/TextPath.h"
@@ -42,7 +41,6 @@
 
 class SkCanvas;
 class SkPaint;
-class SkTextBlob;
 struct SkPoint;
 
 namespace blink {
@@ -124,10 +122,6 @@ private:
 
     // Returns the total advance.
     float buildGlyphBuffer(const TextRunPaintInfo&, GlyphBuffer&, const GlyphData* emphasisData = nullptr) const;
-    PassTextBlobPtr buildTextBlob(const GlyphBuffer&) const;
-    void drawGlyphs(SkCanvas*, const SkPaint&, const SimpleFontData*, const GlyphBuffer&,
-        unsigned from, unsigned numGlyphs, const FloatPoint&, float deviceScaleFactor) const;
-    void drawTextBlob(SkCanvas*, const SkPaint&, const SkTextBlob*, const SkPoint& origin) const;
     void drawGlyphBuffer(SkCanvas*, const SkPaint&, const TextRunPaintInfo&, const GlyphBuffer&, const FloatPoint&, float deviceScaleFactor) const;
     float floatWidthForSimpleText(const TextRun&, HashSet<const SimpleFontData*>* fallbackFonts = 0, FloatRect* glyphBounds = 0) const;
     int offsetForPositionForSimpleText(const TextRun&, float position, bool includePartialGlyphs) const;
