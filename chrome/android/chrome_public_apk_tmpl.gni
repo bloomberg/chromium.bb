@@ -37,7 +37,9 @@ template("chrome_public_apk_tmpl") {
     }
 
     if (chromium_linker_supported) {
-      use_chromium_linker = chrome_public_apk_use_chromium_linker
+      if (!defined(use_chromium_linker)) {
+        use_chromium_linker = chrome_public_apk_use_chromium_linker
+      }
 
       # TODO: Enable packed relocations for x64. See: b/20532404
       if (current_cpu != "x64") {
