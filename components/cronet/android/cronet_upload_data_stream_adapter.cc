@@ -5,6 +5,7 @@
 #include "components/cronet/android/cronet_upload_data_stream_adapter.h"
 
 #include <string>
+#include <utility>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -122,7 +123,7 @@ static jlong AttachUploadDataToRequest(
   scoped_ptr<CronetUploadDataStream> upload_data_stream(
       new CronetUploadDataStream(adapter, jlength));
 
-  request_adapter->SetUpload(upload_data_stream.Pass());
+  request_adapter->SetUpload(std::move(upload_data_stream));
 
   return reinterpret_cast<jlong>(adapter);
 }

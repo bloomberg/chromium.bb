@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "url_request_adapter.h"
+#include "components/cronet/android/url_request_adapter.h"
 
 #include <stddef.h>
 #include <string.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -62,14 +63,14 @@ void URLRequestAdapter::SetUploadContent(const char* bytes, int bytes_len) {
   scoped_ptr<net::UploadElementReader> reader(
       new net::UploadOwnedBytesElementReader(&data));
   upload_data_stream_ =
-      net::ElementsUploadDataStream::CreateWithReader(reader.Pass(), 0);
+      net::ElementsUploadDataStream::CreateWithReader(std::move(reader), 0);
 }
 
 void URLRequestAdapter::SetUploadChannel(JNIEnv* env, int64_t content_length) {
   scoped_ptr<net::UploadElementReader> reader(
       new WrappedChannelElementReader(delegate_, content_length));
   upload_data_stream_ =
-      net::ElementsUploadDataStream::CreateWithReader(reader.Pass(), 0);
+      net::ElementsUploadDataStream::CreateWithReader(std::move(reader), 0);
 }
 
 void URLRequestAdapter::DisableRedirects() {
@@ -163,7 +164,7 @@ void URLRequestAdapter::OnInitiateConnection() {
   }
 
   if (upload_data_stream_) {
-    url_request_->set_upload(upload_data_stream_.Pass());
+    url_request_->set_upload(std::move(upload_data_stream_));
   } else if (chunked_upload_) {
     url_request_->EnableChunkedUpload();
   }

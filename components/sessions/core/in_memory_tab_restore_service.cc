@@ -4,6 +4,7 @@
 
 #include "components/sessions/core/in_memory_tab_restore_service.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -13,7 +14,7 @@ namespace sessions {
 InMemoryTabRestoreService::InMemoryTabRestoreService(
     scoped_ptr<TabRestoreServiceClient> client,
     TabRestoreService::TimeFactory* time_factory)
-    : client_(client.Pass()),
+    : client_(std::move(client)),
       helper_(this, NULL, client_.get(), time_factory) {}
 
 InMemoryTabRestoreService::~InMemoryTabRestoreService() {}

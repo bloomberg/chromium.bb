@@ -4,6 +4,8 @@
 
 #include "components/cronet/android/cronet_in_memory_pref_store.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/values.h"
 
@@ -41,14 +43,14 @@ void CronetInMemoryPrefStore::SetValue(const std::string& key,
                                        scoped_ptr<base::Value> value,
                                        uint32_t flags) {
   DCHECK(value);
-  if (prefs_.SetValue(key, value.Pass()))
+  if (prefs_.SetValue(key, std::move(value)))
     ReportValueChanged(key, flags);
 }
 
 void CronetInMemoryPrefStore::SetValueSilently(const std::string& key,
                                                scoped_ptr<base::Value> value,
                                                uint32_t flags) {
-  prefs_.SetValue(key, value.Pass());
+  prefs_.SetValue(key, std::move(value));
 }
 
 void CronetInMemoryPrefStore::RemoveValue(const std::string& key,

@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <limits>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -126,7 +126,7 @@ void URLRequestContextAdapter::Initialize(
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
   network_thread_->StartWithOptions(options);
-  config_ = config.Pass();
+  config_ = std::move(config);
 }
 
 void URLRequestContextAdapter::InitRequestContextOnMainThread() {
@@ -153,10 +153,10 @@ void URLRequestContextAdapter::InitRequestContextOnNetworkThread() {
 
   context_builder.set_network_delegate(
       make_scoped_ptr(new BasicNetworkDelegate()));
-  context_builder.set_proxy_config_service(proxy_config_service_.Pass());
+  context_builder.set_proxy_config_service(std::move(proxy_config_service_));
   config_->ConfigureURLRequestContextBuilder(&context_builder, nullptr);
 
-  context_ = context_builder.Build().Pass();
+  context_ = context_builder.Build();
 
   if (config_->enable_sdch) {
     DCHECK(context_->sdch_manager());
@@ -306,8 +306,8 @@ void URLRequestContextAdapter::StartNetLogToFileHelper(
     write_to_file_observer_->set_capture_mode(
         net::NetLogCaptureMode::IncludeSocketBytes());
   }
-  write_to_file_observer_->StartObserving(context_->net_log(), file.Pass(),
-                                  nullptr, context_.get());
+  write_to_file_observer_->StartObserving(context_->net_log(), std::move(file),
+                                          nullptr, context_.get());
 }
 
 void URLRequestContextAdapter::StopNetLogHelper() {

@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cronet_url_request_adapter.h"
+#include "components/cronet/android/cronet_url_request_adapter.h"
 
 #include <limits>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -147,7 +148,7 @@ void CronetURLRequestAdapter::SetUpload(
     scoped_ptr<net::UploadDataStream> upload) {
   DCHECK(!context_->IsOnNetworkThread());
   DCHECK(!upload_);
-  upload_ = upload.Pass();
+  upload_ = std::move(upload);
 }
 
 void CronetURLRequestAdapter::Start(JNIEnv* env,
@@ -336,7 +337,7 @@ void CronetURLRequestAdapter::StartOnNetworkThread() {
   url_request_->SetExtraRequestHeaders(initial_request_headers_);
   url_request_->SetPriority(initial_priority_);
   if (upload_)
-    url_request_->set_upload(upload_.Pass());
+    url_request_->set_upload(std::move(upload_));
   url_request_->Start();
 }
 

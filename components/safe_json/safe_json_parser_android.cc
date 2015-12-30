@@ -4,6 +4,8 @@
 
 #include "components/safe_json/safe_json_parser_android.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/values.h"
@@ -45,7 +47,7 @@ void SafeJsonParserAndroid::OnSanitizationSuccess(
     return;
   }
 
-  success_callback_.Run(value.Pass());
+  success_callback_.Run(std::move(value));
 }
 
 void SafeJsonParserAndroid::OnSanitizationError(const std::string& error) {

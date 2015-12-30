@@ -5,6 +5,7 @@
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/i18n/string_compare.h"
 #include "base/metrics/histogram_macros.h"
@@ -105,9 +106,9 @@ void TranslateInfoBarDelegate::Create(
           original_language, target_language, error_type,
           triggered_from_menu))));
   if (old_delegate)
-    infobar_manager->ReplaceInfoBar(old_infobar, infobar.Pass());
+    infobar_manager->ReplaceInfoBar(old_infobar, std::move(infobar));
   else
-    infobar_manager->AddInfoBar(infobar.Pass());
+    infobar_manager->AddInfoBar(std::move(infobar));
 }
 
 void TranslateInfoBarDelegate::UpdateOriginalLanguage(

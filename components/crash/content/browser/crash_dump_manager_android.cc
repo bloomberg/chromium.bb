@@ -80,7 +80,7 @@ base::File CrashDumpManager::CreateMinidumpFile(int child_process_id) {
     DCHECK(!ContainsKey(child_process_id_to_minidump_path_, child_process_id));
     child_process_id_to_minidump_path_[child_process_id] = minidump_path;
   }
-  return minidump_file.Pass();
+  return minidump_file;
 }
 
 // static

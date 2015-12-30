@@ -6,8 +6,8 @@
 
 #include <limits.h>
 #include <stddef.h>
-
 #include <map>
+#include <utility>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
@@ -138,7 +138,7 @@ CronetURLRequestContextAdapter::CronetURLRequestContextAdapter(
     scoped_ptr<URLRequestContextConfig> context_config)
     : network_thread_(new base::Thread("network")),
       http_server_properties_manager_(nullptr),
-      context_config_(context_config.Pass()),
+      context_config_(std::move(context_config)),
       is_context_initialized_(false),
       default_load_flags_(net::LOAD_NORMAL) {
   base::Thread::Options options;
@@ -285,7 +285,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
     context_builder.SetInterceptors(std::move(interceptors));
   }
 #endif  // defined(DATA_REDUCTION_PROXY_SUPPORT)
-  context_builder.set_network_delegate(network_delegate.Pass());
+  context_builder.set_network_delegate(std::move(network_delegate));
   context_builder.set_net_log(net_log_.get());
 
   // Android provides a local HTTP proxy server that handles proxying when a PAC
@@ -293,7 +293,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   // local HTTP proxy. See: crbug.com/432539.
   context_builder.set_proxy_service(
       net::ProxyService::CreateWithoutProxyResolver(
-          proxy_config_service_.Pass(), net_log_.get()));
+          std::move(proxy_config_service_), net_log_.get()));
   config->ConfigureURLRequestContextBuilder(&context_builder, net_log_.get());
 
   // Set up pref file if storage path is specified.
@@ -310,7 +310,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
     scoped_refptr<PrefRegistrySimple> registry(new PrefRegistrySimple());
     registry->RegisterDictionaryPref(kHttpServerProperties,
                                      new base::DictionaryValue());
-    pref_service_ = factory.Create(registry.get()).Pass();
+    pref_service_ = factory.Create(registry.get());
 
     scoped_ptr<net::HttpServerPropertiesManager> http_server_properties_manager(
         new net::HttpServerPropertiesManager(pref_service_.get(),
@@ -319,7 +319,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
     http_server_properties_manager->InitializeOnNetworkThread();
     http_server_properties_manager_ = http_server_properties_manager.get();
     context_builder.SetHttpServerProperties(
-        http_server_properties_manager.Pass());
+        std::move(http_server_properties_manager));
   }
 
   // Explicitly disable the persister for Cronet to avoid persistence of dynamic
@@ -327,7 +327,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   // of HPKP by specifying transport_security_persister_path in the future.
   context_builder.set_transport_security_persister_path(base::FilePath());
 
-  context_ = context_builder.Build().Pass();
+  context_ = context_builder.Build();
 
   default_load_flags_ = net::LOAD_DO_NOT_SAVE_COOKIES |
                         net::LOAD_DO_NOT_SEND_COOKIES;
@@ -499,8 +499,8 @@ void CronetURLRequestContextAdapter::StartNetLogToFileOnNetworkThread(
     write_to_file_observer_->set_capture_mode(
         net::NetLogCaptureMode::IncludeSocketBytes());
   }
-  write_to_file_observer_->StartObserving(context_->net_log(), file.Pass(),
-                                  nullptr, context_.get());
+  write_to_file_observer_->StartObserving(context_->net_log(), std::move(file),
+                                          nullptr, context_.get());
 }
 
 void CronetURLRequestContextAdapter::StopNetLogOnNetworkThread() {
@@ -641,7 +641,7 @@ static jlong CreateRequestContextAdapter(JNIEnv* env,
       reinterpret_cast<URLRequestContextConfig*>(jconfig));
 
   CronetURLRequestContextAdapter* context_adapter =
-      new CronetURLRequestContextAdapter(context_config.Pass());
+      new CronetURLRequestContextAdapter(std::move(context_config));
   return reinterpret_cast<jlong>(context_adapter);
 }
 

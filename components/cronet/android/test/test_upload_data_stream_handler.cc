@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "test_upload_data_stream_handler.h"
+#include "components/cronet/android/test/test_upload_data_stream_handler.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -26,7 +26,7 @@ TestUploadDataStreamHandler::TestUploadDataStreamHandler(
       read_callback_invoked_(false),
       bytes_read_(0),
       network_thread_(new base::Thread("network")) {
-  upload_data_stream_ = upload_data_stream.Pass();
+  upload_data_stream_ = std::move(upload_data_stream);
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
   network_thread_->StartWithOptions(options);
@@ -43,7 +43,7 @@ void TestUploadDataStreamHandler::Destroy(
   DCHECK(!network_thread_->task_runner()->BelongsToCurrentThread());
   // Stick network_thread_ in a local, so |this| may be destroyed from the
   // network thread before the network thread is destroyed.
-  scoped_ptr<base::Thread> network_thread = network_thread_.Pass();
+  scoped_ptr<base::Thread> network_thread = std::move(network_thread_);
   network_thread->task_runner()->DeleteSoon(FROM_HERE, this);
   // Deleting thread stops it after all tasks are completed.
   network_thread.reset();
@@ -183,7 +183,7 @@ static jlong CreateTestUploadDataStreamHandler(
   scoped_ptr<net::UploadDataStream> upload_data_stream(
       reinterpret_cast<net::UploadDataStream*>(jupload_data_stream));
   TestUploadDataStreamHandler* handler = new TestUploadDataStreamHandler(
-      upload_data_stream.Pass(), env, jtest_upload_data_stream_handler);
+      std::move(upload_data_stream), env, jtest_upload_data_stream_handler);
   return reinterpret_cast<jlong>(handler);
 }
 

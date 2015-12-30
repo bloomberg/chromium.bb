@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "native_test_server.h"
+#include "components/cronet/android/test/native_test_server.h"
 
 #include <string>
+#include <utility>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -68,7 +69,7 @@ scoped_ptr<net::test_server::RawHttpResponse> ConstructResponseBasedOnFile(
   DCHECK(read_headers);
   scoped_ptr<net::test_server::RawHttpResponse> http_response(
       new net::test_server::RawHttpResponse(headers_contents, file_contents));
-  return http_response.Pass();
+  return http_response;
 }
 
 scoped_ptr<net::test_server::HttpResponse> NativeTestServerRequestHandler(
@@ -84,7 +85,7 @@ scoped_ptr<net::test_server::HttpResponse> NativeTestServerRequestHandler(
     } else {
       response->set_content("Request has no body. :(");
     }
-    return response.Pass();
+    return std::move(response);
   }
 
   if (base::StartsWith(request.relative_url, kEchoHeaderPath,
@@ -96,23 +97,23 @@ scoped_ptr<net::test_server::HttpResponse> NativeTestServerRequestHandler(
     } else {
       response->set_content("Header not found. :(");
     }
-    return response.Pass();
+    return std::move(response);
   }
 
   if (request.relative_url == kEchoAllHeadersPath) {
     response->set_content(request.all_headers);
-    return response.Pass();
+    return std::move(response);
   }
 
   if (request.relative_url == kEchoMethodPath) {
     response->set_content(request.method_string);
-    return response.Pass();
+    return std::move(response);
   }
 
   if (request.relative_url == kRedirectToEchoBodyPath) {
     response->set_code(net::HTTP_TEMPORARY_REDIRECT);
     response->AddCustomHeader("Location", kEchoBodyPath);
-    return response.Pass();
+    return std::move(response);
   }
 
   // Unhandled requests result in the Embedded test server sending a 404.
@@ -131,7 +132,7 @@ scoped_ptr<net::test_server::HttpResponse> SdchRequestHandler(
                        base::CompareCase::SENSITIVE)) {
     base::FilePath file_path = dir_path.Append("sdch/index");
     scoped_ptr<net::test_server::RawHttpResponse> response =
-        ConstructResponseBasedOnFile(file_path).Pass();
+        ConstructResponseBasedOnFile(file_path);
     // Check for query params to see which dictionary to advertise.
     // For instance, ?q=dictionaryA will make the server advertise dictionaryA.
     GURL url = g_test_server->GetURL(request.relative_url);
@@ -146,7 +147,7 @@ scoped_ptr<net::test_server::HttpResponse> SdchRequestHandler(
         response->AddHeader(base::StringPrintf(
             "Get-Dictionary: %s%s", kSdchDictPath, dictionary.c_str()));
     }
-    return response.Pass();
+    return std::move(response);
   }
 
   if (base::StartsWith(request.relative_url, kSdchTestPath,
@@ -155,13 +156,13 @@ scoped_ptr<net::test_server::HttpResponse> SdchRequestHandler(
     if (avail_dictionary_header != request.headers.end()) {
       base::FilePath file_path = dir_path.Append(
           "sdch/" + avail_dictionary_header->second + "_encoded");
-      return ConstructResponseBasedOnFile(file_path).Pass();
+      return ConstructResponseBasedOnFile(file_path);
     }
     scoped_ptr<net::test_server::BasicHttpResponse> response(
         new net::test_server::BasicHttpResponse());
     response->set_content_type("text/plain");
     response->set_content("Sdch is not used.\n");
-    return response.Pass();
+    return std::move(response);
   }
 
   // Unhandled requests result in the Embedded test server sending a 404.

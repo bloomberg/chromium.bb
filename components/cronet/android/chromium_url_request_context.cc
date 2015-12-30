@@ -5,6 +5,7 @@
 #include "components/cronet/android/chromium_url_request_context.h"
 
 #include <string>
+#include <utility>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -80,7 +81,7 @@ static jlong CreateRequestContextAdapter(
   URLRequestContextAdapter* context_adapter = new URLRequestContextAdapter(
       new JniURLRequestContextAdapterDelegate(env, jcaller), user_agent);
   context_adapter->AddRef();  // Hold onto this ref-counted object.
-  context_adapter->Initialize(context_config.Pass());
+  context_adapter->Initialize(std::move(context_config));
   return reinterpret_cast<jlong>(context_adapter);
 }
 

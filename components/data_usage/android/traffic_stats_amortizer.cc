@@ -6,6 +6,7 @@
 
 #include <algorithm>  // For std::min.
 #include <cmath>      // For std::modf.
+#include <utility>
 
 #include "base/location.h"
 #include "base/metrics/histogram_base.h"
@@ -149,7 +150,7 @@ void TrafficStatsAmortizer::AmortizeDataUse(
   // identical except for byte counts and have the same callback.
   buffered_data_use_.push_back(
       std::pair<scoped_ptr<DataUse>, AmortizationCompleteCallback>(
-          data_use.Pass(), callback));
+          std::move(data_use), callback));
 
   AddPreAmortizationBytes(tx_bytes, rx_bytes);
 }
@@ -171,8 +172,8 @@ TrafficStatsAmortizer::TrafficStatsAmortizer(
     const base::TimeDelta& traffic_stats_query_delay,
     const base::TimeDelta& max_amortization_delay,
     size_t max_data_use_buffer_size)
-    : tick_clock_(tick_clock.Pass()),
-      traffic_stats_query_timer_(traffic_stats_query_timer.Pass()),
+    : tick_clock_(std::move(tick_clock)),
+      traffic_stats_query_timer_(std::move(traffic_stats_query_timer)),
       traffic_stats_query_delay_(traffic_stats_query_delay),
       max_amortization_delay_(max_amortization_delay),
       max_data_use_buffer_size_(max_data_use_buffer_size),
@@ -328,7 +329,7 @@ void TrafficStatsAmortizer::AmortizeNow() {
 
   // Pass post-amortization DataUse objects to their respective callbacks.
   for (auto& data_use_buffer_pair : data_use_sequence)
-    data_use_buffer_pair.second.Run(data_use_buffer_pair.first.Pass());
+    data_use_buffer_pair.second.Run(std::move(data_use_buffer_pair.first));
 }
 
 }  // namespace android

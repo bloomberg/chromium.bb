@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -107,8 +107,8 @@ class TestTrafficStatsAmortizer : public TrafficStatsAmortizer {
  public:
   TestTrafficStatsAmortizer(scoped_ptr<base::TickClock> tick_clock,
                             scoped_ptr<base::Timer> traffic_stats_query_timer)
-      : TrafficStatsAmortizer(tick_clock.Pass(),
-                              traffic_stats_query_timer.Pass(),
+      : TrafficStatsAmortizer(std::move(tick_clock),
+                              std::move(traffic_stats_query_timer),
                               kTrafficStatsQueryDelay,
                               kMaxAmortizationDelay,
                               kMaxDataUseBufferSize),

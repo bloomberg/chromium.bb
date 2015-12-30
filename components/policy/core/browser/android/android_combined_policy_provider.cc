@@ -46,7 +46,7 @@ void AndroidCombinedPolicyProvider::FlushPolicies(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   initialized_ = true;
-  UpdatePolicy(policy_converter_->GetPolicyBundle().Pass());
+  UpdatePolicy(policy_converter_->GetPolicyBundle());
 }
 
 // static

@@ -4,6 +4,8 @@
 
 #include "components/cronet/url_request_context_config.h"
 
+#include <utility>
+
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -55,7 +57,7 @@ void ParseAndSetExperimentalOptions(
   }
 
   scoped_ptr<base::DictionaryValue> dict =
-      base::DictionaryValue::From(options.Pass());
+      base::DictionaryValue::From(std::move(options));
 
   if (!dict) {
     DCHECK(false) << "Experimental options string is not a dictionary: "
@@ -200,7 +202,7 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
                                  net_log);
 
   if (mock_cert_verifier)
-    context_builder->SetCertVerifier(mock_cert_verifier.Pass());
+    context_builder->SetCertVerifier(std::move(mock_cert_verifier));
   // TODO(mef): Use |config| to set cookies.
 }
 
