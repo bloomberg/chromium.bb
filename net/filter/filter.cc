@@ -28,6 +28,7 @@
 #include "base/values.h"
 #include "net/base/io_buffer.h"
 #include "net/base/sdch_net_log_params.h"
+#include "net/filter/brotli_filter.h"
 #include "net/filter/gzip_filter.h"
 #include "net/filter/sdch_filter.h"
 #include "net/url_request/url_request_context.h"
@@ -38,6 +39,7 @@ namespace net {
 namespace {
 
 // Filter types (using canonical lower case only):
+const char kBrotli[]       = "br";
 const char kDeflate[]      = "deflate";
 const char kGZip[]         = "gzip";
 const char kXGZip[]        = "x-gzip";
@@ -62,6 +64,8 @@ void LogSdchProblem(const FilterContext& filter_context,
 
 std::string FilterTypeAsString(Filter::FilterType type_id) {
   switch (type_id) {
+    case Filter::FILTER_TYPE_BROTLI:
+      return "FILTER_TYPE_BROTLI";
     case Filter::FILTER_TYPE_DEFLATE:
       return "FILTER_TYPE_DEFLATE";
     case Filter::FILTER_TYPE_GZIP:
@@ -184,7 +188,9 @@ bool Filter::FlushStreamBuffer(int stream_data_len) {
 Filter::FilterType Filter::ConvertEncodingToType(
     const std::string& filter_type) {
   FilterType type_id;
-  if (base::LowerCaseEqualsASCII(filter_type, kDeflate)) {
+  if (base::LowerCaseEqualsASCII(filter_type, kBrotli)) {
+    type_id = FILTER_TYPE_BROTLI;
+  } else if (base::LowerCaseEqualsASCII(filter_type, kDeflate)) {
     type_id = FILTER_TYPE_DEFLATE;
   } else if (base::LowerCaseEqualsASCII(filter_type, kGZip) ||
              base::LowerCaseEqualsASCII(filter_type, kXGZip)) {
@@ -350,6 +356,16 @@ Filter::FilterStatus Filter::CopyOut(char* dest_buffer, int* dest_len) {
 }
 
 // static
+Filter* Filter::InitBrotliFilter(FilterType type_id, int buffer_size) {
+  scoped_ptr<Filter> brotli_filter(CreateBrotliFilter(type_id));
+  if (!brotli_filter.get())
+    return nullptr;
+
+  brotli_filter->InitBuffer(buffer_size);
+  return brotli_filter.release();
+}
+
+// static
 Filter* Filter::InitGZipFilter(FilterType type_id, int buffer_size) {
   scoped_ptr<GZipFilter> gz_filter(new GZipFilter(type_id));
   gz_filter->InitBuffer(buffer_size);
@@ -372,6 +388,9 @@ Filter* Filter::PrependNewFilter(FilterType type_id,
                                  Filter* filter_list) {
   scoped_ptr<Filter> first_filter;  // Soon to be start of chain.
   switch (type_id) {
+    case FILTER_TYPE_BROTLI:
+      first_filter.reset(InitBrotliFilter(type_id, buffer_size));
+      break;
     case FILTER_TYPE_GZIP_HELPING_SDCH:
     case FILTER_TYPE_DEFLATE:
     case FILTER_TYPE_GZIP:

@@ -603,30 +603,37 @@ void URLRequestHttpJob::AddExtraHeaders() {
       }
     }
 
+    // Advertise "br" encoding only if transferred data is opaque to proxy.
+    bool advertise_brotli = false;
+    const HttpNetworkSession::Params* network_session_params =
+        request()->context()->GetNetworkSessionParams();
+    if (network_session_params && network_session_params->enable_brotli)
+      advertise_brotli = request()->url().SchemeIsCryptographic();
+
     // Supply Accept-Encoding headers first so that it is more likely that they
     // will be in the first transmitted packet. This can sometimes make it
     // easier to filter and analyze the streams to assure that a proxy has not
     // damaged these headers. Some proxies deliberately corrupt Accept-Encoding
     // headers.
-    if (!advertise_sdch) {
-      // Tell the server what compression formats we support (other than SDCH).
+    std::string advertised_encodings = "gzip, deflate";
+    if (advertise_sdch)
+      advertised_encodings += ", sdch";
+    if (advertise_brotli)
+      advertised_encodings += ", br";
+    // Tell the server what compression formats are supported.
+    request_info_.extra_headers.SetHeader(HttpRequestHeaders::kAcceptEncoding,
+                                          advertised_encodings);
+
+    if (dictionaries_advertised_) {
       request_info_.extra_headers.SetHeader(
-          HttpRequestHeaders::kAcceptEncoding, "gzip, deflate");
-    } else {
-      // Include SDCH in acceptable list.
-      request_info_.extra_headers.SetHeader(
-          HttpRequestHeaders::kAcceptEncoding, "gzip, deflate, sdch");
-      if (dictionaries_advertised_) {
-        request_info_.extra_headers.SetHeader(
-            kAvailDictionaryHeader,
-            dictionaries_advertised_->GetDictionaryClientHashList());
-        // Since we're tagging this transaction as advertising a dictionary,
-        // we'll definitely employ an SDCH filter (or tentative sdch filter)
-        // when we get a response. When done, we'll record histograms via
-        // SDCH_DECODE or SDCH_PASSTHROUGH. Hence we need to record packet
-        // arrival times.
-        packet_timing_enabled_ = true;
-      }
+          kAvailDictionaryHeader,
+          dictionaries_advertised_->GetDictionaryClientHashList());
+      // Since we're tagging this transaction as advertising a dictionary,
+      // we'll definitely employ an SDCH filter (or tentative sdch filter)
+      // when we get a response. When done, we'll record histograms via
+      // SDCH_DECODE or SDCH_PASSTHROUGH. Hence we need to record packet
+      // arrival times.
+      packet_timing_enabled_ = true;
     }
   }
 

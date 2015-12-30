@@ -451,11 +451,16 @@ component("net") {
       "base/net_string_util_icu.cc",
       "base/net_util_icu.cc",
     ]
+
+    # Brotli support.
+    deps += [ "//third_party/brotli" ]
+    sources += [ "filter/brotli_filter.cc" ]
   }
 }
 
 if (is_android) {
-  # Same as net, but with ICU, file, ftp, and websocket support stripped.
+  # Same as net, but with brotli encoding, ICU, file, ftp, and websocket
+  # support stripped.
   component("net_small") {
     sources = net_shared_sources
 
@@ -484,6 +489,9 @@ if (is_android) {
       "base/net_string_util_icu_alternatives_android.cc",
       "base/net_string_util_icu_alternatives_android.h",
     ]
+
+    # Disable Brotli support.
+    sources += [ "filter/brotli_filter_disabled.cc" ]
   }
 }
 
@@ -1620,6 +1628,7 @@ test("net_unittests") {
       "disk_cache/blockfile/block_files_unittest.cc",
 
       # Need to read input data files.
+      "filter/brotli_filter_unittest.cc",
       "filter/gzip_filter_unittest.cc",
       "socket/ssl_server_socket_unittest.cc",
       "spdy/fuzzing/hpack_fuzz_util_test.cc",

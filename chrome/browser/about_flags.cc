@@ -2085,6 +2085,11 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_EXPERIMENTAL_FRAMEWORK_DESCRIPTION,
      kOsAll,
      FEATURE_VALUE_TYPE(features::kExperimentalFramework)},
+    {"enable-brotli",
+     IDS_FLAGS_ENABLE_BROTLI_NAME,
+     IDS_FLAGS_ENABLE_BROTLI_DESCRIPTION,
+     kOsAll,
+     FEATURE_VALUE_TYPE(features::kBrotliEncoding)},
 #if defined(OS_ANDROID)
     {"enable-unified-media-pipeline",
      IDS_FLAGS_ENABLE_UNIFIED_MEDIA_PIPELINE_NAME,

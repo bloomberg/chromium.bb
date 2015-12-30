@@ -5113,18 +5113,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Material Design version of chrome://policy -->
       <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_POLICY_PAGE_NAME" desc="Name for the flag to enable the material design policy page.">
-        Enable Material Design policy page
+          Enable Material Design policy page
       </message>
       <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_POLICY_PAGE_DESCRIPTION" desc="Description for the flag to enable the material design policy page.">
-        If enabled, the chrome://md-policy URL loads the Material Design policy page.
+          If enabled, the chrome://md-policy URL loads the Material Design policy page.
       </message>
 
       <!-- Material Design version of chrome://downloads -->
       <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_DOWNLOADS_NAME" desc="Name for the flag to enable the material design downloads page.">
-        Enable Material Design downloads
+          Enable Material Design downloads
       </message>
       <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_DOWNLOADS_DESCRIPTION" desc="Description for the flag to enable the material design downloads page.">
-        If enabled, the chrome://downloads/ URL loads the Material Design downloads page.
+          If enabled, the chrome://downloads/ URL loads the Material Design downloads page.
       </message>
 
       <!-- Material Design version of chrome://history -->
@@ -14763,6 +14763,13 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         If enabled, a tab switcher will show even when 'merge tabs and apps' option is on in the settings.
       </message>
     </if>
+
+      <message name="IDS_FLAGS_ENABLE_BROTLI_NAME" desc="Title for the flag to enable Brotli Content-Encoding.">
+        Brotli Content-Encoding.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_BROTLI_DESCRIPTION" desc="Description for the flag to enable Brotli Content-Encoding.">
+        Enable Brotli Content-Encoding support.
+      </message>
 
     </messages>
   </release>

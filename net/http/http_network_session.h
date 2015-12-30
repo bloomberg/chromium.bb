@@ -115,6 +115,9 @@ class NET_EXPORT HttpNetworkSession
     // Enables NPN support.  Note that ALPN is always enabled.
     bool enable_npn;
 
+    // Enables Brotli Content-Encoding support.
+    bool enable_brotli;
+
     // Enables QUIC support.
     bool enable_quic;
     // Enables QUIC for proxies.

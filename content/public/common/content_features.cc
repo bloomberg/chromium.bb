@@ -9,6 +9,11 @@ namespace features {
 
 // All features in alphabetical order.
 
+// Enables brotli "Accept-Encoding" advertising and "Content-Encoding" support.
+// Brotli format specification: http://www.ietf.org/id/draft-alakuijala-brotli
+const base::Feature kBrotliEncoding = {
+    "brotli-encoding", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Downloads resumption will be controllable via a flag until it's enabled
 // permanently. See https://crbug.com/7648
 const base::Feature kDownloadResumption{"DownloadResumption",

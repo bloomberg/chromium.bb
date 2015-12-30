@@ -16,6 +16,7 @@ namespace features {
 
 // All features in alphabetical order. The features should be documented
 // alongside the definition of their values in the .cc file.
+CONTENT_EXPORT extern const base::Feature kBrotliEncoding;
 CONTENT_EXPORT extern const base::Feature kDownloadResumption;
 CONTENT_EXPORT extern const base::Feature kExperimentalFramework;
 

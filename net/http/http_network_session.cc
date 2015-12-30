@@ -99,6 +99,7 @@ HttpNetworkSession::Params::Params()
       use_alternative_services(false),
       alternative_service_probability_threshold(1),
       enable_npn(true),
+      enable_brotli(false),
       enable_quic(false),
       enable_quic_for_proxies(false),
       enable_quic_port_selection(true),

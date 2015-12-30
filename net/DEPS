@@ -11,9 +11,10 @@ include_rules = [
   "+sdch/open-vcdiff",
   "+v8",
 
-  # Most of net should not depend on icu, to keep size down when built as a
-  # library.
+  # Most of net should not depend on icu, and brotli to keep size down when
+  # built as a library.
   "-base/i18n",
+  "-third_party/brotli",
   "-third_party/icu",
 ]
 
@@ -55,6 +56,10 @@ specific_include_rules = {
 
   "run_all_unittests\.cc": [
     "+third_party/mojo/src/mojo/edk",
+  ],
+
+  "brotli_filter\.cc": [
+    "+third_party/brotli",
   ],
 }
 

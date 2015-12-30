@@ -68930,6 +68930,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1084055006" label="disable-web-notification-custom-layouts"/>
   <int value="-1078093206" label="ash-debug-shortcuts"/>
   <int value="-1077752943" label="enable-password-generation"/>
+  <int value="-1075156797" label="enable-brotli"/>
   <int value="-1075089382" label="enable-physical-web"/>
   <int value="-1062119671" label="enable-password-force-saving"/>
   <int value="-1056310158" label="disable-memory-pressure-chromeos"/>
@@ -69304,6 +69305,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1862207743" label="enable-android-spellchecker"/>
   <int value="1865799183" label="javascript-harmony"/>
   <int value="1881036528" label="disable-multilingual-spellchecker"/>
+  <int value="1881174782" label="disable-brotli"/>
   <int value="1891210939" label="enable-blink-features"/>
   <int value="1892201400" label="enable-password-separated-signin-flow"/>
   <int value="1896456311" label="enable-password-save-in-page-navigation"/>

@@ -215,6 +215,8 @@ class IOThread : public content::BrowserThreadDelegate {
 
     Optional<bool> enable_npn;
 
+    Optional<bool> enable_brotli;
+
     Optional<bool> enable_quic;
     Optional<bool> enable_quic_for_proxies;
     Optional<bool> enable_quic_port_selection;

@@ -16,6 +16,12 @@ namespace net {
 
 namespace {
 
+// Data encoded in kBrotliHelloData.
+const char kBrotliDecodedHelloData[] = "hello, world!\n";
+// kBrotliDecodedHelloData encoded with brotli.
+const char kBrotliHelloData[] =
+    "\033\015\0\0\244\024\102\152\020\111\152\072\235\126\034";
+
 // This is a header that signals the end of the data.
 const char kGzipData[] = "\x1f\x08b\x08\0\0\0\0\0\0\3\3\0\0\0\0\0\0\0\0";
 const char kGzipDataWithName[] =
@@ -45,6 +51,13 @@ void BigGZipServer(const HttpRequestInfo* request,
                    std::string* response_data) {
   response_data->assign(kGzipDataWithName, sizeof(kGzipDataWithName));
   response_data->insert(10, 64 * 1024, 'a');
+}
+
+void BrotliHelloServer(const HttpRequestInfo* request,
+                       std::string* response_status,
+                       std::string* response_headers,
+                       std::string* response_data) {
+  response_data->assign(kBrotliHelloData, sizeof(kBrotliHelloData) - 1);
 }
 
 const MockTransaction kGZip_Transaction = {
@@ -110,6 +123,15 @@ const MockTransaction kEmptyBodyGzip_Transaction = {
     nullptr,
     0,
     0,
+    OK,
+};
+
+const MockTransaction kBrotli_Slow_Transaction = {
+    "http://www.google.com/brotli", "GET", base::Time(), "", LOAD_NORMAL,
+    "HTTP/1.1 200 OK",
+    "Cache-Control: max-age=10000\n"
+    "Content-Encoding: br\n",
+    base::Time(), "", TEST_MODE_SLOW_READ, &BrotliHelloServer, nullptr, 0, 0,
     OK,
 };
 
@@ -272,6 +294,29 @@ TEST(URLRequestJob, SlowFilterRead) {
   EXPECT_TRUE(network_layer.done_reading_called());
 
   RemoveMockTransaction(&kGzip_Slow_Transaction);
+}
+
+TEST(URLRequestJob, SlowBrotliRead) {
+  MockNetworkLayer network_layer;
+  TestURLRequestContext context;
+  context.set_http_transaction_factory(&network_layer);
+
+  TestDelegate d;
+  scoped_ptr<URLRequest> req(context.CreateRequest(
+      GURL(kBrotli_Slow_Transaction.url), DEFAULT_PRIORITY, &d));
+  AddMockTransaction(&kBrotli_Slow_Transaction);
+
+  req->set_method("GET");
+  req->Start();
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(d.request_failed());
+  EXPECT_EQ(200, req->GetResponseCode());
+  EXPECT_EQ(kBrotliDecodedHelloData, d.data_received());
+  EXPECT_TRUE(network_layer.done_reading_called());
+
+  RemoveMockTransaction(&kBrotli_Slow_Transaction);
 }
 
 }  // namespace net

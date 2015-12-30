@@ -56,6 +56,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
 #include "net/base/external_estimate_provider.h"
@@ -844,6 +845,8 @@ void IOThread::Init() {
           switches::kEnableUserAlternateProtocolPorts)) {
     globals_->enable_user_alternate_protocol_ports = true;
   }
+  globals_->enable_brotli.set(
+      base::FeatureList::IsEnabled(features::kBrotliEncoding));
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
   // is fixed.
   tracked_objects::ScopedTracker tracking_profile13(
@@ -1137,6 +1140,8 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->alternative_service_probability_threshold);
 
   globals.enable_npn.CopyToIfSet(&params->enable_npn);
+
+  globals.enable_brotli.CopyToIfSet(&params->enable_brotli);
 
   globals.enable_quic.CopyToIfSet(&params->enable_quic);
   globals.enable_quic_for_proxies.CopyToIfSet(&params->enable_quic_for_proxies);

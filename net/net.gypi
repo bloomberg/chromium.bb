@@ -1418,6 +1418,7 @@
       'dns/single_request_host_resolver_unittest.cc',
       'extras/sqlite/sqlite_channel_id_store_unittest.cc',
       'extras/sqlite/sqlite_persistent_cookie_store_unittest.cc',
+      'filter/brotli_filter_unittest.cc',
       'filter/filter_unittest.cc',
       'filter/gzip_filter_unittest.cc',
       'filter/mock_filter_context.cc',

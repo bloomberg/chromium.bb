@@ -107,6 +107,7 @@
       'target_name': 'net',
       'dependencies': [
         '../base/base.gyp:base_i18n',
+        '../third_party/brotli/brotli.gyp:brotli',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
@@ -117,6 +118,7 @@
         'base/filename_util_icu.cc',
         'base/net_string_util_icu.cc',
         'base/net_util_icu.cc',
+        'filter/brotli_filter.cc',
       ],
       'includes': [ 'net_common.gypi' ],
     },
@@ -384,6 +386,7 @@
               'disk_cache/backend_unittest.cc',
               'disk_cache/blockfile/block_files_unittest.cc',
               # Need to read input data files.
+              'filter/brotli_filter_unittest.cc',
               'filter/gzip_filter_unittest.cc',
               # Need TestServer.
               "cert_net/cert_net_fetcher_impl_unittest.cc",
@@ -1357,6 +1360,7 @@
             'DISABLE_FTP_SUPPORT=1',
           ],
           'sources': [
+            'filter/brotli_filter_disabled.cc',
             'base/net_string_util_icu_alternatives_android.cc',
             'base/net_string_util_icu_alternatives_android.h',
           ],
