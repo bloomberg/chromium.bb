@@ -1318,7 +1318,7 @@ crbug.com/571376 http/tests/webfont/font-display-intervention.html [ Pass Failur
 crbug.com/570899 [ Mac10.6 ] virtual/rootlayerscrolls/fast/scrolling/background-paint-scrolled.html [ Failure ]
 crbug.com/571361 [ Mac10.6 ] virtual/rootlayerscrolls/fast/scrolling/background-paint-scrolled-out-and-in.html [ Failure ]
 
-crbug.com/571590 fast/repaint/block-layout-inline-children-replaced.html [ Pass Failure ]
+crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Pass Failure ]
 
 crbug.com/571709 http/tests/inspector/resource-tree/resource-request-content-while-loading.html [ Timeout Pass ]
 crbug.com/451577 http/tests/inspector/resource-tree/resource-tree-crafted-frame-add.html [ Timeout Pass ]
