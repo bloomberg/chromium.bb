@@ -685,7 +685,9 @@ class IOThreadTestWithIOThreadObject : public testing::Test {
   scoped_ptr<IOThread> io_thread_;
 };
 
-TEST_F(IOThreadTestWithIOThreadObject, UpdateNegotiateDisableCnameLookup) {
+// https://crbug.com/570703
+TEST_F(IOThreadTestWithIOThreadObject,
+       DISABLED_UpdateNegotiateDisableCnameLookup) {
   // This test uses the kDisableAuthNegotiateCnameLookup to check that
   // the HttpAuthPreferences are correctly initialized and running on the
   // IO thread. The other preferences are tested by the HttpAuthPreferences
@@ -700,7 +702,8 @@ TEST_F(IOThreadTestWithIOThreadObject, UpdateNegotiateDisableCnameLookup) {
                  base::Unretained(this), true));
 }
 
-TEST_F(IOThreadTestWithIOThreadObject, UpdateEnableAuthNegotiatePort) {
+// https://crbug.com/570703
+TEST_F(IOThreadTestWithIOThreadObject, DISABLED_UpdateEnableAuthNegotiatePort) {
   pref_service()->SetBoolean(prefs::kEnableAuthNegotiatePort, false);
   RunOnIOThreadBlocking(
       base::Bind(&IOThreadTestWithIOThreadObject::CheckNegotiateEnablePort,
@@ -712,6 +715,7 @@ TEST_F(IOThreadTestWithIOThreadObject, UpdateEnableAuthNegotiatePort) {
 }
 
 // Flaky: https://crbug.com/570605.
+// https://crbug.com/570703
 TEST_F(IOThreadTestWithIOThreadObject, DISABLED_UpdateServerWhitelist) {
   GURL url("http://test.example.com");
 
@@ -726,7 +730,8 @@ TEST_F(IOThreadTestWithIOThreadObject, DISABLED_UpdateServerWhitelist) {
                  base::Unretained(this), true, url));
 }
 
-TEST_F(IOThreadTestWithIOThreadObject, UpdateDelegateWhitelist) {
+// https://crbug.com/570703
+TEST_F(IOThreadTestWithIOThreadObject, DISABLED_UpdateDelegateWhitelist) {
   GURL url("http://test.example.com");
 
   pref_service()->SetString(prefs::kAuthNegotiateDelegateWhitelist, "");
@@ -742,7 +747,9 @@ TEST_F(IOThreadTestWithIOThreadObject, UpdateDelegateWhitelist) {
 
 #if defined(OS_ANDROID)
 // AuthAndroidNegotiateAccountType is only used on Android.
-TEST_F(IOThreadTestWithIOThreadObject, UpdateAuthAndroidNegotiateAccountType) {
+// https://crbug.com/570703
+TEST_F(IOThreadTestWithIOThreadObject,
+       DISABLED_UpdateAuthAndroidNegotiateAccountType) {
   pref_service()->SetString(prefs::kAuthAndroidNegotiateAccountType, "acc1");
   RunOnIOThreadBlocking(base::Bind(
       &IOThreadTestWithIOThreadObject::CheckAuthAndroidNegoitateAccountType,
