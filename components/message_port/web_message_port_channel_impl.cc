@@ -34,7 +34,6 @@ void WebMessagePortChannelImpl::CreatePair(
   }
 
   *channel1 = new WebMessagePortChannelImpl(std::move(pipe1));
-  ;
   *channel2 = new WebMessagePortChannelImpl(std::move(pipe2));
 }
 

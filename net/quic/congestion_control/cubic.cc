@@ -70,7 +70,6 @@ float Cubic::Beta() const {
 void Cubic::Reset() {
   epoch_ = QuicTime::Zero();  // Reset time.
   app_limited_start_time_ = QuicTime::Zero();
-  ;
   last_update_time_ = QuicTime::Zero();  // Reset time.
   last_congestion_window_ = 0;
   last_max_congestion_window_ = 0;

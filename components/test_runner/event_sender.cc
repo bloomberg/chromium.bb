@@ -636,8 +636,6 @@ EventSenderBindings::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetProperty("forceLayoutOnEvents",
                    &EventSenderBindings::ForceLayoutOnEvents,
                    &EventSenderBindings::SetForceLayoutOnEvents)
-      .SetProperty("dragMode", &EventSenderBindings::IsDragMode,
-                   &EventSenderBindings::SetIsDragMode)
 #if defined(OS_WIN)
       .SetProperty("WM_KEYDOWN", &EventSenderBindings::WmKeyDown,
                    &EventSenderBindings::SetWmKeyDown)
@@ -654,10 +652,10 @@ EventSenderBindings::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetProperty("WM_SYSCHAR", &EventSenderBindings::WmSysChar,
                    &EventSenderBindings::SetWmSysChar)
       .SetProperty("WM_SYSDEADCHAR", &EventSenderBindings::WmSysDeadChar,
-                   &EventSenderBindings::SetWmSysDeadChar);
-#else
-      ;
+                   &EventSenderBindings::SetWmSysDeadChar)
 #endif
+      .SetProperty("dragMode", &EventSenderBindings::IsDragMode,
+                   &EventSenderBindings::SetIsDragMode);
 }
 
 void EventSenderBindings::EnableDOMUIEventLogging() {
@@ -996,7 +994,7 @@ void EventSenderBindings::SetMouseButtonState(gin::Arguments* args) {
     return;
   }
 
-  int modifiers = -1; // Default to the modifier implied by button_number
+  int modifiers = -1;  // Default to the modifier implied by button_number
   if (!args->PeekNext().IsEmpty()) {
     modifiers = GetKeyModifiersFromV8(args->isolate(), args->PeekNext());
   }
@@ -1493,7 +1491,7 @@ void EventSender::KeyDown(const std::string& code_str,
     event_down.modifiers |= WebInputEvent::ShiftKey;
 
   // See if KeyLocation argument is given.
-  switch(location) {
+  switch (location) {
   case DOMKeyLocationStandard:
     break;
   case DOMKeyLocationLeft:
@@ -1596,7 +1594,7 @@ std::vector<std::string> EventSender::ContextClick() {
 #if defined(OS_WIN)
   current_buttons_ &=
       ~GetWebMouseEventModifierForButton(WebMouseEvent::ButtonRight);
-  pressed_button_= WebMouseEvent::ButtonNone;
+  pressed_button_ = WebMouseEvent::ButtonNone;
 
   InitMouseEvent(WebInputEvent::MouseUp,
                  WebMouseEvent::ButtonRight,
@@ -2004,7 +2002,7 @@ void EventSender::MouseLeave() {
                  click_count_,
                  0,
                  &event);
-   HandleInputEventOnViewOrPopup(event);
+  HandleInputEventOnViewOrPopup(event);
 }
 
 
@@ -2047,7 +2045,7 @@ void EventSender::TrackpadScrollEnd() {
 }
 
 void EventSender::MouseScrollBy(gin::Arguments* args) {
-   WebMouseWheelEvent event;
+  WebMouseWheelEvent event;
   InitMouseWheelEvent(args, false, &event);
   HandleInputEventOnViewOrPopup(event);
 }
@@ -2096,8 +2094,9 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type,
         || touch_point->state == WebTouchPoint::StateCancelled) {
       touch_points_.erase(touch_points_.begin() + i);
       --i;
-    } else
+    } else {
       touch_point->state = WebTouchPoint::StateStationary;
+    }
   }
 }
 

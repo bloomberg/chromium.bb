@@ -286,8 +286,8 @@ TEST_F(MultiBufferTest, ReadAllAdvanceFirst) {
     unsigned char buffer[27];
     buffer[17] = 17;
     size_t to_read = std::min<size_t>(end - pos, 17);
-    while (AdvanceAll())
-      ;
+    while (AdvanceAll()) {
+    }
     int64_t bytes = reader.TryRead(buffer, to_read);
     EXPECT_GT(bytes, 0);
     EXPECT_EQ(buffer[17], 17);
@@ -316,8 +316,8 @@ TEST_F(MultiBufferTest, ReadAllAdvanceFirst_NeverDefer) {
     unsigned char buffer[27];
     buffer[17] = 17;
     size_t to_read = std::min<size_t>(end - pos, 17);
-    while (AdvanceAll())
-      ;
+    while (AdvanceAll()) {
+    }
     int64_t bytes = reader.TryRead(buffer, to_read);
     EXPECT_GT(bytes, 0);
     EXPECT_EQ(buffer[17], 17);
@@ -347,8 +347,8 @@ TEST_F(MultiBufferTest, ReadAllAdvanceFirst_NeverDefer2) {
     unsigned char buffer[27];
     buffer[17] = 17;
     size_t to_read = std::min<size_t>(end - pos, 17);
-    while (AdvanceAll())
-      ;
+    while (AdvanceAll()) {
+    }
     int64_t bytes = reader.TryRead(buffer, to_read);
     EXPECT_GT(bytes, 0);
     EXPECT_EQ(buffer[17], 17);
@@ -375,8 +375,8 @@ TEST_F(MultiBufferTest, LRUTest) {
   // Note, no pinning, all data should end up in LRU.
   EXPECT_EQ(current_size, lru_->Size());
   current_size += max_size;
-  while (AdvanceAll())
-    ;
+  while (AdvanceAll()) {
+  }
   EXPECT_EQ(current_size, lru_->Size());
   lru_->IncrementMaxSize(-max_size);
   lru_->Prune(3);

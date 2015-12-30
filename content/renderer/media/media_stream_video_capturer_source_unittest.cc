@@ -57,7 +57,6 @@ class MockVideoCapturerSource : public media::VideoCapturerSource {
     formats.push_back(kFormatLarge);
     callback.Run(formats);
   }
-
 };
 
 class MediaStreamVideoCapturerSourceTest : public testing::Test {
@@ -214,8 +213,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest,
       StartCapture(
           testing::Field(&media::VideoCaptureParams::resolution_change_policy,
                          media::RESOLUTION_POLICY_FIXED_ASPECT_RATIO),
-          _, _))
-      ;
+          _, _));
   blink::WebMediaStreamTrack track = StartSource();
   // When the track goes out of scope, the source will be stopped.
   EXPECT_CALL(mock_delegate(), StopCapture());
@@ -249,8 +247,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest,
       StartCapture(
           testing::Field(&media::VideoCaptureParams::resolution_change_policy,
                          media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT),
-          _, _))
-      ;
+          _, _));
   blink::WebMediaStreamTrack track = StartSource();
   // When the track goes out of scope, the source will be stopped.
   EXPECT_CALL(mock_delegate(), StopCapture());

@@ -281,7 +281,7 @@ void It2MeNativeMessagingHost::OnStateChanged(
       break;
 
     default:
-      ;
+      break;
   }
 
   SendMessageToClient(std::move(message));

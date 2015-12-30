@@ -40,8 +40,9 @@ std::string GetEncoded(const std::string& input) {
   base::MD5Digest digest;
   base::MD5Sum(input.c_str(), input.size(), &digest);
   std::string base64encoded;
-  base::Base64Encode(std::string((char*)digest.a, arraysize(digest.a)),
-                     &base64encoded);
+  base::Base64Encode(
+      std::string(reinterpret_cast<char*>(digest.a), arraysize(digest.a)),
+      &base64encoded);
   return base64encoded;
 }
 
@@ -98,9 +99,7 @@ void InitEnv() {
 
 namespace data_reduction_proxy {
 
-class DataReductionProxyTamperDetectionTest : public testing::Test {
-
-};
+using DataReductionProxyTamperDetectionTest = testing::Test;
 
 // Tests function ValidateChromeProxyHeader.
 TEST_F(DataReductionProxyTamperDetectionTest, ChromeProxy) {
@@ -709,7 +708,6 @@ TEST_F(DataReductionProxyTamperDetectionTest, CompressionRatio) {
     int original_content_length;
     int content_length;
     int compression_ratio;
-    ;
   } tests[] = {
       // Checks the correctness of histogram for Video
       {"HTTP/1.1 200 OK\n"
@@ -847,4 +845,4 @@ TEST_F(DataReductionProxyTamperDetectionTest, DetectAndReport) {
   }
 }
 
-} // namespace
+}  // namespace data_reduction_proxy

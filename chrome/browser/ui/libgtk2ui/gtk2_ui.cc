@@ -81,217 +81,191 @@ namespace libgtk2ui {
 namespace {
 
 class GtkThemeIconSource : public gfx::ImageSkiaSource {
-  public:
-    GtkThemeIconSource(int id, const char* icon, bool enabled)
-        : id_(id),
-          icon_(icon),
-          enabled_(enabled) {
-    }
+ public:
+  GtkThemeIconSource(int id, const char* icon, bool enabled)
+      : id_(id), icon_(icon), enabled_(enabled) {}
 
-    ~GtkThemeIconSource() override {}
+  ~GtkThemeIconSource() override {}
 
-    gfx::ImageSkiaRep GetImageForScale(float scale) override {
-      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-      SkBitmap default_icon = rb.GetImageNamed(id_).AsBitmap();
+  gfx::ImageSkiaRep GetImageForScale(float scale) override {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    SkBitmap default_icon = rb.GetImageNamed(id_).AsBitmap();
 
-      int scalew = default_icon.width() * scale;
-      int scaleh = default_icon.height() * scale;
+    int scalew = default_icon.width() * scale;
+    int scaleh = default_icon.height() * scale;
 
-      // Ask GTK to render the icon to a buffer, which we will steal from.
-      GtkIconTheme* icon_theme = gtk_icon_theme_get_default();
-      GdkPixbuf* gdk_icon = gtk_icon_theme_load_icon(
-          icon_theme,
-          icon_,
-          20 * scale,
-          (GtkIconLookupFlags)0,
-          NULL);
+    // Ask GTK to render the icon to a buffer, which we will steal from.
+    GtkIconTheme* icon_theme = gtk_icon_theme_get_default();
+    GdkPixbuf* gdk_icon = gtk_icon_theme_load_icon(
+        icon_theme, icon_, 20 * scale, (GtkIconLookupFlags)0, NULL);
 
-      // This can theoretically happen if an icon theme doesn't provide a
-      // specific image. This should realistically never happen, but I bet there
-      // are some theme authors who don't reliably provide all icons.
-      if (!gdk_icon)
-        return gfx::ImageSkiaRep();
+    // This can theoretically happen if an icon theme doesn't provide a
+    // specific image. This should realistically never happen, but I bet there
+    // are some theme authors who don't reliably provide all icons.
+    if (!gdk_icon)
+      return gfx::ImageSkiaRep();
 
 #if GTK_MAJOR_VERSION == 2
-      GtkIconSource* icon_source = gtk_icon_source_new();
-      gtk_icon_source_set_pixbuf(icon_source, gdk_icon);
+    GtkIconSource* icon_source = gtk_icon_source_new();
+    gtk_icon_source_set_pixbuf(icon_source, gdk_icon);
 
-      GdkPixbuf* temp = gtk_style_render_icon(
-          gtk_rc_get_style(NativeThemeGtk2::instance()->GetButton()),
-          icon_source,
-          GTK_TEXT_DIR_NONE,
-          enabled_ ? GTK_STATE_NORMAL : GTK_STATE_INSENSITIVE,
-          (GtkIconSize)-1,
-          NativeThemeGtk2::instance()->GetButton(),
-          NULL);
+    GdkPixbuf* temp = gtk_style_render_icon(
+        gtk_rc_get_style(NativeThemeGtk2::instance()->GetButton()), icon_source,
+        GTK_TEXT_DIR_NONE, enabled_ ? GTK_STATE_NORMAL : GTK_STATE_INSENSITIVE,
+        (GtkIconSize)-1, NativeThemeGtk2::instance()->GetButton(), NULL);
 
-      gtk_icon_source_free(icon_source);
-      g_object_unref(gdk_icon);
+    gtk_icon_source_free(icon_source);
+    g_object_unref(gdk_icon);
 
-      gdk_icon = temp;
+    gdk_icon = temp;
 #endif
 
-      SkBitmap retval;
-      retval.allocN32Pixels(scalew, scaleh);
-      retval.eraseColor(0);
+    SkBitmap retval;
+    retval.allocN32Pixels(scalew, scaleh);
+    retval.eraseColor(0);
 
-      const SkBitmap icon = GdkPixbufToImageSkia(gdk_icon);
-      g_object_unref(gdk_icon);
+    const SkBitmap icon = GdkPixbufToImageSkia(gdk_icon);
+    g_object_unref(gdk_icon);
 
-      SkCanvas canvas(retval);
-      SkPaint paint;
+    SkCanvas canvas(retval);
+    SkPaint paint;
 
 #if GTK_MAJOR_VERSION > 2
-      if (!enabled_)
-        paint.setAlpha(128);
+    if (!enabled_)
+      paint.setAlpha(128);
 #endif
 
-      canvas.drawBitmap(icon,
-                        (scalew / 2) - (icon.width() / 2),
-                        (scaleh / 2) - (icon.height() / 2),
-                        &paint);
+    canvas.drawBitmap(icon, (scalew / 2) - (icon.width() / 2),
+                      (scaleh / 2) - (icon.height() / 2), &paint);
 
-      return gfx::ImageSkiaRep(retval, scale);
-    }
+    return gfx::ImageSkiaRep(retval, scale);
+  }
 
-  private:
-    int id_;
-    const char* icon_;
-    bool enabled_;
+ private:
+  int id_;
+  const char* icon_;
+  bool enabled_;
 
-    DISALLOW_COPY_AND_ASSIGN(GtkThemeIconSource);
+  DISALLOW_COPY_AND_ASSIGN(GtkThemeIconSource);
 };
-
 
 class GtkButtonImageSource : public gfx::ImageSkiaSource {
-  public:
-    GtkButtonImageSource(const char* idr_string, gfx::Size size)
-        : width_(size.width()),
-          height_(size.height()) {
-      is_blue_ = !!strstr(idr_string, "IDR_BLUE");
-      focus_ = !!strstr(idr_string, "_FOCUSED_");
+ public:
+  GtkButtonImageSource(const char* idr_string, gfx::Size size)
+      : width_(size.width()), height_(size.height()) {
+    is_blue_ = !!strstr(idr_string, "IDR_BLUE");
+    focus_ = !!strstr(idr_string, "_FOCUSED_");
 
-      if (strstr(idr_string, "_DISABLED")) {
-        state_ = ui::NativeTheme::kDisabled;
-      } else if (strstr(idr_string, "_HOVER")) {
-        state_ = ui::NativeTheme::kHovered;
-      } else if (strstr(idr_string, "_PRESSED")) {
-        state_ = ui::NativeTheme::kPressed;
-      } else {
-        state_ = ui::NativeTheme::kNormal;
-      }
+    if (strstr(idr_string, "_DISABLED")) {
+      state_ = ui::NativeTheme::kDisabled;
+    } else if (strstr(idr_string, "_HOVER")) {
+      state_ = ui::NativeTheme::kHovered;
+    } else if (strstr(idr_string, "_PRESSED")) {
+      state_ = ui::NativeTheme::kPressed;
+    } else {
+      state_ = ui::NativeTheme::kNormal;
     }
+  }
 
-    ~GtkButtonImageSource() override {}
+  ~GtkButtonImageSource() override {}
 
-    gfx::ImageSkiaRep GetImageForScale(float scale) override {
-      int width = width_ * scale;
-      int height = height_ * scale;
+  gfx::ImageSkiaRep GetImageForScale(float scale) override {
+    int width = width_ * scale;
+    int height = height_ * scale;
 
-      SkBitmap border;
-      border.allocN32Pixels(width, height);
-      border.eraseColor(0);
+    SkBitmap border;
+    border.allocN32Pixels(width, height);
+    border.eraseColor(0);
 
-      // Create a temporary GTK button to snapshot
-      GtkWidget* window = gtk_offscreen_window_new();
-      GtkWidget* button = gtk_toggle_button_new();
+    // Create a temporary GTK button to snapshot
+    GtkWidget* window = gtk_offscreen_window_new();
+    GtkWidget* button = gtk_toggle_button_new();
 
-      if (state_ == ui::NativeTheme::kPressed)
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), true);
-      else if (state_ == ui::NativeTheme::kDisabled)
-        gtk_widget_set_sensitive(button, false);
+    if (state_ == ui::NativeTheme::kPressed)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), true);
+    else if (state_ == ui::NativeTheme::kDisabled)
+      gtk_widget_set_sensitive(button, false);
 
-      gtk_widget_set_size_request(button, width, height);
-      gtk_container_add(GTK_CONTAINER(window), button);
+    gtk_widget_set_size_request(button, width, height);
+    gtk_container_add(GTK_CONTAINER(window), button);
 
-      if (is_blue_)
-        TurnButtonBlue(button);
+    if (is_blue_)
+      TurnButtonBlue(button);
 
-      gtk_widget_show_all(window);
+    gtk_widget_show_all(window);
 
-
-      cairo_surface_t* surface = cairo_image_surface_create_for_data(
+    cairo_surface_t* surface = cairo_image_surface_create_for_data(
         static_cast<unsigned char*>(border.getAddr(0, 0)),
-        CAIRO_FORMAT_ARGB32,
-        width, height,
-        width * 4);
-      cairo_t* cr = cairo_create(surface);
+        CAIRO_FORMAT_ARGB32, width, height, width * 4);
+    cairo_t* cr = cairo_create(surface);
 
 #if GTK_MAJOR_VERSION == 2
-      if (focus_)
-        GTK_WIDGET_SET_FLAGS(button, GTK_HAS_FOCUS);
+    if (focus_)
+      GTK_WIDGET_SET_FLAGS(button, GTK_HAS_FOCUS);
 
-      int w, h;
-      GdkPixmap* pixmap;
+    int w, h;
+    GdkPixmap* pixmap;
 
-      {
-        // http://crbug.com/346740
-        ANNOTATE_SCOPED_MEMORY_LEAK;
-        pixmap = gtk_widget_get_snapshot(button, NULL);
-      }
+    {
+      // http://crbug.com/346740
+      ANNOTATE_SCOPED_MEMORY_LEAK;
+      pixmap = gtk_widget_get_snapshot(button, NULL);
+    }
 
-      gdk_drawable_get_size(GDK_DRAWABLE(pixmap), &w, &h);
-      GdkColormap* colormap = gdk_drawable_get_colormap(pixmap);
-      GdkPixbuf* pixbuf = gdk_pixbuf_get_from_drawable(NULL,
-                                                       GDK_DRAWABLE(pixmap),
-                                                       colormap,
-                                                       0, 0, 0, 0, w, h);
+    gdk_drawable_get_size(GDK_DRAWABLE(pixmap), &w, &h);
+    GdkColormap* colormap = gdk_drawable_get_colormap(pixmap);
+    GdkPixbuf* pixbuf = gdk_pixbuf_get_from_drawable(
+        NULL, GDK_DRAWABLE(pixmap), colormap, 0, 0, 0, 0, w, h);
 
-      gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
-      cairo_paint(cr);
+    gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
+    cairo_paint(cr);
 
-      g_object_unref(pixbuf);
-      g_object_unref(pixmap);
+    g_object_unref(pixbuf);
+    g_object_unref(pixmap);
 #else
-      gtk_widget_draw(button, cr);
+    gtk_widget_draw(button, cr);
 
-      // There's probably a better way to do this
-      if (focus_)
-        gtk_render_focus(gtk_widget_get_style_context(button),
-                         cr, 0, 0, width, height);
+    // There's probably a better way to do this
+    if (focus_)
+      gtk_render_focus(gtk_widget_get_style_context(button), cr, 0, 0,
+                       width, height);
 #endif
 
-      cairo_destroy(cr);
-      cairo_surface_destroy(surface);
+    cairo_destroy(cr);
+    cairo_surface_destroy(surface);
 
-      gtk_widget_destroy(window);
+    gtk_widget_destroy(window);
 
-      return gfx::ImageSkiaRep(border, scale);
-    }
+    return gfx::ImageSkiaRep(border, scale);
+  }
 
-  private:
-    bool is_blue_;
-    bool focus_;
-    ui::NativeTheme::State state_;
-    int width_;
-    int height_;
+ private:
+  bool is_blue_;
+  bool focus_;
+  ui::NativeTheme::State state_;
+  int width_;
+  int height_;
 
-    DISALLOW_COPY_AND_ASSIGN(GtkButtonImageSource);
+  DISALLOW_COPY_AND_ASSIGN(GtkButtonImageSource);
 };
-
 
 class GtkButtonPainter : public views::Painter {
-  public:
-    explicit GtkButtonPainter(std::string idr) : idr_(idr) {}
-    ~GtkButtonPainter() override {}
+ public:
+  explicit GtkButtonPainter(std::string idr) : idr_(idr) {}
+  ~GtkButtonPainter() override {}
 
-    gfx::Size GetMinimumSize() const override {
-      return gfx::Size();
-    }
-    void Paint(gfx::Canvas* canvas, const gfx::Size& size) override {
-      gfx::ImageSkiaSource* source =
-          new GtkButtonImageSource(idr_.c_str(), size);
-      gfx::ImageSkia image(source, 1);
-      canvas->DrawImageInt(image, 0, 0);
-    }
+  gfx::Size GetMinimumSize() const override { return gfx::Size(); }
+  void Paint(gfx::Canvas* canvas, const gfx::Size& size) override {
+    gfx::ImageSkiaSource* source = new GtkButtonImageSource(idr_.c_str(), size);
+    gfx::ImageSkia image(source, 1);
+    canvas->DrawImageInt(image, 0, 0);
+  }
 
-  private:
-    std::string idr_;
+ private:
+  std::string idr_;
 
-    DISALLOW_COPY_AND_ASSIGN(GtkButtonPainter);
+  DISALLOW_COPY_AND_ASSIGN(GtkButtonPainter);
 };
-
-
 
 struct GObjectDeleter {
   void operator()(void* ptr) {
@@ -783,7 +757,6 @@ scoped_ptr<views::Border> Gtk2UI::CreateNativeBorder(
   }
 
   return std::move(gtk_border);
-  ;
 }
 
 void Gtk2UI::AddWindowButtonOrderObserver(

@@ -133,7 +133,6 @@ bool FileSystemUsageCache::AtomicUpdateUsageByDelta(
   bool is_valid = true;
   uint32_t dirty = 0;
   int64_t usage = 0;
-  ;
   if (!Read(usage_file_path, &is_valid, &dirty, &usage))
     return false;
   return Write(usage_file_path, is_valid, dirty, usage + delta);

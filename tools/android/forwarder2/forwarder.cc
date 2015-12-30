@@ -98,7 +98,7 @@ class Forwarder::BufferedCopier {
       case STATE_CLOSING:
         break;  // T10
       case STATE_CLOSED:
-        ;
+        break;
     }
   }
 
@@ -196,7 +196,7 @@ class Forwarder::BufferedCopier {
         break;
 
       case STATE_CLOSED:
-        ;
+        break;
     }
   }
 

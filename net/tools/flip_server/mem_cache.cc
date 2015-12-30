@@ -206,7 +206,6 @@ FileData* MemoryCache::GetFileData(const std::string& filename) {
     return NULL;
   }
   return fi->second.get();
-  ;
 }
 
 bool MemoryCache::AssignFileData(const std::string& filename,

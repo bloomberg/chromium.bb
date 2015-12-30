@@ -350,7 +350,6 @@ struct TestNumericConversion<Dst, Src, SIGN_PRESERVING_VALUE_PRESERVING> {
                   "Comparison must be sign preserving and value preserving");
 
     const CheckedNumeric<Dst> checked_dst = SrcLimits::max();
-    ;
     TEST_EXPECTED_VALIDITY(RANGE_VALID, checked_dst);
     if (MaxExponent<Dst>::value > MaxExponent<Src>::value) {
       if (MaxExponent<Dst>::value >= MaxExponent<Src>::value * 2 - 1) {

@@ -329,7 +329,6 @@ TEST_F(AutofillExternalDelegateUnitTest, DuplicateAutofillDatalistValues) {
   autofill_item.push_back(Suggestion());
   autofill_item[0].value = ASCIIToUTF16("Rick");
   autofill_item[0].frontend_id = kAutofillProfileId;
-  ;
   external_delegate_->OnSuggestionsReturned(kQueryId, autofill_item);
 }
 
