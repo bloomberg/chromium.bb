@@ -517,6 +517,7 @@ template("locale_pak_resources") {
     build_config = _build_config
     resources_zip = _resources_zip
     type = "android_resources"
+    is_locale_resource = true
   }
 
   action("${target_name}__create_resources_zip") {
@@ -1226,6 +1227,8 @@ template("android_java_prebuilt") {
 #   testonly: Marks this target as "test-only".
 #   write_asset_list: Adds an extra file to the assets, which contains a list of
 #     all other asset files.
+#   alternative_locale_resource_dep: The locale resource target which overrides
+#     any exsting locale resources in dep graph.
 #
 #   DEPRECATED_java_in_dir: Directory containing java files. All .java files in
 #     this directory will be included in the library. This is only supported to
@@ -1397,6 +1400,11 @@ template("android_apk") {
     deps = _native_libs_deps + _android_manifest_deps
     if (defined(invoker.deps)) {
       deps += invoker.deps
+    }
+
+    if (defined(invoker.alternative_locale_resource_dep)) {
+      deps += [ invoker.alternative_locale_resource_dep ]
+      has_alternative_locale_resource = true
     }
 
     proguard_enabled = _proguard_enabled

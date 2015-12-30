@@ -101,6 +101,7 @@ class Deps(object):
         GetDepConfig(p) for p in direct_deps_config_paths]
     self.all_deps_configs = [
         GetDepConfig(p) for p in self.all_deps_config_paths]
+    self.direct_deps_config_paths = direct_deps_config_paths
 
   def All(self, wanted_type=None):
     if type is None:
@@ -115,6 +116,11 @@ class Deps(object):
   def AllConfigPaths(self):
     return self.all_deps_config_paths
 
+  def RemoveNonDirectDep(self, path):
+    if path in self.direct_deps_config_paths:
+      raise Exception('Cannot remove direct dep.')
+    self.all_deps_config_paths.remove(path)
+    self.all_deps_configs.remove(GetDepConfig(path))
 
 def _MergeAssets(all_assets):
   """Merges all assets from the given deps.
@@ -180,6 +186,8 @@ def main(argv):
   parser.add_option('--package-name',
       help='Java package name for these resources.')
   parser.add_option('--android-manifest', help='Path to android manifest.')
+  parser.add_option('--is-locale-resource', action='store_true',
+                    help='Whether it is locale resource.')
 
   # android_assets options
   parser.add_option('--asset-sources', help='List of asset sources.')
@@ -216,6 +224,8 @@ def main(argv):
       help='Whether proguard is enabled for this apk.')
   parser.add_option('--proguard-info',
       help='Path to the proguard .info output for this apk.')
+  parser.add_option('--has-alternative-locale-resource', action='store_true',
+      help='Whether there is alternative-locale-resource in direct deps')
 
   options, args = parser.parse_args(argv)
 
@@ -264,6 +274,21 @@ def main(argv):
                                                       options.type)
 
   deps = Deps(direct_deps_config_paths)
+
+  # Remove other locale resources if there is alternative_locale_resource in
+  # direct deps.
+  if options.has_alternative_locale_resource:
+    alternative = [r['path'] for r in deps.Direct('android_resources')
+                   if r.get('is_locale_resource')]
+    # We can only have one locale resources in direct deps.
+    if len(alternative) != 1:
+      raise Exception('The number of locale resource in direct deps is wrong %d'
+                       % len(alternative))
+    unwanted = [r['path'] for r in deps.All('android_resources')
+                if r.get('is_locale_resource') and r['path'] not in alternative]
+    for p in unwanted:
+      deps.RemoveNonDirectDep(p)
+
 
   direct_library_deps = deps.Direct('java_library')
   all_library_deps = deps.All('java_library')
@@ -362,6 +387,8 @@ def main(argv):
       deps_info['package_name'] = options.package_name
     if options.r_text:
       deps_info['r_text'] = options.r_text
+    if options.is_locale_resource:
+      deps_info['is_locale_resource'] = True
 
   if options.type in ('android_resources','android_apk', 'resource_rewriter'):
     config['resources'] = {}
