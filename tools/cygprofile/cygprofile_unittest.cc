@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 #include <sys/time.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -78,7 +78,7 @@ TEST(CygprofileTest, ManagerBasic) {
 
   // This should make the manager spawn its internal flush thread which will
   // wait for a notification before it starts doing some work.
-  manager.AddLog(thread_log.Pass());
+  manager.AddLog(std::move(thread_log));
 
   EXPECT_EQ(0U, entries.size());
   // This will wake up the internal thread.
