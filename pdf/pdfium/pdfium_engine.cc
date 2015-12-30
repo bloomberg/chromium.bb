@@ -2599,12 +2599,13 @@ void PDFiumEngine::ContinueLoadingDocument(
   permissions_handler_revision_ = FPDF_GetSecurityHandlerRevision(doc_);
 
   if (!form_) {
-    // Only returns 0 when data isn't available.  If form data is downloaded, or
-    // if this isn't a form, returns positive values.
-    if (!doc_loader_.IsDocumentComplete() &&
-        !FPDFAvail_IsFormAvail(fpdf_availability_, &download_hints_)) {
+    int form_status =
+        FPDFAvail_IsFormAvail(fpdf_availability_, &download_hints_);
+    bool doc_complete = doc_loader_.IsDocumentComplete();
+    // Try again if the data is not available and the document hasn't finished
+    // downloading.
+    if (form_status == PDF_FORM_NOTAVAIL && !doc_complete)
       return;
-    }
 
     form_ = FPDFDOC_InitFormFillEnvironment(
         doc_, static_cast<FPDF_FORMFILLINFO*>(this));
