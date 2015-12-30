@@ -632,10 +632,8 @@ TEST_F(URLRequestHttpJobWithBrotliSupportTest, NoBrotliAdvertisementOverHttp) {
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request =
-      context_->CreateRequest(GURL("http://www.example.com"), DEFAULT_PRIORITY,
-                              &delegate)
-          .Pass();
+  scoped_ptr<URLRequest> request = context_->CreateRequest(
+      GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
   request->Start();
   base::RunLoop().RunUntilIdle();
 
@@ -669,10 +667,8 @@ TEST_F(URLRequestHttpJobWithBrotliSupportTest, BrotliAdvertisement) {
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request =
-      context_->CreateRequest(GURL("https://www.example.com"), DEFAULT_PRIORITY,
-                              &delegate)
-          .Pass();
+  scoped_ptr<URLRequest> request = context_->CreateRequest(
+      GURL("https://www.example.com"), DEFAULT_PRIORITY, &delegate);
   request->Start();
   base::RunLoop().RunUntilIdle();
 
