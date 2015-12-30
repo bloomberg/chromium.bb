@@ -45,6 +45,11 @@ class GinJavaBridgeMessageFilter : public BrowserMessageFilter {
   static scoped_refptr<GinJavaBridgeMessageFilter> FromHost(
       GinJavaBridgeDispatcherHost* host, bool create_if_not_exists);
 
+  // Removes the filter, which triggers its deletion. Needs to be called when
+  // the corresponding RenderProcessHost cleans itself up, e.g. on renderer
+  // process exit.
+  static void RemoveFilter(GinJavaBridgeDispatcherHost* host);
+
  private:
   friend class BrowserThread;
   friend class base::DeleteHelper<GinJavaBridgeMessageFilter>;

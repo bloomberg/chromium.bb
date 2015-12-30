@@ -80,6 +80,20 @@ void GinJavaBridgeDispatcherHost::WebContentsDestroyed() {
     filter->RemoveHost(this);
 }
 
+void GinJavaBridgeDispatcherHost::RenderProcessGone(
+    base::TerminationStatus status) {
+  GinJavaBridgeMessageFilter::RemoveFilter(this);
+}
+
+void GinJavaBridgeDispatcherHost::RenderViewHostChanged(
+    RenderViewHost* old_host,
+    RenderViewHost* new_host) {
+  scoped_refptr<GinJavaBridgeMessageFilter> filter =
+      GinJavaBridgeMessageFilter::FromHost(this, false);
+  if (!filter)
+    InstallFilterAndRegisterAllRoutingIds();
+}
+
 GinJavaBoundObject::ObjectID GinJavaBridgeDispatcherHost::AddObject(
     const base::android::JavaRef<jobject>& object,
     const base::android::JavaRef<jclass>& safe_annotation_clazz,
