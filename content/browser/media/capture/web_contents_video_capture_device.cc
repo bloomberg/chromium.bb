@@ -446,8 +446,10 @@ ContentCaptureSubscription::ContentCaptureSubscription(
 // TODO(isheriff): Needs implementation on non-aura platforms.
 // https://crbug.com/567735
 #if defined(USE_AURA)
-  window_activity_tracker_.reset(
-      new content::WindowActivityTrackerAura(view->GetNativeView()));
+  if (view) {
+    window_activity_tracker_.reset(
+        new content::WindowActivityTrackerAura(view->GetNativeView()));
+  }
 #endif
   timer_subscriber_.reset(new FrameSubscriber(
       media::VideoCaptureOracle::kTimerPoll, oracle_proxy, &delivery_log_,
