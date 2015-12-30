@@ -5,6 +5,7 @@
 #include "tools/android/forwarder2/host_controller.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -32,7 +33,7 @@ scoped_ptr<HostController> HostController::Create(
   if (!adb_control_socket->ConnectTcp(std::string(), adb_port)) {
     LOG(ERROR) << "Could not connect HostController socket on port: "
                << adb_port;
-    return host_controller.Pass();
+    return host_controller;
   }
   // Send the command to the device start listening to the "device_forward_port"
   bool send_command_success = SendCommand(
@@ -44,14 +45,13 @@ scoped_ptr<HostController> HostController::Create(
           adb_control_socket.get(), &device_port_allocated, &command) ||
       command != command::BIND_SUCCESS) {
     LOG(ERROR) << "Device binding error using port " << device_port;
-    return host_controller.Pass();
+    return host_controller;
   }
-  host_controller.reset(
-      new HostController(
-          device_port_allocated, host_port, adb_port, exit_notifier_fd,
-          error_callback, adb_control_socket.Pass(),
-          delete_controller_notifier.Pass()));
-  return host_controller.Pass();
+  host_controller.reset(new HostController(
+      device_port_allocated, host_port, adb_port, exit_notifier_fd,
+      error_callback, std::move(adb_control_socket),
+      std::move(delete_controller_notifier)));
+  return host_controller;
 }
 
 HostController::~HostController() {
@@ -77,11 +77,10 @@ HostController::HostController(
       host_port_(host_port),
       adb_port_(adb_port),
       global_exit_notifier_fd_(exit_notifier_fd),
-      adb_control_socket_(adb_control_socket.Pass()),
-      delete_controller_notifier_(delete_controller_notifier.Pass()),
+      adb_control_socket_(std::move(adb_control_socket)),
+      delete_controller_notifier_(std::move(delete_controller_notifier)),
       deletion_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      thread_("HostControllerThread") {
-}
+      thread_("HostControllerThread") {}
 
 void HostController::ReadNextCommandSoon() {
   thread_.task_runner()->PostTask(
@@ -117,7 +116,7 @@ void HostController::ReadCommandOnInternalThread() {
   LOG(INFO) << "Will send HOST_SERVER_SUCCESS: " << host_port_;
   SendCommand(
       command::HOST_SERVER_SUCCESS, device_port_, adb_control_socket_.get());
-  StartForwarder(host_server_data_socket.Pass());
+  StartForwarder(std::move(host_server_data_socket));
   ReadNextCommandSoon();
 }
 
@@ -143,7 +142,7 @@ void HostController::StartForwarder(
     return;
   }
   forwarders_manager_.CreateAndStartNewForwarder(
-      host_server_data_socket.Pass(), adb_data_socket.Pass());
+      std::move(host_server_data_socket), std::move(adb_data_socket));
 }
 
 void HostController::OnInternalThreadError() {

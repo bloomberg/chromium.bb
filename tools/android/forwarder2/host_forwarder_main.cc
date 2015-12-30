@@ -357,7 +357,7 @@ class ServerDelegate : public Daemon::ServerDelegate {
     if (!pickle_it.ReadInt(&host_port))
       host_port = -1;
     controllers_manager_.HandleRequest(adb_path_, device_serial, device_port,
-                                       host_port, client_socket.Pass());
+                                       host_port, std::move(client_socket));
   }
 
  private:
