@@ -264,3 +264,12 @@ fuzzer_test("libxml_xml_read_memory_fuzzer") {
     "//third_party/libxml:libxml",
   ]
 }
+
+fuzzer_test("unicode_string_codepage_create_fuzzer") {
+  sources = [
+    "unicode_string_codepage_create_fuzzer.cc",
+  ]
+  deps = [
+    "//third_party/icu",
+  ]
+}
