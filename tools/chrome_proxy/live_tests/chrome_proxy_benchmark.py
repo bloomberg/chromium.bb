@@ -27,6 +27,16 @@ class ChromeProxyLatencyDirect(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.latency_direct.top_20'
 
 
+class ChromeProxyLatencyMetrics(benchmark.Benchmark):
+  tag = 'latency_metrics'
+  test = measurements.ChromeProxyLatencyDirect
+  page_set = pagesets.MetricsStorySet
+
+  @classmethod
+  def Name(cls):
+    return 'chrome_proxy_benchmark.latency_metrics.metrics'
+
+
 class ChromeProxyDataSaving(benchmark.Benchmark):
   tag = 'data_saving'
   test = measurements.ChromeProxyDataSaving
@@ -45,4 +55,13 @@ class ChromeProxyDataSavingDirect(benchmark.Benchmark):
   @classmethod
   def Name(cls):
     return 'chrome_proxy_benchmark.data_saving_direct.top_20'
+
+class ChromeProxyDataSavingMetrics(benchmark.Benchmark):
+  tag = 'data_saving_metrics'
+  test = measurements.ChromeProxyDataSavingDirect
+  page_set = pagesets.MetricsStorySet
+
+  @classmethod
+  def Name(cls):
+    return 'chrome_proxy_benchmark.data_saving_metrics.metrics'
 
