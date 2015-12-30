@@ -83,6 +83,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         bug=295792)
     self.Skip('conformance2/reading/read-pixels-pack-parameters.html',
         bug=483282)
+    self.Fail('conformance2/rendering/draw-buffers.html', bug=483282)
     self.Fail('conformance2/samplers/sampler-drawing-test.html', bug=483282)
     self.Skip('conformance2/textures/webgl_canvas/*', bug=483282)
 
@@ -96,8 +97,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win'], bug=483282)
     self.Fail('conformance2/renderbuffers/framebuffer-object-attachment.html',
         ['win'], bug=1082) # angle bug ID
-    self.Fail('conformance2/rendering/draw-buffers.html',
-        ['win'], bug=483282)
     self.Fail('conformance2/state/gl-object-get-calls.html',
         ['win'], bug=483282)
     self.Fail('conformance2/textures/canvas/*', ['win'], bug=483282)
@@ -228,8 +227,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/shaderswitch.html',
         ['linux'], bug=483282)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
-        ['linux'], bug=483282)
-    self.Fail('conformance2/rendering/draw-buffers.html',
         ['linux'], bug=483282)
     self.Fail('conformance2/renderbuffers/framebuffer-object-attachment.html',
         ['linux'], bug=564020)
