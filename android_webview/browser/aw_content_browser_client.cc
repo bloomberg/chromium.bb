@@ -4,6 +4,8 @@
 
 #include "android_webview/browser/aw_content_browser_client.h"
 
+#include <utility>
+
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_main_parts.h"
 #include "android_webview/browser/aw_contents_client_bridge_base.h"
@@ -192,8 +194,8 @@ net::URLRequestContextGetter* AwContentBrowserClient::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
   DCHECK_EQ(browser_context_.get(), browser_context);
-  return browser_context_->CreateRequestContext(protocol_handlers,
-                                                request_interceptors.Pass());
+  return browser_context_->CreateRequestContext(
+      protocol_handlers, std::move(request_interceptors));
 }
 
 net::URLRequestContextGetter*
@@ -208,7 +210,7 @@ AwContentBrowserClient::CreateRequestContextForStoragePartition(
   // downstream. (crbug.com/350286)
   return browser_context_->CreateRequestContextForStoragePartition(
       partition_path, in_memory, protocol_handlers,
-      request_interceptors.Pass());
+      std::move(request_interceptors));
 }
 
 bool AwContentBrowserClient::IsHandledURL(const GURL& url) {
@@ -386,7 +388,7 @@ void AwContentBrowserClient::SelectClientCertificate(
   AwContentsClientBridgeBase* client =
       AwContentsClientBridgeBase::FromWebContents(web_contents);
   if (client)
-    client->SelectClientCertificate(cert_request_info, delegate.Pass());
+    client->SelectClientCertificate(cert_request_info, std::move(delegate));
 }
 
 bool AwContentBrowserClient::CanCreateWindow(
@@ -508,10 +510,9 @@ AwContentBrowserClient::CreateThrottlesForNavigation(
        !navigation_handle->GetURL().SchemeIs(url::kAboutScheme))) {
     throttles.push_back(
         navigation_interception::InterceptNavigationDelegate::CreateThrottleFor(
-            navigation_handle)
-            .Pass());
+            navigation_handle));
   }
-  return throttles.Pass();
+  return throttles;
 }
 
 #if defined(VIDEO_HOLE)

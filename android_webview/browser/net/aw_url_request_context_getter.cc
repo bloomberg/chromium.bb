@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 
+#include <utility>
 #include <vector>
 
 #include "android_webview/browser/aw_browser_context.h"
@@ -143,17 +144,17 @@ scoped_ptr<net::URLRequestJobFactory> CreateJobFactory(
 
   // The chain of responsibility will execute the handlers in reverse to the
   // order in which the elements of the chain are created.
-  scoped_ptr<net::URLRequestJobFactory> job_factory(aw_job_factory.Pass());
+  scoped_ptr<net::URLRequestJobFactory> job_factory(std::move(aw_job_factory));
   for (content::URLRequestInterceptorScopedVector::reverse_iterator i =
            request_interceptors.rbegin();
        i != request_interceptors.rend();
        ++i) {
     job_factory.reset(new net::URLRequestInterceptingJobFactory(
-        job_factory.Pass(), make_scoped_ptr(*i)));
+        std::move(job_factory), make_scoped_ptr(*i)));
   }
   request_interceptors.weak_clear();
 
-  return job_factory.Pass();
+  return job_factory;
 }
 
 }  // namespace
@@ -165,7 +166,7 @@ AwURLRequestContextGetter::AwURLRequestContextGetter(
     PrefService* user_pref_service)
     : cache_path_(cache_path),
       net_log_(new net::NetLog()),
-      proxy_config_service_(config_service.Pass()),
+      proxy_config_service_(std::move(config_service)),
       cookie_store_(cookie_store),
       http_user_agent_settings_(new AwHttpUserAgentSettings()) {
   // CreateSystemProxyConfigService for Android must be called on main thread.
@@ -202,11 +203,9 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   DCHECK(browser_context);
 
   builder.set_network_delegate(
-      browser_context->GetDataReductionProxyIOData()
-          ->CreateNetworkDelegate(
-              aw_network_delegate.Pass(),
-              false /* No UMA is produced to track bypasses. */)
-          .Pass());
+      browser_context->GetDataReductionProxyIOData()->CreateNetworkDelegate(
+          std::move(aw_network_delegate),
+          false /* No UMA is produced to track bypasses. */));
 #if !defined(DISABLE_FTP_SUPPORT)
   builder.set_ftp_enabled(false);  // Android WebView does not support ftp yet.
 #endif
@@ -215,7 +214,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   // Create the proxy without a resolver since we rely on this local HTTP proxy.
   // TODO(sgurun) is this behavior guaranteed through SDK?
   builder.set_proxy_service(net::ProxyService::CreateWithoutProxyResolver(
-      proxy_config_service_.Pass(), net_log_.get()));
+      std::move(proxy_config_service_), net_log_.get()));
   builder.set_net_log(net_log_.get());
   builder.SetCookieAndChannelIdStores(cookie_store_, NULL);
 
@@ -238,15 +237,15 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
       net::HostResolver::CreateDefaultResolver(nullptr)));
   ApplyCmdlineOverridesToHostResolver(host_resolver.get());
   builder.SetHttpAuthHandlerFactory(
-      CreateAuthHandlerFactory(host_resolver.get()).Pass());
-  builder.set_host_resolver(host_resolver.Pass());
+      CreateAuthHandlerFactory(host_resolver.get()));
+  builder.set_host_resolver(std::move(host_resolver));
 
-  url_request_context_ = builder.Build().Pass();
+  url_request_context_ = builder.Build();
 
-  job_factory_ = CreateJobFactory(&protocol_handlers_,
-                                  request_interceptors_.Pass());
+  job_factory_ =
+      CreateJobFactory(&protocol_handlers_, std::move(request_interceptors_));
   job_factory_.reset(new net::URLRequestInterceptingJobFactory(
-      job_factory_.Pass(),
+      std::move(job_factory_),
       browser_context->GetDataReductionProxyIOData()->CreateInterceptor()));
   url_request_context_->set_job_factory(job_factory_.get());
   url_request_context_->set_http_user_agent_settings(

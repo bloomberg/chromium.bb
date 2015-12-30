@@ -4,6 +4,8 @@
 
 #include "android_webview/native/cookie_manager.h"
 
+#include <utility>
+
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/net/init_native_callback.h"
@@ -340,7 +342,7 @@ void CookieManager::SetCookie(
     const std::string& cookie_value,
     scoped_ptr<BoolCookieCallbackHolder> callback_holder) {
   BoolCallback callback =
-      BoolCookieCallbackHolder::ConvertToCallback(callback_holder.Pass());
+      BoolCookieCallbackHolder::ConvertToCallback(std::move(callback_holder));
   ExecCookieTask(base::Bind(&CookieManager::SetCookieHelper,
                             base::Unretained(this),
                             host,
@@ -402,7 +404,7 @@ void CookieManager::GetCookieValueCompleted(base::Closure complete,
 void CookieManager::RemoveSessionCookies(
     scoped_ptr<BoolCookieCallbackHolder> callback_holder) {
   BoolCallback callback =
-      BoolCookieCallbackHolder::ConvertToCallback(callback_holder.Pass());
+      BoolCookieCallbackHolder::ConvertToCallback(std::move(callback_holder));
   ExecCookieTask(base::Bind(&CookieManager::RemoveSessionCookiesHelper,
                             base::Unretained(this),
                             callback));
@@ -430,7 +432,7 @@ void CookieManager::RemoveCookiesCompleted(
 void CookieManager::RemoveAllCookies(
     scoped_ptr<BoolCookieCallbackHolder> callback_holder) {
   BoolCallback callback =
-      BoolCookieCallbackHolder::ConvertToCallback(callback_holder.Pass());
+      BoolCookieCallbackHolder::ConvertToCallback(std::move(callback_holder));
   ExecCookieTask(base::Bind(&CookieManager::RemoveAllCookiesHelper,
                             base::Unretained(this),
                             callback));
@@ -532,7 +534,8 @@ static void SetCookie(JNIEnv* env,
   std::string cookie_value(ConvertJavaStringToUTF8(env, value));
   scoped_ptr<BoolCookieCallbackHolder> callback(
       new BoolCookieCallbackHolder(env, java_callback));
-  CookieManager::GetInstance()->SetCookie(host, cookie_value, callback.Pass());
+  CookieManager::GetInstance()->SetCookie(host, cookie_value,
+                                          std::move(callback));
 }
 
 static void SetCookieSync(JNIEnv* env,
@@ -559,7 +562,7 @@ static void RemoveSessionCookies(JNIEnv* env,
                                  const JavaParamRef<jobject>& java_callback) {
   scoped_ptr<BoolCookieCallbackHolder> callback(
       new BoolCookieCallbackHolder(env, java_callback));
-  CookieManager::GetInstance()->RemoveSessionCookies(callback.Pass());
+  CookieManager::GetInstance()->RemoveSessionCookies(std::move(callback));
 }
 
 static void RemoveSessionCookiesSync(JNIEnv* env,
@@ -572,7 +575,7 @@ static void RemoveAllCookies(JNIEnv* env,
                              const JavaParamRef<jobject>& java_callback) {
   scoped_ptr<BoolCookieCallbackHolder> callback(
       new BoolCookieCallbackHolder(env, java_callback));
-  CookieManager::GetInstance()->RemoveAllCookies(callback.Pass());
+  CookieManager::GetInstance()->RemoveAllCookies(std::move(callback));
 }
 
 static void RemoveAllCookiesSync(JNIEnv* env,

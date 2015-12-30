@@ -4,6 +4,8 @@
 
 #include "android_webview/browser/hardware_renderer.h"
 
+#include <utility>
+
 #include "android_webview/browser/aw_gl_surface.h"
 #include "android_webview/browser/aw_render_thread_context_provider.h"
 #include "android_webview/browser/child_frame.h"
@@ -80,7 +82,7 @@ void HardwareRenderer::CommitFrame() {
     return;
 
   ReturnResourcesInChildFrame();
-  child_frame_ = child_frame.Pass();
+  child_frame_ = std::move(child_frame);
   DCHECK(child_frame_->frame.get());
   DCHECK(!child_frame_->frame->gl_frame_data);
 }
@@ -120,7 +122,7 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
     }
 
     scoped_ptr<cc::CompositorFrame> child_compositor_frame =
-        child_frame_->frame.Pass();
+        std::move(child_frame_->frame);
 
     // On Android we put our browser layers in physical pixels and set our
     // browser CC device_scale_factor to 1, so suppress the transform between
@@ -140,7 +142,7 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
     }
 
     surface_factory_->SubmitCompositorFrame(child_id_,
-                                            child_compositor_frame.Pass(),
+                                            std::move(child_compositor_frame),
                                             cc::SurfaceFactory::DrawCallback());
   }
 
@@ -186,16 +188,16 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
 
   scoped_ptr<cc::DelegatedFrameData> delegated_frame(
       new cc::DelegatedFrameData);
-  delegated_frame->render_pass_list.push_back(render_pass.Pass());
+  delegated_frame->render_pass_list.push_back(std::move(render_pass));
   scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
-  frame->delegated_frame_data = delegated_frame.Pass();
+  frame->delegated_frame_data = std::move(delegated_frame);
 
   if (root_id_.is_null()) {
     root_id_ = surface_id_allocator_->GenerateId();
     surface_factory_->Create(root_id_);
     display_->SetSurfaceId(root_id_, 1.f);
   }
-  surface_factory_->SubmitCompositorFrame(root_id_, frame.Pass(),
+  surface_factory_->SubmitCompositorFrame(root_id_, std::move(frame),
                                           cc::SurfaceFactory::DrawCallback());
 
   display_->Resize(viewport);
@@ -207,7 +209,7 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
     scoped_ptr<ParentOutputSurface> output_surface_holder(
         new ParentOutputSurface(context_provider));
     output_surface_ = output_surface_holder.get();
-    display_->Initialize(output_surface_holder.Pass(), nullptr);
+    display_->Initialize(std::move(output_surface_holder), nullptr);
   }
   output_surface_->SetExternalStencilTest(stencil_enabled);
   display_->SetExternalClip(clip);

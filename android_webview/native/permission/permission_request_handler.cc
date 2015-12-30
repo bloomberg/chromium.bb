@@ -4,6 +4,8 @@
 
 #include "android_webview/native/permission/permission_request_handler.h"
 
+#include <utility>
+
 #include "android_webview/native/permission/aw_permission_request.h"
 #include "android_webview/native/permission/aw_permission_request_delegate.h"
 #include "android_webview/native/permission/permission_request_handler_client.h"
@@ -50,7 +52,7 @@ void PermissionRequestHandler::SendRequest(
 
   base::WeakPtr<AwPermissionRequest> weak_request;
   base::android::ScopedJavaLocalRef<jobject> java_peer =
-      AwPermissionRequest::Create(request.Pass(), &weak_request);
+      AwPermissionRequest::Create(std::move(request), &weak_request);
   requests_.push_back(weak_request);
   client_->OnPermissionRequest(java_peer, weak_request.get());
   PruneRequests();

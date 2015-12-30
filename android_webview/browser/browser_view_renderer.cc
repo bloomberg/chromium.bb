@@ -4,6 +4,8 @@
 
 #include "android_webview/browser/browser_view_renderer.h"
 
+#include <utility>
+
 #include "android_webview/browser/browser_view_renderer_client.h"
 #include "android_webview/browser/child_frame.h"
 #include "base/auto_reset.h"
@@ -271,13 +273,13 @@ bool BrowserViewRenderer::CompositeHw() {
   }
 
   scoped_ptr<ChildFrame> child_frame = make_scoped_ptr(new ChildFrame(
-      frame.Pass(), GetCompositorID(compositor_),
+      std::move(frame), GetCompositorID(compositor_),
       viewport_rect_for_tile_priority.IsEmpty(), transform_for_tile_priority,
       offscreen_pre_raster_, parent_draw_constraints.is_layer));
 
   // Uncommitted frame can happen with consecutive fallback ticks.
   ReturnUnusedResource(shared_renderer_state_.PassUncommittedFrameOnUI());
-  shared_renderer_state_.SetCompositorFrameOnUI(child_frame.Pass());
+  shared_renderer_state_.SetCompositorFrameOnUI(std::move(child_frame));
   return true;
 }
 

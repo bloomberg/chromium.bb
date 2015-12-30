@@ -5,6 +5,7 @@
 #include "android_webview/native/aw_contents.h"
 
 #include <limits>
+#include <utility>
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_main_parts.h"
@@ -190,7 +191,7 @@ AwContents::AwContents(scoped_ptr<WebContents> web_contents)
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kDisablePageVisibility)),
-      web_contents_(web_contents.Pass()),
+      web_contents_(std::move(web_contents)),
       renderer_manager_key_(GLViewRendererManager::GetInstance()->NullKey()) {
   base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
   icon_helper_.reset(new IconHelper(web_contents_.get()));
@@ -329,7 +330,7 @@ static jlong Init(JNIEnv* env,
       content::WebContents::CreateParams(AwBrowserContext::GetDefault())));
   // Return an 'uninitialized' instance; most work is deferred until the
   // subsequent SetJavaPeers() call.
-  return reinterpret_cast<intptr_t>(new AwContents(web_contents.Pass()));
+  return reinterpret_cast<intptr_t>(new AwContents(std::move(web_contents)));
 }
 
 static void SetForceAuxiliaryBitmapRendering(
@@ -991,7 +992,7 @@ void AwContents::SetPendingWebContentsForPopup(
     base::MessageLoop::current()->DeleteSoon(FROM_HERE, pending.release());
     return;
   }
-  pending_contents_.reset(new AwContents(pending.Pass()));
+  pending_contents_.reset(new AwContents(std::move(pending)));
   // Set dip_scale for pending contents, which is necessary for the later
   // SynchronousCompositor and InputHandler setup.
   pending_contents_->SetDipScaleInternal(browser_view_renderer_.dip_scale());

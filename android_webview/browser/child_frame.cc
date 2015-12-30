@@ -4,6 +4,8 @@
 
 #include "android_webview/browser/child_frame.h"
 
+#include <utility>
+
 #include "cc/output/compositor_frame.h"
 
 namespace android_webview {
@@ -14,7 +16,7 @@ ChildFrame::ChildFrame(scoped_ptr<cc::CompositorFrame> frame,
                        const gfx::Transform& transform_for_tile_priority,
                        bool offscreen_pre_raster,
                        bool is_layer)
-    : frame(frame.Pass()),
+    : frame(std::move(frame)),
       compositor_id(compositor_id),
       viewport_rect_for_tile_priority_empty(
           viewport_rect_for_tile_priority_empty),

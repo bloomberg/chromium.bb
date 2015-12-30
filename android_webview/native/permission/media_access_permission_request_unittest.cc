@@ -61,7 +61,7 @@ class MediaAccessPermissionRequestTest : public testing::Test {
         base::Bind(&MediaAccessPermissionRequestTest::Callback,
                    base::Unretained(this)),
         audio_devices, video_devices));
-    return permission_request.Pass();
+    return permission_request;
   }
 
   std::string audio_device_id_;

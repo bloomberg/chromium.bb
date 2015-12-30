@@ -4,6 +4,8 @@
 
 #include "android_webview/browser/shared_renderer_state.h"
 
+#include <utility>
+
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/child_frame.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
@@ -166,19 +168,19 @@ gfx::Vector2d SharedRendererState::GetScrollOffsetOnRT() {
 void SharedRendererState::SetCompositorFrameOnUI(scoped_ptr<ChildFrame> frame) {
   base::AutoLock lock(lock_);
   DCHECK(!child_frame_.get());
-  child_frame_ = frame.Pass();
+  child_frame_ = std::move(frame);
 }
 
 scoped_ptr<ChildFrame> SharedRendererState::PassCompositorFrameOnRT() {
   base::AutoLock lock(lock_);
   hardware_renderer_has_frame_ =
       hardware_renderer_has_frame_ || child_frame_.get();
-  return child_frame_.Pass();
+  return std::move(child_frame_);
 }
 
 scoped_ptr<ChildFrame> SharedRendererState::PassUncommittedFrameOnUI() {
   base::AutoLock lock(lock_);
-  return child_frame_.Pass();
+  return std::move(child_frame_);
 }
 
 void SharedRendererState::PostExternalDrawConstraintsToChildCompositorOnRT(

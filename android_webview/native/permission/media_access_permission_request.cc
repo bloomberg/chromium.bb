@@ -4,6 +4,8 @@
 
 #include "android_webview/native/permission/media_access_permission_request.h"
 
+#include <utility>
+
 #include "android_webview/native/permission/aw_permission_request.h"
 #include "content/public/browser/media_capture_devices.h"
 
@@ -49,7 +51,8 @@ void MediaAccessPermissionRequest::NotifyRequestResult(bool allowed) {
   scoped_ptr<content::MediaStreamUI> ui;
   MediaStreamDevices devices;
   if (!allowed) {
-    callback_.Run(devices, content::MEDIA_DEVICE_PERMISSION_DENIED, ui.Pass());
+    callback_.Run(devices, content::MEDIA_DEVICE_PERMISSION_DENIED,
+                  std::move(ui));
     return;
   }
 
@@ -72,9 +75,9 @@ void MediaAccessPermissionRequest::NotifyRequestResult(bool allowed) {
     if (device)
       devices.push_back(*device);
   }
-  callback_.Run(devices, devices.empty() ?
-                content::MEDIA_DEVICE_NO_HARDWARE : content::MEDIA_DEVICE_OK,
-                ui.Pass());
+  callback_.Run(devices, devices.empty() ? content::MEDIA_DEVICE_NO_HARDWARE
+                                         : content::MEDIA_DEVICE_OK,
+                std::move(ui));
 }
 
 const GURL& MediaAccessPermissionRequest::GetOrigin() {

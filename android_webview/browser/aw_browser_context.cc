@@ -4,6 +4,8 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 
+#include <utility>
+
 #include "android_webview/browser/aw_browser_policy_connector.h"
 #include "android_webview/browser/aw_form_database_service.h"
 #include "android_webview/browser/aw_permission_manager.h"
@@ -88,7 +90,7 @@ scoped_ptr<net::ProxyConfigService> CreateProxyConfigService() {
   net::ProxyConfigServiceAndroid* android_config_service =
       static_cast<net::ProxyConfigServiceAndroid*>(config_service.get());
   android_config_service->set_exclude_pac_url(true);
-  return config_service.Pass();
+  return config_service;
 }
 
 bool OverrideBlacklistForURL(const GURL& url, bool* block, int* reason) {
@@ -226,7 +228,7 @@ void AwBrowserContext::PreMainMessageLoopRun() {
   data_reduction_proxy_service_.reset(
       new data_reduction_proxy::DataReductionProxyService(
           data_reduction_proxy_settings_.get(), nullptr,
-          GetAwURLRequestContext(), store.Pass(),
+          GetAwURLRequestContext(), std::move(store),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
           db_task_runner, base::TimeDelta()));
@@ -245,9 +247,9 @@ void AwBrowserContext::PreMainMessageLoopRun() {
 
   // TODO(dgn) lazy init, see http://crbug.com/521542
   data_reduction_proxy_settings_->InitDataReductionProxySettings(
-      kDataReductionProxyEnabled,
-      user_pref_service_.get(), data_reduction_proxy_io_data_.get(),
-      data_reduction_proxy_service_.Pass());
+      kDataReductionProxyEnabled, user_pref_service_.get(),
+      data_reduction_proxy_io_data_.get(),
+      std::move(data_reduction_proxy_service_));
   data_reduction_proxy_settings_->MaybeActivateDataReductionProxy(true);
 
   blacklist_manager_.reset(CreateURLBlackListManager(user_pref_service_.get()));
@@ -268,7 +270,7 @@ net::URLRequestContextGetter* AwBrowserContext::CreateRequestContext(
   // has already been allocated and just handle setting the protocol_handlers.
   DCHECK(url_request_context_getter_.get());
   url_request_context_getter_->SetHandlersAndInterceptors(
-      protocol_handlers, request_interceptors.Pass());
+      protocol_handlers, std::move(request_interceptors));
   return url_request_context_getter_.get();
 }
 
@@ -339,7 +341,7 @@ void AwBrowserContext::InitUserPrefService() {
           browser_policy_connector_->GetHandlerList(),
           policy::POLICY_LEVEL_MANDATORY)));
   pref_service_factory.set_read_error_callback(base::Bind(&HandleReadError));
-  user_pref_service_ = pref_service_factory.Create(pref_registry).Pass();
+  user_pref_service_ = pref_service_factory.Create(pref_registry);
 
   user_prefs::UserPrefs::Set(this, user_pref_service_.get());
 }

@@ -5,6 +5,7 @@
 #include "android_webview/browser/net/android_stream_reader_url_request_job.h"
 
 #include <string>
+#include <utility>
 
 #include "android_webview/browser/input_stream.h"
 #include "android_webview/browser/net/input_stream_reader.h"
@@ -54,11 +55,10 @@ const char kHTTPNotFoundText[] = "Not Found";
 class InputStreamReaderWrapper :
     public base::RefCountedThreadSafe<InputStreamReaderWrapper> {
  public:
-  InputStreamReaderWrapper(
-      scoped_ptr<InputStream> input_stream,
-      scoped_ptr<InputStreamReader> input_stream_reader)
-      : input_stream_(input_stream.Pass()),
-        input_stream_reader_(input_stream_reader.Pass()) {
+  InputStreamReaderWrapper(scoped_ptr<InputStream> input_stream,
+                           scoped_ptr<InputStreamReader> input_stream_reader)
+      : input_stream_(std::move(input_stream)),
+        input_stream_reader_(std::move(input_stream_reader)) {
     DCHECK(input_stream_);
     DCHECK(input_stream_reader_);
   }
@@ -91,7 +91,7 @@ AndroidStreamReaderURLRequestJob::AndroidStreamReaderURLRequestJob(
     scoped_ptr<Delegate> delegate)
     : URLRequestJob(request, network_delegate),
       range_parse_result_(net::OK),
-      delegate_(delegate.Pass()),
+      delegate_(std::move(delegate)),
       weak_factory_(this) {
   DCHECK(delegate_);
 }
@@ -103,7 +103,7 @@ AndroidStreamReaderURLRequestJob::AndroidStreamReaderURLRequestJob(
     bool)
     : URLRequestJob(request, network_delegate),
       range_parse_result_(net::OK),
-      delegate_obtainer_(delegate_obtainer.Pass()),
+      delegate_obtainer_(std::move(delegate_obtainer)),
       weak_factory_(this) {
   DCHECK(delegate_obtainer_);
 }
@@ -128,8 +128,8 @@ void OpenInputStreamOnWorkerThread(
 
   scoped_ptr<InputStream> input_stream = delegate->OpenInputStream(env, url);
   job_thread_task_runner->PostTask(
-      FROM_HERE, base::Bind(callback, base::Passed(delegate.Pass()),
-                            base::Passed(input_stream.Pass())));
+      FROM_HERE, base::Bind(callback, base::Passed(std::move(delegate)),
+                            base::Passed(std::move(input_stream))));
 }
 
 } // namespace
@@ -166,7 +166,7 @@ void AndroidStreamReaderURLRequestJob::OnInputStreamOpened(
       scoped_ptr<android_webview::InputStream> input_stream) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(returned_delegate);
-  delegate_ = returned_delegate.Pass();
+  delegate_ = std::move(returned_delegate);
 
   if (!input_stream) {
     bool restart_required = false;
@@ -187,7 +187,7 @@ void AndroidStreamReaderURLRequestJob::OnInputStreamOpened(
 
   DCHECK(!input_stream_reader_wrapper_.get());
   input_stream_reader_wrapper_ = new InputStreamReaderWrapper(
-      input_stream.Pass(), input_stream_reader.Pass());
+      std::move(input_stream), std::move(input_stream_reader));
 
   PostTaskAndReplyWithResult(
       GetWorkerThreadRunner(),

@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "android_webview/native/permission/permission_request_handler.h"
+
+#include <utility>
+
 #include "android_webview/native/permission/aw_permission_request.h"
 #include "android_webview/native/permission/aw_permission_request_delegate.h"
-#include "android_webview/native/permission/permission_request_handler.h"
 #include "android_webview/native/permission/permission_request_handler_client.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -146,7 +149,7 @@ class PermissionRequestHandlerTest : public testing::Test {
   int64_t resources() { return resources_; }
 
   scoped_ptr<AwPermissionRequestDelegate> delegate() {
-    return delegate_.Pass();
+    return std::move(delegate_);
   }
 
   TestPermissionRequestHandler* handler() {
@@ -171,7 +174,7 @@ class PermissionRequestHandlerTest : public testing::Test {
 };
 
 TEST_F(PermissionRequestHandlerTest, TestPermissionGranted) {
-  handler()->SendRequest(delegate().Pass());
+  handler()->SendRequest(delegate());
   // Verify Handler store the request correctly.
   ASSERT_EQ(1u, handler()->requests().size());
   EXPECT_EQ(origin(), handler()->requests()[0]->GetOrigin());
@@ -191,7 +194,7 @@ TEST_F(PermissionRequestHandlerTest, TestPermissionGranted) {
 }
 
 TEST_F(PermissionRequestHandlerTest, TestPermissionDenied) {
-  handler()->SendRequest(delegate().Pass());
+  handler()->SendRequest(delegate());
   // Verify Handler store the request correctly.
   ASSERT_EQ(1u, handler()->requests().size());
   EXPECT_EQ(origin(), handler()->requests()[0]->GetOrigin());
@@ -221,7 +224,7 @@ TEST_F(PermissionRequestHandlerTest, TestMultiplePermissionRequest) {
                  base::Unretained(this))));
 
   // Send 1st request
-  handler()->SendRequest(delegate().Pass());
+  handler()->SendRequest(delegate());
   // Verify Handler store the request correctly.
   ASSERT_EQ(1u, handler()->requests().size());
   EXPECT_EQ(origin(), handler()->requests()[0]->GetOrigin());
@@ -231,7 +234,7 @@ TEST_F(PermissionRequestHandlerTest, TestMultiplePermissionRequest) {
   EXPECT_EQ(resources(), client()->request()->GetResources());
 
   // Send 2nd request
-  handler()->SendRequest(delegate1.Pass());
+  handler()->SendRequest(std::move(delegate1));
   // Verify Handler store the request correctly.
   ASSERT_EQ(2u, handler()->requests().size());
   EXPECT_EQ(origin(), handler()->requests()[0]->GetOrigin());
@@ -246,7 +249,7 @@ TEST_F(PermissionRequestHandlerTest, TestMultiplePermissionRequest) {
   delegate1.reset(new TestAwPermissionRequestDelegate(origin(), resources(),
       base::Bind(&PermissionRequestHandlerTest::NotifyRequestResult,
                  base::Unretained(this))));
-  handler()->SendRequest(delegate1.Pass());
+  handler()->SendRequest(std::move(delegate1));
   // Verify Handler store the request correctly.
   ASSERT_EQ(3u, handler()->requests().size());
   EXPECT_EQ(origin(), handler()->requests()[0]->GetOrigin());
@@ -275,7 +278,7 @@ TEST_F(PermissionRequestHandlerTest, TestPreauthorizePermission) {
   handler()->PreauthorizePermission(origin(), resources());
 
   // Permission should granted without asking PermissionRequestHandlerClient.
-  handler()->SendRequest(delegate().Pass());
+  handler()->SendRequest(delegate());
   EXPECT_TRUE(allowed());
   EXPECT_EQ(NULL, client()->request());
 
@@ -287,7 +290,7 @@ TEST_F(PermissionRequestHandlerTest, TestPreauthorizePermission) {
       base::Bind(&PermissionRequestHandlerTest::NotifyRequestResult,
                  base::Unretained(this))));
   client()->Reset();
-  handler()->SendRequest(delegate.Pass());
+  handler()->SendRequest(std::move(delegate));
   EXPECT_TRUE(allowed());
   EXPECT_EQ(NULL, client()->request());
 }
@@ -303,7 +306,7 @@ TEST_F(PermissionRequestHandlerTest, TestOriginNotPreauthorized) {
       origin, requested_resources,
       base::Bind(&PermissionRequestHandlerTest::NotifyRequestResult,
                  base::Unretained(this))));
-  handler()->SendRequest(delegate.Pass());
+  handler()->SendRequest(std::move(delegate));
   EXPECT_EQ(origin, handler()->requests()[0]->GetOrigin());
   EXPECT_EQ(requested_resources, handler()->requests()[0]->GetResources());
   client()->Grant();
@@ -322,7 +325,7 @@ TEST_F(PermissionRequestHandlerTest, TestResourcesNotPreauthorized) {
       base::Bind(&PermissionRequestHandlerTest::NotifyRequestResult,
                  base::Unretained(this))));
 
-  handler()->SendRequest(delegate.Pass());
+  handler()->SendRequest(std::move(delegate));
   EXPECT_EQ(origin(), handler()->requests()[0]->GetOrigin());
   EXPECT_EQ(requested_resources, handler()->requests()[0]->GetResources());
   client()->Deny();
@@ -340,7 +343,7 @@ TEST_F(PermissionRequestHandlerTest, TestPreauthorizeMultiplePermission) {
       origin_hostname, AwPermissionRequest::Geolocation,
       base::Bind(&PermissionRequestHandlerTest::NotifyRequestResult,
                  base::Unretained(this))));
-  handler()->SendRequest(delegate.Pass());
+  handler()->SendRequest(std::move(delegate));
   EXPECT_TRUE(allowed());
   EXPECT_EQ(NULL, client()->request());
 }

@@ -4,6 +4,8 @@
 
 #include "android_webview/browser/aw_pref_store.h"
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
@@ -41,14 +43,14 @@ void AwPrefStore::SetValue(const std::string& key,
                            scoped_ptr<base::Value> value,
                            uint32_t flags) {
   DCHECK(value);
-  if (prefs_.SetValue(key, value.Pass()))
+  if (prefs_.SetValue(key, std::move(value)))
     ReportValueChanged(key, flags);
 }
 
 void AwPrefStore::SetValueSilently(const std::string& key,
                                    scoped_ptr<base::Value> value,
                                    uint32_t flags) {
-  prefs_.SetValue(key, value.Pass());
+  prefs_.SetValue(key, std::move(value));
 }
 
 void AwPrefStore::RemoveValue(const std::string& key, uint32_t flags) {

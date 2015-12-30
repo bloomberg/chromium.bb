@@ -4,6 +4,8 @@
 
 #include "android_webview/native/permission/aw_permission_request.h"
 
+#include <utility>
+
 #include "android_webview/native/permission/aw_permission_request_delegate.h"
 #include "base/android/jni_string.h"
 #include "jni/AwPermissionRequest_jni.h"
@@ -20,7 +22,7 @@ base::android::ScopedJavaLocalRef<jobject> AwPermissionRequest::Create(
     base::WeakPtr<AwPermissionRequest>* weak_ptr) {
   base::android::ScopedJavaLocalRef<jobject> java_peer;
   AwPermissionRequest* permission_request =
-      new AwPermissionRequest(delegate.Pass(), &java_peer);
+      new AwPermissionRequest(std::move(delegate), &java_peer);
   *weak_ptr = permission_request->weak_factory_.GetWeakPtr();
   return java_peer;
 }
@@ -28,9 +30,7 @@ base::android::ScopedJavaLocalRef<jobject> AwPermissionRequest::Create(
 AwPermissionRequest::AwPermissionRequest(
     scoped_ptr<AwPermissionRequestDelegate> delegate,
     ScopedJavaLocalRef<jobject>* java_peer)
-    : delegate_(delegate.Pass()),
-      processed_(false),
-      weak_factory_(this) {
+    : delegate_(std::move(delegate)), processed_(false), weak_factory_(this) {
   DCHECK(delegate_.get());
   DCHECK(java_peer);
 

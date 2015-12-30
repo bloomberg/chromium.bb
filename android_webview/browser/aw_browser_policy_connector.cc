@@ -50,7 +50,7 @@ scoped_ptr<policy::ConfigurationPolicyHandlerList> BuildHandlerList(
       policy::key::kAuthAndroidNegotiateAccountType,
       prefs::kAuthAndroidNegotiateAccountType, base::Value::TYPE_STRING)));
 
-  return handlers.Pass();
+  return handlers;
 }
 
 }  // namespace

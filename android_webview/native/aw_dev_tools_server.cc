@@ -4,6 +4,8 @@
 
 #include "android_webview/native/aw_dev_tools_server.h"
 
+#include <utility>
+
 #include "android_webview/common/aw_content_client.h"
 #include "android_webview/native/aw_contents.h"
 #include "base/bind.h"
@@ -114,7 +116,7 @@ class UnixDomainServerSocketFactory
     if (socket->ListenWithAddressAndPort(*name, 0, kBackLog) != net::OK)
       return scoped_ptr<net::ServerSocket>();
 
-    return socket.Pass();
+    return std::move(socket);
   }
 
   std::string socket_name_;
@@ -142,13 +144,10 @@ void AwDevToolsServer::Start() {
       new UnixDomainServerSocketFactory(
           base::StringPrintf(kSocketNameFormat, getpid())));
   devtools_http_handler_.reset(new DevToolsHttpHandler(
-      factory.Pass(),
+      std::move(factory),
       base::StringPrintf(kFrontEndURL, content::GetWebKitRevision().c_str()),
-      new AwDevToolsServerDelegate(),
-      base::FilePath(),
-      base::FilePath(),
-      GetProduct(),
-      GetUserAgent()));
+      new AwDevToolsServerDelegate(), base::FilePath(), base::FilePath(),
+      GetProduct(), GetUserAgent()));
 }
 
 void AwDevToolsServer::Stop() {

@@ -4,6 +4,8 @@
 
 #include "android_webview/native/android_protocol_handler.h"
 
+#include <utility>
+
 #include "android_webview/browser/net/android_stream_reader_url_request_job.h"
 #include "android_webview/browser/net/aw_url_request_job_factory.h"
 #include "android_webview/common/url_constants.h"
@@ -222,8 +224,8 @@ net::URLRequestJob* AndroidRequestInterceptorBase::MaybeInterceptRequest(
   scoped_ptr<AndroidStreamReaderURLRequestJobDelegateImpl> reader_delegate(
       new AndroidStreamReaderURLRequestJobDelegateImpl());
 
-  return new AndroidStreamReaderURLRequestJob(
-      request, network_delegate, reader_delegate.Pass());
+  return new AndroidStreamReaderURLRequestJob(request, network_delegate,
+                                              std::move(reader_delegate));
 }
 
 // AssetFileRequestInterceptor ------------------------------------------------

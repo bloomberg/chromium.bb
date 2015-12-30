@@ -4,6 +4,8 @@
 
 #include "android_webview/browser/test/rendering_test.h"
 
+#include <utility>
+
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/child_frame.h"
 #include "base/location.h"
@@ -73,9 +75,9 @@ void RenderingTest::SetCompositorFrame() {
   gfx::Rect viewport(browser_view_renderer_->size());
   root_pass->SetNew(cc::RenderPassId(1, 1), viewport, viewport,
                     gfx::Transform());
-  frame->render_pass_list.push_back(root_pass.Pass());
-  compositor_frame->delegated_frame_data = frame.Pass();
-  compositor_->SetHardwareFrame(compositor_frame.Pass());
+  frame->render_pass_list.push_back(std::move(root_pass));
+  compositor_frame->delegated_frame_data = std::move(frame);
+  compositor_->SetHardwareFrame(std::move(compositor_frame));
 }
 
 void RenderingTest::WillOnDraw() {
