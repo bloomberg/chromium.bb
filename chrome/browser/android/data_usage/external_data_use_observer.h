@@ -22,6 +22,10 @@
 #include "components/data_usage/core/data_use_aggregator.h"
 #include "net/base/network_change_notifier.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/application_status_listener.h"
+#endif
+
 namespace base {
 class SingleThreadTaskRunner;
 }
@@ -90,6 +94,10 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, BufferDataUseReports);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, BufferSize);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, DataUseReportTimedOut);
+#if defined(OS_ANDROID)
+  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
+                           DataUseReportingOnApplicationStatusChange);
+#endif
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, HashFunction);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, MultipleMatchingRules);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
@@ -191,8 +199,16 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // |buffered_data_reports_|. Since an unordered map is used to buffer the
   // reports, the order of reports may change. The reports are buffered in an
   // arbitrary order and there are no guarantees that the next report to be
-  // submitted is the oldest one buffered.
-  void SubmitBufferedDataUseReport();
+  // submitted is the oldest one buffered. |immediate| indicates whether to
+  // submit the report immediately or to wait until |data_use_report_min_bytes_|
+  // unreported bytes are buffered.
+  void SubmitBufferedDataUseReport(bool immediate);
+
+#if defined(OS_ANDROID)
+  // Called whenever the application transitions from foreground to background
+  // or vice versa.
+  void OnApplicationStateChange(base::android::ApplicationState new_state);
+#endif
 
   // Aggregator that sends data use observations to |this|.
   data_usage::DataUseAggregator* data_use_aggregator_;
@@ -242,6 +258,12 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // If a data use report is pending for more than |data_report_submit_timeout_|
   // duration, it is considered as timed out.
   const base::TimeDelta data_report_submit_timeout_;
+
+#if defined(OS_ANDROID)
+  // Listens to when Chromium gets backgrounded and submits buffered data use
+  // reports.
+  scoped_ptr<base::android::ApplicationStatusListener> app_state_listener_;
+#endif
 
   // True if |this| is currently registered as a data use observer.
   bool registered_as_data_use_observer_;

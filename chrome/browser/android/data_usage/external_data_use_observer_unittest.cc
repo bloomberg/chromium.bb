@@ -375,7 +375,7 @@ TEST_F(ExternalDataUseObserverTest, PeriodicFetchMatchingRules) {
             external_data_use_observer()->fetch_matching_rules_duration_);
 }
 
-// Tests if data use reports are sent only after the total bytes send/received
+// Tests if data use reports are sent only after the total bytes sent/received
 // across all buffered reports have reached the specified threshold.
 TEST_F(ExternalDataUseObserverTest, BufferDataUseReports) {
   AddDefaultMatchingRule();
@@ -396,7 +396,7 @@ TEST_F(ExternalDataUseObserverTest, BufferDataUseReports) {
 
     if (i != num_iterations - 1) {
       // Total buffered bytes is less than the minimum threshold. Data use
-      // report should not be send.
+      // report should not be sent.
       EXPECT_TRUE(external_data_use_observer()
                       ->last_data_report_submitted_ticks_.is_null());
       EXPECT_EQ(static_cast<int64_t>(i + 1),
@@ -439,6 +439,63 @@ TEST_F(ExternalDataUseObserverTest, BufferDataUseReports) {
       "DataUsage.ReportSubmission.Bytes.Failed",
       external_data_use_observer()->data_use_report_min_bytes_, 1);
 }
+
+#if defined(OS_ANDROID)
+// Tests data use report submission when application status callback is called.
+// Report should be submitted even if the number of bytes is less than the
+// threshold. Report should not be submitted if there is a pending report.
+TEST_F(ExternalDataUseObserverTest, DataUseReportingOnApplicationStatusChange) {
+  AddDefaultMatchingRule();
+  TriggerTabTrackingOnDefaultTab();
+
+  // Report with less than threshold bytes should be reported, on application
+  // state change to background.
+  data_usage::DataUse data_use = default_data_use();
+  data_use.tx_bytes = 1;
+  data_use.rx_bytes = 1;
+  OnDataUse(data_use);
+  EXPECT_TRUE(external_data_use_observer()
+                  ->last_data_report_submitted_ticks_.is_null());
+  EXPECT_EQ(2, external_data_use_observer()->total_bytes_buffered_);
+  EXPECT_EQ(0, external_data_use_observer()->pending_report_bytes_);
+
+  external_data_use_observer()->OnApplicationStateChange(
+      base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES);
+  EXPECT_FALSE(external_data_use_observer()
+                   ->last_data_report_submitted_ticks_.is_null());
+  EXPECT_EQ(0, external_data_use_observer()->total_bytes_buffered_);
+  EXPECT_EQ(2, external_data_use_observer()->pending_report_bytes_);
+  external_data_use_observer()->OnReportDataUseDone(true);
+
+  // Create pending report.
+  OnDataUse(default_data_use());
+  EXPECT_FALSE(external_data_use_observer()
+                   ->last_data_report_submitted_ticks_.is_null());
+  EXPECT_EQ(0, external_data_use_observer()->total_bytes_buffered_);
+  EXPECT_EQ(default_upload_bytes() + default_download_bytes(),
+            external_data_use_observer()->pending_report_bytes_);
+
+  // Application state change should not submit if there is a pending report.
+  data_use.tx_bytes = 1;
+  data_use.rx_bytes = 1;
+  OnDataUse(data_use);
+  external_data_use_observer()->OnApplicationStateChange(
+      base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES);
+  EXPECT_FALSE(external_data_use_observer()
+                   ->last_data_report_submitted_ticks_.is_null());
+  EXPECT_EQ(2, external_data_use_observer()->total_bytes_buffered_);
+  EXPECT_EQ(default_upload_bytes() + default_download_bytes(),
+            external_data_use_observer()->pending_report_bytes_);
+
+  // Once pending report submission done callback was received, report should be
+  // submitted on next application state change.
+  external_data_use_observer()->OnReportDataUseDone(true);
+  external_data_use_observer()->OnApplicationStateChange(
+      base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES);
+  EXPECT_EQ(0, external_data_use_observer()->total_bytes_buffered_);
+  EXPECT_EQ(2, external_data_use_observer()->pending_report_bytes_);
+}
+#endif // OS_ANDROID
 
 // Tests if the parameters from the field trial are populated correctly.
 TEST_F(ExternalDataUseObserverTest, Variations) {

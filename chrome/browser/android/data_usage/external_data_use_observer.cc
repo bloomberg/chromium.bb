@@ -146,6 +146,11 @@ ExternalDataUseObserver::ExternalDataUseObserver(
       data_use_report_min_bytes_(GetMinBytes()),
       data_report_submit_timeout_(
           base::TimeDelta::FromMilliseconds(GetDataReportSubmitTimeoutMsec())),
+#if defined(OS_ANDROID)
+      app_state_listener_(new base::android::ApplicationStatusListener(
+          base::Bind(&ExternalDataUseObserver::OnApplicationStateChange,
+                     base::Unretained(this)))),
+#endif
       registered_as_data_use_observer_(false),
       weak_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
@@ -204,8 +209,17 @@ void ExternalDataUseObserver::OnReportDataUseDone(bool success) {
   last_data_report_submitted_ticks_ = base::TimeTicks();
   pending_report_bytes_ = 0;
 
-  SubmitBufferedDataUseReport();
+  SubmitBufferedDataUseReport(false);
 }
+
+#if defined(OS_ANDROID)
+void ExternalDataUseObserver::OnApplicationStateChange(
+    base::android::ApplicationState new_state) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (new_state == base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES)
+    SubmitBufferedDataUseReport(true);
+}
+#endif
 
 void ExternalDataUseObserver::OnDataUse(const data_usage::DataUse& data_use) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -270,7 +284,7 @@ void ExternalDataUseObserver::DataUseLabelApplied(
     return;
 
   BufferDataUseReport(data_use, *label, start_time, end_time);
-  SubmitBufferedDataUseReport();
+  SubmitBufferedDataUseReport(false);
 }
 
 void ExternalDataUseObserver::BufferDataUseReport(
@@ -320,7 +334,7 @@ void ExternalDataUseObserver::BufferDataUseReport(
   DCHECK_LE(buffered_data_reports_.size(), kMaxBufferSize);
 }
 
-void ExternalDataUseObserver::SubmitBufferedDataUseReport() {
+void ExternalDataUseObserver::SubmitBufferedDataUseReport(bool immediate) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   const base::TimeTicks ticks_now = base::TimeTicks::Now();
@@ -336,7 +350,7 @@ void ExternalDataUseObserver::SubmitBufferedDataUseReport() {
   if (buffered_data_reports_.empty())
     return;
 
-  if (total_bytes_buffered_ < data_use_report_min_bytes_)
+  if (!immediate && total_bytes_buffered_ < data_use_report_min_bytes_)
     return;
 
   if (!last_data_report_submitted_ticks_.is_null()) {
