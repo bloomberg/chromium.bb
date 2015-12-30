@@ -38,5 +38,10 @@ test(function() {
     assert_false(proxy.supports('scrollTopa'));
 
     assert_false(proxy.supports('あ'));
+
+    // This is a hack to get a 16-bit string for a supported property.
+    var transform16 = new TextDecoder('utf-16').decode(new TextEncoder('utf-16').encode('transform'));
+    assert_true(transform16 === 'transform');
+    assert_true(proxy.supports(transform16));
 }, "This test ensures that supports correctly handles queries with strings that a prefix of a property or vice versa.");
 </script>

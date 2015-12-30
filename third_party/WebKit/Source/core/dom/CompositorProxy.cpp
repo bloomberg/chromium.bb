@@ -17,39 +17,23 @@
 
 namespace blink {
 
-struct MutablePropertyMapping {
+static const struct {
     const char* name;
-    unsigned length;
     WebCompositorMutableProperty property;
+} allowedProperties[] = {
+    { "opacity", WebCompositorMutablePropertyOpacity },
+    { "scrollleft", WebCompositorMutablePropertyScrollLeft },
+    { "scrolltop", WebCompositorMutablePropertyScrollTop },
+    { "transform", WebCompositorMutablePropertyTransform },
 };
-
-// Warning: In order for std::lower_bound to work, the following must be in
-// alphabetical order.
-static MutablePropertyMapping allowedProperties[] = {
-    { "opacity", 7, WebCompositorMutablePropertyOpacity },
-    { "scrollleft", 10, WebCompositorMutablePropertyScrollLeft },
-    { "scrolltop", 9, WebCompositorMutablePropertyScrollTop },
-    { "transform", 9, WebCompositorMutablePropertyTransform },
-};
-
-static bool comparePropertyName(const MutablePropertyMapping& mapping, StringImpl* propertyLower)
-{
-    ASSERT(propertyLower->is8Bit());
-    return memcmp(mapping.name, propertyLower->characters8(), std::min(mapping.length, propertyLower->length())) < 0;
-}
 
 static WebCompositorMutableProperty compositorMutablePropertyForName(const String& attributeName)
 {
-    WebCompositorMutableProperty property = WebCompositorMutablePropertyNone;
-    const String attributeLower = attributeName.lower();
-    const MutablePropertyMapping* start = allowedProperties;
-    const MutablePropertyMapping* end = allowedProperties + WTF_ARRAY_LENGTH(allowedProperties);
-    if (attributeLower.impl()->is8Bit()) {
-        const MutablePropertyMapping* match = std::lower_bound(start, end, attributeLower.impl(), comparePropertyName);
-        if (match != end && equal(match->name, attributeLower.impl()))
-            property = match->property;
+    for (const auto& mapping : allowedProperties) {
+        if (equalIgnoringCase(mapping.name, attributeName))
+            return mapping.property;
     }
-    return property;
+    return WebCompositorMutablePropertyNone;
 }
 
 static bool isControlThread()
