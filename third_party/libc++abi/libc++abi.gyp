@@ -33,6 +33,12 @@
         'trunk/include',
         '../libc++/trunk/include'
       ],
+      'variables': {
+        'clang_warning_flags': [
+          # http://llvm.org/PR25978
+          '-Wno-unused-function',
+        ],
+      },
       'cflags': [
         '-fPIC',
         '-fstrict-aliasing',

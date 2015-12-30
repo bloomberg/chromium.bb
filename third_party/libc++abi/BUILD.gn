@@ -2,6 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+config("libc++abi_warnings") {
+  if (is_clang) {
+    # http://llvm.org/PR25978
+    cflags = [ "-Wno-unused-function" ]
+  }
+}
+
 static_library("libc++abi") {
   sources = [
     "trunk/src/abort_message.cpp",
@@ -33,5 +40,7 @@ static_library("libc++abi") {
     "//build/config/compiler:no_chromium_code",
     "//build/config/compiler:rtti",
     "//buildtools/third_party/libc++:config",
+    # Must be after no_chromium_code.
+    ":libc++abi_warnings",
   ]
 }
