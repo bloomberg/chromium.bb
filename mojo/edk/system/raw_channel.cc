@@ -649,7 +649,8 @@ void RawChannel::DispatchMessages(bool* did_dispatch_message,
       return;  // |this| may have been destroyed in |CallOnError()|.
     }
 
-    if (message_view.type() != MessageInTransit::Type::MESSAGE) {
+    if (message_view.type() != MessageInTransit::Type::MESSAGE &&
+        message_view.type() != MessageInTransit::Type::QUIT_MESSAGE) {
       if (!OnReadMessageForRawChannel(message_view)) {
         CallOnError(Delegate::ERROR_READ_BAD_MESSAGE);
         *stop_dispatching = true;

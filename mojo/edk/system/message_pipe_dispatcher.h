@@ -93,6 +93,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher final
   ~MessagePipeDispatcher() override;
 
   void InitOnIO();
+  void CloseOnIOAndRelease();
   void CloseOnIO();
 
   // |Dispatcher| protected methods:
@@ -171,11 +172,21 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher final
   // get a RawChannel.
   uint64_t pipe_id_;
   enum NonTransferableState {
+    // The pipe_id hasn't been bound to this object yet until it's read,
+    // written, or waited on.
     WAITING_FOR_READ_OR_WRITE,
+    // This object was interacted with, so the pipe_id has been bound and we are
+    // waiting for the broker to connect both sides.
     CONNECT_CALLED,
+    // We have a connection to the other end of the message pipe.
     CONNECTED,
+    // This object has been closed before it's connected. To ensure that the
+    // other end receives a closed message from this end, we've initiated
+    // connecting and will close after it succeeds.
     WAITING_FOR_CONNECT_TO_CLOSE,
+    // The message pipe is closed.
     CLOSED,
+    // The message pipe has been transferred.
     SERIALISED,
   };
 
@@ -198,6 +209,10 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher final
   bool write_error_;
   // Whether it can be sent after read or write.
   bool transferable_;
+  // When this object is closed, it has to wait to flush any pending messages
+  // from the other side to ensure that any in-queue message pipes are closed.
+  // If this is true, we have already sent the other side the request.
+  bool close_requested_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(MessagePipeDispatcher);
 };

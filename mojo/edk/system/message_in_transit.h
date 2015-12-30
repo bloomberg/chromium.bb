@@ -46,12 +46,16 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
     MESSAGE = 0,
     // Since there's a limit on how many fds can be sent in one sendmsg call, if
     // a message has more than that the fds are sent in this message type first.
-    RAW_CHANNEL_POSIX_EXTRA_PLATFORM_HANDLES = 1,
+    RAW_CHANNEL_POSIX_EXTRA_PLATFORM_HANDLES,
     // When a RawChannel is serialized, there could be pending messages to be
     // written to the pipe. They are serialized to shared memory. When they're
     // deserialized on the receiving end, we want to write them to the pipe
     // without any message headers, because those have already been written.
-    RAW_MESSAGE = 3,
+    RAW_MESSAGE,
+    // Tells the other side to close its pipe. This is needed because when a
+    // MessagePipeDispatcher is closed, it has to wait to flush any pending
+    // messages or else in-flight message pipes won't be closed.
+    QUIT_MESSAGE,
   };
 
   // Messages (the header and data) must always be aligned to a multiple of this
