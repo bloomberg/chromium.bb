@@ -312,24 +312,51 @@ public class PhysicalWebUma {
             }
         }
 
-        private static Object[] parseJsonArray(String jsonArrayStr, Class<?> itemType) {
+        private static Number[] parseJsonNumberArray(String jsonArrayStr) {
             try {
                 JSONArray values = new JSONArray(jsonArrayStr);
-                Object[] arr = new Object[values.length()];
+                Number[] array = new Number[values.length()];
                 for (int i = 0; i < values.length(); i++) {
-                    arr[i] = values.get(i);
-                    if (arr[i].getClass() != itemType) return null;
+                    Object object = values.get(i);
+                    if (!(object instanceof Number)) {
+                        return null;
+                    }
+                    array[i] = (Number) object;
                 }
-                return arr;
+                return array;
             } catch (JSONException e) {
                 return null;
             }
         }
 
+        private static Long[] parseJsonLongArray(String jsonArrayStr) {
+            Number[] numbers = parseJsonNumberArray(jsonArrayStr);
+            if (numbers == null) {
+                return null;
+            }
+            Long[] array = new Long[numbers.length];
+            for (int i = 0; i < numbers.length; i++) {
+                array[i] = numbers[i].longValue();
+            }
+            return array;
+        }
+
+        private static Integer[] parseJsonIntegerArray(String jsonArrayStr) {
+            Number[] numbers = parseJsonNumberArray(jsonArrayStr);
+            if (numbers == null) {
+                return null;
+            }
+            Integer[] array = new Integer[numbers.length];
+            for (int i = 0; i < numbers.length; i++) {
+                array[i] = numbers[i].intValue();
+            }
+            return array;
+        }
+
         private static void uploadTimes(String jsonTimesStr, final String key, final TimeUnit tu) {
-            Long[] times = (Long[]) parseJsonArray(jsonTimesStr, Long.class);
+            Long[] times = parseJsonLongArray(jsonTimesStr);
             if (times == null) {
-                Log.e(TAG, "Error reporting " + key);
+                Log.e(TAG, "Error reporting " + key + " with values: " + jsonTimesStr);
                 return;
             }
             for (Long time : times) {
@@ -338,9 +365,9 @@ public class PhysicalWebUma {
         }
 
         private static void uploadCounts(String jsonCountsStr, final String key) {
-            Integer[] counts = (Integer[]) parseJsonArray(jsonCountsStr, Long.class);
+            Integer[] counts = parseJsonIntegerArray(jsonCountsStr);
             if (counts == null) {
-                Log.e(TAG, "Error reporting " + key);
+                Log.e(TAG, "Error reporting " + key + " with values: " + jsonCountsStr);
                 return;
             }
             for (Integer count: counts) {
