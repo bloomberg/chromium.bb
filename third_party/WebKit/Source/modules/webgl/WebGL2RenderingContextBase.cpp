@@ -855,23 +855,10 @@ void WebGL2RenderingContextBase::texStorage3D(GLenum target, GLsizei levels, GLe
     tex->setTexStorageInfo(target, levels, internalformat, width, height, depth);
 }
 
-bool WebGL2RenderingContextBase::validateTexImage3D(const char* functionName, GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type)
-{
-    if (!validateTexFunc3DTarget(functionName, target))
-        return false;
-
-    if (!validateTexFuncLevel(functionName, target, level))
-        return false;
-
-    if (!validateTexFuncParameters(functionName, NotTexSubImage2D, target, level, internalformat, width, height, depth, border, format, type))
-        return false;
-
-    return true;
-}
-
 void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
-    if (isContextLost() || !validateTexImage3D("texImage3D", target, level, internalformat, width, height, depth, border, format, type)
+    if (isContextLost() || !validateTexFunc3DTarget("texImage3D", target)
+        || !validateTexFunc("texImage3D", NotTexSubImage2D, SourceArrayBufferView, target, level, internalformat, width, height, depth, border, format, type, 0, 0, 0)
         || !validateTexFuncData("texImage3D", level, width, height, depth, format, type, pixels, NullAllowed))
         return;
 
@@ -884,14 +871,7 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint in
     }
 
     WebGLTexture* tex = validateTextureBinding("texImage3D", target, true);
-    if (!tex)
-        return;
-
-    if (tex->isImmutable()) {
-        synthesizeGLError(GL_INVALID_OPERATION, "texImage3D", "attempted to modify immutable texture");
-        return;
-    }
-
+    ASSERT(tex);
     webContext()->texImage3D(target, level, convertTexInternalFormat(internalformat, type), width, height, depth, border, format, type, data);
     tex->setLevelInfo(target, level, internalformat, width, height, depth, type);
 }

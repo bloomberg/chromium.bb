@@ -929,10 +929,10 @@ protected:
         SourceImageBitmap,
     };
 
-    // Helper function for tex{Sub}Image2D to check if the input format/type/level/target/width/height/border/xoffset/yoffset are valid.
+    // Helper function for tex{Sub}Image{2|3}D to check if the input format/type/level/target/width/height/depth/border/xoffset/yoffset/zoffset are valid.
     // Otherwise, it would return quickly without doing other work.
     bool validateTexFunc(const char* functionName, TexImageFunctionType, TexFuncValidationSourceType, GLenum target, GLint level, GLenum internalformat, GLsizei width,
-        GLsizei height, GLint border, GLenum format, GLenum type, GLint xoffset, GLint yoffset);
+        GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, GLint xoffset, GLint yoffset, GLint zoffset);
 
     // Helper function to check input width and height for functions {copy, compressed}Tex{Sub}Image.
     // Generates GL error and returns false if width or height is invalid.
