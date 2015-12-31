@@ -48,7 +48,7 @@ def main():
   args = parser.parse_args()
 
   fixits = collections.defaultdict(list)
-  for line in fileinput.input():
+  for line in fileinput.input(['-']):
     if not line.startswith('fix-it:'):
       continue
     m = _FIXIT_RE.match(line)
