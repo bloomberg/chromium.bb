@@ -236,13 +236,12 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
       const std::string& key_system) {
 #if defined(WIDEVINE_CDM_AVAILABLE)
     if (IsWidevine(key_system)) {
-      scoped_ptr<TestLicenseServerConfig> config =
-         scoped_ptr<TestLicenseServerConfig>(new WVTestLicenseServerConfig());
+      scoped_ptr<TestLicenseServerConfig> config(new WVTestLicenseServerConfig);
       if (config->IsPlatformSupported())
-        return config.Pass();
+        return config;
     }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
-    return scoped_ptr<TestLicenseServerConfig>();
+    return nullptr;
   }
 
  protected:
