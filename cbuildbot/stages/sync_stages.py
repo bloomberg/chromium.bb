@@ -42,6 +42,8 @@ from chromite.lib import patch as cros_patch
 from chromite.lib import timeout_util
 from chromite.scripts import cros_mark_chrome_as_stable
 
+from infra_libs.ts_mon.common import metrics
+
 
 site_config = config_lib.GetConfig()
 
@@ -1583,6 +1585,12 @@ class PreCQLauncherStage(SyncStage):
         launch_count += len(configs)
         cl_launch_count += len(configs) * len(plan)
 
+    metrics.CounterMetric('chromeos/cbuildbot/pre-cq/launch_count')\
+          .increment_by(launch_count)
+    metrics.CounterMetric('chromeos/cbuildbot/pre-cq/cl_launch_count')\
+          .increment_by(cl_launch_count)
+    metrics.CounterMetric('chromeos/cbuildbot/pre-cq/tick_count')\
+          .increment()
     graphite.StatsFactory.GetInstance().Counter('pre-cq').increment(
         'launch_count', launch_count)
     graphite.StatsFactory.GetInstance().Counter('pre-cq').increment(
