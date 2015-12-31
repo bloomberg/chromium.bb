@@ -402,7 +402,7 @@ TEST(ScopedPtrTest, MoveBehavior) {
     EXPECT_TRUE(scoper3.get());
   }
 
-#if !(defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if !(defined(OS_ANDROID) || (defined(OS_LINUX) && !defined(OS_CHROMEOS)))
   // Test uncaught Pass() does not have side effects, because Pass()
   // is implemented by std::move().
   // TODO(danakj): Remove this test case when we remove Pass().
