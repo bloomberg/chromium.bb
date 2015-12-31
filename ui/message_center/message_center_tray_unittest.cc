@@ -300,7 +300,7 @@ TEST_F(MessageCenterTrayTest, ContextMenuTestWithMessageCenter) {
       ASCIIToUTF16("Notification message body."), gfx::Image(),
       base::string16() /* empty display source */, GURL(), notifier_id2,
       message_center::RichNotificationData(), NULL /* delegate */));
-  message_center_->AddNotification(notification.Pass());
+  message_center_->AddNotification(std::move(notification));
 
   AddNotification(id3);
 

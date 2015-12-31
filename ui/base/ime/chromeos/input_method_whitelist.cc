@@ -59,7 +59,7 @@ InputMethodWhitelist::GetSupportedInputMethods() const {
         GURL() // input view page url.
         ));
   }
-  return input_methods.Pass();
+  return input_methods;
 }
 
 }  // namespace input_method

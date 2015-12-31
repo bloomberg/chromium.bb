@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/display/chromeos/update_display_configuration_task.h"
+
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -13,7 +16,6 @@
 #include "ui/display/chromeos/test/action_logger_util.h"
 #include "ui/display/chromeos/test/test_display_snapshot.h"
 #include "ui/display/chromeos/test/test_native_display_delegate.h"
-#include "ui/display/chromeos/update_display_configuration_task.h"
 
 namespace ui {
 namespace test {
@@ -55,7 +57,7 @@ class TestDisplayLayoutManager : public DisplayLayoutManager {
   void set_software_mirroring_controller(
       scoped_ptr<DisplayConfigurator::SoftwareMirroringController>
           software_mirroring_controller) {
-    software_mirroring_controller_ = software_mirroring_controller.Pass();
+    software_mirroring_controller_ = std::move(software_mirroring_controller);
   }
 
   // DisplayConfigurator::DisplayLayoutManager:

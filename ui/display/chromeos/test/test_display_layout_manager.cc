@@ -4,6 +4,8 @@
 
 #include "ui/display/chromeos/test/test_display_layout_manager.h"
 
+#include <utility>
+
 #include "ui/display/types/display_snapshot.h"
 
 namespace ui {
@@ -12,7 +14,7 @@ namespace test {
 TestDisplayLayoutManager::TestDisplayLayoutManager(
     ScopedVector<DisplaySnapshot> displays,
     MultipleDisplayState display_state)
-    : displays_(displays.Pass()), display_state_(display_state) {
+    : displays_(std::move(displays)), display_state_(display_state) {
 }
 
 TestDisplayLayoutManager::~TestDisplayLayoutManager() {

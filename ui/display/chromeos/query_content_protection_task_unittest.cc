@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/display/chromeos/query_content_protection_task.h"
+
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/chromeos/display_layout_manager.h"
-#include "ui/display/chromeos/query_content_protection_task.h"
 #include "ui/display/chromeos/test/action_logger_util.h"
 #include "ui/display/chromeos/test/test_display_layout_manager.h"
 #include "ui/display/chromeos/test/test_display_snapshot.h"
@@ -25,7 +27,7 @@ scoped_ptr<DisplaySnapshot> CreateDisplaySnapshot(int64_t id,
   display->set_display_id(id);
   display->set_type(type);
 
-  return display.Pass();
+  return std::move(display);
 }
 
 }  // namespace
@@ -56,7 +58,7 @@ TEST_F(QueryContentProtectionTaskTest, QueryWithNoHDCPCapableDisplay) {
   ScopedVector<DisplaySnapshot> displays;
   displays.push_back(
       CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_INTERNAL));
-  TestDisplayLayoutManager layout_manager(displays.Pass(),
+  TestDisplayLayoutManager layout_manager(std::move(displays),
                                           MULTIPLE_DISPLAY_STATE_SINGLE);
 
   QueryContentProtectionTask task(
@@ -75,7 +77,7 @@ TEST_F(QueryContentProtectionTaskTest, QueryWithNoHDCPCapableDisplay) {
 TEST_F(QueryContentProtectionTaskTest, QueryWithUnknownDisplay) {
   ScopedVector<DisplaySnapshot> displays;
   displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_UNKNOWN));
-  TestDisplayLayoutManager layout_manager(displays.Pass(),
+  TestDisplayLayoutManager layout_manager(std::move(displays),
                                           MULTIPLE_DISPLAY_STATE_SINGLE);
 
   QueryContentProtectionTask task(
@@ -94,7 +96,7 @@ TEST_F(QueryContentProtectionTaskTest, QueryWithUnknownDisplay) {
 TEST_F(QueryContentProtectionTaskTest, FailQueryWithHDMIDisplay) {
   ScopedVector<DisplaySnapshot> displays;
   displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_HDMI));
-  TestDisplayLayoutManager layout_manager(displays.Pass(),
+  TestDisplayLayoutManager layout_manager(std::move(displays),
                                           MULTIPLE_DISPLAY_STATE_SINGLE);
   display_delegate_.set_get_hdcp_state_expectation(false);
 
@@ -112,7 +114,7 @@ TEST_F(QueryContentProtectionTaskTest, FailQueryWithHDMIDisplay) {
 TEST_F(QueryContentProtectionTaskTest, QueryWithHDMIDisplayAndUnfulfilled) {
   ScopedVector<DisplaySnapshot> displays;
   displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_HDMI));
-  TestDisplayLayoutManager layout_manager(displays.Pass(),
+  TestDisplayLayoutManager layout_manager(std::move(displays),
                                           MULTIPLE_DISPLAY_STATE_SINGLE);
 
   QueryContentProtectionTask task(
@@ -131,7 +133,7 @@ TEST_F(QueryContentProtectionTaskTest, QueryWithHDMIDisplayAndUnfulfilled) {
 TEST_F(QueryContentProtectionTaskTest, QueryWithHDMIDisplayAndFulfilled) {
   ScopedVector<DisplaySnapshot> displays;
   displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_HDMI));
-  TestDisplayLayoutManager layout_manager(displays.Pass(),
+  TestDisplayLayoutManager layout_manager(std::move(displays),
                                           MULTIPLE_DISPLAY_STATE_SINGLE);
   display_delegate_.set_hdcp_state(HDCP_STATE_ENABLED);
 
@@ -152,7 +154,7 @@ TEST_F(QueryContentProtectionTaskTest, QueryWith2HDCPDisplays) {
   ScopedVector<DisplaySnapshot> displays;
   displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_HDMI));
   displays.push_back(CreateDisplaySnapshot(2, DISPLAY_CONNECTION_TYPE_DVI));
-  TestDisplayLayoutManager layout_manager(displays.Pass(),
+  TestDisplayLayoutManager layout_manager(std::move(displays),
                                           MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
 
   QueryContentProtectionTask task(
@@ -172,7 +174,7 @@ TEST_F(QueryContentProtectionTaskTest, QueryWithMirrorHDCPDisplays) {
   ScopedVector<DisplaySnapshot> displays;
   displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_HDMI));
   displays.push_back(CreateDisplaySnapshot(2, DISPLAY_CONNECTION_TYPE_DVI));
-  TestDisplayLayoutManager layout_manager(displays.Pass(),
+  TestDisplayLayoutManager layout_manager(std::move(displays),
                                           MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
 
   QueryContentProtectionTask task(

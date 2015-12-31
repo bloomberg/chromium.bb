@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/time/default_tick_clock.h"
 #include "ui/display/chromeos/x11/native_display_event_dispatcher_x11.h"
+
+#include <X11/extensions/Xrandr.h>
+#include <utility>
+
+#include "base/time/default_tick_clock.h"
 #include "ui/display/chromeos/x11/display_mode_x11.h"
 #include "ui/display/chromeos/x11/display_snapshot_x11.h"
 #include "ui/events/platform/platform_event_source.h"
-
-#include <X11/extensions/Xrandr.h>
 
 namespace ui {
 
@@ -108,7 +110,7 @@ uint32_t NativeDisplayEventDispatcherX11::DispatchEvent(
 
 void NativeDisplayEventDispatcherX11::SetTickClockForTest(
     scoped_ptr<base::TickClock> tick_clock) {
-  tick_clock_ = tick_clock.Pass();
+  tick_clock_ = std::move(tick_clock);
   startup_time_ = tick_clock_->NowTicks();
 }
 
