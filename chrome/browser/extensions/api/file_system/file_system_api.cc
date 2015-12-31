@@ -1458,9 +1458,8 @@ ExtensionFunction::ResponseAction FileSystemGetVolumeListFunction::Run() {
   std::vector<linked_ptr<Volume>> result_volume_list;
   FillVolumeList(chrome_details_.GetProfile(), &result_volume_list);
 
-  return RespondNow(
-      ArgumentList(api::file_system::GetVolumeList::Results::Create(
-                       result_volume_list).Pass()));
+  return RespondNow(ArgumentList(
+      api::file_system::GetVolumeList::Results::Create(result_volume_list)));
 }
 #endif
 

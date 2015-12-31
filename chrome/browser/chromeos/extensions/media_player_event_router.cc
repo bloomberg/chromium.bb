@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 
+#include <utility>
+
 #include "base/memory/singleton.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
@@ -19,8 +21,8 @@ void BroadcastEvent(content::BrowserContext* context,
   if (context && EventRouter::Get(context)) {
     scoped_ptr<base::ListValue> args(new base::ListValue());
     scoped_ptr<Event> event(
-        new Event(histogram_value, event_name, args.Pass()));
-    EventRouter::Get(context)->BroadcastEvent(event.Pass());
+        new Event(histogram_value, event_name, std::move(args)));
+    EventRouter::Get(context)->BroadcastEvent(std::move(event));
   }
 }
 

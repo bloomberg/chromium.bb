@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/image_writer_private/test_utils.h"
 
 #include <string.h>
+#include <utility>
 
 #include "build/build_config.h"
 
@@ -168,7 +169,7 @@ void ImageWriterTestUtils::SetUp(bool is_browser_test) {
         chromeos::DBusThreadManager::GetSetterForTesting();
     scoped_ptr<chromeos::ImageBurnerClient>
         image_burner_fake(new ImageWriterFakeImageBurnerClient());
-    dbus_setter->SetImageBurnerClient(image_burner_fake.Pass());
+    dbus_setter->SetImageBurnerClient(std::move(image_burner_fake));
   }
 
   FakeDiskMountManager* disk_manager = new FakeDiskMountManager();

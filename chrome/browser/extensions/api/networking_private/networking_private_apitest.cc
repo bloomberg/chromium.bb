@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
-
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -39,7 +39,7 @@ const char kGuid[] = "SOME_GUID";
 class TestDelegate : public NetworkingPrivateDelegate {
  public:
   explicit TestDelegate(scoped_ptr<VerifyDelegate> verify_delegate)
-      : NetworkingPrivateDelegate(verify_delegate.Pass()), fail_(false) {}
+      : NetworkingPrivateDelegate(std::move(verify_delegate)), fail_(false) {}
 
   ~TestDelegate() override {}
 
@@ -97,7 +97,7 @@ class TestDelegate : public NetworkingPrivateDelegate {
                          ::onc::network_config::kEthernet);
       network->SetString(::onc::network_config::kGUID, kGuid);
       result->Append(network.release());
-      success_callback.Run(result.Pass());
+      success_callback.Run(std::move(result));
     }
   }
 
@@ -165,20 +165,20 @@ class TestDelegate : public NetworkingPrivateDelegate {
       result.reset(new base::ListValue);
       result->AppendString(::onc::network_config::kEthernet);
     }
-    return result.Pass();
+    return result;
   }
 
   scoped_ptr<DeviceStateList> GetDeviceStateList() override {
     scoped_ptr<DeviceStateList> result;
     if (fail_)
-      return result.Pass();
+      return result;
     result.reset(new DeviceStateList);
     scoped_ptr<api::networking_private::DeviceStateProperties> properties(
         new api::networking_private::DeviceStateProperties);
     properties->type = api::networking_private::NETWORK_TYPE_ETHERNET;
     properties->state = api::networking_private::DEVICE_STATE_TYPE_ENABLED;
-    result->push_back(properties.Pass());
-    return result.Pass();
+    result->push_back(std::move(properties));
+    return result;
   }
 
   bool EnableNetworkType(const std::string& type) override {
@@ -211,7 +211,7 @@ class TestDelegate : public NetworkingPrivateDelegate {
       result->SetString(::onc::network_config::kGUID, guid);
       result->SetString(::onc::network_config::kType,
                         ::onc::network_config::kWiFi);
-      success_callback.Run(result.Pass());
+      success_callback.Run(std::move(result));
     }
   }
 
@@ -293,7 +293,7 @@ class NetworkingPrivateApiTest : public ExtensionApiTest {
       TestVerifyDelegate* verify_delegate = new TestVerifyDelegate;
       scoped_ptr<NetworkingPrivateDelegate::VerifyDelegate> verify_delegate_ptr(
           verify_delegate);
-      s_test_delegate_ = new TestDelegate(verify_delegate_ptr.Pass());
+      s_test_delegate_ = new TestDelegate(std::move(verify_delegate_ptr));
       verify_delegate->set_owner(s_test_delegate_);
     }
   }

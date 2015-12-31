@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.h"
 
 #include <string>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/callback.h"
@@ -79,9 +80,8 @@ EPKPChallengeKeyBase::EPKPChallengeKeyBase()
                               ->GetInstallAttributes()) {
   scoped_ptr<chromeos::attestation::ServerProxy> ca_client(
       new chromeos::attestation::AttestationCAClient());
-  default_attestation_flow_.reset(
-      new chromeos::attestation::AttestationFlow(
-          async_caller_, cryptohome_client_, ca_client.Pass()));
+  default_attestation_flow_.reset(new chromeos::attestation::AttestationFlow(
+      async_caller_, cryptohome_client_, std::move(ca_client)));
   attestation_flow_ = default_attestation_flow_.get();
 }
 

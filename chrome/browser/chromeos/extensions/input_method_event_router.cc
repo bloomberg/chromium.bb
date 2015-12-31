@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/json/json_writer.h"
 #include "base/values.h"
@@ -47,9 +48,9 @@ void ExtensionInputMethodEventRouter::InputMethodChanged(
   // The router will only send the event to extensions that are listening.
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::INPUT_METHOD_PRIVATE_ON_CHANGED,
-      extensions::InputMethodAPI::kOnInputMethodChanged, args.Pass()));
+      extensions::InputMethodAPI::kOnInputMethodChanged, std::move(args)));
   event->restrict_to_browser_context = context_;
-  router->BroadcastEvent(event.Pass());
+  router->BroadcastEvent(std::move(event));
 }
 
 }  // namespace chromeos

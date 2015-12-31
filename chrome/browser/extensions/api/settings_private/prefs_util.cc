@@ -284,7 +284,7 @@ scoped_ptr<settings_private::PrefObject> PrefsUtil::GetPref(
         settings_private::PolicyEnforcement::POLICY_ENFORCEMENT_ENFORCED;
     pref_object->policy_source_name.reset(new std::string(
         user_manager::UserManager::Get()->GetPrimaryUser()->email()));
-    return pref_object.Pass();
+    return pref_object;
   }
   if (IsPrefEnterpriseManaged(name)) {
     // Enterprise managed prefs are treated the same as device policy restricted
@@ -293,7 +293,7 @@ scoped_ptr<settings_private::PrefObject> PrefsUtil::GetPref(
         settings_private::PolicySource::POLICY_SOURCE_DEVICE_POLICY;
     pref_object->policy_enforcement =
         settings_private::PolicyEnforcement::POLICY_ENFORCEMENT_ENFORCED;
-    return pref_object.Pass();
+    return pref_object;
   }
 #endif
 
@@ -326,7 +326,7 @@ scoped_ptr<settings_private::PrefObject> PrefsUtil::GetPref(
         settings_private::PolicyEnforcement::POLICY_ENFORCEMENT_ENFORCED;
     pref_object->policy_source_name.reset(new std::string(
         user_manager::UserManager::Get()->GetOwnerAccountId().GetUserEmail()));
-    return pref_object.Pass();
+    return pref_object;
   }
 #endif
 

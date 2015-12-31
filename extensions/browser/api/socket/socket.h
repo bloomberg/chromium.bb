@@ -66,7 +66,7 @@ class Socket : public ApiResource {
   void set_firewall_hole(
       scoped_ptr<AppFirewallHole, content::BrowserThread::DeleteOnUIThread>
           firewall_hole) {
-    firewall_hole_ = firewall_hole.Pass();
+    firewall_hole_ = std::move(firewall_hole);
   }
 #endif  // OS_CHROMEOS
 

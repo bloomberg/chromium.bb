@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -34,7 +35,7 @@ class TestDebugDaemonClient : public chromeos::FakeDebugDaemonClient {
                      base::File file,
                      scoped_refptr<base::TaskRunner> task_runner,
                      const GetDebugLogsCallback& callback) override {
-    base::File* file_param = new base::File(file.Pass());
+    base::File* file_param = new base::File(std::move(file));
     task_runner->PostTaskAndReply(
         FROM_HERE,
         base::Bind(
@@ -82,7 +83,7 @@ class LogPrivateApiTest : public ExtensionApiTest {
     response->set_content(
         "<html><head><title>LogPrivateTest</title>"
         "</head><body>Hello!</body></html>");
-    return response.Pass();
+    return std::move(response);
   }
 };
 

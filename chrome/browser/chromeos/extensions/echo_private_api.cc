@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/extensions/echo_private_api.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -103,7 +104,7 @@ bool EchoPrivateSetOfferInfoFunction::RunSync() {
 
   PrefService* local_state = g_browser_process->local_state();
   DictionaryPrefUpdate offer_update(local_state, prefs::kEchoCheckedOffers);
-  offer_update->SetWithoutPathExpansion("echo." + service_id, dict.Pass());
+  offer_update->SetWithoutPathExpansion("echo." + service_id, std::move(dict));
   return true;
 }
 

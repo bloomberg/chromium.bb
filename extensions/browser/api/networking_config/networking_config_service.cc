@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/browser/api/networking_config/networking_config_service.h"
+
 #include <stddef.h>
 #include <stdint.h>
-
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -16,7 +18,6 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "extensions/browser/api/networking_config/networking_config_service.h"
 #include "extensions/common/api/networking_config.h"
 
 namespace extensions {
@@ -54,7 +55,7 @@ NetworkingConfigService::NetworkingConfigService(
     ExtensionRegistry* extension_registry)
     : browser_context_(browser_context),
       registry_observer_(this),
-      event_delegate_(event_delegate.Pass()),
+      event_delegate_(std::move(event_delegate)),
       weak_factory_(this) {
   registry_observer_.Add(extension_registry);
 }
@@ -158,7 +159,7 @@ void NetworkingConfigService::OnGotProperties(
   }
 
   EventRouter::Get(browser_context_)
-      ->DispatchEventToExtension(extension_id, event.Pass());
+      ->DispatchEventToExtension(extension_id, std::move(event));
 }
 
 void NetworkingConfigService::OnGetPropertiesFailed(
@@ -171,7 +172,7 @@ void NetworkingConfigService::OnGetPropertiesFailed(
   scoped_ptr<Event> event =
       CreatePortalDetectedEventAndDispatch(extension_id, guid, nullptr);
   EventRouter::Get(browser_context_)
-      ->DispatchEventToExtension(extension_id, event.Pass());
+      ->DispatchEventToExtension(extension_id, std::move(event));
 }
 
 scoped_ptr<Event> NetworkingConfigService::CreatePortalDetectedEventAndDispatch(
@@ -199,8 +200,8 @@ scoped_ptr<Event> NetworkingConfigService::CreatePortalDetectedEventAndDispatch(
   scoped_ptr<Event> event(
       new Event(events::NETWORKING_CONFIG_ON_CAPTIVE_PORTAL_DETECTED,
                 api::networking_config::OnCaptivePortalDetected::kEventName,
-                results.Pass()));
-  return event.Pass();
+                std::move(results)));
+  return event;
 }
 
 void NetworkingConfigService::DispatchPortalDetectedEvent(

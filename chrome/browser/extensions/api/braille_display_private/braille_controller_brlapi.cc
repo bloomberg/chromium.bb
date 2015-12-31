@@ -6,10 +6,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <algorithm>
 #include <cerrno>
 #include <cstring>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -95,7 +95,7 @@ scoped_ptr<DisplayState> BrailleControllerImpl::GetDisplayState() {
       display_state->text_cell_count.reset(new int(size));
     }
   }
-  return display_state.Pass();
+  return display_state;
 }
 
 void BrailleControllerImpl::WriteDots(const std::vector<char>& cells) {
@@ -287,7 +287,7 @@ void BrailleControllerImpl::DispatchKeys() {
     }
     scoped_ptr<KeyEvent> event = BrlapiKeyCodeToEvent(code);
     if (event)
-      DispatchKeyEvent(event.Pass());
+      DispatchKeyEvent(std::move(event));
   }
 }
 

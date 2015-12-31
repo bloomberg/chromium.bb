@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/prefs/pref_value_map.h"
@@ -108,7 +110,7 @@ void DeviceLocalAccountExternalPolicyLoader::UpdateExtensionListFromStore() {
     }
   }
 
-  external_cache_->UpdateExtensionsList(prefs.Pass());
+  external_cache_->UpdateExtensionsList(std::move(prefs));
 }
 
 }  // namespace chromeos

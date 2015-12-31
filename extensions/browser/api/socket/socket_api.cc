@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/socket/socket_api.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -164,7 +165,7 @@ void SocketAsyncApiFunction::OnFirewallHoleOpened(
     return;
   }
 
-  socket->set_firewall_hole(hole.Pass());
+  socket->set_firewall_hole(std::move(hole));
   AsyncWorkCompleted();
 }
 

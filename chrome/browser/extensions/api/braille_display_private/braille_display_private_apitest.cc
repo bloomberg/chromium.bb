@@ -287,7 +287,7 @@ class BrailleDisplayPrivateAPIUserTest : public BrailleDisplayPrivateApiTest {
   MockEventDelegate* SetMockEventDelegate(BrailleDisplayPrivateAPI* api) {
     MockEventDelegate* delegate = new MockEventDelegate();
     api->SetEventDelegateForTest(
-        scoped_ptr<BrailleDisplayPrivateAPI::EventDelegate>(delegate).Pass());
+        scoped_ptr<BrailleDisplayPrivateAPI::EventDelegate>(delegate));
     return delegate;
   }
 

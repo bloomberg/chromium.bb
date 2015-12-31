@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/terminal/terminal_private_api.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/sys_info.h"
@@ -65,8 +67,8 @@ void NotifyProcessOutput(Profile* profile,
   if (profile && event_router) {
     scoped_ptr<extensions::Event> event(new extensions::Event(
         extensions::events::TERMINAL_PRIVATE_ON_PROCESS_OUTPUT,
-        terminal_private::OnProcessOutput::kEventName, args.Pass()));
-        event_router->DispatchEventToExtension(extension_id, event.Pass());
+        terminal_private::OnProcessOutput::kEventName, std::move(args)));
+    event_router->DispatchEventToExtension(extension_id, std::move(event));
   }
 }
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/virtual_keyboard_private/chrome_virtual_keyboard_delegate.h"
 
 #include <string>
+#include <utility>
 
 #include "ash/shell.h"
 #include "base/command_line.h"
@@ -87,7 +88,7 @@ bool ChromeVirtualKeyboardDelegate::GetKeyboardConfig(
       GenerateFeatureFlag("voiceinput", keyboard::IsVoiceInputEnabled()));
   features->AppendString(GenerateFeatureFlag("experimental",
       keyboard::IsExperimentalInputViewEnabled()));
-  results->Set("features", features.Pass());
+  results->Set("features", std::move(features));
   return true;
 }
 

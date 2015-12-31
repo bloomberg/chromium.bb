@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/file_stream_md5_digester.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
@@ -25,7 +27,7 @@ FileStreamMd5Digester::~FileStreamMd5Digester() {}
 void FileStreamMd5Digester::GetMd5Digest(
     scoped_ptr<storage::FileStreamReader> stream_reader,
     const ResultCallback& callback) {
-  reader_ = stream_reader.Pass();
+  reader_ = std::move(stream_reader);
   base::MD5Init(&md5_context_);
 
   // Start the read/hash.

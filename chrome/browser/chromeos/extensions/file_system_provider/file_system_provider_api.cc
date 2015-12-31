@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/extensions/file_system_provider/file_system_provider_api.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
@@ -283,8 +284,9 @@ bool FileSystemProviderInternalUnmountRequestedSuccessFunction::RunWhenValid() {
   scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  return FulfillRequest(RequestValue::CreateForUnmountSuccess(params.Pass()),
-                        false /* has_more */);
+  return FulfillRequest(
+      RequestValue::CreateForUnmountSuccess(std::move(params)),
+      false /* has_more */);
 }
 
 bool
@@ -294,7 +296,7 @@ FileSystemProviderInternalGetMetadataRequestedSuccessFunction::RunWhenValid() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   return FulfillRequest(
-      RequestValue::CreateForGetMetadataSuccess(params.Pass()),
+      RequestValue::CreateForGetMetadataSuccess(std::move(params)),
       false /* has_more */);
 }
 
@@ -304,8 +306,9 @@ bool FileSystemProviderInternalGetActionsRequestedSuccessFunction::
   scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  return FulfillRequest(RequestValue::CreateForGetActionsSuccess(params.Pass()),
-                        false /* has_more */);
+  return FulfillRequest(
+      RequestValue::CreateForGetActionsSuccess(std::move(params)),
+      false /* has_more */);
 }
 
 bool FileSystemProviderInternalReadDirectoryRequestedSuccessFunction::
@@ -317,7 +320,7 @@ bool FileSystemProviderInternalReadDirectoryRequestedSuccessFunction::
 
   const bool has_more = params->has_more;
   return FulfillRequest(
-      RequestValue::CreateForReadDirectorySuccess(params.Pass()), has_more);
+      RequestValue::CreateForReadDirectorySuccess(std::move(params)), has_more);
 }
 
 bool
@@ -329,8 +332,8 @@ FileSystemProviderInternalReadFileRequestedSuccessFunction::RunWhenValid() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const bool has_more = params->has_more;
-  return FulfillRequest(RequestValue::CreateForReadFileSuccess(params.Pass()),
-                        has_more);
+  return FulfillRequest(
+      RequestValue::CreateForReadFileSuccess(std::move(params)), has_more);
 }
 
 bool
@@ -341,7 +344,7 @@ FileSystemProviderInternalOperationRequestedSuccessFunction::RunWhenValid() {
 
   return FulfillRequest(
       scoped_ptr<RequestValue>(
-          RequestValue::CreateForOperationSuccess(params.Pass())),
+          RequestValue::CreateForOperationSuccess(std::move(params))),
       false /* has_more */);
 }
 
@@ -351,7 +354,7 @@ bool FileSystemProviderInternalOperationRequestedErrorFunction::RunWhenValid() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const base::File::Error error = ProviderErrorToFileError(params->error);
-  return RejectRequest(RequestValue::CreateForOperationError(params.Pass()),
+  return RejectRequest(RequestValue::CreateForOperationError(std::move(params)),
                        error);
 }
 

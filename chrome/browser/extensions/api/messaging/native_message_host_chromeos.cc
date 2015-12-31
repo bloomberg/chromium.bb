@@ -5,6 +5,7 @@
 #include "extensions/browser/api/messaging/native_message_host.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -106,8 +107,8 @@ scoped_ptr<NativeMessageHost> CreateIt2MeHost() {
           content::BrowserThread::GetMessageLoopProxyForThread(
               content::BrowserThread::FILE));
   scoped_ptr<NativeMessageHost> host(new remoting::It2MeNativeMessagingHost(
-      context.Pass(), host_factory.Pass()));
-  return host.Pass();
+      std::move(context), std::move(host_factory)));
+  return host;
 }
 
 // If you modify the list of allowed_origins, don't forget to update

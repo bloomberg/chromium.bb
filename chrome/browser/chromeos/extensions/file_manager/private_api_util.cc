@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -162,7 +162,7 @@ void ContinueGetSelectedFileInfo(Profile* profile,
   const int index = params->selected_files.size();
   const base::FilePath& file_path = params->file_paths[index];
   params->selected_files.push_back(ui::SelectedFileInfo(file_path, local_path));
-  GetSelectedFileInfoInternal(profile, params.Pass());
+  GetSelectedFileInfoInternal(profile, std::move(params));
 }
 
 }  // namespace

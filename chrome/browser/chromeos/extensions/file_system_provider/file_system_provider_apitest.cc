@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -99,7 +101,7 @@ class AbortOnUnresponsivePerformer : public Observer {
         new NotificationButtonClicker(file_system->GetFileSystemInfo()));
 
     file_system->GetRequestManager()->AddObserver(clicker.get());
-    clickers_.push_back(clicker.Pass());
+    clickers_.push_back(std::move(clicker));
   }
 
   void OnProvidedFileSystemUnmount(

@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/file_system_provider/file_system_provider_api.h"
+#include <utility>
 
+#include "chrome/browser/chromeos/extensions/file_system_provider/file_system_provider_api.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/request_manager.h"
 #include "chrome/browser/chromeos/file_system_provider/request_value.h"
@@ -127,7 +128,7 @@ bool FileSystemProviderInternalFunction::RejectRequest(
     scoped_ptr<chromeos::file_system_provider::RequestValue> value,
     base::File::Error error) {
   const base::File::Error result =
-      request_manager_->RejectRequest(request_id_, value.Pass(), error);
+      request_manager_->RejectRequest(request_id_, std::move(value), error);
   if (result != base::File::FILE_OK) {
     SetError(FileErrorToString(result));
     return false;
@@ -140,7 +141,7 @@ bool FileSystemProviderInternalFunction::FulfillRequest(
     scoped_ptr<RequestValue> value,
     bool has_more) {
   const base::File::Error result =
-      request_manager_->FulfillRequest(request_id_, value.Pass(), has_more);
+      request_manager_->FulfillRequest(request_id_, std::move(value), has_more);
   if (result != base::File::FILE_OK) {
     SetError(FileErrorToString(result));
     return false;

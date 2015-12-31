@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/api/platform_keys/platform_keys_api.h"
 
 #include <stddef.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -229,7 +229,8 @@ PlatformKeysInternalSelectClientCertificatesFunction::Run() {
   }
 
   service->SelectClientCertificates(
-      request, client_certs.Pass(), params->details.interactive, extension_id(),
+      request, std::move(client_certs), params->details.interactive,
+      extension_id(),
       base::Bind(&PlatformKeysInternalSelectClientCertificatesFunction::
                      OnSelectedCertificates,
                  this),
@@ -353,7 +354,7 @@ PlatformKeysVerifyTLSServerCertificateFunction::Run() {
 
   VerifyTrustAPI::GetFactoryInstance()
       ->Get(browser_context())
-      ->Verify(params.Pass(), extension_id(),
+      ->Verify(std::move(params), extension_id(),
                base::Bind(&PlatformKeysVerifyTLSServerCertificateFunction::
                               FinishedVerification,
                           this));

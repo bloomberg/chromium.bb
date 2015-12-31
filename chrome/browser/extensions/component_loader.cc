@@ -109,7 +109,7 @@ LoadManifestOnFileThread(
   bool localized = extension_l10n_util::LocalizeExtension(
       root_directory, manifest.get(), &error);
   CHECK(localized) << error;
-  return manifest.Pass();
+  return manifest;
 }
 
 bool IsNormalSession() {

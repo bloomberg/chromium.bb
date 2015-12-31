@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
@@ -74,7 +76,7 @@ scoped_ptr<base::ListValue> ReadExternalOrdinalFile(
   }
 
   scoped_ptr<base::ListValue> ordinal_list_value =
-      base::ListValue::From(value.Pass());
+      base::ListValue::From(std::move(value));
   if (!ordinal_list_value)
     LOG(WARNING) << "Expect a JSON list in file " << path.value();
 

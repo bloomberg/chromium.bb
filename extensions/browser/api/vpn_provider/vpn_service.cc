@@ -5,6 +5,7 @@
 #include "extensions/browser/api/vpn_provider/vpn_service.h"
 
 #include <stdint.h>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -102,7 +103,7 @@ void VpnService::VpnConfiguration::OnPacketReceived(
       api_vpn::OnPacketReceived::Create(data);
   vpn_service_->SendSignalToExtension(
       extension_id_, extensions::events::VPN_PROVIDER_ON_PACKET_RECEIVED,
-      api_vpn::OnPacketReceived::kEventName, event_args.Pass());
+      api_vpn::OnPacketReceived::kEventName, std::move(event_args));
 }
 
 void VpnService::VpnConfiguration::OnPlatformMessage(uint32_t message) {
@@ -123,7 +124,7 @@ void VpnService::VpnConfiguration::OnPlatformMessage(uint32_t message) {
 
   vpn_service_->SendSignalToExtension(
       extension_id_, extensions::events::VPN_PROVIDER_ON_PLATFORM_MESSAGE,
-      api_vpn::OnPlatformMessage::kEventName, event_args.Pass());
+      api_vpn::OnPlatformMessage::kEventName, std::move(event_args));
 }
 
 VpnService::VpnService(
@@ -224,7 +225,7 @@ void VpnService::OnConfigurationRemoved(const std::string& service_path,
   SendSignalToExtension(configuration->extension_id(),
                         extensions::events::VPN_PROVIDER_ON_CONFIG_REMOVED,
                         api_vpn::OnConfigRemoved::kEventName,
-                        event_args.Pass());
+                        std::move(event_args));
 
   DestroyConfigurationInternal(configuration);
 }
@@ -528,9 +529,9 @@ void VpnService::SendSignalToExtension(
     const std::string& event_name,
     scoped_ptr<base::ListValue> event_args) {
   scoped_ptr<extensions::Event> event(new extensions::Event(
-      histogram_value, event_name, event_args.Pass(), browser_context_));
+      histogram_value, event_name, std::move(event_args), browser_context_));
 
-  event_router_->DispatchEventToExtension(extension_id, event.Pass());
+  event_router_->DispatchEventToExtension(extension_id, std::move(event));
 }
 
 void VpnService::SetActiveConfiguration(

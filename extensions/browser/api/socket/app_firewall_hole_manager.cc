@@ -100,7 +100,7 @@ void AppFirewallHole::OnFirewallHoleOpened(
     scoped_ptr<FirewallHole> firewall_hole) {
   if (app_visible_) {
     DCHECK(!firewall_hole_);
-    firewall_hole_ = firewall_hole.Pass();
+    firewall_hole_ = std::move(firewall_hole);
   }
 }
 
@@ -127,7 +127,7 @@ scoped_ptr<AppFirewallHole> AppFirewallHoleManager::Open(
   if (HasVisibleAppWindows(context_, extension_id)) {
     hole->SetVisible(true);
   }
-  return hole.Pass();
+  return hole;
 }
 
 void AppFirewallHoleManager::Close(AppFirewallHole* hole) {

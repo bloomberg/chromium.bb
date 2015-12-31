@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/extensions/dictionary_event_router.h"
 
 #include <string>
+#include <utility>
 
 #include "base/json/json_writer.h"
 #include "base/values.h"
@@ -47,9 +48,9 @@ void ExtensionDictionaryEventRouter::DispatchLoadedEventIfLoaded() {
   // The router will only send the event to extensions that are listening.
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::INPUT_METHOD_PRIVATE_ON_DICTIONARY_LOADED,
-      extensions::InputMethodAPI::kOnDictionaryLoaded, args.Pass()));
+      extensions::InputMethodAPI::kOnDictionaryLoaded, std::move(args)));
   event->restrict_to_browser_context = context_;
-  router->BroadcastEvent(event.Pass());
+  router->BroadcastEvent(std::move(event));
 }
 
 void ExtensionDictionaryEventRouter::OnCustomDictionaryLoaded() {
@@ -81,9 +82,9 @@ void ExtensionDictionaryEventRouter::OnCustomDictionaryChanged(
   // The router will only send the event to extensions that are listening.
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::INPUT_METHOD_PRIVATE_ON_DICTIONARY_CHANGED,
-      extensions::InputMethodAPI::kOnDictionaryChanged, args.Pass()));
+      extensions::InputMethodAPI::kOnDictionaryChanged, std::move(args)));
   event->restrict_to_browser_context = context_;
-  router->BroadcastEvent(event.Pass());
+  router->BroadcastEvent(std::move(event));
 }
 
 }  // namespace chromeos

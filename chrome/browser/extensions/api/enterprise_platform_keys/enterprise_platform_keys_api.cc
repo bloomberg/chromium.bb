@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys.h"
@@ -115,7 +117,7 @@ void EnterprisePlatformKeysGetCertificatesFunction::OnGotCertificates(
 
   scoped_ptr<base::ListValue> results(new base::ListValue());
   results->Append(client_certs.release());
-  Respond(ArgumentList(results.Pass()));
+  Respond(ArgumentList(std::move(results)));
 }
 
 EnterprisePlatformKeysImportCertificateFunction::

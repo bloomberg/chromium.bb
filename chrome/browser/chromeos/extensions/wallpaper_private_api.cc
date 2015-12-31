@@ -7,6 +7,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/desktop_background/desktop_background_controller.h"
@@ -497,11 +498,9 @@ void WallpaperPrivateSetWallpaperFunction::SaveToFile() {
     // ImageSkia is not RefCountedThreadSafe. Use a deep copied ImageSkia if
     // post to another thread.
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
+        BrowserThread::UI, FROM_HERE,
         base::Bind(&WallpaperPrivateSetWallpaperFunction::SetDecodedWallpaper,
-                   this,
-                   base::Passed(deep_copy.Pass())));
+                   this, base::Passed(std::move(deep_copy))));
 
     base::FilePath wallpaper_dir;
     CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS, &wallpaper_dir));

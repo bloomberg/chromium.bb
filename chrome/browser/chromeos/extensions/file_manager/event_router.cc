@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -101,8 +102,9 @@ void BroadcastEvent(Profile* profile,
                     extensions::events::HistogramValue histogram_value,
                     const std::string& event_name,
                     scoped_ptr<base::ListValue> event_args) {
-  extensions::EventRouter::Get(profile)->BroadcastEvent(make_scoped_ptr(
-      new extensions::Event(histogram_value, event_name, event_args.Pass())));
+  extensions::EventRouter::Get(profile)
+      ->BroadcastEvent(make_scoped_ptr(new extensions::Event(
+          histogram_value, event_name, std::move(event_args))));
 }
 
 // Sends an event named |event_name| with arguments |event_args| to an extension
@@ -115,7 +117,7 @@ void DispatchEventToExtension(
     scoped_ptr<base::ListValue> event_args) {
   extensions::EventRouter::Get(profile)->DispatchEventToExtension(
       extension_id, make_scoped_ptr(new extensions::Event(
-                        histogram_value, event_name, event_args.Pass())));
+                        histogram_value, event_name, std::move(event_args))));
 }
 
 file_manager_private::MountCompletedStatus
@@ -357,8 +359,9 @@ class JobEventRouterImpl : public JobEventRouter {
       extensions::events::HistogramValue histogram_value,
       const std::string& event_name,
       scoped_ptr<base::ListValue> event_args) override {
-    ::file_manager::DispatchEventToExtension(
-        profile_, extension_id, histogram_value, event_name, event_args.Pass());
+    ::file_manager::DispatchEventToExtension(profile_, extension_id,
+                                             histogram_value, event_name,
+                                             std::move(event_args));
   }
 
  private:

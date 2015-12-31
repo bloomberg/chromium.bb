@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/log_private/log_private_api.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -252,9 +253,9 @@ void LogPrivateAPI::AddEntriesOnUI(scoped_ptr<base::ListValue> value) {
     event_args->Append(value->DeepCopy());
     scoped_ptr<Event> event(
         new Event(::extensions::events::LOG_PRIVATE_ON_CAPTURED_EVENTS,
-                  ::events::kOnCapturedEvents, event_args.Pass()));
+                  ::events::kOnCapturedEvents, std::move(event_args)));
     EventRouter::Get(browser_context_)
-        ->DispatchEventToExtension(*ix, event.Pass());
+        ->DispatchEventToExtension(*ix, std::move(event));
   }
 }
 
@@ -293,8 +294,8 @@ void LogPrivateAPI::StartObservingNetEvents(
   write_to_file_observer_.reset(new net::WriteToFileNetLogObserver());
   write_to_file_observer_->set_capture_mode(
       net::NetLogCaptureMode::IncludeCookiesAndCredentials());
-  write_to_file_observer_->StartObserving(io_thread->net_log(), file->Pass(),
-                                          nullptr, nullptr);
+  write_to_file_observer_->StartObserving(io_thread->net_log(),
+                                          std::move(*file), nullptr, nullptr);
 }
 
 void LogPrivateAPI::MaybeStartNetInternalLogging(

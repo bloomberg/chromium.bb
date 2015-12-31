@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/file_system/request_file_system_notification.h"
 
+#include <utility>
+
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -63,7 +65,7 @@ scoped_ptr<Notification> CreateAutoGrantedNotification(
                                  notification_id),
       data, delegate));
 
-  return notification.Pass();
+  return notification;
 }
 
 }  // namespace
@@ -83,7 +85,7 @@ void RequestFileSystemNotification::ShowAutoGrantedNotification(
           extension, volume, writable,
           request_file_system_notification.get() /* delegate */));
   if (notification.get())
-    request_file_system_notification->Show(notification.Pass());
+    request_file_system_notification->Show(std::move(notification));
 }
 
 void RequestFileSystemNotification::SetAppImage(const std::string& id,
@@ -94,7 +96,7 @@ void RequestFileSystemNotification::SetAppImage(const std::string& id,
   if (pending_notification_.get()) {
     pending_notification_->set_icon(*extension_icon_.get());
     g_browser_process->message_center()->AddNotification(
-        pending_notification_.Pass());
+        std::move(pending_notification_));
   }
 }
 
@@ -119,5 +121,5 @@ void RequestFileSystemNotification::Show(
 
   pending_notification_->set_icon(*extension_icon_.get());
   g_browser_process->message_center()->AddNotification(
-      pending_notification_.Pass());
+      std::move(pending_notification_));
 }

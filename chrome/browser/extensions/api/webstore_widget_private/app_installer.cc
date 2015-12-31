@@ -67,7 +67,7 @@ scoped_ptr<ExtensionInstallPrompt::Prompt> AppInstaller::CreateInstallPrompt()
 
   prompt->SetWebstoreData(localized_user_count(), show_user_count(),
                           average_rating(), rating_count());
-  return prompt.Pass();
+  return prompt;
 }
 
 bool AppInstaller::ShouldShowPostInstallUI() const {

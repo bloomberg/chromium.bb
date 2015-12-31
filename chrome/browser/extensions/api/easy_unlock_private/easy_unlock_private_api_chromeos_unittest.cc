@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_api.h"
+
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -11,7 +14,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_api.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
@@ -231,9 +233,7 @@ TEST_F(EasyUnlockPrivateApiTest, PerformECDHKeyAgreement) {
   args->Append(StringToBinaryValue(public_key_2));
 
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
-      function.get(),
-      args.Pass(),
-      browser(),
+      function.get(), std::move(args), browser(),
       extension_function_test_utils::NONE));
 
   EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function.get()));
@@ -279,9 +279,7 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage) {
       api::ToString(api::SIGNATURE_TYPE_HMAC_SHA256));
 
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
-      function.get(),
-      args.Pass(),
-      browser(),
+      function.get(), std::move(args), browser(),
       extension_function_test_utils::NONE));
 
   EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function.get()));
@@ -311,9 +309,7 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage_EmptyOptions) {
   args->Append(options);
 
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
-      function.get(),
-      args.Pass(),
-      browser(),
+      function.get(), std::move(args), browser(),
       extension_function_test_utils::NONE));
 
   EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function.get()));
@@ -352,9 +348,7 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage_AsymmetricSign) {
       api::ToString(api::SIGNATURE_TYPE_ECDSA_P256_SHA256));
 
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
-      function.get(),
-      args.Pass(),
-      browser(),
+      function.get(), std::move(args), browser(),
       extension_function_test_utils::NONE));
 
   EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function.get()));
@@ -392,9 +386,7 @@ TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage) {
       api::ToString(api::SIGNATURE_TYPE_HMAC_SHA256));
 
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
-      function.get(),
-      args.Pass(),
-      browser(),
+      function.get(), std::move(args), browser(),
       extension_function_test_utils::NONE));
 
   EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function.get()));
@@ -424,9 +416,7 @@ TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage_EmptyOptions) {
   args->Append(options);
 
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
-      function.get(),
-      args.Pass(),
-      browser(),
+      function.get(), std::move(args), browser(),
       extension_function_test_utils::NONE));
 
   EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function.get()));
@@ -462,9 +452,7 @@ TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage_AsymmetricSign) {
       api::ToString(api::SIGNATURE_TYPE_ECDSA_P256_SHA256));
 
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
-      function.get(),
-      args.Pass(),
-      browser(),
+      function.get(), std::move(args), browser(),
       extension_function_test_utils::NONE));
 
   EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function.get()));
@@ -490,7 +478,7 @@ scoped_ptr<KeyedService> BuildTestEasyUnlockService(
   service->Initialize(
       EasyUnlockAppManager::Create(extensions::ExtensionSystem::Get(context),
                                    -1 /* manifest id */, base::FilePath()));
-  return service.Pass();
+  return std::move(service);
 }
 
 // A fake EventRouter that logs event it dispatches for testing.
@@ -499,7 +487,7 @@ class FakeEventRouter : public extensions::EventRouter {
   FakeEventRouter(Profile* profile,
                   scoped_ptr<extensions::TestExtensionPrefs> extension_prefs)
       : EventRouter(profile, extension_prefs->prefs()),
-        extension_prefs_(extension_prefs.Pass()),
+        extension_prefs_(std::move(extension_prefs)),
         event_count_(0) {}
 
   void DispatchEventToExtension(const std::string& extension_id,
@@ -526,7 +514,7 @@ scoped_ptr<KeyedService> FakeEventRouterFactoryFunction(
   scoped_ptr<extensions::TestExtensionPrefs> extension_prefs(
       new extensions::TestExtensionPrefs(base::ThreadTaskRunnerHandle::Get()));
   return make_scoped_ptr(new FakeEventRouter(static_cast<Profile*>(profile),
-                                             extension_prefs.Pass()));
+                                             std::move(extension_prefs)));
 }
 
 TEST_F(EasyUnlockPrivateApiTest, AutoPairing) {

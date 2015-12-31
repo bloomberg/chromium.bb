@@ -46,7 +46,7 @@ class TestPrefsUtil : public PrefsUtil {
     }
     pref_object->value.reset(value);
 
-    return pref_object.Pass();
+    return pref_object;
   }
 
   bool AppendToListCrosSetting(const std::string& pref_name,

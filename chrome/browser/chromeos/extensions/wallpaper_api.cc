@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/extensions/wallpaper_api.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/desktop_background/desktop_background_controller.h"
@@ -159,10 +160,8 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
     // request thumbnail in the javascript callback.
     task_runner->PostTask(
         FROM_HERE,
-        base::Bind(&WallpaperSetWallpaperFunction::GenerateThumbnail,
-                   this,
-                   thumbnail_path,
-                   base::Passed(deep_copy.Pass())));
+        base::Bind(&WallpaperSetWallpaperFunction::GenerateThumbnail, this,
+                   thumbnail_path, base::Passed(std::move(deep_copy))));
   } else {
     // Save current extenion name. It will be displayed in the component
     // wallpaper picker app. If current extension is the component wallpaper
@@ -187,9 +186,9 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
       extensions::events::WALLPAPER_PRIVATE_ON_WALLPAPER_CHANGED_BY_3RD_PARTY,
       extensions::api::wallpaper_private::OnWallpaperChangedBy3rdParty::
           kEventName,
-      event_args.Pass()));
+      std::move(event_args)));
   event_router->DispatchEventToExtension(extension_misc::kWallpaperManagerId,
-                                         event.Pass());
+                                         std::move(event));
 }
 
 void WallpaperSetWallpaperFunction::GenerateThumbnail(

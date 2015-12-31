@@ -165,7 +165,7 @@ scoped_ptr<KeyEvent> BrlapiKeyCodeToEvent(brlapi_keyCode_t code) {
   }
   if (result->command == KEY_COMMAND_NONE)
     result.reset();
-  return result.Pass();
+  return result;
 }
 
 }  // namespace braille_display_private

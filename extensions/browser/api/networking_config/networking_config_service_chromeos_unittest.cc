@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "extensions/browser/api/networking_config/networking_config_service.h"
+
+#include <utility>
+
 #include "extensions/browser/api_unittest.h"
 #include "extensions/browser/extension_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,7 +50,7 @@ class NetworkingConfigServiceTest : public ApiUnitTest {
     scoped_ptr<MockEventDelegate> mock_event_delegate =
         scoped_ptr<MockEventDelegate>(new MockEventDelegate());
     service_ = scoped_ptr<NetworkingConfigService>(new NetworkingConfigService(
-        browser_context(), mock_event_delegate.Pass(),
+        browser_context(), std::move(mock_event_delegate),
         extension_registry_.get()));
     DCHECK(service_);
   }

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/extensions/external_cache.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -70,7 +71,7 @@ void ExternalCache::Shutdown(const base::Closure& callback) {
 
 void ExternalCache::UpdateExtensionsList(
     scoped_ptr<base::DictionaryValue> prefs) {
-  extensions_ = prefs.Pass();
+  extensions_ = std::move(prefs);
 
   if (extensions_->empty()) {
     // If list of know extensions is empty, don't init cache on disk. It is

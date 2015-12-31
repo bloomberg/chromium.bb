@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
@@ -92,7 +93,8 @@ class ImeObserverChromeOS : public ui::ImeObserver {
         input_ime::ParseScreenType(GetCurrentScreenType())));
 
     DispatchEventToExtension(extensions::events::INPUT_IME_ON_ACTIVATE,
-                             input_ime::OnActivate::kEventName, args.Pass());
+                             input_ime::OnActivate::kEventName,
+                             std::move(args));
   }
 
   void OnInputContextUpdate(
@@ -111,7 +113,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
 
     DispatchEventToExtension(
         extensions::events::INPUT_IME_ON_INPUT_CONTEXT_UPDATE,
-        input_ime::OnInputContextUpdate::kEventName, args.Pass());
+        input_ime::OnInputContextUpdate::kEventName, std::move(args));
   }
 
   bool IsInterestedInKeyEvent() const override {
@@ -148,7 +150,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
 
     DispatchEventToExtension(extensions::events::INPUT_IME_ON_CANDIDATE_CLICKED,
                              input_ime::OnCandidateClicked::kEventName,
-                             args.Pass());
+                             std::move(args));
   }
 
   void OnMenuItemActivated(const std::string& component_id,
@@ -162,7 +164,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
 
     DispatchEventToExtension(
         extensions::events::INPUT_IME_ON_MENU_ITEM_ACTIVATED,
-        input_ime::OnMenuItemActivated::kEventName, args.Pass());
+        input_ime::OnMenuItemActivated::kEventName, std::move(args));
   }
 
   void OnSurroundingTextChanged(const std::string& component_id,
@@ -184,7 +186,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
 
     DispatchEventToExtension(
         extensions::events::INPUT_IME_ON_SURROUNDING_TEXT_CHANGED,
-        input_ime::OnSurroundingTextChanged::kEventName, args.Pass());
+        input_ime::OnSurroundingTextChanged::kEventName, std::move(args));
   }
 
   void OnCompositionBoundsChanged(
@@ -217,7 +219,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
 
     DispatchEventToExtension(
         extensions::events::INPUT_METHOD_PRIVATE_ON_COMPOSITION_BOUNDS_CHANGED,
-        kOnCompositionBoundsChangedEventName, args.Pass());
+        kOnCompositionBoundsChangedEventName, std::move(args));
   }
 
  private:
@@ -250,10 +252,10 @@ class ImeObserverChromeOS : public ui::ImeObserver {
     }
 
     scoped_ptr<extensions::Event> event(
-        new extensions::Event(histogram_value, event_name, args.Pass()));
+        new extensions::Event(histogram_value, event_name, std::move(args)));
     event->restrict_to_browser_context = profile_;
     extensions::EventRouter::Get(profile_)
-        ->DispatchEventToExtension(extension_id_, event.Pass());
+        ->DispatchEventToExtension(extension_id_, std::move(event));
   }
 
   // The component IME extensions need to know the current screen type (e.g.
@@ -331,7 +333,7 @@ bool InputImeEventRouter::RegisterImeExtension(
   scoped_ptr<ui::IMEEngineObserver> observer(
       new ImeObserverChromeOS(extension_id, profile_));
   chromeos::InputMethodEngine* engine = new chromeos::InputMethodEngine();
-  engine->Initialize(observer.Pass(), extension_id.c_str(), profile_);
+  engine->Initialize(std::move(observer), extension_id.c_str(), profile_);
   engine_map_[extension_id] = engine;
   chromeos::UserSessionManager::GetInstance()
       ->GetDefaultIMEState(profile_)
