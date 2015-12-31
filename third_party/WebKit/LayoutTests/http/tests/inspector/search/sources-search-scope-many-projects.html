@@ -10,7 +10,7 @@
 function test()
 {
     var scope = new WebInspector.SourcesSearchScope();
-    var fs = new InspectorTest.TestFileSystem("/var/www");
+    var fs = new InspectorTest.TestFileSystem("file:///var/www");
     var names = ["search.html", "search.js", "search.css"];
     var resources = {};
     var jsFileSystemUISourceCode;

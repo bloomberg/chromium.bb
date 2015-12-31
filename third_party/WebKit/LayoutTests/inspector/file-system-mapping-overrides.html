@@ -8,34 +8,34 @@ function test()
         function testFileSystemClashDirectOrder(next)
         {
             var fileSystemMapping = new WebInspector.FileSystemMapping();
-            fileSystemMapping.addFileSystem("/Source/devtools");
+            fileSystemMapping.addFileSystem("file:///Source/devtools");
 
-            fileSystemMapping.addNonConfigurableFileMapping("/Source/devtools", "chrome-devtools://devtools/bundled/wrong_url", "/");
-            fileSystemMapping.addFileMapping("/Source/devtools", "http://localhost:1234/right_url", "/");
+            fileSystemMapping.addNonConfigurableFileMapping("file:///Source/devtools", "chrome-devtools://devtools/bundled/wrong_url", "/");
+            fileSystemMapping.addFileMapping("file:///Source/devtools", "http://localhost:1234/right_url", "/");
 
-            InspectorTest.addResult(fileSystemMapping.urlForPath("/Source/devtools", "file:///Source/devtools/file.txt"));
+            InspectorTest.addResult(fileSystemMapping.urlForPath("file:///Source/devtools", "file:///Source/devtools/file.txt"));
             next();
         },
 
         function testFileSystemClashReversedOrder(next)
         {
             var fileSystemMapping = new WebInspector.FileSystemMapping();
-            fileSystemMapping.addFileSystem("/Source/devtools");
+            fileSystemMapping.addFileSystem("file:///Source/devtools");
 
-            fileSystemMapping.addFileMapping("/Source/devtools", "http://localhost:1234/right_url", "/");
-            fileSystemMapping.addNonConfigurableFileMapping("/Source/devtools", "chrome-devtools://devtools/wrong_url", "/");
+            fileSystemMapping.addFileMapping("file:///Source/devtools", "http://localhost:1234/right_url", "/");
+            fileSystemMapping.addNonConfigurableFileMapping("file:///Source/devtools", "chrome-devtools://devtools/wrong_url", "/");
 
-            InspectorTest.addResult(fileSystemMapping.urlForPath("/Source/devtools", "file:///Source/devtools/file.txt"));
+            InspectorTest.addResult(fileSystemMapping.urlForPath("file:///Source/devtools", "file:///Source/devtools/file.txt"));
             next();
         },
 
         function testNetworkClashDirectOrder(next)
         {
             var fileSystemMapping = new WebInspector.FileSystemMapping();
-            fileSystemMapping.addFileSystem("/Source/devtools");
+            fileSystemMapping.addFileSystem("file:///Source/devtools");
 
-            fileSystemMapping.addNonConfigurableFileMapping("/Source/devtools", "http://localhost:1234/front_end", "/wrong");
-            fileSystemMapping.addFileMapping("/Source/devtools", "http://localhost:1234/front_end", "/right");
+            fileSystemMapping.addNonConfigurableFileMapping("file:///Source/devtools", "http://localhost:1234/front_end", "/wrong");
+            fileSystemMapping.addFileMapping("file:///Source/devtools", "http://localhost:1234/front_end", "/right");
 
             InspectorTest.addResult(fileSystemMapping.fileForURL("http://localhost:1234/front_end/file.txt").fileURL);
             next();
@@ -44,10 +44,10 @@ function test()
         function testNetworkClashReversedOrder(next)
         {
             var fileSystemMapping = new WebInspector.FileSystemMapping();
-            fileSystemMapping.addFileSystem("/Source/devtools");
+            fileSystemMapping.addFileSystem("file:///Source/devtools");
 
-            fileSystemMapping.addFileMapping("/Source/devtools", "http://localhost:1234/front_end", "/right");
-            fileSystemMapping.addNonConfigurableFileMapping("/Source/devtools", "http://localhost:1234/front_end", "/wrong");
+            fileSystemMapping.addFileMapping("file:///Source/devtools", "http://localhost:1234/front_end", "/right");
+            fileSystemMapping.addNonConfigurableFileMapping("file:///Source/devtools", "http://localhost:1234/front_end", "/wrong");
 
             InspectorTest.addResult(fileSystemMapping.fileForURL("http://localhost:1234/front_end/file.txt").fileURL);
             next();

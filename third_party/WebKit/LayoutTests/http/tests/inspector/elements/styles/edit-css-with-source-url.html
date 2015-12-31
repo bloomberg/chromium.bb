@@ -22,7 +22,7 @@ function test()
     InspectorTest.runTestSuite([
         function testEditingRulesInElementsPanelDoesNotAddSourceURLToOriginalFile(next)
         {
-            var fileSystemPath = "/var/www";
+            var fileSystemPath = "file:///var/www";
 
             function dumpUISourceCodeContents()
             {

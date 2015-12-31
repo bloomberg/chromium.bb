@@ -10,9 +10,9 @@ Tests workspace mappings
     url http://localhost/foo/index.html is mapped to null
     url https://localhost/index.html is mapped to null
 
-    path /home/example.com / foo/index.html is mapped to null
-    path /home/example.com / index.html is mapped to null
-    path /var/www / localhost/index.html is mapped to http://localhost/index.html
-    path /var/www / localhost/foo/index.html is mapped to http://localhost/foo/index.html
-    path /home/foo / index.html is mapped to null
+    path file:///home/example.com / foo/index.html is mapped to null
+    path file:///home/example.com / index.html is mapped to null
+    path file:///var/www / localhost/index.html is mapped to http://localhost/index.html
+    path file:///var/www / localhost/foo/index.html is mapped to http://localhost/foo/index.html
+    path file:///home/foo / index.html is mapped to null
 

@@ -55,8 +55,8 @@ function test()
         function testFileSystems(next)
         {
             InspectorTest.addResult("Adding first file system.");
-            var fs1 = new InspectorTest.TestFileSystem("/var/www");
-            var fs2 = new InspectorTest.TestFileSystem("/foo/bar");
+            var fs1 = new InspectorTest.TestFileSystem("file:///var/www");
+            var fs2 = new InspectorTest.TestFileSystem("file:///foo/bar");
             InspectorTest.addResult("Adding second file system.");
 
             var uiSourceCodes;
@@ -67,8 +67,8 @@ function test()
             function fileSystemCreated()
             {
                 InspectorTest.addResult("Adding file mappings.");
-                WebInspector.fileSystemMapping.addFileMapping("/var/www", "http://localhost/", "/localhost/");
-                WebInspector.fileSystemMapping.addFileMapping("/foo/bar", "http://www.example.com/", "/");
+                WebInspector.fileSystemMapping.addFileMapping("file:///var/www", "http://localhost/", "/localhost/");
+                WebInspector.fileSystemMapping.addFileMapping("file:///foo/bar", "http://www.example.com/", "/");
 
                 InspectorTest.addResult("Adding files to file systems.");
 
@@ -124,7 +124,7 @@ function test()
 
         function testDefaultExcludes(next)
         {
-            createFileSystem("/var/www", dumpExcludes);
+            createFileSystem("file:///var/www", dumpExcludes);
 
             function dumpExcludes(fs)
             {
@@ -138,8 +138,8 @@ function test()
 
         function testExcludesSettings(next)
         {
-            WebInspector.settings.createLocalSetting("workspaceExcludedFolders", {}).set({"/var/www2":["/html/"]});
-            createFileSystem("/var/www2", dumpExcludes);
+            WebInspector.settings.createLocalSetting("workspaceExcludedFolders", {}).set({"file:///var/www2":["/html/"]});
+            createFileSystem("file:///var/www2", dumpExcludes);
 
             function dumpExcludes(fs)
             {
@@ -153,7 +153,7 @@ function test()
 
         function testExcludesViaDelegate(next)
         {
-            createFileSystem("/var/www3", dumpExcludes);
+            createFileSystem("file:///var/www3", dumpExcludes);
 
             function dumpExcludes(fs)
             {
@@ -168,7 +168,7 @@ function test()
 
         function testExcludesViaProject(next)
         {
-            var fs = new InspectorTest.TestFileSystem(name);
+            var fs = new InspectorTest.TestFileSystem("file:///var/www3");
             fs.root.addFile(".devtools", JSON.stringify({excludes:["/html2/"]}));
             fs.root.mkdir("html").addFile("foo.js", "");
             fs.root.mkdir(".git").addFile("foogit.js", "");

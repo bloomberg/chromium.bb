@@ -24,10 +24,10 @@ function test()
     }
 
     var fileSystemMapping = new WebInspector.FileSystemMapping();
-    var fileSystemPath = "/var/www";
+    var fileSystemPath = "file:///var/www";
     var projectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
-    fileSystemMapping.addFileSystem("/var/www");
-    fileSystemMapping.addFileMapping("/var/www", "http://localhost/", "/localhost/");
+    fileSystemMapping.addFileSystem("file:///var/www");
+    fileSystemMapping.addFileMapping("file:///var/www", "http://localhost/", "/localhost/");
     var fileSystemWorkspaceBinding = new WebInspector.FileSystemWorkspaceBinding(WebInspector.isolatedFileSystemManager, workspace);
     var networkMapping = new WebInspector.NetworkMapping(WebInspector.targetManager, workspace, fileSystemWorkspaceBinding, fileSystemMapping);
 
@@ -48,7 +48,7 @@ function test()
 
     function dumpURLForPath(fileSystemPath, filePath)
     {
-        var url = networkMapping._urlForPath(fileSystemPath, "file://" + fileSystemPath + "/" + filePath)
+        var url = networkMapping._urlForPath(fileSystemPath, fileSystemPath + "/" + filePath)
         InspectorTest.addResult("    path " + fileSystemPath + " / " + filePath + " is mapped to " + (url ? url : null));
     }
     
@@ -71,11 +71,11 @@ function test()
     dumpUISourceCodeForURL("https://localhost/index.html");
     InspectorTest.addResult("");
 
-    dumpURLForPath("/home/example.com", "foo/index.html");
-    dumpURLForPath("/home/example.com", "index.html");
-    dumpURLForPath("/var/www", "localhost/index.html");
-    dumpURLForPath("/var/www", "localhost/foo/index.html");
-    dumpURLForPath("/home/foo", "index.html");
+    dumpURLForPath("file:///home/example.com", "foo/index.html");
+    dumpURLForPath("file:///home/example.com", "index.html");
+    dumpURLForPath("file:///var/www", "localhost/index.html");
+    dumpURLForPath("file:///var/www", "localhost/foo/index.html");
+    dumpURLForPath("file:///home/foo", "index.html");
 
     InspectorTest.completeTest();
 }

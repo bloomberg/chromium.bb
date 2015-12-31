@@ -5,9 +5,9 @@
 function test()
 {
     var paths = {
-        FOO: "/home/username/projects/foo",
-        BAR: "/home/username/projects/bar",
-        SITE1: "/www/site1"
+        FOO: "file:///home/username/projects/foo",
+        BAR: "file:///home/username/projects/bar",
+        SITE1: "file:///www/site1"
     };
 
     function addFileSystem(fileSystemMapping, path)
@@ -101,7 +101,7 @@ function test()
     addFileMapping(fileSystemMapping, paths.SITE1, "http://localhost/", "/");
     addFileMapping(fileSystemMapping, paths.SITE1, "http://www.foo.com/", "/foo/");
     addFileMapping(fileSystemMapping, paths.FOO, "http://www.example.com/bar/", "/foo/");
-    addMappingForResource(fileSystemMapping, "http://www.bar.com/foo/folder/42.js", paths.FOO, "file://" + paths.FOO + "/baz/folder/42.js");
+    addMappingForResource(fileSystemMapping, "http://www.bar.com/foo/folder/42.js", paths.FOO, paths.FOO + "/baz/folder/42.js");
 
     InspectorTest.addResult("Testing mappings for url:");
     dumpFileForURL(fileSystemMapping, "http://www.bar.com/foo/folder/42.js");
@@ -113,15 +113,15 @@ function test()
     InspectorTest.addResult("");
 
     InspectorTest.addResult("Testing mappings for path:");
-    dumpURLForPath(fileSystemMapping, paths.FOO, "file://" + paths.FOO + "/baz/folder/42.js");
-    dumpURLForPath(fileSystemMapping, paths.FOO, "file://" + paths.FOO + "/baz/folder/43.js");
-    dumpURLForPath(fileSystemMapping, paths.FOO, "file://" + paths.FOO + "/bar/folder/42.js");
-    dumpURLForPath(fileSystemMapping, paths.FOO, "file://" + paths.FOO + "/foo/folder/42.js");
-    dumpURLForPath(fileSystemMapping, paths.FOO, "file://" + paths.FOO + "/foo2/folder/42.js");
-    dumpURLForPath(fileSystemMapping, paths.SITE1, "file://" + paths.SITE1 + "/foo/index.html");
-    dumpURLForPath(fileSystemMapping, paths.SITE1, "file://" + paths.SITE1 + "/index.html");
-    dumpURLForPath(fileSystemMapping, paths.SITE1, "file://" + paths.SITE1 + "/foo");
-    dumpURLForPath(fileSystemMapping, paths.SITE1, "file://" + paths.SITE1 + "/foo/");
+    dumpURLForPath(fileSystemMapping, paths.FOO, paths.FOO + "/baz/folder/42.js");
+    dumpURLForPath(fileSystemMapping, paths.FOO, paths.FOO + "/baz/folder/43.js");
+    dumpURLForPath(fileSystemMapping, paths.FOO, paths.FOO + "/bar/folder/42.js");
+    dumpURLForPath(fileSystemMapping, paths.FOO, paths.FOO + "/foo/folder/42.js");
+    dumpURLForPath(fileSystemMapping, paths.FOO, paths.FOO + "/foo2/folder/42.js");
+    dumpURLForPath(fileSystemMapping, paths.SITE1, paths.SITE1 + "/foo/index.html");
+    dumpURLForPath(fileSystemMapping, paths.SITE1, paths.SITE1 + "/index.html");
+    dumpURLForPath(fileSystemMapping, paths.SITE1, paths.SITE1 + "/foo");
+    dumpURLForPath(fileSystemMapping, paths.SITE1, paths.SITE1 + "/foo/");
     InspectorTest.addResult("");
 
     // Then create another file mapping to make sure it is correctly restored from the settings.

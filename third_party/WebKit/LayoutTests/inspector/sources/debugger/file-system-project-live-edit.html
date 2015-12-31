@@ -18,7 +18,7 @@ function test()
     InspectorTest.runTestSuite([
         function testLiveEditReload(next)
         {
-            var fs = new InspectorTest.TestFileSystem("/var/www");
+            var fs = new InspectorTest.TestFileSystem("file:///var/www");
             fs.root.mkdir("html").addFile("edit-me.js", "function f()\n{\n    return 0;\n}\n");
             fs.root.addFile("bar.js", "<bar content>");
             InspectorTest.addResult("Adding file system.");
