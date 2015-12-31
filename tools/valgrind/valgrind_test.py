@@ -719,6 +719,12 @@ class DrMemory(BaseTool):
     if common.IsWindows() and "Release" in self._options.build_dir:
         proc += ["-no_check_delete_mismatch"]
 
+    # We are seeing false positive invalid heap args on 64-bit, so we are
+    # disabling the feature for now (xref
+    # https://github.com/DynamoRIO/drmemory/issues/1839).
+    if common.IsWindows() and "Release_x64" in self._options.build_dir:
+        proc += ["-no_check_heap_mismatch"]
+
     # make callstacks easier to read
     proc += ["-callstack_srcfile_prefix",
              "build\\src,chromium\\src,crt_build\\self_x86"]
