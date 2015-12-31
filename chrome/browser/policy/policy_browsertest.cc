@@ -4,9 +4,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/display/display_manager.h"
@@ -713,7 +713,7 @@ class PolicyTest : public InProcessBrowserTest {
     // is tied to the test instead.
     chrome_screenshot_grabber->screenshot_grabber()->AddObserver(&observer_);
     ash::Shell::GetInstance()->accelerator_controller()->SetScreenshotDelegate(
-        chrome_screenshot_grabber.Pass());
+        std::move(chrome_screenshot_grabber));
 
     SetScreenshotPolicy(enabled);
     ash::Shell::GetInstance()->accelerator_controller()->PerformActionIfEnabled(

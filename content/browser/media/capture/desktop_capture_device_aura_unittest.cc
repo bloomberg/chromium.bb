@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/location.h"
 #include "base/macros.h"
@@ -153,7 +154,7 @@ TEST_F(DesktopCaptureDeviceAuraTest, StartAndStop) {
   capture_params.requested_format.frame_size.SetSize(640, 480);
   capture_params.requested_format.frame_rate = kFrameRate;
   capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
-  capture_device->AllocateAndStart(capture_params, client.Pass());
+  capture_device->AllocateAndStart(capture_params, std::move(client));
   capture_device->StopAndDeAllocate();
 }
 

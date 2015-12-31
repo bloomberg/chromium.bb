@@ -5,8 +5,8 @@
 #include "chrome/browser/metrics/perf/perf_provider_chromeos.h"
 
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -115,7 +115,7 @@ class TestIncognitoObserver : public WindowedIncognitoObserver {
       bool incognito_launched) {
     scoped_ptr<TestIncognitoObserver> observer(new TestIncognitoObserver);
     observer->set_incognito_launched(incognito_launched);
-    return observer.Pass();
+    return std::move(observer);
   }
 
  private:
@@ -203,9 +203,7 @@ TEST_F(PerfProviderTest, NoPerfData) {
 
   perf_provider_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(false),
-      sampled_profile.Pass(),
-      kPerfSuccess,
-      std::vector<uint8_t>(),
+      std::move(sampled_profile), kPerfSuccess, std::vector<uint8_t>(),
       std::vector<uint8_t>());
 
   std::vector<SampledProfile> stored_profiles;
@@ -218,10 +216,8 @@ TEST_F(PerfProviderTest, PerfDataProtoOnly) {
 
   perf_provider_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(false),
-      sampled_profile.Pass(),
-      kPerfSuccess,
-      SerializeMessageToVector(perf_data_proto_),
-      std::vector<uint8_t>());
+      std::move(sampled_profile), kPerfSuccess,
+      SerializeMessageToVector(perf_data_proto_), std::vector<uint8_t>());
 
   std::vector<SampledProfile> stored_profiles;
   EXPECT_TRUE(perf_provider_->GetSampledProfiles(&stored_profiles));
@@ -243,9 +239,7 @@ TEST_F(PerfProviderTest, PerfStatProtoOnly) {
 
   perf_provider_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(false),
-      sampled_profile.Pass(),
-      kPerfSuccess,
-      std::vector<uint8_t>(),
+      std::move(sampled_profile), kPerfSuccess, std::vector<uint8_t>(),
       SerializeMessageToVector(perf_stat_proto_));
 
   std::vector<SampledProfile> stored_profiles;
@@ -268,8 +262,7 @@ TEST_F(PerfProviderTest, BothPerfDataProtoAndPerfStatProto) {
 
   perf_provider_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(false),
-      sampled_profile.Pass(),
-      kPerfSuccess,
+      std::move(sampled_profile), kPerfSuccess,
       SerializeMessageToVector(perf_data_proto_),
       SerializeMessageToVector(perf_stat_proto_));
 
@@ -284,10 +277,8 @@ TEST_F(PerfProviderTest, InvalidPerfOutputResult) {
 
   perf_provider_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(false),
-      sampled_profile.Pass(),
-      kPerfFailure,
-      SerializeMessageToVector(perf_data_proto_),
-      std::vector<uint8_t>());
+      std::move(sampled_profile), kPerfFailure,
+      SerializeMessageToVector(perf_data_proto_), std::vector<uint8_t>());
 
   // Should not have been stored.
   std::vector<SampledProfile> stored_profiles;
@@ -302,19 +293,15 @@ TEST_F(PerfProviderTest, MultipleCalls) {
 
   perf_provider_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(false),
-      sampled_profile.Pass(),
-      kPerfSuccess,
-      SerializeMessageToVector(perf_data_proto_),
-      std::vector<uint8_t>());
+      std::move(sampled_profile), kPerfSuccess,
+      SerializeMessageToVector(perf_data_proto_), std::vector<uint8_t>());
 
   sampled_profile.reset(new SampledProfile);
   sampled_profile->set_trigger_event(SampledProfile::RESTORE_SESSION);
   sampled_profile->set_ms_after_restore(3000);
   perf_provider_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(false),
-      sampled_profile.Pass(),
-      kPerfSuccess,
-      std::vector<uint8_t>(),
+      std::move(sampled_profile), kPerfSuccess, std::vector<uint8_t>(),
       SerializeMessageToVector(perf_stat_proto_));
 
   sampled_profile.reset(new SampledProfile);
@@ -323,18 +310,14 @@ TEST_F(PerfProviderTest, MultipleCalls) {
   sampled_profile->set_ms_after_resume(1500);
   perf_provider_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(false),
-      sampled_profile.Pass(),
-      kPerfSuccess,
-      SerializeMessageToVector(perf_data_proto_),
-      std::vector<uint8_t>());
+      std::move(sampled_profile), kPerfSuccess,
+      SerializeMessageToVector(perf_data_proto_), std::vector<uint8_t>());
 
   sampled_profile.reset(new SampledProfile);
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
   perf_provider_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(false),
-      sampled_profile.Pass(),
-      kPerfSuccess,
-      std::vector<uint8_t>(),
+      std::move(sampled_profile), kPerfSuccess, std::vector<uint8_t>(),
       SerializeMessageToVector(perf_stat_proto_));
 
   std::vector<SampledProfile> stored_profiles;
@@ -385,10 +368,8 @@ TEST_F(PerfProviderTest, IncognitoWindowOpened) {
 
   perf_provider_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(false),
-      sampled_profile.Pass(),
-      kPerfSuccess,
-      SerializeMessageToVector(perf_data_proto_),
-      std::vector<uint8_t>());
+      std::move(sampled_profile), kPerfSuccess,
+      SerializeMessageToVector(perf_data_proto_), std::vector<uint8_t>());
 
   std::vector<SampledProfile> stored_profiles1;
   EXPECT_TRUE(perf_provider_->GetSampledProfiles(&stored_profiles1));
@@ -407,9 +388,7 @@ TEST_F(PerfProviderTest, IncognitoWindowOpened) {
   sampled_profile->set_ms_after_restore(3000);
   perf_provider_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(false),
-      sampled_profile.Pass(),
-      kPerfSuccess,
-      std::vector<uint8_t>(),
+      std::move(sampled_profile), kPerfSuccess, std::vector<uint8_t>(),
       SerializeMessageToVector(perf_stat_proto_));
 
   std::vector<SampledProfile> stored_profiles2;
@@ -430,10 +409,8 @@ TEST_F(PerfProviderTest, IncognitoWindowOpened) {
   // An incognito window opens.
   perf_provider_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(true),
-      sampled_profile.Pass(),
-      kPerfSuccess,
-      SerializeMessageToVector(perf_data_proto_),
-      std::vector<uint8_t>());
+      std::move(sampled_profile), kPerfSuccess,
+      SerializeMessageToVector(perf_data_proto_), std::vector<uint8_t>());
 
   std::vector<SampledProfile> stored_profiles_empty;
   EXPECT_FALSE(perf_provider_->GetSampledProfiles(&stored_profiles_empty));
@@ -443,9 +420,7 @@ TEST_F(PerfProviderTest, IncognitoWindowOpened) {
   // Incognito window is still open.
   perf_provider_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(true),
-      sampled_profile.Pass(),
-      kPerfSuccess,
-      std::vector<uint8_t>(),
+      std::move(sampled_profile), kPerfSuccess, std::vector<uint8_t>(),
       SerializeMessageToVector(perf_stat_proto_));
 
   EXPECT_FALSE(perf_provider_->GetSampledProfiles(&stored_profiles_empty));
@@ -457,10 +432,8 @@ TEST_F(PerfProviderTest, IncognitoWindowOpened) {
   // Incognito window closes.
   perf_provider_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(false),
-      sampled_profile.Pass(),
-      kPerfSuccess,
-      SerializeMessageToVector(perf_data_proto_),
-      std::vector<uint8_t>());
+      std::move(sampled_profile), kPerfSuccess,
+      SerializeMessageToVector(perf_data_proto_), std::vector<uint8_t>());
 
   std::vector<SampledProfile> stored_profiles3;
   EXPECT_TRUE(perf_provider_->GetSampledProfiles(&stored_profiles3));

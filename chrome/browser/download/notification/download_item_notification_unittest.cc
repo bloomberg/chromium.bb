@@ -5,6 +5,7 @@
 #include "chrome/browser/download/notification/download_item_notification.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -74,8 +75,8 @@ class DownloadItemNotificationTest : public testing::Test {
     profile_ = profile_manager_->CreateTestingProfile("test-user");
 
     scoped_ptr<NotificationUIManager> ui_manager(new StubNotificationUIManager);
-    TestingBrowserProcess::GetGlobal()->
-        SetNotificationUIManager(ui_manager.Pass());
+    TestingBrowserProcess::GetGlobal()->SetNotificationUIManager(
+        std::move(ui_manager));
 
     download_notification_manager_.reset(
         new DownloadNotificationManagerForProfile(profile_, nullptr));

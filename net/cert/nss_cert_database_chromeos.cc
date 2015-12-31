@@ -6,8 +6,8 @@
 
 #include <cert.h>
 #include <pk11pub.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -21,7 +21,7 @@ namespace net {
 NSSCertDatabaseChromeOS::NSSCertDatabaseChromeOS(
     crypto::ScopedPK11Slot public_slot,
     crypto::ScopedPK11Slot private_slot)
-    : NSSCertDatabase(public_slot.Pass(), private_slot.Pass()) {
+    : NSSCertDatabase(std::move(public_slot), std::move(private_slot)) {
   // By default, don't use a system slot. Only if explicitly set by
   // SetSystemSlot, the system slot will be used.
   profile_filter_.Init(GetPublicSlot(),
@@ -33,7 +33,7 @@ NSSCertDatabaseChromeOS::~NSSCertDatabaseChromeOS() {}
 
 void NSSCertDatabaseChromeOS::SetSystemSlot(
     crypto::ScopedPK11Slot system_slot) {
-  system_slot_ = system_slot.Pass();
+  system_slot_ = std::move(system_slot);
   profile_filter_.Init(GetPublicSlot(), GetPrivateSlot(), GetSystemSlot());
 }
 

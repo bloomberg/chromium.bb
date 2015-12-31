@@ -5,6 +5,7 @@
 #include "content/common/gpu/media/vaapi_video_encode_accelerator.h"
 
 #include <string.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -102,7 +103,7 @@ struct VaapiVideoEncodeAccelerator::BitstreamBufferRef {
   BitstreamBufferRef(int32_t id,
                      scoped_ptr<base::SharedMemory> shm,
                      size_t size)
-      : id(id), shm(shm.Pass()), size(size) {}
+      : id(id), shm(std::move(shm)), size(size) {}
   const int32_t id;
   const scoped_ptr<base::SharedMemory> shm;
   const size_t size;
@@ -676,7 +677,7 @@ void VaapiVideoEncodeAccelerator::UseOutputBitstreamBuffer(
   }
 
   scoped_ptr<BitstreamBufferRef> buffer_ref(
-      new BitstreamBufferRef(buffer.id(), shm.Pass(), buffer.size()));
+      new BitstreamBufferRef(buffer.id(), std::move(shm), buffer.size()));
 
   encoder_thread_task_runner_->PostTask(
       FROM_HERE,

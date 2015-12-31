@@ -4,6 +4,8 @@
 
 #include "chrome/browser/net/nss_context.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
@@ -28,7 +30,7 @@ class NSSCertDatabaseChromeOSManager : public base::SupportsUserData::Data {
         base::Bind(&NSSCertDatabaseChromeOSManager::DidGetPrivateSlot,
                    weak_ptr_factory_.GetWeakPtr())));
     if (private_slot)
-      DidGetPrivateSlot(private_slot.Pass());
+      DidGetPrivateSlot(std::move(private_slot));
   }
 
   ~NSSCertDatabaseChromeOSManager() override {
@@ -53,7 +55,7 @@ class NSSCertDatabaseChromeOSManager : public base::SupportsUserData::Data {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     nss_cert_database_.reset(new net::NSSCertDatabaseChromeOS(
         crypto::GetPublicSlotForChromeOSUser(username_hash_),
-        private_slot.Pass()));
+        std::move(private_slot)));
 
     ReadyCallbackList callback_list;
     callback_list.swap(ready_callback_list_);
@@ -99,7 +101,7 @@ void CallWithNSSCertDatabase(
 
 void SetSystemSlot(crypto::ScopedPK11Slot system_slot,
                    net::NSSCertDatabaseChromeOS* db) {
-  db->SetSystemSlot(system_slot.Pass());
+  db->SetSystemSlot(std::move(system_slot));
 }
 
 void SetSystemSlotOfDBForResourceContext(content::ResourceContext* context,
@@ -142,5 +144,5 @@ void EnableNSSSystemKeySlotForResourceContext(
       base::Bind(&SetSystemSlotOfDBForResourceContext, context);
   crypto::ScopedPK11Slot system_slot = crypto::GetSystemNSSKeySlot(callback);
   if (system_slot)
-    callback.Run(system_slot.Pass());
+    callback.Run(std::move(system_slot));
 }

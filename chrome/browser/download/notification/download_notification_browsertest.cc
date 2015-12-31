@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -338,7 +339,7 @@ class DownloadNotificationTest : public DownloadNotificationTestBase {
     test_delegate->GetDownloadIdReceiverCallback().Run(
         content::DownloadItem::kInvalidId + 1);
     DownloadServiceFactory::GetForBrowserContext(profile)
-        ->SetDownloadManagerDelegateForTesting(test_delegate.Pass());
+        ->SetDownloadManagerDelegateForTesting(std::move(test_delegate));
 
     DownloadNotificationTestBase::SetUpOnMainThread();
   }
@@ -359,7 +360,8 @@ class DownloadNotificationTest : public DownloadNotificationTestBase {
     incognito_test_delegate.reset(
         new TestChromeDownloadManagerDelegate(incognito_profile));
     DownloadServiceFactory::GetForBrowserContext(incognito_profile)
-        ->SetDownloadManagerDelegateForTesting(incognito_test_delegate.Pass());
+        ->SetDownloadManagerDelegateForTesting(
+            std::move(incognito_test_delegate));
   }
 
   TestChromeDownloadManagerDelegate* GetIncognitoDownloadManagerDelegate()

@@ -414,8 +414,7 @@ void DownloadItemNotification::UpdateNotificationData(
   UpdateNotificationIcon();
 
   std::vector<message_center::ButtonInfo> notification_actions;
-  scoped_ptr<std::vector<DownloadCommands::Command>> actions(
-      GetExtraActions().Pass());
+  scoped_ptr<std::vector<DownloadCommands::Command>> actions(GetExtraActions());
 
   button_actions_.reset(new std::vector<DownloadCommands::Command>);
   for (auto it = actions->begin(); it != actions->end(); it++) {
@@ -643,7 +642,7 @@ DownloadItemNotification::GetExtraActions() const {
       actions->push_back(DownloadCommands::DISCARD);
       actions->push_back(DownloadCommands::KEEP);
     }
-    return actions.Pass();
+    return actions;
   }
 
   switch (item_->GetState()) {
@@ -667,7 +666,7 @@ DownloadItemNotification::GetExtraActions() const {
     case content::DownloadItem::MAX_DOWNLOAD_STATE:
       NOTREACHED();
   }
-  return actions.Pass();
+  return actions;
 }
 
 base::string16 DownloadItemNotification::GetTitle() const {

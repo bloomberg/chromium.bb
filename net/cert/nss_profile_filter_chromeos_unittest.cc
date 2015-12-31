@@ -7,6 +7,7 @@
 #include <cert.h>
 #include <pk11pub.h>
 #include <secmod.h>
+#include <utility>
 
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_nss_types.h"
@@ -75,8 +76,7 @@ class NSSProfileFilterChromeOSTest : public testing::Test {
     ASSERT_TRUE(private_slot_1.get());
     profile_filter_1_.Init(
         crypto::GetPublicSlotForChromeOSUser(user_1_.username_hash()),
-        private_slot_1.Pass(),
-        get_system_slot());
+        std::move(private_slot_1), get_system_slot());
 
     profile_filter_1_copy_ = profile_filter_1_;
 
@@ -86,7 +86,7 @@ class NSSProfileFilterChromeOSTest : public testing::Test {
     ASSERT_TRUE(private_slot_2.get());
     profile_filter_2_.Init(
         crypto::GetPublicSlotForChromeOSUser(user_2_.username_hash()),
-        private_slot_2.Pass(),
+        std::move(private_slot_2),
         crypto::ScopedPK11Slot() /* no system slot */);
 
     certs_ = CreateCertificateListFromFile(GetTestCertsDirectory(),

@@ -513,7 +513,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   scoped_ptr<policy::PolicyCertVerifier> verifier =
       policy::PolicyCertServiceFactory::CreateForProfile(profile);
   policy_cert_verifier_ = verifier.get();
-  cert_verifier_ = verifier.Pass();
+  cert_verifier_ = std::move(verifier);
 #endif
   // The URLBlacklistManager has to be created on the UI thread to register
   // observers of |pref_service|, and it also has to clean up on
@@ -1097,7 +1097,7 @@ void ProfileIOData::Init(
   if (use_system_key_slot_)
     EnableNSSSystemKeySlotForResourceContext(resource_context_.get());
 
-  certificate_provider_ = profile_params_->certificate_provider.Pass();
+  certificate_provider_ = std::move(profile_params_->certificate_provider);
 #endif
 
   if (g_cert_verifier_for_testing) {
@@ -1109,7 +1109,7 @@ void ProfileIOData::Init(
     // The private slot won't be ready by this point. It shouldn't be necessary
     // for cert trust purposes anyway.
     scoped_refptr<net::CertVerifyProc> verify_proc(
-        new chromeos::CertVerifyProcChromeOS(public_slot.Pass()));
+        new chromeos::CertVerifyProcChromeOS(std::move(public_slot)));
     if (policy_cert_verifier_) {
       DCHECK_EQ(policy_cert_verifier_, cert_verifier_.get());
       policy_cert_verifier_->InitializeOnIOThread(verify_proc);

@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
+#include "chrome/browser/signin/easy_unlock_service.h"
 
+#include <stddef.h>
 #include <map>
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -15,7 +17,6 @@
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
-#include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/easy_unlock_service_factory.h"
 #include "chrome/browser/signin/easy_unlock_service_regular.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -145,7 +146,7 @@ class TestAppManagerFactory {
       return scoped_ptr<TestAppManager>();
     scoped_ptr<TestAppManager> app_manager(new TestAppManager());
     mapping_[context] = app_manager.get();
-    return app_manager.Pass();
+    return app_manager;
   }
 
   // Finds a TestAppManager created for |context|. Returns NULL if no
@@ -187,8 +188,8 @@ scoped_ptr<KeyedService> CreateEasyUnlockServiceForTest(
 
   scoped_ptr<EasyUnlockServiceRegular> service(
       new EasyUnlockServiceRegular(Profile::FromBrowserContext(context)));
-  service->Initialize(app_manager.Pass());
-  return service.Pass();
+  service->Initialize(std::move(app_manager));
+  return std::move(service);
 }
 
 class EasyUnlockServiceTest : public testing::Test {

@@ -36,7 +36,7 @@ scoped_ptr<KeyedService> BuildSigninManagerFake(
   scoped_ptr<SigninManagerBase> signin(
       new SigninManagerBase(signin_client, account_tracker_service));
   signin->Initialize(NULL);
-  return signin.Pass();
+  return std::move(signin);
 #else
   scoped_ptr<FakeSigninManager> manager(new FakeSigninManager(
       signin_client, ProfileOAuth2TokenServiceFactory::GetForProfile(profile),

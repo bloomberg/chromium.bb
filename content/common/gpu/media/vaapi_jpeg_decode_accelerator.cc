@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <string.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -79,9 +80,8 @@ VaapiJpegDecodeAccelerator::DecodeRequest::DecodeRequest(
     scoped_ptr<base::SharedMemory> shm,
     const scoped_refptr<media::VideoFrame>& video_frame)
     : bitstream_buffer(bitstream_buffer),
-      shm(shm.Pass()),
-      video_frame(video_frame) {
-}
+      shm(std::move(shm)),
+      video_frame(video_frame) {}
 
 VaapiJpegDecodeAccelerator::DecodeRequest::~DecodeRequest() {
 }
@@ -299,7 +299,7 @@ void VaapiJpegDecodeAccelerator::Decode(
   }
 
   scoped_ptr<DecodeRequest> request(
-      new DecodeRequest(bitstream_buffer, shm.Pass(), video_frame));
+      new DecodeRequest(bitstream_buffer, std::move(shm), video_frame));
 
   decoder_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VaapiJpegDecodeAccelerator::DecodeTask,

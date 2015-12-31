@@ -22,12 +22,7 @@
 #include <algorithm>
 #include <deque>
 #include <map>
-
-// Include gtest.h out of order because <X11/X.h> #define's Bool & None, which
-// gtest uses as struct names (inside a namespace).  This means that
-// #include'ing gtest after anything that pulls in X.h fails to compile.
-// This is http://code.google.com/p/googletest/issues/detail?id=371
-#include "testing/gtest/include/gtest/gtest.h"
+#include <utility>
 
 #include "base/at_exit.h"
 #include "base/bind.h"
@@ -56,6 +51,7 @@
 #include "content/common/gpu/media/video_accelerator_unittest_helpers.h"
 #include "content/public/common/content_switches.h"
 #include "media/filters/h264_parser.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gl/gl_image.h"
 
@@ -517,7 +513,7 @@ GLRenderingVDAClient::CreateFakeVDA() {
         frame_size_,
         base::Bind(&DoNothingReturnTrue)));
   }
-  return decoder.Pass();
+  return decoder;
 }
 
 scoped_ptr<media::VideoDecodeAccelerator>
@@ -530,7 +526,7 @@ GLRenderingVDAClient::CreateDXVAVDA() {
             base::Bind(&DoNothingReturnTrue),
             rendering_helper_->GetGLContext().get()));
 #endif
-  return decoder.Pass();
+  return decoder;
 }
 
 scoped_ptr<media::VideoDecodeAccelerator>
@@ -547,7 +543,7 @@ GLRenderingVDAClient::CreateV4L2VDA() {
         base::ThreadTaskRunnerHandle::Get()));
   }
 #endif
-  return decoder.Pass();
+  return decoder;
 }
 
 scoped_ptr<media::VideoDecodeAccelerator>
@@ -564,7 +560,7 @@ GLRenderingVDAClient::CreateV4L2SliceVDA() {
         base::ThreadTaskRunnerHandle::Get()));
   }
 #endif
-  return decoder.Pass();
+  return decoder;
 }
 
 scoped_ptr<media::VideoDecodeAccelerator>
@@ -575,7 +571,7 @@ GLRenderingVDAClient::CreateVaapiVDA() {
       base::Bind(&DoNothingReturnTrue),
       base::Bind(&GLRenderingVDAClient::BindImage, base::Unretained(this))));
 #endif
-  return decoder.Pass();
+  return decoder;
 }
 
 void GLRenderingVDAClient::BindImage(uint32_t client_texture_id,
@@ -599,7 +595,7 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
   for (size_t i = 0; i < arraysize(decoders); ++i) {
     if (!decoders[i])
       continue;
-    decoder_ = decoders[i].Pass();
+    decoder_ = std::move(decoders[i]);
     weak_decoder_factory_.reset(
         new base::WeakPtrFactory<VideoDecodeAccelerator>(decoder_.get()));
     if (decoder_->Initialize(profile_, client)) {

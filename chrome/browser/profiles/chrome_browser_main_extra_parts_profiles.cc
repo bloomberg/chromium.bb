@@ -4,6 +4,8 @@
 
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 
+#include <utility>
+
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
@@ -263,12 +265,12 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
           new extensions::NetworkingPrivateVerifyDelegateFactoryImpl);
   extensions::NetworkingPrivateDelegateFactory::GetInstance()
       ->SetVerifyDelegateFactory(
-          networking_private_verify_delegate_factory.Pass());
+          std::move(networking_private_verify_delegate_factory));
   scoped_ptr<extensions::NetworkingPrivateUIDelegateFactoryImpl>
       networking_private_ui_delegate_factory(
           new extensions::NetworkingPrivateUIDelegateFactoryImpl);
   extensions::NetworkingPrivateDelegateFactory::GetInstance()
-      ->SetUIDelegateFactory(networking_private_ui_delegate_factory.Pass());
+      ->SetUIDelegateFactory(std::move(networking_private_ui_delegate_factory));
 #endif
 #endif
 #if !defined(OS_ANDROID)

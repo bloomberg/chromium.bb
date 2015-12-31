@@ -6,6 +6,7 @@
 
 #include <limits.h>
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -802,12 +803,12 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   // http://crbug.com/346229
   handlers->AddHandler(
       make_scoped_ptr(new LegacyPoliciesDeprecatingPolicyHandler(
-          power_management_idle_legacy_policies.Pass(),
+          std::move(power_management_idle_legacy_policies),
           make_scoped_ptr(
               new PowerManagementIdleSettingsPolicyHandler(chrome_schema)))));
   handlers->AddHandler(
       make_scoped_ptr(new LegacyPoliciesDeprecatingPolicyHandler(
-          screen_lock_legacy_policies.Pass(),
+          std::move(screen_lock_legacy_policies),
           make_scoped_ptr(new ScreenLockDelayPolicyHandler(chrome_schema)))));
   handlers->AddHandler(
       make_scoped_ptr(new ExternalDataPolicyHandler(key::kUserAvatarImage)));

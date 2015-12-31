@@ -5,10 +5,10 @@
 #include <inttypes.h>
 #include <stddef.h>
 #include <stdint.h>
-
 #include <algorithm>
 #include <queue>
 #include <string>
+#include <utility>
 
 #include "base/at_exit.h"
 #include "base/bind.h"
@@ -310,7 +310,8 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
       }
     }
   }
-  LOG_ASSERT(test_stream->mapped_aligned_in_file.Initialize(dest_file.Pass()));
+  LOG_ASSERT(
+      test_stream->mapped_aligned_in_file.Initialize(std::move(dest_file)));
   // Assert that memory mapped of file starts at 64 byte boundary. So each
   // plane of frames also start at 64 byte boundary.
 
@@ -398,7 +399,7 @@ class VideoEncodeAcceleratorTestEnvironment : public ::testing::Environment {
       bool run_at_fps,
       bool needs_encode_latency,
       bool verify_all_output)
-      : test_stream_data_(data.Pass()),
+      : test_stream_data_(std::move(data)),
         log_path_(log_path),
         run_at_fps_(run_at_fps),
         needs_encode_latency_(needs_encode_latency),
@@ -605,7 +606,7 @@ scoped_ptr<StreamValidator> StreamValidator::Create(
     LOG(FATAL) << "Unsupported profile: " << profile;
   }
 
-  return validator.Pass();
+  return validator;
 }
 
 class VideoFrameQualityValidator {
@@ -1048,7 +1049,7 @@ scoped_ptr<media::VideoEncodeAccelerator> VEAClient::CreateFakeVEA() {
         scoped_refptr<base::SingleThreadTaskRunner>(
             base::ThreadTaskRunnerHandle::Get())));
   }
-  return encoder.Pass();
+  return encoder;
 }
 
 scoped_ptr<media::VideoEncodeAccelerator> VEAClient::CreateV4L2VEA() {
@@ -1059,7 +1060,7 @@ scoped_ptr<media::VideoEncodeAccelerator> VEAClient::CreateV4L2VEA() {
   if (device)
     encoder.reset(new V4L2VideoEncodeAccelerator(device));
 #endif
-  return encoder.Pass();
+  return encoder;
 }
 
 scoped_ptr<media::VideoEncodeAccelerator> VEAClient::CreateVaapiVEA() {
@@ -1067,7 +1068,7 @@ scoped_ptr<media::VideoEncodeAccelerator> VEAClient::CreateVaapiVEA() {
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
   encoder.reset(new VaapiVideoEncodeAccelerator());
 #endif
-  return encoder.Pass();
+  return encoder;
 }
 
 void VEAClient::CreateEncoder() {
@@ -1086,7 +1087,7 @@ void VEAClient::CreateEncoder() {
   for (size_t i = 0; i < arraysize(encoders); ++i) {
     if (!encoders[i])
       continue;
-    encoder_ = encoders[i].Pass();
+    encoder_ = std::move(encoders[i]);
     SetState(CS_ENCODER_SET);
     if (encoder_->Initialize(kInputFormat,
                              test_stream_->visible_size,
@@ -1779,7 +1780,7 @@ int main(int argc, char** argv) {
       reinterpret_cast<content::VideoEncodeAcceleratorTestEnvironment*>(
           testing::AddGlobalTestEnvironment(
               new content::VideoEncodeAcceleratorTestEnvironment(
-                  test_stream_data.Pass(), log_path, run_at_fps,
+                  std::move(test_stream_data), log_path, run_at_fps,
                   needs_encode_latency, verify_all_output)));
 
   return RUN_ALL_TESTS();

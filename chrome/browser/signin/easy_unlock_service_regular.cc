@@ -145,7 +145,7 @@ void EasyUnlockServiceRegular::OnRemoteDevicesLoaded(
     dict->SetString("permitRecord.id", b64_public_key);
     dict->SetString("permitRecord.type", "license");
     dict->SetString("permitRecord.data", b64_public_key);
-    device_list->Append(dict.Pass());
+    device_list->Append(std::move(dict));
   }
 
   // TODO(tengs): Rename this function after the easy_unlock app is replaced.

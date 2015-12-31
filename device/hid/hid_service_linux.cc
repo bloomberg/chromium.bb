@@ -272,7 +272,7 @@ void HidServiceLinux::ValidateFdOnBlockingThread(
   fd.CheckValidity();
   if (fd.is_valid()) {
     params->device_file = base::File(fd.TakeValue());
-    FinishOpen(params.Pass());
+    FinishOpen(std::move(params));
   } else {
     HID_LOG(EVENT) << "Permission broker denied access to '"
                    << params->device_info->device_node() << "'.";
