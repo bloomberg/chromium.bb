@@ -4,6 +4,8 @@
 
 #include "ash/system/chromeos/supervised/tray_supervised_user.h"
 
+#include <utility>
+
 #include "ash/shell.h"
 #include "ash/system/chromeos/label_tray_view.h"
 #include "ash/system/system_notifier.h"
@@ -100,7 +102,8 @@ void TraySupervisedUser::CreateOrUpdateNotification(
           bundle.GetImageNamed(GetSupervisedUserIconId()),
           system_notifier::kNotifierSupervisedUser,
           base::Closure() /* null callback */));
-  message_center::MessageCenter::Get()->AddNotification(notification.Pass());
+  message_center::MessageCenter::Get()->AddNotification(
+      std::move(notification));
 }
 
 void TraySupervisedUser::CreateOrUpdateSupervisedWarningNotification() {

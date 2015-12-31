@@ -4,6 +4,8 @@
 
 #include "ash/accelerators/key_hold_detector.h"
 
+#include <utility>
+
 #include "ash/shell.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/aura/window_tracker.h"
@@ -43,8 +45,7 @@ void PostPressedEvent(ui::KeyEvent* event) {
 }  // namespace
 
 KeyHoldDetector::KeyHoldDetector(scoped_ptr<Delegate> delegate)
-    : state_(INITIAL),
-      delegate_(delegate.Pass()) {}
+    : state_(INITIAL), delegate_(std::move(delegate)) {}
 
 KeyHoldDetector::~KeyHoldDetector() {}
 

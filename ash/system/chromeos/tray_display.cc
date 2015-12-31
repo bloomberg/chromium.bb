@@ -4,6 +4,7 @@
 
 #include "ash/system/chromeos/tray_display.h"
 
+#include <utility>
 #include <vector>
 
 #include "ash/display/display_manager.h"
@@ -401,7 +402,8 @@ void TrayDisplay::CreateOrUpdateNotification(
       new message_center::HandleNotificationClickedDelegate(
           base::Bind(&OpenSettings))));
 
-    message_center::MessageCenter::Get()->AddNotification(notification.Pass());
+  message_center::MessageCenter::Get()->AddNotification(
+      std::move(notification));
 }
 
 views::View* TrayDisplay::CreateDefaultView(user::LoginStatus status) {

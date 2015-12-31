@@ -94,8 +94,7 @@ BatteryNotification::BatteryNotification(
     MessageCenter* message_center,
     TrayPower::NotificationState notification_state)
     : message_center_(message_center) {
-  message_center_->AddNotification(
-      CreateNotification(notification_state).Pass());
+  message_center_->AddNotification(CreateNotification(notification_state));
 }
 
 BatteryNotification::~BatteryNotification() {
@@ -106,8 +105,8 @@ BatteryNotification::~BatteryNotification() {
 void BatteryNotification::Update(
     TrayPower::NotificationState notification_state) {
   if (message_center_->FindVisibleNotificationById(kBatteryNotificationId)) {
-    message_center_->UpdateNotification(
-        kBatteryNotificationId, CreateNotification(notification_state).Pass());
+    message_center_->UpdateNotification(kBatteryNotificationId,
+                                        CreateNotification(notification_state));
   }
 }
 

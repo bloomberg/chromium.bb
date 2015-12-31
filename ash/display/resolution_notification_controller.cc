@@ -4,6 +4,8 @@
 
 #include "ash/display/resolution_notification_controller.h"
 
+#include <utility>
+
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
@@ -235,7 +237,7 @@ void ResolutionNotificationController::CreateOrUpdateNotification(
       data, new ResolutionChangeNotificationDelegate(
                 this, change_info_->timeout_count > 0)));
   notification->SetSystemPriority();
-  message_center->AddNotification(notification.Pass());
+  message_center->AddNotification(std::move(notification));
 }
 
 void ResolutionNotificationController::OnTimerTick() {

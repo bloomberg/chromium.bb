@@ -94,7 +94,7 @@ TEST_F(AcceleratorFilterTest, CanConsumeSystemKeys) {
   scoped_ptr<ui::AcceleratorHistory>
     accelerator_history(new ui::AcceleratorHistory());
   ::wm::AcceleratorFilter filter(
-      scoped_ptr< ::wm::AcceleratorDelegate>(new AcceleratorDelegate).Pass(),
+      scoped_ptr<::wm::AcceleratorDelegate>(new AcceleratorDelegate),
       accelerator_history.get());
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
 

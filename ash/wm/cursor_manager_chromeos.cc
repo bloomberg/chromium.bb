@@ -4,6 +4,8 @@
 
 #include "ash/wm/cursor_manager_chromeos.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "ui/events/event.h"
 #include "ui/keyboard/keyboard_util.h"
@@ -12,10 +14,8 @@
 
 namespace ash {
 
-CursorManager::CursorManager(
-    scoped_ptr< ::wm::NativeCursorManager> delegate)
-        : ::wm::CursorManager(delegate.Pass()) {
-}
+CursorManager::CursorManager(scoped_ptr<::wm::NativeCursorManager> delegate)
+    : ::wm::CursorManager(std::move(delegate)) {}
 
 CursorManager::~CursorManager() {
 }

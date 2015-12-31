@@ -4,6 +4,8 @@
 
 #include "ash/system/chromeos/session/logout_button_tray.h"
 
+#include <utility>
+
 #include "ash/shelf/shelf_types.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/session/logout_confirmation_controller.h"
@@ -83,7 +85,7 @@ LogoutButton::LogoutButton(views::ButtonListener* listener)
   insets += gfx::Insets(0, kLogoutButtonHorizontalExtraPadding,
                         0, kLogoutButtonHorizontalExtraPadding);
   border->set_insets(insets);
-  SetBorder(border.Pass());
+  SetBorder(std::move(border));
   set_animate_on_state_change(false);
 
   SetMinSize(gfx::Size(0, kShelfItemHeight));

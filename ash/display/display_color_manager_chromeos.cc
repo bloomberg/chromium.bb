@@ -4,6 +4,8 @@
 
 #include "ash/display/display_color_manager_chromeos.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -129,7 +131,7 @@ void DisplayColorManager::LoadCalibrationForDisplay(
       blocking_pool_, FROM_HERE, request,
       base::Bind(&DisplayColorManager::UpdateCalibrationData, AsWeakPtr(),
                  display->display_id(), display->product_id(),
-                 base::Passed(data.Pass())));
+                 base::Passed(std::move(data))));
 }
 
 void DisplayColorManager::UpdateCalibrationData(

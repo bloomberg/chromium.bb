@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <math.h>
-#include <vector>
-
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
+
+#include <math.h>
+#include <utility>
+#include <vector>
 
 #include "ash/ash_switches.h"
 #include "ash/display/display_manager.h"
@@ -120,7 +121,7 @@ class MaximizeModeControllerTest : public test::AshTestBase {
     scoped_ptr<base::TickClock> tick_clock(
         test_tick_clock_ = new base::SimpleTestTickClock());
     test_tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
-    maximize_mode_controller()->SetTickClockForTest(tick_clock.Pass());
+    maximize_mode_controller()->SetTickClockForTest(std::move(tick_clock));
   }
 
   void AdvanceTickClock(const base::TimeDelta& delta) {

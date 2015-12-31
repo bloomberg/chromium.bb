@@ -168,7 +168,7 @@ TEST_F(AcceleratorInteractiveUITest, MAYBE_ChromeOsAccelerators) {
   // Test VOLUME_MUTE, VOLUME_DOWN, and VOLUME_UP.
   TestVolumeControlDelegate* volume_delegate = new TestVolumeControlDelegate;
   shell()->system_tray_delegate()->SetVolumeControlDelegate(
-      scoped_ptr<VolumeControlDelegate>(volume_delegate).Pass());
+      scoped_ptr<VolumeControlDelegate>(volume_delegate));
   // VOLUME_MUTE.
   EXPECT_EQ(0, volume_delegate->handle_volume_mute_count());
   SendKeyPressSync(ui::VKEY_VOLUME_MUTE, false, false, false);

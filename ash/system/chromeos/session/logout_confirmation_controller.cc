@@ -4,6 +4,8 @@
 
 #include "ash/system/chromeos/session/logout_confirmation_controller.h"
 
+#include <utility>
+
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/session/logout_confirmation_dialog.h"
@@ -56,7 +58,7 @@ void LogoutConfirmationController::ConfirmLogout(
 
 void LogoutConfirmationController::SetClockForTesting(
     scoped_ptr<base::TickClock> clock) {
-  clock_ = clock.Pass();
+  clock_ = std::move(clock);
 }
 
 void LogoutConfirmationController::OnLockStateChanged(bool locked) {

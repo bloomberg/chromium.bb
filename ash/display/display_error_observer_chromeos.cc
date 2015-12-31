@@ -4,6 +4,8 @@
 
 #include "ash/display/display_error_observer_chromeos.h"
 
+#include <utility>
+
 #include "ash/system/system_notifier.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -52,7 +54,8 @@ void DisplayErrorObserver::OnDisplayModeChangeFailed(
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  system_notifier::kNotifierDisplayError),
       message_center::RichNotificationData(), NULL));
-  message_center::MessageCenter::Get()->AddNotification(notification.Pass());
+  message_center::MessageCenter::Get()->AddNotification(
+      std::move(notification));
 }
 
 base::string16

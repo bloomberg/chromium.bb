@@ -1062,7 +1062,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   // Set accelerator controller delegates.
   accelerator_controller_->SetBrightnessControlDelegate(
       scoped_ptr<ash::BrightnessControlDelegate>(
-          new ash::system::BrightnessControllerChromeos).Pass());
+          new ash::system::BrightnessControllerChromeos));
 
   power_event_observer_.reset(new PowerEventObserver());
   user_activity_notifier_.reset(

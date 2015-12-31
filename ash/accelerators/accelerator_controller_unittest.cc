@@ -868,7 +868,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   {
     TestVolumeControlDelegate* delegate = new TestVolumeControlDelegate;
     ash::Shell::GetInstance()->system_tray_delegate()->SetVolumeControlDelegate(
-        scoped_ptr<VolumeControlDelegate>(delegate).Pass());
+        scoped_ptr<VolumeControlDelegate>(delegate));
     EXPECT_EQ(0, delegate->handle_volume_mute_count());
     EXPECT_TRUE(ProcessInController(volume_mute));
     EXPECT_EQ(1, delegate->handle_volume_mute_count());
@@ -890,7 +890,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     DummyBrightnessControlDelegate* delegate =
         new DummyBrightnessControlDelegate;
     GetController()->SetBrightnessControlDelegate(
-        scoped_ptr<BrightnessControlDelegate>(delegate).Pass());
+        scoped_ptr<BrightnessControlDelegate>(delegate));
     EXPECT_EQ(0, delegate->handle_brightness_down_count());
     EXPECT_TRUE(ProcessInController(brightness_down));
     EXPECT_EQ(1, delegate->handle_brightness_down_count());
@@ -912,7 +912,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     DummyKeyboardBrightnessControlDelegate* delegate =
         new DummyKeyboardBrightnessControlDelegate;
     GetController()->SetKeyboardBrightnessControlDelegate(
-        scoped_ptr<KeyboardBrightnessControlDelegate>(delegate).Pass());
+        scoped_ptr<KeyboardBrightnessControlDelegate>(delegate));
     EXPECT_EQ(0, delegate->handle_keyboard_brightness_down_count());
     EXPECT_TRUE(ProcessInController(alt_brightness_down));
     EXPECT_EQ(1, delegate->handle_keyboard_brightness_down_count());
@@ -1146,7 +1146,7 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
 
     DummyImeControlDelegate* delegate = new DummyImeControlDelegate;
     GetController()->SetImeControlDelegate(
-        scoped_ptr<ImeControlDelegate>(delegate).Pass());
+        scoped_ptr<ImeControlDelegate>(delegate));
     EXPECT_EQ(0, delegate->handle_next_ime_count());
     EXPECT_FALSE(ProcessInController(shift_alt_press));
     EXPECT_TRUE(ProcessInController(shift_alt));
@@ -1408,7 +1408,7 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
     DummyBrightnessControlDelegate* delegate =
         new DummyBrightnessControlDelegate;
     GetController()->SetBrightnessControlDelegate(
-        scoped_ptr<BrightnessControlDelegate>(delegate).Pass());
+        scoped_ptr<BrightnessControlDelegate>(delegate));
     EXPECT_EQ(0, delegate->handle_brightness_down_count());
     EXPECT_TRUE(ProcessInController(brightness_down));
     EXPECT_EQ(1, delegate->handle_brightness_down_count());
@@ -1428,7 +1428,7 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
     EXPECT_TRUE(ProcessInController(volume_up));
     TestVolumeControlDelegate* delegate = new TestVolumeControlDelegate;
     ash::Shell::GetInstance()->system_tray_delegate()->SetVolumeControlDelegate(
-        scoped_ptr<VolumeControlDelegate>(delegate).Pass());
+        scoped_ptr<VolumeControlDelegate>(delegate));
     EXPECT_EQ(0, delegate->handle_volume_mute_count());
     EXPECT_TRUE(ProcessInController(volume_mute));
     EXPECT_EQ(1, delegate->handle_volume_mute_count());
@@ -1495,7 +1495,7 @@ class DeprecatedAcceleratorTester : public AcceleratorControllerTest {
     // For testing the deprecated and new IME shortcuts.
     DummyImeControlDelegate* delegate = new DummyImeControlDelegate;
     GetController()->SetImeControlDelegate(
-        scoped_ptr<ImeControlDelegate>(delegate).Pass());
+        scoped_ptr<ImeControlDelegate>(delegate));
   }
 
   ui::Accelerator CreateAccelerator(const AcceleratorData& data) const {

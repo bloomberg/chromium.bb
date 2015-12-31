@@ -4,6 +4,8 @@
 
 #include "ash/system/chromeos/power/tray_power.h"
 
+#include <utility>
+
 #include "ash/accessibility_delegate.h"
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
@@ -230,7 +232,7 @@ bool TrayPower::MaybeShowUsbChargerNotification() {
                                    system_notifier::kNotifierPower),
         message_center::RichNotificationData(),
         new UsbNotificationDelegate(this)));
-    message_center_->AddNotification(notification.Pass());
+    message_center_->AddNotification(std::move(notification));
     return true;
   } else if (!usb_charger_is_connected && usb_charger_was_connected_) {
     // USB charger was unplugged or was identified as a different type while

@@ -5,6 +5,7 @@
 #include "ash/system/chromeos/session/tray_session_length_limit.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "ash/shell.h"
 #include "ash/system/chromeos/label_tray_view.h"
@@ -161,9 +162,10 @@ void TraySessionLengthLimit::UpdateNotification() {
           data, NULL /* delegate */));
   notification->SetSystemPriority();
   if (message_center->FindVisibleNotificationById(kNotificationId))
-    message_center->UpdateNotification(kNotificationId, notification.Pass());
+    message_center->UpdateNotification(kNotificationId,
+                                       std::move(notification));
   else
-    message_center->AddNotification(notification.Pass());
+    message_center->AddNotification(std::move(notification));
   last_limit_state_ = limit_state_;
 }
 

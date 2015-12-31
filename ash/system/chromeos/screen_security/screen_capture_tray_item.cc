@@ -4,6 +4,8 @@
 
 #include "ash/system/chromeos/screen_security/screen_capture_tray_item.h"
 
+#include <utility>
+
 #include "ash/shell.h"
 #include "ash/system/system_notifier.h"
 #include "grit/ash_resources.h"
@@ -66,7 +68,8 @@ void ScreenCaptureTrayItem::CreateOrUpdateNotification() {
                                  system_notifier::kNotifierScreenCapture),
       data, new tray::ScreenNotificationDelegate(this)));
   notification->SetSystemPriority();
-  message_center::MessageCenter::Get()->AddNotification(notification.Pass());
+  message_center::MessageCenter::Get()->AddNotification(
+      std::move(notification));
 }
 
 std::string ScreenCaptureTrayItem::GetNotificationId() {
