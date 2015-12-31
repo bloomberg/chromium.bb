@@ -4,6 +4,8 @@
 
 #include "mojo/runner/android/background_application_loader.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "mojo/shell/application_manager.h"
@@ -15,11 +17,10 @@ BackgroundApplicationLoader::BackgroundApplicationLoader(
     scoped_ptr<ApplicationLoader> real_loader,
     const std::string& thread_name,
     base::MessageLoop::Type message_loop_type)
-    : loader_(real_loader.Pass()),
+    : loader_(std::move(real_loader)),
       message_loop_type_(message_loop_type),
       thread_name_(thread_name),
-      message_loop_created_(true, false) {
-}
+      message_loop_created_(true, false) {}
 
 BackgroundApplicationLoader::~BackgroundApplicationLoader() {
   if (thread_)
@@ -66,7 +67,7 @@ void BackgroundApplicationLoader::LoadOnBackgroundThread(
     const GURL& url,
     InterfaceRequest<Application> application_request) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  loader_->Load(url, application_request.Pass());
+  loader_->Load(url, std::move(application_request));
 }
 
 }  // namespace runner

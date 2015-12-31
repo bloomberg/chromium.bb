@@ -4,6 +4,8 @@
 
 #include "mojo/runner/android/android_handler_loader.h"
 
+#include <utility>
+
 namespace mojo {
 namespace runner {
 
@@ -18,7 +20,7 @@ void AndroidHandlerLoader::Load(
     InterfaceRequest<Application> application_request) {
   DCHECK(application_request.is_pending());
   application_.reset(
-      new ApplicationImpl(&android_handler_, application_request.Pass()));
+      new ApplicationImpl(&android_handler_, std::move(application_request)));
 }
 
 }  // namespace runner

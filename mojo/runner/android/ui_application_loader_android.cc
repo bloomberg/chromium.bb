@@ -4,6 +4,8 @@
 
 #include "mojo/runner/android/ui_application_loader_android.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/shell/application_manager.h"
@@ -14,8 +16,7 @@ namespace runner {
 UIApplicationLoader::UIApplicationLoader(
     scoped_ptr<ApplicationLoader> real_loader,
     base::MessageLoop* ui_message_loop)
-    : loader_(real_loader.Pass()), ui_message_loop_(ui_message_loop) {
-}
+    : loader_(std::move(real_loader)), ui_message_loop_(ui_message_loop) {}
 
 UIApplicationLoader::~UIApplicationLoader() {
   ui_message_loop_->PostTask(
@@ -36,7 +37,7 @@ void UIApplicationLoader::Load(
 void UIApplicationLoader::LoadOnUIThread(
     const GURL& url,
     InterfaceRequest<Application> application_request) {
-  loader_->Load(url, application_request.Pass());
+  loader_->Load(url, std::move(application_request));
 }
 
 void UIApplicationLoader::ShutdownOnUIThread() {

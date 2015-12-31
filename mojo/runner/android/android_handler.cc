@@ -5,6 +5,7 @@
 #include "mojo/runner/android/android_handler.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
@@ -67,7 +68,7 @@ void RunAndroidApplication(JNIEnv* env,
   }
 
   // Run the application.
-  RunNativeApplication(app_library, application_request.Pass());
+  RunNativeApplication(app_library, std::move(application_request));
   // TODO(vtl): See note about unloading and thread-local destructors above
   // declaration of |LoadNativeApplication()|.
   base::UnloadNativeLibrary(app_library);
@@ -159,7 +160,7 @@ void AndroidHandler::RunApplication(
   base::FilePath archive_path(
       ConvertJavaStringToUTF8(env, j_archive_path.obj()));
 
-  common::BlockingCopyToFile(response->body.Pass(), archive_path);
+  common::BlockingCopyToFile(std::move(response->body), archive_path);
   Java_AndroidHandler_bootstrap(
       env, GetApplicationContext(), j_archive_path.obj(),
       application_request.PassMessagePipe().release().value(),
