@@ -1639,8 +1639,10 @@ void AXLayoutObject::addChildren()
     computeAriaOwnsChildren(ownedChildren);
 
     for (AXObject* obj = rawFirstChild(); obj; obj = obj->rawNextSibling()) {
-        if (!axObjectCache().isAriaOwned(obj))
+        if (!axObjectCache().isAriaOwned(obj)) {
+            obj->setParent(this);
             addChild(obj);
+        }
     }
 
     addHiddenChildren();
