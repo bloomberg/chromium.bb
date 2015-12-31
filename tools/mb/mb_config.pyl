@@ -78,8 +78,8 @@
     'swarming_asan_lsan_gyp_release_trybot': ['swarming', 'asan', 'lsan', 'release_trybot'],
     'swarming_msan_gyp_release_trybot': ['swarming', 'chromeos', 'msan', 'gyp', 'release_trybot'],
     'swarming_deterministic_gyp_release_bot': ['swarming', 'deterministic', 'gyp', 'release_bot'],
-    'swarming_gpu_tests_gn_debug_bot': ['swarming', 'gpu_tests', 'gn', 'debug_bot'],
-    'swarming_gpu_tests_gn_release_bot': ['swarming', 'gpu_tests', 'gn', 'release_bot'],
+    'swarming_gpu_fyi_tests_gn_debug_bot': ['swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gn', 'debug_bot'],
+    'swarming_gpu_fyi_tests_gn_release_bot': ['swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gn', 'release_bot'],
     'swarming_gpu_tests_gn_release_trybot': ['swarming', 'gpu_tests', 'gn', 'release_trybot'],
     'swarming_gpu_tests_gyp_debug_trybot': ['swarming', 'gpu_tests', 'gyp', 'debug_trybot'],
     'swarming_gpu_tests_gyp_release_trybot': ['swarming', 'gpu_tests', 'gyp', 'release_trybot'],
@@ -286,6 +286,11 @@
     },
 
     'gyp': {'type': 'gyp'},
+
+    'internal_gles2_conform_tests': {
+      'gn_args': 'internal_gles2_conform_tests=true',
+      'gyp_defines': 'internal_gles2_conform_tests=1',
+    },
 
     'libfuzzer': { 'gn_args': 'use_libfuzzer=true' },
 
@@ -526,8 +531,8 @@
       'Linux ARM': 'swarming_gyp_release_bot_arm',
     },
     'chromium.gpu.fyi': {
-      'GPU NextGen Linux Builder': 'swarming_gpu_tests_gn_release_bot',
-      'GPU NextGen Linux Builder (dbg)': 'swarming_gpu_tests_gn_debug_bot',
+      'GPU NextGen Linux Builder': 'swarming_gpu_fyi_tests_gn_release_bot',
+      'GPU NextGen Linux Builder (dbg)': 'swarming_gpu_fyi_tests_gn_debug_bot',
       'Linux NextGen Release (NVIDIA)': 'none',
       'Linux NextGen Debug (NVIDIA)': 'none',
     },
