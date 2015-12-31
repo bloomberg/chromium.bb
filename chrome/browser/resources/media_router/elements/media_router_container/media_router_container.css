@@ -43,6 +43,36 @@
   text-decoration: none;
 }
 
+#first-run-button {
+  background-color: white;
+}
+
+#first-run-button-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}
+
+#first-run-flow {
+  background-color: rgb(33, 150, 243);
+  padding: 24px 16px 4px 16px;
+}
+
+#first-run-text,
+#first-run-title {
+  color: white;
+  padding-bottom: 24px;
+}
+
+#first-run-text {
+  font-size: 1.0em;
+  line-height: 1.5em;
+}
+
+#first-run-title {
+  font-size: 1.25em;
+}
+
 #issue-banner {
   margin-top: var(--container-header-height);
   width: 100%;

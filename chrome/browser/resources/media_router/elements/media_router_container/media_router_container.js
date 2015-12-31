@@ -75,6 +75,36 @@ Polymer({
     },
 
     /**
+     * The text for the first run flow button.
+     * @private {string}
+     */
+    firstRunFlowButtonText_: {
+      type: String,
+      readOnly: true,
+      value: loadTimeData.getString('firstRunFlowButton'),
+    },
+
+    /**
+     * The text description for the first run flow.
+     * @private {string}
+     */
+    firstRunFlowText_: {
+      type: String,
+      readOnly: true,
+      value: loadTimeData.getString('firstRunFlowText'),
+    },
+
+    /**
+     * The header of the first run flow.
+     * @private {string}
+     */
+    firstRunFlowTitle_: {
+      type: String,
+      readOnly: true,
+      value: loadTimeData.getString('firstRunFlowTitle'),
+    },
+
+    /**
      * The header text for the sink list.
      * @type {string}
      */
@@ -162,6 +192,15 @@ Polymer({
     },
 
     /**
+     * Whether to show the first run flow.
+     * @private {boolean}
+     */
+    showFirstRunFlow_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * The cast mode shown to the user. Initially set to auto mode. (See
      * media_router.CastMode documentation for details on auto mode.)
      * This value may be changed in one of the following ways:
@@ -245,6 +284,16 @@ Polymer({
         sinkCount: this.allSinks.length,
       });
     }, 3000 /* 3 seconds */);
+  },
+
+  /**
+   * Fires an acknowledge-first-run-flow event. This is call when the first run
+   * flow button is clicked.
+   *
+   * @private
+   */
+  acknowledgeFirstRunFlow_: function() {
+    this.fire('acknowledge-first-run-flow');
   },
 
   /**

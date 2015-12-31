@@ -14,6 +14,18 @@
   <link rel="import" type="css" href="../../media_router_common.css">
   <link rel="import" type="css" href="media_router_container.css">
   <template>
+    <template is="dom-if" if="[[showFirstRunFlow_]]">
+      <div id="first-run-flow">
+        <div id="first-run-title">[[firstRunFlowTitle_]]</div>
+        <div id="first-run-text">[[firstRunFlowText_]]</div>
+        <div id="first-run-button-container">
+          <paper-button id="first-run-button" class="button"
+              on-click="acknowledgeFirstRunFlow_">
+            <span>[[firstRunFlowButtonText_]]</span>
+          </paper-button>
+        </div>
+      </div>
+    </template>
     <media-router-header id="container-header"
         class$="[[currentView_]]" view="[[currentView_]]"
         heading-text="[[computeHeaderText_(currentView_, headerText)]]"

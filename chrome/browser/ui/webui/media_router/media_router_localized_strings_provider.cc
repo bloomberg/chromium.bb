@@ -34,6 +34,12 @@ void AddIssuesStrings(content::WebUIDataSource* html_source) {
 }
 
 void AddMediaRouterContainerStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString("firstRunFlowButton",
+                                  IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_BUTTON);
+  html_source->AddLocalizedString("firstRunFlowText",
+                                  IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_TEXT);
+  html_source->AddLocalizedString("firstRunFlowTitle",
+                                  IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_TITLE);
   html_source->AddLocalizedString("autoCastMode",
                                   IDS_MEDIA_ROUTER_AUTO_CAST_MODE);
   html_source->AddLocalizedString("deviceMissing",

@@ -162,6 +162,20 @@ cr.define('media_router_container', function() {
         setTimeout(done);
       });
 
+      // Tests for 'acknowledge-first-run-flow' event firing when the
+      // 'first-run-button' button is clicked.
+      test('first run button click', function(done) {
+        container.showFirstRunFlow_ = true;
+
+        setTimeout(function() {
+          container.addEventListener('acknowledge-first-run-flow', function() {
+            done();
+          });
+          MockInteractions.tap(container.shadowRoot.getElementById(
+              'first-run-button'));
+        });
+      });
+
       // Tests for 'create-route' event firing when a sink with no associated
       // route is clicked.
       test('select sink without a route', function(done) {
