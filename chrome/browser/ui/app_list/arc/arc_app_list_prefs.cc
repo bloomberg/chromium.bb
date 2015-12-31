@@ -233,7 +233,7 @@ scoped_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
                                            activity,
                                            ready_apps_.count(app_id) > 0));
 
-  return app_info.Pass();
+  return app_info;
 }
 
 bool ArcAppListPrefs::IsRegistered(const std::string& app_id) {

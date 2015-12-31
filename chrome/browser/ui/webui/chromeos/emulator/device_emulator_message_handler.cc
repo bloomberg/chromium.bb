@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/emulator/device_emulator_message_handler.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -239,7 +240,7 @@ void DeviceEmulatorMessageHandler::HandleRequestBluetoothInfo(
   // Get each device's properties.
   for (const dbus::ObjectPath& path : paths) {
     scoped_ptr<base::DictionaryValue> device = GetDeviceInfo(path);
-    devices.Append(device.Pass());
+    devices.Append(std::move(device));
   }
 
   scoped_ptr<base::ListValue> predefined_devices =
@@ -301,7 +302,7 @@ void DeviceEmulatorMessageHandler::HandleRequestAudioNodes(
     audio_node->SetString("name", node.name);
     audio_node->SetBoolean("active", node.active);
 
-    audio_nodes.Append(audio_node.Pass());
+    audio_nodes.Append(std::move(audio_node));
   }
   web_ui()->CallJavascriptFunction(kUpdateAudioNodes, audio_nodes);
 }
@@ -561,9 +562,9 @@ scoped_ptr<base::DictionaryValue> DeviceEmulatorMessageHandler::GetDeviceInfo(
     uuids->AppendString(uuid);
   }
 
-  device->Set("uuids", uuids.Pass());
+  device->Set("uuids", std::move(uuids));
 
-  return device.Pass();
+  return device;
 }
 
 }  // namespace chromeos

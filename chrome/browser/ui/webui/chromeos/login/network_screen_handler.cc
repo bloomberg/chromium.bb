@@ -250,7 +250,7 @@ base::ListValue* NetworkScreenHandler::GetTimezoneList() {
   CrosSettings::Get()->GetString(kSystemTimezone, &current_timezone_id);
 
   scoped_ptr<base::ListValue> timezone_list(new base::ListValue);
-  scoped_ptr<base::ListValue> timezones = system::GetTimezoneList().Pass();
+  scoped_ptr<base::ListValue> timezones = system::GetTimezoneList();
   for (size_t i = 0; i < timezones->GetSize(); ++i) {
     const base::ListValue* timezone = NULL;
     CHECK(timezones->GetList(i, &timezone));

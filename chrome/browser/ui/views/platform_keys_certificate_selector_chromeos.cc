@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/platform_keys_certificate_selector_chromeos.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/callback_helpers.h"
 #include "base/memory/ref_counted.h"
@@ -48,7 +49,7 @@ void PlatformKeysCertificateSelector::Init() {
   views::StyledLabel::RangeStyleInfo bold_style;
   bold_style.font_style = gfx::Font::BOLD;
   label->AddStyleRange(gfx::Range(offset, offset + name.size()), bold_style);
-  CertificateSelector::InitWithText(label.Pass());
+  CertificateSelector::InitWithText(std::move(label));
 }
 
 bool PlatformKeysCertificateSelector::Cancel() {

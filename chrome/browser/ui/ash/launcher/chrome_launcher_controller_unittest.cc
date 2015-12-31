@@ -867,7 +867,7 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     browser->window()->Show();
     NavigateAndCommitActiveTabWithTitle(browser.get(), GURL(url),
                                         ASCIIToUTF16(title));
-    return browser.Pass();
+    return browser;
   }
 
   // Creates a running V1 application.

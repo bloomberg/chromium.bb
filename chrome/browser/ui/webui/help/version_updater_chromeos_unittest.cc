@@ -50,7 +50,7 @@ class VersionUpdaterCrosTest : public ::testing::Test {
     scoped_ptr<DBusThreadManagerSetter> dbus_setter =
         DBusThreadManager::GetSetterForTesting();
     dbus_setter->SetUpdateEngineClient(
-        scoped_ptr<UpdateEngineClient>(fake_update_engine_client_).Pass());
+        scoped_ptr<UpdateEngineClient>(fake_update_engine_client_));
 
     EXPECT_CALL(*mock_user_manager_, IsCurrentUserOwner())
         .WillRepeatedly(Return(false));

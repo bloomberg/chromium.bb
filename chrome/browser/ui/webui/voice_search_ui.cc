@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/voice_search_ui.h"
 
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
@@ -199,15 +200,11 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
     }
     base::ListValue* raw_list = list.get();
     content::BrowserThread::PostTask(
-        content::BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(
-            &AddSharedModulePlatformsOnFileThread,
-            raw_list,
-            path,
-            base::Bind(&VoiceSearchDomHandler::ReturnVoiceSearchInfo,
-                       weak_factory_.GetWeakPtr(),
-                       base::Passed(list.Pass()))));
+        content::BrowserThread::FILE, FROM_HERE,
+        base::Bind(&AddSharedModulePlatformsOnFileThread, raw_list, path,
+                   base::Bind(&VoiceSearchDomHandler::ReturnVoiceSearchInfo,
+                              weak_factory_.GetWeakPtr(),
+                              base::Passed(std::move(list)))));
   }
 
   // Adds information regarding the system and chrome version info to list.

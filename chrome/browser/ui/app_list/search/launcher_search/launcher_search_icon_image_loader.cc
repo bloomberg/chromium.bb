@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader.h"
 
+#include <utility>
+
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/launcher_search_provider/error_reporter.h"
 #include "extensions/common/constants.h"
@@ -34,8 +36,7 @@ LauncherSearchIconImageLoader::LauncherSearchIconImageLoader(
       extension_(extension),
       icon_url_(icon_url),
       icon_size_(icon_dimension, icon_dimension),
-      error_reporter_(error_reporter.Pass()) {
-}
+      error_reporter_(std::move(error_reporter)) {}
 
 LauncherSearchIconImageLoader::~LauncherSearchIconImageLoader() {
 }

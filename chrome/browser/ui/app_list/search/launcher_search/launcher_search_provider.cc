@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_provider.h"
 
+#include <utility>
+
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/launcher_search_provider/launcher_search_provider_service.h"
@@ -59,8 +61,8 @@ void LauncherSearchProvider::SetSearchResults(
   DCHECK(Service::Get(profile_)->IsQueryRunning());
 
   // Add this extension's results (erasing any existing results).
-  extension_results_[extension_id] =
-      make_scoped_ptr(new ScopedVector<LauncherSearchResult>(results.Pass()));
+  extension_results_[extension_id] = make_scoped_ptr(
+      new ScopedVector<LauncherSearchResult>(std::move(results)));
 
   // Update results with other extension results.
   ClearResults();

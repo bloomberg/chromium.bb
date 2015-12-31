@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/ash/system_tray_delegate_chromeos.h"
 
 #include <stddef.h>
-
 #include <algorithm>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/ash_switches.h"
@@ -1230,7 +1230,7 @@ void SystemTrayDelegateChromeOS::OnStartBluetoothDiscoverySession(
   if (!should_run_bluetooth_discovery_)
     return;
   VLOG(1) << "Claiming new Bluetooth device discovery session.";
-  bluetooth_discovery_session_ = discovery_session.Pass();
+  bluetooth_discovery_session_ = std::move(discovery_session);
   GetSystemTrayNotifier()->NotifyBluetoothDiscoveringChanged();
 }
 

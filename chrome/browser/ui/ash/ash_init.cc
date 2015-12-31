@@ -77,7 +77,7 @@ void OpenAsh(gfx::AcceleratedWidget remote_window) {
               content::BrowserThread::GetBlockingPool()->GetSequenceToken(),
               base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
   shell->accelerator_controller()->SetImeControlDelegate(
-      scoped_ptr<ash::ImeControlDelegate>(new ImeController).Pass());
+      scoped_ptr<ash::ImeControlDelegate>(new ImeController));
   shell->high_contrast_controller()->SetEnabled(
       chromeos::AccessibilityManager::Get()->IsHighContrastEnabled());
 
