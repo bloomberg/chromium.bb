@@ -2165,6 +2165,10 @@ void AXLayoutObject::lineBreaks(Vector<int>& lineBreaks) const
         lineBreaks.append(indexForVisiblePosition(visiblePos));
         prevVisiblePos = visiblePos;
         visiblePos = nextLinePosition(visiblePos, 0, HasEditableAXRole);
+
+        // Make sure we always make forward progress.
+        if (visiblePos.deepEquivalent().compareTo(prevVisiblePos.deepEquivalent()) < 0)
+            break;
     }
 }
 
