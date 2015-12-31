@@ -29,13 +29,18 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
   if (ui::MaterialDesignController::IsModeMaterial()) {
     // Dialogs:
     static const SkColor kDialogBackgroundColorMd = SK_ColorWHITE;
+    // Button:
+    static const SkColor kTextButtonEnabledColorMd =
+        SkColorSetRGB(0x64, 0x64, 0x64);
+    static const SkColor kTextButtonDisabledColorMd =
+        SkColorSetA(kTextButtonEnabledColorMd, 0x80);
     // MenuItem:
-    const SkColor kMenuHighlightBackgroundColorMd =
+    static const SkColor kMenuHighlightBackgroundColorMd =
         SkColorSetARGB(0x14, 0x00, 0x00, 0x00);
-    const SkColor kSelectedMenuItemForegroundColorMd = SK_ColorBLACK;
+    static const SkColor kSelectedMenuItemForegroundColorMd = SK_ColorBLACK;
     // Link:
-    const SkColor kLinkDisabledColorMd = SK_ColorBLACK;
-    const SkColor kLinkEnabledColorMd = gfx::kGoogleBlue700;
+    static const SkColor kLinkDisabledColorMd = SK_ColorBLACK;
+    static const SkColor kLinkEnabledColorMd = gfx::kGoogleBlue700;
     // Results tables:
     static const SkColor kResultsTableTextMd = SK_ColorBLACK;
     static const SkColor kResultsTableDimmedTextMd =
@@ -48,6 +53,12 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       case NativeTheme::kColorId_DialogBackground:
       case NativeTheme::kColorId_BubbleBackground:
         return kDialogBackgroundColorMd;
+
+      // Button
+      case NativeTheme::kColorId_MdTextButtonEnabledColor:
+        return kTextButtonEnabledColorMd;
+      case NativeTheme::kColorId_MdTextButtonDisabledColor:
+        return kTextButtonDisabledColorMd;
 
       // MenuItem
       case NativeTheme::kColorId_FocusedMenuItemBackgroundColor:
@@ -394,6 +405,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_ThrobberLightColor:
       return kThrobberLightColor;
 
+    case NativeTheme::kColorId_MdTextButtonEnabledColor:
+    case NativeTheme::kColorId_MdTextButtonDisabledColor:
     case NativeTheme::kColorId_NumColors:
       break;
   }

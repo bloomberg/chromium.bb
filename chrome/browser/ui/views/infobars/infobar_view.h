@@ -58,6 +58,11 @@ class InfoBarView : public infobars::InfoBar,
   // Creates a focusable button for use on an infobar. The appearance is
   // customized for infobars (except in Material mode).
   // NOTE: Subclasses must ignore button presses if we're unowned.
+  static views::Button* CreateTextButton(views::ButtonListener* listener,
+                                         const base::string16& text);
+
+  // Like CreateTextButton, but specifically creates a LabelButton.
+  // TODO(estade): remove this function when MD is default.
   static views::LabelButton* CreateLabelButton(views::ButtonListener* listener,
                                                const base::string16& text);
 

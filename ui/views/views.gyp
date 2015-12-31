@@ -79,6 +79,8 @@
       'controls/button/label_button.h',
       'controls/button/label_button_border.cc',
       'controls/button/label_button_border.h',
+      'controls/button/md_text_button.cc',
+      'controls/button/md_text_button.h',
       'controls/button/menu_button.cc',
       'controls/button/menu_button.h',
       'controls/button/menu_button_listener.h',

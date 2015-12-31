@@ -70,18 +70,24 @@ void ConfirmInfoBar::ViewHierarchyChanged(
     AddChildView(label_);
 
     if (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_OK) {
-      ok_button_ = CreateLabelButton(
-          this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
-      if (delegate->OKButtonTriggersUACPrompt())
+      if (delegate->OKButtonTriggersUACPrompt()) {
+        // Use a label button even in MD mode as MD buttons don't support icons.
+        views::LabelButton* ok_button = CreateLabelButton(
+            this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
         elevation_icon_setter_.reset(new ElevationIconSetter(
-            ok_button_,
+            ok_button,
             base::Bind(&ConfirmInfoBar::Layout, base::Unretained(this))));
+        ok_button_ = ok_button;
+      } else {
+        ok_button_ = CreateTextButton(
+            this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
+      }
       AddChildView(ok_button_);
       ok_button_->SizeToPreferredSize();
     }
 
     if (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_CANCEL) {
-      cancel_button_ = CreateLabelButton(
+      cancel_button_ = CreateTextButton(
           this,
           delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL));
       AddChildView(cancel_button_);

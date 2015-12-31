@@ -14,8 +14,8 @@ class ConfirmInfoBarDelegate;
 class ElevationIconSetter;
 
 namespace views {
+class Button;
 class Label;
-class LabelButton;
 }
 
 // An infobar that shows a message, up to two optional buttons, and an optional,
@@ -45,8 +45,8 @@ class ConfirmInfoBar : public InfoBarView,
   int NonLabelWidth() const;
 
   views::Label* label_;
-  views::LabelButton* ok_button_;
-  views::LabelButton* cancel_button_;
+  views::Button* ok_button_;
+  views::Button* cancel_button_;
   views::Link* link_;
   scoped_ptr<ElevationIconSetter> elevation_icon_setter_;
 
