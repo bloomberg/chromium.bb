@@ -8,8 +8,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <sys/types.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -1358,7 +1358,7 @@ void WizardController::MaybeStartListeningForSharkConnection() {
 void WizardController::OnSharkConnected(
     scoped_ptr<pairing_chromeos::HostPairingController> remora_controller) {
   VLOG(1) << "OnSharkConnected";
-  remora_controller_ = remora_controller.Pass();
+  remora_controller_ = std::move(remora_controller);
   base::MessageLoop::current()->DeleteSoon(
       FROM_HERE, shark_connection_listener_.release());
   shark_controller_detected_ = true;

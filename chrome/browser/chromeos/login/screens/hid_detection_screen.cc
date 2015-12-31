@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
@@ -533,7 +535,7 @@ void HIDDetectionScreen::UpdateBTDevices() {
 void HIDDetectionScreen::OnStartDiscoverySession(
     scoped_ptr<device::BluetoothDiscoverySession> discovery_session) {
   VLOG(1) << "BT Discovery session started";
-  discovery_session_ = discovery_session.Pass();
+  discovery_session_ = std::move(discovery_session);
   UpdateDevices();
 }
 

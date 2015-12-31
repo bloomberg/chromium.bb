@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/auth/chrome_cryptohome_authenticator.h"
 
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -18,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/chromeos/login/auth/chrome_cryptohome_authenticator.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
@@ -259,12 +259,12 @@ class CryptohomeAuthenticatorTest : public testing::Test {
     if (key_type) {
       key_definition.provider_data.push_back(
           cryptohome::KeyDefinition::ProviderData("type"));
-      key_definition.provider_data.back().number = key_type.Pass();
+      key_definition.provider_data.back().number = std::move(key_type);
     }
     if (salt) {
       key_definition.provider_data.push_back(
           cryptohome::KeyDefinition::ProviderData("salt"));
-      key_definition.provider_data.back().bytes = salt.Pass();
+      key_definition.provider_data.back().bytes = std::move(salt);
     }
     EXPECT_CALL(*mock_homedir_methods_,
                 GetKeyDataEx(cryptohome::Identification(

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/screens/terms_of_service_screen.h"
 
 #include <string>
+#include <utility>
 
 #include "base/location.h"
 #include "base/logging.h"
@@ -128,7 +129,7 @@ void TermsOfServiceScreen::OnURLFetchComplete(const net::URLFetcher* source) {
   download_timer_.Stop();
 
   // Destroy the fetcher when this method returns.
-  scoped_ptr<net::URLFetcher> fetcher(terms_of_service_fetcher_.Pass());
+  scoped_ptr<net::URLFetcher> fetcher(std::move(terms_of_service_fetcher_));
   if (!actor_)
     return;
 

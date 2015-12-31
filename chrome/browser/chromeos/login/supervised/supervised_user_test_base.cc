@@ -78,7 +78,7 @@ SupervisedUsersSyncTestAdapter::GetFirstChange() {
   const syncer::SyncData& data = processor_->changes().front().sync_data();
   EXPECT_EQ(syncer::SUPERVISED_USERS, data.GetDataType());
   result->CopyFrom(data.GetSpecifics().managed_user());
-  return result.Pass();
+  return result;
 }
 
 void SupervisedUsersSyncTestAdapter::AddChange(
@@ -127,7 +127,7 @@ SupervisedUsersSharedSettingsSyncTestAdapter::GetFirstChange() {
   const syncer::SyncData& data = processor_->changes().front().sync_data();
   EXPECT_EQ(syncer::SUPERVISED_USER_SHARED_SETTINGS, data.GetDataType());
   result->CopyFrom(data.GetSpecifics().managed_user_shared_setting());
-  return result.Pass();
+  return result;
 }
 
 void SupervisedUsersSharedSettingsSyncTestAdapter::AddChange(

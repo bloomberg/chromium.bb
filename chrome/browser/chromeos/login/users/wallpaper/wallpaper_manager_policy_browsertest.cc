@@ -163,7 +163,7 @@ class WallpaperManagerPolicyTest
                   user_key_bits.size()),
               static_cast<int>(user_key_bits.size()));
     user_policy_builder->policy_data().set_username(account_id.GetUserEmail());
-    return user_policy_builder.Pass();
+    return user_policy_builder;
   }
 
   // LoginManagerTest:

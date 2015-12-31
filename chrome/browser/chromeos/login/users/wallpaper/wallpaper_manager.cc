@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 
 #include <stdint.h>
-
 #include <numeric>
+#include <utility>
 #include <vector>
 
 #include "ash/ash_constants.h"
@@ -206,7 +206,7 @@ class WallpaperManager::PendingWallpaper :
     started_load_at_ = base::Time::Now();
 
     if (default_) {
-      manager->DoSetDefaultWallpaper(account_id_, on_finish_.Pass());
+      manager->DoSetDefaultWallpaper(account_id_, std::move(on_finish_));
     } else if (!user_wallpaper_.isNull()) {
       ash::Shell::GetInstance()
           ->desktop_background_controller()
@@ -217,10 +217,10 @@ class WallpaperManager::PendingWallpaper :
           base::Bind(&WallpaperManager::GetCustomWallpaperInternal, account_id_,
                      info_, wallpaper_path_, true /* update wallpaper */,
                      base::ThreadTaskRunnerHandle::Get(),
-                     base::Passed(on_finish_.Pass()),
+                     base::Passed(std::move(on_finish_)),
                      manager->weak_factory_.GetWeakPtr()));
     } else if (!info_.location.empty()) {
-      manager->LoadWallpaper(account_id_, info_, true, on_finish_.Pass());
+      manager->LoadWallpaper(account_id_, info_, true, std::move(on_finish_));
     } else {
       // PendingWallpaper was created and never initialized?
       NOTREACHED();
@@ -346,10 +346,10 @@ void WallpaperManager::InitializeWallpaper() {
   if (ShouldUseCustomizedDefaultWallpaper()) {
     SetDefaultWallpaperPath(GetCustomizedWallpaperDefaultRescaledFileName(
                                 wallpaper::kSmallWallpaperSuffix),
-                            scoped_ptr<gfx::ImageSkia>().Pass(),
+                            scoped_ptr<gfx::ImageSkia>(),
                             GetCustomizedWallpaperDefaultRescaledFileName(
                                 wallpaper::kLargeWallpaperSuffix),
-                            scoped_ptr<gfx::ImageSkia>().Pass());
+                            scoped_ptr<gfx::ImageSkia>());
   }
 
   base::CommandLine* command_line = GetCommandLine();
@@ -449,7 +449,7 @@ void WallpaperManager::OnPolicyFetched(const std::string& policy,
     return;
 
   wallpaper_loader_->Start(
-      data.Pass(),
+      std::move(data),
       0,  // Do not crop.
       base::Bind(&WallpaperManager::SetPolicyControlledWallpaper,
                  weak_factory_.GetWeakPtr(), account_id));
@@ -511,11 +511,9 @@ void WallpaperManager::SetCustomWallpaper(
     // TODO(bshe): This may break if RawImage becomes RefCountedMemory.
     blocking_task_runner->PostTask(
         FROM_HERE,
-        base::Bind(&WallpaperManager::SaveCustomWallpaper,
-                   user_id_hash,
+        base::Bind(&WallpaperManager::SaveCustomWallpaper, user_id_hash,
                    base::FilePath(wallpaper_info.location),
-                   wallpaper_info.layout,
-                   base::Passed(deep_copy.Pass())));
+                   wallpaper_info.layout, base::Passed(std::move(deep_copy))));
   }
 
   std::string relative_path = base::FilePath(user_id_hash).Append(file).value();
@@ -583,8 +581,8 @@ void WallpaperManager::DoSetDefaultWallpaper(
     default_wallpaper_image_.reset();
     if (!file->empty()) {
       loaded_wallpapers_for_test_++;
-      StartLoadAndSetDefaultWallpaper(
-          *file, layout, on_finish.Pass(), &default_wallpaper_image_);
+      StartLoadAndSetDefaultWallpaper(*file, layout, std::move(on_finish),
+                                      &default_wallpaper_image_);
       return;
     }
 
@@ -926,7 +924,7 @@ void WallpaperManager::OnWallpaperDecoded(
     SetUserWallpaperInfo(account_id, info, true);
 
     if (update_wallpaper)
-      DoSetDefaultWallpaper(account_id, on_finish.Pass());
+      DoSetDefaultWallpaper(account_id, std::move(on_finish));
     return;
   }
 
@@ -958,7 +956,7 @@ void WallpaperManager::StartLoad(const AccountId& account_id,
       0,  // Do not crop.
       base::Bind(&WallpaperManager::OnWallpaperDecoded,
                  weak_factory_.GetWeakPtr(), account_id, info.layout,
-                 update_wallpaper, base::Passed(on_finish.Pass())));
+                 update_wallpaper, base::Passed(std::move(on_finish))));
 }
 
 void WallpaperManager::SetCustomizedDefaultWallpaperAfterCheck(
@@ -978,14 +976,12 @@ void WallpaperManager::SetCustomizedDefaultWallpaperAfterCheck(
         downloaded_file.value(),
         0,  // Do not crop.
         base::Bind(&WallpaperManager::OnCustomizedDefaultWallpaperDecoded,
-                   weak_factory_.GetWeakPtr(),
-                   wallpaper_url,
-                   base::Passed(rescaled_files.Pass())));
+                   weak_factory_.GetWeakPtr(), wallpaper_url,
+                   base::Passed(std::move(rescaled_files))));
   } else {
-    SetDefaultWallpaperPath(rescaled_files->path_rescaled_small(),
-                            scoped_ptr<gfx::ImageSkia>().Pass(),
-                            rescaled_files->path_rescaled_large(),
-                            scoped_ptr<gfx::ImageSkia>().Pass());
+    SetDefaultWallpaperPath(
+        rescaled_files->path_rescaled_small(), scoped_ptr<gfx::ImageSkia>(),
+        rescaled_files->path_rescaled_large(), scoped_ptr<gfx::ImageSkia>());
   }
 }
 
@@ -1005,10 +1001,9 @@ void WallpaperManager::OnCustomizedDefaultWallpaperResized(
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetString(prefs::kCustomizationDefaultWallpaperURL,
                           wallpaper_url.spec());
-  SetDefaultWallpaperPath(rescaled_files->path_rescaled_small(),
-                          small_wallpaper_image.Pass(),
-                          rescaled_files->path_rescaled_large(),
-                          large_wallpaper_image.Pass());
+  SetDefaultWallpaperPath(
+      rescaled_files->path_rescaled_small(), std::move(small_wallpaper_image),
+      rescaled_files->path_rescaled_large(), std::move(large_wallpaper_image));
   VLOG(1) << "Customized default wallpaper applied.";
 }
 
@@ -1057,11 +1052,9 @@ void WallpaperManager::StartLoadAndSetDefaultWallpaper(
       path.value(),
       0,  // Do not crop.
       base::Bind(&WallpaperManager::OnDefaultWallpaperDecoded,
-                 weak_factory_.GetWeakPtr(),
-                 path,
-                 layout,
+                 weak_factory_.GetWeakPtr(), path, layout,
                  base::Unretained(result_out),
-                 base::Passed(on_finish.Pass())));
+                 base::Passed(std::move(on_finish))));
 }
 
 void WallpaperManager::SetDefaultWallpaperPath(
@@ -1104,8 +1097,7 @@ void WallpaperManager::SetDefaultWallpaperPath(
   }
 
   if (need_update_screen) {
-    DoSetDefaultWallpaper(EmptyAccountId(),
-                          MovableOnDestroyCallbackHolder().Pass());
+    DoSetDefaultWallpaper(EmptyAccountId(), MovableOnDestroyCallbackHolder());
   }
 }
 

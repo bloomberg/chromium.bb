@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 
+#include <utility>
 #include <vector>
 
 #include "ash/audio/sounds.h"
@@ -1265,7 +1266,7 @@ void ShowLoginWizard(const std::string& first_screen_name) {
           first_screen_name, startup_manifest, display_host));
 
   locale_util::SwitchLanguageCallback callback(
-      base::Bind(&OnLanguageSwitchedCallback, base::Passed(data.Pass())));
+      base::Bind(&OnLanguageSwitchedCallback, base::Passed(std::move(data))));
 
   // Load locale keyboards here. Hardware layout would be automatically enabled.
   locale_util::SwitchLanguage(locale, true, true /* login_layouts_only */,

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/profile_auth_data.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -229,7 +230,8 @@ void ProfileAuthDataTest::PopulateBrowserContext(
 
   GetChannelIDs(browser_context)
       ->SetChannelID(make_scoped_ptr(new net::ChannelIDStore::ChannelID(
-          kChannelIDServerIdentifier, base::Time(), channel_id_key.Pass())));
+          kChannelIDServerIdentifier, base::Time(),
+          std::move(channel_id_key))));
 }
 
 net::URLRequestContext* ProfileAuthDataTest::GetRequestContext(

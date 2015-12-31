@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -182,7 +184,7 @@ void ChromeUserSelectionScreen::SetPublicSessionLocales(
   const bool two_or_more_recommended_locales = recommended_locales.size() >= 2;
 
   // Notify the UI.
-  view_->SetPublicSessionLocales(account_id, available_locales.Pass(),
+  view_->SetPublicSessionLocales(account_id, std::move(available_locales),
                                  default_locale,
                                  two_or_more_recommended_locales);
 }

@@ -808,7 +808,7 @@ class KioskTest : public OobeBaseTest {
     content::BrowserThread::PostTask(
         content::BrowserThread::FILE, FROM_HERE,
         base::Bind(&LockAndUnlock, base::Passed(&lock)));
-    return auto_lock.Pass();
+    return auto_lock;
   }
 
   MockUserManager* mock_user_manager() { return mock_user_manager_.get(); }

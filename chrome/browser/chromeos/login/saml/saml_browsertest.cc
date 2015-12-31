@@ -4,6 +4,7 @@
 
 #include <cstring>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -251,7 +252,7 @@ scoped_ptr<HttpResponse> FakeSamlIdp::HandleRequest(
   http_response->AddCustomHeader(
       "Set-cookie",
       base::StringPrintf("saml=%s", cookie_value_.c_str()));
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 scoped_ptr<HttpResponse> FakeSamlIdp::BuildHTMLResponse(
@@ -271,7 +272,7 @@ scoped_ptr<HttpResponse> FakeSamlIdp::BuildHTMLResponse(
   http_response->set_content(response_html);
   http_response->set_content_type("text/html");
 
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 // A FakeCryptohomeClient that stores the salted and hashed secret passed to

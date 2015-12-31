@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/users/avatar/user_image_loader.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
@@ -86,7 +88,7 @@ void UserImageLoader::ReadAndDecodeImage(const ImageInfo& image_info) {
 
   // In case ReadFileToString() fails, |data| is empty and DecodeImage() calls
   // back to OnDecodeImageFailed().
-  DecodeImage(data.Pass(), image_info);
+  DecodeImage(std::move(data), image_info);
 }
 
 void UserImageLoader::DecodeImage(const scoped_ptr<std::string> data,

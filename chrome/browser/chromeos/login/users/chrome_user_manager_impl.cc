@@ -5,9 +5,9 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 
 #include <stddef.h>
-
 #include <cstddef>
 #include <set>
+#include <utility>
 
 #include "ash/multi_profile_uma.h"
 #include "base/bind.h"
@@ -470,9 +470,11 @@ void ChromeUserManagerImpl::OnExternalDataFetched(
   const AccountId account_id =
       user_manager::known_user::GetAccountId(user_id, std::string());
   if (policy == policy::key::kUserAvatarImage)
-    GetUserImageManager(account_id)->OnExternalDataFetched(policy, data.Pass());
+    GetUserImageManager(account_id)
+        ->OnExternalDataFetched(policy, std::move(data));
   else if (policy == policy::key::kWallpaperImage)
-    WallpaperManager::Get()->OnPolicyFetched(policy, account_id, data.Pass());
+    WallpaperManager::Get()->OnPolicyFetched(policy, account_id,
+                                             std::move(data));
   else
     NOTREACHED();
 }

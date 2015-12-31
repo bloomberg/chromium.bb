@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_impl.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -376,11 +377,9 @@ void UserImageManagerImpl::Job::SetToImageData(scoped_ptr<std::string> data) {
   // * This is safe because the image_loader_ employs a hardened JPEG decoder
   //   that protects against malicious invalid image data being used to attack
   //   the login screen or another user session currently in progress.
-  parent_->image_loader_->Start(data.Pass(),
-                                login::kMaxUserImageSize,
-                                base::Bind(&Job::OnLoadImageDone,
-                                           weak_factory_.GetWeakPtr(),
-                                           true));
+  parent_->image_loader_->Start(
+      std::move(data), login::kMaxUserImageSize,
+      base::Bind(&Job::OnLoadImageDone, weak_factory_.GetWeakPtr(), true));
 }
 
 void UserImageManagerImpl::Job::SetToPath(const base::FilePath& path,
@@ -735,7 +734,7 @@ void UserImageManagerImpl::OnExternalDataFetched(const std::string& policy,
   DCHECK(IsUserImageManaged());
   if (data) {
     job_.reset(new Job(this));
-    job_->SetToImageData(data.Pass());
+    job_->SetToImageData(std::move(data));
   }
 }
 

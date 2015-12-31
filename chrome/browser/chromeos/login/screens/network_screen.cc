@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 
+#include <utility>
+
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
@@ -415,7 +417,7 @@ void NetworkScreen::ScheduleResolveLanguageList(
     scoped_ptr<locale_util::LanguageSwitchResult> language_switch_result) {
   UILanguageListResolvedCallback callback = base::Bind(
       &NetworkScreen::OnLanguageListResolved, weak_factory_.GetWeakPtr());
-  ResolveUILanguageList(language_switch_result.Pass(), callback);
+  ResolveUILanguageList(std::move(language_switch_result), callback);
 }
 
 void NetworkScreen::OnLanguageListResolved(

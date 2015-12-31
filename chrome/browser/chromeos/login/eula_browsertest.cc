@@ -43,7 +43,7 @@ class TestURLFetcherCallback {
     scoped_ptr<net::FakeURLFetcher> fetcher(
         new net::FakeURLFetcher(url, d, response_data, response_code, status));
     OnRequestCreate(url, fetcher.get());
-    return fetcher.Pass();
+    return fetcher;
   }
   MOCK_METHOD2(OnRequestCreate,
                void(const GURL&, net::FakeURLFetcher*));

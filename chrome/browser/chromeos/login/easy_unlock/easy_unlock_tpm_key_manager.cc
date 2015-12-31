@@ -7,6 +7,7 @@
 #include <cryptohi.h>
 #include <keyhi.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -53,7 +54,7 @@ void GetSystemSlotOnIOThread(
   crypto::ScopedPK11Slot system_slot =
       crypto::GetSystemNSSKeySlot(callback_on_origin_thread);
   if (system_slot)
-    callback_on_origin_thread.Run(system_slot.Pass());
+    callback_on_origin_thread.Run(std::move(system_slot));
 }
 
 // Relays |EnsureUserTpmInitializedOnIOThread| callback to
@@ -76,7 +77,7 @@ void EnsureUserTPMInitializedOnIOThread(
   crypto::ScopedPK11Slot private_slot = crypto::GetPrivateSlotForChromeOSUser(
       username_hash, callback_on_origin_thread);
   if (private_slot)
-    callback_on_origin_thread.Run(private_slot.Pass());
+    callback_on_origin_thread.Run(std::move(private_slot));
 }
 
 // Checks if a private RSA key associated with |public_key| can be found in
@@ -96,7 +97,7 @@ crypto::ScopedSECKEYPrivateKey GetPrivateKeyOnWorkerThread(
       crypto::FindNSSKeyFromPublicKeyInfoInSlot(public_key_vector, slot));
   if (!rsa_key || SECKEY_GetPrivateKeyType(rsa_key.get()) != rsaKey)
     return nullptr;
-  return rsa_key.Pass();
+  return rsa_key;
 }
 
 // Signs |data| using a private key associated with |public_key| and stored in
