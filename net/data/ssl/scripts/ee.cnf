@@ -60,6 +60,9 @@ dirName = more_san_sanity
 [req_spdy_pooling]
 subjectAltName = @spdy_pooling
 
+[req_wildcard]
+subjectAltName = @wildcard
+
 [more_san_sanity]
 CN=127.0.0.3
 
@@ -72,3 +75,6 @@ DNS.3 = mail.example.com
 DNS.1 = xn--wgv71a119e.com
 DNS.2 = *.xn--wgv71a119e.com
 DNS.3 = blahblahblahblah.com
+
+[wildcard]
+DNS.1 = *.example.org
