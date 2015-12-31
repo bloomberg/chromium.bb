@@ -858,7 +858,7 @@ void WebGL2RenderingContextBase::texStorage3D(GLenum target, GLsizei levels, GLe
 void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
     if (isContextLost() || !validateTexFunc3DTarget("texImage3D", target)
-        || !validateTexFunc("texImage3D", NotTexSubImage2D, SourceArrayBufferView, target, level, internalformat, width, height, depth, border, format, type, 0, 0, 0)
+        || !validateTexFunc("texImage3D", NotTexSubImage, SourceArrayBufferView, target, level, internalformat, width, height, depth, border, format, type, 0, 0, 0)
         || !validateTexFuncData("texImage3D", level, width, height, depth, format, type, pixels, NullAllowed))
         return;
 
@@ -876,49 +876,8 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint in
     tex->setLevelInfo(target, level, internalformat, width, height, depth, type);
 }
 
-bool WebGL2RenderingContextBase::validateTexSubImage3D(const char* functionName, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
-    GLenum format, GLenum type, GLsizei width, GLsizei height, GLsizei depth)
-{
-    if (!validateTexFunc3DTarget(functionName, target))
-        return false;
-
-    WebGLTexture* tex = validateTextureBinding(functionName, target, false);
-    if (!tex)
-        return false;
-
-    if (!validateTexFuncLevel(functionName, target, level))
-        return false;
-
-    if (!tex->isValid(target, level)) {
-        synthesizeGLError(GL_INVALID_OPERATION, "texSubImage3D", "no previously defined texture image");
-        return false;
-    }
-
-    // Before checking if it is in the range, check if overflow happens first.
-    CheckedInt<GLint> maxX = xoffset, maxY = yoffset, maxZ = zoffset;
-    maxX += width;
-    maxY += height;
-    maxZ += depth;
-    if (!maxX.isValid() || !maxY.isValid() || !maxZ.isValid()
-        || maxX.value() > tex->getWidth(target, level)
-        || maxY.value() > tex->getHeight(target, level)
-        || maxZ.value() > tex->getDepth(target, level)) {
-        synthesizeGLError(GL_INVALID_VALUE, functionName, "dimensions out of range");
-        return false;
-    }
-
-    GLenum internalformat = tex->getInternalFormat(target, level);
-    if (!validateTexFuncFormatAndType(functionName, internalformat, format, type, level))
-        return false;
-
-    return true;
-}
-
 void WebGL2RenderingContextBase::texSubImage3DImpl(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, Image* image, WebGLImageConversion::ImageHtmlDomSource domSource, bool flipY, bool premultiplyAlpha)
 {
-    if (!validateTexSubImage3D("texSubImage3D", target, level, xoffset, yoffset, zoffset, format, type, image->width(), image->height(), 1))
-        return;
-
     // All calling functions check isContextLost, so a duplicate check is not needed here.
     if (type == GL_UNSIGNED_INT_10F_11F_11F_REV) {
         // The UNSIGNED_INT_10F_11F_11F_REV type pack/unpack isn't implemented.
@@ -951,11 +910,10 @@ void WebGL2RenderingContextBase::texSubImage3DImpl(GLenum target, GLint level, G
 
 void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
-    if (isContextLost() || !pixels || !validateTexSubImage3D("texSubImage3D", target, level, xoffset, yoffset, zoffset, format, type, width, height, depth)
-        || !validateTexFuncData("texSubImage3D", level, width, height, depth, format, type, pixels, NullAllowed))
+    if (isContextLost() || !validateTexFunc3DTarget("texSubImage3D", target)
+        || !validateTexFunc("texSubImage3D", TexSubImage, SourceArrayBufferView, target, level, 0, width, height, depth, 0, format, type, xoffset, yoffset, zoffset)
+        || !validateTexFuncData("texSubImage3D", level, width, height, depth, format, type, pixels, NullNotAllowed))
         return;
-
-    // FIXME: Ensure pixels is large enough to contain the desired texture dimensions.
 
     void* data = pixels->baseAddress();
     Vector<uint8_t> tempData;
@@ -974,7 +932,16 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint
 
 void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, ImageData* pixels)
 {
-    if (isContextLost() || !pixels || !validateTexSubImage3D("texSubImage3D", target, level, xoffset, yoffset, zoffset, format, type, pixels->width(), pixels->height(), 1))
+    if (!pixels) {
+        synthesizeGLError(GL_INVALID_VALUE, "texSubImage3D", "no image data");
+        return;
+    }
+    if (pixels->data()->bufferBase()->isNeutered()) {
+        synthesizeGLError(GL_INVALID_VALUE, "texSubImage3D", "The source data has been neutered.");
+        return;
+    }
+    if (isContextLost() || !validateTexFunc3DTarget("texSubImage3D", target)
+        || !validateTexFunc("texSubImage3D", TexSubImage, SourceImageData, target, level, 0, pixels->width(), pixels->height(), 1, 0, format, type, xoffset, yoffset, zoffset))
         return;
 
     if (type == GL_UNSIGNED_INT_10F_11F_11F_REV) {
@@ -1000,19 +967,25 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint
 
 void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, HTMLImageElement* image, ExceptionState& exceptionState)
 {
-    if (isContextLost() || !image || !validateHTMLImageElement("texSubImage3D", image, exceptionState))
+    if (isContextLost() || !validateHTMLImageElement("texSubImage3D", image, exceptionState)
+        || !validateTexFunc3DTarget("texSubImage3D", target))
         return;
 
     RefPtr<Image> imageForRender = image->cachedImage()->image();
     if (imageForRender->isSVGImage())
         imageForRender = drawImageIntoBuffer(imageForRender.get(), image->width(), image->height(), "texSubImage3D");
 
+    if (!imageForRender || !validateTexFunc("texSubImage3D", TexSubImage, SourceHTMLImageElement, target, level, 0, imageForRender->width(), imageForRender->height(), 1, 0, format, type, xoffset, yoffset, zoffset))
+        return;
+
     texSubImage3DImpl(target, level, xoffset, yoffset, zoffset, format, type, imageForRender.get(), WebGLImageConversion::HtmlDomImage, m_unpackFlipY, m_unpackPremultiplyAlpha);
 }
 
 void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, HTMLCanvasElement* canvas, ExceptionState& exceptionState)
 {
-    if (isContextLost() || !validateHTMLCanvasElement("texSubImage3D", canvas, exceptionState))
+    if (isContextLost() || !validateHTMLCanvasElement("texSubImage3D", canvas, exceptionState)
+        || !validateTexFunc3DTarget("texSubImage3D", target)
+        || !validateTexFunc("texSubImage3D", TexSubImage, SourceHTMLCanvasElement, target, level, 0, canvas->width(), canvas->height(), 1, 0, format, type, xoffset, yoffset, zoffset))
         return;
 
     WebGLTexture* texture = validateTextureBinding("texSubImage3D", target, false);
@@ -1032,7 +1005,9 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint
 
 void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, HTMLVideoElement* video, ExceptionState& exceptionState)
 {
-    if (isContextLost() || !validateHTMLVideoElement("texSubImage3D", video, exceptionState))
+    if (isContextLost() || !validateHTMLVideoElement("texSubImage3D", video, exceptionState)
+        || !validateTexFunc3DTarget("texSubImage3D", target)
+        || !validateTexFunc("texSubImage3D", TexSubImage, SourceHTMLVideoElement, target, level, 0, video->videoWidth(), video->videoHeight(), 1, 0, format, type, xoffset, yoffset, zoffset))
         return;
 
     RefPtr<Image> image = videoFrameToImage(video);
@@ -1069,7 +1044,7 @@ void WebGL2RenderingContextBase::compressedTexImage3D(GLenum target, GLint level
         synthesizeGLError(GL_INVALID_VALUE, "compressedTexImage3D", "border not 0");
         return;
     }
-    if (!validateCompressedTexDimensions("compressedTexImage3D", NotTexSubImage2D, target, level, width, height, depth, internalformat))
+    if (!validateCompressedTexDimensions("compressedTexImage3D", NotTexSubImage, target, level, width, height, depth, internalformat))
         return;
     if (!validateCompressedTexFuncData("compressedTexImage3D", width, height, depth, internalformat, data))
         return;

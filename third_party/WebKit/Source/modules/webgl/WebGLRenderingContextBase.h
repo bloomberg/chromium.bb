@@ -841,8 +841,8 @@ protected:
     void texSubImage2DImpl(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLenum format, GLenum type, Image*, WebGLImageConversion::ImageHtmlDomSource, bool flipY, bool premultiplyAlpha);
 
     enum TexImageFunctionType {
-        NotTexSubImage2D,
-        TexSubImage2D
+        NotTexSubImage,
+        TexSubImage
     };
     enum TexImageByGPUType {
         TexImage2DByGPU,
