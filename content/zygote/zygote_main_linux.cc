@@ -588,7 +588,7 @@ bool ZygoteMain(const MainFunctionParams& params,
 
 #if defined(SANITIZER_COVERAGE)
   pid_t sancov_helper_pid = ForkSanitizerCoverageHelper(
-      sancov_socket_fds[0], sancov_socket_fds[1], sancov_file_fd.Pass(),
+      sancov_socket_fds[0], sancov_socket_fds[1], std::move(sancov_file_fd),
       sandbox_fds_to_close_post_fork);
   // It's important that the zygote reaps the helper before dying. Otherwise,
   // the destruction of the PID namespace could kill the helper before it
