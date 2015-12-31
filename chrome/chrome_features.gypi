@@ -21,17 +21,23 @@
           'enable_google_now%': 1,
         }]
       ],
+
+      # Use vulcanized HTML/CSS/JS resources to speed up WebUI (chrome://)
+      # pages. https://github.com/polymer/vulcanize
+      'use_vulcanize%': 1,
     },
 
     # Anything in the conditions needs to be copied to the outer scope to be
     # accessible.
     'enable_google_now%': '<(enable_google_now)',
     'android_java_ui%': '<(android_java_ui)',
+    'use_vulcanize%': '<(use_vulcanize)',
 
     # Grit defines based on the feature flags. These must be manually added to
     # grit targets.
     'chrome_grit_defines': [
       '-D', 'enable_google_now=<(enable_google_now)',
+      '-D', 'use_vulcanize=<(use_vulcanize)',
     ]
   },
 }

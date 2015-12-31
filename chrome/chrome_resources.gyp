@@ -203,6 +203,11 @@
           'variables': {
             'grit_grd_file': 'browser/browser_resources.grd',
             'grit_additional_defines': [
+              # TODO(dbeam): 'chrome_grit_defines' should just be appended to
+              # this list of 'grit_additional_defines' via the top of this file,
+              # but they're not for some reason. Maybe because they're in
+              # different scopes?
+              '<@(chrome_grit_defines)',
               '-E', 'additional_modules_list_file=<(additional_modules_list_file)',
               '-E', 'root_gen_dir=<(SHARED_INTERMEDIATE_DIR)',
             ],

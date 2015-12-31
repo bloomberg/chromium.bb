@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/webui/md_downloads/md_downloads_dom_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -102,14 +103,17 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
                           IDR_MD_DOWNLOADS_1X_NO_DOWNLOADS_PNG);
   source->AddResourcePath("2x/no_downloads.png",
                           IDR_MD_DOWNLOADS_2X_NO_DOWNLOADS_PNG);
+
+#if BUILDFLAG(USE_VULCANIZE)
+  source->AddResourcePath("crisper.js", IDR_MD_DOWNLOADS_CRISPER_JS);
+  source->SetDefaultResource(IDR_MD_DOWNLOADS_VULCANIZED_HTML);
+#else
   source->AddResourcePath("action_service.html",
                           IDR_MD_DOWNLOADS_ACTION_SERVICE_HTML);
   source->AddResourcePath("action_service.js",
                           IDR_MD_DOWNLOADS_ACTION_SERVICE_JS);
   source->AddResourcePath("constants.html", IDR_MD_DOWNLOADS_CONSTANTS_HTML);
   source->AddResourcePath("constants.js", IDR_MD_DOWNLOADS_CONSTANTS_JS);
-  source->AddResourcePath("crisper.js", IDR_MD_DOWNLOADS_CRISPER_JS);
-  source->AddResourcePath("dev.html", IDR_MD_DOWNLOADS_DOWNLOADS_HTML);
   source->AddResourcePath("downloads.js", IDR_MD_DOWNLOADS_DOWNLOADS_JS);
   source->AddResourcePath("i18n_setup.html", IDR_MD_DOWNLOADS_I18N_SETUP_HTML);
   source->AddResourcePath("item.css", IDR_MD_DOWNLOADS_ITEM_CSS);
@@ -123,8 +127,9 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddResourcePath("toolbar.css", IDR_MD_DOWNLOADS_TOOLBAR_CSS);
   source->AddResourcePath("toolbar.html", IDR_MD_DOWNLOADS_TOOLBAR_HTML);
   source->AddResourcePath("toolbar.js", IDR_MD_DOWNLOADS_TOOLBAR_JS);
+  source->SetDefaultResource(IDR_MD_DOWNLOADS_DOWNLOADS_HTML);
+#endif
 
-  source->SetDefaultResource(IDR_MD_DOWNLOADS_VULCANIZED_HTML);
   source->SetJsonPath("strings.js");
 
   return source;

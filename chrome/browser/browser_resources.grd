@@ -25,8 +25,14 @@
       </if>
       <if expr="not is_android">
         <structure name="IDR_DOWNLOADS_DOWNLOADS_HTML" file="resources\downloads\downloads.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
-        <structure name="IDR_MD_DOWNLOADS_DOWNLOADS_HTML" file="resources\md_downloads\downloads.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
-        <structure name="IDR_MD_DOWNLOADS_VULCANIZED_HTML" file="resources\md_downloads\vulcanized.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
+        <if expr="use_vulcanize">
+          <then>
+            <structure name="IDR_MD_DOWNLOADS_VULCANIZED_HTML" file="resources\md_downloads\vulcanized.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
+          </then>
+          <else>
+            <structure name="IDR_MD_DOWNLOADS_DOWNLOADS_HTML" file="resources\md_downloads\downloads.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
+          </else>
+        </if>
       </if>
       <if expr="enable_extensions">
         <structure name="IDR_EXTENSIONS_HTML" file="resources\extensions\extensions.html" flattenhtml="true" type="chrome_html" />
@@ -124,23 +130,29 @@
         <include name="IDR_MD_DOWNLOADS_2X_INCOGNITO_MARKER_PNG" file="resources\md_downloads\2x\incognito_marker.png" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_1X_NO_DOWNLOADS_PNG" file="resources\md_downloads\1x\no_downloads.png" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_2X_NO_DOWNLOADS_PNG" file="resources\md_downloads\2x\no_downloads.png" type="BINDATA" />
-        <include name="IDR_MD_DOWNLOADS_ACTION_SERVICE_HTML" file="resources\md_downloads\action_service.html" type="BINDATA" />
-        <include name="IDR_MD_DOWNLOADS_ACTION_SERVICE_JS" file="resources\md_downloads\action_service.js" type="BINDATA" />
-        <include name="IDR_MD_DOWNLOADS_CONSTANTS_HTML" file="resources\md_downloads\constants.html" type="BINDATA" />
-        <include name="IDR_MD_DOWNLOADS_CONSTANTS_JS" file="resources\md_downloads\constants.js" type="BINDATA" />
-        <include name="IDR_MD_DOWNLOADS_CRISPER_JS" file="resources\md_downloads\crisper.js" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_MD_DOWNLOADS_DOWNLOADS_JS" file="resources\md_downloads\downloads.js" type="BINDATA" />
-        <include name="IDR_MD_DOWNLOADS_I18N_SETUP_HTML" file="resources\md_downloads\i18n_setup.html" type="BINDATA" />
-        <include name="IDR_MD_DOWNLOADS_ITEM_CSS" file="resources\md_downloads\item.css" type="BINDATA" flattenhtml="true" />
-        <include name="IDR_MD_DOWNLOADS_ITEM_HTML" file="resources\md_downloads\item.html" type="BINDATA" />
-        <include name="IDR_MD_DOWNLOADS_ITEM_JS" file="resources\md_downloads\item.js" type="BINDATA" />
-        <include name="IDR_MD_DOWNLOADS_MANAGER_CSS" file="resources\md_downloads\manager.css" type="BINDATA" flattenhtml="true" />
-        <include name="IDR_MD_DOWNLOADS_MANAGER_HTML" file="resources\md_downloads\manager.html" type="BINDATA" />
-        <include name="IDR_MD_DOWNLOADS_MANAGER_JS" file="resources\md_downloads\manager.js" type="BINDATA" />
-        <include name="IDR_MD_DOWNLOADS_SHARED_STYLE_CSS" file="resources\md_downloads\shared_style.css" type="BINDATA" />
-        <include name="IDR_MD_DOWNLOADS_TOOLBAR_CSS" file="resources\md_downloads\toolbar.css" type="BINDATA" />
-        <include name="IDR_MD_DOWNLOADS_TOOLBAR_HTML" file="resources\md_downloads\toolbar.html" type="BINDATA" />
-        <include name="IDR_MD_DOWNLOADS_TOOLBAR_JS" file="resources\md_downloads\toolbar.js" type="BINDATA" />
+        <if expr="use_vulcanize">
+          <then>
+            <include name="IDR_MD_DOWNLOADS_CRISPER_JS" file="resources\md_downloads\crisper.js" flattenhtml="true" type="BINDATA" />
+          </then>
+          <else>
+            <include name="IDR_MD_DOWNLOADS_ACTION_SERVICE_HTML" file="resources\md_downloads\action_service.html" type="BINDATA" />
+            <include name="IDR_MD_DOWNLOADS_ACTION_SERVICE_JS" file="resources\md_downloads\action_service.js" type="BINDATA" />
+            <include name="IDR_MD_DOWNLOADS_CONSTANTS_HTML" file="resources\md_downloads\constants.html" type="BINDATA" />
+            <include name="IDR_MD_DOWNLOADS_CONSTANTS_JS" file="resources\md_downloads\constants.js" type="BINDATA" />
+            <include name="IDR_MD_DOWNLOADS_DOWNLOADS_JS" file="resources\md_downloads\downloads.js" type="BINDATA" />
+            <include name="IDR_MD_DOWNLOADS_I18N_SETUP_HTML" file="resources\md_downloads\i18n_setup.html" type="BINDATA" />
+            <include name="IDR_MD_DOWNLOADS_ITEM_CSS" file="resources\md_downloads\item.css" type="BINDATA" flattenhtml="true" />
+            <include name="IDR_MD_DOWNLOADS_ITEM_HTML" file="resources\md_downloads\item.html" type="BINDATA" />
+            <include name="IDR_MD_DOWNLOADS_ITEM_JS" file="resources\md_downloads\item.js" type="BINDATA" />
+            <include name="IDR_MD_DOWNLOADS_MANAGER_CSS" file="resources\md_downloads\manager.css" type="BINDATA" flattenhtml="true" />
+            <include name="IDR_MD_DOWNLOADS_MANAGER_HTML" file="resources\md_downloads\manager.html" type="BINDATA" />
+            <include name="IDR_MD_DOWNLOADS_MANAGER_JS" file="resources\md_downloads\manager.js" type="BINDATA" />
+            <include name="IDR_MD_DOWNLOADS_SHARED_STYLE_CSS" file="resources\md_downloads\shared_style.css" type="BINDATA" />
+            <include name="IDR_MD_DOWNLOADS_TOOLBAR_CSS" file="resources\md_downloads\toolbar.css" type="BINDATA" />
+            <include name="IDR_MD_DOWNLOADS_TOOLBAR_HTML" file="resources\md_downloads\toolbar.html" type="BINDATA" />
+            <include name="IDR_MD_DOWNLOADS_TOOLBAR_JS" file="resources\md_downloads\toolbar.js" type="BINDATA" />
+          </else>
+        </if>
       </if>
       <if expr="enable_extensions">
         <include name="IDR_EXTENSION_COMMAND_LIST_JS" file="resources\extensions\extension_command_list.js" flattenhtml="true" type="BINDATA" />

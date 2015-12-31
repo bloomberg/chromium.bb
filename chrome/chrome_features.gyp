@@ -16,6 +16,7 @@
         'buildflag_flags': [
           'ENABLE_GOOGLE_NOW=<(enable_google_now)',
           'ANDROID_JAVA_UI=<(android_java_ui)',
+          'USE_VULCANIZE=<(use_vulcanize)',
         ],
       },
     },

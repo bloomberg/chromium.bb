@@ -142,6 +142,7 @@ source_set("ui") {
                     ".",
                     "//chrome")
     deps += [
+      "//chrome/common:features",
       "//components/copresence",
       "//components/feedback/proto",
       "//components/proximity_auth/webui",

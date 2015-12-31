@@ -13,6 +13,13 @@ declare_args() {
   # Default to true if compiling for android, but allow this being overriden
   # through the environment.
   android_java_ui = is_android
+
+  # Use vulcanized HTML/CSS/JS resources to speed up WebUI (chrome://)
+  # pages. https://github.com/polymer/vulcanize
+  use_vulcanize = true
 }
 
-chrome_grit_defines = [ "enable_google_now=$enable_google_now" ]
+chrome_grit_defines = [
+  "enable_google_now=$enable_google_now",
+  "use_vulcanize=$use_vulcanize",
+]
