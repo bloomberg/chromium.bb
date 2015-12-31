@@ -106,18 +106,6 @@
           ]
         },
         "test": "gl_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:104a",
-              "os": "Linux"
-            }
-          ]
-        },
-        "test": "tab_capture_end2end_tests"
       }
     ],
     "isolated_scripts": [
@@ -488,6 +476,9 @@
         "test": "gl_unittests"
       },
       {
+        "override_compile_targets": [
+          "tab_capture_end2end_tests_run"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -873,19 +864,6 @@
           ]
         },
         "test": "gl_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:6821",
-              "hidpi": "1",
-              "os": "Mac-10.10"
-            }
-          ]
-        },
-        "test": "tab_capture_end2end_tests"
       }
     ],
     "isolated_scripts": [
@@ -1274,6 +1252,9 @@
         "test": "gl_unittests"
       },
       {
+        "override_compile_targets": [
+          "tab_capture_end2end_tests_run"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
