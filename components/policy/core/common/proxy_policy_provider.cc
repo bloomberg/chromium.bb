@@ -4,6 +4,8 @@
 
 #include "components/policy/core/common/proxy_policy_provider.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/policy/core/common/policy_bundle.h"
@@ -48,7 +50,7 @@ void ProxyPolicyProvider::RefreshPolicies() {
     // if SetDelegate() was never called before.
     scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
     bundle->CopyFrom(policies());
-    UpdatePolicy(bundle.Pass());
+    UpdatePolicy(std::move(bundle));
   }
 }
 
@@ -57,7 +59,7 @@ void ProxyPolicyProvider::OnUpdatePolicy(
   DCHECK_EQ(delegate_, provider);
   scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
   bundle->CopyFrom(delegate_->policies());
-  UpdatePolicy(bundle.Pass());
+  UpdatePolicy(std::move(bundle));
 }
 
 }  // namespace policy

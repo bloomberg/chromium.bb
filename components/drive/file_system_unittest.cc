@@ -178,7 +178,7 @@ class FileSystemTest : public testing::Test {
         google_apis::test_util::CreateCopyResultCallback(&error, &entry));
     content::RunAllBlockingPoolTasksUntilIdle();
 
-    return entry.Pass();
+    return entry;
   }
 
   // Gets directory info by path synchronously.
@@ -193,7 +193,7 @@ class FileSystemTest : public testing::Test {
     content::RunAllBlockingPoolTasksUntilIdle();
     if (error != FILE_ERROR_OK)
       entries.reset();
-    return entries.Pass();
+    return entries;
   }
 
   // Used to implement ReadDirectorySync().

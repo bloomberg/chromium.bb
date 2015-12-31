@@ -5,6 +5,7 @@
 #include "components/storage_monitor/storage_monitor_chromeos.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -173,7 +174,7 @@ void StorageMonitorCrosTest::SetUp() {
   TestStorageMonitor::Destroy();
   monitor_ = new TestStorageMonitorCros();
   scoped_ptr<StorageMonitor> pass_monitor(monitor_);
-  StorageMonitor::SetStorageMonitorForTesting(pass_monitor.Pass());
+  StorageMonitor::SetStorageMonitorForTesting(std::move(pass_monitor));
 
   monitor_->Init();
   monitor_->AddObserver(mock_storage_observer_.get());

@@ -4,6 +4,8 @@
 
 #include "components/pairing/bluetooth_controller_pairing_controller.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
@@ -132,7 +134,7 @@ void BluetoothControllerPairingController::OnGetAdapter(
 void BluetoothControllerPairingController::OnStartDiscoverySession(
     scoped_ptr<device::BluetoothDiscoverySession> discovery_session) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  discovery_session_ = discovery_session.Pass();
+  discovery_session_ = std::move(discovery_session);
   ChangeStage(STAGE_DEVICES_DISCOVERY);
 
   for (const auto& device : adapter_->GetDevices())

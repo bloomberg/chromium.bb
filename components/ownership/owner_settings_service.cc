@@ -37,7 +37,7 @@ scoped_ptr<em::PolicyFetchResponse> AssembleAndSignPolicy(
       new em::PolicyFetchResponse());
   if (!policy->SerializeToString(policy_response->mutable_policy_data())) {
     LOG(ERROR) << "Failed to encode policy payload.";
-    return scoped_ptr<em::PolicyFetchResponse>(nullptr).Pass();
+    return scoped_ptr<em::PolicyFetchResponse>(nullptr);
   }
 
   ScopedSGNContext sign_context(
@@ -62,7 +62,7 @@ scoped_ptr<em::PolicyFetchResponse> AssembleAndSignPolicy(
       reinterpret_cast<const char*>(signature_item.data), signature_item.len);
   SECITEM_FreeItem(&signature_item, PR_FALSE);
 
-  return policy_response.Pass();
+  return policy_response;
 }
 
 }  // namepace

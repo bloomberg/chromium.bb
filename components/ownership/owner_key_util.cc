@@ -4,6 +4,8 @@
 
 #include "components/ownership/owner_key_util.h"
 
+#include <utility>
+
 namespace ownership {
 
 ///////////////////////////////////////////////////////////////////////////
@@ -18,8 +20,8 @@ PublicKey::~PublicKey() {
 ///////////////////////////////////////////////////////////////////////////
 // PrivateKey
 
-PrivateKey::PrivateKey(crypto::ScopedSECKEYPrivateKey key) : key_(key.Pass()) {
-}
+PrivateKey::PrivateKey(crypto::ScopedSECKEYPrivateKey key)
+    : key_(std::move(key)) {}
 
 PrivateKey::~PrivateKey() {
 }

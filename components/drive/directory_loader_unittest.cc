@@ -122,7 +122,7 @@ class DirectoryLoaderTest : public testing::Test {
         google_apis::test_util::CreateCopyResultCallback(&error, &entry));
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(google_apis::HTTP_CREATED, error);
-    return entry.Pass();
+    return entry;
   }
 
   content::TestBrowserThreadBundle thread_bundle_;

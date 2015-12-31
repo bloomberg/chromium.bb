@@ -4,6 +4,8 @@
 
 #include "components/pairing/shark_connection_listener.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/pairing/bluetooth_host_pairing_controller.h"
@@ -25,7 +27,7 @@ SharkConnectionListener::~SharkConnectionListener() {
 void SharkConnectionListener::PairingStageChanged(Stage new_stage) {
   if (new_stage == HostPairingController::STAGE_WAITING_FOR_CODE_CONFIRMATION) {
     controller_->RemoveObserver(this);
-    callback_.Run(controller_.Pass());
+    callback_.Run(std::move(controller_));
     callback_.Reset();
   }
 }

@@ -480,7 +480,7 @@ void GCMDriverDesktop::IOWorker::WakeFromSuspendForHeartbeat(bool wake) {
   else
     timer.reset(new base::Timer(true, false));
 
-  gcm_client_->UpdateHeartbeatTimer(timer.Pass());
+  gcm_client_->UpdateHeartbeatTimer(std::move(timer));
 #endif
 }
 

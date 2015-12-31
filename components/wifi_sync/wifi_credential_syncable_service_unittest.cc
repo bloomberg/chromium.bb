@@ -5,8 +5,8 @@
 #include "components/wifi_sync/wifi_credential_syncable_service.h"
 
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -144,7 +144,8 @@ class WifiCredentialSyncableServiceTest : public testing::Test {
     change_processor_ = change_processor.get();
     syncable_service_->MergeDataAndStartSyncing(
         syncer::WIFI_CREDENTIALS, syncer::SyncDataList(),
-        change_processor.Pass(), make_scoped_ptr(new SyncErrorFactoryMock()));
+        std::move(change_processor),
+        make_scoped_ptr(new SyncErrorFactoryMock()));
   }
 
  private:

@@ -63,7 +63,7 @@ crypto::ScopedSECKEYPrivateKey OwnerKeyUtilImpl::FindPrivateKeyInSlot(
       crypto::FindNSSKeyFromPublicKeyInfoInSlot(key, slot));
   if (!private_key || SECKEY_GetPrivateKeyType(private_key.get()) != rsaKey)
     return nullptr;
-  return private_key.Pass();
+  return private_key;
 }
 
 bool OwnerKeyUtilImpl::IsPublicKeyPresent() {

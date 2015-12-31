@@ -38,7 +38,7 @@ class ProxyPolicyProviderTest : public testing::Test {
   static scoped_ptr<PolicyBundle> CopyBundle(const PolicyBundle& bundle) {
     scoped_ptr<PolicyBundle> copy(new PolicyBundle());
     copy->CopyFrom(bundle);
-    return copy.Pass();
+    return copy;
   }
 
  private:

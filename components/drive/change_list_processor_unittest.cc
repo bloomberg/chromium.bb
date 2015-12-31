@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
@@ -98,7 +99,7 @@ ScopedVector<ChangeList> CreateBaseChangeList() {
   change_lists[0]->mutable_parent_resource_ids()->push_back("");
 
   change_lists[0]->set_largest_changestamp(kBaseResourceListChangestamp);
-  return change_lists.Pass();
+  return change_lists;
 }
 
 class ChangeListProcessorTest : public testing::Test {
@@ -132,8 +133,7 @@ class ChangeListProcessorTest : public testing::Test {
     about_resource->set_root_folder_id(kRootId);
 
     ChangeListProcessor processor(metadata_.get(), nullptr);
-    return processor.Apply(about_resource.Pass(),
-                           changes.Pass(),
+    return processor.Apply(std::move(about_resource), std::move(changes),
                            false /* is_delta_update */);
   }
 
@@ -147,9 +147,9 @@ class ChangeListProcessorTest : public testing::Test {
     about_resource->set_root_folder_id(kRootId);
 
     ChangeListProcessor processor(metadata_.get(), nullptr);
-    FileError error = processor.Apply(about_resource.Pass(),
-                                      changes.Pass(),
-                                      true /* is_delta_update */);
+    FileError error =
+        processor.Apply(std::move(about_resource), std::move(changes),
+                        true /* is_delta_update */);
     *changed_files = processor.changed_files();
     return error;
   }
@@ -162,7 +162,7 @@ class ChangeListProcessorTest : public testing::Test {
         base::FilePath::FromUTF8Unsafe(path), entry.get());
     if (error != FILE_ERROR_OK)
       entry.reset();
-    return entry.Pass();
+    return entry;
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -246,7 +246,7 @@ TEST_F(ChangeListProcessorTest, DeltaFileAddedInNewDirectory) {
 
   FileChange changed_files;
   EXPECT_EQ(FILE_ERROR_OK,
-            ApplyChangeList(change_lists.Pass(), &changed_files));
+            ApplyChangeList(std::move(change_lists), &changed_files));
 
   int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
@@ -281,7 +281,7 @@ TEST_F(ChangeListProcessorTest, DeltaDirMovedFromRootToDirectory) {
 
   FileChange changed_files;
   EXPECT_EQ(FILE_ERROR_OK,
-            ApplyChangeList(change_lists.Pass(), &changed_files));
+            ApplyChangeList(std::move(change_lists), &changed_files));
 
   int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
@@ -317,7 +317,7 @@ TEST_F(ChangeListProcessorTest, DeltaFileMovedFromDirectoryToRoot) {
   EXPECT_EQ(FILE_ERROR_OK, ApplyFullResourceList(CreateBaseChangeList()));
   FileChange changed_files;
   EXPECT_EQ(FILE_ERROR_OK,
-            ApplyChangeList(change_lists.Pass(), &changed_files));
+            ApplyChangeList(std::move(change_lists), &changed_files));
 
   int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
@@ -350,7 +350,7 @@ TEST_F(ChangeListProcessorTest, DeltaFileRenamedInDirectory) {
   EXPECT_EQ(FILE_ERROR_OK, ApplyFullResourceList(CreateBaseChangeList()));
   FileChange changed_files;
   EXPECT_EQ(FILE_ERROR_OK,
-            ApplyChangeList(change_lists.Pass(), &changed_files));
+            ApplyChangeList(std::move(change_lists), &changed_files));
   EXPECT_EQ(2U, changed_files.size());
   EXPECT_TRUE(changed_files.count(base::FilePath::FromUTF8Unsafe(
       "drive/root/Directory 1/SubDirectory File 1.txt")));
@@ -389,7 +389,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileInRoot) {
   EXPECT_EQ(FILE_ERROR_OK, ApplyFullResourceList(CreateBaseChangeList()));
   FileChange changed_files;
   EXPECT_EQ(FILE_ERROR_OK,
-            ApplyChangeList(change_lists.Pass(), &changed_files));
+            ApplyChangeList(std::move(change_lists), &changed_files));
 
   int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
@@ -410,7 +410,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileInRoot) {
 
   // Apply.
   EXPECT_EQ(FILE_ERROR_OK,
-            ApplyChangeList(change_lists.Pass(), &changed_files));
+            ApplyChangeList(std::move(change_lists), &changed_files));
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
   EXPECT_EQ(16687, changestamp);
   EXPECT_FALSE(GetResourceEntry("drive/root/Added file.txt"));
@@ -438,7 +438,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileFromExistingDirectory) {
   EXPECT_EQ(FILE_ERROR_OK, ApplyFullResourceList(CreateBaseChangeList()));
   FileChange changed_files;
   EXPECT_EQ(FILE_ERROR_OK,
-            ApplyChangeList(change_lists.Pass(), &changed_files));
+            ApplyChangeList(std::move(change_lists), &changed_files));
   int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
   EXPECT_EQ(16730, changestamp);
@@ -460,7 +460,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileFromExistingDirectory) {
 
   // Apply.
   EXPECT_EQ(FILE_ERROR_OK,
-            ApplyChangeList(change_lists.Pass(), &changed_files));
+            ApplyChangeList(std::move(change_lists), &changed_files));
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
   EXPECT_EQ(16770, changestamp);
   EXPECT_FALSE(GetResourceEntry("drive/root/Directory 1/Added file.txt"));
@@ -500,7 +500,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddFileToNewButDeletedDirectory) {
   EXPECT_EQ(FILE_ERROR_OK, ApplyFullResourceList(CreateBaseChangeList()));
   FileChange changed_files;
   EXPECT_EQ(FILE_ERROR_OK,
-            ApplyChangeList(change_lists.Pass(), &changed_files));
+            ApplyChangeList(std::move(change_lists), &changed_files));
 
   int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
@@ -538,11 +538,11 @@ TEST_F(ChangeListProcessorTest, RefreshDirectory) {
       util::GetDriveMyDriveRootPath(), &root));
   const int64_t kNewChangestamp = 12345;
   ResourceEntryVector refreshed_entries;
-  EXPECT_EQ(FILE_ERROR_OK, ChangeListProcessor::RefreshDirectory(
-      metadata_.get(),
-      DirectoryFetchInfo(root.local_id(), kRootId, kNewChangestamp),
-      change_list.Pass(),
-      &refreshed_entries));
+  EXPECT_EQ(FILE_ERROR_OK,
+            ChangeListProcessor::RefreshDirectory(
+                metadata_.get(),
+                DirectoryFetchInfo(root.local_id(), kRootId, kNewChangestamp),
+                std::move(change_list), &refreshed_entries));
 
   // "new_file" should be added.
   ResourceEntry entry;
@@ -575,11 +575,11 @@ TEST_F(ChangeListProcessorTest, RefreshDirectory_WrongParentId) {
       util::GetDriveMyDriveRootPath(), &root));
   const int64_t kNewChangestamp = 12345;
   ResourceEntryVector refreshed_entries;
-  EXPECT_EQ(FILE_ERROR_OK, ChangeListProcessor::RefreshDirectory(
-      metadata_.get(),
-      DirectoryFetchInfo(root.local_id(), kRootId, kNewChangestamp),
-      change_list.Pass(),
-      &refreshed_entries));
+  EXPECT_EQ(FILE_ERROR_OK,
+            ChangeListProcessor::RefreshDirectory(
+                metadata_.get(),
+                DirectoryFetchInfo(root.local_id(), kRootId, kNewChangestamp),
+                std::move(change_list), &refreshed_entries));
 
   // "new_file" should not be added.
   ResourceEntry entry;
@@ -605,7 +605,7 @@ TEST_F(ChangeListProcessorTest, SharedFilesWithNoParentInFeed) {
 
   FileChange changed_files;
   EXPECT_EQ(FILE_ERROR_OK,
-            ApplyChangeList(change_lists.Pass(), &changed_files));
+            ApplyChangeList(std::move(change_lists), &changed_files));
 
   // "new_file" should be added under drive/other.
   ResourceEntry entry;
@@ -650,7 +650,7 @@ TEST_F(ChangeListProcessorTest, ModificationDate) {
   // Apply the change.
   FileChange changed_files;
   EXPECT_EQ(FILE_ERROR_OK,
-            ApplyChangeList(change_lists.Pass(), &changed_files));
+            ApplyChangeList(std::move(change_lists), &changed_files));
 
   // The change is rejected due to the old modification date.
   ResourceEntry entry;

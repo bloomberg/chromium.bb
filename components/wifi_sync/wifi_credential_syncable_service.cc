@@ -5,6 +5,7 @@
 #include "components/wifi_sync/wifi_credential_syncable_service.h"
 
 #include <stdint.h>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -107,7 +108,7 @@ const syncer::ModelType WifiCredentialSyncableService::kModelType =
 
 WifiCredentialSyncableService::WifiCredentialSyncableService(
     scoped_ptr<WifiConfigDelegate> network_config_delegate)
-    : network_config_delegate_(network_config_delegate.Pass()) {
+    : network_config_delegate_(std::move(network_config_delegate)) {
   DCHECK(network_config_delegate_);
 }
 
@@ -123,7 +124,7 @@ syncer::SyncMergeResult WifiCredentialSyncableService::MergeDataAndStartSyncing(
   DCHECK(sync_processor.get());
   DCHECK_EQ(kModelType, type);
 
-  sync_processor_ = sync_processor.Pass();
+  sync_processor_ = std::move(sync_processor);
 
   // TODO(quiche): Update local WiFi configuration from |initial_sync_data|.
   // TODO(quiche): Notify upper layers that sync is ready.

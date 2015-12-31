@@ -5,8 +5,8 @@
 #include "components/user_manager/user_manager_base.h"
 
 #include <stddef.h>
-
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -1092,7 +1092,7 @@ void UserManagerBase::UpdateUserAccountLocale(const AccountId& account_id,
                    base::Passed(&resolved_locale)));
   } else {
     resolved_locale.reset(new std::string(locale));
-    DoUpdateAccountLocale(account_id, resolved_locale.Pass());
+    DoUpdateAccountLocale(account_id, std::move(resolved_locale));
   }
 }
 
