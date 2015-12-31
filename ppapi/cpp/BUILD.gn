@@ -12,7 +12,7 @@ source_set("cpp") {
     "ppp_entrypoints.cc",
   ]
 
-  deps = [
+  public_deps = [
     ":objects",
     "//ppapi/c",
   ]

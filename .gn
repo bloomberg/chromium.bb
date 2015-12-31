@@ -65,6 +65,7 @@ check_targets = [
 
   #"//pdf/*",  # Medium-hard.
   #"//ppapi/*",  # Lots of errors.
+  "//ppapi/examples/*",
   "//printing/*",
 
   #"//remoting/*",  # Medium-hard.
