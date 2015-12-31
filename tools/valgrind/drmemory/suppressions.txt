@@ -236,7 +236,6 @@ WARNING
 name=AllocationRegister guard page access deliberate crash
 base.dll!base::trace_event::AllocationRegister::Insert
 *!base::trace_event::AllocationRegisterTest_OverflowDeathTest_Test::TestBody
-*!testing::internal::HandleExceptionsInMethodIfSupported<>
 
 ############################
 # Benign issues in Chromium
@@ -397,13 +396,11 @@ MSVCR100D.dll!operator new
 *!operator new
 *!operator new[]
 *!`anonymous namespace'::SecurityTest_NewOverflow_Test::TestBody
-*!testing::internal::HandleExceptionsInMethodIfSupported<>
 
 WARNING
 name=Security test (calloc overflow)
 *!`anonymous namespace'::CallocReturnsNull
 *!`anonymous namespace'::SecurityTest_CallocOverflow_Test::TestBody
-*!testing::internal::HandleExceptionsInMethodIfSupported<>
 
 GDI USAGE ERROR
 name=http://crbug.com/234484
@@ -737,7 +734,6 @@ UNADDRESSABLE ACCESS
 name=bug_536803
 *!blink::SecurityOrigin::addSuborigin
 *!blink::SecurityOriginTest_Suborigins_Test::TestBody
-*!testing::internal::HandleExceptionsInMethodIfSupported<>
 
 HANDLE LEAK
 name=bug_555058_a
