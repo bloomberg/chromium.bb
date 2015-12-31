@@ -812,3 +812,10 @@ system call NtDuplicateObject
 *!content::ChildProcessLauncher::Notify
 *!content::ChildProcessLauncher::DidLaunch
 *!base::internal::InvokeHelper<>::MakeItSo
+
+GDI USAGE ERROR
+name=bug_573352
+system call NtGdiDeleteObjectApp
+GDI32.dll!...
+SHELL32.dll!...
+ui_base.dll!drag_utils::SetDragImageOnDataObject
