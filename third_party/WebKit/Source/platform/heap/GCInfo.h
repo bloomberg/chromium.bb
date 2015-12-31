@@ -164,7 +164,7 @@ struct GCInfoAtBaseType {
             TraceTrait<T>::trace,
             FinalizerTrait<T>::finalize,
             FinalizerTrait<T>::nonTrivialFinalizer,
-            WTF::IsPolymorphic<T>::value,
+            std::is_polymorphic<T>::value,
 #if ENABLE(DETAILED_MEMORY_INFRA)
             TypenameStringTrait<T>::get
 #endif

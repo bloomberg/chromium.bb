@@ -39,17 +39,6 @@ inline const char* getStringWithTypeName()
 
 template<typename T> class RawPtr;
 
-// The following are provided in this file:
-//
-//   IsConvertibleToInteger<T>::value
-//
-//   IsSameType<T, U>::value
-//
-//   static_assert's in TypeTraits.cpp illustrate their usage and what they do.
-
-template <bool Predicate, class T = void> struct EnableIf;
-template <class T> struct EnableIf<true, T> { typedef T Type; };
-
 template <typename T> struct IsWeak {
     static const bool value = false;
 };
@@ -73,40 +62,6 @@ template <typename T> struct IsTriviallyDefaultConstructible {
 
 template <typename T> struct IsTriviallyDestructible {
     static const bool value = __has_trivial_destructor(T);
-};
-
-template <typename T> class IsConvertibleToInteger {
-    // Avoid "possible loss of data" warning when using Microsoft's C++ compiler
-    // by not converting int's to doubles.
-    template <bool performCheck, typename U> class IsConvertibleToDouble;
-    template <typename U> class IsConvertibleToDouble<false, U> {
-    public:
-        static const bool value = false;
-    };
-
-    template <typename U> class IsConvertibleToDouble<true, U> {
-        typedef char YesType;
-        struct NoType {
-            char padding[8];
-        };
-
-        static YesType floatCheck(long double);
-        static NoType floatCheck(...);
-        static T& t;
-    public:
-        static const bool value = sizeof(floatCheck(t)) == sizeof(YesType);
-    };
-
-public:
-    static const bool value = std::is_integral<T>::value || IsConvertibleToDouble<!std::is_integral<T>::value, T>::value;
-};
-
-template <typename T, typename U> struct IsSameType {
-    static const bool value = false;
-};
-
-template <typename T> struct IsSameType<T, T> {
-    static const bool value = true;
 };
 
 template <typename T, typename U> class IsSubclass {
@@ -173,11 +128,6 @@ struct RemoveTemplate<OuterTemplate<T>, OuterTemplate> {
     typedef T Type;
 };
 
-// Determines whether this type has a vtable.
-template <typename T> struct IsPolymorphic {
-    static const bool value = __is_polymorphic(T);
-};
-
 #if (COMPILER(MSVC) || !GCC_VERSION_AT_LEAST(4, 9, 0)) && !COMPILER(CLANG)
 // FIXME: MSVC bug workaround. Remove once MSVC STL is fixed.
 // FIXME: GCC before 4.9.0 seems to have the same issue.
@@ -226,7 +176,7 @@ class NeedsTracing {
     } NoType;
 
     // Note that this also checks if a superclass of V has a trace method.
-    template <typename V> static YesType checkHasTraceMethod(V* v, blink::Visitor* p = nullptr, typename EnableIf<IsSameType<decltype(v->trace(p)), void>::value>::Type* g = nullptr);
+    template <typename V> static YesType checkHasTraceMethod(V* v, blink::Visitor* p = nullptr, typename std::enable_if<std::is_same<decltype(v->trace(p)), void>::value>::type* g = nullptr);
     template <typename V> static NoType checkHasTraceMethod(...);
 public:
     // We add sizeof(T) to both sides here, because we want it to fail for

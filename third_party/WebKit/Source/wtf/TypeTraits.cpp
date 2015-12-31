@@ -21,9 +21,7 @@
 
 #include "wtf/TypeTraits.h"
 
-#include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
-#include <type_traits>
 
 namespace WTF {
 
@@ -87,37 +85,6 @@ static_assert(!IsTriviallyCopyAssignable<NonCopyableClass>::value, "NonCopyableC
 static_assert(IsTriviallyDefaultConstructible<NonCopyableClass>::value, "NonCopyableClass should have a trivial default constructor");
 #endif // 0
 
-enum IsConvertibleToIntegerCheck { };
-static_assert(IsConvertibleToInteger<IsConvertibleToIntegerCheck>::value, "enum should be convertible to integer");
-static_assert(IsConvertibleToInteger<bool>::value, "bool should be convertible to integer");
-static_assert(IsConvertibleToInteger<char>::value, "char should be convertible to integer");
-static_assert(IsConvertibleToInteger<signed char>::value, "signed char should be convertible to integer");
-static_assert(IsConvertibleToInteger<unsigned char>::value, "unsigned char should be convertible to integer");
-static_assert(IsConvertibleToInteger<short>::value, "short should be convertible to integer");
-static_assert(IsConvertibleToInteger<unsigned short>::value, "unsigned short should be convertible to integer");
-static_assert(IsConvertibleToInteger<int>::value, "int should be convertible to integer");
-static_assert(IsConvertibleToInteger<unsigned>::value, "unsigned int should be convertible to integer");
-static_assert(IsConvertibleToInteger<long>::value, "long should be convertible to integer");
-static_assert(IsConvertibleToInteger<unsigned long>::value, "unsigned long should be convertible to integer");
-static_assert(IsConvertibleToInteger<long long>::value, "long long should be convertible to integer");
-static_assert(IsConvertibleToInteger<unsigned long long>::value, "unsigned long long should be convertible to integer");
-#if !COMPILER(MSVC) || defined(_NATIVE_WCHAR_T_DEFINED)
-static_assert(IsConvertibleToInteger<wchar_t>::value, "whcar_t should be convertible to integer");
-#endif
-static_assert(IsConvertibleToInteger<double>::value, "double should be convertible to integer");
-static_assert(IsConvertibleToInteger<long double>::value, "long double should be convertible to integer");
-static_assert(IsConvertibleToInteger<float>::value, "float should be convertible to integer");
-static_assert(!IsConvertibleToInteger<char*>::value, "char* should not be convertible to integer");
-static_assert(!IsConvertibleToInteger<const char*>::value, "const char* should not be convertible to integer");
-static_assert(!IsConvertibleToInteger<volatile char*>::value, "volatile char* should not be convertible to integer");
-static_assert(!IsConvertibleToInteger<IsConvertibleToInteger<bool>>::value, "struct should not be convertible to integer");
-
-static_assert((IsSameType<bool, bool>::value), "bool should be the same type as itself");
-static_assert((IsSameType<int*, int*>::value), "int* should be the same type as itself");
-static_assert((!IsSameType<int, int*>::value), "int should not be the same type as int*");
-static_assert((!IsSameType<bool, const bool>::value), "T should not be the same type as const T");
-static_assert((!IsSameType<bool, volatile bool>::value), "T should not be the same type as volatile T");
-
 template <typename T>
 class TestBaseClass {
 };
@@ -128,8 +95,6 @@ class TestDerivedClass : public TestBaseClass<int> {
 static_assert((IsSubclass<TestDerivedClass, TestBaseClass<int>>::value), "Derived class should be a subclass of its base");
 static_assert((!IsSubclass<TestBaseClass<int>, TestDerivedClass>::value), "Base class should not be a sublass of a derived class");
 static_assert((IsSubclassOfTemplate<TestDerivedClass, TestBaseClass>::value), "Derived class should be a subclass of template from its base");
-static_assert((IsSameType<RemoveTemplate<TestBaseClass<int>, TestBaseClass>::Type, int>::value), "RemoveTemplate should remove the template typename from the type");
-static_assert((IsSameType<RemoveTemplate<int, TestBaseClass>::Type, int>::value), "RemoveTemplate should not alter non-template types");
 
 typedef int IntArray[];
 typedef int IntArraySized[4];

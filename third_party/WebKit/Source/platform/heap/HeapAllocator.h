@@ -250,7 +250,7 @@ void HeapVectorBacking<T, Traits>::finalize(void* pointer)
 {
     static_assert(Traits::needsDestruction, "Only vector buffers with items requiring destruction should be finalized");
     // See the comment in HeapVectorBacking::trace.
-    static_assert(Traits::canClearUnusedSlotsWithMemset || WTF::IsPolymorphic<T>::value, "HeapVectorBacking doesn't support objects that cannot be cleared as unused with memset or don't have a vtable");
+    static_assert(Traits::canClearUnusedSlotsWithMemset || std::is_polymorphic<T>::value, "HeapVectorBacking doesn't support objects that cannot be cleared as unused with memset or don't have a vtable");
 
     ASSERT(!WTF::IsTriviallyDestructible<T>::value);
     HeapObjectHeader* header = HeapObjectHeader::fromPayload(pointer);
@@ -264,7 +264,7 @@ void HeapVectorBacking<T, Traits>::finalize(void* pointer)
     // (which are already zeroed out).
     ANNOTATE_CHANGE_SIZE(buffer, length, 0, length);
 #endif
-    if (WTF::IsPolymorphic<T>::value) {
+    if (std::is_polymorphic<T>::value) {
         for (unsigned i = 0; i < length; ++i) {
             if (blink::vTableInitialized(&buffer[i]))
                 buffer[i].~T();

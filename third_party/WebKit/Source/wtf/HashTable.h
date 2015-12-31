@@ -995,10 +995,10 @@ Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Alloca
     ValueType* result;
     // Assert that we will not use memset on things with a vtable entry.  The
     // compiler will also check this on some platforms. We would like to check
-    // this on the whole value (key-value pair), but IsPolymorphic will return
+    // this on the whole value (key-value pair), but std::is_polymorphic will return
     // false for a pair of two types, even if one of the components is
     // polymorphic.
-    static_assert(!Traits::emptyValueIsZero || !IsPolymorphic<KeyType>::value, "empty value cannot be zero for things with a vtable");
+    static_assert(!Traits::emptyValueIsZero || !std::is_polymorphic<KeyType>::value, "empty value cannot be zero for things with a vtable");
 
 #if ENABLE(OILPAN)
     static_assert(Allocator::isGarbageCollected

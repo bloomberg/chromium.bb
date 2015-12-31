@@ -233,7 +233,7 @@ TEST(ContiguousContainerTest, ForwardIteration)
     }
     EXPECT_EQ(kNumElements, count);
 
-    static_assert(WTF::IsSameType<decltype(*list.begin()), Point2D&>::value,
+    static_assert(std::is_same<decltype(*list.begin()), Point2D&>::value,
         "Non-const iteration should produce non-const references.");
 }
 
@@ -251,7 +251,7 @@ TEST(ContiguousContainerTest, ConstForwardIteration)
     }
     EXPECT_EQ(kNumElements, count);
 
-    static_assert(WTF::IsSameType<decltype(*constList.begin()), const Point2D&>::value,
+    static_assert(std::is_same<decltype(*constList.begin()), const Point2D&>::value,
         "Const iteration should produce const references.");
 }
 
@@ -268,7 +268,7 @@ TEST(ContiguousContainerTest, ReverseIteration)
     }
     EXPECT_EQ(kNumElements, count);
 
-    static_assert(WTF::IsSameType<decltype(*list.rbegin()), Point2D&>::value,
+    static_assert(std::is_same<decltype(*list.rbegin()), Point2D&>::value,
         "Non-const iteration should produce non-const references.");
 }
 

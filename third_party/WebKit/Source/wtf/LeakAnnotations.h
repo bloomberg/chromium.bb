@@ -103,7 +103,7 @@ class CanRegisterStaticLocalReference {
     } NoType;
 
     // Check if class T has public method "T* registerAsStaticReference()".
-    template<typename V> static YesType checkHasRegisterAsStaticReferenceMethod(V* p, typename EnableIf<IsSubclass<V, typename std::remove_pointer<decltype(p->registerAsStaticReference())>::type>::value>::Type* = 0);
+    template<typename V> static YesType checkHasRegisterAsStaticReferenceMethod(V* p, typename std::enable_if<IsSubclass<V, typename std::remove_pointer<decltype(p->registerAsStaticReference())>::type>::value>::Type* = 0);
     template<typename V> static NoType checkHasRegisterAsStaticReferenceMethod(...);
 
 public:

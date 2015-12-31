@@ -87,9 +87,9 @@ namespace blink {
         typedef typename std::remove_pointer<TypeWithoutPassRefPtr>::type RefCountedType;
 
         // Verify that only one of the above did a change.
-        static_assert((WTF::IsSameType<RefPtr<RefCountedType>, T>::value
-                        || WTF::IsSameType<PassRefPtr<RefCountedType>, T>::value
-                        || WTF::IsSameType<RefCountedType*, T>::value),
+        static_assert((std::is_same<RefPtr<RefCountedType>, T>::value
+                        || std::is_same<PassRefPtr<RefCountedType>, T>::value
+                        || std::is_same<RefCountedType*, T>::value),
                         "only one type modification should be allowed");
 
         typedef PassRefPtr<RefCountedType> Type;
@@ -184,7 +184,7 @@ namespace blink {
         }
     };
 
-    template<typename T> struct CrossThreadCopier : public CrossThreadCopierBase<WTF::IsConvertibleToInteger<T>::value,
+    template<typename T> struct CrossThreadCopier : public CrossThreadCopierBase<std::is_convertible<T, int>::value,
         WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, RefPtr>::Type, ThreadSafeRefCounted>::value
             || WTF::IsSubclassOfTemplate<typename std::remove_pointer<T>::type, ThreadSafeRefCounted>::value
             || WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, PassRefPtr>::Type, ThreadSafeRefCounted>::value,

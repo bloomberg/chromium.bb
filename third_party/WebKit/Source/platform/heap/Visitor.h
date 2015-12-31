@@ -187,7 +187,7 @@ public:
     void trace(const T& t)
     {
         static_assert(sizeof(T), "T must be fully defined");
-        if (WTF::IsPolymorphic<T>::value) {
+        if (std::is_polymorphic<T>::value) {
             intptr_t vtable = *reinterpret_cast<const intptr_t*>(&t);
             if (!vtable)
                 return;

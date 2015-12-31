@@ -198,7 +198,7 @@ public:
     }
     template<typename T> static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> create(T value)
     {
-        static_assert(!WTF::IsSameType<T, CSSValueID>::value, "Do not call create() with a CSSValueID; call createIdentifier() instead");
+        static_assert(!std::is_same<T, CSSValueID>::value, "Do not call create() with a CSSValueID; call createIdentifier() instead");
         return adoptRefWillBeNoop(new CSSPrimitiveValue(value));
     }
 
