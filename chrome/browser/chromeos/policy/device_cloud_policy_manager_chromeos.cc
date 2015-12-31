@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -116,11 +117,10 @@ DeviceCloudPolicyManagerChromeOS::DeviceCloudPolicyManagerChromeOS(
           task_runner,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)),
-      device_store_(store.Pass()),
+      device_store_(std::move(store)),
       state_keys_broker_(state_keys_broker),
       task_runner_(task_runner),
-      local_state_(nullptr) {
-}
+      local_state_(nullptr) {}
 
 DeviceCloudPolicyManagerChromeOS::~DeviceCloudPolicyManagerChromeOS() {}
 
@@ -250,7 +250,7 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
   if (ForcedReEnrollmentEnabled())
     client_to_connect->SetStateKeysToUpload(state_keys_broker_->state_keys());
 
-  core()->Connect(client_to_connect.Pass());
+  core()->Connect(std::move(client_to_connect));
   core()->StartRefreshScheduler();
   core()->StartRemoteCommandsService(
       scoped_ptr<RemoteCommandsFactory>(new DeviceCommandsFactoryChromeOS()));

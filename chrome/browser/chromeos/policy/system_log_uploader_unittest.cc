@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/policy/system_log_uploader.h"
+
+#include <utility>
+
 #include "base/strings/stringprintf.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/policy/system_log_uploader.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -187,7 +190,7 @@ TEST_F(SystemLogUploaderTest, Basic) {
   scoped_ptr<MockSystemLogDelegate> syslog_delegate(
       new MockSystemLogDelegate(false, SystemLogUploader::SystemLogs()));
   syslog_delegate->set_upload_allowed(false);
-  SystemLogUploader uploader(syslog_delegate.Pass(), task_runner_);
+  SystemLogUploader uploader(std::move(syslog_delegate), task_runner_);
 
   task_runner_->RunPendingTasks();
 }
@@ -200,7 +203,7 @@ TEST_F(SystemLogUploaderTest, SuccessTest) {
       new MockSystemLogDelegate(false, SystemLogUploader::SystemLogs()));
   syslog_delegate->set_upload_allowed(true);
   settings_helper_.SetBoolean(chromeos::kSystemLogUploadEnabled, true);
-  SystemLogUploader uploader(syslog_delegate.Pass(), task_runner_);
+  SystemLogUploader uploader(std::move(syslog_delegate), task_runner_);
 
   EXPECT_EQ(1U, task_runner_->GetPendingTasks().size());
 
@@ -217,7 +220,7 @@ TEST_F(SystemLogUploaderTest, ThreeFailureTest) {
       new MockSystemLogDelegate(true, SystemLogUploader::SystemLogs()));
   syslog_delegate->set_upload_allowed(true);
   settings_helper_.SetBoolean(chromeos::kSystemLogUploadEnabled, true);
-  SystemLogUploader uploader(syslog_delegate.Pass(), task_runner_);
+  SystemLogUploader uploader(std::move(syslog_delegate), task_runner_);
 
   EXPECT_EQ(1U, task_runner_->GetPendingTasks().size());
 
@@ -244,7 +247,7 @@ TEST_F(SystemLogUploaderTest, CheckHeaders) {
       new MockSystemLogDelegate(false, system_logs));
   syslog_delegate->set_upload_allowed(true);
   settings_helper_.SetBoolean(chromeos::kSystemLogUploadEnabled, true);
-  SystemLogUploader uploader(syslog_delegate.Pass(), task_runner_);
+  SystemLogUploader uploader(std::move(syslog_delegate), task_runner_);
 
   EXPECT_EQ(1U, task_runner_->GetPendingTasks().size());
 
@@ -262,7 +265,7 @@ TEST_F(SystemLogUploaderTest, DisableLogUpload) {
   MockSystemLogDelegate* mock_delegate = syslog_delegate.get();
   settings_helper_.SetBoolean(chromeos::kSystemLogUploadEnabled, true);
   mock_delegate->set_upload_allowed(true);
-  SystemLogUploader uploader(syslog_delegate.Pass(), task_runner_);
+  SystemLogUploader uploader(std::move(syslog_delegate), task_runner_);
 
   EXPECT_EQ(1U, task_runner_->GetPendingTasks().size());
   RunPendingUploadTaskAndCheckNext(uploader,

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -39,7 +41,7 @@ UserNetworkConfigurationUpdater::CreateForUserPolicy(
                                           policy_service,
                                           network_config_handler));
   updater->Init();
-  return updater.Pass();
+  return updater;
 }
 
 void UserNetworkConfigurationUpdater::AddTrustedCertsObserver(
@@ -77,7 +79,7 @@ UserNetworkConfigurationUpdater::UserNetworkConfigurationUpdater(
 
 void UserNetworkConfigurationUpdater::SetCertificateImporterForTest(
     scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer) {
-  SetCertificateImporter(certificate_importer.Pass());
+  SetCertificateImporter(std::move(certificate_importer));
 }
 
 void UserNetworkConfigurationUpdater::GetWebTrustedCertificates(
@@ -148,7 +150,7 @@ void UserNetworkConfigurationUpdater::CreateAndSetCertificateImporter(
 
 void UserNetworkConfigurationUpdater::SetCertificateImporter(
     scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer) {
-  certificate_importer_ = certificate_importer.Pass();
+  certificate_importer_ = std::move(certificate_importer);
 
   if (pending_certificates_onc_)
     ImportCertificates(*pending_certificates_onc_);

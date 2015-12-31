@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/consumer_unenrollment_handler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
@@ -56,8 +58,7 @@ class ConsumerUnenrollmentHandlerTest
             install_attributes_.get(),
             base::ThreadTaskRunnerHandle::Get()));
     fake_manager_.reset(new FakeDeviceCloudPolicyManager(
-        store_.Pass(),
-        base::ThreadTaskRunnerHandle::Get()));
+        std::move(store_), base::ThreadTaskRunnerHandle::Get()));
 
     // Set up FakeOwnerSettingsService.
     fake_owner_settings_service_.reset(new chromeos::FakeOwnerSettingsService(

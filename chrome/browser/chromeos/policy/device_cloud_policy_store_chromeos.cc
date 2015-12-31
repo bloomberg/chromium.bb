@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -112,7 +114,7 @@ scoped_ptr<DeviceCloudPolicyValidator>
   validator->ValidateDomain(install_attributes_->GetDomain());
   validator->ValidatePolicyType(dm_protocol::kChromeDevicePolicyType);
   validator->ValidatePayload();
-  return validator.Pass();
+  return validator;
 }
 
 void DeviceCloudPolicyStoreChromeOS::OnPolicyToStoreValidated(
@@ -125,7 +127,7 @@ void DeviceCloudPolicyStoreChromeOS::OnPolicyToStoreValidated(
   }
 
   device_settings_service_->Store(
-      validator->policy().Pass(),
+      std::move(validator->policy()),
       base::Bind(&DeviceCloudPolicyStoreChromeOS::OnPolicyStored,
                  weak_factory_.GetWeakPtr()));
 }

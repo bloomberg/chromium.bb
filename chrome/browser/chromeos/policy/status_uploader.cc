@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/policy/status_uploader.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -35,7 +36,7 @@ StatusUploader::StatusUploader(
     scoped_ptr<DeviceStatusCollector> collector,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : client_(client),
-      collector_(collector.Pass()),
+      collector_(std::move(collector)),
       task_runner_(task_runner),
       upload_frequency_(
           base::TimeDelta::FromMilliseconds(kDefaultUploadDelayMs)),

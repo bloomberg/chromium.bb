@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/recommendation_restorer.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_notifier_impl.h"
@@ -136,7 +138,7 @@ void RecommendationRestorerTest::SetUserSettings() {
 void RecommendationRestorerTest::CreateLoginProfile() {
   ASSERT_FALSE(restorer_);
   TestingProfile* profile = profile_manager_.CreateTestingProfile(
-      chrome::kInitialProfile, prefs_owner_.Pass(),
+      chrome::kInitialProfile, std::move(prefs_owner_),
       base::UTF8ToUTF16(chrome::kInitialProfile), 0, std::string(),
       TestingProfile::TestingFactories());
   restorer_ = RecommendationRestorerFactory::GetForProfile(profile);
@@ -146,8 +148,8 @@ void RecommendationRestorerTest::CreateLoginProfile() {
 void RecommendationRestorerTest::CreateUserProfile() {
   ASSERT_FALSE(restorer_);
   TestingProfile* profile = profile_manager_.CreateTestingProfile(
-      "user", prefs_owner_.Pass(), base::UTF8ToUTF16("user"), 0, std::string(),
-      TestingProfile::TestingFactories());
+      "user", std::move(prefs_owner_), base::UTF8ToUTF16("user"), 0,
+      std::string(), TestingProfile::TestingFactories());
   restorer_ = RecommendationRestorerFactory::GetForProfile(profile);
   EXPECT_TRUE(restorer_);
 }

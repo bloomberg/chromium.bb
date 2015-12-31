@@ -30,7 +30,7 @@ DeviceNetworkConfigurationUpdater::CreateForDevicePolicy(
                                             network_device_handler,
                                             cros_settings));
   updater->Init();
-  return updater.Pass();
+  return updater;
 }
 
 DeviceNetworkConfigurationUpdater::DeviceNetworkConfigurationUpdater(

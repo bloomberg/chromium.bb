@@ -97,7 +97,7 @@ scoped_ptr<net::URLFetcher> FakeURLFetcherFactory::CreateURLFetcher(
       net::FakeURLFetcherFactory::CreateURLFetcher(id, url, request_type,
                                                    delegate);
   EXPECT_TRUE(fetcher);
-  return fetcher.Pass();
+  return fetcher;
 }
 
 }  // namespace
@@ -204,7 +204,7 @@ scoped_ptr<base::DictionaryValue>
   metadata->SetStringWithoutPathExpansion("url", url);
   metadata->SetStringWithoutPathExpansion("hash", base::HexEncode(hash.c_str(),
                                                                   hash.size()));
-  return metadata.Pass();
+  return metadata;
 }
 
 void CloudExternalDataManagerBaseTest::SetExternalDataReference(

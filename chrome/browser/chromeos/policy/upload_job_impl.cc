@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/policy/upload_job_impl.h"
 
 #include <set>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -114,7 +115,7 @@ DataSegment::DataSegment(
     const std::map<std::string, std::string>& header_entries)
     : name_(name),
       filename_(filename),
-      data_(data.Pass()),
+      data_(std::move(data)),
       header_entries_(header_entries) {
   DCHECK(data_);
 }
@@ -133,7 +134,7 @@ const std::string& DataSegment::GetFilename() const {
 }
 
 scoped_ptr<std::string> DataSegment::GetData() {
-  return data_.Pass();
+  return std::move(data_);
 }
 
 bool DataSegment::CheckIfDataContains(const std::string& chunk) {
@@ -173,7 +174,7 @@ UploadJobImpl::UploadJobImpl(
       token_service_(token_service),
       url_context_getter_(url_context_getter),
       delegate_(delegate),
-      boundary_generator_(boundary_generator.Pass()),
+      boundary_generator_(std::move(boundary_generator)),
       state_(IDLE),
       retry_(0) {
   DCHECK(token_service_);
@@ -199,8 +200,8 @@ void UploadJobImpl::AddDataSegment(
     return;
 
   scoped_ptr<DataSegment> data_segment(
-      new DataSegment(name, filename, data.Pass(), header_entries));
-  data_segments_.push_back(data_segment.Pass());
+      new DataSegment(name, filename, std::move(data), header_entries));
+  data_segments_.push_back(std::move(data_segment));
 }
 
 void UploadJobImpl::Start() {

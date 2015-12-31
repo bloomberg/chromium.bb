@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/enrollment_handler_chromeos.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -77,7 +79,7 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
       install_attributes_(install_attributes),
       state_keys_broker_(state_keys_broker),
       owner_settings_service_(owner_settings_service),
-      client_(client.Pass()),
+      client_(std::move(client)),
       background_task_runner_(background_task_runner),
       enrollment_config_(enrollment_config),
       auth_token_(auth_token),
@@ -116,7 +118,7 @@ void EnrollmentHandlerChromeOS::StartEnrollment() {
 
 scoped_ptr<CloudPolicyClient> EnrollmentHandlerChromeOS::ReleaseClient() {
   Stop();
-  return client_.Pass();
+  return std::move(client_);
 }
 
 void EnrollmentHandlerChromeOS::OnPolicyFetched(CloudPolicyClient* client) {
@@ -277,7 +279,7 @@ void EnrollmentHandlerChromeOS::HandlePolicyValidationResult(
     DeviceCloudPolicyValidator* validator) {
   CHECK_EQ(STEP_VALIDATION, enrollment_step_);
   if (validator->success()) {
-    policy_ = validator->policy().Pass();
+    policy_ = std::move(validator->policy());
     username_ = validator->policy_data()->username();
     device_id_ = validator->policy_data()->device_id();
     request_token_ = validator->policy_data()->request_token();

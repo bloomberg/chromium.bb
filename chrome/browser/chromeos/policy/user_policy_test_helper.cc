@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -45,8 +47,9 @@ std::string BuildPolicy(const base::DictionaryValue& mandatory,
   managed_users_list->AppendString("*");
 
   base::DictionaryValue root_dict;
-  root_dict.SetWithoutPathExpansion(policyType, policy_type_dict.Pass());
-  root_dict.SetWithoutPathExpansion("managed_users", managed_users_list.Pass());
+  root_dict.SetWithoutPathExpansion(policyType, std::move(policy_type_dict));
+  root_dict.SetWithoutPathExpansion("managed_users",
+                                    std::move(managed_users_list));
   root_dict.SetStringWithoutPathExpansion("policy_user", account_id);
   root_dict.SetIntegerWithoutPathExpansion("current_key_index", 0);
 

@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -135,7 +135,7 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
   }
 
   void set_kiosk_account(scoped_ptr<policy::DeviceLocalAccount> account) {
-    kiosk_account_ = account.Pass();
+    kiosk_account_ = std::move(account);
   }
 
   scoped_ptr<policy::DeviceLocalAccount>
@@ -987,7 +987,7 @@ TEST_F(DeviceStatusCollectorTest, NoSessionStatusIfSessionReportingDisabled) {
   // Should not report session status if session status reporting is disabled.
   settings_helper_.SetBoolean(chromeos::kReportDeviceSessionStatus, false);
   status_collector_->set_kiosk_account(make_scoped_ptr(
-      new policy::DeviceLocalAccount(fake_device_local_account_)).Pass());
+      new policy::DeviceLocalAccount(fake_device_local_account_)));
   // Set up a device-local account for single-app kiosk mode.
   MockRunningKioskApp(fake_device_local_account_);
 
@@ -998,7 +998,7 @@ TEST_F(DeviceStatusCollectorTest, NoSessionStatusIfSessionReportingDisabled) {
 TEST_F(DeviceStatusCollectorTest, ReportSessionStatus) {
   settings_helper_.SetBoolean(chromeos::kReportDeviceSessionStatus, true);
   status_collector_->set_kiosk_account(make_scoped_ptr(
-      new policy::DeviceLocalAccount(fake_device_local_account_)).Pass());
+      new policy::DeviceLocalAccount(fake_device_local_account_)));
 
   // Set up a device-local account for single-app kiosk mode.
   MockRunningKioskApp(fake_device_local_account_);
@@ -1285,7 +1285,7 @@ TEST_F(DeviceStatusCollectorNetworkInterfacesTest, NoNetworkStateIfNotKiosk) {
 TEST_F(DeviceStatusCollectorNetworkInterfacesTest, NetworkInterfaces) {
   // Mock that we are in kiosk mode so we report network state.
   status_collector_->set_kiosk_account(make_scoped_ptr(
-      new policy::DeviceLocalAccount(fake_device_local_account_)).Pass());
+      new policy::DeviceLocalAccount(fake_device_local_account_)));
 
   // Interfaces should be reported by default.
   GetStatus();

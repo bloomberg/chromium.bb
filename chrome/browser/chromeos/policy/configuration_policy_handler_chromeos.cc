@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -255,7 +255,7 @@ void NetworkConfigurationPolicyHandler::ApplyPolicySettings(
 
   // Currently, only the per-network configuration is stored in a pref. Ignore
   // |global_network_config| and |certificates|.
-  prefs->SetValue(pref_path_, network_configs.Pass());
+  prefs->SetValue(pref_path_, std::move(network_configs));
 }
 
 void NetworkConfigurationPolicyHandler::PrepareForDisplaying(
@@ -329,7 +329,7 @@ void PinnedLauncherAppsPolicyHandler::ApplyPolicySettings(
         pinned_apps_list->Append(app_dict);
       }
     }
-    prefs->SetValue(pref_path(), pinned_apps_list.Pass());
+    prefs->SetValue(pref_path(), std::move(pinned_apps_list));
   }
 }
 
@@ -417,35 +417,35 @@ void PowerManagementIdleSettingsPolicyHandler::ApplyPolicySettings(
 
   value = GetValue(dict, kScreenDimDelayAC);
   if (value)
-    prefs->SetValue(prefs::kPowerAcScreenDimDelayMs, value.Pass());
+    prefs->SetValue(prefs::kPowerAcScreenDimDelayMs, std::move(value));
   value = GetValue(dict, kScreenOffDelayAC);
   if (value)
-    prefs->SetValue(prefs::kPowerAcScreenOffDelayMs, value.Pass());
+    prefs->SetValue(prefs::kPowerAcScreenOffDelayMs, std::move(value));
   value = GetValue(dict, kIdleWarningDelayAC);
   if (value)
-    prefs->SetValue(prefs::kPowerAcIdleWarningDelayMs, value.Pass());
+    prefs->SetValue(prefs::kPowerAcIdleWarningDelayMs, std::move(value));
   value = GetValue(dict, kIdleDelayAC);
   if (value)
-    prefs->SetValue(prefs::kPowerAcIdleDelayMs, value.Pass());
+    prefs->SetValue(prefs::kPowerAcIdleDelayMs, std::move(value));
   value = GetAction(dict, kIdleActionAC);
   if (value)
-    prefs->SetValue(prefs::kPowerAcIdleAction, value.Pass());
+    prefs->SetValue(prefs::kPowerAcIdleAction, std::move(value));
 
   value = GetValue(dict, kScreenDimDelayBattery);
   if (value)
-    prefs->SetValue(prefs::kPowerBatteryScreenDimDelayMs, value.Pass());
+    prefs->SetValue(prefs::kPowerBatteryScreenDimDelayMs, std::move(value));
   value = GetValue(dict, kScreenOffDelayBattery);
   if (value)
-    prefs->SetValue(prefs::kPowerBatteryScreenOffDelayMs, value.Pass());
+    prefs->SetValue(prefs::kPowerBatteryScreenOffDelayMs, std::move(value));
   value = GetValue(dict, kIdleWarningDelayBattery);
   if (value)
-    prefs->SetValue(prefs::kPowerBatteryIdleWarningDelayMs, value.Pass());
+    prefs->SetValue(prefs::kPowerBatteryIdleWarningDelayMs, std::move(value));
   value = GetValue(dict, kIdleDelayBattery);
   if (value)
-    prefs->SetValue(prefs::kPowerBatteryIdleDelayMs, value.Pass());
+    prefs->SetValue(prefs::kPowerBatteryIdleDelayMs, std::move(value));
   value = GetAction(dict, kIdleActionBattery);
   if (value)
-    prefs->SetValue(prefs::kPowerBatteryIdleAction, value.Pass());
+    prefs->SetValue(prefs::kPowerBatteryIdleAction, std::move(value));
 }
 
 ScreenLockDelayPolicyHandler::ScreenLockDelayPolicyHandler(
@@ -474,10 +474,10 @@ void ScreenLockDelayPolicyHandler::ApplyPolicySettings(
 
   value = GetValue(dict, kScreenLockDelayAC);
   if (value)
-    prefs->SetValue(prefs::kPowerAcScreenLockDelayMs, value.Pass());
+    prefs->SetValue(prefs::kPowerAcScreenLockDelayMs, std::move(value));
   value = GetValue(dict, kScreenLockDelayBattery);
   if (value)
-    prefs->SetValue(prefs::kPowerBatteryScreenLockDelayMs, value.Pass());
+    prefs->SetValue(prefs::kPowerBatteryScreenLockDelayMs, std::move(value));
 }
 
 }  // namespace policy

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_screenshot_job.h"
 
 #include <fstream>
+#include <utility>
 
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -93,7 +94,7 @@ scoped_ptr<std::string> DeviceCommandScreenshotJob::Payload::Serialize() {
 DeviceCommandScreenshotJob::DeviceCommandScreenshotJob(
     scoped_ptr<Delegate> screenshot_delegate)
     : num_pending_screenshots_(0),
-      screenshot_delegate_(screenshot_delegate.Pass()),
+      screenshot_delegate_(std::move(screenshot_delegate)),
       weak_ptr_factory_(this) {
   DCHECK(screenshot_delegate_);
 }
@@ -179,7 +180,7 @@ void DeviceCommandScreenshotJob::StartScreenshotUpload() {
     upload_job_->AddDataSegment(
         base::StringPrintf(kNameFieldTemplate, screenshot_entry.first),
         base::StringPrintf(kFilenameFieldTemplate, screenshot_entry.first),
-        header_fields, data.Pass());
+        header_fields, std::move(data));
   }
   upload_job_->Start();
 }

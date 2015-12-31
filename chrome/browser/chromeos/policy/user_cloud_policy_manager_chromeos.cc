@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -92,8 +93,8 @@ UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
                          task_runner,
                          file_task_runner,
                          io_task_runner),
-      store_(store.Pass()),
-      external_data_manager_(external_data_manager.Pass()),
+      store_(std::move(store)),
+      external_data_manager_(std::move(external_data_manager)),
       component_policy_cache_path_(component_policy_cache_path),
       wait_for_policy_fetch_(wait_for_policy_fetch),
       policy_fetch_timeout_(false, false) {
@@ -132,7 +133,7 @@ void UserCloudPolicyManagerChromeOS::Connect(
       device_management_service, request_context));
   CreateComponentCloudPolicyService(component_policy_cache_path_,
                                     request_context, cloud_policy_client.get());
-  core()->Connect(cloud_policy_client.Pass());
+  core()->Connect(std::move(cloud_policy_client));
   client()->AddObserver(this);
 
   external_data_manager_->Connect(request_context);

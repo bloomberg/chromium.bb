@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/policy/system_log_uploader.h"
+
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -14,7 +18,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/policy/system_log_uploader.h"
 #include "chrome/browser/chromeos/policy/upload_job_impl.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
@@ -85,7 +88,7 @@ scoped_ptr<policy::SystemLogUploader::SystemLogs> ReadFiles() {
     system_logs->push_back(std::make_pair(
         file_path, policy::SystemLogUploader::RemoveSensitiveData(data)));
   }
-  return system_logs.Pass();
+  return system_logs;
 }
 
 // An implementation of the |SystemLogUploader::Delegate|, that is used to
@@ -193,7 +196,7 @@ SystemLogUploader::SystemLogUploader(
     : retry_count_(0),
       upload_frequency_(GetUploadFrequency()),
       task_runner_(task_runner),
-      syslog_delegate_(syslog_delegate.Pass()),
+      syslog_delegate_(std::move(syslog_delegate)),
       upload_enabled_(false),
       weak_factory_(this) {
   if (!syslog_delegate_)
@@ -326,7 +329,7 @@ void SystemLogUploader::UploadSystemLogs(scoped_ptr<SystemLogs> system_logs) {
                                         kContentTypePlainText));
     upload_job_->AddDataSegment(
         base::StringPrintf(kNameFieldTemplate, file_number), syslog_entry.first,
-        header_fields, data.Pass());
+        header_fields, std::move(data));
     ++file_number;
   }
   upload_job_->Start();

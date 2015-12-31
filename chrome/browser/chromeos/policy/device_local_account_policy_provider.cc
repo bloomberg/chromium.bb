@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -26,7 +28,7 @@ DeviceLocalAccountPolicyProvider::DeviceLocalAccountPolicyProvider(
     scoped_ptr<PolicyMap> chrome_policy_overrides)
     : user_id_(user_id),
       service_(service),
-      chrome_policy_overrides_(chrome_policy_overrides.Pass()),
+      chrome_policy_overrides_(std::move(chrome_policy_overrides)),
       store_initialized_(false),
       waiting_for_policy_refresh_(false),
       weak_factory_(this) {
@@ -96,8 +98,8 @@ DeviceLocalAccountPolicyProvider::Create(
   scoped_ptr<DeviceLocalAccountPolicyProvider> provider(
       new DeviceLocalAccountPolicyProvider(user_id,
                                            device_local_account_policy_service,
-                                           chrome_policy_overrides.Pass()));
-  return provider.Pass();
+                                           std::move(chrome_policy_overrides)));
+  return provider;
 }
 
 bool DeviceLocalAccountPolicyProvider::IsInitializationComplete(
@@ -184,7 +186,7 @@ void DeviceLocalAccountPolicyProvider::UpdateFromBroker() {
     }
   }
 
-  UpdatePolicy(bundle.Pass());
+  UpdatePolicy(std::move(bundle));
 }
 
 }  // namespace policy

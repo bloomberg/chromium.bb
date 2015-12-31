@@ -226,7 +226,7 @@ GetCurrentKioskDeviceLocalAccount(chromeos::CrosSettings* settings) {
     if (AccountId::FromUserEmail(device_local_account.user_id) ==
         user->GetAccountId()) {
       return make_scoped_ptr(
-          new policy::DeviceLocalAccount(device_local_account)).Pass();
+          new policy::DeviceLocalAccount(device_local_account));
     }
   }
   LOG(WARNING) << "Kiosk app not found in list of device-local accounts";
@@ -540,7 +540,7 @@ DeviceStatusCollector::GetAutoLaunchedKioskSessionInfo() {
     if (chromeos::KioskAppManager::Get()->GetApp(account->kiosk_app_id,
                                                  &current_app) &&
         current_app.was_auto_launched_with_zero_delay) {
-      return account.Pass();
+      return account;
     }
   }
   // No auto-launched kiosk session active.

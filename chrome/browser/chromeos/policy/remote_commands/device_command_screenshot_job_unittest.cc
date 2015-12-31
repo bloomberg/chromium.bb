@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/policy/remote_commands/device_command_screenshot_job.h"
+
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "ash/test/ash_test_base.h"
@@ -15,7 +18,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/policy/remote_commands/device_command_screenshot_job.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "policy/proto/device_management_backend.pb.h"
@@ -87,8 +89,7 @@ MockUploadJob::MockUploadJob(const GURL& upload_url,
                              scoped_ptr<UploadJob::ErrorCode> error_code)
     : upload_url_(upload_url),
       delegate_(delegate),
-      error_code_(error_code.Pass()) {
-}
+      error_code_(std::move(error_code)) {}
 
 MockUploadJob::~MockUploadJob() {
 }
@@ -158,9 +159,8 @@ class MockScreenshotDelegate : public DeviceCommandScreenshotJob::Delegate {
 MockScreenshotDelegate::MockScreenshotDelegate(
     scoped_ptr<UploadJob::ErrorCode> upload_job_error_code,
     bool screenshot_allowed)
-    : upload_job_error_code_(upload_job_error_code.Pass()),
-      screenshot_allowed_(screenshot_allowed) {
-}
+    : upload_job_error_code_(std::move(upload_job_error_code)),
+      screenshot_allowed_(screenshot_allowed) {}
 
 MockScreenshotDelegate::~MockScreenshotDelegate() {
 }
@@ -184,8 +184,8 @@ void MockScreenshotDelegate::TakeSnapshot(
 scoped_ptr<UploadJob> MockScreenshotDelegate::CreateUploadJob(
     const GURL& upload_url,
     UploadJob::Delegate* delegate) {
-  return make_scoped_ptr(
-      new MockUploadJob(upload_url, delegate, upload_job_error_code_.Pass()));
+  return make_scoped_ptr(new MockUploadJob(upload_url, delegate,
+                                           std::move(upload_job_error_code_)));
 }
 
 }  // namespace
@@ -299,8 +299,9 @@ TEST_F(DeviceCommandScreenshotTest, Failure) {
   using ErrorCode = UploadJob::ErrorCode;
   scoped_ptr<ErrorCode> error_code(
       new ErrorCode(UploadJob::AUTHENTICATION_ERROR));
-  scoped_ptr<RemoteCommandJob> job(new DeviceCommandScreenshotJob(
-      make_scoped_ptr(new MockScreenshotDelegate(error_code.Pass(), true))));
+  scoped_ptr<RemoteCommandJob> job(
+      new DeviceCommandScreenshotJob(make_scoped_ptr(
+          new MockScreenshotDelegate(std::move(error_code), true))));
   InitializeScreenshotJob(job.get(), kUniqueID, test_start_time_,
                           kMockUploadUrl);
   bool success = job->Run(

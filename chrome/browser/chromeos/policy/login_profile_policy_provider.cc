@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/policy/login_profile_policy_provider.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -202,7 +203,7 @@ void LoginProfilePolicyProvider::UpdateFromDevicePolicy() {
     }
   }
 
-  UpdatePolicy(bundle.Pass());
+  UpdatePolicy(std::move(bundle));
 }
 
 }  // namespace policy

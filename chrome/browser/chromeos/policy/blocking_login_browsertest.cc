@@ -177,7 +177,7 @@ class BlockingLoginTest
       }
     }
 
-    return response.Pass();
+    return response;
   }
 
   // Creates a new canned response that will respond with the given HTTP

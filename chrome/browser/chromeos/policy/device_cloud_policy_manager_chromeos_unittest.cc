@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 
 #include <stdint.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -83,8 +83,9 @@ class TestingDeviceCloudPolicyManagerChromeOS
       scoped_ptr<DeviceCloudPolicyStoreChromeOS> store,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       ServerBackedStateKeysBroker* state_keys_broker)
-      : DeviceCloudPolicyManagerChromeOS(
-            store.Pass(), task_runner, state_keys_broker) {}
+      : DeviceCloudPolicyManagerChromeOS(std::move(store),
+                                         task_runner,
+                                         state_keys_broker) {}
   ~TestingDeviceCloudPolicyManagerChromeOS() override {}
 };
 

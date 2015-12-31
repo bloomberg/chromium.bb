@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -74,7 +75,7 @@ scoped_ptr<CloudPolicyClient> CreateClient(
                             device_management_service, request_context));
   client->SetupRegistration(policy_data->request_token(),
                             policy_data->device_id());
-  return client.Pass();
+  return client;
 }
 
 // Get the subdirectory of the force-installed extension cache and the component
@@ -127,7 +128,7 @@ DeviceLocalAccountPolicyBroker::DeviceLocalAccountPolicyBroker(
       account_id_(account.account_id),
       user_id_(account.user_id),
       component_policy_cache_path_(component_policy_cache_path),
-      store_(store.Pass()),
+      store_(std::move(store)),
       extension_tracker_(account, store_.get(), &schema_registry_),
       external_data_manager_(external_data_manager),
       core_(dm_protocol::kChromePublicAccountPolicyType,
@@ -181,7 +182,7 @@ void DeviceLocalAccountPolicyBroker::ConnectIfPossible(
     return;
 
   CreateComponentCloudPolicyService(request_context, client.get());
-  core_.Connect(client.Pass());
+  core_.Connect(std::move(client));
   external_data_manager_->Connect(request_context);
   core_.StartRefreshScheduler();
   UpdateRefreshDelay();
@@ -238,14 +239,9 @@ void DeviceLocalAccountPolicyBroker::CreateComponentCloudPolicyService(
                             content::BrowserThread::FILE)));
 
   component_policy_service_.reset(new ComponentCloudPolicyService(
-      this,
-      &schema_registry_,
-      core(),
-      client,
-      resource_cache.Pass(),
-      request_context,
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::FILE),
+      this, &schema_registry_, core(), client, std::move(resource_cache),
+      request_context, content::BrowserThread::GetMessageLoopProxyForThread(
+                           content::BrowserThread::FILE),
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::IO)));
 }
@@ -467,16 +463,12 @@ void DeviceLocalAccountPolicyService::UpdateAccountList() {
               external_data_service_->GetExternalDataManager(it->account_id,
                                                              store.get());
       broker.reset(new DeviceLocalAccountPolicyBroker(
-          *it,
-          component_policy_cache_root_.Append(
-              GetCacheSubdirectoryForAccountID(it->account_id)),
-          store.Pass(),
-          external_data_manager,
+          *it, component_policy_cache_root_.Append(
+                   GetCacheSubdirectoryForAccountID(it->account_id)),
+          std::move(store), external_data_manager,
           base::Bind(&DeviceLocalAccountPolicyService::NotifyPolicyUpdated,
-                     base::Unretained(this),
-                     it->user_id),
-          base::ThreadTaskRunnerHandle::Get(),
-          invalidation_service_provider_));
+                     base::Unretained(this), it->user_id),
+          base::ThreadTaskRunnerHandle::Get(), invalidation_service_provider_));
     }
 
     // Fire up the cloud connection for fetching policy for the account from

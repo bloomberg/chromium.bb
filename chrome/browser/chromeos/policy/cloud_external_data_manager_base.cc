@@ -6,9 +6,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -171,8 +171,7 @@ void CloudExternalDataManagerBase::Backend::Connect(
     scoped_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher) {
   DCHECK(!updater_);
   updater_.reset(new ExternalPolicyDataUpdater(
-      task_runner_,
-      external_policy_data_fetcher.Pass(),
+      task_runner_, std::move(external_policy_data_fetcher),
       kMaxParallelFetches));
   for (FetchCallbackMap::const_iterator it = pending_downloads_.begin();
        it != pending_downloads_.end(); ++it) {
@@ -267,7 +266,7 @@ void CloudExternalDataManagerBase::Backend::Fetch(
           data.get())) {
     // If the external data referenced by |policy| exists in the cache and
     // matches the expected hash, pass it to the callback.
-    RunCallback(callback, data.Pass());
+    RunCallback(callback, std::move(data));
     return;
   }
 

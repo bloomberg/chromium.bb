@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/device_local_account_policy_store.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "chrome/browser/browser_process.h"
@@ -61,8 +63,7 @@ void DeviceLocalAccountPolicyStore::ValidateLoadedPolicyBlob(
     scoped_ptr<em::PolicyFetchResponse> policy(new em::PolicyFetchResponse());
     if (policy->ParseFromString(policy_blob)) {
       CheckKeyAndValidate(
-          false,
-          policy.Pass(),
+          false, std::move(policy),
           base::Bind(&DeviceLocalAccountPolicyStore::UpdatePolicy,
                      weak_factory_.GetWeakPtr()));
     } else {
@@ -81,7 +82,8 @@ void DeviceLocalAccountPolicyStore::UpdatePolicy(
     return;
   }
 
-  InstallPolicy(validator->policy_data().Pass(), validator->payload().Pass());
+  InstallPolicy(std::move(validator->policy_data()),
+                std::move(validator->payload()));
   status_ = STATUS_OK;
   NotifyStoreLoaded();
 }
@@ -148,7 +150,7 @@ void DeviceLocalAccountPolicyStore::Validate(
   }
 
   scoped_ptr<UserCloudPolicyValidator> validator(
-      UserCloudPolicyValidator::Create(policy_response.Pass(),
+      UserCloudPolicyValidator::Create(std::move(policy_response),
                                        background_task_runner()));
   validator->ValidateUsername(account_id_, false);
   validator->ValidatePolicyType(dm_protocol::kChromePublicAccountPolicyType);

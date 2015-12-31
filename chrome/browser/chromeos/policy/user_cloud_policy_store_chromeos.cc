@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/policy/user_cloud_policy_store_chromeos.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -155,7 +156,7 @@ void LegacyPolicyCacheLoader::OnDiskCacheLoaded(
 
 void LegacyPolicyCacheLoader::CheckLoadFinished() {
   if (!token_loader_.get() && !policy_cache_.get())
-    callback_.Run(dm_token_, device_id_, status_, policy_.Pass());
+    callback_.Run(dm_token_, device_id_, status_, std::move(policy_));
 }
 
 // static
@@ -257,7 +258,7 @@ void UserCloudPolicyStoreChromeOS::LoadImmediately() {
   policy_key_loaded_ = true;
 
   scoped_ptr<UserCloudPolicyValidator> validator =
-      CreateValidatorForLoad(policy.Pass());
+      CreateValidatorForLoad(std::move(policy));
   validator->RunValidation();
   OnRetrievedPolicyValidated(validator.get());
 }
@@ -265,9 +266,8 @@ void UserCloudPolicyStoreChromeOS::LoadImmediately() {
 void UserCloudPolicyStoreChromeOS::ValidatePolicyForStore(
     scoped_ptr<em::PolicyFetchResponse> policy) {
   // Create and configure a validator.
-  scoped_ptr<UserCloudPolicyValidator> validator =
-      CreateValidator(policy.Pass(),
-                      CloudPolicyValidatorBase::TIMESTAMP_REQUIRED);
+  scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator(
+      std::move(policy), CloudPolicyValidatorBase::TIMESTAMP_REQUIRED);
   validator->ValidateUsername(username_, true);
   if (policy_key_.empty()) {
     validator->ValidateInitialKey(GetPolicyVerificationKey(),
@@ -368,7 +368,7 @@ void UserCloudPolicyStoreChromeOS::ValidateRetrievedPolicy(
     scoped_ptr<em::PolicyFetchResponse> policy) {
   // Create and configure a validator for the loaded policy.
   scoped_ptr<UserCloudPolicyValidator> validator =
-      CreateValidatorForLoad(policy.Pass());
+      CreateValidatorForLoad(std::move(policy));
   // Start validation. The Validator will delete itself once validation is
   // complete.
   validator.release()->StartValidation(
@@ -391,7 +391,8 @@ void UserCloudPolicyStoreChromeOS::OnRetrievedPolicyValidated(
     return;
   }
 
-  InstallPolicy(validator->policy_data().Pass(), validator->payload().Pass());
+  InstallPolicy(std::move(validator->policy_data()),
+                std::move(validator->payload()));
   status_ = STATUS_OK;
 
   // Policy has been loaded successfully. This indicates that new-style policy
@@ -415,9 +416,8 @@ void UserCloudPolicyStoreChromeOS::OnLegacyLoadFinished(
   if (policy.get()) {
     // Create and configure a validator for the loaded legacy policy. Note that
     // the signature on this policy is not verified.
-    scoped_ptr<UserCloudPolicyValidator> validator =
-        CreateValidator(policy.Pass(),
-                        CloudPolicyValidatorBase::TIMESTAMP_REQUIRED);
+    scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator(
+        std::move(policy), CloudPolicyValidatorBase::TIMESTAMP_REQUIRED);
     validator->ValidateUsername(username_, true);
     validator.release()->StartValidation(
         base::Bind(&UserCloudPolicyStoreChromeOS::OnLegacyPolicyValidated,
@@ -436,7 +436,8 @@ void UserCloudPolicyStoreChromeOS::OnLegacyPolicyValidated(
   validation_status_ = validator->status();
   if (validator->success()) {
     status_ = STATUS_OK;
-    InstallPolicy(validator->policy_data().Pass(), validator->payload().Pass());
+    InstallPolicy(std::move(validator->policy_data()),
+                  std::move(validator->payload()));
 
     // Clear the public key version. The public key version field would
     // otherwise indicate that we have key installed in the store when in fact
@@ -556,7 +557,7 @@ scoped_ptr<UserCloudPolicyValidator>
 UserCloudPolicyStoreChromeOS::CreateValidatorForLoad(
     scoped_ptr<em::PolicyFetchResponse> policy) {
   scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator(
-      policy.Pass(), CloudPolicyValidatorBase::TIMESTAMP_NOT_BEFORE);
+      std::move(policy), CloudPolicyValidatorBase::TIMESTAMP_NOT_BEFORE);
   validator->ValidateUsername(username_, true);
   const bool allow_rotation = false;
   const std::string empty_key = std::string();
@@ -566,6 +567,6 @@ UserCloudPolicyStoreChromeOS::CreateValidatorForLoad(
   // value for the verification key.
   validator->ValidateSignature(
       policy_key_, empty_key, ExtractDomain(username_), allow_rotation);
-  return validator.Pass();
+  return validator;
 }
 }  // namespace policy

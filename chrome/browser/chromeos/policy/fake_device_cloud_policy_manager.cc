@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/fake_device_cloud_policy_manager.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 
@@ -12,9 +14,8 @@ namespace policy {
 FakeDeviceCloudPolicyManager::FakeDeviceCloudPolicyManager(
     scoped_ptr<DeviceCloudPolicyStoreChromeOS> store,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-    : DeviceCloudPolicyManagerChromeOS(store.Pass(), task_runner, NULL),
-      unregister_result_(true) {
-}
+    : DeviceCloudPolicyManagerChromeOS(std::move(store), task_runner, NULL),
+      unregister_result_(true) {}
 
 FakeDeviceCloudPolicyManager::~FakeDeviceCloudPolicyManager() {
   Shutdown();

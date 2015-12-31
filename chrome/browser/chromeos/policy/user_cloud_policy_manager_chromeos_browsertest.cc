@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -26,7 +27,7 @@ class UserCloudPolicyManagerTest : public LoginPolicyTestBase {
     list->AppendString("chrome://policy");
     list->AppendString("chrome://about");
 
-    policy->Set(key::kRestoreOnStartupURLs, list.Pass());
+    policy->Set(key::kRestoreOnStartupURLs, std::move(list));
     policy->SetInteger(key::kRestoreOnStartup,
                        SessionStartupPref::kPrefValueURLs);
   }

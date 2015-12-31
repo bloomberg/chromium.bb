@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -270,7 +271,7 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
     if (set_cert_importer) {
       EXPECT_TRUE(certificate_importer_owned_);
       updater->SetCertificateImporterForTest(
-          certificate_importer_owned_.Pass());
+          std::move(certificate_importer_owned_));
     }
     network_configuration_updater_.reset(updater);
     return updater;
@@ -518,7 +519,8 @@ TEST_F(NetworkConfigurationUpdaterTest,
   certificate_importer_->SetExpectedONCSource(onc::ONC_SOURCE_USER_POLICY);
 
   ASSERT_TRUE(certificate_importer_owned_);
-  updater->SetCertificateImporterForTest(certificate_importer_owned_.Pass());
+  updater->SetCertificateImporterForTest(
+      std::move(certificate_importer_owned_));
   EXPECT_EQ(1u, certificate_importer_->GetAndResetImportCount());
 }
 

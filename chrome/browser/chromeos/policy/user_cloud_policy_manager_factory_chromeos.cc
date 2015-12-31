@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -198,7 +200,7 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
 
   scoped_ptr<UserCloudPolicyManagerChromeOS> manager(
       new UserCloudPolicyManagerChromeOS(
-          store.Pass(), external_data_manager.Pass(),
+          std::move(store), std::move(external_data_manager),
           component_policy_cache_dir, wait_for_initial_policy,
           initial_policy_fetch_timeout, base::ThreadTaskRunnerHandle::Get(),
           file_task_runner, io_task_runner));
@@ -217,7 +219,7 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
 
   DCHECK(managers_.find(profile) == managers_.end());
   managers_[profile] = manager.get();
-  return manager.Pass();
+  return manager;
 }
 
 void UserCloudPolicyManagerFactoryChromeOS::BrowserContextShutdown(

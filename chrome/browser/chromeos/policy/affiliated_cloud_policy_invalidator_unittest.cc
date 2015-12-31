@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/policy/affiliated_cloud_policy_invalidator.h"
 
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -90,7 +90,7 @@ TEST(AffiliatedCloudPolicyInvalidatorTest, CreateUseDestroy) {
   EXPECT_CALL(*policy_client, SetupRegistration("token", "device-id"))
       .WillOnce(WithArgs<1>(Invoke(policy_client,
                                    &MockCloudPolicyClient::SetDMToken)));
-  core.Connect(policy_client_owner.Pass());
+  core.Connect(std::move(policy_client_owner));
   Mock::VerifyAndClearExpectations(&policy_client);
   core.StartRefreshScheduler();
 
