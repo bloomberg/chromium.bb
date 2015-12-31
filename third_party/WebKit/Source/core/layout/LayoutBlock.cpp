@@ -374,32 +374,6 @@ void LayoutBlock::invalidateDisplayItemClients(const LayoutBoxModelObject& paint
     invalidateDisplayItemClientForStartOfContinuationsIfNeeded(*this);
 }
 
-static void addNextFloatingOrOutOfFlowSiblingsToBlock(LayoutBlock* block, LayoutBlock* container)
-{
-    if (block->beingDestroyed())
-        return;
-
-    LayoutObject* child = block->nextSibling();
-    while (child && child->isFloatingOrOutOfFlowPositioned()) {
-        LayoutObject* sibling = child->nextSibling();
-        container->moveChildTo(block, child, nullptr, false);
-        child = sibling;
-    }
-}
-
-static void addPreviousFloatingOrOutOfFlowSiblingsToBlock(LayoutBlock* block, LayoutBlock* container)
-{
-    if (block->beingDestroyed())
-        return;
-
-    LayoutObject* child = block->previousSibling();
-    while (child && child->isFloatingOrOutOfFlowPositioned()) {
-        LayoutObject* sibling = child->previousSibling();
-        container->moveChildTo(block, child, block->firstChild(), false);
-        child = sibling;
-    }
-}
-
 void LayoutBlock::addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild)
 {
     if (beforeChild && beforeChild->parent() != this) {
@@ -474,9 +448,19 @@ void LayoutBlock::addChildIgnoringContinuation(LayoutObject* newChild, LayoutObj
             LayoutBlock* newBox = createAnonymousBlock();
             LayoutBox::addChild(newBox, beforeChild);
             // Reparent adjacent floating or out-of-flow siblings to the new box.
-            addPreviousFloatingOrOutOfFlowSiblingsToBlock(newBox, this);
+            LayoutObject* child = newBox->previousSibling();
+            while (child && child->isFloatingOrOutOfFlowPositioned()) {
+                LayoutObject* sibling = child->previousSibling();
+                moveChildTo(newBox, child, newBox->firstChild(), false);
+                child = sibling;
+            }
             newBox->addChild(newChild);
-            addNextFloatingOrOutOfFlowSiblingsToBlock(newBox, this);
+            child = newBox->nextSibling();
+            while (child && child->isFloatingOrOutOfFlowPositioned()) {
+                LayoutObject* sibling = child->nextSibling();
+                moveChildTo(newBox, child, nullptr, false);
+                child = sibling;
+            }
             return;
         }
     }
@@ -754,13 +738,6 @@ void LayoutBlock::removeChild(LayoutObject* oldChild)
             && (!anonymousBlock->previousSibling() || (anonymousBlock->previousSibling()->style()->styleType() != NOPSEUDO && anonymousBlock->previousSibling()->isFloating() && !anonymousBlock->previousSibling()->previousSibling()))
             && (!anonymousBlock->nextSibling() || (anonymousBlock->nextSibling()->style()->styleType() != NOPSEUDO && anonymousBlock->nextSibling()->isFloating() && !anonymousBlock->nextSibling()->nextSibling()))) {
             collapseAnonymousBlockChild(this, anonymousBlock);
-        } else {
-            // If we have floating or out-of-flow siblings now adjacent to an anonymous block, fold them
-            // into it.
-            if (prev && prev->isAnonymousBlock())
-                addNextFloatingOrOutOfFlowSiblingsToBlock(toLayoutBlock(prev), this);
-            else if (next && next->isAnonymousBlock())
-                addPreviousFloatingOrOutOfFlowSiblingsToBlock(toLayoutBlock(next), this);
         }
     }
 
