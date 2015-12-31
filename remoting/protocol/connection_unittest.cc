@@ -177,7 +177,9 @@ class ConnectionTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(ConnectionTest);
 };
 
-INSTANTIATE_TEST_CASE_P(Ice, ConnectionTest, ::testing::Values(false));
+// TODO(sergeyu): Disabled due to failures on Vista bots. See
+// https://crbug.com/573366.
+// INSTANTIATE_TEST_CASE_P(Ice, ConnectionTest, ::testing::Values(false));
 INSTANTIATE_TEST_CASE_P(Webrtc, ConnectionTest, ::testing::Values(true));
 
 TEST_P(ConnectionTest, RejectConnection) {
