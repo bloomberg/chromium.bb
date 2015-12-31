@@ -821,6 +821,15 @@ test("media_perftests") {
   }
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("audio_unittests_run") {
+  testonly = true
+  deps = [
+    ":audio_unittests",
+  ]
+}
+
 # For running the subset of media_unittests that might require audio hardware
 # separately on GPU bots. media_unittests includes these too.
 test("audio_unittests") {
