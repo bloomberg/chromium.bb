@@ -43,9 +43,9 @@
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebFrameLoadType.h"
 #include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
+#include "third_party/WebKit/public/web/WebFrameSerializerClient.h"
 #include "third_party/WebKit/public/web/WebHistoryCommitType.h"
 #include "third_party/WebKit/public/web/WebMeaningfulLayout.h"
-#include "third_party/WebKit/public/web/WebPageSerializerClient.h"
 #include "third_party/WebKit/public/web/WebScriptExecutionCallback.h"
 #include "ui/gfx/range/range.h"
 #include "url/gurl.h"
@@ -151,7 +151,7 @@ class VRDispatcher;
 class CONTENT_EXPORT RenderFrameImpl
     : public RenderFrame,
       NON_EXPORTED_BASE(public blink::WebFrameClient),
-      NON_EXPORTED_BASE(public blink::WebPageSerializerClient) {
+      NON_EXPORTED_BASE(public blink::WebFrameSerializerClient) {
  public:
   // Creates a new RenderFrame as the main frame of |render_view|.
   static RenderFrameImpl* CreateMainFrame(
@@ -615,10 +615,11 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebVRClient* webVRClient() override;
 #endif
 
-  // WebPageSerializerClient implementation:
+  // WebFrameSerializerClient implementation:
   void didSerializeDataForFrame(
       const blink::WebCString& data,
-      blink::WebPageSerializerClient::PageSerializationStatus status) override;
+      blink::WebFrameSerializerClient::FrameSerializationStatus status)
+      override;
 
   // Make this frame show an empty, unscriptable page.
   // TODO(nasko): Remove this method once swapped out state is no longer used.

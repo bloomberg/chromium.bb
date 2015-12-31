@@ -154,12 +154,12 @@
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBClient.h"
 #include "third_party/WebKit/public/web/WebColorSuggestion.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebFrameSerializer.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
-#include "third_party/WebKit/public/web/WebPageSerializer.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "third_party/WebKit/public/web/WebRange.h"
@@ -240,6 +240,8 @@ using blink::WebElement;
 using blink::WebExternalPopupMenu;
 using blink::WebExternalPopupMenuClient;
 using blink::WebFrame;
+using blink::WebFrameSerializer;
+using blink::WebFrameSerializerClient;
 using blink::WebHistoryItem;
 using blink::WebHTTPBody;
 using blink::WebLocalFrame;
@@ -250,8 +252,6 @@ using blink::WebMediaSession;
 using blink::WebNavigationPolicy;
 using blink::WebNavigationType;
 using blink::WebNode;
-using blink::WebPageSerializer;
-using blink::WebPageSerializerClient;
 using blink::WebPluginParams;
 using blink::WebPopupMenuInfo;
 using blink::WebRange;
@@ -583,14 +583,14 @@ WebString ConvertRelativePathToHtmlAttribute(const base::FilePath& path) {
       path.NormalizePathSeparatorsTo(FILE_PATH_LITERAL('/')).AsUTF8Unsafe());
 }
 
-// Implementation of WebPageSerializer::MHTMLPartsGenerationDelegate that
+// Implementation of WebFrameSerializer::MHTMLPartsGenerationDelegate that
 // 1. Bases shouldSkipResource and getContentID responses on contents of
 //    FrameMsg_SerializeAsMHTML_Params.
 // 2. Stores digests of urls of serialized resources (i.e. urls reported via
 //    shouldSkipResource) into |digests_of_uris_of_serialized_resources| passed
 //    to the constructor.
 class MHTMLPartsGenerationDelegate
-    : public WebPageSerializer::MHTMLPartsGenerationDelegate {
+    : public WebFrameSerializer::MHTMLPartsGenerationDelegate {
  public:
   MHTMLPartsGenerationDelegate(
       const FrameMsg_SerializeAsMHTML_Params& params,
@@ -4215,8 +4215,8 @@ blink::WebVRClient* RenderFrameImpl::webVRClient() {
 
 void RenderFrameImpl::didSerializeDataForFrame(
     const WebCString& data,
-    WebPageSerializerClient::PageSerializationStatus status) {
-  bool end_of_data = status == WebPageSerializerClient::CurrentFrameIsFinished;
+    WebFrameSerializerClient::FrameSerializationStatus status) {
+  bool end_of_data = status == WebFrameSerializerClient::CurrentFrameIsFinished;
   Send(new FrameHostMsg_SerializedHtmlWithLocalLinksResponse(
       routing_id_, data, end_of_data));
 }
@@ -4812,9 +4812,9 @@ void RenderFrameImpl::OnGetSerializedHtmlWithLocalLinks(
   }
 
   // Serialize the frame (without recursing into subframes).
-  WebPageSerializer::serialize(GetWebFrame(),
-                               this,  // WebPageSerializerClient.
-                               weburl_to_local_path);
+  WebFrameSerializer::serialize(GetWebFrame(),
+                                this,  // WebFrameSerializerClient.
+                                weburl_to_local_path);
 }
 
 void RenderFrameImpl::OnSerializeAsMHTML(
@@ -4834,7 +4834,7 @@ void RenderFrameImpl::OnSerializeAsMHTML(
   // Generate MHTML header if needed.
   if (IsMainFrame()) {
     data =
-        WebPageSerializer::generateMHTMLHeader(mhtml_boundary, GetWebFrame());
+        WebFrameSerializer::generateMHTMLHeader(mhtml_boundary, GetWebFrame());
     if (file.WriteAtCurrentPos(data.data(), data.size()) < 0) {
       success = false;
     }
@@ -4842,8 +4842,8 @@ void RenderFrameImpl::OnSerializeAsMHTML(
 
   // Generate MHTML parts.
   if (success) {
-    data = WebPageSerializer::generateMHTMLParts(mhtml_boundary, GetWebFrame(),
-                                                 false, &delegate);
+    data = WebFrameSerializer::generateMHTMLParts(mhtml_boundary, GetWebFrame(),
+                                                  false, &delegate);
     // TODO(jcivelli): write the chunks in deferred tasks to give a chance to
     //                 the message loop to process other events.
     if (file.WriteAtCurrentPos(data.data(), data.size()) < 0) {
@@ -4853,7 +4853,7 @@ void RenderFrameImpl::OnSerializeAsMHTML(
 
   // Generate MHTML footer if needed.
   if (success && params.is_last_frame) {
-    data = WebPageSerializer::generateMHTMLFooter(mhtml_boundary);
+    data = WebFrameSerializer::generateMHTMLFooter(mhtml_boundary);
     if (file.WriteAtCurrentPos(data.data(), data.size()) < 0) {
       success = false;
     }

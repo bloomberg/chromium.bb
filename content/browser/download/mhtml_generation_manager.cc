@@ -97,7 +97,7 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
   // The handle to the file the MHTML is saved to for the browser process.
   base::File browser_file_;
 
-  // Map from frames into content ids (see WebPageSerializer::generateMHTMLParts
+  // Map from frames to content ids (see WebFrameSerializer::generateMHTMLParts
   // for more details about what "content ids" are and how they are used).
   std::map<int, std::string> frame_tree_node_to_content_id_;
 

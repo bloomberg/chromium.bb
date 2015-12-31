@@ -471,7 +471,7 @@ IPC_STRUCT_BEGIN(FrameMsg_SerializeAsMHTML_Params)
 
   // Frame to content-id map.
   // Keys are routing ids of either RenderFrames or RenderFrameProxies.
-  // Values are MHTML content-ids - see WebPageSerializer::generateMHTMLParts.
+  // Values are MHTML content-ids - see WebFrameSerializer::generateMHTMLParts.
   IPC_STRUCT_MEMBER(FrameMsg_SerializeAsMHTML_FrameRoutingIdToContentIdMap,
                     frame_routing_id_to_content_id)
 

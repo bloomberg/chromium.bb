@@ -3,7 +3,7 @@
 # crbug.com/159935
 WebCompositorInputHandlerImplTest.gestureFlingAnimates
 WebCompositorInputHandlerImplTest.gestureFlingTransferResets
-WebPageSerializerTest.HTMLNodes
+WebFrameSerializerTest.HTMLNodes
 
 # crbug.com/241730
 ScrollAnimatorNoneTest.CurveMathQuartic
