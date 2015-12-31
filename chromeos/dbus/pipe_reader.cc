@@ -44,7 +44,7 @@ base::File PipeReader::StartIO() {
     LOG(ERROR) << "Unable to post initial read";
     return base::File();
   }
-  return pipe_write_end.Pass();
+  return pipe_write_end;
 }
 
 void PipeReader::OnDataReady(int byte_count) {

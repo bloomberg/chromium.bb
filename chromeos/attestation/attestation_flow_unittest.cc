@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
@@ -139,7 +141,7 @@ TEST_F(AttestationFlowTest, GetCertificate) {
       base::Unretained(&observer));
 
   scoped_ptr<ServerProxy> proxy_interface(proxy.release());
-  AttestationFlow flow(&async_caller, &client, proxy_interface.Pass());
+  AttestationFlow flow(&async_caller, &client, std::move(proxy_interface));
   flow.GetCertificate(PROFILE_ENTERPRISE_USER_CERTIFICATE, "fake@test.com",
                       "fake_origin", true, mock_callback);
   Run();
@@ -167,7 +169,7 @@ TEST_F(AttestationFlowTest, GetCertificate_NoEK) {
       base::Unretained(&observer));
 
   scoped_ptr<ServerProxy> proxy_interface(proxy.release());
-  AttestationFlow flow(&async_caller, &client, proxy_interface.Pass());
+  AttestationFlow flow(&async_caller, &client, std::move(proxy_interface));
   flow.GetCertificate(PROFILE_ENTERPRISE_USER_CERTIFICATE, "", "", true,
                       mock_callback);
   Run();
@@ -198,7 +200,7 @@ TEST_F(AttestationFlowTest, GetCertificate_EKRejected) {
       base::Unretained(&observer));
 
   scoped_ptr<ServerProxy> proxy_interface(proxy.release());
-  AttestationFlow flow(&async_caller, &client, proxy_interface.Pass());
+  AttestationFlow flow(&async_caller, &client, std::move(proxy_interface));
   flow.GetCertificate(PROFILE_ENTERPRISE_USER_CERTIFICATE, "", "", true,
                       mock_callback);
   Run();
@@ -234,7 +236,7 @@ TEST_F(AttestationFlowTest, GetCertificate_FailEnroll) {
       base::Unretained(&observer));
 
   scoped_ptr<ServerProxy> proxy_interface(proxy.release());
-  AttestationFlow flow(&async_caller, &client, proxy_interface.Pass());
+  AttestationFlow flow(&async_caller, &client, std::move(proxy_interface));
   flow.GetCertificate(PROFILE_ENTERPRISE_USER_CERTIFICATE, "", "", true,
                       mock_callback);
   Run();
@@ -278,7 +280,7 @@ TEST_F(AttestationFlowTest, GetMachineCertificateAlreadyEnrolled) {
       base::Unretained(&observer));
 
   scoped_ptr<ServerProxy> proxy_interface(proxy.release());
-  AttestationFlow flow(&async_caller, &client, proxy_interface.Pass());
+  AttestationFlow flow(&async_caller, &client, std::move(proxy_interface));
   flow.GetCertificate(PROFILE_ENTERPRISE_MACHINE_CERTIFICATE, "", "", true,
                       mock_callback);
   Run();
@@ -307,7 +309,7 @@ TEST_F(AttestationFlowTest, GetCertificate_FailCreateCertRequest) {
       base::Unretained(&observer));
 
   scoped_ptr<ServerProxy> proxy_interface(proxy.release());
-  AttestationFlow flow(&async_caller, &client, proxy_interface.Pass());
+  AttestationFlow flow(&async_caller, &client, std::move(proxy_interface));
   flow.GetCertificate(PROFILE_ENTERPRISE_USER_CERTIFICATE, "", "", true,
                       mock_callback);
   Run();
@@ -339,7 +341,7 @@ TEST_F(AttestationFlowTest, GetCertificate_CertRequestRejected) {
       base::Unretained(&observer));
 
   scoped_ptr<ServerProxy> proxy_interface(proxy.release());
-  AttestationFlow flow(&async_caller, &client, proxy_interface.Pass());
+  AttestationFlow flow(&async_caller, &client, std::move(proxy_interface));
   flow.GetCertificate(PROFILE_ENTERPRISE_USER_CERTIFICATE, "", "", true,
                       mock_callback);
   Run();
@@ -364,7 +366,7 @@ TEST_F(AttestationFlowTest, GetCertificate_FailIsEnrolled) {
       base::Unretained(&observer));
 
   scoped_ptr<ServerProxy> proxy_interface(proxy.release());
-  AttestationFlow flow(&async_caller, &client, proxy_interface.Pass());
+  AttestationFlow flow(&async_caller, &client, std::move(proxy_interface));
   flow.GetCertificate(PROFILE_ENTERPRISE_USER_CERTIFICATE, "", "", true,
                       mock_callback);
   Run();
@@ -411,7 +413,7 @@ TEST_F(AttestationFlowTest, GetCertificate_CheckExisting) {
       base::Unretained(&observer));
 
   scoped_ptr<ServerProxy> proxy_interface(proxy.release());
-  AttestationFlow flow(&async_caller, &client, proxy_interface.Pass());
+  AttestationFlow flow(&async_caller, &client, std::move(proxy_interface));
   flow.GetCertificate(PROFILE_ENTERPRISE_USER_CERTIFICATE, "", "", false,
                       mock_callback);
   Run();
@@ -442,7 +444,7 @@ TEST_F(AttestationFlowTest, GetCertificate_AlreadyExists) {
       base::Unretained(&observer));
 
   scoped_ptr<ServerProxy> proxy_interface(proxy.release());
-  AttestationFlow flow(&async_caller, &client, proxy_interface.Pass());
+  AttestationFlow flow(&async_caller, &client, std::move(proxy_interface));
   flow.GetCertificate(PROFILE_ENTERPRISE_USER_CERTIFICATE, "", "", false,
                       mock_callback);
   Run();
@@ -477,7 +479,7 @@ TEST_F(AttestationFlowTest, AlternatePCA) {
       base::Unretained(&observer));
 
   scoped_ptr<ServerProxy> proxy_interface(proxy.release());
-  AttestationFlow flow(&async_caller, &client, proxy_interface.Pass());
+  AttestationFlow flow(&async_caller, &client, std::move(proxy_interface));
   flow.GetCertificate(PROFILE_ENTERPRISE_USER_CERTIFICATE, "", "", true,
                       mock_callback);
   Run();

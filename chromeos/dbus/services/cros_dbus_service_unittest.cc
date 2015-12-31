@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/services/cros_dbus_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -66,8 +68,8 @@ class CrosDBusServiceTest : public testing::Test {
     // Initialize the cros service with the mocks injected.
     ScopedVector<CrosDBusService::ServiceProviderInterface> service_providers;
     service_providers.push_back(mock_proxy_resolution_service_provider);
-    CrosDBusService::InitializeForTesting(
-        mock_bus_.get(), service_providers.Pass());
+    CrosDBusService::InitializeForTesting(mock_bus_.get(),
+                                          std::move(service_providers));
   }
 
   void TearDown() override {

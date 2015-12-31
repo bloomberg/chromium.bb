@@ -5,6 +5,7 @@
 #include "chromeos/cert_loader.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -157,7 +158,7 @@ void CertLoader::UpdateCertificates(
   VLOG(1) << "UpdateCertificates: " << cert_list->size();
 
   // Ignore any existing certificates.
-  cert_list_ = cert_list.Pass();
+  cert_list_ = std::move(cert_list);
 
   bool initial_load = !certificates_loaded_;
   certificates_loaded_ = true;

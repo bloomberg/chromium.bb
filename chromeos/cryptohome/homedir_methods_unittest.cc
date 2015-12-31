@@ -5,6 +5,7 @@
 #include "chromeos/cryptohome/homedir_methods.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -91,7 +92,7 @@ void HomedirMethodsTest::SetUp() {
       new chromeos::MockCryptohomeClient);
   cryptohome_client_ = cryptohome_client.get();
   chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-      cryptohome_client.Pass());
+      std::move(cryptohome_client));
   HomedirMethods::Initialize();
 }
 

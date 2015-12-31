@@ -79,7 +79,7 @@ class TestGeolocationAPIURLFetcherCallback {
         new net::HttpResponseHeaders(std::string());
     download_headers->AddHeader("Content-Type: application/json");
     fetcher->set_response_headers(download_headers);
-    return fetcher.Pass();
+    return fetcher;
   }
 
   void Initialize(net::FakeURLFetcherFactory* factory) {

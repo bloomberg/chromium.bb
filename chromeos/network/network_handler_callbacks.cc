@@ -4,6 +4,8 @@
 
 #include "chromeos/network/network_handler_callbacks.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/values.h"
 #include "components/device_event_log/device_event_log.h"
@@ -85,7 +87,7 @@ void ShillErrorCallbackFunction(const std::string& error_name,
     return;
   scoped_ptr<base::DictionaryValue> error_data(CreateDBusErrorData(
       path, error_name, detail, dbus_error_name, dbus_error_message));
-  error_callback.Run(error_name, error_data.Pass());
+  error_callback.Run(error_name, std::move(error_data));
 }
 
 void GetPropertiesCallback(const DictionaryResultCallback& callback,

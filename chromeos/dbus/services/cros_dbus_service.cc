@@ -5,6 +5,7 @@
 #include "chromeos/dbus/services/cros_dbus_service.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/stl_util.h"
@@ -31,8 +32,7 @@ class CrosDBusServiceImpl : public CrosDBusService {
       : service_started_(false),
         origin_thread_id_(base::PlatformThread::CurrentId()),
         bus_(bus),
-        service_providers_(service_providers.Pass()) {
-  }
+        service_providers_(std::move(service_providers)) {}
 
   ~CrosDBusServiceImpl() override {
   }
@@ -111,7 +111,7 @@ void CrosDBusService::Initialize(
   }
   dbus::Bus* bus = DBusThreadManager::Get()->GetSystemBus();
   if (base::SysInfo::IsRunningOnChromeOS() && bus) {
-    auto* service = new CrosDBusServiceImpl(bus, service_providers.Pass());
+    auto* service = new CrosDBusServiceImpl(bus, std::move(service_providers));
     g_cros_dbus_service = service;
     service->Start();
   } else {
@@ -128,7 +128,7 @@ void CrosDBusService::InitializeForTesting(
     LOG(WARNING) << "CrosDBusService was already initialized";
     return;
   }
-  auto* service = new CrosDBusServiceImpl(bus, service_providers.Pass());
+  auto* service = new CrosDBusServiceImpl(bus, std::move(service_providers));
   service->Start();
   g_cros_dbus_service = service;
   VLOG(1) << "CrosDBusService initialized";

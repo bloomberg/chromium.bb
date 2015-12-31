@@ -4,6 +4,8 @@
 
 #include "chromeos/network/policy_util.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/values.h"
 #include "chromeos/network/network_profile.h"
@@ -264,7 +266,7 @@ scoped_ptr<base::DictionaryValue> CreateManagedONC(
     }
   }
 
-  return augmented_onc_network.Pass();
+  return augmented_onc_network;
 }
 
 void SetShillPropertiesForGlobalPolicy(
@@ -387,14 +389,14 @@ scoped_ptr<base::DictionaryValue> CreateShillConfiguration(
         onc::MaskCredentialsInOncObject(onc::kNetworkConfigurationSignature,
                                         *user_settings,
                                         kFakeCredential));
-    ui_data->set_user_settings(sanitized_user_settings.Pass());
+    ui_data->set_user_settings(std::move(sanitized_user_settings));
   }
 
   shill_property_util::SetUIData(*ui_data, shill_dictionary.get());
 
   VLOG(2) << "Created Shill properties: " << *shill_dictionary;
 
-  return shill_dictionary.Pass();
+  return shill_dictionary;
 }
 
 const base::DictionaryValue* FindMatchingPolicy(

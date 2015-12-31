@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/dbus_thread_manager.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/sys_info.h"
 #include "base/threading/thread.h"
@@ -50,7 +52,7 @@ static DBusThreadManager* g_dbus_thread_manager = NULL;
 static bool g_using_dbus_thread_manager_for_testing = false;
 
 DBusThreadManager::DBusThreadManager(scoped_ptr<DBusClientBundle> client_bundle)
-    : client_bundle_(client_bundle.Pass()) {
+    : client_bundle_(std::move(client_bundle)) {
   dbus::statistics::Initialize();
 
   if (client_bundle_->IsUsingAnyRealClient()) {
@@ -388,174 +390,185 @@ DBusThreadManagerSetter::~DBusThreadManagerSetter() {
 
 void DBusThreadManagerSetter::SetAmplifierClient(
     scoped_ptr<AmplifierClient> client) {
-  DBusThreadManager::Get()->client_bundle_->amplifier_client_ = client.Pass();
+  DBusThreadManager::Get()->client_bundle_->amplifier_client_ =
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetAudioDspClient(
     scoped_ptr<AudioDspClient> client) {
-  DBusThreadManager::Get()->client_bundle_->audio_dsp_client_ = client.Pass();
+  DBusThreadManager::Get()->client_bundle_->audio_dsp_client_ =
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetCrasAudioClient(
     scoped_ptr<CrasAudioClient> client) {
-  DBusThreadManager::Get()->client_bundle_->cras_audio_client_ = client.Pass();
+  DBusThreadManager::Get()->client_bundle_->cras_audio_client_ =
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetCrosDisksClient(
     scoped_ptr<CrosDisksClient> client) {
-  DBusThreadManager::Get()->client_bundle_->cros_disks_client_ = client.Pass();
+  DBusThreadManager::Get()->client_bundle_->cros_disks_client_ =
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetCryptohomeClient(
     scoped_ptr<CryptohomeClient> client) {
-  DBusThreadManager::Get()->client_bundle_->cryptohome_client_ = client.Pass();
+  DBusThreadManager::Get()->client_bundle_->cryptohome_client_ =
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetDebugDaemonClient(
     scoped_ptr<DebugDaemonClient> client) {
   DBusThreadManager::Get()->client_bundle_->debug_daemon_client_ =
-      client.Pass();
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetEasyUnlockClient(
     scoped_ptr<EasyUnlockClient> client) {
-  DBusThreadManager::Get()->client_bundle_->easy_unlock_client_ = client.Pass();
+  DBusThreadManager::Get()->client_bundle_->easy_unlock_client_ =
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetLorgnetteManagerClient(
     scoped_ptr<LorgnetteManagerClient> client) {
   DBusThreadManager::Get()->client_bundle_->lorgnette_manager_client_ =
-      client.Pass();
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetShillDeviceClient(
     scoped_ptr<ShillDeviceClient> client) {
   DBusThreadManager::Get()->client_bundle_->shill_device_client_ =
-      client.Pass();
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetShillIPConfigClient(
     scoped_ptr<ShillIPConfigClient> client) {
   DBusThreadManager::Get()->client_bundle_->shill_ipconfig_client_ =
-      client.Pass();
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetShillManagerClient(
     scoped_ptr<ShillManagerClient> client) {
   DBusThreadManager::Get()->client_bundle_->shill_manager_client_ =
-      client.Pass();
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetShillServiceClient(
     scoped_ptr<ShillServiceClient> client) {
   DBusThreadManager::Get()->client_bundle_->shill_service_client_ =
-      client.Pass();
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetShillProfileClient(
     scoped_ptr<ShillProfileClient> client) {
   DBusThreadManager::Get()->client_bundle_->shill_profile_client_ =
-      client.Pass();
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetShillThirdPartyVpnDriverClient(
     scoped_ptr<ShillThirdPartyVpnDriverClient> client) {
   DBusThreadManager::Get()
-      ->client_bundle_->shill_third_party_vpn_driver_client_ = client.Pass();
+      ->client_bundle_->shill_third_party_vpn_driver_client_ =
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetGsmSMSClient(
     scoped_ptr<GsmSMSClient> client) {
-  DBusThreadManager::Get()->client_bundle_->gsm_sms_client_ = client.Pass();
+  DBusThreadManager::Get()->client_bundle_->gsm_sms_client_ = std::move(client);
 }
 
 void DBusThreadManagerSetter::SetImageBurnerClient(
     scoped_ptr<ImageBurnerClient> client) {
   DBusThreadManager::Get()->client_bundle_->image_burner_client_ =
-      client.Pass();
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetIntrospectableClient(
     scoped_ptr<IntrospectableClient> client) {
   DBusThreadManager::Get()->client_bundle_->introspectable_client_ =
-      client.Pass();
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetModemMessagingClient(
     scoped_ptr<ModemMessagingClient> client) {
   DBusThreadManager::Get()->client_bundle_->modem_messaging_client_ =
-      client.Pass();
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetNfcAdapterClient(
     scoped_ptr<NfcAdapterClient> client) {
-  DBusThreadManager::Get()->client_bundle_->nfc_adapter_client_ = client.Pass();
+  DBusThreadManager::Get()->client_bundle_->nfc_adapter_client_ =
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetNfcDeviceClient(
     scoped_ptr<NfcDeviceClient> client) {
-  DBusThreadManager::Get()->client_bundle_->nfc_device_client_ = client.Pass();
+  DBusThreadManager::Get()->client_bundle_->nfc_device_client_ =
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetNfcManagerClient(
     scoped_ptr<NfcManagerClient> client) {
-  DBusThreadManager::Get()->client_bundle_->nfc_manager_client_ = client.Pass();
+  DBusThreadManager::Get()->client_bundle_->nfc_manager_client_ =
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetNfcRecordClient(
     scoped_ptr<NfcRecordClient> client) {
-  DBusThreadManager::Get()->client_bundle_->nfc_record_client_ = client.Pass();
+  DBusThreadManager::Get()->client_bundle_->nfc_record_client_ =
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetNfcTagClient(
     scoped_ptr<NfcTagClient> client) {
-  DBusThreadManager::Get()->client_bundle_->nfc_tag_client_ = client.Pass();
+  DBusThreadManager::Get()->client_bundle_->nfc_tag_client_ = std::move(client);
 }
 
 void DBusThreadManagerSetter::SetPeerDaemonManagerClient(
     scoped_ptr<PeerDaemonManagerClient> client) {
   DBusThreadManager::Get()->client_bundle_->peer_daemon_manager_client_ =
-      client.Pass();
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetPermissionBrokerClient(
     scoped_ptr<PermissionBrokerClient> client) {
   DBusThreadManager::Get()->client_bundle_->permission_broker_client_ =
-      client.Pass();
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetPrivetDaemonManagerClient(
     scoped_ptr<PrivetDaemonManagerClient> client) {
   DBusThreadManager::Get()->client_bundle_->privet_daemon_manager_client_ =
-      client.Pass();
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetPowerManagerClient(
     scoped_ptr<PowerManagerClient> client) {
   DBusThreadManager::Get()->client_bundle_->power_manager_client_ =
-      client.Pass();
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetSessionManagerClient(
     scoped_ptr<SessionManagerClient> client) {
   DBusThreadManager::Get()->client_bundle_->session_manager_client_ =
-      client.Pass();
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetSMSClient(scoped_ptr<SMSClient> client) {
-  DBusThreadManager::Get()->client_bundle_->sms_client_ = client.Pass();
+  DBusThreadManager::Get()->client_bundle_->sms_client_ = std::move(client);
 }
 
 void DBusThreadManagerSetter::SetSystemClockClient(
     scoped_ptr<SystemClockClient> client) {
   DBusThreadManager::Get()->client_bundle_->system_clock_client_ =
-      client.Pass();
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetUpdateEngineClient(
     scoped_ptr<UpdateEngineClient> client) {
   DBusThreadManager::Get()->client_bundle_->update_engine_client_ =
-      client.Pass();
+      std::move(client);
 }
 
 }  // namespace chromeos

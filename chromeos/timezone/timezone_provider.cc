@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -55,7 +56,7 @@ void TimeZoneProvider::OnTimezoneResponse(
     requests_.resize(requests_.size() - 1);
   }
 
-  callback.Run(timezone.Pass(), server_error);
+  callback.Run(std::move(timezone), server_error);
 }
 
 }  // namespace chromeos

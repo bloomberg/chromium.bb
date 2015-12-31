@@ -567,7 +567,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     scoped_ptr<dbus::FileDescriptor> file_descriptor(new dbus::FileDescriptor);
     file_descriptor->PutValue(pipe_write_end.TakePlatformFile());
     file_descriptor->CheckValidity();
-    return file_descriptor.Pass();
+    return file_descriptor;
   }
 
   // Called when a CheckValidity response is received.

@@ -6,6 +6,7 @@
 
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -77,7 +78,7 @@ DictionaryPtr GetEditableFlags(const base::DictionaryValue& policy) {
     result_editable->SetWithoutPathExpansion(
         it.key(), GetEditableFlags(*child_policy).release());
   }
-  return result_editable.Pass();
+  return result_editable;
 }
 
 // This is the base class for merging a list of DictionaryValues in
@@ -123,7 +124,7 @@ class MergeListOfDictionaries {
           }
           DictionaryPtr merged_dict(MergeNestedDictionaries(key, nested_dicts));
           if (!merged_dict->empty())
-            merged_value = merged_dict.Pass();
+            merged_value = std::move(merged_dict);
         } else {
           std::vector<const base::Value*> values;
           for (DictPtrs::const_iterator it_inner = dicts.begin();
@@ -140,7 +141,7 @@ class MergeListOfDictionaries {
           result->SetWithoutPathExpansion(key, merged_value.release());
       }
     }
-    return result.Pass();
+    return result;
   }
 
  protected:
@@ -397,7 +398,7 @@ class MergeToAugmented : public MergeToEffective {
             << "Values do not match: " << key
             << " Effective: " << *effective_value;
         // Return the un-augmented field.
-        return effective_value.Pass();
+        return effective_value;
       }
       if (values.active_setting) {
         // Unmanaged networks have assigned (active) values.
@@ -454,7 +455,7 @@ class MergeToAugmented : public MergeToEffective {
     }
     if (augmented_value->empty())
       augmented_value.reset();
-    return augmented_value.Pass();
+    return std::move(augmented_value);
   }
 
   // MergeListOfDictionaries override.
@@ -475,7 +476,7 @@ class MergeToAugmented : public MergeToEffective {
     } else {
       result = MergeToEffective::MergeNestedDictionaries(key, dicts);
     }
-    return result.Pass();
+    return result;
   }
 
  private:

@@ -163,7 +163,7 @@ scoped_ptr<base::DictionaryValue> Decrypt(const std::string& passphrase,
     return nullptr;
   }
 
-  return new_root.Pass();
+  return new_root;
 }
 
 std::string GetSourceAsString(ONCSource source) {
@@ -912,7 +912,7 @@ scoped_ptr<base::DictionaryValue> ConvertOncProxySettingsToProxyConfig(
   } else {
     NOTREACHED();
   }
-  return proxy_dict.Pass();
+  return proxy_dict;
 }
 
 scoped_ptr<base::DictionaryValue> ConvertProxyConfigToOncProxySettings(
@@ -985,7 +985,7 @@ scoped_ptr<base::DictionaryValue> ConvertProxyConfigToOncProxySettings(
       return nullptr;
     }
   }
-  return proxy_settings.Pass();
+  return proxy_settings;
 }
 
 }  // namespace onc

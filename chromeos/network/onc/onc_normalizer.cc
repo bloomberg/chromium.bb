@@ -30,7 +30,7 @@ scoped_ptr<base::DictionaryValue> Normalizer::NormalizeObject(
   scoped_ptr<base::DictionaryValue> result =
       MapObject(*object_signature, onc_object, &error);
   DCHECK(!error);
-  return result.Pass();
+  return result;
 }
 
 scoped_ptr<base::DictionaryValue> Normalizer::MapObject(
@@ -65,7 +65,7 @@ scoped_ptr<base::DictionaryValue> Normalizer::MapObject(
   else if (&signature == &kWiFiSignature)
     NormalizeWiFi(normalized.get());
 
-  return normalized.Pass();
+  return normalized;
 }
 
 namespace {

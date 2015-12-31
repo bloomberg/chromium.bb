@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -257,7 +258,7 @@ void TDLSErrorCallback(
       network_handler::CreateDBusErrorData(
           device_path, error_name, error_detail,
           dbus_error_name, dbus_error_message));
-  error_callback.Run(error_name, error_data.Pass());
+  error_callback.Run(error_name, std::move(error_data));
 }
 
 void CallPerformTDLSOperation(
@@ -572,7 +573,7 @@ const DeviceState* NetworkDeviceHandlerImpl::GetWifiDeviceState(
       return NULL;
     scoped_ptr<base::DictionaryValue> error_data(new base::DictionaryValue);
     error_data->SetString(network_handler::kErrorName, kErrorDeviceMissing);
-    error_callback.Run(kErrorDeviceMissing, error_data.Pass());
+    error_callback.Run(kErrorDeviceMissing, std::move(error_data));
     return NULL;
   }
 

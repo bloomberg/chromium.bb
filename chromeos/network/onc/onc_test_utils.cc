@@ -4,6 +4,8 @@
 
 #include "chromeos/network/onc/onc_test_utils.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
@@ -57,7 +59,7 @@ scoped_ptr<base::DictionaryValue> ReadTestDictionary(
   CHECK(content != NULL) << "Couldn't json-deserialize file '"
                          << filename << "': " << error_message;
 
-  dict = base::DictionaryValue::From(content.Pass());
+  dict = base::DictionaryValue::From(std::move(content));
   CHECK(dict) << "File '" << filename
               << "' does not contain a dictionary as expected, but type "
               << content->GetType();

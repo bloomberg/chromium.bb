@@ -4,6 +4,7 @@
 
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -339,7 +340,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
     }
   }
 
-  SetShillProperties(service_path, shill_dictionary.Pass(), callback,
+  SetShillProperties(service_path, std::move(shill_dictionary), callback,
                      error_callback);
 }
 
@@ -818,7 +819,7 @@ void ManagedNetworkConfigurationHandlerImpl::GetPropertiesCallback(
       !shill_properties_copy->GetStringWithoutPathExpansion(
           shill::kDeviceProperty, &device_path) ||
       device_path.empty()) {
-    send_callback.Run(service_path, shill_properties_copy.Pass());
+    send_callback.Run(service_path, std::move(shill_properties_copy));
     return;
   }
 
@@ -851,7 +852,7 @@ void ManagedNetworkConfigurationHandlerImpl::GetDevicePropertiesSuccess(
   // Create a "Device" dictionary in |network_properties|.
   network_properties->SetWithoutPathExpansion(
       shill::kDeviceProperty, device_properties.DeepCopy());
-  send_callback.Run(service_path, network_properties.Pass());
+  send_callback.Run(service_path, std::move(network_properties));
 }
 
 void ManagedNetworkConfigurationHandlerImpl::GetDevicePropertiesFailure(
@@ -861,7 +862,7 @@ void ManagedNetworkConfigurationHandlerImpl::GetDevicePropertiesFailure(
     const std::string& error_name,
     scoped_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR("Error getting device properties", service_path);
-  send_callback.Run(service_path, network_properties.Pass());
+  send_callback.Run(service_path, std::move(network_properties));
 }
 
 

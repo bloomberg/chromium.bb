@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -139,7 +140,7 @@ void FirewallHole::PortAccessGranted(PortType type,
                                      bool success) {
   if (success) {
     callback.Run(make_scoped_ptr(
-        new FirewallHole(type, port, interface, lifeline_fd.Pass())));
+        new FirewallHole(type, port, interface, std::move(lifeline_fd))));
   } else {
     callback.Run(nullptr);
   }
@@ -152,7 +153,6 @@ FirewallHole::FirewallHole(PortType type,
     : type_(type),
       port_(port),
       interface_(interface),
-      lifeline_fd_(lifeline_fd.Pass()) {
-}
+      lifeline_fd_(std::move(lifeline_fd)) {}
 
 }  // namespace chromeos

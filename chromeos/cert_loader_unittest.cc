@@ -5,6 +5,7 @@
 #include "chromeos/cert_loader.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -39,7 +40,8 @@ class TestNSSCertDatabase : public net::NSSCertDatabaseChromeOS {
  public:
   TestNSSCertDatabase(crypto::ScopedPK11Slot public_slot,
                       crypto::ScopedPK11Slot private_slot)
-      : NSSCertDatabaseChromeOS(public_slot.Pass(), private_slot.Pass()) {}
+      : NSSCertDatabaseChromeOS(std::move(public_slot),
+                                std::move(private_slot)) {}
   ~TestNSSCertDatabase() override {}
 
   void NotifyOfCertAdded(const net::X509Certificate* cert) {

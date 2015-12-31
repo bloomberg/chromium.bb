@@ -4,6 +4,8 @@
 
 #include "chromeos/attestation/attestation_flow.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -87,9 +89,8 @@ AttestationFlow::AttestationFlow(cryptohome::AsyncMethodCaller* async_caller,
                                  scoped_ptr<ServerProxy> server_proxy)
     : async_caller_(async_caller),
       cryptohome_client_(cryptohome_client),
-      server_proxy_(server_proxy.Pass()),
-      weak_factory_(this) {
-}
+      server_proxy_(std::move(server_proxy)),
+      weak_factory_(this) {}
 
 AttestationFlow::~AttestationFlow() {
 }

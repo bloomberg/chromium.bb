@@ -53,7 +53,7 @@ scoped_ptr<Key> TransformKeyIfNeeded(const Key& key,
   if (result->GetKeyType() == Key::KEY_TYPE_PASSWORD_PLAIN)
     result->Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF, system_salt);
 
-  return result.Pass();
+  return result;
 }
 
 // Records status and calls resolver->Resolve().

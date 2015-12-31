@@ -40,7 +40,7 @@ scoped_ptr<base::Value> Mapper::MapValue(const OncValueSignature& signature,
     }
   }
 
-  return result_value.Pass();
+  return result_value;
 }
 
 scoped_ptr<base::DictionaryValue> Mapper::MapObject(
@@ -53,7 +53,7 @@ scoped_ptr<base::DictionaryValue> Mapper::MapObject(
   MapFields(signature, onc_object, &found_unknown_field, error, result.get());
   if (found_unknown_field)
     *error = true;
-  return result.Pass();
+  return result;
 }
 
 scoped_ptr<base::Value> Mapper::MapPrimitive(const OncValueSignature& signature,
@@ -129,7 +129,7 @@ scoped_ptr<base::ListValue> Mapper::MapArray(
     else
       DCHECK(*nested_error);
   }
-  return result_array.Pass();
+  return result_array;
 }
 
 scoped_ptr<base::Value> Mapper::MapEntry(int index,

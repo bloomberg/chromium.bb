@@ -236,11 +236,11 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
     mock_profile_client_ = new StrictMock<MockShillProfileClient>();
     mock_service_client_ = new StrictMock<MockShillServiceClient>();
     dbus_setter->SetShillManagerClient(
-        scoped_ptr<ShillManagerClient>(mock_manager_client_).Pass());
+        scoped_ptr<ShillManagerClient>(mock_manager_client_));
     dbus_setter->SetShillProfileClient(
-        scoped_ptr<ShillProfileClient>(mock_profile_client_).Pass());
+        scoped_ptr<ShillProfileClient>(mock_profile_client_));
     dbus_setter->SetShillServiceClient(
-        scoped_ptr<ShillServiceClient>(mock_service_client_).Pass());
+        scoped_ptr<ShillServiceClient>(mock_service_client_));
 
     SetNetworkConfigurationHandlerExpectations();
 

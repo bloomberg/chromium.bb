@@ -40,7 +40,7 @@ class ONCValidatorTest : public ::testing::Test {
       validator.reset(new Validator(false, false, false, managed_onc));
     }
     validator->SetOncSource(onc_source);
-    original_object_ = onc_object.Pass();
+    original_object_ = std::move(onc_object);
     repaired_object_ = validator->ValidateAndRepairObject(signature,
                                                           *original_object_,
                                                           &validation_result_);

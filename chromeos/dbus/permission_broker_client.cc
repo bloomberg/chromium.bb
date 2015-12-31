@@ -5,6 +5,7 @@
 #include "chromeos/dbus/permission_broker_client.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -155,7 +156,7 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
       LOG(WARNING) << "Access request method call failed.";
     }
 
-    callback.Run(fd.Pass());
+    callback.Run(std::move(fd));
   }
 
   dbus::ObjectProxy* proxy_;

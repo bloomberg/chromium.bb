@@ -60,7 +60,7 @@ scoped_ptr<dbus::Response> BlockingMethodCaller::CallMethodAndBlock(
   // http://crbug.com/125360
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   on_blocking_method_call_.Wait();
-  return response.Pass();
+  return response;
 }
 
 }  // namespace chromeos

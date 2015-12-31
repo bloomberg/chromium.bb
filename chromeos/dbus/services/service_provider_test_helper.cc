@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/services/service_provider_test_helper.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
@@ -155,7 +157,7 @@ void ServiceProviderTestHelper::MockSendSignal(dbus::Signal* signal) {
 
 void ServiceProviderTestHelper::OnResponse(
     scoped_ptr<dbus::Response> response) {
-  response_ = response.Pass();
+  response_ = std::move(response);
   response_received_ = true;
   if (base::MessageLoop::current()->is_running())
     base::MessageLoop::current()->QuitWhenIdle();

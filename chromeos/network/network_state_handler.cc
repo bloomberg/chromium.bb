@@ -999,7 +999,7 @@ ScopedVector<std::string> NetworkStateHandler::GetTechnologiesForType(
     technologies.push_back(new std::string(shill::kTypeVPN));
 
   CHECK_GT(technologies.size(), 0ul);
-  return technologies.Pass();
+  return technologies;
 }
 
 }  // namespace chromeos

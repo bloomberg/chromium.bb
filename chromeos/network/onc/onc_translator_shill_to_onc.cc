@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/network/onc/onc_translator.h"
-
 #include <string>
+#include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -17,6 +16,7 @@
 #include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translation_tables.h"
+#include "chromeos/network/onc/onc_translator.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/shill_property_util.h"
 #include "components/onc/onc_constants.h"
@@ -183,7 +183,7 @@ ShillToONCTranslator::CreateTranslatedONCObject() {
   } else {
     CopyPropertiesAccordingToSignature();
   }
-  return onc_object_.Pass();
+  return std::move(onc_object_);
 }
 
 void ShillToONCTranslator::TranslateEthernet() {

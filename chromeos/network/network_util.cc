@@ -183,7 +183,7 @@ scoped_ptr<base::DictionaryValue> TranslateNetworkStateToONC(
   scoped_ptr<base::DictionaryValue> onc_dictionary =
       TranslateShillServiceToONCPart(*shill_dictionary, onc_source,
                                      &onc::kNetworkWithStateSignature, network);
-  return onc_dictionary.Pass();
+  return onc_dictionary;
 }
 
 scoped_ptr<base::ListValue> TranslateNetworkListToONC(
@@ -201,7 +201,7 @@ scoped_ptr<base::ListValue> TranslateNetworkListToONC(
         TranslateNetworkStateToONC(state);
     network_properties_list->Append(onc_dictionary.release());
   }
-  return network_properties_list.Pass();
+  return network_properties_list;
 }
 
 std::string TranslateONCTypeToShill(const std::string& onc_type) {

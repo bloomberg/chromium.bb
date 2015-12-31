@@ -96,7 +96,7 @@ scoped_ptr<base::Value> Validator::MapValue(const OncValueSignature& signature,
       Mapper::MapValue(signature, onc_value, error);
   if (repaired)
     CHECK_EQ(repaired->GetType(), signature.onc_type);
-  return repaired.Pass();
+  return repaired;
 }
 
 scoped_ptr<base::DictionaryValue> Validator::MapObject(
@@ -145,7 +145,7 @@ scoped_ptr<base::DictionaryValue> Validator::MapObject(
   }
 
   if (valid) {
-    return repaired.Pass();
+    return repaired;
   } else {
     DCHECK(error_or_warning_found_);
     error_or_warning_found_ = *error = true;
@@ -177,7 +177,7 @@ scoped_ptr<base::Value> Validator::MapField(
       LOG(WARNING) << message;
   }
 
-  return result.Pass();
+  return result;
 }
 
 scoped_ptr<base::ListValue> Validator::MapArray(
@@ -195,7 +195,7 @@ scoped_ptr<base::ListValue> Validator::MapArray(
       &array_signature != &kCertificateListSignature) {
     *nested_error = nested_error_in_current_array;
   }
-  return result.Pass();
+  return result;
 }
 
 scoped_ptr<base::Value> Validator::MapEntry(int index,
@@ -208,7 +208,7 @@ scoped_ptr<base::Value> Validator::MapEntry(int index,
       Mapper::MapEntry(index, signature, onc_value, error);
   DCHECK_EQ(str, path_.back());
   path_.pop_back();
-  return result.Pass();
+  return result;
 }
 
 bool Validator::ValidateObjectDefault(const OncValueSignature& signature,

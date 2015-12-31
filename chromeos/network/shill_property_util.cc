@@ -215,7 +215,7 @@ scoped_ptr<NetworkUIData> GetUIDataFromProperties(
   scoped_ptr<NetworkUIData> ui_data = GetUIDataFromValue(*ui_data_value);
   if (!ui_data)
     LOG(ERROR) << "UIData is not a valid JSON dictionary.";
-  return ui_data.Pass();
+  return ui_data;
 }
 
 void SetUIData(const NetworkUIData& ui_data,

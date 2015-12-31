@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
-
 #include <cstdio>
 #include <iostream>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -100,7 +100,7 @@ scoped_ptr<base::DictionaryValue> ReadDictionary(const std::string& filename) {
   }
 
   scoped_ptr<base::DictionaryValue> dict =
-      base::DictionaryValue::From(value.Pass());
+      base::DictionaryValue::From(std::move(value));
   if (!dict) {
     LOG(ERROR) << "File '" << filename
                << "' does not contain a dictionary as expected, but type "
