@@ -46,7 +46,7 @@ class OfflinePageUtils {
       const GURL& online_url);
 
   // Checks whether any offline page is saved.
-  static const bool HasOfflinePages(content::BrowserContext* browser_context);
+  static bool HasOfflinePages(content::BrowserContext* browser_context);
 };
 
 }  // namespace offline_pages

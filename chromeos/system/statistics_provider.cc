@@ -218,8 +218,7 @@ class StatisticsProviderImpl : public StatisticsProvider {
   const base::DictionaryValue* GetRegionDictionary() const;
 
   // Returns extractor from regional_data_extractors_ or nullptr.
-  const RegionDataExtractor GetRegionalDataExtractor(
-      const std::string& name) const;
+  RegionDataExtractor GetRegionalDataExtractor(const std::string& name) const;
 
   bool load_statistics_started_;
   NameValuePairsParser::NameValueMap machine_info_;
@@ -272,7 +271,7 @@ const base::DictionaryValue* StatisticsProviderImpl::GetRegionDictionary()
   return region_dict;
 }
 
-const StatisticsProviderImpl::RegionDataExtractor
+StatisticsProviderImpl::RegionDataExtractor
 StatisticsProviderImpl::GetRegionalDataExtractor(
     const std::string& name) const {
   const auto it = regional_data_extractors_.find(name);

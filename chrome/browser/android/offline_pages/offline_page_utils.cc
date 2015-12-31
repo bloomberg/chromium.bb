@@ -122,7 +122,7 @@ bool OfflinePageUtils::HasOfflinePageForOnlineURL(
 }
 
 // static
-const bool OfflinePageUtils::HasOfflinePages(
+bool OfflinePageUtils::HasOfflinePages(
     content::BrowserContext* browser_context) {
   DCHECK(browser_context);
 

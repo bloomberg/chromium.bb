@@ -128,6 +128,8 @@
           'cflags': [
             '-Wno-null-conversion',
             '-Wno-tautological-undefined-compare',
+            '-Wno-unused-function',
+            '-Wno-unused-local-typedef',
           ],
           'defines': [
             # This macro must be defined to suppress the use

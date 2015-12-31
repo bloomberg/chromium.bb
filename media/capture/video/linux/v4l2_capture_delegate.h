@@ -70,7 +70,7 @@ class V4L2CaptureDelegate
     // specific.
     virtual bool Init(int fd, const v4l2_buffer& buffer) = 0;
 
-    uint8_t* const GetPlaneStart(size_t plane) const {
+    const uint8_t* GetPlaneStart(size_t plane) const {
       DCHECK_LT(plane, planes_.size());
       return planes_[plane].start;
     }

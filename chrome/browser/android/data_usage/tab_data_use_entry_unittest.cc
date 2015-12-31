@@ -73,7 +73,7 @@ class TabDataUseEntryTest : public testing::Test {
     tab_entry_.reset(new TabDataUseEntry(tab_model_.get()));
   }
 
-  const size_t GetMaxSessionsPerTab() const {
+  size_t GetMaxSessionsPerTab() const {
     return tab_model_->max_sessions_per_tab();
   }
 

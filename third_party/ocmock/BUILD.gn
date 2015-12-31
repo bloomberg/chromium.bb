@@ -8,6 +8,11 @@ config("ocmock_config") {
   include_dirs = [ "//third_party/ocmock" ]
 }
 
+config("ocmock_warnings") {
+  # NSInvocation+OCMAdditions.m has some `- (void) foo; {...`
+  cflags = [ "-Wno-semicolon-before-method-body" ]
+}
+
 source_set("ocmock") {
   testonly = true
 
@@ -70,4 +75,5 @@ source_set("ocmock") {
     "//testing/gtest",
   ]
   public_configs = [ ":ocmock_config" ]
+  configs += [ ":ocmock_warnings" ]
 }

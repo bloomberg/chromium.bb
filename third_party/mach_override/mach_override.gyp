@@ -47,6 +47,13 @@
               # For UD_ASSERT(!"message");
               '-Wstring-conversion',
             ],
+            'clang_warning_flags': [
+              # syn.c contains a switch with an assert(false) in a default:
+              # block.  In release builds, the function is missing a return.
+              '-Wno-return-type',
+              # Fires once in decode.c.
+              '-Wno-sometimes-uninitialized',
+            ],
           },
         },
         {

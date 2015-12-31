@@ -96,7 +96,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
 
   // Returns XID of dialog currently displayed. When it returns 0,
   // there is no dialog on the host window.
-  const XID GetModalDialog();
+  XID GetModalDialog();
 
  protected:
   // Overridden from DesktopWindowTreeHost:

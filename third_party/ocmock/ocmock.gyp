@@ -72,6 +72,12 @@
             'OCMock/OCObserverMockObject.h',
             'OCMock/OCObserverMockObject.m',
           ],
+          'variables': {
+            'clang_warning_flags': [
+              # NSInvocation+OCMAdditions.m has some `- (void) foo; {...`
+              '-Wno-semicolon-before-method-body',
+            ],
+          },
         },
       ],
     }],

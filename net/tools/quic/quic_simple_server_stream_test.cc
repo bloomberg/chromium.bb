@@ -65,7 +65,7 @@ class QuicSimpleServerStreamPeer : public QuicSimpleServerStream {
     return stream->body_;
   }
 
-  static const int content_length(QuicSimpleServerStream* stream) {
+  static int content_length(QuicSimpleServerStream* stream) {
     return stream->content_length_;
   }
 

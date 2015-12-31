@@ -76,7 +76,7 @@
 // where we either a) know the call cannot fail, or b) there is nothing we
 // can do when a call fails, we mark the return code as ignored. This avoids
 // spurious compiler warnings.
-#define IGNORE_RET(x) do { if (x); } while (0)
+#define IGNORE_RET(x) ignore_result(x)
 
 using crash_reporter::GetCrashReporterClient;
 using google_breakpad::ExceptionHandler;

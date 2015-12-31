@@ -284,6 +284,20 @@
             '<(tcmalloc_dir)/src/debugallocation.cc',
             '<(tcmalloc_dir)/src/tcmalloc.cc',
           ],
+          'variables': {
+            'clang_warning_flags': [
+              # tcmalloc initializes some fields in the wrong order.
+              '-Wno-reorder',
+              # tcmalloc contains some unused local template specializations.
+              '-Wno-unused-function',
+              # tcmalloc uses COMPILE_ASSERT without static_assert but with
+              # typedefs.
+              '-Wno-unused-local-typedefs',
+              # for magic2_ in debugallocation.cc (only built in Debug builds)
+              # typedefs.
+              '-Wno-unused-private-field',
+            ],
+          },
           'conditions': [
             ['OS=="linux" or OS=="freebsd" or OS=="solaris" or OS=="android"', {
               'sources!': [

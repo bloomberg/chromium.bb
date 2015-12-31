@@ -15,8 +15,11 @@ namespace crazy {
 
 class Sleb128Decoder {
  public:
-  Sleb128Decoder(const uint8_t* buffer, size_t count)
-      : current_(buffer), end_(buffer + count) { }
+  Sleb128Decoder(const uint8_t* buffer, size_t count) : current_(buffer)
+#ifndef NDEBUG
+      , end_(buffer + count)
+#endif
+  {}
 
   size_t pop_front() {
     size_t value = 0;
@@ -42,7 +45,9 @@ class Sleb128Decoder {
 
  private:
   const uint8_t* current_;
+#ifndef NDEBUG
   const uint8_t* const end_;
+#endif
 };
 
 }  // namespace crazy

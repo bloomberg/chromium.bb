@@ -209,7 +209,7 @@ GinJavaMethodInvocationHelper::GetSafeAnnotationClass() {
   return safe_annotation_clazz_;
 }
 
-const GinJavaBridgeError GinJavaMethodInvocationHelper::GetInvocationError() {
+GinJavaBridgeError GinJavaMethodInvocationHelper::GetInvocationError() {
   return invocation_error_;
 }
 

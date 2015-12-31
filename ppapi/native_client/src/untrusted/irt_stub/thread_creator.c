@@ -30,7 +30,7 @@ static int thread_join(uintptr_t tid) {
   return pthread_join((pthread_t) tid, NULL);
 }
 
-const static struct PP_ThreadFunctions thread_funcs = {
+static const struct PP_ThreadFunctions thread_funcs = {
   thread_create,
   thread_join
 };

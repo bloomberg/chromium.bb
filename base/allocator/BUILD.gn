@@ -48,6 +48,23 @@ config("tcmalloc_flags") {
       "TCMALLOC_FOR_DEBUGALLOCATION",
     ]
   }
+  if (is_clang) {
+    cflags = [
+      # tcmalloc initializes some fields in the wrong order.
+      "-Wno-reorder",
+
+      # tcmalloc contains some unused local template specializations.
+      "-Wno-unused-function",
+
+      # tcmalloc uses COMPILE_ASSERT without static_assert but with
+      # typedefs.
+      "-Wno-unused-local-typedefs",
+
+      # for magic2_ in debugallocation.cc (only built in Debug builds)
+      # typedefs.
+      "-Wno-unused-private-field",
+    ]
+  }
 }
 
 # This config and libc modification are only used on Windows.

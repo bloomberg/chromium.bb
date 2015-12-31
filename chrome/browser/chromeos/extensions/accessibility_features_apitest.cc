@@ -69,7 +69,7 @@ class AccessibilityFeaturesApiTest : public ExtensionApiTest,
   bool ShouldModifyingFeatureSucceed() const { return GetParam(); }
 
   // Returns preference path for accessibility features as defined by the API.
-  const char* const GetPrefForFeature(const std::string& feature) {
+  const char* GetPrefForFeature(const std::string& feature) {
     if (feature == "spokenFeedback")
       return prefs::kAccessibilitySpokenFeedbackEnabled;
     if (feature == "largeCursor")

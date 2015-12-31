@@ -151,10 +151,10 @@ class FakeRegistry : public RegistryInterface {
     it->second.last_tag = watcher.last_tag;
   }
 
-  ProvidedFileSystemInfo* const file_system_info() const {
+  const ProvidedFileSystemInfo* file_system_info() const {
     return file_system_info_.get();
   }
-  Watchers* const watchers() const { return watchers_.get(); }
+  const Watchers* watchers() const { return watchers_.get(); }
 
  private:
   scoped_ptr<ProvidedFileSystemInfo> file_system_info_;

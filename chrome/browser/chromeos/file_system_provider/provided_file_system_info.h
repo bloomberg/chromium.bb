@@ -49,8 +49,8 @@ class ProvidedFileSystemInfo {
   bool supports_notify_tag() const { return supports_notify_tag_; }
   int opened_files_limit() const { return opened_files_limit_; }
   const base::FilePath& mount_path() const { return mount_path_; }
-  const bool configurable() const { return configurable_; }
-  const bool watchable() const { return watchable_; }
+  bool configurable() const { return configurable_; }
+  bool watchable() const { return watchable_; }
   extensions::FileSystemProviderSource source() const { return source_; }
 
  private:

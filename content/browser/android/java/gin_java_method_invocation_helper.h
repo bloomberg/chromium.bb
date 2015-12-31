@@ -66,7 +66,7 @@ class CONTENT_EXPORT GinJavaMethodInvocationHelper
   const base::ListValue& GetPrimitiveResult();
   const base::android::JavaRef<jobject>& GetObjectResult();
   const base::android::JavaRef<jclass>& GetSafeAnnotationClass();
-  const GinJavaBridgeError GetInvocationError();
+  GinJavaBridgeError GetInvocationError();
 
  private:
   friend class base::RefCountedThreadSafe<GinJavaMethodInvocationHelper>;

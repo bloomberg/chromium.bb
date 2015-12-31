@@ -33,9 +33,6 @@
         'cflags': [
           '-Wno-long-long',
         ],
-        'cflags!': [
-          '-Wno-unused-parameter', # be a bit stricter to match NaCl flags.
-        ],
         'conditions': [
           ['asan!=1 and msan!=1 and ubsan_vptr!=1', {
             'ldflags': [

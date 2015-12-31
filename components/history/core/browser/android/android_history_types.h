@@ -127,7 +127,7 @@ class HistoryAndBookmarkRow {
     set_value_explicitly(PARENT_ID);
     parent_id_ = parent_id;
   }
-  const int64_t parent_id() const { return parent_id_; }
+  int64_t parent_id() const { return parent_id_; }
 
   // The internal URLID
   void set_url_id(URLID url_id) {

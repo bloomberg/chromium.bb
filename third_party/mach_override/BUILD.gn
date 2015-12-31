@@ -2,6 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+config("libudis86_warnings") {
+  if (is_clang) {
+    cflags = [
+      # syn.c contains a switch with an assert(false) in a default:
+      # block.  In release builds, the function is missing a return.
+      "-Wno-return-type",
+
+      # Fires once in decode.c.
+      "-Wno-sometimes-uninitialized",
+    ]
+  }
+}
+
 static_library("libudis86") {
   sources = [
     "libudis86/decode.c",
@@ -29,7 +42,12 @@ static_library("libudis86") {
   cflags = [ "-Wno-return-type" ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+
+    # Must be after no_chromium_code for warning flags to be ordered correctly.
+    ":libudis86_warnings",
+  ]
 
   if (is_clang) {
     # For UD_ASSERT(!"message");

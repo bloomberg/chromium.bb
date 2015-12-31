@@ -693,7 +693,6 @@ resize_and_retry:
     scratch += old_scratch_used;
     scratch_size -= old_scratch_used;
   }
-retry:
   {
     string_ref = CFStringCreateWithCharactersNoCopy (NULL,
 						     pchars, chars_len,
@@ -1128,10 +1127,6 @@ fail:
 /*
  * AAT shaper
  */
-
-HB_SHAPER_DATA_ENSURE_DECLARE(coretext_aat, face)
-HB_SHAPER_DATA_ENSURE_DECLARE(coretext_aat, font)
-
 
 /*
  * shaper face data

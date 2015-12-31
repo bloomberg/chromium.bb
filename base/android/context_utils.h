@@ -16,7 +16,7 @@ namespace android {
 // Gets a global ref to the application context set with
 // InitApplicationContext(). Ownership is retained by the function - the caller
 // must NOT release it.
-const BASE_EXPORT jobject GetApplicationContext();
+BASE_EXPORT jobject GetApplicationContext();
 
 // Initialize the global application context object.
 // Either this or the Java equivalent ContextUtils.initApplicationContext must

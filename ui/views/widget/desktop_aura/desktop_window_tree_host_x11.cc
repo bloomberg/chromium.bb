@@ -2017,7 +2017,7 @@ gfx::Rect DesktopWindowTreeHostX11::ToPixelRect(
   return gfx::ToEnclosingRect(rect_in_pixels);
 }
 
-const XID DesktopWindowTreeHostX11::GetModalDialog() {
+XID DesktopWindowTreeHostX11::GetModalDialog() {
   return modal_dialog_xid_;
 }
 
