@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/drive/fileapi/fileapi_worker.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -148,7 +149,7 @@ void RunCreateWritableSnapshotFileCallback(
 void RunOpenFileCallback(const OpenFileCallback& callback,
                          const base::Closure& close_callback,
                          base::File file) {
-  callback.Run(file.Pass(), close_callback);
+  callback.Run(std::move(file), close_callback);
 }
 
 base::File OpenFile(const base::FilePath& path, int flags) {

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -117,9 +119,8 @@ void DeviceSettingsService::Store(scoped_ptr<em::PolicyFetchResponse> policy,
                                   const base::Closure& callback) {
   Enqueue(linked_ptr<SessionManagerOperation>(new StoreSettingsOperation(
       base::Bind(&DeviceSettingsService::HandleCompletedOperation,
-                 weak_factory_.GetWeakPtr(),
-                 callback),
-      policy.Pass())));
+                 weak_factory_.GetWeakPtr(), callback),
+      std::move(policy))));
 }
 
 DeviceSettingsService::OwnershipStatus
@@ -252,8 +253,8 @@ void DeviceSettingsService::HandleCompletedOperation(
   }
 
   if (status == STORE_SUCCESS) {
-    policy_data_ = operation->policy_data().Pass();
-    device_settings_ = operation->device_settings().Pass();
+    policy_data_ = std::move(operation->policy_data());
+    device_settings_ = std::move(operation->device_settings());
     load_retries_left_ = kMaxLoadRetries;
   } else if (status != STORE_KEY_UNAVAILABLE) {
     LOG(ERROR) << "Session manager operation failed: " << status;

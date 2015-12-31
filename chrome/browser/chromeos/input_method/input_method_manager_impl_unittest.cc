@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/input_method/input_method_manager_impl.h"
 
 #include <stddef.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -194,7 +194,7 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
         ImeIdFromEngineId(kExt2Engine1Id),
         descriptors,
         mock_engine_handler_.get());
-    manager_->InitializeComponentExtensionForTesting(delegate.Pass());
+    manager_->InitializeComponentExtensionForTesting(std::move(delegate));
   }
 
   void InitImeList() {

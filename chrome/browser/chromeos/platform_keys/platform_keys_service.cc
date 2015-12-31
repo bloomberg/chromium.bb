@@ -135,7 +135,7 @@ class PlatformKeysService::GenerateRSAKeyTask : public Task {
 
   void GotPermissions(scoped_ptr<KeyPermissions::PermissionsForExtension>
                           extension_permissions) {
-    extension_permissions_ = extension_permissions.Pass();
+    extension_permissions_ = std::move(extension_permissions);
     DoStep();
   }
 
@@ -234,7 +234,7 @@ class PlatformKeysService::SignTask : public Task {
 
   void GotPermissions(scoped_ptr<KeyPermissions::PermissionsForExtension>
                           extension_permissions) {
-    extension_permissions_ = extension_permissions.Pass();
+    extension_permissions_ = std::move(extension_permissions);
     DoStep();
   }
 
@@ -310,7 +310,7 @@ class PlatformKeysService::SelectTask : public Task {
              KeyPermissions* key_permissions,
              PlatformKeysService* service)
       : request_(request),
-        input_client_certificates_(input_client_certificates.Pass()),
+        input_client_certificates_(std::move(input_client_certificates)),
         interactive_(interactive),
         extension_id_(extension_id),
         callback_(callback),
@@ -372,7 +372,7 @@ class PlatformKeysService::SelectTask : public Task {
 
   void GotPermissions(scoped_ptr<KeyPermissions::PermissionsForExtension>
                           extension_permissions) {
-    extension_permissions_ = extension_permissions.Pass();
+    extension_permissions_ = std::move(extension_permissions);
     DoStep();
   }
 
@@ -515,7 +515,7 @@ class PlatformKeysService::SelectTask : public Task {
     // necessary but this ensures that the permissions were updated correctly.
     CHECK(!selected_cert_ || (filtered_certs->size() == 1 &&
                               filtered_certs->front() == selected_cert_));
-    callback_.Run(filtered_certs.Pass(), std::string() /* no error */);
+    callback_.Run(std::move(filtered_certs), std::string() /* no error */);
     DoStep();
   }
 
@@ -564,7 +564,7 @@ PlatformKeysService::~PlatformKeysService() {
 
 void PlatformKeysService::SetSelectDelegate(
     scoped_ptr<SelectDelegate> delegate) {
-  select_delegate_ = delegate.Pass();
+  select_delegate_ = std::move(delegate);
 }
 
 void PlatformKeysService::GenerateRSAKey(const std::string& token_id,
@@ -611,8 +611,8 @@ void PlatformKeysService::SelectClientCertificates(
     content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   StartOrQueueTask(make_scoped_ptr(new SelectTask(
-      request, client_certificates.Pass(), interactive, extension_id, callback,
-      web_contents, &key_permissions_, this)));
+      request, std::move(client_certificates), interactive, extension_id,
+      callback, web_contents, &key_permissions_, this)));
 }
 
 void PlatformKeysService::StartOrQueueTask(scoped_ptr<Task> task) {

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/attestation/attestation_policy_observer.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -156,9 +157,8 @@ void AttestationPolicyObserver::Start() {
   if (!attestation_flow_) {
     scoped_ptr<ServerProxy> attestation_ca_client(new AttestationCAClient());
     default_attestation_flow_.reset(new AttestationFlow(
-        cryptohome::AsyncMethodCaller::GetInstance(),
-        cryptohome_client_,
-        attestation_ca_client.Pass()));
+        cryptohome::AsyncMethodCaller::GetInstance(), cryptohome_client_,
+        std::move(attestation_ca_client)));
     attestation_flow_ = default_attestation_flow_.get();
   }
 

@@ -6,9 +6,9 @@
 
 #include <keyhi.h>
 #include <stdint.h>
-
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -474,7 +474,7 @@ scoped_ptr<em::PolicyData> OwnerSettingsServiceChromeOS::AssemblePolicy(
   if (!settings->SerializeToString(policy->mutable_policy_value()))
     return scoped_ptr<em::PolicyData>();
 
-  return policy.Pass();
+  return policy;
 }
 
 // static
@@ -779,7 +779,7 @@ void OwnerSettingsServiceChromeOS::StorePendingChanges() {
   has_pending_management_settings_ = false;
 
   bool rv = AssembleAndSignPolicyAsync(
-      content::BrowserThread::GetBlockingPool(), policy.Pass(),
+      content::BrowserThread::GetBlockingPool(), std::move(policy),
       base::Bind(&OwnerSettingsServiceChromeOS::OnPolicyAssembledAndSigned,
                  store_settings_factory_.GetWeakPtr()));
   if (!rv)
@@ -793,10 +793,9 @@ void OwnerSettingsServiceChromeOS::OnPolicyAssembledAndSigned(
     return;
   }
   device_settings_service_->Store(
-      policy_response.Pass(),
+      std::move(policy_response),
       base::Bind(&OwnerSettingsServiceChromeOS::OnSignedPolicyStored,
-                 store_settings_factory_.GetWeakPtr(),
-                 true /* success */));
+                 store_settings_factory_.GetWeakPtr(), true /* success */));
 }
 
 void OwnerSettingsServiceChromeOS::OnSignedPolicyStored(bool success) {

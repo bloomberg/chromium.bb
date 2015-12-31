@@ -179,7 +179,7 @@ TEST(FileManagerFileTasksTest, FindDriveAppTasks) {
   ScopedVector<std::string> foo_mime_types;
   foo_mime_types.push_back(new std::string("text/plain"));
   foo_mime_types.push_back(new std::string("text/html"));
-  foo_app->set_primary_mimetypes(foo_mime_types.Pass());
+  foo_app->set_primary_mimetypes(std::move(foo_mime_types));
 
   // Bar.app can only handle "text/plain".
   scoped_ptr<google_apis::AppResource> bar_app(new google_apis::AppResource);
@@ -189,14 +189,14 @@ TEST(FileManagerFileTasksTest, FindDriveAppTasks) {
   bar_app->set_object_type("bar_object_type");
   ScopedVector<std::string> bar_mime_types;
   bar_mime_types.push_back(new std::string("text/plain"));
-  bar_app->set_primary_mimetypes(bar_mime_types.Pass());
+  bar_app->set_primary_mimetypes(std::move(bar_mime_types));
 
   // Prepare DriveAppRegistry from Foo.app and Bar.app.
   ScopedVector<google_apis::AppResource> app_resources;
   app_resources.push_back(foo_app.release());
   app_resources.push_back(bar_app.release());
   google_apis::AppList app_list;
-  app_list.set_items(app_resources.Pass());
+  app_list.set_items(std::move(app_resources));
   drive::DriveAppRegistry drive_app_registry(NULL);
   drive_app_registry.UpdateFromAppList(app_list);
 
@@ -708,12 +708,12 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks) {
   baz_app->set_object_type("baz_object_type");
   ScopedVector<std::string> baz_mime_types;
   baz_mime_types.push_back(new std::string("text/plain"));
-  baz_app->set_primary_mimetypes(baz_mime_types.Pass());
+  baz_app->set_primary_mimetypes(std::move(baz_mime_types));
   // Set up DriveAppRegistry.
   ScopedVector<google_apis::AppResource> app_resources;
   app_resources.push_back(baz_app.release());
   google_apis::AppList app_list;
-  app_list.set_items(app_resources.Pass());
+  app_list.set_items(std::move(app_resources));
   drive::DriveAppRegistry drive_app_registry(NULL);
   drive_app_registry.UpdateFromAppList(app_list);
 
@@ -760,13 +760,13 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks_GoogleDocument) {
   foo_app->set_object_type("foo_object_type");
   ScopedVector<std::string> foo_extensions;
   foo_extensions.push_back(new std::string("gdoc"));  // Not ".gdoc"
-  foo_app->set_primary_file_extensions(foo_extensions.Pass());
+  foo_app->set_primary_file_extensions(std::move(foo_extensions));
 
   // Prepare DriveAppRegistry from Foo.app.
   ScopedVector<google_apis::AppResource> app_resources;
   app_resources.push_back(foo_app.release());
   google_apis::AppList app_list;
-  app_list.set_items(app_resources.Pass());
+  app_list.set_items(std::move(app_resources));
   drive::DriveAppRegistry drive_app_registry(NULL);
   drive_app_registry.UpdateFromAppList(app_list);
 

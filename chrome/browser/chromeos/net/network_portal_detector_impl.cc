@@ -319,7 +319,7 @@ void NetworkPortalDetectorImpl::SetStrategy(
     PortalDetectorStrategy::StrategyId id) {
   if (id == strategy_->Id())
     return;
-  strategy_ = PortalDetectorStrategy::CreateById(id, this).Pass();
+  strategy_ = PortalDetectorStrategy::CreateById(id, this);
   StopDetection();
   StartDetectionIfIdle();
 }

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/fileapi/external_file_url_request_job.h"
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -245,7 +246,7 @@ void ExternalFileURLRequestJob::OnHelperResultObtained(
 
   DCHECK(file_system_context.get());
   file_system_context_ = file_system_context;
-  isolated_file_system_scope_ = isolated_file_system_scope.Pass();
+  isolated_file_system_scope_ = std::move(isolated_file_system_scope);
   file_system_url_ = file_system_url;
   mime_type_ = mime_type;
 

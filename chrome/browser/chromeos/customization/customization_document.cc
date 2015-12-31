@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/customization/customization_document.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -713,11 +714,11 @@ ServicesCustomizationDocument::GetDefaultAppsInProviderFormat(
         entry->SetString(extensions::ExternalProviderImpl::kExternalUpdateUrl,
                          extension_urls::GetWebstoreUpdateUrl().spec());
       }
-      prefs->Set(app_id, entry.Pass());
+      prefs->Set(app_id, std::move(entry));
     }
   }
 
-  return prefs.Pass();
+  return prefs;
 }
 
 void ServicesCustomizationDocument::UpdateCachedManifest(Profile* profile) {
@@ -809,13 +810,10 @@ void ServicesCustomizationDocument::StartOEMWallpaperDownload(
   }
 
   wallpaper_downloader_.reset(new CustomizationWallpaperDownloader(
-      g_browser_process->system_request_context(),
-      wallpaper_url,
-      dir,
-      file,
+      g_browser_process->system_request_context(), wallpaper_url, dir, file,
       base::Bind(&ServicesCustomizationDocument::OnOEMWallpaperDownloaded,
                  weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(applying.Pass()))));
+                 base::Passed(std::move(applying)))));
 
   wallpaper_downloader_->Start();
 }
@@ -860,11 +858,10 @@ void ServicesCustomizationDocument::CheckAndApplyWallpaper() {
       base::Bind(&CheckWallpaperCacheExists,
                  GetCustomizedWallpaperDownloadedFileName(),
                  base::Unretained(exists.get()));
-  base::Closure on_checked_closure =
-      base::Bind(&ServicesCustomizationDocument::OnCheckedWallpaperCacheExists,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(exists.Pass()),
-                 base::Passed(applying.Pass()));
+  base::Closure on_checked_closure = base::Bind(
+      &ServicesCustomizationDocument::OnCheckedWallpaperCacheExists,
+      weak_ptr_factory_.GetWeakPtr(), base::Passed(std::move(exists)),
+      base::Passed(std::move(applying)));
   if (!content::BrowserThread::PostBlockingPoolTaskAndReply(
           FROM_HERE, check_file_exists, on_checked_closure)) {
     LOG(WARNING) << "Failed to start check Wallpaper cache exists.";
@@ -878,7 +875,7 @@ void ServicesCustomizationDocument::OnCheckedWallpaperCacheExists(
   DCHECK(exists);
   DCHECK(applying);
 
-  ApplyWallpaper(*exists, applying.Pass());
+  ApplyWallpaper(*exists, std::move(applying));
 }
 
 void ServicesCustomizationDocument::ApplyWallpaper(
@@ -919,11 +916,11 @@ void ServicesCustomizationDocument::ApplyWallpaper(
   if (GURL(current_url).is_valid() && default_wallpaper_file_exists) {
     VLOG(1)
         << "ServicesCustomizationDocument::ApplyWallpaper() : reuse existing";
-    OnOEMWallpaperDownloaded(applying.Pass(), true, GURL(current_url));
+    OnOEMWallpaperDownloaded(std::move(applying), true, GURL(current_url));
   } else {
     VLOG(1)
         << "ServicesCustomizationDocument::ApplyWallpaper() : start download";
-    StartOEMWallpaperDownload(wallpaper_url, applying.Pass());
+    StartOEMWallpaperDownload(wallpaper_url, std::move(applying));
   }
 }
 

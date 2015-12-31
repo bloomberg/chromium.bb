@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/customization/customization_document.h"
 
+#include <utility>
+
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
@@ -164,7 +166,7 @@ class TestURLFetcherCallback {
     scoped_ptr<net::FakeURLFetcher> fetcher(
         new net::FakeURLFetcher(url, d, response_data, response_code, status));
     OnRequestCreate(url, fetcher.get());
-    return fetcher.Pass();
+    return fetcher;
   }
   MOCK_METHOD2(OnRequestCreate,
                void(const GURL&, net::FakeURLFetcher*));
@@ -287,7 +289,7 @@ class ServicesCustomizationDocumentTest : public testing::Test {
     scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs(
         factory.CreateSyncable(registry.get()));
     chrome::RegisterUserProfilePrefs(registry.get());
-    profile_builder.SetPrefService(prefs.Pass());
+    profile_builder.SetPrefService(std::move(prefs));
     return profile_builder.Build();
   }
 

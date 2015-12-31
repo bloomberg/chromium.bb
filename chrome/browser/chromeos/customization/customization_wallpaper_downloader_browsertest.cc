@@ -140,7 +140,7 @@ class TestWallpaperImageURLFetcherCallback {
         new net::HttpResponseHeaders(std::string());
     download_headers->AddHeader("Content-Type: image/jpeg");
     fetcher->set_response_headers(download_headers);
-    return fetcher.Pass();
+    return fetcher;
   }
 
   void Initialize(net::FakeURLFetcherFactory* factory) {

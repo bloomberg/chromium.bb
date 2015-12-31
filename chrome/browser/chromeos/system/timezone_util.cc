@@ -158,7 +158,7 @@ scoped_ptr<base::ListValue> GetTimezoneList() {
     option->Append(new base::StringValue(GetTimezoneName(*timezone)));
     timezoneList->Append(option);
   }
-  return timezoneList.Pass();
+  return timezoneList;
 }
 
 bool HasSystemTimezonePolicy() {

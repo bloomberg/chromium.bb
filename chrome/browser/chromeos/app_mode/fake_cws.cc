@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/app_mode/fake_cws.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -200,7 +202,7 @@ scoped_ptr<HttpResponse> FakeCWS::HandleRequest(const HttpRequest& request) {
         http_response->set_code(net::HTTP_OK);
         http_response->set_content_type("text/xml");
         http_response->set_content(update_check_content);
-        return http_response.Pass();
+        return std::move(http_response);
       }
     }
   }

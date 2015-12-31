@@ -44,11 +44,10 @@ DeviceOAuth2TokenServiceDelegate::DeviceOAuth2TokenServiceDelegate(
       service_account_identity_subscription_(
           CrosSettings::Get()
               ->AddSettingsObserver(
-                    kServiceAccountIdentity,
-                    base::Bind(&DeviceOAuth2TokenServiceDelegate::
-                                   OnServiceAccountIdentityChanged,
-                               base::Unretained(this)))
-              .Pass()),
+                  kServiceAccountIdentity,
+                  base::Bind(&DeviceOAuth2TokenServiceDelegate::
+                                 OnServiceAccountIdentityChanged,
+                             base::Unretained(this)))),
       weak_ptr_factory_(this) {
   // Pull in the system salt.
   SystemSaltGetter::Get()->GetSystemSalt(

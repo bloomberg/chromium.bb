@@ -8,9 +8,9 @@
 #include <stddef.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -151,7 +151,7 @@ AutomaticRebootManager::SystemEventTimes::SystemEventTimes(
 
 AutomaticRebootManager::AutomaticRebootManager(
     scoped_ptr<base::TickClock> clock)
-    : clock_(clock.Pass()),
+    : clock_(std::move(clock)),
       have_boot_time_(false),
       have_update_reboot_needed_time_(false),
       reboot_reason_(AutomaticRebootManagerObserver::REBOOT_REASON_UNKNOWN),

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/platform_keys/key_permissions.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -293,7 +295,7 @@ KeyPermissions::PermissionsForExtension::KeyEntriesToState() {
     }
     new_state->Append(new_entry.release());
   }
-  return new_state.Pass();
+  return std::move(new_state);
 }
 
 KeyPermissions::PermissionsForExtension::KeyEntry*
@@ -373,14 +375,15 @@ void KeyPermissions::CreatePermissionObjectAndPassToCallback(
     const std::string& extension_id,
     const PermissionsCallback& callback,
     scoped_ptr<base::Value> value) {
-  callback.Run(make_scoped_ptr(new PermissionsForExtension(
-      extension_id, value.Pass(), profile_prefs_, profile_policies_, this)));
+  callback.Run(make_scoped_ptr(
+      new PermissionsForExtension(extension_id, std::move(value),
+                                  profile_prefs_, profile_policies_, this)));
 }
 
 void KeyPermissions::SetPlatformKeysOfExtension(const std::string& extension_id,
                                                 scoped_ptr<base::Value> value) {
   extensions_state_store_->SetExtensionValue(
-      extension_id, kStateStorePlatformKeys, value.Pass());
+      extension_id, kStateStorePlatformKeys, std::move(value));
 }
 
 const base::DictionaryValue* KeyPermissions::GetPrefsEntry(

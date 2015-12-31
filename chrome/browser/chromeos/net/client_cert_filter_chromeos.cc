@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/net/client_cert_filter_chromeos.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "crypto/nss_util_internal.h"
 #include "net/cert/x509_certificate.h"
@@ -31,14 +33,13 @@ bool ClientCertFilterChromeOS::Init(const base::Closure& callback) {
 
   if (use_system_slot_) {
     system_slot_ = crypto::GetSystemNSSKeySlot(
-                       base::Bind(&ClientCertFilterChromeOS::GotSystemSlot,
-                                  weak_ptr_factory_.GetWeakPtr())).Pass();
+        base::Bind(&ClientCertFilterChromeOS::GotSystemSlot,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
-  private_slot_ =
-      crypto::GetPrivateSlotForChromeOSUser(
-          username_hash_, base::Bind(&ClientCertFilterChromeOS::GotPrivateSlot,
-                                     weak_ptr_factory_.GetWeakPtr())).Pass();
+  private_slot_ = crypto::GetPrivateSlotForChromeOSUser(
+      username_hash_, base::Bind(&ClientCertFilterChromeOS::GotPrivateSlot,
+                                 weak_ptr_factory_.GetWeakPtr()));
 
   // If the returned slot is null, GotPrivateSlot will be called back
   // eventually. If it is not null, the private slot was available synchronously
@@ -61,7 +62,7 @@ bool ClientCertFilterChromeOS::IsCertAllowed(
 
 void ClientCertFilterChromeOS::GotSystemSlot(
     crypto::ScopedPK11Slot system_slot) {
-  system_slot_ = system_slot.Pass();
+  system_slot_ = std::move(system_slot);
   if (InitIfSlotsAvailable() && !init_callback_.is_null()) {
     init_callback_.Run();
     init_callback_.Reset();
@@ -71,7 +72,7 @@ void ClientCertFilterChromeOS::GotSystemSlot(
 void ClientCertFilterChromeOS::GotPrivateSlot(
     crypto::ScopedPK11Slot private_slot) {
   waiting_for_private_slot_ = false;
-  private_slot_ = private_slot.Pass();
+  private_slot_ = std::move(private_slot);
   if (InitIfSlotsAvailable() && !init_callback_.is_null()) {
     init_callback_.Run();
     init_callback_.Reset();
@@ -82,8 +83,7 @@ bool ClientCertFilterChromeOS::InitIfSlotsAvailable() {
   if ((use_system_slot_ && !system_slot_) || waiting_for_private_slot_)
     return false;
   nss_profile_filter_.Init(crypto::GetPublicSlotForChromeOSUser(username_hash_),
-                           private_slot_.Pass(),
-                           system_slot_.Pass());
+                           std::move(private_slot_), std::move(system_slot_));
   return true;
 }
 

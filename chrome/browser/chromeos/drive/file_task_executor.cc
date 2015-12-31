@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/drive/file_task_executor.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
@@ -70,11 +70,10 @@ FileTaskExecutor::FileTaskExecutor(Profile* profile, const std::string& app_id)
 FileTaskExecutor::FileTaskExecutor(
     scoped_ptr<FileTaskExecutorDelegate> delegate,
     const std::string& app_id)
-  : delegate_(delegate.Pass()),
-    app_id_(app_id),
-    current_index_(0),
-    weak_ptr_factory_(this) {
-}
+    : delegate_(std::move(delegate)),
+      app_id_(app_id),
+      current_index_(0),
+      weak_ptr_factory_(this) {}
 
 FileTaskExecutor::~FileTaskExecutor() {
 }

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/drive/fileapi/async_file_util.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -75,7 +77,7 @@ void RunCreateOrOpenFileCallback(
   // It will be provided as a FileSystem::OpenFileCallback's argument later.
   // (crbug.com/259184).
   callback.Run(
-      file.Pass(),
+      std::move(file),
       base::Bind(&google_apis::RunTaskWithTaskRunner,
                  BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
                  close_callback_on_ui_thread));

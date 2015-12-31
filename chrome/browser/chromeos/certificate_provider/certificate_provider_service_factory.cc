@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -97,8 +98,8 @@ void DefaultDelegate::BroadcastCertificateRequest(int request_id) {
   internal_args->AppendInteger(request_id);
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::CERTIFICATEPROVIDER_ON_CERTIFICATES_REQUESTED,
-      event_name, internal_args.Pass()));
-  event_router_->BroadcastEvent(event.Pass());
+      event_name, std::move(internal_args)));
+  event_router_->BroadcastEvent(std::move(event));
 }
 
 bool DefaultDelegate::DispatchSignRequestToExtension(
@@ -140,13 +141,13 @@ bool DefaultDelegate::DispatchSignRequestToExtension(
 
   scoped_ptr<base::ListValue> internal_args(new base::ListValue);
   internal_args->AppendInteger(request_id);
-  internal_args->Append(request.ToValue().Pass());
+  internal_args->Append(request.ToValue());
 
   event_router_->DispatchEventToExtension(
       extension_id,
       make_scoped_ptr(new extensions::Event(
           extensions::events::CERTIFICATEPROVIDER_ON_SIGN_DIGEST_REQUESTED,
-          event_name, internal_args.Pass())));
+          event_name, std::move(internal_args))));
   return true;
 }
 

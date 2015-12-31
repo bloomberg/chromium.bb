@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -75,7 +75,7 @@ TEST_F(LocalReaderProxyTest, Read) {
   ASSERT_EQ(net::OK, callback.WaitForResult());
 
   // Test instance.
-  LocalReaderProxy proxy(file_reader.Pass(), file_content_.size());
+  LocalReaderProxy proxy(std::move(file_reader), file_content_.size());
 
   // Make sure the read content is as same as the file.
   std::string content;
@@ -96,7 +96,7 @@ TEST_F(LocalReaderProxyTest, ReadWithLimit) {
   ASSERT_EQ(net::OK, callback.WaitForResult());
 
   // Test instance.
-  LocalReaderProxy proxy(file_reader.Pass(), expected_content.size());
+  LocalReaderProxy proxy(std::move(file_reader), expected_content.size());
 
   // Make sure the read content is as same as the file.
   std::string content;
@@ -141,7 +141,7 @@ TEST_F(NetworkReaderProxyTest, Read) {
 
     // And when the data is supplied, the callback will be called.
     scoped_ptr<std::string> data(new std::string("abcde"));
-    proxy.OnGetContent(data.Pass());
+    proxy.OnGetContent(std::move(data));
 
     // The returned data should be fit to the buffer size.
     result = callback.GetResult(result);
@@ -155,9 +155,9 @@ TEST_F(NetworkReaderProxyTest, Read) {
 
     // Supply the data before calling Read operation.
     data.reset(new std::string("fg"));
-    proxy.OnGetContent(data.Pass());
+    proxy.OnGetContent(std::move(data));
     data.reset(new std::string("hij"));
-    proxy.OnGetContent(data.Pass());  // Now 10 bytes are supplied.
+    proxy.OnGetContent(std::move(data));  // Now 10 bytes are supplied.
 
     // The data should be concatenated if possible.
     result = proxy.Read(buffer.get(), kBufferSize, callback.callback());
@@ -191,11 +191,11 @@ TEST_F(NetworkReaderProxyTest, ReadWithLimit) {
 
   // And when the data is supplied, the callback will be called.
   scoped_ptr<std::string> data(new std::string("abcde"));
-  proxy.OnGetContent(data.Pass());
+  proxy.OnGetContent(std::move(data));
   data.reset(new std::string("fgh"));
-  proxy.OnGetContent(data.Pass());
+  proxy.OnGetContent(std::move(data));
   data.reset(new std::string("ijklmno"));
-  proxy.OnGetContent(data.Pass());
+  proxy.OnGetContent(std::move(data));
 
   // The returned data should be fit to the buffer size.
   result = callback.GetResult(result);
@@ -209,9 +209,9 @@ TEST_F(NetworkReaderProxyTest, ReadWithLimit) {
 
   // Supply the data before calling Read operation.
   data.reset(new std::string("pqrs"));
-  proxy.OnGetContent(data.Pass());
+  proxy.OnGetContent(std::move(data));
   data.reset(new std::string("tuvwxyz"));
-  proxy.OnGetContent(data.Pass());  // 't' is the 20-th byte.
+  proxy.OnGetContent(std::move(data));  // 't' is the 20-th byte.
 
   // The data should be concatenated if possible.
   result = proxy.Read(buffer.get(), kBufferSize, callback.callback());
@@ -257,7 +257,7 @@ TEST_F(NetworkReaderProxyTest, ErrorWithPendingData) {
 
   // Supply the data before an error.
   scoped_ptr<std::string> data(new std::string("abcde"));
-  proxy.OnGetContent(data.Pass());
+  proxy.OnGetContent(std::move(data));
 
   // Emulate that an error is found.
   proxy.OnCompleted(FILE_ERROR_FAILED);

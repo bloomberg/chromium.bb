@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "ash/audio/sounds.h"
 #include "ash/autoclick/autoclick_controller.h"
@@ -1175,9 +1176,9 @@ void AccessibilityManager::PostLoadChromeVox(Profile* profile) {
         extensions::events::ACCESSIBILITY_PRIVATE_ON_INTRODUCE_CHROME_VOX,
         extensions::api::accessibility_private::OnIntroduceChromeVox::
             kEventName,
-        event_args.Pass()));
+        std::move(event_args)));
     event_router->DispatchEventWithLazyListener(
-        extension_misc::kChromeVoxExtensionId, event.Pass());
+        extension_misc::kChromeVoxExtensionId, std::move(event));
   }
 
   should_speak_chrome_vox_announcements_on_user_screen_ =

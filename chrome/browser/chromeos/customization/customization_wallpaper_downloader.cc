@@ -6,6 +6,7 @@
 
 #include <math.h>
 #include <algorithm>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -127,8 +128,7 @@ void CustomizationWallpaperDownloader::Start() {
                                            base::Unretained(success.get()));
   base::Closure on_created_closure =
       base::Bind(&CustomizationWallpaperDownloader::OnWallpaperDirectoryCreated,
-                 weak_factory_.GetWeakPtr(),
-                 base::Passed(success.Pass()));
+                 weak_factory_.GetWeakPtr(), base::Passed(std::move(success)));
   if (!content::BrowserThread::PostBlockingPoolTaskAndReply(
           FROM_HERE, mkdir_closure, on_created_closure)) {
     LOG(WARNING) << "Failed to start Customized Wallpaper download.";
@@ -176,8 +176,7 @@ void CustomizationWallpaperDownloader::OnURLFetchComplete(
                                             base::Unretained(success.get()));
   base::Closure on_rename_closure =
       base::Bind(&CustomizationWallpaperDownloader::OnTemporaryFileRenamed,
-                 weak_factory_.GetWeakPtr(),
-                 base::Passed(success.Pass()));
+                 weak_factory_.GetWeakPtr(), base::Passed(std::move(success)));
   if (!content::BrowserThread::PostBlockingPoolTaskAndReply(
           FROM_HERE, rename_closure, on_rename_closure)) {
     LOG(WARNING)

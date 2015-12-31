@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/power/renderer_freezer.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -31,8 +32,7 @@
 namespace chromeos {
 
 RendererFreezer::RendererFreezer(scoped_ptr<RendererFreezer::Delegate> delegate)
-    : delegate_(delegate.Pass()),
-      weak_factory_(this) {
+    : delegate_(std::move(delegate)), weak_factory_(this) {
   delegate_->CheckCanFreezeRenderers(
       base::Bind(&RendererFreezer::OnCheckCanFreezeRenderersComplete,
                  weak_factory_.GetWeakPtr()));

@@ -6,6 +6,7 @@
 
 #include <cstdint>
 #include <queue>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/rand_util.h"
@@ -263,7 +264,7 @@ scoped_ptr<rappor::Sample> ResourceReporter::CreateRapporSample(
                             GET_ENUM_VAL(TaskProcessPriority::BACKGROUND) :
                             GET_ENUM_VAL(TaskProcessPriority::FOREGROUND),
                         GET_ENUM_VAL(TaskProcessPriority::NUM_PRIORITIES));
-  return sample.Pass();
+  return sample;
 }
 
 // static
@@ -408,7 +409,7 @@ void ResourceReporter::OnMemoryPressure(
           kRapporUsageRangeFlagsField,
           GET_ENUM_VAL(GetCpuUsageRange(sampled_cpu_task->cpu_percent)),
           GET_ENUM_VAL(CpuUsageRange::NUM_RANGES));
-      rappor_service->RecordSampleObj(kCpuRapporMetric, cpu_sample.Pass());
+      rappor_service->RecordSampleObj(kCpuRapporMetric, std::move(cpu_sample));
     }
 
     // Use weighted random sampling to select a task to report in the memory
@@ -422,7 +423,7 @@ void ResourceReporter::OnMemoryPressure(
           GET_ENUM_VAL(GetMemoryUsageRange(sampled_memory_task->memory_bytes)),
           GET_ENUM_VAL(MemoryUsageRange::NUM_RANGES));
       rappor_service->RecordSampleObj(kMemoryRapporMetric,
-                                      memory_sample.Pass());
+                                      std::move(memory_sample));
     }
   }
 }

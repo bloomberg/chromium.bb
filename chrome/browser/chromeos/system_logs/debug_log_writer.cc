@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/system_logs/debug_log_writer.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -76,12 +77,8 @@ void WriteDebugLogToFile(base::File* file,
   scoped_refptr<base::TaskRunner> task_runner =
       GetSequencedTaskRunner(sequence_token_name);
   chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->DumpDebugLogs(
-      should_compress,
-      file->Pass(),
-      task_runner,
-      base::Bind(&WriteDebugLogToFileCompleted,
-                 file_path,
-                 sequence_token_name,
+      should_compress, std::move(*file), task_runner,
+      base::Bind(&WriteDebugLogToFileCompleted, file_path, sequence_token_name,
                  callback));
 }
 

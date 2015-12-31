@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
 
+#include <utility>
+
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
 
@@ -31,8 +33,8 @@ CertVerifyProcChromeOS::CertVerifyProcChromeOS(
     crypto::ScopedPK11Slot public_slot) {
   // Only the software slot is passed, since that is the only one where user
   // trust settings are stored.
-  profile_filter_.Init(
-      public_slot.Pass(), crypto::ScopedPK11Slot(), crypto::ScopedPK11Slot());
+  profile_filter_.Init(std::move(public_slot), crypto::ScopedPK11Slot(),
+                       crypto::ScopedPK11Slot());
 }
 
 CertVerifyProcChromeOS::~CertVerifyProcChromeOS() {}

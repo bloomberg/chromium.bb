@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 
+#include <utility>
+
 #undef FocusIn
 #undef FocusOut
 #undef RootWindow
@@ -173,7 +175,7 @@ void InputMethodEngine::Initialize(scoped_ptr<ui::IMEEngineObserver> observer,
   DCHECK(observer) << "Observer must not be null.";
 
   // TODO(komatsu): It is probably better to set observer out of Initialize.
-  observer_ = observer.Pass();
+  observer_ = std::move(observer);
   extension_id_ = extension_id;
   profile_ = profile;
 }

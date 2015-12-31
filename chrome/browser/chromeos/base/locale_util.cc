@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/base/locale_util.h"
 
+#include <utility>
 #include <vector>
 
 #include "chrome/browser/browser_process.h"
@@ -120,9 +121,8 @@ void SwitchLanguage(const std::string& locale,
   base::Closure reloader(
       base::Bind(&SwitchLanguageDoReloadLocale, base::Unretained(data.get())));
   content::BrowserThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE,
-      reloader,
-      base::Bind(&FinishSwitchLanguage, base::Passed(data.Pass())));
+      FROM_HERE, reloader,
+      base::Bind(&FinishSwitchLanguage, base::Passed(std::move(data))));
 }
 
 }  // namespace locale_util

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/file_manager/zip_file_creator.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/message_loop/message_loop.h"
@@ -88,7 +90,7 @@ void ZipFileCreator::OnOpenFileHandle(base::File file) {
 void ZipFileCreator::StartProcessOnIOThread(base::File dest_file) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::FileDescriptor dest_fd(dest_file.Pass());
+  base::FileDescriptor dest_fd(std::move(dest_file));
 
   UtilityProcessHost* host = UtilityProcessHost::Create(
       this,

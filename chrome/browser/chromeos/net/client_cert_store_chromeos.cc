@@ -6,6 +6,7 @@
 
 #include <cert.h>
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -39,7 +40,8 @@ ClientCertStoreChromeOS::ClientCertStoreChromeOS(
     scoped_ptr<CertificateProvider> cert_provider,
     scoped_ptr<CertFilter> cert_filter,
     const PasswordDelegateFactory& password_delegate_factory)
-    : cert_provider_(cert_provider.Pass()), cert_filter_(cert_filter.Pass()) {}
+    : cert_provider_(std::move(cert_provider)),
+      cert_filter_(std::move(cert_filter)) {}
 
 ClientCertStoreChromeOS::~ClientCertStoreChromeOS() {}
 
@@ -99,7 +101,7 @@ void ClientCertStoreChromeOS::GetAndFilterCertsOnWorkerThread(
     net::CertificateList* selected_certs) {
   net::CertificateList unfiltered_certs;
   net::ClientCertStoreNSS::GetPlatformCertsOnWorkerThread(
-      password_delegate.Pass(), &unfiltered_certs);
+      std::move(password_delegate), &unfiltered_certs);
 
   unfiltered_certs.erase(
       std::remove_if(unfiltered_certs.begin(), unfiltered_certs.end(),

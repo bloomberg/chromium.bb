@@ -5,9 +5,9 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 
 #include <stddef.h>
-
 #include <map>
 #include <set>
+#include <utility>
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
@@ -505,7 +505,7 @@ void KioskAppManager::InstallFromCache(const std::string& id) {
     scoped_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
     base::DictionaryValue* extension_copy = extension->DeepCopy();
     prefs->Set(id, extension_copy);
-    external_loader_->SetCurrentAppExtensions(prefs.Pass());
+    external_loader_->SetCurrentAppExtensions(std::move(prefs));
   } else {
     LOG(ERROR) << "Can't find app in the cached externsions"
                << " id = " << id;
@@ -523,9 +523,9 @@ void KioskAppManager::InstallSecondaryApps(
         extension_urls::GetWebstoreUpdateUrl().spec());
     extension_entry->SetBoolean(
         extensions::ExternalProviderImpl::kIsFromWebstore, true);
-    prefs->Set(id, extension_entry.Pass());
+    prefs->Set(id, std::move(extension_entry));
   }
-  secondary_app_external_loader_->SetCurrentAppExtensions(prefs.Pass());
+  secondary_app_external_loader_->SetCurrentAppExtensions(std::move(prefs));
 }
 
 void KioskAppManager::UpdateExternalCache() {
@@ -696,7 +696,7 @@ void KioskAppManager::UpdateAppData() {
 
     prefs->Set(apps_[i]->app_id(), entry.release());
   }
-  external_cache_->UpdateExtensionsList(prefs.Pass());
+  external_cache_->UpdateExtensionsList(std::move(prefs));
 
   RetryFailedAppDataFetch();
 

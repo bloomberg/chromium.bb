@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_provider.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -166,7 +167,7 @@ void DecodeLoginPolicies(
        it != whitelist.end(); ++it) {
     list->Append(new base::StringValue(*it));
   }
-  new_values_cache->SetValue(kAccountsPrefUsers, list.Pass());
+  new_values_cache->SetValue(kAccountsPrefUsers, std::move(list));
 
   scoped_ptr<base::ListValue> account_list(new base::ListValue());
   const em::DeviceLocalAccountsProto device_local_accounts_proto =
@@ -202,10 +203,10 @@ void DecodeLoginPolicies(
           kAccountsPrefDeviceLocalAccountsKeyType,
           policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION);
     }
-    account_list->Append(entry_dict.Pass());
+    account_list->Append(std::move(entry_dict));
   }
   new_values_cache->SetValue(kAccountsPrefDeviceLocalAccounts,
-                             account_list.Pass());
+                             std::move(account_list));
 
   if (policy.has_device_local_accounts()) {
     if (policy.device_local_accounts().has_auto_login_id()) {
@@ -235,7 +236,7 @@ void DecodeLoginPolicies(
          it != flags.end(); ++it) {
       list->Append(new base::StringValue(*it));
     }
-    new_values_cache->SetValue(kStartUpFlags, list.Pass());
+    new_values_cache->SetValue(kStartUpFlags, std::move(list));
   }
 
   if (policy.has_saml_settings()) {
@@ -287,7 +288,8 @@ void DecodeAutoUpdatePolicies(
          i != allowed_connection_types.end(); ++i) {
       list->Append(new base::FundamentalValue(*i));
     }
-    new_values_cache->SetValue(kAllowedConnectionTypesForUpdate, list.Pass());
+    new_values_cache->SetValue(kAllowedConnectionTypesForUpdate,
+                               std::move(list));
   }
 }
 
@@ -582,7 +584,7 @@ void DeviceSettingsProvider::OwnershipStatusChanged() {
     policy->set_username(device_settings_service_->GetUsername());
     CHECK(device_settings_.SerializeToString(policy->mutable_policy_value()));
     if (!device_settings_service_->GetOwnerSettingsService()
-             ->CommitTentativeDeviceSettings(policy.Pass())) {
+             ->CommitTentativeDeviceSettings(std::move(policy))) {
       LOG(ERROR) << "Can't store policy";
     }
   }

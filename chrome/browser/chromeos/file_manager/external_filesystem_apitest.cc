@@ -188,7 +188,7 @@ scoped_ptr<google_apis::FileResource> UpdateDriveEntryTime(
   if (error != google_apis::HTTP_SUCCESS)
     return scoped_ptr<google_apis::FileResource>();
 
-  return entry.Pass();
+  return entry;
 }
 
 scoped_ptr<google_apis::FileResource> AddFileToDriveService(

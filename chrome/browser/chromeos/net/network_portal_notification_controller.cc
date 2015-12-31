@@ -354,7 +354,7 @@ NetworkPortalNotificationController::CreateDefaultCaptivePortalNotification(
           base::UTF8ToUTF16(network->name())),
       icon, base::string16(), GURL(), notifier_id, data, delegate.get()));
   notification->SetSystemPriority();
-  return notification.Pass();
+  return notification;
 }
 
 scoped_ptr<message_center::Notification> NetworkPortalNotificationController::
@@ -404,7 +404,7 @@ scoped_ptr<message_center::Notification> NetworkPortalNotificationController::
       notificationText, icon, base::string16() /* display_source */, GURL(),
       notifier_id, data, delegate.get()));
   notification->SetSystemPriority();
-  return notification.Pass();
+  return notification;
 }
 
 scoped_ptr<Notification> NetworkPortalNotificationController::GetNotification(

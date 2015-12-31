@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/launcher_search_provider/launcher_search_provider_service.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/memory/scoped_vector.h"
 #include "base/strings/utf_string_conversions.h"
@@ -135,7 +136,7 @@ void Service::SetSearchResults(
     search_result->set_title(base::UTF8ToUTF16(result->title));
     search_results.push_back(search_result);
   }
-  provider_->SetSearchResults(extension->id(), search_results.Pass());
+  provider_->SetSearchResults(extension->id(), std::move(search_results));
 }
 
 bool Service::IsQueryRunning() const {

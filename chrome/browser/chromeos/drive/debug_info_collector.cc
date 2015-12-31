@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/drive/debug_info_collector.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/logging.h"
 #include "google_apis/drive/task_util.h"
@@ -32,7 +34,7 @@ void RunGetResourceEntryCallback(const GetResourceEntryCallback& callback,
   DCHECK(!callback.is_null());
   if (error != FILE_ERROR_OK)
     entry.reset();
-  callback.Run(error, entry.Pass());
+  callback.Run(error, std::move(entry));
 }
 
 // Runs the callback with arguments.
@@ -43,7 +45,7 @@ void RunReadDirectoryCallback(
   DCHECK(!callback.is_null());
   if (error != FILE_ERROR_OK)
     entries.reset();
-  callback.Run(error, entries.Pass());
+  callback.Run(error, std::move(entries));
 }
 
 }  // namespace

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/certificate_provider/certificate_requests.h"
 
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -59,7 +60,7 @@ int CertificateRequests::AddRequest(
       base::Bind(timeout_callback, request_id));
 
   const auto insert_result =
-      requests_.insert(std::make_pair(request_id, state.Pass()));
+      requests_.insert(std::make_pair(request_id, std::move(state)));
   DCHECK(insert_result.second) << "request id already in use.";
   return request_id;
 }

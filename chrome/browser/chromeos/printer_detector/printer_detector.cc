@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/printer_detector/printer_detector.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -176,7 +177,7 @@ class SearchPrinterAppNotificationDelegate : public NotificationDelegate {
         webstore_widget_private_api::OnShowWidget::kEventName,
         webstore_widget_private_api::OnShowWidget::Create(options)));
     event_router->DispatchEventToExtension(extension_misc::kWebstoreWidgetAppId,
-                                           event.Pass());
+                                           std::move(event));
   }
 
  private:

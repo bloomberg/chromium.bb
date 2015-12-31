@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/ash_switches.h"
@@ -214,7 +214,7 @@ class DBusServices {
     service_providers.push_back(new ScreenLockServiceProvider);
     service_providers.push_back(new ConsoleServiceProvider(
         make_scoped_ptr(new ChromeConsoleServiceProviderDelegate)));
-    CrosDBusService::Initialize(service_providers.Pass());
+    CrosDBusService::Initialize(std::move(service_providers));
 
     // Initialize PowerDataCollector after DBusThreadManager is initialized.
     PowerDataCollector::Initialize();
@@ -575,7 +575,7 @@ void SetGuestLocale(Profile* const profile) {
   scoped_ptr<GuestLanguageSetCallbackData> data(
       new GuestLanguageSetCallbackData(profile));
   locale_util::SwitchLanguageCallback callback(base::Bind(
-      &GuestLanguageSetCallbackData::Callback, base::Passed(data.Pass())));
+      &GuestLanguageSetCallbackData::Callback, base::Passed(std::move(data))));
   const user_manager::User* const user =
       ProfileHelper::Get()->GetUserByProfile(profile);
   UserSessionManager::GetInstance()->RespectLocalePreference(

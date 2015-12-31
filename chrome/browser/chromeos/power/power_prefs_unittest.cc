@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/power/power_prefs.h"
 
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -179,7 +180,7 @@ TEST_F(PowerPrefsTest, LoginScreen) {
   TestingProfile::Builder builder;
   builder.SetPath(
       profile_manager_.profiles_dir().AppendASCII(chrome::kInitialProfile));
-  builder.SetPrefService(login_profile_prefs.Pass());
+  builder.SetPrefService(std::move(login_profile_prefs));
   TestingProfile* login_profile = builder.BuildIncognito(
       profile_manager_.CreateTestingProfile(chrome::kInitialProfile));
 

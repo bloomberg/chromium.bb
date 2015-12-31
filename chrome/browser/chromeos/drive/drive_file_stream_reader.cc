@@ -5,9 +5,9 @@
 #include "chrome/browser/chromeos/drive/drive_file_stream_reader.h"
 
 #include <stddef.h>
-
 #include <algorithm>
 #include <cstring>
+#include <utility>
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
@@ -98,7 +98,7 @@ int ReadInternal(ScopedVector<std::string>* pending_data,
 LocalReaderProxy::LocalReaderProxy(
     scoped_ptr<util::LocalFileReader> file_reader,
     int64_t length)
-    : file_reader_(file_reader.Pass()),
+    : file_reader_(std::move(file_reader)),
       remaining_length_(length),
       weak_ptr_factory_(this) {
   DCHECK(file_reader_);
@@ -419,7 +419,7 @@ void DriveFileStreamReader::InitializeAfterGetFileContentInitialized(
         new internal::NetworkReaderProxy(
             range_start, range_length,
             entry->file_info().size(), cancel_download_closure_));
-    callback.Run(net::OK, entry.Pass());
+    callback.Run(net::OK, std::move(entry));
     return;
   }
 
@@ -453,8 +453,8 @@ void DriveFileStreamReader::InitializeAfterLocalFileOpen(
   }
 
   reader_proxy_.reset(
-      new internal::LocalReaderProxy(file_reader.Pass(), length));
-  callback.Run(net::OK, entry.Pass());
+      new internal::LocalReaderProxy(std::move(file_reader), length));
+  callback.Run(net::OK, std::move(entry));
 }
 
 void DriveFileStreamReader::OnGetContent(
@@ -462,7 +462,7 @@ void DriveFileStreamReader::OnGetContent(
     scoped_ptr<std::string> data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(reader_proxy_);
-  reader_proxy_->OnGetContent(data.Pass());
+  reader_proxy_->OnGetContent(std::move(data));
 }
 
 void DriveFileStreamReader::OnGetFileContentCompletion(

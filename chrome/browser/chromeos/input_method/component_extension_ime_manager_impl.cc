@@ -175,7 +175,7 @@ scoped_ptr<base::DictionaryValue> ComponentExtensionIMEManagerImpl::GetManifest(
     LOG(ERROR) << "Failed at getting manifest";
 
   return scoped_ptr<base::DictionaryValue>(
-             static_cast<base::DictionaryValue*>(manifest.release())).Pass();
+      static_cast<base::DictionaryValue*>(manifest.release()));
 }
 
 // static

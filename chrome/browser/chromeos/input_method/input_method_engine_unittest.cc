@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/input_method/input_method_engine.h"
+
+#include <utility>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
@@ -9,7 +13,6 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
-#include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,11 +62,11 @@ void InitInputMethod() {
   ime_list.push_back(ext1);
   delegate->set_ime_list(ime_list);
   comp_ime_manager->Initialize(
-      scoped_ptr<ComponentExtensionIMEManagerDelegate>(delegate).Pass());
+      scoped_ptr<ComponentExtensionIMEManagerDelegate>(delegate));
 
   MockInputMethodManager* manager = new MockInputMethodManager;
   manager->SetComponentExtensionIMEManager(
-      scoped_ptr<ComponentExtensionIMEManager>(comp_ime_manager).Pass());
+      scoped_ptr<ComponentExtensionIMEManager>(comp_ime_manager));
   InitializeForTesting(manager);
 }
 
@@ -140,7 +143,7 @@ class InputMethodEngineTest : public testing::Test {
     engine_.reset(new InputMethodEngine());
     observer_ = new TestObserver();
     scoped_ptr<ui::IMEEngineObserver> observer_ptr(observer_);
-    engine_->Initialize(observer_ptr.Pass(),
+    engine_->Initialize(std::move(observer_ptr),
                         whitelisted ? kTestExtensionId : kTestExtensionId2,
                         ProfileManager::GetActiveUserProfile());
   }

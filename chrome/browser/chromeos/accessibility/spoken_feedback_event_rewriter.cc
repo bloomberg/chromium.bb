@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/accessibility/spoken_feedback_event_rewriter.h"
 
 #include <string>
+#include <utility>
 
 #include "ash/shell.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -107,7 +108,7 @@ SpokenFeedbackEventRewriter::~SpokenFeedbackEventRewriter() {
 
 void SpokenFeedbackEventRewriter::SetDelegateForTest(
     scoped_ptr<SpokenFeedbackEventRewriterDelegate> delegate) {
-  delegate_ = delegate.Pass();
+  delegate_ = std::move(delegate);
 }
 
 ui::EventRewriteStatus SpokenFeedbackEventRewriter::RewriteEvent(

@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/display/display_preferences.h"
 
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/display/display_layout_store.h"
@@ -137,7 +137,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
       pref_data->Get(name, &layout_value);
       if (layout_value)
         static_cast<base::DictionaryValue*>(layout_value)
-            ->Set(key, value.Pass());
+            ->Set(key, std::move(value));
     } else {
       scoped_ptr<base::DictionaryValue> layout_value(
           new base::DictionaryValue());

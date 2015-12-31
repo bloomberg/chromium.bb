@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/attestation/platform_verification_impl.h"
+
+#include <utility>
+
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
@@ -20,13 +23,13 @@ void PlatformVerificationImpl::Create(
   DCHECK(render_frame_host);
 
   // The created object is strongly bound to (and owned by) the pipe.
-  new PlatformVerificationImpl(render_frame_host, request.Pass());
+  new PlatformVerificationImpl(render_frame_host, std::move(request));
 }
 
 PlatformVerificationImpl::PlatformVerificationImpl(
     content::RenderFrameHost* render_frame_host,
     mojo::InterfaceRequest<PlatformVerification> request)
-    : binding_(this, request.Pass()),
+    : binding_(this, std::move(request)),
       render_frame_host_(render_frame_host),
       weak_factory_(this) {
   DCHECK(render_frame_host);
