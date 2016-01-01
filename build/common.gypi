@@ -3206,7 +3206,7 @@
 
           [ 'OS=="mac" or OS=="ios"', {
             'xcode_settings': {
-              'WARNING_CFLAGS!': ['-Wall', '-Wextra'],
+              'WARNING_CFLAGS!': ['-Wextra'],
             },
             'conditions': [
               ['buildtype=="Official"', {

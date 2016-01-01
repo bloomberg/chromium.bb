@@ -168,6 +168,12 @@
         'src/Source/ULEB128.m',
         'src/Source/cd_objc2.h',
       ],
+      'variables': {
+        'clang_warning_flags': [
+          # e.g. CDRebaseTypeDescription in CDLCDyldInfo.m
+          '-Wno-unused-function',
+        ],
+      },
       'link_settings': {
         'libraries': [
           '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
