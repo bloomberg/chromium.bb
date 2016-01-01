@@ -72,7 +72,6 @@ public:
         , m_atStart(true)
         , m_ignoringSpaces(false)
         , m_currentCharacterIsSpace(false)
-        , m_currentCharacterShouldCollapseIfPreWap(false)
         , m_appliedStartWidth(appliedStartWidth)
         , m_includeEndWidth(true)
         , m_autoWrap(false)
@@ -101,7 +100,7 @@ public:
     void handleEmptyInline();
     void handleReplaced();
     bool handleText(WordMeasurements&, bool& hyphenated);
-    void prepareForNextCharacter(const LineLayoutText&, bool& prohibitBreakInside, bool previousCharacterIsSpace, bool previousCharacterShouldCollapseIfPreWap);
+    void prepareForNextCharacter(const LineLayoutText&, bool& prohibitBreakInside, bool previousCharacterIsSpace);
     bool canBreakAtWhitespace(bool breakWords, WordMeasurement&, bool stoppedIgnoringSpaces, bool& hyphenated, float charWidth, float& hyphenWidth, bool betweenWords, bool midWordBreak, bool breakAll, bool previousCharacterIsSpace, float lastWidthMeasurement, const LineLayoutText&, const Font&, bool applyWordSpacing, float wordSpacing);
     bool trailingSpaceExceedsAvailableWidth(bool midWordBreak, const LineLayoutText&, WordMeasurement&, bool applyWordSpacing, bool wordSpacing, const Font&);
     WordMeasurement& calculateWordWidth(WordMeasurements&, LineLayoutText&, unsigned lastSpace, float& lastWidthMeasurement, float wordSpacingForWordMeasurement, const Font&, float wordTrailingSpaceWidth, UChar);
@@ -146,7 +145,6 @@ private:
     bool m_atStart;
     bool m_ignoringSpaces;
     bool m_currentCharacterIsSpace;
-    bool m_currentCharacterShouldCollapseIfPreWap;
     bool m_appliedStartWidth;
     bool m_includeEndWidth;
     bool m_autoWrap;
@@ -273,15 +271,15 @@ inline void BreakingContext::initializeForCurrentObject()
     m_preservesNewline = !isSVGText && ComputedStyle::preserveNewline(m_currWS);
 
     m_collapseWhiteSpace = ComputedStyle::collapseWhiteSpace(m_currWS);
+
+    // Ensure the whitespace in constructions like '<span style="white-space: pre-wrap">text <span><span> text</span>'
+    // does not collapse.
+    if (m_collapseWhiteSpace && !ComputedStyle::collapseWhiteSpace(m_lastWS))
+        m_currentCharacterIsSpace = false;
 }
 
 inline void BreakingContext::increment()
 {
-    // Clear out our character space bool, since inline <pre>s don't collapse whitespace
-    // with adjacent inline normal/nowrap spans.
-    if (!m_collapseWhiteSpace)
-        m_currentCharacterIsSpace = false;
-
     m_current.moveToStartOf(m_nextObject);
 
     // When the line box tree is created, this position in the line will be snapped to
@@ -454,7 +452,7 @@ inline void BreakingContext::handleEmptyInline()
             && shouldSkipWhitespaceAfterStartObject(m_block, m_current.object(), m_lineMidpointState)) {
             // If this object is at the start of the line, we need to behave like list markers and
             // start ignoring spaces.
-            m_currentCharacterShouldCollapseIfPreWap = m_currentCharacterIsSpace = true;
+            m_currentCharacterIsSpace = true;
             m_ignoringSpaces = true;
         } else {
             // If we are after a trailing space but aren't ignoring spaces yet then ensure we get a linebox
@@ -486,7 +484,7 @@ inline void BreakingContext::handleReplaced()
 
     m_lineInfo.setEmpty(false, m_block, &m_width);
     m_ignoringSpaces = false;
-    m_currentCharacterShouldCollapseIfPreWap = m_currentCharacterIsSpace = false;
+    m_currentCharacterIsSpace = false;
     m_trailingObjects.clear();
 
     // Optimize for a common case. If we can't find whitespace after the list
@@ -496,7 +494,7 @@ inline void BreakingContext::handleReplaced()
         if (m_blockStyle->collapseWhiteSpace() && shouldSkipWhitespaceAfterStartObject(m_block, m_current.object(), m_lineMidpointState)) {
             // Like with inline flows, we start ignoring spaces to make sure that any
             // additional spaces we see will be discarded.
-            m_currentCharacterShouldCollapseIfPreWap = m_currentCharacterIsSpace = true;
+            m_currentCharacterIsSpace = true;
             m_ignoringSpaces = true;
         }
         if (LineLayoutListMarker(m_current.object()).isInside())
@@ -613,9 +611,8 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     UChar secondToLastCharacter = m_layoutTextInfo.m_lineBreakIterator.secondToLastCharacter();
     for (; m_current.offset() < layoutText.textLength(); m_current.fastIncrementInTextNode()) {
         bool previousCharacterIsSpace = m_currentCharacterIsSpace;
-        bool previousCharacterShouldCollapseIfPreWap = m_currentCharacterShouldCollapseIfPreWap;
         UChar c = m_current.current();
-        m_currentCharacterShouldCollapseIfPreWap = m_currentCharacterIsSpace = c == spaceCharacter || c == tabulationCharacter || (!m_preservesNewline && (c == newlineCharacter));
+        m_currentCharacterIsSpace = c == spaceCharacter || c == tabulationCharacter || (!m_preservesNewline && (c == newlineCharacter));
 
         if (!m_collapseWhiteSpace || !m_currentCharacterIsSpace)
             m_lineInfo.setEmpty(false, m_block, &m_width);
@@ -650,7 +647,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
                 stopIgnoringSpaces(lastSpace);
             }
 
-            prepareForNextCharacter(layoutText, prohibitBreakInside, previousCharacterIsSpace, previousCharacterShouldCollapseIfPreWap);
+            prepareForNextCharacter(layoutText, prohibitBreakInside, previousCharacterIsSpace);
             m_atStart = false;
             nextCharacter(c, lastCharacter, secondToLastCharacter);
             continue;
@@ -750,7 +747,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
             }
         }
 
-        prepareForNextCharacter(layoutText, prohibitBreakInside, previousCharacterIsSpace, previousCharacterShouldCollapseIfPreWap);
+        prepareForNextCharacter(layoutText, prohibitBreakInside, previousCharacterIsSpace);
         m_atStart = false;
         nextCharacter(c, lastCharacter, secondToLastCharacter);
     }
@@ -794,7 +791,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     return false;
 }
 
-inline void BreakingContext::prepareForNextCharacter(const LineLayoutText& layoutText, bool& prohibitBreakInside, bool previousCharacterIsSpace, bool previousCharacterShouldCollapseIfPreWap)
+inline void BreakingContext::prepareForNextCharacter(const LineLayoutText& layoutText, bool& prohibitBreakInside, bool previousCharacterIsSpace)
 {
     if (layoutText.isSVGInlineText() && m_current.offset()) {
         // Force creation of new InlineBoxes for each absolute positioned character (those that start new text chunks).
@@ -809,7 +806,7 @@ inline void BreakingContext::prepareForNextCharacter(const LineLayoutText& layou
         m_startOfIgnoredSpaces.setObject(m_current.object());
         m_startOfIgnoredSpaces.setOffset(m_current.offset());
     }
-    if (!m_currentCharacterIsSpace && previousCharacterShouldCollapseIfPreWap) {
+    if (!m_currentCharacterIsSpace && previousCharacterIsSpace) {
         if (m_autoWrap && m_currentStyle->breakOnlyAfterWhiteSpace())
             m_lineBreak.moveTo(m_current.object(), m_current.offset(), m_current.nextBreakablePosition());
     }
