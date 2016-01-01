@@ -3155,10 +3155,6 @@
               # This is off by default in gcc but on in Ubuntu's gcc(!).
               '-Wno-format',
             ],
-            'cflags_cc!': [
-              # Necessary because llvm.org/PR10448 is WONTFIX (crbug.com/90453).
-              '-Wsign-compare',
-            ]
           }],
           # TODO: Fix all warnings on chromeos too.
           [ 'os_posix==1 and OS!="mac" and OS!="ios" and (clang!=1 or chromeos==1)', {
@@ -3723,6 +3719,10 @@
         'variables': {
           'werror%': '-Werror',
           'libraries_for_target%': '',
+          'conditions' : [
+            # Enable -Wextra for chromium_code when we control the compiler.
+            ['clang==1', { 'wextra': '-Wextra' }, { 'wextra': '-Wno-extra' }],
+          ],
         },
         'defines': [
           '_FILE_OFFSET_BITS=64',
@@ -3732,6 +3732,7 @@
           '-pthread',
           '-fno-strict-aliasing',  # See http://crbug.com/32204
           '-Wall',
+          '<(wextra)',
           # Don't warn about unused function params.  We use those everywhere.
           '-Wno-unused-parameter',
           # Don't warn about the "struct foo f = {0};" initialization pattern.
@@ -3748,9 +3749,6 @@
           # Make inline functions have hidden visiblity by default.
           # Surprisingly, not covered by -fvisibility=hidden.
           '-fvisibility-inlines-hidden',
-          # GCC turns on -Wsign-compare for C++ under -Wall, but clang doesn't,
-          # so we specify it explicitly.  (llvm.org/PR10448, crbug.com/90453)
-          '-Wsign-compare',
         ],
         'ldflags': [
           '-pthread', '-Wl,-z,noexecstack',

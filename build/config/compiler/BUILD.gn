@@ -894,15 +894,11 @@ config("chromium_code") {
   if (is_win) {
     cflags = [ "/W4" ]  # Warning level 4.
   } else {
-    cflags = [
-      "-Wall",
-
-      # GCC turns on -Wsign-compare for C++ under -Wall, but clang doesn't,
-      # so we specify it explicitly.
-      # TODO(fischman): remove this if http://llvm.org/PR10448 obsoletes it.
-      # http://code.google.com/p/chromium/issues/detail?id=90453
-      "-Wsign-compare",
-    ]
+    cflags = [ "-Wall" ]
+    if (is_clang) {
+      # Enable -Wextra for chromium_code when we control the compiler.
+      cflags += [ "-Wextra" ]
+    }
 
     # In Chromium code, we define __STDC_foo_MACROS in order to get the
     # C99 macros on Mac and Linux.
