@@ -15,6 +15,10 @@
      ],
      'variables': {
        'clang_warning_flags': [
+         # Many struct initializers in the GTF_ES code are missing braces.
+         '-Wno-missing-braces',
+         # A few variables are unitialized if GLVersion != 2.0.
+         '-Wno-sometimes-uninitialized',
          # GTFVecBase.h contains static no-inline functions in a header :-/
          '-Wno-unused-function',
        ],
