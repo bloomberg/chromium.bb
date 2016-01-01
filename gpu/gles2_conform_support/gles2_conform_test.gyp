@@ -13,6 +13,12 @@
        '<(SHARED_INTERMEDIATE_DIR)/gles2_conform_test_embedded_data',
        '../../third_party/gles2_conform/GTF_ES/glsl/GTF/Source',
      ],
+     'variables': {
+       'clang_warning_flags': [
+         # GTFVecBase.h contains static no-inline functions in a header :-/
+         '-Wno-unused-function',
+       ],
+     },
   },
   'targets': [
     {
