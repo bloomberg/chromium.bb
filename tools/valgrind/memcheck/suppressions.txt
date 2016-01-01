@@ -3366,3 +3366,14 @@
    fun:_ZN4base6Thread22StartAndWaitForTestingEv
    fun:_ZN12browser_sync12_GLOBAL__N_124SyncBackendRegistrarTest5SetUpEv
 }
+{
+   bug_573604
+   Memcheck:Overlap
+   fun:memcpy@@GLIBC_2.14
+   fun:ProcessCommands
+   fun:BrotliDecompressStream
+   fun:_ZN3net12BrotliFilter16ReadFilteredDataEPcPi
+   fun:_ZN3net6Filter8ReadDataEPcPi
+   fun:_ZN3net14BrotliUnitTest19DecodeAllWithFilterEPNS_6FilterEPKciPcPi
+   fun:_ZN3net37BrotliUnitTest_DecodeMissingData_Test8TestBodyEv
+}
