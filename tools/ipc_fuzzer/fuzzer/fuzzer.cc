@@ -775,7 +775,7 @@ struct FuzzTraits<cc::RenderPassList> {
       scoped_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
       if (!FuzzParam(render_pass.get(), fuzzer))
         return false;
-      p->push_back(render_pass.Pass());
+      p->push_back(std::move(render_pass));
     }
     return true;
   }
@@ -985,7 +985,7 @@ struct FuzzTraits<content::SyntheticGesturePacket> {
         break;
       }
     }
-    p->set_gesture_params(gesture_params.Pass());
+    p->set_gesture_params(std::move(gesture_params));
     return true;
   }
 };
