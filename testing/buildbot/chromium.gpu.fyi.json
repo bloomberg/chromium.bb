@@ -386,21 +386,6 @@
             }
           ]
         },
-        "test": "angle_end2end_tests"
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:104a",
-              "os": "Linux"
-            }
-          ]
-        },
         "test": "angle_unittests"
       },
       {
