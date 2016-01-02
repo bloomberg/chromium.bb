@@ -66,18 +66,6 @@
         "test": "content_gl_tests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:104a",
-              "os": "Linux"
-            }
-          ]
-        },
-        "test": "content_unittests"
-      },
-      {
         "args": [
           "--use-gpu-in-tests"
         ],
@@ -417,18 +405,6 @@
           ]
         },
         "test": "content_gl_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:104a",
-              "os": "Linux"
-            }
-          ]
-        },
-        "test": "content_unittests"
       },
       {
         "args": [
