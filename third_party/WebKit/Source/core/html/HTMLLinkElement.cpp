@@ -122,8 +122,8 @@ static void parseSizes(const CharacterType* value, unsigned length, Vector<IntSi
 
 static LinkEventSender& linkLoadEventSender()
 {
-    DEFINE_STATIC_LOCAL(LinkEventSender, sharedLoadEventSender, (EventTypeNames::load));
-    return sharedLoadEventSender;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<LinkEventSender>, sharedLoadEventSender, (LinkEventSender::create(EventTypeNames::load)));
+    return *sharedLoadEventSender;
 }
 
 void HTMLLinkElement::parseSizesAttribute(const AtomicString& value, Vector<IntSize>& iconSizes)
@@ -159,8 +159,8 @@ HTMLLinkElement::~HTMLLinkElement()
     m_link.clear();
     if (inDocument())
         document().styleEngine().removeStyleSheetCandidateNode(this);
-#endif
     linkLoadEventSender().cancelEvent(this);
+#endif
 }
 
 void HTMLLinkElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)

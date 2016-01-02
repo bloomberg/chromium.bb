@@ -31,7 +31,7 @@
 
 namespace blink {
 
-typedef EventSender<SVGUseElement> SVGUseEventSender;
+using SVGUseEventSender = EventSender<SVGUseElement>;
 
 class SVGUseElement final : public SVGGraphicsElement,
     public SVGURIReference,

@@ -26,7 +26,7 @@
 namespace blink {
 
 template<typename T> class EventSender;
-typedef EventSender<HTMLDetailsElement> DetailsEventSender;
+using DetailsEventSender = EventSender<HTMLDetailsElement>;
 
 class HTMLDetailsElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();

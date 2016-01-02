@@ -36,8 +36,8 @@ using namespace HTMLNames;
 
 static StyleEventSender& styleLoadEventSender()
 {
-    DEFINE_STATIC_LOCAL(StyleEventSender, sharedLoadEventSender, (EventTypeNames::load));
-    return sharedLoadEventSender;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<StyleEventSender>, sharedLoadEventSender, (StyleEventSender::create(EventTypeNames::load)));
+    return *sharedLoadEventSender;
 }
 
 inline HTMLStyleElement::HTMLStyleElement(Document& document, bool createdByParser)
@@ -52,9 +52,9 @@ HTMLStyleElement::~HTMLStyleElement()
 {
 #if !ENABLE(OILPAN)
     StyleElement::clearDocumentData(document(), this);
-#endif
 
     styleLoadEventSender().cancelEvent(this);
+#endif
 }
 
 PassRefPtrWillBeRawPtr<HTMLStyleElement> HTMLStyleElement::create(Document& document, bool createdByParser)

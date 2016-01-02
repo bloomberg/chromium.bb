@@ -29,7 +29,7 @@
 
 namespace blink {
 
-typedef EventSender<SVGStyleElement> SVGStyleEventSender;
+using SVGStyleEventSender = EventSender<SVGStyleElement>;
 
 class SVGStyleElement final : public SVGElement
                             , public StyleElement {

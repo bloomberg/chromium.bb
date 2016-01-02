@@ -31,7 +31,7 @@ namespace blink {
 class HTMLStyleElement;
 
 template<typename T> class EventSender;
-typedef EventSender<HTMLStyleElement> StyleEventSender;
+using StyleEventSender = EventSender<HTMLStyleElement>;
 
 class HTMLStyleElement final : public HTMLElement, private StyleElement {
     DEFINE_WRAPPERTYPEINFO();

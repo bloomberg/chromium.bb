@@ -45,7 +45,7 @@ class KURL;
 class LinkImport;
 
 template<typename T> class EventSender;
-typedef EventSender<HTMLLinkElement> LinkEventSender;
+using LinkEventSender = EventSender<HTMLLinkElement>;
 
 //
 // LinkStyle handles dynaically change-able link resources, which is

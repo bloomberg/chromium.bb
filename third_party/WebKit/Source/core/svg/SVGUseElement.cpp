@@ -46,8 +46,8 @@ namespace blink {
 
 static SVGUseEventSender& svgUseLoadEventSender()
 {
-    DEFINE_STATIC_LOCAL(SVGUseEventSender, sharedLoadEventSender, (EventTypeNames::load));
-    return sharedLoadEventSender;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SVGUseEventSender>, sharedLoadEventSender, (SVGUseEventSender::create(EventTypeNames::load)));
+    return *sharedLoadEventSender;
 }
 
 inline SVGUseElement::SVGUseElement(Document& document)
@@ -82,8 +82,8 @@ SVGUseElement::~SVGUseElement()
 #if !ENABLE(OILPAN)
     clearShadowTree();
     cancelShadowTreeRecreation();
-#endif
     svgUseLoadEventSender().cancelEvent(this);
+#endif
 }
 
 DEFINE_TRACE(SVGUseElement)

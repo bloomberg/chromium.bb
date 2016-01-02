@@ -31,7 +31,7 @@
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGTests.h"
 #include "core/svg/animation/SMILTime.h"
-#include "platform/heap/Heap.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 
 namespace blink {
@@ -41,7 +41,7 @@ class SMILTimeContainer;
 class SVGSMILElement;
 
 template<typename T> class EventSender;
-typedef EventSender<SVGSMILElement> SMILEventSender;
+using SMILEventSender = EventSender<SVGSMILElement>;
 
 // This class implements SMIL interval timing model as needed for SVG animation.
 class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {

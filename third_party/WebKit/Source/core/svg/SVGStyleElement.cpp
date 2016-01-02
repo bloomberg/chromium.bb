@@ -31,8 +31,8 @@ namespace blink {
 
 static SVGStyleEventSender& styleErrorEventSender()
 {
-    DEFINE_STATIC_LOCAL(SVGStyleEventSender, sharedErrorEventSender, (EventTypeNames::error));
-    return sharedErrorEventSender;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SVGStyleEventSender>, sharedErrorEventSender, (SVGStyleEventSender::create(EventTypeNames::error)));
+    return *sharedErrorEventSender;
 }
 
 inline SVGStyleElement::SVGStyleElement(Document& document, bool createdByParser)
@@ -45,9 +45,9 @@ SVGStyleElement::~SVGStyleElement()
 {
 #if !ENABLE(OILPAN)
     StyleElement::clearDocumentData(document(), this);
-#endif
 
     styleErrorEventSender().cancelEvent(this);
+#endif
 }
 
 PassRefPtrWillBeRawPtr<SVGStyleElement> SVGStyleElement::create(Document& document, bool createdByParser)

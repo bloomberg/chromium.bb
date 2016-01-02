@@ -73,8 +73,8 @@ private:
 
 static DetailsEventSender& detailsToggleEventSender()
 {
-    DEFINE_STATIC_LOCAL(DetailsEventSender, sharedToggleEventSender, (EventTypeNames::toggle));
-    return sharedToggleEventSender;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<DetailsEventSender>, sharedToggleEventSender, (DetailsEventSender::create(EventTypeNames::toggle)));
+    return *sharedToggleEventSender;
 }
 
 PassRefPtrWillBeRawPtr<HTMLDetailsElement> HTMLDetailsElement::create(Document& document)
@@ -93,7 +93,9 @@ HTMLDetailsElement::HTMLDetailsElement(Document& document)
 
 HTMLDetailsElement::~HTMLDetailsElement()
 {
+#if !ENABLE(OILPAN)
     detailsToggleEventSender().cancelEvent(this);
+#endif
 }
 
 void HTMLDetailsElement::dispatchPendingEvent(DetailsEventSender* eventSender)

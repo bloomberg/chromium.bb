@@ -56,7 +56,7 @@ class ImageLoader;
 class LayoutImageResource;
 
 template<typename T> class EventSender;
-typedef EventSender<ImageLoader> ImageEventSender;
+using ImageEventSender = EventSender<ImageLoader>;
 
 class CORE_EXPORT ImageLoader : public NoBaseWillBeGarbageCollectedFinalized<ImageLoader>, public ImageResourceClient {
     WILL_BE_USING_PRE_FINALIZER(ImageLoader, dispose);

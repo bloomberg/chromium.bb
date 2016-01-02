@@ -42,8 +42,8 @@ using namespace HTMLNames;
 
 static SourceEventSender& sourceErrorEventSender()
 {
-    DEFINE_STATIC_LOCAL(SourceEventSender, sharedErrorEventSender, (EventTypeNames::error));
-    return sharedErrorEventSender;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SourceEventSender>, sharedErrorEventSender, (SourceEventSender::create(EventTypeNames::error)));
+    return *sharedErrorEventSender;
 }
 
 class HTMLSourceElement::Listener final : public MediaQueryListListener {
@@ -76,8 +76,8 @@ DEFINE_NODE_FACTORY(HTMLSourceElement)
 
 HTMLSourceElement::~HTMLSourceElement()
 {
-    sourceErrorEventSender().cancelEvent(this);
 #if !ENABLE(OILPAN)
+    sourceErrorEventSender().cancelEvent(this);
     m_listener->clearElement();
 #endif
 }

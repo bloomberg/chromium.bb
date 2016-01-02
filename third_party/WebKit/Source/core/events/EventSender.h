@@ -27,15 +27,21 @@
 #define EventSender_h
 
 #include "platform/Timer.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {
 
-template<typename T> class EventSender {
-    WTF_MAKE_NONCOPYABLE(EventSender); USING_FAST_MALLOC(EventSender);
+template<typename T>
+class EventSender final : public NoBaseWillBeGarbageCollectedFinalized<EventSender<T>> {
+    WTF_MAKE_NONCOPYABLE(EventSender);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(EventSender);
 public:
-    explicit EventSender(const AtomicString& eventType);
+    static PassOwnPtrWillBeRawPtr<EventSender> create(const AtomicString& eventType)
+    {
+        return adoptPtrWillBeNoop(new EventSender(eventType));
+    }
 
     const AtomicString& eventType() const { return m_eventType; }
     void dispatchEventSoon(T*);
@@ -49,13 +55,21 @@ public:
     }
 #endif
 
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_dispatchSoonList);
+        visitor->trace(m_dispatchingList);
+    }
+
 private:
+    explicit EventSender(const AtomicString& eventType);
+
     void timerFired(Timer<EventSender<T>>*) { dispatchPendingEvents(); }
 
     AtomicString m_eventType;
     Timer<EventSender<T>> m_timer;
-    WillBePersistentHeapVector<RawPtrWillBeMember<T>> m_dispatchSoonList;
-    WillBePersistentHeapVector<RawPtrWillBeMember<T>> m_dispatchingList;
+    WillBeHeapVector<RawPtrWillBeMember<T>> m_dispatchSoonList;
+    WillBeHeapVector<RawPtrWillBeMember<T>> m_dispatchingList;
 };
 
 template<typename T> EventSender<T>::EventSender(const AtomicString& eventType)

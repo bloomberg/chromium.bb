@@ -54,14 +54,14 @@ namespace blink {
 
 static ImageEventSender& loadEventSender()
 {
-    DEFINE_STATIC_LOCAL(ImageEventSender, sender, (EventTypeNames::load));
-    return sender;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<ImageEventSender>, sender, (ImageEventSender::create(EventTypeNames::load)));
+    return *sender;
 }
 
 static ImageEventSender& errorEventSender()
 {
-    DEFINE_STATIC_LOCAL(ImageEventSender, sender, (EventTypeNames::error));
-    return sender;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<ImageEventSender>, sender, (ImageEventSender::create(EventTypeNames::error)));
+    return *sender;
 }
 
 static inline bool pageIsBeingDismissed(Document* document)
@@ -181,6 +181,7 @@ void ImageLoader::dispose()
     if (m_image)
         m_image->removeClient(this);
 
+#if !ENABLE(OILPAN)
     ASSERT(m_hasPendingLoadEvent || !loadEventSender().hasPendingEvents(this));
     if (m_hasPendingLoadEvent)
         loadEventSender().cancelEvent(this);
@@ -188,6 +189,7 @@ void ImageLoader::dispose()
     ASSERT(m_hasPendingErrorEvent || !errorEventSender().hasPendingEvents(this));
     if (m_hasPendingErrorEvent)
         errorEventSender().cancelEvent(this);
+#endif
 }
 
 #if ENABLE(OILPAN)
