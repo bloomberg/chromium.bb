@@ -53,9 +53,6 @@ public:
     void countFeature(UseCounter::Feature) const override;
     void countDeprecation(UseCounter::Feature) const override;
 
-    // Overridden to allow us to check our pending activity after executing imported script.
-    void importScripts(const Vector<String>& urls, ExceptionState&) override;
-
     // EventTarget
     const AtomicString& interfaceName() const override;
 

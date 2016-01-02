@@ -72,12 +72,6 @@ void DedicatedWorkerGlobalScope::postMessage(ExecutionContext* context, PassRefP
     thread()->workerObjectProxy().postMessageToWorkerObject(message, channels.release());
 }
 
-void DedicatedWorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState& exceptionState)
-{
-    Base::importScripts(urls, exceptionState);
-    thread()->workerObjectProxy().reportPendingActivity(hasPendingActivity());
-}
-
 DedicatedWorkerThread* DedicatedWorkerGlobalScope::thread() const
 {
     return static_cast<DedicatedWorkerThread*>(Base::thread());
