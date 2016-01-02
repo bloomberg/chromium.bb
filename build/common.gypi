@@ -3140,12 +3140,8 @@
         },
         'conditions': [
           [ 'os_posix==1 and OS!="mac" and OS!="ios"', {
-            # We don't want to get warnings from third-party code,
-            # so remove any existing warning-enabling flags like -Wall.
-            'cflags!': [
-              '-Wall',
-              '-Wextra',
-            ],
+            # Remove -Wextra for third-party code.
+            'cflags!': [ '-Wextra' ],
             'cflags_cc': [
               # Don't warn about hash_map in third-party code.
               '-Wno-deprecated',
@@ -3155,6 +3151,11 @@
               # This is off by default in gcc but on in Ubuntu's gcc(!).
               '-Wno-format',
             ],
+          }],
+          [ 'os_posix==1 and clang!=1 and OS!="mac" and OS!="ios"', {
+            # When we don't control the compiler, don't use -Wall for
+            # third-party code either.
+            'cflags!': [ '-Wall' ],
           }],
           # TODO: Fix all warnings on chromeos too.
           [ 'os_posix==1 and OS!="mac" and OS!="ios" and (clang!=1 or chromeos==1)', {

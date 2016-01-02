@@ -940,6 +940,10 @@ config("no_chromium_code") {
       "_CRT_NONSTDC_NO_WARNINGS",
       "_CRT_NONSTDC_NO_DEPRECATE",
     ]
+  } else if (is_clang && !is_nacl) {
+    # TODO(thakis): Remove !is_nacl once
+    # https://codereview.webrtc.org/1552863002/ made its way into chromium.
+    cflags += [ "-Wall" ]
   }
 
   if (is_linux) {
