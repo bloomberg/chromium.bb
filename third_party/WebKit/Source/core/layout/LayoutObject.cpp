@@ -1796,7 +1796,9 @@ StyleDifference LayoutObject::adjustStyleDifference(StyleDifference diff) const
             // skipped or we will miss invalidating decorations (e.g., underlines).
             || (isText() && !isBR() && toLayoutText(this)->hasTextBoxes())
             // Caret is painted in text color.
-            || (isLayoutBlock() && toLayoutBlock(this)->hasCaret()))
+            || (isLayoutBlock() && toLayoutBlock(this)->hasCaret())
+            || (isSVG() && style()->svgStyle().isFillColorCurrentColor())
+            || (isSVG() && style()->svgStyle().isStrokeColorCurrentColor()))
             diff.setNeedsPaintInvalidationObject();
     }
 

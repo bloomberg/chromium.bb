@@ -363,6 +363,22 @@ public:
     const Color& visitedLinkStrokePaintColor() const { return stroke->visitedLinkPaintColor; }
     const String& visitedLinkStrokePaintUri() const { return stroke->visitedLinkPaintUri; }
 
+    bool isFillColorCurrentColor() const
+    {
+        return fillPaintType() == SVG_PAINTTYPE_CURRENTCOLOR
+            || visitedLinkFillPaintType() == SVG_PAINTTYPE_CURRENTCOLOR
+            || fillPaintType() == SVG_PAINTTYPE_URI_CURRENTCOLOR
+            || visitedLinkFillPaintType() == SVG_PAINTTYPE_URI_CURRENTCOLOR;
+    }
+
+    bool isStrokeColorCurrentColor() const
+    {
+        return strokePaintType() == SVG_PAINTTYPE_CURRENTCOLOR
+            || visitedLinkStrokePaintType() == SVG_PAINTTYPE_CURRENTCOLOR
+            || strokePaintType() == SVG_PAINTTYPE_URI_CURRENTCOLOR
+            || visitedLinkStrokePaintType() == SVG_PAINTTYPE_URI_CURRENTCOLOR;
+    }
+
     // convenience
     bool hasClipper() const { return !clipperResource().isEmpty(); }
     bool hasMasker() const { return !maskerResource().isEmpty(); }
