@@ -51,8 +51,6 @@ namespace content {
 class RenderFrameImpl;
 class RenderViewImpl;
 
-const int kInvalidFrameRoutingID = -1;
-
 class CONTENT_EXPORT HistoryEntry {
  public:
   class HistoryNode {
