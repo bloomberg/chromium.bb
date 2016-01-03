@@ -531,12 +531,18 @@ Node* CSSComputedStyleDeclaration::styledNode() const
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(AtomicString customPropertyName) const
 {
-    return ComputedStyleCSSValueMapping::get(customPropertyName, *computeComputedStyle());
+    const ComputedStyle* style = computeComputedStyle();
+    if (!style)
+        return nullptr;
+    return ComputedStyleCSSValueMapping::get(customPropertyName, *style);
 }
 
 const HashMap<AtomicString, RefPtr<CSSVariableData>>* CSSComputedStyleDeclaration::getVariables() const
 {
-    return ComputedStyleCSSValueMapping::getVariables(*computeComputedStyle());
+    const ComputedStyle* style = computeComputedStyle();
+    if (!style)
+        return nullptr;
+    return ComputedStyleCSSValueMapping::getVariables(*style);
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropertyID propertyID) const
