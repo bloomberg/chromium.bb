@@ -25,12 +25,8 @@ def main():
                       help='The slave num of this CT run.')
   parser.add_argument('-b', '--benchmark', required=True,
                       help='The benchmark to run.')
-  parser.add_argument('-m', '--master', required=True,
-                      help='The master the builder is running on.')
-  parser.add_argument('-c', '--builder', required=True,
-                      help='The builder that triggered this run.')
-  parser.add_argument('-g', '--git_hash', required=True,
-                      help='The git hash the build was triggered at.')
+  parser.add_argument('-o', '--out_dir', required=True,
+                      help='The directory outputs should be stored in.')
 
   args = parser.parse_args()
 
@@ -48,9 +44,7 @@ def main():
       '--benchmark_name', args.benchmark,
       '--telemetry_binaries_dir', telemetry_binaries_dir,
       '--page_sets_dir', page_sets_dir,
-      '--master', args.master,
-      '--builder', args.builder,
-      '--git_hash', args.git_hash,
+      '--out_dir', args.out_dir,
       '--alsologtostderr',
   ]
   return subprocess.call(cmd)
