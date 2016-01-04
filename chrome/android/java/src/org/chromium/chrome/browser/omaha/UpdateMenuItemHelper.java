@@ -325,22 +325,18 @@ public class UpdateMenuItemHelper {
     }
 
     private void recordInternalStorageSize() {
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                File path = Environment.getDataDirectory();
-                StatFs statFs = new StatFs(path.getAbsolutePath());
-                int size;
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                    size = getSize(statFs);
-                } else {
-                    size = getSizeUpdatedApi(statFs);
-                }
-                RecordHistogram.recordLinearCountHistogram(
-                        "GoogleUpdate.InfoBar.InternalStorageSizeAvailable", size, 1, 200, 100);
-                return null;
-            }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        assert !ThreadUtils.runningOnUiThread();
+
+        File path = Environment.getDataDirectory();
+        StatFs statFs = new StatFs(path.getAbsolutePath());
+        int size;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            size = getSize(statFs);
+        } else {
+            size = getSizeUpdatedApi(statFs);
+        }
+        RecordHistogram.recordLinearCountHistogram(
+                "GoogleUpdate.InfoBar.InternalStorageSizeAvailable", size, 1, 200, 100);
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
