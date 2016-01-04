@@ -637,6 +637,8 @@
       'renderer/media/audio_track_recorder.h',
       'renderer/media/canvas_capture_handler.cc',
       'renderer/media/canvas_capture_handler.h',
+      'renderer/media/html_video_element_capturer_source.cc',
+      'renderer/media/html_video_element_capturer_source.h',
       'renderer/media/media_recorder_handler.cc',
       'renderer/media/media_recorder_handler.h',
       'renderer/media/media_stream.cc',
