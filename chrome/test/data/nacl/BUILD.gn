@@ -9,7 +9,7 @@ group("nacl") {
   newlib = "//build/toolchain/nacl:clang_newlib_${target_cpu}"
   glibc = "//build/toolchain/nacl:glibc_${target_cpu}"
   pnacl = "//build/toolchain/nacl:newlib_pnacl"
-  deps = [
+  data_deps = [
     ":exit_status_test($glibc)",
     ":exit_status_test($newlib)",
     ":exit_status_test($pnacl)",
@@ -74,13 +74,13 @@ group("nacl") {
   ]
   if (is_linux) {
     nonsfi = "//build/toolchain/nacl:newlib_pnacl_nonsfi"
-    deps += [
+    data_deps += [
       ":irt_exception_test($nonsfi)",
       ":irt_manifest_file($nonsfi)",
       ":shared_test_files($nonsfi)",
     ]
     if (is_clang) {
-      deps += [ ":nonsfi_libc_free" ]
+      data_deps += [ ":nonsfi_libc_free" ]
     }
   }
 }
