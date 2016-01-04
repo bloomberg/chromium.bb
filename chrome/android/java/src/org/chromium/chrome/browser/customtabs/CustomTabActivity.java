@@ -247,9 +247,11 @@ public class CustomTabActivity extends ChromeActivity {
                 CustomTabsConnection.getInstance(getApplication())
                         .getClientPackageNameForSession(mSession),
                 IntentHandler.getUrlFromIntent(getIntent()));
+        mainTab.setAppAssociatedWith(CustomTabsConnection.getInstance(getApplication())
+                .getClientPackageNameForSession(mSession));
+        recordClientPackageName();
         loadUrlInCurrentTab(new LoadUrlParams(IntentHandler.getUrlFromIntent(getIntent())),
                 IntentHandler.getTimestampFromIntent(getIntent()));
-        recordClientPackageName();
         super.finishNativeInitialization();
     }
 

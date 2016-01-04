@@ -33,13 +33,15 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
      */
     static class CustomTabNavigationDelegate extends ExternalNavigationDelegateImpl {
         private static final String TAG = "customtabs";
+        private final String mClientPackageName;
         private boolean mHasActivityStarted;
 
         /**
          * Constructs a new instance of {@link CustomTabNavigationDelegate}.
          */
-        public CustomTabNavigationDelegate(ChromeActivity activity) {
+        public CustomTabNavigationDelegate(ChromeActivity activity, String clientPackageName) {
             super(activity);
+            mClientPackageName = clientPackageName;
         }
 
         @Override
@@ -53,8 +55,14 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
             boolean isExternalProtocol = !UrlUtilities.isAcceptedScheme(intent.getDataString());
             boolean hasDefaultHandler = hasDefaultHandler(intent);
             try {
-                // For a url chrome can handle and there is no default set, handle it ourselves.
-                if (!hasDefaultHandler && !isExternalProtocol) return false;
+                // For a URL chrome can handle and there is no default set, handle it ourselves.
+                if (!hasDefaultHandler) {
+                    if (isPackageSpecializedHandler(getActivity(), mClientPackageName, intent)) {
+                        intent.setPackage(mClientPackageName);
+                    } else if (!isExternalProtocol) {
+                        return false;
+                    }
+                }
                 // If android fails to find a handler, handle it ourselves.
                 if (!getActivity().startActivityIfNeeded(intent, -1)) return false;
 
@@ -137,7 +145,7 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
     @Override
     public InterceptNavigationDelegateImpl createInterceptNavigationDelegate(Tab tab,
             ChromeActivity activity) {
-        mNavigationDelegate = new CustomTabNavigationDelegate(activity);
+        mNavigationDelegate = new CustomTabNavigationDelegate(activity, tab.getAppAssociatedWith());
         mNavigationHandler = new ExternalNavigationHandler(mNavigationDelegate);
         return new InterceptNavigationDelegateImpl(mNavigationHandler, activity, tab);
     }

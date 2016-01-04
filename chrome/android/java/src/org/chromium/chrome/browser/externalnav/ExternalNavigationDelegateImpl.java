@@ -13,6 +13,7 @@ import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
@@ -196,14 +197,24 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     @Override
     public boolean isSpecializedHandlerAvailable(Intent intent) {
+        return isPackageSpecializedHandler(mActivity, null, intent);
+    }
+
+    /**
+     * Check whether the given package is a specialized handler for the given intent
+     *
+     * @param context {@link Context} to use for getting the {@link PackageManager}.
+     * @param packageName Package name to check against. Can be null or empty.
+     * @param intent The intent to resolve for.
+     * @return Whether the given package is a specialized handler for the given intent. If there is
+     *         no package name given checks whether there is any specialized handler.
+     */
+    public static boolean isPackageSpecializedHandler(
+            Context context, String packageName, Intent intent) {
         try {
-            PackageManager pm = mActivity.getPackageManager();
-            List<ResolveInfo> handlers = pm.queryIntentActivities(
-                    intent,
-                    PackageManager.GET_RESOLVED_FILTER);
-            if (handlers == null || handlers.size() == 0) {
-                return false;
-            }
+            List<ResolveInfo> handlers = context.getPackageManager().queryIntentActivities(
+                    intent, PackageManager.GET_RESOLVED_FILTER);
+            if (handlers == null || handlers.size() == 0) return false;
             for (ResolveInfo resolveInfo : handlers) {
                 IntentFilter filter = resolveInfo.filter;
                 if (filter == null) {
@@ -215,6 +226,10 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
                     // Generic handler, skip
                     continue;
                 }
+                if (TextUtils.isEmpty(packageName)) return true;
+                ActivityInfo activityInfo = resolveInfo.activityInfo;
+                if (activityInfo == null) continue;
+                if (!activityInfo.packageName.equals(packageName)) continue;
                 return true;
             }
         } catch (RuntimeException e) {
