@@ -30,6 +30,8 @@
 namespace autofill {
 namespace {
 
+using l10n::CollatorWrapper;
+
 // The maximum capacity needed to store a locale up to the country code.
 const size_t kLocaleCapacity =
     ULOC_LANG_CAPACITY + ULOC_SCRIPT_CAPACITY + ULOC_COUNTRY_CAPACITY + 1;
@@ -863,7 +865,7 @@ class CountryNames {
   // localized to |locale| to their corresponding country codes. Uses a
   // |collator| which is suitable for the locale.
   void AddLocalizedNamesForLocale(const std::string& locale,
-                                  const icu::Collator& collator);
+                                  const CollatorWrapper& collator);
 
   // Interprets |country_name| as a full country name localized to the given
   // |locale| and returns the corresponding country code stored in
@@ -874,13 +876,13 @@ class CountryNames {
 
   // Returns an ICU collator -- i.e. string comparator -- appropriate for the
   // given |locale|, or null if no collator is available.
-  const icu::Collator* GetCollatorForLocale(const std::string& locale);
+  const CollatorWrapper* GetCollatorForLocale(const std::string& locale);
 
   // Returns the ICU sort key corresponding to |str| for the given |collator|.
   // Uses |buffer| as temporary storage, and might resize |buffer| as a side-
   // effect. |buffer_size| should specify the |buffer|'s size, and is updated if
   // the |buffer| is resized.
-  const std::string GetSortKey(const icu::Collator& collator,
+  const std::string GetSortKey(const CollatorWrapper& collator,
                                const base::string16& str,
                                scoped_ptr<uint8_t[]>* buffer,
                                int32_t* buffer_size) const;
@@ -898,7 +900,7 @@ class CountryNames {
       locales_to_localized_names_;
 
   // Maps ICU locale names to their corresponding collators.
-  std::map<std::string, scoped_ptr<icu::Collator>> collators_;
+  std::map<std::string, scoped_ptr<CollatorWrapper>> collators_;
 
   DISALLOW_COPY_AND_ASSIGN(CountryNames);
 };
@@ -953,7 +955,7 @@ const std::string CountryNames::GetCountryCode(const base::string16& country,
 }
 
 void CountryNames::AddLocalizedNamesForLocale(const std::string& locale,
-                                              const icu::Collator& collator) {
+                                              const CollatorWrapper& collator) {
   // Nothing to do if we've previously added the localized names for the given
   // |locale|.
   if (locales_to_localized_names_.count(locale))
@@ -983,7 +985,7 @@ void CountryNames::AddLocalizedNamesForLocale(const std::string& locale,
 const std::string CountryNames::GetCountryCodeForLocalizedName(
     const base::string16& country_name,
     const std::string& locale) {
-  const icu::Collator* collator = GetCollatorForLocale(locale);
+  const CollatorWrapper* collator = GetCollatorForLocale(locale);
   // In very rare cases, the collator fails to initialize.
   if (!collator)
     return std::string();
@@ -1011,19 +1013,20 @@ const std::string CountryNames::GetCountryCodeForLocalizedName(
   return std::string();
 }
 
-const icu::Collator* CountryNames::GetCollatorForLocale(
+const CollatorWrapper* CountryNames::GetCollatorForLocale(
     const std::string& locale) {
   if (!ContainsKey(collators_, locale)) {
-    scoped_ptr<icu::Collator> collator(
+    scoped_ptr<CollatorWrapper> collator(
         autofill::l10n::GetCollatorForLocale(icu::Locale(locale.c_str())));
     if (!collator)
       return nullptr;
 
     // Compare case-insensitively and ignoring punctuation.
     UErrorCode ignored = U_ZERO_ERROR;
-    collator->setAttribute(UCOL_STRENGTH, UCOL_SECONDARY, ignored);
+    collator->collator()->setAttribute(UCOL_STRENGTH, UCOL_SECONDARY, ignored);
     ignored = U_ZERO_ERROR;
-    collator->setAttribute(UCOL_ALTERNATE_HANDLING, UCOL_SHIFTED, ignored);
+    collator->collator()->setAttribute(UCOL_ALTERNATE_HANDLING, UCOL_SHIFTED,
+                                       ignored);
 
     collators_[locale] = std::move(collator);
   }
@@ -1031,7 +1034,7 @@ const icu::Collator* CountryNames::GetCollatorForLocale(
   return collators_[locale].get();
 }
 
-const std::string CountryNames::GetSortKey(const icu::Collator& collator,
+const std::string CountryNames::GetSortKey(const CollatorWrapper& collator,
                                            const base::string16& str,
                                            scoped_ptr<uint8_t[]>* buffer,
                                            int32_t* buffer_size) const {
@@ -1039,15 +1042,16 @@ const std::string CountryNames::GetSortKey(const icu::Collator& collator,
   DCHECK(buffer_size);
 
   icu::UnicodeString icu_str(str.c_str(), str.length());
-  int32_t expected_size = collator.getSortKey(icu_str, buffer->get(),
-                                              *buffer_size);
+  int32_t expected_size =
+      collator.collator()->getSortKey(icu_str, buffer->get(), *buffer_size);
   if (expected_size > *buffer_size) {
     // If there wasn't enough space, grow the buffer and try again.
     *buffer_size = expected_size;
     buffer->reset(new uint8_t[*buffer_size]);
     DCHECK(buffer->get());
 
-    expected_size = collator.getSortKey(icu_str, buffer->get(), *buffer_size);
+    expected_size =
+        collator.collator()->getSortKey(icu_str, buffer->get(), *buffer_size);
     DCHECK_EQ(*buffer_size, expected_size);
   }
 
