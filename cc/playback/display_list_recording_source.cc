@@ -61,7 +61,8 @@ void DisplayListRecordingSource::ToProtobuf(
   proto->set_clear_canvas_with_debug_color(clear_canvas_with_debug_color_);
   proto->set_solid_color(static_cast<uint64_t>(solid_color_));
   proto->set_background_color(static_cast<uint64_t>(background_color_));
-  display_list_->ToProtobuf(proto->mutable_display_list());
+  if (display_list_)
+    display_list_->ToProtobuf(proto->mutable_display_list());
 }
 
 void DisplayListRecordingSource::FromProtobuf(
@@ -77,9 +78,16 @@ void DisplayListRecordingSource::FromProtobuf(
   clear_canvas_with_debug_color_ = proto.clear_canvas_with_debug_color();
   solid_color_ = static_cast<SkColor>(proto.solid_color());
   background_color_ = static_cast<SkColor>(proto.background_color());
-  display_list_ = DisplayItemList::CreateFromProto(proto.display_list());
 
-  FinishDisplayItemListUpdate();
+  // This might not exist if the |display_list_| of the serialized
+  // DisplayListRecordingSource was null, wich can happen if |Clear()| is
+  // called.
+  if (proto.has_display_list()) {
+    display_list_ = DisplayItemList::CreateFromProto(proto.display_list());
+    FinishDisplayItemListUpdate();
+  } else {
+    display_list_ = nullptr;
+  }
 }
 
 void DisplayListRecordingSource::UpdateInvalidationForNewViewport(

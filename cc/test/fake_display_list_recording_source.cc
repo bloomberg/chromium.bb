@@ -27,6 +27,14 @@ FakeDisplayListRecordingSource::CreateRasterSource(bool can_use_lcd) const {
 
 bool FakeDisplayListRecordingSource::EqualsTo(
     const FakeDisplayListRecordingSource& other) {
+  // The DisplayItemLists are equal if they are both null or they are both not
+  // null and render to the same thing.
+  bool display_lists_equal = !display_list_ && !other.display_list_;
+  if (display_list_ && other.display_list_) {
+    display_lists_equal = AreDisplayListDrawingResultsSame(
+        recorded_viewport_, display_list_, other.display_list_);
+  }
+
   return recorded_viewport_ == other.recorded_viewport_ &&
          size_ == other.size_ &&
          slow_down_raster_scale_factor_for_debug_ ==
@@ -38,9 +46,7 @@ bool FakeDisplayListRecordingSource::EqualsTo(
          clear_canvas_with_debug_color_ ==
              other.clear_canvas_with_debug_color_ &&
          solid_color_ == other.solid_color_ &&
-         background_color_ == other.background_color_ &&
-         AreDisplayListDrawingResultsSame(recorded_viewport_, display_list_,
-                                          other.display_list_);
+         background_color_ == other.background_color_ && display_lists_equal;
 }
 
 }  // namespace cc

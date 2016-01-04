@@ -66,7 +66,8 @@ message BlimpMessage {
 
   // Feature-specific messages follow.
   // Only one of these fields may be set per BlimpMessage.
-  // TODO(kmarshall): use a 'oneof' union when it's supported in Chromium.
+  // TODO(kmarshall): use a 'oneof' union when it's supported in Chromium.  See
+  // crbug.com/570371.
   optional TabControlMessage tab_control = 1000;
   optional NavigationMessage navigation = 1001;
   optional RenderWidgetMessage render_widget = 1002;

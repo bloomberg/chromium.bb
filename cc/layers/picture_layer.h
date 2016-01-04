@@ -53,10 +53,18 @@ class CC_EXPORT PictureLayer : public Layer {
   ~PictureLayer() override;
 
   bool HasDrawableContent() const override;
+  void SetTypeForProtoSerialization(proto::LayerNode* proto) const override;
+  void LayerSpecificPropertiesToProto(proto::LayerProperties* proto) override;
+  void FromLayerSpecificPropertiesProto(
+      const proto::LayerProperties& proto) override;
 
   bool is_mask() const { return is_mask_; }
 
  private:
+  friend class TestSerializationPictureLayer;
+
+  void DropRecordingSourceContentIfInvalid();
+
   ContentLayerClient* client_;
   scoped_ptr<DisplayListRecordingSource> recording_source_;
   devtools_instrumentation::

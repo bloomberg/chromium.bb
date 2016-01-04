@@ -123,6 +123,8 @@ component("cc") {
     "layers/delegated_renderer_layer_impl.h",
     "layers/draw_properties.cc",
     "layers/draw_properties.h",
+    "layers/empty_content_layer_client.cc",
+    "layers/empty_content_layer_client.h",
     "layers/heads_up_display_layer.cc",
     "layers/heads_up_display_layer.h",
     "layers/heads_up_display_layer_impl.cc",

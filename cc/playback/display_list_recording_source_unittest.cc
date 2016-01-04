@@ -42,6 +42,19 @@ void ValidateRecordingSourceSerialization(
   EXPECT_TRUE(source->EqualsTo(new_source));
 }
 
+TEST(DisplayListRecordingSourceTest, TestNullDisplayListSerialization) {
+  gfx::Rect recorded_viewport(0, 0, 256, 256);
+
+  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
+      CreateRecordingSource(recorded_viewport);
+  recording_source->SetDisplayListUsesCachedPicture(false);
+  recording_source->SetGenerateDiscardableImagesMetadata(true);
+  recording_source->Rerecord();
+  recording_source->SetEmptyBounds();
+
+  ValidateRecordingSourceSerialization(recording_source.get());
+}
+
 TEST(DisplayListRecordingSourceTest, TestEmptySerializationDeserialization) {
   gfx::Rect recorded_viewport(0, 0, 256, 256);
 

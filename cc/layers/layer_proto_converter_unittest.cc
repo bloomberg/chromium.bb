@@ -4,8 +4,10 @@
 
 #include "cc/layers/layer_proto_converter.h"
 
+#include "cc/layers/empty_content_layer_client.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_settings.h"
+#include "cc/layers/picture_layer.h"
 #include "cc/proto/layer.pb.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
@@ -48,21 +50,21 @@ TEST_F(LayerProtoConverterTest, TestKeepingRoot) {
   scoped_refptr<Layer> old_root = Layer::Create(LayerSettings());
   proto::LayerNode root_node;
   root_node.set_id(old_root->id());
-  root_node.set_type(proto::LayerType::Base);
+  root_node.set_type(proto::LayerType::LAYER);
 
   proto::LayerNode* child_a_node = root_node.add_children();
   child_a_node->set_id(442);
-  child_a_node->set_type(proto::LayerType::Base);
+  child_a_node->set_type(proto::LayerType::LAYER);
   child_a_node->set_parent_id(old_root->id());  // root_node
 
   proto::LayerNode* child_b_node = root_node.add_children();
   child_b_node->set_id(443);
-  child_b_node->set_type(proto::LayerType::Base);
+  child_b_node->set_type(proto::LayerType::LAYER);
   child_b_node->set_parent_id(old_root->id());  // root_node
 
   proto::LayerNode* child_c_node = child_b_node->add_children();
   child_c_node->set_id(444);
-  child_c_node->set_type(proto::LayerType::Base);
+  child_c_node->set_type(proto::LayerType::LAYER);
   child_c_node->set_parent_id(child_b_node->id());
 
   scoped_refptr<Layer> new_root =
@@ -95,21 +97,21 @@ TEST_F(LayerProtoConverterTest, TestSwappingRoot) {
   */
   proto::LayerNode root_node;
   root_node.set_id(441);
-  root_node.set_type(proto::LayerType::Base);
+  root_node.set_type(proto::LayerType::LAYER);
 
   proto::LayerNode* child_a_node = root_node.add_children();
   child_a_node->set_id(442);
-  child_a_node->set_type(proto::LayerType::Base);
+  child_a_node->set_type(proto::LayerType::LAYER);
   child_a_node->set_parent_id(root_node.id());
 
   proto::LayerNode* child_b_node = root_node.add_children();
   child_b_node->set_id(443);
-  child_b_node->set_type(proto::LayerType::Base);
+  child_b_node->set_type(proto::LayerType::LAYER);
   child_b_node->set_parent_id(root_node.id());
 
   proto::LayerNode* child_c_node = child_b_node->add_children();
   child_c_node->set_id(444);
-  child_c_node->set_type(proto::LayerType::Base);
+  child_c_node->set_type(proto::LayerType::LAYER);
   child_c_node->set_parent_id(child_b_node->id());
 
   scoped_refptr<Layer> old_root = Layer::Create(LayerSettings());
@@ -337,6 +339,39 @@ TEST_F(LayerProtoConverterTest, DeserializeLayerProperties) {
 
   // Recursively clear out LayerTreeHost.
   root->SetLayerTreeHost(nullptr);
+}
+
+TEST_F(LayerProtoConverterTest, PictureLayerTypeSerialization) {
+  // Make sure that PictureLayers serialize to the
+  // proto::LayerType::PICTURE_LAYER type.
+  scoped_refptr<PictureLayer> layer = PictureLayer::Create(
+      LayerSettings(), EmptyContentLayerClient::GetInstance());
+
+  proto::LayerNode layer_hierarchy;
+  LayerProtoConverter::SerializeLayerHierarchy(layer.get(), &layer_hierarchy);
+  EXPECT_EQ(proto::LayerType::PICTURE_LAYER, layer_hierarchy.type());
+}
+
+TEST_F(LayerProtoConverterTest, PictureLayerTypeDeserialization) {
+  // Make sure that proto::LayerType::PICTURE_LAYER ends up building a
+  // PictureLayer.
+  scoped_refptr<Layer> old_root = PictureLayer::Create(
+      LayerSettings(), EmptyContentLayerClient::GetInstance());
+  proto::LayerNode root_node;
+  root_node.set_id(old_root->id());
+  root_node.set_type(proto::LayerType::PICTURE_LAYER);
+
+  scoped_refptr<Layer> new_root =
+      LayerProtoConverter::DeserializeLayerHierarchy(old_root, root_node);
+
+  // Validate that the ids are equal.
+  EXPECT_EQ(old_root->id(), new_root->id());
+
+  // Check that the layer type is equal by using the type this layer would
+  // serialize to.
+  proto::LayerNode layer_node;
+  new_root->SetTypeForProtoSerialization(&layer_node);
+  EXPECT_EQ(proto::LayerType::PICTURE_LAYER, layer_node.type());
 }
 
 }  // namespace

@@ -28,6 +28,7 @@ message TabControlMessage {
 
   // Feature-specific messages follow.
   // Only one of these fields may be set per TabControlMessage.
-  // TODO(kmarshall): use a 'oneof' union when it's supported in Chromium.
+  // TODO(kmarshall): use a 'oneof' union when it's supported in Chromium.  See
+  // crbug.com/570371.
   optional SizeMessage size = 1000;
 }

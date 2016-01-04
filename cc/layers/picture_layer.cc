@@ -8,6 +8,9 @@
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/playback/display_list_recording_source.h"
+#include "cc/proto/cc_conversions.h"
+#include "cc/proto/gfx_conversions.h"
+#include "cc/proto/layer.pb.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
@@ -50,25 +53,7 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
   // TODO(danakj): Make is_mask_ a constructor parameter for PictureLayer.
   DCHECK_EQ(layer_impl->is_mask(), is_mask_);
-
-  int source_frame_number = layer_tree_host()->source_frame_number();
-  gfx::Size impl_bounds = layer_impl->bounds();
-  gfx::Size recording_source_bounds = recording_source_->GetSize();
-
-  // If update called, then recording source size must match bounds pushed to
-  // impl layer.
-  DCHECK(update_source_frame_number_ != source_frame_number ||
-         impl_bounds == recording_source_bounds)
-      << " bounds " << impl_bounds.ToString() << " recording source "
-      << recording_source_bounds.ToString();
-
-  if (update_source_frame_number_ != source_frame_number &&
-      recording_source_bounds != impl_bounds) {
-    // Update may not get called for the layer (if it's not in the viewport
-    // for example, even though it has resized making the recording source no
-    // longer valid. In this case just destroy the recording source.
-    recording_source_->SetEmptyBounds();
-  }
+  DropRecordingSourceContentIfInvalid();
 
   layer_impl->SetNearestNeighbor(nearest_neighbor_);
 
@@ -198,8 +183,70 @@ bool PictureLayer::HasDrawableContent() const {
   return client_ && Layer::HasDrawableContent();
 }
 
+void PictureLayer::SetTypeForProtoSerialization(proto::LayerNode* proto) const {
+  proto->set_type(proto::LayerType::PICTURE_LAYER);
+}
+
+void PictureLayer::LayerSpecificPropertiesToProto(
+    proto::LayerProperties* proto) {
+  Layer::LayerSpecificPropertiesToProto(proto);
+  DropRecordingSourceContentIfInvalid();
+
+  proto::PictureLayerProperties* picture = proto->mutable_picture();
+  recording_source_->ToProtobuf(picture->mutable_recording_source());
+  RegionToProto(*invalidation_.region(), picture->mutable_invalidation());
+  RectToProto(last_updated_visible_layer_rect_,
+              picture->mutable_last_updated_visible_layer_rect());
+  picture->set_is_mask(is_mask_);
+  picture->set_nearest_neighbor(nearest_neighbor_);
+
+  picture->set_update_source_frame_number(update_source_frame_number_);
+
+  invalidation_.Clear();
+}
+
+void PictureLayer::FromLayerSpecificPropertiesProto(
+    const proto::LayerProperties& proto) {
+  Layer::FromLayerSpecificPropertiesProto(proto);
+  const proto::PictureLayerProperties& picture = proto.picture();
+  recording_source_->FromProtobuf(picture.recording_source());
+
+  Region new_invalidation = RegionFromProto(picture.invalidation());
+  invalidation_.Swap(&new_invalidation);
+  last_updated_visible_layer_rect_ =
+      ProtoToRect(picture.last_updated_visible_layer_rect());
+  is_mask_ = picture.is_mask();
+  nearest_neighbor_ = picture.nearest_neighbor();
+
+  update_source_frame_number_ = picture.update_source_frame_number();
+}
+
 void PictureLayer::RunMicroBenchmark(MicroBenchmark* benchmark) {
   benchmark->RunOnLayer(this);
+}
+
+void PictureLayer::DropRecordingSourceContentIfInvalid() {
+  int source_frame_number = layer_tree_host()->source_frame_number();
+  gfx::Size recording_source_bounds = recording_source_->GetSize();
+
+  gfx::Size layer_bounds = bounds();
+  if (paint_properties().source_frame_number == source_frame_number)
+    layer_bounds = paint_properties().bounds;
+
+  // If update called, then recording source size must match bounds pushed to
+  // impl layer.
+  DCHECK(update_source_frame_number_ != source_frame_number ||
+         layer_bounds == recording_source_bounds)
+      << " bounds " << layer_bounds.ToString() << " recording source "
+      << recording_source_bounds.ToString();
+
+  if (update_source_frame_number_ != source_frame_number &&
+      recording_source_bounds != layer_bounds) {
+    // Update may not get called for the layer (if it's not in the viewport
+    // for example), even though it has resized making the recording source no
+    // longer valid. In this case just destroy the recording source.
+    recording_source_->SetEmptyBounds();
+  }
 }
 
 }  // namespace cc

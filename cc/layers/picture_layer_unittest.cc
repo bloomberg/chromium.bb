@@ -8,9 +8,11 @@
 
 #include "base/thread_task_runner_handle.h"
 #include "cc/layers/content_layer_client.h"
+#include "cc/layers/empty_content_layer_client.h"
 #include "cc/layers/layer_settings.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/playback/display_item_list_settings.h"
+#include "cc/proto/layer.pb.h"
 #include "cc/test/fake_display_list_recording_source.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_picture_layer.h"
@@ -23,23 +25,144 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
-namespace {
 
-class MockContentLayerClient : public ContentLayerClient {
+class TestSerializationPictureLayer : public PictureLayer {
  public:
-  gfx::Rect PaintableRegion() override { return gfx::Rect(); }
-  scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
-      PaintingControlSetting picture_control) override {
-    return DisplayItemList::Create(gfx::Rect(), DisplayItemListSettings());
+  static scoped_refptr<TestSerializationPictureLayer> Create(
+      const gfx::Size& recording_source_viewport) {
+    return make_scoped_refptr(new TestSerializationPictureLayer(
+        LayerSettings(), EmptyContentLayerClient::GetInstance(),
+        FakeDisplayListRecordingSource::CreateFilledRecordingSource(
+            recording_source_viewport),
+        recording_source_viewport));
   }
-  bool FillsBoundsCompletely() const override { return false; };
-  size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
+
+  FakeDisplayListRecordingSource* recording_source() {
+    return static_cast<FakeDisplayListRecordingSource*>(
+        recording_source_.get());
+  }
+
+  void set_invalidation(const Region& invalidation) {
+    *invalidation_.region() = invalidation;
+  }
+
+  void set_last_updated_visible_layer_rect(const gfx::Rect& rect) {
+    last_updated_visible_layer_rect_ = rect;
+  }
+
+  void set_update_source_frame_number(int number) {
+    update_source_frame_number_ = number;
+  }
+
+  void set_is_mask(bool is_mask) { is_mask_ = is_mask; }
+
+  void set_nearest_neighbor(bool nearest_neighbor) {
+    nearest_neighbor_ = nearest_neighbor;
+  }
+
+  void ValidateSerialization() {
+    proto::LayerProperties proto;
+    LayerSpecificPropertiesToProto(&proto);
+
+    FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
+    TestTaskGraphRunner task_graph_runner;
+    scoped_ptr<FakeLayerTreeHost> host =
+        FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
+    scoped_refptr<TestSerializationPictureLayer> layer =
+        TestSerializationPictureLayer::Create(recording_source_viewport_);
+    host->SetRootLayer(layer);
+    layer->FromLayerSpecificPropertiesProto(proto);
+
+    // Validate that the PictureLayer specific fields are properly set.
+    EXPECT_TRUE(recording_source()->EqualsTo(*layer->recording_source()));
+    EXPECT_EQ(last_updated_visible_layer_rect_,
+              layer->last_updated_visible_layer_rect_);
+    EXPECT_EQ(update_source_frame_number_, layer->update_source_frame_number_);
+    EXPECT_EQ(is_mask_, layer->is_mask_);
+    EXPECT_EQ(nearest_neighbor_, layer->nearest_neighbor_);
+  }
+
+ private:
+  TestSerializationPictureLayer(const LayerSettings& settings,
+                                ContentLayerClient* client,
+                                scoped_ptr<DisplayListRecordingSource> source,
+                                const gfx::Size& recording_source_viewport)
+      : PictureLayer(settings, client, std::move(source)),
+        recording_source_viewport_(recording_source_viewport) {}
+  ~TestSerializationPictureLayer() override {}
+
+  gfx::Size recording_source_viewport_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestSerializationPictureLayer);
 };
 
+namespace {
+
+TEST(PictureLayerTest, TestSetAllPropsSerializationDeserialization) {
+  FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
+  TestTaskGraphRunner task_graph_runner;
+  scoped_ptr<FakeLayerTreeHost> host =
+      FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
+
+  gfx::Size recording_source_viewport(256, 256);
+  scoped_refptr<TestSerializationPictureLayer> layer =
+      TestSerializationPictureLayer::Create(recording_source_viewport);
+  host->SetRootLayer(layer);
+
+  Region region(gfx::Rect(14, 15, 16, 17));
+  layer->set_invalidation(region);
+  layer->set_last_updated_visible_layer_rect(gfx::Rect(5, 6, 7, 8));
+  layer->set_is_mask(true);
+  layer->set_nearest_neighbor(true);
+
+  layer->SetBounds(recording_source_viewport);
+  layer->set_update_source_frame_number(0);
+  layer->recording_source()->SetDisplayListUsesCachedPicture(false);
+  layer->recording_source()->add_draw_rect(
+      gfx::Rect(recording_source_viewport));
+  layer->recording_source()->SetGenerateDiscardableImagesMetadata(true);
+  layer->recording_source()->Rerecord();
+  layer->ValidateSerialization();
+}
+
+TEST(PictureLayerTest, TestSerializationDeserialization) {
+  FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
+  TestTaskGraphRunner task_graph_runner;
+  scoped_ptr<FakeLayerTreeHost> host =
+      FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
+
+  gfx::Size recording_source_viewport(256, 256);
+  scoped_refptr<TestSerializationPictureLayer> layer =
+      TestSerializationPictureLayer::Create(recording_source_viewport);
+  host->SetRootLayer(layer);
+
+  layer->SetBounds(recording_source_viewport);
+  layer->set_update_source_frame_number(0);
+  layer->recording_source()->SetDisplayListUsesCachedPicture(false);
+  layer->recording_source()->add_draw_rect(
+      gfx::Rect(recording_source_viewport));
+  layer->recording_source()->SetGenerateDiscardableImagesMetadata(true);
+  layer->recording_source()->Rerecord();
+  layer->ValidateSerialization();
+}
+
+TEST(PictureLayerTest, TestEmptySerializationDeserialization) {
+  FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
+  TestTaskGraphRunner task_graph_runner;
+  scoped_ptr<FakeLayerTreeHost> host =
+      FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
+
+  gfx::Size recording_source_viewport(256, 256);
+  scoped_refptr<TestSerializationPictureLayer> layer =
+      TestSerializationPictureLayer::Create(recording_source_viewport);
+  host->SetRootLayer(layer);
+  layer->ValidateSerialization();
+}
+
 TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
-  MockContentLayerClient client;
+  ContentLayerClient* client = EmptyContentLayerClient::GetInstance();
   scoped_refptr<PictureLayer> layer =
-      PictureLayer::Create(LayerSettings(), &client);
+      PictureLayer::Create(LayerSettings(), client);
   layer->SetBounds(gfx::Size(10, 10));
 
   FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
@@ -83,10 +206,10 @@ TEST(PictureLayerTest, SuitableForGpuRasterization) {
   FakeDisplayListRecordingSource* recording_source =
       recording_source_owned.get();
 
-  MockContentLayerClient client;
+  ContentLayerClient* client = EmptyContentLayerClient::GetInstance();
   scoped_refptr<FakePictureLayer> layer =
       FakePictureLayer::CreateWithRecordingSource(
-          LayerSettings(), &client, std::move(recording_source_owned));
+          LayerSettings(), client, std::move(recording_source_owned));
 
   FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
   TestTaskGraphRunner task_graph_runner;
@@ -99,7 +222,7 @@ TEST(PictureLayerTest, SuitableForGpuRasterization) {
   gfx::Rect layer_rect(layer_bounds);
   Region invalidation(layer_rect);
   recording_source->UpdateAndExpandInvalidation(
-      &client, &invalidation, layer_bounds, layer_rect, 1,
+      client, &invalidation, layer_bounds, layer_rect, 1,
       DisplayListRecordingSource::RECORD_NORMALLY);
 
   // Layer is suitable for gpu rasterization by default.
@@ -126,9 +249,9 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
 
-  MockContentLayerClient client;
+  ContentLayerClient* client = EmptyContentLayerClient::GetInstance();
   scoped_refptr<FakePictureLayer> layer =
-      FakePictureLayer::Create(LayerSettings(), &client);
+      FakePictureLayer::Create(LayerSettings(), client);
 
   LayerTreeHost::InitParams params;
   params.client = &host_client1;

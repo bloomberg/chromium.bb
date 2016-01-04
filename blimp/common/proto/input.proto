@@ -87,7 +87,8 @@ message InputMessage {
 
   // Input event specific messages follow.
   // Only one of these fields may be set per InputMessage.
-  // TODO(dtrainor): use a 'oneof' union when it's supported in Chromium.
+  // TODO(dtrainor): use a 'oneof' union when it's supported in Chromium.  See
+  // crbug.com/570371.
   optional GestureScrollBegin gesture_scroll_begin = 4;
   optional GestureScrollUpdate gesture_scroll_update = 5;
   optional GestureFlingStart gesture_fling_start = 6;

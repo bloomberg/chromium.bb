@@ -4,6 +4,7 @@
 
 syntax = "proto2";
 
+import "display_list_recording_source.proto";
 import "layer_position_constraint.proto";
 import "point3f.proto";
 import "pointf.proto";
@@ -22,7 +23,9 @@ option optimize_for = LITE_RUNTIME;
 // Identifies the type of cc:Layer a LayerNode represents. It is used to
 // facilitate reconstruction of a Layer of the correct type on the client.
 enum LayerType {
-  Base = 1;
+  UNKNOWN = 0;
+  LAYER = 1;
+  PICTURE_LAYER = 2;
 
   // TODO(nyquist): Add the rest of the necessary LayerTypes.
 };
@@ -58,6 +61,11 @@ message LayerProperties {
   // The Layer base class and each descendant have different proto messages
   // for their specific properties.
   optional BaseLayerProperties base = 5;
+
+  // Only one of these fields may be set per LayerProperties.
+  // TODO(dtrainor): use a 'oneof' union when it's supported in Chromium.  See
+  // crbug.com/570371.
+  optional PictureLayerProperties picture = 6;
 }
 
 message BaseLayerProperties {
@@ -120,4 +128,14 @@ message BaseLayerProperties {
 
   // TODO(nyquist): Figure out what to do with FrameTimingRequests.
   // repeated FrameTimingRequest frame_timing_requests = 49;
+}
+
+message PictureLayerProperties {
+  optional DisplayListRecordingSource recording_source = 1;
+  optional Region invalidation = 2;
+  optional Rect last_updated_visible_layer_rect = 3;
+  optional bool is_mask = 4;
+  optional bool nearest_neighbor = 5;
+
+  optional int64 update_source_frame_number = 6;
 }
