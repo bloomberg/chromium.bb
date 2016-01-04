@@ -859,7 +859,7 @@ base::string16 AutofillProfile::ConstructInferredLabel(
     }
 
     AutofillType autofill_type(*it);
-    const base::string16& field_value = GetInfo(autofill_type, app_locale);
+    base::string16 field_value = GetInfo(autofill_type, app_locale);
     if (field_value.empty())
       continue;
 
@@ -878,7 +878,13 @@ base::string16 AutofillProfile::ConstructInferredLabel(
            remaining_fields.begin();
        it != remaining_fields.end() && num_fields_to_use > 0;
        ++it) {
-    const base::string16& field_value = GetInfo(AutofillType(*it), app_locale);
+    base::string16 field_value;
+    // Special case whole numbers: we want the user-formatted (raw) version, not
+    // the canonicalized version we'll fill into the page.
+    if (*it == PHONE_HOME_WHOLE_NUMBER)
+      field_value = GetRawInfo(*it);
+    else
+      field_value = GetInfo(AutofillType(*it), app_locale);
     if (field_value.empty())
       continue;
 

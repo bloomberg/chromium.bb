@@ -366,7 +366,7 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_CH) {
     "Beispiel Inc, H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich, "
         "Switzerland, hrgiger@beispiel.com",
     "Beispiel Inc, H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich, "
-        "Switzerland, hrgiger@beispiel.com, +41446681800",
+        "Switzerland, hrgiger@beispiel.com, +41 44-668-1800",
   };
 
   std::vector<base::string16> labels;
@@ -412,9 +412,9 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_FR) {
       "Exemple Inc, Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris "
           "CEDEX, France, antoine@exemple.com",
       "Exemple Inc, Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris "
-          "CEDEX, France, antoine@exemple.com, +33142685300",
+          "CEDEX, France, antoine@exemple.com, +33 (0) 1 42 68 53 00",
       "Exemple Inc, Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris "
-          "CEDEX, France, antoine@exemple.com, +33142685300",
+          "CEDEX, France, antoine@exemple.com, +33 (0) 1 42 68 53 00",
   };
 
   std::vector<base::string16> labels;
@@ -467,7 +467,7 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_KR) {
           "park@yeleul.com",
       "Park Jae-sang, Yeleul Inc, Gangnam Finance Center, 152 Teheran-ro, "
           "Yeoksam-Dong, Gangnam-Gu, Seoul, 135-984, South Korea, "
-          "park@yeleul.com, +8225319000",
+          "park@yeleul.com, +82-2-531-9000",
   };
 
   std::vector<base::string16> labels;
@@ -513,7 +513,7 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_JP_Latn) {
     "Miku Hatsune, Rei Inc, Roppongi Hills Mori Tower, 6-10-1 Roppongi, "
         "Minato-ku, Tokyo, 106-6126, Japan, miku@rei.com",
     "Miku Hatsune, Rei Inc, Roppongi Hills Mori Tower, 6-10-1 Roppongi, "
-        "Minato-ku, Tokyo, 106-6126, Japan, miku@rei.com, +81363849000",
+        "Minato-ku, Tokyo, 106-6126, Japan, miku@rei.com, +81-3-6384-9000",
   };
 
   std::vector<base::string16> labels;
@@ -555,7 +555,7 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_JP_ja) {
     "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1例ミク 初音, Japan, "
         "miku@rei.com",
     "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1例ミク 初音, Japan, "
-        "miku@rei.com, 0363849000",
+        "miku@rei.com, 03-6384-9000",
   };
 
   std::vector<base::string16> labels;

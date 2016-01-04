@@ -1625,21 +1625,19 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsForPhonePrefixOrSuffix) {
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->AddProfile(profile);
 
-  // The sublabels here are somewhat braindead until crbug.com/493247 is fixed.
-  // TODO(estade): fix the bug and fix this test.
   const FormFieldData& phone_prefix = form.fields[2];
   GetAutofillSuggestions(form, phone_prefix);
 
   // Test that we sent the right prefix values to the external delegate.
   external_delegate_->CheckSuggestions(kDefaultPageID,
-                                       Suggestion("356", "18003569377", "", 1));
+                                       Suggestion("356", "1800FLOWERS", "", 1));
 
   const FormFieldData& phone_suffix = form.fields[3];
   GetAutofillSuggestions(form, phone_suffix);
 
   // Test that we sent the right suffix values to the external delegate.
   external_delegate_->CheckSuggestions(
-      kDefaultPageID, Suggestion("9377", "18003569377", "", 1));
+      kDefaultPageID, Suggestion("9377", "1800FLOWERS", "", 1));
 }
 
 // Test that we correctly fill an address form.
