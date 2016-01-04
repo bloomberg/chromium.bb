@@ -6,11 +6,15 @@
 
 #include <stddef.h>
 
+#include "cc/animation/animation_host.h"
+#include "cc/animation/animation_id_provider.h"
+#include "cc/animation/animation_player.h"
 #include "cc/base/math_util.h"
 #include "cc/base/region.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass.h"
+#include "cc/test/animation_test_common.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/layer_tree_settings_for_testing.h"
 #include "cc/test/mock_occlusion_tracker.h"
@@ -124,9 +128,25 @@ LayerTestCommon::LayerImplTest::LayerImplTest(const LayerTreeSettings& settings)
   root_layer_impl_->SetHasRenderSurface(true);
   host_->host_impl()->SetVisible(true);
   host_->host_impl()->InitializeRenderer(output_surface_.get());
+
+  if (host_->settings().use_compositor_animation_timelines) {
+    const int timeline_id = AnimationIdProvider::NextTimelineId();
+    timeline_ = AnimationTimeline::Create(timeline_id);
+    host_->animation_host()->AddAnimationTimeline(timeline_);
+    // Create impl-side instance.
+    host_->animation_host()->PushPropertiesTo(
+        host_->host_impl()->animation_host());
+    timeline_impl_ =
+        host_->host_impl()->animation_host()->GetTimelineById(timeline_id);
+  }
 }
 
-LayerTestCommon::LayerImplTest::~LayerImplTest() {}
+LayerTestCommon::LayerImplTest::~LayerImplTest() {
+  if (host_->settings().use_compositor_animation_timelines) {
+    host_->animation_host()->RemoveAnimationTimeline(timeline_);
+    timeline_ = nullptr;
+  }
+}
 
 void LayerTestCommon::LayerImplTest::CalcDrawProps(
     const gfx::Size& viewport_size) {

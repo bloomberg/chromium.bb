@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/memory/scoped_ptr.h"
+#include "cc/animation/animation_timeline.h"
 #include "cc/quads/render_pass.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/test_task_graph_runner.h"
@@ -149,6 +150,8 @@ class LayerTestCommon {
       return host_->host_impl()->task_runner_provider();
     }
     const QuadList& quad_list() const { return render_pass_->quad_list; }
+    scoped_refptr<AnimationTimeline> timeline() { return timeline_; }
+    scoped_refptr<AnimationTimeline> timeline_impl() { return timeline_impl_; }
 
    private:
     FakeLayerTreeHostClient client_;
@@ -157,6 +160,8 @@ class LayerTestCommon {
     scoped_ptr<FakeLayerTreeHost> host_;
     scoped_ptr<LayerImpl> root_layer_impl_;
     scoped_ptr<RenderPass> render_pass_;
+    scoped_refptr<AnimationTimeline> timeline_;
+    scoped_refptr<AnimationTimeline> timeline_impl_;
     int layer_impl_id_;
   };
 };

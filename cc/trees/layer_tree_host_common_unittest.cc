@@ -10,6 +10,8 @@
 #include <set>
 #include <vector>
 
+#include "cc/animation/animation_host.h"
+#include "cc/animation/animation_id_provider.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/animation/transform_operations.h"
@@ -2345,24 +2347,46 @@ TEST_F(LayerTreeHostCommonTest, AnimationsForRenderSurfaceHierarchy) {
       grand_child_of_rs2, layer_transform, gfx::Point3F(0.25f, 0.f, 0.f),
       gfx::PointF(2.5f, 0.f), gfx::Size(10, 10), true, false, false);
 
-  // Put an animated opacity on the render surface.
-  AddOpacityTransitionToController(
-      render_surface1->layer_animation_controller(), 10.0, 1.f, 0.f, false);
+  if (layer_settings().use_compositor_animation_timelines) {
+    // Put an animated opacity on the render surface.
+    AddOpacityTransitionToLayerWithPlayer(
+        render_surface1->id(), timeline_impl(), 10.0, 1.f, 0.f, false);
 
-  // Also put an animated opacity on a layer without descendants.
-  AddOpacityTransitionToController(
-      grand_child_of_root->layer_animation_controller(), 10.0, 1.f, 0.f, false);
+    // Also put an animated opacity on a layer without descendants.
+    AddOpacityTransitionToLayerWithPlayer(
+        grand_child_of_root->id(), timeline_impl(), 10.0, 1.f, 0.f, false);
 
-  // Put a transform animation on the render surface.
-  AddAnimatedTransformToController(
-      render_surface2->layer_animation_controller(), 10.0, 30, 0);
+    // Put a transform animation on the render surface.
+    AddAnimatedTransformToLayerWithPlayer(render_surface2->id(),
+                                          timeline_impl(), 10.0, 30, 0);
 
-  // Also put transform animations on grand_child_of_root, and
-  // grand_child_of_rs2
-  AddAnimatedTransformToController(
-      grand_child_of_root->layer_animation_controller(), 10.0, 30, 0);
-  AddAnimatedTransformToController(
-      grand_child_of_rs2->layer_animation_controller(), 10.0, 30, 0);
+    // Also put transform animations on grand_child_of_root, and
+    // grand_child_of_rs2
+    AddAnimatedTransformToLayerWithPlayer(grand_child_of_root->id(),
+                                          timeline_impl(), 10.0, 30, 0);
+    AddAnimatedTransformToLayerWithPlayer(grand_child_of_rs2->id(),
+                                          timeline_impl(), 10.0, 30, 0);
+  } else {
+    // Put an animated opacity on the render surface.
+    AddOpacityTransitionToController(
+        render_surface1->layer_animation_controller(), 10.0, 1.f, 0.f, false);
+
+    // Also put an animated opacity on a layer without descendants.
+    AddOpacityTransitionToController(
+        grand_child_of_root->layer_animation_controller(), 10.0, 1.f, 0.f,
+        false);
+
+    // Put a transform animation on the render surface.
+    AddAnimatedTransformToController(
+        render_surface2->layer_animation_controller(), 10.0, 30, 0);
+
+    // Also put transform animations on grand_child_of_root, and
+    // grand_child_of_rs2
+    AddAnimatedTransformToController(
+        grand_child_of_root->layer_animation_controller(), 10.0, 30, 0);
+    AddAnimatedTransformToController(
+        grand_child_of_rs2->layer_animation_controller(), 10.0, 30, 0);
+  }
 
   ExecuteCalculateDrawProperties(parent);
 
@@ -2482,8 +2506,13 @@ TEST_F(LayerTreeHostCommonTest,
       Animation::TRANSFORM);
   animation->set_fill_mode(Animation::FILL_MODE_NONE);
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
-  grand_child->layer_animation_controller()->AddAnimation(std::move(animation));
-
+  if (layer_settings().use_compositor_animation_timelines) {
+    AddAnimationToLayerWithPlayer(grand_child->id(), timeline_impl(),
+                                  std::move(animation));
+  } else {
+    grand_child->layer_animation_controller()->AddAnimation(
+        std::move(animation));
+  }
   ExecuteCalculateDrawProperties(parent);
 
   EXPECT_FALSE(parent->screen_space_transform_is_animating());
@@ -3425,9 +3454,14 @@ TEST_F(LayerTreeHostCommonTest,
   TransformOperations end_transform_operations;
   end_transform_operations.AppendScale(1.f, 1.f, 0.f);
 
-  AddAnimatedTransformToLayer(
-      root.get(), 10.0, start_transform_operations, end_transform_operations);
-
+  if (layer_settings().use_compositor_animation_timelines) {
+    AddAnimatedTransformToLayerWithPlayer(root->id(), timeline(), 10.0,
+                                          start_transform_operations,
+                                          end_transform_operations);
+  } else {
+    AddAnimatedTransformToLayer(root.get(), 10.0, start_transform_operations,
+                                end_transform_operations);
+  }
   EXPECT_TRUE(root->TransformIsAnimating());
 
   ExecuteCalculateDrawProperties(root.get());
@@ -4302,12 +4336,21 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithAnimatingTransforms) {
   // Make our render surface.
   animating_surface->SetForceRenderSurface(true);
 
-  // Animate the transform on the render surface.
-  AddAnimatedTransformToController(
-      animating_surface->layer_animation_controller(), 10.0, 30, 0);
-  // This is just an animating layer, not a surface.
-  AddAnimatedTransformToController(
-      animating_child->layer_animation_controller(), 10.0, 30, 0);
+  if (layer_settings().use_compositor_animation_timelines) {
+    // Animate the transform on the render surface.
+    AddAnimatedTransformToLayerWithPlayer(animating_surface->id(), timeline(),
+                                          10.0, 30, 0);
+    // This is just an animating layer, not a surface.
+    AddAnimatedTransformToLayerWithPlayer(animating_child->id(), timeline(),
+                                          10.0, 30, 0);
+  } else {
+    // Animate the transform on the render surface.
+    AddAnimatedTransformToController(
+        animating_surface->layer_animation_controller(), 10.0, 30, 0);
+    // This is just an animating layer, not a surface.
+    AddAnimatedTransformToController(
+        animating_child->layer_animation_controller(), 10.0, 30, 0);
+  }
 
   SetLayerPropertiesForTesting(parent.get(),
                                identity_matrix,
@@ -4974,8 +5017,8 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
-                                  &task_graph_runner);
+  FakeLayerTreeHostImpl host_impl(host()->settings(), &task_runner_provider,
+                                  &shared_bitmap_manager, &task_graph_runner);
   host_impl.CreatePendingTree();
   scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.pending_tree(), 1);
 
@@ -4993,8 +5036,17 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   child->SetOpacity(0.0f);
 
   // Add opacity animation.
-  AddOpacityTransitionToController(
-      child->layer_animation_controller(), 10.0, 0.0f, 1.0f, false);
+  if (layer_settings().use_compositor_animation_timelines) {
+    scoped_refptr<AnimationTimeline> timeline =
+        AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
+    host_impl.animation_host()->AddAnimationTimeline(timeline);
+
+    AddOpacityTransitionToLayerWithPlayer(child->id(), timeline, 10.0, 0.0f,
+                                          1.0f, false);
+  } else {
+    AddOpacityTransitionToController(child->layer_animation_controller(), 10.0,
+                                     0.0f, 1.0f, false);
+  }
 
   root->AddChild(std::move(child));
   root->SetHasRenderSurface(true);
@@ -5013,21 +5065,37 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   ASSERT_EQ(2u, root->render_surface()->layer_list().size());
 }
 
+class LayerTreeSettingsForLCDTextTest : public LayerTreeSettings {
+ public:
+  LayerTreeSettingsForLCDTextTest() {
+    use_compositor_animation_timelines = true;
+  }
+};
+
 using LCDTextTestParam = std::tr1::tuple<bool, bool, bool>;
 class LCDTextTest : public LayerTreeHostCommonTestBase,
                     public testing::TestWithParam<LCDTextTestParam> {
  public:
   LCDTextTest()
-      : LayerTreeHostCommonTestBase(LayerTreeSettings()),
-        host_impl_(&task_runner_provider_,
+      : LayerTreeHostCommonTestBase(LayerTreeSettingsForLCDTextTest()),
+        host_impl_(LayerTreeSettingsForLCDTextTest(),
+                   &task_runner_provider_,
                    &shared_bitmap_manager_,
                    &task_graph_runner_),
         root_(nullptr),
         child_(nullptr),
         grand_child_(nullptr) {}
 
+  scoped_refptr<AnimationTimeline> timeline() { return timeline_; }
+
  protected:
   void SetUp() override {
+    if (layer_settings().use_compositor_animation_timelines) {
+      timeline_ =
+          AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
+      host_impl_.animation_host()->AddAnimationTimeline(timeline_);
+    }
+
     can_use_lcd_text_ = std::tr1::get<0>(GetParam());
     layers_always_allowed_lcd_text_ = std::tr1::get<1>(GetParam());
 
@@ -5074,6 +5142,7 @@ class LCDTextTest : public LayerTreeHostCommonTestBase,
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;
+  scoped_refptr<AnimationTimeline> timeline_;
 
   LayerImpl* root_;
   LayerImpl* child_;
@@ -5198,9 +5267,13 @@ TEST_P(LCDTextTest, CanUseLCDTextWithAnimation) {
   // Add opacity animation.
   child_->SetOpacity(0.9f);
   child_->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  AddOpacityTransitionToController(
-      child_->layer_animation_controller(), 10.0, 0.9f, 0.1f, false);
-
+  if (layer_settings().use_compositor_animation_timelines) {
+    AddOpacityTransitionToLayerWithPlayer(child_->id(), timeline(), 10.0, 0.9f,
+                                          0.1f, false);
+  } else {
+    AddOpacityTransitionToController(child_->layer_animation_controller(), 10.0,
+                                     0.9f, 0.1f, false);
+  }
   ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_,
                                  layers_always_allowed_lcd_text_);
   // Text LCD should be adjusted while animation is active.
@@ -5222,9 +5295,13 @@ TEST_P(LCDTextTest, CanUseLCDTextWithAnimationContentsOpaque) {
 
   // Mark contents non-opaque within the first animation frame.
   child_->SetContentsOpaque(false);
-  AddOpacityTransitionToController(child_->layer_animation_controller(), 10.0,
-                                   0.9f, 0.1f, false);
-
+  if (layer_settings().use_compositor_animation_timelines) {
+    AddOpacityTransitionToLayerWithPlayer(child_->id(), timeline(), 10.0, 0.9f,
+                                          0.1f, false);
+  } else {
+    AddOpacityTransitionToController(child_->layer_animation_controller(), 10.0,
+                                     0.9f, 0.1f, false);
+  }
   ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_,
                                  layers_always_allowed_lcd_text_);
   // LCD text should be disabled for non-opaque layers even during animations.
@@ -6911,9 +6988,14 @@ TEST_F(LayerTreeHostCommonTest,
   start_operations.AppendMatrix(start_scale);
   TransformOperations end_operations;
   end_operations.AppendMatrix(end_scale);
-  AddAnimatedTransformToLayer(animated_layer, 1.0, start_operations,
-                              end_operations);
-
+  if (layer_settings().use_compositor_animation_timelines) {
+    AddAnimatedTransformToLayerWithPlayer(animated_layer->id(), timeline_impl(),
+                                          1.0, start_operations,
+                                          end_operations);
+  } else {
+    AddAnimatedTransformToLayer(animated_layer, 1.0, start_operations,
+                                end_operations);
+  }
   gfx::Vector2dF scroll_delta(5.f, 9.f);
   scroller->SetScrollDelta(scroll_delta);
 
@@ -6947,7 +7029,7 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  LayerTreeSettings settings;
+  LayerTreeSettings settings = host()->settings();
   settings.layer_transforms_should_scale_layer_contents = true;
   FakeLayerTreeHostImpl host_impl(settings, &task_runner_provider,
                                   &shared_bitmap_manager, &task_graph_runner);
@@ -7007,8 +7089,17 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   TransformOperations translation;
   translation.AppendTranslate(1.f, 2.f, 3.f);
 
-  AddAnimatedTransformToLayer(
-      parent_raw, 1.0, TransformOperations(), translation);
+  scoped_refptr<AnimationTimeline> timeline;
+  if (layer_settings().use_compositor_animation_timelines) {
+    timeline = AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
+    host_impl.animation_host()->AddAnimationTimeline(timeline);
+
+    AddAnimatedTransformToLayerWithPlayer(parent_raw->id(), timeline, 1.0,
+                                          TransformOperations(), translation);
+  } else {
+    AddAnimatedTransformToLayer(parent_raw, 1.0, TransformOperations(),
+                                translation);
+  }
 
   // No layers have scale-affecting animations.
   EXPECT_EQ(0.f,
@@ -7032,7 +7123,12 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   TransformOperations scale;
   scale.AppendScale(5.f, 4.f, 3.f);
 
-  AddAnimatedTransformToLayer(child_raw, 1.0, TransformOperations(), scale);
+  if (layer_settings().use_compositor_animation_timelines) {
+    AddAnimatedTransformToLayerWithPlayer(child_raw->id(), timeline, 1.0,
+                                          TransformOperations(), scale);
+  } else {
+    AddAnimatedTransformToLayer(child_raw, 1.0, TransformOperations(), scale);
+  }
   child_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(grand_parent.get());
 
@@ -7055,8 +7151,13 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
       1.f,
       grand_child_raw->draw_properties().starting_animation_contents_scale);
 
-  AddAnimatedTransformToLayer(
-      grand_parent.get(), 1.0, TransformOperations(), scale);
+  if (layer_settings().use_compositor_animation_timelines) {
+    AddAnimatedTransformToLayerWithPlayer(grand_parent->id(), timeline, 1.0,
+                                          TransformOperations(), scale);
+  } else {
+    AddAnimatedTransformToLayer(grand_parent.get(), 1.0, TransformOperations(),
+                                scale);
+  }
   grand_parent->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(grand_parent.get());
 
@@ -7081,7 +7182,12 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
       0.f,
       grand_child_raw->draw_properties().starting_animation_contents_scale);
 
-  AddAnimatedTransformToLayer(parent_raw, 1.0, TransformOperations(), scale);
+  if (layer_settings().use_compositor_animation_timelines) {
+    AddAnimatedTransformToLayerWithPlayer(parent_raw->id(), timeline, 1.0,
+                                          TransformOperations(), scale);
+  } else {
+    AddAnimatedTransformToLayer(parent_raw, 1.0, TransformOperations(), scale);
+  }
   parent_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(grand_parent.get());
 
@@ -7104,18 +7210,32 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
       0.f,
       grand_child_raw->draw_properties().starting_animation_contents_scale);
 
-  grand_parent->layer_animation_controller()->AbortAnimations(
-      Animation::TRANSFORM);
-  parent_raw->layer_animation_controller()->AbortAnimations(
-      Animation::TRANSFORM);
-  child_raw->layer_animation_controller()->AbortAnimations(
-      Animation::TRANSFORM);
+  if (layer_settings().use_compositor_animation_timelines) {
+    AbortAnimationsOnLayerWithPlayer(grand_parent->id(), timeline,
+                                     Animation::TRANSFORM);
+    AbortAnimationsOnLayerWithPlayer(parent_raw->id(), timeline,
+                                     Animation::TRANSFORM);
+    AbortAnimationsOnLayerWithPlayer(child_raw->id(), timeline,
+                                     Animation::TRANSFORM);
+  } else {
+    grand_parent->layer_animation_controller()->AbortAnimations(
+        Animation::TRANSFORM);
+    parent_raw->layer_animation_controller()->AbortAnimations(
+        Animation::TRANSFORM);
+    child_raw->layer_animation_controller()->AbortAnimations(
+        Animation::TRANSFORM);
+  }
 
   TransformOperations perspective;
   perspective.AppendPerspective(10.f);
 
-  AddAnimatedTransformToLayer(
-      child_raw, 1.0, TransformOperations(), perspective);
+  if (layer_settings().use_compositor_animation_timelines) {
+    AddAnimatedTransformToLayerWithPlayer(child_raw->id(), timeline, 1.0,
+                                          TransformOperations(), perspective);
+  } else {
+    AddAnimatedTransformToLayer(child_raw, 1.0, TransformOperations(),
+                                perspective);
+  }
   child_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(grand_parent.get());
 
@@ -7139,15 +7259,25 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
       0.f,
       grand_child_raw->draw_properties().starting_animation_contents_scale);
 
-  child_raw->layer_animation_controller()->AbortAnimations(
-      Animation::TRANSFORM);
-
+  if (layer_settings().use_compositor_animation_timelines) {
+    AbortAnimationsOnLayerWithPlayer(child_raw->id(), timeline,
+                                     Animation::TRANSFORM);
+  } else {
+    child_raw->layer_animation_controller()->AbortAnimations(
+        Animation::TRANSFORM);
+  }
   gfx::Transform scale_matrix;
   scale_matrix.Scale(1.f, 2.f);
   grand_parent->SetTransform(scale_matrix);
   parent_raw->SetTransform(scale_matrix);
   grand_parent->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  AddAnimatedTransformToLayer(parent_raw, 1.0, TransformOperations(), scale);
+
+  if (layer_settings().use_compositor_animation_timelines) {
+    AddAnimatedTransformToLayerWithPlayer(parent_raw->id(), timeline, 1.0,
+                                          TransformOperations(), scale);
+  } else {
+    AddAnimatedTransformToLayer(parent_raw, 1.0, TransformOperations(), scale);
+  }
   ExecuteCalculateDrawProperties(grand_parent.get());
 
   // |grand_parent| and |parent| each have scale 2.f. |parent| has a  scale
@@ -7525,7 +7655,7 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  LayerTreeSettings settings;
+  LayerTreeSettings settings = host()->settings();
   settings.layer_transforms_should_scale_layer_contents = true;
   FakeLayerTreeHostImpl host_impl(settings, &task_runner_provider,
                                   &shared_bitmap_manager, &task_graph_runner);
@@ -7568,7 +7698,18 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
   TransformOperations scale;
   scale.AppendScale(5.f, 8.f, 3.f);
 
-  AddAnimatedTransformToLayer(child2_layer, 1.0, TransformOperations(), scale);
+  if (layer_settings().use_compositor_animation_timelines) {
+    scoped_refptr<AnimationTimeline> timeline =
+        AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
+    host_impl.animation_host()->AddAnimationTimeline(timeline);
+
+    AddAnimatedTransformToLayerWithPlayer(child2_layer->id(), timeline, 1.0,
+                                          TransformOperations(), scale);
+  } else {
+    AddAnimatedTransformToLayer(child2_layer, 1.0, TransformOperations(),
+                                scale);
+  }
+
   SetLayerPropertiesForTesting(child2_layer, scale_transform_child2,
                                gfx::Point3F(), gfx::PointF(), gfx::Size(1, 1),
                                true, false, false);
@@ -7876,9 +8017,13 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectForAnimatedLayer) {
   root->SetForceRenderSurface(true);
   animated->SetOpacity(0.f);
 
-  AddOpacityTransitionToController(animated->layer_animation_controller(), 10.0,
-                                   0.f, 1.f, false);
-
+  if (layer_settings().use_compositor_animation_timelines) {
+    AddOpacityTransitionToLayerWithPlayer(animated->id(), timeline(), 10.0, 0.f,
+                                          1.f, false);
+  } else {
+    AddOpacityTransitionToController(animated->layer_animation_controller(),
+                                     10.0, 0.f, 1.f, false);
+  }
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
 
   EXPECT_FALSE(animated->visible_rect_from_property_trees().IsEmpty());
@@ -7926,9 +8071,15 @@ TEST_F(LayerTreeHostCommonTest,
   start_transform_operations.AppendMatrix(uninvertible_matrix);
   TransformOperations end_transform_operations;
 
-  AddAnimatedTransformToLayer(animated.get(), 10.0, start_transform_operations,
-                              end_transform_operations);
-
+  if (layer_settings().use_compositor_animation_timelines) {
+    AddAnimatedTransformToLayerWithPlayer(animated->id(), timeline(), 10.0,
+                                          start_transform_operations,
+                                          end_transform_operations);
+  } else {
+    AddAnimatedTransformToLayer(animated.get(), 10.0,
+                                start_transform_operations,
+                                end_transform_operations);
+  }
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
 
   // The animated layer has a singular transform and maps to a non-empty rect in
@@ -7979,8 +8130,12 @@ TEST_F(LayerTreeHostCommonTest, AnimatedFilterCreatesRenderSurface) {
                                true, false);
   host()->SetRootLayer(root);
 
-  AddAnimatedFilterToLayer(child.get(), 10.0, 0.1f, 0.2f);
-
+  if (layer_settings().use_compositor_animation_timelines) {
+    AddAnimatedFilterToLayerWithPlayer(child->id(), timeline(), 10.0, 0.1f,
+                                       0.2f);
+  } else {
+    AddAnimatedFilterToLayer(child.get(), 10.0, 0.1f, 0.2f);
+  }
   ExecuteCalculateDrawProperties(root.get());
 
   EXPECT_TRUE(root->has_render_surface());
@@ -8029,8 +8184,13 @@ TEST_F(LayerTreeHostCommonTest, DelayedFilterAnimationCreatesRenderSurface) {
       Animation::Create(std::move(curve), 0, 1, Animation::FILTER);
   animation->set_fill_mode(Animation::FILL_MODE_NONE);
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
-  child->layer_animation_controller()->AddAnimation(std::move(animation));
 
+  if (layer_settings().use_compositor_animation_timelines) {
+    AddAnimationToLayerWithPlayer(child->id(), timeline(),
+                                  std::move(animation));
+  } else {
+    child->layer_animation_controller()->AddAnimation(std::move(animation));
+  }
   ExecuteCalculateDrawProperties(root.get());
 
   EXPECT_TRUE(root->has_render_surface());
@@ -8471,12 +8631,22 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
       animation_id, 1, Animation::TRANSFORM);
   animation->set_fill_mode(Animation::FILL_MODE_NONE);
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
-  child->AddAnimation(std::move(animation));
+  if (layer_settings().use_compositor_animation_timelines) {
+    AddAnimationToLayerWithPlayer(child->id(), timeline(),
+                                  std::move(animation));
+  } else {
+    child->AddAnimation(std::move(animation));
+  }
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
   EXPECT_EQ(gfx::Rect(10, 10), grandchild->visible_rect_from_property_trees());
   grandchild->set_visible_rect_from_property_trees(gfx::Rect());
 
-  child->RemoveAnimation(animation_id);
+  if (layer_settings().use_compositor_animation_timelines) {
+    RemoveAnimationFromLayerWithExistingPlayer(child->id(), timeline(),
+                                               animation_id);
+  } else {
+    child->RemoveAnimation(animation_id);
+  }
   child->SetTransform(identity);
   child->SetOpacity(0.f);
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
@@ -8498,7 +8668,12 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
       animation_id, 1, Animation::OPACITY);
   animation->set_fill_mode(Animation::FILL_MODE_NONE);
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
-  child->AddAnimation(std::move(animation));
+  if (layer_settings().use_compositor_animation_timelines) {
+    AddAnimationToLayerWithExistingPlayer(child->id(), timeline(),
+                                          std::move(animation));
+  } else {
+    child->AddAnimation(std::move(animation));
+  }
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
   EXPECT_EQ(gfx::Rect(10, 10), grandchild->visible_rect_from_property_trees());
 }

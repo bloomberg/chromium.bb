@@ -4,6 +4,7 @@
 
 #include "cc/test/animation_test_common.h"
 
+#include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_player.h"
 #include "cc/animation/keyframed_animation_curve.h"
@@ -373,6 +374,13 @@ int AddAnimatedTransformToPlayer(AnimationPlayer* player,
   return AddAnimatedTransform(player, duration, delta_x, delta_y);
 }
 
+int AddAnimatedTransformToPlayer(AnimationPlayer* player,
+                                 double duration,
+                                 TransformOperations start_operations,
+                                 TransformOperations operations) {
+  return AddAnimatedTransform(player, duration, start_operations, operations);
+}
+
 int AddOpacityTransitionToPlayer(AnimationPlayer* player,
                                  double duration,
                                  float start_opacity,
@@ -414,6 +422,107 @@ int AddOpacityStepsToController(LayerAnimationController* target,
 
   target->AddAnimation(std::move(animation));
   return id;
+}
+
+void AddAnimationToLayerWithPlayer(int layer_id,
+                                   scoped_refptr<AnimationTimeline> timeline,
+                                   scoped_ptr<Animation> animation) {
+  scoped_refptr<AnimationPlayer> player =
+      AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  timeline->AttachPlayer(player);
+  player->AttachLayer(layer_id);
+  DCHECK(player->element_animations());
+  player->AddAnimation(std::move(animation));
+}
+
+void AddAnimationToLayerWithExistingPlayer(
+    int layer_id,
+    scoped_refptr<AnimationTimeline> timeline,
+    scoped_ptr<Animation> animation) {
+  LayerAnimationController* controller =
+      timeline->animation_host()->GetControllerForLayerId(layer_id);
+  DCHECK(controller);
+  controller->AddAnimation(std::move(animation));
+}
+
+void RemoveAnimationFromLayerWithExistingPlayer(
+    int layer_id,
+    scoped_refptr<AnimationTimeline> timeline,
+    int animation_id) {
+  LayerAnimationController* controller =
+      timeline->animation_host()->GetControllerForLayerId(layer_id);
+  DCHECK(controller);
+  controller->RemoveAnimation(animation_id);
+}
+
+int AddAnimatedFilterToLayerWithPlayer(
+    int layer_id,
+    scoped_refptr<AnimationTimeline> timeline,
+    double duration,
+    float start_brightness,
+    float end_brightness) {
+  scoped_refptr<AnimationPlayer> player =
+      AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  timeline->AttachPlayer(player);
+  player->AttachLayer(layer_id);
+  DCHECK(player->element_animations());
+  return AddAnimatedFilterToPlayer(player.get(), duration, start_brightness,
+                                   end_brightness);
+}
+
+int AddAnimatedTransformToLayerWithPlayer(
+    int layer_id,
+    scoped_refptr<AnimationTimeline> timeline,
+    double duration,
+    int delta_x,
+    int delta_y) {
+  scoped_refptr<AnimationPlayer> player =
+      AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  timeline->AttachPlayer(player);
+  player->AttachLayer(layer_id);
+  DCHECK(player->element_animations());
+  return AddAnimatedTransformToPlayer(player.get(), duration, delta_x, delta_y);
+}
+
+int AddAnimatedTransformToLayerWithPlayer(
+    int layer_id,
+    scoped_refptr<AnimationTimeline> timeline,
+    double duration,
+    TransformOperations start_operations,
+    TransformOperations operations) {
+  scoped_refptr<AnimationPlayer> player =
+      AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  timeline->AttachPlayer(player);
+  player->AttachLayer(layer_id);
+  DCHECK(player->element_animations());
+  return AddAnimatedTransformToPlayer(player.get(), duration, start_operations,
+                                      operations);
+}
+
+int AddOpacityTransitionToLayerWithPlayer(
+    int layer_id,
+    scoped_refptr<AnimationTimeline> timeline,
+    double duration,
+    float start_opacity,
+    float end_opacity,
+    bool use_timing_function) {
+  scoped_refptr<AnimationPlayer> player =
+      AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  timeline->AttachPlayer(player);
+  player->AttachLayer(layer_id);
+  DCHECK(player->element_animations());
+  return AddOpacityTransitionToPlayer(player.get(), duration, start_opacity,
+                                      end_opacity, use_timing_function);
+}
+
+void AbortAnimationsOnLayerWithPlayer(
+    int layer_id,
+    scoped_refptr<AnimationTimeline> timeline,
+    Animation::TargetProperty target_property) {
+  LayerAnimationController* controller =
+      timeline->animation_host()->GetControllerForLayerId(layer_id);
+  DCHECK(controller);
+  controller->AbortAnimations(target_property);
 }
 
 }  // namespace cc

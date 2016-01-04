@@ -17,6 +17,8 @@ LayerTreeHostCommonTestBase::LayerTreeHostCommonTestBase(
     const LayerTreeSettings& settings)
     : LayerTestCommon::LayerImplTest(settings),
       render_surface_layer_list_count_(0) {
+  layer_settings_.use_compositor_animation_timelines =
+      settings.use_compositor_animation_timelines;
 }
 
 LayerTreeHostCommonTestBase::~LayerTreeHostCommonTestBase() {
@@ -225,9 +227,15 @@ bool LayerTreeHostCommonTestBase::UpdateLayerListContains(int id) const {
   return false;
 }
 
+class LayerTreeSettingsForCommonTest : public LayerTreeSettings {
+ public:
+  LayerTreeSettingsForCommonTest() {
+    use_compositor_animation_timelines = true;
+  }
+};
+
 LayerTreeHostCommonTest::LayerTreeHostCommonTest()
-    : LayerTreeHostCommonTestBase(LayerTreeSettings()) {
-}
+    : LayerTreeHostCommonTestBase(LayerTreeSettingsForCommonTest()) {}
 
 LayerTreeHostCommonTest::LayerTreeHostCommonTest(
     const LayerTreeSettings& settings)
