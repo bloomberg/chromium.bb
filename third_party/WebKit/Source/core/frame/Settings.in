@@ -231,11 +231,6 @@ touchEditingEnabled initial=false
 useSolidColorScrollbars initial=false
 pinchOverlayScrollbarThickness type=int, initial=0
 
-# Experiment to invert the scroll order of the layout and visual viewports
-# in some circumstances. Namely, during a pinch-zoom gesture and browser
-# generated scrolls like "scroll into view".
-invertViewportScrollOrder initial=false
-
 # Experiment to have all APIs reflect the layout viewport.
 # crbug.com/489206 tracks the experiment.
 inertVisualViewport initial=true
