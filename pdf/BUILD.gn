@@ -10,6 +10,14 @@ assert(enable_pdf)
 pdf_engine = 0  # 0 PDFium
 
 static_library("pdf") {
+  deps = [
+    "//base",
+    "//gin",
+    "//net",
+    "//ppapi/cpp:objects",
+    "//ppapi/cpp/private:internal_module",
+  ]
+
   sources = [
     "chunk_stream.cc",
     "chunk_stream.h",
@@ -34,6 +42,8 @@ static_library("pdf") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   if (pdf_engine == 0) {
+    deps += [ "//third_party/pdfium" ]
+
     sources += [
       "pdfium/pdfium_api_string_buffer_adapter.cc",
       "pdfium/pdfium_api_string_buffer_adapter.h",
@@ -54,15 +64,4 @@ static_library("pdf") {
   if (pdf_enable_xfa) {
     defines = [ "PDF_ENABLE_XFA" ]
   }
-
-  deps = [
-    "//base",
-    "//components/ui/zoom",
-    "//content/public/common",
-    "//gin",
-    "//net",
-    "//ppapi/cpp:objects",
-    "//ppapi/cpp/private:internal_module",
-    "//third_party/pdfium",
-  ]
 }
