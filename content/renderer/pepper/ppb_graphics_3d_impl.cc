@@ -20,7 +20,7 @@
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
-#include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "ppapi/c/ppp_graphics_3d.h"
 #include "ppapi/thunk/enter.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -176,8 +176,8 @@ int32_t PPB_Graphics3D_Impl::DoSwapBuffers() {
   // We do not have a GLES2 implementation when using an OOP proxy.
   // The plugin-side proxy is responsible for adding the SwapBuffers command
   // to the command buffer in that case.
-  if (gles2_impl())
-    gles2_impl()->SwapBuffers();
+  if (gpu::gles2::GLES2Interface* gl = gles2_interface())
+    gl->SwapBuffers();
 
   // Since the backing texture has been updated, a new sync point should be
   // inserted.

@@ -90,6 +90,10 @@ void PPB_Graphics3D_Shared::UnmapTexSubImage2DCHROMIUM(const void* mem) {
   gles2_impl_->UnmapTexSubImage2DCHROMIUM(mem);
 }
 
+gpu::gles2::GLES2Interface* PPB_Graphics3D_Shared::gles2_interface() {
+  return gles2_impl_.get();
+}
+
 void PPB_Graphics3D_Shared::SwapBuffersACK(int32_t pp_error) {
   DCHECK(HasPendingSwap());
   swap_callback_->Run(pp_error);

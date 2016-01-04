@@ -11,18 +11,16 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/macros.h"
-#include "base/thread_task_runner_handle.h"
-#ifndef NDEBUG
 #include "base/logging.h"
-#endif
+#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "cc/blink/context_provider_web_context.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/pepper/pepper_video_decoder_host.h"
 #include "content/renderer/render_thread_impl.h"
-#include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/limits.h"
@@ -457,7 +455,7 @@ void VideoDecoderShim::YUVConverter::Convert(
     uv_height_ = y_height_ / uv_height_divisor_;
 
     // Re-create to resize the textures and upload data.
-    gl_->PixelStorei(GL_UNPACK_ROW_LENGTH, ystride);
+    gl_->PixelStorei(GL_UNPACK_ROW_LENGTH_EXT, ystride);
     gl_->ActiveTexture(GL_TEXTURE0);
     gl_->BindTexture(GL_TEXTURE_2D, y_texture_);
     gl_->TexImage2D(GL_TEXTURE_2D, 0, internal_format_, y_width_, y_height_, 0,
@@ -475,7 +473,7 @@ void VideoDecoderShim::YUVConverter::Convert(
     } else {
       // if there is no alpha channel, then create a 2x2 texture with full
       // alpha.
-      gl_->PixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+      gl_->PixelStorei(GL_UNPACK_ROW_LENGTH_EXT, 0);
       const uint8_t alpha[4] = {0xff, 0xff, 0xff, 0xff};
       gl_->ActiveTexture(GL_TEXTURE3);
       gl_->BindTexture(GL_TEXTURE_2D, a_texture_);
@@ -483,7 +481,7 @@ void VideoDecoderShim::YUVConverter::Convert(
                       GL_UNSIGNED_BYTE, alpha);
     }
 
-    gl_->PixelStorei(GL_UNPACK_ROW_LENGTH, uvstride);
+    gl_->PixelStorei(GL_UNPACK_ROW_LENGTH_EXT, uvstride);
     gl_->ActiveTexture(GL_TEXTURE1);
     gl_->BindTexture(GL_TEXTURE_2D, u_texture_);
     gl_->TexImage2D(GL_TEXTURE_2D, 0, internal_format_, uv_width_, uv_height_,
@@ -497,7 +495,7 @@ void VideoDecoderShim::YUVConverter::Convert(
                     frame->data(media::VideoFrame::kVPlane));
   } else {
     // Bind textures and upload texture data
-    gl_->PixelStorei(GL_UNPACK_ROW_LENGTH, ystride);
+    gl_->PixelStorei(GL_UNPACK_ROW_LENGTH_EXT, ystride);
     gl_->ActiveTexture(GL_TEXTURE0);
     gl_->BindTexture(GL_TEXTURE_2D, y_texture_);
     gl_->TexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, y_width_, y_height_, format_,
@@ -517,7 +515,7 @@ void VideoDecoderShim::YUVConverter::Convert(
       gl_->BindTexture(GL_TEXTURE_2D, a_texture_);
     }
 
-    gl_->PixelStorei(GL_UNPACK_ROW_LENGTH, uvstride);
+    gl_->PixelStorei(GL_UNPACK_ROW_LENGTH_EXT, uvstride);
     gl_->ActiveTexture(GL_TEXTURE1);
     gl_->BindTexture(GL_TEXTURE_2D, u_texture_);
     gl_->TexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, uv_width_, uv_height_, format_,
@@ -583,7 +581,7 @@ void VideoDecoderShim::YUVConverter::Convert(
 
   gl_->ActiveTexture(GL_TEXTURE0);
   gl_->BindTexture(GL_TEXTURE_2D, 0);
-  gl_->PixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+  gl_->PixelStorei(GL_UNPACK_ROW_LENGTH_EXT, 0);
 
   gl_->TraceEndCHROMIUM();
 

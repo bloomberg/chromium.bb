@@ -22,6 +22,7 @@ class TransferBuffer;
 namespace gles2 {
 class GLES2CmdHelper;
 class GLES2Implementation;
+class GLES2Interface;
 }  // namespace gles2
 }  // namespace gpu.
 
@@ -54,6 +55,7 @@ class PPAPI_SHARED_EXPORT PPB_Graphics3D_Shared
   void UnmapTexSubImage2DCHROMIUM(const void* mem) override;
 
   gpu::gles2::GLES2Implementation* gles2_impl() { return gles2_impl_.get(); }
+  gpu::gles2::GLES2Interface* gles2_interface();
 
   // Sends swap-buffers notification to the plugin.
   void SwapBuffersACK(int32_t pp_error);
