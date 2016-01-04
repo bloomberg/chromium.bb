@@ -3148,10 +3148,9 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
                            {"elvis ", NAME_FIRST},
                            {"UnItEd StAtEs", ADDRESS_HOME_COUNTRY},
 
-                           // Make sure fields that differ by punctuation dont
-                           // match.
-                           {"3734 Elvis Presley Blvd ", UNKNOWN_TYPE},
-                           {"3734, Elvis Presley Blvd. ", UNKNOWN_TYPE},
+                           // Make sure fields that differ by punctuation match.
+                           {"3734 Elvis Presley Blvd", ADDRESS_HOME_LINE1},
+                           {"3734, Elvis    Presley Blvd.", ADDRESS_HOME_LINE1},
 
                            // Make sure unsupported variants do not match.
                            {"Elvis Aaron", UNKNOWN_TYPE},

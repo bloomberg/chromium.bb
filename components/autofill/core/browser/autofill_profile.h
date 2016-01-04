@@ -174,6 +174,7 @@ class AutofillProfile : public AutofillDataModel {
   // use.
   void RecordAndLogUse();
 
+  // TODO(crbug.com/574081): Move common profile methods to a utils file.
   // Returns a standardized representation of the given string for comparison
   // purposes. The resulting string will be lower-cased with all punctuation
   // substituted by spaces. Whitespace will be converted to ASCII space, and
