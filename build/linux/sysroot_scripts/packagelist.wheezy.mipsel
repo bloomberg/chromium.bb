@@ -98,6 +98,7 @@ main/libx/libxcursor/libxcursor-dev_1.1.13-1+deb7u1_mipsel.deb
 main/libx/libxdamage/libxdamage1_1.1.3-2_mipsel.deb
 main/libx/libxdamage/libxdamage-dev_1.1.3-2_mipsel.deb
 main/libx/libxdmcp/libxdmcp6_1.1.1-1_mipsel.deb
+main/libx/libxdmcp/libxdmcp-dev_1.1.1-1_mipsel.deb
 main/libx/libxext/libxext6_1.3.1-2+deb7u1_mipsel.deb
 main/libx/libxext/libxext-dev_1.3.1-2+deb7u1_mipsel.deb
 main/libx/libxfixes/libxfixes3_5.0-4+deb7u1_mipsel.deb
@@ -158,5 +159,6 @@ main/x/x11proto-record/x11proto-record-dev_1.14.2-1_all.deb
 main/x/x11proto-render/x11proto-render-dev_0.11.1-2_all.deb
 main/x/x11proto-scrnsaver/x11proto-scrnsaver-dev_1.2.2-1_all.deb
 main/x/x11proto-xext/x11proto-xext-dev_7.2.1-1_all.deb
+main/x/x11proto-xinerama/x11proto-xinerama-dev_1.2.1-2_all.deb
 main/z/zlib/zlib1g_1.2.7.dfsg-13_mipsel.deb
 main/z/zlib/zlib1g-dev_1.2.7.dfsg-13_mipsel.deb

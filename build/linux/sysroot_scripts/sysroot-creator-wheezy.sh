@@ -142,6 +142,7 @@ DEBIAN_PACKAGES="\
   libxdamage1
   libxdamage-dev
   libxdmcp6
+  libxdmcp-dev
   libxext6
   libxext-dev
   libxfixes3
@@ -175,6 +176,7 @@ DEBIAN_PACKAGES="\
   x11proto-render-dev
   x11proto-scrnsaver-dev
   x11proto-xext-dev
+  x11proto-xinerama-dev
   zlib1g
   zlib1g-dev
 "
