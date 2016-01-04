@@ -730,7 +730,11 @@ message DataTypeContext {
 }
 
 message ClientToServerMessage {
+  // |share| field is only used on the server for logging and can sometimes
+  // contain empty string. It is still useful for logging username when it can't
+  // be derived from access token in case of auth error.
   required string share = 1;
+
   optional int32 protocol_version = 2 [default = 45];
   enum Contents {
     COMMIT = 1;
