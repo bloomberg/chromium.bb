@@ -1040,10 +1040,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   }
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
-  ZygoteHostImpl::GetInstance()->TearDownAfterLastChild();
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
-
   // The device monitors are using |system_monitor_| as dependency, so delete
   // them before |system_monitor_| goes away.
   // On Mac and windows, the monitor needs to be destroyed on the same thread
