@@ -53,9 +53,9 @@ def _GetDefaultConcurrentLinks(is_lto):
           # Allow 8Gb per link on Linux because Gold is quite memory hungry
           mem_per_link_gb = 8
           if is_lto:
-            mem_total_gb -= 20 # Reserve
+            mem_total_gb -= 10 # Reserve
             # For LTO builds the RAM requirements are even higher
-            mem_per_link_gb = 32
+            mem_per_link_gb = 16
           return int(max(1, mem_total_gb / mem_per_link_gb))
     return 1
   elif sys.platform == 'darwin':
