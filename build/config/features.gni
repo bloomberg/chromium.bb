@@ -173,9 +173,6 @@ enable_task_manager = !is_ios && !is_android
 
 enable_themes = !is_android && !is_ios
 
-# TODO(scottmg) remove this when we've fixed printing.
-win_pdf_metafile_for_printing = true
-
 # Whether we are using the rlz library or not.  Platforms like Android send
 # rlz codes for searches but do not use the library.
 enable_rlz_support = is_win || is_mac || is_ios || is_chromeos

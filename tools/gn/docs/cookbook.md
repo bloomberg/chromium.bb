@@ -257,7 +257,6 @@ places are noted in the table below.
 | `use_udev` (0/1)                        | `use_udev` (true/false)                        | `//build/config/features.gni` |
 | `use_x11` (0/1)                         | `use_x11` (true/false)                         | `//build/config/ui.gni`       |
 | `use_xi2_mt` (0/1)                      | `use_xi2_mt` (true/false)                      | `//build/config/ui.gni`       |
-| `win_pdf_metafile_for_printing` (0/1)   | `win_pdf_metafile_for_printing` (true/false)   | `//build/config/features.gni` |
 | `win_use_allocator_shim` (0/1)          |                                                | (See "Allocator" below)       |
 
 ### Common target conversion
