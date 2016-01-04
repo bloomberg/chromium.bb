@@ -850,7 +850,7 @@ TEST_F(WidgetTestInteractive, MAYBE_SystemModalWindowReleasesCapture) {
 
   ASSERT_FALSE(focus_listener.focus_changes().empty());
   EXPECT_EQ(top_level_widget.GetNativeView(),
-            focus_listener.focus_changes().back());;
+            focus_listener.focus_changes().back());
 
   EXPECT_FALSE(top_level_widget.HasCapture());
   top_level_widget.SetCapture(NULL);

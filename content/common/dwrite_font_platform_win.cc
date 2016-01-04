@@ -933,7 +933,7 @@ bool FontCollectionLoader::IsFileCached(UINT32 font_key) {
   }
   CacheMap::iterator iter = cache_map_.find(
       GetFontNameFromKey(font_key).c_str());
-  return iter != cache_map_.end();;
+  return iter != cache_map_.end();
 }
 
 bool FontCollectionLoader::LoadCacheFile() {

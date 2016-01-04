@@ -15,7 +15,7 @@ MockLocationArbitrator::MockLocationArbitrator()
 }
 
 void MockLocationArbitrator::StartProviders(bool use_high_accuracy) {
-  providers_started_ = true;;
+  providers_started_ = true;
 }
 
 void MockLocationArbitrator::StopProviders() {

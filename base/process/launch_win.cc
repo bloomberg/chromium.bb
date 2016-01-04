@@ -300,7 +300,7 @@ Process LaunchProcess(const string16& cmdline,
     DestroyEnvironmentBlock(enviroment_block);
     if (!launched) {
       DPLOG(ERROR) << "Command line:" << std::endl << UTF16ToUTF8(cmdline)
-                   << std::endl;;
+                   << std::endl;
       return Process();
     }
   } else {
@@ -309,7 +309,7 @@ Process LaunchProcess(const string16& cmdline,
                        inherit_handles, flags, NULL, NULL,
                        startup_info, &temp_process_info)) {
       DPLOG(ERROR) << "Command line:" << std::endl << UTF16ToUTF8(cmdline)
-                   << std::endl;;
+                   << std::endl;
       return Process();
     }
   }

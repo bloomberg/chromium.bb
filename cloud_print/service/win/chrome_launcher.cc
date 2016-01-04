@@ -13,7 +13,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/process/process.h"
-#include "base/process/process.h"
 #include "base/values.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
@@ -201,8 +200,8 @@ void ChromeLauncher::Run() {
   const base::TimeDelta default_time_out = base::TimeDelta::FromSeconds(1);
   const base::TimeDelta max_time_out = base::TimeDelta::FromHours(1);
 
-  for (base::TimeDelta time_out = default_time_out;;
-       time_out = std::min(time_out * 2, max_time_out)) {
+  base::TimeDelta time_out = default_time_out;
+  while (1) {
     base::FilePath chrome_path =
         chrome_launcher_support::GetAnyChromePath(false /* is_sxs */);
 
@@ -254,6 +253,8 @@ void ChromeLauncher::Run() {
     }
     if (stop_event_.TimedWait(time_out))
       break;
+
+    time_out = std::min(time_out * 2, max_time_out);
   }
 }
 

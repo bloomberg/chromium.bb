@@ -84,7 +84,7 @@ BrowserContext* ShellExtensionsBrowserClient::GetOriginalContext(
 #if defined(OS_CHROMEOS)
 std::string ShellExtensionsBrowserClient::GetUserIdHashFromContext(
     content::BrowserContext* context) {
-  return chromeos::LoginState::Get()->primary_user_hash();;
+  return chromeos::LoginState::Get()->primary_user_hash();
 }
 #endif
 

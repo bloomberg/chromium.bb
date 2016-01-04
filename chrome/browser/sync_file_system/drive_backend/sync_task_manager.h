@@ -206,7 +206,7 @@ class SyncTaskManager {
   scoped_refptr<base::SequencedWorkerPool> worker_pool_;
   base::SequenceChecker sequence_checker_;
 
-  base::WeakPtrFactory<SyncTaskManager> weak_ptr_factory_;;
+  base::WeakPtrFactory<SyncTaskManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncTaskManager);
 };

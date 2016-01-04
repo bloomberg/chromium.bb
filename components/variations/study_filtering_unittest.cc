@@ -120,7 +120,7 @@ TEST(VariationsStudyFilteringTest, CheckStudyFormFactor) {
     }
 
     if (i < arraysize(form_factors)) {
-      const int index = arraysize(form_factors) - i - 1;;
+      const int index = arraysize(form_factors) - i - 1;
       filter.add_form_factor(form_factors[index]);
       form_factor_added[index] = true;
     }

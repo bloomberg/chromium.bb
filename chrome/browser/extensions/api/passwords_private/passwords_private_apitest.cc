@@ -57,7 +57,7 @@ class TestDelegate : public PasswordsPrivateDelegate {
   TestDelegate() : observers_(new base::ObserverListThreadSafe<Observer>()) {
     // Create mock data.
     for (size_t i = 0; i < kNumMocks; i++) {
-      current_entries_.push_back(CreateEntry(i));;
+      current_entries_.push_back(CreateEntry(i));
       current_exceptions_.push_back(CreateException(i));
     }
   }

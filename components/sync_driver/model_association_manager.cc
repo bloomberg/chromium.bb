@@ -364,7 +364,7 @@ void ModelAssociationManager::TypeStartCallback(
     base::TimeDelta association_wait_time =
         std::max(base::TimeDelta(), type_start_time - association_start_time_);
     base::TimeDelta association_time =
-        base::TimeTicks::Now() - type_start_time;;
+        base::TimeTicks::Now() - type_start_time;
     syncer::DataTypeAssociationStats stats =
         BuildAssociationStatsFromMergeResults(local_merge_result,
                                               syncer_merge_result,

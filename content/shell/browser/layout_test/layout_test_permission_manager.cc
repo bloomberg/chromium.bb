@@ -114,7 +114,7 @@ void LayoutTestPermissionManager::ResetPermission(
       PermissionDescription(permission, requesting_origin, embedding_origin));
   if (it == permissions_.end())
     return;
-  permissions_.erase(it);;
+  permissions_.erase(it);
 }
 
 PermissionStatus LayoutTestPermissionManager::GetPermissionStatus(

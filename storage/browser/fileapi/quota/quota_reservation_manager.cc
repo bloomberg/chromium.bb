@@ -85,7 +85,7 @@ scoped_refptr<QuotaReservation> QuotaReservationManager::CreateReservation(
     const GURL& origin,
     FileSystemType type) {
   DCHECK(origin.is_valid());
-  return GetReservationBuffer(origin, type)->CreateReservation();;
+  return GetReservationBuffer(origin, type)->CreateReservation();
 }
 
 }  // namespace storage

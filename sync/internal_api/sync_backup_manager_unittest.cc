@@ -39,7 +39,7 @@ class SyncBackupManagerTest : public syncer::SyncManager::Observer,
                void(const sessions::SyncSessionSnapshot&));
   MOCK_METHOD1(OnConnectionStatusChange, void(ConnectionStatus));
   MOCK_METHOD1(OnActionableError, void(const SyncProtocolError&));
-  MOCK_METHOD1(OnMigrationRequested, void(ModelTypeSet));;
+  MOCK_METHOD1(OnMigrationRequested, void(ModelTypeSet));
   MOCK_METHOD1(OnProtocolEvent, void(const ProtocolEvent&));
   MOCK_METHOD4(OnInitializationComplete,
                void(const WeakHandle<JsBackend>&,

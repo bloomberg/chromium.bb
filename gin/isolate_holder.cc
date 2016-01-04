@@ -85,7 +85,7 @@ void IsolateHolder::Initialize(ScriptMode mode,
 
 void IsolateHolder::AddRunMicrotasksObserver() {
   DCHECK(!task_observer_.get());
-  task_observer_.reset(new RunMicrotasksObserver(isolate_));;
+  task_observer_.reset(new RunMicrotasksObserver(isolate_));
   base::MessageLoop::current()->AddTaskObserver(task_observer_.get());
 }
 

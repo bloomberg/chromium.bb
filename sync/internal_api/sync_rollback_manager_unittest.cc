@@ -85,7 +85,7 @@ class SyncRollbackManagerTest : public testing::Test,
                     const WeakHandle<DataTypeDebugInfoListener>&,
                     bool, ModelTypeSet));
   MOCK_METHOD1(OnActionableError, void(const SyncProtocolError&));
-  MOCK_METHOD1(OnMigrationRequested, void(ModelTypeSet));;
+  MOCK_METHOD1(OnMigrationRequested, void(ModelTypeSet));
   MOCK_METHOD1(OnProtocolEvent, void(const ProtocolEvent&));
 
   void OnConfigDone(bool success) {

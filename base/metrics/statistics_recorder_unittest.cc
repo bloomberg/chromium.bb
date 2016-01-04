@@ -74,7 +74,7 @@ TEST_F(StatisticsRecorderTest, NotInitialized) {
   DeleteHistogram(histogram);
 
   // RegisterOrDeleteDuplicateRanges is a no-op.
-  BucketRanges* ranges = new BucketRanges(3);;
+  BucketRanges* ranges = new BucketRanges(3);
   ranges->ResetChecksum();
   EXPECT_EQ(ranges,
             StatisticsRecorder::RegisterOrDeleteDuplicateRanges(ranges));
@@ -85,9 +85,9 @@ TEST_F(StatisticsRecorderTest, NotInitialized) {
 TEST_F(StatisticsRecorderTest, RegisterBucketRanges) {
   std::vector<const BucketRanges*> registered_ranges;
 
-  BucketRanges* ranges1 = new BucketRanges(3);;
+  BucketRanges* ranges1 = new BucketRanges(3);
   ranges1->ResetChecksum();
-  BucketRanges* ranges2 = new BucketRanges(4);;
+  BucketRanges* ranges2 = new BucketRanges(4);
   ranges2->ResetChecksum();
 
   // Register new ranges.
@@ -111,7 +111,7 @@ TEST_F(StatisticsRecorderTest, RegisterBucketRanges) {
   EXPECT_EQ(0, ranges1->range(2));
 
   // Register ranges with same values.
-  BucketRanges* ranges3 = new BucketRanges(3);;
+  BucketRanges* ranges3 = new BucketRanges(3);
   ranges3->ResetChecksum();
   EXPECT_EQ(ranges1,  // returning ranges1
             StatisticsRecorder::RegisterOrDeleteDuplicateRanges(ranges3));

@@ -1082,11 +1082,11 @@ TEST_F(BrowserAccessibilityTest, TestCaretAndSelectionInSimpleFields) {
   LONG selection_end = -2;
 
   // Test get_caretOffset.
-  HRESULT hr = combo_box_accessible->get_caretOffset(&caret_offset);;
+  HRESULT hr = combo_box_accessible->get_caretOffset(&caret_offset);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(1L, caret_offset);
   // The caret should be at the end of the selection.
-  hr = text_field_accessible->get_caretOffset(&caret_offset);;
+  hr = text_field_accessible->get_caretOffset(&caret_offset);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(2L, caret_offset);
 
@@ -1098,27 +1098,27 @@ TEST_F(BrowserAccessibilityTest, TestCaretAndSelectionInSimpleFields) {
       manager->GetFocus(root_accessible)->ToBrowserAccessibilityWin());
 
   // The caret should not have moved.
-  hr = text_field_accessible->get_caretOffset(&caret_offset);;
+  hr = text_field_accessible->get_caretOffset(&caret_offset);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(2L, caret_offset);
 
   // Test get_nSelections.
-  hr = combo_box_accessible->get_nSelections(&n_selections);;
+  hr = combo_box_accessible->get_nSelections(&n_selections);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(0L, n_selections);
-  hr = text_field_accessible->get_nSelections(&n_selections);;
+  hr = text_field_accessible->get_nSelections(&n_selections);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(1L, n_selections);
 
   // Test get_selection.
   hr = combo_box_accessible->get_selection(
-      0L /* selection_index */, &selection_start, &selection_end);;
+      0L /* selection_index */, &selection_start, &selection_end);
   EXPECT_EQ(E_INVALIDARG, hr); // No selections available.
   // Invalid in_args should not modify out_args.
   EXPECT_EQ(-2L, selection_start);
   EXPECT_EQ(-2L, selection_end);
   hr = text_field_accessible->get_selection(
-      0L /* selection_index */, &selection_start, &selection_end);;
+      0L /* selection_index */, &selection_start, &selection_end);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(1L, selection_start);
   EXPECT_EQ(2L, selection_end);
@@ -1228,7 +1228,7 @@ TEST_F(BrowserAccessibilityTest, TestCaretInContentEditables) {
   hr = div_editable_accessible->get_nSelections(&n_selections);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(0L, n_selections);
-  hr = div_editable_accessible->get_caretOffset(&caret_offset);;
+  hr = div_editable_accessible->get_caretOffset(&caret_offset);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(6L, caret_offset);
 
@@ -1239,10 +1239,10 @@ TEST_F(BrowserAccessibilityTest, TestCaretInContentEditables) {
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(0L, n_selections);
 
-  hr = link_accessible->get_caretOffset(&caret_offset);;
+  hr = link_accessible->get_caretOffset(&caret_offset);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(1L, caret_offset);
-  hr = link_text_accessible->get_caretOffset(&caret_offset);;
+  hr = link_text_accessible->get_caretOffset(&caret_offset);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(1L, caret_offset);
 
@@ -1330,46 +1330,46 @@ TEST_F(BrowserAccessibilityTest, TestSelectionInContentEditables) {
   ASSERT_NE(nullptr, link_text_accessible);
 
   // get_nSelections should work on all objects.
-  HRESULT hr = div_editable_accessible->get_nSelections(&n_selections);;
+  HRESULT hr = div_editable_accessible->get_nSelections(&n_selections);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(1L, n_selections);
-  hr = text_accessible->get_nSelections(&n_selections);;
+  hr = text_accessible->get_nSelections(&n_selections);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(1L, n_selections);
-  hr = link_accessible->get_nSelections(&n_selections);;
+  hr = link_accessible->get_nSelections(&n_selections);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(1L, n_selections);
-  hr = link_text_accessible->get_nSelections(&n_selections);;
+  hr = link_text_accessible->get_nSelections(&n_selections);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(1L, n_selections);
 
   // get_selection should be unaffected by focus placement.
   hr = div_editable_accessible->get_selection(
-      0L /* selection_index */, &selection_start, &selection_end);;
+      0L /* selection_index */, &selection_start, &selection_end);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(1L, selection_start);
   // selection_end should be after embedded object character.
   EXPECT_EQ(7L, selection_end);
 
   hr = text_accessible->get_selection(
-      0L /* selection_index */, &selection_start, &selection_end);;
+      0L /* selection_index */, &selection_start, &selection_end);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(1L, selection_start);
   // No embedded character on this object, only the first part of the text.
   EXPECT_EQ(6L, selection_end);
   hr = link_accessible->get_selection(
-      0L /* selection_index */, &selection_start, &selection_end);;
+      0L /* selection_index */, &selection_start, &selection_end);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(0L, selection_start);
   EXPECT_EQ(4L, selection_end);
   hr = link_text_accessible->get_selection(
-      0L /* selection_index */, &selection_start, &selection_end);;
+      0L /* selection_index */, &selection_start, &selection_end);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(0L, selection_start);
   EXPECT_EQ(4L, selection_end);
 
   // The caret should be at the focus (the end) of the selection.
-  hr = div_editable_accessible->get_caretOffset(&caret_offset);;
+  hr = div_editable_accessible->get_caretOffset(&caret_offset);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(7L, caret_offset);
 
@@ -1380,21 +1380,21 @@ TEST_F(BrowserAccessibilityTest, TestSelectionInContentEditables) {
       manager->GetFocus(root_accessible)->ToBrowserAccessibilityWin());
 
   // The caret should not have moved.
-  hr = div_editable_accessible->get_caretOffset(&caret_offset);;
+  hr = div_editable_accessible->get_caretOffset(&caret_offset);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(7L, caret_offset);
 
   // The caret offset should reflect the position of the selection's focus in
   // any given object.
-  hr = link_accessible->get_caretOffset(&caret_offset);;
+  hr = link_accessible->get_caretOffset(&caret_offset);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(4L, caret_offset);
-  hr = link_text_accessible->get_caretOffset(&caret_offset);;
+  hr = link_text_accessible->get_caretOffset(&caret_offset);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(4L, caret_offset);
 
   hr = div_editable_accessible->get_selection(
-      0L /* selection_index */, &selection_start, &selection_end);;
+      0L /* selection_index */, &selection_start, &selection_end);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(1L, selection_start);
   EXPECT_EQ(7L, selection_end);

@@ -749,7 +749,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_Flush) {
   expected_response.reserve((sizeof(kTestData) - 1) * 1024);
   for (int i = 0; i < 1024; ++i) {
     expected_response += kTestData;
-    stream->AddData(kTestData, sizeof(kTestData) - 1);;
+    stream->AddData(kTestData, sizeof(kTestData) - 1);
     stream->Flush();
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(expected_response, url_request_delegate_.response_data());

@@ -112,7 +112,7 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
 // kFakePixelValueFirst, and the rest of the bytes set to kFakePixelValue, for
 // UnpackedFrame and InvertedFrame verification.
 webrtc::BasicDesktopFrame* CreateBasicFrame(const webrtc::DesktopSize& size) {
-  webrtc::BasicDesktopFrame* frame = new webrtc::BasicDesktopFrame(size);;
+  webrtc::BasicDesktopFrame* frame = new webrtc::BasicDesktopFrame(size);
   DCHECK_EQ(frame->size().width() * webrtc::DesktopFrame::kBytesPerPixel,
             frame->stride());
   memset(frame->data(),
@@ -168,6 +168,7 @@ class UnpackedDesktopFrame : public webrtc::DesktopFrame {
     delete[] data_;
   }
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(UnpackedDesktopFrame);
 };
 
@@ -202,7 +203,7 @@ class FakeScreenCapturer : public webrtc::ScreenCapturer {
     }
     frame_index_++;
 
-    webrtc::DesktopFrame* frame = CreateBasicFrame(size);;
+    webrtc::DesktopFrame* frame = CreateBasicFrame(size);
 
     if (generate_inverted_frames_) {
       frame = new InvertedDesktopFrame(frame);

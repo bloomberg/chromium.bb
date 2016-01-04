@@ -70,7 +70,7 @@ TEST(UIResourceLayerImplTest, VerifyDrawQuads) {
 
   // Make sure we're appending quads when there are valid values.
   gfx::Size bitmap_size(100, 100);
-  gfx::Size layer_size(100, 100);;
+  gfx::Size layer_size(100, 100);
   size_t expected_quad_size = 1;
   bool opaque = true;
   UIResourceId uid = 1;
@@ -117,7 +117,7 @@ TEST(UIResourceLayerImplTest, VerifySetOpaqueOnSkBitmap) {
   host_impl.InitializeRenderer(output_surface.get());
 
   gfx::Size bitmap_size(100, 100);
-  gfx::Size layer_size(100, 100);;
+  gfx::Size layer_size(100, 100);
   bool opaque = false;
   UIResourceId uid = 1;
   scoped_ptr<UIResourceLayerImpl> layer = GenerateUIResourceLayer(&host_impl,
