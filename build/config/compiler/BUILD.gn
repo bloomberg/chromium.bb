@@ -946,14 +946,6 @@ config("no_chromium_code") {
     cflags += [ "-Wall" ]
   }
 
-  if (is_linux) {
-    # Don't warn about ignoring the return value from e.g. close(). This is
-    # off by default in some gccs but on by default in others. BSD systems do
-    # not support this option, since they are usually using gcc 4.2.1, which
-    # does not have this flag yet.
-    cflags += [ "-Wno-unused-result" ]
-  }
-
   if (is_clang) {
     cflags += [
       # Lots of third-party libraries have unused variables. Instead of
