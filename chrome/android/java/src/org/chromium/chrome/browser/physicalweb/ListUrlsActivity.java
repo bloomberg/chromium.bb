@@ -10,7 +10,6 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.AnimationDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -36,11 +35,8 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
     public static final int NOTIFICATION_REFERER = 1;
     public static final int OPTIN_REFERER = 2;
     private static final String TAG = "PhysicalWeb";
-    private static final long SCAN_TIMEOUT_MILLIS = 5000; // 5 seconds
     private NearbyUrlsAdapter mAdapter;
     private PwsClient mPwsClient;
-    private Handler mTimerHandler;
-    private Runnable mTimerCallback;
     private ListView mListView;
     private TextView mEmptyListText;
     private ImageView mScanningImageView;
@@ -70,14 +66,6 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
             PhysicalWebUma.onNotificationPressed(this);
         }
         mDisplayRecorded = false;
-
-        mTimerHandler = new Handler();
-        mTimerCallback = new Runnable() {
-            @Override
-            public void run() {
-                updateForScanningStateChanged(false);
-            }
-        };
     }
 
     @Override
@@ -100,12 +88,28 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
         super.onResume();
         mAdapter.clear();
         Collection<String> urls = UrlManager.getInstance(this).getUrls(true);
+
+        // If we don't have any URLs to scan for, we can just stop.
+        if (urls.isEmpty()) {
+            updateForScanningStateChanged(false);
+            return;
+        }
+
+        // Otherwise, we can update the UI to make it obvious we are busy.
+        updateForScanningStateChanged(true);
+
         final long timestamp = SystemClock.elapsedRealtime();
         mPwsClient.resolve(urls, new PwsClient.ResolveScanCallback() {
             @Override
             public void onPwsResults(Collection<PwsResult> pwsResults) {
                 long duration = SystemClock.elapsedRealtime() - timestamp;
                 PhysicalWebUma.onForegroundPwsResolution(ListUrlsActivity.this, duration);
+
+                // If PWS has returned no results, we know we have nothing to display
+                if (pwsResults.isEmpty()) {
+                    updateForScanningStateChanged(false);
+                }
+
                 // filter out duplicate site URLs
                 Collection<String> siteUrls = new HashSet<>();
                 for (PwsResult pwsResult : pwsResults) {
@@ -121,6 +125,8 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
                         }
                     }
                 }
+
+
                 // TODO(cco3): Right now we use a simple boolean to see if we've previously recorded
                 //             how many URLs we display, but in the future we need to switch to
                 //             something more sophisticated that recognizes when a "refresh" has
@@ -131,12 +137,6 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
                 }
             }
         });
-
-        // Nearby doesn't tell us when it's finished but it usually only
-        // takes a few seconds.
-        updateForScanningStateChanged(true);
-        mTimerHandler.removeCallbacks(mTimerCallback);
-        mTimerHandler.postDelayed(mTimerCallback, SCAN_TIMEOUT_MILLIS);
     }
 
     /**
