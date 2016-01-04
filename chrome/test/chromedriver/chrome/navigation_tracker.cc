@@ -178,6 +178,7 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
     if (!params.GetString("frameId", &frame_id))
       return Status(kUnknownError, "missing or invalid 'frameId'");
 
+    scheduled_frame_set_.erase(frame_id);
     pending_frame_set_.erase(frame_id);
     if (expecting_single_stop_event)
       pending_frame_set_.clear();
