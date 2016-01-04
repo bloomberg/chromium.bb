@@ -658,31 +658,23 @@ GlyphData Font::glyphDataForCharacter(UChar32& c, bool mirror, bool normalizeSpa
     return data;
 }
 
-// FIXME: This function may not work if the emphasis mark uses a complex script, but none of the
-// standard emphasis marks do so.
 bool Font::getEmphasisMarkGlyphData(const AtomicString& mark, GlyphData& glyphData) const
 {
     if (mark.isEmpty())
         return false;
 
-    UChar32 character = mark[0];
+    TextRun emphasisMarkRun(mark, mark.length());
+    TextRunPaintInfo emphasisPaintInfo(emphasisMarkRun);
+    GlyphBuffer glyphBuffer;
+    buildGlyphBuffer(emphasisPaintInfo, glyphBuffer);
 
-    if (U16_IS_SURROGATE(character)) {
-        if (!U16_IS_SURROGATE_LEAD(character))
-            return false;
+    if (glyphBuffer.isEmpty())
+        return false;
 
-        if (mark.length() < 2)
-            return false;
+    ASSERT(glyphBuffer.fontDataAt(0));
+    glyphData.fontData = glyphBuffer.fontDataAt(0)->emphasisMarkFontData(m_fontDescription).get();
+    glyphData.glyph = glyphBuffer.glyphAt(0);
 
-        UChar low = mark[1];
-        if (!U16_IS_TRAIL(low))
-            return false;
-
-        character = U16_GET_SUPPLEMENTARY(character, low);
-    }
-
-    bool normalizeSpace = false;
-    glyphData = glyphDataForCharacter(character, false, normalizeSpace, EmphasisMarkVariant);
     return true;
 }
 
