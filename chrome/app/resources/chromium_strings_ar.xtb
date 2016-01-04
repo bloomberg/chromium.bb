@@ -41,6 +41,7 @@
 <translation id="225614027745146050">مرحبًا</translation>
 <translation id="2316129865977710310">لا، شكرًا</translation>
 <translation id="2347108572062610441">‏غيّرت هذه الإضافة الصفحة التي تظهر عند بدء Chromium.</translation>
+<translation id="2372704305038231957">‏قد لا يعمل Chromium إصدار 32 بت على نحو صحيح لأنه لم يعد مدعومًا على نظام Linux هذا. الرجاء الترقية إلى Chromium إصدار 64 بت.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{‏هناك تنزيل قيد التقدم حاليًا. هل تريد إلغاء التنزيل والخروج من Chromium؟}zero{‏هناك # من التنزيلات قيد التقدم حاليًا. هل تريد إلغاء التنزيلات والخروج من Chromium؟}two{‏هناك تنزيلان (#) قيد التقدم حاليًا. هل تريد إلغاء التنزيلين والخروج من Chromium؟}few{‏هناك # تنزيلات قيد التقدم حاليًا. هل تريد إلغاء التنزيلات والخروج من Chromium؟}many{‏هناك # تنزيلاً قيد التقدم حاليًا. هل تريد إلغاء التنزيلات والخروج من Chromium؟}other{‏هناك # من التنزيلات قيد التقدم حاليًا. هل تريد إلغاء التنزيلات والخروج من Chromium؟}}</translation>
 <translation id="2396765026452590966">‏غيّرت الإضافة "<ph name="EXTENSION_NAME" />" الصفحة التي تظهر عند بدء Chromium.</translation>
 <translation id="2485422356828889247">إزالة التثبيت</translation>
@@ -149,6 +150,7 @@
 <translation id="6485906693002546646">‏أنت تستخدم <ph name="PROFILE_EMAIL" /> لمزامنة عناصرك في Chromium. لتحديث تفضيل المزامنة أو استخدام Chromium بدون حساب Google، يُرجى الانتقال إلى <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">‏إزالة Chromium</translation>
 <translation id="6526111688217511984">‏يحتاج Chromium الوصول إلى سعة التخزين لتنزيل الملفات.</translation>
+<translation id="6584627348340620412">‏لن تدعم الإصدارات المستقبلية من Chromium إصدار32 بت نظام Linux هذا بعد الآن، الرجاء الترقية إلى Chromium إصدار 64 بت.</translation>
 <translation id="6593914713218535185">‏قد لا يعمل Chromium بشكل صحيح لأنه لم يعد معتمدًا على نظام Linux هذا.</translation>
 <translation id="6637001341228460105">‏يحتاج Chromium الوصول إلى الميكروفون لمشاركته مع هذا الموقع.</translation>
 <translation id="6638567566961868659">‏ابحث عن الإشارات المرجعية في قائمة Chromium أو على شريط الإشارات المرجعية.</translation>

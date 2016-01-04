@@ -41,6 +41,7 @@
 <translation id="225614027745146050">Bem-vindo</translation>
 <translation id="2316129865977710310">Não.</translation>
 <translation id="2347108572062610441">Esta extensão alterou a página que é exibida quando você inicia o Chromium.</translation>
+<translation id="2372704305038231957">É possível que o Chromium de 32 bits não funcione corretamente, porque ele não é mais compatível com esse sistema Linux. Faça upgrade para o Chromium de 64 bits.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Um download está em andamento. Deseja cancelar o download e sair do Chromium?}one{# downloads estão em andamento. Deseja cancelar os downloads e sair do Chromium?}other{# downloads estão em andamento. Deseja cancelar os downloads e sair do Chromium?}}</translation>
 <translation id="2396765026452590966">A extensão "<ph name="EXTENSION_NAME" />" alterou a página que é exibida quando você inicia o Chromium.</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
@@ -147,6 +148,7 @@
 <translation id="6485906693002546646">Você está usando <ph name="PROFILE_EMAIL" /> para sincronizar suas informações do Chromium. Para atualizar suas preferências de sincronização ou usar o Chromium sem uma Conta do Google, vá para <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Desinstalar Chromium</translation>
 <translation id="6526111688217511984">O Chromium precisa de acesso de armazenamento para fazer o download de arquivos.</translation>
+<translation id="6584627348340620412">As futuras versões do Chromium de 32 bits não serão mais compatíveis com esse sistema Linux. Faça upgrade para o Chromium de 64 bits.</translation>
 <translation id="6593914713218535185">É possível que o Chromium não funcione corretamente, porque ele não é mais compatível com esse sistema Linux.</translation>
 <translation id="6637001341228460105">O Chromium precisa de acesso ao microfone para compartilhá-lo com este site.</translation>
 <translation id="6638567566961868659">Encontre seus favoritos no menu do Chromium ou na barra de favoritos.</translation>

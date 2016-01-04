@@ -41,6 +41,7 @@
 <translation id="225614027745146050">Selamat datang</translation>
 <translation id="2316129865977710310">Tidak, terima kasih</translation>
 <translation id="2347108572062610441">Sambungan ini telah menukar halaman yang ditunjukkan apabila anda memulakan Chromium.</translation>
+<translation id="2372704305038231957">Chromium 32 bit mungkin tidak akan berfungsi dengan betul kerana tidak disokong pada sistem Linux ini lagi. Sila tingkatkan kepada Chromium 64 bit.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Muat turun sedang berlangsung. Adakah anda ingin membatalkan muat turun dan keluar daripada Chromium?}other{# muat turun sedang berlangsung pada masa ini. Adakah anda ingin membatalkan muat turun dan keluar daripada Chromium?}}</translation>
 <translation id="2396765026452590966">Sambungan "<ph name="EXTENSION_NAME" />" telah menukar halaman yang ditunjukkan apabila anda memulakan Chromium.</translation>
 <translation id="2485422356828889247">Nyahpasang</translation>
@@ -149,6 +150,7 @@
 <translation id="6485906693002546646">Anda menggunakan <ph name="PROFILE_EMAIL" /> untuk menyegerakkan bahan digital chromium anda. Untuk mengemas kini pilihan penyegerakan anda atau menggunakan Chromium tanpa akaun Google, lawati <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Nyahpasang Chromium</translation>
 <translation id="6526111688217511984">Chromium memerlukan akses storan untuk memuat turun fail.</translation>
+<translation id="6584627348340620412">Versi Chromium 32 bit yang akan datang tidak akan menyokong sistem Linux ini lagi, sila tingkatkan kepada Chromium 64 bit.</translation>
 <translation id="6593914713218535185">Chromium mungkin tidak akan berfungsi dengan betul kerana tidak disokong pada sistem Linux ini lagi.</translation>
 <translation id="6637001341228460105">Chromium memerlukan akses mikrofon untuk mengongsinya dengan tapak ini.</translation>
 <translation id="6638567566961868659">Cari penanda halaman anda dalam menu Chromium atau pada bar penanda halaman.</translation>

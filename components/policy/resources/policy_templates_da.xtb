@@ -347,6 +347,38 @@
      Hvis denne indstilling er aktiveret, gemmes browserhistorikken ikke. Denne indstilling deaktiverer også synkronisering af faner.
 
       Hvis denne indstilling er deaktiveret eller ikke konfigureret, gemmes browserhistorikken.</translation>
+<translation id="2424023834246613232">Tilsidesætter regler for valg af standardprinter i <ph name="PRODUCT_NAME" />.
+
+      Denne politik fastlægger reglerne for valg af standardprinter i <ph name="PRODUCT_NAME" />, som vælges, første gang udskrivningsfunktionen anvendes fra en profil.
+
+      Når denne politik er angivet, forsøger <ph name="PRODUCT_NAME" /> at finde en printer, der har alle de angivne attributter, og vælge den som standardprinter. Den først fundne printer, der stemmer overens med politikken, vælges. Hvis der er flere match, kan enhver printer vælges ud fra den rækkefølge, som printerne blev fundet i.
+
+      Hvis ikke denne politik angives, eller hvis der ikke findes nogen printer, som stemmer overens med politikken, inden timeouten udløber, vælges en indbygget PDF-printer som standard. Hvis der ikke er nogen tilgængelig PDF-printer, vælges der ikke nogen printer.
+
+      Værdien parses som et JSON-objekt i overensstemmelse med følgende skema:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Hvorvidt søgningen efter en printer, der opfylder attributten skal begrænses til en specifik gruppe printere.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Regulært udtryk, som matcher printer-id.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regulært udtryk, som matcher printerens viste navn.",
+            "type": "string"
+          }
+        }
+      }
+
+      Printere, der er forbundet til <ph name="CLOUD_PRINT_NAME" />, klassificeres som <ph name="PRINTER_TYPE_CLOUD" />, mens de øvrige printere klassificeres som <ph name="PRINTER_TYPE_LOCAL" />.
+      Hvis et felt udelades, matcher alle værdier. Hvis du f.eks. ikke specificerer forbindelsen, vil et tryk på Vis udskrift starte en søgning efter alle typer printere – både lokalt og i skyen.
+      Almindelige udtryksmønstre skal overholde JavaScript RegExp-syntaksen, og der skelnes mellem store og små bogstaver.</translation>
 <translation id="2426782419955104525">Aktiverer Direkte-funktionen i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre denne indstilling.
 
       Hvis du aktiverer denne indstilling, aktiveres <ph name="PRODUCT_NAME" /> Direkte.
@@ -505,6 +537,7 @@
       Angiver, om udvidelsen for certifikater, der er bundet af TLS-domænet, skal aktiveres.
 
       Denne indstilling bruges til at aktivere udvidelsen for certifikater, der er bundet af TLS-domænet, til testformål. Denne eksperimentelle indstilling vil blive fjernet senere hen.</translation>
+<translation id="2957513448235202597">Kontotype for <ph name="HTTP_NEGOTIATE" />-godkendelse</translation>
 <translation id="2959898425599642200">Regler for omgåelse af proxy</translation>
 <translation id="2960691910306063964">Aktivér eller deaktiver godkendelse uden pinkode for hosts til fjernadgang</translation>
 <translation id="2976002782221275500">Angiver den tid uden brugerinput, der udløser skærmnedtoning, når batteriet bruges.
@@ -1615,6 +1648,9 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
           Hvis politikken ikke indstilles, anvendes standardindstillingen.
 
           Politikkens værdi skal angives i millisekunder. Værdierne reduceres, så de er mindre end eller lig med inaktivitetsforsinkelsen.</translation>
+<translation id="7329968046053403405">Angiver kontotypen for de konti, der leveres af Android-godkendelsesappen, som understøtter <ph name="HTTP_NEGOTIATE" />-godkendelse (f.eks. Kerberos-godkendelse). Disse oplysninger kan indhentes fra leverandøren af godkendelsesappen. Få flere oplysninger på https://goo.gl/hajyfN.
+
+          Hvis der ikke er angivet nogen indstilling, deaktiveres <ph name="HTTP_NEGOTIATE" />-godkendelse i Android.</translation>
 <translation id="7331962793961469250">Når dette er angivet som Sandt, vises kampagner for apps i Chrome Webshop ikke på siden Ny fane.
 
       Hvis indstillingen angives til Falsk eller ikke angives, vises kampagner for apps i Chrome Webshop på den nye fane</translation>
@@ -1634,6 +1670,9 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="7417972229667085380">Den procentdel, som inaktivitetsforsinkelsen i præsentationstilstand skaleres efter (udfases)</translation>
 <translation id="7421483919690710988">Angiv størrelsen på mediediskcache i bytes</translation>
 <translation id="7424751532654212117">Liste over undtagelser for listen over ​​deaktiverede plugins</translation>
+<translation id="7426112309807051726">Angiver, om <ph name="TLS_FALSE_START" />-optimeringen skal deaktiveres. Af historiske årsager har denne politik fået navnet DisableSSLRecordSplitting.
+
+      Hvis politikken ikke indstilles eller indstilles til falsk, aktiveres <ph name="TLS_FALSE_START" />. Hvis den indstilles til sand, deaktiveres <ph name="TLS_FALSE_START" />.</translation>
 <translation id="7433714841194914373">Aktiver Direkte</translation>
 <translation id="7443616896860707393">Påmindelser om HTTP Basic Auth med krydsoprindelse</translation>
 <translation id="7468416082528382842">Placering af Windows-registreringsdatabase:</translation>
@@ -1891,6 +1930,25 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="8519264904050090490">Webadresser for manuel undtagelse af administreret bruger</translation>
 <translation id="8544375438507658205">Standard HTML-gengivelse for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Vis en advarsel, når du er på websites uden for indholdspakkerne</translation>
+<translation id="855339549837475534">Både Chromium og Google Chrome understøtter den samme række politikker.
+      Bemærk, at dette dokument kan indeholde politikker, som er målrettet mod
+      ikke-udgivne softwareversioner (dvs. angivelsen af "understøttes på"
+      henviser til en ikke-udgivet version. Sådanne politikker kan ændres eller
+      fjernes uden varsel.
+
+      Disse politikker er udelukkende beregnet til at konfigurere forekomster af
+      <ph name="PRODUCT_NAME" /> internt i din organisation. Brug af disse politikker udenfor din
+      organisation (f.eks. i et offentligt distribueret program) betragtes som
+      malware og vil formentlig blive registreret som malware af Google og
+      antivirusleverandører.
+
+      Disse indstillinger behøver ikke at blive konfigureret manuelt. Du kan
+      downloade brugervenlige skabeloner til Windows, Mac og Linux på <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er
+      via GPO, selvom levering af politikker via registreringsdatabasen fortsat
+      understøttes for forekomster i Windows, der er tilknyttet et
+      Active Directory-domæne.</translation>
 <translation id="8566842294717252664">Skjul webshoppen fra siden Ny fane og applisten</translation>
 <translation id="8587229956764455752">Tillad oprettelse af nye brugerkonti</translation>
 <translation id="8614804915612153606">Deaktiverer Automatisk opdatering</translation>

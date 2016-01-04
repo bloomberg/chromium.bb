@@ -16,6 +16,9 @@
 <translation id="119944043368869598">Tümünü temizle</translation>
 <translation id="1201402288615127009">Sonraki</translation>
 <translation id="1206892813135768548">Bağlantı metnini kopyala</translation>
+<translation id="1240668123557180468">Yakındaki nesneler tarafından gönderilen web sayfalarını keşfedin. Chrome, çevrenizdeki nesnelerle ilişkilendirilen web sayfalarını toplar, sizin için en faydalı olanlarını bulmak üzere bunları anonim bir şekilde Google hizmetine gönderir ve ardından görüntüler.
+
+Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık olması gerekir.</translation>
 <translation id="1258753120186372309">Google doodle'ı: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Durdur</translation>
 <translation id="1285320974508926690">Bu siteyi hiçbir zaman çevirme</translation>
@@ -80,6 +83,7 @@
 <translation id="2100273922101894616">Otomatik Oturum Aç</translation>
 <translation id="2126426811489709554">Chrome tarafından desteklenmektedir</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> kapatıldı</translation>
+<translation id="2138201775715568214">Yakınlardaki Fiziksel Web sayfaları aranıyor</translation>
 <translation id="2139186145475833000">Ana ekrana ekle</translation>
 <translation id="2154710561487035718">URL'yi Kopyala</translation>
 <translation id="219985413780390209">Kendinizi ve cihazınızı tehlikeli sitelerden koruyun</translation>
@@ -110,6 +114,7 @@
 <translation id="2532336938189706096">Web Görüntüleme</translation>
 <translation id="2536728043171574184">Bu sayfanın çevrimdışı bir kopyası görüntüleniyor</translation>
 <translation id="257931822824936280">Genişletildi - Daraltmak için tıklayın.</translation>
+<translation id="2587052924345400782">Daha yeni bir sürüm mevcut</translation>
 <translation id="2593272815202181319">Eş aralıklı</translation>
 <translation id="2646820313617290661">Ebeveyniniz bu ayarları yönetmenize yardımcı olabilir.</translation>
 <translation id="2677748264148917807">Çık</translation>
@@ -118,6 +123,7 @@
 <translation id="271033894570825754">Yeni</translation>
 <translation id="2718352093833049315">Yaln. Kablosuzda</translation>
 <translation id="2748463065602559597">Güvenli bir Google Chrome sayfasını görüntülüyorsunuz.</translation>
+<translation id="2762000892062317888">az önce</translation>
 <translation id="2770465223704140727">Listeden kaldır</translation>
 <translation id="278029852808208386">Bluetooth cihaz bulunamadı. <ph name="BEGIN_LINK" />Tekrar arayın<ph name="END_LINK" />.</translation>
 <translation id="2816165854387457183">Yavaş bağlantı algılandı.</translation>
@@ -155,7 +161,6 @@
 <translation id="3287852534598822456">Yer işareti artık yok. Lütfen yenileyin.</translation>
 <translation id="3303414029551471755">İçeriği indirme işlemine başlansın mı?</translation>
 <translation id="3328801116991980348">Site bilgileri</translation>
-<translation id="3343085080042659442">Chrome'un sürümü eski. Son sürümde güvenlikle ilgili önemli iyileştirmeler ve yeni özellikler bulunmaktadır.</translation>
 <translation id="3350687908700087792">Tüm gizli sekmeleri kapatın.</translation>
 <translation id="3358663646935160692">Bu hesap <ph name="DOMAIN_NAME" /> tarafından yönetiliyor.
 
@@ -163,10 +168,12 @@ Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chrome profilin
 <translation id="3384347053049321195">Resmi paylaş</translation>
 <translation id="3387650086002190359">Dosya sistemi hataları nedeniyle <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
 <translation id="3414952576877147120">Boyut:</translation>
+<translation id="3435896845095436175">Etkinleştir</translation>
 <translation id="3485544713029068372">Şifreler için Smart Lock</translation>
 <translation id="3492207499832628349">Yeni gizli sekme</translation>
 <translation id="3518985090088779359">Kabul et ve devam et</translation>
 <translation id="3527085408025491307">Klasör</translation>
+<translation id="3559647143395293616">Fiziksel Web'i açın</translation>
 <translation id="360480449234699036">Sayfadan ayrılmadan web siteleriyle ilgili konuları öğrenin. Ara'ya dokunduğunuzda bir kelime ve içinde bulunduğu bağlamı oluşturan metin Google Arama'ya gönderilerek ilgili tanımlar, resimler, arama sonuçları ve diğer ayrıntılar sonuç olarak döndürülür.
 
 Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrıntılı hale getirmek için paneli tümüyle yukarı kaydırın ve arama kutusuna dokunun.</translation>
@@ -175,6 +182,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="3656115297268584622"><ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'nda konumu açın.</translation>
 <translation id="3661699943263275414">Üçüncü taraf web siteleri, çerez verilerini kaydedebilir ve okuyabilir.</translation>
 <translation id="3672452749423051839">Gezinme hataları ile ilgili öneriler</translation>
+<translation id="3732088672634061408">İlgi alanları alınamadı.</translation>
 <translation id="3738139272394829648">Dokun ve Ara</translation>
 <translation id="3774280986422214650">Bu özelliği etkinleştirirseniz Google sunucuları aracılığıyla HTTPS sayfalarına proxy uygulama işlevini test eden bir deneyde yer almış olursunuz.</translation>
 <translation id="3809549525127675114">“<ph name="VIDEO_TITLE" />” bitti</translation>
@@ -217,13 +225,16 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4412992751769744546">Üçüncü taraf çerezlere izin ver</translation>
 <translation id="4440256989292146959">Daha az bant genişliği harcayarak daha çok göz atın</translation>
+<translation id="4452548195519783679">Yer işareti <ph name="FOLDER_NAME" /> klasörüne eklendi</translation>
 <translation id="4505554159887937799">Çevrimdışına kaydedildi</translation>
+<translation id="4513387527876475750">{DAYS,plural, =1{# gün önce}other{# gün önce}}</translation>
 <translation id="4522570452068850558">Ayrıntılar</translation>
 <translation id="4526249700380860531">Kaydedilmiş şifreleri <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> adresinden görüntüleyin ve yönetin</translation>
 <translation id="4532845899244822526">Klasör seçin</translation>
 <translation id="4543087392704641517">Yer işareti başlığı</translation>
 <translation id="4543661749405994812">E-posta adresini kopyala</translation>
 <translation id="4581964774250883625">Gizli moda geçtiniz.</translation>
+<translation id="4583164079174244168">{MINUTES,plural, =1{# dakika önce}other{# dakika önce}}</translation>
 <translation id="4645575059429386691">Ebeveyniniz tarafından yönetiliyor</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> yer işareti silindi</translation>
 <translation id="4665282149850138822"><ph name="NAME" />, Ana ekranınıza eklendi</translation>
@@ -234,6 +245,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" /> uygulamasında aç</translation>
 <translation id="4726963856048758366">Depolama alanı temizlendi</translation>
 <translation id="473775607612524610">Güncelle</translation>
+<translation id="4738836084190194332">Son senkronizasyon: <ph name="WHEN" /></translation>
 <translation id="4761374747761474835">Yer işaretlerinize, geçmişinize, şifrelerinize ve diğer ayarlarınıza tüm cihazlarınızdan erişmek için bir hesap seçin.</translation>
 <translation id="4773299976671772492">Durduruldu</translation>
 <translation id="4797039098279997504"><ph name="URL_OF_THE_CURRENT_TAB" /> adresine dönmek için dokunun</translation>
@@ -261,6 +273,8 @@ Bunun için bilgisayarınızda Chrome'u açmanız ve menüye gidip "Chrome'da ot
 <translation id="5063480226653192405">Kullanım</translation>
 <translation id="509605886816275399">Bu sayfa çevrimdışı olarak kaydedilsin mi?</translation>
 <translation id="5100237604440890931">Daraltıldı - Genişletmek için tıklayın.</translation>
+<translation id="5107381076085091558">İndirme işlemi duraklatıldı.</translation>
+<translation id="5118713593561876160">İlgi alanları</translation>
 <translation id="5127805178023152808">Senkronizasyon kapalı</translation>
 <translation id="5138299137310274655">Bu sayfa <ph name="SOURCE_LANGUAGE" /> dilinde. <ph name="TARGET_LANGUAGE" /> diline çevrilsin mi?</translation>
 <translation id="5150703642582475397">Sekmeleri ve uygulamaları birleştirin</translation>
@@ -328,6 +342,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="5771382037724542929"><ph name="DIRECTORY_NAME" /> dizinindeki varolan <ph name="FILE_NAME" /> adını değiştirmek istiyor musunuz?</translation>
 <translation id="5804241973901381774">İzinler</translation>
 <translation id="5806294296882899667">Varsayılanı yükleme hatası</translation>
+<translation id="5809361687334836369">{HOURS,plural, =1{# saat önce}other{# saat önce}}</translation>
 <translation id="5817918615728894473">Eşle</translation>
 <translation id="5832934273103296195">Genişletildi - Daraltmak için tıklayın</translation>
 <translation id="583891442612896534">Chrome, veri sıkıştırma için Google sunucularına erişemiyor. Veri tasarrufunuz sınırlı olabilir.</translation>
@@ -361,6 +376,9 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6192792657125177640">İstisnalar</translation>
 <translation id="6208263165776660488">Chrome sekmeleri taşındı</translation>
 <translation id="6231464350722415003">Belirttiğiniz web sitelerinde JavaScript'e izin verirken web'in geri kalanında engelleyin</translation>
+<translation id="6232535412751077445">"Do Not Track" seçeneğinin etkinleştirildiğinde, göz atma trafiğinize bir istek eklenir. Her türlü etki, bir web sitesinin isteğe cevap verip vermemesine ve isteğin nasıl yorumlandığına bağlıdır.
+
+Örneğin bazı web siteleri bu isteği size daha önce gezdiğiniz web sitelerine dayalı olmayan reklamları göstererek yanıtlayabilir. Birçok web sitesi (örneğin güvenliği iyileştirmek; içerik, reklam, öneri sağlamak ve raporlama istatistikleri oluşturmak gibi amaçlarla) göz atma verilerinizi toplayıp kullanmayı sürdürecektir.</translation>
 <translation id="624558823898732418">Çeviri Dili: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">Sayfa yazdırılırken bir sorun oluştu. Lütfen tekrar deneyin.</translation>
 <translation id="6295158916970320988">Tüm siteler</translation>
@@ -429,6 +447,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7029809446516969842">Şifreler</translation>
 <translation id="7053983685419859001">Engelle</translation>
 <translation id="7063006564040364415">Senkronizasyon sunucusuna bağlanılamadı.</translation>
+<translation id="7094922512924405309">Yakınlarda herhangi bir Fiziksel Web sayfası bulunamadı</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> açık sekme</translation>
 <translation id="7096034533295549981">Video yükleniyor</translation>
 <translation id="7191430249889272776">Sekme arka planda açıldı.</translation>
@@ -545,6 +564,7 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="8660471606262461360">Google Payments'tan</translation>
 <translation id="8676374126336081632">Girişi temizle</translation>
 <translation id="869891660844655955">Son kullanma tarihi</translation>
+<translation id="8699799819461268362">Google SafeSites filtresi</translation>
 <translation id="8719023831149562936">Geçerli sekme ışınlanamıyor</translation>
 <translation id="8725066075913043281">Yeniden dene</translation>
 <translation id="8727142376512517020">Bu iletiyi tekrar gösterme</translation>
@@ -578,6 +598,7 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="9133515669113036225">Cihazın kimlik bilgilerini sıfırla</translation>
 <translation id="9137013805542155359">Orijinali göster</translation>
 <translation id="9156605176886108508">Yer işareti klasörü yok</translation>
+<translation id="917685106653909562">Yakınlardaki Fiziksel Web sayfaları</translation>
 <translation id="9187199695613236444">Mobil uyumlu görünüm</translation>
 <translation id="9192643434065497760">Eşlemeye izin vermek için Bluetooth'u <ph name="BEGIN_LINK" />cihaz ayarlarında<ph name="END_LINK" /> açın.</translation>
 <translation id="9206873250291191720">A</translation>

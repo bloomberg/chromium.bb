@@ -343,6 +343,38 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
       Jos tämä asetus on käytössä, selaushistoriaa ei tallenneta. Lisäksi tämä asetus poistaa käytöstä välilehtien synkronoinnin.
 
       Jos tämä asetus on poissa käytöstä tai sitä ei ole asetettu, selaushistoria tallennetaan.</translation>
+<translation id="2424023834246613232">Ohittaa tuotteen <ph name="PRODUCT_NAME" /> oletustulostimen valinnan säännöt.
+
+      Tämä käytäntö määrittää säännöt, joiden perusteella <ph name="PRODUCT_NAME" /> valitsee oletustulostimen. Tämä tapahtuu silloin, kun tulostustoimintoa käytetään profiilin kautta ensimmäistä kertaa.
+
+      Kun käytäntö on määritetty, <ph name="PRODUCT_NAME" /> pyrkii löytämään tulostimen, joka täyttää kaikki määritevaatimukset, ja valitsemaan sen oletustulostimeksi. Valinta kohdistuu ensimmäiseen tulostimeen, joka vastaa käytäntöä. Jos useita tulostimia löydetään, mikä tahansa niistä voi tulla valituksi, riippuen niiden löytämisjärjestyksestä.
+
+      Jos käytäntöä ei ole määritetty tai sopivaa tulostinta ei ole löydetty ennen aikakatkaisua, tulostin valitsee oletukseksi sisäänrakennetun tulostuksen PDF:ään tai se ei valitse mitään, jos PDF-tulostusta ei ole saatavilla.
+
+      Arvo merkitään JSON-objektin muodossa seuraavan mallin mukaisesti:
+      {
+        ”type”: ”object”,
+        ”properties”: {
+          ”kind”: {
+            ”description”: ”Rajoitetaanko sopivan tulostimen etsintä tiettyyn tulostinjoukkoon.”,
+            ”type”: {
+              ”enum”: [ ”local”, ”cloud” ]
+            }
+          },
+          ”idPattern”: {
+            ”description”: ”Säännöllinen lauseke, joka vastaa tulostimen tunnusta.”,
+            ”type”: ”string”
+          },
+          ”namePattern”: {
+            ”description”: ”Säännöllinen lauseke, joka vastaa tulostimen näyttönimeä.”,
+            ”type”: ”string”
+          }
+        }
+      }
+
+      Palveluun <ph name="CLOUD_PRINT_NAME" /> yhdistetyt tulostimet ovat tyyppiä <ph name="PRINTER_TYPE_CLOUD" />, ja muut tulostimet ovat tyyppiä <ph name="PRINTER_TYPE_LOCAL" />.
+      Kentän tyhjäksi jättäminen tarkoittaa, että kaikki arvot hyväksytään siihen. Jos esimerkiksi yhteydet jätetään tyhjäksi, tulostuksen esikatselu pyrkii löytämään sekä pilvitulostimia että paikallisia tulostimia.
+      Säännöllisten lausekkeiden muodon tulee noudattaa JavaScript RegExp -syntaksia, ja kirjainkoolla on väliä osumissa.</translation>
 <translation id="2426782419955104525">Ottaa käyttöön tuotteen <ph name="PRODUCT_NAME" /> Instant-ominaisuuden ja estää käyttäjiä muuttamasta tätä asetusta.
 
       Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> Instant otetaan käyttöön.
@@ -501,6 +533,7 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
       Määrittää, tuleeko TLS domain-bound -varmennelaajennuksien olla käytössä.
 
       Tämän asetuksen avulla voidaan ottaa TLS domain-bound -varmennelaajennus testikäyttöön. Asetus on kokeellinen ja se poistetaan myöhemmin.</translation>
+<translation id="2957513448235202597"><ph name="HTTP_NEGOTIATE" /> -todennuksen tilityyppi</translation>
 <translation id="2959898425599642200">Välityspalvelimen ohitussäännöt</translation>
 <translation id="2960691910306063964">Ota käyttöön tai poista käytöstä etäkäytön isäntien PIN-kooditon todennus</translation>
 <translation id="2976002782221275500">Määrittää käyttämättömyysajan, jonka kuluttua ruutu himmennetään, kun laitetta käytetään akkuvirralla.
@@ -1586,6 +1619,9 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
           Kun tälle käytännölle ei aseteta arvoa, se käyttää oletusaikaa.
 
           Tämän käytännön arvo täytyy määrittää millisekunteina. Arvo rajoitetaan korkeintaan käyttämättömyysajan suuruiseksi.</translation>
+<translation id="7329968046053403405">Määrittää tilityypin, jota käytetään <ph name="HTTP_NEGOTIATE" /> -todennusta (esim. Kerberos) tukevassa Android-todennussovelluksessa. Tämän tiedon pitäisi olla saatavilla todennussovelluksen tarjoajalta. Lisätietoja on osoitteessa https://goo.gl/hajyfN.
+
+          Jos asetusta ei määritetä, <ph name="HTTP_NEGOTIATE" /> -todennus poistetaan käytöstä Android-laitteilla.</translation>
 <translation id="7331962793961469250">Kun asetus on True, Chrome Web Storen sovelluksien mainoksia ei näytetä Uusi välilehti -sivulla. Kun asetus on False tai sitä ei ole valittu, Chrome Web Storen sovelluksien mainoksia näytetään Uusi välilehti -sivulla.</translation>
 <translation id="7332963785317884918">Tämä käytäntö on poistettu käytöstä. <ph name="PRODUCT_OS_NAME" /> käyttää aina RemoveLRU-puhdistustapaa.
 
@@ -1603,6 +1639,9 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7417972229667085380">Prosenttiosuus, jolla käyttämättömyyden viive skaalataan esitystilassa (ei enää käytössä)</translation>
 <translation id="7421483919690710988">Aseta levyn mediavälimuistin koko tavuina</translation>
 <translation id="7424751532654212117">Käytöstä poistettujen laajennuksien poikkeukset</translation>
+<translation id="7426112309807051726">Määrittää, poistetaanko <ph name="TLS_FALSE_START" /> -optimointi käytöstä. Historiallisista seikoista johtuen tämän käytännön nimi on DisableSSLRecordSplitting.
+
+      Jos tätä käytäntöä ei aseteta tai jos sen arvo on Epätosi, <ph name="TLS_FALSE_START" /> otetaan käyttöön. Jos käytännön arvo on Tosi, <ph name="TLS_FALSE_START" /> poistetaan käytöstä.</translation>
 <translation id="7433714841194914373">Ota Instant käyttöön</translation>
 <translation id="7443616896860707393">Eri lähteiden HTTP-todennuskehotteet</translation>
 <translation id="7468416082528382842">Windows-rekisterin sijainti:</translation>
@@ -1857,6 +1896,25 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="8519264904050090490">Hallinnoidun käyttäjän manuaalisten poikkeuksien URL-osoitteet</translation>
 <translation id="8544375438507658205">HTML-osoitteiden oletushahmonnin tuotteelle <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Varoita, kun sisältöpaketteihin kuulumaton sivusto avataan</translation>
+<translation id="855339549837475534">Sekä Chromium että Google Chrome tukevat samoja
+      käytäntöjä. Tämä asiakirja voi sisältää käytäntöjä, jotka viittaavat
+      julkaisemattomiin ohjelmistoversioihin (eli versiot, joilla käytäntöä tuetaan,
+      voivat sisältää julkaisemattomia versioita), ja tällaisia käytäntöjä saatetaan
+      muuttaa tai poistaa ilman ennakkoilmoitusta.
+
+      Näiden käytäntöjen tarkoitus on ainoastaan määrittää asetukset, joita
+      <ph name="PRODUCT_NAME" /> käyttää
+      organisaation sisällä. Niiden käyttöä organisaation ulkopuolella (esimerkiksi
+      julkisesti jaeltavassa ohjelmassa) pidetään haitallisena, joten
+      Google ja virustorjuntapalvelut todennäköisesti pitävät näitä käytäntöjä käyttäviä ohjelmia haittaohjelmina.
+
+      Näitä asetuksia ei tarvitse määrittää manuaalisesti.  Windowsille,
+      Macille ja Linuxille on saatavilla helppokäyttöisiä malleja osoitteesta 
+<ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      Windowsissa käytäntöjen määrittämiseen suositellaan Ryhmäkäytäntöä, mutta
+      käytäntöjen määrittämistä rekisterin kautta tuetaan kuitenkin Windowsin esiintymissä,
+      jotka on liitetty Active Directory -toimialueeseen.</translation>
 <translation id="8566842294717252664">Piilota verkkokauppa uusi välilehti -sivulla ja sovellusten käynnistysohjelmassa</translation>
 <translation id="8587229956764455752">Salli uusien käyttäjätilien luominen</translation>
 <translation id="8614804915612153606">Poistaa automaattisen päivityksen käytöstä</translation>

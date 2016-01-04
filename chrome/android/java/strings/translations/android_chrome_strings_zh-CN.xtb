@@ -16,6 +16,9 @@
 <translation id="119944043368869598">全部清除</translation>
 <translation id="1201402288615127009">下一步</translation>
 <translation id="1206892813135768548">复制链接文字</translation>
+<translation id="1240668123557180468">发现附近对象发送的网页。Chrome 会收集与您附近对象相关联的网页，并将这些网页以匿名方式发送给 Google 服务，以找到并显示对您而言最实用的网页。
+
+您必须开启蓝牙和位置信息功能才能使用实物网。</translation>
 <translation id="1258753120186372309">Google 涂鸦：<ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="1285320974508926690">一律不翻译此网站</translation>
@@ -29,7 +32,7 @@
 <translation id="1383876407941801731">搜索</translation>
 <translation id="1389974829397082527">该文件夹中没有书签</translation>
 <translation id="1404122904123200417">嵌入位置：<ph name="WEBSITE_URL" /></translation>
-<translation id="1406000523432664303">“请勿跟踪”</translation>
+<translation id="1406000523432664303">“不跟踪”</translation>
 <translation id="1409879593029778104">系统已阻止下载 <ph name="FILE_NAME" />，因为文件已存在。</translation>
 <translation id="1416550906796893042">应用版本</translation>
 <translation id="1423209968422390786"><ph name="BEGIN_LINK" />此设备的位置信息使用权已被停用<ph name="END_LINK" />。</translation>
@@ -80,6 +83,7 @@
 <translation id="2100273922101894616">自动登录</translation>
 <translation id="2126426811489709554">由 Chrome 提供支持</translation>
 <translation id="213279576345780926">已关闭<ph name="TAB_TITLE" /></translation>
+<translation id="2138201775715568214">正在查找附近的“实物网”网页</translation>
 <translation id="2139186145475833000">添加到主屏幕</translation>
 <translation id="2154710561487035718">复制网址</translation>
 <translation id="219985413780390209">保护您和您的设备不受危险网站的侵害</translation>
@@ -110,6 +114,7 @@
 <translation id="2532336938189706096">网页视图</translation>
 <translation id="2536728043171574184">正在查看此网页的离线副本</translation>
 <translation id="257931822824936280">已展开 - 点击此处即可收起。</translation>
+<translation id="2587052924345400782">新版本已推出</translation>
 <translation id="2593272815202181319">等宽</translation>
 <translation id="2646820313617290661">您的家长会协助管理这些设置。</translation>
 <translation id="2677748264148917807">离开</translation>
@@ -118,6 +123,7 @@
 <translation id="271033894570825754">新建</translation>
 <translation id="2718352093833049315">仅限 Wi-Fi</translation>
 <translation id="2748463065602559597">您正在查看的是安全的 Google Chrome 浏览器网页。</translation>
+<translation id="2762000892062317888">刚刚</translation>
 <translation id="2770465223704140727">从列表中移除</translation>
 <translation id="278029852808208386">未发现任何蓝牙设备。<ph name="BEGIN_LINK" />重新搜索<ph name="END_LINK" />。</translation>
 <translation id="2816165854387457183">检测到网速很慢。</translation>
@@ -155,7 +161,6 @@
 <translation id="3287852534598822456">书签已不存在，请刷新。</translation>
 <translation id="3303414029551471755">要开始下载该内容吗？</translation>
 <translation id="3328801116991980348">网站信息</translation>
-<translation id="3343085080042659442">Chrome 版本太旧。最新版本不仅在安全性方面做出了重要改进，还提供了多项新功能。</translation>
 <translation id="3350687908700087792">关闭所有隐身标签页</translation>
 <translation id="3358663646935160692">此帐户由 <ph name="DOMAIN_NAME" /> 管理。
 
@@ -163,10 +168,12 @@
 <translation id="3384347053049321195">分享图片</translation>
 <translation id="3387650086002190359">未能成功下载 <ph name="FILE_NAME" />，因为文件系统出现了错误。</translation>
 <translation id="3414952576877147120">大小：</translation>
+<translation id="3435896845095436175">启用</translation>
 <translation id="3485544713029068372">Smart Lock（密码专用）</translation>
 <translation id="3492207499832628349">新的隐身标签页</translation>
 <translation id="3518985090088779359">接受并继续</translation>
 <translation id="3527085408025491307">文件夹</translation>
+<translation id="3559647143395293616">启用实物网</translation>
 <translation id="360480449234699036">无需离开所在页面，即可了解网站上的主题。“触摸搜索”功能会将被触摸的字词及上下文一起发送至 Google 搜索，后者将返回相应的定义、图片、搜索结果及其他详细信息。
 
 要调整搜索字词，请长按将其选中。要缩小搜索范围，请将面板向上滑动到顶部，然后触摸搜索框。</translation>
@@ -175,6 +182,7 @@
 <translation id="3656115297268584622">在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />部分开启位置信息服务。</translation>
 <translation id="3661699943263275414">第三方网站可以保存和读取 Cookie 数据</translation>
 <translation id="3672452749423051839">导航错误建议</translation>
+<translation id="3732088672634061408">无法检索兴趣相关数据。</translation>
 <translation id="3738139272394829648">触摸搜索</translation>
 <translation id="3774280986422214650">如果您启用了此功能，您将参与到通过 Google 服务器代理 HTTPS 网页的实验中。</translation>
 <translation id="3809549525127675114">“<ph name="VIDEO_TITLE" />”已播放完毕</translation>
@@ -217,13 +225,16 @@
 <translation id="4378154925671717803">电话</translation>
 <translation id="4412992751769744546">允许第三方 Cookie</translation>
 <translation id="4440256989292146959">加载更快，流量更省</translation>
+<translation id="4452548195519783679">已将书签添加到“<ph name="FOLDER_NAME" />”</translation>
 <translation id="4505554159887937799">已离线保存</translation>
+<translation id="4513387527876475750">{DAYS,plural, =1{# 天前}other{# 天前}}</translation>
 <translation id="4522570452068850558">详细信息</translation>
 <translation id="4526249700380860531">通过 <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> 查看和管理已保存的密码</translation>
 <translation id="4532845899244822526">选择文件夹</translation>
 <translation id="4543087392704641517">书签标题</translation>
 <translation id="4543661749405994812">复制电子邮件地址</translation>
 <translation id="4581964774250883625">您已进入隐身模式。</translation>
+<translation id="4583164079174244168">{MINUTES,plural, =1{# 分钟前}other{# 分钟前}}</translation>
 <translation id="4645575059429386691">由您父母管理</translation>
 <translation id="4663756553811254707">已删除 <ph name="NUMBER_OF_BOOKMARKS" /> 个书签</translation>
 <translation id="4665282149850138822"><ph name="NAME" />已添加到您的主屏幕</translation>
@@ -234,6 +245,7 @@
 <translation id="4720023427747327413">在<ph name="PRODUCT_NAME" />中打开</translation>
 <translation id="4726963856048758366">已清空存储空间</translation>
 <translation id="473775607612524610">更新</translation>
+<translation id="4738836084190194332">上次同步时间：<ph name="WHEN" /></translation>
 <translation id="4761374747761474835">请选择帐户，以便获取您所有设备上保存的书签、历史记录、密码和其他设置。</translation>
 <translation id="4773299976671772492">已停止</translation>
 <translation id="4797039098279997504">触摸即可返回到 <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -261,6 +273,8 @@
 <translation id="5063480226653192405">使用情况</translation>
 <translation id="509605886816275399">要离线保存此网页吗？</translation>
 <translation id="5100237604440890931">已收起 - 点击此处即可展开。</translation>
+<translation id="5107381076085091558">已暂停下载。</translation>
+<translation id="5118713593561876160">兴趣</translation>
 <translation id="5127805178023152808">同步功能已关闭</translation>
 <translation id="5138299137310274655">这是<ph name="SOURCE_LANGUAGE" />网页，要将其翻译成<ph name="TARGET_LANGUAGE" />吗？</translation>
 <translation id="5150703642582475397">一并显示标签页和应用</translation>
@@ -328,6 +342,7 @@
 <translation id="5771382037724542929">要替换“<ph name="DIRECTORY_NAME" />”目录中现有的 <ph name="FILE_NAME" /> 吗？</translation>
 <translation id="5804241973901381774">权限</translation>
 <translation id="5806294296882899667">加载默认书签文件夹时出现错误</translation>
+<translation id="5809361687334836369">{HOURS,plural, =1{# 小时前}other{# 小时前}}</translation>
 <translation id="5817918615728894473">配对</translation>
 <translation id="5832934273103296195">已展开 - 点击即可折叠</translation>
 <translation id="583891442612896534">Chrome 无法连接到 Google 服务器来进行数据压缩，因此您节省的数据流量可能有限。</translation>
@@ -361,6 +376,9 @@
 <translation id="6192792657125177640">例外</translation>
 <translation id="6208263165776660488">Chrome 标签页已移至新的位置</translation>
 <translation id="6231464350722415003">允许在您指定的网站上运行 JavaScript，同时禁止在其他网站上运行 JavaScript</translation>
+<translation id="6232535412751077445">如果您启用了“请勿跟踪”，您的浏览流量中将会包含一项请求。具体影响取决于网站是否会回应该请求以及如何解读该请求。
+
+例如：某些网站在收到该请求后，可能会向您展示相应的广告（这些广告并不是根据您访问过的其他网站而展示的）。许多网站仍会出于一些目的收集并使用您的浏览数据，例如，为了提高安全性，为了提供相关内容、广告和推荐内容，以及为了生成报告统计信息。</translation>
 <translation id="624558823898732418">翻译语言：<ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">打印该页面时出现问题，请重试。</translation>
 <translation id="6295158916970320988">所有网站</translation>
@@ -429,6 +447,7 @@
 <translation id="7029809446516969842">密码</translation>
 <translation id="7053983685419859001">禁止</translation>
 <translation id="7063006564040364415">无法连接到同步服务器。</translation>
+<translation id="7094922512924405309">找不到附近的“实物网”网页</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> 个打开的标签页</translation>
 <translation id="7096034533295549981">加载视频</translation>
 <translation id="7191430249889272776">标签页已在后台打开。</translation>
@@ -545,6 +564,7 @@
 <translation id="8660471606262461360">来自 Google Payments</translation>
 <translation id="8676374126336081632">清除输入的内容</translation>
 <translation id="869891660844655955">截止日期</translation>
+<translation id="8699799819461268362">Google SafeSites 过滤功能</translation>
 <translation id="8719023831149562936">无法传输当前的标签页</translation>
 <translation id="8725066075913043281">重试</translation>
 <translation id="8727142376512517020">不要再显示此对话框</translation>
@@ -578,6 +598,7 @@
 <translation id="9133515669113036225">重置设备凭据</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
 <translation id="9156605176886108508">没有书签文件夹</translation>
+<translation id="917685106653909562">附近的“实物网”网页</translation>
 <translation id="9187199695613236444">适合在移动设备上浏览的视图</translation>
 <translation id="9192643434065497760">请在<ph name="BEGIN_LINK" />设备设置<ph name="END_LINK" />部分开启蓝牙，以允许配对。</translation>
 <translation id="9206873250291191720">A</translation>

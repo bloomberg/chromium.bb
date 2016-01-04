@@ -347,6 +347,38 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
       Si aquesta opció s'activa, l'historial de navegació no es desa (i també es desactiva la sincronització de pestanyes).
 
       Si aquesta opció es desactiva, l'historial de navegació es desa.</translation>
+<translation id="2424023834246613232">Substitueix les regles de selecció de la impressora predeterminada a <ph name="PRODUCT_NAME" />.
+
+      Aquesta política determina les regles per seleccionar la impressora predeterminada a <ph name="PRODUCT_NAME" />, cosa que té lloc la primera vegada que s'utilitza la funció d'impressió amb un perfil.
+
+      Quan s'estableix la política, <ph name="PRODUCT_NAME" /> intenta trobar una impressora que compleixi tots els atributs especificats. Se selecciona com a predeterminada la primera impressora que compleixi la política però, si n'hi ha més d'una, se'n pot seleccionar qualsevol, en funció de l'ordre en què es detectin.
+
+      Si no s'estableix la política o no es troba cap impressora adequada dins del temps d'espera, s'utilitza la impressora PDF integrada o, si no està disponible, no se'n selecciona cap.
+
+      El valor s'analitza com un objecte JSON, d'acord amb l'esquema següent:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Si es limita la cerca de la impressora a un conjunt específic d'impressores.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Expressió regular que ha de concordar amb l'identificador de la impressora.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Expressió regular que ha de concordar amb el nom de visualització de la impressora.",
+            "type": "string"
+          }
+        }
+      }
+
+      Les impressores connectades a <ph name="CLOUD_PRINT_NAME" /> es consideren <ph name="PRINTER_TYPE_CLOUD" />, la resta es classifiquen com a <ph name="PRINTER_TYPE_LOCAL" />.
+      Si es deixa un camp en blanc, vol dir que tots els valors són vàlids. Si, per exemple, no s'especifica la connectivitat, la previsualització d'impressió iniciarà la detecció de tot tipus d'impressores, locals i en núvol.
+      Els patrons de les expressions regulars han de seguir la sintaxi de JavaScript RegExp i la concordança distingeix entre majúscules i minúscules.</translation>
 <translation id="2426782419955104525">Activa la funció Instant a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn aquesta opció.
 
       Si activeu aquesta opció, s'activa Instant a <ph name="PRODUCT_NAME" />.
@@ -505,6 +537,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
       Especifica si l'extensió de certificats lligats al domini TLS ha d'estar activada.
 
       Aquesta configuració s'utilitza per activar l'extensió de certificats lligats al domini TLS per a proves. Aquesta configuració experimental se suprimirà properament.</translation>
+<translation id="2957513448235202597">Tipus de compte per a l'autenticació <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Regles d'evitació de servidors intermediaris</translation>
 <translation id="2960691910306063964">Activa o desactiva l'autenticació sense PIN per als amfitrions d'accés remot</translation>
 <translation id="2976002782221275500">Indica el temps sense activitat per part de l'usuari després del qual la pantalla s'atenua quan el dispositiu funciona amb bateria.
@@ -1586,6 +1619,9 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Quan aquesta política no es defineix, s'utilitza un temps predeterminat.
 
           El valor de la política s'ha d'indicar en mil·lisegons i es limita perquè sigui inferior o igual al retard d'inactivitat.</translation>
+<translation id="7329968046053403405">Especifica de quin tipus han de ser els comptes que proporciona l'aplicació d'autenticació per a Android que admet l'autenticació <ph name="HTTP_NEGOTIATE" /> (per exemple, l'autenticació Kerberos). El proveïdor de l'aplicació d'autenticació ha de facilitar aquesta informació. Per obtenir informació més detallada, consulteu https://goo.gl/hajyfN.
+
+          Si no es proporciona cap opció de configuració, l'autenticació <ph name="HTTP_NEGOTIATE" /> es desactiva a Android.</translation>
 <translation id="7331962793961469250">Quan es defineix com a True, les promocions de les aplicacions de Chrome Web Store no apareixeran a la pàgina de pestanya nova. En definir aquesta opció a False o en deixar-la sense definir, les promocions de les aplicacions de Chrome Web Store apareixeran a la pàgina de pestanya nova.</translation>
 <translation id="7332963785317884918">Aquesta política està obsoleta. <ph name="PRODUCT_OS_NAME" /> sempre utilitzarà l'estratègia de neteja RemoveLRU.
 
@@ -1609,6 +1645,9 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7417972229667085380">Percentatge que permet ajustar el retard d'inactivitat en mode de presentació (desactivat)</translation>
 <translation id="7421483919690710988">Defineix la mida de la memòria cau del disc multimèdia en bytes</translation>
 <translation id="7424751532654212117">Llista d'excepcions de la llista de connectors desactivats</translation>
+<translation id="7426112309807051726">Especifica si l'optimització <ph name="TLS_FALSE_START" /> s'ha de desactivar. Per qüestions relacionades amb l'historial, aquesta política s'anomena DisableSSLRecordSplitting.
+
+      Si la política no s'estableix o s'estableix en false, s'activarà <ph name="TLS_FALSE_START" />. Si s'estableix en true, <ph name="TLS_FALSE_START" /> es desactivarà.</translation>
 <translation id="7433714841194914373">Activa Instant</translation>
 <translation id="7443616896860707393">Línies d'ordre d'autenticació bàsica HTTP de diversos orígens</translation>
 <translation id="7468416082528382842">Ubicació del registre de Windows:</translation>
@@ -1866,6 +1905,24 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8519264904050090490">URL d'excepcions manuals d'usuari gestionat</translation>
 <translation id="8544375438507658205">Renderitzador HTML predeterminat per a <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Mostra un advertiment quan es visitin llocs no inclosos en paquets de contingut.</translation>
+<translation id="855339549837475534">Tant Chromium com Google Chrome admeten el mateix conjunt de polítiques.
+      Tingueu en compte que aquest document pot incloure polítiques orientades
+      a versions no publicades del programari (és a dir, l'entrada Compatible amb
+      pot fer referència a una versió que encara no s'ha publicat).
+      A més, aquestes polítiques es poden canviar o suprimir sense avís previ.
+
+      Aquestes polítiques estan estrictament destinades a utilitzar-se per configurar instàncies de
+      <ph name="PRODUCT_NAME" /> internes de la vostra
+      organització. Utilitzar aquestes polítiques fora de l'organització (per exemple,
+      en un programa distribuït públicament) es considera programari maliciós i és
+      probable que Google i els proveïdors d'antivirus ho marquin com a tal.
+
+      No cal que ajusteu aquesta configuració manualment. Podeu baixar plantilles
+      fàcils d'utilitzar per a Windows, per a Mac i per a Linux de la pàgina <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      La manera recomanada de configurar la política a Windows és amb GPO,
+      tot i que encara es permet administrar la política mitjançant registre en
+      instàncies de Windows que formin part d'un domini d'Active Directory.</translation>
 <translation id="8566842294717252664">Amaga Web Store a la pàgina Pestanya nova i al Menú d'aplicacions</translation>
 <translation id="8587229956764455752">Permet la creació de comptes d'usuari</translation>
 <translation id="8614804915612153606">Desactiva l'actualització automàtica</translation>

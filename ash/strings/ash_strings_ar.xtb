@@ -6,6 +6,7 @@
 <translation id="1021311941847921177">لقد تغيّر اختصار التبديل إلى أسلوب الإدخال التالي. يُرجى استخدام <ph name="NEW_SHORTCUT" /> بدلاً من <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">الإخفاء التلقائي للرف</translation>
 <translation id="1195412055398077112">الخروج عن إطار الشاشة</translation>
+<translation id="1252999807265626933">جارٍ الشحن من <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">تم تعطيل لوحة المفاتيح على الشاشة</translation>
 <translation id="1272079795634619415">إيقاف</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -20,6 +21,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">المشغّل</translation>
 <translation id="15373452373711364">مؤشر الماوس الكبير</translation>
+<translation id="1550523713251050646">انقر للحصول على المزيد من الخيارات</translation>
 <translation id="1602076796624386989">تمكين بيانات الجوال</translation>
 <translation id="1621499497873603021">الوقت المتبقي حتى تصبح البطارية فارغة <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">‏جهاز Chrome</translation>
@@ -77,6 +79,7 @@
 <translation id="3147142846278915599">‏Launcher (مزامنة التطبيقات...)</translation>
 <translation id="3157169093162779309">تمكين قفل التدوير</translation>
 <translation id="3294437725009624529">ضيف</translation>
+<translation id="3371140690572404006">‏جهاز USB-C (المنفذ الأمامي الأيمن)</translation>
 <translation id="3445925074670675829">‏جهاز USB-C</translation>
 <translation id="3473479545200714844">مكبّر الشاشة</translation>
 <translation id="3573179567135747900">التغيير مرة أخرى إلى "<ph name="FROM_LOCALE" />" (يتطلب إعادة التشغيل)</translation>
@@ -103,6 +106,7 @@
 <translation id="3963445509666917109">سماعة (داخلية)</translation>
 <translation id="3967919079500697218">تم تعطيل إمكانية التقاط لقطات شاشة من قِبل المشرف..</translation>
 <translation id="397105322502079400">جارٍ الحساب...</translation>
+<translation id="3995138139523574647">‏جهاز USB-C (المنفذ الخلفي الأيمن)</translation>
 <translation id="4053612967614057854">تعطيل لوحة المفاتيح على الشاشة</translation>
 <translation id="412065659894267608"><ph name="HOUR" />س <ph name="MINUTE" />د حتى الاكتمال</translation>
 <translation id="4250680216510889253">لا</translation>
@@ -156,8 +160,10 @@
 <translation id="6047696787498798094">سيتم إيقاف مشاركة الشاشة عند التبديل إلى مستخدم آخر. هل تريد المتابعة؟</translation>
 <translation id="6062360702481658777">سيتم تسجيل خروجك تلقائيًا في غضون <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">يمكن لأجهزة بلوتوث القريبة اكتشاف جهاز الكمبيوتر وسيظهر كـ "<ph name="NAME" />" بالعنوان <ph name="ADDRESS" /></translation>
+<translation id="6106745654298855237">جارٍ شحن <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">إظهار لوحة مفاتيح على الشاشة</translation>
 <translation id="6165508094623778733">مزيد من المعلومات</translation>
+<translation id="6203030746557259519">العرض الظاهري</translation>
 <translation id="6247708409970142803">%<ph name="PERCENTAGE" /></translation>
 <translation id="6248847161401822652">‏للإنهاء، اضغط على Control Shift Q مرتين.</translation>
 <translation id="6310121235600822547">تم تدوير <ph name="DISPLAY_NAME" /> إلى <ph name="ROTATION" /></translation>
@@ -200,6 +206,7 @@
 <translation id="7573962313813535744">وضع الإرساء</translation>
 <translation id="7593891976182323525">‏مفتاح البحث أو Shift</translation>
 <translation id="7649070708921625228">مساعدة</translation>
+<translation id="7692480393933218409">‏جارٍ شحن أجهزة USB-C المتصلة</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> و<ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">تم تغيير اللغة من "<ph name="FROM_LOCALE" />" إلى "<ph name="TO_LOCALE" />" بعد مزامنة إعداداتك.</translation>
 <translation id="785750925697875037">عرض حساب الجوال</translation>

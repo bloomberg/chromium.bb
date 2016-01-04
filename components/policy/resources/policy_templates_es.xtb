@@ -393,6 +393,38 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si se habilita esta opción, no se almacenará el historial de navegación y se inhabilitará la sincronización de pestañas.
 
       Si se inhabilita o no se configura, se almacenará el historial de navegación.</translation>
+<translation id="2424023834246613232">Anula las reglas de <ph name="PRODUCT_NAME" /> para la selección de la impresora predeterminada.
+
+      Esta política determina las reglas para seleccionar la impresora predeterminada en <ph name="PRODUCT_NAME" />. Esto ocurre la primera vez que se utiliza la función de imprimir con un perfil.
+
+      Cuando se establece esta política, <ph name="PRODUCT_NAME" /> intentará encontrar una impresora con todos los atributos especificados y la seleccionará como impresora predeterminada. Se seleccionará la primera impresora detectada cuyas características coincidan con la política. Si coinciden varias impresoras, puedes seleccionar cualquiera de ellas en función del orden en el que se detecten.
+
+      Si no se establece esta política o no se encuentra ninguna impresora que coincida durante el tiempo de espera, se utilizará la impresora de PDF integrada de forma predeterminada o no seleccionará ninguna impresora si la impresora de PDF no está disponible.
+
+      El valor se analiza como objeto JSON, siguiendo el siguiente esquema:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Indica si se debe limitar la búsqueda de la impresora a un conjunto específico de impresoras.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Expresión regular para encontrar el ID de la impresora.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Expresión regular para encontrar el nombre de visualización de la impresora.",
+            "type": "string"
+          }
+        }
+      }
+
+      Las impresoras conectadas a <ph name="CLOUD_PRINT_NAME" /> se consideran <ph name="PRINTER_TYPE_CLOUD" /> y el resto de las impresoras se clasifican como <ph name="PRINTER_TYPE_LOCAL" />.
+      La omisión de algún campo significa que todos los valores coinciden. Por ejemplo, si no se especifica la conectividad, la vista previa de impresión buscará todo tipo de impresoras, tanto "local" como "cloud".
+      Los patrones de expresión regular deben seguir la sintaxis JavaScript RegExp y las coincidencias distinguen entre mayúsculas y minúsculas.</translation>
 <translation id="2426782419955104525">Habilita la función Instant de <ph name="PRODUCT_NAME" /> y evita que los usuarios modifiquen esta opción.
 
       Si habilitas esta opción, se habilitará <ph name="PRODUCT_NAME" /> Instant.
@@ -568,6 +600,7 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
       Especifica si se debe habilitar la extensión de certificados TLS limitados a dominios.
 
       Esta opción se utiliza para habilitar la extensión de certificados TLS limitados a dominios para pruebas. Esta opción experimental se eliminará en el futuro.</translation>
+<translation id="2957513448235202597">Tipo de cuenta para la autenticación <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Reglas de omisión de proxy</translation>
 <translation id="2960691910306063964">Habilitar o inhabilitar la autenticación sin PIN para host de acceso remoto</translation>
 <translation id="2976002782221275500">Permite especificar el tiempo transcurrido hasta la atenuación de la pantalla (sin que el usuario realice ninguna acción) cuando el dispositivo funciona con la batería.
@@ -1799,6 +1832,9 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
           Cuando no se establece esta política, se utilizará un valor de tiempo predeterminado.
 
           El valor de la política se debe especificar en milisegundos. Los valores están establecidos para ser inferiores o iguales al retraso de desconexión (si está establecido) y al  retraso de inactividad.</translation>
+<translation id="7329968046053403405">Especifica el tipo de cuenta de las cuentas proporcionadas por la aplicación de autenticación de Android que admita la autenticación <ph name="HTTP_NEGOTIATE" /> (p. ej., autenticación Kerberos). Esta información debe estar disponible desde el proveedor de la aplicación de autenticación. Para obtener más información, consulta la página https://goo.gl/hajyfN.
+
+          Si no se proporciona ninguna opción, la autenticación <ph name="HTTP_NEGOTIATE" /> se inhabilitará en Android.</translation>
 <translation id="7331962793961469250">Si se establece en "true", las promociones de aplicaciones de Chrome Web Store no aparecerán en la página Nueva pestaña.
 
       Si se establece en "false" o si no se establece, las promociones de aplicaciones de Chrome Web Store aparecerán en la página Nueva pestaña.</translation>
@@ -1824,6 +1860,9 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 <translation id="7417972229667085380">Porcentaje que permite ajustar el retraso de inactividad en el modo de presentación (política obsoleta)</translation>
 <translation id="7421483919690710988">Establecer tamaño de caché de disco de medios en bytes</translation>
 <translation id="7424751532654212117">Lista de excepciones de la lista de complementos inhabilitados</translation>
+<translation id="7426112309807051726">Especifica si la optimización de <ph name="TLS_FALSE_START" /> se debe inhabilitar. Por razones históricas, esta política se denomina DisableSSLRecordSplitting.
+
+      Si esta política no se establece o se le asigna el valor false, se habilitará <ph name="TLS_FALSE_START" />. Si se asigna el valor true a esta política, se inhabilitará <ph name="TLS_FALSE_START" />.</translation>
 <translation id="7433714841194914373">Habilitar Instant</translation>
 <translation id="7443616896860707393">Mensajes de autenticación básica de HTTP de origen cruzado</translation>
 <translation id="7468416082528382842">Ubicación del registro de Windows:</translation>
@@ -2099,6 +2138,24 @@ Si no se establece esta política, cualquier complemento que coincida con los pa
 <translation id="8519264904050090490">URLs de excepción manual de usuario administrado</translation>
 <translation id="8544375438507658205">Procesador de HTML predeterminado de <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Advertir cuando se visitan sitios no incluidos en paquetes de contenido</translation>
+<translation id="855339549837475534">Tanto Chromium como Google Chrome admiten el mismo conjunto de
+      políticas. Ten en cuenta que en este documento se pueden incluir políticas
+      específicas de versiones de software no publicadas (es decir, que su entrada "compatible con"
+      hace referencia a una versión no publicada) y que dichas políticas pueden
+      modificarse o retirarse sin previo aviso.
+
+      Estas políticas están destinadas exclusivamente a la configuración de instancias de
+      <ph name="PRODUCT_NAME" /> internas de tu
+      organización. El uso de estas políticas fuera de tu organización (por
+      ejemplo, en un programa distribuido públicamente) se considera software malicioso y
+      es probable que Google y los proveedores de antivirus lo designen como tal.
+
+      No es necesario configurar estas opciones manualmente. Hay 
+      disponibles plantillas fáciles de utilizar para Windows, Mac y Linux en la página <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      La forma recomendada de configurar la política en Windows es a través de GPO, aunque
+      aún se admite la asignación de la política a través del registro para instancias de Windows
+      vinculadas a un dominio de Active Directory.</translation>
 <translation id="8566842294717252664">Oculta tienda web en página Nueva pestaña y en menú de aplicaciones</translation>
 <translation id="8587229956764455752">Permitir la creación de nuevas cuentas de usuario</translation>
 <translation id="8614804915612153606">Inhabilitar las actualizaciones automáticas</translation>

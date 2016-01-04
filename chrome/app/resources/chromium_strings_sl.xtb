@@ -43,6 +43,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="225614027745146050">Pozdravljeni</translation>
 <translation id="2316129865977710310">Ne, hvala</translation>
 <translation id="2347108572062610441">Zaradi te razširitve se je spremenila stran, ki je prikazana, ko zaženete Chromium.</translation>
+<translation id="2372704305038231957">32-bitna različica Chromiuma morda ne bo delovala pravilno, ker ni več podprta v tem sistemu Linux. Nadgradite Chromium na 64-bitno različico.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Trenutno poteka prenos. Ali ga želite preklicati in zapreti Chromium?}one{Trenutno poteka # prenos. Ali ga želite preklicati in zapreti Chromium?}two{Trenutno potekata # prenosa. Ali ju želite preklicati in zapreti Chromium?}few{Trenutno potekajo # prenosi. Ali jih želite preklicati in zapreti Chromium?}other{Trenutno poteka # prenosov. Ali jih želite preklicati in zapreti Chromium?}}</translation>
 <translation id="2396765026452590966">Zaradi razširitve »<ph name="EXTENSION_NAME" />« se je spremenila stran, ki je prikazana, ko zaženete Chromium.</translation>
 <translation id="2485422356828889247">Odstranjevanje</translation>
@@ -151,6 +152,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="6485906693002546646">Za sinhronizacijo stvari v Chromiumu uporabljate <ph name="PROFILE_EMAIL" />. Če želite posodobiti nastavitve sinhroniziranja ali uporabljati Chromium brez Google Računa, odprite <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Odstranitev Chromiuma</translation>
 <translation id="6526111688217511984">Chromium potrebuje za prenos datotek dostop do shrambe.</translation>
+<translation id="6584627348340620412">Prihodnje 32-bitne različice Chromiuma ne bodo več podpirale tega sistema Linux. Nadgradite Chromium na 64-bitno različico.</translation>
 <translation id="6593914713218535185">Chromium morda ne bo deloval pravilno, ker ni več podprt v tem sistemu Linux.</translation>
 <translation id="6637001341228460105">Chromium potrebuje dostop do mikrofona, če želite, da temu spletnemu mestu omogoči dostop do njega.</translation>
 <translation id="6638567566961868659">Poiščite svoje zaznamke v meniju Chromiuma ali v vrstici z zaznamki.</translation>

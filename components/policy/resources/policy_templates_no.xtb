@@ -373,6 +373,38 @@
       Hvis denne innstillingen er slått på, lagres ikke nettleserloggen, og fanesynkronisering blir slått av.
 
       Hvis denne innstillingen er slått av, eller hvis du ikke har spesifisert den, lagres nettleserloggen.</translation>
+<translation id="2424023834246613232">Overstyrer reglene for valg av standardskriver i <ph name="PRODUCT_NAME" />.
+
+      Denne regelen fastsetter reglene for valg av standardskriver i <ph name="PRODUCT_NAME" />, noe som skjer den første gangen utskriftsfunksjonen brukes med en profil.
+
+      Når denne regelen er angitt, prøver <ph name="PRODUCT_NAME" /> å finne en skriver som har alle de spesifiserte attributtene, og velger den som standardskriver. Den første skriveren som blir funnet og som samsvarer med regelen, blir valgt. Hvis flere skrivere har alle de spesifiserte attributtene, kan det velges en hvilken som helst av dem, avhengig av rekkefølgen de oppdages i.
+
+      Hvis denne regelen ikke er angitt, eller hvis det ikke blir funnet noen skriver som har alle attributtene, innen operasjonen blir tidsavbrutt, blir den innebygde PDF-skriveren valgt. Hvis PDF-skriveren ikke er tilgjengelig, blir det ikke valgt noen skriver.
+
+      Verdien parses som et JSON-objekt i henhold til følgende oppsett:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Om søket etter den samsvarende skriveren skal begrenses til et spesifikt sett med skrivere.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Et regulært uttrykk som samsvarer med skriverens ID.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Et regulært uttrykk som samsvarer med skriverens visningsnavn.",
+            "type": "string"
+          }
+        }
+      }
+
+      Skrivere som kobles til <ph name="CLOUD_PRINT_NAME" />, anses for å være <ph name="PRINTER_TYPE_CLOUD" />. Resten av skriverne klassifiseres som <ph name="PRINTER_TYPE_LOCAL" />.
+      Hvis du hopper over et felt, gjelder alle verdier. Det vil si at hvis du for eksempel ikke spesifiserer tilkoblingsmulighetene, søker forhåndsvisningen av utskrift etter alle slags skrivere – både lokale og i skyen.
+      Mønstrene for regulære uttrykk må følge JavaScript RegExp-syntaksen, og treffene skiller mellom store og små bokstaver.</translation>
 <translation id="2426782419955104525">Slår på Instant for <ph name="PRODUCT_NAME" /> og forhindrer brukere fra å endre denne innstillingen.
 
       Hvis du slår på denne innstillingen, slår du Instant på for <ph name="PRODUCT_NAME" />.
@@ -545,6 +577,7 @@
       Angi om TLS-domenebetingende sertifikatsutvidelser bør aktiveres.
 
       Disse innstillingene blir brukt til å aktivere den TLS-domenebetingede sertifikatsutvidelsen for testing. Denne eksperimentelle innstillingen blir fjernet i fremtiden.</translation>
+<translation id="2957513448235202597">Kontotype for <ph name="HTTP_NEGOTIATE" />-autentisering</translation>
 <translation id="2959898425599642200">Regler for å omgå mellomtjener</translation>
 <translation id="2960691910306063964">Slå på eller av autentisering uten PIN-kode for fjerntilgangsverter</translation>
 <translation id="2976002782221275500">Angir hvor lenge brukeren kan være inaktiv før skjermen nedtones når enheten kjører på batteristrøm.
@@ -1736,6 +1769,9 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           Hvis denne innstillingen ikke er konfigurert, brukes en standardtid.
 
           Innstillingsverdien må angis i millisekunder. Verdiene er låst til å være lavere enn inaktivitetsforsinkelsen.</translation>
+<translation id="7329968046053403405">Spesifiserer kontotypen for kontoene som gjøres tilgjengelige av Android-autentiseringsappen som støtter <ph name="HTTP_NEGOTIATE" />-autentisering (f.eks. Kerberos-autentisering). Denne informasjonen skal være tilgjengelig fra leverandøren av autentiseringsappen. For mer detaljert informasjon se https://goo.gl/hajyfN.
+
+          Hvis du ikke velger noen innstilling, er <ph name="HTTP_NEGOTIATE" />-autentisering slått av på Android.</translation>
 <translation id="7331962793961469250">Når innstillingen er True, vil ikke reklamer for programmer fra Chrome Nettmarked vises på siden Ny fane.
 
       Hvis dette alternativet settes til False, eller hvis det ikke angis noe for dette alternativet, vises reklamer for programmer fra Chrome Nettbutikk på siden Ny fane</translation>
@@ -1761,6 +1797,9 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7417972229667085380">Prosentandelen for skalering av inaktivitetsforsinkelsen i presentasjonsmodus (avviklet)</translation>
 <translation id="7421483919690710988">Angi størrelse på mediediskbuffer i byte</translation>
 <translation id="7424751532654212117">Liste over unntak fra listen over deaktiverte programtillegg</translation>
+<translation id="7426112309807051726">Angir om optimalisering for <ph name="TLS_FALSE_START" /> skal slås av eller ikke. Av historiske grunner heter denne innstillingen DisableSSLRecordSplitting.
+
+      Hvis du ikke spesifiserer denne regelen, eller hvis du setter den til false (usann), slås <ph name="TLS_FALSE_START" /> på. Hvis du setter den til true (sann), slås <ph name="TLS_FALSE_START" /> av.</translation>
 <translation id="7433714841194914373">Aktiver Instant</translation>
 <translation id="7443616896860707393">Opphavsuavhengig HTTP Basic Auth-forespørsler</translation>
 <translation id="7468416082528382842">Plassering i Windows-register:</translation>
@@ -2036,6 +2075,26 @@ programtillegg. Shockwave Flash-programtillegget tilhører for eksempel Adobe Fl
 <translation id="8519264904050090490">Nettadresser med manuelle unntak for administrerte brukere</translation>
 <translation id="8544375438507658205">Standard gjengivelse av HTML for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Varsle ved besøk på nettsteder som ikke inngår i innholdspakker</translation>
+<translation id="855339549837475534">Både Chromium og Google Chrome støtter det samme regelsettet.
+      Vær oppmerksom på at dette dokumentet kan inneholde regler som er
+      laget for upubliserte programvareversjoner (dvs. at «støttes på»-oppføringen
+      viser til en upublisert versjon), og at slike innstillinger kan
+      endres eller fjernes uten varsel.
+
+      Disse reglene er bare ment for å konfigurere forekomster 
+      av <ph name="PRODUCT_NAME" /> internt i organisasjonen din.
+      Hvis disse reglene brukes utenfor organisasjonen din (for
+      eksempel i offentlig distribuerte programmer), blir de betraktet som skadelig 
+      programvare, og de blir sannsynligvis definert som skadelig programvare av 
+      Google og leverandører av antivirusprogramvare.
+
+      Det er ikke nødvendig å konfigurere disse innstillingene manuelt.
+      Brukervennlige maler for Windows, Mac og Linux kan lastes ned fra <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      Det anbetales at regler i Windows konfigureres via GPO 
+      (gruppepolicyobjekter), selv om det fortsatt er støtte for å spesifisere regler
+      via registeret for Windows-forekomster som er knyttet til 
+      Active Directory-domener.</translation>
 <translation id="8566842294717252664">Skjul nettbutikken fra nye faner og appvelgeren</translation>
 <translation id="8587229956764455752">Tillat oppretting av nye brukerkontoer</translation>
 <translation id="8614804915612153606">Deaktiverer automatiske oppdateringer</translation>

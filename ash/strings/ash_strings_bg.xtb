@@ -6,6 +6,7 @@
 <translation id="1021311941847921177">Комбинацията за превключване към следващия метод на въвеждане е променена. Моля, използвайте „<ph name="NEW_SHORTCUT" />“ вместо „<ph name="OLD_SHORTCUT" />“.</translation>
 <translation id="112308213915226829">Автоматично скриване на лавицата</translation>
 <translation id="1195412055398077112">допълнителна област</translation>
+<translation id="1252999807265626933">Зарежда се от <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Екранната клавиатура е деактивирана</translation>
 <translation id="1272079795634619415">Стоп</translation>
 <translation id="1279938420744323401">„<ph name="DISPLAY_NAME" />“ (<ph name="ANNOTATION" />)</translation>
@@ -20,6 +21,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Стартов панел</translation>
 <translation id="15373452373711364">Голям курсор на мишката</translation>
+<translation id="1550523713251050646">Кликнете за още опции</translation>
 <translation id="1602076796624386989">Активиране на мобилните данни</translation>
 <translation id="1621499497873603021">Оставащо време до изразходването на батерията: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Устройство с Chrome</translation>
@@ -78,6 +80,7 @@
 <translation id="3147142846278915599">Стартов панел (приложенията се синхронизират...)</translation>
 <translation id="3157169093162779309">Заключване на завъртането</translation>
 <translation id="3294437725009624529">Гост</translation>
+<translation id="3371140690572404006">устройство с USB-C (предният десен порт)</translation>
 <translation id="3445925074670675829">USB-C устройство</translation>
 <translation id="3473479545200714844">Екранна лупа</translation>
 <translation id="3573179567135747900">Връщане към „<ph name="FROM_LOCALE" />“ (изисква рестартиране)</translation>
@@ -104,6 +107,7 @@
 <translation id="3963445509666917109">Високоговорител (вътрешен)</translation>
 <translation id="3967919079500697218">Възможността за правене на екранни снимки е деактивирана от администратора ви.</translation>
 <translation id="397105322502079400">Изчислява се...</translation>
+<translation id="3995138139523574647">устройство с USB-C (задният десен порт)</translation>
 <translation id="4053612967614057854">Деактивиране на екранната клавиатура</translation>
 <translation id="412065659894267608"><ph name="HOUR" /> ч <ph name="MINUTE" /> м до пълно зареждане</translation>
 <translation id="4250680216510889253">Не</translation>
@@ -157,8 +161,10 @@
 <translation id="6047696787498798094">Споделянето на екрана ще спре, когато превключите към друг потребител. Искате ли да продължите?</translation>
 <translation id="6062360702481658777">Ще излезете автоматично след <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Компютърът ви е откриваем за устройства с Bluetooth наблизо и ще се показва като „<ph name="NAME" />“ с адрес <ph name="ADDRESS" /></translation>
+<translation id="6106745654298855237">Зарежда се <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Показване на екранната клавиатура</translation>
 <translation id="6165508094623778733">Научете повече</translation>
+<translation id="6203030746557259519">Виртуален дисплей</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">За изход натиснете два пъти Ctrl+Shift+Q.</translation>
 <translation id="6310121235600822547">Завъртяхте „<ph name="DISPLAY_NAME" />“ на <ph name="ROTATION" /></translation>
@@ -203,6 +209,7 @@
 <translation id="7573962313813535744">Режим с докинг станция</translation>
 <translation id="7593891976182323525">„търсене“ или „Shift“</translation>
 <translation id="7649070708921625228">Помощ</translation>
+<translation id="7692480393933218409">Свързаните устройства с USB-C се зареждат</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> и <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Езикът се промени от „<ph name="FROM_LOCALE" />“ на „<ph name="TO_LOCALE" />“ след синхронизирането на настройките ви.</translation>
 <translation id="785750925697875037">Преглед на мобилния профил</translation>

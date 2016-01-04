@@ -387,6 +387,38 @@
       Als deze instelling is ingeschakeld, wordt de browsergeschiedenis niet opgeslagen. Met deze instelling wordt ook tabbladsynchronisatie uitgeschakeld.
 
       Als deze instelling is uitgeschakeld of niet is ingesteld, wordt de browsergeschiedenis opgeslagen.</translation>
+<translation id="2424023834246613232">Negeert de regels van <ph name="PRODUCT_NAME" /> voor selectie van de standaardprinter.
+
+      Dit beleid bepaalt de regels voor het selecteren van de standaardprinter in <ph name="PRODUCT_NAME" />, wat gebeurt wanneer de afdrukfunctie voor het eerst in een profiel wordt gebruikt.
+
+      Wanneer dit beleid is ingesteld, probeert <ph name="PRODUCT_NAME" /> een printer te vinden die overeenkomt met alle opgegeven kenmerken en selecteert deze als standaardprinter. De eerste gevonden printer die overeenkomt met dit beleid, wordt geselecteerd. Als meerdere printers overeenkomen, kan elke willekeurige overeenkomende printer worden geselecteerd, afhankelijk van de volgorde waarin de printers worden gevonden.
+
+      Als dit beleid niet is ingesteld, of als er geen overeenkomende printer binnen de time-outperiode wordt gevonden, wordt de printer standaard ingesteld op de ingebouwde pdf-printer, of er wordt geen printer geselecteerd, als de pdf-printer niet beschikbaar is.
+
+      De waarde wordt geparseerd als JSON-object, overeenkomend met het volgende schema:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Het zoeken naar een overeenkomende printer al dan niet beperken tot een specifieke reeks printers.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Reguliere expressie voor overeenkomende printer-ID.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Reguliere expressie voor overeenkomende printerweergavenaam.",
+            "type": "string"
+          }
+        }
+      }
+
+      Printers die zijn gekoppeld aan <ph name="CLOUD_PRINT_NAME" />, worden als '<ph name="PRINTER_TYPE_CLOUD" />' beschouwd. De overige printers worden als '<ph name="PRINTER_TYPE_LOCAL" />' geclassificeerd.
+      Wanneer een veld wordt overgeslagen, betekent dit dat alle waarden overeenkomen. Het niet-opgeven van de verbinding zorgt er bijvoorbeeld voor dat 'Voorbeeld afdrukken' het detecteren van alle soorten printers start (zowel lokale als cloudprinters).
+      Reguliere expressiepatronen moeten de JavaScript RegExp-syntaxis volgen en namen komen alleen overeen als ook het hoofdlettergebruik klopt (hoofdlettergevoelig).</translation>
 <translation id="2426782419955104525">Hiermee schakel je de Instant-functie van <ph name="PRODUCT_NAME" /> in en voorkom je dat gebruikers deze instelling wijzigen.
 
       Als je deze instelling inschakelt, is <ph name="PRODUCT_NAME" /> Instant ingeschakeld.
@@ -562,6 +594,7 @@
       Geeft aan of de extensie voor TLS-domeingebonden certificaten moet worden ingeschakeld.
 
       Deze instelling wordt gebruikt om de extensie voor TLS-domeingebonden certificaten in te schakelen voor testdoeleinden. Deze experimentele instelling wordt in de toekomst verwijderd.</translation>
+<translation id="2957513448235202597">Accounttype voor <ph name="HTTP_NEGOTIATE" />-verificatie</translation>
 <translation id="2959898425599642200">Regels voor proxyomzeiling</translation>
 <translation id="2960691910306063964">Verificatie zonder pincode in- of uitschakelen voor hosts voor externe toegang</translation>
 <translation id="2976002782221275500">Hiermee wordt de tijdsduur zonder input van gebruikers gespecificeerd waarna het scherm wordt gedimd wanneer er op de accu wordt gewerkt.
@@ -1797,6 +1830,9 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           Als dit beleid niet is ingesteld, wordt een standaardtijdsduur gebruikt.
 
           De beleidswaarde moet worden opgegeven in milliseconden. Waarden moeten lager zijn dan of gelijk zijn aan de inactieve vertraging.</translation>
+<translation id="7329968046053403405">Hiermee wordt het accounttype gespecificeerd van de accounts die worden geleverd door de verificatie-app voor Android die <ph name="HTTP_NEGOTIATE" />-verificatie ondersteunt (zoals Kerberos-verificatie). Deze informatie is beschikbaar via de leverancier van de verificatie-app. Ga voor meer informatie naar https://goo.gl/hajyfN.
+
+          Als er geen instelling is opgegeven, wordt <ph name="HTTP_NEGOTIATE" />-verificatie uitgeschakeld voor Android.</translation>
 <translation id="7331962793961469250">Wanneer dit is ingesteld op 'True', worden promoties voor apps van de Chrome Web Store niet weergegeven op de pagina 'Nieuw tabblad'.
 
       Als je deze optie instelt op 'False' of deze niet instelt, worden promoties voor apps van de Chrome Web Store wel op de pagina 'Nieuw tabblad' weergegeven.</translation>
@@ -1816,6 +1852,9 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7417972229667085380">Het percentage waarmee je de inactieve vertraging in presentatiemodus kunt schalen (verouderd)</translation>
 <translation id="7421483919690710988">Grootte van mediaschijfcache in bytes instellen</translation>
 <translation id="7424751532654212117">Lijst van uitzonderingen op de lijst met uitgeschakelde plug-ins</translation>
+<translation id="7426112309807051726">Geeft aan of de optimalisatie van <ph name="TLS_FALSE_START" /> moet worden uitgeschakeld. Vanwege historische redenen wordt dit beleid DisableSSLRecordSplitting genoemd.
+
+      Als dit beleid niet is ingesteld of is ingesteld op 'onwaar', wordt <ph name="TLS_FALSE_START" /> ingeschakeld. Als dit beleid is ingesteld op 'waar', wordt <ph name="TLS_FALSE_START" /> uitgeschakeld.</translation>
 <translation id="7433714841194914373">Instant inschakelen</translation>
 <translation id="7443616896860707393">Prompts voor algemene HTTP-authenticatie met verschillende herkomst</translation>
 <translation id="7468416082528382842">Locatie van Windows-register:</translation>
@@ -2095,6 +2134,24 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8519264904050090490">URL's van handmatige uitzonderingen voor beheerde gebruikers</translation>
 <translation id="8544375438507658205">Standaard HTML-renderer voor <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Waarschuwen als sites worden bezocht die zich niet in de inhoudspakketten bevinden</translation>
+<translation id="855339549837475534">Chromium en Google Chrome ondersteunen dezelfde reeks
+      beleidsregels. Dit document bevat mogelijk beleidsregels die voor niet-
+      uitgebrachte softwareversies zijn bedoeld (het item 'ondersteund op' verwijst
+      naar een niet-uitgebrachte versie) en dergelijke beleidsregels kunnen zonder
+      kennisgeving worden gewijzigd of verwijderd.
+
+      Deze beleidsregels zijn uitsluitend bedoeld voor het configureren van
+      instanties van <ph name="PRODUCT_NAME" /> binnen je organisatie. Gebruik van deze beleidsregels
+      buiten je organisatie (bijvoorbeeld in een openbaar gedistribueerd
+      programma) wordt beschouwd als malware en wordt waarschijnlijk gelabeld
+      als malware door Google en antivirusproviders.
+
+      Je hoeft deze instellingen niet handmatig te configureren. Je kunt gebruiksvriendelijke
+      sjablonen voor Windows, Mac en Linux downloaden via <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      De aanbevolen manier om beleidsregels te configureren op Windows, is via
+      GPO, maar het toewijzen van beleidsregels via een register wordt nog
+      steeds ondersteund voor Windows-instanties die zijn gekoppeld aan een Active Directory-domein.</translation>
 <translation id="8566842294717252664">De Web Store verbergen op de pagina 'Nieuw tabblad' en in de App Launcher</translation>
 <translation id="8587229956764455752">Het maken van nieuwe gebruikersaccounts toestaan</translation>
 <translation id="8614804915612153606">Schakelt 'Automatisch updaten' uit</translation>

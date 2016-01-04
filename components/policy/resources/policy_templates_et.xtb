@@ -391,6 +391,38 @@
       Kui seade on lubatud, ei salvestata sirvimisajalugu. Seade keelab ka vahelehtede sünkroonimise.
 
       Kui seade on keelatud või määramata, salvestatakse sirvimisajalugu.</translation>
+<translation id="2424023834246613232">Alistatakse rakenduse <ph name="PRODUCT_NAME" /> vaikeprinteri valimise reeglid.
+
+      Selle reegliga määratakse reeglid rakenduses <ph name="PRODUCT_NAME" /> vaikeprinteri valimiseks, mis toimub esimesel korral, kui profiilil printimisfunktsiooni kasutatakse.
+
+      Kui reegel on määratud, üritab rakendus <ph name="PRODUCT_NAME" /> leida printeri, mis vastab kõigile määratud atribuutidele, ja valib selle vaikeprinteriks. Valitakse esimene printer, mis reeglitele vastab. Kui reeglitele vastavaid printereid on mitu, saab nende avastamise järjekorrast olenevalt valida mis tahes sobiva printeri.
+
+      Kui seda reeglit ei määrata või määratud aja jooksul ei leita reeglitele vastavat printerit, määratakse vaikimisi printeriks sisseehitatud PDF-printer. Kui PDF-printer pole saadaval, siis printerit ei valita.
+
+      Väärtus sõelutakse JSON-objektina, mis vastab järgmisele skeemile:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Kas piirata sobiva printeri otsing konkreetse printerite komplektiga?",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Regulaaravaldis, mis ühtib printeri ID-ga.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regulaaravaldis, mis ühtib printeri kuvatava nimega.",
+            "type": "string"
+          }
+        }
+      }
+
+      Rakendusega <ph name="CLOUD_PRINT_NAME" /> ühendatud printerid loetakse gruppi <ph name="PRINTER_TYPE_CLOUD" /> kuuluvateks, ülejäänud printerid kuuluvad gruppi <ph name="PRINTER_TYPE_LOCAL" />.
+      Välja vahelejätmine tähendab, et kõik väärtused ühtivad. Näiteks kui ühenduvust ei määrata, käivitab printimise eelvaade igat tüüpi printerite (nii kohalike kui ka pilves olevate printerite) otsimise.
+      Regulaaravaldise mustrid peavad järgima atribuudi JavaScript RegExp süntaksit ja vasted on tõstutundlikud.</translation>
 <translation id="2426782419955104525">Lubab toote <ph name="PRODUCT_NAME" /> funktsiooni Instant ja takistab kasutajatel seda seadet muuta.
 
       Kui lubate selle seade, on <ph name="PRODUCT_NAME" /> Instant lubatud.
@@ -566,6 +598,7 @@
       Määrab, kas TLS-i domeenisuunaline sertifikaatide laiendus peab olema lubatud.
 
       Selle seadega lubatakse testimiseks TLS-i domeenisuunaline sertifikaatide laiendus. See katseline seade eemaldatakse tulevikus.</translation>
+<translation id="2957513448235202597">Üksuse <ph name="HTTP_NEGOTIATE" /> autentimisel kasutatava konto tüüp</translation>
 <translation id="2959898425599642200">Puhverserveri möödumisreeglid</translation>
 <translation id="2960691910306063964">Kaugjuurdepääsu hostide PIN-koodita autentimise lubamine või keelamine</translation>
 <translation id="2976002782221275500">Määrab aja, pärast mida hämardatakse akutoitega töötamisel ekraan, kui kasutaja pole midagi sisestanud.
@@ -1793,6 +1826,9 @@
           Kui jätate selle reegli määramata, kasutatakse vaikeaega.
 
           Reegli väärtus tuleb määrata millisekundites. Väärtused tuleb kinnitada väiksematena kui jõudeoleku viiteaeg või sellega võrdsetena.</translation>
+<translation id="7329968046053403405">Määrab üksuse <ph name="HTTP_NEGOTIATE" /> autentimist (nt Kerberose autentimine) toetava Androidi autentimisrakenduse kontode tüübi. See teave on saadaval autentimisrakenduse pakkuja kaudu. Vaadake lisateavet aadressilt https://goo.gl/hajyfN.
+
+          Kui seadet ei määrata, on üksuse <ph name="HTTP_NEGOTIATE" /> autentimine Androidis keelatud.</translation>
 <translation id="7331962793961469250">Kui valite „Tõene”, siis ei ilmu Chrome'i veebipoe rakenduste reklaamid uuel vahelehel.
 
       Kui valite „Väär” või jätate seade määramata, siis ilmuvad uuel vahelehel Chrome'i veebipoe rakenduste reklaamid</translation>
@@ -1812,6 +1848,9 @@
 <translation id="7417972229667085380">Esitlusrežiimis tegevusetu oleku viivituse skaleerimise määr protsentides (tugi on katkestatud)</translation>
 <translation id="7421483919690710988">Määrake meediumiketta vahemälu suurus baitides</translation>
 <translation id="7424751532654212117">Keelatud pistikprogrammide loendi erandite loend</translation>
+<translation id="7426112309807051726">Määrab, kas üksuse <ph name="TLS_FALSE_START" /> optimeerimine peaks olema keelatud. Ajaloolistel põhjustel on selle reegli nimi DisableSSLRecordSplitting.
+
+      Kui reegel on määramata või selle väärtuseks on määratud Väär, siis <ph name="TLS_FALSE_START" /> lubatakse. Kui väärtuseks on määratud Tõene, siis <ph name="TLS_FALSE_START" /> keelatakse.</translation>
 <translation id="7433714841194914373">Luba Instant</translation>
 <translation id="7443616896860707393">Erineva päritoluga HTTP Basic Authi viibad</translation>
 <translation id="7468416082528382842">Windowsi registri asukoht:</translation>
@@ -2090,6 +2129,24 @@
 <translation id="8519264904050090490">Kasutaja käsitsi sisestatavate URL-ide erandite haldamine</translation>
 <translation id="8544375438507658205">Rakenduse <ph name="PRODUCT_FRAME_NAME" /> HTML-i vaikerenderdaja</translation>
 <translation id="8549772397068118889">Hoiatamine sisupakettidest väljaspool olevate saitide külastamisel</translation>
+<translation id="855339549837475534">Nii Chromium kui ka Google Chrome toetavad sama reeglite komplekti.
+      Pange tähele, et see dokument võib sisaldada reegleid, mis on
+      suunatud avaldamata tarkvaraversioonidele (seega kirje „toetatud versioonis”
+      viitab avaldamata versioonile), ja sellised reeglid võivad ette teatamata
+      muutuda või need võidakse eemaldada.
+
+      Need reeglid on mõeldud ainult teie organisatsioonisiseste
+      teenuse <ph name="PRODUCT_NAME" /> eksemplaride seadistamiseks.
+      Nende reeglite organisatsioonivälist kasutamist (näiteks
+      avalikult levitatavas programmis) loetakse pahavaraks ning
+      Google ja viirusetõrjeteenuse pakkujad tähistavad selle tõenäoliselt pahavarana.
+
+      Need seaded ei vaja käsitsi seadistamist! Lihtsalt kasutatavad
+      mallid Windowsi, Maci ja Linuxi jaoks saab alla laadida aadressilt <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi
+      reegli varustamist registri kaudu toetatakse endiselt Windowsi eksemplarides,
+      mis on liidetud Active Directory domeeniga.</translation>
 <translation id="8566842294717252664">Veebipoe peitmine uuel vahelehel ja rakenduste käivitajas</translation>
 <translation id="8587229956764455752">Luba uute kasutajakontode loomine</translation>
 <translation id="8614804915612153606">Keelab automaatvärskenduse</translation>

@@ -328,6 +328,38 @@
       如果此设置处于启用状态，系统将不会保存浏览记录，并且会停用标签页同步功能。
 
       如果此设置处于停用状态或未指定，系统将保存浏览记录。</translation>
+<translation id="2424023834246613232">覆盖 <ph name="PRODUCT_NAME" /> 默认打印机选择规则。
+
+      此政策用于确定，当用户以相应个人资料首次在 <ph name="PRODUCT_NAME" /> 中使用打印功能时，系统遵循哪些规则来选择默认打印机。
+
+      如果此政策已设置，<ph name="PRODUCT_NAME" /> 将尝试找到一台与所有指定属性相符的打印机，并选择该打印机作为默认打印机。系统将选择所找到的第一台与此政策相符的打印机（如果找到多台相符的打印机，则可能会选择其中任何一台，具体取决于找到这些打印机的顺序）。
+
+      如果此政策未设置或在规定的时间内未找到相符的打印机，系统将会选择内置的 PDF 打印机作为默认打印机；如果没有 PDF 打印机，则不选择任何打印机。
+
+      系统会按照以下范本将此政策的值作为 JSON 对象进行解析：
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "是否将搜索相符打印机的范围限定为特定的一组打印机。",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "用于匹配打印机 ID 的正则表达式。",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "用于匹配打印机显示名称的正则表达式。",
+            "type": "string"
+          }
+        }
+      }
+
+      连接到 <ph name="CLOUD_PRINT_NAME" />的打印机会被视为<ph name="PRINTER_TYPE_CLOUD" />，其余打印机则归类为<ph name="PRINTER_TYPE_LOCAL" />。
+      如果未在某个字段中输入值，则意味着所有打印机都符合此项属性。例如，如果不指定网络连接状态，那么进行打印预览时，系统将会查找所有类型的打印机（本地打印机和云端打印机）。
+      正则表达式格式必须遵循 JavaScript RegExp 语法，并在匹配时区分大小写。</translation>
 <translation id="2426782419955104525">启用 <ph name="PRODUCT_NAME" /> 的即搜即得功能，并禁止用户更改此设置。
 
       如果您启用了此设置，<ph name="PRODUCT_NAME" /> 的即搜即得功能将处于启用状态。
@@ -486,6 +518,7 @@
       用于指定是否启用TLS网域绑定证书扩展程序。
 
       此政策用于启用TLS网域绑定证书扩展程序，以便进行测试。这一实验性政策日后将会弃用。</translation>
+<translation id="2957513448235202597">进行 <ph name="HTTP_NEGOTIATE" />身份验证时使用的帐户类型</translation>
 <translation id="2959898425599642200">代理绕过规则</translation>
 <translation id="2960691910306063964">针对远程访问主机启用或停用无 PIN 码身份验证</translation>
 <translation id="2976002782221275500">指定在使用电池供电时用户停止输入后隔多久屏幕才变暗。
@@ -1558,6 +1591,9 @@
           如果未设置此政策，系统将使用默认的时间长度。
 
           指定的政策值应以毫秒为单位，并且不得大于闲置延迟时间。</translation>
+<translation id="7329968046053403405">指定由支持 <ph name="HTTP_NEGOTIATE" />身份验证（例如 Kerberos 身份验证）的 Android 身份验证应用提供的帐户所属的类型。您应该可以从身份验证应用的供应商处获得此信息。如需更多详细信息，请访问 https://goo.gl/hajyfN。
+
+          如果此设置未指定，Android 设备上将停用 <ph name="HTTP_NEGOTIATE" />身份验证。</translation>
 <translation id="7331962793961469250">设置为“True”时，新标签页中不会显示 Chrome 网上应用店应用的推广内容。如果将此选项设置为“False”或不做任何设置，新标签页中就会显示 Chrome 网上应用店应用的推广内容。</translation>
 <translation id="7332963785317884918">此政策已被弃用。<ph name="PRODUCT_OS_NAME" />将始终使用“RemoveLRU”清理策略。
 
@@ -1581,6 +1617,9 @@
 <translation id="7417972229667085380">演示模式下待机延迟时间的调整幅度（百分比）（已弃用）</translation>
 <translation id="7421483919690710988">设置媒体磁盘缓存大小（字节）</translation>
 <translation id="7424751532654212117">已停用插件列表的例外情况</translation>
+<translation id="7426112309807051726">指定是否停用 <ph name="TLS_FALSE_START" /> 优化。由于历史原因，此政策被命名为 DisableSSLRecordSplitting。
+
+      如果此政策未设置或设为 false，系统将启用 <ph name="TLS_FALSE_START" />。如果此政策设为 true，系统将停用 <ph name="TLS_FALSE_START" />。</translation>
 <translation id="7433714841194914373">启用“即搜即得”</translation>
 <translation id="7443616896860707393">跨域 HTTP 基本身份验证提示</translation>
 <translation id="7468416082528382842">Windows 注册表位置：</translation>
@@ -1831,6 +1870,13 @@
 <translation id="8519264904050090490">托管用户手动管理的例外网址</translation>
 <translation id="8544375438507658205">默认 HTML 呈现器为“<ph name="PRODUCT_FRAME_NAME" />”</translation>
 <translation id="8549772397068118889">访问非内容包内的网站时发出警告</translation>
+<translation id="855339549837475534">Chromium 和 Google Chrome 所支持的政策完全相同。请注意，本文档所含政策可能有一部分适用于尚未发布的软件版本（即它们的“支持环境”针对的是尚未发布的版本），这些政策可能会随时变更或撤消，恕不另行事先通知。
+
+      这些政策只能用于配置您所在单位内部的 <ph name="PRODUCT_NAME" /> 实例。在您所在单位之外（例如在公开发布的程序中）使用这些政策时，会被视为恶意软件，并可能会被 Google 及防病毒软件供应商标记为恶意软件。
+
+      您无需手动配置这些设置！您可以从 <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" /> 下载适用于 Windows、Mac 和 Linux 的易用模板。
+
+      虽然在已加入 Active Directory 网域的 Windows 实例上仍可以通过注册表配置政策，但我们建议您通过 GPO 在 Windows 上配置政策。</translation>
 <translation id="8566842294717252664">在“打开新的标签页”页面和应用启动器中不显示网上应用店</translation>
 <translation id="8587229956764455752">允许创建新的用户帐户</translation>
 <translation id="8614804915612153606">停用自动更新</translation>

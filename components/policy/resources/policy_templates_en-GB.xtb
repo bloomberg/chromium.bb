@@ -392,6 +392,38 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this setting is enabled, browsing history is not saved. This setting also disables tab syncing.
 
       If this setting is disabled or not set, browsing history is saved.</translation>
+<translation id="2424023834246613232">Overrides <ph name="PRODUCT_NAME" /> default printer selection rules.
+
+      This policy determines the rules for selecting the default printer in <ph name="PRODUCT_NAME" /> which happens the first time the print function is used with a profile.
+
+      When this policy is set, <ph name="PRODUCT_NAME" /> will attempt to find a printer matching all of the specified attributes and select it as default printer. The first printer found that matches the policy is selected. In the case of non-unique match, any matching printer can be selected, depending on the order in which printers are discovered.
+
+      If this policy is not set or a matching printer is not found within the timeout, the printer defaults to built-in PDF printer or no printer selected when PDF printer is not available.
+
+      The value is parsed as JSON object, conforming to the following schema:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Regular expression to match printer id.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regular expression to match printer display name.",
+            "type": "string"
+          }
+        }
+      }
+
+      Printers connected to <ph name="CLOUD_PRINT_NAME" /> are considered <ph name="PRINTER_TYPE_CLOUD" />, the rest of the printers are classified as <ph name="PRINTER_TYPE_LOCAL" />.
+      Omitting a field means all values match, for example, not specifying connectivity will cause Print Preview to initiate the discovery of all types of printers, local and cloud.
+      Regular expression patterns must follow the JavaScript RegExp syntax and matches are case sensitive.</translation>
 <translation id="2426782419955104525">Enables <ph name="PRODUCT_NAME" />'s Instant feature and prevents users from changing this setting.
 
       If you enable this setting, <ph name="PRODUCT_NAME" /> Instant is enabled.
@@ -567,6 +599,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       Specifies whether the TLS domain-bound certificates extension should be enabled.
 
       This setting is used to enable the TLS domain-bound certificates extension for testing.  This experimental setting will be removed in the future.</translation>
+<translation id="2957513448235202597">Account type for <ph name="HTTP_NEGOTIATE" /> authentication</translation>
 <translation id="2959898425599642200">Proxy bypass rules</translation>
 <translation id="2960691910306063964">Enable or disable PIN-less authentication for remote access hosts</translation>
 <translation id="2976002782221275500">Specifies the length of time without user input after which the screen is dimmed when running on battery power.
@@ -1812,6 +1845,9 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           When this policy is unset, a default length of time is used.
 
           The policy value should be specified in milliseconds. Values are clamped to be less than or equal the idle delay.</translation>
+<translation id="7329968046053403405">Specifies the account type of the accounts provided by the Android authentication app that supports <ph name="HTTP_NEGOTIATE" /> authentication (e.g. Kerberos authentication). This information should be available from the supplier of the authentication app. For more details see https://goo.gl/hajyfN.
+
+          If no setting is provided, <ph name="HTTP_NEGOTIATE" /> authentication is disabled on Android.</translation>
 <translation id="7331962793961469250">When set to True, promotions for Chrome Web Store apps will not appear on the new tab page.
 
       Setting this option to False or leaving it unset will make the promotions for Chrome Web Store apps appear on the new tab page</translation>
@@ -1837,6 +1873,9 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7417972229667085380">Percentage by which to scale the idle delay in presentation mode (deprecated)</translation>
 <translation id="7421483919690710988">Set media disk cache size in bytes</translation>
 <translation id="7424751532654212117">List of exceptions to the list of disabled plugins</translation>
+<translation id="7426112309807051726">Specifies whether the <ph name="TLS_FALSE_START" /> optimisation should be disabled. For historical reasons, this policy is named DisableSSLRecordSplitting.
+
+      If the policy is not set or is set to false, then <ph name="TLS_FALSE_START" /> will be enabled. If it is set to true, <ph name="TLS_FALSE_START" /> will be disabled.</translation>
 <translation id="7433714841194914373">Enable Instant</translation>
 <translation id="7443616896860707393">Cross-origin HTTP Basic Auth prompts</translation>
 <translation id="7468416082528382842">Windows registry location:</translation>
@@ -2117,6 +2156,24 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8519264904050090490">Managed user manual exception URLs</translation>
 <translation id="8544375438507658205">Default HTML renderer for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Warn when visiting sites outside of content packs</translation>
+<translation id="855339549837475534">Both Chromium and Google Chrome support the same set of
+      policies. Please note that this document may include policies that are
+      targeted for unreleased software versions (i.e. their 'Supported on' entry
+      refers to an unreleased version) and that such policies are subject to
+      change or removal without prior notice.
+
+      These policies are strictly intended to be used to configure instances of
+      <ph name="PRODUCT_NAME" /> internal to your
+      organisation. Use of these policies outside of your organisation (for
+      example, in a publicly distributed program) is considered malware and will
+      probably be labelled as malware by Google and anti-virus vendors.
+
+      These settings don't need to be configured manually!  Easy-to-use
+      templates for Windows, Mac and Linux are available for download from <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      The recommended way to configure policy on Windows is via GPO, although
+      provisioning policy via registry is still supported for Windows instances
+      that are joined to an Active Directory domain.</translation>
 <translation id="8566842294717252664">Hide the web store from the New Tab Page and app launcher</translation>
 <translation id="8587229956764455752">Allow creation of new user accounts</translation>
 <translation id="8614804915612153606">Disables Auto Update</translation>

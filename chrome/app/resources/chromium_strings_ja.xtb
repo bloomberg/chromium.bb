@@ -41,6 +41,7 @@
 <translation id="225614027745146050">ようこそ</translation>
 <translation id="2316129865977710310">いいえ</translation>
 <translation id="2347108572062610441">この拡張機能により、Chromium の起動時に表示されるページが変更されました。</translation>
+<translation id="2372704305038231957">この Linux システムはサポートされなくなったため、32 ビットの Chromium は正常に機能しない可能性があります。64 ビットの Chromium にアップグレードしてください。</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{ダウンロードが現在進行中です。ダウンロードをキャンセルし、Chromium を終了しますか？}other{# 件のダウンロードが現在進行中です。ダウンロードをキャンセルし、Chromium を終了しますか？}}</translation>
 <translation id="2396765026452590966">拡張機能「<ph name="EXTENSION_NAME" />」により、Chromium の起動時に表示されるページが変更されました。</translation>
 <translation id="2485422356828889247">アンインストール</translation>
@@ -149,6 +150,7 @@
 <translation id="6485906693002546646">Chromium データの同期に <ph name="PROFILE_EMAIL" /> を使用しています。同期設定を更新する、または Google アカウントなしで Chromium を使用するには、<ph name="SETTINGS_LINK" /> にアクセスしてください。</translation>
 <translation id="6510925080656968729">Chromium をアンインストール</translation>
 <translation id="6526111688217511984">Chromium でファイルをダウンロードするにはストレージへのアクセス権が必要です。</translation>
+<translation id="6584627348340620412">32 ビットの Chromium の今後のバージョンではこの Linux システムはサポートされなくなります。64 ビットの Chromium にアップグレードしてください。</translation>
 <translation id="6593914713218535185">この Linux システムはサポートされなくなったため、Chromium は正常に機能しない可能性があります。</translation>
 <translation id="6637001341228460105">このサイトとマイクを共有するには、Chromium にマイクへのアクセスを許可する必要があります。</translation>
 <translation id="6638567566961868659">ブックマークは Chromium メニューやブックマーク バーに表示されます。</translation>

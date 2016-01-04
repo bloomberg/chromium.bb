@@ -15,6 +15,7 @@
 <translation id="3252394070589632019"><ph name="VALUE" />，<ph name="ADDITIONAL_INFO" /> (第 <ph name="INDEX" /> 項建議，共 <ph name="NUM_SUGGESTIONS" /> 項)</translation>
 <translation id="3335947283844343239">重新開啟先前關閉的分頁</translation>
 <translation id="3414292259312108062">Chrome 會將這組密碼儲存在您的 <ph name="BEGIN_LINK" />Google 儲存的密碼<ph name="END_LINK" />中，並為您自動填入這組密碼，即使您記不住也沒關係。</translation>
+<translation id="3567664240939803299">您要讓 Google Smart Lock 儲存您在這個網站的密碼嗎？</translation>
 <translation id="3586931643579894722">隱藏詳細資訊</translation>
 <translation id="3736520371357197498">如果您瞭解安全性風險，也可以選擇在危險程式尚未遭到移除的狀態下<ph name="BEGIN_LINK" />造訪這個不安全的網站<ph name="END_LINK" />。</translation>
 <translation id="385051799172605136">返回</translation>

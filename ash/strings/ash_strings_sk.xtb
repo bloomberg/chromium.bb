@@ -6,6 +6,7 @@
 <translation id="1021311941847921177">Skratka prepnutia na ďalšiu metódu vstupu bola zmenená. Namiesto skratky <ph name="OLD_SHORTCUT" /> používajte kombináciu klávesov <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Automatické skrývanie poličky</translation>
 <translation id="1195412055398077112">presah obsahu</translation>
+<translation id="1252999807265626933">Prebieha nabíjanie zo <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Klávesnica na obrazovke je zakázaná</translation>
 <translation id="1272079795634619415">Zastaviť</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -20,6 +21,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Spúšťač</translation>
 <translation id="15373452373711364">Veľký kurzor myši</translation>
+<translation id="1550523713251050646">Kliknutím zobrazíte ďalšie možnosti</translation>
 <translation id="1602076796624386989">Povoliť mobilné dátové pripojenie</translation>
 <translation id="1621499497873603021">Čas zostávajúci do vybitia batérie: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Zariadenie Chrome</translation>
@@ -78,6 +80,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="3147142846278915599">Spúšťač (synchronizujú sa aplikácie...)</translation>
 <translation id="3157169093162779309">Zapnúť zámku otáčania</translation>
 <translation id="3294437725009624529">Hosť</translation>
+<translation id="3371140690572404006">zariadenia USB-C (port vpravo vpredu)</translation>
 <translation id="3445925074670675829">Zariadenie USB-C</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3573179567135747900">Zmeniť späť na miestne nastavenie „<ph name="FROM_LOCALE" />“ (vyžaduje sa reštart)</translation>
@@ -104,6 +107,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="3963445509666917109">Reproduktor (vnútorný)</translation>
 <translation id="3967919079500697218">Váš správca zakázal zaznamenávanie snímok obrazovky.</translation>
 <translation id="397105322502079400">Prebieha výpočet...</translation>
+<translation id="3995138139523574647">zariadenia USB-C (port vpravo vzadu)</translation>
 <translation id="4053612967614057854">Vypnúť klávesnicu na obrazovke</translation>
 <translation id="412065659894267608"><ph name="HOUR" />h <ph name="MINUTE" />min do nabitia</translation>
 <translation id="4250680216510889253">Nie</translation>
@@ -157,8 +161,10 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="6047696787498798094">Keď prepnete na iného používateľa, zdieľanie obrazovky sa ukončí. Chcete pokračovať?</translation>
 <translation id="6062360702481658777">Odhlásenie prebehne automaticky o <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Váš počítač je viditeľný pre zariadenia Bluetooth v blízkosti a zobrazí sa ako <ph name="NAME" /> s adresou <ph name="ADDRESS" /></translation>
+<translation id="6106745654298855237">Prebieha nabíjanie zariadenia <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Zobraziť klávesnicu na obrazovke</translation>
 <translation id="6165508094623778733">Viac informácií</translation>
+<translation id="6203030746557259519">Virtuálna obrazovka</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" /> %</translation>
 <translation id="6248847161401822652">Ak chcete skončiť, stlačte dvakrát kombináciu kláves Ctrl+Shift+Q.</translation>
 <translation id="6310121235600822547">Obrazovka <ph name="DISPLAY_NAME" /> bola otočená o <ph name="ROTATION" /></translation>
@@ -203,6 +209,7 @@ Ak ho chcete zrušiť, stlačte klávesy Alt + Hľadať alebo Shift.</translatio
 <translation id="7573962313813535744">Režim v doku</translation>
 <translation id="7593891976182323525">Hľadať alebo Shift</translation>
 <translation id="7649070708921625228">Pomocník</translation>
+<translation id="7692480393933218409">Prebieha nabíjanie pripojených zariadení USB-C</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> a <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Po synchronizácii vašich nastavení bol zmenený jazyk „<ph name="FROM_LOCALE" />“ na jazyk „<ph name="TO_LOCALE" />“.</translation>
 <translation id="785750925697875037">Zobraziť mobilný účet</translation>

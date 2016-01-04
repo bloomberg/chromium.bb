@@ -389,6 +389,38 @@
       Nếu cài đặt này được bật thì lịch sử duyệt web sẽ không được lưu. Cài đặt này cũng sẽ tắt đồng bộ hóa tab.
 
       Nếu cài đặt này bị tắt hoặc không được đặt thì lịch sử duyệt web sẽ được lưu.</translation>
+<translation id="2424023834246613232">Ghi đè quy tắc chọn máy in mặc định trong <ph name="PRODUCT_NAME" />.
+
+      Chính sách này xác định quy tắc chọn máy in mặc định trong <ph name="PRODUCT_NAME" />, điều này xảy ra vào lần đầu tiên chức năng in được sử dụng với một cấu hình.
+
+      Khi chính sách này được đặt, <ph name="PRODUCT_NAME" /> sẽ cố gắng tìm máy in khớp với tất cả các thuộc tính đã chỉ định và chọn thiết bị đó làm máy in mặc định. Máy in đầu tiên được tìm thấy phù hợp với chính sách sẽ được chọn, trong trường hợp kết quả trùng khớp không phải duy nhất, có thể chọn bất kỳ máy in trùng khớp nào tùy thuộc vào thứ tự mà máy in được tìm thấy.
+
+      Nếu chính sách này chưa được đặt hoặc không tìm thấy máy in trùng khớp trong khoảng thời gian chờ thì máy in sẽ được đặt mặc định thành máy in PDF tích hợp hoặc không có máy in nào được chọn khi không có máy in PDF.
+
+      Giá trị này được phân tích cú pháp dưới dạng đối tượng JSON tuân theo giản đồ sau đây:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Regular expression to match printer id.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regular expression to match printer display name.",
+            "type": "string"
+          }
+        }
+      }
+
+      Máy in đã kết nối với <ph name="CLOUD_PRINT_NAME" /> được coi là <ph name="PRINTER_TYPE_CLOUD" />, các máy in còn lại được phân loại là <ph name="PRINTER_TYPE_LOCAL" />.
+      Bỏ qua một trường nghĩa là tất cả các giá trị trùng khớp, chẳng hạn như không chỉ rõ kết nối, sẽ làm cho chế độ Xem trước bản in bắt đầu tìm tất cả các loại máy in, cục bộ và trên đám mây.
+      Mẫu biểu thức thông thường phải tuân thủ cú pháp JavaScript RegExp và kết quả trùng khớp có phân biệt chữ hoa-thường.</translation>
 <translation id="2426782419955104525">Bật tính năng Instant của <ph name="PRODUCT_NAME" /> và chặn người dùng thay đổi cài đặt này.
 
       Nếu bạn bật cài đặt này, tính năng Instant của <ph name="PRODUCT_NAME" /> được bật.
@@ -564,6 +596,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Chỉ định xem có cần bật tiện ích chứng chỉ giới hạn miền TLS hay không.
 
       Cài đặt này được sử dụng để bật tiện ích chứng chỉ giới hạn miền TLS dành cho thử nghiệm.  Cài đặt thử nghiệm này sẽ bị xóa trong tương lai.</translation>
+<translation id="2957513448235202597">Loại tài khoản để xác thực <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Quy tắc bỏ qua proxy</translation>
 <translation id="2960691910306063964">Bật hoặc tắt xác thực không có mã PIN cho các máy chủ truy cập từ xa</translation>
 <translation id="2976002782221275500">Chỉ định khoảng thời gian không có thao tác nhập của người dùng mà sau khoảng thời gian đó màn hình bị mờ đi khi chạy trên nguồn pin.
@@ -1793,6 +1826,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Khi chính sách này không được đặt, khoảng thời gian mặc định sẽ được sử dụng.
 
           Phải chỉ định giá trị chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng độ trễ khi không sử dụng.</translation>
+<translation id="7329968046053403405">Chỉ định loại tài khoản của các tài khoản được ứng dụng xác thực Android có hỗ trợ xác thực <ph name="HTTP_NEGOTIATE" /> (ví dụ: xác thực Kerberos) cung cấp. Thông tin này có sẵn từ nhà cung cấp ứng dụng xác thực. Để biết thêm chi tiết, hãy xem https://goo.gl/hajyfN.
+
+          Nếu không có cài đặt nào được cung cấp thì xác thực <ph name="HTTP_NEGOTIATE" /> sẽ bị vô hiệu hóa trên Android.</translation>
 <translation id="7331962793961469250">Khi được đặt thành True, kết quả thăng hạng của các ứng dụng trong Cửa hàng Chrome trực tuyến sẽ không xuất hiện trên trang tab mới.
 
       Nếu đặt tùy chọn này thành False hoặc không đặt, các kết quả thăng hạng của các ứng dụng trong Cửa hàng Chrome trực tuyến sẽ xuất hiện trên trang tab mới.</translation>
@@ -1818,6 +1854,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="7417972229667085380">Tỷ lệ phần trăm theo đó xác định độ trễ khi không hoạt động trong chế độ bản trình bày (không dùng nữa)</translation>
 <translation id="7421483919690710988">Đặt kích thước bộ nhớ cache của đĩa phương tiện theo byte</translation>
 <translation id="7424751532654212117">Danh sách các trường hợp ngoại lệ của danh sách plugin bị vô hiệu hóa</translation>
+<translation id="7426112309807051726">Chỉ định xem có nên tắt tính năng tối ưu hóa <ph name="TLS_FALSE_START" /> hay không. Do các nguyên nhân trước đây, chính sách này được đặt tên là DisableSSLRecordSplitting.
+
+      Nếu chính sách này chưa được đặt hoặc được đặt thành false, <ph name="TLS_FALSE_START" /> sẽ được bật. Nếu chính sách này được đặt thành true, <ph name="TLS_FALSE_START" /> sẽ bị tắt.</translation>
 <translation id="7433714841194914373">Bật chế độ Instant</translation>
 <translation id="7443616896860707393">Lời nhắc xác thực cơ bản HTTP giữa các gốc</translation>
 <translation id="7468416082528382842">Vị trí sổ đăng ký Windows:</translation>
@@ -2087,6 +2126,24 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="8519264904050090490">URL ngoại lệ hướng dẫn người dùng được quản lý</translation>
 <translation id="8544375438507658205">Trình hiển thị HTML mặc định dành cho <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Cảnh báo khi truy cập vào các trang web nằm ngoài gói nội dung</translation>
+<translation id="855339549837475534">Cả Chromium và Google Chrome đều hỗ trợ nhóm chính sách giống nhau. Xin
+      lưu ý rằng tài liệu này có thể bao gồm các chính sách dành
+      cho các phiên bản phần mềm chưa phát hành (nghĩa là mục 'Được hỗ
+      trợ trên' của các chính sách này nói đến một phiên bản chưa phát hành)
+      và những chính sách như vậy sẽ bị thay đổi hoặc xóa bỏ mà không cần báo trước.
+
+      Các chính sách này được sử dụng hoàn toàn cho mục đích định cấu hình các phiên
+      bản <ph name="PRODUCT_NAME" /> nội bộ trong tổ chức của bạn. Việc sử dụng các chính sách này
+      bên ngoài tổ chức của bạn (ví dụ: trong chương trình được phân phối công
+      khai) sẽ được coi là phần mềm độc hại và có thể bị Google và các nhà
+      cung cấp phần mềm diệt vi-rút gắn nhãn là phần mềm độc hại.
+
+      Bạn không cần định cấu hình các cài đặt này theo cách thủ công!  Các mẫu
+      dễ sử dụng dành cho Windows, Mac và Linux có sẵn để tải xuống từ <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      Chúng tôi khuyên bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù
+      việc cấp phép chính sách qua cổng đăng ký vẫn được hỗ trợ cho các phiên bản
+      Windows tham gia miền Active Directory.</translation>
 <translation id="8566842294717252664">Ẩn cửa hàng trực tuyến khỏi trang tab mới và trình chạy ứng dụng</translation>
 <translation id="8587229956764455752">Cho phép tạo tài khoản người dùng mới</translation>
 <translation id="8614804915612153606">Tắt cập nhật tự động</translation>

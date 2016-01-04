@@ -6,6 +6,7 @@
 <translation id="1021311941847921177">次の入力方法に切り替えるショートカットが変わりました。<ph name="OLD_SHORTCUT" /> ではなく <ph name="NEW_SHORTCUT" /> をご使用ください。</translation>
 <translation id="112308213915226829">シェルフを自動的に隠す</translation>
 <translation id="1195412055398077112">オーバースキャン</translation>
+<translation id="1252999807265626933"><ph name="POWER_SOURCE" /> から充電しています</translation>
 <translation id="1270290102613614947">画面キーボードは無効です</translation>
 <translation id="1272079795634619415">中止</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" />（<ph name="ANNOTATION" />）</translation>
@@ -20,6 +21,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" />（HDMI / DP）</translation>
 <translation id="1510238584712386396">ランチャー</translation>
 <translation id="15373452373711364">大きいマウス カーソル</translation>
+<translation id="1550523713251050646">クリックするとその他のオプションが表示されます</translation>
 <translation id="1602076796624386989">モバイル データを有効にする</translation>
 <translation id="1621499497873603021">バッテリーが空になるまであと: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome 搭載デバイス</translation>
@@ -78,6 +80,7 @@
 <translation id="3147142846278915599">ランチャー（アプリを同期中...）</translation>
 <translation id="3157169093162779309">回転ロックを有効にする</translation>
 <translation id="3294437725009624529">ゲスト</translation>
+<translation id="3371140690572404006">USB-C デバイス（右手前のポート）</translation>
 <translation id="3445925074670675829">USB-C デバイス</translation>
 <translation id="3473479545200714844">画面拡大鏡</translation>
 <translation id="3573179567135747900">「<ph name="FROM_LOCALE" />」に戻します（再起動が必要です）</translation>
@@ -104,6 +107,7 @@
 <translation id="3963445509666917109">スピーカー（内蔵）</translation>
 <translation id="3967919079500697218">スクリーンショットを撮る機能は、管理者によって無効にされています。</translation>
 <translation id="397105322502079400">計算しています...</translation>
+<translation id="3995138139523574647">USB-C デバイス（右奥のポート）</translation>
 <translation id="4053612967614057854">画面キーボードを無効にする</translation>
 <translation id="412065659894267608">フル充電まで <ph name="HOUR" /> 時間 <ph name="MINUTE" /> 分</translation>
 <translation id="4250680216510889253">いいえ</translation>
@@ -157,8 +161,10 @@
 <translation id="6047696787498798094">別のユーザーに切り替えると画面の共有は解除されます。続行してもよろしいですか？</translation>
 <translation id="6062360702481658777">あと <ph name="LOGOUT_TIME_LEFT" />で自動的にログアウトします。</translation>
 <translation id="607652042414456612">お使いのパソコンは近くの Bluetooth デバイスで検出可能です。名前「<ph name="NAME" />」、アドレス「<ph name="ADDRESS" />」のデバイスとして表示されます</translation>
+<translation id="6106745654298855237"><ph name="POWER_SOURCE" /> を充電しています</translation>
 <translation id="615957422585914272">画面キーボードを表示する</translation>
 <translation id="6165508094623778733">詳しく見る</translation>
+<translation id="6203030746557259519">仮想ディスプレイ</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">終了するには Ctrl+Shift+Q を 2 回押してください。</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> を <ph name="ROTATION" /> に回転しました</translation>
@@ -203,6 +209,7 @@ Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="7573962313813535744">ドッキング モード</translation>
 <translation id="7593891976182323525">検索/Shift</translation>
 <translation id="7649070708921625228">ヘルプ</translation>
+<translation id="7692480393933218409">接続された USB-C デバイスを充電しています</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">設定の同期後に言語が「<ph name="FROM_LOCALE" />」から「<ph name="TO_LOCALE" />」に変更されました。</translation>
 <translation id="785750925697875037">モバイル アカウントを表示</translation>

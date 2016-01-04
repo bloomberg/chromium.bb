@@ -343,6 +343,38 @@
       Po włączeniu ustawienia historia przeglądania nie jest zapisywana. To ustawienie wyłącza również synchronizowanie kart.
 
      Jeśli ustawienie jest wyłączone lub nieskonfigurowane, historia przeglądania jest zapisywana.</translation>
+<translation id="2424023834246613232">Zastępuje zasady wyboru domyślnej drukarki w <ph name="PRODUCT_NAME" />.
+
+      Określa zasady wybierania domyślnej drukarki w <ph name="PRODUCT_NAME" />. Następuje to w momencie pierwszego użycia funkcji drukowania w połączeniu z profilem.
+
+      Gdy ta zasada jest ustawiona, <ph name="PRODUCT_NAME" /> próbuje znaleźć drukarkę pasującą do wszystkich określonych atrybutów i wybiera ją jako drukarkę domyślną. Gdy zgodnych drukarek jest więcej, wybierana jest pierwsza z nich, która zostanie wykryta (zależy to od kolejności ich wykrywania).
+
+      Jeśli zasada jest wyłączona lub w określonym czasie nie uda się znaleźć zgodnej drukarki, domyślnie zostaje wybrana wbudowana drukarka PDF. Jeśli jest ona niedostępna, drukarka nie zostaje ustawiona.
+
+      Wartość jest analizowana jako obiekt JSON zgodnie z tym schematem:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Określa, czy ograniczyć wyszukiwanie zgodnych drukarek do danego zestawu drukarek.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Wyrażenie regularne określające dopasowanie do identyfikatora drukarki.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Wyrażenie regularne określające dopasowanie do nazwy wyświetlanej drukarki.",
+            "type": "string"
+          }
+        }
+      }
+
+      Drukarki podłączone do <ph name="CLOUD_PRINT_NAME" /> traktowane są jako <ph name="PRINTER_TYPE_CLOUD" />. Pozostałe są klasyfikowane jako <ph name="PRINTER_TYPE_LOCAL" />.
+      Jeśli pole pozostanie puste, wszystkie wartości będą uznawane za zgodne. Na przykład jeśli nie określisz połączenia, po włączeniu podglądu wydruku rozpocznie się wykrywanie wszystkich drukarek – lokalnych i w chmurze.
+      Wzorce wyrażeń regularnych muszą być zgodne ze składnią JavaScript RegExp. W wyszukiwaniu rozróżniana jest wielkość liter.</translation>
 <translation id="2426782419955104525">Włącza funkcję wyszukiwania dynamicznego w <ph name="PRODUCT_NAME" /> i zapobiega zmianie tego ustawienia przez użytkowników.
 
       Jeśli włączysz ustawienie, wyszukiwanie dynamiczne w <ph name="PRODUCT_NAME" /> będzie aktywne.
@@ -501,6 +533,7 @@
       Określa, czy ma być włączone rozszerzenie certyfikatów TLS powiązanych z domeną.
 
       To ustawienie umożliwia testowanie rozszerzenia certyfikatów TLS powiązanych z domeną. Jest eksperymentalne i zostanie usunięte w przyszłości.</translation>
+<translation id="2957513448235202597">Rodzaj konta na potrzeby uwierzytelniania <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Reguły omijania serwera proxy</translation>
 <translation id="2960691910306063964">Włącz lub wyłącz uwierzytelnianie hostów dostępu zdalnego bez kodu PIN</translation>
 <translation id="2976002782221275500">Określa, po jakim czasie nieaktywności użytkownika przyciemniany jest ekran przy zasilaniu z baterii.
@@ -1578,6 +1611,9 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Jeśli ta zasada nie jest ustawiona, używana jest domyślna wartość długości czasu.
 
           Wartość tej zasady powinna być określona w milisekundach. Wartości nie mogą być wyższe od opóźnienia bezczynności.</translation>
+<translation id="7329968046053403405">W przypadku kont z aplikacji uwierzytelniającej na Androida określa rodzaj konta, które obsługuje uwierzytelnianie <ph name="HTTP_NEGOTIATE" /> (np. uwierzytelnianie Kerberos). Tę informację powinien udostępnić dostawca aplikacji uwierzytelniającej. Więcej informacji znajdziesz na https://goo.gl/hajyfN.
+
+          W przypadku braku ustawień uwierzytelnianie <ph name="HTTP_NEGOTIATE" /> w Androidzie jest wyłączone.</translation>
 <translation id="7331962793961469250">Kiedy zostanie ustawiona wartość Prawda, na stronie Nowa karta nie będą wyświetlane promowane aplikacje z Chrome Web Store. Przypisanie tej opcji wartości Fałsz lub jej nieustawienie spowoduje, że promowane aplikacje z Chrome Web Store będą widoczne na stronie Nowa karta.</translation>
 <translation id="7332963785317884918">Ta zasada została wycofana. <ph name="PRODUCT_OS_NAME" /> zawsze stosuje strategię czyszczenia „RemoveLRU”.
 
@@ -1595,6 +1631,9 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="7417972229667085380">Wartość procentowa skalowania opóźnienia bezczynności w trybie prezentacji (wycofana)</translation>
 <translation id="7421483919690710988">Ustaw rozmiar dyskowej pamięci podręcznej multimediów w bajtach</translation>
 <translation id="7424751532654212117">Lista wyjątków od listy wyłączonych wtyczek</translation>
+<translation id="7426112309807051726">Określa, czy ma być wyłączona optymalizacja <ph name="TLS_FALSE_START" />. Z powodów historycznych ta zasada ma nazwę DisableSSLRecordSplitting.
+
+      Jeśli ta zasada jest nieskonfigurowana lub jest wyłączona, to <ph name="TLS_FALSE_START" /> będzie włączone. Jeśli jest włączona, <ph name="TLS_FALSE_START" /> będzie wyłączone.</translation>
 <translation id="7433714841194914373">Włącz wyszukiwanie dynamiczne</translation>
 <translation id="7443616896860707393">Monity o podstawowe uwierzytelnienie HTTP pochodzące z innych witryn</translation>
 <translation id="7468416082528382842">Lokalizacja w rejestrze systemu Windows:</translation>
@@ -1850,6 +1889,27 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="8519264904050090490">Zarządzane adresy URL dodane przez użytkownika na listę wyjątków</translation>
 <translation id="8544375438507658205">Domyślny mechanizm renderowania HTML wtyczki <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Ostrzegaj przy odwiedzaniu witryn spoza pakietów treści</translation>
+<translation id="855339549837475534">Zarówno Chromium, jak i Google Chrome obsługują jednakowy zestaw
+      zasad. Ten dokument może zawierać zasady przeznaczone dla
+      nieopublikowanych wersji oprogramowania (tzn. wpis „obsługiwana w”
+      w informacjach o zasadzie odnosi się do wersji, która nie została wydana).
+      Takie zasady możemy zmienić lub usunąć bez wcześniejszego
+      powiadomienia.
+
+      Zasady te są przeznaczone do konfigurowania
+      <ph name="PRODUCT_NAME" /> tylko na wewnętrzny użytek Twojej organizacji.
+      Użycie ich poza nią (np. w programie rozpowszechnianym publicznie)
+      spowoduje uznanie oprogramowania za złośliwe – prawdopodobnie
+      tak zostanie ono oznaczone przez Google i programy antywirusowe.
+
+      Nie musisz konfigurować tych ustawień ręcznie.
+      Możesz pobrać łatwe w użyciu szablony dla systemów Windows, Mac OS X
+      i Linux ze strony <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      Zalecamy skonfigurowanie zasady w systemie Windows
+      za pośrednictwem obiektu zasad grupy (GPO), mimo że
+      obsługa zasady przez rejestr jest nadal możliwa w systemach Windows
+      połączonych z domeną Active Directory.</translation>
 <translation id="8566842294717252664">Ukryj Chrome Web Store na stronie Nowa karta i w menu z aplikacjami</translation>
 <translation id="8587229956764455752">Pozwól na tworzenie nowych kont użytkowników</translation>
 <translation id="8614804915612153606">Wyłącza automatyczne aktualizacje</translation>

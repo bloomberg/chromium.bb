@@ -6,6 +6,7 @@
 <translation id="1021311941847921177">Zmieniliśmy skrót, który aktywuje następną metodę wprowadzania. Zamiast <ph name="OLD_SHORTCUT" /> używaj teraz <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Autoukrywanie półki</translation>
 <translation id="1195412055398077112">nadmiarowość obrazu</translation>
+<translation id="1252999807265626933">Trwa ładowanie z: <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Klawiatura ekranowa wyłączona</translation>
 <translation id="1272079795634619415">Zatrzymaj</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -20,6 +21,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Program uruchamiający</translation>
 <translation id="15373452373711364">Duży kursor myszy</translation>
+<translation id="1550523713251050646">Kliknij, by wyświetlić więcej opcji</translation>
 <translation id="1602076796624386989">Włącz komórkową transmisję danych</translation>
 <translation id="1621499497873603021">Czas pozostały do wyczerpania baterii: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Urządzenie z Chrome</translation>
@@ -78,6 +80,7 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="3147142846278915599">Menu z aplikacjami (synchronizuję aplikacje...)</translation>
 <translation id="3157169093162779309">Włącz blokadę obracania</translation>
 <translation id="3294437725009624529">Gość</translation>
+<translation id="3371140690572404006">Urządzenie USB-C (przedni port na prawym boku)</translation>
 <translation id="3445925074670675829">Urządzenie USB-C</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3573179567135747900">Zmień z powrotem na „<ph name="FROM_LOCALE" />” (wymaga ponownego uruchomienia)</translation>
@@ -104,6 +107,7 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="3963445509666917109">Głośnik (wewnętrzny)</translation>
 <translation id="3967919079500697218">Możliwość robienia zrzutów ekranów została wyłączona przez administratora.</translation>
 <translation id="397105322502079400">Obliczanie...</translation>
+<translation id="3995138139523574647">Urządzenie USB-C (tylny port na prawym boku)</translation>
 <translation id="4053612967614057854">Wyłącz klawiaturę ekranową</translation>
 <translation id="412065659894267608"><ph name="HOUR" /> godz. <ph name="MINUTE" /> min do pełnego naładowania</translation>
 <translation id="4250680216510889253">Nie</translation>
@@ -157,8 +161,10 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="6047696787498798094">Gdy zmienisz użytkownika, udostępnianie ekranu zostanie zakończone. Chcesz kontynuować?</translation>
 <translation id="6062360702481658777">Zostaniesz automatycznie wylogowany za <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Twój komputer jest wykrywalny na urządzenia Bluetooth znajdujących się w pobliżu. Będzie prezentowany jako „<ph name="NAME" />” z adresem <ph name="ADDRESS" /></translation>
+<translation id="6106745654298855237">Ładowanie (<ph name="POWER_SOURCE" />)</translation>
 <translation id="615957422585914272">Pokaż klawiaturę ekranową</translation>
 <translation id="6165508094623778733">Więcej informacji</translation>
+<translation id="6203030746557259519">Wirtualny wyświetlacz</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">Naciśnij dwukrotnie Control Shift Q, by zakończyć.</translation>
 <translation id="6310121235600822547">Wyświetlacz <ph name="DISPLAY_NAME" /> został obrócony na <ph name="ROTATION" /></translation>
@@ -203,6 +209,7 @@ Naciśnij Alt+Szukaj lub Shift, by anulować.</translation>
 <translation id="7573962313813535744">Tryb dokowania</translation>
 <translation id="7593891976182323525">Szukaj lub Shift</translation>
 <translation id="7649070708921625228">Pomoc</translation>
+<translation id="7692480393933218409">Ładowanie urządzeń podłączonych do portu USB-C</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> i <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Po zsynchronizowaniu ustawień zmieniono język z „<ph name="FROM_LOCALE" />” na „<ph name="TO_LOCALE" />”.</translation>
 <translation id="785750925697875037">Wyświetl konto dla telefonów komórkowych</translation>

@@ -41,6 +41,7 @@
 <translation id="225614027745146050">خوش آمدید</translation>
 <translation id="2316129865977710310">نه سپاسگزارم</translation>
 <translation id="2347108572062610441">‏این افزونه، صفحه‌ای را تغییر داده است که هنگام راه‌اندازی Chromium نشان داده می‌شود.</translation>
+<translation id="2372704305038231957">‏ممکن است Chromium ‏۳۲ بیتی عملکرد درستی نداشته باشد زیرا دیگر در این سیستم Linux پشتیبانی نمی‌شود. لطفاً به Chromium ‏۶۴ بیتی ارتقا دهید.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{‏در حال حاضر یک بارگیری در حال انجام است. آیا می‌خواهید بارگیری را لغو کنید و از Chromium خارج شوید؟}one{‏در حال حاضر # بارگیری در حال انجام است. آیا می‌خواهید بارگیری را لغو کنید و از Chromium خارج شوید؟}other{‏در حال حاضر # بارگیری در حال انجام است. آیا می‌خواهید بارگیری‌ها را لغو کنید و از Chromium خارج شوید؟}}</translation>
 <translation id="2396765026452590966">‏افزونه «<ph name="EXTENSION_NAME" />»، صفحه‌ای را تغییر داده است که هنگام راه‌اندازی Chromium نشان داده می‌شود.</translation>
 <translation id="2485422356828889247">حذف نصب</translation>
@@ -148,6 +149,7 @@
 <translation id="6485906693002546646">‏شما از <ph name="PROFILE_EMAIL" /> برای همگام‌سازی موارد Chromium خودتان استفاده می‌کنید. برای به‌روزرسانی تنظیمات ترجیحی همگام‌سازی‌تان یا استفاده از Chromium بدون حساب Google، به <ph name="SETTINGS_LINK" /> مراجعه کنید.</translation>
 <translation id="6510925080656968729">‏حذف نصب Chromium </translation>
 <translation id="6526111688217511984">‏Chromium برای بارگیری فایل‌ها باید به حافظه دسترسی داشته باشد.</translation>
+<translation id="6584627348340620412">‏نسخه‌های آینده Chromium ‏۳۲ بیتی در این سیستم Linux پشتیبانی نخواهند شد، لطفاً به Chromium ‏۶۴ بیتی ارتقا دهید.</translation>
 <translation id="6593914713218535185">‏Chromium ممکن است درست کار نکند زیرا دیگر در این سیستم Linux پشتیبانی نمی‌شود.</translation>
 <translation id="6637001341228460105">‏Chromium نیاز به مجوز دسترسی به میکروفن دارد تا آن را با این سایت به اشتراک بگذارد.</translation>
 <translation id="6638567566961868659">‏نشانک‌های خود را در منوی Chromium یا از نوار نشانک‌ها پیدا کنید.</translation>

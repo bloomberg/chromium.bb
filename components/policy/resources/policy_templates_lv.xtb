@@ -394,6 +394,38 @@
       Ja šis iestatījums ir iespējots, pārlūkošanas vēsture nav saglabāta. Ar šo iestatījumu arī tiek atspējota ciļņu sinhronizācija.
 
       Ja šis iestatījums ir atspējots vai nav iestatīts, pārlūkošanas vēsture tiek saglabāta.</translation>
+<translation id="2424023834246613232">Aizstāj <ph name="PRODUCT_NAME" /> noklusējuma printera atlases kārtulas.
+
+      Šī politika nosaka kārtulas, kas paredzētas noklusējuma printera atlasei pārlūkā <ph name="PRODUCT_NAME" />, pirmo reizi profilā izmantojot drukāšanas funkciju.
+
+      Ja šī politika ir iestatīta, <ph name="PRODUCT_NAME" /> mēģinās atrast printeri, kurš atbilst visiem norādītajiem atribūtiem, un atlasīt to kā noklusējuma printeri. Tiek atlasīts pirmais printeris, kurš atbilst politikai. Ja nav unikālas atbilstības, var tikt atlasīts jebkurš printeris atkarībā no tā, kādā secībā printeri tiek atrasti.
+
+      Ja šī politika nav iestatīta vai noildzes laikā nav atrasts atbilstošs printeris, kā noklusējuma vērtība tiek atlasīts iebūvētais PDF printeris. Ja PDF printeris nav pieejams, netiek atlasīts neviens printeris.
+
+      Vērtība tiek parsēta kā JSON objekts atbilstoši šai shēmai:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Vai ierobežot atbilstoša printera meklēšanu konkrētu printeru kopā.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Regulārā izteiksme, kurai ir jāatbilst printera ID.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regulārā izteiksme, kurai ir jāatbilst printera rādāmajam nosaukumam.",
+            "type": "string"
+          }
+        }
+      }
+
+      Pakalpojumam <ph name="CLOUD_PRINT_NAME" /> pievienotie printeri tiek uzskatīti par “<ph name="PRINTER_TYPE_CLOUD" />”, pārējie printeri tiek klasificēti kā “<ph name="PRINTER_TYPE_LOCAL" />”.
+      Neaizpildot lauku, tam atbilst visas vērtības, piemēram, nenorādot savienojamību, drukas priekšskatījumā tiek uzsākta visu veidu printeru atklāšana — gan vietējo, gan mākoņa.
+      Regulārās izteiksmes shēmām ir jāatbilst JavaScript RegExp sintaksei, un atbilstības ir reģistrjutīgas.</translation>
 <translation id="2426782419955104525">Iespējo <ph name="PRODUCT_NAME" /> dinamiskās meklēšanas funkciju un neļauj lietotājiem mainīt šo iestatījumu.
 
       Ja iespējojat šo iestatījumu, tiek iespējota <ph name="PRODUCT_NAME" /> dinamiskā meklēšana.
@@ -569,6 +601,7 @@
       Norāda, vai jāiespējo TLS domēnam piesaistītais sertifikātu paplašinājums.
 
       Šis iestatījums tiek izmantots, lai testēšanai iespējotu TLS domēnam piesaistītos sertifikātu paplašinājumus. Šis eksperimentālais iestatījums vēlāk tiks noņemts.</translation>
+<translation id="2957513448235202597">Konta veids <ph name="HTTP_NEGOTIATE" /> autentifikācijas saskaņošanai</translation>
 <translation id="2959898425599642200">Starpniekserveru apiešanas kārtulas</translation>
 <translation id="2960691910306063964">Autentifikācijas bez PIN iespējošana vai atspējošana attālās piekļuves saimniekdatoriem</translation>
 <translation id="2976002782221275500">Tiek norādīts laika periods, kurā lietotājam ir jāveic kāda darbība, pretējā gadījumā ekrāns tiek aptumšots (ja ierīce darbojas ar akumulatora jaudu).
@@ -1808,6 +1841,9 @@
           Ja šīs politikas vērtība nav iestatīta, tiek izmantots noklusējuma laika periods.
 
           Politikas vērtību nedrīkst norādīt milisekundēs. Ir jānorāda vērtības, kas ir mazākas par laiku līdz dīkstāvei vai kas ir vienādas ar to.</translation>
+<translation id="7329968046053403405">Norāda Android autentifikācijas lietotnes nodrošināto kontu veidu, kuros tiek atbalstīta <ph name="HTTP_NEGOTIATE" /> autentifikācija (piemēram, Kerberos autentifikācija). Šai informācijai ir jābūt pieejamai no autentifikācijas lietotnes nodrošinātāja. Plašāku informāciju skatiet vietnē https://goo.gl/hajyfN.
+
+          Ja iestatījums nav norādīts, <ph name="HTTP_NEGOTIATE" /> autentifikācija operētājsistēmā Android tiek atspējota.</translation>
 <translation id="7331962793961469250">Ja ir iestatīta vērtība Patiess, jaunas cilnes lapā netiek rādītas Chrome interneta veikala lietotņu reklāmas.
 
       Ja šai opcijai ir iestatīta vērtība Aplams vai tā vispār nav iestatīta, jaunas cilnes lapā tiek rādītas Chrome interneta veikala lietotņu reklāmas.</translation>
@@ -1833,6 +1869,9 @@
 <translation id="7417972229667085380">Aizkaves līdz dīkstāvei norādīšana procentos (prezentācijas režīmā; pārtraukta)</translation>
 <translation id="7421483919690710988">Iestatīt datu nesēja kešatmiņas lielumu baitos</translation>
 <translation id="7424751532654212117">Atspējoto spraudņu saraksta izņēmumu saraksts</translation>
+<translation id="7426112309807051726">Norāda, vai <ph name="TLS_FALSE_START" /> optimizācija ir jāatspējo. Vēsturisku iemeslu dēļ šīs politikas nosaukums ir DisableSSLRecordSplitting.
+
+      Ja šī politika nav iestatīta vai tās vērtība ir Nepatiesa, funkcija <ph name="TLS_FALSE_START" /> tiks iespējota. Ja ir iestatīta vērtība Patiesa, funkcija <ph name="TLS_FALSE_START" /> tiks atspējota.</translation>
 <translation id="7433714841194914373">Iespējo dinamisko meklēšanu</translation>
 <translation id="7443616896860707393">Savstarpējās izcelsmes HTTP pamata autentifikācijas uzvednes</translation>
 <translation id="7468416082528382842">Windows reģistra atrašanās vieta:</translation>
@@ -2113,6 +2152,24 @@
 <translation id="8519264904050090490">Pārvaldīto lietotāju manuālo izņēmumu vietrāži URL</translation>
 <translation id="8544375438507658205"><ph name="PRODUCT_FRAME_NAME" /> noklusējuma HTML renderētājs</translation>
 <translation id="8549772397068118889">Brīdināt, kad tiek apmeklētas satura pakotnēs neiekļautas vietnes.</translation>
+<translation id="855339549837475534">Gan pārlūkā Chromium, gan Google Chrome tiek atbalstītas vienas un
+      tās pašas politikas. Lūdzu, ņemiet vērā, ka šajā dokumentā var būt
+      ietvertas politikas, kas paredzētas neizlaistām programmatūras versijām
+      (proti, sadaļā “Saderīga ar” ir minēta neizlaista versija), un šīs politikas
+      var mainīt vai noņemt bez iepriekšēja brīdinājuma.
+
+      Šīs politikas ir paredzētas tikai iekšējai
+      pārlūka <ph name="PRODUCT_NAME" /> konfigurēšanai jūsu
+      organizācijā. Ja izmantosiet šīs politikas ārpus savas organizācijas (piemēram,
+      publiski izplatītā programmā), programma tiks uzskatīta par ļaunprātīgu programmatūru
+      un, visticamāk, Google un pretvīrusu programmatūras piedāvātāji to uzskatīs par ļaunprātīgu programmatūru.
+
+      Šie iestatījumi nav jākonfigurē manuāli! Vietnē <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />
+      var lejupielādēt ērti lietojamas veidnes Windows, Mac un Linux datoriem.
+
+      Operētājsistēmā Windows politiku konfigurēšanai ieteicams izmantot GPO,
+      taču Windows sistēmās, kas ir pievienotas Active Directory domēnam,
+      politiku izvietošanai var izmantot arī reģistru.</translation>
 <translation id="8566842294717252664">Interneta veikala ikonas nerādīšana jaunas cilnes lapā un lietotņu palaidējā</translation>
 <translation id="8587229956764455752">Atļaut jaunu lietotāju kontu izveidi</translation>
 <translation id="8614804915612153606">Atspējot automātisko atjaunināšanu</translation>

@@ -342,6 +342,38 @@
       この設定を有効にすると、閲覧履歴は保存されません。また、タブの同期も無効になります。
 
       この設定を無効にした場合、または未設定の場合は、閲覧履歴が保存されます。</translation>
+<translation id="2424023834246613232"><ph name="PRODUCT_NAME" /> のデフォルト プリンタ選択ルールをオーバーライドします。
+
+      このポリシーは、<ph name="PRODUCT_NAME" /> のデフォルト プリンタを選択するルールを決定します。これは、各プロフィールで印刷プロフィールが初めて使用されるときに行われます。
+
+      このポリシーが設定されていると、<ph name="PRODUCT_NAME" /> は、指定されたすべての属性に一致するプリンタを探して選択し、デフォルト プリンタに設定しようと試みます。最初に見つかったポリシーに一致するプリンタが選択されます。適合するプリンタが複数ある場合は、検索順で最初に見つかったプリンタが選択されます。
+
+      このポリシーが設定されていない場合や、タイムアウトするまでに一致するプリンタが見つからない場合、デフォルト プリンタは組み込みの PDF プリンタに設定されますが、PDF プリンタが利用できない場合は、プリンタは設定されません。
+
+      値は JSON オブジェクトとして解析され、次のスキーマに一致するものです。
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "照合するプリンタの検索を特定のプリンタのセットに限定するかどうか",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "プリンタ ID と照合する正規表現",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "プリンタの表示名と照合する正規表現",
+            "type": "string"
+          }
+        }
+      }
+
+      「<ph name="CLOUD_PRINT_NAME" />」に接続されるプリンタは「<ph name="PRINTER_TYPE_CLOUD" />」と見なされ、それ以外のプリンタは「<ph name="PRINTER_TYPE_LOCAL" />」に分類されます。
+      項目を省略すると、すべての値に一致することになります。たとえば、接続の種類を指定しない場合、印刷プレビューはローカルとクラウドを問わず、あらゆる種類のプリンタの検出を開始することになります。
+      正規表現のパターンは JavaScript RegExp 構文に従う必要があり、照合の際に大文字と小文字が区別されます。</translation>
 <translation id="2426782419955104525"><ph name="PRODUCT_NAME" /> のインスタント検索機能を有効にします。ユーザーはこの設定を変更できなくなります。
 
       この設定を有効にすると、<ph name="PRODUCT_NAME" /> のインスタント検索が有効になります。
@@ -500,6 +532,7 @@
       TLS ドメイン固定証明書の拡張機能を有効にするかどうかを指定します。
 
       この設定は、テスト目的で TLS ドメイン固定証明書の拡張機能を有効にするために使用されます。この設定は試験運用的なものであり、今後削除される予定です。</translation>
+<translation id="2957513448235202597">「<ph name="HTTP_NEGOTIATE" />」認証用のアカウントの種類</translation>
 <translation id="2959898425599642200">プロキシ バイパス ルール</translation>
 <translation id="2960691910306063964">リモート アクセス ホストの PIN 入力なしの認証を有効または無効にする</translation>
 <translation id="2976002782221275500">バッテリー電源での実行時に、ユーザー入力が行われなくなってから画面が暗くなるまでの時間を指定します。
@@ -1585,6 +1618,9 @@ Active Directory ドメインに参加していない Windows インスタンス
           このポリシーを設定しないと、デフォルトの時間が使用されます。
 
           ポリシーの値はミリ秒単位で指定してください。アイドル時間より長い値は指定できません。</translation>
+<translation id="7329968046053403405">「<ph name="HTTP_NEGOTIATE" />」認証（Kerberos 認証など）に対応している Android 認証アプリによって提供されるアカウントの種類を指定します。この情報は、認証アプリの提供者から入手します。詳しくは、https://goo.gl/hajyfN をご覧ください。
+
+          このポリシーを設定しない場合、Android での「<ph name="HTTP_NEGOTIATE" />」認証は無効になります。</translation>
 <translation id="7331962793961469250">True に設定すると、Chrome ウェブストア アプリのプロモーションは新しいタブ ページに表示されません。このオプションが False または未設定の場合、Chrome ウェブストア アプリのプロモーションが新しいタブ ページに表示されます。</translation>
 <translation id="7332963785317884918">このポリシーはサポート終了となりました。今後、<ph name="PRODUCT_OS_NAME" /> では常に「RemoveLRU」クリーンアップ設定を使用します。
 
@@ -1608,6 +1644,9 @@ Active Directory ドメインに参加していない Windows インスタンス
 <translation id="7417972229667085380">プレゼンテーション モードでのアイドル時間に掛ける倍率（サポート終了）</translation>
 <translation id="7421483919690710988">メディア ディスク キャッシュ サイズをバイト単位で設定する</translation>
 <translation id="7424751532654212117">無効なプラグインのリストに対する例外のリスト</translation>
+<translation id="7426112309807051726">「<ph name="TLS_FALSE_START" />」最適化を無効にするかどうかを指定します。過去の経緯から、このポリシーの名前は DisableSSLRecordSplitting となっています。
+
+      このポリシーが未設定の場合、または false に設定されている場合、「<ph name="TLS_FALSE_START" />」は有効になります。true に設定されている場合、「<ph name="TLS_FALSE_START" />」は無効になります。</translation>
 <translation id="7433714841194914373">インスタント検索を有効にする</translation>
 <translation id="7443616896860707393">クロスオリジンでの HTTP Basic 認証プロンプト</translation>
 <translation id="7468416082528382842">Windows レジストリの場所:</translation>
@@ -1857,6 +1896,24 @@ Active Directory ドメインに参加していない Windows インスタンス
 <translation id="8519264904050090490">管理対象ユーザーの手動による例外 URL</translation>
 <translation id="8544375438507658205"><ph name="PRODUCT_FRAME_NAME" /> のデフォルトの HTML レンダラ</translation>
 <translation id="8549772397068118889">コンテンツ パック外部のサイトを訪問したときに警告する</translation>
+<translation id="855339549837475534">Chromium と Google Chrome でサポートされるポリシーセットは
+      同じです。このドキュメントには、未公開のソフトウェア バージョンで適用されるポリシーが含まれている
+      ことがあります（つまり、その場合の「サポート対象」項目は未公開のバージョン
+      を指します）。また、このようなポリシーは事前の通知なく変更または削除される
+      ことがあります。
+
+      これらのポリシーは、厳密には組織内部の <ph name="PRODUCT_NAME" /> のインスタンスを
+      設定することを目的としています。
+      これらのポリシーを組織の外部（たとえば、一般配布プログラム）で使用すると、
+      不正ソフトウェアと見なされ、Google やウイルス対策ベンダーでは不正なソフトウェアとして
+      表示される可能性があります。
+
+      これらの設定を手動で行う必要はありません。Windows、Mac、Linux 向けの
+      使いやすいテンプレートを <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" /> からダウンロードできます。
+
+      Windows でポリシーを設定する場合は GPO を使用することをおすすめしますが、
+      Active Directory ドメインに属する Windows インスタンスでは、レジストリを介する
+      ポリシーのプロビジョニングもサポートされています。</translation>
 <translation id="8566842294717252664">新しいタブページとアプリ ランチャーでウェブストアを非表示にする</translation>
 <translation id="8587229956764455752">新しいユーザー アカウントの作成を許可する</translation>
 <translation id="8614804915612153606">自動更新を無効にする</translation>

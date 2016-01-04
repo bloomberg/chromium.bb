@@ -393,6 +393,38 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       Če je ta nastavitev omogočena, se zgodovina brskanja ne shranjuje. Ta nastavitev prav tako onemogoča sinhronizacijo zavihkov.
 
       Če je ta nastavitev onemogočena ali ni nastavljena, se zgodovina brskanja shranjuje.</translation>
+<translation id="2424023834246613232">Preglasi pravila za izbiro privzetega tiskalnika za <ph name="PRODUCT_NAME" />.
+
+      Ta pravilnik določa pravila za izbiro privzetega tiskalnika v brskalniku <ph name="PRODUCT_NAME" />, do česar pride, ko je funkcija tiskanja prvič uporabljena s profilom.
+
+      Če je ta pravilnik nastavljen, <ph name="PRODUCT_NAME" /> poskuša poiskati tiskalnik, ki se ujema z vsemi določenimi atributi, in ga izbere kot privzetega. Izbran je prvi tiskalnik, ki se ujema s pravilnikom. V primeru neenoličnega ujemanja je lahko izbran kateri koli tiskalnik, ki se ujema, odvisno od vrstnega reda odkrivanja tiskalnikov.
+
+      Če ta pravilnik ni nastavljen ali v časovni omejitvi ni najden tiskalnik, ki se ujema, je tiskalnik privzeto vgrajeni tiskalnik PDF.
+
+      Vrednost je razčlenjena kot predmet JSON skladno s to shemo:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Ali naj se iskanje tiskalnika, ki se ujema, omeji na določeno skupino tiskalnikov.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Regularni izraz, ki se ujema z ID-jem tiskalnika.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regularni izraz, ki se ujema s prikaznim imenom tiskalnika.",
+            "type": "string"
+          }
+        }
+      }
+
+      Tiskalniki, povezani s storitvijo tiskanja v oblaku <ph name="CLOUD_PRINT_NAME" />, so obravnavni kot <ph name="PRINTER_TYPE_CLOUD" />, ostali tiskalniki pa so razvrščeni kot <ph name="PRINTER_TYPE_LOCAL" />.
+      Če izpustite polje, se ujemajo vse vrednosti. Če na primer ne določite povezave, predogled tiskanja začne odkrivanje vseh vrst tiskalnikov – lokalnih in v oblaku.
+      Vzorci regularnega izraza morajo upoštevati sintakso JavaScript RegExp in pri ujemanjih se razlikuje med malimi in velikimi črkami.</translation>
 <translation id="2426782419955104525">Omogoči dinamični način za <ph name="PRODUCT_NAME" /> in uporabnikom prepreči spreminjanje te nastavitve.
 
       Če to nastavitev omogočite, je dinamični način za <ph name="PRODUCT_NAME" /> omogočen.
@@ -568,6 +600,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Določa, ali mora biti razširitev za potrdila, domensko vezana na TLS, omogočena.
 
       Ta nastavitev se uporablja, da se razširitev za potrdila, domensko vezana na TLS, omogoči za preskušanje. Ta poskusna nastavitev bo v prihodnosti odstranjena.</translation>
+<translation id="2957513448235202597">Vrsta računa za preverjanje pristnosti z razširitvijo <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Pravila, kdaj se obide proxy</translation>
 <translation id="2960691910306063964">Omogočanje ali onemogočanje preverjanja pristnosti brez kode PIN za gostitelje za oddaljeni dostop</translation>
 <translation id="2976002782221275500">Določa trajanje uporabnikove nedejavnosti, po preteku katere se zaslon zatemni, če se napaja iz akumulatorja.
@@ -1813,6 +1846,9 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Če pravilnik ni nastavljen, se uporabi privzeto trajanje.
 
           Vrednost pravilnika naj bo navedena v milisekundah. Vrednosti morajo biti manjše ali enake kot časovni zamik nedejavnosti.</translation>
+<translation id="7329968046053403405">Določa vrsto računov, ki jih ponuja aplikacija za preverjanje pristnosti za Android, ki podpira preverjanje pristnosti z razširitvijo <ph name="HTTP_NEGOTIATE" /> (npr. preverjanje pristnosti Kerberos). Ti podatki bi morali biti na voljo od ponudnika aplikacije za preverjanje pristnosti. Več informacij je na voljo na https://goo.gl/hajyfN.
+
+          Če ni določena nobena nastavitev, je v Androidu onemogočeno preverjanje pristnosti z razširitvijo <ph name="HTTP_NEGOTIATE" />.</translation>
 <translation id="7331962793961469250">Ko je pravilnik nastavljen na »True«, se promocije za programe iz Spletne trgovine Chrome ne bodo prikazale na strani novega zavihka.
 
       Če to možnost nastavite na »False« ali je ne nastavite, se bodo promocije za programe iz Spletne trgovine Chrome prikazovale na strani novega zavihka</translation>
@@ -1838,6 +1874,9 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7417972229667085380">Odstotek prilagoditve časovnega zamika nedejavnosti v načinu predstavitve (zastarelo)</translation>
 <translation id="7421483919690710988">Nastavi velikost predpomnilnika medija v bajtih</translation>
 <translation id="7424751532654212117">Seznam izjem za seznam onemogočenih vtičnikov</translation>
+<translation id="7426112309807051726">Določa, ali je onemogočena optimizacija funkcije <ph name="TLS_FALSE_START" />. Ta pravilnik se iz zgodovinskih razlogov imenuje DisableSSLRecordSplitting.
+
+      Če ta pravilnik ni nastavljen ali je onemogočen, je funkcija <ph name="TLS_FALSE_START" /> omogočena. Če je omogočen, je funkcija <ph name="TLS_FALSE_START" /> onemogočena.</translation>
 <translation id="7433714841194914373">Omogoči Dinamično iskanje</translation>
 <translation id="7443616896860707393">Ukazni pozivi HTTP Basic Auth iz več izvorov</translation>
 <translation id="7468416082528382842">Lokacija registra sistema Windows:</translation>
@@ -2115,6 +2154,24 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="8519264904050090490">URL-ji ročnih izjem za upravljanega uporabnika</translation>
 <translation id="8544375438507658205">Privzeti upodabljalnik HTML-ja za <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Opozori pri odpiranju spletnih mest zunaj paketov vsebine</translation>
+<translation id="855339549837475534">Chromium in Google Chrome podpirata isto skupino
+      pravilnikov. Upoštevajte, da so lahko v tem dokumentu pravilniki,
+      namenjeni za neizdane različice programske opreme (tj. njihov vnos »podprto v različici«
+      se nanaša na neizdano različico) in take pravilnike lahko
+      brez obvestila spremenimo ali odstranimo.
+
+      Ti pravilniki so namenjeni izključno za konfiguriranje primerkov brskalnika
+      <ph name="PRODUCT_NAME" /> znotraj vaše organizacije.
+      Uporaba teh pravilnikov zunaj organizacije (npr. v javno
+      objavljenem programu) se obravnava kot zlonamerna programska oprema
+      ter jo bodo Google in ponudniki protivirusnih programov označili kot zlonamerno.
+
+      Teh nastavitev ni treba konfigurirati ročno. Za Windows, Mac OS in Linux
+      so na voljo predloge, ki jih je mogoče preprosto uporabljati in jih lahko prenesete tukaj: <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      Čeprav priporočamo, da v sistemu Windows pravilnik konfigurirate prek predmeta pravilnika skupine,
+      je za primerke sistema Windows, ki so pridruženi v domeno Active Directory,
+      še vedno podprta priprava pravilnikov za uporabo prek registra.</translation>
 <translation id="8566842294717252664">Skrivanje spletne trgovine na strani »Nov zavihek« in v zaganjalniku aplikacij</translation>
 <translation id="8587229956764455752">Omogoči ustvarjanje novih uporabniških računov</translation>
 <translation id="8614804915612153606">Onemogoči samodejno posodabljanje</translation>

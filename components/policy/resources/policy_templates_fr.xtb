@@ -396,6 +396,38 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si ce paramètre est activé, l'historique de navigation n'est pas enregistré. Il désactive également la synchronisation des onglets.
 
       Si ce paramètre est désactivé ou n'est pas configuré, l'historique de navigation est enregistré.</translation>
+<translation id="2424023834246613232">Remplace les instructions de sélection de l'imprimante par défaut pour <ph name="PRODUCT_NAME" />.
+
+      Cette règle détermine les instructions de sélection de l'imprimante par défaut dans <ph name="PRODUCT_NAME" />, la première fois que la fonction d'impression est utilisée avec un profil donné.
+
+      Si cette règle est définie, <ph name="PRODUCT_NAME" /> essaiera de trouver une imprimante correspondant à tous les attributs spécifiés et en fera l'imprimante par défaut. La première imprimante retenue d'après ces critères sera sélectionnée. Si plusieurs imprimantes correspondent aux attributs spécifiés, l'une d'entre elles sera sélectionnée (selon l'ordre dans lequel elles auront été découvertes).
+
+      Si cette règle n'est pas définie ou si aucune imprimante n'est retenue dans le délai imparti, l'imprimante par défaut est l'imprimante PDF intégrée à l'outil. Si l'imprimante PDF n'est pas disponible, aucune imprimante n'est sélectionnée.
+
+      La valeur est analysée en tant qu'objet JSON, conformément au schéma suivant :
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Pour limiter ou ne pas limiter la recherche d'une imprimante correspondant aux critères spécifiés à un groupe d'imprimantes spécifique.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Expression régulière correspondant à l'ID de l'imprimante.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Expression régulière correspondant au nom à afficher de l'imprimante.",
+            "type": "string"
+          }
+        }
+      }
+
+      Les imprimantes connectées à <ph name="CLOUD_PRINT_NAME" /> sont considérées comme étant de type "<ph name="PRINTER_TYPE_CLOUD" />", et les autres sont de type "<ph name="PRINTER_TYPE_LOCAL" />".
+      Si vous ne renseignez pas un champ, cela signifie que toutes les valeurs seront prises en compte. Par exemple, si vous ne spécifiez pas de connectivité, l'aperçu avant impression proposera toutes sortes d'imprimantes, à la fois de type "local" et "cloud".
+      Les schémas d'expressions régulières doivent suivre la syntaxe JavaScript RegExp, et les résultats sont sensibles à la casse.</translation>
 <translation id="2426782419955104525">Activer la fonctionnalité de recherche instantanée de <ph name="PRODUCT_NAME" /> et empêcher les utilisateurs de modifier ce paramètre.
 
       Si vous activez ce paramètre, la recherche instantanée de <ph name="PRODUCT_NAME" /> est activée.
@@ -571,6 +603,7 @@ Pour plus d'exemples détaillés, accédez à l'adresse :
       Elle indique si l'extension des certificats TLS liés au domaine doit être activée.
 
       Ce paramètre permet d'activer ces certificats à des fins de test. Ce paramètre expérimental sera supprimé à l'avenir.</translation>
+<translation id="2957513448235202597">Type de compte pour l'authentification <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Règles de contournement de proxy</translation>
 <translation id="2960691910306063964">Activer ou désactiver l'authentification sans code d'accès pour les hôtes d'accès à distance</translation>
 <translation id="2976002782221275500">Indiquer le délai d'inactivité au terme duquel l'écran s'assombrit en cas d'utilisation de la batterie
@@ -1816,6 +1849,9 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
                       Si elle n'est pas définie, la durée par défaut est utilisée.
 
                       La valeur de cette règle doit être indiquée en millisecondes. Les valeurs doivent être inférieures ou égales au délai d'inactivité.</translation>
+<translation id="7329968046053403405">Indique le type des comptes fournis par l'application d'authentification Android compatible avec l'authentification <ph name="HTTP_NEGOTIATE" /> (authentification Kerberos, par exemple). Ces informations devraient être disponibles auprès du fournisseur de l'application d'authentification. Pour en savoir plus, consultez le site https://goo.gl/hajyfN.
+
+          Si aucun paramètre n'est fourni, l'authentification <ph name="HTTP_NEGOTIATE" /> est désactivée sur Android.</translation>
 <translation id="7331962793961469250">Si cette option est définie sur "True", les publicités pour les applications Chrome Web Store ne s'affichent pas sur la page Nouvel onglet.
 
 Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicités s'affichent sur la page Nouvel onglet.</translation>
@@ -1835,6 +1871,9 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
 <translation id="7417972229667085380">Pourcentage d'adaptation du délai d'inactivité en mode Présentation (abandonné)</translation>
 <translation id="7421483919690710988">Définir la taille du cache du disque de support en octets</translation>
 <translation id="7424751532654212117">Liste des exceptions à la liste des plug-ins désactivés</translation>
+<translation id="7426112309807051726">Indique si l'optimisation de <ph name="TLS_FALSE_START" /> doit être désactivée. Pour des raisons historiques, cette règle se nomme DisableSSLRecordSplitting.
+
+      Si cette règle n'est pas configurée, ou si elle est définie sur "False", <ph name="TLS_FALSE_START" /> est activé. Si elle est définie sur "True", <ph name="TLS_FALSE_START" /> est désactivé.</translation>
 <translation id="7433714841194914373">Activer la recherche instantanée</translation>
 <translation id="7443616896860707393">Invites d'authentification de base HTTP (Basic Auth) multi-domaine</translation>
 <translation id="7468416082528382842">Emplacement dans le registre Windows :</translation>
@@ -2116,6 +2155,24 @@ Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette
 <translation id="8519264904050090490">URL d'exception manuelle des utilisateurs gérés</translation>
 <translation id="8544375438507658205">Moteur de rendu HTML par défaut pour <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Prévenir en cas de consultation de sites en dehors des packs de contenu</translation>
+<translation id="855339549837475534">Chromium et Google Chrome sont dotés du même ensemble de règles.
+      Veuillez noter que ce document peut contenir des règles
+      destinées à des versions logicielles inédites (leur entrée sur la compatibilité
+      correspond à une version inédite) et ces règles peuvent être 
+      modifiées ou changées sans préavis.
+
+      Ces règles sont strictement réservées à la configuration des instances de
+      <ph name="PRODUCT_NAME" /> au sein de votre organisation.
+      L'utilisation de ces règles en dehors de votre organisation (par
+      exemple, dans un programme diffusé au public) sera considérée
+      comme malveillante et certainement identifiée comme telle par Google et les       fournisseurs d'antivirus.
+
+      Il est inutile de modifier manuellement ces paramètres. Vous pouvez
+      télécharger des modèles faciles à utiliser pour Windows, Mac et Linux depuis le site <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      Il est conseillé de configurer les règles sur Windows via GPO, même si
+      la gestion des règles via le registre est toujours possible pour les instances
+      de Windows associées à un domaine Active Directory.</translation>
 <translation id="8566842294717252664">Masquer le Chrome Web Store sur la page Nouvel onglet et dans le lanceur d'applications</translation>
 <translation id="8587229956764455752">Autoriser la création de comptes utilisateur</translation>
 <translation id="8614804915612153606">Désactive les mises à jour automatiques</translation>

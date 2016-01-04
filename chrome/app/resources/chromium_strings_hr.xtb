@@ -41,6 +41,7 @@
 <translation id="225614027745146050">Dobro došli</translation>
 <translation id="2316129865977710310">Ne, hvala</translation>
 <translation id="2347108572062610441">Ovo proširenje promijenilo je stranicu koja se prikazuje prilikom pokretanja Chromiuma.</translation>
+<translation id="2372704305038231957">32-bitni Chromium možda neće ispravno raditi jer više nije podržan na ovom sustavu Linuxa. Nadogradite na 64-bitni Chromium.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{U tijeku je preuzimanje. Želite li otkazati preuzimanje i napustiti Chromium?}one{U tijeku je # preuzimanje. Želite li otkazati preuzimanja i napustiti Chromium?}few{U tijeku su # preuzimanja. Želite li otkazati preuzimanja i napustiti Chromium?}other{U tijeku je # preuzimanja. Želite li otkazati preuzimanja i napustiti Chromium?}}</translation>
 <translation id="2396765026452590966">Proširenje "<ph name="EXTENSION_NAME" />" promijenilo je stranicu koja se prikazuje prilikom pokretanja Chromiuma.</translation>
 <translation id="2485422356828889247">Deinstaliraj</translation>
@@ -149,6 +150,7 @@
 <translation id="6485906693002546646">Upotrebljavate <ph name="PROFILE_EMAIL" /> za sinkronizaciju sadržaja u Chromiumu. Za ažuriranje postavki sinkroniziranja ili upotrebu Chromiuma bez Google računa posjetite <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Deinstaliranje Chromiuma</translation>
 <translation id="6526111688217511984">Chromium treba pristup pohrani radi preuzimanja datoteka.</translation>
+<translation id="6584627348340620412">Buduće verzije 32-bitnog Chromiuma više neće podržavati ovaj sustav Linuxa. Nadgradite na 64-bitni Chromium.</translation>
 <translation id="6593914713218535185">Chromium možda neće ispravno raditi jer više nije podržan na tom sustavu Linuxa.</translation>
 <translation id="6637001341228460105">Chromium treba imati pristup mikrofonu da bi ga dijelio s ovom web-lokacijom.</translation>
 <translation id="6638567566961868659">Pronađite oznake u izborniku Chromium ili na traci oznaka.</translation>

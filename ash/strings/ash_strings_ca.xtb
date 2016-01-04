@@ -6,6 +6,7 @@
 <translation id="1021311941847921177">La drecera per canviar al mètode d'introducció següent ha canviat. Utilitzeu <ph name="NEW_SHORTCUT" /> en lloc de la drecera <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Amaga el prestatge automàticament</translation>
 <translation id="1195412055398077112">sobreescaneig</translation>
+<translation id="1252999807265626933">S'està carregant amb: <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Teclat en pantalla desactivat</translation>
 <translation id="1272079795634619415">Atura</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -20,6 +21,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Menú d'aplicacions</translation>
 <translation id="15373452373711364">Cursor del ratolí gran</translation>
+<translation id="1550523713251050646">Feu clic per veure més opcions</translation>
 <translation id="1602076796624386989">Activa les dades mòbils</translation>
 <translation id="1621499497873603021">Temps que queda fins que no s'esgoti la bateria: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Dispositiu Chrome</translation>
@@ -78,6 +80,7 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="3147142846278915599">Launcher (s'estan sincronitzant les aplicacions...)</translation>
 <translation id="3157169093162779309">Activeu el bloqueig de la rotació</translation>
 <translation id="3294437725009624529">Convidat</translation>
+<translation id="3371140690572404006">Dispositiu USB-C (port frontal dret)</translation>
 <translation id="3445925074670675829">Dispositiu USB-C</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3573179567135747900">Torna a canviar a "<ph name="FROM_LOCALE" />" (requereix reiniciar)</translation>
@@ -104,6 +107,7 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="3963445509666917109">Altaveu (intern)</translation>
 <translation id="3967919079500697218">L'administrador ha desactivat l'opció per fer captures de pantalla.</translation>
 <translation id="397105322502079400">S’està calculant...</translation>
+<translation id="3995138139523574647">Dispositiu USB-C (port posterior dret)</translation>
 <translation id="4053612967614057854">Desactiva el teclat en pantalla</translation>
 <translation id="412065659894267608">Falten <ph name="HOUR" /> h <ph name="MINUTE" /> min fins que estigui carregada completament</translation>
 <translation id="4250680216510889253">No</translation>
@@ -157,8 +161,10 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="6047696787498798094">La pantalla es deixarà de compartir quan canvieu d'usuari. Voleu continuar?</translation>
 <translation id="6062360702481658777">Es tancarà la sessió automàticament d'aquí a <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">El vostre ordinador està visible als dispositius Bluetooth propers i apareixerà com a "<ph name="NAME" />" amb l'adreça <ph name="ADDRESS" />.</translation>
+<translation id="6106745654298855237">S'està carregant: <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Mostra el teclat en pantalla</translation>
 <translation id="6165508094623778733">Més informació</translation>
+<translation id="6203030746557259519">Pantalla virtual</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">Premeu Control+Maj+Q dues vegades per sortir.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> s'ha canviat a <ph name="ROTATION" /></translation>
@@ -203,6 +209,7 @@ Premeu Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="7573962313813535744">Mode acoblat</translation>
 <translation id="7593891976182323525">Cerca o Maj</translation>
 <translation id="7649070708921625228">Ajuda</translation>
+<translation id="7692480393933218409">S'estan carregant els dispositius USB-C connectats</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> i <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">L'idioma ha canviat de "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />" després de sincronitzar la vostra configuració.</translation>
 <translation id="785750925697875037">Mostra el compte mòbil</translation>

@@ -6,6 +6,7 @@
 <translation id="1021311941847921177">Seuraavaan syöttötapaan vaihtamisen pikanäppäin on muuttunut. Käytä uutta pikanäppäintä <ph name="NEW_SHORTCUT" /> vanhan (<ph name="OLD_SHORTCUT" />) sijaan.</translation>
 <translation id="112308213915226829">Piilota hylly automaattisesti</translation>
 <translation id="1195412055398077112">kuvasta rajataan pois osa</translation>
+<translation id="1252999807265626933"><ph name="POWER_SOURCE" /> lataa laitetta.</translation>
 <translation id="1270290102613614947">Ruutunäppäimistö poistettiin käytöstä</translation>
 <translation id="1272079795634619415">Pysäytä</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -20,6 +21,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Käynnistysohjelma</translation>
 <translation id="15373452373711364">Suuri hiiren osoitin</translation>
+<translation id="1550523713251050646">Näet lisävaihtoehtoja klikkaamalla tätä.</translation>
 <translation id="1602076796624386989">Ota mobiilitiedonsiirto käyttöön</translation>
 <translation id="1621499497873603021">Akku on tyhjä <ph name="TIME_LEFT" /> kuluttua</translation>
 <translation id="164969095109328410">Chrome-laite</translation>
@@ -77,6 +79,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="3147142846278915599">Käynnistysohjelma (synkronoidaan sovelluksia…)</translation>
 <translation id="3157169093162779309">Ota näytön kierron lukitus käyttöön</translation>
 <translation id="3294437725009624529">Vieras</translation>
+<translation id="3371140690572404006">C-tyypin USB-laite (oikean sivun etummainen portti)</translation>
 <translation id="3445925074670675829">C-tyypin USB-laite</translation>
 <translation id="3473479545200714844">Ruudun suurentaminen</translation>
 <translation id="3573179567135747900">Vaihda takaisin kieleksi <ph name="FROM_LOCALE" /> (vaatii uudelleenkäynnistyksen)</translation>
@@ -103,6 +106,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="3963445509666917109">Kaiutin (sisäinen)</translation>
 <translation id="3967919079500697218">Järjestelmänvalvoja on poistanut käytöstä mahdollisuuden ottaa kuvakaappauksia.</translation>
 <translation id="397105322502079400">Lasketaan...</translation>
+<translation id="3995138139523574647">C-tyypin USB-laite (oikean sivun taaimmainen portti)</translation>
 <translation id="4053612967614057854">Poista ruutunäppäimistö käytöstä</translation>
 <translation id="412065659894267608">Akku täynnä <ph name="HOUR" /> t <ph name="MINUTE" /> min kuluttua</translation>
 <translation id="4250680216510889253">Ei</translation>
@@ -156,8 +160,10 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="6047696787498798094">Näytön jakaminen loppuu, kun vaihdat toiseen käyttäjään. Haluatko jatkaa?</translation>
 <translation id="6062360702481658777">Sinut kirjataan ulos automaattisesti, aikaa jäljellä <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Lähellä olevat Bluetooth-laitteet voivat löytää tietokoneesi. Tietokoneesi nimi on <ph name="NAME" /> ja osoite <ph name="ADDRESS" /></translation>
+<translation id="6106745654298855237">Ladataan laitetta <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Näytä ruutunäppäimistö</translation>
 <translation id="6165508094623778733">Lisätietoja</translation>
+<translation id="6203030746557259519">Virtuaalinäyttö</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" /> %</translation>
 <translation id="6248847161401822652">Lopeta painamalla kahdesti Control Shift Q.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> käännettiin asentoon <ph name="ROTATION" /></translation>
@@ -200,6 +206,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="7573962313813535744">Telakoitu tila</translation>
 <translation id="7593891976182323525">Haku tai Shift</translation>
 <translation id="7649070708921625228">Ohje</translation>
+<translation id="7692480393933218409">Ladataan yhdistettyjä C-tyypin USB-laitteita</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Käyttökieli on muutettu kielestä <ph name="FROM_LOCALE" /> kieleksi <ph name="TO_LOCALE" /> asetustesi synkronoinnin yhteydessä.</translation>
 <translation id="785750925697875037">Näytä mobiilitili</translation>

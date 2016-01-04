@@ -6,6 +6,7 @@
 <translation id="1021311941847921177">De sneltoets om naar de volgende invoermethode te schakelen is gewijzigd. Gebruik <ph name="NEW_SHORTCUT" /> in plaats van <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Plank automatisch verbergen</translation>
 <translation id="1195412055398077112">overscan</translation>
+<translation id="1252999807265626933">Opladen via <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Schermtoetsenbord uitgeschakeld</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -20,6 +21,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Opstartprogramma</translation>
 <translation id="15373452373711364">Grote muisaanwijzer</translation>
+<translation id="1550523713251050646">Klik voor meer opties</translation>
 <translation id="1602076796624386989">Mobiele gegevens inschakelen</translation>
 <translation id="1621499497873603021">Resterende tijd totdat de accu leeg is: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome-apparaat</translation>
@@ -78,6 +80,7 @@ Druk op Zoeken of Shift om te annuleren.</translation>
 <translation id="3147142846278915599">Launcher (apps synchroniseren...)</translation>
 <translation id="3157169093162779309">Draaivergrendeling inschakelen</translation>
 <translation id="3294437725009624529">Gast</translation>
+<translation id="3371140690572404006">USB-C-apparaat (poort rechts aan de voorkant)</translation>
 <translation id="3445925074670675829">USB-C-apparaat</translation>
 <translation id="3473479545200714844">Vergrootglas</translation>
 <translation id="3573179567135747900">Teruggaan naar '<ph name="FROM_LOCALE" />' (opnieuw starten vereist)</translation>
@@ -104,6 +107,7 @@ Druk op Zoeken of Shift om te annuleren.</translation>
 <translation id="3963445509666917109">Luidspreker (intern)</translation>
 <translation id="3967919079500697218">Je beheerder heeft de mogelijkheid uitgeschakeld om screenshots te maken.</translation>
 <translation id="397105322502079400">Berekenen...</translation>
+<translation id="3995138139523574647">USB-C-apparaat (poort rechts aan de achterkant)</translation>
 <translation id="4053612967614057854">Schermtoetsenbord uitschakelen</translation>
 <translation id="412065659894267608"><ph name="HOUR" />u <ph name="MINUTE" />m tot volledig opgeladen</translation>
 <translation id="4250680216510889253">Nee</translation>
@@ -157,8 +161,10 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="6047696787498798094">Scherm delen wordt gestopt wanneer je overschakelt naar een andere gebruiker. Wil je doorgaan?</translation>
 <translation id="6062360702481658777">Je wordt automatisch uitgelogd over <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Je computer is vindbaar voor Bluetooth-apparaten in de buurt en wordt weergegeven als '<ph name="NAME" />' met adres <ph name="ADDRESS" /></translation>
+<translation id="6106745654298855237"><ph name="POWER_SOURCE" /> wordt opgeladen</translation>
 <translation id="615957422585914272">Schermtoetsenbord weergeven</translation>
 <translation id="6165508094623778733">Meer informatie</translation>
+<translation id="6203030746557259519">Virtueel display</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">Druk twee keer op Control+Shift+Q om te stoppen.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> is gedraaid naar <ph name="ROTATION" /></translation>
@@ -203,6 +209,7 @@ Druk op Alt+Zoeken of Shift om te annuleren.</translation>
 <translation id="7573962313813535744">Gedockte modus</translation>
 <translation id="7593891976182323525">Zoeken of Shift</translation>
 <translation id="7649070708921625228">Help</translation>
+<translation id="7692480393933218409">De aangesloten USB-C-apparaten worden opgeladen</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> en <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Na het synchroniseren met je instellingen, is de taal gewijzigd van '<ph name="FROM_LOCALE" />' in '<ph name="TO_LOCALE" />'.</translation>
 <translation id="785750925697875037">Mobiel account weergeven</translation>

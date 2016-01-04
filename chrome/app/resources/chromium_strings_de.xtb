@@ -41,6 +41,7 @@
 <translation id="225614027745146050">Willkommen</translation>
 <translation id="2316129865977710310">Kein Interesse</translation>
 <translation id="2347108572062610441">Die beim Start von Chromium angezeigte Seite wurde durch diese Erweiterung geändert.</translation>
+<translation id="2372704305038231957">Die 32-Bit-Version von Chromium funktioniert unter Umständen nicht ordnungsgemäß, da sie unter diesem Linux-System nicht mehr unterstützt wird. Aktualisieren Sie bitte auf die 64-Bit-Version von Chromium.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Ein Download wird derzeit ausgeführt. Möchten Sie den Download abbrechen und Chromium beenden?}other{# Downloads werden derzeit ausgeführt. Möchten Sie die Downloads abbrechen und Chromium beenden?}}</translation>
 <translation id="2396765026452590966">Die beim Start von Chromium angezeigte Seite wurde durch die Erweiterung <ph name="EXTENSION_NAME" /> geändert.</translation>
 <translation id="2485422356828889247">Deinstallieren</translation>
@@ -149,6 +150,7 @@
 <translation id="6485906693002546646">Ihre E-Mail-Adresse <ph name="PROFILE_EMAIL" /> wird zurzeit für die Synchronisierung Ihrer Chromium-Inhalte verwendet. Wenn Sie Ihre Synchronisierungseinstellungen ändern oder Chromium ohne Google-Konto verwenden möchten, rufen Sie <ph name="SETTINGS_LINK" /> auf.</translation>
 <translation id="6510925080656968729">Chromium deinstallieren</translation>
 <translation id="6526111688217511984">Chromium benötigt Speicherzugriff, um Dateien herunterladen zu können.</translation>
+<translation id="6584627348340620412">Künftige 32-Bit-Versionen von Chromium werden unter diesem Linux-System nicht mehr unterstützt. Aktualisieren Sie bitte auf die 64-Bit-Version von Chromium.</translation>
 <translation id="6593914713218535185">Chromium funktioniert unter Umständen nicht ordnungsgemäß, da es unter diesem Linux-System nicht mehr unterstützt wird.</translation>
 <translation id="6637001341228460105">Chromium benötigt Zugriff auf das Mikrofon, um ihn mit dieser Website teilen zu können.</translation>
 <translation id="6638567566961868659">Ihre Lesezeichen finden Sie im Chromium-Menü oder in der Lesezeichenleiste.</translation>

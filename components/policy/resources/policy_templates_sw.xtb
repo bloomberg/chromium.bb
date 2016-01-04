@@ -389,6 +389,38 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
      Mipangilio hii ikiwashwa, historia ya kuvinjari haihifadhiwi. Mipangilio hii pia huzima kipengee cha kusawazisha kichupo.
 
       Sera hii ikizimwa au isipowekwa, historia ya kuvinjari huhifadhiwa.</translation>
+<translation id="2424023834246613232">Hubatilisha sheria za kuchagua printa chaguo-msingi za <ph name="PRODUCT_NAME" />.
+
+      Sera hii hubainisha sheria za kuchagua printa chaguo-msingi katika <ph name="PRODUCT_NAME" /> ambayo hufanyika mara ya kwanza chaguo la kukokotoa la kuchapisha linapotumiwa kwenye wasifu.
+
+      Sera hii ikiwekwa, <ph name="PRODUCT_NAME" /> itajaribu kutafuta printa inayolingana na vipengele vyote vilivyobainishwa, na iichague kuwa printa chaguo-msingi. Printa ya kwanza inayopatikana ambayo inalingana na sera huchaguliwa, iwapo hakuna kulingana kwa kipekee printa yoyote inayolingana inaweza kuchaguliwa, kutegemea mpangilio ambao printa zinagunduliwa.
+
+      Sera hii isipowekwa au printa inayolingana isipopatikana ndani ya muda uliowekwa, printa itabadilika kwa chaguo-msingi kuwa printa ya PDF iliyojengewa ndani au hakuna printa iliyochaguliwa, printa ya PDF isipopatikana.
+
+      Thamani inachanganuliwa kuwa kifaa cha JSON, inayozingatia utaratibu ufuatao:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Iwe ni kuweka vikwazo vya matokeo ya utafutaji ya printa inayolingana kwa idadi mahususi ya printa.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Kilinganishi kilingane na kitambulisho cha printa.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Kilinganishi kilingane na jina la printa inayoonekana.",
+            "type": "string"
+          }
+        }
+      }
+
+      Printa zilizounganishwa kwenye <ph name="CLOUD_PRINT_NAME" /> zinachukuliwa kuwa <ph name="PRINTER_TYPE_CLOUD" />, printa nyingine zote zinafahamika kuwa <ph name="PRINTER_TYPE_LOCAL" />.
+      Kuacha sehemu kunamaanisha kwamba thamani zote zinalingana, kwa mfano, kukosa kubainisha uunganishaji kutasababisha Onyesho la Kuchungulia kuanzisha ugunduzi wa printa za aina zote, za ndani na za wingu.
+      Lazima michoro ya Kilinganishi ifuate sintaksia ya JavaScript RegExp na kulingana kunafuata herufi kubwa au ndogo.</translation>
 <translation id="2426782419955104525">Huwasha kipengee cha Papo Hapo cha <ph name="PRODUCT_NAME" /> na kuzuia watumiaji kubadilisha mipangilio hii. 
      Ukiwasha mipangilio hii, Papo Hapo ya <ph name="PRODUCT_NAME" /> itawashwa. 
      Ukizima mipangilio hii, Papo Hapo ya <ph name="PRODUCT_NAME" /> itazimwa. 
@@ -555,6 +587,7 @@ Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</t
       Inabainisha ikiwa kiendelezi cha vyeti vilivyo katika kikoa cha TLS kinastahili kuwashwa.
 
       Mpangilio huu unatumiwa kuwasha kiendelezi cha vyeti vilivyo katika kikoa cha TLS kwa uchunguzi. Mpangilio wa majaribio utaondolewa siku zijazo.</translation>
+<translation id="2957513448235202597">Aina ya Akaunti kwa uthibitishaji wa <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Kanuni za ukwepaji proksi</translation>
 <translation id="2960691910306063964">Washa au zima uthibitishaji usiotumia PIN kwa seva pangishi za uwezo wa kufikia kwa mbali</translation>
 <translation id="2976002782221275500">Hubainisha urefu wa muda bila mchango wa mtumiaji ambapo baadaye skrini hufifilizwa inapoendeshwa kwenye nishati ya betri.
@@ -1781,6 +1814,9 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
           Sera hii inapokuwa haijawekwa, urefu wa muda wa chaguo-msingi unatumiwa.
 
           Sera ya thamani inastahili kubainishwa kwa nukta. Thamani zinabanwa ili kuwa chini ya ucheleweshaji wa kutokuwa na shughuli.</translation>
+<translation id="7329968046053403405">Hubainisha aina ya akaunti ya akaunti zinazotolewa na programu ya uthibitishaji wa Android inayotumia uthibitishaji wa <ph name="HTTP_NEGOTIATE" /> (k.m. uthibitishaji wa Kerberos). Maelezo haya yanapaswa kupatikana kutoka kwa muuzaji wa programu ya uthibitishaji. Kwa maelezo zaidi angalia https://goo.gl/hajyfN.
+
+          Ikiwa mipangilio haijatolewa, uthibitishaji wa <ph name="HTTP_NEGOTIATE" /> utazimwa kwenye Android.</translation>
 <translation id="7331962793961469250">Wakati imewekwa kwenye Ndivyo, utambulishaji wa programu za Duka la Wavuti la Chrome hautaionekana katika ukurasa wa kichupo kipya.
 
       Kuweka chaguo hili kwa Siyo Ndivyo au kuliacha kama halijawekwa kutafanya utambulishaji wa programu za Duka la wavuti la Chrome katika ukurasa wa kichupo kipya.</translation>
@@ -1806,6 +1842,9 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 <translation id="7417972229667085380">Asilimia ya kupima kuchelewesha kwa mwanga wa skrini katika modi ya wasilisho (kimewacha kuendesha huduma)</translation>
 <translation id="7421483919690710988">Weka ukubwa wa akiba ya diski ya media katika vipimo vya baiti</translation>
 <translation id="7424751532654212117">Orodha ya vighairi katika orodha ya programu jalizi zilizolemazwa</translation>
+<translation id="7426112309807051726">Hubainisha iwapo uboreshaji wa kipengee cha <ph name="TLS_FALSE_START" /> unapaswa kuzimwa. Kwa sababu za kihistoria, sera hii inaitwa DisableSSLRecordSplitting.
+
+      Sera hii isipowekwa, au ikiwekwa kuwa sivyo, basi kipengee cha <ph name="TLS_FALSE_START" /> kitawashwa. Ikiwekwa kuwa ndivyo, kipengee cha <ph name="TLS_FALSE_START" /> kitazimwa.</translation>
 <translation id="7433714841194914373">Wezesha Papo hapo</translation>
 <translation id="7443616896860707393">Vishtuo vya Cross-origin HTTP Basic Auth</translation>
 <translation id="7468416082528382842">Eneo la usajili wa Windows:</translation>
@@ -2078,6 +2117,21 @@ Kama sera hii haitawekwa, hali ya juu ya utofautishaji itazimwa mwanzoni lakini 
 <translation id="8519264904050090490">URL zisizofuata kanuni za mwongozo wa mtumiaji uliodhibitiwa</translation>
 <translation id="8544375438507658205">Kionyeshi chaguo-msngi cha HTML kwa<ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Tahadharisha ninapotembelea tovuti zilizo nje ya vifurushi vya maudhui</translation>
+<translation id="855339549837475534">Chromium na Google Chrome zinatumia kundi moja la
+      sera. Tafadhali kumbuka kwamba hati hii inaweza kujumuisha sera zinazolenga matoleo ya programu ambayo hayajatolewa (yaani uingizaji wao 'Unaotumika kwenye' unamaanisha toleo ambalo halijatolewa) na kwamba sera kama hizo zinaweza kubadilika au kuondolewa bila ilani.
+
+      Sera hizi zinalenga kutumiwa mahususi kuweka mipangilio ya matukio ya
+      <ph name="PRODUCT_NAME" /> ya ndani kwenye 
+      shirika lako. Matumizi ya sera hizi nje ya shirika lako (kwa
+      mfano, katika programu inayosambazwa kwa umma) yanachukuliwa kuwa programu hasidi na
+      inaweza kuainishwa kama programu hasidi na Google na wauzaji wa kingavirusi.
+
+      Si lazima uweke mipangilio ya programu hizi kwa njia ya kawaida!  Violezo vya
+      matumizi rahisi kwa Windows, Mac na Linux vinaweza kupakuliwa kutoka kwenye <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      Njia inayopendekezwa ya kuweka mipangilio ya sera kwenye Windows ni kupitia GPO, ingawa
+      kuweka sera kupitia usajili bado kunatumika kwa matukio ya Windows
+      ambayo yameunganishwa kwenye kikoa cha Saraka Inayotumika.</translation>
 <translation id="8566842294717252664">Ficha duka la wavuti kwenye ukurasa mpya wa kichupo na kifungua programu cha Chrome</translation>
 <translation id="8587229956764455752">Ruhusu uundaji wa akaunti mpya za mtumiaji</translation>
 <translation id="8614804915612153606">Inalemaza Kusasisha Otomatiki</translation>

@@ -332,6 +332,37 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se esta configuração é ativada, o histórico de navegação não é salvo. Esta configuração também desativa a sincronização de guias.
 
       Se esta configuração é desativada ou não é definida, o histórico de navegação é salvo.</translation>
+<translation id="2424023834246613232">Modifica as regras de seleção de impressora padrão de <ph name="PRODUCT_NAME" />.
+
+      Esta política determina as regras para seleção da impressora padrão em <ph name="PRODUCT_NAME" />, o que ocorre na primeira vez que a função de impressão é usada com um perfil.
+
+      Quando esta política for definida, <ph name="PRODUCT_NAME" /> tentará encontrar uma impressora que corresponda a todos os atributos especificados e a selecionará como impressora padrão. A primeira impressora encontrada que corresponda com a política é selecionada, em caso de correspondência não exclusiva, qualquer impressora correspondente poderá ser selecionada, de acordo com a ordem na qual as impressoras são descobertas.
+
+      Se esta política não for definida ou se não for encontrada uma impressora correspondente dentro do tempo limite, a impressora padrão passa a ser a impressora de PDF incorporada ou "nenhuma impressora selecionada", quando a impressora de PDF não estiver disponível.
+
+      O valor é analisado como objeto JSON, em conformidade com o seguinte esquema:
+      {
+        "type": "object",
+        "properties": {
+            "description": "Limitar ou não a pesquisa da impressora correspondente a um conjunto específico de impressoras.",
+            "type": {
+              "enum": ["local", "na nuvem"]
+            }
+          },
+          "idPattern": {
+            "description": "A expressão regular que corresponda ao código da impressora.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "A expressão regular que corresponda ao nome de exibição da impressora.",
+            "type": "string"
+          }
+        }
+      }
+
+      As impressoras conectadas a <ph name="CLOUD_PRINT_NAME" /> são consideradas <ph name="PRINTER_TYPE_CLOUD" />; o restante das impressoras é classificado como <ph name="PRINTER_TYPE_LOCAL" />.
+      A omissão de um campo significa que todos os valores correspondem. Por exemplo, a não especificação da conectividade fará com que a visualização da impressão inicie a descoberta de todos os tipos de impressoras, locais e na nuvem.
+      Os padrões de expressão regulares devem seguir a sintaxe do JavaScript RegExp e as correspondências diferenciam maiúsculas de minúsculas.</translation>
 <translation id="2426782419955104525">Ativa o recurso Instant do <ph name="PRODUCT_NAME" /> e impede que os usuários alterem essa configuração.
 
       Se você ativar essa configuração, o Instant do <ph name="PRODUCT_NAME" /> será ativado.
@@ -490,6 +521,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Especifica se a extensão dos certificados vinculados ao domínio TLS deve ser ativada.
 
       Essa extensão é usada para ativar a extensão dos certificados vinculados ao domínio TLS para testes. Essa configuração experimental será removida no futuro.</translation>
+<translation id="2957513448235202597">Tipo de conta para autenticação <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Regras de proxies ignoráveis</translation>
 <translation id="2960691910306063964">Ativar ou desativar autenticação sem PIN para hosts de acesso remoto</translation>
 <translation id="2976002782221275500">Especifica o período de inatividade do usuário após o qual a tela é escurecida no funcionamento com a energia da bateria.
@@ -1562,6 +1594,9 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Quando esta política não está definida, é usado um período padrão.
 
           O valor da política deve ser especificado em milissegundos. Os valores são fixos de modo a serem inferiores ou iguais ao intervalo de inatividade.</translation>
+<translation id="7329968046053403405">Especifica o tipo de conta fornecida pelo app de autenticação Android compatível com a autenticação <ph name="HTTP_NEGOTIATE" /> (por exemplo, autenticação Kerberos). Essa informação deve ser disponibilizada pelo fornecedor do app de autenticação. Para ver outros detalhes, consulte https://goo.gl/hajyfN.
+
+          Se nenhuma configuração é fornecida, a autenticação <ph name="HTTP_NEGOTIATE" /> é desativada no Android.</translation>
 <translation id="7331962793961469250">Quando definidas como "True", promoções para aplicativos na Chrome Web Store não serão exibidas na página nova guia. Definir esta opção como "False" ou deixá-la sem definição fará com que as promoções para aplicativos na Chrome Web Store sejam exibidas na página nova guia</translation>
 <translation id="7332963785317884918">Esta política está obsoleta. O <ph name="PRODUCT_OS_NAME" /> sempre usará a estratégia de limpeza "RemoveLRU".
 
@@ -1579,6 +1614,9 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="7417972229667085380">Percentual pelo qual calcular o intervalo de inatividade no modo de apresentação (uso suspenso)</translation>
 <translation id="7421483919690710988">Define o tamanho do cache de disco de mídia em bytes</translation>
 <translation id="7424751532654212117">Lista de exceções à lista de plug-ins desativados</translation>
+<translation id="7426112309807051726">Especifica se a otimização <ph name="TLS_FALSE_START" /> deve ser desativada. Por razões históricas, essa política é chamada de DisableSSLRecordSplitting.
+
+      Se a política não for configurada ou se for definida como "false", <ph name="TLS_FALSE_START" /> será ativada. Se for definida como "true", <ph name="TLS_FALSE_START" /> será desativada.</translation>
 <translation id="7433714841194914373">Ativar o Instant</translation>
 <translation id="7443616896860707393">Solicitações básicas de autorização HTTPS de múltiplas origens</translation>
 <translation id="7468416082528382842">Local do registro do Windows:</translation>
@@ -1830,6 +1868,24 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="8519264904050090490">URLs de exceção manual do usuário gerenciado</translation>
 <translation id="8544375438507658205">Renderizador padrão de HTML para o <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Avisar ao visitar sites fora de pacotes de conteúdo</translation>
+<translation id="855339549837475534">Tanto o Chromium como o Google Chrome são compatíveis com o mesmo conjunto de
+      políticas. Observe que é possível que este documento inclua políticas que são 
+      destinadas a versões de software não lançadas (ou seja, a entrada "Compatível com"
+      se refere a uma versão não lançada), e tais políticas estão sujeitas a
+      alteração ou remoção sem aviso prévio.
+
+      Essas políticas destinam-se somente à configuração de instâncias do
+      <ph name="PRODUCT_NAME" /> internas à sua
+      organização. O uso dessas políticas fora da sua organização (por
+      exemplo, em um programa distribuído publicamente) é considerado malware e,
+      provavelmente, será considerado malware pelo Google e por fornecedores de programas antivírus.
+
+      Não é necessário configurar essas definições manualmente! Modelos fáceis
+      de usar para Windows, Mac e Linux estão disponíveis para download em <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      O modo recomendado para configurar políticas no Windows é por meio de GPO, embora
+      o aprovisionamento de política por meio de registro ainda seja compatível com instâncias do Windows
+      que estejam vinculadas a um domínio Active Directory.</translation>
 <translation id="8566842294717252664">Ocultar a loja on-line da página "Nova guia" e do Acesso rápido aos apps</translation>
 <translation id="8587229956764455752">Permite a criação de novas contas de usuários</translation>
 <translation id="8614804915612153606">Desativa a atualização automática</translation>

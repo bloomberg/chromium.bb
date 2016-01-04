@@ -6,6 +6,7 @@
 <translation id="1021311941847921177">Pintasan untuk beralih ke metode masukan berikutnya telah berubah. Gunakan <ph name="NEW_SHORTCUT" /> sebagai ganti <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Sembunyikan otomatis rak</translation>
 <translation id="1195412055398077112">pemindaian berlebih</translation>
+<translation id="1252999807265626933">Mengisi daya dari <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Keyboard di layar dinonaktifkan</translation>
 <translation id="1272079795634619415">Berhenti</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -20,6 +21,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Peluncur</translation>
 <translation id="15373452373711364">Kursor mouse besar</translation>
+<translation id="1550523713251050646">Klik untuk opsi lainnya</translation>
 <translation id="1602076796624386989">Aktifkan data seluler</translation>
 <translation id="1621499497873603021">Waktu yang tersisa hingga baterai kosong, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Perangkat Chrome</translation>
@@ -78,6 +80,7 @@ Tekan Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="3147142846278915599">Peluncur (menyinkronkan aplikasi...)</translation>
 <translation id="3157169093162779309">Aktifkan penguncian rotasi</translation>
 <translation id="3294437725009624529">Tamu</translation>
+<translation id="3371140690572404006">Perangkat USB-C (port depan sebelah kanan)</translation>
 <translation id="3445925074670675829">Perangkat USB-C</translation>
 <translation id="3473479545200714844">Kaca pembesar layar</translation>
 <translation id="3573179567135747900">Ubah kembali ke "<ph name="FROM_LOCALE" />" (harus dinyalakan ulang)</translation>
@@ -104,6 +107,7 @@ Tekan Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="3963445509666917109">Pengeras Suara (Internal)</translation>
 <translation id="3967919079500697218">Kemampuan untuk membuat tangkapan layar telah dinonaktifkan oleh administrator Anda.</translation>
 <translation id="397105322502079400">Menghitung...</translation>
+<translation id="3995138139523574647">Perangkat USB-C (port belakang sebelah kanan)</translation>
 <translation id="4053612967614057854">Nonaktifkan keyboard di layar</translation>
 <translation id="412065659894267608"><ph name="HOUR" />j <ph name="MINUTE" />m sampai penuh</translation>
 <translation id="4250680216510889253">Tidak</translation>
@@ -157,8 +161,10 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="6047696787498798094">Berbagi layar akan berhenti saat Anda beralih ke pengguna lain. Ingin melanjutkan?</translation>
 <translation id="6062360702481658777">Anda akan dikeluarkan secara otomatis dalam <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Komputer Anda dapat ditemukan pada perangkat Bluetooth terdekat dan akan muncul sebagai "<ph name="NAME" />" dengan alamat <ph name="ADDRESS" /></translation>
+<translation id="6106745654298855237">Mengisi daya <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Tampilkan keyboard di layar</translation>
 <translation id="6165508094623778733">Pelajari lebih lanjut</translation>
+<translation id="6203030746557259519">Tampilan Virtual</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">Tekan Control Shift Q dua kali untuk keluar.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> diputar ke <ph name="ROTATION" /></translation>
@@ -203,6 +209,7 @@ Tekan Alt+Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="7573962313813535744">Mode digalangkan</translation>
 <translation id="7593891976182323525">Telusuri atau Shift</translation>
 <translation id="7649070708921625228">Bantuan</translation>
+<translation id="7692480393933218409">Mengisi daya perangkat USB-C yang tersambung</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> dan <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Bahasa telah diubah dari "<ph name="FROM_LOCALE" />" menjadi "<ph name="TO_LOCALE" />" setelah menyinkronkan setelan Anda.</translation>
 <translation id="785750925697875037">Lihat akun seluler</translation>

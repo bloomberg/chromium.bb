@@ -6,6 +6,7 @@
 <translation id="1021311941847921177">Le raccourci permettant de passer au mode de saisie suivant a été modifié. Utilisez "<ph name="NEW_SHORTCUT" />" au lieu de "<ph name="OLD_SHORTCUT" />".</translation>
 <translation id="112308213915226829">Masquer automatiquement l'étagère</translation>
 <translation id="1195412055398077112">Surbalayage</translation>
+<translation id="1252999807265626933">Charge à partir de la source "<ph name="POWER_SOURCE" />"</translation>
 <translation id="1270290102613614947">Clavier à l'écran désactivé</translation>
 <translation id="1272079795634619415">Arrêter</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -20,6 +21,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Lanceur d'applications</translation>
 <translation id="15373452373711364">Grand curseur</translation>
+<translation id="1550523713251050646">Cliquez pour obtenir plus d'options.</translation>
 <translation id="1602076796624386989">Activer les données mobiles</translation>
 <translation id="1621499497873603021">Temps restant avant que la batterie ne soit vide : <ph name="TIME_LEFT" />.</translation>
 <translation id="164969095109328410">Appareil Google Chrome</translation>
@@ -78,6 +80,7 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="3147142846278915599">Lanceur d'applications (synchronisation des applications en cours…)</translation>
 <translation id="3157169093162779309">Activer le verrouillage de la rotation</translation>
 <translation id="3294437725009624529">Invité</translation>
+<translation id="3371140690572404006">Appareil USB de type C (port situé sur la droite de l'appareil, à l'avant)</translation>
 <translation id="3445925074670675829">Appareil USB de type C</translation>
 <translation id="3473479545200714844">Loupe</translation>
 <translation id="3573179567135747900">Revenir à "<ph name="FROM_LOCALE" />" (redémarrage requis)</translation>
@@ -104,6 +107,7 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="3963445509666917109">Haut-parleur (interne)</translation>
 <translation id="3967919079500697218">Votre administrateur a désactivé la fonctionnalité de capture d'écran.</translation>
 <translation id="397105322502079400">Calcul en cours…</translation>
+<translation id="3995138139523574647">Appareil USB de type C (port situé sur la droite de l'appareil, à l'arrière)</translation>
 <translation id="4053612967614057854">Désactiver le clavier à l'écran</translation>
 <translation id="412065659894267608">Encore <ph name="HOUR" /> h <ph name="MINUTE" /> min de chargement</translation>
 <translation id="4250680216510889253">Non</translation>
@@ -157,8 +161,10 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="6047696787498798094">Le partage d'écran s'arrête lorsque vous passez à un autre utilisateur. Voulez-vous continuer ?</translation>
 <translation id="6062360702481658777">Vous allez être déconnecté automatiquement dans <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Votre ordinateur est visible par les appareils Bluetooth situés à proximité sous le nom "<ph name="NAME" />", associé à l'adresse <ph name="ADDRESS" />.</translation>
+<translation id="6106745654298855237"><ph name="POWER_SOURCE" /> en charge</translation>
 <translation id="615957422585914272">Afficher le clavier à l'écran</translation>
 <translation id="6165508094623778733">En savoir plus</translation>
+<translation id="6203030746557259519">Affichage virtuel</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" /> %</translation>
 <translation id="6248847161401822652">Pour quitter, appuyez deux fois sur Ctrl+Maj+Q.</translation>
 <translation id="6310121235600822547">L'écran "<ph name="DISPLAY_NAME" />" a effectué une rotation de <ph name="ROTATION" />.</translation>
@@ -203,6 +209,7 @@ Appuyez sur Alt + Recherche ou Maj pour le désactiver.</translation>
 <translation id="7573962313813535744">Mode Dock</translation>
 <translation id="7593891976182323525">Recherche ou Maj</translation>
 <translation id="7649070708921625228">Aide</translation>
+<translation id="7692480393933218409">Charge des appareils USB de type C connectés</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> et <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">La langue utilisée est passée de "<ph name="FROM_LOCALE" />" à "<ph name="TO_LOCALE" />" après la synchronisation de vos paramètres.</translation>
 <translation id="785750925697875037">Afficher le compte mobile</translation>

@@ -347,6 +347,38 @@
       Jika setelan ini diaktifkan, riwayat penjelajahan tidak disimpan. Setelan ini juga menonaktifkan sinkronisasi tab.
 
       Jika setelan ini dinonaktifkan atau tidak disetel, riwayat penjelajahan akan disimpan.</translation>
+<translation id="2424023834246613232">Mengganti aturan pemilihan printer default <ph name="PRODUCT_NAME" />.
+
+      Kebijakan ini menentukan aturan untuk memilih printer default di <ph name="PRODUCT_NAME" /> yang terjadi saat fungsi cetak digunakan dengan profil untuk pertama kalinya.
+
+      Jika kebijakan ini disetel, <ph name="PRODUCT_NAME" /> akan mencoba menemukan printer yang sesuai dengan semua atribut yang ditentukan dan memilihnya sebagai printer default. Printer pertama yang ditemukan dan sesuai dengan kebijakan akan dipilih, jika ada printer non unik yang cocok maka printer tersebut dapat dapat dipilih, bergantung pada urutan printer yang ditemukan.
+
+      Jika kebijakan ini tidak disetel atau printer yang sesuai tidak ditemukan selama waktu tunggu, printer PDF yang terpasang akan dipilih sebagai printer default, atau tidak ada printer yang dipilih jika printer PDF tidak tersedia.
+
+      Nilai tersebut diuraikan sebagai objek JSON, sesuai dengan skema berikut:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Perlu tidaknya pembatasan penelusuran printer yang sesuai untuk kumpulan printer tertentu.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Ekspresi reguler untuk mencocokkan ID printer.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Ekspresi reguler untuk mencocokkan nama tampilan printer.",
+            "type": "string"
+          }
+        }
+      }
+
+      Printer yang tersambung ke <ph name="CLOUD_PRINT_NAME" /> dianggap sebagai <ph name="PRINTER_TYPE_CLOUD" />, printer lainnya akan diklasifikasikan sebagai <ph name="PRINTER_TYPE_LOCAL" />.
+      Menghapus satu bidang berarti semua nilai sesuai, misalnya, tidak menentukan konektivitas akan menyebabkan Pratinjau Cetak mulai mencari semua jenis printer, lokal, dan awan.
+      Pola ekspresi reguler harus mengikuti sintaksis JavaScript RegExp, dan hasil yang sesuai peka huruf besar/kecil.</translation>
 <translation id="2426782419955104525">Mengaktifkan fitur Instan <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini.
 
       Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> Instan akan diaktifkan.
@@ -506,6 +538,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Menentukan apakah ekstensi sertifikat terikat domain TLS sebaiknya diaktifkan atau tidak.
 
       Setelan ini digunakan untuk mengaktifkan ekstensi sertifikat terikat domain TLS untuk pengujian.  Setelan eksperimental ini akan dibuang di masa mendatang.</translation>
+<translation id="2957513448235202597">Jenis akun untuk autentikasi <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Peraturan mengabaikan proxy</translation>
 <translation id="2960691910306063964">Mengaktifkan atau menonaktifkan autentikasi tanpa PIN untuk host akses jarak jauh</translation>
 <translation id="2976002782221275500">Menentukan panjang waktu tanpa masukan pengguna sebelum layar meredup saat menggunakan daya baterai.
@@ -1591,6 +1624,9 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           Saat kebijakan ini tidak disetel, panjang waktu default akan digunakan.
 
           Nilai kebijakan ini harus ditentukan dalam milidetik. Nilai dijepit menjadi lebih sedikit dari penundaan waktu menganggur.</translation>
+<translation id="7329968046053403405">Menentukan jenis akun untuk akun yang diberikan oleh aplikasi autentikasi Android, yang mendukung autentikasi <ph name="HTTP_NEGOTIATE" /> (misalnya autentikasi Kerberos). Informasi ini seharusnya tersedia dari penyedia aplikasi autentikasi. Untuk detail selengkapnya, lihat https://goo.gl/hajyfN.
+
+          Jika tidak ada setelan yang diberikan, autentikasi <ph name="HTTP_NEGOTIATE" /> akan dinonaktifkan di Android.</translation>
 <translation id="7331962793961469250">Bila disetel ke True, promosi untuk apl Toko Web Chrome tidak akan muncul pada laman tab baru. Menyetel opsi ini ke False atau membiarkannya tanpa disetel akan membuat promosi untuk apl Toko Web Chrome muncul di laman tab baru</translation>
 <translation id="7332963785317884918">Kebijakan ini tidak lagi digunakan. <ph name="PRODUCT_OS_NAME" /> akan selalu menggunakan strategi pembersihan 'RemoveLRU'.
 
@@ -1608,6 +1644,9 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="7417972229667085380">Persentase yang digunakan untuk menskalakan penundaan status menganggur dalam mode presentasi (tidak digunakan lagi)</translation>
 <translation id="7421483919690710988">Setel ukuran cache disk media dalam bita</translation>
 <translation id="7424751532654212117">Daftar pengecualian untuk daftar plugin yang dinonaktifkan</translation>
+<translation id="7426112309807051726">Menentukan apakah pengoptimalan <ph name="TLS_FALSE_START" /> harus dinonaktifkan atau tidak. Karena alasan historis, kebijakan ini diberi nama DisableSSLRecordSplitting.
+
+      Jika kebijakan tidak disetel, atau disetel ke False, <ph name="TLS_FALSE_START" /> akan diaktifkan. Jika disetel ke True, <ph name="TLS_FALSE_START" /> akan dinonaktifkan.</translation>
 <translation id="7433714841194914373">Aktifkan Instan</translation>
 <translation id="7443616896860707393">Permintaan Autentikasi Dasar HTTP lintas asal</translation>
 <translation id="7468416082528382842">Lokasi registry Windows:</translation>
@@ -1863,6 +1902,24 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="8519264904050090490">URL pengecualian manual pengguna yang dikelola</translation>
 <translation id="8544375438507658205">Pengurai HTML default untuk <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Memperingatkan saat mengunjungi situs di luar paket konten</translation>
+<translation id="855339549837475534">Chromium dan Google Chrome mendukung rangkaian kebijakan
+      yang sama. Harap diperhatikan bahwa dokumen ini dapat berisi kebijakan yang
+      ditargetkan untuk versi perangkat lunak yang belum dirilis (entri 'Didukung di'
+      merujuk ke versi yang belum dirilis) dan oleh karena itu, kebijakan semacam ini dapat
+      berubah atau dihapus tanpa pemberitahuan sebelumnya.
+
+      Kebijakan ini secara ketat ditujukan untuk mengonfigurasi contoh
+      internal <ph name="PRODUCT_NAME" /> ke
+      organisasi Anda. Penggunaan kebijakan ini di luar organisasi Anda (misalnya
+      dalam program yang didistribusikan secara publik) akan dianggap sebagai perangkat lunak perusak dan mungkin
+      akan diberi label sebagai perangkat lunak perusak oleh Google dan vendor anti-virus.
+
+      Setelan ini tidak perlu dikonfigurasi secara manual!  Template
+      yang mudah digunakan untuk Windows, Mac, dan Linux tersedia untuk diunduh dari <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      Cara yang disarankan untuk mengonfigurasi kebijakan ini di Windows adalah melalui GPO, meskipun
+      menyediakan kebijakan melalui registri masih didukung untuk Windows
+      yang bergabung dalam domain Active Directory.</translation>
 <translation id="8566842294717252664">Menyembunyikan toko web dari Laman Tab Baru dan peluncur aplikasi</translation>
 <translation id="8587229956764455752">Mengizinkan pembuatan akun pengguna baru</translation>
 <translation id="8614804915612153606">Nonaktifkan Pembaruan Otomatis</translation>

@@ -41,6 +41,7 @@
 <translation id="225614027745146050">Tere tulemast</translation>
 <translation id="2316129865977710310">Ei, aitäh</translation>
 <translation id="2347108572062610441">See laiendus muutis seda, milline leht kuvatakse Chromiumi käivitamisel.</translation>
+<translation id="2372704305038231957">32-bitine Chromium ei pruugi õigesti töötada, kuna seda ei toetata enam selles Linuxi süsteemis. Viige Chromium üle 64-bitisele versioonile.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Allalaadimine on praegu pooleli. Kas soovite allalaadimise tühistada ja Chromiumist väljuda?}other{# allalaadimist on praegu pooleli. Kas soovite allalaadimised tühistada ja Chromiumist väljuda?}}</translation>
 <translation id="2396765026452590966">Laiendus „<ph name="EXTENSION_NAME" />” muutis seda, milline leht kuvatakse Chromiumi käivitamisel.</translation>
 <translation id="2485422356828889247">Desinstalli</translation>
@@ -149,6 +150,7 @@
 <translation id="6485906693002546646">Kasutate Chromiumi kraami sünkroonimiseks kontot <ph name="PROFILE_EMAIL" />. Sünkroonimiseelistuste värskendamiseks või Chromiumi kasutamiseks ilma Google'i kontota avage <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Desinstalli Chromium</translation>
 <translation id="6526111688217511984">Chromium vajab failide allalaadimiseks juurdepääsu salvestusruumile.</translation>
+<translation id="6584627348340620412">32-bitise Chromiumi tulevased versioonid ei toeta enam seda Linuxi süsteemi. Viige Chromium üle 64-bitisele versioonile.</translation>
 <translation id="6593914713218535185">Chromium ei pruugi õigesti töötada, kuna seda ei toetata enam selles Linuxi süsteemis.</translation>
 <translation id="6637001341228460105">Chromiumil on vaja mikrofonile juurdepääsu selle jagamiseks saidiga.</translation>
 <translation id="6638567566961868659">Otsige oma järjehoidjaid Chromiumi menüüst või järjehoidjaribalt.</translation>

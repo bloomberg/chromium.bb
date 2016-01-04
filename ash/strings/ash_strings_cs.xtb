@@ -6,6 +6,7 @@
 <translation id="1021311941847921177">Zkratka přepnutí na další metodu zadávání se změnila. Namísto zkratky <ph name="OLD_SHORTCUT" /> používejte zkratku <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Automaticky skrývat poličku</translation>
 <translation id="1195412055398077112">přesah obrazu</translation>
+<translation id="1252999807265626933">Zdroj nabíjení: <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Softwarová klávesnice je deaktivována</translation>
 <translation id="1272079795634619415">Zastavit</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -20,6 +21,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Spouštěč</translation>
 <translation id="15373452373711364">Velký kurzor myši</translation>
+<translation id="1550523713251050646">Kliknutím zobrazíte další možnosti</translation>
 <translation id="1602076796624386989">Povolit mobilní datové připojení</translation>
 <translation id="1621499497873603021">Čas zbývající do vybití baterie: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Zařízení Chrome</translation>
@@ -76,6 +78,7 @@
 <translation id="3147142846278915599">Spouštěč (synchronizace aplikací...)</translation>
 <translation id="3157169093162779309">Zapnout zámek otáčení</translation>
 <translation id="3294437725009624529">Host</translation>
+<translation id="3371140690572404006">Zařízení USB Type-C (pravý přední port)</translation>
 <translation id="3445925074670675829">Zařízení USB Type-C</translation>
 <translation id="3473479545200714844">Lupa obrazovky</translation>
 <translation id="3573179567135747900">Změnit zpět na jazyk <ph name="FROM_LOCALE" /> (vyžaduje restart)</translation>
@@ -102,6 +105,7 @@
 <translation id="3963445509666917109">Reproduktor (interní)</translation>
 <translation id="3967919079500697218">Možnost pořizovat snímky obrazovky byla zakázána správcem.</translation>
 <translation id="397105322502079400">Probíhá výpočet…</translation>
+<translation id="3995138139523574647">Zařízení USB Type-C (pravý zadní port)</translation>
 <translation id="4053612967614057854">Zakázat softwarovou klávesnici</translation>
 <translation id="412065659894267608"><ph name="HOUR" /> h <ph name="MINUTE" /> min do nabití</translation>
 <translation id="4250680216510889253">Ne</translation>
@@ -154,8 +158,10 @@
 <translation id="6047696787498798094">Pokud přepnete na jiného uživatele, sdílení obrazovky bude ukončeno. Chcete pokračovat?</translation>
 <translation id="6062360702481658777">Za <ph name="LOGOUT_TIME_LEFT" /> budete automaticky odhlášeni.</translation>
 <translation id="607652042414456612">Váš počítač mohou objevit okolní zařízení Bluetooth, ve kterých se bude zobrazovat s názvem „<ph name="NAME" />“ a adresou <ph name="ADDRESS" />.</translation>
+<translation id="6106745654298855237"><ph name="POWER_SOURCE" /> – nabíjení</translation>
 <translation id="615957422585914272">Zobrazit softwarovou klávesnici</translation>
 <translation id="6165508094623778733">Další informace</translation>
+<translation id="6203030746557259519">Virtuální displej</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" /> %</translation>
 <translation id="6248847161401822652">Práci ukončíte dvojitým stisknutím kombinace kláves Ctrl+Shift+Q.</translation>
 <translation id="6310121235600822547">Displej <ph name="DISPLAY_NAME" /> byl otočen o <ph name="ROTATION" /></translation>
@@ -200,6 +206,7 @@ Vypnete jej stisknutím kombinace kláves Alt + Vyhledávání nebo Shift.</tran
 <translation id="7573962313813535744">Ukotvený režim</translation>
 <translation id="7593891976182323525">Vyhledávání nebo Shift</translation>
 <translation id="7649070708921625228">Nápověda</translation>
+<translation id="7692480393933218409">Nabíjení připojených zařízení USB Type-C</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> a <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Jazyk prohlížeče Chrome se po synchronizaci nastavení změnil z jazyka <ph name="FROM_LOCALE" /> na jazyk <ph name="TO_LOCALE" />.</translation>
 <translation id="785750925697875037">Zobrazit mobilní účet</translation>

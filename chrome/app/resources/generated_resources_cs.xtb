@@ -272,6 +272,7 @@
 <translation id="140250605646987970">Váš telefon byl nalezen. Smart Lock však funguje pouze na zařízeních se systémem Android 5.0 nebo novějším. &lt;a&gt;Další informace&lt;/a&gt;</translation>
 <translation id="1405126334425076373">Ukazatel myši</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (dozorovaný)</translation>
+<translation id="1405476660552109915">Chcete, aby aplikace <ph name="PASSWORD_MANAGER_BRAND" /> uložila váš účet pro tyto stránky?</translation>
 <translation id="1406500794671479665">Ověřování...</translation>
 <translation id="1407050882688520094">Máte založené certifikáty, které identifikují tyto certifikační autority:</translation>
 <translation id="1407135791313364759">Otevřít vše</translation>
@@ -319,6 +320,7 @@
 <translation id="1467999917853307373">Stránka <ph name="URL" /> chce trvale ukládat data v zařízení.</translation>
 <translation id="1468038450257740950">Rozhraní WebGL není podporováno.</translation>
 <translation id="1470719357688513792">Nové nastavení souborů cookie se projeví po opětovném načtení stránky.</translation>
+<translation id="1470811252759861213">Chcete-li rozšíření přenést do všech počítačů, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="14720830734893704">Aktivuje podporu virtuální klávesnice.</translation>
 <translation id="1474079335130556426">Povolí režim na pozadí pro rozhraní Push API. Pokud to rozhraní Push API bude potřebovat, bude Chrome moci zůstat spuštěný i po zavření posledního okna a bude se moci spouštět při spuštění operačního systému.</translation>
 <translation id="1474339897586437869">Soubor <ph name="FILENAME" /> nelze nahrát. Na Disku Google je nedostatek místa.</translation>
@@ -445,6 +447,7 @@
 <translation id="1621207256975573490">Uložit &amp;rám jako...</translation>
 <translation id="1624026626836496796">Tato akce proběhne pouze jednou a vaše identifikační údaje nebudou uloženy.</translation>
 <translation id="1626545055522824874">Certifikát SHA-1</translation>
+<translation id="1627276047960621195">Deskriptory souborů</translation>
 <translation id="1628736721748648976">Kódování</translation>
 <translation id="163309982320328737">Výchozí šířka znaků je Plná</translation>
 <translation id="1634788685286903402">Důvěřovat tomuto certifikátu k ověřování uživatelů e-mailu.</translation>
@@ -615,9 +618,11 @@ UPOZORNĚNÍ: Když toto pravidlo povolíte, Chrome bude zaznamenávat data o v
 <translation id="1886996562706621347">Povolit dotazy stránek, zda je chcete použít jako výchozí obslužný nástroj protokolů (doporučeno)</translation>
 <translation id="1891668193654680795">Důvěřovat tomuto certifikátu při ověřování identity výrobců softwaru.</translation>
 <translation id="189210018541388520">Otevřít v režimu celé obrazovky</translation>
+<translation id="1893046049133338222">ARC: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="189358972401248634">Ostatní jazyky</translation>
 <translation id="1895658205118569222">Vypnout počítač</translation>
 <translation id="1895934970388272448">Proces dokončíte potvrzením registrace v tiskárně – mrkněte na to.</translation>
+<translation id="1897762215429052132">Nastavení připojení k síti, jazyka, rozložení klávesnice apod.</translation>
 <translation id="1899708097738826574"><ph name="OPTIONS_TITLE" /> – <ph name="SUBPAGE_TITLE" /></translation>
 <translation id="1901303067676059328">&amp;Vybrat vše</translation>
 <translation id="1901377140875308934">Přihlásit se do prohlížeče <ph name="SHORT_PRODUCT_NAME" />...</translation>
@@ -895,6 +900,7 @@ Po vytvoření nového dozorovaného uživatele můžete jeho nastavení spravov
 <translation id="2314244639364647639">{NUM_ITEMS,plural, =1{Touto akcí z tohoto zařízení trvale smažete minimálně $1 položku. Z jiných zařízení se však synchronizované položky nesmažou.}few{Touto akcí z tohoto zařízení trvale smažete minimálně $1 položky. Z jiných zařízení se však synchronizované položky nesmažou.}many{Touto akcí trvale z tohoto zařízení trvale smažete minimálně $1 položky. Z jiných zařízení se však synchronizované položky nesmažou.}other{Touto akcí z tohoto zařízení trvale smažete minimálně $1 položek. Z jiných zařízení se však synchronizované položky nesmažou.}}</translation>
 <translation id="2316129865977710310">Ne, děkuji</translation>
 <translation id="2317031807364506312">ZRUŠIT</translation>
+<translation id="2317259163369394535">Doména <ph name="DOMAIN" /> vyžaduje zadání uživatelského jména a hesla.</translation>
 <translation id="2318143611928805047">Velikost papíru</translation>
 <translation id="2322193970951063277">Záhlaví a zápatí</translation>
 <translation id="2325650632570794183">Tento typ souboru není podporován. Navštivte prosím Internetový obchod Chrome, kde najdete aplikaci, ve které lze otevřít tento typ souboru.</translation>
@@ -934,6 +940,7 @@ Po vytvoření nového dozorovaného uživatele můžete jeho nastavení spravov
 <translation id="2378982052244864789">Vyberte adresář rozšíření.</translation>
 <translation id="2379281330731083556">Tisk pomocí dialogového okna systému... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381823505763074471">Odhlášení uživatele <ph name="PROFILE_USERNAME" />.</translation>
+<translation id="2382995423509322422">Shoda podle adresy URL</translation>
 <translation id="2383034317918297467">Způsobí, že se v rozbalovacím seznamu omniboxu budou názvy návrhů někdy zobrazovat výrazněji než adresy URL.</translation>
 <translation id="2384596874640104496">Sinhálská klávesnice</translation>
 <translation id="2385700042425247848">Název služby:</translation>
@@ -1196,6 +1203,7 @@ Tento web by podle mě neměl být blokován.</translation>
 <translation id="2747990718031257077">Aktivuje nový vzhled lišty rozšíření (který je ve vývoji).</translation>
 <translation id="2749756011735116528">Přihlásit se do prohlížeče <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">Zkontrolovat pravopis a gramatiku</translation>
+<translation id="2750634961926122990">Shoda podle názvu hostitele</translation>
 <translation id="2752805177271551234">Použít historii zadávání textu</translation>
 <translation id="2756798847867733934">SIM karta je deaktivována</translation>
 <translation id="2758939858455657368">Následné oznámení, okna a dialogy mohou být rozděleny mezi plochy.</translation>
@@ -1216,6 +1224,7 @@ Tento web by podle mě neměl být blokován.</translation>
 <translation id="2784407158394623927">Aktivace mobilní datové služby</translation>
 <translation id="2784556410206159845">Smart Lock pro Chromebook z důvodu zajištění bezpečnosti zařízení <ph name="DEVICE_TYPE" /> vyžaduje, aby byl v telefonu nastaven zámek obrazovky.</translation>
 <translation id="2785530881066938471">Nelze načíst soubor <ph name="RELATIVE_PATH" /> s obsahovým skriptem. Soubor není kódován ve formátu UTF-8.</translation>
+<translation id="2785873697295365461">Deskriptory souborů</translation>
 <translation id="2787047795752739979">Přepsat originál</translation>
 <translation id="2787591391657537328">Povolit navázání nebo nové zahájení přerušených stahování pomocí položky Pokračovat v kontextové nabídce.</translation>
 <translation id="2788135150614412178">+</translation>
@@ -1356,6 +1365,7 @@ Tento web by podle mě neměl být blokován.</translation>
 <translation id="2934522647674136521">Rastruje webový obsah pomocí GPU. Vyžaduje vykreslování v samostatném vlákně.</translation>
 <translation id="2938225289965773019">Otevírat odkazy <ph name="PROTOCOL" /></translation>
 <translation id="2938685643439809023">mongolština</translation>
+<translation id="2941112035454246133">Nízká</translation>
 <translation id="2941479658084239256">Povolit místní ukládání stránek k použití offline.</translation>
 <translation id="2942290791863759244">Německá klávesnice NEO 2</translation>
 <translation id="2943400156390503548">Prezentace</translation>
@@ -1408,6 +1418,7 @@ Tento web by podle mě neměl být blokován.</translation>
 <translation id="3016641847947582299">Komponenta byla aktualizována</translation>
 <translation id="3016780570757425217">Přístup k údajům o vaší poloze</translation>
 <translation id="302014277942214887">Zadejte identifikátor aplikace nebo URL internetového obchodu.</translation>
+<translation id="3020616530769498629">Aktivovat opětovné načtení bez ověření při žádostech o obnovení</translation>
 <translation id="3020990233660977256">Sériové číslo: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021678814754966447">Zobrazit zdrojo&amp;vý kód rámce</translation>
 <translation id="3024374909719388945">Použít hodiny s formátem 24 h</translation>
@@ -1830,6 +1841,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="3590559774363307859">Heslo bylo uloženo. Toto heslo i ostatní <ph name="SAVED_PASSWORDS_LINK" /> můžete zobrazit v libovolném prohlížeči.</translation>
 <translation id="3590587280253938212">rychlý</translation>
 <translation id="3592260987370335752">&amp;Další informace</translation>
+<translation id="3592313833691251126">Povolí rozšířením vytvářet okna panelů vně prohlížeče. Pokud tuto možnost nepovolíte, otevře se při pokusu o otevření panelu vyskakovací okno. Ve výchozím nastavení je toto chování povoleno jen pro vybraná rozšíření. Pokud tento příznak povolíte, chování bude povoleno pro všechna rozšíření. Pokud jej zakážete, vytváření panelů bude pro všechna rozšíření zakázáno.</translation>
 <translation id="359283478042092570">Vstoupit</translation>
 <translation id="3593152357631900254">Aktivovat režim Fuzzy-Pinyin</translation>
 <translation id="3593965109698325041">Omezení názvu certifikátu</translation>
@@ -1949,6 +1961,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="3741243925913727067">Zálohujte fotky a videa ze svého mediálního zařízení na Disk Google.</translation>
 <translation id="3743492083222969745">Povolí/zakáže nastavení možnosti psaní gesty na virtuální klávesnici.</translation>
 <translation id="3749289110408117711">Název souboru</translation>
+<translation id="3751427701788899101">Připojení bylo ztraceno</translation>
 <translation id="3751522270321808809">Tyto stránky se mohou pokusit podvodem získat vaše informace (například hesla, zprávy nebo platební karty).</translation>
 <translation id="3752439026432317933">Zadat fakturační údaje...</translation>
 <translation id="3752582316358263300">OK...</translation>
@@ -2105,6 +2118,7 @@ Vyberte štítek, který nejlépe popisuje zaznamenané trasy. Na základě toho
 <translation id="3966388904776714213">Zvukový přehrávač</translation>
 <translation id="3967885517199024316">Přihlaste se a synchronizujte záložky, historii a nastavení do všech svých zařízení.</translation>
 <translation id="3968098439516354663">K zobrazení tohoto obsahu je vyžadován plugin <ph name="PLUGIN_NAME" />.</translation>
+<translation id="3968261067169026421">Síť se nepodařilo nastavit</translation>
 <translation id="3968739731834770921">Kana</translation>
 <translation id="397105322502079400">Probíhá výpočet…</translation>
 <translation id="3972425373133383637">Zůstaňte připojeni ke všem důležitým informacím ve všech svých zařízeních.</translation>
@@ -2246,6 +2260,7 @@ Všichni uživatelé se před pokračováním musejí odhlásit.</translation>
 <translation id="4209092469652827314">Velké</translation>
 <translation id="4209267054566995313">Myš ani touchpad nebyly nalezeny.</translation>
 <translation id="4209562316857013835">Povoluje synchronizaci nastavení sítí Wi-Fi mezi zařízeními. Pokud je tato funkce povolena, datový typ identifikačních údajů sítí Wi-Fi se zaregistruje pomocí Synchronizace Chromu a identifikační údaje sítí Wi-Fi se synchronizují podle nastavení uživatelů. (Viz také chrome://settings/syncSetup.)</translation>
+<translation id="4209910116082737373">Povolit stránku rozšíření se vzhledem Material Design</translation>
 <translation id="421017592316736757">Pro přístup k souboru musíte být online.</translation>
 <translation id="421182450098841253">&amp;Zobrazit lištu záložek</translation>
 <translation id="4212108296677106246">Chcete certifikátu <ph name="CERTIFICATE_NAME" /> důvěřovat jako certifikační autoritě?</translation>
@@ -2253,6 +2268,7 @@ Všichni uživatelé se před pokračováním musejí odhlásit.</translation>
 <translation id="4215350869199060536">Jejda, název obsahuje zakázané znaky!</translation>
 <translation id="4215898373199266584">Psst! Příště by se vám mohl hodit anonymní režim (<ph name="INCOGNITO_MODE_SHORTCUT" />).</translation>
 <translation id="4218259925454408822">Přihlásit jiný účet</translation>
+<translation id="4219614746733932747">Pokud je tento příznak aktivován, Blink použije mechanismus přibližování, aby přizpůsobil obsah měřítku zařízení.</translation>
 <translation id="4220865787605972627">Povolí barevnou kalibraci displeje v případě, že displej tuto funkci podporuje.</translation>
 <translation id="4235200303672858594">Celá obrazovka</translation>
 <translation id="4235813040357936597">Přidat účet pro profil <ph name="PROFILE_NAME" /></translation>
@@ -2304,6 +2320,7 @@ Všichni uživatelé se před pokračováním musejí odhlásit.</translation>
 <translation id="4299729908419173967">portugalština (Brazílie)</translation>
 <translation id="4301786491084298653">Zakázat v doméně <ph name="DOMAIN" /></translation>
 <translation id="4304224509867189079">Přihlásit se</translation>
+<translation id="430714521864499800">Aktivuje experimentální implementaci direktivy Cache-Control: stale-while-revalidate. Tato direktiva serverům umožňuje určit, u kterých zdrojů lze z důvodu zlepšení latence provést opětovné ověření na pozadí.</translation>
 <translation id="4307281933914537745">Další informace o obnovení systému</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> kB (<ph name="NUM_KILOBYTES_LIVE" /> kB aktivních)</translation>
 <translation id="431076611119798497">&amp;Podrobnosti</translation>
@@ -2605,6 +2622,7 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="4809190954660909198">Nové fakturační údaje...</translation>
 <translation id="480990236307250886">Otevřít domovskou stránku</translation>
 <translation id="4811502511369621968">Neplatná e-mailová adresa. Zkontrolujte zadaný údaj a zkuste to znovu.</translation>
+<translation id="4812632551187706935">Připojení se nepodařilo inicializovat</translation>
 <translation id="4813345808229079766">Spojení</translation>
 <translation id="4813512666221746211">Chyba sítě</translation>
 <translation id="4816492930507672669">Přizpůsobit na stránku</translation>
@@ -3236,6 +3254,7 @@ Když je tato možnost aktivována, element document.scrollingElement odpovídá
 <translation id="5725124651280963564">Chcete-li generovat klíč pro adresu <ph name="HOST_NAME" />, přihlaste se prosím do zařízení<ph name="TOKEN_NAME" />.</translation>
 <translation id="5725199926572598591">DirectWrite</translation>
 <translation id="572525680133754531">Vykreslí ohraničení kolem složených vykreslených vrstev, čímž pomáhá při ladění a zkoumání skládání vrstev.</translation>
+<translation id="5726521882516480114">Aktivuje vykreslování prvků canvas 2D pomocí grafického procesoru namísto softwarového vykreslování.</translation>
 <translation id="5727728807527375859">Rozšíření, aplikace nebo motivy mohou poškodit váš počítač. Chcete pokračovat?</translation>
 <translation id="5729712731028706266">&amp;Zobrazit</translation>
 <translation id="5729996640881880439">Je nám líto, kód této chyby nelze zobrazit.</translation>
@@ -3277,9 +3296,11 @@ Když je tato možnost aktivována, element document.scrollingElement odpovídá
 <translation id="5773733305264798510">Deaktivovat funkci Delay Agnostic AEC v rozhraní WebRTC</translation>
 <translation id="5774295353725270860">Otevřít aplikaci Soubory</translation>
 <translation id="5774515636230743468">Manifest:</translation>
+<translation id="5776006986202016118">Web žádá o následující připojení:</translation>
 <translation id="577624874850706961">Prohledávat cookie</translation>
 <translation id="5778550464785688721">Úplná kontrola zařízení MIDI</translation>
 <translation id="5780066559993805332">(Nejlepší)</translation>
+<translation id="5780973441651030252">Priorita procesu</translation>
 <translation id="5783221160790377646">Z důvodu chyby se vytváření dozorovaného uživatele nezdařilo. Zkuste to prosím znovu později.</translation>
 <translation id="57838592816432529">Ztlumit</translation>
 <translation id="5785756445106461925">Tato stránka obsahuje ještě další nezabezpečené zdroje. Tyto zdroje budou během přenosu moci zobrazit jiní uživatelé a případní útočníci je mohou upravit a změnit tak vzhled stránky.</translation>
@@ -3410,6 +3431,7 @@ Když je tato možnost aktivována, element document.scrollingElement odpovídá
 <translation id="5979421442488174909">&amp;Přeložit do jazyka <ph name="LANGUAGE" /></translation>
 <translation id="5981759340456370804">Statistiky pro experty</translation>
 <translation id="5982621672636444458">Možnosti řazení</translation>
+<translation id="598419517516225249">Aktivovat direktivu mezipaměti stale-while-revalidate</translation>
 <translation id="5984222099446776634">Nedávno navštívené</translation>
 <translation id="5984814259619230127">Vyhledávání zařízení pomocí rozhraní Bluetooth Low Energy pro Smart Lock</translation>
 <translation id="5986245990306121338">Je-li tento příznak aktivován, zobrazí se přepínač karet i v případě, že v nastavení bude zapnuta možnost Sloučit karty a aplikace.</translation>
@@ -3488,6 +3510,7 @@ Některé funkce nemusí být dostupné. Zkontrolujte, zda profil existuje a zda
 <translation id="6102473941787693058">Aktivovat přihlášení k hlášení neplatných řetězců certifikátů TLS/SSL</translation>
 <translation id="6102988872254107946">Je možné, že jste web v minulosti navštívili, avšak nyní není bezpečný. Služba Bezpečné prohlížení Google na webu <ph name="SITE" /> nedávno <ph name="BEGIN_LINK" />zjistila malware<ph name="END_LINK" />. Někdy mohou být malwarem nakaženy i weby, které jsou obvykle bezpečné.</translation>
 <translation id="6103681770816982672">Upozornění: přepínáte na kanál pro vývojáře</translation>
+<translation id="6103830523912109737">Aktivovat rozhraní Input IME API</translation>
 <translation id="6105158702728922449">Použití vaší kamery a mikrofonu</translation>
 <translation id="6107012941649240045">Vydán pro</translation>
 <translation id="6107079717483424262">Rozpoznat váš hlas, pokud řeknete „Ok Google“</translation>
@@ -3544,6 +3567,7 @@ Některé funkce nemusí být dostupné. Zkontrolujte, zda profil existuje a zda
 <translation id="6198252989419008588">Změnit kód PIN</translation>
 <translation id="6199287473458249703">Hardwarové dekódování videa WebRTC</translation>
 <translation id="6199801702437275229">Čeká se na informace o volném místě...</translation>
+<translation id="6203030746557259519">Virtuální displej</translation>
 <translation id="620329680124578183">Nenačítat (doporučeno)</translation>
 <translation id="6204930791202015665">Zobrazit...</translation>
 <translation id="6205710420833115353">Některé operace trvají neočekávaně dlouho. Chcete je zrušit?</translation>
@@ -3574,6 +3598,7 @@ Některé funkce nemusí být dostupné. Zkontrolujte, zda profil existuje a zda
 <translation id="6251870443722440887">Popisovače – GDI</translation>
 <translation id="6251889282623539337">Smluvní podmínky služby <ph name="DOMAIN" /></translation>
 <translation id="6251924700383757765">Zásady ochrany soukromí</translation>
+<translation id="6253586523465486793">Vynutí, aby po přijetí žádosti o obnovení proběhlo opětovné načtení bez ověření (pokud je tento příznak deaktivován, obvykle probíhá běžné načtení s ověřením mezipaměti).</translation>
 <translation id="6254503684448816922">Ohrožení bezpečnosti klíče</translation>
 <translation id="6259104249628300056">Rozpoznávat zařízení v místní síti</translation>
 <translation id="6263082573641595914">Verze CA Microsoft</translation>
@@ -3592,6 +3617,7 @@ Některé funkce nemusí být dostupné. Zkontrolujte, zda profil existuje a zda
 <translation id="6276301056778294989">Zkontrolujte, zda se na zařízení zobrazuje stejný kód.</translation>
 <translation id="6277105963844135994">Vypršel časový limit sítě</translation>
 <translation id="6277518330158259200">&amp;Pořídit snímek obrazovky</translation>
+<translation id="6279183038361895380">Kurzor zobrazíte stisknutím klávesy |<ph name="ACCELERATOR" />|</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{Nová tiskárna v síti}few{Nové tiskárny v síti}many{Nové tiskárny v síti}other{Nové tiskárny v síti}}</translation>
 <translation id="6285395082104474418">Na stavovém panelu se zobrazuje aktuální stav sítě a baterie a další informace.</translation>
 <translation id="6286684120317096255">Využití dat je měřeno</translation>
@@ -3646,12 +3672,14 @@ Některé funkce nemusí být dostupné. Zkontrolujte, zda profil existuje a zda
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6380143666419481200">Přijmout a pokračovat</translation>
 <translation id="6380224340023442078">Nastavení obsahu...</translation>
+<translation id="6383194710567510941">Umožňuje aktivovat rozhraní chrome.input.ime API.</translation>
 <translation id="6384275966486438344">Změňte nastavení vyhledávání na: <ph name="SEARCH_HOST" /></translation>
 <translation id="6390799748543157332">Stránky, které otevřete v tomto okně, nebudou uvedeny v historii prohlížeče a nezanechají v počítači po zavření všech oken hosta žádné stopy, např. soubory cookie. Všechny stažené soubory však budou zachovány.</translation>
 <translation id="6391538222494443604">Vstupní adresář musí existovat.</translation>
 <translation id="639210578006174481">Experimentální Spouštěč aplikací</translation>
 <translation id="6394627529324717982">Čárka</translation>
 <translation id="6395423953133416962">Odesílat <ph name="BEGIN_LINK1" />informace o systému<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />metriky<ph name="END_LINK2" /></translation>
+<translation id="6395612639278079800">Když uživatel otevře návrh ze stránky Nová karta a návrh už je otevřen na některé kartě, přepne se na tuto kartu (návrh se nebude načítat na nové kartě).</translation>
 <translation id="6397363302884558537">Přestat mluvit</translation>
 <translation id="6397592254427394018">Otevřít všechny záložky v &amp;anonymním okně</translation>
 <translation id="6398765197997659313">Ukončit režim celé obrazovky</translation>
@@ -3751,6 +3779,7 @@ Některé funkce nemusí být dostupné. Zkontrolujte, zda profil existuje a zda
 <translation id="6527303717912515753">Sdílet</translation>
 <translation id="6528546217685656218">Soukromý klíč tohoto klientského certifikátu chybí nebo je neplatný.</translation>
 <translation id="653019979737152879">Synchronizace souboru <ph name="FILE_NAME" />...</translation>
+<translation id="6534583978616527129">Inicializace připojení</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Poznámka:<ph name="END_BOLD" /> Tuto možnost aktivujte pouze v případě, pokud máte jistotu, že to chcete udělat, nebo pokud jste k tomu byli vyzváni. Shromažďování dat může zhoršit výkon.</translation>
 <translation id="654233263479157500">Vyřešit chyby v navigaci pomocí webové služby</translation>
 <translation id="6545834809683560467">Používat službu předpovídání, která pomáhá dokončovat vyhledávací dotazy a adresy URL zadávané do adresního řádku nebo do vyhledávacího pole spouštěče aplikací</translation>
@@ -3777,6 +3806,7 @@ Některé funkce nemusí být dostupné. Zkontrolujte, zda profil existuje a zda
 <translation id="6567688344210276845">Nelze načíst ikonu „<ph name="ICON" />“ pro akci stránky.</translation>
 <translation id="6569050677975271054">Pouze statický seznam zakázaných</translation>
 <translation id="6571070086367343653">Upravit platební kartu</translation>
+<translation id="6573486901998401772">Režim celé obrazovky ukončíte stisknutím klávesy |<ph name="ACCELERATOR" />|</translation>
 <translation id="657402800789773160">&amp;Načíst tuto stránku znovu</translation>
 <translation id="6575134580692778371">Není konfigurováno</translation>
 <translation id="6575251558004911012">Zeptat se, když web požaduje přístup k vaší kameře (doporučeno)</translation>
@@ -3949,6 +3979,7 @@ Některé funkce nemusí být dostupné. Zkontrolujte, zda profil existuje a zda
 <translation id="6860427144121307915">Otevřít na kartě</translation>
 <translation id="6862635236584086457">Všechny soubory uložené v této složce se automaticky zálohují online</translation>
 <translation id="6865313869410766144">Automatické vyplňování formulářů</translation>
+<translation id="6865319096921627602">Aktivovat sjednocený kanál médií pro Android</translation>
 <translation id="6867678160199975333">Přepnout na profil <ph name="NEW_PROFILE_NAME" /></translation>
 <translation id="6869402422344886127">Označené zaškrtávací políčko</translation>
 <translation id="6870130893560916279">Ukrajinská klávesnice</translation>
@@ -4060,6 +4091,7 @@ Některé funkce nemusí být dostupné. Zkontrolujte, zda profil existuje a zda
 <translation id="7022562585984256452">Domovská stránka byla nastavena.</translation>
 <translation id="702373420751953740">Verze PRL:</translation>
 <translation id="7024867552176634416">Vyberte vyměnitelné úložné zařízení, které chcete použít.</translation>
+<translation id="7025036625303002400">Zdá se, že dozorovaný uživatel s tímto jménem již existuje.</translation>
 <translation id="7025190659207909717">Správa mobilních datových služeb</translation>
 <translation id="7025325401470358758">Další podokno</translation>
 <translation id="7027125358315426638">Název databáze:</translation>
@@ -4256,6 +4288,7 @@ Některé funkce nemusí být dostupné. Zkontrolujte, zda profil existuje a zda
 <translation id="734303607351427494">Spravovat vyhledávače...</translation>
 <translation id="7345706641791090287">Potvrďte heslo</translation>
 <translation id="734651947642430719">Metoda zadávání tamilštiny (InScript)</translation>
+<translation id="7346909386216857016">OK, rozumím</translation>
 <translation id="7347751611463936647">Chcete-li použít toto rozšíření, zadejte klíčové slovo <ph name="EXTENSION_KEYWORD" />, stiskněte klávesu Tab a poté začněte psát příslušný příkaz nebo vyhledávaný výraz.</translation>
 <translation id="7348093485538360975">Softwarová klávesnice</translation>
 <translation id="7348749398828259943">Americká mezinárodní klávesnice s rozložením Workman</translation>
@@ -4387,6 +4420,7 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="7530016656428373557">Rychlost vybíjení ve wattech</translation>
 <translation id="7531316138346596025">Výjimky pro pluginy</translation>
 <translation id="7532099961752278950">Nastaveno aplikací:</translation>
+<translation id="7536709149194614609">Restartujte zařízení a zkuste to znovu později.</translation>
 <translation id="7540972813190816353">Při kontrole aktualizací došlo k chybě: <ph name="ERROR" /></translation>
 <translation id="7541121857749629630">Výjimky obrázků</translation>
 <translation id="7543104066686362383">Aktivovat v tomto zařízení <ph name="IDS_SHORT_PRODUCT_NAME" /> funkce ladění</translation>
@@ -4600,6 +4634,7 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="7859704718976024901">Historie procházení</translation>
 <translation id="7861215335140947162">&amp;Stažené soubory</translation>
 <translation id="7864539943188674973">Vypnout Bluetooth</translation>
+<translation id="7868891395842935202">Aktivuje experimentální platformu ke kontrole přístupu k experimentálním rozhraním API.</translation>
 <translation id="7870790288828963061">Nebyly nalezeny žádné novější verze terminálových aplikací. Aktualizaci není třeba provést. Vyjměte jednotku USB.</translation>
 <translation id="787150342916295244">Skenování platebních karet</translation>
 <translation id="7874357055309047713">Vždy spouštět na všech webech</translation>
@@ -4694,6 +4729,7 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="79962507603257656">Stav stahování v centru oznámení</translation>
 <translation id="7997089631332811254">(Vyžaduje |restart| Chromu)</translation>
 <translation id="7997479212858899587">Identita:</translation>
+<translation id="7997826902155442747">Priorita procesu</translation>
 <translation id="7999087758969799248">Standardní metoda zadávání</translation>
 <translation id="7999229196265990314">Byly vytvořeny následující soubory:
 
@@ -4923,6 +4959,7 @@ Výpočet času zbývajícího do úplného nabití</translation>
 <translation id="8309505303672555187">Vyberte síť:</translation>
 <translation id="8312871300878166382">Vložit do složky</translation>
 <translation id="8314013494437618358">Postupné skládání</translation>
+<translation id="8314576811984836978">Experimentální platforma</translation>
 <translation id="8319414634934645341">Rozšířené použití klíče</translation>
 <translation id="8322814362483282060">Přístup této stránky k vašemu mikrofonu je zablokován.</translation>
 <translation id="8326478304147373412">PKCS #7, řetězec certifikátu</translation>
@@ -5192,6 +5229,7 @@ Výpočet času zbývajícího do úplného nabití</translation>
 <translation id="8713979477561846077">Umožňuje aktivovat automatické opravy vstupu fyzické klávesnice pro anglickou (USA) klávesnici, které během psaní na fyzické klávesnici mohou zobrazovat návrhy.</translation>
 <translation id="871476437400413057">hesla uložená Googlem</translation>
 <translation id="8714838604780058252">Grafika na pozadí</translation>
+<translation id="8716065142695381595">Aktivuje sjednocený kanál médií pro Android (týká se médií určených pro platformu Android a pro počítače).</translation>
 <translation id="8722421161699219904">Mezinárodní americká klávesnice</translation>
 <translation id="872451400847464257">Upravit vyhledávač</translation>
 <translation id="8724859055372736596">Zobrazit ve &amp;složce</translation>
@@ -5252,6 +5290,7 @@ Výpočet času zbývajícího do úplného nabití</translation>
 <translation id="8800420788467349919">Hlasitost: <ph name="PRECENTAGE" /> %</translation>
 <translation id="8803496343472038847">Ruská fonetická klávesnice</translation>
 <translation id="8804398419035066391">Komunikovat se spolupracujícími weby</translation>
+<translation id="8807208382546568628">Použít přiblížení nástroje Blink k implementaci měřítka zařízení</translation>
 <translation id="8807632654848257479">Stabilní</translation>
 <translation id="8808478386290700967">Obchod Chrome</translation>
 <translation id="8811462119186190367">Jazyk prohlížeče Chrome se po synchronizaci nastavení změnil z jazyka <ph name="FROM_LOCALE" /> na jazyk <ph name="TO_LOCALE" />.</translation>
@@ -5494,6 +5533,8 @@ Výpočet času zbývajícího do úplného nabití</translation>
 <translation id="916745092148443205">Zvýraznění klepnutím</translation>
 <translation id="9169496697824289689">Zobrazit klávesové zkratky</translation>
 <translation id="9169664750068251925">Blokovat vždy na tomto webu</translation>
+<translation id="9170252085753012166">Pokud tento příznak povolíte, adresa chrome://extensions/ načte stránku rozšíření se vzhledem Material Design.</translation>
+<translation id="9170258315335344149">Přesměrovat návrhy na stránce Nová karta na stávající kartu</translation>
 <translation id="9170848237812810038">Z&amp;pět</translation>
 <translation id="9170884462774788842">Jiný program ve vašem počítači nainstaloval motiv, který může měnit funkce Chromu.</translation>
 <translation id="9177499212658576372">V současnosti jste připojeni k síti typu <ph name="NETWORK_TYPE" />.</translation>

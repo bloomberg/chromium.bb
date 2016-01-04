@@ -6,6 +6,7 @@
 <translation id="1021311941847921177">Η συντόμευση για εναλλαγή στην επόμενη μέθοδο εισαγωγής άλλαξε. Χρησιμοποιήστε το <ph name="NEW_SHORTCUT" /> αντί για το <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Αυτόματη απόκρυψη ραφιού</translation>
 <translation id="1195412055398077112">υπερσάρωση</translation>
+<translation id="1252999807265626933">Φόρτιση από <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Το πληκτρολόγιο οθόνης είναι απενεργοποιημένο</translation>
 <translation id="1272079795634619415">Διακοπή</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -20,6 +21,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Λειτουργία εκκίνησης</translation>
 <translation id="15373452373711364">Μεγάλος δείκτης ποντικιού</translation>
+<translation id="1550523713251050646">Κάντε κλικ για περισσότερες επιλογές</translation>
 <translation id="1602076796624386989">Ενεργοποίηση δεδομένων κινητής τηλεφωνίας</translation>
 <translation id="1621499497873603021">Χρόνος που απομένει μέχρι να αδειάσει η μπαταρία, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Συσκευή Chrome</translation>
@@ -78,6 +80,7 @@
 <translation id="3147142846278915599">Εφαρμογή εκκίνησης (συγχρονισμός εφαρμογών…)</translation>
 <translation id="3157169093162779309">Ενεργοποίηση κλειδώματος περιστροφής</translation>
 <translation id="3294437725009624529">Επισκέπτης</translation>
+<translation id="3371140690572404006">Συσκευή USB-C (δεξιά μπροστινή θύρα)</translation>
 <translation id="3445925074670675829">Συσκευή USB-C</translation>
 <translation id="3473479545200714844">Μεγεθυντής οθόνης</translation>
 <translation id="3573179567135747900">Αλλάξτε το πάλι σε "<ph name="FROM_LOCALE" />" (απαιτείται επανεκκίνηση)</translation>
@@ -104,6 +107,7 @@
 <translation id="3963445509666917109">Ηχείο (Εσωτερικό)</translation>
 <translation id="3967919079500697218">Η δυνατότητα λήψης στιγμιότυπων οθόνης έχει απενεργοποιηθεί από το διαχειριστή σας.</translation>
 <translation id="397105322502079400">Υπολογισμός…</translation>
+<translation id="3995138139523574647">Συσκευή USB-C (πίσω δεξιά θύρα)</translation>
 <translation id="4053612967614057854">Απενεργοποίηση πληκτρολογίου οθόνης</translation>
 <translation id="412065659894267608"><ph name="HOUR" />ω <ph name="MINUTE" />λ μέχρι να ολοκληρωθεί η φόρτιση</translation>
 <translation id="4250680216510889253">Όχι</translation>
@@ -157,8 +161,10 @@
 <translation id="6047696787498798094">Η κοινή χρήση οθόνης θα διακοπεί κατά την εναλλαγή σε άλλον χρήστη. Θέλετε να συνεχίσετε;</translation>
 <translation id="6062360702481658777">Θα αποσυνδεθείτε αυτόματα σε <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Ο υπολογιστής σας μπορεί να εντοπιστεί από κοντινές συσκευές Bluetooth και θα εμφανίζεται ως "<ph name="NAME" />" με διεύθυνση <ph name="ADDRESS" /></translation>
+<translation id="6106745654298855237">Φόρτιση <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Εμφάνιση πληκτρολογίου οθόνης</translation>
 <translation id="6165508094623778733">Μάθετε περισσότερα</translation>
+<translation id="6203030746557259519">Εικονική οθόνη</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">Πατήστε Control Shift Q δύο φορές για έξοδο.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> περιστράφηκε σε <ph name="ROTATION" /></translation>
@@ -203,6 +209,7 @@
 <translation id="7573962313813535744">Λειτουργία βάσης σύνδεσης</translation>
 <translation id="7593891976182323525">Search ή Shift</translation>
 <translation id="7649070708921625228">Βοήθεια</translation>
+<translation id="7692480393933218409">Φόρτιση συνδεδεμένων συσκευών USB-C</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> και <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Η γλώσσα του άλλαξε από "<ph name="FROM_LOCALE" />" σε "<ph name="TO_LOCALE" />" μετά τον συγχρονισμό των ρυθμίσεών σας.</translation>
 <translation id="785750925697875037">Προβολή λογαριασμού κινητής τηλεφωνίας</translation>

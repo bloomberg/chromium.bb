@@ -391,6 +391,38 @@
       이 설정을 사용하면 인터넷 사용 기록이 저장되지 않으며 탭 동기화도 사용 중지됩니다.
 
       이 설정을 사용 중지하거나 설정하지 않으면 인터넷 사용 기록이 저장됩니다.</translation>
+<translation id="2424023834246613232"><ph name="PRODUCT_NAME" /> 기본 프린터 선택 규칙을 재정의합니다.
+
+      이 정책은 <ph name="PRODUCT_NAME" />의 기본 프린터 선택 규칙을 결정하며, 프로필로 인쇄 기능을 처음 사용할 때 적용됩니다.
+
+      이 정책을 설정하면 <ph name="PRODUCT_NAME" />에서 지정한 속성과 모두 일치하는 프린터를 찾으려고 시도하며, 찾은 프린터를 기본 프린터로 선택합니다. 정책과 일치하는 첫 번째 프린터가 선택되며, 일치하는 프린터가 여러 개인 경우 프린터가 발견되는 순서에 따라 일치하는 프린터라면 어떤 것이든 선택될 수 있습니다.
+
+      이 정책이 설정되어 있지 않거나 시간 내에 일치하는 프린터를 찾지 못한 경우 내장 PDF 프린터가 기본으로 설정되며, PDF 프린터를 사용할 수 없는 경우 프린터가 선택되지 않습니다.
+
+      값은 다음 스키마에 따라 JSON 객체로 파싱됩니다.
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Regular expression to match printer id.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regular expression to match printer display name.",
+            "type": "string"
+          }
+        }
+      }
+
+      <ph name="CLOUD_PRINT_NAME" />에 연결된 프린터는 <ph name="PRINTER_TYPE_CLOUD" />로 간주되며, 나머지 프린터는 <ph name="PRINTER_TYPE_LOCAL" />로 분류됩니다.
+      필드가 생략된 경우 모든 값이 가능하다는 의미입니다. 예를 들어 연결을 지정하지 않으면 인쇄 미리보기에서 로컬과 클라우드 프린터를 모두 검색합니다.
+      정규식 패턴은 자바스크립트 RegExp 구문을 따라야 하며, 검색결과는 대소문자를 구분합니다.</translation>
 <translation id="2426782419955104525"><ph name="PRODUCT_NAME" />의 순간 검색 기능을 사용하도록 설정하고 사용자가 이 설정을 변경하지 못하게 합니다.
 
       이 기능을 사용하도록 설정하면 <ph name="PRODUCT_NAME" /> 순간 검색이 활성화됩니다.
@@ -566,6 +598,7 @@
       TLS 도메인 바인딩 인증서 확장 프로그램 사용 설정 여부를 지정합니다.
 
       이 설정은 TLS 도메인 바인딩 인증서를 테스트용으로 설정하는 데 사용됩니다. 이 실험적 설정은 향후 삭제됩니다.</translation>
+<translation id="2957513448235202597"><ph name="HTTP_NEGOTIATE" /> 인증의 계정 유형</translation>
 <translation id="2959898425599642200">프록시 우회 규칙</translation>
 <translation id="2960691910306063964">원격 액세스 호스트에서 PIN을 사용하지 않는 인증을 사용 또는 사용 중지합니다.</translation>
 <translation id="2976002782221275500">배터리 전원으로 실행할 때 사용자 입력이 없어서 화면이 어둡게 되기까지 걸리는 시간을 지정합니다.
@@ -1802,6 +1835,9 @@
           이 정책이 설정되어 있지 않으면 기본 설정된 시간이 적용됩니다.
 
           정책 값은 밀리초 단위로 지정해야 하며, 값은 유휴 지연 시간보다 작거나 같도록 잘립니다.</translation>
+<translation id="7329968046053403405"><ph name="HTTP_NEGOTIATE" /> 인증(예: Kerberos 인증)을 지원하는 Android 인증 앱에서 제공하는 계정의 계정 유형을 지정합니다. 이 정보는 인증 앱 제공업체에서 확인할 수 있습니다. 자세한 내용은 https://goo.gl/hajyfN 페이지를 참조하세요.
+
+          설정하지 않으면 <ph name="HTTP_NEGOTIATE" /> 인증이 Android에서 사용 중지됩니다.</translation>
 <translation id="7331962793961469250">True로 설정하면 Chrome 웹 스토어의 앱 홍보가 새 탭 페이지에 표시되지 않습니다.
 
       이 옵션을 False로 설정하거나 설정하지 않으면 Chrome 웹 스토어의 앱 홍보가 새 탭 페이지에 표시됩니다.</translation>
@@ -1827,6 +1863,9 @@
 <translation id="7417972229667085380">프레젠테이션 모드에서 유휴 지연 시간이 조정되는 비율(지원 중단됨)</translation>
 <translation id="7421483919690710988">미디어 디스크 캐시 크기 설정(바이트)</translation>
 <translation id="7424751532654212117">사용 중지된 플러그인 목록에 대한 예외 목록</translation>
+<translation id="7426112309807051726"><ph name="TLS_FALSE_START" /> 최적화를 사용 중지할지 여부를 지정합니다. 이 정책은 과거의 여러 가지 이유로 인해 DisableSSLRecordSplitting라고 이름 붙여졌습니다.
+
+      이 정책이 설정되지 않거나 false로 설정되면 <ph name="TLS_FALSE_START" />가 사용됩니다. 이 정책이 true로 설정되면 <ph name="TLS_FALSE_START" />가 사용 중지됩니다.</translation>
 <translation id="7433714841194914373">순간 검색 사용</translation>
 <translation id="7443616896860707393">교차 도메인 HTTP 기본 인증 프롬프트</translation>
 <translation id="7468416082528382842">Windows 레지스트리 위치:</translation>
@@ -2104,6 +2143,24 @@
 <translation id="8519264904050090490">관리 사용자 직접 예외 URL</translation>
 <translation id="8544375438507658205"><ph name="PRODUCT_FRAME_NAME" />의 기본 HTML 렌더러</translation>
 <translation id="8549772397068118889">콘텐츠 팩 외부 사이트를 방문할 때 표시되는 경고입니다.</translation>
+<translation id="855339549837475534">Chromium과 Chrome은 같은 정책 조합을
+      지원합니다. 이 문서는 출시되지 않은 소프트웨어 버전(즉, '지원됨' 항목은
+      출시되지 않은 버전을 가리킴)을 대상으로 하는 정책을 포함할 수 있으며
+      그러한 정책은 사전 고지 없이 변경되거나
+      삭제될 수 있습니다.
+
+      이러한 정책은 조직 내부용 <ph name="PRODUCT_NAME" />
+      의 인스턴스를 설정할 때 사용하기 위한
+      것입니다. 조직 외부(예: 공개 배포 프로그램)에서
+      해당 정책을 사용하면 멀웨어로 간주되어 Google 및
+      바이러스 백신 공급업체에 의해 멀웨어로 지정될 수 있습니다.
+
+      이러한 설정은 수동으로 지정할 필요가 없습니다. 사용이 간편한
+      Windows, Mac, Linux용 템플릿을 <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />에서 다운로드하여 사용할 수 있습니다.
+
+      Windows에서 정책을 설정하기 위해 추천되는 방법은 GPO를
+      통하는 것입니다. 하지만 Active Directory 도메인에 연결된 Windows
+      인스턴스에서는 레지스트리를 통한 정책 프로비저닝이 아직 지원됩니다.</translation>
 <translation id="8566842294717252664">새 탭 페이지 및 앱 런처에서 웹 스토어 숨기기</translation>
 <translation id="8587229956764455752">새로운 사용자 계정 생성 허용</translation>
 <translation id="8614804915612153606">자동 업데이트 사용 안 함</translation>

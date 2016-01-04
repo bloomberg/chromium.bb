@@ -6,6 +6,7 @@
 <translation id="1021311941847921177">다음 입력 방법으로 전환하는 단축키가 변경되었습니다. <ph name="OLD_SHORTCUT" /> 대신 <ph name="NEW_SHORTCUT" />을(를) 사용하세요.</translation>
 <translation id="112308213915226829">실행기 자동 숨김</translation>
 <translation id="1195412055398077112">오버스캔</translation>
+<translation id="1252999807265626933"><ph name="POWER_SOURCE" />에서 충전 중</translation>
 <translation id="1270290102613614947">터치 키보드 사용 중지됨</translation>
 <translation id="1272079795634619415">중지</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" />(<ph name="ANNOTATION" />)</translation>
@@ -20,6 +21,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" />(HDMI/DP)</translation>
 <translation id="1510238584712386396">실행기</translation>
 <translation id="15373452373711364">큰 마우스 커서</translation>
+<translation id="1550523713251050646">더 많은 옵션을 확인하려면 클릭하세요.</translation>
 <translation id="1602076796624386989">모바일 데이터 사용</translation>
 <translation id="1621499497873603021">남은 배터리 사용 시간은 <ph name="TIME_LEFT" />입니다.</translation>
 <translation id="164969095109328410">Chrome 기기</translation>
@@ -78,6 +80,7 @@
 <translation id="3147142846278915599">런처(앱 동기화 중...)</translation>
 <translation id="3157169093162779309">회전 잠금 사용</translation>
 <translation id="3294437725009624529">손님</translation>
+<translation id="3371140690572404006">USB-C 기기(우측 전면 포트)</translation>
 <translation id="3445925074670675829">USB-C 기기</translation>
 <translation id="3473479545200714844">화면 돋보기</translation>
 <translation id="3573179567135747900">'<ph name="FROM_LOCALE" />'(으)로 다시 변경(다시 시작해야 함)</translation>
@@ -104,6 +107,7 @@
 <translation id="3963445509666917109">스피커(내부)</translation>
 <translation id="3967919079500697218">관리자가 스크린샷 캡쳐 기능을 사용 중지했습니다.</translation>
 <translation id="397105322502079400">계산 중...</translation>
+<translation id="3995138139523574647">USB-C 기기(우측 후면 포트)</translation>
 <translation id="4053612967614057854">터치 키보드 사용 중지</translation>
 <translation id="412065659894267608">충전 완료까지 <ph name="HOUR" />시간 <ph name="MINUTE" />분 남음</translation>
 <translation id="4250680216510889253">아니요</translation>
@@ -157,8 +161,10 @@
 <translation id="6047696787498798094">다른 사용자로 전환하면 화면 공유가 중단됩니다. 계속하시겠습니까?</translation>
 <translation id="6062360702481658777"><ph name="LOGOUT_TIME_LEFT" /> 후 자동으로 로그아웃됩니다.</translation>
 <translation id="607652042414456612">내 컴퓨터가 근처 블루투스 기기에서 검색할 수 있도록 설정되어 있으며 주소(<ph name="ADDRESS" />)와 함께 '<ph name="NAME" />'(으)로 표시됩니다.</translation>
+<translation id="6106745654298855237"><ph name="POWER_SOURCE" /> 충전 중</translation>
 <translation id="615957422585914272">터치 키보드 표시</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
+<translation id="6203030746557259519">가상 디스플레이</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">종료하려면 Ctrl+Shift+Q를 두 번 누릅니다.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" />(이)가 <ph name="ROTATION" />(으)로 회전되었습니다.</translation>
@@ -203,6 +209,7 @@
 <translation id="7573962313813535744">고정 모드</translation>
 <translation id="7593891976182323525">검색 또는 Shift 키</translation>
 <translation id="7649070708921625228">도움말</translation>
+<translation id="7692480393933218409">연결된 USB-C 기기 충전 중</translation>
 <translation id="7814236020522506259"><ph name="HOUR" />시간 <ph name="MINUTE" />분</translation>
 <translation id="7823564328645135659">설정을 동기화한 뒤 Chrome의 언어가 '<ph name="FROM_LOCALE" />'에서 '<ph name="TO_LOCALE" />'(으)로 변경되었습니다.</translation>
 <translation id="785750925697875037">모바일 계정 표시</translation>

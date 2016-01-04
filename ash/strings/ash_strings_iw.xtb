@@ -6,6 +6,7 @@
 <translation id="1021311941847921177">מקש הקיצור המשמש למעבר לשיטת הקלט הבאה השתנה. השתמש ב-<ph name="NEW_SHORTCUT" /> במקום ב-<ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">הסתרה אוטומטית של המדף</translation>
 <translation id="1195412055398077112">סריקת יתר</translation>
+<translation id="1252999807265626933">טעינה מ-<ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">המקלדת שמופיעה במסך מושבתת</translation>
 <translation id="1272079795634619415">הפסק</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" />‏ (<ph name="ANNOTATION" />)</translation>
@@ -20,6 +21,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">מפעיל</translation>
 <translation id="15373452373711364">סמן עכבר גדול</translation>
+<translation id="1550523713251050646">לחץ לקבלת אפשרויות נוספות</translation>
 <translation id="1602076796624386989">הפעל נתונים לנייד</translation>
 <translation id="1621499497873603021">הזמן שנותר עד להתרוקנות הסוללה, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">‏מכשיר Chrome</translation>
@@ -78,6 +80,7 @@
 <translation id="3147142846278915599">מפעיל היישומים (מסנכרן יישומים...)</translation>
 <translation id="3157169093162779309">הפעל נעילת סיבוב</translation>
 <translation id="3294437725009624529">אורח</translation>
+<translation id="3371140690572404006">‏מכשיר עם יציאת USB-C (יציאה ימנית-קדמית)</translation>
 <translation id="3445925074670675829">‏מכשיר עם יציאת USB-C</translation>
 <translation id="3473479545200714844">מגדיל התצוגה</translation>
 <translation id="3573179567135747900">שנה בחזרה ל"<ph name="FROM_LOCALE" />" (דורש הפעלה מחדש)</translation>
@@ -104,6 +107,7 @@
 <translation id="3963445509666917109">רמקול (פנימי)</translation>
 <translation id="3967919079500697218">היכולת לצלם צילומי מסך הושבתה על-ידי מנהל המערכת שלך.</translation>
 <translation id="397105322502079400">מחשב...</translation>
+<translation id="3995138139523574647">‏מכשיר עם יציאת USB-C (יציאה ימנית-אחורית)</translation>
 <translation id="4053612967614057854">השבת את המקלדת שמופיעה במסך</translation>
 <translation id="412065659894267608"><ph name="HOUR" /> שעות ו-<ph name="MINUTE" /> דקות עד לטעינה מלאה</translation>
 <translation id="4250680216510889253">לא</translation>
@@ -157,8 +161,10 @@
 <translation id="6047696787498798094">שיתוף המסך יפסיק ברגע שתעבור למשתמש אחר. האם ברצונך להמשיך?</translation>
 <translation id="6062360702481658777">תצא באופן אוטומטי בעוד <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">‏מכשירי Bluetooth קרובים יכולים לאתר את המחשב שלך, והוא יופיע כ-"<ph name="NAME" />" עם הכתובת <ph name="ADDRESS" /></translation>
+<translation id="6106745654298855237">טעינה של <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">הצג מקלדת במסך</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
+<translation id="6203030746557259519">תצוגה וירטואלית</translation>
 <translation id="6247708409970142803">%<ph name="PERCENTAGE" /></translation>
 <translation id="6248847161401822652">‏לחץ פעמיים על Control Shift Q כדי לצאת.</translation>
 <translation id="6310121235600822547">בוצע סיבוב של <ph name="DISPLAY_NAME" /> אל <ph name="ROTATION" /></translation>
@@ -202,6 +208,7 @@
 <translation id="7573962313813535744">מצב מעוגן</translation>
 <translation id="7593891976182323525">‏חיפוש או Shift</translation>
 <translation id="7649070708921625228">עזרה</translation>
+<translation id="7692480393933218409">‏טעינת מכשירים מחוברים עם יציאת USB-C</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> ו-<ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">‏שפת Chrome השתנתה מ"<ph name="FROM_LOCALE" />" ל"<ph name="TO_LOCALE" />" לאחר סנכרון ההגדרות.</translation>
 <translation id="785750925697875037">הצג את חשבון הנייד</translation>

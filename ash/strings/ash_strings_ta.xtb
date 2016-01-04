@@ -6,6 +6,7 @@
 <translation id="1021311941847921177">அடுத்த உள்ளீட்டு முறைக்கு மாறுவதற்கான குறுக்குவழி மாற்றப்பட்டது.  <ph name="OLD_SHORTCUT" /> க்குப் பதிலாக <ph name="NEW_SHORTCUT" /> ஐப் பயன்படுத்தவும்.</translation>
 <translation id="112308213915226829">அடுக்கைத் தானாக மறை</translation>
 <translation id="1195412055398077112">ஓவர்ஸ்கேன்</translation>
+<translation id="1252999807265626933"><ph name="POWER_SOURCE" /> இலிருந்து சார்ஜ் செய்யப்படுகிறது</translation>
 <translation id="1270290102613614947">ஆன்ஸ்க்ரீன் விசைப்பலகை முடக்கப்பட்டது</translation>
 <translation id="1272079795634619415">நிறுத்து</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -20,6 +21,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">துவக்கி</translation>
 <translation id="15373452373711364">பெரிய மவுஸ் இடஞ்சுட்டி</translation>
+<translation id="1550523713251050646">மேலும் விருப்பங்களுக்குக் கிளிக் செய்யவும்</translation>
 <translation id="1602076796624386989">மொபைல் தரவை இயக்கு</translation>
 <translation id="1621499497873603021">இன்னும் <ph name="TIME_LEFT" /> இல் பேட்டரி காலியாகிவிடும்</translation>
 <translation id="164969095109328410">Chrome சாதனம்</translation>
@@ -78,6 +80,7 @@
 <translation id="3147142846278915599">துவக்கி (பயன்பாடுகளை ஒத்திசைக்கிறது...)</translation>
 <translation id="3157169093162779309">சுழற்றல் பூட்டை இயக்கு</translation>
 <translation id="3294437725009624529">விருந்தினர்</translation>
+<translation id="3371140690572404006">USB-C சாதனம் (வலது பக்கம் முன்னே இருக்கும் போர்ட்)</translation>
 <translation id="3445925074670675829">USB-C சாதனம்</translation>
 <translation id="3473479545200714844">திரை உருப்பெருக்கி</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" க்கு மீண்டும் மாற்று (மறுதொடக்கம் தேவை)</translation>
@@ -104,6 +107,7 @@
 <translation id="3963445509666917109">ஸ்பீக்கர் (உட்புறம்)</translation>
 <translation id="3967919079500697218">ஸ்கிரீன் ஷாட்டுகள் எடுக்கும் திறனை உங்கள் நிர்வாகி முடக்கியுள்ளார்.</translation>
 <translation id="397105322502079400">கணக்கிடுகிறது...</translation>
+<translation id="3995138139523574647">USB-C சாதனம் (வலது பக்கம் பின்னே இருக்கும் போர்ட்)</translation>
 <translation id="4053612967614057854">ஆன்ஸ்க்ரீன் விசைப்பலகையை முடக்கு</translation>
 <translation id="412065659894267608">முழுவதும் சார்ஜ் ஆகும் நேரம் - <ph name="HOUR" />ம <ph name="MINUTE" />நி</translation>
 <translation id="4250680216510889253">இல்லை</translation>
@@ -157,8 +161,10 @@
 <translation id="6047696787498798094">நீங்கள் வேறொரு பயனருக்கு மாறும்போது, திரைப் பகிர்வு நிறுத்தப்படும். தொடர விருப்பமா?</translation>
 <translation id="6062360702481658777"><ph name="LOGOUT_TIME_LEFT" /> இல் தானாகவே வெளியேற்றப்படுவீர்கள்.</translation>
 <translation id="607652042414456612">உங்கள் கணினி அருகிலுள்ள புளூடூத் சாதனங்களைக் கண்டறியக்கூடியது, மேலும் <ph name="ADDRESS" /> என்ற முகவரியுடன் "<ph name="NAME" />" என்ற பெயரில் தோன்றும்</translation>
+<translation id="6106745654298855237"><ph name="POWER_SOURCE" /> சார்ஜ் ஏற்றப்படுகிறது</translation>
 <translation id="615957422585914272">ஆன்-ஸ்கிரீன் விசைப்பலகையைக் காட்டு</translation>
 <translation id="6165508094623778733">மேலும் அறிக</translation>
+<translation id="6203030746557259519">விர்ச்சுவல் காட்சி</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">வெளியேற Control Shift Q ஐ இருமுறை அழுத்தவும்.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" /> ஆகச் சுழற்றப்பட்டது</translation>
@@ -203,6 +209,7 @@
 <translation id="7573962313813535744">டாக் செய்யப்பட்ட பயன்முறை</translation>
 <translation id="7593891976182323525">Search அல்லது Shift</translation>
 <translation id="7649070708921625228">உதவி</translation>
+<translation id="7692480393933218409">இணைக்கப்பட்ட USB-C சாதனங்களுக்குச் சார்ஜ் ஏற்றப்படுகிறது</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> மற்றும் <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">உங்கள் அமைப்புகளை ஒத்திசைத்த பிறகு, மொழியானது "<ph name="FROM_LOCALE" />" இலிருந்து "<ph name="TO_LOCALE" />" க்கு மாற்றப்பட்டுள்ளது.</translation>
 <translation id="785750925697875037">மொபைல் கணக்கைப் பார்க்கவும்</translation>

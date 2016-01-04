@@ -43,6 +43,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="225614027745146050">Vítejte</translation>
 <translation id="2316129865977710310">Ne, děkuji</translation>
 <translation id="2347108572062610441">Toto rozšíření změnilo stránku, která se zobrazí při spuštění prohlížeče Chromium.</translation>
+<translation id="2372704305038231957">32bitová verze prohlížeče Chromium nemusí fungovat správně, protože v tomto systému Linux již není podporována. Nainstalujte prosím 64bitovou verzi prohlížeče Chromium.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Momentálně probíhá stahování. Chcete stahování zrušit a ukončit prohlížeč Chromium?}few{Momentálně probíhají # stahování. Chcete stahování zrušit a ukončit prohlížeč Chromium?}many{Momentálně probíhá # stahování. Chcete stahování zrušit a ukončit prohlížeč Chromium?}other{Momentálně probíhá # stahování. Chcete stahování zrušit a ukončit prohlížeč Chromium?}}</translation>
 <translation id="2396765026452590966">Rozšíření <ph name="EXTENSION_NAME" /> změnilo stránku, která se zobrazí při spuštění prohlížeče Chromium.</translation>
 <translation id="2485422356828889247">Odinstalovat</translation>
@@ -151,6 +152,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="6485906693002546646">Synchronizujete obsah a nastavení prohlížeče Chromium s účtem <ph name="PROFILE_EMAIL" />. Chcete-li možnosti synchronizace upravit nebo Chromium používat bez účtu Google, navštivte <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Odinstalovat Chromium</translation>
 <translation id="6526111688217511984">Aby bylo možné stahovat soubory, Chromium potřebuje přístup k úložišti.</translation>
+<translation id="6584627348340620412">Budoucí 32bitové verze prohlížeče Chromium již tento systém Linux nebudou podporovat. Nainstalujte prosím 64bitovou verzi prohlížeče Chromium.</translation>
 <translation id="6593914713218535185">Prohlížeč Chromium nemusí fungovat správně, protože v tomto systému Linux již není podporován.</translation>
 <translation id="6637001341228460105">Prohlížeč Chromium potřebuje přístup k mikrofonu, aby jej mohl sdílet s těmito stránkami.</translation>
 <translation id="6638567566961868659">Záložky naleznete v nabídce Chromium nebo na liště záložek.</translation>

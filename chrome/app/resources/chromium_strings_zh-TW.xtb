@@ -41,6 +41,7 @@
 <translation id="225614027745146050">歡迎使用</translation>
 <translation id="2316129865977710310">不，謝謝</translation>
 <translation id="2347108572062610441">這個擴充功能已變更 Chromium 啟動時所顯示的網頁。</translation>
+<translation id="2372704305038231957">32 位元的 Chromium 已不適用於這種 Linux 系統，因此可能無法正常運作。請升級至 64 位元的 Chromium。</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{目前正在執行一項下載作業。您要取消下載並結束 Chromium 嗎？}other{目前正在執行 # 項下載作業。您要取消下載並結束 Chromium 嗎？}}</translation>
 <translation id="2396765026452590966">擴充功能「<ph name="EXTENSION_NAME" />」已變更 Chromium 啟動時所顯示的網頁。</translation>
 <translation id="2485422356828889247">解除安裝</translation>
@@ -149,6 +150,7 @@
 <translation id="6485906693002546646">您正使用 <ph name="PROFILE_EMAIL" /> 帳戶同步處理您的 Chromium 資料。如要更新您的偏好設定，或是在未登入 Google 帳戶的情況下使用 Chromium，請前往 [<ph name="SETTINGS_LINK" />]。</translation>
 <translation id="6510925080656968729">解除安裝 Chromium</translation>
 <translation id="6526111688217511984">Chromium 必須取得儲存空間的存取權才能下載檔案。</translation>
+<translation id="6584627348340620412">日後發佈的 32 位元 Chromium 版本將不再支援這種 Linux 系統，請升級至 64 位元的 Chromium。</translation>
 <translation id="6593914713218535185">Chromium 已不適用於這種 Linux 系統，因此可能無法正常運作。</translation>
 <translation id="6637001341228460105">Chromium 需要麥克風存取權，才能與這個網站分享。</translation>
 <translation id="6638567566961868659">您的書籤會顯示在 Chromium 選單中或書籤列上。</translation>

@@ -41,6 +41,7 @@
 <translation id="225614027745146050">স্বাগতম</translation>
 <translation id="2316129865977710310">না, ধন্যবাদ</translation>
 <translation id="2347108572062610441">আপনি Chromium শুরু করলে কোন পৃষ্ঠাটি দেখানো হবে তা এই এক্সটেনশানটি পরিবর্তন করেছে।</translation>
+<translation id="2372704305038231957">৩২-বিট Chromium সঠিকভাবে কাজ নাও করতে পারে কারণ এটি এখন আর এই Linux সিস্টেমে সমর্থিত নয়। দয়া করে ৬৪-বিট Chromium এ আপগ্রেড করুন।</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{বর্তমানে একটি ডাউনলোড হচ্ছে। আপনি কি ডাউনলোড বাতিল করে Chromium থেকে বেরিয়ে যেতে চান?}one{বর্তমানে #টি ডাউনলোড হচ্ছে। আপনি কি ডাউনলোডগুলি বাতিল করে Chromium থেকে বেরিয়ে যেতে চান?}other{বর্তমানে #টি ডাউনলোড হচ্ছে। আপনি কি ডাউনলোডগুলি বাতিল করে Chromium থেকে বেরিয়ে যেতে চান?}}</translation>
 <translation id="2396765026452590966">আপনি Chromium শুরু করলে কোন পৃষ্ঠাটি দেখানো হবে তা "<ph name="EXTENSION_NAME" />" এক্সটেনশান পরিবর্তন করেছে।</translation>
 <translation id="2485422356828889247">আনইনস্টল</translation>
@@ -149,6 +150,7 @@
 <translation id="6485906693002546646">আপনার Chromium জিনিসপত্র সমন্বয় করার জন্য আপনি <ph name="PROFILE_EMAIL" /> ব্যবহার করছেন৷ আপনার সিঙ্ক পছন্দগুলি আপডেট করতে বা Google অ্যাকাউন্ট ছাড়া Chromium ব্যবহার করতে <ph name="SETTINGS_LINK" /> এ যান৷</translation>
 <translation id="6510925080656968729">Chromium আনইনস্টল করুন</translation>
 <translation id="6526111688217511984">ফাইল ডাউনলোড করতে Chromium এর জন্য সঞ্চয়স্থানের অ্যাক্সেস প্রয়োজন।</translation>
+<translation id="6584627348340620412">৩২-বিট Chromium এর ভবিষ্যৎ সংস্করণগুলি আর এই Linux সিস্টেম সমর্থন করবে না, দয়া করে ৬৪-বিট Chromium এ আপগ্রেড করুন।</translation>
 <translation id="6593914713218535185">Chromium সঠিকভাবে কাজ নাও করতে পারে কারণ এটি এখন আর এই Linux সিস্টেমে সমর্থিত নয়।</translation>
 <translation id="6637001341228460105">এটিকে এই সাইটে ভাগ করার জন্য Chromium এর মাইক্রোফোন অ্যাক্সেস করা প্রয়োজন।</translation>
 <translation id="6638567566961868659">Chromium মেনুতে বা বুকমার্ক দণ্ডে আপনার বুকমার্ক খুঁজুন৷</translation>

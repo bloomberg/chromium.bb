@@ -41,6 +41,7 @@
 <translation id="225614027745146050">Velkommen</translation>
 <translation id="2316129865977710310">Nej tak</translation>
 <translation id="2347108572062610441">Denne udvidelse har ændret din startside i Chromium.</translation>
+<translation id="2372704305038231957">32-bit Chromium fungerer muligvis ikke korrekt på grund af manglende understøttelse i dette Linux-system. Opgrader til 64-bit Chromium.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Der er et download i gang i øjeblikket. Vil du at annullere dit download og lukke Chromium?}one{Der er # downloads i gang i øjeblikket. Vil du at annullere dine downloads og lukke Chromium?}other{Der er # downloads i gang i øjeblikket. Vil du at annullere dine downloads og lukke Chromium?}}</translation>
 <translation id="2396765026452590966">Udvidelsen "<ph name="EXTENSION_NAME" />" har ændret din startside i Chromium.</translation>
 <translation id="2485422356828889247">Afinstaller</translation>
@@ -149,6 +150,7 @@
 <translation id="6485906693002546646">Du bruger <ph name="PROFILE_EMAIL" /> til at synkronisere dine Chromium-ting med. Gå til <ph name="SETTINGS_LINK" />, hvis du vil opdatere dine synkroniseringspræference eller bruge Chromium uden en Google-konto.</translation>
 <translation id="6510925080656968729">Afinstaller Chromium</translation>
 <translation id="6526111688217511984">Chromium skal have lageradgang for at kunne downloade filer.</translation>
+<translation id="6584627348340620412">Fremtidige versioner af 32-bit Chromium vil ikke længere understøtte dette Linux-system. Opgrader til 64-bit Chromium.</translation>
 <translation id="6593914713218535185">Chromium fungerer muligvis ikke korrekt, da det ikke længere understøttes af dette Linux-system.</translation>
 <translation id="6637001341228460105">Chromium skal have adgang til din mikrofon, før den kan deles med dette website.</translation>
 <translation id="6638567566961868659">Find dine bogmærker i Chromium-menuen eller på bogmærkelinjen.</translation>

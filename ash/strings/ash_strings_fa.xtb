@@ -6,6 +6,7 @@
 <translation id="1021311941847921177">کلیدهای میان‌بر جابه‌جایی به روش ورودی بعدی تغییر کرده است. لطفاً از <ph name="NEW_SHORTCUT" /> به جای <ph name="OLD_SHORTCUT" /> استفاده کنید.</translation>
 <translation id="112308213915226829">پنهان کردن خودکار قفسه</translation>
 <translation id="1195412055398077112">بزرگتر از صفحه</translation>
+<translation id="1252999807265626933">در حال شارژ شدن از <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">صفحه‌کلید روی صفحه غیرفعال شد</translation>
 <translation id="1272079795634619415">توقف</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -20,6 +21,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">راه‌انداز</translation>
 <translation id="15373452373711364">نشانگر موشواره بزرگ</translation>
+<translation id="1550523713251050646">برای گزینه‌های بیشتر کلیک کنید</translation>
 <translation id="1602076796624386989">فعال کردن داده‌های تلفن همراه</translation>
 <translation id="1621499497873603021">زمان باقیمانده تا خالی‌شدن شارژ باتری، <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">‏دستگاه Chrome</translation>
@@ -77,6 +79,7 @@
 <translation id="3147142846278915599">راه انداز (همگام‌سازی برنامه‌ها...)</translation>
 <translation id="3157169093162779309">قفل چرخش فعال شود</translation>
 <translation id="3294437725009624529">مهمان</translation>
+<translation id="3371140690572404006">‏دستگاه USB-C (درگاه جلوی سمت راست)</translation>
 <translation id="3445925074670675829">‏دستگاه USB-C</translation>
 <translation id="3473479545200714844">ذره‌بین صفحه</translation>
 <translation id="3573179567135747900">به "<ph name="FROM_LOCALE" />" تغییر دهید (به راه‌اندازی دوباره نیاز دارد)</translation>
@@ -103,6 +106,7 @@
 <translation id="3963445509666917109">بلندگو (داخلی)</translation>
 <translation id="3967919079500697218">سرپرست شما قابلیت عکس گرفتن از صفحه‌نمایش را غیرفعال کرده است.</translation>
 <translation id="397105322502079400">در حال محاسبه…</translation>
+<translation id="3995138139523574647">‏دستگاه USB-C (درگاه عقب سمت راست)</translation>
 <translation id="4053612967614057854">غیرفعال کردن صفحه‌کلید روی نمایشگر</translation>
 <translation id="412065659894267608"><ph name="HOUR" />ساعت <ph name="MINUTE" />دقیقه مانده تا باتری شارژ شود</translation>
 <translation id="4250680216510889253">نه</translation>
@@ -155,8 +159,10 @@
 <translation id="6047696787498798094">زمانی که به یک کاربر دیگر جابه‌جا می‌شوید، اشتراک‌گذاری صفحه نمایش متوقف می‌شود. می‌خواهید ادامه دهید؟</translation>
 <translation id="6062360702481658777">به صورت خودکار در عرض <ph name="LOGOUT_TIME_LEFT" /> از سیستم خارج می‌شوید.</translation>
 <translation id="607652042414456612">رایانه شما توسط دستگاه‌های بلوتوث نزدیک قابل شناسایی است و با نام «<ph name="NAME" />» و آدرس <ph name="ADDRESS" /> نشان داده می‌شود</translation>
+<translation id="6106745654298855237">در حال شارژ کردن <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">نمایش صفحه‌کلید روی صفحه</translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
+<translation id="6203030746557259519">نمایشگر مجازی</translation>
 <translation id="6247708409970142803">%<ph name="PERCENTAGE" /></translation>
 <translation id="6248847161401822652">‏برای خروج Control‏، Shift و Q را دو بار فشار دهید.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> به <ph name="ROTATION" /> چرخانده شد</translation>
@@ -201,6 +207,7 @@ Alt+جستجو یا Shift را برای لغو فشار دهید.</translation>
 <translation id="7573962313813535744">حالت اتصال به پایه</translation>
 <translation id="7593891976182323525">‏جستجو یا Shift</translation>
 <translation id="7649070708921625228">راهنما</translation>
+<translation id="7692480393933218409">‏در حال شارژ کردن دستگاه‌های USB-C متصل</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> و <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">بعد از همگام‌سازی تنظیمات شما، زبان از «<ph name="FROM_LOCALE" />» به «<ph name="TO_LOCALE" />» تغییر کرد.</translation>
 <translation id="785750925697875037">مشاهده حساب تلفن همراه</translation>

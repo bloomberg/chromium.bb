@@ -397,6 +397,38 @@
       Om inställningen är aktiverad sparas ingen webbhistorik. Inställningen inaktiverar även fliksynkronisering.
 
       Om inställningen är inaktiverad eller inte har angetts sparas webbhistorik.</translation>
+<translation id="2424023834246613232">Åsidosätter skrivarens standardurvalsregler för <ph name="PRODUCT_NAME" />.
+
+      Genom denna princip fastställs reglerna för valet av standardskrivare i <ph name="PRODUCT_NAME" />, vilket sker första gången utskriftsfunktionen används av en profil.
+
+      När den här principen är inställd försöker <ph name="PRODUCT_NAME" /> hitta en skrivare som uppfyller alla de angivna attributen och välja denna som standardskrivare. Den första skrivare som hittas och överensstämmer med principen är den som väljs. Om matchningen inte är unik väljs en skrivare som uppfyller attributen i den ordning som skrivarna hittades.
+
+      Om denna princip inte ställs in eller om ingen av de skrivare som hittas uppfyller attributen innan tidsfristen löper ut, ställs den inbyggda PDF-skrivaren in som standardskrivare. Om det inte finns en tillgänglig PDF-skrivare väljs inte någon skrivare.
+
+      Värdet analyseras som ett JSON-objekt enligt följande schema:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Huruvida sökningen efter en skrivare som uppfyller attributen ska begränsas till en specifik uppsättning av skrivare.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Reguljärt uttryck som ska överensstämma med skrivar-id.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Reguljärt uttryck som ska överensstämma med skrivarens visningsnamn.",
+            "type": "string"
+          }
+        }
+      }
+
+      Skrivare som är anslutna till <ph name="CLOUD_PRINT_NAME" /> betraktas som <ph name="PRINTER_TYPE_CLOUD" /> medan övriga skrivare klassificeras som <ph name="PRINTER_TYPE_LOCAL" />.
+      Om ett fält utelämnas innebär det att alla värden överensstämmer. Om till exempel anslutningen inte anges hittar förhandsgranskningen alla typer av skrivare, såväl lokala skrivare som sådana i moln.
+      Reguljära uttryck måste följa JavaScript RegExp-syntaxen. Träffar är skiftlägeskänsliga.</translation>
 <translation id="2426782419955104525">Aktiverar funktionen Instant i <ph name="PRODUCT_NAME" /> och hindrar användarna från att ändra den här inställningen.
 
       Om du aktiverar den här inställningen är Instant i <ph name="PRODUCT_NAME" /> aktiverat.
@@ -572,6 +604,7 @@
       Anger om domänbundna TLS-certifikattillägg ska aktiveras.
 
       Inställningen används för att aktivera domänbundna TLS-certifikattillägg för testning. De experimentella inställningarna tas bort framöver.</translation>
+<translation id="2957513448235202597">Kontotyp för autentisering av <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Regler för proxybypass</translation>
 <translation id="2960691910306063964">Aktivera eller inaktivera autentisering utan pinkod för fjärråtkomstvärdar</translation>
 <translation id="2976002782221275500">Anger efter hur lång tid utan åtgärd från användaren som skärmen ska dämpas när enheten drivs av batteriet.
@@ -1815,6 +1848,9 @@
           Om policyn inte ställs in används en standardtid.
 
           Policyns värde anges i millisekunder. Värdet måste vara mindre än inaktivitetstiden.</translation>
+<translation id="7329968046053403405">Anger kontotypen för konton som tillhandahålls av Androids autentiseringsapp som har stöd för autentisering av <ph name="HTTP_NEGOTIATE" /> (t.ex. Kerberos-autentisering). Informationen ska vara tillgänglig från leverantören av autentiseringsappen. Mer information finns på https://goo.gl/hajyfN.
+
+          Om inställningen inte anges är autentisering av <ph name="HTTP_NEGOTIATE" /> inaktiverat på Android.</translation>
 <translation id="7331962793961469250">När värdet är True visas inte kampanjer för appar i Chrome Web Store på sidan Ny flik.
 
       Om inställningen är False eller inte anges visas kampanjer för appar i Chrome Web Store på sidan Ny flik</translation>
@@ -1840,6 +1876,9 @@
 <translation id="7417972229667085380">Procentsatsen med vilken fördröjningen vid dödtid skalanpassas i presentationsläge (föråldrad)</translation>
 <translation id="7421483919690710988">Ange medieenhetens cachestorlek i byte</translation>
 <translation id="7424751532654212117">Lista med undantag till listan med inaktiverade plugin-program</translation>
+<translation id="7426112309807051726">Anger om optimeringen av <ph name="TLS_FALSE_START" /> ska inaktiveras. Av historiska skäl har principen namnet DisableSSLRecordSplitting.
+
+      Om principen inte har konfigurerats eller har ställts in på falskt aktiveras f<ph name="TLS_FALSE_START" />. Om principen har ställts in på sant inaktiveras <ph name="TLS_FALSE_START" />.</translation>
 <translation id="7433714841194914373">Aktivera Instant</translation>
 <translation id="7443616896860707393">Frågor vid korsursprungs-HTTP med basauktorisering</translation>
 <translation id="7468416082528382842">Windows-registerplats:</translation>
@@ -2119,6 +2158,25 @@
 <translation id="8519264904050090490">Webbadresser för hanterade användares manuella undantag</translation>
 <translation id="8544375438507658205">HTML-standardrenderare för <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Varna när du besöker webbplatser utanför innehållspaket</translation>
+<translation id="855339549837475534">Både Chromium och Google Chrome har stöd för samma principuppsättning
+      Tänk på att det här dokumentet kan innehålla principer som är
+      inriktade på programversioner som inte har lanserats (d.v.s. posten Stöds på
+      syftar på en version som inte har lanserats) och att sådana principer
+      kan ändras eller tas bort utan föregående meddelande.
+
+      Dessa principer är enbart avsedda att användas för att konfigurera instanser
+      av <ph name="PRODUCT_NAME" /> internt inom din
+      organisation. Användning av dessa principer utanför organisationen (till
+      exempel i ett offentligt distribuerat program) anses utgöra skadlig
+      programvara och kommer förmodligen att märkas som skadlig programvara
+      av Google och antivirusprogram.
+
+      Dessa inställningar behöver inte konfigureras manuellt. Du kan ladda ned
+      lättanvända mallar för Windows, Mac och Linux på <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      Vi rekommenderar att du konfigurerar principen på Windows via GPO, men
+      administrationsprincipen via registret stöds fortfarande på Windows-instanser
+      som är kopplade till en Active Directory-domän.</translation>
 <translation id="8566842294717252664">Dölj webbutiken från sidan ny flik och startprogrammet för appar</translation>
 <translation id="8587229956764455752">Tillåt att nya användarkonton skapas</translation>
 <translation id="8614804915612153606">Inaktiverar automatisk uppdatering</translation>

@@ -41,6 +41,7 @@
 <translation id="225614027745146050">ברוכים הבאים</translation>
 <translation id="2316129865977710310">לא, תודה</translation>
 <translation id="2347108572062610441">‏התוסף שינה את הדף שמוצג כשאתה מפעיל את Chromium.</translation>
+<translation id="2372704305038231957">‏ייתכן ש-Chromium ב-32 סיביות לא יפעל כראוי כי אינו נתמך עוד במערכת Linux זו. שדרג ל-Chromium ב-64 סיביות.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{‏הורדה מתבצעת עכשיו. האם ברצונך לבטל את ההורדה ולצאת מ-Chromium?}two{‏# הורדות מתבצעות עכשיו. האם ברצונך לבטל את ההורדות ולצאת מ-Chromium?}many{‏# הורדות מתבצעות עכשיו. האם ברצונך לבטל את ההורדות ולצאת מ-Chromium?}other{‏# הורדות מתבצעות עכשיו. האם ברצונך לבטל את ההורדות ולצאת מ-Chromium?}}</translation>
 <translation id="2396765026452590966">‏התוסף "<ph name="EXTENSION_NAME" />" שינה את הדף שמוצג כשאתה מפעיל את Chromium.</translation>
 <translation id="2485422356828889247">הסר התקנה</translation>
@@ -147,6 +148,7 @@
 <translation id="6485906693002546646">‏אתה משתמש ב-<ph name="PROFILE_EMAIL" /> כדי לסנכרן את הפריטים שלך ב-Chromium. עבור אל '<ph name="SETTINGS_LINK" />' כדי לעדכן את העדפות הסנכרון או להשתמש ב-Chromium ללא חשבון Google.</translation>
 <translation id="6510925080656968729">‏הסר את התקנת Chromium</translation>
 <translation id="6526111688217511984">‏לצורך הורדת קבצים, Chromium זקוק לגישה לאחסון.</translation>
+<translation id="6584627348340620412">‏גרסאות עתידיות של Chromium ב-32 סיביות לא יתמכו עוד במערכת Linux זו. שדרג ל-Chromium ב-64 סיביות.</translation>
 <translation id="6593914713218535185">‏ייתכן ש-Chromium לא יפעל כראוי כי אינו נתמך יותר במערכת Linux זו.</translation>
 <translation id="6637001341228460105">‏Chromium זקוק לגישה אל המיקרופון כדי לשתף אותו עם האתר הזה.</translation>
 <translation id="6638567566961868659">‏מצא את הסימניות שלך בתפריט Chromium או בסרגל הסימניות.</translation>

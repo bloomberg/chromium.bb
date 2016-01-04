@@ -6,6 +6,7 @@
 <translation id="1021311941847921177">切換至下一個輸入法的快速鍵已變更，請改用 <ph name="NEW_SHORTCUT" /> (停用 <ph name="OLD_SHORTCUT" />)。</translation>
 <translation id="112308213915226829">自動隱藏檔案櫃</translation>
 <translation id="1195412055398077112">遮視區域</translation>
+<translation id="1252999807265626933">正在使用「<ph name="POWER_SOURCE" />」充電</translation>
 <translation id="1270290102613614947">螢幕小鍵盤已停用</translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -20,6 +21,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">啟動器</translation>
 <translation id="15373452373711364">大型滑鼠游標</translation>
+<translation id="1550523713251050646">按一下即可查看更多選項</translation>
 <translation id="1602076796624386989">啟用行動數據</translation>
 <translation id="1621499497873603021">電池剩餘使用時間：<ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome 裝置</translation>
@@ -78,6 +80,7 @@
 <translation id="3147142846278915599">啟動器 (正在同步處理應用程式...)</translation>
 <translation id="3157169093162779309">啟用旋轉鎖定</translation>
 <translation id="3294437725009624529">訪客</translation>
+<translation id="3371140690572404006">USB-C 裝置 (右前方連接埠)</translation>
 <translation id="3445925074670675829">USB-C 裝置</translation>
 <translation id="3473479545200714844">畫面放大鏡</translation>
 <translation id="3573179567135747900">改回「<ph name="FROM_LOCALE" />」(需要重新啟動)</translation>
@@ -104,6 +107,7 @@
 <translation id="3963445509666917109">喇叭 (內部)</translation>
 <translation id="3967919079500697218">您的管理員已停用拍攝螢幕擷取畫面功能。</translation>
 <translation id="397105322502079400">計算中…</translation>
+<translation id="3995138139523574647">USB-C 裝置 (右後方連接埠)</translation>
 <translation id="4053612967614057854">停用螢幕小鍵盤</translation>
 <translation id="412065659894267608">尚需 <ph name="HOUR" /> 小時 <ph name="MINUTE" /> 分鐘才能充滿電</translation>
 <translation id="4250680216510889253">否</translation>
@@ -157,8 +161,10 @@
 <translation id="6047696787498798094">切換到另一個使用者會停止共用螢幕，您要繼續嗎？</translation>
 <translation id="6062360702481658777">您將於 <ph name="LOGOUT_TIME_LEFT" />後自動登出。</translation>
 <translation id="607652042414456612">您的電腦已開放附近的藍牙裝置搜尋，顯示名稱為「<ph name="NAME" />」，位址則是 <ph name="ADDRESS" /></translation>
+<translation id="6106745654298855237">正在為「<ph name="POWER_SOURCE" />」充電</translation>
 <translation id="615957422585914272">顯示螢幕小鍵盤</translation>
 <translation id="6165508094623778733">瞭解詳情</translation>
+<translation id="6203030746557259519">虛擬顯示</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">按兩下 Control、Shift 和 Q 鍵即可結束。</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> 已旋轉到<ph name="ROTATION" /></translation>
@@ -203,6 +209,7 @@
 <translation id="7573962313813535744">停駐模式</translation>
 <translation id="7593891976182323525">搜尋鍵或 Shift 鍵</translation>
 <translation id="7649070708921625228">說明</translation>
+<translation id="7692480393933218409">正在為連接的 USB-C 裝置充電</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> 小時 <ph name="MINUTE" /> 分鐘</translation>
 <translation id="7823564328645135659">同步處理您的設定後，系統已將語言從「<ph name="FROM_LOCALE" />」變更為「<ph name="TO_LOCALE" />」。</translation>
 <translation id="785750925697875037">查看行動帳戶</translation>

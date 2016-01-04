@@ -354,6 +354,38 @@
       Dacă această setare este activată, istoricul de navigare nu va fi salvat. Această setare dezactivează și sincronizarea filelor.
 
       Dacă această setare este dezactivată sau nu este configurată, istoricul de navigare va fi salvat.</translation>
+<translation id="2424023834246613232">Modifică regulile de selectare a imprimantei prestabilite pentru <ph name="PRODUCT_NAME" />.
+
+      Această politică stabilește regulile de selectare a imprimantei prestabilite pentru <ph name="PRODUCT_NAME" />, acțiune care are loc atunci când funcția de printare este folosită pentru prima dată cu un profil.
+
+      Când politica este configurată, <ph name="PRODUCT_NAME" /> va încerca să găsească o imprimantă care corespunde cu toate atributele specificate și o va selecta ca imprimantă prestabilită. Se va selecta prima imprimantă conformă cu politica; dacă mai multe imprimante sunt conforme cu politica, oricare dintre acestea poate fi selectată, în funcție de ordinea în care sunt descoperite imprimantele.
+
+      Dacă politica nu este configurată sau nu se găsește nicio imprimantă conformă cu politica în timpul limită, imprimanta prestabilită va fi imprimanta PDF încorporată sau, când imprimanta PDF nu este disponibilă, nu se va selecta nicio imprimantă.
+
+      Valoarea este analizată ca obiect JSON, în conformitate cu următoarea schemă:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Dacă se limitează căutarea imprimantei conforme cu politica la un anumit set de imprimante.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Expresia regulată care corespunde cu ID-ul imprimantei.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Expresia regulată care corespunde cu numele de afișare al imprimantei.",
+            "type": "string"
+          }
+        }
+      }
+
+      Imprimantele conectate la <ph name="CLOUD_PRINT_NAME" /> intră în categoria <ph name="PRINTER_TYPE_CLOUD" />, iar restul imprimantelor sunt clasificate ca <ph name="PRINTER_TYPE_LOCAL" />.
+      Dacă un câmp nu este completat, toate valorile coincid. De exemplu, dacă nu este specificată conectivitatea, Previzualizarea înainte de printare va iniția descoperirea tuturor tipurilor de imprimante, locale și din cloud.
+      Șabloanele expresiei regulate trebuie să respecte sintaxa JavaScript RegExp, iar valorile care coincid disting între scrierea cu majuscule și minuscule.</translation>
 <translation id="2426782419955104525">Activează funcția Instant din <ph name="PRODUCT_NAME" /> și nu le permite utilizatorilor să modifice această setare.
 
       Dacă activezi această setare, funcția Instant din <ph name="PRODUCT_NAME" /> este activată.
@@ -512,6 +544,7 @@
       Specifică dacă extensia pentru certificatele TLS legate la domeniu trebuie să fie activată.
 
       Setarea este folosită pentru a activa extensia pentru certificatele TLS legate la domeniu în vederea testării. Pe viitor, această setare experimentală va fi eliminată.</translation>
+<translation id="2957513448235202597">Tipul de cont pentru autentificarea <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Reguli de ocolire a proxy-ului</translation>
 <translation id="2960691910306063964">Activează sau dezactivează autentificarea fără cod PIN pentru gazdele de acces la distanță</translation>
 <translation id="2976002782221275500">Indică intervalul de timp fără intervenția utilizatorului după care luminozitatea ecranului este redusă atunci când dispozitivul funcționează pe baterie.
@@ -1608,6 +1641,9 @@ nu poate fi stabilit de utilizator din setările browserului.
           Dacă politica nu este setată, se utilizează o perioadă de timp prestabilită.
 
           Valoarea politicii trebuie specificată în milisecunde. Valorile trebuie să fie mai mici sau egale cu intervalul de inactivitate.</translation>
+<translation id="7329968046053403405">Specifică tipul de cont pentru conturile transmise de aplicația de autentificare Android compatibilă cu autentificarea <ph name="HTTP_NEGOTIATE" /> (de exemplu, autentificare Kerberos). Aceste informații ar trebui să fie disponibile de la furnizorul aplicației de autentificare. Pentru mai multe detalii, consultă https://goo.gl/hajyfN.
+
+          Dacă nu se specifică nicio setare, autentificarea <ph name="HTTP_NEGOTIATE" /> va fi dezactivată pe Android.</translation>
 <translation id="7331962793961469250">Când politica este activată, rezultatele promovate pentru aplicațiile din Magazinul web Chrome nu vor apărea în pagina Filă nouă. Dezactivarea acestei opțiuni sau lăsarea acesteia nesetată va face ca rezultatele promovate pentru aplicațiile din Magazinul web Chrome să apară în pagina Filă nouă.</translation>
 <translation id="7332963785317884918">Această politică este învechită. <ph name="PRODUCT_OS_NAME" /> va folosi întotdeauna strategia de curățare „RemoveLRU”.
 
@@ -1625,6 +1661,9 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7417972229667085380">Procentul cu care se ajustează intervalul de inactivitate în modul de prezentare (politică învechită)</translation>
 <translation id="7421483919690710988">Setați dimensiunea în octeți a memoriei cache pe disc pentru conținut media</translation>
 <translation id="7424751532654212117">Lista de excepții de la lista cu pluginuri dezactivate</translation>
+<translation id="7426112309807051726">Specifică dacă optimizarea <ph name="TLS_FALSE_START" /> ar trebui dezactivată. Din motive ce țin de istoric, această politică este denumită DisableSSLRecordSplitting.
+
+      Dacă politica nu este configurată sau este dezactivată, optimizarea <ph name="TLS_FALSE_START" /> va fi activată. Dacă politica este activată, optimizarea <ph name="TLS_FALSE_START" /> va fi dezactivată.</translation>
 <translation id="7433714841194914373">Activează Instant</translation>
 <translation id="7443616896860707393">Mesaje de solicitare pentru autentificarea HTTP de bază indiferent de sursă</translation>
 <translation id="7468416082528382842">Locația din registry-ul Windows:</translation>
@@ -1882,6 +1921,23 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="8519264904050090490">Adrese URL pentru excepții adăugate manual ale utilizatorilor gestionați</translation>
 <translation id="8544375438507658205">Motor de redare HTML prestabilit pentru <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Avertisment la accesarea site-urilor din afara pachetelor de conținut</translation>
+<translation id="855339549837475534">Chromium și Google Chrome acceptă același set de
+      politici. Reține că acest document poate să includă politici care
+      vizează versiuni de software nelansate (adică, în cazul acestora, intrarea
+      „compatibilă cu” se referă la o versiune nelansată) și că astfel de politici pot
+      fi modificate sau eliminate fără notificare în prealabil.
+
+      Aceste politici sunt destinate exclusiv pentru a configura instanțe ale 
+      <ph name="PRODUCT_NAME" /> din
+      organizația ta. Folosirea acestor politici în afara organizației (de exemplu,
+      într-un program distribuit public) se consideră program malware și este
+      posibil să fie etichetată ca atare de Google și de furnizorii de programe antivirus.
+      Nu e nevoie ca aceste setări să fie configurate manual! Poți să descarci
+      șabloane ușor de folosit pentru Windows, Mac și Linux de la <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      Este recomandat să configurezi politica în Windows prin GPO, cu toate că
+      gestionarea politicii prin registry este încă acceptată pentru instanțele Windows
+      care sunt asociate unui domeniu Active Directory.</translation>
 <translation id="8566842294717252664">Ascunde magazinul web în pagina Filă nouă și în lansatorul de aplicații</translation>
 <translation id="8587229956764455752">Permite crearea de noi conturi de utilizator</translation>
 <translation id="8614804915612153606">Dezactivează actualizarea automată</translation>

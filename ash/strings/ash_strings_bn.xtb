@@ -6,6 +6,7 @@
 <translation id="1021311941847921177">পরবর্তী ইনপুট পদ্ধতিতে পরিবর্তন করার শর্টকাটটি পরিবর্তিত হয়েছে। <ph name="OLD_SHORTCUT" /> এর পরিবর্তে দয়া করে <ph name="NEW_SHORTCUT" /> ব্যবহার করুন।</translation>
 <translation id="112308213915226829">শেল্ফ স্বয়ংক্রিয়ভাবে লুকান</translation>
 <translation id="1195412055398077112">ওভারস্ক্যান</translation>
+<translation id="1252999807265626933"><ph name="POWER_SOURCE" /> থেকে চার্জ হচ্ছে</translation>
 <translation id="1270290102613614947">অন-স্ক্রীন কীবোর্ড অক্ষম করা রয়েছে</translation>
 <translation id="1272079795634619415">বন্ধ</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -20,6 +21,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">লঞ্চার</translation>
 <translation id="15373452373711364">বড় মাউস কার্সার</translation>
+<translation id="1550523713251050646">আরো বিকল্পের জন্য ক্লিক করুন</translation>
 <translation id="1602076796624386989">মোবাইল ডেটা সক্রিয় করুন</translation>
 <translation id="1621499497873603021">ব্যাটারি শেষ হতে <ph name="TIME_LEFT" /> সময় বাকি আছে</translation>
 <translation id="164969095109328410">Chrome ডিভাইস</translation>
@@ -78,6 +80,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="3147142846278915599">লঞ্চার (অ্যাপ সিঙ্ক করা হচ্ছে...)</translation>
 <translation id="3157169093162779309">আবর্তন লক সক্ষম করুন</translation>
 <translation id="3294437725009624529">অতিথি</translation>
+<translation id="3371140690572404006">USB-C ডিভাইস (ডান দিকের সামনের পোর্ট)</translation>
 <translation id="3445925074670675829">USB-C ডিভাইস</translation>
 <translation id="3473479545200714844">স্ক্রীন ম্যাগনিফায়ার</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" তে ফেরান (পুনর্সূচনা প্রয়োজন)</translation>
@@ -104,6 +107,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="3963445509666917109">স্পিকার (অভ্যন্তরীণ)</translation>
 <translation id="3967919079500697218">স্ক্রীনশট নেওয়ার ক্ষমতা আপনার প্রশাসক দ্বারা অক্ষম করা হয়েছে৷</translation>
 <translation id="397105322502079400">গণনা করা হচ্ছে...</translation>
+<translation id="3995138139523574647">USB-C ডিভাইস (ডান দিকের পিছনের পোর্ট)</translation>
 <translation id="4053612967614057854">অন-স্ক্রীন কীবোর্ড অক্ষম করুন</translation>
 <translation id="412065659894267608"><ph name="HOUR" />ঘন্টা <ph name="MINUTE" /> মিনিট পর্যন্ত পূর্ণ</translation>
 <translation id="4250680216510889253">না</translation>
@@ -157,8 +161,10 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="6047696787498798094">যখন আপনি অন্য ব্যবহারকারীতে পাল্টাবেন তখন স্ক্রীন ভাগ করা বন্ধ হবে৷ আপনি কি চালিয়ে যেতে চান?</translation>
 <translation id="6062360702481658777">আপনি <ph name="LOGOUT_TIME_LEFT" /> এর মধ্যে স্বয়ংক্রিয়ভাবে সাইন আউট হবেন৷</translation>
 <translation id="607652042414456612">আপনার কম্পিউটার কাছাকাছি Bluetooth ডিভাইসে খুঁজে পাওয়া সম্ভব এবং ঠিকানা <ph name="ADDRESS" /> সমেত "<ph name="NAME" />" হিসাবে প্রদর্শিত হবে</translation>
+<translation id="6106745654298855237"><ph name="POWER_SOURCE" /> চার্জ হচ্ছে</translation>
 <translation id="615957422585914272">অন-স্ক্রীন কীবোর্ড প্রদর্শন করুন</translation>
 <translation id="6165508094623778733">আরো জানুন</translation>
+<translation id="6203030746557259519">ভার্চুয়াল প্রদর্শন</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">প্রস্থান করার জন্য দুবার Control Shift Q টিপুন৷</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" /> আবর্তিত হয়েছে</translation>
@@ -202,6 +208,7 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="7573962313813535744">ডকযুক্ত মোড</translation>
 <translation id="7593891976182323525">Search অথবা Shift</translation>
 <translation id="7649070708921625228">সহায়তা</translation>
+<translation id="7692480393933218409">সংযুক্ত USB-C ডিভাইসগুলি চার্জ হচ্ছে</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> এবং <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">আপনার সেটিংস সিঙ্ক করার পরে ভাষা "<ph name="FROM_LOCALE" />" থেকে "<ph name="TO_LOCALE" />" এ পরিবর্তন করা হয়েছে৷</translation>
 <translation id="785750925697875037">মোবাইল অ্যাকাউন্ট দেখুন</translation>

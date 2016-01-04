@@ -347,6 +347,38 @@
       Ako je postavka omogućena, povijest pregledavanja ne sprema se. Ta postavka onemogućuje i sinkroniziranje kartica.
 
       Ako se postavka onemogući ili se ne postavi, povijest pregledavanja se sprema.</translation>
+<translation id="2424023834246613232">Nadjačava pravila za odabir zadanog pisača za preglednik <ph name="PRODUCT_NAME" />.
+
+      Tim se pravilom daju odrednice za odabir zadanog pisača za preglednik <ph name="PRODUCT_NAME" /> prilikom prve upotrebe funkcije ispisa na profilu.
+
+      Kada se to pravilo postavi, preglednik <ph name="PRODUCT_NAME" /> pokušat će pronaći pisač koji odgovara svim navedenim atributima i odabrati ga kao zadani. Odabire se prvi pisač koji odgovara pravilu, a u slučaju da se pronađe više odgovarajućih pisača, može se odabrati bilo koji pisač ovisno o redoslijedu njihova otkrivanja.
+
+      Ako se to pravilo ne postavi ili se odgovarajući pisač ne pronađe unutar vremenskog ograničenja, upotrebljavat će se ugrađeni PDF pisač ili se neće odabrati nijedan pisač ako PDF pisač nije dostupan.
+
+      Vrijednost se raščlanjuje kao JSON objekt prema sljedećoj shemi:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Treba li se traženje odgovarajućeg pisača ograničiti na određeni skup pisača.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Regularni izraz koji se treba podudarati s ID-om pisača.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regularni izraz koji se treba podudarati sa zaslonskim nazivom pisača.",
+            "type": "string"
+          }
+        }
+      }
+
+      Pisači povezani s uslugom <ph name="CLOUD_PRINT_NAME" /> smatraju se <ph name="PRINTER_TYPE_CLOUD" /> pisačima, dok su ostali pisači klasificirani kao <ph name="PRINTER_TYPE_LOCAL" />.
+      Izostavljanje polja znači da su podudarne sve vrijednosti. Na primjer, ako se ne odredi povezivanje, pregled ispisa pokrenut će otkrivanje svih vrsta pisača, kako lokalnih tako i onih u oblaku.
+      Uzorci regularnih izraza moraju slijediti sintaksu JavaScript RegExp, a u podudaranjima se razlikuju mala i velika slova.</translation>
 <translation id="2426782419955104525">Omogućuje značajku Instant preglednika <ph name="PRODUCT_NAME" /> i onemogućuje korisnicima da mijenjaju tu postavku.
 
       Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> Instant je omogućen.
@@ -505,6 +537,7 @@
       Određuje hoće li proširenje TLS certifikata vezanih uz domenu biti omogućeno.
 
       Ta se postavka upotrebljava za omogućivanje proširenja TLS certifikata vezanih uz domenu za testiranje. Ta će se eksperimentalna postavka ukloniti.</translation>
+<translation id="2957513448235202597">Vrsta računa za <ph name="HTTP_NEGOTIATE" /> autentifikaciju</translation>
 <translation id="2959898425599642200">Pravila zaobilaženja proxyja</translation>
 <translation id="2960691910306063964">Omogući ili onemogući autentifikaciju bez PIN-a za hostove daljinskog pristupa</translation>
 <translation id="2976002782221275500">Određuje koliko vremena treba proteći bez aktivnosti korisnika da bi se zaslon zatamnio tijekom rada s baterijskim napajanjem.
@@ -1586,6 +1619,9 @@
           Kada nije postavljeno, upotrebljava se zadano vrijeme.
 
           Vrijednost pravila treba navesti u milisekundama. Vrijednosti su ograničene na vrijeme kraće od odgode neaktivnosti ili jednako tom vremenu.</translation>
+<translation id="7329968046053403405">Određuje vrstu računa za račune koje pruža Androidova aplikacija za autentifikaciju koja podržava <ph name="HTTP_NEGOTIATE" /> autentifikaciju (npr., autentifikaciju Kerberos). Te informacije pruža dobavljač aplikacije za autentifikaciju. Više informacija potražite na https://goo.gl/hajyfN.
+
+          Ako se ne navede nijedna postavka, na Androidu nije omogućena <ph name="HTTP_NEGOTIATE" /> autentifikacija.</translation>
 <translation id="7331962793961469250">Kada je postavljeno na "true" (točno), promocije za aplikacije Chrome web-trgovine neće se pojavljivati na stranici Nova kartica. Ako se ova opcija postavi na "false" (netočno) ili se ne postavi uopće, promocije za aplikacije Chrome web-trgovine prikazivat će se na stranici Nova kartica</translation>
 <translation id="7332963785317884918">Pravilo je zastarjelo. Sustav <ph name="PRODUCT_OS_NAME" /> uvijek će upotrebljavati strategiju čišćenja "RemoveLRU".
 
@@ -1603,6 +1639,9 @@
 <translation id="7417972229667085380">Postotak za skaliranje odgode u stanju mirovanja u načinu prezentacije (obustavljeno)</translation>
 <translation id="7421483919690710988">Postavite veličinu predmemorije medijskog diska u bajtovima</translation>
 <translation id="7424751532654212117">Popis iznimki popisa onemogućenih dodataka</translation>
+<translation id="7426112309807051726">Određuje treba li se onemogućiti <ph name="TLS_FALSE_START" /> optimizacija. Iz povijesnih razloga to se pravilo zove DisableSSLRecordSplitting.
+
+      Ako se to pravilo ne postavi ili se postavi na "False", omogućit će se <ph name="TLS_FALSE_START" />. Ako se postavi na "True", neće se omogućiti <ph name="TLS_FALSE_START" />.</translation>
 <translation id="7433714841194914373">Omogući Instant</translation>
 <translation id="7443616896860707393">Zahtjevi za Cross-origin HTTP Basic Auth</translation>
 <translation id="7468416082528382842">Lokacija Windows registra:</translation>
@@ -1857,6 +1896,24 @@
 <translation id="8519264904050090490">URL-ovi ručnih iznimaka upravljanih korisnika</translation>
 <translation id="8544375438507658205">Zadani alat za prikazivanje HTML-a za <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Upozori kada se posjećuju web-lokacije izvan paketa sadržaja</translation>
+<translation id="855339549837475534">Chromium i Google Chrome podržavaju isti skup pravila.
+      Napominjemo da ovaj dokument može sadržavati pravila koja se
+      odnose na neobjavljene verzije softvera (to jest, unos "podržano na"
+      odnosi se na neobjavljene verzije) i da su ta pravila podložna promjeni ili
+      uklanjanju bez prethodne najave.
+
+      Ta su pravila namijenjena isključivo konfiguriranju instanci preglednika
+      <ph name="PRODUCT_NAME" /> za unutarnju upotrebu u vašoj
+      organizaciji. Upotreba tih pravila izvan vaše organizacije (na primjer,
+      u javno distribuiranom programu) smatra se zlonamjernim softverom, pa će
+      je Google i dobavljači antivirusnih programa vjerojatno označiti kao takvu.
+
+      Te se postavke ne moraju konfigurirati ručno! Jednostavne predloške za
+      Windows, Mac i Linux možete preuzeti na web-lokaciji <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a,
+      iako se pružanje pravila putem registra i dalje podržava za instance
+      Windowsa pridružene domeni aktivnog direktorija.</translation>
 <translation id="8566842294717252664">Skrivanje web-trgovine na web-stranici nove kartice i pokretaču aplikacija</translation>
 <translation id="8587229956764455752">Dopusti stvaranje novih korisničkih računa</translation>
 <translation id="8614804915612153606">Onemogućuje automatsko ažuriranje</translation>

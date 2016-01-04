@@ -6,6 +6,7 @@
 <translation id="1021311941847921177">La scorciatoia per passare al metodo di immissione successivo è cambiata. Utilizza <ph name="NEW_SHORTCUT" /> invece di <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Nascondi automaticamente shelf</translation>
 <translation id="1195412055398077112">overscan</translation>
+<translation id="1252999807265626933">In carica da: <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Tastiera sullo schermo disattivata</translation>
 <translation id="1272079795634619415">Interrompi</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -20,6 +21,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Avvio applicazioni</translation>
 <translation id="15373452373711364">Puntatore del mouse grande</translation>
+<translation id="1550523713251050646">Fai clic per visualizzare altre opzioni</translation>
 <translation id="1602076796624386989">Attiva dati mobili</translation>
 <translation id="1621499497873603021">Tempo rimanente all'esaurimento della batteria: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Dispositivo Chrome</translation>
@@ -78,6 +80,7 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="3147142846278915599">Avvio applicazioni (sincronizzazione delle app...)</translation>
 <translation id="3157169093162779309">Attiva blocco rotazione</translation>
 <translation id="3294437725009624529">Ospite</translation>
+<translation id="3371140690572404006">Dispositivo USB-C (porta anteriore destra)</translation>
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3473479545200714844">Ingrandimento dello schermo</translation>
 <translation id="3573179567135747900">Torna a "<ph name="FROM_LOCALE" />" (è necessario riavviare)</translation>
@@ -104,6 +107,7 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="3963445509666917109">Altoparlante (interno)</translation>
 <translation id="3967919079500697218">La possibilità di effettuare screenshot è stata disabilitata dal tuo amministratore.</translation>
 <translation id="397105322502079400">Calcolo in corso...</translation>
+<translation id="3995138139523574647">Dispositivo USB-C (porta posteriore destra)</translation>
 <translation id="4053612967614057854">Disattiva tastiera sullo schermo</translation>
 <translation id="412065659894267608"><ph name="HOUR" /> h e <ph name="MINUTE" /> m per completare la ricarica</translation>
 <translation id="4250680216510889253">No</translation>
@@ -157,8 +161,10 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="6047696787498798094">La condivisione dello schermo verrà interrotta se cambi utente. Vuoi continuare?</translation>
 <translation id="6062360702481658777">Verrai disconnesso automaticamente tra <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Il tuo computer è rilevabile per i dispositivi Bluetooth nelle vicinanze e verrà visualizzato come "<ph name="NAME" />" con l'indirizzo <ph name="ADDRESS" /></translation>
+<translation id="6106745654298855237">In carica: <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Mostra tastiera sullo schermo</translation>
 <translation id="6165508094623778733">Ulteriori informazioni</translation>
+<translation id="6203030746557259519">Display virtuale</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">Per uscire premi due volte Ctrl+Maiusc+Q.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> è stato ruotato a <ph name="ROTATION" /></translation>
@@ -203,6 +209,7 @@ Premi Alt+tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="7573962313813535744">Modalità dock</translation>
 <translation id="7593891976182323525">Tasto per la ricerca o Maiusc</translation>
 <translation id="7649070708921625228">Guida</translation>
+<translation id="7692480393933218409">Dispositivi USB-C collegati in carica</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> e <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">La lingua è stata modificata da "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />" dopo la sincronizzazione delle impostazioni.</translation>
 <translation id="785750925697875037">Visualizza account per cellulari</translation>

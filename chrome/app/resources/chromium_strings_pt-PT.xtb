@@ -41,6 +41,7 @@
 <translation id="225614027745146050">Bem-vindo</translation>
 <translation id="2316129865977710310">Não, obrigado</translation>
 <translation id="2347108572062610441">Esta extensão alterou a página apresentada quando inicia o Chromium.</translation>
+<translation id="2372704305038231957">O Chromium de 32 bits pode não funcionar corretamente porque deixou de ser suportado neste sistema Linux. Atualize para o Chromium de 64 bits.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Uma transferência está atualmente em curso. Pretende cancelar a transferência e sair do Chromium?}other{# transferências estão atualmente em curso. Pretende cancelar as transferências e sair do Chromium?}}</translation>
 <translation id="2396765026452590966">A extensão "<ph name="EXTENSION_NAME" />" alterou a página apresentada quando inicia o Chromium.</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
@@ -149,6 +150,7 @@
 <translation id="6485906693002546646">Está a utilizar <ph name="PROFILE_EMAIL" /> para sincronizar os seus conteúdos do Chromium. Para atualizar a preferência de sincronização ou utilizar o Chromium sem uma Conta Google, aceda a <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Desinstalar o Chromium</translation>
 <translation id="6526111688217511984">O Chromium necessita de acesso ao armazenamento para transferir ficheiros.</translation>
+<translation id="6584627348340620412">As versões futuras do Chromium de 32 bits deixarão de suportar este sistema Linux. Atualize para o Chromium de 64 bits.</translation>
 <translation id="6593914713218535185">O Chromium pode não funcionar corretamente, uma vez que já não é suportado neste sistema Linux.</translation>
 <translation id="6637001341228460105">O Chromium necessita de acesso ao microfone para o partilhar com este site.</translation>
 <translation id="6638567566961868659">Encontre os seus marcadores no menu Chromium ou na barra de marcadores.</translation>

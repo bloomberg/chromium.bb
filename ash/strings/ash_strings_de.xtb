@@ -6,6 +6,7 @@
 <translation id="1021311941847921177">Die Tastenkombination für den Wechsel zur nächsten Eingabemethode hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Ablage automatisch ausblenden</translation>
 <translation id="1195412055398077112">Overscan</translation>
+<translation id="1252999807265626933">Wird über ein <ph name="POWER_SOURCE" /> aufgeladen</translation>
 <translation id="1270290102613614947">Bildschirmtastatur deaktiviert</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -20,6 +21,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Übersicht</translation>
 <translation id="15373452373711364">Großer Cursor</translation>
+<translation id="1550523713251050646">Für weitere Optionen klicken</translation>
 <translation id="1602076796624386989">Mobilfunk aktivieren</translation>
 <translation id="1621499497873603021">Verbleibende Akku-Laufzeit: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome-Gerät</translation>
@@ -78,6 +80,7 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="3147142846278915599">Launcher (Apps werden synchronisiert...)</translation>
 <translation id="3157169093162779309">Rotationssperre aktivieren</translation>
 <translation id="3294437725009624529">Gast</translation>
+<translation id="3371140690572404006">USB-C-Gerät (Port vorne rechts)</translation>
 <translation id="3445925074670675829">USB-C-Gerät</translation>
 <translation id="3473479545200714844">Lupe</translation>
 <translation id="3573179567135747900">Zurücksetzen auf "<ph name="FROM_LOCALE" />" (Neustart erforderlich)</translation>
@@ -104,6 +107,7 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="3963445509666917109">Lautsprecher (intern)</translation>
 <translation id="3967919079500697218">Die Funktion zum Erfassen von Screenshots wurde vom Administrator deaktiviert.</translation>
 <translation id="397105322502079400">Wird berechnet...</translation>
+<translation id="3995138139523574647">USB-C-Gerät (Port hinten rechts)</translation>
 <translation id="4053612967614057854">Bildschirmtastatur deaktivieren</translation>
 <translation id="412065659894267608">In <ph name="HOUR" /> Std. <ph name="MINUTE" /> Min. vollständig aufgeladen</translation>
 <translation id="4250680216510889253">Nein</translation>
@@ -157,8 +161,10 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="6047696787498798094">Wenn Sie zu einem anderen Nutzer wechseln, wird die Bildschirmfreigabe beendet. Möchten Sie fortfahren?</translation>
 <translation id="6062360702481658777">Sie werden in <ph name="LOGOUT_TIME_LEFT" /> automatisch abgemeldet.</translation>
 <translation id="607652042414456612">Ihr Computer kann von Bluetooth-Geräten in der näheren Umgebung erkannt werden. Er erscheint als "<ph name="NAME" />" mit der Adresse <ph name="ADDRESS" />.</translation>
+<translation id="6106745654298855237"><ph name="POWER_SOURCE" /> wird aufgeladen</translation>
 <translation id="615957422585914272">Bildschirmtastatur anzeigen</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
+<translation id="6203030746557259519">Virtueller Bildschirm</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" /> %</translation>
 <translation id="6248847161401822652">Drücken Sie zum Beenden zweimal Steuerung-Shift-Q.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> wurde zu <ph name="ROTATION" /> gedreht.</translation>
@@ -203,6 +209,7 @@ Drücken Sie Alt+Suchen oder Shift, um die Aktivierung aufzuheben.</translation>
 <translation id="7573962313813535744">Docking-Modus</translation>
 <translation id="7593891976182323525">Suchen oder Shift</translation>
 <translation id="7649070708921625228">Hilfe</translation>
+<translation id="7692480393933218409">Verbundene USB-C-Geräte werden geladen</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> und <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Nach der Synchronisierung Ihrer Einstellungen wurde die Sprache von "<ph name="FROM_LOCALE" />" in "<ph name="TO_LOCALE" />" geändert.</translation>
 <translation id="785750925697875037">Mobiles Konto aufrufen</translation>

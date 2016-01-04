@@ -6,6 +6,7 @@
 <translation id="1021311941847921177">O atalho para mudar para o método de introdução seguinte foi alterado. Utilize <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Ocultar prateleira automaticamente</translation>
 <translation id="1195412055398077112">overscan</translation>
+<translation id="1252999807265626933">A carregar a partir de <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Teclado no ecrã desativado</translation>
 <translation id="1272079795634619415">Parar</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -20,6 +21,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Iniciador</translation>
 <translation id="15373452373711364">Cursor do rato grande</translation>
+<translation id="1550523713251050646">Clicar para obter mais opções</translation>
 <translation id="1602076796624386989">Ativar dados móveis</translation>
 <translation id="1621499497873603021">Tempo restante até a bateria terminar, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Dispositivo Chrome</translation>
@@ -78,6 +80,7 @@ Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="3147142846278915599">Launcher (a sincronizar aplicações...)</translation>
 <translation id="3157169093162779309">Ativar o bloqueio de rotação</translation>
 <translation id="3294437725009624529">Convidado</translation>
+<translation id="3371140690572404006">Dispositivo USB-C (porta frontal do lado direito)</translation>
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3573179567135747900">Reverter alteração para <ph name="FROM_LOCALE" /> (requer reinicio)</translation>
@@ -104,6 +107,7 @@ Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="3963445509666917109">Altifalante (interno)</translation>
 <translation id="3967919079500697218">A capacidade de criar capturas de ecrã foi desativada pelo seu administrador.</translation>
 <translation id="397105322502079400">A calcular...</translation>
+<translation id="3995138139523574647">Dispositivo USB-C (porta traseira do lado direito)</translation>
 <translation id="4053612967614057854">Desativar o teclado no ecrã</translation>
 <translation id="412065659894267608"><ph name="HOUR" />h <ph name="MINUTE" />m até ficar completa</translation>
 <translation id="4250680216510889253">Não</translation>
@@ -157,8 +161,10 @@ Prima Shift + Alt para mudar.</translation>
 <translation id="6047696787498798094">A partilha do ecrã será interrompida quando mudar para outro utilizador. Pretende continuar?</translation>
 <translation id="6062360702481658777">A sessão será terminada automaticamente dentro de <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">O seu computador é detetável para os dispositivos Bluetooth nas proximidades e aparecerá como "<ph name="NAME" />" com o endereço <ph name="ADDRESS" /></translation>
+<translation id="6106745654298855237">A carregar <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Mostrar teclado no ecrã</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
+<translation id="6203030746557259519">Ecrã virtual</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">Prima Ctrl+Shift+Q duas vezes para sair.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> foi rodado para <ph name="ROTATION" /></translation>
@@ -203,6 +209,7 @@ Prima Alt + Pesquisar ou Shift para cancelar.</translation>
 <translation id="7573962313813535744">Modo ancorado</translation>
 <translation id="7593891976182323525">Pesquisar ou Shift</translation>
 <translation id="7649070708921625228">Ajuda</translation>
+<translation id="7692480393933218409">A carregar os dispositivos USB-C ligados</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> e <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">O idioma foi alterado de <ph name="FROM_LOCALE" /> para <ph name="TO_LOCALE" /> depois de sincronizar as suas definições.</translation>
 <translation id="785750925697875037">Ver conta do telemóvel</translation>

@@ -6,6 +6,7 @@
 <translation id="1021311941847921177">Pakeistas perjungimo į kitą įvesties metodą spartusis klavišas. Naudokite <ph name="NEW_SHORTCUT" /> vietoje <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Automatiškai slėpti lentyną</translation>
 <translation id="1195412055398077112">sritis aplink vaizdo kraštus</translation>
+<translation id="1252999807265626933">Įkraunama naudojant <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Ekrano klaviatūra išjungta</translation>
 <translation id="1272079795634619415">Sustabdyti</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -20,6 +21,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI / DP)</translation>
 <translation id="1510238584712386396">Paleidimo priemonė</translation>
 <translation id="15373452373711364">Didelis pelės žymeklis</translation>
+<translation id="1550523713251050646">Spustelėkite, jei reikia daugiau parinkčių</translation>
 <translation id="1602076796624386989">Įgalinti duomenis mobiliesiems</translation>
 <translation id="1621499497873603021">Laikas, likęs iki akumuliatoriaus išsikrovimo: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">„Chrome“ įrenginys</translation>
@@ -78,6 +80,7 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="3147142846278915599">Paleidimo priemonė (sinchronizuojamos programos...)</translation>
 <translation id="3157169093162779309">Įgalinti pasukimo užrakinimą</translation>
 <translation id="3294437725009624529">Svečias</translation>
+<translation id="3371140690572404006">USB-C įrenginys (prievadas dešinėje, priekinėje dalyje)</translation>
 <translation id="3445925074670675829">USB-C įrenginys</translation>
 <translation id="3473479545200714844">Ekrano didintuvas</translation>
 <translation id="3573179567135747900">Pakeisti atgal į „<ph name="FROM_LOCALE" />“ (reikia paleisti iš naujo)</translation>
@@ -104,6 +107,7 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="3963445509666917109">Garsiakalbis (vidinis)</translation>
 <translation id="3967919079500697218">Jūsų administratorius išjungė ekrano kopijų kūrimo funkciją.</translation>
 <translation id="397105322502079400">Skaičiuojama...</translation>
+<translation id="3995138139523574647">USB-C įrenginys (prievadas dešinėje, užpakalinėje dalyje)</translation>
 <translation id="4053612967614057854">Išjungti ekrano klaviatūrą</translation>
 <translation id="412065659894267608"><ph name="HOUR" /> val. <ph name="MINUTE" /> min. iki visiško įkrovimo</translation>
 <translation id="4250680216510889253">Ne</translation>
@@ -157,8 +161,10 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="6047696787498798094">Perjungus naudotoją ekrano bendrinimas bus nutrauktas. Ar norite tęsti?</translation>
 <translation id="6062360702481658777">Būsite automatiškai atjungti po <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Jūsų kompiuterį galima aptikti netoliese esančiais „Bluetooth“ įrenginiais ir jis rodomas kaip „<ph name="NAME" />“ su adresu <ph name="ADDRESS" /></translation>
+<translation id="6106745654298855237">Įkraunama naudojant <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Rodyti ekrano klaviatūrą</translation>
 <translation id="6165508094623778733">Sužinokite daugiau</translation>
+<translation id="6203030746557259519">Virtualusis ekranas</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" /> %</translation>
 <translation id="6248847161401822652">Jei norite išeiti, du kartus paspauskite „Control“ + „Shift“ + Q.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> pakeista į <ph name="ROTATION" /></translation>
@@ -203,6 +209,7 @@ Jei norite atšaukti, paspauskite „Alt“ + paieškos klavišas arba „Alt“
 <translation id="7573962313813535744">Doko režimas</translation>
 <translation id="7593891976182323525">Paieškos arba antrojo lygio klavišas</translation>
 <translation id="7649070708921625228">Žinynas</translation>
+<translation id="7692480393933218409">Įkraunami prijungti USB-C įrenginiai</translation>
 <translation id="7814236020522506259"><ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Po nustatymų sinchronizavimo kalba pakeista iš <ph name="FROM_LOCALE" /> į <ph name="TO_LOCALE" />.</translation>
 <translation id="785750925697875037">Žiūrėti paskyrą mobiliesiems</translation>

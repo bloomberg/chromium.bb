@@ -354,6 +354,39 @@
       Se esta definição estiver ativada, o histórico de navegação não é guardado. Esta definição também desativa a sincronização de separadores.
 
       Se esta definição estiver desativada ou não estiver definida, o histórico de navegação é guardado.</translation>
+<translation id="2424023834246613232">Substitui as regras de seleção da impressora predefinida do <ph name="PRODUCT_NAME" />.
+
+      Esta política determina as regras para a seleção da impressora predefinida no <ph name="PRODUCT_NAME" /> que ocorre quando a função de impressão é utilizada com um perfil pela primeira vez.
+
+      Quando esta política está definida, o <ph name="PRODUCT_NAME" /> tenta localizar uma impressora que corresponda a todos os atributos especificados e selecioná-la como impressora predefinida. É selecionada a primeira impressora localizada que corresponda à política. Se a correspondência não for única, pode ser selecionada qualquer impressora correspondente, dependendo da ordem pela qual as impressoras são detetadas.
+
+      Se esta política não estiver definida ou não for encontrada uma impressora correspondente no limite de tempo, é predefinida a impressora PDF incorporada ou não é selecionada qualquer impressora quando a impressora PDF não está disponível.
+
+      O valor é analisado como um objeto JSON em conformidade com o esquema seguinte:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Limitar ou não a pesquisa da impressora correspondente a um conjunto específico de impressoras.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Expressão regular para corresponder ao ID da impressora.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Expressão regular para corresponder ao nome a apresentar da impressora.",
+            "type": "string"
+          }
+        }
+      }
+
+      
+      As impressoras ligadas ao <ph name="CLOUD_PRINT_NAME" /> são consideradas como <ph name="PRINTER_TYPE_CLOUD" /> e as restantes são classificadas como <ph name="PRINTER_TYPE_LOCAL" />.
+      Omitir um campo significa que todos os valores são correspondentes, por exemplo, não especificar a conetividade faz com que a Pré-visualização da impressão inicie a deteção de todos os tipos de impressoras: locais e na nuvem.
+      Os padrões da expressão regular têm de seguir a sintaxe JavaScript RegExp e as correspondências são sensíveis a maiúsculas e minúsculas.</translation>
 <translation id="2426782419955104525">Ativa a funcionalidade Instantânea do <ph name="PRODUCT_NAME" /> e evita que os utilizadores alterem esta definição.
 
       Se ativar esta definição, o Instantâneo do <ph name="PRODUCT_NAME" /> será ativado.
@@ -511,6 +544,7 @@
       Especifica se a extensão de certificados de vinculação ao domínio TLS deveria ser ativada.
 
       Esta definição é utilizada para ativar os certificados de vinculação ao domínio TLS para testes. Esta definição experimental será removida no futuro.</translation>
+<translation id="2957513448235202597">Tipo de conta para a autenticação <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Regras para ignorar o proxy</translation>
 <translation id="2960691910306063964">Ativar ou desativar a autenticação sem PIN para anfitriões de acesso remoto</translation>
 <translation id="2976002782221275500">Especifica o período de tempo sem atividade por parte do utilizador após o qual o ecrã escurece quando o dispositivo está a utilizar a energia da bateria.
@@ -1596,6 +1630,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Quando esta política não está definida, utiliza-se um período de tempo predefinido.
 
           O valor da política deve ser especificado em milissegundos. Os valores devem ser inferiores ou iguais ao atraso de inatividade.</translation>
+<translation id="7329968046053403405">Especifica o tipo de conta das contas fornecidas pela aplicação de autenticação Android que suporta a autenticação <ph name="HTTP_NEGOTIATE" /> (por exemplo, a autenticação Kerberos). Estas informações devem ser disponibilizadas pelo fornecedor da aplicação de autenticação. Para mais informações, consulte https://goo.gl/hajyfN.
+
+          Se não for fornecida nenhuma definição, a autenticação <ph name="HTTP_NEGOTIATE" /> é desativada no Android.</translation>
 <translation id="7331962793961469250">Quando a opção está definida como Verdadeiro, as promoções de aplicações da Chrome Web Store não serão apresentadas na página de novo separador. Definir esta opção como Falso ou deixá-la por definir fará com que as promoções de aplicações da Chrome Web Store sejam apresentadas na página de novo separador.</translation>
 <translation id="7332963785317884918">Esta política está obsoleta. O <ph name="PRODUCT_OS_NAME" /> utilizará sempre a estratégia de limpeza "RemoveLRU".
 
@@ -1613,6 +1650,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7417972229667085380">Percentagem que determina a escala do atraso de inatividade no modo de apresentação (descontinuado)</translation>
 <translation id="7421483919690710988">Definir o tamanho da cache do disco multimédia em bytes</translation>
 <translation id="7424751532654212117">Lista de exceções à lista de plug-ins desativados</translation>
+<translation id="7426112309807051726">Especifica se a otimização <ph name="TLS_FALSE_START" /> deve ser desativada. Por razões históricas, o nome desta política é DisableSSLRecordSplitting.
+
+      Se a política não for definida ou for definida como falsa, o <ph name="TLS_FALSE_START" /> fica ativado. Se for definida como verdadeira, o <ph name="TLS_FALSE_START" /> fica desativado.</translation>
 <translation id="7433714841194914373">Ativar Instantâneo</translation>
 <translation id="7443616896860707393">Mensagens de Autorização Básica de HTTP de origem cruzada</translation>
 <translation id="7468416082528382842">Local de registo do Windows:</translation>
@@ -1868,6 +1908,24 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="8519264904050090490">URLs de exceção no manual do utilizador gerido</translation>
 <translation id="8544375438507658205">Processador de HTML predefinido para <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Avisar quando estiver a visitar sites fora dos pacotes de conteúdo</translation>
+<translation id="855339549837475534">Tanto o Chromium como o Google Chrome suportam o mesmo conjunto
+      de políticas. Tenha em atenção que este documento pode incluir políticas
+      direcionadas para versões de software não lançadas (ou seja, a entrada
+      "Suportado em" refere-se a uma versão não lançada) e que tais políticas
+      estão sujeitas a alteração ou remoção sem aviso prévio.
+
+      A utilização destas políticas destina-se unicamente à configuração de
+      instâncias do <ph name="PRODUCT_NAME" /> internas à sua
+      entidade. A utilização destas políticas fora da sua entidade (por
+      exemplo, num programa distribuído publicamente) é considerada um programa malicioso e, provavelmente,
+      é etiquetada como programa malicioso pela Google e por fornecedores de antivírus.
+
+      Não é necessário configuras estas definições manualmente. Existem
+      modelos de fácil utilização para Windows, Mac e Linux que podem ser transferidos a partir de <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      A forma recomendada para configurar a política no Windows é através do GPO, embora
+      o fornecimento da política através de registo ainda seja suportado para
+      instâncias do Windows que estejam associadas a um domínio do Active Directory.</translation>
 <translation id="8566842294717252664">Ocultar a Web Store da página Novo separador e do iniciador de aplicações</translation>
 <translation id="8587229956764455752">Permitir a criação de novas contas de utilizador</translation>
 <translation id="8614804915612153606">Desativar a Atualização Automática</translation>

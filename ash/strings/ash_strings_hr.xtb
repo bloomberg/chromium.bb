@@ -6,6 +6,7 @@
 <translation id="1021311941847921177">Promijenio se prečac za prelazak na sljedeći način unosa. Upotrijebite <ph name="NEW_SHORTCUT" /> umjesto <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Automatski sakrij policu</translation>
 <translation id="1195412055398077112">rubno područje zaslona</translation>
+<translation id="1252999807265626933">Izvor punjenja: <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Tipkovnica na zaslonu onemogućena je</translation>
 <translation id="1272079795634619415">Zaustavi</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -20,6 +21,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Pokretač</translation>
 <translation id="15373452373711364">Veliki pokazivač miša</translation>
+<translation id="1550523713251050646">Kliknite za više opcija</translation>
 <translation id="1602076796624386989">Omogući mobilne podatke</translation>
 <translation id="1621499497873603021">Baterija će se isprazniti za <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome uređaj</translation>
@@ -78,6 +80,7 @@ Pritisnite tipke Pretraživanje ili Shift da biste ju isključili.</translation>
 <translation id="3147142846278915599">Pokretač (sinkronizacija aplikacija...)</translation>
 <translation id="3157169093162779309">Omogući zaključavanje rotacije</translation>
 <translation id="3294437725009624529">Gost</translation>
+<translation id="3371140690572404006">USB-C uređaj (prednji desni priključak)</translation>
 <translation id="3445925074670675829">USB-C uređaj</translation>
 <translation id="3473479545200714844">Povećalo</translation>
 <translation id="3573179567135747900">Vratite na "<ph name="FROM_LOCALE" />" (zahtijeva ponovno pokretanje)</translation>
@@ -104,6 +107,7 @@ Pritisnite tipke Pretraživanje ili Shift da biste ju isključili.</translation>
 <translation id="3963445509666917109">Zvučnik (ugrađeni)</translation>
 <translation id="3967919079500697218">Administrator je onemogućio izradu snimki zaslona.</translation>
 <translation id="397105322502079400">Izračun u tijeku…</translation>
+<translation id="3995138139523574647">USB-C uređaj (stražnji desni priključak)</translation>
 <translation id="4053612967614057854">Onemogući tipkovnicu na zaslonu</translation>
 <translation id="412065659894267608"><ph name="HOUR" /> h <ph name="MINUTE" /> min do završetka punjenja</translation>
 <translation id="4250680216510889253">Ne</translation>
@@ -157,8 +161,10 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="6047696787498798094">Dijeljenje zaslona prekinut će se kad se prebacite na drugog korisnika. Želite li nastaviti?</translation>
 <translation id="6062360702481658777">Automatski ćete se odjaviti za <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Vaše računalo mogu otkriti Bluetooth uređaji u blizini i prikazivat će se kao "<ph name="NAME" />" s adresom <ph name="ADDRESS" />.</translation>
+<translation id="6106745654298855237">Puni se putem: <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Prikaži tipkovnicu na zaslonu</translation>
 <translation id="6165508094623778733">Saznajte više</translation>
+<translation id="6203030746557259519">Virtualni prikaz</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">Pritisnite tipke Control, Shift i Q dvaput da biste odustali.</translation>
 <translation id="6310121235600822547">Zaslon <ph name="DISPLAY_NAME" /> rotiran je za <ph name="ROTATION" /></translation>
@@ -203,6 +209,7 @@ Pritisnite tipke Alt + Pretraživanje ili Shift da biste ju isključili.</transl
 <translation id="7573962313813535744">Način rada u priključnoj stanici</translation>
 <translation id="7593891976182323525">Pretraživanje ili Shift</translation>
 <translation id="7649070708921625228">Pomoć</translation>
+<translation id="7692480393933218409">Punjenje povezanih USB-C uređaja</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> i <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Jezik je promijenjen iz: "<ph name="FROM_LOCALE" />" u: "<ph name="TO_LOCALE" />" nakon sinkronizacije vaših postavki.</translation>
 <translation id="785750925697875037">Prikaz mobilnog računa</translation>

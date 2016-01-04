@@ -16,6 +16,9 @@
 <translation id="119944043368869598">Cancella tutto</translation>
 <translation id="1201402288615127009">Avanti</translation>
 <translation id="1206892813135768548">Copia testo link</translation>
+<translation id="1240668123557180468">Consente di trovare le pagine web inviate da oggetti vicini. Chrome raccoglie le pagine web associate agli oggetti nelle vicinanze, le invia in forma anonima a un servizio di Google per individuare le pagine più utili a te, quindi le visualizza.
+
+Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la localizzazione.</translation>
 <translation id="1258753120186372309">Doodle di Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Interrompi</translation>
 <translation id="1285320974508926690">Non tradurre mai questo sito</translation>
@@ -80,6 +83,7 @@
 <translation id="2100273922101894616">Accesso automatico</translation>
 <translation id="2126426811489709554">Con tecnologia Chrome</translation>
 <translation id="213279576345780926">La scheda <ph name="TAB_TITLE" /> è stata chiusa</translation>
+<translation id="2138201775715568214">Ricerca di pagine Physical Web nelle vicinanze in corso</translation>
 <translation id="2139186145475833000">Aggiungi a schermata Home</translation>
 <translation id="2154710561487035718">Copia URL</translation>
 <translation id="219985413780390209">Proteggi te stesso e il tuo dispositivo da siti pericolosi</translation>
@@ -110,6 +114,7 @@
 <translation id="2532336938189706096">Visualizzazione web</translation>
 <translation id="2536728043171574184">È visualizzata una copia offline della pagina</translation>
 <translation id="257931822824936280">Espanso. Fai clic per comprimere.</translation>
+<translation id="2587052924345400782">Nuova versione disponibile</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2646820313617290661">I tuoi genitori ti aiutano a gestire queste impostazioni.</translation>
 <translation id="2677748264148917807">Esci</translation>
@@ -118,6 +123,7 @@
 <translation id="271033894570825754">Nuovo</translation>
 <translation id="2718352093833049315">Solo su Wi-Fi</translation>
 <translation id="2748463065602559597">È visualizzata una pagina sicura di Google Chrome.</translation>
+<translation id="2762000892062317888">in questo istante</translation>
 <translation id="2770465223704140727">Rimuovi dall'elenco</translation>
 <translation id="278029852808208386">Nessun dispositivo Bluetooth trovato. <ph name="BEGIN_LINK" />Esegui di nuovo la ricerca<ph name="END_LINK" />.</translation>
 <translation id="2816165854387457183">È stata rilevata una connessione lenta.</translation>
@@ -155,7 +161,6 @@
 <translation id="3287852534598822456">Il Preferito non esiste più. Aggiorna.</translation>
 <translation id="3303414029551471755">Procedere al download dei contenuti?</translation>
 <translation id="3328801116991980348">Informazioni sito</translation>
-<translation id="3343085080042659442">Chrome è obsoleto. Nell'ultima versione sono stati apportati miglioramenti rilevanti in materia di sicurezza e sono state aggiunte nuove funzioni.</translation>
 <translation id="3350687908700087792">Chiudi tutte le schede di navigazione in incognito</translation>
 <translation id="3358663646935160692">Questo account è gestito da <ph name="DOMAIN_NAME" />.
 
@@ -163,10 +168,12 @@ Stai per eseguire l'accesso con un account gestito e consentire al relativo ammi
 <translation id="3384347053049321195">Condividi immagine</translation>
 <translation id="3387650086002190359">Download di <ph name="FILE_NAME" /> non riuscito a causa di errori del file system.</translation>
 <translation id="3414952576877147120">Dimensioni:</translation>
+<translation id="3435896845095436175">Abilita</translation>
 <translation id="3485544713029068372">Smart Lock per password</translation>
 <translation id="3492207499832628349">Nuova scheda in incognito</translation>
 <translation id="3518985090088779359">Accetta e continua</translation>
 <translation id="3527085408025491307">Cartella</translation>
+<translation id="3559647143395293616">Attiva il Physical Web</translation>
 <translation id="360480449234699036">Scopri gli argomenti dei siti web senza lasciare la pagina. La funzione Tocca per cercare consente di inviare una parola e il relativo contesto alla Ricerca Google; vengono restituiti risultati di ricerca, immagini, definizioni e altri dettagli.
 
 Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfezionare la ricerca, fai scorrere completamente il riquadro verso l'alto e tocca la casella di ricerca.</translation>
@@ -175,6 +182,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="3656115297268584622">Attiva la localizzazione nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">I siti web di terze parti possono salvare e leggere i dati dei cookie</translation>
 <translation id="3672452749423051839">Suggerimenti per gli errori di navigazione</translation>
+<translation id="3732088672634061408">Impossibile recuperare gli interessi.</translation>
 <translation id="3738139272394829648">Tocca per cercare</translation>
 <translation id="3774280986422214650">Se attivi questa funzione, parteciperai a un esperimento che esegue il proxy delle pagine HTTPS tramite i server di Google.</translation>
 <translation id="3809549525127675114">"<ph name="VIDEO_TITLE" />" terminato</translation>
@@ -217,13 +225,16 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4378154925671717803">Telefono</translation>
 <translation id="4412992751769744546">Consenti cookie di terze parti</translation>
 <translation id="4440256989292146959">Naviga di più e consuma meno dati</translation>
+<translation id="4452548195519783679">Preferito aggiunto in: <ph name="FOLDER_NAME" /></translation>
 <translation id="4505554159887937799">Salvate offline</translation>
+<translation id="4513387527876475750">{DAYS,plural, =1{# giorno fa}other{# giorni fa}}</translation>
 <translation id="4522570452068850558">Dettagli</translation>
 <translation id="4526249700380860531">Controlla e gestisci le password salvate all'indirizzo <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Scegli cartella</translation>
 <translation id="4543087392704641517">Titolo del Preferito</translation>
 <translation id="4543661749405994812">Copia indirizzo email</translation>
 <translation id="4581964774250883625">Sei passato alla navigazione in incognito.</translation>
+<translation id="4583164079174244168">{MINUTES,plural, =1{# minuto fa}other{# minuti fa}}</translation>
 <translation id="4645575059429386691">Gestito da un genitore</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> Preferiti eliminati</translation>
 <translation id="4665282149850138822">Il sito <ph name="NAME" /> è stato aggiunto alla schermata Home</translation>
@@ -234,6 +245,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4720023427747327413">Apri in <ph name="PRODUCT_NAME" /></translation>
 <translation id="4726963856048758366">Spazio di archiviazione liberato</translation>
 <translation id="473775607612524610">Aggiorna</translation>
+<translation id="4738836084190194332">Ultima sincronizzazione: <ph name="WHEN" /></translation>
 <translation id="4761374747761474835">Seleziona un account per visualizzare i tuoi Preferiti, la cronologia, le password e altre impostazioni su tutti i tuoi dispositivi.</translation>
 <translation id="4773299976671772492">Interrotta</translation>
 <translation id="4797039098279997504">Tocca per tornare a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -261,6 +273,8 @@ Apri Chrome sul computer, apri il menu e seleziona "Accedi a Chrome…"</transla
 <translation id="5063480226653192405">Utilizzo</translation>
 <translation id="509605886816275399">Salvare la pagina offline?</translation>
 <translation id="5100237604440890931">Compresso. Fai clic per espandere.</translation>
+<translation id="5107381076085091558">Download sospeso.</translation>
+<translation id="5118713593561876160">Interessi</translation>
 <translation id="5127805178023152808">La sincronizzazione è disattivata</translation>
 <translation id="5138299137310274655">Questa pagina è in <ph name="SOURCE_LANGUAGE" />. Tradurla in <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5150703642582475397">Unisci schede e app</translation>
@@ -328,6 +342,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="5771382037724542929">Vuoi sostituire il file <ph name="FILE_NAME" /> esistente in <ph name="DIRECTORY_NAME" />?</translation>
 <translation id="5804241973901381774">Autorizzazioni</translation>
 <translation id="5806294296882899667">Errore caricamento predefinita</translation>
+<translation id="5809361687334836369">{HOURS,plural, =1{# ora fa}other{# ore fa}}</translation>
 <translation id="5817918615728894473">Accoppia</translation>
 <translation id="5832934273103296195">Visualizzazione espansa. Fai clic per comprimere</translation>
 <translation id="583891442612896534">Chrome non riesce a contattare i server di Google per la compressione dei dati. I salvataggi di dati potrebbero essere limitati.</translation>
@@ -361,6 +376,9 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="6192792657125177640">Eccezioni</translation>
 <translation id="6208263165776660488">Le schede di Chrome sono state spostate</translation>
 <translation id="6231464350722415003">Consenti JavaScript sui siti web da te specificati e bloccalo per tutti gli altri siti web</translation>
+<translation id="6232535412751077445">Se attivi l'opzione "Non tenere traccia", verrà inclusa una richiesta nel tuo traffico di navigazione. Gli effetti dipendono dall'eventuale risposta dei siti web alla richiesta e dall'interpretazione di quest'ultima.
+
+Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annunci non basati su altri siti web visitati. Molti siti web continueranno tuttavia a raccogliere e a utilizzare i dati di navigazione, ad esempio per aumentare la sicurezza, fornire contenuti, annunci e consigli, nonché per generare statistiche sui rapporti.</translation>
 <translation id="624558823898732418">Lingua della traduzione: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">Si è verificato un problema durante la stampa della pagina. Riprova.</translation>
 <translation id="6295158916970320988">Tutti i siti</translation>
@@ -429,6 +447,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="7029809446516969842">Password</translation>
 <translation id="7053983685419859001">Blocca</translation>
 <translation id="7063006564040364415">Impossibile collegarsi al server di sincronizzazione.</translation>
+<translation id="7094922512924405309">Nessuna pagina Physical Web trovata nelle vicinanze</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> schede aperte</translation>
 <translation id="7096034533295549981">Caricamento video</translation>
 <translation id="7191430249889272776">Scheda aperta in background.</translation>
@@ -545,6 +564,7 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="8660471606262461360">Da Google Payments</translation>
 <translation id="8676374126336081632">Cancella testo inserito</translation>
 <translation id="869891660844655955">Data di scadenza</translation>
+<translation id="8699799819461268362">Filtro Google SafeSites</translation>
 <translation id="8719023831149562936">Impossibile trasmettere scheda corrente</translation>
 <translation id="8725066075913043281">Riprova</translation>
 <translation id="8727142376512517020">Non visualizzare più</translation>
@@ -578,6 +598,7 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="9133515669113036225">Reimposta credenziali dispositivo</translation>
 <translation id="9137013805542155359">Mostra originale</translation>
 <translation id="9156605176886108508">Nessuna cartella di Preferiti</translation>
+<translation id="917685106653909562">Pagine Physical Web nelle vicinanze</translation>
 <translation id="9187199695613236444">Visualizzazione ottimizzata per dispositivi mobili</translation>
 <translation id="9192643434065497760">Per consentire l'accoppiamento, attiva il Bluetooth nelle <ph name="BEGIN_LINK" />impostazioni del dispositivo<ph name="END_LINK" />.</translation>
 <translation id="9206873250291191720">A</translation>

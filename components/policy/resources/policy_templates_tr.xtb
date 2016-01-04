@@ -395,6 +395,38 @@
       Bu ayar etkinleştirilirse tarama geçmişi kaydedilmez. Bu ayar aynı zamanda sekme senkronizasyonunu da devre dışı bırakır.
 
       Bu ayar devre dışı bırakılırsa veya hiç yapılandırılmazsa tarama geçmişi kaydedilir.</translation>
+<translation id="2424023834246613232"><ph name="PRODUCT_NAME" /> varsayılan yazıcı seçimi kurallarını geçersiz kılar.
+
+      Bu politika, <ph name="PRODUCT_NAME" /> ürününde varsayılan yazıcının seçilmesine ilişkin kuralları belirler. Bu seçim, yazdırma işlevi bir profille ilk kez kullanıldığında gerçekleşir.
+
+      Bu politika ayarlandığında, <ph name="PRODUCT_NAME" />, belirtilen tüm özelliklerle eşleşen bir yazıcı bulmayı dener ve bunu varsayılan yazıcı olarak seçer. Politikayla eşleştiği belirlenen ilk yazıcı seçilir. Birden fazla eşleşme olması durumunda, yazıcıların keşfedilme sırasına bağlı olarak eşleşen herhangi bir yazıcı seçilebilir.
+
+      Bu politika ayarlanmazsa veya zaman aşımı süresi dahilinde eşleşen bir yazıcı bulunamazsa yazıcı, varsayılan olarak yerleşik PDF yazıcısına ayarlanır veya PDF yazıcısı olmadığında hiçbir yazıcı seçilmez.
+
+      Değer, aşağıdaki şemaya uygun şekilde JSON nesnesi olarak ayrıştırılır:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Eşleşen yazıcı aramasının belirli bir yazıcı grubuyla sınırlandırılıp sınırlandırılmayacağı.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Yazıcı kimliğiyle eşleştirilecek düzenli ifade.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Yazıcı görünen adıyla eşleştirilecek düzenli ifade.",
+            "type": "string"
+          }
+        }
+      }
+
+      <ph name="CLOUD_PRINT_NAME" /> bağlantılı yazıcılar <ph name="PRINTER_TYPE_CLOUD" /> olarak kabul edilir; geri kalan yazıcılar da <ph name="PRINTER_TYPE_LOCAL" /> olarak sınıflandırılır.
+      Bir alanın boş bırakılması, bu alan için tüm değerlerin eşleştiği anlamına gelir. Örneğin, bağlantı değeri belirtilmediğinde, Baskı Önizleme her türden yazıcının (local ve cloud) keşfini başlatır.
+      Düzenli ifade kalıplarının önünde JavaScript RegExp sözdizimi bulunmalıdır ve eşleşmeler büyük/küçük harfe duyarlıdır.</translation>
 <translation id="2426782419955104525"><ph name="PRODUCT_NAME" /> ürününün Anında Arama özelliğini etkinleştirir ve kullanıcıların bu ayarı değiştirmesini önler.
 
       Bu ayarı etkinleştirirseniz <ph name="PRODUCT_NAME" /> Anında Arama özelliği etkinleştirilir.
@@ -570,6 +602,7 @@
       TLS alan adına bağlı sertifikalar uzantısının etkinleştirilip etkinleştirilmeyeceğini belirtir.
 
       Bu ayar TLS alan adına bağlı sertifikalar uzantısını test etme amacıyla etkinleştirmek için kullanılır. Bu deneysel ayar, gelecekte kaldırılacaktır.</translation>
+<translation id="2957513448235202597"><ph name="HTTP_NEGOTIATE" /> kimlik doğrulaması için hesap türü</translation>
 <translation id="2959898425599642200">Proxy atlama kuralları</translation>
 <translation id="2960691910306063964">Uzaktan erişim ana makineleri için PIN'siz kimlik doğrulamayı etkinleştir veya devre dışı bırak</translation>
 <translation id="2976002782221275500">Pil gücüyle çalışırken, ekran karartılmadan önce kullanıcı girişi olmadan geçecek süreyi belirtir.
@@ -1804,6 +1837,9 @@ politikayı geçersiz kılamaz.
           Bu politika ayarlanmadan bırakılırsa, varsayılan süre kullanılır.
 
           Politika değeri milisaniye olarak belirtilmelidir. Değerler boşta kalma gecikmesinden küçük veya ona eşit olacak şekilde bir aralığa sıkıştırılır.</translation>
+<translation id="7329968046053403405"><ph name="HTTP_NEGOTIATE" /> kimlik doğrulamasını (örneğin, Kerberos kimlik doğrulaması) destekleyen Android kimlik doğrulama uygulamasının sağladığı hesapların türünü belirtir. Bu bilgiler Kimlik Doğrulama uygulamasının tedarikçisinden edinilebilir. Daha fazla bilgi için https://goo.gl/hajyfN adresine bakın.
+
+          Hiçbir ayar sağlanmamışsa <ph name="HTTP_NEGOTIATE" /> kimlik doğrulaması Android'de devre dışı bırakılır.</translation>
 <translation id="7331962793961469250">True değerine ayarlandığında, Chrome Web Mağazası uygulamalarına ilişkin tanıtımlar yeni sekme sayfasında görünmez.
 
       Bu seçeneğin False değerine ayarlanması veya ayarlanmadan bırakılması, Chrome Web Mağazası uygulamalarına ilişkin tanıtımların yeni sekme sayfasında görünmesine neden olur</translation>
@@ -1823,6 +1859,9 @@ politikayı geçersiz kılamaz.
 <translation id="7417972229667085380">Sunum modundayken boşta gecikme süresini ölçekleme yüzdesi (kullanımdan kaldırıldı)</translation>
 <translation id="7421483919690710988">Medya disk önbelleği boyutunu bayt olarak ayarla</translation>
 <translation id="7424751532654212117">Devre dışı bırakılmış eklentiler listesinin istisnalar listesi</translation>
+<translation id="7426112309807051726"><ph name="TLS_FALSE_START" /> optimizasyonunun devre dışı bırakılıp bırakılmayacağını belirtir. Geçmişteki sebeplerden dolayı, bu politikaya DisableSSLRecordSplitting adı verilmiştir.
+
+      Bu politika ayarlanmazsa veya yanlış seçeneğine ayarlanırsa <ph name="TLS_FALSE_START" /> özeliği etkinleştirilir. Doğru seçeneğine ayarlanırsa <ph name="TLS_FALSE_START" /> özelliği devre dışı olur.</translation>
 <translation id="7433714841194914373">Anında Arama'yı etkinleştir</translation>
 <translation id="7443616896860707393">Çapraz kökenli HTTP Basic Auth bilgi istemleri</translation>
 <translation id="7468416082528382842">Windows kayıt defteri konumu:</translation>
@@ -2098,6 +2137,27 @@ politikayı geçersiz kılamaz.
 <translation id="8519264904050090490">Yönetilen kullanıcı manuel istisna URL'leri</translation>
 <translation id="8544375438507658205"><ph name="PRODUCT_FRAME_NAME" /> için varsayılan HTML oluşturucusu</translation>
 <translation id="8549772397068118889">İçerik paketlerinin dışındaki siteleri ziyaret ederken uyar</translation>
+<translation id="855339549837475534">Hem Chromium hem de Google Chrome aynı politika grubunu
+      destekler. Bu dokümanın, piyasaya çıkmamış yazılım sürümleri
+      için hedeflenmiş (yani "Desteklenen sürümler" bilgisinde, piyasaya çıkmamış
+      bir sürümün yer aldığı) politikalar içerebileceğini ve bu tür
+      politikaların önceden bildirilmeksizin değiştirilebileceğini veya
+      kaldırılabileceğini lütfen unutmayın.
+
+      Bu politikalar sadece kuruluşunuz dahilindeki <ph name="PRODUCT_NAME" />
+      örneklerini yapılandırmak için kullanılabilir. Bu politikaların
+      kuruluşunuzun dışında (örneğin, herkese açık olarak dağıtılan bir programda)
+      kullanılması kötü amaçlı yazılım olarak kabul edilmesine yol açar ve
+      muhtemelen Google ile virüsten korunma yazılımı tedarikçileri
+      tarafından da kötü amaçlı yazılım olarak sınıflandırılır.
+
+      Bu ayarların manuel olarak yapılandırılması gerekmez!
+      Windows, Mac ve Linux için kullanımı kolay şablonlar
+      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" /> adresinden indirilebilir.
+
+      Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır.
+      Ancak, bir Active Directory alan adına katılmış Windows örnekleri için
+      politikanın temel hazırlığının kayıt defteri kullanılarak yapılması da desteklenir.</translation>
 <translation id="8566842294717252664">Yeni sekme sayfasında ve uygulama başlatıcıda web mağazasını gizle</translation>
 <translation id="8587229956764455752">Yeni kullanıcı hesapları oluşturulmasına izin ver</translation>
 <translation id="8614804915612153606">Otomatik Güncellemeyi devre dışı bırakır</translation>

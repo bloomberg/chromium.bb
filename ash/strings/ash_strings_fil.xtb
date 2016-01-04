@@ -6,6 +6,7 @@
 <translation id="1021311941847921177">Napalitan na ang shortcut para sa paglipat sa susunod na pamamaraan ng pag-input. Mangyaring gamitin ang <ph name="NEW_SHORTCUT" /> sa halip na gamitin ang <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Awtomatikong itago ang shelf</translation>
 <translation id="1195412055398077112">overscan</translation>
+<translation id="1252999807265626933">Nagcha-charge mula sa <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Naka-disable ang on-screen na keyboard</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -20,6 +21,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Launcher</translation>
 <translation id="15373452373711364">Malaking mouse cursor</translation>
+<translation id="1550523713251050646">Mag-click para sa higit pang mga opsyon</translation>
 <translation id="1602076796624386989">Paganahin ang mobile data</translation>
 <translation id="1621499497873603021">Natitirang oras bago maubos ang baterya, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome device</translation>
@@ -78,6 +80,7 @@ Pindutin ang Search o Shift upang kanselahin.</translation>
 <translation id="3147142846278915599">Launcher (nagsi-sync ng mga app...)</translation>
 <translation id="3157169093162779309">I-enable ang lock sa pag-rotate</translation>
 <translation id="3294437725009624529">Bisita</translation>
+<translation id="3371140690572404006">USB-C device (port sa kanang bahagi sa harap)</translation>
 <translation id="3445925074670675829">USB-C device</translation>
 <translation id="3473479545200714844">Screen magnifier</translation>
 <translation id="3573179567135747900">Palitan pabalik sa "<ph name="FROM_LOCALE" />" (kailangang i-restart)</translation>
@@ -104,6 +107,7 @@ Pindutin ang Search o Shift upang kanselahin.</translation>
 <translation id="3963445509666917109">Speaker (Internal)</translation>
 <translation id="3967919079500697218">Na-disable ng iyong administrator ang kakayahang kumuha ng mga screenshot.</translation>
 <translation id="397105322502079400">Kinakalkula...</translation>
+<translation id="3995138139523574647">USB-C device (port sa kanang bahagi sa likod)</translation>
 <translation id="4053612967614057854">I-disable ang on-screen na keyboard</translation>
 <translation id="412065659894267608"><ph name="HOUR" />o <ph name="MINUTE" />m hanggang mapuno</translation>
 <translation id="4250680216510889253">Hindi</translation>
@@ -157,8 +161,10 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="6047696787498798094">Matitigil ang screen sharing kapag nagpalit ka ng user. Gusto mo bang magpatuloy?</translation>
 <translation id="6062360702481658777">Awtomatiko kang masa-sign out sa loob ng <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Ang iyong computer ay katuklas-tuklas sa mga kalapit na Bluetooth device at lalabas bilang "<ph name="NAME" />" na may address na <ph name="ADDRESS" /></translation>
+<translation id="6106745654298855237">China-charge ang <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Ipakita ang on-screen na keyboard</translation>
 <translation id="6165508094623778733">Matuto nang higit pa</translation>
+<translation id="6203030746557259519">Virtual na Display</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">Pindutin ang Control Shift Q nang dalawang beses upang lumabas.</translation>
 <translation id="6310121235600822547">Na-rotate ang <ph name="DISPLAY_NAME" /> sa <ph name="ROTATION" /></translation>
@@ -203,6 +209,7 @@ Pindutin ang Alt+Search o Shift upang kanselahin.</translation>
 <translation id="7573962313813535744">Mode na naka-dock</translation>
 <translation id="7593891976182323525">Search or Shift</translation>
 <translation id="7649070708921625228">Tulong</translation>
+<translation id="7692480393933218409">China-charge ang mga nakakonektang USB-C device</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> at <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Nagbago ang wika mula "<ph name="FROM_LOCALE" />" patungong "<ph name="TO_LOCALE" />" pagkatapos i-sync ang iyong mga setting.</translation>
 <translation id="785750925697875037">Tingnan ang account sa mobile</translation>

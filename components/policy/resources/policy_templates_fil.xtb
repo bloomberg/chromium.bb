@@ -392,6 +392,38 @@
       Kung naka-enable ang setting na ito, hindi ise-save ang history ng pagba-browse. Dini-disable din ng setting na ito ang pagsi-syng ng tab.
 
       Kung naka-disable o hindi nakatakda ang setting na ito, sine-save ang history ng pagba-browse.</translation>
+<translation id="2424023834246613232">Ino-override ang mga panuntunan sa pagpili ng default na printer ng <ph name="PRODUCT_NAME" />.
+
+      Tinutukoy ng patakarang ito ang mga panuntunan sa pagpili ng default na printer sa <ph name="PRODUCT_NAME" /> na magaganap sa unang beses na gamitin ang function na pag-print sa isang profile.
+
+      Kapag nakatakda ang patakarang ito, susubukan ng <ph name="PRODUCT_NAME" /> na maghanap ng printer na tumutugma sa lahat ng tinukoy na attribute at pipiliin ito bilang default na printer. Ang unang printer na nakitang tumutugma sa patakaran ang pipiliin, kung sakaling may hindi natatanging pagtugma, maaaring piliin ang anumang tumutugmang printer, depende sa pagkakasunud-sunod na natuklasan ang mga printer.
+
+      Kung hindi nakatakda ang patakarang ito o walang nakitang tumutugmang printer sa loob ng timeout, magde-default ang printer sa built-in na PDF printer o walang pipiliing printer, kapag hindi available ang PDF printer.
+
+      Ipa-parse ang value bilang JSON object, na umaayon sa sumusunod na schema:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Regular expression to match printer id.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regular expression to match printer display name.",
+            "type": "string"
+          }
+        }
+      }
+
+      Ang mga printer na nakakonekta sa <ph name="CLOUD_PRINT_NAME" /> ay itinuturing na <ph name="PRINTER_TYPE_CLOUD" />, iuuri ang iba pang natitirang printer bilang <ph name="PRINTER_TYPE_LOCAL" />.
+      Ang hindi paglalagay ng laman sa isang field ay nangangahulugang nagtutugma ang lahat ng value, halimbawa, ang hindi pagtukoy ng pagkakakonekta ay magdudulot sa Preview ng Print na simulan ang pagtuklas ng lahat ng uri ng printer, sa lokal at sa cloud.
+      Dapat na sundin ng mga pattern ng karaniwang expression ang JavaScript RegExp syntax at case sensitive ang mga pagtutugma.</translation>
 <translation id="2426782419955104525">Ine-enable ang Instant na feature ng <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang setting na ito.
 
       Kung ie-enable mo ang setting na ito, mae-enable ang <ph name="PRODUCT_NAME" /> Instant.
@@ -567,6 +599,7 @@
       Tinutukoy kung dapat i-enable ang mga extension ng TLS domain-bound na certificate.
 
       Ginagamit ang setting na ito upang i-enable ang extension ng mga TLS domain-bound na certificate para sa pagsusubok.  Aalisin ang pang-eksperimentong setting na ito sa hinaharap.</translation>
+<translation id="2957513448235202597">Uri ng account para sa pagpapatotoo ng <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Mga panuntunan sa pag-bypass ng proxy</translation>
 <translation id="2960691910306063964">I-enable o i-disable ang pagpapatotoo na hindi gumagamit ng PIN para sa mga host ng malayuang access</translation>
 <translation id="2976002782221275500">Tinutukoy ang tagal ng oras na walang input ng user na kapag lumipas ay idi-dim ang screen kapag tumatakbo gamit ang power ng baterya.
@@ -1803,6 +1836,9 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kapag hindi nakatakda ang patakarang ito, may default na tagal ng oras na gagamitin.
 
           Dapat tukuyin ang halaga ng patakaran ayon sa millisecond. Kinakailangang mas mababa kaysa sa o katumbas ng idle delay ang mga halaga.</translation>
+<translation id="7329968046053403405">Tinutukoy ang uri ng account ng mga account na ibinigay ng app sa pagpapatotoo ng Android na sumusuporta sa pagpapatotoo ng <ph name="HTTP_NEGOTIATE" /> (hal. pagpapatotoo ng Kerberos). Dapat na available ang impormasyong ito mula sa supplier ng app sa pagpapatotoo. Para sa higit pang mga detalye, tingnan ang https://goo.gl/hajyfN.
+
+          Kung walang ibinigay na setting, idi-disable ang pagpapatotoo ng <ph name="HTTP_NEGOTIATE" /> sa Android.</translation>
 <translation id="7331962793961469250">Kapag nakatakda sa True, hindi lilitaw sa bagong pahina ng tab ang mga pag-promote para sa mga Chrome Web Store app.
 
       Palilitawin ng pagtatakda sa pagpipiliang ito sa False o pag-iwan dito na hindi nakatakda sa bagong pahina ng tab ang mga pag-promote para sa mga Chrome Web Store app</translation>
@@ -1822,6 +1858,9 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7417972229667085380">Porsyento ng pag-scale ng idle delay kapag nasa presentation mode (hindi na ginagamit)</translation>
 <translation id="7421483919690710988">Itakda ang laki ng cache ng disk ng media sa bytes</translation>
 <translation id="7424751532654212117">Listahan ng mga pagbubukod sa listahan ng hindi pinaganang mga plugin</translation>
+<translation id="7426112309807051726">Tinutukoy kung dapat na ma-disable ang pag-optimize ng <ph name="TLS_FALSE_START" />. Para sa mga dati nang dahilan, pinangalanan ang patakaran na ito na DisableSSLRecordSplitting.
+
+      Kungh indi nakatakda ang patakaran, o nakatakda sa false, ie-enable ang <ph name="TLS_FALSE_START" />. Kung nakatakda ito sa true, idi-disable ang <ph name="TLS_FALSE_START" />.</translation>
 <translation id="7433714841194914373">Paganahin ang Instant</translation>
 <translation id="7443616896860707393">Mga prompt ng Cross-origin HTTP Basic Auth</translation>
 <translation id="7468416082528382842">Lokasyon ng registry ng window:</translation>
@@ -2101,6 +2140,29 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8519264904050090490">Mga pinapamahalaang URL ng manu-manong exception ng user</translation>
 <translation id="8544375438507658205">Default na taga-render ng HTML para sa <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Magbabala kapag bumibisita ng mga site na nasa labas ng mga pack ng nilalaman</translation>
+<translation id="855339549837475534">Sinusuportahan ng Chromium at Google Chrome ang parehong hanay ng
+      mga patakaran. Pakitandaan na maaaring kasama sa dokumentong ito ang mga 
+      patakaran na naka-target para sa mga bersyon ng software na hindi na-release
+      (ibig sabihin, tumutukoy ang kanilang entry na 'sinusuportahan noong' sa isang
+      hindi na-release na bersyon) at ang mga naturang patakaran ay maaaring 
+      magbago o maalis nang walang paunang abiso. 
+
+      Ang mga patakarang ito ay mahigpit na nilalayong gamitin upang mag-configure
+      ng mga paglitaw ng <ph name="PRODUCT_NAME" /> na internal sa iyong
+      organisasyon. Ang paggamit ng mga patakaran na ito sa labas ng iyong 
+      organisasyon (halimbawa, sa isang program na ibinabahagi sa publiko) ay 
+      maituturing na malware at malamang na ma-label bilang malware ng Google at ng
+      mga vendor ng anti-virus.
+
+      Hindi kailangang i-configure nang manu-mano ang mga setting na ito!
+      Available sa pag-download ang mga madaling gamiting template para sa
+      Windows, Mac at Linux sa <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+      Ang inirerekomendang paraan sa pag-configure ng patakaran sa Windows ay sa
+      pamamagitan ng GPO, bagama't ang
+      patakaran sa pagpoprobisyon sa pamamagitan ng registry ay sinusuportahan pa 
+      rin para sa paglitaw ng Windows
+      na kasama sa isang Active Directory na domain.</translation>
 <translation id="8566842294717252664">Itago ang web store sa Page ng Bagong Tab at app launcher</translation>
 <translation id="8587229956764455752">Payagan ang paglikha ng mga bagong user account</translation>
 <translation id="8614804915612153606">Hindi Pinapagana ang Awtomatikong Pag-update</translation>
