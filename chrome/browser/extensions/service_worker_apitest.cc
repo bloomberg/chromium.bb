@@ -572,6 +572,69 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, NotificationAPI) {
                                   "page.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, WebAccessibleResourcesFetch) {
+  EXPECT_TRUE(RunExtensionSubtest(
+      "service_worker/web_accessible_resources/fetch/", "page.html"));
+}
+
+// This test loads a web page that has an iframe pointing to a
+// chrome-extension:// URL. The URL is listed in the extension's
+// web_accessible_resources. Initially the iframe is served from the extension's
+// resource file. After verifying that, we register a Service Worker that
+// controls the extension. Further requests to the same resource as before
+// should now be served by the Service Worker.
+// This test also verifies that if the requested resource exists in the manifest
+// but is not present in the extension directory, the Service Worker can still
+// serve the resource file.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, WebAccessibleResourcesIframeSrc) {
+  const Extension* extension = LoadExtensionWithFlags(
+      test_data_dir_.AppendASCII(
+          "service_worker/web_accessible_resources/iframe_src"),
+      kFlagNone);
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  GURL page_url = embedded_test_server()->GetURL(
+      "/extensions/api_test/service_worker/web_accessible_resources/"
+      "webpage.html");
+
+  content::WebContents* web_contents = AddTab(browser(), page_url);
+  std::string result;
+  // webpage.html will create an iframe pointing to a resource from |extension|.
+  // Expect the resource to be served by the extension.
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents, base::StringPrintf("window.testIframe('%s', 'iframe.html')",
+                                       extension->id().c_str()),
+      &result));
+  EXPECT_EQ("FROM_EXTENSION_RESOURCE", result);
+
+  ExtensionTestMessageListener service_worker_ready_listener("SW_READY", false);
+  EXPECT_TRUE(ExecuteScriptInBackgroundPageNoWait(
+      extension->id(), "window.registerServiceWorker()"));
+  EXPECT_TRUE(service_worker_ready_listener.WaitUntilSatisfied());
+
+  result.clear();
+  // webpage.html will create another iframe pointing to a resource from
+  // |extension| as before. But this time, the resource should be be served
+  // from the Service Worker.
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents, base::StringPrintf("window.testIframe('%s', 'iframe.html')",
+                                       extension->id().c_str()),
+      &result));
+  EXPECT_EQ("FROM_SW_RESOURCE", result);
+
+  result.clear();
+  // webpage.html will create yet another iframe pointing to a resource that
+  // exists in the extension manifest's web_accessible_resources, but is not
+  // present in the extension directory. Expect the resources of the iframe to
+  // be served by the Service Worker.
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents,
+      base::StringPrintf("window.testIframe('%s', 'iframe_non_existent.html')",
+                         extension->id().c_str()),
+      &result));
+  EXPECT_EQ("FROM_SW_RESOURCE", result);
+}
+
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBackgroundSyncTest, Sync) {
   const Extension* extension = LoadExtensionWithFlags(
       test_data_dir_.AppendASCII("service_worker/sync"), kFlagNone);

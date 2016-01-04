@@ -192,9 +192,9 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     // return a opaque response which is from the other origin site and the
     // script in the page can read the content.
     //
-    // We assume that ServiceWorker is skipped for sync requests and non-HTTP
-    // familiy requests by content/ code.
-    if (m_async && !request.skipServiceWorker() && request.url().protocolIsInHTTPFamily() && document.fetcher()->isControlledByServiceWorker()) {
+    // We assume that ServiceWorker is skipped for sync requests and unsupported
+    // protocol requests by content/ code.
+    if (m_async && !request.skipServiceWorker() && SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(request.url().protocol()) && document.fetcher()->isControlledByServiceWorker()) {
         ResourceRequest newRequest(request);
         // FetchRequestMode should be set by the caller. But the expected value
         // of FetchRequestMode is not speced yet except for XHR. So we set here.
