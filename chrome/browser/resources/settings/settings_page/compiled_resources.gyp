@@ -7,5 +7,15 @@
       'target_name': 'settings_page_visibility',
       'includes': ['../../../../../third_party/closure_compiler/compile_js.gypi'],
     },
+    {
+      'target_name': 'settings_router',
+      'variables': {
+        'depends': [
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:assert',
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
+        ],
+      },
+      'includes': ['../../../../../third_party/closure_compiler/compile_js.gypi'],
+    },
   ],
 }
