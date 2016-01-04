@@ -3561,12 +3561,6 @@ void FrameView::adjustScrollbarsAvoidingResizerCount(int overlapDelta)
     }
 }
 
-Scrollbar* FrameView::scrollbarAtRootFramePoint(const IntPoint& pointInRootFrame)
-{
-    IntPoint pointInFrame = convertFromRootFrame(pointInRootFrame);
-    return scrollbarAtFramePoint(pointInFrame);
-}
-
 Scrollbar* FrameView::scrollbarAtFramePoint(const IntPoint& pointInFrame)
 {
     if (m_horizontalScrollbar && m_horizontalScrollbar->shouldParticipateInHitTesting() && m_horizontalScrollbar->frameRect().contains(pointInFrame))

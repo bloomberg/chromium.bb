@@ -493,7 +493,6 @@ public:
     void windowResizerRectChanged();
 
     // For platforms that need to hit test scrollbars from within the engine's event handlers (like Win32).
-    Scrollbar* scrollbarAtRootFramePoint(const IntPoint&);
     Scrollbar* scrollbarAtFramePoint(const IntPoint&);
 
     IntPoint convertChildToSelf(const Widget* child, const IntPoint& point) const override
