@@ -56,7 +56,8 @@ function PDFScriptingAPI(window, plugin) {
   this.setPlugin(plugin);
 
   window.addEventListener('message', function(event) {
-    if (event.origin != 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai') {
+    if (event.origin != 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai' &&
+        event.origin != 'chrome://print') {
       console.error('Received message that was not from the extension: ' +
                     event);
       return;
@@ -271,12 +272,10 @@ PDFScriptingAPI.prototype = {
 function PDFCreateOutOfProcessPlugin(src) {
   var client = new PDFScriptingAPI(window);
   var iframe = window.document.createElement('iframe');
+  iframe.setAttribute('src', 'pdf_preview.html?' + src);
   // Prevent the frame from being tab-focusable.
   iframe.setAttribute('tabindex', '-1');
 
-  var EXTENSION_URL =
-      'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/index.html';
-  iframe.setAttribute('src', EXTENSION_URL + '?' + src);
   iframe.onload = function() {
     client.setPlugin(iframe.contentWindow);
   };

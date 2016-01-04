@@ -367,6 +367,8 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath("print_preview.js", IDR_PRINT_PREVIEW_JS);
+  source->AddResourcePath("pdf_preview.html",
+                          IDR_PRINT_PREVIEW_PDF_PREVIEW_HTML);
   source->AddResourcePath("images/printer.png",
                           IDR_PRINT_PREVIEW_IMAGES_PRINTER);
   source->AddResourcePath("images/printer_shared.png",
@@ -383,6 +385,8 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
                           IDR_PRINT_PREVIEW_IMAGES_MOBILE_SHARED);
   source->SetDefaultResource(IDR_PRINT_PREVIEW_HTML);
   source->SetRequestFilter(base::Bind(&HandleRequestCallback));
+  source->OverrideContentSecurityPolicyFrameSrc("frame-src 'self';");
+  source->DisableDenyXFrameOptions();
   source->OverrideContentSecurityPolicyObjectSrc("object-src 'self';");
   source->AddLocalizedString("moreOptionsLabel", IDS_MORE_OPTIONS_LABEL);
   source->AddLocalizedString("lessOptionsLabel", IDS_LESS_OPTIONS_LABEL);

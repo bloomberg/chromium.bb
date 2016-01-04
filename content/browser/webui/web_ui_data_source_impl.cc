@@ -74,6 +74,11 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
   bool ShouldDenyXFrameOptions() const override {
     return parent_->deny_xframe_options_;
   }
+  void WillServiceRequest(const net::URLRequest* request,
+                          std::string* path) const override {
+    // We want to remove any query strings from the path.
+    *path = path->substr(0, path->find_first_of('?'));
+  }
 
  private:
   WebUIDataSourceImpl* parent_;

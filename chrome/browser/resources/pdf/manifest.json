@@ -15,17 +15,11 @@
     "application/pdf"
   ],
   "content_security_policy": "script-src 'self' blob: filesystem: chrome://resources; object-src * blob: filesystem: data:; plugin-types application/x-google-chrome-pdf",
-  // This is to work-around an issue where this extension is not granted
-  // permission to access chrome://resources when iframed for print preview.
-  // See https://crbug.com/444752.
-  "content_scripts": [
-    {
-      "matches": ["chrome://print/*"],
-      "js": ["content_script.js"]
-    }
-  ],
   "mime_types_handler": "index.html",
   "web_accessible_resources": [
-    "index.html"
+    "*.js",
+    "*.html",
+    "*.css",
+    "*.png"
   ]
 }

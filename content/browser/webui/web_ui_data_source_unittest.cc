@@ -146,4 +146,14 @@ TEST_F(WebUIDataSourceTest, MimeType) {
   EXPECT_EQ(GetMimeType(".css.foo"), html);
 }
 
+TEST_F(WebUIDataSourceTest, QueryStringRemoval) {
+  std::string path = "path.js?query_string";
+  source()->source()->WillServiceRequest(nullptr, &path);
+  EXPECT_EQ("path.js", path);
+
+  path = "path.js?query_string?query_string2";
+  source()->source()->WillServiceRequest(nullptr, &path);
+  EXPECT_EQ("path.js", path);
+}
+
 }  // namespace content
