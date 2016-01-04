@@ -69,10 +69,9 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
   return nil;
 }
 
-- (void)willMoveToSuperview:(nullable UIView*)newSuperview {
-  [super willMoveToSuperview:newSuperview];
-
-  if (newSuperview) {
+- (void)didMoveToSuperview {
+  [super didMoveToSuperview];
+  if (self.superview) {
     self.autoresizingMask =
         UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self addSubview:_webView];
