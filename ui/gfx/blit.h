@@ -16,18 +16,6 @@ class Point;
 class Rect;
 class Vector2d;
 
-// Blits a rectangle from the source context into the destination context.
-GFX_EXPORT void BlitContextToContext(NativeDrawingContext dst_context,
-                                     const Rect& dst_rect,
-                                     NativeDrawingContext src_context,
-                                     const Point& src_origin);
-
-// Blits a rectangle from the source canvas into the destination canvas.
-GFX_EXPORT void BlitCanvasToCanvas(SkCanvas *dst_canvas,
-                                   const Rect& dst_rect,
-                                   SkCanvas *src_canvas,
-                                   const Point& src_origin);
-
 // Scrolls the given subset of the given canvas by the given offset.
 // The canvas should not have a clip or a transform applied, since platforms
 // may implement those operations differently.

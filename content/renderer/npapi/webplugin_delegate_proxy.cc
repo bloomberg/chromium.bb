@@ -938,7 +938,6 @@ void WebPluginDelegateProxy::OnGetCookies(const GURL& url,
 
 void WebPluginDelegateProxy::CopyFromBackBufferToFrontBuffer(
     const gfx::Rect& rect) {
-#if defined(OS_MACOSX)
   // Blitting the bits directly is much faster than going through CG, and since
   // the goal is just to move the raw pixels between two bitmaps with the same
   // pixel format (no compositing, color correction, etc.), it's safe.
@@ -956,12 +955,6 @@ void WebPluginDelegateProxy::CopyFromBackBufferToFrontBuffer(
     source_data += stride;
     target_data += stride;
   }
-#else
-  BlitCanvasToCanvas(front_buffer_canvas(),
-                     rect,
-                     back_buffer_canvas(),
-                     rect.origin());
-#endif
 }
 
 void WebPluginDelegateProxy::UpdateFrontBuffer(
