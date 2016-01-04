@@ -67239,6 +67239,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="49" label="AUTOFILL_CC_INFOBAR_DELEGATE"/>
   <int value="50" label="TRANSLATE_INFOBAR_DELEGATE"/>
   <int value="51" label="IOS_CHROME_SAVE_PASSWORD_INFOBAR_DELEGATE"/>
+  <int value="52" label="NATIVE_APP_INSTALLER_INFOBAR_DELEGATE"/>
+  <int value="53" label="NATIVE_APP_LAUNCHER_INFOBAR_DELEGATE"/>
+  <int value="54" label="NATIVE_APP_OPEN_POLICY_INFOBAR_DELEGATE"/>
+  <int value="55" label="RE_SIGN_IN_INFOBAR_DELEGATE"/>
+  <int value="56" label="SHOW_PASSKIT_ERROR_INFOBAR_DELEGATE"/>
+  <int value="57" label="READER_MODE_INFOBAR_DELEGATE"/>
+  <int value="58" label="SYNC_ERROR_INFOBAR_DELEGATE"/>
+  <int value="59" label="UPGRADE_INFOBAR_DELEGATE"/>
 </enum>
 
 <enum name="InfoBarResponse" type="int">
