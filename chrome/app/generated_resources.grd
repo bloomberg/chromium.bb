@@ -14575,24 +14575,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_MINOR_SHA1_DESCRIPTION" desc="Description of a security problem where the site's certificate expires in 2016 and contains a SHA1 signature in the chain.">
         The certificate for this site expires in 2016, and the certificate chain contains a certificate signed using SHA-1.
       </message>
-      <message name="IDS_PASSIVE_MIXED_CONTENT" desc="Summary phrase of a security problem where the site displayed passive mixed content.">
-        Mixed Content
-      </message>
-      <message name="IDS_PASSIVE_MIXED_CONTENT_DESCRIPTION" desc="Description of a security problem where the site displayed passive mixed content.">
-        The site includes HTTP resources.
-      </message>
-      <message name="IDS_ACTIVE_MIXED_CONTENT" desc="Summary phrase for a security problem where site ran active mixed content.">
-        Active Mixed Content
-      </message>
-      <message name="IDS_ACTIVE_MIXED_CONTENT_DESCRIPTION" desc="Description of a security problem where site ran active mixed content.">
-        You have recently allowed insecure content (such as scripts or iframes) to run on this site.
-      </message>
-      <message name="IDS_NO_MIXED_CONTENT" desc="Summary phrase for a site that does not have any mixed content.">
-        Secure Resources
-      </message>
-      <message name="IDS_NO_MIXED_CONTENT_DESCRIPTION" desc="Description of a site that does not have any mixed content.">
-        All resources on this page are served securely.
-      </message>
       <message name="IDS_CERTIFICATE_CHAIN_ERROR" desc="Summary phrase for a security problem with the site's certificate.">
         Certificate Error
       </message>
