@@ -108,6 +108,13 @@ static inline double calculateScaledActiveTime(double activeDuration, double act
         return nullValue();
 
     ASSERT(activeTime >= 0 && activeTime <= activeDuration);
+
+    if (specified.playbackRate == 0)
+        return startOffset;
+
+    if (!std::isfinite(activeTime))
+        return std::numeric_limits<double>::infinity();
+
     return multiplyZeroAlwaysGivesZero(specified.playbackRate < 0 ? activeTime - activeDuration : activeTime, specified.playbackRate) + startOffset;
 }
 

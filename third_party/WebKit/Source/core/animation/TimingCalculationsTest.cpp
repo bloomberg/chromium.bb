@@ -93,6 +93,8 @@ TEST(AnimationTimingCalculationsTest, ScaledActiveTime)
     EXPECT_EQ(0, calculateScaledActiveTime(std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), 0, timing));
     timing.playbackRate = 1;
     EXPECT_EQ(std::numeric_limits<double>::infinity(), calculateScaledActiveTime(std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), 0, timing));
+    timing.playbackRate = -1;
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), calculateScaledActiveTime(std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), 0, timing));
 }
 
 TEST(AnimationTimingCalculationsTest, IterationTime)
