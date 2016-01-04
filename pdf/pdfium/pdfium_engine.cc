@@ -534,7 +534,6 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client)
       fpdf_availability_(NULL),
       next_timer_id_(0),
       last_page_mouse_down_(-1),
-      first_visible_page_(-1),
       most_visible_page_(-1),
       called_do_document_action_(false),
       render_grayscale_(false),
@@ -2272,10 +2271,6 @@ std::string PDFiumEngine::GetLinkAtPosition(const pp::Point& point) {
   return url;
 }
 
-bool PDFiumEngine::IsSelecting() {
-  return selecting_;
-}
-
 bool PDFiumEngine::HasPermission(DocumentPermission permission) const {
   // PDF 1.7 spec, section 3.5.2 says: "If the revision number is 2 or greater,
   // the operations to which user access can be controlled are as follows: ..."
@@ -2345,11 +2340,6 @@ int PDFiumEngine::GetNamedDestinationPage(const std::string& destination) {
   return dest ? FPDFDest_GetPageIndex(doc_, dest) : -1;
 }
 
-int PDFiumEngine::GetFirstVisiblePage() {
-  CalculateVisiblePages();
-  return first_visible_page_;
-}
-
 int PDFiumEngine::GetMostVisiblePage() {
   CalculateVisiblePages();
   return most_visible_page_;
@@ -2364,26 +2354,6 @@ pp::Rect PDFiumEngine::GetPageRect(int index) {
 
 pp::Rect PDFiumEngine::GetPageContentsRect(int index) {
   return GetScreenRect(pages_[index]->rect());
-}
-
-void PDFiumEngine::PaintThumbnail(pp::ImageData* image_data, int index) {
-  FPDF_BITMAP bitmap = FPDFBitmap_CreateEx(
-      image_data->size().width(), image_data->size().height(),
-      FPDFBitmap_BGRx, image_data->data(), image_data->stride());
-
-  if (pages_[index]->available()) {
-    FPDFBitmap_FillRect(bitmap, 0, 0, image_data->size().width(),
-                        image_data->size().height(), 0xFFFFFFFF);
-
-    FPDF_RenderPageBitmap(
-        bitmap, pages_[index]->GetPage(), 0, 0, image_data->size().width(),
-        image_data->size().height(), 0, GetRenderingFlags());
-  } else {
-    FPDFBitmap_FillRect(bitmap, 0, 0, image_data->size().width(),
-                        image_data->size().height(), kPendingPageColor);
-  }
-
-  FPDFBitmap_Destroy(bitmap);
 }
 
 void PDFiumEngine::SetGrayscale(bool grayscale) {
@@ -2714,15 +2684,10 @@ void PDFiumEngine::CalculateVisiblePages() {
   // screen coordinates.
   form_highlights_.clear();
 
-  if (visible_pages_.size() == 0)
-    first_visible_page_ = -1;
-  else
-    first_visible_page_ = visible_pages_.front();
-
-  int most_visible_page = first_visible_page_;
+  int most_visible_page = visible_pages_.empty() ? 0 : visible_pages_.front();
+  DCHECK_GE(most_visible_page, 0);
   // Check if the next page is more visible than the first one.
-  if (most_visible_page != -1 &&
-      pages_.size() > 0 &&
+  if (!pages_.empty() &&
       most_visible_page < static_cast<int>(pages_.size()) - 1) {
     pp::Rect rc_first =
         visible_rect.Intersect(GetPageScreenRect(most_visible_page));
