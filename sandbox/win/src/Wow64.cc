@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/win/src/wow64.h"
+#include "sandbox/win/src/Wow64.h"
 
 #include <stddef.h>
 
