@@ -64,11 +64,13 @@ class InspectorNetworkTabTest(tab_test_case.TabTestCase):
           self.assertEqual(resp.GetHeader('Content-Type'), 'text/html')
           self.assertTrue('<!DOCTYPE HTML>' in body)
           self.assertFalse(base64_encoded)
+          self.assertEqual('other', resp.initiator['type'])
         else:
           # We know this is the only subresource type in our setup.
           self.assertEqual(resp.GetHeader('Content-Type'), 'image/png')
           self.assertFalse('<!DOCTYPE HTML>' in body)
           self.assertTrue(base64_encoded)
+          self.assertEqual('parser', resp.initiator['type'])
 
   # Flaky on many platforms (at least Win, Linux, and Mac).
   # http://crbug.com/424706

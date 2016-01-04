@@ -13,10 +13,19 @@ class InspectorNetworkException(Exception):
 
 
 class InspectorNetworkResponseData(object):
-  def __init__(self, inspector_network, params):
+  def __init__(self, inspector_network, params, initiator):
+    """Creates a new InspectorNetworkResponseData instance.
+
+    Args:
+      inspector_network: InspectorNetwork instance.
+      params: the 'params' field of the devtools Network.responseReceived event.
+      initiator: initiator of the request, as gathered from
+                 Network.requestWillBeSent.
+    """
     self._inspector_network = inspector_network
     self._request_id = params['requestId']
     self._timestamp = params['timestamp']
+    self._initiator = initiator
 
     self._response = params['response']
     if not self._response:
@@ -51,6 +60,7 @@ class InspectorNetworkResponseData(object):
   def status(self):
     return self._response['status']
 
+  @property
   def status_text(self):
     return self._response['status_text']
 
@@ -84,6 +94,10 @@ class InspectorNetworkResponseData(object):
   def served_from_cache(self):
     return self._served_from_cache
 
+  @property
+  def initiator(self):
+    return self._initiator
+
   def GetHeader(self, name):
     if name in self.headers:
       return self.headers[name]
@@ -105,6 +119,7 @@ class InspectorNetworkResponseData(object):
     event['response'] = self._response
     event['body'], event['base64_encoded_body'] = self.GetBody()
     event['served_from_cache'] = self.served_from_cache
+    event['initiator'] = self._initiator
     return event
 
   @staticmethod
@@ -114,11 +129,12 @@ class InspectorNetworkResponseData(object):
     params['timestamp'] = event.start
     params['requestId'] = event.args['requestId']
     params['response'] = event.args['response']
-    recorded = InspectorNetworkResponseData(None, params)
+    recorded = InspectorNetworkResponseData(None, params, None)
     # pylint: disable=protected-access
     recorded._body = event.args['body']
     recorded._base64_encoded = event.args['base64_encoded_body']
     recorded._served_from_cache = event.args['served_from_cache']
+    recorded._initiator = event.args.get('initiator', None)
     recorded._from_event = True
     return recorded
 
@@ -129,6 +145,7 @@ class InspectorNetwork(object):
     self._http_responses = []
     self._served_from_cache = set()
     self._timeline_recorder = None
+    self._initiators = {}
 
   def ClearCache(self, timeout=60):
     """Clears the browser's disk and memory cache."""
@@ -167,12 +184,19 @@ class InspectorNetwork(object):
     """Clears recorded HTTP responses."""
     self._http_responses = []
     self._served_from_cache.clear()
+    self._initiators.clear()
 
   def _OnNetworkNotification(self, msg):
+    if msg['method'] == 'Network.requestWillBeSent':
+      self._ProcessRequestWillBeSent(msg['params'])
     if msg['method'] == 'Network.responseReceived':
       self._RecordHTTPResponse(msg['params'])
     elif msg['method'] == 'Network.requestServedFromCache':
       self._served_from_cache.add(msg['params']['requestId'])
+
+  def _ProcessRequestWillBeSent(self, params):
+    request_id = params['requestId']
+    self._initiators[request_id] = params['initiator']
 
   def _RecordHTTPResponse(self, params):
     required_fields = ['requestId', 'timestamp', 'response']
@@ -180,7 +204,11 @@ class InspectorNetwork(object):
       if field not in params:
         logging.waring('HTTP Response missing required field: %s', field)
         return
-    self._http_responses.append(InspectorNetworkResponseData(self, params))
+    request_id = params['requestId']
+    assert request_id in self._initiators
+    initiator = self._initiators[request_id]
+    self._http_responses.append(
+        InspectorNetworkResponseData(self, params, initiator))
 
   def GetHTTPResponseBody(self, request_id, timeout=60):
     try:
