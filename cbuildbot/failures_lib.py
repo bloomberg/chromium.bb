@@ -327,6 +327,7 @@ class BuildFailureMessage(object):
     self.tracebacks = tuple(tracebacks)
     self.internal = bool(internal)
     self.reason = str(reason)
+    # builder should match build_config, e.g. self._run.config.name.
     self.builder = str(builder)
 
   def __str__(self):

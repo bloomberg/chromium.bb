@@ -1082,7 +1082,7 @@ class TestCoreLogic(MoxBase):
     self.mox.StubOutWithMock(validation_pool.ValidationPool,
                              'SubmitLocalChanges')
     pool.SubmitLocalChanges(
-        {'foo_repo': set((patches[2],))}, reason
+        {'foo_repo': {patches[2]:reason}}
         ).AndReturn((set((patches[2],)), {}))
 
     for patch in pool.non_manifest_changes:
@@ -1092,8 +1092,9 @@ class TestCoreLogic(MoxBase):
 
     mock_manifest = mock.MagicMock()
     self.mox.ReplayAll()
+    verified_cls = {c:reason for c in patches}
     with mock.patch.object(git.ManifestCheckout, 'Cached', new=mock_manifest):
-      submitted, errors = pool.SubmitChanges(patches, reason=reason)
+      submitted, errors = pool.SubmitChanges(verified_cls)
 
     self.assertEqual(submitted, set((patches[0], patches[2])))
     self.assertEqual(errors, {patches[1]: error})
@@ -1789,9 +1790,10 @@ class BaseSubmitPoolTestCase(MoxBase):
     with mock.patch.object(git.ManifestCheckout, 'Cached', new=mock_manifest):
       if not self.ALL_BUILDS_PASSED:
         actually_rejected = sorted(pool.SubmitPartialPool(
-            pool.candidates, mock.ANY, dict(), [], [], [], reason=reason))
+            pool.candidates, mock.ANY, dict(), dict(), [], [], []))
       else:
-        _, actually_rejected = pool.SubmitChanges(self.patches, reason=reason)
+        verified_cls = {c:reason for c in self.patches}
+        _, actually_rejected = pool.SubmitChanges(verified_cls)
 
     # Check that the right patches were submitted and rejected.
     self.assertItemsEqual(map(str, rejected), map(str, actually_rejected))
@@ -1972,11 +1974,12 @@ class SubmitPartialPoolTest(BaseSubmitPoolTestCase):
 
     self.verified_mock = self.PatchObject(
         triage_lib.CalculateSuspects, 'GetFullyVerifiedChanges',
-        return_value=[])
+        return_value={})
 
   def _MarkPatchesVerified(self, patches):
     """Set up to mark |patches| as verified."""
-    self.verified_mock.return_value = patches
+    verified_patches = {c:None for c in patches}
+    self.verified_mock.return_value = verified_patches
 
   def testSubmitNone(self):
     """Submit no changes."""

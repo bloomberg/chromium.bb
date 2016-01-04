@@ -17,6 +17,7 @@ from chromite.cbuildbot import tree_status
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import clactions
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import patch as cros_patch
 
@@ -584,6 +585,35 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
 
     return changes_by_config
 
+  def GetSubsysResultForSlaves(self):
+    """Get the pass/fail HWTest subsystems results for each slave.
+
+    Returns:
+      A dictionary mapping a slave config name to a dictionary of the pass/fail
+      subsystems. E.g.
+      {'foo-paladin': {'pass_subsystems':{'A', 'B'},
+                       'fail_subsystems':{'C'}}}
+    """
+    # build_id is the master build id for the run
+    build_id, db = self._run.GetCIDBHandle()
+    assert db, 'No database connection to use.'
+    slave_msgs = db.GetSlaveBuildMessages(build_id)
+    slave_subsys_msgs = ([m for m in slave_msgs
+                          if m['message_type'] == constants.SUBSYSTEMS])
+    subsys_by_config = dict()
+    group_msg_by_config = cros_build_lib.GroupByKey(slave_subsys_msgs,
+                                                    'build_config')
+    for config, dict_list in group_msg_by_config.iteritems():
+      d = subsys_by_config.setdefault(config, {})
+      subsys_groups = cros_build_lib.GroupByKey(dict_list, 'message_subtype')
+      for k, v in subsys_groups.iteritems():
+        if k == constants.SUBSYSTEM_PASS:
+          d['pass_subsystems'] = set([x['message_value'] for x in v])
+        if k == constants.SUBSYSTEM_FAIL:
+          d['fail_subsystems'] = set([x['message_value'] for x in v])
+        # If message_subtype==subsystem_unused, keep d as an empty dict.
+    return subsys_by_config
+
   def _ShouldSubmitPartialPool(self):
     """Determine whether we should attempt or skip SubmitPartialPool.
 
@@ -646,12 +676,13 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
 
     if do_partial_submission:
       changes_by_config = self.GetRelevantChangesForSlaves(changes, no_stat)
+      subsys_by_config = self.GetSubsysResultForSlaves()
 
       # Even if there was a failure, we can submit the changes that indicate
       # that they don't care about this failure.
       changes = self.sync_stage.pool.SubmitPartialPool(
-          changes, messages, changes_by_config, failing, inflight, no_stat,
-          reason=constants.STRATEGY_CQ_PARTIAL)
+          changes, messages, changes_by_config, subsys_by_config,
+          failing, inflight, no_stat)
     else:
       logging.warning('Not doing any partial submission, due to critical stage '
                       'failure(s).')

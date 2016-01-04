@@ -682,6 +682,40 @@ class MasterCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
     self.assertEqual(stage.GetIrrelevantChanges(board_metadata_6), {change_1,
                                                                     change_2})
 
+  def testGetSubsysResultForSlaves(self):
+    """Tests for the GetSubsysResultForSlaves."""
+    def get_dict(build_config, message_type, message_subtype, message_value):
+      return {'build_config': build_config,
+              'message_type': message_type,
+              'message_subtype': message_subtype,
+              'message_value': message_value}
+
+    slave_msgs = [get_dict('config_1', constants.SUBSYSTEMS,
+                           constants.SUBSYSTEM_PASS, 'a'),
+                  get_dict('config_1', constants.SUBSYSTEMS,
+                           constants.SUBSYSTEM_PASS, 'b'),
+                  get_dict('config_1', constants.SUBSYSTEMS,
+                           constants.SUBSYSTEM_FAIL, 'c'),
+                  get_dict('config_2', constants.SUBSYSTEMS,
+                           constants.SUBSYSTEM_UNUSED, None),
+                  get_dict('config_3', constants.SUBSYSTEMS,
+                           constants.SUBSYSTEM_PASS, 'a'),
+                  get_dict('config_3', constants.SUBSYSTEMS,
+                           constants.SUBSYSTEM_PASS, 'e'),]
+    # Setup DB and provide list of slave build messages.
+    mock_cidb = mock.MagicMock()
+    cidb.CIDBConnectionFactory.SetupMockCidb(mock_cidb)
+    self.PatchObject(mock_cidb, 'GetSlaveBuildMessages',
+                     return_value=slave_msgs)
+
+    expect_result = {
+        'config_1': {'pass_subsystems':set(['a', 'b']),
+                     'fail_subsystems':set(['c'])},
+        'config_2': {},
+        'config_3': {'pass_subsystems':set(['a', 'e'])}}
+    stage = self.ConstructStage()
+    self.assertEqual(stage.GetSubsysResultForSlaves(), expect_result)
+
 class PublishUprevChangesStageTest(
     generic_stages_unittest.AbstractStageTestCase):
   """Tests for the PublishUprevChanges stage."""

@@ -1881,17 +1881,16 @@ class ValidationPool(object):
 
     return errors
 
-  def SubmitChanges(self, changes, check_tree_open=True, throttled_ok=True,
-                    reason=None):
+  def SubmitChanges(self, verified_cls, check_tree_open=True,
+                    throttled_ok=True):
     """Submits the given changes to Gerrit.
 
     Args:
-      changes: GerritPatch's to submit.
+      verified_cls: A dictionary mapping the fully verified changes to their
+        string reasons for submission.
       check_tree_open: Whether to check that the tree is open before submitting
         changes. If this is False, TreeIsClosedException will never be raised.
       throttled_ok: if |check_tree_open|, treat a throttled tree as open
-      reason: string reason for submission to be recorded in cidb. (Should be
-        None or constant with name STRATEGY_* from constants.py)
 
     Returns:
       (submitted, errors) where submitted is a set of changes that were
@@ -1915,6 +1914,7 @@ class ValidationPool(object):
       raise TreeIsClosedException(
           closed_or_throttled=not throttled_ok)
 
+    changes = verified_cls.keys()
     # Filter out changes that were modified during the CQ run.
     filtered_changes, errors = self.FilterModifiedChanges(changes)
 
@@ -1926,19 +1926,24 @@ class ValidationPool(object):
     # Partition the changes into local changes and remote changes.  Local
     # changes have a local repository associated with them, so we can do a
     # batched git push for them.  Remote changes must be submitted via Gerrit.
-    by_repo = {}
+    by_repo_cls = {}
     for change in filtered_changes:
-      by_repo.setdefault(
+      by_repo_cls.setdefault(
           patch_series.GetGitRepoForChange(change, strict=False), set()
           ).add(change)
-    remote_changes = by_repo.pop(None, set())
+    remote_changes = {c:verified_cls[c] for c in by_repo_cls.pop(None, set())}
 
-    by_repo, reapply_errors = patch_series.ReapplyChanges(by_repo)
+    by_repo_cls, reapply_errors = patch_series.ReapplyChanges(by_repo_cls)
+
+    # Map the changes in by_repo_cls to their submission reasons.
+    by_repo = dict()
+    for repo, cls in by_repo_cls.iteritems():
+      by_repo[repo] = {cl:verified_cls[cl] for cl in cls}
 
     submitted_locals, local_submission_errors = self.SubmitLocalChanges(
-        by_repo, reason)
+        by_repo)
     submitted_remotes, remote_errors = self.SubmitRemoteChanges(
-        patch_series, remote_changes, reason)
+        patch_series, remote_changes)
 
     errors.update(reapply_errors)
     errors.update(local_submission_errors)
@@ -1949,7 +1954,7 @@ class ValidationPool(object):
 
     return submitted_locals | submitted_remotes, errors
 
-  def SubmitRemoteChanges(self, patch_series, changes, reason):
+  def SubmitRemoteChanges(self, patch_series, verified_cls):
     """Submits non-manifest changes via Gerrit.
 
     This function first splits the patches into disjoint transactions so that we
@@ -1960,15 +1965,14 @@ class ValidationPool(object):
 
     Args:
       patch_series: The PatchSeries instance associated with the changes.
-      changes: A colleciton of changes
-      reason: string reason for submission to be recorded in cidb. (Should be
-        None or constant with name STRATEGY_* from constants.py)
+      verified_cls: A dictionary mapping changes to their submission reasons.
 
     Returns:
       (submitted, errors) where submitted is a set of changes that were
       submitted, and errors is a map {change: error} containing changes that
       failed to submit.
     """
+    changes = verified_cls.keys()
     plans, failed = patch_series.CreateDisjointTransactions(
         changes, merge_projects=True)
     errors = {}
@@ -1981,22 +1985,22 @@ class ValidationPool(object):
       def _SubmitPlan(*plan):
         for change in plan:
           p_errors.update(self._SubmitChangeWithDeps(
-              patch_series, change, dict(p_errors), plan, reason=reason))
+              patch_series, change, dict(p_errors),
+              plan, reason=verified_cls[change]))
       parallel.RunTasksInProcessPool(_SubmitPlan, plans, processes=4)
 
       submitted_changes = set(changes) - set(p_errors.keys())
       return (submitted_changes, dict(p_errors))
 
-  def SubmitLocalChanges(self, by_repo, reason):
+  def SubmitLocalChanges(self, by_repo):
     """Submit a set of local changes, i.e. changes which are in the manifest.
 
     Precondition: we must have already checked that all the changes are
     submittable, such as having a +2 in Gerrit.
 
     Args:
-      by_repo: A mapping from repo paths to changes in that repo
-      reason: string reason for submission to be recorded in cidb. (Should be
-        None or constant with name STRATEGY_* from constants.py)
+      by_repo: A mapping from repo paths to a dictionary contains changes to
+        that repo and their corresponding submission reasons.
 
     Returns:
       (submitted, errors) where submitted is a set of changes that were
@@ -2005,13 +2009,13 @@ class ValidationPool(object):
     """
     merged_errors = {}
     submitted = set()
-    for repo, changes in by_repo.iteritems():
-      changes, errors = self._SubmitRepo(repo, changes, reason=reason)
+    for repo, verified_cls in by_repo.iteritems():
+      changes, errors = self._SubmitRepo(repo, verified_cls)
       submitted |= set(changes)
       merged_errors.update(errors)
     return submitted, merged_errors
 
-  def _SubmitRepo(self, repo, changes, reason=None):
+  def _SubmitRepo(self, repo, verified_cls):
     """Submit a sequence of changes from the same repository.
 
     The changes must be from a repository that is checked out locally, we can do
@@ -2020,15 +2024,15 @@ class ValidationPool(object):
 
     Args:
       repo: the path to the repository containing the changes
-      changes: a sequence of changes from a single repository.
-      reason: string reason for submission to be recorded in cidb. (Should be
-        None or constant with name STRATEGY_* from constants.py)
+      verified_cls: a dictionary mapping changes from a single repository to
+        their submission reasons.
 
     Returns:
       (submitted, errors) where submitted is a set of changes that were
       submitted, and errors is a map {change: error} containing changes that
       failed to submit.
     """
+    changes = verified_cls.keys()
     branches = set((change.tracking_branch,) for change in changes)
     push_branch = functools.partial(self.PushRepoBranch, repo, changes)
     push_results = parallel.RunTasksInProcessPool(push_branch, branches)
@@ -2041,7 +2045,8 @@ class ValidationPool(object):
 
     for change in changes:
       push_success = change not in errors
-      self._CheckChangeWasSubmitted(change, push_success, reason=reason,
+      self._CheckChangeWasSubmitted(change, push_success,
+                                    reason=verified_cls[change],
                                     sha1=sha1s.get(change))
 
     return set(changes) - set(errors), errors
@@ -2330,9 +2335,9 @@ class ValidationPool(object):
     Raises:
       TreeIsClosedException: if the tree is closed.
     """
-    self.SubmitChanges(self.non_manifest_changes,
-                       check_tree_open=check_tree_open,
-                       reason=reason)
+    verified_cls = {c:reason for c in self.non_manifest_changes}
+    self.SubmitChanges(verified_cls,
+                       check_tree_open=check_tree_open)
 
   def SubmitPool(self, check_tree_open=True, throttled_ok=True, reason=None):
     """Commits changes to Gerrit from Pool.  This is only called by a master.
@@ -2354,18 +2359,18 @@ class ValidationPool(object):
     # a CQ run (since the submit state has changed, we have no way of
     # knowing).  They *likely* will still fail, but this approach tries
     # to minimize wasting the developers time.
-    submitted, errors = self.SubmitChanges(self.applied,
+    verified_cls = {c:reason for c in self.applied}
+    submitted, errors = self.SubmitChanges(verified_cls,
                                            check_tree_open=check_tree_open,
-                                           throttled_ok=throttled_ok,
-                                           reason=reason)
+                                           throttled_ok=throttled_ok)
     if errors:
       raise FailedToSubmitAllChangesException(errors, len(submitted))
 
     if self.changes_that_failed_to_apply_earlier:
       self._HandleApplyFailure(self.changes_that_failed_to_apply_earlier)
 
-  def SubmitPartialPool(self, changes, messages, changes_by_config, failing,
-                        inflight, no_stat, reason=None):
+  def SubmitPartialPool(self, changes, messages, changes_by_config,
+                        subsys_by_config, failing, inflight, no_stat):
     """If the build failed, push any CLs that don't care about the failure.
 
     In this function we calculate what CLs are definitely innocent and submit
@@ -2373,7 +2378,8 @@ class ValidationPool(object):
 
     Each project can specify a list of stages it does not care about in its
     COMMIT-QUEUE.ini file. Changes to that project will be submitted even if
-    those stages fail.
+    those stages fail. Or if unignored fail stage is only HWTestStage, submit
+    changes that are unrelated to the failed hardware subsystems.
 
     Args:
       changes: A list of GerritPatch instances to examine.
@@ -2381,32 +2387,27 @@ class ValidationPool(object):
         the failed slaves.
       changes_by_config: A dictionary of relevant changes indexed by the
         config names.
+      subsys_by_config: A dictionary of pass/fail HWTest subsystems indexed
+        by the config names.
       failing: Names of the builders that failed.
       inflight: Names of the builders that timed out.
       no_stat: Set of builder names of slave builders that had status None.
-      reason: string reason for submission to be recorded in cidb. (Should be
-        None or constant with name STRATEGY_* from constants.py)
 
     Returns:
       A set of the non-submittable changes.
     """
     fully_verified = triage_lib.CalculateSuspects.GetFullyVerifiedChanges(
-        changes, changes_by_config, failing, inflight, no_stat,
-        messages, self.build_root)
-    if fully_verified:
+        changes, changes_by_config, subsys_by_config, failing, inflight,
+        no_stat, messages, self.build_root)
+    fully_verified_cls = fully_verified.keys()
+    if fully_verified_cls:
       logging.info('The following changes will be submitted using '
                    'board-aware submission logic: %s',
-                   cros_patch.GetChangesAsString(fully_verified))
-    # TODO(akeshet): We have no way to record different submission Reasons for
-    # different CLs, if we had multiple different BAS strategies at work for
-    # them. If we add new strategies to GetFullyVerifiedChanges
-    # strategy above, we should move responsibility to determining |reason| from
-    # the caller of SubmitPartialPool to either SubmitPartialPool or
-    # GetFullyVerifiedChanges.
-    self.SubmitChanges(fully_verified, reason=reason)
+                   cros_patch.GetChangesAsString(fully_verified_cls))
+    self.SubmitChanges(fully_verified)
 
     # Return the list of non-submittable changes.
-    return set(changes) - set(fully_verified)
+    return set(changes) - set(fully_verified_cls)
 
   def _HandleApplyFailure(self, failures):
     """Handles changes that were not able to be applied cleanly.

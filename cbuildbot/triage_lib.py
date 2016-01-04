@@ -608,20 +608,26 @@ class CalculateSuspects(object):
     return cls._FindPackageBuildFailureSuspects(changes, messages, sanity)
 
   @classmethod
-  def _CanIgnoreFailures(cls, messages, change, build_root):
+  def _CanIgnoreFailures(cls, messages, change, build_root,
+                         subsys_by_config):
     """Examine whether we can ignore the failures for |change|.
 
-    Examine the |messages| to see if we are allowed to ignore
-    the failures base on the per-repository settings in
-    COMMIT_QUEUE.ini.
+    First, examine the |messages| to see if we are allowed to ignore
+    the failures base on the per-repository settings in COMMIT_QUEUE.ini.
+    If not, then check whether only the HWTestStage failed, and the failed
+    subsystems are unrelated to this change.
 
     Args:
       messages: A list of BuildFailureMessage from the failed slaves.
       change: A GerritPatch instance to examine.
       build_root: Build root directory.
+      subsys_by_config: A dictionary of pass/fail HWTest subsystems indexed
+        by the config names.
 
     Returns:
-      True if we can ignore the failures; False otherwise.
+      A tuple, first element is True/False indicates whether we can ignore the
+      failures; second element is the reason to ignore the failures, None if
+      failures cannot be ignored.
     """
     # Some repositories may opt to ignore certain stage failures.
     failing_stages = set()
@@ -629,20 +635,49 @@ class CalculateSuspects(object):
       # If there are no tracebacks, that means that the builder
       # did not report its status properly. We don't know what
       # stages failed and cannot safely ignore any stage.
-      return False
+      return (False, None)
 
     for message in messages:
       failing_stages.update(message.GetFailingStages())
     ignored_stages = GetStagesToIgnoreForChange(build_root, change)
     if ignored_stages and failing_stages.issubset(ignored_stages):
-      return True
+      return (True, constants.STRATEGY_CQ_PARTIAL)
 
-    return False
+    # Among the failed stages, except the stages that can be ignored, only
+    # HWTestStage fails, and subsystem logic has been used on all configs
+    # failed at HWTest, and failed subsystems of each config are unrelated to
+    # the current cl, we submit the cl.
+    if not subsys_by_config:
+      return (False, None)
+    relevant_failing_stages = failing_stages - set(ignored_stages)
+    if relevant_failing_stages == set(['HWTest']):
+      configs_failed_hwtest = set([m.builder for m in messages
+                                   if 'HWTest' in m.GetFailingStages()])
+      subsys_result_dicts = ([v for k, v in subsys_by_config.iteritems()
+                              if k in configs_failed_hwtest])
+      if len(configs_failed_hwtest) != len(subsys_result_dicts):
+        logging.warning('There exists malformed config names, which results in '
+                        'mismatch between build configs. Cannot decide '
+                        'whether change is innocent to failures. Will not '
+                        'submit')
+        return (False, None)
+      # Empty dict indicates subsystem logic not used, make sure subsystem logic
+      # is used in all the configs failed at hwtest.
+      if all(subsys_result_dicts):
+        all_fail_subsys, all_pass_subsys = set(), set()
+        for v in subsys_result_dicts:
+          all_fail_subsys |= set(v['fail_subsystems'])
+          all_pass_subsys |= set(v['pass_subsystems'])
+        all_pass_subsys -= all_fail_subsys
+        cl_subsys = set(GetTestSubsystemForChange(build_root, change))
+        if (not cl_subsys & all_fail_subsys) and (cl_subsys <= all_pass_subsys):
+          return (True, constants.STRATEGY_CQ_PARTIAL_SUBSYSTEM)
+
+    return (False, None)
 
   @classmethod
-  def GetFullyVerifiedChanges(cls, changes, changes_by_config, failing,
-                              inflight, no_stat, messages, build_root):
-
+  def GetFullyVerifiedChanges(cls, changes, changes_by_config, subsys_by_config,
+                              failing, inflight, no_stat, messages, build_root):
     """Examines build failures and returns a set of fully verified changes.
 
     A change is fully verified if all the build configs relevant to
@@ -653,6 +688,8 @@ class CalculateSuspects(object):
       changes: A list of GerritPatch instances to examine.
       changes_by_config: A dictionary of relevant changes indexed by the
         config names.
+      subsys_by_config: A dictionary of pass/fail HWTest subsystems indexed
+        by the config names.
       failing: Names of the builders that failed.
       inflight: Names of the builders that timed out.
       no_stat: Set of builder names of slave builders that had status None.
@@ -661,14 +698,16 @@ class CalculateSuspects(object):
       build_root: Build root directory.
 
     Returns:
-      A set of fully verified changes.
+      A dictionary mapping the fully verified changes to their string reasons
+      for submission. (Should be None or constant with name STRATEGY_* from
+      constants.py.)
     """
     changes = set(changes)
     no_stat = set(no_stat)
     failing = set(failing)
     inflight = set(inflight)
 
-    fully_verified = set()
+    fully_verified = dict()
 
     all_tested_changes = set()
     for tested_changes in changes_by_config.itervalues():
@@ -680,7 +719,7 @@ class CalculateSuspects(object):
       logging.info('These changes were not tested by any slaves, '
                    'so they will be submitted: %s',
                    cros_patch.GetChangesAsString(untested_changes))
-      fully_verified.update(untested_changes)
+      fully_verified.update({c: None for c in untested_changes})
 
     for change in all_tested_changes:
       # If all relevant configs associated with a change passed, the
@@ -695,15 +734,17 @@ class CalculateSuspects(object):
         logging.info('All the %s relevant config(s) for change %s passed, so '
                      'it will be submitted.', len(relevant_configs),
                      cros_patch.GetChangesAsString([change]))
-        fully_verified.add(change)
+        fully_verified.update({change: None})
       else:
         # Examine the failures and see if we can safely ignore them
         # for the change.
         failed_messages = [x for x in messages if x.builder in failed_configs]
-        if cls._CanIgnoreFailures(failed_messages, change, build_root):
+        ignore_result = cls._CanIgnoreFailures(
+            failed_messages, change, build_root, subsys_by_config)
+        if ignore_result[0]:
           logging.info('All failures of relevant configs for change %s are '
                        'ignorable by this change, so it will be submitted.',
                        cros_patch.GetChangesAsString([change]))
-          fully_verified.add(change)
+          fully_verified.update({change: ignore_result[1]})
 
     return fully_verified

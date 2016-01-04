@@ -1603,8 +1603,9 @@ class PreCQLauncherStage(SyncStage):
     if tree_status.IsTreeOpen(throttled_ok=True):
       pool.SubmitNonManifestChanges(check_tree_open=False,
                                     reason=constants.STRATEGY_NONMANIFEST)
-      pool.SubmitChanges(will_submit, check_tree_open=False,
-                         reason=constants.STRATEGY_PRECQ_SUBMIT)
+      submit_reason = constants.STRATEGY_PRECQ_SUBMIT
+      will_submit = {c:submit_reason for c in will_submit}
+      pool.SubmitChanges(will_submit, check_tree_open=False)
 
     # Tell ValidationPool to keep waiting for more changes until we hit
     # its internal timeout.
