@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
+import org.chromium.chrome.browser.widget.findinpage.FindToolbarObserver;
 import org.chromium.components.dom_distiller.content.DistillablePageUtils;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -84,6 +85,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
     private final int mHeaderBackgroundColor;
     private boolean mIsFullscreenModeEntered;
     private boolean mIsInfobarContainerShown;
+    private boolean mIsFindToolbarShowing;
 
     public ReaderModeManager(TabModelSelector selector, ChromeActivity activity) {
         super(selector);
@@ -113,6 +115,25 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
         mChromeActivity = null;
         mReaderModePanel = null;
         mTabModelSelector = null;
+    }
+
+    /**
+     * @return A FindToolbarObserver capable of hiding the Reader Mode panel.
+     */
+    public FindToolbarObserver getFindToolbarObserver() {
+        return new FindToolbarObserver() {
+            @Override
+            public void onFindToolbarShown() {
+                mIsFindToolbarShowing = true;
+                closeReaderPanel(StateChangeReason.UNKNOWN, true);
+            }
+
+            @Override
+            public void onFindToolbarHidden() {
+                mIsFindToolbarShowing = false;
+                requestReaderPanelShow(StateChangeReason.UNKNOWN);
+            }
+        };
     }
 
     // TabModelSelectorTabObserver:
@@ -373,6 +394,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                 || mTabStatusMap.get(currentTabId).getStatus() != POSSIBLE
                 || mTabStatusMap.get(currentTabId).isDismissed()
                 || mIsInfobarContainerShown
+                || mIsFindToolbarShowing
                 || mIsFullscreenModeEntered) {
             return;
         }

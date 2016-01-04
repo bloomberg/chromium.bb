@@ -453,6 +453,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         if (ReaderModeManager.isEnabled(this)) {
             mReaderModeManager = new ReaderModeManager(getTabModelSelector(), this);
+            if (mToolbarManager != null) {
+                mToolbarManager.addFindToolbarObserver(
+                        mReaderModeManager.getFindToolbarObserver());
+            }
         }
 
         TraceEvent.end("ChromeActivity:CompositorInitialization");

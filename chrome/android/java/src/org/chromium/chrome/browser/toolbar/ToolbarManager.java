@@ -72,6 +72,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -125,7 +126,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
     private final TabObserver mTabObserver;
     private final BookmarksBridge.BookmarkModelObserver mBookmarksObserver;
-    private final FindToolbarObserver mFindToolbarObserver;
+    private final List<FindToolbarObserver> mFindToolbarObservers;
     private final OverviewModeObserver mOverviewModeObserver;
     private final SceneChangeObserver mSceneChangeObserver;
     private final ActionBarDelegate mActionBarDelegate;
@@ -444,26 +445,28 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             }
         };
 
-        mFindToolbarObserver = new FindToolbarObserver() {
-            @Override
-            public void onFindToolbarShown() {
-                mToolbar.handleFindToolbarStateChange(true);
-                if (mFullscreenManager != null) {
-                    mFullscreenFindInPageToken =
-                            mFullscreenManager.showControlsPersistentAndClearOldToken(
-                                    mFullscreenFindInPageToken);
-                }
-            }
+        mFindToolbarObservers = new ArrayList<>();
+        addFindToolbarObserver(
+                new FindToolbarObserver() {
+                    @Override
+                    public void onFindToolbarShown() {
+                        mToolbar.handleFindToolbarStateChange(true);
+                        if (mFullscreenManager != null) {
+                            mFullscreenFindInPageToken =
+                                    mFullscreenManager.showControlsPersistentAndClearOldToken(
+                                            mFullscreenFindInPageToken);
+                        }
+                    }
 
-            @Override
-            public void onFindToolbarHidden() {
-                mToolbar.handleFindToolbarStateChange(false);
-                if (mFullscreenManager != null) {
-                    mFullscreenManager.hideControlsPersistent(mFullscreenFindInPageToken);
-                    mFullscreenFindInPageToken = FullscreenManager.INVALID_TOKEN;
-                }
-            }
-        };
+                    @Override
+                    public void onFindToolbarHidden() {
+                        mToolbar.handleFindToolbarStateChange(false);
+                        if (mFullscreenManager != null) {
+                            mFullscreenManager.hideControlsPersistent(mFullscreenFindInPageToken);
+                            mFullscreenFindInPageToken = FullscreenManager.INVALID_TOKEN;
+                        }
+                    }
+                });
 
         mOverviewModeObserver = new EmptyOverviewModeObserver() {
             @Override
@@ -498,6 +501,29 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         };
 
         mLoadProgressSimulator = new LoadProgressSimulator(mToolbar);
+    }
+
+    /**
+     * Add an observer to the FindToolbarManager.
+     * @param observer The observer to add.
+     */
+    public void addFindToolbarObserver(FindToolbarObserver observer) {
+        // Keep a list of all added observers in case the manager does not exist yet.
+        mFindToolbarObservers.add(observer);
+        if (mFindToolbarManager != null) {
+            mFindToolbarManager.addObserver(observer);
+        }
+    }
+
+    /**
+     * Remove an observer from the FindToolbarManager.
+     * @param observer The observer to remove.
+     */
+    public void removeFindToolbarObserver(FindToolbarObserver observer) {
+        mFindToolbarObservers.remove(observer);
+        if (mFindToolbarManager != null) {
+            mFindToolbarManager.removeObserver(observer);
+        }
     }
 
     /**
@@ -550,7 +576,13 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                     mTemplateUrlObserver = null;
                 }
 
-                findToolbarManager.removeObserver(mFindToolbarObserver);
+                // Remove all previously attached observers from the FindToolbarManager.
+                if (mFindToolbarManager != null) {
+                    for (FindToolbarObserver observer : mFindToolbarObservers) {
+                        mFindToolbarManager.removeObserver(observer);
+                    }
+                }
+
                 if (overviewModeBehavior != null) {
                     overviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
                 }
@@ -575,7 +607,13 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
         mNativeLibraryReady = false;
 
-        findToolbarManager.addObserver(mFindToolbarObserver);
+        // Add observers to the FindToolbarManager.
+        if (mFindToolbarManager != null) {
+            for (FindToolbarObserver observer : mFindToolbarObservers) {
+                mFindToolbarManager.addObserver(observer);
+            }
+        }
+
         if (overviewModeBehavior != null) {
             overviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
         }
@@ -639,6 +677,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     public void destroy() {
         Tab currentTab = mToolbarModel.getTab();
         if (currentTab != null) currentTab.removeObserver(mTabObserver);
+        mFindToolbarObservers.clear();
     }
 
     /**
