@@ -1457,7 +1457,7 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentDelete) {
   out.rv = trans2->Start(&httpreq2, callback2.callback(), log);
   ASSERT_EQ(out.rv, ERR_IO_PENDING);
   out.rv = trans3->Start(&httpreq3, callback3.callback(), log);
-  delete trans3.release();
+  trans3.reset();
   ASSERT_EQ(out.rv, ERR_IO_PENDING);
   out.rv = callback2.WaitForResult();
   ASSERT_EQ(OK, out.rv);
