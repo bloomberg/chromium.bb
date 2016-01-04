@@ -229,12 +229,15 @@ assertEq(testLenientAndStrict('function f(arguments){}',
                               parsesSuccessfully,
                               parseRaisesException(SyntaxError)),
          true);
+// BUG(v8:4577): In sloppy mode, we currently throw when destructuring
+// parameters include 'arguments', even if a direct argument named
+// 'arguments' is accepted, once the --harmony-sloppy flag is shipped.
 assertEq(testLenientAndStrict('function f([arguments]){}',
-                              parsesSuccessfully,
+                              parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
          true);
 assertEq(testLenientAndStrict('function f({x:arguments}){}',
-                              parsesSuccessfully,
+                              parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
          true);
 assertEq(testLenientAndStrict('function arguments(){}',
@@ -264,11 +267,11 @@ assertEq(testLenientAndStrict('(function f(arguments){})',
                               parseRaisesException(SyntaxError)),
          true);
 assertEq(testLenientAndStrict('(function f([arguments]){})',
-                              parsesSuccessfully,
+                              parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
          true);
 assertEq(testLenientAndStrict('(function f({x:arguments}){})',
-                              parsesSuccessfully,
+                              parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
          true);
 assertEq(testLenientAndStrict('(function arguments(){})',
@@ -318,11 +321,11 @@ assertEq(testLenientAndStrict('({set x(arguments){}})',
                               parseRaisesException(SyntaxError)),
          true);
 assertEq(testLenientAndStrict('({set x([arguments]){}})',
-                              parsesSuccessfully,
+                              parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
          true);
 assertEq(testLenientAndStrict('({set x({x:arguments}){}})',
-                              parsesSuccessfully,
+                              parseRaisesException(SyntaxError),
                               parseRaisesException(SyntaxError)),
          true);
 assertEq(testLenientAndStrict('({set x(arguments){"use strict";}})',
