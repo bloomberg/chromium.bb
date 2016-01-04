@@ -5729,32 +5729,32 @@
     "gtest_tests": [
       {
         "args": [
-          "--site-per-process"
+          "--isolate-extensions"
         ],
         "test": "app_shell_unittests"
       },
       {
         "args": [
-          "--site-per-process"
+          "--isolate-extensions"
         ],
         "test": "ash_unittests"
       },
       {
         "args": [
-          "--site-per-process",
-          "--gtest_filter=-AllUrlsApiTest.WhitelistedExtension:BrowserNavigatorTest.NavigateFromNTPToOptionsInSameTab:BrowserTest.OtherRedirectsDontForkProcess:BrowserTest.WindowOpenClose:ChromeRenderProcessHostTest.*:ChromeRenderProcessHostTestWithCommandLine.*:ErrorPageTest.*:ExtensionApiTest.Tabs2:ExtensionApiTest.TabMove:ExtensionApiTest.TabsOnUpdated:ExtensionURLRewriteBrowserTest.NewTabPageURL:IsolatedAppTest.*:PhishingClassifierDelegateTest.*:PhishingDOMFeatureExtractorTest.SubFrames:PolicyTest.HomepageLocation:PrerenderBrowserTest.*:ProcessManagementTest.*:RedirectTest.ClientEmptyReferer:ReferrerPolicyTest.HttpsRedirect:RestoreOnStartupPolicyTestInstance/RestoreOnStartupPolicyTest.RunTest*:SSLUITest.TestGoodFrameNavigation:SSLUITest.TestMarkNonSecureAs:WebNavigationApiTest.CrossProcessFragment:WebNavigationApiTest.ServerRedirectSingleProcess:WebNavigationApiTest.CrossProcessHistory:WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabs"
+          "--isolate-extensions",
+          "--gtest_filter=-PhishingClassifierDelegateTest.*:WebNavigationApiTest.*"
         ],
         "test": "browser_tests"
       },
       {
         "args": [
-          "--site-per-process"
+          "--isolate-extensions"
         ],
         "test": "components_browsertests"
       },
       {
         "args": [
-          "--site-per-process"
+          "--isolate-extensions"
         ],
         "test": "components_unittests"
       },
@@ -5773,43 +5773,43 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--isolate-sites-for-testing=chrome-extension://*"
         ],
         "test": "extensions_browsertests"
       },
       {
         "args": [
-          "--site-per-process"
+          "--isolate-sites-for-testing=chrome-extension://*"
         ],
         "test": "extensions_unittests"
       },
       {
         "args": [
-          "--site-per-process"
+          "--isolate-extensions"
         ],
         "test": "installer_util_unittests"
       },
       {
         "args": [
-          "--site-per-process"
+          "--isolate-extensions"
         ],
         "test": "interactive_ui_tests"
       },
       {
         "args": [
-          "--site-per-process"
+          "--isolate-extensions"
         ],
         "test": "nacl_loader_unittests"
       },
       {
         "args": [
-          "--site-per-process"
+          "--isolate-extensions"
         ],
         "test": "sync_integration_tests"
       },
       {
         "args": [
-          "--site-per-process"
+          "--isolate-extensions"
         ],
         "test": "unit_tests"
       }
