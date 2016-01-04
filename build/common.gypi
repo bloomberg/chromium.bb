@@ -3146,11 +3146,6 @@
               # Don't warn about hash_map in third-party code.
               '-Wno-deprecated',
             ],
-            'cflags': [
-              # Don't warn about printf format problems.
-              # This is off by default in gcc but on in Ubuntu's gcc(!).
-              '-Wno-format',
-            ],
           }],
           [ 'os_posix==1 and clang!=1 and OS!="mac" and OS!="ios"', {
             # When we don't control the compiler, don't use -Wall for

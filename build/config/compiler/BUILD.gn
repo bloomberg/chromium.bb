@@ -963,11 +963,6 @@ config("no_chromium_code") {
   }
 
   if (is_linux || is_android) {
-    cflags += [
-      # Don't warn about printf format problems. This is off by default in gcc
-      # but on in Ubuntu's gcc(!).
-      "-Wno-format",
-    ]
     cflags_cc += [
       # Don't warn about hash_map in third-party code.
       "-Wno-deprecated",

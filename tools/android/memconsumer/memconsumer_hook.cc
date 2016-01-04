@@ -42,7 +42,7 @@ JNIEXPORT void JNICALL
   if (!g_memory) {
     __android_log_print(ANDROID_LOG_WARN,
                         "MemConsumer",
-                        "Unable to allocate %ld bytes",
+                        "Unable to allocate %lld bytes",
                         memory);
   }
   // If memory allocation failed, try to allocate as much as possible.
