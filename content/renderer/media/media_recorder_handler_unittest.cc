@@ -80,9 +80,7 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
   }
 
   MOCK_METHOD3(writeData, void(const char*, size_t, bool));
-  MOCK_METHOD1(failOutOfMemory, void(const WebString& message));
-  MOCK_METHOD1(failIllegalStreamModification, void(const WebString& message));
-  MOCK_METHOD1(failOtherRecordingError, void(const WebString& message));
+  MOCK_METHOD1(onError, void(const WebString& message));
 
   bool recording() const { return media_recorder_handler_->recording_; }
   bool hasVideoRecorders() const {

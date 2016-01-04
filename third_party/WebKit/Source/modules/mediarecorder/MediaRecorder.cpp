@@ -5,12 +5,10 @@
 #include "modules/mediarecorder/MediaRecorder.h"
 
 #include "bindings/core/v8/Dictionary.h"
-#include "core/dom/DOMError.h"
+#include "core/events/Event.h"
 #include "core/fileapi/Blob.h"
-#include "modules/EventModules.h"
 #include "modules/EventTargetModules.h"
 #include "modules/mediarecorder/BlobEvent.h"
-#include "modules/mediarecorder/MediaRecorderErrorEvent.h"
 #include "platform/ContentType.h"
 #include "platform/NotImplemented.h"
 #include "platform/blob/BlobData.h"
@@ -223,28 +221,10 @@ void MediaRecorder::writeData(const char* data, size_t length, bool lastInSlice)
     createBlobEvent(Blob::create(BlobDataHandle::create(m_blobData.release(), blobDataLength)));
 }
 
-void MediaRecorder::failOutOfMemory(const WebString& message)
+void MediaRecorder::onError(const WebString& message)
 {
-    scheduleDispatchEvent(MediaRecorderErrorEvent::create(
-        EventTypeNames::error, false, false, "OutOfMemory", message));
-
-    if (m_state == State::Recording)
-        stopRecording();
-}
-
-void MediaRecorder::failIllegalStreamModification(const WebString& message)
-{
-    scheduleDispatchEvent(MediaRecorderErrorEvent::create(
-        EventTypeNames::error, false, false, "IllegalStreamModification", message));
-
-    if (m_state == State::Recording)
-        stopRecording();
-}
-
-void MediaRecorder::failOtherRecordingError(const WebString& message)
-{
-    scheduleDispatchEvent(MediaRecorderErrorEvent::create(
-        EventTypeNames::error, false, false, "OtherRecordingError", message));
+    // TODO(mcasas): Beef up the Error Event and add the |message|, see https://github.com/w3c/mediacapture-record/issues/31
+    scheduleDispatchEvent(Event::create(EventTypeNames::error));
 
     if (m_state == State::Recording)
         stopRecording();

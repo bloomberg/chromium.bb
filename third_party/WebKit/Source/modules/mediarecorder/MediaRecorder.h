@@ -63,20 +63,18 @@ public:
     static bool isTypeSupported(const String& type);
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const override;
-    virtual ExecutionContext* executionContext() const override;
+    const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const override;
 
     // ActiveDOMObject
-    virtual void suspend() override;
-    virtual void resume() override;
-    virtual void stop() override;
-    virtual bool hasPendingActivity() const override { return !m_stopped; }
+    void suspend() override;
+    void resume() override;
+    void stop() override;
+    bool hasPendingActivity() const override { return !m_stopped; }
 
     // WebMediaRecorderHandlerClient
-    virtual void writeData(const char* data, size_t length, bool lastInSlice) override;
-    virtual void failOutOfMemory(const WebString& message) override;
-    virtual void failIllegalStreamModification(const WebString& message) override;
-    virtual void failOtherRecordingError(const WebString& message) override;
+    void writeData(const char* data, size_t length, bool lastInSlice) override;
+    void onError(const WebString& message) override;
 
     DECLARE_VIRTUAL_TRACE();
 

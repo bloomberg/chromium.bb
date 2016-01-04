@@ -16,9 +16,7 @@ class WebMediaRecorderHandlerClient {
 public:
     virtual void writeData(const char* data, size_t length, bool lastInslice) = 0;
 
-    virtual void failOutOfMemory(const WebString& message) = 0;
-    virtual void failIllegalStreamModification(const WebString& message) = 0;
-    virtual void failOtherRecordingError(const WebString& message) = 0;
+    virtual void onError(const WebString& message) = 0;
 };
 
 } // namespace blink
