@@ -758,15 +758,22 @@ const ContentTypeToNibPath kNibPaths[] = {
 
   [self initializeTitle];
 
+  // Note that the per-content-type methods and |initializeRadioGroup| below
+  // must be kept in the correct order, as they make interdependent adjustments
+  // of the bubble's height.
   ContentSettingSimpleBubbleModel* simple_bubble =
       contentSettingBubbleModel_->AsSimpleBubbleModel();
+  if (simple_bubble &&
+      simple_bubble->content_type() == CONTENT_SETTINGS_TYPE_PLUGINS) {
+    [self sizeToFitLoadButton];
+    [self initializeBlockedPluginsList];
+  }
+
+  if (allowBlockRadioGroup_)  // Some xibs do not bind |allowBlockRadioGroup_|.
+    [self initializeRadioGroup];
+
   if (simple_bubble) {
     ContentSettingsType type = simple_bubble->content_type();
-
-    if (type == CONTENT_SETTINGS_TYPE_PLUGINS) {
-      [self sizeToFitLoadButton];
-      [self initializeBlockedPluginsList];
-    }
 
     if (type == CONTENT_SETTINGS_TYPE_POPUPS ||
         type == CONTENT_SETTINGS_TYPE_PLUGINS)
@@ -776,9 +783,6 @@ const ContentTypeToNibPath kNibPaths[] = {
     if (type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX)
       [self initializeMIDISysExLists];
   }
-
-  if (allowBlockRadioGroup_)  // not bound in cookie bubble xib
-    [self initializeRadioGroup];
 
   if (contentSettingBubbleModel_->AsMediaStreamBubbleModel())
     [self initializeMediaMenus];
