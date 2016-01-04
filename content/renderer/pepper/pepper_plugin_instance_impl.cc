@@ -2921,7 +2921,11 @@ bool PepperPluginInstanceImpl::IsValidInstanceOf(PluginModule* module) {
 }
 
 PepperPluginInstance* PepperPluginInstance::Get(PP_Instance instance_id) {
-  return HostGlobals::Get()->GetInstance(instance_id);
+  PepperPluginInstanceImpl* instance =
+      HostGlobals::Get()->GetInstance(instance_id);
+  if (instance && !instance->is_deleted())
+    return instance;
+  return nullptr;
 }
 
 RenderView* PepperPluginInstanceImpl::GetRenderView() {
