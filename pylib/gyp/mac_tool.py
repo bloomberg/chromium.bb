@@ -228,7 +228,8 @@ class MacTool(object):
   def ExecFilterLibtool(self, *cmd_list):
     """Calls libtool and filters out '/path/to/libtool: file: foo.o has no
     symbols'."""
-    libtool_re = re.compile(r'^.*libtool: file: .* has no symbols$')
+    libtool_re = re.compile(r'^.*libtool: (?:for architecture: \S* )?'
+                            r'file: .* has no symbols$')
     libtool_re5 = re.compile(
         r'^.*libtool: warning for library: ' +
         r'.* the table of contents is empty ' +
