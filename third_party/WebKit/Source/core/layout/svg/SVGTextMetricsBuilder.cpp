@@ -55,37 +55,22 @@ public:
 
 private:
     void setupBidiRuns();
-    SVGTextMetrics computeMetricsForCharacterSimple(unsigned textPosition);
-    SVGTextMetrics computeMetricsForCharacterComplex(unsigned textPosition);
 
     LineLayoutSVGInlineText m_text;
     BidiCharacterRun* m_bidiRun;
     TextRun m_run;
     BidiResolver<TextRunIterator, BidiCharacterRun> m_bidiResolver;
-    bool m_isComplexText;
     float m_totalWidth;
     TextDirection m_textDirection;
-
-    // Simple text only.
-    OwnPtr<SimpleShaper> m_simpleShaper;
 };
 
 SVGTextMetricsCalculator::SVGTextMetricsCalculator(LayoutSVGInlineText* text)
     : m_text(LineLayoutSVGInlineText(text))
     , m_bidiRun(nullptr)
     , m_run(SVGTextMetrics::constructTextRun(m_text, 0, m_text.textLength(), m_text.styleRef().direction()))
-    , m_isComplexText(false)
     , m_totalWidth(0)
 {
-    const Font& scaledFont = text->scaledFont();
-    CodePath codePath = scaledFont.codePath(TextRunPaintInfo(m_run));
-    m_isComplexText = codePath == ComplexPath;
-    m_run.setCodePath(m_isComplexText ? TextRun::ForceComplex : TextRun::ForceSimple);
-
-    if (!m_isComplexText)
-        m_simpleShaper = adoptPtr(new SimpleShaper(&scaledFont, m_run));
-    else
-        setupBidiRuns();
+    setupBidiRuns();
 }
 
 SVGTextMetricsCalculator::~SVGTextMetricsCalculator()
@@ -112,21 +97,19 @@ void SVGTextMetricsCalculator::setupBidiRuns()
     m_bidiRun = bidiRuns.firstRun();
 }
 
-SVGTextMetrics SVGTextMetricsCalculator::computeMetricsForCharacterSimple(unsigned textPosition)
+SVGTextMetrics SVGTextMetricsCalculator::computeMetricsForCharacter(unsigned textPosition)
 {
-    GlyphBuffer glyphBuffer;
-    unsigned metricsLength = m_simpleShaper->advance(textPosition + 1, &glyphBuffer);
-    if (!metricsLength)
-        return SVGTextMetrics();
+    if (m_bidiRun) {
+        if (textPosition >= static_cast<unsigned>(m_bidiRun->stop())) {
+            m_bidiRun = m_bidiRun->next();
+            // New BiDi run means new reference position for measurements, so reset |m_totalWidth|.
+            m_totalWidth = 0;
+        }
+        ASSERT(m_bidiRun);
+        ASSERT(static_cast<int>(textPosition) < m_bidiRun->stop());
+        m_textDirection = m_bidiRun->direction();
+    }
 
-    float currentWidth = m_simpleShaper->runWidthSoFar() - m_totalWidth;
-    m_totalWidth = m_simpleShaper->runWidthSoFar();
-
-    return SVGTextMetrics(m_text, metricsLength, currentWidth);
-}
-
-SVGTextMetrics SVGTextMetricsCalculator::computeMetricsForCharacterComplex(unsigned textPosition)
-{
     unsigned metricsLength = characterStartsSurrogatePair(textPosition) ? 2 : 1;
     SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(m_text, textPosition, metricsLength, m_textDirection);
     ASSERT(metrics.length() == metricsLength);
@@ -144,25 +127,6 @@ SVGTextMetrics SVGTextMetricsCalculator::computeMetricsForCharacterComplex(unsig
 
     m_totalWidth = complexStartToCurrentMetrics.width();
     return metrics;
-}
-
-SVGTextMetrics SVGTextMetricsCalculator::computeMetricsForCharacter(unsigned textPosition)
-{
-    if (m_bidiRun) {
-        if (textPosition >= static_cast<unsigned>(m_bidiRun->stop())) {
-            m_bidiRun = m_bidiRun->next();
-            // New BiDi run means new reference position for measurements, so reset |m_totalWidth|.
-            m_totalWidth = 0;
-        }
-        ASSERT(m_bidiRun);
-        ASSERT(static_cast<int>(textPosition) < m_bidiRun->stop());
-        m_textDirection = m_bidiRun->direction();
-    }
-
-    if (m_isComplexText)
-        return computeMetricsForCharacterComplex(textPosition);
-
-    return computeMetricsForCharacterSimple(textPosition);
 }
 
 struct MeasureTextData {
