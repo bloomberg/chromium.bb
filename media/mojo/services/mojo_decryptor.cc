@@ -115,8 +115,10 @@ void MojoDecryptor::OnKeyAdded() {
 void MojoDecryptor::OnBufferDecrypted(const DecryptCB& decrypt_cb,
                                       interfaces::Decryptor::Status status,
                                       interfaces::DecoderBufferPtr buffer) {
-  DVLOG(status != interfaces::Decryptor::STATUS_SUCCESS ? 1 : 3)
+  DVLOG_IF(1, status != interfaces::Decryptor::STATUS_SUCCESS)
       << __FUNCTION__ << "(" << status << ")";
+  DVLOG_IF(3, status == interfaces::Decryptor::STATUS_SUCCESS) << __FUNCTION__;
+
   if (buffer.is_null()) {
     decrypt_cb.Run(static_cast<Decryptor::Status>(status), nullptr);
     return;
@@ -130,8 +132,10 @@ void MojoDecryptor::OnAudioDecoded(
     const AudioDecodeCB& audio_decode_cb,
     interfaces::Decryptor::Status status,
     mojo::Array<interfaces::AudioBufferPtr> audio_buffers) {
-  DVLOG(status != interfaces::Decryptor::STATUS_SUCCESS ? 1 : 3)
+  DVLOG_IF(1, status != interfaces::Decryptor::STATUS_SUCCESS)
       << __FUNCTION__ << "(" << status << ")";
+  DVLOG_IF(3, status == interfaces::Decryptor::STATUS_SUCCESS) << __FUNCTION__;
+
   Decryptor::AudioFrames audio_frames;
   for (size_t i = 0; i < audio_buffers.size(); ++i)
     audio_frames.push_back(audio_buffers[i].To<scoped_refptr<AudioBuffer>>());
@@ -142,8 +146,9 @@ void MojoDecryptor::OnAudioDecoded(
 void MojoDecryptor::OnVideoDecoded(const VideoDecodeCB& video_decode_cb,
                                    interfaces::Decryptor::Status status,
                                    interfaces::VideoFramePtr video_frame) {
-  DVLOG(status != interfaces::Decryptor::STATUS_SUCCESS ? 1 : 3)
+  DVLOG_IF(1, status != interfaces::Decryptor::STATUS_SUCCESS)
       << __FUNCTION__ << "(" << status << ")";
+  DVLOG_IF(3, status == interfaces::Decryptor::STATUS_SUCCESS) << __FUNCTION__;
   if (video_frame.is_null()) {
     video_decode_cb.Run(static_cast<Decryptor::Status>(status), nullptr);
     return;

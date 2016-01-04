@@ -114,8 +114,10 @@ void MojoDecryptorService::OnDecryptDone(
     const DecryptCallback& callback,
     media::Decryptor::Status status,
     const scoped_refptr<DecoderBuffer>& buffer) {
-  DVLOG(status != media::Decryptor::kSuccess ? 1 : 3) << __FUNCTION__ << "("
-                                                      << status << ")";
+  DVLOG_IF(1, status != media::Decryptor::kSuccess) << __FUNCTION__ << "("
+                                                    << status << ")";
+  DVLOG_IF(3, status == media::Decryptor::kSuccess) << __FUNCTION__;
+
   if (!buffer) {
     DCHECK_NE(status, media::Decryptor::kSuccess);
     callback.Run(static_cast<Decryptor::Status>(status), nullptr);
@@ -144,8 +146,10 @@ void MojoDecryptorService::OnAudioDecoded(
     const DecryptAndDecodeAudioCallback& callback,
     media::Decryptor::Status status,
     const media::Decryptor::AudioFrames& frames) {
-  DVLOG(status != media::Decryptor::kSuccess ? 1 : 3) << __FUNCTION__ << "("
-                                                      << status << ")";
+  DVLOG_IF(1, status != media::Decryptor::kSuccess) << __FUNCTION__ << "("
+                                                    << status << ")";
+  DVLOG_IF(3, status == media::Decryptor::kSuccess) << __FUNCTION__;
+
   mojo::Array<interfaces::AudioBufferPtr> audio_buffers;
   for (const auto& frame : frames)
     audio_buffers.push_back(interfaces::AudioBuffer::From(frame));
@@ -158,8 +162,10 @@ void MojoDecryptorService::OnVideoDecoded(
     const DecryptAndDecodeVideoCallback& callback,
     media::Decryptor::Status status,
     const scoped_refptr<VideoFrame>& frame) {
-  DVLOG(status != media::Decryptor::kSuccess ? 1 : 3) << __FUNCTION__ << "("
-                                                      << status << ")";
+  DVLOG_IF(1, status != media::Decryptor::kSuccess) << __FUNCTION__ << "("
+                                                    << status << ")";
+  DVLOG_IF(3, status == media::Decryptor::kSuccess) << __FUNCTION__;
+
   if (!frame) {
     DCHECK_NE(status, media::Decryptor::kSuccess);
     callback.Run(static_cast<Decryptor::Status>(status), nullptr);

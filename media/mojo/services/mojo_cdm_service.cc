@@ -231,7 +231,7 @@ void MojoCdmService::OnSessionMessage(const std::string& session_id,
                                       MediaKeys::MessageType message_type,
                                       const std::vector<uint8_t>& message,
                                       const GURL& legacy_destination_url) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__ << "(" << message_type << ")";
   client_->OnSessionMessage(
       session_id, static_cast<interfaces::CdmMessageType>(message_type),
       mojo::Array<uint8_t>::From(message),
@@ -241,7 +241,8 @@ void MojoCdmService::OnSessionMessage(const std::string& session_id,
 void MojoCdmService::OnSessionKeysChange(const std::string& session_id,
                                          bool has_additional_usable_key,
                                          CdmKeysInfo keys_info) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__
+           << " has_additional_usable_key=" << has_additional_usable_key;
 
   mojo::Array<interfaces::CdmKeyInformationPtr> keys_data;
   for (const auto& key : keys_info)
@@ -253,7 +254,7 @@ void MojoCdmService::OnSessionKeysChange(const std::string& session_id,
 void MojoCdmService::OnSessionExpirationUpdate(
     const std::string& session_id,
     const base::Time& new_expiry_time_sec) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__ << " expiry=" << new_expiry_time_sec;
   client_->OnSessionExpirationUpdate(session_id,
                                      new_expiry_time_sec.ToDoubleT());
 }
@@ -267,7 +268,7 @@ void MojoCdmService::OnLegacySessionError(const std::string& session_id,
                                           MediaKeys::Exception exception,
                                           uint32_t system_code,
                                           const std::string& error_message) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__ << "(" << exception << ") " << error_message;
   client_->OnLegacySessionError(
       session_id, static_cast<interfaces::CdmException>(exception), system_code,
       error_message);

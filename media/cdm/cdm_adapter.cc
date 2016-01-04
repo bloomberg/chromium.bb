@@ -569,9 +569,8 @@ void CdmAdapter::InitializeAudioDecoder(const AudioDecoderConfig& config,
   cdm_decoder_config.extra_data_size = config.extra_data().size();
 
   cdm::Status status = cdm_->InitializeAudioDecoder(cdm_decoder_config);
-  DCHECK(status == cdm::kSuccess || status == cdm::kDeferredInitialization ||
-         status == cdm::kSessionError);
   if (status != cdm::kSuccess && status != cdm::kDeferredInitialization) {
+    // DCHECK(status == cdm::kSessionError); http://crbug.com/570486
     DVLOG(1) << __FUNCTION__ << " failed with cdm::Error " << status;
     init_cb.Run(false);
     return;
@@ -605,9 +604,8 @@ void CdmAdapter::InitializeVideoDecoder(const VideoDecoderConfig& config,
   cdm_decoder_config.extra_data_size = config.extra_data().size();
 
   cdm::Status status = cdm_->InitializeVideoDecoder(cdm_decoder_config);
-  DCHECK(status == cdm::kSuccess || status == cdm::kDeferredInitialization ||
-         status == cdm::kSessionError);
   if (status != cdm::kSuccess && status != cdm::kDeferredInitialization) {
+    // DCHECK(status == cdm::kSessionError); http://crbug.com/570486
     DVLOG(1) << __FUNCTION__ << " failed with cdm::Error " << status;
     init_cb.Run(false);
     return;
