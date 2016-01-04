@@ -226,6 +226,19 @@ test("test_opus_encode") {
   ]
 }
 
+# GN orders flags on a target before flags from configs. The default config
+# adds -Wall, and this flag have to be after -Wall -- so they need to
+# come from a config and can't be on the target directly.
+config("test_opus_decode_config") {
+  # test_opus_decode passes a null pointer to opus_decode() for an argument
+  # marked as requiring a non-null value by the nonnull function attribute,
+  # and expects opus_decode() to fail. Disable the -Wnonnull option to avoid
+  # a compilation error if -Werror is specified.
+  if (is_posix) {
+    cflags = [ "-Wno-nonnull" ]
+  }
+}
+
 test("test_opus_decode") {
   sources = [
     "src/tests/test_opus_decode.c",
@@ -235,15 +248,8 @@ test("test_opus_decode") {
   configs += [
     "//build/config/compiler:no_chromium_code",
     ":opus_test_config",
+    ":test_opus_decode_config",
   ]
-
-  # test_opus_decode passes a null pointer to opus_decode() for an argument
-  # marked as requiring a non-null value by the nonnull function attribute,
-  # and expects opus_decode() to fail. Disable the -Wnonnull option to avoid
-  # a compilation error if -Werror is specified.
-  if (is_posix) {
-    cflags = [ "-Wno-nonnull" ]
-  }
 
   deps = [
     ":opus",
