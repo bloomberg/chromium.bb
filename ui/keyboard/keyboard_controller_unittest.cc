@@ -613,4 +613,22 @@ TEST_F(KeyboardControllerAnimationTest, ContainerShowWhileHide) {
   EXPECT_EQ(gfx::Transform(), layer->transform());
 }
 
+// Test for crbug.com/568274.
+TEST_F(KeyboardControllerTest, FloatingKeyboardShowOnFirstTap) {
+  aura::Window* container(controller()->GetContainerWindow());
+  aura::Window* keyboard(ui()->GetKeyboardWindow());
+  root_window()->AddChild(container);
+  controller()->SetKeyboardMode(FLOATING);
+  container->AddChild(keyboard);
+  // Mock focus on an input field.
+  ui()->GetInputMethod()->ShowImeIfNeeded();
+  // Mock set keyboard size from javascript side. In floating mode, virtual
+  // keyboard's size is decided by client.
+  gfx::Rect new_bounds(0, 50, 50, 50);
+  keyboard->SetBounds(new_bounds);
+  ASSERT_EQ(new_bounds, container->bounds());
+  EXPECT_TRUE(keyboard->IsVisible());
+  EXPECT_TRUE(container->IsVisible());
+}
+
 }  // namespace keyboard

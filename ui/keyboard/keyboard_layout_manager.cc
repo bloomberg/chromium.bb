@@ -70,21 +70,21 @@ void KeyboardLayoutManager::SetChildBounds(aura::Window* child,
   controller_->GetContainerWindow()->SetBounds(new_bounds);
   SetChildBoundsDirect(keyboard_, gfx::Rect(new_bounds.size()));
 
-  if (controller_->keyboard_mode() == FULL_WIDTH) {
-    if (old_bounds.height() == 0 && child->bounds().height() != 0 &&
-        controller_->show_on_resize()) {
-      // The window height is set to 0 initially or before switch to an IME in a
-      // different extension. Virtual keyboard window may wait for this bounds
-      // change to correctly animate in.
-      controller_->ShowKeyboard(false);
-    } else {
+  if (old_bounds.height() == 0 && child->bounds().height() != 0 &&
+      controller_->show_on_resize()) {
+    // The window height is set to 0 initially or before switch to an IME in a
+    // different extension. Virtual keyboard window may wait for this bounds
+    // change to correctly animate in.
+    controller_->ShowKeyboard(false);
+  } else {
+    if (controller_->keyboard_mode() == FULL_WIDTH) {
       // We need to send out this notification only if keyboard is visible since
       // keyboard window is resized even if keyboard is hidden.
       if (controller_->keyboard_visible())
         controller_->NotifyKeyboardBoundsChanging(requested_bounds);
+    } else if (controller_->keyboard_mode() == FLOATING) {
+      controller_->NotifyKeyboardBoundsChanging(gfx::Rect());
     }
-  } else if (controller_->keyboard_mode() == FLOATING) {
-    controller_->NotifyKeyboardBoundsChanging(gfx::Rect());
   }
 }
 
