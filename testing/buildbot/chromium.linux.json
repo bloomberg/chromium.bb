@@ -301,6 +301,7 @@
   },
   "Linux Builder": {
     "additional_compile_targets": [
+      "battor_agent",
       "blimp",
       "mandoline:all",
       "mash:all",

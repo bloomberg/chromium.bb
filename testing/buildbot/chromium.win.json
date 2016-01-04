@@ -725,6 +725,11 @@
       }
     ]
   },
+  "Win Builder": {
+    "additional_compile_targets": [
+      "battor_agent"
+    ]
+  },
   "Win x64 GN": {
     "additional_compile_targets": [
       "gn_all"

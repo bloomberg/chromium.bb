@@ -1,4 +1,9 @@
 {
+  "Mac Builder": {
+    "additional_compile_targets": [
+      "battor_agent"
+    ]
+  },
   "Mac GN": {
     "additional_compile_targets": [
       "gn_all"
