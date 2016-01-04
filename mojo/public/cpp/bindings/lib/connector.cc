@@ -264,7 +264,13 @@ void Connector::ReadAllAvailableMessages() {
       return;
 
     if (rv == MOJO_RESULT_SHOULD_WAIT) {
-      WaitToReadMore();
+      // ReadSingleMessage could end up calling HandleError which resets
+      // message_pipe_ to a dummy one that is closed. The old EDK will see the
+      // that the peer is closed immediately, while the new one is asynchronous
+      // because of thread hops. In that case, there'll still be an async
+      // waiter.
+      if (!async_wait_id_)
+        WaitToReadMore();
       break;
     }
   }
