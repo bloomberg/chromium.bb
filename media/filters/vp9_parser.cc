@@ -291,8 +291,9 @@ void Vp9Parser::ReadTiles(Vp9FrameHeader* fhdr) {
   while (max_ones-- && reader_.ReadBool())
     fhdr->log2_tile_cols++;
 
-  if (reader_.ReadBool())
-    fhdr->log2_tile_rows = reader_.ReadLiteral(2) - 1;
+  fhdr->log2_tile_rows = reader_.ReadBool() ? 1 : 0;
+  if (fhdr->log2_tile_rows > 0 && reader_.ReadBool())
+    fhdr->log2_tile_rows++;
 }
 
 bool Vp9Parser::ParseUncompressedHeader(const uint8_t* stream,
