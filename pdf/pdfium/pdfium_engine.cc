@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <set>
+
 #include "base/i18n/icu_encoding_detection.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/json/json_writer.h"
@@ -433,10 +435,15 @@ pp::VarDictionary TraverseBookmarks(FPDF_DOCUMENT doc,
   const unsigned int kMaxDepth = 128;
   if (depth < kMaxDepth) {
     int child_index = 0;
+    std::set<FPDF_BOOKMARK> seen_bookmarks;
     for (FPDF_BOOKMARK child_bookmark =
              FPDFBookmark_GetFirstChild(doc, bookmark);
-         child_bookmark != NULL;
+         child_bookmark;
          child_bookmark = FPDFBookmark_GetNextSibling(doc, child_bookmark)) {
+      if (ContainsKey(seen_bookmarks, child_bookmark))
+        break;
+
+      seen_bookmarks.insert(child_bookmark);
       children.Set(child_index,
                    TraverseBookmarks(doc, child_bookmark, depth + 1));
       child_index++;
