@@ -18,34 +18,12 @@
 </body>
 <script>
     description('This tests whether scrolling still works correctly when an overlay scrollbar is over a plugin. The plugin should still receive mouse down/up events when clicking an overlay scrollbar. Scrolling should still work correctly too. However mouse capture should not be started on the plugin as this would interfere with events going to the scrollbar.');
-    if (window.testRunner)
-        testRunner.dumpAsText();
-    if (window.internals)
-        internals.settings.setOverlayScrollbarsEnabled(true);
 
+    window.jsTestIsAsync = true;
     var startLogging = false;
     var eventHistory = [];
 
-    var d = document.getElementById('container');
-    var plugin = document.createElement('object');
-    plugin.type = 'application/x-webkit-test-netscape';
-    plugin.width = window.innerWidth * 2;
-    plugin.height = window.innerHeight * 2;
-    plugin.addEventListener('mousedown', function(e) {
-        startLogging = true;
-        eventHistory.push('plugin.mousedown');
-    });
-    plugin.addEventListener('mouseup', function(e) {
-        if (startLogging)
-            eventHistory.push('plugin.mouseup');
-    });
-    plugin.addEventListener('mousemove', function(e) {
-        if (startLogging)
-            eventHistory.push('plugin.mousemove');
-    });
-    d.appendChild(plugin);
-
-    if (window.eventSender) {
+    function runTest() {
         // Mouse down on the scrollbar which is over the plugin.
         eventSender.mouseMoveTo(window.innerWidth - 1,
                                 window.innerHeight - 1);
@@ -57,10 +35,40 @@
         // scrollbar and releasing, it dispatches an event to the last
         // element under the mouse.
         eventSender.mouseUp();
+
+        shouldBe('eventHistory.length', '2');
+        shouldBe('eventHistory[0]', '"plugin.mousedown"');
+        shouldBe('eventHistory[1]', '"plugin.mouseup"');
+        shouldBecomeEqual('window.scrollY > 0', 'true', finishJSTest);
     }
 
-    shouldBe('eventHistory.length', '2');
-    shouldBe('eventHistory[0]', '"plugin.mousedown"');
-    shouldBe('eventHistory[1]', '"plugin.mouseup"');
-    shouldNotBe('window.scrollY', '0');
+    window.onload = function() {
+        if (!window.eventSender || !window.internals) {
+            finishJSTest();
+            return;
+        }
+
+        internals.settings.setOverlayScrollbarsEnabled(true);
+
+        var d = document.getElementById('container');
+        var plugin = document.createElement('object');
+        plugin.type = 'application/x-webkit-test-netscape';
+        plugin.width = window.innerWidth * 2;
+        plugin.height = window.innerHeight * 2;
+        plugin.addEventListener('mousedown', function(e) {
+            startLogging = true;
+            eventHistory.push('plugin.mousedown');
+        });
+        plugin.addEventListener('mouseup', function(e) {
+            if (startLogging)
+                eventHistory.push('plugin.mouseup');
+        });
+        plugin.addEventListener('mousemove', function(e) {
+            if (startLogging)
+                eventHistory.push('plugin.mousemove');
+        });
+        d.appendChild(plugin);
+
+        runTest();
+    }
 </script>

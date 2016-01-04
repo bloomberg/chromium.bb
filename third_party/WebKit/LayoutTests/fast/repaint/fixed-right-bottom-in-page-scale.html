@@ -23,6 +23,9 @@
       }
 
       function test() {
+          if (window.internals)
+            internals.settings.setScrollAnimatorEnabled(false);
+
           document.body.style.width = (document.body.clientWidth + 100) + "px";
           scaleWithEventSender();
           scroll();

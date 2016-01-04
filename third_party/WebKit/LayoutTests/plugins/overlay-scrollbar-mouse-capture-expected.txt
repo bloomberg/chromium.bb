@@ -7,7 +7,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS eventHistory.length is 2
 PASS eventHistory[0] is "plugin.mousedown"
 PASS eventHistory[1] is "plugin.mouseup"
-PASS window.scrollY is not 0
+PASS window.scrollY > 0 became true
 PASS successfullyParsed is true
 
 TEST COMPLETE

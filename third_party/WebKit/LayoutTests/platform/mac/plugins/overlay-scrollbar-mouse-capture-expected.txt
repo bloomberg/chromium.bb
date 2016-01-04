@@ -7,7 +7,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 FAIL eventHistory.length should be 2. Was 3.
 PASS eventHistory[0] is "plugin.mousedown"
 FAIL eventHistory[1] should be plugin.mouseup. Was plugin.mousemove.
-FAIL window.scrollY should not be 0.
+FAIL window.scrollY > 0 failed to change to true in 0.5 seconds.
 PASS successfullyParsed is true
 
 TEST COMPLETE

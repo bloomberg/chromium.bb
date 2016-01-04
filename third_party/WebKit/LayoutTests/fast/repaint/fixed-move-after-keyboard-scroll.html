@@ -4,6 +4,11 @@
   <script>
       function runTest()
       {
+          // Turn off smooth scrolling to prevent multiple scroll events from
+          // being triggered. The iframe loaded below expects a single scroll
+          // event, after which it runs the repaint test.
+          internals.settings.setScrollAnimatorEnabled(false);
+
           frames[0].focus();
           if (window.eventSender) {
               window.eventSender.keyDown("pageDown");
