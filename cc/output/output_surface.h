@@ -151,7 +151,7 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   // Get the texture for the main image's overlay.
   virtual unsigned GetOverlayTextureId() const;
 
-  void DidLoseOutputSurface();
+  virtual void DidLoseOutputSurface();
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy);
 
   // Support for a pull-model where draws are requested by the output surface.

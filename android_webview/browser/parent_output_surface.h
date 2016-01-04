@@ -17,6 +17,7 @@ class ParentOutputSurface : NON_EXPORTED_BASE(public cc::OutputSurface) {
   ~ParentOutputSurface() override;
 
   // OutputSurface overrides.
+  void DidLoseOutputSurface() override;
   void Reshape(const gfx::Size& size,
                float scale_factor,
                bool has_alpha) override;
