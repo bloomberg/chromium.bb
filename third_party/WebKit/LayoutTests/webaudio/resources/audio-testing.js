@@ -370,22 +370,6 @@ function isValidNumber(x) {
 })();
 
 
-// Create an AudioBuffer for test verification. Fill an incremental index value
-// into the each channel in the buffer. The channel index is between 1 and
-// |numChannels|. For example, a 4-channel buffer created by this function will
-// contain values 1, 2, 3 and 4 for each channel respectively.
-function createTestingAudioBuffer(context, numChannels, length) {
-    var buffer = context.createBuffer(numChannels, length, context.sampleRate);
-    for (var i = 1; i <= numChannels; i++) {
-        var data = buffer.getChannelData(i-1);
-        for (var j = 0; j < data.length; j++) {
-            // Storing channel index into the channel buffer.
-            data[j] = i;
-        }
-    }
-    return buffer;
-}
-
 // Compute the (linear) signal-to-noise ratio between |actual| and |expected|.  The result is NOT in
 // dB!  If the |actual| and |expected| have different lengths, the shorter length is used.
 function computeSNR(actual, expected)

@@ -41,7 +41,7 @@
       var source = context.createBufferSource();
 
       // Create a mono source buffer filled with '1'.
-      source.buffer = createTestingAudioBuffer(context, 1, renderLength);
+      source.buffer = createConstantBuffer(context, renderLength, [1]);
 
       delay.delayTime.value = delayTime;
 

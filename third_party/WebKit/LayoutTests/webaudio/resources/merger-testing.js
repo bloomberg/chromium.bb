@@ -5,11 +5,7 @@ function testMergerInput(config, done) {
   var context = new OfflineAudioContext(config.numberOfChannels, 128, 44100);
   var merger = context.createChannelMerger(config.numberOfChannels);
   var source = context.createBufferSource();
-
-  // Create a test source buffer.
-  source.buffer = createTestingAudioBuffer(
-    context, config.testBufferChannelCount, 128
-  );
+  source.buffer = createConstantBuffer(context, 128, config.testBufferContent);
 
   // Connect the output of source into the specified input of merger.
   if (config.mergerInputIndex)

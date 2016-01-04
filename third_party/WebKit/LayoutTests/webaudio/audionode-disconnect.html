@@ -22,7 +22,7 @@
       // all zeros since the source was disconnected.
       var context = new OfflineAudioContext(1, 128, 44100);
       var source = context.createBufferSource();
-      var buffer1ch = createTestingAudioBuffer(context, 1, 128);
+      var buffer1ch = createConstantBuffer(context, 128, [1]);
       var gain1 = context.createGain();
       var gain2 = context.createGain();
       var gain3 = context.createGain();
@@ -56,7 +56,7 @@
       // is actually disconnected.
       var context = new OfflineAudioContext(1, 128, 44100);
       var source = context.createBufferSource();
-      var buffer3ch = createTestingAudioBuffer(context, 3, 128);
+      var buffer3ch = createConstantBuffer(context, 128, [1, 2, 3]);
       var splitter = context.createChannelSplitter(3);
       var sum = context.createGain();
       
@@ -87,7 +87,7 @@
       // single destination selectively works correctly.
       var context = new OfflineAudioContext(1, 128, 44100);
       var source = context.createBufferSource();
-      var buffer1ch = createTestingAudioBuffer(context, 1, 128);
+      var buffer1ch = createConstantBuffer(context, 128, [1]);
       var gain1 = context.createGain();
       var gain2 = context.createGain();
       var gain3 = context.createGain();
@@ -126,7 +126,7 @@
       // specified output of the destination node works correctly.
       var context = new OfflineAudioContext(1, 128, 44100);
       var source = context.createBufferSource();
-      var buffer2ch = createTestingAudioBuffer(context, 2, 128);
+      var buffer2ch = createConstantBuffer(context, 128, [1, 2]);
       var splitter = context.createChannelSplitter(2);
       var gain1 = context.createGain();
       var gain2 = context.createGain();
@@ -164,7 +164,7 @@
       // respectively.
       var context = new OfflineAudioContext(3, 128, 44100);
       var source = context.createBufferSource();
-      var buffer3ch = createTestingAudioBuffer(context, 3, 128);
+      var buffer3ch = createConstantBuffer(context, 128, [1, 2, 3]);
       var splitter = context.createChannelSplitter(3);
       var merger = context.createChannelMerger(3);
       
