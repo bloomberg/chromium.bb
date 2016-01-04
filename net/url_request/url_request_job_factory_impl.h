@@ -51,7 +51,7 @@ class NET_EXPORT URLRequestJobFactoryImpl : public URLRequestJobFactory {
   // For testing only.
   friend class URLRequestFilter;
 
-  typedef std::map<std::string, ProtocolHandler*> ProtocolHandlerMap;
+  typedef std::map<std::string, scoped_ptr<ProtocolHandler>> ProtocolHandlerMap;
 
   // Sets a global URLRequestInterceptor for testing purposes.  The interceptor
   // is given the chance to intercept any request before the corresponding

@@ -20,9 +20,7 @@ URLRequestInterceptor* g_interceptor_for_testing = NULL;
 
 URLRequestJobFactoryImpl::URLRequestJobFactoryImpl() {}
 
-URLRequestJobFactoryImpl::~URLRequestJobFactoryImpl() {
-  STLDeleteValues(&protocol_handler_map_);
-}
+URLRequestJobFactoryImpl::~URLRequestJobFactoryImpl() {}
 
 bool URLRequestJobFactoryImpl::SetProtocolHandler(
     const std::string& scheme,
@@ -34,14 +32,13 @@ bool URLRequestJobFactoryImpl::SetProtocolHandler(
     if (it == protocol_handler_map_.end())
       return false;
 
-    delete it->second;
     protocol_handler_map_.erase(it);
     return true;
   }
 
   if (ContainsKey(protocol_handler_map_, scheme))
     return false;
-  protocol_handler_map_[scheme] = protocol_handler.release();
+  protocol_handler_map_[scheme] = std::move(protocol_handler);
   return true;
 }
 
