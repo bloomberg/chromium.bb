@@ -18,6 +18,15 @@ declare_args() {
   # up when Chrome is not run from the command line, so should only be used for
   # development. Only has an effect on Windows builds.
   win_console_app = false
+
+  # Specify the current PGO phase, only used for the Windows MSVS build. Here's
+  # the different values that can be used:
+  #     0 : Means that PGO is turned off.
+  #     1 : Used during the PGI (instrumentation) phase.
+  #     2 : Used during the PGO (optimization) phase.
+  #
+  # TODO(sebmarchand): Add support for the PGU (update) phase.
+  chrome_pgo_phase = 0
 }
 
 if (is_android) {
@@ -332,8 +341,6 @@ if (is_mac || is_win) {
       configs -= [ "//build/config/win:default_incremental_linking" ]
       configs +=
           [ "//build/config/win:default_large_module_incremental_linking" ]
-
-      # TODO(GYP) bug 512851: PGO.
     }
 
     if (use_aura) {
@@ -421,21 +428,17 @@ if (is_mac || is_win) {
           configs -= [ "//build/config/win:default_incremental_linking" ]
           configs += [ "//build/config/win:no_incremental_linking" ]
         }
-        # TODO(GYP) bug 512851: PGO on Windows.
-        # ['chrome_pgo_phase==1', {
-        #   'msvs_settings': {
-        #     'VCLinkerTool': {
-        #       'LinkTimeCodeGeneration': '2',
-        #     },
-        #   },
-        # }],
-        # ['chrome_pgo_phase==2', {
-        #   'msvs_settings': {
-        #     'VCLinkerTool': {
-        #       'LinkTimeCodeGeneration': '3',
-        #     },
-        #   },
-        # }],
+        if (chrome_pgo_phase > 0) {
+          configs += [ "//build/config/compiler:optimize_max" ]
+        }
+        if (chrome_pgo_phase == 1) {
+          ldflags = [
+            "/LTCG:PGINSTRUMENT",
+            "/PogoSafeMode",
+          ]
+        } else if (chrome_pgo_phase == 2) {
+          ldflags = [ "/LTCG:PGOPTIMIZE" ]
+        }
       }
 
       if (enable_configuration_policy) {
