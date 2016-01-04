@@ -3439,6 +3439,16 @@
             'PreprocessorDefinitions': ['_DEBUG'],
           },
         },
+        'variables': {
+          'clang_warning_flags': [
+            # Allow comparing the address of references and 'this' against 0
+            # in debug builds. Technically, these can never be null in
+            # well-defined C/C++ and Clang can optimize such checks away in
+            # release builds, but they may be used in asserts in debug builds.
+            '-Wno-undefined-bool-conversion',
+            '-Wno-tautological-undefined-compare',
+          ],
+        },
         'conditions': [
           ['OS=="linux" or OS=="android"', {
             'target_conditions': [
@@ -3460,30 +3470,6 @@
               'OTHER_CFLAGS': [
                 '-fstack-protector-all',  # Implies -fstack-protector
               ],
-            },
-          }],
-          ['clang==1', {
-            'cflags': [
-              # Allow comparing the address of references and 'this' against 0
-              # in debug builds. Technically, these can never be null in
-              # well-defined C/C++ and Clang can optimize such checks away in
-              # release builds, but they may be used in asserts in debug builds.
-              '-Wno-undefined-bool-conversion',
-              '-Wno-tautological-undefined-compare',
-            ],
-            'xcode_settings': {
-              'OTHER_CFLAGS': [
-                '-Wno-undefined-bool-conversion',
-                '-Wno-tautological-undefined-compare',
-              ],
-            },
-            'msvs_settings': {
-              'VCCLCompilerTool': {
-                'AdditionalOptions': [
-                  '-Wno-undefined-bool-conversion',
-                  '-Wno-tautological-undefined-compare',
-                ],
-              },
             },
           }],
         ],
