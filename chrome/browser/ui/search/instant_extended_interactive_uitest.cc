@@ -812,12 +812,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
 }
 
 // http://crbug.com/518106
-#if defined(OS_WIN)
-#define MAYBE_SetPrefetchQuery DISABLED_SetPrefetchQuery
-#else
-#define MAYBE_SetPrefetchQuery SetPrefetchQuery
-#endif
-IN_PROC_BROWSER_TEST_F(InstantExtendedPrefetchTest, MAYBE_SetPrefetchQuery) {
+IN_PROC_BROWSER_TEST_F(InstantExtendedPrefetchTest, DISABLED_SetPrefetchQuery) {
   // Skip the test if suggest support is disabled, since this is generally due
   // to policy and can't be overridden.
   if (!browser()->profile()->GetPrefs()->GetBoolean(
