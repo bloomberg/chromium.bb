@@ -243,6 +243,12 @@
           'sources': [
             'src/ext/icu/icu.c',
           ],
+          'variables': {
+            'clang_warning_flags_unset': [
+              # icu.c uses assert(!"foo") instead of assert(false && "foo")
+              '-Wstring-conversion',
+            ],
+          },
         },
       ],
     }],

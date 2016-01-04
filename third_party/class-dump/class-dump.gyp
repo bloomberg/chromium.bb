@@ -170,6 +170,8 @@
       ],
       'variables': {
         'clang_warning_flags': [
+          # hundreds of technically incorrect calls to stringWithFormat
+          '-Wno-format',
           # e.g. CDRebaseTypeDescription in CDLCDyldInfo.m
           '-Wno-unused-function',
         ],

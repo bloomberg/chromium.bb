@@ -3205,10 +3205,6 @@
           }],
           [ 'OS=="ios"', {
             'xcode_settings': {
-              # TODO(ios): Fix remaining warnings in third-party code, then
-              # remove this; the Mac cleanup didn't get everything that's
-              # flagged in an iOS build.
-              'GCC_TREAT_WARNINGS_AS_ERRORS': 'NO',
               'RUN_CLANG_STATIC_ANALYZER': 'NO',
               # Several internal ios directories generate numerous warnings for
               # -Wobjc-missing-property-synthesis.
