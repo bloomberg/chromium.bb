@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/file_system_provider/operations/write_file.h"
 
+#include <utility>
+
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
@@ -58,7 +60,7 @@ bool WriteFile::Execute(int request_id) {
       request_id,
       extensions::events::FILE_SYSTEM_PROVIDER_ON_WRITE_FILE_REQUESTED,
       extensions::api::file_system_provider::OnWriteFileRequested::kEventName,
-      event_args.Pass());
+      std::move(event_args));
 }
 
 void WriteFile::OnSuccess(int /* request_id */,

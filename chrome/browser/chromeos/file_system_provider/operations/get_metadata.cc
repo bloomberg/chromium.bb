@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "chrome/common/extensions/api/file_system_provider_internal.h"
@@ -177,7 +178,7 @@ void GetMetadata::OnSuccess(int /* request_id */,
                             bool has_more) {
   scoped_ptr<EntryMetadata> metadata(new EntryMetadata);
   const bool convert_result = ConvertRequestValueToFileInfo(
-      result.Pass(), fields_,
+      std::move(result), fields_,
       entry_path_.AsUTF8Unsafe() == FILE_PATH_LITERAL("/"), metadata.get());
 
   if (!convert_result) {
@@ -187,7 +188,7 @@ void GetMetadata::OnSuccess(int /* request_id */,
     return;
   }
 
-  callback_.Run(metadata.Pass(), base::File::FILE_OK);
+  callback_.Run(std::move(metadata), base::File::FILE_OK);
 }
 
 void GetMetadata::OnError(int /* request_id */,

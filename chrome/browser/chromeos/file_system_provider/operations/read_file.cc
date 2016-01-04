@@ -8,6 +8,7 @@
 
 #include <limits>
 #include <string>
+#include <utility>
 
 #include "base/trace_event/trace_event.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
@@ -86,8 +87,8 @@ void ReadFile::OnSuccess(int /* request_id */,
                          scoped_ptr<RequestValue> result,
                          bool has_more) {
   TRACE_EVENT0("file_system_provider", "ReadFile::OnSuccess");
-  const int copy_result = CopyRequestValueToBuffer(
-      result.Pass(), buffer_, current_offset_, length_);
+  const int copy_result = CopyRequestValueToBuffer(std::move(result), buffer_,
+                                                   current_offset_, length_);
 
   if (copy_result < 0) {
     LOG(ERROR) << "Failed to parse a response for the read file operation.";

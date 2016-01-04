@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 
@@ -30,8 +32,7 @@ FakeEntry::FakeEntry() {
 
 FakeEntry::FakeEntry(scoped_ptr<EntryMetadata> metadata,
                      const std::string& contents)
-    : metadata(metadata.Pass()), contents(contents) {
-}
+    : metadata(std::move(metadata)), contents(contents) {}
 
 FakeEntry::~FakeEntry() {
 }
@@ -69,7 +70,7 @@ void FakeProvidedFileSystem::AddEntry(const base::FilePath& entry_path,
   metadata->mime_type.reset(new std::string(mime_type));
 
   entries_[entry_path] =
-      make_linked_ptr(new FakeEntry(metadata.Pass(), contents));
+      make_linked_ptr(new FakeEntry(std::move(metadata), contents));
 }
 
 const FakeEntry* FakeProvidedFileSystem::GetEntry(

@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <limits>
+#include <utility>
 #include <vector>
 
 #include "base/files/file.h"
@@ -17,7 +18,7 @@ namespace file_system_provider {
 
 ThrottledFileSystem::ThrottledFileSystem(
     scoped_ptr<ProvidedFileSystemInterface> file_system)
-    : file_system_(file_system.Pass()), weak_ptr_factory_(this) {
+    : file_system_(std::move(file_system)), weak_ptr_factory_(this) {
   const int opened_files_limit =
       file_system_->GetFileSystemInfo().opened_files_limit();
   open_queue_.reset(opened_files_limit
@@ -195,7 +196,7 @@ void ThrottledFileSystem::Notify(
     const std::string& tag,
     const storage::AsyncFileUtil::StatusCallback& callback) {
   return file_system_->Notify(entry_path, recursive, change_type,
-                              changes.Pass(), tag, callback);
+                              std::move(changes), tag, callback);
 }
 
 void ThrottledFileSystem::Configure(

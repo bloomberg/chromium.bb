@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <string>
+#include <utility>
 
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/get_metadata.h"
@@ -90,7 +91,7 @@ void ReadDirectory::OnSuccess(int /* request_id */,
                               bool has_more) {
   storage::AsyncFileUtil::EntryList entry_list;
   const bool convert_result =
-      ConvertRequestValueToEntryList(result.Pass(), &entry_list);
+      ConvertRequestValueToEntryList(std::move(result), &entry_list);
 
   if (!convert_result) {
     LOG(ERROR)

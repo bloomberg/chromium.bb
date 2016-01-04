@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/file_system_provider/operations/get_metadata.h"
 
 #include <string>
+#include <utility>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -52,7 +53,7 @@ void CreateRequestValueFromJSON(const std::string& json,
   ASSERT_TRUE(value->GetAsList(&value_as_list));
   scoped_ptr<Params> params(Params::Create(*value_as_list));
   ASSERT_TRUE(params.get());
-  *result = RequestValue::CreateForGetMetadataSuccess(params.Pass());
+  *result = RequestValue::CreateForGetMetadataSuccess(std::move(params));
   ASSERT_TRUE(result->get());
 }
 
@@ -62,7 +63,7 @@ class CallbackLogger {
   class Event {
    public:
     Event(scoped_ptr<EntryMetadata> metadata, base::File::Error result)
-        : metadata_(metadata.Pass()), result_(result) {}
+        : metadata_(std::move(metadata)), result_(result) {}
     virtual ~Event() {}
 
     const EntryMetadata* metadata() const { return metadata_.get(); }
@@ -80,7 +81,7 @@ class CallbackLogger {
 
   void OnGetMetadata(scoped_ptr<EntryMetadata> metadata,
                      base::File::Error result) {
-    events_.push_back(new Event(metadata.Pass(), result));
+    events_.push_back(new Event(std::move(metadata), result));
   }
 
   const ScopedVector<Event>& events() const { return events_; }
@@ -314,7 +315,7 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess) {
   ASSERT_NO_FATAL_FAILURE(CreateRequestValueFromJSON(input, &request_value));
 
   const bool has_more = false;
-  get_metadata.OnSuccess(kRequestId, request_value.Pass(), has_more);
+  get_metadata.OnSuccess(kRequestId, std::move(request_value), has_more);
 
   ASSERT_EQ(1u, callback_logger.events().size());
   CallbackLogger::Event* event = callback_logger.events()[0];
@@ -375,7 +376,7 @@ TEST_F(FileSystemProviderOperationsGetMetadataTest, OnSuccess_InvalidMetadata) {
   ASSERT_NO_FATAL_FAILURE(CreateRequestValueFromJSON(input, &request_value));
 
   const bool has_more = false;
-  get_metadata.OnSuccess(kRequestId, request_value.Pass(), has_more);
+  get_metadata.OnSuccess(kRequestId, std::move(request_value), has_more);
 
   ASSERT_EQ(1u, callback_logger.events().size());
   CallbackLogger::Event* event = callback_logger.events()[0];

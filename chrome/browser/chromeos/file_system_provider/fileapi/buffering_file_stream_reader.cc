@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/file_system_provider/fileapi/buffering_file_stream_reader.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -17,7 +18,7 @@ BufferingFileStreamReader::BufferingFileStreamReader(
     scoped_ptr<storage::FileStreamReader> file_stream_reader,
     int preloading_buffer_length,
     int64_t max_bytes_to_read)
-    : file_stream_reader_(file_stream_reader.Pass()),
+    : file_stream_reader_(std::move(file_stream_reader)),
       preloading_buffer_length_(preloading_buffer_length),
       max_bytes_to_read_(max_bytes_to_read),
       bytes_read_(0),

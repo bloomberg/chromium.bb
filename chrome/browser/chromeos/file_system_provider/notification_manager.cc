@@ -138,7 +138,7 @@ NotificationManager::CreateNotification() {
           new ProviderNotificationDelegate(this)));
 
   notification->SetSystemPriority();
-  return notification.Pass();
+  return notification;
 }
 
 void NotificationManager::OnNotificationResult(NotificationResult result) {

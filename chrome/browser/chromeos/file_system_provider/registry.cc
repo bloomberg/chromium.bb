@@ -239,7 +239,7 @@ scoped_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
     restored_file_systems->push_back(restored_file_system);
   }
 
-  return restored_file_systems.Pass();
+  return restored_file_systems;
 }
 
 void Registry::UpdateWatcherTag(const ProvidedFileSystemInfo& file_system_info,

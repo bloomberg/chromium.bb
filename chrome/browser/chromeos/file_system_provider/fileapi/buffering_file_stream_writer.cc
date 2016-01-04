@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/file_system_provider/fileapi/buffering_file_stream_writer.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -15,12 +16,11 @@ namespace file_system_provider {
 BufferingFileStreamWriter::BufferingFileStreamWriter(
     scoped_ptr<storage::FileStreamWriter> file_stream_writer,
     int intermediate_buffer_length)
-    : file_stream_writer_(file_stream_writer.Pass()),
+    : file_stream_writer_(std::move(file_stream_writer)),
       intermediate_buffer_length_(intermediate_buffer_length),
       intermediate_buffer_(new net::IOBuffer(intermediate_buffer_length_)),
       buffered_bytes_(0),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 BufferingFileStreamWriter::~BufferingFileStreamWriter() {
   if (buffered_bytes_)

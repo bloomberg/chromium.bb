@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "chrome/common/extensions/api/file_system_provider_internal.h"
@@ -68,7 +69,7 @@ bool GetActions::Execute(int request_id) {
 void GetActions::OnSuccess(int /* request_id */,
                            scoped_ptr<RequestValue> result,
                            bool has_more) {
-  callback_.Run(ConvertRequestValueToActions(result.Pass()),
+  callback_.Run(ConvertRequestValueToActions(std::move(result)),
                 base::File::FILE_OK);
 }
 

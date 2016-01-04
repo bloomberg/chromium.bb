@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/files/file.h"
@@ -91,7 +92,7 @@ class FakeEventRouter : public extensions::EventRouter {
       ASSERT_TRUE(params.get());
       file_system_->GetRequestManager()->FulfillRequest(
           request_id,
-          RequestValue::CreateForOperationSuccess(params.Pass()),
+          RequestValue::CreateForOperationSuccess(std::move(params)),
           false /* has_more */);
     } else {
       file_system_->GetRequestManager()->RejectRequest(

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/file_system_provider/request_manager.h"
 
+#include <utility>
+
 #include "base/files/file.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
@@ -68,7 +70,7 @@ int RequestManager::CreateRequest(RequestType type,
                            type);
 
   Request* request = new Request;
-  request->handler = handler.Pass();
+  request->handler = std::move(handler);
   requests_[request_id] = request;
   ResetTimer(request_id);
 
@@ -101,7 +103,8 @@ base::File::Error RequestManager::FulfillRequest(
                     observers_,
                     OnRequestFulfilled(request_id, *response.get(), has_more));
 
-  request_it->second->handler->OnSuccess(request_id, response.Pass(), has_more);
+  request_it->second->handler->OnSuccess(request_id, std::move(response),
+                                         has_more);
 
   if (!has_more) {
     DestroyRequest(request_id);
@@ -126,7 +129,7 @@ base::File::Error RequestManager::RejectRequest(
   FOR_EACH_OBSERVER(Observer,
                     observers_,
                     OnRequestRejected(request_id, *response.get(), error));
-  request_it->second->handler->OnError(request_id, response.Pass(), error);
+  request_it->second->handler->OnError(request_id, std::move(response), error);
   DestroyRequest(request_id);
 
   return base::File::FILE_OK;

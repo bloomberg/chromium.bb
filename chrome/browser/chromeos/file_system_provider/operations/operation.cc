@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/file_system_provider/operations/operation.h"
 
+#include <utility>
+
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "extensions/browser/event_router.h"
 
@@ -20,7 +22,7 @@ bool DispatchEventImpl(extensions::EventRouter* event_router,
   if (!event_router->ExtensionHasEventListener(extension_id, event->event_name))
     return false;
 
-  event_router->DispatchEventToExtension(extension_id, event.Pass());
+  event_router->DispatchEventToExtension(extension_id, std::move(event));
   return true;
 }
 
@@ -46,8 +48,8 @@ bool Operation::SendEvent(int request_id,
                           extensions::events::HistogramValue histogram_value,
                           const std::string& event_name,
                           scoped_ptr<base::ListValue> event_args) {
-  return dispatch_event_impl_.Run(make_scoped_ptr(
-      new extensions::Event(histogram_value, event_name, event_args.Pass())));
+  return dispatch_event_impl_.Run(make_scoped_ptr(new extensions::Event(
+      histogram_value, event_name, std::move(event_args))));
 }
 
 }  // namespace operations
