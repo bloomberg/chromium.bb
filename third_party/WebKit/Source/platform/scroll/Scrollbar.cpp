@@ -126,27 +126,19 @@ bool Scrollbar::isLeftSideVerticalScrollbar() const
     return false;
 }
 
-bool Scrollbar::offsetDidChange()
+void Scrollbar::offsetDidChange()
 {
     ASSERT(m_scrollableArea);
 
     float position = scrollableAreaCurrentPos();
     if (position == m_currentPos)
-        return false;
+        return;
 
-    float oldPosition = m_currentPos;
     int oldThumbPosition = theme().thumbPosition(*this);
     m_currentPos = position;
-
-    ScrollbarPart invalidParts = theme().invalidateOnThumbPositionChange(
-        *this, oldPosition, position);
-    if (invalidParts != NoPart)
-        setNeedsPaintInvalidation(invalidParts);
-
+    updateThumbPosition();
     if (m_pressedPart == ThumbPart)
         setPressedPos(m_pressedPos + theme().thumbPosition(*this) - oldThumbPosition);
-
-    return true;
 }
 
 void Scrollbar::disconnectFromScrollableArea()
@@ -162,7 +154,22 @@ void Scrollbar::setProportion(int visibleSize, int totalSize)
     m_visibleSize = visibleSize;
     m_totalSize = totalSize;
 
+    updateThumbProportion();
+}
+
+void Scrollbar::updateThumb()
+{
     setNeedsPaintInvalidation();
+}
+
+void Scrollbar::updateThumbPosition()
+{
+    updateThumb();
+}
+
+void Scrollbar::updateThumbProportion()
+{
+    updateThumb();
 }
 
 void Scrollbar::paint(GraphicsContext& context, const CullRect& cullRect) const
@@ -310,7 +317,7 @@ void Scrollbar::setHoveredPart(ScrollbarPart part)
     if (((m_hoveredPart == NoPart || part == NoPart) && theme().invalidateOnMouseEnterExit())
         // When there's a pressed part, we don't draw a hovered state, so there's no reason to invalidate.
         || m_pressedPart == NoPart)
-        setNeedsPaintInvalidation(static_cast<ScrollbarPart>(m_hoveredPart | part));
+        setNeedsPaintInvalidation();
 
     m_hoveredPart = part;
 }
@@ -320,7 +327,7 @@ void Scrollbar::setPressedPart(ScrollbarPart part)
     if (m_pressedPart != NoPart
         // When we no longer have a pressed part, we can start drawing a hovered state on the hovered part.
         || m_hoveredPart != NoPart)
-        setNeedsPaintInvalidation(static_cast<ScrollbarPart>(m_pressedPart | m_hoveredPart | part));
+        setNeedsPaintInvalidation();
     m_pressedPart = part;
 }
 
@@ -555,14 +562,12 @@ float Scrollbar::scrollableAreaCurrentPos() const
     return m_scrollableArea->scrollPosition().y() - m_scrollableArea->minimumScrollPosition().y();
 }
 
-void Scrollbar::setNeedsPaintInvalidation(ScrollbarPart parts)
+void Scrollbar::setNeedsPaintInvalidation()
 {
-    if (m_theme.shouldRepaintAllPartsOnInvalidation())
-        parts = AllParts;
-    if (parts & ~ThumbPart)
+    if (m_theme.shouldRepaintAllPartsOnInvalidation()) {
         m_trackNeedsRepaint = true;
-    if (parts & ThumbPart)
         m_thumbNeedsRepaint = true;
+    }
     if (m_scrollableArea)
         m_scrollableArea->setScrollbarNeedsPaintInvalidation(orientation());
 }

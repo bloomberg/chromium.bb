@@ -428,17 +428,20 @@ private:
         break;
     case TrackAlpha:
         [_scrollbarPainter.get() setTrackAlpha:currentValue];
-        _scrollbar->setNeedsPaintInvalidation(static_cast<ScrollbarPart>(~ThumbPart));
+        _scrollbar->setTrackNeedsRepaint(true);
         break;
     case UIStateTransition:
         [_scrollbarPainter.get() setUiStateTransitionProgress:currentValue];
-        _scrollbar->setNeedsPaintInvalidation();
+        _scrollbar->setThumbNeedsRepaint(true);
+        _scrollbar->setTrackNeedsRepaint(true);
         break;
     case ExpansionTransition:
         [_scrollbarPainter.get() setExpansionTransitionProgress:currentValue];
-        _scrollbar->setNeedsPaintInvalidation(ThumbPart);
+        _scrollbar->setThumbNeedsRepaint(true);
         break;
     }
+
+    _scrollbar->setNeedsPaintInvalidation();
 }
 
 - (void)invalidate
