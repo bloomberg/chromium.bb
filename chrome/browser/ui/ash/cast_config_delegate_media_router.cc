@@ -29,14 +29,6 @@ media_router::MediaRouter* GetMediaRouter() {
   return router;
 }
 
-// The media router will sometimes append " (Tab)" to the tab title. This
-// function will remove that data from the inout param |string|.
-void StripEndingTab(base::string16* string) {
-  const base::string16 ending = base::UTF8ToUTF16(" (Tab)");
-  if (base::EndsWith(*string, ending, base::CompareCase::SENSITIVE))
-    *string = string->substr(0, string->size() - ending.size());
-}
-
 }  // namespace
 
 // This class caches the values that the observers give us so we can query them
@@ -129,56 +121,9 @@ CastConfigDelegateMediaRouter::RegisterDeviceUpdateObserver(
 }
 
 void CastConfigDelegateMediaRouter::RequestDeviceRefresh() {
-  // The media router component isn't ready yet.
-  if (!devices())
-    return;
-
-  // Build the old-style ReceiverAndActivity set out of the MediaRouter
-  // source/sink/route setup. We first map the existing sinks, and then we
-  // update those sinks with activity information.
-
-  ReceiversAndActivities items;
-
-  for (const media_router::MediaSink& sink : devices()->sinks()) {
-    ReceiverAndActivity ra;
-    ra.receiver.id = sink.id();
-    ra.receiver.name = base::UTF8ToUTF16(sink.name());
-    items.push_back(ra);
-  }
-
-  for (const media_router::MediaRoute& route : devices()->routes()) {
-    if (!route.for_display())
-      continue;
-
-    for (ReceiverAndActivity& item : items) {
-      if (item.receiver.id == route.media_sink_id()) {
-        item.activity.id = route.media_route_id();
-        item.activity.title = base::UTF8ToUTF16(route.description());
-        StripEndingTab(&item.activity.title);
-        item.activity.is_local_source = route.is_local();
-
-        if (route.is_local()) {
-          // TODO(jdufault): Once the extension backend is removed, we can
-          // remove tab_id and specify the Desktop/Tab capture directly.
-          // crbug.com/551132.
-          // TODO(jdufault): We currently don't actually display DIAL casts to
-          // the user even though we have all the information necessary. We'll
-          // do this once the extension backend is gone because supporting both
-          // introduces extra complexity. crbug.com/551132.
-
-          // Default to a tab/app capture. This will display the media router
-          // description. This means we will properly support DIAL casts.
-          item.activity.tab_id = 0;
-          if (media_router::IsDesktopMirroringMediaSource(route.media_source()))
-            item.activity.tab_id = Activity::TabId::DESKTOP;
-        }
-
-        break;
-      }
-    }
-  }
-
-  callback_list_.Notify(items);
+  // TODO(jdufault): Temporarily disable mediarouter integration. See
+  // crbug.com/571111.
+  return;
 }
 
 void CastConfigDelegateMediaRouter::CastToReceiver(
