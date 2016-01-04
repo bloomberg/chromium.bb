@@ -375,9 +375,10 @@ goog.require('__crWeb.message');
     }, 0);
   };
 
-  // Keep the original replaceState() method. It's needed to update UIWebView's
-  // URL and window.history.state property during history navigations that don't
-  // cause a page load.
+  // Keep the original pushState() and replaceState() methods. It's needed to
+  // update the web view's URL and window.history.state property during history
+  // navigations that don't cause a page load.
+  var originalWindowHistoryPushState = window.history.pushState;
   var originalWindowHistoryReplaceState = window.history.replaceState;
   __gCrWeb['replaceWebViewURL'] = function(url, stateObject) {
     originalWindowHistoryReplaceState.call(history, stateObject, '', url);
@@ -401,7 +402,8 @@ goog.require('__crWeb.message');
         typeof(stateObject) == 'undefined' ? '' :
             __gCrWeb.common.JSONStringify(stateObject);
     pageUrl = pageUrl || window.location.href;
-    originalWindowHistoryReplaceState.call(history, stateObject, '', pageUrl);
+    originalWindowHistoryPushState.call(history, stateObject,
+                                        pageTitle, pageUrl);
     invokeOnHost_({'command': 'window.history.didPushState',
                    'stateObject': serializedState,
                    'baseUrl': document.baseURI,
@@ -416,7 +418,8 @@ goog.require('__crWeb.message');
         typeof(stateObject) == 'undefined' ? '' :
             __gCrWeb.common.JSONStringify(stateObject);
     pageUrl = pageUrl || window.location.href;
-    originalWindowHistoryReplaceState.call(history, stateObject, '', pageUrl);
+    originalWindowHistoryReplaceState.call(history, stateObject,
+                                           pageTitle, pageUrl);
     invokeOnHost_({'command': 'window.history.didReplaceState',
                    'stateObject': serializedState,
                    'baseUrl': document.baseURI,
