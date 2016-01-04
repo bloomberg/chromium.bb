@@ -273,6 +273,13 @@ void BackgroundSyncManager::OnStorageWiped() {
                  weak_ptr_factory_.GetWeakPtr(), MakeEmptyCompletion()));
 }
 
+void BackgroundSyncManager::SetMaxSyncAttemptsForTesting(int max_attempts) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  op_scheduler_.ScheduleOperation(base::Bind(
+      &BackgroundSyncManager::SetMaxSyncAttemptsImpl,
+      weak_ptr_factory_.GetWeakPtr(), max_attempts, MakeEmptyCompletion()));
+}
+
 BackgroundSyncManager::BackgroundSyncManager(
     const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context)
     : service_worker_context_(service_worker_context),
@@ -1419,6 +1426,15 @@ void BackgroundSyncManager::OnPowerChanged() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   FireReadyEvents();
+}
+
+void BackgroundSyncManager::SetMaxSyncAttemptsImpl(
+    int max_attempts,
+    const base::Closure& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  parameters_->max_sync_attempts = max_attempts;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
 }
 
 // TODO(jkarlin): Figure out how to pass scoped_ptrs with this.

@@ -105,7 +105,7 @@ void SetMaxSyncAttemptsOnIOThread(
     int max_sync_attempts) {
   BackgroundSyncManager* background_sync_manager =
       sync_context->background_sync_manager();
-  background_sync_manager->set_max_sync_attempts(max_sync_attempts);
+  background_sync_manager->SetMaxSyncAttemptsForTesting(max_sync_attempts);
 }
 
 }  // namespace
@@ -423,10 +423,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, WaitUntil) {
   EXPECT_FALSE(GetRegistrationOneShot("delay"));
 }
 
-// DISABLED due to race between the rejection reaching the BackgroundSyncManager
-// via the normal IPC mechanism and the GetRegistration happening over the mojo
-// IPC. See https://crbug.com/570333.
-IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, DISABLED_WaitUntilReject) {
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, WaitUntilReject) {
   EXPECT_TRUE(RegisterServiceWorker());
   EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
 

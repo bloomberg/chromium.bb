@@ -105,6 +105,10 @@ class CONTENT_EXPORT BackgroundSyncManager
                              const GURL& pattern) override;
   void OnStorageWiped() override;
 
+  // Sets the max number of sync attempts after any pending operations have
+  // completed.
+  void SetMaxSyncAttemptsForTesting(int max_attempts);
+
   BackgroundSyncNetworkObserver* GetNetworkObserverForTesting() {
     return network_observer_.get();
   }
@@ -112,10 +116,6 @@ class CONTENT_EXPORT BackgroundSyncManager
   void set_clock(scoped_ptr<base::Clock> clock) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     clock_ = std::move(clock);
-  }
-  void set_max_sync_attempts(int max_attempts) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    parameters_->max_sync_attempts = max_attempts;
   }
 
  protected:
@@ -363,6 +363,10 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   void OnNetworkChanged();
   void OnPowerChanged();
+
+  // SetMaxSyncAttempts callback
+  void SetMaxSyncAttemptsImpl(int max_sync_attempts,
+                              const base::Closure& callback);
 
   // Operation Scheduling callback and convenience functions.
   template <typename CallbackT, typename... Params>
