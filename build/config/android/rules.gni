@@ -2211,7 +2211,7 @@ template("create_native_executable_dist") {
 #
 # Example:
 #  proto_java_library("foo_proto_java") {
-#    proto_path = [ "src/foo" ]
+#    proto_path = "src/foo"
 #    sources = [ "$proto_path/foo.proto" ]
 #  }
 template("proto_java_library") {
