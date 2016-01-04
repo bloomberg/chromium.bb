@@ -133,7 +133,7 @@ source_set("ui") {
     deps += [ "//net" ]
   }
 
-  if ((!is_android || use_aura) && !is_ios) {
+  if (!android_java_ui && !is_ios) {
     sources += rebase_path(gypi_values.chrome_browser_ui_non_mobile_sources,
                            ".",
                            "//chrome")
@@ -472,7 +472,7 @@ source_set("ui") {
         rebase_path(gypi_values.chrome_browser_ui_autofill_dialog_sources,
                     ".",
                     "//chrome")
-    if ((!is_android || use_aura) && !is_ios) {
+    if (!android_java_ui && !is_ios) {
       sources += rebase_path(
               gypi_values.chrome_browser_ui_autofill_dialog_non_mobile_sources,
               ".",
