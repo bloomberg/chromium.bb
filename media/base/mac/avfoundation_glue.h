@@ -94,11 +94,11 @@ MEDIA_EXPORT
 @end
 
 MEDIA_EXPORT
-@interface CrAVCaptureInput  // Originally from AVCaptureInput.h.
+@interface CrAVCaptureInput : NSObject  // Originally from AVCaptureInput.h.
 @end
 
 MEDIA_EXPORT
-@interface CrAVCaptureOutput  // Originally from AVCaptureOutput.h.
+@interface CrAVCaptureOutput : NSObject  // Originally from AVCaptureOutput.h.
 @end
 
 // Originally AVCaptureSession and coming from AVCaptureSession.h.

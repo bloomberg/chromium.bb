@@ -30,8 +30,9 @@ namespace internal {
 template<typename CFT>
 struct ScopedCFTypeRefTraits {
   static CFT InvalidValue() { return nullptr; }
-  static void Retain(CFT object) {
+  static CFT Retain(CFT object) {
     CFRetain(object);
+    return object;
   }
   static void Release(CFT object) {
     CFRelease(object);

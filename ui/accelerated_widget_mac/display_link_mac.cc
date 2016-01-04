@@ -15,8 +15,8 @@ namespace base {
 template<>
 struct ScopedTypeRefTraits<CVDisplayLinkRef> {
   static CVDisplayLinkRef InvalidValue() { return nullptr; }
-  static void Retain(CVDisplayLinkRef object) {
-    CVDisplayLinkRetain(object);
+  static CVDisplayLinkRef Retain(CVDisplayLinkRef object) {
+    return CVDisplayLinkRetain(object);
   }
   static void Release(CVDisplayLinkRef object) {
     CVDisplayLinkRelease(object);

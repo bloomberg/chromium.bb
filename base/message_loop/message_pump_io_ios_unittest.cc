@@ -44,7 +44,7 @@ class MessagePumpIOSForIOTest : public testing::Test {
   }
 
   void HandleFdIOEvent(MessageLoopForIO::FileDescriptorWatcher* watcher) {
-    MessagePumpIOSForIO::HandleFdIOEvent(watcher->fdref_,
+    MessagePumpIOSForIO::HandleFdIOEvent(watcher->fdref_.get(),
         kCFFileDescriptorReadCallBack | kCFFileDescriptorWriteCallBack,
         watcher);
   }

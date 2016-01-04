@@ -7,83 +7,27 @@
 
 #include <Block.h>
 
-#include "base/compiler_specific.h"
-#include "base/memory/scoped_policy.h"
+#include "base/mac/scoped_typeref.h"
 
 namespace base {
 namespace mac {
 
+namespace internal {
+
+template <typename B>
+struct ScopedBlockTraits {
+  static B InvalidValue() { return nullptr; }
+  static B Retain(B block) { return Block_copy(block); }
+  static void Release(B block) { Block_release(block); }
+};
+
+}  // namespace internal
+
 // ScopedBlock<> is patterned after ScopedCFTypeRef<>, but uses Block_copy() and
 // Block_release() instead of CFRetain() and CFRelease().
 
-template<typename B>
-class ScopedBlock {
- public:
-  explicit ScopedBlock(
-      B block = nullptr,
-      base::scoped_policy::OwnershipPolicy policy = base::scoped_policy::ASSUME)
-      : block_(block) {
-    if (block_ && policy == base::scoped_policy::RETAIN)
-      block_ = Block_copy(block);
-  }
-
-  ScopedBlock(const ScopedBlock<B>& that)
-      : block_(that.block_) {
-    if (block_)
-      block_ = Block_copy(block_);
-  }
-
-  ~ScopedBlock() {
-    if (block_)
-      Block_release(block_);
-  }
-
-  ScopedBlock& operator=(const ScopedBlock<B>& that) {
-    reset(that.get(), base::scoped_policy::RETAIN);
-    return *this;
-  }
-
-  void reset(B block = nullptr,
-             base::scoped_policy::OwnershipPolicy policy =
-                 base::scoped_policy::ASSUME) {
-    if (block && policy == base::scoped_policy::RETAIN)
-      block = Block_copy(block);
-    if (block_)
-      Block_release(block_);
-    block_ = block;
-  }
-
-  bool operator==(B that) const {
-    return block_ == that;
-  }
-
-  bool operator!=(B that) const {
-    return block_ != that;
-  }
-
-  operator B() const {
-    return block_;
-  }
-
-  B get() const {
-    return block_;
-  }
-
-  void swap(ScopedBlock& that) {
-    B temp = that.block_;
-    that.block_ = block_;
-    block_ = temp;
-  }
-
-  B release() WARN_UNUSED_RESULT {
-    B temp = block_;
-    block_ = nullptr;
-    return temp;
-  }
-
- private:
-  B block_;
-};
+template <typename B>
+using ScopedBlock = ScopedTypeRef<B, internal::ScopedBlockTraits<B>>;
 
 }  // namespace mac
 }  // namespace base

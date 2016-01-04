@@ -5,13 +5,15 @@
 #ifndef BASE_MAC_SCOPED_NSOBJECT_H_
 #define BASE_MAC_SCOPED_NSOBJECT_H_
 
+#include <type_traits>
+
 // Include NSObject.h directly because Foundation.h pulls in many dependencies.
 // (Approx 100k lines of code versus 1.5k for NSObject.h). scoped_nsobject gets
 // singled out because it is most typically included from other header files.
 #import <Foundation/NSObject.h>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/mac/scoped_typeref.h"
 
 @class NSAutoreleasePool;
 
@@ -37,71 +39,26 @@ namespace base {
 // We check for bad uses of scoped_nsobject and NSAutoreleasePool at compile
 // time with a template specialization (see below).
 
-template<typename NST>
-class scoped_nsprotocol {
+namespace internal {
+
+template <typename NST>
+struct ScopedNSProtocolTraits {
+  static NST InvalidValue() { return nil; }
+  static NST Retain(NST nst) { return [nst retain]; }
+  static void Release(NST nst) { [nst release]; }
+};
+
+}  // namespace internal
+
+template <typename NST>
+class scoped_nsprotocol
+    : public ScopedTypeRef<NST, internal::ScopedNSProtocolTraits<NST>> {
  public:
-  explicit scoped_nsprotocol(NST object = nil) : object_(object) {}
-
-  scoped_nsprotocol(const scoped_nsprotocol<NST>& that)
-      : object_([that.object_ retain]) {
-  }
-
-  template <typename NSU>
-  scoped_nsprotocol(const scoped_nsprotocol<NSU>& that)
-      : object_([that.get() retain]) {
-  }
-
-  ~scoped_nsprotocol() {
-    [object_ release];
-  }
-
-  scoped_nsprotocol& operator=(const scoped_nsprotocol<NST>& that) {
-    reset([that.get() retain]);
-    return *this;
-  }
-
-  void reset(NST object = nil) {
-    // We intentionally do not check that object != object_ as the caller must
-    // either already have an ownership claim over whatever it passes to this
-    // method, or call it with the |RETAIN| policy which will have ensured that
-    // the object is retained once more when reaching this point.
-    [object_ release];
-    object_ = object;
-  }
-
-  bool operator==(NST that) const { return object_ == that; }
-  bool operator!=(NST that) const { return object_ != that; }
-
-  operator NST() const {
-    return object_;
-  }
-
-  NST get() const {
-    return object_;
-  }
-
-  void swap(scoped_nsprotocol& that) {
-    NST temp = that.object_;
-    that.object_ = object_;
-    object_ = temp;
-  }
-
-  // scoped_nsprotocol<>::release() is like scoped_ptr<>::release.  It is NOT a
-  // wrapper for [object_ release].  To force a scoped_nsprotocol<> to call
-  // [object_ release], use scoped_nsprotocol<>::reset().
-  NST release() WARN_UNUSED_RESULT {
-    NST temp = object_;
-    object_ = nil;
-    return temp;
-  }
+  using ScopedTypeRef<NST,
+                      internal::ScopedNSProtocolTraits<NST>>::ScopedTypeRef;
 
   // Shift reference to the autorelease pool to be released later.
-  NST autorelease() {
-    return [release() autorelease];
-  }
-
- private:
-  NST object_;
+  NST autorelease() { return [this->release() autorelease]; }
 };
 
 // Free functions
@@ -120,56 +77,20 @@ bool operator!=(C p1, const scoped_nsprotocol<C>& p2) {
   return p1 != p2.get();
 }
 
-template<typename NST>
+template <typename NST>
 class scoped_nsobject : public scoped_nsprotocol<NST*> {
  public:
-  explicit scoped_nsobject(NST* object = nil)
-      : scoped_nsprotocol<NST*>(object) {}
+  using scoped_nsprotocol<NST*>::scoped_nsprotocol;
 
-  scoped_nsobject(const scoped_nsobject<NST>& that)
-      : scoped_nsprotocol<NST*>(that) {
-  }
-
-  template<typename NSU>
-  scoped_nsobject(const scoped_nsobject<NSU>& that)
-      : scoped_nsprotocol<NST*>(that) {
-  }
-
-  scoped_nsobject& operator=(const scoped_nsobject<NST>& that) {
-    scoped_nsprotocol<NST*>::operator=(that);
-    return *this;
-  }
+  static_assert(std::is_same<NST, NSAutoreleasePool>::value == false,
+                "Use ScopedNSAutoreleasePool instead");
 };
 
 // Specialization to make scoped_nsobject<id> work.
 template<>
 class scoped_nsobject<id> : public scoped_nsprotocol<id> {
  public:
-  explicit scoped_nsobject(id object = nil) : scoped_nsprotocol<id>(object) {}
-
-  scoped_nsobject(const scoped_nsobject<id>& that)
-      : scoped_nsprotocol<id>(that) {
-  }
-
-  template<typename NSU>
-  scoped_nsobject(const scoped_nsobject<NSU>& that)
-      : scoped_nsprotocol<id>(that) {
-  }
-
-  scoped_nsobject& operator=(const scoped_nsobject<id>& that) {
-    scoped_nsprotocol<id>::operator=(that);
-    return *this;
-  }
-};
-
-// Do not use scoped_nsobject for NSAutoreleasePools, use
-// ScopedNSAutoreleasePool instead. This is a compile time check. See details
-// at top of header.
-template<>
-class scoped_nsobject<NSAutoreleasePool> {
- private:
-  explicit scoped_nsobject(NSAutoreleasePool* object = nil);
-  DISALLOW_COPY_AND_ASSIGN(scoped_nsobject);
+  using scoped_nsprotocol<id>::scoped_nsprotocol;
 };
 
 }  // namespace base

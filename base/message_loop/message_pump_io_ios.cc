@@ -22,7 +22,7 @@ bool MessagePumpIOSForIO::FileDescriptorWatcher::StopWatchingFileDescriptor() {
   if (fdref_ == NULL)
     return true;
 
-  CFFileDescriptorDisableCallBacks(fdref_, callback_types_);
+  CFFileDescriptorDisableCallBacks(fdref_.get(), callback_types_);
   if (pump_)
     pump_->RemoveRunLoopSource(fd_source_);
   fd_source_.reset();
@@ -39,7 +39,7 @@ void MessagePumpIOSForIO::FileDescriptorWatcher::Init(
     CFRunLoopSourceRef fd_source,
     bool is_persistent) {
   DCHECK(fdref);
-  DCHECK(!fdref_);
+  DCHECK(!fdref_.is_valid());
 
   is_persistent_ = is_persistent;
   fdref_.reset(fdref);
@@ -97,7 +97,7 @@ bool MessagePumpIOSForIO::WatchFileDescriptor(
     callback_types |= kCFFileDescriptorWriteCallBack;
   }
 
-  CFFileDescriptorRef fdref = controller->fdref_;
+  CFFileDescriptorRef fdref = controller->fdref_.get();
   if (fdref == NULL) {
     base::ScopedCFTypeRef<CFFileDescriptorRef> scoped_fdref(
         CFFileDescriptorCreate(
@@ -174,7 +174,7 @@ void MessagePumpIOSForIO::HandleFdIOEvent(CFFileDescriptorRef fdref,
                                           void* context) {
   FileDescriptorWatcher* controller =
       static_cast<FileDescriptorWatcher*>(context);
-  DCHECK_EQ(fdref, controller->fdref_);
+  DCHECK_EQ(fdref, controller->fdref_.get());
 
   // Ensure that |fdref| will remain live for the duration of this function
   // call even if |controller| is deleted or |StopWatchingFileDescriptor()| is
@@ -194,14 +194,14 @@ void MessagePumpIOSForIO::HandleFdIOEvent(CFFileDescriptorRef fdref,
   // guarantees that |controller| has not been deleted.
   if (callback_types & kCFFileDescriptorReadCallBack &&
       CFFileDescriptorIsValid(fdref)) {
-    DCHECK_EQ(fdref, controller->fdref_);
+    DCHECK_EQ(fdref, controller->fdref_.get());
     controller->OnFileCanReadWithoutBlocking(fd, pump);
   }
 
   // Re-enable callbacks after the read/write if the file descriptor is still
   // valid and the controller is persistent.
   if (CFFileDescriptorIsValid(fdref) && controller->is_persistent_) {
-    DCHECK_EQ(fdref, controller->fdref_);
+    DCHECK_EQ(fdref, controller->fdref_.get());
     CFFileDescriptorEnableCallBacks(fdref, callback_types);
   }
 }

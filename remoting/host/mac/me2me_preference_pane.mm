@@ -64,7 +64,7 @@ launch_data_t MessageForJob(const std::string& job_label,
                             const char* operation) {
   // launch_data_alloc returns something that needs to be freed.
   ScopedLaunchData message(launch_data_alloc(LAUNCH_DATA_DICTIONARY));
-  if (!message) {
+  if (!message.is_valid()) {
     NSLog(@"launch_data_alloc");
     return nullptr;
   }
@@ -74,37 +74,37 @@ launch_data_t MessageForJob(const std::string& job_label,
   // called, so put it in a scoper and .release() it when given to the
   // dictionary.
   ScopedLaunchData job_label_launchd(launch_data_new_string(job_label.c_str()));
-  if (!job_label_launchd) {
+  if (!job_label_launchd.is_valid()) {
     NSLog(@"launch_data_new_string");
     return nullptr;
   }
 
-  if (!launch_data_dict_insert(message,
+  if (!launch_data_dict_insert(message.get(),
                                job_label_launchd.release(),
                                operation)) {
     return nullptr;
   }
 
-  return launch_msg(message);
+  return launch_msg(message.get());
 }
 
 pid_t PIDForJob(const std::string& job_label) {
   ScopedLaunchData response(MessageForJob(job_label, LAUNCH_KEY_GETJOB));
-  if (!response) {
+  if (!response.is_valid()) {
     return -1;
   }
 
-  launch_data_type_t response_type = launch_data_get_type(response);
+  launch_data_type_t response_type = launch_data_get_type(response.get());
   if (response_type != LAUNCH_DATA_DICTIONARY) {
     if (response_type == LAUNCH_DATA_ERRNO) {
-      NSLog(@"PIDForJob: error %d", launch_data_get_errno(response));
+      NSLog(@"PIDForJob: error %d", launch_data_get_errno(response.get()));
     } else {
       NSLog(@"PIDForJob: expected dictionary, got %d", response_type);
     }
     return -1;
   }
 
-  launch_data_t pid_data = launch_data_dict_lookup(response,
+  launch_data_t pid_data = launch_data_dict_lookup(response.get(),
                                                    LAUNCH_JOBKEY_PID);
   if (!pid_data)
     return 0;
@@ -583,7 +583,7 @@ std::string JsonHostConfig::GetSerializedData() const {
 - (BOOL)sendJobControlMessage:(const char*)launch_key {
   base::mac::ScopedLaunchData response(
       base::mac::MessageForJob(remoting::kServiceName, launch_key));
-  if (!response) {
+  if (!response.is_valid()) {
     NSLog(@"Failed to send message to launchd");
     [self showError];
     return NO;

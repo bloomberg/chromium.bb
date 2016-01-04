@@ -139,7 +139,8 @@ TEST_F(ServiceDiscoveryClientMacTest, ServiceResolver) {
 
   ServiceResolverImplMac* resolver_impl =
       static_cast<ServiceResolverImplMac*>(resolver.get());
-  resolver_impl->GetContainerForTesting()->SetServiceForTesting(test_service);
+  resolver_impl->GetContainerForTesting()->SetServiceForTesting(
+      test_service.release());
   resolver->StartResolving();
 
   resolver_impl->GetContainerForTesting()->OnResolveUpdate(

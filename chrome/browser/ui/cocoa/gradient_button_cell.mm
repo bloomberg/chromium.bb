@@ -375,8 +375,7 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
   // The basic gradient shown inside; see above.
   NSGradient* gradient;
   if (hoverAlpha == 0 && !useThemeGradient) {
-    gradient = defaultGradient ? defaultGradient
-                               : gradient_;
+    gradient = defaultGradient ? defaultGradient : gradient_.get();
   } else {
     gradient = [self gradientForHoverAlpha:hoverAlpha
                                   isThemed:useThemeGradient];

@@ -22,7 +22,10 @@ namespace base {
 //   template<>
 //   struct ScopedTypeRefTraits<CGLContextObj> {
 //     static CGLContextObj InvalidValue() { return nullptr; }
-//     static void Retain(CGLContextObj object) { CGLContextRetain(object); }
+//     static CGLContextObj Retain(CGLContextObj object) {
+//       CGLContextRetain(object);
+//       return object;
+//     }
 //     static void Release(CGLContextObj object) { CGLContextRelease(object); }
 //   };
 //
@@ -55,13 +58,13 @@ class ScopedTypeRef {
       base::scoped_policy::OwnershipPolicy policy = base::scoped_policy::ASSUME)
       : object_(object) {
     if (object_ && policy == base::scoped_policy::RETAIN)
-      Traits::Retain(object_);
+      object_ = Traits::Retain(object_);
   }
 
   ScopedTypeRef(const ScopedTypeRef<T, Traits>& that)
       : object_(that.object_) {
     if (object_)
-      Traits::Retain(object_);
+      object_ = Traits::Retain(object_);
   }
 
   ~ScopedTypeRef() {
@@ -86,7 +89,7 @@ class ScopedTypeRef {
              base::scoped_policy::OwnershipPolicy policy =
                 base::scoped_policy::ASSUME) {
     if (object && policy == base::scoped_policy::RETAIN)
-      Traits::Retain(object);
+      object = Traits::Retain(object);
     if (object_)
       Traits::Release(object_);
     object_ = object;
