@@ -19,6 +19,14 @@
 extern "C" {
 #endif
 
+unsigned int vpx_avg_4x4_c(const uint8_t *, int p);
+unsigned int vpx_avg_4x4_neon(const uint8_t *, int p);
+RTCD_EXTERN unsigned int (*vpx_avg_4x4)(const uint8_t *, int p);
+
+unsigned int vpx_avg_8x8_c(const uint8_t *, int p);
+unsigned int vpx_avg_8x8_neon(const uint8_t *, int p);
+RTCD_EXTERN unsigned int (*vpx_avg_8x8)(const uint8_t *, int p);
+
 void vpx_comp_avg_pred_c(uint8_t *comp_pred, const uint8_t *pred, int width, int height, const uint8_t *ref, int ref_stride);
 #define vpx_comp_avg_pred vpx_comp_avg_pred_c
 
@@ -293,6 +301,12 @@ void vpx_h_predictor_8x8_c(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *abov
 void vpx_h_predictor_8x8_neon(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
 RTCD_EXTERN void (*vpx_h_predictor_8x8)(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
 
+void vpx_hadamard_16x16_c(int16_t const *src_diff, int src_stride, int16_t *coeff);
+#define vpx_hadamard_16x16 vpx_hadamard_16x16_c
+
+void vpx_hadamard_8x8_c(int16_t const *src_diff, int src_stride, int16_t *coeff);
+#define vpx_hadamard_8x8 vpx_hadamard_8x8_c
+
 void vpx_he_predictor_4x4_c(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
 #define vpx_he_predictor_4x4 vpx_he_predictor_4x4_c
 
@@ -344,6 +358,14 @@ void vpx_idct8x8_64_add_c(const tran_low_t *input, uint8_t *dest, int dest_strid
 void vpx_idct8x8_64_add_neon(const tran_low_t *input, uint8_t *dest, int dest_stride);
 RTCD_EXTERN void (*vpx_idct8x8_64_add)(const tran_low_t *input, uint8_t *dest, int dest_stride);
 
+int16_t vpx_int_pro_col_c(uint8_t const *ref, const int width);
+int16_t vpx_int_pro_col_neon(uint8_t const *ref, const int width);
+RTCD_EXTERN int16_t (*vpx_int_pro_col)(uint8_t const *ref, const int width);
+
+void vpx_int_pro_row_c(int16_t *hbuf, uint8_t const *ref, const int ref_stride, const int height);
+void vpx_int_pro_row_neon(int16_t *hbuf, uint8_t const *ref, const int ref_stride, const int height);
+RTCD_EXTERN void (*vpx_int_pro_row)(int16_t *hbuf, uint8_t const *ref, const int ref_stride, const int height);
+
 void vpx_iwht4x4_16_add_c(const tran_low_t *input, uint8_t *dest, int dest_stride);
 #define vpx_iwht4x4_16_add vpx_iwht4x4_16_add_c
 
@@ -393,6 +415,9 @@ RTCD_EXTERN void (*vpx_lpf_vertical_8)(uint8_t *s, int pitch, const uint8_t *bli
 void vpx_lpf_vertical_8_dual_c(uint8_t *s, int pitch, const uint8_t *blimit0, const uint8_t *limit0, const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1, const uint8_t *thresh1);
 void vpx_lpf_vertical_8_dual_neon(uint8_t *s, int pitch, const uint8_t *blimit0, const uint8_t *limit0, const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1, const uint8_t *thresh1);
 RTCD_EXTERN void (*vpx_lpf_vertical_8_dual)(uint8_t *s, int pitch, const uint8_t *blimit0, const uint8_t *limit0, const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1, const uint8_t *thresh1);
+
+void vpx_minmax_8x8_c(const uint8_t *s, int p, const uint8_t *d, int dp, int *min, int *max);
+#define vpx_minmax_8x8 vpx_minmax_8x8_c
 
 unsigned int vpx_mse16x16_c(const uint8_t *src_ptr, int  source_stride, const uint8_t *ref_ptr, int  recon_stride, unsigned int *sse);
 unsigned int vpx_mse16x16_media(const uint8_t *src_ptr, int  source_stride, const uint8_t *ref_ptr, int  recon_stride, unsigned int *sse);
@@ -589,6 +614,10 @@ void vpx_sad8x8x4d_c(const uint8_t *src_ptr, int src_stride, const uint8_t * con
 
 void vpx_sad8x8x8_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array);
 #define vpx_sad8x8x8 vpx_sad8x8x8_c
+
+int vpx_satd_c(const int16_t *coeff, int length);
+int vpx_satd_neon(const int16_t *coeff, int length);
+RTCD_EXTERN int (*vpx_satd)(const int16_t *coeff, int length);
 
 void vpx_scaled_2d_c(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h);
 #define vpx_scaled_2d vpx_scaled_2d_c
@@ -792,6 +821,10 @@ uint32_t vpx_variance_halfpixvar16x16_v_media(const unsigned char *src_ptr, int 
 void vpx_ve_predictor_4x4_c(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
 #define vpx_ve_predictor_4x4 vpx_ve_predictor_4x4_c
 
+int vpx_vector_var_c(int16_t const *ref, int16_t const *src, const int bwl);
+int vpx_vector_var_neon(int16_t const *ref, int16_t const *src, const int bwl);
+RTCD_EXTERN int (*vpx_vector_var)(int16_t const *ref, int16_t const *src, const int bwl);
+
 void vpx_dsp_rtcd(void);
 
 #include "vpx_config.h"
@@ -804,6 +837,10 @@ static void setup_rtcd_internal(void)
 
     (void)flags;
 
+    vpx_avg_4x4 = vpx_avg_4x4_c;
+    if (flags & HAS_NEON) vpx_avg_4x4 = vpx_avg_4x4_neon;
+    vpx_avg_8x8 = vpx_avg_8x8_c;
+    if (flags & HAS_NEON) vpx_avg_8x8 = vpx_avg_8x8_neon;
     vpx_convolve8 = vpx_convolve8_c;
     if (flags & HAS_NEON) vpx_convolve8 = vpx_convolve8_neon;
     vpx_convolve8_avg = vpx_convolve8_avg_c;
@@ -902,6 +939,10 @@ static void setup_rtcd_internal(void)
     if (flags & HAS_NEON) vpx_idct8x8_1_add = vpx_idct8x8_1_add_neon;
     vpx_idct8x8_64_add = vpx_idct8x8_64_add_c;
     if (flags & HAS_NEON) vpx_idct8x8_64_add = vpx_idct8x8_64_add_neon;
+    vpx_int_pro_col = vpx_int_pro_col_c;
+    if (flags & HAS_NEON) vpx_int_pro_col = vpx_int_pro_col_neon;
+    vpx_int_pro_row = vpx_int_pro_row_c;
+    if (flags & HAS_NEON) vpx_int_pro_row = vpx_int_pro_row_neon;
     vpx_lpf_horizontal_16 = vpx_lpf_horizontal_16_c;
     if (flags & HAS_NEON) vpx_lpf_horizontal_16 = vpx_lpf_horizontal_16_neon;
     vpx_lpf_horizontal_4 = vpx_lpf_horizontal_4_c;
@@ -946,6 +987,8 @@ static void setup_rtcd_internal(void)
     if (flags & HAS_NEON) vpx_sad8x16 = vpx_sad8x16_neon;
     vpx_sad8x8 = vpx_sad8x8_c;
     if (flags & HAS_NEON) vpx_sad8x8 = vpx_sad8x8_neon;
+    vpx_satd = vpx_satd_c;
+    if (flags & HAS_NEON) vpx_satd = vpx_satd_neon;
     vpx_sub_pixel_variance16x16 = vpx_sub_pixel_variance16x16_media;
     if (flags & HAS_NEON) vpx_sub_pixel_variance16x16 = vpx_sub_pixel_variance16x16_neon;
     vpx_sub_pixel_variance32x32 = vpx_sub_pixel_variance32x32_c;
@@ -988,6 +1031,8 @@ static void setup_rtcd_internal(void)
     if (flags & HAS_NEON) vpx_variance8x16 = vpx_variance8x16_neon;
     vpx_variance8x8 = vpx_variance8x8_media;
     if (flags & HAS_NEON) vpx_variance8x8 = vpx_variance8x8_neon;
+    vpx_vector_var = vpx_vector_var_c;
+    if (flags & HAS_NEON) vpx_vector_var = vpx_vector_var_neon;
 }
 #endif
 
