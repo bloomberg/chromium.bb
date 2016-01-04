@@ -511,7 +511,7 @@ wl_proxy_add_dispatcher(struct wl_proxy *proxy,
 			const void *implementation, void *data)
 {
 	if (proxy->object.implementation || proxy->dispatcher) {
-		wl_log("proxy %p already has listener\n");
+		wl_log("proxy %p already has listener\n", proxy);
 		return -1;
 	}
 
