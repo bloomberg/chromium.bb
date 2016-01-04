@@ -70,6 +70,10 @@ UIImage* ChromeIdentityService::GetCachedAvatarForIdentity(
   return nil;
 }
 
+void ChromeIdentityService::GetHostedDomainForIdentity(
+    ChromeIdentity* identity,
+    GetHostedDomainCallback callback) {}
+
 void ChromeIdentityService::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }

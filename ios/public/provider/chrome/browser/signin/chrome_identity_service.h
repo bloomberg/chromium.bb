@@ -38,6 +38,10 @@ typedef void (^ForgetIdentityCallback)(NSError* error);
 // Callback passed to method |GetAvatarForIdentity()|.
 typedef void (^GetAvatarCallback)(UIImage* avatar);
 
+// Callback passed to method |GetHostedDomainForIdentity()|.
+typedef void (^GetHostedDomainCallback)(NSString* hosted_domain,
+                                        NSError* error);
+
 // ChromeIdentityService abstracts the signin flow on iOS.
 class ChromeIdentityService {
  public:
@@ -133,6 +137,11 @@ class ChromeIdentityService {
   // Synchronously returns any cached avatar, or nil.
   // GetAvatarForIdentity() should be generally used instead of this method.
   virtual UIImage* GetCachedAvatarForIdentity(ChromeIdentity* identity);
+
+  // Fetches the identity hosted domain, from the cache or the network. Calls
+  // back on the main thread.
+  virtual void GetHostedDomainForIdentity(ChromeIdentity* identity,
+                                          GetHostedDomainCallback callback);
 
   // Adds and removes observers.
   void AddObserver(Observer* observer);
