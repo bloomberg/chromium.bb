@@ -18,6 +18,8 @@ from telemetry.core import discover
 from telemetry.testing import options_for_unittests
 from telemetry.testing import progress_reporter
 
+from benchmarks import blink_style
+from benchmarks import dromaeo
 from benchmarks import image_decoding
 from benchmarks import indexeddb_perf
 from benchmarks import jetstream
@@ -27,10 +29,13 @@ from benchmarks import new_tab
 from benchmarks import octane
 from benchmarks import rasterize_and_record_micro
 from benchmarks import repaint
+from benchmarks import service_worker
 from benchmarks import spaceport
 from benchmarks import speedometer
 from benchmarks import sunspider
 from benchmarks import text_selection
+from benchmarks import v8
+from benchmarks import webrtc
 
 
 def SmokeTestGenerator(benchmark):
@@ -95,6 +100,11 @@ _BLACK_LIST_TEST_MODULES = {
 _ANDROID_BLACK_LIST_MODULES = {
     kraken,  # Takes 275 seconds on Android.
     sunspider,  # Takes 163 seconds on Android.
+    service_worker,  # crbug.com/574135
+    v8,  # crbug.com/574135
+    blink_style,  # crbug.com/574135
+    dromaeo,  # crbug.com/574135
+    webrtc  # crbug.com/574135
 }
 
 
