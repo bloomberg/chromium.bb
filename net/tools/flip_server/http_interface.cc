@@ -32,7 +32,6 @@ HttpSM::HttpSM(SMConnection* connection,
 }
 HttpSM::~HttpSM() {
   Reset();
-  delete http_framer_;
 }
 
 void HttpSM::ProcessBodyData(const char* input, size_t size) {

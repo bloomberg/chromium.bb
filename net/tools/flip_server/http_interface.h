@@ -69,7 +69,7 @@ class HttpSM : public BalsaVisitorInterface, public SMInterface {
 
  public:
   void AddToOutputOrder(const MemCacheIter& mci);
-  BalsaFrame* spdy_framer() { return http_framer_; }
+  BalsaFrame* spdy_framer() { return http_framer_.get(); }
   void set_is_request() override {}
   const OutputOrdering& output_ordering() const { return output_ordering_; }
 
@@ -125,7 +125,7 @@ class HttpSM : public BalsaVisitorInterface, public SMInterface {
   void GetOutput() override;
 
  private:
-  BalsaFrame* http_framer_;
+  scoped_ptr<BalsaFrame> http_framer_;
   BalsaHeaders headers_;
   uint32_t stream_id_;
   int32_t server_idx_;
