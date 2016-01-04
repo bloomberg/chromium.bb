@@ -83,7 +83,10 @@
         ['OS == "android"', {
           'dependencies': [ '../../build/android/ndk.gyp:cpu_features' ],
         }],
-        ['target_arch=="ia32" or target_arch=="x64"', {
+        # iOS uses the same project to generate build project for both device
+        # and simulator and do not use "target_arch" variable. Other platform
+        # set it correctly.
+        ['OS!="ios" and (target_arch=="ia32" or target_arch=="x64")', {
           'defines': [ 'WEBP_HAVE_SSE2', 'WEBP_HAVE_SSE41' ],
         }],
         ['order_profiling != 0', {
@@ -113,7 +116,10 @@
         'dsp/yuv_sse2.c',
       ],
       'conditions': [
-        ['(target_arch=="ia32" or target_arch=="x64") and msan==0', {
+        # iOS uses the same project to generate build project for both device
+        # and simulator and do not use "target_arch" variable. Other platform
+        # set it correctly.
+        ['OS!="ios" and (target_arch=="ia32" or target_arch=="x64") and msan==0', {
           'cflags': [ '-msse2', ],
           'xcode_settings': { 'OTHER_CFLAGS': [ '-msse2' ] },
         }],
@@ -144,7 +150,10 @@
             'VCCLCompilerTool': { 'AdditionalOptions': [ '-msse4.1' ] },
           },
         }],
-        ['(target_arch=="ia32" or target_arch=="x64") and msan==0', {
+        # iOS uses the same project to generate build project for both device
+        # and simulator and do not use "target_arch" variable. Other platform
+        # set it correctly.
+        ['OS!="ios" and (target_arch=="ia32" or target_arch=="x64") and msan==0', {
           'cflags': [ '-msse4.1', ],
           'xcode_settings': { 'OTHER_CFLAGS': [ '-msse4.1' ] },
         }],
