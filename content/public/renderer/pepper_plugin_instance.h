@@ -49,6 +49,8 @@ class RenderView;
 
 class PepperPluginInstance {
  public:
+  // Return the PepperPluginInstance for the given |instance_id|. Will return
+  // null if the instance is in the process of being deleted.
   static CONTENT_EXPORT PepperPluginInstance* Get(PP_Instance instance_id);
 
   virtual ~PepperPluginInstance() {}

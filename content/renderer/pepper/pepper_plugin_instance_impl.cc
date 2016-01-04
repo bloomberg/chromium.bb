@@ -383,6 +383,23 @@ PepperPluginInstanceImpl* PepperPluginInstanceImpl::Create(
                                       plugin_url);
 }
 
+// static
+PepperPluginInstance* PepperPluginInstance::Get(PP_Instance instance_id) {
+  PepperPluginInstanceImpl* instance =
+      PepperPluginInstanceImpl::GetForTesting(instance_id);
+  if (instance && !instance->is_deleted())
+    return instance;
+  return nullptr;
+}
+
+// static
+PepperPluginInstanceImpl* PepperPluginInstanceImpl::GetForTesting(
+    PP_Instance instance_id) {
+  PepperPluginInstanceImpl* instance =
+      HostGlobals::Get()->GetInstance(instance_id);
+  return instance;
+}
+
 PepperPluginInstanceImpl::ExternalDocumentLoader::ExternalDocumentLoader()
     : finished_loading_(false) {}
 
@@ -2918,10 +2935,6 @@ PP_ExternalPluginResult PepperPluginInstanceImpl::ResetAsProxied(
 bool PepperPluginInstanceImpl::IsValidInstanceOf(PluginModule* module) {
   DCHECK(module);
   return module == module_.get() || module == original_module_.get();
-}
-
-PepperPluginInstance* PepperPluginInstance::Get(PP_Instance instance_id) {
-  return HostGlobals::Get()->GetInstance(instance_id);
 }
 
 RenderView* PepperPluginInstanceImpl::GetRenderView() {

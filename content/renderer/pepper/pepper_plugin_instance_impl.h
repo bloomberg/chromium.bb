@@ -136,6 +136,12 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
                                           PluginModule* module,
                                           blink::WebPluginContainer* container,
                                           const GURL& plugin_url);
+
+  // Return the PepperPluginInstanceImpl for the given |instance_id|. Will
+  // return the instance even if it is in the process of being deleted.
+  // Currently only used in tests.
+  static PepperPluginInstanceImpl* GetForTesting(PP_Instance instance_id);
+
   RenderFrameImpl* render_frame() const { return render_frame_; }
   PluginModule* module() const { return module_.get(); }
 
