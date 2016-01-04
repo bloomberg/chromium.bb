@@ -140,8 +140,6 @@ void WindowTreeImpl::OnWillDestroyWindowTreeImpl(WindowTreeImpl* connection) {
     client()->OnEmbeddedAppDisconnected(
         WindowIdToTransportId(*connection->root_));
   }
-  if (root_.get() && root_->connection_id == connection->id())
-    root_.reset();
 }
 
 void WindowTreeImpl::NotifyChangeCompleted(
