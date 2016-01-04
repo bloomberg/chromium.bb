@@ -13,6 +13,10 @@ from telemetry.web_perf.metrics import webrtc_rendering_timeline
 
 RENDERING_VALUE_PREFIX = 'WebRTCRendering_'
 
+# TODO(qyearsley, mcasas): Add webrtc.audio when http://crbug.com/468732
+# is fixed, or revert https://codereview.chromium.org/1544573002/ when
+# http://crbug.com/568333 is fixed.
+
 # Disabled because the reference set becomes flaky with the new
 # https:// page set introduced in http://crbug.com/523517.
 # Try removing once the Chrome used for ref builds advances
@@ -48,18 +52,6 @@ class WebrtcDataChannel(_Webrtc):
   @classmethod
   def Name(cls):
     return 'webrtc.datachannel'
-
-
-# Disable Audio tests until we can implement http://crbug.com/468732. We can
-# get data out from the tests, but it's not very useful yet.
-@benchmark.Disabled('all')
-class WebrtcAudio(_Webrtc):
-  """Measures WebRtc Audio capture and remote communication"""
-  page_set = page_sets.WebrtcAudioPageSet
-
-  @classmethod
-  def Name(cls):
-    return 'webrtc.audio'
 
 
 # WebrtcRendering must be a PerfBenchmark, and not a _Webrtc, because it is a
