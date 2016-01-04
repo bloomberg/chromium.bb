@@ -114,7 +114,8 @@ void DataUseAggregator::PassDataUseToAmortizer(scoped_ptr<DataUse> data_use) {
 
   // As an optimization, re-use a lazily initialized callback object for every
   // call into |amortizer_|, so that a new callback object doesn't have to be
-  // allocated and held onto every time.
+  // allocated and held onto every time. This also allows the |amortizer_| to
+  // combine together similar DataUse objects in its buffer if applicable.
   if (amortization_callback_.is_null()) {
     amortization_callback_ =
         base::Bind(&DataUseAggregator::OnAmortizationComplete, GetWeakPtr());

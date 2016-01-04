@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -67,14 +68,30 @@ base::HistogramBase::Sample GetDelaySample(const base::TimeDelta& delay) {
   return static_cast<base::HistogramBase::Sample>(delay.InMilliseconds());
 }
 
+// Synthesizes a fake scoped_ptr<DataUse> with the given |url|, |tx_bytes| and
+// |rx_bytes|, using arbitrary values for all other fields.
+scoped_ptr<DataUse> CreateDataUseWithURL(const GURL& url,
+                                         int64_t tx_bytes,
+                                         int64_t rx_bytes) {
+  return scoped_ptr<DataUse>(
+      new DataUse(url, base::TimeTicks() /* request_start */,
+                  GURL("http://examplefirstparty.com"), 10 /* tab_id */,
+                  net::NetworkChangeNotifier::CONNECTION_2G, "example_mcc_mnc",
+                  tx_bytes, rx_bytes));
+}
+
 // Synthesizes a fake scoped_ptr<DataUse> with the given |tx_bytes| and
 // |rx_bytes|, using arbitrary values for all other fields.
 scoped_ptr<DataUse> CreateDataUse(int64_t tx_bytes, int64_t rx_bytes) {
-  return scoped_ptr<DataUse>(new DataUse(
-      GURL("http://example.com"), base::TimeTicks() /* request_start */,
-      GURL("http://examplefirstparty.com"), 10 /* tab_id */,
-      net::NetworkChangeNotifier::CONNECTION_2G, "example_mcc_mnc", tx_bytes,
-      rx_bytes));
+  return CreateDataUseWithURL(GURL("http://example.com"), tx_bytes, rx_bytes);
+}
+
+// Appends |data_use| to |data_use_sequence|. |data_use_sequence| must not be
+// NULL.
+void AppendDataUseToSequence(
+    std::vector<scoped_ptr<DataUse>>* data_use_sequence,
+    scoped_ptr<DataUse> data_use) {
+  data_use_sequence->push_back(std::move(data_use));
 }
 
 // Class that represents a base::MockTimer with an attached base::TickClock, so
@@ -670,6 +687,71 @@ TEST_F(TrafficStatsAmortizerTest, AmortizeAtMaxBufferSize) {
   histogram_tester.ExpectUniqueSample(kAmortizationDelayHistogram, 0, 1);
   histogram_tester.ExpectUniqueSample(kBufferSizeOnFlushHistogram,
                                       kExpectedBufSize, 1);
+}
+
+TEST_F(TrafficStatsAmortizerTest, AmortizeCombinedDataUse) {
+  SkipFirstAmortizationRun();
+  base::HistogramTester histogram_tester;
+
+  const GURL foo_url("http://foo.com");
+  const GURL bar_url("http://bar.com");
+
+  std::vector<scoped_ptr<DataUse>> baz_sequence;
+  const DataUseAmortizer::AmortizationCompleteCallback baz_callback =
+      base::Bind(&AppendDataUseToSequence, &baz_sequence);
+
+  std::vector<scoped_ptr<DataUse>> qux_sequence;
+  const DataUseAmortizer::AmortizationCompleteCallback qux_callback =
+      base::Bind(&AppendDataUseToSequence, &qux_sequence);
+
+  // Byte counts should double, with some DataUse objects combined together.
+
+  // Two consecutive DataUse objects that are identical except for byte counts
+  // and with the same callback should be combined.
+  amortizer()->AmortizeDataUse(CreateDataUseWithURL(foo_url, 50, 500),
+                               baz_callback);
+  amortizer()->AmortizeDataUse(CreateDataUseWithURL(foo_url, 100, 1000),
+                               baz_callback);
+
+  // This DataUse object should not be combined with the previous one because it
+  // has a different URL.
+  amortizer()->AmortizeDataUse(CreateDataUseWithURL(bar_url, 50, 500),
+                               baz_callback);
+
+  // This DataUse object should not be combined with the previous one because it
+  // has a different callback.
+  amortizer()->AmortizeDataUse(CreateDataUseWithURL(bar_url, 50, 500),
+                               qux_callback);
+
+  // This DataUse object should not be combined with the previous foo/baz
+  // DataUse objects because other DataUse objects were reported in-between.
+  amortizer()->AmortizeDataUse(CreateDataUseWithURL(foo_url, 50, 500),
+                               baz_callback);
+
+  // Simulate that TrafficStats saw double the number of reported bytes across
+  // all reported DataUse.
+  amortizer()->AddTrafficStats(600, 6000);
+  AdvanceTime(kTrafficStatsQueryDelay);
+
+  EXPECT_EQ(3U, baz_sequence.size());
+  ExpectDataUse(CreateDataUseWithURL(foo_url, 300, 3000),
+                std::move(baz_sequence[0]));
+  ExpectDataUse(CreateDataUseWithURL(bar_url, 100, 1000),
+                std::move(baz_sequence[1]));
+  ExpectDataUse(CreateDataUseWithURL(foo_url, 100, 1000),
+                std::move(baz_sequence[2]));
+
+  EXPECT_EQ(1U, qux_sequence.size());
+  ExpectDataUse(CreateDataUseWithURL(bar_url, 100, 1000),
+                std::move(qux_sequence[0]));
+
+  histogram_tester.ExpectUniqueSample(kPreAmortizationTxHistogram, 300, 1);
+  histogram_tester.ExpectUniqueSample(kPreAmortizationRxHistogram, 3000, 1);
+  histogram_tester.ExpectUniqueSample(kPostAmortizationTxHistogram, 600, 1);
+  histogram_tester.ExpectUniqueSample(kPostAmortizationRxHistogram, 6000, 1);
+  histogram_tester.ExpectUniqueSample(
+      kAmortizationDelayHistogram, GetDelaySample(kTrafficStatsQueryDelay), 1);
+  histogram_tester.ExpectUniqueSample(kBufferSizeOnFlushHistogram, 4, 1);
 }
 
 }  // namespace

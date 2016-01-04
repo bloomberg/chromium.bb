@@ -146,11 +146,18 @@ void TrafficStatsAmortizer::AmortizeDataUse(
   DCHECK(!callback.is_null());
   int64_t tx_bytes = data_use->tx_bytes, rx_bytes = data_use->rx_bytes;
 
-  // TODO(sclittle): Combine consecutive buffered DataUse objects that are
+  // As an optimization, combine consecutive buffered DataUse objects that are
   // identical except for byte counts and have the same callback.
-  buffered_data_use_.push_back(
-      std::pair<scoped_ptr<DataUse>, AmortizationCompleteCallback>(
-          std::move(data_use), callback));
+  if (!buffered_data_use_.empty() &&
+      buffered_data_use_.back().first->CanCombineWith(*data_use) &&
+      buffered_data_use_.back().second.Equals(callback)) {
+    buffered_data_use_.back().first->tx_bytes += data_use->tx_bytes;
+    buffered_data_use_.back().first->rx_bytes += data_use->rx_bytes;
+  } else {
+    buffered_data_use_.push_back(
+        std::pair<scoped_ptr<DataUse>, AmortizationCompleteCallback>(
+            std::move(data_use), callback));
+  }
 
   AddPreAmortizationBytes(tx_bytes, rx_bytes);
 }
