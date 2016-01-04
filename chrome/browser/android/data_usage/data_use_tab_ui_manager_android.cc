@@ -16,32 +16,68 @@
 #include "jni/DataUseTabUIManager_jni.h"
 
 // static
-jboolean CheckDataUseTrackingStarted(JNIEnv* env,
-                                     const JavaParamRef<jclass>& clazz,
-                                     jint tab_id,
-                                     const JavaParamRef<jobject>& jprofile) {
+jboolean CheckAndResetDataUseTrackingStarted(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    jint tab_id,
+    const JavaParamRef<jobject>& jprofile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   chrome::android::DataUseUITabModel* data_use_ui_tab_model =
       chrome::android::DataUseUITabModelFactory::GetForBrowserContext(profile);
   DCHECK_LE(0, static_cast<SessionID::id_type>(tab_id));
   if (data_use_ui_tab_model) {
-    return data_use_ui_tab_model->HasDataUseTrackingStarted(
+    return data_use_ui_tab_model->CheckAndResetDataUseTrackingStarted(
         static_cast<SessionID::id_type>(tab_id));
   }
   return false;
 }
 
 // static
-jboolean CheckDataUseTrackingEnded(JNIEnv* env,
-                                   const JavaParamRef<jclass>& clazz,
-                                   jint tab_id,
-                                   const JavaParamRef<jobject>& jprofile) {
+jboolean CheckAndResetDataUseTrackingEnded(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    jint tab_id,
+    const JavaParamRef<jobject>& jprofile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   chrome::android::DataUseUITabModel* data_use_ui_tab_model =
       chrome::android::DataUseUITabModelFactory::GetForBrowserContext(profile);
   DCHECK_LE(0, static_cast<SessionID::id_type>(tab_id));
   if (data_use_ui_tab_model) {
-    return data_use_ui_tab_model->HasDataUseTrackingEnded(
+    return data_use_ui_tab_model->CheckAndResetDataUseTrackingEnded(
+        static_cast<SessionID::id_type>(tab_id));
+  }
+  return false;
+}
+
+// static
+void UserClickedContinueOnDialogBox(JNIEnv* env,
+                                    const JavaParamRef<jclass>& clazz,
+                                    jint tab_id,
+                                    const JavaParamRef<jobject>& jprofile) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  chrome::android::DataUseUITabModel* data_use_ui_tab_model =
+      chrome::android::DataUseUITabModelFactory::GetForBrowserContext(profile);
+  DCHECK_LE(0, static_cast<SessionID::id_type>(tab_id));
+  if (data_use_ui_tab_model) {
+    data_use_ui_tab_model->UserClickedContinueOnDialogBox(
+        static_cast<SessionID::id_type>(tab_id));
+  }
+}
+
+// static
+jboolean WouldDataUseTrackingEnd(JNIEnv* env,
+                                 const JavaParamRef<jclass>& clazz,
+                                 jint tab_id,
+                                 const JavaParamRef<jstring>& url,
+                                 jint transition_type,
+                                 const JavaParamRef<jobject>& jprofile) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  chrome::android::DataUseUITabModel* data_use_ui_tab_model =
+      chrome::android::DataUseUITabModelFactory::GetForBrowserContext(profile);
+  DCHECK_LE(0, static_cast<SessionID::id_type>(tab_id));
+  if (data_use_ui_tab_model) {
+    return data_use_ui_tab_model->WouldDataUseTrackingEnd(
+        ConvertJavaStringToUTF8(env, url), transition_type,
         static_cast<SessionID::id_type>(tab_id));
   }
   return false;
@@ -51,8 +87,8 @@ jboolean CheckDataUseTrackingEnded(JNIEnv* env,
 void OnCustomTabInitialNavigation(JNIEnv* env,
                                   const JavaParamRef<jclass>& clazz,
                                   jint tab_id,
-                                  const JavaParamRef<jstring>& url,
                                   const JavaParamRef<jstring>& package_name,
+                                  const JavaParamRef<jstring>& url,
                                   const JavaParamRef<jobject>& jprofile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   chrome::android::DataUseUITabModel* data_use_ui_tab_model =
@@ -61,8 +97,8 @@ void OnCustomTabInitialNavigation(JNIEnv* env,
   if (data_use_ui_tab_model) {
     data_use_ui_tab_model->ReportCustomTabInitialNavigation(
         static_cast<SessionID::id_type>(tab_id),
-        ConvertJavaStringToUTF8(env, url),
-        ConvertJavaStringToUTF8(env, package_name));
+        ConvertJavaStringToUTF8(env, package_name),
+        ConvertJavaStringToUTF8(env, url));
   }
 }
 

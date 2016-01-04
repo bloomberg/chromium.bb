@@ -54,9 +54,35 @@ public class DataUseTabUIManager {
      * @param tab The tab that may have started tracking data use.
      * @return true If data use tracking has indeed started.
      */
-    public static boolean checkDataUseTrackingStarted(Tab tab) {
-        return nativeCheckDataUseTrackingStarted(
+    public static boolean checkAndResetDataUseTrackingStarted(Tab tab) {
+        return nativeCheckAndResetDataUseTrackingStarted(
                 SessionTabHelper.sessionIdForTab(tab.getWebContents()), tab.getProfile());
+    }
+
+    /**
+     * Notifies that the user clicked "Continue" when the dialog box warning about exiting data use
+     * was shown.
+     *
+     * @param tab The tab on which the dialog box was shown.
+     */
+    public static void userClickedContinueOnDialogBox(Tab tab) {
+        nativeUserClickedContinueOnDialogBox(
+                SessionTabHelper.sessionIdForTab(tab.getWebContents()), tab.getProfile());
+    }
+
+    /**
+     * Returns true if data use tracking is currently active on {@link tab} but will stop if the
+     * navigation continues. Should only be called before the navigation starts.
+     *
+     * @param tab The tab that is being queried for data use tracking.
+     * @param pageTransitionType transition type of the navigation
+     * @param packageName package name of the app package that started this navigation.
+     * @return true If {@link tab} is currently tracked but would stop if the navigation were to
+     * continue.
+     */
+    public static boolean wouldDataUseTrackingEnd(Tab tab, String url, int pageTransitionType) {
+        return nativeWouldDataUseTrackingEnd(SessionTabHelper.sessionIdForTab(tab.getWebContents()),
+                url, pageTransitionType, tab.getProfile());
     }
 
     /**
@@ -66,8 +92,8 @@ public class DataUseTabUIManager {
      * @param tab The tab that may have ended tracking data use.
      * @return true If data use tracking has indeed ended.
      */
-    public static boolean checkDataUseTrackingEnded(Tab tab) {
-        return nativeCheckDataUseTrackingEnded(
+    public static boolean checkAndResetDataUseTrackingEnded(Tab tab) {
+        return nativeCheckAndResetDataUseTrackingEnded(
                 SessionTabHelper.sessionIdForTab(tab.getWebContents()), tab.getProfile());
     }
 
@@ -99,7 +125,8 @@ public class DataUseTabUIManager {
     public static boolean shouldOverrideUrlLoading(Activity activity,
             final Tab tab, final String url, final int pageTransitionType,
             final String referrerUrl) {
-        if (!getOptedOutOfDataUseDialog(activity) && checkDataUseTrackingEnded(tab)) {
+        if (!getOptedOutOfDataUseDialog(activity)
+                && wouldDataUseTrackingEnd(tab, url, pageTransitionType)) {
             startDataUseDialog(activity, tab, url, pageTransitionType, referrerUrl);
             return true;
         }
@@ -147,6 +174,7 @@ public class DataUseTabUIManager {
                                 }
                                 tab.loadUrl(loadUrlParams);
                                 recordDataUseUIAction(DataUseUIActions.DIALOG_CONTINUE_CLICKED);
+                                userClickedContinueOnDialogBox(tab);
                             }
                         })
                 .setNegativeButton(R.string.cancel, new OnClickListener() {
@@ -197,8 +225,13 @@ public class DataUseTabUIManager {
                 DataUseUIActions.INDEX_BOUNDARY);
     }
 
-    private static native boolean nativeCheckDataUseTrackingStarted(int tabId, Profile profile);
-    private static native boolean nativeCheckDataUseTrackingEnded(int tabId, Profile profile);
+    private static native boolean nativeCheckAndResetDataUseTrackingStarted(
+            int tabId, Profile profile);
+    private static native boolean nativeCheckAndResetDataUseTrackingEnded(
+            int tabId, Profile profile);
+    private static native void nativeUserClickedContinueOnDialogBox(int tabId, Profile profile);
+    private static native boolean nativeWouldDataUseTrackingEnd(
+            int tabId, String url, int pageTransitionType, Profile jprofile);
     private static native void nativeOnCustomTabInitialNavigation(int tabID, String packageName,
             String url, Profile profile);
 }

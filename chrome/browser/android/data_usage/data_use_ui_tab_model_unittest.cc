@@ -30,6 +30,9 @@ namespace android {
 
 namespace {
 
+const char kFooLabel[] = "foo_label";
+const char kFooPackage[] = "com.foo";
+
 class TestDataUseTabModel : public DataUseTabModel {
  public:
   TestDataUseTabModel() {}
@@ -96,9 +99,6 @@ class DataUseUITabModelTest : public testing::Test {
 // Tests that DataUseTabModel is notified of tab closure and navigation events,
 // and DataUseTabModel notifies DataUseUITabModel.
 TEST_F(DataUseUITabModelTest, ReportTabEventsTest) {
-  const char kFooLabel[] = "foo_label";
-  const char kFooPackage[] = "com.foo";
-
   std::vector<std::string> url_regexes;
   url_regexes.push_back(
       "http://www[.]foo[.]com/#q=.*|https://www[.]foo[.]com/#q=.*");
@@ -129,18 +129,18 @@ TEST_F(DataUseUITabModelTest, ReportTabEventsTest) {
     data_use_ui_tab_model()->ReportBrowserNavigation(
         GURL("https://www.foo.com/#q=abc"), tests[i].transition_type,
         foo_tab_id);
-    // Wait for DataUseUITabModel to notify DataUseTabModel, which should notify
-    // DataUseUITabModel back.
-    base::RunLoop().RunUntilIdle();
 
     // |data_use_ui_tab_model| should receive callback about starting of
     // tracking of data usage for |foo_tab_id|.
     EXPECT_EQ(!tests[i].expected_label.empty(),
-              data_use_ui_tab_model()->HasDataUseTrackingStarted(foo_tab_id))
+              data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(
+                  foo_tab_id))
         << i;
-    EXPECT_FALSE(data_use_ui_tab_model()->HasDataUseTrackingStarted(foo_tab_id))
+    EXPECT_FALSE(data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(
+        foo_tab_id))
         << i;
-    EXPECT_FALSE(data_use_ui_tab_model()->HasDataUseTrackingEnded(foo_tab_id))
+    EXPECT_FALSE(
+        data_use_ui_tab_model()->CheckAndResetDataUseTrackingEnded(foo_tab_id))
         << i;
 
     std::string got_label;
@@ -150,10 +150,10 @@ TEST_F(DataUseUITabModelTest, ReportTabEventsTest) {
 
     // Report closure of tab.
     data_use_ui_tab_model()->ReportTabClosure(foo_tab_id);
-    base::RunLoop().RunUntilIdle();
 
     // DataUse object should not be labeled.
-    EXPECT_FALSE(data_use_ui_tab_model()->HasDataUseTrackingEnded(foo_tab_id));
+    EXPECT_FALSE(
+        data_use_ui_tab_model()->CheckAndResetDataUseTrackingEnded(foo_tab_id));
     data_use_tab_model()->GetLabelForTabAtTime(
         foo_tab_id, base::TimeTicks::Now() + base::TimeDelta::FromMinutes(10),
         &got_label);
@@ -161,20 +161,23 @@ TEST_F(DataUseUITabModelTest, ReportTabEventsTest) {
   }
 
   const SessionID::id_type bar_tab_id = foo_tab_id + 1;
-  EXPECT_FALSE(data_use_ui_tab_model()->HasDataUseTrackingStarted(bar_tab_id));
+  EXPECT_FALSE(
+      data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(bar_tab_id));
   data_use_ui_tab_model()->ReportCustomTabInitialNavigation(
-      bar_tab_id, std::string(), kFooPackage);
-  base::RunLoop().RunUntilIdle();
+      bar_tab_id, kFooPackage, std::string());
 
   // |data_use_ui_tab_model| should receive callback about starting of
   // tracking of data usage for |bar_tab_id|.
-  EXPECT_TRUE(data_use_ui_tab_model()->HasDataUseTrackingStarted(bar_tab_id));
-  EXPECT_FALSE(data_use_ui_tab_model()->HasDataUseTrackingStarted(bar_tab_id));
-  EXPECT_FALSE(data_use_ui_tab_model()->HasDataUseTrackingEnded(bar_tab_id));
+  EXPECT_TRUE(
+      data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(bar_tab_id));
+  EXPECT_FALSE(
+      data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(bar_tab_id));
+  EXPECT_FALSE(
+      data_use_ui_tab_model()->CheckAndResetDataUseTrackingEnded(bar_tab_id));
 
   data_use_ui_tab_model()->ReportTabClosure(bar_tab_id);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(data_use_ui_tab_model()->HasDataUseTrackingEnded(bar_tab_id));
+  EXPECT_FALSE(
+      data_use_ui_tab_model()->CheckAndResetDataUseTrackingEnded(bar_tab_id));
 }
 
 // Tests if the Entrance/Exit UI state is tracked correctly.
@@ -183,60 +186,176 @@ TEST_F(DataUseUITabModelTest, EntranceExitState) {
   const SessionID::id_type kBarTabId = 2;
   const SessionID::id_type kBazTabId = 3;
 
-  // HasDataUseTrackingStarted should return true only once.
+  // CheckAndResetDataUseTrackingStarted should return true only once.
   data_use_tab_model()->NotifyObserversOfTrackingStarting(kFooTabId);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(data_use_ui_tab_model()->HasDataUseTrackingStarted(kFooTabId));
-  EXPECT_FALSE(data_use_ui_tab_model()->HasDataUseTrackingStarted(kFooTabId));
-  EXPECT_FALSE(data_use_ui_tab_model()->HasDataUseTrackingEnded(kFooTabId));
+  EXPECT_TRUE(
+      data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(kFooTabId));
+  EXPECT_FALSE(
+      data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(kFooTabId));
+  EXPECT_FALSE(
+      data_use_ui_tab_model()->CheckAndResetDataUseTrackingEnded(kFooTabId));
 
-  EXPECT_FALSE(data_use_ui_tab_model()->HasDataUseTrackingStarted(kBarTabId));
-  EXPECT_FALSE(data_use_ui_tab_model()->HasDataUseTrackingEnded(kBarTabId));
+  EXPECT_FALSE(
+      data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(kBarTabId));
+  EXPECT_FALSE(
+      data_use_ui_tab_model()->CheckAndResetDataUseTrackingEnded(kBarTabId));
 
-  // HasDataUseTrackingEnded should return true only once.
+  // CheckAndResetDataUseTrackingEnded should return true only once.
   data_use_tab_model()->NotifyObserversOfTrackingEnding(kFooTabId);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(data_use_ui_tab_model()->HasDataUseTrackingStarted(kFooTabId));
-  EXPECT_TRUE(data_use_ui_tab_model()->HasDataUseTrackingEnded(kFooTabId));
-  EXPECT_FALSE(data_use_ui_tab_model()->HasDataUseTrackingEnded(kFooTabId));
-  EXPECT_FALSE(data_use_ui_tab_model()->HasDataUseTrackingStarted(kFooTabId));
+  EXPECT_FALSE(
+      data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(kFooTabId));
+  EXPECT_TRUE(
+      data_use_ui_tab_model()->CheckAndResetDataUseTrackingEnded(kFooTabId));
+  EXPECT_FALSE(
+      data_use_ui_tab_model()->CheckAndResetDataUseTrackingEnded(kFooTabId));
+  EXPECT_FALSE(
+      data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(kFooTabId));
 
   // The tab enters the tracking state again.
   data_use_tab_model()->NotifyObserversOfTrackingStarting(kFooTabId);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(data_use_ui_tab_model()->HasDataUseTrackingStarted(kFooTabId));
-  EXPECT_FALSE(data_use_ui_tab_model()->HasDataUseTrackingStarted(kFooTabId));
+  EXPECT_TRUE(
+      data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(kFooTabId));
+  EXPECT_FALSE(
+      data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(kFooTabId));
 
   // The tab exits the tracking state.
   data_use_tab_model()->NotifyObserversOfTrackingEnding(kFooTabId);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(data_use_ui_tab_model()->HasDataUseTrackingStarted(kFooTabId));
+  EXPECT_FALSE(
+      data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(kFooTabId));
 
   // The tab enters the tracking state again.
   data_use_tab_model()->NotifyObserversOfTrackingStarting(kFooTabId);
-  base::RunLoop().RunUntilIdle();
   data_use_tab_model()->NotifyObserversOfTrackingStarting(kFooTabId);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(data_use_ui_tab_model()->HasDataUseTrackingStarted(kFooTabId));
-  EXPECT_FALSE(data_use_ui_tab_model()->HasDataUseTrackingStarted(kFooTabId));
+  EXPECT_TRUE(
+      data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(kFooTabId));
+  EXPECT_FALSE(
+      data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(kFooTabId));
 
   // ShowExit should return true only once.
   data_use_tab_model()->NotifyObserversOfTrackingEnding(kBarTabId);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(data_use_ui_tab_model()->HasDataUseTrackingStarted(kBarTabId));
-  EXPECT_TRUE(data_use_ui_tab_model()->HasDataUseTrackingEnded(kBarTabId));
-  EXPECT_FALSE(data_use_ui_tab_model()->HasDataUseTrackingEnded(kBarTabId));
-  EXPECT_FALSE(data_use_ui_tab_model()->HasDataUseTrackingStarted(kBarTabId));
+  EXPECT_FALSE(
+      data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(kBarTabId));
+  EXPECT_TRUE(
+      data_use_ui_tab_model()->CheckAndResetDataUseTrackingEnded(kBarTabId));
+  EXPECT_FALSE(
+      data_use_ui_tab_model()->CheckAndResetDataUseTrackingEnded(kBarTabId));
+  EXPECT_FALSE(
+      data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(kBarTabId));
 
   data_use_ui_tab_model()->ReportTabClosure(kFooTabId);
   data_use_ui_tab_model()->ReportTabClosure(kBarTabId);
 
-  //  HasDataUseTrackingStarted/Ended should return false for closed tabs.
+  //  CheckAndResetDataUseTrackingStarted/Ended should return false for closed
+  //  tabs.
   data_use_tab_model()->NotifyObserversOfTrackingStarting(kBazTabId);
-  base::RunLoop().RunUntilIdle();
   data_use_ui_tab_model()->ReportTabClosure(kBazTabId);
-  EXPECT_FALSE(data_use_ui_tab_model()->HasDataUseTrackingStarted(kBazTabId));
-  EXPECT_FALSE(data_use_ui_tab_model()->HasDataUseTrackingEnded(kBazTabId));
+  EXPECT_FALSE(
+      data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(kBazTabId));
+  EXPECT_FALSE(
+      data_use_ui_tab_model()->CheckAndResetDataUseTrackingEnded(kBazTabId));
+}
+
+// Tests if the Entrance/Exit UI state is tracked correctly.
+TEST_F(DataUseUITabModelTest, EntraceExitStateForDialog) {
+  const SessionID::id_type kFooTabId = 1;
+
+  std::vector<std::string> url_regexes;
+  url_regexes.push_back(
+      "http://www[.]foo[.]com/#q=.*|https://www[.]foo[.]com/#q=.*");
+  RegisterURLRegexes(std::vector<std::string>(url_regexes.size(), kFooPackage),
+                     url_regexes,
+                     std::vector<std::string>(url_regexes.size(), kFooLabel));
+
+  SessionID::id_type foo_tab_id = kFooTabId;
+
+  const struct {
+    // True if a dialog box was shown to the user. It may not be shown if the
+    // user has previously selected the option to opt out.
+    bool continue_dialog_box_shown;
+    bool user_proceeded_with_navigation;
+  } tests[] = {
+      {false, false}, {true, true}, {true, false},
+  };
+
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    // Start a new tab.
+    ++foo_tab_id;
+    data_use_ui_tab_model()->ReportBrowserNavigation(
+        GURL("https://www.foo.com/#q=abc"), ui::PAGE_TRANSITION_GENERATED,
+        foo_tab_id);
+
+    // |data_use_ui_tab_model| should receive callback about starting of
+    // tracking of data usage for |foo_tab_id|.
+    EXPECT_TRUE(data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(
+        foo_tab_id))
+        << i;
+    EXPECT_FALSE(data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(
+        foo_tab_id))
+        << i;
+    EXPECT_FALSE(
+        data_use_ui_tab_model()->CheckAndResetDataUseTrackingEnded(foo_tab_id))
+        << i;
+
+    std::string got_label;
+    data_use_tab_model()->GetLabelForTabAtTime(
+        foo_tab_id, base::TimeTicks::Now(), &got_label);
+    EXPECT_EQ(kFooLabel, got_label) << i;
+
+    // Tab enters non-tracking state.
+    data_use_ui_tab_model()->ReportBrowserNavigation(
+        GURL("https://www.bar.com/#q=abc"),
+        ui::PageTransition::PAGE_TRANSITION_TYPED, foo_tab_id);
+
+    EXPECT_TRUE(
+        data_use_ui_tab_model()->CheckAndResetDataUseTrackingEnded(foo_tab_id))
+        << i;
+    EXPECT_FALSE(
+        data_use_ui_tab_model()->CheckAndResetDataUseTrackingEnded(foo_tab_id))
+        << i;
+
+    // Tab enters tracking state.
+    data_use_ui_tab_model()->ReportBrowserNavigation(
+        GURL("https://www.foo.com/#q=abc"), ui::PAGE_TRANSITION_GENERATED,
+        foo_tab_id);
+
+    EXPECT_TRUE(data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(
+        foo_tab_id))
+        << i;
+
+    // Tab may enter non-tracking state.
+    EXPECT_TRUE(data_use_ui_tab_model()->WouldDataUseTrackingEnd(
+        "https://www.bar.com/#q=abc", ui::PageTransition::PAGE_TRANSITION_TYPED,
+        foo_tab_id));
+    if (tests[i].continue_dialog_box_shown &&
+        tests[i].user_proceeded_with_navigation) {
+      data_use_ui_tab_model()->UserClickedContinueOnDialogBox(foo_tab_id);
+    }
+
+    if (tests[i].user_proceeded_with_navigation) {
+      data_use_ui_tab_model()->ReportBrowserNavigation(
+          GURL("https://www.bar.com/#q=abc"),
+          ui::PageTransition::PAGE_TRANSITION_TYPED, foo_tab_id);
+    }
+
+    const std::string expected_label =
+        tests[i].user_proceeded_with_navigation ? "" : kFooLabel;
+    data_use_tab_model()->GetLabelForTabAtTime(
+        foo_tab_id, base::TimeTicks::Now(), &got_label);
+    EXPECT_EQ(expected_label, got_label) << i;
+
+    if (tests[i].user_proceeded_with_navigation) {
+      // No UI element should be shown afterwards if the dialog box was shown
+      // before.
+      EXPECT_NE(tests[i].continue_dialog_box_shown,
+                data_use_ui_tab_model()->CheckAndResetDataUseTrackingEnded(
+                    foo_tab_id))
+          << i;
+    } else {
+      EXPECT_FALSE(data_use_ui_tab_model()->CheckAndResetDataUseTrackingEnded(
+          foo_tab_id))
+          << i;
+    }
+  }
 }
 
 // Checks if page transition type is converted correctly.

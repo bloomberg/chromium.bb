@@ -50,7 +50,7 @@ void DataUseTabHelper::DidFinishNavigation(
   }
 }
 
-void DataUseTabHelper::RenderFrameDeleted(
+void DataUseTabHelper::FrameDeleted(
     content::RenderFrameHost* render_frame_host) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 

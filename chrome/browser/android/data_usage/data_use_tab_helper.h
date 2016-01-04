@@ -29,7 +29,7 @@ class DataUseTabHelper : public content::WebContentsObserver,
   // Overridden from content::WebContentsObserver:
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
+  void FrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
   DISALLOW_COPY_AND_ASSIGN(DataUseTabHelper);
 };

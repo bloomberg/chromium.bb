@@ -59,26 +59,41 @@ class DataUseUITabModel : public KeyedService,
   // Reports a custom tab navigation to the DataUseTabModel on the IO thread.
   // Includes the |tab_id|, |url|, and |package_name| for the navigation.
   void ReportCustomTabInitialNavigation(SessionID::id_type tab_id,
-                                        const std::string& url,
-                                        const std::string& package_name);
+                                        const std::string& package_name,
+                                        const std::string& url);
 
   // Returns true if data use tracking has been started for the tab with id
   // |tab_id|. Calling this function resets the state of the tab.
-  bool HasDataUseTrackingStarted(SessionID::id_type tab_id);
+  bool CheckAndResetDataUseTrackingStarted(SessionID::id_type tab_id);
 
   // Returns true if data use tracking has ended for the tab with id |tab_id|.
   // Calling this function resets the state of the tab.
-  bool HasDataUseTrackingEnded(SessionID::id_type tab_id);
+  bool CheckAndResetDataUseTrackingEnded(SessionID::id_type tab_id);
 
   // Sets the pointer to DataUseTabModel. |data_use_tab_model| is owned by the
   // caller.
   void SetDataUseTabModel(DataUseTabModel* data_use_tab_model);
+
+  // Returns true if the tab with id |tab_id| is currently tracked, and
+  // starting the navigation to |url| with transition type |page_transition|
+  // would end tracking of data use. Should only be called before the navigation
+  // starts.
+  bool WouldDataUseTrackingEnd(const std::string& url,
+                               int page_transition,
+                               SessionID::id_type tab_id) const;
+
+  // Notifies that user clicked "Continue" when the dialog box with data use
+  // warning was shown. Includes the |tab_id| on which the warning was shown.
+  // When the user clicks "Continue", additional UI warnings about exiting data
+  // use tracking are not shown to the user.
+  void UserClickedContinueOnDialogBox(SessionID::id_type tab_id);
 
   base::WeakPtr<DataUseUITabModel> GetWeakPtr();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DataUseUITabModelTest, ConvertTransitionType);
   FRIEND_TEST_ALL_PREFIXES(DataUseUITabModelTest, EntranceExitState);
+  FRIEND_TEST_ALL_PREFIXES(DataUseUITabModelTest, EntraceExitStateForDialog);
   FRIEND_TEST_ALL_PREFIXES(DataUseUITabModelTest, ReportTabEventsTest);
 
   // DataUseTrackingEvent indicates the state of a tab.
@@ -88,6 +103,9 @@ class DataUseUITabModel : public KeyedService,
 
     // Indicates that data use tracking has ended.
     DATA_USE_TRACKING_ENDED,
+
+    // Indicates that user clicked "Continue" when the dialog box was shown.
+    DATA_USE_CONTINUE_CLICKED,
   };
 
   typedef base::hash_map<SessionID::id_type, DataUseTrackingEvent> TabEvents;

@@ -56,8 +56,8 @@ void DataUseUITabModel::ReportTabClosure(SessionID::id_type tab_id) {
 
 void DataUseUITabModel::ReportCustomTabInitialNavigation(
     SessionID::id_type tab_id,
-    const std::string& url,
-    const std::string& package_name) {
+    const std::string& package_name,
+    const std::string& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (tab_id <= 0)
@@ -89,6 +89,11 @@ base::WeakPtr<DataUseUITabModel> DataUseUITabModel::GetWeakPtr() {
 void DataUseUITabModel::NotifyTrackingStarting(SessionID::id_type tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  // Clear out the previous state if is equal to DATA_USE_CONTINUE_CLICKED. This
+  // ensures that MaybeCreateTabEvent can successfully insert |tab_id| into the
+  // map, and update its value to DATA_USE_TRACKING_STARTED.
+  RemoveTabEvent(tab_id, DATA_USE_CONTINUE_CLICKED);
+
   if (MaybeCreateTabEvent(tab_id, DATA_USE_TRACKING_STARTED))
     return;
   // Since tracking started before the UI could indicate that it ended, it is
@@ -104,9 +109,18 @@ void DataUseUITabModel::NotifyTrackingEnding(SessionID::id_type tab_id) {
   // Since tracking ended before the UI could indicate that it stated, it is not
   // useful for UI to show that it ended.
   RemoveTabEvent(tab_id, DATA_USE_TRACKING_STARTED);
+
+  // If the user clicked "Continue" before this navigation, then |tab_id| value
+  // would be set to DATA_USE_CONTINUE_CLICKED. In that case,
+  // MaybeCreateTabEvent above would have returned false. So, removing tab_id
+  // from the map below ensures that no UI is shown on the tab. This also
+  // resets the state of |tab_id|, so that dialog box or snackbar may be shown
+  // for future navigations.
+  RemoveTabEvent(tab_id, DATA_USE_CONTINUE_CLICKED);
 }
 
-bool DataUseUITabModel::HasDataUseTrackingStarted(SessionID::id_type tab_id) {
+bool DataUseUITabModel::CheckAndResetDataUseTrackingStarted(
+    SessionID::id_type tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   TabEvents::iterator it = tab_events_.find(tab_id);
@@ -116,7 +130,44 @@ bool DataUseUITabModel::HasDataUseTrackingStarted(SessionID::id_type tab_id) {
   return RemoveTabEvent(tab_id, DATA_USE_TRACKING_STARTED);
 }
 
-bool DataUseUITabModel::HasDataUseTrackingEnded(SessionID::id_type tab_id) {
+bool DataUseUITabModel::WouldDataUseTrackingEnd(
+    const std::string& url,
+    int page_transition,
+    SessionID::id_type tab_id) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  TabEvents::const_iterator it = tab_events_.find(tab_id);
+
+  if (it != tab_events_.end() && it->second == DATA_USE_CONTINUE_CLICKED)
+    return false;
+
+  DataUseTabModel::TransitionType transition_type;
+
+  if (!ConvertTransitionType(ui::PageTransitionFromInt(page_transition),
+                             &transition_type)) {
+    return false;
+  }
+
+  if (!data_use_tab_model_)
+    return false;
+
+  return data_use_tab_model_->WouldNavigationEventEndTracking(
+      tab_id, transition_type, GURL(url));
+}
+
+void DataUseUITabModel::UserClickedContinueOnDialogBox(
+    SessionID::id_type tab_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  TabEvents::iterator it = tab_events_.find(tab_id);
+  if (it != tab_events_.end())
+    tab_events_.erase(it);
+
+  MaybeCreateTabEvent(tab_id, DATA_USE_CONTINUE_CLICKED);
+}
+
+bool DataUseUITabModel::CheckAndResetDataUseTrackingEnded(
+    SessionID::id_type tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   TabEvents::iterator it = tab_events_.find(tab_id);
@@ -136,7 +187,9 @@ bool DataUseUITabModel::RemoveTabEvent(SessionID::id_type tab_id,
                                        DataUseTrackingEvent event) {
   DCHECK(thread_checker_.CalledOnValidThread());
   TabEvents::iterator it = tab_events_.find(tab_id);
-  DCHECK(it != tab_events_.end());
+  if (it == tab_events_.end())
+    return false;
+
   if (it->second == event) {
     tab_events_.erase(it);
     return true;

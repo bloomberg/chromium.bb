@@ -112,10 +112,10 @@ public class ExternalDataUseObserver {
     }
 
     @NativeClassQualifiedName("ExternalDataUseObserverBridge")
-    public native void nativeFetchMatchingRulesDone(long nativeExternalDataUseObserver,
+    private native void nativeFetchMatchingRulesDone(long nativeExternalDataUseObserver,
             String[] appPackageName, String[] domainPathRegEx, String[] label);
 
     @NativeClassQualifiedName("ExternalDataUseObserverBridge")
-    public native void nativeOnReportDataUseDone(
+    private native void nativeOnReportDataUseDone(
             long nativeExternalDataUseObserver, boolean success);
 }

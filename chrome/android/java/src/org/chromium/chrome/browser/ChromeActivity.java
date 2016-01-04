@@ -472,18 +472,14 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (mTabModelSelectorTabObserver != null) mTabModelSelectorTabObserver.destroy();
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(tabModelSelector) {
             @Override
-            public void onPageLoadStarted(Tab tab, String url) {
-                if (DataUseTabUIManager.checkDataUseTrackingStarted(tab)) {
+            public void didFirstVisuallyNonEmptyPaint(Tab tab) {
+                if (DataUseTabUIManager.checkAndResetDataUseTrackingStarted(tab)) {
                     mDataUseSnackbarController.showDataUseTrackingStartedBar();
-                } else if (DataUseTabUIManager.checkDataUseTrackingEnded(tab)
-                        && DataUseTabUIManager
-                                .getOptedOutOfDataUseDialog(getApplicationContext())) {
+                } else if (DataUseTabUIManager.getOptedOutOfDataUseDialog(getApplicationContext())
+                        && DataUseTabUIManager.checkAndResetDataUseTrackingEnded(tab)) {
                     mDataUseSnackbarController.showDataUseTrackingEndedBar();
                 }
-            }
 
-            @Override
-            public void didFirstVisuallyNonEmptyPaint(Tab tab) {
                 if (!tab.isNativePage() && !tab.isIncognito()
                         && DataReductionProxySettings.getInstance().wasLoFiModeActiveOnMainFrame()
                         && DataReductionProxySettings.getInstance().canUseDataReductionProxy(
