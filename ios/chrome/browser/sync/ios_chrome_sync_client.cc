@@ -323,9 +323,6 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
                              : base::WeakPtr<syncer::SyncableService>();
     }
     default:
-      // TODO(crbug.com/562170) The following datatypes still need to be
-      // transitioned to the syncer::SyncableService API:
-      // Bookmarks
       NOTREACHED();
       return base::WeakPtr<syncer::SyncableService>();
   }
