@@ -221,9 +221,6 @@ class QuicSimpleClient : public QuicClientBase,
   // UDP socket connected to the server.
   scoped_ptr<UDPClientSocket> socket_;
 
-  // Helper to be used by created connections.
-  scoped_ptr<QuicConnectionHelper> helper_;
-
   // Listens for full responses.
   scoped_ptr<ResponseListener> response_listener_;
 

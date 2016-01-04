@@ -209,6 +209,10 @@ QuicAlarm* MockConnectionHelper::CreateAlarm(QuicAlarm::Delegate* delegate) {
   return new TestAlarm(delegate);
 }
 
+QuicBufferAllocator* MockConnectionHelper::GetBufferAllocator() {
+  return &buffer_allocator_;
+}
+
 void MockConnectionHelper::AdvanceTime(QuicTime::Delta delta) {
   clock_.AdvanceTime(delta);
 }

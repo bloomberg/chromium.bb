@@ -264,6 +264,9 @@ class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {
   // notify |delegate| when the alarm fires.  Caller takes ownership
   // of the new alarm, which will not yet be "set" to fire.
   virtual QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) = 0;
+
+  // Returns a QuicBufferAllocator to be used for all stream frame buffers.
+  virtual QuicBufferAllocator* GetBufferAllocator() = 0;
 };
 
 class NET_EXPORT_PRIVATE QuicConnection

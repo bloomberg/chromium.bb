@@ -170,7 +170,6 @@ class QuicClient : public QuicClientBase,
   const std::string& latest_response_trailers() const;
 
  protected:
-  virtual QuicEpollConnectionHelper* CreateQuicConnectionHelper();
   virtual QuicPacketWriter* CreateQuicPacketWriter();
 
   virtual int ReadPacket(char* buffer,
@@ -234,9 +233,6 @@ class QuicClient : public QuicClientBase,
   EpollServer* epoll_server_;
   // UDP socket.
   int fd_;
-
-  // Helper to be used by created connections.
-  scoped_ptr<QuicEpollConnectionHelper> helper_;
 
   // Listens for full responses.
   scoped_ptr<ResponseListener> response_listener_;

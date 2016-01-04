@@ -48,6 +48,7 @@ class QuicClientBase {
   QuicClientBase(const QuicServerId& server_id,
                  const QuicVersionVector& supported_versions,
                  const QuicConfig& config,
+                 QuicConnectionHelperInterface* helper,
                  ProofVerifier* proof_verifier);
 
   ~QuicClientBase();
@@ -180,6 +181,8 @@ class QuicClientBase {
   // connection ID).
   virtual QuicConnectionId GenerateNewConnectionId();
 
+  QuicConnectionHelperInterface* helper() { return helper_.get(); }
+
  private:
   // |server_id_| is a tuple (hostname, port, is_https) of the server.
   QuicServerId server_id_;
@@ -188,6 +191,9 @@ class QuicClientBase {
   // servers.
   QuicConfig config_;
   QuicCryptoClientConfig crypto_config_;
+
+  // Helper to be used by created connections. Needs to outlive |session_|.
+  scoped_ptr<QuicConnectionHelperInterface> helper_;
 
   // Writer used to actually send packets to the wire. Needs to outlive
   // |session_|.

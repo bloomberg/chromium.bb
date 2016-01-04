@@ -13,10 +13,12 @@ namespace tools {
 QuicClientBase::QuicClientBase(const QuicServerId& server_id,
                                const QuicVersionVector& supported_versions,
                                const QuicConfig& config,
+                               QuicConnectionHelperInterface* helper,
                                ProofVerifier* proof_verifier)
     : server_id_(server_id),
       config_(config),
       crypto_config_(proof_verifier),
+      helper_(helper),
       supported_versions_(supported_versions),
       initial_max_packet_length_(0),
       num_stateless_rejects_received_(0),

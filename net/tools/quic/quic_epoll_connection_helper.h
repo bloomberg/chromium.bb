@@ -15,6 +15,7 @@
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_packet_writer.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_simple_buffer_allocator.h"
 #include "net/quic/quic_time.h"
 #include "net/tools/quic/quic_default_packet_writer.h"
 #include "net/tools/quic/quic_epoll_clock.h"
@@ -40,6 +41,7 @@ class QuicEpollConnectionHelper : public QuicConnectionHelperInterface {
   const QuicClock* GetClock() const override;
   QuicRandom* GetRandomGenerator() override;
   QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) override;
+  QuicBufferAllocator* GetBufferAllocator() override;
 
   EpollServer* epoll_server() { return epoll_server_; }
 
@@ -50,6 +52,7 @@ class QuicEpollConnectionHelper : public QuicConnectionHelperInterface {
 
   const QuicEpollClock clock_;
   QuicRandom* random_generator_;
+  SimpleBufferAllocator buffer_allocator_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicEpollConnectionHelper);
 };

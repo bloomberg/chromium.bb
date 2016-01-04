@@ -101,12 +101,18 @@ QuicPublicResetPacket::QuicPublicResetPacket(
     const QuicPacketPublicHeader& header)
     : public_header(header), nonce_proof(0), rejected_packet_number(0) {}
 
-void StreamBufferDeleter::operator()(char* buf) const {
-  delete[] buf;
+QuicBufferAllocator::~QuicBufferAllocator() = default;
+
+void StreamBufferDeleter::operator()(char* buffer) const {
+  if (allocator_ != nullptr && buffer != nullptr) {
+    allocator_->Delete(buffer);
+  }
 }
 
-UniqueStreamBuffer NewStreamBuffer(size_t size) {
-  return UniqueStreamBuffer(new char[size]);
+UniqueStreamBuffer NewStreamBuffer(QuicBufferAllocator* allocator,
+                                   size_t size) {
+  return UniqueStreamBuffer(allocator->New(size),
+                            StreamBufferDeleter(allocator));
 }
 
 QuicStreamFrame::QuicStreamFrame()

@@ -42,10 +42,10 @@ QuicSimpleClient::QuicSimpleClient(IPEndPoint server_address,
     : QuicClientBase(server_id,
                      supported_versions,
                      QuicConfig(),
+                     CreateQuicConnectionHelper(),
                      proof_verifier),
       server_address_(server_address),
       local_port_(0),
-      helper_(CreateQuicConnectionHelper()),
       initialized_(false),
       packet_reader_started_(false),
       weak_factory_(this) {}
@@ -55,10 +55,13 @@ QuicSimpleClient::QuicSimpleClient(IPEndPoint server_address,
                                    const QuicVersionVector& supported_versions,
                                    const QuicConfig& config,
                                    ProofVerifier* proof_verifier)
-    : QuicClientBase(server_id, supported_versions, config, proof_verifier),
+    : QuicClientBase(server_id,
+                     supported_versions,
+                     config,
+                     CreateQuicConnectionHelper(),
+                     proof_verifier),
       server_address_(server_address),
       local_port_(0),
-      helper_(CreateQuicConnectionHelper()),
       initialized_(false),
       packet_reader_started_(false),
       weak_factory_(this) {}
@@ -217,7 +220,7 @@ void QuicSimpleClient::StartConnect() {
   }
 
   CreateQuicClientSession(new QuicConnection(
-      GetNextConnectionId(), server_address_, helper_.get(), factory,
+      GetNextConnectionId(), server_address_, helper(), factory,
       /* owns_writer= */ false, Perspective::IS_CLIENT, supported_versions()));
 
   session()->Initialize();
@@ -373,7 +376,7 @@ const string& QuicSimpleClient::latest_response_body() const {
 }
 
 QuicConnectionId QuicSimpleClient::GenerateNewConnectionId() {
-  return helper_->GetRandomGenerator()->RandUint64();
+  return helper()->GetRandomGenerator()->RandUint64();
 }
 
 QuicConnectionHelper* QuicSimpleClient::CreateQuicConnectionHelper() {

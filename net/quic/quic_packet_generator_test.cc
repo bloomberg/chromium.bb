@@ -12,6 +12,7 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_flags.h"
+#include "net/quic/quic_simple_buffer_allocator.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_packet_creator_peer.h"
 #include "net/quic/test_tools/quic_packet_generator_peer.h"
@@ -113,7 +114,7 @@ class QuicPacketGeneratorTest : public ::testing::TestWithParam<FecSendPolicy> {
       : framer_(QuicSupportedVersions(),
                 QuicTime::Zero(),
                 Perspective::IS_CLIENT),
-        generator_(42, &framer_, &random_, &delegate_),
+        generator_(42, &framer_, &random_, &buffer_allocator_, &delegate_),
         creator_(QuicPacketGeneratorPeer::GetPacketCreator(&generator_)) {
     generator_.set_fec_send_policy(GetParam());
   }
@@ -222,6 +223,7 @@ class QuicPacketGeneratorTest : public ::testing::TestWithParam<FecSendPolicy> {
 
   QuicFramer framer_;
   MockRandom random_;
+  SimpleBufferAllocator buffer_allocator_;
   StrictMock<MockDelegate> delegate_;
   QuicPacketGenerator generator_;
   QuicPacketCreator* creator_;

@@ -65,6 +65,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   QuicPacketCreator(QuicConnectionId connection_id,
                     QuicFramer* framer,
                     QuicRandom* random_generator,
+                    QuicBufferAllocator* buffer_allocator,
                     DelegateInterface* delegate);
 
   ~QuicPacketCreator();
@@ -378,6 +379,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   hash_map<QuicPathId, QuicPacketNumber> multipath_packet_number_;
   // The path which current constructed packet will be sent on.
   QuicPathId current_path_;
+  QuicBufferAllocator* const buffer_allocator_;
   QuicPacketNumber packet_number_;
   // True when creator is requested to turn on FEC protection. False otherwise.
   // There is a time difference between should_fec_protect_next_packet is

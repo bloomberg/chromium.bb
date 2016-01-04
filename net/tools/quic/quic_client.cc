@@ -60,12 +60,15 @@ QuicClient::QuicClient(IPEndPoint server_address,
                        const QuicConfig& config,
                        EpollServer* epoll_server,
                        ProofVerifier* proof_verifier)
-    : QuicClientBase(server_id, supported_versions, config, proof_verifier),
+    : QuicClientBase(server_id,
+                     supported_versions,
+                     config,
+                     new QuicEpollConnectionHelper(epoll_server),
+                     proof_verifier),
       server_address_(server_address),
       local_port_(0),
       epoll_server_(epoll_server),
       fd_(-1),
-      helper_(CreateQuicConnectionHelper()),
       initialized_(false),
       packets_dropped_(0),
       overflow_supported_(false),
@@ -245,7 +248,7 @@ void QuicClient::StartConnect() {
   }
 
   CreateQuicClientSession(new QuicConnection(
-      GetNextConnectionId(), server_address_, helper_.get(), factory,
+      GetNextConnectionId(), server_address_, helper(), factory,
       /* owns_writer= */ false, Perspective::IS_CLIENT, supported_versions()));
 
   // Reset |writer_| after |session()| so that the old writer outlives the old
@@ -436,10 +439,6 @@ const string& QuicClient::latest_response_body() const {
 const string& QuicClient::latest_response_trailers() const {
   LOG_IF(DFATAL, !store_response_) << "Response not stored!";
   return latest_response_trailers_;
-}
-
-QuicEpollConnectionHelper* QuicClient::CreateQuicConnectionHelper() {
-  return new QuicEpollConnectionHelper(epoll_server_);
 }
 
 QuicPacketWriter* QuicClient::CreateQuicPacketWriter() {

@@ -81,5 +81,9 @@ QuicAlarm* QuicEpollConnectionHelper::CreateAlarm(
   return new QuicEpollAlarm(epoll_server_, delegate);
 }
 
+QuicBufferAllocator* QuicEpollConnectionHelper::GetBufferAllocator() {
+  return &buffer_allocator_;
+}
+
 }  // namespace tools
 }  // namespace net

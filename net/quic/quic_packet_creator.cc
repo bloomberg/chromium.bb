@@ -82,6 +82,7 @@ class QuicRandomBoolSource {
 QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
                                      QuicFramer* framer,
                                      QuicRandom* random_generator,
+                                     QuicBufferAllocator* buffer_allocator,
                                      DelegateInterface* delegate)
     : delegate_(delegate),
       debug_delegate_(nullptr),
@@ -92,6 +93,7 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
       framer_(framer),
       random_bool_source_(new QuicRandomBoolSource(random_generator)),
       current_path_(kDefaultPathId),
+      buffer_allocator_(buffer_allocator),
       packet_number_(0),
       should_fec_protect_next_packet_(false),
       fec_protect_(false),
@@ -333,7 +335,8 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
   size_t bytes_consumed = min<size_t>(BytesFree() - min_frame_size, data_size);
 
   bool set_fin = fin && bytes_consumed == data_size;  // Last frame.
-  UniqueStreamBuffer buffer = NewStreamBuffer(bytes_consumed);
+  UniqueStreamBuffer buffer =
+      NewStreamBuffer(buffer_allocator_, bytes_consumed);
   CopyToBuffer(iov, iov_offset, bytes_consumed, buffer.get());
   *frame = QuicFrame(new QuicStreamFrame(id, set_fin, offset, bytes_consumed,
                                          std::move(buffer)));

@@ -12,6 +12,7 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_flags.h"
+#include "net/quic/quic_simple_buffer_allocator.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/mock_random.h"
 #include "net/quic/test_tools/quic_framer_peer.h"
@@ -119,7 +120,11 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
                        Perspective::IS_CLIENT),
         connection_id_(2),
         data_("foo"),
-        creator_(connection_id_, &client_framer_, &mock_random_, &delegate_),
+        creator_(connection_id_,
+                 &client_framer_,
+                 &mock_random_,
+                 &buffer_allocator_,
+                 &delegate_),
         serialized_packet_(creator_.NoPacket()) {
     creator_.set_connection_id_length(GetParam().connection_id_length);
 
@@ -197,6 +202,7 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
   string data_;
   struct iovec iov_;
   MockRandom mock_random_;
+  SimpleBufferAllocator buffer_allocator_;
   QuicPacketCreator creator_;
   MockEntropyCalculator entropy_calculator_;
   SerializedPacket serialized_packet_;

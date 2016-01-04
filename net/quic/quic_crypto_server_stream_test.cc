@@ -94,7 +94,13 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
     }
   }
 
-  ~QuicCryptoServerStreamTest() override { STLDeleteElements(&helpers_); }
+  ~QuicCryptoServerStreamTest() override {
+    // Ensure that anything that might reference |helpers_| is destroyed before
+    // |helpers_| is destroyed.
+    server_session_.reset();
+    client_session_.reset();
+    STLDeleteElements(&helpers_);
+  }
 
   // Initializes the crypto server stream state for testing.  May be
   // called multiple times.

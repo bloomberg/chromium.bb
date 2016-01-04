@@ -23,6 +23,7 @@
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_sent_packet_manager.h"
 #include "net/quic/quic_session.h"
+#include "net/quic/quic_simple_buffer_allocator.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_random.h"
 #include "net/spdy/spdy_framer.h"
@@ -301,11 +302,13 @@ class MockConnectionHelper : public QuicConnectionHelperInterface {
   const QuicClock* GetClock() const override;
   QuicRandom* GetRandomGenerator() override;
   QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) override;
+  QuicBufferAllocator* GetBufferAllocator() override;
   void AdvanceTime(QuicTime::Delta delta);
 
  private:
   MockClock clock_;
   MockRandom random_generator_;
+  SimpleBufferAllocator buffer_allocator_;
 
   DISALLOW_COPY_AND_ASSIGN(MockConnectionHelper);
 };

@@ -113,4 +113,8 @@ QuicAlarm* QuicConnectionHelper::CreateAlarm(QuicAlarm::Delegate* delegate) {
   return new QuicChromeAlarm(clock_, task_runner_, delegate);
 }
 
+QuicBufferAllocator* QuicConnectionHelper::GetBufferAllocator() {
+  return &buffer_allocator_;
+}
+
 }  // namespace net

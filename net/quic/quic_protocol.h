@@ -715,16 +715,40 @@ struct NET_EXPORT_PRIVATE QuicPingFrame {};
 // frame.
 struct NET_EXPORT_PRIVATE QuicMtuDiscoveryFrame {};
 
-// Deleter for stream buffers.
+class NET_EXPORT_PRIVATE QuicBufferAllocator {
+ public:
+  virtual ~QuicBufferAllocator();
+
+  // Returns or allocates a new buffer of |size|. Never returns null.
+  virtual char* New(size_t size) = 0;
+
+  // Releases a buffer.
+  virtual void Delete(char* buffer) = 0;
+};
+
+// Deleter for stream buffers. Copyable to support platforms where the deleter
+// of a unique_ptr must be copyable. Otherwise it would be nice for this to be
+// move-only.
 class NET_EXPORT_PRIVATE StreamBufferDeleter {
  public:
-  void operator()(char* buf) const;
+  StreamBufferDeleter() : allocator_(nullptr) {}
+  explicit StreamBufferDeleter(QuicBufferAllocator* allocator)
+      : allocator_(allocator) {}
+
+  // Deletes |buffer| using |allocator_|.
+  void operator()(char* buffer) const;
+
+ private:
+  // Not owned; must be valid so long as the buffer stored in the unique_ptr
+  // that owns |this| is valid.
+  QuicBufferAllocator* allocator_;
 };
 
 using UniqueStreamBuffer = std::unique_ptr<char[], StreamBufferDeleter>;
 
-// Allocates memory of size |size| for a QUIC stream buffer.
-UniqueStreamBuffer NewStreamBuffer(size_t size);
+// Allocates memory of size |size| using |allocator| for a QUIC stream buffer.
+NET_EXPORT_PRIVATE UniqueStreamBuffer
+NewStreamBuffer(QuicBufferAllocator* allocator, size_t size);
 
 struct NET_EXPORT_PRIVATE QuicStreamFrame {
   QuicStreamFrame();

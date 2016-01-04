@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_simple_buffer_allocator.h"
 #include "net/quic/quic_time.h"
 #include "net/udp/datagram_client_socket.h"
 
@@ -40,11 +41,13 @@ class NET_EXPORT_PRIVATE QuicConnectionHelper
   const QuicClock* GetClock() const override;
   QuicRandom* GetRandomGenerator() override;
   QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) override;
+  QuicBufferAllocator* GetBufferAllocator() override;
 
  private:
   base::TaskRunner* task_runner_;
   const QuicClock* clock_;
   QuicRandom* random_generator_;
+  SimpleBufferAllocator buffer_allocator_;
   base::WeakPtrFactory<QuicConnectionHelper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnectionHelper);

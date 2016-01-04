@@ -18,6 +18,7 @@
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_simple_buffer_allocator.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_random.h"
@@ -222,9 +223,14 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
     return new TestAlarm(delegate);
   }
 
+  QuicBufferAllocator* GetBufferAllocator() override {
+    return &buffer_allocator_;
+  }
+
  private:
   MockClock* clock_;
   MockRandom* random_generator_;
+  SimpleBufferAllocator buffer_allocator_;
 
   DISALLOW_COPY_AND_ASSIGN(TestConnectionHelper);
 };
@@ -665,13 +671,14 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
         framer_(SupportedVersions(version()),
                 QuicTime::Zero(),
                 Perspective::IS_CLIENT),
-        peer_creator_(connection_id_,
-                      &framer_,
-                      &random_generator_,
-                      /*delegate=*/nullptr),
         send_algorithm_(new StrictMock<MockSendAlgorithm>),
         loss_algorithm_(new MockLossAlgorithm()),
         helper_(new TestConnectionHelper(&clock_, &random_generator_)),
+        peer_creator_(connection_id_,
+                      &framer_,
+                      &random_generator_,
+                      &buffer_allocator_,
+                      /*delegate=*/nullptr),
         writer_(new TestPacketWriter(version(), &clock_)),
         factory_(writer_.get()),
         connection_(connection_id_,
@@ -1087,14 +1094,15 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
 
   QuicConnectionId connection_id_;
   QuicFramer framer_;
-  QuicPacketCreator peer_creator_;
   MockEntropyCalculator entropy_calculator_;
 
   MockSendAlgorithm* send_algorithm_;
   MockLossAlgorithm* loss_algorithm_;
   MockClock clock_;
   MockRandom random_generator_;
+  SimpleBufferAllocator buffer_allocator_;
   scoped_ptr<TestConnectionHelper> helper_;
+  QuicPacketCreator peer_creator_;
   scoped_ptr<TestPacketWriter> writer_;
   NiceMock<MockPacketWriterFactory> factory_;
   TestConnection connection_;
