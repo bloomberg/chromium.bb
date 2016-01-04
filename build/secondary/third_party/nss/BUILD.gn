@@ -1188,6 +1188,9 @@ if (is_linux) {
         # nss doesn"t explicitly cast between different enum types.
         "-Wno-conversion",
 
+        # nss passes "const char*" through "void*".
+        "-Wno-incompatible-pointer-types",
+
         # nss prefers `a && b || c` over `(a && b) || c`.
         "-Wno-logical-op-parentheses",
 
@@ -1196,6 +1199,9 @@ if (is_linux) {
 
         # nss has some `unsigned < 0` checks.
         "-Wno-tautological-compare",
+
+        # nss-urandom-abort.patch removed the only call to rng_systemFromNoise
+        "-Wno-unused-function",
       ]
     }
 
