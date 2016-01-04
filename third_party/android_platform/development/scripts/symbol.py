@@ -301,7 +301,9 @@ def GetLibrarySearchPaths():
   if CHROME_SYMBOLS_DIR:
     return [CHROME_SYMBOLS_DIR]
   dirs = _GetChromeOutputDirCandidates()
-  return PathListJoin(dirs, ['lib.unstripped', 'lib', 'lib.target', '.'])
+  # GYP places unstripped libraries under out/$BUILDTYPE/lib
+  # GN places them under out/$BUILDTYPE/lib.unstripped
+  return PathListJoin(dirs, ['lib.unstripped', 'lib', '.'])
 
 def GetCandidateLibraries(library_name):
   """Returns a list of candidate library filenames.

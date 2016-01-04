@@ -269,10 +269,10 @@ directory.
 The script tries to find the most recent version of the debug version of
 shared libraries under one of the following directories:
 
-  \$CHROMIUM_SRC/<out>/Release/lib/           (used by Ninja builds)
-  \$CHROMIUM_SRC/<out>/Debug/lib/             (used by Ninja builds)
-  \$CHROMIUM_SRC/<out>/Release/lib.target/    (used by Make builds)
-  \$CHROMIUM_SRC/<out>/Debug/lib.target/      (used by Make builds)
+  \$CHROMIUM_SRC/<out>/Release/lib/             (used by GYP builds)
+  \$CHROMIUM_SRC/<out>/Debug/lib/               (used by GYP builds)
+  \$CHROMIUM_SRC/<out>/Release/lib.unstripped/  (used by GN builds)
+  \$CHROMIUM_SRC/<out>/Debug/lib.unstripped/    (used by GN builds)
 
 Where <out> is 'out' by default, unless the --out=<name> option is used or
 the CHROMIUM_OUT_DIR environment variable is defined.
@@ -710,13 +710,12 @@ get_file_timestamp () {
 #
 detect_symbol_dir () {
   local SUBDIRS SUBDIR LIST DIR DIR_LIBS TSTAMP
-  # Make places them under out/$BUILDTYPE/lib.target.
-  # GYP places debug libraries under out/$BUILDTYPE/lib
+  # GYP places unstripped libraries under out/$BUILDTYPE/lib
   # GN places them under out/$BUILDTYPE/lib.unstripped
   if [ "$1" ]; then
-    SUBDIRS="$1/lib $1/lib.target $1/lib.unstripped"
+    SUBDIRS="$1/lib $1/lib.unstripped"
   else
-    SUBDIRS="Release/lib Debug/lib Release/lib.target Debug/lib.target"
+    SUBDIRS="Release/lib Debug/lib"
     SUBDIRS+=" Release/lib.unstripped Debug/lib.unstripped"
   fi
   LIST=$TMPDIR/scan-subdirs-$$.txt
