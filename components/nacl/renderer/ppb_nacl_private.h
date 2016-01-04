@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_NACL_RENDERER_PPB_NACL_PRIVATE_H_
 #define COMPONENTS_NACL_RENDERER_PPB_NACL_PRIVATE_H_
 
+#include "base/memory/scoped_ptr.h"
+#include "base/process/process_handle.h"
+#include "ipc/ipc_sync_channel.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
@@ -214,6 +217,8 @@ struct PPB_NaCl_Private {
    * LaunchSelLdr takes the ownership of the file handle.
    * The |uses_nonsfi_mode| flag indicates whether or not nonsfi-mode should
    * be used with the binary pointed by the url.
+   * |translator_channel| and |process_id| are filled out when launching PNaCl
+   * translator processes.
    */
   void (*LaunchSelLdr)(PP_Instance instance,
                        PP_Bool main_service_runtime,
@@ -222,6 +227,8 @@ struct PPB_NaCl_Private {
                        PP_Bool uses_nonsfi_mode,
                        PP_NaClAppProcessType process_type,
                        void* imc_handle,
+                       scoped_ptr<IPC::SyncChannel>* translator_channel,
+                       base::ProcessId* process_id,
                        struct PP_CompletionCallback callback);
   /* On POSIX systems, this function returns the file descriptor of
    * /dev/urandom.  On non-POSIX systems, this function returns 0.

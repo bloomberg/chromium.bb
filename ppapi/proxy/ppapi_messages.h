@@ -871,6 +871,18 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPInstancePrivate_GetInstanceObject,
 
 #endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
 
+// This message is sent from the renderer to the PNaCl linker process
+// (NaCl untrusted code -- a nexe).  This message tells the PNaCl
+// linker to link the given object files together to produce a nexe
+// file, writing the output to the given file handle.
+IPC_SYNC_MESSAGE_CONTROL2_1(PpapiMsg_PnaclTranslatorLink,
+                            /* object file FDs for inputs */
+                            std::vector<ppapi::proxy::SerializedHandle>,
+                            /* nexe file FD for output */
+                            ppapi::proxy::SerializedHandle,
+                            /* success status result */
+                            bool)
+
 // Reports to the browser that a plugin has been active.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Keepalive)
 

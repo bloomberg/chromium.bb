@@ -15,9 +15,12 @@
 #include "components/nacl/renderer/plugin/srpc_params.h"
 #include "components/nacl/renderer/plugin/temporary_file.h"
 #include "components/nacl/renderer/plugin/utility.h"
+#include "content/public/common/sandbox_init.h"
 #include "native_client/src/shared/platform/nacl_sync_raii.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
+#include "ppapi/c/ppb_file_io.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/proxy/ppapi_messages.h"
 
 namespace plugin {
 namespace {
@@ -86,7 +89,8 @@ PnaclTranslateThread::PnaclTranslateThread()
       num_threads_(0),
       nexe_file_(NULL),
       coordinator_error_info_(NULL),
-      coordinator_(NULL) {
+      coordinator_(NULL),
+      ld_channel_peer_pid_(base::kNullProcessId) {
   NaClXMutexCtor(&subprocess_mu_);
   NaClXMutexCtor(&cond_mu_);
   NaClXCondVarCtor(&buffer_cond_);
@@ -126,6 +130,13 @@ void PnaclTranslateThread::RunCompile(
   DCHECK(compiler_subprocess_->service_runtime());
   compiler_subprocess_active_ = true;
 
+  // Free this IPC channel now to make sure that it does not get freed on
+  // the child thread when the child thread calls Shutdown().
+  // TODO(mseaborn): Convert DoCompile() to using Chrome IPC instead of SRPC,
+  // the same way DoLink() has been converted.  Then we will use this IPC
+  // channel instead of just freeing it here.
+  compiler_subprocess_->service_runtime()->TakeTranslatorChannel();
+
   compile_finished_callback_ = compile_finished_callback;
   translate_thread_.reset(new NaClThread);
   if (translate_thread_ == NULL) {
@@ -147,6 +158,17 @@ void PnaclTranslateThread::RunLink() {
   DCHECK(started());
   DCHECK(ld_subprocess_->service_runtime());
   ld_subprocess_active_ = true;
+
+  // Take ownership of this IPC channel to make sure that it does not get
+  // freed on the child thread when the child thread calls Shutdown().
+  ld_channel_ = ld_subprocess_->service_runtime()->TakeTranslatorChannel();
+  // ld_channel_ is a IPC::SyncChannel, which is not thread-safe and cannot be
+  // used directly by the child thread, so create a SyncMessageFilter which
+  // can be used by the child thread.
+  ld_channel_filter_ = ld_channel_->CreateSyncMessageFilter();
+  // Make a copy of the process ID, again to avoid any thread-safety issues
+  // involved in accessing ld_subprocess_ on the child thread.
+  ld_channel_peer_pid_ = ld_subprocess_->service_runtime()->get_process_id();
 
   // Tear down the previous thread.
   // TODO(jvoung): Use base/threading or something where we can have a
@@ -184,6 +206,31 @@ void PnaclTranslateThread::EndStream() {
   done_ = true;
   NaClXCondVarSignal(&buffer_cond_);
   NaClXMutexUnlock(&cond_mu_);
+}
+
+ppapi::proxy::SerializedHandle PnaclTranslateThread::GetHandleForSubprocess(
+    TempFile* file, int32_t open_flags) {
+  IPC::PlatformFileForTransit file_for_transit;
+
+#if defined(OS_WIN)
+  if (!content::BrokerDuplicateHandle(
+          file->GetFileHandle(),
+          ld_channel_peer_pid_,
+          &file_for_transit,
+          0,  // desired_access is 0 since we're using DUPLICATE_SAME_ACCESS.
+          DUPLICATE_SAME_ACCESS)) {
+    return ppapi::proxy::SerializedHandle();
+  }
+#else
+  file_for_transit = base::FileDescriptor(dup(file->GetFileHandle()), true);
+#endif
+
+  // Using 0 disables any use of quota enforcement for this file handle.
+  PP_Resource file_io = 0;
+
+  ppapi::proxy::SerializedHandle handle;
+  handle.set_file_handle(file_for_transit, open_flags, file_io);
+  return handle;
 }
 
 void WINAPI PnaclTranslateThread::DoCompileThread(void* arg) {
@@ -348,60 +395,42 @@ void PnaclTranslateThread::DoLink() {
     // and now, just leave now.
     if (!ld_subprocess_active_)
       return;
-    // Now that we are in helper thread, we can do the the blocking
-    // StartSrpcServices operation.
-    if (!ld_subprocess_->StartSrpcServices()) {
-      TranslateFailed(
-          PP_NACL_ERROR_SRPC_CONNECTION_FAIL,
-          "SRPC connection failure for " + ld_subprocess_->description());
+  }
+
+  // Reset object files for reading first.  We do this before duplicating
+  // handles/FDs to prevent any handle/FD leaks in case any of the Reset()
+  // calls fail.
+  for (TempFile* obj_file : *obj_files_) {
+    if (!obj_file->Reset()) {
+      TranslateFailed(PP_NACL_ERROR_PNACL_LD_SETUP,
+                      "Link process could not reset object file");
       return;
     }
   }
 
-  SrpcParams params;
-  std::vector<nacl::DescWrapper*> ld_in_files;
-  size_t i;
-  for (i = 0; i < obj_files_->size(); i++) {
-    // Reset object file for reading first.
-    if (!(*obj_files_)[i]->Reset()) {
-      TranslateFailed(PP_NACL_ERROR_PNACL_LD_SETUP,
-                      "Link process could not reset object file");
-    }
-    ld_in_files.push_back((*obj_files_)[i]->read_wrapper());
+  ppapi::proxy::SerializedHandle nexe_file =
+      GetHandleForSubprocess(nexe_file_, PP_FILEOPENFLAG_WRITE);
+  std::vector<ppapi::proxy::SerializedHandle> ld_input_files;
+  for (TempFile* obj_file : *obj_files_) {
+    ld_input_files.push_back(
+        GetHandleForSubprocess(obj_file, PP_FILEOPENFLAG_READ));
   }
-  for (; i < PnaclCoordinator::kMaxTranslatorObjectFiles; i++)
-    ld_in_files.push_back(invalid_desc_wrapper_);
 
-  nacl::DescWrapper* ld_out_file = nexe_file_->write_wrapper();
   int64_t link_start_time = NaClGetTimeOfDayMicroseconds();
-  // Run LD.
-  bool success = ld_subprocess_->InvokeSrpcMethod(
-      "RunWithSplit",
-      "ihhhhhhhhhhhhhhhhh",
-      &params,
-      static_cast<int>(obj_files_->size()),
-      ld_in_files[0]->desc(),
-      ld_in_files[1]->desc(),
-      ld_in_files[2]->desc(),
-      ld_in_files[3]->desc(),
-      ld_in_files[4]->desc(),
-      ld_in_files[5]->desc(),
-      ld_in_files[6]->desc(),
-      ld_in_files[7]->desc(),
-      ld_in_files[8]->desc(),
-      ld_in_files[9]->desc(),
-      ld_in_files[10]->desc(),
-      ld_in_files[11]->desc(),
-      ld_in_files[12]->desc(),
-      ld_in_files[13]->desc(),
-      ld_in_files[14]->desc(),
-      ld_in_files[15]->desc(),
-      ld_out_file->desc());
-  if (!success) {
+  bool success = false;
+  bool sent = ld_channel_filter_->Send(
+      new PpapiMsg_PnaclTranslatorLink(ld_input_files, nexe_file, &success));
+  if (!sent) {
     TranslateFailed(PP_NACL_ERROR_PNACL_LD_INTERNAL,
-                    "link failed.");
+                    "link failed: reply not received from linker.");
     return;
   }
+  if (!success) {
+    TranslateFailed(PP_NACL_ERROR_PNACL_LD_INTERNAL,
+                    "link failed: linker returned failure status.");
+    return;
+  }
+
   GetNaClInterface()->LogTranslateTime(
       "NaCl.Perf.PNaClLoadTime.LinkTime",
       NaClGetTimeOfDayMicroseconds() - link_start_time);

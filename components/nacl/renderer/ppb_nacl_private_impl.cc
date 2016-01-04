@@ -389,6 +389,16 @@ NaClAppProcessType PP_ToNaClAppProcessType(
   return static_cast<NaClAppProcessType>(pp_process_type);
 }
 
+// A dummy IPC::Listener object with a no-op message handler.  We use
+// this with an IPC::SyncChannel where we only send synchronous
+// messages and don't need to handle any messages other than sync
+// replies.
+class NoOpListener : public IPC::Listener {
+ public:
+  bool OnMessageReceived(const IPC::Message& message) override { return false; }
+  void OnChannelError() override {}
+};
+
 // Launch NaCl's sel_ldr process.
 void LaunchSelLdr(PP_Instance instance,
                   PP_Bool main_service_runtime,
@@ -397,6 +407,8 @@ void LaunchSelLdr(PP_Instance instance,
                   PP_Bool uses_nonsfi_mode,
                   PP_NaClAppProcessType pp_process_type,
                   void* imc_handle,
+                  scoped_ptr<IPC::SyncChannel>* translator_channel,
+                  base::ProcessId* process_id,
                   PP_CompletionCallback callback) {
   CHECK(ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->
             BelongsToCurrentThread());
@@ -516,8 +528,24 @@ void LaunchSelLdr(PP_Instance instance,
 
   // Don't save instance_info if channel handle is invalid.
   if (IsValidChannelHandle(instance_info.channel_handle)) {
-    NaClPluginInstance* nacl_plugin_instance = GetNaClPluginInstance(instance);
-    nacl_plugin_instance->instance_info.reset(new InstanceInfo(instance_info));
+    if (process_type == kPNaClTranslatorProcessType) {
+      // Return an IPC channel which allows communicating with a PNaCl
+      // translator process.
+      *translator_channel = IPC::SyncChannel::Create(
+          instance_info.channel_handle,
+          IPC::Channel::MODE_CLIENT,
+          new NoOpListener,
+          content::RenderThread::Get()->GetIOMessageLoopProxy(),
+          true,
+          content::RenderThread::Get()->GetShutdownEvent());
+      *process_id = launch_result.plugin_pid;
+    } else {
+      // Save the channel handle for when StartPpapiProxy() is called.
+      NaClPluginInstance* nacl_plugin_instance =
+          GetNaClPluginInstance(instance);
+      nacl_plugin_instance->instance_info.reset(
+          new InstanceInfo(instance_info));
+    }
   }
 
   *(static_cast<NaClHandle*>(imc_handle)) =

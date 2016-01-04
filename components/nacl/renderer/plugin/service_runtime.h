@@ -12,7 +12,10 @@
 #define COMPONENTS_NACL_RENDERER_PLUGIN_SERVICE_RUNTIME_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/process/process_handle.h"
 #include "components/nacl/renderer/plugin/utility.h"
+#include "ipc/ipc_sync_channel.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/public/imc_types.h"
@@ -70,6 +73,14 @@ class ServiceRuntime {
 
   bool main_service_runtime() const { return main_service_runtime_; }
 
+  scoped_ptr<IPC::SyncChannel> TakeTranslatorChannel() {
+    return scoped_ptr<IPC::SyncChannel>(translator_channel_.release());
+  }
+
+  // Returns the PID of the subprocess.  This PID is needed for copying
+  // handles to the subprocess on Windows.
+  base::ProcessId get_process_id() { return process_id_; }
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
 
@@ -84,6 +95,9 @@ class ServiceRuntime {
   nacl::scoped_ptr<SelLdrLauncherChrome> subprocess_;
 
   NaClHandle bootstrap_channel_;
+
+  scoped_ptr<IPC::SyncChannel> translator_channel_;
+  base::ProcessId process_id_;
 };
 
 }  // namespace plugin

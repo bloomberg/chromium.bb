@@ -62,7 +62,13 @@ bool TempFile::Reset() {
 }
 
 PP_FileHandle TempFile::TakeFileHandle() {
+  DCHECK(file_handle_.IsValid());
   return file_handle_.TakePlatformFile();
+}
+
+PP_FileHandle TempFile::GetFileHandle() {
+  DCHECK(file_handle_.IsValid());
+  return file_handle_.GetPlatformFile();
 }
 
 }  // namespace plugin

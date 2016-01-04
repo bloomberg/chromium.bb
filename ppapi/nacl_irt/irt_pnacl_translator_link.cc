@@ -2,58 +2,79 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
 #include "build/build_config.h"
-#include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "ipc/ipc_listener.h"
+#include "ipc/ipc_sync_channel.h"
+#include "native_client/src/public/chrome_main.h"
 #include "native_client/src/untrusted/irt/irt_dev.h"
 #include "ppapi/nacl_irt/irt_interfaces.h"
+#include "ppapi/nacl_irt/plugin_startup.h"
+#include "ppapi/proxy/ppapi_messages.h"
 
 #if !defined(OS_NACL_NONSFI)
 
 namespace {
 
-const int kMaxObjectFiles = 16;
+typedef int (*CallbackFunc)(int nexe_fd,
+                            const int* obj_file_fds,
+                            int obj_file_fd_count);
 
-int (*g_func)(int nexe_fd,
-              const int* obj_file_fds,
-              int obj_file_fd_count);
-
-void HandleLinkRequest(NaClSrpcRpc* rpc,
-                       NaClSrpcArg** in_args,
-                       NaClSrpcArg** out_args,
-                       NaClSrpcClosure* done) {
-  int obj_file_count = in_args[0]->u.ival;
-  int nexe_fd = in_args[kMaxObjectFiles + 1]->u.hval;
-
-  if (obj_file_count < 1 || obj_file_count > kMaxObjectFiles) {
-    NaClLog(LOG_FATAL, "Bad object file count (%i)\n", obj_file_count);
-  }
-  int obj_file_fds[obj_file_count];
-  for (int i = 0; i < obj_file_count; i++) {
-    obj_file_fds[i] = in_args[i + 1]->u.hval;
+class TranslatorLinkListener : public IPC::Listener {
+ public:
+  TranslatorLinkListener(const IPC::ChannelHandle& handle, CallbackFunc func)
+      : func_(func) {
+    channel_ = IPC::Channel::Create(handle, IPC::Channel::MODE_SERVER, this);
+    CHECK(channel_->Connect());
   }
 
-  int result = g_func(nexe_fd, obj_file_fds, obj_file_count);
+  // Needed for handling sync messages in OnMessageReceived().
+  bool Send(IPC::Message* message) {
+    return channel_->Send(message);
+  }
 
-  rpc->result = result == 0 ? NACL_SRPC_RESULT_OK : NACL_SRPC_RESULT_APP_ERROR;
-  done->Run(done);
-}
+  virtual bool OnMessageReceived(const IPC::Message& msg) {
+    bool handled = false;
+    IPC_BEGIN_MESSAGE_MAP(TranslatorLinkListener, msg)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(PpapiMsg_PnaclTranslatorLink,
+                                      OnPnaclTranslatorLink)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+    return handled;
+  }
 
-const struct NaClSrpcHandlerDesc kSrpcMethods[] = {
-  { "RunWithSplit:ihhhhhhhhhhhhhhhhh:", HandleLinkRequest },
-  { NULL, NULL },
+ private:
+  void OnPnaclTranslatorLink(
+      const std::vector<ppapi::proxy::SerializedHandle>& obj_files,
+      ppapi::proxy::SerializedHandle nexe_file,
+      IPC::Message* reply_msg) {
+    CHECK(nexe_file.is_file());
+
+    std::vector<int> obj_file_fds(obj_files.size());
+    for (size_t i = 0; i < obj_files.size(); ++i) {
+      CHECK(obj_files[i].is_file());
+      obj_file_fds[i] = obj_files[i].descriptor().fd;
+    }
+    int result = func_(nexe_file.descriptor().fd,
+                       obj_file_fds.data(),
+                       obj_file_fds.size());
+    bool success = (result == 0);
+    PpapiMsg_PnaclTranslatorLink::WriteReplyParams(reply_msg, success);
+    Send(reply_msg);
+  }
+
+  scoped_ptr<IPC::Channel> channel_;
+  CallbackFunc func_;
+
+  DISALLOW_COPY_AND_ASSIGN(TranslatorLinkListener);
 };
 
-void ServeLinkRequest(int (*func)(int nexe_fd,
-                                  const int* obj_file_fds,
-                                  int obj_file_fd_count)) {
-  g_func = func;
-  if (!NaClSrpcModuleInit()) {
-    NaClLog(LOG_FATAL, "NaClSrpcModuleInit() failed\n");
-  }
-  if (!NaClSrpcAcceptClientConnection(kSrpcMethods)) {
-    NaClLog(LOG_FATAL, "NaClSrpcAcceptClientConnection() failed\n");
-  }
+void ServeLinkRequest(CallbackFunc func) {
+  base::MessageLoop loop;
+  int fd = ppapi::GetRendererIPCFileDescriptor();
+  IPC::ChannelHandle handle("NaCl IPC", base::FileDescriptor(fd, false));
+  new TranslatorLinkListener(handle, func);
+  loop.Run();
 }
 
 }

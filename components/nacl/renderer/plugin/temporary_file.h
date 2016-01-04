@@ -61,6 +61,11 @@ class TempFile {
   // valid after TakeFileHandle() is called.
   PP_FileHandle TakeFileHandle();
 
+  // Returns a handle to the file, without transferring ownership of it.
+  // This handle remains valid until the TempFile object is destroyed or
+  // TakeFileHandle() is called.
+  PP_FileHandle GetFileHandle();
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(TempFile);
 

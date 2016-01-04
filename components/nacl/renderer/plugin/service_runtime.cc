@@ -38,7 +38,8 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
       pp_instance_(pp_instance),
       main_service_runtime_(main_service_runtime),
       uses_nonsfi_mode_(uses_nonsfi_mode),
-      bootstrap_channel_(NACL_INVALID_HANDLE) {
+      bootstrap_channel_(NACL_INVALID_HANDLE),
+      process_id_(base::kNullProcessId) {
 }
 
 bool ServiceRuntime::SetupCommandChannel() {
@@ -91,6 +92,8 @@ void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
       PP_FromBool(uses_nonsfi_mode_),
       params.process_type,
       &bootstrap_channel_,
+      &translator_channel_,
+      &process_id_,
       callback.pp_completion_callback());
   subprocess_.reset(tmp_subprocess.release());
 }

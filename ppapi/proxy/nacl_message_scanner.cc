@@ -143,6 +143,15 @@ void ScanParam(const IPC::Message& param, ScanningResults* results) {
     IPC::WriteParam(results->new_msg.get(), param);
 }
 
+template <class T>
+void ScanParam(const std::vector<T>& vec, ScanningResults* results) {
+  if (results->new_msg)
+    IPC::WriteParam(results->new_msg.get(), static_cast<int>(vec.size()));
+  for (const T& element : vec) {
+    ScanParam(element, results);
+  }
+}
+
 // Overload to match all other types. If we need to rewrite the message, write
 // the parameter.
 template <class T>
@@ -192,6 +201,21 @@ class MessageScannerImpl {
     return true;
   }
 
+  bool ScanSyncMessage(ScanningResults* results) {
+    typename base::TupleTypes<typename MessageType::Schema::SendParam>
+        ::ValueTuple params;
+    if (!MessageType::ReadSendParam(msg_, &params))
+      return false;
+    // If we need to rewrite the message, write the message id first.
+    if (results->new_msg) {
+      results->new_msg->set_sync();
+      int id = IPC::SyncMessage::GetMessageId(*msg_);
+      results->new_msg->WriteInt(id);
+    }
+    ScanTuple(params, results);
+    return true;
+  }
+
   bool ScanReply(ScanningResults* results) {
     typename base::TupleTypes<typename MessageType::Schema::ReplyParam>
         ::ValueTuple params;
@@ -206,8 +230,6 @@ class MessageScannerImpl {
     ScanTuple(params, results);
     return true;
   }
-  // TODO(dmichael): Add ScanSyncMessage for outgoing sync messages, if we ever
-  //                 need to scan those.
 
  private:
   const MessageType* msg_;
@@ -223,6 +245,17 @@ class MessageScannerImpl {
               new IPC::Message(msg.routing_id(), msg.type(), \
                                IPC::Message::PRIORITY_NORMAL)); \
         if (!scanner.ScanMessage(&results)) \
+          return false; \
+        break; \
+      }
+#define CASE_FOR_SYNC_MESSAGE(MESSAGE_TYPE) \
+      case MESSAGE_TYPE::ID: { \
+        MessageScannerImpl<MESSAGE_TYPE> scanner(&msg); \
+        if (rewrite_msg) \
+          results.new_msg.reset( \
+              new IPC::Message(msg.routing_id(), msg.type(), \
+                               IPC::Message::PRIORITY_NORMAL)); \
+        if (!scanner.ScanSyncMessage(&results)) \
           return false; \
         break; \
       }
@@ -331,6 +364,7 @@ bool NaClMessageScanner::ScanMessage(
     CASE_FOR_MESSAGE(PpapiMsg_PPBAudio_NotifyAudioStreamCreated)
     CASE_FOR_MESSAGE(PpapiMsg_PPPMessaging_HandleMessage)
     CASE_FOR_MESSAGE(PpapiPluginMsg_ResourceReply)
+    CASE_FOR_SYNC_MESSAGE(PpapiMsg_PnaclTranslatorLink)
     CASE_FOR_REPLY(PpapiHostMsg_OpenResource)
     CASE_FOR_REPLY(PpapiHostMsg_PPBGraphics3D_Create)
     CASE_FOR_REPLY(PpapiHostMsg_PPBGraphics3D_CreateTransferBuffer)
