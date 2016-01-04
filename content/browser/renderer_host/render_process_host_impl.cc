@@ -280,6 +280,8 @@ void GetContexts(
       GetRequestContext(request_context, media_request_context, resource_type);
 }
 
+#if defined(ENABLE_WEBRTC)
+
 // Creates a file used for handing over to the renderer.
 IPC::PlatformFileForTransit CreateFileForProcess(base::FilePath file_path,
                                                  base::ProcessHandle process) {
@@ -293,8 +295,6 @@ IPC::PlatformFileForTransit CreateFileForProcess(base::FilePath file_path,
   }
   return IPC::TakeFileHandleForProcess(std::move(dump_file), process);
 }
-
-#if defined(ENABLE_WEBRTC)
 
 // Allow us to only run the trial in the first renderer.
 bool has_done_stun_trials = false;
