@@ -375,13 +375,9 @@ void SetMinimumArrayBufferSizeForShmem(PP_Instance /*instance*/,
   // Does nothing. Not needed in-process.
 }
 
-void RunV8GC(PP_Instance pp_instance) {
-  PepperPluginInstance* instance =
-      content::PepperPluginInstance::Get(pp_instance);
-  if (instance) {
-    instance->GetIsolate()->RequestGarbageCollectionForTesting(
-        v8::Isolate::kFullGarbageCollection);
-  }
+void RunV8GC(PP_Instance instance) {
+  content::PepperPluginInstance::Get(instance)->GetIsolate()->
+      RequestGarbageCollectionForTesting(v8::Isolate::kFullGarbageCollection);
 }
 
 const PPB_Testing_Private testing_interface = {
