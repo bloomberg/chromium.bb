@@ -1736,10 +1736,15 @@ String Internals::counterValue(Element* element)
     return counterValueForElement(element);
 }
 
-int Internals::pageNumber(Element* element, float pageWidth, float pageHeight)
+int Internals::pageNumber(Element* element, float pageWidth, float pageHeight, ExceptionState& exceptionState)
 {
     if (!element)
         return 0;
+
+    if (pageWidth <= 0 || pageHeight <= 0) {
+        exceptionState.throwDOMException(V8TypeError, "Page width and height must be larger than 0.");
+        return 0;
+    }
 
     return PrintContext::pageNumberForElement(element, FloatSize(pageWidth, pageHeight));
 }
@@ -1765,10 +1770,15 @@ Vector<String> Internals::allIconURLs(Document* document) const
     return iconURLs(document, Favicon | TouchIcon | TouchPrecomposedIcon);
 }
 
-int Internals::numberOfPages(float pageWidth, float pageHeight)
+int Internals::numberOfPages(float pageWidth, float pageHeight, ExceptionState& exceptionState)
 {
     if (!frame())
         return -1;
+
+    if (pageWidth <= 0 || pageHeight <= 0) {
+        exceptionState.throwDOMException(V8TypeError, "Page width and height must be larger than 0.");
+        return -1;
+    }
 
     return PrintContext::numberOfPages(frame(), FloatSize(pageWidth, pageHeight));
 }

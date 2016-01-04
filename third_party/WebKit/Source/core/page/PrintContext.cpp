@@ -150,6 +150,9 @@ void PrintContext::computePageRectsWithPageSizeInternal(const FloatSize& pageSiz
 
 void PrintContext::begin(float width, float height)
 {
+    ASSERT(width > 0);
+    ASSERT(height > 0);
+
     // This function can be called multiple times to adjust printing parameters without going back to screen mode.
     m_isPrinting = true;
 
