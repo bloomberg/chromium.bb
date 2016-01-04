@@ -54,17 +54,17 @@
 
 namespace blink {
 
-// static
-WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<Page>>& Page::allPages()
+// Set of all live pages; includes internal Page objects that are
+// not observable from scripts.
+static Page::PageSet& allPages()
 {
-    DEFINE_STATIC_LOCAL(WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<Page>>, allPages, ());
+    DEFINE_STATIC_LOCAL(Page::PageSet, allPages, ());
     return allPages;
 }
 
-// static
-WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<Page>>& Page::ordinaryPages()
+Page::PageSet& Page::ordinaryPages()
 {
-    DEFINE_STATIC_LOCAL(WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<Page>>, ordinaryPages, ());
+    DEFINE_STATIC_LOCAL(Page::PageSet, ordinaryPages, ());
     return ordinaryPages;
 }
 
@@ -82,15 +82,15 @@ void Page::networkStateChanged(bool online)
     }
 
     AtomicString eventName = online ? EventTypeNames::online : EventTypeNames::offline;
-    for (unsigned i = 0; i < frames.size(); i++) {
-        frames[i]->domWindow()->dispatchEvent(Event::create(eventName));
-        InspectorInstrumentation::networkStateChanged(frames[i].get(), online);
+    for (const auto& frame : frames) {
+        frame->domWindow()->dispatchEvent(Event::create(eventName));
+        InspectorInstrumentation::networkStateChanged(frame.get(), online);
     }
 }
 
 void Page::onMemoryPressure()
 {
-    for (auto& page : ordinaryPages())
+    for (Page* page : ordinaryPages())
         page->memoryPurgeController().purgeMemory();
 }
 
@@ -102,6 +102,14 @@ float deviceScaleFactor(LocalFrame* frame)
     if (!page)
         return 1;
     return page->deviceScaleFactor();
+}
+
+PassOwnPtrWillBeRawPtr<Page> Page::createOrdinary(PageClients& pageClients)
+{
+    OwnPtrWillBeRawPtr<Page> page = create(pageClients);
+    ordinaryPages().add(page.get());
+    page->memoryPurgeController().registerClient(page.get());
+    return page.release();
 }
 
 Page::Page(PageClients& pageClients)
@@ -142,13 +150,6 @@ Page::~Page()
 #endif
     // willBeDestroyed() must be called before Page destruction.
     ASSERT(!m_mainFrame);
-}
-
-void Page::makeOrdinary()
-{
-    ASSERT(!ordinaryPages().contains(this));
-    ordinaryPages().add(this);
-    memoryPurgeController().registerClient(this);
 }
 
 ViewportDescription Page::viewportDescription() const
@@ -553,6 +554,11 @@ void Page::willCloseLayerTreeView(WebLayerTreeView& layerTreeView)
         m_scrollingCoordinator->willCloseLayerTreeView(layerTreeView);
 }
 
+void Page::willBeClosed()
+{
+    ordinaryPages().remove(this);
+}
+
 void Page::willBeDestroyed()
 {
     RefPtrWillBeRawPtr<Frame> mainFrame = m_mainFrame;
@@ -575,7 +581,7 @@ void Page::willBeDestroyed()
         m_validationMessageClient->willBeDestroyed();
     m_mainFrame = nullptr;
 
-    Page::notifyContextDestroyed();
+    PageLifecycleNotifier::notifyContextDestroyed();
 }
 
 Page::PageClients::PageClients()

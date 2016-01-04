@@ -76,9 +76,6 @@ class CORE_EXPORT Page final : public NoBaseWillBeGarbageCollectedFinalized<Page
     WTF_MAKE_NONCOPYABLE(Page);
     friend class Settings;
 public:
-    static void platformColorsChanged();
-    static void onMemoryPressure();
-
     // It is up to the platform to ensure that non-null clients are provided where required.
     struct CORE_EXPORT PageClients final {
         STACK_ALLOCATED();
@@ -94,16 +91,29 @@ public:
         SpellCheckerClient* spellCheckerClient;
     };
 
-    explicit Page(PageClients&);
+    static PassOwnPtrWillBeRawPtr<Page> create(PageClients& pageClients)
+    {
+        return adoptPtrWillBeNoop(new Page(pageClients));
+    }
+
+    // An "ordinary" page is a fully-featured page owned by a web view.
+    static PassOwnPtrWillBeRawPtr<Page> createOrdinary(PageClients&);
+
     ~Page() override;
 
-    void makeOrdinary();
+    void willBeClosed();
 
-    // This method returns all pages, incl. private ones associated with
-    // inspector overlay, popups, SVGImage, etc.
-    static WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<Page>>& allPages();
-    // This method returns all ordinary pages.
-    static WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<Page>>& ordinaryPages();
+    using PageSet = WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<Page>>;
+
+    // Return the current set of full-fledged, ordinary pages.
+    // Each created and owned by a WebView.
+    //
+    // This set does not include Pages created for other, internal purposes
+    // (SVGImages, inspector overlays, page popups etc.)
+    static PageSet& ordinaryPages();
+
+    static void platformColorsChanged();
+    static void onMemoryPressure();
 
     FrameHost& frameHost() const { return *m_frameHost; }
 
@@ -215,6 +225,8 @@ public:
     void willBeDestroyed();
 
 private:
+    explicit Page(PageClients&);
+
     void initGroup();
 
     void setNeedsLayoutInAllFrames();

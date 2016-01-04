@@ -464,7 +464,7 @@ Page* InspectorOverlay::overlayPage()
     ASSERT(!m_overlayChromeClient);
     m_overlayChromeClient = InspectorOverlayChromeClient::create(m_webViewImpl->page()->chromeClient(), *this);
     pageClients.chromeClient = m_overlayChromeClient.get();
-    m_overlayPage = adoptPtrWillBeNoop(new Page(pageClients));
+    m_overlayPage = Page::create(pageClients);
 
     Settings& settings = m_webViewImpl->page()->settings();
     Settings& overlaySettings = m_overlayPage->settings();

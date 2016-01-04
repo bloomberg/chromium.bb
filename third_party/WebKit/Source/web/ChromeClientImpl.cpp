@@ -408,7 +408,7 @@ bool ChromeClientImpl::openBeforeUnloadConfirmPanelDelegate(LocalFrame* frame, c
 void ChromeClientImpl::closeWindowSoon()
 {
     // Make sure this Page can no longer be found by JS.
-    Page::ordinaryPages().remove(m_webView->page());
+    m_webView->page()->willBeClosed();
 
     // Make sure that all loading is stopped.  Ensures that JS stops executing!
     m_webView->mainFrame()->stopLoading();

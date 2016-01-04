@@ -245,7 +245,7 @@ bool WebPagePopupImpl::initializePage()
     m_chromeClient = PagePopupChromeClient::create(this);
     pageClients.chromeClient = m_chromeClient.get();
 
-    m_page = adoptPtrWillBeNoop(new Page(pageClients));
+    m_page = Page::create(pageClients);
     m_page->settings().setScriptEnabled(true);
     m_page->settings().setAllowScriptsToCloseWindows(true);
     m_page->settings().setDeviceSupportsTouch(m_webView->page()->settings().deviceSupportsTouch());

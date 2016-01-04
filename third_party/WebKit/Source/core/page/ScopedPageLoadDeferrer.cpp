@@ -32,41 +32,36 @@ namespace blink {
 
 ScopedPageLoadDeferrer::ScopedPageLoadDeferrer(Page* exclusion)
 {
-    const WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<Page>>& pages = Page::ordinaryPages();
-    for (const Page* page : pages) {
+    for (const Page* page : Page::ordinaryPages()) {
         if (page == exclusion || page->defersLoading())
             continue;
 
-        if (page->mainFrame()->isLocalFrame()) {
-            m_deferredFrames.append(page->deprecatedLocalMainFrame());
+        if (!page->mainFrame()->isLocalFrame())
+            continue;
 
-            // Ensure that we notify the client if the initial empty document is accessed before
-            // showing anything modal, to prevent spoofs while the modal window or sheet is visible.
-            page->deprecatedLocalMainFrame()->loader().notifyIfInitialDocumentAccessed();
-        }
+        m_deferredFrames.append(page->deprecatedLocalMainFrame());
+
+        // Ensure that we notify the client if the initial empty document is accessed before
+        // showing anything modal, to prevent spoofs while the modal window or sheet is visible.
+        page->deprecatedLocalMainFrame()->loader().notifyIfInitialDocumentAccessed();
     }
 
-    size_t count = m_deferredFrames.size();
-    for (size_t i = 0; i < count; ++i) {
-        if (Page* page = m_deferredFrames[i]->page())
-            page->setDefersLoading(true);
-    }
+    setDefersLoading(true);
     Platform::current()->currentThread()->scheduler()->suspendTimerQueue();
-}
-
-void ScopedPageLoadDeferrer::detach()
-{
-    for (size_t i = 0; i < m_deferredFrames.size(); ++i) {
-        if (Page* page = m_deferredFrames[i]->page())
-            page->setDefersLoading(false);
-    }
-
-    Platform::current()->currentThread()->scheduler()->resumeTimerQueue();
 }
 
 ScopedPageLoadDeferrer::~ScopedPageLoadDeferrer()
 {
-    detach();
+    setDefersLoading(false);
+    Platform::current()->currentThread()->scheduler()->resumeTimerQueue();
+}
+
+void ScopedPageLoadDeferrer::setDefersLoading(bool isDeferred)
+{
+    for (const auto& frame : m_deferredFrames) {
+        if (Page* page = frame->page())
+            page->setDefersLoading(isDeferred);
+    }
 }
 
 } // namespace blink

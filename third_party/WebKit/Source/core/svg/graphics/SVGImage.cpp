@@ -468,7 +468,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
         OwnPtrWillBeRawPtr<Page> page;
         {
             TRACE_EVENT0("blink", "SVGImage::dataChanged::createPage");
-            page = adoptPtrWillBeNoop(new Page(pageClients));
+            page = Page::create(pageClients);
             page->settings().setScriptEnabled(false);
             page->settings().setPluginsEnabled(false);
             page->settings().setAcceleratedCompositingEnabled(false);

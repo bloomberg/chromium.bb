@@ -38,7 +38,7 @@ public:
     ~ScopedPageLoadDeferrer();
 
 private:
-    void detach();
+    void setDefersLoading(bool);
 
     Vector<RefPtrWillBePersistent<LocalFrame>, 16> m_deferredFrames;
 };

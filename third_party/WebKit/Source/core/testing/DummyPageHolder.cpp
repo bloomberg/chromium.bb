@@ -68,7 +68,7 @@ DummyPageHolder::DummyPageHolder(
         pageClients.dragClient = pageClientsArgument->dragClient;
         pageClients.spellCheckerClient = pageClientsArgument->spellCheckerClient;
     }
-    m_page = adoptPtrWillBeNoop(new Page(pageClients));
+    m_page = Page::create(pageClients);
     Settings& settings = m_page->settings();
     // FIXME: http://crbug.com/363843. This needs to find a better way to
     // not create graphics layers.

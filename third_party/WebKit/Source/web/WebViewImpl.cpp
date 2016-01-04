@@ -514,7 +514,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     pageClients.dragClient = &m_dragClientImpl;
     pageClients.spellCheckerClient = &m_spellCheckerClientImpl;
 
-    m_page = adoptPtrWillBeNoop(new Page(pageClients));
+    m_page = Page::createOrdinary(pageClients);
     MediaKeysController::provideMediaKeysTo(*m_page, &m_mediaKeysClientImpl);
     provideSpeechRecognitionTo(*m_page, SpeechRecognitionClientProxy::create(client ? client->speechRecognizer() : nullptr));
     provideContextFeaturesTo(*m_page, ContextFeaturesClientImpl::create());
@@ -524,8 +524,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     m_page->setValidationMessageClient(ValidationMessageClientImpl::create(*this));
     provideWorkerGlobalScopeProxyProviderTo(*m_page, WorkerGlobalScopeProxyProviderImpl::create());
     StorageNamespaceController::provideStorageNamespaceTo(*m_page, &m_storageClientImpl);
-
-    m_page->makeOrdinary();
 
     if (m_client) {
         setVisibilityState(m_client->visibilityState(), true);

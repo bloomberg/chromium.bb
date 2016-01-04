@@ -262,13 +262,12 @@ Frame* FrameTree::find(const AtomicString& name) const
 
     // Search the entire tree of each of the other pages in this namespace.
     // FIXME: Is random order OK?
-    const WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<Page>>& pages = Page::ordinaryPages();
-    for (const Page* otherPage : pages) {
-        if (otherPage != page) {
-            for (Frame* frame = otherPage->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-                if (frame->tree().name() == name)
-                    return frame;
-            }
+    for (const Page* otherPage : Page::ordinaryPages()) {
+        if (otherPage == page)
+            continue;
+        for (Frame* frame = otherPage->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+            if (frame->tree().name() == name)
+                return frame;
         }
     }
 
