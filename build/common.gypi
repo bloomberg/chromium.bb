@@ -6373,6 +6373,7 @@
       # configured SDK to show properly in the Xcode UI, SDKROOT must be set
       # here at the project level.
       ['OS=="mac"', {
+        'ARCHS': [ 'x86_64' ],
         'conditions': [
           ['mac_sdk_path==""', {
             'SDKROOT': 'macosx<(mac_sdk)',  # -isysroot
@@ -6382,6 +6383,8 @@
         ],
       }],
       ['OS=="ios"', {
+        # Target both iPhone and iPad.
+        'TARGETED_DEVICE_FAMILY': '1,2',
         'conditions': [
           ['ios_sdk_path==""', {
             'conditions': [
@@ -6394,23 +6397,6 @@
             ],
           }, {
             'SDKROOT': '<(ios_sdk_path)',  # -isysroot
-          }],
-        ],
-      }],
-      ['OS=="ios"', {
-        # Target both iPhone and iPad.
-        'TARGETED_DEVICE_FAMILY': '1,2',
-      }, {  # OS!="ios"
-        'conditions': [
-          ['target_arch=="x64"', {
-            'ARCHS': [
-              'x86_64'
-            ],
-          }],
-          ['target_arch=="ia32"', {
-            'ARCHS': [
-              'i386'
-            ],
           }],
         ],
       }],
