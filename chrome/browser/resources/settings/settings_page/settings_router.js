@@ -95,6 +95,22 @@ Polymer({
       subpage: [],
       subpageTitles: [],
     },
+<if expr="chromeos">
+    {
+      url: '/networkDetail',
+      page: 'basic',
+      section: 'internet',
+      subpage: ['network-detail'],
+      subpageTitles: ['internetDetailPageTitle'],
+    },
+    {
+      url: '/knownNetworks',
+      page: 'basic',
+      section: 'internet',
+      subpage: ['known-networks'],
+      subpageTitles: ['internetKnownNetworksPageTitle'],
+    },
+</if>
     {
       url: '/fonts',
       page: 'basic',
@@ -168,20 +184,23 @@ Polymer({
       subpage: ['clear-browsing-data'],
       subpageTitles: ['clearBrowsingData'],
     },
+<if expr="chromeos">
     {
-      url: '/networkDetail',
-      page: 'basic',
-      section: 'internet',
-      subpage: ['network-detail'],
-      subpageTitles: ['internetDetailPageTitle'],
+      url: '/bluetoothAddDevice',
+      page: 'advanced',
+      section: 'bluetooth',
+      subpage: ['bluetooth-add-device'],
+      subpageTitles: ['bluetoothAddDevicePageTitle'],
     },
     {
-      url: '/knownNetworks',
-      page: 'basic',
-      section: 'internet',
-      subpage: ['known-networks'],
-      subpageTitles: ['internetKnownNetworksPageTitle'],
+      url: '/bluetoothAddDevice/bluetoothPairDevice',
+      page: 'advanced',
+      section: 'bluetooth',
+      subpage: ['bluetooth-add-device', 'bluetooth-pair-device'],
+      subpageTitles: ['bluetoothAddDevicePageTitle',
+                      'bluetoothPairDevicePageTitle'],
     },
+</if>
     {
       url: '/languages',
       page: 'advanced',

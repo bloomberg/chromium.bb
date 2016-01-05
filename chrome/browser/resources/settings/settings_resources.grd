@@ -538,6 +538,15 @@
                  file="settings.js"
                  type="chrome_html" />
       <if expr="chromeos">
+        <structure name="IDR_SETTINGS_BLUETOOTH_DEVICE_LIST_ITEM_CSS"
+                   file="bluetooth_page/bluetooth_device_list_item.css"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_BLUETOOTH_DEVICE_LIST_ITEM_HTML"
+                   file="bluetooth_page/bluetooth_device_list_item.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_BLUETOOTH_DEVICE_LIST_ITEM_JS"
+                   file="bluetooth_page/bluetooth_device_list_item.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_BLUETOOTH_PAGE_CSS"
                    file="bluetooth_page/bluetooth_page.css"
                    type="chrome_html" />

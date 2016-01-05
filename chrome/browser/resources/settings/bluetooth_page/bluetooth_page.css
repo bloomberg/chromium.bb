@@ -2,27 +2,21 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-iron-icon {
-  -webkit-margin-end: 10px;
+#addDevice {
+  color: blue;
 }
 
 #deviceList {
-  border: lightgrey solid 1px;
-  margin: 10px 0;
-  max-height: 400px;
-  padding: 10px;
+  -webkit-margin-start: 15px;
+  max-height: 300px;
+  min-height: 100px;
+  overflow-y: auto;
 }
 
-div.iron-selected,
-div.device:hover {
-  background-color: lightgrey;
+cr-expand-button {
+  -webkit-margin-end: 10px;
 }
 
-div.device:not(:hover) .hover-only {
-  visibility: hidden;
-}
-
-span.name[connected],
-span.name[connecting] {
-  font-weight: bold;
+iron-icon {
+  -webkit-margin-end: 10px;
 }

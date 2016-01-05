@@ -72,11 +72,14 @@ TEST_F('SettingsBluetoothPageBrowserTest', 'MAYBE_Bluetooth', function() {
       address: '10:00:00:00:00:01',
       name: 'FakePairedDevice1',
       paired: true,
+      connected: true,
     },
     {
       address: '10:00:00:00:00:02',
       name: 'FakePairedDevice2',
       paired: true,
+      connected: false,
+      connecting: true,
     },
     {
       address: '00:00:00:00:00:01',
@@ -133,13 +136,13 @@ TEST_F('SettingsBluetoothPageBrowserTest', 'MAYBE_Bluetooth', function() {
       self.bluetoothApi_.setDevicesForTest(fakeDevices_);
       Polymer.dom.flush();
       expectTrue(noDevices.hidden);
-      // Confirm that there are three devices in the list.
-      var devices = deviceList.querySelectorAll('iron-selector div');
-      assertEquals(3, devices.length);
-      // Only paired devices should be visible.
-      expectFalse(devices[0].hidden);
-      expectFalse(devices[1].hidden);
-      expectTrue(devices[2].hidden);
+      // Confirm that there are two paired devices in the list.
+      var devices = deviceList.querySelectorAll('bluetooth-device-list-item');
+      assertEquals(2, devices.length);
+      // Check the state of each device.
+      assertTrue(devices[0].device.connected);
+      assertFalse(devices[1].device.connected);
+      assertTrue(devices[1].device.connecting);
     });
   });
 

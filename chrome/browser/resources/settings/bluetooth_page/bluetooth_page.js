@@ -47,16 +47,26 @@ Polymer({
     },
 
     /** Whether bluetooth is enabled. */
-    bluetoothEnabled: {type: Boolean, value: false},
+    bluetoothEnabled: {
+      type: Boolean,
+      value: false,
+      observer: 'bluetoothEnabledChanged_',
+    },
+
+    /** Whether the device list is expanded. */
+    deviceListExpanded: {
+      type: Boolean,
+      value: false,
+    },
 
     /**
      * The ordered list of bluetooth devices.
      * @type {!Array<!chrome.bluetooth.Device>}
      */
-    deviceList: {type: Array, value: function() { return []; }},
-
-    /** The index of the selected device or -1 if none. */
-    selectedDevice: {type: Number, value: -1},
+    deviceList: {
+      type: Array,
+      value: function() { return []; },
+    },
 
     /**
      * Interface for bluetooth calls. May be overriden by tests.
@@ -148,6 +158,12 @@ Polymer({
     }
   },
 
+  bluetoothEnabledChanged_: function() {
+    // When bluetooth is enabled, auto-expand the device list.
+    if (this.bluetoothEnabled)
+      this.deviceListExpanded = true;
+  },
+
   /**
    * If bluetooth is enabled, request the complete list of devices and update
    * |deviceList|.
@@ -219,6 +235,23 @@ Polymer({
   },
 
   /**
+   * @param {!{detail: {action: string, device: !chrome.bluetooth.Device}}} e
+   * @private
+   */
+  onDeviceEvent_: function(e) {
+    var action = e.detail.action;
+    var device = e.detail.device;
+    if (action == 'connect')
+      this.connectDevice_(device);
+    else if (action == 'disconnect')
+      this.disconnectDevice_(device);
+    else if (action == 'remove')
+      this.forgetDevice_(device);
+    else
+      console.error('Unexected action: ' + action);
+  },
+
+  /**
    * @param {string} address
    * @return {number} The index of the device associated with |address| or -1.
    * @private
@@ -237,82 +270,68 @@ Polymer({
    * @return {string} The text to display for |device| in the device list.
    * @private
    */
-  getDeviceText_: function(device) {
-    if (device.connecting)
-      return this.i18n('bluetoothConnecting', device.name);
+  getDeviceName_: function(device) {
     return device.name || device.address;
   },
 
   /**
    * @param {!chrome.bluetooth.Device} device
-   * @return {boolean} True if |device| should be shown in the device list.
+   * @return {boolean}
    * @private
    */
-  showDeviceInList_: function(device) {
-    return !!device.paired || !!device.connected || !!device.connecting;
+  deviceIsPaired_: function(device) {
+    return !!device.paired;
   },
 
   /**
-   * @param {Object} deviceListChanges
-   * @return {boolean} True if deviceList is not empty.
+   * @param {Object} deviceListChanges Changes to the deviceList Array.
+   * @return {boolean} True if deviceList contains any paired devices.
    * @private
    */
   haveDevices_: function(deviceListChanges) {
-    return !!this.deviceList.length;
+    return this.deviceList.findIndex(function(d) { return d.paired; }) != -1;
   },
 
   /**
-   * @param {number} selectedDevice
-   * @return {boolean} True if a device is selected.
+   * @param {!chrome.bluetooth.Device} device
    * @private
    */
-  haveSelectedDevice_: function(selectedDevice) { return selectedDevice >= 0; },
-
-  /** @private */
-  onConnectTap_: function() {
-    if (this.selectedDevice < 0)
-      return;
-    var device = this.deviceList[this.selectedDevice];
-    if (!device)
-      return;
+  connectDevice_: function(device) {
     this.bluetoothPrivate.connect(device.address, function(result) {
       if (chrome.runtime.lastError) {
         console.error(
-            'Error connecting to: ' + device.address +
+            'Error connecting: ' + device.address +
             chrome.runtime.lastError.message);
       }
     });
   },
 
   /**
-   * @param {!Event} event
+   * @param {!chrome.bluetooth.Device} device
    * @private
    */
-  onRemoveTap_: function(event) {
-    var address = event.target.address;
-    var index = this.getDeviceIndex_(address);
-    if (index < 0)
-      return;
-    var device = this.deviceList[index];
-    if (device.connected) {
-      this.bluetoothPrivate.disconnectAll(address, function() {
-        if (chrome.runtime.lastError) {
-          console.error(
-              'Error disconnecting devce: ' + device.name + ': ' +
-              chrome.runtime.lastError.message);
-        }
-      });
-    } else {
-      this.bluetoothPrivate.forgetDevice(address, function() {
-        if (chrome.runtime.lastError) {
-          console.error(
-              'Error forgetting devce: ' + device.name + ': ' +
-                  chrome.runtime.lastError.message);
-        }
-      });
-    }
+  disconnectDevice_: function(device) {
+    this.bluetoothPrivate.disconnectAll(device.address, function() {
+      if (chrome.runtime.lastError) {
+        console.error(
+            'Error disconnecting: ' + device.address +
+            chrome.runtime.lastError.message);
+      }
+    });
   },
 
-  /** @private */
-  onAddDeviceTap_: function() {}
+  /**
+   * @param {!chrome.bluetooth.Device} device
+   * @private
+   */
+  forgetDevice_: function(device) {
+    this.bluetoothPrivate.forgetDevice(device.address, function() {
+      if (chrome.runtime.lastError) {
+        console.error(
+            'Error forgetting: ' + device.name + ': ' +
+                chrome.runtime.lastError.message);
+      }
+      this.updateDeviceList_();
+    }.bind(this));
+  },
 });

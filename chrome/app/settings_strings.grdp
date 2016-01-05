@@ -142,6 +142,9 @@
     <message name="IDS_SETTINGS_BLUETOOTH_ENABLE" desc="Label for control to enable or disable bluetooth.">
       Enable Bluetooth
     </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_REMOVE" desc="Label for removing (unpairing) a paired bluetooth device">
+      Remove from list
+    </message>
   </if>
 
   <!-- Certificate Manager Page -->
