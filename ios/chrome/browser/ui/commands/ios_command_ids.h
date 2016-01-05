@@ -12,9 +12,23 @@
 // If you change a given command's number, any NIB files that refer to it will
 // also need to be updated.
 
-// Do not use IDs below 40900 while the iOS build still depends on //chrome, to
-// avoid conflicts.
-// TODO(droger): Remove this comment once iOS no longer depends on //chrome.
+#define IDC_BACK                                       33000
+#define IDC_FORWARD                                    33001
+#define IDC_RELOAD                                     33002
+#define IDC_STOP                                       33006
+#define IDC_NEW_TAB                                    34014
+#define IDC_CLOSE_TAB                                  34015
+#define IDC_FULLSCREEN                                 34030
+#define IDC_BOOKMARK_PAGE                              35000
+#define IDC_VIEW_SOURCE                                35002
+#define IDC_PRINT                                      35003
+#define IDC_FIND                                       37000
+#define IDC_FIND_NEXT                                  37001
+#define IDC_FIND_PREVIOUS                              37002
+#define IDC_SHOW_HISTORY                               40010
+#define IDC_SHOW_BOOKMARK_MANAGER                      40011
+#define IDC_OPTIONS                                    40015
+#define IDC_HELP_PAGE_VIA_MENU                         40020
 #define IDC_SHOW_TOOLS_MENU                            40900
 #define IDC_TOGGLE_TAB_SWITCHER                        40901
 #define IDC_VOICE_SEARCH                               40902
@@ -59,8 +73,5 @@
 #define IDC_SHOW_SAVE_PASSWORDS_SETTINGS               40945
 #define IDC_READER_MODE                                40947
 #define IDC_RATE_THIS_APP                              40948
-// Do not use IDs above 40999 while the iOS build still depends on //chrome, to
-// avoid conflicts.
-// TODO(droger): Remove this comment once iOS no longer depends on //chrome.
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_IOS_COMMAND_IDS_H_
