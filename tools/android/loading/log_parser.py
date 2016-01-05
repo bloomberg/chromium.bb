@@ -14,7 +14,8 @@ Timing = collections.namedtuple(
     'Timing',
     ['connectEnd', 'connectStart', 'dnsEnd', 'dnsStart', 'proxyEnd',
      'proxyStart', 'receiveHeadersEnd', 'requestTime', 'sendEnd', 'sendStart',
-     'sslEnd', 'sslStart', 'workerReady', 'workerStart'])
+     'serviceWorkerFetchEnd', 'serviceWorkerFetchReady',
+     'serviceWorkerFetchStart', 'sslEnd', 'sslStart'])
 
 
 class Resource(object):
