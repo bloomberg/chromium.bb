@@ -105,15 +105,15 @@ PaintAggregator::PaintUpdate PaintAggregator::GetPendingUpdate() {
   // Include the scroll damage (if any) in the paint rects.
   // Code invalidates damaged rect here, it pick it up from the list of paint
   // rects in the next block.
-  if (ret.has_scroll  && !update_.synthesized_scroll_damage_rect_) {
+  if (ret.has_scroll && !update_.synthesized_scroll_damage_rect_) {
     update_.synthesized_scroll_damage_rect_ = true;
     pp::Rect scroll_damage = update_.GetScrollDamage();
     InvalidateRectInternal(scroll_damage, false);
   }
 
   ret.paint_rects.reserve(update_.paint_rects.size() + 1);
-  for (size_t i = 0; i < update_.paint_rects.size(); i++)
-    ret.paint_rects.push_back(update_.paint_rects[i]);
+  ret.paint_rects.insert(ret.paint_rects.end(), update_.paint_rects.begin(),
+                         update_.paint_rects.end());
 
   return ret;
 }
@@ -217,14 +217,12 @@ void PaintAggregator::ScrollRect(const pp::Rect& clip_rect,
     }
   }
 
-  for (size_t i = 0; i < leftover_rects.size(); ++i)
-    InvalidateRectInternal(leftover_rects[i], false);
+  for (const auto& leftover_rect : leftover_rects)
+    InvalidateRectInternal(leftover_rect, false);
 
-  for (size_t i = 0; i < update_.ready_rects.size(); ++i) {
-    if (update_.scroll_rect.Contains(update_.ready_rects[i].rect)) {
-      update_.ready_rects[i].rect =
-          ScrollPaintRect(update_.ready_rects[i].rect, amount);
-    }
+  for (auto& update_rect : update_.ready_rects) {
+    if (update_.scroll_rect.Contains(update_rect.rect))
+      update_rect.rect = ScrollPaintRect(update_rect.rect, amount);
   }
 
   if (update_.synthesized_scroll_damage_rect_) {

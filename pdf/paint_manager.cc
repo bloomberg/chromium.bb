@@ -211,8 +211,7 @@ void PaintManager::DoPaint() {
   std::vector<PaintAggregator::ReadyRect> ready_now;
   if (pending.empty()) {
     std::vector<PaintAggregator::ReadyRect> temp_ready;
-    for (size_t i = 0; i < ready.size(); ++i)
-      temp_ready.push_back(ready[i]);
+    temp_ready.insert(temp_ready.end(), ready.begin(), ready.end());
     aggregator_.SetIntermediateResults(temp_ready, pending);
     ready_now = aggregator_.GetReadyRects();
     aggregator_.ClearPendingUpdate();
@@ -224,17 +223,17 @@ void PaintManager::DoPaint() {
     view_size_changed_waiting_for_paint_ = false;
   } else {
     std::vector<PaintAggregator::ReadyRect> ready_later;
-    for (size_t i = 0; i < ready.size(); ++i) {
+    for (const auto& ready_rect : ready) {
       // Don't flush any part (i.e. scrollbars) if we're resizing the browser,
       // as that'll lead to flashes.  Until we flush, the browser will use the
       // previous image, but if we flush, it'll revert to using the blank image.
       // We make an exception for the first paint since we want to show the
       // default background color instead of the pepper default of black.
-      if (ready[i].flush_now &&
+      if (ready_rect.flush_now &&
           (!view_size_changed_waiting_for_paint_ || first_paint_)) {
-        ready_now.push_back(ready[i]);
+        ready_now.push_back(ready_rect);
       } else {
-        ready_later.push_back(ready[i]);
+        ready_later.push_back(ready_rect);
       }
     }
     // Take the rectangles, except the ones that need to be flushed right away,
@@ -248,9 +247,9 @@ void PaintManager::DoPaint() {
     }
   }
 
-  for (size_t i = 0; i < ready_now.size(); ++i) {
+  for (const auto& ready_rect : ready_now) {
     graphics_.PaintImageData(
-        ready_now[i].image_data, ready_now[i].offset, ready_now[i].rect);
+        ready_rect.image_data, ready_rect.offset, ready_rect.rect);
   }
 
   int32_t result = graphics_.Flush(

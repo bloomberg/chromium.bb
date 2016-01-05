@@ -57,7 +57,7 @@ std::vector<pp::Rect> PDFiumRange::GetScreenRects(const pp::Point& offset,
   return cached_screen_rects_;
 }
 
-base::string16 PDFiumRange::GetText() {
+base::string16 PDFiumRange::GetText() const {
   int index = char_index_;
   int count = char_count_;
   base::string16 rv;

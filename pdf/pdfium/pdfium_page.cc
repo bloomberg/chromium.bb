@@ -175,7 +175,7 @@ base::Value* PDFiumPage::GetTextBoxAsValue(double page_height,
     pp::Rect rect(
         PageToScreen(pp::Point(), 1.0, left, top, right, bottom, rotation));
     GetLinks(rect, &targets);
-    area = targets.size() == 0 ? TEXT_AREA : WEBLINK_AREA;
+    area = targets.empty() ? TEXT_AREA : WEBLINK_AREA;
   }
 
   int char_index = FPDFText_GetCharIndexAtPos(GetTextPage(), left, top,
@@ -198,17 +198,17 @@ base::Value* PDFiumPage::GetTextBoxAsValue(double page_height,
     text_nodes->Append(CreateURLNode(text_utf8, targets[0].url));
   } else if (area == WEBLINK_AREA && !link) {
     size_t start = 0;
-    for (size_t i = 0; i < targets.size(); ++i) {
+    for (const auto& target : targets) {
       // If there is an extra NULL character at end, find() will not return any
       // matches. There should not be any though.
-      if (!targets[i].url.empty())
-        DCHECK(targets[i].url[targets[i].url.size() - 1] != '\0');
+      if (!target.url.empty())
+        DCHECK_NE(target.url.back(), '\0');
 
       // PDFium may change the case of generated links.
-      std::string lowerCaseURL = base::ToLowerASCII(targets[i].url);
+      std::string lowerCaseURL = base::ToLowerASCII(target.url);
       std::string lowerCaseText = base::ToLowerASCII(text_utf8);
       size_t pos = lowerCaseText.find(lowerCaseURL, start);
-      size_t length = targets[i].url.size();
+      size_t length = target.url.size();
       if (pos == std::string::npos) {
         // Check if the link is a "mailto:" URL
         if (lowerCaseURL.compare(0, 7, "mailto:") == 0) {
@@ -223,15 +223,15 @@ base::Value* PDFiumPage::GetTextBoxAsValue(double page_height,
       }
 
       std::string before_text = text_utf8.substr(start, pos - start);
-      if (before_text.size() > 0)
+      if (!before_text.empty())
         text_nodes->Append(CreateTextNode(before_text));
       std::string link_text = text_utf8.substr(pos, length);
-      text_nodes->Append(CreateURLNode(link_text, targets[i].url));
+      text_nodes->Append(CreateURLNode(link_text, target.url));
 
       start = pos + length;
     }
     std::string before_text = text_utf8.substr(start);
-    if (before_text.size() > 0)
+    if (!before_text.empty())
       text_nodes->Append(CreateTextNode(before_text));
   } else {
     text_nodes->Append(CreateTextNode(text_utf8));
@@ -328,9 +328,9 @@ int PDFiumPage::GetCharCount() {
 }
 
 PDFiumPage::Area PDFiumPage::GetLinkTarget(
-    FPDF_LINK link, PDFiumPage::LinkTarget* target) {
+    FPDF_LINK link, PDFiumPage::LinkTarget* target) const {
   FPDF_DEST dest = FPDFLink_GetDest(engine_->doc(), link);
-  if (dest != NULL)
+  if (dest)
     return GetDestinationTarget(dest, target);
 
   FPDF_ACTION action = FPDFLink_GetAction(link);
@@ -368,11 +368,9 @@ PDFiumPage::Area PDFiumPage::GetLinkTarget(
 }
 
 PDFiumPage::Area PDFiumPage::GetDestinationTarget(
-    FPDF_DEST destination, PDFiumPage::LinkTarget* target) {
-  int page_index = FPDFDest_GetPageIndex(engine_->doc(), destination);
-  if (target) {
-    target->page = page_index;
-  }
+    FPDF_DEST destination, PDFiumPage::LinkTarget* target) const {
+  if (target)
+    target->page = FPDFDest_GetPageIndex(engine_->doc(), destination);
   return DOCLINK_AREA;
 }
 
@@ -390,8 +388,8 @@ int PDFiumPage::GetLink(int char_index, PDFiumPage::LinkTarget* target) {
   pp::Point origin(
       PageToScreen(pp::Point(), 1.0, left, top, right, bottom, 0).point());
   for (size_t i = 0; i < links_.size(); ++i) {
-    for (size_t j = 0; j < links_[i].rects.size(); ++j) {
-      if (links_[i].rects[j].Contains(origin)) {
+    for (const auto& rect : links_[i].rects) {
+      if (rect.Contains(origin)) {
         if (target)
           target->url = links_[i].url;
         return i;
@@ -403,16 +401,15 @@ int PDFiumPage::GetLink(int char_index, PDFiumPage::LinkTarget* target) {
 
 std::vector<int> PDFiumPage::GetLinks(pp::Rect text_area,
                                       std::vector<LinkTarget>* targets) {
+  std::vector<int> links;
   if (!available_)
-    return std::vector<int>();
+    return links;
 
   CalculateLinks();
 
-  std::vector<int> links;
-
   for (size_t i = 0; i < links_.size(); ++i) {
-    for (size_t j = 0; j < links_[i].rects.size(); ++j) {
-      if (links_[i].rects[j].Intersects(text_area)) {
+    for (const auto& rect : links_[i].rects) {
+      if (rect.Intersects(text_area)) {
         if (targets) {
           LinkTarget target;
           target.url = links_[i].url;
@@ -487,7 +484,7 @@ pp::Rect PDFiumPage::PageToScreen(const pp::Point& offset,
                                   double top,
                                   double right,
                                   double bottom,
-                                  int rotation) {
+                                  int rotation) const {
   if (!available_)
     return pp::Rect();
 

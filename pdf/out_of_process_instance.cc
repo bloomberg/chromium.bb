@@ -702,11 +702,11 @@ void OutOfProcessInstance::OnPaint(
 
   engine_->PrePaint();
 
-  for (size_t i = 0; i < paint_rects.size(); i++) {
+  for (const auto& paint_rect : paint_rects) {
     // Intersect with plugin area since there could be pending invalidates from
     // when the plugin area was larger.
     pp::Rect rect =
-        paint_rects[i].Intersect(pp::Rect(pp::Point(), plugin_size_));
+        paint_rect.Intersect(pp::Rect(pp::Point(), plugin_size_));
     if (rect.IsEmpty())
       continue;
 
@@ -717,14 +717,14 @@ void OutOfProcessInstance::OnPaint(
       std::vector<pp::Rect> pdf_ready;
       std::vector<pp::Rect> pdf_pending;
       engine_->Paint(pdf_rect, &image_data_, &pdf_ready, &pdf_pending);
-      for (size_t j = 0; j < pdf_ready.size(); ++j) {
-        pdf_ready[j].Offset(available_area_.point());
+      for (auto& ready_rect : pdf_ready) {
+        ready_rect.Offset(available_area_.point());
         ready->push_back(
-            PaintManager::ReadyRect(pdf_ready[j], image_data_, false));
+            PaintManager::ReadyRect(ready_rect, image_data_, false));
       }
-      for (size_t j = 0; j < pdf_pending.size(); ++j) {
-        pdf_pending[j].Offset(available_area_.point());
-        pending->push_back(pdf_pending[j]);
+      for (auto& pending_rect : pdf_pending) {
+        pending_rect.Offset(available_area_.point());
+        pending->push_back(pending_rect);
       }
     }
 
@@ -738,10 +738,10 @@ void OutOfProcessInstance::OnPaint(
       FillRect(region, background_color_);
     }
 
-    for (size_t j = 0; j < background_parts_.size(); ++j) {
-      pp::Rect intersection = background_parts_[j].location.Intersect(rect);
+    for (const auto& background_part : background_parts_) {
+      pp::Rect intersection = background_part.location.Intersect(rect);
       if (!intersection.IsEmpty()) {
-        FillRect(intersection, background_parts_[j].color);
+        FillRect(intersection, background_part.color);
         ready->push_back(
             PaintManager::ReadyRect(intersection, image_data_, false));
       }
@@ -922,8 +922,8 @@ void OutOfProcessInstance::UpdateTickMarks(
     const std::vector<pp::Rect>& tickmarks) {
   float inverse_scale = 1.0f / device_scale_;
   std::vector<pp::Rect> scaled_tickmarks = tickmarks;
-  for (size_t i = 0; i < scaled_tickmarks.size(); i++)
-    ScaleRect(inverse_scale, &scaled_tickmarks[i]);
+  for (auto& tickmark : scaled_tickmarks)
+    ScaleRect(inverse_scale, &tickmark);
   tickmarks_ = scaled_tickmarks;
 }
 

@@ -35,7 +35,7 @@ void ChunkStream::Preallocate(size_t stream_size) {
   stream_size_ = stream_size;
 }
 
-size_t ChunkStream::GetSize() {
+size_t ChunkStream::GetSize() const {
   return data_.size();
 }
 

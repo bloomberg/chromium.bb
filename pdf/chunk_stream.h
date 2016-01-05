@@ -23,7 +23,7 @@ class ChunkStream {
   void Clear();
 
   void Preallocate(size_t stream_size);
-  size_t GetSize();
+  size_t GetSize() const;
 
   bool WriteData(size_t offset, void* buffer, size_t size);
   bool ReadData(size_t offset, size_t size, void* buffer) const;

@@ -34,13 +34,13 @@ class PDFiumRange {
                                        int rotation);
 
   // Gets the string of characters in this range.
-  base::string16 GetText();
+  base::string16 GetText() const;
 
  private:
   PDFiumPage* page_;
   // Index of first character.
   int char_index_;
-  // How many characters are part of this range (negative if  backwards).
+  // How many characters are part of this range (negative if backwards).
   int char_count_;
 
   // Cache of ScreenRect, and the associated variables used when caching it.
