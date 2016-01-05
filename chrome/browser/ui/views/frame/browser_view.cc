@@ -237,9 +237,13 @@ void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
     PaintHorizontalBorder(canvas, view, true, separator_color);
   }
 
+  // For the bottom separator, increase the luminance. Either double it or halve
+  // the distance to 1.0, whichever is less of a difference.
+  color_utils::HSL hsl;
+  color_utils::SkColorToHSL(separator_color, &hsl);
+  hsl.l = std::min((hsl.l + 1) / 2, hsl.l * 2);
   BrowserView::Paint1pxHorizontalLine(
-      canvas,
-      SkColorSetA(separator_color, SkColorGetA(separator_color) / 2),
+      canvas, color_utils::HSLToSkColor(hsl, SK_AlphaOPAQUE),
       view->GetLocalBounds(), true);
 }
 
