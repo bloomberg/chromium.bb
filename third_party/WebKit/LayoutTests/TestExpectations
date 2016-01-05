@@ -746,13 +746,6 @@ crbug.com/555703 [ Android ] http/tests/media/media-source/mediasource-config-ch
 crbug.com/555703 [ Android ] http/tests/media/media-source/mediasource-config-change-mp4-v-framerate.html [ Failure ]
 crbug.com/555703 [ Android ] http/tests/media/media-source/mediasource-config-change-mp4-v-framesize.html [ Failure ]
 
-# http://crrev.com/1557743002
-crbug.com/387166 css1/box_properties/float_on_text_elements.html [ NeedsRebaseline ]
-crbug.com/387166 css2.1/t0905-c5525-fltwidth-00-c-g.html [ NeedsRebaseline ]
-crbug.com/387166 fast/text/atsui-spacing-features.html [ NeedsRebaseline ]
-crbug.com/387166 fast/text/international/thai-line-breaks.html [ NeedsRebaseline ]
-crbug.com/387166 svg/text/bidi-text-anchor-direction.svg [ NeedsRebaseline ]
-
 crbug.com/517449 [ Android ] css3/images/optimize-contrast-image.html [ Failure ]
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]

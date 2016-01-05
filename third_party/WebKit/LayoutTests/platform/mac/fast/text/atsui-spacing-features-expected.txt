@@ -4,17 +4,17 @@ layer at (0,0) size 800x372
   LayoutBlockFlow {HTML} at (0,0) size 800x372
     LayoutBlockFlow {BODY} at (8,16) size 784x348
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 180x18
-          text run at (0,0) width 180: "Test for regressions against "
-        LayoutInline {I} at (0,0) size 776x36
+        LayoutText {#text} at (0,0) size 179x18
+          text run at (0,0) width 179: "Test for regressions against "
+        LayoutInline {I} at (0,0) size 772x36
           LayoutInline {A} at (0,0) size 354x18 [color=#0000EE]
-            LayoutText {#text} at (179,0) size 354x18
-              text run at (179,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=3922"
-          LayoutText {#text} at (532,0) size 776x36
-            text run at (532,0) width 244: " Variable word/letter spacing and full"
-            text run at (0,18) width 330: "justification not supported for ATSUI-rendered text"
-        LayoutText {#text} at (329,18) size 5x18
-          text run at (329,18) width 5: "."
+            LayoutText {#text} at (178,0) size 354x18
+              text run at (178,0) width 354: "http://bugzilla.opendarwin.org/show_bug.cgi?id=3922"
+          LayoutText {#text} at (531,0) size 772x36
+            text run at (531,0) width 241: " Variable word/letter spacing and full"
+            text run at (0,18) width 327: "justification not supported for ATSUI-rendered text"
+        LayoutText {#text} at (326,18) size 5x18
+          text run at (326,18) width 5: "."
       LayoutBlockFlow (anonymous) at (0,52) size 784x18
         LayoutText {#text} at (0,0) size 517x18
           text run at (0,0) width 517: "Each green box should be identical to the blue box it follows, except for accents."
@@ -29,8 +29,8 @@ layer at (0,0) size 800x372
               LayoutText {#text} at (56,1) size 92x18
                 text run at (56,1) width 92: "Letter spacing"
             LayoutTableCell {TD} at (414,2) size 204x20 [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (62,1) size 80x18
-                text run at (62,1) width 80: "Justification"
+              LayoutText {#text} at (63,1) size 78x18
+                text run at (63,1) width 78: "Justification"
           LayoutTableRow {TR} at (0,24) size 620x234
             LayoutTableCell {TD} at (2,24) size 204x180 [r=1 c=0 rs=1 cs=1]
               LayoutBlockFlow {DIV} at (1,1) size 202x178
