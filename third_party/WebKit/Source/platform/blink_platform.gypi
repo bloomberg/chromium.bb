@@ -438,6 +438,8 @@
       'fonts/shaping/ShapeCache.h',
       'fonts/shaping/ShapeResult.cpp',
       'fonts/shaping/ShapeResult.h',
+      'fonts/shaping/ShapeResultBuffer.cpp',
+      'fonts/shaping/ShapeResultBuffer.h',
       'fonts/shaping/ShapeResultInlineHeaders.h',
       'fonts/shaping/ShapeResultTestInfo.cpp',
       'fonts/shaping/ShapeResultTestInfo.h',

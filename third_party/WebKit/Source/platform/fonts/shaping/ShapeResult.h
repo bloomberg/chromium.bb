@@ -31,21 +31,20 @@
 #ifndef ShapeResult_h
 #define ShapeResult_h
 
-#include "platform/geometry/FloatPoint.h"
+#include "platform/PlatformExport.h"
 #include "platform/geometry/FloatRect.h"
-#include "platform/text/TextRun.h"
+#include "platform/text/TextDirection.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
+#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
 class Font;
-class GlyphBuffer;
-class ShapeResultBuffer;
 class SimpleFontData;
-class HarfBuzzShaper;
+class TextRun;
 struct GlyphData;
 
 class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
@@ -60,26 +59,16 @@ public:
         const TextRun&, float positionOffset, unsigned count);
     ~ShapeResult();
 
-    float width() { return m_width; }
-    FloatRect bounds() { return m_glyphBoundingBox; }
+    float width() const { return m_width; }
+    const FloatRect& bounds() const { return m_glyphBoundingBox; }
     unsigned numCharacters() const { return m_numCharacters; }
     void fallbackFonts(HashSet<const SimpleFontData*>*) const;
     bool hasVerticalOffsets() const { return m_hasVerticalOffsets; }
 
-    // TODO(fmalita): relocate these to ShapeResultBuffer
-    static int offsetForPosition(const ShapeResultBuffer&,
-        const TextRun&, float targetX);
-    static float fillGlyphBuffer(const ShapeResultBuffer&,
-        GlyphBuffer*, const TextRun&, unsigned from, unsigned to);
-    static float fillGlyphBufferForTextEmphasis(const ShapeResultBuffer&,
-        GlyphBuffer*, const TextRun&, const GlyphData* emphasisData,
-        unsigned from, unsigned to);
-    static FloatRect selectionRect(const ShapeResultBuffer&,
-        TextDirection, float totalWidth, const FloatPoint&, int height,
-        unsigned from, unsigned to);
-
     // For memory reporting.
     size_t byteSize();
+
+    int offsetForPosition(float targetX) const;
 
 protected:
     struct RunInfo;
@@ -88,19 +77,6 @@ protected:
 #endif
 
     ShapeResult(const Font*, unsigned numCharacters, TextDirection);
-
-    // TODO(fmalita): relocate these to ShapeResultBuffer
-    int offsetForPosition(float targetX);
-    template<TextDirection>
-    static float fillGlyphBufferForRun(GlyphBuffer*, const RunInfo*,
-        float initialAdvance, unsigned from, unsigned to, unsigned runOffset);
-
-    static float fillGlyphBufferForTextEmphasisRun(GlyphBuffer*, const RunInfo*,
-        const TextRun&, const GlyphData*, float initialAdvance,
-        unsigned from, unsigned to, unsigned runOffset);
-
-    static float fillFastHorizontalGlyphBuffer(const ShapeResultBuffer&,
-        GlyphBuffer*, TextDirection);
 
     float m_width;
     FloatRect m_glyphBoundingBox;
@@ -119,30 +95,7 @@ protected:
     unsigned m_hasVerticalOffsets : 1;
 
     friend class HarfBuzzShaper;
-};
-
-class ShapeResultBuffer {
-    WTF_MAKE_NONCOPYABLE(ShapeResultBuffer);
-    STACK_ALLOCATED();
-public:
-    ShapeResultBuffer()
-        : m_hasVerticalOffsets(false) { }
-
-    void appendResult(PassRefPtr<ShapeResult> result)
-    {
-        m_hasVerticalOffsets |= result->hasVerticalOffsets();
-        m_results.append(result);
-    }
-
-    bool hasVerticalOffsets() const { return m_hasVerticalOffsets; }
-
-    // Empirically, cases where we get more than 50 ShapeResults are extremely rare.
-    typedef Vector<RefPtr<ShapeResult>, 64> ShapeResultVector;
-    const ShapeResultVector& results() const { return m_results; }
-
-private:
-    ShapeResultVector m_results;
-    bool m_hasVerticalOffsets;
+    friend class ShapeResultBuffer;
 };
 
 } // namespace blink

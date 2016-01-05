@@ -29,6 +29,7 @@
 #include "platform/fonts/shaping/CachingWordShapeIterator.h"
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
 #include "platform/fonts/shaping/ShapeCache.h"
+#include "platform/fonts/shaping/ShapeResultBuffer.h"
 #include "wtf/text/CharacterNames.h"
 
 namespace blink {
@@ -81,7 +82,7 @@ int CachingWordShaper::offsetForPosition(const Font* font, const TextRun& run, f
     ShapeResultBuffer buffer;
     shapeResultsForRun(m_shapeCache, font, run, nullptr, &buffer);
 
-    return ShapeResult::offsetForPosition(buffer, run, targetX);
+    return buffer.offsetForPosition(run, targetX);
 }
 
 float CachingWordShaper::fillGlyphBuffer(const Font* font, const TextRun& run,
@@ -91,7 +92,7 @@ float CachingWordShaper::fillGlyphBuffer(const Font* font, const TextRun& run,
     ShapeResultBuffer buffer;
     shapeResultsForRun(m_shapeCache, font, run, fallbackFonts, &buffer);
 
-    return ShapeResult::fillGlyphBuffer(buffer, glyphBuffer, run, from, to);
+    return buffer.fillGlyphBuffer(glyphBuffer, run, from, to);
 }
 
 float CachingWordShaper::fillGlyphBufferForTextEmphasis(const Font* font,
@@ -101,8 +102,7 @@ float CachingWordShaper::fillGlyphBufferForTextEmphasis(const Font* font,
     ShapeResultBuffer buffer;
     shapeResultsForRun(m_shapeCache, font, run, nullptr, &buffer);
 
-    return ShapeResult::fillGlyphBufferForTextEmphasis(buffer, glyphBuffer,
-        run, emphasisData, from, to);
+    return buffer.fillGlyphBufferForTextEmphasis(glyphBuffer, run, emphasisData, from, to);
 }
 
 FloatRect CachingWordShaper::selectionRect(const Font* font, const TextRun& run,
@@ -112,8 +112,7 @@ FloatRect CachingWordShaper::selectionRect(const Font* font, const TextRun& run,
     float totalWidth = shapeResultsForRun(m_shapeCache, font, run, nullptr,
         &buffer);
 
-    return ShapeResult::selectionRect(buffer, run.direction(), totalWidth,
-        point, height, from, to);
+    return buffer.selectionRect(run.direction(), totalWidth, point, height, from, to);
 }
 
 }; // namespace blink
