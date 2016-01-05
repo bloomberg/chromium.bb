@@ -144,7 +144,7 @@ class Trybot(command_line.ArgParseCommand):
       '--trybot', choices=available_bots,
       help=('specify which bots to run telemetry benchmarks on. '
             ' Allowed values are:\n'+'\n'.join(available_bots)),
-      metavar='')
+      metavar='', required=True)
 
   def Run(self, options, extra_args=None):
     """Sends a tryjob to a perf trybot.
