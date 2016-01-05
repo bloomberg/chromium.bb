@@ -40,9 +40,15 @@ struct GlyphOverflow {
     {
     }
 
-    bool isZero() const
+    bool isApproximatelyZero() const
     {
-        return !left && !right && !top && !bottom;
+        // Overflow can be expensive so we try to avoid it. Small amounts of
+        // overflow is imperceptible and is typically masked by pixel snapping.
+        static const float kApproximatelyNoOverflow = 0.0625f;
+        return std::fabs(left) < kApproximatelyNoOverflow
+            && std::fabs(right) < kApproximatelyNoOverflow
+            && std::fabs(top) < kApproximatelyNoOverflow
+            && std::fabs(bottom) < kApproximatelyNoOverflow;
     }
 
     void setFromBounds(const FloatRect& bounds, float ascent, float descent, float textWidth)

@@ -947,6 +947,8 @@ crbug.com/462689 [ Linux ] fast/text/unicode-variation-selector.html [ Failure ]
 # Temporary, until WebAXObjectProxy support lands.
 crbug.com/421771 accessibility/inline-text-box-next-on-line.html [ Skip ]
 
+crbug.com/571404 [ Mac ] fast/repaint/line-flow-with-floats-10.html [ NeedsRebaseline ]
+
 # Disabled briefly until test runner support lands.
 crbug.com/479533 accessibility/show-context-menu.html [ Skip ]
 crbug.com/479533 accessibility/show-context-menu-shadowdom.html [ Skip ]

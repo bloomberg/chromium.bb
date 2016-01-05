@@ -1112,8 +1112,8 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
     GlyphOverflow glyphOverflow;
     glyphOverflow.setFromBounds(glyphBounds, f.fontMetrics().floatAscent(), f.fontMetrics().floatDescent(), m_maxWidth);
     // We shouldn't change our mind once we "know".
-    ASSERT(!m_knownToHaveNoOverflowAndNoFallbackFonts || (fallbackFonts.isEmpty() && glyphOverflow.isZero()));
-    m_knownToHaveNoOverflowAndNoFallbackFonts = fallbackFonts.isEmpty() && glyphOverflow.isZero();
+    ASSERT(!m_knownToHaveNoOverflowAndNoFallbackFonts || (fallbackFonts.isEmpty() && glyphOverflow.isApproximatelyZero()));
+    m_knownToHaveNoOverflowAndNoFallbackFonts = fallbackFonts.isEmpty() && glyphOverflow.isApproximatelyZero();
 
     clearPreferredLogicalWidthsDirty();
 }
