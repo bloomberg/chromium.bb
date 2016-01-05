@@ -57,6 +57,11 @@ class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap {
   // STOPPING
   //   StopInstance() ->
   // STOPPED
+  //
+  // When the instance crashes while it was ready, it will be stopped:
+  //   READY -> STOPPING -> STOPPED
+  // and then restarted:
+  //   STOPPED -> SOCKET_CREATING -> ... -> READY).
   enum class State {
     // ARC is not currently running.
     STOPPED,

@@ -73,23 +73,29 @@ class ArcBridgeService : public ArcBridgeHost {
     // Called whenever ARC's availability has changed for this system.
     virtual void OnAvailableChanged(bool available) {}
 
-    // Called whenever the ARC app list is ready.
+    // Called whenever the ARC app interface state changes.
     virtual void OnAppInstanceReady() {}
+    virtual void OnAppInstanceClosed() {}
 
-    // Called whenever the ARC input is ready.
+    // Called whenever the ARC input interface state changes.
     virtual void OnInputInstanceReady() {}
+    virtual void OnInputInstanceClosed() {}
 
-    // Called whenever the ARC notification is ready.
+    // Called whenever the ARC notification interface state changes.
     virtual void OnNotificationsInstanceReady() {}
+    virtual void OnNotificationsInstanceClosed() {}
 
-    // Called whenever the ARC power is ready.
+    // Called whenever the ARC power interface state changes.
     virtual void OnPowerInstanceReady() {}
+    virtual void OnPowerInstanceClosed() {}
 
-    // Called whenever the ARC process is ready.
+    // Called whenever the ARC process interface state changes.
     virtual void OnProcessInstanceReady() {}
+    virtual void OnProcessInstanceClosed() {}
 
-    // Called whenever the ARC settings is ready.
+    // Called whenever the ARC settings interface state changes.
     virtual void OnSettingsInstanceReady() {}
+    virtual void OnSettingsInstanceClosed() {}
 
    protected:
     virtual ~Observer() {}
@@ -172,11 +178,23 @@ class ArcBridgeService : public ArcBridgeHost {
 
   bool CalledOnValidThread();
 
+  // Closes all Mojo channels.
+  void CloseAllChannels();
+
  private:
   friend class ArcBridgeTest;
   FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Basic);
   FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Prerequisites);
   FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, ShutdownMidStartup);
+  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Restart);
+
+  // Called when one of the individual channels is closed.
+  void CloseAppChannel();
+  void CloseInputChannel();
+  void CloseNotificationsChannel();
+  void ClosePowerChannel();
+  void CloseProcessChannel();
+  void CloseSettingsChannel();
 
   // Callbacks for QueryVersion.
   void OnAppVersionReady(int32_t version);

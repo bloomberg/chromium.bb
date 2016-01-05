@@ -13,11 +13,22 @@ FakeArcBridgeInstance::~FakeArcBridgeInstance() {}
 
 void FakeArcBridgeInstance::Init(ArcBridgeHostPtr host) {
   host_ptr_ = std::move(host);
+  init_calls_++;
+}
+
+void FakeArcBridgeInstance::Unbind() {
+  host_ptr_.reset();
+  if (binding_.is_bound())
+    binding_.Close();
 }
 
 void FakeArcBridgeInstance::Bind(
     mojo::InterfaceRequest<ArcBridgeInstance> interface_request) {
   binding_.Bind(std::move(interface_request));
+}
+
+void FakeArcBridgeInstance::WaitForInitCall() {
+  binding_.WaitForIncomingMethodCall();
 }
 
 }  // namespace arc

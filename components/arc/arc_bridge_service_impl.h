@@ -37,9 +37,7 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
 
  private:
   friend class ArcBridgeTest;
-  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Basic);
-  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Prerequisites);
-  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, ShutdownMidStartup);
+  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Restart);
 
   // If all pre-requisites are true (ARC is available, it has been enabled, and
   // the session has started), and ARC is stopped, start ARC. If ARC is running
@@ -56,6 +54,10 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
   // DBus callbacks.
   void OnArcAvailable(bool available);
 
+  // Called when the bridge channel is closed. This typically only happens when
+  // the ARC instance crashes. This is not called during shutdown.
+  void OnChannelClosed();
+
   scoped_ptr<ArcBridgeBootstrap> bootstrap_;
 
   // Mojo endpoints.
@@ -64,6 +66,10 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
 
   // If the user's session has started.
   bool session_started_;
+
+  // If the instance had already been started but the connection to it was
+  // lost. This should make the instance restart.
+  bool reconnect_ = false;
 
   // WeakPtrFactory to use callbacks.
   base::WeakPtrFactory<ArcBridgeServiceImpl> weak_factory_;

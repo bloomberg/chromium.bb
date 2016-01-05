@@ -67,6 +67,17 @@ void ArcBridgeService::OnAppVersionReady(int32_t version) {
   DCHECK(CalledOnValidThread());
   app_ptr_ = std::move(temporary_app_ptr_);
   FOR_EACH_OBSERVER(Observer, observer_list(), OnAppInstanceReady());
+  app_ptr_.set_connection_error_handler(base::Bind(
+      &ArcBridgeService::CloseAppChannel, weak_factory_.GetWeakPtr()));
+}
+
+void ArcBridgeService::CloseAppChannel() {
+  DCHECK(CalledOnValidThread());
+  if (!app_ptr_)
+    return;
+
+  app_ptr_.reset();
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnAppInstanceClosed());
 }
 
 void ArcBridgeService::OnInputInstanceReady(InputInstancePtr input_ptr) {
@@ -80,6 +91,17 @@ void ArcBridgeService::OnInputVersionReady(int32_t version) {
   DCHECK(CalledOnValidThread());
   input_ptr_ = std::move(temporary_input_ptr_);
   FOR_EACH_OBSERVER(Observer, observer_list(), OnInputInstanceReady());
+  input_ptr_.set_connection_error_handler(base::Bind(
+      &ArcBridgeService::CloseInputChannel, weak_factory_.GetWeakPtr()));
+}
+
+void ArcBridgeService::CloseInputChannel() {
+  DCHECK(CalledOnValidThread());
+  if (!input_ptr_)
+    return;
+
+  input_ptr_.reset();
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnInputInstanceClosed());
 }
 
 void ArcBridgeService::OnNotificationsInstanceReady(
@@ -95,6 +117,18 @@ void ArcBridgeService::OnNotificationsVersionReady(int32_t version) {
   DCHECK(CalledOnValidThread());
   notifications_ptr_ = std::move(temporary_notifications_ptr_);
   FOR_EACH_OBSERVER(Observer, observer_list(), OnNotificationsInstanceReady());
+  notifications_ptr_.set_connection_error_handler(
+      base::Bind(&ArcBridgeService::CloseNotificationsChannel,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void ArcBridgeService::CloseNotificationsChannel() {
+  DCHECK(CalledOnValidThread());
+  if (!notifications_ptr_)
+    return;
+
+  notifications_ptr_.reset();
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnNotificationsInstanceClosed());
 }
 
 void ArcBridgeService::OnPowerInstanceReady(PowerInstancePtr power_ptr) {
@@ -108,6 +142,17 @@ void ArcBridgeService::OnPowerVersionReady(int32_t version) {
   DCHECK(CalledOnValidThread());
   power_ptr_ = std::move(temporary_power_ptr_);
   FOR_EACH_OBSERVER(Observer, observer_list(), OnPowerInstanceReady());
+  power_ptr_.set_connection_error_handler(base::Bind(
+      &ArcBridgeService::ClosePowerChannel, weak_factory_.GetWeakPtr()));
+}
+
+void ArcBridgeService::ClosePowerChannel() {
+  DCHECK(CalledOnValidThread());
+  if (!power_ptr_)
+    return;
+
+  power_ptr_.reset();
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnPowerInstanceClosed());
 }
 
 void ArcBridgeService::OnProcessInstanceReady(ProcessInstancePtr process_ptr) {
@@ -121,6 +166,17 @@ void ArcBridgeService::OnProcessVersionReady(int32_t version) {
   DCHECK(CalledOnValidThread());
   process_ptr_ = std::move(temporary_process_ptr_);
   FOR_EACH_OBSERVER(Observer, observer_list(), OnProcessInstanceReady());
+  process_ptr_.set_connection_error_handler(base::Bind(
+      &ArcBridgeService::CloseProcessChannel, weak_factory_.GetWeakPtr()));
+}
+
+void ArcBridgeService::CloseProcessChannel() {
+  DCHECK(CalledOnValidThread());
+  if (!process_ptr_)
+    return;
+
+  process_ptr_.reset();
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnProcessInstanceClosed());
 }
 
 void ArcBridgeService::OnSettingsInstanceReady(
@@ -134,6 +190,17 @@ void ArcBridgeService::OnSettingsInstanceReady(
 void ArcBridgeService::OnSettingsVersionReady(int32_t version) {
   settings_ptr_ = std::move(temporary_settings_ptr_);
   FOR_EACH_OBSERVER(Observer, observer_list(), OnSettingsInstanceReady());
+  settings_ptr_.set_connection_error_handler(base::Bind(
+      &ArcBridgeService::CloseSettingsChannel, weak_factory_.GetWeakPtr()));
+}
+
+void ArcBridgeService::CloseSettingsChannel() {
+  DCHECK(CalledOnValidThread());
+  if (!settings_ptr_)
+    return;
+
+  settings_ptr_.reset();
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnSettingsInstanceClosed());
 }
 
 void ArcBridgeService::SetState(State state) {
@@ -153,6 +220,17 @@ void ArcBridgeService::SetAvailable(bool available) {
 
 bool ArcBridgeService::CalledOnValidThread() {
   return thread_checker_.CalledOnValidThread();
+}
+
+void ArcBridgeService::CloseAllChannels() {
+  // Call all the error handlers of all the channels to both close the channel
+  // and notify any observers that the channel is closed.
+  CloseAppChannel();
+  CloseInputChannel();
+  CloseNotificationsChannel();
+  ClosePowerChannel();
+  CloseProcessChannel();
+  CloseSettingsChannel();
 }
 
 }  // namespace arc

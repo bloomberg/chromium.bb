@@ -21,13 +21,23 @@ class FakeArcBridgeInstance : public ArcBridgeInstance {
   // the host that the boot sequence has finished.
   void Bind(mojo::InterfaceRequest<ArcBridgeInstance> interface_request);
 
+  // Resets the binding. Useful to simulate a restart.
+  void Unbind();
+
   // ArcBridgeInstance:
   void Init(ArcBridgeHostPtr host) override;
+
+  // Ensures the call to Init() has been dispatched.
+  void WaitForInitCall();
+
+  // The number of times Init() has been called.
+  int init_calls() const { return init_calls_; }
 
  private:
   // Mojo endpoints.
   mojo::Binding<ArcBridgeInstance> binding_;
   ArcBridgeHostPtr host_ptr_;
+  int init_calls_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(FakeArcBridgeInstance);
 };

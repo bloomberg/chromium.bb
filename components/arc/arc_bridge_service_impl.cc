@@ -75,6 +75,9 @@ void ArcBridgeServiceImpl::StopInstance() {
   }
 
   SetState(State::STOPPING);
+  instance_ptr_.reset();
+  if (binding_.is_bound())
+    binding_.Close();
   bootstrap_->Stop();
 }
 
@@ -95,6 +98,8 @@ void ArcBridgeServiceImpl::OnConnectionEstablished(
   }
 
   instance_ptr_ = std::move(instance);
+  instance_ptr_.set_connection_error_handler(base::Bind(
+      &ArcBridgeServiceImpl::OnChannelClosed, weak_factory_.GetWeakPtr()));
 
   ArcBridgeHostPtr host;
   binding_.Bind(GetProxy(&host));
@@ -106,6 +111,24 @@ void ArcBridgeServiceImpl::OnConnectionEstablished(
 void ArcBridgeServiceImpl::OnStopped() {
   DCHECK(CalledOnValidThread());
   SetState(State::STOPPED);
+  if (reconnect_) {
+    // There was a previous invocation and it crashed for some reason. Try
+    // starting the container again.
+    reconnect_ = false;
+    PrerequisitesChanged();
+  }
+}
+
+void ArcBridgeServiceImpl::OnChannelClosed() {
+  DCHECK(CalledOnValidThread());
+  if (state() == State::STOPPED || state() == State::STOPPING) {
+    // This will happen when the instance is shut down. Ignore that case.
+    return;
+  }
+  VLOG(1) << "Mojo connection lost";
+  CloseAllChannels();
+  reconnect_ = true;
+  StopInstance();
 }
 
 }  // namespace arc

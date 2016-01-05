@@ -36,6 +36,7 @@ class FakeArcBridgeBootstrap : public ArcBridgeBootstrap {
 
   void Stop() override {
     DCHECK(delegate_);
+    instance_->Unbind();
     delegate_->OnStopped();
   }
 
@@ -73,7 +74,7 @@ class ArcBridgeTest : public testing::Test, public ArcBridgeService::Observer {
   ArcBridgeService::State state() const { return state_; }
 
  protected:
-  scoped_ptr<ArcBridgeService> service_;
+  scoped_ptr<ArcBridgeServiceImpl> service_;
   scoped_ptr<FakeArcBridgeInstance> instance_;
 
  private:
@@ -108,45 +109,18 @@ class ArcBridgeTest : public testing::Test, public ArcBridgeService::Observer {
   DISALLOW_COPY_AND_ASSIGN(ArcBridgeTest);
 };
 
-// Shuts down the instance reports booted.
-class ScopedShutdownWhenReady : public ArcBridgeService::Observer {
- public:
-  explicit ScopedShutdownWhenReady(ArcBridgeService* service)
-      : service_(service) {
-    service_->AddObserver(this);
-  }
-
-  ~ScopedShutdownWhenReady() override { service_->RemoveObserver(this); }
-
-  void OnStateChanged(ArcBridgeService::State state) override {
-    if (state == ArcBridgeService::State::READY) {
-      service_->Shutdown();
-    }
-  }
-
- private:
-  ArcBridgeService* service_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedShutdownWhenReady);
-};
-
 // Exercises the basic functionality of the ARC Bridge Service.  A message from
 // within the instance should cause the observer to be notified.
 TEST_F(ArcBridgeTest, Basic) {
   ASSERT_FALSE(ready());
   ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
 
-  ScopedShutdownWhenReady shutdown(service_.get());
-
   service_->SetAvailable(true);
   service_->HandleStartup();
+  instance_->WaitForInitCall();
+  ASSERT_EQ(ArcBridgeService::State::READY, state());
 
-  ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
-
-  base::RunLoop run_loop;
-  run_loop.Run();
-
-  EXPECT_TRUE(ready());
+  service_->Shutdown();
   ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
 }
 
@@ -168,16 +142,31 @@ TEST_F(ArcBridgeTest, ShutdownMidStartup) {
 
   service_->SetAvailable(true);
   service_->HandleStartup();
-
+  // WaitForInitCall() omitted.
   ASSERT_EQ(ArcBridgeService::State::READY, state());
+
   service_->Shutdown();
-  // Some machines can reach the STOPPED state immediately.
-  ASSERT_TRUE(state() == ArcBridgeService::State::STOPPING ||
-              state() == ArcBridgeService::State::STOPPED);
+  ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
+}
 
-  base::RunLoop run_loop;
-  run_loop.Run();
+// If the channel is disconnected, it should be re-established.
+TEST_F(ArcBridgeTest, Restart) {
+  ASSERT_FALSE(ready());
+  ASSERT_EQ(0, instance_->init_calls());
 
+  service_->SetAvailable(true);
+  service_->HandleStartup();
+  instance_->WaitForInitCall();
+  ASSERT_EQ(ArcBridgeService::State::READY, state());
+  ASSERT_EQ(1, instance_->init_calls());
+
+  // Simulate a connection loss.
+  service_->OnChannelClosed();
+  instance_->WaitForInitCall();
+  ASSERT_EQ(ArcBridgeService::State::READY, state());
+  ASSERT_EQ(2, instance_->init_calls());
+
+  service_->Shutdown();
   ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
 }
 
