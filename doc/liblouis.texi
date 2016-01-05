@@ -142,7 +142,6 @@ Testing Translation Tables interactively
 Automated Testing of Translation Tables
 
 * YAML Tests::
-* Test Harness::
 * Doctests::
 
 Programming with liblouis
@@ -1904,10 +1903,9 @@ where you define the table that is to be tested and any number of
 words or phrases to translate together with their respective expected
 translation.
 
-The YAML based tests replace the two older methods for testing the
-translation tables which only work with Python and when compiled with
-UCS4: the harness tests and the doctests. They are deprecated and will
-be removed in a future release.
+The YAML based tests replace older methods for testing the translation
+tables which only work with Python and when compiled with UCS4. They
+are deprecated and will be removed in a future release.
 
 @table @asis
 @item YAML tests
@@ -1917,23 +1915,16 @@ namely YAML. If you have @file{libyaml} installed they will
 automatically be invoked as part of the standard @command{make check}
 command.
 
-@item Harness tests
-The harness tests are also data driven like the YAML tests. However
-the data is given in JSON and quite a bit more verbose than the YAML
-tests. They work with both Python2 and Python3 but not from plain C,
-so you need Python and you will have to compile with UCS4.
-
 @item Doctests
 The doctests are based on a technology used in Python where you define
 your tests as if you were sitting at a terminal session with a Python
-interpreter. Again they only work with either Python2 and Python3 but
-not from plain C, so you need Python and you will have to compile with
+interpreter. They only work with either Python2 and Python3 but not
+from plain C, so you need Python and you will have to compile with
 UCS4.
 @end table
 
 @menu
 * YAML Tests::
-* Test Harness::
 * Doctests::
 @end menu
 
@@ -2105,74 +2096,6 @@ defined defaults to 0. Valid mode values are @samp{noContractions},
 For more examples and inspiration please see the YAML tests
 (@file{*.yaml}) in the @file{tests} directory of the source
 distribution.
-
-@node Test Harness
-@section Test Harness
-
-Each harness file is a simple UTF8 encoded JSON file, which has two entries.
-@table @code
-@item tables 
-A list containing table names, which the tests should be run against.
-This is usually just one table, but for some situations more than one
-table is required.
-@item tests
-A list of sections of tests, which should be processed independently.
-Each test section is a dictionary of two items.
-@item flags
-The flags that apply for all the test cases in this section. For
-example, they could all be forward translation tests, or they should
-all be run as computer braille tests.
-
-@item data
-A list of test cases, each one containing the specific test data
-needed to perform a test.
-@end table
-
-These are the valid fields for the flags section:
-@table @code
-@item comment
-A field describing the reason for the tests, the transformation rule
-or any useful info that might be needed in case the test breaks
-(optional).
-@item cursorPos
-The position of the cursor within the given text (optional). Useful
-when simulating screenreader interaction, to debug contraction and
-cursor behavior.
-@item mode
-The liblouis translation mode that should be used for this test
-(optional). If not defined defaults to 0.
-@item outputUniBrl
-For a forward translation test, the output should be in Unicode
-braille. For a backward translation test, the input is in Unicode
-braille.
-@item testmode
-The optional testmode field can have three values: "translate"
-(default if undeclared), "backtranslate" or "hyphenate". Declares what
-tests should be performed on the test data.
-@end table
-
-
-Each test case has the following entries:
-
-@table @code
-@item input
-The Unicode text to be tested (required).
-@item output
-The expected braille output (required). The dots should be encoded in
-the liblouis ASCII-braille like encoding.
-@item brlCursorPos
-The expected position of the braille cursor in the braille output
-(optional). Useful when simulating screenreader interaction, to debug
-contraction and cursor behavior.
-@end table
-
-Variables defined in the flags section can be overridden by individual
-test cases, but if several tests need the same options, they should
-ideally be split into their own section, complete with their own flags
-and data.
-
-For examples please see @file{*_harness.txt} in the harness directory
-in the source distribution.
 
 @node Doctests
 @section Doctests
