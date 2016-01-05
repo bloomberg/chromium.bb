@@ -8,6 +8,79 @@
 
 using page_load_metrics::UserAbortType;
 
+namespace {
+
+void RecordAbortBeforeCommit(UserAbortType abort_type,
+                             const base::TimeDelta& time_to_abort) {
+  switch (abort_type) {
+    case UserAbortType::ABORT_RELOAD:
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortReloadBeforeCommit,
+                          time_to_abort);
+      return;
+    case UserAbortType::ABORT_FORWARD_BACK:
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortForwardBackBeforeCommit,
+                          time_to_abort);
+      return;
+    case UserAbortType::ABORT_NEW_NAVIGATION:
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortNewNavigationBeforeCommit,
+                          time_to_abort);
+      return;
+    case UserAbortType::ABORT_STOP:
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortStopBeforeCommit,
+                          time_to_abort);
+      return;
+    case UserAbortType::ABORT_CLOSE:
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortCloseBeforeCommit,
+                          time_to_abort);
+      return;
+    case UserAbortType::ABORT_OTHER:
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortOtherBeforeCommit,
+                          time_to_abort);
+      return;
+    case UserAbortType::ABORT_NONE:
+    case UserAbortType::ABORT_LAST_ENTRY:
+      NOTREACHED();
+      return;
+  }
+  NOTREACHED();
+}
+
+void RecordAbortAfterCommitBeforePaint(UserAbortType abort_type,
+                                       const base::TimeDelta& time_to_abort) {
+  switch (abort_type) {
+    case UserAbortType::ABORT_RELOAD:
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortReloadBeforePaint,
+                          time_to_abort);
+      return;
+    case UserAbortType::ABORT_FORWARD_BACK:
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortForwardBackBeforePaint,
+                          time_to_abort);
+      return;
+    case UserAbortType::ABORT_NEW_NAVIGATION:
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortNewNavigationBeforePaint,
+                          time_to_abort);
+      return;
+    case UserAbortType::ABORT_STOP:
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortStopBeforePaint,
+                          time_to_abort);
+      return;
+    case UserAbortType::ABORT_CLOSE:
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortCloseBeforePaint,
+                          time_to_abort);
+      return;
+    case UserAbortType::ABORT_OTHER:
+      DLOG(FATAL) << "Received UserAbortType::ABORT_OTHER for committed load.";
+      return;
+    case UserAbortType::ABORT_NONE:
+    case UserAbortType::ABORT_LAST_ENTRY:
+      NOTREACHED();
+      return;
+  }
+  NOTREACHED();
+}
+
+}  // namespace
+
 namespace internal {
 
 const char kHistogramAbortForwardBackBeforeCommit[] =
@@ -47,85 +120,24 @@ void AbortsPageLoadMetricsObserver::OnComplete(
   const base::TimeDelta& time_to_abort = extra_info.time_to_abort;
   DCHECK(!time_to_abort.is_zero());
 
-  // Loads are not considered aborts if they painted before the abort event.
-  if (!timing.first_paint.is_zero() && timing.first_paint < time_to_abort)
-    return;
-
   // Don't log abort times if the page was backgrounded before the abort event.
   if (!EventOccurredInForeground(time_to_abort, extra_info))
     return;
 
-  // If |timing.IsEmpty()|, then this load was not tracked by the renderer. It
-  // is impossible to know whether the abort signals came before the page
-  // painted.
-  if (!extra_info.time_to_commit.is_zero() && !timing.IsEmpty()) {
-    switch (abort_type) {
-      case UserAbortType::ABORT_RELOAD:
-        PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortReloadBeforePaint,
-                            time_to_abort);
-        return;
-      case UserAbortType::ABORT_FORWARD_BACK:
-        PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortForwardBackBeforePaint,
-                            time_to_abort);
-        return;
-      case UserAbortType::ABORT_NEW_NAVIGATION:
-        PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortNewNavigationBeforePaint,
-                            time_to_abort);
-        return;
-      case UserAbortType::ABORT_STOP:
-        PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortStopBeforePaint,
-                            time_to_abort);
-        return;
-      case UserAbortType::ABORT_CLOSE:
-        PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortCloseBeforePaint,
-                            time_to_abort);
-        return;
-      case UserAbortType::ABORT_OTHER:
-        DLOG(FATAL)
-            << "Received UserAbortType::ABORT_OTHER for committed load.";
-        return;
-      case UserAbortType::ABORT_NONE:
-      case UserAbortType::ABORT_LAST_ENTRY:
-        NOTREACHED();
-        return;
-    }
-    NOTREACHED();
-  }
-  if (!extra_info.time_to_commit.is_zero()) {
-    // This load was not tracked by the renderer.
+  if (extra_info.time_to_commit.is_zero()) {
+    RecordAbortBeforeCommit(abort_type, time_to_abort);
     return;
   }
-  // Handle provisional aborts.
-  DCHECK(timing.IsEmpty());
-  switch (abort_type) {
-    case UserAbortType::ABORT_RELOAD:
-      PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortReloadBeforeCommit,
-                          time_to_abort);
-      return;
-    case UserAbortType::ABORT_FORWARD_BACK:
-      PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortForwardBackBeforeCommit,
-                          time_to_abort);
-      return;
-    case UserAbortType::ABORT_NEW_NAVIGATION:
-      PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortNewNavigationBeforeCommit,
-                          time_to_abort);
-      return;
-    case UserAbortType::ABORT_STOP:
-      PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortStopBeforeCommit,
-                          time_to_abort);
-      return;
-    case UserAbortType::ABORT_CLOSE:
-      PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortCloseBeforeCommit,
-                          time_to_abort);
-      return;
-    case UserAbortType::ABORT_OTHER:
-      PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortOtherBeforeCommit,
-                          time_to_abort);
-      return;
-    case UserAbortType::ABORT_NONE:
-    case UserAbortType::ABORT_LAST_ENTRY:
-      NOTREACHED();
-      return;
+
+  // If we have a committed load but |timing.IsEmpty()|, then this load was not
+  // tracked by the renderer. In this case, it is not possible to know whether
+  // the abort signals came before the page painted. Additionally, for
+  // consistency with PageLoad.Timing2 metrics, we ignore non-render-tracked
+  // loads when tracking aborts after commit.
+  if (timing.IsEmpty())
+    return;
+
+  if (timing.first_paint.is_zero() || timing.first_paint >= time_to_abort) {
+    RecordAbortAfterCommitBeforePaint(abort_type, time_to_abort);
   }
-  NOTREACHED();
 }
