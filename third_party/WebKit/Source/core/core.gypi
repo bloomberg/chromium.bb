@@ -3928,6 +3928,7 @@
             'input/EventHandlerTest.cpp',
             'layout/ImageQualityControllerTest.cpp',
             'layout/LayoutBlockTest.cpp',
+            'layout/LayoutBoxTest.cpp',
             'layout/LayoutInlineTest.cpp',
             'layout/LayoutMultiColumnFlowThreadTest.cpp',
             'layout/LayoutObjectTest.cpp',

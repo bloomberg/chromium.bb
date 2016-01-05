@@ -1221,12 +1221,10 @@ void LayoutBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset
     BoxPainter(*this).paint(paintInfo, paintOffset);
 }
 
-
 void LayoutBox::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     BoxPainter(*this).paintBoxDecorationBackground(paintInfo, paintOffset);
 }
-
 
 bool LayoutBox::getBackgroundPaintedExtent(LayoutRect& paintedExtent) const
 {
@@ -1236,7 +1234,7 @@ bool LayoutBox::getBackgroundPaintedExtent(LayoutRect& paintedExtent) const
     // thus can't be handled by this function.
     ASSERT(!isLayoutView());
 
-    LayoutRect backgroundRect(enclosingIntRect(borderBoxRect()));
+    LayoutRect backgroundRect(borderBoxRect());
 
     Color backgroundColor = resolveColor(CSSPropertyBackgroundColor);
     if (backgroundColor.alpha()) {
