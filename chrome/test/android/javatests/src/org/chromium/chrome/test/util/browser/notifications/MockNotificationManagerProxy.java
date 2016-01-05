@@ -80,11 +80,6 @@ public class MockNotificationManagerProxy implements NotificationManagerProxy {
     @Override
     public void cancel(@Nullable String tag, int id) {
         String key = makeKey(id, tag);
-
-        if (!mNotifications.containsKey(key)) {
-            throw new RuntimeException("Invalid pair of notification tag and id supplied.");
-        }
-
         mNotifications.remove(key);
         mMutationCount++;
     }
