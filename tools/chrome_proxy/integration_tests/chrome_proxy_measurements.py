@@ -62,6 +62,18 @@ class ChromeProxyBypass(ChromeProxyValidation):
     self._metrics.AddResultsForBypass(tab, results)
 
 
+class ChromeProxyHTTPSBypass(ChromeProxyValidation):
+  """Correctness measurement for bypass responses."""
+
+  def __init__(self):
+    super(ChromeProxyHTTPSBypass, self).__init__(
+        restart_after_each_page=True,
+        metrics=metrics.ChromeProxyMetric())
+
+  def AddResults(self, tab, results):
+    self._metrics.AddResultsForHTTPSBypass(tab, results)
+
+
 class ChromeProxyCorsBypass(ChromeProxyValidation):
   """Correctness measurement for bypass responses for CORS requests."""
 

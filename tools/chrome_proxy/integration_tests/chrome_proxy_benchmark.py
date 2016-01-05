@@ -71,6 +71,16 @@ class ChromeProxyBypass(ChromeProxyBenchmark):
     return 'chrome_proxy_benchmark.bypass.bypass'
 
 
+class ChromeProxyHTTPSBypass(ChromeProxyBenchmark):
+  tag = 'https_bypass'
+  test = measurements.ChromeProxyHTTPSBypass
+  page_set = pagesets.HTTPSBypassStorySet
+
+  @classmethod
+  def Name(cls):
+    return 'chrome_proxy_benchmark.https_bypass.https_bypass'
+
+
 class ChromeProxyCorsBypass(ChromeProxyBenchmark):
   tag = 'bypass'
   test = measurements.ChromeProxyCorsBypass

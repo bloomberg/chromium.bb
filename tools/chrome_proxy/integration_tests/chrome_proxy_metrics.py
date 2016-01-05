@@ -321,6 +321,31 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'pass_through_size', 'bytes', pass_through_size))
 
+  def AddResultsForHTTPSBypass(self, tab, results):
+    bypass_count = 0
+
+    for resp in self.IterResponses(tab):
+      # Only check https url's
+      if "https://" not in resp.response.url:
+        continue
+
+      # If a Chrome Proxy Via appears fail the test
+      if resp.HasChromeProxyViaHeader():
+        r = resp.response
+        raise ChromeProxyMetricException, (
+            '%s: Should not have Via header (%s) (refer=%s, status=%d)' % (
+                r.url, r.GetHeader('Via'), r.GetHeader('Referer'), r.status))
+      bypass_count += 1
+
+
+    if bypass_count == 0:
+      raise ChromeProxyMetricException, (
+          'Expected at least one https response was expected, but zero such '
+          'responses were received.')
+
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'bypass', 'count', bypass_count))
+
   def AddResultsForBypass(self, tab, results, url_pattern=""):
     bypass_count = 0
     skipped_count = 0
