@@ -5,7 +5,9 @@
 #include "tools/gn/string_utils.h"
 
 #include <stddef.h>
+#include <cctype>
 
+#include "base/strings/string_number_conversions.h"
 #include "tools/gn/err.h"
 #include "tools/gn/input_file.h"
 #include "tools/gn/parser.h"
@@ -131,7 +133,7 @@ bool AppendInterpolatedIdentifier(Scope* scope,
 
 // Handles string interpolations: $identifier and ${expression}
 //
-// |*i| is the index into |input| of the $. This will be updated to point to
+// |*i| is the index into |input| after the $. This will be updated to point to
 // the last character consumed on success. The token is the original string
 // to blame on failure.
 //
@@ -143,13 +145,7 @@ bool AppendStringInterpolation(Scope* scope,
                                size_t* i,
                                std::string* output,
                                Err* err) {
-  size_t dollars_index = *i;
-  (*i)++;
-  if (*i == size) {
-    *err = ErrInsideStringToken(token, dollars_index, 1, "$ at end of string.",
-        "I was expecting an identifier or {...} after the $.");
-    return false;
-  }
+  size_t dollars_index = *i - 1;
 
   if (input[*i] == '{') {
     // Bracketed expression.
@@ -203,6 +199,40 @@ bool AppendStringInterpolation(Scope* scope,
                                       end_offset, output, err);
 }
 
+// Handles a hex literal: $0xFF
+//
+// |*i| is the index into |input| after the $. This will be updated to point to
+// the last character consumed on success. The token is the original string
+// to blame on failure.
+//
+// On failure, returns false and sets the error. On success, appends the
+// char with the given hex value to |*output|.
+bool AppendHexByte(Scope* scope,
+                   const Token& token,
+                   const char* input, size_t size,
+                   size_t* i,
+                   std::string* output,
+                   Err* err) {
+  size_t dollars_index = *i - 1;
+  // "$0" is already known to exist.
+  if (*i + 3 >= size || input[*i + 1] != 'x' || !std::isxdigit(input[*i + 2]) ||
+      !std::isxdigit(input[*i + 3])) {
+    *err = ErrInsideStringToken(
+        token, dollars_index, *i - dollars_index + 1,
+        "Invalid hex character. Hex values must look like 0xFF.");
+    return false;
+  }
+  int value = 0;
+  if (!base::HexStringToInt(base::StringPiece(&input[*i + 2], 2), &value)) {
+    *err = ErrInsideStringToken(token, dollars_index, *i - dollars_index + 1,
+                                "Could not convert hex value.");
+    return false;
+  }
+  *i += 3;
+  output->push_back(value);
+  return true;
+}
+
 }  // namespace
 
 bool ExpandStringLiteral(Scope* scope,
@@ -235,7 +265,16 @@ bool ExpandStringLiteral(Scope* scope,
       }
       output.push_back(input[i]);
     } else if (input[i] == '$') {
-      if (!AppendStringInterpolation(scope, literal, input, size, &i,
+      i++;
+      if (i == size) {
+        *err = ErrInsideStringToken(literal, i - 1, 1, "$ at end of string.",
+            "I was expecting an identifier, 0xFF, or {...} after the $.");
+        return false;
+      }
+      if (input[i] == '0') {
+        if (!AppendHexByte(scope, literal, input, size, &i, &output, err))
+          return false;
+      } else if (!AppendStringInterpolation(scope, literal, input, size, &i,
                                      &output, err))
         return false;
     } else {

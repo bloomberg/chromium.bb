@@ -69,6 +69,10 @@ TEST(StringUtils, ExpandStringLiteralIdentifier) {
   EXPECT_TRUE(CheckExpansionCase("$onescope", "{\n  one = 1\n}", true));
   EXPECT_TRUE(CheckExpansionCase("$onelist", "[1]", true));
 
+  // Hex values
+  EXPECT_TRUE(CheckExpansionCase("$0x0AA", "\x0A""A", true));
+  EXPECT_TRUE(CheckExpansionCase("$0x0a$0xfF", "\x0A\xFF", true));
+
   // Errors
   EXPECT_TRUE(CheckExpansionCase("hello #$", nullptr, false));
   EXPECT_TRUE(CheckExpansionCase("hello #$%", nullptr, false));
@@ -76,6 +80,12 @@ TEST(StringUtils, ExpandStringLiteralIdentifier) {
   EXPECT_TRUE(CheckExpansionCase("hello #${}", nullptr, false));
   EXPECT_TRUE(CheckExpansionCase("hello #$nonexistant", nullptr, false));
   EXPECT_TRUE(CheckExpansionCase("hello #${unterminated", nullptr, false));
+  EXPECT_TRUE(CheckExpansionCase("hex truncated: $0", nullptr, false));
+  EXPECT_TRUE(CheckExpansionCase("hex truncated: $0x", nullptr, false));
+  EXPECT_TRUE(CheckExpansionCase("hex truncated: $0x0", nullptr, false));
+  EXPECT_TRUE(CheckExpansionCase("hex with bad char: $0a", nullptr, false));
+  EXPECT_TRUE(CheckExpansionCase("hex with bad char: $0x1z", nullptr, false));
+  EXPECT_TRUE(CheckExpansionCase("hex with bad char: $0xz1", nullptr, false));
 
   // Unknown backslash values aren't special.
   EXPECT_TRUE(CheckExpansionCase("\\", "\\", true));
