@@ -1838,16 +1838,6 @@ const FeatureEntry kFeatureEntries[] = {
          autofill::switches::kEnableAccessorySuggestionView,
          autofill::switches::kDisableAccessorySuggestionView)},
 #endif  // defined(OS_ANDROID)
-    // Temporary flag to ease the transition to standard-compliant scrollTop
-    // behavior.  Will be removed shortly after http://crbug.com/157855 ships.
-    {"scroll-top-left-interop",
-     IDS_FLAGS_SCROLL_TOP_LEFT_INTEROP_NAME,
-     IDS_FLAGS_SCROLL_TOP_LEFT_INTEROP_DESCRIPTION,
-     kOsAll,
-     ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(switches::kEnableBlinkFeatures,
-                                         "ScrollTopLeftInterop",
-                                         switches::kDisableBlinkFeatures,
-                                         "ScrollTopLeftInterop")},
 #if defined(OS_WIN)
     {"try-supported-channel-layouts",
      IDS_FLAGS_TRY_SUPPORTED_CHANNEL_LAYOUTS_NAME,
