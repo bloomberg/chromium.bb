@@ -100,7 +100,11 @@ public class UpdateMenuItemHelper {
      * @param activity The current {@link ChromeActivity}.
      */
     public void checkForUpdateOnBackgroundThread(final ChromeActivity activity) {
-        if (!getBooleanParam(ENABLE_UPDATE_MENU_ITEM)) return;
+        if (!getBooleanParam(ENABLE_UPDATE_MENU_ITEM)
+                && !getBooleanParam(ChromeSwitches.FORCE_SHOW_UPDATE_MENU_ITEM)
+                && !getBooleanParam(ChromeSwitches.FORCE_SHOW_UPDATE_MENU_BADGE)) {
+            return;
+        }
 
         ThreadUtils.assertOnUiThread();
 
