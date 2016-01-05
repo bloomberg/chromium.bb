@@ -41,5 +41,10 @@ PASS Basic functionality of setAttributeNode
 PASS Basic functionality of setAttributeNodeNS 
 PASS Basic functionality of removeAttributeNode 
 PASS setAttributeNode on bound attribute should throw InUseAttributeError 
+FAIL getAttributeNames tests el.getAttributeNames is not a function
+FAIL Own property correctness with basic attributes assert_array_equals: lengths differ, expected 2 got 0
+FAIL Own property correctness with non-namespaced attribute before same-name namespaced one assert_array_equals: lengths differ, expected 3 got 0
+FAIL Own property correctness with namespaced attribute before same-name non-namespaced one assert_array_equals: lengths differ, expected 3 got 0
+FAIL Own property correctness with two namespaced attributes with the same name-with-prefix assert_array_equals: lengths differ, expected 3 got 0
 Harness: the test ran to completion.
 

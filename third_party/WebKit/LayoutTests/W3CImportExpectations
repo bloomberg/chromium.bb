@@ -171,6 +171,7 @@ imported/web-platform-tests/svg [ Skip ]
 imported/web-platform-tests/tools [ Skip ]
 imported/web-platform-tests/touch-events [ Skip ]
 imported/web-platform-tests/typedarrays [ Skip ]
+imported/web-platform-tests/uievents [ Skip ]
 imported/web-platform-tests/url [ Skip ]
 ## Owners: jsbell@chromium.org
 # imported/web-platform-tests/user-timing [ Pass ]
@@ -614,3 +615,6 @@ imported/web-platform-tests/html/semantics/document-metadata/the-meta-element/pr
 
 # crbug.com/441355: MutationObserver incorrect for replaceChild (causes timeout)
 imported/web-platform-tests/dom/nodes/MutationObserver-childList.html [ Skip ]
+
+# crbug.com/574461: update-w3c-deps imports .py file with x-bit cleared
+imported/web-platform-tests/dom/nodes/Document-createElement-namespace-tests/generate.py [ Skip ]
