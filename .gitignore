@@ -202,3 +202,9 @@ input.txt
 pass.txt
 fail.txt
 output.txt
+
+# /windows/
+/windows/*.obj
+/windows/liblouis.dll
+/windows/liblouis.lib
+/windows/liblouis.exp
