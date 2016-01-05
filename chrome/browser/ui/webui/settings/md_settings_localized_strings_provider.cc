@@ -442,6 +442,8 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("passwords", IDS_SETTINGS_PASSWORDS);
   html_source->AddLocalizedString("passwordsDetail",
                                   IDS_SETTINGS_PASSWORDS_DETAIL);
+  html_source->AddLocalizedString("savedPasswordsHeading",
+                                  IDS_SETTINGS_PASSWORDS_SAVED_HEADING);
 }
 
 void AddPeopleStrings(content::WebUIDataSource* html_source) {

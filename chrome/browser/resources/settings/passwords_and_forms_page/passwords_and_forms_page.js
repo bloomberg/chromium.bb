@@ -23,6 +23,45 @@ Polymer({
       type: Object,
       notify: true,
     },
+
+    /**
+     * An array of passwords to display.
+     * Lazy loaded when the password section is expanded.
+     */
+    savedPasswords: {
+      type: Array,
+      value: function() { return []; },
+    },
+
+    /**
+     * Whether the password section section is opened or not.
+     */
+    passwordsOpened: {
+      type: Boolean,
+      value: false,
+      observer: 'loadPasswords_',
+    },
+  },
+
+  /**
+   * Called when the section is expanded. This will load the list of passwords
+   * only when needed.
+   * @param {boolean} passwordSectionOpened
+   */
+  loadPasswords_: function(passwordSectionOpened) {
+    if (passwordSectionOpened) {
+      // TODO(hcarmona): Get real data.
+      this.savedPasswords =
+          [{origin: 'otherwebsite.com',
+            username: 'bowser',
+            password: '************'},
+           {origin: 'otherlongwebsite.com',
+            username: 'koopa',
+            password: '*********'},
+           {origin: 'otherverylongwebsite.com',
+            username: 'goomba',
+            password: '******'}];
+    }
   },
 });
 })();
