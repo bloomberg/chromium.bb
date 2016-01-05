@@ -6,9 +6,12 @@
 #include "core/dom/Element.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLIFrameElement.h"
+#include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/web/WebHitTestResult.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WebRemoteFrameImpl.h"
 #include "web/tests/sim/SimCompositor.h"
 #include "web/tests/sim/SimDisplayItemList.h"
 #include "web/tests/sim/SimRequest.h"
@@ -249,6 +252,55 @@ TEST_F(FrameThrottlingTest, SynchronousLayoutInThrottledFrame)
     // Querying the width of the div should do a synchronous layout update even
     // though the frame is being throttled.
     EXPECT_EQ(50, divElement->clientWidth());
+}
+
+TEST(RemoteFrameThrottlingTest, ThrottledLocalRoot)
+{
+    FrameTestHelpers::TestWebViewClient viewClient;
+    WebViewImpl* webView = WebViewImpl::create(&viewClient);
+    webView->resize(WebSize(640, 480));
+
+    // Create a remote root frame with a local child frame.
+    FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
+    webView->setMainFrame(remoteClient.frame());
+    remoteClient.frame()->setReplicatedOrigin(WebSecurityOrigin::createUnique());
+
+    WebFrameOwnerProperties properties;
+    FrameTestHelpers::TestWebFrameClient localFrameClient;
+    WebRemoteFrame* rootFrame = webView->mainFrame()->toWebRemoteFrame();
+    WebLocalFrame* localFrame = rootFrame->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &localFrameClient, nullptr, properties);
+
+    WebString baseURL("http://internal.test/");
+    URLTestHelpers::registerMockedURLFromBaseURL(baseURL, "simple_div.html");
+    FrameTestHelpers::loadFrame(localFrame, baseURL.utf8() + "simple_div.html");
+
+    FrameView* frameView = toWebLocalFrameImpl(localFrame)->frameView();
+    EXPECT_TRUE(frameView->frame().isLocalRoot());
+
+    // Enable throttling for the child frame.
+    frameView->setFrameRect(IntRect(0, 480, frameView->width(), frameView->height()));
+    frameView->frame().securityContext()->setSecurityOrigin(SecurityOrigin::createUnique());
+    frameView->updateAllLifecyclePhases();
+    testing::runPendingTasks();
+    EXPECT_TRUE(frameView->shouldThrottleRendering());
+
+    Document* frameDocument = frameView->frame().document();
+    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
+        EXPECT_EQ(DocumentLifecycle::PaintClean, frameDocument->lifecycle().state());
+    else
+        EXPECT_EQ(DocumentLifecycle::PaintInvalidationClean, frameDocument->lifecycle().state());
+
+    // Mutate the local child frame contents.
+    auto* divElement = frameDocument->getElementById("div");
+    divElement->setAttribute(styleAttr, "width: 50px");
+    EXPECT_EQ(DocumentLifecycle::VisualUpdatePending, frameDocument->lifecycle().state());
+
+    // Update the lifecycle again. The frame's lifecycle should not advance
+    // because of throttling even though it is the local root.
+    frameView->updateAllLifecyclePhases();
+    testing::runPendingTasks();
+    EXPECT_EQ(DocumentLifecycle::VisualUpdatePending, frameDocument->lifecycle().state());
+    webView->close();
 }
 
 } // namespace blink

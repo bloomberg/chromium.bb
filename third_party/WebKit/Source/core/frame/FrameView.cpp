@@ -2375,6 +2375,11 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
     // Updating layout can run script, which can tear down the FrameView.
     RefPtrWillBeRawPtr<FrameView> protector(this);
 
+    if (shouldThrottleRendering()) {
+        updateViewportIntersectionsForSubtree();
+        return;
+    }
+
     updateStyleAndLayoutIfNeededRecursive();
     ASSERT(lifecycle().state() >= DocumentLifecycle::LayoutClean);
 
