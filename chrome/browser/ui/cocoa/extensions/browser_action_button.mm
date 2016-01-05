@@ -429,6 +429,8 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
   // Also reset the context menu, since it has a dependency on the backing
   // controller (which owns its model).
   contextMenuController_.reset();
+  // Remove any lingering observations.
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (BOOL)isAnimating {
