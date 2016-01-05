@@ -28,7 +28,10 @@ source_set("native") {
     "//ui/gfx/geometry:geometry",
   ]
 
-  include_dirs = [ "//skia/config" ]
+  include_dirs = [
+    "//skia/config",
+    "//third_party/protobuf",
+  ]
 
   sources = [
     "android_protocol_handler.cc",
@@ -65,6 +68,8 @@ source_set("native") {
     "aw_media_url_interceptor.h",
     "aw_message_port_service_impl.cc",
     "aw_message_port_service_impl.h",
+    "aw_metrics_switch.cc",
+    "aw_metrics_switch.h",
     "aw_pdf_exporter.cc",
     "aw_pdf_exporter.h",
     "aw_picture.cc",
@@ -128,6 +133,7 @@ generate_jni("native_jni") {
     "../java/src/org/chromium/android_webview/AwFormDatabase.java",
     "../java/src/org/chromium/android_webview/AwHttpAuthHandler.java",
     "../java/src/org/chromium/android_webview/AwMessagePortService.java",
+    "../java/src/org/chromium/android_webview/AwMetricsServiceClient.java",
     "../java/src/org/chromium/android_webview/AwPdfExporter.java",
     "../java/src/org/chromium/android_webview/AwPicture.java",
     "../java/src/org/chromium/android_webview/AwQuotaManagerBridge.java",

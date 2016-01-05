@@ -4,6 +4,7 @@
 {
   'variables': {
     'chromium_code': 1,
+    'protoc_out_dir': '<(SHARED_INTERMEDIATE_DIR)/protoc_out',
   },
   'targets': [
     {
@@ -32,6 +33,8 @@
       'include_dirs': [
         '../..',
         '../../skia/config',
+        '../../third_party/protobuf/src',
+        '<(protoc_out_dir)',
       ],
       'sources': [
         'android_protocol_handler.cc',
@@ -67,7 +70,9 @@
         'aw_media_url_interceptor.cc',
         'aw_media_url_interceptor.h',
         'aw_message_port_service_impl.cc',
-        'aw_messagE_port_service_impl.h',
+        'aw_message_port_service_impl.h',
+        'aw_metrics_switch.cc',
+        'aw_metrics_switch.h',
         'aw_pdf_exporter.cc',
         'aw_pdf_exporter.h',
         'aw_picture.cc',
@@ -145,6 +150,7 @@
           '../java/src/org/chromium/android_webview/AwFormDatabase.java',
           '../java/src/org/chromium/android_webview/AwHttpAuthHandler.java',
           '../java/src/org/chromium/android_webview/AwMessagePortService.java',
+          '../java/src/org/chromium/android_webview/AwMetricsServiceClient.java',
           '../java/src/org/chromium/android_webview/AwPdfExporter.java',
           '../java/src/org/chromium/android_webview/AwPicture.java',
           '../java/src/org/chromium/android_webview/AwQuotaManagerBridge.java',

@@ -26,9 +26,11 @@ public class AwBrowserContext {
     private AwFormDatabase mFormDatabase;
     private HttpAuthDatabase mHttpAuthDatabase;
     private AwMessagePortService mMessagePortService;
+    private AwMetricsServiceClient mMetricsServiceClient;
 
     public AwBrowserContext(SharedPreferences sharedPreferences, Context applicationContext) {
         mSharedPreferences = sharedPreferences;
+        mMetricsServiceClient = new AwMetricsServiceClient(applicationContext);
     }
 
     public AwGeolocationPermissions getGeolocationPermissions() {
@@ -57,6 +59,10 @@ public class AwBrowserContext {
             mMessagePortService = new AwMessagePortService();
         }
         return mMessagePortService;
+    }
+
+    public AwMetricsServiceClient getMetricsServiceClient() {
+        return mMetricsServiceClient;
     }
 
     /**

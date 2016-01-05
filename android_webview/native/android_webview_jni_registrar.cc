@@ -17,6 +17,7 @@
 #include "android_webview/native/aw_form_database.h"
 #include "android_webview/native/aw_http_auth_handler.h"
 #include "android_webview/native/aw_message_port_service_impl.h"
+#include "android_webview/native/aw_metrics_switch.h"
 #include "android_webview/native/aw_pdf_exporter.h"
 #include "android_webview/native/aw_picture.h"
 #include "android_webview/native/aw_quota_manager_bridge_impl.h"
@@ -50,6 +51,7 @@ static base::android::RegistrationMethod kWebViewRegisteredMethods[] = {
   { "AwPicture", RegisterAwPicture },
   { "AwSettings", RegisterAwSettings },
   { "AwHttpAuthHandler", RegisterAwHttpAuthHandler },
+  { "AwMetricsServiceClient", RegisterAwMetricsServiceClient },
   { "AwPdfExporter", RegisterAwPdfExporter },
   { "AwPermissionRequest", RegisterAwPermissionRequest },
   { "AwQuotaManagerBridge", RegisterAwQuotaManagerBridge },

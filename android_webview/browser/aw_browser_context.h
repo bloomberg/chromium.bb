@@ -9,6 +9,7 @@
 
 #include "android_webview/browser/aw_download_manager_delegate.h"
 #include "android_webview/browser/aw_message_port_service.h"
+#include "android_webview/browser/aw_metrics_service_client.h"
 #include "android_webview/browser/aw_ssl_host_state_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -84,8 +85,9 @@ class AwBrowserContext : public content::BrowserContext,
   static void SetDataReductionProxyEnabled(bool enabled);
   static void SetLegacyCacheRemovalDelayForTest(int delay_ms);
 
-  // Maps to BrowserMainParts::PreMainMessageLoopRun.
+  // These map to BrowserMainParts::Pre/PostMainMessageLoopRun.
   void PreMainMessageLoopRun();
+  void PostMainMessageLoopRun();
 
   // These methods map to Add methods in visitedlink::VisitedLinkMaster.
   void AddVisitedURLs(const std::vector<GURL>& urls);
@@ -100,17 +102,12 @@ class AwBrowserContext : public content::BrowserContext,
       content::URLRequestInterceptorScopedVector request_interceptors);
 
   AwQuotaManagerBridge* GetQuotaManagerBridge();
-
   AwFormDatabaseService* GetFormDatabaseService();
-
   data_reduction_proxy::DataReductionProxySettings*
       GetDataReductionProxySettings();
-
   data_reduction_proxy::DataReductionProxyIOData*
       GetDataReductionProxyIOData();
-
   AwURLRequestContextGetter* GetAwURLRequestContext();
-
   AwMessagePortService* GetMessagePortService();
 
   policy::URLBlacklistManager* GetURLBlacklistManager();

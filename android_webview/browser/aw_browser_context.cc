@@ -8,6 +8,7 @@
 
 #include "android_webview/browser/aw_browser_policy_connector.h"
 #include "android_webview/browser/aw_form_database_service.h"
+#include "android_webview/browser/aw_metrics_service_client.h"
 #include "android_webview/browser/aw_permission_manager.h"
 #include "android_webview/browser/aw_pref_store.h"
 #include "android_webview/browser/aw_quota_manager_bridge.h"
@@ -29,6 +30,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/metrics/metrics_service.h"
 #include "components/policy/core/browser/browser_policy_connector_base.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
@@ -253,6 +255,13 @@ void AwBrowserContext::PreMainMessageLoopRun() {
   data_reduction_proxy_settings_->MaybeActivateDataReductionProxy(true);
 
   blacklist_manager_.reset(CreateURLBlackListManager(user_pref_service_.get()));
+
+  AwMetricsServiceClient::GetInstance()->Initialize(user_pref_service_.get(),
+                                                    GetRequestContext());
+}
+
+void AwBrowserContext::PostMainMessageLoopRun() {
+  AwMetricsServiceClient::GetInstance()->Finalize();
 }
 
 void AwBrowserContext::AddVisitedURLs(const std::vector<GURL>& urls) {
@@ -332,6 +341,8 @@ void AwBrowserContext::InitUserPrefService() {
   pref_registry->RegisterStringPref(prefs::kAuthServerWhitelist, std::string());
   pref_registry->RegisterStringPref(prefs::kAuthAndroidNegotiateAccountType,
                                     std::string());
+
+  metrics::MetricsService::RegisterPrefs(pref_registry);
 
   base::PrefServiceFactory pref_service_factory;
   pref_service_factory.set_user_prefs(make_scoped_refptr(new AwPrefStore()));
