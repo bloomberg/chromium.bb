@@ -77,16 +77,19 @@ class PDFiumEngine : public PDFEngine,
   void RotateCounterclockwise() override;
   std::string GetSelectedText() override;
   std::string GetLinkAtPosition(const pp::Point& point) override;
+  bool IsSelecting() override;
   bool HasPermission(DocumentPermission permission) const override;
   void SelectAll() override;
   int GetNumberOfPages() override;
   pp::VarArray GetBookmarks() override;
   int GetNamedDestinationPage(const std::string& destination) override;
+  int GetFirstVisiblePage() override;
   int GetMostVisiblePage() override;
   pp::Rect GetPageRect(int index) override;
   pp::Rect GetPageContentsRect(int index) override;
   pp::Rect GetPageScreenRect(int page_index) const override;
   int GetVerticalScrollbarYPosition() override { return position_.y(); }
+  void PaintThumbnail(pp::ImageData* image_data, int index) override;
   void SetGrayscale(bool grayscale) override;
   void OnCallback(int id) override;
   std::string GetPageAsJSON(int index) override;
@@ -666,6 +669,10 @@ class PDFiumEngine : public PDFEngine,
 
   // Holds the page index of the last page that the mouse clicked on.
   int last_page_mouse_down_;
+
+  // Holds the page index of the first visible page; refreshed by calling
+  // CalculateVisiblePages()
+  int first_visible_page_;
 
   // Holds the page index of the most visible page; refreshed by calling
   // CalculateVisiblePages()

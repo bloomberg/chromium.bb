@@ -222,6 +222,7 @@ class PDFEngine {
   virtual void RotateCounterclockwise() = 0;
   virtual std::string GetSelectedText() = 0;
   virtual std::string GetLinkAtPosition(const pp::Point& point) = 0;
+  virtual bool IsSelecting() = 0;
   // Checks the permissions associated with this document.
   virtual bool HasPermission(DocumentPermission permission) const = 0;
   virtual void SelectAll() = 0;
@@ -229,6 +230,8 @@ class PDFEngine {
   virtual int GetNumberOfPages() = 0;
   // Gets the 0-based page number of |destination|, or -1 if it does not exist.
   virtual int GetNamedDestinationPage(const std::string& destination) = 0;
+  // Gets the index of the first visible page, or -1 if none are visible.
+  virtual int GetFirstVisiblePage() = 0;
   // Gets the index of the most visible page, or -1 if none are visible.
   virtual int GetMostVisiblePage() = 0;
   // Gets the rectangle of the page including shadow.
@@ -241,6 +244,8 @@ class PDFEngine {
   // Gets the offset of the vertical scrollbar from the top in document
   // coordinates.
   virtual int GetVerticalScrollbarYPosition() = 0;
+  // Paints page thumbnail to the ImageData.
+  virtual void PaintThumbnail(pp::ImageData* image_data, int index) = 0;
   // Set color / grayscale rendering modes.
   virtual void SetGrayscale(bool grayscale) = 0;
   // Callback for timer that's set with ScheduleCallback().
