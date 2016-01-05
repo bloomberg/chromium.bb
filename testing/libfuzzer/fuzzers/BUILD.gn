@@ -216,7 +216,7 @@ fuzzer_test("pdfium_fuzzer") {
     "//third_party/pdfium:pdfium_config",
     "//v8:external_startup_data",
   ]
-  dict = "pdf.dict"
+  dict = "dicts/pdf.dict"
 }
 
 fuzzer_test("websocket_frame_parser_fuzzer") {
@@ -254,6 +254,7 @@ fuzzer_test("sqlite3_prepare_v2_fuzzer") {
   deps = [
     "//third_party/sqlite",
   ]
+  dict = "dicts/sql.dict"
 }
 
 fuzzer_test("libxml_xml_read_memory_fuzzer") {
