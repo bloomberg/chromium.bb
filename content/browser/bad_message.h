@@ -124,6 +124,8 @@ enum BadMessageReason {
   BDH_EMPTY_OR_INVALID_FILTERS = 100,
   WC_CONTENT_WITH_CERT_ERRORS_BAD_SECURITY_INFO = 101,
   RFMF_RENDERER_FAKED_ITS_OWN_DEATH = 102,
+  DWNLD_INVALID_SAVABLE_RESOURCE_LINKS_RESPONSE = 103,
+  DWNLD_INVALID_SERIALIZE_AS_MHTML_RESPONSE = 104,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

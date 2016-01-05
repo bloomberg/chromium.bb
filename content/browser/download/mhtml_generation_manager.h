@@ -16,7 +16,6 @@
 #include "base/memory/singleton.h"
 #include "base/process/process.h"
 #include "ipc/ipc_platform_file.h"
-#include "url/gurl.h"
 
 namespace base {
 class FilePath;
@@ -68,7 +67,7 @@ class MHTMLGenerationManager {
   void OnFileAvailable(int job_id, base::File browser_file);
 
   // Called on the UI thread when a job has been finished.
-  void JobFinished(int job_id, JobStatus job_status);
+  void JobFinished(Job* job, JobStatus job_status);
 
   // Called on the UI thread after the file got finalized and we have its size.
   void OnFileClosed(int job_id, JobStatus job_status, int64_t file_size);

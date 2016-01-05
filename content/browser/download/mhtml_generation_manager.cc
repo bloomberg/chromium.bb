@@ -17,6 +17,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/frame_messages.h"
@@ -25,7 +26,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents.h"
-#include "url/gurl.h"
 
 namespace content {
 
@@ -36,6 +36,7 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
   Job(int job_id, WebContents* web_contents, GenerateMHTMLCallback callback);
   ~Job() override;
 
+  int id() const { return job_id_; }
   void set_browser_file(base::File file) { browser_file_ = std::move(file); }
 
   GenerateMHTMLCallback callback() const { return callback_; }
@@ -250,7 +251,8 @@ bool MHTMLGenerationManager::Job::OnSerializeAsMHTMLResponse(
   // Sanitize renderer input / reject unexpected messages.
   int sender_id = sender->frame_tree_node()->frame_tree_node_id();
   if (sender_id != frame_tree_node_id_of_busy_frame_) {
-    NOTREACHED();
+    ReceivedBadMessage(sender->GetProcess(),
+                       bad_message::DWNLD_INVALID_SERIALIZE_AS_MHTML_RESPONSE);
     return false;  // Report failure.
   }
   frame_tree_node_id_of_busy_frame_ = FrameTreeNode::kFrameTreeNodeInvalidId;
@@ -329,23 +331,26 @@ void MHTMLGenerationManager::OnSerializeAsMHTMLResponse(
     const std::set<std::string>& digests_of_uris_of_serialized_resources) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!mhtml_generation_in_renderer_succeeded) {
-    JobFinished(job_id, JobStatus::FAILURE);
+  Job* job = FindJob(job_id);
+  if (!job) {
+    ReceivedBadMessage(sender->GetProcess(),
+                       bad_message::DWNLD_INVALID_SERIALIZE_AS_MHTML_RESPONSE);
     return;
   }
 
-  Job* job = FindJob(job_id);
-  if (!job)
+  if (!mhtml_generation_in_renderer_succeeded) {
+    JobFinished(job, JobStatus::FAILURE);
     return;
+  }
 
   if (!job->OnSerializeAsMHTMLResponse(
           sender, digests_of_uris_of_serialized_resources)) {
-    JobFinished(job_id, JobStatus::FAILURE);
+    JobFinished(job, JobStatus::FAILURE);
     return;
   }
 
   if (job->IsDone())
-    JobFinished(job_id, JobStatus::SUCCESS);
+    JobFinished(job, JobStatus::SUCCESS);
 }
 
 // static
@@ -372,34 +377,30 @@ void MHTMLGenerationManager::OnFileAvailable(int job_id,
                                              base::File browser_file) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  Job* job = FindJob(job_id);
+  DCHECK(job);
+
   if (!browser_file.IsValid()) {
     LOG(ERROR) << "Failed to create file";
-    JobFinished(job_id, JobStatus::FAILURE);
+    JobFinished(job, JobStatus::FAILURE);
     return;
   }
-
-  Job* job = FindJob(job_id);
-  if (!job)
-    return;
 
   job->set_browser_file(std::move(browser_file));
 
   if (!job->SendToNextRenderFrame()) {
-    JobFinished(job_id, JobStatus::FAILURE);
+    JobFinished(job, JobStatus::FAILURE);
   }
 }
 
-void MHTMLGenerationManager::JobFinished(int job_id, JobStatus job_status) {
+void MHTMLGenerationManager::JobFinished(Job* job, JobStatus job_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  Job* job = FindJob(job_id);
-  if (!job)
-    return;
+  DCHECK(job);
 
   job->CloseFile(
       base::Bind(&MHTMLGenerationManager::OnFileClosed,
                  base::Unretained(this),  // Safe b/c |this| is a singleton.
-                 job_id, job_status));
+                 job->id(), job_status));
 }
 
 void MHTMLGenerationManager::OnFileClosed(int job_id,
@@ -408,8 +409,7 @@ void MHTMLGenerationManager::OnFileClosed(int job_id,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Job* job = FindJob(job_id);
-  if (!job)
-    return;
+  DCHECK(job);
 
   job->callback().Run(job_status == JobStatus::SUCCESS ? file_size : -1);
   id_to_job_.erase(job_id);
@@ -439,15 +439,8 @@ MHTMLGenerationManager::Job* MHTMLGenerationManager::FindJob(int job_id) {
 
 void MHTMLGenerationManager::RenderProcessExited(Job* job) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  for (IDToJobMap::iterator it = id_to_job_.begin(); it != id_to_job_.end();
-       ++it) {
-    if (it->second == job) {
-      JobFinished(it->first, JobStatus::FAILURE);
-      return;
-    }
-  }
-  NOTREACHED();
+  DCHECK(job);
+  JobFinished(job, JobStatus::FAILURE);
 }
 
 }  // namespace content

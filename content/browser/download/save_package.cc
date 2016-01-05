@@ -22,6 +22,7 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/url_formatter/url_formatter.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_stats.h"
@@ -1035,10 +1036,9 @@ void SavePackage::OnSerializedHtmlWithLocalLinksResponse(
   int frame_tree_node_id = sender->frame_tree_node()->frame_tree_node_id();
   auto it = frame_tree_node_id_to_save_item_.find(frame_tree_node_id);
   if (it == frame_tree_node_id_to_save_item_.end()) {
-    // Sanitization of renderer IPC - we will have no save item only if
-    // the renderer misbehaves and sends OnSerializedHtmlFragment IPC without
-    // being asked to.
-    NOTREACHED();
+    // This is parimarily sanitization of IPC (renderer shouldn't send
+    // OnSerializedHtmlFragment IPC without being asked to), but it might also
+    // occur in the wild (if old renderer response reaches a new SavePackage).
     return;
   }
   SaveItem* save_item = it->second;
@@ -1133,10 +1133,15 @@ void SavePackage::OnSavableResourceLinksResponse(
         sender->frame_tree_node()->frame_tree()->FindByRoutingID(
             sender->GetProcess()->GetID(), subframe.routing_id);
 
-    if (!subframe_tree_node ||
-        subframe_tree_node->parent() != sender->frame_tree_node()) {
+    if (!subframe_tree_node) {
+      // crbug.com/541354 - Raciness when saving a dynamically changing page.
+      continue;
+    }
+    if (subframe_tree_node->parent() != sender->frame_tree_node()) {
       // Only reachable if the renderer has a bug or has been compromised.
-      NOTREACHED();
+      ReceivedBadMessage(
+          sender->GetProcess(),
+          bad_message::DWNLD_INVALID_SAVABLE_RESOURCE_LINKS_RESPONSE);
       continue;
     }
 

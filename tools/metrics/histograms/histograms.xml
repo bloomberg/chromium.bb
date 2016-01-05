@@ -57017,6 +57017,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="100" label="BDH_EMPTY_OR_INVALID_FILTERS"/>
   <int value="101" label="WC_CONTENT_WITH_CERT_ERRORS_BAD_SECURITY_INFO"/>
   <int value="102" label="RFMF_RENDERER_FAKED_ITS_OWN_DEATH"/>
+  <int value="103" label="DWNLD_INVALID_SAVABLE_RESOURCE_LINKS_RESPONSE"/>
+  <int value="104" label="DWNLD_INVALID_SERIALIZE_AS_MHTML_RESPONSE"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">
