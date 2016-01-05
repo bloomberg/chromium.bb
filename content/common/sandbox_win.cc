@@ -40,7 +40,10 @@
 #include "sandbox/win/src/sandbox_nt_util.h"
 #include "sandbox/win/src/sandbox_policy_base.h"
 #include "sandbox/win/src/win_utils.h"
-#include "ui/gfx/win/direct_write.h"
+
+#if !defined(NACL_WIN64)
+#include "ui/gfx/win/direct_write.h" // nogncheck: unused #ifdef NACL_WIN64
+#endif  // !defined(NACL_WIN64)
 
 static sandbox::BrokerServices* g_broker_services = NULL;
 static sandbox::TargetServices* g_target_services = NULL;
