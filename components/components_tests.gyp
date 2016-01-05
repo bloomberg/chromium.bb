@@ -1629,6 +1629,7 @@
             'components.gyp:invalidation_java',
             'components.gyp:policy_java',
             'components.gyp:policy_java_test_support',
+            'components.gyp:web_restriction_java',
             '../base/base.gyp:base_java',
             '../base/base.gyp:base_java_test_support',
             '../testing/android/junit/junit_test.gyp:junit_test_support',
@@ -1637,7 +1638,8 @@
             'main_class': 'org.chromium.testing.local.JunitTestMain',
             'src_paths': [
               'invalidation/impl/android/junit/',
-              'policy/android/junit/'
+              'policy/android/junit/',
+              'web_restriction/junit/'
             ],
           },
           'includes': [ '../build/host_jar.gypi' ],
