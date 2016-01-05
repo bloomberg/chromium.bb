@@ -15,6 +15,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -269,8 +270,9 @@ TEST_F(EmbeddedWorkerInstanceTest, DetachDuringStart) {
   base::RunLoop run_loop;
   worker->SendStartWorker(
       std::move(params),
-      base::Bind(&SaveStatusAndCall, &status, run_loop.QuitClosure()), true, -1,
-      false);
+      base::Bind(&SaveStatusAndCall, &status, run_loop.QuitClosure()),
+      true /* is_new_process */, MSG_ROUTING_NONE,
+      false /* wait_for_debugger */);
   run_loop.Run();
   EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT, status);
   // Don't expect SendStartWorker() to dispatch an OnStopped/Detached() message
@@ -284,8 +286,9 @@ TEST_F(EmbeddedWorkerInstanceTest, DetachDuringStart) {
   EmbeddedWorkerInstance* worker_ptr = worker.get();
   worker_ptr->SendStartWorker(
       std::move(params),
-      base::Bind(&DestroyWorker, base::Passed(&worker), &status), true, -1,
-      false);
+      base::Bind(&DestroyWorker, base::Passed(&worker), &status),
+      true /* is_new_process */, MSG_ROUTING_NONE,
+      false /* wait_for_debugger */);
   // No crash.
   EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT, status);
 }
@@ -298,7 +301,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StopDuringStart) {
   worker->AddListener(this);
   // Pretend we stop during starting before we got a process allocated.
   worker->status_ = EmbeddedWorkerInstance::STARTING;
-  worker->process_id_ = -1;
+  worker->process_id_ = ChildProcessHost::kInvalidUniqueID;
   worker->Stop();
   EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker->status());
   EXPECT_TRUE(detached_);

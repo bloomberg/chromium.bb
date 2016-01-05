@@ -21,6 +21,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/child_process_host.h"
 #include "ipc/ipc_message.h"
 #include "url/gurl.h"
 
@@ -136,7 +137,7 @@ class EmbeddedWorkerInstance::DevToolsProxy : public base::NonThreadSafe {
 EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
   DCHECK(status_ == STOPPING || status_ == STOPPED) << status_;
   devtools_proxy_.reset();
-  if (context_ && process_id_ != -1)
+  if (context_ && process_id_ != ChildProcessHost::kInvalidUniqueID)
     context_->process_manager()->ReleaseWorkerProcess(embedded_worker_id_);
   if (registry_->GetWorker(embedded_worker_id_))
     registry_->RemoveWorker(process_id_, embedded_worker_id_);
@@ -236,12 +237,11 @@ EmbeddedWorkerInstance::EmbeddedWorkerInstance(
       embedded_worker_id_(embedded_worker_id),
       status_(STOPPED),
       starting_phase_(NOT_STARTING),
-      process_id_(-1),
+      process_id_(ChildProcessHost::kInvalidUniqueID),
       thread_id_(kInvalidEmbeddedWorkerThreadId),
       devtools_attached_(false),
       network_accessed_for_script_(false),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 // static
 void EmbeddedWorkerInstance::RunProcessAllocated(
@@ -275,7 +275,7 @@ void EmbeddedWorkerInstance::ProcessAllocated(
     int process_id,
     bool is_new_process,
     ServiceWorkerStatusCode status) {
-  DCHECK_EQ(process_id_, -1);
+  DCHECK_EQ(process_id_, ChildProcessHost::kInvalidUniqueID);
   TRACE_EVENT_ASYNC_END1("ServiceWorker",
                          "EmbeddedWorkerInstance::ProcessAllocate",
                          params.get(),
@@ -508,11 +508,11 @@ void EmbeddedWorkerInstance::OnNetworkAccessedForScriptLoad() {
 
 void EmbeddedWorkerInstance::ReleaseProcess() {
   devtools_proxy_.reset();
-  if (context_ && process_id_ != -1)
+  if (context_ && process_id_ != ChildProcessHost::kInvalidUniqueID)
     context_->process_manager()->ReleaseWorkerProcess(embedded_worker_id_);
   status_ = STOPPED;
-  process_id_ = -1;
-  thread_id_ = -1;
+  process_id_ = ChildProcessHost::kInvalidUniqueID;
+  thread_id_ = kInvalidEmbeddedWorkerThreadId;
   service_registry_.reset();
   start_callback_.Reset();
 }

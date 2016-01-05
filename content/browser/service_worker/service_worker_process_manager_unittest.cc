@@ -6,6 +6,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "content/browser/service_worker/service_worker_process_manager.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -240,7 +241,7 @@ TEST_F(ServiceWorkerProcessManagerTest, AllocateWorkerProcess_InShutdown) {
 
   // Allocating a process in shutdown should abort.
   EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT, status);
-  EXPECT_EQ(-1, process_id);
+  EXPECT_EQ(ChildProcessHost::kInvalidUniqueID, process_id);
   EXPECT_FALSE(is_new_process);
   EXPECT_TRUE(process_manager_->instance_info_.empty());
 }

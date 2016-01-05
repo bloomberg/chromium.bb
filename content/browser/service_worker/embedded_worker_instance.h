@@ -262,7 +262,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   Status status_;
   StartingPhase starting_phase_;
 
-  // Current running information. -1 indicates the worker is not running.
+  // Current running information.
   int process_id_;
   int thread_id_;
   scoped_ptr<ServiceRegistryImpl> service_registry_;

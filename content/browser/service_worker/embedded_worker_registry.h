@@ -127,7 +127,8 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   ServiceWorkerStatusCode Send(int process_id, IPC::Message* message);
 
   // RemoveWorker is called when EmbeddedWorkerInstance is destructed.
-  // |process_id| could be invalid (i.e. -1) if it's not running.
+  // |process_id| could be invalid (i.e. ChildProcessHost::kInvalidUniqueID)
+  // if it's not running.
   void RemoveWorker(int process_id, int embedded_worker_id);
 
   EmbeddedWorkerInstance* GetWorkerForMessage(int process_id,
