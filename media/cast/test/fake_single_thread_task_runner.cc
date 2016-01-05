@@ -4,9 +4,9 @@
 
 #include "media/cast/test/fake_single_thread_task_runner.h"
 
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/time/tick_clock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
 namespace cast {
@@ -24,18 +24,36 @@ bool FakeSingleThreadTaskRunner::PostDelayedTask(
     const base::Closure& task,
     base::TimeDelta delay) {
   if (fail_on_next_task_) {
-    LOG(FATAL) << "Infinite task-add loop detected.";
+    LOG(FATAL) << "Infinite task posting loop detected.  Possibly caused by "
+               << from_here.ToString() << " posting a task with delay "
+               << delay.InMicroseconds() << " usec.";
   }
-  CHECK(delay >= base::TimeDelta());
-  EXPECT_GE(delay, base::TimeDelta());
-  PostedTask posed_task(from_here,
-                        task,
-                        clock_->NowTicks(),
-                        delay,
-                        base::TestPendingTask::NESTABLE);
 
-  tasks_.insert(std::make_pair(posed_task.GetTimeToRun(), posed_task));
-  return false;
+  CHECK_LE(base::TimeDelta(), delay);
+  const base::TimeTicks run_time = clock_->NowTicks() + delay;
+
+  // If there are one or more tasks with the exact same run time, schedule this
+  // task to occur after them.  This mimics the FIFO ordering behavior when
+  // scheduling delayed tasks to be run via base::MessageLoop in a
+  // multi-threaded application.
+  if (!tasks_.empty()) {
+    const auto after_it = tasks_.lower_bound(
+        TaskKey(run_time + base::TimeDelta::FromMicroseconds(1), 0));
+    if (after_it != tasks_.begin()) {
+      auto it = after_it;
+      --it;
+      if (it->first.first == run_time) {
+        tasks_.insert(
+            after_it /* hint */,
+            std::make_pair(TaskKey(run_time, it->first.second + 1), task));
+        return true;
+      }
+    }
+  }
+
+  // No tasks have the exact same run time, so just do a simple insert.
+  tasks_.insert(std::make_pair(TaskKey(run_time, 0), task));
+  return true;
 }
 
 bool FakeSingleThreadTaskRunner::RunsTasksOnCurrentThread() const {
@@ -45,47 +63,44 @@ bool FakeSingleThreadTaskRunner::RunsTasksOnCurrentThread() const {
 void FakeSingleThreadTaskRunner::RunTasks() {
   while (true) {
     // Run all tasks equal or older than current time.
-    std::multimap<base::TimeTicks, PostedTask>::iterator it = tasks_.begin();
+    const auto it = tasks_.begin();
     if (it == tasks_.end())
       return;  // No more tasks.
 
-    PostedTask task = it->second;
-    if (clock_->NowTicks() < task.GetTimeToRun())
+    if (clock_->NowTicks() < it->first.first)
       return;
 
+    const base::Closure task = it->second;
     tasks_.erase(it);
-    task.task.Run();
+    task.Run();
   }
 }
 
 void FakeSingleThreadTaskRunner::Sleep(base::TimeDelta t) {
-  base::TimeTicks run_until = clock_->NowTicks() + t;
+  CHECK_LE(base::TimeDelta(), t);
+  const base::TimeTicks run_until = clock_->NowTicks() + t;
+
   while (1) {
-    // If we run more than 100000 iterations, we've probably
-    // hit some sort of case where a new task is posted every
-    // time that we invoke a task, and we can't make progress
-    // anymore. If that happens, set fail_on_next_task_ to true
-    // and throw an error when the next task is posted.
+    // Run up to 100000 tasks that were scheduled to run during the sleep
+    // period. 100000 should be enough for everybody (see comments below).
     for (int i = 0; i < 100000; i++) {
-      // Run all tasks equal or older than current time.
-      std::multimap<base::TimeTicks, PostedTask>::iterator it = tasks_.begin();
-      if (it == tasks_.end()) {
+      const auto it = tasks_.begin();
+      if (it == tasks_.end() || run_until < it->first.first) {
         clock_->Advance(run_until - clock_->NowTicks());
         return;
       }
 
-      PostedTask task = it->second;
-      if (run_until < task.GetTimeToRun()) {
-        clock_->Advance(run_until - clock_->NowTicks());
-        return;
-      }
-
-      clock_->Advance(task.GetTimeToRun() - clock_->NowTicks());
+      clock_->Advance(it->first.first - clock_->NowTicks());
+      const base::Closure task = it->second;
       tasks_.erase(it);
-      task.task.Run();
+      task.Run();
     }
-    // Instead of failing immediately, we fail when the next task is
-    // added so that the backtrace will include the task that was added.
+
+    // If this point is reached, there's likely some sort of case where a new
+    // non-delayed task is being posted every time a task is popped and invoked
+    // from the queue. If that happens, set fail_on_next_task_ to true and throw
+    // an error when the next task is posted, where we might be able to identify
+    // the caller causing the problem via logging.
     fail_on_next_task_ = true;
   }
 }

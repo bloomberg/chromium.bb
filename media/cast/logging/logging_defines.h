@@ -37,7 +37,9 @@ enum CastLoggingEvent {
   PACKET_RTX_REJECTED,
   // Receiver side packet events.
   PACKET_RECEIVED,
-  kNumOfLoggingEvents = PACKET_RECEIVED
+};
+enum {
+  kNumOfLoggingEvents = PACKET_RECEIVED + 1,
 };
 
 const char* CastLoggingToString(CastLoggingEvent event);

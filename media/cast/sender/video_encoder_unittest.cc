@@ -276,8 +276,8 @@ class VideoEncoderTest
   DISALLOW_COPY_AND_ASSIGN(VideoEncoderTest);
 };
 
-// A simple test to encode ten frames of video, expecting to see one key frame
-// followed by nine delta frames.
+// A simple test to encode three frames of video, expecting to see one key frame
+// followed by two delta frames.
 TEST_P(VideoEncoderTest, GeneratesKeyFrameThenOnlyDeltaFrames) {
   CreateEncoder();
   SetVEAFactoryAutoRespond(true);
@@ -302,14 +302,14 @@ TEST_P(VideoEncoderTest, GeneratesKeyFrameThenOnlyDeltaFrames) {
   ExpectVEAResponsesForExternalVideoEncoder(1, 3);
 
   // Expect the remaining frames are encoded as delta frames.
-  for (++frame_id; frame_id < 10; ++frame_id, ++reference_frame_id) {
+  for (++frame_id; frame_id < 3; ++frame_id, ++reference_frame_id) {
     EXPECT_TRUE(EncodeAndCheckDelivery(CreateTestVideoFrame(frame_size),
                                        frame_id,
                                        reference_frame_id));
     RunTasksAndAdvanceClock();
   }
 
-  WaitForAllFramesToBeDelivered(10);
+  WaitForAllFramesToBeDelivered(3);
   ExpectVEAResponsesForExternalVideoEncoder(1, 3);
 }
 
@@ -325,17 +325,17 @@ TEST_P(VideoEncoderTest, EncodesVariedFrameSizes) {
   ExpectVEAResponsesForExternalVideoEncoder(0, 0);
 
   std::vector<gfx::Size> frame_sizes;
-  frame_sizes.push_back(gfx::Size(1280, 720));
-  frame_sizes.push_back(gfx::Size(640, 360));  // Shrink both dimensions.
-  frame_sizes.push_back(gfx::Size(300, 200));  // Shrink both dimensions again.
-  frame_sizes.push_back(gfx::Size(200, 300));  // Same area.
-  frame_sizes.push_back(gfx::Size(600, 400));  // Grow both dimensions.
-  frame_sizes.push_back(gfx::Size(638, 400));  // Shrink only one dimension.
-  frame_sizes.push_back(gfx::Size(638, 398));  // Shrink the other dimension.
-  frame_sizes.push_back(gfx::Size(320, 180));  // Shrink both dimensions again.
-  frame_sizes.push_back(gfx::Size(322, 180));  // Grow only one dimension.
-  frame_sizes.push_back(gfx::Size(322, 182));  // Grow the other dimension.
-  frame_sizes.push_back(gfx::Size(1920, 1080));  // Grow both dimensions again.
+  frame_sizes.push_back(gfx::Size(128, 72));
+  frame_sizes.push_back(gfx::Size(64, 36));    // Shrink both dimensions.
+  frame_sizes.push_back(gfx::Size(30, 20));    // Shrink both dimensions again.
+  frame_sizes.push_back(gfx::Size(20, 30));    // Same area.
+  frame_sizes.push_back(gfx::Size(60, 40));    // Grow both dimensions.
+  frame_sizes.push_back(gfx::Size(58, 40));    // Shrink only one dimension.
+  frame_sizes.push_back(gfx::Size(58, 38));    // Shrink the other dimension.
+  frame_sizes.push_back(gfx::Size(32, 18));    // Shrink both dimensions again.
+  frame_sizes.push_back(gfx::Size(34, 18));    // Grow only one dimension.
+  frame_sizes.push_back(gfx::Size(34, 20));    // Grow the other dimension.
+  frame_sizes.push_back(gfx::Size(192, 108));  // Grow both dimensions again.
 
   uint32_t frame_id = 0;
 
@@ -352,7 +352,7 @@ TEST_P(VideoEncoderTest, EncodesVariedFrameSizes) {
       ++frame_id;
   }
 
-  // Encode 10+ frames at each size. For encoders with a resize delay, expect
+  // Encode three frames at each size. For encoders with a resize delay, expect
   // the first one or more frames are dropped while the encoder re-inits. Then,
   // for all encoders, expect one key frame followed by all delta frames.
   for (const auto& frame_size : frame_sizes) {
@@ -365,7 +365,7 @@ TEST_P(VideoEncoderTest, EncodesVariedFrameSizes) {
       RunTasksAndAdvanceClock();
     } while (!accepted_first_frame);
     ++frame_id;
-    for (int i = 1; i < 10; ++i, ++frame_id) {
+    for (int i = 1; i < 3; ++i, ++frame_id) {
       EXPECT_TRUE(EncodeAndCheckDelivery(CreateTestVideoFrame(frame_size),
                                          frame_id,
                                          frame_id - 1));
@@ -373,7 +373,7 @@ TEST_P(VideoEncoderTest, EncodesVariedFrameSizes) {
     }
   }
 
-  WaitForAllFramesToBeDelivered(10 * frame_sizes.size());
+  WaitForAllFramesToBeDelivered(3 * frame_sizes.size());
   ExpectVEAResponsesForExternalVideoEncoder(
       2 * frame_sizes.size(), 6 * frame_sizes.size());
 }
@@ -386,7 +386,7 @@ TEST_P(VideoEncoderTest, CanBeDestroyedBeforeVEAIsCreated) {
   CreateEncoder();
 
   // Send a frame to spawn creation of the ExternalVideoEncoder instance.
-  EncodeAndCheckDelivery(CreateTestVideoFrame(gfx::Size(1280, 720)), 0, 0);
+  EncodeAndCheckDelivery(CreateTestVideoFrame(gfx::Size(128, 72)), 0, 0);
 
   // Destroy the encoder, and confirm the VEA Factory did not respond yet.
   DestroyEncoder();

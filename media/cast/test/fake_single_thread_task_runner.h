@@ -7,16 +7,14 @@
 
 #include <map>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "base/test/test_pending_task.h"
 
 namespace media {
 namespace cast {
 namespace test {
-
-typedef base::TestPendingTask PostedTask;
 
 class FakeSingleThreadTaskRunner : public base::SingleThreadTaskRunner {
  public:
@@ -44,7 +42,17 @@ class FakeSingleThreadTaskRunner : public base::SingleThreadTaskRunner {
 
  private:
   base::SimpleTestTickClock* const clock_;
-  std::multimap<base::TimeTicks, PostedTask> tasks_;
+
+  // A compound key is used to ensure FIFO execution of delayed tasks scheduled
+  // for the same point-in-time.  The second part of the key is simply a FIFO
+  // sequence number.
+  using TaskKey = std::pair<base::TimeTicks, unsigned int>;
+
+  // Note: The std::map data structure was chosen because the entire
+  // cast_unittests suite performed 20% faster than when using
+  // std::priority_queue.  http://crbug.com/530842
+  std::map<TaskKey, base::Closure> tasks_;
+
   bool fail_on_next_task_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSingleThreadTaskRunner);

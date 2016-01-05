@@ -74,8 +74,9 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
   // Called from the unit test thread to create another EncodedFrame and push it
   // into the decoding pipeline.
   void FeedMoreVideo(int num_dropped_frames) {
-    // Prepare a simulated EncodedFrame to feed into the VideoDecoder.
+    DCHECK(!cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
+    // Prepare a simulated VideoFrame to feed into the VideoEncoder.
     const scoped_refptr<VideoFrame> video_frame = VideoFrame::CreateFrame(
         PIXEL_FORMAT_YV12, next_frame_size_, gfx::Rect(next_frame_size_),
         next_frame_size_, next_frame_timestamp_);
@@ -98,11 +99,9 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
     last_frame_id_ = encoded_frame->frame_id;
     ASSERT_EQ(reference_time, encoded_frame->reference_time);
 
-    {
-      base::AutoLock auto_lock(lock_);
-      ++total_video_frames_feed_in_;
-    }
+    ++total_video_frames_feed_in_;
 
+    // Post a task to decode the encoded frame.
     cast_environment_->PostTask(
         CastEnvironment::MAIN,
         FROM_HERE,
@@ -161,51 +160,63 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
 
   Vp8Encoder vp8_encoder_;
 
+  // Unlike |total_video_frames_decoded_|, this is only read/written on a single
+  // thread.
+  int total_video_frames_feed_in_;
+
   base::Lock lock_;
   base::ConditionVariable cond_;
-  int total_video_frames_feed_in_;
-  int total_video_frames_decoded_;
+  int total_video_frames_decoded_;  // Protected by |lock_|.
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecoderTest);
 };
 
 TEST_P(VideoDecoderTest, DecodesFrames) {
-  const int kNumFrames = 10;
+  const int kNumFrames = 3;
   for (int i = 0; i < kNumFrames; ++i)
     FeedMoreVideo(0);
   WaitForAllVideoToBeDecoded();
 }
 
 TEST_P(VideoDecoderTest, RecoversFromDroppedFrames) {
-  const int kNumFrames = 100;
-  int next_drop_at = 3;
-  int next_num_dropped = 1;
-  for (int i = 0; i < kNumFrames; ++i) {
-    if (i == next_drop_at) {
-      const int num_dropped = next_num_dropped++;
-      next_drop_at *= 2;
-      i += num_dropped;
-      FeedMoreVideo(num_dropped);
-    } else {
-      FeedMoreVideo(0);
-    }
-  }
+  // Feed 20 frames and expect 20 to be decoded.  At random points, drop one or
+  // more frames.
+  FeedMoreVideo(0);
+  FeedMoreVideo(2);  // Two frames dropped.
+  FeedMoreVideo(0);
+  FeedMoreVideo(0);
+  FeedMoreVideo(1);  // One frame dropped.
+  FeedMoreVideo(0);
+  FeedMoreVideo(0);
+  FeedMoreVideo(0);
+  FeedMoreVideo(1);  // One frame dropped.
+  FeedMoreVideo(0);
+  FeedMoreVideo(0);
+  FeedMoreVideo(0);
+  FeedMoreVideo(0);
+  FeedMoreVideo(3);  // Three frames dropped.
+  FeedMoreVideo(0);
+  FeedMoreVideo(0);
+  FeedMoreVideo(10);  // Ten frames dropped.
+  FeedMoreVideo(0);
+  FeedMoreVideo(1);  // One frame dropped.
+  FeedMoreVideo(0);
   WaitForAllVideoToBeDecoded();
 }
 
 TEST_P(VideoDecoderTest, DecodesFramesOfVaryingSizes) {
   std::vector<gfx::Size> frame_sizes;
-  frame_sizes.push_back(gfx::Size(1280, 720));
-  frame_sizes.push_back(gfx::Size(640, 360));  // Shrink both dimensions.
-  frame_sizes.push_back(gfx::Size(300, 200));  // Shrink both dimensions again.
-  frame_sizes.push_back(gfx::Size(200, 300));  // Same area.
-  frame_sizes.push_back(gfx::Size(600, 400));  // Grow both dimensions.
-  frame_sizes.push_back(gfx::Size(638, 400));  // Shrink only one dimension.
-  frame_sizes.push_back(gfx::Size(638, 398));  // Shrink the other dimension.
-  frame_sizes.push_back(gfx::Size(320, 180));  // Shrink both dimensions again.
-  frame_sizes.push_back(gfx::Size(322, 180));  // Grow only one dimension.
-  frame_sizes.push_back(gfx::Size(322, 182));  // Grow the other dimension.
-  frame_sizes.push_back(gfx::Size(1920, 1080));  // Grow both dimensions again.
+  frame_sizes.push_back(gfx::Size(128, 72));
+  frame_sizes.push_back(gfx::Size(64, 36));    // Shrink both dimensions.
+  frame_sizes.push_back(gfx::Size(30, 20));    // Shrink both dimensions again.
+  frame_sizes.push_back(gfx::Size(20, 30));    // Same area.
+  frame_sizes.push_back(gfx::Size(60, 40));    // Grow both dimensions.
+  frame_sizes.push_back(gfx::Size(58, 40));    // Shrink only one dimension.
+  frame_sizes.push_back(gfx::Size(58, 38));    // Shrink the other dimension.
+  frame_sizes.push_back(gfx::Size(32, 18));    // Shrink both dimensions again.
+  frame_sizes.push_back(gfx::Size(34, 18));    // Grow only one dimension.
+  frame_sizes.push_back(gfx::Size(34, 20));    // Grow the other dimension.
+  frame_sizes.push_back(gfx::Size(192, 108));  // Grow both dimensions again.
 
   // Encode one frame at each size.
   for (const auto& frame_size : frame_sizes) {
@@ -213,10 +224,10 @@ TEST_P(VideoDecoderTest, DecodesFramesOfVaryingSizes) {
     FeedMoreVideo(0);
   }
 
-  // Encode 10 frames at each size.
+  // Encode 3 frames at each size.
   for (const auto& frame_size : frame_sizes) {
     SetNextFrameSize(frame_size);
-    const int kNumFrames = 10;
+    const int kNumFrames = 3;
     for (int i = 0; i < kNumFrames; ++i)
       FeedMoreVideo(0);
   }

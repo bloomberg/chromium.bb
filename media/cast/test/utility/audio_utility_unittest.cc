@@ -15,7 +15,7 @@ namespace {
 
 TEST(AudioTimestampTest, Small) {
   std::vector<float> samples(480);
-  for (int32_t in_timestamp = 0; in_timestamp < 65536; in_timestamp += 177) {
+  for (int32_t in_timestamp = 0; in_timestamp < 65536; in_timestamp += 2077) {
     EncodeTimestamp(in_timestamp, 0, samples.size(), &samples.front());
     uint16_t out_timestamp;
     EXPECT_TRUE(
@@ -34,13 +34,11 @@ TEST(AudioTimestampTest, Negative) {
 TEST(AudioTimestampTest, CheckPhase) {
   std::vector<float> samples(4800);
   EncodeTimestamp(4711, 0, samples.size(), &samples.front());
-  while (samples.size() > 240) {
+  for (size_t i = 0; i < samples.size() - 240; i += 143) {
     uint16_t out_timestamp;
-    EXPECT_TRUE(
-        DecodeTimestamp(&samples.front(), samples.size(), &out_timestamp));
+    EXPECT_TRUE(DecodeTimestamp(&samples.front() + i, samples.size() - i,
+                                &out_timestamp));
     ASSERT_EQ(4711, out_timestamp);
-
-    samples.erase(samples.begin(), samples.begin() + 73);
   }
 }
 
