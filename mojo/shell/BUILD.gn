@@ -96,6 +96,7 @@ test("mojo_shell_unittests") {
     ":test_support",
     "//base",
     "//mojo/application/public/cpp",
+    "//mojo/edk/system:test_utils",
     "//mojo/fetcher",
     "//mojo/package_manager",
     "//mojo/public/cpp/system",

@@ -82,6 +82,12 @@ class DataFetcherTest : public testing::Test {
 
     uint32_t num_bytes = 0;
     Handle body_handle = response->body.release();
+
+    MojoHandleSignalsState hss;
+    ASSERT_EQ(MOJO_RESULT_OK,
+              MojoWait(body_handle.value(), MOJO_HANDLE_SIGNAL_READABLE,
+                       MOJO_DEADLINE_INDEFINITE, &hss));
+
     MojoResult result = MojoReadData(body_handle.value(), nullptr, &num_bytes,
                                      MOJO_READ_DATA_FLAG_QUERY);
     ASSERT_EQ(MOJO_RESULT_OK, result);

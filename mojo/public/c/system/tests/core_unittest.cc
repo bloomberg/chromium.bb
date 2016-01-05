@@ -156,6 +156,10 @@ TEST(CoreTest, BasicMessagePipe) {
   // Close |h0|.
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h0));
 
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoWait(h1, MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+                     MOJO_DEADLINE_INDEFINITE, &state));
+
   // |h1| should no longer be readable or writable.
   EXPECT_EQ(
       MOJO_RESULT_FAILED_PRECONDITION,
@@ -250,7 +254,8 @@ TEST(CoreTest, BasicDataPipe) {
 
   // |hc| should still be readable.
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWait(hc, MOJO_HANDLE_SIGNAL_READABLE, 0, &state));
+            MojoWait(hc, MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+                     MOJO_DEADLINE_INDEFINITE, &state));
 
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
             state.satisfied_signals);

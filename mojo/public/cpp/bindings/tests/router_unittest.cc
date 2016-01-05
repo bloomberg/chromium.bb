@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/tests/message_queue.h"
 #include "mojo/public/cpp/bindings/tests/router_test_util.h"
@@ -48,9 +49,11 @@ TEST_F(RouterTest, BasicRequestResponse) {
   AllocRequestMessage(1, "hello", &request);
 
   MessageQueue message_queue;
-  router0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
+  base::RunLoop run_loop;
+  router0.AcceptWithResponder(
+      &request, new MessageAccumulator(&message_queue, run_loop.QuitClosure()));
 
-  PumpMessages();
+  run_loop.Run();
 
   EXPECT_FALSE(message_queue.IsEmpty());
 
@@ -64,10 +67,12 @@ TEST_F(RouterTest, BasicRequestResponse) {
   Message request2;
   AllocRequestMessage(1, "hello again", &request2);
 
-  router0.AcceptWithResponder(&request2,
-                              new MessageAccumulator(&message_queue));
+  base::RunLoop run_loop2;
+  router0.AcceptWithResponder(
+      &request2,
+      new MessageAccumulator(&message_queue, run_loop2.QuitClosure()));
 
-  PumpMessages();
+  run_loop2.Run();
 
   EXPECT_FALSE(message_queue.IsEmpty());
 
@@ -130,9 +135,13 @@ TEST_F(RouterTest, RequestWithNoReceiver) {
   AllocRequestMessage(1, "hello", &request);
 
   MessageQueue message_queue;
+  base::RunLoop run_loop, run_loop2;
+  router0.set_connection_error_handler(run_loop.QuitClosure());
+  router1.set_connection_error_handler(run_loop2.QuitClosure());
   router0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
 
-  PumpMessages();
+  run_loop.Run();
+  run_loop2.Run();
 
   EXPECT_TRUE(router0.encountered_error());
   EXPECT_TRUE(router1.encountered_error());
@@ -145,15 +154,19 @@ TEST_F(RouterTest, LazyResponses) {
   internal::Router router0(std::move(handle0_), internal::FilterChain());
   internal::Router router1(std::move(handle1_), internal::FilterChain());
 
-  LazyResponseGenerator generator;
+  base::RunLoop run_loop;
+  LazyResponseGenerator generator(run_loop.QuitClosure());
   router1.set_incoming_receiver(&generator);
 
   Message request;
   AllocRequestMessage(1, "hello", &request);
 
   MessageQueue message_queue;
-  router0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
-  PumpMessages();
+  base::RunLoop run_loop2;
+  router0.AcceptWithResponder(
+      &request,
+      new MessageAccumulator(&message_queue, run_loop2.QuitClosure()));
+  run_loop.Run();
 
   // The request has been received but the response has not been sent yet.
   EXPECT_TRUE(message_queue.IsEmpty());
@@ -161,7 +174,7 @@ TEST_F(RouterTest, LazyResponses) {
   // Send the response.
   EXPECT_TRUE(generator.responder_is_valid());
   generator.CompleteWithResponse();
-  PumpMessages();
+  run_loop2.Run();
 
   // Check the response.
   EXPECT_FALSE(message_queue.IsEmpty());
@@ -171,20 +184,26 @@ TEST_F(RouterTest, LazyResponses) {
             std::string(reinterpret_cast<const char*>(response.payload())));
 
   // Send a second message on the pipe.
+  base::RunLoop run_loop3;
+  LazyResponseGenerator generator2(run_loop3.QuitClosure());
+
+  router1.set_incoming_receiver(&generator2);
   Message request2;
   AllocRequestMessage(1, "hello again", &request2);
 
-  router0.AcceptWithResponder(&request2,
-                              new MessageAccumulator(&message_queue));
-  PumpMessages();
+  base::RunLoop run_loop4;
+  router0.AcceptWithResponder(
+      &request2,
+      new MessageAccumulator(&message_queue, run_loop4.QuitClosure()));
+  run_loop3.Run();
 
   // The request has been received but the response has not been sent yet.
   EXPECT_TRUE(message_queue.IsEmpty());
 
   // Send the second response.
-  EXPECT_TRUE(generator.responder_is_valid());
-  generator.CompleteWithResponse();
-  PumpMessages();
+  EXPECT_TRUE(generator2.responder_is_valid());
+  generator2.CompleteWithResponse();
+  run_loop4.Run();
 
   // Check the second response.
   EXPECT_FALSE(message_queue.IsEmpty());
@@ -197,17 +216,26 @@ TEST_F(RouterTest, LazyResponses) {
 // sending a response, then we trigger connection error at both sides. Moreover,
 // both sides still appear to have a valid message pipe handle bound.
 TEST_F(RouterTest, MissingResponses) {
+  base::RunLoop run_loop0, run_loop1;
   internal::Router router0(std::move(handle0_), internal::FilterChain());
   bool error_handler_called0 = false;
   router0.set_connection_error_handler(
-      [&error_handler_called0]() { error_handler_called0 = true; });
+      [&error_handler_called0, &run_loop0]() {
+        error_handler_called0 = true;
+        run_loop0.Quit();
+      });
 
   internal::Router router1(std::move(handle1_), internal::FilterChain());
   bool error_handler_called1 = false;
   router1.set_connection_error_handler(
-      [&error_handler_called1]() { error_handler_called1 = true; });
+      [&error_handler_called1, &run_loop1]() {
+        error_handler_called1 = true;
+        run_loop1.Quit();
+      });
 
-  LazyResponseGenerator generator;
+  base::RunLoop run_loop3;
+  LazyResponseGenerator generator(run_loop3.QuitClosure());
+  router1.set_incoming_receiver(&generator);
   router1.set_incoming_receiver(&generator);
 
   Message request;
@@ -215,14 +243,15 @@ TEST_F(RouterTest, MissingResponses) {
 
   MessageQueue message_queue;
   router0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
-  PumpMessages();
+  run_loop3.Run();
 
   // The request has been received but no response has been sent.
   EXPECT_TRUE(message_queue.IsEmpty());
 
   // Destroy the responder MessagerReceiver but don't send any response.
   generator.CompleteWithoutResponse();
-  PumpMessages();
+  run_loop0.Run();
+  run_loop1.Run();
 
   // Check that no response was received.
   EXPECT_TRUE(message_queue.IsEmpty());
@@ -245,7 +274,8 @@ TEST_F(RouterTest, LateResponse) {
   // MessageReceiver, which was given to us via AcceptWithResponder,
   // after the router has gone away.
 
-  LazyResponseGenerator generator;
+  base::RunLoop run_loop;
+  LazyResponseGenerator generator(run_loop.QuitClosure());
   {
     internal::Router router0(std::move(handle0_), internal::FilterChain());
     internal::Router router1(std::move(handle1_), internal::FilterChain());
@@ -259,7 +289,7 @@ TEST_F(RouterTest, LateResponse) {
     router0.AcceptWithResponder(&request,
                                 new MessageAccumulator(&message_queue));
 
-    PumpMessages();
+    run_loop.Run();
 
     EXPECT_TRUE(generator.has_responder());
   }

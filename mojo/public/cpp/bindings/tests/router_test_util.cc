@@ -34,10 +34,18 @@ void AllocResponseMessage(uint32_t name,
   builder.message()->MoveTo(message);
 }
 
-MessageAccumulator::MessageAccumulator(MessageQueue* queue) : queue_(queue) {}
+MessageAccumulator::MessageAccumulator(MessageQueue* queue,
+                                       const base::Closure& closure)
+    : queue_(queue), closure_(closure) {}
+
+MessageAccumulator::~MessageAccumulator() {}
 
 bool MessageAccumulator::Accept(Message* message) {
   queue_->Push(message);
+  if (!closure_.is_null()) {
+    closure_.Run();
+    closure_.Reset();
+  }
   return true;
 }
 
@@ -72,8 +80,8 @@ bool ResponseGenerator::SendResponse(uint32_t name,
   return responder->Accept(&response);
 }
 
-LazyResponseGenerator::LazyResponseGenerator()
-    : responder_(nullptr), name_(0), request_id_(0) {}
+LazyResponseGenerator::LazyResponseGenerator(const base::Closure& closure)
+    : responder_(nullptr), name_(0), request_id_(0), closure_(closure) {}
 
 LazyResponseGenerator::~LazyResponseGenerator() {
   delete responder_;
@@ -87,6 +95,10 @@ bool LazyResponseGenerator::AcceptWithResponder(
   request_string_ =
       std::string(reinterpret_cast<const char*>(message->payload()));
   responder_ = responder;
+  if (!closure_.is_null()) {
+    closure_.Run();
+    closure_.Reset();
+  }
   return true;
 }
 

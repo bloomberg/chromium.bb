@@ -18,6 +18,12 @@
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/macros.h"
 
+#if defined(OS_WIN)
+// To avoid a compile failure on Windows because it defines ERROR, which is also
+// used by the logs. Similar to change in base/logging.h.
+#undef ERROR
+#endif
+
 #define MOJO_LOG_STREAM(level)                                             \
   ::mojo::internal::LogMessage(MOJO_LOG_LEVEL_##level, __FILE__, __LINE__) \
       .stream()

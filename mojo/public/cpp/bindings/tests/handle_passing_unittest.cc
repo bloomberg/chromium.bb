@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -22,26 +23,36 @@ const char kText2[] = "world";
 
 class StringRecorder {
  public:
-  explicit StringRecorder(std::string* buf) : buf_(buf) {}
-  void Run(const String& a) const { *buf_ = a.To<std::string>(); }
+  StringRecorder(std::string* buf, const base::Closure& closure)
+      : buf_(buf), closure_(closure) {}
+  void Run(const String& a) const {
+    *buf_ = a.To<std::string>();
+    closure_.Run();
+  }
 
  private:
   std::string* buf_;
+  base::Closure closure_;
 };
 
 class ImportedInterfaceImpl : public imported::ImportedInterface {
  public:
-  explicit ImportedInterfaceImpl(
-      InterfaceRequest<imported::ImportedInterface> request)
-      : binding_(this, std::move(request)) {}
+  ImportedInterfaceImpl(
+      InterfaceRequest<imported::ImportedInterface> request,
+      const base::Closure& closure)
+      : binding_(this, std::move(request)), closure_(closure) {}
 
-  void DoSomething() override { do_something_count_++; }
+  void DoSomething() override {
+    do_something_count_++;
+    closure_.Run();
+  }
 
   static int do_something_count() { return do_something_count_; }
 
  private:
   static int do_something_count_;
   Binding<ImportedInterface> binding_;
+  base::Closure closure_;
 };
 int ImportedInterfaceImpl::do_something_count_ = 0;
 
@@ -101,6 +112,12 @@ class SampleFactoryImpl : public sample::Factory {
     // DidStuff2().
     ASSERT_TRUE(pipe.is_valid());
     uint32_t data_size = 0;
+
+    MojoHandleSignalsState state;
+    ASSERT_EQ(MOJO_RESULT_OK,
+              MojoWait(pipe.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
+                       MOJO_DEADLINE_INDEFINITE, &state));
+    ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE, state.satisfied_signals);
     ASSERT_EQ(MOJO_RESULT_OK,
               ReadDataRaw(
                   pipe.get(), nullptr, &data_size, MOJO_READ_DATA_FLAG_QUERY));
@@ -151,8 +168,12 @@ class HandlePassingTest : public testing::Test {
 };
 
 struct DoStuffCallback {
-  DoStuffCallback(bool* got_response, std::string* got_text_reply)
-      : got_response(got_response), got_text_reply(got_text_reply) {}
+  DoStuffCallback(bool* got_response,
+                  std::string* got_text_reply,
+                  const base::Closure& closure)
+      : got_response(got_response),
+        got_text_reply(got_text_reply),
+        closure(closure) {}
 
   void Run(sample::ResponsePtr response, const String& text_reply) const {
     *got_text_reply = text_reply;
@@ -173,10 +194,12 @@ struct DoStuffCallback {
     }
 
     *got_response = true;
+    closure.Run();
   }
 
   bool* got_response;
   std::string* got_text_reply;
+  base::Closure closure;
 };
 
 TEST_F(HandlePassingTest, Basic) {
@@ -190,7 +213,9 @@ TEST_F(HandlePassingTest, Basic) {
   EXPECT_TRUE(WriteTextMessage(pipe1.handle1.get(), kText2));
 
   imported::ImportedInterfacePtr imported;
-  ImportedInterfaceImpl imported_impl(GetProxy(&imported));
+  base::RunLoop run_loop;
+  ImportedInterfaceImpl imported_impl(GetProxy(&imported),
+                                      run_loop.QuitClosure());
 
   sample::RequestPtr request(sample::Request::New());
   request->x = 1;
@@ -198,13 +223,15 @@ TEST_F(HandlePassingTest, Basic) {
   request->obj = std::move(imported);
   bool got_response = false;
   std::string got_text_reply;
-  DoStuffCallback cb(&got_response, &got_text_reply);
+  base::RunLoop run_loop2;
+  DoStuffCallback cb(&got_response, &got_text_reply, run_loop2.QuitClosure());
   factory->DoStuff(std::move(request), std::move(pipe0.handle0), cb);
 
   EXPECT_FALSE(*cb.got_response);
   int count_before = ImportedInterfaceImpl::do_something_count();
 
-  PumpMessages();
+  run_loop.Run();
+  run_loop2.Run();
 
   EXPECT_TRUE(*cb.got_response);
   EXPECT_EQ(kText1, *cb.got_text_reply);
@@ -219,27 +246,34 @@ TEST_F(HandlePassingTest, PassInvalid) {
   request->x = 1;
   bool got_response = false;
   std::string got_text_reply;
-  DoStuffCallback cb(&got_response, &got_text_reply);
+  base::RunLoop run_loop;
+  DoStuffCallback cb(&got_response, &got_text_reply, run_loop.QuitClosure());
   factory->DoStuff(std::move(request), ScopedMessagePipeHandle(), cb);
 
   EXPECT_FALSE(*cb.got_response);
 
-  PumpMessages();
+  run_loop.Run();
 
   EXPECT_TRUE(*cb.got_response);
 }
 
 struct DoStuff2Callback {
-  DoStuff2Callback(bool* got_response, std::string* got_text_reply)
-      : got_response(got_response), got_text_reply(got_text_reply) {}
+  DoStuff2Callback(bool* got_response,
+                   std::string* got_text_reply,
+                   const base::Closure& closure)
+      : got_response(got_response),
+        got_text_reply(got_text_reply),
+        closure(closure) {}
 
   void Run(const String& text_reply) const {
     *got_response = true;
     *got_text_reply = text_reply;
+    closure.Run();
   }
 
   bool* got_response;
   std::string* got_text_reply;
+  base::Closure closure;
 };
 
 // Verifies DataPipeConsumer can be passed and read from.
@@ -268,12 +302,13 @@ TEST_F(HandlePassingTest, DataPipe) {
 
   bool got_response = false;
   std::string got_text_reply;
-  DoStuff2Callback cb(&got_response, &got_text_reply);
+  base::RunLoop run_loop;
+  DoStuff2Callback cb(&got_response, &got_text_reply, run_loop.QuitClosure());
   factory->DoStuff2(std::move(consumer_handle), cb);
 
   EXPECT_FALSE(*cb.got_response);
 
-  PumpMessages();
+  run_loop.Run();
 
   EXPECT_TRUE(*cb.got_response);
   EXPECT_EQ(expected_text_reply, *cb.got_text_reply);
@@ -339,13 +374,15 @@ TEST_F(HandlePassingTest, CreateNamedObject) {
   factory->CreateNamedObject(GetProxy(&object2));
   object2->SetName("object2");
 
+  base::RunLoop run_loop, run_loop2;
   std::string name1;
-  object1->GetName(StringRecorder(&name1));
+  object1->GetName(StringRecorder(&name1, run_loop.QuitClosure()));
 
   std::string name2;
-  object2->GetName(StringRecorder(&name2));
+  object2->GetName(StringRecorder(&name2, run_loop2.QuitClosure()));
 
-  PumpMessages();  // Yield for results.
+  run_loop.Run();
+  run_loop2.Run();
 
   EXPECT_EQ(std::string("object1"), name1);
   EXPECT_EQ(std::string("object2"), name2);

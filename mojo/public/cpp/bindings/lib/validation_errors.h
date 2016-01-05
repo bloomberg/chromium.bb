@@ -5,6 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_VALIDATION_ERRORS_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_VALIDATION_ERRORS_H_
 
+#include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
@@ -70,14 +71,18 @@ void ReportValidationError(ValidationError error,
 // validation.
 class ValidationErrorObserverForTesting {
  public:
-  ValidationErrorObserverForTesting();
+  explicit ValidationErrorObserverForTesting(const Callback<void()>& callback);
   ~ValidationErrorObserverForTesting();
 
   ValidationError last_error() const { return last_error_; }
-  void set_last_error(ValidationError error) { last_error_ = error; }
+  void set_last_error(ValidationError error) {
+    last_error_ = error;
+    callback_.Run();
+  }
 
  private:
   ValidationError last_error_;
+  Callback<void()> callback_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ValidationErrorObserverForTesting);
 };

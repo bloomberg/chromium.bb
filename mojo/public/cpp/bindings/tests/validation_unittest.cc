@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/c/system/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -171,8 +172,12 @@ void RunValidationTests(const std::string& prefix,
     ASSERT_TRUE(ReadTestCase(tests[i], &message, &expected));
 
     std::string result;
-    mojo::internal::ValidationErrorObserverForTesting observer;
+    base::RunLoop run_loop;
+    mojo::internal::ValidationErrorObserverForTesting observer(
+        run_loop.QuitClosure());
     mojo_ignore_result(test_message_receiver->Accept(&message));
+    if (expected != "PASS")  // Observer only gets called on errors.
+      run_loop.Run();
     if (observer.last_error() == mojo::internal::VALIDATION_ERROR_NONE)
       result = "PASS";
     else
@@ -235,9 +240,7 @@ class ValidationIntegrationTest : public ValidationTest {
     ~TestMessageReceiver() override {}
 
     bool Accept(Message* message) override {
-      bool rv = connector_.Accept(message);
-      owner_->PumpMessages();
-      return rv;
+      return connector_.Accept(message);
     }
 
    public:

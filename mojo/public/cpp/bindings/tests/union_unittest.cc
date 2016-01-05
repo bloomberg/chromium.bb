@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -1050,22 +1051,28 @@ TEST(UnionTest, HandleInUnionValidationNull) {
 
 class SmallCacheImpl : public SmallCache {
  public:
-  SmallCacheImpl() : int_value_(0) {}
+  explicit SmallCacheImpl(const base::Closure& closure)
+      : int_value_(0), closure_(closure) {}
   ~SmallCacheImpl() override {}
   int64_t int_value() const { return int_value_; }
 
  private:
-  void SetIntValue(int64_t int_value) override { int_value_ = int_value; }
+  void SetIntValue(int64_t int_value) override {
+    int_value_ = int_value;
+    closure_.Run();
+  }
   void GetIntValue(const GetIntValueCallback& callback) override {
     callback.Run(int_value_);
   }
 
   int64_t int_value_;
+  base::Closure closure_;
 };
 
 TEST(UnionTest, InterfaceInUnion) {
-  base::MessageLoop run_loop(common::MessagePumpMojo::Create());
-  SmallCacheImpl impl;
+  base::MessageLoop message_loop(common::MessagePumpMojo::Create());
+  base::RunLoop run_loop;
+  SmallCacheImpl impl(run_loop.QuitClosure());
   SmallCachePtr ptr;
   Binding<SmallCache> bindings(&impl, GetProxy(&ptr));
 
@@ -1073,13 +1080,14 @@ TEST(UnionTest, InterfaceInUnion) {
   handle->set_f_small_cache(std::move(ptr));
 
   handle->get_f_small_cache()->SetIntValue(10);
-  run_loop.RunUntilIdle();
+  run_loop.Run();
   EXPECT_EQ(10, impl.int_value());
 }
 
 TEST(UnionTest, InterfaceInUnionSerialization) {
-  base::MessageLoop run_loop(common::MessagePumpMojo::Create());
-  SmallCacheImpl impl;
+  base::MessageLoop message_loop(common::MessagePumpMojo::Create());
+  base::RunLoop run_loop;
+  SmallCacheImpl impl(run_loop.QuitClosure());
   SmallCachePtr ptr;
   Binding<SmallCache> bindings(&impl, GetProxy(&ptr));
 
@@ -1101,7 +1109,7 @@ TEST(UnionTest, InterfaceInUnionSerialization) {
   Deserialize_(data, &handle2, nullptr);
 
   handle2->get_f_small_cache()->SetIntValue(10);
-  run_loop.RunUntilIdle();
+  run_loop.Run();
   EXPECT_EQ(10, impl.int_value());
 }
 

@@ -5,7 +5,9 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -75,31 +77,41 @@ class MathCalculatorUI {
  public:
   explicit MathCalculatorUI(math::CalculatorPtr calculator)
       : calculator_(std::move(calculator)),
-        output_(0.0),
-        callback_(MakeRunnable(&MathCalculatorUI::Output, this)) {}
+        output_(0.0) {}
 
   bool WaitForIncomingResponse() {
     return calculator_.WaitForIncomingResponse();
   }
 
   bool encountered_error() const { return calculator_.encountered_error(); }
+  void set_connection_error_handler(const base::Closure& closure) {
+    calculator_.set_connection_error_handler(closure);
+  }
 
-  void Add(double value) { calculator_->Add(value, callback_); }
+  void Add(double value, const base::Closure& closure) {
+    calculator_->Add(
+        value,
+        base::Bind(&MathCalculatorUI::Output, base::Unretained(this), closure));
+  }
 
-  void Subtract(double value) { calculator_->Add(-value, callback_); }
-
-  void Multiply(double value) { calculator_->Multiply(value, callback_); }
-
-  void Divide(double value) { calculator_->Multiply(1.0 / value, callback_); }
+  void Multiply(double value, const base::Closure& closure) {
+    calculator_->Multiply(
+        value,
+        base::Bind(&MathCalculatorUI::Output, base::Unretained(this), closure));
+  }
 
   double GetOutput() const { return output_; }
 
  private:
-  void Output(double output) { output_ = output; }
+  void Output(const base::Closure& closure, double output) {
+    output_ = output;
+    if (!closure.is_null())
+      closure.Run();
+  }
 
   math::CalculatorPtr calculator_;
   double output_;
-  Callback<void(double)> callback_;
+  base::Closure closure_;
 };
 
 class SelfDestructingMathCalculatorUI {
@@ -109,21 +121,25 @@ class SelfDestructingMathCalculatorUI {
     ++num_instances_;
   }
 
-  void BeginTest(bool nested) {
+  void BeginTest(bool nested, const base::Closure& closure) {
     nesting_level_ = nested ? 2 : 1;
     calculator_->Add(
-        1.0, MakeRunnable(&SelfDestructingMathCalculatorUI::Output, this));
+        1.0,
+        base::Bind(&SelfDestructingMathCalculatorUI::Output,
+                   base::Unretained(this), closure));
   }
 
   static int num_instances() { return num_instances_; }
 
-  void Output(double value) {
+  void Output(const base::Closure& closure, double value) {
     if (--nesting_level_ > 0) {
       // Add some more and wait for re-entrant call to Output!
       calculator_->Add(
-          1.0, MakeRunnable(&SelfDestructingMathCalculatorUI::Output, this));
-      base::MessageLoop::current()->RunUntilIdle();
+          1.0,
+          base::Bind(&SelfDestructingMathCalculatorUI::Output,
+                     base::Unretained(this), closure));
     } else {
+      closure.Run();
       delete this;
     }
   }
@@ -177,14 +193,23 @@ class IntegerAccessorImpl : public sample::IntegerAccessor {
 
   int64_t integer() const { return integer_; }
 
+  void set_closure(const base::Closure& closure) { closure_ = closure; }
+
  private:
   // sample::IntegerAccessor implementation.
   void GetInteger(const GetIntegerCallback& callback) override {
     callback.Run(integer_, sample::ENUM_VALUE);
   }
-  void SetInteger(int64_t data, sample::Enum type) override { integer_ = data; }
+  void SetInteger(int64_t data, sample::Enum type) override {
+    integer_ = data;
+    if (!closure_.is_null()) {
+      closure_.Run();
+      closure_.Reset();
+    }
+  }
 
   int64_t integer_;
+  base::Closure closure_;
 };
 
 class InterfacePtrTest : public testing::Test {
@@ -212,10 +237,11 @@ TEST_F(InterfacePtrTest, EndToEnd) {
   // Suppose this is instantiated in a process that has pipe1_.
   MathCalculatorUI calculator_ui(std::move(calc));
 
-  calculator_ui.Add(2.0);
-  calculator_ui.Multiply(5.0);
-
-  PumpMessages();
+  base::RunLoop run_loop, run_loop2;
+  calculator_ui.Add(2.0, run_loop.QuitClosure());
+  calculator_ui.Multiply(5.0, run_loop2.QuitClosure());
+  run_loop.Run();
+  run_loop2.Run();
 
   EXPECT_EQ(10.0, calculator_ui.GetOutput());
 }
@@ -229,13 +255,13 @@ TEST_F(InterfacePtrTest, EndToEnd_Synchronous) {
 
   EXPECT_EQ(0.0, calculator_ui.GetOutput());
 
-  calculator_ui.Add(2.0);
+  calculator_ui.Add(2.0, base::Closure());
   EXPECT_EQ(0.0, calculator_ui.GetOutput());
   calc_impl.WaitForIncomingMethodCall();
   calculator_ui.WaitForIncomingResponse();
   EXPECT_EQ(2.0, calculator_ui.GetOutput());
 
-  calculator_ui.Multiply(5.0);
+  calculator_ui.Multiply(5.0, base::Closure());
   EXPECT_EQ(2.0, calculator_ui.GetOutput());
   calc_impl.WaitForIncomingMethodCall();
   calculator_ui.WaitForIncomingResponse();
@@ -296,21 +322,24 @@ TEST_F(InterfacePtrTest, EncounteredError) {
 
   MathCalculatorUI calculator_ui(std::move(proxy));
 
-  calculator_ui.Add(2.0);
-  PumpMessages();
+  base::RunLoop run_loop;
+  calculator_ui.Add(2.0, run_loop.QuitClosure());
+  run_loop.Run();
   EXPECT_EQ(2.0, calculator_ui.GetOutput());
   EXPECT_FALSE(calculator_ui.encountered_error());
 
-  calculator_ui.Multiply(5.0);
+  calculator_ui.Multiply(5.0, base::Closure());
   EXPECT_FALSE(calculator_ui.encountered_error());
 
   // Close the server.
   calc_impl.CloseMessagePipe();
 
   // The state change isn't picked up locally yet.
+  base::RunLoop run_loop2;
+  calculator_ui.set_connection_error_handler(run_loop2.QuitClosure());
   EXPECT_FALSE(calculator_ui.encountered_error());
 
-  PumpMessages();
+  run_loop2.Run();
 
   // OK, now we see the error.
   EXPECT_TRUE(calculator_ui.encountered_error());
@@ -321,17 +350,22 @@ TEST_F(InterfacePtrTest, EncounteredErrorCallback) {
   MathCalculatorImpl calc_impl(GetProxy(&proxy));
 
   bool encountered_error = false;
+  base::RunLoop run_loop;
   proxy.set_connection_error_handler(
-      [&encountered_error]() { encountered_error = true; });
+      [&encountered_error, &run_loop]() {
+        encountered_error = true;
+        run_loop.Quit();
+      });
 
   MathCalculatorUI calculator_ui(std::move(proxy));
 
-  calculator_ui.Add(2.0);
-  PumpMessages();
+  base::RunLoop run_loop2;
+  calculator_ui.Add(2.0, run_loop2.QuitClosure());
+  run_loop2.Run();
   EXPECT_EQ(2.0, calculator_ui.GetOutput());
   EXPECT_FALSE(calculator_ui.encountered_error());
 
-  calculator_ui.Multiply(5.0);
+  calculator_ui.Multiply(5.0, base::Closure());
   EXPECT_FALSE(calculator_ui.encountered_error());
 
   // Close the server.
@@ -340,7 +374,7 @@ TEST_F(InterfacePtrTest, EncounteredErrorCallback) {
   // The state change isn't picked up locally yet.
   EXPECT_FALSE(calculator_ui.encountered_error());
 
-  PumpMessages();
+  run_loop.Run();
 
   // OK, now we see the error.
   EXPECT_TRUE(calculator_ui.encountered_error());
@@ -358,9 +392,9 @@ TEST_F(InterfacePtrTest, DestroyInterfacePtrOnMethodResponse) {
 
   SelfDestructingMathCalculatorUI* impl =
       new SelfDestructingMathCalculatorUI(std::move(proxy));
-  impl->BeginTest(false);
-
-  PumpMessages();
+  base::RunLoop run_loop;
+  impl->BeginTest(false, run_loop.QuitClosure());
+  run_loop.Run();
 
   EXPECT_EQ(0, SelfDestructingMathCalculatorUI::num_instances());
 }
@@ -373,9 +407,9 @@ TEST_F(InterfacePtrTest, NestedDestroyInterfacePtrOnMethodResponse) {
 
   SelfDestructingMathCalculatorUI* impl =
       new SelfDestructingMathCalculatorUI(std::move(proxy));
-  impl->BeginTest(true);
-
-  PumpMessages();
+  base::RunLoop run_loop;
+  impl->BeginTest(true, run_loop.QuitClosure());
+  run_loop.Run();
 
   EXPECT_EQ(0, SelfDestructingMathCalculatorUI::num_instances());
 }
@@ -384,12 +418,16 @@ TEST_F(InterfacePtrTest, ReentrantWaitForIncomingMethodCall) {
   sample::ServicePtr proxy;
   ReentrantServiceImpl impl(GetProxy(&proxy));
 
+  base::RunLoop run_loop, run_loop2;
+  auto called_cb = [&run_loop](int32_t result) { run_loop.Quit(); };
+  auto called_cb2 = [&run_loop2](int32_t result) { run_loop2.Quit(); };
   proxy->Frobinate(nullptr, sample::Service::BAZ_OPTIONS_REGULAR, nullptr,
-                   sample::Service::FrobinateCallback());
+                   called_cb);
   proxy->Frobinate(nullptr, sample::Service::BAZ_OPTIONS_REGULAR, nullptr,
-                   sample::Service::FrobinateCallback());
+                   called_cb2);
 
-  PumpMessages();
+  run_loop.Run();
+  run_loop2.Run();
 
   EXPECT_EQ(2, impl.max_call_depth());
 }
@@ -401,10 +439,14 @@ TEST_F(InterfacePtrTest, QueryVersion) {
 
   EXPECT_EQ(0u, ptr.version());
 
-  auto callback = [](uint32_t version) { EXPECT_EQ(3u, version); };
+  base::RunLoop run_loop;
+  auto callback = [&run_loop](uint32_t version) {
+    EXPECT_EQ(3u, version);
+    run_loop.Quit();
+  };
   ptr.QueryVersion(callback);
 
-  PumpMessages();
+  run_loop.Run();
 
   EXPECT_EQ(3u, ptr.version());
 }
@@ -418,15 +460,19 @@ TEST_F(InterfacePtrTest, RequireVersion) {
 
   ptr.RequireVersion(1u);
   EXPECT_EQ(1u, ptr.version());
+  base::RunLoop run_loop;
+  impl.set_closure(run_loop.QuitClosure());
   ptr->SetInteger(123, sample::ENUM_VALUE);
-  PumpMessages();
+  run_loop.Run();
   EXPECT_FALSE(ptr.encountered_error());
   EXPECT_EQ(123, impl.integer());
 
   ptr.RequireVersion(3u);
   EXPECT_EQ(3u, ptr.version());
+  base::RunLoop run_loop2;
+  impl.set_closure(run_loop2.QuitClosure());
   ptr->SetInteger(456, sample::ENUM_VALUE);
-  PumpMessages();
+  run_loop2.Run();
   EXPECT_FALSE(ptr.encountered_error());
   EXPECT_EQ(456, impl.integer());
 
@@ -434,8 +480,10 @@ TEST_F(InterfacePtrTest, RequireVersion) {
   ptr.RequireVersion(4u);
   // This value is set to the input of RequireVersion() synchronously.
   EXPECT_EQ(4u, ptr.version());
+  base::RunLoop run_loop3;
+  ptr.set_connection_error_handler(run_loop3.QuitClosure());
   ptr->SetInteger(789, sample::ENUM_VALUE);
-  PumpMessages();
+  run_loop3.Run();
   EXPECT_TRUE(ptr.encountered_error());
   // The call to SetInteger() after RequireVersion(4u) is ignored.
   EXPECT_EQ(456, impl.integer());
@@ -445,12 +493,14 @@ class StrongMathCalculatorImpl : public math::Calculator {
  public:
   StrongMathCalculatorImpl(ScopedMessagePipeHandle handle,
                            bool* error_received,
-                           bool* destroyed)
+                           bool* destroyed,
+                           const base::Closure& closure)
       : error_received_(error_received),
         destroyed_(destroyed),
+        closure_(closure),
         binding_(this, std::move(handle)) {
     binding_.set_connection_error_handler(
-        [this]() { *error_received_ = true; });
+        [this]() { *error_received_ = true; closure_.Run(); });
   }
   ~StrongMathCalculatorImpl() override { *destroyed_ = true; }
 
@@ -471,6 +521,7 @@ class StrongMathCalculatorImpl : public math::Calculator {
   double total_ = 0.0;
   bool* error_received_;
   bool* destroyed_;
+  base::Closure closure_;
 
   StrongBinding<math::Calculator> binding_;
 };
@@ -481,8 +532,9 @@ TEST(StrongConnectorTest, Math) {
   bool error_received = false;
   bool destroyed = false;
   MessagePipe pipe;
+  base::RunLoop run_loop;
   new StrongMathCalculatorImpl(std::move(pipe.handle0), &error_received,
-                               &destroyed);
+                               &destroyed, run_loop.QuitClosure());
 
   math::CalculatorPtr calc;
   calc.Bind(InterfacePtrInfo<math::Calculator>(std::move(pipe.handle1), 0u));
@@ -492,10 +544,11 @@ TEST(StrongConnectorTest, Math) {
     // message pipe.
     MathCalculatorUI calculator_ui(std::move(calc));
 
-    calculator_ui.Add(2.0);
-    calculator_ui.Multiply(5.0);
-
-    loop.RunUntilIdle();
+    base::RunLoop run_loop, run_loop2;
+    calculator_ui.Add(2.0, run_loop.QuitClosure());
+    calculator_ui.Multiply(5.0, run_loop2.QuitClosure());
+    run_loop.Run();
+    run_loop2.Run();
 
     EXPECT_EQ(10.0, calculator_ui.GetOutput());
     EXPECT_FALSE(error_received);
@@ -505,7 +558,7 @@ TEST(StrongConnectorTest, Math) {
   // other
   // end which will destroy the instance since it is strongly bound.
 
-  loop.RunUntilIdle();
+  run_loop.Run();
   EXPECT_TRUE(error_received);
   EXPECT_TRUE(destroyed);
 }
@@ -514,12 +567,14 @@ class WeakMathCalculatorImpl : public math::Calculator {
  public:
   WeakMathCalculatorImpl(ScopedMessagePipeHandle handle,
                          bool* error_received,
-                         bool* destroyed)
+                         bool* destroyed,
+                         const base::Closure& closure)
       : error_received_(error_received),
         destroyed_(destroyed),
+        closure_(closure),
         binding_(this, std::move(handle)) {
     binding_.set_connection_error_handler(
-        [this]() { *error_received_ = true; });
+        [this]() { *error_received_ = true; closure_.Run(); });
   }
   ~WeakMathCalculatorImpl() override { *destroyed_ = true; }
 
@@ -539,6 +594,7 @@ class WeakMathCalculatorImpl : public math::Calculator {
   double total_ = 0.0;
   bool* error_received_;
   bool* destroyed_;
+  base::Closure closure_;
 
   Binding<math::Calculator> binding_;
 };
@@ -549,8 +605,9 @@ TEST(WeakConnectorTest, Math) {
   bool error_received = false;
   bool destroyed = false;
   MessagePipe pipe;
+  base::RunLoop run_loop;
   WeakMathCalculatorImpl impl(std::move(pipe.handle0), &error_received,
-                              &destroyed);
+                              &destroyed, run_loop.QuitClosure());
 
   math::CalculatorPtr calc;
   calc.Bind(InterfacePtrInfo<math::Calculator>(std::move(pipe.handle1), 0u));
@@ -560,10 +617,11 @@ TEST(WeakConnectorTest, Math) {
     // message pipe.
     MathCalculatorUI calculator_ui(std::move(calc));
 
-    calculator_ui.Add(2.0);
-    calculator_ui.Multiply(5.0);
-
-    loop.RunUntilIdle();
+    base::RunLoop run_loop, run_loop2;
+    calculator_ui.Add(2.0, run_loop.QuitClosure());
+    calculator_ui.Multiply(5.0, run_loop2.QuitClosure());
+    run_loop.Run();
+    run_loop2.Run();
 
     EXPECT_EQ(10.0, calculator_ui.GetOutput());
     EXPECT_FALSE(error_received);
@@ -573,61 +631,71 @@ TEST(WeakConnectorTest, Math) {
     // end which will destroy the instance since it is strongly bound.
   }
 
-  loop.RunUntilIdle();
+  run_loop.Run();
   EXPECT_TRUE(error_received);
   EXPECT_FALSE(destroyed);
 }
 
 class CImpl : public C {
  public:
-  CImpl(bool* d_called, InterfaceRequest<C> request)
-      : d_called_(d_called), binding_(this, std::move(request)) {}
+  CImpl(bool* d_called, InterfaceRequest<C> request,
+        const base::Closure& closure)
+      : d_called_(d_called), binding_(this, std::move(request)),
+        closure_(closure) {}
   ~CImpl() override {}
 
  private:
   void D() override {
     *d_called_ = true;
+    closure_.Run();
   }
 
   bool* d_called_;
   StrongBinding<C> binding_;
+  base::Closure closure_;
 };
 
 class BImpl : public B {
  public:
-  BImpl(bool* d_called, InterfaceRequest<B> request)
-      : d_called_(d_called), binding_(this, std::move(request)) {}
+  BImpl(bool* d_called, InterfaceRequest<B> request,
+        const base::Closure& closure)
+      : d_called_(d_called), binding_(this, std::move(request)),
+        closure_(closure) {}
   ~BImpl() override {}
 
  private:
   void GetC(InterfaceRequest<C> c) override {
-    new CImpl(d_called_, std::move(c));
+    new CImpl(d_called_, std::move(c), closure_);
   }
 
   bool* d_called_;
   StrongBinding<B> binding_;
+  base::Closure closure_;
 };
 
 class AImpl : public A {
  public:
-  explicit AImpl(InterfaceRequest<A> request)
-      : d_called_(false), binding_(this, std::move(request)) {}
+  AImpl(InterfaceRequest<A> request, const base::Closure& closure)
+      : d_called_(false), binding_(this, std::move(request)),
+        closure_(closure) {}
   ~AImpl() override {}
 
   bool d_called() const { return d_called_; }
 
  private:
   void GetB(InterfaceRequest<B> b) override {
-    new BImpl(&d_called_, std::move(b));
+    new BImpl(&d_called_, std::move(b), closure_);
   }
 
   bool d_called_;
   Binding<A> binding_;
+  base::Closure closure_;
 };
 
 TEST_F(InterfacePtrTest, Scoping) {
   APtr a;
-  AImpl a_impl(GetProxy(&a));
+  base::RunLoop run_loop;
+  AImpl a_impl(GetProxy(&a), run_loop.QuitClosure());
 
   EXPECT_FALSE(a_impl.d_called());
 
@@ -642,7 +710,7 @@ TEST_F(InterfacePtrTest, Scoping) {
   // While B & C have fallen out of scope, the pipes will remain until they are
   // flushed.
   EXPECT_FALSE(a_impl.d_called());
-  PumpMessages();
+  run_loop.Run();
   EXPECT_TRUE(a_impl.d_called());
 }
 

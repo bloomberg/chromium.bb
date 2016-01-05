@@ -8,6 +8,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/lib/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/lib/scoped_interface_endpoint_handle.h"
@@ -71,9 +72,12 @@ TEST_F(MultiplexRouterTest, BasicRequestResponse) {
   AllocRequestMessage(1, "hello", &request);
 
   MessageQueue message_queue;
-  client0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
+  base::RunLoop run_loop;
+  client0.AcceptWithResponder(
+      &request,
+      new MessageAccumulator(&message_queue, run_loop.QuitClosure()));
 
-  PumpMessages();
+  run_loop.Run();
 
   EXPECT_FALSE(message_queue.IsEmpty());
 
@@ -87,10 +91,12 @@ TEST_F(MultiplexRouterTest, BasicRequestResponse) {
   Message request2;
   AllocRequestMessage(1, "hello again", &request2);
 
-  client0.AcceptWithResponder(&request2,
-                              new MessageAccumulator(&message_queue));
+  base::RunLoop run_loop2;
+  client0.AcceptWithResponder(
+      &request2,
+      new MessageAccumulator(&message_queue, run_loop2.QuitClosure()));
 
-  PumpMessages();
+  run_loop2.Run();
 
   EXPECT_FALSE(message_queue.IsEmpty());
 
@@ -155,9 +161,14 @@ TEST_F(MultiplexRouterTest, RequestWithNoReceiver) {
   AllocRequestMessage(1, "hello", &request);
 
   MessageQueue message_queue;
-  client0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
+  base::RunLoop run_loop, run_loop2;
+  client0.set_connection_error_handler(run_loop.QuitClosure());
+  client1.set_connection_error_handler(run_loop2.QuitClosure());
+  client0.AcceptWithResponder(
+      &request, new MessageAccumulator(&message_queue, run_loop.QuitClosure()));
 
-  PumpMessages();
+  run_loop.Run();
+  run_loop2.Run();
 
   EXPECT_TRUE(client0.encountered_error());
   EXPECT_TRUE(client1.encountered_error());
@@ -169,7 +180,8 @@ TEST_F(MultiplexRouterTest, RequestWithNoReceiver) {
 TEST_F(MultiplexRouterTest, LazyResponses) {
   InterfaceEndpointClient client0(std::move(endpoint0_), nullptr,
                                   make_scoped_ptr(new PassThroughFilter()));
-  LazyResponseGenerator generator;
+  base::RunLoop run_loop;
+  LazyResponseGenerator generator(run_loop.QuitClosure());
   InterfaceEndpointClient client1(std::move(endpoint1_), &generator,
                                   make_scoped_ptr(new PassThroughFilter()));
 
@@ -177,8 +189,11 @@ TEST_F(MultiplexRouterTest, LazyResponses) {
   AllocRequestMessage(1, "hello", &request);
 
   MessageQueue message_queue;
-  client0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
-  PumpMessages();
+  base::RunLoop run_loop2;
+  client0.AcceptWithResponder(
+      &request,
+      new MessageAccumulator(&message_queue, run_loop2.QuitClosure()));
+  run_loop.Run();
 
   // The request has been received but the response has not been sent yet.
   EXPECT_TRUE(message_queue.IsEmpty());
@@ -186,7 +201,7 @@ TEST_F(MultiplexRouterTest, LazyResponses) {
   // Send the response.
   EXPECT_TRUE(generator.responder_is_valid());
   generator.CompleteWithResponse();
-  PumpMessages();
+  run_loop2.Run();
 
   // Check the response.
   EXPECT_FALSE(message_queue.IsEmpty());
@@ -196,12 +211,16 @@ TEST_F(MultiplexRouterTest, LazyResponses) {
             std::string(reinterpret_cast<const char*>(response.payload())));
 
   // Send a second message on the pipe.
+  base::RunLoop run_loop3;
+  generator.set_closure(run_loop3.QuitClosure());
   Message request2;
   AllocRequestMessage(1, "hello again", &request2);
 
-  client0.AcceptWithResponder(&request2,
-                              new MessageAccumulator(&message_queue));
-  PumpMessages();
+  base::RunLoop run_loop4;
+  client0.AcceptWithResponder(
+      &request2,
+      new MessageAccumulator(&message_queue, run_loop4.QuitClosure()));
+  run_loop3.Run();
 
   // The request has been received but the response has not been sent yet.
   EXPECT_TRUE(message_queue.IsEmpty());
@@ -209,7 +228,7 @@ TEST_F(MultiplexRouterTest, LazyResponses) {
   // Send the second response.
   EXPECT_TRUE(generator.responder_is_valid());
   generator.CompleteWithResponse();
-  PumpMessages();
+  run_loop4.Run();
 
   // Check the second response.
   EXPECT_FALSE(message_queue.IsEmpty());
@@ -222,32 +241,41 @@ TEST_F(MultiplexRouterTest, LazyResponses) {
 // sending a response, then we trigger connection error at both sides. Moreover,
 // both sides still appear to have a valid message pipe handle bound.
 TEST_F(MultiplexRouterTest, MissingResponses) {
+  base::RunLoop run_loop0, run_loop1;
   InterfaceEndpointClient client0(std::move(endpoint0_), nullptr,
                                   make_scoped_ptr(new PassThroughFilter()));
   bool error_handler_called0 = false;
   client0.set_connection_error_handler(
-      [&error_handler_called0]() { error_handler_called0 = true; });
+      [&error_handler_called0, &run_loop0]() {
+        error_handler_called0 = true;
+        run_loop0.Quit();
+      });
 
-  LazyResponseGenerator generator;
+  base::RunLoop run_loop3;
+  LazyResponseGenerator generator(run_loop3.QuitClosure());
   InterfaceEndpointClient client1(std::move(endpoint1_), &generator,
                                   make_scoped_ptr(new PassThroughFilter()));
   bool error_handler_called1 = false;
   client1.set_connection_error_handler(
-      [&error_handler_called1]() { error_handler_called1 = true; });
+      [&error_handler_called1, &run_loop1]() {
+        error_handler_called1 = true;
+        run_loop1.Quit();
+      });
 
   Message request;
   AllocRequestMessage(1, "hello", &request);
 
   MessageQueue message_queue;
   client0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
-  PumpMessages();
+  run_loop3.Run();
 
   // The request has been received but no response has been sent.
   EXPECT_TRUE(message_queue.IsEmpty());
 
   // Destroy the responder MessagerReceiver but don't send any response.
   generator.CompleteWithoutResponse();
-  PumpMessages();
+  run_loop0.Run();
+  run_loop1.Run();
 
   // Check that no response was received.
   EXPECT_TRUE(message_queue.IsEmpty());
@@ -270,7 +298,8 @@ TEST_F(MultiplexRouterTest, LateResponse) {
   // MessageReceiver, which was given to us via AcceptWithResponder,
   // after the router has gone away.
 
-  LazyResponseGenerator generator;
+  base::RunLoop run_loop;
+  LazyResponseGenerator generator(run_loop.QuitClosure());
   {
     InterfaceEndpointClient client0(std::move(endpoint0_), nullptr,
                                     make_scoped_ptr(new PassThroughFilter()));
@@ -284,7 +313,7 @@ TEST_F(MultiplexRouterTest, LateResponse) {
     client0.AcceptWithResponder(&request,
                                 new MessageAccumulator(&message_queue));
 
-    PumpMessages();
+    run_loop.Run();
 
     EXPECT_TRUE(generator.has_responder());
   }

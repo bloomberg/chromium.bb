@@ -4,7 +4,9 @@
 
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -34,12 +36,19 @@ namespace {
 // provided int32_t*. Used on the client side.
 class ValueSaver {
  public:
-  explicit ValueSaver(int32_t* last_value_seen)
-      : last_value_seen_(last_value_seen) {}
-  void Run(int32_t x) const { *last_value_seen_ = x; }
+  ValueSaver(int32_t* last_value_seen, const base::Closure& closure)
+      : last_value_seen_(last_value_seen), closure_(closure) {}
+  void Run(int32_t x) const {
+    *last_value_seen_ = x;
+    if (!closure_.is_null()) {
+      closure_.Run();
+      closure_.Reset();
+    }
+  }
 
  private:
   int32_t* const last_value_seen_;
+  mutable base::Closure closure_;
 };
 
 // An implementation of sample::Provider used on the server side.
@@ -79,6 +88,10 @@ class InterfaceImpl : public sample::Provider {
   void EchoInt(int32_t x, const Callback<void(int32_t)>& callback) override {
     last_server_value_seen_ = x;
     *callback_saved_ = callback;
+    if (!closure_.is_null()) {
+      closure_.Run();
+      closure_.Reset();
+    }
   }
 
   void EchoString(const String& a,
@@ -107,9 +120,12 @@ class InterfaceImpl : public sample::Provider {
 
   int32_t last_server_value_seen() const { return last_server_value_seen_; }
 
+  void set_closure(const base::Closure& closure) { closure_ = closure; }
+
  private:
   int32_t last_server_value_seen_;
   Callback<void(int32_t)>* callback_saved_;
+  base::Closure closure_;
 };
 
 class BindingCallbackTest : public testing::Test {
@@ -139,8 +155,12 @@ TEST_F(BindingCallbackTest, Basic) {
   last_client_callback_value_seen_ = 0;
 
   // Invoke the Echo method.
-  interface_ptr_->EchoInt(7, ValueSaver(&last_client_callback_value_seen_));
-  PumpMessages();
+  base::RunLoop run_loop, run_loop2;
+  server_impl.set_closure(run_loop.QuitClosure());
+  interface_ptr_->EchoInt(
+      7,
+      ValueSaver(&last_client_callback_value_seen_, run_loop2.QuitClosure()));
+  run_loop.Run();
 
   // Check that server saw the correct value, but the client has not yet.
   EXPECT_EQ(7, server_impl.last_server_value_seen());
@@ -148,7 +168,7 @@ TEST_F(BindingCallbackTest, Basic) {
 
   // Now run the Callback.
   server_impl.RunCallback();
-  PumpMessages();
+  run_loop2.Run();
 
   // Check that the client has now seen the correct value.
   EXPECT_EQ(7, last_client_callback_value_seen_);
@@ -158,8 +178,12 @@ TEST_F(BindingCallbackTest, Basic) {
   last_client_callback_value_seen_ = 0;
 
   // Invoke the Echo method again.
-  interface_ptr_->EchoInt(13, ValueSaver(&last_client_callback_value_seen_));
-  PumpMessages();
+  base::RunLoop run_loop3, run_loop4;
+  server_impl.set_closure(run_loop3.QuitClosure());
+  interface_ptr_->EchoInt(
+      13,
+      ValueSaver(&last_client_callback_value_seen_, run_loop4.QuitClosure()));
+  run_loop3.Run();
 
   // Check that server saw the correct value, but the client has not yet.
   EXPECT_EQ(13, server_impl.last_server_value_seen());
@@ -167,7 +191,7 @@ TEST_F(BindingCallbackTest, Basic) {
 
   // Now run the Callback again.
   server_impl.RunCallback();
-  PumpMessages();
+  run_loop4.Run();
 
   // Check that the client has now seen the correct value again.
   EXPECT_EQ(13, last_client_callback_value_seen_);
@@ -178,17 +202,23 @@ TEST_F(BindingCallbackTest, Basic) {
 TEST_F(BindingCallbackTest, DeleteBindingThenRunCallback) {
   // Create the ServerImpl.
   InterfaceImpl server_impl;
+  base::RunLoop run_loop;
   {
     // Create the binding in an inner scope so it can be deleted first.
     Binding<sample::Provider> binding(&server_impl, GetProxy(&interface_ptr_));
+    interface_ptr_.set_connection_error_handler(run_loop.QuitClosure());
 
     // Initialize the test values.
     server_impl.resetLastServerValueSeen();
     last_client_callback_value_seen_ = 0;
 
     // Invoke the Echo method.
-    interface_ptr_->EchoInt(7, ValueSaver(&last_client_callback_value_seen_));
-    PumpMessages();
+    base::RunLoop run_loop2;
+    server_impl.set_closure(run_loop2.QuitClosure());
+    interface_ptr_->EchoInt(
+        7,
+        ValueSaver(&last_client_callback_value_seen_, base::Closure()));
+    run_loop2.Run();
   }
   // The binding has now been destroyed and the pipe is closed.
 
@@ -206,8 +236,10 @@ TEST_F(BindingCallbackTest, DeleteBindingThenRunCallback) {
 
   // Attempt to invoke the method again and confirm that an error was
   // encountered.
-  interface_ptr_->EchoInt(13, ValueSaver(&last_client_callback_value_seen_));
-  PumpMessages();
+  interface_ptr_->EchoInt(
+      13,
+      ValueSaver(&last_client_callback_value_seen_, base::Closure()));
+  run_loop.Run();
   EXPECT_TRUE(interface_ptr_.encountered_error());
 }
 
@@ -225,8 +257,12 @@ TEST_F(BindingCallbackTest, DeleteBindingThenDeleteCallback) {
     last_client_callback_value_seen_ = 0;
 
     // Invoke the Echo method.
-    interface_ptr_->EchoInt(7, ValueSaver(&last_client_callback_value_seen_));
-    PumpMessages();
+    base::RunLoop run_loop;
+    server_impl.set_closure(run_loop.QuitClosure());
+    interface_ptr_->EchoInt(
+        7,
+        ValueSaver(&last_client_callback_value_seen_, base::Closure()));
+    run_loop.Run();
   }
   // The binding has now been destroyed and the pipe is closed.
 
@@ -252,8 +288,12 @@ TEST_F(BindingCallbackTest, CloseBindingBeforeDeletingCallback) {
   last_client_callback_value_seen_ = 0;
 
   // Invoke the Echo method.
-  interface_ptr_->EchoInt(7, ValueSaver(&last_client_callback_value_seen_));
-  PumpMessages();
+  base::RunLoop run_loop;
+  server_impl.set_closure(run_loop.QuitClosure());
+  interface_ptr_->EchoInt(
+      7,
+      ValueSaver(&last_client_callback_value_seen_, base::Closure()));
+  run_loop.Run();
 
   // Check that server saw the correct value, but the client has not yet.
   EXPECT_EQ(7, server_impl.last_server_value_seen());
@@ -283,8 +323,12 @@ TEST_F(BindingCallbackTest, DeleteCallbackBeforeBindingDeathTest) {
   last_client_callback_value_seen_ = 0;
 
   // Invoke the Echo method.
-  interface_ptr_->EchoInt(7, ValueSaver(&last_client_callback_value_seen_));
-  PumpMessages();
+  base::RunLoop run_loop;
+  server_impl.set_closure(run_loop.QuitClosure());
+  interface_ptr_->EchoInt(
+      7,
+      ValueSaver(&last_client_callback_value_seen_, base::Closure()));
+  run_loop.Run();
 
   // Check that server saw the correct value, but the client has not yet.
   EXPECT_EQ(7, server_impl.last_server_value_seen());

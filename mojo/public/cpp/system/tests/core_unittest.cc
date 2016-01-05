@@ -366,7 +366,11 @@ TEST(CoreCppTest, TearDownWithMessagesEnqueued) {
     // Send a handle over the previously-establish message pipe.
     ScopedMessagePipeHandle h2;
     ScopedMessagePipeHandle h3;
-    CreateMessagePipe(nullptr, &h2, &h3);
+    MojoCreateMessagePipeOptions options;
+    options.struct_size = sizeof(MojoCreateMessagePipeOptions);
+    options.flags = MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_TRANSFERABLE;
+    if (CreateMessagePipe(&options, &h2, &h3) != MOJO_RESULT_OK)
+      CreateMessagePipe(nullptr, &h2, &h3);  // Must be old EDK.
 
     // Write a message to |h2|, before we send |h3|.
     const char kWorld[] = "world!";
@@ -419,7 +423,11 @@ TEST(CoreCppTest, TearDownWithMessagesEnqueued) {
     // Send a handle over the previously-establish message pipe.
     ScopedMessagePipeHandle h2;
     ScopedMessagePipeHandle h3;
-    CreateMessagePipe(nullptr, &h2, &h3);
+    MojoCreateMessagePipeOptions options;
+    options.struct_size = sizeof(MojoCreateMessagePipeOptions);
+    options.flags = MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_TRANSFERABLE;
+    if (CreateMessagePipe(&options, &h2, &h3) != MOJO_RESULT_OK)
+      CreateMessagePipe(nullptr, &h2, &h3);  // Must be old EDK.
 
     // Write a message to |h2|, before we send |h3|.
     const char kWorld[] = "world!";

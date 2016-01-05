@@ -66,8 +66,9 @@ void ReportValidationError(ValidationError error, const char* description) {
   }
 }
 
-ValidationErrorObserverForTesting::ValidationErrorObserverForTesting()
-    : last_error_(VALIDATION_ERROR_NONE) {
+ValidationErrorObserverForTesting::ValidationErrorObserverForTesting(
+    const Callback<void()>& callback)
+    : last_error_(VALIDATION_ERROR_NONE), callback_(callback) {
   MOJO_DCHECK(!g_validation_error_observer);
   g_validation_error_observer = this;
 }

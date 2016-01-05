@@ -173,36 +173,47 @@ TEST_F(AssociatedInterfaceTest, InterfacesAtBothEnds) {
   AssociatedInterfacePtr<IntegerSender> ptr1;
   ptr1.Bind(std::move(ptr_info));
 
+  base::RunLoop run_loop, run_loop2;
   bool ptr0_callback_run = false;
-  ptr0->Echo(123, [&ptr0_callback_run](int32_t value) {
+  ptr0->Echo(123, [&ptr0_callback_run, &run_loop](int32_t value) {
     EXPECT_EQ(123, value);
     ptr0_callback_run = true;
+    run_loop.Quit();
   });
 
   bool ptr1_callback_run = false;
-  ptr1->Echo(456, [&ptr1_callback_run](int32_t value) {
+  ptr1->Echo(456, [&ptr1_callback_run, &run_loop2](int32_t value) {
     EXPECT_EQ(456, value);
     ptr1_callback_run = true;
+    run_loop2.Quit();
   });
 
-  PumpMessages();
+  run_loop.Run();
+  run_loop2.Run();
   EXPECT_TRUE(ptr0_callback_run);
   EXPECT_TRUE(ptr1_callback_run);
 
   bool ptr0_error_callback_run = false;
-  ptr0.set_connection_error_handler(
-      [&ptr0_error_callback_run]() { ptr0_error_callback_run = true; });
+  base::RunLoop run_loop3;
+  ptr0.set_connection_error_handler([&ptr0_error_callback_run, &run_loop3]() {
+    ptr0_error_callback_run = true;
+    run_loop3.Quit();
+  });
 
   impl0.binding()->Close();
-  PumpMessages();
+  run_loop3.Run();
   EXPECT_TRUE(ptr0_error_callback_run);
 
   bool impl1_error_callback_run = false;
+  base::RunLoop run_loop4;
   impl1.binding()->set_connection_error_handler(
-      [&impl1_error_callback_run]() { impl1_error_callback_run = true; });
+      [&impl1_error_callback_run, &run_loop4]() {
+        impl1_error_callback_run = true;
+        run_loop4.Quit();
+      });
 
   ptr1.reset();
-  PumpMessages();
+  run_loop4.Run();
   EXPECT_TRUE(impl1_error_callback_run);
 }
 
@@ -520,20 +531,31 @@ TEST_F(AssociatedInterfaceTest, PassAssociatedInterfaces) {
       GetProxy(&sender0, connection_ptr.associated_group()));
 
   int32_t echoed_value = 0;
-  sender0->Echo(123, [&echoed_value](int32_t value) { echoed_value = value; });
-  PumpMessages();
+  base::RunLoop run_loop;
+  sender0->Echo(123, [&echoed_value, &run_loop](int32_t value) {
+    echoed_value = value;
+    run_loop.Quit();
+  });
+  run_loop.Run();
   EXPECT_EQ(123, echoed_value);
 
   IntegerSenderAssociatedPtr sender1;
+  base::RunLoop run_loop2;
   connection_ptr->AsyncGetSender(
-      [&sender1](AssociatedInterfacePtrInfo<IntegerSender> ptr_info) {
+      [&sender1, &run_loop2](
+          AssociatedInterfacePtrInfo<IntegerSender> ptr_info) {
         sender1.Bind(std::move(ptr_info));
+        run_loop2.Quit();
       });
-  PumpMessages();
+  run_loop2.Run();
   EXPECT_TRUE(sender1);
 
-  sender1->Echo(456, [&echoed_value](int32_t value) { echoed_value = value; });
-  PumpMessages();
+  base::RunLoop run_loop3;
+  sender1->Echo(456, [&echoed_value, &run_loop3](int32_t value) {
+    echoed_value = value;
+    run_loop3.Quit();
+  });
+  run_loop3.Run();
   EXPECT_EQ(456, echoed_value);
 }
 
