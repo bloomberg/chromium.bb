@@ -386,7 +386,7 @@ long ParseElementHeader(IMkvReader* pReader, long long& pos,
 
   // pos now designates payload
 
-  if (stop >= 0 && pos >= stop)
+  if (stop >= 0 && pos > stop)
     return E_FILE_FORMAT_INVALID;
 
   return 0;  // success
