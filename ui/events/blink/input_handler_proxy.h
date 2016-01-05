@@ -131,6 +131,9 @@ class InputHandlerProxy
       const gfx::Point& causal_event_viewport_point,
       const cc::InputHandlerScrollResult& scroll_result);
 
+  // Whether to use a smooth scroll animation for this event.
+  bool ShouldAnimate(const blink::WebMouseWheelEvent& event) const;
+
   scoped_ptr<blink::WebGestureCurve> fling_curve_;
   // Parameters for the active fling animation, stored in case we need to
   // transfer it out later.

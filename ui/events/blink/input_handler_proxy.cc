@@ -334,6 +334,16 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
   return DID_NOT_HANDLE;
 }
 
+bool InputHandlerProxy::ShouldAnimate(
+    const blink::WebMouseWheelEvent& event) const {
+#if defined(OS_MACOSX)
+  // Mac does not smooth scroll wheel events (crbug.com/574283).
+  return false;
+#else
+  return smooth_scroll_enabled_ && !event.hasPreciseScrollingDeltas;
+#endif
+}
+
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
     const WebMouseWheelEvent& wheel_event) {
   InputHandlerProxy::EventDisposition result = DID_NOT_HANDLE;
@@ -357,7 +367,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
     // Wheel events with |canScroll| == false will not trigger scrolling,
     // only event handlers.  Forward to the main thread.
     result = DID_NOT_HANDLE;
-  } else if (smooth_scroll_enabled_ && !wheel_event.hasPreciseScrollingDeltas) {
+  } else if (ShouldAnimate(wheel_event)) {
     cc::InputHandler::ScrollStatus scroll_status =
         input_handler_->ScrollAnimated(gfx::Point(wheel_event.x, wheel_event.y),
                                        scroll_delta);
