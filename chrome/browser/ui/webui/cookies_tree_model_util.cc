@@ -292,6 +292,7 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
       dict->SetString(kKeyIcon, "chrome://theme/IDR_COOKIE_ICON");
 
       dict->SetString(kKeyDomain, node.GetDetailedInfo().flash_lso_domain);
+      break;
     }
     default:
 #if defined(OS_MACOSX)
