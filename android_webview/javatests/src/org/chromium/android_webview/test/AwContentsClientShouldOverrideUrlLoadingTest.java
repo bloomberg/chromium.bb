@@ -14,6 +14,7 @@ import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -22,6 +23,7 @@ import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEval
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
+import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.test.util.TestWebServer;
 
@@ -40,6 +42,15 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     private static final String REDIRECT_TARGET_PATH = "/redirect_target.html";
     private static final String TITLE = "TITLE";
     private static final String TAG = "AwContentsClientShouldOverrideUrlLoadingTest";
+    private static final String TEST_EMAIL = "nobody@example.org";
+    private static final String TEST_EMAIL_URI = "mailto:" + TEST_EMAIL.replace("@", "%40");
+    private static final String TEST_PHONE = "+16503336000";
+    private static final String TEST_PHONE_URI = "tel:" + TEST_PHONE.replace("+", "%2B");
+    // Use the shortest possible address to ensure it fits into one line.
+    // Otherwise, click on the center of the HTML element may get into empty space.
+    private static final String TEST_ADDRESS = "1 st. long enough, CA 90000";
+    private static final String TEST_ADDRESS_URI = "geo:0,0?q="
+            + TEST_ADDRESS.replace(" ", "+").replace(",", "%2C");
 
     private TestWebServer mWebServer;
     private TestAwContentsClient mContentsClient;
@@ -911,7 +922,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
                     return false;
                 }
             });
-            mAwContents.getSettings().setJavaScriptEnabled(true);
+            enableJavaScriptOnUiThread(mAwContents);
             final String pageTitle = "Click Title";
             final String htmlWithLink = "<html><title>" + pageTitle + "</title>"
                     + "<body><a id='link' href='" + testUrl + "'>Click this!</a></body></html>";
@@ -945,9 +956,37 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         }
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView"})
-    public void testNullContentsClientClickableContent() throws Throwable {
+    private String setupForContentClickTest(final String content, boolean inMainFrame)
+            throws Exception {
+        final String contentId = "content";
+        final String findContentJs = inMainFrame
+                ? "document.getElementById(\"" + contentId + "\")"
+                : "window.frames[0].document.getElementById(\"" + contentId + "\")";
+        final String pageHtml = inMainFrame
+                ? "<html><body onload='document.title=" + findContentJs + ".innerText'>"
+                + "<span id='" + contentId + "'>" + content + "</span></body></html>"
+                : "<html>"
+                + "<body style='margin:0;' onload='document.title=" + findContentJs + ".innerText'>"
+                + " <iframe style='border:none;width:100%;' srcdoc=\""
+                + "   <body style='margin:0;'><span id='" + contentId + "'>"
+                + content + "</span></body>"
+                + "\" src='iframe.html'></iframe>"
+                + "</body></html>";
+        final String testUrl = mWebServer.setResponse("/content_test.html", pageHtml, null);
+
+        enableJavaScriptOnUiThread(mAwContents);
+        loadUrlAsync(mAwContents, testUrl);
+        pollOnUiThread(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return mAwContents.getTitle().equals(content);
+            }
+        });
+        return findContentJs;
+    }
+
+    private void doTestNullContentsClientClickableContent(String pageContent,
+            String intentContent) throws Throwable {
         try {
             // The test will fire real intents through the test activity.
             // Need to temporarily suppress startActivity otherwise there will be a
@@ -959,69 +998,51 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
                     return false;
                 }
             });
-            final String pageTitle = "Click Title";
-            final String testEmail = "nobody@example.org";
-            final String testUrl = mWebServer.setResponse("/email_test.html",
-                    "<html><head><title>" + pageTitle + "</title></head>"
-                    + "<body><span id='email'>" + testEmail + "</span></body>", null);
 
-            // JS is required for the click simulator.
-            mAwContents.getSettings().setJavaScriptEnabled(true);
-            loadUrlAsync(mAwContents, testUrl);
-            pollOnUiThread(new Callable<Boolean>() {
-                @Override
-                public Boolean call() {
-                    return mAwContents.getTitle().equals(pageTitle);
-                }
-            });
-
-            // Clicking on an email should create an intent.
-            DOMUtils.clickNode(this, mAwContents.getContentViewCore(), "email");
+            final String findContentJs = setupForContentClickTest(pageContent, true);
+            // Clicking on the content should create an intent.
+            DOMUtils.clickNodeByJs(this, mAwContents.getContentViewCore(), findContentJs);
             pollOnUiThread(new Callable<Boolean>() {
                 @Override
                 public Boolean call() {
                     return getActivity().getLastSentIntent() != null;
                 }
             });
-            assertEquals("mailto:" + testEmail.replace("@", "%40"),
+            assertEquals(intentContent,
                     getActivity().getLastSentIntent().getData().toString());
         } finally {
             getActivity().setIgnoreStartActivity(false);
         }
     }
 
-    private void doTestClickableContent(boolean inMainFrame) throws Throwable {
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testNullContentsClientClickableEmail() throws Throwable {
+        doTestNullContentsClientClickableContent(TEST_EMAIL, TEST_EMAIL_URI);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add({ContentSwitches.NETWORK_COUNTRY_ISO + "=us"})
+    public void testNullContentsClientClickablePhone() throws Throwable {
+        doTestNullContentsClientClickableContent(TEST_PHONE, TEST_PHONE_URI);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testNullContentsClientClickableAddress() throws Throwable {
+        doTestNullContentsClientClickableContent(TEST_ADDRESS, TEST_ADDRESS_URI);
+    }
+
+    private void doTestClickableContent(String pageContent, String intentContent,
+            boolean inMainFrame) throws Throwable {
         standardSetup();
 
-        final String testEmail = "nobody@example.org";
-        final String findEmailJs = inMainFrame
-                ? "document.getElementById(\"email\")"
-                : "window.frames[0].document.getElementById(\"email\")";
-        final String pageHtml = inMainFrame
-                ? "<html><body onload='document.title=" + findEmailJs + ".innerText'>"
-                + "<span id='email'>" + testEmail + "</span></body></html>"
-                : "<html>"
-                + "<body style='margin:0;' onload='document.title=" + findEmailJs + ".innerText'>"
-                + " <iframe style='border:none;' srcdoc=\""
-                + "   <body style='margin:0;'><span id='email'>" + testEmail + "</span></body>"
-                + "\" src='iframe.html'></iframe>"
-                + "</body></html>";
-        final String testUrl = mWebServer.setResponse("/email_test.html", pageHtml, null);
-
-        // JS is required for the click simulator.
-        mAwContents.getSettings().setJavaScriptEnabled(true);
-        loadUrlAsync(mAwContents, testUrl);
-        pollOnUiThread(new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return mAwContents.getTitle().equals(testEmail);
-            }
-        });
-
+        final String findContentJs = setupForContentClickTest(pageContent, inMainFrame);
         int callCount = mShouldOverrideUrlLoadingHelper.getCallCount();
-        DOMUtils.clickNodeByJs(this, mAwContents.getContentViewCore(), findEmailJs);
+        DOMUtils.clickNodeByJs(this, mAwContents.getContentViewCore(), findContentJs);
         mShouldOverrideUrlLoadingHelper.waitForCallback(callCount);
-        assertEquals("mailto:" + testEmail.replace("@", "%40"),
+        assertEquals(intentContent,
                 mShouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl());
         assertFalse(mShouldOverrideUrlLoadingHelper.isRedirect());
         assertTrue(mShouldOverrideUrlLoadingHelper.hasUserGesture());
@@ -1030,14 +1051,40 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testClickableContent() throws Throwable {
-        doTestClickableContent(true);
+    public void testClickableEmail() throws Throwable {
+        doTestClickableContent(TEST_EMAIL, TEST_EMAIL_URI, true);
     }
 
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testClickableContentInIframe() throws Throwable {
-        doTestClickableContent(false);
+    @CommandLineFlags.Add({ContentSwitches.NETWORK_COUNTRY_ISO + "=us"})
+    public void testClickablePhone() throws Throwable {
+        doTestClickableContent(TEST_PHONE, TEST_PHONE_URI, true);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testClickableAddress() throws Throwable {
+        doTestClickableContent(TEST_ADDRESS, TEST_ADDRESS_URI, true);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testClickableEmailInIframe() throws Throwable {
+        doTestClickableContent(TEST_EMAIL, TEST_EMAIL_URI, false);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add({ContentSwitches.NETWORK_COUNTRY_ISO + "=us"})
+    public void testClickablePhoneInIframe() throws Throwable {
+        doTestClickableContent(TEST_PHONE, TEST_PHONE_URI, false);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testClickableAddressInIframe() throws Throwable {
+        doTestClickableContent(TEST_ADDRESS, TEST_ADDRESS_URI, false);
     }
 
     @SmallTest
