@@ -1,4 +1,8 @@
 include_rules = [
+  "+components/autofill/core/browser",
+  "+components/favicon_base",
   "+components/metrics",
   "+components/sync_sessions",
+  "+ios/web/public",
+  "+net",
 ]

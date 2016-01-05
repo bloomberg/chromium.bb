@@ -37,6 +37,10 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../components/components.gyp:autofill_core_browser',
+        '../../components/components.gyp:favicon_base',
+        '../../components/components.gyp:metrics',
+        '../../components/components.gyp:sync_sessions',
+        '../../net/net.gyp:net',
         '../web/ios_web.gyp:ios_web',
         'ios_provider_web.gyp:ios_provider_web',
       ],

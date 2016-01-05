@@ -1,5 +1,0 @@
-include_rules = [
-  "+components/autofill/core/browser",
-  "+components/favicon_base",
-  "+ios/web/public",
-]
