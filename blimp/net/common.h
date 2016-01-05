@@ -10,6 +10,7 @@
 #include <string>
 
 #include "blimp/net/blimp_net_export.h"
+#include "net/base/ip_address_number.h"
 
 namespace blimp {
 
@@ -19,6 +20,10 @@ class BlimpMessage;
 // See crbug.com/542464
 extern const size_t BLIMP_NET_EXPORT kMaxPacketPayloadSizeBytes;
 extern const size_t BLIMP_NET_EXPORT kPacketHeaderSizeBytes;
+
+// Serializes human-readable BlimpMessage header info, for logging purposes.
+BLIMP_NET_EXPORT std::ostream& operator<<(std::ostream& out,
+                                          const BlimpMessage& message);
 
 }  // namespace blimp
 

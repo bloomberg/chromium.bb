@@ -14,6 +14,7 @@
 #include "blimp/net/blimp_connection.h"
 #include "blimp/net/blimp_message_multiplexer.h"
 #include "blimp/net/browser_connection_handler.h"
+#include "blimp/net/common.h"
 #include "blimp/net/engine_authentication_handler.h"
 #include "blimp/net/engine_connection_manager.h"
 #include "blimp/net/null_blimp_message_processor.h"
@@ -47,7 +48,7 @@ const int kDummyTabId = 0;
 const float kDefaultScaleFactor = 1.f;
 const int kDefaultDisplayWidth = 800;
 const int kDefaultDisplayHeight = 600;
-const uint16_t kDefaultPortNumber = 25467;
+const uint16_t kDefaultPort = 25467;
 
 // Focus rules that support activating an child window.
 class FocusRulesImpl : public wm::BaseFocusRules {
@@ -63,14 +64,23 @@ class FocusRulesImpl : public wm::BaseFocusRules {
   DISALLOW_COPY_AND_ASSIGN(FocusRulesImpl);
 };
 
+net::IPAddressNumber GetIPv4AnyAddress() {
+  net::IPAddressNumber output;
+  output.push_back(0);
+  output.push_back(0);
+  output.push_back(0);
+  output.push_back(0);
+  return output;
+}
+
 }  // namespace
 
 // This class's functions and destruction are all invoked on the IO thread by
 // the BlimpEngineSession.
-class BlimpNetworkComponents {
+class EngineNetworkComponents {
  public:
-  explicit BlimpNetworkComponents(net::NetLog* net_log);
-  ~BlimpNetworkComponents();
+  explicit EngineNetworkComponents(net::NetLog* net_log);
+  ~EngineNetworkComponents();
 
   void Initialize();
 
@@ -80,17 +90,17 @@ class BlimpNetworkComponents {
   scoped_ptr<EngineAuthenticationHandler> authentication_handler_;
   scoped_ptr<EngineConnectionManager> connection_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(BlimpNetworkComponents);
+  DISALLOW_COPY_AND_ASSIGN(EngineNetworkComponents);
 };
 
-BlimpNetworkComponents::BlimpNetworkComponents(net::NetLog* net_log)
+EngineNetworkComponents::EngineNetworkComponents(net::NetLog* net_log)
     : net_log_(net_log) {}
 
-BlimpNetworkComponents::~BlimpNetworkComponents() {
+EngineNetworkComponents::~EngineNetworkComponents() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 }
 
-void BlimpNetworkComponents::Initialize() {
+void EngineNetworkComponents::Initialize() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!connection_handler_);
 
@@ -104,10 +114,7 @@ void BlimpNetworkComponents::Initialize() {
       new EngineConnectionManager(authentication_handler_.get()));
 
   // Adds BlimpTransports to connection_manager_.
-  net::IPAddressNumber local_ip_any;
-  bool success = net::ParseIPLiteralToNumber("0.0.0.0", &local_ip_any);
-  DCHECK(success);
-  net::IPEndPoint address(local_ip_any, kDefaultPortNumber);
+  net::IPEndPoint address(GetIPv4AnyAddress(), kDefaultPort);
   connection_manager_->AddTransport(
       make_scoped_ptr(new TCPEngineTransport(address, net_log_)));
 }
@@ -117,7 +124,7 @@ BlimpEngineSession::BlimpEngineSession(
     net::NetLog* net_log)
     : browser_context_(std::move(browser_context)),
       screen_(new BlimpScreen),
-      net_components_(new BlimpNetworkComponents(net_log)) {
+      net_components_(new EngineNetworkComponents(net_log)) {
   screen_->UpdateDisplayScaleAndSize(kDefaultScaleFactor,
                                      gfx::Size(kDefaultDisplayWidth,
                                                kDefaultDisplayHeight));
@@ -164,19 +171,13 @@ void BlimpEngineSession::Initialize() {
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&BlimpNetworkComponents::Initialize,
+      base::Bind(&EngineNetworkComponents::Initialize,
                  base::Unretained(net_components_.get())));
 
-  // Registers features.
-  // TODO(kmarshall) Refactor this using
-  //  1. Get outgoing message processors for blimp message types of a feature.
-  //  2. Create a feature with these outgoing message processors.
-  //  3. Register the feature as the incoming message processor for these
-  //     blimp message types.
+  // Register features' message senders and receivers.
   tab_control_message_sender_ =
       RegisterFeature(BlimpMessage::TAB_CONTROL, this);
   navigation_message_sender_ = RegisterFeature(BlimpMessage::NAVIGATION, this);
-
   render_widget_feature_.set_render_widget_message_sender(
       RegisterFeature(BlimpMessage::RENDER_WIDGET, &render_widget_feature_));
   render_widget_feature_.set_input_message_sender(

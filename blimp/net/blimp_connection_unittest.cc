@@ -35,7 +35,10 @@ class BlimpConnectionTest : public testing::Test {
     writer_ = writer.get();
     connection_.reset(new BlimpConnection(make_scoped_ptr(new MockPacketReader),
                                           std::move(writer)));
-    connection_->SetConnectionErrorObserver(&error_observer_);
+    connection_->AddConnectionErrorObserver(&error_observer1_);
+    connection_->AddConnectionErrorObserver(&error_observer2_);
+    connection_->AddConnectionErrorObserver(&error_observer3_);
+    connection_->RemoveConnectionErrorObserver(&error_observer3_);
   }
 
   ~BlimpConnectionTest() override {}
@@ -55,7 +58,13 @@ class BlimpConnectionTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   testing::StrictMock<MockPacketWriter>* writer_;
-  testing::StrictMock<MockConnectionErrorObserver> error_observer_;
+  testing::StrictMock<MockConnectionErrorObserver> error_observer1_;
+  testing::StrictMock<MockConnectionErrorObserver> error_observer2_;
+
+  // This error observer is Removed() immediately after it's added;
+  // it should never be called.
+  testing::StrictMock<MockConnectionErrorObserver> error_observer3_;
+
   testing::StrictMock<MockBlimpMessageProcessor> receiver_;
   scoped_ptr<BlimpConnection> connection_;
 };
@@ -106,7 +115,8 @@ TEST_F(BlimpConnectionTest, AsyncTwoPacketsWriteWithError) {
               WritePacket(BufferEqualsProto(*CreateControlMessage()), _))
       .WillOnce(SaveArg<1>(&write_packet_cb))
       .RetiresOnSaturation();
-  EXPECT_CALL(error_observer_, OnConnectionError(net::ERR_FAILED));
+  EXPECT_CALL(error_observer1_, OnConnectionError(net::ERR_FAILED));
+  EXPECT_CALL(error_observer2_, OnConnectionError(net::ERR_FAILED));
 
   BlimpMessageProcessor* sender = connection_->GetOutgoingMessageProcessor();
   net::TestCompletionCallback complete_cb_1;

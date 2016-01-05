@@ -77,7 +77,7 @@ class FakeBlimpConnection : public BlimpConnection,
   ConnectionErrorObserver* error_observer() { return error_observer_; }
 
   // BlimpConnection implementation.
-  void SetConnectionErrorObserver(ConnectionErrorObserver* observer) override {
+  void AddConnectionErrorObserver(ConnectionErrorObserver* observer) override {
     error_observer_ = observer;
   }
 
@@ -209,7 +209,10 @@ TEST_F(BrowserConnectionHandlerTest, ReconnectionAfterError) {
       MockableProcessMessage(EqualsMessageIgnoringId(*client_input_message), _))
       .RetiresOnSaturation();
 
+  // Simulate a connection failure.
   client_connection_->error_observer()->OnConnectionError(net::ERR_FAILED);
+  engine_connection_->error_observer()->OnConnectionError(net::ERR_FAILED);
+
   // Message will be queued to be transmitted when the connection is
   // re-established.
   client_input_feature_->outgoing_message_processor()->ProcessMessage(

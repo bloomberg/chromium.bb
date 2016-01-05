@@ -103,10 +103,11 @@ int StreamPacketReader::DoReadHeader(int result) {
   header_buffer_->set_offset(header_buffer_->offset() + result);
   if (static_cast<size_t>(header_buffer_->offset()) < kPacketHeaderSizeBytes) {
     // There is more header to read.
-    return socket_->Read(header_buffer_.get(),
-                         kPacketHeaderSizeBytes - header_buffer_->offset(),
-                         base::Bind(&StreamPacketReader::OnReadComplete,
-                                    weak_factory_.GetWeakPtr()));
+    int result = socket_->Read(
+        header_buffer_.get(), kPacketHeaderSizeBytes - header_buffer_->offset(),
+        base::Bind(&StreamPacketReader::OnReadComplete,
+                   weak_factory_.GetWeakPtr()));
+    return (result != 0 ? result : net::ERR_CONNECTION_CLOSED);
   }
 
   // Finished reading the header. Parse the size and prepare for payload read.
@@ -140,6 +141,12 @@ int StreamPacketReader::DoReadPayload(int result) {
 
 void StreamPacketReader::OnReadComplete(int result) {
   DCHECK_NE(net::ERR_IO_PENDING, result);
+
+  if (result == 0 /* EOF */) {
+    payload_buffer_ = nullptr;
+    base::ResetAndReturn(&callback_).Run(net::ERR_CONNECTION_CLOSED);
+    return;
+  }
 
   // If the read was succesful, then process the result.
   if (result > 0) {

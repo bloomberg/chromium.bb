@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #include <X11/Xlib.h>
+
 #include <string>
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/threading/thread.h"
 #include "blimp/client/blimp_startup.h"
 #include "blimp/client/session/blimp_client_session_linux.h"
 #include "blimp/client/session/navigation_feature.h"
@@ -19,7 +21,6 @@ const int kDummyTabId = 0;
 
 int main(int argc, const char**argv) {
   base::AtExitManager at_exit;
-
   base::CommandLine::Init(argc, argv);
 
   XInitThreads();

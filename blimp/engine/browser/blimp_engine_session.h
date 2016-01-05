@@ -7,11 +7,14 @@
 
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/engine/browser/engine_render_widget_feature.h"
 #include "blimp/net/blimp_message_processor.h"
+#include "blimp/net/connection_error_observer.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -54,10 +57,10 @@ namespace engine {
 
 class BlimpBrowserContext;
 class BlimpFocusClient;
-class BlimpNetworkComponents;
 class BlimpScreen;
 class BlimpUiContextFactory;
 class BlimpWindowTreeHost;
+class EngineNetworkComponents;
 
 class BlimpEngineSession
     : public BlimpMessageProcessor,
@@ -158,7 +161,7 @@ class BlimpEngineSession
   // Container for connection manager, authentication handler, and
   // browser connection handler. The components run on the I/O thread, and
   // this object is destroyed there.
-  scoped_ptr<BlimpNetworkComponents> net_components_;
+  scoped_ptr<EngineNetworkComponents> net_components_;
 
   // Handles all incoming and outgoing messages related to RenderWidget,
   // including INPUT, COMPOSITOR and RENDER_WIDGET messages.

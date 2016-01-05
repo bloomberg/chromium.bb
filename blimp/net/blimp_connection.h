@@ -7,27 +7,31 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "blimp/net/blimp_net_export.h"
+#include "blimp/net/connection_error_observer.h"
 
 namespace blimp {
 
 class BlimpMessageProcessor;
 class BlimpMessagePump;
-class ConnectionErrorObserver;
 class PacketReader;
 class PacketWriter;
 
 // Encapsulates the state and logic used to exchange BlimpMessages over
 // a network connection.
-class BLIMP_NET_EXPORT BlimpConnection {
+class BLIMP_NET_EXPORT BlimpConnection : public ConnectionErrorObserver {
  public:
   BlimpConnection(scoped_ptr<PacketReader> reader,
                   scoped_ptr<PacketWriter> writer);
 
-  virtual ~BlimpConnection();
+  ~BlimpConnection() override;
 
-  // Lets |observer| know when the network connection encounters an error.
-  virtual void SetConnectionErrorObserver(ConnectionErrorObserver* observer);
+  // Adds |observer| to the connection's error observer list.
+  virtual void AddConnectionErrorObserver(ConnectionErrorObserver* observer);
+
+  // Removes |observer| from the connection's error observer list.
+  virtual void RemoveConnectionErrorObserver(ConnectionErrorObserver* observer);
 
   // Sets the processor which will take incoming messages for this connection.
   // Can be set multiple times, but previously set processors are discarded.
@@ -40,11 +44,15 @@ class BLIMP_NET_EXPORT BlimpConnection {
  protected:
   BlimpConnection();
 
+  // ConnectionErrorObserver implementation.
+  void OnConnectionError(int error) override;
+
  private:
   scoped_ptr<PacketReader> reader_;
   scoped_ptr<BlimpMessagePump> message_pump_;
   scoped_ptr<PacketWriter> writer_;
   scoped_ptr<BlimpMessageProcessor> outgoing_msg_processor_;
+  base::ObserverList<ConnectionErrorObserver> error_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpConnection);
 };

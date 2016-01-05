@@ -6,12 +6,18 @@
 #define BLIMP_CLIENT_SESSION_BLIMP_CLIENT_SESSION_H_
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread.h"
 #include "blimp/client/blimp_client_export.h"
+#include "blimp/common/proto/blimp_message.pb.h"
+#include "blimp/net/blimp_message_processor.h"
 
 namespace blimp {
 
 class BrowserConnectionHandler;
+class ClientConnectionManager;
+class ClientNetworkComponents;
 class NavigationFeature;
 class RenderWidgetFeature;
 class TabControlFeature;
@@ -32,17 +38,22 @@ class BLIMP_CLIENT_EXPORT BlimpClientSession {
   NavigationFeature* GetNavigationFeature() const;
   RenderWidgetFeature* GetRenderWidgetFeature() const;
 
+  // Tells |connection_manager_| to start connecting to the remote host.
+  // Must be called on the IO thread.
+  void Connect();
+
  protected:
   virtual ~BlimpClientSession();
 
  private:
-  // The BrowserConnectionHandler is here so that the BlimpClientSession can
-  // glue the feature-specific handlers to the actual network connection.
-  scoped_ptr<BrowserConnectionHandler> connection_handler_;
-
+  base::Thread io_thread_;
   scoped_ptr<TabControlFeature> tab_control_feature_;
   scoped_ptr<NavigationFeature> navigation_feature_;
   scoped_ptr<RenderWidgetFeature> render_widget_feature_;
+
+  // Container struct for network components.
+  // Must be deleted on the IO thread.
+  scoped_ptr<ClientNetworkComponents> network_components_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpClientSession);
 };

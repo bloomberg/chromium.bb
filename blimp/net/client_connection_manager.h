@@ -5,11 +5,14 @@
 #ifndef BLIMP_NET_CLIENT_CONNECTION_MANAGER_H_
 #define BLIMP_NET_CLIENT_CONNECTION_MANAGER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "blimp/net/blimp_net_export.h"
+#include "blimp/net/connection_error_observer.h"
 
 namespace blimp {
 
@@ -22,13 +25,14 @@ class ConnectionHandler;
 //
 // TODO(haibinlu): cope with network changes that may potentially affect the
 // endpoint that we're trying to connect to.
-class BLIMP_NET_EXPORT ClientConnectionManager {
+class BLIMP_NET_EXPORT ClientConnectionManager
+    : public ConnectionErrorObserver {
  public:
   // Caller is responsible for ensuring that |connection_handler|
   // outlives |this|.
   explicit ClientConnectionManager(ConnectionHandler* connection_handler);
 
-  ~ClientConnectionManager();
+  ~ClientConnectionManager() override;
 
   // Adds a transport. All transports are expected to be added before invoking
   // |Connect|.
@@ -42,6 +46,11 @@ class BLIMP_NET_EXPORT ClientConnectionManager {
   // cases such as network switches, online/offline changes.
   void Connect();
 
+  // Sets the client token to use in the authentication message.
+  void set_client_token(const std::string& client_token) {
+    client_token_ = client_token;
+  }
+
  private:
   // Tries to connect using the BlimpTransport specified at |transport_index|.
   void Connect(int transport_index);
@@ -51,10 +60,20 @@ class BLIMP_NET_EXPORT ClientConnectionManager {
   void OnConnectResult(int transport_index, int result);
 
   // Sends authentication message to the engine via |connection|.
-  void SendAuthenticationMessage(BlimpConnection* connection);
+  void SendAuthenticationMessage(scoped_ptr<BlimpConnection> connection);
 
+  // Invoked after the authentication message is sent to |connection|.
+  // The result of the write operation is passed via |result|.
+  void OnAuthenticationMessageSent(scoped_ptr<BlimpConnection> connection,
+                                   int result);
+
+  // ConnectionErrorObserver implementation.
+  void OnConnectionError(int error) override;
+
+  std::string client_token_;
   ConnectionHandler* connection_handler_;
   std::vector<scoped_ptr<BlimpTransport>> transports_;
+  base::WeakPtrFactory<ClientConnectionManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientConnectionManager);
 };

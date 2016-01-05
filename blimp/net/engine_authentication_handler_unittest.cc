@@ -40,12 +40,10 @@ class EngineAuthenticationHandlerTest : public testing::Test {
 
  protected:
   void ExpectOnConnection() {
-    EXPECT_CALL(*connection_, SetConnectionErrorObserver(_))
-        .Times(2)
-        .WillRepeatedly(SaveArg<0>(&error_observer_));
+    EXPECT_CALL(*connection_, AddConnectionErrorObserver(_))
+        .WillOnce(SaveArg<0>(&error_observer_));
     EXPECT_CALL(*connection_, SetIncomingMessageProcessor(_))
-        .Times(2)
-        .WillRepeatedly(SaveArg<0>(&incoming_message_processor_));
+        .WillOnce(SaveArg<0>(&incoming_message_processor_));
   }
 
   scoped_refptr<base::TestMockTimeTaskRunner> runner_;
@@ -59,6 +57,7 @@ class EngineAuthenticationHandlerTest : public testing::Test {
 
 TEST_F(EngineAuthenticationHandlerTest, AuthenticationSucceeds) {
   ExpectOnConnection();
+  EXPECT_CALL(*connection_, RemoveConnectionErrorObserver(_));
   EXPECT_CALL(connection_handler_, HandleConnectionPtr(Eq(connection_.get())));
   auth_handler_->HandleConnection(std::move(connection_));
   EXPECT_NE(nullptr, error_observer_);
@@ -69,8 +68,6 @@ TEST_F(EngineAuthenticationHandlerTest, AuthenticationSucceeds) {
   incoming_message_processor_->ProcessMessage(std::move(blimp_message),
                                               process_message_cb.callback());
   EXPECT_EQ(net::OK, process_message_cb.WaitForResult());
-  EXPECT_EQ(nullptr, error_observer_);
-  EXPECT_EQ(nullptr, incoming_message_processor_);
 }
 
 TEST_F(EngineAuthenticationHandlerTest, WrongMessageReceived) {
@@ -83,8 +80,6 @@ TEST_F(EngineAuthenticationHandlerTest, WrongMessageReceived) {
   incoming_message_processor_->ProcessMessage(std::move(blimp_message),
                                               process_message_cb.callback());
   EXPECT_EQ(net::OK, process_message_cb.WaitForResult());
-  EXPECT_EQ(nullptr, error_observer_);
-  EXPECT_EQ(nullptr, incoming_message_processor_);
 }
 
 TEST_F(EngineAuthenticationHandlerTest, ConnectionError) {
@@ -93,8 +88,6 @@ TEST_F(EngineAuthenticationHandlerTest, ConnectionError) {
   EXPECT_NE(nullptr, error_observer_);
   EXPECT_NE(nullptr, incoming_message_processor_);
   error_observer_->OnConnectionError(net::ERR_FAILED);
-  EXPECT_EQ(nullptr, error_observer_);
-  EXPECT_EQ(nullptr, incoming_message_processor_);
 }
 
 TEST_F(EngineAuthenticationHandlerTest, Timeout) {
@@ -104,8 +97,6 @@ TEST_F(EngineAuthenticationHandlerTest, Timeout) {
   EXPECT_NE(nullptr, incoming_message_processor_);
 
   runner_->FastForwardBy(base::TimeDelta::FromSeconds(11));
-  EXPECT_EQ(nullptr, error_observer_);
-  EXPECT_EQ(nullptr, incoming_message_processor_);
 }
 
 TEST_F(EngineAuthenticationHandlerTest, AuthHandlerDeletedFirst) {

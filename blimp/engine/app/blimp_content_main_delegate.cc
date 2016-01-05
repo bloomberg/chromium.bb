@@ -6,6 +6,7 @@
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "blimp/engine/browser/blimp_content_browser_client.h"
 #include "blimp/engine/renderer/blimp_content_renderer_client.h"
@@ -13,12 +14,29 @@
 
 namespace blimp {
 namespace engine {
+namespace {
+void InitLogging() {
+  logging::LoggingSettings settings;
+  base::FilePath log_filename;
+  PathService::Get(base::DIR_EXE, &log_filename);
+  log_filename = log_filename.AppendASCII("blimp_engine.log");
+  settings.logging_dest = logging::LOG_TO_ALL;
+  settings.log_file = log_filename.value().c_str();
+  settings.delete_old = logging::DELETE_OLD_LOG_FILE;
+  logging::InitLogging(settings);
+  logging::SetLogItems(true,    // Process ID
+                       true,    // Thread ID
+                       true,    // Timestamp
+                       false);  // Tick count
+}
+}  // namespace
 
 BlimpContentMainDelegate::BlimpContentMainDelegate() {}
 
 BlimpContentMainDelegate::~BlimpContentMainDelegate() {}
 
 bool BlimpContentMainDelegate::BasicStartupComplete(int* exit_code) {
+  InitLogging();
   content::SetContentClient(&content_client_);
   return false;
 }

@@ -64,7 +64,10 @@ Authenticator::Authenticator(
     base::WeakPtr<ConnectionHandler> connection_handler)
     : connection_(std::move(connection)),
       connection_handler_(connection_handler) {
-  connection_->SetConnectionErrorObserver(this);
+  DVLOG(1) << "Authenticator object created.";
+
+  // Observe for errors that might occur during the authentication phase.
+  connection_->AddConnectionErrorObserver(this);
   connection_->SetIncomingMessageProcessor(this);
   timeout_timer_.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kAuthTimeoutDurationInSeconds),
@@ -74,10 +77,11 @@ Authenticator::Authenticator(
 Authenticator::~Authenticator() {}
 
 void Authenticator::OnConnectionAuthenticated(bool authenticated) {
-  connection_->SetIncomingMessageProcessor(nullptr);
-  connection_->SetConnectionErrorObserver(nullptr);
+  DVLOG(1) << "OnConnectionAuthenticated result=" << authenticated;
 
   if (authenticated && connection_handler_) {
+    // Authentication is successful. Stop observing connection errors.
+    connection_->RemoveConnectionErrorObserver(this);
     connection_handler_->HandleConnection(std::move(connection_));
   }
 
@@ -98,10 +102,12 @@ void Authenticator::OnConnectionError(int error) {
 void Authenticator::ProcessMessage(scoped_ptr<BlimpMessage> message,
                                    const net::CompletionCallback& callback) {
   if (message->type() == BlimpMessage::PROTOCOL_CONTROL) {
-    // TODO(haibinlu): check client token.
+    DVLOG(1) << "Authentication challenge received: "
+             << message->protocol_control().start_connection().client_token();
     OnConnectionAuthenticated(true);
   } else {
-    DVLOG(1) << "The first message is not START_CONNECTION";
+    DVLOG(1) << "Expected START_CONNECTION message, got " << message
+             << " instead.";
     OnConnectionAuthenticated(false);
   }
 

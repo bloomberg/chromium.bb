@@ -30,6 +30,7 @@ BlimpMessagePump::BlimpMessagePump(PacketReader* reader)
 BlimpMessagePump::~BlimpMessagePump() {}
 
 void BlimpMessagePump::SetMessageProcessor(BlimpMessageProcessor* processor) {
+  DVLOG(1) << "SetMessageProcessor, processor=" << processor;
   if (processor && !processor_) {
     processor_ = processor;
     ReadNextPacket();
@@ -43,6 +44,7 @@ void BlimpMessagePump::SetMessageProcessor(BlimpMessageProcessor* processor) {
 }
 
 void BlimpMessagePump::ReadNextPacket() {
+  DVLOG(2) << "ReadNextPacket";
   DCHECK(processor_);
   DCHECK(!read_inflight_);
   read_inflight_ = true;
@@ -51,6 +53,7 @@ void BlimpMessagePump::ReadNextPacket() {
 }
 
 void BlimpMessagePump::OnReadPacketComplete(int result) {
+  DVLOG(2) << "OnReadPacketComplete, result=" << result;
   DCHECK(read_inflight_);
   read_inflight_ = false;
   if (result == net::OK) {
@@ -69,8 +72,13 @@ void BlimpMessagePump::OnReadPacketComplete(int result) {
 }
 
 void BlimpMessagePump::OnProcessMessageComplete(int result) {
-  // No error is expected from the message receiver.
-  DCHECK_EQ(net::OK, result);
+  DVLOG(2) << "OnProcessMessageComplete, result=" << result;
+
+  if (result != net::OK) {
+    error_observer_->OnConnectionError(result);
+    return;
+  }
+
   if (processor_)
     ReadNextPacket();
 }

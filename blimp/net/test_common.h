@@ -180,7 +180,11 @@ class MockBlimpConnection : public BlimpConnection {
   MOCK_METHOD1(SetIncomingMessageProcessor,
                void(BlimpMessageProcessor* processor));
 
-  MOCK_METHOD0(GetOutgoingMessageProcessor, BlimpMessageProcessor*());
+  MOCK_METHOD1(AddConnectionErrorObserver, void(ConnectionErrorObserver*));
+
+  MOCK_METHOD1(RemoveConnectionErrorObserver, void(ConnectionErrorObserver*));
+
+  MOCK_METHOD0(GetOutgoingMessageProcessor, BlimpMessageProcessor*(void));
 };
 
 class MockConnectionErrorObserver : public ConnectionErrorObserver {

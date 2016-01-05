@@ -52,6 +52,7 @@ component("blimp_client") {
     "//gpu/command_buffer/client:gl_in_process_context",
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/skia_bindings",
+    "//net",
     "//ui/events/blink",
     "//ui/events/gestures/blink",
     "//ui/gfx/geometry",
@@ -98,6 +99,8 @@ if (is_linux && !is_chromeos) {
     deps = [
       ":blimp_client",
       "//base",
+      "//blimp/net:blimp_net",
+      "//net",
       "//ui/events/platform/x11",
       "//ui/platform_window/x11",
     ]
@@ -247,6 +250,7 @@ if (is_android) {
       ":blimp_client",
       ":jni_headers",
       "//base",
+      "//blimp/common/proto",
       "//blimp/net:blimp_net",
       "//skia",
       "//ui/gfx/geometry",

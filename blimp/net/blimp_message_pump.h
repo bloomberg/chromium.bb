@@ -50,6 +50,11 @@ class BLIMP_NET_EXPORT BlimpMessagePump {
   void OnReadPacketComplete(int result);
 
   // Callback when |processor_| finishes processing a BlimpMessage.
+  // Any values other than net::OK indicate that |processor_| has encountered an
+  // error that should be handled. Currently all errors will cause the
+  // connection to be dropped; in the future we will need to add more
+  // sophisticated error handling logic here.
+  // TODO(kmarshall): Improve error handling.
   void OnProcessMessageComplete(int result);
 
   PacketReader* reader_;

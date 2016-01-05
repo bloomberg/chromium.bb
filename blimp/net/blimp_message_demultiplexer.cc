@@ -7,16 +7,10 @@
 #include <string>
 
 #include "base/strings/stringprintf.h"
+#include "blimp/net/common.h"
 #include "net/base/net_errors.h"
 
 namespace blimp {
-namespace {
-
-std::string BlimpMessageToDebugString(const BlimpMessage& message) {
-  return base::StringPrintf("<message type=%d>", message.type());
-}
-
-}  // namespace
 
 BlimpMessageDemultiplexer::BlimpMessageDemultiplexer() {}
 
@@ -37,11 +31,11 @@ void BlimpMessageDemultiplexer::ProcessMessage(
     const net::CompletionCallback& callback) {
   auto receiver_iter = feature_receiver_map_.find(message->type());
   if (receiver_iter == feature_receiver_map_.end()) {
-    DLOG(FATAL) << "No registered receiver for "
-                << BlimpMessageToDebugString(*message) << ".";
+    DLOG(ERROR) << "No registered receiver for " << *message << ".";
     if (!callback.is_null()) {
       callback.Run(net::ERR_NOT_IMPLEMENTED);
     }
+    return;
   }
 
   receiver_iter->second->ProcessMessage(std::move(message), callback);

@@ -42,31 +42,29 @@ scoped_ptr<BlimpMessageProcessor> BrowserConnectionHandler::RegisterFeature(
 
 void BrowserConnectionHandler::HandleConnection(
     scoped_ptr<BlimpConnection> connection) {
-  // Since there is only a single Client, assume a newer connection should
-  // replace an existing one.
-  DropCurrentConnection();
-  connection_ = std::move(connection);
-  connection_->SetConnectionErrorObserver(this);
+  DCHECK(connection);
+  VLOG(1) << "HandleConnection " << connection;
 
-  // Connect the incoming & outgoing message streams.
-  connection_->SetIncomingMessageProcessor(checkpointer_.get());
+  if (connection_) {
+    DropCurrentConnection();
+  }
+  connection_ = std::move(connection);
+
+  // Hook up message streams to the connection.
+  connection_->SetIncomingMessageProcessor(demultiplexer_.get());
   output_buffer_->SetOutputProcessor(
       connection_->GetOutgoingMessageProcessor());
-}
-
-void BrowserConnectionHandler::DropCurrentConnection() {
-  if (!connection_)
-    return;
-
-  connection_->SetConnectionErrorObserver(nullptr);
-  connection_->SetIncomingMessageProcessor(nullptr);
-  output_buffer_->SetOutputProcessor(nullptr);
-  connection_.reset();
+  connection_->AddConnectionErrorObserver(this);
 }
 
 void BrowserConnectionHandler::OnConnectionError(int error) {
-  LOG(WARNING) << "Connection error " << net::ErrorToString(error);
   DropCurrentConnection();
+}
+
+void BrowserConnectionHandler::DropCurrentConnection() {
+  DCHECK(connection_);
+  output_buffer_->SetOutputProcessor(nullptr);
+  connection_.reset();
 }
 
 }  // namespace blimp
