@@ -244,6 +244,10 @@ class BlinkPerfPaint(perf_benchmark.PerfBenchmark):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'Paint')
     return CreateStorySetFromPath(path, SKIPPED_FILE)
 
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    return cls.IsSvelte(possible_browser)  # http://crbug.com/574483
+
 
 @benchmark.Disabled('win',     # crbug.com/488493
                     'android') # crbug.com/527156
