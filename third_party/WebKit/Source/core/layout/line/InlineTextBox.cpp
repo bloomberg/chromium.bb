@@ -587,7 +587,6 @@ TextRun InlineTextBox::constructTextRun(const ComputedStyle& style, const Font& 
 
     TextRun run(string, textPos().toFloat(), expansion(), expansionBehavior(), direction(), dirOverride() || style.rtlOrdering() == VisualOrder);
     run.setTabSize(!style.collapseWhiteSpace(), style.tabSize());
-    run.setCodePath(lineLayoutItem().canUseSimpleFontCodePath() ? TextRun::ForceSimple : TextRun::ForceComplex);
     run.setTextJustify(style.textJustify());
 
     // Propagate the maximum length of the characters buffer to the TextRun, even when we're only processing a substring.

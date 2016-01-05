@@ -727,7 +727,6 @@ ALWAYS_INLINE float LayoutText::widthFromFont(const Font& f, int start, int len,
     TextRun run = constructTextRun(f, this, start, len, styleRef(), textDirection);
     run.setCharactersLength(textLength() - start);
     ASSERT(run.charactersLength() >= run.length());
-    run.setCodePath(canUseSimpleFontCodePath() ? TextRun::ForceSimple : TextRun::ForceComplex);
     run.setTabSize(!style()->collapseWhiteSpace(), style()->tabSize());
     run.setXPos(leadWidth + textWidthSoFar);
 
@@ -792,7 +791,6 @@ void LayoutText::trimmedPrefWidths(LayoutUnit leadWidthLayoutUnit,
         if (stripFrontSpaces) {
             const UChar spaceChar = spaceCharacter;
             TextRun run = constructTextRun(font, &spaceChar, 1, styleRef(), direction);
-            run.setCodePath(canUseSimpleFontCodePath() ? TextRun::ForceSimple : TextRun::ForceComplex);
             float spaceWidth = font.width(run);
             floatMaxWidth -= spaceWidth;
         } else {
@@ -1082,7 +1080,6 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
             } else {
                 TextRun run = constructTextRun(f, this, i, 1, styleToUse, textDirection);
                 run.setCharactersLength(len - i);
-                run.setCodePath(canUseSimpleFontCodePath() ? TextRun::ForceSimple : TextRun::ForceComplex);
                 ASSERT(run.charactersLength() >= run.length());
                 run.setTabSize(!style()->collapseWhiteSpace(), style()->tabSize());
                 run.setXPos(leadWidth + currMaxWidth);
@@ -1516,7 +1513,6 @@ float LayoutText::width(unsigned from, unsigned len, const Font& f, LayoutUnit x
         run.setCharactersLength(textLength() - from);
         ASSERT(run.charactersLength() >= run.length());
 
-        run.setCodePath(canUseSimpleFontCodePath() ? TextRun::ForceSimple : TextRun::ForceComplex);
         run.setTabSize(!style()->collapseWhiteSpace(), style()->tabSize());
         run.setXPos(xPos.toFloat());
         w = f.width(run, fallbackFonts, glyphBounds);

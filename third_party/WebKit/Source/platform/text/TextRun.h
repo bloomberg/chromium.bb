@@ -71,7 +71,6 @@ public:
         , m_horizontalGlyphStretch(1)
         , m_expansion(expansion)
         , m_expansionBehavior(expansionBehavior)
-        , m_codePath(Auto)
         , m_is8Bit(true)
         , m_allowTabs(false)
         , m_direction(direction)
@@ -91,7 +90,6 @@ public:
         , m_horizontalGlyphStretch(1)
         , m_expansion(expansion)
         , m_expansionBehavior(expansionBehavior)
-        , m_codePath(Auto)
         , m_is8Bit(false)
         , m_allowTabs(false)
         , m_direction(direction)
@@ -111,7 +109,6 @@ public:
         , m_horizontalGlyphStretch(1)
         , m_expansion(expansion)
         , m_expansionBehavior(expansionBehavior)
-        , m_codePath(Auto)
         , m_allowTabs(false)
         , m_direction(direction)
         , m_directionalOverride(directionalOverride)
@@ -139,7 +136,6 @@ public:
         , m_horizontalGlyphStretch(1)
         , m_expansion(expansion)
         , m_expansionBehavior(expansionBehavior)
-        , m_codePath(Auto)
         , m_allowTabs(false)
         , m_direction(direction)
         , m_directionalOverride(directionalOverride)
@@ -210,13 +206,11 @@ public:
     bool rtl() const { return m_direction == RTL; }
     bool ltr() const { return m_direction == LTR; }
     bool directionalOverride() const { return m_directionalOverride; }
-    TextCodePath codePath() const { return static_cast<TextCodePath>(m_codePath); }
     bool spacingDisabled() const { return m_disableSpacing; }
 
     void disableSpacing() { m_disableSpacing = true; }
     void setDirection(TextDirection direction) { m_direction = direction; }
     void setDirectionalOverride(bool override) { m_directionalOverride = override; }
-    void setCodePath(TextCodePath codePath) { m_codePath = codePath; }
 
     void setTextJustify(TextJustify textJustify) { m_textJustify = static_cast<unsigned>(textJustify); }
     TextJustify textJustify() const { return static_cast<TextJustify>(m_textJustify); }
@@ -237,7 +231,6 @@ private:
 
     float m_expansion;
     ExpansionBehavior m_expansionBehavior : 2;
-    unsigned m_codePath : 2;
     unsigned m_is8Bit : 1;
     unsigned m_allowTabs : 1;
     unsigned m_direction : 1;

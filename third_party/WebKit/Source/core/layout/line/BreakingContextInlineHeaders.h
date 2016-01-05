@@ -535,7 +535,6 @@ ALWAYS_INLINE float textWidth(LineLayoutText text, unsigned from, unsigned len, 
         return text.width(from, len, font, xPos, text.style()->direction(), fallbackFonts, glyphBounds);
 
     TextRun run = constructTextRun(font, text, from, len, text.styleRef());
-    run.setCodePath(text.canUseSimpleFontCodePath() ? TextRun::ForceSimple : TextRun::ForceComplex);
     run.setTabSize(!collapseWhiteSpace, text.style()->tabSize());
     run.setXPos(xPos);
     return font.width(run, fallbackFonts, glyphBounds);

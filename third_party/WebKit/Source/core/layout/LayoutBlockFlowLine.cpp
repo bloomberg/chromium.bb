@@ -1178,9 +1178,6 @@ static inline void stripTrailingSpace(LayoutUnit& inlineMax, LayoutUnit& inlineM
         const Font& font = text->style()->font();
         TextRun run = constructTextRun(font, &trailingWhitespaceChar, 1,
             text->styleRef(), text->style()->direction());
-        run.setCodePath(text->canUseSimpleFontCodePath()
-            ? TextRun::ForceSimple
-            : TextRun::ForceComplex);
         float spaceWidth = font.width(run);
         inlineMax -= LayoutUnit::fromFloatCeil(spaceWidth + font.fontDescription().wordSpacing());
         if (inlineMin > inlineMax)
