@@ -16,22 +16,22 @@ cr.define('site_list', function() {
        * An example pref with 2 blocked location items and 2 allowed.
        */
       var prefs = {
-        'profile': {
-          'content_settings': {
-            'exceptions': {
-              'geolocation': {
-                'value': {
+        profile: {
+          content_settings: {
+            exceptions: {
+              geolocation: {
+                value: {
                   'https:\/\/foo-allow.com:443,https:\/\/foo-allow.com:443': {
-                    'setting': 1,
+                    setting: 1,
                   },
                   'https:\/\/bar-allow.com:443,https:\/\/bar-allow.com:443': {
-                    'setting': 1,
+                    setting: 1,
                   },
                   'https:\/\/foo-block.com:443,https:\/\/foo-block.com:443': {
-                    'setting': 2,
+                    setting: 2,
                   },
                   'https:\/\/bar-block.com:443,https:\/\/bar-block.com:443': {
-                    'setting': 2,
+                    setting: 2,
                   }
                 },
               },
@@ -44,10 +44,10 @@ cr.define('site_list', function() {
        * An example empty pref.
        */
       var prefsEmpty = {
-        'profile': {
-          'content_settings': {
-            'exceptions': {
-              'geolocation': {}
+        profile: {
+          content_settings: {
+            exceptions: {
+              geolocation: {}
             },
           },
         },

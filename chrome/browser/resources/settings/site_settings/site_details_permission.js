@@ -33,10 +33,7 @@ Polymer({
     /**
      * The origin, which this permission affects.
      */
-    origin: {
-      type: String,
-      observer: 'initialize_',
-    },
+    origin: String,
 
     i18n_: {
       readOnly: true,
@@ -50,7 +47,17 @@ Polymer({
     },
   },
 
+  observers: [
+    'initialize_(' +
+        'prefs.profile.content_settings.exceptions.*, category, origin)',
+  ],
+
   initialize_: function() {
+    this.$.details.hidden = true;
+    if (this.get('prefs.' +
+        this.computeCategoryExceptionsPrefName(this.category)) === undefined)
+      return;
+
     var pref = this.getPref(
         this.computeCategoryExceptionsPrefName(this.category));
     var originPref = pref.value[this.origin + ',*'];

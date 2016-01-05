@@ -16,10 +16,10 @@ cr.define('site_settings_category', function() {
        * An example pref where the location category is disabled.
        */
       var prefsLocationDisabled = {
-        'profile': {
-          'default_content_setting_values': {
-            'geolocation': {
-              'value': 2,
+        profile: {
+          default_content_setting_values: {
+            geolocation: {
+              value: 2,
             }
           },
         },
@@ -29,10 +29,10 @@ cr.define('site_settings_category', function() {
        * An example pref where the location category is enabled.
        */
       var prefsLocationEnabled = {
-        'profile': {
-          'default_content_setting_values': {
-            'geolocation': {
-              'value': 3,
+        profile: {
+          default_content_setting_values: {
+            geolocation: {
+              value: 3,
             }
           }
         },

@@ -36,6 +36,8 @@ CrSettingsBrowserTest.prototype = {
     'prefs_test_cases.js',
     'prefs_tests.js',
     'reset_page_test.js',
+    'site_details_tests.js',
+    'site_details_permission_tests.js',
     'site_list_tests.js',
     'site_settings_category_tests.js',
   ]),
@@ -58,6 +60,8 @@ TEST_F('CrSettingsBrowserTest', 'MAYBE_CrSettingsTest', function() {
   settings_dropdown_menu.registerTests();
   settings_prefUtil.registerTests();
   settings_prefs.registerTests();
+  site_details.registerTests();
+  site_details_permission.registerTests();
   site_list.registerTests();
   site_settings_category.registerTests();
 
