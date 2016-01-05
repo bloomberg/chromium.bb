@@ -54,6 +54,15 @@ class AvSettings {
     FIXED_VOLUME,
   };
 
+  // Defines the status of platform wake-on-cast feature.
+  enum WakeOnCastStatus {
+    WAKE_ON_CAST_UNKNOWN,  // Should only been used very rarely when platform
+                           // has error to get the status.
+    WAKE_ON_CAST_NOT_SUPPORTED,  // Platform doesn't support wake-on-cast.
+    WAKE_ON_CAST_DISABLED,
+    WAKE_ON_CAST_ENABLED,
+  };
+
   enum Event {
     // This event shall be fired whenever the active state is changed including
     // when the screen turned on, when the cast receiver (or the device where
@@ -93,6 +102,10 @@ class AvSettings {
     // by the device is changed, for e.g., when the device is connected or
     // disconnected to HDMI sinks
     AUDIO_VOLUME_CONTROL_TYPE_CHANGED = 5,
+
+    // This event shall be fired whenever wake-on-cast status is changed by
+    // platform.
+    WAKE_ON_CAST_CHANGED = 6,
 
     // This event should be fired when the device is connected to HDMI sinks.
     HDMI_CONNECTED = 100,
@@ -205,6 +218,13 @@ class AvSettings {
   // if they result in a change of active restrictions.
   virtual void ApplyOutputRestrictions(
       const OutputRestrictions& restrictions) = 0;
+
+  // Returns current Wake-On-Cast status from platform.
+  virtual WakeOnCastStatus GetWakeOnCastStatus() = 0;
+
+  // Enables/Disables Wake-On-Cast status.
+  // Returns false if failed or not supported.
+  virtual bool EnableWakeOnCast(bool enabled) = 0;
 };
 
 }  // namespace chromecast
