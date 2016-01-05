@@ -159,9 +159,9 @@ class CencUtilsTest : public testing::Test {
     // and simply appends the data to the end of it. It updates the box size
     // and sets the data size.
     DCHECK(data.size() < 100);
-    pssh_box[3] += data.size();
+    pssh_box[3] += static_cast<uint8_t>(data.size());
     pssh_box.pop_back();
-    pssh_box.push_back(data.size());
+    pssh_box.push_back(static_cast<uint8_t>(data.size()));
     pssh_box.insert(pssh_box.end(), data.begin(), data.end());
   }
 
@@ -284,7 +284,7 @@ TEST_F(CencUtilsTest, PsshBoxLargerThanSize) {
   // Add 20 additional bytes to |box|.
   size_t original_size = box.size();
   for (size_t i = 0; i < 20; ++i)
-    box.push_back(i);
+    box.push_back(static_cast<uint8_t>(i));
 
   // Tries every size greater than |original_size|.
   for (size_t i = original_size + 1; i < box.size(); ++i) {
