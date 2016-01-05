@@ -60,18 +60,15 @@ void StyleInvalidator::scheduleInvalidationSetsForElement(const InvalidationList
             requiresDescendantInvalidation = true;
     }
 
-    if (!requiresDescendantInvalidation && (invalidationLists.siblings.isEmpty() || !element.nextSibling()))
+    if (invalidationLists.siblings.isEmpty() && !requiresDescendantInvalidation)
         return;
 
     element.setNeedsStyleInvalidation();
-
     PendingInvalidations& pendingInvalidations = ensurePendingInvalidations(element);
-    if (element.nextSibling()) {
-        for (auto& invalidationSet : invalidationLists.siblings) {
-            if (pendingInvalidations.siblings().contains(invalidationSet))
-                continue;
-            pendingInvalidations.siblings().append(invalidationSet);
-        }
+    for (auto& invalidationSet : invalidationLists.siblings) {
+        if (pendingInvalidations.siblings().contains(invalidationSet))
+            continue;
+        pendingInvalidations.siblings().append(invalidationSet);
     }
 
     if (!requiresDescendantInvalidation)
