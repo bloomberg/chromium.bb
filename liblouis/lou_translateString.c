@@ -2163,7 +2163,8 @@ resolveEmphasisPassages(
 	const unsigned int bit_word,
 	const unsigned int bit_symbol)
 {
-	int word_cnt = 0, pass_start = -1, pass_end = -1, word_start = -1, in_word = 0, in_pass = 0;
+	unsigned int word_cnt = 0;
+	int pass_start = -1, pass_end = -1, word_start = -1, in_word = 0, in_pass = 0;
 	int i;
 	
 	if(!offset[lenPhrase])
