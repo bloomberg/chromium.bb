@@ -346,6 +346,12 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'bypass', 'count', bypass_count))
 
+  def AddResultsForHTML5Test(self, tab, results):
+    # Wait for the number of "points" of HTML5 compatibility to appear to verify
+    # the HTML5 elements have loaded successfully.
+    tab.WaitForJavaScriptExpression(
+        'document.getElementsByClassName("pointsPanel")', 15)
+
   def AddResultsForBypass(self, tab, results, url_pattern=""):
     bypass_count = 0
     skipped_count = 0
