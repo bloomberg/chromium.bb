@@ -6,7 +6,7 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [0, 288, 416, 18]
+        [0, 288, 415, 18]
       ],
       "paintInvalidationClients": [
         "LayoutText #text",
