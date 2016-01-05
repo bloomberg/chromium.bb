@@ -85,8 +85,7 @@ typedef unsigned short formtype;
      const widechar * inbuf,
      int *inlen,
      widechar * outbuf, int *outlen, formtype *typeform, char *spacing, 
-     int 
-mode);
+     int mode);
 
   int EXPORT_CALL lou_translate (const char *tableList, const widechar
 				 * inbuf,

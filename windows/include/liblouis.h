@@ -47,11 +47,22 @@ char * EXPORT_CALL lou_getProgramPath (void);
 
   typedef enum
   {
-    plain_text = 0,
-    italic = 1,
-    underline = 2,
-    bold = 4,
-    computer_braille = 8
+	plain_text = 0x0000,
+	italic = 0x0001,
+	underline = 0x0002,
+	bold = 0x0004,
+	computer_braille = 0x0008,
+	passage_break = 0x0010,
+	word_reset = 0x0020,
+	script = 0x0040,
+	trans_note = 0x0080,
+	trans_note_1 = 0x0100,
+	trans_note_2 = 0x0200,
+	trans_note_3 = 0x0400,
+	trans_note_4 = 0x0800,
+	trans_note_5 = 0x1000,
+	//  used by syllable   0x2000,
+	//  used by syllable   0x4000,
   } typeforms;
 #define comp_emph_1 italic
 #define comp_emph_2 underline
@@ -85,8 +96,7 @@ int EXPORT_CALL lou_charSize (void);
 		     *inbuf,
 		     int *inlen, widechar * outbuf, int *outlen,
 		     formtype *typeform, char *spacing, int *outputPos, 
-		     int 
-*inputPos, int *cursorPos, int mode);
+		     int *inputPos, int *cursorPos, int mode);
 
 int EXPORT_CALL lou_translatePrehyphenated (const char *tableList,
 					      const widechar * inbuf,
