@@ -415,8 +415,6 @@ source_set("browser") {
     "ui/keyboard/UIKeyCommand+Chrome.mm",
     "ui/keyboard/hardware_keyboard_watcher.h",
     "ui/keyboard/hardware_keyboard_watcher.mm",
-    "ui/legacy_size_class_support_util.h",
-    "ui/legacy_size_class_support_util.mm",
     "ui/native_content_controller.h",
     "ui/native_content_controller.mm",
     "ui/omnibox/web_omnibox_edit_controller.cc",

@@ -11,13 +11,16 @@
 typedef NS_ENUM(NSInteger, SizeClassIdiom) {
   COMPACT = 0,
   REGULAR,
-  SIZE_CLASS_COUNT
+  UNSPECIFIED,
+  SIZE_CLASS_COUNT = UNSPECIFIED,
 };
 
 // UIView category that exposes SizeClassIdiom getters.
 @interface UIView (SizeClassSupport)
 
-// Convenience getters for the view's width and height SizeClassIdioms.
+// Convenience getters for the view's width and height SizeClassIdioms.  If the
+// view's size class is unspecified, these functions return the size class idiom
+// of the application's key window.
 @property(nonatomic, readonly) SizeClassIdiom cr_widthSizeClass;
 @property(nonatomic, readonly) SizeClassIdiom cr_heightSizeClass;
 

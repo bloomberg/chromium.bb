@@ -567,8 +567,6 @@
         'browser/ui/keyboard/UIKeyCommand+Chrome.mm',
         'browser/ui/keyboard/hardware_keyboard_watcher.h',
         'browser/ui/keyboard/hardware_keyboard_watcher.mm',
-        'browser/ui/legacy_size_class_support_util.h',
-        'browser/ui/legacy_size_class_support_util.mm',
         'browser/ui/native_content_controller.h',
         'browser/ui/native_content_controller.mm',
         'browser/ui/omnibox/web_omnibox_edit_controller.cc',
