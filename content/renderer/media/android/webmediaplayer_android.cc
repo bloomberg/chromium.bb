@@ -976,7 +976,6 @@ void WebMediaPlayerAndroid::OnTimeUpdate(base::TimeDelta current_timestamp,
 void WebMediaPlayerAndroid::OnConnectedToRemoteDevice(
     const std::string& remote_playback_message) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  DCHECK(!media_source_delegate_);
   DrawRemotePlaybackText(remote_playback_message);
   is_remote_ = true;
   SetNeedsEstablishPeer(false);
@@ -985,7 +984,6 @@ void WebMediaPlayerAndroid::OnConnectedToRemoteDevice(
 
 void WebMediaPlayerAndroid::OnDisconnectedFromRemoteDevice() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  DCHECK(!media_source_delegate_);
   SetNeedsEstablishPeer(true);
   if (!paused())
     EstablishSurfaceTexturePeer();
