@@ -24,7 +24,7 @@ void SVGTextPainter::paint(const PaintInfo& paintInfo)
 
     // Paint the outlines, if any
     if (paintInfo.phase == PaintPhaseForeground) {
-        blockInfo.phase = PaintPhaseSelfOutline;
+        blockInfo.phase = PaintPhaseOutline;
         BlockPainter(m_layoutSVGText).paint(blockInfo, LayoutPoint());
     }
 }
