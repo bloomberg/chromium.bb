@@ -56,7 +56,7 @@ if (!is_nacl_nonsfi) {
 }
 
 if (is_component_build) {
-  shared_library("content") {
+  component("content") {
     public_deps =
         content_shared_components + [ "//content/public/app:both_sources" ]
     deps = [

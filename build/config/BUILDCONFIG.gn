@@ -549,6 +549,9 @@ set_defaults("loadable_module") {
 if (is_component_build) {
   set_defaults("component") {
     configs = _shared_library_configs
+    if (is_android) {
+      configs -= [ "//build/config/android:hide_native_jni_exports" ]
+    }
   }
 }
 
@@ -575,12 +578,25 @@ set_defaults("test") {
 # COMPONENT SETUP
 # ==============================================================================
 
-if (is_component_build) {
-  _component_mode = "shared_library"
-} else {
-  _component_mode = "source_set"
-}
+# Defines a component, which equates to a shared_library when
+# is_component_build == true and a source_set / static_library otherwise.
+#
+# Arguments are the same as a normal library with this addition:
+#   component_never_use_source_set: Whether to use static_library instead of
+#       source_set for non-component builds. Some targets (e.g. //base) should
+#       use static_library rather than source_set to avoid linking unused object
+#       files.
 template("component") {
+  _never_use_source_set = defined(invoker.component_never_use_source_set) &&
+                          invoker.component_never_use_source_set
+  assert(_never_use_source_set || true)  # Mark as used.
+  if (is_component_build) {
+    _component_mode = "shared_library"
+  } else if (_never_use_source_set) {
+    _component_mode = "static_library"
+  } else {
+    _component_mode = "source_set"
+  }
   target(_component_mode, target_name) {
     forward_variables_from(invoker, "*")
 
