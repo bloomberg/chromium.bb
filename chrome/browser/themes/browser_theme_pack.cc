@@ -1529,19 +1529,17 @@ void BrowserThemePack::AddRawImagesTo(const RawImages& images,
 }
 
 color_utils::HSL BrowserThemePack::GetTintInternal(int id) const {
-  if (tints_) {
-    for (size_t i = 0; i < kTintTableLength; ++i) {
-      if (tints_[i].id == id) {
-        color_utils::HSL hsl;
-        hsl.h = tints_[i].h;
-        hsl.s = tints_[i].s;
-        hsl.l = tints_[i].l;
-        return hsl;
-      }
-    }
-  }
+  color_utils::HSL hsl;
+  if (GetTint(id, &hsl))
+    return hsl;
 
-  return ThemeProperties::GetDefaultTint(id);
+  int original_id = id;
+  if (id == ThemeProperties::TINT_FRAME_INCOGNITO)
+    original_id = ThemeProperties::TINT_FRAME;
+  else if (id == ThemeProperties::TINT_FRAME_INCOGNITO_INACTIVE)
+    original_id = ThemeProperties::TINT_FRAME_INACTIVE;
+
+  return ThemeProperties::GetDefaultTint(original_id, original_id != id);
 }
 
 int BrowserThemePack::GetRawIDByPersistentID(

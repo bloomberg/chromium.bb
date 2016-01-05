@@ -137,7 +137,7 @@ class ThemeService : public base::NonThreadSafe,
   virtual bool ShouldInitWithSystemTheme() const;
 
   // Get the specified tint - |id| is one of the TINT_* enum values.
-  color_utils::HSL GetTint(int id) const;
+  color_utils::HSL GetTint(int id, bool otr) const;
 
   // Clears all the override fields and saves the dictionary.
   virtual void ClearAllThemeData();

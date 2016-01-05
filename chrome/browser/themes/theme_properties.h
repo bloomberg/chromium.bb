@@ -156,7 +156,7 @@ class ThemeProperties {
 
   // Returns the default tint for the given tint |id| TINT_* enum value.
   // Returns an HSL value of {-1, -1, -1} if |id| is invalid.
-  static color_utils::HSL GetDefaultTint(int id);
+  static color_utils::HSL GetDefaultTint(int id, bool otr);
 
   // Returns the default color for the given color |id| COLOR_* enum value.
   // Returns gfx::kPlaceholderColor if |id| is invalid.

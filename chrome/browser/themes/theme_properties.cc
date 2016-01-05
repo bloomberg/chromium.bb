@@ -86,6 +86,7 @@ const SkColor kDefaultColorButtonBackground = SkColorSetARGB(0, 0, 0, 0);
 
 // Default tints.
 const color_utils::HSL kDefaultTintButtons = { -1, -1, -1 };
+const color_utils::HSL kDefaultTintButtonsIncognito = { -1, -1, 0.85f };
 const color_utils::HSL kDefaultTintFrame = { -1, -1, -1 };
 const color_utils::HSL kDefaultTintFrameInactive = { -1, -1, 0.75f };
 const color_utils::HSL kDefaultTintFrameIncognito = { -1, 0.2f, 0.35f };
@@ -224,23 +225,24 @@ const std::set<int>& ThemeProperties::GetTintableToolbarButtons() {
 }
 
 // static
-color_utils::HSL ThemeProperties::GetDefaultTint(int id) {
+color_utils::HSL ThemeProperties::GetDefaultTint(int id, bool otr) {
   switch (id) {
     case TINT_FRAME:
-      return kDefaultTintFrame;
+      return otr ? kDefaultTintFrameIncognito : kDefaultTintFrame;
     case TINT_FRAME_INACTIVE:
-      return kDefaultTintFrameInactive;
-    case TINT_FRAME_INCOGNITO:
-      return kDefaultTintFrameIncognito;
-    case TINT_FRAME_INCOGNITO_INACTIVE:
-      return kDefaultTintFrameIncognitoInactive;
+      return otr ? kDefaultTintFrameIncognitoInactive
+                 : kDefaultTintFrameInactive;
     case TINT_BUTTONS:
-      return kDefaultTintButtons;
+      return otr ? kDefaultTintButtonsIncognito : kDefaultTintButtons;
     case TINT_BACKGROUND_TAB:
       return kDefaultTintBackgroundTab;
+    case TINT_FRAME_INCOGNITO:
+    case TINT_FRAME_INCOGNITO_INACTIVE:
+      NOTREACHED() << "These values should be queried via their respective "
+                      "non-incognito equivalents and an appropriate |otr| "
+                      "value.";
     default:
-      color_utils::HSL result = {-1, -1, -1};
-      return result;
+      return {-1, -1, -1};
   }
 }
 

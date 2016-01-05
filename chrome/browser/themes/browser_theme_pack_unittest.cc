@@ -54,10 +54,10 @@ class BrowserThemePackTest : public ::testing::Test {
   }
 
   void GenerateDefaultFrameColor(std::map<int, SkColor>* colors,
-                                 int color, int tint) {
+                                 int color, int tint, bool otr) {
     (*colors)[color] = HSLShift(
         ThemeProperties::GetDefaultColor(ThemeProperties::COLOR_FRAME, false),
-        ThemeProperties::GetDefaultTint(tint));
+        ThemeProperties::GetDefaultTint(tint, otr));
   }
 
   // Returns a mapping from each COLOR_* constant to the default value for this
@@ -66,17 +66,17 @@ class BrowserThemePackTest : public ::testing::Test {
   std::map<int, SkColor> GetDefaultColorMap() {
     std::map<int, SkColor> colors;
     GenerateDefaultFrameColor(&colors, ThemeProperties::COLOR_FRAME,
-                              ThemeProperties::TINT_FRAME);
+                              ThemeProperties::TINT_FRAME, false);
     GenerateDefaultFrameColor(&colors,
                               ThemeProperties::COLOR_FRAME_INACTIVE,
-                              ThemeProperties::TINT_FRAME_INACTIVE);
+                              ThemeProperties::TINT_FRAME_INACTIVE, false);
     GenerateDefaultFrameColor(&colors,
                               ThemeProperties::COLOR_FRAME_INCOGNITO,
-                              ThemeProperties::TINT_FRAME_INCOGNITO);
+                              ThemeProperties::TINT_FRAME, true);
     GenerateDefaultFrameColor(
         &colors,
         ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE,
-        ThemeProperties::TINT_FRAME_INCOGNITO_INACTIVE);
+        ThemeProperties::TINT_FRAME_INACTIVE, true);
 
     // For the rest, use default colors.
     for (int i = ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE + 1;

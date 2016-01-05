@@ -341,14 +341,14 @@ std::string ThemeService::GetThemeID() const {
   return profile_->GetPrefs()->GetString(prefs::kCurrentThemeID);
 }
 
-color_utils::HSL ThemeService::GetTint(int id) const {
+color_utils::HSL ThemeService::GetTint(int id, bool otr) const {
   DCHECK(CalledOnValidThread());
 
   color_utils::HSL hsl;
   if (theme_supplier_ && theme_supplier_->GetTint(id, &hsl))
     return hsl;
 
-  return ThemeProperties::GetDefaultTint(id);
+  return ThemeProperties::GetDefaultTint(id, otr);
 }
 
 void ThemeService::ClearAllThemeData() {
@@ -476,7 +476,7 @@ SkColor ThemeService::GetColor(int id, bool otr) const {
   switch (id) {
     case Properties::COLOR_TOOLBAR_BUTTON_ICON:
       return color_utils::HSLShift(gfx::kChromeIconGrey,
-                                   GetTint(Properties::TINT_BUTTONS));
+                                   GetTint(Properties::TINT_BUTTONS, otr));
     case Properties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE:
       // The active color is overridden in Gtk2UI.
       return SkColorSetA(GetColor(Properties::COLOR_TOOLBAR_BUTTON_ICON, otr),
@@ -508,7 +508,7 @@ SkColor ThemeService::GetColor(int id, bool otr) const {
                                ? ui::NativeTheme::kColorId_ThrobberSpinningColor
                                : ui::NativeTheme::kColorId_ThrobberWaitingColor,
                            nullptr);
-      color_utils::HSL hsl = GetTint(Properties::TINT_BUTTONS);
+      color_utils::HSL hsl = GetTint(Properties::TINT_BUTTONS, otr);
       return color_utils::HSLShift(base_color, hsl);
     }
 #if defined(ENABLE_SUPERVISED_USERS)

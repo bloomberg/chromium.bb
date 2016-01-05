@@ -130,7 +130,7 @@ NSColor* ThemeService::GetNSColorTint(int id) const {
   if (nscolor_iter != nscolor_cache_.end())
     return nscolor_iter->second;
 
-  color_utils::HSL tint = GetTint(id);
+  color_utils::HSL tint = GetTint(id, false);
   NSColor* tint_color = nil;
   if (tint.h == -1 && tint.s == -1 && tint.l == -1) {
     tint_color = [NSColor blackColor];
