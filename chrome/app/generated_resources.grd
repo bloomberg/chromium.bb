@@ -5574,11 +5574,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_GESTURE_TAP_HIGHLIGHTING_DESCRIPTION" desc="Description for the flag to turn on gesture tap highlighting">
         Enable the experimental gesture tap highlight implementation.
       </message>
-      <message name="IDS_FLAGS_SMOOTH_SCROLLING_NAME" desc="Title for the flag to turn on smooth scrolling">
+      <message name="IDS_FLAGS_SMOOTH_SCROLLING_NAME" desc="Name of the smooth scrolling flag">
         Smooth Scrolling
       </message>
-      <message name="IDS_FLAGS_SMOOTH_SCROLLING_DESCRIPTION" desc="Description for the flag to turn on smooth scrolling">
-        Enable the experimental smooth scrolling implementation.
+      <message name="IDS_FLAGS_SMOOTH_SCROLLING_DESCRIPTION" desc="Description of the smooth scrolling flag">
+        Animate smoothly when scrolling page content.
       </message>
       <message name="IDS_FLAGS_OVERLAY_SCROLLBARS_NAME" desc="Title for the flag to turn on overlay scrollbars">
         Overlay Scrollbars
