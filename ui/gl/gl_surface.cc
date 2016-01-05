@@ -219,6 +219,10 @@ bool GLSurface::IsSurfaceless() const {
   return false;
 }
 
+bool GLSurface::FlipsVertically() const {
+  return false;
+}
+
 GLSurface* GLSurface::GetCurrent() {
   return current_surface_.Pointer()->Get();
 }
@@ -377,6 +381,10 @@ bool GLSurfaceAdapter::ScheduleOverlayPlane(int z_order,
 
 bool GLSurfaceAdapter::IsSurfaceless() const {
   return surface_->IsSurfaceless();
+}
+
+bool GLSurfaceAdapter::FlipsVertically() const {
+  return surface_->FlipsVertically();
 }
 
 GLSurfaceAdapter::~GLSurfaceAdapter() {}

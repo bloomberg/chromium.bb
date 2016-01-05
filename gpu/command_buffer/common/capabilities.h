@@ -139,6 +139,7 @@ struct GPU_EXPORT Capabilities {
   bool occlusion_query_boolean;
   bool timer_queries;
   bool surfaceless;
+  bool flips_vertically;
 
   int major_version;
   int minor_version;

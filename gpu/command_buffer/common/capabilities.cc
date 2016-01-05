@@ -80,6 +80,7 @@ Capabilities::Capabilities()
       occlusion_query_boolean(false),
       timer_queries(false),
       surfaceless(false),
+      flips_vertically(false),
       major_version(2),
       minor_version(0) {}
 

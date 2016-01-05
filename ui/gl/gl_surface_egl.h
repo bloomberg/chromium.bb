@@ -100,6 +100,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
                             gl::GLImage* image,
                             const Rect& bounds_rect,
                             const RectF& crop_rect) override;
+  bool FlipsVertically() const override;
 
   // Create a NativeViewGLSurfaceEGL with an externally provided VSyncProvider.
   // Takes ownership of the VSyncProvider.
@@ -125,6 +126,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   EGLSurface surface_;
   bool supports_post_sub_buffer_;
   bool alpha_;
+  bool flips_vertically_;
 
   scoped_ptr<VSyncProvider> vsync_provider_;
 

@@ -61,6 +61,10 @@ bool GpuBrowserCompositorOutputSurface::BindToClient(
       swap_buffers_completion_callback_.callback());
   GetCommandBufferProxy()->SetUpdateVSyncParametersCallback(
       update_vsync_parameters_callback_.callback());
+  if (capabilities_.uses_default_gl_framebuffer) {
+    capabilities_.flipped_output_surface =
+        context_provider()->ContextCapabilities().gpu.flips_vertically;
+  }
   return true;
 }
 

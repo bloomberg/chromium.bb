@@ -84,6 +84,14 @@ extern "C" {
 #define EGL_X11_VISUAL_ID_ANGLE 0x33A3
 #endif /* EGL_ANGLE_x11_visual */
 
+#ifndef EGL_ANGLE_surface_orientation
+#define EGL_ANGLE_surface_orientation
+#define EGL_OPTIMAL_SURFACE_ORIENTATION_ANGLE 0x33A7
+#define EGL_SURFACE_ORIENTATION_ANGLE 0x33A8
+#define EGL_SURFACE_ORIENTATION_INVERT_X_ANGLE 0x0001
+#define EGL_SURFACE_ORIENTATION_INVERT_Y_ANGLE 0x0002
+#endif /* EGL_ANGLE_surface_orientation */
+
 using ui::GetLastEGLErrorString;
 
 namespace gfx {
@@ -107,6 +115,7 @@ bool g_egl_create_context_robustness_supported = false;
 bool g_egl_sync_control_supported = false;
 bool g_egl_window_fixed_size_supported = false;
 bool g_egl_surfaceless_context_supported = false;
+bool g_egl_surface_orientation_supported = false;
 
 class EGLSyncControlVSyncProvider
     : public gfx::SyncControlVSyncProvider {
@@ -364,6 +373,8 @@ bool GLSurfaceEGL::InitializeOneOff() {
       HasEGLExtension("EGL_CHROMIUM_sync_control");
   g_egl_window_fixed_size_supported =
       HasEGLExtension("EGL_ANGLE_window_fixed_size");
+  g_egl_surface_orientation_supported =
+      HasEGLExtension("EGL_ANGLE_surface_orientation");
 
   // TODO(oetuaho@nvidia.com): Surfaceless is disabled on Android as a temporary
   // workaround, since code written for Android WebView takes different paths
@@ -492,6 +503,7 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(EGLNativeWindowType window)
       surface_(NULL),
       supports_post_sub_buffer_(false),
       alpha_(true),
+      flips_vertically_(false),
       swap_interval_(1) {
 #if defined(OS_ANDROID)
   if (window)
@@ -541,6 +553,18 @@ bool NativeViewGLSurfaceEGL::Initialize(
   if (gfx::g_driver_egl.ext.b_EGL_NV_post_sub_buffer) {
     egl_window_attributes.push_back(EGL_POST_SUB_BUFFER_SUPPORTED_NV);
     egl_window_attributes.push_back(EGL_TRUE);
+  }
+
+  if (g_egl_surface_orientation_supported) {
+    EGLint attrib;
+    eglGetConfigAttrib(GetDisplay(), GetConfig(),
+                       EGL_OPTIMAL_SURFACE_ORIENTATION_ANGLE, &attrib);
+    flips_vertically_ = (attrib == EGL_SURFACE_ORIENTATION_INVERT_Y_ANGLE);
+  }
+
+  if (flips_vertically_) {
+    egl_window_attributes.push_back(EGL_SURFACE_ORIENTATION_ANGLE);
+    egl_window_attributes.push_back(EGL_SURFACE_ORIENTATION_INVERT_Y_ANGLE);
   }
 
   egl_window_attributes.push_back(EGL_NONE);
@@ -704,6 +728,10 @@ bool NativeViewGLSurfaceEGL::SupportsPostSubBuffer() {
   return supports_post_sub_buffer_;
 }
 
+bool NativeViewGLSurfaceEGL::FlipsVertically() const {
+  return flips_vertically_;
+}
+
 gfx::SwapResult NativeViewGLSurfaceEGL::PostSubBuffer(int x,
                                                       int y,
                                                       int width,
@@ -712,6 +740,12 @@ gfx::SwapResult NativeViewGLSurfaceEGL::PostSubBuffer(int x,
   if (!CommitAndClearPendingOverlays()) {
     DVLOG(1) << "Failed to commit pending overlay planes.";
     return gfx::SwapResult::SWAP_FAILED;
+  }
+  if (flips_vertically_) {
+    // With EGL_SURFACE_ORIENTATION_INVERT_Y_ANGLE the contents are rendered
+    // inverted, but the PostSubBuffer rectangle is still measured from the
+    // bottom left.
+    y = GetSize().height() - y - height;
   }
   if (!eglPostSubBufferNV(GetDisplay(), surface_, x, y, width, height)) {
     DVLOG(1) << "eglPostSubBufferNV failed with error "

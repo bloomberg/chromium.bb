@@ -3146,6 +3146,8 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.commit_overlay_planes = supports_commit_overlay_planes_;
   caps.image = true;
   caps.surfaceless = surfaceless_;
+  bool is_offscreen = !!offscreen_target_frame_buffer_.get();
+  caps.flips_vertically = !is_offscreen && surface_->FlipsVertically();
 
   caps.blend_equation_advanced =
       feature_info_->feature_flags().blend_equation_advanced;
