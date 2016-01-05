@@ -70,7 +70,7 @@ struct MEDIA_EXPORT Vp9Segmentation {
   bool update_data;
   bool abs_delta;
   bool feature_enabled[kNumSegments][SEG_LVL_MAX];
-  int8_t feature_data[kNumSegments][SEG_LVL_MAX];
+  int16_t feature_data[kNumSegments][SEG_LVL_MAX];
 
   int16_t y_dequant[kNumSegments][2];
   int16_t uv_dequant[kNumSegments][2];
@@ -79,7 +79,7 @@ struct MEDIA_EXPORT Vp9Segmentation {
     return feature_enabled[seg_id][feature];
   }
 
-  int8_t FeatureData(size_t seg_id, SegmentLevelFeature feature) const {
+  int16_t FeatureData(size_t seg_id, SegmentLevelFeature feature) const {
     return feature_data[seg_id][feature];
   }
 };
