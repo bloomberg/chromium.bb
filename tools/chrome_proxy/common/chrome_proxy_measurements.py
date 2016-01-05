@@ -29,7 +29,7 @@ def WaitForViaHeader(tab, url="http://check.googlezip.net/test.html"):
       'if (via_header_found) { return true; }'
       'try {'
         'var xmlhttp = new XMLHttpRequest();'
-        'xmlhttp.open("HEAD",url,true);'
+        'xmlhttp.open("GET",url,true);'
         'xmlhttp.onload=function(e) {'
           # Store the last response received for debugging, this will be shown
           # in telemetry dumps if the request fails or times out.
