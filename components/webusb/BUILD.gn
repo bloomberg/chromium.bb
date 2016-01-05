@@ -9,11 +9,13 @@ source_set("webusb") {
     "webusb_detector.h",
   ]
 
-  deps = [
+  public_deps = [
     "//base",
     "//components/webusb/public/interfaces",
-    "//device/core",
     "//device/usb",
+  ]
+  deps = [
+    "//device/core",
   ]
 }
 
