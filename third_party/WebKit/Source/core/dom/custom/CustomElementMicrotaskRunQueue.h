@@ -25,21 +25,21 @@ public:
     void requestDispatchIfNeeded();
     bool isEmpty() const;
 
-    // Must be promptly finalized to prevent unsafe dispatching.
-    EAGERLY_FINALIZE();
     DECLARE_TRACE();
 
 private:
-    static void dispatchIfAlive(WeakPtr<CustomElementMicrotaskRunQueue> self);
+    static void dispatchIfAlive(WeakPtrWillBeWeakPersistent<CustomElementMicrotaskRunQueue>);
 
     CustomElementMicrotaskRunQueue();
 
     void dispatch();
 
-    WeakPtrFactory<CustomElementMicrotaskRunQueue> m_weakFactory;
     RefPtrWillBeMember<CustomElementSyncMicrotaskQueue> m_syncQueue;
     RefPtrWillBeMember<CustomElementAsyncImportMicrotaskQueue> m_asyncQueue;
     bool m_dispatchIsPending;
+#if !ENABLE(OILPAN)
+    WeakPtrFactory<CustomElementMicrotaskRunQueue> m_weakFactory;
+#endif
 };
 
 } // namespace blink
