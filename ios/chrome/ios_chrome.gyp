@@ -575,6 +575,7 @@
         'browser/ui/omnibox/web_omnibox_edit_controller.h',
         'browser/ui/orientation_limiting_navigation_controller.h',
         'browser/ui/orientation_limiting_navigation_controller.mm',
+        'browser/ui/prerender_final_status.h',
         'browser/ui/reversed_animation.h',
         'browser/ui/reversed_animation.mm',
         'browser/ui/rtl_geometry.h',

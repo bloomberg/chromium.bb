@@ -423,6 +423,7 @@ source_set("browser") {
     "ui/omnibox/web_omnibox_edit_controller.h",
     "ui/orientation_limiting_navigation_controller.h",
     "ui/orientation_limiting_navigation_controller.mm",
+    "ui/prerender_final_status.h",
     "ui/reversed_animation.h",
     "ui/reversed_animation.mm",
     "ui/rtl_geometry.h",
