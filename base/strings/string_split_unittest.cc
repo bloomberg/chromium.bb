@@ -268,6 +268,71 @@ TEST(SplitStringUsingSubstrTest, TrailingDelimitersSkipped) {
       results, ElementsAre("un", "deux", "trois", "quatre", "", "", ""));
 }
 
+TEST(SplitStringPieceUsingSubstrTest, StringWithNoDelimiter) {
+  std::vector<base::StringPiece> results =
+      SplitStringPieceUsingSubstr("alongwordwithnodelimiter", "DELIMITER",
+                                  base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  ASSERT_EQ(1u, results.size());
+  EXPECT_THAT(results, ElementsAre("alongwordwithnodelimiter"));
+}
+
+TEST(SplitStringPieceUsingSubstrTest, LeadingDelimitersSkipped) {
+  std::vector<base::StringPiece> results = SplitStringPieceUsingSubstr(
+      "DELIMITERDELIMITERDELIMITERoneDELIMITERtwoDELIMITERthree", "DELIMITER",
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  ASSERT_EQ(6u, results.size());
+  EXPECT_THAT(results, ElementsAre("", "", "", "one", "two", "three"));
+}
+
+TEST(SplitStringPieceUsingSubstrTest, ConsecutiveDelimitersSkipped) {
+  std::vector<base::StringPiece> results = SplitStringPieceUsingSubstr(
+      "unoDELIMITERDELIMITERDELIMITERdosDELIMITERtresDELIMITERDELIMITERcuatro",
+      "DELIMITER", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  ASSERT_EQ(7u, results.size());
+  EXPECT_THAT(results, ElementsAre("uno", "", "", "dos", "tres", "", "cuatro"));
+}
+
+TEST(SplitStringPieceUsingSubstrTest, TrailingDelimitersSkipped) {
+  std::vector<base::StringPiece> results = SplitStringPieceUsingSubstr(
+      "unDELIMITERdeuxDELIMITERtroisDELIMITERquatreDELIMITERDELIMITERDELIMITER",
+      "DELIMITER", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  ASSERT_EQ(7u, results.size());
+  EXPECT_THAT(results,
+              ElementsAre("un", "deux", "trois", "quatre", "", "", ""));
+}
+
+TEST(SplitStringPieceUsingSubstrTest, KeepWhitespace) {
+  std::vector<base::StringPiece> results = SplitStringPieceUsingSubstr(
+      "un DELIMITERdeux\tDELIMITERtrois\nDELIMITERquatre", "DELIMITER",
+      base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  ASSERT_EQ(4u, results.size());
+  EXPECT_THAT(results, ElementsAre("un ", "deux\t", "trois\n", "quatre"));
+}
+
+TEST(SplitStringPieceUsingSubstrTest, TrimWhitespace) {
+  std::vector<base::StringPiece> results = SplitStringPieceUsingSubstr(
+      "un DELIMITERdeux\tDELIMITERtrois\nDELIMITERquatre", "DELIMITER",
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  ASSERT_EQ(4u, results.size());
+  EXPECT_THAT(results, ElementsAre("un", "deux", "trois", "quatre"));
+}
+
+TEST(SplitStringPieceUsingSubstrTest, SplitWantAll) {
+  std::vector<base::StringPiece> results = SplitStringPieceUsingSubstr(
+      "unDELIMITERdeuxDELIMITERtroisDELIMITERDELIMITER", "DELIMITER",
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  ASSERT_EQ(5u, results.size());
+  EXPECT_THAT(results, ElementsAre("un", "deux", "trois", "", ""));
+}
+
+TEST(SplitStringPieceUsingSubstrTest, SplitWantNonEmpty) {
+  std::vector<base::StringPiece> results = SplitStringPieceUsingSubstr(
+      "unDELIMITERdeuxDELIMITERtroisDELIMITERDELIMITER", "DELIMITER",
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  ASSERT_EQ(3u, results.size());
+  EXPECT_THAT(results, ElementsAre("un", "deux", "trois"));
+}
+
 TEST(StringSplitTest, StringSplitKeepWhitespace) {
   std::vector<std::string> r;
 

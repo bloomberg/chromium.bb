@@ -156,15 +156,9 @@ void HttpRequestHeaders::AddHeaderFromString(
 
 void HttpRequestHeaders::AddHeadersFromString(
     const base::StringPiece& headers) {
-  // TODO(willchan): Consider adding more StringPiece support in string_util.h
-  // to eliminate copies.
-  std::vector<std::string> header_line_vector;
-  base::SplitStringUsingSubstr(headers.as_string(), "\r\n",
-                               &header_line_vector);
-  for (std::vector<std::string>::const_iterator it = header_line_vector.begin();
-       it != header_line_vector.end(); ++it) {
-    if (!it->empty())
-      AddHeaderFromString(*it);
+  for (const base::StringPiece& header : base::SplitStringPieceUsingSubstr(
+           headers, "\r\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+    AddHeaderFromString(header);
   }
 }
 
