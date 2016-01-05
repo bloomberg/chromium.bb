@@ -9,6 +9,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Environment;
 
+import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -16,7 +17,6 @@ import org.chromium.chrome.browser.ChromeBrowserProviderClient;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkUtils;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
@@ -27,6 +27,7 @@ import org.chromium.ui.base.PageTransition;
  * A class holding static util functions for offline pages.
  */
 public class OfflinePageUtils {
+    private static final String TAG = "OfflinePageUtils";
     /** Snackbar button types */
     private static final int NO_BUTTON = 0;
     private static final int RELOAD_BUTTON = 1;
@@ -83,11 +84,27 @@ public class OfflinePageUtils {
             return;
         }
 
+        Log.d(TAG, "showOfflineSnackbarIfNecessary called, tab " + tab);
+
         boolean save;
+
         final long bookmarkId = tab.getUserBookmarkId();
+        Context context = activity.getBaseContext();
+        final boolean connected = isConnected(context);
+        final boolean shouldSave = !tab.isOfflinePage();
+        final OfflinePageTabObserver tabObserver =
+                new OfflinePageTabObserver(activity, connected, shouldSave, bookmarkId);
         if (tab.isOfflinePage()) {
             // If an offline page is being visited, prompt that an offline copy is being shown.
             save = false;
+
+            // Set up the connectivity listener to watch for connectivity.
+            if (!connected) {
+                // Create a connectivityListener.
+                final OfflinePageConnectivityListener connectivityListener =
+                        new OfflinePageConnectivityListener(activity, tab);
+                tabObserver.setConnectivityListener(tab.getId(), connectivityListener);
+            }
         } else if (tab.getUserBookmarkId() != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID
                 && !tab.hasOfflineCopy() && !tab.isShowingErrorPage()
                 && OfflinePageBridge.canSavePage(tab.getUrl())) {
@@ -99,18 +116,25 @@ public class OfflinePageUtils {
             return;
         }
 
-        if (tab.isHidden()) {
-            // Wait until the tab becomes visible.
-            final boolean finalSave = save;
-            tab.addObserver(new EmptyTabObserver() {
-                @Override
-                public void onShown(Tab visibleTab) {
-                    showOfflineSnackbar(activity, visibleTab.getId(), finalSave, bookmarkId);
-                }
-            });
+        // Add a listener if we are hidden or offline, we don't need one otherwise.
+        if (tab.isHidden() || !connected) {
+            // Remember if the tab was hidden when we started, so we can show the snackbar when
+            // the tab becomes visible.
+            tabObserver.setWasHidden(tab.isHidden());
+            tab.addObserver(tabObserver);
         } else {
-            showOfflineSnackbar(activity, tab.getId(), save, bookmarkId);
+            showOfflineSnackbar(activity, tab.getId(), save, connected, bookmarkId);
+            Log.d(TAG, "Showing offline page snackbar");
         }
+    }
+
+    /**
+     * Shows the "reload" snackbar for the given tab.
+     */
+    public static void showReloadSnackbar(final ChromeActivity activity, Tab tab) {
+        boolean save = false;
+        boolean connected = true;
+        showOfflineSnackbar(activity, tab.getId(), save, connected, tab.getUserBookmarkId());
     }
 
     /**
@@ -120,8 +144,8 @@ public class OfflinePageUtils {
      * @param save Whether to offer saving the page.
      * @param bookmarkId Bookmark ID related to the opened page.
      */
-    private static void showOfflineSnackbar(
-            final ChromeActivity activity, final int tabId, boolean save, final long bookmarkId) {
+    public static void showOfflineSnackbar(final ChromeActivity activity, final int tabId,
+            boolean save, boolean connected, final long bookmarkId) {
         Context context = activity.getBaseContext();
 
         int snackbarTextId = -1;
@@ -136,7 +160,7 @@ public class OfflinePageUtils {
 
             // Offer to reload the original page if there is network connection or edit if there is
             // none.
-            if (isConnected(context)) {
+            if (connected) {
                 buttonType = RELOAD_BUTTON;
                 actionTextId = R.string.reload;
             } else {
