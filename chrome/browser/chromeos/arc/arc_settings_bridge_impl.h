@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/values.h"
+#include "chromeos/settings/timezone_settings.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/settings/arc_settings_bridge.h"
 
@@ -39,8 +40,10 @@ double ConvertFontSizeChromeToAndroid(int default_size,
 
 // Listens to changes for select Chrome settings (prefs) that Android cares
 // about and sends the new values to Android to keep the state in sync.
-class ArcSettingsBridgeImpl : public ArcSettingsBridge,
-                              public ArcBridgeService::Observer {
+class ArcSettingsBridgeImpl
+    : public ArcSettingsBridge,
+      public ArcBridgeService::Observer,
+      public chromeos::system::TimezoneSettings::Observer {
  public:
   ArcSettingsBridgeImpl() = default;
 
@@ -58,17 +61,21 @@ class ArcSettingsBridgeImpl : public ArcSettingsBridge,
   void OnStateChanged(ArcBridgeService::State state) override;
   void OnSettingsInstanceReady() override;
 
+  // TimezoneSettings::Observer
+  void TimezoneChanged(const icu::TimeZone& timezone) override;
+
  private:
   // Registers to observe changes for Chrome settings we care about.
-  void StartObservingPrefChanges();
+  void StartObservingSettingsChanges();
 
   // Stops listening for Chrome settings changes.
-  void StopObservingPrefChanges();
+  void StopObservingSettingsChanges();
 
   // Retrives Chrome's state for the settings and send it to Android.
   void SyncAllPrefs() const;
-  void SyncSpokenFeedbackEnabled() const;
   void SyncFontSize() const;
+  void SyncSpokenFeedbackEnabled() const;
+  void SyncTimeZone() const;
 
   // Registers to listen to a particular perf.
   void AddPrefToObserve(const std::string& pref_name);
