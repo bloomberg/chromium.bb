@@ -26,7 +26,8 @@ WebThreadImplForWorkerScheduler::WebThreadImplForWorkerScheduler(
     const char* name,
     base::Thread::Options options)
     : thread_(new base::Thread(name ? name : std::string())) {
-  thread_->StartWithOptions(options);
+  bool started = thread_->StartWithOptions(options);
+  CHECK(started);
   thread_task_runner_ = thread_->task_runner();
 
   base::WaitableEvent completion(false, false);
