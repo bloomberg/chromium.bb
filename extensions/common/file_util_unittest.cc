@@ -430,13 +430,7 @@ TEST_F(FileUtilTest, CheckZeroLengthAndMissingIconFile) {
   std::string error;
   scoped_refptr<Extension> extension(file_util::LoadExtension(
       ext_dir, Manifest::INTERNAL, Extension::NO_FLAGS, &error));
-  EXPECT_TRUE(extension);
-  ASSERT_EQ(2U, extension->install_warnings().size());
-
-  EXPECT_EQ("Could not load extension icon 'missing-icon.png'.",
-            extension->install_warnings()[0].message);
-  EXPECT_EQ("Could not load extension icon 'icon.png'.",
-            extension->install_warnings()[1].message);
+  ASSERT_FALSE(extension);
 }
 
 // Try to install an unpacked extension with a zero-length icon file.

@@ -32,7 +32,7 @@ struct ActionInfo {
   };
 
   // Loads an ActionInfo from the given DictionaryValue.
-  static scoped_ptr<ActionInfo> Load(Extension* extension,
+  static scoped_ptr<ActionInfo> Load(const Extension* extension,
                                      const base::DictionaryValue* dict,
                                      base::string16* error);
 

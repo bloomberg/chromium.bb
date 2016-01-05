@@ -35,36 +35,5 @@ TEST_F(BrowserActionUnitTest, MultiIcons) {
   EXPECT_EQ("icon38.png", icons.Get(38, ExtensionIconSet::MATCH_EXACTLY));
 }
 
-TEST_F(BrowserActionUnitTest, MissingIconInWebstoreCrx) {
-  InitializeEmptyExtensionService();
-  base::FilePath path =
-      data_dir().AppendASCII("api_test/browser_action/missing_icon");
-  ASSERT_TRUE(base::PathExists(path));
-
-  const Extension* extension = PackAndInstallCRX(path, INSTALL_NEW);
-
-  ASSERT_EQ(1U, extension->install_warnings().size());
-  EXPECT_EQ("Could not load extension icon 'icon19.png'.",
-            extension->install_warnings().front().message);
-  const ActionInfo* browser_action_info =
-      ActionInfo::GetBrowserActionInfo(extension);
-  ASSERT_TRUE(browser_action_info);
-
-  const ExtensionIconSet& icons = browser_action_info->default_icon;
-
-  EXPECT_EQ(2u, icons.map().size());
-  EXPECT_EQ("icon24.png", icons.Get(24, ExtensionIconSet::MATCH_EXACTLY));
-  EXPECT_EQ("icon38.png", icons.Get(38, ExtensionIconSet::MATCH_EXACTLY));
-}
-
-TEST_F(BrowserActionUnitTest, MissingIconInCommandLine) {
-  InitializeEmptyExtensionService();
-  base::FilePath path =
-      data_dir().AppendASCII("api_test/browser_action/missing_icon");
-  ASSERT_TRUE(base::PathExists(path));
-
-  PackAndInstallCRXWithLocation(path, Manifest::COMMAND_LINE, INSTALL_FAILED);
-}
-
 } // namespace
 } // namespace extensions
