@@ -4,6 +4,11 @@
 
 package org.chromium.chrome.browser.crash;
 
+import static org.chromium.chrome.browser.crash.MinidumpUploadService.BROWSER;
+import static org.chromium.chrome.browser.crash.MinidumpUploadService.GPU;
+import static org.chromium.chrome.browser.crash.MinidumpUploadService.OTHER;
+import static org.chromium.chrome.browser.crash.MinidumpUploadService.RENDERER;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -23,7 +28,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-
 /**
  * Testcase for {@link MinidumpUploadService}.
  */
@@ -356,6 +360,42 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
 
         // Verify.
         assertTrue("Should have called startService(...)", context.isFlagSet(startServiceFlag));
+    }
+
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testGetCrashType1() throws IOException {
+        final File minidumpFile = new File(mCrashDir, "chromium_renderer-123.dmp");
+        setUpMinidumpFile(minidumpFile, BOUNDARY, "browser");
+        assertEquals(BROWSER,
+                MinidumpUploadService.getCrashType(minidumpFile.getAbsolutePath()));
+    }
+
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testGetCrashType2() throws IOException {
+        final File minidumpFile = new File(mCrashDir, "chromium_renderer-123.dmp");
+        setUpMinidumpFile(minidumpFile, BOUNDARY, "renderer");
+        assertEquals(RENDERER,
+                MinidumpUploadService.getCrashType(minidumpFile.getAbsolutePath()));
+    }
+
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testGetCrashType3() throws IOException {
+        final File minidumpFile = new File(mCrashDir, "chromium_renderer-123.dmp");
+        setUpMinidumpFile(minidumpFile, BOUNDARY, "gpu-process");
+        assertEquals(GPU,
+                MinidumpUploadService.getCrashType(minidumpFile.getAbsolutePath()));
+    }
+
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testGetCrashType4() throws IOException {
+        final File minidumpFile = new File(mCrashDir, "chromium_renderer-123.dmp");
+        setUpMinidumpFile(minidumpFile, BOUNDARY, "weird test type");
+        assertEquals(OTHER,
+                MinidumpUploadService.getCrashType(minidumpFile.getAbsolutePath()));
     }
 
     private class MinidumpPreparationContext extends AdvancedMockContext {

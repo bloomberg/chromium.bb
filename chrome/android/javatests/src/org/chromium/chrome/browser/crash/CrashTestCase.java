@@ -50,6 +50,11 @@ public class CrashTestCase extends InstrumentationTestCase {
     }
 
     protected static void setUpMinidumpFile(File file, String boundary) throws IOException {
+        setUpMinidumpFile(file, boundary, null);
+    }
+
+    protected static void setUpMinidumpFile(File file, String boundary, String processType)
+            throws IOException {
         PrintWriter minidumpWriter = null;
         try {
             minidumpWriter = new PrintWriter(new FileWriter(file));
@@ -61,9 +66,13 @@ public class CrashTestCase extends InstrumentationTestCase {
             minidumpWriter.println("Content-Disposition: form-data; name=\"ver\"");
             minidumpWriter.println();
             minidumpWriter.println("1");
+            if (processType != null) {
+                minidumpWriter.println("Content-Disposition: form-data; name=\"ptype\"");
+                minidumpWriter.println();
+                minidumpWriter.println(processType);
+            }
             minidumpWriter.println(boundary + "--");
             minidumpWriter.flush();
-            minidumpWriter.close();
         } finally {
             if (minidumpWriter != null) {
                 minidumpWriter.close();
