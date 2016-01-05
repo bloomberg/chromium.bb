@@ -14,9 +14,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
-#include "remoting/client/frame_consumer.h"
 #include "remoting/codec/video_encoder_verbatim.h"
 #include "remoting/proto/video.pb.h"
+#include "remoting/protocol/frame_consumer.h"
 #include "remoting/protocol/session_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
@@ -30,7 +30,7 @@ namespace {
 const int kFrameWidth = 200;
 const int kFrameHeight = 200;
 
-class TestFrameConsumer : public FrameConsumer {
+class TestFrameConsumer : public protocol::FrameConsumer {
  public:
   TestFrameConsumer() {}
   ~TestFrameConsumer() override {}

@@ -41,6 +41,7 @@ class TestVideoRenderer : public protocol::VideoRenderer,
   // VideoRenderer interface.
   void OnSessionConfig(const protocol::SessionConfig& config) override;
   protocol::VideoStub* GetVideoStub() override;
+  protocol::FrameConsumer* GetFrameConsumer() override;
 
   // protocol::VideoStub interface.
   void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,

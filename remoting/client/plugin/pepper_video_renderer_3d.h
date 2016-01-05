@@ -45,6 +45,7 @@ class PepperVideoRenderer3D : public PepperVideoRenderer,
   // VideoRenderer interface.
   void OnSessionConfig(const protocol::SessionConfig& config) override;
   protocol::VideoStub* GetVideoStub() override;
+  protocol::FrameConsumer* GetFrameConsumer() override;
 
   // protocol::VideoStub interface.
   void ProcessVideoPacket(scoped_ptr<VideoPacket> packet,

@@ -123,6 +123,10 @@ class ProtocolPerfTest
   // VideoRenderer interface.
   void OnSessionConfig(const protocol::SessionConfig& config) override {}
   protocol::VideoStub* GetVideoStub() override { return this; }
+  protocol::FrameConsumer* GetFrameConsumer() override {
+    NOTREACHED();
+    return nullptr;
+  }
 
   // protocol::VideoStub interface.
   void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,

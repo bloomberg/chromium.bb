@@ -115,7 +115,7 @@ void JniFrameConsumer::OnFrameRendered(const base::Closure& done) {
     done.Run();
 }
 
-FrameConsumer::PixelFormat JniFrameConsumer::GetPixelFormat() {
+protocol::FrameConsumer::PixelFormat JniFrameConsumer::GetPixelFormat() {
   return FORMAT_RGBA;
 }
 

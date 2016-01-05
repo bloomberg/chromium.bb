@@ -114,6 +114,12 @@ protocol::VideoStub* PepperVideoRenderer2D::GetVideoStub() {
   return software_video_renderer_->GetVideoStub();
 }
 
+protocol::FrameConsumer* PepperVideoRenderer2D::GetFrameConsumer() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  return software_video_renderer_->GetFrameConsumer();
+}
+
 scoped_ptr<webrtc::DesktopFrame> PepperVideoRenderer2D::AllocateFrame(
     const webrtc::DesktopSize& size) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -187,7 +193,7 @@ void PepperVideoRenderer2D::DrawFrame(scoped_ptr<webrtc::DesktopFrame> frame,
   Flush();
 }
 
-FrameConsumer::PixelFormat PepperVideoRenderer2D::GetPixelFormat() {
+protocol::FrameConsumer::PixelFormat PepperVideoRenderer2D::GetPixelFormat() {
   return FORMAT_BGRA;
 }
 

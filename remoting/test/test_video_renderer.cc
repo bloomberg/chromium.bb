@@ -310,6 +310,12 @@ protocol::VideoStub* TestVideoRenderer::GetVideoStub() {
   return this;
 }
 
+protocol::FrameConsumer* TestVideoRenderer::GetFrameConsumer() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  NOTREACHED();
+  return nullptr;
+}
+
 void TestVideoRenderer::ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
                                            const base::Closure& done) {
   DCHECK(thread_checker_.CalledOnValidThread());

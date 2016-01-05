@@ -27,10 +27,10 @@ class DesktopFrame;
 
 namespace remoting {
 
-class FrameConsumer;
 class VideoDecoder;
 
 namespace protocol {
+class FrameConsumer;
 class PerformanceTracker;
 }  // namespace protocol
 
@@ -45,13 +45,14 @@ class SoftwareVideoRenderer : public protocol::VideoRenderer,
   // tracking is disabled in that case.
   SoftwareVideoRenderer(
       scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner,
-      FrameConsumer* consumer,
+      protocol::FrameConsumer* consumer,
       protocol::PerformanceTracker* perf_tracker);
   ~SoftwareVideoRenderer() override;
 
   // VideoRenderer interface.
   void OnSessionConfig(const protocol::SessionConfig& config) override;
   protocol::VideoStub* GetVideoStub() override;
+  protocol::FrameConsumer* GetFrameConsumer() override;
 
   // protocol::VideoStub interface.
   void ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
@@ -64,7 +65,7 @@ class SoftwareVideoRenderer : public protocol::VideoRenderer,
   void OnFrameRendered(int32_t frame_id, const base::Closure& done);
 
   scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner_;
-  FrameConsumer* consumer_;
+  protocol::FrameConsumer* consumer_;
   protocol::PerformanceTracker* perf_tracker_;
 
   scoped_ptr<VideoDecoder> decoder_;

@@ -18,8 +18,8 @@
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/view.h"
 #include "ppapi/utility/completion_callback_factory.h"
-#include "remoting/client/frame_consumer.h"
 #include "remoting/client/plugin/pepper_video_renderer.h"
+#include "remoting/protocol/frame_consumer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 
@@ -39,7 +39,7 @@ class SoftwareVideoRenderer;
 // Video renderer that wraps SoftwareVideoRenderer and displays it using Pepper
 // 2D graphics API.
 class PepperVideoRenderer2D : public PepperVideoRenderer,
-                              public FrameConsumer {
+                              public protocol::FrameConsumer {
  public:
   PepperVideoRenderer2D();
   ~PepperVideoRenderer2D() override;
@@ -55,9 +55,10 @@ class PepperVideoRenderer2D : public PepperVideoRenderer,
   // VideoRenderer interface.
   void OnSessionConfig(const protocol::SessionConfig& config) override;
   protocol::VideoStub* GetVideoStub() override;
+  protocol::FrameConsumer* GetFrameConsumer() override;
 
  private:
-  // FrameConsumer implementation.
+  // protocol::FrameConsumer implementation.
   scoped_ptr<webrtc::DesktopFrame> AllocateFrame(
       const webrtc::DesktopSize& size) override;
   void DrawFrame(scoped_ptr<webrtc::DesktopFrame> frame,

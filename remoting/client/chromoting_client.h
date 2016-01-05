@@ -39,7 +39,6 @@ class AudioPlayer;
 class ClientContext;
 class ClientUserInterface;
 class FrameConsumerProxy;
-class FrameProducer;
 
 class ChromotingClient : public SignalStrategy::Listener,
                          public protocol::ConnectionToHost::HostEventCallback,

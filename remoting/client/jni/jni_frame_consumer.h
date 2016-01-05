@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "remoting/client/frame_consumer.h"
+#include "remoting/protocol/frame_consumer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace remoting {
@@ -19,7 +19,7 @@ namespace remoting {
 class ChromotingJniRuntime;
 
 // FrameConsumer implementation that draws onto a JNI direct byte buffer.
-class JniFrameConsumer : public FrameConsumer {
+class JniFrameConsumer : public protocol::FrameConsumer {
  public:
   // Does not take ownership of |jni_runtime|.
   explicit JniFrameConsumer(ChromotingJniRuntime* jni_runtime);

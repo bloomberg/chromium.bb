@@ -178,6 +178,13 @@ protocol::VideoStub* PepperVideoRenderer3D::GetVideoStub() {
   return this;
 }
 
+protocol::FrameConsumer* PepperVideoRenderer3D::GetFrameConsumer() {
+  // GetFrameConsumer() is used only for WebRTC-based connections which are not
+  // supported by the plugin.
+  NOTREACHED();
+  return nullptr;
+}
+
 void PepperVideoRenderer3D::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                                                const base::Closure& done) {
   base::ScopedClosureRunner done_runner(done);

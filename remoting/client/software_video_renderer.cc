@@ -14,11 +14,11 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
 #include "remoting/base/util.h"
-#include "remoting/client/frame_consumer.h"
 #include "remoting/codec/video_decoder.h"
 #include "remoting/codec/video_decoder_verbatim.h"
 #include "remoting/codec/video_decoder_vpx.h"
 #include "remoting/proto/video.pb.h"
+#include "remoting/protocol/frame_consumer.h"
 #include "remoting/protocol/session_config.h"
 #include "third_party/libyuv/include/libyuv/convert_argb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
@@ -72,7 +72,7 @@ scoped_ptr<webrtc::DesktopFrame> DoDecodeFrame(
 
 SoftwareVideoRenderer::SoftwareVideoRenderer(
     scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner,
-    FrameConsumer* consumer,
+    protocol::FrameConsumer* consumer,
     protocol::PerformanceTracker* perf_tracker)
     : decode_task_runner_(decode_task_runner),
       consumer_(consumer),
@@ -100,7 +100,7 @@ void SoftwareVideoRenderer::OnSessionConfig(
     NOTREACHED() << "Invalid Encoding found: " << codec;
   }
 
-  if (consumer_->GetPixelFormat() == FrameConsumer::FORMAT_RGBA) {
+  if (consumer_->GetPixelFormat() == protocol::FrameConsumer::FORMAT_RGBA) {
     decoder_ =
         make_scoped_ptr(new RgbToBgrVideoDecoderFilter(std::move(decoder_)));
   }
@@ -109,6 +109,10 @@ void SoftwareVideoRenderer::OnSessionConfig(
 protocol::VideoStub* SoftwareVideoRenderer::GetVideoStub() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return this;
+}
+
+protocol::FrameConsumer* SoftwareVideoRenderer::GetFrameConsumer() {
+  return consumer_;
 }
 
 void SoftwareVideoRenderer::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,

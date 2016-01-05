@@ -1,21 +1,19 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_FRAME_CONSUMER_H_
-#define REMOTING_CLIENT_FRAME_CONSUMER_H_
+#ifndef REMOTING_PROTOCOL_FRAME_CONSUMER_H_
+#define REMOTING_PROTOCOL_FRAME_CONSUMER_H_
 
 #include "base/macros.h"
 
 namespace webrtc {
 class DesktopFrame;
-class DesktopRect;
-class DesktopRegion;
 class DesktopSize;
-class DesktopVector;
 }  // namespace webrtc
 
 namespace remoting {
+namespace protocol {
 
 class FrameConsumer {
  public:
@@ -42,6 +40,7 @@ class FrameConsumer {
   DISALLOW_COPY_AND_ASSIGN(FrameConsumer);
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_CLIENT_FRAME_CONSUMER_H_
+#endif  // REMOTING_PROTOCOL_FRAME_CONSUMER_H_

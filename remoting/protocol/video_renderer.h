@@ -8,11 +8,16 @@
 namespace remoting {
 namespace protocol {
 
+class FrameConsumer;
 class SessionConfig;
 class VideoStub;
 
 // VideoRenderer is responsible for decoding and displaying incoming video
-// stream.
+// stream. This interface is used by ConnectionToHost implementations to
+// render received video frames. ConnectionToHost may feed encoded frames to the
+// VideoStub or decode them and pass decoded frames to the FrameConsumer.
+//
+// TODO(sergeyu): Reconsider this design.
 class VideoRenderer {
  public:
   virtual ~VideoRenderer() {}
@@ -23,6 +28,9 @@ class VideoRenderer {
 
   // Returns the VideoStub interface of this renderer.
   virtual VideoStub* GetVideoStub() = 0;
+
+  // Returns the FrameConsumer interface for this renderer.
+  virtual FrameConsumer* GetFrameConsumer() = 0;
 };
 
 }  // namespace protocol;
