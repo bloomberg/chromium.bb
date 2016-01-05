@@ -20,7 +20,7 @@ from telemetry import benchmark
 class StartWithUrlColdTBM(startup2._StartupPerfBenchmark):
   """Measures time to start Chrome cold with startup URLs."""
 
-  page_set = page_sets.StartupPagesPageSetTBM
+  page_set = page_sets.StartupPagesPageSet
   options = {'pageset_repeat': 5}
 
   def SetExtraBrowserOptions(self, options):
@@ -38,7 +38,7 @@ class StartWithUrlColdTBM(startup2._StartupPerfBenchmark):
 class StartWithUrlWarmTBM(startup2._StartupPerfBenchmark):
   """Measures stimetime to start Chrome warm with startup URLs."""
 
-  page_set = page_sets.StartupPagesPageSetTBM
+  page_set = page_sets.StartupPagesPageSet
   options = {'pageset_repeat': 11}
 
   @classmethod
