@@ -43,11 +43,20 @@ const int kTabID3 = 3;
 
 const char kURLFoo[] = "http://foo.com/";
 const char kURLBar[] = "http://bar.com/";
+const char kURLBaz[] = "http://baz.com/";
 const char kURLFooBar[] = "http://foobar.com/";
 const char kPackageFoo[] = "com.google.package.foo";
 const char kPackageBar[] = "com.google.package.bar";
 
 enum TabEntrySize { ZERO = 0, ONE, TWO, THREE };
+
+// Indicates the tracking states for a sequence of navigations.
+enum TrackingState {
+  NONE,
+  STARTED,
+  ENDED,
+  CONTINUES,
+};
 
 // Mock observer to track the calls to start and end tracking events.
 class MockTabDataUseObserver
@@ -98,6 +107,14 @@ class DataUseTabModelTest : public testing::Test {
   // |active_tabs_|.
   void ExpectTabEntrySize(uint32_t expected_size) const {
     EXPECT_EQ(expected_size, data_use_tab_model_->active_tabs_.size());
+  }
+
+  // Returns true if |tab_id| is a custom tab and started tracking due to
+  // package match.
+  bool IsCustomTabPackageMatch(SessionID::id_type tab_id) const {
+    auto tab_entry_iterator = data_use_tab_model_->active_tabs_.find(tab_id);
+    return (tab_entry_iterator != data_use_tab_model_->active_tabs_.end()) &&
+           tab_entry_iterator->second.is_custom_tab_package_match();
   }
 
   // Returns true if the tracking session for tab with id |tab_id| is currently
@@ -478,13 +495,13 @@ TEST_F(DataUseTabModelTest, NavigationEnterEvent) {
   std::vector<std::string> app_package_names, domain_regexes, labels;
 
   // Matching rule with app package name.
-  app_package_names.push_back(kPackageFoo);
-  domain_regexes.push_back(std::string());
+  app_package_names.push_back(std::string());
+  domain_regexes.push_back(kURLFoo);
   labels.push_back(kTestLabel1);
 
   // Matching rule with regex.
   app_package_names.push_back(std::string());
-  domain_regexes.push_back(kURLFoo);
+  domain_regexes.push_back(kURLBar);
   labels.push_back(kTestLabel2);
 
   RegisterURLRegexes(app_package_names, domain_regexes, labels);
@@ -492,25 +509,26 @@ TEST_F(DataUseTabModelTest, NavigationEnterEvent) {
   ExpectTabEntrySize(TabEntrySize::ZERO);
 
   EXPECT_FALSE(data_use_tab_model_->WouldNavigationEventEndTracking(
-      kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLFoo)));
+      kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION, GURL(kURLFoo)));
   data_use_tab_model_->OnNavigationEvent(
-      kTabID1, DataUseTabModel::TRANSITION_CUSTOM_TAB, GURL(), kPackageFoo);
+      kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION, GURL(kURLFoo),
+      std::string());
   ExpectTabEntrySize(TabEntrySize::ONE);
   EXPECT_TRUE(IsTrackingDataUse(kTabID1));
   ExpectDataUseLabel(kTabID1, kTestLabel1);
   EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
-      kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLBar)));
+      kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLFooBar)));
 
   EXPECT_FALSE(data_use_tab_model_->WouldNavigationEventEndTracking(
-      kTabID2, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLFoo)));
+      kTabID2, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLBar)));
   data_use_tab_model_->OnNavigationEvent(
-      kTabID2, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLFoo),
+      kTabID2, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLBar),
       std::string());
   ExpectTabEntrySize(TabEntrySize::TWO);
   EXPECT_TRUE(IsTrackingDataUse(kTabID2));
   ExpectDataUseLabel(kTabID2, kTestLabel2);
   EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
-      kTabID2, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLBar)));
+      kTabID2, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLFooBar)));
 }
 
 // Tests that a navigation event with empty url and empty package name does not
@@ -568,8 +586,8 @@ TEST_F(DataUseTabModelTest, AllNavigationEnterEvents) {
   } all_enter_transition_tests[] = {
       {DataUseTabModel::TRANSITION_CUSTOM_TAB, std::string(), kPackageFoo,
        kTestLabel1},
-      {DataUseTabModel::TRANSITION_CUSTOM_TAB, kURLFoo, kPackageBar,
-       kTestLabel2},
+      {DataUseTabModel::TRANSITION_CUSTOM_TAB, std::string(), kPackageBar,
+       kTestLabel3},
       {DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, kURLFoo, std::string(),
        kTestLabel2},
       {DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION, kURLFoo, std::string(),
@@ -586,6 +604,9 @@ TEST_F(DataUseTabModelTest, AllNavigationEnterEvents) {
   app_package_names.push_back(std::string());
   domain_regexes.push_back(kURLFoo);
   labels.push_back(kTestLabel2);
+  app_package_names.push_back(kPackageBar);
+  domain_regexes.push_back(std::string());
+  labels.push_back(kTestLabel3);
 
   RegisterURLRegexes(app_package_names, domain_regexes, labels);
 
@@ -599,9 +620,15 @@ TEST_F(DataUseTabModelTest, AllNavigationEnterEvents) {
 
     EXPECT_TRUE(IsTrackingDataUse(tab_id));
     ExpectDataUseLabel(tab_id, test.expect_label);
-    EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
-        tab_id, DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION, GURL(kURLBar)));
+    if (test.transition != DataUseTabModel::TRANSITION_CUSTOM_TAB) {
+      EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
+          tab_id, DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION,
+          GURL(kURLBar)));
+    }
     ExpectTabEntrySize(tab_id);
+    EXPECT_EQ(test.transition == DataUseTabModel::TRANSITION_CUSTOM_TAB,
+              IsCustomTabPackageMatch(tab_id));
+
     ++tab_id;
   }
 }
@@ -695,12 +722,6 @@ TEST_F(DataUseTabModelTest, SingleTabTransitionSequence) {
   std::vector<std::string> app_package_names, domain_regexes, labels;
   MockTabDataUseObserver mock_observer;
 
-  enum TrackingState {
-    NONE,
-    STARTED,
-    ENDED,
-    CONTINUES,
-  };
   const struct {
     DataUseTabModel::TransitionType transition;
     std::string url;
@@ -708,8 +729,8 @@ TEST_F(DataUseTabModelTest, SingleTabTransitionSequence) {
     std::string expected_label;
     TrackingState observer_event;
   } transition_tests[] = {
-      // Opening Custom Tab starts tracking.
-      {DataUseTabModel::TRANSITION_CUSTOM_TAB, std::string(), kPackageFoo,
+      // Opening matching URL from omnibox starts tracking.
+      {DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, kURLBaz, std::string(),
        kTestLabel1, STARTED},
       // Clicking on links in the page continues tracking.
       {DataUseTabModel::TRANSITION_LINK, kURLBar, std::string(), kTestLabel1,
@@ -739,8 +760,8 @@ TEST_F(DataUseTabModelTest, SingleTabTransitionSequence) {
        std::string(), ENDED},
   };
 
-  app_package_names.push_back(kPackageFoo);
-  domain_regexes.push_back(std::string());
+  app_package_names.push_back(std::string());
+  domain_regexes.push_back(kURLBaz);
   labels.push_back(kTestLabel1);
   app_package_names.push_back(std::string());
   domain_regexes.push_back(kURLFoo);
@@ -772,6 +793,70 @@ TEST_F(DataUseTabModelTest, SingleTabTransitionSequence) {
       EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
           kTabID1, DataUseTabModel::TRANSITION_BOOKMARK, GURL()));
     }
+
+    testing::Mock::VerifyAndClearExpectations(&mock_observer);
+  }
+}
+
+// Tests that a sequence of transitions in a custom tab that has an active
+// tracking session never ends the tracking.
+TEST_F(DataUseTabModelTest, SingleCustomTabTransitionSequence) {
+  std::vector<std::string> app_package_names, domain_regexes, labels;
+  MockTabDataUseObserver mock_observer;
+
+  const struct {
+    DataUseTabModel::TransitionType transition;
+    std::string url;
+    std::string package;
+    std::string expected_label;
+    TrackingState observer_event;
+  } transition_tests[] = {
+      // Opening Custom Tab with matching package starts tracking.
+      {DataUseTabModel::TRANSITION_CUSTOM_TAB, std::string(), kPackageFoo,
+       kTestLabel1, STARTED},
+      // Clicking on links in the page continues tracking.
+      {DataUseTabModel::TRANSITION_LINK, kURLBar, std::string(), kTestLabel1,
+       CONTINUES},
+      {DataUseTabModel::TRANSITION_LINK, kURLFooBar, std::string(), kTestLabel1,
+       CONTINUES},
+      // Clicking on bookmark continues tracking.
+      {DataUseTabModel::TRANSITION_BOOKMARK, kURLFooBar, std::string(),
+       kTestLabel1, CONTINUES},
+      // Reloading the page continues tracking.
+      {DataUseTabModel::TRANSITION_RELOAD, kURLFooBar, std::string(),
+       kTestLabel1, CONTINUES},
+      // Clicking on links in the page continues tracking.
+      {DataUseTabModel::TRANSITION_LINK, kURLBar, std::string(), kTestLabel1,
+       CONTINUES},
+  };
+
+  app_package_names.push_back(kPackageFoo);
+  domain_regexes.push_back(std::string());
+  labels.push_back(kTestLabel1);
+  app_package_names.push_back(std::string());
+  domain_regexes.push_back(kURLFoo);
+  labels.push_back(kTestLabel2);
+  RegisterURLRegexes(app_package_names, domain_regexes, labels);
+
+  data_use_tab_model_->AddObserver(&mock_observer);
+  for (auto const& test : transition_tests) {
+    tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
+
+    EXPECT_CALL(mock_observer, NotifyTrackingStarting(kTabID1))
+        .Times(test.observer_event == STARTED ? 1 : 0);
+    EXPECT_CALL(mock_observer, NotifyTrackingEnding(kTabID1))
+        .Times(test.observer_event == ENDED ? 1 : 0);
+
+    data_use_tab_model_->OnNavigationEvent(kTabID1, test.transition,
+                                           GURL(test.url), test.package);
+    tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
+
+    EXPECT_EQ(!test.expected_label.empty(), IsTrackingDataUse(kTabID1));
+    ExpectDataUseLabel(kTabID1, test.expected_label);
+
+    // Tracking never ends.
+    EXPECT_FALSE(data_use_tab_model_->WouldNavigationEventEndTracking(
+        kTabID1, DataUseTabModel::TRANSITION_LINK, GURL()));
 
     testing::Mock::VerifyAndClearExpectations(&mock_observer);
   }

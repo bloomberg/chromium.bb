@@ -186,17 +186,20 @@ class DataUseTabModel {
   // occurs in the tab. |tab_id| is the source tab of the generated event,
   // |transition| indicates the type of the UI event/transition,  |url| is the
   // URL in the source tab, |package| indicates the android package name of
-  // external application that initiated the event. |current_label| and
-  // |new_label| should not be null, and are set with current and new labels
-  // respectively. |current_label| will be set to empty string, if there is no
-  // active tracking session. |new_label| will be set to empty string if there
-  // would be no active tracking session if the navigation happens.
+  // external application that initiated the event. |current_label|, |new_label|
+  // and |is_package_match| should not be null, and are set with current and new
+  // labels respectively. |current_label| will be set to empty string, if there
+  // is no active tracking session. |new_label| will be set to empty string if
+  // there would be no active tracking session if the navigation happens.
+  // |is_package_match| will be set to true if a tracking session will start due
+  // to package name match.
   void GetCurrentAndNewLabelForNavigationEvent(SessionID::id_type tab_id,
                                                TransitionType transition,
                                                const GURL& url,
                                                const std::string& package,
                                                std::string* current_label,
-                                               std::string* new_label) const;
+                                               std::string* new_label,
+                                               bool* is_package_match) const;
 
   // Initiates a new tracking session with the |label| for tab with id |tab_id|.
   void StartTrackingDataUse(SessionID::id_type tab_id,

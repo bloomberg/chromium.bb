@@ -26,7 +26,7 @@ namespace chrome {
 namespace android {
 
 TabDataUseEntry::TabDataUseEntry(DataUseTabModel* tab_model)
-    : tab_model_(tab_model) {
+    : is_custom_tab_package_match_(false), tab_model_(tab_model) {
   DCHECK(tab_model_);
 }
 
@@ -145,6 +145,13 @@ const std::string TabDataUseEntry::GetActiveTrackingSessionLabel() const {
   if (back_iterator == sessions_.rend() || !IsTrackingDataUse())
     return std::string();
   return back_iterator->label;
+}
+
+void TabDataUseEntry::set_custom_tab_package_match(
+    bool is_custom_tab_package_match) {
+  DCHECK(IsTrackingDataUse());
+  DCHECK(!GetActiveTrackingSessionLabel().empty());
+  is_custom_tab_package_match_ = is_custom_tab_package_match;
 }
 
 void TabDataUseEntry::CompactSessionHistory() {

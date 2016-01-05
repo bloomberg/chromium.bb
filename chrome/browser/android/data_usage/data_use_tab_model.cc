@@ -167,13 +167,21 @@ void DataUseTabModel::OnNavigationEvent(SessionID::id_type tab_id,
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsValidTabID(tab_id));
   std::string current_label, new_label;
+  bool is_package_match;
 
   GetCurrentAndNewLabelForNavigationEvent(tab_id, transition, url, package,
-                                          &current_label, &new_label);
-  if (!current_label.empty() && new_label.empty())
+                                          &current_label, &new_label,
+                                          &is_package_match);
+  if (!current_label.empty() && new_label.empty()) {
     EndTrackingDataUse(tab_id);
-  else if (current_label.empty() && !new_label.empty())
+  } else if (current_label.empty() && !new_label.empty()) {
     StartTrackingDataUse(tab_id, new_label);
+    if (transition == TRANSITION_CUSTOM_TAB && is_package_match) {
+      auto tab_entry_iterator = active_tabs_.find(tab_id);
+      DCHECK(tab_entry_iterator != active_tabs_.end());
+      tab_entry_iterator->second.set_custom_tab_package_match(true);
+    }
+  }
 }
 
 void DataUseTabModel::OnTabCloseEvent(SessionID::id_type tab_id) {
@@ -222,8 +230,10 @@ bool DataUseTabModel::WouldNavigationEventEndTracking(SessionID::id_type tab_id,
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsValidTabID(tab_id));
   std::string current_label, new_label;
-  GetCurrentAndNewLabelForNavigationEvent(
-      tab_id, transition, url, std::string(), &current_label, &new_label);
+  bool is_package_match;
+  GetCurrentAndNewLabelForNavigationEvent(tab_id, transition, url,
+                                          std::string(), &current_label,
+                                          &new_label, &is_package_match);
   return (!current_label.empty() && new_label.empty());
 }
 
@@ -271,7 +281,8 @@ void DataUseTabModel::GetCurrentAndNewLabelForNavigationEvent(
     const GURL& url,
     const std::string& package,
     std::string* current_label,
-    std::string* new_label) const {
+    std::string* new_label,
+    bool* is_package_match) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsValidTabID(tab_id));
 
@@ -282,6 +293,16 @@ void DataUseTabModel::GetCurrentAndNewLabelForNavigationEvent(
           : std::string();
   bool matches;
   *new_label = "";
+  *is_package_match = false;
+
+  if (!current_label->empty() &&
+      tab_entry_iterator->second.is_custom_tab_package_match()) {
+    DCHECK_NE(transition, TRANSITION_OMNIBOX_SEARCH);
+    DCHECK_NE(transition, TRANSITION_OMNIBOX_NAVIGATION);
+    DCHECK_NE(transition, TRANSITION_HISTORY_ITEM);
+    *new_label = *current_label;
+    return;
+  }
 
   switch (transition) {
     case TRANSITION_OMNIBOX_SEARCH:
@@ -306,6 +327,7 @@ void DataUseTabModel::GetCurrentAndNewLabelForNavigationEvent(
       if (transition == TRANSITION_CUSTOM_TAB && !package.empty()) {
         matches = data_use_matcher_->MatchesAppPackageName(package, new_label);
         DCHECK_NE(matches, new_label->empty());
+        *is_package_match = matches;
       }
       if (new_label->empty() && !url.is_empty()) {
         matches = data_use_matcher_->MatchesURL(url, new_label);
