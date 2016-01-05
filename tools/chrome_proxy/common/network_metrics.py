@@ -7,11 +7,17 @@ import gzip
 import hashlib
 import io
 import logging
+import os
+import sys
 import zlib
 
 from common import inspector_network
-from metrics import Metric
 from telemetry.timeline import model
+
+sys.path.append(
+    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'perf'))
+from metrics import Metric
+
 from telemetry.page import page_test
 # All network metrics are Chrome only for now.
 from telemetry.value import scalar

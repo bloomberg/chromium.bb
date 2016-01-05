@@ -9,22 +9,14 @@ This script DOES NOT run benchmarks. run_benchmark does that.
 """
 
 import os
-import subprocess
 import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'telemetry'))
+
+from telemetry.testing import unittest_runner
+
+import chrome_proxy_config
 
 
 if __name__ == '__main__':
-  proxy_dir = os.path.dirname(os.path.realpath(__file__))
-  perf_dir = os.path.realpath(os.path.join(proxy_dir, '..', 'perf'))
-  telemetry_dir = os.path.realpath(os.path.join(proxy_dir, '..', 'telemetry'))
-
-  env = os.environ.copy()
-  if 'PYTHONPATH' in env:
-    env['PYTHONPATH'] = env['PYTHONPATH'] + os.pathsep + telemetry_dir
-  else:
-    env['PYTHONPATH'] = telemetry_dir
-
-  path_to_run_tests = os.path.join(telemetry_dir, 'telemetry', 'testing',
-                                   'run_tests.py')
-  argv = ['--top-level-dir', proxy_dir, '--path', perf_dir] + sys.argv[1:]
-  sys.exit(subprocess.call([sys.executable, path_to_run_tests] + argv, env=env))
+  sys.exit(unittest_runner.Run(chrome_proxy_config.CONFIG))
