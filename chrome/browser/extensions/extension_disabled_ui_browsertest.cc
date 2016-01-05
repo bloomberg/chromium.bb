@@ -76,7 +76,7 @@ class ExtensionDisabledGlobalErrorTest : public ExtensionBrowserTest {
   // Caution: currently only supports one error at a time.
   GlobalError* GetExtensionDisabledGlobalError() {
     return GlobalErrorServiceFactory::GetForProfile(profile())->
-        GetGlobalErrorByMenuItemCommandID(IDC_EXTENSION_DISABLED_FIRST);
+        GetGlobalErrorByMenuItemCommandID(IDC_EXTENSION_INSTALL_ERROR_FIRST);
   }
 
   // Install the initial version, which should happen just fine.

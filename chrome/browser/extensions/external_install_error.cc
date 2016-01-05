@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/extensions/extension_install_error_menu_item_id_provider.h"
 #include "chrome/browser/extensions/extension_install_prompt_show_params.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/external_install_manager.h"
@@ -73,6 +74,9 @@ class ExternalInstallMenuAlert : public GlobalError {
   // The owning ExternalInstallError.
   ExternalInstallError* error_;
 
+  // Provides menu item id for GlobalError.
+  ExtensionInstallErrorMenuItemIdProvider id_provider_;
+
   DISALLOW_COPY_AND_ASSIGN(ExternalInstallMenuAlert);
 };
 
@@ -103,6 +107,7 @@ class ExternalInstallBubbleAlert : public GlobalErrorWithStandardBubble {
 
   // The owning ExternalInstallError.
   ExternalInstallError* error_;
+  ExtensionInstallErrorMenuItemIdProvider id_provider_;
 
   // The Prompt with all information, which we then use to populate the bubble.
   // Owned by |error|.
@@ -130,7 +135,7 @@ bool ExternalInstallMenuAlert::HasMenuItem() {
 }
 
 int ExternalInstallMenuAlert::MenuItemCommandID() {
-  return IDC_EXTERNAL_EXTENSION_ALERT;
+  return id_provider_.menu_command_id();
 }
 
 base::string16 ExternalInstallMenuAlert::MenuItemLabel() {
@@ -181,7 +186,7 @@ bool ExternalInstallBubbleAlert::HasMenuItem() {
 }
 
 int ExternalInstallBubbleAlert::MenuItemCommandID() {
-  return IDC_EXTERNAL_EXTENSION_ALERT;
+  return id_provider_.menu_command_id();
 }
 
 base::string16 ExternalInstallBubbleAlert::MenuItemLabel() {
@@ -308,7 +313,7 @@ void ExternalInstallError::InstallUIProceed() {
     // remove the error...
   } else {
     // ... Otherwise we have to do it explicitly.
-    manager_->RemoveExternalInstallError();
+    manager_->RemoveExternalInstallError(extension_id_);
   }
 }
 
@@ -324,7 +329,7 @@ void ExternalInstallError::InstallUIAbort(bool user_initiated) {
     // remove the error...
   } else {
     // ... Otherwise we have to do it explicitly.
-    manager_->RemoveExternalInstallError();
+    manager_->RemoveExternalInstallError(extension_id_);
   }
 }
 

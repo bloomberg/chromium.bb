@@ -686,6 +686,8 @@
       'browser/extensions/extension_icon_manager.h',
       'browser/extensions/extension_install_checker.cc',
       'browser/extensions/extension_install_checker.h',
+      'browser/extensions/extension_install_error_menu_item_id_provider.h',
+      'browser/extensions/extension_install_error_menu_item_id_provider.cc',
       'browser/extensions/extension_install_prompt.cc',
       'browser/extensions/extension_install_prompt.h',
       'browser/extensions/extension_install_prompt_show_params.cc',

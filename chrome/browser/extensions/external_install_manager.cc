@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/external_install_error.h"
 #include "chrome/browser/profiles/profile.h"
@@ -75,71 +76,60 @@ ExternalInstallManager::~ExternalInstallManager() {
 
 void ExternalInstallManager::AddExternalInstallError(const Extension* extension,
                                                      bool is_new_profile) {
-  if (HasExternalInstallError())
-    return;  // Only have one external install error at a time.
+  // Error already exists.
+  if (ContainsKey(errors_, extension->id()))
+    return;
 
   ExternalInstallError::AlertType alert_type =
       (ManifestURL::UpdatesFromGallery(extension) && !is_new_profile)
           ? ExternalInstallError::BUBBLE_ALERT
           : ExternalInstallError::MENU_ALERT;
 
-  error_.reset(new ExternalInstallError(
+  scoped_ptr<ExternalInstallError> error(new ExternalInstallError(
       browser_context_, extension->id(), alert_type, this));
+  errors_.insert(std::make_pair(extension->id(), std::move(error)));
 }
 
-void ExternalInstallManager::RemoveExternalInstallError() {
-  error_.reset();
+void ExternalInstallManager::RemoveExternalInstallError(
+    const std::string& extension_id) {
+  errors_.erase(extension_id);
   UpdateExternalExtensionAlert();
 }
 
-bool ExternalInstallManager::HasExternalInstallError() const {
-  return error_.get() != NULL;
-}
-
 void ExternalInstallManager::UpdateExternalExtensionAlert() {
-  // If the feature is not enabled, or there is already an error displayed, do
-  // nothing.
-  if (!FeatureSwitch::prompt_for_external_extensions()->IsEnabled() ||
-      HasExternalInstallError()) {
+  // If the feature is not enabled do nothing.
+  if (!FeatureSwitch::prompt_for_external_extensions()->IsEnabled())
     return;
-  }
 
   // Look for any extensions that were disabled because of being unacknowledged
   // external extensions.
-  const Extension* extension = NULL;
   const ExtensionSet& disabled_extensions =
       ExtensionRegistry::Get(browser_context_)->disabled_extensions();
-  for (ExtensionSet::const_iterator iter = disabled_extensions.begin();
-       iter != disabled_extensions.end();
-       ++iter) {
-    if (IsUnacknowledgedExternalExtension(iter->get())) {
-      extension = iter->get();
-      break;
+  for (const scoped_refptr<const Extension>& extension : disabled_extensions) {
+    if (ContainsKey(errors_, extension->id()))
+      continue;
+
+    if (!IsUnacknowledgedExternalExtension(extension.get()))
+      continue;
+
+    // Warn the user about the suspicious extension.
+    if (extension_prefs_->IncrementAcknowledgePromptCount(extension->id()) >
+        kMaxExtensionAcknowledgePromptCount) {
+      // Stop prompting for this extension and record metrics.
+      extension_prefs_->AcknowledgeExternalExtension(extension->id());
+      LogExternalExtensionEvent(extension.get(), EXTERNAL_EXTENSION_IGNORED);
+      continue;
     }
+
+    if (is_first_run_)
+      extension_prefs_->SetExternalInstallFirstRun(extension->id());
+
+    // |first_run| is true if the extension was installed during a first run
+    // (even if it's post-first run now).
+    AddExternalInstallError(
+        extension.get(),
+        extension_prefs_->IsExternalInstallFirstRun(extension->id()));
   }
-
-  if (!extension)
-    return;  // No unacknowledged external extensions.
-
-  // Otherwise, warn the user about the suspicious extension.
-  if (extension_prefs_->IncrementAcknowledgePromptCount(extension->id()) >
-      kMaxExtensionAcknowledgePromptCount) {
-    // Stop prompting for this extension and record metrics.
-    extension_prefs_->AcknowledgeExternalExtension(extension->id());
-    LogExternalExtensionEvent(extension, EXTERNAL_EXTENSION_IGNORED);
-
-    // Check if there's another extension that needs prompting.
-    UpdateExternalExtensionAlert();
-    return;
-  }
-
-  if (is_first_run_)
-    extension_prefs_->SetExternalInstallFirstRun(extension->id());
-
-  // |first_run| is true if the extension was installed during a first run
-  // (even if it's post-first run now).
-  AddExternalInstallError(
-      extension, extension_prefs_->IsExternalInstallFirstRun(extension->id()));
 }
 
 void ExternalInstallManager::AcknowledgeExternalExtension(
@@ -148,9 +138,12 @@ void ExternalInstallManager::AcknowledgeExternalExtension(
   UpdateExternalExtensionAlert();
 }
 
-bool ExternalInstallManager::HasExternalInstallBubbleForTesting() const {
-  return error_.get() &&
-         error_->alert_type() == ExternalInstallError::BUBBLE_ALERT;
+std::vector<ExternalInstallError*>
+ExternalInstallManager::GetErrorsForTesting() {
+  std::vector<ExternalInstallError*> errors;
+  for (auto const& error : errors_)
+    errors.push_back(error.second.get());
+  return errors;
 }
 
 void ExternalInstallManager::OnExtensionLoaded(
@@ -165,8 +158,7 @@ void ExternalInstallManager::OnExtensionLoaded(
   LogExternalExtensionEvent(extension, EXTERNAL_EXTENSION_REENABLED);
 
   // If we had an error for this extension, remove it.
-  if (error_.get() && extension->id() == error_->extension_id())
-    RemoveExternalInstallError();
+  RemoveExternalInstallError(extension->id());
 }
 
 void ExternalInstallManager::OnExtensionInstalled(
@@ -217,11 +209,10 @@ void ExternalInstallManager::Observe(
   // It's a shame we have to use the notification system (instead of the
   // registry observer) for this, but the ExtensionUnloaded notification is
   // not sent out if the extension is disabled (which it is here).
-  if (error_.get() &&
-      content::Details<const Extension>(details).ptr()->id() ==
-          error_->extension_id()) {
-    RemoveExternalInstallError();
-  }
+  const std::string& extension_id =
+      content::Details<const Extension>(details).ptr()->id();
+  if (ContainsKey(errors_, extension_id))
+    RemoveExternalInstallError(extension_id);
 }
 
 }  // namespace extensions

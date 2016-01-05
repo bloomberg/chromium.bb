@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/extensions/extension_install_error_menu_item_id_provider.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
@@ -61,32 +62,6 @@ using extensions::PermissionMessages;
 namespace {
 
 static const int kIconSize = extension_misc::EXTENSION_ICON_SMALL;
-
-static base::LazyInstance<
-    std::bitset<IDC_EXTENSION_DISABLED_LAST -
-                IDC_EXTENSION_DISABLED_FIRST + 1> >
-    menu_command_ids = LAZY_INSTANCE_INITIALIZER;
-
-// Get an available menu ID.
-int GetMenuCommandID() {
-  int id;
-  for (id = IDC_EXTENSION_DISABLED_FIRST;
-       id <= IDC_EXTENSION_DISABLED_LAST; ++id) {
-    if (!menu_command_ids.Get()[id - IDC_EXTENSION_DISABLED_FIRST]) {
-      menu_command_ids.Get().set(id - IDC_EXTENSION_DISABLED_FIRST);
-      return id;
-    }
-  }
-  // This should not happen.
-  DCHECK(id <= IDC_EXTENSION_DISABLED_LAST) <<
-      "No available menu command IDs for ExtensionDisabledGlobalError";
-  return IDC_EXTENSION_DISABLED_LAST;
-}
-
-// Make a menu ID available when it is no longer used.
-void ReleaseMenuCommandID(int id) {
-  menu_command_ids.Get().reset(id - IDC_EXTENSION_DISABLED_FIRST);
-}
 
 }  // namespace
 
@@ -214,8 +189,8 @@ class ExtensionDisabledGlobalError
 
   scoped_ptr<extensions::ExtensionUninstallDialog> uninstall_dialog_;
 
-  // Menu command ID assigned for this extension's error.
-  int menu_command_id_;
+  // Helper to get menu command ID assigned for this extension's error.
+  extensions::ExtensionInstallErrorMenuItemIdProvider id_provider_;
 
   content::NotificationRegistrar registrar_;
 
@@ -234,7 +209,6 @@ ExtensionDisabledGlobalError::ExtensionDisabledGlobalError(
       is_remote_install_(is_remote_install),
       icon_(icon),
       user_response_(IGNORED),
-      menu_command_id_(GetMenuCommandID()),
       registry_observer_(this) {
   if (icon_.IsEmpty()) {
     icon_ = gfx::Image(
@@ -253,7 +227,6 @@ ExtensionDisabledGlobalError::ExtensionDisabledGlobalError(
 }
 
 ExtensionDisabledGlobalError::~ExtensionDisabledGlobalError() {
-  ReleaseMenuCommandID(menu_command_id_);
   if (is_remote_install_) {
     UMA_HISTOGRAM_ENUMERATION("Extensions.DisabledUIUserResponseRemoteInstall",
                               user_response_,
@@ -274,7 +247,7 @@ bool ExtensionDisabledGlobalError::HasMenuItem() {
 }
 
 int ExtensionDisabledGlobalError::MenuItemCommandID() {
-  return menu_command_id_;
+  return id_provider_.menu_command_id();
 }
 
 base::string16 ExtensionDisabledGlobalError::MenuItemLabel() {
