@@ -53,8 +53,9 @@ using MediaQueryResultList = WillBeHeapVector<RefPtrWillBeMember<MediaQueryResul
 // the device characteristics are not known. This can be used to prune the loading
 // of stylesheets to only those which are probable to match.
 
-class CORE_EXPORT MediaQueryEvaluator {
-    WTF_MAKE_NONCOPYABLE(MediaQueryEvaluator); USING_FAST_MALLOC(MediaQueryEvaluator);
+class CORE_EXPORT MediaQueryEvaluator final : public NoBaseWillBeGarbageCollectedFinalized<MediaQueryEvaluator> {
+    WTF_MAKE_NONCOPYABLE(MediaQueryEvaluator);
+    USING_FAST_MALLOC_WILL_BE_REMOVED(MediaQueryEvaluator);
 public:
     // Creates evaluator which evaluates only simple media queries
     // Evaluator returns true for "all", and returns value of \mediaFeatureResult
@@ -87,12 +88,14 @@ public:
     // Evaluates media query subexpression, ie "and (media-feature: value)" part.
     bool eval(const MediaQueryExp*) const;
 
+    DECLARE_TRACE();
+
 private:
     const String mediaType() const;
 
     String m_mediaType;
     bool m_expectedResult;
-    RefPtrWillBePersistent<MediaValues> m_mediaValues;
+    RefPtrWillBeMember<MediaValues> m_mediaValues;
 };
 
 } // namespace

@@ -92,6 +92,11 @@ MediaQueryEvaluator::~MediaQueryEvaluator()
 {
 }
 
+DEFINE_TRACE(MediaQueryEvaluator)
+{
+    visitor->trace(m_mediaValues);
+}
+
 const String MediaQueryEvaluator::mediaType() const
 {
     // If a static mediaType was given by the constructor, we use it here.

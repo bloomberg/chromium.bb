@@ -230,7 +230,7 @@ private:
 
     MatchedPropertiesCache m_matchedPropertiesCache;
 
-    OwnPtr<MediaQueryEvaluator> m_medium;
+    OwnPtrWillBeMember<MediaQueryEvaluator> m_medium;
     MediaQueryResultList m_viewportDependentMediaQueryResults;
 
     RawPtrWillBeMember<Document> m_document;

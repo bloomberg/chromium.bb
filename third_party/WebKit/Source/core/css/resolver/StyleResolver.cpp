@@ -150,10 +150,10 @@ StyleResolver::StyleResolver(Document& document)
 {
     FrameView* view = document.view();
     if (view) {
-        m_medium = adoptPtr(new MediaQueryEvaluator(&view->frame()));
+        m_medium = adoptPtrWillBeNoop(new MediaQueryEvaluator(&view->frame()));
         m_printMediaType = equalIgnoringCase(view->mediaType(), MediaTypeNames::print);
     } else {
-        m_medium = adoptPtr(new MediaQueryEvaluator("all"));
+        m_medium = adoptPtrWillBeNoop(new MediaQueryEvaluator("all"));
     }
 
     initWatchedSelectorRules();
@@ -1538,6 +1538,7 @@ DEFINE_TRACE(StyleResolver)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_matchedPropertiesCache);
+    visitor->trace(m_medium);
     visitor->trace(m_viewportDependentMediaQueryResults);
     visitor->trace(m_selectorFilter);
     visitor->trace(m_viewportStyleResolver);

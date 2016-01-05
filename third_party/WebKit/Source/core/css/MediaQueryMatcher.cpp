@@ -53,12 +53,12 @@ void MediaQueryMatcher::documentDetached()
     m_evaluator = nullptr;
 }
 
-PassOwnPtr<MediaQueryEvaluator> MediaQueryMatcher::createEvaluator() const
+PassOwnPtrWillBeRawPtr<MediaQueryEvaluator> MediaQueryMatcher::createEvaluator() const
 {
     if (!m_document || !m_document->frame())
         return nullptr;
 
-    return adoptPtr(new MediaQueryEvaluator(m_document->frame()));
+    return adoptPtrWillBeNoop(new MediaQueryEvaluator(m_document->frame()));
 }
 
 bool MediaQueryMatcher::evaluate(const MediaQuerySet* media)
@@ -147,6 +147,7 @@ DEFINE_TRACE(MediaQueryMatcher)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_document);
+    visitor->trace(m_evaluator);
     visitor->trace(m_mediaLists);
     visitor->trace(m_viewportListeners);
 #endif
