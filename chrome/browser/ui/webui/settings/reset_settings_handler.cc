@@ -49,7 +49,8 @@
 namespace settings {
 
 ResetSettingsHandler::ResetSettingsHandler(
-    Profile* profile, bool allow_powerwash) : profile_(profile) {
+    Profile* profile, bool allow_powerwash)
+    : profile_(profile), weak_ptr_factory_(this) {
 #if defined(OS_CHROMEOS)
   allow_powerwash_ = allow_powerwash;
 #endif  // defined(OS_CHROMEOS)
@@ -119,7 +120,7 @@ void ResetSettingsHandler::HandleResetProfileSettings(
     // Reset once the prefs are fetched.
     config_fetcher_->SetCallback(
         base::Bind(&ResetSettingsHandler::ResetProfile,
-                   Unretained(this),
+                   base::Unretained(this),
                    send_settings));
   } else {
     ResetProfile(send_settings);
@@ -153,7 +154,8 @@ void ResetSettingsHandler::OnShowResetProfileDialog(
   if (!GetResetter()->IsActive()) {
     setting_snapshot_.reset(new ResettableSettingsSnapshot(profile_));
     setting_snapshot_->RequestShortcuts(base::Bind(
-        &ResetSettingsHandler::UpdateFeedbackUI, AsWeakPtr()));
+        &ResetSettingsHandler::UpdateFeedbackUI,
+        weak_ptr_factory_.GetWeakPtr()));
     UpdateFeedbackUI();
   }
 
@@ -161,7 +163,7 @@ void ResetSettingsHandler::OnShowResetProfileDialog(
     return;
   config_fetcher_.reset(new BrandcodeConfigFetcher(
       base::Bind(&ResetSettingsHandler::OnSettingsFetched,
-                 Unretained(this)),
+                 base::Unretained(this)),
       GURL("https://tools.google.com/service/update2"),
       brandcode_));
 }
@@ -202,7 +204,8 @@ void ResetSettingsHandler::ResetProfile(bool send_settings) {
 
   GetResetter()->Reset(
       ProfileResetter::ALL, std::move(default_settings),
-      base::Bind(&ResetSettingsHandler::OnResetProfileSettingsDone, AsWeakPtr(),
+      base::Bind(&ResetSettingsHandler::OnResetProfileSettingsDone,
+                 weak_ptr_factory_.GetWeakPtr(),
                  send_settings));
   content::RecordAction(base::UserMetricsAction("ResetProfile"));
   UMA_HISTOGRAM_BOOLEAN("ProfileReset.SendFeedback", send_settings);

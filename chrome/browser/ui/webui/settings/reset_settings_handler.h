@@ -33,9 +33,7 @@ namespace settings {
 // Handler for
 //  1) 'Reset Profile Settings' dialog
 //  2) 'Powerwash' dialog (ChromeOS only)
-class ResetSettingsHandler
-    : public SettingsPageUIHandler,
-      public base::SupportsWeakPtr<ResetSettingsHandler> {
+class ResetSettingsHandler : public SettingsPageUIHandler {
  public:
   ~ResetSettingsHandler() override;
 
@@ -100,6 +98,8 @@ class ResetSettingsHandler
 
   // Contains Chrome brand code; empty for organic Chrome.
   std::string brandcode_;
+
+  base::WeakPtrFactory<ResetSettingsHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ResetSettingsHandler);
 };
