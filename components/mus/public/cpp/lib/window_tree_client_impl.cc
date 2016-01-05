@@ -113,11 +113,11 @@ WindowTreeClientImpl::WindowTreeClientImpl(
       next_change_id_(1),
       delegate_(delegate),
       window_manager_delegate_(window_manager_delegate),
-      root_(nullptr),
       focused_window_(nullptr),
       binding_(this),
       tree_(nullptr),
       is_embed_root_(false),
+      delete_on_no_roots_(true),
       in_destructor_(false) {
   // Allow for a null request in tests.
   if (request.is_pending())
@@ -149,7 +149,7 @@ WindowTreeClientImpl::~WindowTreeClientImpl() {
 }
 
 void WindowTreeClientImpl::WaitForEmbed() {
-  DCHECK(!root_);
+  DCHECK(roots_.empty());
   // OnEmbed() is the first function called.
   binding_.WaitForIncomingMethodCall();
   // TODO(sky): deal with pipe being closed before we get OnEmbed().
@@ -347,12 +347,9 @@ void WindowTreeClientImpl::OnWindowDestroyed(Window* window) {
   for (auto change_id : in_flight_change_ids_to_remove)
     in_flight_map_.erase(change_id);
 
-  if (window == root_) {
-    root_ = nullptr;
-
-    // When the root is gone we can't do anything useful.
-    if (!in_destructor_)
-      delete this;
+  if (roots_.erase(window) > 0 && roots_.empty() && delete_on_no_roots_ &&
+      !in_destructor_) {
+    delete this;
   }
 }
 
@@ -396,12 +393,13 @@ void WindowTreeClientImpl::OnEmbedImpl(mojom::WindowTree* window_tree,
   is_embed_root_ =
       (access_policy & mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT) != 0;
 
-  DCHECK(!root_);
-  root_ = AddWindowToConnection(this, nullptr, root_data);
+  DCHECK(roots_.empty());
+  Window* root = AddWindowToConnection(this, nullptr, root_data);
+  roots_.insert(root);
 
   focused_window_ = GetWindowById(focused_window_id);
 
-  delegate_->OnEmbed(root_);
+  delegate_->OnEmbed(root);
 
   if (focused_window_) {
     FOR_EACH_OBSERVER(WindowTreeConnectionObserver, observers_,
@@ -412,8 +410,12 @@ void WindowTreeClientImpl::OnEmbedImpl(mojom::WindowTree* window_tree,
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeClientImpl, WindowTreeConnection implementation:
 
-Window* WindowTreeClientImpl::GetRoot() {
-  return root_;
+void WindowTreeClientImpl::SetDeleteOnNoRoots(bool value) {
+  delete_on_no_roots_ = value;
+}
+
+const std::set<Window*>& WindowTreeClientImpl::GetRoots() {
+  return roots_;
 }
 
 Window* WindowTreeClientImpl::GetWindowById(Id id) {
@@ -561,7 +563,9 @@ void SetViewportMetricsOnDecendants(Window* root,
 void WindowTreeClientImpl::OnWindowViewportMetricsChanged(
     mojom::ViewportMetricsPtr old_metrics,
     mojom::ViewportMetricsPtr new_metrics) {
-  Window* window = GetRoot();
+  // TODO(sky): the root need to be supplied to
+  // OnWindowViewportMetricsChanged().
+  Window* window = *GetRoots().begin();
   if (window)
     SetViewportMetricsOnDecendants(window, *old_metrics, *new_metrics);
 }
@@ -709,7 +713,7 @@ void WindowTreeClientImpl::GetWindowManagerInternal(
 
 void WindowTreeClientImpl::RequestClose(uint32_t window_id) {
   Window* window = GetWindowById(window_id);
-  if (!window || window != root_)
+  if (!window || !IsRoot(window))
     return;
 
   FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(window).observers(),

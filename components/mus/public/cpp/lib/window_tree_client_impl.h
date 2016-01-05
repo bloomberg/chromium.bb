@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <set>
 
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -104,6 +105,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   // WindowTreeConnection::GetWindowById.
   void AddWindow(Window* window);
 
+  bool IsRoot(Window* window) const { return roots_.count(window) > 0; }
+
   bool is_embed_root() const { return is_embed_root_; }
 
   // Called after the window's observers have been notified of destruction (as
@@ -137,7 +140,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                    uint32_t access_policy);
 
   // Overridden from WindowTreeConnection:
-  Window* GetRoot() override;
+  void SetDeleteOnNoRoots(bool value) override;
+  const std::set<Window*>& GetRoots() override;
   Window* GetWindowById(Id id) override;
   Window* GetFocusedWindow() override;
   Window* NewWindow(const Window::SharedProperties* properties) override;
@@ -218,7 +222,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
 
   WindowManagerDelegate* window_manager_delegate_;
 
-  Window* root_;
+  std::set<Window*> roots_;
 
   IdToWindowMap windows_;
 
@@ -231,6 +235,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   mojom::WindowTree* tree_;
 
   bool is_embed_root_;
+
+  bool delete_on_no_roots_;
 
   bool in_destructor_;
 

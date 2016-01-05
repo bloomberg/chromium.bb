@@ -392,7 +392,7 @@ class FrameTest : public mojo::test::ApplicationTestBase,
     mus::mojom::WindowTreeClientPtr window_tree_client =
         frame_connection->GetWindowTreeClient();
     mus::Window* frame_root_view = window_manager()->NewWindow();
-    window_manager()->GetRoot()->AddChild(frame_root_view);
+    (*window_manager()->GetRoots().begin())->AddChild(frame_root_view);
     frame_tree_.reset(new FrameTree(
         0u, frame_root_view, std::move(window_tree_client),
         frame_tree_delegate_.get(), frame_client, std::move(frame_connection),

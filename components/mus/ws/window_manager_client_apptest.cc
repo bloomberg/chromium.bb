@@ -23,7 +23,6 @@
 #include "ui/mojo/geometry/geometry_util.h"
 
 namespace mus {
-
 namespace ws {
 
 namespace {
@@ -204,6 +203,11 @@ struct EmbedResult {
   ConnectionSpecificId connection_id;
 };
 
+Window* GetFirstRoot(WindowTreeConnection* connection) {
+  return connection->GetRoots().empty() ? nullptr
+                                        : *connection->GetRoots().begin();
+}
+
 // These tests model synchronization of two peer connections to the window
 // manager
 // service, that are given access to some root window.
@@ -211,6 +215,8 @@ struct EmbedResult {
 class WindowServerTest : public WindowServerTestBase {
  public:
   WindowServerTest() {}
+
+  Window* GetFirstWMRoot() { return GetFirstRoot(window_manager()); }
 
   Window* NewVisibleWindow(Window* parent, WindowTreeConnection* connection) {
     Window* window = connection->NewWindow();
@@ -305,18 +311,18 @@ class WindowServerTest : public WindowServerTestBase {
 
 TEST_F(WindowServerTest, RootWindow) {
   ASSERT_NE(nullptr, window_manager());
-  EXPECT_NE(nullptr, window_manager()->GetRoot());
+  EXPECT_EQ(1u, window_manager()->GetRoots().size());
 }
 
 TEST_F(WindowServerTest, Embed) {
   Window* window = window_manager()->NewWindow();
   ASSERT_NE(nullptr, window);
   window->SetVisible(true);
-  window_manager()->GetRoot()->AddChild(window);
+  GetFirstWMRoot()->AddChild(window);
   WindowTreeConnection* embedded = Embed(window).connection;
   ASSERT_NE(nullptr, embedded);
 
-  Window* window_in_embedded = embedded->GetRoot();
+  Window* window_in_embedded = GetFirstRoot(embedded);
   ASSERT_NE(nullptr, window_in_embedded);
   EXPECT_EQ(window->id(), window_in_embedded->id());
   EXPECT_EQ(nullptr, window_in_embedded->parent());
@@ -329,7 +335,7 @@ TEST_F(WindowServerTest, EmbeddedDoesntSeeChild) {
   Window* window = window_manager()->NewWindow();
   ASSERT_NE(nullptr, window);
   window->SetVisible(true);
-  window_manager()->GetRoot()->AddChild(window);
+  GetFirstWMRoot()->AddChild(window);
   Window* nested = window_manager()->NewWindow();
   ASSERT_NE(nullptr, nested);
   nested->SetVisible(true);
@@ -337,7 +343,7 @@ TEST_F(WindowServerTest, EmbeddedDoesntSeeChild) {
 
   WindowTreeConnection* embedded = Embed(window).connection;
   ASSERT_NE(nullptr, embedded);
-  Window* window_in_embedded = embedded->GetRoot();
+  Window* window_in_embedded = GetFirstRoot(embedded);
   EXPECT_EQ(window->id(), window_in_embedded->id());
   EXPECT_EQ(nullptr, window_in_embedded->parent());
   EXPECT_TRUE(window_in_embedded->children().empty());
@@ -360,7 +366,7 @@ TEST_F(WindowServerTest, EmbeddedDoesntSeeChild) {
 TEST_F(WindowServerTest, SetBounds) {
   Window* window = window_manager()->NewWindow();
   window->SetVisible(true);
-  window_manager()->GetRoot()->AddChild(window);
+  GetFirstWMRoot()->AddChild(window);
   WindowTreeConnection* embedded = Embed(window).connection;
   ASSERT_NE(nullptr, embedded);
 
@@ -377,7 +383,7 @@ TEST_F(WindowServerTest, SetBounds) {
 TEST_F(WindowServerTest, SetBoundsSecurity) {
   Window* window = window_manager()->NewWindow();
   window->SetVisible(true);
-  window_manager()->GetRoot()->AddChild(window);
+  GetFirstWMRoot()->AddChild(window);
   WindowTreeConnection* embedded = Embed(window).connection;
   ASSERT_NE(nullptr, embedded);
 
@@ -399,7 +405,7 @@ TEST_F(WindowServerTest, SetBoundsSecurity) {
 TEST_F(WindowServerTest, DestroySecurity) {
   Window* window = window_manager()->NewWindow();
   window->SetVisible(true);
-  window_manager()->GetRoot()->AddChild(window);
+  GetFirstWMRoot()->AddChild(window);
 
   WindowTreeConnection* embedded = Embed(window).connection;
   ASSERT_NE(nullptr, embedded);
@@ -420,10 +426,10 @@ TEST_F(WindowServerTest, DestroySecurity) {
 TEST_F(WindowServerTest, MultiRoots) {
   Window* window1 = window_manager()->NewWindow();
   window1->SetVisible(true);
-  window_manager()->GetRoot()->AddChild(window1);
+  GetFirstWMRoot()->AddChild(window1);
   Window* window2 = window_manager()->NewWindow();
   window2->SetVisible(true);
-  window_manager()->GetRoot()->AddChild(window2);
+  GetFirstWMRoot()->AddChild(window2);
   WindowTreeConnection* embedded1 = Embed(window1).connection;
   ASSERT_NE(nullptr, embedded1);
   WindowTreeConnection* embedded2 = Embed(window2).connection;
@@ -434,20 +440,20 @@ TEST_F(WindowServerTest, MultiRoots) {
 TEST_F(WindowServerTest, Reorder) {
   Window* window1 = window_manager()->NewWindow();
   window1->SetVisible(true);
-  window_manager()->GetRoot()->AddChild(window1);
+  GetFirstWMRoot()->AddChild(window1);
 
   WindowTreeConnection* embedded = Embed(window1).connection;
   ASSERT_NE(nullptr, embedded);
 
   Window* window11 = embedded->NewWindow();
   window11->SetVisible(true);
-  embedded->GetRoot()->AddChild(window11);
+  GetFirstRoot(embedded)->AddChild(window11);
   Window* window12 = embedded->NewWindow();
   window12->SetVisible(true);
-  embedded->GetRoot()->AddChild(window12);
+  GetFirstRoot(embedded)->AddChild(window12);
   ASSERT_TRUE(WaitForTreeSizeToMatch(window1, 3u));
 
-  Window* root_in_embedded = embedded->GetRoot();
+  Window* root_in_embedded = GetFirstRoot(embedded);
 
   {
     window11->MoveToFront();
@@ -516,13 +522,13 @@ class VisibilityChangeObserver : public WindowObserver {
 TEST_F(WindowServerTest, Visible) {
   Window* window1 = window_manager()->NewWindow();
   window1->SetVisible(true);
-  window_manager()->GetRoot()->AddChild(window1);
+  GetFirstWMRoot()->AddChild(window1);
 
   // Embed another app and verify initial state.
   WindowTreeConnection* embedded = Embed(window1).connection;
   ASSERT_NE(nullptr, embedded);
-  ASSERT_NE(nullptr, embedded->GetRoot());
-  Window* embedded_root = embedded->GetRoot();
+  ASSERT_NE(nullptr, GetFirstRoot(embedded));
+  Window* embedded_root = GetFirstRoot(embedded);
   EXPECT_TRUE(embedded_root->visible());
   EXPECT_TRUE(embedded_root->IsDrawn());
 
@@ -580,13 +586,13 @@ class DrawnChangeObserver : public WindowObserver {
 TEST_F(WindowServerTest, Drawn) {
   Window* window1 = window_manager()->NewWindow();
   window1->SetVisible(true);
-  window_manager()->GetRoot()->AddChild(window1);
+  GetFirstWMRoot()->AddChild(window1);
 
   // Embed another app and verify initial state.
   WindowTreeConnection* embedded = Embed(window1).connection;
   ASSERT_NE(nullptr, embedded);
-  ASSERT_NE(nullptr, embedded->GetRoot());
-  Window* embedded_root = embedded->GetRoot();
+  ASSERT_NE(nullptr, GetFirstRoot(embedded));
+  Window* embedded_root = GetFirstRoot(embedded);
   EXPECT_TRUE(embedded_root->visible());
   EXPECT_TRUE(embedded_root->IsDrawn());
 
@@ -594,7 +600,7 @@ TEST_F(WindowServerTest, Drawn) {
   // change to |embedded|.
   {
     DrawnChangeObserver observer(embedded_root);
-    window_manager()->GetRoot()->SetVisible(false);
+    GetFirstWMRoot()->SetVisible(false);
     ASSERT_TRUE(DoRunLoopWithTimeout());
   }
 
@@ -686,17 +692,17 @@ bool WaitForNoWindowToHaveFocus(WindowTreeConnection* connection) {
 TEST_F(WindowServerTest, Focus) {
   Window* window1 = window_manager()->NewWindow();
   window1->SetVisible(true);
-  window_manager()->GetRoot()->AddChild(window1);
+  GetFirstWMRoot()->AddChild(window1);
 
   WindowTreeConnection* embedded = Embed(window1).connection;
   ASSERT_NE(nullptr, embedded);
   Window* window11 = embedded->NewWindow();
   window11->SetVisible(true);
-  embedded->GetRoot()->AddChild(window11);
+  GetFirstRoot(embedded)->AddChild(window11);
 
   {
     // Focus the embed root in |embedded|.
-    Window* embedded_root = embedded->GetRoot();
+    Window* embedded_root = GetFirstRoot(embedded);
     FocusChangeObserver observer(embedded_root);
     observer.set_quit_on_change(false);
     embedded_root->SetFocus();
@@ -709,7 +715,7 @@ TEST_F(WindowServerTest, Focus) {
     ASSERT_TRUE(WaitForWindowToHaveFocus(window1));
   }
 
-  // Focus a child of embedded->GetRoot().
+  // Focus a child of GetFirstRoot(embedded).
   {
     FocusChangeObserver observer(window11);
     observer.set_quit_on_change(false);
@@ -718,7 +724,7 @@ TEST_F(WindowServerTest, Focus) {
     ASSERT_NE(nullptr, observer.last_gained_focus());
     ASSERT_NE(nullptr, observer.last_lost_focus());
     EXPECT_EQ(window11->id(), observer.last_gained_focus()->id());
-    EXPECT_EQ(embedded->GetRoot()->id(), observer.last_lost_focus()->id());
+    EXPECT_EQ(GetFirstRoot(embedded)->id(), observer.last_lost_focus()->id());
   }
 
   {
@@ -726,17 +732,16 @@ TEST_F(WindowServerTest, Focus) {
     // observer sees the right values.
     FocusChangeObserver observer(window11);
     observer.set_quit_on_change(false);
-    embedded->GetRoot()->SetFocus();
+    GetFirstRoot(embedded)->SetFocus();
     ASSERT_NE(nullptr, observer.last_gained_focus());
     ASSERT_NE(nullptr, observer.last_lost_focus());
     EXPECT_EQ(window11->id(), observer.last_lost_focus()->id());
-    EXPECT_EQ(embedded->GetRoot()->id(), observer.last_gained_focus()->id());
+    EXPECT_EQ(GetFirstRoot(embedded)->id(), observer.last_gained_focus()->id());
   }
 }
 
 TEST_F(WindowServerTest, Activation) {
-  Window* parent =
-      NewVisibleWindow(window_manager()->GetRoot(), window_manager());
+  Window* parent = NewVisibleWindow(GetFirstWMRoot(), window_manager());
   Window* child1 = NewVisibleWindow(parent, window_manager());
   Window* child2 = NewVisibleWindow(parent, window_manager());
   Window* child3 = NewVisibleWindow(parent, window_manager());
@@ -748,8 +753,8 @@ TEST_F(WindowServerTest, Activation) {
   WindowTreeConnection* embedded2 = Embed(child2).connection;
   ASSERT_NE(nullptr, embedded2);
 
-  Window* child11 = NewVisibleWindow(embedded1->GetRoot(), embedded1);
-  Window* child21 = NewVisibleWindow(embedded2->GetRoot(), embedded2);
+  Window* child11 = NewVisibleWindow(GetFirstRoot(embedded1), embedded1);
+  Window* child21 = NewVisibleWindow(GetFirstRoot(embedded2), embedded2);
 
   WaitForTreeSizeToMatch(parent, 6);
 
@@ -794,7 +799,7 @@ TEST_F(WindowServerTest, Activation) {
 }
 
 TEST_F(WindowServerTest, ActivationNext) {
-  Window* parent = window_manager()->GetRoot();
+  Window* parent = GetFirstWMRoot();
   Window* child1 = NewVisibleWindow(parent, window_manager());
   Window* child2 = NewVisibleWindow(parent, window_manager());
   Window* child3 = NewVisibleWindow(parent, window_manager());
@@ -806,9 +811,9 @@ TEST_F(WindowServerTest, ActivationNext) {
   WindowTreeConnection* embedded3 = Embed(child3).connection;
   ASSERT_NE(nullptr, embedded3);
 
-  Window* child11 = NewVisibleWindow(embedded1->GetRoot(), embedded1);
-  Window* child21 = NewVisibleWindow(embedded2->GetRoot(), embedded2);
-  Window* child31 = NewVisibleWindow(embedded3->GetRoot(), embedded3);
+  Window* child11 = NewVisibleWindow(GetFirstRoot(embedded1), embedded1);
+  Window* child21 = NewVisibleWindow(GetFirstRoot(embedded2), embedded2);
+  Window* child31 = NewVisibleWindow(GetFirstRoot(embedded3), embedded3);
   WaitForTreeSizeToMatch(parent, 7);
 
   Window* expecteds[] = { child1, child2, child3, child1, nullptr };
@@ -864,11 +869,12 @@ TEST_F(WindowServerTest, DeleteWindowServer) {
   Window* window = window_manager()->NewWindow();
   ASSERT_NE(nullptr, window);
   window->SetVisible(true);
-  window_manager()->GetRoot()->AddChild(window);
+  GetFirstWMRoot()->AddChild(window);
   WindowTreeConnection* connection = Embed(window).connection;
   ASSERT_TRUE(connection);
   bool got_destroy = false;
-  DestroyedChangedObserver observer(this, connection->GetRoot(), &got_destroy);
+  DestroyedChangedObserver observer(this, GetFirstRoot(connection),
+                                    &got_destroy);
   delete connection;
   EXPECT_TRUE(window_tree_connection_destroyed());
   EXPECT_TRUE(got_destroy);
@@ -880,7 +886,7 @@ TEST_F(WindowServerTest, DisconnectTriggersDelete) {
   Window* window = window_manager()->NewWindow();
   ASSERT_NE(nullptr, window);
   window->SetVisible(true);
-  window_manager()->GetRoot()->AddChild(window);
+  GetFirstWMRoot()->AddChild(window);
   WindowTreeConnection* connection = Embed(window).connection;
   EXPECT_NE(connection, window_manager());
   Window* embedded_window = connection->NewWindow();
@@ -918,7 +924,7 @@ class WindowRemovedFromParentObserver : public WindowObserver {
 TEST_F(WindowServerTest, EmbedRemovesChildren) {
   Window* window1 = window_manager()->NewWindow();
   Window* window2 = window_manager()->NewWindow();
-  window_manager()->GetRoot()->AddChild(window1);
+  GetFirstWMRoot()->AddChild(window1);
   window1->AddChild(window2);
 
   WindowRemovedFromParentObserver observer(window2);
@@ -941,7 +947,7 @@ class DestroyObserver : public WindowObserver {
                   WindowTreeConnection* connection,
                   bool* got_destroy)
       : test_(test), got_destroy_(got_destroy) {
-    connection->GetRoot()->AddObserver(this);
+    GetFirstRoot(connection)->AddObserver(this);
   }
   ~DestroyObserver() override {}
 
@@ -971,7 +977,7 @@ class DestroyObserver : public WindowObserver {
 // OnWindowManagerDestroyed()).
 TEST_F(WindowServerTest, WindowServerDestroyedAfterRootObserver) {
   Window* embed_window = window_manager()->NewWindow();
-  window_manager()->GetRoot()->AddChild(embed_window);
+  GetFirstWMRoot()->AddChild(embed_window);
 
   WindowTreeConnection* embedded_connection = Embed(embed_window).connection;
 
@@ -988,17 +994,17 @@ TEST_F(WindowServerTest, WindowServerDestroyedAfterRootObserver) {
 // connection.
 TEST_F(WindowServerTest, EmbedRootSeesHierarchyChanged) {
   Window* embed_window = window_manager()->NewWindow();
-  window_manager()->GetRoot()->AddChild(embed_window);
+  GetFirstWMRoot()->AddChild(embed_window);
 
   WindowTreeConnection* vm2 =
       Embed(embed_window, mus::mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT)
           .connection;
   Window* vm2_v1 = vm2->NewWindow();
-  vm2->GetRoot()->AddChild(vm2_v1);
+  GetFirstRoot(vm2)->AddChild(vm2_v1);
 
   WindowTreeConnection* vm3 = Embed(vm2_v1).connection;
   Window* vm3_v1 = vm3->NewWindow();
-  vm3->GetRoot()->AddChild(vm3_v1);
+  GetFirstRoot(vm3)->AddChild(vm3_v1);
 
   // As |vm2| is an embed root it should get notified about |vm3_v1|.
   ASSERT_TRUE(WaitForTreeSizeToMatch(vm2_v1, 2));
@@ -1006,7 +1012,7 @@ TEST_F(WindowServerTest, EmbedRootSeesHierarchyChanged) {
 
 TEST_F(WindowServerTest, EmbedFromEmbedRoot) {
   Window* embed_window = window_manager()->NewWindow();
-  window_manager()->GetRoot()->AddChild(embed_window);
+  GetFirstWMRoot()->AddChild(embed_window);
 
   // Give the connection embedded at |embed_window| embed root powers.
   const EmbedResult result1 =
@@ -1014,13 +1020,13 @@ TEST_F(WindowServerTest, EmbedFromEmbedRoot) {
   WindowTreeConnection* vm2 = result1.connection;
   EXPECT_EQ(result1.connection_id, vm2->GetConnectionId());
   Window* vm2_v1 = vm2->NewWindow();
-  vm2->GetRoot()->AddChild(vm2_v1);
+  GetFirstRoot(vm2)->AddChild(vm2_v1);
 
   const EmbedResult result2 = Embed(vm2_v1);
   WindowTreeConnection* vm3 = result2.connection;
   EXPECT_EQ(result2.connection_id, vm3->GetConnectionId());
   Window* vm3_v1 = vm3->NewWindow();
-  vm3->GetRoot()->AddChild(vm3_v1);
+  GetFirstRoot(vm3)->AddChild(vm3_v1);
 
   // Embed from v3, the callback should not get the connection id as vm3 is not
   // an embed root.
@@ -1042,24 +1048,23 @@ TEST_F(WindowServerTest, EmbedFromEmbedRoot) {
 
 TEST_F(WindowServerTest, ClientAreaChanged) {
   Window* embed_window = window_manager()->NewWindow();
-  window_manager()->GetRoot()->AddChild(embed_window);
+  GetFirstWMRoot()->AddChild(embed_window);
 
   WindowTreeConnection* embedded_connection = Embed(embed_window).connection;
 
   // Verify change from embedded makes it to parent.
-  embedded_connection->GetRoot()->SetClientArea(gfx::Insets(1, 2, 3, 4));
+  GetFirstRoot(embedded_connection)->SetClientArea(gfx::Insets(1, 2, 3, 4));
   ASSERT_TRUE(WaitForClientAreaToChange(embed_window));
   EXPECT_TRUE(gfx::Insets(1, 2, 3, 4) == embed_window->client_area());
 
   // Changing bounds shouldn't effect client area.
   embed_window->SetBounds(gfx::Rect(21, 22, 23, 24));
-  WaitForBoundsToChange(embedded_connection->GetRoot());
+  WaitForBoundsToChange(GetFirstRoot(embedded_connection));
   EXPECT_TRUE(gfx::Rect(21, 22, 23, 24) ==
-              embedded_connection->GetRoot()->bounds());
+              GetFirstRoot(embedded_connection)->bounds());
   EXPECT_TRUE(gfx::Insets(1, 2, 3, 4) ==
-              embedded_connection->GetRoot()->client_area());
+              GetFirstRoot(embedded_connection)->client_area());
 }
 
 }  // namespace ws
-
 }  // namespace mus

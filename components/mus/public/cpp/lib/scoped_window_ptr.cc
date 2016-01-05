@@ -22,7 +22,7 @@ ScopedWindowPtr::~ScopedWindowPtr() {
 
 // static
 void ScopedWindowPtr::DeleteWindowOrWindowManager(Window* window) {
-  if (window->connection()->GetRoot() == window)
+  if (window->connection()->GetRoots().count(window) > 0)
     delete window->connection();
   else
     window->Destroy();

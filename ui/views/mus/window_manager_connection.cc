@@ -122,8 +122,8 @@ mus::Window* WindowManagerConnection::NewWindow(
       mus::WindowTreeConnection::Create(
           this, std::move(window_tree_client_request),
           mus::WindowTreeConnection::CreateType::WAIT_FOR_EMBED);
-  DCHECK(window_tree_connection->GetRoot());
-  return window_tree_connection->GetRoot();
+  DCHECK_EQ(1u, window_tree_connection->GetRoots().size());
+  return *window_tree_connection->GetRoots().begin();
 }
 
 WindowManagerConnection::WindowManagerConnection(mojo::ApplicationImpl* app)

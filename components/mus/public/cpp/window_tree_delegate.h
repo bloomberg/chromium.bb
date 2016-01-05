@@ -18,11 +18,11 @@ class WindowTreeConnection;
 
 // Interface implemented by an application using the window manager.
 //
-// Each call to OnEmbed() results in a new WindowTreeConnection and new root
-// Window.
 // WindowTreeConnection is deleted by any of the following:
-// . If the root of the connection is destroyed. This happens if the owner
-//   of the root Embed()s another app in root, or root is explicitly deleted.
+// . If all the roots of the connection are destroyed and the connection is
+//   configured to delete when there are no roots (the default). This happens
+//   if the owner of the roots Embed()s another app in all the roots, or all
+//   the roots are explicitly deleted.
 // . The connection to the window manager is lost.
 // . Explicitly by way of calling delete.
 //

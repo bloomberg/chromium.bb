@@ -152,7 +152,8 @@ bool OwnsWindow(WindowTreeConnection* connection, Window* window) {
 }
 
 bool IsConnectionRoot(Window* window) {
-  return window->connection() && window->connection()->GetRoot() == window;
+  return window->connection() &&
+         window->connection()->GetRoots().count(window) > 0;
 }
 
 bool OwnsWindowOrIsRoot(Window* window) {

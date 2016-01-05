@@ -40,7 +40,7 @@ class WindowManagerAppTest : public mojo::test::ApplicationTestBase,
     mus::WindowTreeConnection* connection = mus::WindowTreeConnection::Create(
         this, std::move(window_tree_client_request),
         mus::WindowTreeConnection::CreateType::WAIT_FOR_EMBED);
-    return connection->GetRoot();
+    return *connection->GetRoots().begin();
   }
 
  private:

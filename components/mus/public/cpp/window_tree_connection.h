@@ -49,8 +49,12 @@ class WindowTreeConnection {
       CreateType create_type,
       WindowManagerDelegate* window_manager_delegate);
 
+  // Sets whether this is deleted when there are no roots. The default is to
+  // delete when there are no roots.
+  virtual void SetDeleteOnNoRoots(bool value) = 0;
+
   // Returns the root of this connection.
-  virtual Window* GetRoot() = 0;
+  virtual const std::set<Window*>& GetRoots() = 0;
 
   // Returns a Window known to this connection.
   virtual Window* GetWindowById(Id id) = 0;

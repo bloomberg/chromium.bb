@@ -115,8 +115,9 @@ class WebViewTest : public mus::WindowServerTestBase,
   }
 
   void TearDown() override {
+    ASSERT_EQ(1u, window_manager()->GetRoots().size());
     mus::ScopedWindowPtr::DeleteWindowOrWindowManager(
-        window_manager()->GetRoot());
+        *window_manager()->GetRoots().begin());
     WindowServerTestBase::TearDown();
   }
 

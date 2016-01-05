@@ -95,6 +95,12 @@ class WindowTreeSetup {
 
   TestWindowTree* window_tree() { return &window_tree_; }
 
+  Window* GetFirstRoot() {
+    return window_tree_connection()->GetRoots().empty()
+               ? nullptr
+               : *window_tree_connection()->GetRoots().begin();
+  }
+
  private:
   TestWindowTree window_tree_;
   TestWindowTreeDelegate window_tree_delegate_;
@@ -150,7 +156,7 @@ using WindowTreeClientImplTest = testing::Test;
 // Verifies bounds are reverted if the server replied that the change failed.
 TEST_F(WindowTreeClientImplTest, SetBoundsFailed) {
   WindowTreeSetup setup;
-  Window* root = setup.window_tree_connection()->GetRoot();
+  Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
   const gfx::Rect original_bounds(root->bounds());
   const gfx::Rect new_bounds(gfx::Rect(0, 0, 100, 100));
@@ -166,7 +172,7 @@ TEST_F(WindowTreeClientImplTest, SetBoundsFailed) {
 // server replies with a new bounds and the original bounds change fails.
 TEST_F(WindowTreeClientImplTest, SetBoundsFailedWithPendingChange) {
   WindowTreeSetup setup;
-  Window* root = setup.window_tree_connection()->GetRoot();
+  Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
   const gfx::Rect original_bounds(root->bounds());
   const gfx::Rect new_bounds(gfx::Rect(0, 0, 100, 100));
@@ -199,7 +205,7 @@ TEST_F(WindowTreeClientImplTest, SetBoundsFailedWithPendingChange) {
 
 TEST_F(WindowTreeClientImplTest, TwoInFlightBoundsChangesBothCanceled) {
   WindowTreeSetup setup;
-  Window* root = setup.window_tree_connection()->GetRoot();
+  Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
   const gfx::Rect original_bounds(root->bounds());
   const gfx::Rect bounds1(gfx::Rect(0, 0, 100, 100));
@@ -229,7 +235,7 @@ TEST_F(WindowTreeClientImplTest, TwoInFlightBoundsChangesBothCanceled) {
 // failed.
 TEST_F(WindowTreeClientImplTest, SetPropertyFailed) {
   WindowTreeSetup setup;
-  Window* root = setup.window_tree_connection()->GetRoot();
+  Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
   ASSERT_FALSE(root->HasSharedProperty("foo"));
   const int32_t new_value = 11;
@@ -246,7 +252,7 @@ TEST_F(WindowTreeClientImplTest, SetPropertyFailed) {
 // server replies with a new property and the original property change fails.
 TEST_F(WindowTreeClientImplTest, SetPropertyFailedWithPendingChange) {
   WindowTreeSetup setup;
-  Window* root = setup.window_tree_connection()->GetRoot();
+  Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
   const int32_t value1 = 11;
   root->SetSharedProperty("foo", value1);
@@ -280,7 +286,7 @@ TEST_F(WindowTreeClientImplTest, SetPropertyFailedWithPendingChange) {
 // Verifies visible is reverted if the server replied that the change failed.
 TEST_F(WindowTreeClientImplTest, SetVisibleFailed) {
   WindowTreeSetup setup;
-  Window* root = setup.window_tree_connection()->GetRoot();
+  Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
   const bool original_visible = root->visible();
   const bool new_visible = !original_visible;
@@ -296,7 +302,7 @@ TEST_F(WindowTreeClientImplTest, SetVisibleFailed) {
 // server replies with a new visible and the original visible change fails.
 TEST_F(WindowTreeClientImplTest, SetVisibleFailedWithPendingChange) {
   WindowTreeSetup setup;
-  Window* root = setup.window_tree_connection()->GetRoot();
+  Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
   const bool original_visible = root->visible();
   const bool new_visible = !original_visible;
@@ -327,7 +333,7 @@ TEST_F(WindowTreeClientImplTest, SetVisibleFailedWithPendingChange) {
 
 TEST_F(WindowTreeClientImplTest, InputEventBasic) {
   WindowTreeSetup setup;
-  Window* root = setup.window_tree_connection()->GetRoot();
+  Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
 
   TestInputEventHandler event_handler;
@@ -357,7 +363,7 @@ TEST_F(WindowTreeClientImplTest, InputEventBasic) {
 // Verifies focus is reverted if the server replied that the change failed.
 TEST_F(WindowTreeClientImplTest, SetFocusFailed) {
   WindowTreeSetup setup;
-  Window* root = setup.window_tree_connection()->GetRoot();
+  Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
   root->SetVisible(true);
   Window* child = setup.window_tree_connection()->NewWindow();
@@ -378,7 +384,7 @@ TEST_F(WindowTreeClientImplTest, SetFocusFailed) {
 // replies with a new focus and the original focus change fails.
 TEST_F(WindowTreeClientImplTest, SetFocusFailedWithPendingChange) {
   WindowTreeSetup setup;
-  Window* root = setup.window_tree_connection()->GetRoot();
+  Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
   root->SetVisible(true);
   Window* child1 = setup.window_tree_connection()->NewWindow();
@@ -415,7 +421,7 @@ TEST_F(WindowTreeClientImplTest, SetFocusFailedWithPendingChange) {
 
 TEST_F(WindowTreeClientImplTest, FocusOnRemovedWindowWithInFlightFocusChange) {
   WindowTreeSetup setup;
-  Window* root = setup.window_tree_connection()->GetRoot();
+  Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
   root->SetVisible(true);
   Window* child1 = setup.window_tree_connection()->NewWindow();
@@ -471,7 +477,7 @@ class ToggleVisibilityFromDestroyedObserver : public WindowObserver {
 
 TEST_F(WindowTreeClientImplTest, ToggleVisibilityFromWindowDestroyed) {
   WindowTreeSetup setup;
-  Window* root = setup.window_tree_connection()->GetRoot();
+  Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
   Window* child1 = setup.window_tree_connection()->NewWindow();
   root->AddChild(child1);
