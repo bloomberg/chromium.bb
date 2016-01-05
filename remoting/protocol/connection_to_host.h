@@ -24,7 +24,7 @@ class Session;
 class SessionConfig;
 class TransportContext;
 struct TransportRoute;
-class VideoStub;
+class VideoRenderer;
 
 class ConnectionToHost {
  public:
@@ -70,7 +70,7 @@ class ConnectionToHost {
   // is called.
   virtual void set_client_stub(ClientStub* client_stub) = 0;
   virtual void set_clipboard_stub(ClipboardStub* clipboard_stub) = 0;
-  virtual void set_video_stub(VideoStub* video_stub) = 0;
+  virtual void set_video_renderer(VideoRenderer* video_renderer) = 0;
   // If no audio stub is specified then audio will not be requested.
   virtual void set_audio_stub(AudioStub* audio_stub) = 0;
 

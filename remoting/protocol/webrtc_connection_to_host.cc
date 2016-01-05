@@ -63,7 +63,7 @@ void WebrtcConnectionToHost::set_clipboard_stub(ClipboardStub* clipboard_stub) {
   clipboard_stub_ = clipboard_stub;
 }
 
-void WebrtcConnectionToHost::set_video_stub(VideoStub* video_stub) {
+void WebrtcConnectionToHost::set_video_renderer(VideoRenderer* video_renderer) {
   NOTIMPLEMENTED();
 }
 

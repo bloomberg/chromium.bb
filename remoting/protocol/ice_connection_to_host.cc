@@ -21,7 +21,7 @@
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/ice_transport.h"
 #include "remoting/protocol/transport_context.h"
-#include "remoting/protocol/video_stub.h"
+#include "remoting/protocol/video_renderer.h"
 
 namespace remoting {
 namespace protocol {
@@ -35,7 +35,7 @@ void IceConnectionToHost::Connect(
     HostEventCallback* event_callback) {
   DCHECK(client_stub_);
   DCHECK(clipboard_stub_);
-  DCHECK(monitored_video_stub_);
+  DCHECK(video_renderer_);
 
   transport_.reset(new IceTransport(transport_context, this));
 
@@ -73,13 +73,10 @@ void IceConnectionToHost::set_clipboard_stub(ClipboardStub* clipboard_stub) {
   clipboard_stub_ = clipboard_stub;
 }
 
-void IceConnectionToHost::set_video_stub(VideoStub* video_stub) {
-  DCHECK(video_stub);
-  monitored_video_stub_.reset(new MonitoredVideoStub(
-      video_stub, base::TimeDelta::FromSeconds(
-                      MonitoredVideoStub::kConnectivityCheckDelaySeconds),
-      base::Bind(&IceConnectionToHost::OnVideoChannelStatus,
-                 base::Unretained(this))));
+void IceConnectionToHost::set_video_renderer(VideoRenderer* video_renderer) {
+  DCHECK(video_renderer);
+  DCHECK(!monitored_video_stub_);
+  video_renderer_ = video_renderer;
 }
 
 void IceConnectionToHost::set_audio_stub(AudioStub* audio_stub) {
@@ -101,19 +98,31 @@ void IceConnectionToHost::OnSessionStateChange(Session::State state) {
 
     case Session::AUTHENTICATED:
       SetState(AUTHENTICATED, OK);
+
+      // Setup control channel.
       control_dispatcher_.reset(new ClientControlDispatcher());
       control_dispatcher_->Init(transport_->GetMultiplexedChannelFactory(),
                                 this);
       control_dispatcher_->set_client_stub(client_stub_);
       control_dispatcher_->set_clipboard_stub(clipboard_stub_);
 
+      // Setup event channel.
       event_dispatcher_.reset(new ClientEventDispatcher());
       event_dispatcher_->Init(transport_->GetMultiplexedChannelFactory(), this);
 
+      // Configure video pipeline.
+      video_renderer_->OnSessionConfig(session_->config());
+      monitored_video_stub_.reset(new MonitoredVideoStub(
+          video_renderer_->GetVideoStub(),
+          base::TimeDelta::FromSeconds(
+              MonitoredVideoStub::kConnectivityCheckDelaySeconds),
+          base::Bind(&IceConnectionToHost::OnVideoChannelStatus,
+                     base::Unretained(this))));
       video_dispatcher_.reset(
           new ClientVideoDispatcher(monitored_video_stub_.get()));
       video_dispatcher_->Init(transport_->GetStreamChannelFactory(), this);
 
+      // Configure audio pipeline if necessary.
       if (session_->config().is_audio_enabled()) {
         audio_reader_.reset(new AudioReader(audio_stub_));
         audio_reader_->Init(transport_->GetMultiplexedChannelFactory(), this);

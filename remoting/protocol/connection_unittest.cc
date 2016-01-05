@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/fake_session.h"
+#include "remoting/protocol/fake_video_renderer.h"
 #include "remoting/protocol/ice_connection_to_client.h"
 #include "remoting/protocol/ice_connection_to_host.h"
 #include "remoting/protocol/protocol_mock_objects.h"
@@ -90,7 +91,7 @@ class ConnectionTest : public testing::Test,
     // Setup client side.
     client_connection_->set_client_stub(&client_stub_);
     client_connection_->set_clipboard_stub(&client_clipboard_stub_);
-    client_connection_->set_video_stub(&client_video_stub_);
+    client_connection_->set_video_renderer(&client_video_renderer_);
   }
 
   void Connect() {
@@ -167,7 +168,7 @@ class ConnectionTest : public testing::Test,
   MockConnectionToHostEventCallback client_event_handler_;
   MockClientStub client_stub_;
   MockClipboardStub client_clipboard_stub_;
-  MockVideoStub client_video_stub_;
+  FakeVideoRenderer client_video_renderer_;
   scoped_ptr<ConnectionToHost> client_connection_;
   FakeSession* client_session_;  // Owned by |client_connection_|.
   scoped_ptr<FakeSession> owned_client_session_;

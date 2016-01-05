@@ -44,6 +44,8 @@
         'protocol/fake_session.h',
         'protocol/fake_stream_socket.cc',
         'protocol/fake_stream_socket.h',
+        'protocol/fake_video_renderer.cc',
+        'protocol/fake_video_renderer.h',
         'protocol/protocol_mock_objects.cc',
         'protocol/protocol_mock_objects.h',
         'protocol/test_event_matchers.h',

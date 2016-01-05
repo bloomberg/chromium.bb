@@ -19,7 +19,8 @@ void FakeConnectionToHost::set_client_stub(protocol::ClientStub* client_stub) {}
 void FakeConnectionToHost::set_clipboard_stub(
     protocol::ClipboardStub* clipboard_stub) {}
 
-void FakeConnectionToHost::set_video_stub(protocol::VideoStub* video_stub) {}
+void FakeConnectionToHost::set_video_renderer(
+    protocol::VideoRenderer* video_renderer) {}
 
 void FakeConnectionToHost::set_audio_stub(protocol::AudioStub* audio_stub) {}
 

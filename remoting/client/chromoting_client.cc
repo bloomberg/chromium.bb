@@ -67,7 +67,7 @@ void ChromotingClient::Start(
 
   connection_->set_client_stub(this);
   connection_->set_clipboard_stub(this);
-  connection_->set_video_stub(video_renderer_->GetVideoStub());
+  connection_->set_video_renderer(video_renderer_);
   connection_->set_audio_stub(audio_decode_scheduler_.get());
 
   session_manager_.reset(new protocol::JingleSessionManager(signal_strategy));
@@ -209,7 +209,6 @@ void ChromotingClient::OnAuthenticated() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Initialize the decoder.
-  video_renderer_->OnSessionConfig(connection_->config());
   if (connection_->config().is_audio_enabled())
     audio_decode_scheduler_->Initialize(connection_->config());
 }

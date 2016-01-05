@@ -22,7 +22,7 @@ class FakeConnectionToHost : public protocol::ConnectionToHost {
   // ConnectionToHost interface.
   void set_client_stub(protocol::ClientStub* client_stub) override;
   void set_clipboard_stub(protocol::ClipboardStub* clipboard_stub) override;
-  void set_video_stub(protocol::VideoStub* video_stub) override;
+  void set_video_renderer(protocol::VideoRenderer* video_renderer) override;
   void set_audio_stub(protocol::AudioStub* audio_stub) override;
   void Connect(scoped_ptr<protocol::Session> session,
                scoped_refptr<protocol::TransportContext> transport_context,

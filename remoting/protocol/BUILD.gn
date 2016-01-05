@@ -73,6 +73,8 @@ source_set("test_support") {
     "fake_session.h",
     "fake_stream_socket.cc",
     "fake_stream_socket.h",
+    "fake_video_renderer.cc",
+    "fake_video_renderer.h",
     "protocol_mock_objects.cc",
     "protocol_mock_objects.h",
   ]
