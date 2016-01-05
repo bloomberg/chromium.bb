@@ -30,7 +30,7 @@ namespace arc {
 namespace {
 
 const base::FilePath::CharType kArcBridgeSocketPath[] =
-    FILE_PATH_LITERAL("/home/chronos/ArcBridge/bridge.sock");
+    FILE_PATH_LITERAL("/var/run/chrome/arc_bridge.sock");
 
 void OnChannelCreated(mojo::embedder::ChannelInfo* channel) {}
 
