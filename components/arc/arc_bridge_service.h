@@ -137,6 +137,13 @@ class ArcBridgeService : public ArcBridgeHost {
   ProcessInstance* process_instance() { return process_ptr_.get(); }
   SettingsInstance* settings_instance() { return settings_ptr_.get(); }
 
+  int32_t app_version() const { return app_ptr_.version(); }
+  int32_t input_version() const { return input_ptr_.version(); }
+  int32_t notifications_version() const { return notifications_ptr_.version(); }
+  int32_t power_version() const { return power_ptr_.version(); }
+  int32_t process_version() const { return process_ptr_.version(); }
+  int32_t settings_version() const { return settings_ptr_.version(); }
+
   // ArcHost:
   void OnAppInstanceReady(AppInstancePtr app_ptr) override;
   void OnInputInstanceReady(InputInstancePtr input_ptr) override;
@@ -171,6 +178,14 @@ class ArcBridgeService : public ArcBridgeHost {
   FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Prerequisites);
   FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, ShutdownMidStartup);
 
+  // Callbacks for QueryVersion.
+  void OnAppVersionReady(int32_t version);
+  void OnInputVersionReady(int32_t version);
+  void OnNotificationsVersionReady(int32_t version);
+  void OnPowerVersionReady(int32_t version);
+  void OnProcessVersionReady(int32_t version);
+  void OnSettingsVersionReady(int32_t version);
+
   // Mojo interfaces.
   AppInstancePtr app_ptr_;
   InputInstancePtr input_ptr_;
@@ -178,6 +193,19 @@ class ArcBridgeService : public ArcBridgeHost {
   PowerInstancePtr power_ptr_;
   ProcessInstancePtr process_ptr_;
   SettingsInstancePtr settings_ptr_;
+
+  // Temporary Mojo interfaces.  After a Mojo interface pointer has been
+  // received from the other endpoint, we still need to asynchronously query
+  // its version.  While that is going on, we should still return nullptr on
+  // the xxx_instance() functions.
+  // To keep the xxx_instance() functions being trivial, store the instance
+  // pointer in a temporary variable to avoid losing its reference.
+  AppInstancePtr temporary_app_ptr_;
+  InputInstancePtr temporary_input_ptr_;
+  NotificationsInstancePtr temporary_notifications_ptr_;
+  PowerInstancePtr temporary_power_ptr_;
+  ProcessInstancePtr temporary_process_ptr_;
+  SettingsInstancePtr temporary_settings_ptr_;
 
   base::ObserverList<Observer> observer_list_;
 
@@ -188,6 +216,9 @@ class ArcBridgeService : public ArcBridgeHost {
 
   // The current state of the bridge.
   ArcBridgeService::State state_;
+
+  // WeakPtrFactory to use callbacks.
+  base::WeakPtrFactory<ArcBridgeService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcBridgeService);
 };

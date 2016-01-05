@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "mojo/common/common_type_converters.h"
 
 namespace mojo {
@@ -109,8 +110,18 @@ void FakeAppInstance::WaitForIncomingMethodCall() {
 }
 
 void FakeAppInstance::WaitForOnAppInstanceReady() {
-  WaitForIncomingMethodCall();  // Wait for Init().
-  WaitForIncomingMethodCall();  // Wait for RefreshAppList().
+  // Several messages are sent back and forth when OnAppInstanceReady() is
+  // called. Normally, it would be preferred to use a single
+  // WaitForIncomingMethodCall() to wait for each method individually, but
+  // QueryVersion() does require processing on the I/O thread, so
+  // RunUntilIdle() is required to correctly dispatch it. On slower machines
+  // (and when running under Valgrind), the two thread hops needed to send and
+  // dispatch each Mojo message might not be picked up by a single
+  // RunUntilIdle(), so keep pumping the message loop until all expected
+  // messages are.
+  while (refresh_app_list_count_ != 1) {
+    base::RunLoop().RunUntilIdle();
+  }
 }
 
 }  // namespace arc
