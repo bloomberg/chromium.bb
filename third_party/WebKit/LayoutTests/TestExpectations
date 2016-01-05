@@ -748,6 +748,13 @@ crbug.com/555703 [ Android ] http/tests/media/media-source/mediasource-config-ch
 crbug.com/555703 [ Android ] http/tests/media/media-source/mediasource-config-change-mp4-v-framerate.html [ Failure ]
 crbug.com/555703 [ Android ] http/tests/media/media-source/mediasource-config-change-mp4-v-framesize.html [ Failure ]
 
+# http://crrev.com/1557743002
+crbug.com/387166 css1/box_properties/float_on_text_elements.html [ NeedsRebaseline ]
+crbug.com/387166 css2.1/t0905-c5525-fltwidth-00-c-g.html [ NeedsRebaseline ]
+crbug.com/387166 fast/text/atsui-spacing-features.html [ NeedsRebaseline ]
+crbug.com/387166 fast/text/international/thai-line-breaks.html [ NeedsRebaseline ]
+crbug.com/387166 svg/text/bidi-text-anchor-direction.svg [ NeedsRebaseline ]
+
 crbug.com/517449 [ Android ] css3/images/optimize-contrast-image.html [ Failure ]
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
@@ -882,7 +889,6 @@ crbug.com/498021 [ Linux ] fast/text/ellipsis-stroked.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/emphasis-complex.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/danda-space.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/hindi-whitespace.html [ Failure ]
-crbug.com/498021 [ Linux ] fast/text/international/thai-line-breaks.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/selection-multiple-runs.html [ Failure ]
 crbug.com/498021 [ Linux ] editing/pasteboard/4944770-2.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/encoding/invalid-UTF-8.html [ Failure ]
@@ -965,7 +971,6 @@ crbug.com/548695 fast/forms/datalist/update-range-with-datalist.html [ Failure ]
 
 # Temporarily disabled after chromium change
 crbug.com/492511 [ Mac ] fast/text/atsui-negative-spacing-features.html [ Failure ]
-crbug.com/492511 [ Mac ] fast/text/atsui-spacing-features.html [ Failure ]
 crbug.com/492511 [ Mac ] fast/text/international/arabic-justify.html [ Failure ]
 
 # Ref tests that fail due to differences in inline box structure, even though they contain the same text.
@@ -1073,7 +1078,6 @@ crbug.com/521730 [ Win10 ] fast/text-autosizing/tables/wide-percentage-width.htm
 crbug.com/521730 [ Win10 ] fast/text-autosizing/tables/wide-specified-width.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/atsui-kerning-and-ligatures.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/atsui-multiple-renderers.html [ Failure ]
-crbug.com/521730 [ Win10 ] fast/text/atsui-spacing-features.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/basic/009.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/basic/generic-family-changes.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/capitalize-boundaries.html [ Failure ]

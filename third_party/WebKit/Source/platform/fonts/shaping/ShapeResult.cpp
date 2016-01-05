@@ -120,6 +120,7 @@ ShapeResult::ShapeResult(const Font* font, unsigned numCharacters, TextDirection
     , m_numCharacters(numCharacters)
     , m_numGlyphs(0)
     , m_direction(direction)
+    , m_hasVerticalOffsets(0)
 {
 }
 
@@ -279,16 +280,55 @@ float ShapeResult::fillGlyphBufferForTextEmphasisRun(GlyphBuffer* glyphBuffer,
     return advanceSoFar - initialAdvance;
 }
 
-float ShapeResult::fillGlyphBuffer(Vector<RefPtr<ShapeResult>>& results,
+float ShapeResult::fillFastHorizontalGlyphBuffer(const ShapeResultBuffer& resultsBuffer,
+    GlyphBuffer* glyphBuffer, TextDirection dir)
+{
+    ASSERT(!resultsBuffer.hasVerticalOffsets());
+
+    const auto& results = resultsBuffer.results();
+    float advance = 0;
+
+    for (unsigned i = 0; i < results.size(); ++i) {
+        const auto& wordResult =
+            isLeftToRightDirection(dir) ? results[i] : results[results.size() - 1 - i];
+        ASSERT(!wordResult->hasVerticalOffsets());
+
+        for (const auto& run : wordResult->m_runs) {
+            ASSERT(run);
+            ASSERT(HB_DIRECTION_IS_HORIZONTAL(run->m_direction));
+            ASSERT(run->m_numGlyphs == run->m_glyphData.size());
+
+            for (const auto& glyphData : run->m_glyphData) {
+                ASSERT(!glyphData.offset.height());
+
+                glyphBuffer->add(glyphData.glyph, run->m_fontData.get(),
+                    advance + glyphData.offset.width());
+                advance += glyphData.advance;
+            }
+        }
+    }
+
+    ASSERT(!glyphBuffer->hasVerticalOffsets());
+
+    return advance;
+}
+
+float ShapeResult::fillGlyphBuffer(const ShapeResultBuffer& resultsBuffer,
     GlyphBuffer* glyphBuffer, const TextRun& textRun,
     unsigned from, unsigned to)
 {
+    // Fast path: full run with no vertical offsets
+    if (!from && to == static_cast<unsigned>(textRun.length()) && !resultsBuffer.hasVerticalOffsets())
+        return fillFastHorizontalGlyphBuffer(resultsBuffer, glyphBuffer, textRun.direction());
+
+    const auto& results = resultsBuffer.results();
     float advance = 0;
+
     if (textRun.rtl()) {
         unsigned wordOffset = textRun.length();
         for (unsigned j = 0; j < results.size(); j++) {
             unsigned resolvedIndex = results.size() - 1 - j;
-            RefPtr<ShapeResult>& wordResult = results[resolvedIndex];
+            const RefPtr<ShapeResult>& wordResult = results[resolvedIndex];
             for (unsigned i = 0; i < wordResult->m_runs.size(); i++) {
                 advance += wordResult->fillGlyphBufferForRun<RTL>(glyphBuffer,
                     wordResult->m_runs[i].get(), advance, from, to,
@@ -299,7 +339,7 @@ float ShapeResult::fillGlyphBuffer(Vector<RefPtr<ShapeResult>>& results,
     } else {
         unsigned wordOffset = 0;
         for (unsigned j = 0; j < results.size(); j++) {
-            RefPtr<ShapeResult>& wordResult = results[j];
+            const RefPtr<ShapeResult>& wordResult = results[j];
             for (unsigned i = 0; i < wordResult->m_runs.size(); i++) {
                 advance += wordResult->fillGlyphBufferForRun<LTR>(glyphBuffer,
                     wordResult->m_runs[i].get(), advance, from, to, wordOffset);
@@ -311,16 +351,17 @@ float ShapeResult::fillGlyphBuffer(Vector<RefPtr<ShapeResult>>& results,
     return advance;
 }
 
-float ShapeResult::fillGlyphBufferForTextEmphasis(
-    Vector<RefPtr<ShapeResult>>& results, GlyphBuffer* glyphBuffer,
-    const TextRun& textRun, const GlyphData* emphasisData,
+float ShapeResult::fillGlyphBufferForTextEmphasis(const ShapeResultBuffer& resultsBuffer,
+    GlyphBuffer* glyphBuffer, const TextRun& textRun, const GlyphData* emphasisData,
     unsigned from, unsigned to)
 {
+    const auto& results = resultsBuffer.results();
     float advance = 0;
     unsigned wordOffset = textRun.rtl() ? textRun.length() : 0;
+
     for (unsigned j = 0; j < results.size(); j++) {
         unsigned resolvedIndex = textRun.rtl() ? results.size() - 1 - j : j;
-        RefPtr<ShapeResult>& wordResult = results[resolvedIndex];
+        const RefPtr<ShapeResult>& wordResult = results[resolvedIndex];
         for (unsigned i = 0; i < wordResult->m_runs.size(); i++) {
             unsigned resolvedOffset = wordOffset -
                 (textRun.rtl() ? wordResult->numCharacters() : 0);
@@ -334,10 +375,11 @@ float ShapeResult::fillGlyphBufferForTextEmphasis(
     return advance;
 }
 
-FloatRect ShapeResult::selectionRect(Vector<RefPtr<ShapeResult>>& results,
+FloatRect ShapeResult::selectionRect(const ShapeResultBuffer& resultsBuffer,
     TextDirection direction, float totalWidth, const FloatPoint& point,
     int height, unsigned absoluteFrom, unsigned absoluteTo)
 {
+    const auto& results = resultsBuffer.results();
     float currentX = 0;
     float fromX = 0;
     float toX = 0;
@@ -355,7 +397,7 @@ FloatRect ShapeResult::selectionRect(Vector<RefPtr<ShapeResult>>& results,
 
     unsigned totalNumCharacters = 0;
     for (unsigned j = 0; j < results.size(); j++) {
-        RefPtr<ShapeResult> result = results[j];
+        const RefPtr<ShapeResult> result = results[j];
         if (direction == RTL) {
             // Convert logical offsets to visual offsets, because results are in
             // logical order while runs are in visual order.
@@ -424,9 +466,10 @@ size_t ShapeResult::byteSize()
     return selfByteSize;
 }
 
-int ShapeResult::offsetForPosition(Vector<RefPtr<ShapeResult>>& results,
+int ShapeResult::offsetForPosition(const ShapeResultBuffer& resultsBuffer,
     const TextRun& run, float targetX)
 {
+    const auto& results = resultsBuffer.results();
     unsigned totalOffset;
     if (run.rtl()) {
         totalOffset = run.length();
@@ -443,7 +486,7 @@ int ShapeResult::offsetForPosition(Vector<RefPtr<ShapeResult>>& results,
         }
     } else {
         totalOffset = 0;
-        for (auto& wordResult : results) {
+        for (const auto& wordResult : results) {
             if (!wordResult)
                 continue;
             int offsetForWord = wordResult->offsetForPosition(targetX);

@@ -43,6 +43,7 @@ namespace blink {
 
 class Font;
 class GlyphBuffer;
+class ShapeResultBuffer;
 class SimpleFontData;
 class HarfBuzzShaper;
 struct GlyphData;
@@ -63,15 +64,17 @@ public:
     FloatRect bounds() { return m_glyphBoundingBox; }
     unsigned numCharacters() const { return m_numCharacters; }
     void fallbackFonts(HashSet<const SimpleFontData*>*) const;
+    bool hasVerticalOffsets() const { return m_hasVerticalOffsets; }
 
-    static int offsetForPosition(Vector<RefPtr<ShapeResult>>&,
+    // TODO(fmalita): relocate these to ShapeResultBuffer
+    static int offsetForPosition(const ShapeResultBuffer&,
         const TextRun&, float targetX);
-    static float fillGlyphBuffer(Vector<RefPtr<ShapeResult>>&,
+    static float fillGlyphBuffer(const ShapeResultBuffer&,
         GlyphBuffer*, const TextRun&, unsigned from, unsigned to);
-    static float fillGlyphBufferForTextEmphasis(Vector<RefPtr<ShapeResult>>&,
+    static float fillGlyphBufferForTextEmphasis(const ShapeResultBuffer&,
         GlyphBuffer*, const TextRun&, const GlyphData* emphasisData,
         unsigned from, unsigned to);
-    static FloatRect selectionRect(Vector<RefPtr<ShapeResult>>&,
+    static FloatRect selectionRect(const ShapeResultBuffer&,
         TextDirection, float totalWidth, const FloatPoint&, int height,
         unsigned from, unsigned to);
 
@@ -86,14 +89,18 @@ protected:
 
     ShapeResult(const Font*, unsigned numCharacters, TextDirection);
 
+    // TODO(fmalita): relocate these to ShapeResultBuffer
     int offsetForPosition(float targetX);
     template<TextDirection>
-    float fillGlyphBufferForRun(GlyphBuffer*, const RunInfo*,
+    static float fillGlyphBufferForRun(GlyphBuffer*, const RunInfo*,
         float initialAdvance, unsigned from, unsigned to, unsigned runOffset);
 
-    float fillGlyphBufferForTextEmphasisRun(GlyphBuffer*, const RunInfo*,
+    static float fillGlyphBufferForTextEmphasisRun(GlyphBuffer*, const RunInfo*,
         const TextRun&, const GlyphData*, float initialAdvance,
         unsigned from, unsigned to, unsigned runOffset);
+
+    static float fillFastHorizontalGlyphBuffer(const ShapeResultBuffer&,
+        GlyphBuffer*, TextDirection);
 
     float m_width;
     FloatRect m_glyphBoundingBox;
@@ -101,14 +108,41 @@ protected:
     RefPtr<SimpleFontData> m_primaryFont;
 
     unsigned m_numCharacters;
-    unsigned m_numGlyphs : 31;
+    unsigned m_numGlyphs : 30;
 
     // Overall direction for the TextRun, dictates which order each individual
     // sub run (represented by RunInfo structs in the m_runs vector) can have a
     // different text direction.
     unsigned m_direction : 1;
 
+    // Tracks whether any runs contain glyphs with a y-offset != 0.
+    unsigned m_hasVerticalOffsets : 1;
+
     friend class HarfBuzzShaper;
+};
+
+class ShapeResultBuffer {
+    WTF_MAKE_NONCOPYABLE(ShapeResultBuffer);
+    STACK_ALLOCATED();
+public:
+    ShapeResultBuffer()
+        : m_hasVerticalOffsets(false) { }
+
+    void appendResult(PassRefPtr<ShapeResult> result)
+    {
+        m_hasVerticalOffsets |= result->hasVerticalOffsets();
+        m_results.append(result);
+    }
+
+    bool hasVerticalOffsets() const { return m_hasVerticalOffsets; }
+
+    // Empirically, cases where we get more than 50 ShapeResults are extremely rare.
+    typedef Vector<RefPtr<ShapeResult>, 64> ShapeResultVector;
+    const ShapeResultVector& results() const { return m_results; }
+
+private:
+    ShapeResultVector m_results;
+    bool m_hasVerticalOffsets;
 };
 
 } // namespace blink
