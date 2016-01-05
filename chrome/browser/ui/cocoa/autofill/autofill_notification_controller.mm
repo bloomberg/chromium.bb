@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/chrome_style.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_tooltip_controller.h"
-#include "grit/theme_resources.h"
+#include "grit/components_scaled_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
 

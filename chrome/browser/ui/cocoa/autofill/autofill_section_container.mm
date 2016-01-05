@@ -24,6 +24,7 @@
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "grit/components_scaled_resources.h"
 #include "grit/theme_resources.h"
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/l10n/l10n_util_mac.h"
