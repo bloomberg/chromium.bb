@@ -8,8 +8,10 @@
 #include "net/cert/internal/parse_certificate.h"
 #include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/internal/signature_policy.h"
+#include "net/cert/internal/verify_name_match.h"
 #include "net/cert/internal/verify_signed_data.h"
 #include "net/der/input.h"
+#include "net/der/parser.h"
 
 namespace net {
 
@@ -125,12 +127,27 @@ WARN_UNUSED_RESULT bool FullyParseCertificate(const der::Input& cert_tlv,
   return true;
 }
 
-// Returns true if |name1| matches |name2|.
-WARN_UNUSED_RESULT bool NameMatches(const der::Input& name1,
-                                    const der::Input& name2) {
-  // TODO(eroman): Should account for normalization (i.e. call
-  // VerifyNameMatches() instead).
-  return name1.Equals(name2);
+WARN_UNUSED_RESULT bool GetSequenceValue(const der::Input& tlv,
+                                         der::Input* value) {
+  der::Parser parser(tlv);
+  return parser.ReadTag(der::kSequence, value) && !parser.HasMore();
+}
+
+// Returns true if |name1_tlv| matches |name2_tlv|. The two inputs must be
+// tag-length-value for RFC 5280's Name.
+WARN_UNUSED_RESULT bool NameMatches(const der::Input& name1_tlv,
+                                    const der::Input& name2_tlv) {
+  der::Input name1_value;
+  der::Input name2_value;
+
+  // Assume that the Name is an RDNSequence. VerifyNameMatch() expects the
+  // value from a SEQUENCE, so strip off the tag.
+  if (!GetSequenceValue(name1_tlv, &name1_value) ||
+      !GetSequenceValue(name2_tlv, &name2_value)) {
+    return false;
+  }
+
+  return VerifyNameMatch(name1_value, name2_value);
 }
 
 // Returns true if |cert| was self-issued. The definition of self-issuance

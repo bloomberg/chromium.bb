@@ -121,7 +121,7 @@ void RunTest(const char* file_name) {
   for (const auto& cert_str : chain)
     input_chain.push_back(InputFromString(&cert_str));
 
-  SimpleSignaturePolicy signature_policy(2048);
+  SimpleSignaturePolicy signature_policy(1024);
 
   bool result =
       VerifyCertificateChain(input_chain, trust_store, &signature_policy, time);
@@ -215,6 +215,14 @@ TEST(VerifyCertificateChainTest, TargetHasPathlenButNotCa) {
 
 TEST(VerifyCertificateChainTest, TargetUnknownCriticalExtension) {
   RunTest("target-unknown-critical-extension.pem");
+}
+
+TEST(VerifyCertificateChainTest, IssuerAndSubjectNotByteForByteEqual) {
+  RunTest("issuer-and-subject-not-byte-for-byte-equal.pem");
+}
+
+TEST(VerifyCertificateChainTest, IssuerAndSubjectNotByteForByteEqualAnchor) {
+  RunTest("issuer-and-subject-not-byte-for-byte-equal-anchor.pem");
 }
 
 // Tests that verifying a chain with no certificates fails.
