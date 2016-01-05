@@ -230,7 +230,7 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
 
     scoped_ptr<net::SSLServerSocket> server_socket = net::CreateSSLServerSocket(
         make_scoped_ptr(new NetStreamSocketAdapter(std::move(socket))),
-        cert.get(), local_key_pair_->private_key(), ssl_config);
+        cert.get(), *local_key_pair_->private_key(), ssl_config);
     net::SSLServerSocket* raw_server_socket = server_socket.get();
     socket_ = std::move(server_socket);
     result = raw_server_socket->Handshake(

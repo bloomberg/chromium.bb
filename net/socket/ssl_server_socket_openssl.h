@@ -31,7 +31,7 @@ class SSLServerSocketOpenSSL : public SSLServerSocket {
   // parameters are used.
   SSLServerSocketOpenSSL(scoped_ptr<StreamSocket> socket,
                          scoped_refptr<X509Certificate> certificate,
-                         crypto::RSAPrivateKey* key,
+                         const crypto::RSAPrivateKey& key,
                          const SSLServerConfig& ssl_config);
   ~SSLServerSocketOpenSSL() override;
 

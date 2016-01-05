@@ -293,7 +293,7 @@ scoped_ptr<StreamSocket> EmbeddedTestServer::DoSSLUpgrade(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_vector));
 
   return CreateSSLServerSocket(std::move(connection), GetCertificate().get(),
-                               server_key.get(), ssl_config_);
+                               *server_key, ssl_config_);
 }
 
 void EmbeddedTestServer::DoAcceptLoop() {

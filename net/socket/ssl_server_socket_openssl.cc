@@ -29,7 +29,7 @@ void EnableSSLServerSockets() {
 scoped_ptr<SSLServerSocket> CreateSSLServerSocket(
     scoped_ptr<StreamSocket> socket,
     X509Certificate* certificate,
-    crypto::RSAPrivateKey* key,
+    const crypto::RSAPrivateKey& key,
     const SSLServerConfig& ssl_config) {
   crypto::EnsureOpenSSLInit();
   return scoped_ptr<SSLServerSocket>(new SSLServerSocketOpenSSL(
@@ -39,7 +39,7 @@ scoped_ptr<SSLServerSocket> CreateSSLServerSocket(
 SSLServerSocketOpenSSL::SSLServerSocketOpenSSL(
     scoped_ptr<StreamSocket> transport_socket,
     scoped_refptr<X509Certificate> certificate,
-    crypto::RSAPrivateKey* key,
+    const crypto::RSAPrivateKey& key,
     const SSLServerConfig& ssl_config)
     : transport_send_busy_(false),
       transport_recv_busy_(false),
@@ -56,7 +56,7 @@ SSLServerSocketOpenSSL::SSLServerSocketOpenSSL(
       completed_handshake_(false) {
   // TODO(byungchul): Need a better way to clone a key.
   std::vector<uint8_t> key_bytes;
-  CHECK(key->ExportPrivateKey(&key_bytes));
+  CHECK(key.ExportPrivateKey(&key_bytes));
   key_.reset(crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_bytes));
   CHECK(key_.get());
 }

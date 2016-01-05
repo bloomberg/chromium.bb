@@ -47,15 +47,14 @@ NET_EXPORT void EnableSSLServerSockets();
 // The returned SSLServerSocket takes ownership of |socket|.  Stubbed versions
 // of CreateSSLServerSocket will delete |socket| and return NULL.
 // It takes a reference to |certificate|.
-// The |key| and |ssl_config| parameters are copied.  |key| cannot be const
-// because the methods used to copy its contents are non-const.
+// The |key| and |ssl_config| parameters are copied.
 //
 // The caller starts the SSL server handshake by calling Handshake on the
 // returned socket.
 NET_EXPORT scoped_ptr<SSLServerSocket> CreateSSLServerSocket(
     scoped_ptr<StreamSocket> socket,
     X509Certificate* certificate,
-    crypto::RSAPrivateKey* key,
+    const crypto::RSAPrivateKey& key,
     const SSLServerConfig& ssl_config);
 
 }  // namespace net

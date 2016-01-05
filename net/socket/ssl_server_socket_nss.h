@@ -28,7 +28,7 @@ class SSLServerSocketNSS : public SSLServerSocket {
   // parameters are used.
   SSLServerSocketNSS(scoped_ptr<StreamSocket> socket,
                      scoped_refptr<X509Certificate> certificate,
-                     crypto::RSAPrivateKey* key,
+                     const crypto::RSAPrivateKey& key,
                      const SSLServerConfig& ssl_config);
   ~SSLServerSocketNSS() override;
 

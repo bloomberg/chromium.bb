@@ -350,9 +350,8 @@ class SSLServerSocketTest : public PlatformTest {
     client_socket_ = socket_factory_->CreateSSLClientSocket(
         std::move(client_connection), host_and_pair, client_ssl_config_,
         context);
-    server_socket_ =
-        CreateSSLServerSocket(std::move(server_socket), cert.get(),
-                              private_key.get(), server_ssl_config_);
+    server_socket_ = CreateSSLServerSocket(std::move(server_socket), cert.get(),
+                                           *private_key, server_ssl_config_);
   }
 
   FakeDataChannel channel_1_;
