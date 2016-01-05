@@ -905,6 +905,10 @@ inline void BreakingContext::commitAndUpdateLineBreakIfNeeded()
 {
     bool checkForBreak = m_autoWrap;
     if (m_width.committedWidth() && !m_width.fitsOnLine() && m_lineBreak.object() && m_currWS == NOWRAP) {
+        if (m_width.fitsOnLine(0, ExcludeWhitespace)) {
+            m_width.commit();
+            m_lineBreak.moveToStartOf(m_nextObject);
+        }
         checkForBreak = true;
     } else if (m_nextObject && m_current.object().isText() && m_nextObject.isText() && !m_nextObject.isBR() && (m_autoWrap || m_nextObject.style()->autoWrap())) {
         if (m_autoWrap && m_currentCharacterIsSpace) {
