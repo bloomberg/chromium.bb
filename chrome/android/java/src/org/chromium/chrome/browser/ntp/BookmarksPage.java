@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.ntp;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
@@ -69,25 +68,6 @@ public class BookmarksPage implements NativePage, InvalidationAwareThumbnailProv
     private final SharedPreferences mSharedPreferences;
 
     /**
-     * Interface to be notified when the user clicks on a bookmark. To be used with
-     * buildPageForShortcutActivity().
-     */
-    public interface BookmarkSelectedListener {
-        /**
-         * Called when a bookmark is selected.
-         * @param url The url of the selected bookmark.
-         * @param title The title of the selected bookmark.
-         * @param favicon The favicon of the selected bookmark.
-         */
-        void onBookmarkSelected(String url, String title, Bitmap favicon);
-
-        /**
-         * Called when a new tab has been opened in a new tab.
-         */
-        void onNewTabOpened();
-    }
-
-    /**
      * Creates a BookmarksPage to be shown in a tab.
      * @param context The view context for showing the page.
      * @param tab The tab in which the page will be shown.
@@ -97,24 +77,8 @@ public class BookmarksPage implements NativePage, InvalidationAwareThumbnailProv
      */
     public static BookmarksPage buildPage(Context context, Tab tab,
             TabModelSelector tabModelSelector) {
-        return new BookmarksPage(context, tab.getProfile(), tab, tabModelSelector, null,
+        return new BookmarksPage(context, tab.getProfile(), tab, tabModelSelector,
                 PAGE_MODE_NORMAL);
-    }
-
-    /**
-     * Creates a BookmarksPage to be shown in document mode.
-     * @param context The view context for showing the page.
-     * @param tab The tab from which bookmarks page is loaded.
-     * @param tabModelSelector The TabModelSelector to use when opening new tabs from the bookmarks
-     *         page.
-     * @param profile The profile from which to load bookmarks.
-     * @param listener The BookmarkSelectedListener to notify when the user clicks a bookmark.
-     * @return The new BookmarksPage object.
-     */
-    public static BookmarksPage buildPageInDocumentMode(Context context, Tab tab,
-            TabModelSelector tabModelSelector, Profile profile, BookmarkSelectedListener listener) {
-        return new BookmarksPage(
-                context, profile, tab, tabModelSelector, listener, PAGE_MODE_DOCUMENT);
     }
 
     /**
@@ -224,24 +188,8 @@ public class BookmarksPage implements NativePage, InvalidationAwareThumbnailProv
     }
 
     private class DocumentModeManager extends BookmarksPageManagerImpl {
-        private final BookmarkSelectedListener mListener;
-
-        public DocumentModeManager(Tab tab, TabModelSelector tabModelSelector,
-                BookmarkSelectedListener listener) {
+        public DocumentModeManager(Tab tab, TabModelSelector tabModelSelector) {
             super(tab, tabModelSelector);
-            mListener = listener;
-        }
-
-        @Override
-        public void openInNewTab(BookmarkItemView item) {
-            super.openInNewTab(item);
-            mListener.onNewTabOpened();
-        }
-
-        @Override
-        public void openInNewIncognitoTab(BookmarkItemView item) {
-            super.openInNewIncognitoTab(item);
-            mListener.onNewTabOpened();
         }
 
         @Override
@@ -250,7 +198,6 @@ public class BookmarksPage implements NativePage, InvalidationAwareThumbnailProv
                 updateBookmarksPageContents(item.getBookmarkId(), false);
             } else {
                 recordOpenedBookmark(ACTION_OPEN_BOOKMARK_CURRENT_TAB);
-                mListener.onBookmarkSelected(item.getUrl(), item.getTitle(), item.getFavicon());
             }
         }
 
@@ -261,8 +208,7 @@ public class BookmarksPage implements NativePage, InvalidationAwareThumbnailProv
     }
 
     private BookmarksPage(Context context, Profile profile, Tab tab,
-            TabModelSelector tabModelSelector, BookmarkSelectedListener listener,
-            int pageMode) {
+            TabModelSelector tabModelSelector, int pageMode) {
         mProfile = profile;
         mFaviconHelper = new FaviconHelper();
         mTitle = context.getResources().getString(R.string.ntp_bookmarks);
@@ -302,7 +248,7 @@ public class BookmarksPage implements NativePage, InvalidationAwareThumbnailProv
                 manager = buildManager(tab, tabModelSelector);
                 break;
             case PAGE_MODE_DOCUMENT:
-                manager = buildManagerForDocumentMode(tab, tabModelSelector, listener);
+                manager = buildManagerForDocumentMode(tab, tabModelSelector);
                 break;
             default:
                 assert false;
@@ -371,9 +317,9 @@ public class BookmarksPage implements NativePage, InvalidationAwareThumbnailProv
         return new BookmarksPageManagerImpl(tab, tabModelSelector);
     }
 
-    private BookmarksPageManager buildManagerForDocumentMode(
-            Tab tab, TabModelSelector tabModelSelector, BookmarkSelectedListener listener) {
-        return new DocumentModeManager(tab, tabModelSelector, listener);
+    private BookmarksPageManager buildManagerForDocumentMode(Tab tab,
+            TabModelSelector tabModelSelector) {
+        return new DocumentModeManager(tab, tabModelSelector);
     }
 
     private void getFaviconImageForUrl(String url, int size, FaviconImageCallback faviconCallback) {

@@ -10,7 +10,6 @@ import android.app.ActivityManager;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
@@ -41,7 +40,6 @@ import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallbac
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
-import org.chromium.chrome.browser.ntp.BookmarksPage.BookmarkSelectedListener;
 import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
@@ -177,20 +175,6 @@ public class NewTabPage
      */
     public static boolean isNTPUrl(String url) {
         return url != null && url.startsWith(UrlConstants.NTP_URL);
-    }
-
-    public static void launchBookmarksDialog(Activity activity, Tab tab,
-            TabModelSelector tabModelSelector) {
-        if (!EnhancedBookmarkUtils.showEnhancedBookmarkIfEnabled(activity)) {
-            BookmarkDialogSelectedListener listener = new BookmarkDialogSelectedListener(tab);
-            NativePage page = BookmarksPage.buildPageInDocumentMode(
-                    activity, tab, tabModelSelector, Profile.getLastUsedProfile(),
-                    listener);
-            page.updateForUrl(UrlConstants.BOOKMARKS_URL);
-            Dialog dialog = new NativePageDialog(activity, page);
-            listener.setDialog(dialog);
-            dialog.show();
-        }
     }
 
     public static void launchInterestsDialog(Activity activity, final Tab tab) {
@@ -388,11 +372,7 @@ public class NewTabPage
         public void navigateToBookmarks() {
             if (mIsDestroyed) return;
             RecordUserAction.record("MobileNTPSwitchToBookmarks");
-            if (FeatureUtilities.isDocumentMode(mActivity)) {
-                launchBookmarksDialog(mActivity, mTab, mTabModelSelector);
-            } else if (!EnhancedBookmarkUtils.showEnhancedBookmarkIfEnabled(mActivity)) {
-                mTab.loadUrl(new LoadUrlParams(UrlConstants.BOOKMARKS_URL));
-            }
+            EnhancedBookmarkUtils.showBookmarkManager(mActivity);
         }
 
         @Override
@@ -778,29 +758,5 @@ public class NewTabPage
     @Override
     public void captureThumbnail(Canvas canvas) {
         mNewTabPageView.captureThumbnail(canvas);
-    }
-
-    private static class BookmarkDialogSelectedListener implements BookmarkSelectedListener {
-        private Dialog mDialog;
-        private final Tab mTab;
-
-        public BookmarkDialogSelectedListener(Tab tab) {
-            mTab = tab;
-        }
-
-        @Override
-        public void onNewTabOpened() {
-            if (mDialog != null) mDialog.dismiss();
-        }
-
-        @Override
-        public void onBookmarkSelected(String url, String title, Bitmap favicon) {
-            if (mDialog != null) mDialog.dismiss();
-            mTab.loadUrl(new LoadUrlParams(url));
-        }
-
-        public void setDialog(Dialog dialog) {
-            mDialog = dialog;
-        }
     }
 }

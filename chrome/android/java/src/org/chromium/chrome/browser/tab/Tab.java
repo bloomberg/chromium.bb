@@ -2577,8 +2577,7 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
     @CalledByNative
     public void showOfflinePages() {
         // The offline pages filter view will be loaded by default when offline.
-        boolean shown = EnhancedBookmarkUtils.showEnhancedBookmarkIfEnabled(mActivity);
-        assert shown;
+        EnhancedBookmarkUtils.showBookmarkManager(mActivity);
     }
 
     /**

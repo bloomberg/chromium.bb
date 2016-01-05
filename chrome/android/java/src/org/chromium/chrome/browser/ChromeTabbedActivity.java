@@ -926,12 +926,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                     @Override
                     public void run() {
                         StartupMetrics.getInstance().recordOpenedBookmarks();
-                        if (!EnhancedBookmarkUtils.showEnhancedBookmarkIfEnabled(
-                                ChromeTabbedActivity.this)) {
-                            currentTab.loadUrl(new LoadUrlParams(
-                                    UrlConstants.BOOKMARKS_URL,
-                                    PageTransition.AUTO_BOOKMARK));
-                        }
+                        EnhancedBookmarkUtils.showBookmarkManager(
+                                ChromeTabbedActivity.this);
                     }
                 });
                 RecordUserAction.record("MobileMenuAllBookmarks");

@@ -117,12 +117,6 @@ public abstract class ChromeSwitches {
     // Native Switches
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
-    /**
-     * Enable enhanced bookmarks feature.
-     * Native switch - switches::kEnhancedBookmarksExperiment
-     */
-    public static final String ENABLE_ENHANCED_BOOKMARKS = "enhanced-bookmarks-experiment";
-
     /** Enable the DOM Distiller. */
     public static final String ENABLE_DOM_DISTILLER = "enable-dom-distiller";
 

@@ -22,7 +22,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeBrowserProviderClient;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.bookmark.BookmarksBridge;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarksModel.AddBookmarkCallback;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
@@ -48,13 +47,6 @@ import org.chromium.ui.base.DeviceFormFactor;
 public class EnhancedBookmarkUtils {
     private static final String PREF_LAST_USED_URL = "enhanced_bookmark_last_used_url";
     private static final String PREF_LAST_USED_PARENT = "enhanced_bookmark_last_used_parent_folder";
-
-    /**
-     * @return True if enhanced bookmark feature is enabled.
-     */
-    public static boolean isEnhancedBookmarkEnabled() {
-        return BookmarksBridge.isEnhancedBookmarksEnabled();
-    }
 
     /**
      * If the tab has already been bookmarked, start {@link EnhancedBookmarkEditActivity} for the
@@ -266,14 +258,9 @@ public class EnhancedBookmarkUtils {
     }
 
     /**
-     * Shows enhanced bookmark main UI, if it is turned on. Does nothing if it is turned off.
-     * @return True if enhanced bookmark is on, false otherwise.
+     * Shows enhanced bookmark main UI.
      */
-    public static boolean showEnhancedBookmarkIfEnabled(Activity activity) {
-        if (!isEnhancedBookmarkEnabled()) {
-            return false;
-        }
-
+    public static void showBookmarkManager(Activity activity) {
         String url = getFirstUrlToLoad(activity);
 
         if (DeviceFormFactor.isTablet(activity)) {
@@ -283,7 +270,6 @@ public class EnhancedBookmarkUtils {
             intent.setData(Uri.parse(url));
             activity.startActivity(intent);
         }
-        return true;
     }
 
     /**

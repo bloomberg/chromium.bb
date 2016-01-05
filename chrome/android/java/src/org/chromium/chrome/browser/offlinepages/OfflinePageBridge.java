@@ -12,7 +12,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.bookmark.BookmarksBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
@@ -164,11 +163,7 @@ public final class OfflinePageBridge {
      */
     public static boolean isEnabled() {
         ThreadUtils.assertOnUiThread();
-        if (sIsEnabled == null) {
-            // Enhanced bookmarks feature should also be enabled.
-            sIsEnabled = nativeIsOfflinePagesEnabled()
-                    && BookmarksBridge.isEnhancedBookmarksEnabled();
-        }
+        if (sIsEnabled == null) sIsEnabled = nativeIsOfflinePagesEnabled();
         return sIsEnabled;
     }
 

@@ -36,7 +36,6 @@
 #include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
-#include "components/enhanced_bookmarks/enhanced_bookmark_switches.h"
 #include "components/flags_ui/feature_entry_macros.h"
 #include "components/flags_ui/flags_storage.h"
 #include "components/flags_ui/flags_ui_switches.h"
@@ -1414,14 +1413,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      SINGLE_VALUE_TYPE(extensions::switches::kEnableAppsShowOnFirstPaint)},
 #endif
-    {"enhanced-bookmarks-experiment",
-     IDS_FLAGS_ENHANCED_BOOKMARKS_NAME,
-     IDS_FLAGS_ENHANCED_BOOKMARKS_DESCRIPTION,
-     kOsDesktop | kOsAndroid,
-     ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(switches::kEnhancedBookmarksExperiment,
-                                         "1",
-                                         switches::kEnhancedBookmarksExperiment,
-                                         "0")},
 #if defined(OS_ANDROID)
     {"reader-mode-heuristics",
      IDS_FLAGS_READER_MODE_HEURISTICS_NAME,

@@ -816,9 +816,7 @@ public class DocumentActivity extends ChromeActivity {
             }, MENU_EXIT_ANIMATION_WAIT_MS);
         } else if (id == R.id.all_bookmarks_menu_id) {
             StartupMetrics.getInstance().recordOpenedBookmarks();
-            if (!EnhancedBookmarkUtils.showEnhancedBookmarkIfEnabled(this)) {
-                NewTabPage.launchBookmarksDialog(this, mTab, getTabModelSelector());
-            }
+            EnhancedBookmarkUtils.showBookmarkManager(this);
             RecordUserAction.record("MobileMenuAllBookmarks");
         } else if (id == R.id.recent_tabs_menu_id) {
             NewTabPage.launchRecentTabsDialog(this, mTab);

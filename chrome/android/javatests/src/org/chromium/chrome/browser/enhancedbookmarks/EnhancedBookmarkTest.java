@@ -38,7 +38,6 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests for the enhanced bookmark manager.
  */
-@CommandLineFlags.Add(ChromeSwitches.ENABLE_ENHANCED_BOOKMARKS + "=1")
 public class EnhancedBookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     public EnhancedBookmarkTest() {

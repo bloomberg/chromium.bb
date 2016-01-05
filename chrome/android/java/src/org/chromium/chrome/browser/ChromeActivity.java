@@ -61,7 +61,6 @@ import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuObserver;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.bookmark.BookmarksBridge.BookmarkModelObserver;
-import org.chromium.chrome.browser.bookmark.ManageBookmarkActivity;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -1026,38 +1025,14 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         // TODO(bauerb): This does not take partner bookmarks into account.
         final long bookmarkId = tabToBookmark.getUserBookmarkId();
 
-        if (EnhancedBookmarkUtils.isEnhancedBookmarkEnabled()) {
-            final EnhancedBookmarksModel bookmarkModel = new EnhancedBookmarksModel();
-            if (bookmarkModel.isBookmarkModelLoaded()) {
+        final EnhancedBookmarksModel bookmarkModel = new EnhancedBookmarksModel();
+        bookmarkModel.runAfterBookmarkModelLoaded(new Runnable() {
+            @Override
+            public void run() {
                 EnhancedBookmarkUtils.addOrEditBookmark(bookmarkId, bookmarkModel,
                         tabToBookmark, getSnackbarManager(), ChromeActivity.this);
-            } else if (mBookmarkObserver == null) {
-                mBookmarkObserver = new BookmarkModelObserver() {
-                    @Override
-                    public void bookmarkModelChanged() {}
-
-                    @Override
-                    public void bookmarkModelLoaded() {
-                        EnhancedBookmarkUtils.addOrEditBookmark(bookmarkId, bookmarkModel,
-                                tabToBookmark, getSnackbarManager(), ChromeActivity.this);
-                        bookmarkModel.removeObserver(this);
-                    }
-                };
-                bookmarkModel.addObserver(mBookmarkObserver);
             }
-        } else {
-            Intent intent = new Intent(this, ManageBookmarkActivity.class);
-            if (bookmarkId == ChromeBrowserProviderClient.INVALID_BOOKMARK_ID) {
-                intent.putExtra(ManageBookmarkActivity.BOOKMARK_INTENT_IS_FOLDER, false);
-                intent.putExtra(ManageBookmarkActivity.BOOKMARK_INTENT_TITLE,
-                        tabToBookmark.getTitle());
-                intent.putExtra(ManageBookmarkActivity.BOOKMARK_INTENT_URL, tabToBookmark.getUrl());
-            } else {
-                intent.putExtra(ManageBookmarkActivity.BOOKMARK_INTENT_IS_FOLDER, false);
-                intent.putExtra(ManageBookmarkActivity.BOOKMARK_INTENT_ID, bookmarkId);
-            }
-            startActivity(intent);
-        }
+        });
     }
 
     /**

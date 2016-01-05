@@ -26,7 +26,6 @@
 #include "components/bookmarks/common/android/bookmark_type.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
-#include "components/enhanced_bookmarks/enhanced_bookmark_features.h"
 #include "components/query_parser/query_parser.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/undo/bookmark_undo_service.h"
@@ -142,12 +141,6 @@ static jlong Init(JNIEnv* env,
                   const JavaParamRef<jobject>& j_profile) {
   BookmarksBridge* delegate = new BookmarksBridge(env, obj, j_profile);
   return reinterpret_cast<intptr_t>(delegate);
-}
-
-static jboolean IsEnhancedBookmarksFeatureEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
-  return enhanced_bookmarks::IsEnhancedBookmarksEnabled();
 }
 
 jboolean BookmarksBridge::IsEditBookmarksEnabled(
@@ -796,8 +789,7 @@ base::string16 BookmarksBridge::GetTitle(const BookmarkNode* node) const {
   if (partner_bookmarks_shim_->IsPartnerBookmark(node))
     return partner_bookmarks_shim_->GetTitle(node);
 
-  if (node == bookmark_model_->bookmark_bar_node()
-      && enhanced_bookmarks::IsEnhancedBookmarksEnabled()) {
+  if (node == bookmark_model_->bookmark_bar_node()) {
     return l10n_util::GetStringUTF16(IDS_ENHANCED_BOOKMARK_BAR_FOLDER_NAME);
   }
 
