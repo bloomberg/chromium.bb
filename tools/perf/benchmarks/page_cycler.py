@@ -213,6 +213,7 @@ class PageCyclerTypical25(_PageCycler):
   Designed to represent typical, not highly optimized or highly popular web
   sites. Runs against pages recorded in June, 2014.
   """
+  options = {'pageset_repeat': 3}
 
   @classmethod
   def Name(cls):
