@@ -3,6 +3,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 * Noteworthy changes in release 2.6.6 (2016-3-7)
 
 ** New features
+- The YAML tests now allow for an optional test description. See the
+  documentation for more details.
 ** Bug fixes
 ** Other changes
 ** Braille table improvements
