@@ -85,6 +85,10 @@ class ExternalDataUseObserverBridge {
                            const base::android::JavaParamRef<jobject>& obj,
                            bool success);
 
+  // Notifies the ExternalDataUseObserverBridge that the external control app
+  // is installed.
+  void OnControlAppInstalled(JNIEnv* env, jobject obj) const;
+
  private:
   // Java listener that provides regular expressions to |this|. Data use
   // reports are submitted to |j_external_data_use_observer_|.

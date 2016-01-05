@@ -232,15 +232,7 @@ void ExternalDataUseObserver::OnDataUse(const data_usage::DataUse& data_use) {
   // |fetch_matching_rules_duration_|, fetch them again.
   if (now_ticks - last_matching_rules_fetch_time_ >=
       fetch_matching_rules_duration_) {
-    last_matching_rules_fetch_time_ = now_ticks;
-
-    // It is okay to use base::Unretained here since
-    // |external_data_use_observer_bridge_| is owned by |this|, and is destroyed
-    // on UI thread when |this| is destroyed.
-    ui_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&ExternalDataUseObserverBridge::FetchMatchingRules,
-                   base::Unretained(external_data_use_observer_bridge_)));
+    FetchMatchingRules();
   }
 
   scoped_ptr<std::string> label(new std::string());
@@ -270,6 +262,20 @@ void ExternalDataUseObserver::ShouldRegisterAsDataUseObserver(
     data_use_aggregator_->RemoveObserver(this);
 
   registered_as_data_use_observer_ = should_register;
+}
+
+void ExternalDataUseObserver::FetchMatchingRules() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  last_matching_rules_fetch_time_ = base::TimeTicks::Now();
+
+  // It is okay to use base::Unretained here since
+  // |external_data_use_observer_bridge_| is owned by |this|, and is destroyed
+  // on UI thread when |this| is destroyed.
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&ExternalDataUseObserverBridge::FetchMatchingRules,
+                 base::Unretained(external_data_use_observer_bridge_)));
 }
 
 void ExternalDataUseObserver::DataUseLabelApplied(

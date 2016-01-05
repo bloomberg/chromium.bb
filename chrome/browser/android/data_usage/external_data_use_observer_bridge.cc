@@ -9,14 +9,28 @@
 #include "base/android/context_utils.h"
 #include "base/android/jni_string.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/data_usage/data_use_tab_model.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/ExternalDataUseObserver_jni.h"
 
 using base::android::ConvertUTF8ToJavaString;
+
+namespace {
+
+// Returns the package name of the control app from the field trial.
+const std::string GetControlAppPackageName() {
+  return variations::GetVariationParamValue(
+      chrome::android::ExternalDataUseObserver::
+          kExternalDataUseObserverFieldTrial,
+      "control_app_package_name");
+}
+
+}  // namespace
 
 namespace chrome {
 
@@ -61,6 +75,9 @@ void ExternalDataUseObserverBridge::Init(
       reinterpret_cast<intptr_t>(this)));
   DCHECK(!j_external_data_use_observer_.is_null());
 
+  Java_ExternalDataUseObserver_setControlAppPackageName(
+      env, j_external_data_use_observer_.obj(),
+      ConvertUTF8ToJavaString(env, GetControlAppPackageName()).obj());
   FetchMatchingRules();
 }
 
@@ -139,6 +156,12 @@ void ExternalDataUseObserverBridge::OnReportDataUseDone(
   io_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ExternalDataUseObserver::OnReportDataUseDone,
                             external_data_use_observer_, success));
+}
+
+void ExternalDataUseObserverBridge::OnControlAppInstalled(JNIEnv* env,
+                                                          jobject obj) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  data_use_tab_model_->OnControlAppInstalled();
 }
 
 bool RegisterExternalDataUseObserver(JNIEnv* env) {

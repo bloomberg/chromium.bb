@@ -6,6 +6,9 @@ package org.chromium.chrome.browser.datausage;
 
 import android.content.Context;
 
+import org.chromium.base.ApplicationState;
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.PackageUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeClassQualifiedName;
@@ -13,14 +16,64 @@ import org.chromium.chrome.browser.ChromeApplication;
 
 /**
  * This class provides a base class implementation of a data use observer that is external to
- * Chromium. This class should be accessed only on IO thread.
+ * Chromium. This class should be accessed only on UI thread.
  */
 @JNINamespace("chrome::android")
 public class ExternalDataUseObserver {
     /**
+     * Listens for application state changes and whenever Chromium state changes to running, checks
+     * and nofifies {@link #ExternalDataUseObserverBridge} if the control app is installed.
+     */
+    private class ControlAppManager implements ApplicationStatus.ApplicationStateListener {
+        // Package name of the control app.
+        private final String mControlAppPackageName;
+
+        // True if the control app is installed.
+        private boolean mInstalled;
+
+        ControlAppManager(String controlAppPackageName) {
+            mControlAppPackageName = controlAppPackageName;
+            mInstalled = false;
+            ApplicationStatus.registerApplicationStateListener(this);
+            checkAndNotifyPackageInstall();
+        }
+
+        @Override
+        public void onApplicationStateChange(int newState) {
+            if (!mInstalled && newState == ApplicationState.HAS_RUNNING_ACTIVITIES) {
+                checkAndNotifyPackageInstall();
+            }
+        }
+
+        /**
+         * Checks if the control app is installed and notifies {@link
+         * #ExternalDataUseObserverBridge}.
+         */
+        private void checkAndNotifyPackageInstall() {
+            // Check if native object is destroyed. This may happen at the time of Chromium
+            // shutdown.
+            if (mNativeExternalDataUseObserverBridge == 0) {
+                return;
+            }
+            if (mControlAppPackageName != null && !mControlAppPackageName.isEmpty()
+                    && PackageUtils.getPackageVersion(
+                               ApplicationStatus.getApplicationContext(), mControlAppPackageName)
+                            != -1) {
+                mInstalled = true;
+                nativeOnControlAppInstalled(mNativeExternalDataUseObserverBridge);
+            }
+        }
+    }
+
+    /**
      * Pointer to the native ExternalDataUseObserverBridge object.
      */
     private long mNativeExternalDataUseObserverBridge;
+
+    /**
+     * {@link #ControlAppManager} object that notifies when control app is installed.
+     */
+    private ControlAppManager mControlAppManager;
 
     @CalledByNative
     private static ExternalDataUseObserver create(Context context, long nativePtr) {
@@ -34,6 +87,15 @@ public class ExternalDataUseObserver {
     public ExternalDataUseObserver(long nativePtr) {
         mNativeExternalDataUseObserverBridge = nativePtr;
         assert mNativeExternalDataUseObserverBridge != 0;
+    }
+
+    /**
+     * Sets the package name of the control app.
+     * @param controlAppPackageName package name of the control app.
+     */
+    @CalledByNative
+    protected void setControlAppPackageName(String controlAppPackageName) {
+        mControlAppManager = new ControlAppManager(controlAppPackageName);
     }
 
     /**
@@ -118,4 +180,7 @@ public class ExternalDataUseObserver {
     @NativeClassQualifiedName("ExternalDataUseObserverBridge")
     private native void nativeOnReportDataUseDone(
             long nativeExternalDataUseObserver, boolean success);
+
+    @NativeClassQualifiedName("ExternalDataUseObserverBridge")
+    private native void nativeOnControlAppInstalled(long nativeExternalDataUseObserver);
 }

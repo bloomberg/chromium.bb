@@ -66,6 +66,13 @@ class DataUseMatcher {
   bool MatchesAppPackageName(const std::string& app_package_name,
                              std::string* label) const WARN_UNUSED_RESULT;
 
+  // Fetches the matching rules asynchronously from
+  // |external_data_use_observer_|.
+  void FetchMatchingRules();
+
+  // Returns true if there is any valid matching rule.
+  bool HasValidRules() const;
+
  private:
   friend class DataUseMatcherTest;
   FRIEND_TEST_ALL_PREFIXES(DataUseMatcherTest,

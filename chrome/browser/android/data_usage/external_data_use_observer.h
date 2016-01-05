@@ -86,6 +86,9 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // register as a data use observer.
   void ShouldRegisterAsDataUseObserver(bool should_register);
 
+  // Fetches the matching rules asynchronously.
+  void FetchMatchingRules();
+
   base::WeakPtr<ExternalDataUseObserver> GetWeakPtr();
 
  private:
@@ -99,6 +102,8 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
                            DataUseReportingOnApplicationStatusChange);
 #endif
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, HashFunction);
+  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
+                           MatchingRuleFetchOnControlAppInstall);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, MultipleMatchingRules);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
                            PeriodicFetchMatchingRules);

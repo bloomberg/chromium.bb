@@ -131,6 +131,20 @@ bool DataUseMatcher::MatchesAppPackageName(const std::string& app_package_name,
   return false;
 }
 
+void DataUseMatcher::FetchMatchingRules() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(io_task_runner_);
+
+  // Notify |external_data_use_observer_| to fetch the rules.
+  io_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&ExternalDataUseObserver::FetchMatchingRules,
+                            external_data_use_observer_));
+}
+
+bool DataUseMatcher::HasValidRules() const {
+  return !matching_rules_.empty();
+}
+
 void DataUseMatcher::ParsePackageField(const std::string& app_package_name,
                                        std::string* new_app_package_name,
                                        base::TimeTicks* expiration) const {

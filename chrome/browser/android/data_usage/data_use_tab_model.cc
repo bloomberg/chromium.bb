@@ -132,6 +132,7 @@ DataUseTabModel::DataUseTabModel()
       max_sessions_per_tab_(GetMaxSessionsPerTab()),
       closed_tab_expiration_duration_(GetClosedTabExpirationDuration()),
       open_tab_expiration_duration_(GetOpenTabExpirationDuration()),
+      is_control_app_installed_(false),
       weak_factory_(this) {
   // Detach from current thread since rest of DataUseTabModel lives on the UI
   // thread and the current thread may not be UI thread..
@@ -168,6 +169,9 @@ void DataUseTabModel::OnNavigationEvent(SessionID::id_type tab_id,
   DCHECK(IsValidTabID(tab_id));
   std::string current_label, new_label;
   bool is_package_match;
+
+  if (is_control_app_installed_ && !data_use_matcher_->HasValidRules())
+    data_use_matcher_->FetchMatchingRules();
 
   GetCurrentAndNewLabelForNavigationEvent(tab_id, transition, url, package,
                                           &current_label, &new_label,
@@ -254,6 +258,11 @@ void DataUseTabModel::RegisterURLRegexes(
   DCHECK(thread_checker_.CalledOnValidThread());
   data_use_matcher_->RegisterURLRegexes(app_package_name, domain_path_regex,
                                         label);
+}
+
+void DataUseTabModel::OnControlAppInstalled() {
+  is_control_app_installed_ = true;
+  data_use_matcher_->FetchMatchingRules();
 }
 
 base::TimeTicks DataUseTabModel::NowTicks() const {

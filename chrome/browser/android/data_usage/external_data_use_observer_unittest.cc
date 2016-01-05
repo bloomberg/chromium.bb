@@ -375,6 +375,47 @@ TEST_F(ExternalDataUseObserverTest, PeriodicFetchMatchingRules) {
             external_data_use_observer()->fetch_matching_rules_duration_);
 }
 
+// Tests the matching rule fetch behavior when the external control app is
+// installed and not installed. If control app is installed and no valid rules
+// are found, matching rules are fetched on every navigation. Rules are not
+// fetched if control app is not installed  or if more than zero valid rules
+// have been fetched.
+TEST_F(ExternalDataUseObserverTest, MatchingRuleFetchOnControlAppInstall) {
+  // Matching rules not fetched on navigation if control app is not installed.
+  external_data_use_observer()->last_matching_rules_fetch_time_ =
+      base::TimeTicks();
+  EXPECT_FALSE(external_data_use_observer()
+                   ->data_use_tab_model_->is_control_app_installed_);
+  external_data_use_observer()->data_use_tab_model_->OnNavigationEvent(
+      kDefaultTabId, DataUseTabModel::TRANSITION_LINK, GURL(kDefaultURL),
+      std::string());
+  EXPECT_TRUE(
+      external_data_use_observer()->last_matching_rules_fetch_time_.is_null());
+
+  // Matching rules fetched on every navigation if control app is installed and
+  // zero rules are available.
+  external_data_use_observer()->data_use_tab_model_->OnControlAppInstalled();
+  external_data_use_observer()->data_use_tab_model_->OnNavigationEvent(
+      kDefaultTabId, DataUseTabModel::TRANSITION_LINK, GURL(kDefaultURL),
+      std::string());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(
+      external_data_use_observer()->last_matching_rules_fetch_time_.is_null());
+
+  // Matching rules not fetched on navigation if control app is installed and
+  // more than zero rules are available.
+  AddDefaultMatchingRule();
+  external_data_use_observer()->last_matching_rules_fetch_time_ =
+      base::TimeTicks();
+  EXPECT_TRUE(
+      external_data_use_observer()->last_matching_rules_fetch_time_.is_null());
+  external_data_use_observer()->data_use_tab_model_->OnNavigationEvent(
+      kDefaultTabId, DataUseTabModel::TRANSITION_LINK, GURL(kDefaultURL),
+      std::string());
+  EXPECT_TRUE(
+      external_data_use_observer()->last_matching_rules_fetch_time_.is_null());
+}
+
 // Tests if data use reports are sent only after the total bytes sent/received
 // across all buffered reports have reached the specified threshold.
 TEST_F(ExternalDataUseObserverTest, BufferDataUseReports) {

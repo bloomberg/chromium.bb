@@ -140,6 +140,9 @@ class DataUseTabModel {
                           const std::vector<std::string>& domain_path_regex,
                           const std::vector<std::string>& label);
 
+  // Notifies the DataUseTabModel that the external control app is installed.
+  void OnControlAppInstalled();
+
   // Returns the maximum number of tracking sessions to maintain per tab.
   size_t max_sessions_per_tab() const { return max_sessions_per_tab_; }
 
@@ -179,6 +182,8 @@ class DataUseTabModel {
   FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest, TabCloseEventEndsTracking);
   FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest,
                            UnexpiredTabEntryRemovaltimeHistogram);
+  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
+                           MatchingRuleFetchOnControlAppInstall);
 
   typedef base::hash_map<SessionID::id_type, TabDataUseEntry> TabEntryMap;
 
@@ -237,6 +242,9 @@ class DataUseTabModel {
 
   // Stores the matching patterns.
   scoped_ptr<DataUseMatcher> data_use_matcher_;
+
+  // True if the external control app is installed.
+  bool is_control_app_installed_;
 
   base::ThreadChecker thread_checker_;
 
