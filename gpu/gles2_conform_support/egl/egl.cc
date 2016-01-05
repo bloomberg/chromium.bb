@@ -126,7 +126,7 @@ EGLAPI EGLBoolean EGLAPIENTRY eglInitialize(EGLDisplay dpy,
     for (size_t i = 0; i < args.size(); ++i) {
       argv[i] = args[i].c_str();
     }
-    base::CommandLine::Init(args.size(), argv.get());
+    base::CommandLine::Init(static_cast<int>(args.size()), argv.get());
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     if (!command_line->HasSwitch(switches::kDisableGpuDriverBugWorkarounds)) {
       gpu::ApplyGpuDriverBugWorkarounds(command_line);
