@@ -32,6 +32,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/error_page/common/error_page_switches.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
@@ -336,8 +337,9 @@ class ErrorPageTest : public InProcessBrowserTest {
   // Navigates the active tab to a mock url created for the file at |file_path|.
   // Needed for StaleCacheStatus and StaleCacheStatusFailedCorrections tests.
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(switches::kShowSavedCopy,
-                                    switches::kEnableShowSavedCopyPrimary);
+    command_line->AppendSwitchASCII(
+        error_page::switches::kShowSavedCopy,
+        error_page::switches::kEnableShowSavedCopyPrimary);
   }
 
   // Navigates the active tab to a mock url created for the file at |path|.

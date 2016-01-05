@@ -6,6 +6,8 @@ static_library("common") {
   sources = [
     "error_page_params.cc",
     "error_page_params.h",
+    "error_page_switches.cc",
+    "error_page_switches.h",
     "net_error_info.cc",
     "net_error_info.h",
     "offline_page_types.h",

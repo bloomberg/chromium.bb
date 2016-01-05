@@ -17,10 +17,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/google_chrome_strings.h"
 #include "components/error_page/common/error_page_params.h"
+#include "components/error_page/common/error_page_switches.h"
 #include "components/error_page/common/net_error_info.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_google_chrome_strings.h"
@@ -619,7 +619,8 @@ void LocalizedError::GetStrings(int error_code,
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   // Check if easter egg should be disabled.
-  if (command_line->HasSwitch(switches::kDisableDinosaurEasterEgg)) {
+  if (command_line->HasSwitch(
+          error_page::switches::kDisableDinosaurEasterEgg)) {
     // The presence of this string disables the easter egg. Acts as a flag.
     error_strings->SetString("disabledEasterEgg",
         l10n_util::GetStringUTF16(IDS_ERRORPAGE_FUN_DISABLED));
@@ -743,11 +744,13 @@ void LocalizedError::GetStrings(int error_code,
     return;
 
   const std::string& show_saved_copy_value =
-      command_line->GetSwitchValueASCII(switches::kShowSavedCopy);
-  bool show_saved_copy_primary = (show_saved_copy_value ==
-      switches::kEnableShowSavedCopyPrimary);
-  bool show_saved_copy_secondary = (show_saved_copy_value ==
-      switches::kEnableShowSavedCopySecondary);
+      command_line->GetSwitchValueASCII(error_page::switches::kShowSavedCopy);
+  bool show_saved_copy_primary =
+      (show_saved_copy_value ==
+       error_page::switches::kEnableShowSavedCopyPrimary);
+  bool show_saved_copy_secondary =
+      (show_saved_copy_value ==
+       error_page::switches::kEnableShowSavedCopySecondary);
   bool show_saved_copy_visible =
       (stale_copy_in_cache && !is_post &&
       (show_saved_copy_primary || show_saved_copy_secondary));

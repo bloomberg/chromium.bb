@@ -114,6 +114,7 @@
 #include "components/data_reduction_proxy/content/browser/data_reduction_proxy_message_filter.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/dom_distiller/core/url_constants.h"
+#include "components/error_page/common/error_page_switches.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/metrics/client_info.h"
 #include "components/net_log/chrome_net_log.h"
@@ -1427,7 +1428,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #endif
 
   static const char* const kDinosaurEasterEggSwitches[] = {
-    switches::kDisableDinosaurEasterEgg,
+      error_page::switches::kDisableDinosaurEasterEgg,
   };
   command_line->CopySwitchesFrom(browser_command_line,
                                  kDinosaurEasterEggSwitches,
@@ -1507,7 +1508,8 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
       if (prefs->HasPrefPath(prefs::kAllowDinosaurEasterEgg) &&
           !prefs->GetBoolean(prefs::kAllowDinosaurEasterEgg))
-        command_line->AppendSwitch(switches::kDisableDinosaurEasterEgg);
+        command_line->AppendSwitch(
+            error_page::switches::kDisableDinosaurEasterEgg);
     }
 
     if (IsAutoReloadEnabled())
@@ -1527,11 +1529,15 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
       // Command line switches override
       const std::string& show_saved_copy_value =
-          browser_command_line.GetSwitchValueASCII(switches::kShowSavedCopy);
-      if (show_saved_copy_value == switches::kEnableShowSavedCopyPrimary ||
-          show_saved_copy_value == switches::kEnableShowSavedCopySecondary ||
-          show_saved_copy_value == switches::kDisableShowSavedCopy) {
-        command_line->AppendSwitchASCII(switches::kShowSavedCopy,
+          browser_command_line.GetSwitchValueASCII(
+              error_page::switches::kShowSavedCopy);
+      if (show_saved_copy_value ==
+              error_page::switches::kEnableShowSavedCopyPrimary ||
+          show_saved_copy_value ==
+              error_page::switches::kEnableShowSavedCopySecondary ||
+          show_saved_copy_value ==
+              error_page::switches::kDisableShowSavedCopy) {
+        command_line->AppendSwitchASCII(error_page::switches::kShowSavedCopy,
                                         show_saved_copy_value);
       } else {
         std::string group =
@@ -1539,11 +1545,12 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
         if (group == "Primary") {
           command_line->AppendSwitchASCII(
-              switches::kShowSavedCopy, switches::kEnableShowSavedCopyPrimary);
+              error_page::switches::kShowSavedCopy,
+              error_page::switches::kEnableShowSavedCopyPrimary);
         } else if (group == "Secondary") {
           command_line->AppendSwitchASCII(
-              switches::kShowSavedCopy,
-              switches::kEnableShowSavedCopySecondary);
+              error_page::switches::kShowSavedCopy,
+              error_page::switches::kEnableShowSavedCopySecondary);
         }
       }
     }

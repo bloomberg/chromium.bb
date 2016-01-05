@@ -36,6 +36,7 @@
 #include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
+#include "components/error_page/common/error_page_switches.h"
 #include "components/flags_ui/feature_entry_macros.h"
 #include "components/flags_ui/flags_storage.h"
 #include "components/flags_ui/flags_ui_switches.h"
@@ -204,11 +205,14 @@ const FeatureEntry::Choice kDataReductionProxyLoFiChoices[] = {
 const FeatureEntry::Choice kShowSavedCopyChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_ENABLE_SHOW_SAVED_COPY_PRIMARY,
-    switches::kShowSavedCopy, switches::kEnableShowSavedCopyPrimary },
+    error_page::switches::kShowSavedCopy,
+    error_page::switches::kEnableShowSavedCopyPrimary },
   { IDS_FLAGS_ENABLE_SHOW_SAVED_COPY_SECONDARY,
-    switches::kShowSavedCopy, switches::kEnableShowSavedCopySecondary },
+    error_page::switches::kShowSavedCopy,
+    error_page::switches::kEnableShowSavedCopySecondary },
   { IDS_FLAGS_DISABLE_SHOW_SAVED_COPY,
-    switches::kShowSavedCopy, switches::kDisableShowSavedCopy }
+    error_page::switches::kShowSavedCopy,
+    error_page::switches::kDisableShowSavedCopy }
 };
 
 const FeatureEntry::Choice kDefaultTileWidthChoices[] = {

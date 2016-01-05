@@ -128,9 +128,6 @@ const char kIOSTestingFixedHttpsPort[] = "testing-fixed-https-port";
 // measurements.
 const char kDisableBackgroundNetworking[] = "disable-background-networking";
 
-// Disables the dinosaur easter egg on the offline interstitial.
-const char kDisableDinosaurEasterEgg[] = "disable-dinosaur-easter-egg";
-
 // Enables grouping websites by domain and filtering them by period.
 const char kHistoryEnableGroupByDomain[] = "enable-grouped-history";
 
@@ -143,15 +140,5 @@ const char kMarkNonSecureAsNonSecure[] = "non-secure";
 // SafeBrowsingProtocolManager::ForceScheduleNextUpdate() is explicitly called.
 // This is used for testing only.
 const char kSbDisableAutoUpdate[] = "safebrowsing-disable-auto-update";
-
-// Command line flag offering a "Show saved copy" option to the user if offline.
-// The various modes are disabled, primary, or secondary. Primary/secondary
-// refers to button placement (for experiment).
-const char kShowSavedCopy[] = "show-saved-copy";
-
-// Values for the kShowSavedCopy flag.
-const char kEnableShowSavedCopyPrimary[] = "primary";
-const char kEnableShowSavedCopySecondary[] = "secondary";
-const char kDisableShowSavedCopy[] = "disable";
 
 }  // namespace switches

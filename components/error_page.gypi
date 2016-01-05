@@ -19,6 +19,8 @@
       'sources': [
         'error_page/common/error_page_params.cc',
         'error_page/common/error_page_params.h',
+        'error_page/common/error_page_switches.cc',
+        'error_page/common/error_page_switches.h',
         'error_page/common/net_error_info.cc',
         'error_page/common/net_error_info.h',
         'error_page/common/offline_page_types.h',
