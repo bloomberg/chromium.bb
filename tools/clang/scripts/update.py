@@ -102,6 +102,9 @@ def DownloadUrl(url, output_file):
         sys.stdout.write('.' * (num_dots - dots_printed))
         sys.stdout.flush()
         dots_printed = num_dots
+      if bytes_done != total_size:
+        raise urllib2.URLError("only got %d of %d bytes" %
+                               (bytes_done, total_size))
       print ' Done.'
       return
     except urllib2.URLError as e:
