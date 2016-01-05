@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <error.h>
-#include "liblouis.h"
+#include "louis.h"
 #include "brl_checks.h"
 
 #define EXIT_SKIPPED 77
@@ -225,7 +225,7 @@ read_typeform_string(yaml_parser_t *parser, formtype* typeform, typeforms kind, 
 }
 
 formtype*
-read_typeforms (yaml_parser_t *parser, int len) {
+read_typeforms (yaml_parser_t *parser, char *tables_list, int len) {
   yaml_event_t event;
   formtype *typeform = calloc(len, sizeof(formtype));
   int parse_error = 1;
@@ -248,9 +248,9 @@ read_typeforms (yaml_parser_t *parser, int len) {
       read_typeform_string(parser, typeform, word_reset, len);
     } else {
       int i;
-      static const char* emph_classes [11];
+      static const char* emph_classes [MAX_EMPH_CLASSES + 1];
       typeforms kind = plain_text;
-      getEmphClasses(emph_classes); // get declared emphasis classes
+      getEmphClasses(tables_list, emph_classes); // get declared emphasis classes
       for (i = 0; emph_classes[i]; i++) {
         if (strcmp(event.data.scalar.value, emph_classes[i]) == 0) {
           yaml_event_delete(&event);
@@ -288,7 +288,7 @@ read_typeforms (yaml_parser_t *parser, int len) {
 }
 
 void
-read_options (yaml_parser_t *parser, int len,
+read_options (yaml_parser_t *parser, char *tables_list, int len,
 	      int *xfail, translationModes *mode,
 	      formtype **typeform, int **cursorPos) {
   yaml_event_t event;
@@ -312,7 +312,7 @@ read_options (yaml_parser_t *parser, int len,
       *mode = read_mode(parser);
     } else if (!strcmp(option_name, "typeform")) {
       yaml_event_delete(&event);
-      *typeform = read_typeforms(parser, len);
+      *typeform = read_typeforms(parser, tables_list, len);
     } else if (!strcmp(option_name, "cursorPos")) {
       yaml_event_delete(&event);
       *cursorPos = read_cursorPos(parser, len);
@@ -368,7 +368,7 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
 
   if (event.type == YAML_MAPPING_START_EVENT) {
     yaml_event_delete(&event);
-    read_options(parser, my_strlen_utf8_c(word), &xfail, &mode, &typeform, &cursorPos);
+    read_options(parser, tables_list, my_strlen_utf8_c(word), &xfail, &mode, &typeform, &cursorPos);
 
     if (!yaml_parser_parse(parser, &event) ||
 	(event.type != YAML_SEQUENCE_END_EVENT))
@@ -423,11 +423,6 @@ read_tests(yaml_parser_t *parser, char *tables_list, int direction, int hyphenat
     yaml_error(YAML_SEQUENCE_START_EVENT, &event);
 
   yaml_event_delete(&event);
-  
-  // compile table a first time so that declared emphasis classes, which are
-  // required to parse the "typeform" options, are available during the first
-  // call to read_typeforms
-  lou_getTable(tables_list);
   
   int done = 0;
   while (!done) {

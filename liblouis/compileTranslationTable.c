@@ -182,26 +182,11 @@ typedef struct
 }
 CharsString;
 
-#define MAX_EMPH_CLASSES 10 // {emph_1...emph_10} in typeform enum (liblouis.h)
-
 static int errorCount;
 static int warningCount;
 static TranslationTableHeader *table;
 static TranslationTableOffset tableSize;
 static TranslationTableOffset tableUsed;
-static const char * emphClasses[MAX_EMPH_CLASSES + 1];
-
-/* for accessing emphasis classes declared in last compiled table from check_brl.c
- * array must be at least (MAX_EMPH_CLASSES + 1) long
- */
-void
-getEmphClasses(const char ** array)
-{
-  int i;
-  for (i = 0; emphClasses[i]; i++)
-    array[i] = strdup(emphClasses[i]);
-  array[i] = NULL;
-}
 
 typedef struct
 {
@@ -4056,8 +4041,8 @@ doOpcode:
 	    for (k = 0; k < emphClass.length; k++)
 	      s[k] = (char)emphClass.chars[k];
 	    s[k++] = '\0';
-	    for (i = 0; emphClasses[i]; i++)
-	      if (strcmp(s, emphClasses[i]) == 0)
+	    for (i = 0; table->emphClasses[i]; i++)
+	      if (strcmp(s, table->emphClasses[i]) == 0)
 		{
 		  logMessage (LOG_WARN, "Duplicate emphasis class: %s", s);
 		  warningCount++;
@@ -4109,8 +4094,8 @@ doOpcode:
 		      }
 		    break;
 		  }
-		emphClasses[i] = s;
-		emphClasses[i+1] = NULL;
+		table->emphClasses[i] = s;
+		table->emphClasses[i+1] = NULL;
 		return 1;
 	      }
 	    else
@@ -4140,8 +4125,8 @@ doOpcode:
 	    for (k = 0; k < emphClass.length; k++)
 	      s[k] = (char)emphClass.chars[k];
 	    s[k++] = '\0';
-	    for (i = 0; emphClasses[i]; i++)
-	      if (strcmp(s, emphClasses[i]) == 0)
+	    for (i = 0; table->emphClasses[i]; i++)
+	      if (strcmp(s, table->emphClasses[i]) == 0)
 		{
 		  /* TODO: compileBrailleIndicator could be called directly here which would remove
 		     the need for values CTO_SingleLetterItal to CTO_LenTransNotePhrase.
@@ -5776,9 +5761,7 @@ compileTranslationTable (const char *tableList)
   allocateHeader (NULL);
   
   /* Initialize emphClasses array */
-  for (i = 0; emphClasses[i]; i++)
-    free(emphClasses[i]);
-  emphClasses[0] = NULL;
+  table->emphClasses[0] = NULL;
   
   /* Compile things that are necesary for the proper operation of 
      liblouis or liblouisxml or liblouisutdml */
@@ -5892,6 +5875,19 @@ getLastTableList ()
   strncpy (scratchBuf, lastTrans->tableList, lastTrans->tableListLength);
   scratchBuf[lastTrans->tableListLength] = 0;
   return scratchBuf;
+}
+
+/* for accessing emphasis classes declared in table from check_brl.c
+ * array must be at least (MAX_EMPH_CLASSES + 1) long
+ */
+void
+getEmphClasses(const char* tableList, const char ** array)
+{
+  int i = 0;
+  if (getTable(tableList))
+    for (; table->emphClasses[i]; i++)
+      array[i] = strdup(table->emphClasses[i]);
+  array[i] = NULL;
 }
 
 void *EXPORT_CALL
@@ -6056,7 +6052,11 @@ lou_free ()
       currentEntry = tableChain;
       while (currentEntry)
 	{
-	  free (currentEntry->table);
+	  int i;
+	  TranslationTableHeader *t = (TranslationTableHeader *)currentEntry->table;
+	  for (i = 0; t->emphClasses[i]; i++)
+	    free(t->emphClasses[i]);
+	  free (t);
 	  previousEntry = currentEntry;
 	  currentEntry = currentEntry->next;
 	  free (previousEntry);

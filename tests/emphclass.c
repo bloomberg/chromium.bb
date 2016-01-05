@@ -58,7 +58,7 @@ main (int argc, char **argv)
 		fprintf(stderr, "%s should be valid\n", table);
 		return 1;
 	}
-	getEmphClasses(emph_classes);
+	getEmphClasses(table, emph_classes);
 	result |= check_translation(table,
 	                            "foobar",
 	                            typeform("foo", "+++++"),

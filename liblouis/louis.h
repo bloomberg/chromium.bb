@@ -72,6 +72,8 @@ extern "C"
 
 #define MAXSTRING 2048
 
+#define MAX_EMPH_CLASSES 10 // {emph_1...emph_10} in typeforms enum (liblouis.h)
+
   typedef unsigned int TranslationTableOffset;
 #define OFFSETSIZE sizeof (TranslationTableOffset)
 
@@ -600,6 +602,7 @@ extern "C"
     TranslationTableOffset numberSign;
 	TranslationTableOffset noContractSign;
     widechar seqPatterns[SEQPATTERNSIZE];
+    char* emphClasses[MAX_EMPH_CLASSES + 1];
     int seqPatternsCount;
     /*Do not change the order of the following emphasis rule pointers! 
      */
