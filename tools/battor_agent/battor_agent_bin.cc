@@ -169,8 +169,8 @@ class BattOrAgentBin : public BattOrAgent::Listener {
       ExitFromThreadStartFailure(kUiThreadName);
     }
 
-    agent_.reset(new BattOrAgent(file_thread_.task_runner(),
-                                 ui_thread_.task_runner(), path, this));
+    agent_.reset(new BattOrAgent(path, this, file_thread_.task_runner(),
+                                 ui_thread_.task_runner()));
     error_ = BATTOR_ERROR_NONE;
     done_.Signal();
   }

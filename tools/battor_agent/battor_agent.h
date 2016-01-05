@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "tools/battor_agent/battor_connection.h"
 #include "tools/battor_agent/battor_error.h"
@@ -27,7 +28,8 @@ namespace battor {
 //
 // This class is NOT thread safe, and must be interacted with only from the IO
 // thread. The IO thread must also have a running MessageLoop.
-class BattOrAgent : public BattOrConnection::Listener {
+class BattOrAgent : public BattOrConnection::Listener,
+                    public base::SupportsWeakPtr<BattOrAgent> {
  public:
   // The listener interface that must be implemented in order to interact with
   // the BattOrAgent.
@@ -37,10 +39,10 @@ class BattOrAgent : public BattOrConnection::Listener {
   };
 
   BattOrAgent(
-      scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner,
       const std::string& path,
-      Listener* listener);
+      Listener* listener,
+      scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner);
   virtual ~BattOrAgent();
 
   // Tells the BattOr to start tracing.
@@ -50,26 +52,66 @@ class BattOrAgent : public BattOrConnection::Listener {
   // trace log.
   static bool SupportsExplicitClockSync() { return true; }
 
-  // BattOrConnection::Listener implementation.
+  // BattOrConnection::Listener implementations.
   void OnConnectionOpened(bool success) override;
   void OnBytesSent(bool success) override;
   void OnBytesRead(bool success,
                    BattOrMessageType type,
                    scoped_ptr<std::vector<char>> bytes) override;
 
- private:
-  // Initializes the serial connection (if not done already).
-  // OnConnectionOpened() will be called once the connection is made.
-  void ConnectIfNeeded();
+ protected:
+  // The connection that knows how to communicate with the BattOr in terms of
+  // protocol primitives. This is protected so that it can be replaced with a
+  // fake in testing.
+  scoped_ptr<BattOrConnection> connection_;
 
-  // StartTracing continuation called once the connection is initialized.
-  void DoStartTracing();
+ private:
+  enum class Command {
+    INVALID,
+    START_TRACING,
+  };
+
+  enum class Action {
+    INVALID,
+
+    // Actions required to connect to a BattOr.
+    REQUEST_CONNECTION,
+
+    // Actions required for starting tracing.
+    SEND_RESET,
+    SEND_INIT,
+    READ_INIT_ACK,
+    SEND_SET_GAIN,
+    READ_SET_GAIN_ACK,
+    SEND_START_TRACING,
+    READ_START_TRACING_ACK,
+  };
+
+  // Performs an action.
+  void PerformAction(Action action);
+  // Performs an action after a delay.
+  void PerformDelayedAction(Action action, base::TimeDelta delay);
+
+  // Requests a connection to the BattOr.
+  void BeginConnect();
+
+  // Sends a control message over the connection.
+  void SendControlMessage(BattOrControlMessageType type,
+                          uint16_t param1,
+                          uint16_t param2);
+
+  // Completes the command with the specified error.
+  void CompleteCommand(BattOrError error);
 
   // The listener that handles the commands' results. It must outlive the agent.
   Listener* listener_;
 
-  // The serial connection to the BattOr.
-  scoped_ptr<BattOrConnection> connection_;
+  // The last action executed by the agent. This should only be updated in
+  // PerformAction().
+  Action last_action_;
+
+  // The tracing command currently being executed by the agent.
+  Command command_;
 
   // Checker to make sure that this is only ever called on the IO thread.
   base::ThreadChecker thread_checker_;

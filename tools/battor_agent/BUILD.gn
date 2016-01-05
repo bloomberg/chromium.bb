@@ -38,15 +38,18 @@ source_set("battor_agent_lib") {
 
 test("battor_agent_unittests") {
   sources = [
+    "battor_agent_unittest.cc",
     "battor_connection_impl_unittest.cc",
   ]
   deps = [
     ":battor_agent_lib",
     "//base",
     "//base/test:run_all_unittests",
+    "//base/test:test_support",
     "//device/serial",
     "//device/serial:test_support",
     "//mojo/public/c/system:for_shared_library",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }

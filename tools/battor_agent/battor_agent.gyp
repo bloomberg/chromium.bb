@@ -52,11 +52,13 @@
         '../../base/base.gyp:test_support_base',
         '../../device/serial/serial.gyp:device_serial',
         '../../device/serial/serial.gyp:device_serial_test_util',        
+	'../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
         '../../third_party/mojo/mojo_public.gyp:mojo_environment_standalone',
         '../../third_party/mojo/mojo_public.gyp:mojo_public',
       ],
       'sources': [
+	'battor_agent_unittest.cc',
         'battor_connection_impl_unittest.cc',
       ],
     },
