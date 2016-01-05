@@ -66,6 +66,12 @@ camera.views.Browser = function(context, router) {
    */
   this.lastPictureIndex_ = 0;
 
+  /**
+   * @type {?function()}
+   * @private
+   */
+  this.selectionChanged_ = null;
+
   // End of properties, seal the object.
   Object.seal(this);
 
@@ -89,12 +95,23 @@ camera.views.Browser.prototype = {
 };
 
 /**
- * Enters the view.
+ * Enters the view. Assumes, that the arguments may be provided.
+ * @param {Object=} opt_arguments Arguments for the browser.
  * @override
  */
-camera.views.Browser.prototype.onEnter = function() {
-  if (this.model.currentIndex === null && this.model.length)
-    this.model.currentIndex = this.model.length - 1;
+camera.views.Browser.prototype.onEnter = function(opt_arguments) {
+  var index = null;
+  if (opt_arguments) {
+    if (opt_arguments.picture)
+      index = this.pictureIndex(opt_arguments.picture);
+    if (opt_arguments.selectionChanged)
+      this.selectionChanged_ = opt_arguments.selectionChanged;
+  }
+  // Navigate to the newest picture if no arguments are provided.
+  if (index == null && this.pictures.length)
+    index = this.pictures.length - 1;
+  this.setSelectedIndex(index);
+
   this.onResize();
   this.scrollTracker_.start();
   this.updateButtons_();
@@ -119,14 +136,17 @@ camera.views.Browser.prototype.onActivate = function() {
  */
 camera.views.Browser.prototype.onLeave = function() {
   this.scrollTracker_.stop();
+  this.selectionChanged_ = null;
+  this.setSelectedIndex(null);
 };
 
 /**
  * @override
  */
 camera.views.Browser.prototype.onResize = function() {
-  if (this.currentPicture()) {
-    camera.util.scrollToCenter(this.currentPicture().element,
+  var selectedPicture = this.lastSelectedPicture();
+  if (selectedPicture) {
+    camera.util.scrollToCenter(selectedPicture.element,
                                this.scroller_,
                                camera.util.SmoothScroller.Mode.INSTANT);
   }
@@ -179,7 +199,7 @@ camera.views.Browser.prototype.onScrollEnded_ = function() {
   // Find the closest picture.
   var minDistance = -1;
   var minIndex = -1;
-  for (var index = 0; index < this.model.length; index++) {
+  for (var index = 0; index < this.pictures.length; index++) {
     var element = this.pictures[index].element;
     var distance = Math.abs(
         element.offsetLeft + element.offsetWidth / 2 - center);
@@ -192,18 +212,7 @@ camera.views.Browser.prototype.onScrollEnded_ = function() {
   // Select the closest picture to the center of the window.
   // This may invoke scrolling, to center the currently selected picture.
   if (minIndex != -1)
-    this.model.currentIndex = minIndex;
-
-  // Update resolutions only if updating the currentIndex didn't cause any
-  // scrolling.
-  setTimeout(function() {
-    // If animating, then onScrollEnded() will be called again after it is
-    // finished. Therefore, we can ignore this call.
-    if (!this.scroller_.animating) {
-      this.updatePicturesResolutions_();
-      this.synchronizeFocus();
-    }
-  }.bind(this), 0);
+    this.setSelectedIndex(minIndex);
 };
 
 /**
@@ -211,8 +220,7 @@ camera.views.Browser.prototype.onScrollEnded_ = function() {
  * @private
  */
 camera.views.Browser.prototype.updateButtons_ = function() {
-  var pictureSelected = this.model.currentIndex !== null;
-  if (pictureSelected) {
+  if (this.selectedIndexes.length) {
     document.querySelector('#browser-print').removeAttribute('disabled');
     document.querySelector('#browser-export').removeAttribute('disabled');
     document.querySelector('#browser-delete').removeAttribute('disabled');
@@ -231,20 +239,21 @@ camera.views.Browser.prototype.updateButtons_ = function() {
  * @private
  */
 camera.views.Browser.prototype.updatePicturesResolutions_ = function() {
- var updateResolutions = function() {
+  var selectedPicture = this.lastSelectedPicture();
+  var updateResolutions = function() {
     for (var index = 0; index < this.pictures.length; index++) {
-      this.pictures[index].displayResolution =
-          (index == this.model.currentIndex) ?
-              camera.views.GalleryBase.DOMPicture.DisplayResolution.HIGH :
-              camera.views.GalleryBase.DOMPicture.DisplayResolution.LOW;
+      var picture = this.pictures[index];
+      picture.displayResolution = (picture == selectedPicture) ?
+          camera.views.GalleryBase.DOMPicture.DisplayResolution.HIGH :
+          camera.views.GalleryBase.DOMPicture.DisplayResolution.LOW;
     }
   }.bind(this);
 
   // Wait until the zoom-in transition is finished, and then update pictures'
   // resolutions.
-  if (this.model.currentIndex !== null) {
+  if (selectedPicture !== null) {
     camera.util.waitForTransitionCompletion(
-        this.pictures[this.model.currentIndex].element,
+        selectedPicture.element,
         250,  // Timeout in ms.
         updateResolutions);
   } else {
@@ -256,32 +265,28 @@ camera.views.Browser.prototype.updatePicturesResolutions_ = function() {
 /**
  * @override
  */
-camera.views.Browser.prototype.onCurrentIndexChanged = function(
-    oldIndex, newIndex) {
-  camera.views.GalleryBase.prototype.onCurrentIndexChanged.apply(
-      this, arguments);
+camera.views.Browser.prototype.setSelectedIndex = function(index) {
+  camera.views.GalleryBase.prototype.setSelectedIndex.apply(this, arguments);
 
-  if (newIndex !== null) {
-   camera.util.scrollToCenter(this.currentPicture().element,
-                              this.scroller_);
+  var selectedPicture = this.lastSelectedPicture();
+  if (selectedPicture) {
+    camera.util.scrollToCenter(selectedPicture.element, this.scroller_);
+  }
+  if (this.selectionChanged_) {
+    this.selectionChanged_(selectedPicture ? selectedPicture.picture : null);
   }
 
   this.updateButtons_();
-};
 
-/**
- * @override
- */
-camera.views.Browser.prototype.onPictureDeleting = function(index) {
-  camera.views.GalleryBase.prototype.onPictureDeleting.apply(
-      this, arguments);
-
-  // Update the resolutions, since the current image might have changed
-  // without scrolling and without scrolling. Use a timer, to wait until
-  // the picture is deleted from the model. Same for the focus.
+  // Update resolutions only if updating the selected index didn't cause any
+  // scrolling.
   setTimeout(function() {
-    this.updatePicturesResolutions_();
-    this.synchronizeFocus();
+    // If animating, then onScrollEnded() will be called again after it is
+    // finished. Therefore, we can ignore this call.
+    if (!this.scroller_.animating) {
+      this.updatePicturesResolutions_();
+      this.synchronizeFocus();
+    }
   }.bind(this), 0);
 };
 
@@ -289,14 +294,38 @@ camera.views.Browser.prototype.onPictureDeleting = function(index) {
  * @override
  */
 camera.views.Browser.prototype.onKeyPressed = function(event) {
-  var currentPicture = this.currentPicture();
   switch (camera.util.getShortcutIdentifier(event)) {
-    case 'Ctrl-U+0053':  // Ctrl+S for saving.
-      this.exportSelection();
+    case 'Right':
+      if (this.pictures.length) {
+        var leadIndex = this.lastSelectedIndex();
+        if (leadIndex === null) {
+          this.setSelectedIndex(this.pictures.length - 1);
+        } else {
+          this.setSelectedIndex(Math.max(0, leadIndex - 1));
+        }
+      }
       event.preventDefault();
       return;
-    case 'Ctrl-U+0050':  // Ctrl+P for printing.
-      window.print();
+    case 'Left':
+      if (this.pictures.length) {
+        var leadIndex = this.lastSelectedIndex();
+        if (leadIndex === null) {
+          this.setSelectedIndex(0);
+        } else {
+          this.setSelectedIndex(
+              Math.min(this.pictures.length - 1, leadIndex + 1));
+        }
+      }
+      event.preventDefault();
+      return;
+    case 'End':
+      if (this.pictures.length)
+        this.setSelectedIndex(0);
+      event.preventDefault();
+      return;
+    case 'Home':
+      if (this.pictures.length)
+        this.setSelectedIndex(this.pictures.length - 1);
       event.preventDefault();
       return;
   }
@@ -319,7 +348,8 @@ camera.views.Browser.prototype.addPictureToDOM = function(picture) {
   browser.insertBefore(img, boundsPadder.nextSibling);
 
   // Add to the collection.
-  this.pictures.push(new camera.views.GalleryBase.DOMPicture(picture, img));
+  var domPicture = new camera.views.GalleryBase.DOMPicture(picture, img);
+  this.pictures.push(domPicture);
 
   img.addEventListener('mousedown', function(event) {
     event.preventDefault();  // Prevent focusing.
@@ -332,11 +362,12 @@ camera.views.Browser.prototype.addPictureToDOM = function(picture) {
       return;
     }
 
-    this.model.currentIndex = this.model.pictures.indexOf(picture);
+    this.setSelectedIndex(this.pictures.indexOf(domPicture));
   }.bind(this));
   img.addEventListener('focus', function() {
-    if (this.model.currentIndex != this.model.pictures.indexOf(picture))
-      this.model.currentIndex = this.model.pictures.indexOf(picture);
+    var index = this.pictures.indexOf(domPicture);
+    if (this.lastSelectedIndex() != index)
+      this.setSelectedIndex(index);
   }.bind(this));
 };
 
