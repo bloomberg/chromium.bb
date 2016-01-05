@@ -530,19 +530,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         validPrimitive = validUnit(value, FInteger);
         break;
 
-    case CSSPropertyPerspective:
-        if (id == CSSValueNone) {
-            validPrimitive = true;
-        } else if (validUnit(value, FLength) && (m_parsedCalculation || value->fValue > 0)) {
-            validPrimitive = true;
-        } else if (unresolvedProperty == CSSPropertyAliasWebkitPerspective && validUnit(value, FNumber) && value->fValue > 0) {
-            value->setUnit(CSSPrimitiveValue::UnitType::Pixels);
-            validPrimitive = true;
-        } else {
-            return false;
-        }
-        break;
-
     case CSSPropertyJustifyContent:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         parsedValue = parseContentDistributionOverflowPosition();
@@ -878,6 +865,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyContent:
     case CSSPropertyListStyleImage:
     case CSSPropertyListStyle:
+    case CSSPropertyPerspective:
         validPrimitive = false;
         break;
 

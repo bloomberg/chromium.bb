@@ -2876,6 +2876,22 @@ static PassRefPtrWillBeRawPtr<CSSValueList> consumeContent(CSSParserTokenRange& 
     return values.release();
 }
 
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumePerspective(CSSParserTokenRange& range, CSSParserMode cssParserMode, CSSPropertyID unresolvedProperty)
+{
+    if (range.peek().id() == CSSValueNone)
+        return consumeIdent(range);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue = consumeLength(range, cssParserMode, ValueRangeAll);
+    if (!parsedValue && (unresolvedProperty == CSSPropertyAliasWebkitPerspective)) {
+        double perspective;
+        if (!consumeNumberRaw(range, perspective))
+            return nullptr;
+        parsedValue = cssValuePool().createValue(perspective, CSSPrimitiveValue::UnitType::Pixels);
+    }
+    if (parsedValue && (parsedValue->isCalculated() || parsedValue->getDoubleValue() > 0))
+        return parsedValue.release();
+    return nullptr;
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -3121,6 +3137,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeContent(m_range, m_context);
     case CSSPropertyListStyleImage:
         return consumeImage(m_range, m_context);
+    case CSSPropertyPerspective:
+        return consumePerspective(m_range, m_context.mode(), unresolvedProperty);
     default:
         return nullptr;
     }
