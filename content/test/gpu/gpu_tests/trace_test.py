@@ -22,6 +22,16 @@ test_harness_script = r"""
   domAutomationController.setAutomationId = function(id) {}
 
   domAutomationController.send = function(msg) {
+    // Issue a read pixel to synchronize the gpu process to ensure
+    // the asynchronous category enabling is finished.
+    var canvas = document.createElement("canvas")
+    canvas.width = 1;
+    canvas.height = 1;
+    var gl = canvas.getContext("webgl");
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    var id = new Uint8Array(4);
+    gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, id);
+
     domAutomationController._finished = true;
   }
 
@@ -53,7 +63,7 @@ class TraceValidatorBase(gpu_test_base.ValidatorBase):
   def WillNavigateToPage(self, page, tab):
     config = tracing_config.TracingConfig()
     for cat in TOPLEVEL_CATEGORIES:
-      config.tracing_category_filter.AddIncludedCategory(cat)
+      config.tracing_category_filter.AddDisabledByDefault(cat)
     config.tracing_options.enable_chrome_trace = True
     tab.browser.platform.tracing_controller.Start(config, 60)
 
