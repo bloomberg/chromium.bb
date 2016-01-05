@@ -4130,7 +4130,7 @@ doOpcode:
 
 		case CTO_Match:
 		{
-			CharsString ptn_before, ptn_after, ptn_regex;
+			CharsString ptn_before, ptn_after;
 			widechar patterns[512], buffer[256];
 			TranslationTableOffset offset;
 			int len, mrk;
@@ -5717,7 +5717,7 @@ compileTranslationTable (const char *tableList)
     {
       TranslationTableOpcode opcode;
       for (opcode = 0; opcode < CTO_None; opcode++)
-	opcodeLengths[opcode] = strlen (opcodeNames[opcode]);
+	opcodeLengths[opcode] = (short) strlen (opcodeNames[opcode]);
     }
   allocateHeader (NULL);
   /* Compile things that are necesary for the proper operation of 
