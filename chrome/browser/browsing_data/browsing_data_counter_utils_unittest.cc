@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/options/clear_browser_data_handler.h"
+#include "chrome/browser/browsing_data/browsing_data_counter_utils.h"
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -10,10 +10,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace options {
-
 // Tests the complex output of the Autofill counter.
-TEST(ClearBrowserDataTest, AutofillCounterResult) {
+TEST(BrowsingDataCounterUtilsTest, AutofillCounterResult) {
   AutofillCounter counter;
 
   // This test assumes that the strings are served exactly as defined,
@@ -55,10 +53,7 @@ TEST(ClearBrowserDataTest, AutofillCounterResult) {
         test_case.num_suggestions
     ));
 
-    base::string16 output = ClearBrowserDataHandler::GetCounterTextFromResult(
-        &result);
+    base::string16 output = GetCounterTextFromResult(&result);
     EXPECT_EQ(output, base::ASCIIToUTF16(test_case.expected_output));
   }
 }
-
-}  // namespace options
