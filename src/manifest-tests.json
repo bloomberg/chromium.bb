@@ -21,6 +21,7 @@
     "videoCapture",
     "storage",
     "unlimitedStorage",
+    "idle",
     "chromeosInfoPrivate",
     {"fileSystem": ["write", "directory"]}
   ],
