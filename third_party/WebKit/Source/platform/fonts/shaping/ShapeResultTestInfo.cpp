@@ -19,7 +19,7 @@ bool ShapeResultTestInfo::runInfoForTesting(unsigned runIndex,
 {
     if (runIndex < m_runs.size() && m_runs[runIndex]) {
         startIndex = m_runs[runIndex]->m_startIndex;
-        numGlyphs = m_runs[runIndex]->m_numGlyphs;
+        numGlyphs = m_runs[runIndex]->m_glyphData.size();
         script = m_runs[runIndex]->m_script;
         return true;
     }

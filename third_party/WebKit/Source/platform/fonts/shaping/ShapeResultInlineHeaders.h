@@ -60,10 +60,9 @@ public:
     RunInfo(const SimpleFontData* font, hb_direction_t dir, hb_script_t script,
         unsigned startIndex, unsigned numGlyphs, unsigned numCharacters)
         : m_fontData(const_cast<SimpleFontData*>(font)), m_direction(dir)
-        , m_script(script), m_startIndex(startIndex)
-        , m_numCharacters(numCharacters) , m_numGlyphs(numGlyphs), m_width(0.0f)
+        , m_script(script), m_glyphData(numGlyphs), m_startIndex(startIndex)
+        , m_numCharacters(numCharacters), m_width(0.0f)
     {
-        m_glyphData.resize(m_numGlyphs);
     }
 
     bool rtl() const { return HB_DIRECTION_IS_BACKWARD(m_direction); }
@@ -95,7 +94,6 @@ public:
     Vector<HarfBuzzRunGlyphData> m_glyphData;
     unsigned m_startIndex;
     unsigned m_numCharacters;
-    unsigned m_numGlyphs;
     float m_width;
 };
 

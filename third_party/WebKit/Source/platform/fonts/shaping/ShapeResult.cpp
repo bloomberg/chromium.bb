@@ -49,22 +49,23 @@ float ShapeResult::RunInfo::xPositionForVisualOffset(unsigned offset) const
 float ShapeResult::RunInfo::xPositionForOffset(unsigned offset) const
 {
     ASSERT(offset <= m_numCharacters);
+    const unsigned numGlyphs = m_glyphData.size();
     unsigned glyphIndex = 0;
     float position = 0;
     if (rtl()) {
-        while (glyphIndex < m_numGlyphs && m_glyphData[glyphIndex].characterIndex > offset) {
+        while (glyphIndex < numGlyphs && m_glyphData[glyphIndex].characterIndex > offset) {
             position += m_glyphData[glyphIndex].advance;
             ++glyphIndex;
         }
         // For RTL, we need to return the right side boundary of the character.
         // Add advance of glyphs which are part of the character.
-        while (glyphIndex < m_numGlyphs - 1 && m_glyphData[glyphIndex].characterIndex == m_glyphData[glyphIndex + 1].characterIndex) {
+        while (glyphIndex < numGlyphs - 1 && m_glyphData[glyphIndex].characterIndex == m_glyphData[glyphIndex + 1].characterIndex) {
             position += m_glyphData[glyphIndex].advance;
             ++glyphIndex;
         }
         position += m_glyphData[glyphIndex].advance;
     } else {
-        while (glyphIndex < m_numGlyphs && m_glyphData[glyphIndex].characterIndex < offset) {
+        while (glyphIndex < numGlyphs && m_glyphData[glyphIndex].characterIndex < offset) {
             position += m_glyphData[glyphIndex].advance;
             ++glyphIndex;
         }
@@ -75,12 +76,13 @@ float ShapeResult::RunInfo::xPositionForOffset(unsigned offset) const
 int ShapeResult::RunInfo::characterIndexForXPosition(float targetX) const
 {
     ASSERT(targetX <= m_width);
+    const unsigned numGlyphs = m_glyphData.size();
     float currentX = 0;
     float currentAdvance = m_glyphData[0].advance;
     unsigned glyphIndex = 0;
 
     // Sum up advances that belong to the first character.
-    while (glyphIndex < m_numGlyphs - 1 && m_glyphData[glyphIndex].characterIndex == m_glyphData[glyphIndex + 1].characterIndex)
+    while (glyphIndex < numGlyphs - 1 && m_glyphData[glyphIndex].characterIndex == m_glyphData[glyphIndex + 1].characterIndex)
         currentAdvance += m_glyphData[++glyphIndex].advance;
     currentAdvance = currentAdvance / 2.0;
     if (targetX <= currentAdvance)
@@ -88,11 +90,11 @@ int ShapeResult::RunInfo::characterIndexForXPosition(float targetX) const
 
     currentX = currentAdvance;
     ++glyphIndex;
-    while (glyphIndex < m_numGlyphs) {
+    while (glyphIndex < numGlyphs) {
         unsigned prevCharacterIndex = m_glyphData[glyphIndex - 1].characterIndex;
         float prevAdvance = currentAdvance;
         currentAdvance = m_glyphData[glyphIndex].advance;
-        while (glyphIndex < m_numGlyphs - 1 && m_glyphData[glyphIndex].characterIndex == m_glyphData[glyphIndex + 1].characterIndex)
+        while (glyphIndex < numGlyphs - 1 && m_glyphData[glyphIndex].characterIndex == m_glyphData[glyphIndex + 1].characterIndex)
             currentAdvance += m_glyphData[++glyphIndex].advance;
         currentAdvance = currentAdvance / 2.0;
         float nextX = currentX + prevAdvance + currentAdvance;
@@ -146,7 +148,7 @@ float ShapeResult::fillGlyphBufferForRun(GlyphBuffer* glyphBuffer,
     if (!run)
         return 0;
     float advanceSoFar = initialAdvance;
-    unsigned numGlyphs = run->m_numGlyphs;
+    const unsigned numGlyphs = run->m_glyphData.size();
     for (unsigned i = 0; i < numGlyphs; ++i) {
         const HarfBuzzRunGlyphData& glyphData = run->m_glyphData[i];
         uint16_t currentCharacterIndex = run->m_startIndex +
@@ -234,7 +236,7 @@ float ShapeResult::fillGlyphBufferForTextEmphasisRun(GlyphBuffer* glyphBuffer,
         : run->glyphToCharacterIndex(0) + runOffset);
 
     float advanceSoFar = initialAdvance;
-    unsigned numGlyphs = run->m_numGlyphs;
+    const unsigned numGlyphs = run->m_glyphData.size();
     for (unsigned i = 0; i < numGlyphs; ++i) {
         const HarfBuzzRunGlyphData& glyphData = run->m_glyphData[i];
         uint16_t currentCharacterIndex = run->m_startIndex + glyphData.characterIndex + runOffset;
@@ -296,7 +298,6 @@ float ShapeResult::fillFastHorizontalGlyphBuffer(const ShapeResultBuffer& result
         for (const auto& run : wordResult->m_runs) {
             ASSERT(run);
             ASSERT(HB_DIRECTION_IS_HORIZONTAL(run->m_direction));
-            ASSERT(run->m_numGlyphs == run->m_glyphData.size());
 
             for (const auto& glyphData : run->m_glyphData) {
                 ASSERT(!glyphData.offset.height());

@@ -634,7 +634,7 @@ void HarfBuzzShaper::insertRunIntoShapeResult(ShapeResult* result,
 {
     ASSERT(numGlyphs > 0);
     OwnPtr<ShapeResult::RunInfo> run(std::move(runToInsert));
-    run->m_glyphData.resize(numGlyphs);
+    ASSERT(numGlyphs == run->m_glyphData.size());
 
     const SimpleFontData* currentFontData = run->m_fontData.get();
     const hb_glyph_info_t* glyphInfos = hb_buffer_get_glyph_infos(harfBuzzBuffer, 0);
