@@ -19,8 +19,8 @@ class ServerWindow;
 // Delegate used by the AccessPolicy implementations to get state.
 class AccessPolicyDelegate {
  public:
-  // Returns true if |id| is the root of the connection.
-  virtual bool IsRootForAccessPolicy(const WindowId& id) const = 0;
+  // Returns true if the connection has |window| as one of its roots.
+  virtual bool HasRootForAccessPolicy(const ServerWindow* window) const = 0;
 
   // Returns true if |window| has been exposed to the client.
   virtual bool IsWindowKnownForAccessPolicy(

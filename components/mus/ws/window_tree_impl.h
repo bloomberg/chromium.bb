@@ -264,7 +264,7 @@ class WindowTreeImpl : public mojom::WindowTree,
   void WmRequestClose(Id transport_window_id) override;
 
   // AccessPolicyDelegate:
-  bool IsRootForAccessPolicy(const WindowId& id) const override;
+  bool HasRootForAccessPolicy(const ServerWindow* window) const override;
   bool IsWindowKnownForAccessPolicy(const ServerWindow* window) const override;
   bool IsWindowRootOfAnotherConnectionForAccessPolicy(
       const ServerWindow* window) const override;

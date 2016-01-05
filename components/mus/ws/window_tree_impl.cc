@@ -986,8 +986,8 @@ void WindowTreeImpl::WmRequestClose(Id transport_window_id) {
     connection->client_->RequestClose(transport_window_id);
 }
 
-bool WindowTreeImpl::IsRootForAccessPolicy(const WindowId& id) const {
-  return IsRoot(id);
+bool WindowTreeImpl::HasRootForAccessPolicy(const ServerWindow* window) const {
+  return IsRoot(window->id());
 }
 
 bool WindowTreeImpl::IsWindowKnownForAccessPolicy(
