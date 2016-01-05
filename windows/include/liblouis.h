@@ -163,7 +163,7 @@ void EXPORT_CALL lou_registerTableResolver (char ** (* resolver) (const char *ta
 int EXPORT_CALL lou_compileString (const char *tableList, const char 
     *inString);
 
-  char * EXPORT_CALL lou_setDataPath (char *path);
+  char * EXPORT_CALL lou_setDataPath (const char *path);
 /* Set the path used for searching for tables and liblouisutdml files. 
    * Overrides the installation path. */
 

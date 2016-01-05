@@ -147,7 +147,7 @@ static char dataPath[MAXSTRING];
 static char *dataPathPtr;
 
 char *EXPORT_CALL
-lou_setDataPath (char *path)
+lou_setDataPath (const char *path)
 {
   dataPathPtr = NULL;
   if (path == NULL)
