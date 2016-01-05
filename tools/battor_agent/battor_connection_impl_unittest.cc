@@ -2,11 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "tools/battor_agent/battor_connection.h"
-
-#include <stddef.h>
-#include <stdint.h>
-#include <string.h>
+#include "tools/battor_agent/battor_connection_impl.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -26,10 +22,10 @@ void NullReadCallback(int, device::serial::ReceiveError) {}
 namespace battor {
 
 // TestableBattOrConnection uses a fake serial connection be testable.
-class TestableBattOrConnection : public BattOrConnection {
+class TestableBattOrConnection : public BattOrConnectionImpl {
  public:
   TestableBattOrConnection(BattOrConnection::Listener* listener)
-      : BattOrConnection("/dev/test", listener, nullptr, nullptr) {}
+      : BattOrConnectionImpl("/dev/test", listener, nullptr, nullptr) {}
   scoped_refptr<device::SerialIoHandler> CreateIoHandler() override {
     return device::TestSerialIoHandler::Create();
   }
@@ -37,10 +33,10 @@ class TestableBattOrConnection : public BattOrConnection {
   scoped_refptr<device::SerialIoHandler> GetIoHandler() { return io_handler_; }
 };
 
-// BattOrConnectionTest provides a BattOrConnection and captures the
+// BattOrConnectionImplTest provides a BattOrConnection and captures the
 // results of all its commands.
-class BattOrConnectionTest : public testing::Test,
-                             public BattOrConnection::Listener {
+class BattOrConnectionImplTest : public testing::Test,
+                                 public BattOrConnection::Listener {
  public:
   void OnConnectionOpened(bool success) override { open_success_ = success; };
   void OnBytesSent(bool success) override { send_success_ = success; }
@@ -112,7 +108,7 @@ class BattOrConnectionTest : public testing::Test,
   scoped_ptr<std::vector<char>> read_bytes_;
 };
 
-TEST_F(BattOrConnectionTest, InitSendsCorrectBytes) {
+TEST_F(BattOrConnectionImplTest, InitSendsCorrectBytes) {
   OpenConnection();
   ASSERT_TRUE(GetOpenSuccess());
 
@@ -132,7 +128,7 @@ TEST_F(BattOrConnectionTest, InitSendsCorrectBytes) {
   ASSERT_EQ(0, std::memcmp(ReadBytesRaw(13)->data(), expected_data, 13));
 }
 
-TEST_F(BattOrConnectionTest, ResetSendsCorrectBytes) {
+TEST_F(BattOrConnectionImplTest, ResetSendsCorrectBytes) {
   OpenConnection();
   ASSERT_TRUE(GetOpenSuccess());
 
@@ -157,7 +153,7 @@ TEST_F(BattOrConnectionTest, ResetSendsCorrectBytes) {
   ASSERT_EQ(0, std::memcmp(ReadBytesRaw(12)->data(), expected_data, 12));
 }
 
-TEST_F(BattOrConnectionTest, ReadBytesControlMessage) {
+TEST_F(BattOrConnectionImplTest, ReadBytesControlMessage) {
   OpenConnection();
   ASSERT_TRUE(GetOpenSuccess());
 
@@ -183,7 +179,7 @@ TEST_F(BattOrConnectionTest, ReadBytesControlMessage) {
   ASSERT_EQ(0, std::memcmp(GetReadBytes()->data(), expected, 5));
 }
 
-TEST_F(BattOrConnectionTest, ReadBytesNotEnoughBytes) {
+TEST_F(BattOrConnectionImplTest, ReadBytesNotEnoughBytes) {
   OpenConnection();
   ASSERT_TRUE(GetOpenSuccess());
 
@@ -194,7 +190,7 @@ TEST_F(BattOrConnectionTest, ReadBytesNotEnoughBytes) {
   ASSERT_FALSE(IsReadComplete());
 }
 
-TEST_F(BattOrConnectionTest, ReadBytesInvalidType) {
+TEST_F(BattOrConnectionImplTest, ReadBytesInvalidType) {
   OpenConnection();
   ASSERT_TRUE(GetOpenSuccess());
 
@@ -214,7 +210,7 @@ TEST_F(BattOrConnectionTest, ReadBytesInvalidType) {
   ASSERT_FALSE(GetReadSuccess());
 }
 
-TEST_F(BattOrConnectionTest, ReadBytesWithEscapeCharacters) {
+TEST_F(BattOrConnectionImplTest, ReadBytesWithEscapeCharacters) {
   OpenConnection();
   ASSERT_TRUE(GetOpenSuccess());
 
@@ -238,7 +234,8 @@ TEST_F(BattOrConnectionTest, ReadBytesWithEscapeCharacters) {
   ASSERT_EQ(0, std::memcmp(GetReadBytes()->data(), expected, 2));
 }
 
-TEST_F(BattOrConnectionTest, ReadBytesWithEscapeCharactersInSubsequentReads) {
+TEST_F(BattOrConnectionImplTest,
+       ReadBytesWithEscapeCharactersInSubsequentReads) {
   OpenConnection();
   ASSERT_TRUE(GetOpenSuccess());
 
@@ -268,7 +265,7 @@ TEST_F(BattOrConnectionTest, ReadBytesWithEscapeCharactersInSubsequentReads) {
   ASSERT_EQ(0, std::memcmp(GetReadBytes()->data(), expected, 4));
 }
 
-TEST_F(BattOrConnectionTest, ReadControlMessage) {
+TEST_F(BattOrConnectionImplTest, ReadControlMessage) {
   OpenConnection();
   ASSERT_TRUE(GetOpenSuccess());
 

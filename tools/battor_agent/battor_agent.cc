@@ -4,6 +4,8 @@
 
 #include "tools/battor_agent/battor_agent.h"
 
+#include "tools/battor_agent/battor_connection_impl.h"
+
 namespace battor {
 
 BattOrAgent::BattOrAgent(
@@ -12,10 +14,10 @@ BattOrAgent::BattOrAgent(
     const std::string& path,
     Listener* listener)
     : listener_(listener),
-      connection_(new BattOrConnection(path,
-                                       this,
-                                       file_thread_task_runner,
-                                       ui_thread_task_runner)) {
+      connection_(new BattOrConnectionImpl(path,
+                                           this,
+                                           file_thread_task_runner,
+                                           ui_thread_task_runner)) {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
@@ -57,13 +59,6 @@ void BattOrAgent::OnBytesRead(bool success,
 
 void BattOrAgent::ConnectIfNeeded() {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (connection_->IsOpen()) {
-    // TODO(charliea): Rewrite this in a way that allows for multiple tracing
-    // commands.
-    DoStartTracing();
-    return;
-  }
 
   connection_->Open();
 }

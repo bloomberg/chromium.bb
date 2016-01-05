@@ -22,6 +22,8 @@ source_set("battor_agent_lib") {
     "battor_agent.h",
     "battor_connection.cc",
     "battor_connection.h",
+    "battor_connection_impl.cc",
+    "battor_connection_impl.h",
     "battor_error.h",
   ]
   deps = [
@@ -33,7 +35,7 @@ source_set("battor_agent_lib") {
 
 test("battor_agent_unittests") {
   sources = [
-    "battor_connection_unittest.cc",
+    "battor_connection_impl_unittest.cc",
   ]
   deps = [
     ":battor_agent_lib",

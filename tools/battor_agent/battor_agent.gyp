@@ -32,6 +32,8 @@
         'battor_agent.h',
         'battor_connection.cc',
         'battor_connection.h',
+        'battor_connection_impl.cc',
+        'battor_connection_impl.h',
         'battor_error.h',
       ],
       'dependencies': [
@@ -55,7 +57,7 @@
         '../../third_party/mojo/mojo_public.gyp:mojo_public',
       ],
       'sources': [
-        'battor_connection_unittest.cc',
+        'battor_connection_impl_unittest.cc',
       ],
     },
   ],
