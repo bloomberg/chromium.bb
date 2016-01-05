@@ -119,24 +119,7 @@ class PeerVideoSender : public VideoSender {
                     transport_sender,
                     base::Bind(&IgnorePlayoutDelayChanges)) {}
   using VideoSender::OnReceivedCastFeedback;
-  using VideoSender::GetMaximumTargetBitrateForFrame;
 };
-
-// Creates a VideoFrame NOT backed by actual memory storage.  The frame's
-// metadata (i.e., size and frame duration) are all that are needed to test the
-// GetMaximumTargetBitrateForFrame() logic.
-scoped_refptr<VideoFrame> CreateFakeFrame(const gfx::Size& resolution,
-                                          bool high_frame_rate_in_metadata) {
-  const scoped_refptr<VideoFrame> frame = VideoFrame::WrapExternalData(
-      PIXEL_FORMAT_I420, resolution, gfx::Rect(resolution), resolution,
-      static_cast<uint8_t*>(nullptr) + 1, resolution.GetArea() * 3 / 2,
-      base::TimeDelta());
-  const double frame_rate = high_frame_rate_in_metadata ? 60.0 : 30.0;
-  frame->metadata()->SetTimeDelta(
-      VideoFrameMetadata::FRAME_DURATION,
-      base::TimeDelta::FromSecondsD(1.0 / frame_rate));
-  return frame;
-}
 
 }  // namespace
 
@@ -612,52 +595,6 @@ TEST_F(VideoSenderTest, PopulatesResourceUtilizationInFrameMetadata) {
     if (i == 0)
       EXPECT_GE(1.0, utilization);  // Key frames never exceed 1.0.
     DVLOG(1) << "Utilization computed by VideoSender is: " << utilization;
-  }
-}
-
-// Tests that VideoSender::GetMaximumTargetBitrateForFrame() returns the correct
-// result for a number of frame resolution combinations.
-TEST(VideoSenderMathTest, ComputesCorrectMaximumTargetBitratesForFrames) {
-  const struct {
-    int width;
-    int height;
-    bool high_frame_rate;
-    int expected_bitrate;
-  } kTestCases[] = {
-    // Standard 16:9 resolutions, non-HFR.
-    { 16, 9, false, 1000000 },
-    { 320, 180, false, 1000000 },
-    { 640, 360, false, 2000000 },
-    { 800, 450, false, 2500000 },
-    { 1280, 720, false, 4000000 },
-    { 1920, 1080, false, 6000000 },
-    { 3840, 2160, false, 12000000 },
-
-    // Standard 16:9 resolutions, HFR.
-    { 16, 9, true, 1000000 },
-    { 320, 180, true, 1500000 },
-    { 640, 360, true, 3000000 },
-    { 800, 450, true, 3750000 },
-    { 1280, 720, true, 6000000 },
-    { 1920, 1080, true, 9000000 },
-    { 3840, 2160, true, 18000000 },
-
-    // 4:3 and oddball resolutions.
-    { 640, 480, false, 2305555 },
-    { 1024, 768, false, 3694444 },
-    { 10, 5000, false, 1000000 },
-    { 1234, 567, false, 3483333 },
-    { 16384, 16384, true, 102399999 },
-  };
-
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
-    const gfx::Size resolution(kTestCases[i].width, kTestCases[i].height);
-    SCOPED_TRACE(::testing::Message() << "resolution=" << resolution.ToString()
-                 << ", hfr=" << kTestCases[i].high_frame_rate);
-    const scoped_refptr<VideoFrame> frame =
-        CreateFakeFrame(resolution, kTestCases[i].high_frame_rate);
-    EXPECT_EQ(kTestCases[i].expected_bitrate,
-              PeerVideoSender::GetMaximumTargetBitrateForFrame(*frame));
   }
 }
 

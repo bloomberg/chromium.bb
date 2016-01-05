@@ -242,8 +242,7 @@ void VideoSender::InsertRawVideoFrame(
   }
 
   const int bitrate = congestion_control_->GetBitrate(
-      reference_time + target_playout_delay_, target_playout_delay_,
-      GetMaximumTargetBitrateForFrame(*video_frame));
+      reference_time + target_playout_delay_, target_playout_delay_);
   if (bitrate != last_bitrate_) {
     video_encoder_->SetBitRate(bitrate);
     last_bitrate_ = bitrate;
@@ -296,57 +295,6 @@ base::TimeDelta VideoSender::GetInFlightMediaDuration() const {
   } else {
     return duration_in_encoder_;
   }
-}
-
-// static
-int VideoSender::GetMaximumTargetBitrateForFrame(
-    const media::VideoFrame& frame) {
-  enum {
-    // Constants used to linearly translate between lines of resolution and a
-    // maximum target bitrate.  These values are based on observed quality
-    // trade-offs over a wide range of content.  The math will use these values
-    // to compute a bitrate of 2 Mbps for 360 lines of resolution and 4 Mbps for
-    // 720 lines.
-    BITRATE_FOR_HIGH_RESOLUTION = 4000000,
-    BITRATE_FOR_STANDARD_RESOLUTION = 2000000,
-    HIGH_RESOLUTION_LINES = 720,
-    STANDARD_RESOLUTION_LINES = 360,
-
-    // The smallest maximum target bitrate, regardless of what the math says.
-    MAX_BITRATE_LOWER_BOUND = 1000000,
-
-    // Constants used to boost the result for high frame rate content.
-    HIGH_FRAME_RATE_THRESHOLD_USEC = 25000,  // 40 FPS
-    HIGH_FRAME_RATE_BOOST_NUMERATOR = 3,
-    HIGH_FRAME_RATE_BOOST_DENOMINATOR = 2,
-  };
-
-  // Determine the approximate height of a 16:9 frame having the same area
-  // (number of pixels) as |frame|.
-  const gfx::Size& resolution = frame.visible_rect().size();
-  const int lines_of_resolution =
-      ((resolution.width() * 9) == (resolution.height() * 16)) ?
-          resolution.height() :
-          static_cast<int>(sqrt(resolution.GetArea() * 9.0 / 16.0));
-
-  // Linearly translate from |lines_of_resolution| to a maximum target bitrate.
-  int64_t result = lines_of_resolution - STANDARD_RESOLUTION_LINES;
-  result *= BITRATE_FOR_HIGH_RESOLUTION - BITRATE_FOR_STANDARD_RESOLUTION;
-  result /= HIGH_RESOLUTION_LINES - STANDARD_RESOLUTION_LINES;
-  result += BITRATE_FOR_STANDARD_RESOLUTION;
-
-  // Boost the result for high frame rate content.
-  base::TimeDelta frame_duration;
-  if (frame.metadata()->GetTimeDelta(media::VideoFrameMetadata::FRAME_DURATION,
-                                     &frame_duration) &&
-      frame_duration > base::TimeDelta() &&
-      frame_duration.InMicroseconds() <= HIGH_FRAME_RATE_THRESHOLD_USEC) {
-    result *= HIGH_FRAME_RATE_BOOST_NUMERATOR;
-    result /= HIGH_FRAME_RATE_BOOST_DENOMINATOR;
-  }
-
-  // Return a lower-bounded result.
-  return std::max<int>(result, MAX_BITRATE_LOWER_BOUND);
 }
 
 void VideoSender::OnEncodedVideoFrame(

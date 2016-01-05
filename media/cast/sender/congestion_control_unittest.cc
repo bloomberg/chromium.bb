@@ -82,29 +82,23 @@ TEST_F(CongestionControlTest, SimpleRun) {
   // Empty the buffer.
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(100));
 
-  // Use a soft maximum bitrate limit so large it will not bound the results of
-  // the underlying computations.
-  const int soft_max_bitrate = std::numeric_limits<int>::max();
-
   uint32_t safe_bitrate = frame_size * 1000 / kFrameDelayMs;
   uint32_t bitrate = congestion_control_->GetBitrate(
       testing_clock_.NowTicks() + base::TimeDelta::FromMilliseconds(300),
-      base::TimeDelta::FromMilliseconds(300), soft_max_bitrate);
+      base::TimeDelta::FromMilliseconds(300));
   EXPECT_NEAR(
       safe_bitrate / kTargetEmptyBufferFraction, bitrate, safe_bitrate * 0.05);
 
   bitrate = congestion_control_->GetBitrate(
       testing_clock_.NowTicks() + base::TimeDelta::FromMilliseconds(200),
-      base::TimeDelta::FromMilliseconds(300),
-      soft_max_bitrate);
+      base::TimeDelta::FromMilliseconds(300));
   EXPECT_NEAR(safe_bitrate / kTargetEmptyBufferFraction * 2 / 3,
               bitrate,
               safe_bitrate * 0.05);
 
   bitrate = congestion_control_->GetBitrate(
       testing_clock_.NowTicks() + base::TimeDelta::FromMilliseconds(100),
-      base::TimeDelta::FromMilliseconds(300),
-      soft_max_bitrate);
+      base::TimeDelta::FromMilliseconds(300));
   EXPECT_NEAR(safe_bitrate / kTargetEmptyBufferFraction * 1 / 3,
               bitrate,
               safe_bitrate * 0.05);
@@ -116,8 +110,7 @@ TEST_F(CongestionControlTest, SimpleRun) {
   // Results should show that we have ~200ms to send.
   bitrate = congestion_control_->GetBitrate(
       testing_clock_.NowTicks() + base::TimeDelta::FromMilliseconds(300),
-      base::TimeDelta::FromMilliseconds(300),
-      soft_max_bitrate);
+      base::TimeDelta::FromMilliseconds(300));
   EXPECT_NEAR(safe_bitrate / kTargetEmptyBufferFraction * 2 / 3,
               bitrate,
               safe_bitrate * 0.05);
@@ -129,8 +122,7 @@ TEST_F(CongestionControlTest, SimpleRun) {
   // Results should show that we have ~100ms to send.
   bitrate = congestion_control_->GetBitrate(
       testing_clock_.NowTicks() + base::TimeDelta::FromMilliseconds(300),
-      base::TimeDelta::FromMilliseconds(300),
-      soft_max_bitrate);
+      base::TimeDelta::FromMilliseconds(300));
   EXPECT_NEAR(safe_bitrate / kTargetEmptyBufferFraction * 1 / 3,
               bitrate,
               safe_bitrate * 0.05);

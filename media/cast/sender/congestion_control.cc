@@ -44,8 +44,7 @@ class AdaptiveCongestionControl : public CongestionControl {
                             base::TimeTicks when) final;
   void AckFrame(uint32_t frame_id, base::TimeTicks when) final;
   int GetBitrate(base::TimeTicks playout_time,
-                 base::TimeDelta playout_delay,
-                 int soft_max_bitrate) final;
+                 base::TimeDelta playout_delay) final;
 
  private:
   struct FrameStats {
@@ -104,8 +103,7 @@ class FixedCongestionControl : public CongestionControl {
                             base::TimeTicks when) final {}
   void AckFrame(uint32_t frame_id, base::TimeTicks when) final {}
   int GetBitrate(base::TimeTicks playout_time,
-                 base::TimeDelta playout_delay,
-                 int soft_max_bitrate) final {
+                 base::TimeDelta playout_delay) final {
     return bitrate_;
   }
 
@@ -343,8 +341,7 @@ base::TimeTicks AdaptiveCongestionControl::EstimatedSendingTime(
 }
 
 int AdaptiveCongestionControl::GetBitrate(base::TimeTicks playout_time,
-                                          base::TimeDelta playout_delay,
-                                          int soft_max_bitrate) {
+                                          base::TimeDelta playout_delay) {
   double safe_bitrate = CalculateSafeBitrate();
   // Estimate when we might start sending the next frame.
   base::TimeDelta time_to_catch_up =
@@ -363,7 +360,6 @@ int AdaptiveCongestionControl::GetBitrate(base::TimeTicks playout_time,
           << " SBR:" << (safe_bitrate / 1E6);
   TRACE_COUNTER_ID1("cast.stream", "Empty Buffer Fraction", this,
                     empty_buffer_fraction);
-  bits_per_second = std::min(bits_per_second, soft_max_bitrate);
   bits_per_second = std::max(bits_per_second, min_bitrate_configured_);
   bits_per_second = std::min(bits_per_second, max_bitrate_configured_);
 

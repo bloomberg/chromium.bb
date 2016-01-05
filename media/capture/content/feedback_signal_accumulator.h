@@ -31,6 +31,9 @@ class MEDIA_EXPORT FeedbackSignalAccumulator {
   // Update(1.0, t=1s) will result in an accumulated average value of 0.5.
   explicit FeedbackSignalAccumulator(base::TimeDelta half_life);
 
+  // TODO(xjz): Change time type used by Reset() and Update() methods to
+  // TimeDelta instead of TimeTicks. https://crbug.com/573280.
+
   // Erase all memory of historical values, re-starting with the given
   // |starting_value|.
   void Reset(double starting_value, base::TimeTicks timestamp);

@@ -37,8 +37,7 @@ class CongestionControl {
   // is a soft upper-bound applied to the computed target bitrate before the
   // hard upper- and lower-bounds are applied.
   virtual int GetBitrate(base::TimeTicks playout_time,
-                         base::TimeDelta playout_delay,
-                         int soft_max_bitrate) = 0;
+                         base::TimeDelta playout_delay) = 0;
 };
 
 CongestionControl* NewAdaptiveCongestionControl(

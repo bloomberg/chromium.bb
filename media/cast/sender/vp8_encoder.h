@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "media/capture/content/feedback_signal_accumulator.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/sender/software_video_encoder.h"
 #include "third_party/libvpx_new/source/libvpx/vpx/vpx_encoder.h"
@@ -77,6 +78,12 @@ class Vp8Encoder : public SoftwareVideoEncoder {
   // encountered.
   // TODO(miu): Remove after discovering cause.  http://crbug.com/519022
   bool has_seen_zero_length_encoded_frame_;
+
+  // The accumulator (time averaging) of the encoding speed.
+  FeedbackSignalAccumulator encoding_speed_acc_;
+
+  // The higher the speed, the less CPU usage, and the lower quality.
+  int encoding_speed_;
 
   DISALLOW_COPY_AND_ASSIGN(Vp8Encoder);
 };

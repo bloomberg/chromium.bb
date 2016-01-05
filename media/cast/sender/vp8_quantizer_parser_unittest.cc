@@ -33,6 +33,7 @@ VideoSenderConfig GetVideoConfigForTest() {
   config.max_frame_rate = kFrameRate;
   config.min_qp = kQp;
   config.max_qp = kQp;
+  config.max_cpu_saver_qp = kQp;
   return config;
 }
 }  // unnamed namespace
@@ -59,6 +60,7 @@ class Vp8QuantizerParserTest : public ::testing::Test {
     DCHECK((qp > 3) && (qp < 64));
     video_config_.min_qp = qp;
     video_config_.max_qp = qp;
+    video_config_.max_cpu_saver_qp = qp;
     RecreateVp8Encoder();
   }
 

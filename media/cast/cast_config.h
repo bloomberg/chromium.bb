@@ -128,6 +128,16 @@ struct VideoSenderConfig {
   int start_bitrate;
   int max_qp;
   int min_qp;
+
+  // The maximum |min_quantizer| set to the encoder when CPU is constrained.
+  // This is a trade-off between higher resolution with lower encoding quality
+  // and lower resolution with higher encoding quality. The set value indicates
+  // the maximum quantizer that the encoder might produce better quality video
+  // at this resolution than lowering resolution with similar CPU usage and
+  // smaller quantizer. The set value has to be between |min_qp| and |max_qp|.
+  // Suggested value range: [4, 30].
+  int max_cpu_saver_qp;
+
   int max_frame_rate;  // TODO(miu): Should be double, not int.
 
   // This field is used differently by various encoders. It defaults to 1.
