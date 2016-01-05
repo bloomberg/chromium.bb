@@ -42,12 +42,6 @@
           '<(PRODUCT_DIR)/test_data/chrome/renderer/resources/extensions/',
           '<(PRODUCT_DIR)/test_data/chrome/test/data/unit/',
           '<(PRODUCT_DIR)/test_data/ui/webui/',
-        ],
-      },
-    }],
-    ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
-      'variables': {
-        'files': [
           '../base/test/data/',
           '../components/test/data/',
           '../extensions/test/data/',
@@ -89,6 +83,7 @@
           '../third_party/pywebsocket/',
           '../third_party/tlslite/',
           '<(PRODUCT_DIR)/pyproto/google/',
+          '<(PRODUCT_DIR)/test_data/chrome/browser/resources/md_downloads/',
         ],
       },
     }],
