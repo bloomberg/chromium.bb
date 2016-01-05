@@ -142,13 +142,13 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
 
         bool shouldPaintInViewportSpace = (*it)->attachment() == FixedBackgroundAttachment;
         if (shouldPaintInViewportSpace) {
-            BoxPainter::paintFillLayerExtended(m_layoutView, paintInfo, Color(), **it, LayoutRect(LayoutRect::infiniteIntRect()), BackgroundBleedNone);
+            BoxPainter::paintFillLayer(m_layoutView, paintInfo, Color(), **it, LayoutRect(LayoutRect::infiniteIntRect()), BackgroundBleedNone);
         } else {
             context.save();
             // TODO(trchen): We should be able to handle 3D-transformed root
             // background with slimming paint by using transform display items.
             context.concatCTM(transform.toAffineTransform());
-            BoxPainter::paintFillLayerExtended(m_layoutView, paintInfo, Color(), **it, LayoutRect(paintRect), BackgroundBleedNone);
+            BoxPainter::paintFillLayer(m_layoutView, paintInfo, Color(), **it, LayoutRect(paintRect), BackgroundBleedNone);
             context.restore();
         }
     }

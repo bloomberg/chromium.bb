@@ -71,11 +71,11 @@ void InlineFlowBoxPainter::paintFillLayer(const PaintInfo& paintInfo, const Colo
     StyleImage* img = fillLayer.image();
     bool hasFillImage = img && img->canRender();
     if ((!hasFillImage && !m_inlineFlowBox.lineLayoutItem().style()->hasBorderRadius()) || (!m_inlineFlowBox.prevLineBox() && !m_inlineFlowBox.nextLineBox()) || !m_inlineFlowBox.parent()) {
-        BoxPainter::paintFillLayerExtended(*boxModel, paintInfo, c, fillLayer, rect, BackgroundBleedNone, &m_inlineFlowBox, rect.size(), op);
+        BoxPainter::paintFillLayer(*boxModel, paintInfo, c, fillLayer, rect, BackgroundBleedNone, &m_inlineFlowBox, rect.size(), op);
     } else if (m_inlineFlowBox.lineLayoutItem().style()->boxDecorationBreak() == DCLONE) {
         GraphicsContextStateSaver stateSaver(paintInfo.context);
         paintInfo.context.clip(pixelSnappedIntRect(rect));
-        BoxPainter::paintFillLayerExtended(*boxModel, paintInfo, c, fillLayer, rect, BackgroundBleedNone, &m_inlineFlowBox, rect.size(), op);
+        BoxPainter::paintFillLayer(*boxModel, paintInfo, c, fillLayer, rect, BackgroundBleedNone, &m_inlineFlowBox, rect.size(), op);
     } else {
         // We have a fill image that spans multiple lines.
         // FIXME: frameSize ought to be the same as rect.size().
@@ -84,7 +84,7 @@ void InlineFlowBoxPainter::paintFillLayer(const PaintInfo& paintInfo, const Colo
         GraphicsContextStateSaver stateSaver(paintInfo.context);
         // TODO(chrishtr): this should likely be pixel-snapped.
         paintInfo.context.clip(pixelSnappedIntRect(rect));
-        BoxPainter::paintFillLayerExtended(*boxModel, paintInfo, c, fillLayer, imageStripPaintRect, BackgroundBleedNone, &m_inlineFlowBox, rect.size(), op);
+        BoxPainter::paintFillLayer(*boxModel, paintInfo, c, fillLayer, imageStripPaintRect, BackgroundBleedNone, &m_inlineFlowBox, rect.size(), op);
     }
 }
 

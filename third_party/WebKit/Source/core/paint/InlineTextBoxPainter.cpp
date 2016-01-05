@@ -84,7 +84,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
         return;
     }
 
-    // The text clip phase already has a LayoutObjectDrawingRecorder. Text clips are initiated only in BoxPainter::paintLayerExtended,
+    // The text clip phase already has a LayoutObjectDrawingRecorder. Text clips are initiated only in BoxPainter::paintFillLayer,
     // which is already within a LayoutObjectDrawingRecorder.
     Optional<DrawingRecorder> drawingRecorder;
     if (paintInfo.phase != PaintPhaseTextClip) {

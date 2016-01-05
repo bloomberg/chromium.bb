@@ -156,9 +156,8 @@ bool BoxPainter::calculateFillLayerOcclusionCulling(FillLayerOcclusionOutputList
         // FIXME : It would be possible for the following occlusion culling test to be more aggressive
         // on layers with no repeat by testing whether the image covers the layout rect.
         // Testing that here would imply duplicating a lot of calculations that are currently done in
-        // LayoutBoxModelObject::paintFillLayerExtended. A more efficient solution might be to move
-        // the layer recursion into paintFillLayerExtended, or to compute the layer geometry here
-        // and pass it down.
+        // LayoutBoxModelObject::paintFillLayer. A more efficient solution might be to move the layer
+        // recursion into paintFillLayer, or to compute the layer geometry here and pass it down.
 
         // TODO(trchen): Need to check compositing mode as well.
         if (currentLayer->blendMode() != WebBlendModeNormal)
@@ -204,16 +203,10 @@ void BoxPainter::paintFillLayers(const PaintInfo& paintInfo, const Color& c, con
         context.beginLayer();
 
     for (auto it = reversedPaintList.rbegin(); it != reversedPaintList.rend(); ++it)
-        paintFillLayer(paintInfo, c, **it, rect, bleedAvoidance, op, backgroundObject);
+        paintFillLayer(m_layoutBox, paintInfo, c, **it, rect, bleedAvoidance, 0, LayoutSize(), op, backgroundObject);
 
     if (shouldDrawBackgroundInSeparateBuffer)
         context.endLayer();
-}
-
-void BoxPainter::paintFillLayer(const PaintInfo& paintInfo, const Color& c, const FillLayer& fillLayer, const LayoutRect& rect,
-    BackgroundBleedAvoidance bleedAvoidance, SkXfermode::Mode op, const LayoutObject* backgroundObject)
-{
-    BoxPainter::paintFillLayerExtended(m_layoutBox, paintInfo, c, fillLayer, rect, bleedAvoidance, 0, LayoutSize(), op, backgroundObject);
 }
 
 void BoxPainter::applyBoxShadowForBackground(GraphicsContext& context, const LayoutObject& obj)
@@ -285,7 +278,7 @@ FloatRoundedRect BoxPainter::backgroundRoundedRectAdjustedForBleedAvoidance(cons
     return getBackgroundRoundedRect(obj, borderRect, box, boxSize.width(), boxSize.height(), includeLogicalLeftEdge, includeLogicalRightEdge);
 }
 
-void BoxPainter::paintFillLayerExtended(const LayoutBoxModelObject& obj, const PaintInfo& paintInfo, const Color& color, const FillLayer& bgLayer, const LayoutRect& rect, BackgroundBleedAvoidance bleedAvoidance, const InlineFlowBox* box, const LayoutSize& boxSize, SkXfermode::Mode op, const LayoutObject* backgroundObject)
+void BoxPainter::paintFillLayer(const LayoutBoxModelObject& obj, const PaintInfo& paintInfo, const Color& color, const FillLayer& bgLayer, const LayoutRect& rect, BackgroundBleedAvoidance bleedAvoidance, const InlineFlowBox* box, const LayoutSize& boxSize, SkXfermode::Mode op, const LayoutObject* backgroundObject)
 {
     GraphicsContext& context = paintInfo.context;
     if (rect.isEmpty())
