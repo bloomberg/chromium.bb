@@ -36,6 +36,8 @@ class SCHEDULER_EXPORT ThrottlingHelper : public TimeDomain::Observer {
 
   static base::TimeDelta DelayToNextRunTimeInSeconds(base::TimeTicks now);
 
+  const scoped_refptr<TaskQueue>& task_runner() const { return task_runner_; }
+
  private:
   void PumpThrottledTasks();
   void MaybeSchedulePumpThrottledTasksLocked(
@@ -44,7 +46,7 @@ class SCHEDULER_EXPORT ThrottlingHelper : public TimeDomain::Observer {
   std::set<TaskQueue*> throttled_queues_;
   base::Closure pump_throttled_tasks_closure_;
   base::Closure forward_immediate_work_closure_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<TaskQueue> task_runner_;
   RendererSchedulerImpl* renderer_scheduler_;  // NOT OWNED
   base::TickClock* tick_clock_;                // NOT OWNED
   const char* tracing_category_;               // NOT OWNED

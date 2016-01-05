@@ -36,12 +36,14 @@ ThrottlingHelper::~ThrottlingHelper() {
 }
 
 void ThrottlingHelper::Throttle(TaskQueue* task_queue) {
+  DCHECK_NE(task_queue, task_runner_.get());
   throttled_queues_.insert(task_queue);
 
   task_queue->SetTimeDomain(time_domain_.get());
   task_queue->SetPumpPolicy(TaskQueue::PumpPolicy::MANUAL);
 
-  MaybeSchedulePumpThrottledTasksLocked(FROM_HERE);
+  if (!task_queue->IsEmpty())
+    MaybeSchedulePumpThrottledTasksLocked(FROM_HERE);
 }
 
 void ThrottlingHelper::Unthrottle(TaskQueue* task_queue) {

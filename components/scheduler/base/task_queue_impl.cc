@@ -379,6 +379,8 @@ void TaskQueueImpl::SetPumpPolicy(PumpPolicy pump_policy) {
 }
 
 void TaskQueueImpl::PumpQueueLocked(bool may_post_dowork) {
+  TRACE_EVENT1(disabled_by_default_tracing_category_,
+               "TaskQueueImpl::PumpQueueLocked", "queue", name_);
   TaskQueueManager* task_queue_manager = any_thread().task_queue_manager;
   if (!task_queue_manager)
     return;

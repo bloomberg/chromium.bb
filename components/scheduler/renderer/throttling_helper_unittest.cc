@@ -170,6 +170,13 @@ TEST_F(ThrottlingHelperTest, TimerAlignment_Unthrottled) {
                   start_time + base::TimeDelta::FromMilliseconds(8300.0)));
 }
 
+TEST_F(ThrottlingHelperTest,
+       ThrotlingAnEmptyQueueDoesNotPostPumpThrottledTasksLocked) {
+  throttling_helper_->Throttle(timer_queue_.get());
+
+  EXPECT_TRUE(throttling_helper_->task_runner()->IsEmpty());
+}
+
 TEST_F(ThrottlingHelperTest, WakeUpForNonDelayedTask) {
   std::vector<base::TimeTicks> run_times;
 
