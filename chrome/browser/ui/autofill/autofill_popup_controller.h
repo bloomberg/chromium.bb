@@ -41,9 +41,6 @@ class AutofillPopupController : public AutofillPopupViewDelegate {
   // rather than an Autofill suggestion.
   virtual bool IsWarning(size_t index) const = 0;
 
-  // Updates the bounds of the popup and initiates a redraw.
-  virtual void SetPopupBounds(const gfx::Rect& bounds) = 0;
-
   // Returns the bounds of the item at |index| in the popup, relative to
   // the top left of the popup.
   virtual gfx::Rect GetRowBounds(size_t index) = 0;

@@ -386,11 +386,6 @@ gfx::Rect AutofillPopupControllerImpl::GetRowBounds(size_t index) {
       GetRowHeightFromId(suggestions_[index].frontend_id));
 }
 
-void AutofillPopupControllerImpl::SetPopupBounds(const gfx::Rect& bounds) {
-  popup_bounds_ = bounds;
-  UpdateBoundsAndRedrawPopup();
-}
-
 const gfx::Rect& AutofillPopupControllerImpl::popup_bounds() const {
   return popup_bounds_;
 }

@@ -95,7 +95,6 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
   }
 
   // Making protected functions public for testing
-  using AutofillPopupControllerImpl::SetPopupBounds;
   using AutofillPopupControllerImpl::GetLineCount;
   using AutofillPopupControllerImpl::GetSuggestionAt;
   using AutofillPopupControllerImpl::GetElidedValueAt;
@@ -184,18 +183,6 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
   scoped_ptr<NiceMock<MockAutofillExternalDelegate> > external_delegate_;
   testing::NiceMock<TestAutofillPopupController>* autofill_popup_controller_;
 };
-
-TEST_F(AutofillPopupControllerUnitTest, SetBounds) {
-  // Ensure the popup size can be set and causes a redraw.
-  gfx::Rect popup_bounds(10, 10, 100, 100);
-
-  EXPECT_CALL(*autofill_popup_controller_,
-              UpdateBoundsAndRedrawPopup());
-
-  popup_controller()->SetPopupBounds(popup_bounds);
-
-  EXPECT_EQ(popup_bounds, popup_controller()->popup_bounds());
-}
 
 TEST_F(AutofillPopupControllerUnitTest, ChangeSelectedLine) {
   // Set up the popup.

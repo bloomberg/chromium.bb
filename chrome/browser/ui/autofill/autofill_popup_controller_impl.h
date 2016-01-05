@@ -79,7 +79,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   int GetIconResourceID(const base::string16& resource_name) const override;
   bool IsWarning(size_t index) const override;
   gfx::Rect GetRowBounds(size_t index) override;
-  void SetPopupBounds(const gfx::Rect& bounds) override;
   const gfx::Rect& popup_bounds() const override;
   gfx::NativeView container_view() override;
   const gfx::RectF& element_bounds() const override;
