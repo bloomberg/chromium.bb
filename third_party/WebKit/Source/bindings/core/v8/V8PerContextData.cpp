@@ -115,7 +115,10 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(const Wrapp
             return v8::Local<v8::Function>();
     }
 
-    v8::Local<v8::Object> prototypeObject = interfaceObject->Get(currentContext, v8AtomicString(m_isolate, "prototype")).ToLocalChecked().As<v8::Object>();
+    v8::Local<v8::Value> prototypeValue;
+    if (!interfaceObject->Get(currentContext, v8AtomicString(m_isolate, "prototype")).ToLocal(&prototypeValue) || !prototypeValue->IsObject())
+        return v8::Local<v8::Function>();
+    v8::Local<v8::Object> prototypeObject = prototypeValue.As<v8::Object>();
     if (prototypeObject->InternalFieldCount() == v8PrototypeInternalFieldcount
         && type->wrapperTypePrototype == WrapperTypeInfo::WrapperTypeObjectPrototype)
         prototypeObject->SetAlignedPointerInInternalField(v8PrototypeTypeIndex, const_cast<WrapperTypeInfo*>(type));
