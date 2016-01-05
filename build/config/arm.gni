@@ -73,4 +73,7 @@ if (current_cpu == "arm") {
       arm_fpu = "vfpv3-d16"
     }
   }
+} else if (current_cpu == "arm64") {
+  # arm64 supports only "hard".
+  arm_float_abi = "hard"
 }
