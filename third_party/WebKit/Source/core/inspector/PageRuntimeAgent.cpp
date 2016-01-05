@@ -121,7 +121,9 @@ void PageRuntimeAgent::willReleaseScriptContext(LocalFrame* frame, ScriptState* 
 
 ScriptState* PageRuntimeAgent::defaultScriptState()
 {
-    return ScriptState::forMainWorld(m_inspectedFrames->root());
+    ScriptState* scriptState = ScriptState::forMainWorld(m_inspectedFrames->root());
+    ASSERT(scriptState);
+    return scriptState;
 }
 
 void PageRuntimeAgent::muteConsole()
@@ -144,8 +146,10 @@ void PageRuntimeAgent::reportExecutionContextCreation()
 
         // Ensure execution context is created.
         // If initializeMainWorld returns true, then is registered by didCreateScriptContext
-        if (!frame->script().initializeMainWorld())
-            reportExecutionContext(ScriptState::forMainWorld(frame), true, "", frameId);
+        if (!frame->script().initializeMainWorld()) {
+            ScriptState* scriptState = ScriptState::forMainWorld(frame);
+            reportExecutionContext(scriptState, true, "", frameId);
+        }
         frame->script().collectIsolatedContexts(isolatedContexts);
         if (isolatedContexts.isEmpty())
             continue;

@@ -387,6 +387,8 @@ void InspectorAnimationAgent::resolveAnimation(ErrorString* errorString, const S
     }
 
     ScriptState* scriptState = ScriptState::forMainWorld(frame);
+    if (!scriptState)
+        return;
     InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(scriptState);
     if (injectedScript.isEmpty())
         return;

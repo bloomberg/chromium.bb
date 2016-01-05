@@ -239,7 +239,7 @@ TextPosition ScriptController::eventHandlerPosition() const
 bool ScriptController::bindToWindowObject(LocalFrame* frame, const String& key, NPObject* object)
 {
     ScriptState* scriptState = ScriptState::forMainWorld(frame);
-    if (!scriptState->contextIsValid())
+    if (!scriptState)
         return false;
 
     ScriptState::Scope scope(scriptState);
@@ -348,7 +348,7 @@ static NPObject* createNoScriptObject()
 static NPObject* createScriptObject(LocalFrame* frame, v8::Isolate* isolate)
 {
     ScriptState* scriptState = ScriptState::forMainWorld(frame);
-    if (!scriptState->contextIsValid())
+    if (!scriptState)
         return createNoScriptObject();
 
     ScriptState::Scope scope(scriptState);
@@ -386,7 +386,7 @@ NPObject* ScriptController::createScriptObjectForPluginElement(HTMLPlugInElement
         return createNoScriptObject();
 
     ScriptState* scriptState = ScriptState::forMainWorld(frame());
-    if (!scriptState->contextIsValid())
+    if (!scriptState)
         return createNoScriptObject();
 
     ScriptState::Scope scope(scriptState);
@@ -553,7 +553,7 @@ v8::Local<v8::Value> ScriptController::evaluateScriptInMainWorld(const ScriptSou
     m_sourceURL = &sourceURL;
 
     ScriptState* scriptState = ScriptState::forMainWorld(frame());
-    if (!scriptState->contextIsValid())
+    if (!scriptState)
         return v8::Local<v8::Value>();
     v8::EscapableHandleScope handleScope(isolate());
     ScriptState::Scope scope(scriptState);

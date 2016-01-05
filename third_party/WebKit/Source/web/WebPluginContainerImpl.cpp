@@ -456,7 +456,7 @@ v8::Local<v8::Object> WebPluginContainerImpl::v8ObjectForElement()
         return v8::Local<v8::Object>();
 
     ScriptState* scriptState = ScriptState::forMainWorld(frame);
-    if (!scriptState->contextIsValid())
+    if (!scriptState)
         return v8::Local<v8::Object>();
 
     v8::Local<v8::Value> v8value = toV8(m_element.get(), scriptState->context()->Global(), scriptState->isolate());

@@ -232,7 +232,7 @@ v8::Local<v8::Value> PrivateScriptRunner::installClassIfNeeded(Document* documen
 
     v8::HandleScope handleScope(toIsolate(document));
     ScriptState* scriptState = ScriptState::forWorld(document->contextDocument()->frame(), DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (!scriptState->contextIsValid())
+    if (!scriptState)
         return v8::Local<v8::Value>();
 
     ScriptState::Scope scope(scriptState);

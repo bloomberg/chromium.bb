@@ -69,6 +69,7 @@ void WebDevToolsFrontendImpl::didClearWindowObject(WebLocalFrameImpl* frame)
     if (m_webFrame == frame) {
         v8::Isolate* isolate = v8::Isolate::GetCurrent();
         ScriptState* scriptState = ScriptState::forMainWorld(m_webFrame->frame());
+        ASSERT(scriptState);
         ScriptState::Scope scope(scriptState);
 
         if (m_devtoolsHost)

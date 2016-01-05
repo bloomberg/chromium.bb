@@ -593,10 +593,10 @@ bool {{v8_class}}::PrivateScript::{{method.name}}Method({{method.argument_declar
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
     ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (!scriptState->contextIsValid())
+    if (!scriptState)
         return false;
     ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-    if (!scriptState->contextIsValid())
+    if (!scriptStateInUserScript)
         return false;
 
     ScriptState::Scope scope(scriptState);

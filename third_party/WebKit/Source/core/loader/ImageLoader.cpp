@@ -96,10 +96,12 @@ public:
         v8::HandleScope scope(isolate);
         // If we're invoked from C++ without a V8 context on the stack, we should
         // run the microtask in the context of the element's document's main world.
-        if (ScriptState::hasCurrentScriptState(isolate))
+        if (ScriptState::hasCurrentScriptState(isolate)) {
             m_scriptState = ScriptState::current(isolate);
-        else
+        } else {
             m_scriptState = ScriptState::forMainWorld(loader->element()->document().frame());
+            ASSERT(m_scriptState);
+        }
     }
 
     ~Task() override

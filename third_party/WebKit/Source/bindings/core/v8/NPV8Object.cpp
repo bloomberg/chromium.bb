@@ -91,10 +91,7 @@ static ScriptState* mainWorldScriptState(v8::Isolate* isolate, NPObject* npObjec
     LocalDOMWindow* window = object->rootObject;
     if (!window || !window->frame())
         return nullptr;
-    ScriptState* scriptState = ScriptState::forMainWorld(window->frame());
-    if (!scriptState->contextIsValid())
-        return nullptr;
-    return scriptState;
+    return ScriptState::forMainWorld(window->frame());
 }
 
 static PassOwnPtr<v8::Local<v8::Value>[]> createValueListFromVariantArgs(v8::Isolate* isolate, const NPVariant* arguments, uint32_t argumentCount, NPObject* owner)

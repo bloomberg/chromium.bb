@@ -219,6 +219,8 @@ void DevToolsHost::showContextMenu(LocalFrame* targetFrame, float x, float y, co
 {
     ASSERT(m_frontendFrame);
     ScriptState* frontendScriptState = ScriptState::forMainWorld(m_frontendFrame);
+    if (!frontendScriptState)
+        return;
     ScriptValue devtoolsApiObject = frontendScriptState->getFromGlobalObject("DevToolsAPI");
     ASSERT(devtoolsApiObject.isObject());
 

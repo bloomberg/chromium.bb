@@ -674,6 +674,8 @@ void InspectorIndexedDBAgent::requestDatabaseNames(ErrorString* errorString, con
         return;
 
     ScriptState* scriptState = ScriptState::forMainWorld(frame);
+    if (!scriptState)
+        return;
     ScriptState::Scope scope(scriptState);
     TrackExceptionState exceptionState;
     IDBRequest* idbRequest = idbFactory->getDatabaseNames(scriptState, exceptionState);
@@ -695,6 +697,8 @@ void InspectorIndexedDBAgent::requestDatabase(ErrorString* errorString, const St
         return;
 
     ScriptState* scriptState = ScriptState::forMainWorld(frame);
+    if (!scriptState)
+        return;
     ScriptState::Scope scope(scriptState);
     RefPtr<DatabaseLoader> databaseLoader = DatabaseLoader::create(scriptState, requestCallback);
     databaseLoader->start(idbFactory, document->securityOrigin(), databaseName);
@@ -717,6 +721,8 @@ void InspectorIndexedDBAgent::requestData(ErrorString* errorString, const String
     }
 
     ScriptState* scriptState = ScriptState::forMainWorld(frame);
+    if (!scriptState)
+        return;
     ScriptState::Scope scope(scriptState);
     RefPtr<DataLoader> dataLoader = DataLoader::create(scriptState, requestCallback, objectStoreName, indexName, idbKeyRange, skipCount, pageSize);
     dataLoader->start(idbFactory, document->securityOrigin(), databaseName);
@@ -823,6 +829,8 @@ void InspectorIndexedDBAgent::clearObjectStore(ErrorString* errorString, const S
         return;
 
     ScriptState* scriptState = ScriptState::forMainWorld(frame);
+    if (!scriptState)
+        return;
     ScriptState::Scope scope(scriptState);
     RefPtr<ClearObjectStore> clearObjectStore = ClearObjectStore::create(scriptState, objectStoreName, requestCallback);
     clearObjectStore->start(idbFactory, document->securityOrigin(), databaseName);

@@ -941,7 +941,7 @@ v8::Local<v8::Value> WebLocalFrameImpl::callFunctionEvenIfScriptDisabled(v8::Loc
 v8::Local<v8::Context> WebLocalFrameImpl::mainWorldScriptContext() const
 {
     ScriptState* scriptState = ScriptState::forMainWorld(frame());
-    ASSERT(scriptState->contextIsValid());
+    ASSERT(scriptState);
     return scriptState->context();
 }
 

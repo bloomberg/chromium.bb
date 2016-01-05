@@ -79,8 +79,8 @@ public:
         return scriptState;
     }
 
-    // The context of the returned ScriptState may have been already detached.
-    // You must check scriptState->contextIsValid() before using the context.
+    // These methods can return nullptr if the context associated with the
+    // ScriptState has already been detached.
     static ScriptState* forMainWorld(LocalFrame*);
     static ScriptState* forWorld(LocalFrame*, DOMWrapperWorld&);
 

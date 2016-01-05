@@ -149,6 +149,8 @@ bool DocumentXSLT::processingInstructionInsertedIntoDocument(Document& document,
         return true;
 
     ScriptState* scriptState = ScriptState::forMainWorld(document.frame());
+    if (!scriptState)
+        return false;
     RefPtrWillBeRawPtr<DOMContentLoadedListener> listener = DOMContentLoadedListener::create(scriptState, pi);
     document.addEventListener(EventTypeNames::DOMContentLoaded, listener, false);
     ASSERT(!pi->eventListenerForXSLT());

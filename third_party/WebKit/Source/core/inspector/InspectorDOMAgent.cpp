@@ -2122,12 +2122,14 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(No
     if (!frame)
         return nullptr;
 
-    ScriptState* state = ScriptState::forMainWorld(frame);
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(state);
+    ScriptState* scriptState = ScriptState::forMainWorld(frame);
+    if (!scriptState)
+        return nullptr;
+    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(scriptState);
     if (injectedScript.isEmpty())
         return nullptr;
 
-    ScriptValue scriptValue = nodeAsScriptValue(state, node);
+    ScriptValue scriptValue = nodeAsScriptValue(scriptState, node);
     return injectedScript.wrapObject(scriptValue, objectGroup);
 }
 

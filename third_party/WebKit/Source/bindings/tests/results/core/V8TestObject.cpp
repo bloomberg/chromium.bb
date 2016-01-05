@@ -13916,10 +13916,10 @@ bool V8TestObject::PrivateScript::voidMethodImplementedInPrivateScriptMethod(Loc
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
     ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (!scriptState->contextIsValid())
+    if (!scriptState)
         return false;
     ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-    if (!scriptState->contextIsValid())
+    if (!scriptStateInUserScript)
         return false;
 
     ScriptState::Scope scope(scriptState);
@@ -13943,10 +13943,10 @@ bool V8TestObject::PrivateScript::shortMethodImplementedInPrivateScriptMethod(Lo
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
     ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (!scriptState->contextIsValid())
+    if (!scriptState)
         return false;
     ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-    if (!scriptState->contextIsValid())
+    if (!scriptStateInUserScript)
         return false;
 
     ScriptState::Scope scope(scriptState);
@@ -13974,10 +13974,10 @@ bool V8TestObject::PrivateScript::shortMethodWithShortArgumentImplementedInPriva
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
     ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (!scriptState->contextIsValid())
+    if (!scriptState)
         return false;
     ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-    if (!scriptState->contextIsValid())
+    if (!scriptStateInUserScript)
         return false;
 
     ScriptState::Scope scope(scriptState);
@@ -14006,10 +14006,10 @@ bool V8TestObject::PrivateScript::stringMethodWithStringArgumentImplementedInPri
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
     ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (!scriptState->contextIsValid())
+    if (!scriptState)
         return false;
     ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-    if (!scriptState->contextIsValid())
+    if (!scriptStateInUserScript)
         return false;
 
     ScriptState::Scope scope(scriptState);
@@ -14038,10 +14038,10 @@ bool V8TestObject::PrivateScript::nodeMethodWithNodeArgumentImplementedInPrivate
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
     ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (!scriptState->contextIsValid())
+    if (!scriptState)
         return false;
     ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-    if (!scriptState->contextIsValid())
+    if (!scriptStateInUserScript)
         return false;
 
     ScriptState::Scope scope(scriptState);
@@ -14068,10 +14068,10 @@ bool V8TestObject::PrivateScript::nodeMethodWithVariousArgumentsImplementedInPri
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
     ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (!scriptState->contextIsValid())
+    if (!scriptState)
         return false;
     ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-    if (!scriptState->contextIsValid())
+    if (!scriptStateInUserScript)
         return false;
 
     ScriptState::Scope scope(scriptState);
@@ -14102,10 +14102,10 @@ bool V8TestObject::PrivateScript::methodForPrivateScriptOnlyMethod(LocalFrame* f
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
     ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (!scriptState->contextIsValid())
+    if (!scriptState)
         return false;
     ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-    if (!scriptState->contextIsValid())
+    if (!scriptStateInUserScript)
         return false;
 
     ScriptState::Scope scope(scriptState);
@@ -14135,10 +14135,10 @@ bool V8TestObject::PrivateScript::readonlyShortAttributeAttributeGetter(LocalFra
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
     ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (!scriptState->contextIsValid())
+    if (!scriptState)
         return false;
     ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-    if (!scriptState->contextIsValid())
+    if (!scriptStateInUserScript)
         return false;
 
     ScriptState::Scope scope(scriptState);
@@ -14166,10 +14166,10 @@ bool V8TestObject::PrivateScript::shortAttributeAttributeGetter(LocalFrame* fram
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
     ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (!scriptState->contextIsValid())
+    if (!scriptState)
         return false;
     ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-    if (!scriptState->contextIsValid())
+    if (!scriptStateInUserScript)
         return false;
 
     ScriptState::Scope scope(scriptState);
@@ -14197,10 +14197,10 @@ bool V8TestObject::PrivateScript::shortAttributeAttributeSetter(LocalFrame* fram
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
     ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (!scriptState->contextIsValid())
+    if (!scriptState)
         return false;
     ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-    if (!scriptState->contextIsValid())
+    if (!scriptStateInUserScript)
         return false;
 
     ScriptState::Scope scope(scriptState);
@@ -14219,10 +14219,10 @@ bool V8TestObject::PrivateScript::stringAttributeAttributeGetter(LocalFrame* fra
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
     ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (!scriptState->contextIsValid())
+    if (!scriptState)
         return false;
     ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-    if (!scriptState->contextIsValid())
+    if (!scriptStateInUserScript)
         return false;
 
     ScriptState::Scope scope(scriptState);
@@ -14250,10 +14250,10 @@ bool V8TestObject::PrivateScript::stringAttributeAttributeSetter(LocalFrame* fra
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
     ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (!scriptState->contextIsValid())
+    if (!scriptState)
         return false;
     ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-    if (!scriptState->contextIsValid())
+    if (!scriptStateInUserScript)
         return false;
 
     ScriptState::Scope scope(scriptState);
@@ -14272,10 +14272,10 @@ bool V8TestObject::PrivateScript::nodeAttributeAttributeGetter(LocalFrame* frame
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
     ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (!scriptState->contextIsValid())
+    if (!scriptState)
         return false;
     ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-    if (!scriptState->contextIsValid())
+    if (!scriptStateInUserScript)
         return false;
 
     ScriptState::Scope scope(scriptState);
@@ -14301,10 +14301,10 @@ bool V8TestObject::PrivateScript::nodeAttributeAttributeSetter(LocalFrame* frame
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
     ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (!scriptState->contextIsValid())
+    if (!scriptState)
         return false;
     ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-    if (!scriptState->contextIsValid())
+    if (!scriptStateInUserScript)
         return false;
 
     ScriptState::Scope scope(scriptState);
@@ -14323,10 +14323,10 @@ bool V8TestObject::PrivateScript::attributeForPrivateScriptOnlyAttributeGetter(L
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
     ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (!scriptState->contextIsValid())
+    if (!scriptState)
         return false;
     ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-    if (!scriptState->contextIsValid())
+    if (!scriptStateInUserScript)
         return false;
 
     ScriptState::Scope scope(scriptState);
@@ -14354,10 +14354,10 @@ bool V8TestObject::PrivateScript::attributeForPrivateScriptOnlyAttributeSetter(L
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
     ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (!scriptState->contextIsValid())
+    if (!scriptState)
         return false;
     ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-    if (!scriptState->contextIsValid())
+    if (!scriptStateInUserScript)
         return false;
 
     ScriptState::Scope scope(scriptState);
@@ -14376,10 +14376,10 @@ bool V8TestObject::PrivateScript::enumForPrivateScriptAttributeGetter(LocalFrame
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
     ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (!scriptState->contextIsValid())
+    if (!scriptState)
         return false;
     ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-    if (!scriptState->contextIsValid())
+    if (!scriptStateInUserScript)
         return false;
 
     ScriptState::Scope scope(scriptState);
@@ -14407,10 +14407,10 @@ bool V8TestObject::PrivateScript::enumForPrivateScriptAttributeSetter(LocalFrame
     v8::HandleScope handleScope(toIsolate(frame));
     ScriptForbiddenScope::AllowUserAgentScript script;
     ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (!scriptState->contextIsValid())
+    if (!scriptState)
         return false;
     ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-    if (!scriptState->contextIsValid())
+    if (!scriptStateInUserScript)
         return false;
 
     ScriptState::Scope scope(scriptState);

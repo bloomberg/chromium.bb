@@ -259,7 +259,7 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, Legacy
         LocalFrame* frame = m_element->document().frame();
         if (frame) {
             ScriptState* scriptState = ScriptState::forMainWorld(frame);
-            if (scriptState->contextIsValid())
+            if (scriptState)
                 ScriptStreamer::startStreaming(m_pendingScript, PendingScript::Async, frame->settings(), scriptState, frame->frameScheduler()->loadingTaskRunner());
         }
         contextDocument->scriptRunner()->queueScriptForExecution(this, ScriptRunner::ASYNC_EXECUTION);
