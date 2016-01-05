@@ -725,7 +725,6 @@
       'browser/local_discovery/cloud_device_list_unittest.cc',
       'browser/local_discovery/cloud_print_printer_list_unittest.cc',
       'browser/local_discovery/gcd_api_flow_unittest.cc',
-      'browser/local_discovery/gcd_registration_ticket_request_unittest.cc',
       'browser/local_discovery/privet_confirm_api_flow_unittest.cc',
       'browser/local_discovery/privet_http_unittest.cc',
       'browser/local_discovery/privet_url_fetcher_unittest.cc',
