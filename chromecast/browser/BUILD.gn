@@ -44,8 +44,6 @@ source_set("browser") {
     "metrics/cast_metrics_service_client.h",
     "metrics/cast_stability_metrics_provider.cc",
     "metrics/cast_stability_metrics_provider.h",
-    "pref_service_helper.cc",
-    "pref_service_helper.h",
     "service/cast_service_simple.cc",
     "service/cast_service_simple.h",
     "url_request_context_factory.cc",
@@ -56,7 +54,6 @@ source_set("browser") {
     sources += [
       "cast_content_browser_client_simple.cc",
       "cast_network_delegate_simple.cc",
-      "pref_service_helper_simple.cc",
     ]
   }
 

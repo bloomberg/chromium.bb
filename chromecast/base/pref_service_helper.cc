@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/browser/pref_service_helper.h"
+#include "chromecast/base/pref_service_helper.h"
 
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/prefs/json_pref_store.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service_factory.h"
 #include "base/prefs/pref_store.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/base/pref_names.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace chromecast {
-namespace shell {
 
 namespace {
 
@@ -39,7 +39,11 @@ base::FilePath GetConfigPath() {
 
 // static
 scoped_ptr<PrefService> PrefServiceHelper::CreatePrefService(
-    PrefRegistrySimple* registry) {
+    PrefRegistrySimple* registry,
+    base::SequencedWorkerPool* worker_pool) {
+  DCHECK(registry);
+  DCHECK(worker_pool);
+
   const base::FilePath config_path(GetConfigPath());
   VLOG(1) << "Loading config from " << config_path.value();
 
@@ -58,9 +62,7 @@ scoped_ptr<PrefService> PrefServiceHelper::CreatePrefService(
 
   base::PrefServiceFactory prefServiceFactory;
   scoped_refptr<base::SequencedTaskRunner> task_runner =
-      JsonPrefStore::GetTaskRunnerForFile(
-          config_path,
-          content::BrowserThread::GetBlockingPool());
+      JsonPrefStore::GetTaskRunnerForFile(config_path, worker_pool);
   prefServiceFactory.SetUserPrefsFile(config_path, task_runner.get());
   prefServiceFactory.set_async(false);
 
@@ -80,5 +82,4 @@ scoped_ptr<PrefService> PrefServiceHelper::CreatePrefService(
   return pref_service;
 }
 
-}  // namespace shell
 }  // namespace chromecast
