@@ -8,10 +8,11 @@
 #include "net/base/host_port_pair.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
+using local_discovery::ServiceDescription;
+using DeviceInfo = AndroidDeviceManager::DeviceInfo;
+using BrowserInfo = AndroidDeviceManager::BrowserInfo;
 
-typedef AndroidDeviceManager::DeviceInfo DeviceInfo;
-typedef AndroidDeviceManager::BrowserInfo BrowserInfo;
+namespace {
 
 void CompareDeviceInfo(bool* was_run,
                        const DeviceInfo& expected,
@@ -19,8 +20,8 @@ void CompareDeviceInfo(bool* was_run,
   EXPECT_EQ(expected.model, actual.model);
   EXPECT_EQ(expected.connected, actual.connected);
 
-  BrowserInfo exp_br_info = expected.browser_info[0];
-  BrowserInfo act_br_info = actual.browser_info[0];
+  const BrowserInfo& exp_br_info = expected.browser_info[0];
+  const BrowserInfo& act_br_info = actual.browser_info[0];
   EXPECT_EQ(exp_br_info.socket_name, act_br_info.socket_name);
   EXPECT_EQ(exp_br_info.display_name, act_br_info.display_name);
   EXPECT_EQ(exp_br_info.type, act_br_info.type);
