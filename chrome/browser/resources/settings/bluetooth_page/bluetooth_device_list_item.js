@@ -24,8 +24,6 @@ Polymer({
    * @private
    */
   itemTapped_: function(e) {
-    if (this.device.connected || this.device.connecting)
-      return;
     this.fire('device-event', {
       action: 'connect',
       device: this.device,
@@ -49,6 +47,7 @@ Polymer({
    * @private
    */
   doNothing_: function(e) {
+    // Avoid triggering itemTapped_.
     e.stopPropagation();
   },
 

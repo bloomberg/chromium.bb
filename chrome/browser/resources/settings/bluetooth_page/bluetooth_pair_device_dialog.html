@@ -1,0 +1,68 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+
+<dom-module id="settings-bluetooth-pair-device-dialog">
+  <link rel="import" type="css" href="chrome://md-settings/settings_shared.css">
+  <link rel="import" type="css" href="bluetooth_page.css">
+  <link rel="import" type="css" href="bluetooth_dialog.css">
+  <template>
+    <div id="dialogOuterDiv" class="layout vertical flex">
+      <div id="dialogHeaderDiv" class="settings-box layout horizontal center">
+        <span id="dialogTitle" class="flex"
+            i18n-content="bluetoothPairDevicePageTitle">
+        </span>
+        <paper-icon-button icon="close" on-tap="onCancelTap_" id="close">
+        </paper-icon-button>
+      </div>
+      <div id="pairing"
+          class="settings-blox layout vertical center center-justified flex">
+        <div id="dialogMessage">
+          [[getMessage_(pairingDevice, pairingEvent)]]
+        </div>
+        <div hidden$="[[!showEnterPincode_(pairingEvent)]]">
+          <paper-input id="pincode" minlength="1" maxlength="16" type="text">
+        </div>
+        <div hidden$="[[!showEnterPasskey_(pairingEvent)]]">
+          <paper-input id="passkey" minlength="6" maxlength="6" type="text">
+        </div>
+        <div id="pinDiv" class="layout horizontal center center-justified"
+            hidden="[[!showDisplayPassOrPin_(pairingEvent)]]">
+          <template is="dom-repeat" items="[[digits]]">
+            <span class$="[[getPinClass_(pairingEvent, index)]]">
+                [[getPinDigit_(pairingEvent, index)]]
+            </span>
+          </template>
+          <span class$="[[getPinClass_(pairingEvent, -1)]]"
+              hidden="[[showAcceptReject_(pairingEvent)]]">
+              [[i18n('bluetoothEnterKey')]]
+          </span>
+        </div>
+      </div>
+      <div id="dialogFooterDiv" class="layout horizontal center end-justified">
+        <paper-button i18n-content="bluetoothAccept"
+            hidden$="[[!showAcceptReject_(pairingEvent)]]"
+            on-tap="onAcceptTap_">
+        </paper-button>
+        <paper-button i18n-content="bluetoothReject"
+            hidden$="[[!showAcceptReject_(pairingEvent)]]"
+            on-tap="onRejectTap_">
+        </paper-button>
+        <paper-button i18n-content="bluetoothConnect"
+            hidden$="[[!showConnect_(pairingEvent)]]"
+            on-tap="onConnectTap_">
+        </paper-button>
+        <paper-button i18n-content="bluetoothDismiss"
+            hidden$="[[!showDismiss_(pairingDevice, pairingEvent)]]"
+            on-tap="onDismissTap_">
+        </paper-button>
+        <paper-button i18n-content="bluetoothCancel" on-tap="onCancelTap_"
+            hidden$="[[showDismiss_(pairingDevice, pairingEvent)]]"
+        </paper-button>
+      </div>
+    </div>
+  </template>
+  <script src="bluetooth_pair_device_dialog.js"></script>
+</dom-module>

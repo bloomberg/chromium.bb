@@ -1,0 +1,49 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
+
+<dom-module id="settings-bluetooth-add-device-dialog">
+  <link rel="import" type="css" href="chrome://md-settings/settings_shared.css">
+  <link rel="import" type="css" href="bluetooth_page.css">
+  <link rel="import" type="css" href="bluetooth_dialog.css">
+  <template>
+    <div id="dialogOuterDiv" class="layout vertical flex">
+      <div id="dialogHeaderDiv" class="settings-box layout horizontal">
+        <span id="dialogTitle" class="flex"
+            i18n-content="bluetoothAddDevicePageTitle">
+        </span>
+        <paper-icon-button icon="close" on-tap="onCancelTap_" id="close">
+        </paper-icon-button>
+      </div>
+      <div class="settings-box flex">
+        <div id="dialogDeviceList" class="settings-box layout vertical"
+            on-device-event="onDeviceEvent_">
+          <span class="no-devices" hidden$="[[haveDevices_(deviceList)]]"
+              i18n-content="bluetoothNoDevices">
+          </span>
+          <iron-selector class="flex">
+            <template is="dom-repeat" items="[[deviceList]]"
+                filter="deviceNotPaired_" observe="paired">
+              <bluetooth-device-list-item device="[[item]]">
+              </bluetooth-device-list-item>
+            </template>
+          </iron-selector>
+        </div>
+      </div>
+      <div id="dialogFooterDiv" class="layout horizontal center">
+        <div id="scanning" class="layout horizontal center flex"
+            hidden$="[[!adapterState.discovering]]">
+          <paper-spinner active="[[adapterState.discovering]]">
+          </paper-spinner>
+          <span i18n-content="bluetoothScanning"></span>
+        </div>
+        <paper-button id="cancel" class="end-justified"
+            i18n-content="bluetoothCancel" on-tap="onCancelTap_">
+        </paper-button>
+      </div>
+    </div>
+  </template>
+  <script src="bluetooth_add_device_dialog.js"></script>
+</dom-module>

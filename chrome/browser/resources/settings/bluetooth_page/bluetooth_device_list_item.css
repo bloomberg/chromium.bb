@@ -19,6 +19,10 @@ paper-item:hover {
   background-color: #f0f0f0;
 }
 
+span.name {
+  padding: 10px 0;
+}
+
 span.name[connected] {
   font-weight: bold;
 }

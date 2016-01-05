@@ -139,11 +139,35 @@
     <message name="IDS_SETTINGS_BLUETOOTH" desc="Name of the settings page which displays bluetooth device settings.">
       Bluetooth
     </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_ADD_DEVICE" desc="Name of the settings page for adding bluetooth devices.">
+      Add a Device
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE" desc="Name of the settings page for pairing bluetooth devices.">
+      Pair Bluetooth Device
+    </message>
     <message name="IDS_SETTINGS_BLUETOOTH_ENABLE" desc="Label for control to enable or disable bluetooth.">
       Enable Bluetooth
     </message>
     <message name="IDS_SETTINGS_BLUETOOTH_REMOVE" desc="Label for removing (unpairing) a paired bluetooth device">
       Remove from list
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_REQUEST_PINCODE" desc="Bluetooth pairing message typically displayed when the external Bluetooth 2.0 and older device has no display or means of input.">
+      Please enter the PIN for "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>":
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_DISPLAY_PINCODE" desc="Bluetooth pairing message typically displayed when pairing a Bluetooth 2.0 and older wireless keyboard.">
+      Please enter this PIN code on "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>":
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_REQUEST_PASSKEY" desc="Bluetooth pairing message typically displayed when the external Bluetooth 2.1 and later device has no display or means of input, and does not support SSP.">
+      Please enter the passkey for "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>":
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_DISPLAY_PASSKEY" desc="Bluetooth pairing message typically displayed when pairing a Bluetooth 2.1 and later wireless keyboard.">
+      Please enter this passkey on "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>":
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_CONFIRM_PASSKEY" desc="Bluetooth pairing message typically shown when pairing with a device that has a display.">
+      Please confirm this passkey is shown on "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>":
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_START_CONNECTING">
+      Connecting to "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>".
     </message>
   </if>
 

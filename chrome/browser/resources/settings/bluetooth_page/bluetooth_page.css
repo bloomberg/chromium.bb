@@ -9,7 +9,6 @@
 #deviceList {
   -webkit-margin-start: 15px;
   max-height: 300px;
-  min-height: 100px;
   overflow-y: auto;
 }
 
@@ -19,4 +18,15 @@ cr-expand-button {
 
 iron-icon {
   -webkit-margin-end: 10px;
+}
+
+settings-bluetooth-add-device-dialog,
+settings-bluetooth-pair-device-dialog {
+  height: 400px;
+  padding: 0;
+  width: 500px;
+}
+
+span.no-devices {
+  margin: 10px 20px;
 }
