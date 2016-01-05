@@ -192,6 +192,10 @@ void ToolbarButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
 
   layer()->Add(ink_drop_layer);
   layer()->StackAtBottom(ink_drop_layer);
+
+  // Invalidates the contents of the parent's layer which may contain
+  // a stale close/reload icon that should not remain visible.
+  parent()->SchedulePaint();
 }
 
 void ToolbarButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
