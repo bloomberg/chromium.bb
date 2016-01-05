@@ -2015,12 +2015,12 @@ This indicates that the tests are for hyphenation
 If no flags are defined forward translation is assumed.
 
 @item tests
-A list of tests. Each test consists of a list of two or three items.
-The first item is the unicode text to be tested. The second item is
-the expected braille output. This can be either unicode braille or an
-ASCII-braille like encoding. Quoting strings is optional. Comments can
-be inserted almost anywhere using the @samp{#} sign. A simple test
-would look at follows:
+A list of tests. Each test consists of a list of two, three or in some
+cases even four items. The first item is the unicode text to be
+tested. The second item is the expected braille output. This can be
+either unicode braille or an ASCII-braille like encoding. Quoting
+strings is optional. Comments can be inserted almost anywhere using
+the @samp{#} sign. A simple test would look at follows:
 
 @example
   - # a simple, no-frills test
@@ -2092,6 +2092,24 @@ defined defaults to 0. Valid mode values are @samp{noContractions},
 @end table
 
 @end table
+
+@subsection Optional test description
+When a test contains three or four items the first item is assumed to
+be a test description, the second item is the unicode text to be
+tested and the third item is the expected braille output. Again an
+optional fourth item can contain additional options for the test. The
+following shows an example:
+
+@example
+  -
+    - Number-text-transitions with italic
+    - 123abc
+    - ⠼⠁⠃⠉⠨⠶⠰⠁⠃⠉⠨⠄
+    - @{typeform: '000111'@}
+@end example
+
+In case the test fails the description will be printed together with
+the expected and the actual braille output.
 
 For more examples and inspiration please see the YAML tests
 (@file{*.yaml}) in the @file{tests} directory of the source

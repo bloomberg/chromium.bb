@@ -285,6 +285,7 @@ my_strlen_utf8_c(char *s) {
 void
 read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenation) {
   yaml_event_t event;
+  char *description = NULL;
   char *word;
   char *translation;
   int xfail = 0;
@@ -309,6 +310,17 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
   if (!yaml_parser_parse(parser, &event))
     simple_error("Error in YAML", &event);
 
+  /* Handle an optional description */
+  if (event.type == YAML_SCALAR_EVENT) {
+    description = word;
+    word = translation;
+    translation = strndup(event.data.scalar.value, event.data.scalar.length);
+    yaml_event_delete(&event);
+
+    if (!yaml_parser_parse(parser, &event))
+      simple_error("Error in YAML", &event);
+  }
+
   if (event.type == YAML_MAPPING_START_EVENT) {
     yaml_event_delete(&event);
     read_options(parser, my_strlen_utf8_c(word), &xfail, &mode, &typeform, &cursorPos);
@@ -326,12 +338,16 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
 
   if (cursorPos) {
     if (xfail != check_cursor_pos(tables_list, word, cursorPos)) {
+      if (description)
+	fprintf(stderr, "%s\n", description);
       error_at_line(0, 0, file_name, event.start_mark.line,
 		    (xfail ? "Unexpected Pass" :"Failure"));
       errors++;
     }
   } else if (hyphenation) {
     if (xfail != check_hyphenation(tables_list, word, translation)) {
+      if (description)
+	fprintf(stderr, "%s\n", description);
       error_at_line(0, 0, file_name, event.start_mark.line,
 		    (xfail ? "Unexpected Pass" :"Failure"));
       errors++;
@@ -339,6 +355,8 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
   } else {
     if (xfail != check_with_mode(tables_list, word, typeform,
 				 translation, translation_mode, direction)) {
+      if (description)
+	fprintf(stderr, "%s\n", description);
       error_at_line(0, 0, file_name, event.start_mark.line,
 		    (xfail ? "Unexpected Pass" :"Failure"));
       errors++;
@@ -346,6 +364,7 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
   }
   yaml_event_delete(&event);
   count++;
+  free(description);
   free(word);
   free(translation);
   free(typeform);

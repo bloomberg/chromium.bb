@@ -23,4 +23,15 @@ tests:
     - ⠠⠛⠕⠕⠙ ⠃⠽⠑
   # same as above using "flow style" notation
   - [Good bye,  ⠠⠛⠕⠕⠙ ⠃⠽⠑]
+  - # and finally a test with an optional test description. Here the
+    # first item is the description, the second is the string to
+    # translate and the third is the expected outcome
+    - a test with an optional test description
+    - hello
+    - ⠓⠑⠇⠇⠕
+  -
+    - Number-text-transitions with italic
+    - 123abc
+    - ⠼⠁⠃⠉⠨⠶⠰⠁⠃⠉⠨⠄
+    - {typeform: '000111'}
 
