@@ -41,8 +41,8 @@ var arabicIndicDigitOne = String.fromCharCode(0x661);
 shouldBe('rowspanAttributeEffect(arabicIndicDigitOne)', '1');
 shouldBe('rowspanAttributeEffect("2" + arabicIndicDigitOne)', '2');
 
-shouldBe('rowspanAttributeEffect("2147483647")', '8190');
-shouldBe('rowspanAttributeEffect("4294967295")', '8190');
+shouldBe('rowspanAttributeEffect("2147483647")', '65534');
+shouldBe('rowspanAttributeEffect("4294967295")', '65534');
 shouldBe('rowspanAttributeEffect("4294967296")', '1');
 </script>
 </body>
