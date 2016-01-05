@@ -153,6 +153,15 @@ Polymer({
     },
 
     /**
+     * Whether the user's mouse is positioned over the dialog.
+     * @private {boolean}
+     */
+    mouseIsPositionedOverDialog_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * The list of current routes.
      * @type {!Array<!media_router.Route>}
      */
@@ -247,16 +256,6 @@ Polymer({
     },
 
     /**
-     * List of active timer IDs. Used to retrieve active timer IDs when
-     * clearing timers.
-     * @private {!Array<number>}
-     */
-    timerIdList_: {
-      type: Array,
-      value: [],
-    },
-
-    /**
      * Whether the user has explicitly selected a cast mode.
      * @private {boolean}
      */
@@ -268,7 +267,8 @@ Polymer({
 
   listeners: {
     'arrow-drop-click': 'toggleCastModeHidden_',
-    'tap': 'onTap_',
+    'mouseleave': 'onMouseLeave_',
+    'mouseenter': 'onMouseEnter_',
   },
 
   ready: function() {
@@ -723,6 +723,24 @@ Polymer({
     this.startTapTimer_();
   },
 
+  /**
+   * Called when a mouseleave event is triggered.
+   *
+   * @private
+   */
+  onMouseLeave_: function() {
+    this.mouseIsPositionedOverDialog_ = false;
+  },
+
+  /**
+   * Called when a mouseenter event is triggered.
+   *
+   * @private
+   */
+  onMouseEnter_: function() {
+    this.mouseIsPositionedOverDialog_ = true;
+  },
+
   onNotifyRouteCreationTimeout: function() {
     this.currentLaunchingSinkId_ = '';
   },
@@ -736,24 +754,6 @@ Polymer({
   onSinkClick_: function(event) {
     this.showOrCreateRoute_(this.$.sinkList.itemForElement(event.target));
     this.fire('sink-click', {index: event.model.index});
-  },
-
-  /**
-   * Called when a tap event is triggered. Clears any active timers. onTap_
-   * is called before a new timer is started for taps that trigger a new active
-   * timer.
-   *
-   * @private
-   */
-  onTap_: function(e) {
-    if (this.timerIdList_.length == 0)
-      return;
-
-    this.timerIdList_.forEach(function(id) {
-      clearTimeout(id);
-    }, this);
-
-    this.timerIdList_ = [];
   },
 
   /**
@@ -908,17 +908,16 @@ Polymer({
   },
 
   /**
-   * Starts a timer which fires a close-dialog event if the timer has not been
-   * cleared within three seconds.
+   * Starts a timer which fires a close-dialog event if the user's mouse is
+   * not positioned over the dialog after three seconds.
    *
    * @private
    */
   startTapTimer_: function() {
     var id = setTimeout(function() {
-      this.fire('close-dialog');
+      if (!this.mouseIsPositionedOverDialog_)
+        this.fire('close-dialog');
     }.bind(this), 3000 /* 3 seconds */);
-
-    this.timerIdList_.push(id);
   },
 
   /**
