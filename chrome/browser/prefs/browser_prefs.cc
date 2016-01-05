@@ -306,14 +306,9 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   BackgroundModeManager::RegisterPrefs(registry);
 #endif
 
-  // TODO(bshe): Use !defined(ANDROID_JAVA_UI) once
-  // codereview.chromium.org/1459793002 landed.
-#if !defined(OS_ANDROID) || defined(USE_AURA)
-  RegisterBrowserPrefs(registry);
-#endif
-
 #if !defined(OS_ANDROID)
   ChromeTracingDelegate::RegisterPrefs(registry);
+  RegisterBrowserPrefs(registry);
   StartupBrowserCreator::RegisterLocalStatePrefs(registry);
   // The native GCM is used on Android instead.
   gcm::GCMChannelStatusSyncer::RegisterPrefs(registry);
@@ -494,9 +489,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   signin::RegisterProfilePrefs(registry);
 #endif
 
-  // TODO(bshe): Revisit this once it is more clear on what should we do with
-  // default apps on Aura Android. See crbug.com/564738
-#if (!defined(OS_ANDROID) || defined(USE_AURA)) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   default_apps::RegisterProfilePrefs(registry);
 #endif
 

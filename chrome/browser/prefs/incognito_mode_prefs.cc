@@ -213,11 +213,6 @@ void IncognitoModePrefs::InitializePlatformParentalControls() {
 bool IncognitoModePrefs::ArePlatformParentalControlsEnabled() {
 #if defined(OS_WIN)
   return PlatformParentalControlsValue::GetInstance()->is_enabled();
-#elif defined(OS_ANDROID) && defined(USE_AURA)
-  // TODO(bshe): Support parental controls for Aura Android. See
-  // crbug.com/564742
-  NOTIMPLEMENTED();
-  return false;
 #elif BUILDFLAG(ANDROID_JAVA_UI)
   return chrome::android::ChromeApplication::AreParentalControlsEnabled();
 #else
