@@ -16,8 +16,6 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "net/base/net_errors.h"
 
-class PageLoadMetricsObserverTest;
-
 namespace content {
 class NavigationHandle;
 class RenderFrameHost;
@@ -27,72 +25,17 @@ namespace IPC {
 class Message;
 }  // namespace IPC
 
-namespace rappor {
-class RapporService;
-}
-
 namespace page_load_metrics {
 
 class PageLoadTracker;
 
-// These constants are for keeping the tests in sync.
-const char kHistogramCommit[] = "PageLoad.Timing2.NavigationToCommit";
-const char kHistogramFirstLayout[] = "PageLoad.Timing2.NavigationToFirstLayout";
-const char kHistogramFirstTextPaint[] =
-    "PageLoad.Timing2.NavigationToFirstTextPaint";
-const char kHistogramDomContentLoaded[] =
-    "PageLoad.Timing2.NavigationToDOMContentLoadedEventFired";
-const char kHistogramLoad[] = "PageLoad.Timing2.NavigationToLoadEventFired";
-const char kHistogramFirstPaint[] = "PageLoad.Timing2.NavigationToFirstPaint";
-const char kHistogramFirstImagePaint[] =
-    "PageLoad.Timing2.NavigationToFirstImagePaint";
-const char kHistogramFirstContentfulPaint[] =
-    "PageLoad.Timing2.NavigationToFirstContentfulPaint";
-const char kBackgroundHistogramCommit[] =
-    "PageLoad.Timing2.NavigationToCommit.Background";
-const char kBackgroundHistogramFirstLayout[] =
-    "PageLoad.Timing2.NavigationToFirstLayout.Background";
-const char kBackgroundHistogramFirstTextPaint[] =
-    "PageLoad.Timing2.NavigationToFirstTextPaint.Background";
-const char kBackgroundHistogramDomContentLoaded[] =
-    "PageLoad.Timing2.NavigationToDOMContentLoadedEventFired.Background";
-const char kBackgroundHistogramLoad[] =
-    "PageLoad.Timing2.NavigationToLoadEventFired.Background";
-const char kBackgroundHistogramFirstPaint[] =
-    "PageLoad.Timing2.NavigationToFirstPaint.Background";
-const char kBackgroundHistogramFirstImagePaint[] =
-    "PageLoad.Timing2.NavigationToFirstImagePaint.Background.";
-const char kBackgroundHistogramFirstContentfulPaint[] =
-    "PageLoad.Timing2.NavigationToFirstContentfulPaint.Background";
+namespace internal {
 
-const char kHistogramFirstContentfulPaintHigh[] =
-    "PageLoad.Timing2.NavigationToFirstContentfulPaint.HighResolutionClock";
-const char kHistogramFirstContentfulPaintLow[] =
-    "PageLoad.Timing2.NavigationToFirstContentfulPaint.LowResolutionClock";
+extern const char kProvisionalEvents[];
+extern const char kBackgroundProvisionalEvents[];
+extern const char kErrorEvents[];
 
-const char kHistogramFirstBackground[] =
-    "PageLoad.Timing2.NavigationToFirstBackground";
-const char kHistogramFirstForeground[] =
-    "PageLoad.Timing2.NavigationToFirstForeground";
-
-const char kHistogramBackgroundBeforePaint[] =
-    "PageLoad.Timing2.NavigationToFirstBackground.AfterCommit.BeforePaint";
-const char kHistogramBackgroundBeforeCommit[] =
-    "PageLoad.Timing2.NavigationToFirstBackground.BeforeCommit";
-
-const char kProvisionalEvents[] = "PageLoad.Events.Provisional";
-const char kBackgroundProvisionalEvents[] =
-    "PageLoad.Events.Provisional.Background";
-
-const char kErrorEvents[] = "PageLoad.Events.InternalError";
-
-const char kRapporMetricsNameCoarseTiming[] =
-    "PageLoad.CoarseTiming.NavigationToFirstContentfulPaint";
-
-// NOTE: Some of these histograms are separated into a separate histogram
-// specified by the ".Background" suffix. For these events, we put them into the
-// background histogram if the web contents was ever in the background from
-// navigation start to the event in question.
+}  // namespace internal
 
 // ProvisionalLoadEvents count all main frame navigations before they commit.
 // The events in this enum are all disjoint, and summing them yields the total
@@ -171,14 +114,12 @@ enum InternalErrorLoadEvent {
 class PageLoadMetricsEmbedderInterface {
  public:
   virtual ~PageLoadMetricsEmbedderInterface() {}
-  virtual rappor::RapporService* GetRapporService() = 0;
   virtual bool IsPrerendering(content::WebContents* web_contents) = 0;
   virtual void RegisterObservers(PageLoadTracker* metrics) = 0;
 };
 
 // This class tracks a given page load, starting from navigation start /
-// provisional load, until a new navigation commits or the navigation fails. It
-// also records RAPPOR/UMA about the page load.
+// provisional load, until a new navigation commits or the navigation fails.
 // MetricsWebContentsObserver manages a set of provisional PageLoadTrackers, as
 // well as a committed PageLoadTracker.
 class PageLoadTracker {
@@ -219,7 +160,6 @@ class PageLoadTracker {
   const GURL& committed_url();
 
   void RecordTimingHistograms(const PageLoadExtraInfo& info);
-  void RecordRappor(const PageLoadExtraInfo& info);
   void UpdateAbortInternal(UserAbortType abort_type,
                            const base::TimeTicks& timestamp);
 
@@ -229,8 +169,9 @@ class PageLoadTracker {
   // The navigation start in TimeTicks, not the wall time reported by Blink.
   const base::TimeTicks navigation_start_;
 
-  // Time this navigation was committed, or zero if this navigation hasn't
-  // committed yet.
+  // URL and time this page load was committed. If this page load hasn't
+  // committed, |committed_url_| will be empty, and |commit_time_| will be zero.
+  GURL committed_url_;
   base::TimeTicks commit_time_;
 
   // Will be ABORT_NONE if we have not aborted this load yet. Otherwise will
@@ -246,7 +187,6 @@ class PageLoadTracker {
   bool started_in_foreground_;
 
   PageLoadTiming timing_;
-  GURL url_;
 
   // Interface to chrome features. Must outlive the class.
   PageLoadMetricsEmbedderInterface* const embedder_interface_;
@@ -263,8 +203,6 @@ class MetricsWebContentsObserver
       public content::WebContentsUserData<MetricsWebContentsObserver> {
  public:
   // Note that the returned metrics is owned by the web contents.
-  // The caller must guarantee that the RapporService (if non-null) will
-  // outlive the WebContents.
   static MetricsWebContentsObserver* CreateForWebContents(
       content::WebContents* web_contents,
       scoped_ptr<PageLoadMetricsEmbedderInterface> embedder_interface);

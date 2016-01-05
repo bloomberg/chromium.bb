@@ -139,6 +139,7 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetSystemRequestContext(net::URLRequestContextGetter* context_getter);
   void SetNotificationUIManager(
       scoped_ptr<NotificationUIManager> notification_ui_manager);
+  void SetRapporService(rappor::RapporService* rappor_service);
   void ShutdownBrowserPolicyConnector();
 
  private:
@@ -180,6 +181,7 @@ class TestingBrowserProcess : public BrowserProcess {
   PrefService* local_state_;
   IOThread* io_thread_;
   net::URLRequestContextGetter* system_request_context_;
+  rappor::RapporService* rappor_service_;
 
   scoped_ptr<BrowserProcessPlatformPart> platform_part_;
 

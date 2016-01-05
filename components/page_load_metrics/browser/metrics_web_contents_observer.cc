@@ -4,8 +4,6 @@
 
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 
-#include <stddef.h>
-#include <stdint.h>
 #include <utility>
 
 #include "base/location.h"
@@ -15,8 +13,6 @@
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/page_load_metrics/common/page_load_metrics_messages.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
-#include "components/rappor/rappor_service.h"
-#include "components/rappor/rappor_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_handle.h"
@@ -38,10 +34,9 @@ namespace {
 // The url we see from the renderer side is not always the same as what
 // we see from the browser side (e.g. chrome://newtab). We want to be
 // sure here that we aren't logging UMA for internal pages.
-bool IsRelevantNavigation(
-    content::NavigationHandle* navigation_handle,
-    const GURL& browser_url,
-    const std::string& mime_type) {
+bool IsRelevantNavigation(content::NavigationHandle* navigation_handle,
+                          const GURL& browser_url,
+                          const std::string& mime_type) {
   DCHECK(navigation_handle->HasCommitted());
   return navigation_handle->IsInMainFrame() &&
          !navigation_handle->IsSamePage() &&
@@ -83,7 +78,7 @@ bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
 }
 
 void RecordInternalError(InternalErrorLoadEvent event) {
-  UMA_HISTOGRAM_ENUMERATION(kErrorEvents, event, ERR_LAST_ENTRY);
+  UMA_HISTOGRAM_ENUMERATION(internal::kErrorEvents, event, ERR_LAST_ENTRY);
 }
 
 UserAbortType AbortTypeForPageTransition(ui::PageTransition transition) {
@@ -97,30 +92,16 @@ UserAbortType AbortTypeForPageTransition(ui::PageTransition transition) {
   return ABORT_OTHER;
 }
 
-// The number of buckets in the bitfield histogram. These buckets are described
-// in rappor.xml in PageLoad.CoarseTiming.NavigationToFirstContentfulPaint.
-// The bucket flag is defined by 1 << bucket_index, and is the bitfield
-// representing which timing bucket the page load falls into, i.e. 000010
-// would be the bucket flag showing that the page took between 2 and 4 seconds
-// to load.
-const size_t kNumRapporHistogramBuckets = 6;
-
-uint64_t RapporHistogramBucketIndex(const base::TimeDelta& time) {
-  int64_t seconds = time.InSeconds();
-  if (seconds < 2)
-    return 0;
-  if (seconds < 4)
-    return 1;
-  if (seconds < 8)
-    return 2;
-  if (seconds < 16)
-    return 3;
-  if (seconds < 32)
-    return 4;
-  return 5;
-}
-
 }  // namespace
+
+namespace internal {
+
+const char kProvisionalEvents[] = "PageLoad.Events.Provisional";
+const char kBackgroundProvisionalEvents[] =
+    "PageLoad.Events.Provisional.Background";
+const char kErrorEvents[] = "PageLoad.Events.InternalError";
+
+}  // namespace internal
 
 PageLoadTracker::PageLoadTracker(
     bool in_foreground,
@@ -138,9 +119,11 @@ PageLoadTracker::PageLoadTracker(
 }
 
 PageLoadTracker::~PageLoadTracker() {
-  PageLoadExtraInfo info = GetPageLoadMetricsInfo();
-  RecordRappor(info);
-  RecordTimingHistograms(info);
+  const PageLoadExtraInfo info = GetPageLoadMetricsInfo();
+  if (!info.time_to_commit.is_zero() && renderer_tracked() &&
+      timing_.IsEmpty()) {
+    RecordInternalError(ERR_NO_IPCS_RECEIVED);
+  }
   for (const auto& observer : observers_) {
     observer->OnComplete(timing_, info);
   }
@@ -163,7 +146,7 @@ void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
   // TODO(bmcquade): To improve accuracy, consider adding commit time to
   // NavigationHandle. Taking a timestamp here should be close enough for now.
   commit_time_ = base::TimeTicks::Now();
-  url_ = navigation_handle->GetURL();
+  committed_url_ = navigation_handle->GetURL();
   for (const auto& observer : observers_) {
     observer->OnCommit(navigation_handle);
   }
@@ -218,18 +201,15 @@ PageLoadExtraInfo PageLoadTracker::GetPageLoadMetricsInfo() {
   } else {
     DCHECK(abort_time_.is_null());
   }
-  if (!commit_time_.is_null()) {
+  if (!committed_url_.is_empty()) {
     DCHECK_GT(commit_time_, navigation_start_);
     time_to_commit = commit_time_ - navigation_start_;
+  } else {
+    DCHECK(commit_time_.is_null());
   }
   return PageLoadExtraInfo(first_background_time, first_foreground_time,
-                           started_in_foreground_, time_to_commit, abort_type_,
-                           time_to_abort);
-}
-
-const GURL& PageLoadTracker::committed_url() {
-  DCHECK(!commit_time_.is_null());
-  return url_;
+                           started_in_foreground_, committed_url_,
+                           time_to_commit, abort_type_, time_to_abort);
 }
 
 void PageLoadTracker::NotifyAbort(UserAbortType abort_type,
@@ -275,146 +255,13 @@ void PageLoadTracker::UpdateAbortInternal(UserAbortType abort_type,
   abort_time_ = timestamp;
 }
 
-void PageLoadTracker::RecordTimingHistograms(const PageLoadExtraInfo& info) {
-  if (!info.first_background_time.is_zero() &&
-      !EventOccurredInForeground(timing_.first_paint, info)) {
-    if (!info.time_to_commit.is_zero()) {
-      PAGE_LOAD_HISTOGRAM(kHistogramBackgroundBeforePaint,
-                          info.first_background_time);
-    } else {
-      PAGE_LOAD_HISTOGRAM(kHistogramBackgroundBeforeCommit,
-                          info.first_background_time);
-    }
-  }
-
-  // The rest of the histograms require the load to have commit and be relevant.
-  if (info.time_to_commit.is_zero() || !renderer_tracked())
-    return;
-
-  if (EventOccurredInForeground(info.time_to_commit, info)) {
-    PAGE_LOAD_HISTOGRAM(kHistogramCommit, info.time_to_commit);
-  } else {
-    PAGE_LOAD_HISTOGRAM(kBackgroundHistogramCommit, info.time_to_commit);
-  }
-
-  // The rest of the timing histograms require us to have received IPCs from the
-  // renderer. Record UMA for how often this occurs (usually for quickly aborted
-  // loads). For now, don't update observers if this is the case.
-  if (timing_.IsEmpty()) {
-    RecordInternalError(ERR_NO_IPCS_RECEIVED);
-    return;
-  }
-
-  if (!timing_.dom_content_loaded_event_start.is_zero()) {
-    if (EventOccurredInForeground(timing_.dom_content_loaded_event_start,
-                                  info)) {
-      PAGE_LOAD_HISTOGRAM(kHistogramDomContentLoaded,
-                          timing_.dom_content_loaded_event_start);
-    } else {
-      PAGE_LOAD_HISTOGRAM(kBackgroundHistogramDomContentLoaded,
-                          timing_.dom_content_loaded_event_start);
-    }
-  }
-  if (!timing_.load_event_start.is_zero()) {
-    if (EventOccurredInForeground(timing_.load_event_start, info)) {
-      PAGE_LOAD_HISTOGRAM(kHistogramLoad, timing_.load_event_start);
-    } else {
-      PAGE_LOAD_HISTOGRAM(kBackgroundHistogramLoad, timing_.load_event_start);
-    }
-  }
-  if (!timing_.first_layout.is_zero()) {
-    if (EventOccurredInForeground(timing_.first_layout, info)) {
-      PAGE_LOAD_HISTOGRAM(kHistogramFirstLayout, timing_.first_layout);
-    } else {
-      PAGE_LOAD_HISTOGRAM(kBackgroundHistogramFirstLayout,
-                          timing_.first_layout);
-    }
-  }
-  if (!timing_.first_paint.is_zero()) {
-    if (EventOccurredInForeground(timing_.first_paint, info)) {
-      PAGE_LOAD_HISTOGRAM(kHistogramFirstPaint, timing_.first_paint);
-    } else {
-      PAGE_LOAD_HISTOGRAM(kBackgroundHistogramFirstPaint, timing_.first_paint);
-    }
-  }
-  if (!timing_.first_text_paint.is_zero()) {
-    if (EventOccurredInForeground(timing_.first_text_paint, info)) {
-      PAGE_LOAD_HISTOGRAM(kHistogramFirstTextPaint, timing_.first_text_paint);
-    } else {
-      PAGE_LOAD_HISTOGRAM(kBackgroundHistogramFirstTextPaint,
-                          timing_.first_text_paint);
-    }
-  }
-  if (!timing_.first_image_paint.is_zero()) {
-    if (EventOccurredInForeground(timing_.first_image_paint, info)) {
-      PAGE_LOAD_HISTOGRAM(kHistogramFirstImagePaint, timing_.first_image_paint);
-    } else {
-      PAGE_LOAD_HISTOGRAM(kBackgroundHistogramFirstImagePaint,
-                          timing_.first_image_paint);
-    }
-  }
-  base::TimeDelta first_contentful_paint = GetFirstContentfulPaint(timing_);
-  if (!first_contentful_paint.is_zero()) {
-    if (EventOccurredInForeground(first_contentful_paint, info)) {
-      PAGE_LOAD_HISTOGRAM(kHistogramFirstContentfulPaint,
-                          first_contentful_paint);
-      // Bucket these histograms into high/low resolution clock systems. This
-      // might point us to directions that will de-noise some UMA.
-      if (base::TimeTicks::IsHighResolution()) {
-        PAGE_LOAD_HISTOGRAM(kHistogramFirstContentfulPaintHigh,
-                            first_contentful_paint);
-      } else {
-        PAGE_LOAD_HISTOGRAM(kHistogramFirstContentfulPaintLow,
-                            first_contentful_paint);
-      }
-    } else {
-      PAGE_LOAD_HISTOGRAM(kBackgroundHistogramFirstContentfulPaint,
-                          first_contentful_paint);
-    }
-  }
-
-  // Log time to first foreground / time to first background. Log counts that we
-  // started a relevant page load in the foreground / background.
-  if (!info.first_background_time.is_zero())
-    PAGE_LOAD_HISTOGRAM(kHistogramFirstBackground, info.first_background_time);
-  else if (!info.first_foreground_time.is_zero())
-    PAGE_LOAD_HISTOGRAM(kHistogramFirstForeground, info.first_foreground_time);
-}
-
 void PageLoadTracker::RecordProvisionalEvent(ProvisionalLoadEvent event) {
   if (HasBackgrounded()) {
-    UMA_HISTOGRAM_ENUMERATION(kBackgroundProvisionalEvents, event,
+    UMA_HISTOGRAM_ENUMERATION(internal::kBackgroundProvisionalEvents, event,
                               PROVISIONAL_LOAD_LAST_ENTRY);
   } else {
-    UMA_HISTOGRAM_ENUMERATION(kProvisionalEvents, event,
+    UMA_HISTOGRAM_ENUMERATION(internal::kProvisionalEvents, event,
                               PROVISIONAL_LOAD_LAST_ENTRY);
-  }
-}
-
-void PageLoadTracker::RecordRappor(const PageLoadExtraInfo& info) {
-  if (info.time_to_commit.is_zero())
-    return;
-  DCHECK(!committed_url().is_empty());
-  rappor::RapporService* rappor_service =
-      embedder_interface_->GetRapporService();
-  if (!rappor_service)
-    return;
-  base::TimeDelta first_contentful_paint = GetFirstContentfulPaint(timing_);
-  // Log the eTLD+1 of sites that show poor loading performance.
-  if (EventOccurredInForeground(first_contentful_paint, info)) {
-    scoped_ptr<rappor::Sample> sample =
-        rappor_service->CreateSample(rappor::UMA_RAPPOR_TYPE);
-    sample->SetStringField(
-        "Domain", rappor::GetDomainAndRegistrySampleFromGURL(committed_url()));
-    uint64_t bucket_index = RapporHistogramBucketIndex(first_contentful_paint);
-    sample->SetFlagsField("Bucket", uint64_t(1) << bucket_index,
-                          kNumRapporHistogramBuckets);
-    // The IsSlow flag is just a one bit boolean if the first contentful paint
-    // was > 10s.
-    sample->SetFlagsField("IsSlow", first_contentful_paint.InSecondsF() >= 10,
-                          1);
-    rappor_service->RecordSampleObj(kRapporMetricsNameCoarseTiming,
-                                    std::move(sample));
   }
 }
 
@@ -496,10 +343,19 @@ void MetricsWebContentsObserver::DidFinishNavigation(
   // TODO(csharrison): Track changes to NavigationHandle for signals when this
   // is the case (HTTP response headers).
   if (!navigation_handle->HasCommitted()) {
-    net::Error error = navigation_handle->GetNetErrorCode();
-    ProvisionalLoadEvent event = error == net::OK ? PROVISIONAL_LOAD_STOPPED
-        : error == net::ERR_ABORTED ? PROVISIONAL_LOAD_ERR_ABORTED
-        : PROVISIONAL_LOAD_ERR_FAILED_NON_ABORT;
+    const ProvisionalLoadEvent event = [](net::Error error) {
+      switch (error) {
+        case net::OK:
+          // When a finished navigation that didn't commit has a net error code
+          // of OK, it indicates that the provisional load was stopped by the
+          // user.
+          return PROVISIONAL_LOAD_STOPPED;
+        case net::ERR_ABORTED:
+          return PROVISIONAL_LOAD_ERR_ABORTED;
+        default:
+          return PROVISIONAL_LOAD_ERR_FAILED_NON_ABORT;
+      }
+    }(navigation_handle->GetNetErrorCode());
     finished_nav->RecordProvisionalEvent(event);
     if (event != PROVISIONAL_LOAD_ERR_FAILED_NON_ABORT) {
       finished_nav->NotifyAbort(ABORT_OTHER, base::TimeTicks::Now());

@@ -11,10 +11,6 @@ namespace content {
 class WebContents;
 }
 
-namespace rappor {
-class RapporService;
-}
-
 namespace chrome {
 
 void InitializePageLoadMetricsForWebContents(
@@ -25,7 +21,6 @@ class PageLoadMetricsEmbedder
  public:
   // PageLoadMetricsEmbedderInterface:
   ~PageLoadMetricsEmbedder() override;
-  rappor::RapporService* GetRapporService() override;
   bool IsPrerendering(content::WebContents* web_contents) override;
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override;
 };

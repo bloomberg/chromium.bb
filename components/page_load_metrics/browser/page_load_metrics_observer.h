@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "content/public/browser/navigation_handle.h"
+#include "url/gurl.h"
 
 namespace page_load_metrics {
 
@@ -49,6 +50,7 @@ struct PageLoadExtraInfo {
   PageLoadExtraInfo(const base::TimeDelta& first_background_time,
                     const base::TimeDelta& first_foreground_time,
                     bool started_in_foreground,
+                    const GURL& committed_url,
                     const base::TimeDelta& time_to_commit,
                     UserAbortType abort_type,
                     const base::TimeDelta& time_to_abort);
@@ -65,6 +67,10 @@ struct PageLoadExtraInfo {
 
   // True if the page load started in the foreground.
   const bool started_in_foreground;
+
+  // Committed URL. If the page load did not commit, |committed_url| will be
+  // empty.
+  const GURL committed_url;
 
   // Time from navigation start until commit. If the page load did not commit,
   // |time_to_commit| will be zero.

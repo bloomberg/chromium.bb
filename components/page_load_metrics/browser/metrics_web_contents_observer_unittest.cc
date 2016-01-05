@@ -4,14 +4,15 @@
 
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/kill.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/common/page_load_metrics_messages.h"
-#include "components/rappor/rappor_utils.h"
-#include "components/rappor/test_rappor_service.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/test_renderer_host.h"
@@ -26,27 +27,48 @@ const char kDefaultTestUrl[] = "https://google.com";
 const char kDefaultTestUrlAnchor[] = "https://google.com#samepage";
 const char kDefaultTestUrl2[] = "https://whatever.com";
 
-}  //  namespace
+// Simple PageLoadMetricsObserver that copies observed PageLoadTimings into the
+// provided std::vector, so they can be analyzed by unit tests.
+class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
+ public:
+  explicit TestPageLoadMetricsObserver(
+      std::vector<PageLoadTiming>* observed_timings)
+      : observed_timings_(observed_timings) {}
+
+  void OnComplete(const PageLoadTiming& timing,
+                  const PageLoadExtraInfo&) override {
+    observed_timings_->push_back(timing);
+  }
+
+ private:
+  std::vector<PageLoadTiming>* const observed_timings_;
+};
 
 class TestPageLoadMetricsEmbedderInterface
     : public PageLoadMetricsEmbedderInterface {
  public:
   TestPageLoadMetricsEmbedderInterface() : is_prerendering_(false) {}
-  rappor::TestRapporService* GetRapporService() override {
-    return &rappor_tester_;
-  }
+
   bool IsPrerendering(content::WebContents* web_contents) override {
     return is_prerendering_;
   }
-  void RegisterObservers(PageLoadTracker* tracker) override {}
   void set_is_prerendering(bool is_prerendering) {
     is_prerendering_ = is_prerendering;
   }
+  void RegisterObservers(PageLoadTracker* tracker) override {
+    tracker->AddObserver(
+        make_scoped_ptr(new TestPageLoadMetricsObserver(&observed_timings_)));
+  }
+  const std::vector<PageLoadTiming>& observed_timings() const {
+    return observed_timings_;
+  }
 
  private:
+  std::vector<PageLoadTiming> observed_timings_;
   bool is_prerendering_;
-  rappor::TestRapporService rappor_tester_;
 };
+
+}  //  namespace
 
 class MetricsWebContentsObserverTest
     : public content::RenderViewHostTestHarness {
@@ -68,37 +90,42 @@ class MetricsWebContentsObserverTest
     observer_->WasShown();
   }
 
-  void AssertNoHistogramsLogged() {
-    histogram_tester_.ExpectTotalCount(kHistogramDomContentLoaded, 0);
-    histogram_tester_.ExpectTotalCount(kHistogramLoad, 0);
-    histogram_tester_.ExpectTotalCount(kHistogramFirstLayout, 0);
-    histogram_tester_.ExpectTotalCount(kHistogramFirstTextPaint, 0);
-  }
-
   void CheckProvisionalEvent(ProvisionalLoadEvent event,
                              int count,
                              bool background) {
     if (background) {
-      histogram_tester_.ExpectBucketCount(kBackgroundProvisionalEvents, event,
-                                          count);
+      histogram_tester_.ExpectBucketCount(
+          internal::kBackgroundProvisionalEvents, event, count);
       num_provisional_events_bg_ += count;
     } else {
-      histogram_tester_.ExpectBucketCount(kProvisionalEvents, event, count);
+      histogram_tester_.ExpectBucketCount(internal::kProvisionalEvents, event,
+                                          count);
       num_provisional_events_ += count;
     }
   }
 
   void CheckErrorEvent(InternalErrorLoadEvent error, int count) {
-    histogram_tester_.ExpectBucketCount(kErrorEvents, error, count);
+    histogram_tester_.ExpectBucketCount(internal::kErrorEvents, error, count);
     num_errors_ += count;
   }
 
   void CheckTotalEvents() {
-    histogram_tester_.ExpectTotalCount(kProvisionalEvents,
+    histogram_tester_.ExpectTotalCount(internal::kProvisionalEvents,
                                        num_provisional_events_);
-    histogram_tester_.ExpectTotalCount(kBackgroundProvisionalEvents,
+    histogram_tester_.ExpectTotalCount(internal::kBackgroundProvisionalEvents,
                                        num_provisional_events_bg_);
-    histogram_tester_.ExpectTotalCount(kErrorEvents, num_errors_);
+    histogram_tester_.ExpectTotalCount(internal::kErrorEvents, num_errors_);
+  }
+
+  void AssertNoNonEmptyTimingReported() {
+    ASSERT_FALSE(embedder_interface_->observed_timings().empty());
+    for (const auto& timing : embedder_interface_->observed_timings()) {
+      ASSERT_TRUE(timing.IsEmpty());
+    }
+  }
+
+  void AssertNoTimingReported() {
+    ASSERT_TRUE(embedder_interface_->observed_timings().empty());
   }
 
  protected:
@@ -113,10 +140,6 @@ class MetricsWebContentsObserverTest
 
   DISALLOW_COPY_AND_ASSIGN(MetricsWebContentsObserverTest);
 };
-
-TEST_F(MetricsWebContentsObserverTest, NoMetrics) {
-  AssertNoHistogramsLogged();
-}
 
 TEST_F(MetricsWebContentsObserverTest, NotInMainFrame) {
   base::TimeDelta first_layout = base::TimeDelta::FromMilliseconds(1);
@@ -145,7 +168,7 @@ TEST_F(MetricsWebContentsObserverTest, NotInMainFrame) {
   // Navigate again to see if the timing updated for a subframe message.
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
 
-  AssertNoHistogramsLogged();
+  AssertNoNonEmptyTimingReported();
 }
 
 TEST_F(MetricsWebContentsObserverTest, SamePageNoTrigger) {
@@ -164,163 +187,7 @@ TEST_F(MetricsWebContentsObserverTest, SamePageNoTrigger) {
       web_contents()->GetMainFrame());
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrlAnchor));
   // A same page navigation shouldn't trigger logging UMA for the original.
-  AssertNoHistogramsLogged();
-}
-
-TEST_F(MetricsWebContentsObserverTest, SamePageNoTriggerUntilTrueNavCommit) {
-  base::TimeDelta first_layout = base::TimeDelta::FromMilliseconds(1);
-
-  PageLoadTiming timing;
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_layout = first_layout;
-
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
-
-  observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
-      web_contents()->GetMainFrame());
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrlAnchor));
-  // A same page navigation shouldn't trigger logging UMA for the original.
-  AssertNoHistogramsLogged();
-
-  // But we should keep the timing info and log it when we get another
-  // navigation.
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
-  histogram_tester_.ExpectTotalCount(kHistogramCommit, 1);
-  histogram_tester_.ExpectTotalCount(kHistogramDomContentLoaded, 0);
-  histogram_tester_.ExpectTotalCount(kHistogramLoad, 0);
-  histogram_tester_.ExpectTotalCount(kHistogramFirstLayout, 1);
-  histogram_tester_.ExpectBucketCount(kHistogramFirstLayout,
-                                      first_layout.InMilliseconds(), 1);
-  histogram_tester_.ExpectTotalCount(kHistogramFirstTextPaint, 0);
-}
-
-TEST_F(MetricsWebContentsObserverTest, SingleMetricAfterCommit) {
-  base::TimeDelta first_layout = base::TimeDelta::FromMilliseconds(1);
-
-  PageLoadTiming timing;
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_layout = first_layout;
-
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
-
-  observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
-      web_contents()->GetMainFrame());
-
-  AssertNoHistogramsLogged();
-
-  // Navigate again to force histogram recording.
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
-
-  histogram_tester_.ExpectTotalCount(kHistogramCommit, 1);
-  histogram_tester_.ExpectTotalCount(kHistogramDomContentLoaded, 0);
-  histogram_tester_.ExpectTotalCount(kHistogramLoad, 0);
-  histogram_tester_.ExpectTotalCount(kHistogramFirstLayout, 1);
-  histogram_tester_.ExpectBucketCount(kHistogramFirstLayout,
-                                      first_layout.InMilliseconds(), 1);
-  histogram_tester_.ExpectTotalCount(kHistogramFirstTextPaint, 0);
-}
-
-TEST_F(MetricsWebContentsObserverTest, MultipleMetricsAfterCommits) {
-  base::TimeDelta first_layout_1 = base::TimeDelta::FromMilliseconds(1);
-  base::TimeDelta first_layout_2 = base::TimeDelta::FromMilliseconds(20);
-  base::TimeDelta response = base::TimeDelta::FromMilliseconds(10);
-  base::TimeDelta first_text_paint = base::TimeDelta::FromMilliseconds(30);
-  base::TimeDelta dom_content = base::TimeDelta::FromMilliseconds(40);
-  base::TimeDelta load = base::TimeDelta::FromMilliseconds(100);
-
-  PageLoadTiming timing;
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_layout = first_layout_1;
-  timing.response_start = response;
-  timing.first_text_paint = first_text_paint;
-  timing.dom_content_loaded_event_start = dom_content;
-  timing.load_event_start = load;
-
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
-
-  observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
-      web_contents()->GetMainFrame());
-
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
-
-  PageLoadTiming timing2;
-  timing2.navigation_start = base::Time::FromDoubleT(200);
-  timing2.first_layout = first_layout_2;
-
-  observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing2),
-      web_contents()->GetMainFrame());
-
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
-
-  histogram_tester_.ExpectTotalCount(kHistogramCommit, 2);
-  histogram_tester_.ExpectBucketCount(kHistogramFirstLayout,
-                                      first_layout_1.InMilliseconds(), 1);
-  histogram_tester_.ExpectTotalCount(kHistogramFirstLayout, 2);
-  histogram_tester_.ExpectBucketCount(kHistogramFirstLayout,
-                                      first_layout_1.InMilliseconds(), 1);
-  histogram_tester_.ExpectBucketCount(kHistogramFirstLayout,
-                                      first_layout_2.InMilliseconds(), 1);
-
-  histogram_tester_.ExpectTotalCount(kHistogramFirstTextPaint, 1);
-  histogram_tester_.ExpectBucketCount(kHistogramFirstTextPaint,
-                                      first_text_paint.InMilliseconds(), 1);
-
-  histogram_tester_.ExpectTotalCount(kHistogramDomContentLoaded, 1);
-  histogram_tester_.ExpectBucketCount(kHistogramDomContentLoaded,
-                                      dom_content.InMilliseconds(), 1);
-
-  histogram_tester_.ExpectTotalCount(kHistogramLoad, 1);
-  histogram_tester_.ExpectBucketCount(kHistogramLoad, load.InMilliseconds(), 1);
-}
-
-TEST_F(MetricsWebContentsObserverTest, BackgroundDifferentHistogram) {
-  base::TimeDelta first_layout = base::TimeDelta::FromSeconds(2);
-
-  PageLoadTiming timing;
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_layout = first_layout;
-
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-
-  // Simulate "Open link in new tab."
-  observer_->WasHidden();
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
-
-  observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
-      web_contents()->GetMainFrame());
-
-  // Simulate switching to the tab and making another navigation.
-  observer_->WasShown();
-  AssertNoHistogramsLogged();
-
-  // Navigate again to force histogram recording.
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
-
-  histogram_tester_.ExpectTotalCount(kBackgroundHistogramCommit, 1);
-  histogram_tester_.ExpectTotalCount(kBackgroundHistogramDomContentLoaded, 0);
-  histogram_tester_.ExpectTotalCount(kBackgroundHistogramLoad, 0);
-  histogram_tester_.ExpectTotalCount(kBackgroundHistogramFirstLayout, 1);
-  histogram_tester_.ExpectBucketCount(kBackgroundHistogramFirstLayout,
-                                      first_layout.InMilliseconds(), 1);
-  histogram_tester_.ExpectTotalCount(kBackgroundHistogramFirstTextPaint, 0);
-
-  histogram_tester_.ExpectTotalCount(kHistogramCommit, 0);
-  histogram_tester_.ExpectTotalCount(kHistogramDomContentLoaded, 0);
-  histogram_tester_.ExpectTotalCount(kHistogramLoad, 0);
-  histogram_tester_.ExpectTotalCount(kHistogramFirstLayout, 0);
-  histogram_tester_.ExpectTotalCount(kHistogramFirstTextPaint, 0);
+  AssertNoNonEmptyTimingReported();
 }
 
 TEST_F(MetricsWebContentsObserverTest, DontLogPrerender) {
@@ -337,99 +204,7 @@ TEST_F(MetricsWebContentsObserverTest, DontLogPrerender) {
       web_contents()->GetMainFrame());
 
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
-  AssertNoHistogramsLogged();
-}
-
-TEST_F(MetricsWebContentsObserverTest, OnlyBackgroundLaterEvents) {
-  PageLoadTiming timing;
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  // Set these events at 1 microsecond so they are definitely occur before we
-  // background the tab later in the test.
-  timing.response_start = base::TimeDelta::FromMicroseconds(1);
-  timing.dom_content_loaded_event_start = base::TimeDelta::FromMicroseconds(1);
-
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
-  observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
-      web_contents()->GetMainFrame());
-
-  // Background the tab, then forground it.
-  observer_->WasHidden();
-  observer_->WasShown();
-  timing.first_layout = base::TimeDelta::FromSeconds(3);
-  timing.first_text_paint = base::TimeDelta::FromSeconds(4);
-  observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
-      web_contents()->GetMainFrame());
-
-  // Navigate again to force histogram recording.
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
-
-  histogram_tester_.ExpectTotalCount(kBackgroundHistogramCommit, 0);
-  histogram_tester_.ExpectTotalCount(kBackgroundHistogramDomContentLoaded, 0);
-  histogram_tester_.ExpectTotalCount(kBackgroundHistogramLoad, 0);
-  histogram_tester_.ExpectTotalCount(kBackgroundHistogramFirstLayout, 1);
-  histogram_tester_.ExpectBucketCount(kBackgroundHistogramFirstLayout,
-                                      timing.first_layout.InMilliseconds(), 1);
-  histogram_tester_.ExpectTotalCount(kBackgroundHistogramFirstTextPaint, 1);
-  histogram_tester_.ExpectBucketCount(kBackgroundHistogramFirstTextPaint,
-                                      timing.first_text_paint.InMilliseconds(),
-                                      1);
-
-  histogram_tester_.ExpectTotalCount(kHistogramCommit, 1);
-  histogram_tester_.ExpectTotalCount(kHistogramDomContentLoaded, 1);
-  histogram_tester_.ExpectBucketCount(
-      kHistogramDomContentLoaded,
-      timing.dom_content_loaded_event_start.InMilliseconds(), 1);
-  histogram_tester_.ExpectTotalCount(kHistogramLoad, 0);
-  histogram_tester_.ExpectTotalCount(kHistogramFirstLayout, 0);
-  histogram_tester_.ExpectTotalCount(kHistogramFirstTextPaint, 0);
-}
-
-TEST_F(MetricsWebContentsObserverTest, DontBackgroundQuickerLoad) {
-  // Set this event at 1 microsecond so it occurs before we foreground later in
-  // the test.
-  base::TimeDelta first_layout = base::TimeDelta::FromMicroseconds(1);
-
-  PageLoadTiming timing;
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_layout = first_layout;
-
-  observer_->WasHidden();
-
-  // Open in new tab
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-
-  web_contents_tester->StartNavigation(GURL(kDefaultTestUrl));
-
-  content::RenderFrameHostTester* rfh_tester =
-      content::RenderFrameHostTester::For(main_rfh());
-
-  // Switch to the tab
-  observer_->WasShown();
-
-  // Start another provisional load
-  web_contents_tester->StartNavigation(GURL(kDefaultTestUrl2));
-  rfh_tester->SimulateNavigationCommit(GURL(kDefaultTestUrl2));
-  observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
-      main_rfh());
-  rfh_tester->SimulateNavigationStop();
-
-  // Navigate again to see if the timing updated for the foregrounded load.
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
-
-  histogram_tester_.ExpectTotalCount(kHistogramCommit, 1);
-  histogram_tester_.ExpectTotalCount(kHistogramDomContentLoaded, 0);
-  histogram_tester_.ExpectTotalCount(kHistogramLoad, 0);
-  histogram_tester_.ExpectTotalCount(kHistogramFirstLayout, 1);
-  histogram_tester_.ExpectBucketCount(kHistogramFirstLayout,
-                                      first_layout.InMilliseconds(), 1);
-  histogram_tester_.ExpectTotalCount(kHistogramFirstTextPaint, 0);
+  AssertNoTimingReported();
 }
 
 TEST_F(MetricsWebContentsObserverTest, FailProvisionalLoad) {
@@ -461,25 +236,6 @@ TEST_F(MetricsWebContentsObserverTest, AbortProvisionalLoad) {
   CheckProvisionalEvent(PROVISIONAL_LOAD_ERR_FAILED_NON_ABORT, 0, false);
   CheckProvisionalEvent(PROVISIONAL_LOAD_ERR_ABORTED, 1, false);
   CheckTotalEvents();
-}
-
-TEST_F(MetricsWebContentsObserverTest, BackgroundBeforePaint) {
-  page_load_metrics::PageLoadTiming timing;
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_paint = base::TimeDelta::FromSeconds(10);
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-  web_contents_tester->NavigateAndCommit(GURL("https://www.google.com"));
-  // Background the tab and go for a coffee or something.
-  observer_->WasHidden();
-  observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
-      main_rfh());
-  // Come back and start browsing again.
-  observer_->WasShown();
-  // Simulate the user performaning another navigation.
-  web_contents_tester->NavigateAndCommit(GURL("https://www.example.com"));
-  histogram_tester_.ExpectTotalCount(kHistogramBackgroundBeforePaint, 1);
 }
 
 TEST_F(MetricsWebContentsObserverTest, AbortProvisionalLoadInBackground) {
@@ -588,70 +344,7 @@ TEST_F(MetricsWebContentsObserverTest, ObservePartialNavigation) {
       main_rfh());
   // Navigate again to force histogram logging.
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
-  AssertNoHistogramsLogged();
-}
-
-TEST_F(MetricsWebContentsObserverTest, NoRappor) {
-  rappor::TestSample::Shadow* sample_obj =
-      embedder_interface_->GetRapporService()->GetRecordedSampleForMetric(
-          kRapporMetricsNameCoarseTiming);
-  EXPECT_EQ(sample_obj, nullptr);
-}
-
-TEST_F(MetricsWebContentsObserverTest, RapporLongPageLoad) {
-  PageLoadTiming timing;
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_image_paint = base::TimeDelta::FromSeconds(40);
-
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
-
-  observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
-      main_rfh());
-
-  // Navigate again to force logging RAPPOR.
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
-  rappor::TestSample::Shadow* sample_obj =
-      embedder_interface_->GetRapporService()->GetRecordedSampleForMetric(
-          kRapporMetricsNameCoarseTiming);
-  const auto& string_it = sample_obj->string_fields.find("Domain");
-  EXPECT_NE(string_it, sample_obj->string_fields.end());
-  EXPECT_EQ(rappor::GetDomainAndRegistrySampleFromGURL(GURL(kDefaultTestUrl)),
-            string_it->second);
-
-  const auto& flag_it = sample_obj->flag_fields.find("IsSlow");
-  EXPECT_NE(flag_it, sample_obj->flag_fields.end());
-  EXPECT_EQ(1u, flag_it->second);
-}
-
-TEST_F(MetricsWebContentsObserverTest, RapporQuickPageLoad) {
-  PageLoadTiming timing;
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_text_paint = base::TimeDelta::FromSeconds(1);
-
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
-
-  observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
-      main_rfh());
-
-  // Navigate again to force logging RAPPOR.
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
-  rappor::TestSample::Shadow* sample_obj =
-      embedder_interface_->GetRapporService()->GetRecordedSampleForMetric(
-          kRapporMetricsNameCoarseTiming);
-  const auto& string_it = sample_obj->string_fields.find("Domain");
-  EXPECT_NE(string_it, sample_obj->string_fields.end());
-  EXPECT_EQ(rappor::GetDomainAndRegistrySampleFromGURL(GURL(kDefaultTestUrl)),
-            string_it->second);
-
-  const auto& flag_it = sample_obj->flag_fields.find("IsSlow");
-  EXPECT_NE(flag_it, sample_obj->flag_fields.end());
-  EXPECT_EQ(0u, flag_it->second);
+  AssertNoTimingReported();
 }
 
 }  // namespace page_load_metrics

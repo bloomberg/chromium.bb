@@ -11,10 +11,6 @@
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "content/public/test/web_contents_tester.h"
 
-namespace rappor {
-class RapporService;
-}  // namespace rappor
-
 namespace page_load_metrics {
 
 // This class can be used to drive tests of PageLoadMetricsObservers. To hook up

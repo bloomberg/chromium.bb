@@ -19,8 +19,6 @@ class TestPageLoadMetricsEmbedderInterface
       PageLoadMetricsObserverTestHarness* test)
       : test_(test) {}
 
-  rappor::RapporService* GetRapporService() override { return nullptr; }
-
   bool IsPrerendering(content::WebContents* web_contents) override {
     return false;
   }

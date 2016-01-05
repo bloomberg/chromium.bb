@@ -73,6 +73,7 @@ TestingBrowserProcess::TestingBrowserProcess()
       local_state_(nullptr),
       io_thread_(nullptr),
       system_request_context_(nullptr),
+      rappor_service_(nullptr),
       platform_part_(new TestingBrowserProcessPlatformPart()) {
 #if defined(ENABLE_EXTENSIONS)
   extensions_browser_client_.reset(
@@ -112,7 +113,7 @@ metrics::MetricsService* TestingBrowserProcess::metrics_service() {
 }
 
 rappor::RapporService* TestingBrowserProcess::rappor_service() {
-  return nullptr;
+  return rappor_service_;
 }
 
 IOThread* TestingBrowserProcess::io_thread() {
@@ -451,6 +452,11 @@ void TestingBrowserProcess::SetSafeBrowsingService(
 #else
   sb_service_ = sb_service;
 #endif
+}
+
+void TestingBrowserProcess::SetRapporService(
+    rappor::RapporService* rappor_service) {
+  rappor_service_ = rappor_service;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
