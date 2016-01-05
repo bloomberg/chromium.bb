@@ -49,10 +49,11 @@ class ApplicationInstance : public Shell {
   // Required before GetProcessId can be called.
   void SetNativeRunner(NativeRunner* native_runner);
 
-  base::ProcessId GetProcessId() const;
-
   Application* application() { return application_.get(); }
   const Identity& identity() const { return identity_; }
+  int id() const { return id_; }
+  base::ProcessId pid() const { return pid_; }
+  void set_pid(base::ProcessId pid) { pid_ = pid; }
   base::Closure on_application_end() const { return on_application_end_; }
   void set_requesting_content_handler_id(uint32_t id) {
     requesting_content_handler_id_ = id;
@@ -71,6 +72,8 @@ class ApplicationInstance : public Shell {
       const ConnectToApplicationCallback& callback) override;
   void QuitApplication() override;
 
+  static int GenerateUniqueID();
+
   void CallAcceptConnection(scoped_ptr<ConnectToApplicationParams> params);
 
   void OnConnectionError();
@@ -80,6 +83,10 @@ class ApplicationInstance : public Shell {
   void DestroyRunner();
 
   ApplicationManager* const manager_;
+  // An id that identifies this instance. Distinct from pid, as a single process
+  // may vend multiple application instances, and this object may exist before a
+  // process is launched.
+  const int id_;
   const Identity identity_;
   const bool allow_any_application_;
   uint32_t requesting_content_handler_id_;

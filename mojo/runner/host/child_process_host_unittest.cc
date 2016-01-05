@@ -6,6 +6,7 @@
 
 #include "mojo/runner/host/child_process_host.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -20,6 +21,10 @@ namespace mojo {
 namespace runner {
 namespace {
 
+using PidAvailableCallback = base::Callback<void(base::ProcessId)>;
+
+void EmptyCallback(base::ProcessId pid) {}
+
 // Subclass just so we can observe |DidStart()|.
 class TestChildProcessHost : public ChildProcessHost {
  public:
@@ -27,8 +32,8 @@ class TestChildProcessHost : public ChildProcessHost {
       : ChildProcessHost(launch_process_runner, false, base::FilePath()) {}
   ~TestChildProcessHost() override {}
 
-  void DidStart() override {
-    ChildProcessHost::DidStart();
+  void DidStart(const PidAvailableCallback& pid_available_callback) override {
+    ChildProcessHost::DidStart(pid_available_callback);
     base::MessageLoop::current()->QuitWhenIdle();
   }
 
@@ -73,7 +78,7 @@ TEST(ChildProcessHostTest, MAYBE_StartJoin) {
       embedder::ScopedPlatformHandle());
 
   TestChildProcessHost child_process_host(blocking_pool.get());
-  child_process_host.Start();
+  child_process_host.Start(base::Bind(&EmptyCallback));
   message_loop.Run();
   child_process_host.ExitNow(123);
   int exit_code = child_process_host.Join();

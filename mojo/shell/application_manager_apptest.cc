@@ -143,10 +143,12 @@ class GetRunningApplicationInfoAppTest
     for (size_t i = 0; i < applications.size(); ++i)
       names_.insert(applications[i]->url);
   }
-  void ApplicationStarted(mojom::ApplicationInfoPtr application) override {
+  void ApplicationInstanceCreated(
+      mojom::ApplicationInfoPtr application) override {
     names_.insert(application->url);
   }
-  void ApplicationEnded(uint32_t pid) override {}
+  void ApplicationInstanceDestroyed(int id) override {}
+  void ApplicationPIDAvailable(int id, uint32_t pid) override {}
 
   std::set<std::string> names_;
   Binding<mojom::ApplicationManagerListener> binding_;

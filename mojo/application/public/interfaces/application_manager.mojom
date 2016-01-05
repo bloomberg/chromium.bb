@@ -7,6 +7,7 @@ module mojo.shell.mojom;
 import "mojo/application/public/interfaces/shell.mojom";
 
 struct ApplicationInfo {
+  int32 id;
   string url;
   string qualifier;
   uint32 pid;
@@ -20,9 +21,20 @@ interface ApplicationManagerListener {
   // applications that the listener observes changes against.
   SetRunningApplications(array<ApplicationInfo> applications);
 
-  // Tells the listener about applications starting or ending.
-  ApplicationStarted(ApplicationInfo application);
-  ApplicationEnded(uint32 pid);
+  // Called when the application manager has started tracking an application.
+  // This happens when the application manager first handles a request to launch
+  // the application, and before any process or content handler is created for
+  // it.
+  ApplicationInstanceCreated(ApplicationInfo application);
+
+  // Called when the application manager has stopped tracking an application.
+  // (i.e. when it has ended/quit).
+  ApplicationInstanceDestroyed(int32 id);
+
+  // Called when a pid is available for the application. This could be because a
+  // process was created by the runner for it, or because an existing content
+  // handler process was assigned.
+  ApplicationPIDAvailable(int32 id, uint32 pid);
 };
 
 interface ApplicationManager {

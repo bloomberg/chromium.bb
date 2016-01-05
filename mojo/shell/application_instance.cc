@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
@@ -17,6 +18,13 @@
 
 namespace mojo {
 namespace shell {
+namespace {
+
+base::StaticAtomicSequenceNumber g_instance_id;
+
+const int kInvalidInstanceId = -1;
+
+}  // namespace
 
 ApplicationInstance::ApplicationInstance(
     ApplicationPtr application,
@@ -25,6 +33,7 @@ ApplicationInstance::ApplicationInstance(
     uint32_t requesting_content_handler_id,
     const base::Closure& on_application_end)
     : manager_(manager),
+      id_(GenerateUniqueID()),
       identity_(identity),
       allow_any_application_(identity.filter().size() == 1 &&
                              identity.filter().count("*") == 1),
@@ -61,11 +70,6 @@ void ApplicationInstance::ConnectToClient(
 
 void ApplicationInstance::SetNativeRunner(NativeRunner* native_runner) {
   native_runner_ = native_runner;
-  pid_ = native_runner_->GetApplicationPID();
-}
-
-base::ProcessId ApplicationInstance::GetProcessId() const {
-  return pid_;
 }
 
 // Shell implementation:
@@ -111,6 +115,14 @@ void ApplicationInstance::QuitApplication() {
   application_->OnQuitRequested(
       base::Bind(&ApplicationInstance::OnQuitRequestedResult,
                  base::Unretained(this)));
+}
+
+// static
+int ApplicationInstance::GenerateUniqueID() {
+  int id = g_instance_id.GetNext() + 1;
+  CHECK_NE(0, id);
+  CHECK_NE(kInvalidInstanceId, id);
+  return id;
 }
 
 void ApplicationInstance::CallAcceptConnection(

@@ -36,6 +36,7 @@ void InProcessNativeRunner::Start(
     const base::FilePath& app_path,
     bool start_sandboxed,
     InterfaceRequest<Application> application_request,
+    const base::Callback<void(base::ProcessId)>& pid_available_callback,
     const base::Closure& app_completed_callback) {
   app_path_ = app_path;
 
@@ -50,16 +51,13 @@ void InProcessNativeRunner::Start(
   DCHECK(!thread_);
   thread_.reset(new base::DelegateSimpleThread(this, "app_thread"));
   thread_->Start();
+  pid_available_callback.Run(base::kNullProcessId);
 }
 
 void InProcessNativeRunner::InitHost(
     ScopedHandle channel,
     InterfaceRequest<Application> application_request) {
   NOTREACHED();  // Can't host another process in this runner.
-}
-
-base::ProcessId InProcessNativeRunner::GetApplicationPID() const {
-  return base::kNullProcessId;
 }
 
 void InProcessNativeRunner::Run() {

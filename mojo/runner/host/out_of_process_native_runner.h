@@ -30,13 +30,14 @@ class OutOfProcessNativeRunner : public shell::NativeRunner {
   ~OutOfProcessNativeRunner() override;
 
   // NativeRunner:
-  void Start(const base::FilePath& app_path,
-             bool start_sandboxed,
-             InterfaceRequest<Application> application_request,
-             const base::Closure& app_completed_callback) override;
+  void Start(
+      const base::FilePath& app_path,
+      bool start_sandboxed,
+      InterfaceRequest<Application> application_request,
+      const base::Callback<void(base::ProcessId)>& pid_available_callback,
+      const base::Closure& app_completed_callback) override;
   void InitHost(ScopedHandle channel,
                 InterfaceRequest<Application> application_request) override;
-  base::ProcessId GetApplicationPID() const override;
 
  private:
   // |ChildController::StartApp()| callback:

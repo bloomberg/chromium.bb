@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/process/process.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
@@ -179,7 +180,7 @@ InterfaceRequest<Application> ApplicationManager::CreateInstance(
       CreateApplicationInfoForInstance(instance);
   listeners_.ForAllPtrs(
       [this, &application_info](mojom::ApplicationManagerListener* listener) {
-        listener->ApplicationStarted(application_info.Clone());
+        listener->ApplicationInstanceCreated(application_info.Clone());
       });
   instance->InitializeApplication();
   if (resulting_instance)
@@ -276,6 +277,8 @@ void ApplicationManager::RunNativeApplication(
                path.AsUTF8Unsafe());
   scoped_ptr<NativeRunner> runner = native_runner_factory_->Create(path);
   runner->Start(path, start_sandboxed, std::move(application_request),
+                base::Bind(&ApplicationManager::ApplicationPIDAvailable,
+                           weak_ptr_factory_.GetWeakPtr(), instance->id()),
                 base::Bind(&ApplicationManager::CleanupRunner,
                            weak_ptr_factory_.GetWeakPtr(), runner.get()));
   instance->SetNativeRunner(runner.get());
@@ -300,9 +303,13 @@ ApplicationLoader* ApplicationManager::GetLoaderForURL(const GURL& url) {
 mojom::ApplicationInfoPtr ApplicationManager::CreateApplicationInfoForInstance(
     ApplicationInstance* instance) const {
   mojom::ApplicationInfoPtr info(mojom::ApplicationInfo::New());
+  info->id = instance->id();
   info->url = instance->identity().url().spec();
   info->qualifier = instance->identity().qualifier();
-  info->pid = instance->GetProcessId();
+  if (instance->identity().url().spec() == "mojo://shell/")
+    info->pid = base::Process::Current().Pid();
+  else
+    info->pid = instance->pid();
   return info;
 }
 
@@ -314,15 +321,30 @@ void ApplicationManager::OnApplicationInstanceError(
   // Remove the shell.
   auto it = identity_to_instance_.find(identity);
   DCHECK(it != identity_to_instance_.end());
-  base::ProcessId pid = instance->GetProcessId();
+  int id = instance->id();
   delete it->second;
   identity_to_instance_.erase(it);
   listeners_.ForAllPtrs(
-      [this, pid](mojom::ApplicationManagerListener* listener) {
-        listener->ApplicationEnded(pid);
+      [this, id](mojom::ApplicationManagerListener* listener) {
+        listener->ApplicationInstanceDestroyed(id);
       });
   if (!on_application_end.is_null())
     on_application_end.Run();
+}
+
+void ApplicationManager::ApplicationPIDAvailable(
+    int id,
+    base::ProcessId pid) {
+  for (auto& instance : identity_to_instance_) {
+    if (instance.second->id() == id) {
+      instance.second->set_pid(pid);
+      break;
+    }
+  }
+  listeners_.ForAllPtrs(
+      [this, id, pid](mojom::ApplicationManagerListener* listener) {
+        listener->ApplicationPIDAvailable(id, pid);
+      });
 }
 
 void ApplicationManager::CleanupRunner(NativeRunner* runner) {

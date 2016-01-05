@@ -135,6 +135,7 @@ class ApplicationManager {
   // no loader configured for the URL.
   ApplicationLoader* GetLoaderForURL(const GURL& url);
 
+  void ApplicationPIDAvailable(int id, base::ProcessId pid);
   void CleanupRunner(NativeRunner* runner);
 
   mojom::ApplicationInfoPtr CreateApplicationInfoForInstance(

@@ -32,6 +32,7 @@ void OutOfProcessNativeRunner::Start(
     const base::FilePath& app_path,
     bool start_sandboxed,
     InterfaceRequest<Application> application_request,
+    const base::Callback<void(base::ProcessId)>& pid_available_callback,
     const base::Closure& app_completed_callback) {
   app_path_ = app_path;
 
@@ -40,7 +41,7 @@ void OutOfProcessNativeRunner::Start(
 
   child_process_host_.reset(
       new ChildProcessHost(launch_process_runner_, start_sandboxed, app_path));
-  child_process_host_->Start();
+  child_process_host_->Start(pid_available_callback);
 
   child_process_host_->StartApp(
       std::move(application_request),
@@ -56,10 +57,6 @@ void OutOfProcessNativeRunner::InitHost(
       std::move(application_request),
       base::Bind(&OutOfProcessNativeRunner::AppCompleted,
                  base::Unretained(this)));
-}
-
-base::ProcessId OutOfProcessNativeRunner::GetApplicationPID() const {
-  return child_process_host_->GetChildPID();
 }
 
 void OutOfProcessNativeRunner::AppCompleted(int32_t result) {

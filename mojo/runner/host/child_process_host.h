@@ -52,9 +52,8 @@ class ChildProcessHost {
 
   // |Start()|s the child process; calls |DidStart()| (on the thread on which
   // |Start()| was called) when the child has been started (or failed to start).
-  void Start();
-
-  base::ProcessId GetChildPID() const;
+  void Start(
+      const base::Callback<void(base::ProcessId)>& pid_available_callback);
 
   // Waits for the child process to terminate, and returns its exit code.
   int Join();
@@ -66,7 +65,8 @@ class ChildProcessHost {
 
  protected:
   // virtual for testing.
-  virtual void DidStart();
+  virtual void DidStart(
+      const base::Callback<void(base::ProcessId)>& pid_available_callback);
 
  private:
   void DoLaunch();

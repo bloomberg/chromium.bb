@@ -68,7 +68,8 @@ ChildProcessHost::~ChildProcessHost() {
     CHECK(!controller_) << "Destroying ChildProcessHost before calling Join";
 }
 
-void ChildProcessHost::Start() {
+void ChildProcessHost::Start(
+    const base::Callback<void(base::ProcessId)>& pid_available_callback) {
   DCHECK(!child_process_.IsValid());
   DCHECK(child_message_pipe_.is_valid());
 
@@ -93,11 +94,8 @@ void ChildProcessHost::Start() {
   launch_process_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&ChildProcessHost::DoLaunch, base::Unretained(this)),
-      base::Bind(&ChildProcessHost::DidStart, weak_factory_.GetWeakPtr()));
-}
-
-base::ProcessId ChildProcessHost::GetChildPID() const {
-  return child_process_.IsValid() ? child_process_.Pid() : base::kNullProcessId;
+      base::Bind(&ChildProcessHost::DidStart, weak_factory_.GetWeakPtr(),
+                 pid_available_callback));
 }
 
 int ChildProcessHost::Join() {
@@ -129,10 +127,13 @@ void ChildProcessHost::ExitNow(int32_t exit_code) {
   controller_->ExitNow(exit_code);
 }
 
-void ChildProcessHost::DidStart() {
+void ChildProcessHost::DidStart(
+    const base::Callback<void(base::ProcessId)>& pid_available_callback) {
   DVLOG(2) << "ChildProcessHost::DidStart()";
 
-  if (!child_process_.IsValid()) {
+  if (child_process_.IsValid()) {
+    pid_available_callback.Run(child_process_.Pid());
+  } else {
     LOG(ERROR) << "Failed to start child process";
     AppCompleted(MOJO_RESULT_UNKNOWN);
   }

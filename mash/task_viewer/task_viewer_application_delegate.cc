@@ -62,12 +62,13 @@ class TaskViewer : public views::WidgetDelegateView,
   ~TaskViewer() override {}
 
  private:
-  struct ProcessInfo {
+  struct ApplicationInfo {
+    int id;
     std::string url;
     uint32_t pid;
 
-    ProcessInfo(const std::string url, base::ProcessId pid)
-        : url(url), pid(pid) {}
+    ApplicationInfo(int id, const std::string url, base::ProcessId pid)
+        : id(id), url(url), pid(pid) {}
   };
 
   // Overridden from views::WidgetDelegate:
@@ -93,16 +94,16 @@ class TaskViewer : public views::WidgetDelegateView,
 
   // Overridden from ui::TableModel:
   int RowCount() override {
-    return static_cast<int>(processes_.size());
+    return static_cast<int>(applications_.size());
   }
   base::string16 GetText(int row, int column_id) override {
     switch(column_id) {
     case 0:
-      DCHECK(row < static_cast<int>(processes_.size()));
-      return base::UTF8ToUTF16(processes_[row]->url);
+      DCHECK(row < static_cast<int>(applications_.size()));
+      return base::UTF8ToUTF16(applications_[row]->url);
     case 1:
-      DCHECK(row < static_cast<int>(processes_.size()));
-      return base::IntToString16(processes_[row]->pid);
+      DCHECK(row < static_cast<int>(applications_.size()));
+      return base::IntToString16(applications_[row]->pid);
     default:
       NOTREACHED();
       break;
@@ -118,8 +119,8 @@ class TaskViewer : public views::WidgetDelegateView,
     DCHECK_EQ(sender, kill_button_);
     DCHECK_EQ(table_view_->SelectedRowCount(), 1);
     int row = table_view_->FirstSelectedRow();
-    DCHECK(row < static_cast<int>(processes_.size()));
-    base::Process process = base::Process::Open(processes_[row]->pid);
+    DCHECK(row < static_cast<int>(applications_.size()));
+    base::Process process = base::Process::Open(applications_[row]->pid);
     process.Terminate(9, true);
   }
 
@@ -127,43 +128,46 @@ class TaskViewer : public views::WidgetDelegateView,
   void SetRunningApplications(
       mojo::Array<ApplicationInfoPtr> applications) override {
     // This callback should only be called with an empty model.
-    DCHECK(processes_.empty());
+    DCHECK(applications_.empty());
     for (size_t i = 0; i < applications.size(); ++i) {
-      processes_.push_back(
-          make_scoped_ptr(new ProcessInfo(applications[i]->url,
-                                          applications[i]->pid)));
+      applications_.push_back(
+          make_scoped_ptr(new ApplicationInfo(applications[i]->id,
+                                              applications[i]->url,
+                                              applications[i]->pid)));
     }
   }
-  void ApplicationStarted(ApplicationInfoPtr application) override {
-    DCHECK(!ContainsURL(application->url));
-    // TODO(beng): eventually nothing should be returning invalid process ids.
-    if (application->pid != base::kNullProcessId)
-      DCHECK(!ContainsPid(application->pid));
-    processes_.push_back(
-        make_scoped_ptr(new ProcessInfo(application->url, application->pid)));
-    observer_->OnItemsAdded(static_cast<int>(processes_.size()), 1);
+  void ApplicationInstanceCreated(ApplicationInfoPtr application) override {
+    DCHECK(!ContainsId(application->id));
+    applications_.push_back(make_scoped_ptr(
+        new ApplicationInfo(application->id, application->url,
+                            application->pid)));
+    observer_->OnItemsAdded(static_cast<int>(applications_.size()), 1);
   }
-  void ApplicationEnded(uint32_t pid) override {
-    for (auto it = processes_.begin(); it != processes_.end(); ++it) {
-      if ((*it)->pid == pid) {
-        observer_->OnItemsRemoved(static_cast<int>(it - processes_.begin()), 1);
-        processes_.erase(it);
+  void ApplicationInstanceDestroyed(int32_t id) override {
+    for (auto it = applications_.begin(); it != applications_.end(); ++it) {
+      if ((*it)->id == id) {
+        observer_->OnItemsRemoved(
+            static_cast<int>(it - applications_.begin()), 1);
+        applications_.erase(it);
         return;
       }
     }
     NOTREACHED();
   }
-
-  bool ContainsURL(const std::string& url) const {
-    for (auto& it : processes_) {
-      if (it->url == url)
-        return true;
+  void ApplicationPIDAvailable(int id, uint32_t pid) override {
+    for (auto it = applications_.begin(); it != applications_.end(); ++it) {
+      if ((*it)->id == id) {
+        (*it)->pid = pid;
+        observer_->OnItemsChanged(
+            static_cast<int>(it - applications_.begin()), 1);
+        return;
+      }
     }
-    return false;
   }
-  bool ContainsPid(uint32_t pid) const {
-    for (auto& it : processes_) {
-      if (it->pid == pid)
+
+  bool ContainsId(int id) const {
+    for (auto& it : applications_) {
+      if (it->id == id)
         return true;
     }
     return false;
@@ -199,7 +203,7 @@ class TaskViewer : public views::WidgetDelegateView,
   views::LabelButton* kill_button_;
   ui::TableModelObserver* observer_;
 
-  std::vector<scoped_ptr<ProcessInfo>> processes_;
+  std::vector<scoped_ptr<ApplicationInfo>> applications_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskViewer);
 };
