@@ -18,19 +18,26 @@
         android:scaleType="centerInside"
         android:contentDescription="@null" />
 
-    <TextView
-        android:id="@+id/control_message"
+    <org.chromium.chrome.browser.infobar.InfoBarDualControlLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_marginEnd="@dimen/infobar_control_margin_between_items"
-        android:gravity="center_vertical"
-        android:textSize="@dimen/infobar_text_size"
-        android:textColor="@color/default_text_color" />
+        android:layout_weight="1" >
 
-    <android.support.v7.widget.SwitchCompat
-        android:id="@+id/control_toggle_switch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/control_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/infobar_text_size"
+            android:textColor="@color/default_text_color" />
+
+        <TextView
+            android:id="@+id/control_secondary_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/infobar_text_size"
+            android:textColor="@color/infobar_descriptive_text_color" />
+
+    </org.chromium.chrome.browser.infobar.InfoBarDualControlLayout>
 
 </LinearLayout>

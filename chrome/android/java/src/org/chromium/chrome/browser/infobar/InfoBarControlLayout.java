@@ -36,6 +36,9 @@ import org.chromium.chrome.R;
  * layout algorithm to match.
  *
  * TODO(dfalcantara): Standardize all the possible control types.
+ * TODO(dfalcantara): The line spacing multiplier is applied to all lines in JB & KK, even if the
+ *                    TextView has only one line.  This throws off vertical alignment.  Find a
+ *                    solution that hopefully doesn't involve subclassing the TextView.
  */
 public final class InfoBarControlLayout extends ViewGroup {
 
@@ -185,6 +188,43 @@ public final class InfoBarControlLayout extends ViewGroup {
     }
 
     /**
+     * Adds an icon with a descriptive message to the layout.
+     *
+     * -----------------------------------------------------
+     * | ICON | PRIMARY MESSAGE SECONDARY MESSAGE          |
+     * -----------------------------------------------------
+     * If an icon is not provided, the ImageView that would normally show it is hidden.
+     *
+     * @param iconResourceId   ID of the drawable to use for the icon.
+     * @param primaryMessage   Message to display for the toggle.
+     * @param secondaryMessage Additional descriptive text for the toggle.  May be null.
+     */
+    public View addIcon(
+            int iconResourceId, CharSequence primaryMessage, CharSequence secondaryMessage) {
+        LinearLayout layout = (LinearLayout) LayoutInflater.from(getContext()).inflate(
+                R.layout.infobar_control_icon_with_description, this, false);
+        addView(layout, new ControlLayoutParams());
+
+        ImageView iconView = (ImageView) layout.findViewById(R.id.control_icon);
+        iconView.setImageResource(iconResourceId);
+
+        // The primary message text is always displayed.
+        TextView primaryView = (TextView) layout.findViewById(R.id.control_message);
+        primaryView.setText(primaryMessage);
+
+        // The secondary message text is optional.
+        TextView secondaryView =
+                (TextView) layout.findViewById(R.id.control_secondary_message);
+        if (secondaryMessage == null) {
+            layout.removeView(secondaryView);
+        } else {
+            secondaryView.setText(secondaryMessage);
+        }
+
+        return layout;
+    }
+
+    /**
      * Creates a standard toggle switch and adds it to the layout.
      *
      * -------------------------------------------------
@@ -203,14 +243,14 @@ public final class InfoBarControlLayout extends ViewGroup {
                 R.layout.infobar_control_toggle, this, false);
         addView(switchLayout, new ControlLayoutParams());
 
-        ImageView iconView = (ImageView) switchLayout.findViewById(R.id.control_toggle_icon);
+        ImageView iconView = (ImageView) switchLayout.findViewById(R.id.control_icon);
         if (iconResourceId == 0) {
             switchLayout.removeView(iconView);
         } else {
             iconView.setImageResource(iconResourceId);
         }
 
-        TextView messageView = (TextView) switchLayout.findViewById(R.id.control_toggle_message);
+        TextView messageView = (TextView) switchLayout.findViewById(R.id.control_message);
         messageView.setText(toggleMessage);
 
         SwitchCompat switchView =
