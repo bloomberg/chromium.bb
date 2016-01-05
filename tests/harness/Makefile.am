@@ -16,6 +16,7 @@ harness_TESTS =					\
 	hu-hu-g1_harness.txt			\
 	iu-ca-g1_harness.txt			\
 	ko-g2_harness.txt			\
+	ko-2006-g2_harness.txt			\
 	letterDefTest_harness.txt		\
 	nocross_harness.txt			\
 	ta-ta-g1_harness.txt			\
@@ -27,6 +28,7 @@ harness_TESTS =					\
 	en-ueb-g1_harness.txt			\
 	hr-8dots_harness.txt			\
 	sr-g1_harness.txt			\
+	eo-g1_harness.txt			\
 	no_harness.txt				\
 	no_harness_g1.txt			\
 	no_harness_g2.txt			\

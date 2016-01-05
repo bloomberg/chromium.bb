@@ -48,12 +48,42 @@ tests:
   - [2nd, ⠼⠃⠝⠙]
   - [3rd, ⠼⠉⠗⠙]
   - [4th, ⠼⠙⠞⠓]
-  - [one italic word, ⠕⠝⠑ ⠨⠂⠊⠞⠁⠇⠊⠉ ⠺⠕⠗⠙, {typeform: '000011111100000', xfail: true}] # Emphasis broken
-  - [two italic words, ⠨⠂⠞⠺⠕ ⠨⠂⠊⠞⠁⠇⠊⠉ ⠺⠕⠗⠙⠎, {typeform: '1111111111000000', xfail: true}] # Emphasis broken
-  - [three italic words, ⠨⠶⠞⠓⠗⠑⠑ ⠊⠞⠁⠇⠊⠉ ⠺⠕⠗⠙⠎⠨⠄, {typeform: '111111111111111111'}]
-  - [one bold word, ⠕⠝⠑ ⠘⠂⠃⠕⠇⠙ ⠺⠕⠗⠙, {typeform: '0000444400000', xfail: true}] # Emphasis broken
-  - [two bold words, ⠘⠂⠞⠺⠕ ⠘⠂⠃⠕⠇⠙ ⠺⠕⠗⠙⠎, {typeform: '44444444000000', xfail: true}] # Emphasis broken
-  - [three bold words, ⠘⠶⠞⠓⠗⠑⠑ ⠃⠕⠇⠙ ⠺⠕⠗⠙⠎⠘⠄, {typeform: '4444444444444444'}]
-  - [one underlined word, ⠕⠝⠑ ⠸⠂⠥⠝⠙⠑⠗⠇⠊⠝⠑⠙ ⠺⠕⠗⠙, {typeform: '0000222222222200000', xfail: true}] # Emphasis broken
-  - [two underlined words, ⠸⠂⠞⠺⠕ ⠸⠂⠥⠝⠙⠑⠗⠇⠊⠝⠑⠙ ⠺⠕⠗⠙⠎, {typeform: '22222222222222000000', xfail: true}] # Emphasis broken
-  - [three underlined words, ⠸⠶⠞⠓⠗⠑⠑ ⠥⠝⠙⠑⠗⠇⠊⠝⠑⠙ ⠺⠕⠗⠙⠎⠸⠄, {typeform: '2222222222222222222222'}]
+  - - one italic word
+    - ⠕⠝⠑ ⠨⠂⠊⠞⠁⠇⠊⠉ ⠺⠕⠗⠙
+    - typeform: '000011111100000'
+      # Emphasis doesn't always work
+      xfail: true
+  - - two italic words
+    - ⠨⠂⠞⠺⠕ ⠨⠂⠊⠞⠁⠇⠊⠉ ⠺⠕⠗⠙⠎
+    - typeform: '1111111111000000'
+      # Emphasis doesn't always work
+      xfail: true
+  - - three italic words
+    - ⠨⠶⠞⠓⠗⠑⠑ ⠊⠞⠁⠇⠊⠉ ⠺⠕⠗⠙⠎⠨⠄
+    - {typeform: '111111111111111111'}
+  - - one bold word
+    - ⠕⠝⠑ ⠘⠂⠃⠕⠇⠙ ⠺⠕⠗⠙
+    - typeform: '0000444400000'
+      # Emphasis doesn't always work
+      xfail: true
+  - - two bold words
+    - ⠘⠂⠞⠺⠕ ⠘⠂⠃⠕⠇⠙ ⠺⠕⠗⠙⠎
+    - typeform: '44444444000000'
+      # Emphasis doesn't always work
+      xfail: true
+  - - three bold words
+    - ⠘⠶⠞⠓⠗⠑⠑ ⠃⠕⠇⠙ ⠺⠕⠗⠙⠎⠘⠄
+    - {typeform: '4444444444444444'}
+  - - one underlined word
+    - ⠕⠝⠑ ⠸⠂⠥⠝⠙⠑⠗⠇⠊⠝⠑⠙ ⠺⠕⠗⠙
+    - typeform: '0000222222222200000'
+      # Emphasis doesn't always work
+      xfail: true
+  - - two underlined words
+    - ⠸⠂⠞⠺⠕ ⠸⠂⠥⠝⠙⠑⠗⠇⠊⠝⠑⠙ ⠺⠕⠗⠙⠎
+    - typeform: '22222222222222000000'
+      # Emphasis doesn't always work
+      xfail: true
+  - - three underlined words
+    - ⠸⠶⠞⠓⠗⠑⠑ ⠥⠝⠙⠑⠗⠇⠊⠝⠑⠙ ⠺⠕⠗⠙⠎⠸⠄
+    - {typeform: '2222222222222222222222'}

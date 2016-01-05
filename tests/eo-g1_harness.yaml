@@ -78,7 +78,7 @@ tests:
   - [abcĉdefgĝhĥijĵklmnopqrsŝtuŭvwxyz, 'ABC%DEFG]H\\IJWKLMNOPQRS!TU+V)XYZ']
   - [ABCĈDEFGĜHĤIJĴKLMNOPQRSŜTUŬVWXYZ, '..ABC%DEFG]H\\IJWKLMNOPQRS!TU+V)XYZ', {xfail: true}]
   # FIXME: the following passes with ucs2 but fails with ucs4
-  #  - [defgDEFGdefg, DEFG..DEFG.'DEFG]
+  #  - [defgDEFGdefg, 'DEFG..DEFG.''DEFG', {xfail: true}]
   - [Bonan tagon, .BONAN TAGON]
   - [saluton, SALUTON]
   - [Saluton, .SALUTON]

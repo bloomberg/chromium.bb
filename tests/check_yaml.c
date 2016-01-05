@@ -1,8 +1,26 @@
+/* liblouis Braille Translation and Back-Translation Library
+
+Copyright (C) 2015 Swiss Library for the Blind, Visually Impaired and Print Disabled
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA */
+
 #include <config.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include <error.h>
+#include "error.h"
 #include "liblouis.h"
 #include "brl_checks.h"
 
@@ -120,15 +138,14 @@ read_flags (yaml_parser_t *parser, int *direction, int *hyphenation) {
 int
 read_xfail (yaml_parser_t *parser) {
   yaml_event_t event;
-  int xfail = 0;
+  /* assume xfail true if there is an xfail key */
+  int xfail = 1;
   if (!yaml_parser_parse(parser, &event) ||
       (event.type != YAML_SCALAR_EVENT))
     yaml_error(YAML_SCALAR_EVENT, &event);
-  if (!strcmp(event.data.scalar.value, "Y") ||
-      !strcmp(event.data.scalar.value, "true") ||
-      !strcmp(event.data.scalar.value, "Yes") ||
-      !strcmp(event.data.scalar.value, "ON"))
-    xfail = 1;
+  if (!strcmp(event.data.scalar.value, "false") ||
+      !strcmp(event.data.scalar.value, "off"))
+    xfail = 0;
   yaml_event_delete(&event);
   return xfail;
 }
@@ -309,27 +326,21 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
 
   if (cursorPos) {
     if (xfail != check_cursor_pos(tables_list, word, cursorPos)) {
-      char *error_msg = "Failure";
-      if (xfail)
-	error_msg = "Unexpected Pass";
-      fprintf(stderr, "%s:%zu %s\n", file_name, event.start_mark.line, error_msg);
+      error_at_line(0, 0, file_name, event.start_mark.line,
+		    (xfail ? "Unexpected Pass" :"Failure"));
       errors++;
     }
   } else if (hyphenation) {
     if (xfail != check_hyphenation(tables_list, word, translation)) {
-      char *error_msg = "Failure";
-      if (xfail)
-	error_msg = "Unexpected Pass";
-      fprintf(stderr, "%s:%zu %s\n", file_name, event.start_mark.line, error_msg);
+      error_at_line(0, 0, file_name, event.start_mark.line,
+		    (xfail ? "Unexpected Pass" :"Failure"));
       errors++;
     }
   } else {
     if (xfail != check_with_mode(tables_list, word, typeform,
 				 translation, translation_mode, direction)) {
-      char *error_msg = "Failure";
-      if (xfail)
-	error_msg = "Unexpected Pass";
-      fprintf(stderr, "%s:%zu %s\n", file_name, event.start_mark.line, error_msg);
+      error_at_line(0, 0, file_name, event.start_mark.line,
+		    (xfail ? "Unexpected Pass" :"Failure"));
       errors++;
     }
   }

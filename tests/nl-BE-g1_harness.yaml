@@ -97,23 +97,22 @@ tests:
   - [EEN woord in hoofdletters, '>een woord in hoofdletters']
   - [TWEE WOORDEN in hoofdletters, '>twee >woorden in hoofdletters']
   - [DRIE WOORDEN IN hoofdletters, '>drie >woorden >in hoofdletters']
-  - [MEER DAN DRIE WOORDEN in hoofdletters, '>>meer dan drie >woorden
-      in hoofdletters', {xfail: true}]
-  - [BTW-TARIEF volledig in hoofdletters, '>btw-tarief volledig in
-      hoofdletters']
-  - [BTW-tarief alleen btw in hoofdletters, '>btw-''tarief alleen btw
-      in hoofdletters']
+  - - MEER DAN DRIE WOORDEN in hoofdletters
+    - '>>meer dan drie >woorden in hoofdletters'
+    - {xfail: true}
+  - [BTW-TARIEF volledig in hoofdletters, '>btw-tarief volledig in hoofdletters']
+  - [BTW-tarief alleen btw in hoofdletters, '>btw-''tarief alleen btw in hoofdletters']
   - [P+R park and ride, '>p!+r park and ride']
   - [N-VA Nieuw-Vlaamse Alliantie, '>n-va $nieuw-$vlaamse $alliantie']
-  - [CD&V Christen-Democratisch en Vlaams, '>cd!&v $christen-$democratisch
-      en $vlaams']
+  - [CD&V Christen-Democratisch en Vlaams, '>cd!&v $christen-$democratisch en $vlaams']
   - [W.F. Hermans, '>w/f/ $hermans']
   - [FAQ's, '>faq.''s']
   - [VTM'er, '>vtm.''er']
   - [65+'er, '#fe!+.er']
-  - ['SLAAT DE VLAM IN DE PAN, DEK DE VUURHAARD DAN AF MET EEN BRANDWERENDE
-      DEKEN OF EEN VOCHTIGE DOEK.', '>>slaat de vlam in de pan, dek de vuurhaard
-      dan af met een brandwerende deken of een vochtige >doek/', {xfail: true}]
+  - - SLAAT DE VLAM IN DE PAN, DEK DE VUURHAARD DAN AF MET EEN BRANDWERENDE DEKEN OF EEN VOCHTIGE DOEK.
+    - '>>slaat de vlam in de pan, dek de vuurhaard dan af met een brandwerende deken
+      of een vochtige >doek/'
+    - {xfail: true}
   - [lisa_dirk@yahoo.com, lisa_dirk`yahoo/com]
   - ['http://www.avh.asso.fr', 'http:||www/avh/asso/fr']
   - ['C:\\Documents and Settings', '$c:!1$documents and $settings']

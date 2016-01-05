@@ -3,8 +3,9 @@ tests:
   - [WILDCARD, ⠘⠺⠊⠇⠙⠉⠁⠗⠙] # tested buggy behavior
   - [-, ⠤] # same thing again
   # common punctuation test
-  - ["!\"#$%&/()=?*|÷×[]¤@{}§<>€+''", ⠖⠶⠼⠲⠼⠚⠴⠈⠯⠌⠶⠶⠶⠢⠤⠈⠇⠳⠘⠒⠶⠄⠠⠶⠶⠧⠶⠜⠶⠆⠰⠶⠬⠐⠪⠕⠂⠢⠖⠄, {xfail: true}]
-  - [\\, ⠡]
+  - - '!"#$%&/()=?*\\|÷×[]¤@{}§<>€+'''
+    - ⠖⠶⠼⠲⠼⠚⠴⠈⠯⠌⠶⠶⠶⠢⠤⠡⠈⠇⠳⠘⠒⠶⠄⠠⠶⠶⠧⠶⠜⠶⠆⠰⠶⠬⠐⠪⠕⠂⠢⠖⠄
+    - {xfail: true}
   # alphabet test (including diacritics) latin script only
   - [qwertzuiopšđasdfghjklčćžyxcvbnm, ⠟⠺⠑⠗⠞⠵⠥⠊⠕⠏⠱⠹⠁⠎⠙⠋⠛⠓⠚⠅⠇⠡⠩⠮⠽⠭⠉⠧⠃⠝⠍]
   # special syllables /digraphs

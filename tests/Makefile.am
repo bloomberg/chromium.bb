@@ -1,8 +1,14 @@
 SUBDIRS = tables tablesWithMetadata doctests harness harnessSources
 
-AM_CPPFLAGS = -I$(top_srcdir)/liblouis
+AM_CPPFLAGS =					\
+	-I$(top_srcdir)/liblouis		\
+	-I$(top_srcdir)/gnulib			\
+	-I$(top_builddir)/gnulib
 
-LDADD = $(top_builddir)/liblouis/liblouis.la
+LDADD =						\
+	$(top_builddir)/liblouis/liblouis.la	\
+	$(top_builddir)/gnulib/libgnu.la	\
+	$(LTLIBINTL)
 
 present_progressive_SOURCES =	\
 	brl_checks.c		\
