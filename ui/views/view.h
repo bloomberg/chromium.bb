@@ -1223,6 +1223,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   friend class internal::PostEventDispatchHandler;
   friend class internal::RootView;
   friend class FocusManager;
+  friend class ViewLayerTest;
   friend class Widget;
 
   // Painting  -----------------------------------------------------------------
@@ -1238,6 +1239,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Invoked before and after the bounds change to schedule painting the old and
   // new bounds.
   void SchedulePaintBoundsChanged(SchedulePaintType type);
+
+  // Schedules a paint on the parent View if it exists.
+  void SchedulePaintOnParent();
 
   // Tree operations -----------------------------------------------------------
 

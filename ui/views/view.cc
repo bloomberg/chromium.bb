@@ -1769,6 +1769,14 @@ void View::SchedulePaintBoundsChanged(SchedulePaintType type) {
   }
 }
 
+void View::SchedulePaintOnParent() {
+  if (parent_) {
+    // Translate the requested paint rect to the parent's coordinate system
+    // then pass this notification up to the parent.
+    parent_->SchedulePaintInRect(ConvertRectToParent(GetLocalBounds()));
+  }
+}
+
 // Tree operations -------------------------------------------------------------
 
 void View::DoRemoveChildView(View* view,
@@ -2082,6 +2090,12 @@ void View::CreateLayer() {
   Widget* widget = GetWidget();
   if (widget)
     widget->UpdateRootLayers();
+
+  // Before having its own Layer, this View may have painted in to a Layer owned
+  // by an ancestor View. Scheduling a paint on the parent View will erase this
+  // View's painting effects on the ancestor View's Layer.
+  // (See crbug.com/551492)
+  SchedulePaintOnParent();
 }
 
 void View::UpdateParentLayers() {
