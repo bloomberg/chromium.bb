@@ -22,8 +22,8 @@ import subprocess
 import sys
 
 def usage():
-  print 'usage: %s {--api-version|--cflags|--ldflags|--libs|--libs-for-gn}' % \
-      sys.argv[0]
+  print ('usage: %s {--api-version|--cflags|--ldflags|--libs|--libs-for-gn} '
+         '[sysroot]' % sys.argv[0])
 
 
 def run_cups_config(cups_config, mode):
@@ -63,7 +63,7 @@ def main():
     return 1
 
   mode = sys.argv[1]
-  if len(sys.argv) > 2:
+  if len(sys.argv) > 2 and sys.argv[2]:
     sysroot = sys.argv[2]
     cups_config = os.path.join(sysroot, 'usr', 'bin', 'cups-config')
     if not os.path.exists(cups_config):
