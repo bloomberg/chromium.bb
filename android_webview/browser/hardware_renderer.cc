@@ -172,7 +172,7 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
   // Surface and transformed using the given transform.
   scoped_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
   render_pass->SetAll(cc::RenderPassId(1, 1), gfx::Rect(viewport), clip,
-                      gfx::Transform(), true);
+                      gfx::Transform(), false);
 
   cc::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
