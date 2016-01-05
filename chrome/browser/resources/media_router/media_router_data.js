@@ -38,7 +38,7 @@ cr.define('media_router', function() {
 
   /**
    * This corresponds to the C++ MediaSink IconType.
-   * @enum {mumber}
+   * @enum {number}
    */
   var SinkIconType = {
     CAST: 0,
