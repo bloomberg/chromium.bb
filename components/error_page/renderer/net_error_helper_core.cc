@@ -283,7 +283,7 @@ scoped_ptr<NavigationCorrectionResponse> ParseNavigationCorrectionResponse(
 
 void LogCorrectionTypeShown(int type_id) {
   UMA_HISTOGRAM_ENUMERATION(
-      "Net.ErrorpageCounts.NavigationCorrectionLinksShown", type_id,
+      "Net.ErrorPageCounts.NavigationCorrectionLinksShown", type_id,
       kWebSearchQueryUMAId + 1);
 }
 
@@ -390,7 +390,7 @@ void TrackClickUMA(std::string type_id) {
   // Web search suggestion isn't in |kCorrectionResourceTable| array.
   if (type_id == "webSearchQuery") {
     UMA_HISTOGRAM_ENUMERATION(
-       "Net.ErrorpageCounts.NavigationCorrectionLinksUsed",
+       "Net.ErrorPageCounts.NavigationCorrectionLinksUsed",
        kWebSearchQueryUMAId, kWebSearchQueryUMAId + 1);
     return;
   }
@@ -402,7 +402,7 @@ void TrackClickUMA(std::string type_id) {
     if (kCorrectionResourceTable[correction_index].correction_type ==
         type_id) {
       UMA_HISTOGRAM_ENUMERATION(
-         "Net.ErrorpageCounts.NavigationCorrectionLinksUsed",
+         "Net.ErrorPageCounts.NavigationCorrectionLinksUsed",
          static_cast<int>(correction_index), kWebSearchQueryUMAId + 1);
       break;
     }
