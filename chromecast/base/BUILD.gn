@@ -52,6 +52,7 @@ source_set("base") {
 
   deps = [
     "//base",
+    "//base:prefs",
   ]
 }
 
