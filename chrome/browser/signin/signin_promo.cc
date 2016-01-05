@@ -205,13 +205,12 @@ GURL GetPromoURL(signin_metrics::AccessPoint access_point,
                  bool is_constrained) {
   CHECK_LT(static_cast<int>(access_point),
            static_cast<int>(signin_metrics::AccessPoint::ACCESS_POINT_MAX));
-  CHECK_NE(
-      static_cast<int>(access_point),
-      static_cast<int>(signin_metrics::AccessPoint::ACCESS_POINT_UNSPECIFIED));
+  CHECK_NE(static_cast<int>(access_point),
+           static_cast<int>(signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN));
   CHECK_LT(static_cast<int>(reason),
            static_cast<int>(signin_metrics::Reason::REASON_MAX));
   CHECK_NE(static_cast<int>(reason),
-           static_cast<int>(signin_metrics::Reason::REASON_UNSPECIFIED));
+           static_cast<int>(signin_metrics::Reason::REASON_UNKNOWN_REASON));
 
   std::string url(chrome::kChromeUIChromeSigninURL);
   base::StringAppendF(&url, "?%s=%d", kSignInPromoQueryKeyAccessPoint,
@@ -294,29 +293,35 @@ signin_metrics::AccessPoint GetAccessPointForPromoURL(const GURL& url) {
   std::string value;
   if (!net::GetValueForKeyInQuery(url, kSignInPromoQueryKeyAccessPoint,
                                   &value)) {
-    return signin_metrics::AccessPoint::ACCESS_POINT_UNSPECIFIED;
+    return signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN;
   }
 
-  int access_point = 0;
-  CHECK(base::StringToInt(value, &access_point));
-  CHECK_GE(
-      access_point,
-      static_cast<int>(signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE));
-  CHECK_LT(access_point,
-           static_cast<int>(signin_metrics::AccessPoint::ACCESS_POINT_MAX));
+  int access_point = -1;
+  base::StringToInt(value, &access_point);
+  if (access_point <
+          static_cast<int>(
+              signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE) ||
+      access_point >=
+          static_cast<int>(signin_metrics::AccessPoint::ACCESS_POINT_MAX)) {
+    return signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN;
+  }
+
   return static_cast<signin_metrics::AccessPoint>(access_point);
 }
 
 signin_metrics::Reason GetSigninReasonForPromoURL(const GURL& url) {
   std::string value;
   if (!net::GetValueForKeyInQuery(url, kSignInPromoQueryKeyReason, &value))
-    return signin_metrics::Reason::REASON_UNSPECIFIED;
+    return signin_metrics::Reason::REASON_UNKNOWN_REASON;
 
-  int reason = 0;
-  CHECK(base::StringToInt(value, &reason));
-  CHECK_GE(reason, static_cast<int>(
-                       signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT));
-  CHECK_LT(reason, static_cast<int>(signin_metrics::Reason::REASON_MAX));
+  int reason = -1;
+  base::StringToInt(value, &reason);
+  if (reason < static_cast<int>(
+                   signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT) ||
+      reason >= static_cast<int>(signin_metrics::Reason::REASON_MAX)) {
+    return signin_metrics::Reason::REASON_UNKNOWN_REASON;
+  }
+
   return static_cast<signin_metrics::Reason>(reason);
 }
 

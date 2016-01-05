@@ -134,9 +134,8 @@ enum class AccessPoint : int {
   ACCESS_POINT_CONTENT_AREA,
   ACCESS_POINT_SIGNIN_PROMO,
   ACCESS_POINT_RECENT_TABS,
-  ACCESS_POINT_UNSPECIFIED,  // This should never have been used to get signin
-                             // URL.
-  ACCESS_POINT_MAX           // This must be last.
+  ACCESS_POINT_UNKNOWN,  // This should never have been used to get signin URL.
+  ACCESS_POINT_MAX,      // This must be last.
 };
 
 // Enum values which enumerates all reasons to start sign in process.
@@ -145,8 +144,8 @@ enum class Reason : int {
   REASON_ADD_SECONDARY_ACCOUNT,
   REASON_REAUTHENTICATION,
   REASON_UNLOCK,
-  REASON_UNSPECIFIED,  // This should never have been used to get signin URL.
-  REASON_MAX           // This must be last.
+  REASON_UNKNOWN_REASON,  // This should never have been used to get signin URL.
+  REASON_MAX,             // This must be last.
 };
 
 // Enum values used for use with the "Signin.Reauth" histogram.

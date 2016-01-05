@@ -12342,12 +12342,21 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_Signin_FromUnknownAccessPoint">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN.
+  </description>
+</action>
+
 <action name="Signin_Signin_FromUnspecifiedAccessPoint">
   <owner>gogerald@chromium.org</owner>
   <description>
     Recorded on sign in start from access point
     signin_metrics::AccessPoint::ACCESS_POINT_UNSPECIFIED.
   </description>
+  <obsolete>Replaced by Signin_Signin_FromUnknownAccessPoint.</obsolete>
 </action>
 
 <action name="Signin_Signin_FromUserManager">
