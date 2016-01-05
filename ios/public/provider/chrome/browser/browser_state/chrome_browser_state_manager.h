@@ -26,10 +26,6 @@ class ChromeBrowserStateManager {
  public:
   virtual ~ChromeBrowserStateManager() {}
 
-  // Temporary method to help migrating from ProfileManager to
-  // ChromeBrowserStateManager.
-  virtual void ShutDown() {}
-
   // Returns the ChromeBrowserState that was last used, creating one if
   // necessary.
   virtual ChromeBrowserState* GetLastUsedBrowserState() = 0;

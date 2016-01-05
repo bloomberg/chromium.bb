@@ -133,12 +133,7 @@ void ApplicationContextImpl::StartTearDown() {
   metrics_services_manager_.reset();
 
   // Need to clear browser states before the IO thread.
-  if (chrome_browser_state_manager_) {
-    // TODO(crbug.com/560854): the ShutDown() method can be folded into the
-    // destructor once ApplicationContextImpl owns ChromeBrowserStateManager.
-    chrome_browser_state_manager_->ShutDown();
-    chrome_browser_state_manager_.reset();
-  }
+  chrome_browser_state_manager_.reset();
 
   // PromoResourceService must be destroyed after the keyed services and before
   // the IO thread.
