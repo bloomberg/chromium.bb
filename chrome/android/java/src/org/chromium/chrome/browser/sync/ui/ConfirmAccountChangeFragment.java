@@ -113,7 +113,7 @@ public class ConfirmAccountChangeFragment extends DialogFragment
                 if (account == null) return;
                 SigninManager.get(activity).signInToSelectedAccount(activity, account,
                         SigninManager.SIGNIN_TYPE_INTERACTIVE,
-                        SigninManager.SIGNIN_SYNC_IMMEDIATELY, false, null);
+                        SigninManager.SIGNIN_SYNC_IMMEDIATELY, null);
             }
         });
     }

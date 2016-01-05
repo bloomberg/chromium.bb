@@ -95,8 +95,7 @@ public final class FirstRunSignInProcessor {
                 ? SigninManager.SIGNIN_SYNC_SETUP_IN_PROGRESS
                 : SigninManager.SIGNIN_SYNC_IMMEDIATELY;
         signinManager.signInToSelectedAccount(activity, account,
-                SigninManager.SIGNIN_TYPE_INTERACTIVE, delaySyncType, false,
-                new SignInFlowObserver() {
+                SigninManager.SIGNIN_TYPE_INTERACTIVE, delaySyncType, new SignInFlowObserver() {
                     private void completeSignIn() {
                         // Show sync settings if user pressed the "Settings" button.
                         if (delaySync) {

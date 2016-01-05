@@ -116,9 +116,10 @@ public class SigninPromoScreen
                 dismiss();
             }
         };
-        SigninManager.get(getOwnerActivity().getApplicationContext()).signInToSelectedAccount(
-                getOwnerActivity(), account, SigninManager.SIGNIN_TYPE_INTERACTIVE,
-                SigninManager.SIGNIN_SYNC_IMMEDIATELY, false, signInCallback);
+        SigninManager.get(getOwnerActivity().getApplicationContext())
+                .signInToSelectedAccount(getOwnerActivity(), account,
+                        SigninManager.SIGNIN_TYPE_INTERACTIVE,
+                        SigninManager.SIGNIN_SYNC_IMMEDIATELY, signInCallback);
     }
 
     @Override

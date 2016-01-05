@@ -18,7 +18,6 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.notifications.GoogleServicesNotificationController;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.signin.ChromeSigninController;
@@ -73,8 +72,6 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
             new ObserverList<SignInStateObserver>();
     private final ObserverList<SignInAllowedObserver> mSignInAllowedObservers =
             new ObserverList<SignInAllowedObserver>();
-
-    private final SigninNotificationController mSigninNotificationController;
 
     private Activity mSignInActivity;
     private Account mSignInAccount;
@@ -169,11 +166,6 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         mNativeSigninManagerAndroid = nativeInit();
         mSigninAllowedByPolicy = nativeIsSigninAllowedByPolicy(mNativeSigninManagerAndroid);
 
-        // Setup notification system for Google services. This includes both sign-in and sync.
-        GoogleServicesNotificationController controller =
-                GoogleServicesNotificationController.get(mContext);
-        mSigninNotificationController = new SigninNotificationController(
-                mContext, controller, AccountManagementFragment.class);
         AccountTrackerService.get(mContext).addSystemAccountsSeededListener(this);
     }
 
@@ -238,13 +230,6 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
                 }
             }
         });
-    }
-
-    /**
-     * Return the SigninNotificationController.
-     */
-    public SigninNotificationController getSigninNotificationController() {
-        return mSigninNotificationController;
     }
 
     /**
@@ -448,7 +433,6 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
             profileSyncService.signOut();
         }
         ChromeSigninController.get(mContext).setSignedInAccountName(null);
-        mSigninNotificationController.onClearSignedInUser();
         nativeSignOut(mNativeSigninManagerAndroid);
 
         if (wipeData) {
@@ -498,11 +482,10 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
      * @param account    The account to sign into.
      * @param signInType The type of the sign-in (one of SIGNIN_TYPE constants).
      * @param signInSync When to enable the ProfileSyncService (one of SIGNIN_SYNC constants).
-     * @param showSignInNotification Whether the sign-in notification should be shown.
      * @param observer   The observer to invoke when done, or null.
      */
     public void signInToSelectedAccount(@Nullable Activity activity, final Account account,
-            final int signInType, final int signInSync, final boolean showSignInNotification,
+            final int signInType, final int signInSync,
             @Nullable final SignInFlowObserver observer) {
         // The SigninManager handles most of the sign-in flow, and onSigninComplete handles the
         // Chrome-specific details.
@@ -527,14 +510,6 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
                 }
 
                 SigninManager.get(mContext).logInSignedInUser();
-                // If Chrome was started from an external intent we should show the sync signin
-                // popup, since the user has not seen the welcome screen where there is easy access
-                // to turn off sync.
-                if (showSignInNotification) {
-                    SigninManager.get(mContext)
-                            .getSigninNotificationController()
-                            .showSyncSignInNotification();
-                }
             }
             @Override
             public void onSigninCancelled() {

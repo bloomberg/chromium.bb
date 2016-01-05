@@ -65,7 +65,7 @@ public final class ForcedSigninProcessor {
                 || googleAccounts.length != 1) {
             return;
         }
-        signinManager.signInToSelectedAccount(null, googleAccounts[0], signinType,
-                SigninManager.SIGNIN_SYNC_IMMEDIATELY, false, null);
+        signinManager.signInToSelectedAccount(
+                null, googleAccounts[0], signinType, SigninManager.SIGNIN_SYNC_IMMEDIATELY, null);
     }
 }
