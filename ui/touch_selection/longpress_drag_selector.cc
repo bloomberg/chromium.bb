@@ -108,7 +108,7 @@ bool LongPressDragSelector::WillHandleTouchEvent(const MotionEvent& event) {
 }
 
 bool LongPressDragSelector::IsActive() const {
-  return state_ != INACTIVE && state_ != LONGPRESS_PENDING;
+  return state_ == DRAG_PENDING || state_ == DRAGGING;
 }
 
 void LongPressDragSelector::OnLongPressEvent(base::TimeTicks event_time,
@@ -124,6 +124,10 @@ void LongPressDragSelector::OnLongPressEvent(base::TimeTicks event_time,
       client_->IsWithinTapSlop(touch_down_position_ - position)) {
     SetState(SELECTION_PENDING);
   }
+}
+
+void LongPressDragSelector::OnScrollBeginEvent() {
+  SetState(INACTIVE);
 }
 
 void LongPressDragSelector::OnSelectionActivated() {

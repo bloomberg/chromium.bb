@@ -40,6 +40,9 @@ class UI_TOUCH_SELECTION_EXPORT LongPressDragSelector
   void OnLongPressEvent(base::TimeTicks event_time,
                         const gfx::PointF& position);
 
+  // Called when a scroll is going to happen to cancel longpress-drag gesture.
+  void OnScrollBeginEvent();
+
   // Called when the active selection changes.
   void OnSelectionActivated();
   void OnSelectionDeactivated();

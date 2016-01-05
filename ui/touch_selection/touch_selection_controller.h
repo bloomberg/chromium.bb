@@ -102,6 +102,10 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   bool WillHandleLongPressEvent(base::TimeTicks event_time,
                                 const gfx::PointF& location);
 
+  // To be called before forwarding a gesture scroll begin event to prevent
+  // long-press drag.
+  void OnScrollBeginEvent();
+
   // Allow showing the selection handles from the most recent selection bounds
   // update (if valid), or a future valid bounds update.
   void AllowShowingFromCurrentSelection();

@@ -1616,6 +1616,10 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
         }
         break;
 
+      case blink::WebInputEvent::GestureScrollBegin:
+        selection_controller_->OnScrollBeginEvent();
+        break;
+
       default:
         break;
     }

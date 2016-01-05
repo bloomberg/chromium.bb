@@ -87,12 +87,13 @@ TEST_F(LongPressDragSelectorTest, BasicDrag) {
   gfx::PointF selection_start(0, 10);
   gfx::PointF selection_end(10, 10);
   selector.OnLongPressEvent(event.GetEventTime(), gfx::PointF());
-  EXPECT_TRUE(GetAndResetActiveStateChanged());
+  EXPECT_FALSE(GetAndResetActiveStateChanged());
 
   // Motion should not be consumed until a selection is detected.
   EXPECT_FALSE(selector.WillHandleTouchEvent(event.MovePoint(0, 0, 0)));
   SetSelection(selection_start, selection_end);
   selector.OnSelectionActivated();
+  EXPECT_TRUE(GetAndResetActiveStateChanged());
   EXPECT_FALSE(IsDragging());
 
   // Initiate drag motion.  Note that the first move event after activation is
@@ -133,9 +134,10 @@ TEST_F(LongPressDragSelectorTest, BasicReverseDrag) {
   gfx::PointF selection_start(0, 10);
   gfx::PointF selection_end(10, 10);
   selector.OnLongPressEvent(event.GetEventTime(), gfx::PointF());
-  EXPECT_TRUE(GetAndResetActiveStateChanged());
+  EXPECT_FALSE(GetAndResetActiveStateChanged());
   SetSelection(selection_start, selection_end);
   selector.OnSelectionActivated();
+  EXPECT_TRUE(GetAndResetActiveStateChanged());
   EXPECT_FALSE(IsDragging());
 
   // Initiate drag motion.
@@ -248,10 +250,9 @@ TEST_F(LongPressDragSelectorTest, NoSelection) {
   EXPECT_FALSE(selector.WillHandleTouchEvent(event.PressPoint(0, 0)));
   EXPECT_FALSE(GetAndResetActiveStateChanged());
 
-  // Trigger a longpress. This will notify the client that detection is active,
-  // but until there's a longpress no drag selection should occur.
+  // Trigger a longpress.
   selector.OnLongPressEvent(event.GetEventTime(), gfx::PointF());
-  EXPECT_TRUE(GetAndResetActiveStateChanged());
+  EXPECT_FALSE(GetAndResetActiveStateChanged());
   EXPECT_FALSE(IsDragging());
 
   // Touch movement should not initiate selection drag, as there is no active
@@ -263,7 +264,6 @@ TEST_F(LongPressDragSelectorTest, NoSelection) {
   EXPECT_EQ(gfx::PointF(), DragPosition());
 
   EXPECT_FALSE(selector.WillHandleTouchEvent(event.ReleasePoint()));
-  EXPECT_TRUE(GetAndResetActiveStateChanged());
 }
 
 TEST_F(LongPressDragSelectorTest, NoDragMotion) {
@@ -276,11 +276,12 @@ TEST_F(LongPressDragSelectorTest, NoDragMotion) {
 
   // Activate a longpress-triggered selection.
   selector.OnLongPressEvent(event.GetEventTime(), gfx::PointF());
-  EXPECT_TRUE(GetAndResetActiveStateChanged());
+  EXPECT_FALSE(GetAndResetActiveStateChanged());
   gfx::PointF selection_start(0, 10);
   gfx::PointF selection_end(10, 10);
   SetSelection(selection_start, selection_end);
   selector.OnSelectionActivated();
+  EXPECT_TRUE(GetAndResetActiveStateChanged());
   EXPECT_FALSE(IsDragging());
 
   // Touch movement within the slop region should not initiate selection drag.
@@ -304,11 +305,12 @@ TEST_F(LongPressDragSelectorTest, SelectionDeactivated) {
 
   // Activate a longpress-triggered selection.
   selector.OnLongPressEvent(event.GetEventTime(), gfx::PointF());
-  EXPECT_TRUE(GetAndResetActiveStateChanged());
+  EXPECT_FALSE(GetAndResetActiveStateChanged());
   gfx::PointF selection_start(0, 10);
   gfx::PointF selection_end(10, 10);
   SetSelection(selection_start, selection_end);
   selector.OnSelectionActivated();
+  EXPECT_TRUE(GetAndResetActiveStateChanged());
   EXPECT_FALSE(IsDragging());
 
   // Start a drag selection.
@@ -342,9 +344,10 @@ TEST_F(LongPressDragSelectorTest, DragFast) {
   gfx::PointF selection_start(0, 10);
   gfx::PointF selection_end(10, 10);
   selector.OnLongPressEvent(event.GetEventTime(), gfx::PointF());
-  EXPECT_TRUE(GetAndResetActiveStateChanged());
+  EXPECT_FALSE(GetAndResetActiveStateChanged());
   SetSelection(selection_start, selection_end);
   selector.OnSelectionActivated();
+  EXPECT_TRUE(GetAndResetActiveStateChanged());
   EXPECT_FALSE(IsDragging());
 
   // Initiate drag motion.
@@ -362,6 +365,33 @@ TEST_F(LongPressDragSelectorTest, DragFast) {
   EXPECT_FALSE(selector.WillHandleTouchEvent(event.ReleasePoint()));
   EXPECT_FALSE(IsDragging());
   EXPECT_TRUE(GetAndResetActiveStateChanged());
+}
+
+TEST_F(LongPressDragSelectorTest, ScrollAfterLongPress) {
+  LongPressDragSelector selector(this);
+  MockMotionEvent event;
+  gfx::PointF touch_point(0, 0);
+
+  // Start a touch sequence.
+  EXPECT_FALSE(selector.WillHandleTouchEvent(
+      event.PressPoint(touch_point.x(), touch_point.y())));
+
+  // Long-press and hold down.
+  selector.OnLongPressEvent(event.GetEventTime(), touch_point);
+
+  // Scroll the page. This should cancel long-press drag gesture.
+  touch_point.Offset(0, 2 * kSlop);
+  EXPECT_FALSE(selector.WillHandleTouchEvent(
+      event.MovePoint(0, touch_point.x(), touch_point.y())));
+  selector.OnScrollBeginEvent();
+
+  // Now if the selection is activated, because long-press drag gesture was
+  // canceled, active state of the long-press selector should not change.
+  selector.OnSelectionActivated();
+  EXPECT_FALSE(GetAndResetActiveStateChanged());
+
+  // Release the touch sequence.
+  selector.WillHandleTouchEvent(event.ReleasePoint());
 }
 
 }  // namespace ui

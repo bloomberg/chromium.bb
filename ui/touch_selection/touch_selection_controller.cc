@@ -241,6 +241,24 @@ bool TouchSelectionController::WillHandleLongPressEvent(
   return false;
 }
 
+void TouchSelectionController::OnScrollBeginEvent() {
+  // When there is an active selection, if the user performs a long-press that
+  // does not trigger a new selection (e.g. a long-press on an empty area) and
+  // then scrolls, the scroll will move the selection. In this case we will
+  // think incorrectly that the selection change was due to the long-press and
+  // will activate touch selection and start long-press drag gesture (see
+  // ActivateInsertionIfNecessary()). To prevent this, we need to reset the
+  // state of touch selection controller and long-press drag selector.
+  // TODO(mohsen): Remove this workaround when we have enough information about
+  // the cause of a selection change (see https://crbug.com/571897).
+  longpress_drag_selector_.OnScrollBeginEvent();
+  response_pending_input_event_ = INPUT_EVENT_TYPE_NONE;
+  if (active_status_ == INACTIVE) {
+    activate_insertion_automatically_ = false;
+    activate_selection_automatically_ = false;
+  }
+}
+
 void TouchSelectionController::AllowShowingFromCurrentSelection() {
   if (active_status_ != INACTIVE)
     return;

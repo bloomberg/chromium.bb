@@ -2929,6 +2929,7 @@ void RenderWidgetHostViewAura::HandleGestureForTouchSelection(
       }
       break;
     case ui::ET_GESTURE_SCROLL_BEGIN:
+      selection_controller_->OnScrollBeginEvent();
       selection_controller_client_->OnScrollStarted();
       break;
     case ui::ET_GESTURE_SCROLL_END:

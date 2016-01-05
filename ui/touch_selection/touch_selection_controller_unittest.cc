@@ -1275,6 +1275,46 @@ TEST_F(TouchSelectionControllerTest, NoLongPressDragIfDisabled) {
   EXPECT_TRUE(test_controller.GetEndVisible());
 }
 
+// When there is a selection on the page and long-press drag is performed
+// somewhere that has nothing to select, long-press drag selector should not get
+// activated so the page can scroll.
+TEST_F(TouchSelectionControllerTest, LongPressDragScroll) {
+  EnableLongPressDragSelection();
+  TouchSelectionControllerTestApi test_controller(&controller());
+
+  gfx::RectF start_rect(10, 0, 0, 10);
+  gfx::RectF end_rect(20, 0, 0, 10);
+  gfx::PointF touch_point(0, 0);
+  bool visible = true;
+  MockMotionEvent event;
+
+  // Pre-select something.
+  ChangeSelection(start_rect, visible, end_rect, visible);
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_ESTABLISHED));
+
+  // Start the touch sequence and perform the long-press out of the existing
+  // selection.
+  EXPECT_FALSE(controller().WillHandleTouchEvent(
+      event.PressPoint(touch_point.x(), touch_point.y())));
+  OnLongPressEvent();
+
+  // Drag down. Selection controller should not consume the touch-move event.
+  touch_point.Offset(0, 2 * kDefaulTapSlop);
+  EXPECT_FALSE(controller().WillHandleTouchEvent(
+      event.MovePoint(0, touch_point.x(), touch_point.y())));
+
+  // Begin page scroll and update the selection. Selection handles should not be
+  // shown which means long-press drag selector is not activated.
+  controller().OnScrollBeginEvent();
+  start_rect.Offset(0, 2 * kDefaulTapSlop);
+  end_rect.Offset(0, 2 * kDefaulTapSlop);
+  ChangeSelection(start_rect, visible, end_rect, visible);
+  EXPECT_THAT(GetAndResetEvents(), IsEmpty());
+
+  // Release the touch sequence.
+  EXPECT_FALSE(controller().WillHandleTouchEvent(event.ReleasePoint()));
+}
+
 TEST_F(TouchSelectionControllerTest, RectBetweenBounds) {
   gfx::RectF start_rect(5, 5, 0, 10);
   gfx::RectF end_rect(50, 5, 0, 10);
