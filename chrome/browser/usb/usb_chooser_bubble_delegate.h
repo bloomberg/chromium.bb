@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_USB_USB_CHOOSER_BUBBLE_DELEGATE_H_
 #define CHROME_BROWSER_USB_USB_CHOOSER_BUBBLE_DELEGATE_H_
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -38,8 +40,9 @@ class UsbChooserBubbleDelegate : public ChooserBubbleDelegate,
   ~UsbChooserBubbleDelegate() override;
 
   // ChooserBubbleDelegate:
-  const std::vector<base::string16>& GetOptions() const override;
-  void Select(int index) override;
+  size_t NumOptions() const override;
+  const base::string16& GetOption(size_t index) const override;
+  void Select(size_t index) override;
   void Cancel() override;
   void Close() override;
 
@@ -58,8 +61,9 @@ class UsbChooserBubbleDelegate : public ChooserBubbleDelegate,
   ScopedObserver<device::UsbService, device::UsbService::Observer>
       usb_service_observer_;
   std::vector<device::UsbDeviceFilter> filters_;
-  std::vector<scoped_refptr<device::UsbDevice>> devices_;
-  std::vector<base::string16> devices_names_;
+  // Each pair is a (device, device name).
+  std::vector<std::pair<scoped_refptr<device::UsbDevice>, base::string16>>
+      devices_;
   BubbleReference bubble_controller_;
   base::WeakPtrFactory<UsbChooserBubbleDelegate> weak_factory_;
 

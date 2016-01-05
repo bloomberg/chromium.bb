@@ -24,8 +24,9 @@ class BluetoothChooserBubbleDelegate : public ChooserBubbleDelegate {
   ~BluetoothChooserBubbleDelegate() override;
 
   // ChooserBubbleDelegate:
-  const std::vector<base::string16>& GetOptions() const override;
-  void Select(int index) override;
+  size_t NumOptions() const override;
+  const base::string16& GetOption(size_t index) const override;
+  void Select(size_t index) override;
   void Cancel() override;
   void Close() override;
 
@@ -45,17 +46,8 @@ class BluetoothChooserBubbleDelegate : public ChooserBubbleDelegate {
   }
 
  private:
-  // TODO(juncai): use std::vector<std::pair<base::string16, std::string>>
-  // here since the lengths can't get out of sync and each pair of items
-  // is tightly associated.
-  // Also need to change ChooserBubbleDelegate::GetOptions to be:
-  // size_t NumOptions()
-  // const base::string16& GetOption(size_t index)
-  //
-  // |device_names_| and |device_ids_| have the same length.
-  // device_names_[i] is the name for the device with id device_ids_[i].
-  std::vector<base::string16> device_names_;
-  std::vector<std::string> device_ids_;
+  // Each pair is a (device name, device id).
+  std::vector<std::pair<base::string16, std::string>> device_names_and_ids_;
   BluetoothChooserDesktop* bluetooth_chooser_;
   BubbleReference bubble_controller_;
 

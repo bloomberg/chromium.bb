@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/website_settings/chooser_bubble_ui_view.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/macros.h"
@@ -115,84 +116,20 @@ ui::TableColumn ChooserTableColumn(int id, const std::string& title) {
 class ChooserTableModel : public ui::TableModel,
                           public ChooserBubbleDelegate::Observer {
  public:
-  explicit ChooserTableModel(ChooserBubbleDelegate* chooser_bubble_delegate)
-      : observer_(nullptr), chooser_bubble_delegate_(chooser_bubble_delegate) {
-    chooser_bubble_delegate_->set_observer(this);
-  }
+  explicit ChooserTableModel(ChooserBubbleDelegate* chooser_bubble_delegate);
 
   // ui::TableModel:
-  int RowCount() override {
-    const std::vector<base::string16>& device_names =
-        chooser_bubble_delegate_->GetOptions();
-    if (device_names.empty()) {
-      // Here it returns 1 when there is no device. In this case, the
-      // table view still needs to display a text message saying no
-      // devices found, so the number of rows is 1.
-      return 1;
-    } else {
-      return static_cast<int>(device_names.size());
-    }
-  }
+  int RowCount() override;
+  base::string16 GetText(int row, int column_id) override;
+  void SetObserver(ui::TableModelObserver* observer) override;
 
-  // ui::TableModel:
-  base::string16 GetText(int row, int column_id) override {
-    const std::vector<base::string16>& device_names =
-        chooser_bubble_delegate_->GetOptions();
-    if (device_names.empty()) {
-      DCHECK(row == 0);
-      return l10n_util::GetStringUTF16(
-          IDS_CHOOSER_BUBBLE_NO_DEVICES_FOUND_PROMPT);
-    } else if (row >= 0 && row < static_cast<int>(device_names.size())) {
-      return device_names[row];
-    } else {
-      NOTREACHED();
-      return base::string16();
-    }
-  }
+  // ChooserBubbleDelegate::Observer:
+  void OnOptionsInitialized() override;
+  void OnOptionAdded(size_t index) override;
+  void OnOptionRemoved(size_t index) override;
 
-  // ui::TableModel:
-  void SetObserver(ui::TableModelObserver* observer) override {
-    observer_ = observer;
-  }
-
-  // ChooserOptions::Observer:
-  void OnOptionsInitialized() override {
-    if (observer_) {
-      observer_->OnModelChanged();
-      Update();
-    }
-  }
-
-  // ChooserOptions::Observer:
-  void OnOptionAdded(int index) override {
-    if (observer_) {
-      observer_->OnItemsAdded(index, 1);
-      Update();
-    }
-  }
-
-  // ChooserOptions::Observer:
-  void OnOptionRemoved(int index) override {
-    if (observer_) {
-      observer_->OnItemsRemoved(index, 1);
-      Update();
-    }
-  }
-
-  void Update() {
-    views::TableView* table_view = static_cast<views::TableView*>(observer_);
-
-    if (chooser_bubble_delegate_->GetOptions().empty()) {
-      observer_->OnModelChanged();
-      table_view->SetEnabled(false);
-    } else {
-      table_view->SetEnabled(true);
-    }
-  }
-
-  void SetConnectButton(views::LabelButton* connect_button) {
-    connect_button_ = connect_button;
-  }
+  void Update();
+  void SetConnectButton(views::LabelButton* connect_button);
 
  private:
   ui::TableModelObserver* observer_;
@@ -232,7 +169,7 @@ ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
                   views::GridLayout::FILL, views::GridLayout::FILL,
                   kChooserPermissionBubbleWidth,
                   kChooserPermissionBubbleHeight);
-  if (chooser_bubble_delegate_->GetOptions().empty()) {
+  if (chooser_bubble_delegate_->NumOptions() == 0) {
     table_view_->SetEnabled(false);
   }
 
@@ -342,6 +279,71 @@ void ChooserBubbleUiViewDelegate::UpdateAnchor(
 
   // Reposition the bubble based on the updated arrow and view.
   SetAnchorView(anchor_view);
+}
+
+ChooserTableModel::ChooserTableModel(
+    ChooserBubbleDelegate* chooser_bubble_delegate)
+    : observer_(nullptr), chooser_bubble_delegate_(chooser_bubble_delegate) {
+  chooser_bubble_delegate_->set_observer(this);
+}
+
+int ChooserTableModel::RowCount() {
+  // When there are no devices, the table contains a message saying there
+  // are no devices, so the number of rows is always at least 1.
+  return std::max(static_cast<int>(chooser_bubble_delegate_->NumOptions()), 1);
+}
+
+base::string16 ChooserTableModel::GetText(int row, int column_id) {
+  int num_options = static_cast<int>(chooser_bubble_delegate_->NumOptions());
+  if (num_options == 0) {
+    DCHECK_EQ(0, row);
+    return l10n_util::GetStringUTF16(
+        IDS_CHOOSER_BUBBLE_NO_DEVICES_FOUND_PROMPT);
+  }
+
+  DCHECK_GE(row, 0);
+  DCHECK_LT(row, num_options);
+  return chooser_bubble_delegate_->GetOption(static_cast<size_t>(row));
+}
+
+void ChooserTableModel::SetObserver(ui::TableModelObserver* observer) {
+  observer_ = observer;
+}
+
+void ChooserTableModel::OnOptionsInitialized() {
+  if (observer_) {
+    observer_->OnModelChanged();
+    Update();
+  }
+}
+
+void ChooserTableModel::OnOptionAdded(size_t index) {
+  if (observer_) {
+    observer_->OnItemsAdded(static_cast<int>(index), 1);
+    Update();
+  }
+}
+
+void ChooserTableModel::OnOptionRemoved(size_t index) {
+  if (observer_) {
+    observer_->OnItemsRemoved(static_cast<int>(index), 1);
+    Update();
+  }
+}
+
+void ChooserTableModel::Update() {
+  views::TableView* table_view = static_cast<views::TableView*>(observer_);
+
+  if (chooser_bubble_delegate_->NumOptions() == 0) {
+    observer_->OnModelChanged();
+    table_view->SetEnabled(false);
+  } else {
+    table_view->SetEnabled(true);
+  }
+}
+
+void ChooserTableModel::SetConnectButton(views::LabelButton* connect_button) {
+  connect_button_ = connect_button;
 }
 
 //////////////////////////////////////////////////////////////////////////////

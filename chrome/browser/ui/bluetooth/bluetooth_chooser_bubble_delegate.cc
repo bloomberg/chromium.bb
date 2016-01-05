@@ -16,20 +16,22 @@ BluetoothChooserBubbleDelegate::~BluetoothChooserBubbleDelegate() {
     bluetooth_chooser_->set_bluetooth_chooser_bubble_delegate(nullptr);
 }
 
-const std::vector<base::string16>& BluetoothChooserBubbleDelegate::GetOptions()
-    const {
-  return device_names_;
+size_t BluetoothChooserBubbleDelegate::NumOptions() const {
+  return device_names_and_ids_.size();
 }
 
-// TODO(juncai): Change the index type to be size_t in base class to avoid
-// extra type casting.
-void BluetoothChooserBubbleDelegate::Select(int index) {
-  size_t idx = static_cast<size_t>(index);
-  size_t num_options = device_ids_.size();
-  DCHECK_LT(idx, num_options);
+const base::string16& BluetoothChooserBubbleDelegate::GetOption(
+    size_t index) const {
+  DCHECK_LT(index, device_names_and_ids_.size());
+  return device_names_and_ids_[index].first;
+}
+
+void BluetoothChooserBubbleDelegate::Select(size_t index) {
+  DCHECK_LT(index, device_names_and_ids_.size());
   if (bluetooth_chooser_) {
     bluetooth_chooser_->CallEventHandler(
-        content::BluetoothChooser::Event::SELECTED, device_ids_[idx]);
+        content::BluetoothChooser::Event::SELECTED,
+        device_names_and_ids_[index].second);
   }
 
   if (bubble_controller_)
@@ -56,25 +58,21 @@ void BluetoothChooserBubbleDelegate::Close() {
 void BluetoothChooserBubbleDelegate::AddDevice(
     const std::string& device_id,
     const base::string16& device_name) {
-  DCHECK(!ContainsValue(device_ids_, device_id));
-  device_names_.push_back(device_name);
-  device_ids_.push_back(device_id);
-  // TODO(juncai): Change OnOptionAdded's index type to be size_t to avoid
-  // extra type casting here.
+  device_names_and_ids_.push_back(std::make_pair(device_name, device_id));
   if (observer())
-    observer()->OnOptionAdded(static_cast<int>(device_names_.size()) - 1);
+    observer()->OnOptionAdded(device_names_and_ids_.size() - 1);
 }
 
 void BluetoothChooserBubbleDelegate::RemoveDevice(
     const std::string& device_id) {
-  auto iter = std::find(device_ids_.begin(), device_ids_.end(), device_id);
-  if (iter != device_ids_.end()) {
-    size_t index = iter - device_ids_.begin();
-    device_ids_.erase(iter);
-    device_names_.erase(device_names_.begin() + index);
-    // TODO(juncai): Change OnOptionRemoved's index type to be size_t to avoid
-    // extra type casting here.
-    if (observer())
-      observer()->OnOptionRemoved(index);
+  for (auto it = device_names_and_ids_.begin();
+       it != device_names_and_ids_.end(); ++it) {
+    if (it->second == device_id) {
+      size_t index = it - device_names_and_ids_.begin();
+      device_names_and_ids_.erase(it);
+      if (observer())
+        observer()->OnOptionRemoved(index);
+      return;
+    }
   }
 }

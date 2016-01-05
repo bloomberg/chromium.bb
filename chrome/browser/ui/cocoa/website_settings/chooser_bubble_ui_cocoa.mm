@@ -294,31 +294,26 @@ scoped_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 }
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView*)tableView {
-  const std::vector<base::string16>& device_names =
-      chooserBubbleDelegate_->GetOptions();
-  if (device_names.empty()) {
-    return 1;
-  } else {
-    return static_cast<NSInteger>(device_names.size());
-  }
+  // When there are no devices, the table contains a message saying there are
+  // no devices, so the number of rows is always at least 1.
+  return std::max(static_cast<NSInteger>(chooserBubbleDelegate_->NumOptions()),
+                  static_cast<NSInteger>(1));
 }
 
 - (id)tableView:(NSTableView*)tableView
     objectValueForTableColumn:(NSTableColumn*)tableColumn
                           row:(NSInteger)rowIndex {
-  const std::vector<base::string16>& device_names =
-      chooserBubbleDelegate_->GetOptions();
-  if (device_names.empty()) {
-    DCHECK(rowIndex == 0);
+  NSInteger num_options =
+      static_cast<NSInteger>(chooserBubbleDelegate_->NumOptions());
+  if (num_options == 0) {
+    DCHECK_EQ(0, rowIndex);
     return l10n_util::GetNSString(IDS_CHOOSER_BUBBLE_NO_DEVICES_FOUND_PROMPT);
-  } else {
-    if (rowIndex >= 0 &&
-        rowIndex < static_cast<NSInteger>(device_names.size())) {
-      return base::SysUTF16ToNSString(device_names[rowIndex]);
-    } else {
-      return @"";
-    }
   }
+
+  DCHECK_GE(rowIndex, 0);
+  DCHECK_LT(rowIndex, num_options);
+  return base::SysUTF16ToNSString(
+      chooserBubbleDelegate_->GetOption(static_cast<size_t>(rowIndex)));
 }
 
 - (BOOL)tableView:(NSTableView*)aTableView
@@ -346,9 +341,7 @@ scoped_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 }
 
 - (void)updateTableView {
-  const std::vector<base::string16>& device_names =
-      chooserBubbleDelegate_->GetOptions();
-  [tableView_ setEnabled:!device_names.empty()];
+  [tableView_ setEnabled:chooserBubbleDelegate_->NumOptions() > 0];
   [tableView_ reloadData];
 }
 
@@ -503,12 +496,12 @@ void ChooserBubbleUiCocoa::OnOptionsInitialized() {
   [chooser_bubble_ui_controller_ onOptionsInitialized];
 }
 
-void ChooserBubbleUiCocoa::OnOptionAdded(int index) {
-  [chooser_bubble_ui_controller_ onOptionAdded:index];
+void ChooserBubbleUiCocoa::OnOptionAdded(size_t index) {
+  [chooser_bubble_ui_controller_ onOptionAdded:static_cast<NSInteger>(index)];
 }
 
-void ChooserBubbleUiCocoa::OnOptionRemoved(int index) {
-  [chooser_bubble_ui_controller_ onOptionRemoved:index];
+void ChooserBubbleUiCocoa::OnOptionRemoved(size_t index) {
+  [chooser_bubble_ui_controller_ onOptionRemoved:static_cast<NSInteger>(index)];
 }
 
 void ChooserBubbleUiCocoa::OnBubbleClosing() {

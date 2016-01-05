@@ -35,16 +35,18 @@ class ChooserBubbleDelegate : public BubbleDelegate {
     // Called after the options list is initialized for the first time.
     // OnOptionsInitialized should only be called once.
     virtual void OnOptionsInitialized() = 0;
-    // Called after GetOptions()[index] has been added to the options and the
+
+    // Called after GetOption(index) has been added to the options and the
     // newly added option is the last element in the options list. Calling
-    // GetOptions()[index] from inside a call to OnOptionAdded will see the
+    // GetOption(index) from inside a call to OnOptionAdded will see the
     // added string since the options have already been updated.
-    virtual void OnOptionAdded(int index) = 0;
-    // Called when GetOptions()[index] is no longer present, and all later
-    // options have been moved earlier by 1 slot. Calling GetOptions()[index]
+    virtual void OnOptionAdded(size_t index) = 0;
+
+    // Called when GetOption(index) is no longer present, and all later
+    // options have been moved earlier by 1 slot. Calling GetOption(index)
     // from inside a call to OnOptionRemoved will NOT see the removed string
     // since the options have already been updated.
-    virtual void OnOptionRemoved(int index) = 0;
+    virtual void OnOptionRemoved(size_t index) = 0;
 
    protected:
     virtual ~Observer() {}
@@ -54,16 +56,22 @@ class ChooserBubbleDelegate : public BubbleDelegate {
   std::string GetName() const override;
   scoped_ptr<BubbleUi> BuildBubbleUi() override;
 
-  // The set of options users can pick from. For example, it can be
-  // USB/Bluetooth devices names which are listed in the chooser bubble
-  // so that users can grant permission.
-  virtual const std::vector<base::string16>& GetOptions() const = 0;
+  // The number of options users can pick from. For example, it can be
+  // the number of USB/Bluetooth device names which are listed in the
+  // chooser bubble so that users can grant permission.
+  virtual size_t NumOptions() const = 0;
+
+  // The |index|th option string which is listed in the chooser bubble.
+  virtual const base::string16& GetOption(size_t index) const = 0;
 
   // These three functions are called just before this object is destroyed:
+
   // Called when the user selects the |index|th element from the dialog.
-  virtual void Select(int index) = 0;
+  virtual void Select(size_t index) = 0;
+
   // Called when the user presses the 'Cancel' button in the dialog.
   virtual void Cancel() = 0;
+
   // Called when the user clicks outside the dialog or the dialog otherwise
   // closes without the user taking an explicit action.
   virtual void Close() = 0;

@@ -77,34 +77,32 @@ UsbChooserBubbleDelegate::~UsbChooserBubbleDelegate() {
     callback_.Run(nullptr);
 }
 
-const std::vector<base::string16>& UsbChooserBubbleDelegate::GetOptions()
-    const {
-  return devices_names_;
+size_t UsbChooserBubbleDelegate::NumOptions() const {
+  return devices_.size();
 }
 
-void UsbChooserBubbleDelegate::Select(int index) {
-  size_t idx = static_cast<size_t>(index);
-  size_t num_options = devices_.size();
-  DCHECK_LT(idx, num_options);
-  if (idx < num_options) {
-    content::WebContents* web_contents =
-        content::WebContents::FromRenderFrameHost(render_frame_host_);
-    GURL embedding_origin =
-        web_contents->GetMainFrame()->GetLastCommittedURL().GetOrigin();
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    UsbChooserContext* chooser_context =
-        UsbChooserContextFactory::GetForProfile(profile);
-    chooser_context->GrantDevicePermission(
-        render_frame_host_->GetLastCommittedURL().GetOrigin(), embedding_origin,
-        devices_[idx]->guid());
+const base::string16& UsbChooserBubbleDelegate::GetOption(size_t index) const {
+  DCHECK_LT(index, devices_.size());
+  return devices_[index].second;
+}
 
-    device::usb::DeviceInfoPtr device_info_ptr =
-        device::usb::DeviceInfo::From(*devices_[idx]);
-    callback_.Run(std::move(device_info_ptr));
-  } else {
-    callback_.Run(nullptr);
-  }
+void UsbChooserBubbleDelegate::Select(size_t index) {
+  DCHECK_LT(index, devices_.size());
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host_);
+  GURL embedding_origin =
+      web_contents->GetMainFrame()->GetLastCommittedURL().GetOrigin();
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  UsbChooserContext* chooser_context =
+      UsbChooserContextFactory::GetForProfile(profile);
+  chooser_context->GrantDevicePermission(
+      render_frame_host_->GetLastCommittedURL().GetOrigin(), embedding_origin,
+      devices_[index].first->guid());
+
+  device::usb::DeviceInfoPtr device_info_ptr =
+      device::usb::DeviceInfo::From(*devices_[index].first);
+  callback_.Run(std::move(device_info_ptr));
   callback_.reset();  // Reset |callback_| so that it is only run once.
 
   if (bubble_controller_)
@@ -120,27 +118,26 @@ void UsbChooserBubbleDelegate::Close() {}
 
 void UsbChooserBubbleDelegate::OnDeviceAdded(
     scoped_refptr<device::UsbDevice> device) {
-  DCHECK(!ContainsValue(devices_, device));
   if (device::UsbDeviceFilter::MatchesAny(device, filters_) &&
       FindOriginInDescriptorSet(
           device->webusb_allowed_origins(),
           render_frame_host_->GetLastCommittedURL().GetOrigin())) {
-    devices_.push_back(device);
-    devices_names_.push_back(device->product_string());
+    devices_.push_back(std::make_pair(device, device->product_string()));
     if (observer())
-      observer()->OnOptionAdded(static_cast<int>(devices_names_.size()) - 1);
+      observer()->OnOptionAdded(devices_.size() - 1);
   }
 }
 
 void UsbChooserBubbleDelegate::OnDeviceRemoved(
     scoped_refptr<device::UsbDevice> device) {
-  auto iter = std::find(devices_.begin(), devices_.end(), device);
-  if (iter != devices_.end()) {
-    int index = iter - devices_.begin();
-    devices_.erase(iter);
-    devices_names_.erase(devices_names_.begin() + index);
-    if (observer())
-      observer()->OnOptionRemoved(index);
+  for (auto it = devices_.begin(); it != devices_.end(); ++it) {
+    if (it->first == device) {
+      size_t index = it - devices_.begin();
+      devices_.erase(it);
+      if (observer())
+        observer()->OnOptionRemoved(index);
+      return;
+    }
   }
 }
 
@@ -153,8 +150,7 @@ void UsbChooserBubbleDelegate::GotUsbDeviceList(
         FindOriginInDescriptorSet(
             device->webusb_allowed_origins(),
             render_frame_host_->GetLastCommittedURL().GetOrigin())) {
-      devices_.push_back(device);
-      devices_names_.push_back(device->product_string());
+      devices_.push_back(std::make_pair(device, device->product_string()));
     }
   }
   if (observer())

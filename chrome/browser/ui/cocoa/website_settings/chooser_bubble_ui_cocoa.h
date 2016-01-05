@@ -32,8 +32,8 @@ class ChooserBubbleUiCocoa : public BubbleUi,
 
   // ChooserBubbleDelegate::Observer:
   void OnOptionsInitialized() override;
-  void OnOptionAdded(int index) override;
-  void OnOptionRemoved(int index) override;
+  void OnOptionAdded(size_t index) override;
+  void OnOptionRemoved(size_t index) override;
 
   // Called when |chooser_bubble_ui_controller_| is closing.
   void OnBubbleClosing();
