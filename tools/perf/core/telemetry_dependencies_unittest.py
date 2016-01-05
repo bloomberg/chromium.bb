@@ -15,7 +15,6 @@ from core import path_util
 
 _TELEMETRY_DEPS = [
     'build/android/devil/',
-    'build/android/pylib/',
     'third_party/catapult/',
     'tools/telemetry/']
 

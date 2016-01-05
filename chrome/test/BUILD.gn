@@ -675,16 +675,10 @@ if (!is_android) {
 
   group("telemetry_perf_unittests") {
     deps = [
-      "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
+      "//tools/perf:perf",
     ]
 
     data = [
-      "//tools/perf/",
-
-      # Field trial config
-      "//tools/variations/",
-      "//testing/variations/",
-
       # For isolate contract.
       "//testing/scripts/common.py",
       "//testing/xvfb.py",
