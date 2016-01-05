@@ -363,9 +363,22 @@ base::string16 InferLabelFromPlaceholder(const WebFormControlElement& element) {
   return base::string16();
 }
 
+// Helper for |InferLabelForElement()| that infers a label, from
+// the value attribute when it is present and user has not typed in (if
+// element's value attribute is same as the element's value).
+base::string16 InferLabelFromValueAttr(const WebFormControlElement& element) {
+  CR_DEFINE_STATIC_LOCAL(WebString, kValue, ("value"));
+  if (element.hasAttribute(kValue) && element.getAttribute(kValue) ==
+      element.value()) {
+    return element.getAttribute(kValue);
+  }
+
+  return base::string16();
+}
+
 // Helper for |InferLabelForElement()| that infers a label, if possible, from
 // enclosing list item,
-// e.g. <li>Some Text<input ...><input ...><input ...></tr>
+// e.g. <li>Some Text<input ...><input ...><input ...></li>
 base::string16 InferLabelFromListItem(const WebFormControlElement& element) {
   WebNode parent = element.parentNode();
   CR_DEFINE_STATIC_LOCAL(WebString, kListItem, ("li"));
@@ -375,6 +388,24 @@ base::string16 InferLabelFromListItem(const WebFormControlElement& element) {
   }
 
   if (!parent.isNull() && HasTagName(parent, kListItem))
+    return FindChildText(parent);
+
+  return base::string16();
+}
+
+// Helper for |InferLabelForElement()| that infers a label, if possible, from
+// enclosing label,
+// e.g. <label>Some Text<input ...><input ...><input ...></label>
+base::string16 InferLabelFromEnclosingLabel(
+    const WebFormControlElement& element) {
+  WebNode parent = element.parentNode();
+  CR_DEFINE_STATIC_LOCAL(WebString, kLabel, ("label"));
+  while (!parent.isNull() && parent.isElementNode() &&
+         !parent.to<WebElement>().hasHTMLTagName(kLabel)) {
+    parent = parent.parentNode();
+  }
+
+  if (!parent.isNull() && HasTagName(parent, kLabel))
     return FindChildText(parent);
 
   return base::string16();
@@ -633,23 +664,35 @@ std::vector<std::string> AncestorTagNames(
   return tag_names;
 }
 
+bool IsLabelValid(base::StringPiece16 inferred_label,
+    const std::vector<base::char16>& stop_words) {
+  // If |inferred_label| has any character other than those in |stop_words|.
+  auto first_non_stop_word = std::find_if(inferred_label.begin(),
+      inferred_label.end(), [&stop_words](base::char16 c) {
+          return !ContainsValue(stop_words, c);
+      });
+  return first_non_stop_word != inferred_label.end();
+}
+
 // Infers corresponding label for |element| from surrounding context in the DOM,
 // e.g. the contents of the preceding <p> tag or text element.
-base::string16 InferLabelForElement(const WebFormControlElement& element) {
+base::string16 InferLabelForElement(const WebFormControlElement& element,
+    const std::vector<base::char16>& stop_words) {
   base::string16 inferred_label;
+
   if (IsCheckableElement(toWebInputElement(&element))) {
     inferred_label = InferLabelFromNext(element);
-    if (!inferred_label.empty())
+    if (IsLabelValid(inferred_label, stop_words))
       return inferred_label;
   }
 
   inferred_label = InferLabelFromPrevious(element);
-  if (!inferred_label.empty())
+  if (IsLabelValid(inferred_label, stop_words))
     return inferred_label;
 
   // If we didn't find a label, check for placeholder text.
   inferred_label = InferLabelFromPlaceholder(element);
-  if (!inferred_label.empty())
+  if (IsLabelValid(inferred_label, stop_words))
     return inferred_label;
 
   // For all other searches that involve traversing up the tree, the search
@@ -661,11 +704,13 @@ base::string16 InferLabelForElement(const WebFormControlElement& element) {
       continue;
 
     seen_tag_names.insert(tag_name);
-    if (tag_name == "DIV") {
+    if (tag_name == "LABEL") {
+      inferred_label = InferLabelFromEnclosingLabel(element);
+    } else if (tag_name == "DIV") {
       inferred_label = InferLabelFromDivTable(element);
     } else if (tag_name == "TD") {
       inferred_label = InferLabelFromTableColumn(element);
-      if (inferred_label.empty())
+      if (!IsLabelValid(inferred_label, stop_words))
         inferred_label = InferLabelFromTableRow(element);
     } else if (tag_name == "DD") {
       inferred_label = InferLabelFromDefinitionList(element);
@@ -675,11 +720,16 @@ base::string16 InferLabelForElement(const WebFormControlElement& element) {
       break;
     }
 
-    if (!inferred_label.empty())
-      break;
+    if (IsLabelValid(inferred_label, stop_words))
+      return inferred_label;
   }
 
-  return inferred_label;
+  // If we didn't find a label, check the value attr used as the placeholder.
+  inferred_label = InferLabelFromValueAttr(element);
+  if (IsLabelValid(inferred_label, stop_words))
+    return inferred_label;
+  else
+    return base::string16();
 }
 
 // Fills |option_strings| with the values of the <option> elements present in
@@ -1033,6 +1083,18 @@ bool FormOrFieldsetsToFormData(
     }
   }
 
+  // List of characters a label can't be entirely made of (this list can grow).
+  // Since the term |stop_words| is a known text processing concept we use here
+  // it to refer to such characters. They are not to be confused with words.
+  std::vector<base::char16> stop_words;
+  stop_words.push_back(static_cast<base::char16>(' '));
+  stop_words.push_back(static_cast<base::char16>('*'));
+  stop_words.push_back(static_cast<base::char16>(':'));
+  stop_words.push_back(static_cast<base::char16>('-'));
+  stop_words.push_back(static_cast<base::char16>(L'\u2013'));
+  stop_words.push_back(static_cast<base::char16>('('));
+  stop_words.push_back(static_cast<base::char16>(')'));
+
   // Loop through the form control elements, extracting the label text from
   // the DOM.  We use the |fields_extracted| vector to make sure we assign the
   // extracted label to the correct field, as it's possible |form_fields| will
@@ -1045,8 +1107,10 @@ bool FormOrFieldsetsToFormData(
       continue;
 
     const WebFormControlElement& control_element = control_elements[i];
-    if (form_fields[field_idx]->label.empty())
-      form_fields[field_idx]->label = InferLabelForElement(control_element);
+    if (form_fields[field_idx]->label.empty()) {
+      form_fields[field_idx]->label = InferLabelForElement(control_element,
+                                                           stop_words);
+    }
     TruncateString(&form_fields[field_idx]->label, kMaxDataLength);
 
     if (field && *form_control_element == control_element)

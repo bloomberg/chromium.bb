@@ -31,8 +31,8 @@ ADDRESS_HOME_CITY | SCity | City* |  | LoginName_1-default
 ADDRESS_HOME_STATE | SState | State* | AK | LoginName_1-default
 ADDRESS_HOME_ZIP | SZip | Zip Code* |  | LoginName_1-default
 PHONE_HOME_CITY_CODE | ShippingPhone_tel1 | Shipping Phone* |  | LoginName_1-default
-PHONE_HOME_NUMBER | ShippingPhone_tel2 | ) |  | LoginName_1-default
-PHONE_HOME_NUMBER | ShippingPhone_tel3 | - |  | LoginName_1-default
+PHONE_HOME_NUMBER | ShippingPhone_tel2 |  |  | LoginName_1-default
+PHONE_HOME_NUMBER | ShippingPhone_tel3 |  |  | LoginName_1-default
 UNKNOWN_TYPE | ShippingPhone_ext1 | Ext |  | LoginName_1-default
 UNKNOWN_TYPE | custtype | Is this purchase for personal or business use? | 200 | LoginName_1-default
 UNKNOWN_TYPE | Age | Age |  | LoginName_1-default

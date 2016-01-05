@@ -13,8 +13,8 @@ ADDRESS_HOME_STATE | creditCard.billingContact.address.state | State: | -1 | cre
 ADDRESS_HOME_ZIP | creditCard.billingContact.address.postalCode | Zip code: |  | creditCard.cardType.code_1-default
 EMAIL_ADDRESS | user.email | email address: |  | creditCard.cardType.code_1-default
 PHONE_HOME_CITY_CODE | user.phone.areaCode | phone: |  | creditCard.cardType.code_1-default
-PHONE_HOME_NUMBER | user.phone.exchangeNumber | – |  | creditCard.cardType.code_1-default
-PHONE_HOME_WHOLE_NUMBER | user.phone.subscriberNumber | – |  | creditCard.cardType.code_1-default
+PHONE_HOME_NUMBER | user.phone.exchangeNumber | phone:Please enter your phone number |  | creditCard.cardType.code_1-default
+PHONE_HOME_WHOLE_NUMBER | user.phone.subscriberNumber | phone:Please enter your phone number |  | creditCard.cardType.code_1-default
 UNKNOWN_TYPE | user.profile.createAccount | Yes! Create an account for me at macys.com | true | creditCard.cardType.code_1-default
 EMAIL_ADDRESS | user.profile.email | email address: |  | user.profile.email_1-default
 EMAIL_ADDRESS | user.profile.confirmEmail | Confirm email address: |  | user.profile.email_1-default

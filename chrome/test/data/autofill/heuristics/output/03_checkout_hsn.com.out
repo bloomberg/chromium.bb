@@ -7,13 +7,13 @@ ADDRESS_HOME_CITY | Body$BillingAddress$_city | City |  | Body$BillingIsShipping
 ADDRESS_HOME_STATE | Body$BillingAddress$_state | State |    | Body$BillingIsShippingCheckboxB_1-default
 ADDRESS_HOME_ZIP | Body$BillingAddress$_zipcode | Zip Code |  | Body$BillingIsShippingCheckboxB_1-default
 PHONE_HOME_WHOLE_NUMBER | Body$BillingAddress$_PrimaryPhone | Primary Phone |  | Body$BillingIsShippingCheckboxB_1-default
-UNKNOWN_TYPE | Body$BillingAddress$rdoPrimary |  | H | Body$BillingIsShippingCheckboxB_1-default
-UNKNOWN_TYPE | Body$BillingAddress$rdoPrimary |  | M | Body$BillingIsShippingCheckboxB_1-default
-UNKNOWN_TYPE | Body$BillingAddress$rdoPrimary |  | W | Body$BillingIsShippingCheckboxB_1-default
+UNKNOWN_TYPE | Body$BillingAddress$rdoPrimary | H | H | Body$BillingIsShippingCheckboxB_1-default
+UNKNOWN_TYPE | Body$BillingAddress$rdoPrimary | M | M | Body$BillingIsShippingCheckboxB_1-default
+UNKNOWN_TYPE | Body$BillingAddress$rdoPrimary | W | W | Body$BillingIsShippingCheckboxB_1-default
 PHONE_HOME_WHOLE_NUMBER | Body$BillingAddress$_Alt1Phone | Alternate Phone2(optional) |  | Body$BillingIsShippingCheckboxB_1-default
-UNKNOWN_TYPE | Body$BillingAddress$rdoAlt1 |  | H | Body$BillingIsShippingCheckboxB_1-default
-UNKNOWN_TYPE | Body$BillingAddress$rdoAlt1 |  | M | Body$BillingIsShippingCheckboxB_1-default
-UNKNOWN_TYPE | Body$BillingAddress$rdoAlt1 |  | W | Body$BillingIsShippingCheckboxB_1-default
+UNKNOWN_TYPE | Body$BillingAddress$rdoAlt1 | H | H | Body$BillingIsShippingCheckboxB_1-default
+UNKNOWN_TYPE | Body$BillingAddress$rdoAlt1 | M | M | Body$BillingIsShippingCheckboxB_1-default
+UNKNOWN_TYPE | Body$BillingAddress$rdoAlt1 | W | W | Body$BillingIsShippingCheckboxB_1-default
 UNKNOWN_TYPE | Body$MobileAlerts | Send me special promotion mobile alerts | on | Body$BillingIsShippingCheckboxB_1-default
 EMAIL_ADDRESS | Body$NewEmailAddress2 | Email Address |  | Body$BillingIsShippingCheckboxB_1-default
 UNKNOWN_TYPE | Body$WeeklyNewsletterSignup12 | Email me weekly HSN newsletters and special offers | on | Body$BillingIsShippingCheckboxB_1-default

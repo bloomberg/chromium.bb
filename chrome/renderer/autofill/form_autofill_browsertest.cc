@@ -302,6 +302,12 @@ class FormAutofillTest : public ChromeRenderViewTest {
           WebInputElement::defaultMaxLength() : 0;
       expected.name = ASCIIToUTF16(field_cases[i].name);
       expected.value = ASCIIToUTF16(field_cases[i].initial_value);
+      if (expected.form_control_type == "text" ||
+          expected.form_control_type == "month") {
+        expected.label = ASCIIToUTF16(field_cases[i].initial_value);
+      } else {
+        expected.label.clear();
+      }
       expected.autocomplete_attribute = field_cases[i].autocomplete_attribute;
       EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[i]);
       // Fill the form_data for the field.
@@ -529,21 +535,25 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
     expected.name = ASCIIToUTF16("firstname");
     expected.value = ASCIIToUTF16("John");
+    expected.label = ASCIIToUTF16("John");
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[0]);
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, field);
 
     expected.name = ASCIIToUTF16("lastname");
     expected.value = ASCIIToUTF16("Smith");
+    expected.label = ASCIIToUTF16("Smith");
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[1]);
 
     expected.name = ASCIIToUTF16("email");
     expected.value = ASCIIToUTF16("john@example.com");
+    expected.label = ASCIIToUTF16("john@example.com");
     expected.autocomplete_attribute = "off";
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[2]);
     expected.autocomplete_attribute.clear();
 
     expected.name = ASCIIToUTF16("phone");
     expected.value = ASCIIToUTF16("1.800.555.1234");
+    expected.label = ASCIIToUTF16("1.800.555.1234");
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[3]);
   }
 
@@ -579,18 +589,21 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
     expected.name = ASCIIToUTF16("firstname");
     expected.value = ASCIIToUTF16("John");
+    expected.label = ASCIIToUTF16("John");
     expected.form_control_type = "text";
     expected.max_length = WebInputElement::defaultMaxLength();
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[0]);
 
     expected.name = ASCIIToUTF16("lastname");
     expected.value = ASCIIToUTF16("Smith");
+    expected.label = ASCIIToUTF16("Smith");
     expected.form_control_type = "text";
     expected.max_length = WebInputElement::defaultMaxLength();
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[1]);
 
     expected.name = ASCIIToUTF16("email");
     expected.value = ASCIIToUTF16("john@example.com");
+    expected.label = ASCIIToUTF16("john@example.com");
     expected.autocomplete_attribute = "off";
     expected.form_control_type = "text";
     expected.max_length = WebInputElement::defaultMaxLength();
@@ -599,6 +612,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
     expected.name = ASCIIToUTF16("street-address");
     expected.value = ASCIIToUTF16("123 Fantasy Ln.\nApt. 42");
+    expected.label.clear();
     expected.form_control_type = "textarea";
     expected.max_length = 0;
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[3]);
@@ -1077,27 +1091,32 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
     expected.name = ASCIIToUTF16("noAC");
     expected.value = ASCIIToUTF16("one");
+    expected.label = ASCIIToUTF16("one");
     expected.autocomplete_attribute = "off";
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[2]);
     expected.autocomplete_attribute.clear();
 
     expected.name = ASCIIToUTF16("notenabled");
     expected.value = ASCIIToUTF16("no clear");
+    expected.label.clear();
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[3]);
 
     expected.form_control_type = "month";
     expected.max_length = 0;
     expected.name = ASCIIToUTF16("month");
     expected.value.clear();
+    expected.label.clear();
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[4]);
 
     expected.name = ASCIIToUTF16("month-disabled");
     expected.value = ASCIIToUTF16("2012-11");
+    expected.label = ASCIIToUTF16("2012-11");
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[5]);
 
     expected.form_control_type = "textarea";
     expected.name = ASCIIToUTF16("textarea");
     expected.value.clear();
+    expected.label.clear();
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[6]);
 
     expected.name = ASCIIToUTF16("textarea-disabled");
@@ -2179,14 +2198,17 @@ TEST_F(FormAutofillTest, ExtractMultipleForms) {
 
   expected.name = ASCIIToUTF16("firstname");
   expected.value = ASCIIToUTF16("John");
+  expected.label = ASCIIToUTF16("John");
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[0]);
 
   expected.name = ASCIIToUTF16("lastname");
   expected.value = ASCIIToUTF16("Smith");
+  expected.label = ASCIIToUTF16("Smith");
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[1]);
 
   expected.name = ASCIIToUTF16("email");
   expected.value = ASCIIToUTF16("john@example.com");
+  expected.label = ASCIIToUTF16("john@example.com");
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[2]);
 
   // Second form.
@@ -2201,14 +2223,17 @@ TEST_F(FormAutofillTest, ExtractMultipleForms) {
 
   expected.name = ASCIIToUTF16("firstname");
   expected.value = ASCIIToUTF16("Jack");
+  expected.label = ASCIIToUTF16("Jack");
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[0]);
 
   expected.name = ASCIIToUTF16("lastname");
   expected.value = ASCIIToUTF16("Adams");
+  expected.label = ASCIIToUTF16("Adams");
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[1]);
 
   expected.name = ASCIIToUTF16("email");
   expected.value = ASCIIToUTF16("jack@example.com");
+  expected.label = ASCIIToUTF16("jack@example.com");
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[2]);
 }
 
@@ -2253,18 +2278,22 @@ TEST_F(FormAutofillTest, OnlyExtractNewForms) {
 
   expected.name = ASCIIToUTF16("firstname");
   expected.value = ASCIIToUTF16("John");
+  expected.label = ASCIIToUTF16("John");
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[0]);
 
   expected.name = ASCIIToUTF16("lastname");
   expected.value = ASCIIToUTF16("Smith");
+  expected.label = ASCIIToUTF16("Smith");
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[1]);
 
   expected.name = ASCIIToUTF16("email");
   expected.value = ASCIIToUTF16("john@example.com");
+  expected.label = ASCIIToUTF16("john@example.com");
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[2]);
 
   expected.name = ASCIIToUTF16("telephone");
   expected.value = ASCIIToUTF16("12345");
+  expected.label.clear();
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[3]);
 
   forms.clear();
@@ -2302,14 +2331,17 @@ TEST_F(FormAutofillTest, OnlyExtractNewForms) {
 
   expected.name = ASCIIToUTF16("second_firstname");
   expected.value = ASCIIToUTF16("Bob");
+  expected.label.clear();
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[0]);
 
   expected.name = ASCIIToUTF16("second_lastname");
   expected.value = ASCIIToUTF16("Hope");
+  expected.label.clear();
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[1]);
 
   expected.name = ASCIIToUTF16("second_email");
   expected.value = ASCIIToUTF16("bobhope@example.com");
+  expected.label.clear();
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[2]);
 }
 
@@ -3351,11 +3383,11 @@ TEST_F(FormAutofillTest, LabelsInferredWithImageTags) {
   names.push_back(ASCIIToUTF16("dayphone1"));
   values.push_back(base::string16());
 
-  labels.push_back(ASCIIToUTF16("-"));
+  labels.push_back(ASCIIToUTF16(""));
   names.push_back(ASCIIToUTF16("dayphone2"));
   values.push_back(base::string16());
 
-  labels.push_back(ASCIIToUTF16("-"));
+  labels.push_back(ASCIIToUTF16(""));
   names.push_back(ASCIIToUTF16("dayphone3"));
   values.push_back(base::string16());
 
@@ -3638,11 +3670,11 @@ TEST_F(FormAutofillTest, ThreePartPhone) {
   expected.name = ASCIIToUTF16("dayphone1");
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[0]);
 
-  expected.label = ASCIIToUTF16("-");
+  expected.label = ASCIIToUTF16("");
   expected.name = ASCIIToUTF16("dayphone2");
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[1]);
 
-  expected.label = ASCIIToUTF16("-");
+  expected.label = ASCIIToUTF16("");
   expected.name = ASCIIToUTF16("dayphone3");
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[2]);
 
@@ -3696,12 +3728,12 @@ TEST_F(FormAutofillTest, MaxLengthFields) {
   expected.max_length = 3;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[0]);
 
-  expected.label = ASCIIToUTF16("-");
+  expected.label = ASCIIToUTF16("");
   expected.name = ASCIIToUTF16("dayphone2");
   expected.max_length = 3;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[1]);
 
-  expected.label = ASCIIToUTF16("-");
+  expected.label = ASCIIToUTF16("");
   expected.name = ASCIIToUTF16("dayphone3");
   expected.max_length = 4;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[2]);
@@ -4012,18 +4044,21 @@ TEST_F(FormAutofillTest, SelectOneAsText) {
 
   expected.name = ASCIIToUTF16("firstname");
   expected.value = ASCIIToUTF16("John");
+  expected.label = ASCIIToUTF16("John");
   expected.form_control_type = "text";
   expected.max_length = WebInputElement::defaultMaxLength();
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[0]);
 
   expected.name = ASCIIToUTF16("lastname");
   expected.value = ASCIIToUTF16("Smith");
+  expected.label = ASCIIToUTF16("Smith");
   expected.form_control_type = "text";
   expected.max_length = WebInputElement::defaultMaxLength();
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[1]);
 
   expected.name = ASCIIToUTF16("country");
   expected.value = ASCIIToUTF16("Albania");
+  expected.label.clear();
   expected.form_control_type = "select-one";
   expected.max_length = 0;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[2]);
@@ -4043,18 +4078,21 @@ TEST_F(FormAutofillTest, SelectOneAsText) {
 
   expected.name = ASCIIToUTF16("firstname");
   expected.value = ASCIIToUTF16("John");
+  expected.label = ASCIIToUTF16("John");
   expected.form_control_type = "text";
   expected.max_length = WebInputElement::defaultMaxLength();
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[0]);
 
   expected.name = ASCIIToUTF16("lastname");
   expected.value = ASCIIToUTF16("Smith");
+  expected.label = ASCIIToUTF16("Smith");
   expected.form_control_type = "text";
   expected.max_length = WebInputElement::defaultMaxLength();
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[1]);
 
   expected.name = ASCIIToUTF16("country");
   expected.value = ASCIIToUTF16("AL");
+  expected.label.clear();
   expected.form_control_type = "select-one";
   expected.max_length = 0;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[2]);

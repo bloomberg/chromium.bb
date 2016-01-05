@@ -11,8 +11,8 @@ ADDRESS_HOME_CITY | cityOrTownOfBirth | City or Town of Birth: |  | firstName_1-
 ADDRESS_HOME_STATE | stateOrProvinceOfBirth | State or Province of Birth: (only if born in the US or Canada) |  | firstName_1-default
 ADDRESS_HOME_COUNTRY | countryOfBirth | Country of Birth: |  | firstName_1-default
 UNKNOWN_TYPE | studentSSNa | U.S. Social Security Number: (Why do we ask for your SSN?) |  | firstName_1-default
-UNKNOWN_TYPE | studentSSNb | - |  | firstName_1-default
-UNKNOWN_TYPE | studentSSNc | - |  | firstName_1-default
+UNKNOWN_TYPE | studentSSNb |  |  | firstName_1-default
+UNKNOWN_TYPE | studentSSNc |  |  | firstName_1-default
 UNKNOWN_TYPE | idCardNumber | UT Austin ID Card Number: |  | firstName_1-default
 EMAIL_ADDRESS | emailAddress | E-mail Address: |  | firstName_1-default
 EMAIL_ADDRESS | emailAddressVerify | Verify Your E-mail Address: |  | firstName_1-default

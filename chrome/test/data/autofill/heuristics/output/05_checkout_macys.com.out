@@ -7,5 +7,5 @@ ADDRESS_HOME_CITY | currentShipment.shipmentAddress.city | City: |  | selectedSh
 ADDRESS_HOME_STATE | currentShipment.shipmentAddress.state | State: | NOSELECTION | selectedShippingAddress_1-default
 ADDRESS_HOME_ZIP | currentShipment.shipmentAddress.zipCode | ZipCode: |  | selectedShippingAddress_1-default
 PHONE_HOME_CITY_CODE | currentShipment.shipmentAddress.dayPhone.areaCode | Phone: |  | selectedShippingAddress_1-default
-PHONE_HOME_NUMBER | currentShipment.shipmentAddress.dayPhone.exchangeNbr | - |  | selectedShippingAddress_1-default
-PHONE_HOME_NUMBER | currentShipment.shipmentAddress.dayPhone.subscriberNbr | - |  | selectedShippingAddress_1-default
+PHONE_HOME_NUMBER | currentShipment.shipmentAddress.dayPhone.exchangeNbr | * Phone: |  | selectedShippingAddress_1-default
+PHONE_HOME_WHOLE_NUMBER | currentShipment.shipmentAddress.dayPhone.subscriberNbr | * Phone: |  | selectedShippingAddress_1-default
