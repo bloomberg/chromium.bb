@@ -183,6 +183,10 @@ bool PpapiCommandBufferProxy::IsGpuChannelLost() {
   return false;
 }
 
+void PpapiCommandBufferProxy::EnsureWorkVisible() {
+  NOTIMPLEMENTED();
+}
+
 gpu::CommandBufferNamespace PpapiCommandBufferProxy::GetNamespaceID() const {
   return gpu::CommandBufferNamespace::GPU_IO;
 }
@@ -204,6 +208,8 @@ bool PpapiCommandBufferProxy::IsFenceSyncFlushed(uint64_t release) {
 }
 
 bool PpapiCommandBufferProxy::IsFenceSyncFlushReceived(uint64_t release) {
+  // TODO(dyen): This needs a synchronous NOP to the PpapiHost which
+  // also sends a synchronous NOP to the actual server.
   return IsFenceSyncFlushed(release);
 }
 

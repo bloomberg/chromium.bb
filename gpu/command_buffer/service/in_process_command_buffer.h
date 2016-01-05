@@ -130,6 +130,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   void SignalQuery(uint32_t query_id, const base::Closure& callback) override;
   void SetLock(base::Lock*) override;
   bool IsGpuChannelLost() override;
+  void EnsureWorkVisible() override;
   CommandBufferNamespace GetNamespaceID() const override;
   uint64_t GetCommandBufferID() const override;
   int32_t GetExtraCommandBufferData() const override;

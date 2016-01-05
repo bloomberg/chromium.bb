@@ -455,7 +455,7 @@ int32_t CommandBufferProxyImpl::CreateImage(ClientBuffer buffer,
                               GetCommandBufferID(), image_fence_sync);
 
     // Force a synchronous IPC to validate sync token.
-    channel_->ValidateFlushIDReachedServer(stream_id_, true);
+    EnsureWorkVisible();
     sync_token.SetVerifyFlush();
 
     gpu_memory_buffer_manager->SetDestructionSyncToken(gpu_memory_buffer,
@@ -512,6 +512,10 @@ void CommandBufferProxyImpl::SetLock(base::Lock* lock) {
 
 bool CommandBufferProxyImpl::IsGpuChannelLost() {
   return !channel_ || channel_->IsLost();
+}
+
+void CommandBufferProxyImpl::EnsureWorkVisible() {
+  channel_->ValidateFlushIDReachedServer(stream_id_, true);
 }
 
 gpu::CommandBufferNamespace CommandBufferProxyImpl::GetNamespaceID() const {

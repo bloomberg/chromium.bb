@@ -86,6 +86,13 @@ class GPU_EXPORT GpuControl {
   // should be considered as lost.
   virtual bool IsGpuChannelLost() = 0;
 
+  // When this function returns it ensures all previously flushed work is
+  // visible by the service. This command does this by sending a synchronous
+  // IPC. Note just because the work is visible to the server does not mean
+  // that it has been processed. This is only relevant for out of process
+  // services and will be treated as a NOP for in process command buffers.
+  virtual void EnsureWorkVisible() = 0;
+
   // The namespace and command buffer ID forms a unique pair for all existing
   // GpuControl (on client) and matches for the corresponding command buffer
   // (on server) in a single server process. The extra command buffer data can

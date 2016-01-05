@@ -499,6 +499,10 @@ bool GLManager::IsGpuChannelLost() {
   return false;
 }
 
+void GLManager::EnsureWorkVisible() {
+  // This is only relevant for out-of-process command buffers.
+}
+
 gpu::CommandBufferNamespace GLManager::GetNamespaceID() const {
   return gpu::CommandBufferNamespace::IN_PROCESS;
 }

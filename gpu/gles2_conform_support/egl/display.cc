@@ -340,6 +340,10 @@ bool Display::IsGpuChannelLost() {
   return false;
 }
 
+void Display::EnsureWorkVisible() {
+  // This is only relevant for out-of-process command buffers.
+}
+
 gpu::CommandBufferNamespace Display::GetNamespaceID() const {
   return gpu::CommandBufferNamespace::IN_PROCESS;
 }

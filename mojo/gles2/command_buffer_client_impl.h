@@ -76,6 +76,7 @@ class CommandBufferClientImpl
   void SignalQuery(uint32_t query, const base::Closure& callback) override;
   void SetLock(base::Lock*) override;
   bool IsGpuChannelLost() override;
+  void EnsureWorkVisible() override;
   gpu::CommandBufferNamespace GetNamespaceID() const override;
   uint64_t GetCommandBufferID() const override;
   int32_t GetExtraCommandBufferData() const override;
