@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/signin/user_manager_screen_handler.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/browser/profiles/profile_statistics.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/local_auth.h"
@@ -75,6 +77,7 @@ const char kKeyIsDesktop[] = "isDesktopUser";
 const char kKeyAvatarUrl[] = "userImage";
 const char kKeyNeedsSignin[] = "needsSignin";
 const char kKeyHasLocalCreds[] = "hasLocalCreds";
+const char kKeyStatistics[] = "statistics";
 const char kKeyIsProfileLoaded[] = "isProfileLoaded";
 
 // JS API callback names.
@@ -585,7 +588,32 @@ void UserManagerScreenHandler::HandleRemoveUserWarningLoadStats(
   if (!profile)
     return;
 
-  profiles::GetProfileStatistics(
+  if (!chrome::FindAnyBrowser(profile, true, desktop_type_)) {
+    // If no windows are open for that profile, the statistics in
+    // ProfileInfoCache are up to date. The statistics in ProfileInfoCache are
+    // returned because the copy in user_pod_row.js may be outdated. However, if
+    // some statistics are missing in ProfileInfoCache (i.e. |item.success| is
+    // false), then the actual statistics are queried instead.
+    base::DictionaryValue return_value;
+    profiles::ProfileCategoryStats stats =
+        profiles::GetProfileStatisticsFromCache(profile_path);
+    bool stats_success = true;
+    for (const auto& item : stats) {
+      scoped_ptr<base::DictionaryValue> stat(new base::DictionaryValue);
+      stat->SetIntegerWithoutPathExpansion("count", item.count);
+      stat->SetBooleanWithoutPathExpansion("success", item.success);
+      return_value.SetWithoutPathExpansion(item.category, std::move(stat));
+      stats_success &= item.success;
+    }
+    if (stats_success) {
+      web_ui()->CallJavascriptFunction("updateRemoveWarningDialog",
+                                       base::StringValue(profile_path.value()),
+                                       return_value);
+      return;
+    }
+  }
+
+  profiles::GatherProfileStatistics(
       profile,
       base::Bind(
           &UserManagerScreenHandler::RemoveUserDialogLoadStatsCallback,
@@ -597,16 +625,16 @@ void UserManagerScreenHandler::RemoveUserDialogLoadStatsCallback(
     base::FilePath profile_path,
     profiles::ProfileCategoryStats result) {
   // Copy result into return_value.
-  base::StringValue return_profile_path(profile_path.value());
   base::DictionaryValue return_value;
   for (const auto& item : result) {
-    base::DictionaryValue* stat = new base::DictionaryValue();
+    scoped_ptr<base::DictionaryValue> stat(new base::DictionaryValue);
     stat->SetIntegerWithoutPathExpansion("count", item.count);
     stat->SetBooleanWithoutPathExpansion("success", item.success);
-    return_value.SetWithoutPathExpansion(item.category, stat);
+    return_value.SetWithoutPathExpansion(item.category, std::move(stat));
   }
   web_ui()->CallJavascriptFunction("updateRemoveWarningDialog",
-                                   return_profile_path, return_value);
+                                   base::StringValue(profile_path.value()),
+                                   return_value);
 }
 
 void UserManagerScreenHandler::HandleGetRemoveWarningDialogMessage(
@@ -878,6 +906,18 @@ void UserManagerScreenHandler::SendUserList() {
     profile_value->SetBoolean(kKeyIsDesktop, true);
     profile_value->SetString(
         kKeyAvatarUrl, GetAvatarImageAtIndex(i, info_cache));
+
+    profiles::ProfileCategoryStats stats =
+        profiles::GetProfileStatisticsFromCache(profile_path);
+    scoped_ptr<base::DictionaryValue> stats_dict(new base::DictionaryValue);
+    for (const auto& item : stats) {
+      scoped_ptr<base::DictionaryValue> stat(new base::DictionaryValue);
+      stat->SetIntegerWithoutPathExpansion("count", item.count);
+      stat->SetBooleanWithoutPathExpansion("success", item.success);
+      stats_dict->SetWithoutPathExpansion(item.category, std::move(stat));
+    }
+    profile_value->SetWithoutPathExpansion(kKeyStatistics,
+                                           std::move(stats_dict));
 
     // GetProfileByPath returns a pointer if the profile is fully loaded, NULL
     // otherwise.

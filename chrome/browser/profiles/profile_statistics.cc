@@ -4,6 +4,8 @@
 
 #include "chrome/browser/profiles/profile_statistics.h"
 
+#include <set>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -19,12 +21,11 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace {
 
@@ -46,18 +47,19 @@ int CountBookmarksFromNode(const bookmarks::BookmarkNode* node) {
 
 class ProfileStatisticsAggregator
     : public base::RefCountedThreadSafe<ProfileStatisticsAggregator> {
-  // This class collects statistical information about the profile and returns
+  // This class is used internally by GetProfileStatistics and
+  // StoreProfileStatisticsToCache.
+  //
+  // The class collects statistical information about the profile and returns
   // the information via a callback function. Currently bookmarks, history,
   // logins and preferences are counted.
   //
   // The class is RefCounted because this is needed for CancelableTaskTracker
   // to function properly. Once all tasks are run (or cancelled) the instance is
   // automatically destructed.
-  //
-  // The class is used internally by GetProfileStatistics function.
 
  public:
-  explicit ProfileStatisticsAggregator(Profile* profile,
+  ProfileStatisticsAggregator(Profile* profile,
       const profiles::ProfileStatisticsCallback& callback,
       base::CancelableTaskTracker* tracker);
 
@@ -79,21 +81,57 @@ class ProfileStatisticsAggregator
   void StatisticsCallbackHistory(history::HistoryCountResult result);
 
   // Bookmark counting.
-  ProfileStatValue CountBookmarks() const;
+  void WaitOrCountBookmarks();
+  void CountBookmarks(bookmarks::BookmarkModel* bookmark_model);
 
-  // Preference counting.
-  ProfileStatValue CountPrefs() const;
+  class BookmarkModelHelper
+      : public bookmarks::BookmarkModelObserver {
+   public:
+    explicit BookmarkModelHelper(ProfileStatisticsAggregator* parent)
+        : parent_(parent) {}
 
-  Profile* profile_;
-  profiles::ProfileCategoryStats profile_category_stats_;
+    void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
+                             bool ids_reassigned)
+        override {
+      // Remove observer before release, otherwise it may become a dangling
+      // reference.
+      model->RemoveObserver(this);
+      parent_->CountBookmarks(model);
+      parent_->Release();
+    }
 
-  // Callback function to be called when results arrive. Will be called
-  // multiple times (once for each statistics).
-  const profiles::ProfileStatisticsCallback callback_;
+    void BookmarkNodeMoved(bookmarks::BookmarkModel* model,
+                           const bookmarks::BookmarkNode* old_parent,
+                           int old_index,
+                           const bookmarks::BookmarkNode* new_parent,
+                           int new_index) override {}
 
-  base::CancelableTaskTracker* tracker_;
+    void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
+                           const bookmarks::BookmarkNode* parent,
+                           int index) override {}
 
-  // Password counting.
+    void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
+        const bookmarks::BookmarkNode* parent,
+        int old_index, const bookmarks::BookmarkNode* node,
+        const std::set<GURL>& no_longer_bookmarked) override {}
+
+    void BookmarkNodeChanged(bookmarks::BookmarkModel* model,
+        const bookmarks::BookmarkNode* node) override {}
+
+    void BookmarkNodeFaviconChanged(bookmarks::BookmarkModel* model,
+        const bookmarks::BookmarkNode* node) override {}
+
+    void BookmarkNodeChildrenReordered(bookmarks::BookmarkModel* model,
+        const bookmarks::BookmarkNode* node) override {}
+
+    void BookmarkAllUserNodesRemoved(bookmarks::BookmarkModel* model,
+        const std::set<GURL>& removed_urls) override {}
+
+   private:
+    ProfileStatisticsAggregator* parent_ = nullptr;
+  };
+
+  // Password counting
   class PasswordStoreConsumerHelper
       : public password_manager::PasswordStoreConsumer {
    public:
@@ -111,6 +149,24 @@ class ProfileStatisticsAggregator
 
     DISALLOW_COPY_AND_ASSIGN(PasswordStoreConsumerHelper);
   };
+
+  // Preference counting.
+  ProfileStatValue CountPrefs() const;
+
+  Profile* profile_;
+  profiles::ProfileCategoryStats profile_category_stats_;
+
+  // Callback function to be called when results arrive. Will be called
+  // multiple times (once for each statistics).
+  const profiles::ProfileStatisticsCallback callback_;
+
+  base::CancelableTaskTracker* tracker_;
+  scoped_ptr<base::CancelableTaskTracker> default_tracker_;
+
+  // Bookmark counting
+  scoped_ptr<BookmarkModelHelper> bookmark_model_helper_;
+
+  // Password counting.
   PasswordStoreConsumerHelper password_store_consumer_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileStatisticsAggregator);
@@ -124,17 +180,22 @@ ProfileStatisticsAggregator::ProfileStatisticsAggregator(
       callback_(callback),
       tracker_(tracker),
       password_store_consumer_helper_(this) {
+  if (!tracker_) {
+    default_tracker_.reset(new base::CancelableTaskTracker);
+    tracker_ = default_tracker_.get();
+  }
   Init();
 }
 
 void ProfileStatisticsAggregator::Init() {
+  DCHECK(profile_);
+
   // Initiate bookmark counting (async). Post to UI thread.
-  tracker_->PostTaskAndReplyWithResult(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI).get(),
-          FROM_HERE,
-          base::Bind(&ProfileStatisticsAggregator::CountBookmarks, this),
-          base::Bind(&ProfileStatisticsAggregator::StatisticsCallback,
-                     this, profiles::kProfileStatisticsBookmarks));
+  tracker_->PostTask(
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::UI).get(),
+      FROM_HERE,
+      base::Bind(&ProfileStatisticsAggregator::WaitOrCountBookmarks, this));
 
   // Initiate history counting (async).
   history::HistoryService* history_service =
@@ -164,11 +225,12 @@ void ProfileStatisticsAggregator::Init() {
 
   // Initiate preference counting (async). Post to UI thread.
   tracker_->PostTaskAndReplyWithResult(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI).get(),
-          FROM_HERE,
-          base::Bind(&ProfileStatisticsAggregator::CountPrefs, this),
-          base::Bind(&ProfileStatisticsAggregator::StatisticsCallback,
-                     this, profiles::kProfileStatisticsSettings));
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::UI).get(),
+      FROM_HERE,
+      base::Bind(&ProfileStatisticsAggregator::CountPrefs, this),
+      base::Bind(&ProfileStatisticsAggregator::StatisticsCallback,
+                 this, profiles::kProfileStatisticsSettings));
 }
 
 void ProfileStatisticsAggregator::StatisticsCallback(
@@ -178,7 +240,13 @@ void ProfileStatisticsAggregator::StatisticsCallback(
   datum.count = result.count;
   datum.success = result.success;
   profile_category_stats_.push_back(datum);
-  callback_.Run(profile_category_stats_);
+  if (!callback_.is_null())
+    callback_.Run(profile_category_stats_);
+
+  if (result.success) {
+    profiles::SetProfileStatisticsInCache(profile_->GetPath(), datum.category,
+                                          result.count);
+  }
 }
 
 void ProfileStatisticsAggregator::StatisticsCallbackSuccess(
@@ -206,21 +274,30 @@ void ProfileStatisticsAggregator::StatisticsCallbackHistory(
                      result_converted);
 }
 
-ProfileStatValue ProfileStatisticsAggregator::CountBookmarks() const {
+void ProfileStatisticsAggregator::CountBookmarks(
+    bookmarks::BookmarkModel* bookmark_model) {
+  int count = CountBookmarksFromNode(bookmark_model->bookmark_bar_node()) +
+              CountBookmarksFromNode(bookmark_model->other_node()) +
+              CountBookmarksFromNode(bookmark_model->mobile_node());
+
+  StatisticsCallbackSuccess(profiles::kProfileStatisticsBookmarks, count);
+}
+
+void ProfileStatisticsAggregator::WaitOrCountBookmarks() {
   bookmarks::BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForProfileIfExists(profile_);
 
-  ProfileStatValue result;
   if (bookmark_model) {
-    result.count = CountBookmarksFromNode(bookmark_model->bookmark_bar_node()) +
-                   CountBookmarksFromNode(bookmark_model->other_node()) +
-                   CountBookmarksFromNode(bookmark_model->mobile_node());
-    result.success = true;
+    if (bookmark_model->loaded()) {
+      CountBookmarks(bookmark_model);
+    } else {
+      AddRef();
+      bookmark_model_helper_.reset(new BookmarkModelHelper(this));
+      bookmark_model->AddObserver(bookmark_model_helper_.get());
+    }
   } else {
-    result.count = 0;
-    result.success = false;
+    StatisticsCallbackFailure(profiles::kProfileStatisticsBookmarks);
   }
-  return result;
 }
 
 ProfileStatValue ProfileStatisticsAggregator::CountPrefs() const {
@@ -262,9 +339,15 @@ const char kProfileStatisticsPasswords[] = "Passwords";
 const char kProfileStatisticsBookmarks[] = "Bookmarks";
 const char kProfileStatisticsSettings[] = "Settings";
 
-void GetProfileStatistics(Profile* profile,
-    const ProfileStatisticsCallback& callback,
-    base::CancelableTaskTracker* tracker) {
+void GatherProfileStatistics(Profile* profile,
+                             const ProfileStatisticsCallback& callback,
+                             base::CancelableTaskTracker* tracker) {
+  DCHECK(profile);
+  if (profile->IsOffTheRecord() || profile->IsSystemProfile()) {
+    NOTREACHED();
+    return;
+  }
+
   scoped_refptr<ProfileStatisticsAggregator> aggregator =
       new ProfileStatisticsAggregator(profile, callback, tracker);
 }
@@ -309,8 +392,12 @@ void SetProfileStatisticsInCache(const base::FilePath& profile_path,
   if (!g_browser_process || !g_browser_process->local_state())
     return;
 
-  ProfileInfoCache& profile_info_cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
+  // profile_manager() may return a null pointer.
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  if (!profile_manager)
+    return;
+
+  ProfileInfoCache& profile_info_cache = profile_manager->GetProfileInfoCache();
   ProfileAttributesEntry* entry = nullptr;
   if (!profile_info_cache.GetProfileAttributesWithPath(profile_path, &entry))
     return;

@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <set>
+#include <string>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -41,6 +42,7 @@
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/browser/profiles/profile_statistics.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
@@ -1058,6 +1060,15 @@ void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
       chrome::NOTIFICATION_PROFILE_ADDED,
       content::Source<Profile>(profile),
       content::NotificationService::NoDetails());
+
+  // Record statistics to ProfileInfoCache if statistics were not recorded
+  // during shutdown, i.e. the last shutdown was a system shutdown or a crash.
+  if (!profile->IsGuestSession() && !profile->IsSystemProfile() &&
+      !profile->IsNewProfile() && !go_off_the_record &&
+      profile->GetLastSessionExitType() != Profile::EXIT_NORMAL) {
+    profiles::GatherProfileStatistics(
+        profile, profiles::ProfileStatisticsCallback(), nullptr);
+  }
 }
 
 void ProfileManager::DoFinalInitForServices(Profile* profile,
@@ -1458,19 +1469,26 @@ void ProfileManager::BrowserListObserver::OnBrowserAdded(
 void ProfileManager::BrowserListObserver::OnBrowserRemoved(
     Browser* browser) {
   Profile* profile = browser->profile();
+  Profile* original_profile = profile->GetOriginalProfile();
+  // Do nothing if the closed window is not the last window of the same profile.
   for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    if (it->profile()->GetOriginalProfile() == profile->GetOriginalProfile())
-      // Not the last window for this profile.
+    if (it->profile()->GetOriginalProfile() == original_profile)
       return;
   }
 
-  // If the last browser of a profile that is scheduled for deletion is closed
-  // do that now.
   base::FilePath path = profile->GetPath();
-  if (profile->GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles) &&
-      !IsProfileMarkedForDeletion(path)) {
+  if (IsProfileMarkedForDeletion(path)) {
+    // Do nothing if the profile is already being deleted.
+  } else if (profile->GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles)) {
+    // Delete if the profile is an ephemeral profile.
     g_browser_process->profile_manager()->ScheduleProfileForDeletion(
         path, ProfileManager::CreateCallback());
+  } else if (!profile->IsSystemProfile()) {
+    // Gather statistics and store into ProfileInfoCache. For incognito profile
+    // we gather the statistics of its parent profile instead, because a window
+    // of the parent profile was open.
+    profiles::GatherProfileStatistics(
+        original_profile, profiles::ProfileStatisticsCallback(), nullptr);
   }
 }
 

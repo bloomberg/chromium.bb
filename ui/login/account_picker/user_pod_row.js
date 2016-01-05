@@ -976,6 +976,23 @@ cr.define('login', function() {
     },
 
     /**
+     * Gets the elements used for statistics display.
+     * @type {Object.<string, !HTMLDivElement>}
+     */
+    get statsMapElements() {
+      return {
+          'BrowsingHistory':
+              this.querySelector('.action-box-remove-user-warning-history'),
+          'Passwords':
+              this.querySelector('.action-box-remove-user-warning-passwords'),
+          'Bookmarks':
+              this.querySelector('.action-box-remove-user-warning-bookmarks'),
+          'Settings':
+              this.querySelector('.action-box-remove-user-warning-settings')
+      }
+    },
+
+    /**
      * Updates the user pod element.
      */
     update: function() {
@@ -1404,7 +1421,6 @@ cr.define('login', function() {
         this.actionBoxMenu.classList.add('menu-moved-up');
         this.actionBoxAreaElement.classList.add('menu-moved-up');
       }
-      chrome.send('logRemoveUserWarningShown');
     },
 
     /**
@@ -1418,32 +1434,16 @@ cr.define('login', function() {
 
       // Show extra statistics information for desktop users
       var message;
-      if (this.user.isDesktopUser) {
-        this.classList.remove('has-errors');
-        var isSyncedUser = this.user.emailAddress !== "";
-        if (!this.user.isProfileLoaded) {
-          message = loadTimeData.getString(
-              isSyncedUser ? 'removeUserWarningTextSyncNoStats' :
-              'removeUserWarningTextNonSyncNoStats');
-          this.updateRemoveWarningDialogSetMessage_(this.user.profilePath,
-                                                    message);
-        } else {
-          message = loadTimeData.getString(
-              isSyncedUser ? 'removeUserWarningTextSyncCalculating' :
-              'removeUserWarningTextNonSyncCalculating');
-          substitute = loadTimeData.getString(
-              'removeUserWarningTextCalculating');
-          this.updateRemoveWarningDialogSetMessage_(this.user.profilePath,
-                                                    message, substitute);
-        }
-
+      if (this.user.isLegacySupervisedUser) {
+        this.moveActionMenuUpIfNeeded_();
+      } else {
+        this.RemoveWarningDialogSetMessage_(true, false);
         // set a global handler for the callback
         window.updateRemoveWarningDialog =
             this.updateRemoveWarningDialog_.bind(this);
         chrome.send('removeUserWarningLoadStats', [this.user.profilePath]);
       }
-
-      this.moveActionMenuUpIfNeeded_();
+      chrome.send('logRemoveUserWarningShown');
     },
 
     /**
@@ -1454,45 +1454,57 @@ cr.define('login', function() {
     updateRemoveWarningDialog_: function(profilePath, profileStats) {
       if (profilePath !== this.user.profilePath)
         return;
-      // Converting profileStats into id attribute by an object.
-      var stats_id_map = {
-        'BrowsingHistory': 'action-box-remove-user-warning-history',
-        'Passwords': 'action-box-remove-user-warning-passwords',
-        'Bookmarks': 'action-box-remove-user-warning-bookmarks',
-        'Settings': 'action-box-remove-user-warning-settings',
-      }
-      // Load individual statistics
-      var num_stats_loaded = 0;
-      var total_count = 0;
-      var failed = false;
+
+      var stats_elements = this.statsMapElements;
+      // Update individual statistics
+      var hasErrors = false;
       for (var key in profileStats) {
-        if (stats_id_map.hasOwnProperty(key)) {
+        if (stats_elements.hasOwnProperty(key)) {
           if (profileStats[key].success) {
-            var count = profileStats[key].count;
-            this.querySelector("." + stats_id_map[key]).textContent = count;
-            total_count += count;
-          } else {
-            failed = true;
-            this.querySelector("." + stats_id_map[key]).textContent = '';
+            this.user.statistics[key] = profileStats[key];
+          } else if (!this.user.statistics[key].success) {
+            hasErrors = true;
+            stats_elements[key].textContent = '';
           }
+        }
+      }
+
+      this.RemoveWarningDialogSetMessage_(false, hasErrors);
+    },
+
+    /**
+     * Set the new message in the dialog.
+     * @param {boolean} Whether this is the first output, that requires setting
+     * a in-progress message.
+     * @param {boolean} Whether any actual query to the statistics have failed.
+     * Should be true only if there is an error and the corresponding statistic
+     * is also unavailable in ProfileInfoCache.
+     */
+    RemoveWarningDialogSetMessage_: function(isInitial, hasErrors) {
+      var stats_elements = this.statsMapElements;
+      var total_count = 0;
+      var num_stats_loaded = 0;
+      for (var key in stats_elements) {
+        if (this.user.statistics[key].success) {
+          var count = this.user.statistics[key].count;
+          stats_elements[key].textContent = count;
+          total_count += count;
           num_stats_loaded++;
         }
       }
 
       // this.classList is used for selecting the appropriate dialog.
-      this.classList.toggle('has-errors', failed);
-      if (total_count > 0) {
+      if (total_count)
         this.classList.remove('has-no-stats');
-      }
 
+      var is_synced_user = this.user.emailAddress !== "";
       // Write total number if all statistics are loaded.
-      if (num_stats_loaded === Object.keys(stats_id_map).length) {
-        if (total_count === 0) {
+      if (num_stats_loaded === Object.keys(stats_elements).length) {
+        if (!total_count) {
           this.classList.add('has-no-stats');
-          var isSyncedUser = this.user.emailAddress !== "";
           var message = loadTimeData.getString(
-              isSyncedUser ? 'removeUserWarningTextSyncNoStats' :
-              'removeUserWarningTextNonSyncNoStats');
+              is_synced_user ? 'removeUserWarningTextSyncNoStats' :
+                               'removeUserWarningTextNonSyncNoStats');
           this.updateRemoveWarningDialogSetMessage_(this.user.profilePath,
                                                     message);
         } else {
@@ -1500,14 +1512,28 @@ cr.define('login', function() {
               this.updateRemoveWarningDialogSetMessage_.bind(this);
           chrome.send('getRemoveWarningDialogMessage',[{
               profilePath: this.user.profilePath,
-              isSyncedUser: this.user.emailAddress !== "",
-              hasErrors: failed,
+              isSyncedUser: is_synced_user,
+              hasErrors: hasErrors,
               totalCount: total_count
           }]);
         }
+      } else if (isInitial) {
+        if (!this.user.isProfileLoaded) {
+          message = loadTimeData.getString(
+              is_synced_user ? 'removeUserWarningTextSyncNoStats' :
+                               'removeUserWarningTextNonSyncNoStats');
+          this.updateRemoveWarningDialogSetMessage_(this.user.profilePath,
+                                                    message);
+        } else {
+          message = loadTimeData.getString(
+              is_synced_user ? 'removeUserWarningTextSyncCalculating' :
+                               'removeUserWarningTextNonSyncCalculating');
+          substitute = loadTimeData.getString(
+              'removeUserWarningTextCalculating');
+          this.updateRemoveWarningDialogSetMessage_(this.user.profilePath,
+                                                    message, substitute);
+        }
       }
-
-      this.moveActionMenuUpIfNeeded_();
     },
 
     /**
@@ -1524,8 +1550,7 @@ cr.define('login', function() {
       // Add localized messages where $1 will be replaced with
       // <span class="total-count"></span>.
       var element = this.querySelector('.action-box-remove-user-warning-text');
-      while (element.firstChild)
-        element.removeChild(element.firstChild);
+      element.textContent = '';
 
       messageParts = message.split('$1');
       var numParts = messageParts.length;
@@ -1538,6 +1563,7 @@ cr.define('login', function() {
           element.appendChild(elementToAdd);
         }
       }
+      this.moveActionMenuUpIfNeeded_();
     },
 
     /**
@@ -2077,7 +2103,8 @@ cr.define('login', function() {
       this.classList.toggle('legacy-supervised', isLegacySupervisedUser);
       this.classList.toggle('child', isChildUser);
       this.classList.toggle('synced', isSyncedUser);
-      this.classList.toggle('has-no-stats', !isProfileLoaded);
+      this.classList.toggle('has-no-stats',
+          !isProfileLoaded && !this.user.statistics.length);
 
       if (this.isAuthTypeUserClick)
         this.passwordLabelElement.textContent = this.authValue;

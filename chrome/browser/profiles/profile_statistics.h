@@ -39,13 +39,16 @@ using ProfileStatisticsCallback = base::Callback<void(ProfileCategoryStats)>;
 
 // Profile Statistics ----------------------------------------------------------
 
-// This function collects statistical information about |profile| and returns
-// the information via |callback|. Currently bookmarks, history, logins and
-// preferences are counted. The callback function will probably be called more
-// than once so binding parameters with bind::Passed() is prohibited.
-void GetProfileStatistics(Profile* profile,
-                          const ProfileStatisticsCallback& callback,
-                          base::CancelableTaskTracker* tracker);
+// This function collects statistical information about |profile|, also returns
+// the information via |callback| if |callback| is not null. The statistical
+// information is also copied to ProfileInfoCache. Currently bookmarks, history,
+// logins and preferences are counted. The callback function will probably be
+// called more than once, so binding parameters with bind::Passed() is
+// prohibited. Most of the async tasks involved in this function can be
+// cancelled if |tracker| is not null.
+void GatherProfileStatistics(Profile* profile,
+                             const ProfileStatisticsCallback& callback,
+                             base::CancelableTaskTracker* tracker);
 
 // ProfileInfoCache ------------------------------------------------------------
 
