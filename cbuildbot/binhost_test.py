@@ -121,12 +121,13 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
         # Chrome prebuilts. Complain.
         # TODO(davidjames): This should be a fatal error for important
         # builders, but we need to clean up existing cases first.
-        pfq_compat_id = self.COMPAT_IDS[key]
-        err = self.GetCompatIdDiff(compat_id, pfq_compat_id)
-        msg = '%s%s uses mismatched Chrome prebuilts from %s -- %s'
-        self.Complain(msg % (msg_prefix, config.name, key.board, err),
-                      fatal=False)
-        pfqs.add(key)
+        pfq_compat_id = self.COMPAT_IDS.get(key)
+        if pfq_compat_id:
+          err = self.GetCompatIdDiff(compat_id, pfq_compat_id)
+          msg = '%s%s uses mismatched Chrome prebuilts from %s -- %s'
+          self.Complain(msg % (msg_prefix, config.name, key.board, err),
+                        fatal=False)
+          pfqs.add(key)
 
     if not pfqs:
       pre_cq = (config.build_type == config_lib.CONFIG_TYPE_PRECQ)

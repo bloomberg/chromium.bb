@@ -462,11 +462,9 @@ _x86_internal_release_boards = frozenset([
 
 _x86_external_boards = frozenset([
     'amd64-generic',
-    'amd64-generic_freon',
     'gizmo',
     'x32-generic',
     'x86-generic',
-    'x86-generic_freon',
 ])
 
 # Every board should be in only 1 of the above sets.
@@ -557,9 +555,6 @@ _no_vmtest_boards = _arm_boards | _brillo_boards | frozenset((
 # corresponds to the set of experimental or self-standing configs.
 _waterfall_config_map = {
     constants.WATERFALL_EXTERNAL: frozenset([
-        # Experimental Paladins
-        'amd64-generic_freon-paladin',
-
         # Incremental
         'amd64-generic-incremental',
         'daisy-incremental',
@@ -1149,6 +1144,7 @@ def GetConfig():
       'daisy',
       'veyron_minnie',
       'x86-generic',
+      'amd64-generic',
   ])
 
   def _AddFullConfigs():
@@ -1189,19 +1185,6 @@ def GetConfig():
       'amd64-generic-chromium-pfq', internal_chromium_pfq,
       _base_configs['amd64-generic'],
       disk_layout='2gb-rootfs',
-  )
-
-  site_config.Add(
-      'amd64-generic_freon-chromium-pfq', internal_chromium_pfq,
-      _base_configs['amd64-generic_freon'],
-      disk_layout='2gb-rootfs',
-      vm_tests=[],
-  )
-
-  site_config.Add(
-      'x86-generic_freon-chromium-pfq', internal_chromium_pfq,
-      _base_configs['x86-generic_freon'],
-      vm_tests=[],
   )
 
   _chrome_pfq_important_boards = frozenset([

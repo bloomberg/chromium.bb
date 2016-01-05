@@ -1312,67 +1312,6 @@
             "-chrome_internal"
         ]
     },
-    "amd64-generic_freon-chromium-pfq": {
-        "_template": "chromium-pfq",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "amd64-generic_freon"
-        ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "disk_layout": "2gb-rootfs",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
-        "vm_tests": []
-    },
-    "amd64-generic_freon-compile-only-pre-cq": {
-        "_template": "compile-only-pre-cq",
-        "boards": [
-            "amd64-generic_freon"
-        ]
-    },
-    "amd64-generic_freon-full": {
-        "_template": "full",
-        "boards": [
-            "amd64-generic_freon"
-        ],
-        "prebuilts": "public",
-        "useflags": [
-            "-chrome_internal"
-        ]
-    },
-    "amd64-generic_freon-no-vmtest-pre-cq": {
-        "_template": "no-vmtest-pre-cq",
-        "boards": [
-            "amd64-generic_freon"
-        ]
-    },
-    "amd64-generic_freon-paladin": {
-        "_template": "paladin",
-        "active_waterfall": "chromiumos",
-        "boards": [
-            "amd64-generic_freon"
-        ],
-        "important": false,
-        "vm_tests": []
-    },
-    "amd64-generic_freon-pre-cq": {
-        "_template": "pre-cq",
-        "boards": [
-            "amd64-generic_freon"
-        ]
-    },
-    "amd64-generic_freon-tot-chromium-pfq-informational": {
-        "_template": "chromium-pfq-informational",
-        "boards": [
-            "amd64-generic_freon"
-        ],
-        "useflags": [
-            "-chrome_internal"
-        ]
-    },
     "arkham-chrome-pfq": {
         "_template": "chrome-pfq",
         "boards": [
@@ -23800,65 +23739,6 @@
         "_template": "chromium-pfq-informational",
         "boards": [
             "x86-generic"
-        ],
-        "useflags": [
-            "-chrome_internal"
-        ]
-    },
-    "x86-generic_freon-chromium-pfq": {
-        "_template": "chromium-pfq",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "x86-generic_freon"
-        ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
-        "vm_tests": []
-    },
-    "x86-generic_freon-compile-only-pre-cq": {
-        "_template": "compile-only-pre-cq",
-        "boards": [
-            "x86-generic_freon"
-        ]
-    },
-    "x86-generic_freon-full": {
-        "_template": "full",
-        "boards": [
-            "x86-generic_freon"
-        ],
-        "prebuilts": "public",
-        "useflags": [
-            "-chrome_internal"
-        ]
-    },
-    "x86-generic_freon-no-vmtest-pre-cq": {
-        "_template": "no-vmtest-pre-cq",
-        "boards": [
-            "x86-generic_freon"
-        ]
-    },
-    "x86-generic_freon-paladin": {
-        "_template": "paladin",
-        "boards": [
-            "x86-generic_freon"
-        ],
-        "important": false,
-        "vm_tests": []
-    },
-    "x86-generic_freon-pre-cq": {
-        "_template": "pre-cq",
-        "boards": [
-            "x86-generic_freon"
-        ]
-    },
-    "x86-generic_freon-tot-chromium-pfq-informational": {
-        "_template": "chromium-pfq-informational",
-        "boards": [
-            "x86-generic_freon"
         ],
         "useflags": [
             "-chrome_internal"
