@@ -184,7 +184,7 @@ bool ServiceWorkerGlobalScope::dispatchEventInternal(PassRefPtrWillBeRawPtr<Even
 {
     m_eventNestingLevel++;
     bool result = WorkerGlobalScope::dispatchEventInternal(event.get());
-    if (event->interfaceName() == EventNames::ErrorEvent && m_eventNestingLevel == 2 && !event->defaultPrevented())
+    if (event->interfaceName() == EventNames::ErrorEvent && m_eventNestingLevel == 2)
         m_hadErrorInTopLevelEventHandler = true;
     m_eventNestingLevel--;
     return result;
