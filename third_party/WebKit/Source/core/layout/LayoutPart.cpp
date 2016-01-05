@@ -343,8 +343,13 @@ void LayoutPart::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& paint
 {
     if (widget() && widget()->isFrameView()) {
         FrameView* childFrameView = toFrameView(widget());
-        PaintInvalidationState childViewPaintInvalidationState(*childFrameView->layoutView(), paintInvalidationState);
-        toFrameView(widget())->invalidateTreeIfNeeded(childViewPaintInvalidationState);
+        // |childFrameView| is in another document, which could be
+        // missing its LayoutView. TODO(jchaffraix): Ideally we should
+        // not need this code.
+        if (LayoutView* childLayoutView = childFrameView->layoutView()) {
+            PaintInvalidationState childViewPaintInvalidationState(*childLayoutView, paintInvalidationState);
+            childFrameView->invalidateTreeIfNeeded(childViewPaintInvalidationState);
+        }
     }
 
     LayoutReplaced::invalidatePaintOfSubtreesIfNeeded(paintInvalidationState);
