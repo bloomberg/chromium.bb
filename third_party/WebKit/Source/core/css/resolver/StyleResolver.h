@@ -87,13 +87,6 @@ public:
     ~StyleResolver();
     void dispose();
 
-    // FIXME: StyleResolver should not be keeping tree-walk state.
-    // These should move to some global tree-walk state, or should be contained in a
-    // TreeWalkContext or similar which is passed in to StyleResolver methods when available.
-    // Using these during tree walk will allow style selector to optimize child and descendant selector lookups.
-    void pushParentElement(Element&);
-    void popParentElement(Element&);
-
     PassRefPtr<ComputedStyle> styleForElement(Element*, const ComputedStyle* parentStyle = 0, StyleSharingBehavior = AllowStyleSharing,
         RuleMatchingBehavior = MatchAllRules);
 
@@ -118,6 +111,8 @@ public:
     void appendPendingAuthorStyleSheets();
     bool hasPendingAuthorStyleSheets() const { return m_pendingStyleSheets.size() > 0 || m_needCollectFeatures; }
 
+    // TODO(esprehn): StyleResolver should probably not contain tree walking
+    // state, instead we should pass a context object during recalcStyle.
     SelectorFilter& selectorFilter() { return m_selectorFilter; }
 
     StyleRuleKeyframes* findKeyframesRule(const Element*, const AtomicString& animationName);

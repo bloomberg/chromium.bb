@@ -5,6 +5,7 @@
 #ifndef StyleResolverParentScope_h
 #define StyleResolverParentScope_h
 
+#include "core/css/SelectorFilter.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -52,7 +53,7 @@ inline StyleResolverParentScope::~StyleResolverParentScope()
     if (!m_pushed)
         return;
     if (parent().isElementNode())
-        m_resolver->popParentElement(toElement(parent()));
+        m_resolver->selectorFilter().popParent(toElement(parent()));
 }
 
 inline void StyleResolverParentScope::ensureParentStackIsPushed()
@@ -68,7 +69,7 @@ inline void StyleResolverParentScope::pushParentIfNeeded()
     if (m_previous)
         m_previous->pushParentIfNeeded();
     if (parent().isElementNode())
-        m_resolver->pushParentElement(toElement(parent()));
+        m_resolver->selectorFilter().pushParent(toElement(parent()));
     m_pushed = true;
 }
 

@@ -345,16 +345,6 @@ void StyleResolver::clearStyleSharingList()
     m_styleSharingLists.resize(0);
 }
 
-void StyleResolver::pushParentElement(Element& parent)
-{
-    m_selectorFilter.pushParent(parent);
-}
-
-void StyleResolver::popParentElement(Element& parent)
-{
-    m_selectorFilter.popParent(parent);
-}
-
 static inline ScopedStyleResolver* scopedResolverFor(const Element& element)
 {
     // Ideally, returning element->treeScope().scopedStyleResolver() should be
