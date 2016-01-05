@@ -45,8 +45,10 @@ scoped_ptr<PepperCdmWrapper> PepperCdmWrapperImpl::Create(
     return scoped_ptr<PepperCdmWrapper>();
 
   GURL url(plugin_instance->container()->element().document().url());
-  CHECK_EQ(security_origin.GetOrigin(), url.GetOrigin())
-      << "Pepper instance has a different origin than the EME call.";
+  if (security_origin.GetOrigin() != url.GetOrigin()) {
+    NOTREACHED() << "Pepper instance has a different origin than the EME call.";
+    return scoped_ptr<PepperCdmWrapper>();
+  }
 
   if (!plugin_instance->GetContentDecryptorDelegate())
     return scoped_ptr<PepperCdmWrapper>();
