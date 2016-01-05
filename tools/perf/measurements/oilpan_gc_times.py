@@ -7,7 +7,8 @@ import os
 from telemetry.page import action_runner
 from telemetry.page import page_test
 from telemetry.timeline.model import TimelineModel
-from telemetry.timeline import tracing_config
+from telemetry.timeline import tracing_category_filter
+from telemetry.timeline import tracing_options
 from telemetry.value import list_of_scalar_values
 from telemetry.value import scalar
 
@@ -137,11 +138,14 @@ class _OilpanGCTimesBase(page_test.PageTest):
   def WillNavigateToPage(self, page, tab):
     # FIXME: Remove webkit.console when blink.console lands in chromium and
     # the ref builds are updated. crbug.com/386847
-    config = tracing_config.TracingConfig()
-    for c in ['webkit.console', 'blink.console', 'blink_gc']:
-      config.tracing_category_filter.AddIncludedCategory(c)
-    config.tracing_options.enable_chrome_trace = True
-    tab.browser.platform.tracing_controller.Start(config, timeout=1000)
+    categories = ['webkit.console', 'blink.console', 'blink_gc']
+    category_filter = tracing_category_filter.TracingCategoryFilter()
+    for c in categories:
+      category_filter.AddIncludedCategory(c)
+    options = tracing_options.TracingOptions()
+    options.enable_chrome_trace = True
+    tab.browser.platform.tracing_controller.Start(options, category_filter,
+                                                  timeout=1000)
 
   def ValidateAndMeasurePage(self, page, tab, results):
     timeline_data = tab.browser.platform.tracing_controller.Stop()
