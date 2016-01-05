@@ -53,7 +53,6 @@
           '<(grit_out_dir)/quota_internals_resources.pak',
           '<(grit_out_dir)/settings_resources.pak',
           '<(grit_out_dir)/sync_file_system_internals_resources.pak',
-          '<(grit_out_dir)/webrtc_device_provider_resources.pak',
         ],
       }],
       ['enable_extensions==1', {

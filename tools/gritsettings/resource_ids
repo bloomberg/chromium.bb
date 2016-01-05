@@ -298,9 +298,6 @@
     "includes": [30370],
     "structures": [30670],
   },
-  "chrome/browser/devtools/device/webrtc/resources.grd": {
-    "includes": [30820],
-  },
   "chrome/browser/resources/md_policy/policy_resources.grd": {
     "structures": [30900],
   },

@@ -252,8 +252,6 @@ const char kChromeUIUberFrameHost[] = "uber-frame";
 const char kChromeUIUberHost[] = "chrome";
 const char kChromeUIUserActionsHost[] = "user-actions";
 const char kChromeUIVersionHost[] = "version";
-const char kChromeUIWebRTCDeviceProviderHost[] =
-    "webrtc-device-provider";
 const char kChromeUIWorkersHost[] = "workers";
 
 const char kChromeUIThemePath[] = "theme";

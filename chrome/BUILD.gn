@@ -685,10 +685,8 @@ repack("packed_extra_resources") {
       "$root_gen_dir/chrome/quota_internals_resources.pak",
       "$root_gen_dir/chrome/settings_resources.pak",
       "$root_gen_dir/chrome/sync_file_system_internals_resources.pak",
-      "$root_gen_dir/chrome/webrtc_device_provider_resources.pak",
     ]
     deps += [
-      "//chrome/browser/devtools:webrtc_device_provider_resources",
       "//chrome/browser/resources:component_extension_resources",
       "//chrome/browser/resources:options_resources",
       "//chrome/browser/resources:quota_internals_resources",

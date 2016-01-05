@@ -97,9 +97,6 @@
       'browser/devtools/device/adb/mock_adb_server.h',
       'browser/devtools/device/port_forwarding_browsertest.cc',
       'browser/devtools/device/usb/android_usb_browsertest.cc',
-      'browser/devtools/device/webrtc/devtools_bridge_client_browsertest.cc',
-      'browser/devtools/device/webrtc/devtools_bridge_client_browsertest.h',
-      'browser/devtools/device/webrtc/webrtc_device_provider_browsertest.cc',
       'browser/devtools/devtools_sanity_browsertest.cc',
       'browser/devtools/devtools_window_testing.cc',
       'browser/devtools/devtools_window_testing.h',
@@ -922,7 +919,6 @@
     # and are handled by a rule, but in the GN build they're in a separate
     # action so need to be separated out.
     'chrome_browser_tests_webui_js_sources': [
-      'browser/devtools/device/webrtc/devtools_bridge_client_browsertest.js',
       'browser/ui/webui/app_list/start_page_browsertest.js',
       'browser/ui/webui/chromeos/bluetooth_pairing_ui_browsertest.js',
       'browser/ui/webui/chromeos/certificate_manager_dialog_browsertest.js',

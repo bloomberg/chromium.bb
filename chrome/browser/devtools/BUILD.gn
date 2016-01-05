@@ -69,7 +69,6 @@ static_library("devtools") {
 
   if (!is_android) {
     deps += [
-      ":webrtc_device_provider_resources",
       "//chrome:extra_resources",
       "//chrome:resources",
       "//chrome:strings",
@@ -109,14 +108,6 @@ static_library("devtools") {
       "device/usb/android_usb_socket.h",
       "device/usb/usb_device_provider.cc",
       "device/usb/usb_device_provider.h",
-      "device/webrtc/devtools_bridge_client.cc",
-      "device/webrtc/devtools_bridge_client.h",
-      "device/webrtc/devtools_bridge_instances_request.cc",
-      "device/webrtc/devtools_bridge_instances_request.h",
-      "device/webrtc/send_command_request.cc",
-      "device/webrtc/send_command_request.h",
-      "device/webrtc/webrtc_device_provider.cc",
-      "device/webrtc/webrtc_device_provider.h",
       "devtools_contents_resizing_strategy.cc",
       "devtools_contents_resizing_strategy.h",
       "devtools_embedder_message_dispatcher.cc",
@@ -141,20 +132,6 @@ static_library("devtools") {
       "global_confirm_info_bar.h",
       "remote_debugging_server.cc",
       "remote_debugging_server.h",
-    ]
-  }
-}
-
-if (!is_android) {
-  # GYP version: chrome/browser/devtools/webrtc_device_provider_resources.gyp:webrtc_device_provider_resources
-  grit("webrtc_device_provider_resources") {
-    source = "device/webrtc/resources.grd"
-    output_dir = "$root_gen_dir/chrome"
-    outputs = [
-      "grit/webrtc_device_provider_resources.h",
-      "grit/webrtc_device_provider_resources_map.cc",
-      "grit/webrtc_device_provider_resources_map.h",
-      "webrtc_device_provider_resources.pak",
     ]
   }
 }
