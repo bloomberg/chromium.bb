@@ -112,8 +112,6 @@ private:
         bool haveAddedCharsetDeclaration;
         // This meta element need to be skipped when serializing DOM.
         RawPtrWillBeMember<const Element> skipMetaElement;
-        // Flag indicates we are in script or style tag.
-        bool isInScriptOrStyleTag;
         bool haveAddedXMLProcessingDirective;
         // Flag indicates whether we have added additional contents before end tag.
         // This flag will be re-assigned in each call of function

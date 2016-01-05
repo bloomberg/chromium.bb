@@ -112,7 +112,6 @@ WebFrameSerializerImpl::SerializeDomParam::SerializeDomParam(
     , haveSeenDocType(false)
     , haveAddedCharsetDeclaration(false)
     , skipMetaElement(nullptr)
-    , isInScriptOrStyleTag(false)
     , haveAddedXMLProcessingDirective(false)
     , haveAddedContentsBeforeEnd(false)
 {
@@ -201,8 +200,6 @@ String WebFrameSerializerImpl::postActionAfterSerializeOpenTag(
         param->haveAddedContentsBeforeEnd = true;
         // Will search each META which has charset declaration, and skip them all
         // in PreActionBeforeSerializeOpenTag.
-    } else if (isHTMLScriptElement(*element) || isHTMLScriptElement(*element)) {
-        param->isInScriptOrStyleTag = true;
     }
 
     return result.toString();
@@ -221,9 +218,6 @@ String WebFrameSerializerImpl::preActionBeforeSerializeEndTag(
     // skipMetaElement is definitely META tag if it's not 0.
     if (param->skipMetaElement == element) {
         *needSkip = true;
-    } else if (isHTMLScriptElement(*element) || isHTMLScriptElement(*element)) {
-        ASSERT(param->isInScriptOrStyleTag);
-        param->isInScriptOrStyleTag = false;
     }
 
     return result;
