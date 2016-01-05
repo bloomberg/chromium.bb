@@ -8,6 +8,8 @@ import("//chrome/chrome_tests.gni")
 import("//media/media_options.gni")
 import("//third_party/protobuf/proto_library.gni")
 
+assert(is_chromeos)
+
 gypi_values = exec_script("//build/gypi_to_gn.py",
                           [ rebase_path("../../chrome_browser_chromeos.gypi") ],
                           "scope",
