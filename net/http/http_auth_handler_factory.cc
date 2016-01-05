@@ -100,8 +100,6 @@ HttpAuthHandlerRegistryFactory::HttpAuthHandlerRegistryFactory() {
 }
 
 HttpAuthHandlerRegistryFactory::~HttpAuthHandlerRegistryFactory() {
-  STLDeleteContainerPairSecondPointers(factory_map_.begin(),
-                                       factory_map_.end());
 }
 
 void HttpAuthHandlerRegistryFactory::SetHttpAuthPreferences(
@@ -117,14 +115,10 @@ void HttpAuthHandlerRegistryFactory::RegisterSchemeFactory(
     HttpAuthHandlerFactory* factory) {
   factory->set_http_auth_preferences(http_auth_preferences());
   std::string lower_scheme = base::ToLowerASCII(scheme);
-  FactoryMap::iterator it = factory_map_.find(lower_scheme);
-  if (it != factory_map_.end()) {
-    delete it->second;
-  }
   if (factory)
-    factory_map_[lower_scheme] = factory;
+    factory_map_[lower_scheme] = make_scoped_ptr(factory);
   else
-    factory_map_.erase(it);
+    factory_map_.erase(lower_scheme);
 }
 
 HttpAuthHandlerFactory* HttpAuthHandlerRegistryFactory::GetSchemeFactory(
@@ -134,7 +128,7 @@ HttpAuthHandlerFactory* HttpAuthHandlerRegistryFactory::GetSchemeFactory(
   if (it == factory_map_.end()) {
     return NULL;                  // |scheme| is not registered.
   }
-  return it->second;
+  return it->second.get();
 }
 
 // static
@@ -158,7 +152,7 @@ HttpAuthHandlerRegistryFactory::Create(const HttpAuthPreferences* prefs,
   scoped_ptr<HttpAuthHandlerRegistryFactory> registry_factory(
       CreateAuthHandlerRegistryFactory(*prefs, host_resolver));
   registry_factory->set_http_auth_preferences(prefs);
-  for (auto factory_entry : registry_factory->factory_map_) {
+  for (auto& factory_entry : registry_factory->factory_map_) {
     factory_entry.second->set_http_auth_preferences(prefs);
   }
   return registry_factory;

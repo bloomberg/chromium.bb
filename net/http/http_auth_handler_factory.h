@@ -184,7 +184,7 @@ class NET_EXPORT HttpAuthHandlerRegistryFactory
                         scoped_ptr<HttpAuthHandler>* handler) override;
 
  private:
-  typedef std::map<std::string, HttpAuthHandlerFactory*> FactoryMap;
+  using FactoryMap = std::map<std::string, scoped_ptr<HttpAuthHandlerFactory>>;
 
   FactoryMap factory_map_;
   DISALLOW_COPY_AND_ASSIGN(HttpAuthHandlerRegistryFactory);
