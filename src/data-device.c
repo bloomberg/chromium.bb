@@ -881,6 +881,14 @@ create_data_source(struct wl_client *client,
 		return;
 	}
 
+	source->resource =
+		wl_resource_create(client, &wl_data_source_interface, 1, id);
+	if (source->resource == NULL) {
+		free(source);
+		wl_resource_post_no_memory(resource);
+		return;
+	}
+
 	wl_signal_init(&source->destroy_signal);
 	source->accept = client_source_accept;
 	source->send = client_source_send;
@@ -888,8 +896,6 @@ create_data_source(struct wl_client *client,
 
 	wl_array_init(&source->mime_types);
 
-	source->resource =
-		wl_resource_create(client, &wl_data_source_interface, 1, id);
 	wl_resource_set_implementation(source->resource, &data_source_interface,
 				       source, destroy_data_source);
 }
