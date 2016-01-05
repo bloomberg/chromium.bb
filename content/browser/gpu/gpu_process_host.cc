@@ -72,11 +72,6 @@
 #include "ui/gfx/x/x11_switches.h"
 #endif
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-#include "content/browser/browser_io_surface_manager_mac.h"
-#include "content/common/child_process_messages.h"
-#endif
-
 #if defined(OS_MACOSX)
 #include "content/browser/renderer_host/render_widget_resize_helper_mac.h"
 #endif
@@ -451,13 +446,6 @@ GpuProcessHost::~GpuProcessHost() {
     queued_messages_.pop();
   }
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  if (!io_surface_manager_token_.IsZero()) {
-    BrowserIOSurfaceManager::GetInstance()->InvalidateGpuProcessToken();
-    io_surface_manager_token_.SetZero();
-  }
-#endif
-
   // This is only called on the IO thread so no race against the constructor
   // for another GpuProcessHost.
   if (g_gpu_process_hosts[kind_] == this)
@@ -567,14 +555,6 @@ bool GpuProcessHost::Init() {
 
   if (!Send(new GpuMsg_Initialize()))
     return false;
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  io_surface_manager_token_ =
-      BrowserIOSurfaceManager::GetInstance()->GenerateGpuProcessToken();
-  // Note: A valid IOSurface manager token needs to be sent to the Gpu process
-  // before any GpuMemoryBuffer allocation requests can be sent.
-  Send(new ChildProcessMsg_SetIOSurfaceManagerToken(io_surface_manager_token_));
-#endif
 
   return true;
 }
@@ -936,13 +916,6 @@ void GpuProcessHost::ForceShutdown() {
   // for another GpuProcessHost.
   if (g_gpu_process_hosts[kind_] == this)
     g_gpu_process_hosts[kind_] = NULL;
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  if (!io_surface_manager_token_.IsZero()) {
-    BrowserIOSurfaceManager::GetInstance()->InvalidateGpuProcessToken();
-    io_surface_manager_token_.SetZero();
-  }
-#endif
 
   process_->ForceShutdown();
 }

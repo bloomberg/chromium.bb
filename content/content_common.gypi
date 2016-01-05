@@ -420,8 +420,6 @@
       'common/mac/font_descriptor.mm',
       'common/mac/font_loader.h',
       'common/mac/font_loader.mm',
-      'common/mac/io_surface_manager_messages.h',
-      'common/mac/io_surface_manager_token.h',
       'common/manifest_manager_messages.h',
       'common/media/aec_dump_messages.h',
       'common/media/audio_messages.h',

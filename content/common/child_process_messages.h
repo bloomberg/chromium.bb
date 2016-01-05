@@ -23,10 +23,6 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 
-#if defined(OS_MACOSX)
-#include "content/common/mac/io_surface_manager_token.h"
-#endif
-
 IPC_ENUM_TRAITS_MAX_VALUE(tracked_objects::ThreadData::Status,
                           tracked_objects::ThreadData::STATUS_LAST)
 
@@ -77,6 +73,8 @@ IPC_STRUCT_TRAITS_BEGIN(gfx::GpuMemoryBufferHandle)
   IPC_STRUCT_TRAITS_MEMBER(stride)
 #if defined(USE_OZONE)
   IPC_STRUCT_TRAITS_MEMBER(native_pixmap_handle)
+#elif defined(OS_MACOSX)
+  IPC_STRUCT_TRAITS_MEMBER(mach_port)
 #endif
 IPC_STRUCT_TRAITS_END()
 
@@ -123,13 +121,6 @@ IPC_MESSAGE_CONTROL1(ChildProcessMsg_GetChildHistogramData,
 // Sent to child processes to tell them to enter or leave background mode.
 IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetProcessBackgrounded,
                      bool /* background */)
-
-#if defined(OS_MACOSX)
-// Sent to child processes to tell them what token to use when registering
-// and/or acquiring IOSurfaces.
-IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetIOSurfaceManagerToken,
-                     content::IOSurfaceManagerToken /* token */)
-#endif
 
 // Sends a pipe used by the child process to broker passing of Mojo handles.
 IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetMojoParentPipeHandle,

@@ -16,6 +16,10 @@
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/range/range.h"
 
+#if defined(OS_MACOSX)
+#include "ipc/mach_port_mac.h"
+#endif
+
 namespace {
 
 struct SkBitmap_Data {
@@ -339,6 +343,33 @@ void ParamTraits<gfx::ScrollOffset>::Log(const param_type& p, std::string* l) {
   LogParam(p.y(), l);
   l->append(")");
 }
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+void ParamTraits<gfx::ScopedRefCountedIOSurfaceMachPort>::Write(
+    Message* m,
+    const param_type p) {
+  MachPortMac mach_port_mac(p.get());
+  ParamTraits<MachPortMac>::Write(m, mach_port_mac);
+}
+
+bool ParamTraits<gfx::ScopedRefCountedIOSurfaceMachPort>::Read(
+    const Message* m,
+    base::PickleIterator* iter,
+    param_type* r) {
+  MachPortMac mach_port_mac;
+  if (!ParamTraits<MachPortMac>::Read(m, iter, &mach_port_mac))
+    return false;
+  r->reset(mach_port_mac.get_mach_port());
+  return true;
+}
+
+void ParamTraits<gfx::ScopedRefCountedIOSurfaceMachPort>::Log(
+    const param_type& p,
+    std::string* l) {
+  l->append("IOSurface Mach send right: ");
+  LogParam(p.get(), l);
+}
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 }  // namespace IPC
 

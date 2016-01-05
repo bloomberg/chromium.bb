@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac_export.h"
-#include "ui/accelerated_widget_mac/surface_handle_types.h"
+#include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
@@ -20,7 +20,6 @@
 #if defined(__OBJC__)
 #import <Cocoa/Cocoa.h>
 #import "base/mac/scoped_nsobject.h"
-#include "ui/base/cocoa/remote_layer_api.h"
 #endif  // __OBJC__
 
 class SkCanvas;

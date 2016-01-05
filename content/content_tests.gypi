@@ -367,7 +367,6 @@
       'browser/blob_storage/blob_async_builder_host_unittest.cc',
       'browser/blob_storage/blob_async_transport_strategy_unittest.cc',
       'browser/blob_storage/blob_storage_registry_unittest.cc',
-      'browser/browser_io_surface_manager_mac_unittest.cc',
       'browser/browser_thread_unittest.cc',
       'browser/browser_url_handler_impl_unittest.cc',
       'browser/byte_stream_unittest.cc',

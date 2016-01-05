@@ -30,7 +30,6 @@
 #include "content/public/common/sandbox_init.h"
 #elif defined(OS_MACOSX)
 #include "content/browser/bootstrap_sandbox_manager_mac.h"
-#include "content/browser/browser_io_surface_manager_mac.h"
 #include "content/browser/mach_broker_mac.h"
 #include "sandbox/mac/bootstrap_sandbox.h"
 #include "sandbox/mac/pre_exec_delegate.h"
@@ -242,9 +241,6 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
     // Make sure the MachBroker is running, and inform it to expect a
     // check-in from the new process.
     broker->EnsureRunning();
-
-    // Make sure the IOSurfaceManager service is running.
-    BrowserIOSurfaceManager::GetInstance()->EnsureRunning();
 
     const SandboxType sandbox_type = delegate->GetSandboxType();
     scoped_ptr<sandbox::PreExecDelegate> pre_exec_delegate;

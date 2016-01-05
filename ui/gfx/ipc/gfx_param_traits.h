@@ -13,6 +13,10 @@
 #include "ui/gfx/ipc/gfx_ipc_export.h"
 #include "ui/gfx/ipc/gfx_param_traits_macros.h"
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "ui/gfx/mac/io_surface.h"
+#endif
+
 class SkBitmap;
 
 namespace gfx {
@@ -130,6 +134,20 @@ struct GFX_IPC_EXPORT ParamTraits<gfx::ScrollOffset> {
   static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+template <>
+struct GFX_IPC_EXPORT ParamTraits<gfx::ScopedRefCountedIOSurfaceMachPort> {
+  typedef gfx::ScopedRefCountedIOSurfaceMachPort param_type;
+  static void Write(Message* m, const param_type p);
+  // Note: Read() passes ownership of the Mach send right from the IPC message
+  // to the ScopedRefCountedIOSurfaceMachPort. Therefore, Read() may only be
+  // called once for a given message, otherwise the singular right will be
+  // managed and released by two objects.
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 }  // namespace IPC
 

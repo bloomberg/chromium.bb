@@ -24,7 +24,6 @@ typedef void* GLeglImageOES;
 #include "base/mac/scoped_cftyperef.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "ui/accelerated_widget_mac/io_surface_context.h"
-#include "ui/accelerated_widget_mac/surface_handle_types.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/base/ui_base_switches.h"
@@ -465,11 +464,10 @@ void ImageTransportSurfaceOverlayMac::DisplayFirstPendingSwapImmediately() {
   // Send acknowledgement to the browser.
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
   if (use_remote_layer_api_) {
-    params.surface_handle =
-        ui::SurfaceHandleFromCAContextID([ca_context_ contextId]);
+    params.ca_context_id = [ca_context_ contextId];
   } else {
-    params.surface_handle =
-        ui::SurfaceHandleFromIOSurfaceID(current_root_plane_->io_surface_id);
+    params.io_surface.reset(
+        IOSurfaceCreateMachPort(current_root_plane_->io_surface));
   }
   params.size = swap->pixel_size;
   params.scale_factor = swap->scale_factor;

@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "ui/gfx/buffer_format_util.h"
-#include "ui/gfx/mac/io_surface_manager.h"
+#include "ui/gfx/mac/io_surface.h"
 #include "ui/gl/gl_image_io_surface.h"
 
 namespace content {
@@ -49,14 +49,9 @@ GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
     int client_id,
     gfx::PluginWindowHandle surface_handle) {
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
-      gfx::IOSurfaceManager::CreateIOSurface(size, format));
+      gfx::CreateIOSurface(size, format));
   if (!io_surface)
     return gfx::GpuMemoryBufferHandle();
-
-  if (!gfx::IOSurfaceManager::GetInstance()->RegisterIOSurface(id, client_id,
-                                                               io_surface)) {
-    return gfx::GpuMemoryBufferHandle();
-  }
 
   {
     base::AutoLock lock(io_surfaces_lock_);
@@ -69,6 +64,7 @@ GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::IO_SURFACE_BUFFER;
   handle.id = id;
+  handle.mach_port.reset(IOSurfaceCreateMachPort(io_surface));
   return handle;
 }
 
@@ -93,8 +89,6 @@ void GpuMemoryBufferFactoryIOSurface::DestroyGpuMemoryBuffer(
     DCHECK(io_surfaces_.find(key) != io_surfaces_.end());
     io_surfaces_.erase(key);
   }
-
-  gfx::IOSurfaceManager::GetInstance()->UnregisterIOSurface(id, client_id);
 }
 
 gpu::ImageFactory* GpuMemoryBufferFactoryIOSurface::AsImageFactory() {

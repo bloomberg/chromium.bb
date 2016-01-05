@@ -23,7 +23,6 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #if !defined(OS_IOS)
 #include "base/test/mock_chrome_application_mac.h"
-#include "content/browser/in_process_io_surface_manager_mac.h"
 #endif
 #endif
 
@@ -110,9 +109,6 @@ void ContentTestSuite::Initialize() {
 #if defined(OS_ANDROID)
   SurfaceTextureManager::SetInstance(
       InProcessSurfaceTextureManager::GetInstance());
-#endif
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  gfx::IOSurfaceManager::SetInstance(InProcessIOSurfaceManager::GetInstance());
 #endif
 #if defined(USE_OZONE)
   if (!is_child_process) {

@@ -2,21 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/mac/io_surface_manager.h"
+#include "ui/gfx/mac/io_surface.h"
 
-#include <IOSurface/IOSurface.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "base/mac/scoped_cftyperef.h"
+#include "base/mac/mach_logging.h"
 #include "base/macros.h"
 #include "ui/gfx/buffer_format_util.h"
 
 namespace gfx {
-namespace {
 
-IOSurfaceManager* g_instance = NULL;
+namespace {
 
 void AddIntegerValue(CFMutableDictionaryRef dictionary,
                      const CFStringRef key,
@@ -89,21 +87,28 @@ int32_t PixelFormat(gfx::BufferFormat format) {
 
 }  // namespace
 
+namespace internal {
+
 // static
-IOSurfaceManager* IOSurfaceManager::GetInstance() {
-  DCHECK(g_instance);
-  return g_instance;
+mach_port_t IOSurfaceMachPortTraits::Retain(mach_port_t port) {
+  kern_return_t kr =
+      mach_port_mod_refs(mach_task_self(), port, MACH_PORT_RIGHT_SEND, 1);
+  MACH_LOG_IF(ERROR, kr != KERN_SUCCESS, kr)
+      << "IOSurfaceMachPortTraits::Retain mach_port_mod_refs";
+  return port;
 }
 
 // static
-void IOSurfaceManager::SetInstance(IOSurfaceManager* instance) {
-  DCHECK(!g_instance || !instance);
-  g_instance = instance;
+void IOSurfaceMachPortTraits::Release(mach_port_t port) {
+  kern_return_t kr =
+      mach_port_mod_refs(mach_task_self(), port, MACH_PORT_RIGHT_SEND, -1);
+  MACH_LOG_IF(ERROR, kr != KERN_SUCCESS, kr)
+      << "IOSurfaceMachPortTraits::Release mach_port_mod_refs";
 }
 
-// static
-IOSurfaceRef IOSurfaceManager::CreateIOSurface(const gfx::Size& size,
-                                               gfx::BufferFormat format) {
+}  // namespace internal
+
+IOSurfaceRef CreateIOSurface(const gfx::Size& size, gfx::BufferFormat format) {
   size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
   base::ScopedCFTypeRef<CFMutableArrayRef> planes(CFArrayCreateMutable(
       kCFAllocatorDefault, num_planes, &kCFTypeArrayCallBacks));
@@ -146,4 +151,4 @@ IOSurfaceRef IOSurfaceManager::CreateIOSurface(const gfx::Size& size,
   return IOSurfaceCreate(properties);
 }
 
-}  // namespace content
+}  // namespace gfx

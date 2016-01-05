@@ -18,6 +18,8 @@
 
 #if defined(USE_OZONE)
 #include "ui/gfx/native_pixmap_handle_ozone.h"
+#elif defined(OS_MACOSX)
+#include "ui/gfx/mac/io_surface.h"
 #endif
 
 extern "C" typedef struct _ClientBuffer* ClientBuffer;
@@ -37,6 +39,7 @@ using GpuMemoryBufferId = GenericSharedMemoryId;
 
 struct GFX_EXPORT GpuMemoryBufferHandle {
   GpuMemoryBufferHandle();
+  ~GpuMemoryBufferHandle();
   bool is_null() const { return type == EMPTY_BUFFER; }
   GpuMemoryBufferType type;
   GpuMemoryBufferId id;
@@ -45,6 +48,8 @@ struct GFX_EXPORT GpuMemoryBufferHandle {
   int32_t stride;
 #if defined(USE_OZONE)
   NativePixmapHandle native_pixmap_handle;
+#elif defined(OS_MACOSX)
+  ScopedRefCountedIOSurfaceMachPort mach_port;
 #endif
 };
 

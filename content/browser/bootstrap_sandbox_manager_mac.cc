@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
-#include "content/browser/browser_io_surface_manager_mac.h"
 #include "content/browser/mach_broker_mac.h"
 #include "content/common/sandbox_init_mac.h"
 #include "content/public/browser/browser_thread.h"
@@ -77,11 +76,6 @@ void BootstrapSandboxManager::RegisterRendererPolicy() {
   // during sandbox warmup. Since NSColorSpace conforms to NSCoding, this
   // should be plumbed over IPC instead <http://crbug.com/265709>.
   policy.rules["com.apple.windowserver.active"] =
-      sandbox::Rule(sandbox::POLICY_ALLOW);
-
-  // Allow renderers to contact the IOSurfaceManager in the browser to share
-  // accelerated surfaces.
-  policy.rules[BrowserIOSurfaceManager::GetMachPortName()] =
       sandbox::Rule(sandbox::POLICY_ALLOW);
 
   // Allow access to launchservicesd on 10.10+ otherwise the renderer will crash

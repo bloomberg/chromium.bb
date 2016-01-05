@@ -70,10 +70,6 @@
 #include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "content/child/child_io_surface_manager_mac.h"
-#endif
-
 #if defined(USE_OZONE)
 #include "ui/ozone/public/client_native_pixmap_factory.h"
 #endif
@@ -178,29 +174,6 @@ class SuicideOnChannelErrorFilter : public IPC::MessageFilter {
 };
 
 #endif  // OS(POSIX)
-
-#if defined(OS_MACOSX)
-class IOSurfaceManagerFilter : public IPC::MessageFilter {
- public:
-  // Overridden from IPC::MessageFilter:
-  bool OnMessageReceived(const IPC::Message& message) override {
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(IOSurfaceManagerFilter, message)
-      IPC_MESSAGE_HANDLER(ChildProcessMsg_SetIOSurfaceManagerToken,
-                          OnSetIOSurfaceManagerToken)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-  }
-
- protected:
-  ~IOSurfaceManagerFilter() override {}
-
-  void OnSetIOSurfaceManagerToken(const IOSurfaceManagerToken& token) {
-    ChildIOSurfaceManager::GetInstance()->set_token(token);
-  }
-};
-#endif
 
 #if defined(USE_OZONE)
 class ClientNativePixmapFactoryFilter : public IPC::MessageFilter {
@@ -479,10 +452,6 @@ void ChildThreadImpl::Init(const Options& options) {
   // and single-process mode.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessType))
     channel_->AddFilter(new SuicideOnChannelErrorFilter());
-#endif
-
-#if defined(OS_MACOSX)
-  channel_->AddFilter(new IOSurfaceManagerFilter());
 #endif
 
 #if defined(USE_OZONE)

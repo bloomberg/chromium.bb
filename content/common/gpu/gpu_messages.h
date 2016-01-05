@@ -46,6 +46,9 @@
 
 #if defined(OS_ANDROID)
 #include "content/common/android/surface_texture_peer.h"
+#elif defined(OS_MACOSX)
+#include "ui/base/cocoa/remote_layer_api.h"
+#include "ui/gfx/mac/io_surface.h"
 #endif
 
 #undef IPC_MESSAGE_EXPORT
@@ -120,7 +123,9 @@ IPC_STRUCT_END()
 #if defined(OS_MACOSX)
 IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
   IPC_STRUCT_MEMBER(int32_t, surface_id)
-  IPC_STRUCT_MEMBER(uint64_t, surface_handle)
+  // Only one of ca_context_id or io_surface may be non-0.
+  IPC_STRUCT_MEMBER(CAContextID, ca_context_id)
+  IPC_STRUCT_MEMBER(gfx::ScopedRefCountedIOSurfaceMachPort, io_surface)
   IPC_STRUCT_MEMBER(int32_t, route_id)
   IPC_STRUCT_MEMBER(gfx::Size, size)
   IPC_STRUCT_MEMBER(float, scale_factor)

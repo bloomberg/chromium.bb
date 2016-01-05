@@ -111,10 +111,8 @@
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/memory/memory_pressure_monitor_mac.h"
 #include "content/browser/bootstrap_sandbox_manager_mac.h"
-#include "content/browser/browser_io_surface_manager_mac.h"
 #include "content/browser/cocoa/system_hotkey_helper_mac.h"
 #include "content/browser/compositor/browser_compositor_view_mac.h"
-#include "content/browser/in_process_io_surface_manager_mac.h"
 #include "content/browser/theme_helper_mac.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #endif
@@ -662,17 +660,6 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  {
-    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:IOSurfaceManager");
-    if (parsed_command_line_.HasSwitch(switches::kSingleProcess)) {
-      gfx::IOSurfaceManager::SetInstance(
-          InProcessIOSurfaceManager::GetInstance());
-    } else {
-      gfx::IOSurfaceManager::SetInstance(
-          BrowserIOSurfaceManager::GetInstance());
-    }
-  }
-
   if (BootstrapSandboxManager::ShouldEnable()) {
     TRACE_EVENT0("startup",
                  "BrowserMainLoop::Subsystem:BootstrapSandbox");

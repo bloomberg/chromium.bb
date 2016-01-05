@@ -19,8 +19,6 @@
         'display_link_mac.h',
         'io_surface_context.h',
         'io_surface_context.mm',
-        'surface_handle_types.cc',
-        'surface_handle_types.h',
         'window_resize_helper_mac.cc',
         'window_resize_helper_mac.h',
       ],

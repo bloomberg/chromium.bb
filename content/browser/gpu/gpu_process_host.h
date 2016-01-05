@@ -34,10 +34,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-#include "content/common/mac/io_surface_manager_token.h"
-#endif
-
 struct GPUCreateCommandBufferConfig;
 
 namespace IPC {
@@ -294,12 +290,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   ClientIdToShaderCacheMap client_id_to_shader_cache_;
 
   std::string shader_prefix_key_;
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // Unique unguessable token that the GPU process is using to register
-  // IOSurfaces.
-  IOSurfaceManagerToken io_surface_manager_token_;
-#endif
 
   // Browser-side Mojo endpoint which sets up a Mojo channel with the child
   // process and contains the browser's ServiceRegistry.

@@ -69,7 +69,6 @@
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #import "third_party/mozilla/ComplexTextInputPanel.h"
-#include "ui/accelerated_widget_mac/surface_handle_types.h"
 #include "ui/base/cocoa/animation_utils.h"
 #import "ui/base/cocoa/fullscreen_window_manager.h"
 #import "ui/base/cocoa/underlay_opengl_hosting_window.h"

@@ -19,7 +19,7 @@
 #include "gpu/command_buffer/service/image_factory.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
-#include "ui/gfx/mac/io_surface_manager.h"
+#include "ui/gfx/mac/io_surface.h"
 
 namespace gl {
 class GLImage;
@@ -67,6 +67,8 @@ class CONTENT_EXPORT GpuMemoryBufferFactoryIOSurface
   typedef std::pair<gfx::IOSurfaceId, int> IOSurfaceMapKey;
   typedef base::hash_map<IOSurfaceMapKey, base::ScopedCFTypeRef<IOSurfaceRef>>
       IOSurfaceMap;
+  // TOOD(reveman): Remove |io_surfaces_| and allow IOSurface backed GMBs to be
+  // used with any GPU process by passing a mach_port to CreateImageCHROMIUM.
   IOSurfaceMap io_surfaces_;
   base::Lock io_surfaces_lock_;
 
