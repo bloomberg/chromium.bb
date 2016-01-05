@@ -8,6 +8,13 @@ config("cpu_features_include") {
   include_dirs = [ "ndk/sources/android/cpufeatures" ]
 }
 
+config("cpu_features_warnings") {
+  if (is_clang) {
+    # cpu-features.c has few unused functions on x86 b/26403333
+    cflags = [ "-Wno-unused-function" ]
+  }
+}
+
 # This is the GN version of
 # //build/android/ndk.gyp:cpu_features
 source_set("cpu_features") {
@@ -17,7 +24,12 @@ source_set("cpu_features") {
   public_configs = [ ":cpu_features_include" ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+
+    # Must be after no_chromium_code for warning flags to be ordered correctly.
+    ":cpu_features_warnings",
+  ]
 }
 
 android_java_prebuilt("android_gcm_java") {

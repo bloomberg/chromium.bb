@@ -15,6 +15,12 @@
       'sources': [
         '<(android_ndk_root)/sources/android/cpufeatures/cpu-features.c',
       ],
+      'variables': {
+        'clang_warning_flags': [
+          # cpu-features.c has few unused functions on x86 b/26403333
+          '-Wno-unused-function',
+        ],
+      },
     },
   ],
 }
