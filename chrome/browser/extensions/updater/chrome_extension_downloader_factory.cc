@@ -7,6 +7,8 @@
 #include <string>
 #include <utility>
 
+
+#include "base/command_line.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
@@ -23,6 +25,10 @@ using extensions::ExtensionDownloader;
 using extensions::ExtensionDownloaderDelegate;
 using update_client::UpdateQueryParams;
 
+namespace {
+const char kTestRequestParam[] = "extension-updater-test-request";
+}  // namespace
+
 scoped_ptr<ExtensionDownloader>
 ChromeExtensionDownloaderFactory::CreateForRequestContext(
     net::URLRequestContextGetter* request_context,
@@ -35,8 +41,14 @@ ChromeExtensionDownloaderFactory::CreateForRequestContext(
   if (!brand.empty() && !google_brand::IsOrganic(brand))
     downloader->set_brand_code(brand);
 #endif  // defined(GOOGLE_CHROME_BUILD)
-  downloader->set_manifest_query_params(
-      UpdateQueryParams::Get(UpdateQueryParams::CRX));
+  std::string manifest_query_params =
+      UpdateQueryParams::Get(UpdateQueryParams::CRX);
+  base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(kTestRequestParam)) {
+    manifest_query_params += "&testrequest=1";
+  }
+  downloader->set_manifest_query_params(manifest_query_params);
   downloader->set_ping_enabled_domain("google.com");
   downloader->set_enable_extra_update_metrics(
       ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
