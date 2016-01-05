@@ -609,9 +609,9 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   // Send an update favicon message and make sure it works.
   {
     PluginFaviconMessageObserver observer(contents());
-    EXPECT_TRUE(ntp_rfh->GetRenderViewHost()->OnMessageReceived(
-                    ViewHostMsg_UpdateFaviconURL(
-                        ntp_rfh->GetRenderViewHost()->GetRoutingID(), icons)));
+    EXPECT_TRUE(ntp_rfh->GetRenderViewHost()->GetWidget()->OnMessageReceived(
+        ViewHostMsg_UpdateFaviconURL(
+            ntp_rfh->GetRenderViewHost()->GetRoutingID(), icons)));
     EXPECT_TRUE(observer.favicon_received());
   }
   // Create one more frame in the same SiteInstance where ntp_rfh
@@ -628,10 +628,9 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   // The new RVH should be able to update its favicon.
   {
     PluginFaviconMessageObserver observer(contents());
-    EXPECT_TRUE(
-        dest_rfh->GetRenderViewHost()->OnMessageReceived(
-            ViewHostMsg_UpdateFaviconURL(
-                dest_rfh->GetRenderViewHost()->GetRoutingID(), icons)));
+    EXPECT_TRUE(dest_rfh->GetRenderViewHost()->GetWidget()->OnMessageReceived(
+        ViewHostMsg_UpdateFaviconURL(
+            dest_rfh->GetRenderViewHost()->GetRoutingID(), icons)));
     EXPECT_TRUE(observer.favicon_received());
   }
 
@@ -640,9 +639,8 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   {
     PluginFaviconMessageObserver observer(contents());
     EXPECT_TRUE(
-        ntp_rvh->OnMessageReceived(
-            ViewHostMsg_UpdateFaviconURL(
-                dest_rfh->GetRenderViewHost()->GetRoutingID(), icons)));
+        ntp_rvh->GetWidget()->OnMessageReceived(ViewHostMsg_UpdateFaviconURL(
+            dest_rfh->GetRenderViewHost()->GetRoutingID(), icons)));
     EXPECT_FALSE(observer.favicon_received());
   }
 
@@ -707,9 +705,9 @@ TEST_F(RenderFrameHostManagerTest, UpdateFaviconURLWhilePendingSwapOut) {
   // Send an update favicon message and make sure it works.
   {
     PluginFaviconMessageObserver observer(contents());
-    EXPECT_TRUE(rfh1->GetRenderViewHost()->OnMessageReceived(
-                    ViewHostMsg_UpdateFaviconURL(
-                        rfh1->GetRenderViewHost()->GetRoutingID(), icons)));
+    EXPECT_TRUE(rfh1->GetRenderViewHost()->GetWidget()->OnMessageReceived(
+        ViewHostMsg_UpdateFaviconURL(rfh1->GetRenderViewHost()->GetRoutingID(),
+                                     icons)));
     EXPECT_TRUE(observer.favicon_received());
   }
 
@@ -731,7 +729,7 @@ TEST_F(RenderFrameHostManagerTest, UpdateFaviconURLWhilePendingSwapOut) {
   // The new RVH should be able to update its favicons.
   {
     PluginFaviconMessageObserver observer(contents());
-    EXPECT_TRUE(rfh2->GetRenderViewHost()->OnMessageReceived(
+    EXPECT_TRUE(rfh2->GetRenderViewHost()->GetWidget()->OnMessageReceived(
         ViewHostMsg_UpdateFaviconURL(rfh2->GetRenderViewHost()->GetRoutingID(),
                                      icons)));
     EXPECT_TRUE(observer.favicon_received());
@@ -741,7 +739,7 @@ TEST_F(RenderFrameHostManagerTest, UpdateFaviconURLWhilePendingSwapOut) {
   // be ignored.
   {
     PluginFaviconMessageObserver observer(contents());
-    EXPECT_TRUE(rfh1->GetRenderViewHost()->OnMessageReceived(
+    EXPECT_TRUE(rfh1->GetRenderViewHost()->GetWidget()->OnMessageReceived(
         ViewHostMsg_UpdateFaviconURL(rfh1->GetRenderViewHost()->GetRoutingID(),
                                      icons)));
     EXPECT_FALSE(observer.favicon_received());
@@ -818,7 +816,8 @@ TEST_F(RenderFrameHostManagerTest, WhiteListSwapCompositorFrame) {
   ViewHostMsg_SwapCompositorFrame msg(
       rvh()->GetRoutingID(), 0, frame, std::vector<IPC::Message>());
 
-  EXPECT_TRUE(swapped_out_rfh->render_view_host()->OnMessageReceived(msg));
+  EXPECT_TRUE(
+      swapped_out_rfh->render_view_host()->GetWidget()->OnMessageReceived(msg));
   EXPECT_TRUE(swapped_out_rwhv->did_swap_compositor_frame());
 }
 

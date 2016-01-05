@@ -369,7 +369,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void SetEditCommandsForNextKeyEvent(
       const std::vector<EditCommand>& commands);
 
-  // Executes the edit command on the RenderView.
+  // Executes the edit command.
   void ExecuteEditCommand(const std::string& command,
                           const std::string& value);
 
@@ -489,6 +489,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // request to create a new RenderWidget.
   void SetInitialRenderSizeParams(const ViewMsg_Resize_Params& resize_params);
 
+  // Called when we receive a notification indicating that the renderer process
+  // is gone. This will reset our state so that our state will be consistent if
+  // a new renderer is created.
+  void RendererExited(base::TerminationStatus status, int exit_code);
+
   // Expose increment/decrement of the in-flight event count, so
   // RenderViewHostImpl can account for in-flight beforeunload/unload events.
   int increment_in_flight_event_count() { return ++in_flight_event_count_; }
@@ -500,11 +505,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   bool renderer_initialized() const { return renderer_initialized_; }
 
  protected:
-  // Called when we receive a notification indicating that the renderer
-  // process has gone. This will reset our state so that our state will be
-  // consistent if a new renderer is created.
-  void RendererExited(base::TerminationStatus status, int exit_code);
-
   // Retrieves an id the renderer can use to refer to its view.
   // This is used for various IPC messages, including plugins.
   gfx::NativeViewId GetNativeViewId() const;
@@ -521,7 +521,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
 
   bool IsMouseLocked() const;
 
-  // The View associated with the RenderViewHost. The lifetime of this object
+  // The View associated with the RenderWidgetHost. The lifetime of this object
   // is associated with the lifetime of the Render process. If the Renderer
   // crashes, its View is destroyed and this pointer becomes NULL, even though
   // render_view_host_ lives on to load another URL (creating a new View while
@@ -561,7 +561,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   bool OnSwapCompositorFrame(const IPC::Message& message);
   void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
   void OnQueueSyntheticGesture(const SyntheticGesturePacket& gesture_packet);
-  virtual void OnFocus();
   void OnSetCursor(const WebCursor& cursor);
   void OnTextInputStateChanged(
       const ViewHostMsg_TextInputState_Params& params);

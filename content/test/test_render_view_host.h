@@ -203,9 +203,8 @@ class TestRenderViewHost
       public RenderViewHostTester {
  public:
   TestRenderViewHost(SiteInstance* instance,
+                     scoped_ptr<RenderWidgetHostImpl> widget,
                      RenderViewHostDelegate* delegate,
-                     RenderWidgetHostDelegate* widget_delegate,
-                     int32_t routing_id,
                      int32_t main_frame_routing_id,
                      bool swapped_out);
   ~TestRenderViewHost() override;

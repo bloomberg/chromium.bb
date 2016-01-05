@@ -5,12 +5,14 @@
 #include "content/browser/renderer_host/render_view_host_factory.h"
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 
 namespace content {
 
 // static
-RenderViewHostFactory* RenderViewHostFactory::factory_ = NULL;
+RenderViewHostFactory* RenderViewHostFactory::factory_ = nullptr;
 
 // static
 RenderViewHost* RenderViewHostFactory::Create(
@@ -41,9 +43,12 @@ RenderViewHost* RenderViewHostFactory::Create(
                                           routing_id, main_frame_routing_id,
                                           swapped_out);
   }
-  return new RenderViewHostImpl(instance, delegate, widget_delegate, routing_id,
-                                main_frame_routing_id, swapped_out, hidden,
-                                true /* has_initialized_audio_host */);
+  return new RenderViewHostImpl(
+      instance,
+      make_scoped_ptr(new RenderWidgetHostImpl(
+          widget_delegate, instance->GetProcess(), routing_id, hidden)),
+      delegate, main_frame_routing_id, swapped_out,
+      true /* has_initialized_audio_host */);
 }
 
 // static
@@ -55,7 +60,7 @@ void RenderViewHostFactory::RegisterFactory(RenderViewHostFactory* factory) {
 // static
 void RenderViewHostFactory::UnregisterFactory() {
   DCHECK(factory_) << "No factory to unregister.";
-  factory_ = NULL;
+  factory_ = nullptr;
 }
 
 }  // namespace content

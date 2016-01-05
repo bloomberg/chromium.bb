@@ -65,7 +65,8 @@ RenderViewHostTester* RenderViewHostTester::For(RenderViewHost* host) {
 // static
 bool RenderViewHostTester::TestOnMessageReceived(RenderViewHost* rvh,
                                                  const IPC::Message& msg) {
-  return static_cast<RenderViewHostImpl*>(rvh)->OnMessageReceived(msg);
+  return static_cast<RenderViewHostImpl*>(rvh)->GetWidget()->OnMessageReceived(
+      msg);
 }
 
 // static

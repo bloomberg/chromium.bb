@@ -212,27 +212,23 @@ gfx::NativeViewId TestRenderWidgetHostView::GetParentForWindowlessPlugin()
 }
 #endif
 
-TestRenderViewHost::TestRenderViewHost(
-    SiteInstance* instance,
-    RenderViewHostDelegate* delegate,
-    RenderWidgetHostDelegate* widget_delegate,
-    int32_t routing_id,
-    int32_t main_frame_routing_id,
-    bool swapped_out)
+TestRenderViewHost::TestRenderViewHost(SiteInstance* instance,
+                                       scoped_ptr<RenderWidgetHostImpl> widget,
+                                       RenderViewHostDelegate* delegate,
+                                       int32_t main_frame_routing_id,
+                                       bool swapped_out)
     : RenderViewHostImpl(instance,
+                         std::move(widget),
                          delegate,
-                         widget_delegate,
-                         routing_id,
                          main_frame_routing_id,
                          swapped_out,
-                         false /* hidden */,
                          false /* has_initialized_audio_host */),
       delete_counter_(NULL),
       opener_frame_route_id_(MSG_ROUTING_NONE) {
   // TestRenderWidgetHostView installs itself into this->view_ in its
   // constructor, and deletes itself when TestRenderWidgetHostView::Destroy() is
   // called.
-  new TestRenderWidgetHostView(this);
+  new TestRenderWidgetHostView(GetWidget());
 }
 
 TestRenderViewHost::~TestRenderViewHost() {
@@ -259,7 +255,7 @@ bool TestRenderViewHost::CreateRenderView(
     const FrameReplicationState& replicated_frame_state,
     bool window_was_created_with_opener) {
   DCHECK(!IsRenderViewLive());
-  set_renderer_initialized(true);
+  GetWidget()->set_renderer_initialized(true);
   DCHECK(IsRenderViewLive());
   opener_frame_route_id_ = opener_frame_route_id;
   RenderFrameHost* main_frame = GetMainFrame();
@@ -274,11 +270,11 @@ MockRenderProcessHost* TestRenderViewHost::GetProcess() const {
 }
 
 void TestRenderViewHost::SimulateWasHidden() {
-  WasHidden();
+  GetWidget()->WasHidden();
 }
 
 void TestRenderViewHost::SimulateWasShown() {
-  WasShown(ui::LatencyInfo());
+  GetWidget()->WasShown(ui::LatencyInfo());
 }
 
 WebPreferences TestRenderViewHost::TestComputeWebkitPrefs() {

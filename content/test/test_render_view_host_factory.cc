@@ -4,6 +4,7 @@
 
 #include "content/test/test_render_view_host_factory.h"
 
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/public/browser/render_process_host_factory.h"
 #include "content/test/test_render_view_host.h"
@@ -33,8 +34,11 @@ RenderViewHost* TestRenderViewHostFactory::CreateRenderViewHost(
     int32_t routing_id,
     int32_t main_frame_routing_id,
     bool swapped_out) {
-  return new TestRenderViewHost(instance, delegate, widget_delegate, routing_id,
-                                main_frame_routing_id, swapped_out);
+  return new TestRenderViewHost(instance,
+                                make_scoped_ptr(new RenderWidgetHostImpl(
+                                    widget_delegate, instance->GetProcess(),
+                                    routing_id, false /* hidden */)),
+                                delegate, main_frame_routing_id, swapped_out);
 }
 
 }  // namespace content

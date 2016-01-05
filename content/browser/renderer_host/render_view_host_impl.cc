@@ -205,19 +205,13 @@ RenderViewHostImpl* RenderViewHostImpl::From(RenderWidgetHost* rwh) {
   return rvh;
 }
 
-RenderViewHostImpl::RenderViewHostImpl(
-    SiteInstance* instance,
-    RenderViewHostDelegate* delegate,
-    RenderWidgetHostDelegate* widget_delegate,
-    int32_t routing_id,
-    int32_t main_frame_routing_id,
-    bool swapped_out,
-    bool hidden,
-    bool has_initialized_audio_host)
-    : RenderWidgetHostImpl(widget_delegate,
-                           instance->GetProcess(),
-                           routing_id,
-                           hidden),
+RenderViewHostImpl::RenderViewHostImpl(SiteInstance* instance,
+                                       scoped_ptr<RenderWidgetHostImpl> widget,
+                                       RenderViewHostDelegate* delegate,
+                                       int32_t main_frame_routing_id,
+                                       bool swapped_out,
+                                       bool has_initialized_audio_host)
+    : render_widget_host_(std::move(widget)),
       frames_ref_count_(0),
       delegate_(delegate),
       instance_(static_cast<SiteInstanceImpl*>(instance)),
@@ -610,7 +604,7 @@ void RenderViewHostImpl::RenderProcessExited(RenderProcessHost* host,
   if (!GetWidget()->renderer_initialized())
     return;
 
-  RenderWidgetHostImpl::RendererExited(status, exit_code);
+  GetWidget()->RendererExited(status, exit_code);
   delegate_->RenderViewTerminated(this, status, exit_code);
 }
 
@@ -747,20 +741,19 @@ void RenderViewHostImpl::DragSourceSystemDragEnded() {
 }
 
 bool RenderViewHostImpl::Send(IPC::Message* msg) {
-  return RenderWidgetHostImpl::Send(msg);
+  return GetWidget()->Send(msg);
 }
 
 RenderWidgetHostImpl* RenderViewHostImpl::GetWidget() const {
-  return const_cast<RenderWidgetHostImpl*>(
-      static_cast<const RenderWidgetHostImpl*>(this));
+  return render_widget_host_.get();
 }
 
 RenderProcessHost* RenderViewHostImpl::GetProcess() const {
-  return RenderWidgetHostImpl::GetProcess();
+  return GetWidget()->GetProcess();
 }
 
 int RenderViewHostImpl::GetRoutingID() const {
-  return RenderWidgetHostImpl::GetRoutingID();
+  return GetWidget()->GetRoutingID();
 }
 
 RenderFrameHost* RenderViewHostImpl::GetMainFrame() {
@@ -899,10 +892,8 @@ bool RenderViewHostImpl::SuddenTerminationAllowed() const {
 // RenderViewHostImpl, IPC message handlers:
 
 bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
-  if (!BrowserMessageFilter::CheckCanDispatchOnUI(
-          msg, static_cast<RenderWidgetHostImpl*>(this))) {
+  if (!BrowserMessageFilter::CheckCanDispatchOnUI(msg, GetWidget()))
     return true;
-  }
 
   // Filter out most IPC messages if this renderer is swapped out.
   // We still want to handle certain ACKs to keep our state consistent.
@@ -948,10 +939,9 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_ClosePage_ACK, OnClosePageACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidZoomURL, OnDidZoomURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeTouched, OnFocusedNodeTouched)
-    // Have the super handle all other messages.
-    IPC_MESSAGE_UNHANDLED(
-        handled = RenderWidgetHostImpl::OnMessageReceived(msg))
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
   return handled;

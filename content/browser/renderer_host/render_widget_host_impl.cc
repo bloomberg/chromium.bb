@@ -437,6 +437,9 @@ bool RenderWidgetHostImpl::IsLoading() const {
 }
 
 bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
+  if (owner_delegate_ && owner_delegate_->OnMessageReceived(msg))
+    return true;
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostImpl, msg)
     IPC_MESSAGE_HANDLER(FrameHostMsg_RenderProcessGone, OnRenderProcessGone)
@@ -452,7 +455,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_SwapCompositorFrame,
                                 OnSwapCompositorFrame(msg))
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnUpdateRect)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
                         OnTextInputStateChanged)
@@ -1717,11 +1719,6 @@ void RenderWidgetHostImpl::OnQueueSyntheticGesture(
         SyntheticGesture::Create(*gesture_packet.gesture_params()),
         base::Bind(&RenderWidgetHostImpl::OnSyntheticGestureCompleted,
                    weak_factory_.GetWeakPtr()));
-}
-
-void RenderWidgetHostImpl::OnFocus() {
-  // Only RenderViewHost can deal with that message.
-  bad_message::ReceivedBadMessage(GetProcess(), bad_message::RWH_FOCUS);
 }
 
 void RenderWidgetHostImpl::OnSetCursor(const WebCursor& cursor) {

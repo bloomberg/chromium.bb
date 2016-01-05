@@ -172,8 +172,8 @@ class CaptureTestSourceController {
 // CaptureTestSourceController.
 class CaptureTestView : public TestRenderWidgetHostView {
  public:
-  explicit CaptureTestView(RenderWidgetHostImpl* rwh,
-                           CaptureTestSourceController* controller)
+  CaptureTestView(RenderWidgetHostImpl* rwh,
+                  CaptureTestSourceController* controller)
       : TestRenderWidgetHostView(rwh),
         controller_(controller),
         fake_bounds_(100, 100, 100 + kTestWidth, 100 + kTestHeight) {}
@@ -240,40 +240,19 @@ class CaptureTestView : public TestRenderWidgetHostView {
   DISALLOW_IMPLICIT_CONSTRUCTORS(CaptureTestView);
 };
 
-#if defined(COMPILER_MSVC)
-// MSVC warns on diamond inheritance. See comment for same warning on
-// RenderViewHostImpl.
-#pragma warning(push)
-#pragma warning(disable: 4250)
-#endif
-
 // A stub implementation which returns solid-color bitmaps in calls to
 // CopyFromBackingStore(). The behavior is controlled by a
 // CaptureTestSourceController.
-class CaptureTestRenderViewHost : public TestRenderViewHost {
+class CaptureTestRenderWidgetHost : public RenderWidgetHostImpl {
  public:
-  CaptureTestRenderViewHost(SiteInstance* instance,
-                            RenderViewHostDelegate* delegate,
-                            RenderWidgetHostDelegate* widget_delegate,
-                            int32_t routing_id,
-                            int32_t main_frame_routing_id,
-                            bool swapped_out,
-                            CaptureTestSourceController* controller)
-      : TestRenderViewHost(instance,
-                           delegate,
-                           widget_delegate,
-                           routing_id,
-                           main_frame_routing_id,
-                           swapped_out),
-        controller_(controller) {
-    // Override the default view installed by TestRenderViewHost; we need
-    // our special subclass which has mocked-out tab capture support.
-    RenderWidgetHostView* old_view = GetWidget()->GetView();
-    GetWidget()->SetView(new CaptureTestView(GetWidget(), controller));
-    delete old_view;
-  }
+  CaptureTestRenderWidgetHost(RenderWidgetHostDelegate* delegate,
+                              RenderProcessHost* process,
+                              int32_t routing_id,
+                              CaptureTestSourceController* controller)
+      : RenderWidgetHostImpl(delegate, process, routing_id, false /* hidden */),
+        controller_(controller) {}
 
-  // TestRenderViewHost overrides.
+  // RenderWidgetHostImpl overrides.
   void CopyFromBackingStore(const gfx::Rect& src_rect,
                             const gfx::Size& accelerated_dst_size,
                             const ReadbackRequestCallback& callback,
@@ -294,13 +273,40 @@ class CaptureTestRenderViewHost : public TestRenderViewHost {
  private:
   CaptureTestSourceController* controller_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(CaptureTestRenderViewHost);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(CaptureTestRenderWidgetHost);
 };
 
-#if defined(COMPILER_MSVC)
-// Re-enable warning 4250
-#pragma warning(pop)
-#endif
+class CaptureTestRenderViewHost : public TestRenderViewHost {
+ public:
+  CaptureTestRenderViewHost(SiteInstance* instance,
+                            RenderViewHostDelegate* delegate,
+                            RenderWidgetHostDelegate* widget_delegate,
+                            int32_t routing_id,
+                            int32_t main_frame_routing_id,
+                            bool swapped_out,
+                            CaptureTestSourceController* controller)
+      : TestRenderViewHost(instance,
+                           make_scoped_ptr(new CaptureTestRenderWidgetHost(
+                               widget_delegate,
+                               instance->GetProcess(),
+                               routing_id,
+                               controller)),
+                           delegate,
+                           main_frame_routing_id,
+                           swapped_out),
+        controller_(controller) {
+    // Override the default view installed by TestRenderViewHost; we need
+    // our special subclass which has mocked-out tab capture support.
+    RenderWidgetHostView* old_view = GetWidget()->GetView();
+    GetWidget()->SetView(new CaptureTestView(GetWidget(), controller));
+    delete old_view;
+  }
+
+ private:
+  CaptureTestSourceController* controller_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(CaptureTestRenderViewHost);
+};
 
 class CaptureTestRenderViewHostFactory : public RenderViewHostFactory {
  public:

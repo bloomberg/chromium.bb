@@ -47,18 +47,6 @@ struct FileChooserFileInfo;
 struct FileChooserParams;
 struct FrameReplicationState;
 
-#if defined(COMPILER_MSVC)
-// RenderViewHostImpl is the bottom of a diamond-shaped hierarchy,
-// with RenderWidgetHost at the root. VS warns when methods from the
-// root are overridden in only one of the base classes and not both
-// (in this case, RenderWidgetHostImpl provides implementations of
-// many of the methods).  This is a silly warning when dealing with
-// pure virtual methods that only have a single implementation in the
-// hierarchy above this class, and is safe to ignore in this case.
-#pragma warning(push)
-#pragma warning(disable: 4250)
-#endif
-
 // This implements the RenderViewHost interface that is exposed to
 // embedders of content, and adds things only visible to content.
 //
@@ -81,7 +69,6 @@ struct FrameReplicationState;
 // For context, please see https://crbug.com/467770 and
 // http://www.chromium.org/developers/design-documents/site-isolation.
 class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
-                                          RenderWidgetHostImpl,
                                           public RenderWidgetHostOwnerDelegate,
                                           public RenderProcessHostObserver {
  public:
@@ -91,23 +78,11 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // Convenience function, just like RenderViewHost::From.
   static RenderViewHostImpl* From(RenderWidgetHost* rwh);
 
-  // |routing_id| must be a valid route id.  |swapped_out| indicates
-  // whether the view should initially be swapped out (e.g., for an opener
-  // frame being rendered by another process). |hidden| indicates whether the
-  // view is initially hidden or visible.
-  //
-  // The |session_storage_namespace| parameter allows multiple render views and
-  // WebContentses to share the same session storage (part of the WebStorage
-  // spec) space. This is useful when restoring contentses, but most callers
-  // should pass in NULL which will cause a new SessionStorageNamespace to be
-  // created.
   RenderViewHostImpl(SiteInstance* instance,
+                     scoped_ptr<RenderWidgetHostImpl> widget,
                      RenderViewHostDelegate* delegate,
-                     RenderWidgetHostDelegate* widget_delegate,
-                     int32_t routing_id,
                      int32_t main_frame_routing_id,
                      bool swapped_out,
-                     bool hidden,
                      bool has_initialized_audio_host);
   ~RenderViewHostImpl() override;
 
@@ -266,9 +241,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
     sudden_termination_allowed_ = enabled;
   }
 
-  // RenderWidgetHost public overrides.
-  bool OnMessageReceived(const IPC::Message& msg) override;
-
   // Creates a new RenderView with the given route id.
   void CreateNewWindow(int32_t route_id,
                        int32_t main_frame_route_id,
@@ -309,10 +281,8 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // to keep them consistent).
 
  protected:
-  // RenderWidgetHost protected overrides.
-  void OnFocus() override;
-
   // RenderWidgetHostOwnerDelegate overrides.
+  bool OnMessageReceived(const IPC::Message& msg) override;
   void RenderWidgetDidInit() override;
   void RenderWidgetWillSetIsLoading(bool is_loading) override;
   void RenderWidgetGotFocus() override;
@@ -352,6 +322,7 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   void OnDidZoomURL(double zoom_level, const GURL& url);
   void OnRunFileChooser(const FileChooserParams& params);
   void OnFocusedNodeTouched(bool editable);
+  void OnFocus();
 
  private:
   // TODO(nasko): Temporarily friend RenderFrameHostImpl, so we don't duplicate
@@ -388,6 +359,9 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // upon receipt from the renderer process to prevent it from forging access to
   // files without the user's consent.
   void GrantFileAccessFromPageState(const PageState& validated_state);
+
+  // The RenderWidgetHost.
+  scoped_ptr<RenderWidgetHostImpl> render_widget_host_;
 
   // The number of RenderFrameHosts which have a reference to this RVH.
   int frames_ref_count_;
@@ -460,10 +434,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostImpl);
 };
-
-#if defined(COMPILER_MSVC)
-#pragma warning(pop)
-#endif
 
 }  // namespace content
 

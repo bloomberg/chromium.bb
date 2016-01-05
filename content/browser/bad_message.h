@@ -30,7 +30,7 @@ enum BadMessageReason {
   RVH_CAN_ACCESS_FILES_OF_PAGE_STATE = 6,
   RVH_FILE_CHOOSER_PATH = 7,
   RWH_SYNTHETIC_GESTURE = 8,
-  RWH_FOCUS = 9,
+  RWH_FOCUS = 9,  // obsolete; no longer used
   RWH_BLUR = 10,
   RWH_SHARED_BITMAP = 11,
   RWH_BAD_ACK_MESSAGE = 12,
