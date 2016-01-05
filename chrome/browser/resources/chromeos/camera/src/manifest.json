@@ -17,7 +17,7 @@
     "storage",
     "unlimitedStorage",
     "chromeosInfoPrivate",
-    {"fileSystem": ["write"]}
+    {"fileSystem": ["write", "directory"]}
   ],
   "requirements": {
     "3D": {

@@ -1449,7 +1449,6 @@ camera.views.Camera.prototype.takePictureImmediately_ = function(opt_callback) {
     img.addEventListener('click', function() {
       // For simplicity, always navigate to the newest picture.
       if (this.model_.length) {
-        this.model_.currentIndex = this.model_.length - 1;
         this.router.navigate(camera.Router.ViewIdentifier.BROWSER);
       }
     }.bind(this));

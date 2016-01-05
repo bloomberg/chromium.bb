@@ -43,6 +43,13 @@ camera.views.GalleryBase = function(context, router, rootElement, name) {
   this.pictures = [];
 
   /**
+   * Contains selected pictures' indexes sorted in the selection order.
+   * @type {Array.<number>}
+   * @protected
+   */
+  this.selectedIndexes = [];
+
+  /**
    * @type {boolean}
    * @private
    */
@@ -158,20 +165,13 @@ camera.views.GalleryBase.prototype.renderPictures_ = function() {
 };
 
 /**
- * Exports the selected picture. If nothing selected, then nothing happens.
+ * Exports the selected pictures. If nothing selected, then nothing happens.
  * @protected
  */
 camera.views.GalleryBase.prototype.exportSelection = function() {
-  if (!this.currentPicture())
+  var selectedIndexes = this.selectedIndexes;
+  if (!selectedIndexes.length)
     return;
-
-  var accepts = [{
-    description: '*.jpg',
-    extensions: ['jpg', 'jpeg'],
-    mimeTypes: ['image/jpeg']
-  }];
-
-  var picture = this.currentPicture().picture;
 
   var onError = function() {
     // TODO(mtomasz): Check if it works.
@@ -180,57 +180,137 @@ camera.views.GalleryBase.prototype.exportSelection = function() {
         chrome.i18n.getMessage('errorMsgGalleryExportFailed'));
   }.bind(this);
 
-  chrome.fileSystem.chooseEntry({
-    type: 'saveFile',
-    suggestedName: picture.imageEntry.name,
-    accepts: accepts
-  }, function(fileEntry) {
-      if (!fileEntry)
-        return;
-      this.model.exportPicture(
-          picture,
-          fileEntry,
-          function() {},
-          onError);
-  }.bind(this));
+  var onSave = function(fileEntry, picture) {
+    this.model.exportPicture(
+        picture,
+        fileEntry,
+        function() {},
+        onError);
+  }.bind(this);
+
+  if (selectedIndexes.length == 1) {
+    var accepts = [{
+      description: '*.jpg',
+      extensions: ['jpg', 'jpeg'],
+      mimeTypes: ['image/jpeg']
+    }];
+
+    var picture = this.lastSelectedPicture().picture;
+    chrome.fileSystem.chooseEntry({
+      type: 'saveFile',
+      suggestedName: picture.imageEntry.name,
+      accepts: accepts
+    }, function(fileEntry) {
+        if (!fileEntry)
+          return;
+        onSave(fileEntry, picture);
+    });
+  } else {
+    chrome.fileSystem.chooseEntry({
+      type: 'openDirectory'
+    }, function(dirEntry) {
+        if (!dirEntry)
+          return;
+        var selectedPictures = this.selectedPictures();
+        for (var i = 0; i < selectedPictures.length; i++) {
+          var picture = selectedPictures[i].picture;
+          dirEntry.getFile(picture.imageEntry.name, {
+            create: true, exclusive: false
+          }, function(fileEntry) {
+              onSave(fileEntry, picture);
+          });
+        }
+    }.bind(this));
+  }
 };
 
 /**
- * Deletes the currently selected picture. If nothing selected, then nothing
+ * Deletes the currently selected pictures. If nothing selected, then nothing
  * happens.
  * @protected
  */
 camera.views.GalleryBase.prototype.deleteSelection = function() {
-  if (!this.currentPicture())
+  var selectedIndexes = this.selectedIndexes;
+  if (!selectedIndexes.length)
     return;
 
+  // TODO(yuli): Revise the confirmation message for deleting multiple pictures.
   this.router.navigate(camera.Router.ViewIdentifier.DIALOG, {
     type: camera.views.Dialog.Type.CONFIRMATION,
     message: chrome.i18n.getMessage('deleteConfirmationMsg')
   }, function(result) {
     if (!result.isPositive)
       return;
-    this.model.deletePicture(this.currentPicture().picture,
-        function() {
-          if (this.entered && !this.currentPicture())
-            this.router.back();
-        }.bind(this),
-        function() {
-          // TODO(mtomasz): Handle errors.
-        });
+    var selectedPictures = this.selectedPictures();
+    var lastDeleteIndex = this.pictures.indexOf(selectedPictures[0]);
+    for (var i = selectedPictures.length - 1; i >= 0; i--) {
+      this.model.deletePicture(selectedPictures[i].picture,
+          function() {
+            // Update the selection after all selected pictures are deleted.
+            if (!this.selectedIndexes.length) {
+              if (this.pictures.length > 0) {
+                this.setSelectedIndex(Math.max(0, lastDeleteIndex - 1));
+              }
+              else {
+                this.setSelectedIndex(null);
+                if (this.entered)
+                  this.router.back();
+              }
+            }
+          }.bind(this),
+          function() {
+            // TODO(mtomasz): Handle errors.
+          });
+    }
   }.bind(this));
 };
 
 /**
- * Returns the currently selected picture view.
+ * Returns the last selected index from the current selections.
+ * @return {?number}
+ * @protected
+ */
+camera.views.GalleryBase.prototype.lastSelectedIndex = function() {
+  var selectedIndexes = this.selectedIndexes;
+  if (!selectedIndexes.length)
+    return null;
+
+  return selectedIndexes[selectedIndexes.length - 1];
+};
+
+/**
+ * Returns the last selected picture from the current selections.
  * @return {camera.views.GalleryBase.DOMPicture}
  * @protected
  */
-camera.views.GalleryBase.prototype.currentPicture = function() {
-  if (this.model.currentIndex === null)
-    return null;
+camera.views.GalleryBase.prototype.lastSelectedPicture = function() {
+  var leadIndex = this.lastSelectedIndex();
+  return (leadIndex !== null) ? this.pictures[leadIndex] : null;
+};
 
-  return this.pictures[this.model.currentIndex];
+/**
+ * Returns the currently selected picture views sorted in the added order.
+ * @return {Array.<camera.views.GalleryBase.DOMPicture>}
+ * @protected
+ */
+camera.views.GalleryBase.prototype.selectedPictures = function() {
+  var indexes = this.selectedIndexes.slice();
+  indexes.sort(function(a, b) { return a - b; });
+  return indexes.map(function(i) { return this.pictures[i]; }.bind(this));
+};
+
+/**
+ * Returns the picture's index in the picture views.
+ * @param {camera.models.Gallery.Picture} picture Picture to be indexed.
+ * @return {?number}
+ * @protected
+ */
+camera.views.GalleryBase.prototype.pictureIndex = function(picture) {
+  for (var index = 0; index < this.pictures.length; index++) {
+    if (this.pictures[index].picture == picture)
+      return index;
+  }
+  return null;
 };
 
 /**
@@ -240,39 +320,76 @@ camera.views.GalleryBase.prototype.onActivate = function() {
   // Tab indexes have to be recalculated, since they might have changed while
   // the view wasn't active. Therefore, the restoring logic in the View class
   // might have restored old tabIndex values.
+  var selectedPicture = this.lastSelectedPicture();
   for (var index = 0; index < this.pictures.length; index++) {
-    this.pictures[index].element.tabIndex =
-        (index == this.model.currentIndex) ? 0 : -1;
+    var picture = this.pictures[index];
+    picture.element.tabIndex = (picture == selectedPicture) ? 0 : -1;
+  }
+};
+
+/**
+ * Sets the picture as selected.
+ * @param {number} index Index of the picture to be selected.
+ * @protected
+ */
+camera.views.GalleryBase.prototype.setPictureSelected = function(index) {
+  this.pictures[index].element.tabIndex = this.active ? 0 : -1;
+  this.pictures[index].element.classList.add('selected');
+  this.pictures[index].element.setAttribute('aria-selected', 'true');
+
+  this.ariaListNode().setAttribute('aria-activedescendant',
+      this.pictures[index].element.id);
+};
+
+/**
+ * Sets the picture as unselected.
+ * @param {number} index Index of the picture to be unselected.
+ * @protected
+ */
+camera.views.GalleryBase.prototype.setPictureUnselected = function(index) {
+  this.pictures[index].element.tabIndex = -1;
+  this.pictures[index].element.classList.remove('selected');
+  this.pictures[index].element.setAttribute('aria-selected', 'false');
+};
+
+/**
+ * Sets the selected index.
+ * @param {number} index Index of the picture to be selected.
+ * @protected
+ */
+camera.views.GalleryBase.prototype.setSelectedIndex = function(index) {
+  var selectedIndexes = this.selectedIndexes;
+  for (var i = 0; i < selectedIndexes.length; i++) {
+    this.setPictureUnselected(selectedIndexes[i]);
+  }
+  selectedIndexes.splice(0, selectedIndexes.length);
+
+  if (index !== null) {
+    this.setPictureSelected(index);
+    selectedIndexes.push(index);
   }
 };
 
 /**
  * @override
  */
-camera.views.GalleryBase.prototype.onCurrentIndexChanged = function(
-    oldIndex, newIndex) {
-  if (oldIndex !== null && oldIndex < this.model.length) {
-    this.pictures[oldIndex].element.tabIndex = -1;
-    this.pictures[oldIndex].element.classList.remove('selected');
-    this.pictures[oldIndex].element.setAttribute('aria-selected', 'false');
-  }
+camera.views.GalleryBase.prototype.onPictureDeleting = function(picture) {
+  var index = this.pictureIndex(picture);
+  if (index == null)
+    return;
 
-  if (newIndex !== null && newIndex < this.model.length) {
-    this.pictures[newIndex].element.tabIndex = this.active ? 0 : -1;
-    this.pictures[newIndex].element.classList.add('selected');
-    this.pictures[newIndex].element.setAttribute('aria-selected', 'true');
-
-    this.ariaListNode().setAttribute('aria-activedescendant',
-        this.pictures[newIndex].element.id);
-  }
-};
-
-/**
- * @override
- */
-camera.views.GalleryBase.prototype.onPictureDeleting = function(index) {
   var element = this.pictures[index].element;
   this.pictures.splice(index, 1);
+
+  // Update the selection if the deleted picture is selected.
+  var removal = this.selectedIndexes.indexOf(index);
+  if (removal != -1) {
+    this.selectedIndexes.splice(removal, 1);
+    for (var i = 0; i < this.selectedIndexes.length; i++) {
+      if (this.selectedIndexes[i] > index)
+        this.selectedIndexes[i]--;
+    }
+  }
 
   // Hack to restore focus after removing an element. Note, that we restore
   // focus only if there was something focused before. However, if the focus
@@ -287,38 +404,7 @@ camera.views.GalleryBase.prototype.onPictureDeleting = function(index) {
  * @override
  */
 camera.views.GalleryBase.prototype.onKeyPressed = function(event) {
-  var currentPicture = this.currentPicture();
   switch (camera.util.getShortcutIdentifier(event)) {
-    case 'Right':
-      if (this.model.length) {
-        if (!currentPicture)
-          this.model.currentIndex = this.model.length - 1;
-        else
-          this.model.currentIndex = Math.max(0, this.model.currentIndex - 1);
-      }
-      event.preventDefault();
-      break;
-    case 'Left':
-      if (this.model.length) {
-        if (!currentPicture) {
-          this.model.currentIndex = 0;
-        } else {
-          this.model.currentIndex =
-              Math.min(this.model.length - 1, this.model.currentIndex + 1);
-        }
-      }
-      event.preventDefault();
-      break;
-     case 'End':
-      if (this.model.length)
-        this.model.currentIndex = 0;
-      event.preventDefault();
-      break;
-    case 'Home':
-      if (this.model.length)
-        this.model.currentIndex = this.model.length - 1;
-      event.preventDefault();
-      break;
     case 'U+007F':  // Delete.
       this.deleteSelection();
       event.preventDefault();
@@ -327,14 +413,22 @@ camera.views.GalleryBase.prototype.onKeyPressed = function(event) {
       this.router.back();
       event.preventDefault();
       break;
+    case 'Ctrl-U+0053':  // Ctrl+S for saving.
+      this.exportSelection();
+      event.preventDefault();
+      break;
+    case 'Ctrl-U+0050':  // Ctrl+P for printing.
+      window.print();
+      event.preventDefault();
+      break;
   }
 };
 
 /**
  * @override
  */
-camera.views.GalleryBase.prototype.onPictureAdded = function(index) {
-  this.addPictureToDOM(this.model.pictures[index]);
+camera.views.GalleryBase.prototype.onPictureAdded = function(picture) {
+  this.addPictureToDOM(picture);
 };
 
 /**
@@ -367,10 +461,11 @@ camera.views.GalleryBase.prototype.synchronizeFocus = function() {
   var force = this.forceUpcomingFocusSync_;
   this.forceUpcomingFocusSync_ = false;
 
-  var currentPicture = this.currentPicture();
-  if (currentPicture && (document.activeElement != document.body || force) &&
-      currentPicture.element.getAttribute('tabindex') !== undefined &&
-      currentPicture.element.getAttribute('tabindex') != -1) {
-    currentPicture.element.focus();
+  // Synchronize focus on the last selected picture.
+  var selectedPicture = this.lastSelectedPicture();
+  if (selectedPicture && (document.activeElement != document.body || force) &&
+      selectedPicture.element.getAttribute('tabindex') !== undefined &&
+      selectedPicture.element.getAttribute('tabindex') != -1) {
+    selectedPicture.element.focus();
   }
 };

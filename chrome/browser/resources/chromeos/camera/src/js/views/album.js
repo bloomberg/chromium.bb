@@ -105,8 +105,8 @@ camera.views.Album.prototype.onLeave = function() {
  */
 camera.views.Album.prototype.onActivate = function() {
   camera.views.GalleryBase.prototype.onActivate.apply(this, arguments);
-  if (this.model.currentIndex === null && this.model.length)
-    this.model.currentIndex = this.model.length - 1;
+  if (!this.selectedIndexes.length && this.pictures.length)
+    this.setSelectedIndex(this.pictures.length - 1);
 
   // Update the focus. If scrolling, then it will be updated once scrolling
   // is finished in onScrollEnd().
@@ -118,8 +118,9 @@ camera.views.Album.prototype.onActivate = function() {
  * @override
  */
 camera.views.Album.prototype.onResize = function() {
-  if (this.currentPicture()) {
-    camera.util.ensureVisible(this.currentPicture().element,
+  var selectedPicture = this.lastSelectedPicture();
+  if (selectedPicture) {
+    camera.util.ensureVisible(selectedPicture.element,
                               this.scroller_,
                               camera.util.SmoothScroller.Mode.INSTANT);
   }
@@ -157,28 +158,33 @@ camera.views.Album.prototype.onDeleteButtonClicked_ = function(event) {
  * @private
  */
 camera.views.Album.prototype.updateButtons_ = function() {
-  var pictureSelected = this.model.currentIndex !== null;
-  if (pictureSelected) {
+  if (this.pictures.length)
     document.querySelector('#album-print').removeAttribute('disabled');
+  else
+    document.querySelector('#album-print').setAttribute('disabled', '');
+
+  if (this.selectedIndexes.length) {
     document.querySelector('#album-export').removeAttribute('disabled');
     document.querySelector('#album-delete').removeAttribute('disabled');
   } else {
-    document.querySelector('#album-print').setAttribute('disabled', '');
     document.querySelector('#album-export').setAttribute('disabled', '');
     document.querySelector('#album-delete').setAttribute('disabled', '');
   }
 };
 
 /**
- * Opens the current picture in the browser view.
+ * Opens the picture in the browser view.
+ * @param {camera.models.Gallery.Picture} picture Picture to be opened.
  * @private
  */
-camera.views.Album.prototype.openCurrentInBrowser_ = function() {
+camera.views.Album.prototype.openPictureInBrowser_ = function(picture) {
   this.router.navigate(
-      camera.Router.ViewIdentifier.BROWSER,
-      undefined /* opt_arguments */,
-      function() {
-        if (this.entered && !this.currentPicture())
+      camera.Router.ViewIdentifier.BROWSER, {
+        picture: picture,
+        selectionChanged: function(picture) {
+          this.setSelectedIndex(picture ? this.pictureIndex(picture) : null);
+      }.bind(this)}, function() {
+        if (this.entered && !this.pictures.length)
           this.router.back();
       }.bind(this));
 };
@@ -186,13 +192,12 @@ camera.views.Album.prototype.openCurrentInBrowser_ = function() {
 /**
  * @override
  */
-camera.views.Album.prototype.onCurrentIndexChanged = function(
-    oldIndex, newIndex) {
-  camera.views.GalleryBase.prototype.onCurrentIndexChanged.apply(
-      this, arguments);
-  if (newIndex !== null) {
-    camera.util.ensureVisible(this.currentPicture().element,
-                              this.scroller_);
+camera.views.Album.prototype.setSelectedIndex = function(index) {
+  camera.views.GalleryBase.prototype.setSelectedIndex.apply(this, arguments);
+
+  var selectedPicture = this.lastSelectedPicture();
+  if (selectedPicture) {
+    camera.util.ensureVisible(selectedPicture.element, this.scroller_);
   }
 
   // Update visibility of the album buttons.
@@ -208,17 +213,19 @@ camera.views.Album.prototype.onCurrentIndexChanged = function(
  * @override
  */
 camera.views.Album.prototype.onKeyPressed = function(event) {
-  var currentPicture = this.currentPicture();
+  var selectedIndexes = this.selectedIndexes;
   switch (camera.util.getShortcutIdentifier(event)) {
+    // TODO(yuli): Handle 'Ctrl'/'Shift' keys for multiple selections.
     case 'Down':
-      if (this.model.length) {
-        if (!currentPicture) {
-          this.model.currentIndex = this.model.length - 1;
+      if (this.pictures.length) {
+        if (!selectedIndexes.length) {
+          this.setSelectedIndex(this.pictures.length - 1);
         } else {
-          for (var index = this.model.currentIndex - 1; index >= 0; index--) {
-            if (currentPicture.element.offsetLeft ==
+          var min = Math.min.apply(null, selectedIndexes);
+          for (var index = min - 1; index >= 0; index--) {
+            if (this.pictures[min].element.offsetLeft ==
                 this.pictures[index].element.offsetLeft) {
-              this.model.currentIndex = index;
+              this.setSelectedIndex(index);
               break;
             }
           }
@@ -227,21 +234,52 @@ camera.views.Album.prototype.onKeyPressed = function(event) {
       event.preventDefault();
       return;
     case 'Up':
-      if (this.model.length) {
-        if (!currentPicture) {
-          this.model.currentIndex = 0;
+      if (this.pictures.length) {
+        if (!selectedIndexes.length) {
+          this.setSelectedIndex(0);
         } else {
-          for (var index = this.model.currentIndex + 1;
-               index < this.model.length;
-               index++) {
-            if (currentPicture.element.offsetLeft ==
+          var max = Math.max.apply(null, selectedIndexes);
+          for (var index = max + 1; index < this.pictures.length; index++) {
+            if (this.pictures[max].element.offsetLeft ==
                 this.pictures[index].element.offsetLeft) {
-              this.model.currentIndex = index;
+              this.setSelectedIndex(index);
               break;
             }
           }
         }
       }
+      event.preventDefault();
+      return;
+    case 'Right':
+      if (this.pictures.length) {
+        if (!selectedIndexes.length) {
+          this.setSelectedIndex(this.pictures.length - 1);
+        } else {
+          var min = Math.min.apply(null, selectedIndexes);
+          this.setSelectedIndex(Math.max(0, min - 1));
+        }
+      }
+      event.preventDefault();
+      return;
+    case 'Left':
+      if (this.pictures.length) {
+        if (!selectedIndexes.length) {
+          this.setSelectedIndex(0);
+        } else {
+          var max = Math.max.apply(null, selectedIndexes);
+          this.setSelectedIndex(Math.min(this.pictures.length - 1, max + 1));
+        }
+      }
+      event.preventDefault();
+      return;
+    case 'End':
+      if (this.pictures.length)
+        this.setSelectedIndex(0);
+      event.preventDefault();
+      return;
+    case 'Home':
+      if (this.pictures.length)
+        this.setSelectedIndex(this.pictures.length - 1);
       event.preventDefault();
       return;
     case 'Enter':
@@ -251,16 +289,8 @@ camera.views.Album.prototype.onKeyPressed = function(event) {
               document.activeElement)) {
         return;
       }
-      if (currentPicture)
-        this.openCurrentInBrowser_();
-      event.preventDefault();
-      return;
-    case 'Ctrl-U+0053':  // Ctrl+S for saving.
-      this.exportSelection();
-      event.preventDefault();
-      return;
-    case 'Ctrl-U+0050':  // Ctrl+P for printing.
-      window.print();
+      if (selectedIndexes.length == 1)
+        this.openPictureInBrowser_(this.lastSelectedPicture().picture);
       event.preventDefault();
       return;
   }
@@ -290,21 +320,23 @@ camera.views.Album.prototype.addPictureToDOM = function(picture) {
   album.insertBefore(img, album.firstChild);
 
   // Add to the collection.
-  this.pictures.push(new camera.views.GalleryBase.DOMPicture(picture, img));
+  var domPicture = new camera.views.GalleryBase.DOMPicture(picture, img);
+  this.pictures.push(domPicture);
 
   // Add handlers.
   img.addEventListener('mousedown', function(event) {
     event.preventDefault();  // Prevent focusing.
   });
   img.addEventListener('click', function() {
-    this.model.currentIndex = this.model.pictures.indexOf(picture);
+    // TODO(yuli): Handle 'Ctrl'/'Shift' keys for multiple selections.
+    this.setSelectedIndex(this.pictures.indexOf(domPicture));
   }.bind(this));
   img.addEventListener('focus', function() {
-    this.model.currentIndex = this.model.pictures.indexOf(picture);
+    this.setSelectedIndex(this.pictures.indexOf(domPicture));
   }.bind(this));
 
   img.addEventListener('dblclick', function() {
-    this.openCurrentInBrowser_();
+    this.openPictureInBrowser_(picture);
   }.bind(this));
 };
 

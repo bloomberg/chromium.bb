@@ -26,12 +26,6 @@ camera.models.Gallery = function() {
   this.pictures_ = [];
 
   /**
-   * @type {?number}
-   * @private
-   */
-  this.currentIndex_ = null;
-
-  /**
    * @type {FileSystem}
    * @private
    */
@@ -121,26 +115,17 @@ camera.models.Gallery.Observer = function() {
 };
 
 /**
- * Notifies about the current index changes.
- * @param {?number} oldIndex Old index, or null if nothing was selected.
- * @param {?number} newIndex New index, or null if nothing will be selected.
- */
-camera.models.Gallery.Observer.prototype.onCurrentIndexChanged = function(
-    oldIndex, newIndex) {
-};
-
-/**
  * Notifies about a picture being deleted.
- * @param {number} index Index of the picture to be deleted.
+ * @param {camera.models.Gallery.Picture} picture Picture to be deleted.
  */
-camera.models.Gallery.Observer.prototype.onPictureDeleting = function(index) {
+camera.models.Gallery.Observer.prototype.onPictureDeleting = function(picture) {
 };
 
 /**
  * Notifies about an added picture.
- * @param {number} index Index of the added picture.
+ * @param {camera.models.Gallery.Picture} picture Picture to be added.
  */
-camera.models.Gallery.Observer.prototype.onPictureAdded = function(index) {
+camera.models.Gallery.Observer.prototype.onPictureAdded = function(picture) {
 };
 
 /**
@@ -180,26 +165,6 @@ camera.models.Gallery.prototype = {
    */
   get pictures() {
     return this.pictures_;
-  },
-
-  /**
-   * @return {?number} Current index.
-   */
-  get currentIndex() {
-    return this.currentIndex_;
-  },
-
-  /**
-   * @param {?number} value Current index.
-   */
-  set currentIndex(value) {
-    var previousIndex = this.currentIndex_;
-    this.currentIndex_ = value;
-
-    // Notify observers.
-    for (var index = 0; index < this.observers_.length; index++) {
-      this.observers_[index].onCurrentIndexChanged(previousIndex, value);
-    }
   }
 };
 
@@ -331,23 +296,11 @@ camera.models.Gallery.prototype.deletePicture = function(
   picture.imageEntry.remove(function() {
     picture.thumbnailEntry.remove(function() {
       // Notify observers.
-      var pictureIndex = this.pictures_.indexOf(picture);
-      for (var index = 0; index < this.observers_.length; index++) {
-        this.observers_[index].onPictureDeleting(pictureIndex);
+      for (var i = 0; i < this.observers_.length; i++) {
+        this.observers_[i].onPictureDeleting(picture);
       }
-      this.pictures_.splice(pictureIndex, 1);
-
-      // Update the selection.
-      if (this.currentIndex_ !== null) {
-        var index = null;
-        if (this.pictures_.length > 0) {
-          if (this.currentIndex_ > 0)
-            index = this.currentIndex_ - 1;
-          else
-            index = 0;
-        }
-        this.currentIndex = index;
-      }
+      var index = this.pictures_.indexOf(picture);
+      this.pictures_.splice(index, 1);
 
       onSuccess();
     }.bind(this), onFailure);
@@ -514,9 +467,8 @@ camera.models.Gallery.prototype.addPicture = function(
                   thumbnailEntry, imageEntry);
               this.pictures_.push(picture);
               // Notify observers.
-              var pictureIndex = this.pictures_.length - 1;
-              for (var index = 0; index < this.observers_.length; index++) {
-                this.observers_[index].onPictureAdded(pictureIndex);
+              for (var i = 0; i < this.observers_.length; i++) {
+                this.observers_[i].onPictureAdded(picture);
               }
             }.bind(this),
             // TODO(mtomasz): Remove the thumbnail on error.
