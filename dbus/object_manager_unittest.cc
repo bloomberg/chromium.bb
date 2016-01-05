@@ -87,7 +87,7 @@ class ObjectManagerTest
     ASSERT_TRUE(bus_->HasDBusThread());
 
     object_manager_ = bus_->GetObjectManager(
-        "org.chromium.TestService",
+        test_service_->service_name(),
         ObjectPath("/org/chromium/TestService"));
     object_manager_->RegisterInterface("org.chromium.TestInterface", this);
 
@@ -189,7 +189,7 @@ class ObjectManagerTest
 
   void PerformAction(const std::string& action, const ObjectPath& object_path) {
     ObjectProxy* object_proxy = bus_->GetObjectProxy(
-        "org.chromium.TestService",
+        test_service_->service_name(),
         ObjectPath("/org/chromium/TestObject"));
 
     MethodCall method_call("org.chromium.TestInterface", "PerformAction");
@@ -288,7 +288,7 @@ TEST_F(ObjectManagerTest, GetObjectsWithUnknownInterface) {
 
 TEST_F(ObjectManagerTest, SameObject) {
   ObjectManager* object_manager = bus_->GetObjectManager(
-      "org.chromium.TestService",
+      test_service_->service_name(),
       ObjectPath("/org/chromium/TestService"));
   EXPECT_EQ(object_manager_, object_manager);
 }
@@ -302,7 +302,7 @@ TEST_F(ObjectManagerTest, DifferentObjectForService) {
 
 TEST_F(ObjectManagerTest, DifferentObjectForPath) {
   ObjectManager* object_manager = bus_->GetObjectManager(
-      "org.chromium.TestService",
+      test_service_->service_name(),
       ObjectPath("/org/chromium/DifferentService"));
   EXPECT_NE(object_manager_, object_manager);
 }
@@ -387,7 +387,7 @@ TEST_F(ObjectManagerTest, PropertiesChangedAsObjectsReceived) {
   object_manager_->UnregisterInterface("org.chromium.TestInterface");
   run_loop_.reset(new base::RunLoop);
   EXPECT_TRUE(bus_->RemoveObjectManager(
-      "org.chromium.TestService",
+      test_service_->service_name(),
       ObjectPath("/org/chromium/TestService"),
       run_loop_->QuitClosure()));
   run_loop_->Run();
@@ -396,7 +396,7 @@ TEST_F(ObjectManagerTest, PropertiesChangedAsObjectsReceived) {
                 ObjectPath("/org/chromium/TestService"));
 
   object_manager_ = bus_->GetObjectManager(
-      "org.chromium.TestService",
+      test_service_->service_name(),
       ObjectPath("/org/chromium/TestService"));
   object_manager_->RegisterInterface("org.chromium.TestInterface", this);
 

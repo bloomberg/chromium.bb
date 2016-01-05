@@ -20,16 +20,12 @@ class ObjectProxyTest : public testing::Test {
     bus_options.bus_type = Bus::SESSION;
     bus_options.connection_type = Bus::PRIVATE;
     bus_ = new Bus(bus_options);
-
-    object_proxy_ = bus_->GetObjectProxy(
-        "org.chromium.TestService", ObjectPath("/org/chromium/TestObject"));
   }
 
   void TearDown() override { bus_->ShutdownAndBlock(); }
 
   base::MessageLoopForIO message_loop_;
   scoped_refptr<Bus> bus_;
-  ObjectProxy* object_proxy_;
 };
 
 // Used as a WaitForServiceToBeAvailableCallback.
@@ -43,14 +39,17 @@ void OnServiceIsAvailable(scoped_ptr<base::RunLoop>* run_loop,
 TEST_F(ObjectProxyTest, WaitForServiceToBeAvailable) {
   scoped_ptr<base::RunLoop> run_loop;
 
+  TestService::Options options;
+  TestService test_service(options);
+
   // Callback is not yet called because the service is not available.
-  object_proxy_->WaitForServiceToBeAvailable(
+  ObjectProxy* object_proxy = bus_->GetObjectProxy(
+      test_service.service_name(), ObjectPath("/org/chromium/TestObject"));
+  object_proxy->WaitForServiceToBeAvailable(
       base::Bind(&OnServiceIsAvailable, &run_loop));
   base::RunLoop().RunUntilIdle();
 
   // Start the service.
-  TestService::Options options;
-  TestService test_service(options);
   ASSERT_TRUE(test_service.StartService());
   ASSERT_TRUE(test_service.WaitUntilServiceIsStarted());
   ASSERT_TRUE(test_service.has_ownership());
@@ -61,7 +60,7 @@ TEST_F(ObjectProxyTest, WaitForServiceToBeAvailable) {
 
   // Callback is called because the service is already available.
   run_loop.reset(new base::RunLoop);
-  object_proxy_->WaitForServiceToBeAvailable(
+  object_proxy->WaitForServiceToBeAvailable(
       base::Bind(&OnServiceIsAvailable, &run_loop));
   run_loop->Run();
 

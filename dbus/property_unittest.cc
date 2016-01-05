@@ -77,7 +77,7 @@ class PropertyTest : public testing::Test {
     bus_options.dbus_task_runner = dbus_thread_->task_runner();
     bus_ = new Bus(bus_options);
     object_proxy_ = bus_->GetObjectProxy(
-        "org.chromium.TestService",
+        test_service_->service_name(),
         ObjectPath("/org/chromium/TestObject"));
     ASSERT_TRUE(bus_->HasDBusThread());
 

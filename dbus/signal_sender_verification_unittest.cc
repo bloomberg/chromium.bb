@@ -40,6 +40,11 @@ class SignalSenderVerificationTest : public testing::Test {
     thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
     ASSERT_TRUE(dbus_thread_->StartWithOptions(thread_options));
 
+    // Create the test service, using the D-Bus thread.
+    TestService::Options options;
+    options.dbus_task_runner = dbus_thread_->task_runner();
+    test_service_.reset(new TestService(options));
+
     // Create the client, using the D-Bus thread.
     Bus::Options bus_options;
     bus_options.bus_type = Bus::SESSION;
@@ -47,7 +52,7 @@ class SignalSenderVerificationTest : public testing::Test {
     bus_options.dbus_task_runner = dbus_thread_->task_runner();
     bus_ = new Bus(bus_options);
     object_proxy_ = bus_->GetObjectProxy(
-        "org.chromium.TestService",
+        test_service_->service_name(),
         ObjectPath("/org/chromium/TestObject"));
     ASSERT_TRUE(bus_->HasDBusThread());
 
@@ -69,10 +74,7 @@ class SignalSenderVerificationTest : public testing::Test {
     run_loop_.reset(new base::RunLoop);
     run_loop_->Run();
 
-    // Start the test service, using the D-Bus thread.
-    TestService::Options options;
-    options.dbus_task_runner = dbus_thread_->task_runner();
-    test_service_.reset(new TestService(options));
+    // Start the test service.
     ASSERT_TRUE(test_service_->StartService());
     ASSERT_TRUE(test_service_->WaitUntilServiceIsStarted());
     ASSERT_TRUE(test_service_->HasDBusThread());
@@ -80,6 +82,7 @@ class SignalSenderVerificationTest : public testing::Test {
 
     // Same setup for the second TestService. This service should not have the
     // ownership of the name at this point.
+    options.service_name = test_service_->service_name();
     test_service2_.reset(new TestService(options));
     ASSERT_TRUE(test_service2_->StartService());
     ASSERT_TRUE(test_service2_->WaitUntilServiceIsStarted());
@@ -280,6 +283,7 @@ TEST_F(SignalSenderVerificationTest, TestOwnerStealing) {
   TestService::Options options;
   options.dbus_task_runner = dbus_thread_->task_runner();
   options.request_ownership_options = Bus::REQUIRE_PRIMARY_ALLOW_REPLACEMENT;
+  options.service_name = test_service_->service_name();
   TestService stealable_test_service(options);
   ASSERT_TRUE(stealable_test_service.StartService());
   ASSERT_TRUE(stealable_test_service.WaitUntilServiceIsStarted());
@@ -331,7 +335,7 @@ TEST_F(SignalSenderVerificationTest, DISABLED_TestMultipleObjects) {
   const char kMessage[] = "hello, world";
 
   ObjectProxy* object_proxy2 = bus_->GetObjectProxy(
-      "org.chromium.TestService",
+      test_service_->service_name(),
       ObjectPath("/org/chromium/DifferentObject"));
 
   bool second_name_owner_changed_called = false;

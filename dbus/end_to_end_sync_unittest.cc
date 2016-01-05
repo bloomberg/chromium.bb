@@ -35,7 +35,7 @@ class EndToEndSyncTest : public testing::Test {
     client_bus_options.connection_type = Bus::PRIVATE;
     client_bus_ = new Bus(client_bus_options);
     object_proxy_ = client_bus_->GetObjectProxy(
-        "org.chromium.TestService",
+        test_service_->service_name(),
         ObjectPath("/org/chromium/TestObject"));
     ASSERT_FALSE(client_bus_->HasDBusThread());
   }
@@ -112,7 +112,7 @@ TEST_F(EndToEndSyncTest, InvalidObjectPath) {
   const ObjectPath invalid_object_path("/org/chromium/TestObject/");
 
   // Replace object proxy with new one.
-  object_proxy_ = client_bus_->GetObjectProxy("org.chromium.TestService",
+  object_proxy_ = client_bus_->GetObjectProxy(test_service_->service_name(),
                                               invalid_object_path);
 
   MethodCall method_call("org.chromium.TestInterface", "Echo");

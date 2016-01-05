@@ -63,7 +63,7 @@ class EndToEndAsyncTest : public testing::Test {
     bus_options.dbus_task_runner = dbus_thread_->task_runner();
     bus_ = new Bus(bus_options);
     object_proxy_ = bus_->GetObjectProxy(
-        "org.chromium.TestService",
+        test_service_->service_name(),
         ObjectPath("/org/chromium/TestObject"));
     ASSERT_TRUE(bus_->HasDBusThread());
 
@@ -97,7 +97,7 @@ class EndToEndAsyncTest : public testing::Test {
     run_loop_->Run();
 
     // Create a second object proxy for the root object.
-    root_object_proxy_ = bus_->GetObjectProxy("org.chromium.TestService",
+    root_object_proxy_ = bus_->GetObjectProxy(test_service_->service_name(),
                                               ObjectPath("/"));
     ASSERT_TRUE(bus_->HasDBusThread());
 
@@ -147,7 +147,7 @@ class EndToEndAsyncTest : public testing::Test {
 
     // Create new object proxy.
     object_proxy_ = bus_->GetObjectProxy(
-        "org.chromium.TestService",
+        test_service_->service_name(),
         ObjectPath("/org/chromium/TestObject"));
   }
 
@@ -435,7 +435,7 @@ TEST_F(EndToEndAsyncTest, CancelPendingCalls) {
 
   // Remove the object proxy before receiving the result.
   // This results in cancelling the pending method call.
-  bus_->RemoveObjectProxy("org.chromium.TestService",
+  bus_->RemoveObjectProxy(test_service_->service_name(),
                           ObjectPath("/org/chromium/TestObject"),
                           base::Bind(&base::DoNothing));
 
@@ -517,7 +517,7 @@ TEST_F(EndToEndAsyncTest, InvalidObjectPath) {
   const ObjectPath invalid_object_path("/org/chromium/TestObject/");
 
   // Replace object proxy with new one.
-  object_proxy_ = bus_->GetObjectProxy("org.chromium.TestService",
+  object_proxy_ = bus_->GetObjectProxy(test_service_->service_name(),
                                        invalid_object_path);
 
   MethodCall method_call("org.chromium.TestInterface", "Echo");
