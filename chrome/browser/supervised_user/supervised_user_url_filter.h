@@ -77,7 +77,12 @@ class SupervisedUserURLFilter
 
   static FilteringBehavior BehaviorFromInt(int behavior_value);
 
-  static int GetBlockMessageID(FilteringBehaviorReason reason);
+  static int GetBlockMessageID(
+      FilteringBehaviorReason reason,
+      bool is_child_account,
+      bool single_parent);
+
+  static int GetBlockHeaderID(FilteringBehaviorReason reason);
 
   static bool ReasonIsAutomatic(FilteringBehaviorReason reason);
 

@@ -193,16 +193,39 @@ SupervisedUserURLFilter::BehaviorFromInt(int behavior_value) {
 }
 
 // static
-int SupervisedUserURLFilter::GetBlockMessageID(FilteringBehaviorReason reason) {
+int SupervisedUserURLFilter::GetBlockMessageID(
+    FilteringBehaviorReason reason, bool is_child_account, bool single_parent) {
   switch (reason) {
     case DEFAULT:
-      return IDS_SUPERVISED_USER_BLOCK_MESSAGE_DEFAULT;
-    case ASYNC_CHECKER:
-      return IDS_SUPERVISED_USER_BLOCK_MESSAGE_ASYNC_CHECKER;
+      return is_child_account ?
+          (single_parent ?
+              IDS_CHILD_BLOCK_MESSAGE_DEFAULT_SINGLE_PARENT :
+              IDS_CHILD_BLOCK_MESSAGE_DEFAULT_MULTI_PARENT) :
+          IDS_SUPERVISED_USER_BLOCK_MESSAGE_DEFAULT;
     case BLACKLIST:
-      return IDS_SUPERVISED_USER_BLOCK_MESSAGE_BLACKLIST;
+    case ASYNC_CHECKER:
+      return IDS_SUPERVISED_USER_BLOCK_MESSAGE_SAFE_SITES;
     case MANUAL:
-      return IDS_SUPERVISED_USER_BLOCK_MESSAGE_MANUAL;
+      return is_child_account ?
+          (single_parent ?
+              IDS_CHILD_BLOCK_MESSAGE_MANUAL_SINGLE_PARENT :
+              IDS_CHILD_BLOCK_MESSAGE_MANUAL_MULTI_PARENT) :
+          IDS_SUPERVISED_USER_BLOCK_MESSAGE_MANUAL;
+  }
+  NOTREACHED();
+  return 0;
+}
+
+// static
+int SupervisedUserURLFilter::GetBlockHeaderID(FilteringBehaviorReason reason) {
+  switch (reason) {
+    case DEFAULT:
+      return IDS_SUPERVISED_USER_BLOCK_HEADER_DEFAULT;
+    case BLACKLIST:
+    case ASYNC_CHECKER:
+      return IDS_SUPERVISED_USER_BLOCK_HEADER_SAFE_SITES;
+    case MANUAL:
+      return IDS_SUPERVISED_USER_BLOCK_HEADER_MANUAL;
   }
   NOTREACHED();
   return 0;

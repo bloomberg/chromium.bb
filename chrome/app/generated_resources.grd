@@ -6108,7 +6108,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enable the "stale-while-revalidate" cache directive
         </message>
         <message name="IDS_FLAGS_ENABLE_STALE_WHILE_REVALIDATE_DESCRIPTION" desc="Description of the flag to enable the &quot;stale-while-revalidate&quot; cache directive. This message is intended for web developers who are familiar with technical terms. &quot;Cache-Control: stale-while-revalidate&quot; is the literal string sent by the HTTP server, and so should be untranslated where possible. If necessary for translation it can be split into the HTTP header name part &quot;Cache-Control&quot; and the value part &quot;stale-while-revalidate&quot;. &quot;directive&quot; here is an instruction sent by an HTTP server to indicate what caching behaviour should be used. The directive is typically configured by the server administrator. &quot;servers&quot; here refers to HTTP server software. &quot;resources&quot; here means individual files served by HTTP servers and cached by the browser. &quot;be revalidated&quot; means &quot;be checked with the HTTP server whether or not the browser has the latest version&quot;. &quot;in the background&quot; here means without making the user wait. &quot;latency&quot; here refers to the time the user waits for a web page to be loaded or become usable.">
-          Enable the experimental implementation of the "Cache-Control: stale-while-revalidate" directive. This permits servers to specify that some resources may be revalidated in the background to improve latency.
+          Enable the experimental implementation of the "Cache-Control: stale-while-revalidate" directive. This permits servers to specify that some resources may be revalidated in the background to improve latency. 
         </message>
       </if>
       <message name="IDS_FLAGS_ENABLE_NAVIGATION_TRACING" desc="Name of the flag to enable navigation tracing">
@@ -7840,13 +7840,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Page blocked
       </message>
       <message name="IDS_BLOCK_INTERSTITIAL_MESSAGE" desc="A message for the supervised user when they attempt to visit a site that is not permitted by the manager.">
-        Oops, looks like you need permission from <ph name="NAME">$1<ex>John Doe</ex></ph> to access this page.
+        Oops! You need permission from <ph name="NAME">$1<ex>John Doe</ex></ph> to access this page.
       </message>
       <message name="IDS_CHILD_BLOCK_INTERSTITIAL_MESSAGE_SINGLE_PARENT" desc="A message for the child user when they attempt to visit a site that is not permitted by their parent.">
-        Oops! You need to ask your parent if it's ok to visit this page.
+        Oops! You need to ask your parent if it's OK to visit this page.
       </message>
       <message name="IDS_CHILD_BLOCK_INTERSTITIAL_MESSAGE_MULTI_PARENT" desc="A message for the child user when they attempt to visit a site that is not permitted by their parents.">
-        Oops! You need to ask your parents if it's ok to visit this page.
+        Oops! You need to ask your parents if it's OK to visit this page.
       </message>
       <message name="IDS_BLOCK_INTERSTITIAL_MESSAGE_ACCESS_REQUESTS_DISABLED" desc="A message for the supervised user when they attempt to visit a site that is not permitted by the manager (and they can't ask for permission).">
         Oops, looks like you don't have permission to access this page.
@@ -7855,7 +7855,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Go back
       </message>
       <message name="IDS_BLOCK_INTERSTITIAL_REQUEST_ACCESS_BUTTON" desc="A button for requesting access to blocked sites.">
-        Request permission
+        Ask permission
       </message>
       <message name="IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_ACCESS_BUTTON" desc="A button for requesting access to blocked sites.">
         Ask permission
@@ -7878,20 +7878,44 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_FAILED_MESSAGE_MULTI_PARENT" desc="The text that tells the child user that a request to his/her parents failed.">
         We could not reach your parents at the moment. Please try again.
       </message>
-      <message name="IDS_SUPERVISED_USER_BLOCK_MESSAGE_DEFAULT" desc="Message to be shown when a site was blocked due to the default fallback behavior.">
-        This site was blocked due to the default fallback behavior.
+      <message name="IDS_CHILD_BLOCK_MESSAGE_DEFAULT_SINGLE_PARENT" desc="Message to be shown when a site was blocked due to the default fallback behavior and the child has one parent.">
+        You're seeing this message because your parent needs to approve new sites on your first visit.
       </message>
-      <message name="IDS_SUPERVISED_USER_BLOCK_MESSAGE_ASYNC_CHECKER" desc="Message to be shown when a site was blocked due to the SafeSites online safety check.">
-        This site was blocked due to the SafeSites online check.
+      <message name="IDS_CHILD_BLOCK_MESSAGE_DEFAULT_MULTI_PARENT" desc="Message to be shown when a site was blocked due to the default fallback behavior and the child has two parents.">
+        You're seeing this message because your parents need to approve new sites on your first visit.
       </message>
-      <message name="IDS_SUPERVISED_USER_BLOCK_MESSAGE_BLACKLIST" desc="Message to be shown when a site was blocked due to the static blacklist.">
-        This site was blocked due to the SafeSites static blacklist.
+      <message name="IDS_SUPERVISED_USER_BLOCK_MESSAGE_DEFAULT" desc="Message to be show to a supervised user when a site was blocked due to the default fallback behaviour.">
+        You're seeing this message because your manager needs to approve new sites on your first visit.
       </message>
-      <message name="IDS_SUPERVISED_USER_BLOCK_MESSAGE_MANUAL" desc="Message to be shown when a site was blocked due to a manual blacklist entry.">
-        This site was blocked due to a manual blacklist entry.
+      <message name="IDS_SUPERVISED_USER_BLOCK_HEADER_DEFAULT" desc="Header for the message to be shown when a site was blocked due to the default fallback behaviour.">
+        Not approved
+      </message>
+      <message name="IDS_SUPERVISED_USER_BLOCK_MESSAGE_SAFE_SITES" desc="Message to be shown when a site was blocked due to the SafeSites safety check.">
+        You're seeing this message because Google SafeSites is enabled.
+      </message>
+      <message name="IDS_SUPERVISED_USER_BLOCK_HEADER_SAFE_SITES" desc="Header for the message to be shown when a site was blocked due to the SafeSites safety check.">
+        SafeSites
+      </message>
+      <message name="IDS_CHILD_BLOCK_MESSAGE_MANUAL_SINGLE_PARENT" desc="Message to be shown to a child when a site was blocked due to a manual blacklist entry and the child has one parent.">
+        You're seeing this message because your parent blocked this site.
+      </message>
+      <message name="IDS_CHILD_BLOCK_MESSAGE_MANUAL_MULTI_PARENT" desc="Message to be shown to a child when a site was blocked due to a manual blacklist entry and the child has two parents.">
+        You're seeing this message because one of your parents blocked this site.
+      </message>
+      <message name="IDS_SUPERVISED_USER_BLOCK_MESSAGE_MANUAL" desc="Message to be shown to a supervised user when a site is blocked due to a manual blacklist entry">
+        You're seeing this message because your manager blocked this site.
+      </message>
+      <message name="IDS_SUPERVISED_USER_BLOCK_HEADER_MANUAL" desc="Header for the message to be shown when a site was blocked due to a manual blacklist entry.">
+        Blocked
       </message>
       <message name="IDS_BLOCK_INTERSTITIAL_SEND_FEEDBACK" desc="The text for a link to submit feedback about a blocked site.">
         Was this unexpected? Tell us about it!
+      </message>
+      <message name="IDS_BLOCK_INTERSTITIAL_SHOW_DETAILS" desc="The text for the link to show details about the interstitial.">
+        Details
+      </message>
+      <message name="IDS_BLOCK_INTERSTITIAL_HIDE_DETAILS" desc="The text for the link to hide details about the interstitial.">
+        Hide details
       </message>
       <message name="IDS_BLOCK_INTERSTITIAL_DEFAULT_FEEDBACK_TEXT" desc="The default text for feedback about a blocked site.">
         <ph name="REASON">$1<ex>This site was blocked due to the SafeSites filter.</ex></ph>

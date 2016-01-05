@@ -13,33 +13,51 @@
 
 <body>
 <div id="main-frame-blocked">
-  <div id="box">
-    <div id="content-top">
-      <img id="error-img">
-      <div id="avatar-container">
-        <img id="avatar-img" class="avatar-img" hidden>
-        <img id="second-avatar-img" class="avatar-img" hidden>
+  <div id="information-container">
+    <h1>
+      <div id="block-page-message" i18n-content="blockPageMessage"></div>
+      <div id="request-failed-message" i18n-content="requestFailedMessage"
+          hidden></div>
+      <div id="request-sent-message" i18n-content="requestSentMessage" hidden>
       </div>
-      <h1>
-        <div id="block-page-message" i18n-content="blockPageMessage"></div>
-        <div id="request-failed-message" i18n-content="requestFailedMessage"
-            hidden></div>
-        <div id="request-sent-message" i18n-content="requestSentMessage" hidden>
+    </h1>
+    <div id="custodians-information" hidden>
+      <div id="custodian-information" class="custodian-information">
+        <img id="custodian-avatar-img" class="avatar-img">
+        <div id="custodian-contact">
+          <div id="custodian-name" class="custodian-name"></div>
+          <div id="custodian-email" class="custodian-email"></div>
         </div>
-        <div id="block-reason-message" i18n-content="blockReasonMessage"></div>
-      </h1>
-      <div id="button-container">
-        <button id="back-button" class="custom-appearance"
-            i18n-content="backButton">
-        </button>
-        <button id="request-access-button" class="custom-appearance"
-            i18n-content="requestAccessButton">
-        </button>
       </div>
-      <h1>
-        <a id="feedback-link" is="action-link" i18n-content="feedbackLink"></a>
-      </h1>
+      <div id="second-custodian-information" class="custodian-information" hidden>
+        <img id="second-custodian-avatar-img" class="avatar-img" hidden>
+        <div id="second-custodian-contact">
+          <div id="second-custodian-name" class="custodian-name"></div>
+          <div id="second-custodian-email" class="custodian-email"></div>
+        </div>
+      </div>
     </div>
+  </div>
+  <div id="button-container">
+    <div id="details-button-container">
+      <a id="show-details-link" i18n-content="showDetailsLink"
+          hidden class="button">
+      </a>
+      <a id="hide-details-link" i18n-content="hideDetailsLink"
+          hidden class="button"></a>
+      <a id="back-button" i18n-content="backButton"
+          hidden class="button"></a>
+    </div>
+    <div id="request-access-button" class="button"
+        i18n-content="requestAccessButton">
+    </div> 
+  </div>
+  <h1>
+    <a id="feedback-link" is="action-link" i18n-content="feedbackLink"></a>
+  </h1>
+  <div id="details" hidden>
+    <p id="details-header" i18n-content="blockReasonHeader"></p>
+    <p id="details-message" i18n-content="blockReasonMessage"></p>
   </div>
 </div>
 </body>

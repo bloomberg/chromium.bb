@@ -22,24 +22,49 @@ function initialize() {
   }
   var avatarURL1x = loadTimeData.getString('avatarURL1x');
   var avatarURL2x = loadTimeData.getString('avatarURL2x');
-  if (avatarURL1x) {
-    $('avatar-img').style.content = makeImageSet(avatarURL1x, avatarURL2x);
-    $('avatar-img').hidden = false;
-    $('error-img').hidden = true;
+  var custodianName = loadTimeData.getString('custodianName');
+  if (custodianName) {
+    $('custodians-information').hidden = false;
+    if (avatarURL1x) {
+      $('custodian-avatar-img').style.content =
+          makeImageSet(avatarURL1x, avatarURL2x);
+    }
+    $('custodian-name').innerHTML = custodianName;
+    $('custodian-email').innerHTML = loadTimeData.getString('custodianEmail');
     var secondAvatarURL1x = loadTimeData.getString('secondAvatarURL1x');
     var secondAvatarURL2x = loadTimeData.getString('secondAvatarURL2x');
-    if (secondAvatarURL1x) {
-      $('second-avatar-img').style.content =
-          makeImageSet(secondAvatarURL1x, secondAvatarURL2x);
-      $('second-avatar-img').hidden = false;
-      // The avatar images should overlap a bit.
-      $('avatar-img').style.left = '6px';
-      $('avatar-img').style.zIndex = '1';
-      $('second-avatar-img').style.left = '-6px';
+    var secondCustodianName = loadTimeData.getString('secondCustodianName');
+    if (secondCustodianName) {
+      $('second-custodian-information').hidden = false;
+      $('second-custodian-avatar-img').hidden = false;
+      if (secondAvatarURL1x) {
+        $('second-custodian-avatar-img').style.content =
+            makeImageSet(secondAvatarURL1x, secondAvatarURL2x);
+      }
+      $('second-custodian-name').innerHTML = secondCustodianName;
+      $('second-custodian-email').innerHTML = loadTimeData.getString(
+          'secondCustodianEmail');
     }
   }
+  var showDetailsLink = loadTimeData.getString('showDetailsLink');
+  $('show-details-link').hidden = !showDetailsLink;
+  $('back-button').hidden = showDetailsLink;
   $('back-button').onclick = function(event) {
     sendCommand('back');
+  };
+  $('show-details-link').onclick = function(event) {
+    $('details').hidden = false;
+    $('show-details-link').hidden = true;
+    $('hide-details-link').hidden = false;
+    $('information-container').classList.add('hidden-on-mobile');
+    $('request-access-button').classList.add('hidden-on-mobile');
+  };
+  $('hide-details-link').onclick = function(event) {
+    $('details').hidden = true;
+    $('show-details-link').hidden = false;
+    $('hide-details-link').hidden = true;
+    $('information-container').classList.remove('hidden-on-mobile');
+    $('request-access-button').classList.remove('hidden-on-mobile');
   };
   if (loadTimeData.getBoolean('showFeedbackLink')) {
     $('feedback-link').onclick = function(event) {
@@ -55,14 +80,15 @@ function initialize() {
  * @param {boolean} isSuccessful Whether the request was successful or not.
  */
 function setRequestStatus(isSuccessful) {
-  $('error-img').hidden = true;
   $('block-page-message').hidden = true;
   if (isSuccessful) {
     $('request-failed-message').hidden = true;
     $('request-sent-message').hidden = false;
-    if ($('avatar-img').hidden) {
-      $('request-sent-message').style.marginTop = '40px';
-    }
+    $('show-details-link').hidden = true;
+    $('hide-details-link').hidden = true;
+    $('details').hidden = true;
+    $('back-button').hidden = false;
+    $('request-access-button').hidden = true;
   } else {
     $('request-failed-message').hidden = false;
     $('request-access-button').hidden = false;

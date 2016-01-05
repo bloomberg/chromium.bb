@@ -229,6 +229,14 @@ std::string SupervisedUserInterstitial::GetHTMLContents() {
       base::UTF8ToUTF16(supervised_user_service->GetCustodianName());
   base::string16 second_custodian =
       base::UTF8ToUTF16(supervised_user_service->GetSecondCustodianName());
+  base::string16 custodian_email =
+      base::UTF8ToUTF16(supervised_user_service->GetCustodianEmailAddress());
+  base::string16 second_custodian_email = base::UTF8ToUTF16(
+      supervised_user_service->GetSecondCustodianEmailAddress());
+  strings.SetString("custodianName", custodian);
+  strings.SetString("custodianEmail", custodian_email);
+  strings.SetString("secondCustodianName", second_custodian);
+  strings.SetString("secondCustodianEmail", second_custodian_email);
 
   base::string16 block_message;
   if (allow_access_requests) {
@@ -246,10 +254,11 @@ std::string SupervisedUserInterstitial::GetHTMLContents() {
         IDS_BLOCK_INTERSTITIAL_MESSAGE_ACCESS_REQUESTS_DISABLED);
   }
   strings.SetString("blockPageMessage", block_message);
-  strings.SetString("blockReasonMessage", is_child_account
-      ? l10n_util::GetStringUTF16(
-            SupervisedUserURLFilter::GetBlockMessageID(reason_))
-      : base::string16());
+  strings.SetString("blockReasonMessage", l10n_util::GetStringUTF16(
+      SupervisedUserURLFilter::GetBlockMessageID(
+          reason_, is_child_account, second_custodian.empty())));
+  strings.SetString("blockReasonHeader", l10n_util::GetStringUTF16(
+      SupervisedUserURLFilter::GetBlockHeaderID(reason_)));
 
   bool show_feedback = false;
 #if defined(GOOGLE_CHROME_BUILD)
@@ -262,9 +271,12 @@ std::string SupervisedUserInterstitial::GetHTMLContents() {
 
   strings.SetString("backButton", l10n_util::GetStringUTF16(IDS_BACK_BUTTON));
   strings.SetString("requestAccessButton", l10n_util::GetStringUTF16(
-      is_child_account
-          ? IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_ACCESS_BUTTON
-          : IDS_BLOCK_INTERSTITIAL_REQUEST_ACCESS_BUTTON));
+      IDS_BLOCK_INTERSTITIAL_REQUEST_ACCESS_BUTTON));
+
+  strings.SetString("showDetailsLink", l10n_util::GetStringUTF16(
+      IDS_BLOCK_INTERSTITIAL_SHOW_DETAILS));
+  strings.SetString("hideDetailsLink", l10n_util::GetStringUTF16(
+        IDS_BLOCK_INTERSTITIAL_HIDE_DETAILS));
 
   base::string16 request_sent_message;
   base::string16 request_failed_message;
@@ -339,16 +351,22 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
     return;
   }
 
+  SupervisedUserService* supervised_user_service =
+      SupervisedUserServiceFactory::GetForProfile(profile_);
+  base::string16 second_custodian =
+      base::UTF8ToUTF16(supervised_user_service->GetSecondCustodianName());
+
   if (command == "\"feedback\"") {
     base::string16 reason = l10n_util::GetStringUTF16(
-        SupervisedUserURLFilter::GetBlockMessageID(reason_));
+        SupervisedUserURLFilter::GetBlockMessageID(
+            reason_, true, second_custodian.empty()));
     std::string message = l10n_util::GetStringFUTF8(
         IDS_BLOCK_INTERSTITIAL_DEFAULT_FEEDBACK_TEXT, reason);
 #if BUILDFLAG(ANDROID_JAVA_UI)
     ReportChildAccountFeedback(web_contents_, message, url_);
 #else
     chrome::ShowFeedbackPage(chrome::FindBrowserWithWebContents(web_contents_),
-                             message, std::string());
+                           message, std::string());
 #endif
     return;
   }
