@@ -27,7 +27,6 @@ class Rect;
 }
 
 namespace mus {
-
 namespace ws {
 
 class AccessPolicy;
@@ -45,7 +44,7 @@ class WindowTreeImpl : public mojom::WindowTree,
                        public mojom::WindowManagerInternalClient {
  public:
   WindowTreeImpl(ConnectionManager* connection_manager,
-                 const WindowId& root_id,
+                 ServerWindow* root,
                  uint32_t policy_bitmask);
   ~WindowTreeImpl() override;
 
@@ -62,16 +61,18 @@ class WindowTreeImpl : public mojom::WindowTree,
   }
   const ServerWindow* GetWindow(const WindowId& id) const;
 
-  // Returns true if this connection's root is |id|.
-  bool IsRoot(const WindowId& id) const;
+  // Returns true if |window| is one of this connections roots.
+  bool HasRoot(const ServerWindow* window) const;
 
-  // Returns the id of the root node. This is null if the root has been
-  // destroyed but the connection is still valid.
-  const WindowId* root() const { return root_.get(); }
+  std::set<const ServerWindow*> roots() { return roots_; }
 
   bool is_embed_root() const { return is_embed_root_; }
 
-  WindowTreeHostImpl* GetHost() const;
+  const WindowTreeHostImpl* GetHost(const ServerWindow* window) const;
+  WindowTreeHostImpl* GetHost(const ServerWindow* window) {
+    return const_cast<WindowTreeHostImpl*>(
+        const_cast<const WindowTreeImpl*>(this)->GetHost(window));
+  }
 
   // Invoked when a connection is about to be destroyed.
   void OnWillDestroyWindowTreeImpl(WindowTreeImpl* connection);
@@ -91,6 +92,20 @@ class WindowTreeImpl : public mojom::WindowTree,
              uint32_t policy_bitmask,
              ConnectionSpecificId* connection_id);
   void DispatchInputEvent(ServerWindow* target, mojom::EventPtr event);
+
+  // Maps the window id from the client to the server. Normally the ids are the
+  // same, but there may be a different id at the embed point.
+  WindowId MapWindowIdFromClient(Id transport_window_id) const {
+    return MapWindowIdFromClient(WindowIdFromTransportId(transport_window_id));
+  }
+  WindowId MapWindowIdFromClient(const WindowId& id) const;
+
+  // Maps the window id to the client.
+  Id MapWindowIdToClient(const ServerWindow* window) const;
+  Id MapWindowIdToClient(const WindowId& id) const;
+
+  // Calls through to the client.
+  void OnChangeCompleted(uint32_t change_id, bool success);
 
   // The following methods are invoked after the corresponding change has been
   // processed. They do the appropriate bookkeeping and update the client as
@@ -123,7 +138,7 @@ class WindowTreeImpl : public mojom::WindowTree,
                             const ServerWindow* relative_window,
                             mojom::OrderDirection direction,
                             bool originated_change);
-  void ProcessWindowDeleted(const WindowId& window, bool originated_change);
+  void ProcessWindowDeleted(const ServerWindow* window, bool originated_change);
   void ProcessWillChangeWindowVisibility(const ServerWindow* window,
                                          bool originated_change);
   void ProcessCursorChanged(const ServerWindow* window,
@@ -142,9 +157,23 @@ class WindowTreeImpl : public mojom::WindowTree,
   using WindowIdSet = base::hash_set<Id>;
   using WindowMap = std::map<ConnectionSpecificId, ServerWindow*>;
 
+  enum class RemoveRootReason {
+    // The window is being removed.
+    DELETED,
+
+    // Another connection is being embedded in the window.
+    EMBED,
+  };
+
+  // Used when this connection is associated with the window manager.
+  WindowTreeHostImpl* GetHostForWindowManager();
+
   bool ShouldRouteToWindowManager(const ServerWindow* window) const;
 
   bool IsWindowKnown(const ServerWindow* window) const;
+
+  // Returns true if |id| is a valid WindowId for a new window.
+  bool IsValidIdForNewWindow(const WindowId& id) const;
 
   // These functions return true if the corresponding mojom function is allowed
   // for this connection.
@@ -168,7 +197,7 @@ class WindowTreeImpl : public mojom::WindowTree,
                        std::vector<ServerWindow*>* local_windows);
 
   // Resets the root of this connection.
-  void RemoveRoot();
+  void RemoveRoot(const ServerWindow* window, RemoveRootReason reason);
 
   // Converts Window(s) to WindowData(s) for transport. This assumes all the
   // windows are valid for the client. The parent of windows the client is not
@@ -229,10 +258,10 @@ class WindowTreeImpl : public mojom::WindowTree,
                            Id window_id,
                            bool visible) override;
   void SetWindowProperty(uint32_t change_id,
-                         Id window_id,
+                         Id transport_window_id,
                          const mojo::String& name,
                          mojo::Array<uint8_t> value) override;
-  void AttachSurface(Id window_id,
+  void AttachSurface(Id transport_window_id,
                      mojom::SurfaceType type,
                      mojo::InterfaceRequest<mojom::Surface> surface,
                      mojom::SurfaceClientPtr client) override;
@@ -240,12 +269,12 @@ class WindowTreeImpl : public mojom::WindowTree,
              mojom::WindowTreeClientPtr client,
              uint32_t policy_bitmask,
              const EmbedCallback& callback) override;
-  void SetFocus(uint32_t change_id, Id window_id) override;
-  void SetCanFocus(Id window_id, bool can_focus) override;
+  void SetFocus(uint32_t change_id, Id transport_window_id) override;
+  void SetCanFocus(Id transport_window_id, bool can_focus) override;
   void SetPredefinedCursor(uint32_t change_id,
-                           Id window_id,
+                           Id transport_window_id,
                            mus::mojom::Cursor cursor_id) override;
-  void SetWindowTextInputState(Id window_id,
+  void SetWindowTextInputState(Id transport_window_id,
                                mojo::TextInputStatePtr state) override;
   void SetImeVisibility(Id transport_window_id,
                         bool visible,
@@ -285,12 +314,18 @@ class WindowTreeImpl : public mojom::WindowTree,
   // The set of windows that has been communicated to the client.
   WindowIdSet known_windows_;
 
-  // The root of this connection. This is a scoped_ptr to reinforce the
-  // connection may have no root. A connection has no root if either the root
-  // is destroyed or Embed() is invoked on the root.
-  scoped_ptr<WindowId> root_;
+  // The roots, or embed points, of this connection. A WindowTreeImpl may have
+  // any number of roots, including 0.
+  std::set<const ServerWindow*> roots_;
 
   uint32_t event_ack_id_;
+
+  // WindowTreeHostImpl the current event came from.
+  // TODO(sky): in the case of multiple roots we may outlive
+  // |event_source_host_|. Make sure we null out event_source_host_ if the
+  // WindowTreeHostImpl is destroyed before us.
+  WindowTreeHostImpl* event_source_host_;
+
   bool is_embed_root_;
 
   std::queue<scoped_ptr<TargetedEvent>> event_queue_;
@@ -303,7 +338,6 @@ class WindowTreeImpl : public mojom::WindowTree,
 };
 
 }  // namespace ws
-
 }  // namespace mus
 
 #endif  // COMPONENTS_MUS_WS_WINDOW_TREE_IMPL_H_

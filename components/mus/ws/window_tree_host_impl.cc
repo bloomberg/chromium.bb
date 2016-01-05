@@ -88,6 +88,10 @@ void WindowTreeHostImpl::Init(WindowTreeHostDelegate* delegate) {
     delegate_->OnDisplayInitialized();
 }
 
+const WindowTreeImpl* WindowTreeHostImpl::GetWindowTree() const {
+  return delegate_ ? delegate_->GetWindowTree() : nullptr;
+}
+
 WindowTreeImpl* WindowTreeHostImpl::GetWindowTree() {
   return delegate_ ? delegate_->GetWindowTree() : nullptr;
 }
@@ -196,16 +200,16 @@ void WindowTreeHostImpl::RemoveAccelerator(uint32_t id) {
   event_dispatcher_.RemoveAccelerator(id);
 }
 
-void WindowTreeHostImpl::AddActivationParent(uint32_t window_id) {
-  ServerWindow* window =
-      connection_manager_->GetWindow(WindowIdFromTransportId(window_id));
+void WindowTreeHostImpl::AddActivationParent(Id transport_window_id) {
+  ServerWindow* window = connection_manager_->GetWindow(
+      MapWindowIdFromClient(transport_window_id));
   if (window)
     activation_parents_.insert(window->id());
 }
 
-void WindowTreeHostImpl::RemoveActivationParent(uint32_t window_id) {
-  ServerWindow* window =
-      connection_manager_->GetWindow(WindowIdFromTransportId(window_id));
+void WindowTreeHostImpl::RemoveActivationParent(Id transport_window_id) {
+  ServerWindow* window = connection_manager_->GetWindow(
+      MapWindowIdFromClient(transport_window_id));
   if (window)
     activation_parents_.erase(window->id());
 }
@@ -226,6 +230,13 @@ void WindowTreeHostImpl::SetUnderlaySurfaceOffsetAndExtendedHitArea(
 
   window->SetUnderlayOffset(gfx::Vector2d(x_offset, y_offset));
   window->set_extended_hit_test_region(hit_area.To<gfx::Insets>());
+}
+
+WindowId WindowTreeHostImpl::MapWindowIdFromClient(
+    Id transport_window_id) const {
+  const WindowTreeImpl* connection = GetWindowTree();
+  return connection ? connection->MapWindowIdFromClient(transport_window_id)
+                    : WindowIdFromTransportId(transport_window_id);
 }
 
 void WindowTreeHostImpl::OnClientClosed() {
@@ -364,7 +375,7 @@ void WindowTreeHostImpl::OnFocusChanged(
                                                  new_focused_window);
     }
     embedded_connection_old =
-        connection_manager_->GetConnectionWithRoot(old_focused_window->id());
+        connection_manager_->GetConnectionWithRoot(old_focused_window);
     if (embedded_connection_old) {
       DCHECK_NE(owning_connection_old, embedded_connection_old);
       embedded_connection_old->ProcessFocusChanged(old_focused_window,
@@ -383,7 +394,7 @@ void WindowTreeHostImpl::OnFocusChanged(
                                                  new_focused_window);
     }
     embedded_connection_new =
-        connection_manager_->GetConnectionWithRoot(new_focused_window->id());
+        connection_manager_->GetConnectionWithRoot(new_focused_window);
     if (embedded_connection_new &&
         embedded_connection_new != owning_connection_old &&
         embedded_connection_new != embedded_connection_old) {
@@ -438,7 +449,7 @@ void WindowTreeHostImpl::DispatchInputEventToWindow(ServerWindow* target,
   WindowTreeImpl* connection =
       in_nonclient_area
           ? connection_manager_->GetConnection(target->id().connection_id)
-          : connection_manager_->GetConnectionWithRoot(target->id());
+          : connection_manager_->GetConnectionWithRoot(target);
   if (!connection) {
     DCHECK(!in_nonclient_area);
     connection = connection_manager_->GetConnection(target->id().connection_id);

@@ -98,11 +98,11 @@ ws::ClientConnection*
 MandolineUIServicesApp::CreateClientConnectionForEmbedAtWindow(
     ws::ConnectionManager* connection_manager,
     mojo::InterfaceRequest<mojom::WindowTree> tree_request,
-    const ws::WindowId& root_id,
+    ws::ServerWindow* root,
     uint32_t policy_bitmask,
     mojom::WindowTreeClientPtr client) {
   scoped_ptr<ws::WindowTreeImpl> service(
-      new ws::WindowTreeImpl(connection_manager, root_id, policy_bitmask));
+      new ws::WindowTreeImpl(connection_manager, root, policy_bitmask));
   return new ws::DefaultClientConnection(std::move(service), connection_manager,
                                          std::move(tree_request),
                                          std::move(client));

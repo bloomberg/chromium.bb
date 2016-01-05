@@ -56,6 +56,7 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   // Initializes state that depends on the existence of a WindowTreeHostImpl.
   void Init(WindowTreeHostDelegate* delegate);
 
+  const WindowTreeImpl* GetWindowTree() const;
   WindowTreeImpl* GetWindowTree();
 
   mojom::WindowTreeHostClient* client() const { return client_.get(); }
@@ -115,8 +116,8 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
                       mojom::EventMatcherPtr event_matcher,
                       const AddAcceleratorCallback& callback) override;
   void RemoveAccelerator(uint32_t id) override;
-  void AddActivationParent(uint32_t window_id) override;
-  void RemoveActivationParent(uint32_t window_id) override;
+  void AddActivationParent(Id transport_window_id) override;
+  void RemoveActivationParent(Id transport_window_id) override;
   void ActivateNextWindow() override;
   void SetUnderlaySurfaceOffsetAndExtendedHitArea(
       Id window_id,
@@ -128,6 +129,8 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
 
  private:
   friend class WindowTreeTest;
+
+  WindowId MapWindowIdFromClient(Id transport_window_id) const;
 
   void OnClientClosed();
   void OnEventAckTimeout();

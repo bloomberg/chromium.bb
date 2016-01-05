@@ -19,7 +19,7 @@ namespace ws {
 
 class ClientConnection;
 class ConnectionManager;
-struct WindowId;
+class ServerWindow;
 
 class ConnectionManagerDelegate {
  public:
@@ -32,7 +32,7 @@ class ConnectionManagerDelegate {
   virtual ClientConnection* CreateClientConnectionForEmbedAtWindow(
       ConnectionManager* connection_manager,
       mojo::InterfaceRequest<mojom::WindowTree> tree_request,
-      const WindowId& root_id,
+      ServerWindow* root,
       uint32_t policy_bitmask,
       mojom::WindowTreeClientPtr client) = 0;
 

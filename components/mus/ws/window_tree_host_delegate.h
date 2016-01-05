@@ -26,7 +26,11 @@ class WindowTreeHostDelegate {
   virtual void OnDisplayClosed() = 0;
 
   // Returns the WindowTreeImpl associated with the delegate.
-  virtual WindowTreeImpl* GetWindowTree() = 0;
+  virtual const WindowTreeImpl* GetWindowTree() const = 0;
+  WindowTreeImpl* GetWindowTree() {
+    return const_cast<WindowTreeImpl*>(
+        const_cast<const WindowTreeHostDelegate*>(this)->GetWindowTree());
+  }
 
  protected:
   virtual ~WindowTreeHostDelegate() {}

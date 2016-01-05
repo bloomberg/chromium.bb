@@ -49,7 +49,7 @@ class WindowTreeHostConnection : public WindowTreeHostDelegate {
   // WindowTreeHostDelegate:
   void OnDisplayInitialized() override;
   void OnDisplayClosed() override;
-  WindowTreeImpl* GetWindowTree() override;
+  const WindowTreeImpl* GetWindowTree() const override;
 
  private:
   scoped_ptr<WindowTreeHostImpl> host_;

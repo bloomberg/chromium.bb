@@ -70,7 +70,7 @@ class ConnectionManager : public ServerWindowDelegate,
 
   // See description of WindowTree::Embed() for details. This assumes
   // |transport_window_id| is valid.
-  WindowTreeImpl* EmbedAtWindow(const WindowId& window_id,
+  WindowTreeImpl* EmbedAtWindow(ServerWindow* root,
                                 uint32_t policy_bitmask,
                                 mojom::WindowTreeClientPtr client);
 
@@ -108,18 +108,16 @@ class ConnectionManager : public ServerWindowDelegate,
       const ServerWindow* window);
 
   // Returns the WindowTreeImpl that has |id| as a root.
-  WindowTreeImpl* GetConnectionWithRoot(const WindowId& id) {
+  WindowTreeImpl* GetConnectionWithRoot(const ServerWindow* window) {
     return const_cast<WindowTreeImpl*>(
-        const_cast<const ConnectionManager*>(this)->GetConnectionWithRoot(id));
+        const_cast<const ConnectionManager*>(this)
+            ->GetConnectionWithRoot(window));
   }
-  const WindowTreeImpl* GetConnectionWithRoot(const WindowId& id) const;
+  const WindowTreeImpl* GetConnectionWithRoot(const ServerWindow* window) const;
 
   WindowTreeHostImpl* GetWindowTreeHostByWindow(const ServerWindow* window);
   const WindowTreeHostImpl* GetWindowTreeHostByWindow(
       const ServerWindow* window) const;
-
-  // Returns the first ancestor of |service| that is marked as an embed root.
-  WindowTreeImpl* GetEmbedRoot(WindowTreeImpl* service);
 
   WindowTreeHostImpl* GetActiveWindowTreeHost();
 
@@ -161,7 +159,7 @@ class ConnectionManager : public ServerWindowDelegate,
   void ProcessWindowReorder(const ServerWindow* window,
                             const ServerWindow* relative_window,
                             const mojom::OrderDirection direction);
-  void ProcessWindowDeleted(const WindowId& window);
+  void ProcessWindowDeleted(const ServerWindow* window);
   void ProcessWillChangeWindowPredefinedCursor(ServerWindow* window,
                                                int32_t cursor_id);
 
@@ -182,6 +180,10 @@ class ConnectionManager : public ServerWindowDelegate,
 
   using InFlightWindowManagerChangeMap =
       std::map<uint32_t, InFlightWindowManagerChange>;
+
+  bool GetAndClearInFlightWindowManagerChange(
+      uint32_t window_manager_change_id,
+      InFlightWindowManagerChange* change);
 
   // Invoked when a connection is about to execute a window server operation.
   // Subsequently followed by FinishOperation() once the change is done.

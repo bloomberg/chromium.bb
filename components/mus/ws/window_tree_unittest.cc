@@ -43,7 +43,6 @@ using mus::mojom::PointerData;
 using mus::mojom::WindowDataPtr;
 
 namespace mus {
-
 namespace ws {
 namespace {
 
@@ -192,12 +191,12 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
   ClientConnection* CreateClientConnectionForEmbedAtWindow(
       ConnectionManager* connection_manager,
       mojo::InterfaceRequest<mus::mojom::WindowTree> service_request,
-      const WindowId& root_id,
+      ServerWindow* root,
       uint32_t policy_bitmask,
       mus::mojom::WindowTreeClientPtr client) override {
     // Used by ConnectionManager::AddRoot.
     scoped_ptr<WindowTreeImpl> service(
-        new WindowTreeImpl(connection_manager, root_id, policy_bitmask));
+        new WindowTreeImpl(connection_manager, root, policy_bitmask));
     last_connection_ = new TestClientConnection(std::move(service));
     return last_connection_;
   }
@@ -221,7 +220,7 @@ class TestWindowTreeHostConnection : public WindowTreeHostConnection {
   void OnDisplayInitialized() override {
     connection_manager()->AddHost(this);
     set_window_tree(connection_manager()->EmbedAtWindow(
-        window_tree_host()->root_window()->id(),
+        window_tree_host()->root_window(),
         mus::mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT,
         mus::mojom::WindowTreeClientPtr()));
   }
@@ -312,6 +311,11 @@ ui::MouseEvent CreateMouseUpEvent(int x, int y) {
                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
 }
 
+const ServerWindow* FirstRoot(WindowTreeImpl* connection) {
+  return connection->roots().size() == 1u ? *(connection->roots().begin())
+                                          : nullptr;
+}
+
 }  // namespace
 
 // -----------------------------------------------------------------------------
@@ -339,6 +343,10 @@ class WindowTreeTest : public testing::Test {
 
   ConnectionManager* connection_manager() { return connection_manager_.get(); }
 
+  ServerWindow* GetWindowById(const WindowId& id) {
+    return connection_manager_->GetWindow(id);
+  }
+
   TestWindowTreeClient* wm_client() { return wm_client_; }
   int32_t cursor_id() { return cursor_id_; }
 
@@ -359,8 +367,8 @@ class WindowTreeTest : public testing::Test {
     AckPreviousEvent();
   }
 
-  // Embeds a child window to the root window. Shared setup between several of
-  // the unit tests.
+  // Creates a new window from wm_connection() and embeds a new connection in
+  // it.
   void SetupEventTargeting(TestWindowTreeClient** out_client,
                            WindowTreeImpl** window_tree_connection,
                            ServerWindow** window);
@@ -405,8 +413,9 @@ void WindowTreeTest::SetupEventTargeting(
   EXPECT_TRUE(
       wm_connection()->NewWindow(embed_window_id, ServerWindow::Properties()));
   EXPECT_TRUE(wm_connection()->SetWindowVisibility(embed_window_id, true));
-  EXPECT_TRUE(
-      wm_connection()->AddWindow(*(wm_connection()->root()), embed_window_id));
+  ASSERT_TRUE(FirstRoot(wm_connection()));
+  EXPECT_TRUE(wm_connection()->AddWindow(FirstRoot(wm_connection())->id(),
+                                         embed_window_id));
   host_connection()->window_tree_host()->root_window()->SetBounds(
       gfx::Rect(0, 0, 100, 100));
   mojom::WindowTreeClientPtr client;
@@ -417,8 +426,8 @@ void WindowTreeTest::SetupEventTargeting(
   wm_connection()->Embed(embed_window_id, std::move(client),
                          mojom::WindowTree::ACCESS_POLICY_DEFAULT,
                          &connection_id);
-  WindowTreeImpl* connection1 =
-      connection_manager()->GetConnectionWithRoot(embed_window_id);
+  WindowTreeImpl* connection1 = connection_manager()->GetConnectionWithRoot(
+      GetWindowById(embed_window_id));
   ASSERT_TRUE(connection1 != nullptr);
   ASSERT_NE(connection1, wm_connection());
 
@@ -429,8 +438,8 @@ void WindowTreeTest::SetupEventTargeting(
   const WindowId child1(connection1->id(), 1);
   EXPECT_TRUE(connection1->NewWindow(child1, ServerWindow::Properties()));
   EXPECT_TRUE(connection1->AddWindow(embed_window_id, child1));
-  connection1->GetHost()->AddActivationParent(
-      WindowIdToTransportId(embed_window_id));
+  connection1->GetHost(GetWindowById(embed_window_id))
+      ->AddActivationParent(WindowIdToTransportId(embed_window_id));
 
   ServerWindow* v1 = connection1->GetWindow(child1);
   v1->SetVisible(true);
@@ -452,8 +461,9 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   EXPECT_TRUE(
       wm_connection()->NewWindow(embed_window_id, ServerWindow::Properties()));
   EXPECT_TRUE(wm_connection()->SetWindowVisibility(embed_window_id, true));
-  EXPECT_TRUE(
-      wm_connection()->AddWindow(*(wm_connection()->root()), embed_window_id));
+  ASSERT_TRUE(FirstRoot(wm_connection()));
+  EXPECT_TRUE(wm_connection()->AddWindow(FirstRoot(wm_connection())->id(),
+                                         embed_window_id));
   host_connection()->window_tree_host()->root_window()->SetBounds(
       gfx::Rect(0, 0, 100, 100));
   mojom::WindowTreeClientPtr client;
@@ -464,8 +474,8 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   wm_connection()->Embed(embed_window_id, std::move(client),
                          mojom::WindowTree::ACCESS_POLICY_DEFAULT,
                          &connection_id);
-  WindowTreeImpl* connection1 =
-      connection_manager()->GetConnectionWithRoot(embed_window_id);
+  WindowTreeImpl* connection1 = connection_manager()->GetConnectionWithRoot(
+      GetWindowById(embed_window_id));
   ASSERT_TRUE(connection1 != nullptr);
   ASSERT_NE(connection1, wm_connection());
 
@@ -488,18 +498,19 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   // Focus should not go to |child1| yet, since the parent still doesn't allow
   // active children.
   DispatchEventAndAckImmediately(CreatePointerDownEvent(21, 22));
-  EXPECT_EQ(nullptr, connection1->GetHost()->GetFocusedWindow());
+  WindowTreeHostImpl* host1 =
+      connection1->GetHost(GetWindowById(embed_window_id));
+  EXPECT_EQ(nullptr, host1->GetFocusedWindow());
   DispatchEventAndAckImmediately(CreatePointerUpEvent(21, 22));
   connection1_client->tracker()->changes()->clear();
   wm_client()->tracker()->changes()->clear();
 
-  connection1->GetHost()->AddActivationParent(
-      WindowIdToTransportId(embed_window_id));
+  host1->AddActivationParent(WindowIdToTransportId(embed_window_id));
 
   // Focus should go to child1. This result in notifying both the window
   // manager and client connection being notified.
   DispatchEventAndAckImmediately(CreatePointerDownEvent(21, 22));
-  EXPECT_EQ(v1, connection1->GetHost()->GetFocusedWindow());
+  EXPECT_EQ(v1, host1->GetFocusedWindow());
   ASSERT_GE(wm_client()->tracker()->changes()->size(), 1u);
   EXPECT_EQ("Focused id=2,1",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
@@ -671,8 +682,9 @@ TEST_F(WindowTreeTest, WindowReorderingChangesCursor) {
   EXPECT_TRUE(
       window_tree_connection->NewWindow(child2, ServerWindow::Properties()));
   EXPECT_TRUE(window_tree_connection->AddWindow(embed_window_id, child2));
-  window_tree_connection->GetHost()->AddActivationParent(
-      WindowIdToTransportId(embed_window_id));
+  window_tree_connection->GetHost(
+                            GetWindowById(WindowId(wm_connection()->id(), 1)))
+      ->AddActivationParent(WindowIdToTransportId(embed_window_id));
   ServerWindow* window2 = window_tree_connection->GetWindow(child2);
   window2->SetVisible(true);
   window2->SetBounds(gfx::Rect(20, 20, 20, 20));
@@ -696,8 +708,9 @@ TEST_F(WindowTreeTest, EventAck) {
   EXPECT_TRUE(
       wm_connection()->NewWindow(embed_window_id, ServerWindow::Properties()));
   EXPECT_TRUE(wm_connection()->SetWindowVisibility(embed_window_id, true));
-  EXPECT_TRUE(
-      wm_connection()->AddWindow(*(wm_connection()->root()), embed_window_id));
+  ASSERT_TRUE(FirstRoot(wm_connection()));
+  EXPECT_TRUE(wm_connection()->AddWindow(FirstRoot(wm_connection())->id(),
+                                         embed_window_id));
   host_connection()->window_tree_host()->root_window()->SetBounds(
       gfx::Rect(0, 0, 100, 100));
 
@@ -720,5 +733,4 @@ TEST_F(WindowTreeTest, EventAck) {
 }
 
 }  // namespace ws
-
 }  // namespace mus
