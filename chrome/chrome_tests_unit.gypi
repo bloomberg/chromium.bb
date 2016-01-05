@@ -906,6 +906,7 @@
       'browser/resources/google_now/common_test_util.js',
       'browser/resources/google_now/utility.js',
       'browser/resources/google_now/utility_test_util.js',
+      'browser/resources/md_downloads/action_service.js',
       'browser/resources/print_preview/data/measurement_system.js',
       'browser/resources/print_preview/print_preview_utils.js',
       'renderer/resources/extensions/notifications_custom_bindings.js',
@@ -916,6 +917,7 @@
       'browser/resources/google_now/background_unittest.gtestjs',
       'browser/resources/google_now/cards_unittest.gtestjs',
       'browser/resources/google_now/utility_unittest.gtestjs',
+      'browser/resources/md_downloads/action_service_unittest.gtestjs',
       'browser/resources/print_preview/data/measurement_system_unittest.gtestjs',
       'browser/resources/print_preview/print_preview_utils_unittest.gtestjs',
       'renderer/resources/extensions/notifications_custom_bindings.gtestjs',
@@ -2272,8 +2274,6 @@
       },
       'sources': [
         '<@(chrome_unit_tests_sources)',
-        '<@(chrome_unit_tests_js_sources)',
-        '<@(chrome_unit_tests_gtestjs_sources)',
       ],
       'conditions': [
         ['OS!="ios"', {
@@ -2297,11 +2297,6 @@
             '../tools/json_schema_compiler/test/json_schema_compiler_tests.gyp:json_schema_compiler_tests',
             '../ui/gl/gl.gyp:gl',
             '../ui/gl/gl.gyp:gl_test_support',
-            '../v8/tools/gyp/v8.gyp:v8',
-          ],
-          # TODO(scr): Use this in browser_tests too.
-          'includes': [
-            'js_unittest_rules.gypi',
           ],
           'include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome',
@@ -2345,7 +2340,20 @@
           ],
         }],
         ['OS!="android" and OS!="ios"', {
-          'sources': [ '<@(chrome_unit_tests_non_mobile_sources)' ],
+          'dependencies': [
+            '../v8/tools/gyp/v8.gyp:v8',
+          ],
+          'includes': [
+            'js_unittest_rules.gypi',
+          ],
+          'include_dirs': [
+            '<(SHARED_INTERMEDIATE_DIR)/chrome',
+          ],
+          'sources': [
+            '<@(chrome_unit_tests_non_mobile_sources)',
+            '<@(chrome_unit_tests_js_sources)',
+            '<@(chrome_unit_tests_gtestjs_sources)',
+          ],
         }],
         ['chromeos==1', {
           'sources!': [
