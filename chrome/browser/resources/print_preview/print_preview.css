@@ -138,6 +138,7 @@ button.loading {
 }
 
 #print-preview button.default {
+  font-kerning: none;
   font-weight: bold;
 }
 
