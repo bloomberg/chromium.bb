@@ -124,6 +124,9 @@ typedef int (*InitMetro)();
 
 #if defined(KASKO)
 
+// For ::GetProfileType().
+#pragma comment(lib, "userenv.lib")
+
 // Returns a string containing a list of all modifiers for the loaded profile.
 std::wstring GetProfileType() {
   std::wstring profile_type;

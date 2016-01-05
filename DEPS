@@ -760,12 +760,13 @@ hooks = [
                '--overwrite',
     ],
   },
+  # TODO(pmonette): Move include files out of binaries folder.
   {
     'name': 'kasko',
     'pattern': '.',
     'action': ['python',
                'src/build/get_syzygy_binaries.py',
-               '--output-dir=src/third_party/kasko',
+               '--output-dir=src/third_party/kasko/binaries',
                '--revision=56f13b37f044639b4c28cb75f327ca5e3db8758e',
                '--resource=kasko.zip',
                '--resource=kasko_symbols.zip',

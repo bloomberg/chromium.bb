@@ -98,6 +98,8 @@ if (syzygy_optimize) {
       script = "//chrome/tools/build/win/syzygy/instrument.py"
 
       filter = "syzyasan-instrumentation-filter.txt"
+
+      dll_name = invoker.dll_name
       input_dll = "$root_out_dir/$dll_name.dll"
       input_pdb = "$root_out_dir/$dll_name.dll.pdb"
 

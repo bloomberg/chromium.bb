@@ -1,0 +1,55 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+import("//build/config/sanitizers/sanitizers.gni")
+
+declare_args() {
+  # Enable the Kasko crash reporter. Enabled by default on syzyasan build.
+  enable_kasko = is_syzyasan
+
+  # Enable the reporting of browser hangs with Kasko.
+  enable_kasko_hang_reports = false
+}
+
+if (enable_kasko) {
+  assert(is_win, "Kasko only support Windows.")
+  assert(target_cpu == "x86", "Kasko only support 32 bits.")
+  assert(is_chrome_branded,
+         "The Kasko client is only initialized in Chrome-branded builds.")
+
+  config("kasko_config") {
+    visibility = [ ":*" ]
+    defines = [ "KASKO" ]
+    if (enable_kasko_hang_reports) {
+      defines += [ "KASKO_HANG_REPORTS" ]
+    }
+    include_dirs = [ "//third_party/kasko/binaries/include" ]
+    lib_dirs = [ "//third_party/kasko/binaries" ]
+    libs = [ "kasko.dll.lib" ]
+  }
+
+  copy("copy_kasko_dll") {
+    visibility = [ ":*" ]
+    sources = [
+      "//third_party/kasko/binaries/kasko.dll",
+      "//third_party/kasko/binaries/kasko.dll.pdb",
+    ]
+    outputs = [
+      "$root_out_dir/{{source_file_part}}",
+    ]
+  }
+
+  group("kasko") {
+    if (enable_kasko) {
+      deps = [
+        ":copy_kasko_dll",
+      ]
+      public_configs = [ ":kasko_config" ]
+    }
+  }
+} else {
+  group("kasko") {
+  }
+}

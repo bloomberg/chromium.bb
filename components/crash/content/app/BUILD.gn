@@ -44,6 +44,7 @@ source_set("app") {
   ]
   deps = [
     "//base",
+    "//third_party/kasko",
   ]
 
   deps += [ ":lib" ]
