@@ -2483,13 +2483,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   pushURL = URLEscapedForHistory(pushURL);
   if (!pushURL.is_valid())
     return YES;
-  const NavigationManagerImpl& navigationManager =
-      _webStateImpl->GetNavigationManagerImpl();
   web::NavigationItem* navItem = [self currentNavItem];
-  // PushState happened before first navigation entry or called right after
-  // window.open when the url is empty.
-  if (!navItem ||
-      (navigationManager.GetItemCount() <= 1 && navItem->GetURL().is_empty()))
+  // PushState happened before first navigation entry or called when the
+  // navigation entry does not contain a valid URL.
+  if (!navItem || !navItem->GetURL().is_valid())
     return YES;
   if (!web::history_state_util::IsHistoryStateChangeValid(navItem->GetURL(),
                                                           pushURL)) {
