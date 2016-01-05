@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <map>
 #include <string>
 
@@ -28,7 +27,7 @@
 #include "content/browser/message_port_service.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
-#include "content/browser/service_worker/service_worker_client_navigation_utils.h"
+#include "content/browser/service_worker/service_worker_client_utils.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
@@ -52,9 +51,6 @@
 namespace content {
 
 using StatusCallback = ServiceWorkerVersion::StatusCallback;
-using ServiceWorkerClients = std::vector<ServiceWorkerClientInfo>;
-using GetClientsCallback =
-    base::Callback<void(scoped_ptr<ServiceWorkerClients>)>;
 
 namespace {
 
@@ -199,67 +195,6 @@ base::TimeDelta GetTickDuration(const base::TimeTicks& time) {
   return base::TimeTicks().Now() - time;
 }
 
-void OnGetWindowClientsFromUI(
-    // The tuple contains process_id, frame_id, client_uuid.
-    const std::vector<base::Tuple<int, int, std::string>>& clients_info,
-    const GURL& script_url,
-    const GetClientsCallback& callback) {
-  scoped_ptr<ServiceWorkerClients> clients(new ServiceWorkerClients);
-
-  for (const auto& it : clients_info) {
-    ServiceWorkerClientInfo info =
-        ServiceWorkerProviderHost::GetWindowClientInfoOnUI(base::get<0>(it),
-                                                           base::get<1>(it));
-
-    // If the request to the provider_host returned an empty
-    // ServiceWorkerClientInfo, that means that it wasn't possible to associate
-    // it with a valid RenderFrameHost. It might be because the frame was killed
-    // or navigated in between.
-    if (info.IsEmpty())
-      continue;
-
-    // We can get info for a frame that was navigating end ended up with a
-    // different URL than expected. In such case, we should make sure to not
-    // expose cross-origin WindowClient.
-    if (info.url.GetOrigin() != script_url.GetOrigin())
-      continue;
-
-    info.client_uuid = base::get<2>(it);
-    clients->push_back(info);
-  }
-
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(callback, base::Passed(&clients)));
-}
-
-void AddWindowClient(
-    ServiceWorkerProviderHost* host,
-    std::vector<base::Tuple<int, int, std::string>>* client_info) {
-  if (host->client_type() != blink::WebServiceWorkerClientTypeWindow)
-    return;
-  client_info->push_back(base::MakeTuple(host->process_id(), host->frame_id(),
-                                         host->client_uuid()));
-}
-
-void AddNonWindowClient(ServiceWorkerProviderHost* host,
-                        const ServiceWorkerClientQueryOptions& options,
-                        ServiceWorkerClients* clients) {
-  blink::WebServiceWorkerClientType host_client_type = host->client_type();
-  if (host_client_type == blink::WebServiceWorkerClientTypeWindow)
-    return;
-  if (options.client_type != blink::WebServiceWorkerClientTypeAll &&
-      options.client_type != host_client_type)
-    return;
-
-  ServiceWorkerClientInfo client_info(blink::WebPageVisibilityStateHidden,
-                                      false,  // is_focused
-                                      host->document_url(),
-                                      REQUEST_CONTEXT_FRAME_TYPE_NONE,
-                                      base::TimeTicks(), host_client_type);
-  client_info.client_uuid = host->client_uuid();
-  clients->push_back(client_info);
-}
-
 bool IsInstalled(ServiceWorkerVersion::Status status) {
   switch (status) {
     case ServiceWorkerVersion::NEW:
@@ -274,13 +209,6 @@ bool IsInstalled(ServiceWorkerVersion::Status status) {
   NOTREACHED() << "Unexpected status: " << status;
   return false;
 }
-
-struct ServiceWorkerClientInfoSortMRU {
-  bool operator()(const ServiceWorkerClientInfo& a,
-                  const ServiceWorkerClientInfo& b) const {
-    return a.last_focus_time > b.last_focus_time;
-  }
-};
 
 }  // namespace
 
@@ -1185,22 +1113,10 @@ void ServiceWorkerVersion::OnGetClients(
       "ServiceWorker", "ServiceWorkerVersion::OnGetClients", request_id,
       "client_type", options.client_type, "include_uncontrolled",
       options.include_uncontrolled);
-
-  ServiceWorkerClients clients;
-  if (controllee_map_.empty() && !options.include_uncontrolled) {
-    OnGetClientsFinished(request_id, &clients);
-    return;
-  }
-
-  // For Window clients we want to query the info on the UI thread first.
-  if (options.client_type == blink::WebServiceWorkerClientTypeWindow ||
-      options.client_type == blink::WebServiceWorkerClientTypeAll) {
-    GetWindowClients(request_id, options);
-    return;
-  }
-
-  GetNonWindowClients(request_id, options, &clients);
-  OnGetClientsFinished(request_id, &clients);
+  service_worker_client_utils::GetClients(
+      weak_factory_.GetWeakPtr(), options,
+      base::Bind(&ServiceWorkerVersion::OnGetClientsFinished,
+                 weak_factory_.GetWeakPtr(), request_id));
 }
 
 void ServiceWorkerVersion::OnGetClientsFinished(int request_id,
@@ -1214,8 +1130,6 @@ void ServiceWorkerVersion::OnGetClientsFinished(int request_id,
   if (running_status() != STARTING && running_status() != RUNNING)
     return;
 
-  // Sort clients so that the most recently active tab is in the front.
-  std::sort(clients->begin(), clients->end(), ServiceWorkerClientInfoSortMRU());
   embedded_worker_->SendMessage(
       ServiceWorkerMsg_DidGetClients(request_id, *clients));
 }
@@ -1431,7 +1345,7 @@ void ServiceWorkerVersion::OnOpenWindow(int request_id, GURL url) {
     return;
   }
 
-  service_worker_client_navigation_utils::OpenWindow(
+  service_worker_client_utils::OpenWindow(
       url, script_url_, embedded_worker_->process_id(), context_,
       base::Bind(&ServiceWorkerVersion::OnOpenWindowFinished,
                  weak_factory_.GetWeakPtr(), request_id));
@@ -1602,7 +1516,7 @@ void ServiceWorkerVersion::OnNavigateClient(int request_id,
     return;
   }
 
-  service_worker_client_navigation_utils::NavigateClient(
+  service_worker_client_utils::NavigateClient(
       url, script_url_, provider_host->process_id(), provider_host->frame_id(),
       context_, base::Bind(&ServiceWorkerVersion::OnNavigateClientFinished,
                            weak_factory_.GetWeakPtr(), request_id));
@@ -1766,64 +1680,6 @@ void ServiceWorkerVersion::StartWorkerInternal() {
         version_id_, scope_, script_url_,
         base::Bind(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,
                    weak_factory_.GetWeakPtr()));
-  }
-}
-
-void ServiceWorkerVersion::GetWindowClients(
-    int request_id,
-    const ServiceWorkerClientQueryOptions& options) {
-  DCHECK(options.client_type == blink::WebServiceWorkerClientTypeWindow ||
-         options.client_type == blink::WebServiceWorkerClientTypeAll);
-
-  std::vector<base::Tuple<int, int, std::string>> clients_info;
-  if (!options.include_uncontrolled) {
-    for (auto& controllee : controllee_map_)
-      AddWindowClient(controllee.second, &clients_info);
-  } else if (context_) {
-    for (auto it =
-             context_->GetClientProviderHostIterator(script_url_.GetOrigin());
-         !it->IsAtEnd(); it->Advance()) {
-      AddWindowClient(it->GetProviderHost(), &clients_info);
-    }
-  }
-
-  if (clients_info.empty()) {
-    DidGetWindowClients(request_id, options,
-                        make_scoped_ptr(new ServiceWorkerClients));
-    return;
-  }
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&OnGetWindowClientsFromUI, clients_info, script_url_,
-                 base::Bind(&ServiceWorkerVersion::DidGetWindowClients,
-                            weak_factory_.GetWeakPtr(), request_id, options)));
-}
-
-void ServiceWorkerVersion::DidGetWindowClients(
-    int request_id,
-    const ServiceWorkerClientQueryOptions& options,
-    scoped_ptr<ServiceWorkerClients> clients) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (options.client_type == blink::WebServiceWorkerClientTypeAll)
-    GetNonWindowClients(request_id, options, clients.get());
-  OnGetClientsFinished(request_id, clients.get());
-}
-
-void ServiceWorkerVersion::GetNonWindowClients(
-    int request_id,
-    const ServiceWorkerClientQueryOptions& options,
-    ServiceWorkerClients* clients) {
-  if (!options.include_uncontrolled) {
-    for (auto& controllee : controllee_map_) {
-      AddNonWindowClient(controllee.second, options, clients);
-    }
-  } else if (context_) {
-    for (auto it =
-             context_->GetClientProviderHostIterator(script_url_.GetOrigin());
-         !it->IsAtEnd(); it->Advance()) {
-      AddNonWindowClient(it->GetProviderHost(), options, clients);
-    }
   }
 }
 

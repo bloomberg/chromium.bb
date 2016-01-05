@@ -286,6 +286,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Returns if it has controllee.
   bool HasControllee() const { return !controllee_map_.empty(); }
+  std::map<std::string, ServiceWorkerProviderHost*> controllee_map() {
+    return controllee_map_;
+  }
+
+  base::WeakPtr<ServiceWorkerContextCore> context() const { return context_; }
 
   // Adds and removes |request_job| as a dependent job not to stop the
   // ServiceWorker while |request_job| is reading the stream of the fetch event
@@ -521,14 +526,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   void DidSkipWaiting(int request_id);
 
-  void GetWindowClients(int request_id,
-                        const ServiceWorkerClientQueryOptions& options);
-  void DidGetWindowClients(int request_id,
-                           const ServiceWorkerClientQueryOptions& options,
-                           scoped_ptr<ServiceWorkerClients> clients);
-  void GetNonWindowClients(int request_id,
-                           const ServiceWorkerClientQueryOptions& options,
-                           ServiceWorkerClients* clients);
   void OnGetClientsFinished(int request_id, ServiceWorkerClients* clients);
 
   // The timeout timer periodically calls OnTimeoutTimer, which stops the worker
