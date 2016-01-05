@@ -1603,7 +1603,7 @@ int main(int argc, char **argv)
 	if (!args)
 		encoders = connectors = crtcs = planes = framebuffers = 1;
 
-	dev.fd = util_open(module, device);
+	dev.fd = util_open(device, module);
 	if (dev.fd < 0)
 		return -1;
 

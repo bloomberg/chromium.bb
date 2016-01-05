@@ -295,7 +295,7 @@ int main(int argc, char *argv[])
 
 	args = argc - optind;
 
-	fd = util_open(module, device);
+	fd = util_open(device, module);
 	if (fd < 0)
 		return 1;
 
