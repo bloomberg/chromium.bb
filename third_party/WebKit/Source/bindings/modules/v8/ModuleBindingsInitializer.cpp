@@ -4,7 +4,6 @@
 
 #include "bindings/modules/v8/ModuleBindingsInitializer.h"
 
-#include "bindings/core/v8/ModuleProxy.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "bindings/modules/v8/SerializedScriptValueForModulesFactory.h"
 #include "core/dom/ExecutionContext.h"
