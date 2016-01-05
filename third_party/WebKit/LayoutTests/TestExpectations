@@ -1286,7 +1286,6 @@ crbug.com/568778 [ XP ] tables/mozilla_expected_failures/bugs/bug85016.html [ Fa
 # FIXME crbug.com/570401 bad rebaselines submited, wrong size scale factor affecting the text result expected
 # backing size, some image results twice a big as expected, or become all-white squares.
 
-crbug.com/569919 compositing/color-matching/image-color-matching.html [ NeedsRebaseline ]
 crbug.com/570401 paint/selection/selection-within-composited-scroller.html [ NeedsManualRebaseline ]
 crbug.com/570401 fast/canvas/canvas-shadow-source-in.html [ Failure ]
 crbug.com/570401 virtual/display_list_2d_canvas/fast/canvas/canvas-shadow-source-in.html [ Failure ]
