@@ -83,16 +83,26 @@ class MockBackgroundSyncServiceClient : public BackgroundSyncServiceClient {
     callback_.Run(SERVICE_WORKER_EVENT_STATUS_ABORTED);
   }
 
+  void set_notify_sync_called(const base::Closure& closure) {
+    notify_sync_called_ = closure;
+  }
+
  private:
   // BackgroundSyncServiceClient overrides
   void Sync(int64_t handle_id,
             content::BackgroundSyncEventLastChance last_chance,
             const SyncCallback& callback) override {
     EXPECT_TRUE(callback_.is_null());
+
+    if (!notify_sync_called_.is_null()) {
+      notify_sync_called_.Run();
+      notify_sync_called_.Reset();
+    }
     callback_ = callback;
   }
 
   SyncCallback callback_;
+  base::Closure notify_sync_called_;
   mojo::StrongBinding<BackgroundSyncServiceClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(MockBackgroundSyncServiceClient);
@@ -822,13 +832,16 @@ TEST_F(ServiceWorkerVersionTest, RequestCustomizedTimeout) {
   EXPECT_EQ(SERVICE_WORKER_ERROR_TIMEOUT, status);
 }
 
-// crbug.com/571271 tracks flakiness in MixedRequestTimeouts.
-TEST_F(ServiceWorkerWaitForeverInFetchTest, DISABLED_MixedRequestTimeouts) {
+TEST_F(ServiceWorkerWaitForeverInFetchTest, MixedRequestTimeouts) {
   ServiceWorkerStatusCode sync_status =
       SERVICE_WORKER_ERROR_NETWORK;  // dummy value
   ServiceWorkerStatusCode fetch_status =
       SERVICE_WORKER_ERROR_NETWORK;  // dummy value
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+
+  base::RunLoop run_loop;
+  mock_background_sync_dispatcher_->set_notify_sync_called(
+      run_loop.QuitClosure());
 
   // Create a fetch request that should expire sometime later.
   version_->DispatchFetchEvent(ServiceWorkerFetchRequest(),
@@ -853,6 +866,7 @@ TEST_F(ServiceWorkerWaitForeverInFetchTest, DISABLED_MixedRequestTimeouts) {
   EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
 
   // Gracefully handle the sync event finishing after the timeout.
+  run_loop.Run();  // Wait until Sync() is called on the mojo client.
   mock_background_sync_dispatcher_->RunCallback();
   base::RunLoop().RunUntilIdle();
 
