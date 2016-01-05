@@ -1364,3 +1364,6 @@ crbug.com/572723 [ Linux Mac10.9 ] inspector/sources/debugger/debugger-disable-e
 crbug.com/572723 [ Mac Release ] inspector/sources/debugger/debugger-uncaught-promise-on-pause.html [ Timeout Pass ]
 
 crbug.com/572726 inspector/tracing/timeline-node-reference.html [ Timeout Pass Crash ]
+
+crbug.com/387166 [ XP ] svg/hixie/viewbox/preserveAspectRatio/001.xml [ NeedsRebaseline ]
+crbug.com/387166 [ XP ] svg/text/bidi-text-anchor-direction.svg [ NeedsRebaseline ]
