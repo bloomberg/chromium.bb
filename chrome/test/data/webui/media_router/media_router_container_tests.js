@@ -473,7 +473,6 @@ cr.define('media_router_container', function() {
         setTimeout(function() {
           checkElementsVisibleWithId(['container-header',
                                       'device-missing',
-                                      'issue-banner',
                                       'route-details']);
           done();
         });

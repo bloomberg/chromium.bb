@@ -452,7 +452,8 @@ Polymer({
    * @private
    */
   computeIssueBannerShown_: function(view, issue) {
-    return !!issue && view != media_router.MediaRouterView.CAST_MODE_LIST;
+    return !!issue && (view == media_router.MediaRouterView.SINK_LIST ||
+                       view == media_router.MediaRouterView.ISSUE);
   },
 
   /**
