@@ -49,7 +49,10 @@ namespace net {
 namespace test {
 
 namespace {
-const char kDefaultServerHostName[] = "www.google.com";
+const char kDefaultServerHostName[] = "www.example.org";
+const char kServer2HostName[] = "mail.example.org";
+const char kServer3HostName[] = "docs.example.org";
+const char kServer4HostName[] = "images.example.org";
 const int kDefaultServerPort = 443;
 
 // Run all tests with all the combinations of versions and
@@ -248,10 +251,9 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
   }
 
   static ProofVerifyDetailsChromium DefaultProofVerifyDetails() {
-    // Load a certificate that is valid for www.example.org, mail.example.org,
-    // and mail.example.com.
+    // Load a certificate that is valid for *.example.org
     scoped_refptr<X509Certificate> test_cert(
-        ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem"));
+        ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem"));
     EXPECT_TRUE(test_cert.get());
     ProofVerifyDetailsChromium verify_details;
     verify_details.cert_verify_result.verified_cert = test_cert;
@@ -311,6 +313,8 @@ INSTANTIATE_TEST_CASE_P(Version,
 
 TEST_P(QuicStreamFactoryTest, Create) {
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
@@ -346,6 +350,8 @@ TEST_P(QuicStreamFactoryTest, Create) {
 
 TEST_P(QuicStreamFactoryTest, CreateZeroRtt) {
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
@@ -370,6 +376,8 @@ TEST_P(QuicStreamFactoryTest, CreateZeroRtt) {
 
 TEST_P(QuicStreamFactoryTest, CreateZeroRttPost) {
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
@@ -401,6 +409,8 @@ TEST_P(QuicStreamFactoryTest, CreateZeroRttPost) {
 
 TEST_P(QuicStreamFactoryTest, NoZeroRttForDifferentHost) {
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
@@ -413,9 +423,9 @@ TEST_P(QuicStreamFactoryTest, NoZeroRttForDifferentHost) {
                                            "192.168.0.1", "");
 
   QuicStreamRequest request(factory_.get());
-  int rv = request.Request(
-      host_port_pair_, privacy_mode_, /*cert_verify_flags=*/0,
-      "different.host.example.com", "GET", net_log_, callback_.callback());
+  int rv =
+      request.Request(host_port_pair_, privacy_mode_, /*cert_verify_flags=*/0,
+                      kServer2HostName, "GET", net_log_, callback_.callback());
   // If server and origin have different hostnames, then handshake confirmation
   // should be required, so Request will return asynchronously.
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -432,6 +442,8 @@ TEST_P(QuicStreamFactoryTest, NoZeroRttForDifferentHost) {
 
 TEST_P(QuicStreamFactoryTest, GoAway) {
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
@@ -461,17 +473,18 @@ TEST_P(QuicStreamFactoryTest, GoAway) {
 
 TEST_P(QuicStreamFactoryTest, Pooling) {
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
 
-  HostPortPair server2("mail.google.com", kDefaultServerPort);
+  HostPortPair server2(kServer2HostName, kDefaultServerPort);
   host_resolver_.set_synchronous_mode(true);
-  host_resolver_.rules()->AddIPLiteralRule(kDefaultServerHostName,
+  host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
                                            "192.168.0.1", "");
-  host_resolver_.rules()->AddIPLiteralRule("mail.google.com", "192.168.0.1",
-                                           "");
+  host_resolver_.rules()->AddIPLiteralRule(server2.host(), "192.168.0.1", "");
 
   QuicStreamRequest request(factory_.get());
   EXPECT_EQ(OK, request.Request(host_port_pair_, privacy_mode_,
@@ -499,6 +512,9 @@ TEST_P(QuicStreamFactoryTest, Pooling) {
 TEST_P(QuicStreamFactoryTest, NoPoolingIfDisabled) {
   disable_connection_pooling_ = true;
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   SequencedSocketData socket_data1(reads, arraysize(reads), nullptr, 0);
@@ -506,12 +522,11 @@ TEST_P(QuicStreamFactoryTest, NoPoolingIfDisabled) {
   socket_factory_.AddSocketDataProvider(&socket_data1);
   socket_factory_.AddSocketDataProvider(&socket_data2);
 
-  HostPortPair server2("mail.google.com", kDefaultServerPort);
+  HostPortPair server2(kServer2HostName, kDefaultServerPort);
   host_resolver_.set_synchronous_mode(true);
-  host_resolver_.rules()->AddIPLiteralRule(kDefaultServerHostName,
+  host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
                                            "192.168.0.1", "");
-  host_resolver_.rules()->AddIPLiteralRule("mail.google.com", "192.168.0.1",
-                                           "");
+  host_resolver_.rules()->AddIPLiteralRule(server2.host(), "192.168.0.1", "");
 
   QuicStreamRequest request(factory_.get());
   EXPECT_EQ(OK, request.Request(host_port_pair_, privacy_mode_,
@@ -540,6 +555,9 @@ TEST_P(QuicStreamFactoryTest, NoPoolingIfDisabled) {
 
 TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   SequencedSocketData socket_data1(reads, arraysize(reads), nullptr, 0);
@@ -547,12 +565,11 @@ TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
   socket_factory_.AddSocketDataProvider(&socket_data1);
   socket_factory_.AddSocketDataProvider(&socket_data2);
 
-  HostPortPair server2("mail.google.com", kDefaultServerPort);
+  HostPortPair server2(kServer2HostName, kDefaultServerPort);
   host_resolver_.set_synchronous_mode(true);
-  host_resolver_.rules()->AddIPLiteralRule(kDefaultServerHostName,
+  host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
                                            "192.168.0.1", "");
-  host_resolver_.rules()->AddIPLiteralRule("mail.google.com", "192.168.0.1",
-                                           "");
+  host_resolver_.rules()->AddIPLiteralRule(server2.host(), "192.168.0.1", "");
 
   QuicStreamRequest request(factory_.get());
   EXPECT_EQ(OK, request.Request(host_port_pair_, privacy_mode_,
@@ -594,12 +611,13 @@ TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
 
 TEST_P(QuicStreamFactoryTest, HttpsPooling) {
   Initialize();
+
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
 
-  HostPortPair server1("www.example.org", 443);
-  HostPortPair server2("mail.example.org", 443);
+  HostPortPair server1(kDefaultServerHostName, 443);
+  HostPortPair server2(kServer2HostName, 443);
 
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -640,10 +658,11 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingIfDisabled) {
   socket_factory_.AddSocketDataProvider(&socket_data1);
   socket_factory_.AddSocketDataProvider(&socket_data2);
 
-  HostPortPair server1("www.example.org", 443);
-  HostPortPair server2("mail.example.org", 443);
+  HostPortPair server1(kDefaultServerHostName, 443);
+  HostPortPair server2(kServer2HostName, 443);
 
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   host_resolver_.set_synchronous_mode(true);
@@ -682,11 +701,11 @@ class QuicAlternativeServiceCertificateValidationPooling
     SequencedSocketData socket_data1(reads, arraysize(reads), nullptr, 0);
     socket_factory_.AddSocketDataProvider(&socket_data1);
 
-    HostPortPair server1("www.example.org", 443);
-    HostPortPair server2("mail.example.org", 443);
+    HostPortPair server1(kDefaultServerHostName, 443);
+    HostPortPair server2(kServer2HostName, 443);
 
-    std::string origin_host(valid ? "mail.example.org" : "invalid.example.org");
-    HostPortPair alternative("www.example.org", 443);
+    std::string origin_host(valid ? kServer2HostName : "invalid.example.com");
+    HostPortPair alternative(kDefaultServerHostName, 443);
 
     ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
     bool common_name_fallback_used;
@@ -751,11 +770,11 @@ TEST_P(QuicStreamFactoryTest, HttpsPoolingWithMatchingPins) {
   SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
 
-  HostPortPair server1("www.example.org", 443);
-  HostPortPair server2("mail.example.org", 443);
+  HostPortPair server1(kDefaultServerHostName, 443);
+  HostPortPair server2(kServer2HostName, 443);
   uint8_t primary_pin = 1;
   uint8_t backup_pin = 2;
-  test::AddPin(&transport_security_state_, "mail.example.org", primary_pin,
+  test::AddPin(&transport_security_state_, kServer2HostName, primary_pin,
                backup_pin);
 
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -799,16 +818,17 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithMatchingPinsIfDisabled) {
   socket_factory_.AddSocketDataProvider(&socket_data1);
   socket_factory_.AddSocketDataProvider(&socket_data2);
 
-  HostPortPair server1("www.example.org", 443);
-  HostPortPair server2("mail.example.org", 443);
+  HostPortPair server1(kDefaultServerHostName, 443);
+  HostPortPair server2(kServer2HostName, 443);
   uint8_t primary_pin = 1;
   uint8_t backup_pin = 2;
-  test::AddPin(&transport_security_state_, "mail.example.org", primary_pin,
+  test::AddPin(&transport_security_state_, kServer2HostName, primary_pin,
                backup_pin);
 
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   verify_details.cert_verify_result.public_key_hashes.push_back(
       test::GetTestHashValue(primary_pin));
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   host_resolver_.set_synchronous_mode(true);
@@ -847,12 +867,12 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithDifferentPins) {
   socket_factory_.AddSocketDataProvider(&socket_data1);
   socket_factory_.AddSocketDataProvider(&socket_data2);
 
-  HostPortPair server1("www.example.org", 443);
-  HostPortPair server2("mail.example.org", 443);
+  HostPortPair server1(kDefaultServerHostName, 443);
+  HostPortPair server2(kServer2HostName, 443);
   uint8_t primary_pin = 1;
   uint8_t backup_pin = 2;
   uint8_t bad_pin = 3;
-  test::AddPin(&transport_security_state_, "mail.example.org", primary_pin,
+  test::AddPin(&transport_security_state_, kServer2HostName, primary_pin,
                backup_pin);
 
   ProofVerifyDetailsChromium verify_details1 = DefaultProofVerifyDetails();
@@ -895,6 +915,10 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithDifferentPins) {
 
 TEST_P(QuicStreamFactoryTest, Goaway) {
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
@@ -951,6 +975,9 @@ TEST_P(QuicStreamFactoryTest, Goaway) {
 
 TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
   QuicStreamId stream_id = kClientDataStreamId1;
   scoped_ptr<QuicEncryptedPacket> client_rst(
       maker_.MakeRstPacket(1, true, stream_id, QUIC_STREAM_CANCELLED));
@@ -1080,12 +1107,16 @@ TEST_P(QuicStreamFactoryTest, CancelCreate) {
 
 TEST_P(QuicStreamFactoryTest, CreateConsistentEphemeralPort) {
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   // Sequentially connect to the default host, then another host, and then the
   // default host.  Verify that the default host gets a consistent ephemeral
   // port, that is different from the other host's connection.
 
-  std::string other_server_name = "other.google.com";
+  std::string other_server_name = kServer2HostName;
   EXPECT_NE(kDefaultServerHostName, other_server_name);
   HostPortPair host_port_pair2(other_server_name, kDefaultServerPort);
 
@@ -1096,6 +1127,10 @@ TEST_P(QuicStreamFactoryTest, CreateConsistentEphemeralPort) {
 
 TEST_P(QuicStreamFactoryTest, GoAwayDisablesConsistentEphemeralPort) {
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   // Get a session to the host using the port suggester.
   int original_port = GetSourcePortForNewSessionAndGoAway(host_port_pair_);
@@ -1107,6 +1142,10 @@ TEST_P(QuicStreamFactoryTest, GoAwayDisablesConsistentEphemeralPort) {
 
 TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   scoped_ptr<QuicEncryptedPacket> rst(ConstructRstPacket());
   std::vector<MockWrite> writes;
@@ -1159,6 +1198,9 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
 TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
   close_sessions_on_ip_change_ = true;
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   scoped_ptr<QuicEncryptedPacket> rst(ConstructRstPacket());
@@ -1212,6 +1254,10 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
 
 TEST_P(QuicStreamFactoryTest, OnSSLConfigChanged) {
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   scoped_ptr<QuicEncryptedPacket> rst(ConstructRstPacket());
   std::vector<MockWrite> writes;
@@ -1263,6 +1309,10 @@ TEST_P(QuicStreamFactoryTest, OnSSLConfigChanged) {
 
 TEST_P(QuicStreamFactoryTest, OnCertAdded) {
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   scoped_ptr<QuicEncryptedPacket> rst(ConstructRstPacket());
   std::vector<MockWrite> writes;
@@ -1315,6 +1365,10 @@ TEST_P(QuicStreamFactoryTest, OnCertAdded) {
 
 TEST_P(QuicStreamFactoryTest, OnCACertChanged) {
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   scoped_ptr<QuicEncryptedPacket> rst(ConstructRstPacket());
   std::vector<MockWrite> writes;
@@ -1367,6 +1421,7 @@ TEST_P(QuicStreamFactoryTest, OnCACertChanged) {
 
 TEST_P(QuicStreamFactoryTest, SharedCryptoConfig) {
   Initialize();
+
   vector<string> cannoncial_suffixes;
   cannoncial_suffixes.push_back(string(".c.youtube.com"));
   cannoncial_suffixes.push_back(string(".googlevideo.com"));
@@ -1439,6 +1494,8 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
 TEST_P(QuicStreamFactoryTest, RacingConnections) {
   disable_disk_cache_ = false;
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   if (!GetParam().enable_connection_racing)
     return;
@@ -1491,6 +1548,9 @@ TEST_P(QuicStreamFactoryTest, RacingConnections) {
 TEST_P(QuicStreamFactoryTest, EnableNotLoadFromDiskCache) {
   disable_disk_cache_ = true;
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
   QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), runner_.get());
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
@@ -1522,6 +1582,12 @@ TEST_P(QuicStreamFactoryTest, BadPacketLoss) {
   disable_disk_cache_ = false;
   max_number_of_lossy_connections_ = 2;
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
   QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), runner_.get());
 
   EXPECT_FALSE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get(),
@@ -1542,9 +1608,9 @@ TEST_P(QuicStreamFactoryTest, BadPacketLoss) {
   SequencedSocketData socket_data4(nullptr, 0, nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data4);
 
-  HostPortPair server2("mail.example.org", kDefaultServerPort);
-  HostPortPair server3("docs.example.org", kDefaultServerPort);
-  HostPortPair server4("images.example.org", kDefaultServerPort);
+  HostPortPair server2(kServer2HostName, kDefaultServerPort);
+  HostPortPair server3(kServer3HostName, kDefaultServerPort);
+  HostPortPair server4(kServer4HostName, kDefaultServerPort);
 
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::ZERO_RTT);
@@ -1689,6 +1755,9 @@ TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfTwo) {
   disable_disk_cache_ = false;
   threshold_public_resets_post_handshake_ = 2;
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), runner_.get());
 
   EXPECT_FALSE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get(),
@@ -1703,7 +1772,7 @@ TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfTwo) {
   SequencedSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data2);
 
-  HostPortPair server2("mail.example.org", kDefaultServerPort);
+  HostPortPair server2(kServer2HostName, kDefaultServerPort);
 
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::CONFIRM_HANDSHAKE);
@@ -1769,6 +1838,9 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfTwo) {
   disable_disk_cache_ = true;
   threshold_timeouts_with_open_streams_ = 2;
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), runner_.get());
   EXPECT_FALSE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get(),
@@ -1783,7 +1855,7 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfTwo) {
   SequencedSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data2);
 
-  HostPortPair server2("mail.example.org", kDefaultServerPort);
+  HostPortPair server2(kServer2HostName, kDefaultServerPort);
 
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::CONFIRM_HANDSHAKE);
@@ -1856,6 +1928,10 @@ TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfThree) {
   disable_disk_cache_ = true;
   threshold_public_resets_post_handshake_ = 2;
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   EXPECT_FALSE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get(),
                                                      host_port_pair_.port()));
@@ -1872,8 +1948,8 @@ TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfThree) {
   SequencedSocketData socket_data3(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data3);
 
-  HostPortPair server2("mail.example.org", kDefaultServerPort);
-  HostPortPair server3("docs.example.org", kDefaultServerPort);
+  HostPortPair server2(kServer2HostName, kDefaultServerPort);
+  HostPortPair server3(kServer3HostName, kDefaultServerPort);
 
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::CONFIRM_HANDSHAKE);
@@ -1965,6 +2041,10 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfThree) {
   disable_disk_cache_ = true;
   threshold_public_resets_post_handshake_ = 2;
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), runner_.get());
 
   EXPECT_FALSE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get(),
@@ -1983,8 +2063,8 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfThree) {
   SequencedSocketData socket_data3(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data3);
 
-  HostPortPair server2("mail.example.org", kDefaultServerPort);
-  HostPortPair server3("docs.example.org", kDefaultServerPort);
+  HostPortPair server2(kServer2HostName, kDefaultServerPort);
+  HostPortPair server3(kServer3HostName, kDefaultServerPort);
 
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::CONFIRM_HANDSHAKE);
@@ -2083,6 +2163,11 @@ TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfFour) {
   disable_disk_cache_ = true;
   threshold_public_resets_post_handshake_ = 2;
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), runner_.get());
 
   EXPECT_FALSE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get(),
@@ -2103,9 +2188,9 @@ TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfFour) {
   SequencedSocketData socket_data4(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data4);
 
-  HostPortPair server2("mail.example.org", kDefaultServerPort);
-  HostPortPair server3("docs.example.org", kDefaultServerPort);
-  HostPortPair server4("images.example.org", kDefaultServerPort);
+  HostPortPair server2(kServer2HostName, kDefaultServerPort);
+  HostPortPair server3(kServer3HostName, kDefaultServerPort);
+  HostPortPair server4(kServer4HostName, kDefaultServerPort);
 
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::CONFIRM_HANDSHAKE);
@@ -2217,6 +2302,11 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfFour) {
   disable_disk_cache_ = true;
   threshold_public_resets_post_handshake_ = 2;
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), runner_.get());
 
   EXPECT_FALSE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get(),
@@ -2238,9 +2328,9 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfFour) {
   SequencedSocketData socket_data4(reads, arraysize(reads), nullptr, 0);
   socket_factory_.AddSocketDataProvider(&socket_data4);
 
-  HostPortPair server2("mail.example.org", kDefaultServerPort);
-  HostPortPair server3("docs.example.org", kDefaultServerPort);
-  HostPortPair server4("images.example.org", kDefaultServerPort);
+  HostPortPair server2(kServer2HostName, kDefaultServerPort);
+  HostPortPair server3(kServer3HostName, kDefaultServerPort);
+  HostPortPair server4(kServer4HostName, kDefaultServerPort);
 
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::CONFIRM_HANDSHAKE);
@@ -2357,6 +2447,8 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfFour) {
 
 TEST_P(QuicStreamFactoryTest, EnableDelayTcpRace) {
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   bool delay_tcp_race = QuicStreamFactoryPeer::GetDelayTcpRace(factory_.get());
   QuicStreamFactoryPeer::SetDelayTcpRace(factory_.get(), false);
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
@@ -2407,6 +2499,8 @@ TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
   store_server_configs_in_properties_ = true;
   idle_connection_timeout_seconds_ = 500;
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   const QuicConfig* config = QuicStreamFactoryPeer::GetConfig(factory_.get());
   EXPECT_EQ(500, config->IdleConnectionStateLifetime().ToSeconds());
 
@@ -2422,7 +2516,8 @@ TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
   http_server_properties_.SetAlternativeServices(
       host_port_pair_, alternative_service_info_vector);
 
-  QuicServerId quic_server_id("www.google.com", 80, PRIVACY_MODE_DISABLED);
+  QuicServerId quic_server_id(kDefaultServerHostName, 80,
+                              PRIVACY_MODE_DISABLED);
   QuicServerInfoFactory* quic_server_info_factory =
       new PropertiesBasedQuicServerInfoFactory(
           http_server_properties_.GetWeakPtr());
@@ -2497,6 +2592,8 @@ TEST_P(QuicStreamFactoryTest, QuicDoingZeroRTT) {
 
 TEST_P(QuicStreamFactoryTest, YieldAfterPackets) {
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   QuicStreamFactoryPeer::SetYieldAfterPackets(factory_.get(), 0);
 
   scoped_ptr<QuicEncryptedPacket> close_packet(
@@ -2541,6 +2638,8 @@ TEST_P(QuicStreamFactoryTest, YieldAfterPackets) {
 
 TEST_P(QuicStreamFactoryTest, YieldAfterDuration) {
   Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   QuicStreamFactoryPeer::SetYieldAfterDuration(
       factory_.get(), QuicTime::Delta::FromMilliseconds(-1));
 

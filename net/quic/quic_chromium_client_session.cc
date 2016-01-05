@@ -566,8 +566,8 @@ bool QuicChromiumClientSession::CanPool(const std::string& hostname,
   }
   SSLInfo ssl_info;
   if (!GetSSLInfo(&ssl_info) || !ssl_info.cert.get()) {
-    // We can always pool with insecure QUIC sessions.
-    return true;
+    NOTREACHED() << "QUIC should always have certificates.";
+    return false;
   }
 
   return SpdySession::CanPool(transport_security_state_, ssl_info,

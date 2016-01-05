@@ -37,6 +37,11 @@ void MockCryptoClientStream::CryptoConnect() {
     case ZERO_RTT: {
       encryption_established_ = true;
       handshake_confirmed_ = false;
+      crypto_negotiated_params_.key_exchange = kC255;
+      crypto_negotiated_params_.aead = kAESG;
+      if (proof_verify_details_) {
+        client_session()->OnProofVerifyDetailsAvailable(*proof_verify_details_);
+      }
       session()->connection()->SetDecrypter(ENCRYPTION_INITIAL,
                                             QuicDecrypter::Create(kNULL));
       session()->connection()->SetEncrypter(ENCRYPTION_INITIAL,

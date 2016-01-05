@@ -636,6 +636,7 @@ TEST_P(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
 
   MockQuicData mock_quic_data2;
   mock_quic_data2.AddRead(ASYNC, ERR_SOCKET_NOT_CONNECTED);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details_);
 
   mock_quic_data1.AddSocketDataToFactory(&socket_factory_);
   mock_quic_data2.AddSocketDataToFactory(&socket_factory_);
