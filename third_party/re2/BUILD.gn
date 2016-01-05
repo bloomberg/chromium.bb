@@ -61,17 +61,6 @@ static_library("re2") {
   configs += [ "//build/config/compiler:no_chromium_code" ]
   public_configs = [ ":re2_config" ]
 
-  deps = [
-    "//base/third_party/dynamic_annotations",
-  ]
-
-  if (is_win) {
-    cflags = [
-      "/wd4018",  # Signed/unsigned mismatch in comparison.
-      "/wd4722",  # Destructor never terminates.
-    ]
-  }
-
   # TODO(battre) If Dr. Memory is ever migrated to GN, a flag needs to be
   # added for this that adds a MEMORY_SANITIZER define. See re2.gyp.
   # if (is_drmemory) {

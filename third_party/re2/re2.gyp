@@ -20,9 +20,6 @@
           '<(DEPTH)',
         ],
       },
-      'dependencies': [
-        '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-      ],
       'sources': [
         'src/re2/bitstate.cc',
         'src/re2/compile.cc',
@@ -73,9 +70,6 @@
         'src/util/valgrind.h',
       ],
       'conditions': [
-        ['OS=="win"', {
-          'msvs_disabled_warnings': [ 4018, 4722, 4267 ],
-        }],
         ['build_for_tool=="drmemory"', {
           # Treat builds for Dr. Memory as builds for MSAN to prevent false
           # positives created by lazily initialized memory.
