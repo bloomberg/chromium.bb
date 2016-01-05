@@ -87,6 +87,10 @@
       <Item Name="Size">m_size</Item>
     </Expand>
   </Type>
+  <Type Name="blink::Length">
+    <DisplayString Condition="m_isFloat">{(blink::LengthType)m_type} {m_floatValue}</DisplayString>
+    <DisplayString>{(blink::LengthType)m_type} {m_intValue}</DisplayString>
+  </Type>
   <Type Name="blink::WebRect">
     <AlternativeType Name="blink::WebFloatRect"/>
     <DisplayString>({x}, {y}) x ({width}, {height})</DisplayString>
@@ -194,8 +198,5 @@
   </Type>
   <Type Name="blink::FontPlatformData">
     <DisplayString>{*m_typeface.m_ptr}, {m_textSize}px</DisplayString>
-  </Type>
-  <Type Name="LogFontTypeface">
-    <DisplayString>{fLogFont.lfFaceName,su}</DisplayString>
   </Type>
 </AutoVisualizer>

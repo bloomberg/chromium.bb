@@ -32,4 +32,7 @@
       </Synthetic>
     </Expand>
   </Type>
+  <Type Name="LogFontTypeface">
+    <DisplayString>{fLogFont.lfFaceName,su}</DisplayString>
+  </Type>
 </AutoVisualizer>
