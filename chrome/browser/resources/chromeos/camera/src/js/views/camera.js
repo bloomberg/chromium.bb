@@ -102,6 +102,12 @@ camera.views.Camera = function(context, router) {
   this.capturing_ = false;
 
   /**
+   * @type {boolean}
+   * @private
+   */
+  this.locked_ = false;
+
+  /**
    * The main (full screen) canvas for full quality capture.
    * @type {fx.Canvas}
    * @private
@@ -644,6 +650,14 @@ camera.views.Camera.prototype.initialize = function(callback) {
             document.body.classList.toggle('mirror', values.toggleMirror);
           }.bind(this));
     }
+
+    // Monitor the locked state to avoid retrying camera connection when locked.
+    chrome.idle.onStateChanged.addListener(function(newState) {
+      if (newState == 'locked')
+        this.locked_ = true;
+      else if (newState == 'active')
+        this.locked_ = false;
+    }.bind(this));
 
     // Initialize the web camera.
     this.start_();
@@ -1651,6 +1665,19 @@ camera.views.Camera.prototype.setDefaultGeometry_ = function() {
  * @private
  */
 camera.views.Camera.prototype.start_ = function() {
+  var scheduleRetry = function() {
+    if (this.retryStartTimer_) {
+      clearTimeout(this.retryStartTimer_);
+      this.retryStartTimer_ = null;
+    }
+    this.retryStartTimer_ = setTimeout(this.start_.bind(this), 1000);
+  }.bind(this);
+
+  if (this.locked_) {
+    scheduleRetry();
+    return;
+  }
+
   var index = 0;
 
   var onSuccess = function() {
@@ -1677,24 +1704,20 @@ camera.views.Camera.prototype.start_ = function() {
     this.context_.onErrorRecovered('no-camera');
   }.bind(this);
 
-  var scheduleRetry = function() {
+  var onFailure = function() {
+    document.body.classList.remove('initializing');
     this.context_.onError(
         'no-camera',
         chrome.i18n.getMessage('errorMsgNoCamera'),
         chrome.i18n.getMessage('errorMsgNoCameraHint'));
-    if (this.retryStartTimer_) {
-      clearTimeout(this.retryStartTimer_);
-      this.retryStartTimer_ = null;
-    }
-    this.retryStartTimer_ = setTimeout(this.start_.bind(this), 1000);
-  }.bind(this);
-
-  var onFailure = function() {
-    document.body.classList.remove('initializing');
     scheduleRetry();
   }.bind(this);
 
   var tryNextResolution = function() {
+    if (this.locked_) {
+      scheduleRetry();
+      return;
+    }
     this.startWithResolution_(
         camera.views.Camera.RESOLUTIONS[index],
         onSuccess,
@@ -1707,7 +1730,7 @@ camera.views.Camera.prototype.start_ = function() {
             onFailure();
           }
         },
-        scheduleRetry.bind(this));  // onDisconnected
+        scheduleRetry);  // onDisconnected
   }.bind(this);
 
   tryNextResolution();
