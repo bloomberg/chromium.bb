@@ -112,8 +112,7 @@ class GrContext* TestContextProvider::GrContext() {
   if (gr_context_)
     return gr_context_.get();
 
-  skia::RefPtr<class SkGLContext> gl_context =
-      skia::AdoptRef(SkNullGLContext::Create(kNone_GrGLStandard));
+  scoped_ptr<class SkGLContext> gl_context(SkNullGLContext::Create());
   gl_context->makeCurrent();
   gr_context_ = skia::AdoptRef(GrContext::Create(
       kOpenGL_GrBackend, reinterpret_cast<GrBackendContext>(gl_context->gl())));

@@ -25,6 +25,7 @@
 #include "platform/graphics/Canvas2DLayerBridge.h"
 
 #include "SkSurface.h"
+#include "base/memory/scoped_ptr.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/test/MockWebGraphicsContext3D.h"
@@ -65,7 +66,7 @@ public:
     MockWebGraphicsContext3DProvider(WebGraphicsContext3D* context3d)
         : m_context3d(context3d)
     {
-        RefPtr<SkGLContext> glContext = adoptRef(SkNullGLContext::Create(kNone_GrGLStandard));
+        scoped_ptr<SkGLContext> glContext(SkNullGLContext::Create());
         glContext->makeCurrent();
         m_grContext = adoptRef(GrContext::Create(kOpenGL_GrBackend, reinterpret_cast<GrBackendContext>(glContext->gl())));
     }
