@@ -36,6 +36,8 @@ class BASE_EXPORT MemoryDumpProvider {
     ProcessId target_pid;
   };
 
+  virtual ~MemoryDumpProvider() {}
+
   // Called by the MemoryDumpManager when generating memory dumps.
   // The |args| specify if the embedder should generate light/heavy dumps on
   // dump requests. The embedder should return true if the |pmd| was
@@ -52,7 +54,6 @@ class BASE_EXPORT MemoryDumpProvider {
 
  protected:
   MemoryDumpProvider() {}
-  virtual ~MemoryDumpProvider() {}
 
   DISALLOW_COPY_AND_ASSIGN(MemoryDumpProvider);
 };

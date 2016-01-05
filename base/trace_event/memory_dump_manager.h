@@ -84,6 +84,15 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
       const MemoryDumpProvider::Options& options);
   void UnregisterDumpProvider(MemoryDumpProvider* mdp);
 
+  // Unregisters an unbound dump provider and takes care about its deletion
+  // asynchronously. Can be used only for for dump providers with no
+  // task-runner affinity.
+  // This method takes ownership of the dump provider and guarantees that:
+  //  - The |mdp| will be deleted at some point in the near future.
+  //  - Its deletion will not happen concurrently with the OnMemoryDump() call.
+  // Note that OnMemoryDump() calls can still happen after this method returns.
+  void UnregisterAndDeleteDumpProviderSoon(scoped_ptr<MemoryDumpProvider> mdp);
+
   // Requests a memory dump. The dump might happen or not depending on the
   // filters and categories specified when enabling tracing.
   // The optional |callback| is executed asynchronously, on an arbitrary thread,
@@ -142,8 +151,7 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   //   the ProcessMemoryDumpAsyncState. This is to allow removal (see below).
   // - When the MDP.OnMemoryDump() is invoked, the corresponding MDPInfo copy
   //   inside ProcessMemoryDumpAsyncState is removed.
-  // - In nominal conditions, the MDPInfo is destroyed in the
-  //   UnregisterDumpProvider() call.
+  // - In most cases, the MDPInfo is destroyed within UnregisterDumpProvider().
   // - If UnregisterDumpProvider() is called while a dump is in progress, the
   //   MDPInfo is destroyed in the epilogue of ContinueAsyncProcessDump(), when
   //   the copy inside ProcessMemoryDumpAsyncState is erase()-d.
@@ -167,6 +175,10 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
         const MemoryDumpProvider::Options& options);
 
     MemoryDumpProvider* const dump_provider;
+
+    // Used to transfer ownership for UnregisterAndDeleteDumpProviderSoon().
+    // nullptr in all other cases.
+    scoped_ptr<MemoryDumpProvider> owned_dump_provider;
 
     // Human readable name, for debugging and testing. Not necessarily unique.
     const char* const name;
@@ -263,6 +275,10 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   // across threads as needed as specified by MDPs in RegisterDumpProvider().
   void ContinueAsyncProcessDump(
       ProcessMemoryDumpAsyncState* owned_pmd_async_state);
+
+  // Helper for the public UnregisterDumpProvider* functions.
+  void UnregisterDumpProviderInternal(MemoryDumpProvider* mdp,
+                                      bool take_mdp_ownership_and_delete_async);
 
   // An ordererd set of registered MemoryDumpProviderInfo(s), sorted by thread
   // affinity (MDPs belonging to the same thread are adjacent).

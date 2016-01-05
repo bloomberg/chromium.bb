@@ -199,7 +199,7 @@ void MemoryDumpManager::RegisterDumpProvider(
   {
     AutoLock lock(lock_);
     bool already_registered = !dump_providers_.insert(mdpinfo).second;
-    // This actually happen in some tests which don't have a clean tear-down
+    // This actually happens in some tests which don't have a clean tear-down
     // path for RenderThreadImpl::Init().
     if (already_registered)
       return;
@@ -217,6 +217,21 @@ void MemoryDumpManager::RegisterDumpProvider(
 }
 
 void MemoryDumpManager::UnregisterDumpProvider(MemoryDumpProvider* mdp) {
+  UnregisterDumpProviderInternal(mdp, false /* delete_async */);
+}
+
+void MemoryDumpManager::UnregisterAndDeleteDumpProviderSoon(
+    scoped_ptr<MemoryDumpProvider> mdp) {
+  UnregisterDumpProviderInternal(mdp.release(), true /* delete_async */);
+}
+
+void MemoryDumpManager::UnregisterDumpProviderInternal(
+    MemoryDumpProvider* mdp,
+    bool take_mdp_ownership_and_delete_async) {
+  scoped_ptr<MemoryDumpProvider> owned_mdp;
+  if (take_mdp_ownership_and_delete_async)
+    owned_mdp.reset(mdp);
+
   AutoLock lock(lock_);
 
   auto mdp_iter = dump_providers_.begin();
@@ -226,19 +241,29 @@ void MemoryDumpManager::UnregisterDumpProvider(MemoryDumpProvider* mdp) {
   }
 
   if (mdp_iter == dump_providers_.end())
-    return;
+    return;  // Not registered / already unregistered.
 
-  // Unregistration of a MemoryDumpProvider while tracing is ongoing is safe
-  // only if the MDP has specified a thread affinity (via task_runner()) AND
-  // the unregistration happens on the same thread (so the MDP cannot unregister
-  // and OnMemoryDump() at the same time).
-  // Otherwise, it is not possible to guarantee that its unregistration is
-  // race-free. If you hit this DCHECK, your MDP has a bug.
-  DCHECK(!subtle::NoBarrier_Load(&memory_tracing_enabled_) ||
-         ((*mdp_iter)->task_runner &&
-          (*mdp_iter)->task_runner->BelongsToCurrentThread()))
-      << "MemoryDumpProvider \"" << (*mdp_iter)->name << "\" attempted to "
-      << "unregister itself in a racy way. Please file a crbug.";
+  if (take_mdp_ownership_and_delete_async) {
+    // The MDP will be deleted whenever the MDPInfo struct will, that is either:
+    // - At the end of this function, if no dump is in progress.
+    // - In the prologue of the ContinueAsyncProcessDump().
+    DCHECK(!(*mdp_iter)->owned_dump_provider);
+    (*mdp_iter)->owned_dump_provider = std::move(owned_mdp);
+  } else if (subtle::NoBarrier_Load(&memory_tracing_enabled_)) {
+    // If you hit this DCHECK, your dump provider has a bug.
+    // Unregistration of a MemoryDumpProvider is safe only if:
+    // - The MDP has specified a thread affinity (via task_runner()) AND
+    //   the unregistration happens on the same thread (so the MDP cannot
+    //   unregister and be in the middle of a OnMemoryDump() at the same time.
+    // - The MDP has NOT specified a thread affinity and its ownership is
+    //   transferred via UnregisterAndDeleteDumpProviderSoon().
+    // In all the other cases, it is not possible to guarantee that the
+    // unregistration will not race with OnMemoryDump() calls.
+    DCHECK((*mdp_iter)->task_runner &&
+           (*mdp_iter)->task_runner->BelongsToCurrentThread())
+        << "MemoryDumpProvider \"" << (*mdp_iter)->name << "\" attempted to "
+        << "unregister itself in a racy way. Please file a crbug.";
+  }
 
   // The MDPInfo instance can still be referenced by the
   // |ProcessMemoryDumpAsyncState.pending_dump_providers|. For this reason
@@ -365,24 +390,49 @@ void MemoryDumpManager::ContinueAsyncProcessDump(
   if (!task_runner)
     task_runner = pmd_async_state->dump_thread_task_runner.get();
 
+  bool post_task_failed = false;
   if (!task_runner->BelongsToCurrentThread()) {
     // It's time to hop onto another thread.
-    const bool did_post_task = task_runner->PostTask(
+    post_task_failed = !task_runner->PostTask(
         FROM_HERE, Bind(&MemoryDumpManager::ContinueAsyncProcessDump,
                         Unretained(this), Unretained(pmd_async_state.get())));
-    if (did_post_task) {
+    if (!post_task_failed) {
       // Ownership is tranferred to the next ContinueAsyncProcessDump().
       ignore_result(pmd_async_state.release());
       return;
     }
-    // The thread is gone. Skip the dump provider and keep going.
-    mdpinfo->disabled = true;
   }
 
-  // At this point wither we are on the right thread (|mdpinfo.task_runner|)
-  // to access mdp fields, or the right thread is gone (and |disabled| == true).
+  // At this point either:
+  // - The MDP has a task runner affinity and we are on the right thread.
+  // - The MDP has a task runner affinity but the underlying thread is gone,
+  //   hence the above |post_task_failed| == true.
+  // - The MDP does NOT have a task runner affinity. A locked access is required
+  //   to R/W |disabled| (for the UnregisterAndDeleteDumpProviderSoon() case).
+  bool should_dump;
+  const char* disabled_reason = nullptr;
+  {
+    AutoLock lock(lock_);
+    if (!mdpinfo->disabled) {
+      if (mdpinfo->consecutive_failures >= kMaxConsecutiveFailuresCount) {
+        mdpinfo->disabled = true;
+        disabled_reason =
+            "Dump failure, possibly related with sandboxing (crbug.com/461788)."
+            " Try --no-sandbox.";
+      } else if (post_task_failed) {
+        disabled_reason = "The thread it was meant to dump onto is gone.";
+        mdpinfo->disabled = true;
+      }
+    }
+    should_dump = !mdpinfo->disabled;
+  }
 
-  if (!mdpinfo->disabled) {
+  if (disabled_reason) {
+    LOG(ERROR) << "Disabling MemoryDumpProvider \"" << mdpinfo->name << "\". "
+               << disabled_reason;
+  }
+
+  if (should_dump) {
     // Invoke the dump provider.
     TRACE_EVENT_WITH_FLOW1(kTraceCategory,
                            "MemoryDumpManager::ContinueAsyncProcessDump",
@@ -398,18 +448,8 @@ void MemoryDumpManager::ContinueAsyncProcessDump(
         pmd_async_state->GetOrCreateMemoryDumpContainerForProcess(target_pid);
     MemoryDumpArgs args = {pmd_async_state->req_args.level_of_detail};
     bool dump_successful = mdpinfo->dump_provider->OnMemoryDump(args, pmd);
-
-    if (dump_successful) {
-      mdpinfo->consecutive_failures = 0;
-    } else {
-      ++mdpinfo->consecutive_failures;
-      if (mdpinfo->consecutive_failures >= kMaxConsecutiveFailuresCount) {
-        mdpinfo->disabled = true;
-        LOG(ERROR) << "MemoryDumpProvider \"" << mdpinfo->name << "\" failed, "
-                   << "possibly due to sandboxing (crbug.com/461788)."
-                   << "Disabling dumper for current process. Try --no-sandbox.";
-      }
-    }
+    mdpinfo->consecutive_failures =
+        dump_successful ? 0 : mdpinfo->consecutive_failures + 1;
   }  // if (!mdpinfo->disabled)
 
   pmd_async_state->pending_dump_providers.pop_back();
