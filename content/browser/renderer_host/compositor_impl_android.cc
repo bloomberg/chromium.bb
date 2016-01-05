@@ -260,9 +260,6 @@ CompositorImpl::~CompositorImpl() {
   root_window_->DetachCompositor();
   // Clean-up any surface references.
   SetSurface(NULL);
-
-  // Explicitly tear down everything cc-related before destroying |this|.
-  host_.reset();
 }
 
 void CompositorImpl::PostComposite(CompositingTrigger trigger) {

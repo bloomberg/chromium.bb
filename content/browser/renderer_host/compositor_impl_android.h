@@ -162,6 +162,8 @@ class CONTENT_EXPORT CompositorImpl
   scoped_refptr<cc::Layer> root_layer_;
   scoped_refptr<cc::Layer> subroot_layer_;
 
+  // Destruction order matters here:
+  base::ObserverList<VSyncObserver, true> observer_list_;
   scoped_ptr<cc::LayerTreeHost> host_;
   ui::ResourceManagerImpl resource_manager_;
 
@@ -221,8 +223,6 @@ class CONTENT_EXPORT CompositorImpl
   bool output_surface_request_pending_;
 
   gpu::Capabilities gpu_capabilities_;
-
-  base::ObserverList<VSyncObserver, true> observer_list_;
 
   base::WeakPtrFactory<CompositorImpl> weak_factory_;
 
