@@ -20,7 +20,12 @@ RemoteMediaPlayerManager::RemoteMediaPlayerManager(
       weak_ptr_factory_(this) {
 }
 
-RemoteMediaPlayerManager::~RemoteMediaPlayerManager() {}
+RemoteMediaPlayerManager::~RemoteMediaPlayerManager() {
+  for (MediaPlayerAndroid* player : alternative_players_)
+    player->DeleteOnCorrectThread();
+
+  alternative_players_.weak_clear();
+}
 
 void RemoteMediaPlayerManager::OnStart(int player_id) {
   RemoteMediaPlayerBridge* remote_player = GetRemotePlayer(player_id);
