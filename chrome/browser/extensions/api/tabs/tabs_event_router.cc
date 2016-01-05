@@ -200,6 +200,7 @@ static bool WillDispatchTabCreatedEvent(
   event->event_args->Clear();
   event->event_args->Append(tab_value);
   tab_value->SetBoolean(tabs_constants::kSelectedKey, active);
+  tab_value->SetBoolean(tabs_constants::kActiveKey, active);
   return true;
 }
 
