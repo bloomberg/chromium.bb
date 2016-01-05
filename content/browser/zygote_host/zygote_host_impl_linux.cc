@@ -161,8 +161,7 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
   // or namespace sandbox. This is needed beacuse the processes are
   // non-dumpable, so /proc/pid/oom_score_adj can only be written by root.
   use_suid_sandbox_for_adj_oom_score_ =
-      !sandbox_binary_.empty() &&
-      (using_namespace_sandbox || using_suid_sandbox);
+      !sandbox_binary_.empty() && using_suid_sandbox;
 
   // Start up the sandbox host process and get the file descriptor for the
   // renderers to talk to it.
