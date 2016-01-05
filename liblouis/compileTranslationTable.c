@@ -4062,7 +4062,7 @@ doOpcode:
 		  logMessage (LOG_WARN, "Duplicate emphasis class: %s", s);
 		  warningCount++;
 		  free(s);
-		  return 0;
+		  return 1;
 		}
 	    if (i < MAX_EMPH_CLASSES)
 	      {
@@ -4089,7 +4089,7 @@ doOpcode:
 		      {
 			logMessage (LOG_ERROR, "First emphasis class must be \"italic\" but got %s", s);
 			errorCount++;
-			return 1;
+			return 0;
 		      }
 		    break;
 		  case 1:
@@ -4097,7 +4097,7 @@ doOpcode:
 		      {
 			logMessage (LOG_ERROR, "Second emphasis class must be \"underline\" but got %s", s);
 			errorCount++;
-			return 1;
+			return 0;
 		      }
 		    break;
 		  case 2:
@@ -4105,23 +4105,24 @@ doOpcode:
 		      {
 			logMessage (LOG_ERROR, "Third emphasis class must be \"bold\" but got %s", s);
 			errorCount++;
-			return 1;
+			return 0;
 		      }
 		    break;
 		  }
 		emphClasses[i] = s;
 		emphClasses[i+1] = NULL;
-		return 0;
+		return 1;
 	      }
 	    else
 	      {
 		logMessage (LOG_ERROR, "Max number of emphasis classes (%i) reached", MAX_EMPH_CLASSES);
 		errorCount++;
 		free(s);
-		return 1;
+		return 0;
 	      }
 	  }
-      return 1;
+      compileError (nested, "emphclass must be followed by a valid class name.");
+      return 0;
     case CTO_SingleLetterEmph:
     case CTO_EmphWord:
     case CTO_EmphWordStop:
@@ -4131,6 +4132,7 @@ doOpcode:
     case CTO_LastWordEmphBefore:
     case CTO_LastWordEmphAfter:
     case CTO_LenEmphPhrase:
+      ok = 0;
       if (getToken(nested, &token, "emphasis class"))
 	if (parseChars(nested, &emphClass, &token))
 	  {
@@ -4145,17 +4147,17 @@ doOpcode:
 		     the need for values CTO_SingleLetterItal to CTO_LenTransNotePhrase.
 		   */
 		  opcode = opcode + CTO_SingleLetterItal - CTO_SingleLetterEmph + 9 * i;
-		  ok = 0;
+		  ok = 1;
 		  break;
 		}
-	    if (ok != 0)
+	    if (!ok)
 	      {
 		logMessage (LOG_ERROR, "Emphasis class %s not declared", s);
 		errorCount++;
 	      }
 	    free(s);
 	  }
-      if (ok != 0)
+      if (!ok)
 	return ok;
     }
   switch (opcode)
