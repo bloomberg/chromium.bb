@@ -480,8 +480,10 @@ bool VisitDatabase::GetRedirectToVisit(VisitID to_visit,
     sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
         "SELECT u.url "
         "FROM visits v JOIN urls u ON v.url = u.id "
-        "WHERE v.id = ?"));
+        "WHERE v.id = ? AND (v.transition & ?) != 0"));
     statement.BindInt64(0, row.referring_visit);
+    statement.BindInt64(1, (ui::PAGE_TRANSITION_IS_REDIRECT_MASK |
+                            ui::PAGE_TRANSITION_CHAIN_START));
 
     if (!statement.Step())
       return false;
