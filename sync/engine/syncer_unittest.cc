@@ -62,6 +62,7 @@
 #include "sync/util/cryptographer.h"
 #include "sync/util/extensions_activity.h"
 #include "sync/util/time.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
@@ -2807,6 +2808,177 @@ TEST_F(SyncerTest, DeletingEntryInFolder) {
   }
   EXPECT_TRUE(SyncShareNudge());
   EXPECT_EQ(0, GetCommitCounters(BOOKMARKS).num_commits_conflict);
+}
+
+// Test conflict resolution when deleting a hierarchy of nodes within a folder
+// and running into a conflict in one of items. The conflict in a deleted
+// item must prevent all deleted ancestors from being committed as well;
+// otherwise the conflicting item would end up being orphaned.
+TEST_F(SyncerTest, DeletingFolderWithConflictInSubfolder) {
+  int64_t top_handle, nested_handle, leaf_handle;
+  {
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
+    MutableEntry top_entry(&trans, CREATE, BOOKMARKS, trans.root_id(), "top");
+    ASSERT_TRUE(top_entry.good());
+    top_entry.PutIsDir(true);
+    top_entry.PutSpecifics(DefaultBookmarkSpecifics());
+    top_entry.PutIsUnsynced(true);
+    top_handle = top_entry.GetMetahandle();
+
+    MutableEntry nested_entry(&trans, CREATE, BOOKMARKS, top_entry.GetId(),
+                              "nested");
+    ASSERT_TRUE(nested_entry.good());
+    nested_entry.PutIsDir(true);
+    nested_entry.PutSpecifics(DefaultBookmarkSpecifics());
+    nested_entry.PutIsUnsynced(true);
+    nested_handle = nested_entry.GetMetahandle();
+
+    MutableEntry leaf_entry(&trans, CREATE, BOOKMARKS, nested_entry.GetId(),
+                            "leaf");
+    ASSERT_TRUE(leaf_entry.good());
+    leaf_entry.PutSpecifics(DefaultBookmarkSpecifics());
+    leaf_entry.PutIsUnsynced(true);
+    leaf_handle = leaf_entry.GetMetahandle();
+  }
+  EXPECT_TRUE(SyncShareNudge());
+
+  // Delete all 3 entries and also add unapplied update to the middle one.
+  {
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
+    MutableEntry leaf_entry(&trans, GET_BY_HANDLE, leaf_handle);
+    ASSERT_TRUE(leaf_entry.good());
+    EXPECT_TRUE(leaf_entry.GetId().ServerKnows());
+    leaf_entry.PutIsUnsynced(true);
+    leaf_entry.PutIsDel(true);
+
+    MutableEntry nested_entry(&trans, GET_BY_HANDLE, nested_handle);
+    ASSERT_TRUE(nested_entry.good());
+    EXPECT_TRUE(nested_entry.GetId().ServerKnows());
+    nested_entry.PutIsUnsynced(true);
+    nested_entry.PutIsDel(true);
+
+    sync_pb::EntitySpecifics specifics;
+    specifics.mutable_bookmark()->set_url("http://demo/");
+    specifics.mutable_bookmark()->set_favicon("PNG");
+    nested_entry.PutServerSpecifics(specifics);
+    // This will put the entry into conflict.
+    nested_entry.PutIsUnappliedUpdate(true);
+    nested_entry.PutServerVersion(nested_entry.GetBaseVersion() + 1);
+
+    MutableEntry top_entry(&trans, GET_BY_HANDLE, top_handle);
+    ASSERT_TRUE(top_entry.good());
+    EXPECT_TRUE(top_entry.GetId().ServerKnows());
+    top_entry.PutIsUnsynced(true);
+    top_entry.PutIsDel(true);
+  }
+  EXPECT_TRUE(SyncShareNudge());
+
+  // Verify that the top folder hasn't been committed. Doing so would
+  // orphan the nested folder.
+  syncable::Id top_id;
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    Entry top_entry(&trans, GET_BY_HANDLE, top_handle);
+    ASSERT_TRUE(top_entry.good());
+    top_id = top_entry.GetId();
+
+    EXPECT_TRUE(top_entry.GetIsUnsynced());
+    EXPECT_TRUE(top_entry.GetIsDel());
+  }
+
+  EXPECT_THAT(mock_server_->committed_ids(),
+              testing::Not(testing::Contains(top_id)));
+}
+
+// Test conflict resolution when committing a hierarchy of items and running
+// into a conflict in a parent folder. A conflicting parent must prevent any
+// of its descendants from being committed.
+TEST_F(SyncerTest, CommittingItemsWithConflictInParentFolder) {
+  int64_t top_handle, nested_handle, leaf_handle;
+  {
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
+    MutableEntry top_entry(&trans, CREATE, BOOKMARKS, trans.root_id(), "top");
+    ASSERT_TRUE(top_entry.good());
+    top_entry.PutIsDir(true);
+    top_entry.PutSpecifics(DefaultBookmarkSpecifics());
+    top_entry.PutIsUnsynced(true);
+    top_handle = top_entry.GetMetahandle();
+
+    MutableEntry nested_entry(&trans, CREATE, BOOKMARKS, top_entry.GetId(),
+                              "nested");
+    ASSERT_TRUE(nested_entry.good());
+    nested_entry.PutIsDir(true);
+    nested_entry.PutSpecifics(DefaultBookmarkSpecifics());
+    nested_entry.PutIsUnsynced(true);
+    nested_handle = nested_entry.GetMetahandle();
+
+    MutableEntry leaf_entry(&trans, CREATE, BOOKMARKS, nested_entry.GetId(),
+                            "leaf");
+    ASSERT_TRUE(leaf_entry.good());
+    leaf_entry.PutSpecifics(DefaultBookmarkSpecifics());
+    leaf_entry.PutIsUnsynced(true);
+    leaf_handle = leaf_entry.GetMetahandle();
+  }
+  EXPECT_TRUE(SyncShareNudge());
+
+  // Touch all 3 entries and also add unapplied update to the top one.
+  syncable::Id top_id, nested_id, leaf_id;
+  {
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
+    sync_pb::EntitySpecifics specifics;
+    specifics.mutable_bookmark()->set_url("http://demo/");
+
+    MutableEntry top_entry(&trans, GET_BY_HANDLE, top_handle);
+    ASSERT_TRUE(top_entry.good());
+    top_id = top_entry.GetId();
+    EXPECT_TRUE(top_id.ServerKnows());
+    top_entry.PutIsUnsynced(true);
+    top_entry.PutSpecifics(specifics);
+
+    // This will put the top entry into conflict.
+    top_entry.PutIsUnappliedUpdate(true);
+    top_entry.PutServerIsDel(true);
+    top_entry.PutServerVersion(top_entry.GetBaseVersion() + 1);
+
+    MutableEntry nested_entry(&trans, GET_BY_HANDLE, nested_handle);
+    ASSERT_TRUE(nested_entry.good());
+    nested_id = nested_entry.GetId();
+    EXPECT_TRUE(nested_id.ServerKnows());
+    nested_entry.PutSpecifics(specifics);
+    nested_entry.PutIsUnsynced(true);
+
+    MutableEntry leaf_entry(&trans, GET_BY_HANDLE, leaf_handle);
+    ASSERT_TRUE(leaf_entry.good());
+    leaf_id = leaf_entry.GetId();
+    EXPECT_TRUE(leaf_id.ServerKnows());
+    leaf_entry.PutSpecifics(specifics);
+    leaf_entry.PutIsUnsynced(true);
+  }
+  EXPECT_TRUE(SyncShareNudge());
+
+  // Verify that all 3 entries remain unsynced
+  EXPECT_THAT(mock_server_->committed_ids(),
+              testing::Not(testing::Contains(top_id)));
+  EXPECT_THAT(mock_server_->committed_ids(),
+              testing::Not(testing::Contains(nested_id)));
+  EXPECT_THAT(mock_server_->committed_ids(),
+              testing::Not(testing::Contains(leaf_id)));
+
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+
+    Entry top_entry(&trans, GET_BY_HANDLE, top_handle);
+    ASSERT_TRUE(top_entry.good());
+    ASSERT_TRUE(top_entry.GetIsUnsynced());
+
+    Entry nested_entry(&trans, GET_BY_HANDLE, nested_handle);
+    ASSERT_TRUE(nested_entry.good());
+    ASSERT_TRUE(nested_entry.GetIsUnsynced());
+
+    Entry leaf_entry(&trans, GET_BY_HANDLE, leaf_handle);
+    ASSERT_TRUE(leaf_entry.good());
+    ASSERT_TRUE(leaf_entry.GetIsUnsynced());
+  }
 }
 
 // Test conflict resolution when handling an update for an item with specified
