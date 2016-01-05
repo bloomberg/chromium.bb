@@ -520,6 +520,16 @@ void TabSpecificContentSettings::OnGeolocationPermissionSet(
       content::NotificationService::NoDetails());
 }
 
+void TabSpecificContentSettings::OnDidUseKeygen(const GURL& origin_url) {
+  HostContentSettingsMap* map = HostContentSettingsMapFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  GURL url = web_contents()->GetLastCommittedURL();
+  if (map->GetContentSetting(url, url, CONTENT_SETTINGS_TYPE_KEYGEN,
+                             std::string()) != CONTENT_SETTING_ALLOW) {
+    OnContentBlocked(CONTENT_SETTINGS_TYPE_KEYGEN);
+  }
+}
+
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
 void TabSpecificContentSettings::OnProtectedMediaIdentifierPermissionSet(
     const GURL& requesting_origin,
@@ -748,6 +758,7 @@ bool TabSpecificContentSettings::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(TabSpecificContentSettings, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ContentBlocked,
                         OnContentBlockedWithDetail)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DidUseKeygen, OnDidUseKeygen)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

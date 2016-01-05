@@ -197,6 +197,9 @@ public:
     // This callback is similar, but for plugins.
     virtual void didNotAllowPlugins() { }
 
+    // This callback notifies the client that the frame created a Keygen element.
+    virtual void didUseKeygen() { }
+
     virtual WebCookieJar* cookieJar() const = 0;
 
     virtual void didChangeName(const String&) { }

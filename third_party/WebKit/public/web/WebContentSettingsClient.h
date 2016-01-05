@@ -84,6 +84,9 @@ public:
     // Notifies the client that the frame would have executed script if script were enabled.
     virtual void didNotAllowScript() { }
 
+    // Notifies the client that the frame instantiated a keygen element.
+    virtual void didUseKeygen() { }
+
     virtual ~WebContentSettingsClient() { }
 };
 

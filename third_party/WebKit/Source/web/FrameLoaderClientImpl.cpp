@@ -293,6 +293,12 @@ void FrameLoaderClientImpl::didNotAllowPlugins()
 
 }
 
+void FrameLoaderClientImpl::didUseKeygen()
+{
+    if (m_webFrame->contentSettingsClient())
+        m_webFrame->contentSettingsClient()->didUseKeygen();
+}
+
 bool FrameLoaderClientImpl::hasWebView() const
 {
     return m_webFrame->viewImpl();

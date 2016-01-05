@@ -78,6 +78,7 @@ class ContentSettingsObserver
   bool allowMutationEvents(bool default_value) override;
   void didNotAllowPlugins() override;
   void didNotAllowScript() override;
+  void didUseKeygen() override;
   bool allowDisplayingInsecureContent(bool allowed_per_settings,
                                       const blink::WebSecurityOrigin& context,
                                       const blink::WebURL& url) override;
@@ -151,7 +152,7 @@ class ContentSettingsObserver
   typedef std::pair<GURL, bool> StoragePermissionsKey;
   std::map<StoragePermissionsKey, bool> cached_storage_permissions_;
 
-  // Caches the result of |AllowScript|.
+  // Caches the result of AllowScript.
   std::map<blink::WebFrame*, bool> cached_script_permissions_;
 
   std::set<std::string> temporarily_allowed_plugins_;

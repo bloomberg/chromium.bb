@@ -593,6 +593,13 @@ bool ContentSettingsObserver::allowRunningInsecureContent(
   return true;
 }
 
+void ContentSettingsObserver::didUseKeygen() {
+  WebFrame* frame = render_frame()->GetWebFrame();
+  Send(new ChromeViewHostMsg_DidUseKeygen(
+      routing_id(),
+      GURL(frame->securityOrigin().toString())));
+}
+
 void ContentSettingsObserver::didNotAllowPlugins() {
   DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS);
 }
