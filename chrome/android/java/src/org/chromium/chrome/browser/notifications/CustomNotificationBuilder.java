@@ -100,6 +100,9 @@ public class CustomNotificationBuilder implements NotificationBuilder {
 
     @Override
     public Notification build() {
+        // TODO(mvanouwerkerk): Try inheriting from StandardNotificationBuilder to reduce
+        // duplication.
+
         // A note about RemoteViews and updating notifications. When a notification is passed to the
         // {@code NotificationManager} with the same tag and id as a previous notification, an
         // in-place update will be performed. In that case, the actions of all new
@@ -145,6 +148,16 @@ public class CustomNotificationBuilder implements NotificationBuilder {
         builder.setDefaults(mDefaults);
         builder.setVibrate(mVibratePattern);
         builder.setContent(compactView);
+
+        // Some things are duplicated in the builder to ensure the notification shows correctly on
+        // Wear devices and custom lock screens.
+        builder.setContentTitle(mTitle);
+        builder.setContentText(mBody);
+        builder.setSubText(mOrigin);
+        builder.setLargeIcon(mLargeIcon);
+        for (Action action : mActions) {
+            builder.addAction(action);
+        }
 
         Notification notification = builder.build();
         notification.bigContentView = bigView;
