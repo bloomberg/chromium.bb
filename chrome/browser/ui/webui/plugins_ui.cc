@@ -130,6 +130,50 @@ base::string16 PluginTypeToString(int type) {
   return base::string16();
 }
 
+base::string16 GetPluginDescription(const WebPluginInfo& plugin) {
+  // If this plugin is Pepper Flash, and the plugin path is the same as the
+  // path for the Pepper Flash System plugin, then mark this plugin
+  // description as the system plugin to help the user disambiguate the
+  // two plugins.
+  base::string16 desc = plugin.desc;
+  if (plugin.is_pepper_plugin() &&
+      plugin.name == base::ASCIIToUTF16(content::kFlashPluginName)) {
+    base::FilePath system_flash_path;
+    PathService::Get(chrome::FILE_PEPPER_FLASH_SYSTEM_PLUGIN,
+                     &system_flash_path);
+    if (base::FilePath::CompareEqualIgnoreCase(plugin.path.value(),
+                                               system_flash_path.value())) {
+#if defined(GOOGLE_CHROME_BUILD)
+      // Existing documentation for debugging Flash describe this plugin as
+      // "Debug" so preserve this nomenclature here.
+      desc += base::ASCIIToUTF16(" Debug");
+#else
+      // On Chromium, we can name it what it really is; the system plugin.
+      desc += base::ASCIIToUTF16(" System");
+#endif
+    }
+  }
+  return desc;
+}
+
+scoped_ptr<base::ListValue> GetPluginMimeTypes(const WebPluginInfo& plugin) {
+  scoped_ptr<base::ListValue> mime_types(new base::ListValue());
+  for (const auto& plugin_mime_type: plugin.mime_types) {
+    base::DictionaryValue* mime_type = new base::DictionaryValue();
+    mime_type->SetString("mimeType", plugin_mime_type.mime_type);
+    mime_type->SetString("description", plugin_mime_type.description);
+
+    base::ListValue* file_extensions = new base::ListValue();
+    for (const auto& mime_file_extension : plugin_mime_type.file_extensions) {
+      file_extensions->Append(new base::StringValue(mime_file_extension));
+    }
+    mime_type->Set("fileExtensions", file_extensions);
+    mime_types->Append(mime_type);
+  }
+  return mime_types;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // PluginsDOMHandler
@@ -373,55 +417,11 @@ void PluginsDOMHandler::PluginsLoaded(
 
       base::DictionaryValue* plugin_file = new base::DictionaryValue();
       plugin_file->SetString("name", group_plugin.name);
-
-      // If this plugin is Pepper Flash, and the plugin path is the same as the
-      // path for the Pepper Flash System plugin, then mark this plugin
-      // description as the system plugin to help the user disambiguate the
-      // two plugins.
-      base::string16 desc = group_plugin.desc;
-      if (group_plugin.is_pepper_plugin() &&
-          group_plugin.name == base::ASCIIToUTF16(content::kFlashPluginName)) {
-        base::FilePath system_flash_path;
-        PathService::Get(chrome::FILE_PEPPER_FLASH_SYSTEM_PLUGIN,
-                         &system_flash_path);
-        if (base::FilePath::CompareEqualIgnoreCase(group_plugin.path.value(),
-                                                   system_flash_path.value())) {
-#if defined(GOOGLE_CHROME_BUILD)
-          // Existing documentation for debugging Flash describe this plugin as
-          // "Debug" so preserve this nomenclature here.
-          desc += base::ASCIIToUTF16(" Debug");
-#else
-          // On Chromium, we can name it what it really is; the system plugin.
-          desc += base::ASCIIToUTF16(" System");
-#endif
-        }
-      }
-      plugin_file->SetString("description", desc);
-
+      plugin_file->SetString("description", GetPluginDescription(group_plugin));
       plugin_file->SetString("path", group_plugin.path.value());
       plugin_file->SetString("version", group_plugin.version);
       plugin_file->SetString("type", PluginTypeToString(group_plugin.type));
-
-      base::ListValue* mime_types = new base::ListValue();
-      const std::vector<content::WebPluginMimeType>& plugin_mime_types =
-          group_plugin.mime_types;
-      for (size_t k = 0; k < plugin_mime_types.size(); ++k) {
-        base::DictionaryValue* mime_type = new base::DictionaryValue();
-        mime_type->SetString("mimeType", plugin_mime_types[k].mime_type);
-        mime_type->SetString("description", plugin_mime_types[k].description);
-
-        base::ListValue* file_extensions = new base::ListValue();
-        const std::vector<std::string>& mime_file_extensions =
-            plugin_mime_types[k].file_extensions;
-        for (size_t l = 0; l < mime_file_extensions.size(); ++l) {
-          file_extensions->Append(
-              new base::StringValue(mime_file_extensions[l]));
-        }
-        mime_type->Set("fileExtensions", file_extensions);
-
-        mime_types->Append(mime_type);
-      }
-      plugin_file->Set("mimeTypes", mime_types);
+      plugin_file->Set("mimeTypes", GetPluginMimeTypes(group_plugin));
 
       bool plugin_enabled = plugin_prefs->IsPluginEnabled(group_plugin);
 
@@ -446,11 +446,7 @@ void PluginsDOMHandler::PluginsLoaded(
         } else {
           all_plugins_disabled_by_policy = false;
           all_plugins_managed_by_policy = false;
-          if (plugin_enabled) {
-            enabled_mode = "enabledByUser";
-          } else {
-            enabled_mode = "disabledByUser";
-          }
+          enabled_mode = plugin_enabled ? "enabledByUser" : "disabledByUser";
         }
       }
       plugin_file->SetString("enabledMode", enabled_mode);
