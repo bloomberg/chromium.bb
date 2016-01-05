@@ -5,8 +5,11 @@
 // This is a "No Compile Test" suite.
 // http://dev.chromium.org/developers/testing/no-compile-tests
 
-#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+
+#include <utility>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
 namespace {
@@ -25,7 +28,7 @@ class RefCountedClass : public base::RefCountedThreadSafe<RefCountedClass> {
 #if defined(NCTEST_NO_PASS_DOWNCAST)  // [r"fatal error: no viable conversion from returned value of type 'scoped_ptr<\(anonymous namespace\)::Parent, default_delete<\(anonymous namespace\)::Parent>>' to function return type 'scoped_ptr<\(anonymous namespace\)::Child, default_delete<\(anonymous namespace\)::Child>>'"]
 
 scoped_ptr<Child> DowncastUsingPassAs(scoped_ptr<Parent> object) {
-  return object.Pass();
+  return object;
 }
 
 #elif defined(NCTEST_NO_REF_COUNTED_SCOPED_PTR)  // [r"fatal error: static_assert failed \"T is a refcounted type and needs a scoped_refptr\""]
@@ -46,7 +49,7 @@ void WontCompile() {
 void WontCompile() {
   scoped_ptr<int[]> a;
   scoped_ptr<int*> b;
-  b = a.Pass();
+  b = std::move(a);
 }
 
 #elif defined(NCTEST_NO_PASS_TO_ARRAY)  // [r"fatal error: no viable overloaded '='"]
@@ -54,21 +57,21 @@ void WontCompile() {
 void WontCompile() {
   scoped_ptr<int*> a;
   scoped_ptr<int[]> b;
-  b = a.Pass();
+  b = std::move(a);
 }
 
 #elif defined(NCTEST_NO_CONSTRUCT_FROM_ARRAY)  // [r"fatal error: no matching constructor for initialization of 'scoped_ptr<int \*>'"]
 
 void WontCompile() {
   scoped_ptr<int[]> a;
-  scoped_ptr<int*> b(a.Pass());
+  scoped_ptr<int*> b(std::move(a));
 }
 
 #elif defined(NCTEST_NO_CONSTRUCT_TO_ARRAY)  // [r"fatal error: no matching constructor for initialization of 'scoped_ptr<int \[\]>'"]
 
 void WontCompile() {
   scoped_ptr<int*> a;
-  scoped_ptr<int[]> b(a.Pass());
+  scoped_ptr<int[]> b(std::move(a));
 }
 
 #elif defined(NCTEST_NO_CONSTRUCT_SCOPED_PTR_ARRAY_FROM_NULL)  // [r"is ambiguous"]
