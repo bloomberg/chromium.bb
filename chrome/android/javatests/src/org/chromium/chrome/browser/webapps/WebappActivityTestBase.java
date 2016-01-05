@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.view.ViewGroup;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -193,5 +194,24 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
                 return !getActivity().isSplashScreenVisibleForTests();
             }
         });
+    }
+
+    protected ViewGroup waitUntilSplashScreenAppears() {
+        try {
+            CriteriaHelper.pollForCriteria(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    return getActivity().getSplashScreenForTests() != null;
+                }
+            });
+        } catch (InterruptedException e) {
+            fail();
+        }
+
+        ViewGroup splashScreen = getActivity().getSplashScreenForTests();
+        if (splashScreen == null) {
+            fail("No splash screen available.");
+        }
+        return splashScreen;
     }
 }

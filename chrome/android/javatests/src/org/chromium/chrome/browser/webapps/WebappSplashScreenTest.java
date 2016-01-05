@@ -55,7 +55,7 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
     @Feature({"Webapps"})
     public void testDefaultBackgroundColor() throws Exception {
         startWebappActivity();
-        ViewGroup splashScreen = getActivity().getSplashScreenForTests();
+        ViewGroup splashScreen = waitUntilSplashScreenAppears();
         ColorDrawable background = (ColorDrawable) splashScreen.getBackground();
 
         assertEquals(ApiCompatibilityUtils.getColor(getActivity().getResources(),
@@ -230,8 +230,8 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
         WebappDataStorage.open(context, WEBAPP_ID).updateSplashScreenImage(splashBitmap);
 
         startWebappActivity(createIntent());
+        ViewGroup splashScreen = waitUntilSplashScreenAppears();
         assertTrue(getActivity().isSplashScreenVisibleForTests());
-        ViewGroup splashScreen = getActivity().getSplashScreenForTests();
 
         ImageView splashImage =
                 (ImageView) splashScreen.findViewById(R.id.webapp_splash_screen_icon);
@@ -257,8 +257,8 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
         WebappDataStorage.open(context, WEBAPP_ID).updateSplashScreenImage(splashBitmap);
 
         startWebappActivity(createIntent());
+        ViewGroup splashScreen = waitUntilSplashScreenAppears();
         assertTrue(getActivity().isSplashScreenVisibleForTests());
-        ViewGroup splashScreen = getActivity().getSplashScreenForTests();
 
         // The icon is centered within a fixed-size area on the splash screen.
         ImageView splashImage =
@@ -286,8 +286,8 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
         Intent intent = createIntent();
         intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_GENERATED, true);
         startWebappActivity(intent);
+        ViewGroup splashScreen = waitUntilSplashScreenAppears();
         assertTrue(getActivity().isSplashScreenVisibleForTests());
-        ViewGroup splashScreen = getActivity().getSplashScreenForTests();
 
         // There's no icon displayed.
         ImageView splashImage =
@@ -311,8 +311,8 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
         // Don't register anything for the web app, which represents apps that were added to the
         // home screen before splash screen images were downloaded.
         startWebappActivity(createIntent());
+        ViewGroup splashScreen = waitUntilSplashScreenAppears();
         assertTrue(getActivity().isSplashScreenVisibleForTests());
-        ViewGroup splashScreen = getActivity().getSplashScreenForTests();
 
         // There's no icon displayed.
         ImageView splashImage =

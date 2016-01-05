@@ -37,7 +37,7 @@ public class WebappSplashScreenHomescreenIconTest extends WebappActivityTestBase
     @SmallTest
     @Feature({"Webapps"})
     public void testShowFallbackIcon() {
-        ViewGroup splashScreen = getActivity().getSplashScreenForTests();
+        ViewGroup splashScreen = waitUntilSplashScreenAppears();
         ImageView splashImage = (ImageView) splashScreen.findViewById(
                 R.id.webapp_splash_screen_icon);
         BitmapDrawable drawable = (BitmapDrawable) splashImage.getDrawable();

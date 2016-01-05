@@ -32,7 +32,7 @@ public class WebappSplashScreenBackgroundColorTest extends WebappActivityTestBas
     public void testShowBackgroundColorAndRecordUma() throws Exception {
         startWebappActivity();
 
-        ViewGroup splashScreen = getActivity().getSplashScreenForTests();
+        ViewGroup splashScreen = waitUntilSplashScreenAppears();
         ColorDrawable background = (ColorDrawable) splashScreen.getBackground();
 
         assertEquals(Color.GREEN, background.getColor());
