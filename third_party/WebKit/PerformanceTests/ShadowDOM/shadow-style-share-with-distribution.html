@@ -29,7 +29,7 @@
         } while (++i < listSize);
         document.querySelector('#list').appendChild(frag);
 
-        PerfTestRunner.forceLayoutOrFullFrame();
+        PerfTestRunner.forceLayout();
         return PerfTestRunner.now() - start;
       },
       done: function() {

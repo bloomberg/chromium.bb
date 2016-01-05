@@ -23,9 +23,9 @@
 function runTest()
 {
     document.getElementById("flexbox").style.display = 'flex';
-    PerfTestRunner.forceLayoutOrFullFrame();
+    PerfTestRunner.forceLayout();
     document.getElementById("flexbox").style.display = '';
-    PerfTestRunner.forceLayoutOrFullFrame();
+    PerfTestRunner.forceLayout();
 }
 
 PerfTestRunner.measureRunsPerSecond({

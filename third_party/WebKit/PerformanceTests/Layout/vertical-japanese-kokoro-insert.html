@@ -1612,10 +1612,10 @@
                   };
 
                   function runTest() {
-                      PerfTestRunner.forceLayoutOrFullFrame();
+                      PerfTestRunner.forceLayout();
                       var now = PerfTestRunner.now();
                       insertInto.appendChild(docFragment.cloneNode(true));
-                      PerfTestRunner.forceLayoutOrFullFrame();
+                      PerfTestRunner.forceLayout();
                       var resultTime = PerfTestRunner.now() - now;
                       insertInto.innerHTML = '';
                       return resultTime;

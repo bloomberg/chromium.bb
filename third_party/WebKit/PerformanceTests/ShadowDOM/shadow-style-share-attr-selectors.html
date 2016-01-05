@@ -24,7 +24,7 @@
           list.appendChild(host);
         } while (++i < listSize);
 
-        PerfTestRunner.forceLayoutOrFullFrame();
+        PerfTestRunner.forceLayout();
         return PerfTestRunner.now() - start;
       }
     });

@@ -112,19 +112,6 @@ class _BlinkPerfMeasurement(page_test.PageTest):
     print log
 
 
-class _BlinkPerfFullFrameMeasurement(_BlinkPerfMeasurement):
-  def __init__(self):
-    super(_BlinkPerfFullFrameMeasurement, self).__init__()
-    self._blink_perf_js += '\nwindow.fullFrameMeasurement = true;'
-
-  def CustomizeBrowserOptions(self, options):
-    super(_BlinkPerfFullFrameMeasurement, self).CustomizeBrowserOptions(
-        options)
-    # Full layout measurement needs content_shell with internals testing API.
-    assert 'content-shell' in options.browser_type
-    options.AppendExtraBrowserArgs(['--expose-internals-for-testing'])
-
-
 class _SharedPywebsocketPageState(shared_page_state.SharedPageState):
   """Runs a pywebsocket server."""
   def __init__(self, test, finder_options, user_story_set):
@@ -245,16 +232,6 @@ class BlinkPerfLayout(perf_benchmark.PerfBenchmark):
     return cls.IsSvelte(possible_browser)  # http://crbug.com/551950
 
 
-@benchmark.Enabled('content-shell')
-class BlinkPerfLayoutFullLayout(BlinkPerfLayout):
-  tag = 'layout_full_frame'
-  test = _BlinkPerfFullFrameMeasurement
-
-  @classmethod
-  def Name(cls):
-    return 'blink_perf.layout_full_frame'
-
-
 class BlinkPerfPaint(perf_benchmark.PerfBenchmark):
   tag = 'paint'
   test = _BlinkPerfMeasurement
@@ -294,16 +271,6 @@ class BlinkPerfSVG(perf_benchmark.PerfBenchmark):
   def CreateStorySet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'SVG')
     return CreateStorySetFromPath(path, SKIPPED_FILE)
-
-
-@benchmark.Enabled('content-shell')
-class BlinkPerfSVGFullLayout(BlinkPerfSVG):
-  tag = 'svg_full_frame'
-  test = _BlinkPerfFullFrameMeasurement
-
-  @classmethod
-  def Name(cls):
-    return 'blink_perf.svg_full_frame'
 
 
 class BlinkPerfShadowDOM(perf_benchmark.PerfBenchmark):

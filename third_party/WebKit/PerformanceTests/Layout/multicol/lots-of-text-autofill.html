@@ -656,9 +656,9 @@
 
     function test() {
         style.display = "block";
-        PerfTestRunner.forceLayoutOrFullFrame();
+        PerfTestRunner.forceLayout();
         style.display = "none";
-        PerfTestRunner.forceLayoutOrFullFrame();
+        PerfTestRunner.forceLayout();
     }
 
     PerfTestRunner.measureRunsPerSecond({

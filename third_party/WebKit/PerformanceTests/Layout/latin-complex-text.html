@@ -96,10 +96,10 @@
             };
 
             function runTest() {
-                PerfTestRunner.forceLayoutOrFullFrame();
+                PerfTestRunner.forceLayout();
                 var now = PerfTestRunner.now();
                 document.body.appendChild(docFragment.cloneNode(true));
-                PerfTestRunner.forceLayoutOrFullFrame();
+                PerfTestRunner.forceLayout();
                 var resultTime = PerfTestRunner.now() - now;
                 document.body.removeChild(document.body.lastChild);
                 return resultTime;

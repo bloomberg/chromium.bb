@@ -19,7 +19,7 @@ function buildTree()
 
 function setup() {
     wrapper.style.display = "block";
-    PerfTestRunner.forceLayoutOrFullFrame();
+    PerfTestRunner.forceLayout();
 }
 
 function runTest() {
@@ -28,7 +28,7 @@ function runTest() {
     var now = PerfTestRunner.now();
 
     wrapper.style.display = "none";
-    PerfTestRunner.forceLayoutOrFullFrame();
+    PerfTestRunner.forceLayout();
 
     return PerfTestRunner.now() - now;
 }

@@ -49,7 +49,7 @@
                     var y = Math.floor(Math.random() * height);
                     var el = document.getElementById("float" + x + "_" + y);
                     el.className = toggle(el.className, "float", "float big");
-                    PerfTestRunner.forceLayoutOrFullFrame();
+                    PerfTestRunner.forceLayout();
                 }
                 resetTest();
                 container.style.display = "none";

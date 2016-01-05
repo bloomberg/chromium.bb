@@ -574,7 +574,6 @@
             '../chrome/chrome.gyp:load_library_perf_tests',
             '../chrome/chrome.gyp:performance_browser_tests',
             '../chrome/chrome.gyp:sync_performance_tests',
-            '../content/content_shell_and_tests.gyp:content_shell',
             '../gpu/gpu.gyp:gpu_perftests',
             '../media/media.gyp:media_perftests',
             '../media/midi/midi.gyp:midi_unittests',

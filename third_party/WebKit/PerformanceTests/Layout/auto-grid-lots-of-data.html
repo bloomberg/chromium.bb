@@ -21,14 +21,14 @@ body {
 <script src="../resources/runner.js"></script>
 <script>
 function startTest() {
-    PerfTestRunner.forceLayoutOrFullFrame();
+    PerfTestRunner.forceLayout();
 
     var index = 0;
     PerfTestRunner.measureRunsPerSecond({
         description: "Measures performance of layout on a page using CSS grid layout.",
         run: function() {
             document.body.style.width = ++index % 2 ? "99%" : "98%";
-            PerfTestRunner.forceLayoutOrFullFrame();
+            PerfTestRunner.forceLayout();
         }
     });
 }

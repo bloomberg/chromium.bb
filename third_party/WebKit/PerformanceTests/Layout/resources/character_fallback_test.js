@@ -21,7 +21,7 @@ function replaceTextAndWaitForLayout(charSelection) {
     while (target.firstChild)
         target.removeChild(target.firstChild);
     target.appendChild(document.createTextNode(charSelection));
-    PerfTestRunner.forceLayoutOrFullFrame();
+    PerfTestRunner.forceLayout();
 }
 
 function cleanup() {
