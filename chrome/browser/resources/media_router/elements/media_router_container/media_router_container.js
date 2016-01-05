@@ -741,6 +741,11 @@ Polymer({
     this.mouseIsPositionedOverDialog_ = true;
   },
 
+  /**
+   * Handles timeout of previous create route attempt. Clearing
+   * |currentLaunchingSinkId_| hides the spinner indicating there is a route
+   * creation in progress and show the device icon instead.
+   */
   onNotifyRouteCreationTimeout: function() {
     this.currentLaunchingSinkId_ = '';
   },
