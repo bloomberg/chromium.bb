@@ -790,6 +790,8 @@ v8::Local<v8::Context> toV8Context(Frame* frame, DOMWrapperWorld& world)
     if (!frame)
         return v8::Local<v8::Context>();
     v8::Local<v8::Context> context = toV8ContextEvenIfDetached(frame, world);
+    if (context.IsEmpty())
+        return v8::Local<v8::Context>();
     ScriptState* scriptState = ScriptState::from(context);
     if (scriptState->contextIsValid()) {
         ASSERT(toFrameIfNotDetached(context) == frame);
@@ -801,7 +803,7 @@ v8::Local<v8::Context> toV8Context(Frame* frame, DOMWrapperWorld& world)
 v8::Local<v8::Context> toV8ContextEvenIfDetached(Frame* frame, DOMWrapperWorld& world)
 {
     ASSERT(frame);
-    return frame->windowProxy(world)->context();
+    return frame->windowProxy(world)->contextIfInitialized();
 }
 
 void crashIfIsolateIsDead(v8::Isolate* isolate)

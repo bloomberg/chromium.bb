@@ -58,7 +58,7 @@ public:
     ~WindowProxy();
     DECLARE_TRACE();
 
-    v8::Local<v8::Context> context() const { return m_scriptState ? m_scriptState->context() : v8::Local<v8::Context>(); }
+    v8::Local<v8::Context> contextIfInitialized() const { return m_scriptState ? m_scriptState->context() : v8::Local<v8::Context>(); }
     ScriptState* scriptState() const { return m_scriptState.get(); }
 
     // Update document object of the frame.
