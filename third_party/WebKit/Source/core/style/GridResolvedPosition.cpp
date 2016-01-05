@@ -65,7 +65,7 @@ static void initialAndFinalPositionsFromStyle(const ComputedStyle& gridContainer
 static GridSpan definiteGridSpanWithInitialNamedSpanAgainstOpposite(size_t resolvedOppositePosition, const GridPosition& position, const Vector<size_t>& gridLines)
 {
     if (resolvedOppositePosition == 0)
-        return GridSpan::definiteGridSpan(resolvedOppositePosition, resolvedOppositePosition + 1);
+        return GridSpan::untranslatedDefiniteGridSpan(resolvedOppositePosition, resolvedOppositePosition + 1);
 
     size_t firstLineBeforeOppositePositionIndex = 0;
     const size_t* firstLineBeforeOppositePosition = std::lower_bound(gridLines.begin(), gridLines.end(), resolvedOppositePosition);
@@ -75,7 +75,7 @@ static GridSpan definiteGridSpanWithInitialNamedSpanAgainstOpposite(size_t resol
     size_t resolvedGridLinePosition = gridLines[gridLineIndex];
     if (resolvedGridLinePosition >= resolvedOppositePosition)
         resolvedGridLinePosition = resolvedOppositePosition - 1;
-    return GridSpan::definiteGridSpan(resolvedGridLinePosition, resolvedOppositePosition);
+    return GridSpan::untranslatedDefiniteGridSpan(resolvedGridLinePosition, resolvedOppositePosition);
 }
 
 static GridSpan definiteGridSpanWithFinalNamedSpanAgainstOpposite(size_t resolvedOppositePosition, const GridPosition& position, const Vector<size_t>& gridLines)
@@ -90,7 +90,7 @@ static GridSpan definiteGridSpanWithFinalNamedSpanAgainstOpposite(size_t resolve
     if (resolvedGridLinePosition <= resolvedOppositePosition)
         resolvedGridLinePosition = resolvedOppositePosition + 1;
 
-    return GridSpan::definiteGridSpan(resolvedOppositePosition, resolvedGridLinePosition);
+    return GridSpan::untranslatedDefiniteGridSpan(resolvedOppositePosition, resolvedGridLinePosition);
 }
 
 static GridSpan definiteGridSpanWithNamedSpanAgainstOpposite(size_t resolvedOppositePosition, const GridPosition& position, GridPositionSide side, const Vector<size_t>& gridLines)
@@ -115,8 +115,8 @@ static GridSpan resolveNamedGridLinePositionAgainstOppositePosition(const Comput
     // See http://lists.w3.org/Archives/Public/www-style/2013Jun/0394.html.
     if (it == gridLinesNames.end()) {
         if ((side == ColumnStartSide || side == RowStartSide) && resolvedOppositePosition)
-            return GridSpan::definiteGridSpan(resolvedOppositePosition - 1, resolvedOppositePosition);
-        return GridSpan::definiteGridSpan(resolvedOppositePosition, resolvedOppositePosition + 1);
+            return GridSpan::untranslatedDefiniteGridSpan(resolvedOppositePosition - 1, resolvedOppositePosition);
+        return GridSpan::untranslatedDefiniteGridSpan(resolvedOppositePosition, resolvedOppositePosition + 1);
     }
 
     return definiteGridSpanWithNamedSpanAgainstOpposite(resolvedOppositePosition, position, side, it->value);
@@ -125,23 +125,18 @@ static GridSpan resolveNamedGridLinePositionAgainstOppositePosition(const Comput
 static GridSpan definiteGridSpanWithSpanAgainstOpposite(size_t resolvedOppositePosition, const GridPosition& position, GridPositionSide side)
 {
     size_t positionOffset = position.spanPosition();
-    if (side == ColumnStartSide || side == RowStartSide) {
-        if (resolvedOppositePosition == 0)
-            return GridSpan::definiteGridSpan(resolvedOppositePosition, resolvedOppositePosition + 1);
+    if (side == ColumnStartSide || side == RowStartSide)
+        return GridSpan::untranslatedDefiniteGridSpan(resolvedOppositePosition - positionOffset, resolvedOppositePosition);
 
-        size_t initialResolvedPosition = std::max<int>(0, resolvedOppositePosition - positionOffset);
-        return GridSpan::definiteGridSpan(initialResolvedPosition, resolvedOppositePosition);
-    }
-
-    return GridSpan::definiteGridSpan(resolvedOppositePosition, resolvedOppositePosition + positionOffset);
+    return GridSpan::untranslatedDefiniteGridSpan(resolvedOppositePosition, resolvedOppositePosition + positionOffset);
 }
 
 static GridSpan resolveGridPositionAgainstOppositePosition(const ComputedStyle& gridContainerStyle, size_t resolvedOppositePosition, const GridPosition& position, GridPositionSide side)
 {
     if (position.isAuto()) {
-        if ((side == ColumnStartSide || side == RowStartSide) && resolvedOppositePosition)
-            return GridSpan::definiteGridSpan(resolvedOppositePosition - 1, resolvedOppositePosition);
-        return GridSpan::definiteGridSpan(resolvedOppositePosition, resolvedOppositePosition + 1);
+        if (side == ColumnStartSide || side == RowStartSide)
+            return GridSpan::untranslatedDefiniteGridSpan(resolvedOppositePosition - 1, resolvedOppositePosition);
+        return GridSpan::untranslatedDefiniteGridSpan(resolvedOppositePosition, resolvedOppositePosition + 1);
     }
 
     ASSERT(position.isSpan());
@@ -174,12 +169,12 @@ size_t GridResolvedPosition::spanSizeForAutoPlacedItem(const ComputedStyle& grid
 
 size_t GridResolvedPosition::explicitGridColumnCount(const ComputedStyle& gridContainerStyle)
 {
-    return std::min(gridContainerStyle.gridTemplateColumns().size(), kGridMaxTracks);
+    return std::min<size_t>(gridContainerStyle.gridTemplateColumns().size(), kGridMaxTracks);
 }
 
 size_t GridResolvedPosition::explicitGridRowCount(const ComputedStyle& gridContainerStyle)
 {
-    return std::min(gridContainerStyle.gridTemplateRows().size(), kGridMaxTracks);
+    return std::min<size_t>(gridContainerStyle.gridTemplateRows().size(), kGridMaxTracks);
 }
 
 static size_t explicitGridSizeForSide(const ComputedStyle& gridContainerStyle, GridPositionSide side)
@@ -208,7 +203,7 @@ static size_t resolveNamedGridLinePositionFromStyle(const ComputedStyle& gridCon
     return it->value[namedGridLineIndex];
 }
 
-static size_t resolveGridPositionFromStyle(const ComputedStyle& gridContainerStyle, const GridPosition& position, GridPositionSide side)
+static int resolveGridPositionFromStyle(const ComputedStyle& gridContainerStyle, const GridPosition& position, GridPositionSide side)
 {
     switch (position.type()) {
     case ExplicitPosition: {
@@ -223,10 +218,6 @@ static size_t resolveGridPositionFromStyle(const ComputedStyle& gridContainerSty
 
         size_t resolvedPosition = abs(position.integerPosition()) - 1;
         size_t endOfTrack = explicitGridSizeForSide(gridContainerStyle, side);
-
-        // Per http://lists.w3.org/Archives/Public/www-style/2013Mar/0589.html, we clamp negative value to the first line.
-        if (endOfTrack < resolvedPosition)
-            return 0;
 
         return endOfTrack - resolvedPosition;
     }
@@ -280,25 +271,25 @@ GridSpan GridResolvedPosition::resolveGridPositionsFromStyle(const ComputedStyle
 
     if (initialPosition.shouldBeResolvedAgainstOppositePosition()) {
         // Infer the position from the final position ('auto / 1' or 'span 2 / 3' case).
-        size_t finalResolvedPosition = resolveGridPositionFromStyle(gridContainerStyle, finalPosition, finalSide);
+        int finalResolvedPosition = resolveGridPositionFromStyle(gridContainerStyle, finalPosition, finalSide);
         return resolveGridPositionAgainstOppositePosition(gridContainerStyle, finalResolvedPosition, initialPosition, initialSide);
     }
 
     if (finalPosition.shouldBeResolvedAgainstOppositePosition()) {
         // Infer our position from the initial position ('1 / auto' or '3 / span 2' case).
-        size_t initialResolvedPosition = resolveGridPositionFromStyle(gridContainerStyle, initialPosition, initialSide);
+        int initialResolvedPosition = resolveGridPositionFromStyle(gridContainerStyle, initialPosition, initialSide);
         return resolveGridPositionAgainstOppositePosition(gridContainerStyle, initialResolvedPosition, finalPosition, finalSide);
     }
 
-    size_t resolvedInitialPosition = resolveGridPositionFromStyle(gridContainerStyle, initialPosition, initialSide);
-    size_t resolvedFinalPosition = resolveGridPositionFromStyle(gridContainerStyle, finalPosition, finalSide);
+    int resolvedInitialPosition = resolveGridPositionFromStyle(gridContainerStyle, initialPosition, initialSide);
+    int resolvedFinalPosition = resolveGridPositionFromStyle(gridContainerStyle, finalPosition, finalSide);
 
     if (resolvedFinalPosition < resolvedInitialPosition)
         std::swap(resolvedFinalPosition, resolvedInitialPosition);
     else if (resolvedFinalPosition == resolvedInitialPosition)
         resolvedFinalPosition = resolvedInitialPosition + 1;
 
-    return GridSpan::definiteGridSpan(resolvedInitialPosition, resolvedFinalPosition);
+    return GridSpan::untranslatedDefiniteGridSpan(resolvedInitialPosition, resolvedFinalPosition);
 }
 
 } // namespace blink

@@ -22,8 +22,6 @@
     grid-column: auto / 8;
 }
 
-/* These 2 classes forces the grid to be sized after the grid-{end|after}, thus end up in the
-   first row / columns. */
 .negativeOverflowingRowFirstColumn {
     grid-row: auto / -10;
     grid-column: 1;
@@ -132,15 +130,15 @@
 
 <div class="unconstrainedContainer">
     <div class="grid bigGrid gridAutoFlowColumnDense">
-        <div class="sizedToGridArea negativeOverflowingRowFirstColumn" data-offset-x="0" data-offset-y="0" data-expected-width="50" data-expected-height="50">XXXXX XXXXX XXXXX</div>
-        <div class="sizedToGridArea secondRowNegativeOverflowingColumn" data-offset-x="0" data-offset-y="50" data-expected-width="50" data-expected-height="100">XXXXX XXXXX XXXXX</div>
+        <div class="sizedToGridArea negativeOverflowingRowFirstColumn" data-offset-x="170" data-offset-y="0" data-expected-width="50" data-expected-height="30">XXXXX XXXXX XXXXX</div>
+        <div class="sizedToGridArea secondRowNegativeOverflowingColumn" data-offset-x="0" data-offset-y="80" data-expected-width="170" data-expected-height="100">XXXXX XXXXX XXXXX</div>
     </div>
 </div>
 
 <div class="unconstrainedContainer">
     <div class="grid bigGrid gridAutoFlowRowDense">
-        <div class="sizedToGridArea negativeOverflowingRowFirstColumn" data-offset-x="0" data-offset-y="0" data-expected-width="50" data-expected-height="50">XXXXX XXXXX XXXXX</div>
-        <div class="sizedToGridArea secondRowNegativeOverflowingColumn" data-offset-x="0" data-offset-y="50" data-expected-width="50" data-expected-height="100">XXXXX XXXXX XXXXX</div>
+        <div class="sizedToGridArea negativeOverflowingRowFirstColumn" data-offset-x="170" data-offset-y="0" data-expected-width="50" data-expected-height="30">XXXXX XXXXX XXXXX</div>
+        <div class="sizedToGridArea secondRowNegativeOverflowingColumn" data-offset-x="0" data-offset-y="80" data-expected-width="170" data-expected-height="100">XXXXX XXXXX XXXXX</div>
     </div>
 </div>
 

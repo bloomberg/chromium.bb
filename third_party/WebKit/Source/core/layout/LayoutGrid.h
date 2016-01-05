@@ -213,6 +213,9 @@ private:
 
     LayoutUnit m_minContentHeight { -1 };
     LayoutUnit m_maxContentHeight { -1 };
+
+    int m_smallestRowStart;
+    int m_smallestColumnStart;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutGrid, isLayoutGrid());
