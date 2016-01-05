@@ -81,8 +81,9 @@ class BrowserHeaderPainterAsh : public ash::HeaderPainter,
   // browser windows and for hosted app windows which show the toolbar.
   gfx::ImageSkia GetFrameImageForNonTabbedBrowser(Mode mode) const;
 
-  // Updates the images used for the minimize, restore and close buttons.
-  void UpdateCaptionButtonImages();
+  // Updates the size and icons used for the minimize, restore, and close
+  // buttons.
+  void UpdateCaptionButtons();
 
   // Returns bounds of the region in |view_| which is painted with the header
   // images. The region is assumed to start at the top left corner of |view_|

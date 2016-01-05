@@ -4,6 +4,7 @@
 
 #include "ash/frame/default_header_painter.h"
 
+#include "ash/ash_layout_constants.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/header_painter_util.h"
 #include "base/debug/leak_annotations.h"
@@ -101,6 +102,8 @@ void DefaultHeaderPainter::Init(
   frame_ = frame;
   view_ = header_view;
   caption_button_container_ = caption_button_container;
+  caption_button_container_->SetButtonSize(
+      GetAshLayoutSize(AshLayoutSize::NON_BROWSER_CAPTION_BUTTON));
   UpdateAllButtonImages();
 }
 
@@ -293,35 +296,27 @@ bool DefaultHeaderPainter::ShouldUseLightImages() {
 
 void DefaultHeaderPainter::UpdateAllButtonImages() {
   bool use_light_images = ShouldUseLightImages();
-  caption_button_container_->SetButtonImages(
+  caption_button_container_->SetButtonImage(
       CAPTION_BUTTON_ICON_MINIMIZE,
       use_light_images ? IDR_AURA_WINDOW_CONTROL_ICON_MINIMIZE_WHITE
-                       : IDR_AURA_WINDOW_CONTROL_ICON_MINIMIZE,
-      IDR_AURA_WINDOW_CONTROL_BACKGROUND_H,
-      IDR_AURA_WINDOW_CONTROL_BACKGROUND_P);
+                       : IDR_AURA_WINDOW_CONTROL_ICON_MINIMIZE);
 
   UpdateSizeButtonImages(use_light_images);
 
-  caption_button_container_->SetButtonImages(
-      CAPTION_BUTTON_ICON_CLOSE,
-      use_light_images ? IDR_AURA_WINDOW_CONTROL_ICON_CLOSE_WHITE
-                       : IDR_AURA_WINDOW_CONTROL_ICON_CLOSE,
-      IDR_AURA_WINDOW_CONTROL_BACKGROUND_H,
-      IDR_AURA_WINDOW_CONTROL_BACKGROUND_P);
+  caption_button_container_->SetButtonImage(
+      CAPTION_BUTTON_ICON_CLOSE, use_light_images
+                                     ? IDR_AURA_WINDOW_CONTROL_ICON_CLOSE_WHITE
+                                     : IDR_AURA_WINDOW_CONTROL_ICON_CLOSE);
 
-  caption_button_container_->SetButtonImages(
+  caption_button_container_->SetButtonImage(
       CAPTION_BUTTON_ICON_LEFT_SNAPPED,
       use_light_images ? IDR_AURA_WINDOW_CONTROL_ICON_LEFT_SNAPPED_WHITE
-                       : IDR_AURA_WINDOW_CONTROL_ICON_LEFT_SNAPPED,
-      IDR_AURA_WINDOW_CONTROL_BACKGROUND_H,
-      IDR_AURA_WINDOW_CONTROL_BACKGROUND_P);
+                       : IDR_AURA_WINDOW_CONTROL_ICON_LEFT_SNAPPED);
 
-  caption_button_container_->SetButtonImages(
+  caption_button_container_->SetButtonImage(
       CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
       use_light_images ? IDR_AURA_WINDOW_CONTROL_ICON_RIGHT_SNAPPED_WHITE
-                       : IDR_AURA_WINDOW_CONTROL_ICON_RIGHT_SNAPPED,
-      IDR_AURA_WINDOW_CONTROL_BACKGROUND_H,
-      IDR_AURA_WINDOW_CONTROL_BACKGROUND_P);
+                       : IDR_AURA_WINDOW_CONTROL_ICON_RIGHT_SNAPPED);
 }
 
 void DefaultHeaderPainter::UpdateSizeButtonImages(bool use_light_images) {
@@ -333,11 +328,8 @@ void DefaultHeaderPainter::UpdateSizeButtonImages(bool use_light_images) {
     icon_id = use_light_images ? IDR_AURA_WINDOW_CONTROL_ICON_MAXIMIZE_WHITE
                                : IDR_AURA_WINDOW_CONTROL_ICON_MAXIMIZE;
   }
-  caption_button_container_->SetButtonImages(
-      CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
-      icon_id,
-      IDR_AURA_WINDOW_CONTROL_BACKGROUND_H,
-      IDR_AURA_WINDOW_CONTROL_BACKGROUND_P);
+  caption_button_container_->SetButtonImage(
+      CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, icon_id);
 }
 
 gfx::Rect DefaultHeaderPainter::GetLocalBounds() const {

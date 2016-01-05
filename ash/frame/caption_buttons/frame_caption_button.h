@@ -32,18 +32,14 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
   FrameCaptionButton(views::ButtonListener* listener, CaptionButtonIcon icon);
   ~FrameCaptionButton() override;
 
-  // Sets the images to use to paint the button. If |animate| is ANIMATE_YES,
-  // the button crossfades to the new visuals. If the image ids match those
-  // currently used by the button and |animate| is ANIMATE_NO the crossfade
+  // Sets the image to use to paint the button. If |animate| is ANIMATE_YES,
+  // the button crossfades to the new visuals. If the image id matches the one
+  // currently used by the button and |animate| is ANIMATE_NO, the crossfade
   // animation is progressed to the end.
-  void SetImages(CaptionButtonIcon icon,
-                 Animate animate,
-                 int icon_image_id,
-                 int hovered_background_image_id,
-                 int pressed_background_image_id);
+  void SetImage(CaptionButtonIcon icon, Animate animate, int icon_image_id);
 
   // Returns true if the button is crossfading to new visuals set in
-  // SetImages().
+  // SetImage().
   bool IsAnimatingImageSwap() const;
 
   // Sets the alpha to use for painting. Used to animate visibility changes.
@@ -64,6 +60,8 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
 
   int icon_image_id() const { return icon_image_id_; }
 
+  void set_size(const gfx::Size& size) { size_ = size; }
+
  protected:
   // views::CustomButton override:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -77,25 +75,24 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
   // The button's current icon.
   CaptionButtonIcon icon_;
 
+  // The size of the button.
+  gfx::Size size_;
+
   // Whether the button should be painted as active.
   bool paint_as_active_;
 
   // Current alpha to use for painting.
   int alpha_;
 
-  // The images and image ids used to paint the button.
+  // The image id and image used to paint the button's icon.
   int icon_image_id_;
-  int hovered_background_image_id_;
-  int pressed_background_image_id_;
   gfx::ImageSkia icon_image_;
-  gfx::ImageSkia hovered_background_image_;
-  gfx::ImageSkia pressed_background_image_;
 
   // The icon image to crossfade from.
   gfx::ImageSkia crossfade_icon_image_;
 
   // Crossfade animation started when the button's images are changed by
-  // SetImages().
+  // SetImage().
   scoped_ptr<gfx::SlideAnimation> swap_images_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameCaptionButton);

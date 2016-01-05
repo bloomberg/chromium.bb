@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_header_painter_ash.h"
 
+#include "ash/ash_layout_constants.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/header_painter_util.h"
 #include "base/logging.h"  // DCHECK
@@ -238,7 +239,7 @@ void BrowserHeaderPainterAsh::LayoutHeader() {
   // on having laid out the window controls.
   painted_height_ = -1;
 
-  UpdateCaptionButtonImages();
+  UpdateCaptionButtons();
   caption_button_container_->Layout();
 
   gfx::Size caption_button_container_size =
@@ -399,52 +400,32 @@ gfx::ImageSkia BrowserHeaderPainterAsh::GetFrameImageForNonTabbedBrowser(
       IDR_THEME_FRAME_INCOGNITO_INACTIVE : IDR_THEME_FRAME_INACTIVE);
 }
 
-void BrowserHeaderPainterAsh::UpdateCaptionButtonImages() {
-  int hover_background_id = 0;
-  int pressed_background_id = 0;
-  if (frame_->IsMaximized() || frame_->IsFullscreen()) {
-    hover_background_id =
-        IDR_ASH_BROWSER_WINDOW_CONTROL_BACKGROUND_MAXIMIZED_H;
-    pressed_background_id =
-        IDR_ASH_BROWSER_WINDOW_CONTROL_BACKGROUND_MAXIMIZED_P;
-  } else {
-    hover_background_id =
-        IDR_ASH_BROWSER_WINDOW_CONTROL_BACKGROUND_RESTORED_H;
-    pressed_background_id =
-        IDR_ASH_BROWSER_WINDOW_CONTROL_BACKGROUND_RESTORED_P;
-  }
-  caption_button_container_->SetButtonImages(
+void BrowserHeaderPainterAsh::UpdateCaptionButtons() {
+  caption_button_container_->SetButtonImage(
       ash::CAPTION_BUTTON_ICON_MINIMIZE,
-      IDR_AURA_WINDOW_CONTROL_ICON_MINIMIZE,
-      hover_background_id,
-      pressed_background_id);
-
-  int size_icon_id = 0;
-  if (frame_->IsMaximized() || frame_->IsFullscreen())
-    size_icon_id = IDR_AURA_WINDOW_CONTROL_ICON_RESTORE;
-  else
-    size_icon_id = IDR_AURA_WINDOW_CONTROL_ICON_MAXIMIZE;
-  caption_button_container_->SetButtonImages(
-      ash::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
-      size_icon_id,
-      hover_background_id,
-      pressed_background_id);
-
-  caption_button_container_->SetButtonImages(
+      IDR_AURA_WINDOW_CONTROL_ICON_MINIMIZE);
+  caption_button_container_->SetButtonImage(
       ash::CAPTION_BUTTON_ICON_CLOSE,
-      IDR_AURA_WINDOW_CONTROL_ICON_CLOSE,
-      hover_background_id,
-      pressed_background_id);
-  caption_button_container_->SetButtonImages(
+      IDR_AURA_WINDOW_CONTROL_ICON_CLOSE);
+  caption_button_container_->SetButtonImage(
       ash::CAPTION_BUTTON_ICON_LEFT_SNAPPED,
-      IDR_AURA_WINDOW_CONTROL_ICON_LEFT_SNAPPED,
-      hover_background_id,
-      pressed_background_id);
-  caption_button_container_->SetButtonImages(
+      IDR_AURA_WINDOW_CONTROL_ICON_LEFT_SNAPPED);
+  caption_button_container_->SetButtonImage(
       ash::CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
-      IDR_AURA_WINDOW_CONTROL_ICON_RIGHT_SNAPPED,
-      hover_background_id,
-      pressed_background_id);
+      IDR_AURA_WINDOW_CONTROL_ICON_RIGHT_SNAPPED);
+
+  int size_icon_id = IDR_AURA_WINDOW_CONTROL_ICON_MAXIMIZE;
+  gfx::Size button_size(
+      GetAshLayoutSize(AshLayoutSize::BROWSER_RESTORED_CAPTION_BUTTON));
+  if (frame_->IsMaximized() || frame_->IsFullscreen()) {
+    size_icon_id = IDR_AURA_WINDOW_CONTROL_ICON_RESTORE;
+    button_size =
+        GetAshLayoutSize(AshLayoutSize::BROWSER_MAXIMIZED_CAPTION_BUTTON);
+  }
+  caption_button_container_->SetButtonImage(
+      ash::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
+      size_icon_id);
+  caption_button_container_->SetButtonSize(button_size);
 }
 
 gfx::Rect BrowserHeaderPainterAsh::GetPaintedBounds() const {

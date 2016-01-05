@@ -25,10 +25,9 @@ WebAppLeftHeaderView::WebAppLeftHeaderView(BrowserView* browser_view)
 
   back_button_ =
       new ash::FrameCaptionButton(this, ash::CAPTION_BUTTON_ICON_BACK);
-  back_button_->SetImages(
-      ash::CAPTION_BUTTON_ICON_BACK, ash::FrameCaptionButton::ANIMATE_NO,
-      IDR_AURA_WINDOW_CONTROL_ICON_BACK, IDR_AURA_WINDOW_CONTROL_BACKGROUND_H,
-      IDR_AURA_WINDOW_CONTROL_BACKGROUND_P);
+  back_button_->SetImage(ash::CAPTION_BUTTON_ICON_BACK,
+                         ash::FrameCaptionButton::ANIMATE_NO,
+                         IDR_AURA_WINDOW_CONTROL_ICON_BACK);
   AddChildView(back_button_);
 
   location_icon_ =
@@ -43,10 +42,9 @@ WebAppLeftHeaderView::~WebAppLeftHeaderView() {
 
 void WebAppLeftHeaderView::Update() {
   int icon_resource = browser_view_->browser()->toolbar_model()->GetIcon();
-  location_icon_->SetImages(ash::CAPTION_BUTTON_ICON_LOCATION,
-                            ash::FrameCaptionButton::ANIMATE_NO, icon_resource,
-                            IDR_AURA_WINDOW_CONTROL_BACKGROUND_H,
-                            IDR_AURA_WINDOW_CONTROL_BACKGROUND_P);
+  location_icon_->SetImage(ash::CAPTION_BUTTON_ICON_LOCATION,
+                           ash::FrameCaptionButton::ANIMATE_NO,
+                           icon_resource);
 
   back_button_->SetState(
       chrome::IsCommandEnabled(browser_view_->browser(), IDC_BACK)

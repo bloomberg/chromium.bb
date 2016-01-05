@@ -177,6 +177,14 @@ int BrowserNonClientFrameViewAsh::GetTopInset(bool restored) const {
     return 0;
 
   if (browser_view()->IsTabStripVisible()) {
+    // TODO(tdanderson): Remove this temporary hack to prevent the buttons in
+    //                   the header from overlapping the tabstrip/toolbar
+    //                   separator in material design.
+    if (ui::MaterialDesignController::IsModeMaterial()) {
+      return header_painter_->GetHeaderHeight() -
+          browser_view()->GetTabStripHeight();
+    }
+
     return ((frame()->IsMaximized() || frame()->IsFullscreen()) && !restored) ?
         kTabstripTopSpacingShort : kTabstripTopSpacingTall;
   }

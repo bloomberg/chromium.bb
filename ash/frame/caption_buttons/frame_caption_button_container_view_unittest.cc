@@ -4,6 +4,7 @@
 
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 
+#include "ash/ash_layout_constants.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -69,15 +70,14 @@ class FrameCaptionButtonContainerViewTest : public ash::test::AshTestBase {
     return widget;
   }
 
-  // Sets |container| to use arbitrary images for the buttons. Setting the
-  // images causes the buttons to have non-empty sizes.
-  void SetMockImages(FrameCaptionButtonContainerView* container) {
+  // Sets arbitrary images for the icons and assign the default caption button
+  // size to the buttons in |container|.
+  void InitContainer(FrameCaptionButtonContainerView* container) {
+    container->SetButtonSize(
+        GetAshLayoutSize(AshLayoutSize::NON_BROWSER_CAPTION_BUTTON));
     for (int icon = 0; icon < CAPTION_BUTTON_ICON_COUNT; ++icon) {
-      container->SetButtonImages(
-          static_cast<CaptionButtonIcon>(icon),
-          IDR_AURA_WINDOW_CONTROL_ICON_CLOSE,
-          IDR_AURA_WINDOW_CONTROL_BACKGROUND_H,
-          IDR_AURA_WINDOW_CONTROL_BACKGROUND_P);
+      container->SetButtonImage(static_cast<CaptionButtonIcon>(icon),
+                                IDR_AURA_WINDOW_CONTROL_ICON_CLOSE);
     }
   }
 
@@ -113,7 +113,7 @@ TEST_F(FrameCaptionButtonContainerViewTest, ButtonVisibility) {
   // allowed.
   FrameCaptionButtonContainerView container1(
       CreateTestWidget(MAXIMIZE_ALLOWED, MINIMIZE_ALLOWED));
-  SetMockImages(&container1);
+  InitContainer(&container1);
   container1.Layout();
   FrameCaptionButtonContainerView::TestApi t1(&container1);
   EXPECT_TRUE(t1.minimize_button()->visible());
@@ -126,7 +126,7 @@ TEST_F(FrameCaptionButtonContainerViewTest, ButtonVisibility) {
   // maximizing is disallowed.
   FrameCaptionButtonContainerView container2(
       CreateTestWidget(MAXIMIZE_DISALLOWED, MINIMIZE_ALLOWED));
-  SetMockImages(&container2);
+  InitContainer(&container2);
   container2.Layout();
   FrameCaptionButtonContainerView::TestApi t2(&container2);
   EXPECT_TRUE(t2.minimize_button()->visible());
@@ -139,7 +139,7 @@ TEST_F(FrameCaptionButtonContainerViewTest, ButtonVisibility) {
   // neither minimizing nor maximizing are allowed.
   FrameCaptionButtonContainerView container3(
       CreateTestWidget(MAXIMIZE_DISALLOWED, MINIMIZE_DISALLOWED));
-  SetMockImages(&container3);
+  InitContainer(&container3);
   container3.Layout();
   FrameCaptionButtonContainerView::TestApi t3(&container3);
   EXPECT_FALSE(t3.minimize_button()->visible());
@@ -155,7 +155,7 @@ TEST_F(FrameCaptionButtonContainerViewTest,
        TestUpdateSizeButtonVisibilityAnimation) {
   FrameCaptionButtonContainerView container(
       CreateTestWidget(MAXIMIZE_ALLOWED, MINIMIZE_ALLOWED));
-  SetMockImages(&container);
+  InitContainer(&container);
   container.SetBoundsRect(gfx::Rect(container.GetPreferredSize()));
   container.Layout();
 

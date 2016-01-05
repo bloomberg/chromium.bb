@@ -65,13 +65,10 @@ class ASH_EXPORT FrameCaptionButtonContainerView
     DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
 
-  // Sets the resource ids of the images to paint the button for |icon|. The
-  // FrameCaptionButtonContainerView will keep track of the images to use for
+  // Sets the resource id of the image to paint the button for |icon|. The
+  // FrameCaptionButtonContainerView will keep track of the image to use for
   // |icon| even if none of the buttons currently use |icon|.
-  void SetButtonImages(CaptionButtonIcon icon,
-                       int icon_image_id,
-                       int hovered_background_image_id,
-                       int pressed_background_image_id);
+  void SetButtonImage(CaptionButtonIcon icon, int icon_image_id);
 
   // Sets whether the buttons should be painted as active. Does not schedule
   // a repaint.
@@ -90,29 +87,20 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   // to reflect the change in visibility.
   void UpdateSizeButtonVisibility();
 
+  // Sets the size of the buttons in this container.
+  void SetButtonSize(const gfx::Size& size);
+
   // views::View:
   gfx::Size GetPreferredSize() const override;
   void Layout() override;
   const char* GetClassName() const override;
 
-  // Overridden from gfx::AnimationDelegate:
+  // gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
 
  private:
   friend class FrameCaptionButtonContainerViewTest;
-
-  struct ButtonIconIds {
-    ButtonIconIds();
-    ButtonIconIds(int icon_id,
-                  int hovered_background_id,
-                  int pressed_background_id);
-    ~ButtonIconIds();
-
-    int icon_image_id;
-    int hovered_background_image_id;
-    int pressed_background_image_id;
-  };
 
   // Sets |button|'s icon to |icon|. If |animate| is ANIMATE_YES, the button
   // will crossfade to the new icon. If |animate| is ANIMATE_NO and
@@ -149,9 +137,9 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   FrameCaptionButton* size_button_;
   FrameCaptionButton* close_button_;
 
-  // Mapping of the images needed to paint a button for each of the values of
+  // Mapping of the image ID needed to paint a button for each of the values of
   // CaptionButtonIcon.
-  std::map<CaptionButtonIcon, ButtonIconIds> button_icon_id_map_;
+  std::map<CaptionButtonIcon, int> button_icon_id_map_;
 
   // Animation that affects the position of |minimize_button_| and the
   // visibility of |size_button_|.

@@ -4,6 +4,7 @@
 
 #include "ash/frame/custom_frame_view_ash.h"
 
+#include "ash/ash_layout_constants.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/shell.h"
@@ -128,14 +129,11 @@ TEST_F(CustomFrameViewAshTest, HeaderHeight) {
   scoped_ptr<views::Widget> widget(CreateWidget(delegate));
   widget->Show();
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia* close_button =
-      rb.GetImageSkiaNamed(IDR_AURA_WINDOW_CONTROL_BACKGROUND_H);
-
   // The header should have enough room for the window controls. The
   // header/content separator line overlays the window controls.
-  EXPECT_EQ(close_button->height(),
-            delegate->custom_frame_view()->GetHeaderView()->height());
+  EXPECT_EQ(
+      GetAshLayoutSize(AshLayoutSize::NON_BROWSER_CAPTION_BUTTON).height(),
+      delegate->custom_frame_view()->GetHeaderView()->height());
 }
 
 // Verify that CustomFrameViewAsh returns the correct minimum and maximum frame

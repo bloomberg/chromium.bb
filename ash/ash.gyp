@@ -33,6 +33,8 @@
       'ash_constants.cc',
       'ash_constants.h',
       'ash_export.h',
+      'ash_layout_constants.cc',
+      'ash_layout_constants.h',
       'ash_switches.cc',
       'ash_switches.h',
       'ash_touch_exploration_manager_chromeos.cc',

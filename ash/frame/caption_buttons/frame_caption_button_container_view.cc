@@ -149,25 +149,16 @@ void FrameCaptionButtonContainerView::TestApi::EndAnimations() {
   container_view_->maximize_mode_animation_->End();
 }
 
-void FrameCaptionButtonContainerView::SetButtonImages(
-    CaptionButtonIcon icon,
-    int icon_image_id,
-    int hovered_background_image_id,
-    int pressed_background_image_id) {
-  button_icon_id_map_[icon] = ButtonIconIds(icon_image_id,
-                                            hovered_background_image_id,
-                                            pressed_background_image_id);
+void FrameCaptionButtonContainerView::SetButtonImage(CaptionButtonIcon icon,
+                                                     int icon_image_id) {
+  button_icon_id_map_[icon] = icon_image_id;
+
   FrameCaptionButton* buttons[] = {
     minimize_button_, size_button_, close_button_
   };
   for (size_t i = 0; i < arraysize(buttons); ++i) {
-    if (buttons[i]->icon() == icon) {
-      buttons[i]->SetImages(icon,
-                            FrameCaptionButton::ANIMATE_NO,
-                            icon_image_id,
-                            hovered_background_image_id,
-                            pressed_background_image_id);
-    }
+    if (buttons[i]->icon() == icon)
+      buttons[i]->SetImage(icon, FrameCaptionButton::ANIMATE_NO, icon_image_id);
   }
 }
 
@@ -206,6 +197,12 @@ void FrameCaptionButtonContainerView::UpdateSizeButtonVisibility() {
     maximize_mode_animation_->SetSlideDuration(kHideAnimationDurationMs);
     maximize_mode_animation_->Hide();
   }
+}
+
+void FrameCaptionButtonContainerView::SetButtonSize(const gfx::Size& size) {
+  minimize_button_->set_size(size);
+  size_button_->set_size(size);
+  close_button_->set_size(size);
 }
 
 gfx::Size FrameCaptionButtonContainerView::GetPreferredSize() const {
@@ -299,15 +296,9 @@ void FrameCaptionButtonContainerView::SetButtonIcon(FrameCaptionButton* button,
 
   FrameCaptionButton::Animate fcb_animate = (animate == ANIMATE_YES) ?
       FrameCaptionButton::ANIMATE_YES : FrameCaptionButton::ANIMATE_NO;
-  std::map<CaptionButtonIcon, ButtonIconIds>::const_iterator it =
-      button_icon_id_map_.find(icon);
-  if (it != button_icon_id_map_.end()) {
-    button->SetImages(icon,
-                      fcb_animate,
-                      it->second.icon_image_id,
-                      it->second.hovered_background_image_id,
-                      it->second.pressed_background_image_id);
-  }
+  auto it = button_icon_id_map_.find(icon);
+  if (it != button_icon_id_map_.end())
+    button->SetImage(icon, fcb_animate, it->second);
 }
 
 bool FrameCaptionButtonContainerView::ShouldSizeButtonBeVisible() const {
@@ -416,24 +407,6 @@ void FrameCaptionButtonContainerView::SetHoveredAndPressedButtons(
       new_state = views::Button::STATE_PRESSED;
     button->SetState(new_state);
   }
-}
-
-FrameCaptionButtonContainerView::ButtonIconIds::ButtonIconIds()
-    : icon_image_id(-1),
-      hovered_background_image_id(-1),
-      pressed_background_image_id(-1) {
-}
-
-FrameCaptionButtonContainerView::ButtonIconIds::ButtonIconIds(
-    int icon_id,
-    int hovered_background_id,
-    int pressed_background_id)
-    : icon_image_id(icon_id),
-      hovered_background_image_id(hovered_background_id),
-      pressed_background_image_id(pressed_background_id) {
-}
-
-FrameCaptionButtonContainerView::ButtonIconIds::~ButtonIconIds() {
 }
 
 }  // namespace ash
