@@ -2,14 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
-  'includes': [
-    'chrome_features.gypi',
-  ],
   'variables': {
-    # Apply Chrome-specific grit settings to all grit actions in this file.
+    # Apply Chrome-specific grit settings to all of this file.
+    # The advantage is that one entry here applies to the entire file.
+    # The caveat is these variables cannot be merged with other variable
+    # dictionaries in more inner scopes. If the variable should be merged,
+    # consider putting them in a gypi file and including it at the right scope
+    # instead. e.g. with chrome_grit_action.gypi.
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
-    'grit_additional_defines': [ '<@(chrome_grit_defines)' ],
-
     'additional_modules_list_file': '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/internal/additional_modules_list.txt',
   },
   'targets': [
@@ -27,7 +27,7 @@
           'variables': {
             'grit_grd_file': 'browser/resources/memory_internals_resources.grd',
           },
-          'includes': [ '../build/grit_action.gypi' ],
+          'includes': [ 'chrome_grit_action.gypi' ],
         },
         {
           # GN version: //chrome/browser/resources:net_internals_resources
@@ -35,7 +35,7 @@
           'variables': {
             'grit_grd_file': 'browser/resources/net_internals_resources.grd',
           },
-          'includes': [ '../build/grit_action.gypi' ],
+          'includes': [ 'chrome_grit_action.gypi' ],
         },
         {
           # GN version: //chrome/browser/resources:invalidations_resources
@@ -43,7 +43,7 @@
           'variables': {
             'grit_grd_file': 'browser/resources/invalidations_resources.grd',
             },
-          'includes': ['../build/grit_action.gypi' ],
+          'includes': ['chrome_grit_action.gypi' ],
         },
         {
           # GN version: //chrome/browser/resources:password_manager_internals_resources
@@ -51,7 +51,7 @@
           'variables': {
             'grit_grd_file': 'browser/resources/password_manager_internals_resources.grd',
           },
-          'includes': [ '../build/grit_action.gypi' ],
+          'includes': [ 'chrome_grit_action.gypi' ],
         },
         {
           # GN version: //chrome/browser/resources:policy_resources
@@ -59,7 +59,7 @@
           'variables': {
             'grit_grd_file': 'browser/resources/md_policy/policy_resources.grd',
           },
-          'includes': [ '../build/grit_action.gypi' ],
+          'includes': [ 'chrome_grit_action.gypi' ],
         },
         {
           # GN version: //chrome/browser/resources:signin_internals_resources
@@ -67,7 +67,7 @@
           'variables': {
             'grit_grd_file': 'browser/resources/signin_internals_resources.grd',
             },
-          'includes': ['../build/grit_action.gypi' ],
+          'includes': ['chrome_grit_action.gypi' ],
         },
         {
           # GN version: //chrome/browser/resources:translate_internals_resources
@@ -75,7 +75,7 @@
           'variables': {
             'grit_grd_file': 'browser/resources/translate_internals_resources.grd',
           },
-          'includes': [ '../build/grit_action.gypi' ],
+          'includes': [ 'chrome_grit_action.gypi' ],
         },
       ],
       'includes': [ '../build/grit_target.gypi' ],
@@ -94,7 +94,7 @@
               'variables': {
                 'grit_grd_file': 'browser/resources/component_extension_resources.grd',
               },
-              'includes': [ '../build/grit_action.gypi' ],
+              'includes': [ 'chrome_grit_action.gypi' ],
             },
             {
               # GN version: //chrome/browser/resources:options_resources
@@ -102,7 +102,7 @@
               'variables': {
                 'grit_grd_file': 'browser/resources/options_resources.grd',
               },
-              'includes': [ '../build/grit_action.gypi' ],
+              'includes': [ 'chrome_grit_action.gypi' ],
             },
             {
               # GN version: //chrome/browser/resources:settings_resources
@@ -110,7 +110,7 @@
               'variables': {
                 'grit_grd_file': 'browser/resources/settings/settings_resources.grd',
               },
-              'includes': [ '../build/grit_action.gypi' ],
+              'includes': [ 'chrome_grit_action.gypi' ],
             },
           ],
           'copies': [
@@ -136,7 +136,7 @@
               'variables': {
                 'grit_grd_file': 'browser/resources/quota_internals_resources.grd',
               },
-              'includes': [ '../build/grit_action.gypi' ],
+              'includes': [ 'chrome_grit_action.gypi' ],
             },
             {
               # GN version: //chrome/browser/resources:sync_file_system_internals_resources
@@ -144,7 +144,7 @@
               'variables': {
                 'grit_grd_file': 'browser/resources/sync_file_system_internals_resources.grd',
               },
-              'includes': [ '../build/grit_action.gypi' ],
+              'includes': [ 'chrome_grit_action.gypi' ],
             },
           ],
         }],
@@ -203,16 +203,11 @@
           'variables': {
             'grit_grd_file': 'browser/browser_resources.grd',
             'grit_additional_defines': [
-              # TODO(dbeam): 'chrome_grit_defines' should just be appended to
-              # this list of 'grit_additional_defines' via the top of this file,
-              # but they're not for some reason. Maybe because they're in
-              # different scopes?
-              '<@(chrome_grit_defines)',
               '-E', 'additional_modules_list_file=<(additional_modules_list_file)',
               '-E', 'root_gen_dir=<(SHARED_INTERMEDIATE_DIR)',
             ],
           },
-          'includes': [ '../build/grit_action.gypi' ],
+          'includes': [ 'chrome_grit_action.gypi' ],
         },
         {
           # GN version: //chrome/common:resources
@@ -220,7 +215,7 @@
           'variables': {
             'grit_grd_file': 'common/common_resources.grd',
           },
-          'includes': [ '../build/grit_action.gypi' ],
+          'includes': [ 'chrome_grit_action.gypi' ],
         },
         {
           # GN version: //chrome/renderer:resources
@@ -228,7 +223,7 @@
           'variables': {
             'grit_grd_file': 'renderer/resources/renderer_resources.grd',
           },
-          'includes': [ '../build/grit_action.gypi' ],
+          'includes': [ 'chrome_grit_action.gypi' ],
         },
       ],
       'conditions': [
@@ -240,7 +235,7 @@
               'variables': {
                 'grit_grd_file': 'common/extensions_api_resources.grd',
               },
-              'includes': [ '../build/grit_action.gypi' ],
+              'includes': [ 'chrome_grit_action.gypi' ],
             }
           ],
         }],
@@ -263,7 +258,7 @@
           'variables': {
             'grit_grd_file': 'app/resources/locale_settings.grd',
           },
-          'includes': [ '../build/grit_action.gypi' ],
+          'includes': [ 'chrome_grit_action.gypi' ],
         },
         {
           # GN version: //chrome/app:chromium_strings
@@ -271,7 +266,7 @@
           'variables': {
             'grit_grd_file': 'app/chromium_strings.grd',
           },
-          'includes': [ '../build/grit_action.gypi' ],
+          'includes': [ 'chrome_grit_action.gypi' ],
         },
         {
           # GN version: //chrome/app:generated_resources
@@ -279,7 +274,7 @@
           'variables': {
             'grit_grd_file': 'app/generated_resources.grd',
           },
-          'includes': [ '../build/grit_action.gypi' ],
+          'includes': [ 'chrome_grit_action.gypi' ],
         },
         {
           # GN version: //chrome/app:google_chrome_strings
@@ -287,7 +282,7 @@
           'variables': {
             'grit_grd_file': 'app/google_chrome_strings.grd',
           },
-          'includes': [ '../build/grit_action.gypi' ],
+          'includes': [ 'chrome_grit_action.gypi' ],
         },
         {
           # GN version: //chrome/app:settings_strings
@@ -295,7 +290,7 @@
           'variables': {
             'grit_grd_file': 'app/settings_strings.grd',
           },
-          'includes': [ '../build/grit_action.gypi' ],
+          'includes': [ 'chrome_grit_action.gypi' ],
         },
         {
           # GN version: //chrome/app:settings_chromium_strings
@@ -303,7 +298,7 @@
           'variables': {
             'grit_grd_file': 'app/settings_chromium_strings.grd',
           },
-          'includes': [ '../build/grit_action.gypi' ],
+          'includes': [ 'chrome_grit_action.gypi' ],
         },
         {
           # GN version: //chrome/app:settings_google_chrome_strings
@@ -311,7 +306,7 @@
           'variables': {
             'grit_grd_file': 'app/settings_google_chrome_strings.grd',
           },
-          'includes': [ '../build/grit_action.gypi' ],
+          'includes': [ 'chrome_grit_action.gypi' ],
         },
       ],
     },
@@ -414,7 +409,7 @@
           'variables': {
             'grit_grd_file': '<(platform_locale_settings_grd)',
           },
-          'includes': [ '../build/grit_action.gypi' ],
+          'includes': [ 'chrome_grit_action.gypi' ],
         },
       ],
       'includes': [ '../build/grit_target.gypi' ],
@@ -433,7 +428,7 @@
           'variables': {
             'grit_grd_file': 'app/theme/theme_resources.grd',
           },
-          'includes': [ '../build/grit_action.gypi' ],
+          'includes': [ 'chrome_grit_action.gypi' ],
         },
       ],
       'includes': [ '../build/grit_target.gypi' ],
@@ -651,7 +646,7 @@
           'variables': {
             'grit_grd_file': 'app/theme/chrome_unscaled_resources.grd',
           },
-          'includes': [ '../build/grit_action.gypi' ],
+          'includes': [ 'chrome_grit_action.gypi' ],
         },
       ],
       'includes': [ '../build/grit_target.gypi' ],
@@ -666,7 +661,7 @@
           'variables': {
             'grit_grd_file': 'browser/resources/options_test_resources.grd',
           },
-          'includes': [ '../build/grit_action.gypi' ],
+          'includes': [ 'chrome_grit_action.gypi' ],
         },
       ],
       'includes': [ '../build/grit_target.gypi' ],
@@ -681,7 +676,7 @@
           'variables': {
             'grit_grd_file': 'test/data/webui_test_resources.grd',
           },
-          'includes': [ '../build/grit_action.gypi' ],
+          'includes': [ 'chrome_grit_action.gypi' ],
         },
       ],
       'includes': [ '../build/grit_target.gypi' ],

@@ -1,7 +1,7 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
- 
+
 # This is the GYP equivalent of //chrome/common/features.gni.
 # Please keep in sync!
 
@@ -38,6 +38,6 @@
     'chrome_grit_defines': [
       '-D', 'enable_google_now=<(enable_google_now)',
       '-D', 'use_vulcanize=<(use_vulcanize)',
-    ]
+    ],
   },
 }
