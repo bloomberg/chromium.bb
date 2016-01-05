@@ -299,6 +299,7 @@ group("both_gn_and_gyp") {
 
     if (!is_component_build) {
       deps += [
+        "//components/cronet/android:cronet_package",
         "//components/cronet/android:cronet_sample_apk",
         "//components/cronet/android:cronet_sample_test_apk",
         "//components/cronet/android:cronet_test_apk",

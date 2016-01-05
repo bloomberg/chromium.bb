@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/util/version.gni")
 import("//chrome/version.gni")
@@ -496,5 +497,189 @@ test("cronet_unittests") {
     "//components/metrics",
     "//net",
     "//testing/gtest",
+  ]
+}
+
+_package_dir = "$root_out_dir/cronet"
+_extract_cronet_jars_dir = "$target_gen_dir/cronet_jar_extract"
+
+action("extract_cronet_jars") {
+  # extract_from_jars.py deletes the target directory before extracting.
+  script = "//components/cronet/tools/extract_from_jars.py"
+  depfile = "$target_gen_dir/$target_name.d"
+
+  sources = [
+    "$root_out_dir/lib.java/base/base_java.jar",
+    "$root_out_dir/lib.java/components/cronet/android/cronet_java.jar",
+    "$root_out_dir/lib.java/net/android/net_java.jar",
+    "$root_out_dir/lib.java/url/url_java.jar",
+  ]
+  outputs = [
+    depfile,
+  ]
+
+  _rebased_sources = rebase_path(sources, root_build_dir)
+
+  args = [
+    "--classes-dir",
+    rebase_path(_extract_cronet_jars_dir, root_build_dir),
+    "--jars=${_rebased_sources}",
+    "--depfile",
+    rebase_path(depfile, root_build_dir),
+  ]
+
+  deps = [
+    ":cronet_java",
+    "//base:base_java",
+    "//net/android:net_java",
+    "//url:url_java",
+  ]
+}
+
+action("repackage_extracted_jars") {
+  _output_jar = "$_package_dir/cronet.jar"
+
+  script = "//build/android/gyp/jar.py"
+  outputs = [
+    _output_jar,
+  ]
+
+  args = [
+    "--classes-dir",
+    rebase_path(_extract_cronet_jars_dir, root_build_dir),
+    "--jar-path",
+    rebase_path(_output_jar, root_build_dir),
+  ]
+
+  deps = [
+    ":extract_cronet_jars",
+  ]
+}
+
+template("jar_src") {
+  action(target_name) {
+    _rebased_src_dirs = rebase_path(invoker.src_dirs, root_build_dir)
+
+    script = "//components/cronet/tools/jar_src.py"
+    depfile = "$target_gen_dir/$target_name.d"
+    outputs = [
+      depfile,
+      invoker.jar_path,
+    ]
+    args = [
+      "--src-dir=${_rebased_src_dirs}",
+      "--jar-path",
+      rebase_path(invoker.jar_path, root_build_dir),
+      "--depfile",
+      rebase_path(depfile, root_build_dir),
+    ]
+  }
+}
+
+jar_src("jar_cronet_api_source") {
+  src_dirs = [ "api/src" ]
+  jar_path = "$_package_dir/cronet_api-src.jar"
+}
+
+jar_src("jar_cronet_sample_source") {
+  src_dirs = [ "sample" ]
+  jar_path = "$_package_dir/cronet-sample-src.jar"
+}
+
+jar_src("jar_cronet_other_source") {
+  src_dirs = [
+    "//base/android/java/src",
+    "//components/cronet/android/java/src",
+    "//net/android/java/src",
+    "//url/android/java/src",
+  ]
+  jar_path = "$_package_dir/cronet-src.jar"
+}
+
+action("generate_licenses") {
+  _license_path = "$_package_dir/LICENSE"
+
+  script = "//components/cronet/tools/cronet_licenses.py"
+  outputs = [
+    _license_path,
+  ]
+  args = [
+    "license",
+    rebase_path(_license_path, root_build_dir),
+  ]
+}
+
+action("generate_javadoc") {
+  script = "//components/cronet/tools/generate_javadoc.py"
+  depfile = "$target_gen_dir/$target_name.d"
+  outputs = [
+    depfile,
+  ]
+
+  args = [
+    "--output-dir",
+    rebase_path(_package_dir, root_build_dir),
+    "--input-dir",
+    rebase_path("//components/cronet", root_build_dir),
+    "--overview-file",
+    rebase_path("$_package_dir/README.md.html", root_build_dir),
+    "--readme-file",
+    rebase_path("//components/cronet/README.md", root_build_dir),
+    "--depfile",
+    rebase_path(depfile, root_build_dir),
+  ]
+}
+
+copy("cronet_package_copy") {
+  sources = [
+    "$root_out_dir/lib.java/components/cronet/android/cronet_api.jar",
+    "//AUTHORS",
+    "//chrome/VERSION",
+    "//components/cronet/android/proguard.cfg",
+  ]
+  outputs = [
+    "$_package_dir/{{source_file_part}}",
+  ]
+
+  deps = [
+    ":cronet_api",
+  ]
+}
+
+copy("cronet_package_copy_native_lib") {
+  sources = [
+    "$root_out_dir/libcronet.so",
+  ]
+  outputs = [
+    "$_package_dir/libs/${android_app_abi}/libcronet.so",
+  ]
+  deps = [
+    ":cronet",
+  ]
+}
+
+copy("cronet_package_copy_native_lib_unstripped") {
+  sources = [
+    "$root_out_dir/lib.unstripped/libcronet.so",
+  ]
+  outputs = [
+    "$_package_dir/symbols/${android_app_abi}/libcronet.so",
+  ]
+  deps = [
+    ":cronet",
+  ]
+}
+
+group("cronet_package") {
+  deps = [
+    ":cronet_package_copy",
+    ":cronet_package_copy_native_lib",
+    ":cronet_package_copy_native_lib_unstripped",
+    ":generate_javadoc",
+    ":generate_licenses",
+    ":jar_cronet_api_source",
+    ":jar_cronet_other_source",
+    ":jar_cronet_sample_source",
+    ":repackage_extracted_jars",
   ]
 }

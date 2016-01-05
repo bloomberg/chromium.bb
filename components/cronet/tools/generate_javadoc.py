@@ -48,6 +48,7 @@ def GenerateJavadoc(options):
 
 def main():
   parser = optparse.OptionParser()
+  build_utils.AddDepfileOption(parser)
   parser.add_option('--output-dir', help='Directory to put javadoc')
   parser.add_option('--input-dir', help='Root of cronet source')
   parser.add_option('--overview-file', help='Path of the overview page')
@@ -60,6 +61,12 @@ def main():
 
   GenerateJavadoc(options)
 
+  if options.depfile:
+    input_paths = []
+    for root, _, filenames in os.walk(options.input_dir):
+      input_paths.extend(os.path.join(root, f) for f in filenames)
+    build_utils.WriteDepfile(options.depfile,
+                             input_paths + build_utils.GetPythonDependencies())
+
 if __name__ == '__main__':
   sys.exit(main())
-

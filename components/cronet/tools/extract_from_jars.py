@@ -31,6 +31,7 @@ def ExtractJars(options):
 
 def main():
   parser = optparse.OptionParser()
+  build_utils.AddDepfileOption(parser)
   parser.add_option('--classes-dir', help='Directory to extract .class files.')
   parser.add_option('--jars', help='Paths to jars to extract.')
   parser.add_option('--stamp', help='Path to touch on success.')
@@ -38,6 +39,10 @@ def main():
   options, _ = parser.parse_args()
 
   ExtractJars(options)
+
+  if options.depfile:
+    build_utils.WriteDepfile(options.depfile,
+                             build_utils.GetPythonDependencies())
 
   if options.stamp:
     build_utils.Touch(options.stamp)

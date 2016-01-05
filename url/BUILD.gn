@@ -72,6 +72,13 @@ component("url") {
 }
 
 if (is_android) {
+  android_library("url_java") {
+    DEPRECATED_java_in_dir = "android/java/src"
+    deps = [
+      "//base:base_java",
+    ]
+  }
+
   generate_jni("url_jni_headers") {
     sources = [
       "android/java/src/org/chromium/url/IDNStringUtil.java",
@@ -98,6 +105,7 @@ if (is_android) {
     ]
 
     deps = [
+      ":url_java",
       ":url_jni_headers",
       "//base",
       "//base/third_party/dynamic_annotations",

@@ -193,6 +193,7 @@
             '../cc/cc_tests.gyp:cc_perftests_apk',
             '../cc/cc_tests.gyp:cc_unittests_apk',
             #"//clank" TODO(GYP) - conditional somehow?
+            '../components/components.gyp:cronet_package',
             '../components/components.gyp:cronet_sample_apk',
             '../components/components.gyp:cronet_sample_test_apk',
             '../components/components.gyp:cronet_test_apk',
