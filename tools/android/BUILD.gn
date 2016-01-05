@@ -68,3 +68,11 @@ group("customtabs_benchmark") {
     "//tools/android/customtabs_benchmark:customtabs_benchmark_apk",
   ]
 }
+
+# GYP: //tools/android/android_tools.gyp:audio_focus_grabber
+group("audio_focus_grabber") {
+  testonly = true
+  deps = [
+    "//tools/android/audio_focus_grabber:audio_focus_grabber_apk",
+  ]
+}
