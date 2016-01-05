@@ -27,13 +27,13 @@ namespace protocol {
 class ClipboardEvent;
 class CursorShapeInfo;
 class PerformanceTracker;
+class VideoRenderer;
 }  // namespace protocol
 
 class ChromotingJniRuntime;
 class ClientStatusLogger;
 class JniFrameConsumer;
 class TokenFetcherProxy;
-class VideoRenderer;
 
 // ClientUserInterface that indirectly makes and receives JNI calls.
 class ChromotingJniInstance
@@ -154,7 +154,7 @@ class ChromotingJniInstance
   scoped_ptr<ClientContext> client_context_;
   scoped_ptr<protocol::PerformanceTracker> perf_tracker_;
   scoped_ptr<JniFrameConsumer> view_;
-  scoped_ptr<VideoRenderer> video_renderer_;
+  scoped_ptr<protocol::VideoRenderer> video_renderer_;
   scoped_ptr<protocol::Authenticator> authenticator_;
   scoped_ptr<ChromotingClient> client_;
   XmppSignalStrategy::XmppServerConfig xmpp_config_;

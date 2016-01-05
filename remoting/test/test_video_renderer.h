@@ -9,8 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "remoting/client/video_renderer.h"
 #include "remoting/protocol/session_config.h"
+#include "remoting/protocol/video_renderer.h"
 #include "remoting/protocol/video_stub.h"
 
 namespace base {
@@ -32,7 +32,8 @@ struct RGBValue;
 // used from a thread running a message loop and this class will use that
 // message loop to execute the done callbacks passed by the caller of
 // ProcessVideoPacket.
-class TestVideoRenderer : public VideoRenderer, public protocol::VideoStub {
+class TestVideoRenderer : public protocol::VideoRenderer,
+                          public protocol::VideoStub {
  public:
   TestVideoRenderer();
   ~TestVideoRenderer() override;

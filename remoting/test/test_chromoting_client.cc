@@ -70,7 +70,7 @@ TestChromotingClient::TestChromotingClient()
     : TestChromotingClient(nullptr) {}
 
 TestChromotingClient::TestChromotingClient(
-    scoped_ptr<VideoRenderer> video_renderer)
+    scoped_ptr<protocol::VideoRenderer> video_renderer)
     : connection_to_host_state_(protocol::ConnectionToHost::INITIALIZING),
       connection_error_code_(protocol::OK),
       video_renderer_(std::move(video_renderer)) {}

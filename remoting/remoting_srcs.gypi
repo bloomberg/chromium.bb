@@ -196,6 +196,7 @@
       'protocol/transport_context.h',
       'protocol/v2_authenticator.cc',
       'protocol/v2_authenticator.h',
+      'protocol/video_renderer.h',
       'protocol/video_stub.h',
     ],
 
@@ -279,7 +280,6 @@
       'client/token_fetcher_proxy.h',
       'client/touch_input_scaler.cc',
       'client/touch_input_scaler.h',
-      'client/video_renderer.h',
     ],
 
     'remoting_client_plugin_sources': [

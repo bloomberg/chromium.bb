@@ -11,7 +11,6 @@
 #include "remoting/client/audio_player.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/client_user_interface.h"
-#include "remoting/client/video_renderer.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
@@ -20,12 +19,13 @@
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/session_config.h"
 #include "remoting/protocol/transport_context.h"
+#include "remoting/protocol/video_renderer.h"
 
 namespace remoting {
 
 ChromotingClient::ChromotingClient(ClientContext* client_context,
                                    ClientUserInterface* user_interface,
-                                   VideoRenderer* video_renderer,
+                                   protocol::VideoRenderer* video_renderer,
                                    scoped_ptr<AudioPlayer> audio_player)
     : user_interface_(user_interface),
       video_renderer_(video_renderer),

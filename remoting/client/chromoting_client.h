@@ -31,6 +31,7 @@ namespace protocol {
 class CandidateSessionConfig;
 class SessionManager;
 class TransportContext;
+class VideoRenderer;
 }  // namespace protocol
 
 class AudioDecodeScheduler;
@@ -39,7 +40,6 @@ class ClientContext;
 class ClientUserInterface;
 class FrameConsumerProxy;
 class FrameProducer;
-class VideoRenderer;
 
 class ChromotingClient : public SignalStrategy::Listener,
                          public protocol::ConnectionToHost::HostEventCallback,
@@ -50,7 +50,7 @@ class ChromotingClient : public SignalStrategy::Listener,
   // requested.
   ChromotingClient(ClientContext* client_context,
                    ClientUserInterface* user_interface,
-                   VideoRenderer* video_renderer,
+                   protocol::VideoRenderer* video_renderer,
                    scoped_ptr<AudioPlayer> audio_player);
 
   ~ChromotingClient() override;
@@ -118,7 +118,7 @@ class ChromotingClient : public SignalStrategy::Listener,
 
   // The following are not owned by this class.
   ClientUserInterface* user_interface_ = nullptr;
-  VideoRenderer* video_renderer_ = nullptr;
+  protocol::VideoRenderer* video_renderer_ = nullptr;
   SignalStrategy* signal_strategy_ = nullptr;
 
   std::string host_jid_;

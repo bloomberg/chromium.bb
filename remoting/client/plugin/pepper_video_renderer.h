@@ -5,7 +5,7 @@
 #ifndef REMOTING_CLIENT_PLUGIN_PEPPER_VIDEO_RENDERER_H_
 #define REMOTING_CLIENT_PLUGIN_PEPPER_VIDEO_RENDERER_H_
 
-#include "remoting/client/video_renderer.h"
+#include "remoting/protocol/video_renderer.h"
 
 namespace webrtc {
 class DesktopSize;
@@ -27,7 +27,7 @@ class PerformanceTracker;
 }  // namespace protocol
 
 // Interface for video renderers that render video in pepper plugin.
-class PepperVideoRenderer : public VideoRenderer {
+class PepperVideoRenderer : public protocol::VideoRenderer {
  public:
   class EventHandler {
    public:

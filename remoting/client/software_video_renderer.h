@@ -12,8 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "remoting/client/video_renderer.h"
 #include "remoting/protocol/performance_tracker.h"
+#include "remoting/protocol/video_renderer.h"
 #include "remoting/protocol/video_stub.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
@@ -36,7 +36,7 @@ class PerformanceTracker;
 
 // Implementation of VideoRenderer interface that decodes frame on CPU (on a
 // decode thread) and then passes decoded frames to a FrameConsumer.
-class SoftwareVideoRenderer : public VideoRenderer,
+class SoftwareVideoRenderer : public protocol::VideoRenderer,
                               public protocol::VideoStub {
  public:
   // All methods must be called on the same thread the renderer is created. The

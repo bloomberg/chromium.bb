@@ -21,12 +21,12 @@ namespace remoting {
 
 class ClientContext;
 class XmppSignalStrategy;
-class VideoRenderer;
 
 namespace protocol {
 class ClipboardStub;
 class HostStub;
 class InputStub;
+class VideoRenderer;
 }  // namespace protocol
 
 namespace test {
@@ -44,7 +44,8 @@ class TestChromotingClient : public ClientUserInterface,
                              public protocol::CursorShapeStub {
  public:
   TestChromotingClient();
-  explicit TestChromotingClient(scoped_ptr<VideoRenderer> video_renderer);
+  explicit TestChromotingClient(
+      scoped_ptr<protocol::VideoRenderer> video_renderer);
   ~TestChromotingClient() override;
 
   // Starts a Chromoting connection using the specified connection setup info.
@@ -114,7 +115,7 @@ class TestChromotingClient : public ClientUserInterface,
   scoped_ptr<ClientContext> client_context_;
 
   // Processes video packets from the host.
-  scoped_ptr<VideoRenderer> video_renderer_;
+  scoped_ptr<protocol::VideoRenderer> video_renderer_;
 
   // SignalStrategy used for connection signaling.
   scoped_ptr<SignalStrategy> signal_strategy_;

@@ -21,7 +21,6 @@
 #include "remoting/client/chromoting_client.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/client_user_interface.h"
-#include "remoting/client/video_renderer.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/fake_desktop_environment.h"
@@ -31,6 +30,7 @@
 #include "remoting/protocol/session_config.h"
 #include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/video_frame_pump.h"
+#include "remoting/protocol/video_renderer.h"
 #include "remoting/signaling/fake_signal_strategy.h"
 #include "remoting/test/fake_network_dispatcher.h"
 #include "remoting/test/fake_port_allocator.h"
@@ -77,7 +77,7 @@ class ProtocolPerfTest
     : public testing::Test,
       public testing::WithParamInterface<NetworkPerformanceParams>,
       public ClientUserInterface,
-      public VideoRenderer,
+      public protocol::VideoRenderer,
       public protocol::VideoStub,
       public HostStatusObserver {
  public:
