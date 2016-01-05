@@ -295,9 +295,10 @@ void ObjectPainter::drawLineForBoxSide(GraphicsContext& graphicsContext, int x1,
         length = y2 - y1;
     }
 
-    // FIXME: We really would like this check to be an ASSERT as we don't want to draw empty borders. However
-    // nothing guarantees that the following recursive calls to drawLineForBoxSide will have non-null dimensions.
-    if (!thickness || !length)
+    // We would like this check to be an ASSERT as we don't want to draw empty borders. However
+    // nothing guarantees that the following recursive calls to drawLineForBoxSide will have
+    // positive thickness and length.
+    if (length <= 0 || thickness <= 0)
         return;
 
     if (style == DOUBLE && thickness < 3)
@@ -340,8 +341,7 @@ void ObjectPainter::drawLineForBoxSide(GraphicsContext& graphicsContext, int x1,
 void ObjectPainter::drawDashedOrDottedBoxSide(GraphicsContext& graphicsContext, int x1, int y1, int x2, int y2,
     BoxSide side, Color color, int thickness, EBorderStyle style, bool antialias)
 {
-    if (thickness <= 0)
-        return;
+    ASSERT(thickness > 0);
 
     bool wasAntialiased = graphicsContext.shouldAntialias();
     StrokeStyle oldStrokeStyle = graphicsContext.strokeStyle();
@@ -372,7 +372,7 @@ void ObjectPainter::drawDoubleBoxSide(GraphicsContext& graphicsContext, int x1, 
     int length, BoxSide side, Color color, int thickness, int adjacentWidth1, int adjacentWidth2, bool antialias)
 {
     int thirdOfThickness = (thickness + 1) / 3;
-    ASSERT(thirdOfThickness);
+    ASSERT(thirdOfThickness > 0);
 
     if (!adjacentWidth1 && !adjacentWidth2) {
         StrokeStyle oldStrokeStyle = graphicsContext.strokeStyle();
