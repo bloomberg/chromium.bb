@@ -423,18 +423,19 @@ def conditional_if_endif(code, conditional_string):
             '#endif // %s\n' % conditional_string)
 
 
+def maybe_add_conditional(code, test, conditional):
+    if not test:
+        return code
+    return generate_indented_conditional(code, conditional)
+
 # [Exposed]
 def exposed_if(code, exposed_test):
-    if not exposed_test:
-        return code
-    return generate_indented_conditional(code, 'executionContext && (%s)' % exposed_test)
+    return maybe_add_conditional(code, exposed_test, 'executionContext && (%s)' % exposed_test)
 
 
 # [RuntimeEnabled]
 def runtime_enabled_if(code, runtime_enabled_function_name):
-    if not runtime_enabled_function_name:
-        return code
-    return generate_indented_conditional(code, '%s()' % runtime_enabled_function_name)
+    return maybe_add_conditional(code, runtime_enabled_function_name, '%s()' % runtime_enabled_function_name)
 
 
 ################################################################################

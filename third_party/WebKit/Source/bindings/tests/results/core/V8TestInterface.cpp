@@ -30,6 +30,7 @@
 #include "bindings/tests/idls/core/TestPartialInterfaceImplementation.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
+#include "core/experiments/ExperimentalFeatures.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -92,6 +93,13 @@ static void TestInterfaceImplementationConstructorAttributeSetterCallback(v8::Lo
 
 static void testInterfaceAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueFast(info, WTF::getPtr(impl->testInterfaceAttribute()), impl);
@@ -101,6 +109,13 @@ static void testInterfaceAttributeAttributeGetterCallback(const v8::FunctionCall
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::V8TestInterface_TestInterfaceAttribute_AttributeGetter);
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::testInterfaceAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -143,6 +158,13 @@ static void testInterfaceConstructorAttributeAttributeSetterCallback(v8::Local<v
 
 static void doubleAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValue(info, impl->doubleAttribute());
@@ -151,6 +173,13 @@ static void doubleAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Va
 static void doubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::doubleAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -176,6 +205,13 @@ static void doubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInf
 
 static void floatAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValue(info, impl->floatAttribute());
@@ -184,6 +220,13 @@ static void floatAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Val
 static void floatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::floatAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -209,6 +252,13 @@ static void floatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo
 
 static void unrestrictedDoubleAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValue(info, impl->unrestrictedDoubleAttribute());
@@ -217,6 +267,13 @@ static void unrestrictedDoubleAttributeAttributeGetter(const v8::FunctionCallbac
 static void unrestrictedDoubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::unrestrictedDoubleAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -242,6 +299,13 @@ static void unrestrictedDoubleAttributeAttributeSetterCallback(const v8::Functio
 
 static void unrestrictedFloatAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValue(info, impl->unrestrictedFloatAttribute());
@@ -250,6 +314,13 @@ static void unrestrictedFloatAttributeAttributeGetter(const v8::FunctionCallback
 static void unrestrictedFloatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::unrestrictedFloatAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -275,6 +346,13 @@ static void unrestrictedFloatAttributeAttributeSetterCallback(const v8::Function
 
 static void testEnumAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueString(info, impl->testEnumAttribute(), info.GetIsolate());
@@ -283,6 +361,13 @@ static void testEnumAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::
 static void testEnumAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::testEnumAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -318,6 +403,13 @@ static void testEnumAttributeAttributeSetterCallback(const v8::FunctionCallbackI
 
 static void stringOrDoubleAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     StringOrDouble result;
@@ -328,6 +420,13 @@ static void stringOrDoubleAttributeAttributeGetter(const v8::FunctionCallbackInf
 static void stringOrDoubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::stringOrDoubleAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -354,6 +453,13 @@ static void stringOrDoubleAttributeAttributeSetterCallback(const v8::FunctionCal
 
 static void conditionalLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueInt(info, impl->conditionalLongAttribute());
@@ -362,6 +468,13 @@ static void conditionalLongAttributeAttributeGetter(const v8::FunctionCallbackIn
 static void conditionalLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::conditionalLongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -387,6 +500,13 @@ static void conditionalLongAttributeAttributeSetterCallback(const v8::FunctionCa
 
 static void conditionalReadOnlyLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueInt(info, impl->conditionalReadOnlyLongAttribute());
@@ -395,18 +515,39 @@ static void conditionalReadOnlyLongAttributeAttributeGetter(const v8::FunctionCa
 static void conditionalReadOnlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::conditionalReadOnlyLongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void staticStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8SetReturnValueString(info, TestInterfaceImplementation::staticStringAttribute(), info.GetIsolate());
 }
 
 static void staticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::staticStringAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -429,12 +570,26 @@ static void staticStringAttributeAttributeSetterCallback(const v8::FunctionCallb
 
 static void staticReturnDOMWrapperAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8SetReturnValue(info, TestInterfaceImplementation::staticReturnDOMWrapperAttribute(), info.GetIsolate()->GetCurrentContext()->Global());
 }
 
 static void staticReturnDOMWrapperAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::staticReturnDOMWrapperAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -462,18 +617,39 @@ static void staticReturnDOMWrapperAttributeAttributeSetterCallback(const v8::Fun
 
 static void staticReadOnlyStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8SetReturnValueString(info, TestInterfaceImplementation::staticReadOnlyStringAttribute(), info.GetIsolate());
 }
 
 static void staticReadOnlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::staticReadOnlyStringAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void staticReadOnlyReturnDOMWrapperAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     RefPtr<TestInterfaceImplementation> cppValue(TestInterfaceImplementation::staticReadOnlyReturnDOMWrapperAttribute());
     if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue.get()))
         return;
@@ -487,24 +663,52 @@ static void staticReadOnlyReturnDOMWrapperAttributeAttributeGetter(const v8::Fun
 static void staticReadOnlyReturnDOMWrapperAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::staticReadOnlyReturnDOMWrapperAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void staticConditionalReadOnlyLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8SetReturnValueInt(info, TestInterfaceImplementation::staticConditionalReadOnlyLongAttribute());
 }
 
 static void staticConditionalReadOnlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::staticConditionalReadOnlyLongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void legacyInterfaceTypeCheckingAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueFast(info, WTF::getPtr(impl->legacyInterfaceTypeCheckingAttribute()), impl);
@@ -513,6 +717,13 @@ static void legacyInterfaceTypeCheckingAttributeAttributeGetter(const v8::Functi
 static void legacyInterfaceTypeCheckingAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::legacyInterfaceTypeCheckingAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -535,6 +746,13 @@ static void legacyInterfaceTypeCheckingAttributeAttributeSetterCallback(const v8
 
 static void alwaysExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueInt(info, impl->alwaysExposedAttribute());
@@ -543,6 +761,13 @@ static void alwaysExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo
 static void alwaysExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::alwaysExposedAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -568,6 +793,13 @@ static void alwaysExposedAttributeAttributeSetterCallback(const v8::FunctionCall
 
 static void workerExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueInt(info, impl->workerExposedAttribute());
@@ -576,6 +808,13 @@ static void workerExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo
 static void workerExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::workerExposedAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -601,6 +840,13 @@ static void workerExposedAttributeAttributeSetterCallback(const v8::FunctionCall
 
 static void windowExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueInt(info, impl->windowExposedAttribute());
@@ -609,6 +855,13 @@ static void windowExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo
 static void windowExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::windowExposedAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -634,6 +887,13 @@ static void windowExposedAttributeAttributeSetterCallback(const v8::FunctionCall
 
 static void lenientThisAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     if (!V8TestInterface::hasInstance(info.Holder(), info.GetIsolate()))
         return; // Return silently because of [LenientThis].
     v8::Local<v8::Object> holder = info.Holder();
@@ -644,6 +904,13 @@ static void lenientThisAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
 static void lenientThisAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::lenientThisAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -668,24 +935,52 @@ static void lenientThisAttributeAttributeSetterCallback(const v8::FunctionCallba
 
 static void implementsStaticReadOnlyLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8SetReturnValueInt(info, TestInterfaceImplementation::implementsStaticReadOnlyLongAttribute());
 }
 
 static void implementsStaticReadOnlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::implementsStaticReadOnlyLongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void implementsStaticStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8SetReturnValueString(info, TestInterfaceImplementation::implementsStaticStringAttribute(), info.GetIsolate());
 }
 
 static void implementsStaticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::implementsStaticStringAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -708,6 +1003,13 @@ static void implementsStaticStringAttributeAttributeSetterCallback(const v8::Fun
 
 static void implementsReadonlyStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueString(info, impl->implementsReadonlyStringAttribute(), info.GetIsolate());
@@ -716,12 +1018,26 @@ static void implementsReadonlyStringAttributeAttributeGetter(const v8::FunctionC
 static void implementsReadonlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::implementsReadonlyStringAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
 static void implementsStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueString(info, impl->implementsStringAttribute(), info.GetIsolate());
@@ -730,6 +1046,13 @@ static void implementsStringAttributeAttributeGetter(const v8::FunctionCallbackI
 static void implementsStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::implementsStringAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -754,6 +1077,13 @@ static void implementsStringAttributeAttributeSetterCallback(const v8::FunctionC
 
 static void implementsNodeAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueFast(info, WTF::getPtr(impl->implementsNodeAttribute()), impl);
@@ -762,6 +1092,13 @@ static void implementsNodeAttributeAttributeGetter(const v8::FunctionCallbackInf
 static void implementsNodeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::implementsNodeAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -790,6 +1127,13 @@ static void implementsNodeAttributeAttributeSetterCallback(const v8::FunctionCal
 
 static void implementsEventHandlerAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     EventListener* cppValue(impl->implementsEventHandlerAttribute());
@@ -799,6 +1143,13 @@ static void implementsEventHandlerAttributeAttributeGetter(const v8::FunctionCal
 static void implementsEventHandlerAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::implementsEventHandlerAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -821,6 +1172,13 @@ static void implementsEventHandlerAttributeAttributeSetterCallback(const v8::Fun
 
 static void implementsRuntimeEnabledNodeAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueFast(info, WTF::getPtr(impl->implementsRuntimeEnabledNodeAttribute()), impl);
@@ -829,6 +1187,13 @@ static void implementsRuntimeEnabledNodeAttributeAttributeGetter(const v8::Funct
 static void implementsRuntimeEnabledNodeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::implementsRuntimeEnabledNodeAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -857,12 +1222,26 @@ static void implementsRuntimeEnabledNodeAttributeAttributeSetterCallback(const v
 
 static void implements2StaticStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8SetReturnValueString(info, TestImplements2::implements2StaticStringAttribute(), info.GetIsolate());
 }
 
 static void implements2StaticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::implements2StaticStringAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -885,6 +1264,13 @@ static void implements2StaticStringAttributeAttributeSetterCallback(const v8::Fu
 
 static void implements2StringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueString(info, TestImplements2::implements2StringAttribute(*impl), info.GetIsolate());
@@ -893,6 +1279,13 @@ static void implements2StringAttributeAttributeGetter(const v8::FunctionCallback
 static void implements2StringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::implements2StringAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -917,6 +1310,13 @@ static void implements2StringAttributeAttributeSetterCallback(const v8::Function
 
 static void implements3StringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueString(info, TestImplements3Implementation::implements3StringAttribute(*impl), info.GetIsolate());
@@ -925,6 +1325,13 @@ static void implements3StringAttributeAttributeGetter(const v8::FunctionCallback
 static void implements3StringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::implements3StringAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -949,12 +1356,26 @@ static void implements3StringAttributeAttributeSetterCallback(const v8::Function
 
 static void implements3StaticStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8SetReturnValueString(info, TestImplements3Implementation::implements3StaticStringAttribute(), info.GetIsolate());
 }
 
 static void implements3StaticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::implements3StaticStringAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -978,6 +1399,13 @@ static void implements3StaticStringAttributeAttributeSetterCallback(const v8::Fu
 #if ENABLE(PARTIAL_CONDITION)
 static void partialLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueInt(info, TestPartialInterface::partialLongAttribute(*impl));
@@ -988,6 +1416,13 @@ static void partialLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
 static void partialLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::partialLongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1019,6 +1454,13 @@ static void partialLongAttributeAttributeSetterCallback(const v8::FunctionCallba
 #if ENABLE(PARTIAL_CONDITION)
 static void partialStaticLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8SetReturnValueInt(info, TestPartialInterface::partialStaticLongAttribute());
 }
 #endif // ENABLE(PARTIAL_CONDITION)
@@ -1027,6 +1469,13 @@ static void partialStaticLongAttributeAttributeGetter(const v8::FunctionCallback
 static void partialStaticLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::partialStaticLongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1057,6 +1506,13 @@ static void partialStaticLongAttributeAttributeSetterCallback(const v8::Function
 #if ENABLE(PARTIAL_CONDITION)
 static void partialCallWithExecutionContextLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
@@ -1068,6 +1524,13 @@ static void partialCallWithExecutionContextLongAttributeAttributeGetter(const v8
 static void partialCallWithExecutionContextLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::partialCallWithExecutionContextLongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1100,6 +1563,13 @@ static void partialCallWithExecutionContextLongAttributeAttributeSetterCallback(
 #if ENABLE(PARTIAL_CONDITION)
 static void partialPartialEnumTypeAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueString(info, TestPartialInterface::partialPartialEnumTypeAttribute(*impl), info.GetIsolate());
@@ -1110,6 +1580,13 @@ static void partialPartialEnumTypeAttributeAttributeGetter(const v8::FunctionCal
 static void partialPartialEnumTypeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::partialPartialEnumTypeAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1149,6 +1626,13 @@ static void partialPartialEnumTypeAttributeAttributeSetterCallback(const v8::Fun
 #if ENABLE(PARTIAL_CONDITION)
 static void stringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     String result;
@@ -1162,6 +1646,13 @@ static void stringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Va
 static void stringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::stringAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1191,6 +1682,13 @@ static void stringAttributeAttributeSetterCallback(const v8::FunctionCallbackInf
 
 static void partial2LongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     v8SetReturnValueInt(info, TestPartialInterfaceImplementation::partial2LongAttribute(*impl));
@@ -1199,6 +1697,13 @@ static void partial2LongAttributeAttributeGetter(const v8::FunctionCallbackInfo<
 static void partial2LongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::partial2LongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1224,12 +1729,26 @@ static void partial2LongAttributeAttributeSetterCallback(const v8::FunctionCallb
 
 static void partial2StaticLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     v8SetReturnValueInt(info, TestPartialInterfaceImplementation::partial2StaticLongAttribute());
 }
 
 static void partial2StaticLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::partial2StaticLongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1273,6 +1792,13 @@ static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo
 static void voidMethodTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::voidMethodTestInterfaceEmptyArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1302,6 +1828,13 @@ static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8:
 static void voidMethodDoubleArgFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::voidMethodDoubleArgFloatArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1331,6 +1864,13 @@ static void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethod(const v8::
 static void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1366,6 +1906,13 @@ static void voidMethodTestEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value
 static void voidMethodTestEnumArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::voidMethodTestEnumArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1379,6 +1926,13 @@ static void voidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 static void voidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::voidMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1392,6 +1946,13 @@ static void voidMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Valu
 static void voidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::voidMethodMethodForMainWorld(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1405,6 +1966,13 @@ static void alwaysExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>&
 static void alwaysExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::alwaysExposedMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1418,6 +1986,13 @@ static void workerExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>&
 static void workerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::workerExposedMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1431,6 +2006,13 @@ static void windowExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>&
 static void windowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::windowExposedMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1443,6 +2025,13 @@ static void alwaysExposedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::V
 static void alwaysExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::alwaysExposedStaticMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1455,6 +2044,13 @@ static void workerExposedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::V
 static void workerExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::workerExposedStaticMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1467,6 +2063,13 @@ static void windowExposedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::V
 static void windowExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::windowExposedStaticMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1479,6 +2082,13 @@ static void staticReturnDOMWrapperMethodMethod(const v8::FunctionCallbackInfo<v8
 static void staticReturnDOMWrapperMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::staticReturnDOMWrapperMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1492,6 +2102,13 @@ static void methodWithExposedAndRuntimeEnabledFlagMethod(const v8::FunctionCallb
 static void methodWithExposedAndRuntimeEnabledFlagMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::methodWithExposedAndRuntimeEnabledFlagMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1590,6 +2207,13 @@ static void methodWithExposedHavingRuntimeEnabldFlagMethod(const v8::FunctionCal
 static void methodWithExposedHavingRuntimeEnabldFlagMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::methodWithExposedHavingRuntimeEnabldFlagMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1603,6 +2227,13 @@ static void windowAndServiceWorkerExposedMethodMethod(const v8::FunctionCallback
 static void windowAndServiceWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::windowAndServiceWorkerExposedMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1673,6 +2304,13 @@ static void legacyInterfaceTypeCheckingMethodMethod(const v8::FunctionCallbackIn
 static void legacyInterfaceTypeCheckingMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::legacyInterfaceTypeCheckingMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1686,6 +2324,13 @@ static void implementsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>
 static void implementsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::implementsVoidMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1724,6 +2369,13 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
 static void implementsComplexMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::implementsComplexMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1731,6 +2383,13 @@ static void implementsComplexMethodMethodCallback(const v8::FunctionCallbackInfo
 static void implementsCustomVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     V8TestInterface::implementsCustomVoidMethodMethodCustom(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1743,6 +2402,13 @@ static void implementsStaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::
 static void implementsStaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::implementsStaticVoidMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1756,6 +2422,13 @@ static void implements2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value
 static void implements2VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::implements2VoidMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1769,6 +2442,13 @@ static void implements3VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value
 static void implements3VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::implements3VoidMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1781,6 +2461,13 @@ static void implements3StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8:
 static void implements3StaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::implements3StaticVoidMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1797,6 +2484,13 @@ static void partialVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& i
 static void partialVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::partialVoidMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1813,6 +2507,13 @@ static void partialStaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Val
 static void partialStaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::partialStaticVoidMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1842,6 +2543,13 @@ static void partialVoidMethodLongArgMethod(const v8::FunctionCallbackInfo<v8::Va
 static void partialVoidMethodLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::partialVoidMethodLongArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1865,6 +2573,13 @@ static void partialCallWithExecutionContextRaisesExceptionVoidMethodMethod(const
 static void partialCallWithExecutionContextRaisesExceptionVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::partialCallWithExecutionContextRaisesExceptionVoidMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1894,6 +2609,13 @@ static void partialVoidMethodPartialCallbackTypeArgMethod(const v8::FunctionCall
 static void partialVoidMethodPartialCallbackTypeArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::partialVoidMethodPartialCallbackTypeArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -1926,6 +2648,13 @@ static void shortMethodWithShortArgumentImplementedInPrivateScriptMethod(const v
 static void shortMethodWithShortArgumentImplementedInPrivateScriptMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::shortMethodWithShortArgumentImplementedInPrivateScriptMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -2114,6 +2843,13 @@ static void toJSONMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 static void toJSONMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::toJSONMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -2127,6 +2863,13 @@ static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 static void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::toStringMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -2147,6 +2890,13 @@ static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 static void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationV8Internal::iteratorMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -2389,13 +3139,10 @@ void V8TestInterface::installV8TestInterfaceTemplate(v8::Local<v8::FunctionTempl
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    if (!RuntimeEnabledFeatures::featureNameEnabled())
-        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterface", V8TestInterfaceEmpty::domTemplate(isolate), V8TestInterface::internalFieldCount, 0, 0, 0, 0, 0, 0);
-    else
-        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterface", V8TestInterfaceEmpty::domTemplate(isolate), V8TestInterface::internalFieldCount,
-            V8TestInterfaceAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceAttributes),
-            V8TestInterfaceAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceAccessors),
-            V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods));
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterface", V8TestInterfaceEmpty::domTemplate(isolate), V8TestInterface::internalFieldCount,
+        V8TestInterfaceAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceAttributes),
+        V8TestInterfaceAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceAccessors),
+        V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods));
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
@@ -2653,6 +3400,14 @@ bool V8TestInterface::PrivateScript::stringAttributeAttributeGetter(LocalFrame* 
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
     if (holder.IsEmpty())
         return false;
+
+    ExecutionContext* executionContext = currentExecutionContext(scriptState->isolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
 
     ExceptionState exceptionState(ExceptionState::GetterContext, "stringAttribute", "TestInterfaceImplementation", scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestInterfaceImplementation", "stringAttribute", holder);

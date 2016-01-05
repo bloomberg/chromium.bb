@@ -33,6 +33,7 @@
 #       arbitrary, but that "X" is standard, e.g. [Attr=X], [Attr=Foo].
 #
 
+APIExperimentEnabled=*
 ActiveDOMObject
 CachedAttribute=*
 CallWith=ExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow|ThisValue

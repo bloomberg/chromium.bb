@@ -18,7 +18,9 @@
 #include "bindings/tests/idls/modules/TestPartialInterfaceImplementation3.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
+#include "core/experiments/ExperimentalFeatures.h"
 #include "core/frame/LocalFrame.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
@@ -245,6 +247,13 @@ static void partialVoidTestEnumModulesArgMethodMethod(const v8::FunctionCallback
 static void partialVoidTestEnumModulesArgMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationPartialV8Internal::partialVoidTestEnumModulesArgMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -289,6 +298,13 @@ static void unscopeableVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value
 static void unscopeableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String errorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+         return;
+    }
     TestInterfaceImplementationPartialV8Internal::unscopeableVoidMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -305,13 +321,10 @@ void V8TestInterfacePartial::installV8TestInterfaceTemplate(v8::Local<v8::Functi
     V8TestInterface::installV8TestInterfaceTemplate(functionTemplate, isolate);
 
     v8::Local<v8::Signature> defaultSignature;
-    if (!RuntimeEnabledFeatures::featureNameEnabled())
-        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterface", v8::Local<v8::FunctionTemplate>(), V8TestInterface::internalFieldCount, 0, 0, 0, 0, 0, 0);
-    else
-        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterface", v8::Local<v8::FunctionTemplate>(), V8TestInterface::internalFieldCount,
-            0, 0,
-            0, 0,
-            V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods));
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterface", v8::Local<v8::FunctionTemplate>(), V8TestInterface::internalFieldCount,
+        0, 0,
+        0, 0,
+        V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods));
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();

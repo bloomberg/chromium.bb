@@ -1,3 +1,5 @@
+{% from 'utilities.cpp' import check_api_experiment %}
+
 {##############################################################################}
 {% macro constant_getter_callback(constant) %}
 {% filter conditional(constant.conditional_string) %}
@@ -9,6 +11,9 @@ static void {{constant.name}}ConstantGetterCallback(v8::Local<v8::Name>, const v
     {% endif %}
     {% if constant.measure_as %}
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{constant.measure_as('ConstantGetter')}});
+    {% endif %}
+    {% if constant.is_api_experiment_enabled %}
+    {{check_api_experiment(constant) | indent}}
     {% endif %}
     {% if constant.idl_type in ('Double', 'Float') %}
     v8SetReturnValue(info, {{constant.value}});
@@ -44,7 +49,7 @@ V8DOMConfiguration::installConstant(isolate, functionTemplate, prototypeTemplate
 {% endfor %}
 {% endfilter %}
 {% endfor %}
-{# Constants with [DeprecateAs] or [MeasureAs] #}
+{# Constants with [DeprecateAs] or [MeasureAs] or [APIExperimentEnabled] #}
 {% for constant in special_getter_constants %}
 V8DOMConfiguration::installConstantWithGetter(isolate, functionTemplate, prototypeTemplate, "{{constant.name}}", {{cpp_class}}V8Internal::{{constant.name}}ConstantGetterCallback);
 {% endfor %}

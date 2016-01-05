@@ -60,6 +60,7 @@
 #include "core/dom/MessagePort.h"
 #include "core/dom/TagCollection.h"
 #include "core/dom/custom/CustomElementProcessingStack.h"
+#include "core/experiments/ExperimentalFeatures.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
@@ -109,6 +110,76 @@ static void MEASURED_CONSTANTConstantGetterCallback(v8::Local<v8::Name>, const v
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::Constant);
     v8SetReturnValueInt(info, 1);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void FEATURE1_RUNTIME_AND_EXPERIMENT_ENABLED_CONST1ConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String memberErrorMessage;
+    if (!ExperimentalFeatures::featureName1Enabled(executionContext, memberErrorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         return;
+    }
+    v8SetReturnValueInt(info, 1);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void FEATURE1_RUNTIME_AND_EXPERIMENT_ENABLED_CONST2ConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String memberErrorMessage;
+    if (!ExperimentalFeatures::featureName1Enabled(executionContext, memberErrorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         return;
+    }
+    v8SetReturnValueInt(info, 2);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void FEATURE2_RUNTIME_AND_EXPERIMENT_ENABLED_CONST1ConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String memberErrorMessage;
+    if (!ExperimentalFeatures::featureName2Enabled(executionContext, memberErrorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         return;
+    }
+    v8SetReturnValueInt(info, 3);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void FEATURE2_RUNTIME_AND_EXPERIMENT_ENABLED_CONST2ConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String memberErrorMessage;
+    if (!ExperimentalFeatures::featureName2Enabled(executionContext, memberErrorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         return;
+    }
+    v8SetReturnValueInt(info, 4);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void FEATURE3_RUNTIME_AND_EXPERIMENT_ENABLED_CONST1ConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String memberErrorMessage;
+    if (!ExperimentalFeatures::featureName3Enabled(executionContext, memberErrorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         return;
+    }
+    v8SetReturnValueInt(info, 5);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -2854,6 +2925,108 @@ static void enforceRangeLongAttributeAttributeSetterCallback(const v8::FunctionC
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void experimentRuntimeEnabledLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String memberErrorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, memberErrorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         return;
+    }
+    v8::Local<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toImpl(holder);
+    v8SetReturnValueInt(info, impl->experimentRuntimeEnabledLongAttribute());
+}
+
+static void experimentRuntimeEnabledLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String memberErrorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, memberErrorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         return;
+    }
+    TestObjectV8Internal::experimentRuntimeEnabledLongAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void experimentRuntimeEnabledLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "experimentRuntimeEnabledLongAttribute", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toImpl(holder);
+    int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
+    impl->setExperimentRuntimeEnabledLongAttribute(cppValue);
+}
+
+static void experimentRuntimeEnabledLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Value> v8Value = info[0];
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
+    TestObjectV8Internal::experimentRuntimeEnabledLongAttributeAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+#if ENABLE(CONDITION)
+static void experimentConditionalRuntimeEnabledLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String memberErrorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, memberErrorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         return;
+    }
+    v8::Local<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toImpl(holder);
+    v8SetReturnValueInt(info, impl->experimentConditionalRuntimeEnabledLongAttribute());
+}
+#endif // ENABLE(CONDITION)
+
+#if ENABLE(CONDITION)
+static void experimentConditionalRuntimeEnabledLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String memberErrorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, memberErrorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         return;
+    }
+    TestObjectV8Internal::experimentConditionalRuntimeEnabledLongAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+#endif // ENABLE(CONDITION)
+
+#if ENABLE(CONDITION)
+static void experimentConditionalRuntimeEnabledLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "experimentConditionalRuntimeEnabledLongAttribute", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toImpl(holder);
+    int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
+    impl->setExperimentConditionalRuntimeEnabledLongAttribute(cppValue);
+}
+#endif // ENABLE(CONDITION)
+
+#if ENABLE(CONDITION)
+static void experimentConditionalRuntimeEnabledLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Value> v8Value = info[0];
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
+    TestObjectV8Internal::experimentConditionalRuntimeEnabledLongAttributeAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+#endif // ENABLE(CONDITION)
+
 static void implementedAsLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
@@ -5400,6 +5573,53 @@ static void unscopeableLongAttributeAttributeSetterCallback(const v8::FunctionCa
     v8::Local<v8::Value> v8Value = info[0];
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
     TestObjectV8Internal::unscopeableLongAttributeAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void unscopeableExperimentEnabledLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String memberErrorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, memberErrorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         return;
+    }
+    v8::Local<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toImpl(holder);
+    v8SetReturnValueInt(info, impl->unscopeableExperimentEnabledLongAttribute());
+}
+
+static void unscopeableExperimentEnabledLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String memberErrorMessage;
+    if (!ExperimentalFeatures::featureNameEnabled(executionContext, memberErrorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         return;
+    }
+    TestObjectV8Internal::unscopeableExperimentEnabledLongAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void unscopeableExperimentEnabledLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "unscopeableExperimentEnabledLongAttribute", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toImpl(holder);
+    int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
+    impl->setUnscopeableExperimentEnabledLongAttribute(cppValue);
+}
+
+static void unscopeableExperimentEnabledLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Value> v8Value = info[0];
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
+    TestObjectV8Internal::unscopeableExperimentEnabledLongAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -10709,6 +10929,242 @@ static void doNotCheckSignatureVoidMethodMethodCallback(const v8::FunctionCallba
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void experimentEnabledVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    impl->experimentEnabledVoidMethod();
+}
+
+static void experimentEnabledVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String memberErrorMessage;
+    if (!ExperimentalFeatures::featureName1Enabled(executionContext, memberErrorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         return;
+    }
+    TestObjectV8Internal::experimentEnabledVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void perWorldBindingsExperimentEnabledVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    impl->perWorldBindingsExperimentEnabledVoidMethod();
+}
+
+static void perWorldBindingsExperimentEnabledVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String memberErrorMessage;
+    if (!ExperimentalFeatures::featureName1Enabled(executionContext, memberErrorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         return;
+    }
+    TestObjectV8Internal::perWorldBindingsExperimentEnabledVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void perWorldBindingsExperimentEnabledVoidMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    impl->perWorldBindingsExperimentEnabledVoidMethod();
+}
+
+static void perWorldBindingsExperimentEnabledVoidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    String memberErrorMessage;
+    if (!ExperimentalFeatures::featureName1Enabled(executionContext, memberErrorMessage)) {
+         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         return;
+    }
+    TestObjectV8Internal::perWorldBindingsExperimentEnabledVoidMethodMethodForMainWorld(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void experimentEnabledOverloadedVoidMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    V8StringResource<> stringArg;
+    {
+        stringArg = info[0];
+        if (!stringArg.prepare())
+            return;
+    }
+    impl->experimentEnabledOverloadedVoidMethod(stringArg);
+}
+
+static void experimentEnabledOverloadedVoidMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "experimentEnabledOverloadedVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    int longArg;
+    {
+        longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
+    }
+    impl->experimentEnabledOverloadedVoidMethod(longArg);
+}
+
+static void experimentEnabledOverloadedVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "experimentEnabledOverloadedVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
+    switch (std::min(1, info.Length())) {
+    case 1:
+        if (info[0]->IsNumber()) {
+            experimentEnabledOverloadedVoidMethod2Method(info);
+            return;
+        }
+        if (true) {
+            experimentEnabledOverloadedVoidMethod1Method(info);
+            return;
+        }
+        if (true) {
+            experimentEnabledOverloadedVoidMethod2Method(info);
+            return;
+        }
+        break;
+    default:
+        break;
+    }
+    if (info.Length() < 1) {
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
+    return;
+}
+
+static void experimentEnabledOverloadedVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::experimentEnabledOverloadedVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void partiallyExperimentEnabledOverloadedVoidMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    V8StringResource<> stringArg;
+    {
+        stringArg = info[0];
+        if (!stringArg.prepare())
+            return;
+    }
+    impl->partiallyExperimentEnabledOverloadedVoidMethod(stringArg);
+}
+
+static void partiallyExperimentEnabledOverloadedVoidMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    TestInterfaceImplementation* testInterfaceArg;
+    {
+        testInterfaceArg = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+        if (!testInterfaceArg) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("partiallyExperimentEnabledOverloadedVoidMethod", "TestObject", "parameter 1 is not of type 'TestInterface'."));
+            return;
+        }
+    }
+    impl->partiallyExperimentEnabledOverloadedVoidMethod(testInterfaceArg);
+}
+
+static void partiallyExperimentEnabledOverloadedVoidMethod3Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "partiallyExperimentEnabledOverloadedVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    int longArg;
+    V8StringResource<> stringArg;
+    {
+        longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
+        stringArg = info[1];
+        if (!stringArg.prepare())
+            return;
+    }
+    impl->partiallyExperimentEnabledOverloadedVoidMethod(longArg, stringArg);
+}
+
+static void partiallyExperimentEnabledOverloadedVoidMethod4Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "partiallyExperimentEnabledOverloadedVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    int longArg;
+    V8StringResource<> stringArg;
+    TestInterfaceImplementation* testInterfaceArg;
+    {
+        longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
+        stringArg = info[1];
+        if (!stringArg.prepare())
+            return;
+        testInterfaceArg = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), info[2]);
+        if (!testInterfaceArg) {
+            exceptionState.throwTypeError("parameter 3 is not of type 'TestInterface'.");
+            exceptionState.throwIfNeeded();
+            return;
+        }
+    }
+    impl->partiallyExperimentEnabledOverloadedVoidMethod(longArg, stringArg, testInterfaceArg);
+}
+
+static void partiallyExperimentEnabledOverloadedVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "partiallyExperimentEnabledOverloadedVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
+    switch (std::min(3, info.Length())) {
+    case 1:
+        if (V8TestInterface::hasInstance(info[0], info.GetIsolate())) {
+            partiallyExperimentEnabledOverloadedVoidMethod2Method(info);
+            return;
+        }
+        if (true) {
+            partiallyExperimentEnabledOverloadedVoidMethod1Method(info);
+            return;
+        }
+        break;
+    case 2:
+        if (true) {
+            partiallyExperimentEnabledOverloadedVoidMethod3Method(info);
+            return;
+        }
+        break;
+    case 3:
+        if (true) {
+            partiallyExperimentEnabledOverloadedVoidMethod4Method(info);
+            return;
+        }
+        break;
+    default:
+        break;
+    }
+    if (info.Length() < 1) {
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
+    return;
+}
+
+static void partiallyExperimentEnabledOverloadedVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::partiallyExperimentEnabledOverloadedVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void implementedAsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -12924,6 +13380,10 @@ const V8DOMConfiguration::AccessorConfiguration V8TestObjectAccessors[] = {
     {"customElementsCallbacksReadonlyLongAttribute", TestObjectV8Internal::customElementsCallbacksReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"deprecatedLongAttribute", TestObjectV8Internal::deprecatedLongAttributeAttributeGetterCallback, TestObjectV8Internal::deprecatedLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"enforceRangeLongAttribute", TestObjectV8Internal::enforceRangeLongAttributeAttributeGetterCallback, TestObjectV8Internal::enforceRangeLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"experimentRuntimeEnabledLongAttribute", TestObjectV8Internal::experimentRuntimeEnabledLongAttributeAttributeGetterCallback, TestObjectV8Internal::experimentRuntimeEnabledLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+#if ENABLE(CONDITION)
+    {"experimentConditionalRuntimeEnabledLongAttribute", TestObjectV8Internal::experimentConditionalRuntimeEnabledLongAttributeAttributeGetterCallback, TestObjectV8Internal::experimentConditionalRuntimeEnabledLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+#endif // ENABLE(CONDITION)
     {"implementedAsLongAttribute", TestObjectV8Internal::implementedAsLongAttributeAttributeGetterCallback, TestObjectV8Internal::implementedAsLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"customImplementedAsLongAttribute", TestObjectV8Internal::customImplementedAsLongAttributeAttributeGetterCallback, TestObjectV8Internal::customImplementedAsLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"customGetterImplementedAsLongAttribute", TestObjectV8Internal::customGetterImplementedAsLongAttributeAttributeGetterCallback, TestObjectV8Internal::customGetterImplementedAsLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
@@ -12989,6 +13449,7 @@ const V8DOMConfiguration::AccessorConfiguration V8TestObjectAccessors[] = {
     {"measuredLongAttribute", TestObjectV8Internal::measuredLongAttributeAttributeGetterCallback, TestObjectV8Internal::measuredLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"sameObjectAttribute", TestObjectV8Internal::sameObjectAttributeAttributeGetterCallback, TestObjectV8Internal::sameObjectAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"unscopeableLongAttribute", TestObjectV8Internal::unscopeableLongAttributeAttributeGetterCallback, TestObjectV8Internal::unscopeableLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"unscopeableExperimentEnabledLongAttribute", TestObjectV8Internal::unscopeableExperimentEnabledLongAttributeAttributeGetterCallback, TestObjectV8Internal::unscopeableExperimentEnabledLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"testInterfaceAttribute", TestObjectV8Internal::testInterfaceAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"testInterfaceGarbageCollectedAttribute", TestObjectV8Internal::testInterfaceGarbageCollectedAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceGarbageCollectedAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"testInterfaceGarbageCollectedOrNullAttribute", TestObjectV8Internal::testInterfaceGarbageCollectedOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceGarbageCollectedOrNullAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
@@ -13198,6 +13659,10 @@ const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
 #endif // ENABLE(CONDITION)
     {"customElementCallbacksVoidMethod", TestObjectV8Internal::customElementCallbacksVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"deprecatedVoidMethod", TestObjectV8Internal::deprecatedVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
+    {"experimentEnabledVoidMethod", TestObjectV8Internal::experimentEnabledVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
+    {"perWorldBindingsExperimentEnabledVoidMethod", TestObjectV8Internal::perWorldBindingsExperimentEnabledVoidMethodMethodCallback, TestObjectV8Internal::perWorldBindingsExperimentEnabledVoidMethodMethodCallbackForMainWorld, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
+    {"experimentEnabledOverloadedVoidMethod", TestObjectV8Internal::experimentEnabledOverloadedVoidMethodMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
+    {"partiallyExperimentEnabledOverloadedVoidMethod", TestObjectV8Internal::partiallyExperimentEnabledOverloadedVoidMethodMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"implementedAsVoidMethod", TestObjectV8Internal::implementedAsVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"measureAsVoidMethod", TestObjectV8Internal::measureAsVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"measureMethod", TestObjectV8Internal::measureMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
@@ -13333,6 +13798,11 @@ static void installV8TestObjectTemplate(v8::Local<v8::FunctionTemplate> function
     }
     V8DOMConfiguration::installConstantWithGetter(isolate, functionTemplate, prototypeTemplate, "DEPRECATED_CONSTANT", TestObjectV8Internal::DEPRECATED_CONSTANTConstantGetterCallback);
     V8DOMConfiguration::installConstantWithGetter(isolate, functionTemplate, prototypeTemplate, "MEASURED_CONSTANT", TestObjectV8Internal::MEASURED_CONSTANTConstantGetterCallback);
+    V8DOMConfiguration::installConstantWithGetter(isolate, functionTemplate, prototypeTemplate, "FEATURE1_RUNTIME_AND_EXPERIMENT_ENABLED_CONST1", TestObjectV8Internal::FEATURE1_RUNTIME_AND_EXPERIMENT_ENABLED_CONST1ConstantGetterCallback);
+    V8DOMConfiguration::installConstantWithGetter(isolate, functionTemplate, prototypeTemplate, "FEATURE1_RUNTIME_AND_EXPERIMENT_ENABLED_CONST2", TestObjectV8Internal::FEATURE1_RUNTIME_AND_EXPERIMENT_ENABLED_CONST2ConstantGetterCallback);
+    V8DOMConfiguration::installConstantWithGetter(isolate, functionTemplate, prototypeTemplate, "FEATURE2_RUNTIME_AND_EXPERIMENT_ENABLED_CONST1", TestObjectV8Internal::FEATURE2_RUNTIME_AND_EXPERIMENT_ENABLED_CONST1ConstantGetterCallback);
+    V8DOMConfiguration::installConstantWithGetter(isolate, functionTemplate, prototypeTemplate, "FEATURE2_RUNTIME_AND_EXPERIMENT_ENABLED_CONST2", TestObjectV8Internal::FEATURE2_RUNTIME_AND_EXPERIMENT_ENABLED_CONST2ConstantGetterCallback);
+    V8DOMConfiguration::installConstantWithGetter(isolate, functionTemplate, prototypeTemplate, "FEATURE3_RUNTIME_AND_EXPERIMENT_ENABLED_CONST1", TestObjectV8Internal::FEATURE3_RUNTIME_AND_EXPERIMENT_ENABLED_CONST1ConstantGetterCallback);
     static_assert(0 == TestObject::CONST_VALUE_0, "the value of TestObject_CONST_VALUE_0 does not match with implementation");
     static_assert(1 == TestObject::CONST_VALUE_1, "the value of TestObject_CONST_VALUE_1 does not match with implementation");
     static_assert(2 == TestObject::CONST_VALUE_2, "the value of TestObject_CONST_VALUE_2 does not match with implementation");
@@ -13354,6 +13824,11 @@ static void installV8TestObjectTemplate(v8::Local<v8::FunctionTemplate> function
     static_assert(3 == TestObject::FEATURE2_ENABLED_CONST1, "the value of TestObject_FEATURE2_ENABLED_CONST1 does not match with implementation");
     static_assert(4 == TestObject::FEATURE2_ENABLED_CONST2, "the value of TestObject_FEATURE2_ENABLED_CONST2 does not match with implementation");
     static_assert(5 == TestObject::FEATURE3_ENABLED_CONST1, "the value of TestObject_FEATURE3_ENABLED_CONST1 does not match with implementation");
+    static_assert(1 == TestObject::FEATURE1_RUNTIME_AND_EXPERIMENT_ENABLED_CONST1, "the value of TestObject_FEATURE1_RUNTIME_AND_EXPERIMENT_ENABLED_CONST1 does not match with implementation");
+    static_assert(2 == TestObject::FEATURE1_RUNTIME_AND_EXPERIMENT_ENABLED_CONST2, "the value of TestObject_FEATURE1_RUNTIME_AND_EXPERIMENT_ENABLED_CONST2 does not match with implementation");
+    static_assert(3 == TestObject::FEATURE2_RUNTIME_AND_EXPERIMENT_ENABLED_CONST1, "the value of TestObject_FEATURE2_RUNTIME_AND_EXPERIMENT_ENABLED_CONST1 does not match with implementation");
+    static_assert(4 == TestObject::FEATURE2_RUNTIME_AND_EXPERIMENT_ENABLED_CONST2, "the value of TestObject_FEATURE2_RUNTIME_AND_EXPERIMENT_ENABLED_CONST2 does not match with implementation");
+    static_assert(5 == TestObject::FEATURE3_RUNTIME_AND_EXPERIMENT_ENABLED_CONST1, "the value of TestObject_FEATURE3_RUNTIME_AND_EXPERIMENT_ENABLED_CONST1 does not match with implementation");
     static_assert(1 == TestObject::CONST_IMPL, "the value of TestObject_CONST_IMPL does not match with implementation");
     v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(TestObjectV8Internal::indexedPropertyGetterCallback, TestObjectV8Internal::indexedPropertySetterCallback, 0, TestObjectV8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestObject>, v8::Local<v8::Value>(), v8::PropertyHandlerFlags::kNone);
     instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
@@ -13412,6 +13887,7 @@ void V8TestObject::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> con
         unscopeables = prototypeObject->Get(context, unscopablesSymbol).ToLocalChecked().As<v8::Object>();
     else
         unscopeables = v8::Object::New(isolate);
+    unscopeables->CreateDataProperty(context, v8AtomicString(isolate, "unscopeableExperimentEnabledLongAttribute"), v8::True(isolate)).FromJust();
     unscopeables->CreateDataProperty(context, v8AtomicString(isolate, "unscopeableLongAttribute"), v8::True(isolate)).FromJust();
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
         unscopeables->CreateDataProperty(context, v8AtomicString(isolate, "unscopeableRuntimeEnabledLongAttribute"), v8::True(isolate)).FromJust();
@@ -13670,6 +14146,7 @@ bool V8TestObject::PrivateScript::readonlyShortAttributeAttributeGetter(LocalFra
     if (holder.IsEmpty())
         return false;
 
+
     ExceptionState exceptionState(ExceptionState::GetterContext, "readonlyShortAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestObject", "readonlyShortAttribute", holder);
     if (v8Value.IsEmpty())
@@ -13699,6 +14176,7 @@ bool V8TestObject::PrivateScript::shortAttributeAttributeGetter(LocalFrame* fram
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
     if (holder.IsEmpty())
         return false;
+
 
     ExceptionState exceptionState(ExceptionState::GetterContext, "shortAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestObject", "shortAttribute", holder);
@@ -13752,6 +14230,7 @@ bool V8TestObject::PrivateScript::stringAttributeAttributeGetter(LocalFrame* fra
     if (holder.IsEmpty())
         return false;
 
+
     ExceptionState exceptionState(ExceptionState::GetterContext, "stringAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestObject", "stringAttribute", holder);
     if (v8Value.IsEmpty())
@@ -13804,6 +14283,7 @@ bool V8TestObject::PrivateScript::nodeAttributeAttributeGetter(LocalFrame* frame
     if (holder.IsEmpty())
         return false;
 
+
     ExceptionState exceptionState(ExceptionState::GetterContext, "nodeAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestObject", "nodeAttribute", holder);
     if (v8Value.IsEmpty())
@@ -13853,6 +14333,7 @@ bool V8TestObject::PrivateScript::attributeForPrivateScriptOnlyAttributeGetter(L
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
     if (holder.IsEmpty())
         return false;
+
 
     ExceptionState exceptionState(ExceptionState::GetterContext, "attributeForPrivateScriptOnly", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestObject", "attributeForPrivateScriptOnly", holder);
@@ -13905,6 +14386,7 @@ bool V8TestObject::PrivateScript::enumForPrivateScriptAttributeGetter(LocalFrame
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
     if (holder.IsEmpty())
         return false;
+
 
     ExceptionState exceptionState(ExceptionState::GetterContext, "enumForPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestObject", "enumForPrivateScript", holder);

@@ -53,3 +53,22 @@ const char* validValues[] = {
 {% endif %}
 {{property_location_list | join(' | ')}}
 {%- endmacro %}
+
+
+{% macro check_api_experiment_internal(errorName, experiment_name) %}
+{% if experiment_name %}
+String {{errorName}};
+if (!{{experiment_name}}(executionContext, {{errorName}})) {
+     v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+     toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, {{errorName}}));
+     return;
+}
+{% endif %}
+{% endmacro %}
+
+
+{% macro check_api_experiment(member, isolate="info.GetIsolate()") -%}
+ExecutionContext* executionContext = currentExecutionContext({{isolate}});
+{{check_api_experiment_internal("errorMessage", member.api_experiment_enabled_per_interface) -}}
+{{check_api_experiment_internal("memberErrorMessage", member.api_experiment_enabled) -}}
+{% endmacro %}

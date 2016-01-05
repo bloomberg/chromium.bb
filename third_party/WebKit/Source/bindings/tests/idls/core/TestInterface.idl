@@ -36,6 +36,7 @@
     Conditional=CONDITION,
     Custom=LegacyCallAsFunction,
     DoNotCheckConstants,
+    APIExperimentEnabled=ExperimentName,
     ImplementedAs=TestInterfaceImplementation,
     Iterable,
     RuntimeEnabled=FeatureName,

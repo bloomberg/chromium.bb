@@ -122,12 +122,18 @@ def method_context(interface, method, is_visible=True):
     if 'LenientThis' in extended_attributes:
         raise Exception('[LenientThis] is not supported for operations.')
 
+    if 'APIExperimentEnabled' in extended_attributes:
+        includes.add('core/experiments/ExperimentalFeatures.h')
+        includes.add('core/inspector/ConsoleMessage.h')
+
     argument_contexts = [
         argument_context(interface, method, argument, index, is_visible=is_visible)
         for index, argument in enumerate(arguments)]
 
     return {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
+        'api_experiment_enabled': v8_utilities.api_experiment_enabled_function(method),  # [APIExperimentEnabled]
+        'api_experiment_enabled_per_interface': v8_utilities.api_experiment_enabled_function(interface),  # [APIExperimentEnabled]
         'arguments': argument_contexts,
         'argument_declarations_for_private_script':
             argument_declarations_for_private_script(interface, method),
@@ -156,6 +162,7 @@ def method_context(interface, method, is_visible=True):
             any(True for argument_context in argument_contexts
                 if argument_context['is_optional_without_default_value']),
         'idl_type': idl_type.base_type,
+        'is_api_experiment_enabled': v8_utilities.api_experiment_enabled_function(method) or v8_utilities.api_experiment_enabled_function(interface),  # [APIExperimentEnabled]
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
         'is_call_with_script_arguments': is_call_with_script_arguments,
         'is_call_with_script_state': is_call_with_script_state,
