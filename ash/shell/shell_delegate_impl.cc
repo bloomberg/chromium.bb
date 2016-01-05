@@ -137,17 +137,9 @@ class SessionStateDelegateImpl : public SessionStateDelegate {
 
 }  // namespace
 
-ShellDelegateImpl::ShellDelegateImpl()
-    : watcher_(NULL), shelf_delegate_(NULL) {}
+ShellDelegateImpl::ShellDelegateImpl() : shelf_delegate_(nullptr) {}
 
-ShellDelegateImpl::~ShellDelegateImpl() {
-}
-
-void ShellDelegateImpl::SetWatcher(WindowWatcher* watcher) {
-  watcher_ = watcher;
-  if (shelf_delegate_)
-    shelf_delegate_->set_watcher(watcher);
-}
+ShellDelegateImpl::~ShellDelegateImpl() {}
 
 bool ShellDelegateImpl::IsFirstRunAfterBoot() const {
   return false;
@@ -205,7 +197,7 @@ app_list::AppListViewDelegate* ShellDelegateImpl::GetAppListViewDelegate() {
 }
 
 ShelfDelegate* ShellDelegateImpl::CreateShelfDelegate(ShelfModel* model) {
-  shelf_delegate_ = new ShelfDelegateImpl(watcher_);
+  shelf_delegate_ = new ShelfDelegateImpl();
   return shelf_delegate_;
 }
 

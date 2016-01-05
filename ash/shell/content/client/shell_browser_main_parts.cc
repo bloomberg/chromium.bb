@@ -82,7 +82,7 @@ class ShellViewsDelegate : public views::TestViewsDelegate {
 
 ShellBrowserMainParts::ShellBrowserMainParts(
     const content::MainFunctionParams& parameters)
-    : BrowserMainParts(), delegate_(NULL) {}
+    : BrowserMainParts(), delegate_(nullptr) {}
 
 ShellBrowserMainParts::~ShellBrowserMainParts() {}
 
@@ -136,7 +136,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   window_watcher_.reset(new ash::shell::WindowWatcher);
   gfx::Screen* screen = Shell::GetInstance()->GetScreen();
   screen->AddObserver(window_watcher_.get());
-  delegate_->SetWatcher(window_watcher_.get());
 
   ash::shell::InitWindowTypeLauncher();
 
@@ -148,8 +147,7 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   screen->RemoveObserver(window_watcher_.get());
 
   window_watcher_.reset();
-  delegate_->SetWatcher(NULL);
-  delegate_ = NULL;
+  delegate_ = nullptr;
   ash::Shell::DeleteInstance();
   ShellContentState::DestroyInstance();
   // The global message center state must be shutdown absent

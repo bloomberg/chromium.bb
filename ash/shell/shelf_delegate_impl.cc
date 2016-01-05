@@ -4,18 +4,12 @@
 
 #include "ash/shell/shelf_delegate_impl.h"
 
-#include "ash/shell.h"
-#include "ash/shell/toplevel_window.h"
-#include "ash/shell/window_watcher.h"
-#include "ash/wm/window_util.h"
 #include "base/strings/string_util.h"
 
 namespace ash {
 namespace shell {
 
-ShelfDelegateImpl::ShelfDelegateImpl(WindowWatcher* watcher)
-    : watcher_(watcher) {
-}
+ShelfDelegateImpl::ShelfDelegateImpl() {}
 
 ShelfDelegateImpl::~ShelfDelegateImpl() {
 }
