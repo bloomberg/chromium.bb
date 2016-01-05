@@ -1,4 +1,4 @@
-SUBDIRS = tables tablesWithMetadata doctests harness harnessSources yaml
+SUBDIRS = tables tablesWithMetadata doctests yaml
 
 AM_CPPFLAGS =					\
 	-I$(top_srcdir)/liblouis		\

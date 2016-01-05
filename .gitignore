@@ -159,13 +159,11 @@ TAGS
 /tests/doctests/Makefile
 /tests/doctests/Makefile.in
 
-# /tests/harness/
-/tests/harness/Makefile.in
-/tests/harness/Makefile
-
-# /tests/harnessSources/
-/tests/harnessSources/Makefile.in
-/tests/harnessSources/Makefile
+# /tests/yaml/
+/tests/yaml/Makefile
+/tests/yaml/Makefile.in
+/tests/yaml/*.log
+/tests/yaml/*.trs
 
 # /tests/tables/
 /tests/tables/Makefile.in
