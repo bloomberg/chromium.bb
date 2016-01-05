@@ -276,27 +276,45 @@ KeySystemConfigSelector::KeySystemConfigSelector(
 KeySystemConfigSelector::~KeySystemConfigSelector() {
 }
 
+bool IsSupportedClearMediaFormat(const std::string& container_mime_type,
+                                 const std::string& codecs) {
+  std::vector<std::string> codec_vector;
+  media::ParseCodecString(codecs, &codec_vector, false);
+  media::SupportsType support_result =
+      media::IsSupportedMediaFormat(container_mime_type, codec_vector);
+  switch (support_result) {
+    case media::IsSupported:
+      return true;
+    case media::MayBeSupported:
+      // If no codecs were specified, the best possible result is
+      // MayBeSupported, indicating support for the container.
+      return codec_vector.empty();
+    case media::IsNotSupported:
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+
+// TODO(sandersd): Move contentType parsing from Blink to here so that invalid
+// parameters can be rejected. http://crbug.com/417561
 bool KeySystemConfigSelector::IsSupportedContentType(
     const std::string& key_system,
     EmeMediaType media_type,
     const std::string& container_mime_type,
     const std::string& codecs,
     KeySystemConfigSelector::ConfigState* config_state) {
-  // TODO(sandersd): Move contentType parsing from Blink to here so that invalid
-  // parameters can be rejected. http://crbug.com/417561
-  std::string container_lower = base::ToLowerASCII(container_mime_type);
-
   // Check that |container_mime_type| and |codecs| are supported by Chrome. This
   // is done primarily to validate extended codecs, but it also ensures that the
   // CDM cannot support codecs that Chrome does not (which could complicate the
   // robustness algorithm).
-  std::vector<std::string> codec_vector;
-  media::ParseCodecString(codecs, &codec_vector, false);
-  if (!codec_vector.empty() &&
-      (media::IsSupportedMediaFormat(container_lower, codec_vector) !=
-       media::IsSupported)) {
+  if (!IsSupportedClearMediaFormat(container_mime_type, codecs))
     return false;
-  }
+
+  // TODO(servolk): Converting |container_mime_type| to lower-case could be
+  // moved to KeySystemsImpl::GetContentTypeConfigRule, plus we could add some
+  // upper-case container name test cases in media/base/key_systems_unittest.cc.
+  std::string container_lower = base::ToLowerASCII(container_mime_type);
 
   // Check that |container_mime_type| and |codecs| are supported by the CDM.
   // This check does not handle extended codecs, so extended codec information
