@@ -747,7 +747,8 @@ void SVGSVGElement::finishParsingChildren()
 {
     SVGGraphicsElement::finishParsingChildren();
 
-    // The outermost SVGSVGElement SVGLoad event is fired through Document::dispatchWindowLoadEvent.
+    // The outermost SVGSVGElement SVGLoad event is fired through
+    // LocalDOMWindow::dispatchWindowLoadEvent.
     if (isOutermostSVGSVGElement())
         return;
 

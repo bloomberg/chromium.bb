@@ -383,7 +383,7 @@ HTMLMediaElement::~HTMLMediaElement()
     removeElementFromDocumentMap(this, &document());
 
     // Destroying the player may cause a resource load to be canceled,
-    // which could result in Document::dispatchWindowLoadEvent() being
+    // which could result in LocalDOMWindow::dispatchWindowLoadEvent() being
     // called via ResourceFetch::didLoadResource() then
     // FrameLoader::checkCompleted(). To prevent load event dispatching during
     // object destruction, we use Document::incrementLoadEventDelayCount().

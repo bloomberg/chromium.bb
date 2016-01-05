@@ -2624,8 +2624,9 @@ void Document::implicitClose()
         return;
     }
 
-    // The call to dispatchWindowLoadEvent can detach the LocalDOMWindow and cause it (and its
-    // attached Document) to be destroyed.
+    // The call to dispatchWindowLoadEvent (from documentWasClosed()) can detach
+    // the LocalDOMWindow and cause it (and its attached Document) to be
+    // destroyed.
     RefPtrWillBeRawPtr<LocalDOMWindow> protectedWindow(this->domWindow());
 
     m_loadEventProgress = LoadEventInProgress;
