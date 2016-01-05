@@ -127,8 +127,11 @@ public:
     bool clientCacheIsValid(const DisplayItemClient&) const;
     bool cacheIsEmpty() const { return m_currentPaintArtifact.isEmpty(); }
 
+    // For micro benchmarking of record time.
     bool displayItemConstructionIsDisabled() const { return m_constructionDisabled; }
     void setDisplayItemConstructionIsDisabled(const bool disable) { m_constructionDisabled = disable; }
+    bool subsequenceCachingIsDisabled() const { return m_subsequenceCachingDisabled; }
+    void setSubsequenceCachingIsDisabled(bool disable) { m_subsequenceCachingDisabled = disable; }
 
     bool textPainted() const { return m_textPainted; }
     void setTextPainted() { m_textPainted = true; }
@@ -183,6 +186,7 @@ protected:
         : m_newDisplayItemList(kInitialDisplayItemListCapacityBytes)
         , m_validlyCachedClientsDirty(false)
         , m_constructionDisabled(false)
+        , m_subsequenceCachingDisabled(false)
         , m_textPainted(false)
         , m_imagePainted(false)
         , m_skippingCacheCount(0)
@@ -252,6 +256,9 @@ private:
     // Allow display item construction to be disabled to isolate the costs of construction
     // in performance metrics.
     bool m_constructionDisabled;
+
+    // Allow subsequence caching to be disabled to test the cost of display item caching.
+    bool m_subsequenceCachingDisabled;
 
     // Indicates this PaintController has ever had text. It is never reset to false.
     bool m_textPainted;

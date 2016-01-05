@@ -78,10 +78,13 @@ void ContentLayerDelegate::paintContents(
     PaintController& paintController = m_graphicsLayer->paintController();
     paintController.setDisplayItemConstructionIsDisabled(
         paintingControl == WebContentLayerClient::DisplayListConstructionDisabled);
+    paintController.setSubsequenceCachingIsDisabled(
+        paintingControl == WebContentLayerClient::SubsequenceCachingDisabled);
 
     // We also disable caching when Painting or Construction are disabled. In both cases we would like
     // to compare assuming the full cost of recording, not the cost of re-using cached content.
-    if (paintingControl != WebContentLayerClient::PaintDefaultBehavior)
+    if (paintingControl != WebContentLayerClient::PaintDefaultBehavior
+        && paintingControl != WebContentLayerClient::SubsequenceCachingDisabled)
         paintController.invalidateAll();
 
     GraphicsContext::DisabledMode disabledMode = GraphicsContext::NothingDisabled;
@@ -92,6 +95,7 @@ void ContentLayerDelegate::paintContents(
     m_graphicsLayer->paint(nullptr, disabledMode);
     paintArtifactToWebDisplayItemList(webDisplayItemList, paintController.paintArtifact(), paintableRegion());
     paintController.setDisplayItemConstructionIsDisabled(false);
+    paintController.setSubsequenceCachingIsDisabled(false);
 }
 
 size_t ContentLayerDelegate::approximateUnsharedMemoryUsage() const

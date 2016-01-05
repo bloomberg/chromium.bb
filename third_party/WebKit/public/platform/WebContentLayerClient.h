@@ -43,7 +43,8 @@ public:
         PaintDefaultBehavior,
         DisplayListConstructionDisabled,
         DisplayListCachingDisabled,
-        DisplayListPaintingDisabled
+        DisplayListPaintingDisabled,
+        SubsequenceCachingDisabled
     };
 
     // The paintable region is the rectangular region, within the bounds of the layer

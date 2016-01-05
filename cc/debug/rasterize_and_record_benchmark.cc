@@ -37,8 +37,12 @@ const int kWarmupRuns = 0;
 const int kTimeCheckInterval = 1;
 
 const char* kModeSuffixes[DisplayListRecordingSource::RECORDING_MODE_COUNT] = {
-    "", "_sk_null_canvas", "_painting_disabled", "_caching_disabled",
-    "_construction_disabled"};
+    "",
+    "_sk_null_canvas",
+    "_painting_disabled",
+    "_caching_disabled",
+    "_construction_disabled",
+    "_subsequence_caching_disabled"};
 
 }  // namespace
 
@@ -139,6 +143,9 @@ void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
       case DisplayListRecordingSource::RECORD_WITH_CONSTRUCTION_DISABLED:
         painting_control =
             ContentLayerClient::DISPLAY_LIST_CONSTRUCTION_DISABLED;
+        break;
+      case DisplayListRecordingSource::RECORD_WITH_SUBSEQUENCE_CACHING_DISABLED:
+        painting_control = ContentLayerClient::SUBSEQUENCE_CACHING_DISABLED;
         break;
       default:
         NOTREACHED();

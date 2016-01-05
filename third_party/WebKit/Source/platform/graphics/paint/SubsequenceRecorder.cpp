@@ -17,7 +17,7 @@ bool SubsequenceRecorder::useCachedSubsequenceIfPossible(GraphicsContext& contex
     if (!RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
         return false;
 
-    if (context.paintController().displayItemConstructionIsDisabled())
+    if (context.paintController().displayItemConstructionIsDisabled() || context.paintController().subsequenceCachingIsDisabled())
         return false;
 
     if (!context.paintController().clientCacheIsValid(client))
