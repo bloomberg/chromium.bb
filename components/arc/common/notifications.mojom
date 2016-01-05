@@ -15,6 +15,7 @@ enum ArcNotificationEvent {
   BUTTON3_CLICKED = 4,
   BUTTON4_CLICKED = 5,
   BUTTON5_CLICKED = 6,
+  MAX = BUTTON5_CLICKED
 };
 
 // These values must be matched with the NOTIFICATION_TYPE_* constants in
@@ -23,6 +24,7 @@ enum ArcNotificationType {
   BASIC = 0,
   IMAGE = 1,
   PROGRESS = 2,
+  MAX = PROGRESS
 };
 
 struct ArcNotificationData {
