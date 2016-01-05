@@ -54,27 +54,27 @@ LayoutGeometryMap::~LayoutGeometryMap()
 {
 }
 
-void LayoutGeometryMap::mapToContainer(TransformState& transformState, const LayoutBoxModelObject* container) const
+void LayoutGeometryMap::mapToAncestor(TransformState& transformState, const LayoutBoxModelObject* ancestor) const
 {
     // If the mapping includes something like columns, we have to go via layoutObjects.
     if (hasNonUniformStep()) {
-        m_mapping.last().m_layoutObject->mapLocalToContainer(container, transformState, ApplyContainerFlip | m_mapCoordinatesFlags);
+        m_mapping.last().m_layoutObject->mapLocalToAncestor(ancestor, transformState, ApplyContainerFlip | m_mapCoordinatesFlags);
         transformState.flatten();
         return;
     }
 
     bool inFixed = false;
 #if ENABLE(ASSERT)
-    bool foundContainer = !container || (m_mapping.size() && m_mapping[0].m_layoutObject == container);
+    bool foundAncestor = !ancestor || (m_mapping.size() && m_mapping[0].m_layoutObject == ancestor);
 #endif
 
     for (int i = m_mapping.size() - 1; i >= 0; --i) {
         const LayoutGeometryMapStep& currentStep = m_mapping[i];
 
         // If container is the root LayoutView (step 0) we want to apply its fixed position offset.
-        if (i > 0 && currentStep.m_layoutObject == container) {
+        if (i > 0 && currentStep.m_layoutObject == ancestor) {
 #if ENABLE(ASSERT)
-            foundContainer = true;
+            foundAncestor = true;
 #endif
             break;
         }
@@ -91,7 +91,7 @@ void LayoutGeometryMap::mapToContainer(TransformState& transformState, const Lay
 
         if (!i) {
             // A null container indicates mapping through the root LayoutView, so including its transform (the page scale).
-            if (!container && currentStep.m_transform)
+            if (!ancestor && currentStep.m_transform)
                 transformState.applyTransform(*currentStep.m_transform.get());
         } else {
             TransformState::TransformAccumulation accumulate = currentStep.m_accumulatingTransform ? TransformState::AccumulateTransform : TransformState::FlattenTransform;
@@ -107,7 +107,7 @@ void LayoutGeometryMap::mapToContainer(TransformState& transformState, const Lay
         }
     }
 
-    ASSERT(foundContainer);
+    ASSERT(foundAncestor);
     transformState.flatten();
 }
 
@@ -128,16 +128,16 @@ void LayoutGeometryMap::dumpSteps() const
 }
 #endif
 
-FloatQuad LayoutGeometryMap::mapToContainer(const FloatRect& rect, const LayoutBoxModelObject* container) const
+FloatQuad LayoutGeometryMap::mapToAncestor(const FloatRect& rect, const LayoutBoxModelObject* ancestor) const
 {
     FloatQuad result;
 
-    if (!hasFixedPositionStep() && !hasTransformStep() && !hasNonUniformStep() && (!container || (m_mapping.size() && container == m_mapping[0].m_layoutObject))) {
+    if (!hasFixedPositionStep() && !hasTransformStep() && !hasNonUniformStep() && (!ancestor || (m_mapping.size() && ancestor == m_mapping[0].m_layoutObject))) {
         result = rect;
         result.move(m_accumulatedOffset);
     } else {
         TransformState transformState(TransformState::ApplyTransformDirection, rect.center(), rect);
-        mapToContainer(transformState, container);
+        mapToAncestor(transformState, ancestor);
         result = transformState.lastPlanarQuad();
     }
 
@@ -145,7 +145,7 @@ FloatQuad LayoutGeometryMap::mapToContainer(const FloatRect& rect, const LayoutB
     if (m_mapping.size() > 0) {
         const LayoutObject* lastLayoutObject = m_mapping.last().m_layoutObject;
 
-        FloatRect layoutObjectMappedResult = lastLayoutObject->localToContainerQuad(rect, container, m_mapCoordinatesFlags).boundingBox();
+        FloatRect layoutObjectMappedResult = lastLayoutObject->localToAncestorQuad(rect, ancestor, m_mapCoordinatesFlags).boundingBox();
 
         // Inspector creates layoutObjects with negative width <https://bugs.webkit.org/show_bug.cgi?id=87194>.
         // Taking FloatQuad bounds avoids spurious assertions because of that.

@@ -1031,7 +1031,7 @@ IntRect LayoutObject::absoluteElementBoundingBoxRect() const
 {
     Vector<LayoutRect> rects;
     const LayoutBoxModelObject* container = enclosingLayer()->layoutObject();
-    addElementVisualOverflowRects(rects, LayoutPoint(localToContainerPoint(FloatPoint(), container)));
+    addElementVisualOverflowRects(rects, LayoutPoint(localToAncestorPoint(FloatPoint(), container)));
     return container->localToAbsoluteQuad(FloatQuad(FloatRect(unionRect(rects)))).enclosingBoundingBox();
 }
 
@@ -1587,30 +1587,29 @@ LayoutRect LayoutObject::clippedOverflowRectForPaintInvalidation(const LayoutBox
     return LayoutRect();
 }
 
-void LayoutObject::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+void LayoutObject::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
-    if (paintInvalidationContainer == this)
+    if (ancestor == this)
         return;
 
-    if (paintInvalidationState && paintInvalidationState->canMapToContainer(paintInvalidationContainer)) {
+    if (paintInvalidationState && paintInvalidationState->canMapToContainer(ancestor)) {
         rect.move(paintInvalidationState->paintOffset());
         if (paintInvalidationState->isClipped())
             rect.intersect(paintInvalidationState->clipRect());
         return;
     }
 
-    if (LayoutObject* o = parent()) {
-        if (o->hasOverflowClip()) {
-            LayoutBox* boxParent = toLayoutBox(o);
-            if (o == paintInvalidationContainer)
-                boxParent->applyCachedScrollOffsetForPaintInvalidation(rect);
-            else
-                boxParent->applyCachedClipAndScrollOffsetForPaintInvalidation(rect);
+    if (LayoutObject* parent = this->parent()) {
+        if (parent->hasOverflowClip()) {
+            LayoutBox* parentBox = toLayoutBox(parent);
+            parentBox->mapScrollingContentsRectToBoxSpace(rect);
+            if (parent != ancestor)
+                parentBox->applyOverflowClip(rect);
             if (rect.isEmpty())
                 return;
         }
 
-        o->mapToVisibleRectInContainerSpace(paintInvalidationContainer, rect, paintInvalidationState);
+        parent->mapToVisibleRectInAncestorSpace(ancestor, rect, paintInvalidationState);
     }
 }
 
@@ -2144,7 +2143,7 @@ LayoutRect LayoutObject::viewRect() const
 FloatPoint LayoutObject::localToAbsolute(const FloatPoint& localPoint, MapCoordinatesFlags mode) const
 {
     TransformState transformState(TransformState::ApplyTransformDirection, localPoint);
-    mapLocalToContainer(0, transformState, mode | ApplyContainerFlip);
+    mapLocalToAncestor(0, transformState, mode | ApplyContainerFlip);
     transformState.flatten();
 
     return transformState.lastPlanarPoint();
@@ -2167,9 +2166,9 @@ FloatQuad LayoutObject::absoluteToLocalQuad(const FloatQuad& quad, MapCoordinate
     return transformState.lastPlanarQuad();
 }
 
-void LayoutObject::mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void LayoutObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
-    if (paintInvalidationContainer == this)
+    if (ancestor == this)
         return;
 
     LayoutObject* o = parent();
@@ -2189,7 +2188,7 @@ void LayoutObject::mapLocalToContainer(const LayoutBoxModelObject* paintInvalida
     if (o->hasOverflowClip())
         transformState.move(-toLayoutBox(o)->scrolledContentOffset());
 
-    o->mapLocalToContainer(paintInvalidationContainer, transformState, mode, wasFixed, paintInvalidationState);
+    o->mapLocalToAncestor(ancestor, transformState, mode, wasFixed, paintInvalidationState);
 }
 
 const LayoutObject* LayoutObject::pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
@@ -2237,32 +2236,32 @@ void LayoutObject::getTransformFromContainer(const LayoutObject* containerObject
     }
 }
 
-FloatQuad LayoutObject::localToContainerQuad(const FloatQuad& localQuad, const LayoutBoxModelObject* paintInvalidationContainer, MapCoordinatesFlags mode, bool* wasFixed) const
+FloatQuad LayoutObject::localToAncestorQuad(const FloatQuad& localQuad, const LayoutBoxModelObject* ancestor, MapCoordinatesFlags mode, bool* wasFixed) const
 {
-    // Track the point at the center of the quad's bounding box. As mapLocalToContainer() calls offsetFromContainer(),
+    // Track the point at the center of the quad's bounding box. As mapLocalToAncestor() calls offsetFromContainer(),
     // it will use that point as the reference point to decide which column's transform to apply in multiple-column blocks.
     TransformState transformState(TransformState::ApplyTransformDirection, localQuad.boundingBox().center(), localQuad);
-    mapLocalToContainer(paintInvalidationContainer, transformState, mode | ApplyContainerFlip | UseTransforms, wasFixed);
+    mapLocalToAncestor(ancestor, transformState, mode | ApplyContainerFlip | UseTransforms, wasFixed);
     transformState.flatten();
 
     return transformState.lastPlanarQuad();
 }
 
-FloatPoint LayoutObject::localToContainerPoint(const FloatPoint& localPoint, const LayoutBoxModelObject* paintInvalidationContainer, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+FloatPoint LayoutObject::localToAncestorPoint(const FloatPoint& localPoint, const LayoutBoxModelObject* ancestor, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
     TransformState transformState(TransformState::ApplyTransformDirection, localPoint);
-    mapLocalToContainer(paintInvalidationContainer, transformState, mode | ApplyContainerFlip | UseTransforms, wasFixed, paintInvalidationState);
+    mapLocalToAncestor(ancestor, transformState, mode | ApplyContainerFlip | UseTransforms, wasFixed, paintInvalidationState);
     transformState.flatten();
 
     return transformState.lastPlanarPoint();
 }
 
-void LayoutObject::localToContainerRects(Vector<LayoutRect>& rects, const LayoutBoxModelObject* paintInvalidationContainer, const LayoutPoint& preOffset, const LayoutPoint& postOffset) const
+void LayoutObject::localToAncestorRects(Vector<LayoutRect>& rects, const LayoutBoxModelObject* ancestor, const LayoutPoint& preOffset, const LayoutPoint& postOffset) const
 {
     for (size_t i = 0; i < rects.size(); ++i) {
         LayoutRect& rect = rects[i];
         rect.moveBy(preOffset);
-        FloatQuad containerQuad = localToContainerQuad(FloatQuad(FloatRect(rect)), paintInvalidationContainer);
+        FloatQuad containerQuad = localToAncestorQuad(FloatQuad(FloatRect(rect)), ancestor);
         LayoutRect containerRect = LayoutRect(containerQuad.boundingBox());
         if (containerRect.isEmpty()) {
             rects.remove(i--);
@@ -2280,7 +2279,7 @@ FloatPoint LayoutObject::localToInvalidationBackingPoint(const LayoutPoint& loca
 
     if (backingLayer)
         *backingLayer = paintInvalidationContainer.layer();
-    FloatPoint containerPoint = localToContainerPoint(FloatPoint(localPoint), &paintInvalidationContainer, TraverseDocumentBoundaries);
+    FloatPoint containerPoint = localToAncestorPoint(FloatPoint(localPoint), &paintInvalidationContainer, TraverseDocumentBoundaries);
 
     // A layoutObject can have no invalidation backing if it is from a detached frame,
     // or when forced compositing is disabled.
@@ -2306,9 +2305,9 @@ LayoutSize LayoutObject::offsetFromContainer(const LayoutObject* o, const Layout
     return offset;
 }
 
-LayoutSize LayoutObject::offsetFromAncestorContainer(const LayoutObject* container) const
+LayoutSize LayoutObject::offsetFromAncestorContainer(const LayoutObject* ancestorContainer) const
 {
-    if (container == this)
+    if (ancestorContainer == this)
         return LayoutSize();
 
     LayoutSize offset;
@@ -2324,7 +2323,7 @@ LayoutSize LayoutObject::offsetFromAncestorContainer(const LayoutObject* contain
         offset += currentOffset;
         referencePoint.move(currentOffset);
         currContainer = nextContainer;
-    } while (currContainer != container);
+    } while (currContainer != ancestorContainer);
 
     return offset;
 }

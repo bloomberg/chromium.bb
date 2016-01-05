@@ -938,7 +938,7 @@ IntSize LayoutBox::scrolledContentOffset() const
     return flooredIntSize(layer()->scrollableArea()->scrollOffset());
 }
 
-void LayoutBox::applyCachedScrollOffsetForPaintInvalidation(LayoutRect& paintRect) const
+void LayoutBox::mapScrollingContentsRectToBoxSpace(LayoutRect& rect) const
 {
     ASSERT(hasLayer());
     ASSERT(hasOverflowClip());
@@ -950,23 +950,22 @@ void LayoutBox::applyCachedScrollOffsetForPaintInvalidation(LayoutRect& paintRec
         else
             offset.setWidth(-offset.width());
     }
-    paintRect.move(offset);
+    rect.move(offset);
 }
 
-void LayoutBox::applyCachedClipAndScrollOffsetForPaintInvalidation(LayoutRect& paintRect) const
+void LayoutBox::applyOverflowClip(LayoutRect& rect) const
 {
     ASSERT(hasLayer());
     ASSERT(hasOverflowClip());
 
-    applyCachedScrollOffsetForPaintInvalidation(paintRect);
-    flipForWritingMode(paintRect);
+    flipForWritingMode(rect);
 
     // size() is inaccurate if we're in the middle of a layout of this LayoutBox, so use the
     // layer's size instead. Even if the layer's size is wrong, the layer itself will issue paint invalidations
     // anyway if its size does change.
     LayoutRect clipRect(LayoutPoint(), LayoutSize(layer()->size()));
-    paintRect = intersection(paintRect, clipRect);
-    flipForWritingMode(paintRect);
+    rect = intersection(rect, clipRect);
+    flipForWritingMode(rect);
 }
 
 void LayoutBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
@@ -1453,7 +1452,7 @@ bool LayoutBox::intersectsVisibleViewport()
     LayoutView* layoutView = view();
     while (layoutView->frame()->ownerLayoutObject())
         layoutView = layoutView->frame()->ownerLayoutObject()->view();
-    mapToVisibleRectInContainerSpace(layoutView, rect, 0);
+    mapToVisibleRectInAncestorSpace(layoutView, rect, nullptr);
     return rect.intersects(LayoutRect(layoutView->frameView()->scrollableArea()->visibleContentRectDouble()));
 }
 
@@ -1641,12 +1640,12 @@ LayoutUnit LayoutBox::perpendicularContainingBlockLogicalHeight() const
     return cb->adjustContentBoxLogicalHeightForBoxSizing(logicalHeightLength.value());
 }
 
-void LayoutBox::mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void LayoutBox::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
-    if (paintInvalidationContainer == this)
+    if (ancestor == this)
         return;
 
-    if (paintInvalidationState && paintInvalidationState->canMapToContainer(paintInvalidationContainer)) {
+    if (paintInvalidationState && paintInvalidationState->canMapToContainer(ancestor)) {
         LayoutSize offset = paintInvalidationState->paintOffset() + locationOffset();
         if (style()->hasInFlowPosition() && layer())
             offset += layer()->offsetForInFlowPosition();
@@ -1654,8 +1653,8 @@ void LayoutBox::mapLocalToContainer(const LayoutBoxModelObject* paintInvalidatio
         return;
     }
 
-    bool containerSkipped;
-    LayoutObject* o = container(paintInvalidationContainer, &containerSkipped);
+    bool ancestorSkipped;
+    LayoutObject* o = container(ancestor, &ancestorSkipped);
     if (!o)
         return;
 
@@ -1682,17 +1681,17 @@ void LayoutBox::mapLocalToContainer(const LayoutBoxModelObject* paintInvalidatio
         transformState.move(containerOffset.width(), containerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
     }
 
-    if (containerSkipped) {
+    if (ancestorSkipped) {
         // There can't be a transform between paintInvalidationContainer and o, because transforms create containers, so it should be safe
         // to just subtract the delta between the paintInvalidationContainer and o.
-        LayoutSize containerOffset = paintInvalidationContainer->offsetFromAncestorContainer(o);
+        LayoutSize containerOffset = ancestor->offsetFromAncestorContainer(o);
         transformState.move(-containerOffset.width(), -containerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
         return;
     }
 
     mode &= ~ApplyContainerFlip;
 
-    o->mapLocalToContainer(paintInvalidationContainer, transformState, mode, wasFixed);
+    o->mapLocalToAncestor(ancestor, transformState, mode, wasFixed);
 }
 
 void LayoutBox::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformState& transformState) const
@@ -1883,11 +1882,11 @@ LayoutRect LayoutBox::clippedOverflowRectForPaintInvalidation(const LayoutBoxMod
     }
 
     LayoutRect r = visualOverflowRect();
-    mapToVisibleRectInContainerSpace(paintInvalidationContainer, r, paintInvalidationState);
+    mapToVisibleRectInAncestorSpace(paintInvalidationContainer, r, paintInvalidationState);
     return r;
 }
 
-void LayoutBox::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+void LayoutBox::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
     // The rect we compute at each step is shifted by our x/y offset in the parent container's coordinate space.
     // Only when we cross a writing mode boundary will we have to possibly flipForWritingMode (to convert into a more appropriate
@@ -1906,7 +1905,7 @@ void LayoutBox::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* pai
     // included into the visual overflow for repaint, we wouldn't have this issue.
     inflatePaintInvalidationRectForReflectionAndFilter(rect);
 
-    if (paintInvalidationState && paintInvalidationState->canMapToContainer(paintInvalidationContainer) && position != FixedPosition) {
+    if (paintInvalidationState && paintInvalidationState->canMapToContainer(ancestor) && position != FixedPosition) {
         if (layer() && layer()->transform())
             rect = LayoutRect(layer()->transform()->mapRect(pixelSnappedIntRect(rect)));
 
@@ -1921,15 +1920,15 @@ void LayoutBox::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* pai
         return;
     }
 
-    if (paintInvalidationContainer == this) {
-        if (paintInvalidationContainer->style()->isFlippedBlocksWritingMode())
+    if (ancestor == this) {
+        if (ancestor->style()->isFlippedBlocksWritingMode())
             flipForWritingMode(rect);
         return;
     }
 
     bool containerSkipped;
-    LayoutObject* o = container(paintInvalidationContainer, &containerSkipped);
-    if (!o)
+    LayoutObject* container = this->container(ancestor, &containerSkipped);
+    if (!container)
         return;
 
     if (isWritingModeRoot())
@@ -1946,8 +1945,8 @@ void LayoutBox::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* pai
         topLeft.move(locationOffset());
     }
 
-    if (position == AbsolutePosition && o->isInFlowPositioned() && o->isLayoutInline()) {
-        topLeft += toLayoutInline(o)->offsetForInFlowPositionedInline(*this);
+    if (position == AbsolutePosition && container->isInFlowPositioned() && container->isLayoutInline()) {
+        topLeft += toLayoutInline(container)->offsetForInFlowPositionedInline(*this);
     } else if (styleToUse.hasInFlowPosition() && layer()) {
         // Apply the relative position offset when invalidating a rectangle.  The layer
         // is translated, but the layout box isn't, so we need to do this to get the
@@ -1959,30 +1958,29 @@ void LayoutBox::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* pai
     // FIXME: We ignore the lightweight clipping rect that controls use, since if |o| is in mid-layout,
     // its controlClipRect will be wrong. For overflow clip we use the values cached by the layer.
     rect.setLocation(topLeft);
-    if (o->hasOverflowClip()) {
-        LayoutBox* containerBox = toLayoutBox(o);
-        if (o == paintInvalidationContainer)
-            containerBox->applyCachedScrollOffsetForPaintInvalidation(rect);
-        else
-            containerBox->applyCachedClipAndScrollOffsetForPaintInvalidation(rect);
+    if (container->hasOverflowClip()) {
+        LayoutBox* containerBox = toLayoutBox(container);
+        containerBox->mapScrollingContentsRectToBoxSpace(rect);
+        if (container != ancestor)
+            containerBox->applyOverflowClip(rect);
         if (rect.isEmpty())
             return;
     }
 
     if (containerSkipped) {
         // If the paintInvalidationContainer is below o, then we need to map the rect into paintInvalidationContainer's coordinates.
-        LayoutSize containerOffset = paintInvalidationContainer->offsetFromAncestorContainer(o);
+        LayoutSize containerOffset = ancestor->offsetFromAncestorContainer(container);
         rect.move(-containerOffset);
         // If the paintInvalidationContainer is fixed, then the rect is already in its coordinates so doesn't need viewport-adjusting.
-        if (paintInvalidationContainer->style()->position() != FixedPosition && o->isLayoutView())
-            toLayoutView(o)->adjustViewportConstrainedOffset(rect, LayoutView::viewportConstrainedPosition(position));
+        if (ancestor->style()->position() != FixedPosition && container->isLayoutView())
+            toLayoutView(container)->adjustViewportConstrainedOffset(rect, LayoutView::viewportConstrainedPosition(position));
         return;
     }
 
-    if (o->isLayoutView())
-        toLayoutView(o)->mapToVisibleRectInContainerSpace(paintInvalidationContainer, rect, LayoutView::viewportConstrainedPosition(position), paintInvalidationState);
+    if (container->isLayoutView())
+        toLayoutView(container)->mapToVisibleRectInAncestorSpace(ancestor, rect, LayoutView::viewportConstrainedPosition(position), paintInvalidationState);
     else
-        o->mapToVisibleRectInContainerSpace(paintInvalidationContainer, rect, paintInvalidationState);
+        container->mapToVisibleRectInAncestorSpace(ancestor, rect, paintInvalidationState);
 }
 
 void LayoutBox::inflatePaintInvalidationRectForReflectionAndFilter(LayoutRect& paintInvalidationRect) const

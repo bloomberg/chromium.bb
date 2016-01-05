@@ -1056,7 +1056,7 @@ LayoutRect LayoutInline::clippedOverflowRect(const LayoutBoxModelObject* paintIn
     if (overflowRect.isEmpty())
         return overflowRect;
 
-    mapToVisibleRectInContainerSpace(paintInvalidationContainer, overflowRect, paintInvalidationState);
+    mapToVisibleRectInAncestorSpace(paintInvalidationContainer, overflowRect, paintInvalidationState);
     return overflowRect;
 }
 
@@ -1078,9 +1078,9 @@ LayoutRect LayoutInline::visualOverflowRect() const
     return overflowRect;
 }
 
-void LayoutInline::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+void LayoutInline::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
-    if (paintInvalidationState && paintInvalidationState->canMapToContainer(paintInvalidationContainer)) {
+    if (paintInvalidationState && paintInvalidationState->canMapToContainer(ancestor)) {
         if (style()->hasInFlowPosition() && layer())
             rect.move(layer()->offsetForInFlowPosition());
         rect.move(paintInvalidationState->paintOffset());
@@ -1089,12 +1089,12 @@ void LayoutInline::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* 
         return;
     }
 
-    if (paintInvalidationContainer == this)
+    if (ancestor == this)
         return;
 
-    bool containerSkipped;
-    LayoutObject* o = container(paintInvalidationContainer, &containerSkipped);
-    if (!o)
+    bool ancestorSkipped;
+    LayoutObject* container = this->container(ancestor, &ancestorSkipped);
+    if (!container)
         return;
 
     LayoutPoint topLeft = rect.location();
@@ -1110,24 +1110,23 @@ void LayoutInline::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* 
     // FIXME: We ignore the lightweight clipping rect that controls use, since if |o| is in mid-layout,
     // its controlClipRect will be wrong. For overflow clip we use the values cached by the layer.
     rect.setLocation(topLeft);
-    if (o->hasOverflowClip()) {
-        LayoutBox* containerBox = toLayoutBox(o);
-        if (o == paintInvalidationContainer)
-            containerBox->applyCachedScrollOffsetForPaintInvalidation(rect);
-        else
-            containerBox->applyCachedClipAndScrollOffsetForPaintInvalidation(rect);
+    if (container->hasOverflowClip()) {
+        LayoutBox* containerBox = toLayoutBox(container);
+        containerBox->mapScrollingContentsRectToBoxSpace(rect);
+        if (container != ancestor)
+            containerBox->applyOverflowClip(rect);
         if (rect.isEmpty())
             return;
     }
 
-    if (containerSkipped) {
+    if (ancestorSkipped) {
         // If the paintInvalidationContainer is below o, then we need to map the rect into paintInvalidationContainer's coordinates.
-        LayoutSize containerOffset = paintInvalidationContainer->offsetFromAncestorContainer(o);
+        LayoutSize containerOffset = ancestor->offsetFromAncestorContainer(container);
         rect.move(-containerOffset);
         return;
     }
 
-    o->mapToVisibleRectInContainerSpace(paintInvalidationContainer, rect, paintInvalidationState);
+    container->mapToVisibleRectInAncestorSpace(ancestor, rect, paintInvalidationState);
 }
 
 LayoutSize LayoutInline::offsetFromContainer(const LayoutObject* container, const LayoutPoint& point, bool* offsetDependsOnPoint) const
@@ -1155,12 +1154,12 @@ PaintLayerType LayoutInline::layerTypeRequired() const
         ||  style()->hasCompositorProxy() || style()->containsPaint() ? NormalPaintLayer : NoPaintLayer;
 }
 
-void LayoutInline::mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void LayoutInline::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
-    if (paintInvalidationContainer == this)
+    if (ancestor == this)
         return;
 
-    if (paintInvalidationState && paintInvalidationState->canMapToContainer(paintInvalidationContainer)) {
+    if (paintInvalidationState && paintInvalidationState->canMapToContainer(ancestor)) {
         LayoutSize offset = paintInvalidationState->paintOffset();
         if (style()->hasInFlowPosition() && layer())
             offset += layer()->offsetForInFlowPosition();
@@ -1169,7 +1168,7 @@ void LayoutInline::mapLocalToContainer(const LayoutBoxModelObject* paintInvalida
     }
 
     bool containerSkipped;
-    LayoutObject* o = container(paintInvalidationContainer, &containerSkipped);
+    LayoutObject* o = container(ancestor, &containerSkipped);
     if (!o)
         return;
 
@@ -1195,12 +1194,12 @@ void LayoutInline::mapLocalToContainer(const LayoutBoxModelObject* paintInvalida
     if (containerSkipped) {
         // There can't be a transform between paintInvalidationContainer and o, because transforms create containers, so it should be safe
         // to just subtract the delta between the paintInvalidationContainer and o.
-        LayoutSize containerOffset = paintInvalidationContainer->offsetFromAncestorContainer(o);
+        LayoutSize containerOffset = ancestor->offsetFromAncestorContainer(o);
         transformState.move(-containerOffset.width(), -containerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
         return;
     }
 
-    o->mapLocalToContainer(paintInvalidationContainer, transformState, mode, wasFixed, paintInvalidationState);
+    o->mapLocalToAncestor(ancestor, transformState, mode, wasFixed, paintInvalidationState);
 }
 
 void LayoutInline::updateDragState(bool dragOn)

@@ -97,7 +97,7 @@ LayoutRect SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(const Layou
     LayoutRect rect;
     const LayoutSVGRoot& svgRoot = mapRectToSVGRootForPaintInvalidation(object,
         paintInvalidationRect, rect, strokeWidthForHairlinePadding);
-    svgRoot.mapToVisibleRectInContainerSpace(paintInvalidationContainer, rect, paintInvalidationState);
+    svgRoot.mapToVisibleRectInAncestorSpace(paintInvalidationContainer, rect, paintInvalidationState);
     return rect;
 }
 
@@ -120,11 +120,11 @@ const LayoutSVGRoot& SVGLayoutSupport::mapRectToSVGRootForPaintInvalidation(cons
     return svgRoot;
 }
 
-void SVGLayoutSupport::mapLocalToContainer(const LayoutObject* object, const LayoutBoxModelObject* paintInvalidationContainer, TransformState& transformState, bool* wasFixed, const PaintInvalidationState* paintInvalidationState)
+void SVGLayoutSupport::mapLocalToAncestor(const LayoutObject* object, const LayoutBoxModelObject* ancestor, TransformState& transformState, bool* wasFixed, const PaintInvalidationState* paintInvalidationState)
 {
     transformState.applyTransform(object->localToParentTransform());
 
-    if (paintInvalidationState && paintInvalidationState->canMapToContainer(paintInvalidationContainer)) {
+    if (paintInvalidationState && paintInvalidationState->canMapToContainer(ancestor)) {
         // |svgTransform| contains localToBorderBoxTransform mentioned below.
         transformState.applyTransform(paintInvalidationState->svgTransform());
         transformState.move(paintInvalidationState->paintOffset());
@@ -135,12 +135,12 @@ void SVGLayoutSupport::mapLocalToContainer(const LayoutObject* object, const Lay
 
     // At the SVG/HTML boundary (aka LayoutSVGRoot), we apply the localToBorderBoxTransform
     // to map an element from SVG viewport coordinates to CSS box coordinates.
-    // LayoutSVGRoot's mapLocalToContainer method expects CSS box coordinates.
+    // LayoutSVGRoot's mapLocalToAncestor method expects CSS box coordinates.
     if (parent->isSVGRoot())
         transformState.applyTransform(toLayoutSVGRoot(parent)->localToBorderBoxTransform());
 
     MapCoordinatesFlags mode = UseTransforms;
-    parent->mapLocalToContainer(paintInvalidationContainer, transformState, mode, wasFixed, paintInvalidationState);
+    parent->mapLocalToAncestor(ancestor, transformState, mode, wasFixed, paintInvalidationState);
 }
 
 const LayoutObject* SVGLayoutSupport::pushMappingToContainer(const LayoutObject* object, const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap)
@@ -151,7 +151,7 @@ const LayoutObject* SVGLayoutSupport::pushMappingToContainer(const LayoutObject*
 
     // At the SVG/HTML boundary (aka LayoutSVGRoot), we apply the localToBorderBoxTransform
     // to map an element from SVG viewport coordinates to CSS box coordinates.
-    // LayoutSVGRoot's mapLocalToContainer method expects CSS box coordinates.
+    // LayoutSVGRoot's mapLocalToAncestor method expects CSS box coordinates.
     if (parent->isSVGRoot()) {
         TransformationMatrix matrix(object->localToParentTransform());
         matrix.multiply(toLayoutSVGRoot(parent)->localToBorderBoxTransform());

@@ -141,20 +141,20 @@ TEST_F(LayoutGeometryMapTest, SimpleGeometryMapTest)
     LayoutGeometryMap rgm;
     rgm.pushMappingsToAncestor(getLayoutBox(webView, "InitialDiv"), 0);
     FloatRect rect(0.0f, 0.0f, 1.0f, 2.0f);
-    EXPECT_EQ(FloatQuad(FloatRect(8.0f, 8.0f, 1.0f, 2.0f)), rgm.mapToContainer(rect, nullptr));
+    EXPECT_EQ(FloatQuad(FloatRect(8.0f, 8.0f, 1.0f, 2.0f)), rgm.mapToAncestor(rect, nullptr));
 
     rgm.popMappingsToAncestor(static_cast<PaintLayer*>(nullptr));
-    EXPECT_EQ(FloatQuad(FloatRect(0.0f, 0.0f, 1.0f, 2.0f)), rgm.mapToContainer(rect, nullptr));
+    EXPECT_EQ(FloatQuad(FloatRect(0.0f, 0.0f, 1.0f, 2.0f)), rgm.mapToAncestor(rect, nullptr));
 
     rgm.pushMappingsToAncestor(getLayoutBox(webView, "InnerDiv"), 0);
-    EXPECT_EQ(FloatQuad(FloatRect(21.0f, 6.0f, 1.0f, 2.0f)), rgm.mapToContainer(rect, getLayoutBox(webView, "CenterDiv")));
+    EXPECT_EQ(FloatQuad(FloatRect(21.0f, 6.0f, 1.0f, 2.0f)), rgm.mapToAncestor(rect, getLayoutBox(webView, "CenterDiv")));
 
     rgm.pushMappingsToAncestor(getLayoutBox(webView, "OtherDiv"), getLayoutBox(webView, "InnerDiv"));
-    EXPECT_EQ(FloatQuad(FloatRect(22.0f, 12.0f, 1.0f, 2.0f)), rgm.mapToContainer(rect, getLayoutBox(webView, "CenterDiv")));
+    EXPECT_EQ(FloatQuad(FloatRect(22.0f, 12.0f, 1.0f, 2.0f)), rgm.mapToAncestor(rect, getLayoutBox(webView, "CenterDiv")));
 
-    EXPECT_EQ(FloatQuad(FloatRect(1.0f, 6.0f, 1.0f, 2.0f)), rgm.mapToContainer(rect, getLayoutBox(webView, "InnerDiv")));
+    EXPECT_EQ(FloatQuad(FloatRect(1.0f, 6.0f, 1.0f, 2.0f)), rgm.mapToAncestor(rect, getLayoutBox(webView, "InnerDiv")));
 
-    EXPECT_EQ(FloatQuad(FloatRect(50.0f, 44.0f, 1.0f, 2.0f)), rgm.mapToContainer(rect, nullptr));
+    EXPECT_EQ(FloatQuad(FloatRect(50.0f, 44.0f, 1.0f, 2.0f)), rgm.mapToAncestor(rect, nullptr));
 }
 
 // Fails on Windows due to crbug.com/391457. When run through the transform the
@@ -177,27 +177,27 @@ TEST_F(LayoutGeometryMapTest, TransformedGeometryTest)
     const float scaleWidth = 2.0f;
     const float scaleHeight = 3.0f;
     FloatRect rect(0.0f, 0.0f, 15.0f, 25.0f);
-    EXPECT_EQ(FloatQuad(FloatRect(8.0f, 8.0f, 15.0f, 25.0f)), rgm.mapToContainer(rect, nullptr));
+    EXPECT_EQ(FloatQuad(FloatRect(8.0f, 8.0f, 15.0f, 25.0f)), rgm.mapToAncestor(rect, nullptr));
 
     rgm.popMappingsToAncestor(static_cast<PaintLayer*>(nullptr));
-    EXPECT_EQ(FloatQuad(FloatRect(0.0f, 0.0f, 15.0f, 25.0f)).boundingBox(), rgm.mapToContainer(rect, nullptr).boundingBox());
+    EXPECT_EQ(FloatQuad(FloatRect(0.0f, 0.0f, 15.0f, 25.0f)).boundingBox(), rgm.mapToAncestor(rect, nullptr).boundingBox());
 
     rgm.pushMappingsToAncestor(getLayoutBox(webView, "InnerDiv"), 0);
-    EXPECT_EQ(FloatQuad(FloatRect(523.0f - rectWidth, 6.0f, 15.0f, 25.0f)).boundingBox(), rgm.mapToContainer(rect, getLayoutBox(webView, "CenterDiv")).boundingBox());
+    EXPECT_EQ(FloatQuad(FloatRect(523.0f - rectWidth, 6.0f, 15.0f, 25.0f)).boundingBox(), rgm.mapToAncestor(rect, getLayoutBox(webView, "CenterDiv")).boundingBox());
 
     rgm.pushMappingsToAncestor(getLayoutBox(webView, "OtherDiv"), getLayoutBox(webView, "InnerDiv"));
-    EXPECT_EQ(FloatQuad(FloatRect(522.0f - rectWidth, 12.0f, 15.0f, 25.0f)).boundingBox(), rgm.mapToContainer(rect, getLayoutBox(webView, "CenterDiv")).boundingBox());
+    EXPECT_EQ(FloatQuad(FloatRect(522.0f - rectWidth, 12.0f, 15.0f, 25.0f)).boundingBox(), rgm.mapToAncestor(rect, getLayoutBox(webView, "CenterDiv")).boundingBox());
 
-    EXPECT_EQ(FloatQuad(FloatRect(1.0f, 6.0f, 15.0f, 25.0f)).boundingBox(), rgm.mapToContainer(rect, getLayoutBox(webView, "InnerDiv")).boundingBox());
+    EXPECT_EQ(FloatQuad(FloatRect(1.0f, 6.0f, 15.0f, 25.0f)).boundingBox(), rgm.mapToAncestor(rect, getLayoutBox(webView, "InnerDiv")).boundingBox());
 
-    EXPECT_EQ(FloatQuad(FloatRect(821.0f - rectWidth * scaleWidth, 31.0f, 15.0f * scaleWidth, 25.0f * scaleHeight)).boundingBox(), rgm.mapToContainer(rect, nullptr).boundingBox());
+    EXPECT_EQ(FloatQuad(FloatRect(821.0f - rectWidth * scaleWidth, 31.0f, 15.0f * scaleWidth, 25.0f * scaleHeight)).boundingBox(), rgm.mapToAncestor(rect, nullptr).boundingBox());
 
     rect = FloatRect(10.0f, 25.0f, 15.0f, 25.0f);
-    EXPECT_EQ(FloatQuad(FloatRect(512.0f - rectWidth, 37.0f, 15.0f, 25.0f)).boundingBox(), rgm.mapToContainer(rect, getLayoutBox(webView, "CenterDiv")).boundingBox());
+    EXPECT_EQ(FloatQuad(FloatRect(512.0f - rectWidth, 37.0f, 15.0f, 25.0f)).boundingBox(), rgm.mapToAncestor(rect, getLayoutBox(webView, "CenterDiv")).boundingBox());
 
-    EXPECT_EQ(FloatQuad(FloatRect(11.0f, 31.0f, 15.0f, 25.0f)).boundingBox(), rgm.mapToContainer(rect, getLayoutBox(webView, "InnerDiv")).boundingBox());
+    EXPECT_EQ(FloatQuad(FloatRect(11.0f, 31.0f, 15.0f, 25.0f)).boundingBox(), rgm.mapToAncestor(rect, getLayoutBox(webView, "InnerDiv")).boundingBox());
 
-    EXPECT_EQ(FloatQuad(FloatRect(801.0f - rectWidth * scaleWidth, 106.0f, 15.0f * scaleWidth, 25.0f * scaleHeight)).boundingBox(), rgm.mapToContainer(rect, nullptr).boundingBox());
+    EXPECT_EQ(FloatQuad(FloatRect(801.0f - rectWidth * scaleWidth, 106.0f, 15.0f * scaleWidth, 25.0f * scaleHeight)).boundingBox(), rgm.mapToAncestor(rect, nullptr).boundingBox());
 }
 
 TEST_F(LayoutGeometryMapTest, FixedGeometryTest)
@@ -211,23 +211,23 @@ TEST_F(LayoutGeometryMapTest, FixedGeometryTest)
     LayoutGeometryMap rgm;
     rgm.pushMappingsToAncestor(getLayoutBox(webView, "InitialDiv"), 0);
     FloatRect rect(0.0f, 0.0f, 15.0f, 25.0f);
-    EXPECT_EQ(FloatQuad(FloatRect(8.0f, 8.0f, 15.0f, 25.0f)), rgm.mapToContainer(rect, nullptr));
+    EXPECT_EQ(FloatQuad(FloatRect(8.0f, 8.0f, 15.0f, 25.0f)), rgm.mapToAncestor(rect, nullptr));
 
     rgm.popMappingsToAncestor(static_cast<PaintLayer*>(nullptr));
-    EXPECT_EQ(FloatQuad(FloatRect(0.0f, 0.0f, 15.0f, 25.0f)), rgm.mapToContainer(rect, nullptr));
+    EXPECT_EQ(FloatQuad(FloatRect(0.0f, 0.0f, 15.0f, 25.0f)), rgm.mapToAncestor(rect, nullptr));
 
     rgm.pushMappingsToAncestor(getLayoutBox(webView, "InnerDiv"), 0);
-    EXPECT_EQ(FloatQuad(FloatRect(20.0f, 14.0f, 15.0f, 25.0f)), rgm.mapToContainer(rect, nullptr));
+    EXPECT_EQ(FloatQuad(FloatRect(20.0f, 14.0f, 15.0f, 25.0f)), rgm.mapToAncestor(rect, nullptr));
 
     rgm.pushMappingsToAncestor(getLayoutBox(webView, "OtherDiv"), getLayoutBox(webView, "InnerDiv"));
-    EXPECT_EQ(FloatQuad(FloatRect(21.0f, 20.0f, 15.0f, 25.0f)), rgm.mapToContainer(rect, getLayoutContainer(webView, "CenterDiv")));
+    EXPECT_EQ(FloatQuad(FloatRect(21.0f, 20.0f, 15.0f, 25.0f)), rgm.mapToAncestor(rect, getLayoutContainer(webView, "CenterDiv")));
 
     rect = FloatRect(22.0f, 15.2f, 15.3f, 0.0f);
-    EXPECT_EQ(FloatQuad(FloatRect(43.0f, 35.2f, 15.3f, 0.0f)), rgm.mapToContainer(rect, getLayoutContainer(webView, "CenterDiv")));
+    EXPECT_EQ(FloatQuad(FloatRect(43.0f, 35.2f, 15.3f, 0.0f)), rgm.mapToAncestor(rect, getLayoutContainer(webView, "CenterDiv")));
 
-    EXPECT_EQ(FloatQuad(FloatRect(43.0f, 35.2f, 15.3f, 0.0f)), rgm.mapToContainer(rect, getLayoutContainer(webView, "InnerDiv")));
+    EXPECT_EQ(FloatQuad(FloatRect(43.0f, 35.2f, 15.3f, 0.0f)), rgm.mapToAncestor(rect, getLayoutContainer(webView, "InnerDiv")));
 
-    EXPECT_EQ(FloatQuad(FloatRect(43.0f, 35.2f, 15.3f, 0.0f)), rgm.mapToContainer(rect, nullptr));
+    EXPECT_EQ(FloatQuad(FloatRect(43.0f, 35.2f, 15.3f, 0.0f)), rgm.mapToAncestor(rect, nullptr));
 }
 
 TEST_F(LayoutGeometryMapTest, IframeTest)
@@ -246,7 +246,7 @@ TEST_F(LayoutGeometryMapTest, IframeTest)
     rgm.pushMappingsToAncestor(getFrameElement("test_frame", webView, "InitialDiv"), 0);
     FloatRect rect(0.0f, 0.0f, 1.0f, 2.0f);
 
-    EXPECT_EQ(FloatQuad(FloatRect(8.0f, 8.0f, 1.0f, 2.0f)), rgmNoFrame.mapToContainer(rect, nullptr));
+    EXPECT_EQ(FloatQuad(FloatRect(8.0f, 8.0f, 1.0f, 2.0f)), rgmNoFrame.mapToAncestor(rect, nullptr));
 
     // Our initial rect looks like: (0, 0, 1, 2)
     //        p0_____
@@ -265,33 +265,33 @@ TEST_F(LayoutGeometryMapTest, IframeTest)
     // That maximum x should likewise be p0.x + cos(30deg) = p0.x + 0.866.
     // And the maximum y should be p0.x + sin(30deg) + 2*cos(30deg)
     //      = p0.y + 2.232.
-    EXPECT_NEAR(69.5244f, rectFromQuad(rgm.mapToContainer(rect, nullptr)).x(), 0.0001f);
-    EXPECT_NEAR(-44.0237, rectFromQuad(rgm.mapToContainer(rect, nullptr)).y(), 0.0001f);
-    EXPECT_NEAR(1.866, rectFromQuad(rgm.mapToContainer(rect, nullptr)).width(), 0.0001f);
-    EXPECT_NEAR(2.232, rectFromQuad(rgm.mapToContainer(rect, nullptr)).height(), 0.0001f);
+    EXPECT_NEAR(69.5244f, rectFromQuad(rgm.mapToAncestor(rect, nullptr)).x(), 0.0001f);
+    EXPECT_NEAR(-44.0237, rectFromQuad(rgm.mapToAncestor(rect, nullptr)).y(), 0.0001f);
+    EXPECT_NEAR(1.866, rectFromQuad(rgm.mapToAncestor(rect, nullptr)).width(), 0.0001f);
+    EXPECT_NEAR(2.232, rectFromQuad(rgm.mapToAncestor(rect, nullptr)).height(), 0.0001f);
 
     rgm.popMappingsToAncestor(static_cast<PaintLayer*>(nullptr));
     rgmNoFrame.popMappingsToAncestor(static_cast<PaintLayer*>(nullptr));
 
     rgm.pushMappingsToAncestor(getFrameElement("test_frame", webView, "InnerDiv"), 0);
     rgmNoFrame.pushMappingsToAncestor(getFrameElement("test_frame", webView, "InnerDiv"), 0);
-    EXPECT_EQ(FloatQuad(FloatRect(21.0f, 6.0f, 1.0f, 2.0f)), rgm.mapToContainer(rect, getFrameLayoutContainer("test_frame", webView, "CenterDiv")));
-    EXPECT_EQ(FloatQuad(FloatRect(21.0f, 6.0f, 1.0f, 2.0f)), rgmNoFrame.mapToContainer(rect, getFrameLayoutContainer("test_frame", webView, "CenterDiv")));
+    EXPECT_EQ(FloatQuad(FloatRect(21.0f, 6.0f, 1.0f, 2.0f)), rgm.mapToAncestor(rect, getFrameLayoutContainer("test_frame", webView, "CenterDiv")));
+    EXPECT_EQ(FloatQuad(FloatRect(21.0f, 6.0f, 1.0f, 2.0f)), rgmNoFrame.mapToAncestor(rect, getFrameLayoutContainer("test_frame", webView, "CenterDiv")));
 
     rgm.pushMappingsToAncestor(getFrameElement("test_frame", webView, "OtherDiv"), getFrameLayoutContainer("test_frame", webView, "InnerDiv"));
     rgmNoFrame.pushMappingsToAncestor(getFrameElement("test_frame", webView, "OtherDiv"), getFrameLayoutContainer("test_frame", webView, "InnerDiv"));
-    EXPECT_EQ(FloatQuad(FloatRect(22.0f, 12.0f, 1.0f, 2.0f)), rgm.mapToContainer(rect, getFrameLayoutContainer("test_frame", webView, "CenterDiv")));
-    EXPECT_EQ(FloatQuad(FloatRect(22.0f, 12.0f, 1.0f, 2.0f)), rgmNoFrame.mapToContainer(rect, getFrameLayoutContainer("test_frame", webView, "CenterDiv")));
+    EXPECT_EQ(FloatQuad(FloatRect(22.0f, 12.0f, 1.0f, 2.0f)), rgm.mapToAncestor(rect, getFrameLayoutContainer("test_frame", webView, "CenterDiv")));
+    EXPECT_EQ(FloatQuad(FloatRect(22.0f, 12.0f, 1.0f, 2.0f)), rgmNoFrame.mapToAncestor(rect, getFrameLayoutContainer("test_frame", webView, "CenterDiv")));
 
-    EXPECT_EQ(FloatQuad(FloatRect(1.0f, 6.0f, 1.0f, 2.0f)), rgm.mapToContainer(rect, getFrameLayoutContainer("test_frame", webView, "InnerDiv")));
-    EXPECT_EQ(FloatQuad(FloatRect(1.0f, 6.0f, 1.0f, 2.0f)), rgmNoFrame.mapToContainer(rect, getFrameLayoutContainer("test_frame", webView, "InnerDiv")));
+    EXPECT_EQ(FloatQuad(FloatRect(1.0f, 6.0f, 1.0f, 2.0f)), rgm.mapToAncestor(rect, getFrameLayoutContainer("test_frame", webView, "InnerDiv")));
+    EXPECT_EQ(FloatQuad(FloatRect(1.0f, 6.0f, 1.0f, 2.0f)), rgmNoFrame.mapToAncestor(rect, getFrameLayoutContainer("test_frame", webView, "InnerDiv")));
 
-    EXPECT_NEAR(87.8975f, rectFromQuad(rgm.mapToContainer(rect, nullptr)).x(), 0.0001f);
-    EXPECT_NEAR(8.1532f, rectFromQuad(rgm.mapToContainer(rect, nullptr)).y(), 0.0001f);
-    EXPECT_NEAR(1.866, rectFromQuad(rgm.mapToContainer(rect, nullptr)).width(), 0.0001f);
-    EXPECT_NEAR(2.232, rectFromQuad(rgm.mapToContainer(rect, nullptr)).height(), 0.0001f);
+    EXPECT_NEAR(87.8975f, rectFromQuad(rgm.mapToAncestor(rect, nullptr)).x(), 0.0001f);
+    EXPECT_NEAR(8.1532f, rectFromQuad(rgm.mapToAncestor(rect, nullptr)).y(), 0.0001f);
+    EXPECT_NEAR(1.866, rectFromQuad(rgm.mapToAncestor(rect, nullptr)).width(), 0.0001f);
+    EXPECT_NEAR(2.232, rectFromQuad(rgm.mapToAncestor(rect, nullptr)).height(), 0.0001f);
 
-    EXPECT_EQ(FloatQuad(FloatRect(50.0f, 44.0f, 1.0f, 2.0f)), rgmNoFrame.mapToContainer(rect, nullptr));
+    EXPECT_EQ(FloatQuad(FloatRect(50.0f, 44.0f, 1.0f, 2.0f)), rgmNoFrame.mapToAncestor(rect, nullptr));
 }
 
 TEST_F(LayoutGeometryMapTest, ColumnTest)
@@ -315,27 +315,27 @@ TEST_F(LayoutGeometryMapTest, ColumnTest)
     FloatPoint point;
     FloatRect rect(0.0f, 0.0f, 5.0f, 3.0f);
 
-    EXPECT_EQ(FloatQuad(FloatRect(8.0f, 8.0f, 5.0f, 3.0f)), rgm.mapToContainer(rect, nullptr));
+    EXPECT_EQ(FloatQuad(FloatRect(8.0f, 8.0f, 5.0f, 3.0f)), rgm.mapToAncestor(rect, nullptr));
 
     rgm.popMappingsToAncestor(static_cast<PaintLayer*>(nullptr));
-    EXPECT_EQ(FloatQuad(FloatRect(0.0f, 0.0f, 5.0f, 3.0f)), rgm.mapToContainer(rect, nullptr));
+    EXPECT_EQ(FloatQuad(FloatRect(0.0f, 0.0f, 5.0f, 3.0f)), rgm.mapToAncestor(rect, nullptr));
 
     rgm.pushMappingsToAncestor(getLayoutBox(webView, "Col1"), 0);
-    EXPECT_EQ(FloatQuad(FloatRect(8.0f, 8.0f, 5.0f, 3.0f)), rgm.mapToContainer(rect, nullptr));
+    EXPECT_EQ(FloatQuad(FloatRect(8.0f, 8.0f, 5.0f, 3.0f)), rgm.mapToAncestor(rect, nullptr));
 
     rgm.popMappingsToAncestor(static_cast<PaintLayer*>(nullptr));
     rgm.pushMappingsToAncestor(getLayoutBox(webView, "Col2"), nullptr);
-    EXPECT_NEAR(8.0f + offset, rectFromQuad(rgm.mapToContainer(rect, nullptr)).x(), 0.1f);
-    EXPECT_NEAR(8.0f, rectFromQuad(rgm.mapToContainer(rect, nullptr)).y(), 0.1f);
-    EXPECT_EQ(5.0f, rectFromQuad(rgm.mapToContainer(rect, nullptr)).width());
-    EXPECT_EQ(3.0f, rectFromQuad(rgm.mapToContainer(rect, nullptr)).height());
+    EXPECT_NEAR(8.0f + offset, rectFromQuad(rgm.mapToAncestor(rect, nullptr)).x(), 0.1f);
+    EXPECT_NEAR(8.0f, rectFromQuad(rgm.mapToAncestor(rect, nullptr)).y(), 0.1f);
+    EXPECT_EQ(5.0f, rectFromQuad(rgm.mapToAncestor(rect, nullptr)).width());
+    EXPECT_EQ(3.0f, rectFromQuad(rgm.mapToAncestor(rect, nullptr)).height());
 
     rgm.popMappingsToAncestor(static_cast<PaintLayer*>(nullptr));
     rgm.pushMappingsToAncestor(getLayoutBox(webView, "Col3"), nullptr);
-    EXPECT_NEAR(8.0f + offset * 2.0f, rectFromQuad(rgm.mapToContainer(rect, nullptr)).x(), 0.1f);
-    EXPECT_NEAR(8.0f, rectFromQuad(rgm.mapToContainer(rect, nullptr)).y(), 0.1f);
-    EXPECT_EQ(5.0f, rectFromQuad(rgm.mapToContainer(rect, nullptr)).width());
-    EXPECT_EQ(3.0f, rectFromQuad(rgm.mapToContainer(rect, nullptr)).height());
+    EXPECT_NEAR(8.0f + offset * 2.0f, rectFromQuad(rgm.mapToAncestor(rect, nullptr)).x(), 0.1f);
+    EXPECT_NEAR(8.0f, rectFromQuad(rgm.mapToAncestor(rect, nullptr)).y(), 0.1f);
+    EXPECT_EQ(5.0f, rectFromQuad(rgm.mapToAncestor(rect, nullptr)).width());
+    EXPECT_EQ(3.0f, rectFromQuad(rgm.mapToAncestor(rect, nullptr)).height());
 
 }
 

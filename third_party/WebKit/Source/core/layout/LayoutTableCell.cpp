@@ -353,18 +353,18 @@ LayoutRect LayoutTableCell::clippedOverflowRectForPaintInvalidation(const Layout
     LayoutPoint location(std::max<LayoutUnit>(left, -visualOverflowRect().x()), std::max<LayoutUnit>(top, -visualOverflowRect().y()));
     LayoutRect r(-location.x(), -location.y(), location.x() + std::max(size().width() + right, visualOverflowRect().maxX()), location.y() + std::max(size().height() + bottom, visualOverflowRect().maxY()));
 
-    mapToVisibleRectInContainerSpace(paintInvalidationContainer, r, paintInvalidationState);
+    mapToVisibleRectInAncestorSpace(paintInvalidationContainer, r, paintInvalidationState);
     return r;
 }
 
-void LayoutTableCell::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& r, const PaintInvalidationState* paintInvalidationState) const
+void LayoutTableCell::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& r, const PaintInvalidationState* paintInvalidationState) const
 {
-    if (paintInvalidationContainer == this)
+    if (ancestor == this)
         return;
     r.setY(r.y());
-    if ((!paintInvalidationState || !paintInvalidationState->canMapToContainer(paintInvalidationContainer)) && parent())
+    if ((!paintInvalidationState || !paintInvalidationState->canMapToContainer(ancestor)) && parent())
         r.moveBy(-parentBox()->location()); // Rows are in the same coordinate space, so don't add their offset in.
-    LayoutBlockFlow::mapToVisibleRectInContainerSpace(paintInvalidationContainer, r, paintInvalidationState);
+    LayoutBlockFlow::mapToVisibleRectInAncestorSpace(ancestor, r, paintInvalidationState);
 }
 
 LayoutUnit LayoutTableCell::cellBaselinePosition() const

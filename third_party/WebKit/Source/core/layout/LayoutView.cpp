@@ -314,11 +314,11 @@ LayoutRect LayoutView::visualOverflowRect() const
     return LayoutRect(documentRect());
 }
 
-void LayoutView::mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void LayoutView::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
     ASSERT_UNUSED(wasFixed, !wasFixed || *wasFixed == static_cast<bool>(mode & IsFixed));
 
-    if (!paintInvalidationContainer && mode & UseTransforms && shouldUseTransformFromContainer(0)) {
+    if (!ancestor && mode & UseTransforms && shouldUseTransformFromContainer(0)) {
         TransformationMatrix t;
         getTransformFromContainer(0, LayoutSize(), t);
         transformState.applyTransform(t);
@@ -332,7 +332,7 @@ void LayoutView::mapLocalToContainer(const LayoutBoxModelObject* paintInvalidati
         mode &= ~IsFixed;
     }
 
-    if (paintInvalidationContainer == this)
+    if (ancestor == this)
         return;
 
     if (mode & TraverseDocumentBoundaries) {
@@ -340,7 +340,7 @@ void LayoutView::mapLocalToContainer(const LayoutBoxModelObject* paintInvalidati
             transformState.move(-frame()->view()->scrollOffset());
             transformState.move(parentDocLayoutObject->contentBoxOffset());
 
-            parentDocLayoutObject->mapLocalToContainer(paintInvalidationContainer, transformState, mode, wasFixed, paintInvalidationState);
+            parentDocLayoutObject->mapLocalToAncestor(ancestor, transformState, mode, wasFixed, paintInvalidationState);
         }
     }
 }
@@ -458,12 +458,12 @@ void LayoutView::invalidatePaintForViewAndCompositedLayers()
         compositor()->fullyInvalidatePaint();
 }
 
-void LayoutView::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* invalidationState) const
+void LayoutView::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, const PaintInvalidationState* invalidationState) const
 {
-    mapToVisibleRectInContainerSpace(paintInvalidationContainer, rect, IsNotFixedPosition, invalidationState);
+    mapToVisibleRectInAncestorSpace(ancestor, rect, IsNotFixedPosition, invalidationState);
 }
 
-void LayoutView::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, ViewportConstrainedPosition viewportConstraint, const PaintInvalidationState* state) const
+void LayoutView::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, ViewportConstrainedPosition viewportConstraint, const PaintInvalidationState* state) const
 {
     if (document().printing())
         return;
@@ -480,11 +480,11 @@ void LayoutView::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* pa
     adjustViewportConstrainedOffset(rect, viewportConstraint);
 
     // Apply our transform if we have one (because of full page zooming).
-    if (!paintInvalidationContainer && layer() && layer()->transform())
+    if (!ancestor && layer() && layer()->transform())
         rect = layer()->transform()->mapRect(rect);
 
-    ASSERT(paintInvalidationContainer);
-    if (paintInvalidationContainer == this)
+    ASSERT(ancestor);
+    if (ancestor == this)
         return;
 
     Element* owner = document().ownerElement();
@@ -503,7 +503,7 @@ void LayoutView::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* pa
 
         // Adjust for frame border.
         rect.move(obj->contentBoxOffset());
-        obj->mapToVisibleRectInContainerSpace(paintInvalidationContainer, rect, 0);
+        obj->mapToVisibleRectInAncestorSpace(ancestor, rect, 0);
     }
 }
 

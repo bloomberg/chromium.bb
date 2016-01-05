@@ -68,7 +68,7 @@ LayoutBlock* CaretBase::caretLayoutObject(Node* node)
 static void mapCaretRectToCaretPainter(LayoutObject* caretLayoutObject, LayoutBlock* caretPainter, LayoutRect& caretRect)
 {
     // FIXME: This shouldn't be called on un-rooted subtrees.
-    // FIXME: This should probably just use mapLocalToContainer.
+    // FIXME: This should probably just use mapLocalToAncestor.
     // Compute an offset between the caretLayoutObject and the caretPainter.
 
     ASSERT(caretLayoutObject->isDescendantOf(caretPainter));
@@ -137,7 +137,7 @@ void CaretBase::invalidateLocalCaretRect(Node* node, const LayoutRect& rect)
     LayoutRect inflatedRect = rect;
     inflatedRect.inflate(1);
 
-    // FIXME: We should use mapLocalToContainer() since we know we're not un-rooted.
+    // FIXME: We should use mapLocalToAncestor() since we know we're not un-rooted.
     mapCaretRectToCaretPainter(node->layoutObject(), caretPainter, inflatedRect);
 
     // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415

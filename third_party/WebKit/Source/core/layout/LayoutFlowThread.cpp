@@ -97,16 +97,16 @@ void LayoutFlowThread::validateColumnSets()
     generateColumnSetIntervalTree();
 }
 
-void LayoutFlowThread::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+void LayoutFlowThread::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
-    ASSERT(paintInvalidationContainer != this); // A flow thread should never be an invalidation container.
+    ASSERT(ancestor != this); // A flow thread should never be an invalidation container.
     // |rect| is a layout rectangle, where the block direction coordinate is flipped for writing
     // mode. fragmentsBoundingBox(), on the other hand, works on physical rectangles, so we need to
     // flip the rectangle before and after calling it.
     flipForWritingMode(rect);
     rect = fragmentsBoundingBox(rect);
     flipForWritingMode(rect);
-    LayoutBlockFlow::mapToVisibleRectInContainerSpace(paintInvalidationContainer, rect, paintInvalidationState);
+    LayoutBlockFlow::mapToVisibleRectInAncestorSpace(ancestor, rect, paintInvalidationState);
 }
 
 void LayoutFlowThread::layout()

@@ -337,11 +337,11 @@ LayoutRect LayoutSVGRoot::clippedOverflowRectForPaintInvalidation(const LayoutBo
 
     // Compute the paint invalidation rect in the parent coordinate space.
     LayoutRect rect(enclosingIntRect(paintInvalidationRect));
-    LayoutReplaced::mapToVisibleRectInContainerSpace(paintInvalidationContainer, rect, paintInvalidationState);
+    LayoutReplaced::mapToVisibleRectInAncestorSpace(paintInvalidationContainer, rect, paintInvalidationState);
     return rect;
 }
 
-void LayoutSVGRoot::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+void LayoutSVGRoot::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
     // Note that we don't apply the border-box transform here - it's assumed
     // that whoever called us has done that already.
@@ -350,17 +350,17 @@ void LayoutSVGRoot::mapToVisibleRectInContainerSpace(const LayoutBoxModelObject*
     if (shouldApplyViewportClip())
         rect.intersect(LayoutRect(pixelSnappedBorderBoxRect()));
 
-    LayoutReplaced::mapToVisibleRectInContainerSpace(paintInvalidationContainer, rect, paintInvalidationState);
+    LayoutReplaced::mapToVisibleRectInAncestorSpace(ancestor, rect, paintInvalidationState);
 }
 
 // This method expects local CSS box coordinates.
 // Callers with local SVG viewport coordinates should first apply the localToBorderBoxTransform
 // to convert from SVG viewport coordinates to local CSS box coordinates.
-void LayoutSVGRoot::mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void LayoutSVGRoot::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
     ASSERT(mode & ~IsFixed); // We should have no fixed content in the SVG layout tree.
 
-    LayoutReplaced::mapLocalToContainer(paintInvalidationContainer, transformState, mode | ApplyContainerFlip, wasFixed, paintInvalidationState);
+    LayoutReplaced::mapLocalToAncestor(ancestor, transformState, mode | ApplyContainerFlip, wasFixed, paintInvalidationState);
 }
 
 const LayoutObject* LayoutSVGRoot::pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const

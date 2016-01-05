@@ -30,7 +30,7 @@ PaintInvalidationState::PaintInvalidationState(const LayoutView& layoutView, Vec
         }
         if (ownerPaintInvalidationState && ownerPaintInvalidationState->m_forcedSubtreeInvalidationWithinContainer)
             m_forcedSubtreeInvalidationWithinContainer = true;
-        FloatPoint point = layoutView.localToContainerPoint(FloatPoint(), &m_paintInvalidationContainer, TraverseDocumentBoundaries);
+        FloatPoint point = layoutView.localToAncestorPoint(FloatPoint(), &m_paintInvalidationContainer, TraverseDocumentBoundaries);
         m_paintOffset = LayoutSize(point.x(), point.y());
     }
     m_clipRect = layoutView.viewRect();
@@ -62,7 +62,7 @@ PaintInvalidationState::PaintInvalidationState(PaintInvalidationState& next, Lay
     } else {
         if (m_cachedOffsetsEnabled) {
             if (fixed) {
-                FloatPoint fixedOffset = layoutObject.localToContainerPoint(FloatPoint(), &m_paintInvalidationContainer, TraverseDocumentBoundaries);
+                FloatPoint fixedOffset = layoutObject.localToAncestorPoint(FloatPoint(), &m_paintInvalidationContainer, TraverseDocumentBoundaries);
                 m_paintOffset = LayoutSize(fixedOffset.x(), fixedOffset.y());
             } else {
                 LayoutSize offset = layoutObject.isBox() && !layoutObject.isTableRow() ? toLayoutBox(layoutObject).locationOffset() : LayoutSize();

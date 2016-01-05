@@ -274,7 +274,7 @@ void PaintLayerClipper::calculateClipRects(const ClipRectsContext& context, Clip
         // This offset cannot use convertToLayerCoords, because sometimes our rootLayer may be across
         // some transformed layer boundary, for example, in the PaintLayerCompositor overlapMap, where
         // clipRects are needed in view space.
-        applyClipRects(context, m_layoutObject, roundedLayoutPoint(m_layoutObject.localToContainerPoint(FloatPoint(), context.rootLayer->layoutObject())), clipRects);
+        applyClipRects(context, m_layoutObject, roundedLayoutPoint(m_layoutObject.localToAncestorPoint(FloatPoint(), context.rootLayer->layoutObject())), clipRects);
     }
 }
 

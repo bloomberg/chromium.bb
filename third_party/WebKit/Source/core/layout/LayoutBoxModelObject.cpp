@@ -441,7 +441,7 @@ void LayoutBoxModelObject::addOutlineRectsForDescendant(const LayoutObject& desc
     if (descendant.hasLayer()) {
         Vector<LayoutRect> layerOutlineRects;
         descendant.addOutlineRects(layerOutlineRects, LayoutPoint(), includeBlockOverflows);
-        descendant.localToContainerRects(layerOutlineRects, this, LayoutPoint(), additionalOffset);
+        descendant.localToAncestorRects(layerOutlineRects, this, LayoutPoint(), additionalOffset);
         rects.appendVector(layerOutlineRects);
         return;
     }

@@ -118,7 +118,7 @@ TEST_F(LayoutObjectTest, MapToVisibleRectInContainerSpace)
 
     container->setScrollTop(50);
     LayoutRect rect(0, 60, 20, 20);
-    text->mapToVisibleRectInContainerSpace(container, rect, nullptr);
+    text->mapToVisibleRectInAncestorSpace(container, rect, nullptr);
     EXPECT_TRUE(rect == LayoutRect(0, 10, 20, 20));
 }
 
