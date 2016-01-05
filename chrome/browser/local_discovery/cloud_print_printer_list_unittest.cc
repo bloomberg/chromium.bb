@@ -9,7 +9,6 @@
 #include <set>
 
 #include "base/json/json_reader.h"
-#include "chrome/browser/local_discovery/cloud_device_list_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,9 +30,10 @@ const char kSampleSuccessResponseOAuth[] = "{"
     "    ]"
     "}";
 
-class MockDelegate : public CloudDeviceListDelegate {
+class MockDelegate : public CloudPrintPrinterList::Delegate {
  public:
-  MOCK_METHOD1(OnDeviceListReady, void(const DeviceList&));
+  MOCK_METHOD1(OnDeviceListReady,
+               void(const CloudPrintPrinterList::DeviceList&));
   MOCK_METHOD0(OnDeviceListUnavailable, void());
 };
 
@@ -50,7 +50,7 @@ TEST(CloudPrintPrinterListTest, Params) {
 TEST(CloudPrintPrinterListTest, Parsing) {
   StrictMock<MockDelegate> delegate;
   CloudPrintPrinterList device_list(&delegate);
-  CloudDeviceListDelegate::DeviceList devices;
+  CloudPrintPrinterList::DeviceList devices;
   EXPECT_CALL(delegate, OnDeviceListReady(_)).WillOnce(SaveArg<0>(&devices));
 
   scoped_ptr<base::Value> value =
@@ -74,7 +74,6 @@ TEST(CloudPrintPrinterListTest, Parsing) {
   EXPECT_EQ("someID", devices[0].id);
   EXPECT_EQ("someDisplayName", devices[0].display_name);
   EXPECT_EQ("someDescription", devices[0].description);
-  EXPECT_EQ("printer", devices[0].type);
 }
 
 }  // namespace

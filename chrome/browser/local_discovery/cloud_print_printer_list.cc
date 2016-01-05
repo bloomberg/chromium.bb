@@ -12,9 +12,16 @@
 
 namespace local_discovery {
 
-CloudPrintPrinterList::CloudPrintPrinterList(CloudDeviceListDelegate* delegate)
-    : delegate_(delegate) {
-}
+CloudPrintPrinterList::Device::Device() {}
+
+CloudPrintPrinterList::Device::~Device() {}
+
+CloudPrintPrinterList::Delegate::Delegate() {}
+
+CloudPrintPrinterList::Delegate::~Delegate() {}
+
+CloudPrintPrinterList::CloudPrintPrinterList(Delegate* delegate)
+    : delegate_(delegate) {}
 
 CloudPrintPrinterList::~CloudPrintPrinterList() {
 }
@@ -32,12 +39,12 @@ void CloudPrintPrinterList::OnGCDAPIFlowComplete(
     return;
   }
 
-  std::vector<CloudDeviceListDelegate::Device> devices;
+  DeviceList devices;
   for (base::ListValue::const_iterator i = printers->begin();
        i != printers->end();
        i++) {
     base::DictionaryValue* printer;
-    CloudDeviceListDelegate::Device printer_details;
+    Device printer_details;
 
     if (!(*i)->GetAsDictionary(&printer))
       continue;
@@ -57,7 +64,7 @@ GURL CloudPrintPrinterList::GetURL() {
 
 bool CloudPrintPrinterList::FillPrinterDetails(
     const base::DictionaryValue& printer_value,
-    CloudDeviceListDelegate::Device* printer_details) {
+    Device* printer_details) {
   if (!printer_value.GetString(cloud_print::kIdValue, &printer_details->id))
     return false;
 
@@ -69,8 +76,6 @@ bool CloudPrintPrinterList::FillPrinterDetails(
   // Non-essential.
   printer_value.GetString(cloud_print::kPrinterDescValue,
                           &printer_details->description);
-
-  printer_details->type = CloudDeviceListDelegate::kDeviceTypePrinter;
 
   return true;
 }

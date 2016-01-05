@@ -2660,10 +2660,6 @@
       'browser/search_engines/template_url_service_android.h',
     ],
     'chrome_browser_service_discovery_sources': [
-      'browser/local_discovery/cloud_device_list.cc',
-      'browser/local_discovery/cloud_device_list.h',
-      'browser/local_discovery/cloud_device_list_delegate.cc',
-      'browser/local_discovery/cloud_device_list_delegate.h',
       'browser/local_discovery/cloud_print_printer_list.cc',
       'browser/local_discovery/cloud_print_printer_list.h',
       'browser/local_discovery/device_description.cc',

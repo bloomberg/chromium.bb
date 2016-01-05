@@ -36,7 +36,7 @@ class ServiceDiscoverySharedClient;
 class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
                                 public PrivetRegisterOperation::Delegate,
                                 public PrivetDeviceLister::Delegate,
-                                public CloudDeviceListDelegate,
+                                public CloudPrintPrinterList::Delegate,
                                 public SigninManagerBase::Observer {
  public:
   LocalDiscoveryUIHandler();
@@ -65,8 +65,9 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   void DeviceRemoved(const std::string& name) override;
   void DeviceCacheFlushed() override;
 
-  // CloudDeviceListDelegate implementation.
-  void OnDeviceListReady(const std::vector<Device>& devices) override;
+  // CloudPrintPrinterList::Delegate implementation.
+  void OnDeviceListReady(
+      const CloudPrintPrinterList::DeviceList& devices) override;
   void OnDeviceListUnavailable() override;
 
   // SigninManagerBase::Observer implementation.
@@ -178,7 +179,7 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
 
   // List of printers from cloud print.
   scoped_ptr<GCDApiFlow> cloud_print_printer_list_;
-  std::vector<Device> cloud_devices_;
+  std::vector<CloudPrintPrinterList::Device> cloud_devices_;
   int failed_list_count_;
   int succeded_list_count_;
 

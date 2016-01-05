@@ -14,7 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/local_discovery/cloud_device_list.h"
 #include "chrome/browser/local_discovery/privet_confirm_api_flow.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
 #include "chrome/browser/local_discovery/privet_device_lister_impl.h"
@@ -59,30 +58,29 @@ int g_num_visible = 0;
 const int kCloudDevicesPrivetVersion = 3;
 
 scoped_ptr<base::DictionaryValue> CreateDeviceInfo(
-    const CloudDeviceListDelegate::Device& description) {
+    const CloudPrintPrinterList::Device& description) {
   scoped_ptr<base::DictionaryValue> return_value(new base::DictionaryValue);
 
   return_value->SetString(kDictionaryKeyID, description.id);
   return_value->SetString(kDictionaryKeyDisplayName, description.display_name);
   return_value->SetString(kDictionaryKeyDescription, description.description);
-  return_value->SetString(kDictionaryKeyType, description.type);
+  return_value->SetString(kDictionaryKeyType, "printer");
 
   return return_value;
 }
 
-void ReadDevicesList(
-    const std::vector<CloudDeviceListDelegate::Device>& devices,
-    const std::set<std::string>& local_ids,
-    base::ListValue* devices_list) {
-  for (CloudDeviceList::iterator i = devices.begin(); i != devices.end(); i++) {
-    if (local_ids.count(i->id) > 0) {
-      devices_list->Append(CreateDeviceInfo(*i).release());
+void ReadDevicesList(const CloudPrintPrinterList::DeviceList& devices,
+                     const std::set<std::string>& local_ids,
+                     base::ListValue* devices_list) {
+  for (const auto& i : devices) {
+    if (local_ids.count(i.id) > 0) {
+      devices_list->Append(CreateDeviceInfo(i).release());
     }
   }
 
-  for (CloudDeviceList::iterator i = devices.begin(); i != devices.end(); i++) {
-    if (local_ids.count(i->id) == 0) {
-      devices_list->Append(CreateDeviceInfo(*i).release());
+  for (const auto& i : devices) {
+    if (local_ids.count(i.id) == 0) {
+      devices_list->Append(CreateDeviceInfo(i).release());
     }
   }
 }
@@ -396,7 +394,7 @@ void LocalDiscoveryUIHandler::DeviceCacheFlushed() {
 }
 
 void LocalDiscoveryUIHandler::OnDeviceListReady(
-    const std::vector<Device>& devices) {
+    const CloudPrintPrinterList::DeviceList& devices) {
   cloud_devices_.insert(cloud_devices_.end(), devices.begin(), devices.end());
   ++succeded_list_count_;
   CheckListingDone();

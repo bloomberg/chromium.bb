@@ -723,7 +723,6 @@
       'common/local_discovery/service_discovery_client_unittest.cc',
     ],
     'chrome_unit_tests_service_discovery_sources': [
-      'browser/local_discovery/cloud_device_list_unittest.cc',
       'browser/local_discovery/cloud_print_printer_list_unittest.cc',
       'browser/local_discovery/gcd_api_flow_unittest.cc',
       'browser/local_discovery/privet_confirm_api_flow_unittest.cc',
