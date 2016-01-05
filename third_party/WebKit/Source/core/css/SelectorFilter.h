@@ -66,13 +66,12 @@ public:
 private:
     void pushParentStackFrame(Element& parent);
     void popParentStackFrame();
-    void setupParentStack(Element& parent);
 
     WillBeHeapVector<ParentStackFrame> m_parentStack;
 
     // With 100 unique strings in the filter, 2^12 slot table has false positive rate of ~0.2%.
-    static const unsigned bloomFilterKeyBits = 12;
-    OwnPtr<BloomFilter<bloomFilterKeyBits>> m_ancestorIdentifierFilter;
+    using IdentifierFilter = BloomFilter<12>;
+    OwnPtr<IdentifierFilter> m_ancestorIdentifierFilter;
 };
 
 template <unsigned maximumIdentifierCount>

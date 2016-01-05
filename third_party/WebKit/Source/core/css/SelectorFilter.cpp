@@ -79,38 +79,17 @@ void SelectorFilter::popParentStackFrame()
     }
 }
 
-void SelectorFilter::setupParentStack(Element& parent)
+void SelectorFilter::pushParent(Element& parent)
 {
-    ASSERT(m_parentStack.isEmpty() == !m_ancestorIdentifierFilter);
-    // Kill whatever we stored before.
-    m_parentStack.shrink(0);
-    m_ancestorIdentifierFilter = adoptPtr(new BloomFilter<bloomFilterKeyBits>);
-    // Fast version if parent is a root element:
-    if (!parent.parentOrShadowHostNode()) {
+    ASSERT(parent.document().inStyleRecalc());
+    ASSERT(parent.inActiveDocument());
+    if (m_parentStack.isEmpty()) {
+        ASSERT(parent == parent.document().documentElement());
+        ASSERT(!m_ancestorIdentifierFilter);
+        m_ancestorIdentifierFilter = adoptPtr(new IdentifierFilter);
         pushParentStackFrame(parent);
         return;
     }
-    // Otherwise climb up the tree.
-    WillBeHeapVector<RawPtrWillBeMember<Element>, 30> ancestors;
-    for (Element* ancestor = &parent; ancestor; ancestor = ancestor->parentOrShadowHostElement())
-        ancestors.append(ancestor);
-    for (size_t n = ancestors.size(); n; --n)
-        pushParentStackFrame(*ancestors[n - 1]);
-}
-
-void SelectorFilter::pushParent(Element& parent)
-{
-    const Element* parentsParent = parent.parentOrShadowHostElement();
-
-    // We are not always invoked consistently. For example, script execution can cause us to enter
-    // style recalc in the middle of tree building. We may also be invoked from somewhere within the tree.
-    // Reset the stack in this case, or if we see a new root element.
-    // Otherwise just push the new parent.
-    if (!parentsParent || m_parentStack.isEmpty()) {
-        setupParentStack(parent);
-        return;
-    }
-
     ASSERT(m_ancestorIdentifierFilter);
     // We may get invoked for some random elements in some wacky cases during style resolve.
     // Pause maintaining the stack in this case.
@@ -121,6 +100,8 @@ void SelectorFilter::pushParent(Element& parent)
 
 void SelectorFilter::popParent(Element& parent)
 {
+    ASSERT(parent.document().inStyleRecalc());
+    ASSERT(parent.inActiveDocument());
     // Note that we may get invoked for some random elements in some wacky cases during style resolve.
     // Pause maintaining the stack in this case.
     if (!parentStackIsConsistent(&parent))
