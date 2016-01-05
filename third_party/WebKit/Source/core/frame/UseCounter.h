@@ -952,6 +952,7 @@ public:
         V8SVGSVGElement_Viewport_AttributeGetter = 1095,
         V8RegExpPrototypeStickyGetter = 1096,
         V8RegExpPrototypeToString = 1097,
+        V8InputDeviceCapabilities_FiresTouchEvents_AttributeGetter = 1098,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
