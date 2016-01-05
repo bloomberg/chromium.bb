@@ -9,6 +9,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -239,7 +240,7 @@ class InfoBarContainerLayout extends FrameLayout {
         void prepareAnimation() {
             mFrontView = (ViewGroup) LayoutInflater.from(getContext()).inflate(
                     R.layout.infobar_wrapper, InfoBarContainerLayout.this, false);
-            mFrontView.addView(mFrontInnerView);
+            addInnerView(mFrontView, mFrontInnerView);
             addView(mFrontView);
             updateLayoutParams();
         }
@@ -315,7 +316,7 @@ class InfoBarContainerLayout extends FrameLayout {
         void prepareAnimation() {
             mOldFrontView = (ViewGroup) getChildAt(0);
             mNewFrontView = (ViewGroup) getChildAt(1);
-            mNewFrontView.addView(mNewFrontInnerView);
+            addInnerView(mNewFrontView, mNewFrontInnerView);
         }
 
         @Override
@@ -414,7 +415,7 @@ class InfoBarContainerLayout extends FrameLayout {
         void prepareAnimation() {
             mFrontView = (ViewGroup) getChildAt(0);
             mOldInnerView = mFrontView.getChildAt(0);
-            mFrontView.addView(mNewInnerView);
+            addInnerView(mFrontView, mNewInnerView);
         }
 
         @Override
@@ -540,6 +541,14 @@ class InfoBarContainerLayout extends FrameLayout {
         } else {
             mAnimation.start();
         }
+    }
+
+    /**
+     * Adds an infobar view to a wrapper view, with suitable LayoutParams.
+     */
+    private void addInnerView(ViewGroup wrapperView, View innerView) {
+        wrapperView.addView(innerView, new LayoutParams(
+                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, Gravity.TOP));
     }
 
     private void updateLayoutParams() {

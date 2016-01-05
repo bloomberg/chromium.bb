@@ -6,16 +6,15 @@ package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.util.TypedValue;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.FrameLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -103,18 +102,13 @@ public class TranslateLanguagePanel
         mTargetAdapter = new LanguageArrayAdapter(context, R.layout.translate_spinner,
                 LANGUAGE_TYPE_TARGET);
 
-        // Determine how wide each spinner needs to be to avoid truncating its children.
-        mSourceAdapter.addAll(createSpinnerLanguages(""));
-        mTargetAdapter.addAll(createSpinnerLanguages(""));
-        mSourceAdapter.measureWidthRequiredForView();
-        mTargetAdapter.measureWidthRequiredForView();
-
         // Set up the spinners.
         mSourceSpinner.setOnItemSelectedListener(this);
         mTargetSpinner.setOnItemSelectedListener(this);
         mSourceSpinner.setAdapter(mSourceAdapter);
         mTargetSpinner.setAdapter(mTargetAdapter);
         reloadSpinners();
+        measureSpinnerMinWidths();
     }
 
     private void reloadSpinners() {
@@ -170,12 +164,14 @@ public class TranslateLanguagePanel
     public void onItemSelected(AdapterView<?> adapter, View view, int position, long id) {
         Spinner spinner = (Spinner) adapter;
         String newCode = ((SpinnerLanguageElement) spinner.getSelectedItem()).getLanguageCode();
-        if (spinner == mSourceSpinner) {
+        if (spinner == mSourceSpinner && !newCode.equals(mSessionOptions.sourceLanguageCode())) {
             mSessionOptions.setSourceLanguage(newCode);
-        } else {
-            mSessionOptions.setTargetLanguage(newCode);
+            reloadSpinners();
         }
-        reloadSpinners();
+        if (spinner == mTargetSpinner && !newCode.equals(mSessionOptions.targetLanguageCode())) {
+            mSessionOptions.setTargetLanguage(newCode);
+            reloadSpinners();
+        }
     }
 
     @Override
@@ -198,12 +194,33 @@ public class TranslateLanguagePanel
         return result;
     }
 
+    /** Measures how wide the spinners need to be to avoid truncating text. */
+    private void measureSpinnerMinWidths() {
+        Context context = mSourceAdapter.getContext();
+        TextView textView = (TextView) mSourceAdapter.getView(0, null, null);
+        Paint textPaint = textView.getPaint();
+
+        float longestLanguageWidth = 0;
+        for (TranslateOptions.TranslateLanguagePair language : mSessionOptions.allLanguages()) {
+            float width = textPaint.measureText(language.mLanguageRepresentation);
+            longestLanguageWidth = Math.max(longestLanguageWidth, width);
+        }
+
+        float sourceTemplateWidth = textPaint.measureText(TextUtils.expandTemplate(
+                context.getString(R.string.translate_options_source_hint), "").toString());
+        float targetTemplateWidth = textPaint.measureText(TextUtils.expandTemplate(
+                context.getString(R.string.translate_options_target_hint), "").toString());
+
+        mSourceAdapter.mMinWidth = (int) Math.ceil(sourceTemplateWidth + longestLanguageWidth);
+        mTargetAdapter.mMinWidth = (int) Math.ceil(targetTemplateWidth + longestLanguageWidth);
+    }
+
     /**
      * The drop down view displayed to show the currently selected value.
      */
     private static class LanguageArrayAdapter extends ArrayAdapter<SpinnerLanguageElement> {
         private final SpannableString mTextTemplate;
-        private int mMinimumWidth;
+        private int mMinWidth;
 
         public LanguageArrayAdapter(Context context, int textViewResourceId,
                 int languageType) {
@@ -219,46 +236,27 @@ public class TranslateLanguagePanel
                     new ForegroundColorSpan(Color.GRAY), 0, textTemplate.length(), 0);
         }
 
-        /** Measures how large the view needs to be to avoid truncating its children. */
-        public void measureWidthRequiredForView() {
-            mMinimumWidth = 0;
-
-            final int spec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-
-            FrameLayout layout = new FrameLayout(getContext());
-            TextView estimator = (TextView) LayoutInflater.from(getContext()).inflate(
-                    R.layout.infobar_text, null);
-            layout.addView(estimator);
-            for (int i = 0; i < getCount(); ++i) {
-                estimator.setText(getStringForLanguage(i));
-                estimator.measure(spec, spec);
-                mMinimumWidth = Math.max(mMinimumWidth, estimator.getMeasuredWidth());
-            }
-        }
-
         @Override
         public View getDropDownView(int position, View convertView, ViewGroup parent) {
-            View result = super.getDropDownView(position, convertView, parent);
-            if (result instanceof TextView) {
-                ((TextView) result).setText(getItem(position).toString());
-            }
-            return result;
+            TextView view = (TextView) super.getDropDownView(position, convertView, parent);
+            view.setText(getItem(position).toString());
+            return view;
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             TextView result;
-            if (!(convertView instanceof TextView)) {
+            if (convertView instanceof TextView) {
+                result = (TextView) convertView;
+            } else {
                 result = new TextView(getContext());
                 result.setTextSize(TypedValue.COMPLEX_UNIT_PX,
                         getContext().getResources().getDimension(R.dimen.infobar_text_size));
-            } else {
-                result = (TextView) convertView;
+                result.setEllipsize(TextUtils.TruncateAt.END);
+                result.setMaxLines(1);
+                result.setMinWidth(mMinWidth);
             }
-            result.setEllipsize(TextUtils.TruncateAt.END);
-            result.setMaxLines(1);
             result.setText(getStringForLanguage(position));
-            result.setMinWidth(mMinimumWidth);
             return result;
         }
 

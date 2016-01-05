@@ -139,7 +139,6 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
     private Button mSecondaryButton;
     private View mCustomButton;
 
-    private Group mMainGroup;
     private Group mButtonGroup;
 
     private boolean mIsUsingBigIcon;
@@ -342,14 +341,12 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
      * first call to onMeasure().
      */
     void onContentCreated() {
-        mMainGroup = new Group(mMessageLayout);
-
         View[] buttons = Group.filterNullViews(mCustomButton, mSecondaryButton, mPrimaryButton);
         if (buttons.length != 0) mButtonGroup = new Group(buttons);
 
         // Add the child views in the desired focus order.
         if (mIconView != null) addView(mIconView);
-        for (View v : mMainGroup.views) addView(v);
+        addView(mMessageLayout);
         for (View v : mControlLayouts) addView(v);
         if (mButtonGroup != null) {
             for (View v : mButtonGroup.views) addView(v);
@@ -399,6 +396,10 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
         // big each child wants to be.
         int unspecifiedSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         for (int i = 0; i < getChildCount(); i++) {
+            // No need to do a preliminary measure() on an InfoBarControlLayout,
+            // since InfoBarControlLayout handles all the measuring logic internally.
+            // TODO(dfalcantara): remove this instanceof check when refactoring this method.
+            if (getChildAt(i) instanceof InfoBarControlLayout) continue;
             measureChild(getChildAt(i), unspecifiedSpec, unspecifiedSpec);
         }
 
