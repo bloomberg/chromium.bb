@@ -944,6 +944,27 @@ crbug.com/521124 crbug.com/571481 [ Win7 XP ] fast/text/orientation-sideways.htm
 # Temporary, until we stop use_system_harfbuzz on Linux including non-official builds
 crbug.com/462689 [ Linux ] fast/text/unicode-variation-selector.html [ Failure ]
 
+crbug.com/571404 [ Mac ] css3/flexbox/repaint.html [ NeedsRebaseline ]
+crbug.com/571404 [ Mac Win ] fast/repaint/bugzilla-6278.html [ NeedsRebaseline ]
+crbug.com/571404 [ Mac Win ] fast/repaint/inline-style-change-in-scrolled-view.html [ NeedsRebaseline ]
+crbug.com/571404 [ Mac Win ] fast/repaint/layout-state-scrolloffset.html [ NeedsRebaseline ]
+crbug.com/571404 [ Mac Win ] fast/repaint/layout-state-scrolloffset2.html [ NeedsRebaseline ]
+crbug.com/571404 [ Mac Win ] fast/repaint/layout-state-scrolloffset3.html [ NeedsRebaseline ]
+crbug.com/571404 [ Mac Win ] fast/repaint/line-flow-with-floats-1.html [ NeedsRebaseline ]
+crbug.com/571404 [ Mac Win ] fast/repaint/line-flow-with-floats-2.html [ NeedsRebaseline ]
+crbug.com/571404 [ Mac Win ] fast/repaint/line-flow-with-floats-3.html [ NeedsRebaseline ]
+crbug.com/571404 [ Mac Win ] fast/repaint/line-flow-with-floats-4.html [ NeedsRebaseline ]
+crbug.com/571404 [ Mac Win ] fast/repaint/line-flow-with-floats-5.html [ NeedsRebaseline ]
+crbug.com/571404 [ Mac Win ] fast/repaint/line-flow-with-floats-9.html [ NeedsRebaseline ]
+crbug.com/571404 [ Mac Win Linux ] fast/repaint/make-children-non-inline.html [ NeedsRebaseline ]
+crbug.com/571404 [ Mac Win ] fast/repaint/positioned-great-grandparent-change-location.html [ NeedsRebaseline ]
+crbug.com/571404 [ Mac Win ] fast/repaint/table-collapsed-border.html [ NeedsRebaseline ]
+crbug.com/571404 [ Win ] fast/repaint/line-overflow.html [ NeedsRebaseline ]
+crbug.com/571404 [ Win ] fast/repaint/selection-after-remove.html [ NeedsRebaseline ]
+crbug.com/571404 [ Win ] fast/repaint/remove-block-after-layout.html [ NeedsRebaseline ]
+crbug.com/571404 [ Win ] fast/repaint/selection-clear.html [ NeedsRebaseline ]
+crbug.com/571404 [ Win ] fast/repaint/overflow-scroll-delete.html [ NeedsRebaseline ]
+
 # Temporary, until WebAXObjectProxy support lands.
 crbug.com/421771 accessibility/inline-text-box-next-on-line.html [ Skip ]
 

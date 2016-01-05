@@ -32,7 +32,6 @@
 namespace blink {
 
 struct GlyphOverflow {
-    STACK_ALLOCATED();
     GlyphOverflow()
         : left(0)
         , right(0)
@@ -46,40 +45,20 @@ struct GlyphOverflow {
         return !left && !right && !top && !bottom;
     }
 
-    // These helper functions are exposed to share logic with SVG which computes overflow
-    // in floating point (see: SVGTextLayoutEngine).
-    static float topOverflow(const FloatRect& bounds, float ascent)
-    {
-        return std::max(0.0f, -bounds.y() - ascent);
-    }
-    static float bottomOverflow(const FloatRect& bounds, float descent)
-    {
-        return std::max(0.0f, bounds.maxY() - descent);
-    }
-    static float leftOverflow(const FloatRect& bounds)
-    {
-        return std::max(0.0f, -bounds.x());
-    }
-    static float rightOverflow(const FloatRect& bounds, float textWidth)
-    {
-        return std::max(0.0f, bounds.maxX() - textWidth);
-    }
-
     void setFromBounds(const FloatRect& bounds, float ascent, float descent, float textWidth)
     {
-        top = ceilf(topOverflow(bounds, ascent));
-        bottom = ceilf(bottomOverflow(bounds, descent));
-        left = ceilf(leftOverflow(bounds));
-        right = ceilf(rightOverflow(bounds, textWidth));
+        top = std::max(0.0f, -bounds.y() - ascent);
+        bottom = std::max(0.0f, bounds.maxY() - descent);
+        left = std::max(0.0f, -bounds.x());
+        right = std::max(0.0f, bounds.maxX() - textWidth);
     }
 
     // Top and bottom are the amounts of glyph overflows exceeding the font metrics' ascent and descent, respectively.
     // Left and right are the amounts of glyph overflows exceeding the left and right edge of normal layout boundary, respectively.
-    // All fields are in absolute number of pixels rounded up to the nearest integer.
-    int left;
-    int right;
-    int top;
-    int bottom;
+    float left;
+    float right;
+    float top;
+    float bottom;
 };
 
 } // namespace blink

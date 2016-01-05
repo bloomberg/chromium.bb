@@ -19,7 +19,6 @@
 
 #include "core/layout/svg/SVGTextLayoutEngine.h"
 
-#include "core/layout/line/GlyphOverflow.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGTextPath.h"
 #include "core/layout/svg/SVGTextChunkBuilder.h"
@@ -110,7 +109,6 @@ void SVGTextLayoutEngine::updateRelativePositionAdjustmentsIfNeeded(float dx, fl
     m_dy = dy;
 }
 
-// Computes the glyph overflow without integer clamping (see: GlyphOverflow.h).
 static void computeGlyphOverflow(SVGInlineTextBox* textBox, SVGTextFragment& textFragment)
 {
     LineLayoutSVGInlineText textLineLayout = LineLayoutSVGInlineText(textBox->lineLayoutItem());
@@ -124,11 +122,11 @@ static void computeGlyphOverflow(SVGInlineTextBox* textBox, SVGTextFragment& tex
     float width = scaledFont.width(run, nullptr, &glyphOverflowBounds);
     float ascent = scaledFont.fontMetrics().floatAscent();
     float descent = scaledFont.fontMetrics().floatDescent();
-
-    textFragment.glyphOverflowTop = GlyphOverflow::topOverflow(glyphOverflowBounds, ascent) / scalingFactor;
-    textFragment.glyphOverflowBottom = GlyphOverflow::bottomOverflow(glyphOverflowBounds, descent) / scalingFactor;
-    textFragment.glyphOverflowLeft = GlyphOverflow::leftOverflow(glyphOverflowBounds) / scalingFactor;
-    textFragment.glyphOverflowRight = GlyphOverflow::rightOverflow(glyphOverflowBounds, width) / scalingFactor;
+    textFragment.glyphOverflow.setFromBounds(glyphOverflowBounds, ascent, descent, width);
+    textFragment.glyphOverflow.top /= scalingFactor;
+    textFragment.glyphOverflow.left /= scalingFactor;
+    textFragment.glyphOverflow.right /= scalingFactor;
+    textFragment.glyphOverflow.bottom /= scalingFactor;
 }
 
 void SVGTextLayoutEngine::recordTextFragment(SVGInlineTextBox* textBox)

@@ -820,20 +820,20 @@ inline void InlineFlowBox::addTextBoxVisualOverflow(InlineTextBox* textBox, Glyp
     GlyphOverflow* glyphOverflow = it == textBoxDataMap.end() ? nullptr : &it->value.second;
     bool isFlippedLine = style.isFlippedLinesWritingMode();
 
-    int topGlyphEdge = glyphOverflow ? (isFlippedLine ? glyphOverflow->bottom : glyphOverflow->top) : 0;
-    int bottomGlyphEdge = glyphOverflow ? (isFlippedLine ? glyphOverflow->top : glyphOverflow->bottom) : 0;
-    int leftGlyphEdge = glyphOverflow ? glyphOverflow->left : 0;
-    int rightGlyphEdge = glyphOverflow ? glyphOverflow->right : 0;
+    float topGlyphEdge = glyphOverflow ? (isFlippedLine ? glyphOverflow->bottom : glyphOverflow->top) : 0;
+    float bottomGlyphEdge = glyphOverflow ? (isFlippedLine ? glyphOverflow->top : glyphOverflow->bottom) : 0;
+    float leftGlyphEdge = glyphOverflow ? glyphOverflow->left : 0;
+    float rightGlyphEdge = glyphOverflow ? glyphOverflow->right : 0;
 
-    int strokeOverflow = static_cast<int>(ceilf(style.textStrokeWidth() / 2.0f));
-    int topGlyphOverflow = -strokeOverflow - topGlyphEdge;
-    int bottomGlyphOverflow = strokeOverflow + bottomGlyphEdge;
-    int leftGlyphOverflow = -strokeOverflow - leftGlyphEdge;
-    int rightGlyphOverflow = strokeOverflow + rightGlyphEdge;
+    float strokeOverflow = style.textStrokeWidth() / 2.0f;
+    float topGlyphOverflow = -strokeOverflow - topGlyphEdge;
+    float bottomGlyphOverflow = strokeOverflow + bottomGlyphEdge;
+    float leftGlyphOverflow = -strokeOverflow - leftGlyphEdge;
+    float rightGlyphOverflow = strokeOverflow + rightGlyphEdge;
 
     TextEmphasisPosition emphasisMarkPosition;
     if (style.textEmphasisMark() != TextEmphasisMarkNone && textBox->getEmphasisMarkPosition(style, emphasisMarkPosition)) {
-        int emphasisMarkHeight = style.font().emphasisMarkHeight(style.textEmphasisMarkString());
+        float emphasisMarkHeight = style.font().emphasisMarkHeight(style.textEmphasisMarkString());
         if ((emphasisMarkPosition == TextEmphasisPositionOver) == (!style.isFlippedLinesWritingMode()))
             topGlyphOverflow = std::min(topGlyphOverflow, -emphasisMarkHeight);
         else
@@ -842,7 +842,7 @@ inline void InlineFlowBox::addTextBoxVisualOverflow(InlineTextBox* textBox, Glyp
 
     // If letter-spacing is negative, we should factor that into right layout overflow. Even in RTL, letter-spacing is
     // applied to the right, so this is not an issue with left overflow.
-    rightGlyphOverflow -= std::min(0, (int)style.font().fontDescription().letterSpacing());
+    rightGlyphOverflow -= std::min(0.0f, style.font().fontDescription().letterSpacing());
 
     LayoutRectOutsets textShadowLogicalOutsets;
     if (ShadowList* textShadow = style.textShadow())
@@ -860,10 +860,15 @@ inline void InlineFlowBox::addTextBoxVisualOverflow(InlineTextBox* textBox, Glyp
     LayoutUnit childOverflowLogicalLeft = std::min<LayoutUnit>(textShadowLogicalLeft + leftGlyphOverflow, leftGlyphOverflow);
     LayoutUnit childOverflowLogicalRight = std::max<LayoutUnit>(textShadowLogicalRight + rightGlyphOverflow, rightGlyphOverflow);
 
-    LayoutUnit logicalTopVisualOverflow = std::min(textBox->pixelSnappedLogicalTop() + childOverflowLogicalTop, logicalVisualOverflow.y());
-    LayoutUnit logicalBottomVisualOverflow = std::max(textBox->pixelSnappedLogicalBottom() + childOverflowLogicalBottom, logicalVisualOverflow.maxY());
-    LayoutUnit logicalLeftVisualOverflow = std::min(textBox->pixelSnappedLogicalLeft() + childOverflowLogicalLeft, logicalVisualOverflow.x());
-    LayoutUnit logicalRightVisualOverflow = std::max(textBox->pixelSnappedLogicalRight() + childOverflowLogicalRight, logicalVisualOverflow.maxX());
+    int enclosingLogicalTopWithOverflow = (textBox->logicalTop() + childOverflowLogicalTop).floor();
+    int enclosingLogicalBottomWithOverflow = (textBox->logicalBottom() + childOverflowLogicalBottom).ceil();
+    int enclosingLogicalLeftWithOverflow = (textBox->logicalLeft() + childOverflowLogicalLeft).floor();
+    int enclosingLogicalRightWithOverflow = (textBox->logicalRight() + childOverflowLogicalRight).ceil();
+
+    LayoutUnit logicalTopVisualOverflow = std::min<LayoutUnit>(enclosingLogicalTopWithOverflow, logicalVisualOverflow.y());
+    LayoutUnit logicalBottomVisualOverflow = std::max<LayoutUnit>(enclosingLogicalBottomWithOverflow, logicalVisualOverflow.maxY());
+    LayoutUnit logicalLeftVisualOverflow = std::min<LayoutUnit>(enclosingLogicalLeftWithOverflow, logicalVisualOverflow.x());
+    LayoutUnit logicalRightVisualOverflow = std::max<LayoutUnit>(enclosingLogicalRightWithOverflow, logicalVisualOverflow.maxX());
 
     logicalVisualOverflow = LayoutRect(logicalLeftVisualOverflow, logicalTopVisualOverflow, logicalRightVisualOverflow - logicalLeftVisualOverflow, logicalBottomVisualOverflow - logicalTopVisualOverflow);
 

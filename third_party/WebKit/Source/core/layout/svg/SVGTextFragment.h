@@ -20,6 +20,7 @@
 #ifndef SVGTextFragment_h
 #define SVGTextFragment_h
 
+#include "core/layout/line/GlyphOverflow.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/Allocator.h"
 
@@ -56,10 +57,10 @@ struct SVGTextFragment {
     FloatRect overflowBoundingBox(float baseline) const
     {
         FloatRect fragmentRect(
-            x - glyphOverflowLeft,
-            y - baseline - glyphOverflowTop,
-            width + glyphOverflowLeft + glyphOverflowRight,
-            height + glyphOverflowTop + glyphOverflowBottom);
+            x - glyphOverflow.left,
+            y - baseline - glyphOverflow.top,
+            width + glyphOverflow.left + glyphOverflow.right,
+            height + glyphOverflow.top + glyphOverflow.bottom);
         if (!isTransformed())
             return fragmentRect;
         return buildNormalFragmentTransform().mapRect(fragmentRect);
@@ -96,12 +97,7 @@ struct SVGTextFragment {
     float width;
     float height;
 
-    // Top and bottom are the amounts of glyph overflows exceeding the font metrics' ascent and descent, respectively.
-    float glyphOverflowTop;
-    float glyphOverflowBottom;
-    // Left and right are the amounts of glyph overflows exceeding the left and right edge of normal layout boundary, respectively.
-    float glyphOverflowLeft;
-    float glyphOverflowRight;
+    GlyphOverflow glyphOverflow;
 
     // Includes rotation/glyph-orientation-(horizontal|vertical) transforms, as well as orientation related shifts
     // (see SVGTextLayoutEngine, which builds this transformation).
