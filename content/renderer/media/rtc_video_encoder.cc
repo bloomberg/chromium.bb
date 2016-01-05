@@ -176,6 +176,10 @@ class RTCVideoEncoder::Impl
   // Checks if the bitrate would overflow when passing from kbps to bps.
   bool IsBitrateTooHigh(uint32_t bitrate);
 
+  // Checks if the frame size is different than hardware accelerator
+  // requirements.
+  bool RequiresSizeChange(const scoped_refptr<media::VideoFrame>& frame) const;
+
   base::ThreadChecker thread_checker_;
 
   // Weak pointer to the parent RTCVideoEncoder, for posting back VEA::Client
@@ -504,10 +508,16 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
   }
 
   const int index = input_buffers_free_.back();
+  bool requires_copy = false;
   scoped_refptr<media::VideoFrame> frame;
   if (next_frame->native_handle()) {
     frame = static_cast<media::VideoFrame*>(next_frame->native_handle());
+    requires_copy = RequiresSizeChange(frame);
   } else {
+    requires_copy = true;
+  }
+
+  if (requires_copy) {
     base::SharedMemory* input_buffer = input_buffers_[index];
     frame = media::VideoFrame::WrapExternalSharedMemory(
         media::PIXEL_FORMAT_I420, input_frame_coded_size_,
@@ -581,6 +591,12 @@ bool RTCVideoEncoder::Impl::IsBitrateTooHigh(uint32_t bitrate) {
   LogAndNotifyError(FROM_HERE, "Overflow converting bitrate from kbps to bps",
                     media::VideoEncodeAccelerator::kInvalidArgumentError);
   return true;
+}
+
+bool RTCVideoEncoder::Impl::RequiresSizeChange(
+    const scoped_refptr<media::VideoFrame>& frame) const {
+  return (frame->coded_size() != input_frame_coded_size_ ||
+          frame->visible_rect() != gfx::Rect(input_visible_size_));
 }
 
 RTCVideoEncoder::RTCVideoEncoder(
