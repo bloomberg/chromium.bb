@@ -600,9 +600,8 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
                         }
 
                         currentFrame = fillToEndFrame;
-
-                        break;
                     }
+                    break;
                 }
 
             case ParamEvent::SetValueCurve:
