@@ -407,9 +407,9 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
      * Orientation change event handler. Simply close the panel.
      */
     public void onOrientationChange() {
-        // Close to reset the panel then immediately show again.
-        closeReaderPanel(StateChangeReason.UNKNOWN, false);
-        requestReaderPanelShow(StateChangeReason.UNKNOWN);
+        if (mReaderModePanel != null) {
+            mReaderModePanel.onOrientationChanged();
+        }
     }
 
     /**
