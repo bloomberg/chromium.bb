@@ -44,6 +44,9 @@ namespace mojo {
 //                                           // instance of StronglyBound.
 //     }
 //   };
+//
+// This class is thread hostile once it is bound to a message pipe. Until it is
+// bound, it may be bound or destroyed on any thread.
 template <typename Interface>
 class StrongBinding {
   MOJO_MOVE_ONLY_TYPE(StrongBinding)

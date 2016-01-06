@@ -58,6 +58,11 @@ class AssociatedGroup;
 // implementation runs on. If writing library code that has to work on different
 // types of threads callers may need to provide different waiter
 // implementations.
+//
+// This class is thread hostile while bound to a message pipe. All calls to this
+// class must be from the thread that bound it. The interface implementation's
+// methods will be called from the thread that bound this. If a Binding is not
+// bound to a message pipe, it may be bound or destroyed on any thread.
 template <typename Interface>
 class Binding {
  public:

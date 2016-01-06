@@ -24,12 +24,14 @@ class AssociatedGroup;
 // closes the pipe and deletes the proxy on destruction. The pointer must be
 // bound to a message pipe before the interface methods can be called.
 //
-// This class is thread hostile, as is the local proxy it manages. All calls to
-// this class or the proxy should be from the same thread that created it. If
-// you need to move the proxy to a different thread, extract the
-// InterfacePtrInfo (containing just the message pipe and any version
-// information) using PassInterface(), pass it to a different thread, and
-// create and bind a new InterfacePtr from that thread.
+// This class is thread hostile, as is the local proxy it manages, while bound
+// to a message pipe. All calls to this class or the proxy should be from the
+// same thread that bound it. If you need to move the proxy to a different
+// thread, extract the InterfacePtrInfo (containing just the message pipe and
+// any version information) using PassInterface(), pass it to a different
+// thread, and create and bind a new InterfacePtr from that thread. If an
+// InterfacePtr is not bound to a message pipe, it may be bound or destroyed on
+// any thread.
 template <typename Interface>
 class InterfacePtr {
   DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND(InterfacePtr)
