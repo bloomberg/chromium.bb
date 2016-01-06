@@ -777,12 +777,6 @@ void ContentSettingsHandler::OnContentSettingChanged(
   } else {
     if (ContainsKey(GetExceptionsInfoMap(), details.type()))
       UpdateExceptionsViewFromModel(details.type());
-    for (const ChooserTypeNameEntry& chooser_type : kChooserTypeGroupNames) {
-      if (chooser_type.type == details.type()) {
-        UpdateChooserExceptionsViewFromModel(chooser_type);
-        break;
-      }
-    }
   }
 }
 
@@ -1512,6 +1506,7 @@ void ContentSettingsHandler::RemoveChooserException(
   ChooserContextBase* chooser_context = chooser_type->get_context(profile);
   chooser_context->RevokeObjectPermission(requesting_origin, embedding_origin,
                                           *object);
+  UpdateChooserExceptionsViewFromModel(*chooser_type);
   // TODO(reillyg): Create metrics for revocations. crbug.com/556845
 }
 

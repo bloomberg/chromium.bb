@@ -100,9 +100,9 @@ UsbChooserContext::GetAllGrantedObjects() {
       base::DictionaryValue object;
       object.SetString(kDeviceNameKey, device->product_string());
       object.SetString(kGuidKey, device->guid());
-      objects.push_back(make_scoped_ptr(
-          new ChooserContextBase::Object(requesting_origin, embedding_origin,
-                                         &object, "", is_off_the_record_)));
+      objects.push_back(make_scoped_ptr(new ChooserContextBase::Object(
+          requesting_origin, embedding_origin, &object, "preference",
+          is_off_the_record_)));
     }
   }
 
