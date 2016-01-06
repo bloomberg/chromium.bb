@@ -31,11 +31,11 @@ static const size_t kRidiculousNumberOfPackets =
 DedupInfo::DedupInfo() : last_byte_acked_for_audio(0) {}
 
 // static
-PacketKey PacedPacketSender::MakePacketKey(PacketKey::PacketType packet_type,
-                                           uint32_t frame_id,
+PacketKey PacedPacketSender::MakePacketKey(base::TimeTicks capture_time,
                                            uint32_t ssrc,
+                                           uint32_t frame_id,
                                            uint16_t packet_id) {
-  PacketKey key{packet_type, frame_id, ssrc, packet_id};
+  PacketKey key{capture_time, ssrc, frame_id, packet_id};
   return key;
 }
 
@@ -172,7 +172,7 @@ bool PacedSender::ResendPackets(const SendPacketVector& packets,
 bool PacedSender::SendRtcpPacket(uint32_t ssrc, PacketRef packet) {
   if (state_ == State_TransportBlocked) {
     PacketKey key =
-        PacedPacketSender::MakePacketKey(PacketKey::RTCP, 0, ssrc, 0);
+        PacedPacketSender::MakePacketKey(base::TimeTicks(), ssrc, 0, 0);
     priority_packet_list_[key] = make_pair(PacketType_RTCP, packet);
   } else {
     // We pass the RTCP packets straight through.

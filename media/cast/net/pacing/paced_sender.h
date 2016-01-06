@@ -37,16 +37,14 @@ static const size_t kMaxBurstSize = 20;
 //    are sent out.
 // 3. The PacketKey is unique for each RTP (frame) packet.
 struct PacketKey {
-  enum PacketType { RTCP = 0, RTP = 1 };
-
-  PacketType packet_type;
-  uint32_t frame_id;
+  base::TimeTicks capture_time;
   uint32_t ssrc;
+  uint32_t frame_id;
   uint16_t packet_id;
 
   bool operator<(const PacketKey& key) const {
-    return std::tie(packet_type, frame_id, ssrc, packet_id) <
-           std::tie(key.packet_type, key.frame_id, key.ssrc, key.packet_id);
+    return std::tie(capture_time, ssrc, frame_id, packet_id) <
+           std::tie(key.capture_time, key.ssrc, key.frame_id, key.packet_id);
   }
 };
 
@@ -83,9 +81,9 @@ class PacedPacketSender {
 
   virtual ~PacedPacketSender() {}
 
-  static PacketKey MakePacketKey(PacketKey::PacketType,
-                                 uint32_t frame_id,
+  static PacketKey MakePacketKey(base::TimeTicks capture_time,
                                  uint32_t ssrc,
+                                 uint32_t frame_id,
                                  uint16_t packet_id);
 };
 
