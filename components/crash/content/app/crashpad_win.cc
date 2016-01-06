@@ -77,6 +77,9 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
       arguments.push_back("--type=crashpad-handler");
     }
 
+    // TODO(scottmg): See https://crashpad.chromium.org/bug/23.
+    arguments.push_back("--no-rate-limit");
+
     result = g_crashpad_client.Get().StartHandler(
         exe_file, database_path, url, process_annotations, arguments, false);
 
