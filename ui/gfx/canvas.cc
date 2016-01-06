@@ -394,8 +394,9 @@ void Canvas::DrawImageInt(const ImageSkia& image,
   const ImageSkiaRep& image_rep = image.GetRepresentation(image_scale_);
   if (image_rep.is_null())
     return;
+  bool remove_image_scale = true;
   DrawImageIntHelper(image_rep, src_x, src_y, src_w, src_h, dest_x, dest_y,
-                     dest_w, dest_h, filter, paint, false);
+                     dest_w, dest_h, filter, paint, remove_image_scale);
 }
 
 void Canvas::DrawImageIntInPixel(const ImageSkiaRep& image_rep,
@@ -409,8 +410,11 @@ void Canvas::DrawImageIntInPixel(const ImageSkiaRep& image_rep,
   int src_y = 0;
   int src_w = image_rep.pixel_width();
   int src_h = image_rep.pixel_height();
+  // Don't remove image scale here, this function is used to draw the
+  // (already scaled) |image_rep| at a 1:1 scale with the canvas.
+  bool remove_image_scale = false;
   DrawImageIntHelper(image_rep, src_x, src_y, src_w, src_h, dest_x, dest_y,
-                     dest_w, dest_h, filter, paint, true);
+                     dest_w, dest_h, filter, paint, remove_image_scale);
 }
 
 void Canvas::DrawImageInPath(const ImageSkia& image,
@@ -534,7 +538,7 @@ void Canvas::DrawImageIntHelper(const ImageSkiaRep& image_rep,
                                 int dest_h,
                                 bool filter,
                                 const SkPaint& paint,
-                                bool pixel) {
+                                bool remove_image_scale) {
   DLOG_ASSERT(src_x + src_w < std::numeric_limits<int16_t>::max() &&
               src_y + src_h < std::numeric_limits<int16_t>::max());
   if (src_w <= 0 || src_h <= 0) {
@@ -553,17 +557,6 @@ void Canvas::DrawImageIntHelper(const ImageSkiaRep& image_rep,
                        SkIntToScalar(dest_x + dest_w),
                        SkIntToScalar(dest_y + dest_h) };
 
-  if (src_w == dest_w && src_h == dest_h &&
-      user_scale_x == 1.0f && user_scale_y == 1.0f &&
-      image_rep.scale() == 1.0f && !pixel) {
-    // Workaround for apparent bug in Skia that causes image to occasionally
-    // shift.
-    SkIRect src_rect = { src_x, src_y, src_x + src_w, src_y + src_h };
-    const SkBitmap& bitmap = image_rep.sk_bitmap();
-    canvas_->drawBitmapRect(bitmap, src_rect, dest_rect, &paint);
-    return;
-  }
-
   // Make a bitmap shader that contains the bitmap we want to draw. This is
   // basically what SkCanvas.drawBitmap does internally, but it gives us
   // more control over quality and will use the mipmap in the source image if
@@ -575,10 +568,8 @@ void Canvas::DrawImageIntHelper(const ImageSkiaRep& image_rep,
   shader_scale.postTranslate(SkIntToScalar(dest_x), SkIntToScalar(dest_y));
 
   skia::RefPtr<SkShader> shader = CreateImageRepShaderForScale(
-      image_rep,
-      SkShader::kRepeat_TileMode,
-      shader_scale,
-      pixel ? 1.0f : image_rep.scale());
+      image_rep, SkShader::kRepeat_TileMode, shader_scale,
+      remove_image_scale ? image_rep.scale() : 1.f);
 
   // Set up our paint to use the shader & release our reference (now just owned
   // by the paint).

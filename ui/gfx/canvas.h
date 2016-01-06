@@ -418,9 +418,9 @@ class GFX_EXPORT Canvas {
   bool IntersectsClipRectInt(int x, int y, int w, int h);
   bool IntersectsClipRect(const Rect& rect);
 
-  // Helper for the DrawImageInt functions declared above. The |pixel|
-  // parameter if true indicates that the bounds and the image are to
-  // be assumed to be in pixels, i.e. no scaling needs to be performed.
+  // Helper for the DrawImageInt functions declared above. The
+  // |remove_image_scale| parameter indicates if the scale of the |image_rep|
+  // should be removed when drawing the image, to avoid double-scaling it.
   void DrawImageIntHelper(const ImageSkiaRep& image_rep,
                           int src_x,
                           int src_y,
@@ -432,7 +432,7 @@ class GFX_EXPORT Canvas {
                           int dest_h,
                           bool filter,
                           const SkPaint& paint,
-                          bool pixel);
+                          bool remove_image_scale);
 
   // The device scale factor at which drawing on this canvas occurs.
   // An additional scale can be applied via Canvas::Scale(). However,
