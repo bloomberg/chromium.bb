@@ -5,18 +5,15 @@
 import("//build/config/features.gni")
 
 if (enable_nacl) {
-  source_set("common") {
+  # This is separate so it can be used by ../broker:nacl64.
+  source_set("minimal") {
     sources = [
       "nacl_cmd_line.cc",
       "nacl_cmd_line.h",
       "nacl_constants.cc",
       "nacl_constants.h",
-      "nacl_host_messages.cc",
-      "nacl_host_messages.h",
       "nacl_messages.cc",
       "nacl_messages.h",
-      "nacl_nonsfi_util.cc",
-      "nacl_nonsfi_util.h",
       "nacl_process_type.h",
       "nacl_renderer_messages.cc",
       "nacl_renderer_messages.h",
@@ -25,11 +22,45 @@ if (enable_nacl) {
       "nacl_types.h",
       "nacl_types_param_traits.cc",
       "nacl_types_param_traits.h",
+    ]
+
+    public_deps = [
+      ":switches",
+    ]
+
+    deps = [
+      ":minimal_content_dummy",
+      "//base",
+      "//base:base_static",
+      "//ipc",
+    ]
+  }
+
+  # This exists just to make 'gn check' happy with :minimal.  It can't
+  # depend on //content/public/common or anything like that, because that
+  # would bring in lots more than counts as "minimal" (stuff that should
+  # not be in the nacl64.exe build).
+  source_set("minimal_content_dummy") {
+    check_includes = false
+    sources = [
+      "//content/public/common/content_switches.h",
+      "//content/public/common/process_type.h",
+      "//content/public/common/sandbox_type.h",
+    ]
+  }
+
+  source_set("common") {
+    sources = [
+      "nacl_host_messages.cc",
+      "nacl_host_messages.h",
+      "nacl_nonsfi_util.cc",
+      "nacl_nonsfi_util.h",
       "pnacl_types.cc",
       "pnacl_types.h",
     ]
 
     public_deps = [
+      ":minimal",
       ":switches",
     ]
 
