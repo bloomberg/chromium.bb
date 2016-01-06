@@ -53,19 +53,20 @@ config("libsrtp_config") {
     ]
   }
 
-  if (current_cpu == "x64" || current_cpu == "x86" || current_cpu == "arm") {
+  if (current_cpu == "x64" || current_cpu == "x86") {
     defines += [
-      # TODO(leozwang): CPU_RISC doesn"t work properly on android/arm
-      # platform for unknown reasons, need to investigate the root cause
-      # of it. CPU_RISC is used for optimization only, and CPU_CISC should
-      # just work just fine, it has been tested on android/arm with srtp
-      # test applications and libjingle.
       "CPU_CISC",
     ]
   }
 
-  if (current_cpu == "mipsel") {
-    defines += [ "CPU_RISC" ]
+  if (current_cpu == "arm" || current_cpu == "arm64" ||
+      current_cpu == "mipsel" || current_cpu == "mips64el") {
+    # TODO(leozwang): CPU_RISC doesn't work properly on android/arm and
+    # mips platforms for unknown reasons, need to investigate the root
+    # cause of it. CPU_RISC is used for optimization only, and CPU_CISC
+    # should just work just fine, it has been tested on android/arm with
+    # srtp test applications and libjingle.
+    defines += [ "CPU_CISC" ]
   }
 }
 
