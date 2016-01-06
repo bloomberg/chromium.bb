@@ -307,7 +307,8 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
                                 uint32_t transient_window_id) override {
     tracker()->OnTransientWindowRemoved(window_id, transient_window_id);
   }
-  void OnWindowViewportMetricsChanged(ViewportMetricsPtr old_metrics,
+  void OnWindowViewportMetricsChanged(mojo::Array<uint32_t> window_ids,
+                                      ViewportMetricsPtr old_metrics,
                                       ViewportMetricsPtr new_metrics) override {
     // Don't track the metrics as they are available at an indeterministic time
     // on Android.

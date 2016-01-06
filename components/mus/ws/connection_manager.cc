@@ -349,11 +349,12 @@ void ConnectionManager::ProcessWillChangeWindowPredefinedCursor(
 }
 
 void ConnectionManager::ProcessViewportMetricsChanged(
+    WindowTreeHostImpl* host,
     const mojom::ViewportMetrics& old_metrics,
     const mojom::ViewportMetrics& new_metrics) {
   for (auto& pair : connection_map_) {
     pair.second->service()->ProcessViewportMetricsChanged(
-        old_metrics, new_metrics, IsOperationSource(pair.first));
+        host, old_metrics, new_metrics, IsOperationSource(pair.first));
   }
 }
 

@@ -323,7 +323,8 @@ void WindowTreeHostImpl::OnViewportMetricsChanged(
   } else {
     root_->SetBounds(gfx::Rect(new_metrics.size_in_pixels.To<gfx::Size>()));
   }
-  connection_manager_->ProcessViewportMetricsChanged(old_metrics, new_metrics);
+  connection_manager_->ProcessViewportMetricsChanged(this, old_metrics,
+                                                     new_metrics);
 }
 
 void WindowTreeHostImpl::OnTopLevelSurfaceChanged(cc::SurfaceId surface_id) {

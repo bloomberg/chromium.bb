@@ -564,13 +564,14 @@ void SetViewportMetricsOnDecendants(Window* root,
 }
 
 void WindowTreeClientImpl::OnWindowViewportMetricsChanged(
+    mojo::Array<uint32_t> window_ids,
     mojom::ViewportMetricsPtr old_metrics,
     mojom::ViewportMetricsPtr new_metrics) {
-  // TODO(sky): the root need to be supplied to
-  // OnWindowViewportMetricsChanged().
-  Window* window = *GetRoots().begin();
-  if (window)
-    SetViewportMetricsOnDecendants(window, *old_metrics, *new_metrics);
+  for (size_t i = 0; i < window_ids.size(); ++i) {
+    Window* window = GetWindowById(window_ids[i]);
+    if (window)
+      SetViewportMetricsOnDecendants(window, *old_metrics, *new_metrics);
+  }
 }
 
 void WindowTreeClientImpl::OnWindowHierarchyChanged(

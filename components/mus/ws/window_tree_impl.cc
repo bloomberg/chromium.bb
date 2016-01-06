@@ -286,11 +286,20 @@ void WindowTreeImpl::ProcessClientAreaChanged(
 }
 
 void WindowTreeImpl::ProcessViewportMetricsChanged(
+    WindowTreeHostImpl* host,
     const mojom::ViewportMetrics& old_metrics,
     const mojom::ViewportMetrics& new_metrics,
     bool originated_change) {
-  client_->OnWindowViewportMetricsChanged(old_metrics.Clone(),
-                                          new_metrics.Clone());
+  mojo::Array<Id> window_ids;
+  for (const ServerWindow* root : roots_) {
+    if (GetHost(root) == host)
+      window_ids.push_back(MapWindowIdToClient(root->id()));
+  }
+  if (window_ids.size() == 0u)
+    return;
+
+  client_->OnWindowViewportMetricsChanged(
+      std::move(window_ids), old_metrics.Clone(), new_metrics.Clone());
 }
 
 void WindowTreeImpl::ProcessWillChangeWindowHierarchy(

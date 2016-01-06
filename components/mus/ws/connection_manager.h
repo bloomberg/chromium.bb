@@ -148,7 +148,8 @@ class ConnectionManager : public ServerWindowDelegate,
       const ServerWindow* window,
       const gfx::Insets& new_client_area,
       const std::vector<gfx::Rect>& new_additional_client_areas);
-  void ProcessViewportMetricsChanged(const mojom::ViewportMetrics& old_metrics,
+  void ProcessViewportMetricsChanged(WindowTreeHostImpl* host,
+                                     const mojom::ViewportMetrics& old_metrics,
                                      const mojom::ViewportMetrics& new_metrics);
   void ProcessWillChangeWindowHierarchy(const ServerWindow* window,
                                         const ServerWindow* new_parent,
