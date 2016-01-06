@@ -128,7 +128,6 @@
 #include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
 #include "gin/public/debug.h"
 #include "gpu/GLES2/gl2extchromium.h"
-#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
 #include "ipc/mojo/ipc_channel_mojo.h"

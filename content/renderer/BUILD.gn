@@ -24,12 +24,15 @@ source_set("renderer") {
   defines = []
 
   deps = [
+    "//base:i18n",
+
     # TODO(GYP) bug 376846 remove this. This should be inherited from //net but
     # those don't cross component boundaries.
     "//base/allocator",
     "//cc",
     "//cc/blink",
     "//cc/proto",
+    "//cc/surfaces",
     "//components/scheduler:scheduler",
     "//components/startup_metric_utils/common",
     "//components/url_formatter",
@@ -41,14 +44,18 @@ source_set("renderer") {
     "//content/public/common:mojo_bindings",
     "//crypto:platform",
     "//device/battery:mojo_bindings",
+    "//device/bluetooth",
+    "//device/devices_app/public/cpp",
     "//device/devices_app/usb/public/interfaces",
     "//device/vibration:mojo_bindings",
     "//gin",
     "//gpu",
+    "//gpu/blink",
     "//gpu/command_buffer/client:gles2_interface",
     "//jingle:jingle_glue",
     "//media",
     "//media/blink",
+    "//media/midi",
     "//mojo/application/public/interfaces",
     "//mojo/common:url_type_converters",
     "//mojo/converters/geometry",
@@ -68,6 +75,7 @@ source_set("renderer") {
     "//third_party/widevine/cdm:version_h",
     "//ui/accessibility",
     "//ui/base",
+    "//ui/base/ime",
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
     "//ui/events/blink",
