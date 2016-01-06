@@ -62,6 +62,10 @@ class MEDIA_EXPORT AudioManager {
   static AudioManager* CreateForTesting();
 
   // Enables non-crash dumps when audio thread hangs are detected.
+  // TODO(dalecurtis): There are no callers to this function at present. A list
+  // of bad drivers has been given to Microsoft. This should be re-enabled in
+  // the future if Microsoft is able to triage third party drivers.
+  // See http://crbug.com/422522
   static void EnableCrashKeyLoggingForAudioThreadHangs();
 
 #if defined(OS_LINUX)
