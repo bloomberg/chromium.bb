@@ -100,9 +100,9 @@ def _RunProcess(cmd):
 
 
 class Trybot(command_line.ArgParseCommand):
-  """Display help information about a command"""
+  """ Run telemetry perf benchmark on trybot """
 
-  usage = 'benchmark_name --trybot=<botname> [<benchmark run options>]'
+  usage = 'botname benchmark_name [<benchmark run options>]'
   _builders = None
 
   def __init__(self):
@@ -124,7 +124,8 @@ class Trybot(command_line.ArgParseCommand):
   @classmethod
   def CreateParser(cls):
     parser = argparse.ArgumentParser(
-        'Run telemetry benchmarks on trybot.',
+        ('Run telemetry benchmarks on trybot. You can add all the benchmark '
+         'options available except the --browser option'),
         formatter_class=argparse.RawTextHelpFormatter)
     return parser
 
@@ -139,12 +140,16 @@ class Trybot(command_line.ArgParseCommand):
   def AddCommandLineArgs(cls, parser, environment):
     del environment  # unused
     available_bots = _GetTrybotList(cls._GetBuilderList())
-    parser.add_argument('benchmark_name', type=str)
     parser.add_argument(
-      '--trybot', choices=available_bots,
-      help=('specify which bots to run telemetry benchmarks on. '
-            ' Allowed values are:\n'+'\n'.join(available_bots)),
-      metavar='', required=True)
+        'trybot', choices=available_bots,
+        help=('specify which bots to run telemetry benchmarks on. '
+              ' Allowed values are:\n'+'\n'.join(available_bots)),
+        metavar='<trybot name>')
+    parser.add_argument(
+        'benchmark_name', type=str,
+        help=('specify which benchmark to run. To see all available benchmarks,'
+              ' run `run_benchmark list`'),
+        metavar='<benchmark name>')
 
   def Run(self, options, extra_args=None):
     """Sends a tryjob to a perf trybot.

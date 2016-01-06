@@ -89,8 +89,7 @@ class TrybotCommandTest(unittest.TestCase):
     ]
     parser = trybot_command.Trybot.CreateParser()
     trybot_command.Trybot.AddCommandLineArgs(parser, None)
-    trybot_action = [a for a in parser._actions if '--trybot' in
-                     a.option_strings][0]
+    trybot_action = [a for a in parser._actions if a.dest == 'trybot'][0]
     self.assertEquals(
         expected_trybots_list,
         sorted(trybot_action.choices))
@@ -113,18 +112,14 @@ class TrybotCommandTest(unittest.TestCase):
 
     parser = trybot_command.Trybot.CreateParser()
     trybot_command.Trybot.AddCommandLineArgs(parser, None)
-    trybot_action = [a for a in parser._actions if '--trybot' in
-                     a.option_strings][0]
-    self.assertEquals(
-        expected_trybots_list,
-        sorted(trybot_action.choices))
+    trybot_action = [a for a in parser._actions if a.dest == 'trybot'][0]
+    self.assertEquals(expected_trybots_list, sorted(trybot_action.choices))
 
   def testFindAllBrowserTypesNonTrybotBrowser(self):
     self._MockTryserverJson({})
     parser = trybot_command.Trybot.CreateParser()
     trybot_command.Trybot.AddCommandLineArgs(parser, None)
-    trybot_action = [a for a in parser._actions if '--trybot' in
-                     a.option_strings][0]
+    trybot_action = [a for a in parser._actions if a.dest == 'trybot'][0]
     self.assertEquals(
         ['all', 'all-android', 'all-linux', 'all-mac', 'all-win'],
         sorted(trybot_action.choices))
