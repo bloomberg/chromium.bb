@@ -9,6 +9,7 @@
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/functions.h"
 #include "mojo/public/c/system/message_pipe.h"
+#include "mojo/public/c/system/wait_set.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder_internal.h"
 #include "third_party/mojo/src/mojo/edk/system/core.h"
 

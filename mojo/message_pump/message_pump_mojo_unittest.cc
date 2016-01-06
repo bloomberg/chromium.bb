@@ -159,6 +159,35 @@ TEST(MessagePumpMojo, UnregisterAfterDeadline) {
   EXPECT_EQ(1, handler.error_count());
 }
 
+TEST(MessagePumpMojo, AddClosedHandle) {
+  base::MessageLoop message_loop(MessagePumpMojo::Create());
+  CountingMojoHandler handler;
+  MessagePipe handles;
+  Handle closed_handle = handles.handle0.get();
+  handles.handle0.reset();
+  MessagePumpMojo::current()->AddHandler(
+      &handler, closed_handle, MOJO_HANDLE_SIGNAL_READABLE, base::TimeTicks());
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+  MessagePumpMojo::current()->RemoveHandler(closed_handle);
+  EXPECT_EQ(0, handler.error_count());
+  EXPECT_EQ(0, handler.success_count());
+}
+
+TEST(MessagePumpMojo, CloseAfterAdding) {
+  base::MessageLoop message_loop(MessagePumpMojo::Create());
+  CountingMojoHandler handler;
+  MessagePipe handles;
+  MessagePumpMojo::current()->AddHandler(&handler, handles.handle0.get(),
+                                         MOJO_HANDLE_SIGNAL_READABLE,
+                                         base::TimeTicks());
+  handles.handle0.reset();
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+  EXPECT_EQ(1, handler.error_count());
+  EXPECT_EQ(0, handler.success_count());
+}
+
 }  // namespace test
 }  // namespace common
 }  // namespace mojo
