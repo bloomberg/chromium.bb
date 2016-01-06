@@ -129,12 +129,12 @@ bool ResourceDispatcher::OnMessageReceived(const IPC::Message& message) {
 
 ResourceDispatcher::PendingRequestInfo*
 ResourceDispatcher::GetPendingRequestInfo(int request_id) {
-  PendingRequestList::iterator it = pending_requests_.find(request_id);
+  PendingRequestMap::iterator it = pending_requests_.find(request_id);
   if (it == pending_requests_.end()) {
     // This might happen for kill()ed requests on the webkit end.
     return NULL;
   }
-  return &(it->second);
+  return it->second.get();
 }
 
 void ResourceDispatcher::OnUploadProgress(int request_id,
@@ -338,7 +338,7 @@ void ResourceDispatcher::OnReceivedRedirect(
     request_info->pending_redirect_message.reset(
         new ResourceHostMsg_FollowRedirect(request_id));
     if (!request_info->is_deferred) {
-      FollowPendingRedirect(request_id, *request_info);
+      FollowPendingRedirect(request_id, request_info);
     }
   } else {
     Cancel(request_id);
@@ -347,8 +347,8 @@ void ResourceDispatcher::OnReceivedRedirect(
 
 void ResourceDispatcher::FollowPendingRedirect(
     int request_id,
-    PendingRequestInfo& request_info) {
-  IPC::Message* msg = request_info.pending_redirect_message.release();
+    PendingRequestInfo* request_info) {
+  IPC::Message* msg = request_info->pending_redirect_message.release();
   if (msg)
     message_sender_->Send(msg);
 }
@@ -421,15 +421,15 @@ void ResourceDispatcher::CompletedRequestAfterBackgroundThreadFlush(
 }
 
 bool ResourceDispatcher::RemovePendingRequest(int request_id) {
-  PendingRequestList::iterator it = pending_requests_.find(request_id);
+  PendingRequestMap::iterator it = pending_requests_.find(request_id);
   if (it == pending_requests_.end())
     return false;
 
-  PendingRequestInfo& request_info = it->second;
+  PendingRequestInfo* request_info = it->second.get();
 
-  bool release_downloaded_file = request_info.download_to_file;
+  bool release_downloaded_file = request_info->download_to_file;
 
-  ReleaseResourcesInMessageQueue(&request_info.deferred_message_queue);
+  ReleaseResourcesInMessageQueue(&request_info->deferred_message_queue);
   pending_requests_.erase(it);
 
   if (release_downloaded_file) {
@@ -444,7 +444,7 @@ bool ResourceDispatcher::RemovePendingRequest(int request_id) {
 }
 
 void ResourceDispatcher::Cancel(int request_id) {
-  PendingRequestList::iterator it = pending_requests_.find(request_id);
+  PendingRequestMap::iterator it = pending_requests_.find(request_id);
   if (it == pending_requests_.end()) {
     DVLOG(1) << "unknown request";
     return;
@@ -455,7 +455,7 @@ void ResourceDispatcher::Cancel(int request_id) {
   // TODO(csharrison): Remove this code when crbug.com/557430 is resolved.
   // ~250,000 ERR_ABORTED coming into canary with |request_time| < 100ms. Sample
   // by .01% to get something reasonable.
-  PendingRequestInfo& info = it->second;
+  const PendingRequestInfo& info = *it->second;
   int64_t request_time =
       (base::TimeTicks::Now() - info.request_start).InMilliseconds();
   if (info.resource_type == ResourceType::RESOURCE_TYPE_MAIN_FRAME &&
@@ -479,16 +479,16 @@ void ResourceDispatcher::Cancel(int request_id) {
 }
 
 void ResourceDispatcher::SetDefersLoading(int request_id, bool value) {
-  PendingRequestList::iterator it = pending_requests_.find(request_id);
+  PendingRequestMap::iterator it = pending_requests_.find(request_id);
   if (it == pending_requests_.end()) {
     DLOG(ERROR) << "unknown request";
     return;
   }
-  PendingRequestInfo& request_info = it->second;
+  PendingRequestInfo* request_info = it->second.get();
   if (value) {
-    request_info.is_deferred = value;
-  } else if (request_info.is_deferred) {
-    request_info.is_deferred = false;
+    request_info->is_deferred = value;
+  } else if (request_info->is_deferred) {
+    request_info->is_deferred = false;
 
     FollowPendingRedirect(request_id, request_info);
 
@@ -522,16 +522,6 @@ bool ResourceDispatcher::AttachThreadedDataReceiver(
   return false;
 }
 
-ResourceDispatcher::PendingRequestInfo::PendingRequestInfo()
-    : peer(NULL),
-      threaded_data_provider(NULL),
-      resource_type(RESOURCE_TYPE_SUB_RESOURCE),
-      is_deferred(false),
-      download_to_file(false),
-      buffer_size(0),
-      data_offset(-1) {
-}
-
 ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
     RequestPeer* peer,
     ResourceType resource_type,
@@ -540,16 +530,13 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
     const GURL& request_url,
     bool download_to_file)
     : peer(peer),
-      threaded_data_provider(NULL),
       resource_type(resource_type),
       origin_pid(origin_pid),
-      is_deferred(false),
       url(request_url),
       frame_origin(frame_origin),
       response_url(request_url),
       download_to_file(download_to_file),
-      request_start(base::TimeTicks::Now()),
-      data_offset(-1) {
+      request_start(base::TimeTicks::Now()) {
 }
 
 ResourceDispatcher::PendingRequestInfo::~PendingRequestInfo() {
@@ -573,16 +560,16 @@ void ResourceDispatcher::DispatchMessage(const IPC::Message& message) {
 }
 
 void ResourceDispatcher::FlushDeferredMessages(int request_id) {
-  PendingRequestList::iterator it = pending_requests_.find(request_id);
+  PendingRequestMap::iterator it = pending_requests_.find(request_id);
   if (it == pending_requests_.end())  // The request could have become invalid.
     return;
-  PendingRequestInfo& request_info = it->second;
-  if (request_info.is_deferred)
+  PendingRequestInfo* request_info = it->second.get();
+  if (request_info->is_deferred)
     return;
   // Because message handlers could result in request_info being destroyed,
   // we need to work with a stack reference to the deferred queue.
   MessageQueue q;
-  q.swap(request_info.deferred_message_queue);
+  q.swap(request_info->deferred_message_queue);
   while (!q.empty()) {
     IPC::Message* m = q.front();
     q.pop_front();
@@ -592,11 +579,11 @@ void ResourceDispatcher::FlushDeferredMessages(int request_id) {
     // we should honor the same and stop dispatching further messages.
     // We need to find the request again in the list as it may have completed
     // by now and the request_info instance above may be invalid.
-    PendingRequestList::iterator index = pending_requests_.find(request_id);
+    PendingRequestMap::iterator index = pending_requests_.find(request_id);
     if (index != pending_requests_.end()) {
-      PendingRequestInfo& pending_request = index->second;
-      if (pending_request.is_deferred) {
-        pending_request.deferred_message_queue.swap(q);
+      PendingRequestInfo* pending_request = index->second.get();
+      if (pending_request->is_deferred) {
+        pending_request->deferred_message_queue.swap(q);
         return;
       }
     }
@@ -643,12 +630,12 @@ int ResourceDispatcher::StartAsync(const RequestInfo& request_info,
   // Compute a unique request_id for this renderer process.
   int request_id = MakeRequestID();
   pending_requests_[request_id] =
-      PendingRequestInfo(peer,
+      make_scoped_ptr(new PendingRequestInfo(peer,
                          request->resource_type,
                          request->origin_pid,
                          frame_origin,
                          request->url,
-                         request_info.download_to_file);
+                         request_info.download_to_file));
 
   if (resource_scheduling_filter_.get() &&
       request_info.loading_web_task_runner) {
