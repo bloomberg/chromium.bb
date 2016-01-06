@@ -24,7 +24,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
@@ -202,10 +201,6 @@ bool ChromeAutocompleteProviderClient::IsOffTheRecord() const {
 
 bool ChromeAutocompleteProviderClient::SearchSuggestEnabled() const {
   return profile_->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled);
-}
-
-bool ChromeAutocompleteProviderClient::BookmarkBarIsVisible() const {
-  return profile_->GetPrefs()->GetBoolean(bookmarks::prefs::kShowBookmarkBar);
 }
 
 bool ChromeAutocompleteProviderClient::TabSyncEnabledAndUnencrypted() const {

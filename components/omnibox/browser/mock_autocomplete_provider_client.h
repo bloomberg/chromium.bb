@@ -64,7 +64,6 @@ class MockAutocompleteProviderClient : public AutocompleteProviderClient {
   MOCK_METHOD0(GetBuiltinsToProvideAsUserTypes, std::vector<base::string16>());
   MOCK_CONST_METHOD0(IsOffTheRecord, bool());
   MOCK_CONST_METHOD0(SearchSuggestEnabled, bool());
-  MOCK_CONST_METHOD0(BookmarkBarIsVisible, bool());
   MOCK_CONST_METHOD0(TabSyncEnabledAndUnencrypted, bool());
   MOCK_METHOD6(
       Classify,

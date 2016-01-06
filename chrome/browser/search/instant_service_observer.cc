@@ -14,7 +14,3 @@ void InstantServiceObserver::MostVisitedItemsChanged(
 void InstantServiceObserver::DefaultSearchProviderChanged(
     bool google_base_url_domain_changed) {
 }
-
-void InstantServiceObserver::OmniboxStartMarginChanged(
-    int omnibox_start_margin) {
-}

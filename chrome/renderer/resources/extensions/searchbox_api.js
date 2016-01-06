@@ -19,7 +19,6 @@ if (!chrome.embeddedSearch) {
       native function GetQuery();
       native function GetSearchRequestParams();
       native function GetRightToLeft();
-      native function GetStartMargin();
       native function GetSuggestionToPrefetch();
       native function IsFocused();
       native function IsKeyCaptureEnabled();
@@ -34,7 +33,6 @@ if (!chrome.embeddedSearch) {
       this.__defineGetter__('isFocused', IsFocused);
       this.__defineGetter__('isKeyCaptureEnabled', IsKeyCaptureEnabled);
       this.__defineGetter__('rtl', GetRightToLeft);
-      this.__defineGetter__('startMargin', GetStartMargin);
       this.__defineGetter__('suggestion', GetSuggestionToPrefetch);
       this.__defineGetter__('value', GetQuery);
       Object.defineProperty(this, 'requestParams',
@@ -78,7 +76,6 @@ if (!chrome.embeddedSearch) {
 
       this.onfocuschange = null;
       this.onkeycapturechange = null;
-      this.onmarginchange = null;
       this.onsubmit = null;
       this.onsuggestionchange = null;
 

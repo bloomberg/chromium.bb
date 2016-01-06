@@ -71,10 +71,6 @@ bool SearchIPCRouterPolicyImpl::ShouldSendSetSuggestionToPrefetch() {
   return !is_incognito_;
 }
 
-bool SearchIPCRouterPolicyImpl::ShouldSendSetOmniboxStartMargin() {
-  return true;
-}
-
 bool SearchIPCRouterPolicyImpl::ShouldSendSetInputInProgress(
     bool is_active_tab) {
   return is_active_tab && !is_incognito_;

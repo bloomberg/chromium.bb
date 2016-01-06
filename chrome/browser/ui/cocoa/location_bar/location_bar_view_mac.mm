@@ -22,9 +22,6 @@
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/instant_service.h"
-#include "chrome/browser/search/instant_service_factory.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
@@ -558,13 +555,6 @@ void LocationBarViewMac::OnChanged() {
   location_icon_decoration_->SetImage(image);
   ev_bubble_decoration_->SetImage(image);
   Layout();
-
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(profile());
-  if (instant_service) {
-    gfx::Rect bounds(NSRectToCGRect([field_ frame]));
-    instant_service->OnOmniboxStartMarginChanged(bounds.x());
-  }
 }
 
 void LocationBarViewMac::OnSetFocus() {

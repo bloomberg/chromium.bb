@@ -19,10 +19,6 @@ class TemplateURL;
 
 namespace search {
 
-// Use this value for "start margin" to prevent the "es_sm" parameter from
-// being used.
-extern const int kDisableStartMargin;
-
 // Returns whether the Instant Extended API is enabled.
 bool IsInstantExtendedAPIEnabled();
 

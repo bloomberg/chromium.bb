@@ -49,26 +49,12 @@ class SearchTermsData {
   // This implementation returns the empty string.
   virtual std::string GetSuggestRequestIdentifier() const;
 
-  // Returns true if search terms are shown in the omnibox on search results
-  // pages.
-  virtual bool IsShowingSearchTermsOnSearchResultsPages() const;
-
   // Returns a string indicating whether InstantExtended is enabled.
   virtual std::string InstantExtendedEnabledParam(bool for_search) const;
 
   // Returns a string that will cause the search results page to update
   // incrementally.
   virtual std::string ForceInstantResultsParam(bool for_prerender) const;
-
-  // Returns the start-edge margin of the omnibox in pixels.
-  virtual int OmniboxStartMargin() const;
-
-  // Returns a string indicating whether a non-default theme is active,
-  // suitable for adding as a query string param to the homepage.  This only
-  // applies if Instant Extended is enabled.  Returns an empty string otherwise.
-  // Determining this requires accessing the Profile, so this can only ever be
-  // non-empty for UIThreadSearchTermsData.
-  virtual std::string NTPIsThemedParam() const;
 
   // Returns a string indicating which webview is currently in use on iOS,
   // suitable for adding as a query string param to search requests.  Returns an

@@ -16,8 +16,6 @@
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -127,11 +125,6 @@ std::string UIThreadSearchTermsData::GetSuggestRequestIdentifier() const {
   return "chrome-ext-ansg";
 }
 
-bool UIThreadSearchTermsData::IsShowingSearchTermsOnSearchResultsPages() const {
-  return search::IsInstantExtendedAPIEnabled() &&
-         search::IsQueryExtractionEnabled();
-}
-
 std::string UIThreadSearchTermsData::InstantExtendedEnabledParam(
     bool for_search) const {
   return search::InstantExtendedEnabledParam(for_search);
@@ -140,33 +133,6 @@ std::string UIThreadSearchTermsData::InstantExtendedEnabledParam(
 std::string UIThreadSearchTermsData::ForceInstantResultsParam(
     bool for_prerender) const {
   return search::ForceInstantResultsParam(for_prerender);
-}
-
-int UIThreadSearchTermsData::OmniboxStartMargin() const {
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(profile_);
-  // Android and iOS have no InstantService.
-  return instant_service ? instant_service->omnibox_start_margin()
-                         : search::kDisableStartMargin;
-}
-
-std::string UIThreadSearchTermsData::NTPIsThemedParam() const {
-  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::UI));
-#if defined(ENABLE_THEMES)
-  if (!search::IsInstantExtendedAPIEnabled())
-    return std::string();
-
-  // TODO(dhollowa): Determine fraction of custom themes that don't affect the
-  // NTP background and/or color.
-  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile_);
-  // NTP is considered themed if the theme is not default and not native (GTK+).
-  if (theme_service && !theme_service->UsingDefaultTheme() &&
-      !theme_service->UsingSystemTheme())
-    return "es_th=1&";
-#endif  // defined(ENABLE_THEMES)
-
-  return std::string();
 }
 
 // It's acutally OK to call this method on any thread, but it's currently placed

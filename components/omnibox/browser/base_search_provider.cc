@@ -265,7 +265,6 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
       new TemplateURLRef::SearchTermsArgs(suggestion.suggestion()));
   match.search_terms_args->original_query = input.text();
   match.search_terms_args->accepted_suggestion = accepted_suggestion;
-  match.search_terms_args->enable_omnibox_start_margin = true;
   match.search_terms_args->suggest_query_params =
       suggestion.suggest_query_params();
   match.search_terms_args->append_extra_query_params =
@@ -372,8 +371,6 @@ void BaseSearchProvider::AddMatchToMap(
       accepted_suggestion, ShouldAppendExtraParams(result));
   if (!match.destination_url.is_valid())
     return;
-  match.search_terms_args->bookmark_bar_pinned =
-      client_->BookmarkBarIsVisible();
   match.RecordAdditionalInfo(kRelevanceFromServerKey,
                              result.relevance_from_server() ? kTrue : kFalse);
   match.RecordAdditionalInfo(kShouldPrefetchKey,

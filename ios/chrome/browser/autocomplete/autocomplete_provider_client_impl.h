@@ -45,7 +45,6 @@ class AutocompleteProviderClientImpl : public AutocompleteProviderClient {
   std::vector<base::string16> GetBuiltinsToProvideAsUserTypes() override;
   bool IsOffTheRecord() const override;
   bool SearchSuggestEnabled() const override;
-  bool BookmarkBarIsVisible() const override;
   bool TabSyncEnabledAndUnencrypted() const override;
   void Classify(
       const base::string16& text,

@@ -80,7 +80,6 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   MOCK_METHOD0(ShouldSendSetPromoInformation, bool());
   MOCK_METHOD0(ShouldSendSetDisplayInstantResults, bool());
   MOCK_METHOD0(ShouldSendSetSuggestionToPrefetch, bool());
-  MOCK_METHOD0(ShouldSendSetOmniboxStartMargin, bool());
   MOCK_METHOD1(ShouldSendSetInputInProgress, bool(bool));
   MOCK_METHOD0(ShouldSendOmniboxFocusChanged, bool());
   MOCK_METHOD0(ShouldSendMostVisitedItems, bool());
@@ -109,8 +108,7 @@ class SearchIPCRouterTest : public BrowserWithTestWindowTest {
     TemplateURLData data;
     data.SetShortName(base::ASCIIToUTF16("foo.com"));
     data.SetURL("http://foo.com/url?bar={searchTerms}");
-    data.instant_url = "http://foo.com/instant?"
-        "{google:omniboxStartMarginParameter}foo=foo#foo=foo&espv";
+    data.instant_url = "http://foo.com/instant?foo=foo#foo=foo&espv";
     data.new_tab_url = "https://foo.com/newtab?espv";
     data.alternate_urls.push_back("http://foo.com/alt#quux={searchTerms}");
     data.search_terms_replacement_key = "espv";
@@ -698,30 +696,6 @@ TEST_F(SearchIPCRouterTest, DoNotSendSetSuggestionToPrefetch) {
   GetSearchTabHelper(contents)->SetSuggestionToPrefetch(InstantSuggestion());
   EXPECT_FALSE(MessageWasSent(
       ChromeViewMsg_SearchBoxSetSuggestionToPrefetch::ID));
-}
-
-TEST_F(SearchIPCRouterTest, SendSetOmniboxStartMargin) {
-  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  SetupMockDelegateAndPolicy();
-  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  EXPECT_CALL(*policy, ShouldSendSetOmniboxStartMargin()).Times(1)
-      .WillOnce(testing::Return(true));
-
-  process()->sink().ClearMessages();
-  GetSearchIPCRouter().SetOmniboxStartMargin(92);
-  EXPECT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxMarginChange::ID));
-}
-
-TEST_F(SearchIPCRouterTest, DoNotSendSetOmniboxStartMargin) {
-  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  SetupMockDelegateAndPolicy();
-  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  EXPECT_CALL(*policy, ShouldSendSetOmniboxStartMargin()).Times(1)
-      .WillOnce(testing::Return(false));
-
-  process()->sink().ClearMessages();
-  GetSearchIPCRouter().SetOmniboxStartMargin(92);
-  EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxMarginChange::ID));
 }
 
 TEST_F(SearchIPCRouterTest, SendOmniboxFocusChange) {

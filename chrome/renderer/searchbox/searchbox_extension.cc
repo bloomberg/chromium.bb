@@ -353,17 +353,6 @@ static const char kDispatchKeyCaptureChangeScript[] =
     "  true;"
     "}";
 
-static const char kDispatchMarginChangeEventScript[] =
-    "if (window.chrome &&"
-    "    window.chrome.embeddedSearch &&"
-    "    window.chrome.embeddedSearch.searchBox &&"
-    "    window.chrome.embeddedSearch.searchBox.onmarginchange &&"
-    "    typeof window.chrome.embeddedSearch.searchBox.onmarginchange =="
-    "        'function') {"
-    "  window.chrome.embeddedSearch.searchBox.onmarginchange();"
-    "  true;"
-    "}";
-
 static const char kDispatchMostVisitedChangedScript[] =
     "if (window.chrome &&"
     "    window.chrome.embeddedSearch &&"
@@ -465,9 +454,6 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   // Gets the Embedded Search request params. Used for logging purposes.
   static void GetSearchRequestParams(
       const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  // Gets the start-edge margin to use with extended Instant.
-  static void GetStartMargin(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // Gets the current top suggestion to prefetch search results.
   static void GetSuggestionToPrefetch(
@@ -591,11 +577,6 @@ void SearchBoxExtension::DispatchKeyCaptureChange(blink::WebFrame* frame) {
 }
 
 // static
-void SearchBoxExtension::DispatchMarginChange(blink::WebFrame* frame) {
-  Dispatch(frame, kDispatchMarginChangeEventScript);
-}
-
-// static
 void SearchBoxExtension::DispatchMostVisitedChanged(
     blink::WebFrame* frame) {
   Dispatch(frame, kDispatchMostVisitedChangedScript);
@@ -649,8 +630,6 @@ SearchBoxExtensionWrapper::GetNativeFunctionTemplate(
     return v8::FunctionTemplate::New(isolate, GetRightToLeft);
   if (name->Equals(v8::String::NewFromUtf8(isolate, "GetSearchRequestParams")))
     return v8::FunctionTemplate::New(isolate, GetSearchRequestParams);
-  if (name->Equals(v8::String::NewFromUtf8(isolate, "GetStartMargin")))
-    return v8::FunctionTemplate::New(isolate, GetStartMargin);
   if (name->Equals(v8::String::NewFromUtf8(isolate, "GetSuggestionToPrefetch")))
     return v8::FunctionTemplate::New(isolate, GetSuggestionToPrefetch);
   if (name->Equals(v8::String::NewFromUtf8(isolate, "GetThemeBackgroundInfo")))
@@ -891,15 +870,6 @@ void SearchBoxExtensionWrapper::GetSearchRequestParams(
               UTF16ToV8String(isolate, params.assisted_query_stats));
   }
   args.GetReturnValue().Set(data);
-}
-
-// static
-void SearchBoxExtensionWrapper::GetStartMargin(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) return;
-  args.GetReturnValue().Set(static_cast<int32_t>(
-      SearchBox::Get(render_view)->start_margin()));
 }
 
 // static

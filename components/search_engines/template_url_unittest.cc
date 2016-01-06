@@ -645,42 +645,6 @@ TEST_F(TemplateURLTest, ReplaceCurrentPageUrl) {
   }
 }
 
-TEST_F(TemplateURLTest, OmniboxStartmargin) {
-  struct TestData {
-    const bool enable_omnibox_start_margin;
-    const int omnibox_start_margin;
-    const std::string expected_result;
-  } test_data[] = {
-    { false,
-      0,
-      "http://bar/foo?q=foobar" },
-    { true,
-      0,
-      "http://bar/foo?es_sm=0&q=foobar" },
-    { true,
-      42,
-      "http://bar/foo?es_sm=42&q=foobar" },
-  };
-  TemplateURLData data;
-  data.SetURL("http://bar/foo?{google:omniboxStartMarginParameter}"
-              "q={searchTerms}");
-  data.input_encodings.push_back("UTF-8");
-  TemplateURL url(data);
-  EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
-  ASSERT_TRUE(url.url_ref().SupportsReplacement(search_terms_data_));
-  for (size_t i = 0; i < arraysize(test_data); ++i) {
-    TemplateURLRef::SearchTermsArgs search_terms_args(ASCIIToUTF16("foobar"));
-    search_terms_args.enable_omnibox_start_margin =
-        test_data[i].enable_omnibox_start_margin;
-    search_terms_data_.set_omnibox_start_margin(
-        test_data[i].omnibox_start_margin);
-    GURL result(url.url_ref().ReplaceSearchTerms(search_terms_args,
-                                                 search_terms_data_));
-    ASSERT_TRUE(result.is_valid());
-    EXPECT_EQ(test_data[i].expected_result, result.spec());
-  }
-}
-
 TEST_F(TemplateURLTest, Suggestions) {
   struct TestData {
     const int accepted_suggestion;
@@ -1603,35 +1567,6 @@ TEST_F(TemplateURLTest, IsSearchResults) {
               search_provider.IsSearchURL(GURL(url_data[i].url),
                                           search_terms_data_));
   }
-}
-
-TEST_F(TemplateURLTest, ReflectsBookmarkBarPinned) {
-  TemplateURLData data;
-  data.input_encodings.push_back("UTF-8");
-  data.SetURL("{google:baseURL}?{google:bookmarkBarPinned}q={searchTerms}");
-  TemplateURL url(data);
-  EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
-  ASSERT_TRUE(url.url_ref().SupportsReplacement(search_terms_data_));
-  TemplateURLRef::SearchTermsArgs search_terms_args(ASCIIToUTF16("foo"));
-
-  // Do not add the param when InstantExtended is suppressed on SRPs.
-  search_terms_data_.set_is_showing_search_terms_on_search_results_pages(false);
-  std::string result = url.url_ref().ReplaceSearchTerms(search_terms_args,
-                                                        search_terms_data_);
-  EXPECT_EQ("http://www.google.com/?q=foo", result);
-
-  // Add the param when InstantExtended is not suppressed on SRPs.
-  search_terms_data_.set_is_showing_search_terms_on_search_results_pages(true);
-  search_terms_args.bookmark_bar_pinned = false;
-  result = url.url_ref().ReplaceSearchTerms(search_terms_args,
-                                            search_terms_data_);
-  EXPECT_EQ("http://www.google.com/?bmbp=0&q=foo", result);
-
-  search_terms_data_.set_is_showing_search_terms_on_search_results_pages(true);
-  search_terms_args.bookmark_bar_pinned = true;
-  result = url.url_ref().ReplaceSearchTerms(search_terms_args,
-                                            search_terms_data_);
-  EXPECT_EQ("http://www.google.com/?bmbp=1&q=foo", result);
 }
 
 TEST_F(TemplateURLTest, SearchboxVersionIncludedForAnswers) {

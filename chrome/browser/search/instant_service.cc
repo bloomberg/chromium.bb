@@ -73,7 +73,6 @@ bool IsLocalNTPSuggestionServiceEnabled() {
 InstantService::InstantService(Profile* profile)
     : profile_(profile),
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile_)),
-      omnibox_start_margin_(search::kDisableStartMargin),
       suggestions_service_(NULL),
       weak_ptr_factory_(this) {
   // The initialization below depends on a typical set of browser threads. Skip
@@ -295,12 +294,6 @@ void InstantService::Observe(int type,
 void InstantService::SendSearchURLsToRenderer(content::RenderProcessHost* rph) {
   rph->Send(new ChromeViewMsg_SetSearchURLs(
       search::GetSearchURLs(profile_), search::GetNewTabPageURL(profile_)));
-}
-
-void InstantService::OnOmniboxStartMarginChanged(int start_margin) {
-  omnibox_start_margin_ = start_margin;
-  FOR_EACH_OBSERVER(InstantServiceObserver, observers_,
-                    OmniboxStartMarginChanged(omnibox_start_margin_));
 }
 
 void InstantService::OnRendererProcessTerminated(int process_id) {

@@ -179,7 +179,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) override;
   void MostVisitedItemsChanged(
       const std::vector<InstantMostVisitedItem>& items) override;
-  void OmniboxStartMarginChanged(int omnibox_start_margin) override;
 
   // Sets the mode of the model based on the current URL of web_contents().
   // Only updates the origin part of the mode if |update_origin| is true,

@@ -434,34 +434,6 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   ASSERT_THAT(active_tab->GetURL().spec(), HasSubstr("q=puppies"));
 }
 
-#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
-// Flaky crashes at shutdown on Linux Asan; http://crbug.com/517886.
-#define MAYBE_OmniboxMarginSetForSearchURLs \
-  DISABLED_OmniboxMarginSetForSearchURLs
-#else
-#define MAYBE_OmniboxMarginSetForSearchURLs OmniboxMarginSetForSearchURLs
-#endif
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
-                       MAYBE_OmniboxMarginSetForSearchURLs) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmnibox();
-
-  // Create an observer to wait for the instant tab to support Instant.
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
-      content::NotificationService::AllSources());
-
-  SetOmniboxText("flowers");
-  browser()->window()->GetLocationBar()->AcceptInput();
-  observer.Wait();
-
-  const std::string& url =
-      browser()->tab_strip_model()->GetActiveWebContents()->GetURL().spec();
-  // Make sure we actually used search_url, not instant_url.
-  ASSERT_THAT(url, HasSubstr("&is_search"));
-  EXPECT_THAT(url, HasSubstr("&es_sm="));
-}
-
 // Test to verify that switching tabs should not dispatch onmostvisitedchanged
 // events.
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NoMostVisitedChangedOnTabSwitch) {

@@ -340,12 +340,8 @@ void SearchTabHelper::NavigationEntryCommitted(
     return;
 
   if (search::ShouldAssignURLToInstantRenderer(web_contents_->GetURL(),
-                                               profile())) {
-    InstantService* instant_service =
-        InstantServiceFactory::GetForProfile(profile());
-    ipc_router_.SetOmniboxStartMargin(instant_service->omnibox_start_margin());
+                                               profile()))
     ipc_router_.SetDisplayInstantResults();
-  }
 
   UpdateMode(true, false);
 
@@ -408,10 +404,6 @@ void SearchTabHelper::LogMostVisitedItemsSource(
     // all suggestions are provided by client.
     this->OnLogEvent(event, base::TimeDelta());
   }
-}
-
-void SearchTabHelper::OmniboxStartMarginChanged(int omnibox_start_margin) {
-  ipc_router_.SetOmniboxStartMargin(omnibox_start_margin);
 }
 
 void SearchTabHelper::FocusOmnibox(OmniboxFocusState state) {

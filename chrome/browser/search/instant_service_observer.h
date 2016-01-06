@@ -26,9 +26,6 @@ class InstantServiceObserver {
   virtual void DefaultSearchProviderChanged(
       bool google_base_url_domain_changed);
 
-  // Indicates that the omnibox start margin has changed.
-  virtual void OmniboxStartMarginChanged(int omnibox_start_margin);
-
  protected:
   virtual ~InstantServiceObserver() {}
 };

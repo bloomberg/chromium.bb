@@ -85,9 +85,6 @@ class AutocompleteProviderClient {
   virtual bool IsOffTheRecord() const = 0;
   virtual bool SearchSuggestEnabled() const = 0;
 
-  // Returns whether the bookmark bar is visible on all tabs.
-  virtual bool BookmarkBarIsVisible() const = 0;
-
   virtual bool TabSyncEnabledAndUnencrypted() const = 0;
 
   // Given some string |text| that the user wants to use for navigation,

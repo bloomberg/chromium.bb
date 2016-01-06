@@ -54,10 +54,6 @@ std::string SearchTermsData::GetSuggestRequestIdentifier() const {
   return std::string();
 }
 
-bool SearchTermsData::IsShowingSearchTermsOnSearchResultsPages() const {
-  return false;
-}
-
 std::string SearchTermsData::InstantExtendedEnabledParam(
     bool for_search) const {
   return std::string();
@@ -65,14 +61,6 @@ std::string SearchTermsData::InstantExtendedEnabledParam(
 
 std::string SearchTermsData::ForceInstantResultsParam(
     bool for_prerender) const {
-  return std::string();
-}
-
-int SearchTermsData::OmniboxStartMargin() const {
-  return 0;
-}
-
-std::string SearchTermsData::NTPIsThemedParam() const {
   return std::string();
 }
 

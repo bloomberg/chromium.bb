@@ -241,8 +241,7 @@ SearchBox::SearchBox(content::RenderView* render_view)
     is_key_capture_enabled_(false),
     display_instant_results_(false),
     most_visited_items_cache_(kMaxInstantMostVisitedItemCacheSize),
-    query_(),
-    start_margin_(0) {
+    query_() {
 }
 
 SearchBox::~SearchBox() {
@@ -379,7 +378,6 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewMsg_HistorySyncCheckResult,
                         OnHistorySyncCheckResult)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxFocusChanged, OnFocusChanged)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxMarginChange, OnMarginChange)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxMostVisitedItemsChanged,
                         OnMostVisitedChanged)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxPromoInformation,
@@ -457,14 +455,6 @@ void SearchBox::OnHistorySyncCheckResult(bool sync_history) {
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
     extensions_v8::SearchBoxExtension::DispatchHistorySyncCheckResult(
         render_view()->GetWebView()->mainFrame(), sync_history);
-  }
-}
-
-void SearchBox::OnMarginChange(int margin) {
-  start_margin_ = margin;
-  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
-    extensions_v8::SearchBoxExtension::DispatchMarginChange(
-        render_view()->GetWebView()->mainFrame());
   }
 }
 
@@ -551,7 +541,6 @@ void SearchBox::Reset() {
   query_.clear();
   embedded_search_request_params_ = EmbeddedSearchRequestParams();
   suggestion_ = InstantSuggestion();
-  start_margin_ = 0;
   is_focused_ = false;
   is_key_capture_enabled_ = false;
   theme_info_ = ThemeBackgroundInfo();

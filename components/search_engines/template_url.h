@@ -147,19 +147,12 @@ class TemplateURLRef {
     // the request was issued.  Set to base::string16::npos if not used.
     size_t cursor_position;
 
-    // True to enable the start-edge margin of the omnibox, used in extended
-    // Instant to align the preview contents with the omnibox.
-    bool enable_omnibox_start_margin;
-
     // The URL of the current webpage to be used for experimental zero-prefix
     // suggestions.
     std::string current_page_url;
 
     // Which omnibox the user used to type the prefix.
     metrics::OmniboxEventProto::PageClassification page_classification;
-
-    // True for searches issued with the bookmark bar pref set to shown.
-    bool bookmark_bar_pinned;
 
     // Optional session token.
     std::string session_token;
@@ -311,7 +304,6 @@ class TemplateURLRef {
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseURLTwoParameters);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseURLNestedParameter);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, URLRefTestImageURLWithPOST);
-  FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ReflectsBookmarkBarPinned);
 
   // Enumeration of the known types.
   enum ReplacementType {
@@ -319,7 +311,6 @@ class TemplateURLRef {
     GOOGLE_ASSISTED_QUERY_STATS,
     GOOGLE_BASE_URL,
     GOOGLE_BASE_SUGGEST_URL,
-    GOOGLE_BOOKMARK_BAR_PINNED,
     GOOGLE_CURRENT_PAGE_URL,
     GOOGLE_CURSOR_POSITION,
     GOOGLE_FORCE_INSTANT_RESULTS,
@@ -331,7 +322,6 @@ class TemplateURLRef {
     GOOGLE_INPUT_TYPE,
     GOOGLE_INSTANT_EXTENDED_ENABLED,
     GOOGLE_NTP_IS_THEMED,
-    GOOGLE_OMNIBOX_START_MARGIN,
     GOOGLE_CONTEXTUAL_SEARCH_VERSION,
     GOOGLE_CONTEXTUAL_SEARCH_CONTEXT_DATA,
     GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION,
@@ -714,7 +704,6 @@ class TemplateURL {
 
  private:
   friend class TemplateURLService;
-  FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ReflectsBookmarkBarPinned);
 
   void CopyFrom(const TemplateURL& other);
 

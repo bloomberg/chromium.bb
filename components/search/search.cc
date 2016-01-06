@@ -71,9 +71,6 @@ const char kReuseInstantSearchBasePage[] = "reuse_instant_search_base_page";
 
 }  // namespace
 
-// Negative start-margin values prevent the "es_sm" parameter from being used.
-const int kDisableStartMargin = -1;
-
 bool IsInstantExtendedAPIEnabled() {
 #if defined(OS_IOS)
   return false;

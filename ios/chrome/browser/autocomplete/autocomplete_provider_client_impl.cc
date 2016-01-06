@@ -6,7 +6,6 @@
 
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -130,11 +129,6 @@ bool AutocompleteProviderClientImpl::IsOffTheRecord() const {
 
 bool AutocompleteProviderClientImpl::SearchSuggestEnabled() const {
   return browser_state_->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled);
-}
-
-bool AutocompleteProviderClientImpl::BookmarkBarIsVisible() const {
-  return browser_state_->GetPrefs()->GetBoolean(
-      bookmarks::prefs::kShowBookmarkBar);
 }
 
 bool AutocompleteProviderClientImpl::TabSyncEnabledAndUnencrypted() const {

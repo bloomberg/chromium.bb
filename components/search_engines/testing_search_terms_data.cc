@@ -8,8 +8,7 @@
 
 TestingSearchTermsData::TestingSearchTermsData(
     const std::string& google_base_url)
-    : google_base_url_(google_base_url),
-      is_showing_search_terms_on_search_results_pages_(false) {
+    : google_base_url_(google_base_url) {
 }
 
 TestingSearchTermsData::~TestingSearchTermsData() {}
@@ -30,12 +29,4 @@ std::string TestingSearchTermsData::GetSearchClient() const {
 
 std::string TestingSearchTermsData::GoogleImageSearchSource() const {
   return "google_image_search_source";
-}
-
-bool TestingSearchTermsData::IsShowingSearchTermsOnSearchResultsPages() const {
-  return is_showing_search_terms_on_search_results_pages_;
-}
-
-int TestingSearchTermsData::OmniboxStartMargin() const {
-  return omnibox_start_margin_;
 }

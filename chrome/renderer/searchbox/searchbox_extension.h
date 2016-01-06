@@ -40,7 +40,6 @@ class SearchBoxExtension {
   static void DispatchInputCancel(blink::WebFrame* frame);
   static void DispatchInputStart(blink::WebFrame* frame);
   static void DispatchKeyCaptureChange(blink::WebFrame* frame);
-  static void DispatchMarginChange(blink::WebFrame* frame);
   static void DispatchMostVisitedChanged(blink::WebFrame* frame);
   static void DispatchSubmit(blink::WebFrame* frame);
   static void DispatchSuggestionChange(blink::WebFrame* frame);
