@@ -14,6 +14,10 @@
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_image.h"
 
+namespace ui {
+class ScopedMakeCurrent;
+}
+
 namespace gfx {
 class Size;
 }
@@ -56,6 +60,10 @@ class StreamTexture : public gl::GLImage,
   // GpuCommandBufferStub::DestructionObserver implementation.
   void OnWillDestroyStub() override;
 
+  scoped_ptr<ui::ScopedMakeCurrent> MakeStubCurrent();
+
+  void UpdateTexImage();
+
   // Called when a new frame is available for the SurfaceTexture.
   void OnFrameAvailable();
 
@@ -85,6 +93,13 @@ class StreamTexture : public gl::GLImage,
   int32_t route_id_;
   bool has_listener_;
   uint32_t texture_id_;
+
+  unsigned framebuffer_;
+  unsigned vertex_shader_;
+  unsigned fragment_shader_;
+  unsigned program_;
+  unsigned vertex_buffer_;
+  int u_xform_location_;
 
   base::WeakPtrFactory<StreamTexture> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(StreamTexture);
