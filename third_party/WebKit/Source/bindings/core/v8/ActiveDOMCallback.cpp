@@ -55,7 +55,7 @@ bool ActiveDOMCallback::isScriptControllerTerminating() const
 {
     ExecutionContext* context = executionContext();
     if (context && context->isWorkerGlobalScope()) {
-        WorkerScriptController* scriptController = toWorkerGlobalScope(context)->script();
+        WorkerOrWorkletScriptController* scriptController = toWorkerGlobalScope(context)->script();
         if (!scriptController || scriptController->isExecutionForbidden() || scriptController->isExecutionTerminating())
             return true;
     }

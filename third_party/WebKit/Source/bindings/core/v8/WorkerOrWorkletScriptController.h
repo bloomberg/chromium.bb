@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WorkerScriptController_h
-#define WorkerScriptController_h
+#ifndef WorkerOrWorkletScriptController_h
+#define WorkerOrWorkletScriptController_h
 
 #include "bindings/core/v8/RejectedPromises.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -50,12 +50,12 @@ class ExceptionState;
 class ScriptSourceCode;
 class WorkerGlobalScope;
 
-class CORE_EXPORT WorkerScriptController : public NoBaseWillBeGarbageCollectedFinalized<WorkerScriptController> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(WorkerScriptController);
-    WTF_MAKE_NONCOPYABLE(WorkerScriptController);
+class CORE_EXPORT WorkerOrWorkletScriptController : public NoBaseWillBeGarbageCollectedFinalized<WorkerOrWorkletScriptController> {
+    USING_FAST_MALLOC_WILL_BE_REMOVED(WorkerOrWorkletScriptController);
+    WTF_MAKE_NONCOPYABLE(WorkerOrWorkletScriptController);
 public:
-    static PassOwnPtrWillBeRawPtr<WorkerScriptController> create(WorkerGlobalScope*, v8::Isolate*);
-    virtual ~WorkerScriptController();
+    static PassOwnPtrWillBeRawPtr<WorkerOrWorkletScriptController> create(WorkerGlobalScope*, v8::Isolate*);
+    virtual ~WorkerOrWorkletScriptController();
     void dispose();
 
     bool isExecutionForbidden() const;
@@ -70,12 +70,11 @@ public:
 
     // Used by WorkerThread:
     bool initializeContextIfNeeded();
-    // Async request to terminate future JavaScript execution on the
-    // worker thread. JavaScript evaluation exits with a
-    // non-continuable exception and WorkerScriptController calls
-    // forbidExecution to prevent further JavaScript execution. Use
-    // forbidExecution()/isExecutionForbidden() to guard against
-    // reentry into JavaScript.
+    // Async request to terminate future JavaScript execution on the worker
+    // thread. JavaScript evaluation exits with a non-continuable exception and
+    // WorkerOrWorkletScriptController calls forbidExecution to prevent further
+    // JavaScript execution. Use forbidExecution()/isExecutionForbidden() to
+    // guard against reentry into JavaScript.
     void willScheduleExecutionTermination();
 
     // Used by WorkerGlobalScope:
@@ -95,7 +94,7 @@ public:
     bool isContextInitialized() const { return m_scriptState && !!m_scriptState->perContextData(); }
 
 private:
-    WorkerScriptController(WorkerGlobalScope*, v8::Isolate*);
+    WorkerOrWorkletScriptController(WorkerGlobalScope*, v8::Isolate*);
     class ExecutionState;
 
     v8::Isolate* isolate() const;
@@ -124,4 +123,4 @@ private:
 
 } // namespace blink
 
-#endif // WorkerScriptController_h
+#endif // WorkerOrWorkletScriptController_h

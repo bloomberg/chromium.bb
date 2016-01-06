@@ -41,7 +41,7 @@
 #include "bindings/core/v8/V8Location.h"
 #include "bindings/core/v8/V8PerContextData.h"
 #include "bindings/core/v8/V8Window.h"
-#include "bindings/core/v8/WorkerScriptController.h"
+#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fetch/AccessControlStatus.h"
@@ -287,7 +287,7 @@ static void promiseRejectHandlerInWorker(v8::PromiseRejectMessage data)
         return;
 
     ASSERT(executionContext->isWorkerGlobalScope());
-    WorkerScriptController* scriptController = toWorkerGlobalScope(executionContext)->script();
+    WorkerOrWorkletScriptController* scriptController = toWorkerGlobalScope(executionContext)->script();
     ASSERT(scriptController);
 
     promiseRejectHandler(data, *scriptController->rejectedPromises(), String());

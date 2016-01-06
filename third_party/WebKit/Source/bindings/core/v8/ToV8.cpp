@@ -50,7 +50,7 @@ v8::Local<v8::Value> toV8(WorkerGlobalScope* impl, v8::Local<v8::Object> creatio
     if (UNLIKELY(!impl))
         return v8::Null(isolate);
 
-    WorkerScriptController* script = impl->script();
+    WorkerOrWorkletScriptController* script = impl->script();
     if (!script)
         return v8::Null(isolate);
 

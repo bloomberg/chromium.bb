@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/WorkerScriptController.h"
+#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -54,10 +54,10 @@
 
 namespace blink {
 
-class WorkerScriptController::ExecutionState final {
+class WorkerOrWorkletScriptController::ExecutionState final {
     STACK_ALLOCATED();
 public:
-    explicit ExecutionState(WorkerScriptController* controller)
+    explicit ExecutionState(WorkerOrWorkletScriptController* controller)
         : hadException(false)
         , lineNumber(0)
         , columnNumber(0)
@@ -87,26 +87,26 @@ public:
     RefPtrWillBeMember<ErrorEvent> m_errorEventFromImportedScript;
 
     // A ExecutionState context is stack allocated by
-    // WorkerScriptController::evaluate(), with the contoller using it
+    // WorkerOrWorkletScriptController::evaluate(), with the contoller using it
     // during script evaluation. To handle nested evaluate() uses,
     // ExecutionStates are chained together;
     // |m_outerState| keeps a pointer to the context object one level out
     // (or 0, if outermost.) Upon return from evaluate(), the
-    // WorkerScriptController's ExecutionState is popped and the previous one
-    // restored (see above dtor.)
+    // WorkerOrWorkletScriptController's ExecutionState is popped and the
+    // previous one restored (see above dtor.)
     //
     // With Oilpan, |m_outerState| isn't traced. It'll be "up the stack"
     // and its fields will be traced when scanning the stack.
-    RawPtrWillBeMember<WorkerScriptController> m_controller;
+    RawPtrWillBeMember<WorkerOrWorkletScriptController> m_controller;
     ExecutionState* m_outerState;
 };
 
-PassOwnPtrWillBeRawPtr<WorkerScriptController> WorkerScriptController::create(WorkerGlobalScope* workerGlobalScope, v8::Isolate* isolate)
+PassOwnPtrWillBeRawPtr<WorkerOrWorkletScriptController> WorkerOrWorkletScriptController::create(WorkerGlobalScope* workerGlobalScope, v8::Isolate* isolate)
 {
-    return adoptPtrWillBeNoop(new WorkerScriptController(workerGlobalScope, isolate));
+    return adoptPtrWillBeNoop(new WorkerOrWorkletScriptController(workerGlobalScope, isolate));
 }
 
-WorkerScriptController::WorkerScriptController(WorkerGlobalScope* workerGlobalScope, v8::Isolate* isolate)
+WorkerOrWorkletScriptController::WorkerOrWorkletScriptController(WorkerGlobalScope* workerGlobalScope, v8::Isolate* isolate)
     : m_workerGlobalScope(workerGlobalScope)
     , m_executionForbidden(false)
     , m_executionScheduledToTerminate(false)
@@ -117,12 +117,12 @@ WorkerScriptController::WorkerScriptController(WorkerGlobalScope* workerGlobalSc
     m_world = DOMWrapperWorld::create(isolate, WorkerWorldId);
 }
 
-WorkerScriptController::~WorkerScriptController()
+WorkerOrWorkletScriptController::~WorkerOrWorkletScriptController()
 {
     ASSERT(!m_rejectedPromises);
 }
 
-void WorkerScriptController::dispose()
+void WorkerOrWorkletScriptController::dispose()
 {
     m_rejectedPromises->dispose();
     m_rejectedPromises.release();
@@ -133,7 +133,7 @@ void WorkerScriptController::dispose()
         m_scriptState->disposePerContextData();
 }
 
-bool WorkerScriptController::initializeContextIfNeeded()
+bool WorkerOrWorkletScriptController::initializeContextIfNeeded()
 {
     v8::HandleScope handleScope(isolate());
 
@@ -169,12 +169,12 @@ bool WorkerScriptController::initializeContextIfNeeded()
     return v8CallBoolean(globalObject->SetPrototype(context, jsWorkerGlobalScope));
 }
 
-v8::Isolate* WorkerScriptController::isolate() const
+v8::Isolate* WorkerOrWorkletScriptController::isolate() const
 {
     return m_workerGlobalScope->thread()->isolate();
 }
 
-ScriptValue WorkerScriptController::evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, CachedMetadataHandler* cacheHandler, V8CacheOptions v8CacheOptions)
+ScriptValue WorkerOrWorkletScriptController::evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, CachedMetadataHandler* cacheHandler, V8CacheOptions v8CacheOptions)
 {
     if (!initializeContextIfNeeded())
         return ScriptValue();
@@ -226,7 +226,7 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
     return ScriptValue(m_scriptState.get(), result);
 }
 
-bool WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, RefPtrWillBeRawPtr<ErrorEvent>* errorEvent, CachedMetadataHandler* cacheHandler, V8CacheOptions v8CacheOptions)
+bool WorkerOrWorkletScriptController::evaluate(const ScriptSourceCode& sourceCode, RefPtrWillBeRawPtr<ErrorEvent>* errorEvent, CachedMetadataHandler* cacheHandler, V8CacheOptions v8CacheOptions)
 {
     if (isExecutionForbidden())
         return false;
@@ -261,7 +261,7 @@ bool WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, RefPtr
     return true;
 }
 
-void WorkerScriptController::willScheduleExecutionTermination()
+void WorkerOrWorkletScriptController::willScheduleExecutionTermination()
 {
     // The mutex provides a memory barrier to ensure that once
     // termination is scheduled, isExecutionTerminating will
@@ -270,31 +270,31 @@ void WorkerScriptController::willScheduleExecutionTermination()
     m_executionScheduledToTerminate = true;
 }
 
-bool WorkerScriptController::isExecutionTerminating() const
+bool WorkerOrWorkletScriptController::isExecutionTerminating() const
 {
     // See comments in willScheduleExecutionTermination regarding mutex usage.
     MutexLocker locker(m_scheduledTerminationMutex);
     return m_executionScheduledToTerminate;
 }
 
-void WorkerScriptController::forbidExecution()
+void WorkerOrWorkletScriptController::forbidExecution()
 {
     ASSERT(m_workerGlobalScope->isContextThread());
     m_executionForbidden = true;
 }
 
-bool WorkerScriptController::isExecutionForbidden() const
+bool WorkerOrWorkletScriptController::isExecutionForbidden() const
 {
     ASSERT(m_workerGlobalScope->isContextThread());
     return m_executionForbidden;
 }
 
-void WorkerScriptController::disableEval(const String& errorMessage)
+void WorkerOrWorkletScriptController::disableEval(const String& errorMessage)
 {
     m_disableEvalPending = errorMessage;
 }
 
-void WorkerScriptController::rethrowExceptionFromImportedScript(PassRefPtrWillBeRawPtr<ErrorEvent> errorEvent, ExceptionState& exceptionState)
+void WorkerOrWorkletScriptController::rethrowExceptionFromImportedScript(PassRefPtrWillBeRawPtr<ErrorEvent> errorEvent, ExceptionState& exceptionState)
 {
     const String& errorMessage = errorEvent->message();
     if (m_executionState)
@@ -302,7 +302,7 @@ void WorkerScriptController::rethrowExceptionFromImportedScript(PassRefPtrWillBe
     exceptionState.rethrowV8Exception(V8ThrowException::createGeneralError(isolate(), errorMessage));
 }
 
-DEFINE_TRACE(WorkerScriptController)
+DEFINE_TRACE(WorkerOrWorkletScriptController)
 {
     visitor->trace(m_workerGlobalScope);
     visitor->trace(m_rejectedPromises);

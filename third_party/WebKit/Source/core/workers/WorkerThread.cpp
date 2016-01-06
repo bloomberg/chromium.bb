@@ -71,7 +71,7 @@ public:
     {
         Microtask::performCheckpoint(m_workerThread->isolate());
         if (WorkerGlobalScope* globalScope = m_workerThread->workerGlobalScope()) {
-            if (WorkerScriptController* scriptController = globalScope->script())
+            if (WorkerOrWorkletScriptController* scriptController = globalScope->script())
                 scriptController->rejectedPromises()->processQueue();
             if (globalScope->isClosing()) {
                 m_workerThread->workerReportingProxy().workerGlobalScopeClosed();
@@ -300,7 +300,7 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
         // Notify proxy that a new WorkerGlobalScope has been created and started.
         m_workerReportingProxy.workerGlobalScopeStarted(m_workerGlobalScope.get());
 
-        WorkerScriptController* script = m_workerGlobalScope->script();
+        WorkerOrWorkletScriptController* script = m_workerGlobalScope->script();
         if (!script->isExecutionForbidden())
             script->initializeContextIfNeeded();
     }

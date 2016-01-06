@@ -43,7 +43,7 @@
 #include "bindings/core/v8/V8WorkerGlobalScope.h"
 #include "bindings/core/v8/V8XPathNSResolver.h"
 #include "bindings/core/v8/WindowProxy.h"
-#include "bindings/core/v8/WorkerScriptController.h"
+#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "bindings/core/v8/custom/V8CustomXPathNSResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -777,7 +777,7 @@ v8::Local<v8::Context> toV8Context(ExecutionContext* context, DOMWrapperWorld& w
         if (LocalFrame* frame = toDocument(context)->frame())
             return toV8Context(frame, world);
     } else if (context->isWorkerGlobalScope()) {
-        if (WorkerScriptController* script = toWorkerGlobalScope(context)->script()) {
+        if (WorkerOrWorkletScriptController* script = toWorkerGlobalScope(context)->script()) {
             if (script->scriptState()->contextIsValid())
                 return script->scriptState()->context();
         }

@@ -28,7 +28,7 @@
 #define WorkerGlobalScope_h
 
 #include "bindings/core/v8/V8CacheOptions.h"
-#include "bindings/core/v8/WorkerScriptController.h"
+#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/EventListener.h"
@@ -83,7 +83,7 @@ public:
     String userAgent() const final;
     void disableEval(const String& errorMessage) final;
 
-    WorkerScriptController* script() { return m_script.get(); }
+    WorkerOrWorkletScriptController* script() { return m_script.get(); }
 
     virtual void didEvaluateWorkerScript();
     void dispose();
@@ -186,7 +186,7 @@ private:
 
     mutable UseCounter::CountBits m_deprecationWarningBits;
 
-    OwnPtrWillBeMember<WorkerScriptController> m_script;
+    OwnPtrWillBeMember<WorkerOrWorkletScriptController> m_script;
     WorkerThread* m_thread;
 
     RefPtrWillBeMember<WorkerInspectorController> m_workerInspectorController;
