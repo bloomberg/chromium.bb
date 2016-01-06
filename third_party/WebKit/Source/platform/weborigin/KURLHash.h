@@ -27,6 +27,7 @@
 #define KURLHash_h
 
 #include "platform/weborigin/KURL.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
@@ -37,6 +38,7 @@ namespace blink {
 // KURLs.
 
 struct KURLHash {
+    STATIC_ONLY(KURLHash);
     static unsigned hash(const KURL& key)
     {
         return key.string().impl()->hash();

@@ -31,11 +31,13 @@
 
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "wtf/Allocator.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
 struct SecurityOriginHash {
+    STATIC_ONLY(SecurityOriginHash);
     static unsigned hash(SecurityOrigin* origin)
     {
         unsigned hashCodes[4] = {

@@ -27,6 +27,7 @@
 #define KURL_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/OwnPtr.h"
@@ -45,6 +46,7 @@ struct KURLHash;
 enum ParsedURLStringTag { ParsedURLString };
 
 class PLATFORM_EXPORT KURL {
+    USING_FAST_MALLOC(KURL);
 public:
     // This must be called during initialization (before we create
     // other threads).

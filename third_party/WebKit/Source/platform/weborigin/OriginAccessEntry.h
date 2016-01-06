@@ -32,6 +32,7 @@
 #define OriginAccessEntry_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -39,6 +40,7 @@ namespace blink {
 class SecurityOrigin;
 
 class PLATFORM_EXPORT OriginAccessEntry {
+    USING_FAST_MALLOC(OriginAccessEntry);
 public:
     enum SubdomainSetting {
         // 'www.example.com' matches an OriginAccessEntry for 'example.com'

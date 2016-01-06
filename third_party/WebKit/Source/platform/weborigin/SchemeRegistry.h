@@ -28,6 +28,7 @@
 #define SchemeRegistry_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/StringHash.h"
@@ -41,6 +42,7 @@ template <typename T>
 using URLSchemesMap = HashMap<String, T, CaseFoldingHash>;
 
 class PLATFORM_EXPORT SchemeRegistry {
+    STATIC_ONLY(SchemeRegistry);
 public:
     static void registerURLSchemeAsLocal(const String&);
     static bool shouldTreatURLSchemeAsLocal(const String&);

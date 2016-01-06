@@ -31,6 +31,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "platform/PlatformExport.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/text/WTFString.h"
 
@@ -40,6 +41,7 @@ class KURL;
 class SecurityOriginCache;
 
 class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
+    WTF_MAKE_NONCOPYABLE(SecurityOrigin);
 public:
     static PassRefPtr<SecurityOrigin> create(const KURL&);
     static PassRefPtr<SecurityOrigin> createUnique();
