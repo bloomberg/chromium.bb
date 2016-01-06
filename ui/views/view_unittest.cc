@@ -3596,6 +3596,10 @@ class ViewLayerTest : public ViewsTestBase {
 
   Widget* widget() { return widget_; }
 
+ protected:
+  // Accessors to View internals.
+  void SchedulePaintOnParent(View* view) { view->SchedulePaintOnParent(); }
+
  private:
   Widget* widget_;
 };
@@ -3986,6 +3990,50 @@ TEST_F(ViewLayerTest, DontPaintChildrenWithLayers) {
   ui::DrawWaiterForTest::WaitForCompositingEnded(
       GetRootLayer()->GetCompositor());
   EXPECT_TRUE(content_view->painted());
+}
+
+TEST_F(ViewLayerTest, NoCrashWhenParentlessViewSchedulesPaintOnParent) {
+  TestView v;
+  SchedulePaintOnParent(&v);
+}
+
+TEST_F(ViewLayerTest, ScheduledRectsInParentAfterSchedulingPaint) {
+  TestView parent_view;
+  parent_view.SetBounds(10, 10, 100, 100);
+
+  TestView* child_view = new TestView;
+  child_view->SetBounds(5, 6, 10, 20);
+  parent_view.AddChildView(child_view);
+
+  parent_view.scheduled_paint_rects_.clear();
+  SchedulePaintOnParent(child_view);
+  ASSERT_EQ(1U, parent_view.scheduled_paint_rects_.size());
+  EXPECT_EQ(gfx::Rect(5, 6, 10, 20),
+            parent_view.scheduled_paint_rects_.front());
+}
+
+TEST_F(ViewLayerTest, ParentPaintWhenSwitchingPaintToLayerFromFalseToTrue) {
+  TestView parent_view;
+  parent_view.SetBounds(10, 11, 12, 13);
+
+  TestView* child_view = new TestView;
+  parent_view.AddChildView(child_view);
+
+  parent_view.scheduled_paint_rects_.clear();
+  child_view->SetPaintToLayer(true);
+  EXPECT_EQ(1U, parent_view.scheduled_paint_rects_.size());
+}
+
+TEST_F(ViewLayerTest, NoParentPaintWhenSwitchingPaintToLayerFromTrueToTrue) {
+  TestView parent_view;
+  parent_view.SetBounds(10, 11, 12, 13);
+
+  TestView* child_view = new TestView;
+  child_view->SetPaintToLayer(true);
+  parent_view.AddChildView(child_view);
+
+  parent_view.scheduled_paint_rects_.clear();
+  EXPECT_EQ(0U, parent_view.scheduled_paint_rects_.size());
 }
 
 // Tests that the visibility of child layers are updated correctly when a View's
