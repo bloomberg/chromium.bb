@@ -200,6 +200,7 @@ base::string16 ElideText(const base::string16& text,
   DCHECK_NE(behavior, FADE_TAIL);
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetCursorEnabled(false);
+  // TODO(bshe): 5000 is out dated. We should remove it. See crbug.com/551660.
   // Do not bother accurately sizing strings over 5000 characters here, for
   // performance purposes. This matches the behavior of Canvas::SizeStringFloat.
   render_text->set_truncate_length(5000);
