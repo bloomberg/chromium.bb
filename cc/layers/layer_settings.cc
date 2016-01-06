@@ -6,7 +6,7 @@
 
 namespace cc {
 
-LayerSettings::LayerSettings() : use_compositor_animation_timelines(false) {}
+LayerSettings::LayerSettings() : use_compositor_animation_timelines(true) {}
 
 LayerSettings::~LayerSettings() {}
 

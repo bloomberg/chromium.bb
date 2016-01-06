@@ -101,7 +101,7 @@ LayerTreeSettings::LayerTreeSettings()
       verify_property_trees(false),
       use_property_trees(true),
       image_decode_tasks_enabled(false),
-      use_compositor_animation_timelines(false),
+      use_compositor_animation_timelines(true),
       wait_for_beginframe_interval(true),
       max_staging_buffer_usage_in_bytes(32 * 1024 * 1024),
       memory_policy_(64 * 1024 * 1024,
