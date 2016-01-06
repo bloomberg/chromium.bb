@@ -101,7 +101,6 @@ class CC_EXPORT LayerTreeImpl {
   bool PinchGestureActive() const;
   BeginFrameArgs CurrentBeginFrameArgs() const;
   base::TimeDelta CurrentBeginFrameInterval() const;
-  void SetNeedsCommit();
   gfx::Rect DeviceViewport() const;
   gfx::Size DrawViewportSize() const;
   const gfx::Rect ViewportRectForTilePriority() const;

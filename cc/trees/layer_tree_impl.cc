@@ -997,10 +997,6 @@ base::TimeDelta LayerTreeImpl::CurrentBeginFrameInterval() const {
   return layer_tree_host_impl_->CurrentBeginFrameInterval();
 }
 
-void LayerTreeImpl::SetNeedsCommit() {
-  layer_tree_host_impl_->SetNeedsCommit();
-}
-
 gfx::Rect LayerTreeImpl::DeviceViewport() const {
   return layer_tree_host_impl_->DeviceViewport();
 }

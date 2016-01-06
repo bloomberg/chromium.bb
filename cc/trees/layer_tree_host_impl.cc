@@ -3626,9 +3626,7 @@ bool LayerTreeHostImpl::IsLayerInTree(int layer_id,
   }
 }
 
-void LayerTreeHostImpl::SetMutatorsNeedCommit() {
-  SetNeedsCommit();
-}
+void LayerTreeHostImpl::SetMutatorsNeedCommit() {}
 
 void LayerTreeHostImpl::SetMutatorsNeedRebuildPropertyTrees() {}
 

@@ -16,6 +16,8 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/location.h"
 #include "base/thread_task_runner_handle.h"
+#include "cc/animation/animation_host.h"
+#include "cc/animation/animation_id_provider.h"
 #include "cc/animation/scrollbar_animation_controller_thinning.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/base/math_util.h"
@@ -110,6 +112,7 @@ class LayerTreeHostImplTest : public testing::Test,
     settings.minimum_occlusion_tracking_size = gfx::Size();
     settings.renderer_settings.texture_id_allocation_chunk_size = 1;
     settings.gpu_rasterization_enabled = true;
+    settings.use_compositor_animation_timelines = true;
     settings.verify_property_trees = true;
     return settings;
   }
@@ -207,6 +210,13 @@ class LayerTreeHostImplTest : public testing::Test,
         BEGINFRAME_FROM_HERE,
         base::TimeTicks() + base::TimeDelta::FromMilliseconds(1)));
     host_impl_->DidFinishImplFrame();
+
+    if (host_impl_->settings().use_compositor_animation_timelines) {
+      timeline_ =
+          AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
+      host_impl_->animation_host()->AddAnimationTimeline(timeline_);
+    }
+
     return init;
   }
 
@@ -406,6 +416,8 @@ class LayerTreeHostImplTest : public testing::Test,
 
   void SetupMouseMoveAtWithDeviceScale(float device_scale_factor);
 
+  scoped_refptr<AnimationTimeline> timeline() { return timeline_; }
+
  protected:
   virtual scoped_ptr<OutputSurface> CreateOutputSurface() {
     return FakeOutputSurface::Create3d();
@@ -439,6 +451,7 @@ class LayerTreeHostImplTest : public testing::Test,
   bool skip_draw_layers_in_on_draw_;
   scoped_ptr<LayerTreeHostImpl::FrameData> last_on_draw_frame_;
   RenderPassList last_on_draw_render_passes_;
+  scoped_refptr<AnimationTimeline> timeline_;
 };
 
 // A test fixture for new animation timelines tests.
@@ -1135,7 +1148,11 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingPendingTree) {
   child->SetBounds(gfx::Size(10, 10));
   child->draw_properties().visible_layer_rect = gfx::Rect(10, 10);
   child->SetDrawsContent(true);
-  AddAnimatedTransformToLayer(child, 10.0, 3, 0);
+  if (host_impl_->settings().use_compositor_animation_timelines) {
+    AddAnimatedTransformToLayerWithPlayer(child->id(), timeline(), 10.0, 3, 0);
+  } else {
+    AddAnimatedTransformToLayer(child, 10.0, 3, 0);
+  }
 
   EXPECT_FALSE(did_request_next_frame_);
   EXPECT_FALSE(did_request_redraw_);
@@ -1191,7 +1208,12 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingActiveTree) {
   start.AppendTranslate(6.f, 7.f, 0.f);
   TransformOperations end;
   end.AppendTranslate(8.f, 9.f, 0.f);
-  AddAnimatedTransformToLayer(child, 4.0, start, end);
+  if (host_impl_->settings().use_compositor_animation_timelines) {
+    AddAnimatedTransformToLayerWithPlayer(child->id(), timeline(), 4.0, start,
+                                          end);
+  } else {
+    AddAnimatedTransformToLayer(child, 4.0, start, end);
+  }
 
   base::TimeTicks now = base::TimeTicks::Now();
   host_impl_->WillBeginImplFrame(
@@ -1248,7 +1270,11 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingCommitToActiveTree) {
   child->SetBounds(gfx::Size(10, 10));
   child->draw_properties().visible_layer_rect = gfx::Rect(10, 10);
   child->SetDrawsContent(true);
-  AddAnimatedTransformToLayer(child, 10.0, 3, 0);
+  if (host_impl_->settings().use_compositor_animation_timelines) {
+    AddAnimatedTransformToLayerWithPlayer(child->id(), timeline(), 10.0, 3, 0);
+  } else {
+    AddAnimatedTransformToLayer(child, 10.0, 3, 0);
+  }
 
   // Set up the property trees so that UpdateDrawProperties will work in
   // CommitComplete below.
@@ -1315,7 +1341,13 @@ TEST_F(LayerTreeHostImplTest, AnimationMarksLayerNotReady) {
   start.AppendTranslate(6.f, 7.f, 0.f);
   TransformOperations end;
   end.AppendTranslate(8.f, 9.f, 0.f);
-  int animation_id = AddAnimatedTransformToLayer(child, 4.0, start, end);
+  int animation_id;
+  if (host_impl_->settings().use_compositor_animation_timelines) {
+    animation_id = AddAnimatedTransformToLayerWithPlayer(
+        child->id(), timeline(), 4.0, start, end);
+  } else {
+    animation_id = AddAnimatedTransformToLayer(child, 4.0, start, end);
+  }
 
   base::TimeTicks now = base::TimeTicks::Now();
   host_impl_->WillBeginImplFrame(
@@ -1346,7 +1378,12 @@ TEST_F(LayerTreeHostImplTest, AnimationMarksLayerNotReady) {
 
   // Remove the animation.
   child->set_has_missing_tiles(true);
-  child->layer_animation_controller()->RemoveAnimation(animation_id);
+  if (host_impl_->settings().use_compositor_animation_timelines) {
+    RemoveAnimationFromLayerWithExistingPlayer(child->id(), timeline(),
+                                               animation_id);
+  } else {
+    child->layer_animation_controller()->RemoveAnimation(animation_id);
+  }
   child->draw_properties().screen_space_transform_is_animating = false;
 
   // Child layer doesn't have an animation, but was never ready since the last
@@ -3200,18 +3237,17 @@ TEST_F(LayerTreeHostImplTest, DidDrawCalledOnAllLayers) {
 
 class MissingTextureAnimatingLayer : public DidDrawCheckLayer {
  public:
-  static scoped_ptr<LayerImpl> Create(LayerTreeImpl* tree_impl,
-                                      int id,
-                                      bool tile_missing,
-                                      bool had_incomplete_tile,
-                                      bool animating,
-                                      ResourceProvider* resource_provider) {
-    return make_scoped_ptr(new MissingTextureAnimatingLayer(tree_impl,
-                                                            id,
-                                                            tile_missing,
-                                                            had_incomplete_tile,
-                                                            animating,
-                                                            resource_provider));
+  static scoped_ptr<LayerImpl> Create(
+      LayerTreeImpl* tree_impl,
+      int id,
+      bool tile_missing,
+      bool had_incomplete_tile,
+      bool animating,
+      ResourceProvider* resource_provider,
+      scoped_refptr<AnimationTimeline> timeline) {
+    return make_scoped_ptr(new MissingTextureAnimatingLayer(
+        tree_impl, id, tile_missing, had_incomplete_tile, animating,
+        resource_provider, timeline));
   }
 
   void AppendQuads(RenderPass* render_pass,
@@ -3229,12 +3265,18 @@ class MissingTextureAnimatingLayer : public DidDrawCheckLayer {
                                bool tile_missing,
                                bool had_incomplete_tile,
                                bool animating,
-                               ResourceProvider* resource_provider)
+                               ResourceProvider* resource_provider,
+                               scoped_refptr<AnimationTimeline> timeline)
       : DidDrawCheckLayer(tree_impl, id),
         tile_missing_(tile_missing),
         had_incomplete_tile_(had_incomplete_tile) {
-    if (animating)
-      AddAnimatedTransformToLayer(this, 10.0, 3, 0);
+    if (animating) {
+      if (tree_impl->settings().use_compositor_animation_timelines) {
+        AddAnimatedTransformToLayerWithPlayer(this->id(), timeline, 10.0, 3, 0);
+      } else {
+        AddAnimatedTransformToLayer(this, 10.0, 3, 0);
+      }
+    }
   }
 
   bool tile_missing_;
@@ -3342,12 +3384,15 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsAndFails) {
   host_impl_->SwapBuffers(frame);
 
   for (size_t i = 0; i < cases.size(); ++i) {
+    // Clean up host_impl_ state.
     const auto& testcase = cases[i];
     std::vector<LayerImpl*> to_remove;
     for (const auto& child : root->children())
       to_remove.push_back(child.get());
     for (auto* child : to_remove)
       root->RemoveChild(child);
+    if (host_impl_->settings().use_compositor_animation_timelines)
+      timeline()->ClearPlayers();
 
     std::ostringstream scope;
     scope << "Test case: " << i;
@@ -3356,7 +3401,8 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsAndFails) {
     root->AddChild(MissingTextureAnimatingLayer::Create(
         host_impl_->active_tree(), 2, testcase.layer_before.has_missing_tile,
         testcase.layer_before.has_incomplete_tile,
-        testcase.layer_before.is_animating, host_impl_->resource_provider()));
+        testcase.layer_before.is_animating, host_impl_->resource_provider(),
+        timeline()));
     DidDrawCheckLayer* before =
         static_cast<DidDrawCheckLayer*>(root->children().back().get());
     if (testcase.layer_before.has_copy_request)
@@ -3365,7 +3411,8 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsAndFails) {
     root->AddChild(MissingTextureAnimatingLayer::Create(
         host_impl_->active_tree(), 3, testcase.layer_between.has_missing_tile,
         testcase.layer_between.has_incomplete_tile,
-        testcase.layer_between.is_animating, host_impl_->resource_provider()));
+        testcase.layer_between.is_animating, host_impl_->resource_provider(),
+        timeline()));
     DidDrawCheckLayer* between =
         static_cast<DidDrawCheckLayer*>(root->children().back().get());
     if (testcase.layer_between.has_copy_request)
@@ -3374,7 +3421,8 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsAndFails) {
     root->AddChild(MissingTextureAnimatingLayer::Create(
         host_impl_->active_tree(), 4, testcase.layer_after.has_missing_tile,
         testcase.layer_after.has_incomplete_tile,
-        testcase.layer_after.is_animating, host_impl_->resource_provider()));
+        testcase.layer_after.is_animating, host_impl_->resource_provider(),
+        timeline()));
     DidDrawCheckLayer* after =
         static_cast<DidDrawCheckLayer*>(root->children().back().get());
     if (testcase.layer_after.has_copy_request)
@@ -3445,7 +3493,8 @@ TEST_F(LayerTreeHostImplTest,
     root->AddChild(MissingTextureAnimatingLayer::Create(
         host_impl_->active_tree(), 2, testcase.layer_before.has_missing_tile,
         testcase.layer_before.has_incomplete_tile,
-        testcase.layer_before.is_animating, host_impl_->resource_provider()));
+        testcase.layer_before.is_animating, host_impl_->resource_provider(),
+        timeline()));
     DidDrawCheckLayer* before =
         static_cast<DidDrawCheckLayer*>(root->children().back().get());
     if (testcase.layer_before.has_copy_request)
@@ -3454,7 +3503,8 @@ TEST_F(LayerTreeHostImplTest,
     root->AddChild(MissingTextureAnimatingLayer::Create(
         host_impl_->active_tree(), 3, testcase.layer_between.has_missing_tile,
         testcase.layer_between.has_incomplete_tile,
-        testcase.layer_between.is_animating, host_impl_->resource_provider()));
+        testcase.layer_between.is_animating, host_impl_->resource_provider(),
+        timeline()));
     DidDrawCheckLayer* between =
         static_cast<DidDrawCheckLayer*>(root->children().back().get());
     if (testcase.layer_between.has_copy_request)
@@ -3463,7 +3513,8 @@ TEST_F(LayerTreeHostImplTest,
     root->AddChild(MissingTextureAnimatingLayer::Create(
         host_impl_->active_tree(), 4, testcase.layer_after.has_missing_tile,
         testcase.layer_after.has_incomplete_tile,
-        testcase.layer_after.is_animating, host_impl_->resource_provider()));
+        testcase.layer_after.is_animating, host_impl_->resource_provider(),
+        timeline()));
     DidDrawCheckLayer* after =
         static_cast<DidDrawCheckLayer*>(root->children().back().get());
     if (testcase.layer_after.has_copy_request)
