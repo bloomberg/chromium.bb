@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/app/close_handle_hook_win.h"
+#include "base/debug/close_handle_hook_win.h"
 
 #include <Windows.h>
 #include <psapi.h>
@@ -18,8 +18,6 @@
 #include "base/win/pe_image.h"
 #include "base/win/scoped_handle.h"
 #include "build/build_config.h"
-#include "chrome/common/channel_info.h"
-#include "components/version_info/version_info.h"
 
 namespace {
 
@@ -60,6 +58,13 @@ BOOL WINAPI DuplicateHandleHook(HANDLE source_process,
                               target_handle, desired_access, inherit_handle,
                               options);
 }
+
+}  // namespace
+
+namespace base {
+namespace debug {
+
+namespace {
 
 // Provides a simple way to temporarily change the protection of a memory page.
 class AutoProtectMemory {
@@ -235,22 +240,6 @@ void HandleHooks::Unpatch() {
   }
 }
 
-bool UseHooks() {
-#if defined(ARCH_CPU_X86_64)
-  return false;
-#elif defined(NDEBUG)
-  version_info::Channel channel = chrome::GetChannel();
-  if (channel == version_info::Channel::CANARY ||
-      channel == version_info::Channel::DEV) {
-    return true;
-  }
-
-  return false;
-#else  // NDEBUG
-  return true;
-#endif
-}
-
 void PatchLoadedModules(HandleHooks* hooks) {
   const DWORD kSize = 256;
   DWORD returned;
@@ -270,19 +259,18 @@ void PatchLoadedModules(HandleHooks* hooks) {
 }  // namespace
 
 void InstallHandleHooks() {
-  if (UseHooks()) {
-    HandleHooks* hooks = g_hooks.Pointer();
+  HandleHooks* hooks = g_hooks.Pointer();
 
-    // Performing EAT interception first is safer in the presence of other
-    // threads attempting to call CloseHandle.
-    hooks->AddEATPatch();
-    PatchLoadedModules(hooks);
-  } else {
-    base::win::DisableHandleVerifier();
-  }
+  // Performing EAT interception first is safer in the presence of other
+  // threads attempting to call CloseHandle.
+  hooks->AddEATPatch();
+  PatchLoadedModules(hooks);
 }
 
 void RemoveHandleHooks() {
   // We are partching all loaded modules without forcing them to stay in memory,
   // removing patches is not safe.
 }
+
+}  // namespace debug
+}  // namespace base
