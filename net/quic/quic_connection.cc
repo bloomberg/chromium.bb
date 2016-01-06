@@ -2013,10 +2013,6 @@ QuicFecGroup* QuicConnection::GetFecGroup() {
   return group_map_[fec_group_num];
 }
 
-void QuicConnection::SendConnectionClose(QuicErrorCode error) {
-  SendConnectionCloseWithDetails(error, string());
-}
-
 void QuicConnection::SendConnectionCloseWithDetails(QuicErrorCode error,
                                                     const string& details) {
   // If we're write blocked, WritePacket() will not send, but will capture the

@@ -176,10 +176,6 @@ void ReliableQuicStream::Reset(QuicRstStreamErrorCode error) {
   rst_sent_ = true;
 }
 
-void ReliableQuicStream::CloseConnection(QuicErrorCode error) {
-  session()->connection()->SendConnectionClose(error);
-}
-
 void ReliableQuicStream::CloseConnectionWithDetails(QuicErrorCode error,
                                                     const string& details) {
   session()->connection()->SendConnectionCloseWithDetails(error, details);

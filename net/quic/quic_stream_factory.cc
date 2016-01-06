@@ -317,7 +317,8 @@ void QuicStreamFactory::Job::RunAuxilaryJob() {
 void QuicStreamFactory::Job::Cancel() {
   callback_.Reset();
   if (session_)
-    session_->connection()->SendConnectionClose(QUIC_CONNECTION_CANCELLED);
+    session_->connection()->SendConnectionCloseWithDetails(
+        QUIC_CONNECTION_CANCELLED, "New job canceled.");
 }
 
 void QuicStreamFactory::Job::CancelWaitForDataReadyCallback() {
@@ -473,7 +474,9 @@ int QuicStreamFactory::Job::DoConnectComplete(int rv) {
   // existing session instead.
   AddressList address(session_->connection()->peer_address());
   if (factory_->OnResolution(server_id_, address)) {
-    session_->connection()->SendConnectionClose(QUIC_CONNECTION_IP_POOLED);
+    session_->connection()->SendConnectionCloseWithDetails(
+        QUIC_CONNECTION_IP_POOLED,
+        "An active session exists for the given IP.");
     session_ = nullptr;
     return OK;
   }

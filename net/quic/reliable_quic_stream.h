@@ -92,7 +92,6 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
 
   // Called by the subclass or the sequencer to close the entire connection from
   // this end.
-  virtual void CloseConnection(QuicErrorCode error);
   virtual void CloseConnectionWithDetails(QuicErrorCode error,
                                           const std::string& details);
 

@@ -353,7 +353,6 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // Sends a connection close frame to the peer, and closes the connection by
   // calling CloseConnection(notifying the visitor as it does so).
-  virtual void SendConnectionClose(QuicErrorCode error);
   virtual void SendConnectionCloseWithDetails(QuicErrorCode error,
                                               const std::string& details);
   // Notifies the visitor of the close and marks the connection as disconnected.
