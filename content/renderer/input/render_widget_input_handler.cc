@@ -206,11 +206,30 @@ void RenderWidgetInputHandler::HandleInputEvent(
                                          &event_overscroll);
 
 #if defined(OS_ANDROID)
-  const bool is_keyboard_event =
-      WebInputEvent::isKeyboardEventType(input_event.type);
+  bool from_ime = false;
 
-  // For non-keyboard events, we want the change source to be FROM_NON_IME.
-  ImeEventGuard guard(widget_, false, is_keyboard_event);
+  // For most keyboard events, we want the change source to be FROM_IME because
+  // we don't need to update IME states in AdapterInputConnection.
+  if (WebInputEvent::isKeyboardEventType(input_event.type)) {
+    const WebKeyboardEvent& key_event =
+        *static_cast<const WebKeyboardEvent*>(&input_event);
+    // TODO(changwan): this if-condition is a stop-gap solution to update IME
+    // states in AdapterInputConnection when using DPAD navigation. This is not
+    // a correct solution because InputConnection#getTextBeforeCursor()
+    // immediately after InputConnection#sendKeyEvent() will not return the
+    // correct value. The correct solution is either redesign the architecture
+    // or emulate the DPAD behavior in AdapterInputConnection, either is
+    // non-trivial.
+    if (key_event.nativeKeyCode != AKEYCODE_TAB &&
+        key_event.nativeKeyCode != AKEYCODE_DPAD_CENTER &&
+        key_event.nativeKeyCode != AKEYCODE_DPAD_LEFT &&
+        key_event.nativeKeyCode != AKEYCODE_DPAD_RIGHT &&
+        key_event.nativeKeyCode != AKEYCODE_DPAD_UP &&
+        key_event.nativeKeyCode != AKEYCODE_DPAD_DOWN)
+      from_ime = true;
+  }
+
+  ImeEventGuard guard(widget_, false, from_ime);
 #endif
 
   base::TimeTicks start_time;

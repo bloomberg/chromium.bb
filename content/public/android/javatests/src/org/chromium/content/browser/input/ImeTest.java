@@ -883,6 +883,36 @@ public class ImeTest extends ContentShellTestBase {
     }
 
     @SmallTest
+    @Feature({"TextInput", "Main"})
+    public void testNavigateTextWithDpadKeyCodes() throws Throwable {
+        focusElementAndWaitForStateUpdate("textarea");
+
+        commitText("hello", 1);
+        waitAndVerifyStatesAndCalls(0, "hello", 5, 5, -1, -1);
+
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_LEFT));
+        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_LEFT));
+
+        // Ideally getTextBeforeCursor immediately after dispatchKeyEvent should return a correct
+        // value, but we have a stop-gap solution in render_widget_input_handler and it make take
+        // some round trip time until we get the correct value.
+        // TODO(changwan): Change the test not to wait when we fix it.
+        waitUntilGetCharacterBeforeCursorBecomes("l");
+    }
+
+    private void waitUntilGetCharacterBeforeCursorBecomes(final String expectedText)
+            throws InterruptedException {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                String actualText = (String) mConnection.getTextBeforeCursor(1, 0);
+                updateFailureReason("actualText: " + actualText);
+                return expectedText.equals(actualText);
+            }
+        });
+    }
+
+    @SmallTest
     @Feature({"TextInput"})
     public void testPastePopupShowAndHide() throws Throwable {
         commitText("hello", 1);
