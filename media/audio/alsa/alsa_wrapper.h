@@ -71,14 +71,49 @@ class MEDIA_EXPORT AlsaWrapper {
   virtual int MixerSelemHasCaptureVolume(snd_mixer_elem_t* elem);
   virtual int MixerSelemGetCaptureVolumeRange(snd_mixer_elem_t* elem,
                                               long* min, long* max);
+  virtual void* MixerElemGetCallbackPrivate(const snd_mixer_elem_t* obj);
+  virtual void MixerElemSetCallback(snd_mixer_elem_t* obj,
+                                    snd_mixer_elem_callback_t val);
+  virtual void MixerElemSetCallbackPrivate(snd_mixer_elem_t* obj, void* val);
+  virtual snd_mixer_elem_t* MixerFindSelem(snd_mixer_t* mixer,
+                                           const snd_mixer_selem_id_t* id);
+  virtual int MixerHandleEvents(snd_mixer_t* mixer);
+  virtual int MixerPollDescriptors(snd_mixer_t* mixer,
+                                   struct pollfd* pfds,
+                                   unsigned int space);
+  virtual int MixerPollDescriptorsCount(snd_mixer_t* mixer);
+  virtual int MixerSelemGetPlaybackSwitch(snd_mixer_elem_t* elem,
+                                          snd_mixer_selem_channel_id_t channel,
+                                          int* value);
+  virtual int MixerSelemGetPlaybackVolume(snd_mixer_elem_t* elem,
+                                          snd_mixer_selem_channel_id_t channel,
+                                          long* value);
+  virtual int MixerSelemGetPlaybackVolumeRange(snd_mixer_elem_t* elem,
+                                               long* min,
+                                               long* max);
+  virtual int MixerSelemHasPlaybackSwitch(snd_mixer_elem_t* elem);
+  virtual void MixerSelemIdSetIndex(snd_mixer_selem_id_t* obj,
+                                    unsigned int val);
+  virtual void MixerSelemIdSetName(snd_mixer_selem_id_t* obj, const char* val);
+  virtual int MixerSelemSetPlaybackSwitch(snd_mixer_elem_t* elem,
+                                          snd_mixer_selem_channel_id_t channel,
+                                          int value);
+  virtual int MixerSelemSetPlaybackVolumeAll(snd_mixer_elem_t* elem,
+                                             long value);
+  virtual int MixerSelemIdMalloc(snd_mixer_selem_id_t** ptr);
+  virtual void MixerSelemIdFree(snd_mixer_selem_id_t* obj);
 
   virtual const char* StrError(int errnum);
 
  private:
-  int ConfigureHwParams(snd_pcm_t* handle, snd_pcm_hw_params_t* hw_params,
-                        snd_pcm_format_t format, snd_pcm_access_t access,
-                        unsigned int channels, unsigned int rate,
-                        int soft_resample, unsigned int latency);
+  int ConfigureHwParams(snd_pcm_t* handle,
+                        snd_pcm_hw_params_t* hw_params,
+                        snd_pcm_format_t format,
+                        snd_pcm_access_t access,
+                        unsigned int channels,
+                        unsigned int rate,
+                        int soft_resample,
+                        unsigned int latency);
   DISALLOW_COPY_AND_ASSIGN(AlsaWrapper);
 };
 
