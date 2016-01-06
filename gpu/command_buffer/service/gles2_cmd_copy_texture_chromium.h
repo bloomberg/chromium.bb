@@ -35,6 +35,7 @@ class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
                      GLenum source_target,
                      GLuint source_id,
                      GLenum source_internal_format,
+                     GLenum dest_target,
                      GLuint dest_id,
                      GLenum dest_internal_format,
                      GLsizei width,
@@ -47,6 +48,7 @@ class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
                         GLenum source_target,
                         GLuint source_id,
                         GLenum source_internal_format,
+                        GLenum dest_target,
                         GLuint dest_id,
                         GLenum dest_internal_format,
                         GLint xoffset,
@@ -70,6 +72,7 @@ class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
   void DoCopyTextureWithTransform(const gles2::GLES2Decoder* decoder,
                                   GLenum source_target,
                                   GLuint source_id,
+                                  GLenum dest_target,
                                   GLuint dest_id,
                                   GLsizei width,
                                   GLsizei height,
@@ -85,21 +88,33 @@ class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
   struct ProgramInfo {
     ProgramInfo()
         : program(0u),
-          vertex_translate_handle(0u),
+          vertex_dest_mult_handle(0u),
+          vertex_dest_add_handle(0u),
+          vertex_source_mult_handle(0u),
+          vertex_source_add_handle(0u),
           tex_coord_transform_handle(0u),
-          half_size_handle(0u),
           sampler_handle(0u) {}
 
     GLuint program;
-    GLuint vertex_translate_handle;
+
+    // Transformations that map from the original quad coordinates [-1, 1] into
+    // the destination texture's quad coordinates.
+    GLuint vertex_dest_mult_handle;
+    GLuint vertex_dest_add_handle;
+
+    // Transformations that map from the original quad coordinates [-1, 1] into
+    // the source texture's texture coordinates.
+    GLuint vertex_source_mult_handle;
+    GLuint vertex_source_add_handle;
+
     GLuint tex_coord_transform_handle;
-    GLuint half_size_handle;
     GLuint sampler_handle;
   };
 
   void DoCopyTextureInternal(const gles2::GLES2Decoder* decoder,
                              GLenum source_target,
                              GLuint source_id,
+                             GLenum dest_target,
                              GLuint dest_id,
                              GLint xoffset,
                              GLint yoffset,
@@ -118,9 +133,9 @@ class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
 
   bool initialized_;
   typedef std::vector<GLuint> ShaderVector;
-  ShaderVector vertex_shaders_;
+  GLuint vertex_shader_;
   ShaderVector fragment_shaders_;
-  typedef std::pair<int, int> ProgramMapKey;
+  typedef int ProgramMapKey;
   typedef base::hash_map<ProgramMapKey, ProgramInfo> ProgramMap;
   ProgramMap programs_;
   GLuint buffer_id_;

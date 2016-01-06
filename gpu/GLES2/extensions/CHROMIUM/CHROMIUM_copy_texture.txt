@@ -40,9 +40,7 @@ New Procedures and Functions
                                     GLboolean unpack_premultiply_alpha,
                                     GLboolean unpack_unmultiply_alpha)
 
-    Copies the contents of texture referred to by <source_id> to <dest_id>
-    texture. If <source_id> texture is not defined or has different dimension
-    to <dest_id> texture, define <source_id> texture same to <dest_id> texture.
+    Copies the contents of <source_id> texture to <dest_id> texture.
 
     Texture level 0 is copied from the source image to level 0 of the
     destination texture.
@@ -86,7 +84,7 @@ New Procedures and Functions
     objects.
 
     INVALID_VALUE is generated if textures corresponding to <dest_id> have not
-    been bound as GL_TEXTURE_2D object.
+    been bound as GL_TEXTURE_2D or GL_TEXTURE_RECTANGLE_ARB objects.
 
     INVALID_VALUE is generated if textures corresponding to <source_id> have not
     been bound as GL_TEXTURE_2D, GL_TEXTURE_RECTANGLE_ARB or
@@ -121,11 +119,17 @@ New Procedures and Functions
 
     <height> specifies the width of the texture subimage.
 
+    INVALID_VALUE is generated if either <source_id> texture or <dest_id>
+    texture is not defined.
+
     INVALID_OPERATION is generated if source internal_format and destination
     internal_format are not one of the valid formats described above.
 
     INVALID_OPERATION is generated if the destination texture has not been
     defined.
+
+    INVALID_VALUE is generated if <dest_id> texture is not bound as
+    GL_TEXTURE_2D or GL_TEXTURE_RECTANGLE_ARB.
 
     INVALID_VALUE is generated if level 0 of the source texture or
     the destination texture is not defined.
@@ -165,3 +169,4 @@ Revision History
     19/6/2015   Add arguments unpack_flip_y, unpack_premultiply_alpha, and
                 unpack_unmultiply_alpha to both commands.
     4/1/2016    Removed the argument target.
+    4/1/2016    Added GL_TEXTURE_RECTANGLE_ARB as valid dest_id target
