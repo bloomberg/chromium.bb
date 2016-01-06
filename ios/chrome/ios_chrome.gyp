@@ -497,6 +497,8 @@
         'browser/snapshots/snapshot_overlay.mm',
         'browser/snapshots/snapshots_util.h',
         'browser/snapshots/snapshots_util.mm',
+        'browser/ssl/ios_ssl_blocking_page.cc',
+        'browser/ssl/ios_ssl_blocking_page.h',
         'browser/suggestions/image_fetcher_impl.h',
         'browser/suggestions/image_fetcher_impl.mm',
         'browser/suggestions/suggestions_service_factory.h',
