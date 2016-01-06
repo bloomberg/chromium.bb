@@ -58,7 +58,6 @@ extern const char kSafeBrowsingEnabled[];
 extern const char kSafeBrowsingExtendedReportingEnabled[];
 extern const char kSafeBrowsingExtendedReportingOptInAllowed[];
 extern const char kSafeBrowsingProceedAnywayDisabled[];
-extern const char kSSLErrorOverrideAllowed[];
 
 }  // namespace prefs
 

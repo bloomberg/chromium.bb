@@ -167,8 +167,4 @@ const char kSafeBrowsingExtendedReportingOptInAllowed[] =
 const char kSafeBrowsingProceedAnywayDisabled[] =
     "safebrowsing.proceed_anyway_disabled";
 
-// Boolean that is true when the SSL interstitial should allow users to
-// proceed anyway. Otherwise, proceeding is not possible.
-const char kSSLErrorOverrideAllowed[] = "ssl.error_override_allowed";
-
 }  // namespace prefs
