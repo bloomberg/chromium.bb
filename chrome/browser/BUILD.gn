@@ -454,9 +454,6 @@ source_set("browser") {
                            ".",
                            "//chrome")
   }
-  if (is_chromeos) {
-    deps += [ "//components/drive:drive_chromeos" ]
-  }
   if (enable_background) {
     sources += rebase_path(gypi_values.chrome_browser_background_sources,
                            ".",
@@ -1283,10 +1280,6 @@ source_set("test_support") {
       "//components/drive:test_support",
       "//components/storage_monitor:test_support",
     ]
-  }
-
-  if (is_chromeos) {
-    deps += [ "//components/drive:test_support_chromeos" ]
   }
 
   if (enable_mdns) {
