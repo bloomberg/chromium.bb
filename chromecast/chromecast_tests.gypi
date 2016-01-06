@@ -177,6 +177,7 @@
             'cast_renderer_media_unittests',
             'cast_shell_unittests',
             'cast_shell_browser_test',
+            'media/media.gyp:alsa_cma_backend_unittests',
             'media/media.gyp:cast_media_unittests',
           ],
           'variables': {

@@ -32,4 +32,23 @@ const char kLastLaunchedApp[] = "last-launched-app";
 // started.
 const char kPreviousApp[] = "previous-app";
 
+// Size of the ALSA output buffer in frames. This directly sets the latency of
+// the output device. Latency can be calculated by multiplying the sample rate
+// by the output buffer size.
+const char kAlsaOutputBufferSize[] = "alsa-output-buffer-size";
+
+// Size of the ALSA output period in frames. The period of an ALSA output device
+// determines how many frames elapse between hardware interrupts.
+const char kAlsaOutputPeriodSize[] = "alsa-output-period-size";
+
+// How many frames need to be in the output buffer before output starts.
+const char kAlsaOutputStartThreshold[] = "alsa-output-start-threshold";
+
+// Minimum number of available frames for scheduling a transfer.
+const char kAlsaOutputAvailMin[] = "alsa-output-avail-min";
+
+// Time in ms to wait before closing the PCM handle when no more mixer inputs
+// remain.
+const char kAlsaCheckCloseTimeout[] = "alsa-check-close-timeout";
+
 }  // namespace switches
