@@ -5,7 +5,9 @@
 #include "content/browser/service_worker/service_worker_controllee_request_handler.h"
 
 #include <utility>
+#include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
@@ -14,7 +16,6 @@
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
-#include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/common/resource_request_body.h"
@@ -34,8 +35,6 @@ namespace content {
 namespace {
 
 int kMockProviderId = 1;
-
-void EmptyCallback() {}
 
 }
 
@@ -67,7 +66,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
     provider_host_ = host->AsWeakPtr();
     context()->AddProviderHost(std::move(host));
 
-    context()->storage()->LazyInitialize(base::Bind(&EmptyCallback));
+    context()->storage()->LazyInitialize(base::Bind(&base::DoNothing));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -190,6 +189,39 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
   // Navigations should trigger an update too.
   handler.reset(NULL);
   EXPECT_TRUE(version_->update_timer_.IsRunning());
+}
+
+// Test that an installing registration is associated with a provider host.
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, InstallingRegistration) {
+  // Create an installing registration.
+  version_->SetStatus(ServiceWorkerVersion::INSTALLING);
+  registration_->SetInstallingVersion(version_);
+  context()->storage()->NotifyInstallingRegistration(registration_.get());
+
+  // Conduct a main resource load.
+  const GURL kDocUrl("http://host/scope/doc");
+  scoped_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
+      kDocUrl, net::DEFAULT_PRIORITY, &url_request_delegate_);
+  scoped_ptr<ServiceWorkerControlleeRequestHandler> handler(
+      new ServiceWorkerControlleeRequestHandler(
+          context()->AsWeakPtr(), provider_host_,
+          base::WeakPtr<storage::BlobStorageContext>(),
+          FETCH_REQUEST_MODE_NO_CORS, FETCH_CREDENTIALS_MODE_OMIT,
+          FetchRedirectMode::FOLLOW_MODE, RESOURCE_TYPE_MAIN_FRAME,
+          REQUEST_CONTEXT_TYPE_HYPERLINK, REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
+          scoped_refptr<ResourceRequestBody>()));
+  scoped_ptr<net::URLRequestJob> job(
+      handler->MaybeCreateJob(request.get(), nullptr, &mock_resource_context_));
+  base::RunLoop().RunUntilIdle();
+
+  // The handler should have fallen back to network and destroyed the job. The
+  // registration should be associated with the provider host, although it is
+  // not controlled since there is no active version.
+  EXPECT_FALSE(job);
+  EXPECT_EQ(registration_.get(), provider_host_->associated_registration());
+  EXPECT_EQ(version_.get(), provider_host_->installing_version());
+  EXPECT_FALSE(version_->HasControllee());
+  EXPECT_FALSE(provider_host_->controlling_version());
 }
 
 // Test to not regress crbug/414118.

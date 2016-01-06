@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_controllee_request_handler.h"
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -244,6 +246,12 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
     return;
   }
 
+  // A registration exists, so associate it. Note that the controller is only
+  // set if there's an active version. If there's no active version, we should
+  // still associate so the provider host can use .ready.
+  provider_host_->AssociateRegistration(registration.get(),
+                                        false /* notify_controllerchange */);
+
   if (!active_version.get() ||
       active_version->status() != ServiceWorkerVersion::ACTIVATED) {
     job_->FallbackToNetwork();
@@ -259,8 +267,6 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
 
   ServiceWorkerMetrics::CountControlledPageLoad(stripped_url_);
 
-  provider_host_->AssociateRegistration(registration.get(),
-                                        false /* notify_controllerchange */);
   job_->ForwardToServiceWorker();
   TRACE_EVENT_ASYNC_END2(
       "ServiceWorker",
