@@ -194,6 +194,9 @@ void ActiveVerifier::Disable() {
 }
 
 void ActiveVerifier::OnHandleBeingClosed(HANDLE handle) {
+  if (!enabled_)
+    return;
+
   AutoNativeLock lock(*lock_);
   if (closing_)
     return;
