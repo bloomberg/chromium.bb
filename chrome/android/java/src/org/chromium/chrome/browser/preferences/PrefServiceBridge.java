@@ -369,6 +369,13 @@ public final class PrefServiceBridge {
     }
 
     /**
+     * @return the last account id associated with sync.
+     */
+    public String getSyncLastAccountId() {
+        return nativeGetSyncLastAccountId();
+    }
+
+    /**
      * @return the last account username associated with sync.
      */
     public String getSyncLastAccountName() {
@@ -1010,6 +1017,7 @@ public final class PrefServiceBridge {
     private native void nativeSetResolveNavigationErrorEnabled(boolean enabled);
     private native void nativeSetEulaAccepted();
     private native void nativeResetAcceptLanguages(String defaultLocale);
+    private native String nativeGetSyncLastAccountId();
     private native String nativeGetSyncLastAccountName();
     private native String nativeGetSupervisedUserCustodianName();
     private native String nativeGetSupervisedUserCustodianEmail();

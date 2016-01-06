@@ -76,8 +76,10 @@ void BrowserStateDataRemover::NotifyWithDetails(
     return;
   }
 
-  if (forget_last_username_)
+  if (forget_last_username_) {
+    browser_state_->GetPrefs()->ClearPref(prefs::kGoogleServicesLastAccountId);
     browser_state_->GetPrefs()->ClearPref(prefs::kGoogleServicesLastUsername);
+  }
 
   if (callback_)
     callback_.get()();

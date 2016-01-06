@@ -18,11 +18,19 @@ const char kAutologinEnabled[] = "autologin.enabled";
 // The profile's hosted domain; empty if unset;
 // AccountTrackerService::kNoHostedDomainFound if there is none.
 
+// Typically contains an obfuscated gaiaid and will match the value of
+// kGoogleServicesUserAccountId. Some platforms and legacy clients may have
+// an email stored in this preference instead. This is transitional and will
+// eventually be fixed, allowing the removal of kGoogleServicesUserAccountId.
 const char kGoogleServicesAccountId[] = "google.services.account_id";
 
 // The profile's hosted domain; empty if unset; Profile::kNoHostedDomainFound
 // if there is none.
 const char kGoogleServicesHostedDomain[] = "google.services.hosted_domain";
+
+// Similar to kGoogleServicesLastUsername, this is the corresponding version of
+// kGoogleServicesAccountId that is not cleared on signout.
+const char kGoogleServicesLastAccountId[] = "google.services.last_account_id";
 
 // String the identifies the last user that logged into sync and other
 // google services. As opposed to kGoogleServicesUsername, this value is not

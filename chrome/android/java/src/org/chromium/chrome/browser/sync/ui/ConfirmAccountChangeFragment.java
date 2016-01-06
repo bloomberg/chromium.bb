@@ -38,6 +38,7 @@ public class ConfirmAccountChangeFragment extends DialogFragment
     private static final String KEY_NEW_ACCOUNT_NAME = "newAccountName";
 
     public static void confirmSyncAccount(String syncAccountName, Activity activity) {
+        // TODO(skym): Use last account id for equality check, crbug.com/571698.
         String lastSyncAccountName = PrefServiceBridge.getInstance().getSyncLastAccountName();
         if (lastSyncAccountName != null && !lastSyncAccountName.isEmpty()
                 && !lastSyncAccountName.equals(syncAccountName)) {

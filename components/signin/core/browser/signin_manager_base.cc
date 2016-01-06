@@ -43,6 +43,8 @@ void SigninManagerBase::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(prefs::kGoogleServicesHostedDomain,
                                std::string());
+  registry->RegisterStringPref(prefs::kGoogleServicesLastAccountId,
+                               std::string());
   registry->RegisterStringPref(prefs::kGoogleServicesLastUsername,
                                std::string());
   registry->RegisterInt64Pref(
@@ -208,8 +210,10 @@ void SigninManagerBase::SetAuthenticatedAccountId(
   }
 
   // Go ahead and update the last signed in account info here as well. Once a
-  // user is signed in the two preferences should match. Doing it here as
-  // opposed to on signin allows us to catch the upgrade scenario.
+  // user is signed in the corresponding preferences should match. Doing it here
+  // as opposed to on signin allows us to catch the upgrade scenario.
+  client_->GetPrefs()->SetString(prefs::kGoogleServicesLastAccountId,
+                                 account_id);
   client_->GetPrefs()->SetString(prefs::kGoogleServicesLastUsername,
                                  info.email);
 }

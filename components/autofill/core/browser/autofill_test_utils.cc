@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/autofill_test_utils.h"
 
+#include <string>
+
 #include "base/guid.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_service_factory.h"
@@ -40,15 +42,17 @@ scoped_ptr<PrefService> PrefServiceForTesting() {
       new user_prefs::PrefRegistrySyncable());
   AutofillManager::RegisterProfilePrefs(registry.get());
 
-  // PDM depends on these prefs, which is normally registered in
+  // PDM depends on these prefs, which are normally registered in
   // SigninManagerFactory.
   registry->RegisterStringPref(::prefs::kGoogleServicesAccountId,
                                std::string());
-  registry->RegisterStringPref(::prefs::kGoogleServicesUsername,
+  registry->RegisterStringPref(::prefs::kGoogleServicesLastAccountId,
+                               std::string());
+  registry->RegisterStringPref(::prefs::kGoogleServicesLastUsername,
                                std::string());
   registry->RegisterStringPref(::prefs::kGoogleServicesUserAccountId,
                                std::string());
-  registry->RegisterStringPref(::prefs::kGoogleServicesLastUsername,
+  registry->RegisterStringPref(::prefs::kGoogleServicesUsername,
                                std::string());
 
   // PDM depends on these prefs, which are normally registered in

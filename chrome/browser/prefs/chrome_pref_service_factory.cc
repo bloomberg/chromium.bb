@@ -235,6 +235,12 @@ const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
     PrefHashFilter::VALUE_PERSONAL
   },
+  {
+    24, prefs::kGoogleServicesLastAccountId,
+    PrefHashFilter::ENFORCE_ON_LOAD,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
+    PrefHashFilter::VALUE_PERSONAL
+  },
   // See note at top, new items added here also need to be added to
   // histograms.xml's TrackedPreference enum.
 };

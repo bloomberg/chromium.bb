@@ -6,6 +6,7 @@
 
 #include <jni.h>
 #include <stddef.h>
+#include <vector>
 
 #include "base/android/build_info.h"
 #include "base/android/jni_android.h"
@@ -638,6 +639,13 @@ static void SetDoNotTrackEnabled(JNIEnv* env,
                                  const JavaParamRef<jobject>& obj,
                                  jboolean allow) {
   GetPrefService()->SetBoolean(prefs::kEnableDoNotTrack, allow);
+}
+
+static ScopedJavaLocalRef<jstring> GetSyncLastAccountId(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return ConvertUTF8ToJavaString(
+      env, GetPrefService()->GetString(prefs::kGoogleServicesLastAccountId));
 }
 
 static ScopedJavaLocalRef<jstring> GetSyncLastAccountName(

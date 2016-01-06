@@ -372,6 +372,7 @@ bool InlineSigninHelper::HandleCrossAccountError(
     const std::string& refresh_token,
     OneClickSigninSyncStarter::ConfirmationRequired confirmation_required,
     OneClickSigninSyncStarter::StartSyncMode start_mode) {
+  // TODO(skym): Use last account id for equality check, crbug.com/571698.
   std::string last_email =
       profile_->GetPrefs()->GetString(prefs::kGoogleServicesLastUsername);
 
