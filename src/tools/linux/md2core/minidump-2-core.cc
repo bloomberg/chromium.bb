@@ -35,7 +35,6 @@
 
 #include <elf.h>
 #include <errno.h>
-#include <inttypes.h>
 #include <link.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,6 +49,7 @@
 #include "common/linux/memory_mapped_file.h"
 #include "common/minidump_type_helper.h"
 #include "common/scoped_ptr.h"
+#include "google_breakpad/common/breakpad_types.h"
 #include "google_breakpad/common/minidump_format.h"
 #include "third_party/lss/linux_syscall_support.h"
 #include "tools/linux/md2core/minidump_memory_range.h"
