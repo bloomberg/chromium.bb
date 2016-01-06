@@ -272,6 +272,7 @@
         ['disable_file_support==1', {
           'sources!': [
             'base/directory_lister_unittest.cc',
+            'base/directory_listing_unittest.cc',
             'url_request/url_request_file_job_unittest.cc',
           ],
         }],
