@@ -968,6 +968,38 @@ bool Node::isSlotOrActiveInsertionPoint() const
     return isHTMLSlotElement(*this) || isActiveInsertionPoint(*this);
 }
 
+bool Node::isInV1ShadowTree() const
+{
+    ShadowRoot* shadowRoot = containingShadowRoot();
+    return shadowRoot && shadowRoot->isV1();
+}
+
+bool Node::isInV0ShadowTree() const
+{
+    ShadowRoot* shadowRoot = containingShadowRoot();
+    return shadowRoot && !shadowRoot->isV1();
+}
+
+static ElementShadow* parentElementShadow(const Node& node)
+{
+    Element* parent = node.parentElement();
+    if (!parent)
+        return nullptr;
+    return parent->shadow();
+}
+
+bool Node::isChildOfV1ShadowHost() const
+{
+    ElementShadow* parentShadow = parentElementShadow(*this);
+    return parentShadow && parentShadow->isV1();
+}
+
+bool Node::isChildOfV0ShadowHost() const
+{
+    ElementShadow* parentShadow = parentElementShadow(*this);
+    return parentShadow && !parentShadow->isV1();
+}
+
 Element* Node::shadowHost() const
 {
     if (ShadowRoot* root = containingShadowRoot())
@@ -2211,10 +2243,15 @@ PassRefPtrWillBeRawPtr<StaticNodeList> Node::getDestinationInsertionPoints()
 HTMLSlotElement* Node::assignedSlot() const
 {
     ASSERT(!needsDistributionRecalc());
-    Element* parent = parentElement();
-    if (!parent)
-        return nullptr;
-    if (ElementShadow* shadow = parent->shadow()) {
+    if (ElementShadow* shadow = parentElementShadow(*this))
+        return shadow->assignedSlotFor(*this);
+    return nullptr;
+}
+
+HTMLSlotElement* Node::assignedSlotForBinding()
+{
+    updateDistribution();
+    if (ElementShadow* shadow = parentElementShadow(*this)) {
         if (shadow->isV1() && shadow->isOpen())
             return shadow->assignedSlotFor(*this);
     }
