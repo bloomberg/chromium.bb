@@ -9478,6 +9478,9 @@ TEST_F(LayerTreeHostCommonTest, TwoUnclippedRenderSurfaces) {
   ExecuteCalculateDrawProperties(root);
 
   EXPECT_EQ(gfx::Rect(-10, -10, 30, 30), render_surface2->clip_rect());
+  // A clip node is created for every render surface and for layers that have
+  // local clip. So, here it should be craeted for every layer.
+  EXPECT_EQ(root->layer_tree_impl()->property_trees()->clip_tree.size(), 5u);
 }
 
 TEST_F(LayerTreeHostCommonTest, MaskLayerScreenSpaceTransform) {

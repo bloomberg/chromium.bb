@@ -73,25 +73,6 @@ static ClipNode* GetClipParent(const DataForRecursion<LayerType>& data,
 }
 
 template <typename LayerType>
-static bool AppliesClip(LayerType* layer,
-                        const DataForRecursion<LayerType>& data,
-                        bool created_render_surface,
-                        bool is_clipped) {
-  const bool render_surface_applies_clip = created_render_surface && is_clipped;
-  const bool render_surface_may_grow_due_to_clip_children =
-      created_render_surface && layer->num_unclipped_descendants() > 0;
-
-  if (layer->masks_to_bounds() || layer->mask_layer() ||
-      render_surface_may_grow_due_to_clip_children)
-    return true;
-
-  if (!render_surface_applies_clip)
-    return false;
-
-  return true;
-}
-
-template <typename LayerType>
 static bool LayerClipsSubtree(LayerType* layer) {
   return layer->masks_to_bounds() || layer->mask_layer();
 }
@@ -151,17 +132,9 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
       layer_clips_subtree ||
       parent->data.layers_are_clipped_when_surfaces_disabled;
 
-  bool applies_clip =
-      AppliesClip(layer, data_from_ancestor, created_render_surface,
-                  ancestor_clips_subtree);
-  bool parent_applies_clip = !parent->data.resets_clip;
-
-  // When we have an unclipped surface, all ancestor clips no longer apply.
-  // However, if our parent already clears ancestor clips and applies no clip of
-  // its own, there aren't any ancestor clips that need clearing.
-  bool needs_to_clear_ancestor_clips =
-      has_unclipped_surface && parent_applies_clip;
-  bool requires_node = applies_clip || needs_to_clear_ancestor_clips;
+  // Render surface's clip is needed during hit testing. So, we need to create
+  // a clip node for every render surface.
+  bool requires_node = layer_clips_subtree || created_render_surface;
 
   if (!requires_node) {
     data_for_children->clip_tree_parent = parent_id;
