@@ -9,8 +9,10 @@
 
 #include <utility>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chromeos/binder/command_stream.h"
 #include "chromeos/chromeos_export.h"
@@ -37,6 +39,17 @@ class CHROMEOS_EXPORT CommandBroker
                 const TransactionData& request,
                 scoped_ptr<TransactionData>* reply);
 
+  // Increments the ref-count of a remote object specified by |handle|.
+  void AddReference(int32_t handle);
+
+  // Decrements the ref-count of a remote object specified by |handle|.
+  void ReleaseReference(int32_t handle);
+
+  // Returns a closure which decrements the ref-count of a remote object.
+  // It's safe to run the returned closure even after the destruction of this
+  // object.
+  base::Closure GetReleaseReferenceClosure(int32_t handle);
+
   // CommandStream::IncomingCommandHandler override:
   void OnReply(scoped_ptr<TransactionData> data) override;
   void OnDeadReply() override;
@@ -60,6 +73,8 @@ class CHROMEOS_EXPORT CommandBroker
 
   ResponseType response_type_ = RESPONSE_TYPE_NONE;
   scoped_ptr<TransactionData> response_data_;
+
+  base::WeakPtrFactory<CommandBroker> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandBroker);
 };

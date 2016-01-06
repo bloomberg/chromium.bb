@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "chromeos/binder/driver.h"
 #include "chromeos/binder/transaction_data.h"
@@ -38,7 +39,8 @@ binder_transaction_data ConvertTransactionDataToStruct(
 
 }  // namespace
 
-CommandBroker::CommandBroker(Driver* driver) : command_stream_(driver, this) {}
+CommandBroker::CommandBroker(Driver* driver)
+    : command_stream_(driver, this), weak_ptr_factory_(this) {}
 
 CommandBroker::~CommandBroker() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -76,6 +78,25 @@ bool CommandBroker::Transact(int32_t handle,
     *reply = response_data.Pass();
   }
   return true;
+}
+
+void CommandBroker::AddReference(int32_t handle) {
+  // Increment weak reference count.
+  command_stream_.AppendOutgoingCommand(BC_INCREFS, &handle, sizeof(handle));
+  // Increment strong reference count.
+  command_stream_.AppendOutgoingCommand(BC_ACQUIRE, &handle, sizeof(handle));
+}
+
+void CommandBroker::ReleaseReference(int32_t handle) {
+  // Decrement strong reference count.
+  command_stream_.AppendOutgoingCommand(BC_RELEASE, &handle, sizeof(handle));
+  // Decrement weak reference count.
+  command_stream_.AppendOutgoingCommand(BC_DECREFS, &handle, sizeof(handle));
+}
+
+base::Closure CommandBroker::GetReleaseReferenceClosure(int32_t handle) {
+  return base::Bind(&CommandBroker::ReleaseReference,
+                    weak_ptr_factory_.GetWeakPtr(), handle);
 }
 
 void CommandBroker::OnReply(scoped_ptr<TransactionData> data) {
