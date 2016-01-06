@@ -69,9 +69,6 @@ const CGFloat kInternalPageImageSpacing = 10;
 // Square size of the images on the Connections tab.
 const CGFloat kConnectionImageSize = 30;
 
-// Square size of the image that is shown for internal pages.
-const CGFloat kInternalPageImageSize = 16;
-
 // Square size of the permission images.
 const CGFloat kPermissionImageSize = 19;
 
@@ -396,27 +393,33 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
   NSPoint controlOrigin = NSMakePoint(
       kInternalPageFramePadding,
       kInternalPageFramePadding + info_bubble::kBubbleArrowHeight);
-  NSSize imageSize = NSMakeSize(kInternalPageImageSize,
-                                kInternalPageImageSize);
-  NSImageView* imageView = [self addImageWithSize:imageSize
+  NSImage* productLogoImage =
+      rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_16).ToNSImage();
+  NSImageView* imageView = [self addImageWithSize:[productLogoImage size]
                                            toView:contentView_
                                           atPoint:controlOrigin];
-  [imageView setImage:rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_16).ToNSImage()];
+  [imageView setImage:productLogoImage];
 
-  controlOrigin.x += NSWidth([imageView frame]) + kInternalPageImageSpacing;
+  NSRect imageFrame = [imageView frame];
+  controlOrigin.x += NSWidth(imageFrame) + kInternalPageImageSpacing;
   base::string16 text = l10n_util::GetStringUTF16(IDS_PAGE_INFO_INTERNAL_PAGE);
   NSTextField* textField = [self addText:text
                                 withSize:[NSFont smallSystemFontSize]
                                     bold:NO
                                   toView:contentView_
                                  atPoint:controlOrigin];
-  // Center the text vertically with the image.
+  // Center the image vertically with the text. Previously this code centered
+  // the text vertically while holding the image in place. That produced correct
+  // results when the image, at 26x26, was taller than (or just slightly
+  // shorter) than the text, but produced incorrect results once the icon
+  // shrank to 16x16. The icon should now always be shorter than the text.
+  // See crbug.com/572044 .
   NSRect textFrame = [textField frame];
-  textFrame.origin.y += (imageSize.height - NSHeight(textFrame)) / 2;
-  [textField setFrame:textFrame];
+  imageFrame.origin.y += (NSHeight(textFrame) - NSHeight(imageFrame)) / 2;
+  [imageView setFrame:imageFrame];
 
   // Adjust the contentView to fit everything.
-  CGFloat maxY = std::max(NSMaxY([imageView frame]), NSMaxY(textFrame));
+  CGFloat maxY = std::max(NSMaxY(imageFrame), NSMaxY(textFrame));
   [contentView_ setFrame:NSMakeRect(
       0, 0, [self defaultWindowWidth], maxY + kInternalPageFramePadding)];
 
