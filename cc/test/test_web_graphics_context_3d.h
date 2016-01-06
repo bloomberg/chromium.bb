@@ -275,8 +275,11 @@ class TestWebGraphicsContext3D {
                                            GLuint io_surface_id,
                                            GLuint plane) {}
 
-  virtual unsigned insertSyncPoint();
+  virtual GLuint insertSyncPoint();
+  virtual GLuint64 insertFenceSync();
+  virtual void genSyncToken(GLuint64 fence_sync, GLbyte* sync_token);
   virtual void waitSyncToken(const GLbyte* sync_token);
+  virtual void verifySyncTokens(GLbyte** sync_tokens, GLsizei count);
 
   const gpu::SyncToken& last_waited_sync_token() const {
     return last_waited_sync_token_;
@@ -482,7 +485,7 @@ class TestWebGraphicsContext3D {
   TestContextSupport* test_support_;
   gfx::Rect update_rect_;
   UpdateType last_update_type_;
-  unsigned next_insert_sync_point_;
+  GLuint64 next_insert_fence_sync_;
   gpu::SyncToken last_waited_sync_token_;
   int unpack_alignment_;
 

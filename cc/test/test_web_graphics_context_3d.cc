@@ -69,7 +69,7 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
       scale_factor_(-1.f),
       test_support_(NULL),
       last_update_type_(NO_UPDATE),
-      next_insert_sync_point_(1),
+      next_insert_fence_sync_(1),
       unpack_alignment_(4),
       bound_buffer_(0),
       weak_ptr_factory_(this) {
@@ -649,8 +649,20 @@ GLuint TestWebGraphicsContext3D::createGpuMemoryBufferImageCHROMIUM(
   return image_id;
 }
 
-unsigned TestWebGraphicsContext3D::insertSyncPoint() {
-  return next_insert_sync_point_++;
+GLuint TestWebGraphicsContext3D::insertSyncPoint() {
+  return static_cast<GLuint>(next_insert_fence_sync_++);
+}
+
+GLuint64 TestWebGraphicsContext3D::insertFenceSync() {
+  return next_insert_fence_sync_++;
+}
+
+void TestWebGraphicsContext3D::genSyncToken(GLuint64 fence_sync,
+                                            GLbyte* sync_token) {
+  gpu::SyncToken sync_token_data(gpu::CommandBufferNamespace::GPU_IO, 0, 0,
+                                 fence_sync);
+  sync_token_data.SetVerifyFlush();
+  memcpy(sync_token, &sync_token_data, sizeof(sync_token_data));
 }
 
 void TestWebGraphicsContext3D::waitSyncToken(const GLbyte* sync_token) {
@@ -659,6 +671,16 @@ void TestWebGraphicsContext3D::waitSyncToken(const GLbyte* sync_token) {
     memcpy(sync_token_data.GetData(), sync_token, sizeof(sync_token_data));
     if (sync_token_data.HasData())
       last_waited_sync_token_ = sync_token_data;
+  }
+}
+
+void TestWebGraphicsContext3D::verifySyncTokens(GLbyte** sync_tokens,
+                                                GLsizei count) {
+  for (GLsizei i = 0; i < count; ++i) {
+    gpu::SyncToken sync_token_data;
+    memcpy(sync_token_data.GetData(), sync_tokens[i], sizeof(sync_token_data));
+    sync_token_data.SetVerifyFlush();
+    memcpy(sync_tokens[i], &sync_token_data, sizeof(sync_token_data));
   }
 }
 

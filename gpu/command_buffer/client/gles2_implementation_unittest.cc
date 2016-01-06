@@ -35,6 +35,7 @@ using testing::DoAll;
 using testing::InSequence;
 using testing::Invoke;
 using testing::Mock;
+using testing::Pointee;
 using testing::Sequence;
 using testing::StrictMock;
 using testing::Truly;
@@ -3881,14 +3882,10 @@ TEST_F(GLES2ImplementationTest, VerifySyncTokensCHROMIUM) {
   EXPECT_FALSE(sync_token.verified_flush());
 
   ClearCommands();
-  const GLuint64 kVerifyFenceSync = 234u;
   EXPECT_CALL(*gpu_control_, CanWaitUnverifiedSyncToken(_))
       .WillOnce(testing::Return(true));
-  EXPECT_CALL(*gpu_control_, GenerateFenceSyncRelease())
-      .WillOnce(testing::Return(kVerifyFenceSync));
-  EXPECT_CALL(*gpu_control_, IsFenceSyncFlushReceived(kVerifyFenceSync))
-      .WillOnce(testing::Return(true));
-  gl_->VerifySyncTokensCHROMIUM(sync_token_datas, 1);
+  EXPECT_CALL(*gpu_control_, EnsureWorkVisible());
+  gl_->VerifySyncTokensCHROMIUM(sync_token_datas, arraysize(sync_token_datas));
   EXPECT_TRUE(NoCommandsWritten());
   EXPECT_EQ(GL_NO_ERROR, CheckError());
 
@@ -3896,6 +3893,67 @@ TEST_F(GLES2ImplementationTest, VerifySyncTokensCHROMIUM) {
   EXPECT_EQ(kCommandBufferId, sync_token.command_buffer_id());
   EXPECT_EQ(kFenceSync, sync_token.release_count());
   EXPECT_TRUE(sync_token.verified_flush());
+}
+
+TEST_F(GLES2ImplementationTest, VerifySyncTokensCHROMIUM_Sequence) {
+  // To verify sync tokens, the sync tokens must all be verified after
+  // CanWaitUnverifiedSyncTokens() are called. This test ensures the right
+  // sequence.
+  ExpectedMemoryInfo result =
+      GetExpectedResultMemory(sizeof(cmds::GetError::Result));
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillRepeatedly(SetMemory(result.ptr, GLuint(GL_NO_ERROR)))
+      .RetiresOnSaturation();
+
+  const CommandBufferNamespace kNamespaceId = CommandBufferNamespace::GPU_IO;
+  const GLuint64 kCommandBufferId = 234u;
+  const GLuint64 kFenceSync1 = 123u;
+  const GLuint64 kFenceSync2 = 234u;
+  gpu::SyncToken sync_token1;
+  gpu::SyncToken sync_token2;
+  GLbyte* sync_token_datas[] = { sync_token1.GetData(), sync_token2.GetData() };
+
+  EXPECT_CALL(*gpu_control_, GetNamespaceID())
+      .WillRepeatedly(Return(kNamespaceId));
+  EXPECT_CALL(*gpu_control_, GetCommandBufferID())
+      .WillRepeatedly(Return(kCommandBufferId));
+  EXPECT_CALL(*gpu_control_, GetExtraCommandBufferData())
+      .WillRepeatedly(Return(0));
+
+  // Generate sync token 1.
+  EXPECT_CALL(*gpu_control_, IsFenceSyncRelease(kFenceSync1))
+      .WillOnce(Return(true));
+  EXPECT_CALL(*gpu_control_, IsFenceSyncFlushed(kFenceSync1))
+      .WillOnce(Return(true));
+  gl_->GenUnverifiedSyncTokenCHROMIUM(kFenceSync1, sync_token1.GetData());
+  ASSERT_TRUE(sync_token1.HasData());
+  ASSERT_FALSE(sync_token1.verified_flush());
+
+  // Generate sync token 2.
+  EXPECT_CALL(*gpu_control_, IsFenceSyncRelease(kFenceSync2))
+      .WillOnce(Return(true));
+  EXPECT_CALL(*gpu_control_, IsFenceSyncFlushed(kFenceSync2))
+      .WillOnce(Return(true));
+  gl_->GenUnverifiedSyncTokenCHROMIUM(kFenceSync2, sync_token2.GetData());
+  ASSERT_TRUE(sync_token2.HasData());
+  ASSERT_FALSE(sync_token2.verified_flush());
+
+  // Ensure proper sequence of checking and validating.
+  Sequence sequence;
+  EXPECT_CALL(*gpu_control_, CanWaitUnverifiedSyncToken(Pointee(sync_token1)))
+      .InSequence(sequence)
+      .WillOnce(Return(true));
+  EXPECT_CALL(*gpu_control_, CanWaitUnverifiedSyncToken(Pointee(sync_token2)))
+      .InSequence(sequence)
+      .WillOnce(Return(true));
+  EXPECT_CALL(*gpu_control_, EnsureWorkVisible())
+      .InSequence(sequence);
+  gl_->VerifySyncTokensCHROMIUM(sync_token_datas, arraysize(sync_token_datas));
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(GL_NO_ERROR, CheckError());
+
+  EXPECT_TRUE(sync_token1.verified_flush());
+  EXPECT_TRUE(sync_token2.verified_flush());
 }
 
 TEST_F(GLES2ImplementationTest, WaitSyncTokenCHROMIUM) {

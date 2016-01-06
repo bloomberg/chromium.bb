@@ -5589,7 +5589,7 @@ void GLES2Implementation::GenUnverifiedSyncTokenCHROMIUM(GLuint64 fence_sync,
 
 void GLES2Implementation::VerifySyncTokensCHROMIUM(GLbyte **sync_tokens,
                                                    GLsizei count) {
-  bool sync_tokens_verified = false;
+  bool requires_synchronization = false;
   for (GLsizei i = 0; i < count; ++i) {
     if (sync_tokens[i]) {
       SyncToken sync_token;
@@ -5601,18 +5601,26 @@ void GLES2Implementation::VerifySyncTokensCHROMIUM(GLbyte **sync_tokens,
                      "Cannot verify sync token using this context.");
           return;
         }
-        if (!sync_tokens_verified) {
-          // Insert a fence sync here and ensure it is received immediately.
-          // This will require a flush but simplifies things a bit because
-          // unverified sync tokens only need an ordering barrier.
-          const uint64_t release = gpu_control_->GenerateFenceSyncRelease();
-          FlushHelper();
-          const bool verified = gpu_control_->IsFenceSyncFlushReceived(release);
-          DCHECK(verified);
+        requires_synchronization = true;
+      }
+    }
+  }
 
-          sync_tokens_verified = true;
-        }
+  // This step must be done after all unverified tokens have finished processing
+  // CanWaitUnverifiedSyncToken(), command buffers use that to do any necessary
+  // flushes.
+  if (requires_synchronization) {
+    // Make sure we have no pending ordering barriers by flushing now.
+    FlushHelper();
 
+    // Ensure all the fence syncs are visible on GPU service.
+    gpu_control_->EnsureWorkVisible();
+
+    // We can automatically mark everything as verified now.
+    for (GLsizei i = 0; i < count; ++i) {
+      SyncToken sync_token;
+      memcpy(&sync_token, sync_tokens[i], sizeof(sync_token));
+      if (!sync_token.verified_flush()) {
         sync_token.SetVerifyFlush();
         memcpy(sync_tokens[i], &sync_token, sizeof(sync_token));
       }

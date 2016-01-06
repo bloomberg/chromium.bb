@@ -1140,6 +1140,9 @@ void ResourceProvider::PrepareSendToParent(const ResourceIdArray& resources,
   DCHECK(thread_checker_.CalledOnValidThread());
   GLES2Interface* gl = ContextGL();
   bool need_sync_token = false;
+
+  gpu::SyncToken new_sync_token;
+  std::vector<GLbyte*> unverified_sync_tokens;
   for (ResourceIdArray::const_iterator it = resources.begin();
        it != resources.end();
        ++it) {
@@ -1147,17 +1150,36 @@ void ResourceProvider::PrepareSendToParent(const ResourceIdArray& resources,
     TransferResource(gl, *it, &resource);
     need_sync_token |= (!resource.mailbox_holder.sync_token.HasData() &&
                         !resource.is_software);
+
+    if (resource.mailbox_holder.sync_token.HasData() &&
+        !resource.mailbox_holder.sync_token.verified_flush()) {
+      unverified_sync_tokens.push_back(
+          resource.mailbox_holder.sync_token.GetData());
+    }
+
     ++resources_.find(*it)->second.exported_count;
     list->push_back(resource);
   }
+
   if (need_sync_token &&
       output_surface_->capabilities().delegated_sync_points_required) {
-    gpu::SyncToken sync_token(gl->InsertSyncPointCHROMIUM());
+    const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
+    gl->OrderingBarrierCHROMIUM();
+    gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, new_sync_token.GetData());
+    unverified_sync_tokens.push_back(new_sync_token.GetData());
+  }
+
+  if (!unverified_sync_tokens.empty()) {
+    gl->VerifySyncTokensCHROMIUM(unverified_sync_tokens.data(),
+                                 unverified_sync_tokens.size());
+  }
+
+  if (new_sync_token.HasData()) {
     for (TransferableResourceArray::iterator it = list->begin();
          it != list->end();
          ++it) {
       if (!it->mailbox_holder.sync_token.HasData())
-        it->mailbox_holder.sync_token = sync_token;
+        it->mailbox_holder.sync_token = new_sync_token;
     }
   }
 }
