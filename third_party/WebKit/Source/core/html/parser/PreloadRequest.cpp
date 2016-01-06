@@ -44,6 +44,7 @@ FetchRequest PreloadRequest::resourceRequest(Document* document)
     request.setDefer(m_defer);
     request.setResourceWidth(m_resourceWidth);
     request.clientHintsPreferences().updateFrom(m_clientHintsPreferences);
+    request.setIntegrityMetadata(m_integrityMetadata);
 
     return request;
 }

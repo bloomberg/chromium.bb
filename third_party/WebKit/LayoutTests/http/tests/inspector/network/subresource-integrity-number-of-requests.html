@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../network-test.js"></script>
+<script>
+// Regression test for https://crbug.com/573269.
+function loadIFrame() {
+    var iframe = document.createElement('iframe');
+    iframe.src = 'resources/call-success-with-integrity-frame.html';
+    document.body.appendChild(iframe);
+}
+
+function test() {
+    function findRequestsByURL(url)
+    {
+        var requests = InspectorTest.networkRequests();
+        var results = [];
+        for (var i = 0; i < requests.length; ++i) {
+            if (url.test(requests[i].url))
+                results.push(requests[i]);
+        }
+
+        return results;
+    }
+    InspectorTest.addConsoleSniffer(step1);
+    InspectorTest.evaluateInPage("loadIFrame()");
+
+    function step1() {
+        var requests = findRequestsByURL(/call-success.js/);
+        InspectorTest.assertTrue(requests.length === 1);
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body>
+<script>runTest();</script>
+<p>Verify that only one request is made for basic script requests with integrity attribute.</p>
+</body>
+</html>

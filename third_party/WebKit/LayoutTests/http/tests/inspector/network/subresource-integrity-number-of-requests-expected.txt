@@ -1,0 +1,4 @@
+CONSOLE MESSAGE: line 5: Script loaded successfully.
+Verify that only one request is made for basic script requests with integrity attribute.
+
+

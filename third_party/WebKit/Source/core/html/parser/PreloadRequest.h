@@ -7,6 +7,7 @@
 
 #include "core/fetch/ClientHintsPreferences.h"
 #include "core/fetch/FetchRequest.h"
+#include "core/fetch/IntegrityMetadata.h"
 #include "core/fetch/Resource.h"
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/weborigin/SecurityPolicy.h"
@@ -51,6 +52,14 @@ public:
     bool isPreconnect() const { return m_requestType == RequestTypePreconnect; }
     const ClientHintsPreferences& preferences() const { return m_clientHintsPreferences; }
     ReferrerPolicy referrerPolicy() const { return m_referrerPolicy; }
+    void setIntegrityMetadata(const IntegrityMetadataSet& metadataSet)
+    {
+        m_integrityMetadata = metadataSet;
+    }
+    IntegrityMetadataSet integrityMetadata() const
+    {
+        return m_integrityMetadata;
+    }
 
 private:
     PreloadRequest(const String& initiatorName,
@@ -92,6 +101,7 @@ private:
     ClientHintsPreferences m_clientHintsPreferences;
     RequestType m_requestType;
     ReferrerPolicy m_referrerPolicy;
+    IntegrityMetadataSet m_integrityMetadata;
 };
 
 typedef Vector<OwnPtr<PreloadRequest>> PreloadRequestStream;

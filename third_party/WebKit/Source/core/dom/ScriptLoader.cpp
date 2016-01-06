@@ -308,8 +308,6 @@ bool ScriptLoader::fetchScript(const String& sourceUrl, FetchRequest::DeferOptio
         }
 
         m_resource = ScriptResource::fetch(request, elementDocument->fetcher());
-        if (m_resource && !integrityAttr.isEmpty())
-            m_resource->setIntegrityMetadata(metadataSet);
 
         m_isExternalScript = true;
     }

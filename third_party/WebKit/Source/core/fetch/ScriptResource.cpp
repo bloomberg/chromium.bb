@@ -41,7 +41,10 @@ ResourcePtr<ScriptResource> ScriptResource::fetch(FetchRequest& request, Resourc
 {
     ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
     request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextScript);
-    return toScriptResource(fetcher->requestResource(request, ScriptResourceFactory()));
+    ResourcePtr<ScriptResource> resource = toScriptResource(fetcher->requestResource(request, ScriptResourceFactory()));
+    if (resource && !request.integrityMetadata().isEmpty())
+        resource->setIntegrityMetadata(request.integrityMetadata());
+    return resource;
 }
 
 ScriptResource::ScriptResource(const ResourceRequest& resourceRequest, const String& charset)
