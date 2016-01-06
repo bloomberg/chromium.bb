@@ -37,7 +37,6 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/switches.h"
-#include "ui/gl/gl_switches.h"
 
 namespace {
 
@@ -284,13 +283,9 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
     // Allows us to use the same reference image on HiDPI/Retina displays.
     command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor, "1");
 
-#if defined(OS_CHROMEOS)
-    // ChromeOS builds running on Linux use OSMesa by default. This is flaky
-    // with pixel tests, so force these environments to use hardware GPU.
-    command_line->AppendSwitch(switches::kUseGpuInTests);
-#else
-    // Software rendering is faster and more reliable for these tests.
-    // Unfortunately ChromeOS does not support software rendering.
+#if !defined(OS_CHROMEOS)
+    // These pixel tests are flaky on MSan bots with hardware rendering.
+    // However, ChromeOS does not support software compositing.
     command_line->AppendSwitch(switches::kDisableGpu);
 #endif
   }
