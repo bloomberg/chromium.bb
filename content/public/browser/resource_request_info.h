@@ -94,12 +94,8 @@ class ResourceRequestInfo {
   // True if GetRenderFrameID() represents a main frame in the RenderView.
   virtual bool IsMainFrame() const = 0;
 
-  // True if GetParentRenderFrameID() represents a main frame in the RenderView.
+  // True if the frame's parent represents a main frame in the RenderView.
   virtual bool ParentIsMainFrame() const = 0;
-
-  // Routing ID of parent frame of frame that sent this resource request.
-  // -1 if unknown / invalid.
-  virtual int GetParentRenderFrameID() const = 0;
 
   // Returns the associated resource type.
   virtual ResourceType GetResourceType() const = 0;

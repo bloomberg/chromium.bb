@@ -214,6 +214,12 @@ class WebContents : public PageNavigator,
   // Returns the focused frame for the currently active view.
   virtual RenderFrameHost* GetFocusedFrame() = 0;
 
+  // Returns the current RenderFrameHost for a given FrameTreeNode ID if it is
+  // part of this tab. See RenderFrameHost::GetFrameTreeNodeId for documentation
+  // on this ID.
+  virtual RenderFrameHost* FindFrameByFrameTreeNodeId(
+      int frame_tree_node_id) = 0;
+
   // Calls |on_frame| for each frame in the currently active view.
   // Note: The RenderFrameHost parameter is not guaranteed to have a live
   // RenderFrame counterpart in the renderer process. Callbacks should check

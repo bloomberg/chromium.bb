@@ -318,6 +318,10 @@ RenderFrameHost* RenderFrameHostImpl::GetParent() {
   return parent_node->current_frame_host();
 }
 
+int RenderFrameHostImpl::GetFrameTreeNodeId() {
+  return frame_tree_node_->frame_tree_node_id();
+}
+
 const std::string& RenderFrameHostImpl::GetFrameName() {
   return frame_tree_node_->frame_name();
 }

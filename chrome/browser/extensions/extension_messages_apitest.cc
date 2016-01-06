@@ -39,6 +39,8 @@
 #include "extensions/common/api/runtime.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
+#include "extensions/test/extension_test_message_listener.h"
+#include "extensions/test/result_catcher.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/jwk_serializer.h"
 #include "net/dns/mock_host_resolver.h"
@@ -116,6 +118,22 @@ class MessageSender : public content::NotificationObserver {
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Messaging) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("messaging/connect")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MessagingCrash) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ExtensionTestMessageListener ready_to_crash("ready_to_crash", true);
+  ASSERT_TRUE(LoadExtension(
+          test_data_dir_.AppendASCII("messaging/connect_crash")));
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/extensions/test_file.html"));
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(ready_to_crash.WaitUntilSatisfied());
+
+  ResultCatcher catcher;
+  CrashTab(tab);
+  EXPECT_TRUE(catcher.GetNextResult());
 }
 
 // Tests that message passing from one extension to another works.

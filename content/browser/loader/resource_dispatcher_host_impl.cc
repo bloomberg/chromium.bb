@@ -1182,8 +1182,7 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
   // ResourceRequestInfo rather than caching it locally.  This lets us update
   // the info object when a transfer occurs.
   info->UpdateForTransfer(child_id, route_id, request_data.origin_pid,
-                          request_id, request_data.parent_render_frame_id,
-                          filter_->GetWeakPtr());
+                          request_id, filter_->GetWeakPtr());
 
   // Update maps that used the old IDs, if necessary.  Some transfers in tests
   // do not actually use a different ID, so not all maps need to be updated.
@@ -1414,7 +1413,6 @@ void ResourceDispatcherHostImpl::BeginRequest(
       request_data.render_frame_id,
       request_data.is_main_frame,
       request_data.parent_is_main_frame,
-      request_data.parent_render_frame_id,
       request_data.resource_type,
       request_data.transition_type,
       request_data.should_replace_current_entry,
@@ -1712,7 +1710,6 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       render_frame_route_id,
       false,             // is_main_frame
       false,             // parent_is_main_frame
-      -1,                // parent_render_frame_id
       RESOURCE_TYPE_SUB_RESOURCE,
       ui::PAGE_TRANSITION_LINK,
       false,     // should_replace_current_entry
@@ -2152,7 +2149,6 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       request_id_,
       -1,  // request_data.render_frame_id,
       info.is_main_frame, info.parent_is_main_frame,
-      -1,  // request_data.parent_render_frame_id,
       resource_type, info.common_params.transition,
       // should_replace_current_entry. This was only maintained at layer for
       // request transfers and isn't needed for browser-side navigations.

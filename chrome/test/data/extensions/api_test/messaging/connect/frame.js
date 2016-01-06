@@ -9,9 +9,16 @@ chrome.runtime.onConnect.addListener(function(port) {
       // This number is used in test.js to identify messages from this frame.
       var test_id = location.search.slice(-1);
       port.postMessage('from_' + test_id);
+    } else if (msg.testConnectChildFrameAndNavigate) {
+      location.search = '?testConnectChildFrameAndNavigateDone';
     }
   });
 });
 
 // continuation of testSendMessageFromFrame()
-chrome.runtime.sendMessage({frameUrl: location.href});
+if (location.search.lastIndexOf('?testSendMessageFromFrame', 0) === 0) {
+  chrome.runtime.sendMessage({frameUrl: location.href});
+} else if (location.search === '?testConnectChildFrameAndNavigateSetup') {
+  // continuation of connectChildFrameAndNavigate() 1/2
+  chrome.runtime.sendMessage('testConnectChildFrameAndNavigateSetupDone');
+}

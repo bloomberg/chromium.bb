@@ -15,7 +15,10 @@
     },
     {
       "all_frames": true,
-      "matches": ["http://*/*?testSendMessageFromFrame*"],
+      "matches": [
+        "http://*/*?testSendMessageFromFrame*",
+        "http://*/*?testConnectChildFrameAndNavigate*"
+      ],
       "js": ["frame.js"]
     }
   ]

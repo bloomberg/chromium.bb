@@ -76,6 +76,16 @@
       this.onDestroy_();
     privates(this.onDisconnect).impl.destroy_();
     privates(this.onMessage).impl.destroy_();
+    // TODO(robwu): Remove port lifetime management because it is completely
+    // handled in the browser. The renderer's only roles are
+    // 1) rejecting ports so that the browser knows that the renderer is not
+    //    interested in the port (this is merely an optimization)
+    // 2) acknowledging port creations, so that the browser knows that the port
+    //    was successfully created (from the perspective of the extension), but
+    //    then closed for some non-fatal reason.
+    // 3) notifying the browser of explicit port closure via .disconnect().
+    // In other cases (navigations), the browser automatically cleans up the
+    //    port.
     messagingNatives.PortRelease(this.portId_);
     delete ports[this.portId_];
   };

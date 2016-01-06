@@ -103,21 +103,23 @@ extension (via <code>(new Date()).getTime()</code>, for instance) might give
 unexpected results.
 </p>
 
-<h2 id="frame_ids">A note about frame and process IDs</h2>
+<h2 id="frame_ids">A note about frame IDs</h2>
 <p>
 Frames within a tab can be identified by a frame ID. The frame ID of the main
 frame is always 0, the ID of child frames is a positive number. Once a document
 is constructed in a frame, its frame ID remains constant during the lifetime of
-the document.
+the document. As of Chrome 49, this ID is also constant for the lifetime of the
+frame (across multiple navigations).
 </p>
 <p>
 Due to the multi-process nature of Chrome, a tab might use different processes
 to render the source and destination of a web page. Therefore, if a navigation
 takes place in a new process, you might receive events both from the new and
 the old page until the new navigation is committed (i.e. the
-<code>onCommitted</code> event is send for the new main frame). Because frame
-IDs are only unique for a given process, the webNavigation events include a
-process ID, so you can still determine which frame a navigation came from.
+<code>onCommitted</code> event is send for the new main frame). In other words,
+it is possible to have more than one pending sequence of webNavigation events
+with the same <code>frameId</code>. The sequences can be distinguished by the
+<code>processId</code> key.
 </p>
 <p>
 Also note that during a provisional load the process might be switched several

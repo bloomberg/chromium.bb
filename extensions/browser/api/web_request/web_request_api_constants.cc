@@ -10,6 +10,7 @@ const char kChallengerKey[] = "challenger";
 const char kErrorKey[] = "error";
 const char kFrameIdKey[] = "frameId";
 const char kParentFrameIdKey[] = "parentFrameId";
+const char kProcessIdKey[] = "processId";
 const char kFromCache[] = "fromCache";
 const char kHostKey[] = "host";
 const char kIpKey[] = "ip";

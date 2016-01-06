@@ -12,6 +12,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -110,12 +111,18 @@ void ExtensionWebContentsObserver::RenderViewCreated(
 void ExtensionWebContentsObserver::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
   InitializeRenderFrame(render_frame_host);
+
+  // Optimization: Look up the extension API frame ID to force the mapping to be
+  // cached. This minimizes the number of IO->UI->IO thread hops when the ID is
+  // looked up again on the IO thread for the webRequest API.
+  ExtensionApiFrameIdMap::Get()->CacheFrameId(render_frame_host);
 }
 
 void ExtensionWebContentsObserver::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
   ProcessManager::Get(browser_context_)
       ->UnregisterRenderFrameHost(render_frame_host);
+  ExtensionApiFrameIdMap::Get()->RemoveFrameId(render_frame_host);
 }
 
 void ExtensionWebContentsObserver::DidCommitProvisionalLoadForFrame(

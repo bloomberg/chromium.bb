@@ -102,9 +102,16 @@ NativeMessagePort::~NativeMessagePort() {
   host_task_runner_->DeleteSoon(FROM_HERE, core_.release());
 }
 
-void NativeMessagePort::DispatchOnMessage(
-    const Message& message,
-    int target_port_id) {
+bool NativeMessagePort::IsValidPort() {
+  // The native message port is immediately connected after construction, so it
+  // is not possible to invalidate the port between construction and connection.
+  // The return value doesn't matter since native messaging follows a code path
+  // where IsValidPort() is never called.
+  NOTREACHED();
+  return true;
+}
+
+void NativeMessagePort::DispatchOnMessage(const Message& message) {
   DCHECK(thread_checker_.CalledOnValidThread());
   core_->OnMessageFromChrome(message.data);
 }

@@ -31,7 +31,12 @@
             "description": "Information about the frame to retrieve information about.",
             "properties": {
               "tabId": { "type": "integer", "minimum": 0, "description": "The ID of the tab in which the frame is." },
-              "processId": {"type": "integer", "description": "The ID of the process runs the renderer for this tab."},
+              "processId": {
+                "type": "integer",
+                "optional": true,
+                "deprecated": "Frames are now uniquely identified by their tab ID and frame ID; the process ID is no longer needed and therefore ignored.",
+                "description": "The ID of the process that runs the renderer for this tab."
+              },
               "frameId": { "type": "integer", "minimum": 0, "description": "The ID of the frame in the given tab." }
             }
           },
@@ -90,7 +95,7 @@
                     },
                     "processId": {
                       "type": "integer",
-                      "description": "The ID of the process runs the renderer for this tab."
+                      "description": "The ID of the process that runs the renderer for this frame."
                     },
                     "frameId": {
                       "type": "integer",
@@ -132,7 +137,7 @@
             "properties": {
               "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation is about to occur."},
               "url": {"type": "string"},
-              "processId": {"type": "integer", "description": "The ID of the process runs the renderer for this tab."},
+              "processId": {"type": "integer", "description": "The ID of the process that runs the renderer for this frame."},
               "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; a positive value indicates navigation in a subframe. Frame IDs are unique for a given tab and process."},
               "parentFrameId": {"type": "integer", "description": "ID of frame that wraps the frame. Set to -1 of no parent frame exists."},
               "timeStamp": {"type": "number", "description": "The time when the browser was about to start the navigation, in milliseconds since the epoch."}
@@ -159,7 +164,7 @@
             "properties": {
               "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation occurs."},
               "url": {"type": "string"},
-              "processId": {"type": "integer", "description": "The ID of the process runs the renderer for this tab."},
+              "processId": {"type": "integer", "description": "The ID of the process that runs the renderer for this frame."},
               "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; a positive value indicates navigation in a subframe. Frame IDs are unique within a tab."},
               "transitionType": {"$ref": "TransitionType", "description": "Cause of the navigation."},
               "transitionQualifiers": {"type": "array", "description": "A list of transition qualifiers.", "items": {"$ref": "TransitionQualifier"}},
@@ -187,7 +192,7 @@
             "properties": {
               "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation occurs."},
               "url": {"type": "string"},
-              "processId": {"type": "integer", "description": "The ID of the process runs the renderer for this tab."},
+              "processId": {"type": "integer", "description": "The ID of the process that runs the renderer for this frame."},
               "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; a positive value indicates navigation in a subframe. Frame IDs are unique within a tab."},
               "timeStamp": {"type": "number", "description": "The time when the page's DOM was fully constructed, in milliseconds since the epoch."}
             }
@@ -213,7 +218,7 @@
             "properties": {
               "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation occurs."},
               "url": {"type": "string"},
-              "processId": {"type": "integer", "description": "The ID of the process runs the renderer for this tab."},
+              "processId": {"type": "integer", "description": "The ID of the process that runs the renderer for this frame."},
               "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; a positive value indicates navigation in a subframe. Frame IDs are unique within a tab."},
               "timeStamp": {"type": "number", "description": "The time when the document finished loading, in milliseconds since the epoch."}
             }
@@ -239,7 +244,7 @@
             "properties": {
               "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation occurs."},
               "url": {"type": "string"},
-              "processId": {"type": "integer", "description": "The ID of the process runs the renderer for this tab."},
+              "processId": {"type": "integer", "description": "The ID of the process that runs the renderer for this frame."},
               "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; a positive value indicates navigation in a subframe. Frame IDs are unique within a tab."},
               "error": {"type": "string", "description": "The error description."},
               "timeStamp": {"type": "number", "description": "The time when the error occurred, in milliseconds since the epoch."}
@@ -265,7 +270,7 @@
             "name": "details",
             "properties": {
               "sourceTabId": {"type": "integer", "description": "The ID of the tab in which the navigation is triggered."},
-              "sourceProcessId": {"type": "integer", "description": "The ID of the process runs the renderer for the source tab."},
+              "sourceProcessId": {"type": "integer", "description": "The ID of the process that runs the renderer for the source frame."},
               "sourceFrameId": {"type": "integer", "description": "The ID of the frame with sourceTabId in which the navigation is triggered. 0 indicates the main frame."},
               "url": {"type": "string", "description": "The URL to be opened in the new window."},
               "tabId": {"type": "integer", "description": "The ID of the tab in which the url is opened"},
@@ -293,7 +298,7 @@
             "properties": {
               "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation occurs."},
               "url": {"type": "string"},
-              "processId": {"type": "integer", "description": "The ID of the process runs the renderer for this tab."},
+              "processId": {"type": "integer", "description": "The ID of the process that runs the renderer for this frame."},
               "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; a positive value indicates navigation in a subframe. Frame IDs are unique within a tab."},
               "transitionType": {"$ref": "TransitionType", "description": "Cause of the navigation."},
               "transitionQualifiers": {"type": "array", "description": "A list of transition qualifiers.", "items": {"$ref": "TransitionQualifier"}},
@@ -337,7 +342,7 @@
             "properties": {
               "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation occurs."},
               "url": {"type": "string"},
-              "processId": {"type": "integer", "description": "The ID of the process runs the renderer for this tab."},
+              "processId": {"type": "integer", "description": "The ID of the process that runs the renderer for this frame."},
               "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; a positive value indicates navigation in a subframe. Frame IDs are unique within a tab."},
               "transitionType": {"$ref": "TransitionType", "description": "Cause of the navigation."},
               "transitionQualifiers": {"type": "array", "description": "A list of transition qualifiers.", "items": {"$ref": "TransitionQualifier"}},

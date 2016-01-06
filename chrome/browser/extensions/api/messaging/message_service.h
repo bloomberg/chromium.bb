@@ -16,8 +16,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/messaging/message_property_provider.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/common/api/messaging/message.h"
@@ -27,8 +25,6 @@ class Profile;
 
 namespace content {
 class BrowserContext;
-class RenderProcessHost;
-class WebContents;
 }
 
 namespace extensions {
@@ -54,11 +50,8 @@ class LazyBackgroundTaskQueue;
 //
 // Terminology:
 // channel: connection between two ports
-// port: an IPC::Message::Process interface and an optional routing_id (in the
-// case that the port is a tab).  The Process is usually either a
-// RenderProcessHost or a RenderViewHost.
-class MessageService : public BrowserContextKeyedAPI,
-                       public content::NotificationObserver {
+// port: One sender or receiver tied to one or more RenderFrameHost instances.
+class MessageService : public BrowserContextKeyedAPI {
  public:
   // A messaging channel. Note that the opening port can be the same as the
   // receiver, if an extension background page wants to talk to its tab (for
@@ -69,13 +62,15 @@ class MessageService : public BrowserContextKeyedAPI,
   class MessagePort {
    public:
     virtual ~MessagePort() {}
+
+    // Called right before a port is connected to a channel. If false, the port
+    // is not used and the channel is closed.
+    virtual bool IsValidPort() = 0;
+
     // Notify the port that the channel has been opened.
-    virtual void DispatchOnConnect(int dest_port_id,
-                                   const std::string& channel_name,
+    virtual void DispatchOnConnect(const std::string& channel_name,
                                    scoped_ptr<base::DictionaryValue> source_tab,
                                    int source_frame_id,
-                                   int target_tab_id,
-                                   int target_frame_id,
                                    int guest_process_id,
                                    int guest_render_frame_routing_id,
                                    const std::string& source_extension_id,
@@ -85,20 +80,21 @@ class MessageService : public BrowserContextKeyedAPI,
 
     // Notify the port that the channel has been closed. If |error_message| is
     // non-empty, it indicates an error occurred while opening the connection.
-    virtual void DispatchOnDisconnect(int source_port_id,
-                                      const std::string& error_message) {}
+    virtual void DispatchOnDisconnect(const std::string& error_message) {}
 
     // Dispatch a message to this end of the communication.
-    virtual void DispatchOnMessage(const Message& message,
-                                   int target_port_id) = 0;
+    virtual void DispatchOnMessage(const Message& message) = 0;
 
-    // MessagPorts that target extensions will need to adjust their keepalive
+    // Mark the port as opened by the specific frame.
+    virtual void OpenPort(int process_id, int routing_id) {}
+
+    // Close the port for the given frame.
+    virtual void ClosePort(int process_id, int routing_id) {}
+
+    // MessagePorts that target extensions will need to adjust their keepalive
     // counts for their lazy background page.
     virtual void IncrementLazyKeepaliveCount() {}
     virtual void DecrementLazyKeepaliveCount() {}
-
-    // Get the RenderProcessHost (if any) associated with the port.
-    virtual content::RenderProcessHost* GetRenderProcessHost();
 
    protected:
     MessagePort() {}
@@ -145,6 +141,7 @@ class MessageService : public BrowserContextKeyedAPI,
   // are restricted to that tab, so if there are multiple tabs in that process,
   // only the targeted tab will receive messages.
   void OpenChannelToTab(int source_process_id,
+                        int source_routing_id,
                         int receiver_port_id,
                         int tab_id,
                         int frame_id,
@@ -157,6 +154,14 @@ class MessageService : public BrowserContextKeyedAPI,
       int receiver_port_id,
       const std::string& source_extension_id,
       const std::string& native_app_name);
+
+  // Mark the given port as opened by the frame identified by
+  // (process_id, routing_id).
+  void OpenPort(int port_id, int process_id, int routing_id);
+
+  // Closes the given port in the given frame. If this was the last frame or if
+  // |force_close| is true, then the other side is closed as well.
+  void ClosePort(int port_id, int process_id, int routing_id, bool force_close);
 
   // Closes the message channel associated with the given port, and notifies
   // the other side.
@@ -200,6 +205,12 @@ class MessageService : public BrowserContextKeyedAPI,
                        const Extension* target_extension,
                        bool did_enqueue);
 
+  void ClosePortImpl(int port_id,
+                     int process_id,
+                     int routing_id,
+                     bool force_close,
+                     const std::string& error_message);
+
   void CloseChannelImpl(MessageChannelMap::iterator channel_iter,
                         int port_id,
                         const std::string& error_message,
@@ -208,14 +219,6 @@ class MessageService : public BrowserContextKeyedAPI,
   // Have MessageService take ownership of |channel|, and remove any pending
   // channels with the same id.
   void AddChannel(MessageChannel* channel, int receiver_port_id);
-
-  // content::NotificationObserver interface.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
-  // A process that might be in our list of channels has closed.
-  void OnProcessClosed(content::RenderProcessHost* process);
 
   // If the channel is being opened from an incognito tab the user must allow
   // the connection.
@@ -252,11 +255,15 @@ class MessageService : public BrowserContextKeyedAPI,
       scoped_ptr<OpenChannelParams> params,
       int source_process_id,
       extensions::ExtensionHost* host);
-  void PendingLazyBackgroundPageCloseChannel(int port_id,
-                                             const std::string& error_message,
-                                             extensions::ExtensionHost* host) {
+  void PendingLazyBackgroundPageClosePort(int port_id,
+                                          int process_id,
+                                          int routing_id,
+                                          bool force_close,
+                                          const std::string& error_message,
+                                          extensions::ExtensionHost* host) {
     if (host)
-      CloseChannel(port_id, error_message);
+      ClosePortImpl(port_id, process_id, routing_id, force_close,
+                    error_message);
   }
   void PendingLazyBackgroundPagePostMessage(int port_id,
                                             const Message& message,
@@ -267,7 +274,7 @@ class MessageService : public BrowserContextKeyedAPI,
 
   // Immediate dispatches a disconnect to |source| for |port_id|. Sets source's
   // runtime.lastMessage to |error_message|, if any.
-  void DispatchOnDisconnect(content::RenderProcessHost* source,
+  void DispatchOnDisconnect(content::RenderFrameHost* source,
                             int port_id,
                             const std::string& error_message);
 
@@ -282,7 +289,6 @@ class MessageService : public BrowserContextKeyedAPI,
   static const bool kServiceIsCreatedWithBrowserContext = false;
   static const bool kServiceIsNULLWhileTesting = true;
 
-  content::NotificationRegistrar registrar_;
   MessageChannelMap channels_;
   // A set of channel IDs waiting for TLS channel IDs to complete opening, and
   // any pending messages queued to be sent on those channels. This and the

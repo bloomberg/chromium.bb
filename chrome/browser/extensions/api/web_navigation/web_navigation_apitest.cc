@@ -44,6 +44,7 @@
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/result_catcher.h"
@@ -737,6 +738,12 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcessHistory) {
 
   ASSERT_TRUE(RunExtensionTest("webnavigation/crossProcessHistory"))
       << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcessIframe) {
+  content::IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(RunExtensionTest("webnavigation/crossProcessIframe")) << message_;
 }
 
 // TODO(jam): http://crbug.com/350550

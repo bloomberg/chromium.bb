@@ -26,6 +26,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/view_type_utils.h"
 #include "net/base/net_errors.h"
 
@@ -492,7 +493,6 @@ bool WebNavigationGetFrameFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   int tab_id = params->details.tab_id;
   int frame_id = params->details.frame_id;
-  int process_id = params->details.process_id;
 
   SetResult(base::Value::CreateNullValue());
 
@@ -516,8 +516,8 @@ bool WebNavigationGetFrameFunction::RunSync() {
       observer->frame_navigation_state();
 
   content::RenderFrameHost* render_frame_host =
-      frame_id == 0 ? web_contents->GetMainFrame()
-                    : content::RenderFrameHost::FromID(process_id, frame_id);
+      ExtensionApiFrameIdMap::Get()->GetRenderFrameHostById(web_contents,
+                                                            frame_id);
   if (!frame_navigation_state.IsValidFrame(render_frame_host))
     return true;
 

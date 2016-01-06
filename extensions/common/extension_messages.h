@@ -182,14 +182,6 @@ IPC_STRUCT_BEGIN(ExtensionMsg_ExternalConnectionInfo)
   // The URL of the frame that initiated the request.
   IPC_STRUCT_MEMBER(GURL, source_url)
 
-  // The ID of the tab that is the target of the request, or -1 if there is no
-  // target tab.
-  IPC_STRUCT_MEMBER(int, target_tab_id)
-
-  // The ID of the frame that is the target of the request, or -1 if there is
-  // no target frame (implying the message is for all frames).
-  IPC_STRUCT_MEMBER(int, target_frame_id)
-
   // The process ID of the webview that initiated the request.
   IPC_STRUCT_MEMBER(int, guest_process_id)
 
@@ -642,37 +634,45 @@ IPC_MESSAGE_ROUTED1(ExtensionHostMsg_EventAck, int /* message_id */)
 // sending messages.  If an error occurred, the opener will be notified
 // asynchronously.
 IPC_SYNC_MESSAGE_CONTROL4_1(ExtensionHostMsg_OpenChannelToExtension,
-                            int /* routing_id */,
+                            int /* frame_routing_id */,
                             ExtensionMsg_ExternalConnectionInfo,
                             std::string /* channel_name */,
                             bool /* include_tls_channel_id */,
                             int /* port_id */)
 
 IPC_SYNC_MESSAGE_CONTROL3_1(ExtensionHostMsg_OpenChannelToNativeApp,
-                            int /* routing_id */,
+                            int /* frame_routing_id */,
                             std::string /* source_extension_id */,
                             std::string /* native_app_name */,
                             int /* port_id */)
 
 // Get a port handle to the given tab.  The handle can be used for sending
 // messages to the extension.
-IPC_SYNC_MESSAGE_CONTROL3_1(ExtensionHostMsg_OpenChannelToTab,
+IPC_SYNC_MESSAGE_CONTROL4_1(ExtensionHostMsg_OpenChannelToTab,
+                            int /* frame_routing_id */,
                             ExtensionMsg_TabTargetConnectionInfo,
                             std::string /* extension_id */,
                             std::string /* channel_name */,
                             int /* port_id */)
 
+// Sent in response to ExtensionMsg_DispatchOnConnect when the port is accepted.
+// The handle is the value returned by ExtensionHostMsg_OpenChannelTo*.
+IPC_MESSAGE_CONTROL2(ExtensionHostMsg_OpenMessagePort,
+                     int /* frame_routing_id */,
+                     int /* port_id */);
+
+// Sent in response to ExtensionMsg_DispatchOnConnect and whenever the port is
+// closed. The handle is the value returned by ExtensionHostMsg_OpenChannelTo*.
+IPC_MESSAGE_CONTROL3(ExtensionHostMsg_CloseMessagePort,
+                     int /* frame_routing_id */,
+                     int /* port_id */,
+                     bool /* force_close */);
+
 // Send a message to an extension process.  The handle is the value returned
-// by ViewHostMsg_OpenChannelTo*.
+// by ExtensionHostMsg_OpenChannelTo*.
 IPC_MESSAGE_ROUTED2(ExtensionHostMsg_PostMessage,
                     int /* port_id */,
                     extensions::Message)
-
-// Send a message to an extension process.  The handle is the value returned
-// by ViewHostMsg_OpenChannelTo*.
-IPC_MESSAGE_CONTROL2(ExtensionHostMsg_CloseChannel,
-                     int /* port_id */,
-                     std::string /* error_message */)
 
 // Used to get the extension message bundle.
 IPC_SYNC_MESSAGE_CONTROL1_1(ExtensionHostMsg_GetMessageBundle,

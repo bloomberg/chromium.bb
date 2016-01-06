@@ -19,7 +19,7 @@ Object.prototype.toJSON = function() {
 };
 
 // For complex connect tests.
-chrome.runtime.onConnect.addListener(function(port) {
+chrome.runtime.onConnect.addListener(function onConnect(port) {
   console.log('connected');
   port.onMessage.addListener(function(msg) {
     console.log('got ' + msg);
@@ -35,6 +35,10 @@ chrome.runtime.onConnect.addListener(function(port) {
       port.postMessage('from_main');
     } else if (msg.testDisconnect) {
       port.disconnect();
+    } else if (msg.testConnectChildFrameAndNavigateSetup) {
+      chrome.runtime.onConnect.removeListener(onConnect);
+      chrome.test.assertFalse(chrome.runtime.onConnect.hasListeners());
+      testConnectChildFrameAndNavigateSetup();
     } else if (msg.testDisconnectOnClose) {
       window.location = "about:blank";
     } else if (msg.testPortName) {
@@ -79,6 +83,17 @@ function testSendMessageFromFrame() {
     f.src = '?testSendMessageFromFrame' + i;
     document.body.appendChild(f);
   }
+}
+
+function testConnectChildFrameAndNavigateSetup() {
+  var frames = document.querySelectorAll('iframe');
+  for (var i = 0; i < frames.length; ++i) {
+    frames[i].remove();
+  }
+  var f = document.createElement('iframe');
+  f.src = '?testConnectChildFrameAndNavigateSetup';
+  document.body.appendChild(f);
+  // Test will continue in frame.js
 }
 
 // Tests sendMessage to an invalid extension.

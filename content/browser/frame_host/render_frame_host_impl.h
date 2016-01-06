@@ -140,6 +140,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   SiteInstanceImpl* GetSiteInstance() override;
   RenderProcessHost* GetProcess() override;
   RenderFrameHost* GetParent() override;
+  int GetFrameTreeNodeId() override;
   const std::string& GetFrameName() override;
   bool IsCrossProcessSubframe() override;
   GURL GetLastCommittedURL() override;

@@ -260,6 +260,21 @@ chrome.test.getConfig(function(config) {
       }
     },
 
+    // Tests that reloading a child frame disconnects the port if it was the
+    // only recipient of the port (i.e. no onConnect in main frame).
+    function connectChildFrameAndNavigate() {
+      listenOnce(chrome.runtime.onMessage, function(msg) {
+        chrome.test.assertEq('testConnectChildFrameAndNavigateSetupDone', msg);
+        // Now we have set up a frame and ensured that there is no onConnect
+        // handler in the main frame. Run the actual test:
+        var port = chrome.tabs.connect(testTab.id);
+        listenOnce(port.onDisconnect, function() {});
+        port.postMessage({testConnectChildFrameAndNavigate: true});
+      });
+      chrome.tabs.connect(testTab.id)
+        .postMessage({testConnectChildFrameAndNavigateSetup: true});
+    },
+
     // Tests that we get the disconnect event when the tab context closes.
     function disconnectOnClose() {
       var port = chrome.tabs.connect(testTab.id);
@@ -300,7 +315,6 @@ chrome.test.getConfig(function(config) {
           'Could not establish connection. Receiving end does not exist.',
           function() {
             stopFailing();
-            chrome.test.succeed();
           }
       ));
     },
@@ -330,14 +344,12 @@ chrome.test.getConfig(function(config) {
     //       chrome.test.assertEq(location.href, sender.url);
     //       setTimeout(function() {
     //         stopFailing();
-    //         chrome.test.succeed();
     //       }, 0);
     //     }
     //   );
     //
     //   chrome.runtime.sendMessage('ping');
     // },
-
   ]);
 });
 
@@ -347,10 +359,12 @@ function connectToTabWithFrameId(frameId, expectedMessages) {
   });
   var messages = [];
   var isDone = false;
-  listenForever(port.onMessage, function(message) {
-    if (isDone) // Should not get any messages after completing the test.
+  port.onMessage.addListener(function(message) {
+    if (isDone) { // Should not get any messages after completing the test.
       chrome.test.fail(
           'Unexpected message from port to frame ' + frameId + ': ' + message);
+      return;
+    }
 
     messages.push(message);
     isDone = messages.length == expectedMessages.length;
@@ -359,7 +373,7 @@ function connectToTabWithFrameId(frameId, expectedMessages) {
       chrome.test.succeed();
     }
   });
-  listenOnce(port.onDisconnect, function() {
+  port.onDisconnect.addListener(function() {
     if (!isDone) // The event should never be triggered when we expect messages.
       chrome.test.fail('Unexpected disconnect from port to frame ' + frameId);
   });

@@ -49,7 +49,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       int render_frame_id,
       bool is_main_frame,
       bool parent_is_main_frame,
-      int parent_render_frame_id,
       ResourceType resource_type,
       ui::PageTransition transition_type,
       bool should_replace_current_entry,
@@ -79,7 +78,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   int GetRenderFrameID() const override;
   bool IsMainFrame() const override;
   bool ParentIsMainFrame() const override;
-  int GetParentRenderFrameID() const override;
   ResourceType GetResourceType() const override;
   int GetProcessType() const override;
   blink::WebReferrerPolicy GetReferrerPolicy() const override;
@@ -118,7 +116,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
                          int route_id,
                          int origin_pid,
                          int request_id,
-                         int parent_render_frame_id,
                          base::WeakPtr<ResourceMessageFilter> filter);
 
   // CrossSiteResourceHandler for this request.  May be null.
@@ -204,7 +201,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   int render_frame_id_;
   bool is_main_frame_;
   bool parent_is_main_frame_;
-  int parent_render_frame_id_;
   bool should_replace_current_entry_;
   bool is_download_;
   bool is_stream_;

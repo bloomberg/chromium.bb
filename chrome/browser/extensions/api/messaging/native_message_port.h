@@ -21,7 +21,8 @@ class NativeMessagePort : public MessageService::MessagePort {
   ~NativeMessagePort() override;
 
   // MessageService::MessagePort implementation.
-  void DispatchOnMessage(const Message& message, int target_port_id) override;
+  bool IsValidPort() override;
+  void DispatchOnMessage(const Message& message) override;
 
  private:
   class Core;

@@ -77,6 +77,7 @@
       'browser/error_map_unittest.cc',
       'browser/event_listener_map_unittest.cc',
       'browser/event_router_unittest.cc',
+      'browser/extension_api_frame_id_map_unittest.cc',
       'browser/extension_icon_image_unittest.cc',
       'browser/extension_pref_value_map_unittest.cc',
       'browser/extension_registry_unittest.cc',

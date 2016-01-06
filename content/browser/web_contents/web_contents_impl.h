@@ -240,6 +240,8 @@ class CONTENT_EXPORT WebContentsImpl
   RenderProcessHost* GetRenderProcessHost() const override;
   RenderFrameHostImpl* GetMainFrame() override;
   RenderFrameHostImpl* GetFocusedFrame() override;
+  RenderFrameHostImpl* FindFrameByFrameTreeNodeId(
+      int frame_tree_node_id) override;
   void ForEachFrame(
       const base::Callback<void(RenderFrameHost*)>& on_frame) override;
   void SendToAllFrames(IPC::Message* message) override;

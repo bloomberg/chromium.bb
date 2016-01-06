@@ -37,6 +37,16 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Returns nullptr if the IDs do not correspond to a live RenderFrameHost.
   static RenderFrameHost* FromID(int render_process_id, int render_frame_id);
 
+  // Returns the current RenderFrameHost associated with the frame identified by
+  // the given FrameTreeNode ID, in any WebContents. The frame may change its
+  // current RenderFrameHost over time, so the returned RenderFrameHost can be
+  // different from the RenderFrameHost that returned the ID via
+  // GetFrameTreeNodeId(). See GetFrameTreeNodeId for more details.
+  // Use WebContents::FindFrameByFrameTreeNodeId to find a RenderFrameHost in
+  // a specific WebContents.
+  // Returns nullptr if the frame does not exist.
+  static RenderFrameHost* FromFrameTreeNodeId(int frame_tree_node_id);
+
 #if defined(OS_ANDROID)
   // Globally allows for injecting JavaScript into the main world. This feature
   // is present only to support Android WebView and must not be used in other
@@ -67,6 +77,17 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // there is no parent. The result may be in a different process than the
   // current RenderFrameHost.
   virtual RenderFrameHost* GetParent() = 0;
+
+  // Returns the FrameTreeNode ID for this frame. This ID is browser-global and
+  // uniquely identifies a frame that hosts content. The identifier is fixed at
+  // the creation of the frame and stays constant for the lifetime of the frame.
+  // When the frame is removed, the ID is not used again.
+  //
+  // A RenderFrameHost is tied to a process. Due to cross-process navigations,
+  // the RenderFrameHost may have a shorter lifetime than a frame. Consequently,
+  // the same FrameTreeNode ID may refer to a different RenderFrameHost after a
+  // navigation.
+  virtual int GetFrameTreeNodeId() = 0;
 
   // Returns the assigned name of the frame, the name of the iframe tag
   // declaring it. For example, <iframe name="framename">[...]</iframe>. It is

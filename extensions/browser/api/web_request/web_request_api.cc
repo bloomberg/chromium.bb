@@ -40,6 +40,7 @@
 #include "extensions/browser/api/web_request/web_request_event_router_delegate.h"
 #include "extensions/browser/api/web_request/web_request_time_tracker.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -131,10 +132,6 @@ const char* GetRequestStageAsString(
   return "Not reached";
 }
 
-int GetFrameId(bool is_main_frame, int frame_id) {
-  return is_main_frame ? 0 : frame_id;
-}
-
 bool IsWebRequestEvent(const std::string& event_name) {
   std::string web_request_event_name(event_name);
   if (base::StartsWith(web_request_event_name,
@@ -205,9 +202,7 @@ bool GetWebViewInfo(const net::URLRequest* request,
 
 void ExtractRequestInfoDetails(const net::URLRequest* request,
                                bool* is_main_frame,
-                               int* frame_id,
-                               bool* parent_is_main_frame,
-                               int* parent_frame_id,
+                               int* render_frame_id,
                                int* render_process_host_id,
                                int* routing_id,
                                ResourceType* resource_type) {
@@ -215,10 +210,8 @@ void ExtractRequestInfoDetails(const net::URLRequest* request,
   if (!info)
     return;
 
-  *frame_id = info->GetRenderFrameID();
+  *render_frame_id = info->GetRenderFrameID();
   *is_main_frame = info->IsMainFrame();
-  *parent_frame_id = info->GetParentRenderFrameID();
-  *parent_is_main_frame = info->ParentIsMainFrame();
   *render_process_host_id = info->GetChildID();
   *routing_id = info->GetRouteID();
 
@@ -227,6 +220,21 @@ void ExtractRequestInfoDetails(const net::URLRequest* request,
     *resource_type = info->GetResourceType();
   else
     *resource_type = content::RESOURCE_TYPE_LAST_TYPE;
+}
+
+// Extracts a pair of IDs to identify the RenderFrameHost. These IDs are used to
+// get the frame ID and parent frame ID from ExtensionApiFrameIdMap, and then
+// stored in |dict| by DispatchEventToListeners or SendOnMessageEventOnUI.
+void ExtractRenderFrameInfo(base::DictionaryValue* dict,
+                            int* render_process_id,
+                            int* render_frame_id) {
+  if (!dict->GetInteger(keys::kFrameIdKey, render_frame_id) ||
+      !dict->GetInteger(keys::kProcessIdKey, render_process_id)) {
+    *render_process_id = -1;
+    *render_frame_id = -1;
+  }
+  // kFrameIdKey will be overwritten later, so it's not removed here.
+  dict->Remove(keys::kProcessIdKey, nullptr);
 }
 
 // Extracts the body from |request| and writes the data into |out|.
@@ -361,6 +369,16 @@ void SendOnMessageEventOnUI(
     return;
 
   scoped_ptr<base::ListValue> event_args(new base::ListValue);
+  int render_process_host_id = -1;
+  int render_frame_id = -1;
+  ExtractRenderFrameInfo(event_argument.get(), &render_process_host_id,
+                         &render_frame_id);
+  content::RenderFrameHost* rfh =
+      content::RenderFrameHost::FromID(render_process_host_id, render_frame_id);
+  event_argument->SetInteger(keys::kFrameIdKey,
+                             ExtensionApiFrameIdMap::GetFrameId(rfh));
+  event_argument->SetInteger(keys::kParentFrameIdKey,
+                             ExtensionApiFrameIdMap::GetParentFrameId(rfh));
   event_args->Append(event_argument.release());
 
   EventRouter* event_router = EventRouter::Get(browser_context);
@@ -527,8 +545,8 @@ struct ExtensionWebRequestEventRouter::EventListener {
       // is also used to find and remove an event listener when an extension is
       // unloaded. At this point, the event listener cannot be mapped back to
       // the original process, so 0 is used instead of the actual process ID.
-      DCHECK(embedder_process_id == 0 || that.embedder_process_id == 0);
-      return false;
+      if (embedder_process_id == 0 || that.embedder_process_id == 0)
+        return false;
     }
 
     if (embedder_process_id != that.embedder_process_id)
@@ -744,28 +762,24 @@ void ExtensionWebRequestEventRouter::ExtractRequestInfo(
     const net::URLRequest* request,
     base::DictionaryValue* out) {
   bool is_main_frame = false;
-  int frame_id = -1;
-  bool parent_is_main_frame = false;
-  int parent_frame_id = -1;
-  int frame_id_for_extension = -1;
-  int parent_frame_id_for_extension = -1;
+  int render_frame_id = -1;
   int render_process_host_id = -1;
   int routing_id = -1;
   ResourceType resource_type = content::RESOURCE_TYPE_LAST_TYPE;
-  ExtractRequestInfoDetails(request, &is_main_frame, &frame_id,
-                            &parent_is_main_frame, &parent_frame_id,
+  ExtractRequestInfoDetails(request, &is_main_frame, &render_frame_id,
                             &render_process_host_id, &routing_id,
                             &resource_type);
-  frame_id_for_extension = GetFrameId(is_main_frame, frame_id);
-  parent_frame_id_for_extension = GetFrameId(parent_is_main_frame,
-                                             parent_frame_id);
 
   out->SetString(keys::kRequestIdKey,
                  base::Uint64ToString(request->identifier()));
   out->SetString(keys::kUrlKey, request->url().spec());
   out->SetString(keys::kMethodKey, request->method());
-  out->SetInteger(keys::kFrameIdKey, frame_id_for_extension);
-  out->SetInteger(keys::kParentFrameIdKey, parent_frame_id_for_extension);
+  // Note: This (frameId, processId) pair is removed by ExtractRenderFrameInfo,
+  // and finally restored in DispatchEventToListeners or SendOnMessageEventOnUI.
+  // TODO(robwu): This is ugly. Create a proper data structure to separate these
+  // two IDs from the dictionary, so that kFrameIdKey has only one meaning.
+  out->SetInteger(keys::kFrameIdKey, render_frame_id);
+  out->SetInteger(keys::kProcessIdKey, render_process_host_id);
   out->SetString(keys::kTypeKey, helpers::ResourceTypeToString(resource_type));
   out->SetDouble(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
   if (web_request_event_router_delegate_) {
@@ -1244,21 +1258,12 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
   // TODO(mpcomplete): Consider consolidating common (extension_id,json_args)
   // pairs into a single message sent to a list of sub_event_names.
   int num_handlers_blocking = 0;
-  for (const EventListener* listener : listeners) {
-    // Filter out the optional keys that this listener didn't request.
-    scoped_ptr<base::ListValue> args_filtered(args.DeepCopy());
-    base::DictionaryValue* dict = NULL;
-    CHECK(args_filtered->GetDictionary(0, &dict) && dict);
-    if (!(listener->extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS))
-      dict->Remove(keys::kRequestHeadersKey, NULL);
-    if (!(listener->extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS))
-      dict->Remove(keys::kResponseHeadersKey, NULL);
 
-    EventRouter::DispatchEventToSender(
-        listener->ipc_sender.get(), browser_context, listener->extension_id,
-        listener->histogram_value, listener->sub_event_name,
-        std::move(args_filtered), EventRouter::USER_GESTURE_UNKNOWN,
-        EventFilteringInfo());
+  scoped_ptr<std::vector<EventListener>> listeners_to_dispatch(
+      new std::vector<EventListener>());
+  listeners_to_dispatch->reserve(listeners.size());
+  for (const EventListener* listener : listeners) {
+    listeners_to_dispatch->push_back(*listener);
     if (listener->extra_info_spec &
         (ExtraInfoSpec::BLOCKING | ExtraInfoSpec::ASYNC_BLOCKING)) {
       listener->blocked_requests.insert(request->identifier());
@@ -1276,6 +1281,22 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
     }
   }
 
+  // TODO(robwu): Avoid unnecessary copy, by changing |args| to be a
+  // scoped_ptr<base::DictionaryValue> and transferring the ownership.
+  const base::DictionaryValue* dict = nullptr;
+  CHECK(args.GetDictionary(0, &dict) && dict);
+  base::DictionaryValue* args_copy = dict->DeepCopy();
+
+  int render_process_host_id = -1;
+  int render_frame_id = -1;
+  ExtractRenderFrameInfo(args_copy, &render_process_host_id, &render_frame_id);
+
+  ExtensionApiFrameIdMap::Get()->GetFrameIdOnIO(
+      render_process_host_id, render_frame_id,
+      base::Bind(&ExtensionWebRequestEventRouter::DispatchEventToListeners,
+                 AsWeakPtr(), browser_context,
+                 base::Passed(&listeners_to_dispatch), base::Owned(args_copy)));
+
   if (num_handlers_blocking > 0) {
     BlockedRequest& blocked_request = blocked_requests_[request->identifier()];
     blocked_request.request = request;
@@ -1286,6 +1307,59 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
   }
 
   return false;
+}
+
+void ExtensionWebRequestEventRouter::DispatchEventToListeners(
+    void* browser_context,
+    scoped_ptr<std::vector<EventListener>> listeners,
+    base::DictionaryValue* dict,
+    int extension_api_frame_id,
+    int extension_api_parent_frame_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(listeners.get());
+  DCHECK_GT(listeners->size(), 0UL);
+  DCHECK(dict);
+
+  dict->SetInteger(keys::kFrameIdKey, extension_api_frame_id);
+  dict->SetInteger(keys::kParentFrameIdKey, extension_api_parent_frame_id);
+
+  std::string event_name =
+      EventRouter::GetBaseEventName((*listeners)[0].sub_event_name);
+  DCHECK(IsWebRequestEvent(event_name));
+
+  const std::set<EventListener>& event_listeners =
+      listeners_[browser_context][event_name];
+  void* cross_browser_context = GetCrossBrowserContext(browser_context);
+  const std::set<EventListener>* cross_event_listeners =
+      cross_browser_context ? &listeners_[cross_browser_context][event_name]
+                            : nullptr;
+
+  for (const EventListener& target : *listeners) {
+    std::set<EventListener>::const_iterator listener =
+        event_listeners.find(target);
+    // Ignore listener if it was removed between the thread hops.
+    if (listener == event_listeners.end()) {
+      if (!cross_event_listeners)
+        continue;
+      listener = cross_event_listeners->find(target);
+      if (listener == cross_event_listeners->end())
+        continue;
+    }
+
+    // Filter out the optional keys that this listener didn't request.
+    scoped_ptr<base::ListValue> args_filtered(new base::ListValue);
+    args_filtered->Append(dict->DeepCopy());
+    if (!(listener->extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS))
+      dict->Remove(keys::kRequestHeadersKey, nullptr);
+    if (!(listener->extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS))
+      dict->Remove(keys::kResponseHeadersKey, nullptr);
+
+    EventRouter::DispatchEventToSender(
+        listener->ipc_sender.get(), browser_context, listener->extension_id,
+        listener->histogram_value, listener->sub_event_name,
+        std::move(args_filtered), EventRouter::USER_GESTURE_UNKNOWN,
+        EventFilteringInfo());
+  }
 }
 
 void ExtensionWebRequestEventRouter::OnEventHandled(
@@ -1441,17 +1515,14 @@ void ExtensionWebRequestEventRouter::AddCallbackForPageLoad(
 bool ExtensionWebRequestEventRouter::IsPageLoad(
     const net::URLRequest* request) const {
   bool is_main_frame = false;
-  int frame_id = -1;
-  bool parent_is_main_frame = false;
-  int parent_frame_id = -1;
+  int render_frame_id = -1;
   int render_process_host_id = -1;
   int routing_id = -1;
   ResourceType resource_type = content::RESOURCE_TYPE_LAST_TYPE;
 
-  ExtractRequestInfoDetails(request, &is_main_frame, &frame_id,
-                            &parent_is_main_frame, &parent_frame_id,
-                            &render_process_host_id,
-                            &routing_id, &resource_type);
+  ExtractRequestInfoDetails(request, &is_main_frame, &render_frame_id,
+                            &render_process_host_id, &routing_id,
+                            &resource_type);
 
   return resource_type == content::RESOURCE_TYPE_MAIN_FRAME;
 }
@@ -1591,18 +1662,15 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
   *extra_info_spec = 0;
 
   bool is_main_frame = false;
-  int frame_id = -1;
-  bool parent_is_main_frame = false;
-  int parent_frame_id = -1;
+  int render_frame_id = -1;
   int render_process_host_id = -1;
   int routing_id = -1;
   ResourceType resource_type = content::RESOURCE_TYPE_LAST_TYPE;
   const GURL& url = request->url();
 
-  ExtractRequestInfoDetails(request, &is_main_frame, &frame_id,
-                            &parent_is_main_frame, &parent_frame_id,
-                            &render_process_host_id,
-                            &routing_id, &resource_type);
+  ExtractRequestInfoDetails(request, &is_main_frame, &render_frame_id,
+                            &render_process_host_id, &routing_id,
+                            &resource_type);
 
   bool is_request_from_extension =
       IsRequestFromExtension(request, extension_info_map);

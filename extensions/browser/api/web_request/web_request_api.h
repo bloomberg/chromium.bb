@@ -342,6 +342,13 @@ class ExtensionWebRequestEventRouter
       const std::vector<const EventListener*>& listeners,
       const base::ListValue& args);
 
+  void DispatchEventToListeners(
+      void* browser_context,
+      scoped_ptr<std::vector<EventListener>> listeners,
+      base::DictionaryValue* dict,
+      int extension_api_frame_id,
+      int extension_api_parent_frame_id);
+
   // Returns a list of event listeners that care about the given event, based
   // on their filter parameters. |extra_info_spec| will contain the combined
   // set of extra_info_spec flags that every matching listener asked for.

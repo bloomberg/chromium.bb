@@ -4,31 +4,121 @@
 
 #include "chrome/browser/extensions/api/messaging/extension_message_port.h"
 
+#include "base/scoped_observer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/process_manager_observer.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 
 namespace extensions {
 
-ExtensionMessagePort::ExtensionMessagePort(content::RenderProcessHost* process,
-                                           int routing_id,
-                                           const std::string& extension_id)
-     : process_(process),
-       routing_id_(routing_id),
-       extension_id_(extension_id),
-       background_host_ptr_(NULL) {
+const char kReceivingEndDoesntExistError[] =
+    "Could not establish connection. Receiving end does not exist.";
+
+// Helper class to detect when frames are destroyed.
+class ExtensionMessagePort::FrameTracker : public content::WebContentsObserver,
+                                           public ProcessManagerObserver {
+ public:
+  explicit FrameTracker(ExtensionMessagePort* port)
+      : pm_observer_(this), port_(port) {}
+  ~FrameTracker() override {}
+
+  void TrackExtensionProcessFrames() {
+    pm_observer_.Add(ProcessManager::Get(port_->browser_context_));
+  }
+
+  void TrackTabFrames(content::WebContents* tab) {
+    Observe(tab);
+  }
+
+ private:
+  // content::WebContentsObserver overrides:
+  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host)
+      override {
+    port_->UnregisterFrame(render_frame_host);
+  }
+
+  void DidNavigateAnyFrame(content::RenderFrameHost* render_frame_host,
+                           const content::LoadCommittedDetails& details,
+                           const content::FrameNavigateParams&) override {
+    if (!details.is_in_page)
+      port_->UnregisterFrame(render_frame_host);
+  }
+
+  // extensions::ProcessManagerObserver overrides:
+  void OnExtensionFrameUnregistered(
+      const std::string& extension_id,
+      content::RenderFrameHost* render_frame_host) override {
+    if (extension_id == port_->extension_id_)
+      port_->UnregisterFrame(render_frame_host);
+  }
+
+  ScopedObserver<ProcessManager, ProcessManagerObserver> pm_observer_;
+  ExtensionMessagePort* port_;  // Owns this FrameTracker.
+
+  DISALLOW_COPY_AND_ASSIGN(FrameTracker);
+};
+
+ExtensionMessagePort::ExtensionMessagePort(
+    base::WeakPtr<MessageService> message_service,
+    int port_id,
+    const std::string& extension_id,
+    content::RenderProcessHost* extension_process)
+    : weak_message_service_(message_service),
+      port_id_(port_id),
+      extension_id_(extension_id),
+      browser_context_(extension_process->GetBrowserContext()),
+      extension_process_(extension_process),
+      frames_(ProcessManager::Get(browser_context_)->
+              GetRenderFrameHostsForExtension(extension_id)),
+      did_create_port_(false),
+      background_host_ptr_(nullptr),
+      frame_tracker_(new FrameTracker(this)) {
+  frame_tracker_->TrackExtensionProcessFrames();
+}
+
+ExtensionMessagePort::ExtensionMessagePort(
+    base::WeakPtr<MessageService> message_service,
+    int port_id,
+    const std::string& extension_id,
+    content::RenderFrameHost* rfh,
+    bool include_child_frames)
+    : weak_message_service_(message_service),
+      port_id_(port_id),
+      extension_id_(extension_id),
+      browser_context_(rfh->GetProcess()->GetBrowserContext()),
+      extension_process_(nullptr),
+      did_create_port_(false),
+      background_host_ptr_(nullptr),
+      frame_tracker_(new FrameTracker(this)) {
+  content::WebContents* tab = content::WebContents::FromRenderFrameHost(rfh);
+  DCHECK(tab);
+  frame_tracker_->TrackTabFrames(tab);
+  if (include_child_frames) {
+    tab->ForEachFrame(base::Bind(&ExtensionMessagePort::RegisterFrame,
+                                 base::Unretained(this)));
+  } else {
+    RegisterFrame(rfh);
+  }
+}
+
+ExtensionMessagePort::~ExtensionMessagePort() {}
+
+bool ExtensionMessagePort::IsValidPort() {
+  return !frames_.empty();
 }
 
 void ExtensionMessagePort::DispatchOnConnect(
-    int dest_port_id,
     const std::string& channel_name,
     scoped_ptr<base::DictionaryValue> source_tab,
     int source_frame_id,
-    int target_tab_id,
-    int target_frame_id,
     int guest_process_id,
     int guest_render_frame_routing_id,
     const std::string& source_extension_id,
@@ -44,32 +134,26 @@ void ExtensionMessagePort::DispatchOnConnect(
   info.target_id = target_extension_id;
   info.source_id = source_extension_id;
   info.source_url = source_url;
-  info.target_tab_id = target_tab_id;
-  info.target_frame_id = target_frame_id;
   info.guest_process_id = guest_process_id;
   info.guest_render_frame_routing_id = guest_render_frame_routing_id;
 
-  process_->Send(new ExtensionMsg_DispatchOnConnect(
-      routing_id_, dest_port_id, channel_name, source, info, tls_channel_id));
+  SendToPort(make_scoped_ptr(new ExtensionMsg_DispatchOnConnect(
+      MSG_ROUTING_NONE, port_id_, channel_name, source, info, tls_channel_id)));
 }
 
 void ExtensionMessagePort::DispatchOnDisconnect(
-    int source_port_id,
     const std::string& error_message) {
-  process_->Send(new ExtensionMsg_DispatchOnDisconnect(
-      routing_id_, source_port_id, error_message));
+  SendToPort(make_scoped_ptr(new ExtensionMsg_DispatchOnDisconnect(
+      MSG_ROUTING_NONE, port_id_, error_message)));
 }
 
-void ExtensionMessagePort::DispatchOnMessage(const Message& message,
-                                             int target_port_id) {
-  process_->Send(new ExtensionMsg_DeliverMessage(
-      routing_id_, target_port_id, message));
+void ExtensionMessagePort::DispatchOnMessage(const Message& message) {
+  SendToPort(make_scoped_ptr(new ExtensionMsg_DeliverMessage(
+      MSG_ROUTING_NONE, port_id_, message)));
 }
 
 void ExtensionMessagePort::IncrementLazyKeepaliveCount() {
-  Profile* profile =
-      Profile::FromBrowserContext(process_->GetBrowserContext());
-  extensions::ProcessManager* pm = ProcessManager::Get(profile);
+  ProcessManager* pm = ProcessManager::Get(browser_context_);
   ExtensionHost* host = pm->GetBackgroundHostForExtension(extension_id_);
   if (host && BackgroundInfo::HasLazyBackgroundPage(host->extension()))
     pm->IncrementLazyKeepaliveCount(host->extension());
@@ -80,16 +164,66 @@ void ExtensionMessagePort::IncrementLazyKeepaliveCount() {
 }
 
 void ExtensionMessagePort::DecrementLazyKeepaliveCount() {
-  Profile* profile =
-      Profile::FromBrowserContext(process_->GetBrowserContext());
-  extensions::ProcessManager* pm = ProcessManager::Get(profile);
+  ProcessManager* pm = ProcessManager::Get(browser_context_);
   ExtensionHost* host = pm->GetBackgroundHostForExtension(extension_id_);
   if (host && host == background_host_ptr_)
     pm->DecrementLazyKeepaliveCount(host->extension());
 }
 
-content::RenderProcessHost* ExtensionMessagePort::GetRenderProcessHost() {
-  return process_;
+void ExtensionMessagePort::OpenPort(int process_id, int routing_id) {
+  DCHECK(routing_id != MSG_ROUTING_NONE || extension_process_);
+
+  did_create_port_ = true;
+}
+
+void ExtensionMessagePort::ClosePort(int process_id, int routing_id) {
+  if (routing_id == MSG_ROUTING_NONE) {
+    // The only non-frame-specific message is the response to an unhandled
+    // onConnect event in the extension process.
+    DCHECK(extension_process_);
+    frames_.clear();
+    CloseChannel();
+    return;
+  }
+
+  content::RenderFrameHost* rfh =
+      content::RenderFrameHost::FromID(process_id, routing_id);
+  if (rfh)
+    UnregisterFrame(rfh);
+}
+
+void ExtensionMessagePort::CloseChannel() {
+  std::string error_message = did_create_port_ ? std::string() :
+      kReceivingEndDoesntExistError;
+  if (weak_message_service_)
+    weak_message_service_->CloseChannel(port_id_, error_message);
+}
+
+void ExtensionMessagePort::RegisterFrame(content::RenderFrameHost* rfh) {
+  frames_.insert(rfh);
+}
+
+void ExtensionMessagePort::UnregisterFrame(content::RenderFrameHost* rfh) {
+  if (frames_.erase(rfh) != 0 && frames_.empty())
+    CloseChannel();
+}
+
+void ExtensionMessagePort::SendToPort(scoped_ptr<IPC::Message> msg) {
+  DCHECK_GT(frames_.size(), 0UL);
+  if (extension_process_) {
+    // All extension frames reside in the same process, so we can just send a
+    // single IPC message to the extension process as an optimization.
+    // The frame tracking is then only used to make sure that the port gets
+    // closed when all frames have closed / reloaded.
+    msg->set_routing_id(MSG_ROUTING_CONTROL);
+    extension_process_->Send(msg.release());
+    return;
+  }
+  for (content::RenderFrameHost* rfh : frames_) {
+    IPC::Message* msg_copy = new IPC::Message(*msg.get());
+    msg_copy->set_routing_id(rfh->GetRoutingID());
+    rfh->Send(msg_copy);
+  }
 }
 
 }  // namespace extensions

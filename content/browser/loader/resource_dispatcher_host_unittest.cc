@@ -153,7 +153,6 @@ static ResourceHostMsg_Request CreateResourceRequest(const char* method,
   request.should_reset_appcache = false;
   request.is_main_frame = true;
   request.parent_is_main_frame = false;
-  request.parent_render_frame_id = -1;
   request.transition_type = ui::PAGE_TRANSITION_LINK;
   request.allow_download = true;
   return request;

@@ -86,10 +86,11 @@ bool ChromeExtensionMessageFilter::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToTab, OnOpenChannelToTab)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToNativeApp,
                         OnOpenChannelToNativeApp)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenMessagePort, OnOpenMessagePort)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_CloseMessagePort, OnCloseMessagePort)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_PostMessage, OnPostMessage)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ExtensionHostMsg_GetMessageBundle,
                                     OnGetExtMessageBundle)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_CloseChannel, OnExtensionCloseChannel)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddAPIActionToActivityLog,
                         OnAddAPIActionToExtensionActivityLog);
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddDOMActionToActivityLog,
@@ -105,8 +106,9 @@ bool ChromeExtensionMessageFilter::OnMessageReceived(
 void ChromeExtensionMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
   switch (message.type()) {
+    case ExtensionHostMsg_OpenMessagePort::ID:
+    case ExtensionHostMsg_CloseMessagePort::ID:
     case ExtensionHostMsg_PostMessage::ID:
-    case ExtensionHostMsg_CloseChannel::ID:
     case ExtensionHostMsg_AddAPIActionToActivityLog::ID:
     case ExtensionHostMsg_AddDOMActionToActivityLog::ID:
     case ExtensionHostMsg_AddEventToActivityLog::ID:
@@ -194,6 +196,7 @@ void ChromeExtensionMessageFilter::OpenChannelToNativeAppOnUIThread(
 }
 
 void ChromeExtensionMessageFilter::OnOpenChannelToTab(
+    int routing_id,
     const ExtensionMsg_TabTargetConnectionInfo& info,
     const std::string& extension_id,
     const std::string& channel_name,
@@ -204,12 +207,13 @@ void ChromeExtensionMessageFilter::OnOpenChannelToTab(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&ChromeExtensionMessageFilter::OpenChannelToTabOnUIThread,
-                 this, render_process_id_, port2_id, info, extension_id,
-                 channel_name));
+                 this, render_process_id_, routing_id, port2_id, info,
+                 extension_id, channel_name));
 }
 
 void ChromeExtensionMessageFilter::OpenChannelToTabOnUIThread(
     int source_process_id,
+    int source_routing_id,
     int receiver_port_id,
     const ExtensionMsg_TabTargetConnectionInfo& info,
     const std::string& extension_id,
@@ -218,12 +222,32 @@ void ChromeExtensionMessageFilter::OpenChannelToTabOnUIThread(
   if (profile_) {
     extensions::MessageService::Get(profile_)
         ->OpenChannelToTab(source_process_id,
+                           source_routing_id,
                            receiver_port_id,
                            info.tab_id,
                            info.frame_id,
                            extension_id,
                            channel_name);
   }
+}
+
+void ChromeExtensionMessageFilter::OnOpenMessagePort(int routing_id,
+                                                     int port_id) {
+  if (!profile_)
+    return;
+
+  extensions::MessageService::Get(profile_)->OpenPort(
+      port_id, render_process_id_, routing_id);
+}
+
+void ChromeExtensionMessageFilter::OnCloseMessagePort(int routing_id,
+                                                      int port_id,
+                                                      bool force_close) {
+  if (!profile_)
+    return;
+
+  extensions::MessageService::Get(profile_)->ClosePort(
+      port_id, render_process_id_, routing_id, force_close);
 }
 
 void ChromeExtensionMessageFilter::OnPostMessage(
@@ -259,21 +283,6 @@ void ChromeExtensionMessageFilter::OnGetExtMessageBundleOnBlockingPool(
   ExtensionHostMsg_GetMessageBundle::WriteReplyParams(reply_msg,
                                                       *dictionary_map);
   Send(reply_msg);
-}
-
-void ChromeExtensionMessageFilter::OnExtensionCloseChannel(
-    int port_id,
-    const std::string& error_message) {
-  if (!profile_)
-    return;
-
-  if (!content::RenderProcessHost::FromID(render_process_id_))
-    return;  // To guard against crash in browser_tests shutdown.
-
-  extensions::MessageService* message_service =
-      extensions::MessageService::Get(profile_);
-  if (message_service)
-    message_service->CloseChannel(port_id, error_message);
 }
 
 void ChromeExtensionMessageFilter::OnAddAPIActionToExtensionActivityLog(

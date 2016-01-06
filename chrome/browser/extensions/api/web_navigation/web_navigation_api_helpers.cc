@@ -21,6 +21,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/common/event_filtering_info.h"
 #include "net/base/net_errors.h"
 #include "ui/base/page_transition_types.h"
@@ -62,15 +63,10 @@ void DispatchEvent(content::BrowserContext* browser_context,
 }  // namespace
 
 int GetFrameId(content::RenderFrameHost* frame_host) {
-  if (!frame_host)
-    return -1;
-  return !frame_host->GetParent() ? 0 : frame_host->GetRoutingID();
+  return ExtensionApiFrameIdMap::GetFrameId(frame_host);
 }
 
 // Constructs and dispatches an onBeforeNavigate event.
-// TODO(dcheng): Is the parent process ID needed here? http://crbug.com/393640
-// Collisions are probably possible... but maybe this won't ever happen because
-// of the SiteInstance grouping policies.
 void DispatchOnBeforeNavigate(content::WebContents* web_contents,
                               content::RenderFrameHost* frame_host,
                               const GURL& validated_url) {

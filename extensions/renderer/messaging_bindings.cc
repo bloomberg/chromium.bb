@@ -130,8 +130,6 @@ class PortTracker {
 base::LazyInstance<PortTracker> g_port_tracker = LAZY_INSTANCE_INITIALIZER;
 
 const char kPortClosedError[] = "Attempting to use a disconnected port object";
-const char kReceivingEndDoesntExistError[] =
-    "Could not establish connection. Receiving end does not exist.";
 
 class ExtensionImpl : public ObjectBackedNativeHandler {
  public:
@@ -175,8 +173,8 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
 
   // Sends a message along the given channel.
   void PostMessage(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    content::RenderFrame* renderframe = context()->GetRenderFrame();
-    if (!renderframe)
+    content::RenderFrame* render_frame = context()->GetRenderFrame();
+    if (!render_frame)
       return;
 
     // Arguments are (int32_t port_id, string message).
@@ -190,8 +188,8 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
       return;
     }
 
-    renderframe->Send(new ExtensionHostMsg_PostMessage(
-        renderframe->GetRoutingID(), port_id,
+    render_frame->Send(new ExtensionHostMsg_PostMessage(
+        render_frame->GetRoutingID(), port_id,
         Message(*v8::String::Utf8Value(args[1]),
                 blink::WebUserGestureIndicator::isProcessingUserGesture())));
   }
@@ -209,9 +207,10 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
 
     // Send via the RenderThread because the RenderFrame might be closing.
     bool notify_browser = args[1].As<v8::Boolean>()->Value();
-    if (notify_browser) {
-      content::RenderThread::Get()->Send(
-          new ExtensionHostMsg_CloseChannel(port_id, std::string()));
+    content::RenderFrame* render_frame = context()->GetRenderFrame();
+    if (notify_browser && render_frame) {
+      render_frame->Send(new ExtensionHostMsg_CloseMessagePort(
+          render_frame->GetRoutingID(), port_id, true));
     }
 
     ClearPortDataAndNotifyDispatcher(port_id);
@@ -231,6 +230,8 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
   // The frame a port lived in has been destroyed.  When there are no more
   // frames with a reference to a given port, we will disconnect it and notify
   // the other end of the channel.
+  // TODO(robwu): Port lifetime management has moved to the browser, this is no
+  // longer needed. See .destroy_() inmessaging.js for more details.
   void PortRelease(const v8::FunctionCallbackInfo<v8::Value>& args) {
     // Arguments are (int32_t port_id).
     CHECK(args.Length() == 1 && args[0]->IsInt32());
@@ -240,12 +241,11 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
   // Releases the reference to |port_id| for this context, and clears all port
   // data if there are no more references.
   void ReleasePort(int port_id) {
+    content::RenderFrame* render_frame = context()->GetRenderFrame();
     if (g_port_tracker.Get().RemoveReference(context(), port_id) &&
-        !g_port_tracker.Get().HasPort(port_id)) {
-      // Send via the RenderThread because the RenderFrame might be closing.
-      content::RenderThread::Get()->Send(
-          new ExtensionHostMsg_CloseChannel(port_id, std::string()));
-      ClearPortDataAndNotifyDispatcher(port_id);
+        !g_port_tracker.Get().HasPort(port_id) && render_frame) {
+      render_frame->Send(new ExtensionHostMsg_CloseMessagePort(
+          render_frame->GetRoutingID(), port_id, false));
     }
   }
 
@@ -286,23 +286,6 @@ void DispatchOnConnectToScriptContext(
     const std::string& tls_channel_id,
     bool* port_created,
     ScriptContext* script_context) {
-  // Only dispatch the events if this is the requested target frame (0 = main
-  // frame; positive = child frame).
-  content::RenderFrame* renderframe = script_context->GetRenderFrame();
-  if (info.target_frame_id == 0 && renderframe->GetWebFrame()->parent() != NULL)
-    return;
-  if (info.target_frame_id > 0 &&
-      renderframe->GetRoutingID() != info.target_frame_id)
-    return;
-
-  // Bandaid fix for crbug.com/520303.
-  // TODO(rdevlin.cronin): Fix this properly by routing messages to the correct
-  // RenderFrame from the browser (same with |target_frame_id| in fact).
-  if (info.target_tab_id != -1 &&
-      info.target_tab_id != ExtensionFrameHelper::Get(renderframe)->tab_id()) {
-    return;
-  }
-
   v8::Isolate* isolate = script_context->isolate();
   v8::HandleScope handle_scope(isolate);
 
@@ -472,11 +455,15 @@ void MessagingBindings::DispatchOnConnect(
       base::Bind(&DispatchOnConnectToScriptContext, target_port_id,
                  channel_name, &source, info, tls_channel_id, &port_created));
 
-  // If we didn't create a port, notify the other end of the channel (treat it
-  // as a disconnect).
-  if (!port_created) {
-    content::RenderThread::Get()->Send(new ExtensionHostMsg_CloseChannel(
-        target_port_id, kReceivingEndDoesntExistError));
+  int routing_id = restrict_to_render_frame
+                       ? restrict_to_render_frame->GetRoutingID()
+                       : MSG_ROUTING_NONE;
+  if (port_created) {
+    content::RenderThread::Get()->Send(
+        new ExtensionHostMsg_OpenMessagePort(routing_id, target_port_id));
+  } else {
+    content::RenderThread::Get()->Send(new ExtensionHostMsg_CloseMessagePort(
+        routing_id, target_port_id, false));
   }
 }
 

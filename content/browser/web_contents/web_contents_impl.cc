@@ -773,6 +773,12 @@ RenderFrameHostImpl* WebContentsImpl::GetFocusedFrame() {
   return focused_node->current_frame_host();
 }
 
+RenderFrameHostImpl* WebContentsImpl::FindFrameByFrameTreeNodeId(
+    int frame_tree_node_id) {
+  FrameTreeNode* frame = frame_tree_.FindByID(frame_tree_node_id);
+  return frame ? frame->current_frame_host() : nullptr;
+}
+
 void WebContentsImpl::ForEachFrame(
     const base::Callback<void(RenderFrameHost*)>& on_frame) {
   frame_tree_.ForEach(base::Bind(&ForEachFrameInternal, on_frame));

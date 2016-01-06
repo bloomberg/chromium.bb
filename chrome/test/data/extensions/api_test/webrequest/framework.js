@@ -191,11 +191,6 @@ function isUnexpectedDetachedRequest(name, details) {
 }
 
 function captureEvent(name, details, callback) {
-  // frameId should be -1 or positive, but is sometimes -2 (MSG_ROUTING_NONE).
-  // TODO(robwu): This will be resolved once crbug.com/432875 is resolved.
-  if (details.frameId === -2)
-    details.frameId = -1;
-
   // Ignore system-level requests like safebrowsing updates and favicon fetches
   // since they are unpredictable.
   if (details.type == "other" ||

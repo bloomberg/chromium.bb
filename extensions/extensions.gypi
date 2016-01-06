@@ -565,6 +565,8 @@
       'browser/event_router.h',
       'browser/event_router_factory.cc',
       'browser/event_router_factory.h',
+      'browser/extension_api_frame_id_map.cc',
+      'browser/extension_api_frame_id_map.h',
       'browser/extension_dialog_auto_confirm.cc',
       'browser/extension_dialog_auto_confirm.h',
       'browser/extension_error.cc',
