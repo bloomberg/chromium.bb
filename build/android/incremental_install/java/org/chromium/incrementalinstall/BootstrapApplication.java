@@ -118,7 +118,7 @@ public final class BootstrapApplication extends Application {
         ApplicationInfo appInfo = getPackageManager().getApplicationInfo(getPackageName(),
                 PackageManager.GET_META_DATA);
         String value = appInfo.metaData.getString(key);
-        if (!value.contains(".")) {
+        if (value != null && !value.contains(".")) {
             value = getPackageName() + "." + value;
         }
         return value;
@@ -129,11 +129,22 @@ public final class BootstrapApplication extends Application {
      */
     private void initInstrumentation(String realInstrumentationName)
             throws ReflectiveOperationException {
+        Instrumentation oldInstrumentation =
+                (Instrumentation) Reflect.getField(mActivityThread, "mInstrumentation");
+        if (realInstrumentationName == null) {
+            // This is the case when an incremental app is used as a target for an instrumentation
+            // test. In this case, ActivityThread can instantiate the proper class just fine since
+            // it exists within the test apk (as opposed to the incremental apk-under-test).
+            Log.i(TAG, "Running with external instrumentation");
+            mRealInstrumentation = oldInstrumentation;
+            return;
+        }
+        // For unit tests, the instrumentation class is replaced in the manifest by a build step
+        // because ActivityThread tries to instantiate it before we get a chance to load the
+        // incremental dex files.
         Log.i(TAG, "Instantiating instrumentation " + realInstrumentationName);
         mRealInstrumentation = (Instrumentation) Reflect.newInstance(
                 Class.forName(realInstrumentationName));
-        Instrumentation oldInstrumentation =
-                (Instrumentation) Reflect.getField(mActivityThread, "mInstrumentation");
 
         // Initialize the fields that are set by Instrumentation.init().
         String[] initFields = {"mThread", "mMessageQueue", "mInstrContext", "mAppContext",
