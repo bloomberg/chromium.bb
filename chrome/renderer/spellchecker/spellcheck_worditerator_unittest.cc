@@ -17,6 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::i18n::BreakIterator;
+using WordIteratorStatus = SpellcheckWordIterator::WordIteratorStatus;
 
 namespace {
 
@@ -30,6 +31,16 @@ base::string16 GetRulesForLanguage(const std::string& language) {
   SpellcheckCharAttribute attribute;
   attribute.SetDefaultLanguage(language);
   return attribute.GetRuleSet(true);
+}
+
+WordIteratorStatus GetNextNonSkippableWord(SpellcheckWordIterator* iterator,
+                                           base::string16* word_string,
+                                           int* word_start,
+                                           int* word_length) {
+  WordIteratorStatus status = SpellcheckWordIterator::IS_SKIPPABLE;
+  while (status == SpellcheckWordIterator::IS_SKIPPABLE)
+    status = iterator->GetNextWord(word_string, word_start, word_length);
+  return status;
 }
 
 }  // namespace
@@ -144,13 +155,13 @@ TEST(SpellcheckWordIteratorTest, SplitWord) {
         base::string16(1, ' '), base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
     base::string16 actual_word;
-    int actual_start, actual_end;
+    int actual_start, actual_len;
     size_t index = 0;
     for (SpellcheckWordIterator::WordIteratorStatus status =
-             iterator.GetNextWord(&actual_word, &actual_start, &actual_end);
+             iterator.GetNextWord(&actual_word, &actual_start, &actual_len);
          status != SpellcheckWordIterator::IS_END_OF_TEXT;
          status =
-             iterator.GetNextWord(&actual_word, &actual_start, &actual_end)) {
+             iterator.GetNextWord(&actual_word, &actual_start, &actual_len)) {
       if (status == SpellcheckWordIterator::WordIteratorStatus::IS_SKIPPABLE)
         continue;
 
@@ -180,18 +191,13 @@ TEST(SpellcheckWordIteratorTest, RuleSetConsistency) {
   // iterator.GetNextWord() calls get stuck in an infinite loop. Therefore, this
   // test succeeds if this call returns without timeouts.
   base::string16 actual_word;
-  int actual_start, actual_end;
-  SpellcheckWordIterator::WordIteratorStatus status;
-  for (status = iterator.GetNextWord(&actual_word, &actual_start, &actual_end);
-       status == SpellcheckWordIterator::IS_SKIPPABLE;
-       status =
-           iterator.GetNextWord(&actual_word, &actual_start, &actual_end)) {
-    continue;
-  }
+  int actual_start, actual_len;
+  WordIteratorStatus status = GetNextNonSkippableWord(
+      &iterator, &actual_word, &actual_start, &actual_len);
 
   EXPECT_EQ(SpellcheckWordIterator::WordIteratorStatus::IS_END_OF_TEXT, status);
   EXPECT_EQ(0, actual_start);
-  EXPECT_EQ(0, actual_end);
+  EXPECT_EQ(0, actual_len);
 }
 
 // Vertify our SpellcheckWordIterator can treat ASCII numbers as word characters
@@ -249,15 +255,9 @@ TEST(SpellcheckWordIteratorTest, TreatNumbersAsWordCharacters) {
     EXPECT_TRUE(iterator.SetText(input_word.c_str(), input_word.length()));
 
     base::string16 actual_word;
-    int actual_start, actual_end;
-    SpellcheckWordIterator::WordIteratorStatus status;
-    for (status =
-             iterator.GetNextWord(&actual_word, &actual_start, &actual_end);
-         status == SpellcheckWordIterator::IS_SKIPPABLE;
-         status =
-             iterator.GetNextWord(&actual_word, &actual_start, &actual_end)) {
-      continue;
-    }
+    int actual_start, actual_len;
+    WordIteratorStatus status = GetNextNonSkippableWord(
+        &iterator, &actual_word, &actual_start, &actual_len);
 
     EXPECT_EQ(SpellcheckWordIterator::WordIteratorStatus::IS_WORD, status);
     if (kTestCases[i].left_to_right)
@@ -267,59 +267,48 @@ TEST(SpellcheckWordIteratorTest, TreatNumbersAsWordCharacters) {
   }
 }
 
-// Vertify SpellcheckWordIterator treats typographical apostrophe as a part of
+// Verify SpellcheckWordIterator treats typographical apostrophe as a part of
 // the word.
 TEST(SpellcheckWordIteratorTest, TypographicalApostropheIsPartOfWord) {
   static const struct {
     const char* language;
-    const wchar_t* word;
+    const wchar_t* input;
+    const wchar_t* expected;
   } kTestCases[] = {
-    // Typewriter apostrophe:
-    {
-      "en-AU", L"you're"
-    }, {
-      "en-CA", L"you're"
-    }, {
-      "en-GB", L"you're"
-    }, {
-      "en-US", L"you're"
-    },
-    // Typographical apostrophe:
-    {
-      "en-AU", L"you\x2019re"
-    }, {
-      "en-CA", L"you\x2019re"
-    }, {
-      "en-GB", L"you\x2019re"
-    }, {
-      "en-US", L"you\x2019re"
-    },
+      // Typewriter apostrophe:
+      {"en-AU", L"you're", L"you're"},
+      {"en-CA", L"you're", L"you're"},
+      {"en-GB", L"you're", L"you're"},
+      {"en-US", L"you're", L"you're"},
+      {"en-US", L"!!!!you're", L"you're"},
+      // Typographical apostrophe:
+      {"en-AU", L"you\x2019re", L"you\x2019re"},
+      {"en-CA", L"you\x2019re", L"you\x2019re"},
+      {"en-GB", L"you\x2019re", L"you\x2019re"},
+      {"en-US", L"you\x2019re", L"you\x2019re"},
+      {"en-US", L"....you\x2019re", L"you\x2019re"},
   };
 
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     SpellcheckCharAttribute attributes;
     attributes.SetDefaultLanguage(kTestCases[i].language);
 
-    base::string16 input_word(base::WideToUTF16(kTestCases[i].word));
+    base::string16 input_word(base::WideToUTF16(kTestCases[i].input));
+    base::string16 expected_word(base::WideToUTF16(kTestCases[i].expected));
     SpellcheckWordIterator iterator;
     EXPECT_TRUE(iterator.Initialize(&attributes, true));
     EXPECT_TRUE(iterator.SetText(input_word.c_str(), input_word.length()));
 
     base::string16 actual_word;
-    int actual_start, actual_end;
-    SpellcheckWordIterator::WordIteratorStatus status;
-    for (status =
-             iterator.GetNextWord(&actual_word, &actual_start, &actual_end);
-         status == SpellcheckWordIterator::IS_SKIPPABLE;
-         iterator.GetNextWord(&actual_word, &actual_start, &actual_end)) {
-      continue;
-    }
+    int actual_start, actual_len;
+    WordIteratorStatus status = GetNextNonSkippableWord(
+        &iterator, &actual_word, &actual_start, &actual_len);
 
     EXPECT_EQ(SpellcheckWordIterator::WordIteratorStatus::IS_WORD, status);
-    EXPECT_EQ(input_word, actual_word);
-    EXPECT_EQ(0, actual_start);
-    EXPECT_EQ(input_word.length(),
-              static_cast<base::string16::size_type>(actual_end));
+    EXPECT_EQ(expected_word, actual_word);
+    EXPECT_LE(0, actual_start);
+    EXPECT_EQ(expected_word.length(),
+              static_cast<base::string16::size_type>(actual_len));
   }
 }
 
