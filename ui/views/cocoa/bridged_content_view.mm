@@ -122,7 +122,8 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
 }
 
 - (void)clearView {
-  hostedView_ = NULL;
+  textInputClient_ = nullptr;
+  hostedView_ = nullptr;
   [cursorTrackingArea_.get() clearOwner];
   [self removeTrackingArea:cursorTrackingArea_.get()];
 }
@@ -329,8 +330,10 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
 }
 
 - (NSTextInputContext*)inputContext {
-  if (!hostedView_)
-    return [super inputContext];
+  // If the textInputClient_ does not exist, return nil since this view does not
+  // conform to NSTextInputClient protocol.
+  if (!textInputClient_)
+    return nil;
 
   // If a menu is active, and -[NSView interpretKeyEvents:] asks for the
   // input context, return nil. This ensures the action message is sent to
@@ -339,7 +342,17 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
   if (menuController && menuController->owner() == hostedView_->GetWidget())
     return nil;
 
-  return [super inputContext];
+  // When not in an editable mode, or while entering passwords
+  // (http://crbug.com/23219), we don't want to show IME candidate windows.
+  // Returning nil prevents this view from getting messages defined as part of
+  // the NSTextInputClient protocol.
+  switch (textInputClient_->GetTextInputType()) {
+    case ui::TEXT_INPUT_TYPE_NONE:
+    case ui::TEXT_INPUT_TYPE_PASSWORD:
+      return nil;
+    default:
+      return [super inputContext];
+  }
 }
 
 // NSResponder implementation.

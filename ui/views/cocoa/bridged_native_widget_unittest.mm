@@ -145,8 +145,13 @@ class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase {
   BridgedNativeWidgetTest();
   ~BridgedNativeWidgetTest() override;
 
-  // Install a textfield in the view hierarchy and make it the text input
-  // client.
+  // Install a textfield with input type |text_input_type| in the view hierarchy
+  // and make it the text input client.
+  void InstallTextField(const std::string& text,
+                        ui::TextInputType text_input_type);
+
+  // Install a textfield with input type ui::TEXT_INPUT_TYPE_TEXT in the view
+  // hierarchy and make it the text input client.
   void InstallTextField(const std::string& text);
 
   // Returns the current text as std::string.
@@ -172,9 +177,13 @@ BridgedNativeWidgetTest::BridgedNativeWidgetTest() {
 BridgedNativeWidgetTest::~BridgedNativeWidgetTest() {
 }
 
-void BridgedNativeWidgetTest::InstallTextField(const std::string& text) {
+void BridgedNativeWidgetTest::InstallTextField(
+    const std::string& text,
+    ui::TextInputType text_input_type) {
   Textfield* textfield = new Textfield();
   textfield->SetText(ASCIIToUTF16(text));
+  textfield->SetTextInputType(text_input_type);
+  view_->RemoveAllChildViews(true);
   view_->AddChildView(textfield);
 
   // Request focus so the InputMethod can dispatch events to the RootView, and
@@ -183,6 +192,10 @@ void BridgedNativeWidgetTest::InstallTextField(const std::string& text) {
   textfield->RequestFocus();
 
   [ns_view_ setTextInputClient:textfield];
+}
+
+void BridgedNativeWidgetTest::InstallTextField(const std::string& text) {
+  InstallTextField(text, ui::TEXT_INPUT_TYPE_TEXT);
 }
 
 std::string BridgedNativeWidgetTest::GetText() {
@@ -347,6 +360,20 @@ TEST_F(BridgedNativeWidgetInitTest, ShadowType) {
 
   window_.reset();
   widget_.reset();
+}
+
+// Ensure a nil NSTextInputContext is returned when the ui::TextInputClient is
+// not editable, a password field, or unset.
+TEST_F(BridgedNativeWidgetTest, InputContext) {
+  const std::string test_string = "test_str";
+  InstallTextField(test_string, ui::TEXT_INPUT_TYPE_PASSWORD);
+  EXPECT_FALSE([ns_view_ inputContext]);
+  InstallTextField(test_string, ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_TRUE([ns_view_ inputContext]);
+  [ns_view_ setTextInputClient:nil];
+  EXPECT_FALSE([ns_view_ inputContext]);
+  InstallTextField(test_string, ui::TEXT_INPUT_TYPE_NONE);
+  EXPECT_FALSE([ns_view_ inputContext]);
 }
 
 // Test getting complete string using text input protocol.
