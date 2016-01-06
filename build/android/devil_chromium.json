@@ -3,7 +3,7 @@
   "dependencies": {
     "aapt": {
       "file_info": {
-        "linux_x86_64": {
+        "linux2_x86_64": {
           "local_paths": [
             "../../third_party/android_tools/sdk/build-tools/23.0.0/aapt"
           ]
@@ -12,7 +12,7 @@
     },
     "adb": {
       "file_info": {
-        "linux_x86_64": {
+        "linux2_x86_64": {
           "local_paths": [
             "../../third_party/android_tools/sdk/platform-tools/adb"
           ]
@@ -21,7 +21,7 @@
     },
     "android_sdk": {
       "file_info": {
-        "linux_x86_64": {
+        "linux2_x86_64": {
           "local_paths": [
             "../../third_party/android_tools/sdk"
           ]
@@ -30,7 +30,7 @@
     },
     "dexdump": {
       "file_info": {
-        "linux_x86_64": {
+        "linux2_x86_64": {
           "local_paths": [
             "../../third_party/android_tools/sdk/build-tools/23.0.0/dexdump"
           ]
@@ -39,7 +39,7 @@
     },
     "split-select": {
       "file_info": {
-        "linux_x86_64": {
+        "linux2_x86_64": {
           "local_paths": [
             "../../third_party/android_tools/sdk/build-tools/23.0.0/split-select"
           ]
@@ -48,17 +48,17 @@
     },
     "pymock": {
       "file_info": {
-        "android_darwin": {
+        "darwin_x86_64": {
           "local_paths": [
             "../../third_party/pymock"
           ]
         },
-        "linux_x86_64": {
+        "linux2_x86_64": {
           "local_paths": [
             "../../third_party/pymock"
           ]
         },
-        "win32_x86_64": {
+        "win32_AMD64": {
           "local_paths": [
             "../../third_party/pymock"
           ]
