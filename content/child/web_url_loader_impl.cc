@@ -768,9 +768,9 @@ void WebURLLoaderImpl::Context::OnReceivedCompletedResponse(
 }
 
 WebURLLoaderImpl::Context::~Context() {
-  if (request_id_ >= 0) {
-    resource_dispatcher_->RemovePendingRequest(request_id_);
-  }
+  // We must be already cancelled at this point.
+  // TODO(kinuko): Replace this with DCHECK once we make sure this is safe.
+  CHECK_LT(request_id_, 0);
 }
 
 void WebURLLoaderImpl::Context::CancelBodyStreaming() {
