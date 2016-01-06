@@ -26,6 +26,7 @@
 #ifndef CSSCrossfadeValue_h
 #define CSSCrossfadeValue_h
 
+#include "core/CoreExport.h"
 #include "core/css/CSSImageGeneratorValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/fetch/ImageResource.h"
@@ -39,7 +40,7 @@ class ImageResource;
 class CrossfadeSubimageObserverProxy;
 class LayoutObject;
 
-class CSSCrossfadeValue final : public CSSImageGeneratorValue {
+class CORE_EXPORT CSSCrossfadeValue final : public CSSImageGeneratorValue {
     friend class CrossfadeSubimageObserverProxy;
     WILL_BE_USING_PRE_FINALIZER(CSSCrossfadeValue, dispose);
 public:
