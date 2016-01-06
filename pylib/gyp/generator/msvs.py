@@ -91,6 +91,7 @@ generator_additional_non_configuration_keys = [
     'msvs_target_platform_minversion',
 ]
 
+generator_filelist_paths = None
 
 # List of precompiled header related keys.
 precomp_keys = [
@@ -1936,6 +1937,19 @@ def PerformBuild(data, configurations, params):
     print 'Building [%s]: %s' % (config, arguments)
     rtn = subprocess.check_call(arguments)
 
+
+def CalculateGeneratorInputInfo(params):
+  if params.get('flavor') == 'ninja':
+    toplevel = params['options'].toplevel_dir
+    qualified_out_dir = os.path.normpath(os.path.join(
+        toplevel, ninja_generator.ComputeOutputDir(params),
+        'gypfiles-msvs-ninja'))
+
+    global generator_filelist_paths
+    generator_filelist_paths = {
+        'toplevel': toplevel,
+        'qualified_out_dir': qualified_out_dir,
+    }
 
 def GenerateOutput(target_list, target_dicts, data, params):
   """Generate .sln and .vcproj files.
