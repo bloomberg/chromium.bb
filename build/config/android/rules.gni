@@ -1738,11 +1738,11 @@ template("android_apk") {
       native_libs = _extra_native_libs
       native_libs_even_when_incremental =
           _extra_native_libs_even_when_incremental
-
-      # Placeholders necessary for some older devices.
-      # http://crbug.com/395038
-      forward_variables_from(invoker, [ "native_lib_placeholders" ])
     }
+
+    # Placeholders necessary for some older devices.
+    # http://crbug.com/395038
+    forward_variables_from(invoker, [ "native_lib_placeholders" ])
   }
 
   if ((_native_libs != [] || _extra_native_libs_even_when_incremental != []) &&
