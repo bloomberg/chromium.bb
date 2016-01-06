@@ -188,7 +188,6 @@ void Predictor::RegisterProfilePrefs(
 // --------------------- Start UI methods. ------------------------------------
 
 void Predictor::InitNetworkPredictor(PrefService* user_prefs,
-                                     PrefService* local_state,
                                      IOThread* io_thread,
                                      net::URLRequestContextGetter* getter,
                                      ProfileIOData* profile_io_data) {
@@ -198,7 +197,7 @@ void Predictor::InitNetworkPredictor(PrefService* user_prefs,
   url_request_context_getter_ = getter;
 
   // Gather the list of hostnames to prefetch on startup.
-  UrlList urls = GetPredictedUrlListAtStartup(user_prefs, local_state);
+  UrlList urls = GetPredictedUrlListAtStartup(user_prefs);
 
   base::ListValue* referral_list =
       static_cast<base::ListValue*>(user_prefs->GetList(
@@ -314,9 +313,7 @@ void Predictor::PreconnectUrlAndSubresources(const GURL& url,
   PredictFrameSubresources(url.GetWithEmptyPath(), first_party_for_cookies);
 }
 
-UrlList Predictor::GetPredictedUrlListAtStartup(
-    PrefService* user_prefs,
-    PrefService* local_state) {
+UrlList Predictor::GetPredictedUrlListAtStartup(PrefService* user_prefs) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   UrlList urls;
   // Recall list of URLs we learned about during last session.
@@ -1299,7 +1296,6 @@ GURL Predictor::CanonicalizeUrl(const GURL& url) {
 
 void SimplePredictor::InitNetworkPredictor(
     PrefService* user_prefs,
-    PrefService* local_state,
     IOThread* io_thread,
     net::URLRequestContextGetter* getter,
     ProfileIOData* profile_io_data) {

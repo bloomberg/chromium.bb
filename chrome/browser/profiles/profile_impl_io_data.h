@@ -76,7 +76,6 @@ class ProfileImplIOData : public ProfileIOData {
     scoped_refptr<ChromeURLRequestContextGetter> CreateMainRequestContextGetter(
         content::ProtocolHandlerMap* protocol_handlers,
         content::URLRequestInterceptorScopedVector request_interceptors,
-        PrefService* local_state,
         IOThread* io_thread) const;
     scoped_refptr<ChromeURLRequestContextGetter>
         CreateIsolatedAppRequestContextGetter(

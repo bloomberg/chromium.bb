@@ -5,6 +5,7 @@
 #include "chrome/browser/profiles/profile_impl_io_data.h"
 
 #include <set>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -223,7 +224,6 @@ scoped_refptr<ChromeURLRequestContextGetter>
 ProfileImplIOData::Handle::CreateMainRequestContextGetter(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors,
-    PrefService* local_state,
     IOThread* io_thread) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   LazyInitialize();
@@ -233,7 +233,6 @@ ProfileImplIOData::Handle::CreateMainRequestContextGetter(
 
   io_data_->predictor_
       ->InitNetworkPredictor(profile_->GetPrefs(),
-                             local_state,
                              io_thread,
                              main_request_context_getter_.get(),
                              io_data_);

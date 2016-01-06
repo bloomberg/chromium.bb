@@ -19,15 +19,14 @@
 #ifndef CHROME_BROWSER_NET_PREDICTOR_H_
 #define CHROME_BROWSER_NET_PREDICTOR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <queue>
 #include <set>
 #include <string>
 #include <vector>
-
-#include <stddef.h>
-
-#include <stdint.h>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -137,7 +136,6 @@ class Predictor {
   // ------------- Start UI thread methods.
 
   virtual void InitNetworkPredictor(PrefService* user_prefs,
-                                    PrefService* local_state,
                                     IOThread* io_thread,
                                     net::URLRequestContextGetter* getter,
                                     ProfileIOData* profile_io_data);
@@ -151,8 +149,7 @@ class Predictor {
   void PreconnectUrlAndSubresources(const GURL& url,
                                     const GURL& first_party_for_cookies);
 
-  static UrlList GetPredictedUrlListAtStartup(PrefService* user_prefs,
-                                              PrefService* local_state);
+  static UrlList GetPredictedUrlListAtStartup(PrefService* user_prefs);
 
   static void set_max_queueing_delay(int max_queueing_delay_ms);
 
@@ -610,7 +607,6 @@ class SimplePredictor : public Predictor {
       : Predictor(preconnect_enabled, predictor_enabled) {}
   ~SimplePredictor() override {}
   void InitNetworkPredictor(PrefService* user_prefs,
-                            PrefService* local_state,
                             IOThread* io_thread,
                             net::URLRequestContextGetter* getter,
                             ProfileIOData* profile_io_data) override;

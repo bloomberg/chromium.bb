@@ -919,7 +919,6 @@ net::URLRequestContextGetter* ProfileImpl::CreateRequestContext(
     content::URLRequestInterceptorScopedVector request_interceptors) {
   return io_data_.CreateMainRequestContextGetter(
                      protocol_handlers, std::move(request_interceptors),
-                     g_browser_process->local_state(),
                      g_browser_process->io_thread())
       .get();
 }
