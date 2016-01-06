@@ -6,9 +6,11 @@
 
 #include <stddef.h>
 #include <limits>
+#include <set>
 #include <utility>
 #include <vector>
 
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -126,7 +128,8 @@ class ResourceUsageReporterImpl : public ResourceUsageReporter {
  public:
   ResourceUsageReporterImpl(base::WeakPtr<ChromeRenderProcessObserver> observer,
                             mojo::InterfaceRequest<ResourceUsageReporter> req)
-      : binding_(this, std::move(req)),
+      : workers_to_go_(0),
+        binding_(this, std::move(req)),
         observer_(observer),
         weak_factory_(this) {}
   ~ResourceUsageReporterImpl() override {}
@@ -216,6 +219,8 @@ class ResourceUsageReporterImpl : public ResourceUsageReporter {
   base::WeakPtr<ChromeRenderProcessObserver> observer_;
 
   base::WeakPtrFactory<ResourceUsageReporterImpl> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResourceUsageReporterImpl);
 };
 
 void CreateResourceUsageReporter(
@@ -264,13 +269,37 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver()
       chrome_common_media::LocalizedStringProvider);
 #endif
 
-  // Setup initial set of crash dump data for Field Trials in this renderer.
-  variations::SetVariationListCrashKeys();
-  // Listen for field trial activations to report them to the browser.
-  base::FieldTrialList::AddObserver(this);
+  InitFieldTrialObserving(command_line);
 }
 
-ChromeRenderProcessObserver::~ChromeRenderProcessObserver() {
+ChromeRenderProcessObserver::~ChromeRenderProcessObserver() {}
+
+void ChromeRenderProcessObserver::InitFieldTrialObserving(
+    const base::CommandLine& command_line) {
+  // Set up initial set of crash dump data for field trials in this renderer.
+  variations::SetVariationListCrashKeys();
+
+  // Listen for field trial activations to report them to the browser.
+  base::FieldTrialList::AddObserver(this);
+
+  // Some field trials may have been activated before this point. Notify the
+  // browser of these activations now. To detect these, take the set difference
+  // of currently active trials with the initially active trials.
+  base::FieldTrial::ActiveGroups initially_active_trials;
+  base::FieldTrialList::GetActiveFieldTrialGroupsFromString(
+      command_line.GetSwitchValueASCII(switches::kForceFieldTrials),
+      &initially_active_trials);
+  std::set<std::string> initially_active_trials_set;
+  for (const auto& entry : initially_active_trials) {
+    initially_active_trials_set.insert(std::move(entry.trial_name));
+  }
+
+  base::FieldTrial::ActiveGroups current_active_trials;
+  base::FieldTrialList::GetActiveFieldTrialGroups(&current_active_trials);
+  for (const auto& trial : current_active_trials) {
+    if (!ContainsKey(initially_active_trials_set, trial.trial_name))
+      OnFieldTrialGroupFinalized(trial.trial_name, trial.group_name);
+  }
 }
 
 bool ChromeRenderProcessObserver::OnControlMessageReceived(

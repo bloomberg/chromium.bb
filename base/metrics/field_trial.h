@@ -67,6 +67,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list_threadsafe.h"
+#include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 
@@ -112,10 +113,13 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
 
   // A triplet representing a FieldTrial, its selected group and whether it's
   // active.
-  struct FieldTrialState {
-    std::string trial_name;
-    std::string group_name;
+  struct BASE_EXPORT State {
+    StringPiece trial_name;
+    StringPiece group_name;
     bool activated;
+
+    State();
+    ~State();
   };
 
   typedef std::vector<ActiveGroup> ActiveGroups;
@@ -254,7 +258,7 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
   // been disabled. In that case, true is returned and |field_trial_state| is
   // filled in; otherwise, the result is false and |field_trial_state| is left
   // untouched.
-  bool GetState(FieldTrialState* field_trial_state);
+  bool GetState(State* field_trial_state);
 
   // Returns the group_name. A winner need not have been chosen.
   std::string group_name_internal() const { return group_name_; }
@@ -323,15 +327,6 @@ class BASE_EXPORT FieldTrialList {
     DONT_ACTIVATE_TRIALS,
     ACTIVATE_TRIALS,
   };
-
-  // Define a separator character to use when creating a persistent form of an
-  // instance.  This is intended for use as a command line argument, passed to a
-  // second process to mimic our state (i.e., provide the same group name).
-  static const char kPersistentStringSeparator;  // Currently a slash.
-
-  // Define a marker character to be used as a prefix to a trial name on the
-  // command line which forces its activation.
-  static const char kActivationMarker;  // Currently an asterisk.
 
   // Year that is guaranteed to not be expired when instantiating a field trial
   // via |FactoryGetFieldTrial()|.  Set to two years from the build date.
@@ -452,6 +447,11 @@ class BASE_EXPORT FieldTrialList {
   static void GetActiveFieldTrialGroups(
       FieldTrial::ActiveGroups* active_groups);
 
+  // Returns the field trials that are marked active in |trials_string|.
+  static void GetActiveFieldTrialGroupsFromString(
+      const std::string& trials_string,
+      FieldTrial::ActiveGroups* active_groups);
+
   // Use a state string (re: StatesToString()) to augment the current list of
   // field trials to include the supplied trials, and using a 100% probability
   // for each trial, force them to have the same group string. This is commonly
@@ -461,9 +461,9 @@ class BASE_EXPORT FieldTrialList {
   // trials are all marked as "used" for the purposes of active trial reporting
   // if |mode| is ACTIVATE_TRIALS, otherwise each trial will be marked as "used"
   // if it is prefixed with |kActivationMarker|. Trial names in
-  // |ignored_trial_names| are ignored when parsing |prior_trials|.
+  // |ignored_trial_names| are ignored when parsing |trials_string|.
   static bool CreateTrialsFromString(
-      const std::string& prior_trials,
+      const std::string& trials_string,
       FieldTrialActivationMode mode,
       const std::set<std::string>& ignored_trial_names);
 

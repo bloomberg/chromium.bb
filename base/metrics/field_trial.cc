@@ -17,6 +17,15 @@ namespace base {
 
 namespace {
 
+// Define a separator character to use when creating a persistent form of an
+// instance.  This is intended for use as a command line argument, passed to a
+// second process to mimic our state (i.e., provide the same group name).
+const char kPersistentStringSeparator = '/';  // Currently a slash.
+
+// Define a marker character to be used as a prefix to a trial name on the
+// command line which forces its activation.
+const char kActivationMarker = '*';
+
 // Created a time value based on |year|, |month| and |day_of_month| parameters.
 Time CreateTimeFromParams(int year, int month, int day_of_month) {
   DCHECK_GT(year, 1970);
@@ -57,6 +66,45 @@ FieldTrial::Probability GetGroupBoundaryValue(
   return std::min(result, divisor - 1);
 }
 
+// Parses the --force-fieldtrials string |trials_string| into |entries|.
+// Returns true if the string was parsed correctly. On failure, the |entries|
+// array may end up being partially filled.
+bool ParseFieldTrialsString(const std::string& trials_string,
+                            std::vector<FieldTrial::State>* entries) {
+  const StringPiece trials_string_piece(trials_string);
+
+  size_t next_item = 0;
+  while (next_item < trials_string.length()) {
+    size_t name_end = trials_string.find(kPersistentStringSeparator, next_item);
+    if (name_end == trials_string.npos || next_item == name_end)
+      return false;
+    size_t group_name_end =
+        trials_string.find(kPersistentStringSeparator, name_end + 1);
+    if (name_end + 1 == group_name_end)
+      return false;
+    if (group_name_end == trials_string.npos)
+      group_name_end = trials_string.length();
+
+    FieldTrial::State entry;
+    // Verify if the trial should be activated or not.
+    if (trials_string[next_item] == kActivationMarker) {
+      // Name cannot be only the indicator.
+      if (name_end - next_item == 1)
+        return false;
+      next_item++;
+      entry.activated = true;
+    }
+    entry.trial_name =
+        trials_string_piece.substr(next_item, name_end - next_item);
+    entry.group_name =
+        trials_string_piece.substr(name_end + 1, group_name_end - name_end - 1);
+    next_item = group_name_end + 1;
+
+    entries->push_back(entry);
+  }
+  return true;
+}
+
 }  // namespace
 
 // statics
@@ -64,8 +112,6 @@ const int FieldTrial::kNotFinalized = -1;
 const int FieldTrial::kDefaultGroupNumber = 0;
 bool FieldTrial::enable_benchmarking_ = false;
 
-const char FieldTrialList::kPersistentStringSeparator('/');
-const char FieldTrialList::kActivationMarker('*');
 int FieldTrialList::kNoExpirationYear = 0;
 
 //------------------------------------------------------------------------------
@@ -73,6 +119,10 @@ int FieldTrialList::kNoExpirationYear = 0;
 
 FieldTrial::EntropyProvider::~EntropyProvider() {
 }
+
+FieldTrial::State::State() : activated(false) {}
+
+FieldTrial::State::~State() {}
 
 void FieldTrial::Disable() {
   DCHECK(!group_reported_);
@@ -226,7 +276,7 @@ bool FieldTrial::GetActiveGroup(ActiveGroup* active_group) const {
   return true;
 }
 
-bool FieldTrial::GetState(FieldTrialState* field_trial_state) {
+bool FieldTrial::GetState(State* field_trial_state) {
   if (!enable_field_trial_)
     return false;
   FinalizeGroupChoice();
@@ -412,7 +462,7 @@ void FieldTrialList::AllStatesToString(std::string* output) {
   AutoLock auto_lock(global_->lock_);
 
   for (const auto& registered : global_->registered_) {
-    FieldTrial::FieldTrialState trial;
+    FieldTrial::State trial;
     if (!registered.second->GetState(&trial))
       continue;
     DCHECK_EQ(std::string::npos,
@@ -421,9 +471,9 @@ void FieldTrialList::AllStatesToString(std::string* output) {
               trial.group_name.find(kPersistentStringSeparator));
     if (trial.activated)
       output->append(1, kActivationMarker);
-    output->append(trial.trial_name);
+    trial.trial_name.AppendToString(output);
     output->append(1, kPersistentStringSeparator);
-    output->append(trial.group_name);
+    trial.group_name.AppendToString(output);
     output->append(1, kPersistentStringSeparator);
   }
 }
@@ -445,6 +495,24 @@ void FieldTrialList::GetActiveFieldTrialGroups(
 }
 
 // static
+void FieldTrialList::GetActiveFieldTrialGroupsFromString(
+    const std::string& trials_string,
+    FieldTrial::ActiveGroups* active_groups) {
+  std::vector<FieldTrial::State> entries;
+  if (!ParseFieldTrialsString(trials_string, &entries))
+    return;
+
+  for (const auto& entry : entries) {
+    if (entry.activated) {
+      FieldTrial::ActiveGroup group;
+      group.trial_name = entry.trial_name.as_string();
+      group.group_name = entry.group_name.as_string();
+      active_groups->push_back(group);
+    }
+  }
+}
+
+// static
 bool FieldTrialList::CreateTrialsFromString(
     const std::string& trials_string,
     FieldTrialActivationMode mode,
@@ -453,40 +521,21 @@ bool FieldTrialList::CreateTrialsFromString(
   if (trials_string.empty() || !global_)
     return true;
 
-  size_t next_item = 0;
-  while (next_item < trials_string.length()) {
-    size_t name_end = trials_string.find(kPersistentStringSeparator, next_item);
-    if (name_end == trials_string.npos || next_item == name_end)
-      return false;
-    size_t group_name_end = trials_string.find(kPersistentStringSeparator,
-                                               name_end + 1);
-    if (name_end + 1 == group_name_end)
-      return false;
-    if (group_name_end == trials_string.npos)
-      group_name_end = trials_string.length();
+  std::vector<FieldTrial::State> entries;
+  if (!ParseFieldTrialsString(trials_string, &entries))
+    return false;
 
-    // Verify if the trial should be activated or not.
-    std::string name;
-    bool force_activation = false;
-    if (trials_string[next_item] == kActivationMarker) {
-      // Name cannot be only the indicator.
-      if (name_end - next_item == 1)
-        return false;
-      next_item++;
-      force_activation = true;
-    }
-    name.append(trials_string, next_item, name_end - next_item);
-    std::string group_name(trials_string, name_end + 1,
-                           group_name_end - name_end - 1);
-    next_item = group_name_end + 1;
+  for (const auto& entry : entries) {
+    const std::string trial_name = entry.trial_name.as_string();
+    const std::string group_name = entry.group_name.as_string();
 
-    if (ignored_trial_names.find(name) != ignored_trial_names.end())
+    if (ContainsKey(ignored_trial_names, trial_name))
       continue;
 
-    FieldTrial* trial = CreateFieldTrial(name, group_name);
+    FieldTrial* trial = CreateFieldTrial(trial_name, group_name);
     if (!trial)
       return false;
-    if (mode == ACTIVATE_TRIALS || force_activation) {
+    if (mode == ACTIVATE_TRIALS || entry.activated) {
       // Call |group()| to mark the trial as "used" and notify observers, if
       // any. This is useful to ensure that field trials created in child
       // processes are properly reported in crash reports.

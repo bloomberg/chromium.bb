@@ -316,8 +316,19 @@ TEST_F(FieldTrialTest, ActiveGroups) {
   }
 }
 
+TEST_F(FieldTrialTest, GetActiveFieldTrialGroupsFromString) {
+  FieldTrial::ActiveGroups active_groups;
+  FieldTrialList::GetActiveFieldTrialGroupsFromString("*A/X/B/Y/*C/Z",
+                                                      &active_groups);
+  ASSERT_EQ(2U, active_groups.size());
+  EXPECT_EQ("A", active_groups[0].trial_name);
+  EXPECT_EQ("X", active_groups[0].group_name);
+  EXPECT_EQ("C", active_groups[1].trial_name);
+  EXPECT_EQ("Z", active_groups[1].group_name);
+}
+
 TEST_F(FieldTrialTest, AllGroups) {
-  FieldTrial::FieldTrialState field_trial_state;
+  FieldTrial::State field_trial_state;
   std::string one_winner("One Winner");
   scoped_refptr<FieldTrial> trial =
       CreateFieldTrial(one_winner, 10, "Default", NULL);

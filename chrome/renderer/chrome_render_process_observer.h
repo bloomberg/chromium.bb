@@ -19,6 +19,10 @@
 class GURL;
 struct ContentSettings;
 
+namespace base {
+class CommandLine;
+}
+
 namespace content {
 class ResourceDispatcherDelegate;
 }
@@ -42,12 +46,16 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver,
   const RendererContentSettingRules* content_setting_rules() const;
 
  private:
-  // RenderProcessObserver implementation.
+  // Initializes field trial state change observation and notifies the browser
+  // of any field trials that might have already been activated.
+  void InitFieldTrialObserving(const base::CommandLine& command_line);
+
+  // content::RenderProcessObserver:
   bool OnControlMessageReceived(const IPC::Message& message) override;
   void WebKitInitialized() override;
   void OnRenderProcessShutdown() override;
 
-  // Observer implementation.
+  // base::FieldTrialList::Observer:
   void OnFieldTrialGroupFinalized(const std::string& trial_name,
                                   const std::string& group_name) override;
 
