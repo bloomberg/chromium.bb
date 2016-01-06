@@ -52,13 +52,10 @@ SSLServerSocketOpenSSL::SSLServerSocketOpenSSL(
       transport_socket_(std::move(transport_socket)),
       ssl_config_(ssl_config),
       cert_(certificate),
+      key_(key.Copy()),
       next_handshake_state_(STATE_NONE),
       completed_handshake_(false) {
-  // TODO(byungchul): Need a better way to clone a key.
-  std::vector<uint8_t> key_bytes;
-  CHECK(key.ExportPrivateKey(&key_bytes));
-  key_.reset(crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_bytes));
-  CHECK(key_.get());
+  CHECK(key_);
 }
 
 SSLServerSocketOpenSSL::~SSLServerSocketOpenSSL() {
@@ -135,7 +132,7 @@ int SSLServerSocketOpenSSL::Read(IOBuffer* buf, int buf_len,
                                  const CompletionCallback& callback) {
   DCHECK(user_read_callback_.is_null());
   DCHECK(user_handshake_callback_.is_null());
-  DCHECK(!user_read_buf_.get());
+  DCHECK(!user_read_buf_);
   DCHECK(!callback.is_null());
 
   user_read_buf_ = buf;
@@ -158,7 +155,7 @@ int SSLServerSocketOpenSSL::Read(IOBuffer* buf, int buf_len,
 int SSLServerSocketOpenSSL::Write(IOBuffer* buf, int buf_len,
                                   const CompletionCallback& callback) {
   DCHECK(user_write_callback_.is_null());
-  DCHECK(!user_write_buf_.get());
+  DCHECK(!user_write_buf_);
   DCHECK(!callback.is_null());
 
   user_write_buf_ = buf;
@@ -270,7 +267,7 @@ void SSLServerSocketOpenSSL::OnSendComplete(int result) {
   if (!completed_handshake_)
     return;
 
-  if (user_write_buf_.get()) {
+  if (user_write_buf_) {
     int rv = DoWriteLoop(result);
     if (rv != ERR_IO_PENDING)
       DoWriteCallback(rv);
@@ -289,7 +286,7 @@ void SSLServerSocketOpenSSL::OnRecvComplete(int result) {
 
   // Network layer received some data, check if client requested to read
   // decrypted data.
-  if (!user_read_buf_.get() || !completed_handshake_)
+  if (!user_read_buf_ || !completed_handshake_)
     return;
 
   int rv = DoReadLoop(result);
@@ -314,7 +311,7 @@ int SSLServerSocketOpenSSL::BufferSend() {
   if (transport_send_busy_)
     return ERR_IO_PENDING;
 
-  if (!send_buffer_.get()) {
+  if (!send_buffer_) {
     // Get a fresh send buffer out of the send BIO.
     size_t max_read = BIO_pending(transport_bio_);
     if (!max_read)
@@ -363,7 +360,7 @@ void SSLServerSocketOpenSSL::TransportWriteComplete(int result) {
     (void)BIO_shutdown_wr(transport_bio_);
     send_buffer_ = NULL;
   } else {
-    DCHECK(send_buffer_.get());
+    DCHECK(send_buffer_);
     send_buffer_->DidConsume(result);
     DCHECK_GE(send_buffer_->BytesRemaining(), 0);
     if (send_buffer_->BytesRemaining() <= 0)
@@ -432,7 +429,7 @@ int SSLServerSocketOpenSSL::TransportReadComplete(int result) {
     // the CHECK. http://crbug.com/335557.
     result = transport_write_error_;
   } else {
-    DCHECK(recv_buffer_.get());
+    DCHECK(recv_buffer_);
     int ret = BIO_write(transport_bio_, recv_buffer_->data(), result);
     // A write into a memory BIO should always succeed.
     DCHECK_EQ(result, ret);
@@ -461,7 +458,7 @@ bool SSLServerSocketOpenSSL::DoTransportIO() {
 }
 
 int SSLServerSocketOpenSSL::DoPayloadRead() {
-  DCHECK(user_read_buf_.get());
+  DCHECK(user_read_buf_);
   DCHECK_GT(user_read_buf_len_, 0);
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
   int rv = SSL_read(ssl_, user_read_buf_->data(), user_read_buf_len_);
@@ -480,7 +477,7 @@ int SSLServerSocketOpenSSL::DoPayloadRead() {
 }
 
 int SSLServerSocketOpenSSL::DoPayloadWrite() {
-  DCHECK(user_write_buf_.get());
+  DCHECK(user_write_buf_);
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
   int rv = SSL_write(ssl_, user_write_buf_->data(), user_write_buf_len_);
   if (rv >= 0)
@@ -653,7 +650,7 @@ int SSLServerSocketOpenSSL::Init() {
       reinterpret_cast<const unsigned char*>(der_string.data());
 
   ScopedX509 x509(d2i_X509(NULL, &der_string_array, der_string.length()));
-  if (!x509.get())
+  if (!x509)
     return ERR_UNEXPECTED;
 
   // On success, SSL_use_certificate acquires a reference to |x509|.

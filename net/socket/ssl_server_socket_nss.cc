@@ -105,13 +105,10 @@ SSLServerSocketNSS::SSLServerSocketNSS(
       transport_socket_(transport_socket.Pass()),
       ssl_config_(ssl_config),
       cert_(cert),
+      key_(key.Copy()),
       next_handshake_state_(STATE_NONE),
       completed_handshake_(false) {
-  // TODO(hclam): Need a better way to clone a key.
-  std::vector<uint8_t> key_bytes;
-  CHECK(key.ExportPrivateKey(&key_bytes));
-  key_.reset(crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_bytes));
-  CHECK(key_.get());
+  CHECK(key_);
 }
 
 SSLServerSocketNSS::~SSLServerSocketNSS() {
@@ -198,7 +195,7 @@ int SSLServerSocketNSS::Read(IOBuffer* buf, int buf_len,
                              const CompletionCallback& callback) {
   DCHECK(user_read_callback_.is_null());
   DCHECK(user_handshake_callback_.is_null());
-  DCHECK(!user_read_buf_.get());
+  DCHECK(!user_read_buf_);
   DCHECK(nss_bufs_);
   DCHECK(!callback.is_null());
 
@@ -221,7 +218,7 @@ int SSLServerSocketNSS::Read(IOBuffer* buf, int buf_len,
 int SSLServerSocketNSS::Write(IOBuffer* buf, int buf_len,
                               const CompletionCallback& callback) {
   DCHECK(user_write_callback_.is_null());
-  DCHECK(!user_write_buf_.get());
+  DCHECK(!user_write_buf_);
   DCHECK(nss_bufs_);
   DCHECK(!callback.is_null());
 
@@ -523,7 +520,7 @@ void SSLServerSocketNSS::OnSendComplete(int result) {
   if (!completed_handshake_)
     return;
 
-  if (user_write_buf_.get()) {
+  if (user_write_buf_) {
     int rv = DoWriteLoop(result);
     if (rv != ERR_IO_PENDING)
       DoWriteCallback(rv);
@@ -542,7 +539,7 @@ void SSLServerSocketNSS::OnRecvComplete(int result) {
 
   // Network layer received some data, check if client requested to read
   // decrypted data.
-  if (!user_read_buf_.get() || !completed_handshake_)
+  if (!user_read_buf_ || !completed_handshake_)
     return;
 
   int rv = DoReadLoop(result);
@@ -663,7 +660,7 @@ bool SSLServerSocketNSS::DoTransportIO() {
 }
 
 int SSLServerSocketNSS::DoPayloadRead() {
-  DCHECK(user_read_buf_.get());
+  DCHECK(user_read_buf_);
   DCHECK_GT(user_read_buf_len_, 0);
   int rv = PR_Read(nss_fd_, user_read_buf_->data(), user_read_buf_len_);
   if (rv >= 0)
@@ -679,7 +676,7 @@ int SSLServerSocketNSS::DoPayloadRead() {
 }
 
 int SSLServerSocketNSS::DoPayloadWrite() {
-  DCHECK(user_write_buf_.get());
+  DCHECK(user_write_buf_);
   int rv = PR_Write(nss_fd_, user_write_buf_->data(), user_write_buf_len_);
   if (rv >= 0)
     return rv;
