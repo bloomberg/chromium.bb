@@ -18,14 +18,13 @@
 #include "third_party/WebKit/public/platform/WebCanvasCaptureHandler.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
-#include "third_party/WebKit/public/platform/WebSkImage.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace content {
 
 // CanvasCaptureHandler acts as the link between Blink side HTMLCanvasElement
 // and Chrome side VideoCapturerSource. It is responsible for handling
-// WebSkImage instances sent from the Blink side, convert them to
+// SkImage instances sent from the Blink side, convert them to
 // media::VideoFrame and plug them to the MediaStreamTrack.
 // CanvasCaptureHandler instance is owned by a blink::CanvasDrawListener which
 // is owned by a CanvasCaptureMediaStreamTrack.
@@ -47,7 +46,7 @@ class CONTENT_EXPORT CanvasCaptureHandler final
   ~CanvasCaptureHandler() override;
 
   // blink::WebCanvasCaptureHandler Implementation.
-  void sendNewFrame(const blink::WebSkImage& image) override;
+  void sendNewFrame(const SkImage* image) override;
   bool needsNewFrame() const override;
 
   // Functions called by media::VideoCapturerSource implementation.
@@ -60,7 +59,7 @@ class CONTENT_EXPORT CanvasCaptureHandler final
   blink::WebSize GetSourceSize() const { return size_; }
 
  private:
-  void CreateNewFrame(const blink::WebSkImage& image);
+  void CreateNewFrame(const SkImage* image);
   void AddVideoCapturerSourceToVideoTrack(
       scoped_ptr<media::VideoCapturerSource> source,
       blink::WebMediaStreamTrack* web_track);

@@ -200,7 +200,6 @@
       "platform/WebSelectionBound.h",
       "platform/WebSetSinkIdCallbacks.h",
       "platform/WebSize.h",
-      "platform/WebSkImage.h",
       "platform/WebSocketHandle.h",
       "platform/WebSocketHandleClient.h",
       "platform/WebSocketHandshakeRequestInfo.h",

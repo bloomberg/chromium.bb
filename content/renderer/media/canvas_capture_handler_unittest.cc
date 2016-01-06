@@ -9,12 +9,12 @@
 #include "content/renderer/media/canvas_capture_handler.h"
 #include "content/renderer/media/media_stream_video_capturer_source.h"
 #include "media/base/limits.h"
+#include "skia/ext/refptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
-#include "third_party/WebKit/public/platform/WebSkImage.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
 
 using ::testing::_;
@@ -75,12 +75,12 @@ class CanvasCaptureHandlerTest : public Test {
   void OnRunning(bool state) { DoOnRunning(state); }
 
   // Verify returned frames.
-  static blink::WebSkImage GenerateTestImage() {
+  static skia::RefPtr<SkImage> GenerateTestImage() {
     SkBitmap testBitmap;
     testBitmap.allocN32Pixels(kTestCanvasCaptureFrameWidth,
                               kTestCanvasCaptureFrameHeight);
     testBitmap.eraseColor(SK_ColorBLUE);
-    return blink::WebSkImage(SkImage::NewFromBitmap(testBitmap));
+    return skia::AdoptRef(SkImage::NewFromBitmap(testBitmap));
   }
 
   void OnVerifyDeliveredFrame(
@@ -161,7 +161,7 @@ TEST_F(CanvasCaptureHandlerTest, GetFormatsStartAndStop) {
       params, base::Bind(&CanvasCaptureHandlerTest::OnDeliverFrame,
                          base::Unretained(this)),
       base::Bind(&CanvasCaptureHandlerTest::OnRunning, base::Unretained(this)));
-  canvas_capture_handler_->sendNewFrame(GenerateTestImage());
+  canvas_capture_handler_->sendNewFrame(GenerateTestImage().get());
   run_loop.Run();
 
   source->StopCapture();
@@ -182,7 +182,7 @@ TEST_F(CanvasCaptureHandlerTest, VerifyFrame) {
       params, base::Bind(&CanvasCaptureHandlerTest::OnVerifyDeliveredFrame,
                          base::Unretained(this)),
       base::Bind(&CanvasCaptureHandlerTest::OnRunning, base::Unretained(this)));
-  canvas_capture_handler_->sendNewFrame(GenerateTestImage());
+  canvas_capture_handler_->sendNewFrame(GenerateTestImage().get());
   run_loop.RunUntilIdle();
 }
 

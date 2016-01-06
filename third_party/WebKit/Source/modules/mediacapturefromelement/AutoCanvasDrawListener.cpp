@@ -4,8 +4,6 @@
 
 #include "modules/mediacapturefromelement/AutoCanvasDrawListener.h"
 
-#include "public/platform/WebSkImage.h"
-
 namespace blink {
 
 // static

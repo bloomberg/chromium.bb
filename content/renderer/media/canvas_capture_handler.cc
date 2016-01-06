@@ -115,7 +115,7 @@ CanvasCaptureHandler::~CanvasCaptureHandler() {
   io_task_runner_->DeleteSoon(FROM_HERE, delegate_.release());
 }
 
-void CanvasCaptureHandler::sendNewFrame(const blink::WebSkImage& image) {
+void CanvasCaptureHandler::sendNewFrame(const SkImage* image) {
   DCHECK(thread_checker_.CalledOnValidThread());
   CreateNewFrame(image);
 }
@@ -150,11 +150,11 @@ void CanvasCaptureHandler::StopVideoCapture() {
   io_task_runner_->DeleteSoon(FROM_HERE, delegate_.release());
 }
 
-void CanvasCaptureHandler::CreateNewFrame(const blink::WebSkImage& image) {
+void CanvasCaptureHandler::CreateNewFrame(const SkImage* image) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  DCHECK(!image.isNull());
-  const gfx::Size size(image.width(), image.height());
+  DCHECK(image);
+  const gfx::Size size(image->width(), image->height());
   if (size != last_size) {
     temp_data_.resize(
         media::VideoFrame::AllocationSize(media::PIXEL_FORMAT_ARGB, size));
@@ -166,7 +166,7 @@ void CanvasCaptureHandler::CreateNewFrame(const blink::WebSkImage& image) {
     last_size = size;
   }
 
-  image.readPixels(image_info_, &temp_data_[0], row_bytes_, 0, 0);
+  image->readPixels(image_info_, &temp_data_[0], row_bytes_, 0, 0);
   scoped_refptr<media::VideoFrame> video_frame =
       frame_pool_.CreateFrame(media::PIXEL_FORMAT_I420, size, gfx::Rect(size),
                               size, base::TimeTicks::Now() - base::TimeTicks());

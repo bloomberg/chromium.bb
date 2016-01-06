@@ -6,7 +6,6 @@
 
 #include "platform/Task.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebSkImage.h"
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebTraceLocation.h"
 

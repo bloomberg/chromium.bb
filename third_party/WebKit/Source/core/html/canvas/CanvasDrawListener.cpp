@@ -4,8 +4,6 @@
 
 #include "core/html/canvas/CanvasDrawListener.h"
 
-#include "public/platform/WebSkImage.h"
-
 namespace blink {
 
 CanvasDrawListener::~CanvasDrawListener() {}
@@ -17,7 +15,7 @@ bool CanvasDrawListener::needsNewFrame() const
 
 void CanvasDrawListener::sendNewFrame(const WTF::PassRefPtr<SkImage>& image)
 {
-    m_handler->sendNewFrame(WebSkImage(image));
+    m_handler->sendNewFrame(image.get());
 }
 
 void CanvasDrawListener::requestFrame()

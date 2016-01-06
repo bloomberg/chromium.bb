@@ -335,7 +335,6 @@
       'exported/WebSocketHandshakeRequestInfo.cpp',
       'exported/WebSocketHandshakeResponseInfo.cpp',
       'exported/WebSourceInfo.cpp',
-      'exported/WebSkImage.cpp',
       'exported/WebSpeechSynthesisUtterance.cpp',
       'exported/WebSpeechSynthesisVoice.cpp',
       'exported/WebSpeechSynthesizerClientImpl.cpp',
