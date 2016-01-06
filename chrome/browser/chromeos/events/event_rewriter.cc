@@ -680,6 +680,22 @@ bool EventRewriter::RewriteModifierKeys(const ui::KeyEvent& key_event,
   const ModifierRemapping* remapped_key = NULL;
   // Remapping based on DomKey.
   switch (incoming.key) {
+    // On Chrome OS, F15 (XF86XK_Launch6) with NumLock (Mod2Mask) is sent
+    // when Diamond key is pressed.
+    case ui::DomKey::F15:
+      // When diamond key is not available, the configuration UI for Diamond
+      // key is not shown. Therefore, ignore the kLanguageRemapDiamondKeyTo
+      // syncable pref.
+      if (HasDiamondKey())
+        remapped_key =
+            GetRemappedKey(prefs::kLanguageRemapDiamondKeyTo, *pref_service);
+      // Default behavior of F15 is Control, even if --has-chromeos-diamond-key
+      // is absent, according to unit test comments.
+      if (!remapped_key) {
+        DCHECK_EQ(ui::VKEY_CONTROL, kModifierRemappingCtrl->result.key_code);
+        remapped_key = kModifierRemappingCtrl;
+      }
+      break;
     case ui::DomKey::ALT_GRAPH:
       // The Neo2 codes modifiers such that CapsLock appears as VKEY_ALTGR,
       // but AltGraph (right Alt) also appears as VKEY_ALTGR in Neo2,
@@ -727,27 +743,12 @@ bool EventRewriter::RewriteModifierKeys(const ui::KeyEvent& key_event,
 
   // Remapping based on DomCode.
   switch (incoming.code) {
-    // On Chrome OS, F15 (XF86XK_Launch6) with NumLock (Mod2Mask) is sent
-    // when Diamond key is pressed.
-    case ui::DomCode::F15:
-      // When diamond key is not available, the configuration UI for Diamond
-      // key is not shown. Therefore, ignore the kLanguageRemapDiamondKeyTo
-      // syncable pref.
-      if (HasDiamondKey())
-        remapped_key =
-            GetRemappedKey(prefs::kLanguageRemapDiamondKeyTo, *pref_service);
-      // Default behavior of F15 is Control, even if --has-chromeos-diamond-key
-      // is absent, according to unit test comments.
-      if (!remapped_key) {
-        DCHECK_EQ(ui::VKEY_CONTROL, kModifierRemappingCtrl->result.key_code);
-        remapped_key = kModifierRemappingCtrl;
-      }
-      break;
     // On Chrome OS, XF86XK_Launch7 (F16) with Mod3Mask is sent when Caps Lock
     // is pressed (with one exception: when
     // IsISOLevel5ShiftUsedByCurrentInputMethod() is true, the key generates
     // XK_ISO_Level3_Shift with Mod3Mask, not XF86XK_Launch7).
     case ui::DomCode::F16:
+    case ui::DomCode::CAPS_LOCK:
       characteristic_flag = ui::EF_CAPS_LOCK_DOWN;
       remapped_key =
           GetRemappedKey(prefs::kLanguageRemapCapsLockKeyTo, *pref_service);
