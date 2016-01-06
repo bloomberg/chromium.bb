@@ -103,8 +103,12 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
                        MediaRecorderIllegalPauseThrowsDOMError) {
-  MakeTypicalCall("testIllegalPauseThrowsDOMError();",
-      kMediaRecorderHtmlFile);
+  MakeTypicalCall("testIllegalPauseThrowsDOMError();", kMediaRecorderHtmlFile);
+}
+
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
+                       MediaRecorderTwoChannelAudioRecording) {
+  MakeTypicalCall("testTwoChannelAudio();", kMediaRecorderHtmlFile);
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,

@@ -16,6 +16,12 @@
 const DEFAULT_CONSTRAINTS= {audio:true, video:true};
 const DEFAULT_RECORDER_MIME_TYPE = '';
 const DEFAULT_TIME_SLICE = 100;
+const FREQUENCY = 880;
+// Note that not all audio sampling rates are supported by the underlying
+// Opus audio codec: the valid rates are 8kHz, 12kHz, 16kHz, 24kHz, 48kHz.
+// See crbug/569089 for details.
+const SAMPLING_RATE = 48000;
+const NUM_SAMPLES = 2 * SAMPLING_RATE;
 
 // Function assert_throws inspired from Blink's
 // LayoutTests/resources/testharness.js
@@ -23,7 +29,7 @@ const DEFAULT_TIME_SLICE = 100;
 function assertThrows(func, description) {
   try {
     func.call(this);
-    failTest('Error:' + func + description + " did not throw!");
+    failTest('Error:' + func + description + ' did not throw!');
   } catch (e) {
     console.log(e);
     reportTestSuccess();
@@ -32,8 +38,8 @@ function assertThrows(func, description) {
 
 function createAndStartMediaRecorder(stream, mimeType, slice) {
   return new Promise(function(resolve, reject) {
-    document.getElementById("video").src = URL.createObjectURL(stream);
-    var recorder = new MediaRecorder(stream, {"mimeType" : mimeType});
+    document.getElementById('video').src = URL.createObjectURL(stream);
+    var recorder = new MediaRecorder(stream, {'mimeType' : mimeType});
     console.log('Recorder object created.');
     if (slice != undefined) {
       recorder.start(slice);
@@ -47,8 +53,7 @@ function createAndStartMediaRecorder(stream, mimeType, slice) {
 
 function createMediaRecorder(stream, mimeType) {
   return new Promise(function(resolve, reject) {
-    document.getElementById("video").src = URL.createObjectURL(stream);
-    var recorder = new MediaRecorder(stream, {"mimeType" : mimeType});
+    var recorder = new MediaRecorder(stream, {'mimeType' : mimeType});
     console.log('Recorder object created.');
     resolve(recorder);
   });
@@ -117,7 +122,7 @@ function testStartStopAndRecorderState() {
       });
 }
 
-// Tests that when MediaRecorder's start() functioo is called, some data is
+// Tests that when MediaRecorder's start() function is called, some data is
 // made available by media recorder via dataavailable events, containing non
 // empty blob data.
 function testStartAndDataAvailable() {
@@ -364,7 +369,7 @@ function testPausePreventsDataavailableFromBeingFired() {
       })
       .then(function() {
         theRecorder.ondataavailable = function(event) {
-          failTest("Received unexpected data after pause!");
+          failTest('Received unexpected data after pause!');
         };
       })
       .then(function() {
@@ -428,6 +433,40 @@ function testIllegalStartInPausedStateThrowsDOMError() {
         recorder.pause();
         assertThrows(function() {recorder.start()}, 'Calling start() in' +
             ' paused state should cause a DOM error');
+      });
+}
+
+// Tests that MediaRecorder can record a 2 Channel audio stream.
+function testTwoChannelAudio() {
+  var audioSize = 0;
+  var context = new OfflineAudioContext(2, NUM_SAMPLES, SAMPLING_RATE);
+  var oscillator = context.createOscillator();
+  oscillator.type = "sine";
+  oscillator.frequency.value = FREQUENCY;
+  var dest = context.createMediaStreamDestination();
+  dest.channelCount = 2;
+  oscillator.connect(dest);
+  createMediaRecorder(dest.stream, DEFAULT_RECORDER_MIME_TYPE)
+      .then(function(recorder) {
+        recorder.ondataavailable = function(event) {
+          audioSize += event.data.size;
+        };
+        recorder.start();
+        oscillator.start();
+        context.startRendering();
+      })
+      .then(function() {
+        return waitFor('Make sure the recording has data',
+            function() {
+              return audioSize > 0;
+            });
+      })
+      .catch(function(err) {
+        return failTest(err.toString());
+      })
+      .then(function() {
+        console.log('audioSize', audioSize);
+        reportTestSuccess();
       });
 }
 
