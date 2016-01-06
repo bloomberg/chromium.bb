@@ -11,7 +11,7 @@
 namespace content {
 
 RenderWidgetHostInputEventRouter::RenderWidgetHostInputEventRouter()
-    : current_touch_target_(nullptr), active_touches_(0) {}
+    : active_touches_(0) {}
 
 RenderWidgetHostInputEventRouter::~RenderWidgetHostInputEventRouter() {
   owner_map_.clear();
@@ -41,7 +41,12 @@ RenderWidgetHostViewBase* RenderWidgetHostInputEventRouter::FindEventTarget(
   // parent frame has not sent a new compositor frame since that happened.
   if (iter == owner_map_.end())
     return root_view;
-  return iter->second.get();
+  RenderWidgetHostViewBase* target = iter->second.get();
+  // If we find the weak pointer is now null, it means the map entry is stale
+  // and should be removed to free space.
+  if (!target)
+    owner_map_.erase(iter);
+  return target;
 }
 
 void RenderWidgetHostInputEventRouter::RouteMouseEvent(
@@ -87,8 +92,14 @@ void RenderWidgetHostInputEventRouter::RouteTouchEvent(
         gfx::Point transformed_point;
         gfx::Point original_point(event->touches[0].position.x,
                                   event->touches[0].position.y);
-        current_touch_target_ =
+        RenderWidgetHostViewBase* target =
             FindEventTarget(root_view, original_point, &transformed_point);
+        if (!target)
+          return;
+
+        // Store the weak-ptr to the target, since it could disappear in the
+        // middle of a touch sequence.
+        current_touch_target_ = target->GetWeakPtr();
       }
       ++active_touches_;
       if (current_touch_target_)
@@ -106,7 +117,7 @@ void RenderWidgetHostInputEventRouter::RouteTouchEvent(
         current_touch_target_->ProcessTouchEvent(*event, latency);
       --active_touches_;
       if (!active_touches_)
-        current_touch_target_ = nullptr;
+        current_touch_target_ = WeakTarget();
       break;
     default:
       NOTREACHED();

@@ -57,6 +57,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter {
   }
 
  private:
+  using WeakTarget = base::WeakPtr<RenderWidgetHostViewBase>;
   using SurfaceIdNamespaceOwnerMap =
       base::hash_map<uint32_t, base::WeakPtr<RenderWidgetHostViewBase>>;
 
@@ -65,7 +66,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter {
                                             gfx::Point* transformed_point);
 
   SurfaceIdNamespaceOwnerMap owner_map_;
-  RenderWidgetHostViewBase* current_touch_target_;
+  WeakTarget current_touch_target_;
   int active_touches_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostInputEventRouter);
