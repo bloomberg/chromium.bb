@@ -21,14 +21,16 @@
 
 class SiteEngagementHelperTest : public BrowserWithTestWindowTest {
  public:
-  // Create a SiteEngagementHelper. Called here as friend class methods cannot
-  // be called in tests.
-  scoped_ptr<SiteEngagementHelper> CreateHelper(
-      content::WebContents* web_contents) {
-    scoped_ptr<SiteEngagementHelper> helper(
-        new SiteEngagementHelper(web_contents));
-    DCHECK(helper.get());
+  void SetUp() override {
+    BrowserWithTestWindowTest::SetUp();
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableSiteEngagementService);
+  }
 
+  SiteEngagementHelper* GetHelper(content::WebContents* web_contents) {
+    SiteEngagementHelper* helper =
+        SiteEngagementHelper::FromWebContents(web_contents);
+    DCHECK(helper);
     return helper;
   }
 
@@ -97,41 +99,41 @@ class SiteEngagementHelperTest : public BrowserWithTestWindowTest {
     content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-    scoped_ptr<SiteEngagementHelper> helper(CreateHelper(web_contents));
+    SiteEngagementHelper* helper = GetHelper(web_contents);
     SiteEngagementService* service =
       SiteEngagementServiceFactory::GetForProfile(browser()->profile());
     DCHECK(service);
 
     // Check that navigation triggers engagement.
     NavigateWithDisposition(url1, CURRENT_TAB);
-    TrackingStarted(helper.get());
+    TrackingStarted(helper);
 
     EXPECT_DOUBLE_EQ(0.5, service->GetScore(url1));
     EXPECT_EQ(0, service->GetScore(url2));
 
     // Simulate a user input trigger and ensure it is treated correctly.
-    HandleUserInputAndRestartTracking(helper.get(), type);
+    HandleUserInputAndRestartTracking(helper, type);
 
     EXPECT_DOUBLE_EQ(0.55, service->GetScore(url1));
     EXPECT_EQ(0, service->GetScore(url2));
 
     // Simulate three inputs , and ensure they are treated correctly.
-    HandleUserInputAndRestartTracking(helper.get(), type);
-    HandleUserInputAndRestartTracking(helper.get(), type);
-    HandleUserInputAndRestartTracking(helper.get(), type);
+    HandleUserInputAndRestartTracking(helper, type);
+    HandleUserInputAndRestartTracking(helper, type);
+    HandleUserInputAndRestartTracking(helper, type);
 
     EXPECT_DOUBLE_EQ(0.7, service->GetScore(url1));
     EXPECT_EQ(0, service->GetScore(url2));
 
     // Simulate inputs for a different link.
     NavigateWithDisposition(url2, CURRENT_TAB);
-    TrackingStarted(helper.get());
+    TrackingStarted(helper);
 
     EXPECT_DOUBLE_EQ(0.7, service->GetScore(url1));
     EXPECT_DOUBLE_EQ(0.5, service->GetScore(url2));
     EXPECT_DOUBLE_EQ(1.2, service->GetTotalEngagementPoints());
 
-    HandleUserInputAndRestartTracking(helper.get(), type);
+    HandleUserInputAndRestartTracking(helper, type);
     EXPECT_DOUBLE_EQ(0.7, service->GetScore(url1));
     EXPECT_DOUBLE_EQ(0.55, service->GetScore(url2));
     EXPECT_DOUBLE_EQ(1.25, service->GetTotalEngagementPoints());
@@ -161,48 +163,48 @@ TEST_F(SiteEngagementHelperTest, MediaEngagementAccumulation) {
   content::WebContents* web_contents =
     browser()->tab_strip_model()->GetActiveWebContents();
 
-  scoped_ptr<SiteEngagementHelper> helper(CreateHelper(web_contents));
+  SiteEngagementHelper* helper = GetHelper(web_contents);
   SiteEngagementService* service =
     SiteEngagementServiceFactory::GetForProfile(browser()->profile());
   DCHECK(service);
 
   NavigateWithDisposition(url1, CURRENT_TAB);
-  TrackingStarted(helper.get());
+  TrackingStarted(helper);
 
   EXPECT_DOUBLE_EQ(0.5, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
 
   // Simulate a foreground media input and ensure it is treated correctly.
-  HandleMediaPlaying(helper.get(), false);
+  HandleMediaPlaying(helper, false);
 
   EXPECT_DOUBLE_EQ(0.52, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
 
   // Simulate continual media playing, and ensure it is treated correctly.
-  HandleMediaPlaying(helper.get(), false);
-  HandleMediaPlaying(helper.get(), false);
-  HandleMediaPlaying(helper.get(), false);
+  HandleMediaPlaying(helper, false);
+  HandleMediaPlaying(helper, false);
+  HandleMediaPlaying(helper, false);
 
   EXPECT_DOUBLE_EQ(0.58, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
 
   // Simulate backgrounding the media.
-  HandleMediaPlaying(helper.get(), true);
-  HandleMediaPlaying(helper.get(), true);
+  HandleMediaPlaying(helper, true);
+  HandleMediaPlaying(helper, true);
 
   EXPECT_DOUBLE_EQ(0.60, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
 
   // Simulate inputs for a different link.
   NavigateWithDisposition(url2, CURRENT_TAB);
-  TrackingStarted(helper.get());
+  TrackingStarted(helper);
 
   EXPECT_DOUBLE_EQ(0.6, service->GetScore(url1));
   EXPECT_DOUBLE_EQ(0.5, service->GetScore(url2));
   EXPECT_DOUBLE_EQ(1.1, service->GetTotalEngagementPoints());
 
-  HandleMediaPlaying(helper.get(), false);
-  HandleMediaPlaying(helper.get(), false);
+  HandleMediaPlaying(helper, false);
+  HandleMediaPlaying(helper, false);
   EXPECT_DOUBLE_EQ(0.6, service->GetScore(url1));
   EXPECT_DOUBLE_EQ(0.54, service->GetScore(url2));
   EXPECT_DOUBLE_EQ(1.14, service->GetTotalEngagementPoints());
@@ -216,14 +218,14 @@ TEST_F(SiteEngagementHelperTest, MediaEngagement) {
     browser()->tab_strip_model()->GetActiveWebContents();
 
   base::MockTimer* media_tracker_timer = new base::MockTimer(true, false);
-  scoped_ptr<SiteEngagementHelper> helper(CreateHelper(web_contents));
-  SetMediaTrackerPauseTimer(helper.get(), make_scoped_ptr(media_tracker_timer));
+  SiteEngagementHelper* helper = GetHelper(web_contents);
+  SetMediaTrackerPauseTimer(helper, make_scoped_ptr(media_tracker_timer));
   SiteEngagementService* service =
     SiteEngagementServiceFactory::GetForProfile(browser()->profile());
   DCHECK(service);
 
   NavigateWithDisposition(url1, CURRENT_TAB);
-  MediaStartedPlaying(helper.get());
+  MediaStartedPlaying(helper);
 
   EXPECT_DOUBLE_EQ(0.50, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
@@ -240,7 +242,7 @@ TEST_F(SiteEngagementHelperTest, MediaEngagement) {
   EXPECT_EQ(0, service->GetScore(url2));
   EXPECT_TRUE(media_tracker_timer->IsRunning());
 
-  MediaStoppedPlaying(helper.get());
+  MediaStoppedPlaying(helper);
   media_tracker_timer->Fire();
   EXPECT_DOUBLE_EQ(0.53, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
@@ -252,7 +254,7 @@ TEST_F(SiteEngagementHelperTest, MediaEngagement) {
   EXPECT_EQ(0, service->GetScore(url2));
   EXPECT_TRUE(media_tracker_timer->IsRunning());
 
-  MediaStartedPlaying(helper.get());
+  MediaStartedPlaying(helper);
   media_tracker_timer->Fire();
   EXPECT_DOUBLE_EQ(0.55, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
@@ -263,7 +265,7 @@ TEST_F(SiteEngagementHelperTest, MediaEngagement) {
   EXPECT_EQ(0.5, service->GetScore(url2));
   EXPECT_FALSE(media_tracker_timer->IsRunning());
 
-  MediaStartedPlaying(helper.get());
+  MediaStartedPlaying(helper);
   media_tracker_timer->Fire();
   EXPECT_DOUBLE_EQ(0.55, service->GetScore(url1));
   EXPECT_EQ(0.52, service->GetScore(url2));
@@ -275,7 +277,7 @@ TEST_F(SiteEngagementHelperTest, MediaEngagement) {
   EXPECT_EQ(0.53, service->GetScore(url2));
   EXPECT_TRUE(media_tracker_timer->IsRunning());
 
-  MediaStoppedPlaying(helper.get());
+  MediaStoppedPlaying(helper);
   web_contents->WasShown();
   media_tracker_timer->Fire();
   EXPECT_DOUBLE_EQ(0.55, service->GetScore(url1));
@@ -290,7 +292,7 @@ TEST_F(SiteEngagementHelperTest, MixedInputEngagementAccumulation) {
   content::WebContents* web_contents =
     browser()->tab_strip_model()->GetActiveWebContents();
 
-  scoped_ptr<SiteEngagementHelper> helper(CreateHelper(web_contents));
+  SiteEngagementHelper* helper = GetHelper(web_contents);
   SiteEngagementService* service =
     SiteEngagementServiceFactory::GetForProfile(browser()->profile());
   DCHECK(service);
@@ -302,7 +304,7 @@ TEST_F(SiteEngagementHelperTest, MixedInputEngagementAccumulation) {
                               0);
 
   NavigateWithDisposition(url1, CURRENT_TAB);
-  TrackingStarted(helper.get());
+  TrackingStarted(helper);
 
   EXPECT_DOUBLE_EQ(0.5, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
@@ -311,16 +313,13 @@ TEST_F(SiteEngagementHelperTest, MixedInputEngagementAccumulation) {
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_NAVIGATION, 1);
 
-  HandleUserInputAndRestartTracking(helper.get(),
-                                    blink::WebInputEvent::RawKeyDown);
-  HandleUserInputAndRestartTracking(helper.get(),
+  HandleUserInputAndRestartTracking(helper, blink::WebInputEvent::RawKeyDown);
+  HandleUserInputAndRestartTracking(helper,
                                     blink::WebInputEvent::GestureTapDown);
-  HandleUserInputAndRestartTracking(helper.get(),
+  HandleUserInputAndRestartTracking(helper,
                                     blink::WebInputEvent::GestureTapDown);
-  HandleUserInputAndRestartTracking(helper.get(),
-                                    blink::WebInputEvent::RawKeyDown);
-  HandleUserInputAndRestartTracking(helper.get(),
-                                    blink::WebInputEvent::MouseDown);
+  HandleUserInputAndRestartTracking(helper, blink::WebInputEvent::RawKeyDown);
+  HandleUserInputAndRestartTracking(helper, blink::WebInputEvent::MouseDown);
 
   EXPECT_DOUBLE_EQ(0.75, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
@@ -336,14 +335,12 @@ TEST_F(SiteEngagementHelperTest, MixedInputEngagementAccumulation) {
                                SiteEngagementMetrics::ENGAGEMENT_TOUCH_GESTURE,
                                2);
 
-  HandleUserInputAndRestartTracking(helper.get(),
-                                    blink::WebInputEvent::MouseWheel);
-  HandleUserInputAndRestartTracking(helper.get(),
-                                    blink::WebInputEvent::MouseDown);
-  HandleMediaPlaying(helper.get(), true);
-  HandleUserInputAndRestartTracking(helper.get(),
+  HandleUserInputAndRestartTracking(helper, blink::WebInputEvent::MouseWheel);
+  HandleUserInputAndRestartTracking(helper, blink::WebInputEvent::MouseDown);
+  HandleMediaPlaying(helper, true);
+  HandleUserInputAndRestartTracking(helper,
                                     blink::WebInputEvent::GestureTapDown);
-  HandleMediaPlaying(helper.get(), false);
+  HandleMediaPlaying(helper, false);
 
   EXPECT_DOUBLE_EQ(0.93, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
@@ -364,16 +361,15 @@ TEST_F(SiteEngagementHelperTest, MixedInputEngagementAccumulation) {
                                1);
 
   NavigateWithDisposition(url2, CURRENT_TAB);
-  TrackingStarted(helper.get());
+  TrackingStarted(helper);
 
   EXPECT_DOUBLE_EQ(0.93, service->GetScore(url1));
   EXPECT_DOUBLE_EQ(0.5, service->GetScore(url2));
   EXPECT_DOUBLE_EQ(1.43, service->GetTotalEngagementPoints());
 
-  HandleUserInputAndRestartTracking(helper.get(),
+  HandleUserInputAndRestartTracking(helper,
                                     blink::WebInputEvent::GestureTapDown);
-  HandleUserInputAndRestartTracking(helper.get(),
-                                    blink::WebInputEvent::RawKeyDown);
+  HandleUserInputAndRestartTracking(helper, blink::WebInputEvent::RawKeyDown);
 
   EXPECT_DOUBLE_EQ(0.93, service->GetScore(url1));
   EXPECT_DOUBLE_EQ(0.6, service->GetScore(url2));
@@ -398,9 +394,9 @@ TEST_F(SiteEngagementHelperTest, CheckTimerAndCallbacks) {
 
   base::MockTimer* input_tracker_timer = new base::MockTimer(true, false);
   base::MockTimer* media_tracker_timer = new base::MockTimer(true, false);
-  scoped_ptr<SiteEngagementHelper> helper(CreateHelper(web_contents));
-  SetInputTrackerPauseTimer(helper.get(), make_scoped_ptr(input_tracker_timer));
-  SetMediaTrackerPauseTimer(helper.get(), make_scoped_ptr(media_tracker_timer));
+  SiteEngagementHelper* helper = GetHelper(web_contents);
+  SetInputTrackerPauseTimer(helper, make_scoped_ptr(input_tracker_timer));
+  SetMediaTrackerPauseTimer(helper, make_scoped_ptr(media_tracker_timer));
 
   SiteEngagementService* service =
     SiteEngagementServiceFactory::GetForProfile(browser()->profile());
@@ -413,11 +409,11 @@ TEST_F(SiteEngagementHelperTest, CheckTimerAndCallbacks) {
   // Input timer should be running for navigation delay, but media timer is
   // inactive.
   EXPECT_TRUE(input_tracker_timer->IsRunning());
-  EXPECT_FALSE(IsTrackingInput(helper.get()));
+  EXPECT_FALSE(IsTrackingInput(helper));
   EXPECT_FALSE(media_tracker_timer->IsRunning());
 
   // Media timer starts once media is detected as playing.
-  MediaStartedPlaying(helper.get());
+  MediaStartedPlaying(helper);
   EXPECT_TRUE(media_tracker_timer->IsRunning());
 
   input_tracker_timer->Fire();
@@ -428,12 +424,12 @@ TEST_F(SiteEngagementHelperTest, CheckTimerAndCallbacks) {
   // Input timer should start running again after input, but the media timer
   // keeps running.
   EXPECT_FALSE(input_tracker_timer->IsRunning());
-  EXPECT_TRUE(IsTrackingInput(helper.get()));
+  EXPECT_TRUE(IsTrackingInput(helper));
   EXPECT_TRUE(media_tracker_timer->IsRunning());
 
-  HandleUserInput(helper.get(), blink::WebInputEvent::RawKeyDown);
+  HandleUserInput(helper, blink::WebInputEvent::RawKeyDown);
   EXPECT_TRUE(input_tracker_timer->IsRunning());
-  EXPECT_FALSE(IsTrackingInput(helper.get()));
+  EXPECT_FALSE(IsTrackingInput(helper));
   EXPECT_TRUE(media_tracker_timer->IsRunning());
 
   EXPECT_DOUBLE_EQ(0.57, service->GetScore(url1));
@@ -441,13 +437,13 @@ TEST_F(SiteEngagementHelperTest, CheckTimerAndCallbacks) {
 
   input_tracker_timer->Fire();
   EXPECT_FALSE(input_tracker_timer->IsRunning());
-  EXPECT_TRUE(IsTrackingInput(helper.get()));
+  EXPECT_TRUE(IsTrackingInput(helper));
   EXPECT_TRUE(media_tracker_timer->IsRunning());
 
   // Timer should start running again after input.
-  HandleUserInput(helper.get(), blink::WebInputEvent::GestureTapDown);
+  HandleUserInput(helper, blink::WebInputEvent::GestureTapDown);
   EXPECT_TRUE(input_tracker_timer->IsRunning());
-  EXPECT_FALSE(IsTrackingInput(helper.get()));
+  EXPECT_FALSE(IsTrackingInput(helper));
   EXPECT_TRUE(media_tracker_timer->IsRunning());
 
   EXPECT_DOUBLE_EQ(0.62, service->GetScore(url1));
@@ -455,7 +451,7 @@ TEST_F(SiteEngagementHelperTest, CheckTimerAndCallbacks) {
 
   input_tracker_timer->Fire();
   EXPECT_FALSE(input_tracker_timer->IsRunning());
-  EXPECT_TRUE(IsTrackingInput(helper.get()));
+  EXPECT_TRUE(IsTrackingInput(helper));
 
   media_tracker_timer->Fire();
   EXPECT_TRUE(media_tracker_timer->IsRunning());
@@ -465,7 +461,7 @@ TEST_F(SiteEngagementHelperTest, CheckTimerAndCallbacks) {
   // Timer should be running for navigation delay. Media is disabled again.
   NavigateWithDisposition(url2, CURRENT_TAB);
   EXPECT_TRUE(input_tracker_timer->IsRunning());
-  EXPECT_FALSE(IsTrackingInput(helper.get()));
+  EXPECT_FALSE(IsTrackingInput(helper));
   EXPECT_FALSE(media_tracker_timer->IsRunning());
 
   EXPECT_DOUBLE_EQ(0.64, service->GetScore(url1));
@@ -474,15 +470,15 @@ TEST_F(SiteEngagementHelperTest, CheckTimerAndCallbacks) {
 
   input_tracker_timer->Fire();
   EXPECT_FALSE(input_tracker_timer->IsRunning());
-  EXPECT_TRUE(IsTrackingInput(helper.get()));
+  EXPECT_TRUE(IsTrackingInput(helper));
   EXPECT_FALSE(media_tracker_timer->IsRunning());
 
-  HandleUserInput(helper.get(), blink::WebInputEvent::MouseDown);
+  HandleUserInput(helper, blink::WebInputEvent::MouseDown);
   EXPECT_TRUE(input_tracker_timer->IsRunning());
-  EXPECT_FALSE(IsTrackingInput(helper.get()));
+  EXPECT_FALSE(IsTrackingInput(helper));
   EXPECT_FALSE(media_tracker_timer->IsRunning());
 
-  MediaStartedPlaying(helper.get());
+  MediaStartedPlaying(helper);
   EXPECT_TRUE(media_tracker_timer->IsRunning());
 
   EXPECT_DOUBLE_EQ(0.64, service->GetScore(url1));
@@ -508,9 +504,9 @@ TEST_F(SiteEngagementHelperTest, ShowAndHide) {
 
   base::MockTimer* input_tracker_timer = new base::MockTimer(true, false);
   base::MockTimer* media_tracker_timer = new base::MockTimer(true, false);
-  scoped_ptr<SiteEngagementHelper> helper(CreateHelper(web_contents));
-  SetInputTrackerPauseTimer(helper.get(), make_scoped_ptr(input_tracker_timer));
-  SetMediaTrackerPauseTimer(helper.get(), make_scoped_ptr(media_tracker_timer));
+  SiteEngagementHelper* helper = GetHelper(web_contents);
+  SetInputTrackerPauseTimer(helper, make_scoped_ptr(input_tracker_timer));
+  SetMediaTrackerPauseTimer(helper, make_scoped_ptr(media_tracker_timer));
 
   NavigateWithDisposition(url1, CURRENT_TAB);
   input_tracker_timer->Fire();
@@ -519,37 +515,37 @@ TEST_F(SiteEngagementHelperTest, ShowAndHide) {
   web_contents->WasHidden();
   EXPECT_FALSE(input_tracker_timer->IsRunning());
   EXPECT_FALSE(media_tracker_timer->IsRunning());
-  EXPECT_FALSE(IsTrackingInput(helper.get()));
+  EXPECT_FALSE(IsTrackingInput(helper));
 
   // Showing the tab should start tracking again after another delay. Media
   // tracking remains inactive.
   web_contents->WasShown();
   EXPECT_TRUE(input_tracker_timer->IsRunning());
   EXPECT_FALSE(media_tracker_timer->IsRunning());
-  EXPECT_FALSE(IsTrackingInput(helper.get()));
+  EXPECT_FALSE(IsTrackingInput(helper));
 
   // Start media tracking.
-  MediaStartedPlaying(helper.get());
+  MediaStartedPlaying(helper);
   EXPECT_TRUE(media_tracker_timer->IsRunning());
 
   // Hiding the tab should stop input tracking, but not media tracking.
   web_contents->WasHidden();
   EXPECT_FALSE(input_tracker_timer->IsRunning());
   EXPECT_TRUE(media_tracker_timer->IsRunning());
-  EXPECT_FALSE(IsTrackingInput(helper.get()));
+  EXPECT_FALSE(IsTrackingInput(helper));
 
   // Showing the tab should start tracking again after another delay. Media
   // tracking continues.
   web_contents->WasShown();
   EXPECT_TRUE(input_tracker_timer->IsRunning());
   EXPECT_TRUE(media_tracker_timer->IsRunning());
-  EXPECT_FALSE(IsTrackingInput(helper.get()));
+  EXPECT_FALSE(IsTrackingInput(helper));
 
   input_tracker_timer->Fire();
   media_tracker_timer->Fire();
   EXPECT_FALSE(input_tracker_timer->IsRunning());
   EXPECT_TRUE(media_tracker_timer->IsRunning());
-  EXPECT_TRUE(IsTrackingInput(helper.get()));
+  EXPECT_TRUE(IsTrackingInput(helper));
 }
 
 // Ensure tracking behavior is correct for multiple navigations in a single tab.
@@ -561,26 +557,26 @@ TEST_F(SiteEngagementHelperTest, SingleTabNavigation) {
       browser()->tab_strip_model()->GetActiveWebContents();
 
   base::MockTimer* input_tracker_timer = new base::MockTimer(true, false);
-  scoped_ptr<SiteEngagementHelper> helper(CreateHelper(web_contents));
-  SetInputTrackerPauseTimer(helper.get(), make_scoped_ptr(input_tracker_timer));
+  SiteEngagementHelper* helper = GetHelper(web_contents);
+  SetInputTrackerPauseTimer(helper, make_scoped_ptr(input_tracker_timer));
 
   // Navigation should start the initial delay timer.
   NavigateWithDisposition(url1, CURRENT_TAB);
   EXPECT_TRUE(input_tracker_timer->IsRunning());
-  EXPECT_FALSE(IsTrackingInput(helper.get()));
+  EXPECT_FALSE(IsTrackingInput(helper));
 
   // Navigating before the timer fires should simply reset the timer.
   NavigateWithDisposition(url2, CURRENT_TAB);
   EXPECT_TRUE(input_tracker_timer->IsRunning());
-  EXPECT_FALSE(IsTrackingInput(helper.get()));
+  EXPECT_FALSE(IsTrackingInput(helper));
 
   // When the timer fires, callbacks are added.
   input_tracker_timer->Fire();
   EXPECT_FALSE(input_tracker_timer->IsRunning());
-  EXPECT_TRUE(IsTrackingInput(helper.get()));
+  EXPECT_TRUE(IsTrackingInput(helper));
 
   // Navigation should start the initial delay timer again.
   NavigateWithDisposition(url1, CURRENT_TAB);
   EXPECT_TRUE(input_tracker_timer->IsRunning());
-  EXPECT_FALSE(IsTrackingInput(helper.get()));
+  EXPECT_FALSE(IsTrackingInput(helper));
 }
