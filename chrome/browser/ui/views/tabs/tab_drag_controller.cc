@@ -1800,10 +1800,12 @@ gfx::NativeWindow TabDragController::GetLocalProcessWindow(
     const gfx::Point& screen_point,
     bool exclude_dragged_view) {
   std::set<gfx::NativeWindow> exclude;
-  gfx::NativeWindow dragged_window =
-      attached_tabstrip_->GetWidget()->GetNativeWindow();
-  if (exclude_dragged_view && dragged_window)
-    exclude.insert(dragged_window);
+  if (exclude_dragged_view) {
+    gfx::NativeWindow dragged_window =
+        attached_tabstrip_->GetWidget()->GetNativeWindow();
+    if (dragged_window)
+      exclude.insert(dragged_window);
+  }
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Exclude windows which are pending deletion via Browser::TabStripEmpty().
   // These windows can be returned in the Linux Aura port because the browser
@@ -1818,6 +1820,8 @@ gfx::NativeWindow TabDragController::GetLocalProcessWindow(
       exclude.insert((*it)->window()->GetNativeWindow());
   }
 #endif
-  return GetLocalProcessWindowAtPoint(host_desktop_type_, screen_point, exclude,
-                                      dragged_window);
+  return GetLocalProcessWindowAtPoint(host_desktop_type_,
+                                      screen_point,
+                                      exclude);
+
 }

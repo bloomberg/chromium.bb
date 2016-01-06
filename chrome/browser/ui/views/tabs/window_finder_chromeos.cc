@@ -14,7 +14,6 @@ gfx::NativeWindow GetLocalProcessWindowAtPointAsh(
 gfx::NativeWindow GetLocalProcessWindowAtPoint(
     chrome::HostDesktopType host_desktop_type,
     const gfx::Point& screen_point,
-    const std::set<gfx::NativeWindow>& ignore,
-    gfx::NativeWindow source) {
+    const std::set<gfx::NativeWindow>& ignore) {
   return GetLocalProcessWindowAtPointAsh(screen_point, ignore);
 }
