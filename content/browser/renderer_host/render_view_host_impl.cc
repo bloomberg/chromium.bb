@@ -480,16 +480,8 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.slimming_paint_v2_enabled =
       command_line.HasSwitch(switches::kEnableSlimmingPaintV2);
 
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
-  bool default_enable_scroll_animator = true;
-#else
-  bool default_enable_scroll_animator = false;
-#endif
-  prefs.enable_scroll_animator = default_enable_scroll_animator;
-  if (command_line.HasSwitch(switches::kEnableSmoothScrolling))
-    prefs.enable_scroll_animator = true;
-  if (command_line.HasSwitch(switches::kDisableSmoothScrolling))
-    prefs.enable_scroll_animator = false;
+  prefs.enable_scroll_animator = !command_line.HasSwitch(
+      switches::kDisableSmoothScrolling);
 
   // Certain GPU features might have been blacklisted.
   GpuDataManagerImpl::GetInstance()->UpdateRendererWebPrefs(&prefs);

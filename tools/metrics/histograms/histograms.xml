@@ -68956,6 +68956,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1972383451" label="disable-pinch"/>
   <int value="-1963402827" label="enable-topchrome-md"/>
   <int value="-1961648833" label="show_summary"/>
+  <int value="-1956349722" label="disable-smooth-scrolling"/>
   <int value="-1946595906" label="enable-push-api-background-mode"/>
   <int value="-1943507605" label="enable-new-video-renderer"/>
   <int value="-1941852572" label="floating-virtual-keyboard"/>

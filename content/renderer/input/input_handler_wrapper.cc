@@ -27,8 +27,8 @@ InputHandlerWrapper::InputHandlerWrapper(
       render_view_impl_(render_view_impl) {
   DCHECK(input_handler);
   input_handler_proxy_.set_smooth_scroll_enabled(
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-                  switches::kEnableSmoothScrolling));
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+                  switches::kDisableSmoothScrolling));
 }
 
 InputHandlerWrapper::~InputHandlerWrapper() {
