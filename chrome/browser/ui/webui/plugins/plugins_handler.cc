@@ -1,115 +1,47 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/plugins_ui.h"
+#include "chrome/browser/ui/webui/plugins/plugins_handler.h"
 
-#include <stddef.h>
-
-#include <algorithm>
-#include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
-#include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/singleton.h"
-#include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
-#include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/values.h"
-#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/pref_registry/pref_registry_syncable.h"
-#include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/plugin_service.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/browser/web_ui_data_source.h"
-#include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/content_constants.h"
-#include "grit/browser_resources.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
-#endif
-
-using content::PluginService;
-using content::WebContents;
 using content::WebPluginInfo;
-using content::WebUIMessageHandler;
+// Holds grouped plugins. The key is the group identifier and
+// the value is the list of plugins belonging to the group.
+using PluginGroups = base::hash_map<std::string,
+      std::vector<const content::WebPluginInfo*>>;
 
 namespace {
 
 // Callback function to process result of EnablePlugin method.
 void AssertPluginEnabled(bool did_enable) {
   DCHECK(did_enable);
-}
-
-content::WebUIDataSource* CreatePluginsUIHTMLSource(Profile* profile) {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIPluginsHost);
-
-  source->AddLocalizedString("pluginsTitle", IDS_PLUGINS_TITLE);
-  source->AddLocalizedString("pluginsDetailsModeLink",
-                             IDS_PLUGINS_DETAILS_MODE_LINK);
-  source->AddLocalizedString("pluginsNoneInstalled",
-                             IDS_PLUGINS_NONE_INSTALLED);
-  source->AddLocalizedString("pluginDisabled", IDS_PLUGINS_DISABLED_PLUGIN);
-  source->AddLocalizedString("pluginDisabledByPolicy",
-                             IDS_PLUGINS_DISABLED_BY_POLICY_PLUGIN);
-  source->AddLocalizedString("pluginEnabledByPolicy",
-                             IDS_PLUGINS_ENABLED_BY_POLICY_PLUGIN);
-  source->AddLocalizedString("pluginGroupManagedByPolicy",
-                             IDS_PLUGINS_GROUP_MANAGED_BY_POLICY);
-  source->AddLocalizedString("pluginDownload", IDS_PLUGINS_DOWNLOAD);
-  source->AddLocalizedString("pluginName", IDS_PLUGINS_NAME);
-  source->AddLocalizedString("pluginVersion", IDS_PLUGINS_VERSION);
-  source->AddLocalizedString("pluginDescription", IDS_PLUGINS_DESCRIPTION);
-  source->AddLocalizedString("pluginPath", IDS_PLUGINS_PATH);
-  source->AddLocalizedString("pluginType", IDS_PLUGINS_TYPE);
-  source->AddLocalizedString("pluginMimeTypes", IDS_PLUGINS_MIME_TYPES);
-  source->AddLocalizedString("pluginMimeTypesMimeType",
-                             IDS_PLUGINS_MIME_TYPES_MIME_TYPE);
-  source->AddLocalizedString("pluginMimeTypesDescription",
-                             IDS_PLUGINS_MIME_TYPES_DESCRIPTION);
-  source->AddLocalizedString("pluginMimeTypesFileExtensions",
-                             IDS_PLUGINS_MIME_TYPES_FILE_EXTENSIONS);
-  source->AddLocalizedString("disable", IDS_PLUGINS_DISABLE);
-  source->AddLocalizedString("enable", IDS_PLUGINS_ENABLE);
-  source->AddLocalizedString("alwaysAllowed", IDS_PLUGINS_ALWAYS_ALLOWED);
-  source->AddLocalizedString("noPlugins", IDS_PLUGINS_NO_PLUGINS);
-
-  source->SetJsonPath("strings.js");
-  source->AddResourcePath("plugins.js", IDR_PLUGINS_JS);
-  source->SetDefaultResource(IDR_PLUGINS_HTML);
-#if defined(OS_CHROMEOS)
-  chromeos::AddAccountUITweaksLocalizedValues(source, profile);
-#endif
-  return source;
 }
 
 base::string16 PluginTypeToString(int type) {
@@ -173,73 +105,16 @@ scoped_ptr<base::ListValue> GetPluginMimeTypes(const WebPluginInfo& plugin) {
   return mime_types;
 }
 
+}  // namespace
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// PluginsDOMHandler
-//
-////////////////////////////////////////////////////////////////////////////////
 
-// The handler for Javascript messages for the chrome://plugins/ page.
-// TODO(viettrungluu): Make plugin list updates notify, and then observe
-// changes; maybe replumb plugin list through plugin service?
-// <http://crbug.com/39101>
-class PluginsDOMHandler : public WebUIMessageHandler,
-                          public content::NotificationObserver {
- public:
-  PluginsDOMHandler();
-  ~PluginsDOMHandler() override {}
-
-  // WebUIMessageHandler implementation.
-  void RegisterMessages() override;
-
-  // Callback for the "requestPluginsData" message.
-  void HandleRequestPluginsData(const base::ListValue* args);
-
-  // Callback for the "enablePlugin" message.
-  void HandleEnablePluginMessage(const base::ListValue* args);
-
-  // Callback for the "saveShowDetailsToPrefs" message.
-  void HandleSaveShowDetailsToPrefs(const base::ListValue* args);
-
-  // Calback for the "getShowDetails" message.
-  void HandleGetShowDetails(const base::ListValue* args);
-
-  // Callback for the "setPluginAlwaysAllowed" message.
-  void HandleSetPluginAlwaysAllowed(const base::ListValue* args);
-
-  // content::NotificationObserver method overrides
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
- private:
-  void LoadPlugins();
-
-  // Called on the UI thread when the plugin information is ready.
-  void PluginsLoaded(const std::vector<WebPluginInfo>& plugins);
-
-  content::NotificationRegistrar registrar_;
-
-  // Holds grouped plugins. The key is the group identifier and
-  // the value is the list of plugins belonging to the group.
-  typedef base::hash_map<std::string, std::vector<const WebPluginInfo*> >
-      PluginGroups;
-
-  // This pref guards the value whether about:plugins is in the details mode or
-  // not.
-  BooleanPrefMember show_details_;
-
-  base::WeakPtrFactory<PluginsDOMHandler> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(PluginsDOMHandler);
-};
-
-PluginsDOMHandler::PluginsDOMHandler()
-    : weak_ptr_factory_(this) {
+PluginsHandler::PluginsHandler() : weak_ptr_factory_(this) {
 }
 
-void PluginsDOMHandler::RegisterMessages() {
+PluginsHandler::~PluginsHandler() {
+}
+
+void PluginsHandler::RegisterMessages() {
   Profile* profile = Profile::FromWebUI(web_ui());
 
   PrefService* prefs = profile->GetPrefs();
@@ -250,27 +125,27 @@ void PluginsDOMHandler::RegisterMessages() {
                  content::Source<Profile>(profile));
 
   web_ui()->RegisterMessageCallback("requestPluginsData",
-      base::Bind(&PluginsDOMHandler::HandleRequestPluginsData,
+      base::Bind(&PluginsHandler::HandleRequestPluginsData,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("enablePlugin",
-      base::Bind(&PluginsDOMHandler::HandleEnablePluginMessage,
+      base::Bind(&PluginsHandler::HandleEnablePluginMessage,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("setPluginAlwaysAllowed",
-      base::Bind(&PluginsDOMHandler::HandleSetPluginAlwaysAllowed,
+      base::Bind(&PluginsHandler::HandleSetPluginAlwaysAllowed,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("saveShowDetailsToPrefs",
-      base::Bind(&PluginsDOMHandler::HandleSaveShowDetailsToPrefs,
+      base::Bind(&PluginsHandler::HandleSaveShowDetailsToPrefs,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("getShowDetails",
-      base::Bind(&PluginsDOMHandler::HandleGetShowDetails,
+      base::Bind(&PluginsHandler::HandleGetShowDetails,
                  base::Unretained(this)));
 }
 
-void PluginsDOMHandler::HandleRequestPluginsData(const base::ListValue* args) {
+void PluginsHandler::HandleRequestPluginsData(const base::ListValue* args) {
   LoadPlugins();
 }
 
-void PluginsDOMHandler::HandleEnablePluginMessage(const base::ListValue* args) {
+void PluginsHandler::HandleEnablePluginMessage(const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
 
   // Be robust in accepting badness since plugins display HTML (hence
@@ -320,7 +195,7 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const base::ListValue* args) {
   }
 }
 
-void PluginsDOMHandler::HandleSaveShowDetailsToPrefs(
+void PluginsHandler::HandleSaveShowDetailsToPrefs(
     const base::ListValue* args) {
   std::string details_mode;
   if (!args->GetString(0, &details_mode)) {
@@ -330,12 +205,12 @@ void PluginsDOMHandler::HandleSaveShowDetailsToPrefs(
   show_details_.SetValue(details_mode == "true");
 }
 
-void PluginsDOMHandler::HandleGetShowDetails(const base::ListValue* args) {
+void PluginsHandler::HandleGetShowDetails(const base::ListValue* args) {
   base::FundamentalValue show_details(show_details_.GetValue());
   web_ui()->CallJavascriptFunction("loadShowDetailsFromPrefs", show_details);
 }
 
-void PluginsDOMHandler::HandleSetPluginAlwaysAllowed(
+void PluginsHandler::HandleSetPluginAlwaysAllowed(
     const base::ListValue* args) {
   // Be robust in the input parameters, but crash in a Debug build.
   if (args->GetSize() != 2) {
@@ -364,23 +239,23 @@ void PluginsDOMHandler::HandleSetPluginAlwaysAllowed(
   update->SetBoolean(plugin, allowed);
 }
 
-void PluginsDOMHandler::Observe(int type,
-                                const content::NotificationSource& source,
-                                const content::NotificationDetails& details) {
+void PluginsHandler::Observe(int type,
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED, type);
   LoadPlugins();
 }
 
-void PluginsDOMHandler::LoadPlugins() {
+void PluginsHandler::LoadPlugins() {
   if (weak_ptr_factory_.HasWeakPtrs())
     return;
 
-  PluginService::GetInstance()->GetPlugins(
-      base::Bind(&PluginsDOMHandler::PluginsLoaded,
+  content::PluginService::GetInstance()->GetPlugins(
+      base::Bind(&PluginsHandler::PluginsLoaded,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PluginsDOMHandler::PluginsLoaded(
+void PluginsHandler::PluginsLoaded(
     const std::vector<WebPluginInfo>& plugins) {
   Profile* profile = Profile::FromWebUI(web_ui());
   PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile).get();
@@ -496,36 +371,4 @@ void PluginsDOMHandler::PluginsLoaded(
   base::DictionaryValue results;
   results.Set("plugins", plugin_groups_data);
   web_ui()->CallJavascriptFunction("returnPluginsData", results);
-}
-
-}  // namespace
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// PluginsUI
-//
-///////////////////////////////////////////////////////////////////////////////
-
-PluginsUI::PluginsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(new PluginsDOMHandler());
-
-  // Set up the chrome://plugins/ source.
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, CreatePluginsUIHTMLSource(profile));
-}
-
-// static
-base::RefCountedMemory* PluginsUI::GetFaviconResourceBytes(
-      ui::ScaleFactor scale_factor) {
-  return ResourceBundle::GetSharedInstance().
-      LoadDataResourceBytesForScale(IDR_PLUGINS_FAVICON, scale_factor);
-}
-
-// static
-void PluginsUI::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kPluginsShowDetails, false);
-  registry->RegisterDictionaryPref(
-      prefs::kContentSettingsPluginWhitelist,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
