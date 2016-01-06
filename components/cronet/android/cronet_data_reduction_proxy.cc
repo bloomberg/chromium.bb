@@ -4,6 +4,8 @@
 
 #include "components/cronet/android/cronet_data_reduction_proxy.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -38,9 +40,9 @@ scoped_ptr<PrefService> CreatePrefService() {
   pref_service_factory.set_user_prefs(
       make_scoped_refptr(new CronetInMemoryPrefStore()));
   scoped_ptr<PrefService> pref_service =
-      pref_service_factory.Create(pref_registry.get()).Pass();
+      pref_service_factory.Create(pref_registry.get());
   pref_registry = nullptr;
-  return pref_service.Pass();
+  return pref_service;
 }
 
 // TODO(bengr): Apply test configurations directly, instead of via the
@@ -100,8 +102,8 @@ CronetDataReductionProxy::~CronetDataReductionProxy() {
 scoped_ptr<net::NetworkDelegate>
 CronetDataReductionProxy::CreateNetworkDelegate(
     scoped_ptr<net::NetworkDelegate> wrapped_network_delegate) {
-  return io_data_->CreateNetworkDelegate(wrapped_network_delegate.Pass(),
-                                         false /* No bypass UMA */ );
+  return io_data_->CreateNetworkDelegate(std::move(wrapped_network_delegate),
+                                         false /* No bypass UMA */);
 }
 
 scoped_ptr<net::URLRequestInterceptor>
@@ -125,7 +127,7 @@ void CronetDataReductionProxy::Init(bool enable,
       data_reduction_proxy_service->GetWeakPtr());
   settings_->InitDataReductionProxySettings(
       kDataReductionProxyEnabled, prefs_.get(), io_data_.get(),
-      data_reduction_proxy_service.Pass());
+      std::move(data_reduction_proxy_service));
   settings_->SetDataReductionProxyEnabled(enable);
   settings_->MaybeActivateDataReductionProxy(true);
 }
