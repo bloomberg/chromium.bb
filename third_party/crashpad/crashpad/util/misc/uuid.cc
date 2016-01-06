@@ -26,7 +26,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
-#include "build/build_config.h"
 #include "util/stdlib/cxx.h"
 
 #if defined(OS_MACOSX)

@@ -17,9 +17,9 @@
 #include <dlfcn.h>
 #include <mach/mach.h>
 #include <signal.h>
-#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include <map>

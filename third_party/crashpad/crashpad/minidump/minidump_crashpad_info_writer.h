@@ -15,7 +15,7 @@
 #ifndef CRASHPAD_MINIDUMP_MINIDUMP_CRASHPAD_INFO_WRITER_H_
 #define CRASHPAD_MINIDUMP_MINIDUMP_CRASHPAD_INFO_WRITER_H_
 
-#include <stddef.h>
+#include <sys/types.h>
 
 #include <vector>
 

@@ -14,9 +14,6 @@
 
 #include "minidump/minidump_file_writer.h"
 
-#include <windows.h>
-#include <dbghelp.h>
-#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 

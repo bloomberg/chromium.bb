@@ -22,7 +22,6 @@
 #include <mach-o/ldsyms.h>
 #include <mach-o/loader.h>
 #include <mach-o/nlist.h>
-#include <stddef.h>
 #include <stdint.h>
 
 #include "base/strings/stringprintf.h"

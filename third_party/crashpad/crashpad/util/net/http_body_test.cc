@@ -14,8 +14,6 @@
 
 #include "util/net/http_body.h"
 
-#include <stddef.h>
-#include <stdint.h>
 #include <string.h>
 
 #include "gtest/gtest.h"

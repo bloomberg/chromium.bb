@@ -14,7 +14,7 @@
 
 #include "util/misc/random_string.h"
 
-#include <stddef.h>
+#include <sys/types.h>
 
 #include <set>
 

@@ -15,7 +15,6 @@
 #ifndef CRASHPAD_MINIDUMP_MINIDUMP_WRITER_UTIL_H_
 #define CRASHPAD_MINIDUMP_MINIDUMP_WRITER_UTIL_H_
 
-#include <stddef.h>
 #include <stdint.h>
 #include <sys/types.h>
 #include <time.h>

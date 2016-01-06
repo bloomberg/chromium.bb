@@ -23,7 +23,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "client/crashpad_info.h"
 #include "snapshot/mac/mach_o_image_segment_reader.h"

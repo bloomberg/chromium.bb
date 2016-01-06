@@ -19,8 +19,8 @@
 
 #include <windows.h>
 #include <dbghelp.h>
-#include <stddef.h>
 #include <stdint.h>
+#include <sys/types.h>
 
 #include <string>
 

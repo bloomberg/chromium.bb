@@ -14,11 +14,6 @@
 
 #include "minidump/minidump_string_writer.h"
 
-#include <windows.h>
-#include <dbghelp.h>
-#include <stddef.h>
-#include <sys/types.h>
-
 #include <string>
 
 #include "base/compiler_specific.h"

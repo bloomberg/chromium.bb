@@ -16,7 +16,7 @@
 #define CRASHPAD_UTIL_MACH_TASK_MEMORY_H_
 
 #include <mach/mach.h>
-#include <stddef.h>
+#include <sys/types.h>
 
 #include <string>
 

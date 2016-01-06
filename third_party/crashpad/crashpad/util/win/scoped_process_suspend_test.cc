@@ -19,7 +19,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/macros.h"
 #include "gtest/gtest.h"
 #include "test/errors.h"
 #include "test/win/win_child_process.h"

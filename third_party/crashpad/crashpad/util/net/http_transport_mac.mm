@@ -19,7 +19,6 @@
 
 #include "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
-#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "third_party/apple_cf/CFStreamAbstract.h"

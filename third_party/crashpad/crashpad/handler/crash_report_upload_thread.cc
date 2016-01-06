@@ -21,7 +21,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -34,7 +33,6 @@
 #include "util/net/http_multipart_builder.h"
 #include "util/net/http_transport.h"
 #include "util/stdlib/map_insert.h"
-#include "util/thread/thread.h"
 
 namespace crashpad {
 
@@ -138,78 +136,30 @@ class CallRecordUploadAttempt {
 
 }  // namespace
 
-namespace internal {
-
-class CrashReportUploadHelperThread final : public Thread {
- public:
-  explicit CrashReportUploadHelperThread(CrashReportUploadThread* self)
-      : self_(self) {}
-  ~CrashReportUploadHelperThread() override {}
-
-  void ThreadMain() override {
-    self_->ThreadMain();
-  }
-
- private:
-  CrashReportUploadThread* self_;
-
-  DISALLOW_COPY_AND_ASSIGN(CrashReportUploadHelperThread);
-};
-
-}  // namespace internal
-
 CrashReportUploadThread::CrashReportUploadThread(CrashReportDatabase* database,
                                                  const std::string& url)
     : url_(url),
-      database_(database),
-      semaphore_(0),
-      thread_(),
-      running_(false) {
+      // Check for pending reports every 15 minutes, even in the absence of a
+      // signal from the handler thread. This allows for failed uploads to be
+      // retried periodically, and for pending reports written by other
+      // processes to be recognized.
+      thread_(15 * 60, this),
+      database_(database) {
 }
 
 CrashReportUploadThread::~CrashReportUploadThread() {
-  DCHECK(!running_);
-  DCHECK(!thread_);
 }
 
 void CrashReportUploadThread::Start() {
-  DCHECK(!running_);
-  DCHECK(!thread_);
-
-  running_ = true;
-  thread_.reset(new internal::CrashReportUploadHelperThread(this));
-  thread_->Start();
+  thread_.Start(0);
 }
 
 void CrashReportUploadThread::Stop() {
-  DCHECK(running_);
-  DCHECK(thread_);
-
-  if (!running_) {
-    return;
-  }
-
-  running_ = false;
-  semaphore_.Signal();
-
-  thread_->Join();
-  thread_.reset();
+  thread_.Stop();
 }
 
 void CrashReportUploadThread::ReportPending() {
-  semaphore_.Signal();
-}
-
-void CrashReportUploadThread::ThreadMain() {
-  while (running_) {
-    ProcessPendingReports();
-
-    // Check for pending reports every 15 minutes, even in the absence of a
-    // signal from the handler thread. This allows for failed uploads to be
-    // retried periodically, and for pending reports written by other processes
-    // to be recognized.
-    semaphore_.TimedWait(15 * 60);
-  }
+  thread_.DoWorkNow();
 }
 
 void CrashReportUploadThread::ProcessPendingReports() {
@@ -227,7 +177,7 @@ void CrashReportUploadThread::ProcessPendingReports() {
 
     // Respect Stop() being called after at least one attempt to process a
     // report.
-    if (!running_) {
+    if (!thread_.is_running()) {
       return;
     }
   }
@@ -376,6 +326,10 @@ CrashReportUploadThread::UploadResult CrashReportUploadThread::UploadReport(
   }
 
   return UploadResult::kSuccess;
+}
+
+void CrashReportUploadThread::DoWork(const WorkerThread* thread) {
+  ProcessPendingReports();
 }
 
 }  // namespace crashpad

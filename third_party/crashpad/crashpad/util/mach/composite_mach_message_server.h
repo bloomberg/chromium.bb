@@ -16,7 +16,6 @@
 #define CRASHPAD_UTIL_MACH_COMPOSITE_MACH_MESSAGE_SERVER_H_
 
 #include <mach/mach.h>
-#include <stddef.h>
 
 #include <map>
 #include <set>

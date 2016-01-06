@@ -14,8 +14,8 @@
 
 #include "minidump/test/minidump_context_test_util.h"
 
-#include <stddef.h>
 #include <string.h>
+#include <sys/types.h>
 
 #include "base/format_macros.h"
 #include "base/macros.h"

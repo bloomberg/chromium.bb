@@ -19,7 +19,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "snapshot/cpu_context.h"
 #include "util/file/file_writer.h"
 

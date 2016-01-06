@@ -16,8 +16,8 @@
 #define CRASHPAD_SNAPSHOT_WIN_PE_IMAGE_READER_H_
 
 #include <windows.h>
-#include <stddef.h>
 #include <stdint.h>
+#include <sys/types.h>
 
 #include <string>
 

@@ -16,7 +16,6 @@
 #define CRASHPAD_SNAPSHOT_MAC_PROCESS_READER_H_
 
 #include <mach/mach.h>
-#include <stddef.h>
 #include <stdint.h>
 #include <sys/time.h>
 #include <sys/types.h>

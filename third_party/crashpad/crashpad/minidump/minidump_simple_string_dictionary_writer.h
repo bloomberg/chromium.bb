@@ -15,7 +15,6 @@
 #ifndef CRASHPAD_MINIDUMP_MINIDUMP_SIMPLE_STRING_DICTIONARY_WRITER_H_
 #define CRASHPAD_MINIDUMP_MINIDUMP_SIMPLE_STRING_DICTIONARY_WRITER_H_
 
-#include <stddef.h>
 #include <sys/types.h>
 
 #include <map>

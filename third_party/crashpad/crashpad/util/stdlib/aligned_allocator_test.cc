@@ -14,10 +14,8 @@
 
 #include "util/stdlib/aligned_allocator.h"
 
-#include <stddef.h>
 #include <stdint.h>
 
-#include "build/build_config.h"
 #include "gtest/gtest.h"
 
 #if defined(OS_WIN)

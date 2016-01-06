@@ -14,9 +14,8 @@
 
 #include "util/misc/uuid.h"
 
-#include <stddef.h>
-#include <stdint.h>
 #include <string.h>
+#include <sys/types.h>
 
 #include <string>
 
@@ -24,7 +23,6 @@
 #include "base/macros.h"
 #include "base/scoped_generic.h"
 #include "base/strings/stringprintf.h"
-#include "build/build_config.h"
 #include "gtest/gtest.h"
 
 namespace crashpad {

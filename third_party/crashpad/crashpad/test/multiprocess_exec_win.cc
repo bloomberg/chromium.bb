@@ -14,7 +14,7 @@
 
 #include "test/multiprocess_exec.h"
 
-#include <stddef.h>
+#include <sys/types.h>
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"

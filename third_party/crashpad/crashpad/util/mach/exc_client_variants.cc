@@ -14,7 +14,7 @@
 
 #include "util/mach/exc_client_variants.h"
 
-#include <stddef.h>
+#include <sys/types.h>
 
 #include <vector>
 

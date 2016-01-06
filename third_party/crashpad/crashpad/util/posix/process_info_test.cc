@@ -14,7 +14,6 @@
 
 #include "util/posix/process_info.h"
 
-#include <stddef.h>
 #include <time.h>
 #include <unistd.h>
 

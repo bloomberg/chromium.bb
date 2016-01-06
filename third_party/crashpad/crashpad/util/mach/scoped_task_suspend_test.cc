@@ -16,7 +16,6 @@
 
 #include <mach/mach.h>
 
-#include "base/macros.h"
 #include "gtest/gtest.h"
 #include "test/mac/mach_errors.h"
 #include "test/mac/mach_multiprocess.h"

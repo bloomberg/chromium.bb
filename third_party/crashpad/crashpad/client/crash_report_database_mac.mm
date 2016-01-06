@@ -17,7 +17,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #import <Foundation/Foundation.h>
-#include <stddef.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -27,7 +26,6 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/scoped_generic.h"
 #include "base/strings/string_piece.h"

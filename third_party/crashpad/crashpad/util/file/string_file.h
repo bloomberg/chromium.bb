@@ -15,7 +15,6 @@
 #ifndef CRASHPAD_UTIL_FILE_STRING_FILE_H_
 #define CRASHPAD_UTIL_FILE_STRING_FILE_H_
 
-#include <stddef.h>
 #include <sys/types.h>
 
 #include <string>

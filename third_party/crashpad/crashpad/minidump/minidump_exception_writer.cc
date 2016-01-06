@@ -14,12 +14,9 @@
 
 #include "minidump/minidump_exception_writer.h"
 
-#include <sys/types.h>
-
 #include <utility>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "minidump/minidump_context_writer.h"
 #include "snapshot/exception_snapshot.h"

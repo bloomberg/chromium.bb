@@ -14,7 +14,6 @@
 
 #include "minidump/minidump_simple_string_dictionary_writer.h"
 
-#include <stddef.h>
 #include <stdint.h>
 
 #include <map>

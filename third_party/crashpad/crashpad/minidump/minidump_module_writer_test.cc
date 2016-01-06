@@ -14,17 +14,11 @@
 
 #include "minidump/minidump_module_writer.h"
 
-#include <windows.h>
-#include <dbghelp.h>
-#include <stddef.h>
-#include <stdint.h>
 #include <string.h>
-#include <sys/types.h>
 
 #include <utility>
 
 #include "base/format_macros.h"
-#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "gtest/gtest.h"

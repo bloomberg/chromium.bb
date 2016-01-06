@@ -16,7 +16,6 @@
 #define CRASHPAD_UTIL_WIN_PROCESS_INFO_H_
 
 #include <windows.h>
-#include <stdint.h>
 #include <sys/types.h>
 
 #include <string>

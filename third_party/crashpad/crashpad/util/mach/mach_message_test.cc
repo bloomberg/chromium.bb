@@ -14,7 +14,6 @@
 
 #include "util/mach/mach_message.h"
 
-#include <stdint.h>
 #include <unistd.h>
 
 #include "base/mac/scoped_mach_port.h"

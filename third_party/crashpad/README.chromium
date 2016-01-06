@@ -2,7 +2,7 @@ Name: Crashpad
 Short Name: crashpad
 URL: https://crashpad.chromium.org/
 Version: unknown
-Revision: b0394744cc41a846eb9a79ccc73cd2992790ed42
+Revision: 54048cfd78af0a54cf4a2d2ecfb83881f5c54590
 License: Apache 2.0
 License File: crashpad/LICENSE
 Security Critical: yes
@@ -35,8 +35,4 @@ $ cd "${CRASHPAD_DIR}"
 $ git am --3way --message-id -p4 /tmp/patchdir
 
 Local Modifications:
-- Removed references to "base/basictypes.h" and replaced them with appropriate
-  headers.
-- Updated usage of ScopedLaunchData to use explicit methods rather than the
-  implicit |operator T()| conversion.
-- Include crashpad targets in GYP's `all` target list.
+None.

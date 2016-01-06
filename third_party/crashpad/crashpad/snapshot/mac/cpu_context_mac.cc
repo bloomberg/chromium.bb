@@ -17,7 +17,6 @@
 #include <string.h>
 
 #include "base/logging.h"
-#include "build/build_config.h"
 
 namespace crashpad {
 

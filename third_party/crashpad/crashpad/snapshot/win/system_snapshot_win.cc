@@ -17,7 +17,6 @@
 #include <windows.h>
 #include <intrin.h>
 #include <powrprof.h>
-#include <stdint.h>
 #include <winnt.h>
 
 #include <algorithm>

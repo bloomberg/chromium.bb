@@ -14,8 +14,6 @@
 
 #include "util/file/file_io.h"
 
-#include <stddef.h>
-
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"

@@ -17,7 +17,7 @@
 
 #include <windows.h>
 #include <dbghelp.h>
-#include <stddef.h>
+#include <sys/types.h>
 
 #include <string>
 #include <vector>

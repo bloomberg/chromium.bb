@@ -17,7 +17,7 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <launch.h>
-#include <stddef.h>
+#include <sys/types.h>
 
 namespace crashpad {
 

@@ -15,7 +15,7 @@
 #include "util/mac/checked_mach_address_range.h"
 
 #include <mach/mach.h>
-#include <stddef.h>
+#include <sys/types.h>
 
 #include <limits>
 

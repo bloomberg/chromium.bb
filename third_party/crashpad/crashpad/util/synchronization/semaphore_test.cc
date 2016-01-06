@@ -14,9 +14,8 @@
 
 #include "util/synchronization/semaphore.h"
 
-#include <stddef.h>
+#include <sys/types.h>
 
-#include "build/build_config.h"
 #include "gtest/gtest.h"
 
 #if defined(OS_POSIX)

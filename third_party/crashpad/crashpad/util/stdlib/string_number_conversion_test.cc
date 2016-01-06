@@ -14,7 +14,7 @@
 
 #include "util/stdlib/string_number_conversion.h"
 
-#include <stddef.h>
+#include <sys/types.h>
 
 #include <limits>
 

@@ -20,7 +20,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "build/build_config.h"
 #include "util/win/capture_context.h"
 #include "util/win/nt_internals.h"
 #include "util/win/ntstatus_logging.h"

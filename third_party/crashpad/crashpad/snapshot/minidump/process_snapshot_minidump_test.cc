@@ -16,7 +16,6 @@
 
 #include <windows.h>
 #include <dbghelp.h>
-#include <stdint.h>
 #include <string.h>
 
 #include "base/memory/scoped_ptr.h"

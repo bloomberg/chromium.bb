@@ -15,7 +15,6 @@
 #ifndef CRASHPAD_MINIDUMP_MINIDUMP_CONTEXT_WRITER_H_
 #define CRASHPAD_MINIDUMP_MINIDUMP_CONTEXT_WRITER_H_
 
-#include <stddef.h>
 #include <sys/types.h>
 
 #include "base/macros.h"

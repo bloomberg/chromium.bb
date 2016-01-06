@@ -14,11 +14,10 @@
 
 #include "util/thread/thread_log_messages.h"
 
-#include <stddef.h>
 #include <string.h>
+#include <sys/types.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "gtest/gtest.h"
 #include "util/thread/thread.h"

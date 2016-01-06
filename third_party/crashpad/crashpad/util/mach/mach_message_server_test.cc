@@ -15,9 +15,9 @@
 #include "util/mach/mach_message_server.h"
 
 #include <mach/mach.h>
-#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <sys/types.h>
 
 #include <set>
 

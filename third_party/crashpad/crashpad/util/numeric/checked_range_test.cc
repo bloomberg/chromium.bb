@@ -14,8 +14,8 @@
 
 #include "util/numeric/checked_range.h"
 
-#include <stddef.h>
 #include <stdint.h>
+#include <sys/types.h>
 
 #include <limits>
 

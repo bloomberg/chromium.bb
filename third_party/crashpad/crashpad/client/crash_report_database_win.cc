@@ -14,16 +14,16 @@
 
 #include "client/crash_report_database.h"
 
-#include <stddef.h>
+#include <windows.h>
 #include <stdint.h>
 #include <string.h>
+#include <sys/types.h>
 #include <time.h>
-#include <windows.h>
+#include <wchar.h>
 
 #include <utility>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"

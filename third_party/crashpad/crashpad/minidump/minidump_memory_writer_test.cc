@@ -14,11 +14,6 @@
 
 #include "minidump/minidump_memory_writer.h"
 
-#include <windows.h>
-#include <dbghelp.h>
-#include <stddef.h>
-#include <stdint.h>
-
 #include <utility>
 
 #include "base/format_macros.h"

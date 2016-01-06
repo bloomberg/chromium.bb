@@ -15,7 +15,6 @@
 #ifndef CRASHPAD_UTIL_FILE_FILE_READER_H_
 #define CRASHPAD_UTIL_FILE_FILE_READER_H_
 
-#include <stddef.h>
 #include <stdio.h>
 #include <sys/types.h>
 

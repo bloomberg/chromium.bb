@@ -16,7 +16,6 @@
 #define CRASHPAD_UTIL_MACH_EXCEPTION_PORTS_H_
 
 #include <mach/mach.h>
-#include <stddef.h>
 
 #include <vector>
 

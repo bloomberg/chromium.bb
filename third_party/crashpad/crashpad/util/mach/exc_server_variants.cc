@@ -21,7 +21,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "util/mac/mac_util.h"
 #include "util/mach/composite_mach_message_server.h"
 #include "util/mach/exc.h"

@@ -16,7 +16,6 @@
 #define CRASHPAD_UTIL_MACH_MACH_MESSAGE_H_
 
 #include <mach/mach.h>
-#include <stddef.h>
 #include <stdint.h>
 #include <sys/types.h>
 

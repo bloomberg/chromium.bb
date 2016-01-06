@@ -14,7 +14,6 @@
 
 #include "util/win/time.h"
 
-#include <inttypes.h>
 #include <stdint.h>
 
 #include "base/logging.h"

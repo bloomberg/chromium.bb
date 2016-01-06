@@ -14,8 +14,6 @@
 
 #include "minidump/minidump_writable.h"
 
-#include <stddef.h>
-
 #include <string>
 #include <vector>
 

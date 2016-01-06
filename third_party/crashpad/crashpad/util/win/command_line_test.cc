@@ -16,7 +16,7 @@
 
 #include <windows.h>
 #include <shellapi.h>
-#include <stddef.h>
+#include <sys/types.h>
 
 #include "base/logging.h"
 #include "base/macros.h"

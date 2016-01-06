@@ -14,18 +14,11 @@
 
 #include "minidump/minidump_thread_writer.h"
 
-#include <windows.h>
-#include <dbghelp.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <sys/types.h>
-
 #include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
-#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "gtest/gtest.h"
 #include "minidump/minidump_context_writer.h"

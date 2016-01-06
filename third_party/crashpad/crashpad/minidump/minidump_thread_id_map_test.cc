@@ -14,8 +14,7 @@
 
 #include "minidump/minidump_thread_id_map.h"
 
-#include <stddef.h>
-#include <stdint.h>
+#include <sys/types.h>
 
 #include <vector>
 

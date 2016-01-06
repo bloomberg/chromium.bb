@@ -37,8 +37,6 @@
         'package.h',
       ],
       'conditions': [
-        # Exclude targets from the (lowercase) `all` target on platforms that
-        # are not fully supported.
         ['OS!="mac" and OS!="win"', {
           'suppress_wildcard': 1,
         }],

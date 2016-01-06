@@ -14,8 +14,8 @@
 
 #include "client/simulate_crash_mac.h"
 
-#include <stddef.h>
 #include <string.h>
+#include <sys/types.h>
 
 #include "base/logging.h"
 #include "base/mac/mach_logging.h"

@@ -15,7 +15,6 @@
 #ifndef CRASHPAD_MINIDUMP_MINIDUMP_MODULE_CRASHPAD_INFO_WRITER_H_
 #define CRASHPAD_MINIDUMP_MINIDUMP_MODULE_CRASHPAD_INFO_WRITER_H_
 
-#include <stddef.h>
 #include <stdint.h>
 #include <sys/types.h>
 

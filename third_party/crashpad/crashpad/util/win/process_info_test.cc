@@ -16,7 +16,6 @@
 
 #include <dbghelp.h>
 #include <intrin.h>
-#include <stddef.h>
 #include <wchar.h>
 
 #include "base/files/file_path.h"

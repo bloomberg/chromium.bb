@@ -16,7 +16,6 @@
 #define CRASHPAD_UTIL_MACH_CHILD_PORT_SERVER_H_
 
 #include <mach/mach.h>
-#include <stddef.h>
 
 #include <set>
 

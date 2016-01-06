@@ -17,8 +17,6 @@
 #include <windows.h>
 #include <string.h>
 
-#include "base/macros.h"
-#include "build/build_config.h"
 #include "gtest/gtest.h"
 #include "test/win/win_multiprocess.h"
 #include "util/synchronization/semaphore.h"

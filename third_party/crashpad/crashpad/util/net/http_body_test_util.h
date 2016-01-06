@@ -15,7 +15,6 @@
 #ifndef CRASHPAD_UTIL_NET_HTTP_BODY_TEST_UTIL_H_
 #define CRASHPAD_UTIL_NET_HTTP_BODY_TEST_UTIL_H_
 
-#include <stddef.h>
 #include <sys/types.h>
 
 #include <string>

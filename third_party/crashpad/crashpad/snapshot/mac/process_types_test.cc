@@ -16,8 +16,6 @@
 
 #include <AvailabilityMacros.h>
 #include <mach/mach.h>
-#include <stddef.h>
-#include <stdint.h>
 #include <string.h>
 
 #include <vector>

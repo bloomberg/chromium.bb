@@ -14,8 +14,8 @@
 
 #include "util/win/capture_context.h"
 
-#include <stddef.h>
 #include <stdint.h>
+#include <sys/types.h>
 
 #include <algorithm>
 

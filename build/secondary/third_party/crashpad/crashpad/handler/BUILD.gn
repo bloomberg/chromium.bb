@@ -12,6 +12,8 @@ source_set("handler_lib") {
     "mac/crash_report_exception_handler.h",
     "mac/exception_handler_server.cc",
     "mac/exception_handler_server.h",
+    "prune_crash_reports_thread.cc",
+    "prune_crash_reports_thread.h",
     "win/crash_report_exception_handler.cc",
     "win/crash_report_exception_handler.h",
   ]

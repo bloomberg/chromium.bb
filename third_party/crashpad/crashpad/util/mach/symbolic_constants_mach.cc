@@ -14,8 +14,8 @@
 
 #include "util/mach/symbolic_constants_mach.h"
 
-#include <stddef.h>
 #include <string.h>
+#include <sys/types.h>
 
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"

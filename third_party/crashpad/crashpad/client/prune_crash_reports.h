@@ -15,7 +15,6 @@
 #ifndef CRASHPAD_CLIENT_PRUNE_CRASH_REPORTS_H_
 #define CRASHPAD_CLIENT_PRUNE_CRASH_REPORTS_H_
 
-#include <stddef.h>
 #include <sys/types.h>
 #include <time.h>
 

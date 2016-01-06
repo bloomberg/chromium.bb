@@ -15,7 +15,6 @@
 #ifndef CRASHPAD_SNAPSHOT_WIN_MEMORY_SNAPSHOT_WIN_H_
 #define CRASHPAD_SNAPSHOT_WIN_MEMORY_SNAPSHOT_WIN_H_
 
-#include <stddef.h>
 #include <stdint.h>
 #include <sys/types.h>
 

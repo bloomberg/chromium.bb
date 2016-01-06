@@ -16,8 +16,8 @@
 #define CRASHPAD_SNAPSHOT_WIN_PROCESS_SNAPSHOT_WIN_H_
 
 #include <windows.h>
-#include <stddef.h>
 #include <sys/time.h>
+#include <sys/types.h>
 
 #include <map>
 #include <string>

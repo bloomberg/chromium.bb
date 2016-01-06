@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <stddef.h>
+#include "snapshot/test/test_cpu_context.h"
+
 #include <string.h>
+#include <sys/types.h>
 
 #include "base/macros.h"
-#include "snapshot/test/test_cpu_context.h"
 
 namespace crashpad {
 namespace test {

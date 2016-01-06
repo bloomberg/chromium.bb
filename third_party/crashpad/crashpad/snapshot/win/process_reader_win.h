@@ -16,7 +16,6 @@
 #define CRASHPAD_SNAPSHOT_WIN_PROCESS_READER_WIN_H_
 
 #include <windows.h>
-#include <stdint.h>
 #include <sys/time.h>
 
 #include <vector>

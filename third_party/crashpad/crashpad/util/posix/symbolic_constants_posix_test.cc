@@ -14,8 +14,8 @@
 
 #include "util/posix/symbolic_constants_posix.h"
 
-#include <stddef.h>
 #include <sys/signal.h>
+#include <sys/types.h>
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"

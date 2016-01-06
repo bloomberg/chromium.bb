@@ -14,10 +14,10 @@
 
 #include "util/net/http_transport.h"
 
-#include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 
 #include <utility>
 #include <vector>

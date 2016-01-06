@@ -16,11 +16,10 @@
 
 #include <mach-o/loader.h>
 #include <mach-o/nlist.h>
-#include <stddef.h>
+#include <sys/types.h>
 
 #include <utility>
 
-#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "util/mac/checked_mach_address_range.h"

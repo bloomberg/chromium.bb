@@ -14,8 +14,6 @@
 
 #include "util/file/file_io.h"
 
-#include <stddef.h>
-
 #include "base/atomicops.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"

@@ -14,9 +14,8 @@
 
 #include "snapshot/cpu_context.h"
 
-#include <stddef.h>
-#include <stdint.h>
 #include <string.h>
+#include <sys/types.h>
 
 #include "base/macros.h"
 #include "gtest/gtest.h"
