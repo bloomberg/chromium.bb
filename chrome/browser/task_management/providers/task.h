@@ -58,6 +58,9 @@ class Task {
   // (if possible).
   virtual void Activate();
 
+  // Kills this task.
+  virtual void Kill();
+
   // Will be called to let the task refresh itself between refresh cycles.
   // |update_interval| is the time since the last task manager refresh.
   // the |refresh_flags| indicate which resources should be calculated on each

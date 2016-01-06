@@ -47,6 +47,9 @@ class TaskManagerInterface {
   // possible.
   virtual void ActivateTask(TaskId task_id) = 0;
 
+  // Kills the task with |task_id|.
+  virtual void KillTask(TaskId task_id) = 0;
+
   // returns the CPU usage in percent for the process on which the task with
   // |task_id| is running during the current refresh cycle.
   virtual double GetCpuUsage(TaskId task_id) const = 0;

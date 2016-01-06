@@ -19,6 +19,7 @@ class BrowserProcessTask : public Task {
   ~BrowserProcessTask() override;
 
   // task_management::Task:
+  void Kill() override;
   void Refresh(const base::TimeDelta& update_interval,
                int64_t refresh_flags) override;
   Type GetType() const override;

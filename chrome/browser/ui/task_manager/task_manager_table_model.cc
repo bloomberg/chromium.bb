@@ -606,13 +606,7 @@ void TaskManagerTableModel::ActivateTask(int row_index) {
 }
 
 void TaskManagerTableModel::KillTask(int row_index) {
-  base::ProcessId proc_id = observed_task_manager()->GetProcessId(
-      tasks_[row_index]);
-
-  DCHECK_NE(proc_id, base::GetCurrentProcId());
-
-  base::Process process = base::Process::Open(proc_id);
-  process.Terminate(content::RESULT_CODE_KILLED, false);
+  observed_task_manager()->KillTask(tasks_[row_index]);
 }
 
 void TaskManagerTableModel::UpdateRefreshTypes(int column_id, bool visibility) {

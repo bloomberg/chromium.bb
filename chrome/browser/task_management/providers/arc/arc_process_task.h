@@ -24,6 +24,7 @@ class ArcProcessTask : public Task {
   // task_management::Task:
   Type GetType() const override;
   int GetChildProcessUniqueID() const override;
+  void Kill() override;
 
   base::ProcessId nspid() const { return nspid_; }
   const std::string& process_name() const { return process_name_; }

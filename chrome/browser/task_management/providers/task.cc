@@ -6,11 +6,13 @@
 
 #include <stddef.h>
 
+#include "base/process/process.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_management/task_manager_observer.h"
+#include "content/public/common/result_codes.h"
 
 namespace task_management {
 
@@ -53,6 +55,12 @@ base::string16 Task::GetProfileNameFromProfile(Profile* profile) {
 }
 
 void Task::Activate() {
+}
+
+void Task::Kill() {
+  DCHECK_NE(process_id(), base::GetCurrentProcId());
+  base::Process process = base::Process::Open(process_id());
+  process.Terminate(content::RESULT_CODE_KILLED, false);
 }
 
 void Task::Refresh(const base::TimeDelta& update_interval,

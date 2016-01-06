@@ -55,6 +55,10 @@ BrowserProcessTask::BrowserProcessTask()
 BrowserProcessTask::~BrowserProcessTask() {
 }
 
+void BrowserProcessTask::Kill() {
+  // Never kill the browser process.
+}
+
 void BrowserProcessTask::Refresh(const base::TimeDelta& update_interval,
                                  int64_t refresh_flags) {
   Task::Refresh(update_interval, refresh_flags);

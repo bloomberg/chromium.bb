@@ -87,4 +87,8 @@ struct RunningAppProcessInfo {
 interface ProcessInstance {
   // Requests ARC instance to return the current process list.
   RequestProcessList() => (array<RunningAppProcessInfo> processes);
+
+  // Requests ARC instance to kill a process.
+  [MinVersion=1]
+  KillProcess(uint32 pid, string reason);
 };

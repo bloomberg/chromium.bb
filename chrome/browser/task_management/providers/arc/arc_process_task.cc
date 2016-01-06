@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/arc/arc_bridge_service.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace task_management {
@@ -42,6 +43,21 @@ Task::Type ArcProcessTask::GetType() const {
 int ArcProcessTask::GetChildProcessUniqueID() const {
   // ARC process is not a child process of the browser.
   return 0;
+}
+
+void ArcProcessTask::Kill() {
+  arc::ProcessInstance* arc_process_instance =
+      arc::ArcBridgeService::Get()->process_instance();
+  if (!arc_process_instance) {
+    LOG(ERROR) << "ARC process instance is not ready.";
+    return;
+  }
+  if (arc::ArcBridgeService::Get()->process_version() < 1) {
+    LOG(ERROR) << "ARC KillProcess IPC is unavailable.";
+    return;
+  }
+  arc_process_instance->KillProcess(
+      nspid_, "Killed manually from Task Manager");
 }
 
 }  // namespace task_management
