@@ -195,11 +195,24 @@ void ExpectTreesAreIdentical(Layer* layer,
   }
 }
 
+class LayerTreeSettingsForTreeSynchronizerTest : public LayerTreeSettings {
+ public:
+  LayerTreeSettingsForTreeSynchronizerTest() {
+    use_compositor_animation_timelines = true;
+  }
+};
+
 class TreeSynchronizerTest : public testing::Test {
  public:
   TreeSynchronizerTest()
       : client_(FakeLayerTreeHostClient::DIRECT_3D),
-        host_(FakeLayerTreeHost::Create(&client_, &task_graph_runner_)) {}
+        host_(FakeLayerTreeHost::Create(
+            &client_,
+            &task_graph_runner_,
+            LayerTreeSettingsForTreeSynchronizerTest())) {
+    layer_settings_.use_compositor_animation_timelines =
+        host_->settings().use_compositor_animation_timelines;
+  }
 
  protected:
   FakeLayerTreeHostClient client_;
@@ -560,7 +573,12 @@ TEST_F(TreeSynchronizerTest, SyncMaskReplicaAndReplicaMaskLayers) {
 }
 
 TEST_F(TreeSynchronizerTest, SynchronizeAnimations) {
-  LayerTreeSettings settings;
+  LayerTreeSettingsForTreeSynchronizerTest settings;
+  // This test is meaningless in new use_compositor_animation_timelines mode.
+  // TODO(loyso): Delete FakeLayerAnimationController and related stuff.
+  if (settings.use_compositor_animation_timelines)
+    return;
+
   FakeImplTaskRunnerProvider task_runner_provider;
   FakeRenderingStatsInstrumentation stats_instrumentation;
   TestSharedBitmapManager shared_bitmap_manager;
