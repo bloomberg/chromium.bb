@@ -37,7 +37,7 @@ public abstract class Criteria {
      * @return The failure message that will be logged if the criteria is not satisfied within
      *         the specified time range.
      */
-    public final String getFailureReason() {
+    public String getFailureReason() {
         return mFailureReason;
     }
 

@@ -102,6 +102,11 @@ public class CriteriaHelper {
             public boolean isSatisfied() {
                 return ThreadUtils.runOnUiThreadBlockingNoException(callable);
             }
+
+            @Override
+            public String getFailureReason() {
+                return criteria.getFailureReason();
+            }
         }, maxTimeoutMs, checkIntervalMs);
     }
 
