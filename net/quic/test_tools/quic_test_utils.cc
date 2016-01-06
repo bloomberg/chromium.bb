@@ -333,15 +333,21 @@ TestQuicSpdyServerSession::TestQuicSpdyServerSession(
     QuicConnection* connection,
     const QuicConfig& config,
     const QuicCryptoServerConfig* crypto_config)
-    : QuicServerSession(config, connection, &visitor_, crypto_config) {
+    : QuicServerSessionBase(config, connection, &visitor_, crypto_config) {
   Initialize();
 }
 
 TestQuicSpdyServerSession::~TestQuicSpdyServerSession() {}
 
+QuicCryptoServerStreamBase*
+TestQuicSpdyServerSession::CreateQuicCryptoServerStream(
+    const QuicCryptoServerConfig* crypto_config) {
+  return new QuicCryptoServerStream(crypto_config, this);
+}
+
 QuicCryptoServerStream* TestQuicSpdyServerSession::GetCryptoStream() {
   return static_cast<QuicCryptoServerStream*>(
-      QuicServerSession::GetCryptoStream());
+      QuicServerSessionBase::GetCryptoStream());
 }
 
 TestQuicSpdyClientSession::TestQuicSpdyClientSession(

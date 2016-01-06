@@ -2061,7 +2061,7 @@ TEST_P(EndToEndTest, EarlyResponseFinRecording) {
       QuicDispatcherPeer::session_map(dispatcher);
   QuicDispatcher::SessionMap::const_iterator it = map.begin();
   EXPECT_TRUE(it != map.end());
-  QuicServerSession* server_session = it->second;
+  QuicServerSessionBase* server_session = it->second;
 
   // The stream is not waiting for the arrival of the peer's final offset.
   EXPECT_EQ(

@@ -4,8 +4,8 @@
 //
 // A server specific QuicSession subclass.
 
-#ifndef NET_TOOLS_QUIC_QUIC_SERVER_SESSION_H_
-#define NET_TOOLS_QUIC_QUIC_SERVER_SESSION_H_
+#ifndef NET_TOOLS_QUIC_QUIC_SERVER_SESSION_BASE_H_
+#define NET_TOOLS_QUIC_QUIC_SERVER_SESSION_BASE_H_
 
 #include <stdint.h>
 
@@ -31,7 +31,8 @@ class ReliableQuicStream;
 namespace tools {
 
 namespace test {
-class QuicServerSessionPeer;
+class QuicServerSessionBasePeer;
+class QuicSimpleServerSessionPeer;
 }  // namespace test
 
 // An interface from the session to the entity owning the session.
@@ -52,13 +53,13 @@ class QuicServerSessionVisitor {
       QuicConnectionId connection_id) {}
 };
 
-class QuicServerSession : public QuicSpdySession {
+class QuicServerSessionBase : public QuicSpdySession {
  public:
   // |crypto_config| must outlive the session.
-  QuicServerSession(const QuicConfig& config,
-                    QuicConnection* connection,
-                    QuicServerSessionVisitor* visitor,
-                    const QuicCryptoServerConfig* crypto_config);
+  QuicServerSessionBase(const QuicConfig& config,
+                        QuicConnection* connection,
+                        QuicServerSessionVisitor* visitor,
+                        const QuicCryptoServerConfig* crypto_config);
 
   // Override the base class to notify the owner of the connection close.
   void OnConnectionClosed(QuicErrorCode error, bool from_peer) override;
@@ -68,7 +69,7 @@ class QuicServerSession : public QuicSpdySession {
   // estimate.
   void OnCongestionWindowChange(QuicTime now) override;
 
-  ~QuicServerSession() override;
+  ~QuicServerSessionBase() override;
 
   void Initialize() override;
 
@@ -84,9 +85,7 @@ class QuicServerSession : public QuicSpdySession {
   }
 
  protected:
-  // QuicSession methods:
-  QuicSpdyStream* CreateIncomingDynamicStream(QuicStreamId id) override;
-  QuicSpdyStream* CreateOutgoingDynamicStream(SpdyPriority priority) override;
+  // QuicSession methods(override them with return type of QuicSpdyStream*):
   QuicCryptoServerStreamBase* GetCryptoStream() override;
 
   // If an outgoing stream can be created, return true.
@@ -101,12 +100,13 @@ class QuicServerSession : public QuicSpdySession {
   virtual bool ShouldCreateIncomingDynamicStream(QuicStreamId id);
 
   virtual QuicCryptoServerStreamBase* CreateQuicCryptoServerStream(
-      const QuicCryptoServerConfig* crypto_config);
+      const QuicCryptoServerConfig* crypto_config) = 0;
 
   const QuicCryptoServerConfig* crypto_config() { return crypto_config_; }
 
  private:
-  friend class test::QuicServerSessionPeer;
+  friend class test::QuicServerSessionBasePeer;
+  friend class test::QuicSimpleServerSessionPeer;
 
   const QuicCryptoServerConfig* crypto_config_;
   scoped_ptr<QuicCryptoServerStreamBase> crypto_stream_;
@@ -128,10 +128,10 @@ class QuicServerSession : public QuicSpdySession {
   // Number of packets sent to the peer, at the time we last sent a SCUP.
   int64_t last_scup_packet_number_;
 
-  DISALLOW_COPY_AND_ASSIGN(QuicServerSession);
+  DISALLOW_COPY_AND_ASSIGN(QuicServerSessionBase);
 };
 
 }  // namespace tools
 }  // namespace net
 
-#endif  // NET_TOOLS_QUIC_QUIC_SERVER_SESSION_H_
+#endif  // NET_TOOLS_QUIC_QUIC_SERVER_SESSION_BASE_H_

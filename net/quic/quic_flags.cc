@@ -136,3 +136,6 @@ bool FLAGS_quic_use_rfc7539 = true;
 
 // If true, drop not awaited QUIC packets before decrypting them.
 bool FLAGS_quic_drop_non_awaited_packets = false;
+
+// If true, use the fast implementation of IncrementalHash/FNV1a_128_Hash.
+bool FLAGS_quic_utils_use_fast_incremental_hash = true;

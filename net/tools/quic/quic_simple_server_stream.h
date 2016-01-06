@@ -16,8 +16,6 @@
 
 namespace net {
 
-class QuicSpdySession;
-
 namespace tools {
 
 namespace test {

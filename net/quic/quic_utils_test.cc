@@ -5,6 +5,7 @@
 #include "net/quic/quic_utils.h"
 
 #include "net/quic/crypto/crypto_protocol.h"
+#include "net/quic/quic_flags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
@@ -97,6 +98,44 @@ TEST(QuicUtilsTest, ParseQuicConnectionOptions) {
   expected_options.push_back(kTBBR);
   expected_options.push_back(kREJ);
   EXPECT_EQ(expected_options, parsed_options);
+}
+
+uint128 IncrementalHashReference(const void* data, size_t len) {
+  // The two constants are defined as part of the hash algorithm.
+  // see http://www.isthe.com/chongo/tech/comp/fnv/
+  // hash = 144066263297769815596495629667062367629
+  uint128 hash =
+      uint128(UINT64_C(7809847782465536322), UINT64_C(7113472399480571277));
+  // kPrime = 309485009821345068724781371
+  const uint128 kPrime(16777216, 315);
+  const uint8_t* octets = reinterpret_cast<const uint8_t*>(data);
+  for (size_t i = 0; i < len; ++i) {
+    hash = hash ^ uint128(0, octets[i]);
+    hash = hash * kPrime;
+  }
+  return hash;
+}
+
+TEST(QuicUtilsHashTest, ReferenceTestSlow) {
+  FLAGS_quic_utils_use_fast_incremental_hash = false;
+  std::vector<uint8_t> data(32);
+  for (size_t i = 0; i < data.size(); ++i) {
+    data[i] = i % 255;
+  }
+  EXPECT_EQ(IncrementalHashReference(data.data(), data.size()),
+            QuicUtils::FNV1a_128_Hash(
+                reinterpret_cast<const char*>(data.data()), data.size()));
+}
+
+TEST(QuicUtilsHashTest, ReferenceTestFast) {
+  FLAGS_quic_utils_use_fast_incremental_hash = true;
+  std::vector<uint8_t> data(32);
+  for (size_t i = 0; i < data.size(); ++i) {
+    data[i] = i % 255;
+  }
+  EXPECT_EQ(IncrementalHashReference(data.data(), data.size()),
+            QuicUtils::FNV1a_128_Hash(
+                reinterpret_cast<const char*>(data.data()), data.size()));
 }
 
 }  // namespace

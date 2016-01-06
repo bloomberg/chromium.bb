@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/quic/quic_server_session.h"
+#include "net/tools/quic/quic_server_session_base.h"
 
 #include "base/logging.h"
 #include "net/quic/proto/cached_network_parameters.pb.h"
@@ -10,12 +10,11 @@
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_spdy_session.h"
 #include "net/quic/reliable_quic_stream.h"
-#include "net/tools/quic/quic_simple_server_stream.h"
 
 namespace net {
 namespace tools {
 
-QuicServerSession::QuicServerSession(
+QuicServerSessionBase::QuicServerSessionBase(
     const QuicConfig& config,
     QuicConnection* connection,
     QuicServerSessionVisitor* visitor,
@@ -28,19 +27,14 @@ QuicServerSession::QuicServerSession(
       last_scup_time_(QuicTime::Zero()),
       last_scup_packet_number_(0) {}
 
-QuicServerSession::~QuicServerSession() {}
+QuicServerSessionBase::~QuicServerSessionBase() {}
 
-void QuicServerSession::Initialize() {
+void QuicServerSessionBase::Initialize() {
   crypto_stream_.reset(CreateQuicCryptoServerStream(crypto_config_));
   QuicSpdySession::Initialize();
 }
 
-QuicCryptoServerStreamBase* QuicServerSession::CreateQuicCryptoServerStream(
-    const QuicCryptoServerConfig* crypto_config) {
-  return new QuicCryptoServerStream(crypto_config, this);
-}
-
-void QuicServerSession::OnConfigNegotiated() {
+void QuicServerSessionBase::OnConfigNegotiated() {
   QuicSession::OnConfigNegotiated();
 
   if (!config()->HasReceivedConnectionOptions()) {
@@ -79,8 +73,8 @@ void QuicServerSession::OnConfigNegotiated() {
   }
 }
 
-void QuicServerSession::OnConnectionClosed(QuicErrorCode error,
-                                           bool from_peer) {
+void QuicServerSessionBase::OnConnectionClosed(QuicErrorCode error,
+                                               bool from_peer) {
   QuicSession::OnConnectionClosed(error, from_peer);
   // In the unlikely event we get a connection close while doing an asynchronous
   // crypto event, make sure we cancel the callback.
@@ -90,12 +84,12 @@ void QuicServerSession::OnConnectionClosed(QuicErrorCode error,
   visitor_->OnConnectionClosed(connection()->connection_id(), error);
 }
 
-void QuicServerSession::OnWriteBlocked() {
+void QuicServerSessionBase::OnWriteBlocked() {
   QuicSession::OnWriteBlocked();
   visitor_->OnWriteBlocked(connection());
 }
 
-void QuicServerSession::OnCongestionWindowChange(QuicTime now) {
+void QuicServerSessionBase::OnCongestionWindowChange(QuicTime now) {
   if (!bandwidth_resumption_enabled_) {
     return;
   }
@@ -182,7 +176,7 @@ void QuicServerSession::OnCongestionWindowChange(QuicTime now) {
   last_scup_packet_number_ = connection()->packet_number_of_last_sent_packet();
 }
 
-bool QuicServerSession::ShouldCreateIncomingDynamicStream(QuicStreamId id) {
+bool QuicServerSessionBase::ShouldCreateIncomingDynamicStream(QuicStreamId id) {
   if (!connection()->connected()) {
     LOG(DFATAL) << "ShouldCreateIncomingDynamicStream called when disconnected";
     return false;
@@ -197,16 +191,7 @@ bool QuicServerSession::ShouldCreateIncomingDynamicStream(QuicStreamId id) {
   return true;
 }
 
-QuicSpdyStream* QuicServerSession::CreateIncomingDynamicStream(
-    QuicStreamId id) {
-  if (!ShouldCreateIncomingDynamicStream(id)) {
-    return nullptr;
-  }
-
-  return new QuicSimpleServerStream(id, this);
-}
-
-bool QuicServerSession::ShouldCreateOutgoingDynamicStream() {
+bool QuicServerSessionBase::ShouldCreateOutgoingDynamicStream() {
   if (!connection()->connected()) {
     LOG(DFATAL) << "ShouldCreateOutgoingDynamicStream called when disconnected";
     return false;
@@ -223,20 +208,7 @@ bool QuicServerSession::ShouldCreateOutgoingDynamicStream() {
   return true;
 }
 
-QuicSpdyStream* QuicServerSession::CreateOutgoingDynamicStream(
-    SpdyPriority priority) {
-  if (!ShouldCreateOutgoingDynamicStream()) {
-    return nullptr;
-  }
-
-  QuicSpdyStream* stream =
-      new QuicSimpleServerStream(GetNextOutgoingStreamId(), this);
-  stream->SetPriority(priority);
-  ActivateStream(stream);
-  return stream;
-}
-
-QuicCryptoServerStreamBase* QuicServerSession::GetCryptoStream() {
+QuicCryptoServerStreamBase* QuicServerSessionBase::GetCryptoStream() {
   return crypto_stream_.get();
 }
 

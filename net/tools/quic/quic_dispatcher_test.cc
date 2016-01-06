@@ -48,19 +48,24 @@ namespace tools {
 namespace test {
 namespace {
 
-class TestQuicSpdyServerSession : public QuicServerSession {
+class TestQuicSpdyServerSession : public QuicServerSessionBase {
  public:
   TestQuicSpdyServerSession(const QuicConfig& config,
                             QuicConnection* connection,
                             const QuicCryptoServerConfig* crypto_config)
-      : QuicServerSession(config, connection, nullptr, crypto_config),
-        crypto_stream_(QuicServerSession::GetCryptoStream()) {}
+      : QuicServerSessionBase(config, connection, nullptr, crypto_config),
+        crypto_stream_(QuicServerSessionBase::GetCryptoStream()) {}
   ~TestQuicSpdyServerSession() override{};
 
   MOCK_METHOD2(OnConnectionClosed, void(QuicErrorCode error, bool from_peer));
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
   MOCK_METHOD1(CreateOutgoingDynamicStream,
                QuicSpdyStream*(SpdyPriority priority));
+
+  QuicCryptoServerStreamBase* CreateQuicCryptoServerStream(
+      const QuicCryptoServerConfig* crypto_config) override {
+    return new QuicCryptoServerStream(crypto_config, this);
+  }
 
   void SetCryptoStream(QuicCryptoServerStream* crypto_stream) {
     crypto_stream_ = crypto_stream;
@@ -88,8 +93,8 @@ class TestDispatcher : public QuicDispatcher {
                        new QuicEpollConnectionHelper(eps)) {}
 
   MOCK_METHOD2(CreateQuicSession,
-               QuicServerSession*(QuicConnectionId connection_id,
-                                  const IPEndPoint& client_address));
+               QuicServerSessionBase*(QuicConnectionId connection_id,
+                                      const IPEndPoint& client_address));
 
   using QuicDispatcher::current_server_address;
   using QuicDispatcher::current_client_address;
@@ -116,13 +121,14 @@ class MockServerConnection : public MockConnection {
   QuicDispatcher* dispatcher_;
 };
 
-QuicServerSession* CreateSession(QuicDispatcher* dispatcher,
-                                 const QuicConfig& config,
-                                 QuicConnectionId connection_id,
-                                 const IPEndPoint& client_address,
-                                 MockConnectionHelper* helper,
-                                 const QuicCryptoServerConfig* crypto_config,
-                                 TestQuicSpdyServerSession** session) {
+QuicServerSessionBase* CreateSession(
+    QuicDispatcher* dispatcher,
+    const QuicConfig& config,
+    QuicConnectionId connection_id,
+    const IPEndPoint& client_address,
+    MockConnectionHelper* helper,
+    const QuicCryptoServerConfig* crypto_config,
+    TestQuicSpdyServerSession** session) {
   MockServerConnection* connection =
       new MockServerConnection(connection_id, helper, dispatcher);
   *session = new TestQuicSpdyServerSession(config, connection, crypto_config);
@@ -406,7 +412,7 @@ class QuicDispatcherStatelessRejectTest
 
   // Sets up dispatcher_, sesession1_, and crypto_stream1_ based on
   // the test parameters.
-  QuicServerSession* CreateSessionBasedOnTestParams(
+  QuicServerSessionBase* CreateSessionBasedOnTestParams(
       QuicConnectionId connection_id,
       const IPEndPoint& client_address) {
     CreateSession(&dispatcher_, config_, connection_id, client_address,

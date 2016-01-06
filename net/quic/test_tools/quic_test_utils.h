@@ -29,7 +29,7 @@
 #include "net/spdy/spdy_framer.h"
 #include "net/tools/quic/quic_dispatcher.h"
 #include "net/tools/quic/quic_per_connection_packet_writer.h"
-#include "net/tools/quic/quic_server_session.h"
+#include "net/tools/quic/quic_server_session_base.h"
 #include "net/tools/quic/test_tools/mock_quic_server_session_visitor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -481,7 +481,7 @@ class MockQuicSpdySession : public QuicSpdySession {
   DISALLOW_COPY_AND_ASSIGN(MockQuicSpdySession);
 };
 
-class TestQuicSpdyServerSession : public tools::QuicServerSession {
+class TestQuicSpdyServerSession : public tools::QuicServerSessionBase {
  public:
   TestQuicSpdyServerSession(QuicConnection* connection,
                             const QuicConfig& config,
@@ -491,6 +491,8 @@ class TestQuicSpdyServerSession : public tools::QuicServerSession {
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
   MOCK_METHOD1(CreateOutgoingDynamicStream,
                QuicSpdyStream*(SpdyPriority priority));
+  QuicCryptoServerStreamBase* CreateQuicCryptoServerStream(
+      const QuicCryptoServerConfig* crypto_config) override;
 
   QuicCryptoServerStream* GetCryptoStream() override;
 

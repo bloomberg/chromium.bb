@@ -24,7 +24,7 @@ namespace test {
 
 // TODO(ianswett): A number of theses tests were written with the assumption of
 // an initial CWND of 10. They have carefully calculated values which should be
-// updated to be based on kInitialCongestionWindowInsecure.
+// updated to be based on kInitialCongestionWindow.
 const uint32_t kInitialCongestionWindowPackets = 10;
 const uint32_t kDefaultWindowTCP =
     kInitialCongestionWindowPackets * kDefaultTCPMSS;

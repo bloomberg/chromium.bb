@@ -20,9 +20,7 @@ class NET_EXPORT_PRIVATE QuicClientSessionBase : public QuicSpdySession {
 
   // Called when the proof in |cached| is marked valid.  If this is a secure
   // QUIC session, then this will happen only after the proof verifier
-  // completes.  If this is an insecure QUIC connection, this will happen
-  // as soon as a valid config is discovered (either from the cache or
-  // from the server).
+  // completes.
   virtual void OnProofValid(
       const QuicCryptoClientConfig::CachedState& cached) = 0;
 

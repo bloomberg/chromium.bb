@@ -15,12 +15,68 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_write_blocked_list.h"
 
 using base::StringPiece;
 using std::string;
 
 namespace net {
+namespace {
+
+// We know that >= GCC 4.8 and Clang have a __uint128_t intrinsic. Other
+// compilers don't necessarily, notably MSVC.
+#if defined(__x86_64__) &&                                         \
+    ((defined(__GNUC__) &&                                         \
+      (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8))) || \
+     defined(__clang__))
+#define QUIC_UTIL_HAS_UINT128 1
+#endif
+
+#ifdef QUIC_UTIL_HAS_UINT128
+uint128 IncrementalHashFast(uint128 uhash, const char* data, size_t len) {
+  // This code ends up faster than the naive implementation for 2 reasons:
+  // 1. uint128 from base/int128.h is sufficiently complicated that the compiler
+  //    cannot transform the multiplication by kPrime into a shift-multiply-add;
+  //    it has go through all of the instructions for a 128-bit multiply.
+  // 2. Because there are so fewer instructions (around 13), the hot loop fits
+  //    nicely in the instruction queue of many Intel CPUs.
+  // kPrime = 309485009821345068724781371
+  static const __uint128_t kPrime =
+      (static_cast<__uint128_t>(16777216) << 64) + 315;
+  __uint128_t xhash = (static_cast<__uint128_t>(Uint128High64(uhash)) << 64) +
+                      Uint128Low64(uhash);
+  const uint8_t* octets = reinterpret_cast<const uint8_t*>(data);
+  for (size_t i = 0; i < len; ++i) {
+    xhash = (xhash ^ octets[i]) * kPrime;
+  }
+  return uint128(static_cast<uint64_t>(xhash >> 64),
+                 static_cast<uint64_t>(xhash & UINT64_C(0xFFFFFFFFFFFFFFFF)));
+}
+#endif
+
+uint128 IncrementalHashSlow(uint128 hash, const char* data, size_t len) {
+  // kPrime = 309485009821345068724781371
+  static const uint128 kPrime(16777216, 315);
+  const uint8_t* octets = reinterpret_cast<const uint8_t*>(data);
+  for (size_t i = 0; i < len; ++i) {
+    hash = hash ^ uint128(0, octets[i]);
+    hash = hash * kPrime;
+  }
+  return hash;
+}
+
+uint128 IncrementalHash(uint128 hash, const char* data, size_t len) {
+#ifdef QUIC_UTIL_HAS_UINT128
+  return FLAGS_quic_utils_use_fast_incremental_hash
+             ? IncrementalHashFast(hash, data, len)
+             : IncrementalHashSlow(hash, data, len);
+#else
+  return IncrementalHashSlow(hash, data, len);
+#endif
+}
+
+}  // namespace
 
 // static
 uint64_t QuicUtils::FNV1a_64_Hash(const char* data, int len) {
@@ -51,7 +107,7 @@ uint128 QuicUtils::FNV1a_128_Hash_Two(const char* data1,
                                       int len2) {
   // The two constants are defined as part of the hash algorithm.
   // see http://www.isthe.com/chongo/tech/comp/fnv/
-  // 144066263297769815596495629667062367629
+  // kOffset = 144066263297769815596495629667062367629
   const uint128 kOffset(UINT64_C(7809847782465536322),
                         UINT64_C(7113472399480571277));
 
@@ -60,18 +116,6 @@ uint128 QuicUtils::FNV1a_128_Hash_Two(const char* data1,
     return hash;
   }
   return IncrementalHash(hash, data2, len2);
-}
-
-// static
-uint128 QuicUtils::IncrementalHash(uint128 hash, const char* data, size_t len) {
-  // 309485009821345068724781371
-  const uint128 kPrime(16777216, 315);
-  const uint8_t* octets = reinterpret_cast<const uint8_t*>(data);
-  for (size_t i = 0; i < len; ++i) {
-    hash = hash ^ uint128(0, octets[i]);
-    hash = hash * kPrime;
-  }
-  return hash;
 }
 
 // static

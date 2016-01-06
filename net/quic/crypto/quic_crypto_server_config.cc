@@ -704,13 +704,8 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   hkdf_suffix.append(client_hello_serialized.data(),
                      client_hello_serialized.length());
   hkdf_suffix.append(requested_config->serialized);
-  // The addition of x509_supported in this if statement is so that an insecure
-  // quic client talking to a secure quic server will not result in the secure
-  // quic server adding the cert to the kdf.
-  // TODO(nharper): Should a server that is configured to be secure (i.e. one
-  // that has a proof_source_) be accepting responses from an insecure client?
   DCHECK(proof_source_.get());
-  if (version > QUIC_VERSION_25 && x509_supported) {
+  if (version > QUIC_VERSION_25) {
     if (crypto_proof->certs->empty()) {
       *error_details = "Failed to get certs";
       return QUIC_CRYPTO_INTERNAL_ERROR;

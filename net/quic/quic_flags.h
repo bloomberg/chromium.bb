@@ -43,4 +43,5 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_new_blocked_list;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_inplace_encryption;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_rfc7539;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_drop_non_awaited_packets;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_utils_use_fast_incremental_hash;
 #endif  // NET_QUIC_QUIC_FLAGS_H_

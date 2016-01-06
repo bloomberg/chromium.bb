@@ -130,8 +130,10 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
     if (!packet_creator_.ConsumeData(id, iov, total_bytes_consumed,
                                      offset + total_bytes_consumed, fin,
                                      has_handshake, &frame, fec_protection)) {
-      // Current packet is full and flushed.
-      continue;
+      // The creator is always flushed if there's not enough room for a new
+      // stream frame before ConsumeData, so ConsumeData should always succeed.
+      LOG(DFATAL) << "Failed to ConsumeData, stream:" << id;
+      return QuicConsumedData(0, false);
     }
 
     // A stream frame is created and added.
@@ -157,6 +159,8 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
       // if we're simply writing a fin.
       break;
     }
+    // TODO(ianswett): Move to having the creator flush itself when it's full.
+    packet_creator_.Flush();
   }
 
   // Don't allow the handshake to be bundled with other retransmittable frames.

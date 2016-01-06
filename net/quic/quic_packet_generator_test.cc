@@ -117,6 +117,8 @@ class QuicPacketGeneratorTest : public ::testing::TestWithParam<FecSendPolicy> {
         generator_(42, &framer_, &random_, &buffer_allocator_, &delegate_),
         creator_(QuicPacketGeneratorPeer::GetPacketCreator(&generator_)) {
     generator_.set_fec_send_policy(GetParam());
+    // TODO(ianswett): Fix this test so it uses a non-null encrypter.
+    FLAGS_quic_never_write_unencrypted_data = false;
   }
 
   ~QuicPacketGeneratorTest() override {

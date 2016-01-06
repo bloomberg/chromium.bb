@@ -258,7 +258,6 @@ bool QuicPacketCreator::ConsumeData(QuicStreamId id,
                                     QuicFrame* frame,
                                     FecProtection fec_protection) {
   if (!HasRoomForStreamFrame(id, offset)) {
-    Flush();
     return false;
   }
   if (fec_protection == MUST_FEC_PROTECT) {
@@ -266,11 +265,14 @@ bool QuicPacketCreator::ConsumeData(QuicStreamId id,
     MaybeStartFecProtection();
   }
   CreateStreamFrame(id, iov, iov_offset, offset, fin, frame);
-  bool success = AddFrame(*frame, /*save_retransmittable_frames=*/true);
+  if (!AddFrame(*frame, /*save_retransmittable_frames=*/true)) {
+    // Fails if we try to write unencrypted stream data.
+    delete frame->stream_frame;
+    return false;
+  }
   if (needs_padding) {
     needs_padding_ = true;
   }
-  DCHECK(success);
   if (fec_protection == MUST_FEC_PROTECT &&
       iov_offset + frame->stream_frame->frame_length == iov.total_length) {
     // Turn off FEC protection when we're done writing protected data.
@@ -736,6 +738,13 @@ bool QuicPacketCreator::ShouldRetransmit(const QuicFrame& frame) {
 bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
                                  bool save_retransmittable_frames) {
   DVLOG(1) << "Adding frame: " << frame;
+  if (FLAGS_quic_never_write_unencrypted_data && frame.type == STREAM_FRAME &&
+      frame.stream_frame->stream_id != kCryptoStreamId &&
+      encryption_level_ == ENCRYPTION_NONE) {
+    LOG(DFATAL) << "Cannot send stream data without encryption.";
+    delegate_->CloseConnection(QUIC_UNENCRYPTED_STREAM_DATA, false);
+    return false;
+  }
   InFecGroup is_in_fec_group = MaybeUpdateLengthsAndStartFec();
 
   size_t frame_len = framer_->GetSerializedFrameLength(

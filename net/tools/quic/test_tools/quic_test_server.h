@@ -12,6 +12,7 @@
 #include "net/quic/quic_session.h"
 #include "net/tools/quic/quic_dispatcher.h"
 #include "net/tools/quic/quic_server.h"
+#include "net/tools/quic/quic_simple_server_session.h"
 #include "net/tools/quic/quic_simple_server_stream.h"
 
 namespace net {
@@ -31,7 +32,7 @@ class QuicTestServer : public QuicServer {
     virtual ~SessionFactory() {}
 
     // Returns a new session owned by the caller.
-    virtual QuicServerSession* CreateSession(
+    virtual QuicServerSessionBase* CreateSession(
         const QuicConfig& config,
         QuicConnection* connection,
         QuicServerSessionVisitor* visitor,
@@ -84,7 +85,7 @@ class QuicTestServer : public QuicServer {
 
 // Test session which sends a GOAWAY immedaitely on creation, before crypto
 // credentials have even been established.
-class ImmediateGoAwaySession : public QuicServerSession {
+class ImmediateGoAwaySession : public QuicSimpleServerSession {
  public:
   ImmediateGoAwaySession(const QuicConfig& config,
                          QuicConnection* connection,

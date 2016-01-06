@@ -14,7 +14,7 @@ namespace {
 // The test vectors come from RFC 7539 Section 2.8.2.
 
 // Each test vector consists of six strings of lowercase hexadecimal digits.
-// The strings may be empty (zero length). A test vector with a NULL |key|
+// The strings may be empty (zero length). A test vector with a nullptr |key|
 // marks the end of an array of test vectors.
 struct TestVector {
   // Input:

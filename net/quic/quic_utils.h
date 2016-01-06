@@ -42,10 +42,6 @@ class NET_EXPORT_PRIVATE QuicUtils {
                                     const char* data2,
                                     int len2);
 
-  // returns the 128 bit FNV1a hash of the |data|, starting with the
-  // previous hash.
-  static uint128 IncrementalHash(uint128 hash, const char* data, size_t len);
-
   // FindMutualTag sets |out_result| to the first tag in the priority list that
   // is also in the other list and returns true. If there is no intersection it
   // returns false.

@@ -20,14 +20,14 @@
 #include "net/quic/quic_protocol.h"
 #include "net/tools/quic/quic_dispatcher.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
-#include "net/tools/quic/quic_server_session.h"
+#include "net/tools/quic/quic_simple_server_session.h"
 #include "net/tools/quic/quic_simple_server_stream.h"
 
 namespace net {
 namespace tools {
 namespace test {
 
-class CustomStreamSession : public QuicServerSession {
+class CustomStreamSession : public QuicSimpleServerSession {
  public:
   CustomStreamSession(
       const QuicConfig& config,
@@ -36,7 +36,7 @@ class CustomStreamSession : public QuicServerSession {
       const QuicCryptoServerConfig* crypto_config,
       QuicTestServer::StreamFactory* factory,
       QuicTestServer::CryptoStreamFactory* crypto_stream_factory)
-      : QuicServerSession(config, connection, visitor, crypto_config),
+      : QuicSimpleServerSession(config, connection, visitor, crypto_config),
         stream_factory_(factory),
         crypto_stream_factory_(crypto_stream_factory) {}
 
@@ -47,7 +47,7 @@ class CustomStreamSession : public QuicServerSession {
     if (stream_factory_) {
       return stream_factory_->CreateStream(id, this);
     }
-    return QuicServerSession::CreateIncomingDynamicStream(id);
+    return QuicSimpleServerSession::CreateIncomingDynamicStream(id);
   }
 
   QuicCryptoServerStreamBase* CreateQuicCryptoServerStream(
@@ -55,7 +55,7 @@ class CustomStreamSession : public QuicServerSession {
     if (crypto_stream_factory_) {
       return crypto_stream_factory_->CreateCryptoStream(crypto_config, this);
     }
-    return QuicServerSession::CreateQuicCryptoServerStream(crypto_config);
+    return QuicSimpleServerSession::CreateQuicCryptoServerStream(crypto_config);
   }
 
  private:
@@ -75,8 +75,8 @@ class QuicTestDispatcher : public QuicDispatcher {
         stream_factory_(nullptr),
         crypto_stream_factory_(nullptr) {}
 
-  QuicServerSession* CreateQuicSession(QuicConnectionId id,
-                                       const IPEndPoint& client) override {
+  QuicServerSessionBase* CreateQuicSession(QuicConnectionId id,
+                                           const IPEndPoint& client) override {
     base::AutoLock lock(factory_lock_);
     if (session_factory_ == nullptr && stream_factory_ == nullptr &&
         crypto_stream_factory_ == nullptr) {
@@ -86,7 +86,7 @@ class QuicTestDispatcher : public QuicDispatcher {
         id, client, helper(), connection_writer_factory(),
         /* owns_writer= */ true, Perspective::IS_SERVER, supported_versions());
 
-    QuicServerSession* session = nullptr;
+    QuicServerSessionBase* session = nullptr;
     if (stream_factory_ != nullptr || crypto_stream_factory_ != nullptr) {
       session =
           new CustomStreamSession(config(), connection, this, crypto_config(),
@@ -164,7 +164,7 @@ ImmediateGoAwaySession::ImmediateGoAwaySession(
     QuicConnection* connection,
     QuicServerSessionVisitor* visitor,
     const QuicCryptoServerConfig* crypto_config)
-    : QuicServerSession(config, connection, visitor, crypto_config) {
+    : QuicSimpleServerSession(config, connection, visitor, crypto_config) {
   SendGoAway(QUIC_PEER_GOING_AWAY, "");
 }
 

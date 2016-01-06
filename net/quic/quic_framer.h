@@ -357,6 +357,9 @@ class NET_EXPORT_PRIVATE QuicFramer {
   static QuicPacketEntropyHash GetPacketEntropyHash(
       const QuicPacketHeader& header);
 
+  // Called when a PATH_CLOSED frame has been sent/received on |path_id|.
+  void OnPathClosed(QuicPathId path_id);
+
  private:
   friend class test::QuicFramerPeer;
 
@@ -400,6 +403,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
   bool ProcessPathId(QuicDataReader* reader, QuicPathId* path_id);
   bool ProcessPacketSequenceNumber(QuicDataReader* reader,
                                    QuicPacketNumberLength packet_number_length,
+                                   QuicPacketNumber last_packet_number,
                                    QuicPacketNumber* packet_number);
   bool ProcessFrameData(QuicDataReader* reader, const QuicPacketHeader& header);
   bool ProcessStreamFrame(QuicDataReader* reader,
@@ -427,10 +431,16 @@ class NET_EXPORT_PRIVATE QuicFramer {
                       size_t buffer_length,
                       size_t* decrypted_length);
 
+  // Checks if |path_id| is a viable path to receive packets on. Returns true
+  // and sets |last_packet_number| if the path is not closed. Returns false
+  // otherwise.
+  bool IsValidPath(QuicPathId path_id, QuicPacketNumber* last_packet_number);
+
   // Returns the full packet number from the truncated
   // wire format version and the last seen packet number.
   QuicPacketNumber CalculatePacketNumberFromWire(
       QuicPacketNumberLength packet_number_length,
+      QuicPacketNumber last_packet_number,
       QuicPacketNumber packet_number) const;
 
   // Returns the QuicTime::Delta corresponding to the time from when the framer
@@ -499,8 +509,18 @@ class NET_EXPORT_PRIVATE QuicFramer {
   QuicFramerVisitorInterface* visitor_;
   QuicReceivedEntropyHashCalculatorInterface* entropy_calculator_;
   QuicErrorCode error_;
+  // Set of closed paths. A path is considered as closed if a PATH_CLOSED frame
+  // has been sent/received.
+  // TODO(fayang): this set is never cleaned up. A possible improvement is to
+  // use intervals.
+  base::hash_set<QuicPathId> closed_paths_;
+  // Map mapping path id to packet number of last successfully decrypted/revived
+  // received packet.
+  base::hash_map<QuicPathId, QuicPacketNumber> last_packet_numbers_;
   // Updated by ProcessPacketHeader when it succeeds.
   QuicPacketNumber last_packet_number_;
+  // The path on which last successfully decrypted/revived packet was received.
+  QuicPathId last_path_id_;
   // Updated by WritePacketHeader.
   QuicConnectionId last_serialized_connection_id_;
   // Version of the protocol being used.

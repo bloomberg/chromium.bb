@@ -13,6 +13,7 @@
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 #include "net/tools/quic/quic_per_connection_packet_writer.h"
+#include "net/tools/quic/quic_simple_server_session.h"
 #include "net/tools/quic/quic_time_wait_list_manager.h"
 
 namespace net {
@@ -288,7 +289,7 @@ void QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
   switch (fate) {
     case kFateProcess: {
       // Create a session and process the packet.
-      QuicServerSession* session =
+      QuicServerSessionBase* session =
           CreateQuicSession(connection_id, current_client_address_);
       DVLOG(1) << "Created new session for " << connection_id;
       session_map_.insert(std::make_pair(connection_id, session));
@@ -387,7 +388,7 @@ bool QuicDispatcher::HasPendingWrites() const {
 
 void QuicDispatcher::Shutdown() {
   while (!session_map_.empty()) {
-    QuicServerSession* session = session_map_.begin()->second;
+    QuicServerSessionBase* session = session_map_.begin()->second;
     session->connection()->SendConnectionCloseWithDetails(
         QUIC_PEER_GOING_AWAY, "Server shutdown imminent");
     // Validate that the session removes itself from the session map on close.
@@ -443,16 +444,16 @@ void QuicDispatcher::OnConnectionRemovedFromTimeWaitList(
   DVLOG(1) << "Connection " << connection_id << " removed from time wait list.";
 }
 
-QuicServerSession* QuicDispatcher::CreateQuicSession(
+QuicServerSessionBase* QuicDispatcher::CreateQuicSession(
     QuicConnectionId connection_id,
     const IPEndPoint& client_address) {
-  // The QuicServerSession takes ownership of |connection| below.
+  // The QuicServerSessionBase takes ownership of |connection| below.
   QuicConnection* connection = new QuicConnection(
       connection_id, client_address, helper_.get(), connection_writer_factory_,
       /* owns_writer= */ true, Perspective::IS_SERVER, supported_versions_);
 
-  QuicServerSession* session =
-      new QuicServerSession(config_, connection, this, crypto_config_);
+  QuicServerSessionBase* session =
+      new QuicSimpleServerSession(config_, connection, this, crypto_config_);
   session->Initialize();
   return session;
 }

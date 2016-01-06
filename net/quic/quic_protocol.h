@@ -37,6 +37,7 @@ namespace net {
 
 class QuicPacket;
 struct QuicPacketHeader;
+class QuicAckListenerInterface;
 
 typedef uint64_t QuicConnectionId;
 typedef uint32_t QuicStreamId;

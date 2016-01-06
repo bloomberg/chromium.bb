@@ -475,9 +475,11 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
                                   QuicPacketNumber last_packet_number) {
     QuicPacketNumber wire_packet_number = expected_packet_number & kMask;
     QuicFramerPeer::SetLastPacketNumber(&framer_, last_packet_number);
-    EXPECT_EQ(expected_packet_number,
-              QuicFramerPeer::CalculatePacketNumberFromWire(
-                  &framer_, PACKET_6BYTE_PACKET_NUMBER, wire_packet_number))
+    EXPECT_EQ(
+        expected_packet_number,
+        QuicFramerPeer::CalculatePacketNumberFromWire(
+            &framer_, PACKET_6BYTE_PACKET_NUMBER,
+            QuicFramerPeer::GetLastPacketNumber(&framer_), wire_packet_number))
         << "last_packet_number: " << last_packet_number
         << " wire_packet_number: " << wire_packet_number;
   }
@@ -1038,6 +1040,113 @@ TEST_P(QuicFramerTest, PacketHeaderWithBothVersionFlagAndMultipathFlag) {
     }
     CheckProcessingFails(packet, i, expected_error, QUIC_INVALID_PACKET_HEADER);
   }
+}
+
+TEST_P(QuicFramerTest, PacketHeaderWithPathChange) {
+  // Packet 1 from path 0x42.
+  // clang-format off
+  unsigned char packet1[] = {
+    // public flags (version)
+    0x7C,
+    // connection_id
+    0x10, 0x32, 0x54, 0x76, 0x98, 0xBA, 0xDC, 0xFE,
+    // path_id
+    0x42,
+    // packet number
+    0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
+    // private flags
+    0x00,
+  };
+  // clang-format on
+
+  EXPECT_EQ(0u, QuicFramerPeer::GetLastPacketNumber(&framer_));
+  EXPECT_EQ(kInvalidPathId, QuicFramerPeer::GetLastPathId(&framer_));
+  QuicEncryptedPacket encrypted1(AsChars(packet1), arraysize(packet1), false);
+  EXPECT_FALSE(framer_.ProcessPacket(encrypted1));
+  EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
+  EXPECT_EQ(kPathId, visitor_.header_->path_id);
+  EXPECT_EQ(kPacketNumber, visitor_.header_->packet_number);
+  EXPECT_EQ(kPacketNumber, QuicFramerPeer::GetLastPacketNumber(&framer_));
+  EXPECT_EQ(kPathId, QuicFramerPeer::GetLastPathId(&framer_));
+
+  // Packet 2 from default path.
+  // clang-format off
+  unsigned char packet2[] = {
+    // public flags (version)
+    0x7C,
+    // connection_id
+    0x10, 0x32, 0x54, 0x76, 0x98, 0xBA, 0xDC, 0xFE,
+    // path_id
+    0x00,
+    // packet number
+    0xCC, 0x9A, 0x78, 0x56, 0x34, 0x12,
+    // private flags
+    0x00,
+  };
+  // clang-format on
+
+  QuicEncryptedPacket encrypted2(AsChars(packet2), arraysize(packet2), false);
+  EXPECT_FALSE(framer_.ProcessPacket(encrypted2));
+  EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
+  EXPECT_EQ(kDefaultPathId, visitor_.header_->path_id);
+  EXPECT_EQ(kPacketNumber + 16, visitor_.header_->packet_number);
+  EXPECT_EQ(kPacketNumber + 16, QuicFramerPeer::GetLastPacketNumber(&framer_));
+  EXPECT_EQ(kDefaultPathId, QuicFramerPeer::GetLastPathId(&framer_));
+
+  // Packet 3 from path 0x42.
+  // clang-format off
+  unsigned char packet3[] = {
+    // public flags (version)
+    0x7C,
+    // connection_id
+    0x10, 0x32, 0x54, 0x76, 0x98, 0xBA, 0xDC, 0xFE,
+    // path_id
+    0x42,
+    // packet number
+    0xBD, 0x9A, 0x78, 0x56, 0x34, 0x12,
+    // private flags
+    0x00,
+  };
+  // clang-format on
+
+  QuicEncryptedPacket encrypted3(AsChars(packet3), arraysize(packet3), false);
+  EXPECT_FALSE(framer_.ProcessPacket(encrypted3));
+  EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
+  EXPECT_EQ(kPathId, visitor_.header_->path_id);
+  EXPECT_EQ(kPacketNumber + 1, visitor_.header_->packet_number);
+  EXPECT_EQ(kPacketNumber + 1, QuicFramerPeer::GetLastPacketNumber(&framer_));
+  EXPECT_EQ(kPathId, QuicFramerPeer::GetLastPathId(&framer_));
+}
+
+TEST_P(QuicFramerTest, ReceivedPacketOnClosedPath) {
+  // Packet 1 from path 0x42.
+  // clang-format off
+  unsigned char packet[] = {
+    // public flags (version)
+    0x7C,
+    // connection_id
+    0x10, 0x32, 0x54, 0x76, 0x98, 0xBA, 0xDC, 0xFE,
+    // path_id
+    0x42,
+    // packet number
+    0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
+    // private flags
+    0x00,
+  };
+  // clang-format on
+
+  framer_.OnPathClosed(kPathId);
+  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
+  EXPECT_FALSE(framer_.ProcessPacket(encrypted));
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+  EXPECT_EQ(0u, QuicFramerPeer::GetLastPacketNumber(&framer_));
+  EXPECT_EQ(kInvalidPathId, QuicFramerPeer::GetLastPathId(&framer_));
 }
 
 TEST_P(QuicFramerTest, PacketHeaderWith4BytePacketNumber) {

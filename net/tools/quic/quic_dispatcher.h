@@ -18,14 +18,14 @@
 #include "net/quic/quic_blocked_writer_interface.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_protocol.h"
-#include "net/tools/quic/quic_server_session.h"
+#include "net/tools/quic/quic_server_session_base.h"
 #include "net/tools/quic/quic_time_wait_list_manager.h"
 
 namespace net {
 
 class QuicConfig;
 class QuicCryptoServerConfig;
-class QuicServerSession;
+class QuicServerSessionBase;
 
 namespace tools {
 
@@ -117,7 +117,7 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   void OnConnectionRemovedFromTimeWaitList(
       QuicConnectionId connection_id) override;
 
-  typedef base::hash_map<QuicConnectionId, QuicServerSession*> SessionMap;
+  typedef base::hash_map<QuicConnectionId, QuicServerSessionBase*> SessionMap;
 
   const SessionMap& session_map() const { return session_map_; }
 
@@ -136,7 +136,7 @@ class QuicDispatcher : public QuicServerSessionVisitor,
                 "relative to kInitialCongestionWindow.");
 
  protected:
-  virtual QuicServerSession* CreateQuicSession(
+  virtual QuicServerSessionBase* CreateQuicSession(
       QuicConnectionId connection_id,
       const IPEndPoint& client_address);
 
@@ -238,7 +238,7 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   scoped_ptr<QuicTimeWaitListManager> time_wait_list_manager_;
 
   // The list of closed but not-yet-deleted sessions.
-  std::vector<QuicServerSession*> closed_session_list_;
+  std::vector<QuicServerSessionBase*> closed_session_list_;
 
   // The helper used for all connections.
   scoped_ptr<QuicConnectionHelperInterface> helper_;

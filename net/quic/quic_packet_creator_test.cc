@@ -133,6 +133,8 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
     client_framer_.set_visitor(&framer_visitor_);
     client_framer_.set_received_entropy_calculator(&entropy_calculator_);
     server_framer_.set_visitor(&framer_visitor_);
+    // TODO(ianswett): Fix this test so it uses a non-null encrypter.
+    FLAGS_quic_never_write_unencrypted_data = false;
   }
 
   ~QuicPacketCreatorTest() override {}
@@ -1574,6 +1576,15 @@ TEST_P(QuicPacketCreatorTest, SerializePacketOnDifferentPath) {
   // Verify serialized data packet's path id.
   EXPECT_EQ(kPathId1, serialized_packet_.path_id);
   ClearSerializedPacket(&serialized_packet_);
+}
+
+TEST_P(QuicPacketCreatorTest, AddUnencryptedStreamDataClosesConnection) {
+  FLAGS_quic_never_write_unencrypted_data = true;
+  EXPECT_CALL(delegate_, CloseConnection(_, _));
+  QuicStreamFrame stream_frame(kHeadersStreamId, /*fin=*/false, 0u,
+                               StringPiece());
+  EXPECT_DFATAL(creator_.AddSavedFrame(QuicFrame(&stream_frame)),
+                "Cannot send stream data without encryption.");
 }
 
 }  // namespace

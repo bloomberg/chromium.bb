@@ -137,6 +137,7 @@ QuicFramer::QuicFramer(const QuicVersionVector& supported_versions,
       entropy_calculator_(nullptr),
       error_(QUIC_NO_ERROR),
       last_packet_number_(0),
+      last_path_id_(kInvalidPathId),
       last_serialized_connection_id_(0),
       supported_versions_(supported_versions),
       decrypter_level_(ENCRYPTION_NONE),
@@ -822,8 +823,35 @@ const QuicTime::Delta QuicFramer::CalculateTimestampFromWire(
   return QuicTime::Delta::FromMicroseconds(time);
 }
 
+bool QuicFramer::IsValidPath(QuicPathId path_id,
+                             QuicPacketNumber* last_packet_number) {
+  if (ContainsKey(closed_paths_, path_id)) {
+    // Path is closed.
+    return false;
+  }
+
+  if (path_id == last_path_id_) {
+    *last_packet_number = last_packet_number_;
+    return true;
+  }
+
+  if (ContainsKey(last_packet_numbers_, path_id)) {
+    *last_packet_number = last_packet_numbers_[path_id];
+  } else {
+    *last_packet_number = 0;
+  }
+
+  return true;
+}
+
+void QuicFramer::OnPathClosed(QuicPathId path_id) {
+  closed_paths_.insert(path_id);
+  last_packet_numbers_.erase(path_id);
+}
+
 QuicPacketNumber QuicFramer::CalculatePacketNumberFromWire(
     QuicPacketNumberLength packet_number_length,
+    QuicPacketNumber last_packet_number,
     QuicPacketNumber packet_number) const {
   // The new packet number might have wrapped to the next epoch, or
   // it might have reverse wrapped to the previous epoch, or it might
@@ -835,8 +863,8 @@ QuicPacketNumber QuicFramer::CalculatePacketNumberFromWire(
   // number or an adjacent epoch.
   const QuicPacketNumber epoch_delta = UINT64_C(1)
                                        << (8 * packet_number_length);
-  QuicPacketNumber next_packet_number = last_packet_number_ + 1;
-  QuicPacketNumber epoch = last_packet_number_ & ~(epoch_delta - 1);
+  QuicPacketNumber next_packet_number = last_packet_number + 1;
+  QuicPacketNumber epoch = last_packet_number & ~(epoch_delta - 1);
   QuicPacketNumber prev_epoch = epoch - epoch_delta;
   QuicPacketNumber next_epoch = epoch + epoch_delta;
 
@@ -1020,9 +1048,16 @@ bool QuicFramer::ProcessUnauthenticatedHeader(QuicDataReader* encrypted_reader,
     return RaiseError(QUIC_INVALID_PACKET_HEADER);
   }
 
-  if (!ProcessPacketSequenceNumber(encrypted_reader,
-                                   header->public_header.packet_number_length,
-                                   &header->packet_number)) {
+  QuicPacketNumber last_packet_number = last_packet_number_;
+  if (header->public_header.multipath_flag &&
+      !IsValidPath(header->path_id, &last_packet_number)) {
+    // Stop processing because path is closed.
+    return false;
+  }
+
+  if (!ProcessPacketSequenceNumber(
+          encrypted_reader, header->public_header.packet_number_length,
+          last_packet_number, &header->packet_number)) {
     set_detailed_error("Unable to read packet number.");
     return RaiseError(QUIC_INVALID_PACKET_HEADER);
   }
@@ -1074,6 +1109,15 @@ bool QuicFramer::ProcessAuthenticatedHeader(QuicDataReader* reader,
   header->entropy_hash = GetPacketEntropyHash(*header);
   // Set the last packet number after we have decrypted the packet
   // so we are confident is not attacker controlled.
+  if (header->public_header.multipath_flag &&
+      header->path_id != last_path_id_) {
+    if (last_path_id_ != kInvalidPathId) {
+      // Save current last packet number before changing path.
+      last_packet_numbers_[last_path_id_] = last_packet_number_;
+    }
+    // Change path.
+    last_path_id_ = header->path_id;
+  }
   last_packet_number_ = header->packet_number;
   return true;
 }
@@ -1089,6 +1133,7 @@ bool QuicFramer::ProcessPathId(QuicDataReader* reader, QuicPathId* path_id) {
 bool QuicFramer::ProcessPacketSequenceNumber(
     QuicDataReader* reader,
     QuicPacketNumberLength packet_number_length,
+    QuicPacketNumber last_packet_number,
     QuicPacketNumber* packet_number) {
   QuicPacketNumber wire_packet_number = 0u;
   if (!reader->ReadBytes(&wire_packet_number, packet_number_length)) {
@@ -1097,8 +1142,8 @@ bool QuicFramer::ProcessPacketSequenceNumber(
 
   // TODO(ianswett): Explore the usefulness of trying multiple packet numbers
   // in case the first guess is incorrect.
-  *packet_number =
-      CalculatePacketNumberFromWire(packet_number_length, wire_packet_number);
+  *packet_number = CalculatePacketNumberFromWire(
+      packet_number_length, last_packet_number, wire_packet_number);
   return true;
 }
 

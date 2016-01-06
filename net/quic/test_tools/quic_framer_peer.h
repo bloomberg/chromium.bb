@@ -19,6 +19,7 @@ class QuicFramerPeer {
   static QuicPacketNumber CalculatePacketNumberFromWire(
       QuicFramer* framer,
       QuicPacketNumberLength packet_number_length,
+      QuicPacketNumber last_packet_number,
       QuicPacketNumber packet_number);
   static void SetLastSerializedConnectionId(QuicFramer* framer,
                                             QuicConnectionId connection_id);
@@ -31,6 +32,10 @@ class QuicFramerPeer {
   static void SwapCrypters(QuicFramer* framer1, QuicFramer* framer2);
 
   static QuicEncrypter* GetEncrypter(QuicFramer* framer, EncryptionLevel level);
+
+  static QuicPacketNumber GetLastPacketNumber(QuicFramer* framer);
+
+  static QuicPathId GetLastPathId(QuicFramer* framer);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicFramerPeer);

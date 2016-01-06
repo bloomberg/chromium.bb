@@ -14,9 +14,10 @@ namespace test {
 QuicPacketNumber QuicFramerPeer::CalculatePacketNumberFromWire(
     QuicFramer* framer,
     QuicPacketNumberLength packet_number_length,
+    QuicPacketNumber last_packet_number,
     QuicPacketNumber packet_number) {
-  return framer->CalculatePacketNumberFromWire(packet_number_length,
-                                               packet_number);
+  return framer->CalculatePacketNumberFromWire(
+      packet_number_length, last_packet_number, packet_number);
 }
 
 // static
@@ -62,6 +63,16 @@ void QuicFramerPeer::SwapCrypters(QuicFramer* framer1, QuicFramer* framer2) {
 QuicEncrypter* QuicFramerPeer::GetEncrypter(QuicFramer* framer,
                                             EncryptionLevel level) {
   return framer->encrypter_[level].get();
+}
+
+// static
+QuicPacketNumber QuicFramerPeer::GetLastPacketNumber(QuicFramer* framer) {
+  return framer->last_packet_number_;
+}
+
+// static
+QuicPathId QuicFramerPeer::GetLastPathId(QuicFramer* framer) {
+  return framer->last_path_id_;
 }
 
 }  // namespace test
