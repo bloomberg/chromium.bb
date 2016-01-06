@@ -206,7 +206,6 @@ class WizardController : public BaseScreenDelegate,
   void OnTermsOfServiceDeclined();
   void OnTermsOfServiceAccepted();
   void OnControllerPairingFinished();
-  void OnHostPairingFinished();
   void OnAutoEnrollmentCheckCompleted();
 
   // Callback invoked once it has been determined whether the device is disabled

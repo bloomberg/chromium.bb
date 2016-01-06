@@ -766,10 +766,6 @@ void WizardController::OnControllerPairingFinished() {
   ShowAutoEnrollmentCheckScreen();
 }
 
-void WizardController::OnHostPairingFinished() {
-  ShowAutoEnrollmentCheckScreen();
-}
-
 void WizardController::OnAutoEnrollmentCheckCompleted() {
   // Check whether the device is disabled. OnDeviceDisabledChecked() will be
   // invoked when the result of this check is known. Until then, the current
@@ -1051,9 +1047,6 @@ void WizardController::OnExit(BaseScreen& /* screen */,
       break;
     case CONTROLLER_PAIRING_FINISHED:
       OnControllerPairingFinished();
-      break;
-    case HOST_PAIRING_FINISHED:
-      OnHostPairingFinished();
       break;
     default:
       NOTREACHED();
