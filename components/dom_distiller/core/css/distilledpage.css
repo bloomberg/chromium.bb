@@ -285,6 +285,7 @@ h6 {
   .light, .dark, .sepia {
       color: #000 !important;
       background-color: #fff !important;
+      font-family: sans-serif !important;
   }
 
   /* If the transition duration is unchanged, the above color changes
