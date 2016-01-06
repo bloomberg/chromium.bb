@@ -2325,6 +2325,11 @@ void WebGLRenderingContextBase::drawElements(GLenum mode, GLsizei count, GLenum 
     if (!validateDrawElements("drawElements", mode, count, type, offset))
         return;
 
+    if (transformFeedbackActive() && !transformFeedbackPaused()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "drawElements", "transform feedback is active and not paused");
+        return;
+    }
+
     clearIfComposited();
 
     handleTextureCompleteness("drawElements", true);
@@ -5067,6 +5072,12 @@ void WebGLRenderingContextBase::useProgram(ScriptState* scriptState, WebGLProgra
         synthesizeGLError(GL_INVALID_OPERATION, "useProgram", "program not valid");
         return;
     }
+
+    if (transformFeedbackActive() && !transformFeedbackPaused()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "useProgram", "transform feedback is active and not paused");
+        return;
+    }
+
     if (m_currentProgram != program) {
         if (m_currentProgram)
             m_currentProgram->onDetached(webContext());

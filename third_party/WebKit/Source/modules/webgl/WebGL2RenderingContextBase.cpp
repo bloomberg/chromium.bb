@@ -1521,6 +1521,11 @@ void WebGL2RenderingContextBase::drawElementsInstanced(GLenum mode, GLsizei coun
     if (!validateDrawInstanced("drawElementsInstanced", instanceCount))
         return;
 
+    if (transformFeedbackActive() && !transformFeedbackPaused()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "drawElementsInstanced", "transform feedback is active and not paused");
+        return;
+    }
+
     clearIfComposited();
 
     handleTextureCompleteness("drawElementsInstanced", true);
@@ -1533,6 +1538,11 @@ void WebGL2RenderingContextBase::drawRangeElements(GLenum mode, GLuint start, GL
 {
     if (!validateDrawElements("drawRangeElements", mode, count, type, offset))
         return;
+
+    if (transformFeedbackActive() && !transformFeedbackPaused()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "drawRangeElements", "transform feedback is active and not paused");
+        return;
+    }
 
     clearIfComposited();
 
@@ -2161,6 +2171,11 @@ void WebGL2RenderingContextBase::bindTransformFeedback(GLenum target, WebGLTrans
         return;
     }
 
+    if (transformFeedbackActive() && !transformFeedbackPaused()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "bindTransformFeedback", "transform feedback is active and not paused");
+        return;
+    }
+
     m_transformFeedbackBinding = feedback;
 
     webContext()->bindTransformFeedback(target, objectOrZero(feedback));
@@ -2172,8 +2187,21 @@ void WebGL2RenderingContextBase::beginTransformFeedback(GLenum primitiveMode)
 {
     if (isContextLost())
         return;
+    if (!validateTransformFeedbackPrimitiveMode("beginTransformFeedback", primitiveMode))
+        return;
+
+    if (transformFeedbackActive()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "beginTransformFeedback", "transform feedback is active");
+        return;
+    }
 
     webContext()->beginTransformFeedback(primitiveMode);
+
+    // TODO(kbr): there are many more reasons BeginTransformFeedback may fail, the most
+    // problematic being "if any binding point used in transform feedback mode does not
+    // have a buffer object bound", and "if no binding points would be used".
+    // crbug.com/448164
+    setTransformFeedbackActive(true);
 }
 
 void WebGL2RenderingContextBase::endTransformFeedback()
@@ -2181,7 +2209,15 @@ void WebGL2RenderingContextBase::endTransformFeedback()
     if (isContextLost())
         return;
 
+    if (!transformFeedbackActive()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "endTransformFeedback", "transform feedback is not active");
+        return;
+    }
+
     webContext()->endTransformFeedback();
+
+    setTransformFeedbackPaused(false);
+    setTransformFeedbackActive(false);
 }
 
 void WebGL2RenderingContextBase::transformFeedbackVaryings(WebGLProgram* program, const Vector<String>& varyings, GLenum bufferMode)
@@ -2252,7 +2288,14 @@ void WebGL2RenderingContextBase::pauseTransformFeedback()
     if (isContextLost())
         return;
 
+    if (!transformFeedbackActive() || transformFeedbackPaused()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "pauseTransformFeedback", "transform feedback is not active or is paused");
+        return;
+    }
+
     webContext()->pauseTransformFeedback();
+
+    setTransformFeedbackPaused(true);
 }
 
 void WebGL2RenderingContextBase::resumeTransformFeedback()
@@ -2260,7 +2303,27 @@ void WebGL2RenderingContextBase::resumeTransformFeedback()
     if (isContextLost())
         return;
 
+    if (!transformFeedbackActive() || !transformFeedbackPaused()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "resumeTransformFeedback", "transform feedback is not active or is not paused");
+        return;
+    }
+
     webContext()->resumeTransformFeedback();
+
+    setTransformFeedbackPaused(false);
+}
+
+bool WebGL2RenderingContextBase::validateTransformFeedbackPrimitiveMode(const char* functionName, GLenum primitiveMode)
+{
+    switch (primitiveMode) {
+    case GL_POINTS:
+    case GL_LINES:
+    case GL_TRIANGLES:
+        return true;
+    default:
+        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid transform feedback primitive mode");
+        return false;
+    }
 }
 
 void WebGL2RenderingContextBase::bindBufferBase(GLenum target, GLuint index, WebGLBuffer* buffer)
@@ -2274,6 +2337,13 @@ void WebGL2RenderingContextBase::bindBufferBase(GLenum target, GLuint index, Web
         buffer = 0;
     if (!validateAndUpdateBufferBindBaseTarget("bindBufferBase", target, index, buffer))
         return;
+
+    // ES 3.0.4 spec section 2.15.2 "Transform Feedback Primitive Capture"
+    if (target == GL_TRANSFORM_FEEDBACK_BUFFER && transformFeedbackActive()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "bindBufferBase", "target is TRANSFORM_FEEDBACK_BUFFER and transform feedback is active");
+        return;
+    }
+
     webContext()->bindBufferBase(target, index, objectOrZero(buffer));
 }
 
@@ -2291,10 +2361,42 @@ void WebGL2RenderingContextBase::bindBufferRange(GLenum target, GLuint index, We
         return;
     }
 
+    // ES 3.0.4 spec section 2.15.2 "Transform Feedback Primitive Capture"
+    if (target == GL_TRANSFORM_FEEDBACK_BUFFER && transformFeedbackActive()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "bindBufferRange", "target is TRANSFORM_FEEDBACK_BUFFER and transform feedback is active");
+        return;
+    }
+
     if (!validateAndUpdateBufferBindBaseTarget("bindBufferRange", target, index, buffer))
         return;
 
     webContext()->bindBufferRange(target, index, objectOrZero(buffer), static_cast<GLintptr>(offset), static_cast<GLsizeiptr>(size));
+}
+
+bool WebGL2RenderingContextBase::transformFeedbackActive() const
+{
+    if (m_transformFeedbackBinding)
+        return m_transformFeedbackBinding->isActive();
+    return false;
+}
+
+bool WebGL2RenderingContextBase::transformFeedbackPaused() const
+{
+    if (m_transformFeedbackBinding)
+        return m_transformFeedbackBinding->isPaused();
+    return false;
+}
+
+void WebGL2RenderingContextBase::setTransformFeedbackActive(bool transformFeedbackActive)
+{
+    if (m_transformFeedbackBinding)
+        m_transformFeedbackBinding->setActive(transformFeedbackActive);
+}
+
+void WebGL2RenderingContextBase::setTransformFeedbackPaused(bool transformFeedbackPaused)
+{
+    if (m_transformFeedbackBinding)
+        m_transformFeedbackBinding->setPaused(transformFeedbackPaused);
 }
 
 ScriptValue WebGL2RenderingContextBase::getIndexedParameter(ScriptState* scriptState, GLenum target, GLuint index)

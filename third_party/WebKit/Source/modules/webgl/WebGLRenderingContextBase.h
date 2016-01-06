@@ -1133,6 +1133,9 @@ protected:
     // JavaScript).
     void maybePreserveDefaultVAOObjectWrapper(ScriptState*);
 
+    virtual bool transformFeedbackActive() const { return false; }
+    virtual bool transformFeedbackPaused() const { return false; }
+
     friend class WebGLStateRestorer;
     friend class WebGLRenderingContextEvictionManager;
 

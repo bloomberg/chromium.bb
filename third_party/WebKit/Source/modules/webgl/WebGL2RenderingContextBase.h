@@ -147,6 +147,7 @@ public:
     WebGLActiveInfo* getTransformFeedbackVarying(WebGLProgram*, GLuint);
     void pauseTransformFeedback();
     void resumeTransformFeedback();
+    bool validateTransformFeedbackPrimitiveMode(const char* functionName, GLenum primitiveMode);
 
     /* Uniform Buffer Objects and Transform Feedback Buffers */
     void bindBufferBase(GLenum, GLuint, WebGLBuffer*);
@@ -243,6 +244,11 @@ protected:
 
     void resetUnpackParameters() override;
     void restoreUnpackParameters() override;
+
+    bool transformFeedbackActive() const override;
+    bool transformFeedbackPaused() const override;
+    void setTransformFeedbackActive(bool);
+    void setTransformFeedbackPaused(bool);
 
     PersistentWillBeMember<WebGLFramebuffer> m_readFramebufferBinding;
     PersistentWillBeMember<WebGLTransformFeedback> m_transformFeedbackBinding;

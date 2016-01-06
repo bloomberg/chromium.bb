@@ -24,6 +24,11 @@ public:
 
     bool hasEverBeenBound() const { return object() && m_target; }
 
+    bool isActive() const { return m_active; }
+    bool isPaused() const { return m_paused; }
+    void setActive(bool);
+    void setPaused(bool);
+
 protected:
     explicit WebGLTransformFeedback(WebGL2RenderingContextBase*);
 
@@ -33,6 +38,9 @@ private:
     bool isTransformFeedback() const override { return true; }
 
     GLenum m_target;
+
+    bool m_active;
+    bool m_paused;
 };
 
 } // namespace blink
