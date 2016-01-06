@@ -286,6 +286,7 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
         mPrimaryButton.setOnClickListener(this);
         mPrimaryButton.setText(primaryText);
         mPrimaryButton.setTextColor(Color.WHITE);
+        mPrimaryButton.setRaised(false);
 
         if (TextUtils.isEmpty(secondaryText)) return;
 
