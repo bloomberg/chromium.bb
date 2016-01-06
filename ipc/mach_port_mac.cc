@@ -37,6 +37,7 @@ bool ParamTraits<MachPortMac>::Read(const Message* m,
   IPC::internal::MachPortAttachmentMac* mach_port_attachment =
       static_cast<IPC::internal::MachPortAttachmentMac*>(brokerable_attachment);
   r->set_mach_port(mach_port_attachment->get_mach_port());
+  mach_port_attachment->reset_mach_port_ownership();
   return true;
 }
 

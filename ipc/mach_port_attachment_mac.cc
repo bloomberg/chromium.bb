@@ -24,13 +24,7 @@ MachPortAttachmentMac::MachPortAttachmentMac(mach_port_t mach_port)
 MachPortAttachmentMac::MachPortAttachmentMac(const WireFormat& wire_format)
     : BrokerableAttachment(wire_format.attachment_id),
       mach_port_(static_cast<mach_port_t>(wire_format.mach_port)),
-      owns_mach_port_(false) {}
-
-MachPortAttachmentMac::MachPortAttachmentMac(
-    const BrokerableAttachment::AttachmentId& id)
-    : BrokerableAttachment(id),
-      mach_port_(MACH_PORT_NULL),
-      owns_mach_port_(false) {}
+      owns_mach_port_(true) {}
 
 MachPortAttachmentMac::~MachPortAttachmentMac() {
   if (mach_port_ != MACH_PORT_NULL && owns_mach_port_) {

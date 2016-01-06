@@ -51,10 +51,10 @@ class IPC_EXPORT MachPortAttachmentMac : public BrokerableAttachment {
   // IPC message.
   explicit MachPortAttachmentMac(mach_port_t mach_port);
 
-  // These constructors do not take ownership of |mach_port|, and should only be
-  // called by the receiver of a Chrome IPC message.
+  // This constructor takes ownership of |wire_format.mach_port|, but does not
+  // modify its ref count. Should only be called by the receiver of a Chrome IPC
+  // message.
   explicit MachPortAttachmentMac(const WireFormat& wire_format);
-  explicit MachPortAttachmentMac(const BrokerableAttachment::AttachmentId& id);
 
   BrokerableType GetBrokerableType() const override;
 
@@ -71,11 +71,10 @@ class IPC_EXPORT MachPortAttachmentMac : public BrokerableAttachment {
   const mach_port_t mach_port_;
 
   // In the sender process, the attachment owns the Mach port of a newly created
-  // message. The attachment broker will eventually take ownership, and set
-  // this member to |false|.
-  // In the destination process, the attachment never owns the Mach port. The
-  // client code that receives the Chrome IPC message is always expected to take
-  // ownership.
+  // message. The attachment broker will eventually take ownership of
+  // |mach_port_|.
+  // In the destination process, the attachment owns |mach_port_| until
+  // ParamTraits<MachPortMac>::Read() is called, which takes ownership.
   bool owns_mach_port_;
   DISALLOW_COPY_AND_ASSIGN(MachPortAttachmentMac);
 };

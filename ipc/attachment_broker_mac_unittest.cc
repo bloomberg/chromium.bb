@@ -76,8 +76,10 @@ base::mac::ScopedMachSendRight GetMachPortFromBrokeredAttachment(
 
   IPC::internal::MachPortAttachmentMac* received_mach_port_attachment =
       static_cast<IPC::internal::MachPortAttachmentMac*>(attachment.get());
-  return base::mac::ScopedMachSendRight(
+  base::mac::ScopedMachSendRight send_right(
       received_mach_port_attachment->get_mach_port());
+  received_mach_port_attachment->reset_mach_port_ownership();
+  return send_right;
 }
 
 // Makes a Mach port backed SharedMemory region and fills it with |contents|.
