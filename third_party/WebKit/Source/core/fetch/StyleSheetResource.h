@@ -31,13 +31,14 @@
 #ifndef StyleSheetResource_h
 #define StyleSheetResource_h
 
+#include "core/CoreExport.h"
 #include "core/fetch/TextResource.h"
 
 namespace blink {
 
 class StyleSheetResourceClient;
 
-class StyleSheetResource : public TextResource {
+class CORE_EXPORT StyleSheetResource : public TextResource {
 public:
     using ClientType = StyleSheetResourceClient;
 

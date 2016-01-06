@@ -44,6 +44,11 @@ ResourcePtr<CSSStyleSheetResource> CSSStyleSheetResource::fetch(FetchRequest& re
     return toCSSStyleSheetResource(fetcher->requestResource(request, CSSStyleSheetResourceFactory()));
 }
 
+ResourcePtr<CSSStyleSheetResource> CSSStyleSheetResource::createForTest(const ResourceRequest& request, const String& charset)
+{
+    return new CSSStyleSheetResource(request, charset);
+}
+
 CSSStyleSheetResource::CSSStyleSheetResource(const ResourceRequest& resourceRequest, const String& charset)
     : StyleSheetResource(resourceRequest, CSSStyleSheet, "text/css", charset)
 {
