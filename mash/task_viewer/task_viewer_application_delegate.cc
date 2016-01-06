@@ -59,7 +59,9 @@ class TaskViewer : public views::WidgetDelegateView,
     kill_button_->SetStyle(views::Button::STYLE_BUTTON);
     AddChildView(kill_button_);
   }
-  ~TaskViewer() override {}
+  ~TaskViewer() override {
+    table_view_->SetModel(nullptr);
+  }
 
  private:
   struct ApplicationInfo {
