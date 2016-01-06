@@ -34,6 +34,12 @@ class ShellSurface : public SurfaceDelegate,
   explicit ShellSurface(Surface* surface);
   ~ShellSurface() override;
 
+  // Set the callback to run when the user wants the shell surface to be closed.
+  // The receiver can chose to not close the window on this signal.
+  void set_close_callback(const base::Closure& close_callback) {
+    close_callback_ = close_callback;
+  }
+
   // Show surface as a toplevel window.
   void SetToplevel();
 
@@ -57,6 +63,10 @@ class ShellSurface : public SurfaceDelegate,
 
   // Start an interactive move of surface.
   void Move();
+
+  // Signal a request to close the window. It is up to the implementation to
+  // actually decide to do so though.
+  void Close();
 
   // Set geometry for surface. The geometry represents the "visible bounds"
   // for the surface from the user's perspective.
@@ -89,6 +99,7 @@ class ShellSurface : public SurfaceDelegate,
   base::string16 title_;
   std::string application_id_;
   gfx::Rect geometry_;
+  base::Closure close_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellSurface);
 };

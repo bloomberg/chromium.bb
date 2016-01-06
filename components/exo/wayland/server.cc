@@ -879,6 +879,9 @@ void xdg_shell_get_xdg_surface(wl_client* client,
   // An XdgSurface is a toplevel shell surface.
   shell_surface->SetToplevel();
 
+  shell_surface->set_close_callback(base::Bind(
+      &xdg_surface_send_close, base::Unretained(xdg_surface_resource)));
+
   SetImplementation(xdg_surface_resource, &xdg_surface_implementation,
                     std::move(shell_surface));
 }

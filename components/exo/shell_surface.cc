@@ -49,19 +49,34 @@ class CustomFrameView : public views::NonClientFrameView {
   DISALLOW_COPY_AND_ASSIGN(CustomFrameView);
 };
 
-views::Widget::InitParams CreateWidgetInitParams(
-    views::WidgetDelegate* delegate) {
-  views::Widget::InitParams params;
-  params.type = views::Widget::InitParams::TYPE_WINDOW;
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.delegate = delegate;
-  params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.show_state = ui::SHOW_STATE_NORMAL;
-  params.parent = ash::Shell::GetContainer(
-      ash::Shell::GetPrimaryRootWindow(), ash::kShellWindowId_DefaultContainer);
-  return params;
-}
+class ShellSurfaceWidget : public views::Widget {
+ public:
+  explicit ShellSurfaceWidget(ShellSurface* shell_surface)
+      : shell_surface_(shell_surface) {}
+
+  static views::Widget::InitParams CreateInitParams(
+      views::WidgetDelegate* delegate) {
+    views::Widget::InitParams params;
+    params.type = views::Widget::InitParams::TYPE_WINDOW;
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.delegate = delegate;
+    params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
+    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+    params.show_state = ui::SHOW_STATE_NORMAL;
+    params.parent =
+        ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
+                                 ash::kShellWindowId_DefaultContainer);
+    return params;
+  }
+
+  // Overridden from views::Widget
+  void Close() override { shell_surface_->Close(); }
+
+ private:
+  ShellSurface* const shell_surface_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShellSurfaceWidget);
+};
 
 }  // namespace
 
@@ -94,9 +109,9 @@ void ShellSurface::SetToplevel() {
     return;
   }
 
-  views::Widget::InitParams params = CreateWidgetInitParams(this);
+  views::Widget::InitParams params = ShellSurfaceWidget::CreateInitParams(this);
   params.bounds = gfx::Rect(gfx::Size(1, 1));
-  widget_.reset(new views::Widget);
+  widget_.reset(new ShellSurfaceWidget(this));
   widget_->Init(params);
   widget_->GetNativeWindow()->set_owned_by_parent(false);
   widget_->GetNativeWindow()->SetName("ExoShellSurface");
@@ -116,9 +131,9 @@ void ShellSurface::SetMaximized() {
     return;
   }
 
-  views::Widget::InitParams params = CreateWidgetInitParams(this);
+  views::Widget::InitParams params = ShellSurfaceWidget::CreateInitParams(this);
   params.show_state = ui::SHOW_STATE_MAXIMIZED;
-  widget_.reset(new views::Widget);
+  widget_.reset(new ShellSurfaceWidget(this));
   widget_->Init(params);
   widget_->GetNativeWindow()->set_owned_by_parent(false);
   widget_->GetNativeWindow()->SetName("ExoShellSurface");
@@ -134,9 +149,9 @@ void ShellSurface::SetFullscreen() {
     return;
   }
 
-  views::Widget::InitParams params = CreateWidgetInitParams(this);
+  views::Widget::InitParams params = ShellSurfaceWidget::CreateInitParams(this);
   params.show_state = ui::SHOW_STATE_FULLSCREEN;
-  widget_.reset(new views::Widget);
+  widget_.reset(new ShellSurfaceWidget(this));
   widget_->Init(params);
   widget_->GetNativeWindow()->set_owned_by_parent(false);
   widget_->GetNativeWindow()->SetName("ExoShellSurface");
@@ -179,6 +194,11 @@ void ShellSurface::Move() {
     widget_->RunMoveLoop(gfx::Vector2d(), views::Widget::MOVE_LOOP_SOURCE_MOUSE,
                          views::Widget::MOVE_LOOP_ESCAPE_BEHAVIOR_DONT_HIDE);
   }
+}
+
+void ShellSurface::Close() {
+  if (!close_callback_.is_null())
+    close_callback_.Run();
 }
 
 void ShellSurface::SetGeometry(const gfx::Rect& geometry) {

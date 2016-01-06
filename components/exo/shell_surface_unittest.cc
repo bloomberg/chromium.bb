@@ -137,5 +137,25 @@ TEST_F(ShellSurfaceTest, SetGeometry) {
             surface->bounds().ToString());
 }
 
+void Close(int* close_call_count) {
+  (*close_call_count)++;
+}
+
+TEST_F(ShellSurfaceTest, CloseCallback) {
+  scoped_ptr<Surface> surface(new Surface);
+  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+
+  int close_call_count = 0;
+  shell_surface->set_close_callback(
+      base::Bind(&Close, base::Unretained(&close_call_count)));
+
+  shell_surface->SetToplevel();
+  surface->Commit();
+
+  EXPECT_EQ(0, close_call_count);
+  shell_surface->GetWidget()->Close();
+  EXPECT_EQ(1, close_call_count);
+}
+
 }  // namespace
 }  // namespace exo
