@@ -1025,12 +1025,13 @@ void LayoutBlock::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, L
     bool hasRelativeLogicalHeight = child.hasRelativeLogicalHeight()
         || (child.isAnonymous() && this->hasRelativeLogicalHeight())
         || child.stretchesToViewport();
-    if (relayoutChildren || (hasRelativeLogicalHeight && !isLayoutView()))
+    if (relayoutChildren || (hasRelativeLogicalHeight && !isLayoutView())) {
         child.setChildNeedsLayout(MarkOnlyThis);
 
-    // If relayoutChildren is set and the child has percentage padding or an embedded content box, we also need to invalidate the childs pref widths.
-    if (relayoutChildren && child.needsPreferredWidthsRecalculation())
-        child.setPreferredLogicalWidthsDirty(MarkOnlyThis);
+        // If the child has percentage padding or an embedded content box, we also need to invalidate the childs pref widths.
+        if (child.needsPreferredWidthsRecalculation())
+            child.setPreferredLogicalWidthsDirty(MarkOnlyThis);
+    }
 }
 
 void LayoutBlock::simplifiedNormalFlowLayout()
