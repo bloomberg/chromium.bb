@@ -549,13 +549,13 @@ component("media") {
   }
 
   public_deps = [
+    ":shared_memory_support",
     "//media/audio",
     "//media/base",
     "//third_party/opus",
   ]
 
   deps += [
-    ":shared_memory_support",
     "//base",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
