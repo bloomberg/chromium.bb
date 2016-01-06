@@ -8,7 +8,6 @@ group("example") {
   testonly = true
 
   deps = [
-    "//mash/example/main",
     "//mash/example/views_examples",
     "//mash/example/window_type_launcher",
     "//mash/wm",

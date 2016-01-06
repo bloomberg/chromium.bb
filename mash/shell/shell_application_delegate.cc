@@ -20,6 +20,7 @@ void ShellApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
   StartBrowserDriver();
   StartWindowManager();
   StartSystemUI();
+  StartQuickLaunch();
 }
 
 bool ShellApplicationDelegate::ConfigureIncomingConnection(
@@ -44,6 +45,13 @@ void ShellApplicationDelegate::StartBrowserDriver() {
   StartRestartableService(
       "mojo:browser_driver",
       base::Bind(&ShellApplicationDelegate::StartBrowserDriver,
+                 base::Unretained(this)));
+}
+
+void ShellApplicationDelegate::StartQuickLaunch() {
+  StartRestartableService(
+      "mojo:quick_launch",
+      base::Bind(&ShellApplicationDelegate::StartQuickLaunch,
                  base::Unretained(this)));
 }
 
