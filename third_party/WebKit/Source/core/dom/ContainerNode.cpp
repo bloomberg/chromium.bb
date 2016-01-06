@@ -1533,9 +1533,6 @@ bool childAttachedAllowedWhenAttachingChildren(ContainerNode* node)
     if (node->isInsertionPoint())
         return true;
 
-    if (isHTMLSlotElement(node))
-        return true;
-
     if (node->isElementNode() && toElement(node)->shadow())
         return true;
 

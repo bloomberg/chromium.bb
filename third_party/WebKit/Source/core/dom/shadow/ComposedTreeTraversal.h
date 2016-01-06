@@ -140,6 +140,7 @@ private:
     }
 
     static Node* resolveDistributionStartingAt(const Node*, TraversalDirection);
+    static Node* v1ResolveDistributionStartingAt(const Node&, TraversalDirection);
     static Node* v0ResolveDistributionStartingAt(const Node&, TraversalDirection);
 
     static Node* traverseNext(const Node&);
@@ -153,16 +154,19 @@ private:
 
     static ContainerNode* traverseParent(const Node&, ParentTraversalDetails* = 0);
     // TODO(hayato): Make ParentTraversalDetails be aware of slot elements too.
-    static ContainerNode* traverseParentForV0(const Node&,  ParentTraversalDetails* = 0);
-    static ContainerNode* traverseParentOrHost(const Node&);
+    static ContainerNode* v1TraverseParent(const Node&);
+    static ContainerNode* v0TraverseParent(const Node&, ParentTraversalDetails* = 0);
 
     static Node* traverseNextSibling(const Node&);
     static Node* traversePreviousSibling(const Node&);
 
     static Node* traverseSiblings(const Node&, TraversalDirection);
-    static Node* traverseSiblingsForV1HostChild(const Node&, TraversalDirection);
-    static Node* traverseSiblingsForV0Distribution(const Node&, TraversalDirection);
+    static Node* v1TraverseSiblings(const Node&, TraversalDirection);
+    static Node* v0TraverseSiblings(const Node&, TraversalDirection);
 
+    static Node* traverseSiblingsOrShadowInsertionPointSiblings(const Node&, TraversalDirection);
+
+    static ContainerNode* traverseParentOrHost(const Node&);
     static Node* traverseNextAncestorSibling(const Node&);
     static Node* traversePreviousAncestorSibling(const Node&);
 };

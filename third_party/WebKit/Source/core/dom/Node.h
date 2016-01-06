@@ -483,11 +483,6 @@ public:
     bool isInShadowTree() const { return getFlag(IsInShadowTreeFlag); }
     bool isInTreeScope() const { return getFlag(static_cast<NodeFlags>(InDocumentFlag | IsInShadowTreeFlag)); }
 
-    bool isInV1ShadowTree() const;
-    bool isInV0ShadowTree() const;
-    bool isChildOfV1ShadowHost() const;
-    bool isChildOfV0ShadowHost() const;
-
     bool isDocumentTypeNode() const { return nodeType() == DOCUMENT_TYPE_NODE; }
     virtual bool childTypeAllowed(NodeType) const { return false; }
     unsigned countChildren() const;
@@ -665,7 +660,7 @@ public:
 
     PassRefPtrWillBeRawPtr<StaticNodeList> getDestinationInsertionPoints();
     HTMLSlotElement* assignedSlot() const;
-    HTMLSlotElement* assignedSlotForBinding();
+    HTMLSlotElement* assignedSlotForBinding() { updateDistribution(); return assignedSlot(); }
 
     void setAlreadySpellChecked(bool flag) { setFlag(flag, AlreadySpellCheckedFlag); }
     bool isAlreadySpellChecked() { return getFlag(AlreadySpellCheckedFlag); }

@@ -78,7 +78,6 @@ public:
     ShadowRoot* youngerShadowRoot() const { return prev(); }
 
     ShadowRoot* olderShadowRootForBindings() const;
-    // TODO(hayato): Rename this to more less-confusing name. This is likely to be misued because isOpen() includes V0 too.
     bool isOpen() const { return type() == ShadowRootType::V0 || type() == ShadowRootType::Open; }
     bool isV1() const { return type() == ShadowRootType::Open || type() == ShadowRootType::Closed; }
 

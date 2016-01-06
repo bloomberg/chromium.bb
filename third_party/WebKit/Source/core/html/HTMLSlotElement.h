@@ -42,6 +42,7 @@ public:
     DECLARE_NODE_FACTORY(HTMLSlotElement);
 
     const WillBeHeapVector<RefPtrWillBeMember<Node>> getAssignedNodes() const { return m_assignedNodes; }
+    // TODO(hayato): Support fallback contents of slot elements
     const WillBeHeapVector<RefPtrWillBeMember<Node>> getDistributedNodes() const { return m_distributedNodes; }
 
     Node* firstDistributedNode() const { return m_distributedNodes.isEmpty() ? nullptr : m_distributedNodes.first().get(); }
@@ -55,8 +56,6 @@ public:
     void appendDistributedNode(Node&);
     void appendDistributedNodes(const WillBeHeapVector<RefPtrWillBeMember<Node>>&);
     void clearDistribution();
-
-    void updateDistributedNodesWithFallback();
 
     void attach(const AttachContext& = AttachContext()) override;
     void detach(const AttachContext& = AttachContext()) override;
