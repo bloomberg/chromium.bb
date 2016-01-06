@@ -10,6 +10,7 @@
 #include "content/public/common/page_state.h"
 #include "content/public/common/referrer.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 
 namespace IPC {
@@ -137,6 +138,29 @@ bool ParamTraits<net::IPEndPoint>::Read(const Message* m,
 
 void ParamTraits<net::IPEndPoint>::Log(const param_type& p, std::string* l) {
   LogParam("IPEndPoint:" + p.ToString(), l);
+}
+
+void ParamTraits<net::IPAddress>::Write(Message* m, const param_type& p) {
+  WriteParam(m, p.bytes());
+}
+
+bool ParamTraits<net::IPAddress>::Read(const Message* m,
+                                       base::PickleIterator* iter,
+                                       param_type* p) {
+  std::vector<uint8_t> bytes;
+  if (!ReadParam(m, iter, &bytes))
+    return false;
+  if (bytes.size() &&
+      bytes.size() != net::IPAddress::kIPv4AddressSize &&
+      bytes.size() != net::IPAddress::kIPv6AddressSize) {
+    return false;
+  }
+  *p = net::IPAddress(bytes);
+  return true;
+}
+
+void ParamTraits<net::IPAddress>::Log(const param_type& p, std::string* l) {
+    LogParam("IPAddress:" + (p.empty() ? "(empty)" : p.ToString()), l);
 }
 
 void ParamTraits<content::PageState>::Write(

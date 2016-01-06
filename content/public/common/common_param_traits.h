@@ -38,6 +38,7 @@ class PageState;
 
 namespace net {
 class HostPortPair;
+class IPAddress;
 class IPEndPoint;
 }
 
@@ -70,6 +71,14 @@ struct CONTENT_EXPORT ParamTraits<net::HostPortPair> {
 template <>
 struct CONTENT_EXPORT ParamTraits<net::IPEndPoint> {
   typedef net::IPEndPoint param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct CONTENT_EXPORT ParamTraits<net::IPAddress> {
+  typedef net::IPAddress param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, base::PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
