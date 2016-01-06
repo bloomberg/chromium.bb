@@ -5742,7 +5742,7 @@
       {
         "args": [
           "--isolate-extensions",
-          "--gtest_filter=-PhishingClassifierDelegateTest.*:WebNavigationApiTest.*"
+          "--gtest_filter=-PhishingClassifierDelegateTest.*:WebNavigationApiTest.*:SSLUITest.TestMarkNonSecureAs"
         ],
         "test": "browser_tests"
       },
