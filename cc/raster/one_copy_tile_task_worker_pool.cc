@@ -444,10 +444,9 @@ void OneCopyTileTaskWorkerPool::PlaybackAndCopyOnWorkerThread(
       int rows_to_copy = std::min(chunk_size_in_rows, height - y);
       DCHECK_GT(rows_to_copy, 0);
 
-      gl->CopySubTextureCHROMIUM(GL_TEXTURE_2D, staging_buffer->texture_id,
-                                 resource_lock->texture_id(), 0, y, 0, y,
-                                 resource->size().width(), rows_to_copy, false,
-                                 false, false);
+      gl->CopySubTextureCHROMIUM(
+          staging_buffer->texture_id, resource_lock->texture_id(), 0, y, 0, y,
+          resource->size().width(), rows_to_copy, false, false, false);
       y += rows_to_copy;
 
       // Increment |bytes_scheduled_since_last_flush_| by the amount of memory

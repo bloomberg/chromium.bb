@@ -1334,8 +1334,7 @@ void GL_APIENTRY GLES2TexImageIOSurface2DCHROMIUM(GLenum target,
   gles2::GetGLContext()->TexImageIOSurface2DCHROMIUM(target, width, height,
                                                      ioSurfaceId, plane);
 }
-void GL_APIENTRY GLES2CopyTextureCHROMIUM(GLenum target,
-                                          GLenum source_id,
+void GL_APIENTRY GLES2CopyTextureCHROMIUM(GLenum source_id,
                                           GLenum dest_id,
                                           GLint internalformat,
                                           GLenum dest_type,
@@ -1343,12 +1342,11 @@ void GL_APIENTRY GLES2CopyTextureCHROMIUM(GLenum target,
                                           GLboolean unpack_premultiply_alpha,
                                           GLboolean unpack_unmultiply_alpha) {
   gles2::GetGLContext()->CopyTextureCHROMIUM(
-      target, source_id, dest_id, internalformat, dest_type, unpack_flip_y,
+      source_id, dest_id, internalformat, dest_type, unpack_flip_y,
       unpack_premultiply_alpha, unpack_unmultiply_alpha);
 }
 void GL_APIENTRY
-GLES2CopySubTextureCHROMIUM(GLenum target,
-                            GLenum source_id,
+GLES2CopySubTextureCHROMIUM(GLenum source_id,
                             GLenum dest_id,
                             GLint xoffset,
                             GLint yoffset,
@@ -1360,8 +1358,8 @@ GLES2CopySubTextureCHROMIUM(GLenum target,
                             GLboolean unpack_premultiply_alpha,
                             GLboolean unpack_unmultiply_alpha) {
   gles2::GetGLContext()->CopySubTextureCHROMIUM(
-      target, source_id, dest_id, xoffset, yoffset, x, y, width, height,
-      unpack_flip_y, unpack_premultiply_alpha, unpack_unmultiply_alpha);
+      source_id, dest_id, xoffset, yoffset, x, y, width, height, unpack_flip_y,
+      unpack_premultiply_alpha, unpack_unmultiply_alpha);
 }
 void GL_APIENTRY GLES2CompressedCopyTextureCHROMIUM(GLenum target,
                                                     GLenum source_id,

@@ -3171,7 +3171,6 @@ void GLES2Implementation::TexImageIOSurface2DCHROMIUM(GLenum target,
 }
 
 void GLES2Implementation::CopyTextureCHROMIUM(
-    GLenum target,
     GLenum source_id,
     GLenum dest_id,
     GLint internalformat,
@@ -3182,21 +3181,19 @@ void GLES2Implementation::CopyTextureCHROMIUM(
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG(
       "[" << GetLogPrefix() << "] glCopyTextureCHROMIUM("
-          << GLES2Util::GetStringEnum(target) << ", "
           << GLES2Util::GetStringEnum(source_id) << ", "
           << GLES2Util::GetStringEnum(dest_id) << ", " << internalformat << ", "
           << GLES2Util::GetStringPixelType(dest_type) << ", "
           << GLES2Util::GetStringBool(unpack_flip_y) << ", "
           << GLES2Util::GetStringBool(unpack_premultiply_alpha) << ", "
           << GLES2Util::GetStringBool(unpack_unmultiply_alpha) << ")");
-  helper_->CopyTextureCHROMIUM(
-      target, source_id, dest_id, internalformat, dest_type, unpack_flip_y,
-      unpack_premultiply_alpha, unpack_unmultiply_alpha);
+  helper_->CopyTextureCHROMIUM(source_id, dest_id, internalformat, dest_type,
+                               unpack_flip_y, unpack_premultiply_alpha,
+                               unpack_unmultiply_alpha);
   CheckGLError();
 }
 
 void GLES2Implementation::CopySubTextureCHROMIUM(
-    GLenum target,
     GLenum source_id,
     GLenum dest_id,
     GLint xoffset,
@@ -3211,7 +3208,6 @@ void GLES2Implementation::CopySubTextureCHROMIUM(
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG(
       "[" << GetLogPrefix() << "] glCopySubTextureCHROMIUM("
-          << GLES2Util::GetStringEnum(target) << ", "
           << GLES2Util::GetStringEnum(source_id) << ", "
           << GLES2Util::GetStringEnum(dest_id) << ", " << xoffset << ", "
           << yoffset << ", " << x << ", " << y << ", " << width << ", "
@@ -3227,8 +3223,8 @@ void GLES2Implementation::CopySubTextureCHROMIUM(
     return;
   }
   helper_->CopySubTextureCHROMIUM(
-      target, source_id, dest_id, xoffset, yoffset, x, y, width, height,
-      unpack_flip_y, unpack_premultiply_alpha, unpack_unmultiply_alpha);
+      source_id, dest_id, xoffset, yoffset, x, y, width, height, unpack_flip_y,
+      unpack_premultiply_alpha, unpack_unmultiply_alpha);
   CheckGLError();
 }
 

@@ -219,7 +219,7 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
 
     // The canvas is stored in a premultiplied format, so unpremultiply if necessary.
     // The canvas is stored in an inverted position, so the flip semantics are reversed.
-    context->copyTextureCHROMIUM(GL_TEXTURE_2D, sourceTexture, texture, internalFormat, destType, flipY ? GL_FALSE : GL_TRUE, GL_FALSE, premultiplyAlpha ? GL_FALSE : GL_TRUE);
+    context->copyTextureCHROMIUM(sourceTexture, texture, internalFormat, destType, flipY ? GL_FALSE : GL_TRUE, GL_FALSE, premultiplyAlpha ? GL_FALSE : GL_TRUE);
 
     context->deleteTexture(sourceTexture);
 

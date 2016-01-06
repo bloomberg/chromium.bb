@@ -875,9 +875,8 @@ DELEGATE_TO_GL_3(getQueryObjectui64vEXT,
                  WGC3Denum,
                  WGC3Duint64*)
 
-DELEGATE_TO_GL_8(copyTextureCHROMIUM,
+DELEGATE_TO_GL_7(copyTextureCHROMIUM,
                  CopyTextureCHROMIUM,
-                 WGC3Denum,
                  WebGLId,
                  WebGLId,
                  WGC3Denum,
@@ -886,9 +885,8 @@ DELEGATE_TO_GL_8(copyTextureCHROMIUM,
                  WGC3Dboolean,
                  WGC3Dboolean);
 
-DELEGATE_TO_GL_12(copySubTextureCHROMIUM,
+DELEGATE_TO_GL_11(copySubTextureCHROMIUM,
                   CopySubTextureCHROMIUM,
-                  WGC3Denum,
                   WebGLId,
                   WebGLId,
                   WGC3Dint,

@@ -115,8 +115,8 @@ skia::RefPtr<SkImage> NewSkImageFromVideoFrameYUVTextures(
       gl->GenTextures(1, &texture_copy);
       DCHECK(texture_copy);
       gl->BindTexture(GL_TEXTURE_2D, texture_copy);
-      gl->CopyTextureCHROMIUM(GL_TEXTURE_2D, source_textures[i], texture_copy,
-                              GL_RGB, GL_UNSIGNED_BYTE, false, true, false);
+      gl->CopyTextureCHROMIUM(source_textures[i], texture_copy, GL_RGB,
+                              GL_UNSIGNED_BYTE, false, true, false);
 
       gl->DeleteTextures(1, &source_textures[i]);
       source_textures[i] = texture_copy;
@@ -582,9 +582,8 @@ void SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
   // value down to get the expected result.
   // "flip_y == true" means to reverse the video orientation while
   // "flip_y == false" means to keep the intrinsic orientation.
-  gl->CopyTextureCHROMIUM(GL_TEXTURE_2D, source_texture, texture,
-                          internal_format, type, flip_y, premultiply_alpha,
-                          false);
+  gl->CopyTextureCHROMIUM(source_texture, texture, internal_format, type,
+                          flip_y, premultiply_alpha, false);
 
   gl->DeleteTextures(1, &source_texture);
   gl->Flush();

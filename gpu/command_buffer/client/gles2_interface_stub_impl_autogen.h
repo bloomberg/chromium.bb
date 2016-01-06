@@ -912,7 +912,6 @@ void GLES2InterfaceStub::TexImageIOSurface2DCHROMIUM(GLenum /* target */,
                                                      GLuint /* ioSurfaceId */,
                                                      GLuint /* plane */) {}
 void GLES2InterfaceStub::CopyTextureCHROMIUM(
-    GLenum /* target */,
     GLenum /* source_id */,
     GLenum /* dest_id */,
     GLint /* internalformat */,
@@ -921,7 +920,6 @@ void GLES2InterfaceStub::CopyTextureCHROMIUM(
     GLboolean /* unpack_premultiply_alpha */,
     GLboolean /* unpack_unmultiply_alpha */) {}
 void GLES2InterfaceStub::CopySubTextureCHROMIUM(
-    GLenum /* target */,
     GLenum /* source_id */,
     GLenum /* dest_id */,
     GLint /* xoffset */,

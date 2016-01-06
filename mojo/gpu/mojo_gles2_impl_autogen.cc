@@ -1489,8 +1489,7 @@ void MojoGLES2Impl::TexImageIOSurface2DCHROMIUM(GLenum target,
   MojoGLES2MakeCurrent(context_);
   glTexImageIOSurface2DCHROMIUM(target, width, height, ioSurfaceId, plane);
 }
-void MojoGLES2Impl::CopyTextureCHROMIUM(GLenum target,
-                                        GLenum source_id,
+void MojoGLES2Impl::CopyTextureCHROMIUM(GLenum source_id,
                                         GLenum dest_id,
                                         GLint internalformat,
                                         GLenum dest_type,
@@ -1498,12 +1497,11 @@ void MojoGLES2Impl::CopyTextureCHROMIUM(GLenum target,
                                         GLboolean unpack_premultiply_alpha,
                                         GLboolean unpack_unmultiply_alpha) {
   MojoGLES2MakeCurrent(context_);
-  glCopyTextureCHROMIUM(target, source_id, dest_id, internalformat, dest_type,
+  glCopyTextureCHROMIUM(source_id, dest_id, internalformat, dest_type,
                         unpack_flip_y, unpack_premultiply_alpha,
                         unpack_unmultiply_alpha);
 }
-void MojoGLES2Impl::CopySubTextureCHROMIUM(GLenum target,
-                                           GLenum source_id,
+void MojoGLES2Impl::CopySubTextureCHROMIUM(GLenum source_id,
                                            GLenum dest_id,
                                            GLint xoffset,
                                            GLint yoffset,
@@ -1515,9 +1513,9 @@ void MojoGLES2Impl::CopySubTextureCHROMIUM(GLenum target,
                                            GLboolean unpack_premultiply_alpha,
                                            GLboolean unpack_unmultiply_alpha) {
   MojoGLES2MakeCurrent(context_);
-  glCopySubTextureCHROMIUM(target, source_id, dest_id, xoffset, yoffset, x, y,
-                           width, height, unpack_flip_y,
-                           unpack_premultiply_alpha, unpack_unmultiply_alpha);
+  glCopySubTextureCHROMIUM(source_id, dest_id, xoffset, yoffset, x, y, width,
+                           height, unpack_flip_y, unpack_premultiply_alpha,
+                           unpack_unmultiply_alpha);
 }
 void MojoGLES2Impl::CompressedCopyTextureCHROMIUM(GLenum target,
                                                   GLenum source_id,

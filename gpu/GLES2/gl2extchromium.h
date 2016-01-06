@@ -367,7 +367,6 @@ typedef void (GL_APIENTRYP PFNGLBLITFRAMEBUFFERCHROMIUMPROC) (GLint srcX0, GLint
 
 #ifdef GL_GLEXT_PROTOTYPES
 GL_APICALL void GL_APIENTRY glCopyTextureCHROMIUM(
-    GLenum target,
     GLenum source_id,
     GLenum dest_id,
     GLint internalformat,
@@ -377,7 +376,6 @@ GL_APICALL void GL_APIENTRY glCopyTextureCHROMIUM(
     GLboolean unpack_unmultiply_alpha);
 
 GL_APICALL void GL_APIENTRY glCopySubTextureCHROMIUM(
-    GLenum target,
     GLenum source_id,
     GLenum dest_id,
     GLint xoffset,
@@ -391,7 +389,6 @@ GL_APICALL void GL_APIENTRY glCopySubTextureCHROMIUM(
     GLboolean unpack_unmultiply_alpha);
 #endif
 typedef void(GL_APIENTRYP PFNGLCOPYTEXTURECHROMIUMPROC)(
-    GLenum target,
     GLenum source_id,
     GLenum dest_id,
     GLint internalformat,
@@ -401,7 +398,6 @@ typedef void(GL_APIENTRYP PFNGLCOPYTEXTURECHROMIUMPROC)(
     GLboolean unpack_unmultiply_alpha);
 
 typedef void(GL_APIENTRYP PFNGLCOPYSUBTEXTURECHROMIUMPROC)(
-    GLenum target,
     GLenum source_id,
     GLenum dest_id,
     GLint xoffset,

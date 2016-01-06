@@ -4405,7 +4405,6 @@ error::Error GLES2DecoderImpl::HandleCopyTextureCHROMIUM(
   const gles2::cmds::CopyTextureCHROMIUM& c =
       *static_cast<const gles2::cmds::CopyTextureCHROMIUM*>(cmd_data);
   (void)c;
-  GLenum target = static_cast<GLenum>(c.target);
   GLenum source_id = static_cast<GLenum>(c.source_id);
   GLenum dest_id = static_cast<GLenum>(c.dest_id);
   GLint internalformat = static_cast<GLint>(c.internalformat);
@@ -4425,7 +4424,7 @@ error::Error GLES2DecoderImpl::HandleCopyTextureCHROMIUM(
                                     "dest_type");
     return error::kNoError;
   }
-  DoCopyTextureCHROMIUM(target, source_id, dest_id, internalformat, dest_type,
+  DoCopyTextureCHROMIUM(source_id, dest_id, internalformat, dest_type,
                         unpack_flip_y, unpack_premultiply_alpha,
                         unpack_unmultiply_alpha);
   return error::kNoError;
@@ -4437,7 +4436,6 @@ error::Error GLES2DecoderImpl::HandleCopySubTextureCHROMIUM(
   const gles2::cmds::CopySubTextureCHROMIUM& c =
       *static_cast<const gles2::cmds::CopySubTextureCHROMIUM*>(cmd_data);
   (void)c;
-  GLenum target = static_cast<GLenum>(c.target);
   GLenum source_id = static_cast<GLenum>(c.source_id);
   GLenum dest_id = static_cast<GLenum>(c.dest_id);
   GLint xoffset = static_cast<GLint>(c.xoffset);
@@ -4461,9 +4459,9 @@ error::Error GLES2DecoderImpl::HandleCopySubTextureCHROMIUM(
                        "height < 0");
     return error::kNoError;
   }
-  DoCopySubTextureCHROMIUM(target, source_id, dest_id, xoffset, yoffset, x, y,
-                           width, height, unpack_flip_y,
-                           unpack_premultiply_alpha, unpack_unmultiply_alpha);
+  DoCopySubTextureCHROMIUM(source_id, dest_id, xoffset, yoffset, x, y, width,
+                           height, unpack_flip_y, unpack_premultiply_alpha,
+                           unpack_unmultiply_alpha);
   return error::kNoError;
 }
 

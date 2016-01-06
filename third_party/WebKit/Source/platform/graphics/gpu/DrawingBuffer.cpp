@@ -306,7 +306,7 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
             m_context->discardFramebufferEXT(GL_FRAMEBUFFER, 3, attachments);
         }
     } else {
-        m_context->copyTextureCHROMIUM(GL_TEXTURE_2D, m_colorBuffer.textureId, frontColorBufferMailbox->textureInfo.textureId, GL_RGBA, GL_UNSIGNED_BYTE, GL_FALSE, GL_FALSE, GL_FALSE);
+        m_context->copyTextureCHROMIUM(m_colorBuffer.textureId, frontColorBufferMailbox->textureInfo.textureId, GL_RGBA, GL_UNSIGNED_BYTE, GL_FALSE, GL_FALSE, GL_FALSE);
     }
 
     restoreFramebufferBindings();
@@ -528,7 +528,7 @@ bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platfor
     else if (m_actualAttributes.alpha && !m_actualAttributes.premultipliedAlpha && premultiplyAlpha)
         unpackPremultiplyAlphaNeeded = GL_TRUE;
 
-    context->copyTextureCHROMIUM(GL_TEXTURE_2D, sourceTexture, texture, internalFormat, destType, flipY, unpackPremultiplyAlphaNeeded, unpackUnpremultiplyAlphaNeeded);
+    context->copyTextureCHROMIUM(sourceTexture, texture, internalFormat, destType, flipY, unpackPremultiplyAlphaNeeded, unpackUnpremultiplyAlphaNeeded);
 
     context->deleteTexture(sourceTexture);
 

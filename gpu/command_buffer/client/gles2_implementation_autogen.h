@@ -927,8 +927,7 @@ void TexImageIOSurface2DCHROMIUM(GLenum target,
                                  GLuint ioSurfaceId,
                                  GLuint plane) override;
 
-void CopyTextureCHROMIUM(GLenum target,
-                         GLenum source_id,
+void CopyTextureCHROMIUM(GLenum source_id,
                          GLenum dest_id,
                          GLint internalformat,
                          GLenum dest_type,
@@ -936,8 +935,7 @@ void CopyTextureCHROMIUM(GLenum target,
                          GLboolean unpack_premultiply_alpha,
                          GLboolean unpack_unmultiply_alpha) override;
 
-void CopySubTextureCHROMIUM(GLenum target,
-                            GLenum source_id,
+void CopySubTextureCHROMIUM(GLenum source_id,
                             GLenum dest_id,
                             GLint xoffset,
                             GLint yoffset,
