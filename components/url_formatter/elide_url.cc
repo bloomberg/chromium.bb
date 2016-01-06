@@ -16,14 +16,14 @@
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
-#if !defined(OS_ANDROID) || defined(USE_AURA)
+#if !defined(OS_ANDROID)
 #include "ui/gfx/text_elider.h"  // nogncheck
 #include "ui/gfx/text_utils.h"  // nogncheck
-#endif  // !defined(OS_ANDROID) || defined(USE_AURA)
+#endif
 
 namespace {
 
-#if !defined(OS_ANDROID) || defined(USE_AURA)
+#if !defined(OS_ANDROID)
 const base::char16 kDot = '.';
 
 // Build a path from the first |num_components| elements in |path_elements|.
@@ -105,7 +105,7 @@ void SplitHost(const GURL& url,
   }
 }
 
-#endif  // !defined(OS_ANDROID) || defined(USE_AURA)
+#endif  // !defined(OS_ANDROID)
 
 base::string16 FormatUrlForSecurityDisplayInternal(const GURL& url,
                                                    const std::string& languages,
@@ -157,7 +157,7 @@ base::string16 FormatUrlForSecurityDisplayInternal(const GURL& url,
 
 namespace url_formatter {
 
-#if !defined(OS_ANDROID) || defined(USE_AURA)
+#if !defined(OS_ANDROID)
 
 // TODO(pkasting): http://crbug.com/77883 This whole function gets
 // kerning/ligatures/etc. issues potentially wrong by assuming that the width of
@@ -356,7 +356,7 @@ base::string16 ElideHost(const GURL& url,
                         gfx::ELIDE_HEAD);
 }
 
-#endif  // !defined(OS_ANDROID) || defined(USE_AURA)
+#endif  // !defined(OS_ANDROID)
 
 base::string16 FormatUrlForSecurityDisplay(const GURL& url,
                                            const std::string& languages) {

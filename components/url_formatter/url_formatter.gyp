@@ -28,7 +28,7 @@
       'msvs_disabled_warnings': [4267, ],
 
       'conditions': [
-        ['OS!="android" or use_aura==1', {
+        ['OS != "android"', {
           'dependencies': [
             '../../ui/gfx/gfx.gyp:gfx',
           ]
