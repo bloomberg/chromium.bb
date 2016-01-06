@@ -34,10 +34,10 @@ import javax.annotation.Nullable;
 public class NotificationTransportControl
         extends TransportControl implements MediaRouteController.UiListener {
     /**
-      * Service used to transform intent requests triggered from the notification into
-      * {@code Listener} callbacks. Ideally this class should be protected, but public is required
-      * to create as a service.
-      */
+     * Service used to transform intent requests triggered from the notification into
+     * {@code Listener} callbacks. Ideally this class should be protected, but public is required to
+     * create as a service.
+     */
     public static class ListenerService extends Service {
         private static final String ACTION_PREFIX = ListenerService.class.getName() + ".";
 
@@ -185,8 +185,7 @@ public class NotificationTransportControl
                     case PLAYING:
                         showProgress = true;
                         showPlayPause = true;
-                        contentView.setProgressBar(R.id.progress, videoInfo.durationMillis,
-                                videoInfo.currentTimeMillis, false);
+                        setProgressBar(videoInfo, contentView);
                         contentView.setImageViewResource(
                                 R.id.playpause, R.drawable.ic_vidcontrol_pause);
                         contentView.setContentDescription(
@@ -198,8 +197,7 @@ public class NotificationTransportControl
                     case PAUSED:
                         showProgress = true;
                         showPlayPause = true;
-                        contentView.setProgressBar(R.id.progress, videoInfo.durationMillis,
-                                videoInfo.currentTimeMillis, false);
+                        setProgressBar(videoInfo, contentView);
                         contentView.setImageViewResource(
                                 R.id.playpause, R.drawable.ic_vidcontrol_play);
                         contentView.setContentDescription(
@@ -232,6 +230,19 @@ public class NotificationTransportControl
 
                 startForeground(R.id.remote_notification, mNotification);
             }
+        }
+
+        private void setProgressBar(RemoteVideoInfo videoInfo, RemoteViews contentView) {
+            long durationMillis = videoInfo.durationMillis;
+            long currentTimeMillis = videoInfo.currentTimeMillis;
+            // Handle ridiculously long videos (25 days+).
+            if (durationMillis > Integer.MAX_VALUE) {
+                long factor = durationMillis / Integer.MAX_VALUE;
+                durationMillis = Integer.MAX_VALUE;
+                currentTimeMillis = currentTimeMillis / factor;
+            }
+            contentView.setProgressBar(R.id.progress, (int) durationMillis, (int) currentTimeMillis,
+                    false);
         }
 
         private RemoteViews createContentView() {
@@ -358,7 +369,6 @@ public class NotificationTransportControl
         return Bitmap.createScaledBitmap(bitmap, width, height, false);
     }
 
-
     private NotificationTransportControl(Context context) {
         this.mContext = context;
         mHandler = new Handler(context.getMainLooper());
@@ -381,7 +391,7 @@ public class NotificationTransportControl
     }
 
     @Override
-    public void onDurationUpdated(int durationMillis) {
+    public void onDurationUpdated(long durationMillis) {
         // Set the progress update interval based on the screen height/width, since there's no point
         // in updating the progress bar more frequently than what the user can see.
         // getDisplayMetrics() is dependent on the current orientation, so we need to get the max
@@ -415,7 +425,7 @@ public class NotificationTransportControl
     }
 
     @Override
-    public void onPositionChanged(int positionMillis) {
+    public void onPositionChanged(long positionMillis) {
         RemoteVideoInfo videoInfo = new RemoteVideoInfo(getVideoInfo());
         videoInfo.currentTimeMillis = positionMillis;
         setVideoInfo(videoInfo);

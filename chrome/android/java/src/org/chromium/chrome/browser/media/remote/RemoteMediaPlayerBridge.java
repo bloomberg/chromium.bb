@@ -44,7 +44,7 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
     private String mCookies;
     private boolean mPauseRequested;
     private boolean mSeekRequested;
-    private int mSeekLocation;
+    private long mSeekLocation;
 
     // mActive is true when the Chrome is playing, or preparing to play, this player's video
     // remotely.
@@ -114,7 +114,7 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
         }
 
         @Override
-        public int getLocalPosition() {
+        public long getLocalPosition() {
             return nativeGetLocalPosition(mNativeRemoteMediaPlayerBridge);
         }
 
@@ -167,7 +167,7 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
         }
 
         @Override
-        public int getSeekLocation() {
+        public long getSeekLocation() {
             return mSeekLocation;
         }
     };
@@ -265,14 +265,14 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
     @CalledByNative
     protected int getCurrentPosition() {
         if (mRouteController == null) return 0;
-        return mRouteController.getPosition();
+        return (int) mRouteController.getPosition();
     }
 
     @Override
     @CalledByNative
     protected int getDuration() {
         if (mRouteController == null) return 0;
-        return mRouteController.getDuration();
+        return (int) mRouteController.getDuration();
     }
 
     @Override

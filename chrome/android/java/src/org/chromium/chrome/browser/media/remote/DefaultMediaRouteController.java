@@ -95,9 +95,9 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
     private boolean mDebug;
     private String mCurrentSessionId;
     private String mCurrentItemId;
-    private int mStreamPositionTimestamp;
-    private int mLastKnownStreamPosition;
-    private int mStreamDuration;
+    private long mStreamPositionTimestamp;
+    private long mLastKnownStreamPosition;
+    private long mStreamDuration;
     private boolean mSeeking;
     private final String mIntentCategory;
     private PendingIntent mSessionStatusUpdateIntent;
@@ -497,7 +497,7 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
     }
 
     @Override
-    public int getPosition() {
+    public long getPosition() {
         boolean paused = (getPlayerState() != PlayerState.PLAYING);
         if ((mStreamPositionTimestamp != 0) && !mSeeking && !paused
                 && (mLastKnownStreamPosition < mStreamDuration)) {
@@ -507,18 +507,18 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
             if (extrapolatedStreamPosition > mStreamDuration) {
                 extrapolatedStreamPosition = mStreamDuration;
             }
-            return (int) extrapolatedStreamPosition;
+            return extrapolatedStreamPosition;
         }
         return mLastKnownStreamPosition;
     }
 
     @Override
-    public int getDuration() {
+    public long getDuration() {
         return mStreamDuration;
     }
 
     @Override
-    public void seekTo(int msec) {
+    public void seekTo(long msec) {
         if (msec == getPosition()) return;
         // Update the position now since the MRP will update it only once the video is playing
         // remotely. In particular, if the video is paused, the MRP doesn't send the command until
@@ -529,7 +529,7 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
         intent.addCategory(MediaControlIntent.CATEGORY_REMOTE_PLAYBACK);
         intent.putExtra(MediaControlIntent.EXTRA_SESSION_ID, mCurrentSessionId);
         intent.putExtra(MediaControlIntent.EXTRA_ITEM_ID, mCurrentItemId);
-        intent.putExtra(MediaControlIntent.EXTRA_ITEM_CONTENT_POSITION, (long) msec);
+        intent.putExtra(MediaControlIntent.EXTRA_ITEM_CONTENT_POSITION, msec);
         sendIntentToRoute(intent, new ResultBundleHandler() {
             @Override
             public void onResult(Bundle data) {
@@ -881,13 +881,13 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
 
                 this.mCurrentItemId = itemId;
 
-                int duration = (int) itemStatus.getContentDuration();
+                long duration = itemStatus.getContentDuration();
                 // duration can possibly be -1 if it's unknown, so cap to 0
                 updateDuration(Math.max(duration, 0));
 
                 // update the position using the remote player's position
-                mLastKnownStreamPosition = (int) itemStatus.getContentPosition();
-                mStreamPositionTimestamp = (int) itemStatus.getTimestamp();
+                mLastKnownStreamPosition = itemStatus.getContentPosition();
+                mStreamPositionTimestamp = itemStatus.getTimestamp();
                 updatePosition();
 
                 if (mSeeking) {
@@ -981,7 +981,7 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
         });
     }
 
-    private void updateDuration(int durationMillis) {
+    private void updateDuration(long durationMillis) {
         mStreamDuration = durationMillis;
 
         for (UiListener listener : getUiListeners()) {

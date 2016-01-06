@@ -157,8 +157,8 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
     }
 
     /** Number of ms to wait for reconnection, after which we call the failure callbacks. */
-    protected static final int CONNECTION_FAILURE_NOTIFICATION_DELAY_MS = 10000;
-    private static final int END_OF_VIDEO_THRESHOLD_MS = 500;
+    protected static final long CONNECTION_FAILURE_NOTIFICATION_DELAY_MS = 10000L;
+    private static final long END_OF_VIDEO_THRESHOLD_MS = 500L;
     private static final String TAG = "AbstractMediaRouteController";
     private final Set<MediaStateListener> mAvailableRouteListeners;
     private final Context mContext;
@@ -310,7 +310,7 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
         return mUiListeners;
     }
 
-    private final boolean isAtEndOfVideo(int positionMs, int videoLengthMs) {
+    private final boolean isAtEndOfVideo(long positionMs, long videoLengthMs) {
         return videoLengthMs - positionMs < END_OF_VIDEO_THRESHOLD_MS && videoLengthMs > 0;
     }
 
@@ -380,7 +380,7 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
     protected abstract void onRouteUnselectedEvent(MediaRouter router, RouteInfo route);
 
     @Override
-    public void onSeek(int position) {
+    public void onSeek(long position) {
         seekTo(position);
     }
 

@@ -209,14 +209,14 @@ class LockScreenTransportControlV16 extends LockScreenTransportControl {
     }
 
     @Override
-    public void onDurationUpdated(int durationMillis) {
+    public void onDurationUpdated(long durationMillis) {
         RemoteVideoInfo videoInfo = new RemoteVideoInfo(getVideoInfo());
         videoInfo.durationMillis = durationMillis;
         setVideoInfo(videoInfo);
     }
 
     @Override
-    public void onPositionChanged(int positionMillis) {
+    public void onPositionChanged(long positionMillis) {
         RemoteVideoInfo videoInfo = new RemoteVideoInfo(getVideoInfo());
         videoInfo.currentTimeMillis = positionMillis;
         setVideoInfo(videoInfo);

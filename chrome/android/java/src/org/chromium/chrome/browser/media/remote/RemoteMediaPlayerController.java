@@ -339,10 +339,10 @@ public class RemoteMediaPlayerController implements MediaRouteController.UiListe
     }
 
     @Override
-    public void onDurationUpdated(int durationMillis) {}
+    public void onDurationUpdated(long durationMillis) {}
 
     @Override
-    public void onPositionChanged(int positionMillis) {}
+    public void onPositionChanged(long positionMillis) {}
 
     @Override
     public void onTitleChanged(String title) {}

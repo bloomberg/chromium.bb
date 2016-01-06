@@ -63,9 +63,9 @@ public class RecordCastAction {
      * @param videoLengthMs the total length of the video in milliseconds
      * @param timeRemainingMs the remaining time in the video in milliseconds
      */
-    public static void castEndedTimeRemaining(int videoLengthMs, int timeRemainingMs) {
+    public static void castEndedTimeRemaining(long videoLengthMs, long timeRemainingMs) {
         if (LibraryLoader.isInitialized()) {
-            nativeRecordCastEndedTimeRemaining(videoLengthMs, timeRemainingMs);
+            nativeRecordCastEndedTimeRemaining((int) videoLengthMs, (int) timeRemainingMs);
         }
     }
 

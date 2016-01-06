@@ -32,11 +32,11 @@ public class CastVideoControlsTest extends CastTestBase {
         tapPlayPauseButton(tab, videoRect);
         // The new position is sent in a separate message, so we have to wait a bit before
         // fetching it.
-        int position = getRemotePositionMs();
+        long position = getRemotePositionMs();
         boolean paused = false;
         for (int time = 0; time < MAX_VIEW_TIME_MS; time += VIEW_RETRY_MS) {
             Thread.sleep(VIEW_RETRY_MS);
-            int newPosition = getRemotePositionMs();
+            long newPosition = getRemotePositionMs();
             if (newPosition == position) {
                 paused = true;
                 break;

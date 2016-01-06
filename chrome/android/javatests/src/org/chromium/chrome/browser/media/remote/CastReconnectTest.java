@@ -28,8 +28,7 @@ import java.util.concurrent.TimeoutException;
  * from running them automatically outside the wrapper.
  */
 public class CastReconnectTest extends CastTestBase {
-
-    private int mVideoDurationMs;
+    private long mVideoDurationMs;
 
     /**
      * Cast and pause a video. This doesn't test anything itself, but just sets up the state for

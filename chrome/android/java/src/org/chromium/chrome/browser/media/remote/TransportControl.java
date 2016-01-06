@@ -28,7 +28,7 @@ public abstract class TransportControl {
     public static interface Listener {
         void onPlay();
         void onPause();
-        void onSeek(int position);
+        void onSeek(long position);
         void onStop();
     }
 

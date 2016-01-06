@@ -50,7 +50,7 @@ public class CastNotificationTest extends CastTestBase {
         // The new position is sent in a separate message, so we have to wait a bit before
         // fetching it.
         Thread.sleep(STABILIZE_TIME_MS);
-        int position = getRemotePositionMs();
+        long position = getRemotePositionMs();
         // Position should not change while paused
         Thread.sleep(PAUSE_TEST_TIME_MS);
         assertEquals("Pause didn't stop playback", position, getRemotePositionMs());

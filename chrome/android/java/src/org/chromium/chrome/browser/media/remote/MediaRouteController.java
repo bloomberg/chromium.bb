@@ -56,7 +56,7 @@ public interface MediaRouteController extends TransportControl.Listener {
 
         void pauseLocal();
 
-        int getLocalPosition();
+        long getLocalPosition();
 
         /**
          * Tells the rest of Chrome that we are starting to cast, so that user inputs control cast
@@ -107,7 +107,7 @@ public interface MediaRouteController extends TransportControl.Listener {
         /**
          * @return the requested seek location. Only meaningful if isSeekRequested is true.
          */
-        int getSeekLocation();
+        long getSeekLocation();
     }
 
     /**
@@ -152,14 +152,14 @@ public interface MediaRouteController extends TransportControl.Listener {
          * Called when the duration of the currently playing video changes.
          * @param durationMillis the new duration in ms.
          */
-        void onDurationUpdated(int durationMillis);
+        void onDurationUpdated(long durationMillis);
 
         /**
          * Called when the media route controller receives new information about the
          * current position in the video.
          * @param positionMillis the current position in the video in ms.
          */
-        void onPositionChanged(int positionMillis);
+        void onPositionChanged(long positionMillis);
 
         /**
          * Called if the title of the video changes
@@ -280,12 +280,12 @@ public interface MediaRouteController extends TransportControl.Listener {
      *
      * @return The current position of the remote playback in milliseconds.
      */
-    int getPosition();
+    long getPosition();
 
     /**
      * @return The stream duration in milliseconds.
      */
-    int getDuration();
+    long getDuration();
 
     /**
      * @return Whether the video is currently being played.
@@ -302,7 +302,7 @@ public interface MediaRouteController extends TransportControl.Listener {
      *
      * @param msec The position to seek to, in milliseconds.
      */
-    void seekTo(int msec);
+    void seekTo(long msec);
 
     /**
      * Stop the current remote playback completely and release all resources.

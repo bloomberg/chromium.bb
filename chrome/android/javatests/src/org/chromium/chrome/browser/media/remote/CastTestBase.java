@@ -66,12 +66,10 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
         }
 
         @Override
-        public void onDurationUpdated(int durationMillis) {
-        }
+        public void onDurationUpdated(long durationMillis) {}
 
         @Override
-        public void onPositionChanged(int positionMillis) {
-        }
+        public void onPositionChanged(long positionMillis) {}
 
         @Override
         public void onTitleChanged(String title) {
@@ -362,7 +360,7 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
         });
     }
 
-    protected void sleepNoThrow(int timeout) {
+    protected void sleepNoThrow(long timeout) {
         try {
             Thread.sleep(timeout);
         } catch (InterruptedException e) {
@@ -463,11 +461,11 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
         return false;
     }
 
-    protected int getRemotePositionMs() {
+    protected long getRemotePositionMs() {
         return getMediaRouteController().getPosition();
     }
 
-    protected int getRemoteDurationMs() {
+    protected long getRemoteDurationMs() {
         return getMediaRouteController().getDuration();
     }
 

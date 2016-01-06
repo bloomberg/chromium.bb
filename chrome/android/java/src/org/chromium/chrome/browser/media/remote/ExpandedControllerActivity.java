@@ -87,7 +87,7 @@ public class ExpandedControllerActivity
         @Override
         public void onSeekTo(long pos) {
             if (mMediaRouteController == null) return;
-            mMediaRouteController.seekTo((int) pos);
+            mMediaRouteController.seekTo(pos);
         }
 
         @Override
@@ -298,14 +298,14 @@ public class ExpandedControllerActivity
     }
 
     @Override
-    public void onDurationUpdated(int durationMillis) {
+    public void onDurationUpdated(long durationMillis) {
         RemoteVideoInfo videoInfo = new RemoteVideoInfo(mVideoInfo);
         videoInfo.durationMillis = durationMillis;
         setVideoInfo(videoInfo);
     }
 
     @Override
-    public void onPositionChanged(int positionMillis) {
+    public void onPositionChanged(long positionMillis) {
         RemoteVideoInfo videoInfo = new RemoteVideoInfo(mVideoInfo);
         videoInfo.currentTimeMillis = positionMillis;
         setVideoInfo(videoInfo);

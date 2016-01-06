@@ -99,10 +99,10 @@ public class CastPositionTransferTest extends CastTestBase {
         castVideoAndWaitUntilPlaying(CAST_TEST_ROUTE, tab, videoRect);
 
         tapPlayPauseButton(tab, videoRect);
-        int pausePosition = getRemotePositionMs();
+        long pausePosition = getRemotePositionMs();
         for (int time = 0; time < MAX_VIEW_TIME_MS; time += VIEW_RETRY_MS) {
             Thread.sleep(VIEW_RETRY_MS);
-            int newPosition = getRemotePositionMs();
+            long newPosition = getRemotePositionMs();
             if (newPosition == pausePosition) {
                 break;
             }
@@ -114,7 +114,7 @@ public class CastPositionTransferTest extends CastTestBase {
                 && getRemotePositionMs() != pausePosition; time += VIEW_RETRY_MS) {
             Thread.sleep(VIEW_RETRY_MS);
         }
-        int remotePositionMs = getRemotePositionMs();
+        long remotePositionMs = getRemotePositionMs();
         assertEquals("The remote player did not seek",
                 CAST_START_TIME_MS, remotePositionMs, SEEK_EPSILON_MS);
 
