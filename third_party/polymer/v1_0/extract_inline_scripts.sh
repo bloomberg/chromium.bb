@@ -44,6 +44,7 @@ do
 
   html_without_js="$dir/$name-extracted.html"
   extracted_js="$dir/$name-extracted.js"
-  crisper --source "$original_html_name" --html "$html_without_js" --js "$extracted_js" 
+  crisper --script-in-head=false --source "$original_html_name" \
+      --html "$html_without_js" --js "$extracted_js"
   mv "$html_without_js" "$original_html_name"
 done
