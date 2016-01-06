@@ -44,8 +44,7 @@ def SetConfigPath(options):
   options on the given command line."""
 
   sysroot = options.sysroot
-  if not sysroot:
-    sysroot = ""
+  assert sysroot
 
   # Compute the library path name based on the architecture.
   arch = options.arch
@@ -122,8 +121,8 @@ if options.strip_out != None:
   for regexp in options.strip_out:
     strip_out.append(re.compile(regexp))
 
-SetConfigPath(options)
 if options.sysroot:
+  SetConfigPath(options)
   prefix = GetPkgConfigPrefixToStrip(args)
 else:
   prefix = ''
