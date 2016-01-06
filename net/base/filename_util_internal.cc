@@ -43,12 +43,10 @@ base::FilePath::StringType GetCorrectedExtensionUnsafe(
   if (!extension.empty() && !ignore_extension)
     return extension;
 
-  base::FilePath::StringType preferred_mime_extension;
-  GetPreferredExtensionForMimeType(mime_type, &preferred_mime_extension);
-
   // Don't do anything if there's not a preferred extension for the mime
   // type.
-  if (preferred_mime_extension.empty())
+  base::FilePath::StringType preferred_mime_extension;
+  if (!GetPreferredExtensionForMimeType(mime_type, &preferred_mime_extension))
     return extension;
 
   // If the existing extension is in the list of valid extensions for the

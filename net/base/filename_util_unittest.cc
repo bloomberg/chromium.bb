@@ -1026,8 +1026,19 @@ TEST(FilenameUtilTest, GenerateFileName) {
      "image/jpeg", L"download", L"image" JPEG_EXT},
     {__LINE__, "http://www.example.com/image.aspx?id=blargh", "", "", " .foo",
      "", L"download", L"-.foo"},
+
+    // Note that the next 4 tests will not fail on all platforms on regression.
+    // They only fail if application/[x-]gzip has a default extension, which
+    // can vary across platforms (And even by OS install).
     {__LINE__, "http://www.example.com/goat.tar.gz?wearing_hat=true", "", "",
      "", "application/gzip", L"", L"goat.tar.gz"},
+    {__LINE__, "http://www.example.com/goat.tar.gz?wearing_hat=true", "", "",
+     "", "application/x-gzip", L"", L"goat.tar.gz"},
+    {__LINE__, "http://www.example.com/goat.tgz?wearing_hat=true", "", "", "",
+     "application/gzip", L"", L"goat.tgz"},
+    {__LINE__, "http://www.example.com/goat.tgz?wearing_hat=true", "", "", "",
+     "application/x-gzip", L"", L"goat.tgz"},
+
 #if defined(OS_CHROMEOS)
     {// http://crosbug.com/26028
      __LINE__, "http://www.example.com/fooa%cc%88.txt", "", "", "",
