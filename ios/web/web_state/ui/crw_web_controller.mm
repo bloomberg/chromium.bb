@@ -1591,9 +1591,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     if (!_overlayPreviewMode)
       _usePlaceholderOverlay = NO;
   } else if (_requireReloadOnDisplay && self.webView) {
+    _requireReloadOnDisplay = NO;
     [self addPlaceholderOverlay];
     [self loadCurrentURL];
-    _requireReloadOnDisplay = NO;
   }
 }
 
