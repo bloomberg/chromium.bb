@@ -51,6 +51,7 @@ class WebrtcConnectionToClient : public ConnectionToClient,
   void OnSessionStateChange(Session::State state) override;
 
   // WebrtcTransport::EventHandler interface
+  void OnWebrtcTransportConnecting() override;
   void OnWebrtcTransportConnected() override;
   void OnWebrtcTransportError(ErrorCode error) override;
 

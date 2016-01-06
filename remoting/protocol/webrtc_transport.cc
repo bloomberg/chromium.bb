@@ -110,6 +110,8 @@ WebrtcTransport::WebrtcTransport(
     : worker_thread_(worker_thread),
       transport_context_(transport_context),
       event_handler_(event_handler),
+      outgoing_data_stream_adapter_(true),
+      incoming_data_stream_adapter_(false),
       weak_factory_(this) {}
 
 WebrtcTransport::~WebrtcTransport() {}
@@ -155,8 +157,10 @@ void WebrtcTransport::OnPortAllocatorCreated(
       rtc::scoped_ptr<cricket::PortAllocator>(port_allocator.release()),
       nullptr, this);
 
-  data_stream_adapter_.Initialize(
-      peer_connection_, transport_context_->role() == TransportRole::SERVER);
+  outgoing_data_stream_adapter_.Initialize(peer_connection_);
+  incoming_data_stream_adapter_.Initialize(peer_connection_);
+
+  event_handler_->OnWebrtcTransportConnecting();
 
   if (transport_context_->role() == TransportRole::SERVER)
     RequestNegotiation();
@@ -246,11 +250,6 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
   }
 
   return true;
-}
-
-StreamChannelFactory* WebrtcTransport::GetStreamChannelFactory() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return &data_stream_adapter_;
 }
 
 void WebrtcTransport::OnLocalSessionDescriptionCreated(
@@ -363,7 +362,7 @@ void WebrtcTransport::OnRemoveStream(webrtc::MediaStreamInterface* stream) {
 void WebrtcTransport::OnDataChannel(
     webrtc::DataChannelInterface* data_channel) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  data_stream_adapter_.OnIncomingDataChannel(data_channel);
+  incoming_data_stream_adapter_.OnIncomingDataChannel(data_channel);
 }
 
 void WebrtcTransport::OnRenegotiationNeeded() {
@@ -393,8 +392,11 @@ void WebrtcTransport::OnIceConnectionChange(
     webrtc::PeerConnectionInterface::IceConnectionState new_state) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (new_state == webrtc::PeerConnectionInterface::kIceConnectionConnected)
+  if (!connected_ &&
+      new_state == webrtc::PeerConnectionInterface::kIceConnectionConnected) {
+    connected_ = true;
     event_handler_->OnWebrtcTransportConnected();
+  }
 }
 
 void WebrtcTransport::OnIceGatheringChange(

@@ -32,6 +32,14 @@ class WebrtcTransport : public Transport,
  public:
   class EventHandler {
    public:
+    // Called after |peer_connection| has been created but before handshake. The
+    // handler should create data channels and media streams. Renegotiation will
+    // be required in two cases after this method returns:
+    //   1. When the first data channel is created, if it wasn't created by this
+    //      event handler.
+    //   2. Whenever a media stream is added or removed.
+    virtual void OnWebrtcTransportConnecting() = 0;
+
     // Called when the transport is connected.
     virtual void OnWebrtcTransportConnected() = 0;
 
@@ -51,7 +59,14 @@ class WebrtcTransport : public Transport,
     return peer_connection_factory_;
   }
 
-  StreamChannelFactory* GetStreamChannelFactory();
+  // Factories for outgoing and incoming data channels. Must be used only after
+  // the transport is connected.
+  StreamChannelFactory* outgoing_channel_factory() {
+    return &outgoing_data_stream_adapter_;
+  }
+  StreamChannelFactory* incoming_channel_factory() {
+    return &incoming_data_stream_adapter_;
+  }
 
   // Transport interface.
   void Start(Authenticator* authenticator,
@@ -106,6 +121,8 @@ class WebrtcTransport : public Transport,
 
   bool negotiation_pending_ = false;
 
+  bool connected_ = false;
+
   scoped_ptr<buzz::XmlElement> pending_transport_info_message_;
   base::OneShotTimer transport_info_timer_;
 
@@ -114,7 +131,8 @@ class WebrtcTransport : public Transport,
   std::list<rtc::scoped_refptr<webrtc::MediaStreamInterface>>
       unclaimed_streams_;
 
-  WebrtcDataStreamAdapter data_stream_adapter_;
+  WebrtcDataStreamAdapter outgoing_data_stream_adapter_;
+  WebrtcDataStreamAdapter incoming_data_stream_adapter_;
 
   base::WeakPtrFactory<WebrtcTransport> weak_factory_;
 

@@ -36,8 +36,11 @@ class TestTransportEventHandler : public WebrtcTransport::EventHandler {
   TestTransportEventHandler() {}
   ~TestTransportEventHandler() {}
 
-  // Both callbacks must be set before the test handler is passed to a Transport
+  // All callbacks must be set before the test handler is passed to a Transport
   // object.
+  void set_connecting_callback(const base::Closure& callback) {
+    connecting_callback_ = callback;
+  }
   void set_connected_callback(const base::Closure& callback) {
     connected_callback_ = callback;
   }
@@ -46,14 +49,20 @@ class TestTransportEventHandler : public WebrtcTransport::EventHandler {
   }
 
   // WebrtcTransport::EventHandler interface.
+  void OnWebrtcTransportConnecting() override {
+    if (!connecting_callback_.is_null())
+      connecting_callback_.Run();
+  }
   void OnWebrtcTransportConnected() override {
-    connected_callback_.Run();
+    if (!connected_callback_.is_null())
+      connected_callback_.Run();
   }
   void OnWebrtcTransportError(ErrorCode error) override {
     error_callback_.Run(error);
   }
 
  private:
+  base::Closure connecting_callback_;
   base::Closure connected_callback_;
   ErrorCallback error_callback_;
 
@@ -70,6 +79,15 @@ class WebrtcTransportTest : public testing::Test {
         NetworkSettings(NetworkSettings::NAT_TRAVERSAL_OUTGOING);
   }
 
+  void TearDown() override {
+    run_loop_.reset();
+    client_socket_.reset();
+    client_transport_.reset();
+    host_socket_.reset();
+    host_transport_.reset();
+    base::RunLoop().RunUntilIdle();
+  }
+
   void ProcessTransportInfo(scoped_ptr<WebrtcTransport>* target_transport,
                             scoped_ptr<buzz::XmlElement> transport_info) {
     ASSERT_TRUE(target_transport);
@@ -77,7 +95,6 @@ class WebrtcTransportTest : public testing::Test {
                     ->ProcessTransportInfo(transport_info.get()));
   }
 
- protected:
   void InitializeConnection() {
     host_transport_.reset(
         new WebrtcTransport(jingle_glue::JingleThreadWrapper::current(),
@@ -126,14 +143,20 @@ class WebrtcTransportTest : public testing::Test {
     run_loop_.reset(new base::RunLoop());
     run_loop_->Run();
 
+    host_event_handler_.set_connected_callback(base::Closure());
+    client_event_handler_.set_connected_callback(base::Closure());
+
     EXPECT_EQ(OK, error_);
   }
 
-  void CreateDataStream() {
-    client_transport_->GetStreamChannelFactory()->CreateChannel(
+  void CreateClientDataStream() {
+    client_transport_->incoming_channel_factory()->CreateChannel(
         kChannelName, base::Bind(&WebrtcTransportTest::OnClientChannelCreated,
                                  base::Unretained(this)));
-    host_transport_->GetStreamChannelFactory()->CreateChannel(
+  }
+
+  void CreateHostDataStream() {
+    host_transport_->outgoing_channel_factory()->CreateChannel(
         kChannelName, base::Bind(&WebrtcTransportTest::OnHostChannelCreated,
                                  base::Unretained(this)));
   }
@@ -188,12 +211,19 @@ TEST_F(WebrtcTransportTest, Connects) {
 }
 
 TEST_F(WebrtcTransportTest, DataStream) {
+  client_event_handler_.set_connecting_callback(base::Bind(
+      &WebrtcTransportTest::CreateClientDataStream, base::Unretained(this)));
+  host_event_handler_.set_connecting_callback(base::Bind(
+      &WebrtcTransportTest::CreateHostDataStream, base::Unretained(this)));
+
   InitializeConnection();
-  CreateDataStream();
   StartConnection();
 
   run_loop_.reset(new base::RunLoop());
   run_loop_->Run();
+
+  EXPECT_TRUE(client_socket_);
+  EXPECT_TRUE(host_socket_);
 
   const int kMessageSize = 1024;
   const int kMessages = 100;
@@ -202,6 +232,22 @@ TEST_F(WebrtcTransportTest, DataStream) {
   tester.Start();
   message_loop_.Run();
   tester.CheckResults();
+}
+
+// Verify that data streams can be created after connection has been initiated.
+TEST_F(WebrtcTransportTest, DataStreamLate) {
+  InitializeConnection();
+  StartConnection();
+  WaitUntilConnected();
+
+  CreateClientDataStream();
+  CreateHostDataStream();
+
+  run_loop_.reset(new base::RunLoop());
+  run_loop_->Run();
+
+  EXPECT_TRUE(client_socket_);
+  EXPECT_TRUE(host_socket_);
 }
 
 }  // namespace protocol

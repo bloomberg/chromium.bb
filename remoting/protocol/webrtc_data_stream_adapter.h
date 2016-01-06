@@ -24,15 +24,14 @@ namespace protocol {
 // send and receive data over PeerConnection data channels.
 class WebrtcDataStreamAdapter : public StreamChannelFactory {
  public:
-  WebrtcDataStreamAdapter();
+  explicit WebrtcDataStreamAdapter(bool outgoing);
   ~WebrtcDataStreamAdapter() override;
 
   // Initializes the adapter for |peer_connection|. If |outgoing| is set to true
   // all channels will be created as outgoing. Otherwise CreateChannel() will
   // wait for the other end to create connection.
   void Initialize(
-      rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection,
-      bool outgoing);
+      rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection);
 
   // Called by WebrtcTransport.
   void OnIncomingDataChannel(webrtc::DataChannelInterface* data_channel);
@@ -49,8 +48,9 @@ class WebrtcDataStreamAdapter : public StreamChannelFactory {
                           Channel* channel,
                           bool connected);
 
+  const bool outgoing_;
+
   rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
-  bool outgoing_ = false;
 
   std::map<std::string, Channel*> pending_channels_;
 

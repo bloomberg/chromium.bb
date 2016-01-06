@@ -147,20 +147,9 @@ void WebrtcConnectionToClient::OnSessionStateChange(Session::State state) {
     case Session::AUTHENTICATING:
       event_handler_->OnConnectionAuthenticating(this);
       break;
-    case Session::AUTHENTICATED: {
-      // Initialize channels.
-      control_dispatcher_->Init(transport_.GetStreamChannelFactory(), this);
-
-      event_dispatcher_->Init(transport_.GetStreamChannelFactory(), this);
-      event_dispatcher_->set_on_input_event_callback(base::Bind(
-          &ConnectionToClient::OnInputEventReceived, base::Unretained(this)));
-
-      // Notify the handler after initializing the channels, so that
-      // ClientSession can get a client clipboard stub.
+    case Session::AUTHENTICATED:
       event_handler_->OnConnectionAuthenticated(this);
       break;
-    }
-
     case Session::CLOSED:
     case Session::FAILED:
       control_dispatcher_.reset();
@@ -171,7 +160,16 @@ void WebrtcConnectionToClient::OnSessionStateChange(Session::State state) {
   }
 }
 
+void WebrtcConnectionToClient::OnWebrtcTransportConnecting() {
+  control_dispatcher_->Init(transport_.outgoing_channel_factory(), this);
+
+  event_dispatcher_->Init(transport_.incoming_channel_factory(), this);
+  event_dispatcher_->set_on_input_event_callback(base::Bind(
+      &ConnectionToClient::OnInputEventReceived, base::Unretained(this)));
+}
+
 void WebrtcConnectionToClient::OnWebrtcTransportConnected() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   event_handler_->OnConnectionChannelsConnected(this);
 }
 

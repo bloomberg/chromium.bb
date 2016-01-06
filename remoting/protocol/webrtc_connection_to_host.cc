@@ -85,14 +85,6 @@ void WebrtcConnectionToHost::OnSessionStateChange(Session::State state) {
 
     case Session::AUTHENTICATED:
       SetState(AUTHENTICATED, OK);
-
-      control_dispatcher_.reset(new ClientControlDispatcher());
-      control_dispatcher_->Init(transport_->GetStreamChannelFactory(), this);
-      control_dispatcher_->set_client_stub(client_stub_);
-      control_dispatcher_->set_clipboard_stub(clipboard_stub_);
-
-      event_dispatcher_.reset(new ClientEventDispatcher());
-      event_dispatcher_->Init(transport_->GetStreamChannelFactory(), this);
       break;
 
     case Session::CLOSED:
@@ -101,6 +93,16 @@ void WebrtcConnectionToHost::OnSessionStateChange(Session::State state) {
       SetState(CLOSED, state == Session::FAILED ? session_->error() : OK);
       break;
   }
+}
+
+void WebrtcConnectionToHost::OnWebrtcTransportConnecting() {
+  control_dispatcher_.reset(new ClientControlDispatcher());
+  control_dispatcher_->Init(transport_->incoming_channel_factory(), this);
+  control_dispatcher_->set_client_stub(client_stub_);
+  control_dispatcher_->set_clipboard_stub(clipboard_stub_);
+
+  event_dispatcher_.reset(new ClientEventDispatcher());
+  event_dispatcher_->Init(transport_->outgoing_channel_factory(), this);
 }
 
 void WebrtcConnectionToHost::OnWebrtcTransportConnected() {}

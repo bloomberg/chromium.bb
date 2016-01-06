@@ -204,32 +204,24 @@ int WebrtcDataStreamAdapter::Channel::DoWrite(
   }
 }
 
-WebrtcDataStreamAdapter::WebrtcDataStreamAdapter() : weak_factory_(this) {}
+WebrtcDataStreamAdapter::WebrtcDataStreamAdapter(bool outgoing)
+    : outgoing_(outgoing), weak_factory_(this) {}
 
 WebrtcDataStreamAdapter::~WebrtcDataStreamAdapter() {
   DCHECK(pending_channels_.empty());
 }
 
 void WebrtcDataStreamAdapter::Initialize(
-    rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection,
-    bool outgoing) {
+    rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection) {
   peer_connection_ = peer_connection;
-  outgoing_ = outgoing;
-
- if (outgoing_) {
-    for (auto& channel : pending_channels_) {
-      webrtc::DataChannelInit config;
-      config.reliable = true;
-      channel.second->Start(
-          peer_connection_->CreateDataChannel(channel.first, &config));
-    }
- }
 }
 
 void WebrtcDataStreamAdapter::OnIncomingDataChannel(
     webrtc::DataChannelInterface* data_channel) {
+  DCHECK(!outgoing_);
+
   auto it = pending_channels_.find(data_channel->label());
-  if (outgoing_ || it == pending_channels_.end()) {
+  if (it == pending_channels_.end()) {
     LOG(ERROR) << "Received unexpected data channel " << data_channel->label();
     return;
   }
@@ -239,6 +231,7 @@ void WebrtcDataStreamAdapter::OnIncomingDataChannel(
 void WebrtcDataStreamAdapter::CreateChannel(
     const std::string& name,
     const ChannelCreatedCallback& callback) {
+  DCHECK(peer_connection_);
   DCHECK(pending_channels_.find(name) == pending_channels_.end());
 
   Channel* channel =
@@ -246,7 +239,7 @@ void WebrtcDataStreamAdapter::CreateChannel(
                              base::Unretained(this), callback));
   pending_channels_[name] = channel;
 
-  if (peer_connection_ && outgoing_) {
+  if (outgoing_) {
     webrtc::DataChannelInit config;
     config.reliable = true;
     channel->Start(peer_connection_->CreateDataChannel(name, &config));
