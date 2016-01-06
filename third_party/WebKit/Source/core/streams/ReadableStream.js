@@ -400,7 +400,9 @@
         try {
           chunkSize = strategySize(chunk);
         } catch (chunkSizeE) {
-          ErrorReadableStream(stream, chunkSizeE);
+          if (stream[readableStreamState] === STATE_READABLE) {
+            ErrorReadableStream(stream, chunkSizeE);
+          }
           throw chunkSizeE;
         }
       }
@@ -408,7 +410,9 @@
       try {
         EnqueueValueWithSize(stream, chunk, chunkSize);
       } catch (enqueueE) {
-        ErrorReadableStream(stream, enqueueE);
+        if (stream[readableStreamState] === STATE_READABLE) {
+          ErrorReadableStream(stream, enqueueE);
+        }
         throw enqueueE;
       }
     }
