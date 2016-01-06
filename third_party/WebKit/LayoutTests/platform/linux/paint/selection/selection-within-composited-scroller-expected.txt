@@ -18,7 +18,7 @@
           "drawsContent": true,
           "backgroundColor": "#D3D3D3",
           "repaintRects": [
-            [0, 160, 21, 17]
+            [0, 160, 21, 19]
           ],
           "paintInvalidationClients": [
             "LayoutBlockFlow DIV id='scroller'",
@@ -35,7 +35,7 @@
                   "bounds": [200, 1620],
                   "drawsContent": true,
                   "repaintRects": [
-                    [0, 610, 21, 17]
+                    [0, 610, 21, 19]
                   ],
                   "paintInvalidationClients": [
                     "LayoutBlockFlow DIV id='scroller'",
