@@ -5051,7 +5051,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram
-    name="Compositing.RenderPass.AppendQuadData.CheckerboardedNeedsRasterContentArea"
+    name="Compositing.RenderPass.AppendQuadData.CheckerboardedNeedRasterContentArea"
     units="pixels/frame">
   <owner>weiliangc@chromium.org</owner>
   <summary>
