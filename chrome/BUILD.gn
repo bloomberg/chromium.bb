@@ -125,8 +125,6 @@ if (!is_android) {
         "app/kasko_client.h",
         "app/main_dll_loader_win.cc",
         "app/main_dll_loader_win.h",
-        "app/signature_validator_win.cc",
-        "app/signature_validator_win.h",
         "common/crash_keys.cc",
         "common/crash_keys.h",
       ]
@@ -164,10 +162,6 @@ if (!is_android) {
         "//chrome/app/version_assembly:version_assembly_manifest",
       ]
 
-      libs = [
-        "wintrust.lib",
-        "crypt32.lib",
-      ]
       if (win_console_app) {
         defines += [ "WIN_CONSOLE_APP" ]
       } else {

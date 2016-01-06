@@ -75,8 +75,6 @@
         'app/kasko_client.h',
         'app/main_dll_loader_win.cc',
         'app/main_dll_loader_win.h',
-        'app/signature_validator_win.cc',
-        'app/signature_validator_win.h',
       ],
       'mac_bundle_resources': [
         'app/app-Info.plist',
@@ -458,10 +456,6 @@
                 'uxtheme.dll',
                 'ole32.dll',
                 'oleaut32.dll',
-              ],
-              'AdditionalDependencies': [
-                'wintrust.lib',
-                'crypt32.lib'
               ],
               'conditions': [
                 ['win_console_app==0', {
