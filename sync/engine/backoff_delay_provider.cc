@@ -65,27 +65,13 @@ TimeDelta BackoffDelayProvider::GetDelay(const base::TimeDelta& last_delay) {
 
 TimeDelta BackoffDelayProvider::GetInitialDelay(
     const sessions::ModelNeutralState& state) const {
-  // NETWORK_CONNECTION_UNAVAILABLE implies we did not even manage to hit the
-  // wire; the failure occurred locally. Note that if commit_result is *not*
-  // UNSET, this implies download_updates_result succeeded.  Also note that
-  // last_get_key_result is coupled to last_download_updates_result in that
-  // they are part of the same GetUpdates request, so we only check if
-  // the download request is CONNECTION_UNAVAILABLE.
-  //
-  // TODO(tim): Should we treat NETWORK_IO_ERROR similarly? It's different
-  // from CONNECTION_UNAVAILABLE in that a request may well have succeeded
-  // in contacting the server (e.g we got a 200 back), but we failed
-  // trying to parse the response (actual content length != HTTP response
-  // header content length value).  For now since we're considering
-  // merging this code to branches and I haven't audited all the
-  // NETWORK_IO_ERROR cases carefully, I'm going to target the fix
-  // very tightly (see bug chromium-os:35073). DIRECTORY_LOOKUP_FAILED is
-  // another example of something that shouldn't backoff, though the
-  // scheduler should probably be handling these cases differently. See
-  // the TODO(rlarocque) in ScheduleNextSync.
+  // NETWORK_CONNECTION_UNAVAILABLE implies we did not receive HTTP response
+  // from server because of some network error. If network is unavailable then
+  // on next connection type or address change scheduler will run canary job.
+  // Otherwise we'll retry in 30 seconds.
   if (state.commit_result == NETWORK_CONNECTION_UNAVAILABLE ||
       state.last_download_updates_result == NETWORK_CONNECTION_UNAVAILABLE) {
-    return short_initial_backoff_;
+    return default_initial_backoff_;
   }
 
   if (SyncerErrorIsError(state.last_get_key_result))

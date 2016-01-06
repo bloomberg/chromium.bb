@@ -91,9 +91,6 @@ struct SYNC_EXPORT HttpResponse {
 
   static const char* GetServerConnectionCodeString(
       ServerConnectionCode code);
-
-  static ServerConnectionCode ServerConnectionCodeFromNetError(
-      int error_code);
 };
 
 struct ServerConnectionEvent {

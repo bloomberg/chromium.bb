@@ -512,7 +512,7 @@ void HttpBridge::OnURLFetchTimedOut() {
   fetch_state_.request_completed = true;
   fetch_state_.request_succeeded = false;
   fetch_state_.http_response_code = -1;
-  fetch_state_.error_code = net::URLRequestStatus::FAILED;
+  fetch_state_.error_code = net::ERR_TIMED_OUT;
 
   // This method is called by the timer, not the url fetcher implementation,
   // so it's safe to delete the fetcher here.

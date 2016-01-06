@@ -120,4 +120,70 @@ TEST(SyncAPIServerConnectionManagerTest, AbortPost) {
   abort_thread.Stop();
 }
 
+namespace {
+
+class FailingHttpPost : public HttpPostProviderInterface {
+ public:
+  explicit FailingHttpPost(int error_code) : error_code_(error_code) {}
+  ~FailingHttpPost() override {}
+
+  void SetExtraRequestHeaders(const char* headers) override {}
+  void SetURL(const char* url, int port) override {}
+  void SetPostPayload(const char* content_type,
+                      int content_length,
+                      const char* content) override {}
+  bool MakeSynchronousPost(int* error_code, int* response_code) override {
+    *error_code = error_code_;
+    return false;
+  }
+  int GetResponseContentLength() const override { return 0; }
+  const char* GetResponseContent() const override { return ""; }
+  const std::string GetResponseHeaderValue(
+      const std::string& name) const override {
+    return std::string();
+  }
+  void Abort() override {}
+
+ private:
+  int error_code_;
+};
+
+class FailingHttpPostFactory : public HttpPostProviderFactory {
+ public:
+  explicit FailingHttpPostFactory(int error_code) : error_code_(error_code) {}
+  ~FailingHttpPostFactory() override {}
+  void Init(const std::string& user_agent,
+            const BindToTrackerCallback& bind_to_tracker_callback) override {}
+
+  HttpPostProviderInterface* Create() override {
+    return new FailingHttpPost(error_code_);
+  }
+  void Destroy(HttpPostProviderInterface* http) override {
+    delete static_cast<FailingHttpPost*>(http);
+  }
+
+ private:
+  int error_code_;
+};
+
+}  // namespace
+
+// Fail request with TIMED_OUT error. Make sure server status is
+// CONNECTION_UNAVAILABLE and therefore request will be retried after network
+// change.
+TEST(SyncAPIServerConnectionManagerTest, FailPostWithTimedOut) {
+  CancelationSignal signal;
+  SyncAPIServerConnectionManager server(
+      "server", 0, true, new FailingHttpPostFactory(net::ERR_TIMED_OUT),
+      &signal);
+
+  ServerConnectionManager::PostBufferParams params;
+
+  bool result = server.PostBufferToPath(&params, "/testpath", "testauth");
+
+  EXPECT_FALSE(result);
+  EXPECT_EQ(HttpResponse::CONNECTION_UNAVAILABLE,
+            params.response.server_status);
+}
+
 }  // namespace syncer

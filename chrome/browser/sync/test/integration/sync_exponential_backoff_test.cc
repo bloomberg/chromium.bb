@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "net/base/network_change_notifier.h"
 
 namespace {
 
@@ -81,11 +82,24 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, OfflineToOnline) {
   exponential_backoff_checker.Wait();
   ASSERT_FALSE(exponential_backoff_checker.TimedOut());
 
+  // Trigger network change notification and remember time when it happened.
+  // Ensure that scheduler runs canary job immediately.
   GetFakeServer()->EnableNetwork();
+  net::NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+
+  base::Time network_notification_time = base::Time::Now();
 
   // Verify that sync was able to recover.
   ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
   ASSERT_TRUE(ModelMatchesVerifier(0));
+
+  // Verify that recovery time is short. Without canary job recovery time would
+  // be more than 5 seconds.
+  base::TimeDelta recovery_time =
+      GetSyncService(0)->GetLastSessionSnapshot().sync_start_time() -
+      network_notification_time;
+  ASSERT_LE(recovery_time, base::TimeDelta::FromSeconds(2));
 }
 
 IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, TransientErrorTest) {

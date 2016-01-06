@@ -67,6 +67,8 @@ class SYNC_EXPORT SyncAPIServerConnectionManager
                            VeryEarlyAbortPost);
   FRIEND_TEST_ALL_PREFIXES(SyncAPIServerConnectionManagerTest, EarlyAbortPost);
   FRIEND_TEST_ALL_PREFIXES(SyncAPIServerConnectionManagerTest, AbortPost);
+  FRIEND_TEST_ALL_PREFIXES(SyncAPIServerConnectionManagerTest,
+                           FailPostWithTimedOut);
 
   // A factory creating concrete HttpPostProviders for use whenever we need to
   // issue a POST to sync servers.
