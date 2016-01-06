@@ -92,7 +92,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
                                   base::string16* title,
                                   base::string16* body) override;
   bool RemoveSuggestion(int list_index) override;
-#if !defined(OS_ANDROID) || defined(USE_AURA)
+#if !defined(OS_ANDROID)
   const gfx::FontList& GetValueFontListForRow(size_t index) const override;
   const gfx::FontList& GetLabelFontList() const override;
 #endif
@@ -135,7 +135,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   virtual void InvalidateRow(size_t row);
 
   // Protected so tests can access.
-#if !defined(OS_ANDROID) || defined(USE_AURA)
+#if !defined(OS_ANDROID)
   // Calculates the desired width of the popup based on its contents.
   int GetDesiredPopupWidth() const;
 
@@ -159,7 +159,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   // when the popup is reused it doesn't leak values between uses.
   void ClearState();
 
-#if !defined(OS_ANDROID) || defined(USE_AURA)
+#if !defined(OS_ANDROID)
   // Calculates and sets the bounds of the popup, including placing it properly
   // to prevent it from going off the screen.
   void UpdatePopupBounds();
@@ -182,7 +182,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   std::vector<base::string16> elided_values_;
   std::vector<base::string16> elided_labels_;
 
-#if !defined(OS_ANDROID) || defined(USE_AURA)
+#if !defined(OS_ANDROID)
   // The fonts for the popup text.
   gfx::FontList value_font_list_;
   gfx::FontList label_font_list_;

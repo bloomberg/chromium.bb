@@ -42,7 +42,7 @@ const size_t kRowHeight = 24;
 // The vertical height of a separator in pixels.
 const size_t kSeparatorHeight = 1;
 
-#if !defined(OS_ANDROID) || defined(USE_AURA)
+#if !defined(OS_ANDROID)
 // Size difference between name and label in pixels.
 const int kLabelFontSizeDelta = -2;
 
@@ -64,7 +64,7 @@ const DataResource kDataResources[] = {
   { "jcbCC", IDR_AUTOFILL_CC_GENERIC },
   { "masterCardCC", IDR_AUTOFILL_CC_MASTERCARD },
   { "visaCC", IDR_AUTOFILL_CC_VISA },
-#if defined(OS_ANDROID) && !defined(USE_AURA)
+#if defined(OS_ANDROID)
   { "scanCreditCardIcon", IDR_AUTOFILL_CC_SCAN_NEW },
   { "settings", IDR_AUTOFILL_SETTINGS },
 #endif
@@ -115,7 +115,7 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
   controller_common_->SetKeyPressCallback(
       base::Bind(&AutofillPopupControllerImpl::HandleKeyPressEvent,
                  base::Unretained(this)));
-#if !defined(OS_ANDROID) || defined(USE_AURA)
+#if !defined(OS_ANDROID)
   label_font_list_ = value_font_list_.DeriveWithSizeDelta(kLabelFontSizeDelta);
   title_font_list_ = value_font_list_.DeriveWithStyle(gfx::Font::BOLD);
 #if defined(OS_MACOSX)
@@ -135,7 +135,7 @@ void AutofillPopupControllerImpl::Show(
   DCHECK_EQ(suggestions_.size(), elided_values_.size());
   DCHECK_EQ(suggestions_.size(), elided_labels_.size());
 
-#if !defined(OS_ANDROID) || defined(USE_AURA)
+#if !defined(OS_ANDROID)
   // Android displays the long text with ellipsis using the view attributes.
 
   UpdatePopupBounds();
@@ -312,7 +312,7 @@ bool AutofillPopupControllerImpl::HandleKeyPressEvent(
 }
 
 void AutofillPopupControllerImpl::UpdateBoundsAndRedrawPopup() {
-#if !defined(OS_ANDROID) || defined(USE_AURA)
+#if !defined(OS_ANDROID)
   // TODO(csharp): Since UpdatePopupBounds can change the position of the popup,
   // the popup could end up jumping from above the element to below it.
   // It is unclear if it is better to keep the popup where it was, or if it
@@ -361,10 +361,10 @@ int AutofillPopupControllerImpl::GetIconResourceID(
     }
   }
 
-#if defined(OS_ANDROID) && !defined(USE_AURA)
+#if defined(OS_ANDROID)
   if (result == IDR_AUTOFILL_CC_SCAN_NEW && IsKeyboardAccessoryEnabled())
     result = IDR_AUTOFILL_CC_SCAN_NEW_KEYBOARD_ACCESSORY;
-#endif
+#endif  // OS_ANDROID
 
   return result;
 }
@@ -457,7 +457,7 @@ bool AutofillPopupControllerImpl::RemoveSuggestion(int list_index) {
   return true;
 }
 
-#if !defined(OS_ANDROID) || defined(USE_AURA)
+#if !defined(OS_ANDROID)
 const gfx::FontList& AutofillPopupControllerImpl::GetValueFontListForRow(
     size_t index) const {
   if (suggestions_[index].frontend_id == POPUP_ITEM_ID_WARNING_MESSAGE)
@@ -600,7 +600,7 @@ void AutofillPopupControllerImpl::InvalidateRow(size_t row) {
   view_->InvalidateRow(row);
 }
 
-#if !defined(OS_ANDROID) || defined(USE_AURA)
+#if !defined(OS_ANDROID)
 int AutofillPopupControllerImpl::GetDesiredPopupWidth() const {
   int popup_width = controller_common_->RoundedElementBounds().width();
   for (size_t i = 0; i < GetLineCount(); ++i) {
@@ -654,7 +654,7 @@ void AutofillPopupControllerImpl::UpdatePopupBounds() {
 
   popup_bounds_ = controller_common_->GetPopupBounds(popup_width, popup_height);
 }
-#endif
+#endif  // !defined(OS_ANDROID)
 
 WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
