@@ -43,6 +43,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/base/chunked_upload_data_stream.h"
+#include "net/base/directory_listing.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/external_estimate_provider.h"
 #include "net/base/load_flags.h"

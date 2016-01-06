@@ -117,7 +117,6 @@
       'sources': [
         'base/filename_util_icu.cc',
         'base/net_string_util_icu.cc',
-        'base/net_util_icu.cc',
         'filter/brotli_filter.cc',
       ],
       'includes': [ 'net_common.gypi' ],

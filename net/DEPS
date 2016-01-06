@@ -24,15 +24,14 @@ specific_include_rules = {
     "+base/i18n",
   ],
 
+  # Functions largely not used by the rest of net.
+  "directory_listing\.cc": [
+    "+base/i18n",
+  ],
+
   # Within net, only used by file: requests.
   "filename_util_icu\.cc": [
     "+base/i18n/file_util_icu.h",
-  ],
-
-  # Functions largely not used by the rest of net.
-  "net_util_icu\.cc": [
-    "+base/i18n",
-    "+third_party/icu",
   ],
 
   # Consolidated string functions that depend on icu.

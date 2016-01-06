@@ -12,8 +12,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "net/base/directory_listing.h"
 #include "net/base/io_buffer.h"
-#include "net/base/net_util.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 

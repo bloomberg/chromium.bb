@@ -1,17 +1,39 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/net_util.h"
+#include "net/base/directory_listing.h"
 
 #include "base/i18n/time_formatting.h"
 #include "base/json/string_escape.h"
+#include "base/logging.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "net/base/escape.h"
+#include "net/base/net_module.h"
+#include "net/grit/net_resources.h"
 
 namespace net {
+
+std::string GetDirectoryListingHeader(const base::string16& title) {
+  static const base::StringPiece header(
+      NetModule::GetResource(IDR_DIR_HEADER_HTML));
+  // This can be null in unit tests.
+  DLOG_IF(WARNING, header.empty())
+      << "Missing resource: directory listing header";
+
+  std::string result;
+  if (!header.empty())
+    result.assign(header.data(), header.size());
+
+  result.append("<script>start(");
+  base::EscapeJSONString(title, true, &result);
+  result.append(");</script>\n");
+
+  return result;
+}
 
 std::string GetDirectoryListingEntry(const base::string16& name,
                                      const std::string& raw_bytes,

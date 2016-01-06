@@ -23,7 +23,6 @@
 #include <unistd.h>
 #endif  // defined(OS_POSIX)
 
-#include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -34,10 +33,8 @@
 #include "net/base/address_list.h"
 #include "net/base/escape.h"
 #include "net/base/ip_address_number.h"
-#include "net/base/net_module.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
-#include "net/grit/net_resources.h"
 #include "url/gurl.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
@@ -95,24 +92,6 @@ std::string CanonicalizeHost(const std::string& host,
   }
 
   return canon_host;
-}
-
-std::string GetDirectoryListingHeader(const base::string16& title) {
-  static const base::StringPiece header(
-      NetModule::GetResource(IDR_DIR_HEADER_HTML));
-  // This can be null in unit tests.
-  DLOG_IF(WARNING, header.empty()) <<
-      "Missing resource: directory listing header";
-
-  std::string result;
-  if (!header.empty())
-    result.assign(header.data(), header.size());
-
-  result.append("<script>start(");
-  base::EscapeJSONString(title, true, &result);
-  result.append(");</script>\n");
-
-  return result;
 }
 
 inline bool IsHostCharAlphanumeric(char c) {

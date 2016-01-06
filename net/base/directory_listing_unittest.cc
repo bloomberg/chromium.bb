@@ -2,16 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/net_util.h"
-
-#include <stdint.h>
-
-#include <string>
+#include "net/base/directory_listing.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/gurl.h"
 
 namespace net {
 
@@ -26,7 +21,7 @@ struct GetDirectoryListingEntryCase {
   const char* const expected;
 };
 
-TEST(NetUtilTest, GetDirectoryListingEntry) {
+TEST(DirectoryListingTest, GetDirectoryListingEntry) {
   const GetDirectoryListingEntryCase test_cases[] = {
     {L"Foo",
      "",

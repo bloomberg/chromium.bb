@@ -117,28 +117,6 @@ NET_EXPORT std::string CanonicalizeHost(const std::string& host,
 // CanonicalizeHost(), or you may not get accurate results.
 NET_EXPORT bool IsCanonicalizedHostCompliant(const std::string& host);
 
-// Call these functions to get the html snippet for a directory listing.
-// The return values of both functions are in UTF-8.
-NET_EXPORT std::string GetDirectoryListingHeader(const base::string16& title);
-
-// Given the name of a file in a directory (ftp or local) and
-// other information (is_dir, size, modification time), it returns
-// the html snippet to add the entry for the file to the directory listing.
-// Currently, it's a script tag containing a call to a Javascript function
-// |addRow|.
-//
-// |name| is the file name to be displayed. |raw_bytes| will be used
-// as the actual target of the link (so for example, ftp links should use
-// server's encoding). If |raw_bytes| is an empty string, UTF-8 encoded |name|
-// will be used.
-//
-// Both |name| and |raw_bytes| are escaped internally.
-NET_EXPORT std::string GetDirectoryListingEntry(const base::string16& name,
-                                                const std::string& raw_bytes,
-                                                bool is_dir,
-                                                int64_t size,
-                                                base::Time modified);
-
 // Strip the portions of |url| that aren't core to the network request.
 //   - user name / password
 //   - reference section
