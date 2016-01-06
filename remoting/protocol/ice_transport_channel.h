@@ -95,7 +95,6 @@ class IceTransportChannel : public sigslot::has_slots<> {
                            const cricket::Candidate& candidate);
   void OnRouteChange(cricket::TransportChannel* channel,
                      const cricket::Candidate& candidate);
-  void OnReceivingState(cricket::TransportChannel* channel);
   void OnWritableState(cricket::TransportChannel* channel);
 
   // Callback for TransportChannelSocketAdapter to notify when the socket is

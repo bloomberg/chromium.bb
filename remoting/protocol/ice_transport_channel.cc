@@ -110,8 +110,6 @@ void IceTransportChannel::OnPortAllocatorCreated(
       this, &IceTransportChannel::OnCandidateGathered);
   channel_->SignalRouteChange.connect(
       this, &IceTransportChannel::OnRouteChange);
-  channel_->SignalReceivingState.connect(
-      this, &IceTransportChannel::OnReceivingState);
   channel_->SignalWritableState.connect(
       this, &IceTransportChannel::OnWritableState);
   channel_->set_incoming_only(!(transport_context_->network_settings().flags &
@@ -137,6 +135,10 @@ void IceTransportChannel::OnPortAllocatorCreated(
   reconnect_timer_.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kReconnectDelaySeconds),
       this, &IceTransportChannel::TryReconnect);
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&IceTransportChannel::NotifyConnected,
+                            weak_factory_.GetWeakPtr()));
 }
 
 void IceTransportChannel::NotifyConnected() {
@@ -200,13 +202,6 @@ void IceTransportChannel::OnRouteChange(
   // Ignore notifications if the channel is not writable.
   if (channel_->writable())
     NotifyRouteChanged();
-}
-
-void IceTransportChannel::OnReceivingState(cricket::TransportChannel* channel) {
-  DCHECK_EQ(channel, static_cast<cricket::TransportChannel*>(channel_.get()));
-
-  if (channel->receiving() && !callback_.is_null())
-    NotifyConnected();
 }
 
 void IceTransportChannel::OnWritableState(cricket::TransportChannel* channel) {
