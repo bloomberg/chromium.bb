@@ -591,7 +591,9 @@ TypeConverter<TransferableResourcePtr, cc::TransferableResource>::Convert(
   transferable->filter = input.filter;
   transferable->size = Size::From(input.size);
   transferable->mailbox_holder = MailboxHolder::From(input.mailbox_holder);
+  transferable->read_lock_fences_enabled = input.read_lock_fences_enabled;
   transferable->is_software = input.is_software;
+  transferable->is_overlay_candidate = input.is_overlay_candidate;
   return transferable;
 }
 
@@ -605,7 +607,9 @@ TypeConverter<cc::TransferableResource, TransferableResourcePtr>::Convert(
   transferable.filter = input->filter;
   transferable.size = input->size.To<gfx::Size>();
   transferable.mailbox_holder = input->mailbox_holder.To<gpu::MailboxHolder>();
+  transferable.read_lock_fences_enabled = input->read_lock_fences_enabled;
   transferable.is_software = input->is_software;
+  transferable.is_overlay_candidate = input->is_overlay_candidate;
   return transferable;
 }
 

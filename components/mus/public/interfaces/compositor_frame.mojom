@@ -71,8 +71,9 @@ struct TransferableResource {
   uint32 filter;
   mojo.Size size;
   MailboxHolder mailbox_holder;
-  bool is_repeated;
+  bool read_lock_fences_enabled;
   bool is_software;
+  bool is_overlay_candidate;
 };
 
 // See cc/output/compositor_frame_metadata.h.

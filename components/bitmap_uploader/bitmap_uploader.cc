@@ -149,8 +149,9 @@ void BitmapUploader::Upload() {
     mailbox_holder->sync_token =
         mus::mojom::SyncToken::From<gpu::SyncToken>(sync_token);
     resource->mailbox_holder = std::move(mailbox_holder);
-    resource->is_repeated = false;
+    resource->read_lock_fences_enabled = false;
     resource->is_software = false;
+    resource->is_overlay_candidate = false;
 
     mus::mojom::QuadPtr quad = mus::mojom::Quad::New();
     quad->material = mus::mojom::MATERIAL_TEXTURE_CONTENT;
