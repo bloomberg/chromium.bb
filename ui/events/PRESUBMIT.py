@@ -15,6 +15,6 @@ def GetPreferredTryMasters(project, change):
       'linux_chromium_chromeos_asan_rel_ng': set(['defaulttests']),
     },
     'tryserver.chromium.win': {
-      'win_chromium_compile_dbg': set(['defaulttests']),
+      'win_chromium_compile_dbg_ng': set(['defaulttests']),
     }
   }
