@@ -258,6 +258,8 @@ void QuicCryptoClientStream::DoInitialize(
     // expiration because it may have been a while since we last verified
     // the proof.
     DCHECK(crypto_config_->proof_verifier());
+    // Track proof verification time when cached server config is used.
+    proof_verify_start_time_ = base::TimeTicks::Now();
     // If the cached state needs to be verified, do it now.
     next_state_ = STATE_VERIFY_PROOF;
   } else {
@@ -480,6 +482,10 @@ QuicAsyncStatus QuicCryptoClientStream::DoVerifyProof(
 
 void QuicCryptoClientStream::DoVerifyProofComplete(
     QuicCryptoClientConfig::CachedState* cached) {
+  if (!proof_verify_start_time_.is_null()) {
+    UMA_HISTOGRAM_TIMES("Net.QuicSession.VerifyProofTime.CachedServerConfig",
+                        base::TimeTicks::Now() - proof_verify_start_time_);
+  }
   if (!verify_ok_) {
     if (verify_details_.get()) {
       client_session()->OnProofVerifyDetailsAvailable(*verify_details_);

@@ -236,6 +236,8 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream
   // STATE_VERIFY_PROOF*, and subsequent STATE_SEND_CHLO state.
   bool stateless_reject_received_;
 
+  base::TimeTicks proof_verify_start_time_;
+
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoClientStream);
 };
 
