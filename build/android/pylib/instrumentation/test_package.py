@@ -11,13 +11,16 @@ from pylib.instrumentation import test_jar
 
 
 class TestPackage(test_jar.TestJar):
-  def __init__(self, apk_path, jar_path, test_support_apk_path):
+  def __init__(self, apk_path, jar_path, test_support_apk_path,
+               additional_apks=None, apk_under_test=None):
     test_jar.TestJar.__init__(self, jar_path)
 
     if not os.path.exists(apk_path):
       raise Exception('%s not found, please build it' % apk_path)
-    self._apk_path = apk_path
+    self._additional_apks = additional_apks or []
     self._apk_name = os.path.splitext(os.path.basename(apk_path))[0]
+    self._apk_path = apk_path
+    self._apk_under_test = apk_under_test
     self._package_name = apk_helper.GetPackageName(self._apk_path)
     self._test_support_apk_path = test_support_apk_path
 
@@ -35,7 +38,11 @@ class TestPackage(test_jar.TestJar):
 
   # Override.
   def Install(self, device):
+    if self._apk_under_test:
+      device.Install(self._apk_under_test)
     device.Install(self.GetApkPath())
     if (self._test_support_apk_path and
         os.path.exists(self._test_support_apk_path)):
       device.Install(self._test_support_apk_path)
+    for apk in (a for a in self._additional_apks if os.path.exists(a)):
+      device.Install(apk)

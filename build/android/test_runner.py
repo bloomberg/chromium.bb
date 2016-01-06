@@ -450,7 +450,9 @@ def ProcessInstrumentationOptions(args):
       args.isolate_file_path,
       args.set_asserts,
       args.delete_stale_data,
-      args.timeout_scale)
+      args.timeout_scale,
+      args.apk_under_test,
+      args.additional_apks)
 
 
 def AddUIAutomatorTestOptions(parser):
