@@ -455,6 +455,16 @@ void RemoveAnimationFromLayerWithExistingPlayer(
   controller->RemoveAnimation(animation_id);
 }
 
+Animation* GetAnimationFromLayerWithExistingPlayer(
+    int layer_id,
+    scoped_refptr<AnimationTimeline> timeline,
+    int animation_id) {
+  LayerAnimationController* controller =
+      timeline->animation_host()->GetControllerForLayerId(layer_id);
+  DCHECK(controller);
+  return controller->GetAnimationById(animation_id);
+}
+
 int AddAnimatedFilterToLayerWithPlayer(
     int layer_id,
     scoped_refptr<AnimationTimeline> timeline,

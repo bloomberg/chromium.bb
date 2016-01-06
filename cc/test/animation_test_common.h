@@ -220,7 +220,13 @@ void AddAnimationToLayerWithExistingPlayer(
     int layer_id,
     scoped_refptr<AnimationTimeline> timeline,
     scoped_ptr<Animation> animation);
+
 void RemoveAnimationFromLayerWithExistingPlayer(
+    int layer_id,
+    scoped_refptr<AnimationTimeline> timeline,
+    int animation_id);
+
+Animation* GetAnimationFromLayerWithExistingPlayer(
     int layer_id,
     scoped_refptr<AnimationTimeline> timeline,
     int animation_id);

@@ -7,6 +7,8 @@
 #include <stddef.h>
 
 #include "base/thread_task_runner_handle.h"
+#include "cc/animation/animation_host.h"
+#include "cc/animation/animation_id_provider.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/mutable_properties.h"
 #include "cc/base/math_util.h"
@@ -382,20 +384,37 @@ class MockLayerTreeHost : public LayerTreeHost {
   MOCK_METHOD0(SetNeedsFullTreeSync, void());
 };
 
+class LayerTreeSettingsForLayerTest : public LayerTreeSettings {
+ public:
+  LayerTreeSettingsForLayerTest() { use_compositor_animation_timelines = true; }
+};
+
 class LayerTest : public testing::Test {
  public:
   LayerTest()
-      : host_impl_(&task_runner_provider_,
+      : host_impl_(LayerTreeSettingsForLayerTest(),
+                   &task_runner_provider_,
                    &shared_bitmap_manager_,
                    &task_graph_runner_),
-        fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {}
+        fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {
+    layer_settings_.use_compositor_animation_timelines =
+        settings().use_compositor_animation_timelines;
+    if (settings().use_compositor_animation_timelines) {
+      timeline_impl_ =
+          AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
+      timeline_impl_->set_is_impl_only(true);
+      host_impl_.animation_host()->AddAnimationTimeline(timeline_impl_);
+    }
+  }
+
+  const LayerTreeSettings& settings() { return settings_; }
+  scoped_refptr<AnimationTimeline> timeline_impl() { return timeline_impl_; }
 
  protected:
   void SetUp() override {
     LayerTreeHost::InitParams params;
-    LayerTreeSettings settings;
     params.client = &fake_client_;
-    params.settings = &settings;
+    params.settings = &settings_;
     params.task_graph_runner = &task_graph_runner_;
     layer_tree_host_.reset(
         new StrictMock<MockLayerTreeHost>(&fake_client_, &params));
@@ -477,6 +496,9 @@ class LayerTest : public testing::Test {
   scoped_refptr<Layer> grand_child2_;
   scoped_refptr<Layer> grand_child3_;
 
+  scoped_refptr<AnimationTimeline> timeline_impl_;
+
+  LayerTreeSettingsForLayerTest settings_;
   LayerSettings layer_settings_;
 };
 
@@ -1051,14 +1073,18 @@ TEST_F(LayerTest,
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1,
                                   layer_tree_host_->SetRootLayer(test_layer));
 
-  scoped_ptr<AnimationRegistrar> registrar = AnimationRegistrar::Create();
-  impl_layer->layer_animation_controller()->SetAnimationRegistrar(
-      registrar.get());
+  scoped_ptr<AnimationRegistrar> registrar;
+  if (settings().use_compositor_animation_timelines) {
+    AddAnimatedTransformToLayerWithPlayer(impl_layer->id(), timeline_impl(),
+                                          1.0, 0, 100);
+  } else {
+    registrar = AnimationRegistrar::Create();
+    impl_layer->layer_animation_controller()->SetAnimationRegistrar(
+        registrar.get());
 
-  AddAnimatedTransformToController(impl_layer->layer_animation_controller(),
-                                   1.0,
-                                   0,
-                                   100);
+    AddAnimatedTransformToController(impl_layer->layer_animation_controller(),
+                                     1.0, 0, 100);
+  }
 
   gfx::Transform transform;
   transform.Rotate(45.0);
@@ -1069,13 +1095,19 @@ TEST_F(LayerTest,
   EXPECT_TRUE(impl_layer->LayerPropertyChanged());
 
   impl_layer->ResetAllChangeTrackingForSubtree();
-  AddAnimatedTransformToController(impl_layer->layer_animation_controller(),
-                                   1.0,
-                                   0,
-                                   100);
-  impl_layer->layer_animation_controller()
-      ->GetAnimation(Animation::TRANSFORM)
-      ->set_is_impl_only(true);
+  if (settings().use_compositor_animation_timelines) {
+    int animation_id = AddAnimatedTransformToLayerWithPlayer(
+        impl_layer->id(), timeline_impl(), 1.0, 0, 100);
+    GetAnimationFromLayerWithExistingPlayer(impl_layer->id(), timeline_impl(),
+                                            animation_id)
+        ->set_is_impl_only(true);
+  } else {
+    AddAnimatedTransformToController(impl_layer->layer_animation_controller(),
+                                     1.0, 0, 100);
+    impl_layer->layer_animation_controller()
+        ->GetAnimation(Animation::TRANSFORM)
+        ->set_is_impl_only(true);
+  }
   transform.Rotate(45.0);
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetTransform(transform));
 
@@ -1093,15 +1125,18 @@ TEST_F(LayerTest,
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1,
                                   layer_tree_host_->SetRootLayer(test_layer));
 
-  scoped_ptr<AnimationRegistrar> registrar = AnimationRegistrar::Create();
-  impl_layer->layer_animation_controller()->SetAnimationRegistrar(
-      registrar.get());
+  scoped_ptr<AnimationRegistrar> registrar;
+  if (settings().use_compositor_animation_timelines) {
+    AddOpacityTransitionToLayerWithPlayer(impl_layer->id(), timeline_impl(),
+                                          1.0, 0.3f, 0.7f, false);
+  } else {
+    registrar = AnimationRegistrar::Create();
+    impl_layer->layer_animation_controller()->SetAnimationRegistrar(
+        registrar.get());
 
-  AddOpacityTransitionToController(impl_layer->layer_animation_controller(),
-                                   1.0,
-                                   0.3f,
-                                   0.7f,
-                                   false);
+    AddOpacityTransitionToController(impl_layer->layer_animation_controller(),
+                                     1.0, 0.3f, 0.7f, false);
+  }
 
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetOpacity(0.5f));
 
@@ -1110,14 +1145,19 @@ TEST_F(LayerTest,
   EXPECT_TRUE(impl_layer->LayerPropertyChanged());
 
   impl_layer->ResetAllChangeTrackingForSubtree();
-  AddOpacityTransitionToController(impl_layer->layer_animation_controller(),
-                                   1.0,
-                                   0.3f,
-                                   0.7f,
-                                   false);
-  impl_layer->layer_animation_controller()
-      ->GetAnimation(Animation::OPACITY)
-      ->set_is_impl_only(true);
+  if (settings().use_compositor_animation_timelines) {
+    int animation_id = AddOpacityTransitionToLayerWithPlayer(
+        impl_layer->id(), timeline_impl(), 1.0, 0.3f, 0.7f, false);
+    GetAnimationFromLayerWithExistingPlayer(impl_layer->id(), timeline_impl(),
+                                            animation_id)
+        ->set_is_impl_only(true);
+  } else {
+    AddOpacityTransitionToController(impl_layer->layer_animation_controller(),
+                                     1.0, 0.3f, 0.7f, false);
+    impl_layer->layer_animation_controller()
+        ->GetAnimation(Animation::OPACITY)
+        ->set_is_impl_only(true);
+  }
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetOpacity(0.75f));
 
   EXPECT_FALSE(impl_layer->LayerPropertyChanged());
@@ -1134,12 +1174,18 @@ TEST_F(LayerTest,
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1,
                                   layer_tree_host_->SetRootLayer(test_layer));
 
-  scoped_ptr<AnimationRegistrar> registrar = AnimationRegistrar::Create();
-  impl_layer->layer_animation_controller()->SetAnimationRegistrar(
-      registrar.get());
+  scoped_ptr<AnimationRegistrar> registrar;
+  if (settings().use_compositor_animation_timelines) {
+    AddAnimatedFilterToLayerWithPlayer(impl_layer->id(), timeline_impl(), 1.0,
+                                       1.f, 2.f);
+  } else {
+    registrar = AnimationRegistrar::Create();
+    impl_layer->layer_animation_controller()->SetAnimationRegistrar(
+        registrar.get());
 
-  AddAnimatedFilterToController(
-      impl_layer->layer_animation_controller(), 1.0, 1.f, 2.f);
+    AddAnimatedFilterToController(impl_layer->layer_animation_controller(), 1.0,
+                                  1.f, 2.f);
+  }
 
   FilterOperations filters;
   filters.Append(FilterOperation::CreateBlurFilter(2.f));
@@ -1150,11 +1196,19 @@ TEST_F(LayerTest,
   EXPECT_TRUE(impl_layer->LayerPropertyChanged());
 
   impl_layer->ResetAllChangeTrackingForSubtree();
-  AddAnimatedFilterToController(
-      impl_layer->layer_animation_controller(), 1.0, 1.f, 2.f);
-  impl_layer->layer_animation_controller()
-      ->GetAnimation(Animation::FILTER)
-      ->set_is_impl_only(true);
+  if (settings().use_compositor_animation_timelines) {
+    int animation_id = AddAnimatedFilterToLayerWithPlayer(
+        impl_layer->id(), timeline_impl(), 1.0, 1.f, 2.f);
+    GetAnimationFromLayerWithExistingPlayer(impl_layer->id(), timeline_impl(),
+                                            animation_id)
+        ->set_is_impl_only(true);
+  } else {
+    AddAnimatedFilterToController(impl_layer->layer_animation_controller(), 1.0,
+                                  1.f, 2.f);
+    impl_layer->layer_animation_controller()
+        ->GetAnimation(Animation::FILTER)
+        ->set_is_impl_only(true);
+  }
   filters.Append(FilterOperation::CreateSepiaFilter(0.5f));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetFilters(filters));
 
@@ -1301,6 +1355,10 @@ void AssertLayerTreeHostMatchesForSubtree(Layer* layer, LayerTreeHost* host) {
 
 class LayerLayerTreeHostTest : public testing::Test {
  public:
+  LayerLayerTreeHostTest() {
+    layer_settings_.use_compositor_animation_timelines = true;
+  }
+
  protected:
   LayerSettings layer_settings_;
 };
@@ -1488,6 +1546,10 @@ static bool AddTestAnimation(Layer* layer) {
 }
 
 TEST_F(LayerLayerTreeHostTest, ShouldNotAddAnimationWithoutAnimationRegistrar) {
+  // This tests isn't needed in new use_compositor_animation_timelines mode.
+  if (layer_settings_.use_compositor_animation_timelines)
+    return;
+
   scoped_refptr<Layer> layer = Layer::Create(layer_settings_);
 
   // Case 1: without a LayerTreeHost and without an AnimationRegistrar, the
@@ -1502,6 +1564,8 @@ TEST_F(LayerLayerTreeHostTest, ShouldNotAddAnimationWithoutAnimationRegistrar) {
 
   LayerTreeSettings settings;
   settings.accelerated_animation_enabled = false;
+  settings.use_compositor_animation_timelines =
+      layer_settings_.use_compositor_animation_timelines;
   LayerTreeHostFactory factory;
   scoped_ptr<LayerTreeHost> layer_tree_host = factory.Create(settings);
   layer_tree_host->SetRootLayer(layer);
