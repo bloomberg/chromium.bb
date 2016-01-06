@@ -1283,11 +1283,6 @@ crbug.com/568778 [ XP ] tables/mozilla/bugs/bug86708.html [ Failure ]
 crbug.com/568778 [ XP ] tables/mozilla_expected_failures/bugs/97619.html [ Failure ]
 crbug.com/568778 [ XP ] tables/mozilla_expected_failures/bugs/bug85016.html [ Failure ]
 
-# FIXME crbug.com/570401 bad rebaselines submited, wrong size scale factor affecting the text result expected
-# backing size, some image results twice a big as expected, or become all-white squares.
-crbug.com/570002 fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
-crbug.com/570002 virtual/display_list_2d_canvas/fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
-
 crbug.com/568867 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
 crbug.com/568867 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
 
