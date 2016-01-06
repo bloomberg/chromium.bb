@@ -23,32 +23,32 @@ namespace ios {
 //      is no longer necessary.
 class StringProvider {
  public:
-  StringProvider() {}
-  virtual ~StringProvider() {}
+  StringProvider();
+  virtual ~StringProvider();
 
   // Returns the string to display in the omnibox context menu for the user to
   // copy the URL for the current search query into the pasteboard.
   virtual std::string GetOmniboxCopyUrlString() = 0;
 
   // Return the strings used to display spoofing attempt errors.
-  virtual base::string16 GetSpoofingInterstitialTitle() = 0;
-  virtual base::string16 GetSpoofingInterstitialHeadline() = 0;
-  virtual base::string16 GetSpoofingInterstitialMessage() = 0;
-  virtual base::string16 GetSpoofingInterstitialDetails() = 0;
-  virtual base::string16 GetSpoofingInterstitialFailure() = 0;
+  virtual base::string16 GetSpoofingInterstitialTitle();
+  virtual base::string16 GetSpoofingInterstitialHeadline();
+  virtual base::string16 GetSpoofingInterstitialMessage();
+  virtual base::string16 GetSpoofingInterstitialDetails();
+  virtual base::string16 GetSpoofingInterstitialFailure();
 
   // Return the resource IDs used to display unsafe port errors.
-  virtual int GetUnsafePortTitleID() = 0;
-  virtual int GetUnsafePortHeadlineID() = 0;
-  virtual int GetUnsafePortMessageID() = 0;
-  virtual int GetUnsafePortDetailsID() = 0;
+  virtual int GetUnsafePortTitleID();
+  virtual int GetUnsafePortHeadlineID();
+  virtual int GetUnsafePortMessageID();
+  virtual int GetUnsafePortDetailsID();
 
   // Returns a generic "Done" string.
-  virtual base::string16 GetDoneString() = 0;
+  virtual base::string16 GetDoneString();
   // Returns a generic "OK" string.
-  virtual base::string16 GetOKString() = 0;
+  virtual base::string16 GetOKString();
   // Returns the product name (e.g. "Google Chrome").
-  virtual base::string16 GetProductName() = 0;
+  virtual base::string16 GetProductName();
 };
 
 }  // namespace ios

@@ -17,6 +17,7 @@ source_set("browser") {
     "signin/chrome_identity_service.mm",
     "signin/signin_error_provider.h",
     "signin/signin_error_provider.mm",
+    "string_provider.cc",
     "string_provider.h",
     "ui/infobar_view_delegate.h",
     "ui/infobar_view_protocol.h",
