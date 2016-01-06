@@ -141,6 +141,7 @@ config("mesa_internal_warnings") {
       "/wd4305",  # Truncation from int to float.
       "/wd4334",  # Result of 32-bit shift implicitly converted to 64 bits.
       "/wd4345",  # POD-type default initializers.
+      "/wd4311",  # Pointer truncation TODO(brucedawson): http://crbug.com/554200
     ]
   }
 }

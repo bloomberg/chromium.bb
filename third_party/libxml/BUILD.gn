@@ -28,7 +28,8 @@ config("libxml_warnings") {
   if (is_win) {
     cflags_c = [
       "/wd4018",  # Signed/unsigned mismatch in comparison.
-      "/wd4101",  # Unreferenced local variable.
+      "/wd4267",  # TODO(brucedawson): http://crbug.com/554200 fix C4267
+      "/wd4311",  # and C4311 warnings.
     ]
   }
   if (is_clang) {

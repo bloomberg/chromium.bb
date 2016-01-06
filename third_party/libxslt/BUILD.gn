@@ -86,7 +86,13 @@ static_library("libxslt") {
     include_dirs = [ "linux" ]
   } else if (is_win) {
     include_dirs = [ "win32" ]
-    cflags += [ "/wd4267" ]  # size_t to int.
+    cflags += [
+      "/wd4267",  # size_t to int.
+
+      # TODO(brucedawson): http://crbug.com/554200 4311 is a VS
+      # 2015 64-bit warning for pointer truncation
+      "/wd4311",
+    ]
   } else if (is_mac) {
     include_dirs = [ "mac" ]
   }
