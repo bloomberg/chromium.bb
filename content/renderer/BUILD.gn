@@ -93,7 +93,6 @@ source_set("renderer") {
   }
 
   if (is_android) {
-    sources -= [ "media/audio_decoder.cc" ]
     sources += [
       "external_popup_menu.cc",
       "external_popup_menu.h",

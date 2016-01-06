@@ -1389,12 +1389,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_StartContentIntent,
                     GURL /* content_url */,
                     bool /* is_main_frame */)
 
-// This message runs the MediaCodec for decoding audio for webaudio.
-IPC_MESSAGE_CONTROL3(ViewHostMsg_RunWebAudioMediaCodec,
-                     base::SharedMemoryHandle /* encoded_data_handle */,
-                     base::FileDescriptor /* pcm_output */,
-                     uint32_t /* data_size*/)
-
 // Reply to the ViewMsg_ExtractSmartClipData message.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_SmartClipDataExtracted,
                     base::string16 /* text */,

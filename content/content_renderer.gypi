@@ -261,8 +261,6 @@
       'renderer/manifest/manifest_uma_util.h',
       'renderer/media/aec_dump_message_filter.cc',
       'renderer/media/aec_dump_message_filter.h',
-      'renderer/media/android/audio_decoder_android.cc',
-      'renderer/media/android/audio_decoder_android.h',
       'renderer/media/android/media_info_loader.cc',
       'renderer/media/android/media_info_loader.h',
       'renderer/media/android/media_source_delegate.cc',
@@ -811,9 +809,6 @@
       ],
     }],
     ['OS=="android"', {
-      'sources!': [
-        'renderer/media/audio_decoder.cc',
-      ],
       'sources': [
         'renderer/external_popup_menu.cc',
         'renderer/external_popup_menu.h',

@@ -205,12 +205,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   bool CheckBenchmarkingEnabled() const;
   bool CheckPreparsedJsCachingEnabled() const;
 
-#if defined(OS_ANDROID)
-  void OnWebAudioMediaCodec(base::SharedMemoryHandle encoded_data_handle,
-                            base::FileDescriptor pcm_output,
-                            uint32_t data_size);
-#endif
-
   void OnAllocateGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                  uint32_t width,
                                  uint32_t height,

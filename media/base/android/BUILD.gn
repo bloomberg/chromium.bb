@@ -64,9 +64,6 @@ source_set("android") {
     "sdk_media_codec_bridge.h",
     "video_decoder_job.cc",
     "video_decoder_job.h",
-    "webaudio_media_codec_bridge.cc",
-    "webaudio_media_codec_bridge.h",
-    "webaudio_media_codec_info.h",
   ]
   configs += [
     "//media:media_config",
@@ -114,7 +111,6 @@ generate_jni("media_jni_headers") {
     "java/src/org/chromium/media/MediaDrmBridge.java",
     "java/src/org/chromium/media/MediaPlayerBridge.java",
     "java/src/org/chromium/media/MediaPlayerListener.java",
-    "java/src/org/chromium/media/WebAudioMediaCodecBridge.java",
   ]
   jni_package = "media"
 }

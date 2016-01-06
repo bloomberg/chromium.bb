@@ -1823,7 +1823,6 @@
             'base/android/java/src/org/chromium/media/MediaDrmBridge.java',
             'base/android/java/src/org/chromium/media/MediaPlayerBridge.java',
             'base/android/java/src/org/chromium/media/MediaPlayerListener.java',
-            'base/android/java/src/org/chromium/media/WebAudioMediaCodecBridge.java',
           ],
           'variables': {
             'jni_gen_package': 'media',
@@ -1901,9 +1900,6 @@
             'base/android/sdk_media_codec_bridge.h',
             'base/android/video_decoder_job.cc',
             'base/android/video_decoder_job.h',
-            'base/android/webaudio_media_codec_bridge.cc',
-            'base/android/webaudio_media_codec_bridge.h',
-            'base/android/webaudio_media_codec_info.h',
           ],
           'conditions': [
             # Only 64 bit builds are using android-21 NDK library, check common.gypi
