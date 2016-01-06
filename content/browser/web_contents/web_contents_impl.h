@@ -1180,6 +1180,9 @@ class CONTENT_EXPORT WebContentsImpl
   int minimum_zoom_percent_;
   int maximum_zoom_percent_;
 
+  // Used to correctly handle integer zooming through a smooth scroll device.
+  float zoom_scroll_remainder_;
+
   // The intrinsic size of the page.
   gfx::Size preferred_size_;
 
