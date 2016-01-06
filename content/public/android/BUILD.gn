@@ -35,6 +35,7 @@ android_library("content_java") {
     "//device/battery:mojo_bindings_java",
     "//device/battery/android:battery_monitor_android",
     "//device/bluetooth:java",
+    "//device/usb:java",
     "//device/vibration:mojo_bindings_java",
     "//device/vibration/android:vibration_manager_android",
     "//media/base/android:media_java",

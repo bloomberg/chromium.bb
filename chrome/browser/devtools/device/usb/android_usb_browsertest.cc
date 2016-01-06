@@ -427,10 +427,6 @@ class MockUsbDevice : public UsbDevice {
     return T::kConfigured ? &config_desc_ : nullptr;
   }
 
-  bool Close(scoped_refptr<UsbDeviceHandle> handle) override {
-    return true;
-  }
-
   std::set<int> claimed_interfaces_;
 
  protected:
