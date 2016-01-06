@@ -99,6 +99,10 @@
   return [_scrollView isZooming];
 }
 
+- (CGFloat)zoomScale {
+  return [_scrollView zoomScale];
+}
+
 - (void)setContentOffset:(CGPoint)contentOffset {
   [_scrollView setContentOffset:contentOffset];
 }
