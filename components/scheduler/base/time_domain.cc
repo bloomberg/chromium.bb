@@ -177,6 +177,17 @@ void TimeDomain::WakeupReadyDelayedQueues(
   }
 }
 
+void TimeDomain::ClearExpiredWakeups() {
+  LazyNow lazy_now(CreateLazyNow());
+  while (!delayed_wakeup_multimap_.empty()) {
+    DelayedWakeupMultimap::iterator next_wakeup =
+        delayed_wakeup_multimap_.begin();
+    if (next_wakeup->first > lazy_now.Now())
+      break;
+    delayed_wakeup_multimap_.erase(next_wakeup);
+  }
+}
+
 bool TimeDomain::NextScheduledRunTime(base::TimeTicks* out_time) const {
   if (delayed_wakeup_multimap_.empty())
     return false;

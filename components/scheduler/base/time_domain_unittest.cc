@@ -15,6 +15,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
+using testing::AnyNumber;
 using testing::Mock;
 
 namespace scheduler {
@@ -27,6 +28,7 @@ class MockTimeDomain : public TimeDomain {
 
   ~MockTimeDomain() override {}
 
+  using TimeDomain::ClearExpiredWakeups;
   using TimeDomain::NextScheduledRunTime;
   using TimeDomain::NextScheduledTaskQueue;
   using TimeDomain::ScheduleDelayedWork;
@@ -181,6 +183,32 @@ TEST_F(TimeDomainTest, UpdateWorkQueues) {
   time_domain_->SetNow(delayed_runtime);
   time_domain_->UpdateWorkQueues(false, nullptr);
   EXPECT_EQ(1UL, dummy_queue->delayed_work_queue()->Size());
+}
+
+TEST_F(TimeDomainTest, ClearExpiredWakeups) {
+  LazyNow lazy_now = time_domain_->CreateLazyNow();
+  base::TimeDelta delay1 = base::TimeDelta::FromMilliseconds(10);
+  base::TimeDelta delay2 = base::TimeDelta::FromMilliseconds(20);
+  base::TimeTicks run_time1 = time_domain_->Now() + delay1;
+  base::TimeTicks run_time2 = time_domain_->Now() + delay2;
+
+  EXPECT_CALL(*time_domain_.get(), RequestWakeup(_, _)).Times(AnyNumber());
+  time_domain_->ScheduleDelayedWork(task_queue_.get(), run_time1, &lazy_now);
+  time_domain_->ScheduleDelayedWork(task_queue_.get(), run_time2, &lazy_now);
+
+  base::TimeTicks next_run_time;
+  ASSERT_TRUE(time_domain_->NextScheduledRunTime(&next_run_time));
+  EXPECT_EQ(run_time1, next_run_time);
+
+  time_domain_->SetNow(run_time1);
+  time_domain_->ClearExpiredWakeups();
+
+  ASSERT_TRUE(time_domain_->NextScheduledRunTime(&next_run_time));
+  EXPECT_EQ(run_time2, next_run_time);
+
+  time_domain_->SetNow(run_time2);
+  time_domain_->ClearExpiredWakeups();
+  ASSERT_FALSE(time_domain_->NextScheduledRunTime(&next_run_time));
 }
 
 namespace {

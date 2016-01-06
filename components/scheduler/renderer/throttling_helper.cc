@@ -75,16 +75,23 @@ void ThrottlingHelper::PumpThrottledTasks() {
   pending_pump_throttled_tasks_ = false;
 
   time_domain_->AdvanceTo(tick_clock_->NowTicks());
-  bool work_to_do = false;
   for (TaskQueue* task_queue : throttled_queues_) {
     if (task_queue->IsEmpty())
       continue;
 
-    work_to_do = true;
     task_queue->PumpQueue(false);
   }
+  // Make sure NextScheduledRunTime gives us an up-to date result.
+  time_domain_->ClearExpiredWakeups();
 
-  if (work_to_do)
+  base::TimeTicks next_scheduled_delayed_task;
+  // Maybe schedule a call to ThrottlingHelper::PumpThrottledTasks if there is
+  // a pending delayed task. NOTE posting a non-delayed task in the future will
+  // result in ThrottlingHelper::OnTimeDomainHasImmediateWork being called.
+  //
+  // TODO(alexclarke): Consider taking next_scheduled_delayed_task into account
+  // inside MaybeSchedulePumpThrottledTasksLocked.
+  if (time_domain_->NextScheduledRunTime(&next_scheduled_delayed_task))
     MaybeSchedulePumpThrottledTasksLocked(FROM_HERE);
 }
 

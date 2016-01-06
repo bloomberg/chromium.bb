@@ -231,9 +231,7 @@ TEST_F(ThrottlingHelperTest,
   mock_task_runner_->RunTasksWhile(
       base::Bind(&MessageLoopTaskCounter, &task_count));
 
-  // NOTE PumpThrottledTasks will always run at least twice because we can only
-  // detect if the queues have become empty before pumping.
-  EXPECT_EQ(2u, task_count);
+  EXPECT_EQ(1u, task_count);
 }
 
 }  // namespace scheduler

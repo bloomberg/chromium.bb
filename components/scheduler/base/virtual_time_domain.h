@@ -28,6 +28,8 @@ class SCHEDULER_EXPORT VirtualTimeDomain : public TimeDomain {
   // call TaskQueueManager::MaybeScheduleImmediateWork if needed.
   void AdvanceTo(base::TimeTicks now);
 
+  using TimeDomain::ClearExpiredWakeups;
+
  protected:
   void OnRegisterWithTaskQueueManager(
       TaskQueueManager* task_queue_manager) override;

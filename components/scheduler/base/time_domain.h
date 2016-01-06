@@ -115,6 +115,12 @@ class SCHEDULER_EXPORT TimeDomain {
       bool should_trigger_wakeup,
       const internal::TaskQueueImpl::Task* previous_task);
 
+ protected:
+  // Clears expired entries from |delayed_wakeup_multimap_|. Caution needs to be
+  // taken to ensure TaskQueueImpl::UpdateDelayedWorkQueue or
+  // TaskQueueImpl::Pump is called on the affected queues.
+  void ClearExpiredWakeups();
+
  private:
   void MoveNewlyUpdatableQueuesIntoUpdatableQueueSet();
 
