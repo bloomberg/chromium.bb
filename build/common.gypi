@@ -2673,9 +2673,6 @@
 
         # TODO(thakis): Enable this, crbug.com/507717
         '-Wno-shift-negative-value',
-
-        # TODO(thakis): Consider enabling this?
-        '-Wno-bitfield-width',
       ],
     },
     'includes': [ 'set_clang_warning_flags.gypi', ],

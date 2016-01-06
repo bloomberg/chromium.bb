@@ -875,9 +875,6 @@ config("default_warnings") {
       cflags += [
         # TODO(thakis): Enable this, crbug.com/507717
         "-Wno-shift-negative-value",
-
-        # TODO(thakis): Consider enabling this?
-        "-Wno-bitfield-width",
       ]
     }
   }
