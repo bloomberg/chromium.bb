@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chromecast/base/cast_constants.h"
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/browser/cast_browser_context.h"
@@ -171,11 +172,12 @@ bool CastContentBrowserClient::IsHandledURL(const GURL& url) {
     return false;
 
   static const char* const kProtocolList[] = {
-      url::kBlobScheme,
-      url::kFileSystemScheme,
-      content::kChromeUIScheme,
-      content::kChromeDevToolsScheme,
-      url::kDataScheme,
+    content::kChromeUIScheme,
+    content::kChromeDevToolsScheme,
+    kChromeResourceScheme,
+    url::kBlobScheme,
+    url::kDataScheme,
+    url::kFileSystemScheme,
   };
 
   const std::string& scheme = url.scheme();
@@ -409,6 +411,11 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 }
 
 #endif  // defined(OS_ANDROID)
+
+void CastContentBrowserClient::GetAdditionalWebUISchemes(
+    std::vector<std::string>* additional_schemes) {
+  additional_schemes->push_back(kChromeResourceScheme);
+}
 
 #if defined(OS_ANDROID) && defined(VIDEO_HOLE)
 content::ExternalVideoSurfaceContainer*

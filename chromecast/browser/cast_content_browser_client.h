@@ -152,6 +152,8 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
       int child_process_id,
       content::FileDescriptorInfo* mappings) override;
 #endif  // defined(OS_ANDROID)
+  void GetAdditionalWebUISchemes(
+      std::vector<std::string>* additional_schemes) override;
 #if defined(OS_ANDROID) && defined(VIDEO_HOLE)
   content::ExternalVideoSurfaceContainer*
   OverrideCreateExternalVideoSurfaceContainer(

@@ -14,6 +14,8 @@ source_set("base") {
     "android/system_time_change_notifier_android.cc",
     "android/system_time_change_notifier_android.h",
     "bind_to_task_runner.h",
+    "cast_constants.cc",
+    "cast_constants.h",
     "cast_paths.cc",
     "cast_paths.h",
     "cast_resource.cc",

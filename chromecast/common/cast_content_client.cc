@@ -9,10 +9,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
+#include "chromecast/base/cast_constants.h"
 #include "chromecast/base/version.h"
 #include "content/public/common/user_agent.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "url/url_util.h"
 
 namespace chromecast {
 namespace shell {
@@ -50,6 +52,10 @@ std::string BuildAndroidOsInfo() {
 }
 #endif
 
+const url::SchemeWithType kChromeResourceSchemeWithType = {
+  kChromeResourceScheme, url::SCHEME_WITHOUT_PORT
+};
+
 }  // namespace
 
 std::string GetUserAgent() {
@@ -71,6 +77,12 @@ std::string GetUserAgent() {
 }
 
 CastContentClient::~CastContentClient() {
+}
+
+void CastContentClient::AddAdditionalSchemes(
+    std::vector<url::SchemeWithType>* standard_schemes,
+    std::vector<std::string>* savable_schemes) {
+  standard_schemes->push_back(kChromeResourceSchemeWithType);
 }
 
 std::string CastContentClient::GetUserAgent() const {

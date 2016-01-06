@@ -19,6 +19,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "chromecast/base/cast_constants.h"
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/base/cast_sys_info_util.h"
 #include "chromecast/base/chromecast_switches.h"
@@ -41,6 +42,7 @@
 #include "chromecast/public/cast_sys_info.h"
 #include "chromecast/service/cast_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -325,6 +327,9 @@ int CastBrowserMainParts::PreCreateThreads() {
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
                                  cast_browser_process_->cast_screen());
 #endif
+
+  content::ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
+      kChromeResourceScheme);
   return 0;
 }
 

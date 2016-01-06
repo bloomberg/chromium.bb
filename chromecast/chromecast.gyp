@@ -88,6 +88,8 @@
         'base/android/system_time_change_notifier_android.cc',
         'base/android/system_time_change_notifier_android.h',
         'base/bind_to_task_runner.h',
+        'base/cast_constants.cc',
+        'base/cast_constants.h',
         'base/cast_paths.cc',
         'base/cast_paths.h',
         'base/cast_resource.h',
