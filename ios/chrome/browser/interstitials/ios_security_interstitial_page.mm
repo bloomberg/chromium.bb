@@ -24,8 +24,7 @@ IOSSecurityInterstitialPage::IOSSecurityInterstitialPage(
     const GURL& request_url)
     : web_state_(web_state),
       request_url_(request_url),
-      web_interstitial_(nullptr),
-      controller_(new IOSChromeControllerClient(web_state)) {
+      web_interstitial_(nullptr) {
   // Creating web_interstitial_ without showing it leaks memory, so don't
   // create it here.
 }
@@ -38,8 +37,6 @@ void IOSSecurityInterstitialPage::Show() {
       web_state_, ShouldCreateNewNavigation(), request_url_,
       scoped_ptr<web::HtmlWebInterstitialDelegate>(this));
   web_interstitial_->Show();
-
-  controller_->SetWebInterstitial(web_interstitial_);
   AfterShow();
 }
 
@@ -68,22 +65,4 @@ bool IOSSecurityInterstitialPage::IsPrefEnabled(const char* pref_name) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
   return browser_state->GetPrefs()->GetBoolean(pref_name);
-}
-
-void IOSSecurityInterstitialPage::SetReportingPreference(bool report) {
-  controller_->SetReportingPreference(report);
-}
-
-void IOSSecurityInterstitialPage::OpenExtendedReportingPrivacyPolicy() {
-  controller_->OpenExtendedReportingPrivacyPolicy();
-}
-
-security_interstitials::MetricsHelper*
-IOSSecurityInterstitialPage::GetMetricsHelper() {
-  return controller_->metrics_helper();
-}
-
-void IOSSecurityInterstitialPage::SetMetricsHelper(
-    scoped_ptr<security_interstitials::MetricsHelper> metrics_helper) {
-  controller_->set_metrics_helper(std::move(metrics_helper));
 }

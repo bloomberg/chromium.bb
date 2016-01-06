@@ -92,7 +92,7 @@ class SafeBrowsingBlockingPage : public IOSSecurityInterstitialPage {
   bool ShouldCreateNewNavigation() const override;
   void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) const override;
-  void AfterShow() override {}
+  void AfterShow() override;
 
   // A list of SafeBrowsingUIManager::UnsafeResource for a tab that the user
   // should be warned about.  They are queued when displaying more than one
@@ -147,6 +147,8 @@ class SafeBrowsingBlockingPage : public IOSSecurityInterstitialPage {
   std::string GetExtraMetricsSuffix() const;
   std::string GetRapporPrefix() const;
   std::string GetSamplingEventName() const;
+
+  scoped_ptr<IOSChromeControllerClient> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPage);
 };

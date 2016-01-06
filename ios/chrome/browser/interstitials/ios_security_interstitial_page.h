@@ -58,15 +58,6 @@ class IOSSecurityInterstitialPage : public web::HtmlWebInterstitialDelegate {
   // the ChromeBrowserState associated with |web_state_|.
   bool IsPrefEnabled(const char* pref_name) const;
 
-  // TODO(felt): Remove these. They are temporary methods, used to pass along
-  // calls to the |controller_| for subclasses that don't yet have their own
-  // ChromeControllerClients. crbug.com/488673
-  void SetReportingPreference(bool report);
-  void OpenExtendedReportingPrivacyPolicy();
-  security_interstitials::MetricsHelper* GetMetricsHelper();
-  void SetMetricsHelper(
-      scoped_ptr<security_interstitials::MetricsHelper> metrics_helper);
-
   web::WebState* web_state() const { return web_state_; }
   const GURL& request_url() const { return request_url_; }
   web::WebInterstitial* web_interstitial() const { return web_interstitial_; }
@@ -81,9 +72,6 @@ class IOSSecurityInterstitialPage : public web::HtmlWebInterstitialDelegate {
   // Once non-null, the |web_interstitial_| takes ownership of this
   // IOSSecurityInterstitialPage instance.
   web::WebInterstitial* web_interstitial_;
-
-  // For subclasses that don't have their own IOSChromeControllerClient yet.
-  scoped_ptr<IOSChromeControllerClient> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSSecurityInterstitialPage);
 };
