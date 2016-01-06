@@ -26,7 +26,6 @@
 class NetPrefObserver;
 class PrefService;
 
-class ShortcutsBackend;
 class TrackedPreferenceValidationDelegate;
 
 #if defined(OS_CHROMEOS)
@@ -183,11 +182,6 @@ class ProfileImpl : public Profile {
   void EnsureSessionServiceCreated();
 #endif
 
-
-  void EnsureRequestContextCreated() {
-    GetRequestContext();
-  }
-
   // Updates the ProfileInfoCache with data from this profile.
   void UpdateProfileSupervisedUserIdCache();
   void UpdateProfileNameCache();
@@ -242,7 +236,6 @@ class ProfileImpl : public Profile {
 #endif
   scoped_ptr<NetPrefObserver> net_pref_observer_;
   scoped_ptr<ssl_config::SSLConfigServiceManager> ssl_config_service_manager_;
-  scoped_refptr<ShortcutsBackend> shortcuts_backend_;
 
   // Exit type the last time the profile was opened. This is set only once from
   // prefs.
