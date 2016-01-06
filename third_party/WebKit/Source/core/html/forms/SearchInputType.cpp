@@ -113,7 +113,7 @@ void SearchInputType::startSearchEventTimer()
     unsigned length = element().innerEditorValue().length();
 
     if (!length) {
-        stopSearchEventTimer();
+        m_searchEventTimer.stop();
         element().document().postTask(BLINK_FROM_HERE, createSameThreadTask(&HTMLInputElement::onSearch, PassRefPtrWillBeRawPtr<HTMLInputElement>(&element())));
         return;
     }
@@ -123,9 +123,10 @@ void SearchInputType::startSearchEventTimer()
     m_searchEventTimer.startOneShot(max(0.2, 0.6 - 0.1 * length), BLINK_FROM_HERE);
 }
 
-void SearchInputType::stopSearchEventTimer()
+void SearchInputType::dispatchSearchEvent()
 {
     m_searchEventTimer.stop();
+    element().dispatchEvent(Event::createBubble(EventTypeNames::search));
 }
 
 void SearchInputType::searchEventTimerFired(Timer<SearchInputType>*)

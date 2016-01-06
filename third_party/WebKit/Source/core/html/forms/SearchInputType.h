@@ -40,8 +40,6 @@ class SearchInputType final : public BaseTextInputType {
 public:
     static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
 
-    void stopSearchEventTimer();
-
 private:
     SearchInputType(HTMLInputElement&);
     void countUsage() override;
@@ -54,6 +52,7 @@ private:
     bool supportsInputModeAttribute() const override;
     void updateView() override;
     const AtomicString& defaultAutocapitalize() const override;
+    void dispatchSearchEvent() override;
 
     void searchEventTimerFired(Timer<SearchInputType>*);
     bool searchEventsShouldBeDispatched() const;

@@ -212,6 +212,7 @@ public:
     bool hasCustomFocusLogic() const override;
 
     virtual bool shouldDispatchFormControlChangeEvent(String&, String&);
+    virtual void dispatchSearchEvent();
 
     // For test purpose
     virtual ColorChooserClient* colorChooserClient();
