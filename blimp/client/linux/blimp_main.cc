@@ -15,7 +15,7 @@
 #include "blimp/client/session/navigation_feature.h"
 
 namespace {
-const char kDefaultUrl[] = "https://www.google.com";
+const char kDefaultUrl[] = "https://example.com";
 const int kDummyTabId = 0;
 }
 

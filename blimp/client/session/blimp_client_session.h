@@ -15,6 +15,8 @@
 
 namespace blimp {
 
+class BlimpMessageProcessor;
+class BlimpMessageThreadPipe;
 class BrowserConnectionHandler;
 class ClientConnectionManager;
 class ClientNetworkComponents;
@@ -38,14 +40,17 @@ class BLIMP_CLIENT_EXPORT BlimpClientSession {
   NavigationFeature* GetNavigationFeature() const;
   RenderWidgetFeature* GetRenderWidgetFeature() const;
 
-  // Tells |connection_manager_| to start connecting to the remote host.
-  // Must be called on the IO thread.
-  void Connect();
-
  protected:
   virtual ~BlimpClientSession();
 
  private:
+  // Registers a message processor which will receive all messages of the |type|
+  // specified.  Returns a BlimpMessageProcessor object for sending messages of
+  // type |type|.
+  scoped_ptr<BlimpMessageProcessor> RegisterFeature(
+      BlimpMessage::Type type,
+      BlimpMessageProcessor* incoming_processor);
+
   base::Thread io_thread_;
   scoped_ptr<TabControlFeature> tab_control_feature_;
   scoped_ptr<NavigationFeature> navigation_feature_;
@@ -53,7 +58,12 @@ class BLIMP_CLIENT_EXPORT BlimpClientSession {
 
   // Container struct for network components.
   // Must be deleted on the IO thread.
-  scoped_ptr<ClientNetworkComponents> network_components_;
+  scoped_ptr<ClientNetworkComponents> net_components_;
+
+  // Pipes for receiving BlimpMessages from IO thread.
+  // Incoming messages are only routed to the UI thread since all features run
+  // on the UI thread.
+  std::vector<scoped_ptr<BlimpMessageThreadPipe>> incoming_pipes_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpClientSession);
 };
