@@ -168,12 +168,10 @@ public:
 
     bool clientHasCheckedPaintInvalidation(const DisplayItemClient& client) const
     {
-        ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
         return m_clientsCheckedPaintInvalidation.contains(&client);
     }
     void setClientHasCheckedPaintInvalidation(const DisplayItemClient& client)
     {
-        ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
         m_clientsCheckedPaintInvalidation.add(&client);
     }
 

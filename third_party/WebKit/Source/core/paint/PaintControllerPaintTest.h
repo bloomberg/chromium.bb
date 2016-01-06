@@ -18,8 +18,7 @@ namespace blink {
 class PaintControllerPaintTestBase : public RenderingTest {
 public:
     PaintControllerPaintTestBase(bool enableSlimmingPaintV2)
-        : m_originalSlimmingPaintSynchronizedPaintingEnabled(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
-        , m_originalSlimmingPaintOffsetCachingEnabled(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled())
+        : m_originalSlimmingPaintOffsetCachingEnabled(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled())
         , m_originalSlimmingPaintV2Enabled(RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         , m_enableSlimmingPaintV2(enableSlimmingPaintV2)
     { }
@@ -37,7 +36,6 @@ protected:
     }
     void TearDown() override
     {
-        RuntimeEnabledFeatures::setSlimmingPaintSynchronizedPaintingEnabled(m_originalSlimmingPaintSynchronizedPaintingEnabled);
         RuntimeEnabledFeatures::setSlimmingPaintOffsetCachingEnabled(m_originalSlimmingPaintOffsetCachingEnabled);
         RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(m_originalSlimmingPaintV2Enabled);
         GraphicsLayer::setDrawDebugRedFillForTesting(true);
@@ -56,14 +54,12 @@ protected:
 
     void updateLifecyclePhasesToPaintClean()
     {
-        ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
         updateLifecyclePhasesBeforePaint();
         document().view()->synchronizedPaint();
     }
 
     bool paintWithoutCommit(const IntRect* interestRect = nullptr)
     {
-        ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
         // Only root graphics layer is supported.
         document().view()->lifecycle().advanceTo(DocumentLifecycle::InPaint);
         if (!layoutView().layer()->graphicsLayerBacking()->paintWithoutCommit(interestRect)) {
@@ -88,7 +84,6 @@ protected:
     }
 
 private:
-    bool m_originalSlimmingPaintSynchronizedPaintingEnabled;
     bool m_originalSlimmingPaintOffsetCachingEnabled;
     bool m_originalSlimmingPaintV2Enabled;
     bool m_enableSlimmingPaintV2;

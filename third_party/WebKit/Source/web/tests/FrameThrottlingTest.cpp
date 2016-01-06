@@ -153,10 +153,7 @@ TEST_F(FrameThrottlingTest, ThrottledLifecycleUpdate)
     frameElement->setAttribute(styleAttr, "transform: translateY(480px)");
     compositeFrame();
     EXPECT_TRUE(frameDocument->view()->canThrottleRendering());
-    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
-        EXPECT_EQ(DocumentLifecycle::PaintClean, frameDocument->lifecycle().state());
-    else
-        EXPECT_EQ(DocumentLifecycle::PaintInvalidationClean, frameDocument->lifecycle().state());
+    EXPECT_EQ(DocumentLifecycle::PaintClean, frameDocument->lifecycle().state());
 
     // Mutating the throttled frame followed by a beginFrame will not result in
     // a complete lifecycle update.
@@ -285,10 +282,7 @@ TEST(RemoteFrameThrottlingTest, ThrottledLocalRoot)
     EXPECT_TRUE(frameView->shouldThrottleRendering());
 
     Document* frameDocument = frameView->frame().document();
-    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
-        EXPECT_EQ(DocumentLifecycle::PaintClean, frameDocument->lifecycle().state());
-    else
-        EXPECT_EQ(DocumentLifecycle::PaintInvalidationClean, frameDocument->lifecycle().state());
+    EXPECT_EQ(DocumentLifecycle::PaintClean, frameDocument->lifecycle().state());
 
     // Mutate the local child frame contents.
     auto* divElement = frameDocument->getElementById("div");

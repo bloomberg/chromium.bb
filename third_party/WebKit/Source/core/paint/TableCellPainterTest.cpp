@@ -11,8 +11,6 @@ using TableCellPainterTest = PaintControllerPaintTest;
 
 TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
 {
-    RuntimeEnabledFeatures::setSlimmingPaintSynchronizedPaintingEnabled(true);
-
     setBodyInnerHTML(
         "<style>"
         "  td { width: 200px; height: 200px; border: none; }"

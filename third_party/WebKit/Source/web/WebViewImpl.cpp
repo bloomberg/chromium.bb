@@ -2003,16 +2003,14 @@ void WebViewImpl::updateAllLifecyclePhases()
 
     PageWidgetDelegate::updateAllLifecyclePhases(*m_page, *mainFrameImpl()->frame());
 
-    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
-        if (InspectorOverlay* overlay = inspectorOverlay()) {
-            overlay->updateAllLifecyclePhases();
-            // TODO(chrishtr): integrate paint into the overlay's lifecycle.
-            if (overlay->pageOverlay() && overlay->pageOverlay()->graphicsLayer())
-                overlay->pageOverlay()->graphicsLayer()->paint(nullptr);
-        }
-        if (m_pageColorOverlay)
-            m_pageColorOverlay->graphicsLayer()->paint(nullptr);
+    if (InspectorOverlay* overlay = inspectorOverlay()) {
+        overlay->updateAllLifecyclePhases();
+        // TODO(chrishtr): integrate paint into the overlay's lifecycle.
+        if (overlay->pageOverlay() && overlay->pageOverlay()->graphicsLayer())
+            overlay->pageOverlay()->graphicsLayer()->paint(nullptr);
     }
+    if (m_pageColorOverlay)
+        m_pageColorOverlay->graphicsLayer()->paint(nullptr);
 
     // TODO(chrishtr): link highlights don't currently paint themselves, it's still driven by cc.
     // Fix this.

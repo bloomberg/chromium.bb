@@ -2413,7 +2413,7 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
             if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
                 updatePaintProperties();
 
-            if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled() && !m_frame->document()->printing())
+            if (!m_frame->document()->printing())
                 synchronizedPaint();
 
             if (RuntimeEnabledFeatures::frameTimingSupportEnabled())
@@ -2423,8 +2423,8 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
                 pushPaintArtifactToCompositor();
 
             ASSERT(!view->hasPendingSelection());
-            ASSERT(lifecycle().state() == DocumentLifecycle::PaintInvalidationClean
-                || (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled() && lifecycle().state() == DocumentLifecycle::PaintClean));
+            ASSERT((m_frame->document()->printing() && lifecycle().state() == DocumentLifecycle::PaintInvalidationClean)
+                || lifecycle().state() == DocumentLifecycle::PaintClean);
         }
     }
 
@@ -2442,7 +2442,6 @@ void FrameView::updatePaintProperties()
 
 void FrameView::synchronizedPaint()
 {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
     ASSERT(frame() == page()->mainFrame() || (!frame().tree().parent()->isLocalFrame()));
 
     LayoutView* view = layoutView();

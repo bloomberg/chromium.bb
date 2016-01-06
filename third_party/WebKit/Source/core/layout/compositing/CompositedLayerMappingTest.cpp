@@ -17,8 +17,7 @@ class CompositedLayerMappingTest : public RenderingTest {
 public:
     CompositedLayerMappingTest()
         : RenderingTest(SingleChildFrameLoaderClient::create())
-        , m_originalSlimmingPaintSynchronizedPaintingEnabled(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
-{ }
+    { }
 
 protected:
     IntRect recomputeInterestRect(const GraphicsLayer* graphicsLayer)
@@ -49,8 +48,6 @@ protected:
 private:
     void SetUp() override
     {
-        RuntimeEnabledFeatures::setSlimmingPaintSynchronizedPaintingEnabled(true);
-
         RenderingTest::SetUp();
         enableCompositing();
         GraphicsLayer::setDrawDebugRedFillForTesting(false);
@@ -59,12 +56,8 @@ private:
     void TearDown() override
     {
         GraphicsLayer::setDrawDebugRedFillForTesting(true);
-        RuntimeEnabledFeatures::setSlimmingPaintSynchronizedPaintingEnabled(m_originalSlimmingPaintSynchronizedPaintingEnabled);
-
         RenderingTest::TearDown();
     }
-
-    bool m_originalSlimmingPaintSynchronizedPaintingEnabled;
 };
 
 #define EXPECT_RECT_EQ(expected, actual) \

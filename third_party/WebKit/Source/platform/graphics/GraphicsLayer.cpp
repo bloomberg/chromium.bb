@@ -305,8 +305,6 @@ void GraphicsLayer::setOffsetDoubleFromLayoutObject(const DoubleSize& offset, Sh
 
 IntRect GraphicsLayer::interestRect()
 {
-    if (!RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
-        m_previousInterestRect = m_client->computeInterestRect(this, m_previousInterestRect);
     return m_previousInterestRect;
 }
 
@@ -332,8 +330,7 @@ bool GraphicsLayer::paintWithoutCommit(const IntRect* interestRect, GraphicsCont
         interestRect = &newInterestRect;
     }
 
-    if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()
-        && !paintController().subsequenceCachingIsDisabled()
+    if (!paintController().subsequenceCachingIsDisabled()
         && !m_client->needsRepaint()
         && !paintController().cacheIsEmpty()
         && m_previousInterestRect == *interestRect) {

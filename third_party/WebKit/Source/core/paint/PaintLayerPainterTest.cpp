@@ -22,8 +22,6 @@ INSTANTIATE_TEST_CASE_P(All, PaintLayerPainterTest, ::testing::Values(
 
 TEST_P(PaintLayerPainterTest, CachedSubsequence)
 {
-    RuntimeEnabledFeatures::setSlimmingPaintSynchronizedPaintingEnabled(true);
-
     setBodyInnerHTML(
         "<div id='container1' style='position: relative; z-index: 1; width: 200px; height: 200px; background-color: blue'>"
         "  <div id='content1' style='position: absolute; width: 100px; height: 100px; background-color: red'></div>"
@@ -87,8 +85,6 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence)
 
 TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
 {
-    RuntimeEnabledFeatures::setSlimmingPaintSynchronizedPaintingEnabled(true);
-
     setBodyInnerHTML(
         "<div id='container1' style='position: relative; z-index: 1; width: 200px; height: 200px; background-color: blue'>"
         "  <div id='content1' style='position: absolute; width: 100px; height: 100px; background-color: green'></div>"
@@ -183,8 +179,6 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
 
 TEST_P(PaintLayerPainterTest, CachedSubsequenceOnStyleChangeWithInterestRectClipping)
 {
-    RuntimeEnabledFeatures::setSlimmingPaintSynchronizedPaintingEnabled(true);
-
     setBodyInnerHTML(
         "<div id='container1' style='position: relative; z-index: 1; width: 200px; height: 200px; background-color: blue'>"
         "  <div id='content1' style='position: absolute; width: 100px; height: 100px; background-color: red'></div>"
