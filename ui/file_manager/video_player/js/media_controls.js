@@ -369,13 +369,20 @@ MediaControls.prototype.updateTimeLabel_ = function(current, opt_duration) {
   if (isNaN(current))
     current = 0;
 
-  this.currentTime_.textContent =
-      MediaControls.formatTime_(current) + ' / ' +
-      MediaControls.formatTime_(duration);
-  // Keep the maximum space to prevent time label from moving while playing.
-  this.currentTimeSpacer_.textContent =
-      MediaControls.formatTime_(duration) + ' / ' +
-      MediaControls.formatTime_(duration);
+  if (isFinite(duration)) {
+    this.currentTime_.textContent =
+        MediaControls.formatTime_(current) + ' / ' +
+        MediaControls.formatTime_(duration);
+    // Keep the maximum space to prevent time label from moving while playing.
+    this.currentTimeSpacer_.textContent =
+        MediaControls.formatTime_(duration) + ' / ' +
+        MediaControls.formatTime_(duration);
+  } else {
+    // Media's duration can be positive infinity value when the media source is
+    // not known to be bounded yet. In such cases, we should hide duration.
+    this.currentTime_.textContent = MediaControls.formatTime_(current);
+    this.currentTimeSpacer_.textContent = MediaControls.formatTime_(current);
+  }
 };
 
 /*
