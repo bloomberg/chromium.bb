@@ -272,8 +272,10 @@ Process LaunchProcess(const string16& cmdline,
 
     // If this code is run under a debugger, the launched process is
     // automatically associated with a job object created by the debugger.
-    // The CREATE_BREAKAWAY_FROM_JOB flag is used to prevent this.
-    flags |= CREATE_BREAKAWAY_FROM_JOB;
+    // The CREATE_BREAKAWAY_FROM_JOB flag is used to prevent this on Windows
+    // releases that do not support nested jobs.
+    if (win::GetVersion() < win::VERSION_WIN8)
+      flags |= CREATE_BREAKAWAY_FROM_JOB;
   }
 
   if (options.force_breakaway_from_job_)
