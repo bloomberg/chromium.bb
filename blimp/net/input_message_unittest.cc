@@ -9,8 +9,8 @@
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/input.pb.h"
 #include "blimp/net/blimp_message_processor.h"
+#include "blimp/net/input_message_converter.h"
 #include "blimp/net/input_message_generator.h"
-#include "blimp/net/input_message_processor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebGestureDevice.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -20,7 +20,7 @@ namespace {
 
 void ValidateWebInputEventRoundTripping(const blink::WebInputEvent& event) {
   InputMessageGenerator generator;
-  InputMessageProcessor processor;
+  InputMessageConverter processor;
 
   scoped_ptr<BlimpMessage> proto = generator.GenerateMessage(event);
   EXPECT_NE(nullptr, proto.get());

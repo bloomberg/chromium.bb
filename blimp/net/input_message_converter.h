@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_NET_INPUT_MESSAGE_PROCESSOR_H_
-#define BLIMP_NET_INPUT_MESSAGE_PROCESSOR_H_
+#ifndef BLIMP_NET_INPUT_MESSAGE_CONVERTER_H_
+#define BLIMP_NET_INPUT_MESSAGE_CONVERTER_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -19,20 +19,20 @@ class InputMessage;
 
 // Handles creating WebInputEvents from a stream of InputMessage protos.  This
 // class may be stateful to optimize the size of the serialized transmission
-// data.  See InputMessageProcessor for the deserialize code.
-class BLIMP_NET_EXPORT InputMessageProcessor {
+// data.  See InputMessageConverter for the deserialize code.
+class BLIMP_NET_EXPORT InputMessageConverter {
  public:
-  InputMessageProcessor();
-  ~InputMessageProcessor();
+  InputMessageConverter();
+  ~InputMessageConverter();
 
   // Process an InputMessage and create a WebInputEvent from it.  This might
   // make use of state from previous messages.
   scoped_ptr<blink::WebInputEvent> ProcessMessage(const InputMessage& message);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(InputMessageProcessor);
+  DISALLOW_COPY_AND_ASSIGN(InputMessageConverter);
 };
 
 }  // namespace blimp
 
-#endif  // BLIMP_NET_INPUT_MESSAGE_PROCESSOR_H_
+#endif  // BLIMP_NET_INPUT_MESSAGE_CONVERTER_H_

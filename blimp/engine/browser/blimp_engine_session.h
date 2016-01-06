@@ -80,7 +80,7 @@ class BlimpEngineSession
   BlimpBrowserContext* browser_context() { return browser_context_.get(); }
 
   // BlimpMessageProcessor implementation.
-  // This object handles incoming TAB_CONTROL and NAVIGATION messages.
+  // This object handles incoming TAB_CONTROL and NAVIGATION messages directly.
   void ProcessMessage(scoped_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
@@ -165,8 +165,6 @@ class BlimpEngineSession
 
   // Handles all incoming and outgoing messages related to RenderWidget,
   // including INPUT, COMPOSITOR and RENDER_WIDGET messages.
-  // TODO(dtrainor, haibinlu): Move this to a higher level once we start dealing
-  // with multiple tabs.
   EngineRenderWidgetFeature render_widget_feature_;
 
   scoped_ptr<BlimpMessageProcessor> tab_control_message_sender_;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/net/input_message_processor.h"
+#include "blimp/net/input_message_converter.h"
 
 #include "base/logging.h"
 #include "blimp/common/proto/input.pb.h"
@@ -134,11 +134,11 @@ scoped_ptr<blink::WebInputEvent> ProtoToGesturePinchUpdate(
 
 }  // namespace
 
-InputMessageProcessor::InputMessageProcessor() {}
+InputMessageConverter::InputMessageConverter() {}
 
-InputMessageProcessor::~InputMessageProcessor() {}
+InputMessageConverter::~InputMessageConverter() {}
 
-scoped_ptr<blink::WebInputEvent> InputMessageProcessor::ProcessMessage(
+scoped_ptr<blink::WebInputEvent> InputMessageConverter::ProcessMessage(
     const InputMessage& message) {
   scoped_ptr<blink::WebInputEvent> event;
 

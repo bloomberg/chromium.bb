@@ -21,7 +21,7 @@ class BlimpMessageProcessor;
 
 // Handles creating serialized InputMessage protos from a stream of
 // WebInputEvents.  This class may be stateful to optimize the size of the
-// serialized transmission data.  See InputMessageProcessor for the deserialize
+// serialized transmission data.  See InputMessageConverter for the deserialize
 // code.
 class BLIMP_NET_EXPORT InputMessageGenerator {
  public:

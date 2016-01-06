@@ -100,7 +100,7 @@ void EngineRenderWidgetFeature::ProcessMessage(
     case BlimpMessage::INPUT:
       if (message->input().render_widget_id() == render_widget_id) {
         scoped_ptr<blink::WebInputEvent> event =
-            input_message_processor_.ProcessMessage(message->input());
+            input_message_converter_.ProcessMessage(message->input());
         if (event)
           delegate->OnWebInputEvent(std::move(event));
       }

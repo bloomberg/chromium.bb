@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "blimp/net/blimp_message_processor.h"
-#include "blimp/net/input_message_processor.h"
+#include "blimp/net/input_message_converter.h"
 
 namespace blink {
 class WebInputEvent;
@@ -87,16 +87,11 @@ class EngineRenderWidgetFeature : public BlimpMessageProcessor {
   DelegateMap delegates_;
   RenderWidgetIdMap render_widget_ids_;
 
-  // TODO(haibinlu): rename InputMessageProcessor.
-  InputMessageProcessor input_message_processor_;
+  InputMessageConverter input_message_converter_;
 
-  // Message processor for sending RENDER_WIDGET messages.
+  // Outgoing message processors for RENDER_WIDGET, COMPOSITOR and INPUT types.
   scoped_ptr<BlimpMessageProcessor> render_widget_message_sender_;
-
-  // Message processor for sending COMPOSITOR messages.
   scoped_ptr<BlimpMessageProcessor> compositor_message_sender_;
-
-  // Message processor for sending INPUT messages.
   scoped_ptr<BlimpMessageProcessor> input_message_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(EngineRenderWidgetFeature);
