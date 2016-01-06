@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.signin;
 
 import android.accounts.Account;
-import android.app.Activity;
 import android.content.Context;
 import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.MediumTest;
@@ -95,7 +94,7 @@ public class OAuth2TokenServiceIntegrationTest extends NativeLibraryTestBase {
                     }
 
                     @Override
-                    public boolean canBeUsed(Context ctx, Activity activity) {
+                    public boolean canBeUsed(Context ctx) {
                         return true;
                     }
                 });

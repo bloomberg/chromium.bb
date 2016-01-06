@@ -99,7 +99,7 @@ public class AccountTrackerService {
         mSystemAccountsChanged = false;
         mSyncForceRefreshedForTest = false;
         final AccountIdProvider accountIdProvider = AccountIdProvider.getInstance();
-        if (accountIdProvider.canBeUsed(mContext, null)) {
+        if (accountIdProvider.canBeUsed(mContext)) {
             mSystemAccountsSeedingStatus = SystemAccountsSeedingStatus.SEEDING_IN_PROGRESS;
         } else {
             mSystemAccountsSeedingStatus = SystemAccountsSeedingStatus.SEEDING_NOT_STARTED;

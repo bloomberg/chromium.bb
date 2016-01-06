@@ -18,6 +18,8 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
+import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.sync.signin.ChromeSigninController;
 
 import javax.annotation.Nullable;
@@ -257,7 +259,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
      * @param passive If passive is true then this operation should not interact with the user.
      * @param observer The Observer to notify when the sign-in process is finished.
      */
-    public void startSignIn(Activity activity, final Account account, boolean passive,
+    public void startSignIn(@Nullable Activity activity, final Account account, boolean passive,
             final SignInFlowObserver observer) {
         if (mSignInAccount != null) {
             Log.w(TAG, "Ignoring sign-in request as another sign-in request is pending.");
@@ -277,7 +279,16 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         notifySignInAllowedChanged();
 
         if (!AccountTrackerService.get(mContext).checkAndSeedSystemAccounts()) {
-            mHasPendingSignin = true;
+            if (AccountIdProvider.getInstance().canBeUsed(mContext)) {
+                mHasPendingSignin = true;
+            } else {
+                UserRecoverableErrorHandler errorHandler = activity != null
+                        ? new UserRecoverableErrorHandler.ModalDialog(activity)
+                        : new UserRecoverableErrorHandler.SystemNotification();
+                ExternalAuthUtils.getInstance().canUseGooglePlayServices(mContext, errorHandler);
+                Log.w(TAG, "Cancelling the sign-in process as Google Play services is unavailable");
+                cancelSignIn();
+            }
             return;
         }
 

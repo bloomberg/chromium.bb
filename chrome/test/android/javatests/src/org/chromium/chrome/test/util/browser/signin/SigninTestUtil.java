@@ -5,7 +5,6 @@
 package org.chromium.chrome.test.util.browser.signin;
 
 import android.accounts.Account;
-import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.preference.PreferenceManager;
@@ -115,7 +114,7 @@ public final class SigninTestUtil {
                     }
 
                     @Override
-                    public boolean canBeUsed(Context ctx, Activity activity) {
+                    public boolean canBeUsed(Context ctx) {
                         return true;
                     }
                 });
