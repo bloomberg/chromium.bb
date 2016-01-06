@@ -987,6 +987,15 @@ crbug.com/504703 inspector-protocol/debugger/debugger-step-into-dedicated-worker
 crbug.com/445194 [ Debug ] fast/dom/shadow/focus-controller-recursion-crash.html [ Skip ]
 crbug.com/505387 [ Win ] virtual/prefer_compositing_to_lcd_text/scrollbars/rtl/overflow-scroll-rtl.html [ Failure ]
 
+crbug.com/545147 fast/css/vertical-text-overflow-ellipsis-text-align-justify.html [ NeedsRebaseline ]
+crbug.com/545147 fast/css/vertical-text-overflow-ellipsis-text-align-left.html [ NeedsRebaseline ]
+crbug.com/545147 fast/css/vertical-text-overflow-ellipsis-text-align-center.html [ NeedsRebaseline ]
+crbug.com/545147 fast/writing-mode/vertical-lr-replaced-selection.html [ NeedsRebaseline ]
+crbug.com/545147 fast/text/drawBidiText.html [ NeedsRebaseline ]
+crbug.com/545147 fast/lists/003-vertical.html [ NeedsRebaseline ]
+crbug.com/545147 fast/css/vertical-text-overflow-ellipsis-text-align-right.html [ NeedsRebaseline ]
+crbug.com/545147 fast/text/justify-ideograph-complex.html [ NeedsRebaseline ]
+
 crbug.com/505415 [ XP ] accessibility/canvas-fallback-content-labels.html [ Failure ]
 
 # Mac10.10-specific failures that still need triaging.
@@ -1071,7 +1080,6 @@ crbug.com/521730 [ Win10 ] fast/text/atsui-multiple-renderers.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/basic/009.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/basic/generic-family-changes.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/capitalize-boundaries.html [ Failure ]
-crbug.com/521730 [ Win10 ] fast/text/drawBidiText.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/emoji-web-font.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/firstline/001.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/firstline/002.html [ Failure ]

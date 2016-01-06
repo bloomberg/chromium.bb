@@ -445,9 +445,9 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
 #if OS(MACOSX)
     // FIXME: Having any font feature settings enabled can lead to selection gaps on
     // Chromium-mac. https://bugs.webkit.org/show_bug.cgi?id=113418
-    bool canUseCachedWordMeasurements = layoutText->canUseSimpleFontCodePath() && !font.fontDescription().featureSettings();
+    bool canUseCachedWordMeasurements = font.canShapeWordByWord() && !font.fontDescription().featureSettings();
 #else
-    bool canUseCachedWordMeasurements = layoutText->canUseSimpleFontCodePath();
+    bool canUseCachedWordMeasurements = font.canShapeWordByWord();
 #endif
 
     if (canUseCachedWordMeasurements) {
