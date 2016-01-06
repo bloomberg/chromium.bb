@@ -10,10 +10,12 @@
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/display/types/native_display_delegate.h"
+#include "ui/ozone/ozone_base_export.h"
 
 namespace ui {
 
-class NativeDisplayDelegateOzone : public NativeDisplayDelegate {
+class OZONE_BASE_EXPORT NativeDisplayDelegateOzone
+    : public NativeDisplayDelegate {
  public:
   NativeDisplayDelegateOzone();
   ~NativeDisplayDelegateOzone() override;
