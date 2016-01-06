@@ -54,9 +54,9 @@ class ExclusiveAccessBubble : public gfx::AnimationDelegate {
   // Space between top of screen and popup, in simplified UI.
   static const int kSimplifiedPopupTopPx;
 
-  // Returns the current desirable rect for the popup window.  If
-  // |ignore_animation_state| is true this returns the rect assuming the popup
-  // is fully onscreen.
+  // Returns the current desirable rect for the popup window in screen
+  // coordinates. If |ignore_animation_state| is true this returns the rect
+  // assuming the popup is fully onscreen.
   virtual gfx::Rect GetPopupRect(bool ignore_animation_state) const = 0;
   virtual gfx::Point GetCursorScreenPoint() = 0;
   virtual bool WindowContainsPoint(gfx::Point pos) = 0;

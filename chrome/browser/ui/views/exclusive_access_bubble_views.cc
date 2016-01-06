@@ -422,6 +422,7 @@ ExclusiveAccessBubbleViews::ExclusiveAccessBubbleViews(
   popup_->Init(params);
   popup_->SetContentsView(view_);
   gfx::Size size = GetPopupRect(true).size();
+  // Bounds are in screen coordinates.
   popup_->SetBounds(GetPopupRect(false));
   // We set layout manager to nullptr to prevent the widget from sizing its
   // contents to the same size as itself. This prevents the widget contents from
@@ -574,17 +575,11 @@ void ExclusiveAccessBubbleViews::AnimationEnded(
 gfx::Rect ExclusiveAccessBubbleViews::GetPopupRect(
     bool ignore_animation_state) const {
   gfx::Size size(view_->GetPreferredSize());
-  // NOTE: don't use the bounds of the root_view_. On linux GTK changing window
-  // size is async. Instead we use the size of the screen.
-  gfx::Screen* screen = gfx::Screen::GetScreenFor(
-      bubble_view_context_->GetBubbleAssociatedWidget()->GetNativeView());
-  gfx::Rect screen_bounds =
-      screen->GetDisplayNearestWindow(
-                  bubble_view_context_->GetBubbleAssociatedWidget()
-                      ->GetNativeView()).bounds();
-  int x = screen_bounds.x() + (screen_bounds.width() - size.width()) / 2;
+  gfx::Rect widget_bounds = bubble_view_context_->GetBubbleAssociatedWidget()
+                                ->GetClientAreaBoundsInScreen();
+  int x = widget_bounds.x() + (widget_bounds.width() - size.width()) / 2;
 
-  int top_container_bottom = screen_bounds.y();
+  int top_container_bottom = widget_bounds.y();
   if (bubble_view_context_->IsImmersiveModeEnabled()) {
     // Skip querying the top container height in non-immersive fullscreen
     // because:

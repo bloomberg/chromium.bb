@@ -65,7 +65,7 @@ class ExclusiveAccessBubbleViews : public ExclusiveAccessBubble,
   // Returns the root view containing |browser_view_|.
   views::View* GetBrowserRootView() const;
 
-  // FullScreenExitBubble overrides:
+  // ExclusiveAccessBubble overrides:
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
   gfx::Rect GetPopupRect(bool ignore_animation_state) const override;
