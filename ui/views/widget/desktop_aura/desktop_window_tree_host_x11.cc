@@ -1116,6 +1116,10 @@ void DesktopWindowTreeHostX11::InitX11Window(
       window_type = atom_cache_.GetAtom("_NET_WM_WINDOW_TYPE_NORMAL");
       break;
   }
+  // An in-activatable window should not interact with the system wm.
+  if (!activatable_)
+    swa.override_redirect = True;
+
   if (swa.override_redirect)
     attribute_mask |= CWOverrideRedirect;
 
