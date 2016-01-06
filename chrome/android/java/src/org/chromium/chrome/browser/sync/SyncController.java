@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
+import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.sync.ui.PassphraseActivity;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.ModelType;
@@ -102,6 +103,16 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         if (gmsCoreSyncListener != null) {
             mProfileSyncService.addSyncStateChangedListener(gmsCoreSyncListener);
         }
+
+        SigninManager.get(mContext).addSignInStateObserver(new SigninManager.SignInStateObserver() {
+            @Override
+            public void onSignedIn() {
+                mProfileSyncService.requestStart();
+            }
+
+            @Override
+            public void onSignedOut() {}
+        });
     }
 
     /**

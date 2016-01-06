@@ -118,8 +118,7 @@ public class SigninPromoScreen
         };
         SigninManager.get(getOwnerActivity().getApplicationContext())
                 .signInToSelectedAccount(getOwnerActivity(), account,
-                        SigninManager.SIGNIN_TYPE_INTERACTIVE,
-                        SigninManager.SIGNIN_SYNC_IMMEDIATELY, signInCallback);
+                        SigninManager.SIGNIN_TYPE_INTERACTIVE, signInCallback);
     }
 
     @Override

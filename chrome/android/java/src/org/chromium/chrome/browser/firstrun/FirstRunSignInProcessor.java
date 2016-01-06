@@ -90,15 +90,12 @@ public final class FirstRunSignInProcessor {
             return;
         }
 
-        final boolean delaySync = getFirstRunFlowSignInSetupSync(activity);
-        final int delaySyncType = delaySync
-                ? SigninManager.SIGNIN_SYNC_SETUP_IN_PROGRESS
-                : SigninManager.SIGNIN_SYNC_IMMEDIATELY;
+        final boolean setUpSync = getFirstRunFlowSignInSetupSync(activity);
         signinManager.signInToSelectedAccount(activity, account,
-                SigninManager.SIGNIN_TYPE_INTERACTIVE, delaySyncType, new SignInFlowObserver() {
+                SigninManager.SIGNIN_TYPE_INTERACTIVE, new SignInFlowObserver() {
                     private void completeSignIn() {
                         // Show sync settings if user pressed the "Settings" button.
-                        if (delaySync) {
+                        if (setUpSync) {
                             openSyncSettings(activity);
                         }
                         setFirstRunFlowSignInComplete(activity, true);
@@ -121,6 +118,7 @@ public final class FirstRunSignInProcessor {
      */
     private static void openSyncSettings(Activity activity) {
         if (ProfileSyncService.get() == null) return;
+        assert !ProfileSyncService.get().hasSyncSetupCompleted();
         String accountName = ChromeSigninController.get(activity).getSignedInAccountName();
         if (TextUtils.isEmpty(accountName)) return;
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
