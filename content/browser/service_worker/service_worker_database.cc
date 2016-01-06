@@ -272,26 +272,6 @@ ServiceWorkerDatabase::Status ParseId(const std::string& serialized,
   return ServiceWorkerDatabase::STATUS_OK;
 }
 
-ServiceWorkerDatabase::Status ParseDatabaseVersion(
-    const std::string& serialized,
-    int64_t* out) {
-  DCHECK(out);
-  const int kFirstValidVersion = 1;
-  int64_t version;
-  if (!base::StringToInt64(serialized, &version) ||
-      version < kFirstValidVersion) {
-    return ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED;
-  }
-  if (kCurrentSchemaVersion < version) {
-    DLOG(ERROR) << "ServiceWorkerDatabase has newer schema version"
-                << " than the current latest version: "
-                << version << " vs " << kCurrentSchemaVersion;
-    return ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED;
-  }
-  *out = version;
-  return ServiceWorkerDatabase::STATUS_OK;
-}
-
 ServiceWorkerDatabase::Status ParseRegistrationData(
     const std::string& serialized,
     ServiceWorkerDatabase::RegistrationData* out) {
@@ -1197,25 +1177,27 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::LazyOpen(
   status = ReadDatabaseVersion(&db_version);
   if (status != STATUS_OK)
     return status;
-  DCHECK_LE(0, db_version);
 
-  if (db_version > 0 && db_version < kCurrentSchemaVersion) {
-    switch (db_version) {
-      case 1:
-        status = UpgradeDatabaseSchemaFromV1ToV2();
-        if (status != STATUS_OK)
-          return status;
-        db_version = 2;
-        // Intentionally fall-through to other version upgrade cases.
-    }
-    // Either the database got upgraded to the current schema version, or some
-    // upgrade step failed which would have caused this method to abort.
-    DCHECK_EQ(db_version, kCurrentSchemaVersion);
+  switch (db_version) {
+    case 0:
+      // This database is new. It will be initialized when something is written.
+      DCHECK_EQ(UNINITIALIZED, state_);
+      return STATUS_OK;
+    case 1:
+      // This database has an obsolete schema version. ServiceWorkerStorage
+      // should recreate it.
+      status = STATUS_ERROR_FAILED;
+      Disable(FROM_HERE, status);
+      return status;
+    case 2:
+      DCHECK_EQ(db_version, kCurrentSchemaVersion);
+      state_ = INITIALIZED;
+      return STATUS_OK;
+    default:
+      // Other cases should be handled in ReadDatabaseVersion.
+      NOTREACHED();
+      return STATUS_ERROR_CORRUPTED;
   }
-
-  if (db_version > 0)
-    state_ = INITIALIZED;
-  return STATUS_OK;
 }
 
 bool ServiceWorkerDatabase::IsNewOrNonexistentDatabase(
@@ -1225,52 +1207,6 @@ bool ServiceWorkerDatabase::IsNewOrNonexistentDatabase(
   if (status == STATUS_OK && state_ == UNINITIALIZED)
     return true;
   return false;
-}
-
-ServiceWorkerDatabase::Status
-ServiceWorkerDatabase::UpgradeDatabaseSchemaFromV1ToV2() {
-  Status status = STATUS_OK;
-  leveldb::WriteBatch batch;
-
-  // Version 2 introduced REGID_TO_ORIGIN, add for all existing registrations.
-  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
-  for (itr->Seek(kRegKeyPrefix); itr->Valid(); itr->Next()) {
-    status = LevelDBStatusToStatus(itr->status());
-    if (status != STATUS_OK) {
-      HandleReadResult(FROM_HERE, status);
-      return status;
-    }
-
-    std::string key;
-    if (!RemovePrefix(itr->key().ToString(), kRegKeyPrefix, &key))
-      break;
-
-    std::vector<std::string> parts =
-        base::SplitString(key, std::string(1, kKeySeparator),
-                          base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-    if (parts.size() != 2) {
-      status = STATUS_ERROR_CORRUPTED;
-      HandleReadResult(FROM_HERE, status);
-      return status;
-    }
-
-    int64_t registration_id;
-    status = ParseId(parts[1], &registration_id);
-    if (status != STATUS_OK) {
-      HandleReadResult(FROM_HERE, status);
-      return status;
-    }
-
-    batch.Put(CreateRegistrationIdToOriginKey(registration_id), parts[0]);
-  }
-
-  // Update schema version manually instead of relying on WriteBatch to make
-  // sure each upgrade step only updates it to the actually correct version.
-  batch.Put(kDatabaseVersionKey, base::Int64ToString(2));
-  status = LevelDBStatusToStatus(
-      db_->Write(leveldb::WriteOptions(), &batch));
-  HandleWriteResult(FROM_HERE, status);
-  return status;
 }
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadNextAvailableId(
@@ -1521,7 +1457,15 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadDatabaseVersion(
     return status;
   }
 
-  status = ParseDatabaseVersion(value, db_version);
+  const int kFirstValidVersion = 1;
+  if (!base::StringToInt64(value, db_version) ||
+      *db_version < kFirstValidVersion || kCurrentSchemaVersion < *db_version) {
+    status = STATUS_ERROR_CORRUPTED;
+    HandleReadResult(FROM_HERE, status);
+    return status;
+  }
+
+  status = STATUS_OK;
   HandleReadResult(FROM_HERE, status);
   return status;
 }

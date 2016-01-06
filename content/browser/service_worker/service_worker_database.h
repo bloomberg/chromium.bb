@@ -248,10 +248,6 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // the database is new or nonexistent, that is, it has never been used.
   bool IsNewOrNonexistentDatabase(Status status);
 
-  // Upgrades the database schema from version 1 to version 2. Called by
-  // LazyOpen() when the stored schema is older than version 2.
-  Status UpgradeDatabaseSchemaFromV1ToV2();
-
   // Reads the next available id for |id_key|. Returns OK if it's successfully
   // read. Fills |next_avail_id| with an initial value and returns OK if it's
   // not found in the database. Otherwise, returns an error.
@@ -351,14 +347,18 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
 
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, OpenDatabase);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, OpenDatabase_InMemory);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, DatabaseVersion);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest,
+                           DatabaseVersion_ValidSchemaVersion);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest,
+                           DatabaseVersion_ObsoleteSchemaVersion);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest,
+                           DatabaseVersion_CorruptedSchemaVersion);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, GetNextAvailableIds);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest,
                            Registration_UninitializedDatabase);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest,
                            UserData_UninitializedDatabase);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, DestroyDatabase);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, UpgradeSchemaToVersion2);
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDatabase);
 };

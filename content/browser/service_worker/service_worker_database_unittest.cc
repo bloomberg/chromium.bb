@@ -115,7 +115,7 @@ TEST(ServiceWorkerDatabaseTest, OpenDatabase_InMemory) {
             database->LazyOpen(false));
 }
 
-TEST(ServiceWorkerDatabaseTest, DatabaseVersion) {
+TEST(ServiceWorkerDatabaseTest, DatabaseVersion_ValidSchemaVersion) {
   GURL origin("http://example.com");
   scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->LazyOpen(true));
@@ -144,62 +144,83 @@ TEST(ServiceWorkerDatabaseTest, DatabaseVersion) {
   EXPECT_LT(0, db_version);
 }
 
-TEST(ServiceWorkerDatabaseTest, UpgradeSchemaToVersion2) {
+TEST(ServiceWorkerDatabaseTest, DatabaseVersion_ObsoleteSchemaVersion) {
   base::ScopedTempDir database_dir;
   ASSERT_TRUE(database_dir.CreateUniqueTempDir());
   scoped_ptr<ServiceWorkerDatabase> database(
       CreateDatabase(database_dir.path()));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->LazyOpen(true));
 
+  // First writing triggers database initialization and bumps the schema
+  // version.
   GURL origin("http://example.com");
-
-  // Add a registration to the database.
   std::vector<ServiceWorkerDatabase::ResourceRecord> resources;
+  resources.push_back(CreateResource(1, URL(origin, "/resource"), 10));
   ServiceWorkerDatabase::RegistrationData deleted_version;
   std::vector<int64_t> newly_purgeable_resources;
   ServiceWorkerDatabase::RegistrationData data;
-  data.registration_id = 100;
-  data.scope = URL(origin, "/foo");
-  data.script = URL(origin, "/script1.js");
-  data.version_id = 200;
-  data.resources_total_size_bytes = 300;
-  resources.push_back(CreateResource(1, data.script, 300));
+  data.resources_total_size_bytes = 10;
   ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database->WriteRegistration(data, resources, &deleted_version,
                                         &newly_purgeable_resources));
-
-  // Sanity check on current version.
   int64_t db_version = -1;
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->ReadDatabaseVersion(&db_version));
+  ASSERT_LT(0, db_version);
+
+  // Emulate an obsolete schema version.
+  int64_t old_db_version = 1;
+  leveldb::WriteBatch batch;
+  batch.Put("INITDATA_DB_VERSION", base::Int64ToString(old_db_version));
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK, database->WriteBatch(&batch));
+  db_version = -1;
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database->ReadDatabaseVersion(&db_version));
-  EXPECT_LE(2, db_version);
+  ASSERT_EQ(old_db_version, db_version);
 
-  // Now delete the data that will be created in an upgrade to schema version 2,
-  // and reset the schema version to 1.
-  leveldb::WriteBatch batch;
-  batch.Delete("REGID_TO_ORIGIN:" + base::Int64ToString(data.registration_id));
-  batch.Put("INITDATA_DB_VERSION", base::Int64ToString(1));
-  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK, database->WriteBatch(&batch));
-
-  // Make sure correct data got deleted.
-  GURL origin_out;
-  EXPECT_EQ(
-      ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
-      database->ReadRegistrationOrigin(data.registration_id, &origin_out));
-
-  // Close and reopen the database to verify the schema got updated.
+  // Opening the database whose schema version is obsolete should fail.
   database.reset(CreateDatabase(database_dir.path()));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_FAILED,
+            database->LazyOpen(true));
+}
+
+TEST(ServiceWorkerDatabaseTest, DatabaseVersion_CorruptedSchemaVersion) {
+  base::ScopedTempDir database_dir;
+  ASSERT_TRUE(database_dir.CreateUniqueTempDir());
+  scoped_ptr<ServiceWorkerDatabase> database(
+      CreateDatabase(database_dir.path()));
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->LazyOpen(true));
 
-  // Verify version number.
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+  // First writing triggers database initialization and bumps the schema
+  // version.
+  GURL origin("http://example.com");
+  std::vector<ServiceWorkerDatabase::ResourceRecord> resources;
+  resources.push_back(CreateResource(1, URL(origin, "/resource"), 10));
+  ServiceWorkerDatabase::RegistrationData deleted_version;
+  std::vector<int64_t> newly_purgeable_resources;
+  ServiceWorkerDatabase::RegistrationData data;
+  data.resources_total_size_bytes = 10;
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteRegistration(data, resources, &deleted_version,
+                                        &newly_purgeable_resources));
+  int64_t db_version = -1;
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database->ReadDatabaseVersion(&db_version));
-  EXPECT_LE(2, db_version);
+  ASSERT_LT(0, db_version);
 
-  // And check that looking up origin for registration works.
-  EXPECT_EQ(
-      ServiceWorkerDatabase::STATUS_OK,
-      database->ReadRegistrationOrigin(data.registration_id, &origin_out));
-  EXPECT_EQ(origin, origin_out);
+  // Emulate a corrupted schema version.
+  int64_t corrupted_db_version = -10;
+  leveldb::WriteBatch batch;
+  batch.Put("INITDATA_DB_VERSION", base::Int64ToString(corrupted_db_version));
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK, database->WriteBatch(&batch));
+  db_version = -1;
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED,
+            database->ReadDatabaseVersion(&db_version));
+
+  // Opening the database whose schema version is corrupted should fail.
+  database.reset(CreateDatabase(database_dir.path()));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED,
+            database->LazyOpen(true));
 }
 
 TEST(ServiceWorkerDatabaseTest, GetNextAvailableIds) {
