@@ -2433,6 +2433,8 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
 
 void FrameView::updatePaintProperties()
 {
+    TRACE_EVENT0("blink", "FrameView::updatePaintProperties");
+
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
     forAllNonThrottledFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::InUpdatePaintProperties); });
@@ -2442,6 +2444,8 @@ void FrameView::updatePaintProperties()
 
 void FrameView::synchronizedPaint()
 {
+    TRACE_EVENT0("blink", "FrameView::synchronizedPaint");
+
     ASSERT(frame() == page()->mainFrame() || (!frame().tree().parent()->isLocalFrame()));
 
     LayoutView* view = layoutView();
@@ -2490,6 +2494,8 @@ void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer)
 
 void FrameView::pushPaintArtifactToCompositor()
 {
+    TRACE_EVENT0("blink", "FrameView::pushPaintArtifactToCompositor");
+
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
     LayoutView* view = layoutView();
