@@ -39,13 +39,13 @@ void FillRangeOnLine(const LocationRange& range, int line_number,
   if (range.begin().line_number() < line_number)
     begin_char = 0;
   else
-    begin_char = range.begin().char_offset() - 1;
+    begin_char = range.begin().column_number() - 1;
 
   int end_char;
   if (range.end().line_number() > line_number)
     end_char = static_cast<int>(line->size());  // Ending is non-inclusive.
   else
-    end_char = range.end().char_offset() - 1;
+    end_char = range.end().column_number() - 1;
 
   CHECK(end_char >= begin_char);
   CHECK(begin_char >= 0 && begin_char <= static_cast<int>(line->size()));
@@ -71,9 +71,9 @@ void OutputHighlighedPosition(const Location& location,
 
   // Allow the marker to be one past the end of the line for marking the end.
   highlight.push_back(' ');
-  CHECK(location.char_offset() - 1 >= 0 &&
-        location.char_offset() - 1 < static_cast<int>(highlight.size()));
-  highlight[location.char_offset() - 1] = '^';
+  CHECK(location.column_number() - 1 >= 0 &&
+        location.column_number() - 1 < static_cast<int>(highlight.size()));
+  highlight[location.column_number() - 1] = '^';
 
   // Trim unused spaces from end of line.
   while (!highlight.empty() && highlight[highlight.size() - 1] == ' ')

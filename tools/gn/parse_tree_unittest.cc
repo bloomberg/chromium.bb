@@ -94,7 +94,7 @@ TEST(ParseTree, BlockUnusedVars) {
   // origin will point to the value assigned to the variable (in this case, the
   // "13" assigned to "b".
   EXPECT_EQ(3, err.location().line_number());
-  EXPECT_EQ(7, err.location().char_offset());
+  EXPECT_EQ(7, err.location().column_number());
 }
 
 TEST(ParseTree, OriginForDereference) {
@@ -111,7 +111,7 @@ TEST(ParseTree, OriginForDereference) {
   // The origin for the "not a string" error message should be where the value
   // was dereferenced (the "a" on the second line).
   EXPECT_EQ(2, err.location().line_number());
-  EXPECT_EQ(20, err.location().char_offset());
+  EXPECT_EQ(20, err.location().column_number());
 }
 
 TEST(ParseTree, SortRangeExtraction) {

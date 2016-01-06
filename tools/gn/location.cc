@@ -13,23 +13,23 @@
 Location::Location()
     : file_(nullptr),
       line_number_(-1),
-      char_offset_(-1) {
+      column_number_(-1) {
 }
 
 Location::Location(const InputFile* file,
                    int line_number,
-                   int char_offset,
+                   int column_number,
                    int byte)
     : file_(file),
       line_number_(line_number),
-      char_offset_(char_offset),
+      column_number_(column_number),
       byte_(byte) {
 }
 
 bool Location::operator==(const Location& other) const {
   return other.file_ == file_ &&
          other.line_number_ == line_number_ &&
-         other.char_offset_ == char_offset_;
+         other.column_number_ == column_number_;
 }
 
 bool Location::operator!=(const Location& other) const {
@@ -38,11 +38,11 @@ bool Location::operator!=(const Location& other) const {
 
 bool Location::operator<(const Location& other) const {
   DCHECK(file_ == other.file_);
-  return std::tie(line_number_, char_offset_) <
-         std::tie(other.line_number_, other.char_offset_);
+  return std::tie(line_number_, column_number_) <
+         std::tie(other.line_number_, other.column_number_);
 }
 
-std::string Location::Describe(bool include_char_offset) const {
+std::string Location::Describe(bool include_column_number) const {
   if (!file_)
     return std::string();
 
@@ -54,9 +54,9 @@ std::string Location::Describe(bool include_char_offset) const {
 
   ret += ":";
   ret += base::IntToString(line_number_);
-  if (include_char_offset) {
+  if (include_column_number) {
     ret += ":";
-    ret += base::IntToString(char_offset_);
+    ret += base::IntToString(column_number_);
   }
   return ret;
 }

@@ -68,7 +68,7 @@ void DoParserErrorTest(const char* input, int err_line, int err_char) {
   }
 
   EXPECT_EQ(err_line, err.location().line_number());
-  EXPECT_EQ(err_char, err.location().char_offset());
+  EXPECT_EQ(err_char, err.location().column_number());
 }
 
 // Expects the tokenizer or parser to identify an error at the given line and
@@ -86,7 +86,7 @@ void DoExpressionErrorTest(const char* input, int err_line, int err_char) {
   }
 
   EXPECT_EQ(err_line, err.location().line_number());
-  EXPECT_EQ(err_char, err.location().char_offset());
+  EXPECT_EQ(err_char, err.location().column_number());
 }
 
 }  // namespace

@@ -63,11 +63,11 @@ LocationRange CreatePersistentRange(const InputFile& input_file,
 
   return LocationRange(Location(clone_input_file,
                                 range.begin().line_number(),
-                                range.begin().char_offset(),
+                                range.begin().column_number(),
                                 -1 /* TODO(scottmg) */),
                        Location(clone_input_file,
                                 range.end().line_number(),
-                                range.end().char_offset(),
+                                range.end().column_number(),
                                 -1 /* TODO(scottmg) */));
 }
 

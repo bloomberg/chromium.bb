@@ -256,7 +256,7 @@ Value AccessorNode::ExecuteScopeAccess(Scope* scope, Err* err) const {
 void AccessorNode::SetNewLocation(int line_number) {
   Location old = base_.location();
   base_.set_location(
-      Location(old.file(), line_number, old.char_offset(), old.byte()));
+      Location(old.file(), line_number, old.column_number(), old.byte()));
 }
 
 // BinaryOpNode ---------------------------------------------------------------
@@ -483,7 +483,7 @@ void IdentifierNode::Print(std::ostream& out, int indent) const {
 void IdentifierNode::SetNewLocation(int line_number) {
   Location old = value_.location();
   value_.set_location(
-      Location(old.file(), line_number, old.char_offset(), old.byte()));
+      Location(old.file(), line_number, old.column_number(), old.byte()));
 }
 
 // ListNode -------------------------------------------------------------------
@@ -742,7 +742,7 @@ void LiteralNode::Print(std::ostream& out, int indent) const {
 void LiteralNode::SetNewLocation(int line_number) {
   Location old = value_.location();
   value_.set_location(
-      Location(old.file(), line_number, old.char_offset(), old.byte()));
+      Location(old.file(), line_number, old.column_number(), old.byte()));
 }
 
 // UnaryOpNode ----------------------------------------------------------------

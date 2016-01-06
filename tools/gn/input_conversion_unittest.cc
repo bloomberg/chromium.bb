@@ -126,7 +126,7 @@ TEST_F(InputConversionTest, ValueDict) {
   ASSERT_TRUE(a_origin);
   LocationRange a_range = a_origin->GetRange();
   EXPECT_EQ(2, a_range.begin().line_number());
-  EXPECT_EQ(6, a_range.begin().char_offset());
+  EXPECT_EQ(6, a_range.begin().column_number());
 
   const InputFile* a_file = a_range.begin().file();
   EXPECT_EQ(input, a_file->contents());

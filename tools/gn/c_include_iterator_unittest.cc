@@ -15,8 +15,8 @@ bool RangeIs(const LocationRange& range,
              int line, int begin_char, int end_char) {
   return range.begin().line_number() == line &&
          range.end().line_number() == line &&
-         range.begin().char_offset() == begin_char &&
-         range.end().char_offset() == end_char;
+         range.begin().column_number() == begin_char &&
+         range.end().column_number() == end_char;
 }
 
 }  // namespace

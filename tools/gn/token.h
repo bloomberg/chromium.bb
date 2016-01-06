@@ -68,7 +68,7 @@ class Token {
         location_,
         Location(location_.file(),
                  location_.line_number(),
-                 location_.char_offset() + static_cast<int>(value_.size()),
+                 location_.column_number() + static_cast<int>(value_.size()),
                  location_.byte() + static_cast<int>(value_.size())));
   }
 
