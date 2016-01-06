@@ -31,6 +31,8 @@ def _ParseOptions(args):
   parser.add_option('--classpath', action='append',
                     help='Classpath for proguard.')
   parser.add_option('--stamp', help='Path to touch on success.')
+  parser.add_option('--verbose', '-v', action='store_true',
+                    help='Print all proguard output')
 
   options, _ = parser.parse_args(args)
 
@@ -63,7 +65,7 @@ def main(args):
   input_paths = proguard.GetInputs()
 
   build_utils.CallAndWriteDepfileIfStale(
-      proguard.CheckOutput,
+      lambda: proguard.CheckOutput(options.verbose),
       options,
       input_paths=input_paths,
       input_strings=proguard.build(),

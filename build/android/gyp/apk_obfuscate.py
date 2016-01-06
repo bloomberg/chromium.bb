@@ -69,6 +69,8 @@ def ParseArgs(argv):
                          'These will not be obfuscated.')
   parser.add_option('--multidex-configuration-path',
                     help='A JSON file containing multidex build configuration.')
+  parser.add_option('--verbose', '-v', action='store_true',
+                    help='Print all proguard output')
 
   (options, args) = parser.parse_args(argv)
 
@@ -118,7 +120,7 @@ def DoProguard(options):
     configs.append(multidex_config)
 
   proguard.configs(configs)
-  proguard.CheckOutput()
+  proguard.CheckOutput(options.verbose)
 
 
 def _PossibleMultidexConfig(options):
