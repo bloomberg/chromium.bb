@@ -30,6 +30,9 @@ class BLIMP_CLIENT_EXPORT TabControlFeature : public BlimpMessageProcessor {
   // affect the web content display area for all tabs.
   void SetSizeAndScale(const gfx::Size& size, float device_pixel_ratio);
 
+  void CreateTab(int tab_id);
+  void CloseTab(int tab_id);
+
  private:
   // BlimpMessageProcessor implementation.
   void ProcessMessage(scoped_ptr<BlimpMessage> message,

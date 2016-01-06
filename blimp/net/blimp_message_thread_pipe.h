@@ -27,10 +27,9 @@ class BlimpMessageProcessor;
 // 1. Create the pipe on the "main" thread, specifying the target thread's
 //    task runner.
 // 2. Take one or more MessageProcessor proxies from it.
-// 3. Post a task to the target thread to set the outgoing
-//    MessageProcessor.
+// 3. Post a task to the target thread to set the target MessageProcessor.
 // 4. Start using the MessageProcessor proxy(/ies) on the main thread.
-// 5. When the outgoing MessageProcessor is about to be destroyed on the
+// 5. When the target MessageProcessor is about to be destroyed on the
 //    target thread, destroy the pipe instance immediately beforehand.
 //    Any messages that are subsequently passed to a proxy, or are already
 //    in-flight to the pipe, will be silently dropped.

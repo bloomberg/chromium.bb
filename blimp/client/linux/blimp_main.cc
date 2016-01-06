@@ -13,9 +13,10 @@
 #include "blimp/client/blimp_startup.h"
 #include "blimp/client/session/blimp_client_session_linux.h"
 #include "blimp/client/session/navigation_feature.h"
+#include "blimp/client/session/tab_control_feature.h"
 
 namespace {
-const char kDefaultUrl[] = "https://example.com";
+const char kDefaultUrl[] = "https://www.google.com";
 const int kDummyTabId = 0;
 }
 
@@ -29,12 +30,12 @@ int main(int argc, const char**argv) {
   blimp::InitializeMainMessageLoop();
 
   blimp::BlimpClientSessionLinux session;
+  session.GetTabControlFeature()->CreateTab(kDummyTabId);
 
   // If there is a non-switch argument to the command line, load that url.
   base::CommandLine::StringVector args =
       base::CommandLine::ForCurrentProcess()->GetArgs();
   std::string url = args.size() > 0 ? args[0] : kDefaultUrl;
-
   session.GetNavigationFeature()->NavigateToUrlText(kDummyTabId, url);
 
   base::RunLoop().Run();

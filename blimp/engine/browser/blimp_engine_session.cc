@@ -13,6 +13,7 @@
 #include "blimp/engine/ui/blimp_ui_context_factory.h"
 #include "blimp/net/blimp_connection.h"
 #include "blimp/net/blimp_message_multiplexer.h"
+#include "blimp/net/blimp_message_thread_pipe.h"
 #include "blimp/net/browser_connection_handler.h"
 #include "blimp/net/common.h"
 #include "blimp/net/engine_authentication_handler.h"
@@ -75,20 +76,39 @@ net::IPAddressNumber GetIPv4AnyAddress() {
 
 }  // namespace
 
-// This class's functions and destruction are all invoked on the IO thread by
-// the BlimpEngineSession.
+// EngineNetworkComponents is created by the BlimpEngineSession on the UI
+// thread, and then used and destroyed on the IO thread.
 class EngineNetworkComponents {
  public:
   explicit EngineNetworkComponents(net::NetLog* net_log);
   ~EngineNetworkComponents();
 
+  // Sets up network components and starts listening for incoming connection.
+  // This should be called after all features have been registered so that
+  // received messages can be properly handled.
   void Initialize();
+
+  // Connects message pipes between the specified feature and the network layer,
+  // using |incoming_proxy| as the incoming message processor, and connecting
+  // |outgoing_pipe| to the actual message sender.
+  void RegisterFeature(BlimpMessage::Type type,
+                       scoped_ptr<BlimpMessageThreadPipe> outgoing_pipe,
+                       scoped_ptr<BlimpMessageProcessor> incoming_proxy);
 
  private:
   net::NetLog* net_log_;
   scoped_ptr<BrowserConnectionHandler> connection_handler_;
   scoped_ptr<EngineAuthenticationHandler> authentication_handler_;
   scoped_ptr<EngineConnectionManager> connection_manager_;
+
+  // Container for the feature-specific MessageProcessors.
+  std::vector<scoped_ptr<BlimpMessageProcessor>> incoming_proxies_;
+
+  // Containers for the MessageProcessors used to write feature-specific
+  // messages to the network, and the thread-pipe endpoints through which
+  // they are used from the UI thread.
+  std::vector<scoped_ptr<BlimpMessageProcessor>> outgoing_message_processors_;
+  std::vector<scoped_ptr<BlimpMessageThreadPipe>> outgoing_pipes_;
 
   DISALLOW_COPY_AND_ASSIGN(EngineNetworkComponents);
 };
@@ -102,21 +122,44 @@ EngineNetworkComponents::~EngineNetworkComponents() {
 
 void EngineNetworkComponents::Initialize() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  DCHECK(!connection_handler_);
+  DCHECK(connection_handler_);
+  DCHECK(!authentication_handler_);
 
   // Creates and connects net components.
   // A BlimpConnection flows from
   // connection_manager_ --> authentication_handler_ --> connection_handler_
-  connection_handler_.reset(new BrowserConnectionHandler);
-  authentication_handler_.reset(
+  authentication_handler_ = make_scoped_ptr(
       new EngineAuthenticationHandler(connection_handler_.get()));
-  connection_manager_.reset(
+  connection_manager_ = make_scoped_ptr(
       new EngineConnectionManager(authentication_handler_.get()));
 
   // Adds BlimpTransports to connection_manager_.
   net::IPEndPoint address(GetIPv4AnyAddress(), kDefaultPort);
   connection_manager_->AddTransport(
       make_scoped_ptr(new TCPEngineTransport(address, net_log_)));
+}
+
+void EngineNetworkComponents::RegisterFeature(
+    BlimpMessage::Type type,
+    scoped_ptr<BlimpMessageThreadPipe> outgoing_pipe,
+    scoped_ptr<BlimpMessageProcessor> incoming_proxy) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  if (!connection_handler_) {
+    connection_handler_ = make_scoped_ptr(new BrowserConnectionHandler);
+  }
+
+  // Registers |incoming_proxy| as the message processor for incoming
+  // messages with |type|. Sets the returned outgoing message processor as the
+  // target of the |outgoing_pipe|.
+  scoped_ptr<BlimpMessageProcessor> outgoing_message_processor =
+      connection_handler_->RegisterFeature(type, incoming_proxy.get());
+  outgoing_pipe->set_target_processor(outgoing_message_processor.get());
+
+  // This object manages the lifetimes of the pipe, proxy and target processor.
+  incoming_proxies_.push_back(std::move(incoming_proxy));
+  outgoing_pipes_.push_back(std::move(outgoing_pipe));
+  outgoing_message_processors_.push_back(std::move(outgoing_message_processor));
 }
 
 BlimpEngineSession::BlimpEngineSession(
@@ -169,11 +212,6 @@ void BlimpEngineSession::Initialize() {
 
   window_tree_host_->SetBounds(gfx::Rect(screen_->GetPrimaryDisplay().size()));
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&EngineNetworkComponents::Initialize,
-                 base::Unretained(net_components_.get())));
-
   // Register features' message senders and receivers.
   tab_control_message_sender_ =
       RegisterFeature(BlimpMessage::TAB_CONTROL, this);
@@ -184,14 +222,46 @@ void BlimpEngineSession::Initialize() {
       RegisterFeature(BlimpMessage::INPUT, &render_widget_feature_));
   render_widget_feature_.set_compositor_message_sender(
       RegisterFeature(BlimpMessage::COMPOSITOR, &render_widget_feature_));
+
+  // Initialize must only be posted after the RegisterFeature calls have
+  // completed.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&EngineNetworkComponents::Initialize,
+                 base::Unretained(net_components_.get())));
 }
 
 scoped_ptr<BlimpMessageProcessor> BlimpEngineSession::RegisterFeature(
     BlimpMessage::Type type,
     BlimpMessageProcessor* incoming_processor) {
-  // TODO(haibinlu): implement this once thread hopping message processing is
-  // done.
-  return make_scoped_ptr(new NullBlimpMessageProcessor);
+  // Creates an outgoing pipe and a proxy for forwarding messages
+  // from features on the UI thread to network components on the IO thread.
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::IO);
+  scoped_ptr<BlimpMessageThreadPipe> outgoing_pipe(
+      new BlimpMessageThreadPipe(io_task_runner));
+  scoped_ptr<BlimpMessageProcessor> outgoing_proxy =
+      outgoing_pipe->CreateProxy();
+
+  // Creates an incoming pipe and a proxy for receiving messages
+  // from network components on the IO thread.
+  scoped_ptr<BlimpMessageThreadPipe> incoming_pipe(new BlimpMessageThreadPipe(
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::UI)));
+  incoming_pipe->set_target_processor(incoming_processor);
+  scoped_ptr<BlimpMessageProcessor> incoming_proxy =
+      incoming_pipe->CreateProxy();
+
+  // Finishes registration on IO thread.
+  io_task_runner->PostTask(
+      FROM_HERE, base::Bind(&EngineNetworkComponents::RegisterFeature,
+                            base::Unretained(net_components_.get()), type,
+                            base::Passed(std::move(outgoing_pipe)),
+                            base::Passed(std::move(incoming_proxy))));
+
+  incoming_pipes_.push_back(std::move(incoming_pipe));
+  return outgoing_proxy;
 }
 
 void BlimpEngineSession::CreateWebContents(const int target_tab_id) {
