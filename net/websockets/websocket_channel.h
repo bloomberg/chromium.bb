@@ -98,6 +98,12 @@ class NET_EXPORT WebSocketChannel {
   // processing to OnClosingHandshake() if necessary.
   void StartClosingHandshake(uint16_t code, const std::string& reason);
 
+  // Returns the current send quota. This value is unsafe to use outside of the
+  // browser IO thread because it changes asynchronously.  The value is only
+  // valid for the execution of the current Task or until SendFrame() is called,
+  // whichever happens sooner.
+  int current_send_quota() const { return current_send_quota_; }
+
   // Starts the connection process, using a specified creator callback rather
   // than the default. This is exposed for testing.
   void SendAddChannelRequestForTesting(

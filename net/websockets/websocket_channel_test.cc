@@ -5,8 +5,8 @@
 #include "net/websockets/websocket_channel.h"
 
 #include <limits.h>
+#include <stddef.h>
 #include <string.h>
-
 #include <iostream>
 #include <iterator>
 #include <string>
@@ -3419,6 +3419,29 @@ TEST_F(WebSocketChannelStreamTimeoutTest, ConnectionCloseTimesOut) {
   *read_frames = CreateFrameVector(frames);
   read_callback.Run(OK);
   completion.WaitForResult();
+}
+
+// Verify that current_send_quota() returns a non-zero value for a newly
+// connected channel.
+TEST_F(WebSocketChannelTest, CurrentSendQuotaNonZero) {
+  CreateChannelAndConnectSuccessfully();
+  EXPECT_GT(channel_->current_send_quota(), 0);
+}
+
+// Verify that current_send_quota() is updated when SendFrame() is called.
+TEST_F(WebSocketChannelTest, CurrentSendQuotaUpdated) {
+  const int kMessageSize = 5;
+  set_stream(make_scoped_ptr(new WriteableFakeWebSocketStream));
+  CreateChannelAndConnectSuccessfully();
+
+  int initial_send_quota = channel_->current_send_quota();
+  EXPECT_GE(initial_send_quota, kMessageSize);
+
+  channel_->SendFrame(
+      true, WebSocketFrameHeader::kOpCodeText,
+      std::vector<char>(static_cast<size_t>(kMessageSize), 'a'));
+  int new_send_quota = channel_->current_send_quota();
+  EXPECT_EQ(kMessageSize, initial_send_quota - new_send_quota);
 }
 
 }  // namespace
