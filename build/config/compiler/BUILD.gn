@@ -1159,7 +1159,10 @@ config("no_optimize") {
     if (!using_sanitizer) {
       cflags += [ "-fomit-frame-pointer" ]
     }
-    ldflags = common_optimize_on_ldflags
+
+    # Don't use gc-sections since it can cause links to succeed when they
+    # actually shouldn't. http://crbug.com/159847
+    ldflags = common_optimize_on_ldflags - [ "-Wl,--gc-sections" ]
   } else {
     cflags = [ "-O0" ]
     ldflags = []

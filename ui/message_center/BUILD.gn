@@ -9,31 +9,33 @@ import("//testing/test.gni")
 component("message_center") {
   deps = [
     "//base",
-    "//base:i18n",
-    "//base/third_party/dynamic_annotations",
-    "//components/url_formatter",
-    "//skia",
-    "//ui/accessibility",
     "//ui/base",
-    "//ui/events",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-    "//ui/native_theme",
-    "//ui/resources",
-    "//ui/strings",
     "//url",
-  ]
-
-  configs += [
-    "//build/config:precompiled_headers",
-
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
   ]
 
   defines = [ "MESSAGE_CENTER_IMPLEMENTATION" ]
 
   if (enable_notifications && !is_android) {
+    deps += [
+      "//base:i18n",
+      "//base/third_party/dynamic_annotations",
+      "//components/url_formatter",
+      "//skia",
+      "//ui/accessibility",
+      "//ui/events",
+      "//ui/gfx",
+      "//ui/gfx/geometry",
+      "//ui/native_theme",
+      "//ui/resources",
+      "//ui/strings",
+    ]
+
+    configs += [
+      "//build/config:precompiled_headers",
+
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      "//build/config/compiler:no_size_t_to_int_warning",
+    ]
     sources = [
       "cocoa/notification_controller.h",
       "cocoa/notification_controller.mm",
@@ -153,27 +155,29 @@ component("message_center") {
   }
 }
 
-static_library("test_support") {
+source_set("test_support") {
   testonly = true
-  sources = [
-    "fake_message_center.cc",
-    "fake_message_center.h",
-    "fake_message_center_tray_delegate.cc",
-    "fake_message_center_tray_delegate.h",
-    "fake_notifier_settings_provider.cc",
-    "fake_notifier_settings_provider.h",
-  ]
+
+  if (enable_notifications && !is_android) {
+    sources = [
+      "fake_message_center.cc",
+      "fake_message_center.h",
+      "fake_message_center_tray_delegate.cc",
+      "fake_message_center_tray_delegate.h",
+      "fake_notifier_settings_provider.cc",
+      "fake_notifier_settings_provider.h",
+    ]
+    deps = [
+      "//base",
+      "//base/test:test_support",
+      "//skia",
+      "//ui/gfx",
+      "//ui/gfx/geometry",
+    ]
+  }
 
   public_deps = [
     ":message_center",
-  ]
-
-  deps = [
-    "//base",
-    "//base/test:test_support",
-    "//skia",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
   ]
 }
 

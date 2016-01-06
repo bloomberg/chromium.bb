@@ -76,6 +76,12 @@ source_set("test_support") {
                     ".",
                     "//content")
 
+    if (is_android) {
+      sources -= [
+        "mock_google_streaming_server.cc",
+        "mock_google_streaming_server.h",
+      ]
+    }
     public_deps += [ "//third_party/WebKit/public:blink" ]
     deps += [
       ":content_test_mojo_bindings",
@@ -90,6 +96,7 @@ source_set("test_support") {
       "//content/public/renderer",
       "//content/public/utility",
       "//content/shell:pak",
+      "//ipc:test_support",
       "//ipc/mojo",
       "//media",
       "//mojo/application/public/cpp:cpp_for_chromium",

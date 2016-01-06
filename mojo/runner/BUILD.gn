@@ -226,6 +226,8 @@ if (is_android) {
   shared_library("bootstrap") {
     sources = [
       "android/bootstrap.cc",
+      "register_local_aliases.cc",
+      "register_local_aliases.h",
     ]
     deps = [
       ":jni_headers",
