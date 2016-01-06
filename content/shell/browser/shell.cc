@@ -270,6 +270,37 @@ gfx::NativeView Shell::GetContentView() {
   return web_contents_->GetNativeView();
 }
 
+WebContents* Shell::OpenURLFromTab(WebContents* source,
+                                   const OpenURLParams& params) {
+  // This implementation only handles CURRENT_TAB.
+  if (params.disposition != CURRENT_TAB)
+    return nullptr;
+
+  NavigationController::LoadURLParams load_url_params(params.url);
+  load_url_params.source_site_instance = params.source_site_instance;
+  load_url_params.transition_type = params.transition;
+  load_url_params.frame_tree_node_id = params.frame_tree_node_id;
+  load_url_params.referrer = params.referrer;
+  load_url_params.redirect_chain = params.redirect_chain;
+  load_url_params.extra_headers = params.extra_headers;
+  load_url_params.is_renderer_initiated = params.is_renderer_initiated;
+  load_url_params.transferred_global_request_id =
+      params.transferred_global_request_id;
+  load_url_params.should_replace_current_entry =
+      params.should_replace_current_entry;
+
+  // Only allows the browser-initiated navigation to use POST.
+  if (params.uses_post && !params.is_renderer_initiated) {
+    load_url_params.load_type =
+        NavigationController::LOAD_TYPE_BROWSER_INITIATED_HTTP_POST;
+    load_url_params.browser_initiated_post_data =
+        params.browser_initiated_post_data;
+  }
+
+  source->GetController().LoadURLWithParams(load_url_params);
+  return source;
+}
+
 void Shell::LoadingStateChanged(WebContents* source,
     bool to_different_document) {
   UpdateNavigationControls(to_different_document);
