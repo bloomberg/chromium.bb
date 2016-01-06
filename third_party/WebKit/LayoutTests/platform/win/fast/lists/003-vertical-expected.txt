@@ -177,14 +177,14 @@ layer at (0,0) size 458x600
         LayoutBlockFlow {UL} at (194,0) size 108x584
           LayoutListItem {LI} at (0,40) size 18x544
             LayoutListMarker (anonymous) at (0,293.39) size 17x7: bullet
-            LayoutInline {A} at (0,0) size 17x91 [color=#0000EE]
-              LayoutText {#text} at (0,453) size 17x91
-                text run at (0,453) width 91: "RSS Validator"
+            LayoutInline {A} at (0,0) size 17x92 [color=#0000EE]
+              LayoutText {#text} at (0,452) size 17x92
+                text run at (0,452) width 92: "RSS Validator"
           LayoutListItem {LI} at (18,40) size 18x544
             LayoutListMarker (anonymous) at (0,293.39) size 17x7: bullet
-            LayoutInline {A} at (0,0) size 17x148 [color=#0000EE]
-              LayoutText {#text} at (0,396) size 17x148
-                text run at (0,396) width 148: "Dive Into Accessibility"
+            LayoutInline {A} at (0,0) size 17x149 [color=#0000EE]
+              LayoutText {#text} at (0,395) size 17x149
+                text run at (0,395) width 149: "Dive Into Accessibility"
           LayoutListItem {LI} at (36,40) size 18x544
             LayoutListMarker (anonymous) at (0,293.39) size 17x7: bullet
             LayoutInline {A} at (0,0) size 17x101 [color=#0000EE]
