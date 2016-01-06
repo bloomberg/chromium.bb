@@ -39,3 +39,4 @@ Local Modifications:
   headers.
 - Updated usage of ScopedLaunchData to use explicit methods rather than the
   implicit |operator T()| conversion.
+- Include crashpad targets in GYP's `all` target list.
