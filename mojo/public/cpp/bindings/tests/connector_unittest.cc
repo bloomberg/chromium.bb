@@ -24,14 +24,13 @@ namespace {
 class MessageAccumulator : public MessageReceiver {
  public:
   MessageAccumulator() {}
-  explicit MessageAccumulator(const base::Closure& closure)
-      : closure_(closure) {}
+  explicit MessageAccumulator(const Closure& closure) : closure_(closure) {}
 
   bool Accept(Message* message) override {
     queue_.Push(message);
     if (!closure_.is_null())
       closure_.Run();
-    closure_.Reset();
+    closure_.reset();
     return true;
   }
 
@@ -43,9 +42,11 @@ class MessageAccumulator : public MessageReceiver {
     closure_ = closure;
   }
 
+  size_t size() const { return queue_.size(); }
+
  private:
   MessageQueue queue_;
-  base::Closure closure_;
+  Closure closure_;
 };
 
 class ConnectorDeletingMessageAccumulator : public MessageAccumulator {
@@ -492,6 +493,37 @@ TEST_F(ConnectorTest, RaiseError) {
   // The message pipe handle is valid at both sides.
   EXPECT_TRUE(connector0.is_valid());
   EXPECT_TRUE(connector1.is_valid());
+}
+
+TEST_F(ConnectorTest, PauseWithQueuedMessages) {
+  internal::Connector connector0(std::move(handle0_),
+                                 internal::Connector::SINGLE_THREADED_SEND);
+  internal::Connector connector1(std::move(handle1_),
+                                 internal::Connector::SINGLE_THREADED_SEND);
+
+  const char kText[] = "hello world";
+
+  Message message;
+  AllocMessage(kText, &message);
+
+  // Queue up two messages.
+  connector0.Accept(&message);
+  connector0.Accept(&message);
+
+  base::RunLoop run_loop;
+  // Configure the accumulator such that it pauses after the first message is
+  // received.
+  MessageAccumulator accumulator([&connector1, &run_loop]() {
+    connector1.PauseIncomingMethodCallProcessing();
+    run_loop.Quit();
+  });
+  connector1.set_incoming_receiver(&accumulator);
+
+  run_loop.Run();
+
+  // As we paused after the first message we should only have gotten one
+  // message.
+  ASSERT_EQ(1u, accumulator.size());
 }
 
 }  // namespace

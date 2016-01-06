@@ -29,6 +29,8 @@ class MessageQueue {
   // ownership of its handles to the given |message|.
   void Pop(Message* message);
 
+  size_t size() const { return queue_.size(); }
+
  private:
   void Pop();
 

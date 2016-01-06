@@ -212,6 +212,7 @@ void Connector::OnHandleReady(MojoResult result) {
 
 void Connector::WaitToReadMore() {
   CHECK(!async_wait_id_);
+  CHECK(!paused_);
   async_wait_id_ = waiter_->AsyncWait(message_pipe_.get().value(),
                                       MOJO_HANDLE_SIGNAL_READABLE,
                                       MOJO_DEADLINE_INDEFINITE,
@@ -220,6 +221,8 @@ void Connector::WaitToReadMore() {
 }
 
 bool Connector::ReadSingleMessage(MojoResult* read_result) {
+  CHECK(!paused_);
+
   bool receiver_result = false;
 
   // Detect if |this| was destroyed during message dispatch. Allow for the
@@ -261,6 +264,9 @@ void Connector::ReadAllAvailableMessages() {
 
     // Return immediately if |this| was destroyed. Do not touch any members!
     if (!ReadSingleMessage(&rv))
+      return;
+
+    if (paused_)
       return;
 
     if (rv == MOJO_RESULT_SHOULD_WAIT) {
