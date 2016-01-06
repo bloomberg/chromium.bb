@@ -142,7 +142,7 @@
 #endif  // defined(OS_WIN)
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
-#include "chrome/browser/local_discovery/privet_notifications.h"
+#include "chrome/browser/printing/cloud_print/privet_notifications.h"
 #endif
 
 #if defined(USE_ASH)
@@ -645,7 +645,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
   values->SetBoolean("cloudPrintHideNotificationsCheckbox",
-                     !local_discovery::PrivetNotificationService::IsEnabled());
+                     !cloud_print::PrivetNotificationService::IsEnabled());
 #endif
 
   values->SetBoolean("cloudPrintShowMDnsOptions",

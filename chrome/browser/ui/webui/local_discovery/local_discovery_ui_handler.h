@@ -11,9 +11,9 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/local_discovery/cloud_print_printer_list.h"
-#include "chrome/browser/local_discovery/privet_device_lister.h"
-#include "chrome/browser/local_discovery/privet_http.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_printer_list.h"
+#include "chrome/browser/printing/cloud_print/privet_device_lister.h"
+#include "chrome/browser/printing/cloud_print/privet_http.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -21,23 +21,27 @@
 #define CLOUD_PRINT_CONNECTOR_UI_AVAILABLE
 #endif
 
-// TODO(noamsml): Factor out full registration flow into single class
-namespace local_discovery {
-
+namespace cloud_print {
 class PrivetConfirmApiCallFlow;
 class PrivetHTTPAsynchronousFactory;
 class PrivetHTTPResolution;
 class PrivetV1HTTPClient;
+}
+
+// TODO(noamsml): Factor out full registration flow into single class
+namespace local_discovery {
+
 class ServiceDiscoverySharedClient;
 
 // UI Handler for chrome://devices/
 // It listens to local discovery notifications and passes those notifications
 // into the Javascript to update the page.
-class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
-                                public PrivetRegisterOperation::Delegate,
-                                public PrivetDeviceLister::Delegate,
-                                public CloudPrintPrinterList::Delegate,
-                                public SigninManagerBase::Observer {
+class LocalDiscoveryUIHandler
+    : public content::WebUIMessageHandler,
+      public cloud_print::PrivetRegisterOperation::Delegate,
+      public cloud_print::PrivetDeviceLister::Delegate,
+      public cloud_print::CloudPrintPrinterList::Delegate,
+      public SigninManagerBase::Observer {
  public:
   LocalDiscoveryUIHandler();
   ~LocalDiscoveryUIHandler() override;
@@ -47,27 +51,30 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
   // PrivetRegisterOperation::Delegate implementation.
-  void OnPrivetRegisterClaimToken(PrivetRegisterOperation* operation,
-                                  const std::string& token,
-                                  const GURL& url) override;
-  void OnPrivetRegisterError(PrivetRegisterOperation* operation,
-                             const std::string& action,
-                             PrivetRegisterOperation::FailureReason reason,
-                             int printer_http_code,
-                             const base::DictionaryValue* json) override;
-  void OnPrivetRegisterDone(PrivetRegisterOperation* operation,
+  void OnPrivetRegisterClaimToken(
+      cloud_print::PrivetRegisterOperation* operation,
+      const std::string& token,
+      const GURL& url) override;
+  void OnPrivetRegisterError(
+      cloud_print::PrivetRegisterOperation* operation,
+      const std::string& action,
+      cloud_print::PrivetRegisterOperation::FailureReason reason,
+      int printer_http_code,
+      const base::DictionaryValue* json) override;
+  void OnPrivetRegisterDone(cloud_print::PrivetRegisterOperation* operation,
                             const std::string& device_id) override;
 
   // PrivetDeviceLister::Delegate implementation.
-  void DeviceChanged(bool added,
-                     const std::string& name,
-                     const DeviceDescription& description) override;
+  void DeviceChanged(
+      bool added,
+      const std::string& name,
+      const cloud_print::DeviceDescription& description) override;
   void DeviceRemoved(const std::string& name) override;
   void DeviceCacheFlushed() override;
 
   // CloudPrintPrinterList::Delegate implementation.
   void OnDeviceListReady(
-      const CloudPrintPrinterList::DeviceList& devices) override;
+      const cloud_print::CloudPrintPrinterList::DeviceList& devices) override;
   void OnDeviceListUnavailable() override;
 
   // SigninManagerBase::Observer implementation.
@@ -78,7 +85,8 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
                        const std::string& username) override;
 
  private:
-  typedef std::map<std::string, DeviceDescription> DeviceDescriptionMap;
+  typedef std::map<std::string,
+                   cloud_print::DeviceDescription> DeviceDescriptionMap;
   typedef base::Callback<void(bool result)> ResultCallback;
 
   // Message handlers:
@@ -105,11 +113,11 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   void HandleShowSyncUI(const base::ListValue* args);
 
   // For when the IP address of the printer has been resolved for registration.
-  void StartRegisterHTTP(scoped_ptr<PrivetHTTPClient> http_client);
+  void StartRegisterHTTP(scoped_ptr<cloud_print::PrivetHTTPClient> http_client);
 
   // For when the confirm operation on the cloudprint server has finished
   // executing.
-  void OnConfirmDone(GCDApiFlow::Status status);
+  void OnConfirmDone(cloud_print::GCDApiFlow::Status status);
 
   // Signal to the web interface an error has ocurred while registering.
   void SendRegisterError();
@@ -126,7 +134,7 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   // Reset and cancel the current registration.
   void ResetCurrentRegistration();
 
-  scoped_ptr<GCDApiFlow> CreateApiFlow();
+  scoped_ptr<cloud_print::GCDApiFlow> CreateApiFlow();
   void OnSetupError();
 
   // Announcement hasn't been sent for a certain time after registration
@@ -157,29 +165,29 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   scoped_refptr<ServiceDiscoverySharedClient> service_discovery_client_;
 
   // A factory for creating the privet HTTP Client.
-  scoped_ptr<PrivetHTTPAsynchronousFactory> privet_http_factory_;
+  scoped_ptr<cloud_print::PrivetHTTPAsynchronousFactory> privet_http_factory_;
 
   // An object representing the resolution process for the privet_http_factory.
-  scoped_ptr<PrivetHTTPResolution> privet_resolution_;
+  scoped_ptr<cloud_print::PrivetHTTPResolution> privet_resolution_;
 
   // The current HTTP client (used for the current operation).
-  scoped_ptr<PrivetV1HTTPClient> current_http_client_;
+  scoped_ptr<cloud_print::PrivetV1HTTPClient> current_http_client_;
 
   // The current register operation. Only one allowed at any time.
-  scoped_ptr<PrivetRegisterOperation> current_register_operation_;
+  scoped_ptr<cloud_print::PrivetRegisterOperation> current_register_operation_;
 
   // The current confirm call used during the registration flow.
-  scoped_ptr<GCDApiFlow> confirm_api_call_flow_;
+  scoped_ptr<cloud_print::GCDApiFlow> confirm_api_call_flow_;
 
   // The device lister used to list devices on the local network.
-  scoped_ptr<PrivetDeviceLister> privet_lister_;
+  scoped_ptr<cloud_print::PrivetDeviceLister> privet_lister_;
 
   // Whether or not the page is marked as visible.
   bool is_visible_;
 
   // List of printers from cloud print.
-  scoped_ptr<GCDApiFlow> cloud_print_printer_list_;
-  std::vector<CloudPrintPrinterList::Device> cloud_devices_;
+  scoped_ptr<cloud_print::GCDApiFlow> cloud_print_printer_list_;
+  std::vector<cloud_print::CloudPrintPrinterList::Device> cloud_devices_;
   int failed_list_count_;
   int succeded_list_count_;
 

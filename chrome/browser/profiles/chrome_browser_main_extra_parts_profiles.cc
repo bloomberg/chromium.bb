@@ -141,7 +141,7 @@
 #endif
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
-#include "chrome/browser/local_discovery/privet_notifications_factory.h"
+#include "chrome/browser/printing/cloud_print/privet_notifications_factory.h"
 #endif
 
 namespace chrome {
@@ -246,7 +246,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   invalidation::ProfileInvalidationProviderFactory::GetInstance();
   InstantServiceFactory::GetInstance();
 #if defined(ENABLE_SERVICE_DISCOVERY)
-  local_discovery::PrivetNotificationServiceFactory::GetInstance();
+  cloud_print::PrivetNotificationServiceFactory::GetInstance();
 #endif
 #if defined(ENABLE_SUPERVISED_USERS)
 #if defined(OS_CHROMEOS)

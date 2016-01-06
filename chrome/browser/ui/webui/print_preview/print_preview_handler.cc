@@ -94,7 +94,7 @@
 #endif
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
-#include "chrome/browser/local_discovery/privet_constants.h"
+#include "chrome/browser/printing/cloud_print/privet_constants.h"
 #endif
 
 using content::BrowserThread;
@@ -1549,7 +1549,7 @@ void PrintPreviewHandler::StartPrivetLister(const scoped_refptr<
   DCHECK(!service_discovery_client_.get() ||
          service_discovery_client_.get() == client.get());
   service_discovery_client_ = client;
-  printer_lister_.reset(new local_discovery::PrivetLocalPrinterLister(
+  printer_lister_.reset(new cloud_print::PrivetLocalPrinterLister(
       service_discovery_client_.get(), profile->GetRequestContext(), this));
   printer_lister_->Start();
 }
@@ -1558,7 +1558,7 @@ void PrintPreviewHandler::LocalPrinterChanged(
     bool added,
     const std::string& name,
     bool has_local_printing,
-    const local_discovery::DeviceDescription& description) {
+    const cloud_print::DeviceDescription& description) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (has_local_printing ||
       command_line->HasSwitch(switches::kEnablePrintPreviewRegisterPromos)) {
@@ -1575,7 +1575,7 @@ void PrintPreviewHandler::LocalPrinterCacheFlushed() {
 }
 
 void PrintPreviewHandler::PrivetCapabilitiesUpdateClient(
-    scoped_ptr<local_discovery::PrivetHTTPClient> http_client) {
+    scoped_ptr<cloud_print::PrivetHTTPClient> http_client) {
   if (!PrivetUpdateClient(std::move(http_client)))
     return;
 
@@ -1587,7 +1587,7 @@ void PrintPreviewHandler::PrivetCapabilitiesUpdateClient(
 }
 
 bool PrintPreviewHandler::PrivetUpdateClient(
-    scoped_ptr<local_discovery::PrivetHTTPClient> http_client) {
+    scoped_ptr<cloud_print::PrivetHTTPClient> http_client) {
   if (!http_client) {
     SendPrivetCapabilitiesError(privet_http_resolution_->GetName());
     privet_http_resolution_.reset();
@@ -1596,7 +1596,7 @@ bool PrintPreviewHandler::PrivetUpdateClient(
 
   privet_local_print_operation_.reset();
   privet_capabilities_operation_.reset();
-  privet_http_client_ = local_discovery::PrivetV1HTTPClient::CreateDefault(
+  privet_http_client_ = cloud_print::PrivetV1HTTPClient::CreateDefault(
       std::move(http_client));
 
   privet_http_resolution_.reset();
@@ -1608,7 +1608,7 @@ void PrintPreviewHandler::PrivetLocalPrintUpdateClient(
     std::string print_ticket,
     std::string capabilities,
     gfx::Size page_size,
-    scoped_ptr<local_discovery::PrivetHTTPClient> http_client) {
+    scoped_ptr<cloud_print::PrivetHTTPClient> http_client) {
   if (!PrivetUpdateClient(std::move(http_client)))
     return;
 
@@ -1654,14 +1654,14 @@ void PrintPreviewHandler::OnPrivetCapabilities(
     const base::DictionaryValue* capabilities) {
   std::string name = privet_capabilities_operation_->GetHTTPClient()->GetName();
 
-  if (!capabilities || capabilities->HasKey(local_discovery::kPrivetKeyError) ||
+  if (!capabilities || capabilities->HasKey(cloud_print::kPrivetKeyError) ||
       !printer_lister_) {
     SendPrivetCapabilitiesError(name);
     return;
   }
 
   base::DictionaryValue printer_info;
-  const local_discovery::DeviceDescription* description =
+  const cloud_print::DeviceDescription* description =
       printer_lister_->GetDeviceDescription(name);
 
   if (!description) {
@@ -1702,9 +1702,9 @@ void PrintPreviewHandler::PrintToPrivetPrinter(const std::string& device_name,
 
 bool PrintPreviewHandler::CreatePrivetHTTP(
     const std::string& name,
-    const local_discovery::PrivetHTTPAsynchronousFactory::ResultCallback&
+    const cloud_print::PrivetHTTPAsynchronousFactory::ResultCallback&
         callback) {
-  const local_discovery::DeviceDescription* device_description =
+  const cloud_print::DeviceDescription* device_description =
       printer_lister_ ? printer_lister_->GetDeviceDescription(name) : NULL;
 
   if (!device_description) {
@@ -1713,7 +1713,7 @@ bool PrintPreviewHandler::CreatePrivetHTTP(
   }
 
   privet_http_factory_ =
-      local_discovery::PrivetHTTPAsynchronousFactory::CreateInstance(
+      cloud_print::PrivetHTTPAsynchronousFactory::CreateInstance(
           Profile::FromWebUI(web_ui())->GetRequestContext());
   privet_http_resolution_ = privet_http_factory_->CreatePrivetHTTP(name);
   privet_http_resolution_->Start(device_description->address, callback);
@@ -1722,12 +1722,12 @@ bool PrintPreviewHandler::CreatePrivetHTTP(
 }
 
 void PrintPreviewHandler::OnPrivetPrintingDone(
-    const local_discovery::PrivetLocalPrintOperation* print_operation) {
+    const cloud_print::PrivetLocalPrintOperation* print_operation) {
   ClosePreviewDialog();
 }
 
 void PrintPreviewHandler::OnPrivetPrintingError(
-    const local_discovery::PrivetLocalPrintOperation* print_operation,
+    const cloud_print::PrivetLocalPrintOperation* print_operation,
     int http_code) {
   base::FundamentalValue http_code_value(http_code);
   web_ui()->CallJavascriptFunction("onPrivetPrintFailed", http_code_value);
@@ -1735,7 +1735,7 @@ void PrintPreviewHandler::OnPrivetPrintingError(
 
 void PrintPreviewHandler::FillPrinterDescription(
     const std::string& name,
-    const local_discovery::DeviceDescription& description,
+    const cloud_print::DeviceDescription& description,
     bool has_local_printing,
     base::DictionaryValue* printer_value) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

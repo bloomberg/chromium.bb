@@ -20,8 +20,8 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
-#include "chrome/browser/local_discovery/privet_local_printer_lister.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
+#include "chrome/browser/printing/cloud_print/privet_local_printer_lister.h"
 #endif  // ENABLE_SERVICE_DISCOVERY
 
 class PrinterHandler;
@@ -45,8 +45,8 @@ class Size;
 class PrintPreviewHandler
     : public content::WebUIMessageHandler,
 #if defined(ENABLE_SERVICE_DISCOVERY)
-      public local_discovery::PrivetLocalPrinterLister::Delegate,
-      public local_discovery::PrivetLocalPrintOperation::Delegate,
+      public cloud_print::PrivetLocalPrinterLister::Delegate,
+      public cloud_print::PrivetLocalPrintOperation::Delegate,
 #endif
       public ui::SelectFileDialog::Listener,
       public printing::PrintViewManagerObserver,
@@ -92,15 +92,15 @@ class PrintPreviewHandler
       bool added,
       const std::string& name,
       bool has_local_printing,
-      const local_discovery::DeviceDescription& description) override;
+      const cloud_print::DeviceDescription& description) override;
   void LocalPrinterRemoved(const std::string& name) override;
   void LocalPrinterCacheFlushed() override;
 
   // PrivetLocalPrintOperation::Delegate implementation.
-  void OnPrivetPrintingDone(const local_discovery::PrivetLocalPrintOperation*
-                                print_operation) override;
+  void OnPrivetPrintingDone(
+      const cloud_print::PrivetLocalPrintOperation* print_operation) override;
   void OnPrivetPrintingError(
-      const local_discovery::PrivetLocalPrintOperation* print_operation,
+      const cloud_print::PrivetLocalPrintOperation* print_operation,
       int http_code) override;
 #endif  // ENABLE_SERVICE_DISCOVERY
   int regenerate_preview_request_count() const {
@@ -278,14 +278,14 @@ class PrintPreviewHandler
       local_discovery::ServiceDiscoverySharedClient>& client);
   void OnPrivetCapabilities(const base::DictionaryValue* capabilities);
   void PrivetCapabilitiesUpdateClient(
-      scoped_ptr<local_discovery::PrivetHTTPClient> http_client);
+      scoped_ptr<cloud_print::PrivetHTTPClient> http_client);
   void PrivetLocalPrintUpdateClient(
       std::string print_ticket,
       std::string capabilities,
       gfx::Size page_size,
-      scoped_ptr<local_discovery::PrivetHTTPClient> http_client);
+      scoped_ptr<cloud_print::PrivetHTTPClient> http_client);
   bool PrivetUpdateClient(
-      scoped_ptr<local_discovery::PrivetHTTPClient> http_client);
+      scoped_ptr<cloud_print::PrivetHTTPClient> http_client);
   void StartPrivetLocalPrint(const std::string& print_ticket,
                              const std::string& capabilities,
                              const gfx::Size& page_size);
@@ -296,11 +296,11 @@ class PrintPreviewHandler
                             const gfx::Size& page_size);
   bool CreatePrivetHTTP(
       const std::string& name,
-      const local_discovery::PrivetHTTPAsynchronousFactory::ResultCallback&
+      const cloud_print::PrivetHTTPAsynchronousFactory::ResultCallback&
           callback);
   void FillPrinterDescription(
       const std::string& name,
-      const local_discovery::DeviceDescription& description,
+      const cloud_print::DeviceDescription& description,
       bool has_local_printing,
       base::DictionaryValue* printer_value);
 #endif
@@ -372,15 +372,15 @@ class PrintPreviewHandler
 #if defined(ENABLE_SERVICE_DISCOVERY)
   scoped_refptr<local_discovery::ServiceDiscoverySharedClient>
       service_discovery_client_;
-  scoped_ptr<local_discovery::PrivetLocalPrinterLister> printer_lister_;
+  scoped_ptr<cloud_print::PrivetLocalPrinterLister> printer_lister_;
 
-  scoped_ptr<local_discovery::PrivetHTTPAsynchronousFactory>
+  scoped_ptr<cloud_print::PrivetHTTPAsynchronousFactory>
       privet_http_factory_;
-  scoped_ptr<local_discovery::PrivetHTTPResolution> privet_http_resolution_;
-  scoped_ptr<local_discovery::PrivetV1HTTPClient> privet_http_client_;
-  scoped_ptr<local_discovery::PrivetJSONOperation>
+  scoped_ptr<cloud_print::PrivetHTTPResolution> privet_http_resolution_;
+  scoped_ptr<cloud_print::PrivetV1HTTPClient> privet_http_client_;
+  scoped_ptr<cloud_print::PrivetJSONOperation>
       privet_capabilities_operation_;
-  scoped_ptr<local_discovery::PrivetLocalPrintOperation>
+  scoped_ptr<cloud_print::PrivetLocalPrintOperation>
       privet_local_print_operation_;
 #endif
 

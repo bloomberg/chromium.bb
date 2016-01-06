@@ -17,7 +17,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_split.h"
 #include "base/task_runner_util.h"
-#include "chrome/browser/local_discovery/pwg_raster_converter.h"
+#include "chrome/browser/printing/pwg_raster_converter.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
 #include "components/cloud_devices/common/printer_description.h"
 #include "device/core/device_client.h"
@@ -43,7 +43,7 @@ using extensions::Extension;
 using extensions::ExtensionRegistry;
 using extensions::ListBuilder;
 using extensions::UsbPrinterManifestData;
-using local_discovery::PWGRasterConverter;
+using printing::PWGRasterConverter;
 
 namespace {
 
@@ -254,8 +254,8 @@ void ExtensionPrinterHandler::StartGrantPrinterAccess(
                      weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void ExtensionPrinterHandler::SetPwgRasterConverterForTesting(
-    scoped_ptr<local_discovery::PWGRasterConverter> pwg_raster_converter) {
+void ExtensionPrinterHandler::SetPWGRasterConverterForTesting(
+    scoped_ptr<PWGRasterConverter> pwg_raster_converter) {
   pwg_raster_converter_ = std::move(pwg_raster_converter);
 }
 

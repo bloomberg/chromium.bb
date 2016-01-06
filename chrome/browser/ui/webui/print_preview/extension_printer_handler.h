@@ -38,7 +38,7 @@ namespace gfx {
 class Size;
 }
 
-namespace local_discovery {
+namespace printing {
 class PWGRasterConverter;
 }
 
@@ -77,8 +77,8 @@ class ExtensionPrinterHandler : public PrinterHandler {
  private:
   friend class ExtensionPrinterHandlerTest;
 
-  void SetPwgRasterConverterForTesting(
-      scoped_ptr<local_discovery::PWGRasterConverter> pwg_raster_converter);
+  void SetPWGRasterConverterForTesting(
+      scoped_ptr<printing::PWGRasterConverter> pwg_raster_converter);
 
   // Converts |data| to PWG raster format (from PDF) for a printer described
   // by |printer_description|.
@@ -119,7 +119,7 @@ class ExtensionPrinterHandler : public PrinterHandler {
 
   content::BrowserContext* browser_context_;
 
-  scoped_ptr<local_discovery::PWGRasterConverter> pwg_raster_converter_;
+  scoped_ptr<printing::PWGRasterConverter> pwg_raster_converter_;
   int pending_enumeration_count_ = 0;
 
   scoped_refptr<base::TaskRunner> slow_task_runner_;
