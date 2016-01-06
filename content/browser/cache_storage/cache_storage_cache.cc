@@ -815,11 +815,12 @@ void CacheStorageCache::PutDidCreateEntry(
     scoped_ptr<disk_cache::Entry*> entry_ptr,
     scoped_ptr<PutContext> put_context,
     int rv) {
+  put_context->cache_entry.reset(*entry_ptr);
+
   if (rv != net::OK) {
     put_context->callback.Run(CACHE_STORAGE_ERROR_EXISTS);
     return;
   }
-  put_context->cache_entry.reset(*entry_ptr);
 
   CacheMetadata metadata;
   CacheRequest* request_metadata = metadata.mutable_request();
