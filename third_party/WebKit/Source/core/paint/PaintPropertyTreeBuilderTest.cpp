@@ -7,6 +7,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "platform/text/TextStream.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
@@ -23,7 +24,7 @@ public:
 
     void loadTestData(const char* fileName)
     {
-        String fullPath(Platform::current()->unitTestSupport()->webKitRootDir());
+        String fullPath = testing::blinkRootDir();
         fullPath.append("/Source/core/paint/test_data/");
         fullPath.append(fileName);
         WebData inputBuffer = Platform::current()->unitTestSupport()->readFromFile(fullPath);

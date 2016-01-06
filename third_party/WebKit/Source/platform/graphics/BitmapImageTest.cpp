@@ -33,6 +33,7 @@
 #include "platform/SharedBuffer.h"
 #include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/graphics/ImageObserver.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -63,7 +64,7 @@ public:
 
     static PassRefPtr<SharedBuffer> readFile(const char* fileName)
     {
-        String filePath = Platform::current()->unitTestSupport()->webKitRootDir();
+        String filePath = testing::blinkRootDir();
         filePath.append(fileName);
         return Platform::current()->unitTestSupport()->readFromFile(filePath);
     }

@@ -30,6 +30,7 @@
 
 #include "platform/testing/URLTestHelpers.h"
 
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLError.h"
@@ -75,12 +76,12 @@ void registerMockedErrorURLLoad(const WebURL& fullURL)
 void registerMockedURLLoadWithCustomResponse(const WebURL& fullURL, const WebString& fileName, const WebString& relativeBaseDirectory, WebURLResponse response)
 {
     // Physical file path for the mock = <webkitRootDir> + relativeBaseDirectory + fileName.
-    std::string filePath = std::string(Platform::current()->unitTestSupport()->webKitRootDir().utf8().data());
+    String filePath = testing::blinkRootDir();
     filePath.append("/Source/web/tests/data/");
-    filePath.append(std::string(relativeBaseDirectory.utf8().data()));
-    filePath.append(std::string(fileName.utf8().data()));
+    filePath.append(relativeBaseDirectory);
+    filePath.append(fileName);
 
-    Platform::current()->unitTestSupport()->registerMockedURL(fullURL, response, WebString::fromUTF8(filePath.c_str()));
+    Platform::current()->unitTestSupport()->registerMockedURL(fullURL, response, filePath);
 }
 
 } // namespace URLTestHelpers

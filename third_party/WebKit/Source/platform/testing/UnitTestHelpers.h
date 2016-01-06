@@ -26,10 +26,14 @@
 #ifndef UnitTestHelpers_h
 #define UnitTestHelpers_h
 
+#include "wtf/text/WTFString.h"
+
 namespace blink {
 namespace testing {
 
 void runPendingTasks();
+
+String blinkRootDir();
 
 } // namespace testing
 } // namespace blink

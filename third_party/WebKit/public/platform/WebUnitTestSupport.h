@@ -56,9 +56,6 @@ public:
     // Set a delegate that allows callbacks for all WebURLLoaderClients to be intercepted.
     virtual void setLoaderDelegate(WebURLLoaderTestDelegate*) { }
 
-    // Returns the root directory of the WebKit code.
-    virtual WebString webKitRootDir() { return WebString(); }
-
     // Constructs a WebLayerTreeView set up with reasonable defaults for
     // testing.
     virtual WebLayerTreeView* createLayerTreeViewForTesting() { return nullptr; }

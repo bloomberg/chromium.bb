@@ -65,7 +65,7 @@ public:
         ,  m_didFail(false)
     {
         // Reuse one of the test files from WebFrameTest.
-        m_baseFilePath = Platform::current()->unitTestSupport()->webKitRootDir();
+        m_baseFilePath = testing::blinkRootDir();
         m_baseFilePath.append("/Source/web/tests/data/");
         m_frameFilePath = m_baseFilePath;
         m_frameFilePath.append("iframes_test.html");

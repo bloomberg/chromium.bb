@@ -31,6 +31,7 @@
 #include "public/platform/WebImage.h"
 
 #include "platform/SharedBuffer.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebSize.h"
@@ -41,7 +42,7 @@ namespace blink {
 
 static PassRefPtr<SharedBuffer> readFile(const char* fileName)
 {
-    String filePath = Platform::current()->unitTestSupport()->webKitRootDir();
+    String filePath = testing::blinkRootDir();
     filePath.append("/Source/web/tests/data/");
     filePath.append(fileName);
 

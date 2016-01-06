@@ -335,17 +335,6 @@ void TestBlinkWebUnitTestSupport::setLoaderDelegate(
   url_loader_factory_->set_delegate(delegate);
 }
 
-blink::WebString TestBlinkWebUnitTestSupport::webKitRootDir() {
-  base::FilePath path;
-  PathService::Get(base::DIR_SOURCE_ROOT, &path);
-  path = path.Append(FILE_PATH_LITERAL("third_party/WebKit"));
-  path = base::MakeAbsoluteFilePath(path);
-  CHECK(!path.empty());
-  std::string path_ascii = path.MaybeAsASCII();
-  CHECK(!path_ascii.empty());
-  return blink::WebString::fromUTF8(path_ascii.c_str());
-}
-
 blink::WebLayerTreeView*
 TestBlinkWebUnitTestSupport::createLayerTreeViewForTesting() {
   scoped_ptr<WebLayerTreeViewImplForTesting> view(

@@ -5718,7 +5718,7 @@ TEST_P(ParameterizedWebFrameTest, CompositorScrollIsUserScrollLongPage)
 
 TEST_P(ParameterizedWebFrameTest, FirstPartyForCookiesForRedirect)
 {
-    WTF::String filePath = Platform::current()->unitTestSupport()->webKitRootDir();
+    String filePath = testing::blinkRootDir();
     filePath.append("/Source/web/tests/data/first_party.html");
 
     WebURL testURL(toKURL("http://internal.test/first_party_redirect.html"));

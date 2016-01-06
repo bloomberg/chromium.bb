@@ -32,14 +32,14 @@
 
 #include "platform/fonts/TestFontSelector.h"
 #include "platform/fonts/TypesettingFeatures.h"
-#include "public/platform/WebUnitTestSupport.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
 static inline String fontPath(String relativePath)
 {
-    return Platform::current()->unitTestSupport()->webKitRootDir()
+    return testing::blinkRootDir()
         + String("/Source/platform/testing/data/")
         + relativePath;
 }

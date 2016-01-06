@@ -25,6 +25,9 @@
 
 #include "platform/testing/UnitTestHelpers.h"
 
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/path_service.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
@@ -46,6 +49,15 @@ void runPendingTasks()
 {
     Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, new QuitTask);
     Platform::current()->unitTestSupport()->enterRunLoop();
+}
+
+String blinkRootDir()
+{
+    base::FilePath path;
+    base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
+    path = path.Append(FILE_PATH_LITERAL("third_party/WebKit"));
+    path = base::MakeAbsoluteFilePath(path);
+    return String::fromUTF8(path.MaybeAsASCII().c_str());
 }
 
 }
