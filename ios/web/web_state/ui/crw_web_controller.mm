@@ -1325,10 +1325,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)loadCurrentURLInWebView {
   [self willLoadCurrentURLInWebView];
 
-  // Re-register the user agent, because UIWebView sometimes loses it.
-  // See crbug.com/228397.
-  [self registerUserAgent];
-
   // Clear the set of URLs opened in external applications.
   _openedApplicationURL.reset([[NSMutableSet alloc] init]);
 
@@ -2832,11 +2828,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)restoreStateAfterURLRejection {
   [[self sessionController] discardNonCommittedEntries];
-
-  // Re-register the user agent, because UIWebView will sometimes try to read
-  // the agent again from a saved search result page in which no other page has
-  // yet been loaded. See crbug.com/260370.
-  [self registerUserAgent];
 
   // Reset |_lastRegisteredRequestURL| so that it reflects the URL from before
   // the load was rejected. This value may be out of sync because

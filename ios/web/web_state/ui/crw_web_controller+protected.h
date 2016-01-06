@@ -108,9 +108,6 @@ struct NewWindowInfo {
 // based on the confidence in the verification.
 - (GURL)webURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel;
 
-// Registers the current user agent with the web view.
-- (void)registerUserAgent;
-
 // Returns YES if the current navigation item corresponds to a web page
 // loaded by a POST request.
 - (BOOL)isCurrentNavigationItemPOST;

@@ -533,12 +533,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   return _documentURL;
 }
 
-// TODO(stuartmorgan): Remove this method and use the API for WKWebView,
-// making the reset-on-each-load behavior specific to the UIWebView subclass.
-- (void)registerUserAgent {
-  web::BuildAndRegisterUserAgentForUIWebView(nil, [self useDesktopUserAgent]);
-}
-
 - (BOOL)isCurrentNavigationItemPOST {
   // |_pendingNavigationInfo| will be nil if the decidePolicy* delegate methods
   // were not called.

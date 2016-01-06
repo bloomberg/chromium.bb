@@ -186,6 +186,9 @@ const int64_t kContinuousCheckIntervalMSLow = 3000;
 - (void)generateMissingLoadRequestWithURL:(const GURL&)currentURL
                                  referrer:(const web::Referrer&)referrer;
 
+// Registers the current user agent with the web view.
+- (void)registerUserAgent;
+
 // Returns a child scripting CRWWebController with the given window name.
 - (id<CRWWebControllerScripting>)scriptingInterfaceForWindowNamed:
     (NSString*)name;
@@ -432,6 +435,14 @@ const size_t kMaxMessageQueueSize = 262144;
   }
 }
 
+- (void)restoreStateAfterURLRejection {
+  // Re-register the user agent, because UIWebView will sometimes try to read
+  // the agent again from a saved search result page in which no other page has
+  // yet been loaded. See crbug.com/260370.
+  [self registerUserAgent];
+  [super restoreStateAfterURLRejection];
+}
+
 #pragma mark -
 #pragma mark Testing-Only Methods
 
@@ -532,12 +543,6 @@ const size_t kMaxMessageQueueSize = 262144;
   return url;
 }
 
-- (void)registerUserAgent {
-  web::BuildAndRegisterUserAgentForUIWebView(
-      self.webStateImpl->GetRequestGroupID(),
-      [self useDesktopUserAgent]);
-}
-
 - (BOOL)isCurrentNavigationItemPOST {
   DCHECK([self currentSessionEntry]);
   NSData* currentPOSTData =
@@ -633,6 +638,11 @@ const size_t kMaxMessageQueueSize = 262144;
 
 - (void)loadRequestForCurrentNavigationItem {
   DCHECK(self.webView && !self.nativeController);
+
+  // Re-register the user agent, because UIWebView sometimes loses it.
+  // See crbug.com/228397.
+  [self registerUserAgent];
+
   NSMutableURLRequest* request = [self requestForCurrentNavigationItem];
 
   ProceduralBlock GETBlock = ^{
@@ -1399,6 +1409,11 @@ const size_t kMaxMessageQueueSize = 262144;
   }
 
   [self registerLoadRequest:currentURL referrer:referrer transition:transition];
+}
+
+- (void)registerUserAgent {
+  web::BuildAndRegisterUserAgentForUIWebView(
+      self.webStateImpl->GetRequestGroupID(), [self useDesktopUserAgent]);
 }
 
 - (id<CRWWebControllerScripting>)scriptingInterfaceForWindowNamed:
