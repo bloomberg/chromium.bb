@@ -13,6 +13,9 @@ import sys
 import textwrap
 
 
+IS_WINDOWS = sys.platform.startswith('win')
+
+
 def SubprocessCheckCall0Or1(args):
     """Like subprocss.check_call(), but allows a return code of 1.
 
@@ -20,7 +23,7 @@ def SubprocessCheckCall0Or1(args):
     code 1, and re-raises the subprocess.check_call() exception otherwise.
     """
     try:
-        subprocess.check_call(args)
+        subprocess.check_call(args, shell=IS_WINDOWS)
     except subprocess.CalledProcessError, e:
         if e.returncode != 1:
             raise
@@ -67,7 +70,8 @@ def main(args):
     parsed = parser.parse_args(args)
 
     original_head = (
-        subprocess.check_output(['git', 'rev-parse', 'HEAD']).rstrip())
+        subprocess.check_output(['git', 'rev-parse', 'HEAD'],
+                                shell=IS_WINDOWS).rstrip())
 
     # Read the README, because that’s what it’s for. Extract some things from
     # it, and save it to be able to update it later.
@@ -86,7 +90,8 @@ def main(args):
                                re.MULTILINE)
     revision_old = revision_match.group(1)
 
-    subprocess.check_call(['git', 'fetch', parsed.repository, parsed.fetch_ref])
+    subprocess.check_call(['git', 'fetch', parsed.repository, parsed.fetch_ref],
+                          shell=IS_WINDOWS)
 
     # Make sure that parsed.update_to is an ancestor of FETCH_HEAD, and
     # revision_old is an ancestor of parsed.update_to. This prevents the use of
@@ -125,7 +130,7 @@ Press ^C to abort.
     except:
         # ^C, signal, or something else.
         print >>sys.stderr, 'Aborting...'
-        subprocess.call(['git', 'cherry-pick', '--abort'])
+        subprocess.call(['git', 'cherry-pick', '--abort'], shell=IS_WINDOWS)
         raise
 
     # Get an abbreviated hash and subject line for each commit in the window,
@@ -137,7 +142,8 @@ Press ^C to abort.
                                          '--abbrev-commit',
                                          '--pretty=oneline',
                                          '--reverse',
-                                         update_range]).splitlines(False)
+                                         update_range],
+                                         shell=IS_WINDOWS).splitlines(False)
 
     if assisted_cherry_pick:
         # If the user had to help, count the number of cherry-picked commits,
@@ -146,14 +152,14 @@ Press ^C to abort.
             ['git', 'rev-list', '--count', original_head + '..HEAD']))
         if cherry_picked_commits != len(log_lines):
             print >>sys.stderr, 'Something smells fishy, aborting anyway...'
-            subprocess.call(['git', 'cherry-pick', '--abort'])
+            subprocess.call(['git', 'cherry-pick', '--abort'], shell=IS_WINDOWS)
             raise Exception('not all commits were cherry-picked',
                             len(log_lines),
                             cherry_picked_commits)
 
     # Make a nice commit message. Start with the full commit hash.
     revision_new = subprocess.check_output(
-        ['git', 'rev-parse', parsed.update_to]).rstrip()
+        ['git', 'rev-parse', parsed.update_to], shell=IS_WINDOWS).rstrip()
     new_message = 'Update ' + project_name + ' to ' + revision_new + '\n\n'
 
     # Wrap everything to 72 characters, with a hanging indent.
@@ -197,14 +203,16 @@ Press ^C to abort.
     # This soft-reset causes all of the cherry-picks to show up as staged,
     # which will have the effect of squashing them along with the README update
     # when committed below.
-    subprocess.check_call(['git', 'reset', '--soft', original_head])
+    subprocess.check_call(['git', 'reset', '--soft', original_head],
+                          shell=IS_WINDOWS)
 
     # Write the new README.
     open(readme_path, 'wb').write(readme_content_new)
 
     # Commit everything.
-    subprocess.check_call(['git', 'add', readme_path])
-    subprocess.check_call(['git', 'commit', '--message=' + new_message])
+    subprocess.check_call(['git', 'add', readme_path], shell=IS_WINDOWS)
+    subprocess.check_call(['git', 'commit', '--message=' + new_message],
+                          shell=IS_WINDOWS)
 
     if has_local_modifications:
         print >>sys.stderr, (
