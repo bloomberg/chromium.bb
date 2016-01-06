@@ -90,7 +90,7 @@ function convertTemplatesToShadowRootsWithin(node) {
         var parent = template.parentNode;
         parent.removeChild(template);
         var shadowRoot;
-        if (!mode) {
+        if (!mode || mode == 'v0'){
             shadowRoot = parent.createShadowRoot();
         } else {
             shadowRoot = parent.attachShadow({'mode': mode});

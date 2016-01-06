@@ -31,6 +31,8 @@
 #include "core/html/HTMLSlotElement.h"
 
 #include "core/HTMLNames.h"
+#include "core/dom/NodeTraversal.h"
+#include "core/dom/shadow/InsertionPoint.h"
 
 namespace blink {
 
@@ -96,6 +98,21 @@ void HTMLSlotElement::detach(const AttachContext& context)
         node->lazyReattachIfAttached();
 
     HTMLElement::detach(context);
+}
+
+void HTMLSlotElement::updateDistributedNodesWithFallback()
+{
+    if (!m_distributedNodes.isEmpty())
+        return;
+    for (auto& child : NodeTraversal::childrenOf(*this)) {
+        // Insertion points are not supported as slots fallback
+        if (isActiveInsertionPoint(child))
+            continue;
+        if (isHTMLSlotElement(child))
+            appendDistributedNodes(toHTMLSlotElement(child).getDistributedNodes());
+        else
+            appendDistributedNode(child);
+    }
 }
 
 DEFINE_TRACE(HTMLSlotElement)
