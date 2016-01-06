@@ -5,6 +5,7 @@
 
 #include <vector>
 
+#include "base/base64.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_simple_task_runner.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/safe_browsing/chunk.pb.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
+#include "components/safe_browsing_db/safebrowsing.pb.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -267,6 +269,57 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashUrl) {
       "pver=3.0" +
           key_param_ + "&additional_query&ext=1",
       pm->GetHashUrl(true).spec());
+}
+
+TEST_F(SafeBrowsingProtocolManagerTest, TestGetV4HashUrl) {
+  scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
+
+  EXPECT_EQ(
+      "https://safebrowsing.googleapis.com/v4/encodedFullHashes/request_base64?"
+      "alt=proto&client_id=unittest&client_version=1.0" + key_param_,
+      pm->GetV4HashUrl("request_base64").spec());
+
+  // Additional query has no effect.
+  pm->set_additional_query(kAdditionalQuery);
+  EXPECT_EQ(
+      "https://safebrowsing.googleapis.com/v4/encodedFullHashes/request_base64?"
+      "alt=proto&client_id=unittest&client_version=1.0" + key_param_,
+      pm->GetV4HashUrl("request_base64").spec());
+}
+
+TEST_F(SafeBrowsingProtocolManagerTest, TestGetV4HashRequest) {
+  scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
+
+  FindFullHashesRequest req;
+  ThreatInfo* info = req.mutable_threat_info();
+  info->add_threat_types(API_ABUSE);
+  info->add_platform_types(CHROME_PLATFORM);
+  info->add_threat_entry_types(URL_EXPRESSION);
+
+  SBPrefix one = 1u;
+  SBPrefix two = 2u;
+  SBPrefix three = 3u;
+  std::string hash(reinterpret_cast<const char*>(&one), sizeof(SBPrefix));
+  info->add_threat_entries()->set_hash(hash);
+  hash.clear();
+  hash.append(reinterpret_cast<const char*>(&two), sizeof(SBPrefix));
+  info->add_threat_entries()->set_hash(hash);
+  hash.clear();
+  hash.append(reinterpret_cast<const char*>(&three), sizeof(SBPrefix));
+  info->add_threat_entries()->set_hash(hash);
+
+  // Serialize and Base64 encode.
+  std::string req_data, req_base64;
+  req.SerializeToString(&req_data);
+  base::Base64Encode(req_data, &req_base64);
+
+  std::vector<SBPrefix> prefixes;
+  prefixes.push_back(one);
+  prefixes.push_back(two);
+  prefixes.push_back(three);
+  EXPECT_EQ(
+      req_base64,
+      pm->GetV4HashRequest(prefixes, API_ABUSE));
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestUpdateUrl) {

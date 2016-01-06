@@ -31,6 +31,7 @@
 #include "chrome/browser/safe_browsing/protocol_manager_helper.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
+#include "components/safe_browsing_db/safebrowsing.pb.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
@@ -85,6 +86,19 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
                            FullHashCallback callback,
                            bool is_download,
                            bool is_extended_reporting);
+
+  // Retrieve the full hash for a set of prefixes, and invoke the callback
+  // argument when the results are retrieved. The callback may be invoked
+  // synchronously. Uses the V4 Safe Browsing protocol.
+  virtual void GetV4FullHashes(const std::vector<SBPrefix>& prefixes,
+                               ThreatType threat_type,
+                               FullHashCallback callback);
+
+  // Retrieve the full hash and API metadata for a set of prefixes, and invoke
+  // the callback argument when the results are retrieved. The callback may be
+  // invoked synchronously. Uses the V4 Safe Browsing protocol.
+  virtual void GetFullHashesWithApis(const std::vector<SBPrefix>& prefixes,
+                                     FullHashCallback callback);
 
   // Forces the start of next update after |interval| time.
   void ForceScheduleNextUpdate(base::TimeDelta interval);
@@ -188,6 +202,10 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestChunkStrings);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestGetHashUrl);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
+                           TestGetV4HashUrl);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
+                           TestGetV4HashRequest);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
                            TestGetHashBackOffTimes);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestNextChunkUrl);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestUpdateUrl);
@@ -222,6 +240,16 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   // Generates GetHash request URL for retrieving full hashes.
   GURL GetHashUrl(bool is_extended_reporting) const;
   // Generates URL for reporting safe browsing hits for UMA users.
+
+  // Generates GetHashWithApis Pver4 request URL for retrieving full hashes.
+  // |request_base64| is the serialized FindFullHashesRequest protocol buffer
+  // encoded in base 64.
+  GURL GetV4HashUrl(const std::string& request_base64) const;
+
+  // Fills a FindFullHashesRequest protocol buffer for an API_ABUSE request.
+  // Returns the serialized and base 64 encoded request as a string.
+  std::string GetV4HashRequest(const std::vector<SBPrefix>& prefixes,
+                               ThreatType threat_type);
 
   // Composes a ChunkUrl based on input string.
   GURL NextChunkUrl(const std::string& input) const;
@@ -336,6 +364,7 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   std::deque<ChunkUrl> chunk_request_urls_;
 
   HashRequests hash_requests_;
+  HashRequests v4_hash_requests_;
 
   // True if the service has been given an add/sub chunk but it hasn't been
   // added to the database yet.

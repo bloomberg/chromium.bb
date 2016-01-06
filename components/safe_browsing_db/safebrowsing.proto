@@ -251,7 +251,7 @@ enum ThreatType {
   THREAT_TYPE_UNSPECIFIED = 0;
 
   // Malware threat type.
-  MALWARE = 1;
+  MALWARE_THREAT = 1;
 
   // Social engineering threat type.
   SOCIAL_ENGINEERING_PUBLIC = 2;
@@ -275,10 +275,10 @@ enum PlatformType {
   PLATFORM_TYPE_UNSPECIFIED = 0;
 
   // Threat posed to Windows.
-  WINDOWS = 1;
+  WINDOWS_PLATFORM = 1;
 
   // Threat posed to Linux.
-  LINUX = 2;
+  LINUX_PLATFORM = 2;
 
   // Threat posed to Android.
   // This cannot be ANDROID because that symbol is defined for android builds
@@ -286,10 +286,10 @@ enum PlatformType {
   ANDROID_PLATFORM = 3;
 
   // Threat posed to OSX.
-  OSX = 4;
+  OSX_PLATFORM = 4;
 
   // Threat posed to iOS.
-  IOS = 5;
+  IOS_PLATFORM = 5;
 
   // Threat posed to at least one of the defined platforms.
   ANY_PLATFORM = 6;
@@ -298,7 +298,7 @@ enum PlatformType {
   ALL_PLATFORMS = 7;
 
   // Threat posed to Chrome.
-  CHROME = 8;
+  CHROME_PLATFORM = 8;
 }
 
 // The client metadata associated with Safe Browsing API requests.

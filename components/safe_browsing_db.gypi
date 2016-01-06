@@ -11,6 +11,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../crypto/crypto.gyp:crypto',
+        ':safebrowsing_proto',
       ],
       'sources': [
         # Note: sources list duplicated in GN build.

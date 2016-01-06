@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/base64.h"
 #include "base/environment.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -91,6 +92,9 @@ static const int kSbMaxUpdateWaitSec = 30;
 static const size_t kSbMaxBackOff = 8;
 
 const char kUmaHashResponseMetricName[] = "SB2.GetHashResponseOrErrorCode";
+
+// The V4 URL prefix where browser fetches hashes from the V4 server.
+const char kSbV4UrlPrefix[] = "https://safebrowsing.googleapis.com/v4";
 
 // The default SBProtocolManagerFactory.
 class SBProtocolManagerFactoryImpl : public SBProtocolManagerFactory {
@@ -196,6 +200,10 @@ SafeBrowsingProtocolManager::~SafeBrowsingProtocolManager() {
   STLDeleteContainerPairFirstPointers(hash_requests_.begin(),
                                       hash_requests_.end());
   hash_requests_.clear();
+
+  STLDeleteContainerPairFirstPointers(v4_hash_requests_.begin(),
+                                      v4_hash_requests_.end());
+  v4_hash_requests_.clear();
 }
 
 // We can only have one update or chunk request outstanding, but there may be
@@ -229,6 +237,58 @@ void SafeBrowsingProtocolManager::GetFullHash(
   fetcher->SetRequestContext(request_context_getter_.get());
   fetcher->SetUploadData("text/plain", get_hash);
   fetcher->Start();
+}
+
+std::string SafeBrowsingProtocolManager::GetV4HashRequest(
+    const std::vector<SBPrefix>& prefixes,
+    ThreatType threat_type) {
+  // Build the request. Client info and client states are not added to the
+  // request protocol buffer. Client info is passed as params in the url.
+  FindFullHashesRequest req;
+  ThreatInfo* info = req.mutable_threat_info();
+  info->add_threat_types(threat_type);
+  info->add_platform_types(CHROME_PLATFORM);
+  info->add_threat_entry_types(URL_EXPRESSION);
+  for (const SBPrefix& prefix : prefixes) {
+    std::string hash(reinterpret_cast<const char*>(&prefix), sizeof(SBPrefix));
+    info->add_threat_entries()->set_hash(hash);
+  }
+
+  // Serialize and Base64 encode.
+  std::string req_data, req_base64;
+  req.SerializeToString(&req_data);
+  base::Base64Encode(req_data, &req_base64);
+
+  return req_base64;
+}
+
+void SafeBrowsingProtocolManager::GetV4FullHashes(
+    const std::vector<SBPrefix>& prefixes,
+    ThreatType threat_type,
+    FullHashCallback callback) {
+  DCHECK(CalledOnValidThread());
+  // TODO(kcarattini): Implement backoff behavior.
+
+  std::string req_base64 = GetV4HashRequest(prefixes, threat_type);
+  GURL gethash_url = GetV4HashUrl(req_base64);
+
+  net::URLFetcher* fetcher =
+      net::URLFetcher::Create(url_fetcher_id_++, gethash_url,
+                              net::URLFetcher::GET, this)
+          .release();
+  // TODO(kcarattini): Implement a new response processor.
+  v4_hash_requests_[fetcher] = FullHashDetails(callback,
+                                               false  /* is_download */);
+
+  fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE);
+  fetcher->SetRequestContext(request_context_getter_.get());
+  fetcher->Start();
+}
+
+void SafeBrowsingProtocolManager::GetFullHashesWithApis(
+    const std::vector<SBPrefix>& prefixes,
+    FullHashCallback callback) {
+  GetV4FullHashes(prefixes, API_ABUSE, callback);
 }
 
 void SafeBrowsingProtocolManager::GetNextUpdate() {
@@ -758,6 +818,15 @@ GURL SafeBrowsingProtocolManager::GetHashUrl(bool is_extended_reporting) const {
   std::string url = SafeBrowsingProtocolManagerHelper::ComposeUrl(
       url_prefix_, "gethash", client_name_, version_, additional_query_,
       is_extended_reporting);
+  return GURL(url);
+}
+
+// The API hash call uses the pver4 Safe Browsing server.
+GURL SafeBrowsingProtocolManager::GetV4HashUrl(
+    const std::string& request_base64) const {
+  std::string url = SafeBrowsingProtocolManagerHelper::ComposePver4Url(
+      kSbV4UrlPrefix, "encodedFullHashes",
+      request_base64, client_name_, version_);
   return GURL(url);
 }
 
