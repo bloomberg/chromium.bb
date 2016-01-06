@@ -7,11 +7,14 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 
 namespace net {
 
+class ProofVerifyContext;
 class QuicChromiumClientSession;
+class QuicCryptoClientConfig;
 class QuicCryptoClientStream;
 class QuicServerId;
 
@@ -24,7 +27,10 @@ class NET_EXPORT QuicCryptoClientStreamFactory {
   virtual QuicCryptoClientStream* CreateQuicCryptoClientStream(
       const QuicServerId& server_id,
       QuicChromiumClientSession* session,
+      scoped_ptr<ProofVerifyContext> proof_verify_context,
       QuicCryptoClientConfig* crypto_config) = 0;
+
+  static QuicCryptoClientStreamFactory* GetDefaultFactory();
 };
 
 }  // namespace net

@@ -201,13 +201,10 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       disabled_reason_(QUIC_DISABLED_NOT),
       weak_factory_(this) {
   crypto_stream_.reset(
-      crypto_client_stream_factory
-          ? crypto_client_stream_factory->CreateQuicCryptoClientStream(
-                server_id, this, crypto_config)
-          : new QuicCryptoClientStream(
-                server_id, this,
-                new ProofVerifyContextChromium(cert_verify_flags, net_log_),
-                crypto_config));
+      crypto_client_stream_factory->CreateQuicCryptoClientStream(
+          server_id, this, make_scoped_ptr(new ProofVerifyContextChromium(
+                               cert_verify_flags, net_log_)),
+          crypto_config));
   connection->set_debug_visitor(logger_.get());
   net_log_.BeginEvent(NetLog::TYPE_QUIC_SESSION,
                       base::Bind(NetLogQuicClientSessionCallback, &server_id,

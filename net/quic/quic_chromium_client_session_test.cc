@@ -22,6 +22,7 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_server_info.h"
+#include "net/quic/quic_crypto_client_stream_factory.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_packet_reader.h"
 #include "net/quic/quic_protocol.h"
@@ -56,7 +57,7 @@ class QuicChromiumClientSessionTest
             connection_,
             GetSocket(),
             /*stream_factory=*/nullptr,
-            /*crypto_client_stream_factory=*/nullptr,
+            QuicCryptoClientStreamFactory::GetDefaultFactory(),
             &clock_,
             &transport_security_state_,
             make_scoped_ptr((QuicServerInfo*)nullptr),

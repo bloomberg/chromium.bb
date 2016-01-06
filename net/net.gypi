@@ -1024,6 +1024,7 @@
       'quic/network_connection.h',
       'quic/quic_crypto_client_stream.cc',
       'quic/quic_crypto_client_stream.h',
+      'quic/quic_crypto_client_stream_factory.cc',
       'quic/quic_crypto_client_stream_factory.h',
       'quic/quic_crypto_server_stream.cc',
       'quic/quic_crypto_server_stream.h',

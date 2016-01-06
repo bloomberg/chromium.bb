@@ -119,7 +119,8 @@ HttpNetworkSession::Params::Params()
       quic_random(NULL),
       quic_max_packet_length(kDefaultMaxPacketSize),
       enable_user_alternate_protocol_ports(false),
-      quic_crypto_client_stream_factory(NULL),
+      quic_crypto_client_stream_factory(
+          QuicCryptoClientStreamFactory::GetDefaultFactory()),
       quic_max_recent_disabled_reasons(kQuicMaxRecentDisabledReasons),
       quic_threshold_public_resets_post_handshake(0),
       quic_threshold_timeouts_streams_open(0),
