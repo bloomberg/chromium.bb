@@ -32,48 +32,32 @@ std::string MakeCommandLineArg(const char* key, const Val val) {
   return ss.str();
 }
 
-void GetLlcCommandLine(std::vector<char>* split_args,
+void GetLlcCommandLine(std::vector<std::string>* args,
                        size_t obj_files_size,
                        int32_t opt_level,
                        bool is_debug,
                        const std::string& architecture_attributes) {
-  typedef std::vector<std::string> Args;
-  Args args;
-
   // TODO(dschuff): This CL override is ugly. Change llc to default to
   // using the number of modules specified in the first param, and
   // ignore multiple uses of -split-module
-  args.push_back(MakeCommandLineArg("-split-module=", obj_files_size));
-  args.push_back(MakeCommandLineArg("-O", opt_level));
+  args->push_back(MakeCommandLineArg("-split-module=", obj_files_size));
+  args->push_back(MakeCommandLineArg("-O", opt_level));
   if (is_debug)
-    args.push_back("-bitcode-format=llvm");
+    args->push_back("-bitcode-format=llvm");
   if (!architecture_attributes.empty())
-    args.push_back("-mattr=" + architecture_attributes);
-
-  for (const std::string& arg : args) {
-    std::copy(arg.begin(), arg.end(), std::back_inserter(*split_args));
-    split_args->push_back('\x00');
-  }
+    args->push_back("-mattr=" + architecture_attributes);
 }
 
-void GetSubzeroCommandLine(std::vector<char>* split_args,
+void GetSubzeroCommandLine(std::vector<std::string>* args,
                            int32_t opt_level,
                            bool is_debug,
                            const std::string& architecture_attributes) {
-  typedef std::vector<std::string> Args;
-  Args args;
-
-  args.push_back(MakeCommandLineArg("-O", opt_level));
+  args->push_back(MakeCommandLineArg("-O", opt_level));
   DCHECK(!is_debug);
   // TODO(stichnot): enable this once the mattr flag formatting is
   // compatible: https://code.google.com/p/nativeclient/issues/detail?id=4132
   // if (!architecture_attributes.empty())
-  //   args.push_back("-mattr=" + architecture_attributes);
-
-  for (const std::string& arg : args) {
-    std::copy(arg.begin(), arg.end(), std::back_inserter(*split_args));
-    split_args->push_back('\x00');
-  }
+  //   args->push_back("-mattr=" + architecture_attributes);
 }
 
 }  // namespace
@@ -270,16 +254,22 @@ void PnaclTranslateThread::DoCompile() {
   int64_t do_compile_start_time = NaClGetTimeOfDayMicroseconds();
   bool init_success;
 
-  std::vector<char> split_args;
+  std::vector<std::string> args;
   if (pnacl_options_->use_subzero) {
-    GetSubzeroCommandLine(&split_args, pnacl_options_->opt_level,
+    GetSubzeroCommandLine(&args, pnacl_options_->opt_level,
                           PP_ToBool(pnacl_options_->is_debug),
                           architecture_attributes_);
   } else {
-    GetLlcCommandLine(&split_args, obj_files_->size(),
+    GetLlcCommandLine(&args, obj_files_->size(),
                       pnacl_options_->opt_level,
                       PP_ToBool(pnacl_options_->is_debug),
                       architecture_attributes_);
+  }
+
+  std::vector<char> split_args;
+  for (const std::string& arg : args) {
+    std::copy(arg.begin(), arg.end(), std::back_inserter(split_args));
+    split_args.push_back('\x00');
   }
 
   init_success = compiler_subprocess_->InvokeSrpcMethod(
