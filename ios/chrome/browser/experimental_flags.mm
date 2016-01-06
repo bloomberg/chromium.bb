@@ -159,8 +159,10 @@ bool IsWKWebViewEnabled() {
     return false;
 
   // Check if the finch experiment is turned on.
-  return base::StartsWith(group_name, "Enabled",
-                          base::CompareCase::INSENSITIVE_ASCII);
+  return !base::StartsWith(group_name, "Disabled",
+                           base::CompareCase::INSENSITIVE_ASCII) &&
+         !base::StartsWith(group_name, "Control",
+                           base::CompareCase::INSENSITIVE_ASCII);
 }
 
 bool IsTargetedToWKWebViewExperimentControlGroup() {
