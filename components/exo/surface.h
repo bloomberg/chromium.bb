@@ -55,6 +55,12 @@ class Surface : public aura::Window, public ui::CompositorObserver {
   // This sets the region of the surface that contains opaque content.
   void SetOpaqueRegion(const SkRegion& region);
 
+  // This sets the scaling factor used to interpret the contents of the buffer
+  // attached to the surface. Note that if the scale is larger than 1, then you
+  // have to attach a buffer that is larger (by a factor of scale in each
+  // dimension) than the desired surface size.
+  void SetBufferScale(float scale);
+
   // Functions that control sub-surface state. All sub-surface state is
   // double-buffered and will be applied when Commit() is called.
   void AddSubSurface(Surface* sub_surface);
@@ -138,6 +144,9 @@ class Surface : public aura::Window, public ui::CompositorObserver {
 
   // The opaque region to take effect when Commit() is called.
   SkRegion pending_opaque_region_;
+
+  // The buffer scaling factor to take effect when Commit() is called.
+  float pending_buffer_scale_;
 
   // The stack of sub-surfaces to take effect when Commit() is called.
   // Bottom-most sub-surface at the front of the list and top-most sub-surface

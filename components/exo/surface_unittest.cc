@@ -91,6 +91,27 @@ TEST_F(SurfaceTest, SetOpaqueRegion) {
   surface->SetOpaqueRegion(SkRegion(SkIRect::MakeEmpty()));
 }
 
+TEST_F(SurfaceTest, SetBufferScale) {
+  gfx::Size buffer_size(512, 512);
+  scoped_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size).Pass(),
+                 GL_TEXTURE_2D));
+  scoped_ptr<Surface> surface(new Surface);
+
+  // Attach the buffer to the surface. This will update the pending bounds of
+  // the surface to the buffer size.
+  surface->Attach(buffer.get());
+  EXPECT_EQ(buffer_size.ToString(), surface->GetPreferredSize().ToString());
+
+  // This will update the pending bounds of the surface and take the buffer
+  // scale into account.
+  const float kBufferScale = 2.0f;
+  surface->SetBufferScale(kBufferScale);
+  EXPECT_EQ(
+      gfx::ScaleToFlooredSize(buffer_size, 1.0f / kBufferScale).ToString(),
+      surface->GetPreferredSize().ToString());
+}
+
 TEST_F(SurfaceTest, Commit) {
   scoped_ptr<Surface> surface(new Surface);
 

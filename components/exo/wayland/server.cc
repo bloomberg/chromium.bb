@@ -178,7 +178,15 @@ void surface_set_buffer_transform(wl_client* client,
 void surface_set_buffer_scale(wl_client* client,
                               wl_resource* resource,
                               int32_t scale) {
-  NOTIMPLEMENTED();
+  if (scale < 1) {
+    wl_resource_post_error(resource, WL_SURFACE_ERROR_INVALID_SCALE,
+                           "buffer scale must be at least one "
+                           "('%d' specified)",
+                           scale);
+    return;
+  }
+
+  GetUserDataAs<Surface>(resource)->SetBufferScale(scale);
 }
 
 const struct wl_surface_interface surface_implementation = {

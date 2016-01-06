@@ -22,6 +22,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/transform_util.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(exo::Surface*);
 
@@ -93,6 +94,7 @@ class EmptyWindowDelegate : public aura::WindowDelegate {
 Surface::Surface()
     : aura::Window(new EmptyWindowDelegate),
       has_pending_contents_(false),
+      pending_buffer_scale_(1.0f),
       needs_commit_surface_hierarchy_(false),
       update_contents_after_successful_compositing_(false),
       compositor_(nullptr),
@@ -150,6 +152,12 @@ void Surface::SetOpaqueRegion(const SkRegion& region) {
                gfx::SkIRectToRect(region.getBounds()).ToString());
 
   pending_opaque_region_ = region;
+}
+
+void Surface::SetBufferScale(float scale) {
+  TRACE_EVENT1("exo", "Surface::SetBufferScale", "scale", scale);
+
+  pending_buffer_scale_ = scale;
 }
 
 void Surface::AddSubSurface(Surface* sub_surface) {
@@ -274,10 +282,15 @@ void Surface::CommitSurfaceHierarchy() {
                                  std::move(texture_mailbox_release_callback),
                                  texture_mailbox.size_in_pixels());
       layer()->SetTextureFlipped(false);
-      layer()->SetBounds(gfx::Rect(layer()->bounds().origin(),
-                                   texture_mailbox.size_in_pixels()));
+      gfx::Size contents_size(gfx::ScaleToFlooredSize(
+          texture_mailbox.size_in_pixels(), 1.0f / pending_buffer_scale_));
+      layer()->SetBounds(gfx::Rect(layer()->bounds().origin(), contents_size));
       layer()->SetFillsBoundsOpaquely(pending_opaque_region_.contains(
-          gfx::RectToSkIRect(gfx::Rect(texture_mailbox.size_in_pixels()))));
+          gfx::RectToSkIRect(gfx::Rect(contents_size))));
+      layer()->SetTransform(gfx::GetScaleTransform(
+          gfx::Rect(texture_mailbox.size_in_pixels()).CenterPoint(),
+          static_cast<float>(contents_size.width()) /
+              texture_mailbox.size_in_pixels().width()));
     } else {
       // Show solid color content if no buffer is attached or we failed
       // to produce a texture mailbox for the currently attached buffer.
@@ -334,7 +347,9 @@ void Surface::CommitSurfaceHierarchy() {
 }
 
 gfx::Size Surface::GetPreferredSize() const {
-  return pending_buffer_ ? pending_buffer_->GetSize() : layer()->size();
+  return pending_buffer_ ? gfx::ScaleToFlooredSize(pending_buffer_->GetSize(),
+                                                   1.0f / pending_buffer_scale_)
+                         : layer()->size();
 }
 
 bool Surface::IsSynchronized() const {
