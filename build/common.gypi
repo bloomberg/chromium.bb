@@ -1011,7 +1011,7 @@
           'use_openmax_dl_fft%': 0,
         }],
         ['OS=="win" or OS=="linux"', {
-            'enable_mdns%' : 1,
+          'enable_mdns%' : 1,
         }],
 
         # Disable various features by default on embedded.

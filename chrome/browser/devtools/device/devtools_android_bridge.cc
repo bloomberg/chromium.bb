@@ -29,7 +29,6 @@
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "chrome/browser/devtools/device/adb/adb_device_provider.h"
-#include "chrome/browser/devtools/device/cast_device_provider.h"
 #include "chrome/browser/devtools/device/port_forwarding_controller.h"
 #include "chrome/browser/devtools/device/tcp_device_provider.h"
 #include "chrome/browser/devtools/device/usb/usb_device_provider.h"
@@ -50,6 +49,10 @@
 #include "net/base/escape.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
+
+#if defined(ENABLE_SERVICE_DISCOVERY)
+#include "chrome/browser/devtools/device/cast_device_provider.h"
+#endif
 
 using content::BrowserThread;
 
@@ -924,7 +927,11 @@ void DevToolsAndroidBridge::CreateDeviceProviders() {
 
   if (scoped_refptr<TCPDeviceProvider> provider = CreateTCPDeviceProvider())
     device_providers.push_back(provider);
+
+#if defined(ENABLE_SERVICE_DISCOVERY)
   device_providers.push_back(new CastDeviceProvider());
+#endif
+
   device_providers.push_back(new AdbDeviceProvider());
 
   PrefService* service = profile_->GetPrefs();

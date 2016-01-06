@@ -44,7 +44,6 @@
       'feedback_private.idl',
       'file_system.idl',
       'font_settings.json',
-      'gcd_private.idl',
       'gcm.json',
       'hangouts_private.idl',
       'history.json',
@@ -59,7 +58,6 @@
       'launcher_page.idl',
       'location.idl',
       'manifest_types.json',
-      'mdns.idl',
       'media_galleries.idl',
       'metrics_private.json',
       'notification_provider.idl',
@@ -136,6 +134,11 @@
       'media_player_private.json',
     ],
 
+    'service_discovery_schema_files': [
+      'gcd_private.idl',
+      'mdns.idl',
+    ],
+
     'webrtc_schema_files': [
       'cast_streaming_receiver_session.idl',
       'cast_streaming_rtp_stream.idl',
@@ -172,6 +175,11 @@
         'schema_files': [
 	  'input_ime.json',
 	],
+      }],
+      ['enable_service_discovery==1', {
+        'schema_files': [
+          '<@(service_discovery_schema_files)',
+        ],
       }],
       ['enable_webrtc==1', {
         'schema_files': [

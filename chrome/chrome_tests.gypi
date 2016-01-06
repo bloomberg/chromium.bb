@@ -170,7 +170,6 @@
       'browser/extensions/api/management/management_api_browsertest.cc',
       'browser/extensions/api/management/management_apitest.cc',
       'browser/extensions/api/management/management_browsertest.cc',
-      'browser/extensions/api/mdns/mdns_apitest.cc',
       'browser/extensions/api/media_galleries/media_galleries_apitest.cc',
       'browser/extensions/api/media_galleries/media_galleries_watch_apitest.cc',
       'browser/extensions/api/messaging/native_messaging_apitest.cc',
@@ -900,6 +899,9 @@
       'browser/ui/app_list/search/people/people_provider_browsertest.cc',
       'browser/ui/app_list/search/webstore/webstore_provider_browsertest.cc',
       'browser/ui/app_list/speech_recognizer_browsertest.cc',
+    ],
+    'chrome_browser_tests_service_discovery_sources': [
+      'browser/extensions/api/mdns/mdns_apitest.cc',
     ],
     'chrome_browser_tests_media_router_sources': [
       'browser/ui/webui/media_router/media_router_dialog_controller_impl_browsertest.cc',
@@ -2565,6 +2567,9 @@
           'sources': [ '<@(chrome_browser_tests_app_list_sources)' ],
         }, {
           'sources!': [ 'browser/ui/webui/app_list/start_page_browsertest.js' ],
+        }],
+        ['enable_service_discovery==1', {
+          'sources': [ '<@(chrome_browser_tests_service_discovery_sources)' ],
         }],
         ['enable_supervised_users==1', {
           'sources': [ '<@(chrome_browser_tests_supervised_user_sources)' ],

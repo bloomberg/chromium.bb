@@ -17,6 +17,9 @@ sources = gypi_values.main_schema_files
 if (is_chromeos) {
   sources += gypi_values.chromeos_schema_files
 }
+if (enable_service_discovery) {
+  sources += gypi_values.service_discovery_schema_files
+}
 if (enable_webrtc) {
   sources += gypi_values.webrtc_schema_files
 }
