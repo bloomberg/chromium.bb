@@ -164,10 +164,18 @@ source_set("chromeos") {
 source_set("unit_tests") {
   testonly = true
 
+  # TODO(yawano): Move chrome_unit_tests_drive_sources to non chromeos build.
   sources = rebase_path(
-          chrome_tests_unit_gypi_values.chrome_unit_tests_chromeos_sources,
-          ".",
-          "//chrome")
+                chrome_tests_unit_gypi_values.chrome_unit_tests_chromeos_sources,
+                ".",
+                "//chrome") +
+            rebase_path(
+                chrome_tests_unit_gypi_values.chrome_unit_tests_drive_sources,
+                ".",
+                "//chrome") + rebase_path(
+                chrome_tests_unit_gypi_values.chrome_unit_tests_drive_chromeos_sources,
+                ".",
+                "//chrome")
 
   public_deps = [
     ":chromeos",

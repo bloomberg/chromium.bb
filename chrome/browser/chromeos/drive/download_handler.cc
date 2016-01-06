@@ -19,8 +19,8 @@
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/drive.pb.h"
-#include "components/drive/file_system_interface.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

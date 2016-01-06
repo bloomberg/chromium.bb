@@ -26,9 +26,9 @@
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/settings/timezone_settings.h"
-#include "components/drive/file_system_observer.h"
+#include "components/drive/chromeos/file_system_observer.h"
+#include "components/drive/chromeos/sync_client.h"
 #include "components/drive/service/drive_service_interface.h"
-#include "components/drive/sync_client.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "storage/browser/fileapi/file_system_operation.h"
 

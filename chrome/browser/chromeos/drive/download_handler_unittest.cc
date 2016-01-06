@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/drive/dummy_file_system.h"
+#include "components/drive/chromeos/dummy_file_system.h"
 #include "components/drive/file_system_core_util.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
