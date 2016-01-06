@@ -880,14 +880,6 @@ config("default_warnings") {
         "-Wno-bitfield-width",
       ]
     }
-
-    if (is_nacl_nonsfi) {
-      cflags += [
-        # TODO(phosek): Enable after https://codereview.chromium.org/1419373002/
-        # is rolled into Chrome.
-        "-Wno-sign-compare",
-      ]
-    }
   }
 }
 
