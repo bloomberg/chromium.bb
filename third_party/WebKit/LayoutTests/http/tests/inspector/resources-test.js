@@ -1,5 +1,6 @@
 var initialize_ResourceTest = function() {
 
+InspectorTest.preloadPanel("sources");
 InspectorTest.preloadPanel("resources");
 
 InspectorTest.requestURLComparer = function(r1, r2)

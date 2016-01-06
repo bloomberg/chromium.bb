@@ -48,42 +48,29 @@ function test()
         contentScriptsNavigatorView.revealUISourceCode(uiSourceCode);
     }
 
-    function dumpNavigator(view)
-    {
-        ["frame", "frame/domain", "frame/domain/folder", "domain", "domain/folder"].forEach(dumpNavigatorInMode.bind(null, view));
-    }
-
-    function dumpNavigatorInMode(view, mode)
-    {
-        InspectorTest.addResult(view === sourcesNavigatorView ? "Sources:" : "Content Scripts:");
-        WebInspector.moduleSetting("navigatorGrouping").set(mode);
-        InspectorTest.addResult("-------- Setting mode: [" + mode + "]");
-        InspectorTest.dumpNavigatorView(view);
-    }
-
     var rootURL = "http://localhost:8080/LayoutTests/inspector/debugger/";
 
     InspectorTest.addResult("\n\n================================================");
     InspectorTest.addResult("Adding first resource:");
     addUISourceCode(rootURL + "foo/bar/script.js", false);
-    dumpNavigator(sourcesNavigatorView);
+    InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
 
     InspectorTest.addResult("\n\n================================================");
     InspectorTest.addResult("Adding second resource:");
     addUISourceCode(rootURL + "foo/bar/script.js?a=2", false);
-    dumpNavigator(sourcesNavigatorView);
+    InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
 
     InspectorTest.addResult("\n\n================================================");
     InspectorTest.addResult("Adding resources into another frame:");
     addUISourceCode(rootURL + "foo/bar/script.js?a=1", false, subframe);
     addUISourceCode(rootURL + "foo/baz/script.js", false, subframe);
-    dumpNavigator(sourcesNavigatorView);
+    InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
 
     InspectorTest.addResult("\n\n================================================");
     InspectorTest.addResult("Adding resources into another target:");
     addUISourceCode2(rootURL + "foo/bar/script.js?a=3", false);
     addUISourceCode2(rootURL + "foo/baz/script.js", false);
-    dumpNavigator(sourcesNavigatorView);
+    InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
 
     InspectorTest.addResult("\n\n================================================");
     InspectorTest.addResult("Adding content scripts and some random resources:");
@@ -98,51 +85,51 @@ function test()
     addUISourceCode("http://example.com/path%20with%20spaces/white%20space.html", false);
     addUISourceCode("?a=b", false);
     addUISourceCode("very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong_url", false);
-    dumpNavigator(sourcesNavigatorView);
-    dumpNavigator(contentScriptsNavigatorView);
+    InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
+    InspectorTest.dumpNavigatorViewInAllModes(contentScriptsNavigatorView);
 
     InspectorTest.addResult("\n\n================================================");
     InspectorTest.addResult("Revealing first resource:");
     revealUISourceCode(uiSourceCodes[0]);
-    dumpNavigator(sourcesNavigatorView);
+    InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
 
     // Here we keep http://localhost:8080/LayoutTests/inspector/debugger2/ folder collapsed while adding resources into it.
     InspectorTest.addResult("\n\n================================================");
     InspectorTest.addResult("Adding some resources to change the way debugger folder looks like, first:");
     var rootURL2 = "http://localhost:8080/LayoutTests/inspector/debugger2/";
     addUISourceCode(rootURL2 + "foo/bar/script.js", false);
-    dumpNavigator(sourcesNavigatorView);
+    InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
 
     InspectorTest.addResult("\n\n================================================");
     InspectorTest.addResult("Second:");
     addUISourceCode(rootURL2 + "foo/bar/script.js?a=2", false);
-    dumpNavigator(sourcesNavigatorView);
+    InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
 
     InspectorTest.addResult("\n\n================================================");
     InspectorTest.addResult("Others:");
     addUISourceCode(rootURL2 + "foo/bar/script.js?a=1", false);
     addUISourceCode(rootURL2 + "foo/baz/script.js", false);
-    dumpNavigator(sourcesNavigatorView);
+    InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
 
     InspectorTest.addResult("\n\n================================================");
     var rootURL3 = "http://localhost:8080/LayoutTests/inspector/debugger3/";
     addUISourceCode(rootURL3 + "hasOwnProperty/__proto__/constructor/foo.js", false);
     addUISourceCode(rootURL3 + "hasOwnProperty/__proto__/foo.js", false);
     addUISourceCode(rootURL3 + "hasOwnProperty/foo.js", false);
-    dumpNavigator(sourcesNavigatorView);
+    InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
 
     InspectorTest.addResult("\n\n================================================");
     InspectorTest.addResult("Revealing all resources:");
     for (var i = 0; i < uiSourceCodes.length; ++i)
         revealUISourceCode(uiSourceCodes[i]);
-    dumpNavigator(sourcesNavigatorView);
-    dumpNavigator(contentScriptsNavigatorView);
+    InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
+    InspectorTest.dumpNavigatorViewInAllModes(contentScriptsNavigatorView);
 
     InspectorTest.addResult("\n\n================================================");
     InspectorTest.addResult("Removing all resources:");
     InspectorTest.testNetworkProject._reset(target);
-    dumpNavigator(sourcesNavigatorView);
-    dumpNavigator(contentScriptsNavigatorView);
+    InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
+    InspectorTest.dumpNavigatorViewInAllModes(contentScriptsNavigatorView);
 
     InspectorTest.completeTest();
 }

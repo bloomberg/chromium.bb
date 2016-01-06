@@ -29,4 +29,62 @@ Frames
         import-child.html
         import-hello.html
         resource-tree-htmlimports.html
+Sources:
+-------- Setting mode: [frame]
+top
+  import-child.html
+  import-hello.html
+  resource-tree-htmlimports.html
+  import-hello.js
+  inspector-test.js
+  resource-tree-test.js
+  resources-test.js
+Sources:
+-------- Setting mode: [frame/domain]
+top
+  127.0.0.1:8000
+    import-child.html
+    import-hello.html
+    resource-tree-htmlimports.html
+    import-hello.js
+    inspector-test.js
+    resource-tree-test.js
+    resources-test.js
+Sources:
+-------- Setting mode: [frame/domain/folder]
+top
+  127.0.0.1:8000
+    inspector
+      resource-tree
+        resources
+          import-child.html
+          import-hello.html
+          import-hello.js
+        resource-tree-htmlimports.html
+        resource-tree-test.js
+      inspector-test.js
+      resources-test.js
+Sources:
+-------- Setting mode: [domain]
+127.0.0.1:8000
+  import-child.html
+  import-hello.html
+  resource-tree-htmlimports.html
+  import-hello.js
+  inspector-test.js
+  resource-tree-test.js
+  resources-test.js
+Sources:
+-------- Setting mode: [domain/folder]
+127.0.0.1:8000
+  inspector
+    resource-tree
+      resources
+        import-child.html
+        import-hello.html
+        import-hello.js
+      resource-tree-htmlimports.html
+      resource-tree-test.js
+    inspector-test.js
+    resources-test.js
 

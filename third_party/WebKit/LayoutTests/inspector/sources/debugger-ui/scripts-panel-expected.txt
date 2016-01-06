@@ -2,6 +2,7 @@ Tests that scripts panel UI elements work as intended.
 
 
 Running: testInitialLoad
+Navigator:
 mock-target-1
   top
     (no domain)
@@ -11,6 +12,7 @@ mock-target-1
       foobar.js
 
 Running: testReset
+Navigator:
 mock-target-2
   top
     (no domain)
@@ -18,22 +20,28 @@ mock-target-2
       baz.js
       foo.js
 Revealing in navigator.
+Navigator:
 mock-target-2
   top
     (no domain)
       bar.js
       baz.js
       foo.js
+Navigator:
+mock-target-2
+Navigator:
 mock-target-2
   top
     (no domain)
       bar.js
 
 Running: testDebuggerUISourceCodeAddedAndRemoved
+Navigator:
 mock-target-3
   top
     (no domain)
       foo.js
+Navigator:
 mock-target-3
   top
     (no domain)

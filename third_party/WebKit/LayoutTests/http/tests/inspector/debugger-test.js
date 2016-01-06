@@ -386,27 +386,6 @@ InspectorTest.waitForScriptSource = function(scriptName, callback)
     InspectorTest.addSniffer(WebInspector.SourcesView.prototype, "_addUISourceCode", InspectorTest.waitForScriptSource.bind(InspectorTest, scriptName, callback));
 };
 
-InspectorTest.dumpNavigatorView = function(navigatorView)
-{
-    dumpNavigatorTreeOutline(navigatorView._scriptsTree);
-
-    function dumpNavigatorTreeElement(prefix, treeElement)
-    {
-        InspectorTest.addResult(prefix + treeElement.title);
-        treeElement.expand();
-        var children = treeElement.children();
-        for (var i = 0; i < children.length; ++i)
-            dumpNavigatorTreeElement(prefix + "  ", children[i]);
-    }
-
-    function dumpNavigatorTreeOutline(treeOutline)
-    {
-        var children = treeOutline.rootElement().children();
-        for (var i = 0; i < children.length; ++i)
-            dumpNavigatorTreeElement("", children[i]);
-    }
-};
-
 InspectorTest.setBreakpoint = function(sourceFrame, lineNumber, condition, enabled)
 {
     if (!sourceFrame._muted)

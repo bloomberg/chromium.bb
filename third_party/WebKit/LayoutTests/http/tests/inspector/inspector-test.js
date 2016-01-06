@@ -413,6 +413,40 @@ InspectorTest.expandAndDumpEventListeners = function(eventListenersView, updateC
     }
 }
 
+InspectorTest.dumpNavigatorView = function(navigatorView)
+{
+    dumpNavigatorTreeOutline(navigatorView._scriptsTree);
+
+    function dumpNavigatorTreeElement(prefix, treeElement)
+    {
+        InspectorTest.addResult(prefix + treeElement.title);
+        treeElement.expand();
+        var children = treeElement.children();
+        for (var i = 0; i < children.length; ++i)
+            dumpNavigatorTreeElement(prefix + "  ", children[i]);
+    }
+
+    function dumpNavigatorTreeOutline(treeOutline)
+    {
+        var children = treeOutline.rootElement().children();
+        for (var i = 0; i < children.length; ++i)
+            dumpNavigatorTreeElement("", children[i]);
+    }
+}
+
+InspectorTest.dumpNavigatorViewInAllModes = function(view)
+{
+    ["frame", "frame/domain", "frame/domain/folder", "domain", "domain/folder"].forEach(InspectorTest.dumpNavigatorViewInMode.bind(InspectorTest, view));
+}
+
+InspectorTest.dumpNavigatorViewInMode = function(view, mode)
+{
+    InspectorTest.addResult(view instanceof WebInspector.SourcesNavigatorView ? "Sources:" : "Content Scripts:");
+    WebInspector.moduleSetting("navigatorGrouping").set(mode);
+    InspectorTest.addResult("-------- Setting mode: [" + mode + "]");
+    InspectorTest.dumpNavigatorView(view);
+}
+
 InspectorTest.assertGreaterOrEqual = function(a, b, message)
 {
     if (a < b)

@@ -2,58 +2,54 @@
 <head>
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
-<script src="../debugger/resources/script1.js"></script>
-<script src="../debugger/resources/script2.js"></script>
-<script src="../debugger/resources/script3.js"></script>
 
 <script>
+function createScriptsAndRun()
+{
+    eval("window.foo1 = function() {}\n//# sourceURL=script1.js");
+    eval("window.foo2 = function() {}\n//# sourceURL=script2.js");
+    eval("window.foo3 = function() {}\n//# sourceURL=script3.js");
+    eval("window.foo4 = function() {}\n//# sourceURL=script4.js");
+    eval("window.foo5 = function() {}\n//# sourceURL=script5.js");
+
+    runTest();
+}
 
 function test()
 {
+    var framesOpened = 0;
+
     InspectorTest.runDebuggerTestSuite([
         function testSourceFramesCount(next)
         {
             var panel = WebInspector.panels.sources;
-            var sourceFrameCount = 0;
 
-            InspectorTest.showScriptSource("source-frame-count.html", step2);
+            InspectorTest.showScriptSource("source-frame-count.html", function() {});
+            InspectorTest.showScriptSource("script1.js", function() {});
+            InspectorTest.showScriptSource("script2.js", function() {});
+            InspectorTest.showScriptSource("script3.js", function() {});
+            InspectorTest.showScriptSource("script4.js", function() {});
+            InspectorTest.showScriptSource("script5.js", reloadThePage);
 
-            function step2()
+            function reloadThePage()
             {
-                InspectorTest.showScriptSource("script1.js", step3);
-            }
-
-            function step3()
-            {
-                InspectorTest.showScriptSource("script2.js", didShowScriptSources);
-            }
-
-            function didShowScriptSources()
-            {
-                var alreadyShownURLs = {};
+                InspectorTest.addResult("Reloading page...");
+                InspectorTest.reloadPage(didReload);
                 function didCreateSourceFrame()
                 {
-                    if (!alreadyShownURLs[this._uiSourceCode.originURL()])
-                        sourceFrameCount += 1;
-                    alreadyShownURLs[this._uiSourceCode.originURL()] = true;
+                    framesOpened++;
                 }
                 InspectorTest.addSniffer(WebInspector.SourceFrame.prototype, "wasShown", didCreateSourceFrame, true);
-                InspectorTest.reloadPage(didReload);
+
             }
 
             function didReload()
             {
-                InspectorTest.showScriptSource("script3.js", didShowScriptSourceAgain);
-            }
-
-            function didShowScriptSourceAgain()
-            {
-                InspectorTest.assertTrue(panel.visibleView._uiSourceCode.originURL().indexOf("script3.js") !== -1);
-                // There should be maximum 3 source frames shown:
-                //  - first one is the first shown (first tab added)
-                //  - second one is the last viewed ("script2.js")
-                //  - third one is explicitly selected script3.js.
-                InspectorTest.assertEquals(true, sourceFrameCount <= 3, "too many source frames created after page reload");
+                if (framesOpened > 3)
+                    InspectorTest.addResult("Too many frames opened: " + framesOpened);
+                else
+                    InspectorTest.addResult("Less than 3 frames opened");
+                InspectorTest.addResult("Visible view: " + panel.visibleView._uiSourceCode.name());
                 next();
             }
         }
@@ -85,7 +81,7 @@ function fourthInlinedScriptInPage()
 
 </head>
 
-<body onload="runTest()">
+<body onload="createScriptsAndRun()">
 <p>Tests that scripts panel does not create too many source frames.</p>
 
 </body>

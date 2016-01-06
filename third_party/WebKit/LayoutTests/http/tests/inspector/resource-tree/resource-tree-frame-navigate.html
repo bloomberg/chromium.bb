@@ -7,40 +7,22 @@
 <link rel="stylesheet" href="resources/styles-initial.css">
 
 <script>
-
 function navigateIframe()
 {
     var iframe = document.getElementById("iframe");
-    iframe.removeAttribute("onload");
-    iframe.onload = onIframeLoad;
     iframe.setAttribute("src", "resources/resource-tree-frame-navigate-iframe-after.html");
     document.body.appendChild(iframe);
 }
 
-function onIframeLoad()
-{
-    console.log("iframe navigated");
-}
-
 function test()
 {
-    InspectorTest.runAfterResourcesAreFinished(["resource-tree-frame-navigate-iframe-before.html", "script-initial.js", "styles-initial.css", "styles-initial-2.css"], step1);
-
-    function step1()
-    {
-        InspectorTest.addResult("Before navigation");
-        InspectorTest.addResult("====================================");
-        InspectorTest.dumpResourceTreeEverything();
-        InspectorTest.addConsoleSniffer(step2);
-        InspectorTest.evaluateInPage("navigateIframe()");
-    }
+    InspectorTest.addResult("Before navigation");
+    InspectorTest.addResult("====================================");
+    InspectorTest.dumpResourceTreeEverything();
+    InspectorTest.addConsoleSniffer(step2);
+    InspectorTest.evaluateInPage("navigateIframe()");
 
     function step2()
-    {
-        InspectorTest.runAfterResourcesAreFinished(["resource-tree-frame-navigate-iframe-after.html", "styles-navigated.css", "script-navigated.js"], step3);
-    }
-
-    function step3()
     {
         InspectorTest.addResult("");
         InspectorTest.addResult("After navigation");

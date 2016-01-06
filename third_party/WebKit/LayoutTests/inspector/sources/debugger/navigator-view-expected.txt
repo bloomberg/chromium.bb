@@ -70,7 +70,7 @@ Sources:
 top
   script.js
   script.js?a=2
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     script.js
     script.js?a=1
 Sources:
@@ -79,7 +79,7 @@ top
   localhost:8080
     script.js
     script.js?a=2
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     localhost:8080
       script.js
       script.js?a=1
@@ -90,7 +90,7 @@ top
     LayoutTests/inspector/debugger/foo/bar
       script.js
       script.js?a=2
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     localhost:8080
       LayoutTests/inspector/debugger/foo
         bar
@@ -109,12 +109,11 @@ Sources:
 localhost:8080
   LayoutTests/inspector/debugger/foo
     bar
+      script.js
       script.js?a=1
+      script.js?a=2
     baz
       script.js
-  LayoutTests/inspector/debugger/foo/bar
-    script.js
-    script.js?a=2
 
 
 ================================================
@@ -124,7 +123,7 @@ Sources:
 top
   script.js
   script.js?a=2
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     script.js
     script.js?a=1
 mock-target-100
@@ -137,7 +136,7 @@ top
   localhost:8080
     script.js
     script.js?a=2
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     localhost:8080
       script.js
       script.js?a=1
@@ -153,7 +152,7 @@ top
     LayoutTests/inspector/debugger/foo/bar
       script.js
       script.js?a=2
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     localhost:8080
       LayoutTests/inspector/debugger/foo
         bar
@@ -191,12 +190,11 @@ mock-target-100
 localhost:8080
   LayoutTests/inspector/debugger/foo
     bar
+      script.js
       script.js?a=1
+      script.js?a=2
     baz
       script.js
-  LayoutTests/inspector/debugger/foo/bar
-    script.js
-    script.js?a=2
 
 
 ================================================
@@ -216,7 +214,7 @@ top
   script.js?a=2
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
   white space.html
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     script.js
     script.js?a=1
 mock-target-100
@@ -241,7 +239,7 @@ top
     contentScript2.js?a=1
     script.js
     script.js?a=2
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     localhost:8080
       script.js
       script.js?a=1
@@ -271,7 +269,7 @@ top
       contentScript2.js?a=1
       script.js
       script.js?a=2
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     localhost:8080
       LayoutTests/inspector/debugger/foo
         bar
@@ -332,15 +330,14 @@ example.com
 localhost:8080
   LayoutTests/inspector/debugger/foo
     bar
+      contentScript.js?a=1
+      contentScript.js?a=2
+      contentScript2.js?a=1
+      script.js
       script.js?a=1
+      script.js?a=2
     baz
       script.js
-  LayoutTests/inspector/debugger/foo/bar
-    contentScript.js?a=1
-    contentScript.js?a=2
-    contentScript2.js?a=1
-    script.js
-    script.js?a=2
 Content Scripts:
 -------- Setting mode: [frame]
 Content Scripts:
@@ -370,7 +367,7 @@ top
   script.js?a=2
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
   white space.html
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     script.js
     script.js?a=1
 mock-target-100
@@ -395,7 +392,7 @@ top
     contentScript2.js?a=1
     script.js
     script.js?a=2
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     localhost:8080
       script.js
       script.js?a=1
@@ -425,7 +422,7 @@ top
       contentScript2.js?a=1
       script.js
       script.js?a=2
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     localhost:8080
       LayoutTests/inspector/debugger/foo
         bar
@@ -486,15 +483,14 @@ example.com
 localhost:8080
   LayoutTests/inspector/debugger/foo
     bar
+      contentScript.js?a=1
+      contentScript.js?a=2
+      contentScript2.js?a=1
+      script.js
       script.js?a=1
+      script.js?a=2
     baz
       script.js
-  LayoutTests/inspector/debugger/foo/bar
-    contentScript.js?a=1
-    contentScript.js?a=2
-    contentScript2.js?a=1
-    script.js
-    script.js?a=2
 
 
 ================================================
@@ -515,7 +511,7 @@ top
   script.js?a=2
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
   white space.html
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     script.js
     script.js?a=1
 mock-target-100
@@ -541,7 +537,7 @@ top
     script.js
     script.js
     script.js?a=2
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     localhost:8080
       script.js
       script.js?a=1
@@ -574,7 +570,7 @@ top
         script.js?a=2
       debugger2/foo/bar
         script.js
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     localhost:8080
       LayoutTests/inspector/debugger/foo
         bar
@@ -634,18 +630,17 @@ example.com
   (index)
   ?a=b
 localhost:8080
-  LayoutTests/inspector/debugger/foo
-    bar
-      script.js?a=1
-    baz
-      script.js
   LayoutTests/inspector
-    debugger/foo/bar
-      contentScript.js?a=1
-      contentScript.js?a=2
-      contentScript2.js?a=1
-      script.js
-      script.js?a=2
+    debugger/foo
+      bar
+        contentScript.js?a=1
+        contentScript.js?a=2
+        contentScript2.js?a=1
+        script.js
+        script.js?a=1
+        script.js?a=2
+      baz
+        script.js
     debugger2/foo/bar
       script.js
 
@@ -669,7 +664,7 @@ top
   script.js?a=2
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
   white space.html
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     script.js
     script.js?a=1
 mock-target-100
@@ -696,7 +691,7 @@ top
     script.js
     script.js?a=2
     script.js?a=2
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     localhost:8080
       script.js
       script.js?a=1
@@ -730,7 +725,7 @@ top
       debugger2/foo/bar
         script.js
         script.js?a=2
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     localhost:8080
       LayoutTests/inspector/debugger/foo
         bar
@@ -791,18 +786,17 @@ example.com
   (index)
   ?a=b
 localhost:8080
-  LayoutTests/inspector/debugger/foo
-    bar
-      script.js?a=1
-    baz
-      script.js
   LayoutTests/inspector
-    debugger/foo/bar
-      contentScript.js?a=1
-      contentScript.js?a=2
-      contentScript2.js?a=1
-      script.js
-      script.js?a=2
+    debugger/foo
+      bar
+        contentScript.js?a=1
+        contentScript.js?a=2
+        contentScript2.js?a=1
+        script.js
+        script.js?a=1
+        script.js?a=2
+      baz
+        script.js
     debugger2/foo/bar
       script.js
       script.js?a=2
@@ -829,7 +823,7 @@ top
   script.js?a=2
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
   white space.html
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     script.js
     script.js?a=1
 mock-target-100
@@ -858,7 +852,7 @@ top
     script.js?a=1
     script.js?a=2
     script.js?a=2
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     localhost:8080
       script.js
       script.js?a=1
@@ -896,7 +890,7 @@ top
           script.js?a=2
         baz
           script.js
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     localhost:8080
       LayoutTests/inspector/debugger/foo
         bar
@@ -959,18 +953,17 @@ example.com
   (index)
   ?a=b
 localhost:8080
-  LayoutTests/inspector/debugger/foo
-    bar
-      script.js?a=1
-    baz
-      script.js
   LayoutTests/inspector
-    debugger/foo/bar
-      contentScript.js?a=1
-      contentScript.js?a=2
-      contentScript2.js?a=1
-      script.js
-      script.js?a=2
+    debugger/foo
+      bar
+        contentScript.js?a=1
+        contentScript.js?a=2
+        contentScript2.js?a=1
+        script.js
+        script.js?a=1
+        script.js?a=2
+      baz
+        script.js
     debugger2/foo
       bar
         script.js
@@ -1003,7 +996,7 @@ top
   script.js?a=2
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
   white space.html
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     script.js
     script.js?a=1
 mock-target-100
@@ -1035,7 +1028,7 @@ top
     script.js?a=1
     script.js?a=2
     script.js?a=2
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     localhost:8080
       script.js
       script.js?a=1
@@ -1079,7 +1072,7 @@ top
             foo.js
           foo.js
         foo.js
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     localhost:8080
       LayoutTests/inspector/debugger/foo
         bar
@@ -1145,18 +1138,17 @@ example.com
   (index)
   ?a=b
 localhost:8080
-  LayoutTests/inspector/debugger/foo
-    bar
-      script.js?a=1
-    baz
-      script.js
   LayoutTests/inspector
-    debugger/foo/bar
-      contentScript.js?a=1
-      contentScript.js?a=2
-      contentScript2.js?a=1
-      script.js
-      script.js?a=2
+    debugger/foo
+      bar
+        contentScript.js?a=1
+        contentScript.js?a=2
+        contentScript2.js?a=1
+        script.js
+        script.js?a=1
+        script.js?a=2
+      baz
+        script.js
     debugger2/foo
       bar
         script.js
@@ -1196,7 +1188,7 @@ top
   script.js?a=2
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
   white space.html
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     script.js
     script.js?a=1
 mock-target-100
@@ -1228,7 +1220,7 @@ top
     script.js?a=1
     script.js?a=2
     script.js?a=2
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     localhost:8080
       script.js
       script.js?a=1
@@ -1272,7 +1264,7 @@ top
             foo.js
           foo.js
         foo.js
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     localhost:8080
       LayoutTests/inspector/debugger/foo
         bar
@@ -1338,18 +1330,17 @@ example.com
   (index)
   ?a=b
 localhost:8080
-  LayoutTests/inspector/debugger/foo
-    bar
-      script.js?a=1
-    baz
-      script.js
   LayoutTests/inspector
-    debugger/foo/bar
-      contentScript.js?a=1
-      contentScript.js?a=2
-      contentScript2.js?a=1
-      script.js
-      script.js?a=2
+    debugger/foo
+      bar
+        contentScript.js?a=1
+        contentScript.js?a=2
+        contentScript2.js?a=1
+        script.js
+        script.js?a=1
+        script.js?a=2
+      baz
+        script.js
     debugger2/foo
       bar
         script.js
@@ -1399,7 +1390,7 @@ top
   script.js?a=2
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
   white space.html
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     script.js
     script.js?a=1
 Sources:
@@ -1427,7 +1418,7 @@ top
     script.js?a=1
     script.js?a=2
     script.js?a=2
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     localhost:8080
       script.js
       script.js?a=1
@@ -1466,7 +1457,7 @@ top
             foo.js
           foo.js
         foo.js
-  childframe( iframeurl.html )
+  childframe (iframeurl.html)
     localhost:8080
       LayoutTests/inspector/debugger/foo
         bar
@@ -1513,18 +1504,17 @@ example.com
   (index)
   ?a=b
 localhost:8080
-  LayoutTests/inspector/debugger/foo
-    bar
-      script.js?a=1
-    baz
-      script.js
   LayoutTests/inspector
-    debugger/foo/bar
-      contentScript.js?a=1
-      contentScript.js?a=2
-      contentScript2.js?a=1
-      script.js
-      script.js?a=2
+    debugger/foo
+      bar
+        contentScript.js?a=1
+        contentScript.js?a=2
+        contentScript2.js?a=1
+        script.js
+        script.js?a=1
+        script.js?a=2
+      baz
+        script.js
     debugger2/foo
       bar
         script.js
