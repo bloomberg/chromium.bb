@@ -154,28 +154,17 @@ config("runtime_library") {
     libs = [ "c++_static" ]
   }
 
-  # libgcc must come before libdl for ld.bfd (MIPS)
-  if (current_cpu == "mipsel") {
-    libs += [
-      # ld linker is used for mips Android, and ld does not accept library
-      # absolute path prefixed by "-l"; Since libgcc does not exist in mips
-      # sysroot the proper library will be linked.
-      # TODO(gordanac): Remove once gold linker is used for mips Android.
-      "gcc",
-    ]
-  } else {
-    libs += [
-      # Manually link the libgcc.a that the cross compiler uses. This is
-      # absolute because the linker will look inside the sysroot if it's not.
-      rebase_path(android_libgcc_file),
-    ]
-  }
-
+  # Manually link the libgcc.a that the cross compiler uses. This is
+  # absolute because the linker will look inside the sysroot if it's not.
   libs += [
+    rebase_path(android_libgcc_file),
     "c",
-    "dl",
-    "m",
   ]
+
+  # Clang with libc++ does not require an explicit atomic library reference.
+  if (!is_clang) {
+    libs += [ "atomic" ]
+  }
 
   if (is_clang) {
     # Work around incompatibilities between bionic and clang headers.
@@ -189,11 +178,6 @@ config("runtime_library") {
   # issues with libc++ (crbug.com/456380).
   if (current_cpu != "mipsel" && current_cpu != "mips64el") {
     ldflags += [ "-Wl,--warn-shared-textrel" ]
-  }
-
-  # Clang with libc++ does not require an explicit atomic library reference.
-  if (!is_clang) {
-    libs += [ "atomic" ]
   }
 }
 
