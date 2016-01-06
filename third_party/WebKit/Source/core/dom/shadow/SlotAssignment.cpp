@@ -28,10 +28,10 @@ void SlotAssignment::resolveAssignment(const ShadowRoot& shadowRoot)
 {
     m_assignment.clear();
 
-    using Name2Slot = HashMap<AtomicString, HTMLSlotElement*>;
+    using Name2Slot = WillBeHeapHashMap<AtomicString, RefPtrWillBeMember<HTMLSlotElement>>;
     Name2Slot name2slot;
     HTMLSlotElement* defaultSlot = nullptr;
-    Vector<HTMLSlotElement*> slots;
+    WillBeHeapVector<RefPtrWillBeMember<HTMLSlotElement>> slots;
 
     // TODO(hayato): Cache slots elements so that we do not have to travese the shadow tree. See ShadowRoot::descendantInsertionPoints()
     for (HTMLSlotElement& slot : Traversal<HTMLSlotElement>::descendantsOf(shadowRoot)) {
