@@ -5,10 +5,11 @@
 #ifndef CHROMEOS_BINDER_TRANSACTION_DATA_FROM_DRIVER_H_
 #define CHROMEOS_BINDER_TRANSACTION_DATA_FROM_DRIVER_H_
 
-#include <linux/android/binder.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <unistd.h>
+#include <sys/types.h>
+
+#include <linux/android/binder.h>
 
 #include "base/callback.h"
 #include "base/macros.h"

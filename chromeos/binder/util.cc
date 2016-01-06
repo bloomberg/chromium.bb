@@ -4,8 +4,9 @@
 
 #include "chromeos/binder/util.h"
 
+#include <sys/types.h>
+
 #include <linux/android/binder.h>
-#include <stdint.h>
 
 #include "base/logging.h"
 

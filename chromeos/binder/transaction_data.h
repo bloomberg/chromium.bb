@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_BINDER_TRANSACTION_DATA_H_
 #define CHROMEOS_BINDER_TRANSACTION_DATA_H_
 
+#include <sys/types.h>
+
 #include "chromeos/binder/status.h"
 
 namespace binder {

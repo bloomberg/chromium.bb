@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_BINDER_UTIL_H_
 #define CHROMEOS_BINDER_UTIL_H_
 
+#include <stdint.h>
+
 #include "chromeos/chromeos_export.h"
 
 namespace binder {
