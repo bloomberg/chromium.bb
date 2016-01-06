@@ -1924,6 +1924,35 @@ void GLES2DecoderTestBase::SetupMockGLBehaviors() {
           &GLES2DecoderTestBase::MockGLStates::OnVertexAttribNullPointer));
 }
 
+void GLES2DecoderTestBase::SetupInitStateManualExpectations(bool es3_capable) {
+  if (es3_capable) {
+    EXPECT_CALL(*gl_, PixelStorei(GL_PACK_ROW_LENGTH, 0))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, PixelStorei(GL_PACK_SKIP_PIXELS, 0))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, PixelStorei(GL_PACK_SKIP_ROWS, 0))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_ROW_LENGTH, 0))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_IMAGE_HEIGHT, 0))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_SKIP_PIXELS, 0))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_SKIP_ROWS, 0))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_SKIP_IMAGES, 0))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+}
+
 GLES2DecoderWithShaderTestBase::MockCommandBufferEngine::
 MockCommandBufferEngine() {
 

@@ -436,56 +436,64 @@ _STATES = {
         'type': 'GLint',
         'enum': 'GL_PACK_ROW_LENGTH',
         'default': '0',
-        'es3': True
+        'es3': True,
+        'manual': True,
       },
       {
         'name': 'pack_skip_pixels',
         'type': 'GLint',
         'enum': 'GL_PACK_SKIP_PIXELS',
         'default': '0',
-        'es3': True
+        'es3': True,
+        'manual': True,
       },
       {
         'name': 'pack_skip_rows',
         'type': 'GLint',
         'enum': 'GL_PACK_SKIP_ROWS',
         'default': '0',
-        'es3': True
+        'es3': True,
+        'manual': True,
       },
       {
         'name': 'unpack_row_length',
         'type': 'GLint',
         'enum': 'GL_UNPACK_ROW_LENGTH',
         'default': '0',
-        'es3': True
+        'es3': True,
+        'manual': True,
       },
       {
         'name': 'unpack_image_height',
         'type': 'GLint',
         'enum': 'GL_UNPACK_IMAGE_HEIGHT',
         'default': '0',
-        'es3': True
+        'es3': True,
+        'manual': True,
       },
       {
         'name': 'unpack_skip_pixels',
         'type': 'GLint',
         'enum': 'GL_UNPACK_SKIP_PIXELS',
         'default': '0',
-        'es3': True
+        'es3': True,
+        'manual': True,
       },
       {
         'name': 'unpack_skip_rows',
         'type': 'GLint',
         'enum': 'GL_UNPACK_SKIP_ROWS',
         'default': '0',
-        'es3': True
+        'es3': True,
+        'manual': True,
       },
       {
         'name': 'unpack_skip_images',
         'type': 'GLint',
         'enum': 'GL_UNPACK_SKIP_IMAGES',
         'default': '0',
-        'es3': True
+        'es3': True,
+        'manual': True,
       }
     ],
   },
@@ -10453,6 +10461,9 @@ void ContextState::InitState(const ContextState *prev_state) const {
             for item in state['states']:
               item_name = CachedStateName(item)
 
+              if 'manual' in item:
+                assert item['manual']
+                continue
               if 'es3' in item:
                 assert item['es3']
                 f.write("  if (feature_info_->IsES3Capable()) {\n");
@@ -10513,6 +10524,7 @@ void ContextState::InitState(const ContextState *prev_state) const {
       f.write("  } else {")
       WriteStates(False)
       f.write("  }")
+      f.write("  InitStateManual(prev_state);")
       f.write("}\n")
 
       f.write("""bool ContextState::GetEnabled(GLenum cap) const {
@@ -10711,6 +10723,9 @@ void GLES2DecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
             f.write("      .RetiresOnSaturation();\n")
         elif state['type'] == 'NamedParameter':
           for item in state['states']:
+            if 'manual' in item:
+              assert item['manual']
+              continue
             if 'extension_flag' in item:
               f.write("  if (group_->feature_info()->feature_flags().%s) {\n" %
                          item['extension_flag'])
@@ -10753,6 +10768,7 @@ void GLES2DecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
           f.write("      .RetiresOnSaturation();\n")
           if 'extension_flag' in state:
             f.write("  }\n")
+      f.write("  SetupInitStateManualExpectations(es3_capable);\n")
       f.write("}\n")
     self.generated_cpp_filenames.append(filename)
 

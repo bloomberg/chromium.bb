@@ -737,6 +737,8 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   void AddExpectationsForVertexAttribManager();
   void SetupMockGLBehaviors();
 
+  void SetupInitStateManualExpectations(bool es3_capable);
+
   scoped_ptr< ::testing::StrictMock<MockCommandBufferEngine> > engine_;
   scoped_refptr<ContextGroup> group_;
   MockGLStates gl_states_;

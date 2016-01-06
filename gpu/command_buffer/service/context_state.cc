@@ -625,6 +625,14 @@ PixelStoreParams ContextState::GetUnpackParams(Dimension dimension) {
   return params;
 }
 
+void ContextState::InitStateManual(const ContextState*) const {
+  // Here we always reset the states whether it's different from previous ones.
+  // We have very limited states here; also, once we switch to MANGLE, MANGLE
+  // will opmitize this.
+  UpdatePackParameters();
+  UpdateUnpackParameters();
+}
+
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file
 // instead of having to edit some template or the code generator.

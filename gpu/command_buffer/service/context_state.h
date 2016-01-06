@@ -304,6 +304,8 @@ struct GPU_EXPORT ContextState {
   // parameters user values; otherwise, set them to 0.
   void UpdateUnpackParameters() const;
 
+  void InitStateManual(const ContextState* prev_state) const;
+
   FeatureInfo* feature_info_;
   scoped_ptr<ErrorState> error_state_;
 };

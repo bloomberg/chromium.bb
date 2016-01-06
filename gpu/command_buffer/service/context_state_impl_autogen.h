@@ -326,46 +326,6 @@ void ContextState::InitState(const ContextState* prev_state) const {
     if (prev_state->unpack_alignment != unpack_alignment) {
       glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment);
     }
-    if (feature_info_->IsES3Capable()) {
-      if (prev_state->pack_row_length != pack_row_length) {
-        glPixelStorei(GL_PACK_ROW_LENGTH, pack_row_length);
-      }
-    }
-    if (feature_info_->IsES3Capable()) {
-      if (prev_state->pack_skip_pixels != pack_skip_pixels) {
-        glPixelStorei(GL_PACK_SKIP_PIXELS, pack_skip_pixels);
-      }
-    }
-    if (feature_info_->IsES3Capable()) {
-      if (prev_state->pack_skip_rows != pack_skip_rows) {
-        glPixelStorei(GL_PACK_SKIP_ROWS, pack_skip_rows);
-      }
-    }
-    if (feature_info_->IsES3Capable()) {
-      if (prev_state->unpack_row_length != unpack_row_length) {
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, unpack_row_length);
-      }
-    }
-    if (feature_info_->IsES3Capable()) {
-      if (prev_state->unpack_image_height != unpack_image_height) {
-        glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, unpack_image_height);
-      }
-    }
-    if (feature_info_->IsES3Capable()) {
-      if (prev_state->unpack_skip_pixels != unpack_skip_pixels) {
-        glPixelStorei(GL_UNPACK_SKIP_PIXELS, unpack_skip_pixels);
-      }
-    }
-    if (feature_info_->IsES3Capable()) {
-      if (prev_state->unpack_skip_rows != unpack_skip_rows) {
-        glPixelStorei(GL_UNPACK_SKIP_ROWS, unpack_skip_rows);
-      }
-    }
-    if (feature_info_->IsES3Capable()) {
-      if (prev_state->unpack_skip_images != unpack_skip_images) {
-        glPixelStorei(GL_UNPACK_SKIP_IMAGES, unpack_skip_images);
-      }
-    }
     if ((polygon_offset_factor != prev_state->polygon_offset_factor) ||
         (polygon_offset_units != prev_state->polygon_offset_units))
       glPolygonOffset(polygon_offset_factor, polygon_offset_units);
@@ -446,30 +406,6 @@ void ContextState::InitState(const ContextState* prev_state) const {
                           stencil_path_mask);
     glPixelStorei(GL_PACK_ALIGNMENT, pack_alignment);
     glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment);
-    if (feature_info_->IsES3Capable()) {
-      glPixelStorei(GL_PACK_ROW_LENGTH, pack_row_length);
-    }
-    if (feature_info_->IsES3Capable()) {
-      glPixelStorei(GL_PACK_SKIP_PIXELS, pack_skip_pixels);
-    }
-    if (feature_info_->IsES3Capable()) {
-      glPixelStorei(GL_PACK_SKIP_ROWS, pack_skip_rows);
-    }
-    if (feature_info_->IsES3Capable()) {
-      glPixelStorei(GL_UNPACK_ROW_LENGTH, unpack_row_length);
-    }
-    if (feature_info_->IsES3Capable()) {
-      glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, unpack_image_height);
-    }
-    if (feature_info_->IsES3Capable()) {
-      glPixelStorei(GL_UNPACK_SKIP_PIXELS, unpack_skip_pixels);
-    }
-    if (feature_info_->IsES3Capable()) {
-      glPixelStorei(GL_UNPACK_SKIP_ROWS, unpack_skip_rows);
-    }
-    if (feature_info_->IsES3Capable()) {
-      glPixelStorei(GL_UNPACK_SKIP_IMAGES, unpack_skip_images);
-    }
     glPolygonOffset(polygon_offset_factor, polygon_offset_units);
     glSampleCoverage(sample_coverage_value, sample_coverage_invert);
     glScissor(scissor_x, scissor_y, scissor_width, scissor_height);
@@ -485,6 +421,7 @@ void ContextState::InitState(const ContextState* prev_state) const {
                         stencil_back_z_pass_op);
     glViewport(viewport_x, viewport_y, viewport_width, viewport_height);
   }
+  InitStateManual(prev_state);
 }
 bool ContextState::GetEnabled(GLenum cap) const {
   switch (cap) {
