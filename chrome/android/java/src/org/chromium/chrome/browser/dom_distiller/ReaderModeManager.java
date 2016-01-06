@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.readermode.ReaderModePanel;
+import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarContainerObserver;
@@ -395,7 +396,8 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                 || mTabStatusMap.get(currentTabId).isDismissed()
                 || mIsInfobarContainerShown
                 || mIsFindToolbarShowing
-                || mIsFullscreenModeEntered) {
+                || mIsFullscreenModeEntered
+                || DeviceClassManager.isAccessibilityModeEnabled(mChromeActivity)) {
             return;
         }
         mReaderModePanel.requestPanelShow(reason);
