@@ -7,6 +7,7 @@ import("//build/config/locales.gni")
 import("//build/config/ui.gni")
 import("//chromecast/build/tests/cast_test.gni")
 import("//chromecast/chromecast.gni")
+import("//media/media_options.gni")
 import("//tools/grit/repack.gni")
 import("//ui/ozone/ozone.gni")
 
@@ -107,12 +108,16 @@ cast_test_group("cast_tests") {
       "//chromecast/app:cast_shell_unittests",
       "//chromecast/browser:cast_shell_browser_test",
       "//chromecast/media:cast_media_unittests",
-      "//chromecast/media/cma/backend/alsa:alsa_cma_backend_unittests",
     ]
 
     # --enable-local-file-accesses => to load sample media files
     # --test-launcher-jobs=1 => so internal code can bind to port
     filters += [ "cast_shell_browser_test --no-sandbox --enable-local-file-accesses --enable-cma-media-pipeline --ozone-platform=cast --test-launcher-jobs=1" ]
+
+    if (use_alsa) {
+      tests +=
+          [ "//chromecast/media/cma/backend/alsa:alsa_cma_backend_unittests" ]
+    }
   }
 
   if (!disable_display) {

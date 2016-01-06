@@ -6,6 +6,7 @@
   'variables': {
     'chromium_code': 1,
     'chromecast_branding%': 'public',
+    'use_alsa%': 0,
 
     # Set true if the ALSA library being used supports raw timestamps
     'use_alsa_monotonic_raw_tstamps%': 0,
@@ -397,20 +398,26 @@
         '<(DEPTH)/chromecast/media/base/media_caps.h',
       ],
     },  # end of target 'libcast_media_1.0_audio'
-    {
-      'target_name': 'alsa_cma_backend_unittests',
-      'type': '<(gtest_target_type)',
-      'dependencies': [
-        'alsa_cma_backend',
-        '<(DEPTH)/base/base.gyp:run_all_unittests',
-        '<(DEPTH)/testing/gmock.gyp:gmock',
-        '<(DEPTH)/testing/gtest.gyp:gtest',
-       ],
-      'sources': [
-        'cma/backend/alsa/mock_alsa_wrapper.cc',
-        'cma/backend/alsa/mock_alsa_wrapper.h',
-        'cma/backend/alsa/stream_mixer_alsa_unittest.cc',
-      ],
-    },  # end of target 'alsa_cma_backend_unittests'
   ],  # end of targets
+  'conditions': [
+    ['use_alsa==1', {
+      'targets': [
+        {
+          'target_name': 'alsa_cma_backend_unittests',
+          'type': '<(gtest_target_type)',
+          'dependencies': [
+            'alsa_cma_backend',
+            '<(DEPTH)/base/base.gyp:run_all_unittests',
+            '<(DEPTH)/testing/gmock.gyp:gmock',
+            '<(DEPTH)/testing/gtest.gyp:gtest',
+           ],
+          'sources': [
+            'cma/backend/alsa/mock_alsa_wrapper.cc',
+            'cma/backend/alsa/mock_alsa_wrapper.h',
+            'cma/backend/alsa/stream_mixer_alsa_unittest.cc',
+          ],
+        },  # end of target 'alsa_cma_backend_unittests'
+      ],  # end of targets
+    }],
+  ],  # end of conditions
 }

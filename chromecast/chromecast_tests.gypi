@@ -4,7 +4,8 @@
 
 {
   'variables': {
-    'chromium_code': 1
+    'chromium_code': 1,
+    'use_alsa%': 0,
   },
   'targets': [
     {
@@ -177,7 +178,6 @@
             'cast_renderer_media_unittests',
             'cast_shell_unittests',
             'cast_shell_browser_test',
-            'media/media.gyp:alsa_cma_backend_unittests',
             'media/media.gyp:cast_media_unittests',
           ],
           'variables': {
@@ -187,6 +187,13 @@
               'cast_shell_browser_test --no-sandbox --enable-local-file-accesses --enable-cma-media-pipeline --ozone-platform=cast --test-launcher-jobs=1',
             ],
           },
+          'conditions': [
+            ['use_alsa==1', {
+              'dependencies': [
+                'media/media.gyp:alsa_cma_backend_unittests',
+              ],
+            }],
+          ],
         }],
         ['disable_display==1', {
           'variables': {
