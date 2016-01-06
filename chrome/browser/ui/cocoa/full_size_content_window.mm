@@ -4,8 +4,12 @@
 
 #import "chrome/browser/ui/cocoa/full_size_content_window.h"
 
+#include <crt_externs.h>
+
+#include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/mac/scoped_objc_class_swizzler.h"
 
 @interface FullSizeContentWindow ()
 
@@ -44,9 +48,61 @@
 
 @end
 
+static bool g_disable_callstacksymbols = false;
+static IMP g_original_callstacksymbols_implementation;
+
+@interface FullSizeContentWindowSwizzlingSupport : NSObject
+@end
+
+@implementation FullSizeContentWindowSwizzlingSupport
+
+// This method replaces [NSThread callStackSymbols] via swizzling - see +load
+// below.
++ (NSArray*)callStackSymbols {
+  return g_disable_callstacksymbols ?
+      @[@"+callStackSymbols disabled for performance reasons"] :
+      g_original_callstacksymbols_implementation(
+          self, @selector(callStackSymbols));
+}
+
+@end
+
 @implementation FullSizeContentWindow
 
 #pragma mark - Lifecycle
+
+// In initWithContentRect:styleMask:backing:defer:, the call to
+// [NSView addSubview:positioned:relativeTo:] causes NSWindow to complain that
+// an unknown view is being added to it, and to generate a stack trace.
+// Not only does this stack trace pollute the console, it can also take hundreds
+// of milliseconds to generate (because of symbolication). By swizzling
+// [NSThread callStackSymbols] we can prevent the stack trace output.
+// See crbug.com/520373 .
++ (void)load {
+  // Swizzling should only happen in the browser process.
+  const char* const* const argv = *_NSGetArgv();
+  const int argc = *_NSGetArgc();
+  const char kType[] = "--type=";
+  for (int i = 1; i < argc; ++i) {
+    const char* arg = argv[i];
+    if (strncmp(arg, kType, strlen(kType)) == 0) {
+      return;
+    }
+  }
+
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    Class targetClass = [NSThread class];
+    Class swizzleClass = [FullSizeContentWindowSwizzlingSupport class];
+    SEL targetSelector = @selector(callStackSymbols);
+
+    CR_DEFINE_STATIC_LOCAL(base::mac::ScopedObjCClassSwizzler,
+                           callStackSymbolsSuppressor, (targetClass,
+                           swizzleClass, targetSelector));
+    g_original_callstacksymbols_implementation =
+        callStackSymbolsSuppressor.GetOriginalImplementation();
+  });
+}
 
 - (instancetype)init {
   NOTREACHED();
@@ -87,6 +143,13 @@
       // it is positioned below the buttons.
       NSView* superview = [chromeWindowView_ superview];
       [chromeWindowView_ removeFromSuperview];
+
+      // Prevent the AppKit from generating a backtrace to include in it's
+      // complaint about our upcoming call to addSubview:positioned:relativeTo:.
+      // See +load for more info.
+      base::AutoReset<bool> disable_symbolication(&g_disable_callstacksymbols,
+                                                  true);
+
       [superview addSubview:chromeWindowView_
                  positioned:NSWindowBelow
                  relativeTo:nil];
