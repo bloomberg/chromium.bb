@@ -830,6 +830,12 @@ config("default_warnings") {
 
   if (is_clang) {
     cflags += [
+      # TODO(thakis): Add -Wfor-loop-analysis to -Wall in clang, remove this:
+      "-Wfor-loop-analysis",
+
+      # TODO(thakis): Consider -Wloop-analysis (turns on
+      # -Wrange-loop-analysis too).
+
       # This warns on using ints as initializers for floats in
       # initializer lists (e.g. |int a = f(); CGSize s = { a, a };|),
       # which happens in several places in chrome code. Not sure if

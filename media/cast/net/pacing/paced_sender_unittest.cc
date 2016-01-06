@@ -119,7 +119,6 @@ class PacedSenderTest : public ::testing::Test {
       task_runner_->RunTasks();
       if (mock_transport_.expected_packet_size_.empty())
         return true;
-      i++;
     }
 
     return mock_transport_.expected_packet_size_.empty();

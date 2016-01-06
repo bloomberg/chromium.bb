@@ -2633,6 +2633,12 @@
       'clang_warning_flags': [
         '-Wheader-hygiene',
 
+        # TODO(thakis): Add -Wfor-loop-analysis to -Wall in clang, remove this:
+        '-Wfor-loop-analysis',
+
+        # TODO(thakis): Consider -Wloop-analysis (turns on
+        # -Wrange-loop-analysis too).
+
         # Don't die on dtoa code that uses a char as an array index.
         # This is required solely for base/third_party/dmg_fp/dtoa.cc.
         '-Wno-char-subscripts',
