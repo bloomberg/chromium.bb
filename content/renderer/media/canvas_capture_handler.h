@@ -23,25 +23,27 @@
 
 namespace content {
 
-// CanvasCaptureHandler acts as the link between blink side HTMLCanvasElement
+// CanvasCaptureHandler acts as the link between Blink side HTMLCanvasElement
 // and Chrome side VideoCapturerSource. It is responsible for handling
-// WebSkImage instances sent from the blink side, convert them to
+// WebSkImage instances sent from the Blink side, convert them to
 // media::VideoFrame and plug them to the MediaStreamTrack.
 // CanvasCaptureHandler instance is owned by a blink::CanvasDrawListener which
 // is owned by a CanvasCaptureMediaStreamTrack.
 // All methods are called on the same thread as construction and destruction,
 // i.e. the Main Render thread. Note that a CanvasCaptureHandlerDelegate is
-// used to send back frames on the IO thread.
+// used to send back frames to |io_task_runner_|, i.e. IO thread.
 class CONTENT_EXPORT CanvasCaptureHandler final
     : public NON_EXPORTED_BASE(blink::WebCanvasCaptureHandler) {
  public:
   // A VideoCapturerSource instance is created, which is responsible for handing
   // stop&start callbacks back to CanvasCaptureHandler. That VideoCapturerSource
   // is then plugged into a MediaStreamTrack passed as |track|, and it is owned
-  // by the blink side MediaStreamSource.
-  CanvasCaptureHandler(const blink::WebSize& size,
-                       double frame_rate,
-                       blink::WebMediaStreamTrack* track);
+  // by the Blink side MediaStreamSource.
+  CanvasCaptureHandler(
+      const blink::WebSize& size,
+      double frame_rate,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+      blink::WebMediaStreamTrack* track);
   ~CanvasCaptureHandler() override;
 
   // blink::WebCanvasCaptureHandler Implementation.
@@ -63,12 +65,12 @@ class CONTENT_EXPORT CanvasCaptureHandler final
       scoped_ptr<media::VideoCapturerSource> source,
       blink::WebMediaStreamTrack* web_track);
 
-  // Implementation VideoCapturerSource that is owned by blink and delegates
+  // Implementation VideoCapturerSource that is owned by Blink and delegates
   // the Start/Stop calls to CanvasCaptureHandler.
   class VideoCapturerSource;
 
   // Object that does all the work of running |new_frame_callback_|.
-  // Destroyed on |io_task_runner_| after the class is destroyed.
+  // Destroyed on |frame_callback_task_runner_| after the class is destroyed.
   class CanvasCaptureHandlerDelegate;
 
   media::VideoCaptureFormat capture_format_;

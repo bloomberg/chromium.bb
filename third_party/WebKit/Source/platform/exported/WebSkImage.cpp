@@ -17,6 +17,11 @@ WebSkImage::WebSkImage(const WebSkImage& image)
     m_image = image.m_image;
 }
 
+WebSkImage::WebSkImage(SkImage* image)
+{
+    m_image = adoptRef(image);
+}
+
 WebSkImage::~WebSkImage()
 {
     m_image.reset();

@@ -19,6 +19,7 @@ class BLINK_PLATFORM_EXPORT WebSkImage {
 public:
     WebSkImage();
     WebSkImage(const WebSkImage&);
+    WebSkImage(SkImage*);
     ~WebSkImage();
 
     bool isNull() const { return m_image.isNull(); }

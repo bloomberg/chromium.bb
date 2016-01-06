@@ -94,12 +94,14 @@ class CanvasCaptureHandler::CanvasCaptureHandlerDelegate {
   DISALLOW_COPY_AND_ASSIGN(CanvasCaptureHandlerDelegate);
 };
 
-CanvasCaptureHandler::CanvasCaptureHandler(const blink::WebSize& size,
-                                           double frame_rate,
-                                           blink::WebMediaStreamTrack* track)
+CanvasCaptureHandler::CanvasCaptureHandler(
+    const blink::WebSize& size,
+    double frame_rate,
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+    blink::WebMediaStreamTrack* track)
     : ask_for_new_frame_(false),
       size_(size),
-      io_task_runner_(content::RenderThread::Get()->GetIOMessageLoopProxy()),
+      io_task_runner_(io_task_runner),
       weak_ptr_factory_(this) {
   scoped_ptr<media::VideoCapturerSource> video_source(
       new CanvasCaptureHandler::VideoCapturerSource(
@@ -156,8 +158,8 @@ void CanvasCaptureHandler::CreateNewFrame(const blink::WebSkImage& image) {
   if (size != last_size) {
     temp_data_.resize(
         media::VideoFrame::AllocationSize(media::PIXEL_FORMAT_ARGB, size));
-    row_bytes_ = media::VideoFrame::RowBytes(
-        0, media::PIXEL_FORMAT_ARGB, capture_format_.frame_size.width());
+    row_bytes_ =
+        media::VideoFrame::RowBytes(0, media::PIXEL_FORMAT_ARGB, size.width());
     image_info_ =
         SkImageInfo::Make(size.width(), size.height(), kBGRA_8888_SkColorType,
                           kPremul_SkAlphaType);
@@ -168,6 +170,8 @@ void CanvasCaptureHandler::CreateNewFrame(const blink::WebSkImage& image) {
   scoped_refptr<media::VideoFrame> video_frame =
       frame_pool_.CreateFrame(media::PIXEL_FORMAT_I420, size, gfx::Rect(size),
                               size, base::TimeTicks::Now() - base::TimeTicks());
+  DCHECK(video_frame);
+
   libyuv::ARGBToI420(temp_data_.data(), row_bytes_,
                      video_frame->data(media::VideoFrame::kYPlane),
                      video_frame->stride(media::VideoFrame::kYPlane),
@@ -176,7 +180,6 @@ void CanvasCaptureHandler::CreateNewFrame(const blink::WebSkImage& image) {
                      video_frame->data(media::VideoFrame::kVPlane),
                      video_frame->stride(media::VideoFrame::kVPlane),
                      size.width(), size.height());
-
   io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&CanvasCaptureHandler::CanvasCaptureHandlerDelegate::

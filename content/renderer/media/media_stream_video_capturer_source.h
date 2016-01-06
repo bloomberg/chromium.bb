@@ -32,6 +32,7 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
   ~MediaStreamVideoCapturerSource() override;
 
  private:
+  friend class CanvasCaptureHandlerTest;
   friend class MediaStreamVideoCapturerSourceTest;
 
   // Implements MediaStreamVideoSource.
