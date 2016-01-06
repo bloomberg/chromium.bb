@@ -8,7 +8,6 @@
 #include <tuple>
 #include <utility>
 
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/record_parsed.h"
@@ -66,20 +65,14 @@ MDnsCache::MDnsCache() {
 }
 
 MDnsCache::~MDnsCache() {
-  Clear();
-}
-
-void MDnsCache::Clear() {
-  next_expiration_ = base::Time();
-  STLDeleteValues(&mdns_cache_);
 }
 
 const RecordParsed* MDnsCache::LookupKey(const Key& key) {
   RecordMap::iterator found = mdns_cache_.find(key);
   if (found != mdns_cache_.end()) {
-    return found->second;
+    return found->second.get();
   }
-  return NULL;
+  return nullptr;
 }
 
 MDnsCache::UpdateType MDnsCache::UpdateDnsRecord(
@@ -95,20 +88,18 @@ MDnsCache::UpdateType MDnsCache::UpdateDnsRecord(
     new_expiration = std::min(new_expiration, next_expiration_);
 
   std::pair<RecordMap::iterator, bool> insert_result =
-      mdns_cache_.insert(std::make_pair(cache_key, (const RecordParsed*)NULL));
+      mdns_cache_.insert(std::make_pair(cache_key, nullptr));
   UpdateType type = NoChange;
   if (insert_result.second) {
     type = RecordAdded;
   } else {
-    const RecordParsed* other_record = insert_result.first->second;
-
-    if (record->ttl() != 0 && !record->IsEqual(other_record, true)) {
+    if (record->ttl() != 0 &&
+        !record->IsEqual(insert_result.first->second.get(), true)) {
       type = RecordChanged;
     }
-    delete other_record;
   }
 
-  insert_result.first->second = record.release();
+  insert_result.first->second = std::move(record);
   next_expiration_ = new_expiration;
   return type;
 }
@@ -125,10 +116,9 @@ void MDnsCache::CleanupRecords(
 
   for (RecordMap::iterator i = mdns_cache_.begin();
        i != mdns_cache_.end(); ) {
-    base::Time expiration = GetEffectiveExpiration(i->second);
+    base::Time expiration = GetEffectiveExpiration(i->second.get());
     if (now >= expiration) {
-      record_removed_callback.Run(i->second);
-      delete i->second;
+      record_removed_callback.Run(i->second.get());
       mdns_cache_.erase(i++);
     } else {
       if (next_expiration == base::Time() ||  expiration < next_expiration) {
@@ -155,7 +145,7 @@ void MDnsCache::FindDnsRecords(unsigned type,
       break;
     }
 
-    const RecordParsed* record = i->second;
+    const RecordParsed* record = i->second.get();
 
     // Records are deleted only upon request.
     if (now >= GetEffectiveExpiration(record)) continue;
@@ -169,17 +159,17 @@ scoped_ptr<const RecordParsed> MDnsCache::RemoveRecord(
   Key key = Key::CreateFor(record);
   RecordMap::iterator found = mdns_cache_.find(key);
 
-  if (found != mdns_cache_.end() && found->second == record) {
+  if (found != mdns_cache_.end() && found->second.get() == record) {
+    scoped_ptr<const RecordParsed> result = std::move(found->second);
     mdns_cache_.erase(key);
-    return scoped_ptr<const RecordParsed>(record);
+    return result;
   }
 
   return scoped_ptr<const RecordParsed>();
 }
 
 // static
-std::string MDnsCache::GetOptionalFieldForRecord(
-    const RecordParsed* record) {
+std::string MDnsCache::GetOptionalFieldForRecord(const RecordParsed* record) {
   switch (record->type()) {
     case PtrRecordRdata::kType: {
       const PtrRecordRdata* rdata = record->rdata<PtrRecordRdata>();
