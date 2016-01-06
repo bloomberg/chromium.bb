@@ -33,7 +33,7 @@ android_library("custom_tabs_client_shared_lib") {
 android_library("custom_tabs_support_lib") {
   DEPRECATED_java_in_dir = "src/customtabs/src"
   deps = [
-    "//third_party/android_tools:android_support_annotations_javalib",
+    "//third_party/android_tools:android_support_v13_java",
   ]
   srcjar_deps = [ ":chrome_custom_tabs_service_aidl" ]
 }

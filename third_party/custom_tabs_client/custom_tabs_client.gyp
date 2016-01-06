@@ -41,7 +41,7 @@
       },
       'dependencies': [
         'chrome_custom_tabs_service_aidl',
-        '../android_tools/android_tools.gyp:android_support_annotations_javalib',
+        '../android_tools/android_tools.gyp:android_support_v13_javalib',
       ],
       'includes': [ '../../build/java.gypi' ],
     },
