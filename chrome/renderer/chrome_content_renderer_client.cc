@@ -933,6 +933,8 @@ bool ChromeContentRendererClient::IsNaClAllowed(
        base::EndsWith(app_url_host, "plus.google.com",
                       base::CompareCase::INSENSITIVE_ASCII) ||
        base::EndsWith(app_url_host, "plus.sandbox.google.com",
+                      base::CompareCase::INSENSITIVE_ASCII) ||
+       base::EndsWith(app_url_host, "hangouts.google.com",
                       base::CompareCase::INSENSITIVE_ASCII)) &&
       // The manifest must be loaded from the host's FileSystem.
       (manifest_fs_host == app_url_host);
