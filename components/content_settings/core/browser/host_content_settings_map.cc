@@ -360,8 +360,8 @@ void HostContentSettingsMap::SetNarrowestContentSetting(
   // the existing rule is more specific, than change the existing rule instead
   // of creating a new rule that would be hidden behind the existing rule.
   content_settings::SettingInfo info;
-  scoped_ptr<base::Value> v =
-      GetWebsiteSetting(primary_url, secondary_url, type, std::string(), &info);
+  scoped_ptr<base::Value> v = GetWebsiteSettingInternal(
+      primary_url, secondary_url, type, std::string(), &info);
   DCHECK_EQ(content_settings::SETTING_SOURCE_USER, info.source);
 
   ContentSettingsPattern narrow_primary = primary_pattern;
