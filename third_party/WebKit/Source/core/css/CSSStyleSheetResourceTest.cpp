@@ -78,6 +78,7 @@ TEST_F(CSSStyleSheetResourceTest, PruneCanCauseEviction)
 
         RefPtrWillBeRawPtr<StyleSheetContents> contents = StyleSheetContents::create(CSSParserContext(HTMLStandardMode, nullptr));
         RefPtrWillBeRawPtr<CSSStyleSheet> sheet = CSSStyleSheet::create(contents, document());
+        EXPECT_TRUE(sheet.get());
         RefPtrWillBeRawPtr<CSSCrossfadeValue> crossfade = CSSCrossfadeValue::create(
             CSSImageValue::create(String("image"), imageURL),
             CSSImageValue::create(String("image"), imageURL),
