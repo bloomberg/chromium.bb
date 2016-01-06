@@ -8,6 +8,7 @@ namespace cc {
 
 LayerTreeSettingsForTesting::LayerTreeSettingsForTesting()
     : LayerTreeSettings() {
+  this->use_compositor_animation_timelines = true;
   this->verify_property_trees = true;
 }
 

@@ -90,6 +90,7 @@ class LayerTreeSettingsScaleContent : public LayerTreeSettings {
  public:
   LayerTreeSettingsScaleContent() {
     layer_transforms_should_scale_layer_contents = true;
+    use_compositor_animation_timelines = true;
   }
 };
 

@@ -32,6 +32,7 @@ scoped_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
     TestTaskGraphRunner* task_graph_runner) {
   LayerTreeSettings settings;
   settings.verify_property_trees = true;
+  settings.use_compositor_animation_timelines = true;
   return Create(client, task_graph_runner, settings);
 }
 
