@@ -1283,6 +1283,13 @@
                 '../third_party/libvpx_new/libvpx.gyp:libvpx_new',
               ],
             }],
+            ['chromecast == 1', {
+              'sources!': [
+                'renderer/media/audio_track_recorder_unittest.cc',
+                'renderer/media/media_recorder_handler_unittest.cc',
+                'renderer/media/video_track_recorder_unittest.cc',
+              ],
+            }],
             # Avoid windows due to non-availability of cursor resources in test.
             ['OS != "linux"', {
               'sources!': [
