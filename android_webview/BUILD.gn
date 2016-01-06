@@ -9,6 +9,10 @@ import("//tools/grit/repack.gni")
 import("system_webview_apk_tmpl.gni")
 import("webview_repack_locales.gni")
 
+if (!defined(use_webview_internal_framework)) {
+  use_webview_internal_framework = false
+}
+
 group("android_webview") {
   if (!use_webview_internal_framework) {
     deps = [
