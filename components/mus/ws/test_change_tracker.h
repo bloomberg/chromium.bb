@@ -36,9 +36,9 @@ enum ChangeType {
   CHANGE_TYPE_NODE_DELETED,
   CHANGE_TYPE_INPUT_EVENT,
   CHANGE_TYPE_PROPERTY_CHANGED,
-  CHANGE_TYPE_DELEGATE_EMBED,
   CHANGE_TYPE_FOCUSED,
-  CHANGE_TYPE_CURSOR_CHANGED
+  CHANGE_TYPE_CURSOR_CHANGED,
+  CHANGE_TYPE_ON_CHANGE_COMPLETED,
 };
 
 // TODO(sky): consider nuking and converting directly to WindowData.
@@ -80,6 +80,7 @@ struct Change {
   std::string property_key;
   std::string property_value;
   int32_t cursor_id;
+  uint32_t change_id;
 };
 
 // Converts Changes to string descriptions.
@@ -127,7 +128,7 @@ class TestChangeTracker {
   // WindowTreeClient function.
   void OnEmbed(ConnectionSpecificId connection_id, mojom::WindowDataPtr root);
   void OnEmbeddedAppDisconnected(Id window_id);
-  void OnUnembed();
+  void OnUnembed(Id window_id);
   void OnTransientWindowAdded(Id window_id, Id transient_window_id);
   void OnTransientWindowRemoved(Id window_id, Id transient_window_id);
   void OnWindowBoundsChanged(Id window_id,
@@ -151,7 +152,7 @@ class TestChangeTracker {
                                      mojo::Array<uint8_t> data);
   void OnWindowFocused(Id window_id);
   void OnWindowPredefinedCursorChanged(Id window_id, mojom::Cursor cursor_id);
-  void DelegateEmbed(const mojo::String& url);
+  void OnChangeCompleted(uint32_t change_id, bool success);
 
  private:
   void AddChange(const Change& change);

@@ -262,8 +262,9 @@ void ConnectionManager::WindowManagerChangeCompleted(
     bool success) {
   InFlightWindowManagerChange change;
   if (!GetAndClearInFlightWindowManagerChange(window_manager_change_id,
-                                              &change))
+                                              &change)) {
     return;
+  }
 
   WindowTreeImpl* connection = GetConnection(change.connection_id);
   connection->OnChangeCompleted(change.client_change_id, success);

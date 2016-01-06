@@ -35,10 +35,12 @@ class WindowTreeDelegate {
   // |root|.
   virtual void OnEmbed(Window* root) = 0;
 
-  // Sent when another app is embedded in the same Window as this connection.
-  // Subsequently the root Window and this object are destroyed (observers are
-  // notified appropriately).
-  virtual void OnUnembed();
+  // Sent when another app is embedded in |root| (one of the roots of the
+  // connection). Afer this call |root| is deleted. If |root| is the only root
+  // and the connection is configured to delete when there are no roots (the
+  // default), then after |root| is destroyed the connection is destroyed as
+  // well.
+  virtual void OnUnembed(Window* root);
 
   // Called from the destructor of WindowTreeConnection after all the Windows
   // have been destroyed. |connection| is no longer valid after this call.

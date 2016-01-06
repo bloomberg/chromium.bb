@@ -257,7 +257,7 @@ interface WindowTreeClient {
 
   // Sent when another connection is embedded in the Window this connection was
   // previously embedded in. See Embed() for more information.
-  OnUnembed();
+  OnUnembed(uint32 window);
 
   // Invoked when a window's bounds have changed.
   OnWindowBoundsChanged(uint32 window,

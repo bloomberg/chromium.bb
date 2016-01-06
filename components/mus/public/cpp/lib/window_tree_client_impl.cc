@@ -493,10 +493,13 @@ void WindowTreeClientImpl::OnEmbeddedAppDisconnected(Id window_id) {
   }
 }
 
-void WindowTreeClientImpl::OnUnembed() {
-  delegate_->OnUnembed();
-  // This will send out the various notifications.
-  delete this;
+void WindowTreeClientImpl::OnUnembed(Id window_id) {
+  Window* window = GetWindowById(window_id);
+  if (!window)
+    return;
+
+  delegate_->OnUnembed(window);
+  WindowPrivate(window).LocalDestroy();
 }
 
 void WindowTreeClientImpl::OnWindowBoundsChanged(Id window_id,

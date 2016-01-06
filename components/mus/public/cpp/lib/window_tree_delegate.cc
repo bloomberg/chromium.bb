@@ -6,6 +6,6 @@
 
 namespace mus {
 
-void WindowTreeDelegate::OnUnembed() {}
+void WindowTreeDelegate::OnUnembed(Window* root) {}
 
 }  // namespace mus

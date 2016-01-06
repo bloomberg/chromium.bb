@@ -63,7 +63,7 @@ class WindowTreeDelegateImpl : public mus::WindowTreeDelegate {
  private:
   // WindowTreeDelegate:
   void OnEmbed(mus::Window* root) override { delegate_->OnEmbed(root); }
-  void OnUnembed() override { delegate_->OnUnembed(); }
+  void OnUnembed(mus::Window* root) override { delegate_->OnUnembed(root); }
   void OnConnectionLost(mus::WindowTreeConnection* connection) override {
     delegate_->OnConnectionLost(connection);
   }

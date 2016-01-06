@@ -580,7 +580,7 @@ void WindowTreeImpl::RemoveRoot(const ServerWindow* window,
     return;
 
   if (reason == RemoveRootReason::EMBED) {
-    client_->OnUnembed();
+    client_->OnUnembed(transport_id);
     client_->OnWindowDeleted(transport_id);
     connection_manager_->OnConnectionMessagedClient(id_);
   }

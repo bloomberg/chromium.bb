@@ -283,7 +283,7 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   void OnEmbeddedAppDisconnected(Id window_id) override {
     tracker()->OnEmbeddedAppDisconnected(window_id);
   }
-  void OnUnembed() override { tracker()->OnUnembed(); }
+  void OnUnembed(Id window_id) override { tracker()->OnUnembed(window_id); }
   void OnWindowBoundsChanged(Id window_id,
                              RectPtr old_bounds,
                              RectPtr new_bounds) override {
@@ -1251,7 +1251,8 @@ TEST_F(WindowTreeAppTest, EmbedWithSameWindowId) {
   // Connection2 should have been told of the unembed and delete.
   {
     ws_client2_->WaitForChangeCount(2);
-    EXPECT_EQ("OnUnembed", ChangesToDescription1(*changes2())[0]);
+    EXPECT_EQ("OnUnembed window=" + IdToString(window_1_1),
+              ChangesToDescription1(*changes2())[0]);
     EXPECT_EQ("WindowDeleted window=" + IdToString(window_1_1),
               ChangesToDescription1(*changes2())[1]);
   }
@@ -1301,7 +1302,8 @@ TEST_F(WindowTreeAppTest, EmbedWithSameWindowId2) {
 
     // And 3 should get an unembed and delete.
     ws_client3_->WaitForChangeCount(2);
-    EXPECT_EQ("OnUnembed", ChangesToDescription1(*changes3())[0]);
+    EXPECT_EQ("OnUnembed window=" + IdToString(window_1_1),
+              ChangesToDescription1(*changes3())[0]);
     EXPECT_EQ("WindowDeleted window=" + IdToString(window_1_1),
               ChangesToDescription1(*changes3())[1]);
   }

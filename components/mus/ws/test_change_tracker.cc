@@ -44,7 +44,8 @@ std::string ChangeToDescription1(const Change& change) {
                                 WindowIdToString(change.window_id).c_str());
 
     case CHANGE_TYPE_UNEMBED:
-      return "OnUnembed";
+      return base::StringPrintf("OnUnembed window=%s",
+                                WindowIdToString(change.window_id).c_str());
 
     case CHANGE_TYPE_NODE_ADD_TRANSIENT_WINDOW:
       return base::StringPrintf("AddTransientWindow parent = %s child = %s",
@@ -106,10 +107,6 @@ std::string ChangeToDescription1(const Change& change) {
                                 change.property_key.c_str(),
                                 change.property_value.c_str());
 
-    case CHANGE_TYPE_DELEGATE_EMBED:
-      return base::StringPrintf("DelegateEmbed url=%s",
-                                change.embed_url.data());
-
     case CHANGE_TYPE_FOCUSED:
       return base::StringPrintf("Focused id=%s",
                                 WindowIdToString(change.window_id).c_str());
@@ -118,6 +115,10 @@ std::string ChangeToDescription1(const Change& change) {
       return base::StringPrintf("CursorChanged id=%s cursor_id=%d",
                                 WindowIdToString(change.window_id).c_str(),
                                 change.cursor_id);
+    case CHANGE_TYPE_ON_CHANGE_COMPLETED:
+      return base::StringPrintf("ChangeCompleted id=%d sucess=%s",
+                                change.change_id,
+                                change.bool_value ? "true" : "false");
   }
   return std::string();
 }
@@ -182,7 +183,8 @@ Change::Change()
       window_id3(0),
       event_action(0),
       direction(mojom::ORDER_DIRECTION_ABOVE),
-      bool_value(false) {}
+      bool_value(false),
+      change_id(0u) {}
 
 Change::~Change() {}
 
@@ -223,9 +225,10 @@ void TestChangeTracker::OnWindowBoundsChanged(Id window_id,
   AddChange(change);
 }
 
-void TestChangeTracker::OnUnembed() {
+void TestChangeTracker::OnUnembed(Id window_id) {
   Change change;
   change.type = CHANGE_TYPE_UNEMBED;
+  change.window_id = window_id;
   AddChange(change);
 }
 
@@ -344,10 +347,11 @@ void TestChangeTracker::OnWindowPredefinedCursorChanged(
   AddChange(change);
 }
 
-void TestChangeTracker::DelegateEmbed(const String& url) {
+void TestChangeTracker::OnChangeCompleted(uint32_t change_id, bool success) {
   Change change;
-  change.type = CHANGE_TYPE_DELEGATE_EMBED;
-  change.embed_url = url;
+  change.type = CHANGE_TYPE_ON_CHANGE_COMPLETED;
+  change.change_id = change_id;
+  change.bool_value = success;
   AddChange(change);
 }
 

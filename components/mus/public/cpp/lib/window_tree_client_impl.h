@@ -157,7 +157,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                Id focused_window_id,
                uint32_t access_policy) override;
   void OnEmbeddedAppDisconnected(Id window_id) override;
-  void OnUnembed() override;
+  void OnUnembed(Id window_id) override;
   void OnWindowBoundsChanged(Id window_id,
                              mojo::RectPtr old_bounds,
                              mojo::RectPtr new_bounds) override;

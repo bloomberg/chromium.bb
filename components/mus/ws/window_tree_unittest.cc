@@ -74,7 +74,7 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
   void OnEmbeddedAppDisconnected(uint32_t window) override {
     tracker_.OnEmbeddedAppDisconnected(window);
   }
-  void OnUnembed() override { tracker_.OnUnembed(); }
+  void OnUnembed(Id window_id) override { tracker_.OnUnembed(window_id); }
   void OnWindowBoundsChanged(uint32_t window,
                              mojo::RectPtr old_bounds,
                              mojo::RectPtr new_bounds) override {
