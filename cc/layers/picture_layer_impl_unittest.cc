@@ -264,6 +264,9 @@ class PictureLayerImplTest : public testing::Test {
 
     pending_root->AddChild(std::move(pending_layer));
     pending_tree->SetRootLayer(std::move(pending_root));
+    pending_tree->SetViewportLayersFromIds(
+        Layer::INVALID_ID, pending_tree->root_layer()->id(), Layer::INVALID_ID,
+        Layer::INVALID_ID);
 
     pending_layer_ = static_cast<FakePictureLayerImpl*>(
         host_impl_.pending_tree()->LayerById(id_));

@@ -698,6 +698,13 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   num_dependents_need_push_properties_ = 0;
 }
 
+bool LayerImpl::IsAffectedByPageScale() const {
+  TransformTree& transform_tree =
+      layer_tree_impl()->property_trees()->transform_tree;
+  return transform_tree.Node(transform_tree_index())
+      ->data.in_subtree_of_page_scale_layer;
+}
+
 gfx::Vector2dF LayerImpl::FixedContainerSizeDelta() const {
   LayerImpl* scroll_clip_layer =
       layer_tree_impl()->LayerById(scroll_clip_layer_id_);

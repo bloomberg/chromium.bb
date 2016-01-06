@@ -357,10 +357,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return is_container_for_fixed_position_layers_;
   }
 
-  bool IsAffectedByPageScale() const { return is_affected_by_page_scale_; }
-  void SetIsAffectedByPageScale(bool is_affected) {
-    is_affected_by_page_scale_ = is_affected;
-  }
+  bool IsAffectedByPageScale() const;
 
   gfx::Vector2dF FixedContainerSizeDelta() const;
 

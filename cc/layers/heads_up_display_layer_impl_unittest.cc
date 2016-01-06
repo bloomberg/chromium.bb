@@ -11,6 +11,7 @@
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -46,16 +47,19 @@ TEST(HeadsUpDisplayLayerImplTest, ResourcelessSoftwareDrawAfterResourceLoss) {
     HeadsUpDisplayLayerImpl::Create(host_impl.pending_tree(), 1);
   layer->SetBounds(gfx::Size(100, 100));
 
+  HeadsUpDisplayLayerImpl* layer_ptr = layer.get();
+
+  host_impl.pending_tree()->SetRootLayer(std::move(layer));
+  host_impl.pending_tree()->BuildPropertyTreesForTesting();
+
   // Check regular hardware draw is ok.
-  CheckDrawLayer(
-      layer.get(), host_impl.resource_provider(), DRAW_MODE_HARDWARE);
+  CheckDrawLayer(layer_ptr, host_impl.resource_provider(), DRAW_MODE_HARDWARE);
 
   // Simulate a resource loss on transitioning to resourceless software mode.
-  layer->ReleaseResources();
+  layer_ptr->ReleaseResources();
 
   // Should skip resourceless software draw and not crash in UpdateHudTexture.
-  CheckDrawLayer(layer.get(),
-                 host_impl.resource_provider(),
+  CheckDrawLayer(layer_ptr, host_impl.resource_provider(),
                  DRAW_MODE_RESOURCELESS_SOFTWARE);
 }
 
