@@ -1287,7 +1287,7 @@ crbug.com/568778 [ XP ] tables/mozilla_expected_failures/bugs/bug85016.html [ Fa
 # backing size, some image results twice a big as expected, or become all-white squares.
 
 crbug.com/570401 compositing/overflow/updating-scrolling-content.html [ Failure ]
-crbug.com/570401 compositing/repaint/should-not-clip-composited-overflow-scrolling-layer.html [ Failure ]
+crbug.com/570401 compositing/repaint/should-not-clip-composited-overflow-scrolling-layer.html [ NeedsRebaseline ]
 crbug.com/570401 paint/selection/selection-within-composited-scroller.html [ NeedsRebaseline ]
 crbug.com/570002 fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
 crbug.com/570002 virtual/display_list_2d_canvas/fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
