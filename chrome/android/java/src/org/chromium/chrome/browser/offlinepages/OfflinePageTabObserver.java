@@ -57,6 +57,12 @@ public class OfflinePageTabObserver extends EmptyTabObserver {
     }
 
     @Override
+    public void onHidden(Tab hiddenTab) {
+        mWasHidden = true;
+        // TODO(petewil): In case any snackbars are showing, dismiss them before we switch tabs.
+    }
+
+    @Override
     public void onDestroyed(Tab destroyedTab) {
         // Unregister this tab for OS connectivity notifications.
         if (mListener != null) {
