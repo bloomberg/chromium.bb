@@ -1370,6 +1370,7 @@ def CMDreproduce(parser, args):
       command = bundle.command
       if bundle.relative_cwd:
         workdir = os.path.join(workdir, bundle.relative_cwd)
+      command.extend(properties.get('extra_args') or [])
   else:
     command = properties['command']
   try:
