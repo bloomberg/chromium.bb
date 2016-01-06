@@ -276,7 +276,13 @@ class HWTestConfig(object):
   SHARED_HW_TEST_TIMEOUT = int(1.5 * _HOUR)
   PALADIN_HW_TEST_TIMEOUT = int(1.5 * _HOUR)
   BRANCHED_HW_TEST_TIMEOUT = int(10.0 * _HOUR)
-  ASYNC_HW_TEST_TIMEOUT = int(5.0 * _MINUTE)
+
+  # TODO(jrbarnette) Async HW test phases complete within seconds.
+  # however, the tests they start can require hours to complete.
+  # Chromite code doesn't distinguish "timeout for Autotest" from
+  # timeout in the builder.  This is WRONG WRONG WRONG.  But, until
+  # there's a better fix, we'll allow these phases hours to fail.
+  ASYNC_HW_TEST_TIMEOUT = int(220.0 * _MINUTE)
 
   def __init__(self, suite, num=constants.HWTEST_DEFAULT_NUM,
                pool=constants.HWTEST_MACH_POOL, timeout=SHARED_HW_TEST_TIMEOUT,
