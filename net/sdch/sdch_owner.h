@@ -76,6 +76,7 @@ class NET_EXPORT SdchOwner : public SdchObserver, public PrefStore::Observer {
   // gotten the dictionary.  The first two arguments are bound locally.
   // Public for testing.
   void OnDictionaryFetched(base::Time last_used,
+                           base::Time created_time,
                            int use_count,
                            const std::string& dictionary_text,
                            const GURL& dictionary_url,

@@ -315,8 +315,9 @@ class SdchOwnerTest : public testing::Test {
   // SdchOwner::OnDictionaryFetched(), and return whether that
   // addition was successful or not.
   bool CreateAndAddDictionary(size_t size,
-                              std::string* server_hash_p,
-                              base::Time last_used_time) {
+                              base::Time last_used_time,
+                              base::Time created_time,
+                              std::string* server_hash_p) {
     GURL dictionary_url(
         base::StringPrintf("%s/d%d", generic_url, dictionary_creation_index_));
     std::string dictionary_text(NewSdchDictionary(size - 4));
@@ -328,11 +329,19 @@ class SdchOwnerTest : public testing::Test {
 
     if (DictionaryPresentInManager(server_hash))
       return false;
-    sdch_owner().OnDictionaryFetched(last_used_time, 0, dictionary_text,
-                                     dictionary_url, net_log_, false);
+    sdch_owner().OnDictionaryFetched(last_used_time, created_time, 0,
+                                     dictionary_text, dictionary_url, net_log_,
+                                     false);
     if (server_hash_p)
       *server_hash_p = server_hash;
     return DictionaryPresentInManager(server_hash);
+  }
+
+  bool CreateAndAddDictionary(size_t size,
+                              base::Time last_used_time,
+                              std::string* server_hash_p) {
+    return CreateAndAddDictionary(size, last_used_time, base::Time(),
+                                  server_hash_p);
   }
 
   void ResetOwner() {
@@ -370,8 +379,9 @@ TEST_F(SdchOwnerTest, OnGetDictionary_Fetching) {
   // Fetch generated when half full.
   GURL dict_url2(std::string(generic_url) + "/d2");
   std::string dictionary1(NewSdchDictionary(kMaxSizeForTesting / 2));
-  sdch_owner().OnDictionaryFetched(base::Time::Now(), 1, dictionary1,
-                                   dict_url1, bound_net_log(), false);
+  sdch_owner().OnDictionaryFetched(base::Time::Now(), base::Time::Now(), 1,
+                                   dictionary1, dict_url1, bound_net_log(),
+                                   false);
   EXPECT_EQ(0, JobsRecentlyCreated());
   SignalGetDictionaryAndClearJobs(request_url, dict_url2);
   EXPECT_EQ(1, JobsRecentlyCreated());
@@ -380,8 +390,9 @@ TEST_F(SdchOwnerTest, OnGetDictionary_Fetching) {
   GURL dict_url3(std::string(generic_url) + "/d3");
   std::string dictionary2(NewSdchDictionary(
       (kMaxSizeForTesting / 2 - kMinFetchSpaceForTesting / 2)));
-  sdch_owner().OnDictionaryFetched(base::Time::Now(), 1, dictionary2,
-                                   dict_url2, bound_net_log(), false);
+  sdch_owner().OnDictionaryFetched(base::Time::Now(), base::Time::Now(), 1,
+                                   dictionary2, dict_url2, bound_net_log(),
+                                   false);
   EXPECT_EQ(0, JobsRecentlyCreated());
   SignalGetDictionaryAndClearJobs(request_url, dict_url3);
   EXPECT_EQ(0, JobsRecentlyCreated());
@@ -398,18 +409,18 @@ TEST_F(SdchOwnerTest, OnDictionaryFetched_Fetching) {
                                        base::TimeDelta::FromMinutes(30));
 
   // Add successful when empty.
-  EXPECT_TRUE(CreateAndAddDictionary(kMaxSizeForTesting / 2, nullptr,
-                                     dictionary_last_used_time));
+  EXPECT_TRUE(CreateAndAddDictionary(kMaxSizeForTesting / 2,
+                                     dictionary_last_used_time, nullptr));
   EXPECT_EQ(0, JobsRecentlyCreated());
 
   // Add successful when half full.
-  EXPECT_TRUE(CreateAndAddDictionary(kMaxSizeForTesting / 2, nullptr,
-                                     dictionary_last_used_time));
+  EXPECT_TRUE(CreateAndAddDictionary(kMaxSizeForTesting / 2,
+                                     dictionary_last_used_time, nullptr));
   EXPECT_EQ(0, JobsRecentlyCreated());
 
   // Add unsuccessful when full.
-  EXPECT_FALSE(CreateAndAddDictionary(kMaxSizeForTesting / 2, nullptr,
-                                      dictionary_last_used_time));
+  EXPECT_FALSE(CreateAndAddDictionary(kMaxSizeForTesting / 2,
+                                      dictionary_last_used_time, nullptr));
   EXPECT_EQ(0, JobsRecentlyCreated());
 }
 
@@ -429,9 +440,9 @@ TEST_F(SdchOwnerTest, ConfirmAutoEviction) {
   base::Time stale(base::Time::Now() - base::TimeDelta::FromHours(25));
 
   EXPECT_TRUE(
-      CreateAndAddDictionary(kMaxSizeForTesting / 2, &server_hash_d1, fresh));
+      CreateAndAddDictionary(kMaxSizeForTesting / 2, fresh, &server_hash_d1));
   EXPECT_TRUE(
-      CreateAndAddDictionary(kMaxSizeForTesting / 2, &server_hash_d2, stale));
+      CreateAndAddDictionary(kMaxSizeForTesting / 2, stale, &server_hash_d2));
 
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d1));
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d2));
@@ -442,7 +453,7 @@ TEST_F(SdchOwnerTest, ConfirmAutoEviction) {
   test_clock->Advance(synthetic_delta);
 
   EXPECT_TRUE(
-      CreateAndAddDictionary(kMaxSizeForTesting / 2, &server_hash_d3, fresh));
+      CreateAndAddDictionary(kMaxSizeForTesting / 2, fresh, &server_hash_d3));
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d1));
   EXPECT_FALSE(DictionaryPresentInManager(server_hash_d2));
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d3));
@@ -485,12 +496,12 @@ TEST_F(SdchOwnerTest, ConfirmAutoEviction_2) {
   base::Time fresh(base::Time::Now() - base::TimeDelta::FromHours(23));
   base::Time stale(base::Time::Now() - base::TimeDelta::FromHours(25));
   EXPECT_TRUE(
-      CreateAndAddDictionary(kMaxSizeForTesting / 2, &server_hash_d1, fresh));
+      CreateAndAddDictionary(kMaxSizeForTesting / 2, fresh, &server_hash_d1));
 
   EXPECT_TRUE(
-      CreateAndAddDictionary(kMaxSizeForTesting / 4, &server_hash_d2, stale));
+      CreateAndAddDictionary(kMaxSizeForTesting / 4, stale, &server_hash_d2));
   EXPECT_TRUE(
-      CreateAndAddDictionary(kMaxSizeForTesting / 4, &server_hash_d3, stale));
+      CreateAndAddDictionary(kMaxSizeForTesting / 4, stale, &server_hash_d3));
 
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d1));
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d2));
@@ -498,7 +509,7 @@ TEST_F(SdchOwnerTest, ConfirmAutoEviction_2) {
 
   std::string server_hash_d4;
   EXPECT_TRUE(
-      CreateAndAddDictionary(kMaxSizeForTesting / 2, &server_hash_d4, fresh));
+      CreateAndAddDictionary(kMaxSizeForTesting / 2, fresh, &server_hash_d4));
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d1));
   EXPECT_FALSE(DictionaryPresentInManager(server_hash_d2));
   EXPECT_FALSE(DictionaryPresentInManager(server_hash_d3));
@@ -518,13 +529,13 @@ TEST_F(SdchOwnerTest, ConfirmAutoEviction_Oldest) {
   base::Time stale_older(base::Time::Now() - base::TimeDelta::FromHours(71));
 
   EXPECT_TRUE(
-      CreateAndAddDictionary(kMaxSizeForTesting / 4, &server_hash_d1, fresh));
+      CreateAndAddDictionary(kMaxSizeForTesting / 4, fresh, &server_hash_d1));
 
-  EXPECT_TRUE(CreateAndAddDictionary(kMaxSizeForTesting / 4, &server_hash_d2,
-                                     stale_newer));
+  EXPECT_TRUE(CreateAndAddDictionary(kMaxSizeForTesting / 4, stale_newer,
+                                     &server_hash_d2));
 
-  EXPECT_TRUE(CreateAndAddDictionary(kMaxSizeForTesting / 4, &server_hash_d3,
-                                     stale_older));
+  EXPECT_TRUE(CreateAndAddDictionary(kMaxSizeForTesting / 4, stale_older,
+                                     &server_hash_d3));
 
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d1));
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d2));
@@ -535,7 +546,7 @@ TEST_F(SdchOwnerTest, ConfirmAutoEviction_Oldest) {
 
   std::string server_hash_d4;
   EXPECT_TRUE(
-      CreateAndAddDictionary(kMaxSizeForTesting / 2, &server_hash_d4, fresh));
+      CreateAndAddDictionary(kMaxSizeForTesting / 2, fresh, &server_hash_d4));
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d1));
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d2));
   EXPECT_FALSE(DictionaryPresentInManager(server_hash_d3));
@@ -555,13 +566,13 @@ TEST_F(SdchOwnerTest, UseChangesEviction) {
   base::Time stale_older(base::Time::Now() - base::TimeDelta::FromHours(71));
 
   EXPECT_TRUE(
-      CreateAndAddDictionary(kMaxSizeForTesting / 4, &server_hash_d1, fresh));
+      CreateAndAddDictionary(kMaxSizeForTesting / 4, fresh, &server_hash_d1));
 
-  EXPECT_TRUE(CreateAndAddDictionary(kMaxSizeForTesting / 4, &server_hash_d2,
-                                     stale_newer));
+  EXPECT_TRUE(CreateAndAddDictionary(kMaxSizeForTesting / 4, stale_newer,
+                                     &server_hash_d2));
 
-  EXPECT_TRUE(CreateAndAddDictionary(kMaxSizeForTesting / 4, &server_hash_d3,
-                                     stale_older));
+  EXPECT_TRUE(CreateAndAddDictionary(kMaxSizeForTesting / 4, stale_older,
+                                     &server_hash_d3));
 
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d1));
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d2));
@@ -574,7 +585,7 @@ TEST_F(SdchOwnerTest, UseChangesEviction) {
   // newer stale one.
   std::string server_hash_d4;
   EXPECT_TRUE(
-      CreateAndAddDictionary(kMaxSizeForTesting / 2, &server_hash_d4, fresh));
+      CreateAndAddDictionary(kMaxSizeForTesting / 2, fresh, &server_hash_d4));
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d1));
   EXPECT_FALSE(DictionaryPresentInManager(server_hash_d2));
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d3));
@@ -594,13 +605,13 @@ TEST_F(SdchOwnerTest, UsePreventsAddition) {
   base::Time stale_older(base::Time::Now() - base::TimeDelta::FromHours(71));
 
   EXPECT_TRUE(
-      CreateAndAddDictionary(kMaxSizeForTesting / 4, &server_hash_d1, fresh));
+      CreateAndAddDictionary(kMaxSizeForTesting / 4, fresh, &server_hash_d1));
 
-  EXPECT_TRUE(CreateAndAddDictionary(kMaxSizeForTesting / 4, &server_hash_d2,
-                                     stale_newer));
+  EXPECT_TRUE(CreateAndAddDictionary(kMaxSizeForTesting / 4, stale_newer,
+                                     &server_hash_d2));
 
-  EXPECT_TRUE(CreateAndAddDictionary(kMaxSizeForTesting / 4, &server_hash_d3,
-                                     stale_older));
+  EXPECT_TRUE(CreateAndAddDictionary(kMaxSizeForTesting / 4, stale_older,
+                                     &server_hash_d3));
 
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d1));
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d2));
@@ -613,7 +624,7 @@ TEST_F(SdchOwnerTest, UsePreventsAddition) {
   // The addition of a new dictionary should fail, not evicting anything.
   std::string server_hash_d4;
   EXPECT_FALSE(
-      CreateAndAddDictionary(kMaxSizeForTesting / 2, &server_hash_d4, fresh));
+      CreateAndAddDictionary(kMaxSizeForTesting / 2, fresh, &server_hash_d4));
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d1));
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d2));
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d3));
@@ -626,11 +637,11 @@ TEST_F(SdchOwnerTest, ClearReturnsSpace) {
   std::string server_hash_d2;
 
   // Take up all the space.
-  EXPECT_TRUE(CreateAndAddDictionary(kMaxSizeForTesting, &server_hash_d1,
-                                     base::Time::Now()));
+  EXPECT_TRUE(CreateAndAddDictionary(kMaxSizeForTesting, base::Time::Now(),
+                                     &server_hash_d1));
   // Addition should fail.
-  EXPECT_FALSE(CreateAndAddDictionary(kMaxSizeForTesting, &server_hash_d2,
-                                      base::Time::Now()));
+  EXPECT_FALSE(CreateAndAddDictionary(kMaxSizeForTesting, base::Time::Now(),
+                                      &server_hash_d2));
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d1));
   EXPECT_FALSE(DictionaryPresentInManager(server_hash_d2));
   sdch_manager().ClearData();
@@ -639,7 +650,7 @@ TEST_F(SdchOwnerTest, ClearReturnsSpace) {
 
   // Addition should now succeed.
   EXPECT_TRUE(
-      CreateAndAddDictionary(kMaxSizeForTesting, nullptr, base::Time::Now()));
+      CreateAndAddDictionary(kMaxSizeForTesting, base::Time::Now(), nullptr));
 }
 
 // Confirm memory pressure gets all the space back.
@@ -648,12 +659,12 @@ TEST_F(SdchOwnerTest, MemoryPressureReturnsSpace) {
   std::string server_hash_d2;
 
   // Take up all the space.
-  EXPECT_TRUE(CreateAndAddDictionary(kMaxSizeForTesting, &server_hash_d1,
-                                     base::Time::Now()));
+  EXPECT_TRUE(CreateAndAddDictionary(kMaxSizeForTesting, base::Time::Now(),
+                                     &server_hash_d1));
 
   // Addition should fail.
-  EXPECT_FALSE(CreateAndAddDictionary(kMaxSizeForTesting, &server_hash_d2,
-                                      base::Time::Now()));
+  EXPECT_FALSE(CreateAndAddDictionary(kMaxSizeForTesting, base::Time::Now(),
+                                      &server_hash_d2));
 
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d1));
   EXPECT_FALSE(DictionaryPresentInManager(server_hash_d2));
@@ -670,7 +681,7 @@ TEST_F(SdchOwnerTest, MemoryPressureReturnsSpace) {
 
   // Addition should now succeed.
   EXPECT_TRUE(
-      CreateAndAddDictionary(kMaxSizeForTesting, nullptr, base::Time::Now()));
+      CreateAndAddDictionary(kMaxSizeForTesting, base::Time::Now(), nullptr));
 }
 
 // Confirm that use of a pinned dictionary after its removal works properly.
@@ -679,8 +690,8 @@ TEST_F(SdchOwnerTest, PinRemoveUse) {
   sdch_owner().EnablePersistentStorage(&pref_store());
 
   std::string server_hash_d1;
-  EXPECT_TRUE(CreateAndAddDictionary(kMaxSizeForTesting / 2, &server_hash_d1,
-                                     base::Time::Now()));
+  EXPECT_TRUE(CreateAndAddDictionary(kMaxSizeForTesting / 2, base::Time::Now(),
+                                     &server_hash_d1));
 
   scoped_ptr<SdchManager::DictionarySet> return_set(
       sdch_manager().GetDictionarySet(
@@ -715,6 +726,27 @@ TEST_F(SdchOwnerTest, PinRemoveUse) {
   EXPECT_FALSE(dict_result->Get("dictionaries." + server_hash_d1, &result));
 }
 
+TEST_F(SdchOwnerTest, UsageIntervalMetrics) {
+  const GURL url("http://www.example.com/dict0");
+
+  std::string server_hash;
+  base::Time last_used_time(base::Time::Now() - base::TimeDelta::FromHours(23));
+  base::Time created_time(base::Time::Now() - base::TimeDelta::FromHours(47));
+
+  EXPECT_TRUE(CreateAndAddDictionary(kMaxSizeForTesting / 3, last_used_time,
+                                     created_time, &server_hash));
+
+  base::HistogramTester tester;
+
+  sdch_owner().OnDictionaryUsed(server_hash);
+  tester.ExpectTotalCount("Sdch3.FirstUseInterval", 1);
+  tester.ExpectTotalCount("Sdch3.UsageInterval2", 0);
+
+  sdch_owner().OnDictionaryUsed(server_hash);
+  tester.ExpectTotalCount("Sdch3.FirstUseInterval", 1);  // count didn't change
+  tester.ExpectTotalCount("Sdch3.UsageInterval2", 1);
+}
+
 class SdchOwnerPersistenceTest : public ::testing::Test {
  public:
   SdchOwnerPersistenceTest() : pref_store_(new TestingPrefStore()) {
@@ -743,9 +775,9 @@ class SdchOwnerPersistenceTest : public ::testing::Test {
   }
 
   void InsertDictionaryForURL(const GURL& url, const std::string& nonce) {
-    owner_->OnDictionaryFetched(base::Time::Now(), 1,
-                                CreateDictionary(url, nonce),
-                                url, net_log_, false);
+    owner_->OnDictionaryFetched(base::Time::Now(), base::Time::Now(), 1,
+                                CreateDictionary(url, nonce), url, net_log_,
+                                false);
   }
 
   bool CompleteLoadFromURL(const GURL& url, const std::string& nonce,

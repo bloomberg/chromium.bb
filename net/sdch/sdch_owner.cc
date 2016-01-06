@@ -55,11 +55,12 @@ void RecordPersistenceFailure(PersistenceFailureReason failure_reason) {
 // use of it must be namespace restricted.
 // Schema:
 //      pref_store_->GetValue(kPreferenceName) -> Dictionary {
-//          'version' -> 1 [int]
+//          'version' -> 2 [int]
 //          'dictionaries' -> Dictionary {
 //              server_hash -> {
 //                  'url' -> URL [string]
 //                  'last_used' -> seconds since unix epoch [double]
+//                  'created_time' -> seconds since unix epoch [double]
 //                  'use_count' -> use count [int]
 //                  'size' -> size [int]
 //          }
@@ -69,10 +70,11 @@ const char kVersionKey[] = "version";
 const char kDictionariesKey[] = "dictionaries";
 const char kDictionaryUrlKey[] = "url";
 const char kDictionaryLastUsedKey[] = "last_used";
+const char kDictionaryCreatedTimeKey[] = "created_time";
 const char kDictionaryUseCountKey[] = "use_count";
 const char kDictionarySizeKey[] = "size";
 
-const int kVersion = 1;
+const int kVersion = 2;
 
 // This function returns store[kPreferenceName/kDictionariesKey].  The caller
 // is responsible for making sure any needed calls to
@@ -128,15 +130,21 @@ class DictionaryPreferenceIterator {
   const std::string& server_hash() const { return server_hash_; }
   const GURL& url() const { return url_; }
   base::Time last_used() const { return last_used_; }
+  base::Time created_time() const { return created_time_; }
   int use_count() const { return use_count_; }
   int size() const { return size_; }
 
  private:
-  void LoadDictionaryOrDie();
+  // Load Dictionary silently skipping any that are malformed.
+  void LoadNextDictionary();
+  // Try to load Dictionary from current iterator's position. Returns true if
+  // succeeded.
+  bool TryLoadDictionary();
 
   std::string server_hash_;
   GURL url_;
   base::Time last_used_;
+  base::Time created_time_;
   int use_count_;
   int size_;
 
@@ -145,9 +153,10 @@ class DictionaryPreferenceIterator {
 
 DictionaryPreferenceIterator::DictionaryPreferenceIterator(
     WriteablePrefStore* pref_store)
-    : dictionary_iterator_(*GetPersistentStoreDictionaryMap(pref_store)) {
-  if (!IsAtEnd())
-    LoadDictionaryOrDie();
+    : use_count_(0),
+      size_(0),
+      dictionary_iterator_(*GetPersistentStoreDictionaryMap(pref_store)) {
+  LoadNextDictionary();
 }
 
 bool DictionaryPreferenceIterator::IsAtEnd() const {
@@ -156,34 +165,54 @@ bool DictionaryPreferenceIterator::IsAtEnd() const {
 
 void DictionaryPreferenceIterator::Advance() {
   dictionary_iterator_.Advance();
-  if (!IsAtEnd())
-    LoadDictionaryOrDie();
+  LoadNextDictionary();
 }
 
-void DictionaryPreferenceIterator::LoadDictionaryOrDie() {
-  double last_used_seconds_from_epoch;
+void DictionaryPreferenceIterator::LoadNextDictionary() {
+  while (!IsAtEnd()) {
+    if (TryLoadDictionary())
+      return;
+    dictionary_iterator_.Advance();
+  }
+}
+
+bool DictionaryPreferenceIterator::TryLoadDictionary() {
   const base::DictionaryValue* dict = nullptr;
-  bool success =
-      dictionary_iterator_.value().GetAsDictionary(&dict);
-  DCHECK(success);
+
+  bool success = dictionary_iterator_.value().GetAsDictionary(&dict);
+  if (!success)
+    return false;
 
   server_hash_ = dictionary_iterator_.key();
 
   std::string url_spec;
   success = dict->GetString(kDictionaryUrlKey, &url_spec);
-  DCHECK(success);
+  if (!success)
+    return false;
   url_ = GURL(url_spec);
 
-  success = dict->GetDouble(kDictionaryLastUsedKey,
-                            &last_used_seconds_from_epoch);
-  DCHECK(success);
+  double last_used_seconds_from_epoch = 0;
+  success =
+      dict->GetDouble(kDictionaryLastUsedKey, &last_used_seconds_from_epoch);
+  if (!success)
+    return false;
   last_used_ = base::Time::FromDoubleT(last_used_seconds_from_epoch);
 
   success = dict->GetInteger(kDictionaryUseCountKey, &use_count_);
-  DCHECK(success);
+  if (!success)
+    return false;
 
   success = dict->GetInteger(kDictionarySizeKey, &size_);
-  DCHECK(success);
+  if (!success)
+    return false;
+
+  double created_time_seconds = 0;
+  success = dict->GetDouble(kDictionaryCreatedTimeKey, &created_time_seconds);
+  if (!success)
+    return false;
+  created_time_ = base::Time::FromDoubleT(created_time_seconds);
+
+  return true;
 }
 
 // Triggers a ReportValueChanged() on the specified WriteablePrefStore
@@ -314,6 +343,7 @@ void SdchOwner::SetMinSpaceForDictionaryFetch(
 }
 
 void SdchOwner::OnDictionaryFetched(base::Time last_used,
+                                    base::Time created_time,
                                     int use_count,
                                     const std::string& dictionary_text,
                                     const GURL& dictionary_url,
@@ -443,6 +473,8 @@ void SdchOwner::OnDictionaryFetched(base::Time last_used,
   dictionary_description->SetString(kDictionaryUrlKey, dictionary_url.spec());
   dictionary_description->SetDouble(kDictionaryLastUsedKey,
                                     last_used.ToDoubleT());
+  dictionary_description->SetDouble(kDictionaryCreatedTimeKey,
+                                    created_time.ToDoubleT());
   dictionary_description->SetInteger(kDictionaryUseCountKey, use_count);
   dictionary_description->SetInteger(kDictionarySizeKey,
                                      dictionary_text.size());
@@ -495,6 +527,16 @@ void SdchOwner::OnDictionaryUsed(const std::string& server_hash) {
     UMA_HISTOGRAM_CUSTOM_TIMES("Sdch3.UsageInterval2", time_since_last_used,
                                base::TimeDelta(), base::TimeDelta::FromDays(7),
                                50);
+  } else {
+    double created_time = 0;
+    success = specific_dictionary_map->GetDouble(kDictionaryCreatedTimeKey,
+                                                 &created_time);
+    DCHECK(success);
+    base::TimeDelta time_since_created(now -
+                                       base::Time::FromDoubleT(created_time));
+    UMA_HISTOGRAM_CUSTOM_TIMES("Sdch3.FirstUseInterval", time_since_created,
+                               base::TimeDelta(), base::TimeDelta::FromDays(7),
+                               50);
   }
 
   specific_dictionary_map->SetDouble(kDictionaryLastUsedKey, now.ToDoubleT());
@@ -525,10 +567,11 @@ void SdchOwner::OnGetDictionary(const GURL& request_url,
     return;
   }
 
-  fetcher_->Schedule(dictionary_url,
-                     base::Bind(&SdchOwner::OnDictionaryFetched,
-                                // SdchOwner will outlive its member variables.
-                                base::Unretained(this), base::Time(), 0));
+  fetcher_->Schedule(
+      dictionary_url,
+      base::Bind(&SdchOwner::OnDictionaryFetched,
+                 // SdchOwner will outlive its member variables.
+                 base::Unretained(this), base::Time(), base::Time::Now(), 0));
 }
 
 void SdchOwner::OnClearDictionaries() {
@@ -696,20 +739,24 @@ bool SdchOwner::SchedulePersistedDictionaryLoads(
       continue;
     GURL dict_url(url_string);
 
-    double last_used;
+    double last_used = 0;
     if (!dict_info->GetDouble(kDictionaryLastUsedKey, &last_used))
       continue;
 
-    int use_count;
+    int use_count = 0;
     if (!dict_info->GetInteger(kDictionaryUseCountKey, &use_count))
       continue;
 
+    double created_time = 0;
+    if (!dict_info->GetDouble(kDictionaryCreatedTimeKey, &created_time))
+      continue;
+
     fetcher_->ScheduleReload(
-        dict_url, base::Bind(&SdchOwner::OnDictionaryFetched,
-                             // SdchOwner will outlive its member variables.
-                             base::Unretained(this),
-                             base::Time::FromDoubleT(last_used),
-                             use_count));
+        dict_url,
+        base::Bind(&SdchOwner::OnDictionaryFetched,
+                   // SdchOwner will outlive its member variables.
+                   base::Unretained(this), base::Time::FromDoubleT(last_used),
+                   base::Time::FromDoubleT(created_time), use_count));
   }
 
   return true;
