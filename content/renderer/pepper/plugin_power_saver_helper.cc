@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/common/frame_messages.h"
@@ -70,7 +71,10 @@ void PluginPowerSaverHelper::OnUpdatePluginContentOriginWhitelist(
   auto it = peripheral_plugins_.begin();
   while (it != peripheral_plugins_.end()) {
     if (origin_whitelist.count(it->content_origin)) {
-      it->unthrottle_callback.Run();
+      // Because the unthrottle callback may register another peripheral plugin
+      // and invalidate our iterator, we cannot run it synchronously.
+      base::MessageLoop::current()->PostTask(FROM_HERE,
+                                             it->unthrottle_callback);
       it = peripheral_plugins_.erase(it);
     } else {
       ++it;
