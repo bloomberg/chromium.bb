@@ -30,6 +30,14 @@
 #include "wtf/Partitions.h"
 #include "wtf/text/StringBuilder.h"
 
+namespace {
+    // CSSSelector is one of the top types that consume renderer memory,
+    // so instead of using the |WTF_HEAP_PROFILER_TYPE_NAME| macro in the
+    // allocations below, pass this type name constant to allow profiling
+    // in official builds.
+    const char kCSSSelectorTypeName[] = "blink::CSSSelector";
+}
+
 namespace blink {
 
 CSSSelectorList CSSSelectorList::copy() const
@@ -37,7 +45,7 @@ CSSSelectorList CSSSelectorList::copy() const
     CSSSelectorList list;
 
     unsigned length = this->length();
-    list.m_selectorArray = reinterpret_cast<CSSSelector*>(WTF::Partitions::fastMalloc(sizeof(CSSSelector) * length, WTF_HEAP_PROFILER_TYPE_NAME(CSSSelector)));
+    list.m_selectorArray = reinterpret_cast<CSSSelector*>(WTF::Partitions::fastMalloc(sizeof(CSSSelector) * length, kCSSSelectorTypeName));
     for (unsigned i = 0; i < length; ++i)
         new (&list.m_selectorArray[i]) CSSSelector(m_selectorArray[i]);
 
@@ -54,7 +62,7 @@ CSSSelectorList CSSSelectorList::adoptSelectorVector(Vector<OwnPtr<CSSParserSele
     ASSERT(flattenedSize);
 
     CSSSelectorList list;
-    list.m_selectorArray = reinterpret_cast<CSSSelector*>(WTF::Partitions::fastMalloc(sizeof(CSSSelector) * flattenedSize, WTF_HEAP_PROFILER_TYPE_NAME(CSSSelector)));
+    list.m_selectorArray = reinterpret_cast<CSSSelector*>(WTF::Partitions::fastMalloc(sizeof(CSSSelector) * flattenedSize, kCSSSelectorTypeName));
     size_t arrayIndex = 0;
     for (size_t i = 0; i < selectorVector.size(); ++i) {
         CSSParserSelector* current = selectorVector[i].get();
