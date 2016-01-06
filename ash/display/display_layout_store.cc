@@ -50,6 +50,11 @@ void DisplayLayoutStore::RegisterLayoutForDisplayIdPair(
     int64_t id2,
     const DisplayLayout& layout) {
   auto key = CreateDisplayIdPair(id1, id2);
+
+  // Do not overwrite the valid data with old invalid date.
+  if (paired_layouts_.count(key) && !CompareDisplayIds(id1, id2))
+    return;
+
   paired_layouts_[key] = layout;
 }
 
