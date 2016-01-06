@@ -1216,7 +1216,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         }
 
         @Override
-        public boolean shouldRequestFileAccess(Tab tab) {
+        public boolean shouldRequestFileAccess(String url, Tab tab) {
             return shouldRequestFileAccess;
         }
 

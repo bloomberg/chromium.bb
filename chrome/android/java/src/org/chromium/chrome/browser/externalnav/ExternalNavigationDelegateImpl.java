@@ -26,6 +26,7 @@ import android.util.Log;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -296,9 +297,16 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public boolean shouldRequestFileAccess(Tab tab) {
+    public boolean shouldRequestFileAccess(String url, Tab tab) {
         // If the tab is null, then do not attempt to prompt for access.
         if (tab == null) return false;
+
+        // If the url points inside of Chromium's data directory, no permissions are necessary.
+        // This is required to prevent permission prompt when uses wants to access offline pages.
+        if (url.startsWith("file://" + PathUtils.getDataDirectory(
+                mActivity.getApplicationContext()))) {
+            return false;
+        }
 
         return !tab.getWindowAndroid().hasPermission(permission.WRITE_EXTERNAL_STORAGE)
                 && tab.getWindowAndroid().canRequestPermission(permission.WRITE_EXTERNAL_STORAGE);

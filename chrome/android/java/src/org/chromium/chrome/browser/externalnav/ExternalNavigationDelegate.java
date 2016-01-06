@@ -61,10 +61,11 @@ interface ExternalNavigationDelegate {
             boolean needsToCloseTab);
 
     /**
+     * @param url The requested url.
      * @param tab The current tab.
      * @return Whether we should block the navigation and request file access before proceeding.
      */
-    boolean shouldRequestFileAccess(Tab tab);
+    boolean shouldRequestFileAccess(String url, Tab tab);
 
     /**
      * Trigger a UI affordance that will ask the user to grant file access.  After the access
