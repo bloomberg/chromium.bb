@@ -74,11 +74,6 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
   bool ShouldDenyXFrameOptions() const override {
     return parent_->deny_xframe_options_;
   }
-  void WillServiceRequest(const net::URLRequest* request,
-                          std::string* path) const override {
-    // We want to remove any query strings from the path.
-    *path = path->substr(0, path->find_first_of('?'));
-  }
 
  private:
   WebUIDataSourceImpl* parent_;
@@ -191,19 +186,22 @@ std::string WebUIDataSourceImpl::GetSource() const {
 }
 
 std::string WebUIDataSourceImpl::GetMimeType(const std::string& path) const {
-  if (base::EndsWith(path, ".css", base::CompareCase::INSENSITIVE_ASCII))
+  // Remove the query string for to determine the mime type.
+  std::string file_path = path.substr(0, path.find_first_of('?'));
+
+  if (base::EndsWith(file_path, ".css", base::CompareCase::INSENSITIVE_ASCII))
     return "text/css";
 
-  if (base::EndsWith(path, ".js", base::CompareCase::INSENSITIVE_ASCII))
+  if (base::EndsWith(file_path, ".js", base::CompareCase::INSENSITIVE_ASCII))
     return "application/javascript";
 
-  if (base::EndsWith(path, ".json", base::CompareCase::INSENSITIVE_ASCII))
+  if (base::EndsWith(file_path, ".json", base::CompareCase::INSENSITIVE_ASCII))
     return "application/json";
 
-  if (base::EndsWith(path, ".pdf", base::CompareCase::INSENSITIVE_ASCII))
+  if (base::EndsWith(file_path, ".pdf", base::CompareCase::INSENSITIVE_ASCII))
     return "application/pdf";
 
-  if (base::EndsWith(path, ".svg", base::CompareCase::INSENSITIVE_ASCII))
+  if (base::EndsWith(file_path, ".svg", base::CompareCase::INSENSITIVE_ASCII))
     return "image/svg+xml";
 
   return "text/html";
@@ -226,7 +224,9 @@ void WebUIDataSourceImpl::StartDataRequest(
 
   int resource_id = default_resource_;
   std::map<std::string, int>::iterator result;
-  result = path_to_idr_map_.find(path);
+  // Remove the query string for named resource lookups.
+  std::string file_path = path.substr(0, path.find_first_of('?'));
+  result = path_to_idr_map_.find(file_path);
   if (result != path_to_idr_map_.end())
     resource_id = result->second;
   DCHECK_NE(resource_id, -1);

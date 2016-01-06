@@ -20,7 +20,7 @@ const int kDummyResourceId = 789;
 
 const char kDummyString[] = "foo";
 const char kDummyDefaultResource[] = "<html>foo</html>";
-const char kDummytResource[] = "<html>blah</html>";
+const char kDummyResource[] = "<html>blah</html>";
 
 class TestClient : public TestContentClient {
  public:
@@ -42,7 +42,7 @@ class TestClient : public TestContentClient {
           kDummyDefaultResource, arraysize(kDummyDefaultResource));
     } else if (resource_id == kDummyResourceId) {
       bytes = new base::RefCountedStaticMemory(
-          kDummytResource, arraysize(kDummytResource));
+          kDummyResource, arraysize(kDummyResource));
     }
     return bytes;
   }
@@ -110,7 +110,7 @@ TEST_F(WebUIDataSourceTest, SomeStrings) {
 
 TEST_F(WebUIDataSourceTest, DefaultResource) {
   source()->SetDefaultResource(kDummyDefaultResourceId);
-  StartDataRequest("foobar" );
+  StartDataRequest("foobar");
   std::string result(result_data_->front_as<char>(), result_data_->size());
   EXPECT_NE(result.find(kDummyDefaultResource), std::string::npos);
   StartDataRequest("strings.js");
@@ -123,10 +123,18 @@ TEST_F(WebUIDataSourceTest, NamedResource) {
   source()->AddResourcePath("foobar", kDummyResourceId);
   StartDataRequest("foobar");
   std::string result(result_data_->front_as<char>(), result_data_->size());
-  EXPECT_NE(result.find(kDummytResource), std::string::npos);
+  EXPECT_NE(result.find(kDummyResource), std::string::npos);
   StartDataRequest("strings.js");
   result = std::string(result_data_->front_as<char>(), result_data_->size());
   EXPECT_NE(result.find(kDummyDefaultResource), std::string::npos);
+}
+
+TEST_F(WebUIDataSourceTest, NamedResourceWithQueryString) {
+  source()->SetDefaultResource(kDummyDefaultResourceId);
+  source()->AddResourcePath("foobar", kDummyResourceId);
+  StartDataRequest("foobar?query?string");
+  std::string result(result_data_->front_as<char>(), result_data_->size());
+  EXPECT_NE(result.find(kDummyResource), std::string::npos);
 }
 
 TEST_F(WebUIDataSourceTest, MimeType) {
@@ -144,16 +152,12 @@ TEST_F(WebUIDataSourceTest, MimeType) {
   EXPECT_EQ(GetMimeType("foocss"), html);
   EXPECT_EQ(GetMimeType("foo.css"), css);
   EXPECT_EQ(GetMimeType(".css.foo"), html);
-}
 
-TEST_F(WebUIDataSourceTest, QueryStringRemoval) {
-  std::string path = "path.js?query_string";
-  source()->source()->WillServiceRequest(nullptr, &path);
-  EXPECT_EQ("path.js", path);
-
-  path = "path.js?query_string?query_string2";
-  source()->source()->WillServiceRequest(nullptr, &path);
-  EXPECT_EQ("path.js", path);
+  // With query strings.
+  EXPECT_EQ(GetMimeType("foo?abc?abc"), html);
+  EXPECT_EQ(GetMimeType("foo.html?abc?abc"), html);
+  EXPECT_EQ(GetMimeType("foo.css?abc?abc"), css);
+  EXPECT_EQ(GetMimeType("foo.js?abc?abc"), js);
 }
 
 }  // namespace content
