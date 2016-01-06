@@ -6,12 +6,11 @@
 #define CSSPropertyMetadata_h
 
 #include "core/CSSPropertyNames.h"
-#include "core/CoreExport.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
 
-class CORE_EXPORT CSSPropertyMetadata {
+class CSSPropertyMetadata {
     STATIC_ONLY(CSSPropertyMetadata);
 public:
     static bool isEnabledProperty(CSSPropertyID);

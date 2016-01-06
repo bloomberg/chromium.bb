@@ -26,7 +26,6 @@
 #ifndef CSSStyleSheetResource_h
 #define CSSStyleSheetResource_h
 
-#include "core/CoreExport.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/fetch/StyleSheetResource.h"
 #include "platform/heap/Handle.h"
@@ -39,12 +38,11 @@ class ResourceClient;
 class ResourceFetcher;
 class StyleSheetContents;
 
-class CORE_EXPORT CSSStyleSheetResource final : public StyleSheetResource {
+class CSSStyleSheetResource final : public StyleSheetResource {
 public:
     enum class MIMETypeCheck { Strict, Lax };
 
     static ResourcePtr<CSSStyleSheetResource> fetch(FetchRequest&, ResourceFetcher*);
-    static ResourcePtr<CSSStyleSheetResource> createForTest(const ResourceRequest&, const String& charset);
 
     ~CSSStyleSheetResource() override;
     DECLARE_VIRTUAL_TRACE();

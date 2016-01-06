@@ -21,7 +21,6 @@
 #ifndef CSSImageValue_h
 #define CSSImageValue_h
 
-#include "core/CoreExport.h"
 #include "core/css/CSSValue.h"
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/weborigin/Referrer.h"
@@ -35,7 +34,7 @@ class StyleFetchedImage;
 class StyleImage;
 class LayoutObject;
 
-class CORE_EXPORT CSSImageValue : public CSSValue {
+class CSSImageValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSImageValue> create(const KURL& url, StyleFetchedImage* image = 0)
     {
