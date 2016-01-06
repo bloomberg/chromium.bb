@@ -294,7 +294,7 @@ void Layer::AddChild(scoped_refptr<Layer> child) {
 }
 
 void Layer::InsertChild(scoped_refptr<Layer> child, size_t index) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   child->RemoveFromParent();
   AddDrawableDescendants(child->NumDescendantsThatDrawContent() +
                          (child->DrawsContent() ? 1 : 0));
@@ -307,7 +307,7 @@ void Layer::InsertChild(scoped_refptr<Layer> child, size_t index) {
 }
 
 void Layer::RemoveFromParent() {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (parent_)
     parent_->RemoveChildOrDependent(this);
 }
@@ -344,7 +344,7 @@ void Layer::RemoveChildOrDependent(Layer* child) {
 void Layer::ReplaceChild(Layer* reference, scoped_refptr<Layer> new_layer) {
   DCHECK(reference);
   DCHECK_EQ(reference->parent(), this);
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
 
   if (reference == new_layer.get())
     return;
@@ -366,7 +366,7 @@ void Layer::ReplaceChild(Layer* reference, scoped_refptr<Layer> new_layer) {
 }
 
 void Layer::SetBounds(const gfx::Size& size) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (bounds() == size)
     return;
   bounds_ = size;
@@ -393,7 +393,7 @@ Layer* Layer::RootLayer() {
 }
 
 void Layer::RemoveAllChildren() {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   while (children_.size()) {
     Layer* layer = children_[0].get();
     DCHECK_EQ(this, layer->parent());
@@ -402,7 +402,7 @@ void Layer::RemoveAllChildren() {
 }
 
 void Layer::SetChildren(const LayerList& children) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (children == children_)
     return;
 
@@ -421,7 +421,7 @@ bool Layer::HasAncestor(const Layer* ancestor) const {
 
 void Layer::RequestCopyOfOutput(
     scoped_ptr<CopyOutputRequest> request) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   bool had_no_copy_requests = copy_requests_.empty();
   if (void* source = request->source()) {
     auto it = std::find_if(copy_requests_.begin(), copy_requests_.end(),
@@ -451,7 +451,7 @@ void Layer::UpdateNumCopyRequestsForSubtree(int delta) {
 }
 
 void Layer::SetBackgroundColor(SkColor background_color) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (background_color_ == background_color)
     return;
   background_color_ = background_color;
@@ -478,7 +478,7 @@ SkColor Layer::SafeOpaqueBackgroundColor() const {
 }
 
 void Layer::SetMasksToBounds(bool masks_to_bounds) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (masks_to_bounds_ == masks_to_bounds)
     return;
   masks_to_bounds_ = masks_to_bounds;
@@ -486,7 +486,7 @@ void Layer::SetMasksToBounds(bool masks_to_bounds) {
 }
 
 void Layer::SetMaskLayer(Layer* mask_layer) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (mask_layer_.get() == mask_layer)
     return;
   if (mask_layer_.get()) {
@@ -504,7 +504,7 @@ void Layer::SetMaskLayer(Layer* mask_layer) {
 }
 
 void Layer::SetReplicaLayer(Layer* layer) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (replica_layer_.get() == layer)
     return;
   if (replica_layer_.get()) {
@@ -521,7 +521,7 @@ void Layer::SetReplicaLayer(Layer* layer) {
 }
 
 void Layer::SetFilters(const FilterOperations& filters) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (filters_ == filters)
     return;
   filters_ = filters;
@@ -546,7 +546,7 @@ bool Layer::HasPotentiallyRunningFilterAnimation() const {
 }
 
 void Layer::SetBackgroundFilters(const FilterOperations& filters) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (background_filters_ == filters)
     return;
   background_filters_ = filters;
@@ -554,7 +554,7 @@ void Layer::SetBackgroundFilters(const FilterOperations& filters) {
 }
 
 void Layer::SetOpacity(float opacity) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (opacity_ == opacity)
     return;
   opacity_ = opacity;
@@ -583,7 +583,7 @@ bool Layer::OpacityCanAnimateOnImplThread() const {
 }
 
 void Layer::SetBlendMode(SkXfermode::Mode blend_mode) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (blend_mode_ == blend_mode)
     return;
 
@@ -632,7 +632,7 @@ void Layer::SetBlendMode(SkXfermode::Mode blend_mode) {
 }
 
 void Layer::SetIsRootForIsolatedGroup(bool root) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (is_root_for_isolated_group_ == root)
     return;
   is_root_for_isolated_group_ = root;
@@ -640,7 +640,7 @@ void Layer::SetIsRootForIsolatedGroup(bool root) {
 }
 
 void Layer::SetContentsOpaque(bool opaque) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (contents_opaque_ == opaque)
     return;
   contents_opaque_ = opaque;
@@ -648,7 +648,7 @@ void Layer::SetContentsOpaque(bool opaque) {
 }
 
 void Layer::SetPosition(const gfx::PointF& position) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (position_ == position)
     return;
   position_ = position;
@@ -696,7 +696,7 @@ bool Are2dAxisAligned(const gfx::Transform& a,
 }
 
 void Layer::SetTransform(const gfx::Transform& transform) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (transform_ == transform)
     return;
 
@@ -733,7 +733,7 @@ void Layer::SetTransform(const gfx::Transform& transform) {
 }
 
 void Layer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (transform_origin_ == transform_origin)
     return;
   transform_origin_ = transform_origin;
@@ -823,7 +823,7 @@ bool Layer::ScrollOffsetAnimationWasInterrupted() const {
 }
 
 void Layer::SetScrollParent(Layer* parent) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (scroll_parent_ == parent)
     return;
 
@@ -853,7 +853,7 @@ void Layer::RemoveScrollChild(Layer* child) {
 }
 
 void Layer::SetClipParent(Layer* ancestor) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (clip_parent_ == ancestor)
     return;
 
@@ -885,7 +885,7 @@ void Layer::RemoveClipChild(Layer* child) {
 }
 
 void Layer::SetScrollOffset(const gfx::ScrollOffset& scroll_offset) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
 
   if (scroll_offset_ == scroll_offset)
     return;
@@ -923,7 +923,7 @@ gfx::Vector2dF Layer::ScrollCompensationAdjustment() const {
 
 void Layer::SetScrollOffsetFromImplSide(
     const gfx::ScrollOffset& scroll_offset) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   // This function only gets called during a BeginMainFrame, so there
   // is no need to call SetNeedsUpdate here.
   DCHECK(layer_tree_host_ && layer_tree_host_->CommitRequested());
@@ -954,7 +954,7 @@ void Layer::SetScrollOffsetFromImplSide(
 }
 
 void Layer::SetScrollClipLayerId(int clip_layer_id) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (scroll_clip_layer_id_ == clip_layer_id)
     return;
   scroll_clip_layer_id_ = clip_layer_id;
@@ -962,7 +962,7 @@ void Layer::SetScrollClipLayerId(int clip_layer_id) {
 }
 
 void Layer::SetUserScrollable(bool horizontal, bool vertical) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (user_scrollable_horizontal_ == horizontal &&
       user_scrollable_vertical_ == vertical)
     return;
@@ -972,7 +972,7 @@ void Layer::SetUserScrollable(bool horizontal, bool vertical) {
 }
 
 void Layer::SetShouldScrollOnMainThread(bool should_scroll_on_main_thread) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (should_scroll_on_main_thread_ == should_scroll_on_main_thread)
     return;
   should_scroll_on_main_thread_ = should_scroll_on_main_thread;
@@ -980,7 +980,7 @@ void Layer::SetShouldScrollOnMainThread(bool should_scroll_on_main_thread) {
 }
 
 void Layer::SetHaveWheelEventHandlers(bool have_wheel_event_handlers) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (have_wheel_event_handlers_ == have_wheel_event_handlers)
     return;
 
@@ -989,7 +989,7 @@ void Layer::SetHaveWheelEventHandlers(bool have_wheel_event_handlers) {
 }
 
 void Layer::SetHaveScrollEventHandlers(bool have_scroll_event_handlers) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (have_scroll_event_handlers_ == have_scroll_event_handlers)
     return;
   have_scroll_event_handlers_ = have_scroll_event_handlers;
@@ -997,7 +997,7 @@ void Layer::SetHaveScrollEventHandlers(bool have_scroll_event_handlers) {
 }
 
 void Layer::SetNonFastScrollableRegion(const Region& region) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (non_fast_scrollable_region_ == region)
     return;
   non_fast_scrollable_region_ = region;
@@ -1005,7 +1005,7 @@ void Layer::SetNonFastScrollableRegion(const Region& region) {
 }
 
 void Layer::SetTouchEventHandlerRegion(const Region& region) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (touch_event_handler_region_ == region)
     return;
 
@@ -1014,7 +1014,7 @@ void Layer::SetTouchEventHandlerRegion(const Region& region) {
 }
 
 void Layer::SetScrollBlocksOn(ScrollBlocksOn scroll_blocks_on) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (scroll_blocks_on_ == scroll_blocks_on)
     return;
   scroll_blocks_on_ = scroll_blocks_on;
@@ -1022,7 +1022,7 @@ void Layer::SetScrollBlocksOn(ScrollBlocksOn scroll_blocks_on) {
 }
 
 void Layer::SetForceRenderSurface(bool force) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (force_render_surface_ == force)
     return;
   force_render_surface_ = force;
@@ -1030,7 +1030,7 @@ void Layer::SetForceRenderSurface(bool force) {
 }
 
 void Layer::SetDoubleSided(bool double_sided) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (double_sided_ == double_sided)
     return;
   double_sided_ = double_sided;
@@ -1038,7 +1038,7 @@ void Layer::SetDoubleSided(bool double_sided) {
 }
 
 void Layer::Set3dSortingContextId(int id) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (id == sorting_context_id_)
     return;
   sorting_context_id_ = id;
@@ -1046,7 +1046,7 @@ void Layer::Set3dSortingContextId(int id) {
 }
 
 void Layer::SetTransformTreeIndex(int index) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (transform_tree_index_ == index)
     return;
   transform_tree_index_ = index;
@@ -1063,7 +1063,7 @@ int Layer::transform_tree_index() const {
 }
 
 void Layer::SetClipTreeIndex(int index) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (clip_tree_index_ == index)
     return;
   clip_tree_index_ = index;
@@ -1080,7 +1080,7 @@ int Layer::clip_tree_index() const {
 }
 
 void Layer::SetEffectTreeIndex(int index) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (effect_tree_index_ == index)
     return;
   effect_tree_index_ = index;
@@ -1104,7 +1104,7 @@ void Layer::InvalidatePropertyTreesIndices() {
 }
 
 void Layer::SetShouldFlattenTransform(bool should_flatten) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (should_flatten_transform_ == should_flatten)
     return;
   should_flatten_transform_ = should_flatten;
@@ -1112,7 +1112,7 @@ void Layer::SetShouldFlattenTransform(bool should_flatten) {
 }
 
 void Layer::SetIsDrawable(bool is_drawable) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (is_drawable_ == is_drawable)
     return;
 
@@ -1121,7 +1121,7 @@ void Layer::SetIsDrawable(bool is_drawable) {
 }
 
 void Layer::SetHideLayerAndSubtree(bool hide) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (hide_layer_and_subtree_ == hide)
     return;
 
@@ -1163,7 +1163,7 @@ void Layer::SetIsContainerForFixedPositionLayers(bool container) {
 }
 
 void Layer::SetPositionConstraint(const LayerPositionConstraint& constraint) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (position_constraint_ == constraint)
     return;
   position_constraint_ = constraint;
@@ -1979,7 +1979,7 @@ void Layer::SetFrameTimingRequests(
 }
 
 void Layer::SetElementId(uint64_t id) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (element_id_ == id)
     return;
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
@@ -1989,7 +1989,7 @@ void Layer::SetElementId(uint64_t id) {
 }
 
 void Layer::SetMutableProperties(uint32_t properties) {
-  CHECK(IsPropertyChangeAllowed());
+  DCHECK(IsPropertyChangeAllowed());
   if (mutable_properties_ == properties)
     return;
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),

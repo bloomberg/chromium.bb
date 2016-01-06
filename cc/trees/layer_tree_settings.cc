@@ -88,7 +88,7 @@ LayerTreeSettings::LayerTreeSettings()
       skewport_target_time_in_seconds(1.0f),
       skewport_extrapolation_limit_in_content_pixels(2000),
       max_memory_for_prepaint_percentage(100),
-      strict_layer_property_change_checking(true),
+      strict_layer_property_change_checking(false),
       use_zero_copy(false),
       use_partial_raster(false),
       enable_elastic_overscroll(false),
