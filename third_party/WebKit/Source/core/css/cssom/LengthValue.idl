@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 enum LengthType {
-    "px", "percent", "em", "ex", "ch", "rem", "vw", "vh", "vmin", "vmax", "cm", "mm", "q", "in", "pc", "pt"
+    "px", "percent", "em", "ex", "ch", "rem", "vw", "vh", "vmin", "vmax", "cm", "mm", "in", "pc", "pt"
 };
 
 [

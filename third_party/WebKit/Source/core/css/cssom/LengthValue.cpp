@@ -29,7 +29,6 @@ UnitTable createStrToLenUnitTable()
     table.set(String("vmax"), LengthValue::Vmax);
     table.set(String("cm"), LengthValue::Cm);
     table.set(String("mm"), LengthValue::Mm);
-    table.set(String("q"), LengthValue::QUnit);
     table.set(String("in"), LengthValue::In);
     table.set(String("pc"), LengthValue::Pc);
     table.set(String("pt"), LengthValue::Pt);
@@ -86,7 +85,9 @@ PassRefPtrWillBeRawPtr<LengthValue> LengthValue::divide(double x, ExceptionState
 
 LengthValue::LengthUnit LengthValue::lengthUnitFromName(const String& str)
 {
-    return typeTable().get(str.lower());
+    if (typeTable().contains(str.lower()))
+        return typeTable().get(str.lower());
+    return LengthUnit::Count;
 }
 
 const String& LengthValue::lengthTypeToString(LengthValue::LengthUnit unit)
@@ -103,7 +104,6 @@ const String& LengthValue::lengthTypeToString(LengthValue::LengthUnit unit)
     DEFINE_STATIC_LOCAL(const String, VmaxStr, ("vmax"));
     DEFINE_STATIC_LOCAL(const String, CmStr, ("cm"));
     DEFINE_STATIC_LOCAL(const String, MmStr, ("mm"));
-    DEFINE_STATIC_LOCAL(const String, QStr, ("q"));
     DEFINE_STATIC_LOCAL(const String, InStr, ("in"));
     DEFINE_STATIC_LOCAL(const String, PcStr, ("pc"));
     DEFINE_STATIC_LOCAL(const String, PtStr, ("pt"));
@@ -133,8 +133,6 @@ const String& LengthValue::lengthTypeToString(LengthValue::LengthUnit unit)
         return CmStr;
     case Mm:
         return MmStr;
-    case QUnit:
-        return QStr;
     case In:
         return InStr;
     case Pc:

@@ -5124,6 +5124,11 @@ interface SharedWorker : EventTarget
     getter workerStart
     method constructor
     setter onerror
+interface SimpleLength : LengthValue
+    getter type
+    getter value
+    method constructor
+    setter value
 interface SpeechSynthesisEvent : Event
     getter charIndex
     getter elapsedTime
