@@ -38,13 +38,6 @@ public abstract class InfoBar implements InfoBarView {
     // This points to the InfoBarAndroid class not any of its subclasses.
     private long mNativeInfoBarPtr;
 
-    // Used by tests to reference infobars.
-    private final int mId;
-    private static int sIdCounter = 0;
-    private static int generateId() {
-        return sIdCounter++;
-    }
-
     /**
      * @param listener Listens to when buttons have been clicked on the InfoBar.
      * @param iconDrawableId ID of the resource to use for the Icon.  If 0, no icon will be shown.
@@ -53,7 +46,6 @@ public abstract class InfoBar implements InfoBarView {
     public InfoBar(InfoBarListeners.Dismiss listener, int iconDrawableId, Bitmap iconBitmap,
             CharSequence message) {
         mListener = listener;
-        mId = generateId();
         mIconDrawableId = iconDrawableId;
         mIconBitmap = iconBitmap;
         mMessage = message;
@@ -218,11 +210,6 @@ public abstract class InfoBar implements InfoBarView {
 
     @Override
     public void createContent(InfoBarLayout layout) {
-    }
-
-    @VisibleForTesting
-    public int getId() {
-        return mId;
     }
 
     @VisibleForTesting

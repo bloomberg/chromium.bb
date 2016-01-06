@@ -59,7 +59,7 @@ public class TranslateInfoBarTest extends ChromeActivityTestCaseBase<ChromeActiv
     public void testTranslateLanguagePanel() throws InterruptedException {
         loadUrl(TestHttpServerClient.getUrl(TRANSLATE_PAGE));
         assertTrue("InfoBar not opened.", mListener.addInfoBarAnimationFinished());
-        InfoBar infoBar = mInfoBarContainer.getInfoBars().get(0);
+        InfoBar infoBar = mInfoBarContainer.getInfoBarsForTesting().get(0);
         assertTrue(InfoBarUtil.hasPrimaryButton(infoBar));
         assertTrue(InfoBarUtil.hasSecondaryButton(infoBar));
         TranslateUtil.openLanguagePanel(this, infoBar);
@@ -76,7 +76,7 @@ public class TranslateInfoBarTest extends ChromeActivityTestCaseBase<ChromeActiv
     public void testTranslateNeverPanel() throws InterruptedException {
         loadUrl(TestHttpServerClient.getUrl(TRANSLATE_PAGE));
         assertTrue("InfoBar not opened.", mListener.addInfoBarAnimationFinished());
-        InfoBar infoBar = mInfoBarContainer.getInfoBars().get(0);
+        InfoBar infoBar = mInfoBarContainer.getInfoBarsForTesting().get(0);
 
         assertTrue(InfoBarUtil.clickCloseButton(infoBar));
         assertTrue(mListener.removeInfoBarAnimationFinished());
@@ -84,7 +84,7 @@ public class TranslateInfoBarTest extends ChromeActivityTestCaseBase<ChromeActiv
         // Reload the page so the infobar shows again
         loadUrl(TestHttpServerClient.getUrl(TRANSLATE_PAGE));
         assertTrue("InfoBar not opened", mListener.addInfoBarAnimationFinished());
-        infoBar = mInfoBarContainer.getInfoBars().get(0);
+        infoBar = mInfoBarContainer.getInfoBarsForTesting().get(0);
         assertTrue(InfoBarUtil.clickCloseButton(infoBar));
         assertTrue("InfoBar not swapped", mListener.swapInfoBarAnimationFinished());
 

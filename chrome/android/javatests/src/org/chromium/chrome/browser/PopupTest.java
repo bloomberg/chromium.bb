@@ -36,7 +36,7 @@ public class PopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     }
 
     private int getNumInfobarsShowing() {
-        return getActivity().getActivityTab().getInfoBarContainer().getInfoBars().size();
+        return getInfoBars().size();
     }
 
     @Override
@@ -86,7 +86,7 @@ public class PopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         });
         assertEquals(1, selector.getTotalTabCount());
         final InfoBarContainer container = selector.getCurrentTab().getInfoBarContainer();
-        ArrayList<InfoBar> infobars = container.getInfoBars();
+        ArrayList<InfoBar> infobars = container.getInfoBarsForTesting();
         assertEquals(1, infobars.size());
 
         // Wait until the animations are done, then click the "open popups" button.

@@ -80,7 +80,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         loadUrl(TestHttpServerClient.getUrl(POPUP_PAGE));
         assertTrue("InfoBar not added", mListener.addInfoBarAnimationFinished());
 
-        List<InfoBar> infoBars = getActivity().getActivityTab().getInfoBarContainer().getInfoBars();
+        List<InfoBar> infoBars = getInfoBars();
         assertEquals("Wrong infobar count", 1, infoBars.size());
         assertTrue(InfoBarUtil.hasPrimaryButton(infoBars.get(0)));
         assertFalse(InfoBarUtil.hasSecondaryButton(infoBars.get(0)));
@@ -105,15 +105,14 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         assertTrue("InfoBar not added", mListener.addInfoBarAnimationFinished());
 
         // Make sure it has OK/Cancel buttons.
-        List<InfoBar> infoBars = getActivity().getActivityTab().getInfoBarContainer().getInfoBars();
+        List<InfoBar> infoBars = getInfoBars();
         assertEquals("Wrong infobar count", 1, infoBars.size());
         assertTrue(InfoBarUtil.hasPrimaryButton(infoBars.get(0)));
         assertTrue(InfoBarUtil.hasSecondaryButton(infoBars.get(0)));
 
         loadUrl(HELLO_WORLD_URL);
         assertTrue("InfoBar not removed.", mListener.removeInfoBarAnimationFinished());
-        infoBars = getActivity().getActivityTab().getInfoBarContainer().getInfoBars();
-        assertTrue("Wrong infobar count", infoBars.isEmpty());
+        assertTrue("Wrong infobar count", getInfoBars().isEmpty());
     }
 
 
@@ -128,8 +127,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         loadUrl(TestHttpServerClient.getUrl(GEOLOCATION_PAGE));
         assertTrue("InfoBar not added.", mListener.addInfoBarAnimationFinished());
 
-        List<InfoBar> infoBars = getActivity().getActivityTab().getInfoBarContainer().getInfoBars();
-        assertEquals("Wrong infobar count", 1, infoBars.size());
+        assertEquals("Wrong infobar count", 1, getInfoBars().size());
 
         // Navigate back and ensure the InfoBar has been removed.
         getInstrumentation().runOnMainSync(
@@ -143,9 +141,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 new Criteria() {
                     @Override
                     public boolean isSatisfied() {
-                        List<InfoBar> infoBars =
-                                getActivity().getActivityTab().getInfoBarContainer().getInfoBars();
-                        return infoBars.isEmpty();
+                        return getInfoBars().isEmpty();
                     }
                 },
                 MAX_TIMEOUT, CHECK_INTERVAL);
@@ -175,7 +171,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         assertTrue("InfoBar not added", mListener.addInfoBarAnimationFinished());
 
         // Make sure it has Kill/Wait buttons.
-        List<InfoBar> infoBars = getActivity().getActivityTab().getInfoBarContainer().getInfoBars();
+        List<InfoBar> infoBars = getInfoBars();
         assertEquals("Wrong infobar count", 1, infoBars.size());
         assertTrue(InfoBarUtil.hasPrimaryButton(infoBars.get(0)));
         assertTrue(InfoBarUtil.hasSecondaryButton(infoBars.get(0)));
@@ -191,8 +187,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
             }
         });
         assertTrue("InfoBar not removed.", mListener.removeInfoBarAnimationFinished());
-        infoBars = getActivity().getActivityTab().getInfoBarContainer().getInfoBars();
-        assertTrue("Wrong infobar count", infoBars.isEmpty());
+        assertTrue("Wrong infobar count", getInfoBars().isEmpty());
     }
 
     /**
@@ -218,8 +213,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         assertTrue("InfoBar not added", mListener.addInfoBarAnimationFinished());
 
         // Make sure it has Kill/Wait buttons.
-        final List<InfoBar> infoBars =
-                getActivity().getActivityTab().getInfoBarContainer().getInfoBars();
+        final List<InfoBar> infoBars = getInfoBars();
         assertEquals("Wrong infobar count", 1, infoBars.size());
         assertTrue(InfoBarUtil.hasPrimaryButton(infoBars.get(0)));
         assertTrue(InfoBarUtil.hasSecondaryButton(infoBars.get(0)));
@@ -234,8 +228,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
         // The renderer should have been killed and the InfoBar removed.
         assertTrue("InfoBar not removed.", mListener.removeInfoBarAnimationFinished());
-        assertTrue("Wrong infobar count",
-                getActivity().getActivityTab().getInfoBarContainer().getInfoBars().isEmpty());
+        assertTrue("Wrong infobar count", getInfoBars().isEmpty());
         CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -254,8 +247,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         loadUrl(TestHttpServerClient.getUrl(GEOLOCATION_PAGE));
         assertTrue("InfoBar not added", mListener.addInfoBarAnimationFinished());
-        List<InfoBar> infoBars = getActivity().getActivityTab().getInfoBarContainer().getInfoBars();
-        assertEquals("Wrong infobar count", 1, infoBars.size());
+        assertEquals("Wrong infobar count", 1, getInfoBars().size());
 
         // Swap out the WebContents and send the user somewhere so that the InfoBar gets removed.
         InfoBarTestAnimationListener removeListener = new InfoBarTestAnimationListener();
@@ -269,15 +261,13 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         });
         loadUrl(HELLO_WORLD_URL);
         assertTrue("InfoBar not removed.", removeListener.removeInfoBarAnimationFinished());
-        infoBars = getActivity().getActivityTab().getInfoBarContainer().getInfoBars();
-        assertEquals("Wrong infobar count", 0, infoBars.size());
+        assertEquals("Wrong infobar count", 0, getInfoBars().size());
 
         // Revisiting the original page should make the InfoBar reappear.
         InfoBarTestAnimationListener addListener = new InfoBarTestAnimationListener();
         getActivity().getActivityTab().getInfoBarContainer().setAnimationListener(addListener);
         loadUrl(TestHttpServerClient.getUrl(GEOLOCATION_PAGE));
         assertTrue("InfoBar not added", addListener.addInfoBarAnimationFinished());
-        infoBars = getActivity().getActivityTab().getInfoBarContainer().getInfoBars();
-        assertEquals("Wrong infobar count", 1, infoBars.size());
+        assertEquals("Wrong infobar count", 1, getInfoBars().size());
     }
 }

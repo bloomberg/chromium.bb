@@ -764,16 +764,15 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
      * Returns the infobars being displayed by the current tab, or null if they don't exist.
      */
     protected List<InfoBar> getInfoBars() {
-        Tab currentTab = getActivity().getActivityTab();
-        if (currentTab == null) {
-            return null;
-        }
-
-        if (currentTab.getInfoBarContainer() != null) {
-            return currentTab.getInfoBarContainer().getInfoBars();
-        } else {
-            return null;
-        }
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<InfoBar>>() {
+            @Override
+            public List<InfoBar> call() throws Exception {
+                Tab currentTab = getActivity().getActivityTab();
+                assertNotNull(currentTab);
+                assertNotNull(currentTab.getInfoBarContainer());
+                return currentTab.getInfoBarContainer().getInfoBarsForTesting();
+            }
+        });
     }
 
     /**

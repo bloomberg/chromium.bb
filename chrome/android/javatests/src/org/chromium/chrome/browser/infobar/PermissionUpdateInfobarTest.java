@@ -94,15 +94,7 @@ public class PermissionUpdateInfobarTest extends ChromeTabbedActivityTestBase {
 
             loadUrl(TestHttpServerClient.getUrl(GEOLOCATION_PAGE));
             assertTrue("InfoBar not added", mListener.addInfoBarAnimationFinished());
-
-            InfoBar infoBar = ThreadUtils.runOnUiThreadBlockingNoException(new Callable<InfoBar>() {
-                @Override
-                public InfoBar call() throws Exception {
-                    return getActivity().getActivityTab().getInfoBarContainer()
-                            .getInfoBars().get(0);
-                }
-            });
-            assertNotNull(infoBar);
+            assertEquals(1, getInfoBars().size());
 
             final WebContents webContents = ThreadUtils.runOnUiThreadBlockingNoException(
                     new Callable<WebContents>() {

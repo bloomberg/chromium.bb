@@ -193,8 +193,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                InfoBarContainer container = getActivity().getActivityTab().getInfoBarContainer();
-                return container.getInfoBars().size() == 0;
+                return getInfoBars().isEmpty();
             }
         });
     }
@@ -215,8 +214,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                InfoBarContainer container = getActivity().getActivityTab().getInfoBarContainer();
-                ArrayList<InfoBar> infobars = container.getInfoBars();
+                List<InfoBar> infobars = getInfoBars();
                 if (infobars.size() != 1) return false;
                 if (!(infobars.get(0) instanceof AppBannerInfoBarAndroid)) return false;
 
@@ -251,7 +249,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         });
 
         // Check that the button asks if the user wants to install the app.
-        InfoBar infobar = container.getInfoBars().get(0);
+        InfoBar infobar = container.getInfoBarsForTesting().get(0);
         final Button button =
                 (Button) infobar.getView().findViewById(R.id.button_primary);
         assertEquals(NATIVE_APP_INSTALL_TEXT, button.getText());
@@ -365,7 +363,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
                 return listener.mDoneAnimating;
             }
         });
-        ArrayList<InfoBar> infobars = container.getInfoBars();
+        ArrayList<InfoBar> infobars = container.getInfoBarsForTesting();
         View close = infobars.get(0).getView().findViewById(R.id.infobar_close_button);
         TouchCommon.singleClickView(close);
         waitUntilNoInfoBarsExist();
@@ -487,7 +485,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         });
 
         // Click the button to trigger the adding of the shortcut.
-        InfoBar infobar = container.getInfoBars().get(0);
+        InfoBar infobar = container.getInfoBarsForTesting().get(0);
         final Button button =
                 (Button) infobar.getView().findViewById(R.id.button_primary);
         TouchCommon.singleClickView(button);

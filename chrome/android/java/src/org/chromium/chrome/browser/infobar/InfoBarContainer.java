@@ -282,7 +282,7 @@ public class InfoBarContainer extends SwipableOverlayView {
      * @return all of the InfoBars held in this container.
      */
     @VisibleForTesting
-    public ArrayList<InfoBar> getInfoBars() {
+    public ArrayList<InfoBar> getInfoBarsForTesting() {
         return mInfoBars;
     }
 
