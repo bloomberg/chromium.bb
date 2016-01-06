@@ -242,8 +242,7 @@ bool DownloadQuery::MatchesQuery(const std::vector<base::string16>& query_terms,
   return true;
 }
 
-DownloadQuery::DownloadQuery()
-    : limit_(std::numeric_limits<uint32_t>::max()), skip_(0U) {}
+DownloadQuery::DownloadQuery() : limit_(std::numeric_limits<uint32_t>::max()) {}
 DownloadQuery::~DownloadQuery() {}
 
 // AddFilter() pushes a new FilterCallback to filters_. Most FilterCallbacks are
@@ -435,20 +434,12 @@ void DownloadQuery::AddSorter(DownloadQuery::SortType type,
 }
 
 void DownloadQuery::FinishSearch(DownloadQuery::DownloadVector* results) const {
-  if (skip_ >= results->size()) {
-    results->clear();
-    return;
+ if (!sorters_.empty()) {
+    std::partial_sort(results->begin(),
+                      results->begin() + std::min(limit_, results->size()),
+                      results->end(),
+                      DownloadComparator(sorters_));
   }
-
-  if (!sorters_.empty()) {
-    std::partial_sort(
-        results->begin(),
-        results->begin() + std::min(limit_ + skip_, results->size()),
-        results->end(),
-        DownloadComparator(sorters_));
-  }
-
-  results->erase(results->begin(), results->begin() + skip_);
 
   if (results->size() > limit_)
     results->resize(limit_);
