@@ -13,6 +13,16 @@
 
 namespace libwebm {
 
+// fclose functor for wrapping FILE in std::unique_ptr.
+struct FILEDeleter {
+  int operator()(FILE* f) {
+    if (f != nullptr)
+      return fclose(f);
+    return 0;
+  }
+};
+typedef std::unique_ptr<FILE, FILEDeleter> FilePtr;
+
 struct Range {
   Range(std::size_t off, std::size_t len) : offset(off), length(len) {}
   Range() = delete;

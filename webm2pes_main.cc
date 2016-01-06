@@ -28,5 +28,5 @@ int main(int argc, const char* argv[]) {
   const std::string output_path = argv[2];
 
   libwebm::Webm2Pes converter(input_path, output_path);
-  return converter.Convert() == true ? EXIT_SUCCESS : EXIT_FAILURE;
+  return converter.ConvertToFile() == true ? EXIT_SUCCESS : EXIT_FAILURE;
 }

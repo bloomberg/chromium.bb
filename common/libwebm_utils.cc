@@ -19,29 +19,37 @@ std::int64_t NanosecondsTo90KhzTicks(std::int64_t nanoseconds) {
 }
 
 bool ParseVP9SuperFrameIndex(const std::uint8_t* frame,
-                             std::size_t length,
+                             std::size_t frame_length,
                              Ranges* frame_ranges) {
-  if (frame == nullptr || length == 0 || frame_ranges == nullptr)
+  if (frame == nullptr || frame_length == 0 || frame_ranges == nullptr)
     return false;
 
   bool parse_ok = false;
-  const std::uint8_t marker = frame[length - 1];
+  const std::uint8_t marker = frame[frame_length - 1];
   const std::uint32_t kHasSuperFrameIndexMask = 0xe0;
   const std::uint32_t kSuperFrameMarker = 0xc0;
+  const std::uint32_t kLengthFieldSizeMask = 0x3;
 
   if ((marker & kHasSuperFrameIndexMask) == kSuperFrameMarker) {
     const std::uint32_t kFrameCountMask = 0x7;
     const int num_frames = (marker & kFrameCountMask) + 1;
-    const int length_field_size = ((marker >> 3) & 0x3) + 1;
+    const int length_field_size = ((marker >> 3) & kLengthFieldSizeMask) + 1;
     const std::size_t index_length = 2 + length_field_size * num_frames;
 
-    // Consume the super frame index.
-    std::size_t frame_offset = index_length;
+    if (frame_length < index_length) {
+      std::fprintf(stderr, "Webm2Pes: Invalid superframe index size.\n");
+      return false;
+    }
 
-    if (length >= index_length && frame[length - index_length] == marker) {
+    // Consume the super frame index. Note: it's at the end of the super frame.
+    const std::size_t length = frame_length - index_length;
+
+    if (length >= index_length &&
+        frame[frame_length - index_length] == marker) {
       // Found a valid superframe index.
-      const std::uint8_t* byte = frame + length - index_length + 1;
+      const std::uint8_t* byte = frame + length + 1;
 
+      std::size_t frame_offset = 0;
       for (int i = 0; i < num_frames; ++i) {
         std::uint32_t child_frame_length = 0;
 
