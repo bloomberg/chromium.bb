@@ -190,7 +190,7 @@ places are noted in the table below.
 | `msan` (0/1)                                    | `is_msan` (true/false)                     | `//build/config/sanitizers/sanitizers.gni`     |
 | `SDKROOT` (Mac)                                 | `sysroot`                                  | `//build/config/sysroot.gni`                   |
 | `sysroot`                                       | `sysroot`                                  | `//build/config/sysroot.gni`                   |
-| `target_arch` ("ia32"/"x64"/"arm"/"mipsel")     | `target_arch` ("x86"/"x64"/"arm"/"mipsel") | (global)                                       |
+| `target_arch` ("ia32"/"x64"/"arm"/"mipsel")     | `target_cpu` ("x86"/"x64"/"arm"/"mipsel")  | (global)                                       |
 | `toolkit_views` (0/1)                           | `toolkit_views`                            | `//build/config/ui.gni`                        |
 | `tsan` (0/1)                                    | `is_tsan` (true/false)                     | `//build/config/sanitizers/sanitizers.gni`     |
 | `windows_sdk_path`                              | `windows_sdk_path`                         | (internal to `//build/config/win/BUILD.gn`)    |
