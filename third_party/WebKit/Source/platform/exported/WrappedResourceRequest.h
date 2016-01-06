@@ -33,6 +33,8 @@
 
 #include "platform/exported/WebURLRequestPrivate.h"
 #include "public/platform/WebURLRequest.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -67,8 +69,11 @@ public:
     }
 
 private:
-    class Handle : public WebURLRequestPrivate {
+    class Handle final : public WebURLRequestPrivate {
+        DISALLOW_NEW();
     public:
+        Handle() { }
+
         virtual void dispose() { m_resourceRequest = 0; }
     };
 

@@ -36,6 +36,8 @@
 #include "public/platform/WebHTTPHeaderVisitor.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebURL.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -62,7 +64,8 @@ private:
 
 // The standard implementation of WebURLRequestPrivate, which maintains
 // ownership of a ResourceRequest instance.
-class WebURLRequestPrivateImpl : public WebURLRequestPrivate {
+class WebURLRequestPrivateImpl final : public WebURLRequestPrivate {
+    USING_FAST_MALLOC(WebURLRequestPrivate);
 public:
     WebURLRequestPrivateImpl()
     {

@@ -32,12 +32,14 @@
 #define WebURLResponsePrivate_h
 
 #include "public/platform/WebString.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
 class ResourceResponse;
 
 class WebURLResponsePrivate {
+    WTF_MAKE_NONCOPYABLE(WebURLResponsePrivate);
 public:
     WebURLResponsePrivate() : m_resourceResponse(0) { }
 

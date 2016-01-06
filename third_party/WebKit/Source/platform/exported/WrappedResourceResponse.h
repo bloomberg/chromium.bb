@@ -33,6 +33,7 @@
 
 #include "platform/exported/WebURLResponsePrivate.h"
 #include "public/platform/WebURLResponse.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -68,6 +69,7 @@ public:
 
 private:
     class Handle : public WebURLResponsePrivate {
+        DISALLOW_NEW();
     public:
         virtual void dispose() { m_resourceResponse = 0; }
     };

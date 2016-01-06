@@ -28,11 +28,15 @@
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebScrollbar.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
 class Scrollbar;
 class PLATFORM_EXPORT WebScrollbarImpl final : public WebScrollbar {
+    USING_FAST_MALLOC(WebScrollbarImpl);
+    WTF_MAKE_NONCOPYABLE(WebScrollbarImpl);
 public:
     static WebScrollbarImpl* create(Scrollbar* scrollbar)
     {

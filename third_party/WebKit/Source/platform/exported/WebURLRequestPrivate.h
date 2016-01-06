@@ -31,11 +31,14 @@
 #ifndef WebURLRequestPrivate_h
 #define WebURLRequestPrivate_h
 
+#include "wtf/Noncopyable.h"
+
 namespace blink {
 
 class ResourceRequest;
 
 class WebURLRequestPrivate {
+    WTF_MAKE_NONCOPYABLE(WebURLRequestPrivate);
 public:
     WebURLRequestPrivate()
         : m_resourceRequest(0)

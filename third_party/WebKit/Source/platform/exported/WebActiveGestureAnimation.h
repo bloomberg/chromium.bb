@@ -27,6 +27,7 @@
 #define WebActiveGestureAnimation_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -41,6 +42,7 @@ class WebGestureCurveTarget;
 // to a target, again via a generic interface. It is assumed that animate() is called
 // on a more-or-less regular basis by the owner.
 class PLATFORM_EXPORT WebActiveGestureAnimation {
+    USING_FAST_MALLOC(WebActiveGestureAnimation);
     WTF_MAKE_NONCOPYABLE(WebActiveGestureAnimation);
 public:
     static PassOwnPtr<WebActiveGestureAnimation> createAtAnimationStart(PassOwnPtr<WebGestureCurve>, WebGestureCurveTarget*);

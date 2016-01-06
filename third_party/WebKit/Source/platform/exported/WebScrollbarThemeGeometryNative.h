@@ -29,6 +29,8 @@
 #include "platform/PlatformExport.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebScrollbarThemeGeometry.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -37,6 +39,8 @@ class ScrollbarTheme;
 class WebScrollbar;
 
 class PLATFORM_EXPORT WebScrollbarThemeGeometryNative : public WebScrollbarThemeGeometry {
+    USING_FAST_MALLOC(WebScrollbarThemeGeometryNative);
+    WTF_MAKE_NONCOPYABLE(WebScrollbarThemeGeometryNative);
 public:
     static PassOwnPtr<WebScrollbarThemeGeometryNative> create(ScrollbarTheme&);
 

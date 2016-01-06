@@ -38,6 +38,7 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLLoadTiming.h"
+#include "wtf/Allocator.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
@@ -65,7 +66,8 @@ private:
 
 // The standard implementation of WebURLResponsePrivate, which maintains
 // ownership of a ResourceResponse instance.
-class WebURLResponsePrivateImpl : public WebURLResponsePrivate {
+class WebURLResponsePrivateImpl final : public WebURLResponsePrivate {
+    USING_FAST_MALLOC(WebURLResponsePrivateImpl);
 public:
     WebURLResponsePrivateImpl()
     {

@@ -31,6 +31,7 @@
 #include "public/platform/linux/WebFontInfo.h"
 
 #include "public/platform/linux/WebFallbackFont.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
@@ -45,6 +46,7 @@
 namespace blink {
 
 class CachedFont {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     // Note: We pass the charset explicitly as callers
     // should not create CachedFont entries without knowing
@@ -120,6 +122,7 @@ private:
 
 class CachedFontSet {
     WTF_MAKE_NONCOPYABLE(CachedFontSet);
+    USING_FAST_MALLOC(CachedFontSet);
 public:
     // CachedFontSet takes ownership of the passed FcFontSet.
     static PassOwnPtr<CachedFontSet> createForLocale(const char* locale)
@@ -219,6 +222,8 @@ private:
 };
 
 class FontSetCache {
+    WTF_MAKE_NONCOPYABLE(FontSetCache);
+    USING_FAST_MALLOC(FontSetCache);
 public:
     static FontSetCache& shared()
     {
@@ -248,6 +253,8 @@ public:
     // FIXME: We may wish to add a way to prune the cache at a later time.
 
 private:
+    FontSetCache() { }
+
     // FIXME: This shouldn't need to be AtomicString, but
     // currently HashTraits<const char*> isn't smart enough
     // to hash the string (only does pointer compares).

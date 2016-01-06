@@ -29,12 +29,14 @@
 #include "platform/PlatformExport.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
 #include "public/platform/WebScrollbar.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
 
 // Adapts a WebScrollbar to the ScrollbarThemeClient interface
 class PLATFORM_EXPORT WebScrollbarThemeClientImpl : public ScrollbarThemeClient {
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(WebScrollbarThemeClientImpl);
 public:
     // Caller must retain ownership of this pointer and ensure that its lifetime
