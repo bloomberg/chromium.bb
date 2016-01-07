@@ -460,6 +460,11 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
                 _mm_storeu_ps(values + writeIndex, vValue);
                 vValue = _mm_add_ps(vValue, vInc);
             }
+            // Update |value| with the last value computed so that the .value attribute of the
+            // AudioParam gets the correct linear ramp value, in case the following loop doesn't
+            // execute.
+            if (writeIndex >= 1)
+                value = values[writeIndex - 1];
 #endif
             // Serially process remaining values.
             for (; writeIndex < fillToFrame; ++writeIndex) {
@@ -753,6 +758,7 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
     for (; writeIndex < numberOfValues; ++writeIndex)
         values[writeIndex] = value;
 
+    // This value is used to set the .value attribute of the AudioParam.
     return value;
 }
 

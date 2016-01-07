@@ -1,0 +1,41 @@
+Test linearRampToValue Updates the Param Value
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS gain.gain.value at frame 127 is equal to 0.06201171875.
+PASS gain.gain.value at frame 255 is equal to 0.12451171875.
+PASS gain.gain.value at frame 383 is equal to 0.18701171875.
+PASS gain.gain.value at frame 511 is equal to 0.24951171875.
+PASS gain.gain.value at frame 639 is equal to 0.31201171875.
+PASS gain.gain.value at frame 767 is equal to 0.37451171875.
+PASS gain.gain.value at frame 895 is equal to 0.43701171875.
+PASS gain.gain.value at frame 1023 is equal to 0.49951171875.
+PASS gain.gain.value at frame 1151 is equal to 0.56201171875.
+PASS gain.gain.value at frame 1279 is equal to 0.62451171875.
+PASS gain.gain.value at frame 1407 is equal to 0.68701171875.
+PASS gain.gain.value at frame 1535 is equal to 0.74951171875.
+PASS gain.gain.value at frame 1663 is equal to 0.81201171875.
+PASS gain.gain.value at frame 1791 is equal to 0.87451171875.
+PASS gain.gain.value at frame 1919 is equal to 0.93701171875.
+PASS gain.gain.value at frame 2047 is equal to 0.99951171875.
+PASS gain.gain.value at frame 2175 is equal to 1.
+PASS gain.gain.value at frame 2303 is equal to 1.
+PASS gain.gain.value at frame 2431 is equal to 1.
+PASS gain.gain.value at frame 2559 is equal to 1.
+PASS gain.gain.value at frame 2687 is equal to 1.
+PASS gain.gain.value at frame 2815 is equal to 1.
+PASS gain.gain.value at frame 2943 is equal to 1.
+PASS gain.gain.value at frame 3071 is equal to 1.
+PASS gain.gain.value at frame 3199 is equal to 1.
+PASS gain.gain.value at frame 3327 is equal to 1.
+PASS gain.gain.value at frame 3455 is equal to 1.
+PASS gain.gain.value at frame 3583 is equal to 1.
+PASS gain.gain.value at frame 3711 is equal to 1.
+PASS gain.gain.value at frame 3839 is equal to 1.
+PASS gain.gain.value at frame 3967 is equal to 1.
+PASS linearRampToValue properly set the AudioParam value.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
