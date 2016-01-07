@@ -9958,7 +9958,7 @@ I don't think this site should be blocked!
           Restore settings to their original defaults.
         </message>
         <message name="IDS_RESET_PROFILE_SETTINGS_EXPLANATION" desc="A label describing the consequences of the 'reset profile settings' feature">
-          Your settings will be restored to their original defaults. This will reset your homepage, new tab page and search engine, disable your extensions, and unpin all tabs. It will also clear other temporary and cached data, such as cookies, content and site data.
+          This will reset your startup page, new tab page, search engine, and pinned tabs. It will also disable all extensions and clear temporary data like cookies. Your bookmarks, history and saved passwords will not be cleared.
         </message>
         <message name="IDS_RESET_PROFILE_SETTINGS_BUTTON" desc="The text on the button in chrome://settings that allows resetting some settings in a profile">
           Reset settings
