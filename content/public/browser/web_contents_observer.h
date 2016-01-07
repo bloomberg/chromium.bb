@@ -397,6 +397,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // process.
   virtual void DidUpdateFaviconURL(const std::vector<FaviconURL>& candidates) {}
 
+  // Invoked when the WebContents is muted/unmuted.
+  virtual void DidUpdateAudioMutingState(bool muted) {}
+
   // Invoked when a pepper plugin creates and shows or destroys a fullscreen
   // RenderWidget.
   virtual void DidShowFullscreenWidget(int routing_id) {}

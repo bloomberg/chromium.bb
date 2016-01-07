@@ -1,0 +1,12 @@
+{
+  "name": "<webview> test that allows WebView to be created after app has started.",
+  "version": "1",
+  "permissions": [
+    "webview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

@@ -111,6 +111,13 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
     guest_->web_contents()->SetPageScale(page_scale_factor);
   }
 
+  void DidUpdateAudioMutingState(bool muted) override {
+    if (destroyed_)
+      return;
+
+    guest_->web_contents()->SetAudioMuted(muted);
+  }
+
  private:
   bool is_fullscreen_;
   bool destroyed_;
@@ -400,6 +407,9 @@ void GuestViewBase::DidAttach(int guest_proxy_routing_id) {
   opener_lifetime_observer_.reset();
 
   SetUpSizing(*attach_params());
+
+  // The guest should have the same muting state as the owner.
+  web_contents()->SetAudioMuted(owner_web_contents()->IsAudioMuted());
 
   // Give the derived class an opportunity to perform some actions.
   DidAttachToEmbedder();

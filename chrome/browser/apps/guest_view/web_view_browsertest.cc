@@ -745,6 +745,70 @@ class WebViewDPITest : public WebViewTest {
   static float scale() { return 2.0f; }
 };
 
+class WebContentsAudioMutedObserver : public content::WebContentsObserver {
+ public:
+  explicit WebContentsAudioMutedObserver(content::WebContents* web_contents)
+      : WebContentsObserver(web_contents),
+        loop_runner_(new content::MessageLoopRunner),
+        muting_update_observed_(false) {}
+
+  // WebContentsObserver.
+  void DidUpdateAudioMutingState(bool muted) override {
+    muting_update_observed_ = true;
+    loop_runner_->Quit();
+  }
+
+  void WaitForUpdate() {
+    loop_runner_->Run();
+  }
+
+  bool muting_update_observed() { return muting_update_observed_; }
+
+ private:
+  scoped_refptr<content::MessageLoopRunner> loop_runner_;
+  bool muting_update_observed_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebContentsAudioMutedObserver);
+};
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, AudioMutesWhileAttached) {
+  LoadAppWithGuest("web_view/simple");
+
+  content::WebContents* embedder = GetEmbedderWebContents();
+  content::WebContents* guest = GetGuestWebContents();
+
+  EXPECT_FALSE(embedder->IsAudioMuted());
+  EXPECT_FALSE(guest->IsAudioMuted());
+
+  embedder->SetAudioMuted(true);
+  EXPECT_TRUE(embedder->IsAudioMuted());
+  EXPECT_TRUE(guest->IsAudioMuted());
+
+  embedder->SetAudioMuted(false);
+  EXPECT_FALSE(embedder->IsAudioMuted());
+  EXPECT_FALSE(guest->IsAudioMuted());
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, AudioMutesOnAttach) {
+  LoadAndLaunchPlatformApp("web_view/app_creates_webview",
+                           "WebViewTest.LAUNCHED");
+  content::WebContents* embedder = GetEmbedderWebContents();
+  embedder->SetAudioMuted(true);
+  EXPECT_TRUE(embedder->IsAudioMuted());
+
+  SendMessageToEmbedder("create-guest");
+  content::WebContents* guest =
+      GetGuestViewManager()->WaitForSingleGuestCreated();
+
+  EXPECT_TRUE(embedder->IsAudioMuted());
+  WebContentsAudioMutedObserver observer(guest);
+  // If the guest hasn't attached yet, it may not have received the muting
+  // update, in which case we should wait until it does.
+  if (!guest->IsAudioMuted())
+    observer.WaitForUpdate();
+  EXPECT_TRUE(guest->IsAudioMuted());
+}
+
 // This test verifies that hiding the guest triggers WebContents::WasHidden().
 IN_PROC_BROWSER_TEST_F(WebViewVisibilityTest, GuestVisibilityChanged) {
   LoadAppWithGuest("web_view/visibility_changed");

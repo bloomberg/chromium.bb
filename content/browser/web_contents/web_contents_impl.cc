@@ -1128,6 +1128,9 @@ void WebContentsImpl::SetAudioMuted(bool mute) {
     audio_muter_->StopMuting();
   }
 
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    DidUpdateAudioMutingState(mute));
+
   // Notification for UI updates in response to the changed muting state.
   NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
 }
