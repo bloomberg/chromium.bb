@@ -775,7 +775,7 @@
     }],
     ['kasko==1', {
       'variables': {
-        'kasko_exe_dir': '<(DEPTH)/third_party/kasko',
+        'kasko_exe_dir': '<(DEPTH)/third_party/kasko/binaries',
       },
       'targets': [
         {
@@ -801,7 +801,7 @@
                   'kasko.dll.lib',
                 ],
                 'AdditionalLibraryDirectories': [
-                  '<(DEPTH)/third_party/kasko'
+                  '<(DEPTH)/third_party/kasko/binaries'
                 ],
               },
             },
