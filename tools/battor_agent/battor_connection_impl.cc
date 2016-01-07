@@ -25,96 +25,21 @@ const device::serial::ParityBit kBattOrParityBit =
 const device::serial::StopBits kBattOrStopBit = device::serial::STOP_BITS_ONE;
 const bool kBattOrCtsFlowControl = true;
 const bool kBattOrHasCtsFlowControl = true;
-const uint32_t kMaxMessageSize = 50000;
+// The maximum BattOr message is 50kB long.
+const size_t kMaxMessageSizeBytes = 50000;
 
-// MessageHealth describes the possible healthiness states that a partially
-// received message could be in.
-enum class MessageHealth {
-  INVALID,
-  INCOMPLETE,
-  COMPLETE,
-};
-
-// Parses the specified message.
-//   - message: The incoming message that needs to be parsed.
-//   - parsed_content: Output argument for the message content after removal of
-//     any start, end, type, and escape bytes.
-//   - health: Output argument for the health of the message.
-//   - type: Output argument for the type of message being parsed.
-//   - escape_byte_count: Output argument for the number of escape bytes
-//     removed from the parsed content.
-void ParseMessage(const vector<char>& message,
-                  vector<char>* parsed_content,
-                  MessageHealth* health,
-                  BattOrMessageType* type,
-                  size_t* escape_byte_count) {
-  *health = MessageHealth::INCOMPLETE;
-  *type = BATTOR_MESSAGE_TYPE_CONTROL;
-  *escape_byte_count = 0;
-  parsed_content->reserve(message.size());
-
-  if (message.size() == 0)
-    return;
-
-  // The first byte is the start byte.
-  if (message[0] != BATTOR_CONTROL_BYTE_START) {
-    *health = MessageHealth::INVALID;
-    return;
-  }
-
-  if (message.size() == 1)
-    return;
-
-  // The second byte specifies the message type.
-  *type = static_cast<BattOrMessageType>(message[1]);
-
-  if (*type < static_cast<uint8_t>(BATTOR_MESSAGE_TYPE_CONTROL) ||
-      *type > static_cast<uint8_t>(BATTOR_MESSAGE_TYPE_PRINT)) {
-    *health = MessageHealth::INVALID;
-    return;
-  }
-
-  // After that comes the message data.
-  bool escape_next_byte = false;
-  for (size_t i = 2; i < message.size(); i++) {
-    if (i >= kMaxMessageSize) {
-      *health = MessageHealth::INVALID;
-      return;
-    }
-
-    char next_byte = message[i];
-
-    if (escape_next_byte) {
-      parsed_content->push_back(next_byte);
-      escape_next_byte = false;
-      continue;
-    }
-
-    switch (next_byte) {
-      case BATTOR_CONTROL_BYTE_START:
-        // Two start bytes in a message is invalid.
-        *health = MessageHealth::INVALID;
-        return;
-
-      case BATTOR_CONTROL_BYTE_END:
-        if (i != message.size() - 1) {
-          // We're only parsing a single message here. If we received more bytes
-          // after the end byte, what we've received so far is *not* valid.
-          *health = MessageHealth::INVALID;
-          return;
-        }
-
-        *health = MessageHealth::COMPLETE;
-        return;
-
-      case BATTOR_CONTROL_BYTE_ESCAPE:
-        escape_next_byte = true;
-        (*escape_byte_count)++;
-        continue;
-
-      default:
-        parsed_content->push_back(next_byte);
-    }
+// Returns the maximum number of bytes that could be required to read a message
+// of the specified type.
+size_t GetMaxBytesForMessageType(BattOrMessageType type) {
+  switch (type) {
+    case BATTOR_MESSAGE_TYPE_CONTROL:
+      return 2 * sizeof(BattOrControlMessage) + 3;
+    case BATTOR_MESSAGE_TYPE_CONTROL_ACK:
+      return 2 * sizeof(BattOrControlMessageAck) + 3;
+    case BATTOR_MESSAGE_TYPE_SAMPLES:
+      return 2 * kMaxMessageSizeBytes + 3;
+    default:
+      return 0;
   }
 }
 
@@ -168,9 +93,8 @@ void BattOrConnectionImpl::SendBytes(BattOrMessageType type,
                                      size_t bytes_to_send) {
   const char* bytes = reinterpret_cast<const char*>(buffer);
 
-  // Reserve a send buffer with 3 extra bytes (start, type, and end byte) and
-  // twice as many bytes as we're actually sending, because each raw data byte
-  // might need to be escaped.
+  // Reserve a send buffer with enough extra bytes for the start, type, end, and
+  // escape bytes.
   vector<char> data;
   data.reserve(2 * bytes_to_send + 3);
 
@@ -193,22 +117,27 @@ void BattOrConnectionImpl::SendBytes(BattOrMessageType type,
       data, base::Bind(&BattOrConnectionImpl::OnBytesSent, AsWeakPtr()))));
 }
 
-void BattOrConnectionImpl::ReadBytes(size_t bytes_to_read) {
-  // Allocate a read buffer and reserve enough space in it to account for the
-  // start, type, end, and escape bytes.
-  pending_read_buffer_.reset(new vector<char>());
-  pending_read_buffer_->reserve(2 * bytes_to_read + 3);
-  pending_read_escape_byte_count_ = 0;
+void BattOrConnectionImpl::ReadMessage(BattOrMessageType type) {
+  pending_read_message_type_ = type;
+  size_t max_bytes_to_read = GetMaxBytesForMessageType(type);
 
-  // Add 3 bytes to however many bytes the caller requested because we know
-  // we'll have to read the start, type, and end bytes.
-  bytes_to_read += 3;
+  // Check the left-over bytes from the last read to make sure that we don't
+  // already have a full message.
+  BattOrMessageType parsed_type;
+  scoped_ptr<vector<char>> bytes(new vector<char>());
+  bytes->reserve(max_bytes_to_read);
 
-  ReadMoreBytes(bytes_to_read);
+  if (ParseMessage(&parsed_type, bytes.get())) {
+    listener_->OnMessageRead(true, parsed_type, std::move(bytes));
+    return;
+  }
+
+  BeginReadBytes(max_bytes_to_read - already_read_buffer_.size());
 }
 
 void BattOrConnectionImpl::Flush() {
   io_handler_->Flush();
+  already_read_buffer_.clear();
 }
 
 scoped_refptr<device::SerialIoHandler> BattOrConnectionImpl::CreateIoHandler() {
@@ -216,62 +145,109 @@ scoped_refptr<device::SerialIoHandler> BattOrConnectionImpl::CreateIoHandler() {
                                          ui_thread_task_runner_);
 }
 
-void BattOrConnectionImpl::ReadMoreBytes(size_t bytes_to_read) {
-  last_read_buffer_ = make_scoped_refptr(new net::IOBuffer(bytes_to_read));
+void BattOrConnectionImpl::BeginReadBytes(size_t max_bytes_to_read) {
+  pending_read_buffer_ =
+      make_scoped_refptr(new net::IOBuffer(max_bytes_to_read));
+
   auto on_receive_buffer_filled =
       base::Bind(&BattOrConnectionImpl::OnBytesRead, AsWeakPtr());
 
-  pending_read_length_ = bytes_to_read;
   io_handler_->Read(make_scoped_ptr(new device::ReceiveBuffer(
-      last_read_buffer_, bytes_to_read, on_receive_buffer_filled)));
+      pending_read_buffer_, max_bytes_to_read, on_receive_buffer_filled)));
 }
 
 void BattOrConnectionImpl::OnBytesRead(int bytes_read,
                                        device::serial::ReceiveError error) {
-  if ((static_cast<size_t>(bytes_read) < pending_read_length_) ||
-      (error != device::serial::RECEIVE_ERROR_NONE)) {
-    listener_->OnBytesRead(false, BATTOR_MESSAGE_TYPE_CONTROL, nullptr);
+  if (bytes_read == 0 || error != device::serial::RECEIVE_ERROR_NONE) {
+    // If we didn't have a message before, and we weren't able to read any
+    // additional bytes, then there's no valid message available.
+    EndReadBytes(false, BATTOR_MESSAGE_TYPE_CONTROL, nullptr);
     return;
   }
 
-  pending_read_buffer_->insert(pending_read_buffer_->end(),
-                               last_read_buffer_->data(),
-                               last_read_buffer_->data() + bytes_read);
+  already_read_buffer_.insert(already_read_buffer_.end(),
+                              pending_read_buffer_->data(),
+                              pending_read_buffer_->data() + bytes_read);
 
-  scoped_ptr<vector<char>> parsed_content(new vector<char>());
-  MessageHealth health;
   BattOrMessageType type;
-  size_t escape_byte_count;
+  scoped_ptr<vector<char>> bytes(new vector<char>());
+  bytes->reserve(GetMaxBytesForMessageType(pending_read_message_type_));
 
-  ParseMessage(*pending_read_buffer_, parsed_content.get(), &health, &type,
-               &escape_byte_count);
-
-  if (health == MessageHealth::INVALID) {
-    // If we already have an invalid message, there's no sense in continuing to
-    // process it.
-    listener_->OnBytesRead(false, BATTOR_MESSAGE_TYPE_CONTROL, nullptr);
+  if (!ParseMessage(&type, bytes.get())) {
+    // Even after reading the max number of bytes, we still don't have a valid
+    // message.
+    EndReadBytes(false, BATTOR_MESSAGE_TYPE_CONTROL, nullptr);
     return;
   }
 
-  size_t new_escape_bytes = escape_byte_count - pending_read_escape_byte_count_;
-  pending_read_escape_byte_count_ = escape_byte_count;
-
-  if (new_escape_bytes > 0) {
-    // When the caller requested that we read X additional bytes, they weren't
-    // taking into account any escape bytes that we received. Because we got
-    // some escape bytes, we need to fire off another read to get the rest of
-    // the data.
-    ReadMoreBytes(new_escape_bytes);
+  if (type != pending_read_message_type_) {
+    // We received a complete message, but it wasn't the type we were expecting.
+    EndReadBytes(false, BATTOR_MESSAGE_TYPE_CONTROL, nullptr);
     return;
   }
 
-  if (health == MessageHealth::INCOMPLETE)
-    // If everything is valid and we didn't see any escape bytes, then we should
-    // have the whole message. If we don't, the message was malformed.
-    listener_->OnBytesRead(false, BATTOR_MESSAGE_TYPE_CONTROL, nullptr);
+  EndReadBytes(true, type, std::move(bytes));
+}
 
-  // If we've gotten this far, we've received the whole, well-formed message.
-  listener_->OnBytesRead(true, type, std::move(parsed_content));
+void BattOrConnectionImpl::EndReadBytes(bool success,
+                                        BattOrMessageType type,
+                                        scoped_ptr<std::vector<char>> bytes) {
+  pending_read_buffer_ = nullptr;
+
+  listener_->OnMessageRead(success, type, std::move(bytes));
+}
+
+bool BattOrConnectionImpl::ParseMessage(BattOrMessageType* type,
+                                        vector<char>* bytes) {
+  if (already_read_buffer_.size() <= 3)
+    return false;
+
+  // The first byte is the start byte.
+  if (already_read_buffer_[0] != BATTOR_CONTROL_BYTE_START) {
+    return false;
+  }
+
+  // The second byte specifies the message type.
+  *type = static_cast<BattOrMessageType>(already_read_buffer_[1]);
+
+  if (*type < static_cast<uint8_t>(BATTOR_MESSAGE_TYPE_CONTROL) ||
+      *type > static_cast<uint8_t>(BATTOR_MESSAGE_TYPE_PRINT)) {
+    return false;
+  }
+
+  // After that comes the message bytes.
+  bool escape_next_byte = false;
+  for (size_t i = 2; i < already_read_buffer_.size(); i++) {
+    char next_byte = already_read_buffer_[i];
+
+    if (escape_next_byte) {
+      bytes->push_back(next_byte);
+      escape_next_byte = false;
+      continue;
+    }
+
+    switch (next_byte) {
+      case BATTOR_CONTROL_BYTE_START:
+        // Two start bytes in a message is invalid.
+        return false;
+
+      case BATTOR_CONTROL_BYTE_END:
+        already_read_buffer_.erase(already_read_buffer_.begin(),
+                                   already_read_buffer_.begin() + i + 1);
+        return true;
+
+      case BATTOR_CONTROL_BYTE_ESCAPE:
+        escape_next_byte = true;
+        continue;
+
+      default:
+        bytes->push_back(next_byte);
+    }
+  }
+
+  // If we made it to the end of the read buffer and no end byte was seen, then
+  // we don't have a complete message.
+  return false;
 }
 
 void BattOrConnectionImpl::OnBytesSent(int bytes_sent,

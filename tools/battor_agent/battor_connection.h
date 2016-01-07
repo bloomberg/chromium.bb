@@ -34,9 +34,9 @@ class BattOrConnection {
    public:
     virtual void OnConnectionOpened(bool success) = 0;
     virtual void OnBytesSent(bool success) = 0;
-    virtual void OnBytesRead(bool success,
-                             BattOrMessageType type,
-                             scoped_ptr<std::vector<char>> bytes) = 0;
+    virtual void OnMessageRead(bool success,
+                               BattOrMessageType type,
+                               scoped_ptr<std::vector<char>> bytes) = 0;
   };
 
   BattOrConnection(Listener* listener);
@@ -58,12 +58,10 @@ class BattOrConnection {
                          const void* buffer,
                          size_t bytes_to_send) = 0;
 
-  // Reads the specified number of bytes from the serial connection and calls
-  // the listener's OnBytesRead() when complete. Note that the number of bytes
-  // requested should not include the start, end, or type bytes required by the
-  // BattOr protocol, and that this method may issue multiple read read requests
-  // if the message contains escape characters.
-  virtual void ReadBytes(size_t bytes_to_read) = 0;
+  // Gets the next message available from the serial connection, reading the
+  // correct number of bytes based on the specified message type, and calls the
+  // listener's OnMessageRead() when complete.
+  virtual void ReadMessage(BattOrMessageType type) = 0;
 
   // Flushes the serial connection to the BattOr.
   virtual void Flush() = 0;

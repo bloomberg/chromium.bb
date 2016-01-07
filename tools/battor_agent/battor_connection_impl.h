@@ -42,7 +42,7 @@ class BattOrConnectionImpl
   void SendBytes(BattOrMessageType type,
                  const void* buffer,
                  size_t bytes_to_send) override;
-  void ReadBytes(size_t bytes_to_read) override;
+  void ReadMessage(BattOrMessageType type) override;
   void Flush() override;
 
  protected:
@@ -57,11 +57,20 @@ class BattOrConnectionImpl
 
   // Reads the specified number of additional bytes and adds them to the pending
   // read buffer.
-  void ReadMoreBytes(size_t bytes_to_read);
+  void BeginReadBytes(size_t bytes_to_read);
 
   // Internal callback for when bytes are read. This method may trigger
   // additional reads if any newly read bytes are escape bytes.
   void OnBytesRead(int bytes_read, device::serial::ReceiveError error);
+
+  void EndReadBytes(bool success,
+                    BattOrMessageType type,
+                    scoped_ptr<std::vector<char>> data);
+
+  // Pulls off the next complete message from already_read_buffer_, returning
+  // its type and contents (via out parameters) and whether a complete message
+  // was able to be read (via the return value).
+  bool ParseMessage(BattOrMessageType* type, std::vector<char>* data);
 
   // Internal callback for when bytes are sent.
   void OnBytesSent(int bytes_sent, device::serial::SendError error);
@@ -69,18 +78,13 @@ class BattOrConnectionImpl
   // The path of the BattOr.
   std::string path_;
 
-  // All bytes that have been read since the user requested a read. If multiple
-  // reads are required due to the presence of escape bytes,
-  // pending_read_buffer_ grows with each read.
-  scoped_ptr<std::vector<char>> pending_read_buffer_;
-  // The bytes that were read in just the last read. If multiple reads are
-  // required due to the presence of escape bytes, last_read_buffer_ only
-  // contains the results of the last read.
-  scoped_refptr<net::IOBuffer> last_read_buffer_;
-  // The number of bytes that we requested in the last read.
-  size_t pending_read_length_;
-  // The number of escape bytes that have already been read.
-  size_t pending_read_escape_byte_count_;
+  // All bytes that have already been read from the serial stream, but have not
+  // yet been given to the listener as a complete message.
+  std::vector<char> already_read_buffer_;
+  // The bytes that were read in the pending read.
+  scoped_refptr<net::IOBuffer> pending_read_buffer_;
+  // The type of message we're looking for in the pending read.
+  BattOrMessageType pending_read_message_type_;
 
   // The total number of bytes that we're expecting to send.
   size_t pending_write_length_;

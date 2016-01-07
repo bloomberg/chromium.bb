@@ -114,9 +114,9 @@ void BattOrAgent::OnBytesSent(bool success) {
   }
 }
 
-void BattOrAgent::OnBytesRead(bool success,
-                              BattOrMessageType type,
-                              scoped_ptr<vector<char>> bytes) {
+void BattOrAgent::OnMessageRead(bool success,
+                                BattOrMessageType type,
+                                scoped_ptr<vector<char>> bytes) {
   if (!success) {
     CompleteCommand(BATTOR_ERROR_RECEIVE_ERROR);
     return;
@@ -182,7 +182,7 @@ void BattOrAgent::PerformAction(Action action) {
       SendControlMessage(BATTOR_CONTROL_MESSAGE_TYPE_INIT, 0, 0);
       break;
     case Action::READ_INIT_ACK:
-      connection_->ReadBytes(sizeof(BattOrControlMessageAck));
+      connection_->ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL_ACK);
       break;
     case Action::SEND_SET_GAIN:
       // Set the BattOr's gain. Setting the gain tells the BattOr the range of
@@ -191,13 +191,13 @@ void BattOrAgent::PerformAction(Action action) {
                          0);
       break;
     case Action::READ_SET_GAIN_ACK:
-      connection_->ReadBytes(sizeof(BattOrControlMessageAck));
+      connection_->ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL_ACK);
       break;
     case Action::SEND_START_TRACING:
       SendControlMessage(BATTOR_CONTROL_MESSAGE_TYPE_START_SAMPLING_SD, 0, 0);
       break;
     case Action::READ_START_TRACING_ACK:
-      connection_->ReadBytes(sizeof(BattOrControlMessageAck));
+      connection_->ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL_ACK);
       break;
     case Action::INVALID:
       NOTREACHED();

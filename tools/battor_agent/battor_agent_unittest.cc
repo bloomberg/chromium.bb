@@ -50,7 +50,7 @@ class MockBattOrConnection : public BattOrConnection {
                void(BattOrMessageType type,
                     const void* buffer,
                     size_t bytes_to_send));
-  MOCK_METHOD1(ReadBytes, void(size_t bytes_to_read));
+  MOCK_METHOD1(ReadMessage, void(BattOrMessageType type));
   MOCK_METHOD0(Flush, void());
 
  private:
@@ -128,8 +128,8 @@ class BattOrAgentTest : public testing::Test, public BattOrAgent::Listener {
     if (end_state == BattOrAgentState::INIT_SENT)
       return;
 
-    GetAgent()->OnBytesRead(true, BATTOR_MESSAGE_TYPE_CONTROL_ACK,
-                            AckToCharVector(kInitAck));
+    GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_CONTROL_ACK,
+                              AckToCharVector(kInitAck));
     GetTaskRunner()->RunUntilIdle();
 
     if (end_state == BattOrAgentState::INIT_ACKED)
@@ -141,8 +141,8 @@ class BattOrAgentTest : public testing::Test, public BattOrAgent::Listener {
     if (end_state == BattOrAgentState::SET_GAIN_SENT)
       return;
 
-    GetAgent()->OnBytesRead(true, BATTOR_MESSAGE_TYPE_CONTROL_ACK,
-                            AckToCharVector(kSetGainAck));
+    GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_CONTROL_ACK,
+                              AckToCharVector(kSetGainAck));
     GetTaskRunner()->RunUntilIdle();
 
     if (end_state == BattOrAgentState::GAIN_ACKED)
@@ -158,8 +158,8 @@ class BattOrAgentTest : public testing::Test, public BattOrAgent::Listener {
     // state machine.
     DCHECK(end_state == BattOrAgentState::START_TRACING_COMPLETE);
 
-    GetAgent()->OnBytesRead(true, BATTOR_MESSAGE_TYPE_CONTROL_ACK,
-                            AckToCharVector(kStartTracingAck));
+    GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_CONTROL_ACK,
+                              AckToCharVector(kStartTracingAck));
     GetTaskRunner()->RunUntilIdle();
   }
 
@@ -201,7 +201,8 @@ TEST_F(BattOrAgentTest, StartTracing) {
       SendBytes(BATTOR_MESSAGE_TYPE_CONTROL,
                 BufferEq(&init_msg, sizeof(init_msg)), sizeof(init_msg)));
 
-  EXPECT_CALL(*GetAgent()->GetConnection(), ReadBytes(sizeof(kInitAck)));
+  EXPECT_CALL(*GetAgent()->GetConnection(),
+              ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL_ACK));
 
   BattOrControlMessage set_gain_msg{BATTOR_CONTROL_MESSAGE_TYPE_SET_GAIN,
                                     BATTOR_GAIN_LOW, 0};
@@ -210,7 +211,8 @@ TEST_F(BattOrAgentTest, StartTracing) {
                         BufferEq(&set_gain_msg, sizeof(set_gain_msg)),
                         sizeof(set_gain_msg)));
 
-  EXPECT_CALL(*GetAgent()->GetConnection(), ReadBytes(sizeof(kSetGainAck)));
+  EXPECT_CALL(*GetAgent()->GetConnection(),
+              ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL_ACK));
 
   BattOrControlMessage start_tracing_msg{
       BATTOR_CONTROL_MESSAGE_TYPE_START_SAMPLING_SD, 0, 0};
@@ -220,7 +222,7 @@ TEST_F(BattOrAgentTest, StartTracing) {
                         sizeof(start_tracing_msg)));
 
   EXPECT_CALL(*GetAgent()->GetConnection(),
-              ReadBytes(sizeof(kStartTracingAck)));
+              ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL_ACK));
 
   RunStartTracingTo(BattOrAgentState::START_TRACING_COMPLETE);
   EXPECT_TRUE(IsStartTracingComplete());
@@ -258,7 +260,7 @@ TEST_F(BattOrAgentTest, StartTracingFailsIfInitSendFails) {
 
 TEST_F(BattOrAgentTest, StartTracingFailsIfInitAckReadFails) {
   RunStartTracingTo(BattOrAgentState::INIT_SENT);
-  GetAgent()->OnBytesRead(false, BATTOR_MESSAGE_TYPE_CONTROL_ACK, nullptr);
+  GetAgent()->OnMessageRead(false, BATTOR_MESSAGE_TYPE_CONTROL_ACK, nullptr);
   GetTaskRunner()->RunUntilIdle();
 
   EXPECT_TRUE(IsStartTracingComplete());
@@ -267,8 +269,8 @@ TEST_F(BattOrAgentTest, StartTracingFailsIfInitAckReadFails) {
 
 TEST_F(BattOrAgentTest, StartTracingFailsIfInitWrongAckRead) {
   RunStartTracingTo(BattOrAgentState::INIT_SENT);
-  GetAgent()->OnBytesRead(true, BATTOR_MESSAGE_TYPE_CONTROL_ACK,
-                          AckToCharVector(kStartTracingAck));
+  GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_CONTROL_ACK,
+                            AckToCharVector(kStartTracingAck));
   GetTaskRunner()->RunUntilIdle();
 
   EXPECT_TRUE(IsStartTracingComplete());
@@ -286,7 +288,7 @@ TEST_F(BattOrAgentTest, StartTracingFailsIfSetGainSendFails) {
 
 TEST_F(BattOrAgentTest, StartTracingFailsIfSetGainAckReadFails) {
   RunStartTracingTo(BattOrAgentState::SET_GAIN_SENT);
-  GetAgent()->OnBytesRead(false, BATTOR_MESSAGE_TYPE_CONTROL_ACK, nullptr);
+  GetAgent()->OnMessageRead(false, BATTOR_MESSAGE_TYPE_CONTROL_ACK, nullptr);
   GetTaskRunner()->RunUntilIdle();
 
   EXPECT_TRUE(IsStartTracingComplete());
@@ -295,8 +297,8 @@ TEST_F(BattOrAgentTest, StartTracingFailsIfSetGainAckReadFails) {
 
 TEST_F(BattOrAgentTest, StartTracingFailsIfSetGainWrongAckRead) {
   RunStartTracingTo(BattOrAgentState::SET_GAIN_SENT);
-  GetAgent()->OnBytesRead(true, BATTOR_MESSAGE_TYPE_CONTROL_ACK,
-                          AckToCharVector(kStartTracingAck));
+  GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_CONTROL_ACK,
+                            AckToCharVector(kStartTracingAck));
   GetTaskRunner()->RunUntilIdle();
 
   EXPECT_TRUE(IsStartTracingComplete());
@@ -314,7 +316,7 @@ TEST_F(BattOrAgentTest, StartTracingFailsIfStartTracingSendFails) {
 
 TEST_F(BattOrAgentTest, StartTracingFailsIfStartTracingAckReadFails) {
   RunStartTracingTo(BattOrAgentState::START_TRACING_SENT);
-  GetAgent()->OnBytesRead(false, BATTOR_MESSAGE_TYPE_CONTROL_ACK, nullptr);
+  GetAgent()->OnMessageRead(false, BATTOR_MESSAGE_TYPE_CONTROL_ACK, nullptr);
   GetTaskRunner()->RunUntilIdle();
 
   EXPECT_TRUE(IsStartTracingComplete());
@@ -323,8 +325,8 @@ TEST_F(BattOrAgentTest, StartTracingFailsIfStartTracingAckReadFails) {
 
 TEST_F(BattOrAgentTest, StartTracingFailsIfStartTracingWrongAckRead) {
   RunStartTracingTo(BattOrAgentState::START_TRACING_SENT);
-  GetAgent()->OnBytesRead(true, BATTOR_MESSAGE_TYPE_CONTROL_ACK,
-                          AckToCharVector(kInitAck));
+  GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_CONTROL_ACK,
+                            AckToCharVector(kInitAck));
   GetTaskRunner()->RunUntilIdle();
 
   EXPECT_TRUE(IsStartTracingComplete());

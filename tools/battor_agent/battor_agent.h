@@ -55,9 +55,9 @@ class BattOrAgent : public BattOrConnection::Listener,
   // BattOrConnection::Listener implementations.
   void OnConnectionOpened(bool success) override;
   void OnBytesSent(bool success) override;
-  void OnBytesRead(bool success,
-                   BattOrMessageType type,
-                   scoped_ptr<std::vector<char>> bytes) override;
+  void OnMessageRead(bool success,
+                     BattOrMessageType type,
+                     scoped_ptr<std::vector<char>> bytes) override;
 
  protected:
   // The connection that knows how to communicate with the BattOr in terms of

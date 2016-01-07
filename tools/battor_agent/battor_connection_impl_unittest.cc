@@ -40,9 +40,9 @@ class BattOrConnectionImplTest : public testing::Test,
  public:
   void OnConnectionOpened(bool success) override { open_success_ = success; };
   void OnBytesSent(bool success) override { send_success_ = success; }
-  void OnBytesRead(bool success,
-                   BattOrMessageType type,
-                   scoped_ptr<std::vector<char>> bytes) override {
+  void OnMessageRead(bool success,
+                     BattOrMessageType type,
+                     scoped_ptr<std::vector<char>> bytes) override {
     is_read_complete_ = true;
     read_success_ = success;
     read_type_ = type;
@@ -56,13 +56,13 @@ class BattOrConnectionImplTest : public testing::Test,
 
   void OpenConnection() { connection_->Open(); }
 
-  void ReadBytes(uint16_t bytes_to_read) {
+  void ReadMessage(BattOrMessageType type) {
     is_read_complete_ = false;
-    connection_->ReadBytes(bytes_to_read);
+    connection_->ReadMessage(type);
   }
 
   // Reads the specified number of bytes directly from the serial connection.
-  scoped_refptr<net::IOBuffer> ReadBytesRaw(int bytes_to_read) {
+  scoped_refptr<net::IOBuffer> ReadMessageRaw(int bytes_to_read) {
     scoped_refptr<net::IOBuffer> buffer(
         new net::IOBuffer((size_t)bytes_to_read));
 
@@ -92,7 +92,7 @@ class BattOrConnectionImplTest : public testing::Test,
   bool IsReadComplete() { return is_read_complete_; }
   bool GetReadSuccess() { return read_success_; }
   BattOrMessageType GetReadType() { return read_type_; }
-  std::vector<char>* GetReadBytes() { return read_bytes_.get(); }
+  std::vector<char>* GetReadMessage() { return read_bytes_.get(); }
 
  private:
   scoped_ptr<TestableBattOrConnection> connection_;
@@ -125,7 +125,7 @@ TEST_F(BattOrConnectionImplTest, InitSendsCorrectBytes) {
   };
 
   ASSERT_TRUE(GetSendSuccess());
-  ASSERT_EQ(0, std::memcmp(ReadBytesRaw(13)->data(), expected_data, 13));
+  ASSERT_EQ(0, std::memcmp(ReadMessageRaw(13)->data(), expected_data, 13));
 }
 
 TEST_F(BattOrConnectionImplTest, ResetSendsCorrectBytes) {
@@ -150,10 +150,10 @@ TEST_F(BattOrConnectionImplTest, ResetSendsCorrectBytes) {
   };
 
   ASSERT_TRUE(GetSendSuccess());
-  ASSERT_EQ(0, std::memcmp(ReadBytesRaw(12)->data(), expected_data, 12));
+  ASSERT_EQ(0, std::memcmp(ReadMessageRaw(12)->data(), expected_data, 12));
 }
 
-TEST_F(BattOrConnectionImplTest, ReadBytesControlMessage) {
+TEST_F(BattOrConnectionImplTest, ReadMessageControlMessage) {
   OpenConnection();
   ASSERT_TRUE(GetOpenSuccess());
 
@@ -168,7 +168,7 @@ TEST_F(BattOrConnectionImplTest, ReadBytesControlMessage) {
       BATTOR_CONTROL_BYTE_END,
   };
   SendBytesRaw(data, 8);
-  ReadBytes(5);
+  ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL);
 
   const char expected[] = {BATTOR_CONTROL_MESSAGE_TYPE_RESET, 0x04, 0x04, 0x04,
                            0x04};
@@ -176,93 +176,89 @@ TEST_F(BattOrConnectionImplTest, ReadBytesControlMessage) {
   ASSERT_TRUE(IsReadComplete());
   ASSERT_TRUE(GetReadSuccess());
   ASSERT_EQ(BATTOR_MESSAGE_TYPE_CONTROL, GetReadType());
-  ASSERT_EQ(0, std::memcmp(GetReadBytes()->data(), expected, 5));
+  ASSERT_EQ(0, std::memcmp(GetReadMessage()->data(), expected, 5));
 }
 
-TEST_F(BattOrConnectionImplTest, ReadBytesNotEnoughBytes) {
-  OpenConnection();
-  ASSERT_TRUE(GetOpenSuccess());
-
-  // 3 (h/f), 1 (control message type), 4 (data)
-  SendControlMessage(BATTOR_CONTROL_MESSAGE_TYPE_RESET, 0, 0);
-  ReadBytes(sizeof(BattOrControlMessage) + 1);
-
-  ASSERT_FALSE(IsReadComplete());
-}
-
-TEST_F(BattOrConnectionImplTest, ReadBytesInvalidType) {
+TEST_F(BattOrConnectionImplTest, ReadMessageInvalidType) {
   OpenConnection();
   ASSERT_TRUE(GetOpenSuccess());
 
   const char data[] = {
       BATTOR_CONTROL_BYTE_START,
       UINT8_MAX,
-      BATTOR_CONTROL_MESSAGE_TYPE_INIT,
+      BATTOR_CONTROL_MESSAGE_TYPE_RESET,
+      0x04,
+      0x04,
       0x04,
       0x04,
       BATTOR_CONTROL_BYTE_END,
   };
-  SendBytesRaw(data, 8);
-
-  ReadBytes(3);
+  SendBytesRaw(data, 6);
+  ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL);
 
   ASSERT_TRUE(IsReadComplete());
   ASSERT_FALSE(GetReadSuccess());
 }
 
-TEST_F(BattOrConnectionImplTest, ReadBytesWithEscapeCharacters) {
+TEST_F(BattOrConnectionImplTest, ReadMessageEndsMidMessageByte) {
+  OpenConnection();
+  ASSERT_TRUE(GetOpenSuccess());
+
+  const char data[] = {
+      BATTOR_CONTROL_BYTE_START, BATTOR_MESSAGE_TYPE_CONTROL,
+      BATTOR_CONTROL_MESSAGE_TYPE_RESET, 0x04,
+  };
+  SendBytesRaw(data, 4);
+  ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL);
+
+  ASSERT_TRUE(IsReadComplete());
+  ASSERT_FALSE(GetReadSuccess());
+}
+
+TEST_F(BattOrConnectionImplTest, ReadMessageMissingEndByte) {
   OpenConnection();
   ASSERT_TRUE(GetOpenSuccess());
 
   const char data[] = {
       BATTOR_CONTROL_BYTE_START,
-      BATTOR_MESSAGE_TYPE_CONTROL_ACK,
+      BATTOR_MESSAGE_TYPE_CONTROL,
+      BATTOR_CONTROL_MESSAGE_TYPE_RESET,
+      0x04,
+      0x04,
+      0x04,
+      0x04,
+  };
+  SendBytesRaw(data, 5);
+  ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL);
+
+  ASSERT_TRUE(IsReadComplete());
+  ASSERT_FALSE(GetReadSuccess());
+}
+
+TEST_F(BattOrConnectionImplTest, ReadMessageWithEscapeCharacters) {
+  OpenConnection();
+  ASSERT_TRUE(GetOpenSuccess());
+
+  const char data[] = {
+      BATTOR_CONTROL_BYTE_START,
+      BATTOR_MESSAGE_TYPE_CONTROL,
       BATTOR_CONTROL_MESSAGE_TYPE_RESET,
       BATTOR_CONTROL_BYTE_ESCAPE,
       0x00,
+      0x04,
+      0x04,
+      0x04,
       BATTOR_CONTROL_BYTE_END,
   };
-  SendBytesRaw(data, 6);
-
-  ReadBytes(2);
+  SendBytesRaw(data, 9);
+  ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL);
 
   const char expected[] = {BATTOR_CONTROL_MESSAGE_TYPE_RESET, 0x00};
 
   ASSERT_TRUE(IsReadComplete());
   ASSERT_TRUE(GetReadSuccess());
-  ASSERT_EQ(BATTOR_MESSAGE_TYPE_CONTROL_ACK, GetReadType());
-  ASSERT_EQ(0, std::memcmp(GetReadBytes()->data(), expected, 2));
-}
-
-TEST_F(BattOrConnectionImplTest,
-       ReadBytesWithEscapeCharactersInSubsequentReads) {
-  OpenConnection();
-  ASSERT_TRUE(GetOpenSuccess());
-
-  // The first read should request 7 bytes. Of those 7 bytes, though, 2 of them
-  // are escape bytes, so we'll then do a second read of 2 bytes. In that second
-  // read, we'll see another escape byte, so we'll have to do a third read of 1
-  // byte. That third read should complete the message.
-  const char data[] = {
-      // These bytes make up the first read.
-      BATTOR_CONTROL_BYTE_START, BATTOR_MESSAGE_TYPE_CONTROL_ACK,
-      BATTOR_CONTROL_MESSAGE_TYPE_RESET, BATTOR_CONTROL_BYTE_ESCAPE, 0x00,
-      BATTOR_CONTROL_BYTE_ESCAPE, 0x00,
-      // These bytes make up the second read.
-      BATTOR_CONTROL_BYTE_ESCAPE, 0x00,
-      // This byte makes up the third read.
-      BATTOR_CONTROL_BYTE_END,
-  };
-  SendBytesRaw(data, 10);
-
-  ReadBytes(4);
-
-  const char expected[] = {BATTOR_CONTROL_MESSAGE_TYPE_RESET, 0x00, 0x00, 0x00};
-
-  ASSERT_TRUE(IsReadComplete());
-  ASSERT_TRUE(GetReadSuccess());
-  ASSERT_EQ(BATTOR_MESSAGE_TYPE_CONTROL_ACK, GetReadType());
-  ASSERT_EQ(0, std::memcmp(GetReadBytes()->data(), expected, 4));
+  ASSERT_EQ(BATTOR_MESSAGE_TYPE_CONTROL, GetReadType());
+  ASSERT_EQ(0, std::memcmp(GetReadMessage()->data(), expected, 2));
 }
 
 TEST_F(BattOrConnectionImplTest, ReadControlMessage) {
@@ -270,18 +266,109 @@ TEST_F(BattOrConnectionImplTest, ReadControlMessage) {
   ASSERT_TRUE(GetOpenSuccess());
 
   SendControlMessage(BATTOR_CONTROL_MESSAGE_TYPE_RESET, 4, 7);
-  ReadBytes(sizeof(BattOrControlMessage));
+  ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL);
 
   ASSERT_TRUE(IsReadComplete());
   ASSERT_TRUE(GetReadSuccess());
   ASSERT_EQ(BATTOR_MESSAGE_TYPE_CONTROL, GetReadType());
 
   BattOrControlMessage* msg =
-      reinterpret_cast<BattOrControlMessage*>(GetReadBytes()->data());
+      reinterpret_cast<BattOrControlMessage*>(GetReadMessage()->data());
 
   ASSERT_EQ(BATTOR_CONTROL_MESSAGE_TYPE_RESET, msg->type);
   ASSERT_EQ(4, msg->param1);
   ASSERT_EQ(7, msg->param2);
+}
+
+TEST_F(BattOrConnectionImplTest, ReadMessageExtraBytesStoredBetweenReads) {
+  OpenConnection();
+  ASSERT_TRUE(GetOpenSuccess());
+
+  // Send a samples frame with length and sequence number of zero.
+  const char data[] = {
+      BATTOR_CONTROL_BYTE_START,
+      BATTOR_MESSAGE_TYPE_SAMPLES,
+      0x02,
+      0x00,
+      0x02,
+      0x00,
+      0x02,
+      0x00,
+      BATTOR_CONTROL_BYTE_END,
+  };
+  SendBytesRaw(data, 9);
+  SendControlMessage(BATTOR_CONTROL_MESSAGE_TYPE_INIT, 5, 8);
+
+  // When reading sample frames, we're forced to read lots because each frame
+  // could be up to 50kB long. By reading a really short sample frame (like the
+  // zero-length one above), the BattOrConnection is forced to store whatever
+  // extra data it finds in the serial stream - in this case, the init control
+  // message that we sent.
+  ReadMessage(BATTOR_MESSAGE_TYPE_SAMPLES);
+
+  ASSERT_TRUE(IsReadComplete());
+  ASSERT_TRUE(GetReadSuccess());
+  ASSERT_EQ(BATTOR_MESSAGE_TYPE_SAMPLES, GetReadType());
+
+  ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL);
+
+  ASSERT_TRUE(IsReadComplete());
+  ASSERT_TRUE(GetReadSuccess());
+  ASSERT_EQ(BATTOR_MESSAGE_TYPE_CONTROL, GetReadType());
+
+  BattOrControlMessage* init_msg =
+      reinterpret_cast<BattOrControlMessage*>(GetReadMessage()->data());
+
+  ASSERT_EQ(BATTOR_CONTROL_MESSAGE_TYPE_INIT, init_msg->type);
+  ASSERT_EQ(5, init_msg->param1);
+  ASSERT_EQ(8, init_msg->param2);
+}
+
+TEST_F(BattOrConnectionImplTest, ReadMessageFailsWithControlButExpectingAck) {
+  OpenConnection();
+  ASSERT_TRUE(GetOpenSuccess());
+
+  const char data[] = {
+      BATTOR_CONTROL_BYTE_START,         BATTOR_MESSAGE_TYPE_CONTROL_ACK,
+      BATTOR_CONTROL_MESSAGE_TYPE_RESET, 0x04,
+      BATTOR_CONTROL_BYTE_END,
+  };
+  SendBytesRaw(data, 5);
+  ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL);
+
+  ASSERT_TRUE(IsReadComplete());
+  ASSERT_FALSE(GetReadSuccess());
+}
+
+TEST_F(BattOrConnectionImplTest, ReadMessageFailsWithAckButExpectingControl) {
+  OpenConnection();
+  ASSERT_TRUE(GetOpenSuccess());
+
+  const char data[] = {
+      BATTOR_CONTROL_BYTE_START,         BATTOR_MESSAGE_TYPE_CONTROL_ACK,
+      BATTOR_CONTROL_MESSAGE_TYPE_RESET, 0x04,
+      BATTOR_CONTROL_BYTE_END,
+  };
+  SendBytesRaw(data, 5);
+  ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL);
+
+  ASSERT_TRUE(IsReadComplete());
+  ASSERT_FALSE(GetReadSuccess());
+}
+
+TEST_F(BattOrConnectionImplTest, ReadMessageControlTypePrintFails) {
+  OpenConnection();
+  ASSERT_TRUE(GetOpenSuccess());
+
+  const char data[] = {
+      BATTOR_CONTROL_BYTE_START, BATTOR_MESSAGE_TYPE_PRINT,
+      BATTOR_CONTROL_BYTE_END,
+  };
+  SendBytesRaw(data, 3);
+  ReadMessage(BATTOR_MESSAGE_TYPE_PRINT);
+
+  ASSERT_TRUE(IsReadComplete());
+  ASSERT_FALSE(GetReadSuccess());
 }
 
 }  // namespace battor
