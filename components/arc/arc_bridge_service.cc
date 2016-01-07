@@ -80,6 +80,30 @@ void ArcBridgeService::CloseAppChannel() {
   FOR_EACH_OBSERVER(Observer, observer_list(), OnAppInstanceClosed());
 }
 
+void ArcBridgeService::OnAuthInstanceReady(AuthInstancePtr auth_ptr) {
+  DCHECK(CalledOnValidThread());
+  temporary_auth_ptr_ = std::move(auth_ptr);
+  temporary_auth_ptr_.QueryVersion(base::Bind(
+      &ArcBridgeService::OnAuthVersionReady, weak_factory_.GetWeakPtr()));
+}
+
+void ArcBridgeService::OnAuthVersionReady(int32_t version) {
+  DCHECK(CalledOnValidThread());
+  auth_ptr_ = std::move(temporary_auth_ptr_);
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnAuthInstanceReady());
+  auth_ptr_.set_connection_error_handler(base::Bind(
+      &ArcBridgeService::CloseAuthChannel, weak_factory_.GetWeakPtr()));
+}
+
+void ArcBridgeService::CloseAuthChannel() {
+  DCHECK(CalledOnValidThread());
+  if (!input_ptr_)
+    return;
+
+  auth_ptr_.reset();
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnAuthInstanceClosed());
+}
+
 void ArcBridgeService::OnInputInstanceReady(InputInstancePtr input_ptr) {
   DCHECK(CalledOnValidThread());
   temporary_input_ptr_ = std::move(input_ptr);
@@ -226,6 +250,7 @@ void ArcBridgeService::CloseAllChannels() {
   // Call all the error handlers of all the channels to both close the channel
   // and notify any observers that the channel is closed.
   CloseAppChannel();
+  CloseAuthChannel();
   CloseInputChannel();
   CloseNotificationsChannel();
   ClosePowerChannel();

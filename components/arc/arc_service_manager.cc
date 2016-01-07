@@ -8,6 +8,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "components/arc/arc_bridge_bootstrap.h"
 #include "components/arc/arc_bridge_service_impl.h"
+#include "components/arc/auth/arc_auth_service.h"
 #include "components/arc/input/arc_input_bridge.h"
 #include "components/arc/power/arc_power_bridge.h"
 #include "components/arc/settings/arc_settings_bridge.h"
@@ -22,16 +23,19 @@ ArcServiceManager* g_arc_service_manager = nullptr;
 }  // namespace
 
 ArcServiceManager::ArcServiceManager(
+    scoped_ptr<ArcAuthService> auth_service,
     scoped_ptr<ArcSettingsBridge> settings_bridge)
     : arc_bridge_service_(
           new ArcBridgeServiceImpl(ArcBridgeBootstrap::Create())),
-      arc_settings_bridge_(std::move(settings_bridge)) {
+      arc_auth_service_(std::move(auth_service)),
+      arc_input_bridge_(ArcInputBridge::Create(arc_bridge_service_.get())),
+      arc_settings_bridge_(std::move(settings_bridge)),
+      arc_power_bridge_(new ArcPowerBridge(arc_bridge_service_.get())) {
   DCHECK(!g_arc_service_manager);
-  arc_input_bridge_ = ArcInputBridge::Create(arc_bridge_service_.get());
-  arc_power_bridge_.reset(new ArcPowerBridge(arc_bridge_service_.get()));
   g_arc_service_manager = this;
 
   arc_settings_bridge_->StartObservingBridgeServiceChanges();
+  arc_auth_service_->StartObservingBridgeServiceChanges();
 }
 
 ArcServiceManager::~ArcServiceManager() {

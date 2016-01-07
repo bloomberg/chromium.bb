@@ -21,6 +21,7 @@
         '../ui/events/events.gyp:events_base',
       ],
       'sources': [
+        'arc/auth/arc_auth_service.h',
         'arc/arc_bridge_bootstrap.cc',
         'arc/arc_bridge_bootstrap.h',
         'arc/arc_bridge_service.cc',
@@ -69,6 +70,7 @@
       'sources': [
         'arc/common/app.mojom',
         'arc/common/arc_bridge.mojom',
+        'arc/common/auth.mojom',
         'arc/common/input.mojom',
         'arc/common/notifications.mojom',
         'arc/common/power.mojom',

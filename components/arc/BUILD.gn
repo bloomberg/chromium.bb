@@ -14,6 +14,7 @@ static_library("arc") {
     "arc_bridge_service_impl.h",
     "arc_service_manager.cc",
     "arc_service_manager.h",
+    "auth/arc_auth_service.h",
     "input/arc_input_bridge.h",
     "input/arc_input_bridge_impl.cc",
     "input/arc_input_bridge_impl.h",
@@ -45,6 +46,7 @@ mojom("arc_bindings") {
   sources = [
     "common/app.mojom",
     "common/arc_bridge.mojom",
+    "common/auth.mojom",
     "common/input.mojom",
     "common/notifications.mojom",
     "common/power.mojom",

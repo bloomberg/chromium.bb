@@ -11,6 +11,7 @@
 
 namespace arc {
 
+class ArcAuthService;
 class ArcBridgeService;
 class ArcInputBridge;
 class ArcSettingsBridge;
@@ -20,7 +21,8 @@ class ArcPowerBridge;
 // instance via the ArcBridgeService.
 class ArcServiceManager {
  public:
-  explicit ArcServiceManager(scoped_ptr<ArcSettingsBridge> settings_bridge);
+  ArcServiceManager(scoped_ptr<ArcAuthService> auth_service,
+                    scoped_ptr<ArcSettingsBridge> settings_bridge);
   virtual ~ArcServiceManager();
 
   // |arc_bridge_service| can only be accessed on the thread that this
@@ -34,6 +36,9 @@ class ArcServiceManager {
  private:
   base::ThreadChecker thread_checker_;
   scoped_ptr<ArcBridgeService> arc_bridge_service_;
+
+  // Individual services
+  scoped_ptr<ArcAuthService> arc_auth_service_;
   scoped_ptr<ArcInputBridge> arc_input_bridge_;
   scoped_ptr<ArcSettingsBridge> arc_settings_bridge_;
   scoped_ptr<ArcPowerBridge> arc_power_bridge_;
