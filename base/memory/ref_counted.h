@@ -118,7 +118,7 @@ class BASE_EXPORT RefCountedThreadSafeBase {
 //     ~MyFoo();
 //   };
 //
-// You should always make your destructor private, to avoid any code deleting
+// You should always make your destructor non-public, to avoid any code deleting
 // the object accidently while there are references to it.
 template <class T>
 class RefCounted : public subtle::RefCountedBase {
