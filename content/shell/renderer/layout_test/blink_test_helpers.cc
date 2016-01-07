@@ -21,7 +21,6 @@ void ExportLayoutTestSpecificPreferences(
     WebPreferences* to) {
   to->allow_universal_access_from_file_urls =
       from.allow_universal_access_from_file_urls;
-  to->dom_paste_enabled = from.dom_paste_allowed;
   to->javascript_can_access_clipboard = from.java_script_can_access_clipboard;
   to->xss_auditor_enabled = from.xss_auditor_enabled;
   to->editing_behavior = static_cast<EditingBehavior>(from.editing_behavior);
@@ -32,7 +31,6 @@ void ExportLayoutTestSpecificPreferences(
   to->supports_multiple_windows = from.supports_multiple_windows;
   to->loads_images_automatically = from.loads_images_automatically;
   to->plugins_enabled = from.plugins_enabled;
-  to->application_cache_enabled = from.offline_web_application_cache_enabled;
   to->tabs_to_links = from.tabs_to_links;
   to->experimental_webgl_enabled = from.experimental_webgl_enabled;
   // experimentalCSSRegionsEnabled is deprecated and ignored.

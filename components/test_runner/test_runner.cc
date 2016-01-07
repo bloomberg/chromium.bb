@@ -2594,14 +2594,10 @@ void TestRunner::OverridePreference(const std::string& key,
     prefs->loads_images_automatically = value->BooleanValue();
   } else if (key == "WebKitPluginsEnabled") {
     prefs->plugins_enabled = value->BooleanValue();
-  } else if (key == "WebKitOfflineWebApplicationCacheEnabled") {
-    prefs->offline_web_application_cache_enabled = value->BooleanValue();
   } else if (key == "WebKitTabToLinksPreferenceKey") {
     prefs->tabs_to_links = value->BooleanValue();
   } else if (key == "WebKitWebGLEnabled") {
     prefs->experimental_webgl_enabled = value->BooleanValue();
-  } else if (key == "WebKitCSSRegionsEnabled") {
-    prefs->experimental_css_regions_enabled = value->BooleanValue();
   } else if (key == "WebKitCSSGridLayoutEnabled") {
     prefs->experimental_css_grid_layout_enabled = value->BooleanValue();
   } else if (key == "WebKitHyperlinkAuditingEnabled") {
@@ -2620,8 +2616,6 @@ void TestRunner::OverridePreference(const std::string& key,
     prefs->strict_powerful_feature_restrictions = value->BooleanValue();
   } else if (key == "WebKitShouldRespectImageOrientation") {
     prefs->should_respect_image_orientation = value->BooleanValue();
-  } else if (key == "WebKitWebAudioEnabled") {
-    DCHECK(value->BooleanValue());
   } else if (key == "WebKitWebSecurityEnabled") {
     prefs->web_security_enabled = value->BooleanValue();
   } else {
