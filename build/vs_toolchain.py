@@ -64,7 +64,69 @@ def SetEnvironmentAndGetRuntimeDllDirs():
     # Include the VS runtime in the PATH in case it's not machine-installed.
     runtime_path = ';'.join(vs_runtime_dll_dirs)
     os.environ['PATH'] = runtime_path + ';' + os.environ['PATH']
+  elif sys.platform == 'win32' and not depot_tools_win_toolchain:
+    if not 'GYP_MSVS_OVERRIDE_PATH' in os.environ:
+      os.environ['GYP_MSVS_OVERRIDE_PATH'] = DetectVisualStudioPath()
+
   return vs_runtime_dll_dirs
+
+
+def _RegistryGetValueUsingWinReg(key, value):
+  """Use the _winreg module to obtain the value of a registry key.
+
+  Args:
+    key: The registry key.
+    value: The particular registry value to read.
+  Return:
+    contents of the registry key's value, or None on failure.  Throws
+    ImportError if _winreg is unavailable.
+  """
+  import _winreg
+  try:
+    root, subkey = key.split('\\', 1)
+    assert root == 'HKLM'  # Only need HKLM for now.
+    with _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, subkey) as hkey:
+      return _winreg.QueryValueEx(hkey, value)[0]
+  except WindowsError:
+    return None
+
+
+def _RegistryGetValue(key, value):
+  try:
+    return _RegistryGetValueUsingWinReg(key, value)
+  except ImportError:
+    raise Exception('The python library _winreg not found.')
+
+
+def DetectVisualStudioPath():
+  """Return path to the GYP_MSVS_VERSION of Visual Studio.
+  """
+
+  # Note that this code is used from
+  # build/toolchain/win/setup_toolchain.py as well.
+
+  # Default to Visual Studio 2013 for now.
+  version_as_year = os.environ.get('GYP_MSVS_VERSION', '2013')
+  year_to_version = {
+      '2013': '12.0',
+      '2015': '14.0',
+  }
+  if version_as_year not in year_to_version:
+    raise Exception(('Visual Studio version %s (from GYP_MSVS_VERSION)'
+                     ' not supported. Supported versions are: %s') % (
+                       version_as_year, ', '.join(year_to_version.keys())))
+  version = year_to_version[version_as_year]
+  keys = [r'HKLM\Software\Microsoft\VisualStudio\%s' % version,
+          r'HKLM\Software\Wow6432Node\Microsoft\VisualStudio\%s' % version]
+  for key in keys:
+    path = _RegistryGetValue(key, 'InstallDir')
+    if not path:
+      continue
+    path = os.path.normpath(os.path.join(path, '..', '..'))
+    return path
+
+  raise Exception(('Visual Studio Version %s (from GYP_MSVS_VERSION)'
+                   ' not found.') % (version_as_year))
 
 
 def _VersionNumber():

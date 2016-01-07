@@ -16,6 +16,7 @@ import re
 import subprocess
 import sys
 
+SCRIPT_DIR = os.path.dirname(__file__)
 
 def _ExtractImportantEnvironment(output_of_set):
   """Extracts environment variables required for the toolchain to run from
@@ -55,6 +56,17 @@ def _ExtractImportantEnvironment(output_of_set):
   return env
 
 
+def _DetectVisualStudioPath():
+  """Return path to the GYP_MSVS_VERSION of Visual Studio.
+  """
+
+  # Use the code in build/vs_toolchain.py to avoid duplicating code.
+  chromium_dir = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..', '..'))
+  sys.path.append(os.path.join(chromium_dir, 'build'))
+  import vs_toolchain
+  return vs_toolchain.DetectVisualStudioPath()
+
+
 def _SetupScript(target_cpu, sdk_dir):
   """Returns a command (with arguments) to be used to set up the
   environment."""
@@ -66,9 +78,9 @@ def _SetupScript(target_cpu, sdk_dir):
     return [os.path.normpath(os.path.join(sdk_dir, 'Bin/SetEnv.Cmd')),
             '/' + target_cpu]
   else:
+    if 'GYP_MSVS_OVERRIDE_PATH' not in os.environ:
+      os.environ['GYP_MSVS_OVERRIDE_PATH'] = _DetectVisualStudioPath()
     # We only support x64-hosted tools.
-    # TODO(scottmg|dpranke): Non-depot_tools toolchain: need to get Visual
-    # Studio install location from registry.
     return [os.path.normpath(os.path.join(os.environ['GYP_MSVS_OVERRIDE_PATH'],
                                           'VC/vcvarsall.bat')),
             'amd64_x86' if target_cpu == 'x86' else 'amd64']
