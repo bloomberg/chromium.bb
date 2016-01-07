@@ -16,6 +16,7 @@
 #include "util.h"
 
 extern struct gbm_driver gbm_driver_cirrus;
+extern struct gbm_driver gbm_driver_evdi;
 #ifdef GBM_EXYNOS
 extern struct gbm_driver gbm_driver_exynos;
 #endif
@@ -49,6 +50,7 @@ static struct gbm_driver *gbm_get_driver(int fd)
 
 	struct gbm_driver *driver_list[] = {
 		&gbm_driver_cirrus,
+		&gbm_driver_evdi,
 #ifdef GBM_EXYNOS
 		&gbm_driver_exynos,
 #endif
