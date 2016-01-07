@@ -395,6 +395,17 @@ std::end</a></td>
 </tr>
 
 <tr>
+<td>Forwarding references</td>
+<td><code>std::forward()</code></td>
+<td>Perfectly forwards arguments (including rvalues)</td>
+<td><a href="http://en.cppreference.com/w/cpp/utility/forward"><code>std::forward</code></a></td>
+<td>
+  Allowed, though usage should be rare (primarily for forwarding constructor arguments, or in carefully reviewed library code).
+  <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/-O7euklhSxs/discussion">Discussion thread</a>
+</td>
+</tr>
+
+<tr>
 <td>Type Traits</td>
 <td>Class templates within <code>&lt;type_traits&gt;</code></td>
 <td>Allows compile-time inspection of the properties of types</td>
