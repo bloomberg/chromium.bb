@@ -121,8 +121,6 @@ action("archive") {
     "//chrome/browser/extensions/default_extensions",
     "//chrome/installer/setup",
     "//third_party/icu:icudata",
-
-    #"../chrome.gyp:chrome_nacl_win64",  TODO(GYP) bug 512869.
   ]
 
   if (enable_hidpi) {
@@ -136,11 +134,13 @@ action("archive") {
 
   if (enable_nacl) {
     inputs += [ "$root_out_dir/nacl_irt_x86_64.nexe" ]
+    deps += [ "//ppapi/native_client:irt" ]
     if (current_cpu == "x86") {
       inputs += [
         "$root_out_dir/nacl64.exe",
         "$root_out_dir/nacl_irt_x86_32.nexe",
       ]
+      deps += [ "//components/nacl/broker:nacl64" ]
     }
   }
 
@@ -163,10 +163,6 @@ action("archive") {
     "--depfile",
     rebase_path(depfile, root_build_dir),
   ]
-
-  if (enable_nacl) {
-    deps += [ "//ppapi/native_client:irt" ]
-  }
 }
 
 # TODO(GYP) bug 521052: This target needs to be checked to make sure its the
