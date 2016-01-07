@@ -13,7 +13,10 @@ import sys
 import time
 
 extra_trybots = [
-  'win_clang_dbg',
+  {
+    "mastername": "tryserver.chromium.win",
+    "buildername": "win_clang_dbg",
+  }
 ]
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -266,7 +269,8 @@ class AutoRoller(object):
         # Run additional tryjobs
         extra_try_args = []
         for extra_trybot in extra_trybots:
-          extra_try_args += ['-b', extra_trybot]
+          extra_try_args += ['-m', extra_trybot["mastername"],
+                             '-b', extra_trybot["buildername"]]
         self._RunCommand(base_try_cmd + extra_try_args)
 
       cl_info = self._GetCLInfo()
