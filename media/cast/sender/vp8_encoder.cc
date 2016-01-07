@@ -50,7 +50,8 @@ const double kEquivalentEncodingSpeedStepPerQpStep = 1 / 20.0;
 const int kHighestEncodingSpeed = 12;
 const int kLowestEncodingSpeed = 6;
 
-bool HasSufficientFeedback(const FeedbackSignalAccumulator& accumulator) {
+bool HasSufficientFeedback(
+    const FeedbackSignalAccumulator<base::TimeDelta>& accumulator) {
   const base::TimeDelta amount_of_history =
       accumulator.update_time() - accumulator.reset_time();
   return amount_of_history.InMicroseconds() >= 250000;  // 0.25 second.
@@ -331,15 +332,8 @@ void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
   if (encoded_frame->dependency == EncodedFrame::KEY) {
     key_frame_requested_ = false;
   }
-
-  // This is not a true system clock value, but a "hack" needed in order to use
-  // FeedbackSignalAccumulator.
-  const base::TimeTicks current_time = base::TimeTicks() +
-                                       base::TimeDelta::FromMilliseconds(10) +
-                                       video_frame->timestamp();
-
   if (encoded_frame->dependency == EncodedFrame::KEY) {
-    encoding_speed_acc_.Reset(kHighestEncodingSpeed, current_time);
+    encoding_speed_acc_.Reset(kHighestEncodingSpeed, video_frame->timestamp());
   } else {
     // Equivalent encoding speed considering both cpu_used setting and
     // quantizer.
@@ -350,7 +344,8 @@ void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
     double adjusted_encoding_speed = actual_encoding_speed *
                                      encoded_frame->deadline_utilization /
                                      kTargetDeadlineUtilization;
-    encoding_speed_acc_.Update(adjusted_encoding_speed, current_time);
+    encoding_speed_acc_.Update(adjusted_encoding_speed,
+                               video_frame->timestamp());
   }
 
   if (HasSufficientFeedback(encoding_speed_acc_)) {

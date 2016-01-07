@@ -23,7 +23,11 @@ namespace media {
 //
 // Usage note: Reset() must be called at least once before the first call to
 // Update().
-class MEDIA_EXPORT FeedbackSignalAccumulator {
+//
+// This template class supports data points that are timestamped using either
+// |base::TimeDelta| or |base::TimeTicks|.
+template <typename TimeType>
+class FeedbackSignalAccumulator {
  public:
   // |half_life| is the amount of time that must pass between two data points to
   // move the accumulated average value halfway in-between.  Example: If
@@ -31,13 +35,11 @@ class MEDIA_EXPORT FeedbackSignalAccumulator {
   // Update(1.0, t=1s) will result in an accumulated average value of 0.5.
   explicit FeedbackSignalAccumulator(base::TimeDelta half_life);
 
-  // TODO(xjz): Change time type used by Reset() and Update() methods to
-  // TimeDelta instead of TimeTicks. https://crbug.com/573280.
-
   // Erase all memory of historical values, re-starting with the given
   // |starting_value|.
-  void Reset(double starting_value, base::TimeTicks timestamp);
-  base::TimeTicks reset_time() const { return reset_time_; }
+  void Reset(double starting_value, TimeType timestamp);
+
+  TimeType reset_time() const { return reset_time_; }
 
   // Apply the given |value|, which was observed at the given |timestamp|, to
   // the accumulated average.  If the timestamp is in chronological order, the
@@ -45,8 +47,9 @@ class MEDIA_EXPORT FeedbackSignalAccumulator {
   // effect and false is returned.  If there are two or more updates at the same
   // |timestamp|, only the one with the greatest value will be accounted for
   // (see class comments for elaboration).
-  bool Update(double value, base::TimeTicks timestamp);
-  base::TimeTicks update_time() const { return update_time_; }
+  bool Update(double value, TimeType timestamp);
+
+  TimeType update_time() const { return update_time_; }
 
   // Returns the current accumulated average value.
   double current() const { return average_; }
@@ -57,12 +60,12 @@ class MEDIA_EXPORT FeedbackSignalAccumulator {
   // accumulated average.
   const base::TimeDelta half_life_;
 
-  base::TimeTicks reset_time_;   // |timestamp| passed in last call to Reset().
-  double average_;               // Current accumulated average.
-  double update_value_;          // Latest |value| accepted by Update().
-  base::TimeTicks update_time_;  // Latest |timestamp| accepted by Update().
+  TimeType reset_time_;   // |timestamp| passed in last call to Reset().
+  double average_;        // Current accumulated average.
+  double update_value_;   // Latest |value| accepted by Update().
+  TimeType update_time_;  // Latest |timestamp| accepted by Update().
   double prior_average_;  // Accumulated average before last call to Update().
-  base::TimeTicks prior_update_time_;  // |timestamp| in prior call to Update().
+  TimeType prior_update_time_;  // |timestamp| in prior call to Update().
 };
 
 }  // namespace media

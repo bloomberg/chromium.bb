@@ -85,8 +85,9 @@ base::TimeTicks JustAfter(base::TimeTicks t) {
 // Returns true if updates have been accumulated by |accumulator| for a
 // sufficient amount of time and the latest update was fairly recent, relative
 // to |now|.
-bool HasSufficientRecentFeedback(const FeedbackSignalAccumulator& accumulator,
-                                 base::TimeTicks now) {
+bool HasSufficientRecentFeedback(
+    const FeedbackSignalAccumulator<base::TimeTicks>& accumulator,
+    base::TimeTicks now) {
   const base::TimeDelta amount_of_history =
       accumulator.update_time() - accumulator.reset_time();
   return (amount_of_history.InMicroseconds() >= kMinSizeChangePeriodMicros) &&

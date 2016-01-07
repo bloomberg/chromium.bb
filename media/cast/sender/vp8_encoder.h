@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "media/capture/content/feedback_signal_accumulator.h"
+#include "media/capture/content/feedback_signal_accumulator.cc"
 #include "media/cast/cast_config.h"
 #include "media/cast/sender/software_video_encoder.h"
 #include "third_party/libvpx_new/source/libvpx/vpx/vpx_encoder.h"
@@ -80,7 +80,7 @@ class Vp8Encoder : public SoftwareVideoEncoder {
   bool has_seen_zero_length_encoded_frame_;
 
   // The accumulator (time averaging) of the encoding speed.
-  FeedbackSignalAccumulator encoding_speed_acc_;
+  FeedbackSignalAccumulator<base::TimeDelta> encoding_speed_acc_;
 
   // The higher the speed, the less CPU usage, and the lower quality.
   int encoding_speed_;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/capture/content/feedback_signal_accumulator.h"
+#include "media/capture/content/feedback_signal_accumulator.cc"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,7 +19,7 @@ class FeedbackSignalAccumulatorTest : public ::testing::Test {
 
  protected:
   const base::TimeDelta half_life_;
-  FeedbackSignalAccumulator acc_;
+  FeedbackSignalAccumulator<base::TimeTicks> acc_;
   base::TimeTicks t_;
 };
 
