@@ -559,6 +559,18 @@ string literal</a></td>
 <td>Does not yet work in MSVS2013. Reevaluate once it does. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/gcoUbcjfsII">Discussion thread</a></td>
 </tr>
 
+<tr>
+<td>Ref-qualified Member Functions</td>
+<td><code>class T {<br/>&nbsp;&nbsp;void f() & {}<br/>&nbsp;&nbsp;void f() && {}<br/>};<br/>t.f();  // first<br/>T().f(); // second<br/>std::move(t).f(); // second</code></td>
+<td>Allows class member functions to only bind to |this| as an rvalue or lvalue.</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/member_functions">
+Member functions</a></td>
+<td>
+  Banned in the google3 C++11 library style guide. Banned in Chromium except by explicit approval from <code>styleguide/c++/OWNERS</code>.
+  <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/gowclr2LPQA/discussion">Discussion Thread</a>
+</td>
+</tr>
+
 </tbody>
 </table>
 
@@ -600,6 +612,37 @@ string literal</a></td>
 <td>Provides a standard mulitthreading library using <code>std::thread</code> and associates</td>
 <td><a href="http://en.cppreference.com/w/cpp/thread">Thread support library</a></td>
 <td>C++11 has all kinds of classes for threads, mutexes, etc. Since we already have good code for this in <code>base/</code>, we should keep using the base classes, at least at first. <code>base::Thread</code> is tightly coupled to <code>MessageLoop</code> which would make it hard to replace. We should investigate using standard mutexes, or unique_lock, etc. to replace our locking/synchronization classes.</td>
+</tr>
+
+<tr>
+<td>Atomics</td>
+<td><code>std::atomic</code> and others in <code>&lt;atomic&gt;</code></td>
+<td>Fine-grained atomic types and operations</td>
+<td><a href="http://en.cppreference.com/w/cpp/atomic">&lt;atomic&gt;</a></td>
+<td>Use in tcmalloc has caused <a href="http://crbug.com/572525">performance regressions</a>. Banned until we understand this better. <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/Ej3RAiaI44s/discussion">Discussion Thread</a></td>
+</tr>
+
+<tr>
+<td>Shared Pointers</td>
+<td><code>std::shared_ptr</code></td>
+<td>Allows shared ownership of a pointer through reference counts</td>
+<td><a href="http://en.cppreference.com/w/cpp/memory/shared_ptr">std::shared_ptr</a></td>
+<td>
+  Needs a lot more evaluation for Chromium, and there isn't enough of a push for this feature.
+  <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/aT2wsBLKvzI/discussion">Discussion Thread</a>,
+  <a href="https://google.github.io/styleguide/cppguide.html#Ownership_and_Smart_Pointers">Google Style Guide</a>
+</td>
+</tr>
+
+<tr>
+<td>Initializer Lists</td>
+<td><code>std::initializer_list&lt;T&gt;</code></td>
+<td>Allows containers to be initialized with aggregate elements</td>
+<td><a href="http://en.cppreference.com/w/cpp/utility/initializer_list"><code>std::initializer_list</code></a></td>
+<td>
+  Banned for now; will be re-evaluated once we switch to MSVC 2015.
+  <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/TQQ-L51_naM/discussion">Discussion Thread</a>
+</td>
 </tr>
 
 </tbody>
@@ -652,15 +695,6 @@ std::exception</a></td>
 <td>Allows better versioning of namespaces</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/namespace">Namespaces</a></td>
 <td>Unclear how it will work with components</td>
-</tr>
-
-<tr>
-<td>Ref-qualified Member Functions</td>
-<td><code>class T {<br/>&nbsp;&nbsp;void f() & {}<br/>&nbsp;&nbsp;void f() && {}<br/>};<br/>t.f();  // first<br/>T().f(); // second<br/>std::move(t).f(); // second</code></td>
-<td>Allows class member functions to only bind to |this| as an rvalue or lvalue.</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/member_functions">
-Member functions</a></td>
-<td>Banned in the google3 C++11 library style guide, but being considered for use in bind/callback in google3 and the standard library.</td>
 </tr>
 
 <tr>
@@ -732,14 +766,6 @@ toolchains.</td>
 <td><a href="http://en.cppreference.com/w/cpp/memory/allocator_traits">
 std::allocator_traits</a></td>
 <td>Usage should be rare.</td>
-</tr>
-
-<tr>
-<td>Atomics</td>
-<td><code>std::atomic</code> and others in <code>&lt;atomic&gt;</code></td>
-<td>Fine-grained atomic types and operations</td>
-<td><a href="http://en.cppreference.com/w/cpp/atomic">&lt;atomic&gt;</a></td>
-<td></td>
 </tr>
 
 <tr>
@@ -885,14 +911,6 @@ and <a href="http://en.cppreference.com/w/cpp/iterator/prev">std::prev</a>
 </tr>
 
 <tr>
-<td>Initializer Lists</td>
-<td><code>std::initializer_list&lt;T&gt;</code></td>
-<td>Allows containers to be initialized with aggregate elements</td>
-<td>TODO: documentation link</td>
-<td></td>
-</tr>
-
-<tr>
 <td>Pointer Traits Class Template</td>
 <td><code>std::pointer_traits</code></td>
 <td>Provides a standard way to access properties
@@ -931,15 +949,6 @@ object (and use those within containers)</td>
 <td><a href="http://www.informit.com/guides/content.aspx?g=cplusplus&amp;seqNum=217">
 Reference Wrappers</a></td>
 <td></td>
-</tr>
-
-<tr>
-<td>Shared Pointers</td>
-<td><code>std::shared_ptr</code></td>
-<td>Allows shared ownership of a pointer through reference counts</td>
-<td><a href="http://en.cppreference.com/w/cpp/memory/shared_ptr">std::shared_ptr</a></td>
-<td><a href="https://google.github.io/styleguide/cppguide.html#Ownership_and_Smart_Pointers">
-Ownership and Smart Pointers</a></td>
 </tr>
 
 <tr>
