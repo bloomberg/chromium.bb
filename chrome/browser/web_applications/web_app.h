@@ -202,12 +202,15 @@ void CreateShortcuts(ShortcutCreationReason reason,
 // extension.
 void DeleteAllShortcuts(Profile* profile, const extensions::Extension* app);
 
-// Updates shortcuts for web application based on given shortcut data. This
-// refreshes existing shortcuts and their icons, but does not create new ones.
+// Updates shortcuts for |app|, but does not create new ones if shortcuts are
+// not present in user-facing locations. Some platforms may still (re)create
+// hidden shortcuts to interact correctly with the system shelf.
 // |old_app_title| contains the title of the app prior to this update.
+// |callback| is invoked once the FILE thread tasks have completed.
 void UpdateAllShortcuts(const base::string16& old_app_title,
                         Profile* profile,
-                        const extensions::Extension* app);
+                        const extensions::Extension* app,
+                        const base::Closure& callback);
 
 // Updates shortcuts for all apps in this profile. This is expected to be called
 // on the UI thread.

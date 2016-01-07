@@ -87,14 +87,19 @@ base::FilePath GetShortcutDataDir(const web_app::ShortcutInfo& shortcut_info) {
 
 void UpdateAllShortcutsForShortcutInfo(
     const base::string16& old_app_title,
+    const base::Closure& callback,
     scoped_ptr<web_app::ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
   base::FilePath shortcut_data_dir = GetShortcutDataDir(*shortcut_info);
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&web_app::internals::UpdatePlatformShortcuts,
-                 shortcut_data_dir, old_app_title, base::Passed(&shortcut_info),
-                 file_handlers_info));
+  base::Closure task = base::Bind(
+      &web_app::internals::UpdatePlatformShortcuts, shortcut_data_dir,
+      old_app_title, base::Passed(&shortcut_info), file_handlers_info);
+  if (callback.is_null()) {
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, task);
+  } else {
+    BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE, task,
+                                    callback);
+  }
 }
 
 void OnImageLoaded(scoped_ptr<web_app::ShortcutInfo> shortcut_info,
@@ -450,12 +455,12 @@ void DeleteAllShortcuts(Profile* profile, const extensions::Extension* app) {
 
 void UpdateAllShortcuts(const base::string16& old_app_title,
                         Profile* profile,
-                        const extensions::Extension* app) {
+                        const extensions::Extension* app,
+                        const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  GetInfoForApp(app,
-                profile,
-                base::Bind(&UpdateAllShortcutsForShortcutInfo, old_app_title));
+  GetInfoForApp(app, profile, base::Bind(&UpdateAllShortcutsForShortcutInfo,
+                                         old_app_title, callback));
 }
 
 bool IsValidUrl(const GURL& url) {

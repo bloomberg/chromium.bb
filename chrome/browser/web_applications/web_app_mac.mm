@@ -18,6 +18,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
@@ -62,6 +63,34 @@ namespace {
 
 // Launch Services Key to run as an agent app, which doesn't launch in the dock.
 NSString* const kLSUIElement = @"LSUIElement";
+
+// Class that invokes a provided |callback| when destroyed, and supplies a means
+// to keep the instance alive via posted tasks. The provided |callback| will
+// always be invoked on the UI thread.
+class Latch : public base::RefCountedThreadSafe<
+                  Latch,
+                  content::BrowserThread::DeleteOnUIThread> {
+ public:
+  explicit Latch(const base::Closure& callback) : callback_(callback) {}
+
+  // Wraps a reference to |this| in a Closure and returns it. Running the
+  // Closure does nothing. The Closure just serves to keep a reference alive
+  // until |this| is ready to be destroyed; invoking the |callback|.
+  base::Closure NoOpClosure() { return base::Bind(&Latch::NoOp, this); }
+
+ private:
+  friend class base::RefCountedThreadSafe<Latch>;
+  friend class base::DeleteHelper<Latch>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
+
+  ~Latch() { callback_.Run(); }
+  void NoOp() {}
+
+  base::Closure callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(Latch);
+};
 
 class ScopedCarbonHandle {
  public:
@@ -807,22 +836,31 @@ bool WebAppShortcutCreator::UpdateShortcuts() {
   std::vector<base::FilePath> paths;
   paths.push_back(app_data_dir_);
 
-  // Try to update the copy under /Applications. If that does not exist, check
+  // Try to update the copy under ~/Applications. If that does not exist, check
   // if a matching bundle can be found elsewhere.
   base::FilePath app_path = GetApplicationsShortcutPath();
-  if (app_path.empty() || !base::PathExists(app_path))
-    app_path = GetAppBundleById(GetBundleIdentifier());
 
-  if (app_path.empty()) {
-    if (info_->from_bookmark) {
-      // The bookmark app shortcut has been deleted by the user. Restore it, as
-      // the Mac UI for bookmark apps creates the expectation that the app will
-      // be added to Applications.
-      app_path = GetApplicationsDirname();
-      paths.push_back(app_path);
+  // Never look in ~/Applications or search the system for a bundle ID in a test
+  // since that relies on global system state and potentially cruft that may be
+  // leftover from prior/crashed test runs.
+  // TODO(tapted): Remove this check when tests that arrive here via setting
+  // |g_app_shims_allow_update_and_launch_in_tests| can properly mock out all
+  // the calls below.
+  if (!g_app_shims_allow_update_and_launch_in_tests) {
+    if (app_path.empty() || !base::PathExists(app_path))
+      app_path = GetAppBundleById(GetBundleIdentifier());
+
+    if (app_path.empty()) {
+      if (info_->from_bookmark) {
+        // The bookmark app shortcut has been deleted by the user. Restore it,
+        // as the Mac UI for bookmark apps creates the expectation that the app
+        // will be added to Applications.
+        app_path = GetApplicationsDirname();
+        paths.push_back(app_path);
+      }
+    } else {
+      paths.push_back(app_path.DirName());
     }
-  } else {
-    paths.push_back(app_path.DirName());
   }
 
   size_t success_count = CreateShortcutsIn(paths);
@@ -1138,18 +1176,19 @@ void UpdateShortcutsForAllApps(Profile* profile,
   if (!registry)
     return;
 
+  scoped_refptr<Latch> latch = new Latch(callback);
+
   // Update all apps.
-  scoped_ptr<extensions::ExtensionSet> everything =
+  scoped_ptr<extensions::ExtensionSet> candidates =
       registry->GenerateInstalledExtensionsSet();
-  for (extensions::ExtensionSet::const_iterator it = everything->begin();
-       it != everything->end(); ++it) {
+  for (auto& extension_refptr : *candidates) {
+    const extensions::Extension* extension = extension_refptr.get();
     if (web_app::ShouldCreateShortcutFor(SHORTCUT_CREATION_AUTOMATED, profile,
-                                         it->get())) {
-      web_app::UpdateAllShortcuts(base::string16(), profile, it->get());
+                                         extension)) {
+      web_app::UpdateAllShortcuts(base::string16(), profile, extension,
+                                  latch->NoOpClosure());
     }
   }
-
-  callback.Run();
 }
 
 void RevealAppShimInFinderForApp(Profile* profile,
