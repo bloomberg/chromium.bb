@@ -117,6 +117,13 @@ void ProxyConfigServiceImpl::DefaultNetworkChanged(
   DetermineEffectiveConfigFromDefaultNetwork();
 }
 
+void ProxyConfigServiceImpl::OnShuttingDown() {
+  // Ownership of this class is complicated. Stop observing NetworkStateHandler
+  // when the class shuts down.
+  NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
+                                                                 FROM_HERE);
+}
+
 // static
 bool ProxyConfigServiceImpl::IgnoreProxy(const PrefService* profile_prefs,
                                          const std::string network_profile_path,
@@ -167,6 +174,9 @@ bool ProxyConfigServiceImpl::IgnoreProxy(const PrefService* profile_prefs,
 }
 
 void ProxyConfigServiceImpl::DetermineEffectiveConfigFromDefaultNetwork() {
+  if (!NetworkHandler::IsInitialized())
+    return;
+
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   const NetworkState* network = handler->DefaultNetwork();
 

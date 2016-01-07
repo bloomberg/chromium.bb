@@ -122,6 +122,7 @@ class MobileActivatorTest : public testing::Test {
     NetworkHandler::Initialize();
   }
   void TearDown() override {
+    mobile_activator_.TerminateActivation();
     NetworkHandler::Shutdown();
     DBusThreadManager::Shutdown();
   }

@@ -50,6 +50,7 @@ NetworkHandler::NetworkHandler()
 }
 
 NetworkHandler::~NetworkHandler() {
+  network_state_handler_->Shutdown();
 }
 
 void NetworkHandler::Init() {

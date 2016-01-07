@@ -67,13 +67,22 @@ std::string ValueAsString(const base::Value& value) {
 const char NetworkStateHandler::kDefaultCheckPortalList[] =
     "ethernet,wifi,cellular";
 
-NetworkStateHandler::NetworkStateHandler() : network_list_sorted_(false) {
-}
+NetworkStateHandler::NetworkStateHandler() {}
 
 NetworkStateHandler::~NetworkStateHandler() {
-  FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_, IsShuttingDown());
+  // Normally Shutdown() will get called in ~NetworkHandler, however unit
+  // tests do not use that class so this needs to call Shutdown when we
+  // destry the class.
+  if (!did_shutdown_)
+    Shutdown();
   STLDeleteContainerPointers(network_list_.begin(), network_list_.end());
   STLDeleteContainerPointers(device_list_.begin(), device_list_.end());
+}
+
+void NetworkStateHandler::Shutdown() {
+  DCHECK(!did_shutdown_);
+  did_shutdown_ = true;
+  FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_, OnShuttingDown());
 }
 
 void NetworkStateHandler::InitShillPropertyHandler() {
@@ -92,20 +101,27 @@ void NetworkStateHandler::AddObserver(
     NetworkStateHandlerObserver* observer,
     const tracked_objects::Location& from_here) {
   observers_.AddObserver(observer);
-  device_event_log::AddEntry(from_here.file_name(), from_here.line_number(),
-                             device_event_log::LOG_TYPE_NETWORK,
-                             device_event_log::LOG_LEVEL_DEBUG,
-                             "NetworkStateHandler::AddObserver");
+  device_event_log::AddEntry(
+      from_here.file_name(), from_here.line_number(),
+      device_event_log::LOG_TYPE_NETWORK, device_event_log::LOG_LEVEL_DEBUG,
+      base::StringPrintf("NetworkStateHandler::AddObserver: 0x%p", observer));
+
+  LOG(ERROR) << "ADD Observer: " << from_here.file_name() << ":"
+             << from_here.line_number() << ": " << observer;
 }
 
 void NetworkStateHandler::RemoveObserver(
     NetworkStateHandlerObserver* observer,
     const tracked_objects::Location& from_here) {
   observers_.RemoveObserver(observer);
-  device_event_log::AddEntry(from_here.file_name(), from_here.line_number(),
-                             device_event_log::LOG_TYPE_NETWORK,
-                             device_event_log::LOG_LEVEL_DEBUG,
-                             "NetworkStateHandler::RemoveObserver");
+  device_event_log::AddEntry(
+      from_here.file_name(), from_here.line_number(),
+      device_event_log::LOG_TYPE_NETWORK, device_event_log::LOG_LEVEL_DEBUG,
+      base::StringPrintf("NetworkStateHandler::RemoveObserver: 0x%p",
+                         observer));
+
+  LOG(ERROR) << "REM Observer: " << from_here.file_name() << ":"
+             << from_here.line_number() << ": " << observer;
 }
 
 NetworkStateHandler::TechnologyState NetworkStateHandler::GetTechnologyState(

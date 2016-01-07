@@ -52,6 +52,7 @@ class ProxyConfigServiceImpl : public PrefProxyConfigTrackerImpl,
 
   // NetworkStateHandlerObserver implementation.
   void DefaultNetworkChanged(const NetworkState* network) override;
+  void OnShuttingDown() override;
 
  protected:
   friend class UIProxyConfigService;

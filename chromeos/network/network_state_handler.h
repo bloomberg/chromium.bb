@@ -81,6 +81,10 @@ class CHROMEOS_EXPORT NetworkStateHandler
 
   ~NetworkStateHandler() override;
 
+  // Called just before destruction to give observers a chance to remove
+  // themselves and disable any networking.
+  void Shutdown();
+
   // Add/remove observers.
   void AddObserver(NetworkStateHandlerObserver* observer,
                    const tracked_objects::Location& from_here);
@@ -374,14 +378,14 @@ class CHROMEOS_EXPORT NetworkStateHandler
   scoped_ptr<internal::ShillPropertyHandler> shill_property_handler_;
 
   // Observer list
-  base::ObserverList<NetworkStateHandlerObserver> observers_;
+  base::ObserverList<NetworkStateHandlerObserver, true> observers_;
 
   // List of managed network states
   ManagedStateList network_list_;
 
   // Set to true when the network list is sorted, cleared when network updates
   // arrive. Used to trigger sorting when needed.
-  bool network_list_sorted_;
+  bool network_list_sorted_ = false;
 
   // List of managed device states
   ManagedStateList device_list_;
@@ -395,6 +399,9 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // Map of network specifiers to guids. Contains an entry for each
   // NetworkState that is not saved in a profile.
   SpecifierGuidMap specifier_guid_map_;
+
+  // Ensure that Shutdown() gets called exactly once.
+  bool did_shutdown_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkStateHandler);
 };

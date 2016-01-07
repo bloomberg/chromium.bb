@@ -81,6 +81,7 @@ class NetworkSmsHandlerTest : public testing::Test {
   }
 
   void TearDown() override {
+    network_sms_handler_->RemoveObserver(test_observer_.get());
     network_sms_handler_.reset();
     DBusThreadManager::Shutdown();
   }

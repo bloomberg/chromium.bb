@@ -53,7 +53,7 @@ class CHROMEOS_EXPORT NetworkStateHandlerObserver {
 
   // Called just before NetworkStateHandler is destroyed so that observers
   // can safely stop observing.
-  virtual void IsShuttingDown();
+  virtual void OnShuttingDown();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkStateHandlerObserver);

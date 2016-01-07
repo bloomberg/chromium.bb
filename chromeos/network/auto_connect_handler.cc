@@ -37,10 +37,12 @@ AutoConnectHandler::AutoConnectHandler()
 }
 
 AutoConnectHandler::~AutoConnectHandler() {
-  if (client_cert_resolver_)
-    client_cert_resolver_->RemoveObserver(this);
   if (LoginState::IsInitialized())
     LoginState::Get()->RemoveObserver(this);
+  if (client_cert_resolver_)
+    client_cert_resolver_->RemoveObserver(this);
+  if (network_connection_handler_)
+    network_connection_handler_->RemoveObserver(this);
   if (network_state_handler_)
     network_state_handler_->RemoveObserver(this, FROM_HERE);
   if (managed_configuration_handler_)

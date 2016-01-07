@@ -118,6 +118,9 @@ void NetworkScreen::OnViewDestroyed(NetworkView* view) {
   if (view_ == view) {
     view_ = nullptr;
     timezone_subscription_.reset();
+    // Ownership of NetworkScreen is complicated; ensure that we remove
+    // this as a NetworkStateHandler observer when the view is destroyed.
+    UnsubscribeNetworkNotification();
   }
 }
 

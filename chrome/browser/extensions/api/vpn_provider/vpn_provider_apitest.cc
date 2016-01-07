@@ -118,6 +118,17 @@ class VpnProviderApiTest : public ExtensionApiTest,
   VpnProviderApiTest() {}
   ~VpnProviderApiTest() override {}
 
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    NetworkHandler::Get()->network_configuration_handler()->AddObserver(this);
+  }
+
+  void TearDownOnMainThread() override {
+    ExtensionApiTest::TearDownOnMainThread();
+    NetworkHandler::Get()->network_configuration_handler()->RemoveObserver(
+        this);
+  }
+
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
     test_client_ = new TestShillThirdPartyVpnDriverClient();
@@ -135,7 +146,6 @@ class VpnProviderApiTest : public ExtensionApiTest,
   }
 
   void LoadVpnExtension() {
-    NetworkHandler::Get()->network_configuration_handler()->AddObserver(this);
     extension_ = LoadExtension(test_data_dir_.AppendASCII("vpn_provider"));
     extension_id_ = extension_->id();
     service_ = VpnServiceFactory::GetForBrowserContext(profile());

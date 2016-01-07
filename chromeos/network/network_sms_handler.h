@@ -90,7 +90,7 @@ class CHROMEOS_EXPORT NetworkSmsHandler : public ShillPropertyChangedObserver {
                                 DBusMethodCallStatus call_status,
                                 const base::DictionaryValue& properties);
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer, true> observers_;
   ScopedVector<NetworkSmsDeviceHandler> device_handlers_;
   ScopedVector<base::DictionaryValue> received_messages_;
   base::WeakPtrFactory<NetworkSmsHandler> weak_ptr_factory_;
@@ -98,6 +98,6 @@ class CHROMEOS_EXPORT NetworkSmsHandler : public ShillPropertyChangedObserver {
   DISALLOW_COPY_AND_ASSIGN(NetworkSmsHandler);
 };
 
-}  // namespace
+}  // namespace chromeos
 
 #endif  // CHROMEOS_NETWORK_NETWORK_SMS_HANDLER_H_

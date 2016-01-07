@@ -26,7 +26,7 @@ namespace chromeos {
 //
 // An instance of this class is created on the NetworkHandler (UI) thread and
 // manages its own lifetime, destroying itself when NetworkStateHandlerObserver
-// ::IsShuttingDown() gets called.
+// ::OnShuttingDown() gets called.
 
 class HostResolverImplChromeOS::NetworkObserver
     : public chromeos::NetworkStateHandlerObserver {
@@ -96,7 +96,7 @@ class HostResolverImplChromeOS::NetworkObserver
     CallResolverSetIpAddress(ipv4_address, ipv6_address);
   }
 
-  void IsShuttingDown() override { delete this; }
+  void OnShuttingDown() override { delete this; }
 
   void CallResolverSetIpAddress(const std::string& ipv4_address,
                                 const std::string& ipv6_address) {
