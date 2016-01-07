@@ -674,64 +674,6 @@ void Heap::addPageMemoryRegion(PageMemoryRegion* region)
     RegionTree::add(new RegionTree(region), &s_regionTree);
 }
 
-PageMemoryRegion* Heap::RegionTree::lookup(Address address)
-{
-    RegionTree* current = s_regionTree;
-    while (current) {
-        Address base = current->m_region->base();
-        if (address < base) {
-            current = current->m_left;
-            continue;
-        }
-        if (address >= base + current->m_region->size()) {
-            current = current->m_right;
-            continue;
-        }
-        ASSERT(current->m_region->contains(address));
-        return current->m_region;
-    }
-    return nullptr;
-}
-
-void Heap::RegionTree::add(RegionTree* newTree, RegionTree** context)
-{
-    ASSERT(newTree);
-    Address base = newTree->m_region->base();
-    for (RegionTree* current = *context; current; current = *context) {
-        ASSERT(!current->m_region->contains(base));
-        context = (base < current->m_region->base()) ? &current->m_left : &current->m_right;
-    }
-    *context = newTree;
-}
-
-void Heap::RegionTree::remove(PageMemoryRegion* region, RegionTree** context)
-{
-    ASSERT(region);
-    ASSERT(context);
-    Address base = region->base();
-    RegionTree* current = *context;
-    for (; current; current = *context) {
-        if (region == current->m_region)
-            break;
-        context = (base < current->m_region->base()) ? &current->m_left : &current->m_right;
-    }
-
-    // Shutdown via detachMainThread might not have populated the region tree.
-    if (!current)
-        return;
-
-    *context = nullptr;
-    if (current->m_left) {
-        add(current->m_left, context);
-        current->m_left = nullptr;
-    }
-    if (current->m_right) {
-        add(current->m_right, context);
-        current->m_right = nullptr;
-    }
-    delete current;
-}
-
 void Heap::resetHeapCounters()
 {
     ASSERT(ThreadState::current()->isInGC());
@@ -754,7 +696,7 @@ HeapDoesNotContainCache* Heap::s_heapDoesNotContainCache;
 bool Heap::s_shutdownCalled = false;
 FreePagePool* Heap::s_freePagePool;
 OrphanedPagePool* Heap::s_orphanedPagePool;
-Heap::RegionTree* Heap::s_regionTree = nullptr;
+RegionTree* Heap::s_regionTree = nullptr;
 size_t Heap::s_allocatedSpace = 0;
 size_t Heap::s_allocatedObjectSize = 0;
 size_t Heap::s_objectSizeAtLastGC = 0;

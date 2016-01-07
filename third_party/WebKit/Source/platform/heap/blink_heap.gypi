@@ -52,6 +52,7 @@
       'InlinedGlobalMarkingVisitor.h',
       'MarkingVisitor.h',
       'MarkingVisitorImpl.h',
+      'PageMemory.cpp',
       'PageMemory.h',
       'PagePool.cpp',
       'PagePool.h',

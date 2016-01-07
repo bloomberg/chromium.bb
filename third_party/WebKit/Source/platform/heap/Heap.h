@@ -34,6 +34,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/heap/GCInfo.h"
 #include "platform/heap/HeapPage.h"
+#include "platform/heap/PageMemory.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/Visitor.h"
 #include "wtf/AddressSanitizer.h"
@@ -264,25 +265,6 @@ public:
 #endif
 
 private:
-    // A RegionTree is a simple binary search tree of PageMemoryRegions sorted
-    // by base addresses.
-    class RegionTree {
-    public:
-        explicit RegionTree(PageMemoryRegion* region) : m_region(region), m_left(nullptr), m_right(nullptr) { }
-        ~RegionTree()
-        {
-            delete m_left;
-            delete m_right;
-        }
-        PageMemoryRegion* lookup(Address);
-        static void add(RegionTree*, RegionTree**);
-        static void remove(PageMemoryRegion*, RegionTree**);
-    private:
-        PageMemoryRegion* m_region;
-        RegionTree* m_left;
-        RegionTree* m_right;
-    };
-
     // Reset counters that track live and allocated-since-last-GC sizes.
     static void resetHeapCounters();
 
