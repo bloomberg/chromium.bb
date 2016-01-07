@@ -827,6 +827,22 @@
           ]
         },
         "test": "gl_unittests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "Mac-10.10"
+            }
+          ]
+        },
+        "test": "gles2_conform_test"
       }
     ],
     "isolated_scripts": [
@@ -1213,6 +1229,22 @@
           ]
         },
         "test": "gl_unittests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "Mac-10.10"
+            }
+          ]
+        },
+        "test": "gles2_conform_test"
       },
       {
         "override_compile_targets": [
