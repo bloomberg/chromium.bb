@@ -14,6 +14,7 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebHelperPlugin.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -29,6 +30,18 @@ scoped_ptr<PepperCdmWrapper> PepperCdmWrapperImpl::Create(
     const std::string& pluginType,
     const GURL& security_origin) {
   DCHECK(frame);
+
+  // The frame security origin could be different from the origin where the CDM
+  // creation was initiated, e.g. due to navigation.
+  // Note: The code will continue after navigation to the "same" origin, even
+  // though the CDM is no longer necessary.
+  // TODO: Consider avoiding this possibility entirely. http://crbug.com/575236
+  GURL frame_security_origin(frame->securityOrigin().toString());
+  if (frame_security_origin != security_origin) {
+    LOG(ERROR) << "Frame has a different origin than the EME call.";
+    return scoped_ptr<PepperCdmWrapper>();
+  }
+
   ScopedHelperPlugin helper_plugin(blink::WebHelperPlugin::create(
       blink::WebString::fromUTF8(pluginType), frame));
   if (!helper_plugin)
@@ -44,11 +57,10 @@ scoped_ptr<PepperCdmWrapper> PepperCdmWrapperImpl::Create(
   if (!plugin_instance.get())
     return scoped_ptr<PepperCdmWrapper>();
 
-  GURL url(plugin_instance->container()->element().document().url());
-  if (security_origin.GetOrigin() != url.GetOrigin()) {
-    NOTREACHED() << "Pepper instance has a different origin than the EME call.";
-    return scoped_ptr<PepperCdmWrapper>();
-  }
+  GURL plugin_url(plugin_instance->container()->element().document().url());
+  GURL plugin_security_origin = plugin_url.GetOrigin();
+  CHECK_EQ(security_origin, plugin_security_origin)
+      << "Pepper instance has a different origin than the EME call.";
 
   if (!plugin_instance->GetContentDecryptorDelegate())
     return scoped_ptr<PepperCdmWrapper>();

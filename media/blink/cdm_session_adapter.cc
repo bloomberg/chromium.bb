@@ -134,7 +134,8 @@ void CdmSessionAdapter::OnCdmCreated(const std::string& key_system,
                                      base::TimeTicks start_time,
                                      const scoped_refptr<MediaKeys>& cdm,
                                      const std::string& error_message) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__ << ": "
+           << (cdm ? "success" : "failure (" + error_message + ")");
   DCHECK(!cdm_);
 
   TRACE_EVENT_ASYNC_END2("media", "CdmSessionAdapter::CreateCdm", trace_id_,
