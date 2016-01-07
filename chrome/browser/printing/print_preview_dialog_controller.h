@@ -84,6 +84,10 @@ class PrintPreviewDialogController
 
   void RemoveProxyDialogForWebContents(content::WebContents* source);
 
+  // Returns |source|'s |target| if it's a proxy, otherwise returns |source|.
+  content::WebContents* GetProxyDialogTarget(
+      content::WebContents* source) const;
+
  private:
   friend class base::RefCounted<PrintPreviewDialogController>;
 

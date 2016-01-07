@@ -10,9 +10,16 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/web_contents_tester.h"
 
 using content::WebContents;
+
+namespace {
+// content::WebContentsDelegate destructor is protected: subclass for testing.
+class TestWebContentsDelegate : public content::WebContentsDelegate {};
+}  // namespace
 
 namespace printing {
 
@@ -117,6 +124,89 @@ TEST_F(PrintPreviewDialogControllerUnitTest, MultiplePreviewDialogs) {
   // |preview_dialog_1| is activated and focused.
   dialog_controller->GetOrCreatePreviewDialog(web_contents_1);
   EXPECT_EQ(tab_1_index, tab_strip_model->active_index());
+}
+
+// Get a preview dialog for a proxied initiator should work.
+TEST_F(PrintPreviewDialogControllerUnitTest, ProxyGetOrCreatePreviewDialog) {
+  // Lets start with one window with one tab.
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+  EXPECT_EQ(0, browser()->tab_strip_model()->count());
+  chrome::NewTab(browser());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+
+  // Create a reference to initiator contents.
+  WebContents* initiator = browser()->tab_strip_model()->GetActiveWebContents();
+
+  PrintPreviewDialogController* dialog_controller =
+      PrintPreviewDialogController::GetInstance();
+  ASSERT_TRUE(dialog_controller);
+
+  // Get the preview dialog for initiator.
+  PrintViewManager::FromWebContents(initiator)->PrintPreviewNow(false);
+  WebContents* preview_dialog =
+      dialog_controller->GetOrCreatePreviewDialog(initiator);
+
+  // New print preview dialog is a constrained window, so the number of tabs is
+  // still 1.
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  EXPECT_NE(initiator, preview_dialog);
+
+  // Create the proxy web contents.
+  scoped_ptr<WebContents> proxy(
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+  TestWebContentsDelegate delegate;
+  proxy->SetDelegate(&delegate);
+  dialog_controller->AddProxyDialogForWebContents(proxy.get(), initiator);
+
+  // Get the print preview dialog for the initiator and proxy.
+  WebContents* initiator_preview_dialog =
+      dialog_controller->GetOrCreatePreviewDialog(initiator);
+  WebContents* proxy_preview_dialog =
+      dialog_controller->GetOrCreatePreviewDialog(proxy.get());
+
+  // Preview dialog already exists. Tab count remains the same.
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+
+  // 1:1 relationship between initiator and preview dialog.
+  EXPECT_EQ(initiator_preview_dialog, preview_dialog);
+  EXPECT_EQ(proxy_preview_dialog, preview_dialog);
+
+  dialog_controller->RemoveProxyDialogForWebContents(proxy.get());
+}
+
+// Create a preview dialog for a proxied initiator should fail.
+TEST_F(PrintPreviewDialogControllerUnitTest, ProxyNoGetOrCreatePreviewDialog) {
+  // Lets start with one window with one tab.
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+  EXPECT_EQ(0, browser()->tab_strip_model()->count());
+  chrome::NewTab(browser());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+
+  // Create a reference to initiator contents.
+  WebContents* initiator = browser()->tab_strip_model()->GetActiveWebContents();
+
+  PrintPreviewDialogController* dialog_controller =
+      PrintPreviewDialogController::GetInstance();
+  ASSERT_TRUE(dialog_controller);
+
+  // Create the proxy web contents.
+  scoped_ptr<WebContents> proxy(
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+  TestWebContentsDelegate delegate;
+  proxy->SetDelegate(&delegate);
+  dialog_controller->AddProxyDialogForWebContents(proxy.get(), initiator);
+
+  // Get the print preview dialog for the proxy.
+  WebContents* proxy_preview_dialog =
+      dialog_controller->GetOrCreatePreviewDialog(proxy.get());
+
+  // Preview dialog shouldn't be created. Tab count remains the same.
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+
+  // A proxy should not create a dialog, only re-use.
+  EXPECT_EQ(proxy_preview_dialog, nullptr);
+
+  dialog_controller->RemoveProxyDialogForWebContents(proxy.get());
 }
 
 // Check clearing the initiator details associated with a print preview dialog
