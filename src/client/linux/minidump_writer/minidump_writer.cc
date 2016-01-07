@@ -509,7 +509,7 @@ class MinidumpWriter {
         continue;
 
       MDRawModule mod;
-      if (!FillRawModule(mapping, true, i, mod, NULL))
+      if (!FillRawModule(mapping, true, i, &mod, NULL))
         return false;
       list.CopyIndexAfterObject(j++, &mod, MD_MODULE_SIZE);
     }
@@ -518,7 +518,7 @@ class MinidumpWriter {
          iter != mapping_list_.end();
          ++iter) {
       MDRawModule mod;
-      if (!FillRawModule(iter->first, false, 0, mod, iter->second))
+      if (!FillRawModule(iter->first, false, 0, &mod, iter->second))
         return false;
       list.CopyIndexAfterObject(j++, &mod, MD_MODULE_SIZE);
     }
@@ -532,12 +532,12 @@ class MinidumpWriter {
   bool FillRawModule(const MappingInfo& mapping,
                      bool member,
                      unsigned int mapping_id,
-                     MDRawModule& mod,
+                     MDRawModule* mod,
                      const uint8_t* identifier) {
-    my_memset(&mod, 0, MD_MODULE_SIZE);
+    my_memset(mod, 0, MD_MODULE_SIZE);
 
-    mod.base_of_image = mapping.start_addr;
-    mod.size_of_image = mapping.size;
+    mod->base_of_image = mapping.start_addr;
+    mod->size_of_image = mapping.size;
 
     uint8_t cv_buf[MDCVInfoPDB70_minsize + NAME_MAX];
     uint8_t* cv_ptr = cv_buf;
@@ -572,12 +572,12 @@ class MinidumpWriter {
     my_memcpy(cv_ptr, file_name, file_name_len + 1);
     cv.Copy(cv_buf, MDCVInfoPDB70_minsize + file_name_len + 1);
 
-    mod.cv_record = cv.location();
+    mod->cv_record = cv.location();
 
     MDLocationDescriptor ld;
     if (!minidump_writer_.WriteString(file_path, my_strlen(file_path), &ld))
       return false;
-    mod.module_name_rva = ld.rva;
+    mod->module_name_rva = ld.rva;
     return true;
   }
 
@@ -684,17 +684,14 @@ class MinidumpWriter {
       }
 
 #ifdef __mips__
-      if (dyn.d_tag == DT_MIPS_RLD_MAP) {
-        r_debug = reinterpret_cast<struct r_debug*>(dyn.d_un.d_ptr);
-        continue;
-      }
+      const int32_t debug_tag = DT_MIPS_RLD_MAP;
 #else
-      if (dyn.d_tag == DT_DEBUG) {
+      const int32_t debug_tag = DT_DEBUG;
+#endif
+      if (dyn.d_tag == debug_tag) {
         r_debug = reinterpret_cast<struct r_debug*>(dyn.d_un.d_ptr);
         continue;
-      }
-#endif
-      else if (dyn.d_tag == DT_NULL) {
+      } else if (dyn.d_tag == DT_NULL) {
         break;
       }
     }
@@ -836,15 +833,14 @@ class MinidumpWriter {
       ProcCpuInfoReader* const reader = new(allocator) ProcCpuInfoReader(fd);
       const char* field;
       while (reader->GetNextField(&field)) {
-        for (size_t i = 0;
-             i < sizeof(cpu_info_table) / sizeof(cpu_info_table[0]);
-             i++) {
-          CpuInfoEntry* entry = &cpu_info_table[i];
-          if (i > 0 && entry->found) {
+        bool is_first_entry = true;
+        for (CpuInfoEntry& entry : cpu_info_table) {
+          if (!is_first_entry && entry.found) {
             // except for the 'processor' field, ignore repeated values.
             continue;
           }
-          if (!my_strcmp(field, entry->info_name)) {
+          is_first_entry = false;
+          if (!my_strcmp(field, entry.info_name)) {
             size_t value_len;
             const char* value = reader->GetValueAndLen(&value_len);
             if (value_len == 0)
@@ -854,8 +850,8 @@ class MinidumpWriter {
             if (my_read_decimal_ptr(&val, value) == value)
               continue;
 
-            entry->value = static_cast<int>(val);
-            entry->found = true;
+            entry.value = static_cast<int>(val);
+            entry.found = true;
           }
         }
 
@@ -871,10 +867,8 @@ class MinidumpWriter {
     }
 
     // make sure we got everything we wanted
-    for (size_t i = 0;
-         i < sizeof(cpu_info_table) / sizeof(cpu_info_table[0]);
-         i++) {
-      if (!cpu_info_table[i].found) {
+    for (const CpuInfoEntry& entry : cpu_info_table) {
+      if (!entry.found) {
         return false;
       }
     }
@@ -1010,18 +1004,15 @@ class MinidumpWriter {
           new(allocator) ProcCpuInfoReader(fd);
       const char* field;
       while (reader->GetNextField(&field)) {
-        for (size_t i = 0;
-             i < sizeof(cpu_id_entries)/sizeof(cpu_id_entries[0]);
-             ++i) {
-          const CpuIdEntry* entry = &cpu_id_entries[i];
-          if (my_strcmp(entry->field, field) != 0)
+        for (const CpuInfoEntry& entry : cpu_info_table) {
+          if (my_strcmp(entry.field, field) != 0)
             continue;
           uintptr_t result = 0;
           const char* value = reader->GetValue();
           const char* p = value;
           if (value[0] == '0' && value[1] == 'x') {
             p = my_read_hex_ptr(&result, value+2);
-          } else if (entry->format == 'x') {
+          } else if (entry.format == 'x') {
             p = my_read_hex_ptr(&result, value);
           } else {
             p = my_read_decimal_ptr(&result, value);
@@ -1029,8 +1020,8 @@ class MinidumpWriter {
           if (p == value)
             continue;
 
-          result &= (1U << entry->bit_length)-1;
-          result <<= entry->bit_lshift;
+          result &= (1U << entry.bit_length)-1;
+          result <<= entry.bit_lshift;
           sys_info->cpu.arm_cpu_info.cpuid |=
               static_cast<uint32_t>(result);
         }
@@ -1084,7 +1075,7 @@ class MinidumpWriter {
             const char* tag = value;
             size_t tag_len = value_len;
             const char* p = my_strchr(tag, ' ');
-            if (p != NULL) {
+            if (p) {
               tag_len = static_cast<size_t>(p - tag);
               value += tag_len + 1;
               value_len -= tag_len + 1;
@@ -1092,14 +1083,10 @@ class MinidumpWriter {
               tag_len = strlen(tag);
               value_len = 0;
             }
-            for (size_t i = 0;
-                 i != sizeof(cpu_features_entries) /
-                     sizeof(cpu_features_entries[0]);
-                ++i) {
-              const CpuFeaturesEntry* entry = &cpu_features_entries[i];
-              if (tag_len == strlen(entry->tag) &&
-                  !memcmp(tag, entry->tag, tag_len)) {
-                sys_info->cpu.arm_cpu_info.elf_hwcaps |= entry->hwcaps;
+            for (const CpuInfoEntry& entry : cpu_features_entries) {
+              if (tag_len == strlen(entry.tag) &&
+                  !memcmp(tag, entry.tag, tag_len)) {
+                sys_info->cpu.arm_cpu_info.elf_hwcaps |= entry.hwcaps;
                 break;
               }
             }
