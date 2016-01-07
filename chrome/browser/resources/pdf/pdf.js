@@ -262,8 +262,7 @@ function PDFViewer(browserApi) {
       new ViewportScroller(this.viewport_, this.plugin_, window);
 
   // Request translated strings.
-  if (!this.isPrintPreview_)
-    chrome.resourcesPrivate.getStrings('pdf', this.handleStrings_.bind(this));
+  chrome.resourcesPrivate.getStrings('pdf', this.handleStrings_.bind(this));
 }
 
 PDFViewer.prototype = {
