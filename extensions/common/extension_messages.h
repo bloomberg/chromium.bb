@@ -659,14 +659,14 @@ IPC_SYNC_MESSAGE_CONTROL4_1(ExtensionHostMsg_OpenChannelToTab,
 // The handle is the value returned by ExtensionHostMsg_OpenChannelTo*.
 IPC_MESSAGE_CONTROL2(ExtensionHostMsg_OpenMessagePort,
                      int /* frame_routing_id */,
-                     int /* port_id */);
+                     int /* port_id */)
 
 // Sent in response to ExtensionMsg_DispatchOnConnect and whenever the port is
 // closed. The handle is the value returned by ExtensionHostMsg_OpenChannelTo*.
 IPC_MESSAGE_CONTROL3(ExtensionHostMsg_CloseMessagePort,
                      int /* frame_routing_id */,
                      int /* port_id */,
-                     bool /* force_close */);
+                     bool /* force_close */)
 
 // Send a message to an extension process.  The handle is the value returned
 // by ExtensionHostMsg_OpenChannelTo*.
