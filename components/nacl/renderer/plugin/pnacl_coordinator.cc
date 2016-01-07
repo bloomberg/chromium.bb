@@ -14,8 +14,6 @@
 #include "components/nacl/renderer/plugin/pnacl_translate_thread.h"
 #include "components/nacl/renderer/plugin/service_runtime.h"
 #include "components/nacl/renderer/plugin/temporary_file.h"
-#include "native_client/src/include/portability_io.h"
-#include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_errors.h"
 
@@ -202,13 +200,7 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
                                       pexe_bytes_compiled_,
                                       expected_pexe_size_);
   }
-  nacl_abi_off_t nexe_size = 0;
-  struct nacl_abi_stat stbuf;
-  struct NaClDesc* desc = temp_nexe_file_->read_wrapper()->desc();
-  if (0 == (*((struct NaClDescVtbl const *)desc->base.vtbl)->Fstat)(desc,
-                                                                    &stbuf)) {
-    nexe_size = stbuf.nacl_abi_st_size;
-  }
+  int64_t nexe_size = temp_nexe_file_->GetLength();
   // The nexe is written to the temp_nexe_file_.  We must Reset() the file
   // pointer to be able to read it again from the beginning.
   temp_nexe_file_->Reset();

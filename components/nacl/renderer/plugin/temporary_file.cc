@@ -54,11 +54,15 @@ int32_t TempFile::Open(bool writeable) {
 }
 
 bool TempFile::Reset() {
-  // Use the read_wrapper_ to reset the file pos.  The write_wrapper_ is also
-  // backed by the same file, so it should also reset.
-  CHECK(read_wrapper_);
-  nacl_off64_t newpos = read_wrapper_->Seek(0, SEEK_SET);
+  // file_handle_, read_wrapper_ and write_wrapper_ are all backed by the
+  // same file handle/descriptor, so resetting the seek position of one
+  // will reset them all.
+  int64_t newpos = file_handle_.Seek(base::File::FROM_BEGIN, 0);
   return newpos == 0;
+}
+
+int64_t TempFile::GetLength() {
+  return file_handle_.GetLength();
 }
 
 PP_FileHandle TempFile::TakeFileHandle() {

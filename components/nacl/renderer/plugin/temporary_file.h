@@ -51,6 +51,9 @@ class TempFile {
   // Resets file position of the handle, for reuse.
   bool Reset();
 
+  // Returns the current size of this file.
+  int64_t GetLength();
+
   // Accessors.
   // The nacl::DescWrapper* for the writeable version of the file.
   nacl::DescWrapper* write_wrapper() { return write_wrapper_.get(); }
