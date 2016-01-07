@@ -23,21 +23,24 @@ namespace {
 
 class SequencedTaskRunnerHandleTest : public ::testing::Test {
  protected:
-  static void GetTaskRunner(const Closure& callback) {
-    // Use SequenceCheckerImpl to make sure it's not a no-op in Release builds.
-    scoped_ptr<SequenceCheckerImpl> sequence_checker(new SequenceCheckerImpl);
+  static void VerifyCurrentSequencedTaskRunner(const Closure& callback) {
     ASSERT_TRUE(SequencedTaskRunnerHandle::IsSet());
     scoped_refptr<SequencedTaskRunner> task_runner =
         SequencedTaskRunnerHandle::Get();
     ASSERT_TRUE(task_runner);
+
+    // Use SequenceCheckerImpl to make sure it's not a no-op in Release builds.
+    scoped_ptr<SequenceCheckerImpl> sequence_checker(new SequenceCheckerImpl);
     task_runner->PostTask(
-        FROM_HERE, base::Bind(&SequencedTaskRunnerHandleTest::CheckValidThread,
-                              base::Passed(&sequence_checker), callback));
+        FROM_HERE,
+        base::Bind(&SequencedTaskRunnerHandleTest::CheckValidSequence,
+                   base::Passed(&sequence_checker), callback));
   }
 
  private:
-  static void CheckValidThread(scoped_ptr<SequenceCheckerImpl> sequence_checker,
-                               const Closure& callback) {
+  static void CheckValidSequence(
+      scoped_ptr<SequenceCheckerImpl> sequence_checker,
+      const Closure& callback) {
     EXPECT_TRUE(sequence_checker->CalledOnValidSequencedThread());
     callback.Run();
   }
@@ -47,19 +50,34 @@ class SequencedTaskRunnerHandleTest : public ::testing::Test {
 
 TEST_F(SequencedTaskRunnerHandleTest, FromMessageLoop) {
   RunLoop run_loop;
-  GetTaskRunner(run_loop.QuitClosure());
+  VerifyCurrentSequencedTaskRunner(run_loop.QuitClosure());
   run_loop.Run();
 }
 
-TEST_F(SequencedTaskRunnerHandleTest, FromSequencedWorkerPool) {
+TEST_F(SequencedTaskRunnerHandleTest, FromSequencedWorkerPoolTask) {
   // Wrap the SequencedWorkerPool to avoid leaks due to its asynchronous
   // destruction.
   SequencedWorkerPoolOwner owner(3, "Test");
   WaitableEvent event(false, false);
   owner.pool()->PostSequencedWorkerTask(
       owner.pool()->GetSequenceToken(), FROM_HERE,
-      base::Bind(&SequencedTaskRunnerHandleTest::GetTaskRunner,
-                 base::Bind(&WaitableEvent::Signal, base::Unretained(&event))));
+      base::Bind(
+          &SequencedTaskRunnerHandleTest::VerifyCurrentSequencedTaskRunner,
+          base::Bind(&WaitableEvent::Signal, base::Unretained(&event))));
+  event.Wait();
+  owner.pool()->Shutdown();
+}
+
+TEST_F(SequencedTaskRunnerHandleTest, FromUnsequencedTask) {
+  // Wrap the SequencedWorkerPool to avoid leaks due to its asynchronous
+  // destruction.
+  SequencedWorkerPoolOwner owner(3, "Test");
+  WaitableEvent event(false, false);
+  owner.pool()->PostWorkerTask(
+      FROM_HERE,
+      base::Bind(
+          &SequencedTaskRunnerHandleTest::VerifyCurrentSequencedTaskRunner,
+          base::Bind(&WaitableEvent::Signal, base::Unretained(&event))));
   event.Wait();
 }
 

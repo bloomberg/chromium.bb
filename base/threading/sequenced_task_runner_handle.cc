@@ -12,26 +12,19 @@ namespace base {
 
 // static
 scoped_refptr<SequencedTaskRunner> SequencedTaskRunnerHandle::Get() {
-  // If we are on a worker thread for a SequencedBlockingPool that is running a
-  // sequenced task, return a SequencedTaskRunner for it.
-  scoped_refptr<base::SequencedWorkerPool> pool =
-      SequencedWorkerPool::GetWorkerPoolForCurrentThread();
-  if (pool) {
-    SequencedWorkerPool::SequenceToken sequence_token =
-        SequencedWorkerPool::GetSequenceTokenForCurrentThread();
-    DCHECK(sequence_token.IsValid());
-    DCHECK(pool->IsRunningSequenceOnCurrentThread(sequence_token));
-    return pool->GetSequencedTaskRunner(sequence_token);
-  }
+  // Return the SequencedTaskRunner if found or the SingleThreadedTaskRunner for
+  // the current thread otherwise.
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      SequencedWorkerPool::GetSequencedTaskRunnerForCurrentThread();
+  if (task_runner)
+    return task_runner;
 
-  // Otherwise, return a SingleThreadTaskRunner for the current thread.
   return base::ThreadTaskRunnerHandle::Get();
 }
 
 // static
 bool SequencedTaskRunnerHandle::IsSet() {
-  return (SequencedWorkerPool::GetWorkerPoolForCurrentThread() &&
-          SequencedWorkerPool::GetSequenceTokenForCurrentThread().IsValid()) ||
+  return SequencedWorkerPool::GetWorkerPoolForCurrentThread() ||
          base::ThreadTaskRunnerHandle::IsSet();
 }
 

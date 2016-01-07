@@ -14,9 +14,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/sequence_checker_impl.h"
 #include "base/stl_util.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/test/sequenced_task_runner_test_template.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/test/task_runner_test_template.h"
@@ -894,47 +896,138 @@ TEST_F(SequencedWorkerPoolTest, FlushForTesting) {
   pool()->FlushForTesting();
 }
 
-namespace {
-
-void CheckWorkerPoolAndSequenceToken(
-    const scoped_refptr<SequencedWorkerPool>& expected_pool,
-    SequencedWorkerPool::SequenceToken expected_token) {
-  SequencedWorkerPool::SequenceToken token =
-      SequencedWorkerPool::GetSequenceTokenForCurrentThread();
-  EXPECT_EQ(expected_token.ToString(), token.ToString());
-
-  scoped_refptr<SequencedWorkerPool> pool =
-      SequencedWorkerPool::GetWorkerPoolForCurrentThread();
-  EXPECT_EQ(expected_pool, pool);
+// Helper method for VerifyCurrentSequencedTaskRunner() and
+// VerifyCurrentSequencedTaskRunnerForUnsequencedTask().
+void VerifySequencedTaskRunnerRunsOnCurrentThread(
+    SequencedTaskRunner* task_runner,
+    bool should_run_on_current_thread,
+    const Closure& callback) {
+  EXPECT_EQ(should_run_on_current_thread,
+            task_runner->RunsTasksOnCurrentThread());
+  callback.Run();
 }
 
-}  // namespace
+void VerifyCurrentSequencedTaskRunner(
+    SequencedTaskRunner* expected_task_runner,
+    bool expected_equal,
+    const Closure& callback) {
+  scoped_refptr<SequencedTaskRunner> task_runner =
+      SequencedWorkerPool::GetSequencedTaskRunnerForCurrentThread();
 
-TEST_F(SequencedWorkerPoolTest, GetWorkerPoolAndSequenceTokenForCurrentThread) {
+  EXPECT_TRUE(task_runner->RunsTasksOnCurrentThread());
+
+  // SequencedTaskRunner does not allow directly checking for equality, but we
+  // can post a task to one task runner and verify that the other task runner
+  // is on the same sequence.
+  task_runner->PostTask(
+      FROM_HERE,
+      Bind(&VerifySequencedTaskRunnerRunsOnCurrentThread,
+           base::Unretained(expected_task_runner), expected_equal, callback));
+}
+
+void VerifyCurrentSequencedTaskRunnerForUnsequencedTask(
+    SequencedWorkerPool* pool,
+    const Closure& callback) {
+  EXPECT_FALSE(
+      SequencedWorkerPool::GetSequenceTokenForCurrentThread().IsValid());
+
+  scoped_refptr<SequencedTaskRunner> task_runner =
+      SequencedWorkerPool::GetSequencedTaskRunnerForCurrentThread();
+
+  EXPECT_TRUE(task_runner->RunsTasksOnCurrentThread());
+
+  scoped_refptr<SequencedTaskRunner> expected_task_runner =
+      SequencedWorkerPool::GetSequencedTaskRunnerForCurrentThread();
+
+  // The pool should now be running a sequence. This also verifies that no other
+  // thread will start running tasks with this sequence token.
+  const SequencedWorkerPool::SequenceToken sequence_token =
+      SequencedWorkerPool::GetSequenceTokenForCurrentThread();
+  ASSERT_TRUE(sequence_token.IsValid());
+  EXPECT_TRUE(pool->IsRunningSequence(sequence_token));
+
+  // The two sequenced task runners should be the same. See
+  // VerifyCurrentSequencedTaskRunner() above for why the check is implemented
+  // this way.
+  const bool expected_equal = true;
+  task_runner->PostTask(
+      FROM_HERE,
+      Bind(&VerifySequencedTaskRunnerRunsOnCurrentThread,
+           std::move(expected_task_runner), expected_equal, callback));
+}
+
+TEST_F(SequencedWorkerPoolTest, GetSequencedTaskRunnerForCurrentThread) {
   EnsureAllWorkersCreated();
 
-  // The current thread should have neither a worker pool nor a sequence token.
-  SequencedWorkerPool::SequenceToken local_token =
-      SequencedWorkerPool::GetSequenceTokenForCurrentThread();
-  scoped_refptr<SequencedWorkerPool> local_pool =
-      SequencedWorkerPool::GetWorkerPoolForCurrentThread();
-  EXPECT_FALSE(local_token.IsValid()) << local_token.ToString();
-  EXPECT_FALSE(local_pool);
+  // The current thread should not have a sequenced task runner from a
+  // worker pool.
+  scoped_refptr<SequencedTaskRunner> local_task_runner =
+      SequencedWorkerPool::GetSequencedTaskRunnerForCurrentThread();
+  EXPECT_FALSE(local_task_runner);
 
-  SequencedWorkerPool::SequenceToken token1 = pool()->GetSequenceToken();
-  SequencedWorkerPool::SequenceToken token2 = pool()->GetSequenceToken();
-  pool()->PostSequencedWorkerTask(
-      token1, FROM_HERE,
-      base::Bind(&CheckWorkerPoolAndSequenceToken, pool(), token1));
-  pool()->PostSequencedWorkerTask(
-      token2, FROM_HERE,
-      base::Bind(&CheckWorkerPoolAndSequenceToken, pool(), token2));
+  WaitableEvent event(false, false);
+  Closure signal = Bind(&WaitableEvent::Signal, Unretained(&event));
+  scoped_refptr<SequencedTaskRunner> task_runner_1 =
+      pool()->GetSequencedTaskRunner(SequencedWorkerPool::GetSequenceToken());
+  scoped_refptr<SequencedTaskRunner> task_runner_2 =
+      pool()->GetSequencedTaskRunner(SequencedWorkerPool::GetSequenceToken());
+  task_runner_1->PostTask(
+      FROM_HERE, Bind(&VerifyCurrentSequencedTaskRunner,
+                      base::Unretained(task_runner_1.get()), true, signal));
+  event.Wait();
+  task_runner_2->PostTask(
+      FROM_HERE, Bind(&VerifyCurrentSequencedTaskRunner,
+                      base::Unretained(task_runner_2.get()), true, signal));
+  event.Wait();
 
-  pool()->PostWorkerTask(FROM_HERE,
-                         base::Bind(&CheckWorkerPoolAndSequenceToken, pool(),
-                                    SequencedWorkerPool::SequenceToken()));
+  task_runner_1->PostTask(
+      FROM_HERE, Bind(&VerifyCurrentSequencedTaskRunner,
+                      base::Unretained(task_runner_2.get()), false, signal));
+  event.Wait();
 
-  pool()->FlushForTesting();
+  pool()->PostWorkerTask(
+      FROM_HERE, Bind(&VerifyCurrentSequencedTaskRunnerForUnsequencedTask,
+                      pool(), signal));
+  event.Wait();
+}
+
+class ChecksSequenceOnDestruction
+    : public RefCountedThreadSafe<ChecksSequenceOnDestruction> {
+ public:
+  void DoNothing() {}
+
+ private:
+  friend class RefCountedThreadSafe<ChecksSequenceOnDestruction>;
+
+  ~ChecksSequenceOnDestruction() {
+    EXPECT_TRUE(sequence_checker_.CalledOnValidSequencedThread());
+  }
+
+  SequenceCheckerImpl sequence_checker_;
+};
+
+void VerifySequenceOnDestruction(const Closure& callback) {
+  scoped_refptr<SequencedTaskRunner> task_runner =
+      SequencedWorkerPool::GetSequencedTaskRunnerForCurrentThread();
+  scoped_refptr<ChecksSequenceOnDestruction> check_sequence(
+      new ChecksSequenceOnDestruction);
+
+  // Post a task to an empty method. This will keep the only reference to the
+  // object, so it will be destroyed right after running the task.
+  task_runner->PostTask(FROM_HERE, Bind(&ChecksSequenceOnDestruction::DoNothing,
+                                        std::move(check_sequence)));
+
+  // Post the callback afterwards, so we can be sure the first task completed.
+  task_runner->PostTask(FROM_HERE, callback);
+}
+
+TEST_F(SequencedWorkerPoolTest, CheckSequenceOnDestruction) {
+  EnsureAllWorkersCreated();
+
+  WaitableEvent event(false, false);
+  Closure signal = Bind(&WaitableEvent::Signal, Unretained(&event));
+  pool()->PostWorkerTask(FROM_HERE, Bind(&VerifySequenceOnDestruction, signal));
+  event.Wait();
 }
 
 TEST_F(SequencedWorkerPoolTest, ShutsDownCleanWithContinueOnShutdown) {
