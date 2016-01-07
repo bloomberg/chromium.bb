@@ -23,6 +23,7 @@
 #include "components/feedback/tracing_manager.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "extensions/browser/event_router.h"
+#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "url/url_util.h"

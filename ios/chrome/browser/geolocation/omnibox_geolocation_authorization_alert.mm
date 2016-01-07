@@ -9,12 +9,11 @@
 #import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/strings/sys_string_conversions.h"
+#include "grit/components_strings.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_google_chrome_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/public/provider/chrome/browser/string_provider.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 @interface OmniboxGeolocationAuthorizationAlert () <UIAlertViewDelegate> {
@@ -51,8 +50,7 @@
   NSString* message =
       l10n_util::GetNSString(IDS_IOS_LOCATION_AUTHORIZATION_ALERT);
   NSString* cancel = l10n_util::GetNSString(IDS_IOS_LOCATION_USAGE_CANCEL);
-  NSString* ok = base::SysUTF16ToNSString(
-      ios::GetChromeBrowserProvider()->GetStringProvider()->GetOKString());
+  NSString* ok = l10n_util::GetNSString(IDS_OK);
 
   // Use a UIAlertView to match the style of the iOS system location alert.
   base::scoped_nsobject<UIAlertView> alertView(

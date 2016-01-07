@@ -17,6 +17,7 @@
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "content/public/browser/web_contents.h"
+#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 GeneratedPasswordSavedInfoBarDelegateAndroid::

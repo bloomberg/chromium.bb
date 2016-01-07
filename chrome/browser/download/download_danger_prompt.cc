@@ -21,6 +21,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_item.h"
+#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using extensions::ExperienceSamplingEvent;

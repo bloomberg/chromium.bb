@@ -11,6 +11,7 @@
 #import "chrome/browser/ui/cocoa/passwords/passwords_bubble_utils.h"
 #import "chrome/browser/ui/cocoa/passwords/passwords_list_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
+#include "grit/components_strings.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"

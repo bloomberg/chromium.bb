@@ -21,6 +21,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_image/default_user_images.h"
 #include "grit/browser_resources.h"
+#include "grit/components_strings.h"
 #include "media/audio/sounds/sounds_manager.h"
 #include "net/base/data_url.h"
 #include "ui/base/l10n/l10n_util.h"

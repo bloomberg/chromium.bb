@@ -20,6 +20,7 @@
 #include "components/login/localized_values_builder.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "grit/components_strings.h"
 #include "ui/base/webui/web_ui_util.h"
 
 namespace {

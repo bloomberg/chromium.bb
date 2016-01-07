@@ -36,10 +36,6 @@ class StringProvider {
   virtual int GetUnsafePortMessageID();
   virtual int GetUnsafePortDetailsID();
 
-  // Returns a generic "Done" string.
-  virtual base::string16 GetDoneString();
-  // Returns a generic "OK" string.
-  virtual base::string16 GetOKString();
   // Returns the product name (e.g. "Google Chrome").
   virtual base::string16 GetProductName();
 };

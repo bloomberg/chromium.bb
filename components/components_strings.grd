@@ -205,8 +205,17 @@
       <part file="version_ui_strings.grdp" />
 
       <!-- Generic terms -->
+      <message name="IDS_CANCEL" desc="Used for Cancel on buttons">
+        Cancel
+      </message>
+      <message name="IDS_DONE" desc="A generic term for Done on buttons and menus.">
+        Done
+      </message>
       <message name="IDS_LEARN_MORE" desc="Learn more text">
         Learn more
+      </message>
+      <message name="IDS_OK" desc="Used for OK on buttons">
+        OK
       </message>
       <message name="IDS_UTILITY_PROCESS_JSON_PARSER_NAME" desc="The name of the utility process used for parsing JSON files.">
         JSON Parser

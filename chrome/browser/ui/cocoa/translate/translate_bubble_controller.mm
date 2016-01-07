@@ -18,6 +18,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/translate/core/browser/translate_ui_delegate.h"
 #include "content/public/browser/browser_context.h"
+#include "grit/components_strings.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"

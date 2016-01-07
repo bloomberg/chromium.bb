@@ -30,14 +30,6 @@ int StringProvider::GetUnsafePortDetailsID() {
   return 0;
 }
 
-base::string16 StringProvider::GetDoneString() {
-  return base::string16();
-}
-
-base::string16 StringProvider::GetOKString() {
-  return base::string16();
-}
-
 base::string16 StringProvider::GetProductName() {
   return base::string16();
 }

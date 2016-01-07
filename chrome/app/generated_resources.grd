@@ -604,12 +604,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </message>
 
       <!-- Generic terms -->
-      <message name="IDS_OK" desc="Used for OK on buttons">
-        OK
-      </message>
-      <message name="IDS_CANCEL" desc="Used for Cancel on buttons">
-        Cancel
-      </message>
       <message name="IDS_ADD" desc="Used for Add on buttons">
         Add
       </message>
@@ -621,9 +615,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </message>
       <message name="IDS_CLOSE" desc="A generic term for Close on buttons and menus.">
         Close
-      </message>
-      <message name="IDS_DONE" desc="A generic term for Done on buttons and menus.">
-        Done
       </message>
       <if expr="is_macosx">
         <message name="IDS_ACCNAME_TAB" desc="A generic description of a tab button's role">

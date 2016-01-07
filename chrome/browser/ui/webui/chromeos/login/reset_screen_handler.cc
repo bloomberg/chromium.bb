@@ -17,6 +17,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/login/localized_values_builder.h"
+#include "grit/components_strings.h"
 
 namespace {
 

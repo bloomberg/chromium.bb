@@ -42,6 +42,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "grit/components_strings.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 

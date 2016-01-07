@@ -30,6 +30,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
+#include "grit/components_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using content::WebContents;

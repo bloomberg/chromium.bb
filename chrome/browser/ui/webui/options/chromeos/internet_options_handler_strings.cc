@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/grit/generated_resources.h"
+#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 

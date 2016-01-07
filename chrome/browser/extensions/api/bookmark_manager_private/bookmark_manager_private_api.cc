@@ -41,6 +41,7 @@
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/view_type_utils.h"
+#include "grit/components_strings.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"

@@ -31,6 +31,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/user_metrics.h"
+#include "grit/components_strings.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
 #import "ui/base/cocoa/menu_controller.h"

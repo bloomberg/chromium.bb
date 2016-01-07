@@ -22,6 +22,7 @@
 #include "chrome/grit/locale_settings.h"
 #include "components/login/localized_values_builder.h"
 #include "content/public/browser/web_contents.h"
+#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"

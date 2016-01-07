@@ -22,6 +22,7 @@
 #import "chrome/browser/ui/cocoa/website_settings/split_block_button.h"
 #include "chrome/browser/ui/website_settings/mock_permission_bubble_request.h"
 #include "chrome/grit/generated_resources.h"
+#include "grit/components_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #import "testing/gtest_mac.h"
 #include "ui/base/l10n/l10n_util.h"

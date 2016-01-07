@@ -10,7 +10,6 @@
 #include "grit/components_strings.h"
 #include "ios/chrome/browser/translate/translate_infobar_tags.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/public/provider/chrome/browser/string_provider.h"
 #import "ios/public/provider/chrome/browser/ui/infobar_view_delegate.h"
 #import "ios/public/provider/chrome/browser/ui/infobar_view_protocol.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -71,8 +70,7 @@
                               action:@selector(infoBarButtonDidPress:)];
   // Other buttons.
   NSString* buttonRevert = l10n_util::GetNSString(IDS_TRANSLATE_INFOBAR_REVERT);
-  NSString* buttonOptions = base::SysUTF16ToNSString(
-      ios::GetChromeBrowserProvider()->GetStringProvider()->GetDoneString());
+  NSString* buttonOptions = l10n_util::GetNSString(IDS_DONE);
   [infoBarView addButton1:buttonOptions
                      tag1:TranslateInfoBarIOSTag::AFTER_DONE
                   button2:buttonRevert

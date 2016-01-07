@@ -15,6 +15,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/user_experiment.h"
+#include "grit/components_strings.h"
 #include "grit/theme_resources.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"

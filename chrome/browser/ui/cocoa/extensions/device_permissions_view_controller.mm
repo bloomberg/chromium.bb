@@ -7,6 +7,7 @@
 #import "chrome/browser/ui/cocoa/extensions/device_permissions_dialog_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/device_permissions_view_controller.h"
 #include "chrome/grit/generated_resources.h"
+#include "grit/components_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
 using extensions::DevicePermissionsPrompt;

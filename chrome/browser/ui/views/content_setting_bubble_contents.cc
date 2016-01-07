@@ -22,6 +22,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_contents.h"
+#include "grit/components_strings.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"

@@ -20,6 +20,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/web_contents.h"
+#include "grit/components_strings.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util_mac.h"
 #include "net/ssl/ssl_cert_request_info.h"
