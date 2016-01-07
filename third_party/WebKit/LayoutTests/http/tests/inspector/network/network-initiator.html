@@ -27,15 +27,6 @@ var test = function()
 {
     step2();
 
-    function findRequestByURL(url)
-    {
-        var requests = InspectorTest.networkRequests();
-        for (var i = 0; i < requests.length; ++i) {
-            if (url.test(requests[i].url))
-                return requests[i];
-        }
-    }
-
     /*function step1()
     {
         InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, onRequest);
@@ -51,7 +42,7 @@ var test = function()
 
     function step2()
     {
-        //if (!findRequestByURL(/size=300/))
+        //if (InspectorTest.findRequestsByURLPattern(/size=300/).length === 0)
         //    return;
 
         InspectorTest.addConsoleSniffer(step3);
@@ -62,11 +53,12 @@ var test = function()
     {
         function dumpInitiator(url)
         {
-            var request = findRequestByURL(new RegExp(url.replace(".", "\\.")));
-            if (!request) {
+            var matching_requests = InspectorTest.findRequestsByURLPattern(new RegExp(url.replace(".", "\\.")));
+            if (matching_requests.length === 0) {
                 InspectorTest.addResult(url + " NOT FOUND");
                 return;
             }
+            var request = matching_requests[0];
             var initiator = request.initiator();
             InspectorTest.addResult(request.url + ": " + initiator.type);
             if (initiator.url)

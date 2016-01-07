@@ -71,6 +71,14 @@ InspectorTest.dumpNetworkRequests = function()
         InspectorTest.addResult(requests[i].url);
 }
 
+// |url| must be a regular expression to match request URLs.
+InspectorTest.findRequestsByURLPattern = function(urlPattern)
+{
+    return InspectorTest.networkRequests().filter(function(value) {
+        return urlPattern.test(value.url)
+    });
+}
+
 InspectorTest.makeSimpleXHR = function(method, url, async, callback)
 {
     InspectorTest.makeXHR(method, url, async, undefined, undefined, [], false, undefined, undefined, callback);

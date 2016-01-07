@@ -7,15 +7,6 @@ var test = function()
 {
     InspectorTest.reloadPage(step1);
 
-    function findRequestByURL(url)
-    {
-        var requests = InspectorTest.networkRequests();
-        for (var i = 0; i < requests.length; ++i) {
-            if (url.test(requests[i].url))
-                return requests[i];
-        }
-    }
-
     function step1()
     {
         InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestStarted, onRequest);
@@ -35,7 +26,8 @@ var test = function()
 
     function step2()
     {
-        if (!findRequestByURL(/silent_script.js/))
+        var results = InspectorTest.findRequestsByURLPattern(/silent_script.js/);
+        if (results.length === 0)
             return;
 
         InspectorTest.completeTest();

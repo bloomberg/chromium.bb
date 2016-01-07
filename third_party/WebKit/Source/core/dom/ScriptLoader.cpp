@@ -301,8 +301,8 @@ bool ScriptLoader::fetchScript(const String& sourceUrl, FetchRequest::DeferOptio
         request.setDefer(defer);
 
         String integrityAttr = m_element->fastGetAttribute(HTMLNames::integrityAttr);
-        IntegrityMetadataSet metadataSet;
         if (!integrityAttr.isEmpty()) {
+            IntegrityMetadataSet metadataSet;
             SubresourceIntegrity::parseIntegrityAttribute(integrityAttr, metadataSet, elementDocument.get());
             request.setIntegrityMetadata(metadataSet);
         }

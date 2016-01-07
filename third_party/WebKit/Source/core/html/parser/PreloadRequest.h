@@ -56,7 +56,7 @@ public:
     {
         m_integrityMetadata = metadataSet;
     }
-    IntegrityMetadataSet integrityMetadata() const
+    const IntegrityMetadataSet& integrityMetadata() const
     {
         return m_integrityMetadata;
     }

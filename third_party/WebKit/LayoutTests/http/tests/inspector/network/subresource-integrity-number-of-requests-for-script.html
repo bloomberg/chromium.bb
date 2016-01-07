@@ -12,22 +12,11 @@ function loadIFrame() {
 }
 
 function test() {
-    function findRequestsByURL(url)
-    {
-        var requests = InspectorTest.networkRequests();
-        var results = [];
-        for (var i = 0; i < requests.length; ++i) {
-            if (url.test(requests[i].url))
-                results.push(requests[i]);
-        }
-
-        return results;
-    }
     InspectorTest.addConsoleSniffer(step1);
     InspectorTest.evaluateInPage("loadIFrame()");
 
     function step1() {
-        var requests = findRequestsByURL(/call-success.js/);
+        var requests = InspectorTest.findRequestsByURLPattern(/call-success.js/);
         InspectorTest.assertTrue(requests.length === 1);
         InspectorTest.completeTest();
     }
