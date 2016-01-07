@@ -133,6 +133,7 @@ TypeConverter<GpuCapabilitiesPtr, gpu::Capabilities>::Convert(
   result->blend_equation_advanced = input.blend_equation_advanced;
   result->blend_equation_advanced_coherent =
       input.blend_equation_advanced_coherent;
+  result->flips_vertically = input.flips_vertically;
   return result;
 }
 
@@ -176,6 +177,7 @@ gpu::Capabilities TypeConverter<gpu::Capabilities, GpuCapabilitiesPtr>::Convert(
   result.blend_equation_advanced = input->blend_equation_advanced;
   result.blend_equation_advanced_coherent =
       input->blend_equation_advanced_coherent;
+  result.flips_vertically = input->flips_vertically;
   return result;
 }
 

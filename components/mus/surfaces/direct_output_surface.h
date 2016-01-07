@@ -18,6 +18,7 @@ class DirectOutputSurface : public cc::OutputSurface {
   ~DirectOutputSurface() override;
 
   // cc::OutputSurface implementation
+  bool BindToClient(cc::OutputSurfaceClient* client) override;
   void SwapBuffers(cc::CompositorFrame* frame) override;
 
  private:

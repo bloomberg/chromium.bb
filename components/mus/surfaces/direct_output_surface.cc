@@ -21,6 +21,17 @@ DirectOutputSurface::DirectOutputSurface(
 
 DirectOutputSurface::~DirectOutputSurface() {}
 
+bool DirectOutputSurface::BindToClient(cc::OutputSurfaceClient* client) {
+  if (!cc::OutputSurface::BindToClient(client))
+    return false;
+
+  if (capabilities_.uses_default_gl_framebuffer) {
+    capabilities_.flipped_output_surface =
+        context_provider()->ContextCapabilities().gpu.flips_vertically;
+  }
+  return true;
+}
+
 void DirectOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   DCHECK(context_provider_);
   DCHECK(frame->gl_frame_data);

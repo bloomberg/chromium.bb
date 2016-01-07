@@ -49,9 +49,9 @@ bool SurfacesContextProvider::BindToCurrentThread() {
     return false;
   gles2_helper_->SetAutomaticFlushes(false);
   transfer_buffer_.reset(new gpu::TransferBuffer(gles2_helper_.get()));
-  gpu::Capabilities capabilities = command_buffer_local_->GetCapabilities();
+  capabilities_.gpu = command_buffer_local_->GetCapabilities();
   bool bind_generates_resource =
-      !!capabilities.bind_generates_resource_chromium;
+      !!capabilities_.gpu.bind_generates_resource_chromium;
   // TODO(piman): Some contexts (such as compositor) want this to be true, so
   // this needs to be a public parameter.
   bool lose_context_when_out_of_memory = false;
