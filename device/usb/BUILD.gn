@@ -6,23 +6,39 @@ import("//build/config/features.gni")
 
 assert(!is_ios)
 
+if (is_android) {
+  import("//build/config/android/rules.gni")  # For generate_jni().
+}
+
 source_ids = "//third_party/usb_ids/usb.ids"
 generated_ids = "$target_gen_dir/usb_ids_gen.cc"
 
 source_set("usb") {
   sources = [
+    "android/usb_jni_registrar.cc",
+    "android/usb_jni_registrar.h",
+    "usb_configuration_android.cc",
+    "usb_configuration_android.h",
     "usb_descriptors.cc",
     "usb_descriptors.h",
     "usb_device.cc",
     "usb_device.h",
+    "usb_device_android.cc",
+    "usb_device_android.h",
     "usb_device_filter.cc",
     "usb_device_filter.h",
     "usb_device_handle.cc",
     "usb_device_handle.h",
+    "usb_endpoint_android.cc",
+    "usb_endpoint_android.h",
     "usb_ids.cc",
     "usb_ids.h",
+    "usb_interface_android.cc",
+    "usb_interface_android.h",
     "usb_service.cc",
     "usb_service.h",
+    "usb_service_android.cc",
+    "usb_service_android.h",
     "webusb_descriptors.cc",
     "webusb_descriptors.h",
     generated_ids,
@@ -42,10 +58,7 @@ source_set("usb") {
   }
 
   if (is_android) {
-    sources += [
-      "usb_service_android.cc",
-      "usb_service_android.h",
-    ]
+    deps += [ ":jni_headers" ]
   } else {
     sources += [
       "usb_context.cc",
@@ -110,4 +123,33 @@ action("usb_device_ids") {
 
   # Only the device_usb target can depend on us.
   visibility = [ ":usb" ]
+}
+
+if (is_android) {
+  java_sources_needing_jni = [
+    "android/java/src/org/chromium/device/usb/ChromeUsbConfiguration.java",
+    "android/java/src/org/chromium/device/usb/ChromeUsbDevice.java",
+    "android/java/src/org/chromium/device/usb/ChromeUsbEndpoint.java",
+    "android/java/src/org/chromium/device/usb/ChromeUsbInterface.java",
+    "android/java/src/org/chromium/device/usb/ChromeUsbService.java",
+  ]
+
+  generate_jni("jni_headers") {
+    sources = java_sources_needing_jni
+    jni_package = "device"
+  }
+
+  java_cpp_enum("usb_descriptors_javagen") {
+    sources = [
+      "usb_descriptors.h",
+    ]
+  }
+
+  android_library("java") {
+    java_files = java_sources_needing_jni
+    deps = [
+      "//base:base_java",
+    ]
+    srcjar_deps = [ ":usb_descriptors_javagen" ]
+  }
 }

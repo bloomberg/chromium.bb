@@ -20,6 +20,10 @@
         '../..',
       ],
       'sources': [
+        'android/usb_jni_registrar.cc',
+        'android/usb_jni_registrar.h',
+        'usb_configuration_android.cc',
+        'usb_configuration_android.h',
         'usb_context.cc',
         'usb_context.h',
         'usb_descriptors.cc',
@@ -28,18 +32,26 @@
         'usb_device_impl.h',
         'usb_device.cc',
         'usb_device.h',
+        'usb_device_android.cc',
+        'usb_device_android.h',
         'usb_device_filter.cc',
         'usb_device_filter.h',
         'usb_device_handle_impl.cc',
         'usb_device_handle_impl.h',
         'usb_device_handle.cc',
         'usb_device_handle.h',
+        'usb_endpoint_android.cc',
+        'usb_endpoint_android.h',
         'usb_error.cc',
         'usb_error.h',
         'usb_ids.cc',
         'usb_ids.h',
+        'usb_interface_android.cc',
+        'usb_interface_android.h',
         'usb_service.cc',
         'usb_service.h',
+        'usb_service_android.cc',
+        'usb_service_android.h',
         'usb_service_impl.cc',
         'usb_service_impl.h',
         'webusb_descriptors.cc',
@@ -75,13 +87,14 @@
           ],
         }],
         ['OS=="android"', {
+          'dependencies': [
+            'device_usb_java',
+            'device_usb_jni_headers',
+          ],
           'dependencies!': [
             '../../third_party/libusb/libusb.gyp:libusb',
           ],
-          'sources': [
-            'usb_service_android.cc',
-            'usb_service_android.h',
-          ],
+          # These sources are libusb-specific.
           'sources!': [
             'usb_context.cc',
             'usb_context.h',
@@ -121,5 +134,46 @@
         'mock_usb_service.h',
       ],
     },
+  ],
+  'conditions': [
+    ['OS == "android"', {
+      'targets': [
+        {
+          'target_name': 'device_usb_jni_headers',
+          'type': 'none',
+          'sources': [
+            'android/java/src/org/chromium/device/usb/ChromeUsbConfiguration.java',
+            'android/java/src/org/chromium/device/usb/ChromeUsbDevice.java',
+            'android/java/src/org/chromium/device/usb/ChromeUsbEndpoint.java',
+            'android/java/src/org/chromium/device/usb/ChromeUsbInterface.java',
+            'android/java/src/org/chromium/device/usb/ChromeUsbService.java',
+          ],
+          'variables': {
+            'jni_gen_package': 'device_usb',
+          },
+          'includes': [ '../../build/jni_generator.gypi' ],
+        },
+        {
+          'target_name': 'device_usb_java',
+          'type': 'none',
+          'dependencies': [
+            'usb_descriptors_javagen',
+            '../../base/base.gyp:base',
+          ],
+          'variables': {
+            'java_in_dir': '../../device/usb/android/java',
+          },
+          'includes': [ '../../build/java.gypi' ],
+        },
+        {
+          'target_name': 'usb_descriptors_javagen',
+          'type': 'none',
+          'variables': {
+            'source_file': 'usb_descriptors.h',
+          },
+          'includes': [ '../../build/android/java_cpp_enum.gypi' ],
+        },
+      ],
+    }],
   ],
 }

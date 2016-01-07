@@ -5,12 +5,12 @@
 #ifndef DEVICE_USB_MOCK_USB_DEVICE_H_
 #define DEVICE_USB_MOCK_USB_DEVICE_H_
 
-#include "device/usb/usb_device.h"
-
 #include <stdint.h>
 
 #include <string>
+#include <vector>
 
+#include "device/usb/usb_device.h"
 #include "device/usb/usb_device_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -41,7 +41,6 @@ class MockUsbDevice : public UsbDevice {
                 const std::vector<UsbConfigDescriptor>& configurations);
 
   MOCK_METHOD1(Open, void(const OpenCallback&));
-  MOCK_METHOD1(Close, bool(scoped_refptr<UsbDeviceHandle>));
   MOCK_METHOD0(GetActiveConfiguration, const device::UsbConfigDescriptor*());
 
  private:

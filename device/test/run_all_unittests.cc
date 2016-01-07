@@ -11,11 +11,13 @@
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
 #include "device/bluetooth/android/bluetooth_jni_registrar.h"
+#include "device/usb/android/usb_jni_registrar.h"
 #endif
 
 int main(int argc, char** argv) {
 #if defined(OS_ANDROID)
   device::android::RegisterBluetoothJni(base::android::AttachCurrentThread());
+  device::android::RegisterUsbJni(base::android::AttachCurrentThread());
 #endif
 
   base::TestSuite test_suite(argc, argv);

@@ -26,6 +26,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "device/bluetooth/android/bluetooth_jni_registrar.h"
+#include "device/usb/android/usb_jni_registrar.h"
 #include "media/base/android/media_jni_registrar.h"
 #include "media/midi/midi_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
@@ -73,6 +74,9 @@ bool EnsureJniRegistered(JNIEnv* env) {
       return false;
 
     if (!device::android::RegisterBluetoothJni(env))
+      return false;
+
+    if (!device::android::RegisterUsbJni(env))
       return false;
 
     if (!media::RegisterJni(env))

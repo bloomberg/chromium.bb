@@ -12,6 +12,8 @@
 
 namespace device {
 
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.device.usb
 enum UsbTransferType {
   USB_TRANSFER_CONTROL = 0,
   USB_TRANSFER_ISOCHRONOUS,
@@ -19,6 +21,8 @@ enum UsbTransferType {
   USB_TRANSFER_INTERRUPT,
 };
 
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.device.usb
 enum UsbEndpointDirection {
   USB_DIRECTION_INBOUND = 0,
   USB_DIRECTION_OUTBOUND,

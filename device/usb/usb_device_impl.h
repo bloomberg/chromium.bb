@@ -6,6 +6,8 @@
 #define DEVICE_USB_USB_DEVICE_IMPL_H_
 
 #include <stdint.h>
+
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -45,7 +47,6 @@ class UsbDeviceImpl : public UsbDevice {
   void CheckUsbAccess(const ResultCallback& callback) override;
 #endif  // OS_CHROMEOS
   void Open(const OpenCallback& callback) override;
-  bool Close(scoped_refptr<UsbDeviceHandle> handle) override;
   const UsbConfigDescriptor* GetActiveConfiguration() override;
 
   // These functions are used during enumeration only. The values must not
@@ -87,6 +88,7 @@ class UsbDeviceImpl : public UsbDevice {
   void ReadAllConfigurations();
 
   // Called by UsbDeviceHandleImpl.
+  void Close(scoped_refptr<UsbDeviceHandle> handle);
   void RefreshActiveConfiguration();
 
  private:
