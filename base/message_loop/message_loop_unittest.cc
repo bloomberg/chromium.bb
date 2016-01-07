@@ -1041,4 +1041,15 @@ TEST(MessageLoopTest, OriginalRunnerWorks) {
   EXPECT_EQ(1, foo->test_count());
 }
 
+TEST(MessageLoopTest, DeleteUnboundLoop) {
+  // It should be possible to delete an unbound message loop on a thread which
+  // already has another active loop. This happens when thread creation fails.
+  MessageLoop loop;
+  scoped_ptr<MessageLoop> unbound_loop(MessageLoop::CreateUnbound(
+      MessageLoop::TYPE_DEFAULT, MessageLoop::MessagePumpFactoryCallback()));
+  unbound_loop.reset();
+  EXPECT_EQ(&loop, MessageLoop::current());
+  EXPECT_EQ(loop.task_runner(), ThreadTaskRunnerHandle::Get());
+}
+
 }  // namespace base

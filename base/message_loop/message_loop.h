@@ -11,6 +11,7 @@
 #include "base/base_export.h"
 #include "base/callback_forward.h"
 #include "base/debug/task_annotator.h"
+#include "base/gtest_prod_util.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -403,6 +404,7 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   friend class internal::IncomingTaskQueue;
   friend class ScheduleWorkTest;
   friend class Thread;
+  FRIEND_TEST_ALL_PREFIXES(MessageLoopTest, DeleteUnboundLoop);
 
   using MessagePumpFactoryCallback = Callback<scoped_ptr<MessagePump>()>;
 
