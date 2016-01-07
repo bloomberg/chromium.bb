@@ -34,10 +34,13 @@ struct SVGTextFragment {
         , metricsListOffset(0)
         , length(0)
         , isTextOnPath(false)
+        , isVertical(false)
         , x(0)
         , y(0)
         , width(0)
         , height(0)
+        , lengthAdjustScale(1)
+        , lengthAdjustBias(0)
     {
     }
 
@@ -89,8 +92,9 @@ struct SVGTextFragment {
     // The first laid out character starts at LayoutSVGInlineText::characters() + characterOffset.
     unsigned characterOffset;
     unsigned metricsListOffset;
-    unsigned length : 31;
+    unsigned length : 30;
     unsigned isTextOnPath : 1;
+    unsigned isVertical : 1;
 
     float x;
     float y;
@@ -104,7 +108,8 @@ struct SVGTextFragment {
     AffineTransform transform;
 
     // Contains lengthAdjust related transformations, which are not allowd to influence the SVGTextQuery code.
-    AffineTransform lengthAdjustTransform;
+    float lengthAdjustScale;
+    float lengthAdjustBias;
 
 private:
     AffineTransform buildNormalFragmentTransform() const
@@ -114,7 +119,7 @@ private:
         return buildTransformForTextOnLine();
     }
 
-    bool affectedByTextLength() const { return lengthAdjustTransform.a() != 1 || lengthAdjustTransform.d() != 1; }
+    bool affectedByTextLength() const { return lengthAdjustScale != 1; }
 
     void transformAroundOrigin(AffineTransform& result) const
     {
@@ -126,22 +131,42 @@ private:
 
     AffineTransform buildTransformForTextOnPath() const
     {
-        // For text-on-path layout, multiply the transform with the lengthAdjustTransform before orienting the resulting transform.
-        AffineTransform result = !affectedByTextLength() ? transform : transform * lengthAdjustTransform;
+        // For text-on-path layout, multiply the transform with the
+        // lengthAdjustTransform before orienting the resulting transform.
+        // T(x,y) * M(transform) * M(lengthAdjust) * T(-x,-y)
+        AffineTransform result = !affectedByTextLength() ? transform : transform * lengthAdjustTransform();
         if (!result.isIdentity())
             transformAroundOrigin(result);
         return result;
     }
 
+    AffineTransform lengthAdjustTransform() const
+    {
+        AffineTransform result;
+        if (!affectedByTextLength())
+            return result;
+        // Load a transform assuming horizontal direction, then swap if vertical.
+        result.setMatrix(lengthAdjustScale, 0, 0, 1, lengthAdjustBias, 0);
+        if (isVertical) {
+            result.setD(result.a());
+            result.setA(1);
+            result.setF(result.e());
+            result.setE(0);
+        }
+        return result;
+    }
+
     AffineTransform buildTransformForTextOnLine() const
     {
-        // For text-on-line layout, orient the transform first, then multiply the lengthAdjustTransform with the oriented transform.
+        // For text-on-line layout, orient the transform first, then multiply
+        // the lengthAdjustTransform with the oriented transform.
+        // M(lengthAdjust) * T(x,y) * M(transform) * T(-x,-y)
         if (transform.isIdentity())
-            return lengthAdjustTransform;
+            return lengthAdjustTransform();
 
         AffineTransform result = transform;
         transformAroundOrigin(result);
-        result.preMultiply(lengthAdjustTransform);
+        result.preMultiply(lengthAdjustTransform());
         return result;
     }
 };

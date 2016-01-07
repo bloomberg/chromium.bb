@@ -25,7 +25,6 @@
 
 namespace blink {
 
-class AffineTransform;
 class SVGInlineTextBox;
 struct SVGTextFragment;
 
@@ -50,7 +49,7 @@ protected:
 
 private:
     void processTextLengthSpacingCorrection(bool isVerticalText, float textLengthShift, Vector<SVGTextFragment>&, unsigned& atCharacter);
-    void applyTextLengthScaleAdjustment(const AffineTransform&, Vector<SVGTextFragment>&);
+    void applyTextLengthScaleAdjustment(float textLengthScale, float textLengthBias, Vector<SVGTextFragment>&);
     void processTextAnchorCorrection(bool isVerticalText, float textAnchorShift, Vector<SVGTextFragment>&);
 };
 

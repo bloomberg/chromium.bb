@@ -521,13 +521,10 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Line
             if (m_isVerticalText)
                 m_currentTextFragment.transform.rotate(90);
 
+            m_currentTextFragment.isVertical = m_isVerticalText;
             m_currentTextFragment.isTextOnPath = m_inPathLayout && m_textPathScaling != 1;
-            if (m_currentTextFragment.isTextOnPath) {
-                if (m_isVerticalText)
-                    m_currentTextFragment.lengthAdjustTransform.scaleNonUniform(1, m_textPathScaling);
-                else
-                    m_currentTextFragment.lengthAdjustTransform.scaleNonUniform(m_textPathScaling, 1);
-            }
+            if (m_currentTextFragment.isTextOnPath)
+                m_currentTextFragment.lengthAdjustScale = m_textPathScaling;
         }
 
         // Update current text position, after processing of the current character finished.
