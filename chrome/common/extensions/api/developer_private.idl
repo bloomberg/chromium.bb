@@ -62,14 +62,14 @@ namespace developerPrivate {
   enum ViewType {
     APP_WINDOW,
     BACKGROUND_CONTENTS,
+    COMPONENT,
     EXTENSION_BACKGROUND_PAGE,
     EXTENSION_DIALOG,
     EXTENSION_GUEST,
     EXTENSION_POPUP,
     LAUNCHER_PAGE,
     PANEL,
-    TAB_CONTENTS,
-    VIRTUAL_KEYBOARD
+    TAB_CONTENTS
   };
 
   enum ErrorType {

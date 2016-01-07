@@ -54,6 +54,9 @@ InspectableViewsFinder::View InspectableViewsFinder::ConstructView(
     case VIEW_TYPE_BACKGROUND_CONTENTS:
       view->type = api::developer_private::VIEW_TYPE_BACKGROUND_CONTENTS;
       break;
+    case VIEW_TYPE_COMPONENT:
+      view->type = api::developer_private::VIEW_TYPE_COMPONENT;
+      break;
     case VIEW_TYPE_EXTENSION_BACKGROUND_PAGE:
       view->type = api::developer_private::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE;
       break;
@@ -74,9 +77,6 @@ InspectableViewsFinder::View InspectableViewsFinder::ConstructView(
       break;
     case VIEW_TYPE_TAB_CONTENTS:
       view->type = api::developer_private::VIEW_TYPE_TAB_CONTENTS;
-      break;
-    case VIEW_TYPE_VIRTUAL_KEYBOARD:
-      view->type = api::developer_private::VIEW_TYPE_VIRTUAL_KEYBOARD;
       break;
     default:
       NOTREACHED();

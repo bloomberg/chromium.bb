@@ -8,8 +8,10 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/chromevox_panel.h"
+#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/view_type_utils.h"
 #include "ui/chromeos/accessibility_types.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
@@ -64,8 +66,12 @@ ChromeVoxPanel::ChromeVoxPanel(content::BrowserContext* browser_context)
   url += kChromeVoxPanelRelativeUrl;
 
   views::WebView* web_view = new views::WebView(browser_context);
+  content::WebContents* contents = web_view->GetWebContents();
   web_contents_observer_.reset(
-      new ChromeVoxPanelWebContentsObserver(web_view->GetWebContents(), this));
+      new ChromeVoxPanelWebContentsObserver(contents, this));
+  extensions::SetViewType(contents, extensions::VIEW_TYPE_COMPONENT);
+  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
+      contents);
   web_view->LoadInitialURL(GURL(url));
   web_view_ = web_view;
 

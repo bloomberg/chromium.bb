@@ -358,11 +358,11 @@ void ChromeExtensionsBrowserClient::AttachExtensionTaskManagerTag(
     ViewType view_type) {
   switch (view_type) {
     case VIEW_TYPE_APP_WINDOW:
+    case VIEW_TYPE_COMPONENT:
     case VIEW_TYPE_EXTENSION_BACKGROUND_PAGE:
     case VIEW_TYPE_EXTENSION_DIALOG:
     case VIEW_TYPE_EXTENSION_POPUP:
     case VIEW_TYPE_LAUNCHER_PAGE:
-    case VIEW_TYPE_VIRTUAL_KEYBOARD:
       // These are the only types that are tracked by the ExtensionTag.
       task_management::WebContentsTags::CreateForExtension(web_contents,
                                                            view_type);
