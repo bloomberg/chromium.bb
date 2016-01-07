@@ -45,36 +45,11 @@ Polymer({
      * @type {?settings.SyncStatus}
      */
     syncStatus: Object,
-
-    /**
-     * The currently selected profile icon URL. May be a data URL.
-     * @private {string}
-     */
-    profileIconUrl_: String,
-
-    /**
-     * The current profile name.
-     * @private {string}
-     */
-    profileName_: String,
   },
 
-  /** @override */
   created: function() {
-    settings.SyncPrivateApi.getProfileInfo(this.handleProfileInfo_.bind(this));
     settings.SyncPrivateApi.getSyncStatus(
         this.handleSyncStatusFetched_.bind(this));
-  },
-
-  /**
-   * Handler for when the profile's icon and name is updated.
-   * @private
-   * @param {!string} name
-   * @param {!string} iconUrl
-   */
-  handleProfileInfo_: function(name, iconUrl) {
-    this.profileName_ = name;
-    this.profileIconUrl_ = iconUrl;
   },
 
   /**
@@ -92,14 +67,6 @@ Polymer({
   /** @private */
   onActionLinkTap_: function() {
     settings.SyncPrivateApi.showSetupUI();
-  },
-
-  /** @private */
-  onManageProfileTap_: function() {
-<if expr="not chromeos">
-    this.$.pages.setSubpageChain(['manageProfile']);
-</if>
-    // TODO(tommycli): Implement ChromeOS version. January 2016.
   },
 
   /** @private */

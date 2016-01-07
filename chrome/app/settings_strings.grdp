@@ -608,12 +608,6 @@
     Manage other people
   </message>
 
-  <if expr="not chromeos">
-    <message name="IDS_SETTINGS_EDIT_PERSON" desc="Title of the edit person subpage">
-      Edit person
-    </message>
-  </if>
-
   <message name="IDS_SETTINGS_SYNC_OVERVIEW" desc="The message that appears in the options dialog when sync has not been set up by the user.">
     Sign in to get your bookmarks, history, passwords and other settings on all your devices. You'll also automatically be signed in to your Google services.
   </message>

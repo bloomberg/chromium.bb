@@ -493,11 +493,6 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("peoplePageTitle", IDS_SETTINGS_PEOPLE);
   html_source->AddLocalizedString("manageOtherPeople",
                                   IDS_SETTINGS_PEOPLE_MANAGE_OTHER_PEOPLE);
-
-#if !defined(OS_CHROMEOS)
-  html_source->AddLocalizedString("editPerson", IDS_SETTINGS_EDIT_PERSON);
-#endif
-
   html_source->AddLocalizedString("syncOverview", IDS_SETTINGS_SYNC_OVERVIEW);
   html_source->AddLocalizedString("syncSignin", IDS_SETTINGS_SYNC_SIGNIN);
   html_source->AddLocalizedString("syncDisconnect",
