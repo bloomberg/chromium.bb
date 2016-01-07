@@ -695,7 +695,7 @@ Element* Element::offsetParent()
     if (!element)
         return nullptr;
 
-    if (element->isInShadowTree() && !element->containingShadowRoot()->isOpen())
+    if (element->isInShadowTree() && !element->containingShadowRoot()->isOpenOrV0())
         return nullptr;
 
     return element;

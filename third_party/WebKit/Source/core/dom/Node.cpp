@@ -2233,7 +2233,7 @@ PassRefPtrWillBeRawPtr<StaticNodeList> Node::getDestinationInsertionPoints()
     for (size_t i = 0; i < insertionPoints.size(); ++i) {
         InsertionPoint* insertionPoint = insertionPoints[i];
         ASSERT(insertionPoint->containingShadowRoot());
-        if (!insertionPoint->containingShadowRoot()->isOpen())
+        if (!insertionPoint->containingShadowRoot()->isOpenOrV0())
             break;
         filteredInsertionPoints.append(insertionPoint);
     }
@@ -2252,7 +2252,7 @@ HTMLSlotElement* Node::assignedSlotForBinding()
 {
     updateDistribution();
     if (ElementShadow* shadow = parentElementShadow(*this)) {
-        if (shadow->isV1() && shadow->isOpen())
+        if (shadow->isV1() && shadow->isOpenOrV0())
             return shadow->assignedSlotFor(*this);
     }
     return nullptr;

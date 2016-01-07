@@ -114,7 +114,7 @@ DEFINE_TRACE(TreeScopeEventContext)
 int TreeScopeEventContext::calculateTreeOrderAndSetNearestAncestorClosedTree(int orderNumber, TreeScopeEventContext* nearestAncestorClosedTreeScopeEventContext)
 {
     m_preOrder = orderNumber;
-    m_containingClosedShadowTree = (rootNode().isShadowRoot() && !toShadowRoot(rootNode()).isOpen()) ? this : nearestAncestorClosedTreeScopeEventContext;
+    m_containingClosedShadowTree = (rootNode().isShadowRoot() && !toShadowRoot(rootNode()).isOpenOrV0()) ? this : nearestAncestorClosedTreeScopeEventContext;
     for (size_t i = 0; i < m_children.size(); ++i)
         orderNumber = m_children[i]->calculateTreeOrderAndSetNearestAncestorClosedTree(orderNumber + 1, containingClosedShadowTree());
     m_postOrder = orderNumber + 1;

@@ -84,7 +84,7 @@ public:
     void didDistributeNode(const Node*, InsertionPoint*);
 
     bool isV1() const { return youngestShadowRoot().isV1(); };
-    bool isOpen() const { return youngestShadowRoot().isOpen(); };
+    bool isOpenOrV0() const { return youngestShadowRoot().isOpenOrV0(); };
 
     DECLARE_TRACE();
 
