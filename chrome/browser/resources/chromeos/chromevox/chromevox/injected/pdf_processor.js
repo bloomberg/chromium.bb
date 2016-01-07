@@ -5,16 +5,14 @@
 
 /**
  * @fileoverview Logic to process PDFs
+ *
+ * This file runs when ChromeVox is injected into Chrome's component
+ * extension that implements PDF support. The extension wraps a
+ * PDFium plug-in object.
  */
 
 goog.provide('cvox.PdfProcessor');
 goog.require('cvox.QueueMode');
-
-/**
- * The array of PDFs yet to process.
- * @type {Array<HTMLEmbedElement>}
- */
-cvox.PdfProcessor.pdfEmbeds = [];
 
 /**
  * The current PDF we're processing, or null if we're not processing one.
@@ -52,46 +50,40 @@ cvox.PdfProcessor.processEmbeddedPdfs = function() {
     return;
   }
 
-  var pdfEmbeds = document.querySelectorAll('embed[type="application/pdf"]');
+  var pdfEmbeds = document.querySelectorAll(
+      'embed[type="application/x-google-chrome-pdf"]');
   if (pdfEmbeds.length == 0) {
     return;
   }
-
-  // Convert it to an Array so we can slice off one at a time, and stick
-  // it in a class variable. The responses from the plug-in come as a
-  // generic 'message' event to the window with no context, so we have
-  // to use global state to keep track of progress.
-  cvox.PdfProcessor.pdfEmbeds = Array.prototype.slice.call(pdfEmbeds);
+  cvox.PdfProcessor.pdfEmbed = pdfEmbeds[0];
 
   // Install our event listener for responses.
   window.addEventListener('message',
       /** @type {EventListener} */(cvox.PdfProcessor.onMessage));
 
-  // Start processing the first one.
-  cvox.PdfProcessor.processNextPdf();
+  // Start processing the pdf.
+  cvox.PdfProcessor.process();
 };
 
 /**
- * Pull off the next <embed> element from |cvox.PdfProcessor.pdfEmbeds|
- * and send a message to it to begin processing. If there are no more
+ * Send a message to the plug-in to begin processing. If there are no more
  * elements in the array, remove the event listener and reset
  * NavigationManager so that it lands at the top of the now-modified page.
  */
-cvox.PdfProcessor.processNextPdf = function() {
-  if (cvox.PdfProcessor.pdfEmbeds.length == 0) {
-    window.removeEventListener('message',
-        /** @type {EventListener} */(cvox.PdfProcessor.onMessage));
-    cvox.PdfProcessor.pdfEmbeds = null;
-    cvox.PdfProcessor.pdfEmbed = null;
-
-    cvox.ChromeVox.navigationManager.reset();
-    return;
-  }
-
-  cvox.PdfProcessor.pdfEmbed = cvox.PdfProcessor.pdfEmbeds.shift();
+cvox.PdfProcessor.process = function() {
   cvox.PdfProcessor.pageCount = null;
   cvox.PdfProcessor.pageIndex = null;
-  cvox.PdfProcessor.pdfEmbed.postMessage({'type': 'getAccessibilityJSON'});
+  window.postMessage({'type': 'getAccessibilityJSON'}, '*');
+};
+
+/**
+ * Called after finishing the pdf.
+ */
+cvox.PdfProcessor.finish = function() {
+  window.removeEventListener('message',
+      /** @type {EventListener} */(cvox.PdfProcessor.onMessage));
+  cvox.PdfProcessor.pdfEmbed = null;
+  cvox.ChromeVox.navigationManager.reset();
 };
 
 /**
@@ -127,9 +119,8 @@ cvox.PdfProcessor.onMessage = function(message) {
   // whether it's loaded, whether it's copyable, and how many total pages
   // there are.
   if (!info.loaded) {
-    cvox.PdfProcessor.pdfEmbeds.unshift(cvox.PdfProcessor.pdfEmbed);
     cvox.PdfProcessor.pdfEmbed = null;
-    window.setTimeout(cvox.PdfProcessor.processNextPdf, 100);
+    window.setTimeout(cvox.PdfProcessor.finish, 100);
     return;
   }
 
@@ -186,7 +177,7 @@ cvox.PdfProcessor.getNextPage = function() {
     cvox.PdfProcessor.pdfEmbed.style.display = 'none';
     cvox.PdfProcessor.pdfEmbed.parentElement.appendChild(
         cvox.PdfProcessor.documentDiv);
-    cvox.PdfProcessor.processNextPdf();
+    cvox.PdfProcessor.finish();
     return;
   }
 
