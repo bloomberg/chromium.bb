@@ -38,6 +38,8 @@
 		<string>googledrive</string>
 		<string>googlegmail-x-callback</string>
 		<string>googlegmail</string>
+		<string>googlephotos</string>
+		<string>googlephotos-x-callback</string>
 		<string>googlesheets-v2</string>
 		<string>googlesheets-x-callback</string>
 		<string>googlesheets</string>
