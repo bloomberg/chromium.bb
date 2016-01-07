@@ -245,15 +245,9 @@ void NativeWidgetMus::ConfigurePropertiesForNewWindow(
   (*properties)[mus::mojom::WindowManager::kWindowType_Property] =
       mojo::TypeConverter<const std::vector<uint8_t>, int32_t>::Convert(
           mojo::ConvertTo<mus::mojom::WindowType>(init_params.type));
-  ConfigurePropertiesForNewWindowFromDelegate(init_params.delegate, properties);
-}
-
-void NativeWidgetMus::ConfigurePropertiesForNewWindowFromDelegate(
-    WidgetDelegate* delegate,
-    std::map<std::string, std::vector<uint8_t>>* properties) {
   (*properties)[mus::mojom::WindowManager::kResizeBehavior_Property] =
       mojo::TypeConverter<const std::vector<uint8_t>, int32_t>::Convert(
-          ResizeBehaviorFromDelegate(delegate));
+          ResizeBehaviorFromDelegate(init_params.delegate));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

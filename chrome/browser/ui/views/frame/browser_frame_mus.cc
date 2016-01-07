@@ -16,10 +16,17 @@
 
 namespace {
 
+views::Widget::InitParams GetWidgetParamsImpl(BrowserView* browser_view) {
+  views::Widget::InitParams params;
+  params.bounds = gfx::Rect(10, 10, 640, 480);
+  params.delegate = browser_view;
+  return params;
+}
+
 mus::Window* CreateMusWindow(BrowserView* browser_view) {
   std::map<std::string, std::vector<uint8_t>> properties;
-  views::NativeWidgetMus::ConfigurePropertiesForNewWindowFromDelegate(
-      browser_view, &properties);
+  views::NativeWidgetMus::ConfigurePropertiesForNewWindow(
+      GetWidgetParamsImpl(browser_view), &properties);
   return views::WindowManagerConnection::Get()->NewWindow(properties);
 }
 
@@ -37,9 +44,8 @@ BrowserFrameMus::BrowserFrameMus(BrowserFrame* browser_frame,
 BrowserFrameMus::~BrowserFrameMus() {}
 
 views::Widget::InitParams BrowserFrameMus::GetWidgetParams() {
-  views::Widget::InitParams params;
+  views::Widget::InitParams params(GetWidgetParamsImpl(browser_view_));
   params.native_widget = this;
-  params.bounds = gfx::Rect(10, 10, 640, 480);
   return params;
 }
 
