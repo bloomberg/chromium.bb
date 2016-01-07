@@ -30,11 +30,6 @@ function onLoadIframe2(e) {
 
 function selectLater() {
     selection.selectAllChildren(doc2);
-
-    // TODO(tkent): A workdaround of a testharnessreport.js issue.  Without this,
-    // testharnessreport.js has a null access.
-    if (!document.documentElement)
-        document.appendChild(document.createElement('html'));
     test.done();
 }
 </script>

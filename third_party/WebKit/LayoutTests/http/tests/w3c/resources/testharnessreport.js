@@ -117,8 +117,11 @@
             }
 
             // Add results element to document.
-            if (!document.body)
+            if (!document.body) {
+                if (!document.documentElement)
+                    document.appendChild(document.createElement('html'));
                 document.documentElement.appendChild(document.createElement("body"));
+            }
             document.body.appendChild(results);
 
             if (self.testRunner)
