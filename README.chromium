@@ -8,21 +8,7 @@ Description:
 This directory contains the source code of ICU 54.1 for C/C++.
 
 
-1. It was obtained with the following:
-
-    $ svn export --native-eol LF http://source.icu-project.org/repos/icu/icu/tags/release-54-1 icu
-
-  The following directories we don't use are removed:
-
-   - as_is
-   - packaging
-   - source/layout
-   - source/layoutex
-   - source/data/xml
-
-  patches/configure.patch is applied to get runConfigureICU work in the
-  icudata generation step without layout and layoutex directory by removing the
-  corresponding Makefile's from ac_config variable.
+1. Run "scripts/update.sh <version>" (e.g. 54-1).
 
 2. Apply the following patch for platform.h for NaCl.
 
