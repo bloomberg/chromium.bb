@@ -312,17 +312,19 @@ config("compiler") {
 
   # C++11 compiler flags setup.
   # ---------------------------
-  if (is_linux || is_android || (is_nacl && is_clang)) {
+  if (is_linux || is_android ||
+      (is_nacl && (is_clang || current_cpu == "arm"))) {
     # gnu++11 instead of c++11 is needed because some code uses typeof() (a
     # GNU extension).
     # TODO(thakis): Eventually switch this to c++11 instead,
     # http://crbug.com/427584
     cflags_cc += [ "-std=gnu++11" ]
-  } else if (!is_win && !is_nacl) {
-    # TODO(mcgrathr) - the NaCl GCC toolchain doesn't support either gnu++11
-    # or c++11; we technically don't need this toolchain any more, but there
-    # are still a few buildbots using it, so until those are turned off
-    # we need the !is_nacl clause and the (is_nacl && is_clang) clause, above.
+  } else if (is_nacl) {
+    # The NaCl x86 GCC toolchain doesn't support either gnu++11
+    # or c++11, but it does support gnu++0x.  This toolchain is
+    # used only for the nacl_x86_glibc PPAPI tests.
+    cflags_cc += [ "-std=gnu++0x" ]
+  } else if (!is_win) {
     cflags_cc += [ "-std=c++11" ]
   }
 
