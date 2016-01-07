@@ -22,7 +22,10 @@ import shutil
 import sys
 import zipfile
 
-# Telemetry (src/tools/telemetry) is expected to be in the PYTHONPATH.
+_CATAPULT_BASE_PATH = os.path.abspath(os.path.join(
+    __file__, '..', '..', 'third_party', 'catapult', 'catapult_base'))
+if _CATAPULT_BASE_PATH not in sys.path:
+  sys.path.insert(1, _CATAPULT_BASE_PATH)
 from catapult_base import cloud_storage
 
 import bisect_utils
