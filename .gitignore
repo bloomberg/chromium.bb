@@ -39,9 +39,10 @@ TAGS
 .project
 
 # /build-aux/
+/build-aux/ar-lib
+/build-aux/compile
 /build-aux/config.guess
 /build-aux/config.sub
-/build-aux/compile
 /build-aux/depcomp
 /build-aux/install-sh
 /build-aux/ltmain.sh
@@ -86,6 +87,7 @@ TAGS
 /gnulib/m4/absolute-header.m4
 /gnulib/m4/ld-output-def.m4
 /gnulib/stddef.h
+/gnulib/stdio.h
 /gnulib/stdlib.h
 /gnulib/string.h
 /gnulib/sys/
