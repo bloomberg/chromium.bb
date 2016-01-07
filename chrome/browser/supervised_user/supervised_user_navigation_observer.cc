@@ -41,13 +41,11 @@ SupervisedUserNavigationObserver::SupervisedUserNavigationObserver(
 
 // static
 void SupervisedUserNavigationObserver::OnRequestBlocked(
-    int render_process_host_id,
-    int render_view_id,
+    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const GURL& url,
     SupervisedUserURLFilter::FilteringBehaviorReason reason,
     const base::Callback<void(bool)>& callback) {
-  content::WebContents* web_contents =
-      tab_util::GetWebContentsByID(render_process_host_id, render_view_id);
+  content::WebContents* web_contents = web_contents_getter.Run();
   if (!web_contents) {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE, base::Bind(callback, false));

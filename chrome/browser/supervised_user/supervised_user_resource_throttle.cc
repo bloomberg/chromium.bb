@@ -142,11 +142,12 @@ void SupervisedUserResourceThrottle::ShowInterstitial(
     SupervisedUserURLFilter::FilteringBehaviorReason reason) {
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request_);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&SupervisedUserNavigationObserver::OnRequestBlocked,
-                 info->GetChildID(), info->GetRouteID(), url, reason,
-                 base::Bind(
-                     &SupervisedUserResourceThrottle::OnInterstitialResult,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          &SupervisedUserNavigationObserver::OnRequestBlocked,
+          info->GetWebContentsGetterForRequest(), url, reason,
+          base::Bind(&SupervisedUserResourceThrottle::OnInterstitialResult,
                      weak_ptr_factory_.GetWeakPtr())));
 }
 

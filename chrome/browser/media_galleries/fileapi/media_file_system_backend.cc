@@ -62,30 +62,33 @@ namespace {
 const char kMediaGalleryMountPrefix[] = "media_galleries-";
 
 void OnPreferencesInit(
-    content::RenderViewHost* rvh,
+    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const extensions::Extension* extension,
     MediaGalleryPrefId pref_id,
     const base::Callback<void(base::File::Error result)>& callback) {
+  content::WebContents* contents = web_contents_getter.Run();
+  if (!contents) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(callback, base::File::FILE_ERROR_FAILED));
+    return;
+  }
   MediaFileSystemRegistry* registry =
       g_browser_process->media_file_system_registry();
-  registry->RegisterMediaFileSystemForExtension(
-      content::WebContents::FromRenderViewHost(rvh), extension, pref_id,
-      callback);
+  registry->RegisterMediaFileSystemForExtension(contents, extension, pref_id,
+                                                callback);
 }
 
 void AttemptAutoMountOnUIThread(
-    int32_t process_id,
-    int32_t routing_id,
+    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const std::string& storage_domain,
     const std::string& mount_point,
     const base::Callback<void(base::File::Error result)>& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  content::RenderViewHost* rvh =
-      content::RenderViewHost::FromID(process_id, routing_id);
-  if (rvh) {
+  content::WebContents* web_contents = web_contents_getter.Run();
+  if (web_contents) {
     Profile* profile =
-        Profile::FromBrowserContext(rvh->GetProcess()->GetBrowserContext());
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
     ExtensionService* extension_service =
         extensions::ExtensionSystem::Get(profile)->extension_service();
@@ -105,8 +108,11 @@ void AttemptAutoMountOnUIThread(
       MediaGalleriesPreferences* preferences =
           g_browser_process->media_file_system_registry()->GetPreferences(
               profile);
-      preferences->EnsureInitialized(
-          base::Bind(&OnPreferencesInit, rvh, extension, pref_id, callback));
+      // Pass the WebContentsGetter to the closure to prevent a use-after-free
+      // in the case that the web_contents is destroyed before the closure runs.
+      preferences->EnsureInitialized(base::Bind(&OnPreferencesInit,
+                                                web_contents_getter, extension,
+                                                pref_id, callback));
       return;
     }
   }
@@ -215,11 +221,10 @@ bool MediaFileSystemBackend::AttemptAutoMountForURLRequest(
     return false;
 
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&AttemptAutoMountOnUIThread, request_info->GetChildID(),
-                 request_info->GetRouteID(), storage_domain, mount_point,
-                 callback));
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&AttemptAutoMountOnUIThread,
+                 request_info->GetWebContentsGetterForRequest(), storage_domain,
+                 mount_point, callback));
   return true;
 }
 
