@@ -101,6 +101,20 @@
       "input_view": "inputview.html#id=quick&language=zh-TW&passwordLayout=quick&name=inputmethod_quick"
     },
     {
+      "name": "__MSG_inputmethod_cantonese__",
+      "type": "ime",
+      "id": "yue-hant-t-i0-und",
+      "indicator": "\u7CA4",
+      "description": "Cantonese",
+      "language": [
+        "zh-TW"
+      ],
+      "layouts": [
+        "us"
+      ],
+      "input_view": "inputview.html#id=us&language=zh-CN&passwordLayout=us&name=inputmethod_cantonese"
+    },
+    {
       "name": "__MSG_inputmethod_wubi__",
       "type": "ime",
       "id": "zh-t-i0-wubi-1986",
