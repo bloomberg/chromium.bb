@@ -59,7 +59,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
 
         mScanningImageView = (ImageView) findViewById(R.id.physical_web_logo);
 
-        mPwsClient = new PwsClient();
+        mPwsClient = new PwsClientImpl();
         int referer = getIntent().getIntExtra(REFERER_KEY, 0);
         if (savedInstanceState == null  // Ensure this is a newly-created activity
                 && referer == NOTIFICATION_REFERER) {
