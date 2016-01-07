@@ -80,7 +80,7 @@ class LayerTreeHostScrollTestScrollSimple : public LayerTreeHostScrollTest {
     LayerImpl* scroll_layer = impl->OuterViewportScrollLayer();
     EXPECT_VECTOR_EQ(gfx::Vector2d(), scroll_layer->ScrollDelta());
 
-    scroll_layer->SetScrollClipLayer(root->id());
+    scroll_layer->SetScrollClipLayer(root->children()[0]->id());
     scroll_layer->SetBounds(
         gfx::Size(root->bounds().width() + 100, root->bounds().height() + 100));
     scroll_layer->ScrollBy(scroll_amount_);
@@ -1011,7 +1011,7 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* root = impl->active_tree()->root_layer();
     LayerImpl* scroll_layer = impl->OuterViewportScrollLayer();
-    scroll_layer->SetScrollClipLayer(root->id());
+    scroll_layer->SetScrollClipLayer(root->children()[0]->id());
 
     // Set max_scroll_offset = (100, 100).
     scroll_layer->SetBounds(

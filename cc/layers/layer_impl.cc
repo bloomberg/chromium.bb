@@ -1600,12 +1600,9 @@ gfx::ScrollOffset LayerImpl::MaxScrollOffset() const {
          IsContainerForFixedPositionLayers());
 
   float scale_factor = 1.f;
-  for (LayerImpl const* current_layer = this;
-       current_layer != scroll_clip_layer->parent();
-       current_layer = current_layer->parent()) {
-    if (current_layer == page_scale_layer)
-      scale_factor = layer_tree_impl()->current_page_scale_factor();
-  }
+  DCHECK(scroll_clip_layer != page_scale_layer);
+  if (!scroll_clip_layer->IsAffectedByPageScale() && IsAffectedByPageScale())
+    scale_factor = layer_tree_impl()->current_page_scale_factor();
 
   gfx::SizeF scaled_scroll_bounds =
       gfx::ScaleSize(BoundsForScrolling(), scale_factor);

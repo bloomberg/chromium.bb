@@ -223,6 +223,7 @@ TEST_F(ScrollbarLayerTest, ScrollOffsetSynchronization) {
   content_layer->SetBounds(gfx::Size(1000, 2000));
   content_layer->SavePaintProperties();
 
+  layer_tree_host_->UpdateLayers();
   layer_impl_tree_root = layer_tree_host_->CommitAndCreateLayerImplTree();
 
   EXPECT_EQ(100.f, cc_scrollbar_layer->current_pos());
@@ -448,6 +449,7 @@ TEST_F(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
     scroll_layer->InsertChild(child2, 1);
     layer_tree_root->AddChild(scroll_layer);
     layer_tree_host_->SetRootLayer(layer_tree_root);
+    layer_tree_host_->UpdateLayers();
   }
   LayerImpl* layer_impl_tree_root =
       layer_tree_host_->CommitAndCreateLayerImplTree();

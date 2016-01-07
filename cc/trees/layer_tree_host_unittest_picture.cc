@@ -402,12 +402,15 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
   void SetupTree() override {
     scoped_refptr<Layer> root = Layer::Create(layer_settings());
     root->SetBounds(gfx::Size(100, 100));
+    scoped_refptr<Layer> clip = Layer::Create(layer_settings());
+    clip->SetBounds(gfx::Size(100, 100));
 
     pinch_ = Layer::Create(layer_settings());
     pinch_->SetBounds(gfx::Size(500, 500));
-    pinch_->SetScrollClipLayerId(root->id());
+    pinch_->SetScrollClipLayerId(clip->id());
     pinch_->SetIsContainerForFixedPositionLayers(true);
-    root->AddChild(pinch_);
+    clip->AddChild(pinch_);
+    root->AddChild(clip);
 
     // Don't be solid color so the layer has tilings/tiles.
     client_.set_fill_with_nonsolid_color(true);
@@ -436,7 +439,7 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
 
   void WillActivateTreeOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* root = impl->sync_tree()->root_layer();
-    LayerImpl* pinch = root->children()[0].get();
+    LayerImpl* pinch = root->children()[0]->children()[0].get();
     LayerImpl* gchild = pinch->children()[0].get();
     FakePictureLayerImpl* picture = static_cast<FakePictureLayerImpl*>(gchild);
     ready_to_draw_ = false;
@@ -463,7 +466,7 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* root = impl->active_tree()->root_layer();
-    LayerImpl* pinch = root->children()[0].get();
+    LayerImpl* pinch = root->children()[0]->children()[0].get();
     LayerImpl* gchild = pinch->children()[0].get();
     FakePictureLayerImpl* picture = static_cast<FakePictureLayerImpl*>(gchild);
 

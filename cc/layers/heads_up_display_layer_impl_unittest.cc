@@ -43,23 +43,23 @@ TEST(HeadsUpDisplayLayerImplTest, ResourcelessSoftwareDrawAfterResourceLoss) {
   host_impl.CreatePendingTree();
   host_impl.SetVisible(true);
   host_impl.InitializeRenderer(output_surface.get());
-  scoped_ptr<HeadsUpDisplayLayerImpl> layer =
-    HeadsUpDisplayLayerImpl::Create(host_impl.pending_tree(), 1);
-  layer->SetBounds(gfx::Size(100, 100));
+  scoped_ptr<HeadsUpDisplayLayerImpl> layer_ptr =
+      HeadsUpDisplayLayerImpl::Create(host_impl.pending_tree(), 1);
+  layer_ptr->SetBounds(gfx::Size(100, 100));
 
-  HeadsUpDisplayLayerImpl* layer_ptr = layer.get();
+  HeadsUpDisplayLayerImpl* layer = layer_ptr.get();
 
-  host_impl.pending_tree()->SetRootLayer(std::move(layer));
+  host_impl.pending_tree()->SetRootLayer(std::move(layer_ptr));
   host_impl.pending_tree()->BuildPropertyTreesForTesting();
 
   // Check regular hardware draw is ok.
-  CheckDrawLayer(layer_ptr, host_impl.resource_provider(), DRAW_MODE_HARDWARE);
+  CheckDrawLayer(layer, host_impl.resource_provider(), DRAW_MODE_HARDWARE);
 
   // Simulate a resource loss on transitioning to resourceless software mode.
-  layer_ptr->ReleaseResources();
+  layer->ReleaseResources();
 
   // Should skip resourceless software draw and not crash in UpdateHudTexture.
-  CheckDrawLayer(layer_ptr, host_impl.resource_provider(),
+  CheckDrawLayer(layer, host_impl.resource_provider(),
                  DRAW_MODE_RESOURCELESS_SOFTWARE);
 }
 

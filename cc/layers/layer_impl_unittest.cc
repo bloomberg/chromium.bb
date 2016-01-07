@@ -100,12 +100,13 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
                                   &task_graph_runner);
   host_impl.SetVisible(true);
   EXPECT_TRUE(host_impl.InitializeRenderer(output_surface.get()));
-  scoped_ptr<LayerImpl> root_clip =
+  scoped_ptr<LayerImpl> root_clip_ptr =
       LayerImpl::Create(host_impl.active_tree(), 1);
+  LayerImpl* root_clip = root_clip_ptr.get();
   scoped_ptr<LayerImpl> root_ptr =
       LayerImpl::Create(host_impl.active_tree(), 2);
   LayerImpl* root = root_ptr.get();
-  root_clip->AddChild(std::move(root_ptr));
+  root_clip_ptr->AddChild(std::move(root_ptr));
   scoped_ptr<LayerImpl> scroll_parent =
       LayerImpl::Create(host_impl.active_tree(), 3);
   LayerImpl* scroll_child = LayerImpl::Create(host_impl.active_tree(), 4).get();
@@ -125,6 +126,8 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   LayerImpl* child = root->children()[0].get();
   child->AddChild(LayerImpl::Create(host_impl.active_tree(), 8));
   LayerImpl* grand_child = child->children()[0].get();
+  host_impl.active_tree()->SetRootLayer(std::move(root_clip_ptr));
+  host_impl.active_tree()->BuildPropertyTreesForTesting();
 
   root->SetScrollClipLayer(root_clip->id());
 
@@ -464,6 +467,7 @@ class LayerImplScrollTest : public testing::Test {
         LayerImpl::Create(host_impl_.active_tree(), root_id_));
     host_impl_.active_tree()->root_layer()->AddChild(
         LayerImpl::Create(host_impl_.active_tree(), root_id_ + 1));
+    host_impl_.active_tree()->BuildPropertyTreesForTesting();
     layer()->SetScrollClipLayer(root_id_);
     // Set the max scroll offset by noting that the root layer has bounds (1,1),
     // thus whatever bounds are set for the layer will be the max scroll

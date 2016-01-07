@@ -70,8 +70,7 @@ void CreateVirtualViewportLayers(Layer* root_layer,
 
     inner_viewport_scroll_layer->SetIsContainerForFixedPositionLayers(true);
     outer_scroll_layer->SetIsContainerForFixedPositionLayers(true);
-    host->RegisterViewportLayers(NULL,
-                                 root_layer,
+    host->RegisterViewportLayers(NULL, page_scale_layer,
                                  inner_viewport_scroll_layer,
                                  outer_scroll_layer);
 }
