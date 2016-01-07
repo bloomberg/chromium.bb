@@ -15,6 +15,11 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/text_elider.h"
 
+NSString* const kMenuControllerMenuWillOpenNotification =
+    @"MenuControllerMenuWillOpen";
+NSString* const kMenuControllerMenuDidCloseNotification =
+    @"MenuControllerMenuDidClose";
+
 @interface MenuController (Private)
 - (void)addSeparatorToMenu:(NSMenu*)menu
                    atIndex:(int)index;
@@ -233,6 +238,9 @@
 - (void)menuWillOpen:(NSMenu*)menu {
   isMenuOpen_ = YES;
   model_->MenuWillShow();
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:kMenuControllerMenuWillOpenNotification
+                    object:self];
 }
 
 - (void)menuDidClose:(NSMenu*)menu {
@@ -240,6 +248,9 @@
     model_->MenuClosed();
     isMenuOpen_ = NO;
   }
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:kMenuControllerMenuDidCloseNotification
+                    object:self];
 }
 
 @end

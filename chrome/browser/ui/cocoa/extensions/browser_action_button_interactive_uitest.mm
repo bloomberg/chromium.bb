@@ -4,6 +4,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
@@ -12,6 +15,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/browser_window.h"
+#import "chrome/browser/ui/cocoa/run_loop_testing.h"
 #import "chrome/browser/ui/cocoa/app_menu/app_menu_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
@@ -121,6 +125,63 @@ void MoveMouseToCenter(NSView* view) {
 
 @synthesize menuOpened = menuOpened_;
 @synthesize verify = verify_;
+
+@end
+
+// A helper class to wait for a menu to open and close.
+@interface MenuWatcher : NSObject {
+  // The MenuController for the menu this object is watching.
+  MenuController* menuController_;
+
+  // The closure to run when the menu opens, if any.
+  base::Closure openClosure_;
+
+  // The closure to run when the menu closes, if any.
+  base::Closure closeClosure_;
+}
+
+- (id)initWithController:(MenuController*)controller;
+
+// Notifications from the MenuController.
+- (void)menuDidClose:(NSNotification*)notification;
+- (void)menuDidOpen:(NSNotification*)notification;
+
+@property(nonatomic, assign) base::Closure openClosure;
+@property(nonatomic, assign) base::Closure closeClosure;
+
+@end
+
+@implementation MenuWatcher
+
+@synthesize openClosure = openClosure_;
+@synthesize closeClosure = closeClosure_;
+
+- (id)initWithController:(MenuController*)controller {
+  if (self = [super init]) {
+    menuController_ = controller;
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+         selector:@selector(menuDidOpen:)
+       name:kMenuControllerMenuWillOpenNotification
+        object:menuController_];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+         selector:@selector(menuDidClose:)
+       name:kMenuControllerMenuDidCloseNotification
+        object:menuController_];
+  }
+  return self;
+}
+
+- (void)menuDidClose:(NSNotification*)notification {
+  if (!closeClosure_.is_null())
+    base::ResetAndReturn(&closeClosure_).Run();
+}
+
+- (void)menuDidOpen:(NSNotification*)notification {
+  if (!openClosure_.is_null())
+    base::ResetAndReturn(&openClosure_).Run();
+}
 
 @end
 
@@ -415,6 +476,7 @@ void AddExtensionWithMenuOpen(ToolbarController* toolbarController,
                               const base::Closure& closure) {
   AppMenuController* appMenuController =
       [toolbarController appMenuController];
+  EXPECT_TRUE([appMenuController isMenuOpen]);
 
   scoped_refptr<const extensions::Extension> extension =
       extensions::extension_action_test_util::CreateActionExtension(
@@ -427,14 +489,14 @@ void AddExtensionWithMenuOpen(ToolbarController* toolbarController,
   // Close the app menu.
   [appMenuController cancel];
   EXPECT_FALSE([appMenuController isMenuOpen]);
-  base::MessageLoop::current()->PostTask(FROM_HERE, closure);
+
+  closure.Run();
 }
 
 // Test adding an extension while the app menu is open. Regression test for
 // crbug.com/561237.
-// Flaky: http://crbug.com/564623
 IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
-                       DISABLED_AddExtensionWithMenuOpen) {
+                       AddExtensionWithMenuOpen) {
   // Add an extension to ensure the overflow menu is present.
   scoped_refptr<const extensions::Extension> extension =
       extensions::extension_action_test_util::CreateActionExtension(
@@ -450,11 +512,13 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
   // Click on the app menu, and pass in a callback to continue the test in
   // AddExtensionWithMenuOpen (due to the blocking nature of Cocoa menus,
   // passing in runLoop.QuitClosure() is not sufficient here.)
-  ui_controls::SendMouseEventsNotifyWhenDone(
-      ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
+  base::scoped_nsobject<MenuWatcher> menuWatcher(
+      [[MenuWatcher alloc] initWithController:appMenuController()]);
+  [menuWatcher setOpenClosure:
       base::Bind(&AddExtensionWithMenuOpen,
-                 base::Unretained(toolbarController()),
-                 extension_service(),
-                 runLoop.QuitClosure()));
+                 base::Unretained(toolbarController()), extension_service(),
+                 runLoop.QuitClosure())];
+  ui_controls::SendMouseEvents(ui_controls::LEFT,
+                               ui_controls::DOWN | ui_controls::UP);
   runLoop.Run();
 }

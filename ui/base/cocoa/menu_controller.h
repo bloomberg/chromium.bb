@@ -15,6 +15,9 @@ namespace ui {
 class MenuModel;
 }
 
+UI_BASE_EXPORT extern NSString* const kMenuControllerMenuWillOpenNotification;
+UI_BASE_EXPORT extern NSString* const kMenuControllerMenuDidCloseNotification;
+
 // A controller for the cross-platform menu model. The menu that's created
 // has the tag and represented object set for each menu item. The object is a
 // NSValue holding a pointer to the model for that level of the menu (to
