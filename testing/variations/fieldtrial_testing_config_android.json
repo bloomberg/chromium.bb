@@ -81,6 +81,11 @@
             }
         }
     ],
+    "DataReductionProxyFREPromo": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "DataReductionProxyUseQuic": [
         {
             "group_name": "Enabled"
