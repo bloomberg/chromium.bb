@@ -1093,8 +1093,8 @@ class MinidumpWriter {
               value_len = 0;
             }
             for (size_t i = 0;
-                i < sizeof(cpu_features_entries)/
-                    sizeof(cpu_features_entries[0]);
+                 i != sizeof(cpu_features_entries) /
+                     sizeof(cpu_features_entries[0]);
                 ++i) {
               const CpuFeaturesEntry* entry = &cpu_features_entries[i];
               if (tag_len == strlen(entry->tag) &&
