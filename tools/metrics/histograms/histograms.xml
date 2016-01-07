@@ -59463,7 +59463,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="8"
       label="Arrived at settings menu by another path: entered on, exited on"/>
   <int value="9" label="Enabled directly from the First Run Experience"/>
-  <int value="10" label="Diabled directly from the First Run Experience"/>
+  <int value="10" label="Disabled directly from the First Run Experience"/>
 </enum>
 
 <enum name="DataUsageReportSubmissionResult" type="int">
