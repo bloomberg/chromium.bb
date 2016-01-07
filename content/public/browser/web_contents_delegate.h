@@ -152,11 +152,13 @@ class CONTENT_EXPORT WebContentsDelegate {
                                const GURL& url) {}
 
   // Notification that there was a mouse event, along with the absolute
-  // coordinates of the mouse pointer and whether it was a normal motion event
-  // (otherwise, the pointer left the contents area).
+  // coordinates of the mouse pointer and the type of event. If |motion| is
+  // true, this is a normal motion event. If |exited| is true, the pointer left
+  // the contents area.
   virtual void ContentsMouseEvent(WebContents* source,
                                   const gfx::Point& location,
-                                  bool motion) {}
+                                  bool motion,
+                                  bool exited) {}
 
   // Request the delegate to change the zoom level of the current tab.
   virtual void ContentsZoomChange(bool zoom_in) {}

@@ -1620,14 +1620,17 @@ void Browser::UpdateTargetURL(WebContents* source, const GURL& url) {
   }
 }
 
-void Browser::ContentsMouseEvent(
-    WebContents* source, const gfx::Point& location, bool motion) {
-  if (!GetStatusBubble())
+void Browser::ContentsMouseEvent(WebContents* source,
+                                 const gfx::Point& location,
+                                 bool motion,
+                                 bool exited) {
+  // Mouse motion events update the status bubble, if it exists.
+  if (!GetStatusBubble() || (!motion && !exited))
     return;
 
   if (source == tab_strip_model_->GetActiveWebContents()) {
-    GetStatusBubble()->MouseMoved(location, !motion);
-    if (!motion)
+    GetStatusBubble()->MouseMoved(location, exited);
+    if (exited)
       GetStatusBubble()->SetURL(GURL(), std::string());
   }
 }

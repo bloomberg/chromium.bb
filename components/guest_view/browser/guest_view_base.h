@@ -352,7 +352,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void ActivateContents(content::WebContents* contents) final;
   void ContentsMouseEvent(content::WebContents* source,
                           const gfx::Point& location,
-                          bool motion) final;
+                          bool motion,
+                          bool exited) final;
   void ContentsZoomChange(bool zoom_in) final;
   void LoadingStateChanged(content::WebContents* source,
                            bool to_different_document) final;

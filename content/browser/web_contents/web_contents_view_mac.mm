@@ -465,12 +465,9 @@ void WebContentsViewMac::CloseTab() {
   WebContentsImpl* webContents = [self webContents];
   if (webContents && webContents->GetDelegate()) {
     NSPoint location = [NSEvent mouseLocation];
-    if ([theEvent type] == NSMouseMoved)
-      webContents->GetDelegate()->ContentsMouseEvent(
-          webContents, gfx::Point(location.x, location.y), true);
-    if ([theEvent type] == NSMouseExited)
-      webContents->GetDelegate()->ContentsMouseEvent(
-          webContents, gfx::Point(location.x, location.y), false);
+    webContents->GetDelegate()->ContentsMouseEvent(
+        webContents, gfx::Point(location.x, location.y),
+        [theEvent type] == NSMouseMoved, [theEvent type] == NSMouseExited);
   }
 }
 
