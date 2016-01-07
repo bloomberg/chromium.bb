@@ -136,24 +136,25 @@ void ConnectivityCheckerImpl::OnNetworkChanged(
 }
 
 void ConnectivityCheckerImpl::OnResponseStarted(net::URLRequest* request) {
-  timeout_.Cancel();
   int http_response_code =
       (request->status().is_success() &&
-       request->response_info().headers.get() != NULL)
+       request->response_info().headers.get() != nullptr)
           ? request->response_info().headers->response_code()
           : net::HTTP_BAD_REQUEST;
 
   // Clears resources.
-  url_request_.reset(NULL);  // URLRequest::Cancel() is called in destructor.
+  url_request_.reset(nullptr);  // URLRequest::Cancel() is called in destructor.
 
   if (http_response_code < 400) {
     VLOG(1) << "Connectivity check succeeded";
     check_errors_ = 0;
     SetConnected(true);
+    timeout_.Cancel();
     return;
   }
   VLOG(1) << "Connectivity check failed: " << http_response_code;
   OnUrlRequestError();
+  timeout_.Cancel();
 }
 
 void ConnectivityCheckerImpl::OnReadCompleted(net::URLRequest* request,
@@ -166,9 +167,9 @@ void ConnectivityCheckerImpl::OnSSLCertificateError(
     const net::SSLInfo& ssl_info,
     bool fatal) {
   LOG(ERROR) << "OnSSLCertificateError: cert_status=" << ssl_info.cert_status;
-  timeout_.Cancel();
   net::SSLClientSocket::ClearSessionCache();
   OnUrlRequestError();
+  timeout_.Cancel();
 }
 
 void ConnectivityCheckerImpl::OnUrlRequestError() {
@@ -177,7 +178,7 @@ void ConnectivityCheckerImpl::OnUrlRequestError() {
     check_errors_ = kNumErrorsToNotifyOffline;
     SetConnected(false);
   }
-  url_request_.reset(NULL);
+  url_request_.reset(nullptr);
   // Check again.
   task_runner_->PostDelayedTask(
       FROM_HERE, base::Bind(&ConnectivityCheckerImpl::Check, this),
@@ -193,8 +194,8 @@ void ConnectivityCheckerImpl::Cancel() {
   if (!url_request_.get())
     return;
   VLOG(2) << "Cancel connectivity check in progress";
+  url_request_.reset(nullptr);  // URLRequest::Cancel() is called in destructor.
   timeout_.Cancel();
-  url_request_.reset(NULL);  // URLRequest::Cancel() is called in destructor.
 }
 
 }  // namespace chromecast
