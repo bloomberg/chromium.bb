@@ -425,7 +425,7 @@ hyphenate (const widechar * word, int wordSize, char *hyphens)
 	{
 	  hyphenPattern =
 	    (char *) &table->ruleArea[currentState->hyphenPattern];
-	  patternOffset = i + 1 - strlen (hyphenPattern);
+	  patternOffset = i + 1 - (int)strlen (hyphenPattern);
 
 	  /* Need to ensure that we don't overrun hyphens,
 	   * in some cases hyphenPattern is longer than the remaining letters,
@@ -1729,7 +1729,7 @@ undefinedCharacter (widechar c)
   display = showString (&c, 1);
   for (k = 0; k < (int) strlen (display); k++)
     displayDots[k] = getDotsForChar (display[k]);
-  if (!for_updatePositions (displayDots, 1, strlen(display), 0))
+  if (!for_updatePositions (displayDots, 1, (int)strlen(display), 0))
     return 0;
   return 1;
 }

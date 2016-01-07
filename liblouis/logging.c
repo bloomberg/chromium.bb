@@ -39,7 +39,7 @@ void logWidecharBuf(logLevels level, const char *msg, const widechar *wbuf, int 
    * Give space for additional message (+ strlen(msg))
    * Remember the null terminator (+ 1)
    */
-  int logBufSize = (wlen * ((sizeof(widechar) * 3) + 3)) + 3 + strlen(msg);
+  int logBufSize = (wlen * ((sizeof(widechar) * 3) + 3)) + 3 + (int)strlen(msg);
   char *logMsg = malloc(logBufSize);
   char *p = logMsg;
   char *formatString;
