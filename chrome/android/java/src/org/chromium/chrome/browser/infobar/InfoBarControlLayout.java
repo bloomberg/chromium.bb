@@ -63,7 +63,6 @@ public final class InfoBarControlLayout extends ViewGroup {
         }
     }
 
-    private final int mMaxInfoBarWidth;
     private final int mMarginBetweenRows;
     private final int mMarginBetweenColumns;
 
@@ -74,7 +73,6 @@ public final class InfoBarControlLayout extends ViewGroup {
         super(context);
 
         Resources resources = context.getResources();
-        mMaxInfoBarWidth = resources.getDimensionPixelSize(R.dimen.infobar_max_width);
         mMarginBetweenRows =
                 resources.getDimensionPixelSize(R.dimen.infobar_control_margin_between_rows);
         mMarginBetweenColumns =
@@ -87,7 +85,7 @@ public final class InfoBarControlLayout extends ViewGroup {
                 : "Height of this layout cannot be constrained.";
 
         int fullWidth = MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.UNSPECIFIED
-                ? mMaxInfoBarWidth : MeasureSpec.getSize(widthMeasureSpec);
+                ? Integer.MAX_VALUE : MeasureSpec.getSize(widthMeasureSpec);
         int columnWidth = Math.max(0, (fullWidth - mMarginBetweenColumns) / 2);
 
         int atMostFullWidthSpec = MeasureSpec.makeMeasureSpec(fullWidth, MeasureSpec.AT_MOST);

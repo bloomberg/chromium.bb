@@ -36,11 +36,6 @@ public class DataReductionProxyInfoBar extends ConfirmInfoBar {
     }
 
     @Override
-    public void createContent(InfoBarLayout layout) {
-        layout.setButtons(sLinkText, null);
-    }
-
-    @Override
     public void onButtonClicked(boolean isPrimaryButton) {
         if (!isPrimaryButton) return;
         onLinkClicked();

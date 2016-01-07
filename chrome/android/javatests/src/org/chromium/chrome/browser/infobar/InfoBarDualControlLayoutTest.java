@@ -27,8 +27,8 @@ public class InfoBarDualControlLayoutTest extends InstrumentationTestCase {
     private static final int PRIMARY_HEIGHT = 16;
     private static final int SECONDARY_HEIGHT = 8;
     private static final int STACKED_MARGIN = 4;
+    private static final int INFOBAR_WIDTH = 3200;
 
-    private int mMaxInfoBarWidth;
     private int mTinyControlWidth;
     private Context mContext;
 
@@ -37,8 +37,7 @@ public class InfoBarDualControlLayoutTest extends InstrumentationTestCase {
         super.setUp();
         mContext = getInstrumentation().getTargetContext();
         mContext.setTheme(R.style.MainTheme);
-        mMaxInfoBarWidth = mContext.getResources().getDimensionPixelSize(R.dimen.infobar_max_width);
-        mTinyControlWidth = mMaxInfoBarWidth / 4;
+        mTinyControlWidth = INFOBAR_WIDTH / 4;
     }
 
     @SmallTest
@@ -82,7 +81,7 @@ public class InfoBarDualControlLayoutTest extends InstrumentationTestCase {
         }
 
         // Trigger the measurement & layout algorithms.
-        int parentWidthSpec = MeasureSpec.makeMeasureSpec(mMaxInfoBarWidth, MeasureSpec.EXACTLY);
+        int parentWidthSpec = MeasureSpec.makeMeasureSpec(INFOBAR_WIDTH, MeasureSpec.EXACTLY);
         int parentHeightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         layout.measure(parentWidthSpec, parentHeightSpec);
         layout.layout(0, 0, layout.getMeasuredWidth(), layout.getMeasuredHeight());
@@ -90,7 +89,7 @@ public class InfoBarDualControlLayoutTest extends InstrumentationTestCase {
         // Confirm that the primary View is in the correct place.
         if ((isRtl && alignment == ALIGN_START)
                 || (!isRtl && (alignment == ALIGN_APART || alignment == ALIGN_END))) {
-            assertEquals("Primary should be on the right.", mMaxInfoBarWidth, primary.getRight());
+            assertEquals("Primary should be on the right.", INFOBAR_WIDTH, primary.getRight());
         } else {
             assertEquals("Primary should be on the left.", 0, primary.getLeft());
         }
@@ -111,13 +110,13 @@ public class InfoBarDualControlLayoutTest extends InstrumentationTestCase {
                 } else {
                     // Secondary View is immediately to the right of the parent.
                     assertTrue(primary.getRight() < secondary.getLeft());
-                    MoreAsserts.assertNotEqual(mMaxInfoBarWidth, secondary.getRight());
+                    MoreAsserts.assertNotEqual(INFOBAR_WIDTH, secondary.getRight());
                 }
             } else if (alignment == ALIGN_APART) {
                 if (isRtl) {
                     // Secondary View is on the far right.
                     assertTrue(primary.getRight() < secondary.getLeft());
-                    assertEquals(mMaxInfoBarWidth, secondary.getRight());
+                    assertEquals(INFOBAR_WIDTH, secondary.getRight());
                 } else {
                     // Secondary View is on the far left.
                     assertTrue(secondary.getRight() < primary.getLeft());
@@ -128,7 +127,7 @@ public class InfoBarDualControlLayoutTest extends InstrumentationTestCase {
                 if (isRtl) {
                     // Secondary View is immediately to the right of the parent.
                     assertTrue(primary.getRight() < secondary.getLeft());
-                    MoreAsserts.assertNotEqual(mMaxInfoBarWidth, secondary.getRight());
+                    MoreAsserts.assertNotEqual(INFOBAR_WIDTH, secondary.getRight());
                 } else {
                     // Secondary View is immediately to the left of the parent.
                     assertTrue(secondary.getRight() < primary.getLeft());
@@ -171,13 +170,13 @@ public class InfoBarDualControlLayoutTest extends InstrumentationTestCase {
         layout.addView(primary);
 
         View secondary = new Space(mContext);
-        secondary.setMinimumWidth(mMaxInfoBarWidth);
+        secondary.setMinimumWidth(INFOBAR_WIDTH);
         secondary.setMinimumHeight(SECONDARY_HEIGHT);
         layout.addView(secondary);
 
         // Trigger the measurement & layout algorithms.
         int parentWidthSpec =
-                MeasureSpec.makeMeasureSpec(mMaxInfoBarWidth, MeasureSpec.AT_MOST);
+                MeasureSpec.makeMeasureSpec(INFOBAR_WIDTH, MeasureSpec.AT_MOST);
         int parentHeightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         layout.measure(parentWidthSpec, parentHeightSpec);
         layout.layout(0, 0, layout.getMeasuredWidth(), layout.getMeasuredHeight());
@@ -185,12 +184,12 @@ public class InfoBarDualControlLayoutTest extends InstrumentationTestCase {
         assertEquals(0, primary.getLeft());
         assertEquals(0, secondary.getLeft());
 
-        assertEquals(mMaxInfoBarWidth, primary.getRight());
-        assertEquals(mMaxInfoBarWidth, secondary.getRight());
+        assertEquals(INFOBAR_WIDTH, primary.getRight());
+        assertEquals(INFOBAR_WIDTH, secondary.getRight());
 
-        assertEquals(mMaxInfoBarWidth, primary.getMeasuredWidth());
-        assertEquals(mMaxInfoBarWidth, secondary.getMeasuredWidth());
-        assertEquals(mMaxInfoBarWidth, layout.getMeasuredWidth());
+        assertEquals(INFOBAR_WIDTH, primary.getMeasuredWidth());
+        assertEquals(INFOBAR_WIDTH, secondary.getMeasuredWidth());
+        assertEquals(INFOBAR_WIDTH, layout.getMeasuredWidth());
 
         assertEquals(primary.getBottom() + STACKED_MARGIN, secondary.getTop());
         MoreAsserts.assertNotEqual(layout.getMeasuredHeight(), primary.getMeasuredHeight());

@@ -74,9 +74,6 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
         Context context = getContext();
         if (mAppData != null) {
             // Native app.
-            ImageView playLogo = new ImageView(layout.getContext());
-            playLogo.setImageResource(R.drawable.google_play);
-            layout.setCustomViewInButtonRow(playLogo);
             layout.getPrimaryButton().setButtonColor(ApiCompatibilityUtils.getColor(
                     getContext().getResources(),
                     R.color.app_banner_install_button_bg));
@@ -104,6 +101,20 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
         mMessageLayout.setOnClickListener(this);
         mTitleView.setOnClickListener(this);
         if (mIconView != null) mIconView.setOnClickListener(this);
+    }
+
+    @Override
+    protected void setButtons(InfoBarLayout layout, String primaryText, String secondaryText) {
+        if (mAppData == null) {
+            // The banner for web apps uses standard buttons.
+            super.setButtons(layout, primaryText, secondaryText);
+        } else {
+            // The banner for native apps shows a Play logo in place of a secondary button.
+            assert secondaryText == null;
+            ImageView playLogo = new ImageView(layout.getContext());
+            playLogo.setImageResource(R.drawable.google_play);
+            layout.setBottomViews(primaryText, playLogo, InfoBarDualControlLayout.ALIGN_APART);
+        }
     }
 
     @Override

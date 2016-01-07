@@ -77,8 +77,22 @@ public class ConfirmInfoBar extends InfoBar {
 
     @Override
     public void createContent(InfoBarLayout layout) {
-        layout.setButtons(mPrimaryButtonText, mSecondaryButtonText);
+        setButtons(layout, mPrimaryButtonText, mSecondaryButtonText);
         if (mLinkText != null) layout.setMessageLinkText(mLinkText);
+    }
+
+    /**
+     * If your custom infobar overrides this function, YOU'RE PROBABLY DOING SOMETHING WRONG.
+     *
+     * Adds buttons to the infobar.  This should only be overridden in cases where an infobar
+     * requires adding something other than a button for its secondary View on the bottom row
+     * (almost never).
+     *
+     * @param primaryText Text to display on the primary button.
+     * @param secondaryText Text to display on the secondary button.  May be null.
+     */
+    protected void setButtons(InfoBarLayout layout, String primaryText, String secondaryText) {
+        layout.setButtons(primaryText, secondaryText);
     }
 
     private static boolean hasPermission(Context context, String permission) {

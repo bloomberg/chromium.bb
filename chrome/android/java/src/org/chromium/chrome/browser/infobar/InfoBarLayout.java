@@ -16,7 +16,6 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.ClickableSpan;
 import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -32,16 +31,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Layout that arranges an InfoBar's views. An InfoBarLayout consists of:
- * - A message describing the action that the user can take.
- * - A close button on the right side.
- * - (optional) An icon representing the infobar's purpose on the left side.
- * - (optional) Additional "custom" views (e.g. a checkbox and text, or a pair of spinners)
- * - (optional) One or two buttons with text at the bottom.
+ * Layout that arranges an infobar's views.
+ *
+ * An InfoBarLayout consists of:
+ * - A message describing why the infobar is being displayed.
+ * - A close button in the top right corner.
+ * - (optional) An icon representing the infobar's purpose in the top left corner.
+ * - (optional) Additional {@link InfoBarControlLayouts} for specialized controls (e.g. spinners).
+ * - (optional) One or two buttons with text at the bottom, or a button paired with an ImageView.
  *
  * When adding custom views, widths and heights defined in the LayoutParams will be ignored.
- * However, setting a minimum width in another way, like TextView.getMinWidth(), should still be
- * obeyed.
+ * Setting a minimum width using {@link View#setMininumWidth()} will be obeyed.
  *
  * Logic for what happens when things are clicked should be implemented by the InfoBarView.
  */
@@ -51,14 +51,12 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
      * Parameters used for laying out children.
      */
     private static class LayoutParams extends ViewGroup.LayoutParams {
-
         public int startMargin;
         public int endMargin;
         public int topMargin;
         public int bottomMargin;
 
-        // Where this view will be laid out. These values are assigned in onMeasure() and used in
-        // onLayout().
+        // Where this view will be laid out. Calculated in onMeasure() and used in onLayout().
         public int start;
         public int top;
 
@@ -71,60 +69,13 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
         }
     }
 
-    private static class Group {
-        public View[] views;
-
-        /**
-         * The gravity of each view in Group. Must be either Gravity.START, Gravity.END, or
-         * Gravity.FILL_HORIZONTAL.
-         */
-        public int gravity = Gravity.START;
-
-        /** Whether the views are vertically stacked. */
-        public boolean isStacked;
-
-        Group(View... views) {
-            this.views = views;
-        }
-
-        static View[] filterNullViews(View... views) {
-            ArrayList<View> viewsList = new ArrayList<View>();
-            for (View v : views) {
-                if (v != null) viewsList.add(v);
-            }
-            return viewsList.toArray(new View[viewsList.size()]);
-        }
-
-        void setHorizontalMode(int horizontalSpacing, int startMargin, int endMargin) {
-            isStacked = false;
-            for (int i = 0; i < views.length; i++) {
-                LayoutParams lp = (LayoutParams) views[i].getLayoutParams();
-                lp.startMargin = i == 0 ? startMargin : horizontalSpacing;
-                lp.topMargin = 0;
-                lp.endMargin = i == views.length - 1 ? endMargin : 0;
-                lp.bottomMargin = 0;
-            }
-        }
-
-        void setVerticalMode(int verticalSpacing, int bottomMargin) {
-            isStacked = true;
-            for (int i = 0; i < views.length; i++) {
-                LayoutParams lp = (LayoutParams) views[i].getLayoutParams();
-                lp.startMargin = 0;
-                lp.topMargin = i == 0 ? 0 : verticalSpacing;
-                lp.endMargin = 0;
-                lp.bottomMargin = i == views.length - 1 ? bottomMargin : 0;
-            }
-        }
-    }
-
     private final int mSmallIconSize;
     private final int mSmallIconMargin;
     private final int mBigIconSize;
     private final int mBigIconMargin;
     private final int mMarginAboveButtonGroup;
     private final int mMarginAboveControlGroups;
-    private final int mMargin;
+    private final int mPadding;
     private final int mMinWidth;
     private final int mAccentColor;
 
@@ -135,40 +86,19 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
 
     private TextView mMessageTextView;
     private ImageView mIconView;
-    private ButtonCompat mPrimaryButton;
-    private Button mSecondaryButton;
-    private View mCustomButton;
+    private InfoBarDualControlLayout mButtonRowLayout;
 
-    private Group mButtonGroup;
-
-    private boolean mIsUsingBigIcon;
     private CharSequence mMessageMainText;
     private String mMessageLinkText;
 
     /**
-     * These values are used during onMeasure() to track where the next view will be placed.
-     *
-     * mWidth is the infobar width.
-     * [mStart, mEnd) is the range of unoccupied space on the current row.
-     * mTop and mBottom are the top and bottom of the current row.
-     *
-     * These values, along with a view's gravity, are used to position the next view.
-     * These values are updated after placing a view and after starting a new row.
-     */
-    private int mWidth;
-    private int mStart;
-    private int mEnd;
-    private int mTop;
-    private int mBottom;
-
-    /**
-     * Constructs a layout for the specified InfoBar. After calling this, be sure to set the
+     * Constructs a layout for the specified infobar. After calling this, be sure to set the
      * message, the buttons, and/or the custom content using setMessage(), setButtons(), and
      * setCustomContent().
      *
      * @param context The context used to render.
      * @param infoBarView InfoBarView that listens to events.
-     * @param iconResourceId ID of the icon to use for the InfoBar.
+     * @param iconResourceId ID of the icon to use for the infobar.
      * @param iconBitmap Bitmap for the icon to use, if the resource ID wasn't passed through.
      * @param message The message to show in the infobar.
      */
@@ -179,7 +109,7 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
 
         mInfoBarView = infoBarView;
 
-        // Grab the dimensions.
+        // Cache resource values.
         Resources res = getResources();
         mSmallIconSize = res.getDimensionPixelSize(R.dimen.infobar_small_icon_size);
         mSmallIconMargin = res.getDimensionPixelSize(R.dimen.infobar_small_icon_margin);
@@ -189,7 +119,7 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
                 res.getDimensionPixelSize(R.dimen.infobar_margin_above_button_row);
         mMarginAboveControlGroups =
                 res.getDimensionPixelSize(R.dimen.infobar_margin_above_control_groups);
-        mMargin = res.getDimensionPixelOffset(R.dimen.infobar_margin);
+        mPadding = res.getDimensionPixelOffset(R.dimen.infobar_padding);
         mMinWidth = res.getDimensionPixelSize(R.dimen.infobar_min_width);
         mAccentColor = ApiCompatibilityUtils.getColor(res, R.color.infobar_accent_blue);
 
@@ -202,10 +132,10 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
         Drawable closeButtonBackground = a.getDrawable(0);
         a.recycle();
         mCloseButton.setBackground(closeButtonBackground);
-        mCloseButton.setPadding(mMargin, mMargin, mMargin, mMargin);
+        mCloseButton.setPadding(mPadding, mPadding, mPadding, mPadding);
         mCloseButton.setOnClickListener(this);
         mCloseButton.setContentDescription(res.getString(R.string.infobar_close));
-        mCloseButton.setLayoutParams(new LayoutParams(0, -mMargin, -mMargin, -mMargin));
+        mCloseButton.setLayoutParams(new LayoutParams(0, -mPadding, -mPadding, -mPadding));
 
         // Set up the icon.
         if (iconResourceId != 0 || iconBitmap != null) {
@@ -228,14 +158,14 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
     }
 
     /**
-     * Returns the {@link TextView} corresponding to the main InfoBar message.
+     * Returns the {@link TextView} corresponding to the main infobar message.
      */
     TextView getMessageTextView() {
         return mMessageTextView;
     }
 
     /**
-     * Returns the {@link InfoBarControlLayout} containing the TextView showing the main InfoBar
+     * Returns the {@link InfoBarControlLayout} containing the TextView showing the main infobar
      * message and associated controls, which is sandwiched between its icon and close button.
      */
     InfoBarControlLayout getMessageLayout() {
@@ -254,7 +184,7 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
     }
 
     /**
-     * Sets the message to show for a link in the message, if an InfoBar requires a link
+     * Sets the message to show for a link in the message, if an infobar requires a link
      * (e.g. "Learn more").
      */
     public void setMessageLinkText(String linkText) {
@@ -263,7 +193,7 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
     }
 
     /**
-     * Adds an {@link InfoBarControlLayout} to house additional InfoBar controls, like toggles and
+     * Adds an {@link InfoBarControlLayout} to house additional infobar controls, like toggles and
      * spinners.
      */
     public InfoBarControlLayout addControlLayout() {
@@ -275,39 +205,61 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
     /**
      * Adds one or two buttons to the layout.
      *
-     * @param primaryText Text for the primary button.
+     * @param primaryText Text for the primary button.  If empty, no buttons are added at all.
      * @param secondaryText Text for the secondary button, or null if there isn't a second button.
      */
     public void setButtons(String primaryText, String secondaryText) {
-        if (TextUtils.isEmpty(primaryText)) return;
+        if (TextUtils.isEmpty(primaryText)) {
+            assert secondaryText == null;
+            return;
+        }
 
-        mPrimaryButton = new ButtonCompat(getContext(), mAccentColor);
-        mPrimaryButton.setId(R.id.button_primary);
-        mPrimaryButton.setOnClickListener(this);
-        mPrimaryButton.setText(primaryText);
-        mPrimaryButton.setTextColor(Color.WHITE);
-        mPrimaryButton.setRaised(false);
+        Button secondaryButton = null;
+        if (!TextUtils.isEmpty(secondaryText)) {
+            secondaryButton = ButtonCompat.createBorderlessButton(getContext());
+            secondaryButton.setId(R.id.button_secondary);
+            secondaryButton.setOnClickListener(this);
+            secondaryButton.setText(secondaryText);
+            secondaryButton.setTextColor(mAccentColor);
+        }
 
-        if (TextUtils.isEmpty(secondaryText)) return;
-
-        mSecondaryButton = ButtonCompat.createBorderlessButton(getContext());
-        mSecondaryButton.setId(R.id.button_secondary);
-        mSecondaryButton.setOnClickListener(this);
-        mSecondaryButton.setText(secondaryText);
-        mSecondaryButton.setTextColor(mAccentColor);
+        setBottomViews(primaryText, secondaryButton, InfoBarDualControlLayout.ALIGN_END);
     }
 
-    /** Adds a custom view to show in the button row. */
-    public void setCustomViewInButtonRow(View view) {
-        mCustomButton = view;
+    /**
+     * Sets up the bottom-most part of the infobar with a primary button (e.g. OK) and a secondary
+     * View of your choice.  Subclasses should be calling {@link #setButtons(String, String)}
+     * instead of this function in nearly all cases (that function calls this one).
+     *
+     * @param primaryText Text to display on the primary button.  If empty, the bottom layout is not
+     *                    created.
+     * @param secondaryView View that is aligned with the primary button.  May be null.
+     * @param alignment One of ALIGN_START, ALIGN_APART, or ALIGN_END from
+     *                  {@link InfoBarDualControlLayout}.
+     */
+    public void setBottomViews(String primaryText, View secondaryView, int alignment) {
+        assert !TextUtils.isEmpty(primaryText);
+        ButtonCompat primaryButton = new ButtonCompat(getContext(), mAccentColor);
+        primaryButton.setId(R.id.button_primary);
+        primaryButton.setOnClickListener(this);
+        primaryButton.setText(primaryText);
+        primaryButton.setTextColor(Color.WHITE);
+        primaryButton.setRaised(false);
+
+        assert mButtonRowLayout == null;
+        mButtonRowLayout = new InfoBarDualControlLayout(getContext(), null);
+        mButtonRowLayout.setAlignment(alignment);
+        mButtonRowLayout.setStackedMargin(getResources().getDimensionPixelSize(
+                R.dimen.infobar_margin_between_stacked_buttons));
+
+        mButtonRowLayout.addView(primaryButton);
+        if (secondaryView != null) mButtonRowLayout.addView(secondaryView);
     }
 
     /**
      * Adjusts styling to account for the big icon layout.
      */
     public void setIsUsingBigIcon() {
-        mIsUsingBigIcon = true;
-
         LayoutParams lp = (LayoutParams) mIconView.getLayoutParams();
         lp.width = mBigIconSize;
         lp.height = mBigIconSize;
@@ -327,7 +279,8 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
      * Returns the primary button, or null if it doesn't exist.
      */
     public ButtonCompat getPrimaryButton() {
-        return mPrimaryButton;
+        return mButtonRowLayout == null ? null
+                : (ButtonCompat) mButtonRowLayout.findViewById(R.id.button_primary);
     }
 
     /**
@@ -342,16 +295,11 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
      * first call to onMeasure().
      */
     void onContentCreated() {
-        View[] buttons = Group.filterNullViews(mCustomButton, mSecondaryButton, mPrimaryButton);
-        if (buttons.length != 0) mButtonGroup = new Group(buttons);
-
         // Add the child views in the desired focus order.
         if (mIconView != null) addView(mIconView);
         addView(mMessageLayout);
         for (View v : mControlLayouts) addView(v);
-        if (mButtonGroup != null) {
-            for (View v : mButtonGroup.views) addView(v);
-        }
+        if (mButtonRowLayout != null) addView(mButtonRowLayout);
         addView(mCloseButton);
     }
 
@@ -383,218 +331,129 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
     }
 
     /**
-     * Measures *and* assigns positions to all of the views in the infobar. These positions are
-     * saved in each view's LayoutParams (lp.start and lp.top) and used during onLayout(). All of
-     * the interesting logic happens inside onMeasure(); onLayout() just assigns the already-
-     * determined positions and mirrors everything for RTL, if needed.
+     * Measures and determines where children should go.
+     *
+     * For current specs, see https://goto.google.com/infobar-spec
+     *
+     * All controls are padded from the infobar boundary by the same amount, but different types of
+     * control groups are bound by different widths and have different margins:
+     * --------------------------------------------------------------------------------
+     * |  PADDING                                                                     |
+     * |  --------------------------------------------------------------------------  |
+     * |  | ICON | MESSAGE LAYOUT                                              | X |  |
+     * |  |------+                                                             +---|  |
+     * |  |      |                                                             |   |  |
+     * |  |      ------------------------------------------------------------------|  |
+     * |  |      | CONTROL LAYOUT #1                                               |  |
+     * |  |      ------------------------------------------------------------------|  |
+     * |  |      | CONTROL LAYOUT #X                                               |  |
+     * |  |------------------------------------------------------------------------|  |
+     * |  | BOTTOM ROW LAYOUT                                                      |  |
+     * |  -------------------------------------------------------------------------|  |
+     * |                                                                              |
+     * --------------------------------------------------------------------------------
      */
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         assert getLayoutParams().height == LayoutParams.WRAP_CONTENT
                 : "InfoBar heights cannot be constrained.";
 
-        // Measure all children without imposing any size constraints on them. This determines how
-        // big each child wants to be.
+        // Apply the padding that surrounds all the infobar controls.
+        final int layoutWidth = Math.max(MeasureSpec.getSize(widthMeasureSpec), mMinWidth);
+        final int paddedStart = mPadding;
+        final int paddedEnd = layoutWidth - mPadding;
+        int layoutBottom = mPadding;
+
+        // Measure and place the icon in the top-left corner.
         int unspecifiedSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
-        for (int i = 0; i < getChildCount(); i++) {
-            // No need to do a preliminary measure() on an InfoBarControlLayout,
-            // since InfoBarControlLayout handles all the measuring logic internally.
-            // TODO(dfalcantara): remove this instanceof check when refactoring this method.
-            if (getChildAt(i) instanceof InfoBarControlLayout) continue;
-            measureChild(getChildAt(i), unspecifiedSpec, unspecifiedSpec);
-        }
-
-        // Avoid overlapping views, division by zero, infinite heights, and other fun problems that
-        // could arise with extremely narrow infobars.
-        mWidth = Math.max(MeasureSpec.getSize(widthMeasureSpec), mMinWidth);
-        mTop = mBottom = 0;
-        placeGroups();
-
-        setMeasuredDimension(mWidth, resolveSize(mBottom, heightMeasureSpec));
-    }
-
-    /**
-     * Assigns positions to all of the views in the infobar. The icon enforces a start margin on
-     * all control groups that aren't the final button group.  The message and close button are
-     * placed on the main row, with control groups placed beneath them.
-     */
-    private void placeGroups() {
-        // Enforce the general top-padding on the InfoBar controls.
-        mTop = mBottom = mMargin;
-
-        // Place the icon, which forces all control groups to be inset by the size of the icon.
-        if (mIconView == null) {
-            startRowWithIconMargin();
-        } else {
-            startRowWithoutIconMargin();
-            placeChild(mIconView, Gravity.START);
-        }
-
-        // Place the close button.
-        placeChild(mCloseButton, Gravity.END);
-
-        // Place the main control group, which is sandwiched between the icon and the close button.
-        // When laid out vertically, control groups ignore where the close button's bottom is, but
-        // that value helps define how tall the InfoBar is.  Save the bottom before overwriting it.
-        int closeButtonBottom = mBottom;
-        mTop = mBottom = mMargin;
-        placeChild(mMessageLayout, Gravity.FILL_HORIZONTAL);
-
-        // Place each of the control groups.
-        for (InfoBarControlLayout layout : mControlLayouts) {
-            startRowWithIconMargin();
-            mTop = mBottom + mMarginAboveControlGroups;
-            mBottom = mTop;
-            placeChild(layout, Gravity.FILL_HORIZONTAL);
-        }
-
-        // Place the buttons.
-        if (mButtonGroup != null) {
-            startRowWithoutIconMargin();
-            mTop = mBottom + mMarginAboveButtonGroup;
-            mBottom = mTop;
-
-            updateButtonGroupLayoutProperties();
-            placeButtonGroup(mButtonGroup);
-
-            if (mCustomButton != null) {
-                // The custom button is start-aligned to its parent.
-                LayoutParams primaryButtonLP = (LayoutParams) mPrimaryButton.getLayoutParams();
-                LayoutParams customButtonLP = (LayoutParams) mCustomButton.getLayoutParams();
-                customButtonLP.start = mMargin;
-
-                if (!mButtonGroup.isStacked) {
-                    // Center the custom button vertically relative to the primary button.
-                    customButtonLP.top = primaryButtonLP.top
-                            + (mPrimaryButton.getMeasuredHeight()
-                            - mCustomButton.getMeasuredHeight()) / 2;
-                }
-            }
-        }
-
-        // Apply a bottom padding to the layout, then calculate its final height.
-        mTop = mBottom + mMargin;
-        mBottom = mTop;
-        mBottom = Math.max(mBottom, closeButtonBottom);
-    }
-
-    /**
-     * Places a group of views on the current row, or stacks them over multiple rows if
-     * group.isStacked is true. mStart, mEnd, and mBottom are updated to reflect the space taken by
-     * the group.
-     */
-    private void placeButtonGroup(Group group) {
-        if (group.gravity == Gravity.END) {
-            for (int i = group.views.length - 1; i >= 0; i--) {
-                placeChild(group.views[i], group.gravity);
-                if (group.isStacked && i != 0) startRowWithIconMargin();
-            }
-        } else {  // group.gravity is Gravity.START or Gravity.FILL_HORIZONTAL
-            for (int i = 0; i < group.views.length; i++) {
-                placeChild(group.views[i], group.gravity);
-                if (group.isStacked && i != group.views.length - 1) {
-                    if (group == mButtonGroup) {
-                        startRowWithoutIconMargin();
-                    } else {
-                        startRowWithIconMargin();
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Places a single view on the current row, and updates the view's layout parameters to remember
-     * its position. mStart, mEnd, and mBottom are updated to reflect the space taken by the view.
-     */
-    private void placeChild(View child, int gravity) {
-        LayoutParams lp = (LayoutParams) child.getLayoutParams();
-
-        int availableWidth = Math.max(0, mEnd - mStart - lp.startMargin - lp.endMargin);
-        if (child.getMeasuredWidth() > availableWidth || gravity == Gravity.FILL_HORIZONTAL) {
-            measureChildWithFixedWidth(child, availableWidth);
-        }
-
-        if (gravity == Gravity.START || gravity == Gravity.FILL_HORIZONTAL) {
-            lp.start = mStart + lp.startMargin;
-            mStart = lp.start + child.getMeasuredWidth() + lp.endMargin;
-        } else {  // gravity == Gravity.END
-            lp.start = mEnd - lp.endMargin - child.getMeasuredWidth();
-            mEnd = lp.start - lp.startMargin;
-        }
-
-        lp.top = mTop + lp.topMargin;
-        mBottom = Math.max(mBottom, lp.top + child.getMeasuredHeight() + lp.bottomMargin);
-    }
-
-    /**
-     * Advances the current position to the next row and adds margins on the left, right, and top
-     * of the new row.
-     */
-    private void startRowWithoutIconMargin() {
-        mStart = mMargin;
-        mEnd = mWidth - mMargin;
-        mTop = mBottom;
-    }
-
-    /**
-     * Advances the current position to the next row and adds margins on the left, right, and top
-     * of the new row, accounting for the margins imposed by the icon.
-     */
-    private void startRowWithIconMargin() {
-        startRowWithoutIconMargin();
-
         if (mIconView != null) {
-            if (mIsUsingBigIcon) {
-                mStart += mBigIconSize + mBigIconMargin;
-            } else {
-                mStart += mSmallIconSize + mSmallIconMargin;
-            }
+            LayoutParams iconParams = getChildLayoutParams(mIconView);
+            measureChild(mIconView, unspecifiedSpec, unspecifiedSpec);
+            iconParams.start = paddedStart + iconParams.startMargin;
+            iconParams.top = layoutBottom + iconParams.topMargin;
         }
+        final int iconWidth = getChildWidthWithMargins(mIconView);
+
+        // Measure and place the close button in the top-right corner of the layout.
+        LayoutParams closeParams = getChildLayoutParams(mCloseButton);
+        measureChild(mCloseButton, unspecifiedSpec, unspecifiedSpec);
+        closeParams.start = paddedEnd - closeParams.endMargin - mCloseButton.getMeasuredWidth();
+        closeParams.top = layoutBottom + closeParams.topMargin;
+
+        // Determine how much width is available for all the different control layouts; see the
+        // function JavaDoc above for details.
+        final int paddedWidth = paddedEnd - paddedStart;
+        final int controlLayoutWidth = paddedWidth - iconWidth;
+        final int messageWidth = controlLayoutWidth - getChildWidthWithMargins(mCloseButton);
+
+        // The message layout is sandwiched between the icon and the close button.
+        LayoutParams messageParams = getChildLayoutParams(mMessageLayout);
+        measureChildWithFixedWidth(mMessageLayout, messageWidth);
+        messageParams.start = paddedStart + iconWidth;
+        messageParams.top = layoutBottom;
+
+        // Control layouts are placed below the message layout and the close button.  The icon is
+        // ignored for this particular calculation because the icon enforces a left margin on all of
+        // the control layouts and won't be overlapped.
+        layoutBottom += Math.max(getChildHeightWithMargins(mMessageLayout),
+                getChildHeightWithMargins(mCloseButton));
+
+        // The other control layouts are constrained only by the icon's width.
+        final int controlPaddedStart = paddedStart + iconWidth;
+        for (int i = 0; i < mControlLayouts.size(); i++) {
+            View child = mControlLayouts.get(i);
+            measureChildWithFixedWidth(child, controlLayoutWidth);
+
+            layoutBottom += mMarginAboveControlGroups;
+            getChildLayoutParams(child).start = controlPaddedStart;
+            getChildLayoutParams(child).top = layoutBottom;
+            layoutBottom += child.getMeasuredHeight();
+        }
+
+        // The button layout takes up the full width of the infobar and sits below everything else,
+        // including the icon.
+        layoutBottom = Math.max(layoutBottom, getChildHeightWithMargins(mIconView));
+        if (mButtonRowLayout != null) {
+            measureChildWithFixedWidth(mButtonRowLayout, paddedWidth);
+
+            layoutBottom += mMarginAboveButtonGroup;
+            getChildLayoutParams(mButtonRowLayout).start = paddedStart;
+            getChildLayoutParams(mButtonRowLayout).top = layoutBottom;
+            layoutBottom += mButtonRowLayout.getMeasuredHeight();
+        }
+
+        // Apply padding to the bottom of the infobar.
+        layoutBottom += mPadding;
+
+        setMeasuredDimension(resolveSize(layoutWidth, widthMeasureSpec),
+                resolveSize(layoutBottom, heightMeasureSpec));
+    }
+
+    private static int getChildWidthWithMargins(View view) {
+        if (view == null) return 0;
+        return view.getMeasuredWidth() + getChildLayoutParams(view).startMargin
+                + getChildLayoutParams(view).endMargin;
+    }
+
+    private static int getChildHeightWithMargins(View view) {
+        if (view == null) return 0;
+        return view.getMeasuredHeight() + getChildLayoutParams(view).topMargin
+                + getChildLayoutParams(view).bottomMargin;
+    }
+
+    private static LayoutParams getChildLayoutParams(View view) {
+        return (LayoutParams) view.getLayoutParams();
     }
 
     /**
-     * @return The width of the group, including the items' margins.
+     * Measures a child for the given space, taking into account its margins.
      */
-    private int getWidthWithMargins(Group group) {
-        if (group.isStacked) return getWidthWithMargins(group.views[0]);
-
-        int width = 0;
-        for (View v : group.views) {
-            width += getWidthWithMargins(v);
-        }
-        return width;
-    }
-
-    private int getWidthWithMargins(View child) {
-        LayoutParams lp = (LayoutParams) child.getLayoutParams();
-        return child.getMeasuredWidth() + lp.startMargin + lp.endMargin;
-    }
-
     private void measureChildWithFixedWidth(View child, int width) {
-        int widthSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY);
+        LayoutParams lp = getChildLayoutParams(child);
+        int availableWidth = width - lp.startMargin - lp.endMargin;
+        int widthSpec = MeasureSpec.makeMeasureSpec(availableWidth, MeasureSpec.EXACTLY);
         int heightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         child.measure(widthSpec, heightSpec);
-    }
-
-    /**
-     * Updates the layout properties (margins, gravity, etc) of the button group to prepare for
-     * placing it on its own row.
-     */
-    private void updateButtonGroupLayoutProperties() {
-        int startEndMargin = 0;
-        mButtonGroup.setHorizontalMode(mMargin / 2, startEndMargin, startEndMargin);
-        mButtonGroup.gravity = Gravity.END;
-
-        if (mButtonGroup.views.length >= 2) {
-            int availableWidth = mEnd - mStart;
-            int extraWidth = availableWidth - getWidthWithMargins(mButtonGroup);
-            if (extraWidth < 0) {
-                // Group is too wide to fit on a single row, so stack the group items vertically.
-                mButtonGroup.setVerticalMode(mMargin / 2, 0);
-                mButtonGroup.gravity = Gravity.FILL_HORIZONTAL;
-            }
-        }
     }
 
     /**
@@ -616,8 +475,8 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
     }
 
     /**
-     * Prepares text to be displayed as the InfoBar's main message, including setting up a
-     * clickable link if the InfoBar requires it.
+     * Prepares text to be displayed as the infobar's main message, including setting up a
+     * clickable link if the infobar requires it.
      */
     private CharSequence prepareMainMessageString() {
         SpannableStringBuilder fullString = new SpannableStringBuilder();
