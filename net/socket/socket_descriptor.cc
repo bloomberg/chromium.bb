@@ -17,19 +17,7 @@
 
 namespace net {
 
-PlatformSocketFactory* g_socket_factory = nullptr;
-
-PlatformSocketFactory::PlatformSocketFactory() {
-}
-
-PlatformSocketFactory::~PlatformSocketFactory() {
-}
-
-void PlatformSocketFactory::SetInstance(PlatformSocketFactory* factory) {
-  g_socket_factory = factory;
-}
-
-SocketDescriptor CreateSocketDefault(int family, int type, int protocol) {
+SocketDescriptor CreatePlatformSocket(int family, int type, int protocol) {
 #if defined(OS_WIN)
   EnsureWinsockInit();
   SocketDescriptor result = ::WSASocket(family, type, protocol, nullptr, 0,
@@ -47,13 +35,7 @@ SocketDescriptor CreateSocketDefault(int family, int type, int protocol) {
 #else  // OS_WIN
   return ::socket(family, type, protocol);
 #endif  // OS_WIN
-}
 
-SocketDescriptor CreatePlatformSocket(int family, int type, int protocol) {
-  if (g_socket_factory)
-    return g_socket_factory->CreateSocket(family, type, protocol);
-  else
-    return CreateSocketDefault(family, type, protocol);
 }
 
 }  // namespace net

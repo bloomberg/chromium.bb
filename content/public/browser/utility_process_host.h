@@ -61,9 +61,6 @@ class UtilityProcessHost : public IPC::Sender {
   // the operation.
   virtual void SetExposedDir(const base::FilePath& dir) = 0;
 
-  // Perform presandbox initialization for mDNS.
-  virtual void EnableMDns() = 0;
-
   // Make the process run without a sandbox.
   virtual void DisableSandbox() = 0;
 

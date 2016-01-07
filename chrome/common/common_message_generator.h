@@ -18,10 +18,6 @@
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
 #endif
 
-#if defined(ENABLE_MDNS)
-#include "chrome/common/local_discovery/local_discovery_messages.h"
-#endif
-
 #if defined(ENABLE_PRINT_PREVIEW)
 #include "chrome/common/service_messages.h"
 #endif

@@ -49,7 +49,6 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   bool StartBatchMode() override;
   void EndBatchMode() override;
   void SetExposedDir(const base::FilePath& dir) override;
-  void EnableMDns() override;
   void DisableSandbox() override;
 #if defined(OS_WIN)
   void ElevatePrivileges() override;
@@ -83,10 +82,6 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   bool is_batch_mode_;
 
   base::FilePath exposed_dir_;
-
-  // Whether the utility process needs to perform presandbox initialization
-  // for mDNS.
-  bool is_mdns_enabled_;
 
   // Whether to pass switches::kNoSandbox to the child.
   bool no_sandbox_;

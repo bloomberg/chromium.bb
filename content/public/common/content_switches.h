@@ -236,7 +236,6 @@ CONTENT_EXPORT extern const char kDisableSurfaces[];
 extern const char kUtilityCmdPrefix[];
 CONTENT_EXPORT extern const char kUtilityProcess[];
 extern const char kUtilityProcessAllowedDir[];
-CONTENT_EXPORT extern const char kUtilityProcessEnableMDns[];
 CONTENT_EXPORT extern const char kUtilityProcessRunningElevated[];
 CONTENT_EXPORT extern const char kV8CacheOptions[];
 CONTENT_EXPORT extern const char kV8NativesPassedByFD[];

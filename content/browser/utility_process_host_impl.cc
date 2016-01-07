@@ -130,7 +130,6 @@ UtilityProcessHostImpl::UtilityProcessHostImpl(
     : client_(client),
       client_task_runner_(client_task_runner),
       is_batch_mode_(false),
-      is_mdns_enabled_(false),
       no_sandbox_(false),
       run_elevated_(false),
 #if defined(OS_LINUX)
@@ -175,10 +174,6 @@ void UtilityProcessHostImpl::EndBatchMode()  {
 
 void UtilityProcessHostImpl::SetExposedDir(const base::FilePath& dir) {
   exposed_dir_ = dir;
-}
-
-void UtilityProcessHostImpl::EnableMDns() {
-  is_mdns_enabled_ = true;
 }
 
 void UtilityProcessHostImpl::DisableSandbox() {
@@ -317,9 +312,6 @@ bool UtilityProcessHostImpl::StartProcess() {
       cmd_line->AppendSwitchPath(switches::kUtilityProcessAllowedDir,
                                  exposed_dir_);
     }
-
-    if (is_mdns_enabled_)
-      cmd_line->AppendSwitch(switches::kUtilityProcessEnableMDns);
 
 #if defined(OS_WIN)
     // Let the utility process know if it is intended to be elevated.

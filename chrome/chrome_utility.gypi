@@ -15,8 +15,6 @@
       'utility/cloud_print/pwg_encoder.h',
       'utility/font_cache_handler_win.cc',
       'utility/font_cache_handler_win.h',
-      'utility/local_discovery/service_discovery_message_handler.cc',
-      'utility/local_discovery/service_discovery_message_handler.h',
       'utility/printing_handler.cc',
       'utility/printing_handler.h',
       'utility/safe_json_parser_handler.cc',
@@ -213,12 +211,6 @@
           'sources!': [
             'utility/printing_handler.cc',
             'utility/printing_handler.h',
-          ]
-        }],
-        ['enable_mdns==0', {
-          'sources!': [
-            'utility/local_discovery/service_discovery_message_handler.cc',
-            'utility/local_discovery/service_discovery_message_handler.h',
           ]
         }],
         ['safe_browsing==1', {

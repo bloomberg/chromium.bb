@@ -839,9 +839,6 @@ const char kUtilityProcess[]                = "utility";
 // specifies the directory that can be accessed.
 const char kUtilityProcessAllowedDir[]      = "utility-allowed-dir";
 
-// Allows MDns to access network in sandboxed process.
-const char kUtilityProcessEnableMDns[]      = "utility-enable-mdns";
-
 const char kUtilityProcessRunningElevated[] = "utility-run-elevated";
 
 // In debug builds, asserts that the stream of input events is valid.

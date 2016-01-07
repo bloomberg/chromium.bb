@@ -516,11 +516,6 @@
             '<(DEPTH)/components/components.gyp:dom_distiller_core',  # Needed by chrome_content_client.cc.
           ],
         }],
-        ['enable_mdns == 1', {
-            'sources': [
-              'common/local_discovery/local_discovery_messages.h',
-            ]
-        }],
         ['OS=="mac"', {
           'dependencies': [
             '../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac',

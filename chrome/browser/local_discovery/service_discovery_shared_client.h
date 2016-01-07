@@ -21,7 +21,6 @@ class ServiceDiscoverySharedClient
 
   typedef base::Callback<void(
       const scoped_refptr<ServiceDiscoverySharedClient>&)> GetInstanceCallback;
-  static void GetInstanceWithoutAlert(const GetInstanceCallback& callback);
 
  protected:
   ServiceDiscoverySharedClient();

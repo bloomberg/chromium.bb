@@ -79,7 +79,6 @@ enum IPCMessageStart {
   WebSocketMsgStart,
   NaClHostMsgStart,
   WebRTCIdentityMsgStart,
-  LocalDiscoveryMsgStart,
   PowerMonitorMsgStart,
   EncryptedMediaMsgStart,
   CacheStorageMsgStart,

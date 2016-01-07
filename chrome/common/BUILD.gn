@@ -247,10 +247,6 @@ static_library("common") {
     ]
   }
 
-  if (enable_mdns) {
-    sources += [ "local_discovery/local_discovery_messages.h" ]
-  }
-
   if (is_mac) {
     sources -= [ "channel_info_posix.cc" ]
     public_deps += [

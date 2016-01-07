@@ -22,23 +22,6 @@ typedef SOCKET SocketDescriptor;
 const SocketDescriptor kInvalidSocket = INVALID_SOCKET;
 #endif
 
-// Interface to create native socket.
-// Usually such factories are used for testing purposes, which is not true in
-// this case. This interface is used to substitute WSASocket/socket to make
-// possible execution of some network code in sandbox.
-class NET_EXPORT PlatformSocketFactory {
- public:
-  PlatformSocketFactory();
-  virtual ~PlatformSocketFactory();
-
-  // Replace WSASocket/socket with given factory. The factory will be used by
-  // CreatePlatformSocket.
-  static void SetInstance(PlatformSocketFactory* factory);
-
-  // Creates  socket. See WSASocket/socket documentation of parameters.
-  virtual SocketDescriptor CreateSocket(int family, int type, int protocol) = 0;
-};
-
 // Creates  socket. See WSASocket/socket documentation of parameters.
 SocketDescriptor NET_EXPORT CreatePlatformSocket(int family,
                                                  int type,

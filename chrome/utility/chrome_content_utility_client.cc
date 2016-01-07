@@ -56,10 +56,6 @@
 #include "chrome/utility/printing_handler.h"
 #endif
 
-#if defined(ENABLE_MDNS)
-#include "chrome/utility/local_discovery/service_discovery_message_handler.h"
-#endif
-
 #if defined(OS_MACOSX) && defined(FULL_SAFE_BROWSING)
 #include "chrome/utility/safe_browsing/mac/dmg_analyzer.h"
 #endif
@@ -131,13 +127,6 @@ ChromeContentUtilityClient::ChromeContentUtilityClient()
 
 #if defined(ENABLE_PRINT_PREVIEW) || defined(OS_WIN)
   handlers_.push_back(new printing::PrintingHandler());
-#endif
-
-#if defined(ENABLE_MDNS)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUtilityProcessEnableMDns)) {
-    handlers_.push_back(new local_discovery::ServiceDiscoveryMessageHandler());
-  }
 #endif
 
 #if defined(OS_WIN)
@@ -225,13 +214,6 @@ void ChromeContentUtilityClient::PreSandboxStartup() {
 #if defined(ENABLE_EXTENSIONS)
   extensions::ExtensionsHandler::PreSandboxStartup();
 #endif
-
-#if defined(ENABLE_MDNS)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUtilityProcessEnableMDns)) {
-    local_discovery::ServiceDiscoveryMessageHandler::PreSandboxStartup();
-  }
-#endif  // ENABLE_MDNS
 }
 
 // static

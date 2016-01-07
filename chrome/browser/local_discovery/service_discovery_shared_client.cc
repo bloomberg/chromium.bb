@@ -21,7 +21,6 @@
 
 #if defined(ENABLE_MDNS)
 #include "chrome/browser/local_discovery/service_discovery_client_mdns.h"
-#include "chrome/browser/local_discovery/service_discovery_client_utility.h"
 #endif  // ENABLE_MDNS
 
 namespace {
@@ -95,39 +94,6 @@ scoped_refptr<ServiceDiscoverySharedClient>
 
   return new ServiceDiscoveryClientMdns();
 #endif  // OS_MACOSX
-}
-
-// static
-void ServiceDiscoverySharedClient::GetInstanceWithoutAlert(
-    const GetInstanceCallback& callback) {
-#if !defined(OS_WIN)
-
-  scoped_refptr<ServiceDiscoverySharedClient> result = GetInstance();
-  return callback.Run(result);
-
-#else   // OS_WIN
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(vitalybuka): Switch to |ServiceDiscoveryClientMdns| after we find what
-  // to do with firewall for user-level installs. crbug.com/366408
-  scoped_refptr<ServiceDiscoverySharedClient> result =
-      g_service_discovery_client;
-  if (result.get())
-    return callback.Run(result);
-
-  if (!g_is_firewall_state_reported) {
-    BrowserThread::PostTaskAndReply(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&ReportFirewallStats),
-        base::Bind(&ServiceDiscoverySharedClient::GetInstanceWithoutAlert,
-                   callback));
-    return;
-  }
-
-  result =
-      g_is_firewall_ready ? GetInstance() : new ServiceDiscoveryClientUtility();
-  callback.Run(result);
-#endif  // OS_WIN
 }
 
 #else
