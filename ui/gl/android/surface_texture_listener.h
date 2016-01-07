@@ -37,7 +37,10 @@ class GL_EXPORT SurfaceTextureListener {
 
   // Native code should not hold any reference to this object, and instead pass
   // it up to Java for being referenced by a SurfaceTexture instance.
-  SurfaceTextureListener(const base::Closure& callback);
+  // If use_any_thread is true, then the FrameAvailable callback will happen
+  // on whatever thread calls us.  Otherwise, we will call it back on the same
+  // thread that was used to construct us.
+  SurfaceTextureListener(const base::Closure& callback, bool use_any_thread);
   ~SurfaceTextureListener();
 
   friend class SurfaceTexture;
@@ -45,6 +48,8 @@ class GL_EXPORT SurfaceTextureListener {
   base::Closure callback_;
 
   scoped_refptr<base::SingleThreadTaskRunner> browser_loop_;
+
+  bool use_any_thread_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(SurfaceTextureListener);
 };

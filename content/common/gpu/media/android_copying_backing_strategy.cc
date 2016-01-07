@@ -132,4 +132,11 @@ void AndroidCopyingBackingStrategy::CodecChanged(
   media_codec_ = codec;
 }
 
+void AndroidCopyingBackingStrategy::OnFrameAvailable() {
+  // TODO(liberato): crbug.com/574948 .  The OnFrameAvailable logic can be
+  // moved into AVDA, and we should wait for it before doing the copy.
+  // Because there were some test failures, we don't do this now but
+  // instead preserve the old behavior.
+}
+
 }  // namespace content

@@ -11,10 +11,11 @@
 
 namespace gfx {
 
-SurfaceTextureListener::SurfaceTextureListener(const base::Closure& callback)
+SurfaceTextureListener::SurfaceTextureListener(const base::Closure& callback,
+                                               bool use_any_thread)
     : callback_(callback),
-      browser_loop_(base::ThreadTaskRunnerHandle::Get()) {
-}
+      browser_loop_(base::ThreadTaskRunnerHandle::Get()),
+      use_any_thread_(use_any_thread) {}
 
 SurfaceTextureListener::~SurfaceTextureListener() {
 }
@@ -28,7 +29,7 @@ void SurfaceTextureListener::Destroy(JNIEnv* env,
 
 void SurfaceTextureListener::FrameAvailable(JNIEnv* env,
                                             const JavaParamRef<jobject>& obj) {
-  if (!browser_loop_->BelongsToCurrentThread()) {
+  if (!use_any_thread_ && !browser_loop_->BelongsToCurrentThread()) {
     browser_loop_->PostTask(FROM_HERE, callback_);
   } else {
     callback_.Run();

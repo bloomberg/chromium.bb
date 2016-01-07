@@ -89,6 +89,57 @@ static inline const base::TimeDelta IdleTimerTimeOut() {
   return base::TimeDelta::FromSeconds(1);
 }
 
+// Handle OnFrameAvailable callbacks safely.  Since they occur asynchronously,
+// we take care that the AVDA that wants them still exists.  A WeakPtr to
+// the AVDA would be preferable, except that OnFrameAvailable callbacks can
+// occur off the gpu main thread.  We also can't guarantee when the
+// SurfaceTexture will quit sending callbacks to coordinate with the
+// destruction of the AVDA, so we have a separate object that the cb can own.
+class AndroidVideoDecodeAccelerator::OnFrameAvailableHandler
+    : public base::RefCountedThreadSafe<OnFrameAvailableHandler> {
+ public:
+  // We do not retain ownership of |owner|.  It must remain valid until
+  // after ClearOwner() is called.  This will register with
+  // |surface_texture| to receive OnFrameAvailable callbacks.
+  OnFrameAvailableHandler(
+      AndroidVideoDecodeAccelerator* owner,
+      const scoped_refptr<gfx::SurfaceTexture>& surface_texture)
+      : owner_(owner) {
+    // Note that the callback owns a strong ref to us.
+    surface_texture->SetFrameAvailableCallbackOnAnyThread(
+        base::Bind(&OnFrameAvailableHandler::OnFrameAvailable,
+                   scoped_refptr<OnFrameAvailableHandler>(this)));
+  }
+
+  // Forget about our owner, which is required before one deletes it.
+  // No further callbacks will happen once this completes.
+  void ClearOwner() {
+    base::AutoLock lock(lock_);
+    // No callback can happen until we release the lock.
+    owner_ = nullptr;
+  }
+
+  // Call back into our owner if it hasn't been deleted.
+  void OnFrameAvailable() {
+    base::AutoLock auto_lock(lock_);
+    // |owner_| can't be deleted while we have the lock.
+    if (owner_)
+      owner_->OnFrameAvailable();
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<OnFrameAvailableHandler>;
+  virtual ~OnFrameAvailableHandler() {}
+
+  // Protects changes to owner_.
+  base::Lock lock_;
+
+  // AVDA that wants the OnFrameAvailable callback.
+  AndroidVideoDecodeAccelerator* owner_;
+
+  DISALLOW_COPY_AND_ASSIGN(OnFrameAvailableHandler);
+};
+
 AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
     const base::WeakPtr<gpu::gles2::GLES2Decoder> decoder,
     const base::Callback<bool(void)>& make_context_current)
@@ -155,6 +206,8 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
   strategy_->Initialize(this);
 
   surface_texture_ = strategy_->CreateSurfaceTexture();
+  on_frame_available_handler_ =
+      new OnFrameAvailableHandler(this, surface_texture_);
 
   if (!ConfigureMediaCodec()) {
     LOG(ERROR) << "Failed to create MediaCodec instance.";
@@ -588,6 +641,13 @@ void AndroidVideoDecodeAccelerator::Destroy() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   strategy_->Cleanup(output_picture_buffers_);
+
+  // If we have an OnFrameAvailable handler, tell it that we're going away.
+  if (on_frame_available_handler_) {
+    on_frame_available_handler_->ClearOwner();
+    on_frame_available_handler_ = nullptr;
+  }
+
   weak_this_factory_.InvalidateWeakPtrs();
   if (media_codec_) {
     io_timer_.Stop();
@@ -612,6 +672,12 @@ const base::ThreadChecker& AndroidVideoDecodeAccelerator::ThreadChecker()
 base::WeakPtr<gpu::gles2::GLES2Decoder>
 AndroidVideoDecodeAccelerator::GetGlDecoder() const {
   return gl_decoder_;
+}
+
+void AndroidVideoDecodeAccelerator::OnFrameAvailable() {
+  // Remember: this may be on any thread.
+  DCHECK(strategy_);
+  strategy_->OnFrameAvailable();
 }
 
 void AndroidVideoDecodeAccelerator::PostError(

@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_GPU_AVDA_SHARED_STATE_H_
 #define CONTENT_COMMON_GPU_AVDA_SHARED_STATE_H_
 
+#include "base/synchronization/waitable_event.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "media/base/android/sdk_media_codec_bridge.h"
 #include "ui/gl/gl_image.h"
@@ -22,7 +23,8 @@ namespace content {
 // there's an issue with virtual gl contexts.
 class AVDASharedState : public base::RefCounted<AVDASharedState> {
  public:
-  AVDASharedState() : surface_texture_service_id_(0) {}
+  AVDASharedState()
+      : surface_texture_service_id_(0), frame_available_event_(false, false) {}
 
   GLint surface_texture_service_id() const {
     return surface_texture_service_id_;
@@ -32,10 +34,17 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
     surface_texture_service_id_ = id;
   }
 
+  void SignalFrameAvailable() { frame_available_event_.Signal(); }
+
+  void WaitForFrameAvailable() { frame_available_event_.Wait(); }
+
  private:
   // Platform gl texture Id for |surface_texture_|.  This will be zero if
   // and only if |texture_owner_| is null.
   GLint surface_texture_service_id_;
+
+  // For signalling OnFrameAvailable().
+  base::WaitableEvent frame_available_event_;
 
  protected:
   virtual ~AVDASharedState() {}

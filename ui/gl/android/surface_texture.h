@@ -31,6 +31,12 @@ class GL_EXPORT SurfaceTexture
   // the callback from a weak pointer to your object.
   void SetFrameAvailableCallback(const base::Closure& callback);
 
+  // Set the listener callback, but allow it to be invoked on any thread.  The
+  // same caveats apply as SetFrameAvailableCallback, plus whatever other issues
+  // show up due to multithreading (e.g., don't bind the Closure to a method
+  // via a weak ref).
+  void SetFrameAvailableCallbackOnAnyThread(const base::Closure& callback);
+
   // Update the texture image to the most recent frame from the image stream.
   void UpdateTexImage();
 

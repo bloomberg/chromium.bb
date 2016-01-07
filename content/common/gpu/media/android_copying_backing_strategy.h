@@ -41,6 +41,7 @@ class CONTENT_EXPORT AndroidCopyingBackingStrategy
   void CodecChanged(
       media::VideoCodecBridge*,
       const AndroidVideoDecodeAccelerator::OutputBufferMap&) override;
+  void OnFrameAvailable() override;
 
  private:
   // Used for copy the texture from surface texture to picture buffers.

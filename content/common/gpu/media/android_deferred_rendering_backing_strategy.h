@@ -49,6 +49,7 @@ class CONTENT_EXPORT AndroidDeferredRenderingBackingStrategy
   void CodecChanged(
       media::VideoCodecBridge*,
       const AndroidVideoDecodeAccelerator::OutputBufferMap&) override;
+  void OnFrameAvailable() override;
 
  private:
   // Release any codec buffer that is associated with the given picture buffer

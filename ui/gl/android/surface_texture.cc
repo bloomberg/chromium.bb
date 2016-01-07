@@ -35,9 +35,16 @@ void SurfaceTexture::SetFrameAvailableCallback(
     const base::Closure& callback) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_SurfaceTexturePlatformWrapper_setFrameAvailableCallback(
-      env,
-      j_surface_texture_.obj(),
-      reinterpret_cast<intptr_t>(new SurfaceTextureListener(callback)));
+      env, j_surface_texture_.obj(),
+      reinterpret_cast<intptr_t>(new SurfaceTextureListener(callback, false)));
+}
+
+void SurfaceTexture::SetFrameAvailableCallbackOnAnyThread(
+    const base::Closure& callback) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_SurfaceTexturePlatformWrapper_setFrameAvailableCallback(
+      env, j_surface_texture_.obj(),
+      reinterpret_cast<intptr_t>(new SurfaceTextureListener(callback, true)));
 }
 
 void SurfaceTexture::UpdateTexImage() {

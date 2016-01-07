@@ -6,6 +6,7 @@
 
 #include <string.h>
 
+#include "base/metrics/histogram_macros.h"
 #include "content/common/gpu/media/avda_shared_state.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/context_state.h"
@@ -132,8 +133,12 @@ bool AVDACodecImage::UpdateSurfaceTexture() {
     // to prevent doing lots of work on the drawing path, we skip it.
 
     // The decoder buffer was still pending.
-    // This must be synchronous.
+    // This must be synchronous, so wait for OnFrameAvailable.
     media_codec_->ReleaseOutputBuffer(codec_buffer_index_, true);
+    {
+      SCOPED_UMA_HISTOGRAM_TIMER("Media.AvdaCodecImage.WaitTimeForFrame");
+      shared_state_->WaitForFrameAvailable();
+    }
 
     // Don't bother to check if we're rendered again.
     codec_buffer_index_ = -1;

@@ -84,6 +84,10 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
     // per-image cleanup is needed.
     virtual void CodecChanged(media::VideoCodecBridge* codec,
                               const OutputBufferMap& buffer_map) = 0;
+
+    // Notify the strategy that a frame is available.  This callback can happen
+    // on any thread at any time.
+    virtual void OnFrameAvailable() = 0;
   };
 
   AndroidVideoDecodeAccelerator(
@@ -112,6 +116,10 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
                  media::VideoDecodeAccelerator::Error error) override;
 
   static media::VideoDecodeAccelerator::Capabilities GetCapabilities();
+
+  // Notifies about SurfaceTexture::OnFrameAvailable.  This can happen on any
+  // thread at any time!
+  void OnFrameAvailable();
 
  private:
   enum State {
@@ -242,6 +250,10 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
   // Backing strategy that we'll use to connect PictureBuffers to frames.
   scoped_ptr<BackingStrategy> strategy_;
+
+  // Helper class that manages asynchronous OnFrameAvailable callbacks.
+  class OnFrameAvailableHandler;
+  scoped_refptr<OnFrameAvailableHandler> on_frame_available_handler_;
 
   // Time at which we last did useful work on io_timer_.
   base::TimeTicks most_recent_work_;

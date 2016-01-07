@@ -184,4 +184,8 @@ void AndroidDeferredRenderingBackingStrategy::CodecChanged(
   }
 }
 
+void AndroidDeferredRenderingBackingStrategy::OnFrameAvailable() {
+  shared_state_->SignalFrameAvailable();
+}
+
 }  // namespace content

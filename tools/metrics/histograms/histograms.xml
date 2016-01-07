@@ -18453,6 +18453,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.AvdaCodecImage.WaitTimeForFrame" units="milliseconds">
+  <owner>liberato@chromium.org</owner>
+  <summary>
+    Time spent waiting for a frame to become available in a SurfaceTexture after
+    requesting that MediaCodec renders it.
+  </summary>
+</histogram>
+
 <histogram name="Media.CacheUseful" enum="BooleanSuccess">
   <owner>scherkus@chromium.org</owner>
   <summary>
