@@ -36,7 +36,8 @@ ScrubbedSystemLogsFetcher::ScrubbedSystemLogsFetcher() {
   data_sources_.push_back(new TouchLogSource());
 
   // Debug Daemon data source - currently only this data source supports
-  // the scrub_data parameter.
+  // the scrub_data parameter but all others get processed by Rewrite()
+  // as well.
   const bool scrub_data = true;
   data_sources_.push_back(new DebugDaemonLogSource(scrub_data));
 #endif
@@ -45,6 +46,12 @@ ScrubbedSystemLogsFetcher::ScrubbedSystemLogsFetcher() {
 }
 
 ScrubbedSystemLogsFetcher::~ScrubbedSystemLogsFetcher() {
+}
+
+void ScrubbedSystemLogsFetcher::Rewrite(const std::string& source_name,
+                                        SystemLogsResponse* response) {
+  for (auto& element : *response)
+    element.second = anonymizer_.Anonymize(element.second);
 }
 
 }  // namespace system_logs

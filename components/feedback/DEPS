@@ -8,5 +8,6 @@ include_rules = [
   "+content/public/test",
   "+net/base",
   "+net/url_request",
-  "+third_party/zlib/google/zip.h",
+  "+third_party/re2",
+  "+third_party/zlib/google",
 ]

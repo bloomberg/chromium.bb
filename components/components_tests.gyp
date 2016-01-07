@@ -247,6 +247,7 @@
       'error_page/renderer/net_error_helper_core_unittest.cc',
     ],
     'feedback_unittest_sources': [
+      'feedback/anonymizer_tool_unittest.cc',
       'feedback/feedback_common_unittest.cc',
       'feedback/feedback_data_unittest.cc',
       'feedback/feedback_uploader_chrome_unittest.cc',

@@ -11,6 +11,7 @@
         '../base/base.gyp:base',
         '../content/content.gyp:content_common',
         '../net/net.gyp:net',
+        '../third_party/re2/re2.gyp:re2',
         '../third_party/zlib/google/zip.gyp:zip',
         'keyed_service_core',
         'feedback_proto',
@@ -22,6 +23,8 @@
       'defines': [
       ],
       'sources': [
+        'feedback/anonymizer_tool.cc',
+        'feedback/anonymizer_tool.h',
         'feedback/feedback_common.cc',
         'feedback/feedback_common.h',
         'feedback/feedback_data.cc',

@@ -15,7 +15,7 @@ namespace system_logs {
 class AboutSystemLogsFetcher : public SystemLogsFetcherBase {
  public:
   AboutSystemLogsFetcher();
-  ~AboutSystemLogsFetcher();
+  ~AboutSystemLogsFetcher() override;
 
  private:
 

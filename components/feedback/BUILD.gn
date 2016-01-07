@@ -4,6 +4,8 @@
 
 source_set("feedback") {
   sources = [
+    "anonymizer_tool.cc",
+    "anonymizer_tool.h",
     "feedback_common.cc",
     "feedback_common.h",
     "feedback_data.cc",
@@ -35,6 +37,7 @@ source_set("feedback") {
     "//content/public/browser",
     "//content/public/common",
     "//net",
+    "//third_party/re2",
     "//third_party/zlib:zip",
   ]
 }
@@ -42,6 +45,7 @@ source_set("feedback") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "anonymizer_tool_unittest.cc",
     "feedback_common_unittest.cc",
     "feedback_data_unittest.cc",
     "feedback_uploader_chrome_unittest.cc",
