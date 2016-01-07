@@ -82,7 +82,7 @@
       skia::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
   [confirmationText_
       addLinkRange:model_->save_confirmation_link_range().ToNSRange()
-           withURL:@"about:blank"  // using a link here is bad ui
+           withURL:nil
          linkColor:linkColor];
   [confirmationText_ setDelegate:self];
   [[confirmationText_ textContainer] setLineFragmentPadding:0.0f];

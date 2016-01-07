@@ -16,6 +16,7 @@ UI_BASE_EXPORT
  @private
   BOOL refusesFirstResponder_;
   BOOL drawsBackgroundUsingSuperview_;
+  BOOL isValidLink_;
 }
 
 @property(nonatomic, assign) BOOL drawsBackgroundUsingSuperview;
@@ -26,7 +27,8 @@ UI_BASE_EXPORT
           withFont:(NSFont*)font
       messageColor:(NSColor*)messageColor;
 
-// Marks a |range| within the given message as link.
+// Marks a |range| within the given message as a link. Pass nil as the url to
+// create a link that can neither be copied nor dragged.
 - (void)addLinkRange:(NSRange)range
              withURL:(NSString*)url
            linkColor:(NSColor*)linkColor;

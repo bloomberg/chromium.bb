@@ -105,7 +105,7 @@ NSTextView* AddTextView(
               withFont:font
           messageColor:[NSColor blackColor]];
   [textView addLinkRange:NSMakeRange(offset, [linkString length])
-                 withURL:@"about:blank"  // using a link here is bad ui
+                 withURL:nil
                linkColor:linkColor];
   RemoveUnderlining(textView, offset, link.size());
   [textView setDelegate:delegate];

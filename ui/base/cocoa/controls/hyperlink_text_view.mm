@@ -95,11 +95,34 @@ const float kTextBaselineShift = -1.0;
 
   refusesFirstResponder_ = NO;
   drawsBackgroundUsingSuperview_ = NO;
+  isValidLink_ = NO;
 }
 
 - (void)fixupCursor {
   if ([[NSCursor currentCursor] isEqual:[NSCursor IBeamCursor]])
     [[NSCursor arrowCursor] set];
+}
+
+// Only allow contextual menus (which allow copying of the link URL) if the link
+// is a valid one.
+- (NSMenu*)menuForEvent:(NSEvent*)e {
+  if (isValidLink_)
+    return [super menuForEvent:e];
+
+  return nil;
+}
+
+// Only allow dragging of valid links.
+- (BOOL)dragSelectionWithEvent:(NSEvent*)event
+                        offset:(NSSize)mouseOffset
+                     slideBack:(BOOL)slideBack {
+  if (isValidLink_) {
+    return [super dragSelectionWithEvent:event
+                                  offset:mouseOffset
+                               slideBack:slideBack];
+  }
+
+  return NO;
 }
 
 - (void)setMessage:(NSString*)message
@@ -125,12 +148,15 @@ const float kTextBaselineShift = -1.0;
 - (void)addLinkRange:(NSRange)range
              withURL:(NSString*)url
            linkColor:(NSColor*)linkColor {
-  // When the NSLinkAttributeName attribute is used, AppKit makes the link
-  // draggable. If no URL is provided, dropping it on the tab strip will crash
-  // <http://crbug.com/528228>. Require that a URL is used, and that only a URL
-  // is used.
-  DCHECK_GT([url length], 0u);
-  DCHECK([NSURL URLWithString:url]);
+  // If a URL is provided, make sure it is a valid one.
+  if (url) {
+    DCHECK_GT([url length], 0u);
+    DCHECK([NSURL URLWithString:url]);
+    isValidLink_ = YES;
+  } else {
+    url = @"";
+    isValidLink_ = NO;
+  }
   NSDictionary* attributes = @{
     NSForegroundColorAttributeName : linkColor,
     NSUnderlineStyleAttributeName : @(YES),

@@ -99,7 +99,7 @@ const int kFontSize = 11;
                withFont:font
            messageColor:skia::SkColorToDeviceNSColor(kTextColor)];
   [textView_ addLinkRange:NSMakeRange(offset, [nsLinkText length])
-                  withURL:@"about:blank"  // using a link here is bad ui
+                  withURL:nil
                 linkColor:linkColor];
   [textView_ setRefusesFirstResponder:YES];
   [[textView_ textContainer] setLineFragmentPadding:0.0];
