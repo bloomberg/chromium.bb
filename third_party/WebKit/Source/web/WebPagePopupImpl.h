@@ -91,8 +91,7 @@ private:
     void handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent&) override;
     WebInputEventResult handleMouseWheel(LocalFrame& mainFrame, const WebMouseWheelEvent&) override;
 
-    bool isMouseEventInWindow(const WebMouseEvent&);
-    bool isGestureEventInWindow(const WebGestureEvent&);
+    bool isViewportPointInWindow(int x, int y);
 
     // PagePopup function
     AXObject* rootAXObject() override;

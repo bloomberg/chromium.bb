@@ -408,7 +408,7 @@ WebInputEventResult WebPagePopupImpl::handleGestureEvent(const WebGestureEvent& 
 {
     if (m_closing || !m_page || !m_page->mainFrame() || !toLocalFrame(m_page->mainFrame())->view())
         return WebInputEventResult::NotHandled;
-    if (event.type == WebInputEvent::GestureTap && !isGestureEventInWindow(event)) {
+    if (event.type == WebInputEvent::GestureTap && !isViewportPointInWindow(event.x, event.y)) {
         cancel();
         return WebInputEventResult::NotHandled;
     }
@@ -418,7 +418,7 @@ WebInputEventResult WebPagePopupImpl::handleGestureEvent(const WebGestureEvent& 
 
 void WebPagePopupImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent& event)
 {
-    if (isMouseEventInWindow(event))
+    if (isViewportPointInWindow(event.x, event.y))
         PageWidgetEventHandler::handleMouseDown(mainFrame, event);
     else
         cancel();
@@ -426,20 +426,17 @@ void WebPagePopupImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEven
 
 WebInputEventResult WebPagePopupImpl::handleMouseWheel(LocalFrame& mainFrame, const WebMouseWheelEvent& event)
 {
-    if (isMouseEventInWindow(event))
+    if (isViewportPointInWindow(event.x, event.y))
         return PageWidgetEventHandler::handleMouseWheel(mainFrame, event);
     cancel();
     return WebInputEventResult::NotHandled;
 }
 
-bool WebPagePopupImpl::isMouseEventInWindow(const WebMouseEvent& event)
+bool WebPagePopupImpl::isViewportPointInWindow(int x, int y)
 {
-    return IntRect(0, 0, m_windowRectInScreen.width, m_windowRectInScreen.height).contains(IntPoint(event.x, event.y));
-}
-
-bool WebPagePopupImpl::isGestureEventInWindow(const WebGestureEvent& event)
-{
-    return IntRect(0, 0, m_windowRectInScreen.width, m_windowRectInScreen.height).contains(IntPoint(event.x, event.y));
+    WebRect pointInWindow(x, y, 0, 0);
+    widgetClient()->convertViewportToWindow(&pointInWindow);
+    return IntRect(0, 0, m_windowRectInScreen.width, m_windowRectInScreen.height).contains(IntPoint(pointInWindow.x, pointInWindow.y));
 }
 
 WebInputEventResult WebPagePopupImpl::handleInputEvent(const WebInputEvent& event)
