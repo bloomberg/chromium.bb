@@ -56523,18 +56523,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="AudioSampleRate" type="int">
-  <int value="0" label="k8000Hz"/>
-  <int value="1" label="k16000Hz"/>
-  <int value="2" label="k32000Hz"/>
-  <int value="3" label="k48000Hz"/>
-  <int value="4" label="k96000Hz"/>
-  <int value="5" label="k11025Hz"/>
-  <int value="6" label="k22050Hz"/>
-  <int value="7" label="k44100Hz"/>
-  <int value="8" label="k88200Hz"/>
-  <int value="9" label="k176400Hz"/>
-  <int value="10" label="k192000Hz"/>
-  <int value="11" label="k24000Hz"/>
+  <int value="0" label="8 kHz"/>
+  <int value="1" label="16 kHz"/>
+  <int value="2" label="32 kHz"/>
+  <int value="3" label="48 kHz"/>
+  <int value="4" label="96 kHz"/>
+  <int value="5" label="11.025 kHz"/>
+  <int value="6" label="22.05 kHz"/>
+  <int value="7" label="44.1 kHz"/>
+  <int value="8" label="88.2 kHz"/>
+  <int value="9" label="176.4 kHz"/>
+  <int value="10" label="192 kHz"/>
+  <int value="11" label="24 kHz"/>
+  <int value="12" label="384 kHz"/>
 </enum>
 
 <enum name="AudioThreadStatus" type="int">

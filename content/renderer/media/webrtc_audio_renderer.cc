@@ -594,8 +594,8 @@ void WebRtcAudioRenderer::PrepareSink() {
   // to match the native audio layer.
   int sample_rate = sink_->GetOutputParameters().sample_rate();
   DVLOG(1) << "Audio output hardware sample rate: " << sample_rate;
-  if (sample_rate == 192000) {
-    DVLOG(1) << "Resampling from 48000 to 192000 is required";
+  if (sample_rate >= 192000) {
+    DVLOG(1) << "Resampling from 48000 to " << sample_rate << " is required";
     sample_rate = 48000;
   }
   media::AudioSampleRate asr;
