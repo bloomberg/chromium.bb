@@ -6,7 +6,9 @@
 
 #include <stddef.h>
 
+#include <set>
 #include <string>
+#include <vector>
 
 #include "base/base_paths.h"
 #include "base/bind.h"
@@ -1398,7 +1400,7 @@ void UserSessionManager::OnRestoreActiveSessions(
 
   // One profile has been already loaded on browser start.
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  DCHECK(user_manager->GetLoggedInUsers().size() == 1);
+  DCHECK_EQ(1u, user_manager->GetLoggedInUsers().size());
   DCHECK(user_manager->GetActiveUser());
   std::string active_user_id = user_manager->GetActiveUser()->email();
 
