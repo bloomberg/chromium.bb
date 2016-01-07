@@ -271,7 +271,9 @@ cr.define('options', function() {
       this.clearElement_(instructionsEl);
       this.dismissible_ = opt_notDismissible !== true;
       var message = loadTimeData.getString(this.event_.pairing);
-      message = message.replace('%1', this.event_.device.name);
+      assert(typeof this.event_.device.name == 'string');
+      message = message.replace(
+          '%1', /** @type {string} */(this.event_.device.name));
       instructionsEl.textContent = message;
 
       // Update visibility of dialog elements.

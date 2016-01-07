@@ -79,24 +79,21 @@ cr.define('options', function() {
 
     /**
      * Keeps track of whether the user is signed in or not.
-     * @type {boolean}
-     * @private
+     * @private {boolean}
      */
     signedIn_: false,
 
     /**
      * Indicates whether signing out is allowed or whether a complete profile
      * wipe is required to remove the current enterprise account.
-     * @type {boolean}
-     * @private
+     * @private {boolean}
      */
     signoutAllowed_: true,
 
     /**
      * Keeps track of whether |onShowHomeButtonChanged_| has been called. See
      * |onShowHomeButtonChanged_|.
-     * @type {boolean}
-     * @private
+     * @private {boolean}
      */
     onShowHomeButtonChangedCalled_: false,
 
@@ -104,8 +101,7 @@ cr.define('options', function() {
      * Track if page initialization is complete.  All C++ UI handlers have the
      * chance to manipulate page content within their InitializePage methods.
      * This flag is set to true after all initializers have been called.
-     * @type {boolean}
-     * @private
+     * @private {boolean}
      */
     initializationComplete_: false,
 
@@ -192,7 +188,8 @@ cr.define('options', function() {
       }
 
       // Sync (Sign in) section.
-      this.updateSyncState_(loadTimeData.getValue('syncData'));
+      this.updateSyncState_(/** @type {options.SyncStatus} */(
+          loadTimeData.getValue('syncData')));
 
       $('start-stop-sync').onclick = function(event) {
         if (self.signedIn_) {
@@ -351,7 +348,8 @@ cr.define('options', function() {
         profilesList.autoExpands = true;
 
         // The profiles info data in |loadTimeData| might be stale.
-        this.setProfilesInfo_(loadTimeData.getValue('profilesInfo'));
+        this.setProfilesInfo_(/** @type {!Array<!options.Profile>} */(
+            loadTimeData.getValue('profilesInfo')));
         chrome.send('requestProfilesInfo');
 
         profilesList.addEventListener('change',
@@ -1514,7 +1512,7 @@ cr.define('options', function() {
 
     /**
      * Adds all |profiles| to the list.
-     * @param {Array<!options.Profile>} profiles An array of profile info
+     * @param {!Array<!options.Profile>} profiles An array of profile info
      *     objects.
      * @private
      */
@@ -2296,7 +2294,7 @@ cr.define('options', function() {
       }
 
       button.hidden = false;
-      var strId;
+      /** @type {string} */ var strId;
       switch (status) {
         case ConsumerManagementOverlay.Status.STATUS_UNENROLLED:
           strId = 'consumerManagementEnrollButton';

@@ -200,8 +200,8 @@ cr.define('options', function() {
           this.handleSpellCheckDictionariesPrefChange_.bind(this));
       Preferences.getInstance().addEventListener(ENABLE_TRANSLATE,
           this.handleEnableTranslatePrefChange_.bind(this));
-      this.translateSupportedLanguages_ =
-          loadTimeData.getValue('translateSupportedLanguages');
+      this.translateSupportedLanguages_ = /** @type {Array} */(
+          loadTimeData.getValue('translateSupportedLanguages'));
 
       // Set up add button.
       var onclick = function(e) {
@@ -283,10 +283,12 @@ cr.define('options', function() {
       // change the visibility in handleLanguageOptionsListChange_() based
       // on the selected language. Note that we only have less than 100
       // input methods, so creating DOM nodes at once here should be ok.
-      this.appendInputMethodElement_(loadTimeData.getValue('inputMethodList'));
-      this.appendComponentExtensionIme_(
-          loadTimeData.getValue('componentExtensionImeList'));
-      this.appendInputMethodElement_(loadTimeData.getValue('extensionImeList'));
+      this.appendInputMethodElement_(/** @type {!Array} */(
+          loadTimeData.getValue('inputMethodList')));
+      this.appendComponentExtensionIme_(/** @type {!Array} */(
+          loadTimeData.getValue('componentExtensionImeList')));
+      this.appendInputMethodElement_(/** @type {!Array} */(
+          loadTimeData.getValue('extensionImeList')));
 
       // Listen to pref change once the input method list is initialized.
       Preferences.getInstance().addEventListener(

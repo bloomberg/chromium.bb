@@ -10,7 +10,7 @@
  * that must be displayed right away).
  */
 
-var loadTimeData;
+/** @type {!LoadTimeData} */ var loadTimeData;
 
 // Expose this type globally as a temporary work around until
 // https://github.com/google/closure-compiler/issues/544 is fixed.
@@ -78,8 +78,8 @@ function LoadTimeData() {}
      * Returns a formatted localized string where $1 to $9 are replaced by the
      * second to the tenth argument.
      * @param {string} id The ID of the string we want.
-     * @param {...string} var_args The extra values to include in the formatted
-     *     output.
+     * @param {...(string|number)} var_args The extra values to include in the
+     *     formatted output.
      * @return {string} The formatted string.
      */
     getStringF: function(id, var_args) {

@@ -5,6 +5,16 @@
 ///////////////////////////////////////////////////////////////////////////////
 // AddLanguageOverlay class:
 
+/**
+ * @typedef {{
+ *   code: string,
+ *   displayName: string,
+ *   textDirection: string,
+ *   nativeDisplayName: string
+ * }}
+ */
+options.LanguageData;
+
 cr.define('options', function() {
   /** @const */ var Page = cr.ui.pageManager.Page;
   /** @const */ var PageManager = cr.ui.pageManager.PageManager;
@@ -37,12 +47,13 @@ cr.define('options', function() {
 
       // Create the language list with which users can add a language.
       var addLanguageList = $('add-language-overlay-language-list');
+
       /**
-       * @type {Array<{code: string, displayName: string,
-       *                textDirection: string, nativeDisplayName: string}>}
+       * @type {!Array<!options.LanguageData>}
        * @see chrome/browser/ui/webui/options/language_options_handler.cc
        */
-      var languageListData = loadTimeData.getValue('languageList');
+      var languageListData = /** @type {!Array<!options.LanguageData>} */(
+          loadTimeData.getValue('languageList'));
       for (var i = 0; i < languageListData.length; i++) {
         var language = languageListData[i];
         var displayText = language.displayName;

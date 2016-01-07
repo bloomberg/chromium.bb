@@ -66,8 +66,8 @@ cr.define('options', function() {
 
       this.guid_ = '';
       this.populateCountryList_();
-      this.rebuildInputFields_(
-          loadTimeData.getValue('autofillDefaultCountryComponents'));
+      this.rebuildInputFields_(/** @type {Array<Array<Object>>} */(
+          loadTimeData.getValue('autofillDefaultCountryComponents')));
       this.languageCode_ =
           loadTimeData.getString('autofillDefaultCountryLanguageCode');
       this.connectInputEvents_();

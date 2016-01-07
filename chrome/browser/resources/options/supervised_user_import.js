@@ -41,7 +41,8 @@ cr.define('options', function() {
       var avatarGrid = $('select-avatar-grid');
       options.ProfilesIconGrid.decorate(avatarGrid);
       var avatarIcons = loadTimeData.getValue('avatarIcons');
-      avatarGrid.dataModel = new ArrayDataModel(avatarIcons);
+      avatarGrid.dataModel = new ArrayDataModel(
+          /** @type {!Array} */(avatarIcons));
 
       supervisedUserList.addEventListener('change', function(event) {
         var supervisedUser = supervisedUserList.selectedItem;

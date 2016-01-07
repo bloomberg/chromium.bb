@@ -47,5 +47,6 @@
     $('profiles-list').canDeleteItems = false;
   });
 
-  loadTimeData.overrideValues(loadTimeData.getValue('settingsApp'));
+  loadTimeData.overrideValues(/** @type {!Object} */(
+      loadTimeData.getValue('settingsApp')));
 }());
