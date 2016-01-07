@@ -22,36 +22,6 @@ public:
 
     Platform3DObject object() const { return m_object; }
 
-    // Cached values for vertex attrib range checks
-    class VertexAttribState final : public GarbageCollected<VertexAttribState> {
-    public:
-        VertexAttribState()
-            : enabled(false)
-            , bytesPerElement(0)
-            , size(4)
-            , type(GL_FLOAT)
-            , normalized(false)
-            , stride(16)
-            , originalStride(0)
-            , offset(0)
-            , divisor(0)
-        {
-        }
-
-        DECLARE_TRACE();
-
-        bool enabled;
-        Member<WebGLBuffer> bufferBinding;
-        GLsizei bytesPerElement;
-        GLint size;
-        GLenum type;
-        bool normalized;
-        GLsizei stride;
-        GLsizei originalStride;
-        GLintptr offset;
-        GLuint divisor;
-    };
-
     bool isDefaultObject() const { return m_type == VaoTypeDefault; }
 
     bool hasEverBeenBound() const { return object() && m_hasEverBeenBound; }
@@ -60,10 +30,9 @@ public:
     WebGLBuffer* boundElementArrayBuffer() const { return m_boundElementArrayBuffer; }
     void setElementArrayBuffer(WebGLBuffer*);
 
-    VertexAttribState* getVertexAttribState(size_t);
-    void setVertexAttribState(GLuint, GLsizei, GLint, GLenum, GLboolean, GLsizei, GLintptr, WebGLBuffer*);
+    WebGLBuffer* getArrayBufferForAttrib(size_t);
+    void setArrayBufferForAttrib(GLuint, WebGLBuffer*);
     void unbindBuffer(WebGLBuffer*);
-    void setVertexAttribDivisor(GLuint index, GLuint divisor);
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -81,7 +50,7 @@ private:
     bool m_hasEverBeenBound;
     bool m_destructionInProgress;
     Member<WebGLBuffer> m_boundElementArrayBuffer;
-    HeapVector<Member<VertexAttribState>> m_vertexAttribState;
+    HeapVector<Member<WebGLBuffer>> m_arrayBufferList;
 };
 
 } // namespace blink

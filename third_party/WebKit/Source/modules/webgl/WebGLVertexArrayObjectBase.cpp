@@ -16,7 +16,7 @@ WebGLVertexArrayObjectBase::WebGLVertexArrayObjectBase(WebGLRenderingContextBase
     , m_destructionInProgress(false)
     , m_boundElementArrayBuffer(nullptr)
 {
-    m_vertexAttribState.reserveCapacity(ctx->maxVertexAttribs());
+    m_arrayBufferList.resize(ctx->maxVertexAttribs());
 
     switch (m_type) {
     case VaoTypeDefault:
@@ -43,10 +43,9 @@ void WebGLVertexArrayObjectBase::dispatchDetached(WebGraphicsContext3D* context3
     if (m_boundElementArrayBuffer)
         m_boundElementArrayBuffer->onDetached(context3d);
 
-    for (size_t i = 0; i < m_vertexAttribState.size(); ++i) {
-        VertexAttribState* state = m_vertexAttribState[i].get();
-        if (state->bufferBinding)
-            state->bufferBinding->onDetached(context3d);
+    for (size_t i = 0; i < m_arrayBufferList.size(); ++i) {
+        if (m_arrayBufferList[i])
+            m_arrayBufferList[i]->onDetached(context3d);
     }
 }
 
@@ -78,34 +77,20 @@ void WebGLVertexArrayObjectBase::setElementArrayBuffer(WebGLBuffer* buffer)
     m_boundElementArrayBuffer = buffer;
 }
 
-WebGLVertexArrayObjectBase::VertexAttribState* WebGLVertexArrayObjectBase::getVertexAttribState(size_t index)
+WebGLBuffer* WebGLVertexArrayObjectBase::getArrayBufferForAttrib(size_t index)
 {
     ASSERT(index < context()->maxVertexAttribs());
-    // Lazily create the vertex attribute states.
-    for (size_t i = m_vertexAttribState.size(); i <= index; i++)
-        m_vertexAttribState.append(new VertexAttribState);
-    return m_vertexAttribState[index].get();
+    return m_arrayBufferList[index].get();
 }
 
-void WebGLVertexArrayObjectBase::setVertexAttribState(
-    GLuint index, GLsizei bytesPerElement, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLintptr offset, WebGLBuffer* buffer)
+void WebGLVertexArrayObjectBase::setArrayBufferForAttrib(GLuint index, WebGLBuffer* buffer)
 {
-    GLsizei validatedStride = stride ? stride : bytesPerElement;
-    VertexAttribState* state = getVertexAttribState(index);
-
     if (buffer)
         buffer->onAttached();
-    if (state->bufferBinding)
-        state->bufferBinding->onDetached(context()->webContext());
+    if (m_arrayBufferList[index])
+        m_arrayBufferList[index]->onDetached(context()->webContext());
 
-    state->bufferBinding = buffer;
-    state->bytesPerElement = bytesPerElement;
-    state->size = size;
-    state->type = type;
-    state->normalized = normalized;
-    state->stride = validatedStride;
-    state->originalStride = stride;
-    state->offset = offset;
+    m_arrayBufferList[index] = buffer;
 }
 
 void WebGLVertexArrayObjectBase::unbindBuffer(WebGLBuffer* buffer)
@@ -115,30 +100,18 @@ void WebGLVertexArrayObjectBase::unbindBuffer(WebGLBuffer* buffer)
         m_boundElementArrayBuffer = nullptr;
     }
 
-    for (size_t i = 0; i < m_vertexAttribState.size(); ++i) {
-        VertexAttribState* state = m_vertexAttribState[i];
-        if (state->bufferBinding == buffer) {
-            buffer->onDetached(context()->webContext());
-            state->bufferBinding = nullptr;
+    for (size_t i = 0; i < m_arrayBufferList.size(); ++i) {
+        if (m_arrayBufferList[i] == buffer) {
+            m_arrayBufferList[i]->onDetached(context()->webContext());
+            m_arrayBufferList[i] = nullptr;
         }
     }
-}
-
-void WebGLVertexArrayObjectBase::setVertexAttribDivisor(GLuint index, GLuint divisor)
-{
-    VertexAttribState* state = getVertexAttribState(index);
-    state->divisor = divisor;
-}
-
-DEFINE_TRACE(WebGLVertexArrayObjectBase::VertexAttribState)
-{
-    visitor->trace(bufferBinding);
 }
 
 DEFINE_TRACE(WebGLVertexArrayObjectBase)
 {
     visitor->trace(m_boundElementArrayBuffer);
-    visitor->trace(m_vertexAttribState);
+    visitor->trace(m_arrayBufferList);
     WebGLContextObject::trace(visitor);
 }
 

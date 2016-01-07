@@ -1406,62 +1406,12 @@ void WebGL2RenderingContextBase::vertexAttribIuivImpl(const char* functionName, 
     attribValue.value.uintValue[3] = value[3];
 }
 
-bool WebGL2RenderingContextBase::validateVertexAttribPointerTypeAndSize(GLenum type, GLint size)
-{
-    switch (type) {
-    case GL_BYTE:
-    case GL_UNSIGNED_BYTE:
-    case GL_SHORT:
-    case GL_UNSIGNED_SHORT:
-    case GL_INT:
-    case GL_UNSIGNED_INT:
-    case GL_FLOAT:
-    case GL_HALF_FLOAT:
-        if (size < 1 || size > 4) {
-            synthesizeGLError(GL_INVALID_VALUE, "vertexAttribPointer", "invalid size");
-            return false;
-        }
-        return true;
-    case GL_INT_2_10_10_10_REV:
-    case GL_UNSIGNED_INT_2_10_10_10_REV:
-        if (size < 1 || size > 4) {
-            synthesizeGLError(GL_INVALID_VALUE, "vertexAttribPointer", "invalid size");
-            return false;
-        }
-        if (size != 4) {
-            synthesizeGLError(GL_INVALID_OPERATION, "vertexAttribPointer", "size != 4");
-            return false;
-        }
-        return true;
-    default:
-        synthesizeGLError(GL_INVALID_ENUM, "vertexAttribPointer", "invalid type");
-        return false;
-    }
-}
-
 void WebGL2RenderingContextBase::vertexAttribIPointer(GLuint index, GLint size, GLenum type, GLsizei stride, long long offset)
 {
     if (isContextLost())
         return;
-
-    switch (type) {
-    case GL_BYTE:
-    case GL_UNSIGNED_BYTE:
-    case GL_SHORT:
-    case GL_UNSIGNED_SHORT:
-    case GL_INT:
-    case GL_UNSIGNED_INT:
-        break;
-    default:
-        synthesizeGLError(GL_INVALID_ENUM, "vertexAttribIPointer", "invalid type");
-        return;
-    }
     if (index >= m_maxVertexAttribs) {
         synthesizeGLError(GL_INVALID_VALUE, "vertexAttribIPointer", "index out of range");
-        return;
-    }
-    if (size < 1 || size > 4 || stride < 0 || stride > 255) {
-        synthesizeGLError(GL_INVALID_VALUE, "vertexAttribIPointer", "bad size or stride");
         return;
     }
     if (!validateValueFitNonNegInt32("vertexAttribIPointer", "offset", offset))
@@ -1470,15 +1420,8 @@ void WebGL2RenderingContextBase::vertexAttribIPointer(GLuint index, GLint size, 
         synthesizeGLError(GL_INVALID_OPERATION, "vertexAttribIPointer", "no bound ARRAY_BUFFER");
         return;
     }
-    unsigned typeSize = sizeInBytes(type);
-    ASSERT((typeSize & (typeSize - 1)) == 0); // Ensure that the value is POT.
-    if ((stride & (typeSize - 1)) || (static_cast<GLintptr>(offset) & (typeSize - 1))) {
-        synthesizeGLError(GL_INVALID_OPERATION, "vertexAttribIPointer", "stride or offset not valid for type");
-        return;
-    }
-    GLsizei bytesPerElement = size * typeSize;
 
-    m_boundVertexArrayObject->setVertexAttribState(index, bytesPerElement, size, type, false, stride, static_cast<GLintptr>(offset), m_boundArrayBuffer);
+    m_boundVertexArrayObject->setArrayBufferForAttrib(index, m_boundArrayBuffer);
     webContext()->vertexAttribIPointer(index, size, type, stride, static_cast<GLintptr>(offset));
 }
 
@@ -1493,7 +1436,6 @@ void WebGL2RenderingContextBase::vertexAttribDivisor(GLuint index, GLuint diviso
         return;
     }
 
-    m_boundVertexArrayObject->setVertexAttribDivisor(index, divisor);
     webContext()->vertexAttribDivisorANGLE(index, divisor);
 }
 

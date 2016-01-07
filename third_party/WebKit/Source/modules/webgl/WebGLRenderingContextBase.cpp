@@ -1412,34 +1412,6 @@ int WebGLRenderingContextBase::drawingBufferHeight() const
     return isContextLost() ? 0 : drawingBuffer()->size().height();
 }
 
-unsigned WebGLRenderingContextBase::sizeInBytes(GLenum type) const
-{
-    switch (type) {
-    case GL_BYTE:
-        return sizeof(GLbyte);
-    case GL_UNSIGNED_BYTE:
-        return sizeof(GLubyte);
-    case GL_SHORT:
-        return sizeof(GLshort);
-    case GL_UNSIGNED_SHORT:
-        return sizeof(GLushort);
-    case GL_INT:
-        return sizeof(GLint);
-    case GL_UNSIGNED_INT:
-        return sizeof(GLuint);
-    case GL_FLOAT:
-        return sizeof(GLfloat);
-    case GL_HALF_FLOAT:
-        return sizeof(GLushort);
-    case GL_INT_2_10_10_10_REV:
-        return sizeof(GLint);
-    case GL_UNSIGNED_INT_2_10_10_10_REV:
-        return sizeof(GLuint);
-    }
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
 void WebGLRenderingContextBase::activeTexture(GLenum texture)
 {
     if (isContextLost())
@@ -2278,9 +2250,6 @@ void WebGLRenderingContextBase::disableVertexAttribArray(GLuint index)
         return;
     }
 
-    WebGLVertexArrayObjectBase::VertexAttribState* state = m_boundVertexArrayObject->getVertexAttribState(index);
-    state->enabled = false;
-
     webContext()->disableVertexAttribArray(index);
 }
 
@@ -2394,9 +2363,6 @@ void WebGLRenderingContextBase::enableVertexAttribArray(GLuint index)
         synthesizeGLError(GL_INVALID_VALUE, "enableVertexAttribArray", "index out of range");
         return;
     }
-
-    WebGLVertexArrayObjectBase::VertexAttribState* state = m_boundVertexArrayObject->getVertexAttribState(index);
-    state->enabled = true;
 
     webContext()->enableVertexAttribArray(index);
 }
@@ -3503,27 +3469,38 @@ ScriptValue WebGLRenderingContextBase::getVertexAttrib(ScriptState* scriptState,
         synthesizeGLError(GL_INVALID_VALUE, "getVertexAttrib", "index out of range");
         return ScriptValue::createNull(scriptState);
     }
-    const WebGLVertexArrayObjectBase::VertexAttribState* state = m_boundVertexArrayObject->getVertexAttribState(index);
 
     if ((extensionEnabled(ANGLEInstancedArraysName) || isWebGL2OrHigher())
         && pname == GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE)
-        return WebGLAny(scriptState, state->divisor);
+    {
+        GLint value = 0;
+        webContext()->getVertexAttribiv(index, pname, &value);
+        return WebGLAny(scriptState, value);
+    }
 
     switch (pname) {
     case GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING:
-        if (!state->bufferBinding || !state->bufferBinding->object())
-            return ScriptValue::createNull(scriptState);
-        return WebGLAny(scriptState, state->bufferBinding.get());
+        return WebGLAny(scriptState, m_boundVertexArrayObject->getArrayBufferForAttrib(index));
     case GL_VERTEX_ATTRIB_ARRAY_ENABLED:
-        return WebGLAny(scriptState, state->enabled);
     case GL_VERTEX_ATTRIB_ARRAY_NORMALIZED:
-        return WebGLAny(scriptState, state->normalized);
+        {
+            GLint value = 0;
+            webContext()->getVertexAttribiv(index, pname, &value);
+            return WebGLAny(scriptState, static_cast<bool>(value));
+        }
     case GL_VERTEX_ATTRIB_ARRAY_SIZE:
-        return WebGLAny(scriptState, state->size);
     case GL_VERTEX_ATTRIB_ARRAY_STRIDE:
-        return WebGLAny(scriptState, state->originalStride);
+        {
+            GLint value = 0;
+            webContext()->getVertexAttribiv(index, pname, &value);
+            return WebGLAny(scriptState, value);
+        }
     case GL_VERTEX_ATTRIB_ARRAY_TYPE:
-        return WebGLAny(scriptState, state->type);
+        {
+            GLint value = 0;
+            webContext()->getVertexAttribiv(index, pname, &value);
+            return WebGLAny(scriptState, static_cast<GLenum>(value));
+        }
     case GL_CURRENT_VERTEX_ATTRIB:
         {
             VertexAttribValue& attribValue = m_vertexAttribValue[index];
@@ -5156,35 +5133,12 @@ void WebGLRenderingContextBase::vertexAttrib4fv(GLuint index, const Vector<GLflo
     vertexAttribfvImpl("vertexAttrib4fv", index, v.data(), v.size(), 4);
 }
 
-bool WebGLRenderingContextBase::validateVertexAttribPointerTypeAndSize(GLenum type, GLint size)
-{
-    switch (type) {
-    case GL_BYTE:
-    case GL_UNSIGNED_BYTE:
-    case GL_SHORT:
-    case GL_UNSIGNED_SHORT:
-    case GL_FLOAT:
-        if (size < 1 || size > 4) {
-            synthesizeGLError(GL_INVALID_VALUE, "vertexAttribPointer", "bad size");
-            return false;
-        }
-        return true;
-    default:
-        synthesizeGLError(GL_INVALID_ENUM, "vertexAttribPointer", "invalid type");
-        return false;
-    }
-}
-
 void WebGLRenderingContextBase::vertexAttribPointer(ScriptState* scriptState, GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, long long offset)
 {
-    if (isContextLost() || !validateVertexAttribPointerTypeAndSize(type, size))
+    if (isContextLost())
         return;
     if (index >= m_maxVertexAttribs) {
         synthesizeGLError(GL_INVALID_VALUE, "vertexAttribPointer", "index out of range");
-        return;
-    }
-    if (stride < 0 || stride > 255) {
-        synthesizeGLError(GL_INVALID_VALUE, "vertexAttribPointer", "bad stride");
         return;
     }
     if (!validateValueFitNonNegInt32("vertexAttribPointer", "offset", offset))
@@ -5193,15 +5147,8 @@ void WebGLRenderingContextBase::vertexAttribPointer(ScriptState* scriptState, GL
         synthesizeGLError(GL_INVALID_OPERATION, "vertexAttribPointer", "no bound ARRAY_BUFFER");
         return;
     }
-    unsigned typeSize = sizeInBytes(type);
-    ASSERT((typeSize & (typeSize - 1)) == 0); // Ensure that the value is POT.
-    if ((stride & (typeSize - 1)) || (static_cast<GLintptr>(offset) & (typeSize - 1))) {
-        synthesizeGLError(GL_INVALID_OPERATION, "vertexAttribPointer", "stride or offset not valid for type");
-        return;
-    }
-    GLsizei bytesPerElement = size * typeSize;
 
-    m_boundVertexArrayObject->setVertexAttribState(index, bytesPerElement, size, type, normalized, stride, static_cast<GLintptr>(offset), m_boundArrayBuffer);
+    m_boundVertexArrayObject->setArrayBufferForAttrib(index, m_boundArrayBuffer.get());
     webContext()->vertexAttribPointer(index, size, type, normalized, stride, static_cast<GLintptr>(offset));
     maybePreserveDefaultVAOObjectWrapper(scriptState);
     preserveObjectWrapper(scriptState, m_boundVertexArrayObject, "arraybuffer", index, m_boundArrayBuffer);
@@ -5217,7 +5164,6 @@ void WebGLRenderingContextBase::vertexAttribDivisorANGLE(GLuint index, GLuint di
         return;
     }
 
-    m_boundVertexArrayObject->setVertexAttribDivisor(index, divisor);
     webContext()->vertexAttribDivisorANGLE(index, divisor);
 }
 
