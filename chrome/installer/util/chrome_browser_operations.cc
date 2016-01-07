@@ -107,8 +107,7 @@ bool ChromeBrowserOperations::ShouldCreateUninstallEntry(
 // uninitialized members. Tries to assign:
 // - target: |chrome_exe|.
 // - icon: from |chrome_exe|.
-// - icon_index: |dist|'s icon index (possibly overridden by
-//       khromeShortcutIconIndex in master_preferences)
+// - icon_index: |dist|'s icon index
 // - app_id: the browser model id for the current install.
 // - description: |dist|'s description.
 void ChromeBrowserOperations::AddDefaultShortcutProperties(
@@ -119,22 +118,13 @@ void ChromeBrowserOperations::AddDefaultShortcutProperties(
     properties->set_target(target_exe);
 
   if (!properties->has_icon()) {
-    int icon_index =
-        dist->GetIconIndex(BrowserDistribution::SHORTCUT_CHROME);
-    base::FilePath prefs_path(target_exe.DirName().AppendASCII(
-        installer::kDefaultMasterPrefs));
-    if (base::PathExists(prefs_path)) {
-      installer::MasterPreferences prefs(prefs_path);
-      prefs.GetInt(installer::master_preferences::kChromeShortcutIconIndex,
-                   &icon_index);
-    }
-    properties->set_icon(target_exe, icon_index);
+    properties->set_icon(
+        target_exe, dist->GetIconIndex(BrowserDistribution::SHORTCUT_CHROME));
   }
 
   if (!properties->has_app_id()) {
-    bool is_per_user_install = InstallUtil::IsPerUserInstall(target_exe);
-    properties->set_app_id(
-        ShellUtil::GetBrowserModelId(dist, is_per_user_install));
+    properties->set_app_id(ShellUtil::GetBrowserModelId(
+        dist, InstallUtil::IsPerUserInstall(target_exe)));
   }
 
   if (!properties->has_description())

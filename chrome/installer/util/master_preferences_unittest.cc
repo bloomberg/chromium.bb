@@ -71,7 +71,6 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
       "     \"system_level\": true,\n"
       "     \"verbose_logging\": true,\n"
       "     \"require_eula\": true,\n"
-      "     \"chrome_shortcut_icon_index\": 1,\n"
       "     \"ping_delay\": 40\n"
       "  },\n"
       "  \"blah\": {\n"
@@ -114,11 +113,6 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
       &str_value));
   EXPECT_STREQ("c:\\foo", str_value.c_str());
 
-  int icon_index = 0;
-  EXPECT_TRUE(prefs.GetInt(
-      installer::master_preferences::kChromeShortcutIconIndex,
-      &icon_index));
-  EXPECT_EQ(icon_index, 1);
   int ping_delay = 90;
   EXPECT_TRUE(prefs.GetInt(installer::master_preferences::kDistroPingDelay,
                            &ping_delay));
@@ -134,8 +128,7 @@ TEST_F(MasterPreferencesTest, ParseMissingDistroParams) {
     "     \"import_bookmarks_from_file\": \"\",\n"
     "     \"do_not_create_desktop_shortcut\": true,\n"
     "     \"do_not_create_quick_launch_shortcut\": true,\n"
-    "     \"do_not_launch_chrome\": true,\n"
-    "     \"chrome_shortcut_icon_index\": \"bac\"\n"
+    "     \"do_not_launch_chrome\": true\n"
     "  }\n"
     "} \n";
 
@@ -174,12 +167,6 @@ TEST_F(MasterPreferencesTest, ParseMissingDistroParams) {
   EXPECT_FALSE(prefs.GetString(
       installer::master_preferences::kDistroImportBookmarksFromFilePref,
       &str_value));
-
-  int icon_index = 0;
-  EXPECT_FALSE(prefs.GetInt(
-      installer::master_preferences::kChromeShortcutIconIndex,
-      &icon_index));
-  EXPECT_EQ(icon_index, 0);
 
   int ping_delay = 90;
   EXPECT_FALSE(prefs.GetInt(

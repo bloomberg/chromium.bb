@@ -37,7 +37,6 @@ const char kDefaultMasterPrefs[] = "master_preferences";
 //
 // {
 //   "distribution": {
-//      "chrome_shortcut_icon_index": 0,
 //      "create_all_shortcuts": true,
 //      "import_bookmarks": false,
 //      "import_bookmarks_from_file": "c:\\path",
