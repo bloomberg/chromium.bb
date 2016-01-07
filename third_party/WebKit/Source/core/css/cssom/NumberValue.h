@@ -36,7 +36,7 @@ Number);
     }
 
     StyleValueType type() const override { return StyleValueType::NumberType; }
-protected:
+private:
     NumberValue(double value) : m_value(value) {}
 
     double m_value;

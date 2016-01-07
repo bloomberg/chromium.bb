@@ -30,12 +30,12 @@ public:
     String cssString() const override;
     PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const override;
 
-protected:
+private:
     KeywordValue(const String& keyword) : m_keywordValue(keywordValueFromString(keyword)) {}
 
-    static KeywordValueName keywordValueFromString(const String& keyword);
-
     KeywordValueName m_keywordValue;
+
+    static KeywordValueName keywordValueFromString(const String& keyword);
 };
 
 }

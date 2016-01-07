@@ -42,12 +42,13 @@ public:
     PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const override;
 
 protected:
-    SimpleLength(double value, LengthUnit unit) : LengthValue(), m_unit(unit), m_value(value) {}
-
     virtual PassRefPtrWillBeRawPtr<LengthValue> addInternal(const LengthValue* other, ExceptionState&);
     virtual PassRefPtrWillBeRawPtr<LengthValue> subtractInternal(const LengthValue* other, ExceptionState&);
     virtual PassRefPtrWillBeRawPtr<LengthValue> multiplyInternal(double, ExceptionState&);
     virtual PassRefPtrWillBeRawPtr<LengthValue> divideInternal(double, ExceptionState&);
+
+private:
+    SimpleLength(double value, LengthUnit unit) : LengthValue(), m_unit(unit), m_value(value) {}
 
     LengthUnit m_unit;
     double m_value;
