@@ -138,7 +138,6 @@ MediaRouterUI::MediaRouterUI(content::WebUI* web_ui)
     : ConstrainedWebDialogUI(web_ui),
       handler_(new MediaRouterWebUIMessageHandler(this)),
       ui_initialized_(false),
-      requesting_route_for_default_source_(false),
       current_route_request_id_(-1),
       route_request_counter_(0),
       initiator_(nullptr),
@@ -310,8 +309,8 @@ bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
     return false;
   }
 
-  requesting_route_for_default_source_ = cast_mode == MediaCastMode::DEFAULT;
-  if (requesting_route_for_default_source_ && !presentation_request_) {
+  bool for_default_source = cast_mode == MediaCastMode::DEFAULT;
+  if (for_default_source && !presentation_request_) {
     DLOG(ERROR) << "Requested to create a route for presentation, but "
                 << "presentation request is missing.";
     return false;
@@ -319,7 +318,7 @@ bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
 
   current_route_request_id_ = ++route_request_counter_;
   GURL origin;
-  if (requesting_route_for_default_source_) {
+  if (for_default_source) {
     origin = presentation_request_->frame_url().GetOrigin();
   } else {
     // Requesting route for mirroring. Use a placeholder URL as origin.
@@ -344,7 +343,7 @@ bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
   route_response_callbacks.push_back(base::Bind(
       &MediaRouterUI::OnRouteResponseReceived, weak_factory_.GetWeakPtr(),
       current_route_request_id_, sink_id));
-  if (requesting_route_for_default_source_) {
+  if (for_default_source) {
     if (create_session_request_) {
       // |create_session_request_| will be nullptr after this call, as the
       // object will be transferred to the callback.
@@ -432,13 +431,11 @@ void MediaRouterUI::OnRouteResponseReceived(const int route_request_id,
   }
 
   handler_->OnCreateRouteResponseReceived(sink_id, route);
-  requesting_route_for_default_source_ = false;
   current_route_request_id_ = -1;
   route_creation_timer_.Stop();
 }
 
 void MediaRouterUI::RouteCreationTimeout() {
-  requesting_route_for_default_source_ = false;
   current_route_request_id_ = -1;
 
   base::string16 host =

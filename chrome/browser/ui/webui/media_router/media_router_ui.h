@@ -214,8 +214,6 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   // Set to true by |handler_| when the UI has been initialized.
   bool ui_initialized_;
 
-  bool requesting_route_for_default_source_;
-
   // Set to -1 if not tracking a pending route request.
   int current_route_request_id_;
 
