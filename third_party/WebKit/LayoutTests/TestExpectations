@@ -1329,5 +1329,3 @@ crbug.com/572726 inspector/tracing/timeline-node-reference.html [ Timeout Pass C
 crbug.com/575037 [ Android ] webaudio/codec-tests/aac/vbr-128kbps-44khz.html [ Skip ]
 crbug.com/575037 [ Android ] webaudio/codec-tests/mp3/128kbps-44khz.html [ Skip ]
 crbug.com/575037 [ Android ] webaudio/codec-tests/wav/24bit-22khz-resample.html [ Skip ]
-
-crbug.com/560707 plugins/plugin-clip-subframe.html [ NeedsRebaseline ]
