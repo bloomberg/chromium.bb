@@ -20,9 +20,11 @@ source_set("common") {
 
   deps = [
     "//base",
+    "//chromecast/base",
     "//chromecast/base:cast_version",
     "//content/public/common",
     "//ui/base",
     "//ui/gfx",
+    "//url:url",
   ]
 }
