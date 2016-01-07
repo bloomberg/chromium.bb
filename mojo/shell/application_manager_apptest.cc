@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/process/process_handle.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_test_base.h"
 #include "mojo/application/public/cpp/interface_factory.h"
@@ -63,9 +64,10 @@ class ApplicationManagerAppTestDelegate
 
 }  // namespace
 
-class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase {
+class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase,
+                                  public mojom::ApplicationManagerListener {
  public:
-  ApplicationManagerAppTest() : delegate_(nullptr) {}
+  ApplicationManagerAppTest() : delegate_(nullptr), binding_(this) {}
   ~ApplicationManagerAppTest() override {}
 
   void OnDriverQuit() {
@@ -73,54 +75,16 @@ class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase {
   }
 
  protected:
-  const std::string& data() const {
-    DCHECK(delegate_);
-    return delegate_->data();
-  }
+  struct ApplicationInfo {
+    ApplicationInfo(int id, const std::string& url)
+        : id(id), url(url), pid(base::kNullProcessId) {}
 
-  ApplicationManagerAppTestDelegate* delegate() { return delegate_; }
+    int id;
+    std::string url;
+    base::ProcessId pid;
+  };
 
- private:
-  // test::ApplicationTestBase:
-  ApplicationDelegate* GetApplicationDelegate() override {
-    delegate_ = new ApplicationManagerAppTestDelegate;
-    return delegate_;
-  }
-
-  ApplicationManagerAppTestDelegate* delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(ApplicationManagerAppTest);
-};
-
-TEST_F(ApplicationManagerAppTest, CreateInstanceForHandle) {
-  // 1. Launch a process. (Actually, have the runner launch a process that
-  //    launches a process. #becauselinkerrors).
-  mojo::shell::test::mojom::DriverPtr driver;
-  application_impl()->ConnectToService("exe:application_manager_apptest_driver",
-                                       &driver);
-
-  // 2. Wait for it to connect to us. (via mojo:application_manager_apptests)
-  base::MessageLoop::current()->Run();
-
-  // 3. Profit!
-  EXPECT_EQ(data(), "From Target");
-
-  driver.set_connection_error_handler(
-      base::Bind(&ApplicationManagerAppTest::OnDriverQuit,
-                 base::Unretained(this)));
-  driver->QuitDriver();
-  base::MessageLoop::current()->Run();
-}
-
-class GetRunningApplicationInfoAppTest
-    : public ApplicationManagerAppTest,
-      public mojom::ApplicationManagerListener {
- public:
-  GetRunningApplicationInfoAppTest() : binding_(this) {}
-  ~GetRunningApplicationInfoAppTest() override {}
-
- protected:
-  void QueryApplications() {
+  void AddListenerAndWaitForApplications() {
     mojom::ApplicationManagerPtr application_manager;
     application_impl()->ConnectToService("mojo:shell", &application_manager);
 
@@ -132,35 +96,92 @@ class GetRunningApplicationInfoAppTest
     binding_.WaitForIncomingMethodCall();
   }
 
-  bool Contains(const std::string& name) const {
-    return names_.find(name) != names_.end();
+  const std::string& data() const {
+    DCHECK(delegate_);
+    return delegate_->data();
   }
+
+  const std::vector<ApplicationInfo>& applications() const {
+    return applications_;
+  }
+
+  ApplicationManagerAppTestDelegate* delegate() { return delegate_; }
 
  private:
-  // Overridden from mojom::ApplicationManagerListener:
-  void SetRunningApplications(
-      Array<mojom::ApplicationInfoPtr> applications) override {
-    for (size_t i = 0; i < applications.size(); ++i)
-      names_.insert(applications[i]->url);
+  // test::ApplicationTestBase:
+  ApplicationDelegate* GetApplicationDelegate() override {
+    delegate_ = new ApplicationManagerAppTestDelegate;
+    return delegate_;
   }
+
+  // mojom::ApplicationManagerListener:
+  void SetRunningApplications(
+      Array<mojom::ApplicationInfoPtr> applications) override {}
   void ApplicationInstanceCreated(
       mojom::ApplicationInfoPtr application) override {
-    names_.insert(application->url);
+    applications_.push_back(ApplicationInfo(application->id, application->url));
   }
-  void ApplicationInstanceDestroyed(int id) override {}
-  void ApplicationPIDAvailable(int id, uint32_t pid) override {}
+  void ApplicationInstanceDestroyed(int id) override {
+    for (auto it = applications_.begin(); it != applications_.end(); ++it) {
+      auto& application = *it;
+      if (application.id == id) {
+        applications_.erase(it);
+        break;
+      }
+    }
+  }
+  void ApplicationPIDAvailable(int id, uint32_t pid) override {
+    for (auto& application : applications_) {
+      if (application.id == id) {
+        application.pid = pid;
+        break;
+      }
+    }
+  }
 
-  std::set<std::string> names_;
+  ApplicationManagerAppTestDelegate* delegate_;
   Binding<mojom::ApplicationManagerListener> binding_;
+  std::vector<ApplicationInfo> applications_;
 
-  DISALLOW_COPY_AND_ASSIGN(GetRunningApplicationInfoAppTest);
+  DISALLOW_COPY_AND_ASSIGN(ApplicationManagerAppTest);
 };
 
-TEST_F(GetRunningApplicationInfoAppTest, GetRunningApplicationInfo) {
-  QueryApplications();
-  EXPECT_TRUE(Contains("mojo://mojo_shell_apptests/"));
-  EXPECT_TRUE(Contains("mojo://shell/"));
-  EXPECT_TRUE(Contains("mojo://tracing/"));
+TEST_F(ApplicationManagerAppTest, CreateInstanceForHandle) {
+  AddListenerAndWaitForApplications();
+
+  // 1. Launch a process. (Actually, have the runner launch a process that
+  //    launches a process. #becauselinkerrors).
+  mojo::shell::test::mojom::DriverPtr driver;
+  application_impl()->ConnectToService("exe:application_manager_apptest_driver",
+                                       &driver);
+
+  // 2. Wait for the target to connect to us. (via
+  //    mojo:application_manager_apptests)
+  base::MessageLoop::current()->Run();
+
+  // 3.1. Validate that we got the ping from the target process...
+  EXPECT_EQ("From Target", data());
+
+  // 3.2. ... and that the right applications/processes were created.
+  //      Note that the target process will be created even if the tests are
+  //      run with --single-process.
+  EXPECT_EQ(2u, applications().size());
+  {
+    auto& application = applications().front();
+    EXPECT_EQ("exe://application_manager_apptest_driver/", application.url);
+    EXPECT_NE(base::kNullProcessId, application.pid);
+  }
+  {
+    auto& application = applications().back();
+    EXPECT_EQ("exe://application_manager_apptest_target/", application.url);
+    EXPECT_NE(base::kNullProcessId, application.pid);
+  }
+
+  driver.set_connection_error_handler(
+      base::Bind(&ApplicationManagerAppTest::OnDriverQuit,
+                 base::Unretained(this)));
+  driver->QuitDriver();
+  base::MessageLoop::current()->Run();
 }
 
 }  // namespace shell

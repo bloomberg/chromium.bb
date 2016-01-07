@@ -123,6 +123,8 @@ class TargetApplicationDelegate : public mojo::ApplicationDelegate,
     options.fds_to_remap = &handle_passing_info;
   #endif
     target_ = base::LaunchProcess(child_command_line, options);
+    DCHECK(target_.IsValid());
+    receiver->SetPID(target_.Pid());
 
     if (base::CommandLine::ForCurrentProcess()->HasSwitch("use-new-edk")) {
       MojoHandle platform_handle_wrapper;
