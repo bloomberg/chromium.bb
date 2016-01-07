@@ -186,6 +186,8 @@ void CustomButton::OnMouseCaptureLost() {
   // Starting a drag results in a MouseCaptureLost, we need to ignore it.
   if (state_ != STATE_DISABLED && !InDrag())
     SetState(STATE_NORMAL);
+  if (ink_drop_delegate_)
+    ink_drop_delegate_->OnAction(views::InkDropState::HIDDEN);
 }
 
 void CustomButton::OnMouseEntered(const ui::MouseEvent& event) {
