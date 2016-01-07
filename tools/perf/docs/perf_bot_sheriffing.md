@@ -21,16 +21,17 @@ chromium.perf waterfall green.
 Everyone can view the chromium.perf waterfall at
 https://build.chromium.org/p/chromium.perf/, but for Googlers it is recommended
 that you use the url
-**https://uberchromegw.corp.google.com/i/chromium.perf/** instead. The reason for
-this is that in order to make the performance tests as realistic as possible,
-the chromium.perf waterfall runs release official builds of Chrome. But the
-logs from release official builds may leak info from our partners that we do
-not have permission to share outside of Google. So the logs are available to
-Googlers only.
+**https://uberchromegw.corp.google.com/i/chromium.perf/** instead. The reason
+for this is that in order to make the performance tests as realistic as
+possible, the chromium.perf waterfall runs release official builds of Chrome.
+But the logs from release official builds may leak info from our partners that
+we do not have permission to share outside of Google. So the logs are available
+to Googlers only.
 
 Note that there are four different views:
-   1. [Console view](https://uberchromegw.corp.google.com/i/chromium.perf/) makes
-      it easier to see a summary.
+
+   1. [Console view](https://uberchromegw.corp.google.com/i/chromium.perf/)
+      makes it easier to see a summary.
    2. [Waterfall view](https://uberchromegw.corp.google.com/i/chromium.perf/waterfall)
       shows more details, including recent changes.
    3. [Firefighter](https://chromiumperfstats.appspot.com/) shows traces of
@@ -40,7 +41,8 @@ Note that there are four different views:
         "Android Nexus5 Perf (2)"
       * **start_time** is seconds since the epoch.
 
-You can see a list of all previously filed bugs using the **[Performance-Waterfall](https://code.google.com/p/chromium/issues/list?can=2&q=label%3APerformance-Waterfall)**
+You can see a list of all previously filed bugs using the
+**[Performance-BotHealth](https://code.google.com/p/chromium/issues/list?can=2&q=label%3APerformance-BotHealth)**
 label in crbug.
 
 Please also check the recent
@@ -52,13 +54,16 @@ postings for important announcements about bot turndowns and other known issues.
 You want to keep the waterfall green! So any bot that is red or purple needs to
 be investigated. When a test fails:
 
-1. File a bug using [this template](https://code.google.com/p/chromium/issues/entry?labels=Performance-Waterfall,Performance-Sheriff,Pri-1,Type-Bug-Regression,OS-?&comment=Revision+range+first+seen:%0ALink+to+failing+step+log:%0A%0A%0AIf%20the%20test%20is%20disabled,%20please%20downgrade%20to%20Pri-2.&summary=%3Ctest%3E+failure+on+chromium.perf+at+%3Crevisionrange%3E).
+1. File a bug using
+   [this template](https://code.google.com/p/chromium/issues/entry?labels=Performance-BotHealth,Pri-1,Type-Bug-Regression,OS-?&comment=Revision+range+first+seen:%0ALink+to+failing+step+log:%0A%0A%0AIf%20the%20test%20is%20disabled,%20please%20downgrade%20to%20Pri-2.&summary=%3Ctest%3E+failure+on+chromium.perf+at+%3Crevisionrange%3E).
    You'll want to be sure to include:
    * Link to buildbot status page of failing build.
    * Copy and paste of relevant failure snippet from the stdio.
-   * CC the test owner from [go/perf-owners](https://docs.google.com/spreadsheets/d/1R_1BAOd3xeVtR0jn6wB5HHJ2K25mIbKp3iIRQKkX38o/edit#gid=0).
+   * CC the test owner from
+     [go/perf-owners](https://docs.google.com/spreadsheets/d/1R_1BAOd3xeVtR0jn6wB5HHJ2K25mIbKp3iIRQKkX38o/edit#gid=0).
    * The revision range the test occurred on.
    * A list of all platforms the test fails on.
+
 2. Disable the failing test if it is failing more than one out of five runs.
    (see below for instructions on telemetry and other types of tests). Make sure
    your disable cl includes a BUG= line with the bug from step 1 and the test
@@ -78,6 +83,11 @@ be investigated. When a test fails:
       3. Type the **Bug ID** from step 1, the **Good Revision** the last commit
          pos data was received from, the **Bad Revision** the last commit pos
          and set **Bisect mode** to `return_code`.
+   * On Android and Mac, you can view platform-level screenshots of the device
+     screen for failing tests, links to which are printed in the logs. Often
+     this will immediately reveal failure causes that are opaque from the logs
+     alone. On other platforms, Devtools will produce tab screenshots as long as
+     the tab did not crash.
 
 
 #####<a name="telemetryfailures"></a> Disabling Telemetry Tests
@@ -134,7 +144,7 @@ turn the bot purple, for example.
 
 If the bot goes purple and you believe it's an infrastructure issue, file a bug
 with
-[this template](https://code.google.com/p/chromium/issues/entry?labels=Pri-1,Performance-Waterfall,Performance-Sheriff,Infra-Troopers,OS-?&comment=Link+to+buildbot+status+page:&summary=Purple+Bot+on+chromium.perf),
+[this template](https://code.google.com/p/chromium/issues/entry?labels=Pri-1,Performance-BotHealth,Infra-Troopers,OS-?&comment=Link+to+buildbot+status+page:&summary=Purple+Bot+on+chromium.perf),
 which will automatically add the bug to the trooper queue. Be sure to note
 which step is failing, and paste any relevant info from the logs into the bug.
 
@@ -152,26 +162,26 @@ There are two types of device failures:
    with the same device affinity number are failing, it's probably a device
    failure.
 
-For both types of failures, please file a bug with [this template](https://code.google.com/p/chromium/issues/entry?labels=Pri-1,Performance-Waterfall,Performance-Sheriff,Infra-Labs,OS-Android&comment=Link+to+buildbot+status+page:&summary=Device+offline+on+chromium.perf)
+For both types of failures, please file a bug with [this template](https://code.google.com/p/chromium/issues/entry?labels=Pri-1,Performance-BotHealth,Infra-Labs,OS-Android&comment=Link+to+buildbot+status+page:&summary=Device+offline+on+chromium.perf)
 which will add an issue to the infra labs queue.
 
 ####<a name="followup"></a> Follow up on failures
 
-**[Pri-0 bugs](https://code.google.com/p/chromium/issues/list?can=2&q=label%3APerformance-Waterfall+label%3APri-0)**
+**[Pri-0 bugs](https://code.google.com/p/chromium/issues/list?can=2&q=label%3APerformance-BotHealth+label%3APri-0)**
 should have an owner or contact on speed infra team and be worked on as top
 priority. Pri-0 generally implies an entire waterfall is down.
 
-**[Pri-1 bugs](https://code.google.com/p/chromium/issues/list?can=2&q=label%3APerformance-Waterfall+label%3APri-1)**
+**[Pri-1 bugs](https://code.google.com/p/chromium/issues/list?can=2&q=label%3APerformance-BotHealth+label%3APri-1)**
 should be pinged daily, and checked to make sure someone is following up. Pri-1
 bugs are for a red test (not yet disabled), purple bot, or failing device.
 
-**[Pri-2 bugs](https://code.google.com/p/chromium/issues/list?can=2&q=label%3APerformance-Waterfall+label%3APri-2)**
+**[Pri-2 bugs](https://code.google.com/p/chromium/issues/list?can=2&q=label%3APerformance-BotHealth+label%3APri-2)**
 are for disabled tests. These should be pinged weekly, and work towards fixing
 should be ongoing when the sheriff is not working on a Pri-1 issue. Here is the
-[list of Pri-2 bugs that have not been pinged in a week](https://code.google.com/p/chromium/issues/list?can=2&q=label:Performance-Waterfall%20label:Pri-2%20modified-before:today-7&sort=modified)
+[list of Pri-2 bugs that have not been pinged in a week](https://code.google.com/p/chromium/issues/list?can=2&q=label:Performance-BotHealth%20label:Pri-2%20modified-before:today-7&sort=modified)
 
 If you need help triaging, here are the common labels you should use:
-   * **Performance-Waterfall** should go on all bugs you file about the bots,
+   * **Performance-BotHealth** should go on all bugs you file about the bots;
      it's the label we use to track all the issues.
    * **Infra-Troopers** adds the bug to the trooper queue. This is for high
      priority issues, like a build breakage. Please add a comment explaining
