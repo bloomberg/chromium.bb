@@ -25,11 +25,17 @@ class TestWindowTree : public mojom::WindowTree {
   // invoked since the last GetAndClearChangeId().
   bool GetAndClearChangeId(uint32_t* change_id);
 
+  uint32_t window_id() const { return window_id_; }
+
   bool WasEventAcked(uint32_t event_id) const;
 
  private:
   // mojom::WindowTree:
   void NewWindow(
+      uint32_t change_id,
+      uint32_t window_id,
+      mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) override;
+  void NewTopLevelWindow(
       uint32_t change_id,
       uint32_t window_id,
       mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) override;
@@ -87,6 +93,7 @@ class TestWindowTree : public mojom::WindowTree {
   bool got_change_;
   uint32_t change_id_;
   std::set<uint32_t> acked_events_;
+  uint32_t window_id_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowTree);
 };

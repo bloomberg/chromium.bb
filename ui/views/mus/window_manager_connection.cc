@@ -110,6 +110,9 @@ WindowManagerConnection* WindowManagerConnection::Get() {
 
 mus::Window* WindowManagerConnection::NewWindow(
     const std::map<std::string, std::vector<uint8_t>>& properties) {
+  if (window_tree_connection_)
+    return window_tree_connection_->NewTopLevelWindow(&properties);
+
   mus::mojom::WindowTreeClientPtr window_tree_client;
   mojo::InterfaceRequest<mus::mojom::WindowTreeClient>
       window_tree_client_request = GetProxy(&window_tree_client);
@@ -118,16 +121,16 @@ mus::Window* WindowManagerConnection::NewWindow(
       mojo::Map<mojo::String, mojo::Array<uint8_t>>::From(properties));
 
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
-  mus::WindowTreeConnection* window_tree_connection =
-      mus::WindowTreeConnection::Create(
-          this, std::move(window_tree_client_request),
-          mus::WindowTreeConnection::CreateType::WAIT_FOR_EMBED);
-  DCHECK_EQ(1u, window_tree_connection->GetRoots().size());
-  return *window_tree_connection->GetRoots().begin();
+  window_tree_connection_.reset(mus::WindowTreeConnection::Create(
+      this, std::move(window_tree_client_request),
+      mus::WindowTreeConnection::CreateType::WAIT_FOR_EMBED));
+  window_tree_connection_->SetDeleteOnNoRoots(false);
+  DCHECK_EQ(1u, window_tree_connection_->GetRoots().size());
+  return *window_tree_connection_->GetRoots().begin();
 }
 
 WindowManagerConnection::WindowManagerConnection(mojo::ApplicationImpl* app)
-    : app_(app) {
+    : app_(app), window_tree_connection_(nullptr) {
   app->ConnectToService("mojo:mus", &window_manager_);
 
   ui_init_.reset(new ui::mojo::UIInit(
@@ -137,9 +140,14 @@ WindowManagerConnection::WindowManagerConnection(mojo::ApplicationImpl* app)
                  base::Unretained(this)));
 }
 
-WindowManagerConnection::~WindowManagerConnection() {}
+WindowManagerConnection::~WindowManagerConnection() {
+  // ~WindowTreeConnection calls back to us (we're the WindowTreeDelegate),
+  // destroy it while we are still valid.
+  window_tree_connection_.reset();
+}
 
 void WindowManagerConnection::OnEmbed(mus::Window* root) {}
+
 void WindowManagerConnection::OnConnectionLost(
     mus::WindowTreeConnection* connection) {}
 

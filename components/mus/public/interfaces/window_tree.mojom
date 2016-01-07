@@ -93,6 +93,12 @@ interface WindowTree {
             uint32 window_id,
             map<string, array<uint8>>? properties);
 
+  // Requests the WindowManager to create a new top level window.
+  // TODO(sky): this likely needs context, maybe in |properties|.
+  NewTopLevelWindow(uint32 change_id,
+                    uint32 window_id,
+                    map<string, array<uint8>> properties);
+
   // Deletes a window. This does not recurse. No hierarchy change notifications
   // are sent as a result of this. Only the connection that created the window
   // can delete it.
@@ -366,6 +372,9 @@ interface WindowManagerInternal {
                 uint32 window_id,
                 string name,
                 array<uint8>? value);
+  // Asks the WindowManager to create a new window.
+  WmCreateTopLevelWindow(uint32 change_id,
+                         map<string, array<uint8>> properties);
 };
 
 // This interface is only used as an associated interface and is associated
@@ -377,4 +386,8 @@ interface WindowManagerInternalClient {
   // Calls WindowTreeClient::RequestClose() on the embedded app at the
   // specified window.
   WmRequestClose(uint32 window_id);
+
+  // Response from WmCreateTopLevelWindow() informing the client of the id for
+  // the new window.
+  OnWmCreatedTopLevelWindow(uint32 change_id, uint32 window_id);
 };

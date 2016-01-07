@@ -34,6 +34,10 @@ class WindowManagerImpl : public mus::mojom::WindowManager,
   gfx::Rect CalculateDefaultBounds(mus::Window* window) const;
   gfx::Rect GetMaximizedWindowBounds() const;
 
+  mus::Window* NewTopLevelWindow(
+      std::map<std::string, std::vector<uint8_t>>* properties,
+      mus::mojom::WindowTreeClientPtr client);
+
   // mus::WindowObserver:
   void OnTreeChanging(const TreeChangeParams& params) override;
   void OnWindowEmbeddedAppDisconnected(mus::Window* window) override;
@@ -49,6 +53,8 @@ class WindowManagerImpl : public mus::mojom::WindowManager,
   bool OnWmSetProperty(mus::Window* window,
                        const std::string& name,
                        scoped_ptr<std::vector<uint8_t>>* new_data) override;
+  mus::Window* OnWmCreateTopLevelWindow(
+      std::map<std::string, std::vector<uint8_t>>* properties) override;
 
   WindowManagerApplication* state_;
 

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
@@ -37,6 +38,15 @@ class WindowManagerDelegate {
   virtual bool OnWmSetProperty(Window* window,
                                const std::string& name,
                                scoped_ptr<std::vector<uint8_t>>* new_data) = 0;
+
+  // A client has requested a new top level window. The delegate should create
+  // and parent the window appropriately and return it. |properties| is the
+  // supplied properties from the client requesting the new window. The
+  // delegate may modify |properties| before calling NewWindow(), but the
+  // delegate does *not* own |properties|, they are valid only for the life
+  // of OnWmCreateTopLevelWindow().
+  virtual Window* OnWmCreateTopLevelWindow(
+      std::map<std::string, std::vector<uint8_t>>* properties) = 0;
 
  protected:
   virtual ~WindowManagerDelegate() {}

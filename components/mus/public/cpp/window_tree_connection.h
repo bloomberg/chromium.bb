@@ -68,6 +68,8 @@ class WindowTreeConnection {
   Window* NewWindow() { return NewWindow(nullptr); }
   virtual Window* NewWindow(
       const std::map<std::string, std::vector<uint8_t>>* properties) = 0;
+  virtual Window* NewTopLevelWindow(
+      const std::map<std::string, std::vector<uint8_t>>* properties) = 0;
 
   // Returns true if ACCESS_POLICY_EMBED_ROOT was specified.
   virtual bool IsEmbedRoot() = 0;

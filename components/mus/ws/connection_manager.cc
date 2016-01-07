@@ -138,6 +138,11 @@ void ConnectionManager::OnHostConnectionClosed(
   host_connection_map_.erase(it);
   OnConnectionError(service_connection_it->second);
 
+  for (auto& pair : connection_map_) {
+    pair.second->service()->OnWillDestroyWindowTreeHost(
+        connection->window_tree_host());
+  }
+
   // If we have no more roots left, let the app know so it can terminate.
   if (!host_connection_map_.size())
     delegate_->OnNoMoreRootConnections();
@@ -268,6 +273,32 @@ void ConnectionManager::WindowManagerChangeCompleted(
 
   WindowTreeImpl* connection = GetConnection(change.connection_id);
   connection->OnChangeCompleted(change.client_change_id, success);
+}
+
+void ConnectionManager::WindowManagerCreatedTopLevelWindow(
+    WindowTreeImpl* wm_connection,
+    uint32_t window_manager_change_id,
+    Id transport_window_id) {
+  InFlightWindowManagerChange change;
+  if (!GetAndClearInFlightWindowManagerChange(window_manager_change_id,
+                                              &change)) {
+    return;
+  }
+
+  const WindowId window_id(WindowIdFromTransportId(transport_window_id));
+  const ServerWindow* window = GetWindow(window_id);
+  WindowTreeImpl* connection = GetConnection(change.connection_id);
+  // The window manager should have created the window already, and it should
+  // be ready for embedding.
+  if (!connection->IsWaitingForNewTopLevelWindow(window_manager_change_id) ||
+      !window || window->id().connection_id != wm_connection->id() ||
+      !window->children().empty() || GetConnectionWithRoot(window)) {
+    WindowManagerSentBogusMessage(connection);
+    return;
+  }
+
+  connection->OnWindowManagerCreatedTopLevelWindow(
+      window_manager_change_id, change.client_change_id, window_id);
 }
 
 void ConnectionManager::ProcessWindowBoundsChanged(

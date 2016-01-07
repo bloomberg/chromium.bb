@@ -66,7 +66,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                mojom::OrderDirection direction);
 
   // Returns true if the specified window was created by this connection.
-  bool OwnsWindow(Id id) const;
+  bool OwnsWindow(Window* window) const;
 
   void SetBounds(Window* window,
                  const gfx::Rect& old_bounds,
@@ -116,6 +116,11 @@ class WindowTreeClientImpl : public WindowTreeConnection,
  private:
   friend class WindowTreeClientImplPrivate;
 
+  enum class NewWindowType {
+    CHILD,
+    TOP_LEVEL,
+  };
+
   using IdToWindowMap = std::map<Id, Window*>;
 
   using InFlightMap = std::map<uint32_t, scoped_ptr<InFlightChange>>;
@@ -132,6 +137,9 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   // See InFlightChange for details on how InFlightChanges are used.
   bool ApplyServerChangeToExistingInFlightChange(const InFlightChange& change);
 
+  Window* NewWindowImpl(NewWindowType type,
+                        const Window::SharedProperties* properties);
+
   // OnEmbed() calls into this. Exposed as a separate function for testing.
   void OnEmbedImpl(mojom::WindowTree* window_tree,
                    ConnectionSpecificId connection_id,
@@ -145,6 +153,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   Window* GetWindowById(Id id) override;
   Window* GetFocusedWindow() override;
   Window* NewWindow(const Window::SharedProperties* properties) override;
+  Window* NewTopLevelWindow(
+      const Window::SharedProperties* properties) override;
   bool IsEmbedRoot() override;
   ConnectionSpecificId GetConnectionId() override;
   void AddObserver(WindowTreeConnectionObserver* observer) override;
@@ -207,6 +217,9 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                      Id window_id,
                      const mojo::String& name,
                      mojo::Array<uint8_t> transit_data) override;
+  void WmCreateTopLevelWindow(uint32_t change_id,
+                              mojo::Map<mojo::String, mojo::Array<uint8_t>>
+                                  transport_properties) override;
 
   // This is set once and only once when we get OnEmbed(). It gives the unique
   // id for this connection.

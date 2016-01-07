@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/stringprintf.h"
 #include "components/mus/common/types.h"
 #include "components/mus/common/util.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
@@ -46,19 +47,64 @@ namespace mus {
 namespace ws {
 namespace {
 
+std::string WindowIdToString(const WindowId& id) {
+  return base::StringPrintf("%d,%d", id.connection_id, id.window_id);
+}
+
+class TestWindowManagerInternal : public mojom::WindowManagerInternal {
+ public:
+  TestWindowManagerInternal()
+      : got_create_top_level_window_(false), change_id_(0u) {}
+  ~TestWindowManagerInternal() override {}
+
+  bool did_call_create_top_level_window(uint32_t* change_id) {
+    if (!got_create_top_level_window_)
+      return false;
+
+    got_create_top_level_window_ = false;
+    *change_id = change_id_;
+    return true;
+  }
+
+ private:
+  // WindowManagerInternal:
+  void WmSetBounds(uint32_t change_id,
+                   uint32_t window_id,
+                   mojo::RectPtr bounds) override {}
+  void WmSetProperty(uint32_t change_id,
+                     uint32_t window_id,
+                     const mojo::String& name,
+                     mojo::Array<uint8_t> value) override {}
+  void WmCreateTopLevelWindow(
+      uint32_t change_id,
+      mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) override {
+    got_create_top_level_window_ = true;
+    change_id_ = change_id;
+  }
+
+  bool got_create_top_level_window_;
+  uint32_t change_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestWindowManagerInternal);
+};
+
 // -----------------------------------------------------------------------------
 
 // WindowTreeClient implementation that logs all calls to a TestChangeTracker.
 // TODO(sky): refactor so both this and WindowTreeAppTest share code.
 class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
  public:
-  TestWindowTreeClient() : binding_(this) {}
+  TestWindowTreeClient() : binding_(this), record_on_change_completed_(false) {}
   ~TestWindowTreeClient() override {}
 
   TestChangeTracker* tracker() { return &tracker_; }
 
   void Bind(mojo::InterfaceRequest<mojom::WindowTreeClient> request) {
     binding_.Bind(std::move(request));
+  }
+
+  void set_record_on_change_completed(bool value) {
+    record_on_change_completed_ = value;
   }
 
  private:
@@ -134,7 +180,10 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
                                        mojom::Cursor cursor_id) override {
     tracker_.OnWindowPredefinedCursorChanged(window_id, cursor_id);
   }
-  void OnChangeCompleted(uint32_t change_id, bool success) override {}
+  void OnChangeCompleted(uint32_t change_id, bool success) override {
+    if (record_on_change_completed_)
+      tracker_.OnChangeCompleted(change_id, success);
+  }
   void RequestClose(uint32_t window_id) override {}
   void GetWindowManagerInternal(
       mojo::AssociatedInterfaceRequest<mojom::WindowManagerInternal> internal)
@@ -143,6 +192,7 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
   TestChangeTracker tracker_;
 
   mojo::Binding<mojom::WindowTreeClient> binding_;
+  bool record_on_change_completed_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowTreeClient);
 };
@@ -153,20 +203,27 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
 class TestClientConnection : public ClientConnection {
  public:
   explicit TestClientConnection(scoped_ptr<WindowTreeImpl> service_impl)
-      : ClientConnection(std::move(service_impl), &client_) {}
+      : ClientConnection(std::move(service_impl), &client_),
+        is_paused_(false) {}
 
   TestWindowTreeClient* client() { return &client_; }
+
+  bool is_paused() const { return is_paused_; }
 
   // ClientConnection:
   mojom::WindowManagerInternal* GetWindowManagerInternal() override {
     NOTREACHED();
     return nullptr;
   }
+  void SetIncomingMethodCallProcessingPaused(bool paused) override {
+    is_paused_ = paused;
+  }
 
  private:
   ~TestClientConnection() override {}
 
   TestWindowTreeClient client_;
+  bool is_paused_;
 
   DISALLOW_COPY_AND_ASSIGN(TestClientConnection);
 };
@@ -355,6 +412,11 @@ class WindowTreeTest : public testing::Test {
 
   void DispatchEventWithoutAck(const ui::Event& event) {
     host_connection()->window_tree_host()->OnEvent(event);
+  }
+
+  void set_window_manager_internal(WindowTreeImpl* connection,
+                                   mojom::WindowManagerInternal* wm_internal) {
+    connection->window_manager_internal_ = wm_internal;
   }
 
   void AckPreviousEvent() {
@@ -731,6 +793,67 @@ TEST_F(WindowTreeTest, EventAck) {
   ASSERT_EQ(1u, wm_client()->tracker()->changes()->size());
   EXPECT_EQ("InputEvent window=0,2 event_action=5",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
+}
+
+// Establish connection, call NewTopLevelWindow(), make sure get id, and make
+// sure client paused.
+TEST_F(WindowTreeTest, NewTopLevelWindow) {
+  TestWindowManagerInternal wm_internal;
+  set_window_manager_internal(wm_connection(), &wm_internal);
+  TestWindowTreeClient* embed_connection = nullptr;
+  WindowTreeImpl* window_tree_connection = nullptr;
+  ServerWindow* window = nullptr;
+  ASSERT_NO_FATAL_FAILURE(
+      SetupEventTargeting(&embed_connection, &window_tree_connection, &window));
+  embed_connection->tracker()->changes()->clear();
+  embed_connection->set_record_on_change_completed(true);
+
+  // Create a new top level window.
+  mojo::Map<mojo::String, mojo::Array<uint8_t>> properties;
+  properties.mark_non_null();
+  const uint32_t initial_change_id = 17;
+  const WindowId embed_window_id2_in_child(window_tree_connection->id(), 101);
+  static_cast<mojom::WindowTree*>(window_tree_connection)
+      ->NewTopLevelWindow(initial_change_id,
+                          WindowIdToTransportId(embed_window_id2_in_child),
+                          std::move(properties));
+
+  // The binding should be paused until the wm acks the change.
+  uint32_t wm_change_id = 0u;
+  ASSERT_TRUE(wm_internal.did_call_create_top_level_window(&wm_change_id));
+  EXPECT_TRUE(last_client_connection()->is_paused());
+
+  // Create the window for |embed_window_id2_in_child|.
+  const WindowId embed_window_id2(wm_connection()->id(), 2);
+  EXPECT_TRUE(
+      wm_connection()->NewWindow(embed_window_id2, ServerWindow::Properties()));
+  EXPECT_TRUE(wm_connection()->AddWindow(FirstRoot(wm_connection())->id(),
+                                         embed_window_id2));
+
+  // Ack the change, which should resume the binding.
+  static_cast<mojom::WindowManagerInternalClient*>(wm_connection())
+      ->OnWmCreatedTopLevelWindow(wm_change_id,
+                                  WindowIdToTransportId(embed_window_id2));
+  EXPECT_FALSE(last_client_connection()->is_paused());
+  EXPECT_EQ("ChangeCompleted id=17 sucess=true",
+            SingleChangeToDescription(*embed_connection->tracker()->changes()));
+  embed_connection->tracker()->changes()->clear();
+
+  // Change the visibility of the window from the owner and make sure the
+  // client sees the right id.
+  ServerWindow* embed_window = wm_connection()->GetWindow(embed_window_id2);
+  ASSERT_TRUE(embed_window);
+  EXPECT_FALSE(embed_window->visible());
+  ASSERT_TRUE(wm_connection()->SetWindowVisibility(embed_window->id(), true));
+  EXPECT_TRUE(embed_window->visible());
+  EXPECT_EQ("VisibilityChanged window=" +
+                WindowIdToString(embed_window_id2_in_child) + " visible=true",
+            SingleChangeToDescription(*embed_connection->tracker()->changes()));
+
+  // Set the visibility from the child using the client assigned id.
+  ASSERT_TRUE(window_tree_connection->SetWindowVisibility(
+      embed_window_id2_in_child, false));
+  EXPECT_FALSE(embed_window->visible());
 }
 
 }  // namespace ws

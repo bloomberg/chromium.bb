@@ -492,4 +492,33 @@ TEST_F(WindowTreeClientImplTest, ToggleVisibilityFromWindowDestroyed) {
   setup.window_tree_client()->OnChangeCompleted(change_id, true);
 }
 
+TEST_F(WindowTreeClientImplTest, NewTopLevelWindow) {
+  WindowTreeSetup setup;
+  Window* root1 = setup.GetFirstRoot();
+  ASSERT_TRUE(root1);
+  Window* root2 = setup.window_tree_connection()->NewTopLevelWindow(nullptr);
+  ASSERT_TRUE(root2);
+  ASSERT_NE(root2, root1);
+  EXPECT_NE(root2->id(), root1->id());
+  EXPECT_EQ(2u, setup.window_tree_connection()->GetRoots().size());
+  EXPECT_TRUE(setup.window_tree_connection()->GetRoots().count(root1) > 0u);
+  EXPECT_TRUE(setup.window_tree_connection()->GetRoots().count(root2) > 0u);
+
+  // Ack the request to the windowtree to create the new window.
+  uint32_t change_id;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id));
+  EXPECT_EQ(setup.window_tree()->window_id(), root2->id());
+  setup.window_tree_client()->OnChangeCompleted(change_id, true);
+
+  // Should not be able to add a top level as a child of another window.
+  root1->AddChild(root2);
+  ASSERT_EQ(nullptr, root2->parent());
+
+  // Destroy the first root, shouldn't initiate tear down.
+  root1->Destroy();
+  root1 = nullptr;
+  EXPECT_EQ(1u, setup.window_tree_connection()->GetRoots().size());
+  EXPECT_TRUE(setup.window_tree_connection()->GetRoots().count(root2) > 0u);
+}
+
 }  // namespace mus

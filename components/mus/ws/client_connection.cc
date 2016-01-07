@@ -8,7 +8,6 @@
 #include "components/mus/ws/window_tree_impl.h"
 
 namespace mus {
-
 namespace ws {
 
 ClientConnection::ClientConnection(scoped_ptr<WindowTreeImpl> service,
@@ -32,6 +31,14 @@ DefaultClientConnection::DefaultClientConnection(
 
 DefaultClientConnection::~DefaultClientConnection() {}
 
+void DefaultClientConnection::SetIncomingMethodCallProcessingPaused(
+    bool paused) {
+  if (paused)
+    binding_.PauseIncomingMethodCallProcessing();
+  else
+    binding_.ResumeIncomingMethodCallProcessing();
+}
+
 mojom::WindowManagerInternal*
 DefaultClientConnection::GetWindowManagerInternal() {
   client_->GetWindowManagerInternal(
@@ -40,5 +47,4 @@ DefaultClientConnection::GetWindowManagerInternal() {
 }
 
 }  // namespace ws
-
 }  // namespace mus

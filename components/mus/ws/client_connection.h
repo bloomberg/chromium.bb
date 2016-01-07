@@ -31,6 +31,8 @@ class ClientConnection {
 
   virtual mojom::WindowManagerInternal* GetWindowManagerInternal() = 0;
 
+  virtual void SetIncomingMethodCallProcessingPaused(bool paused) = 0;
+
  private:
   scoped_ptr<WindowTreeImpl> service_;
   mojom::WindowTreeClient* client_;
@@ -50,6 +52,7 @@ class DefaultClientConnection : public ClientConnection {
 
   // ClientConnection:
   mojom::WindowManagerInternal* GetWindowManagerInternal() override;
+  void SetIncomingMethodCallProcessingPaused(bool paused) override;
 
  private:
   ConnectionManager* connection_manager_;

@@ -84,6 +84,39 @@ gfx::Rect WindowManagerImpl::GetMaximizedWindowBounds() const {
   return gfx::Rect(state_->root()->bounds().size());
 }
 
+mus::Window* WindowManagerImpl::NewTopLevelWindow(
+    std::map<std::string, std::vector<uint8_t>>* properties,
+    mus::mojom::WindowTreeClientPtr client) {
+  DCHECK(state_);
+  mus::Window* root = state_->root();
+  DCHECK(root);
+
+  const bool provide_non_client_frame =
+      GetWindowType(*properties) == mus::mojom::WINDOW_TYPE_WINDOW;
+  if (provide_non_client_frame)
+    (*properties)[mus::mojom::kWaitForUnderlay_Property].clear();
+
+  // TODO(sky): constrain and validate properties before passing to server.
+  mus::Window* window = root->connection()->NewWindow(properties);
+  window->SetBounds(CalculateDefaultBounds(window));
+
+  mojom::Container container = GetRequestedContainer(window);
+  state_->GetWindowForContainer(container)->AddChild(window);
+
+  if (client)
+    window->Embed(std::move(client));
+
+  if (provide_non_client_frame) {
+    // NonClientFrameController deletes itself when |window| is destroyed.
+    new NonClientFrameController(state_->app()->shell(), window,
+                                 state_->window_tree_host());
+  }
+
+  state_->IncrementWindowCount();
+
+  return window;
+}
+
 void WindowManagerImpl::OnTreeChanging(const TreeChangeParams& params) {
   DCHECK(state_);
   if (state_->WindowIsContainer(params.old_parent))
@@ -99,32 +132,9 @@ void WindowManagerImpl::OnWindowEmbeddedAppDisconnected(mus::Window* window) {
 void WindowManagerImpl::OpenWindow(
     mus::mojom::WindowTreeClientPtr client,
     mojo::Map<mojo::String, mojo::Array<uint8_t>> transport_properties) {
-  DCHECK(state_);
-  mus::Window* root = state_->root();
-  DCHECK(root);
-
   mus::Window::SharedProperties properties =
       transport_properties.To<mus::Window::SharedProperties>();
-  const bool provide_non_client_frame =
-      GetWindowType(properties) == mus::mojom::WINDOW_TYPE_WINDOW;
-  if (provide_non_client_frame)
-    properties[mus::mojom::kWaitForUnderlay_Property].clear();
-
-  // TODO(sky): constrain and validate properties before passing to server.
-  mus::Window* child_window = root->connection()->NewWindow(&properties);
-  child_window->SetBounds(CalculateDefaultBounds(child_window));
-
-  mojom::Container container = GetRequestedContainer(child_window);
-  state_->GetWindowForContainer(container)->AddChild(child_window);
-  child_window->Embed(std::move(client));
-
-  if (provide_non_client_frame) {
-    // NonClientFrameController deletes itself when |child_window| is destroyed.
-    new NonClientFrameController(state_->app()->shell(), child_window,
-                                 state_->window_tree_host());
-  }
-
-  state_->IncrementWindowCount();
+  NewTopLevelWindow(&properties, std::move(client));
 }
 
 void WindowManagerImpl::GetConfig(const GetConfigCallback& callback) {
@@ -172,6 +182,11 @@ bool WindowManagerImpl::OnWmSetProperty(
          name == mus::mojom::WindowManager::kPreferredSize_Property ||
          name == mus::mojom::WindowManager::kResizeBehavior_Property ||
          name == mus::mojom::WindowManager::kWindowTitle_Property;
+}
+
+mus::Window* WindowManagerImpl::OnWmCreateTopLevelWindow(
+    std::map<std::string, std::vector<uint8_t>>* properties) {
+  return NewTopLevelWindow(properties, nullptr);
 }
 
 }  // namespace wm

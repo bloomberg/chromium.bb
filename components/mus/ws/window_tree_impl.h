@@ -7,7 +7,9 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <queue>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -34,6 +36,7 @@ class ConnectionManager;
 class ServerWindow;
 class TargetedEvent;
 class WindowTreeHostImpl;
+class WindowTreeTest;
 
 // An instance of WindowTreeImpl is created for every WindowTree request.
 // WindowTreeImpl tracks all the state and windows created by a client.
@@ -77,6 +80,8 @@ class WindowTreeImpl : public mojom::WindowTree,
   // Invoked when a connection is about to be destroyed.
   void OnWillDestroyWindowTreeImpl(WindowTreeImpl* connection);
 
+  void OnWillDestroyWindowTreeHost(WindowTreeHostImpl* tree_host);
+
   // These functions are synchronous variants of those defined in the mojom. The
   // WindowTree implementations all call into these. See the mojom for details.
   bool NewWindow(const WindowId& window_id,
@@ -92,6 +97,11 @@ class WindowTreeImpl : public mojom::WindowTree,
              uint32_t policy_bitmask,
              ConnectionSpecificId* connection_id);
   void DispatchInputEvent(ServerWindow* target, mojom::EventPtr event);
+
+  bool IsWaitingForNewTopLevelWindow(uint32_t wm_change_id);
+  void OnWindowManagerCreatedTopLevelWindow(uint32_t wm_change_id,
+                                            uint32_t client_change_id,
+                                            const WindowId& window_id);
 
   // Maps the window id from the client to the server. Normally the ids are the
   // same, but there may be a different id at the embed point.
@@ -157,6 +167,19 @@ class WindowTreeImpl : public mojom::WindowTree,
  private:
   using WindowIdSet = base::hash_set<Id>;
   using WindowMap = std::map<ConnectionSpecificId, ServerWindow*>;
+  friend class WindowTreeTest;
+
+  struct WaitingForTopLevelWindowInfo {
+    WaitingForTopLevelWindowInfo(WindowId window_id, uint32_t wm_change_id)
+        : window_id(window_id), wm_change_id(wm_change_id) {}
+    ~WaitingForTopLevelWindowInfo() {}
+
+    // Id supplied from the client.
+    WindowId window_id;
+
+    // Change id we created for the window manager.
+    uint32_t wm_change_id;
+  };
 
   enum class RemoveRootReason {
     // The window is being removed.
@@ -236,6 +259,10 @@ class WindowTreeImpl : public mojom::WindowTree,
                  Id transport_window_id,
                  mojo::Map<mojo::String, mojo::Array<uint8_t>>
                      transport_properties) override;
+  void NewTopLevelWindow(uint32_t change_id,
+                         Id transport_window_id,
+                         mojo::Map<mojo::String, mojo::Array<uint8_t>>
+                             transport_properties) override;
   void DeleteWindow(uint32_t change_id, Id transport_window_id) override;
   void AddWindow(uint32_t change_id, Id parent_id, Id child_id) override;
   void RemoveWindowFromParent(uint32_t change_id, Id window_id) override;
@@ -292,6 +319,8 @@ class WindowTreeImpl : public mojom::WindowTree,
   // mojom::WindowManagerInternalClient:
   void WmResponse(uint32_t change_id, bool response) override;
   void WmRequestClose(Id transport_window_id) override;
+  void OnWmCreatedTopLevelWindow(uint32_t change_id,
+                                 Id transport_window_id) override;
 
   // AccessPolicyDelegate:
   bool HasRootForAccessPolicy(const ServerWindow* window) const override;
@@ -322,9 +351,6 @@ class WindowTreeImpl : public mojom::WindowTree,
   uint32_t event_ack_id_;
 
   // WindowTreeHostImpl the current event came from.
-  // TODO(sky): in the case of multiple roots we may outlive
-  // |event_source_host_|. Make sure we null out event_source_host_ if the
-  // WindowTreeHostImpl is destroyed before us.
   WindowTreeHostImpl* event_source_host_;
 
   bool is_embed_root_;
@@ -334,6 +360,10 @@ class WindowTreeImpl : public mojom::WindowTree,
   scoped_ptr<mojo::AssociatedBinding<mojom::WindowManagerInternalClient>>
       window_manager_internal_client_binding_;
   mojom::WindowManagerInternal* window_manager_internal_;
+
+  std::map<WindowId, WindowId> embed_to_real_id_map_;
+
+  scoped_ptr<WaitingForTopLevelWindowInfo> waiting_for_top_level_window_info_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeImpl);
 };

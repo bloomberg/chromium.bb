@@ -130,7 +130,7 @@ WindowTreeClientImpl::~WindowTreeClientImpl() {
   std::vector<Window*> non_owned;
   while (!windows_.empty()) {
     IdToWindowMap::iterator it = windows_.begin();
-    if (OwnsWindow(it->second->id())) {
+    if (OwnsWindow(it->second)) {
       it->second->Destroy();
     } else {
       non_owned.push_back(it->second);
@@ -201,8 +201,10 @@ void WindowTreeClientImpl::Reorder(Window* window,
   tree_->ReorderWindow(change_id, window->id(), relative_window_id, direction);
 }
 
-bool WindowTreeClientImpl::OwnsWindow(Id id) const {
-  return HiWord(id) == connection_id_;
+bool WindowTreeClientImpl::OwnsWindow(Window* window) const {
+  // Windows created via CreateTopLevelWindow() are not owned by us, but have
+  // our connection id.
+  return HiWord(window->id()) == connection_id_ && roots_.count(window) == 0;
 }
 
 void WindowTreeClientImpl::SetBounds(Window* window,
@@ -383,6 +385,35 @@ bool WindowTreeClientImpl::ApplyServerChangeToExistingInFlightChange(
   return true;
 }
 
+Window* WindowTreeClientImpl::NewWindowImpl(
+    NewWindowType type,
+    const Window::SharedProperties* properties) {
+  DCHECK(tree_);
+  Window* window =
+      new Window(this, MakeTransportId(connection_id_, next_window_id_++));
+  if (properties)
+    window->properties_ = *properties;
+  AddWindow(window);
+
+  const uint32_t change_id = ScheduleInFlightChange(make_scoped_ptr(
+      new CrashInFlightChange(window, type == NewWindowType::CHILD
+                                          ? ChangeType::NEW_WINDOW
+                                          : ChangeType::NEW_TOP_LEVEL_WINDOW)));
+  mojo::Map<mojo::String, mojo::Array<uint8_t>> transport_properties;
+  if (properties) {
+    transport_properties =
+        mojo::Map<mojo::String, mojo::Array<uint8_t>>::From(*properties);
+  }
+  if (type == NewWindowType::CHILD) {
+    tree_->NewWindow(change_id, window->id(), std::move(transport_properties));
+  } else {
+    roots_.insert(window);
+    tree_->NewTopLevelWindow(change_id, window->id(),
+                             std::move(transport_properties));
+  }
+  return window;
+}
+
 void WindowTreeClientImpl::OnEmbedImpl(mojom::WindowTree* window_tree,
                                        ConnectionSpecificId connection_id,
                                        mojom::WindowDataPtr root_data,
@@ -429,22 +460,12 @@ Window* WindowTreeClientImpl::GetFocusedWindow() {
 
 Window* WindowTreeClientImpl::NewWindow(
     const Window::SharedProperties* properties) {
-  DCHECK(tree_);
-  Window* window =
-      new Window(this, MakeTransportId(connection_id_, next_window_id_++));
-  if (properties)
-    window->properties_ = *properties;
-  AddWindow(window);
+  return NewWindowImpl(NewWindowType::CHILD, properties);
+}
 
-  const uint32_t change_id = ScheduleInFlightChange(
-      make_scoped_ptr(new CrashInFlightChange(window, ChangeType::NEW_WINDOW)));
-  mojo::Map<mojo::String, mojo::Array<uint8_t>> transport_properties;
-  if (properties) {
-    transport_properties =
-        mojo::Map<mojo::String, mojo::Array<uint8_t>>::From(*properties);
-  }
-  tree_->NewWindow(change_id, window->id(), std::move(transport_properties));
-  return window;
+Window* WindowTreeClientImpl::NewTopLevelWindow(
+    const Window::SharedProperties* properties) {
+  return NewWindowImpl(NewWindowType::TOP_LEVEL, properties);
 }
 
 bool WindowTreeClientImpl::IsEmbedRoot() {
@@ -764,6 +785,17 @@ void WindowTreeClientImpl::WmSetProperty(uint32_t change_id,
     }
   }
   window_manager_internal_client_->WmResponse(change_id, result);
+}
+
+void WindowTreeClientImpl::WmCreateTopLevelWindow(
+    uint32_t change_id,
+    mojo::Map<mojo::String, mojo::Array<uint8_t>> transport_properties) {
+  std::map<std::string, std::vector<uint8_t>> properties =
+      transport_properties.To<std::map<std::string, std::vector<uint8_t>>>();
+  Window* window =
+      window_manager_delegate_->OnWmCreateTopLevelWindow(&properties);
+  window_manager_internal_client_->OnWmCreatedTopLevelWindow(change_id,
+                                                             window->id());
 }
 
 }  // namespace mus

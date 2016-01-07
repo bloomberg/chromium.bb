@@ -147,8 +147,7 @@ class ScopedSetBoundsNotifier {
 // Some operations are only permitted in the connection that created the window.
 bool OwnsWindow(WindowTreeConnection* connection, Window* window) {
   return !connection ||
-         static_cast<WindowTreeClientImpl*>(connection)
-             ->OwnsWindow(window->id());
+         static_cast<WindowTreeClientImpl*>(connection)->OwnsWindow(window);
 }
 
 bool IsConnectionRoot(Window* window) {
@@ -274,6 +273,9 @@ void Window::AddChild(Window* child) {
   //             embeddee in an embedder-embeddee relationship.
   if (connection_)
     CHECK_EQ(child->connection(), connection_);
+  // Roots can not be added as children of other windows.
+  if (tree_client() && tree_client()->IsRoot(child))
+    return;
   LocalAddChild(child);
   if (connection_)
     tree_client()->AddChild(this, child->id());
