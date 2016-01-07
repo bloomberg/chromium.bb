@@ -80,6 +80,8 @@ class CC_EXPORT DisplayListRasterSource
                                   float raster_scale,
                                   std::vector<DrawImage>* images) const;
 
+  bool HasDiscardableImageInRect(const gfx::Rect& layer_rect) const;
+
   // Return true iff this raster source can raster the given rect in layer
   // space.
   bool CoversRect(const gfx::Rect& layer_rect) const;

@@ -304,4 +304,9 @@ void DisplayItemList::GetDiscardableImagesInRect(
   image_map_.GetDiscardableImagesInRect(rect, raster_scale, images);
 }
 
+bool DisplayItemList::HasDiscardableImageInRect(
+    const gfx::Rect& layer_rect) const {
+  return image_map_.HasDiscardableImageInRect(layer_rect);
+}
+
 }  // namespace cc

@@ -27,9 +27,11 @@ class FakeDisplayListRasterSource : public DisplayListRasterSource {
   static scoped_refptr<FakeDisplayListRasterSource> CreatePartiallyFilled(
       const gfx::Size& size,
       const gfx::Rect& recorded_viewport);
+  static scoped_refptr<FakeDisplayListRasterSource>
+  CreatePartiallyFilledWithImages(const gfx::Size& size,
+                                  const gfx::Rect& recorded_viewport);
   static scoped_refptr<FakeDisplayListRasterSource> CreateEmpty(
       const gfx::Size& size);
-
   static scoped_refptr<FakeDisplayListRasterSource> CreateFromRecordingSource(
       const DisplayListRecordingSource* recording_source,
       bool can_use_lcd);

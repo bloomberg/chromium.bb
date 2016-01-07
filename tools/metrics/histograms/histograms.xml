@@ -4857,6 +4857,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="Compositing.Browser.RenderPass.AppendQuadData.NumMissingTilesNoImageContent">
+  <owner>vollick@chromium.org</owner>
+  <summary>
+    Tracks the number of missing tiles that had some image content in the
+    browser process.
+  </summary>
+</histogram>
+
+<histogram
+    name="Compositing.Browser.RenderPass.AppendQuadData.NumMissingTilesSomeImageContent">
+  <owner>vollick@chromium.org</owner>
+  <summary>
+    Tracks the number of missing tiles that did not have any image content in
+    the browser process.
+  </summary>
+</histogram>
+
 <histogram name="Compositing.CopyFromSurfaceTime" units="ms">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -5047,6 +5065,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Time spent completing a compositor rasterization task, in microseconds.
     Recorded after the task finishes (in a renderer process).
+  </summary>
+</histogram>
+
+<histogram
+    name="Compositing.Renderer.RenderPass.AppendQuadData.NumMissingTilesNoImageContent">
+  <owner>vollick@chromium.org</owner>
+  <summary>
+    Tracks the number of missing tiles that had some image content in the
+    renderer process.
+  </summary>
+</histogram>
+
+<histogram
+    name="Compositing.Renderer.RenderPass.AppendQuadData.NumMissingTilesSomeImageContent">
+  <owner>vollick@chromium.org</owner>
+  <summary>
+    Tracks the number of missing tiles that did not have any image content in
+    the renderer process.
   </summary>
 </histogram>
 

@@ -11,30 +11,22 @@
 
 namespace cc {
 
+// Set by the layer appending quads.
 struct AppendQuadsData {
-  AppendQuadsData()
-      : num_incomplete_tiles(0),
-        num_missing_tiles(0),
-        visible_layer_area(0),
-        approximated_visible_content_area(0),
-        checkerboarded_visible_content_area(0),
-        checkerboarded_no_recording_content_area(0),
-        checkerboarded_needs_raster_content_area(0) {}
+  int64_t num_incomplete_tiles = 0;
+  int64_t num_missing_tiles = 0;
+  int64_t visible_layer_area = 0;
+  int64_t approximated_visible_content_area = 0;
 
-  // Set by the layer appending quads.
-  int64_t num_incomplete_tiles;
-  // Set by the layer appending quads.
-  int64_t num_missing_tiles;
-  // Set by the layer appending quads.
-  int64_t visible_layer_area;
-  // Set by the layer appending quads.
-  int64_t approximated_visible_content_area;
-  // Set by the layer appending quads. This is total of the following two areas.
-  int64_t checkerboarded_visible_content_area;
-  // Set by the layer appending quads. This is the area outside interest rect.
-  int64_t checkerboarded_no_recording_content_area;
-  // Set by the layer appending quads. This is the area within interest rect.
-  int64_t checkerboarded_needs_raster_content_area;
+  // This is total of the following two areas.
+  int64_t checkerboarded_visible_content_area = 0;
+  // This is the area outside interest rect.
+  int64_t checkerboarded_no_recording_content_area = 0;
+  // This is the area within interest rect.
+  int64_t checkerboarded_needs_raster_content_area = 0;
+
+  int64_t num_missing_tiles_no_image_content = 0;
+  int64_t num_missing_tiles_some_image_content = 0;
 };
 
 }  // namespace cc
