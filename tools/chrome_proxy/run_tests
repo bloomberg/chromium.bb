@@ -19,4 +19,5 @@ import chrome_proxy_config
 
 
 if __name__ == '__main__':
-  sys.exit(unittest_runner.Run(chrome_proxy_config.CONFIG))
+  sys.exit(unittest_runner.Run(chrome_proxy_config.Config(['integration_tests',
+                                                           'live_tests'])))

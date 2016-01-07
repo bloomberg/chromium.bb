@@ -14,4 +14,5 @@ import chrome_proxy_config
 
 
 if __name__ == '__main__':
-  sys.exit(benchmark_runner.main(chrome_proxy_config.CONFIG))
+  sys.exit(benchmark_runner.main(chrome_proxy_config.Config(
+      ['integration_tests'])))

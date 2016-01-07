@@ -7,14 +7,11 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'telemetry'))
-sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'perf'))
 
 from telemetry import benchmark_runner
 
+import chrome_proxy_config
 
 if __name__ == '__main__':
-  top_level_dir = os.path.dirname(os.path.realpath(__file__))
-  config = benchmark_runner.ProjectConfig(
-      top_level_dir=top_level_dir,
-      benchmark_dirs=[os.path.join(top_level_dir, 'live_tests')])
-  sys.exit(benchmark_runner.main(config))
+  sys.exit(benchmark_runner.main(chrome_proxy_config.Config(
+      ['live_tests'])))
