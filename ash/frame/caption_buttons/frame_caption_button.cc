@@ -4,10 +4,12 @@
 
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 
 namespace ash {
 
@@ -40,8 +42,9 @@ FrameCaptionButton::FrameCaptionButton(views::ButtonListener* listener,
     : CustomButton(listener),
       icon_(icon),
       paint_as_active_(false),
+      use_light_images_(false),
       alpha_(255),
-      icon_image_id_(-1),
+      icon_image_id_(gfx::VectorIconId::VECTOR_ICON_NONE),
       swap_images_animation_(new gfx::SlideAnimation(this)) {
   swap_images_animation_->Reset(1);
 
@@ -55,8 +58,8 @@ FrameCaptionButton::~FrameCaptionButton() {
 
 void FrameCaptionButton::SetImage(CaptionButtonIcon icon,
                                   Animate animate,
-                                  int icon_image_id) {
-  // The early return is dependant on |animate| because callers use SetImage()
+                                  gfx::VectorIconId icon_image_id) {
+  // The early return is dependent on |animate| because callers use SetImage()
   // with ANIMATE_NO to progress the crossfade animation to the end.
   if (icon == icon_ &&
       (animate == ANIMATE_YES || !swap_images_animation_->is_animating()) &&
@@ -69,9 +72,9 @@ void FrameCaptionButton::SetImage(CaptionButtonIcon icon,
 
   icon_ = icon;
   icon_image_id_ = icon_image_id;
-
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  icon_image_ = *rb.GetImageSkiaNamed(icon_image_id);
+  icon_image_ = gfx::CreateVectorIcon(
+      icon_image_id, 12,
+      use_light_images_ ? SK_ColorWHITE : gfx::kChromeIconGrey);
 
   if (animate == ANIMATE_YES) {
     swap_images_animation_->Reset(0);

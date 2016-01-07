@@ -84,7 +84,7 @@ class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
   void UpdateAllButtonImages();
 
   // Updates the size button's images.
-  void UpdateSizeButtonImages(bool use_light_images);
+  void UpdateSizeButtonImages();
 
   // Returns the header bounds in the coordinates of |view_|. The header is
   // assumed to be positioned at the top left corner of |view_| and to have the

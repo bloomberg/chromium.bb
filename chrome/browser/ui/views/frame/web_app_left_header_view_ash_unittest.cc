@@ -19,6 +19,7 @@
 #include "grit/components_scaled_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/aura/window.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/button/button.h"
 #include "url/gurl.h"
 
@@ -43,7 +44,7 @@ class WebAppLeftHeaderViewTest : public TestWithBrowserView {
     test_toolbar_model_ = new TestToolbarModel();
     scoped_ptr<ToolbarModel> toolbar_model(test_toolbar_model_);
     browser()->swap_toolbar_models(&toolbar_model);
-    test_toolbar_model_->set_icon(IDR_LOCATION_BAR_HTTP);
+    test_toolbar_model_->set_icon(gfx::VectorIconId::LOCATION_BAR_HTTP);
 
     AddTab(browser(), GURL("about:blank"));
     NavigateAndCommitActiveTab(GURL("http://www.google.com"));
@@ -123,11 +124,13 @@ TEST_F(WebAppLeftHeaderViewTest, LocationIcon) {
   ASSERT_TRUE(view);
 
   // The location icon should be non-secure one.
-  EXPECT_EQ(IDR_LOCATION_BAR_HTTP, view->location_icon_->icon_image_id());
+  EXPECT_EQ(gfx::VectorIconId::LOCATION_BAR_HTTP,
+            view->location_icon_->icon_image_id());
 
-  test_toolbar_model_->set_icon(IDR_OMNIBOX_HTTPS_VALID);
+  test_toolbar_model_->set_icon(gfx::VectorIconId::LOCATION_BAR_HTTPS_VALID);
   NavigateAndCommitActiveTab(GURL("https://secure.google.com"));
 
   // The location icon should now be the secure one.
-  EXPECT_EQ(IDR_OMNIBOX_HTTPS_VALID, view->location_icon_->icon_image_id());
+  EXPECT_EQ(gfx::VectorIconId::LOCATION_BAR_HTTPS_VALID,
+            view->location_icon_->icon_image_id());
 }

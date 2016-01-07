@@ -25,6 +25,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -403,22 +404,21 @@ gfx::ImageSkia BrowserHeaderPainterAsh::GetFrameImageForNonTabbedBrowser(
 void BrowserHeaderPainterAsh::UpdateCaptionButtons() {
   caption_button_container_->SetButtonImage(
       ash::CAPTION_BUTTON_ICON_MINIMIZE,
-      IDR_AURA_WINDOW_CONTROL_ICON_MINIMIZE);
+      gfx::VectorIconId::WINDOW_CONTROL_MINIMIZE);
   caption_button_container_->SetButtonImage(
-      ash::CAPTION_BUTTON_ICON_CLOSE,
-      IDR_AURA_WINDOW_CONTROL_ICON_CLOSE);
+      ash::CAPTION_BUTTON_ICON_CLOSE, gfx::VectorIconId::WINDOW_CONTROL_CLOSE);
   caption_button_container_->SetButtonImage(
       ash::CAPTION_BUTTON_ICON_LEFT_SNAPPED,
-      IDR_AURA_WINDOW_CONTROL_ICON_LEFT_SNAPPED);
+      gfx::VectorIconId::WINDOW_CONTROL_LEFT_SNAPPED);
   caption_button_container_->SetButtonImage(
       ash::CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
-      IDR_AURA_WINDOW_CONTROL_ICON_RIGHT_SNAPPED);
+      gfx::VectorIconId::WINDOW_CONTROL_RIGHT_SNAPPED);
 
-  int size_icon_id = IDR_AURA_WINDOW_CONTROL_ICON_MAXIMIZE;
+  gfx::VectorIconId size_icon_id = gfx::VectorIconId::WINDOW_CONTROL_MAXIMIZE;
   gfx::Size button_size(
       GetAshLayoutSize(AshLayoutSize::BROWSER_RESTORED_CAPTION_BUTTON));
   if (frame_->IsMaximized() || frame_->IsFullscreen()) {
-    size_icon_id = IDR_AURA_WINDOW_CONTROL_ICON_RESTORE;
+    size_icon_id = gfx::VectorIconId::WINDOW_CONTROL_RESTORE;
     button_size =
         GetAshLayoutSize(AshLayoutSize::BROWSER_MAXIMIZED_CAPTION_BUTTON);
   }

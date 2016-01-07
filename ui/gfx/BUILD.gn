@@ -426,6 +426,8 @@ component("gfx") {
 # GYP version: ui/gfx/gfx.gyp:aggregate_vector_icons
 action("aggregate_vector_icons") {
   script = "vector_icons/aggregate_vector_icons.py"
+
+  # TODO(estade): move all platform-specific icons into their own directories.
   sources = [
     "vector_icons/account_box.icon",
     "vector_icons/account_child_invert.icon",
@@ -538,9 +540,23 @@ action("aggregate_vector_icons") {
     "vector_icons/warning.icon",
     "vector_icons/warning_badge.icon",
     "vector_icons/web.icon",
+    "vector_icons/window_control_back.1x.icon",
+    "vector_icons/window_control_back.icon",
+    "vector_icons/window_control_close.1x.icon",
+    "vector_icons/window_control_close.icon",
+    "vector_icons/window_control_left_snapped.1x.icon",
+    "vector_icons/window_control_maximize.1x.icon",
+    "vector_icons/window_control_maximize.icon",
+    "vector_icons/window_control_minimize.1x.icon",
+    "vector_icons/window_control_minimize.icon",
+    "vector_icons/window_control_restore.1x.icon",
+    "vector_icons/window_control_restore.icon",
+    "vector_icons/window_control_right_snapped.1x.icon",
+    "vector_icons/window_control_right_snapped.icon",
     "vector_icons/zoom_minus.icon",
     "vector_icons/zoom_plus.icon",
   ]
+
   outputs = [
     vector_icons_cc_file,
     vector_icons_h_file,

@@ -18,6 +18,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -65,7 +66,7 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
       for (int icon = 0; icon < CAPTION_BUTTON_ICON_COUNT; ++icon) {
         caption_button_container_->SetButtonImage(
             static_cast<CaptionButtonIcon>(icon),
-            IDR_AURA_WINDOW_CONTROL_ICON_CLOSE);
+            gfx::VectorIconId::WINDOW_CONTROL_CLOSE);
       }
 
       AddChildView(caption_button_container_);

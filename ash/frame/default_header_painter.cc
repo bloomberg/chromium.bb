@@ -21,6 +21,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
@@ -158,7 +159,8 @@ void DefaultHeaderPainter::PaintHeader(gfx::Canvas* canvas, Mode mode) {
 }
 
 void DefaultHeaderPainter::LayoutHeader() {
-  UpdateSizeButtonImages(ShouldUseLightImages());
+  caption_button_container_->SetUseLightImages(ShouldUseLightImages());
+  UpdateSizeButtonImages();
   caption_button_container_->Layout();
 
   gfx::Size caption_button_container_size =
@@ -295,39 +297,28 @@ bool DefaultHeaderPainter::ShouldUseLightImages() {
 }
 
 void DefaultHeaderPainter::UpdateAllButtonImages() {
-  bool use_light_images = ShouldUseLightImages();
+  caption_button_container_->SetUseLightImages(ShouldUseLightImages());
   caption_button_container_->SetButtonImage(
-      CAPTION_BUTTON_ICON_MINIMIZE,
-      use_light_images ? IDR_AURA_WINDOW_CONTROL_ICON_MINIMIZE_WHITE
-                       : IDR_AURA_WINDOW_CONTROL_ICON_MINIMIZE);
+      CAPTION_BUTTON_ICON_MINIMIZE, gfx::VectorIconId::WINDOW_CONTROL_MINIMIZE);
 
-  UpdateSizeButtonImages(use_light_images);
+  UpdateSizeButtonImages();
 
   caption_button_container_->SetButtonImage(
-      CAPTION_BUTTON_ICON_CLOSE, use_light_images
-                                     ? IDR_AURA_WINDOW_CONTROL_ICON_CLOSE_WHITE
-                                     : IDR_AURA_WINDOW_CONTROL_ICON_CLOSE);
+      CAPTION_BUTTON_ICON_CLOSE, gfx::VectorIconId::WINDOW_CONTROL_CLOSE);
 
   caption_button_container_->SetButtonImage(
       CAPTION_BUTTON_ICON_LEFT_SNAPPED,
-      use_light_images ? IDR_AURA_WINDOW_CONTROL_ICON_LEFT_SNAPPED_WHITE
-                       : IDR_AURA_WINDOW_CONTROL_ICON_LEFT_SNAPPED);
+      gfx::VectorIconId::WINDOW_CONTROL_LEFT_SNAPPED);
 
   caption_button_container_->SetButtonImage(
       CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
-      use_light_images ? IDR_AURA_WINDOW_CONTROL_ICON_RIGHT_SNAPPED_WHITE
-                       : IDR_AURA_WINDOW_CONTROL_ICON_RIGHT_SNAPPED);
+      gfx::VectorIconId::WINDOW_CONTROL_RIGHT_SNAPPED);
 }
 
-void DefaultHeaderPainter::UpdateSizeButtonImages(bool use_light_images) {
-  int icon_id = 0;
-  if (frame_->IsMaximized() || frame_->IsFullscreen()) {
-    icon_id = use_light_images ? IDR_AURA_WINDOW_CONTROL_ICON_RESTORE_WHITE
-                               : IDR_AURA_WINDOW_CONTROL_ICON_RESTORE;
-  } else {
-    icon_id = use_light_images ? IDR_AURA_WINDOW_CONTROL_ICON_MAXIMIZE_WHITE
-                               : IDR_AURA_WINDOW_CONTROL_ICON_MAXIMIZE;
-  }
+void DefaultHeaderPainter::UpdateSizeButtonImages() {
+  gfx::VectorIconId icon_id = frame_->IsMaximized() || frame_->IsFullscreen()
+                                  ? gfx::VectorIconId::WINDOW_CONTROL_RESTORE
+                                  : gfx::VectorIconId::WINDOW_CONTROL_MAXIMIZE;
   caption_button_container_->SetButtonImage(
       CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, icon_id);
 }

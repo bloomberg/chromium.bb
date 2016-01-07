@@ -13,6 +13,7 @@
 #include "components/toolbar/toolbar_model.h"
 #include "content/public/browser/navigation_entry.h"
 #include "grit/ash_resources.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/layout/box_layout.h"
 
 // static
@@ -27,7 +28,7 @@ WebAppLeftHeaderView::WebAppLeftHeaderView(BrowserView* browser_view)
       new ash::FrameCaptionButton(this, ash::CAPTION_BUTTON_ICON_BACK);
   back_button_->SetImage(ash::CAPTION_BUTTON_ICON_BACK,
                          ash::FrameCaptionButton::ANIMATE_NO,
-                         IDR_AURA_WINDOW_CONTROL_ICON_BACK);
+                         gfx::VectorIconId::WINDOW_CONTROL_BACK);
   AddChildView(back_button_);
 
   location_icon_ =
@@ -41,10 +42,9 @@ WebAppLeftHeaderView::~WebAppLeftHeaderView() {
 }
 
 void WebAppLeftHeaderView::Update() {
-  int icon_resource = browser_view_->browser()->toolbar_model()->GetIcon();
-  location_icon_->SetImage(ash::CAPTION_BUTTON_ICON_LOCATION,
-                           ash::FrameCaptionButton::ANIMATE_NO,
-                           icon_resource);
+  location_icon_->SetImage(
+      ash::CAPTION_BUTTON_ICON_LOCATION, ash::FrameCaptionButton::ANIMATE_NO,
+      browser_view_->browser()->toolbar_model()->GetVectorIcon());
 
   back_button_->SetState(
       chrome::IsCommandEnabled(browser_view_->browser(), IDC_BACK)

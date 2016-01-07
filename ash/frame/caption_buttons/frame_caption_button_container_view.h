@@ -16,6 +16,7 @@
 
 namespace gfx {
 class SlideAnimation;
+enum class VectorIconId;
 }
 
 namespace views {
@@ -65,14 +66,18 @@ class ASH_EXPORT FrameCaptionButtonContainerView
     DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
 
-  // Sets the resource id of the image to paint the button for |icon|. The
+  // Sets the id of the vector image to paint the button for |icon|. The
   // FrameCaptionButtonContainerView will keep track of the image to use for
   // |icon| even if none of the buttons currently use |icon|.
-  void SetButtonImage(CaptionButtonIcon icon, int icon_image_id);
+  void SetButtonImage(CaptionButtonIcon icon, gfx::VectorIconId icon_image_id);
 
   // Sets whether the buttons should be painted as active. Does not schedule
   // a repaint.
   void SetPaintAsActive(bool paint_as_active);
+
+  // Sets whether the buttons should be painted in a lighter color (for use on
+  // dark backgrounds).
+  void SetUseLightImages(bool light);
 
   // Tell the window controls to reset themselves to the normal state.
   void ResetWindowControls();
@@ -139,7 +144,7 @@ class ASH_EXPORT FrameCaptionButtonContainerView
 
   // Mapping of the image ID needed to paint a button for each of the values of
   // CaptionButtonIcon.
-  std::map<CaptionButtonIcon, int> button_icon_id_map_;
+  std::map<CaptionButtonIcon, gfx::VectorIconId> button_icon_id_map_;
 
   // Animation that affects the position of |minimize_button_| and the
   // visibility of |size_button_|.

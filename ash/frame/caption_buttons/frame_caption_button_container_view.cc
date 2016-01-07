@@ -22,6 +22,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/strings/grit/ui_strings.h"  // Accessibility names
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -149,8 +150,9 @@ void FrameCaptionButtonContainerView::TestApi::EndAnimations() {
   container_view_->maximize_mode_animation_->End();
 }
 
-void FrameCaptionButtonContainerView::SetButtonImage(CaptionButtonIcon icon,
-                                                     int icon_image_id) {
+void FrameCaptionButtonContainerView::SetButtonImage(
+    CaptionButtonIcon icon,
+    gfx::VectorIconId icon_image_id) {
   button_icon_id_map_[icon] = icon_image_id;
 
   FrameCaptionButton* buttons[] = {
@@ -166,6 +168,12 @@ void FrameCaptionButtonContainerView::SetPaintAsActive(bool paint_as_active) {
   minimize_button_->set_paint_as_active(paint_as_active);
   size_button_->set_paint_as_active(paint_as_active);
   close_button_->set_paint_as_active(paint_as_active);
+}
+
+void FrameCaptionButtonContainerView::SetUseLightImages(bool light) {
+  minimize_button_->set_use_light_images(light);
+  size_button_->set_use_light_images(light);
+  close_button_->set_use_light_images(light);
 }
 
 void FrameCaptionButtonContainerView::ResetWindowControls() {

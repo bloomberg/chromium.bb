@@ -14,6 +14,7 @@
 
 namespace gfx {
 class SlideAnimation;
+enum class VectorIconId;
 }
 
 namespace ash {
@@ -36,7 +37,9 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
   // the button crossfades to the new visuals. If the image id matches the one
   // currently used by the button and |animate| is ANIMATE_NO, the crossfade
   // animation is progressed to the end.
-  void SetImage(CaptionButtonIcon icon, Animate animate, int icon_image_id);
+  void SetImage(CaptionButtonIcon icon,
+                Animate animate,
+                gfx::VectorIconId icon_image_id);
 
   // Returns true if the button is crossfading to new visuals set in
   // SetImage().
@@ -54,11 +57,13 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
     paint_as_active_ = paint_as_active;
   }
 
+  void set_use_light_images(bool light) { use_light_images_ = light; }
+
   CaptionButtonIcon icon() const {
     return icon_;
   }
 
-  int icon_image_id() const { return icon_image_id_; }
+  gfx::VectorIconId icon_image_id() const { return icon_image_id_; }
 
   void set_size(const gfx::Size& size) { size_ = size; }
 
@@ -81,11 +86,14 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
   // Whether the button should be painted as active.
   bool paint_as_active_;
 
+  // Whether to paint in a lighter color (for use on dark backgrounds).
+  bool use_light_images_;
+
   // Current alpha to use for painting.
   int alpha_;
 
   // The image id and image used to paint the button's icon.
-  int icon_image_id_;
+  gfx::VectorIconId icon_image_id_;
   gfx::ImageSkia icon_image_;
 
   // The icon image to crossfade from.

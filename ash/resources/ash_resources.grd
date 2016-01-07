@@ -180,20 +180,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VOLUME_LEVELS" file="cros/status/status_volume_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VOLUME_MUTE" file="cros/status/status_volume_mute.png" />
 
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_BACK" file="common/window_control_icon_back.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_CLOSE" file="common/window_control_icon_close.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_CLOSE_WHITE" file="common/window_control_icon_close_white.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_LEFT_SNAPPED" file="common/window_control_icon_left_snapped.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_LEFT_SNAPPED_WHITE" file="common/window_control_icon_left_snapped_white.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_MAXIMIZE" file="common/window_control_icon_maximize.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_MAXIMIZE_WHITE" file="common/window_control_icon_maximize_white.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_MINIMIZE" file="common/window_control_icon_minimize.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_MINIMIZE_WHITE" file="common/window_control_icon_minimize_white.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_RESTORE" file="common/window_control_icon_restore.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_RESTORE_WHITE" file="common/window_control_icon_restore_white.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_RIGHT_SNAPPED" file="common/window_control_icon_right_snapped.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_RIGHT_SNAPPED_WHITE" file="common/window_control_icon_right_snapped_white.png" />
-
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_BOTTOM" file="common/window_header_shade_bottom_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_LEFT" file="common/window_header_shade_left_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_RIGHT" file="common/window_header_shade_right_inactive.png" />

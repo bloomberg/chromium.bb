@@ -11,6 +11,7 @@
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "grit/ash_resources.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -77,7 +78,7 @@ class FrameCaptionButtonContainerViewTest : public ash::test::AshTestBase {
         GetAshLayoutSize(AshLayoutSize::NON_BROWSER_CAPTION_BUTTON));
     for (int icon = 0; icon < CAPTION_BUTTON_ICON_COUNT; ++icon) {
       container->SetButtonImage(static_cast<CaptionButtonIcon>(icon),
-                                IDR_AURA_WINDOW_CONTROL_ICON_CLOSE);
+                                gfx::VectorIconId::WINDOW_CONTROL_CLOSE);
     }
   }
 

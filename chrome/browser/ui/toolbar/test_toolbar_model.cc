@@ -11,7 +11,7 @@ TestToolbarModel::TestToolbarModel()
     : ChromeToolbarModel(),
       perform_search_term_replacement_(false),
       security_level_(SecurityStateModel::NONE),
-      icon_(IDR_LOCATION_BAR_HTTP),
+      icon_(gfx::VectorIconId::VECTOR_ICON_NONE),
       should_display_url_(true) {}
 
 TestToolbarModel::~TestToolbarModel() {}
@@ -43,11 +43,12 @@ SecurityStateModel::SecurityLevel TestToolbarModel::GetSecurityLevel(
 }
 
 int TestToolbarModel::GetIcon() const {
-  return icon_;
+  // This placeholder implementation should be removed when MD is default.
+  return IDR_LOCATION_BAR_HTTP;
 }
 
 gfx::VectorIconId TestToolbarModel::GetVectorIcon() const {
-  return gfx::VectorIconId::VECTOR_ICON_NONE;
+  return icon_;
 }
 
 base::string16 TestToolbarModel::GetEVCertName() const {

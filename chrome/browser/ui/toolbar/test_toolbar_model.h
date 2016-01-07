@@ -12,6 +12,10 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/toolbar/chrome_toolbar_model.h"
 
+namespace gfx {
+enum class VectorIconId;
+}
+
 // A ToolbarModel that is backed by instance variables, which are initialized
 // with some basic values that can be changed with the provided setters. This
 // should be used only for testing.
@@ -40,7 +44,7 @@ class TestToolbarModel : public ChromeToolbarModel {
   void set_security_level(SecurityStateModel::SecurityLevel security_level) {
     security_level_ = security_level;
   }
-  void set_icon(int icon) { icon_ = icon; }
+  void set_icon(gfx::VectorIconId icon) { icon_ = icon; }
   void set_ev_cert_name(const base::string16& ev_cert_name) {
     ev_cert_name_ = ev_cert_name;
   }
@@ -53,7 +57,7 @@ class TestToolbarModel : public ChromeToolbarModel {
   GURL url_;
   bool perform_search_term_replacement_;
   SecurityStateModel::SecurityLevel security_level_;
-  int icon_;
+  gfx::VectorIconId icon_;
   base::string16 ev_cert_name_;
   bool should_display_url_;
 
