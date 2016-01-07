@@ -1900,7 +1900,7 @@ should be able to be added at any place in this file.
   <description>A renderer process died abnormally.</description>
 </action>
 
-<action name="BrowserPlugin.Guest.Attached">
+<action name="BrowserPlugin.Guest.Attached" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -1910,12 +1910,12 @@ should be able to be added at any place in this file.
   <description>A renderer process died because it crashed.</description>
 </action>
 
-<action name="BrowserPlugin.Guest.Create">
+<action name="BrowserPlugin.Guest.Create" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="BrowserPlugin.Guest.DidNavigate">
+<action name="BrowserPlugin.Guest.DidNavigate" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -1940,7 +1940,7 @@ should be able to be added at any place in this file.
   <description>A renderer process failed to launch.</description>
 </action>
 
-<action name="BrowserPlugin.Guest.Navigate">
+<action name="BrowserPlugin.Guest.Navigate" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -13488,7 +13488,7 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="WebView.WebRequest.AddListener">
+<action name="WebView.WebRequest.AddListener" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
