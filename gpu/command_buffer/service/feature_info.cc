@@ -316,6 +316,14 @@ void FeatureInfo::InitializeFeatures() {
   AddExtensionString("GL_CHROMIUM_trace_marker");
   AddExtensionString("GL_EXT_debug_marker");
 
+  // Pre es3, there are no PBOS and all unpack state is handled in client side.
+  // With es3, unpack state is needed in server side. We always mark these
+  // enums as valid and pass them to drivers only when a valid PBO is bound.
+  AddExtensionString("GL_EXT_unpack_subimage");
+  validators_.pixel_store.AddValue(GL_UNPACK_ROW_LENGTH);
+  validators_.pixel_store.AddValue(GL_UNPACK_SKIP_ROWS);
+  validators_.pixel_store.AddValue(GL_UNPACK_SKIP_PIXELS);
+
   if (feature_flags_.enable_subscribe_uniform) {
     AddExtensionString("GL_CHROMIUM_subscribe_uniform");
   }

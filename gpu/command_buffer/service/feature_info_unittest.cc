@@ -206,6 +206,7 @@ TEST_P(FeatureInfoTest, InitializeNoExtensions) {
   EXPECT_THAT(info_->extensions(),
               HasSubstr("GL_ANGLE_translated_shader_source"));
   EXPECT_THAT(info_->extensions(), HasSubstr("GL_CHROMIUM_trace_marker"));
+  EXPECT_THAT(info_->extensions(), HasSubstr("GL_EXT_unpack_subimage"));
 
   // Check a couple of random extensions that should not be there.
   EXPECT_THAT(info_->extensions(), Not(HasSubstr("GL_OES_texture_npot")));
@@ -309,6 +310,9 @@ TEST_P(FeatureInfoTest, InitializeNoExtensions) {
   EXPECT_FALSE(info_->validators()->frame_buffer_parameter.IsValid(
       GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT));
   EXPECT_FALSE(info_->feature_flags().chromium_image_ycbcr_422);
+  EXPECT_TRUE(info_->validators()->pixel_store.IsValid(GL_UNPACK_ROW_LENGTH));
+  EXPECT_TRUE(info_->validators()->pixel_store.IsValid(GL_UNPACK_SKIP_ROWS));
+  EXPECT_TRUE(info_->validators()->pixel_store.IsValid(GL_UNPACK_SKIP_PIXELS));
 }
 
 TEST_P(FeatureInfoTest, InitializeWithANGLE) {
