@@ -479,6 +479,24 @@ void SpellChecker::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask
     chunkAndMarkAllMisspellingsAndBadGrammar(textCheckingOptions, fullParagraphToCheck);
 }
 
+static EphemeralRange expandEndToSentenceBoundary(const EphemeralRange& range)
+{
+    ASSERT(range.isNotNull());
+    const VisiblePosition& visibleEnd = createVisiblePosition(range.endPosition());
+    ASSERT(visibleEnd.isNotNull());
+    const Position& sentenceEnd = endOfSentence(visibleEnd).deepEquivalent();
+    return EphemeralRange(range.startPosition(), sentenceEnd.isNotNull() ? sentenceEnd : range.endPosition());
+}
+
+static EphemeralRange expandRangeToSentenceBoundary(const EphemeralRange& range)
+{
+    ASSERT(range.isNotNull());
+    const VisiblePosition& visibleStart = createVisiblePosition(range.startPosition());
+    ASSERT(visibleStart.isNotNull());
+    const Position& sentenceStart = startOfSentence(visibleStart).deepEquivalent();
+    return expandEndToSentenceBoundary(EphemeralRange(sentenceStart.isNull() ? range.startPosition() : sentenceStart, range.endPosition()));
+}
+
 void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(Node* node)
 {
     TRACE_EVENT0("blink", "SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar");
@@ -493,40 +511,27 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask
 {
     if (fullParagraphToCheck.isEmpty())
         return;
+    const EphemeralRange& paragraphRange = fullParagraphToCheck.paragraphRange();
 
     // Since the text may be quite big chunk it up and adjust to the sentence boundary.
     const int kChunkSize = 16 * 1024;
-    int start = fullParagraphToCheck.checkingStart();
-    int end = fullParagraphToCheck.checkingEnd();
-    start = std::min(start, end);
-    end = std::max(start, end);
-    const int kNumChunksToCheck = (end - start + kChunkSize - 1) / kChunkSize;
-    int currentChunkStart = start;
-    if (kNumChunksToCheck == 1) {
-        EphemeralRange checkRange = fullParagraphToCheck.checkingRange();
-        markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, checkRange, checkRange, 0);
-        return;
+    CharacterIterator checkRangeIterator(fullParagraphToCheck.checkingRange(), TextIteratorEmitsObjectReplacementCharacter);
+    for (int requestNum = 0; !checkRangeIterator.atEnd(); requestNum++) {
+        EphemeralRange chunkRange = checkRangeIterator.calculateCharacterSubrange(0, kChunkSize);
+        EphemeralRange checkRange = requestNum ? expandEndToSentenceBoundary(chunkRange) : expandRangeToSentenceBoundary(chunkRange);
+
+        RefPtrWillBeRawPtr<SpellCheckRequest> request = SpellCheckRequest::create(resolveTextCheckingTypeMask(textCheckingOptions), TextCheckingProcessBatch, checkRange, paragraphRange, requestNum);
+        if (request)
+            m_spellCheckRequester->requestCheckingFor(request);
+
+        if (!checkRangeIterator.atEnd()) {
+            checkRangeIterator.advance(1);
+            // The layout should be already update due to the initialization of checkRangeIterator,
+            // so comparePositions can be directly called.
+            if (comparePositions(chunkRange.endPosition(), checkRange.endPosition()) < 0)
+                checkRangeIterator.advance(TextIterator::rangeLength(chunkRange.endPosition(), checkRange.endPosition()));
+        }
     }
-
-    for (int iter = 0; iter < kNumChunksToCheck; ++iter) {
-        EphemeralRange checkRange = expandRangeToSentenceBoundary(fullParagraphToCheck.subrange(currentChunkStart, kChunkSize));
-        int checkingLength = 0;
-        markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, checkRange, checkRange, iter, &checkingLength);
-        currentChunkStart += checkingLength;
-    }
-}
-
-void SpellChecker::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask textCheckingOptions, const EphemeralRange& checkRange, const EphemeralRange& paragraphRange, int requestNumber, int* checkingLength)
-{
-    TextCheckingParagraph sentenceToCheck(checkRange, paragraphRange);
-    if (checkingLength)
-        *checkingLength = sentenceToCheck.checkingLength();
-
-    RefPtrWillBeRawPtr<SpellCheckRequest> request = SpellCheckRequest::create(resolveTextCheckingTypeMask(textCheckingOptions), TextCheckingProcessBatch, checkRange, paragraphRange, requestNumber);
-    if (!request)
-        return;
-
-    m_spellCheckRequester->requestCheckingFor(request);
 }
 
 void SpellChecker::markAndReplaceFor(PassRefPtrWillBeRawPtr<SpellCheckRequest> request, const Vector<TextCheckingResult>& results)

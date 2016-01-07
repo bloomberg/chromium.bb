@@ -104,7 +104,6 @@ private:
 };
 
 void checkTextOfParagraph(TextCheckerClient&, const String&, TextCheckingTypeMask, Vector<TextCheckingResult>&);
-EphemeralRange expandRangeToSentenceBoundary(const EphemeralRange&);
 bool unifiedTextCheckerEnabled(const LocalFrame*);
 
 } // namespace blink
