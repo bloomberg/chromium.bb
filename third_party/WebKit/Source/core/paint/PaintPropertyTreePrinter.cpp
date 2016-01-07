@@ -66,6 +66,7 @@ private:
                 stringBuilder.append(' ');
             if (m_nodeToDebugString.contains(node))
                 stringBuilder.append(m_nodeToDebugString.get(node));
+            stringBuilder.append(String::format(" %p", node));
             Traits::printNodeAsString(node, stringBuilder);
             fprintf(stderr, "%s\n", stringBuilder.toString().ascii().data());
         }
@@ -106,8 +107,7 @@ public:
 
     static void printNodeAsString(const TransformPaintPropertyNode* node, StringBuilder& stringBuilder)
     {
-        stringBuilder.append(String::format(" %p ", node));
-        stringBuilder.append("transform=");
+        stringBuilder.append(" transform=");
 
         TransformationMatrix::DecomposedType decomposition;
         if (!node->matrix().decompose(decomposition)) {
@@ -143,11 +143,30 @@ public:
 
     static void printNodeAsString(const ClipPaintPropertyNode* node, StringBuilder& stringBuilder)
     {
-        stringBuilder.append(String::format(" %p ", node));
-        stringBuilder.append(String::format("localTransformSpace=%p ", node->localTransformSpace()));
+        stringBuilder.append(String::format(" localTransformSpace=%p ", node->localTransformSpace()));
         stringBuilder.append(String::format("rect=%f,%f,%f,%f",
             node->clipRect().rect().x(), node->clipRect().rect().y(),
             node->clipRect().rect().width(), node->clipRect().rect().height()));
+    }
+};
+
+template <>
+class PropertyTreePrinterTraits<EffectPaintPropertyNode> {
+public:
+    static void addFrameViewProperties(const FrameView& frameView, PropertyTreePrinter<EffectPaintPropertyNode>& printer)
+    {
+        // FrameView does not create any effect nodes.
+    }
+
+    static void addObjectPaintProperties(const ObjectPaintProperties& paintProperties, PropertyTreePrinter<EffectPaintPropertyNode>& printer)
+    {
+        if (const EffectPaintPropertyNode* effect = paintProperties.effect())
+            printer.addPropertyNode(effect, "Effect");
+    }
+
+    static void printNodeAsString(const EffectPaintPropertyNode* node, StringBuilder& stringBuilder)
+    {
+        stringBuilder.append(String::format(" opacity=%f", node->opacity()));
     }
 };
 
@@ -163,6 +182,12 @@ void showClipPropertyTree(const FrameView& rootFrame)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
     PropertyTreePrinter<ClipPaintPropertyNode>(rootFrame).show();
+}
+
+void showEffectPropertyTree(const FrameView& rootFrame)
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    PropertyTreePrinter<EffectPaintPropertyNode>(rootFrame).show();
 }
 
 } // namespace blink

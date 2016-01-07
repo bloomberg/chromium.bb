@@ -12,6 +12,7 @@ class FrameView;
 
 void showTransformPropertyTree(const FrameView& rootFrame);
 void showClipPropertyTree(const FrameView& rootFrame);
+void showEffectPropertyTree(const FrameView& rootFrame);
 
 } // namespace blink
 #endif
