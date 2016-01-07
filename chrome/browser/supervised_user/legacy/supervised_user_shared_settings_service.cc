@@ -42,7 +42,7 @@ const char kValue[] = "value";
 
 DictionaryValue* FindOrCreateDictionary(DictionaryValue* parent,
                                         const std::string& key) {
-  DictionaryValue* dict = NULL;
+  DictionaryValue* dict = nullptr;
   if (!parent->GetDictionaryWithoutPathExpansion(key, &dict)) {
     dict = new DictionaryValue;
     parent->SetWithoutPathExpansion(key, dict);
@@ -75,11 +75,11 @@ SyncData CreateSyncDataForValue(
     const std::string& su_id,
     const std::string& key,
     const Value& dict_value) {
-  const DictionaryValue* dict = NULL;
+  const DictionaryValue* dict = nullptr;
   if (!dict_value.GetAsDictionary(&dict))
     return SyncData();
 
-  const Value* value = NULL;
+  const Value* value = nullptr;
   if (!dict->Get(kValue, &value))
     return SyncData();
 
@@ -107,7 +107,7 @@ void SupervisedUserSharedSettingsService::SetValueInternal(
   ScopedSupervisedUserSharedSettingsUpdate update(prefs_, su_id);
   DictionaryValue* update_dict = update.Get();
 
-  DictionaryValue* dict = NULL;
+  DictionaryValue* dict = nullptr;
   bool has_key = update_dict->GetDictionaryWithoutPathExpansion(key, &dict);
   if (!has_key) {
     dict = new DictionaryValue;
@@ -133,17 +133,17 @@ const Value* SupervisedUserSharedSettingsService::GetValue(
     const std::string& key) {
   const DictionaryValue* data =
       prefs_->GetDictionary(prefs::kSupervisedUserSharedSettings);
-  const DictionaryValue* dict = NULL;
+  const DictionaryValue* dict = nullptr;
   if (!data->GetDictionaryWithoutPathExpansion(su_id, &dict))
-    return NULL;
+    return nullptr;
 
-  const DictionaryValue* settings = NULL;
+  const DictionaryValue* settings = nullptr;
   if (!dict->GetDictionaryWithoutPathExpansion(key, &settings))
-    return NULL;
+    return nullptr;
 
-  const Value* value = NULL;
+  const Value* value = nullptr;
   if (!settings->GetWithoutPathExpansion(kValue, &value))
-    return NULL;
+    return nullptr;
 
   return value;
 }
@@ -198,9 +198,24 @@ SupervisedUserSharedSettingsService::MergeDataAndStartSyncing(
   sync_processor_ = std::move(sync_processor);
   error_handler_ = std::move(error_handler);
 
+  int num_before_association = 0;
+  std::map<std::string, std::set<std::string> > pref_seen_keys;
+  const DictionaryValue* pref_dict =
+      prefs_->GetDictionary(prefs::kSupervisedUserSharedSettings);
+  for (DictionaryValue::Iterator it(*pref_dict); !it.IsAtEnd(); it.Advance()) {
+    const DictionaryValue* dict = nullptr;
+    bool success = it.value().GetAsDictionary(&dict);
+    DCHECK(success);
+    num_before_association += dict->size();
+    for (DictionaryValue::Iterator jt(*dict); !jt.IsAtEnd(); jt.Advance())
+      pref_seen_keys[it.key()].insert(jt.key());
+  }
+
   // We keep a map from MU ID to the set of keys that we have seen in the
   // initial sync data.
-  std::map<std::string, std::set<std::string> > seen_keys;
+  std::map<std::string, std::set<std::string> > sync_seen_keys;
+  int num_added = 0;
+  int num_modified = 0;
 
   // Iterate over all initial sync data, and update it locally. This means that
   // the value from the server always wins over a local value.
@@ -224,21 +239,28 @@ SupervisedUserSharedSettingsService::MergeDataAndStartSyncing(
         kAcknowledged, supervised_user_shared_setting.acknowledged());
     callbacks_.Notify(su_id, key);
 
-    seen_keys[su_id].insert(key);
+    if (pref_seen_keys.find(su_id) == pref_seen_keys.end())
+      num_added++;
+    else
+      num_modified++;
+
+    sync_seen_keys[su_id].insert(key);
   }
 
   // Iterate over all settings that we have locally, which includes settings
-  // that were just synced down. We filter those out using |seen_keys|.
+  // that were just synced down. We filter those out using |sync_seen_keys|.
   SyncChangeList change_list;
+  int num_after_association = 0;
   const DictionaryValue* all_settings =
       prefs_->GetDictionary(prefs::kSupervisedUserSharedSettings);
   for (DictionaryValue::Iterator it(*all_settings); !it.IsAtEnd();
        it.Advance()) {
-    const DictionaryValue* dict = NULL;
+    const DictionaryValue* dict = nullptr;
     bool success = it.value().GetAsDictionary(&dict);
     DCHECK(success);
 
-    const std::set<std::string>& seen = seen_keys[it.key()];
+    const std::set<std::string>& seen = sync_seen_keys[it.key()];
+    num_after_association += dict->size();
     for (DictionaryValue::Iterator jt(*dict); !jt.IsAtEnd(); jt.Advance()) {
       // We only need to upload settings that we haven't seen in the initial
       // sync data (which means they were added locally).
@@ -259,7 +281,10 @@ SupervisedUserSharedSettingsService::MergeDataAndStartSyncing(
         sync_processor_->ProcessSyncChanges(FROM_HERE, change_list));
   }
 
-  // TODO(bauerb): Statistics?
+  result.set_num_items_added(num_added);
+  result.set_num_items_modified(num_modified);
+  result.set_num_items_before_association(num_before_association);
+  result.set_num_items_after_association(num_after_association);
   return result;
 }
 
@@ -277,7 +302,7 @@ syncer::SyncDataList SupervisedUserSharedSettingsService::GetAllSyncData(
       prefs_->GetDictionary(prefs::kSupervisedUserSharedSettings);
   for (DictionaryValue::Iterator it(*all_settings); !it.IsAtEnd();
        it.Advance()) {
-    const DictionaryValue* dict = NULL;
+    const DictionaryValue* dict = nullptr;
     bool success = it.value().GetAsDictionary(&dict);
     DCHECK(success);
     for (DictionaryValue::Iterator jt(*dict); !jt.IsAtEnd(); jt.Advance()) {
@@ -300,7 +325,7 @@ syncer::SyncError SupervisedUserSharedSettingsService::ProcessSyncChanges(
     const std::string& su_id = supervised_user_shared_setting.mu_id();
     ScopedSupervisedUserSharedSettingsUpdate update(prefs_, su_id);
     DictionaryValue* update_dict = update.Get();
-    DictionaryValue* dict = NULL;
+    DictionaryValue* dict = nullptr;
     bool has_key = update_dict->GetDictionaryWithoutPathExpansion(key, &dict);
     switch (sync_change.change_type()) {
       case SyncChange::ACTION_ADD:
@@ -328,7 +353,7 @@ syncer::SyncError SupervisedUserSharedSettingsService::ProcessSyncChanges(
       }
       case SyncChange::ACTION_DELETE: {
         if (has_key)
-          update_dict->RemoveWithoutPathExpansion(key, NULL);
+          update_dict->RemoveWithoutPathExpansion(key, nullptr);
         else
           NOTREACHED() << "Trying to delete nonexistent key " << key;
         break;
