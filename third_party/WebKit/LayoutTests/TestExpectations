@@ -1285,11 +1285,6 @@ crbug.com/504837 [ XP ] svg/filters/feTile.svg [ Failure ]
 crbug.com/568867 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
 crbug.com/568867 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
 
-crbug.com/569514 inspector/sources/debugger-step/debugger-step-into-document-write.html [ NeedsRebaseline ]
-crbug.com/569514 inspector/sources/debugger-step/debugger-step-into-inlined-scripts.html [ NeedsRebaseline ]
-crbug.com/569514 inspector/sources/debugger-step/debugger-step-over-document-write.html [ NeedsRebaseline ]
-crbug.com/569514 inspector/sources/debugger/debugger-scripts.html [ NeedsRebaseline ]
-
 crbug.com/569811 inspector-protocol/debugger/updateCallFrameScopes.html [ Pass Failure ]
 
 crbug.com/571376 http/tests/webfont/font-display-intervention.html [ Pass Failure ]

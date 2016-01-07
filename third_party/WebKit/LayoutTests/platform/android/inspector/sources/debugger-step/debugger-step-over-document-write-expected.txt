@@ -6,7 +6,7 @@ Call stack:
 
 Executing StepOver...
 Call stack:
-    0)  (debugger-step-over-document-write.html:5)
+    0)  (debugger-step-over-document-write.html:1)
 
 Executing StepOver...
 Call stack:
@@ -22,7 +22,7 @@ Call stack:
 
 Executing StepOver...
 Call stack:
-    0)  (debugger-step-over-document-write.html:9)
+    0)  (debugger-step-over-document-write.html:1)
 
 Executing StepOver...
 Call stack:
