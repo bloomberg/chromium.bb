@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/arc/arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -72,6 +73,10 @@ void ArcAppItem::Activate(int event_flags) {
   }
 
   app_instance->LaunchApp(app_info->package, app_info->activity);
+
+  // Manually close app_list view because focus is not changed on ARC app start,
+  // and current view remains active.
+  GetController()->DismissView();
 }
 
 void ArcAppItem::SetReady(bool ready) {
