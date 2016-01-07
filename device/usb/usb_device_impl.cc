@@ -204,7 +204,7 @@ void UsbDeviceImpl::Open(const OpenCallback& callback) {
 #endif  // defined(OS_CHROMEOS)
 }
 
-void UsbDeviceImpl::Close(scoped_refptr<UsbDeviceHandle> handle) {
+bool UsbDeviceImpl::Close(scoped_refptr<UsbDeviceHandle> handle) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   for (HandlesVector::iterator it = handles_.begin(); it != handles_.end();
@@ -212,9 +212,10 @@ void UsbDeviceImpl::Close(scoped_refptr<UsbDeviceHandle> handle) {
     if (it->get() == handle.get()) {
       (*it)->InternalClose();
       handles_.erase(it);
-      return;
+      return true;
     }
   }
+  return false;
 }
 
 const UsbConfigDescriptor* UsbDeviceImpl::GetActiveConfiguration() {
