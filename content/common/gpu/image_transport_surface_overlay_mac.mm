@@ -206,9 +206,6 @@ class ImageTransportSurfaceOverlayMac::OverlayPlane {
       return;
     [ca_layer setContents:nil];
     [ca_layer removeFromSuperlayer];
-    [ca_layer setBorderWidth:0];
-    [ca_layer setBorderColor:CGColorGetConstantColor(kCGColorClear)];
-    [ca_layer setBackgroundColor:CGColorGetConstantColor(kCGColorClear)];
     ca_layer.reset();
   }
 
