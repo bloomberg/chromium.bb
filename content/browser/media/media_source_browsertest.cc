@@ -6,6 +6,7 @@
 #include "build/build_config.h"
 #include "content/browser/media/media_browsertest.h"
 #include "content/public/common/content_switches.h"
+#include "media/media_features.h"
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
 #endif
@@ -21,8 +22,10 @@ const char kWebMOpusAudioOnly[] = "audio/webm; codecs=\"opus\"";
 const char kWebMVideoOnly[] = "video/webm; codecs=\"vp8\"";
 const char kWebMAudioVideo[] = "video/webm; codecs=\"vorbis, vp8\"";
 
-#if defined(USE_PROPRIETARY_CODECS) && defined(ENABLE_MPEG2TS_STREAM_PARSER)
+#if defined(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
 const char kMp2tAudioVideo[] = "video/mp2t; codecs=\"mp4a.40.2, avc1.42E01E\"";
+#endif
 #endif
 
 namespace content {
@@ -127,9 +130,11 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Video_WEBM_Audio_MP4) {
 }
 #endif
 
-#if defined(USE_PROPRIETARY_CODECS) && defined(ENABLE_MPEG2TS_STREAM_PARSER)
+#if defined(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_AudioVideo_Mp2t) {
   TestSimplePlayback("bear-1280x720.ts", kMp2tAudioVideo, kEnded);
 }
+#endif
 #endif
 }  // namespace content

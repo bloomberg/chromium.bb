@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "media/base/mime_util.h"
+#include "media/media_features.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -255,7 +256,7 @@ static const MediaFormat kFormatCodecMappings[] = {
     {"audio/x-m4a", PROPRIETARY, kMP4AudioCodecsExpression},
     {"video/mp4", PROPRIETARY, kMP4VideoCodecsExpression},
     {"video/x-m4v", PROPRIETARY, kMP4VideoCodecsExpression},
-#if defined(ENABLE_MPEG2TS_STREAM_PARSER)
+#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
     {"video/mp2t", PROPRIETARY, kMP4VideoCodecsExpression},
 #endif
 #if defined(OS_ANDROID)
@@ -308,7 +309,7 @@ static const CodecIDMappings kAmbiguousCodecStringMap[] = {
     // avc1/avc3.XXXXXX may be ambiguous; handled by ParseH264CodecID().
 };
 
-#if defined(ENABLE_MPEG2TS_STREAM_PARSER)
+#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
 static const char kHexString[] = "0123456789ABCDEF";
 static char IntToHex(int i) {
   DCHECK_GE(i, 0) << i << " not a hex value";
@@ -479,7 +480,7 @@ SupportsType MimeUtil::IsSupportedMediaFormat(
     return IsCodecSupported(default_codec) ? IsSupported : IsNotSupported;
   }
 
-#if defined(ENABLE_MPEG2TS_STREAM_PARSER)
+#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
   if (mime_type_lower_case == "video/mp2t") {
     std::vector<std::string> codecs_to_check;
     for (const auto& codec_id : codecs) {

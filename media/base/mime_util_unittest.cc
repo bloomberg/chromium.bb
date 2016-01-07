@@ -8,6 +8,7 @@
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
 #include "media/base/mime_util.h"
+#include "media/media_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -51,7 +52,7 @@ TEST(MimeUtilTest, CommonMediaMimeType) {
   EXPECT_TRUE(IsSupportedMediaMimeType("audio/mpeg"));
   EXPECT_TRUE(IsSupportedMediaMimeType("audio/aac"));
 
-#if defined(ENABLE_MPEG2TS_STREAM_PARSER)
+#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
   EXPECT_TRUE(IsSupportedMediaMimeType("video/mp2t"));
 #else
   EXPECT_FALSE(IsSupportedMediaMimeType("video/mp2t"));

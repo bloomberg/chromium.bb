@@ -48,10 +48,7 @@ declare_args() {
   # Use low-memory buffers on non-Android builds of Chromecast.
   use_low_memory_buffer = is_chromecast && !is_android
 
-  # Enables the MPEG2-TS stream parser for use with Media Source. Disabled by
-  # default (except on Chromecast) since it's not available on the normal Web
-  # Platform and costs money.
-  enable_mpeg2ts_stream_parser = is_chromecast
+  enable_mse_mpeg2ts_stream_parser = is_chromecast
 
   # Enable HEVC/H265 demuxing. Actual decoding must be provided by the
   # platform. Enable by default for Chromecast.

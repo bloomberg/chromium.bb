@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/android/config.gni")
 import("//build/config/arm.gni")
 import("//build/config/features.gni")
@@ -9,6 +10,13 @@ import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
 import("//media/media_options.gni")
 import("//testing/test.gni")
+
+buildflag_header("media_features") {
+  header = "media_features.h"
+
+  flags =
+      [ "ENABLE_MSE_MPEG2TS_STREAM_PARSER=$enable_mse_mpeg2ts_stream_parser" ]
+}
 
 # Common configuration for targets in the media directory.
 # NOT for exporting.
@@ -479,32 +487,6 @@ component("media") {
       "cdm/cenc_utils.h",
       "filters/h264_to_annex_b_bitstream_converter.cc",
       "filters/h264_to_annex_b_bitstream_converter.h",
-      "formats/mp2t/es_adapter_video.cc",
-      "formats/mp2t/es_adapter_video.h",
-      "formats/mp2t/es_parser.cc",
-      "formats/mp2t/es_parser.h",
-      "formats/mp2t/es_parser_adts.cc",
-      "formats/mp2t/es_parser_adts.h",
-      "formats/mp2t/es_parser_h264.cc",
-      "formats/mp2t/es_parser_h264.h",
-      "formats/mp2t/es_parser_mpeg1audio.cc",
-      "formats/mp2t/es_parser_mpeg1audio.h",
-      "formats/mp2t/mp2t_common.h",
-      "formats/mp2t/mp2t_stream_parser.cc",
-      "formats/mp2t/mp2t_stream_parser.h",
-      "formats/mp2t/timestamp_unroller.cc",
-      "formats/mp2t/timestamp_unroller.h",
-      "formats/mp2t/ts_packet.cc",
-      "formats/mp2t/ts_packet.h",
-      "formats/mp2t/ts_section.h",
-      "formats/mp2t/ts_section_pat.cc",
-      "formats/mp2t/ts_section_pat.h",
-      "formats/mp2t/ts_section_pes.cc",
-      "formats/mp2t/ts_section_pes.h",
-      "formats/mp2t/ts_section_pmt.cc",
-      "formats/mp2t/ts_section_pmt.h",
-      "formats/mp2t/ts_section_psi.cc",
-      "formats/mp2t/ts_section_psi.h",
       "formats/mp4/aac.cc",
       "formats/mp4/aac.h",
       "formats/mp4/avc.cc",
@@ -534,6 +516,36 @@ component("media") {
       "formats/mpeg/mpeg_audio_stream_parser_base.cc",
       "formats/mpeg/mpeg_audio_stream_parser_base.h",
     ]
+    if (enable_mse_mpeg2ts_stream_parser) {
+      sources += [
+        "formats/mp2t/es_adapter_video.cc",
+        "formats/mp2t/es_adapter_video.h",
+        "formats/mp2t/es_parser.cc",
+        "formats/mp2t/es_parser.h",
+        "formats/mp2t/es_parser_adts.cc",
+        "formats/mp2t/es_parser_adts.h",
+        "formats/mp2t/es_parser_h264.cc",
+        "formats/mp2t/es_parser_h264.h",
+        "formats/mp2t/es_parser_mpeg1audio.cc",
+        "formats/mp2t/es_parser_mpeg1audio.h",
+        "formats/mp2t/mp2t_common.h",
+        "formats/mp2t/mp2t_stream_parser.cc",
+        "formats/mp2t/mp2t_stream_parser.h",
+        "formats/mp2t/timestamp_unroller.cc",
+        "formats/mp2t/timestamp_unroller.h",
+        "formats/mp2t/ts_packet.cc",
+        "formats/mp2t/ts_packet.h",
+        "formats/mp2t/ts_section.h",
+        "formats/mp2t/ts_section_pat.cc",
+        "formats/mp2t/ts_section_pat.h",
+        "formats/mp2t/ts_section_pes.cc",
+        "formats/mp2t/ts_section_pes.h",
+        "formats/mp2t/ts_section_pmt.cc",
+        "formats/mp2t/ts_section_pmt.h",
+        "formats/mp2t/ts_section_psi.cc",
+        "formats/mp2t/ts_section_psi.h",
+      ]
+    }
   }
 
   if (use_low_memory_buffer) {
@@ -549,6 +561,7 @@ component("media") {
   }
 
   public_deps = [
+    ":media_features",
     ":shared_memory_support",
     "//media/audio",
     "//media/base",
@@ -745,14 +758,6 @@ test("media_unittests") {
       "filters/h264_to_annex_b_bitstream_converter_unittest.cc",
       "formats/common/stream_parser_test_base.cc",
       "formats/common/stream_parser_test_base.h",
-      "formats/mp2t/es_adapter_video_unittest.cc",
-      "formats/mp2t/es_parser_adts_unittest.cc",
-      "formats/mp2t/es_parser_h264_unittest.cc",
-      "formats/mp2t/es_parser_mpeg1audio_unittest.cc",
-      "formats/mp2t/es_parser_test_base.cc",
-      "formats/mp2t/es_parser_test_base.h",
-      "formats/mp2t/mp2t_stream_parser_unittest.cc",
-      "formats/mp2t/timestamp_unroller_unittest.cc",
       "formats/mp4/aac_unittest.cc",
       "formats/mp4/avc_unittest.cc",
       "formats/mp4/box_reader_unittest.cc",
@@ -763,6 +768,18 @@ test("media_unittests") {
       "formats/mpeg/adts_stream_parser_unittest.cc",
       "formats/mpeg/mpeg1_audio_stream_parser_unittest.cc",
     ]
+    if (enable_mse_mpeg2ts_stream_parser) {
+      sources += [
+        "formats/mp2t/es_adapter_video_unittest.cc",
+        "formats/mp2t/es_parser_adts_unittest.cc",
+        "formats/mp2t/es_parser_h264_unittest.cc",
+        "formats/mp2t/es_parser_mpeg1audio_unittest.cc",
+        "formats/mp2t/es_parser_test_base.cc",
+        "formats/mp2t/es_parser_test_base.h",
+        "formats/mp2t/mp2t_stream_parser_unittest.cc",
+        "formats/mp2t/timestamp_unroller_unittest.cc",
+      ]
+    }
     if (media_use_ffmpeg) {
       sources += [
         "filters/ffmpeg_aac_bitstream_converter_unittest.cc",

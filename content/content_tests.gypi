@@ -1509,6 +1509,7 @@
               ],
               'dependencies': [
                 '<(DEPTH)/content/app/strings/content_strings.gyp:content_strings',
+                '<(DEPTH)/media/media.gyp:media_features',
                 '<(DEPTH)/net/net.gyp:net_resources',
                 '<(DEPTH)/third_party/WebKit/public/blink_resources.gyp:blink_resources',
                 '<(DEPTH)/third_party/iaccessible2/iaccessible2.gyp:iaccessible2',

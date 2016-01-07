@@ -383,6 +383,7 @@ test("content_browsertests") {
     "//gin",
     "//gpu",
     "//ipc:test_support",
+    "//media:media_features",
     "//media:shared_memory_support",
     "//media:test_support",
     "//media/audio:test_support",

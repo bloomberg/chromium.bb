@@ -1548,9 +1548,6 @@
     # Force disable libstdc++ debug mode.
     'disable_glibcxx_debug%': 0,
 
-    # Set to 1 to compile with MSE support for MPEG2 TS
-    'enable_mpeg2ts_stream_parser%': 0,
-
     # Support ChromeOS touchpad gestures with ozone.
     'use_evdev_gestures%': 0,
 
@@ -1885,7 +1882,6 @@
         'use_system_fontconfig%': 1,
       }],
       ['chromecast==1', {
-        'enable_mpeg2ts_stream_parser%': 1,
         'use_custom_freetype%': 0,
         'use_playready%': 0,
         'conditions': [
@@ -2777,11 +2773,6 @@
       }],
       ['proprietary_codecs==1', {
         'defines': ['USE_PROPRIETARY_CODECS'],
-        'conditions': [
-          ['enable_mpeg2ts_stream_parser==1', {
-            'defines': ['ENABLE_MPEG2TS_STREAM_PARSER'],
-          }],
-        ],
       }],
       ['enable_viewport==1', {
         'defines': ['ENABLE_VIEWPORT'],

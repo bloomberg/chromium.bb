@@ -10,6 +10,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "media/media_features.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -47,7 +48,7 @@ const char* kHevcSupported = kPropProbably;
 const char* kHevcSupported = kNot;
 #endif
 
-#if defined(ENABLE_MPEG2TS_STREAM_PARSER)
+#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
 const char* kMp2tsMaybe = kPropMaybe;
 const char* kMp2tsProbably = kPropProbably;
 #else

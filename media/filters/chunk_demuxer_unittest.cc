@@ -25,6 +25,7 @@
 #include "media/base/timestamp_constants.h"
 #include "media/formats/webm/cluster_builder.h"
 #include "media/formats/webm/webm_constants.h"
+#include "media/media_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::AnyNumber;
@@ -362,6 +363,7 @@ class ChunkDemuxerTest : public ::testing::Test {
     return demuxer_->AddId(source_id, type, codecs);
   }
 
+#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
   ChunkDemuxer::Status AddIdForMp2tSource(const std::string& source_id) {
     std::vector<std::string> codecs;
     std::string type = "video/mp2t";
@@ -369,6 +371,7 @@ class ChunkDemuxerTest : public ::testing::Test {
     codecs.push_back("avc1.640028");
     return demuxer_->AddId(source_id, type, codecs);
   }
+#endif
 
   void AppendData(const uint8_t* data, size_t length) {
     AppendData(kSourceId, data, length);
@@ -3047,7 +3050,7 @@ TEST_F(ChunkDemuxerTest, IsParsingMediaSegmentMidMediaSegment) {
 }
 
 #if defined(USE_PROPRIETARY_CODECS)
-#if defined(ENABLE_MPEG2TS_STREAM_PARSER)
+#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
 TEST_F(ChunkDemuxerTest, EmitBuffersDuringAbort) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(

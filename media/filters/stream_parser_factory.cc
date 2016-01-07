@@ -18,13 +18,14 @@
 #include "media/formats/mpeg/adts_stream_parser.h"
 #include "media/formats/mpeg/mpeg1_audio_stream_parser.h"
 #include "media/formats/webm/webm_stream_parser.h"
+#include "media/media_features.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
 #endif
 
 #if defined(USE_PROPRIETARY_CODECS)
-#if defined(ENABLE_MPEG2TS_STREAM_PARSER)
+#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
 #include "media/formats/mp2t/mp2t_stream_parser.h"
 #endif
 #include "media/formats/mp4/es_descriptor.h"
@@ -235,7 +236,7 @@ static StreamParser* BuildADTSParser(const std::vector<std::string>& codecs,
   return new ADTSStreamParser();
 }
 
-#if defined(ENABLE_MPEG2TS_STREAM_PARSER)
+#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
 static const CodecInfo* kVideoMP2TCodecs[] = {
   &kH264AVC1CodecInfo,
   &kH264AVC3CodecInfo,
@@ -263,17 +264,16 @@ static StreamParser* BuildMP2TParser(const std::vector<std::string>& codecs,
 #endif
 #endif
 
-
 static const SupportedTypeInfo kSupportedTypeInfo[] = {
-  { "video/webm", &BuildWebMParser, kVideoWebMCodecs },
-  { "audio/webm", &BuildWebMParser, kAudioWebMCodecs },
+    {"video/webm", &BuildWebMParser, kVideoWebMCodecs},
+    {"audio/webm", &BuildWebMParser, kAudioWebMCodecs},
 #if defined(USE_PROPRIETARY_CODECS)
-  { "audio/aac", &BuildADTSParser, kAudioADTSCodecs },
-  { "audio/mpeg", &BuildMP3Parser, kAudioMP3Codecs },
-  { "video/mp4", &BuildMP4Parser, kVideoMP4Codecs },
-  { "audio/mp4", &BuildMP4Parser, kAudioMP4Codecs },
-#if defined(ENABLE_MPEG2TS_STREAM_PARSER)
-  { "video/mp2t", &BuildMP2TParser, kVideoMP2TCodecs },
+    {"audio/aac", &BuildADTSParser, kAudioADTSCodecs},
+    {"audio/mpeg", &BuildMP3Parser, kAudioMP3Codecs},
+    {"video/mp4", &BuildMP4Parser, kVideoMP4Codecs},
+    {"audio/mp4", &BuildMP4Parser, kAudioMP4Codecs},
+#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
+    {"video/mp2t", &BuildMP2TParser, kVideoMP2TCodecs},
 #endif
 #endif
 };
