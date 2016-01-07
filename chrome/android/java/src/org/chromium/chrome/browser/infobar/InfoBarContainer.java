@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
@@ -99,7 +98,6 @@ public class InfoBarContainer extends SwipableOverlayView {
     public InfoBarContainer(Context context, int tabId, ViewGroup parentView, Tab tab) {
         super(context, null);
         tab.addObserver(getTabObserver());
-        setIsSwipable(false);
 
         // TODO(newt): move this workaround into the infobar views if/when they're scrollable.
         // Workaround for http://crbug.com/407149. See explanation in onMeasure() below.
@@ -298,21 +296,6 @@ public class InfoBarContainer extends SwipableOverlayView {
     @Override
     protected boolean isAllowedToAutoHide() {
         return sIsAllowedToAutoHide;
-    }
-
-    @Override
-    protected void onViewSwipedAway() {
-        assert false;
-    }
-
-    @Override
-    protected void onViewClicked() {
-        assert false;
-    }
-
-    @Override
-    protected void onViewPressed(MotionEvent event) {
-        assert false;
     }
 
     private native long nativeInit();
