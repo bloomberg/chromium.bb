@@ -5055,7 +5055,6 @@
           # GCC_INLINES_ARE_PRIVATE_EXTERN maps to -fvisibility-inlines-hidden
           'GCC_INLINES_ARE_PRIVATE_EXTERN': 'YES',
           'GCC_OBJC_CALL_CXX_CDTORS': 'YES',        # -fobjc-call-cxx-cdtors
-          'GCC_SYMBOLS_PRIVATE_EXTERN': 'YES',      # -fvisibility=hidden
           'GCC_THREADSAFE_STATICS': 'NO',           # -fno-threadsafe-statics
           'GCC_TREAT_WARNINGS_AS_ERRORS': 'YES',    # -Werror
           'GCC_VERSION': '4.2',
@@ -5167,6 +5166,29 @@
                 ],
               }],
             ],
+          }],
+          ['OS=="mac"', {
+            'xcode_settings': {
+              'GCC_SYMBOLS_PRIVATE_EXTERN': 'YES',    # -fvisibility=hidden
+            },
+          }],
+          ['OS=="ios"', {
+            'configurations': {
+              'Debug': {
+                'xcode_settings': {
+                  # XCTests inject a dynamic library into the application. If
+                  # fvisibility is set to hidden, then some symbols needed by
+                  # XCTests are not available. Disable this setting for
+                  # Debug configuration.
+                  'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
+                },
+              },
+              'Release': {
+                'xcode_settings': {
+                  'GCC_SYMBOLS_PRIVATE_EXTERN': 'YES',    # -fvisibility=hidden
+                },
+              },
+            },
           }],
         ],
         'target_conditions': [
