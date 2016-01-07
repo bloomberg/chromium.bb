@@ -5,40 +5,16 @@
 #ifndef NET_BASE_NETWORK_INTERFACES_H_
 #define NET_BASE_NETWORK_INTERFACES_H_
 
-#include "build/build_config.h"
-
-#if defined(OS_WIN)
-#include <windows.h>
-#include <ws2tcpip.h>
-#elif defined(OS_POSIX)
-#include <sys/types.h>
-#include <sys/socket.h>
-#endif
-
 #include <stdint.h>
 
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
-#include "base/strings/utf_offset_string_conversions.h"
-#include "net/base/address_family.h"
-#include "net/base/escape.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/ip_address_number.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
-
-class GURL;
-
-namespace base {
-class Time;
-}
-
-namespace url {
-struct CanonHostInfo;
-struct Parsed;
-}
 
 namespace net {
 
