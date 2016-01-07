@@ -14,6 +14,7 @@
 #include "content/common/mojo/mojo_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_process_host_observer.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -89,6 +90,34 @@ void CallRegisterProcessWithBroker(base::ProcessId pid,
       mojo::ScopedHandle(mojo::Handle(client_pipe)));
 }
 
+class PIDSender : public RenderProcessHostObserver {
+ public:
+  PIDSender(
+      RenderProcessHost* host,
+      mojo::shell::mojom::PIDReceiverPtr pid_receiver)
+      : host_(host),
+        pid_receiver_(std::move(pid_receiver)) {
+    pid_receiver_.set_connection_error_handler([this]() { delete this; });
+    DCHECK(!host_->IsReady());
+    host_->AddObserver(this);
+  }
+  ~PIDSender() override {
+    host_->RemoveObserver(this);
+  }
+
+ private:
+  // Overridden from RenderProcessHostObserver:
+  void RenderProcessReady(RenderProcessHost* host) override {
+    pid_receiver_->SetPID(base::GetProcId(host->GetHandle()));
+    delete this;
+  }
+
+  RenderProcessHost* host_;
+  mojo::shell::mojom::PIDReceiverPtr pid_receiver_;
+
+  DISALLOW_COPY_AND_ASSIGN(PIDSender);
+};
+
 }  // namespace
 
 void RegisterChildWithExternalShell(int child_process_id,
@@ -120,10 +149,16 @@ void RegisterChildWithExternalShell(int child_process_id,
   std::string url =
       base::StringPrintf("exe:chrome_renderer%d", child_process_id);
 
+  mojo::shell::mojom::PIDReceiverPtr pid_receiver;
+  mojo::InterfaceRequest<mojo::shell::mojom::PIDReceiver> request =
+      GetProxy(&pid_receiver);
+  new PIDSender(render_process_host, std::move(pid_receiver));
+
   application_manager->CreateInstanceForHandle(
       mojo::ScopedHandle(mojo::Handle(handle.release().value())),
       url,
-      CreateCapabilityFilterForRenderer());
+      CreateCapabilityFilterForRenderer(),
+      std::move(request));
 
   // Send the other end to the child via Chrome IPC.
   base::PlatformFile client_file = PlatformFileFromScopedPlatformHandle(

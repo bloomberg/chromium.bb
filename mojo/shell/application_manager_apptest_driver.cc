@@ -105,9 +105,13 @@ class TargetApplicationDelegate : public mojo::ApplicationDelegate,
         mojo::shell::test::mojom::CreateInstanceForHandleTest::Name_);
     filter->filter.insert("mojo:mojo_shell_apptests",
                           std::move(test_interfaces));
+    mojo::shell::mojom::PIDReceiverPtr receiver;
+    mojo::InterfaceRequest<mojo::shell::mojom::PIDReceiver> request =
+        GetProxy(&receiver);
     application_manager->CreateInstanceForHandle(
         mojo::ScopedHandle(mojo::Handle(handle.release().value())),
-        "exe:application_manager_apptest_target", std::move(filter));
+        "exe:application_manager_apptest_target", std::move(filter),
+        std::move(request));
     // Put the other end on the command line used to launch the target.
     platform_channel_pair.PrepareToPassClientHandleToChildProcess(
         &child_command_line, &handle_passing_info);

@@ -41,6 +41,7 @@ ApplicationInstance::ApplicationInstance(
       on_application_end_(on_application_end),
       application_(std::move(application)),
       binding_(this),
+      pid_receiver_binding_(this),
       queue_requests_(false),
       native_runner_(nullptr),
       pid_(base::kNullProcessId) {}
@@ -70,6 +71,11 @@ void ApplicationInstance::ConnectToClient(
 
 void ApplicationInstance::SetNativeRunner(NativeRunner* native_runner) {
   native_runner_ = native_runner;
+}
+
+void ApplicationInstance::BindPIDReceiver(
+    InterfaceRequest<mojom::PIDReceiver> pid_receiver) {
+  pid_receiver_binding_.Bind(std::move(pid_receiver));
 }
 
 // Shell implementation:
@@ -115,6 +121,11 @@ void ApplicationInstance::QuitApplication() {
   application_->OnQuitRequested(
       base::Bind(&ApplicationInstance::OnQuitRequestedResult,
                  base::Unretained(this)));
+}
+
+void ApplicationInstance::SetPID(uint32_t pid) {
+  // This will call us back to update pid_.
+  manager_->ApplicationPIDAvailable(id_, pid);
 }
 
 // static

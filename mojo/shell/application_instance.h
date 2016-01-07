@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "mojo/application/public/interfaces/application.mojom.h"
+#include "mojo/application/public/interfaces/application_manager.mojom.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/shell/capability_filter.h"
@@ -29,7 +30,8 @@ class NativeRunner;
 
 // Encapsulates a connection to an instance of an application, tracked by the
 // shell's ApplicationManager.
-class ApplicationInstance : public Shell {
+class ApplicationInstance : public Shell,
+                            public mojom::PIDReceiver {
  public:
   // |requesting_content_handler_id| is the id of the content handler that
   // loaded this app. If the app was not loaded by a content handler the id
@@ -48,6 +50,8 @@ class ApplicationInstance : public Shell {
 
   // Required before GetProcessId can be called.
   void SetNativeRunner(NativeRunner* native_runner);
+
+  void BindPIDReceiver(InterfaceRequest<mojom::PIDReceiver> pid_receiver);
 
   Application* application() { return application_.get(); }
   const Identity& identity() const { return identity_; }
@@ -72,6 +76,9 @@ class ApplicationInstance : public Shell {
       const ConnectToApplicationCallback& callback) override;
   void QuitApplication() override;
 
+  // PIDReceiver implementation:
+  void SetPID(uint32_t pid) override;
+
   static int GenerateUniqueID();
 
   void CallAcceptConnection(scoped_ptr<ConnectToApplicationParams> params);
@@ -93,6 +100,7 @@ class ApplicationInstance : public Shell {
   base::Closure on_application_end_;
   ApplicationPtr application_;
   Binding<Shell> binding_;
+  Binding<mojom::PIDReceiver> pid_receiver_binding_;
   bool queue_requests_;
   std::vector<ConnectToApplicationParams*> queued_client_requests_;
   NativeRunner* native_runner_;

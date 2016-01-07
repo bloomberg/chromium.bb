@@ -37,9 +37,11 @@ class ShellApplicationDelegate
       InterfaceRequest<mojom::ApplicationManager> request) override;
 
   // Overridden from mojom::ApplicationManager:
-  void CreateInstanceForHandle(ScopedHandle channel,
-                               const String& url,
-                               CapabilityFilterPtr filter) override;
+  void CreateInstanceForHandle(
+      ScopedHandle channel,
+      const String& url,
+      CapabilityFilterPtr filter,
+      InterfaceRequest<mojom::PIDReceiver> pid_receiver) override;
   void RegisterProcessWithBroker(uint32_t pid, ScopedHandle pipe) override;
   void AddListener(
       mojom::ApplicationManagerListenerPtr listener) override;

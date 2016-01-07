@@ -121,9 +121,11 @@ ApplicationInstance* ApplicationManager::GetApplicationInstance(
   return it != identity_to_instance_.end() ? it->second : nullptr;
 }
 
-void ApplicationManager::CreateInstanceForHandle(ScopedHandle channel,
-                                                 const GURL& url,
-                                                 CapabilityFilterPtr filter) {
+void ApplicationManager::CreateInstanceForHandle(
+    ScopedHandle channel,
+    const GURL& url,
+    CapabilityFilterPtr filter,
+    InterfaceRequest<mojom::PIDReceiver> pid_receiver) {
   // Instances created by others are considered unique, and thus have no
   // identity. As such they cannot be connected to by anyone else, and so we
   // never call ConnectToClient().
@@ -135,6 +137,7 @@ void ApplicationManager::CreateInstanceForHandle(ScopedHandle channel,
   ApplicationInstance* instance = nullptr;
   InterfaceRequest<Application> application_request =
       CreateInstance(target_id, base::Closure(), &instance);
+  instance->BindPIDReceiver(std::move(pid_receiver));
   scoped_ptr<NativeRunner> runner =
       native_runner_factory_->Create(base::FilePath());
   runner->InitHost(std::move(channel), std::move(application_request));
@@ -150,6 +153,21 @@ void ApplicationManager::AddListener(
   listener->SetRunningApplications(std::move(applications));
 
   listeners_.AddInterfacePtr(std::move(listener));
+}
+
+void ApplicationManager::ApplicationPIDAvailable(
+    int id,
+    base::ProcessId pid) {
+  for (auto& instance : identity_to_instance_) {
+    if (instance.second->id() == id) {
+      instance.second->set_pid(pid);
+      break;
+    }
+  }
+  listeners_.ForAllPtrs(
+      [this, id, pid](mojom::ApplicationManagerListener* listener) {
+        listener->ApplicationPIDAvailable(id, pid);
+      });
 }
 
 InterfaceRequest<Application> ApplicationManager::CreateAndConnectToInstance(
@@ -330,21 +348,6 @@ void ApplicationManager::OnApplicationInstanceError(
       });
   if (!on_application_end.is_null())
     on_application_end.Run();
-}
-
-void ApplicationManager::ApplicationPIDAvailable(
-    int id,
-    base::ProcessId pid) {
-  for (auto& instance : identity_to_instance_) {
-    if (instance.second->id() == id) {
-      instance.second->set_pid(pid);
-      break;
-    }
-  }
-  listeners_.ForAllPtrs(
-      [this, id, pid](mojom::ApplicationManagerListener* listener) {
-        listener->ApplicationPIDAvailable(id, pid);
-      });
 }
 
 void ApplicationManager::CleanupRunner(NativeRunner* runner) {

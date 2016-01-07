@@ -37,9 +37,10 @@ void ShellApplicationDelegate::Create(
 void ShellApplicationDelegate::CreateInstanceForHandle(
     ScopedHandle channel,
     const String& url,
-    CapabilityFilterPtr filter) {
+    CapabilityFilterPtr filter,
+    InterfaceRequest<mojom::PIDReceiver> pid_receiver) {
   manager_->CreateInstanceForHandle(std::move(channel), GURL(url),
-                                    std::move(filter));
+                                    std::move(filter), std::move(pid_receiver));
 }
 
 void ShellApplicationDelegate::RegisterProcessWithBroker(

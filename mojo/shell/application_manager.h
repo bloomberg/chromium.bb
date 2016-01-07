@@ -95,12 +95,16 @@ class ApplicationManager {
 
   ApplicationInstance* GetApplicationInstance(const Identity& identity) const;
 
-  void CreateInstanceForHandle(ScopedHandle channel,
-                               const GURL& url,
-                               CapabilityFilterPtr filter);
+  void CreateInstanceForHandle(
+      ScopedHandle channel,
+      const GURL& url,
+      CapabilityFilterPtr filter,
+      InterfaceRequest<mojom::PIDReceiver> pid_receiver);
   void AddListener(mojom::ApplicationManagerListenerPtr listener);
   void GetRunningApplications(
       const Callback<void(Array<mojom::ApplicationInfoPtr>)>& callback);
+
+  void ApplicationPIDAvailable(int id, base::ProcessId pid);
 
  private:
   using IdentityToInstanceMap = std::map<Identity, ApplicationInstance*>;
@@ -135,7 +139,6 @@ class ApplicationManager {
   // no loader configured for the URL.
   ApplicationLoader* GetLoaderForURL(const GURL& url);
 
-  void ApplicationPIDAvailable(int id, base::ProcessId pid);
   void CleanupRunner(NativeRunner* runner);
 
   mojom::ApplicationInfoPtr CreateApplicationInfoForInstance(
