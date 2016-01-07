@@ -539,8 +539,9 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // Sets exit type. Calling this can terminate the active nested message-loop.
   void SetExitType(ExitType type);
 
-  // Terminates the current nested message-loop.
-  void TerminateNestedMessageLoop();
+  // Terminates the current nested message-loop, if there is any. Returns |true|
+  // if any message loop is terminated.
+  bool TerminateNestedMessageLoopIfNecessary();
 
   // Performs the teardown of the menu launched by Run(). The selected item is
   // returned.

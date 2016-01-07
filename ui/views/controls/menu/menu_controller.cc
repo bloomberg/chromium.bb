@@ -865,7 +865,7 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
     ui::KeyboardCode key_code) {
   if (exit_type() == MenuController::EXIT_ALL ||
       exit_type() == MenuController::EXIT_DESTROYED) {
-    TerminateNestedMessageLoop();
+    TerminateNestedMessageLoopIfNecessary();
     return ui::POST_DISPATCH_PERFORM_DEFAULT;
   }
 
@@ -874,8 +874,7 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
   else
     OnKeyDown(key_code);
 
-  if (exit_type() != MenuController::EXIT_NONE)
-    TerminateNestedMessageLoop();
+  TerminateNestedMessageLoopIfNecessary();
 
   return ui::POST_DISPATCH_NONE;
 }
@@ -2406,16 +2405,16 @@ void MenuController::SetExitType(ExitType type) {
   // the next native message. We quite the nested message loop as soon as
   // possible to avoid having deleted views classes (such as widgets and
   // rootviews) on the stack when the nested message loop stops.
-  //
-  // It's safe to invoke QuitNestedMessageLoop() multiple times, it only effects
-  // the current loop.
-  bool quit_now = exit_type_ != EXIT_NONE && message_loop_depth_;
-  if (quit_now)
-    TerminateNestedMessageLoop();
+  TerminateNestedMessageLoopIfNecessary();
 }
 
-void MenuController::TerminateNestedMessageLoop() {
-  message_loop_->QuitNow();
+bool MenuController::TerminateNestedMessageLoopIfNecessary() {
+  // It is necessary to check both |async_run_| and |message_loop_depth_|
+  // because the topmost async menu could be nested in a sync parent menu.
+  bool quit_now = !async_run_ && exit_type_ != EXIT_NONE && message_loop_depth_;
+  if (quit_now)
+    message_loop_->QuitNow();
+  return quit_now;
 }
 
 MenuItemView* MenuController::ExitMenuRun() {
@@ -2485,10 +2484,8 @@ MenuItemView* MenuController::ExitMenuRun() {
       // Set exit_all_, which makes sure all nested loops exit immediately.
       if (exit_type_ != EXIT_DESTROYED)
         SetExitType(EXIT_ALL);
-    } else if (exit_type_ != EXIT_NONE && message_loop_depth_) {
-      // If we're closing all menus, also mark the next topmost menu
-      // message loop for termination, so that we'll unwind fully.
-      TerminateNestedMessageLoop();
+    } else {
+      TerminateNestedMessageLoopIfNecessary();
     }
   }
 

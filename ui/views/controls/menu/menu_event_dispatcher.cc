@@ -79,8 +79,7 @@ uint32_t MenuEventDispatcher::DispatchEvent(const ui::PlatformEvent& event) {
     }
   }
 
-  if (menu_controller_->exit_type() != MenuController::EXIT_NONE)
-    menu_controller_->TerminateNestedMessageLoop();
+  menu_controller_->TerminateNestedMessageLoopIfNecessary();
 
   return should_perform_default ? ui::POST_DISPATCH_PERFORM_DEFAULT
                                 : ui::POST_DISPATCH_NONE;

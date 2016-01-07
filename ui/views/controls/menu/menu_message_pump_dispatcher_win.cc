@@ -23,12 +23,9 @@ MenuMessagePumpDispatcher::~MenuMessagePumpDispatcher() {}
 uint32_t MenuMessagePumpDispatcher::Dispatch(const MSG& msg) {
   DCHECK(menu_controller_->IsBlockingRun());
 
-  bool should_quit = false;
   bool should_perform_default = true;
-  if (menu_controller_->exit_type() == MenuController::EXIT_ALL ||
-      menu_controller_->exit_type() == MenuController::EXIT_DESTROYED) {
-    should_quit = true;
-  } else {
+  if (menu_controller_->exit_type() != MenuController::EXIT_ALL &&
+      menu_controller_->exit_type() != MenuController::EXIT_DESTROYED) {
     // NOTE: we don't get WM_ACTIVATE or anything else interesting in here.
     switch (msg.message) {
       case WM_CONTEXTMENU: {
@@ -71,7 +68,6 @@ uint32_t MenuMessagePumpDispatcher::Dispatch(const MSG& msg) {
       case WM_SYSKEYDOWN:
         // Exit immediately on system keys.
         menu_controller_->Cancel(MenuController::EXIT_ALL);
-        should_quit = true;
         should_perform_default = false;
         break;
 
@@ -80,8 +76,7 @@ uint32_t MenuMessagePumpDispatcher::Dispatch(const MSG& msg) {
     }
   }
 
-  if (should_quit || menu_controller_->exit_type() != MenuController::EXIT_NONE)
-    menu_controller_->TerminateNestedMessageLoop();
+  menu_controller_->TerminateNestedMessageLoopIfNecessary();
   return should_perform_default ? POST_DISPATCH_PERFORM_DEFAULT
                                 : POST_DISPATCH_NONE;
 }

@@ -15,8 +15,13 @@
 #include "ui/views/controls/menu/menu_controller_delegate.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/menu_message_loop.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/test/views_test_base.h"
+
+#if defined(OS_WIN)
+#include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
+#endif
 
 #if defined(USE_AURA)
 #include "ui/aura/scoped_window_targeter.h"
@@ -124,6 +129,52 @@ class TestEventHandler : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(TestEventHandler);
 };
 
+// A wrapper around MenuMessageLoop that can be used to track whether a message
+// loop is running or not.
+class TestMenuMessageLoop : public MenuMessageLoop {
+ public:
+  explicit TestMenuMessageLoop(scoped_ptr<MenuMessageLoop> original);
+  ~TestMenuMessageLoop() override;
+
+  bool is_running() const { return is_running_; }
+
+ private:
+  // MenuMessageLoop:
+  void Run(MenuController* controller,
+           Widget* owner,
+           bool nested_menu) override;
+  void QuitNow() override;
+  void ClearOwner() override;
+
+  scoped_ptr<MenuMessageLoop> original_;
+  bool is_running_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestMenuMessageLoop);
+};
+
+TestMenuMessageLoop::TestMenuMessageLoop(scoped_ptr<MenuMessageLoop> original)
+    : original_(std::move(original)) {
+  DCHECK(original_);
+}
+
+TestMenuMessageLoop::~TestMenuMessageLoop() {}
+
+void TestMenuMessageLoop::Run(MenuController* controller,
+                              Widget* owner,
+                              bool nested_menu) {
+  is_running_ = true;
+  original_->Run(controller, owner, nested_menu);
+}
+
+void TestMenuMessageLoop::QuitNow() {
+  is_running_ = false;
+  original_->QuitNow();
+}
+
+void TestMenuMessageLoop::ClearOwner() {
+  original_->ClearOwner();
+}
+
 }  // namespace
 
 class TestMenuItemViewShown : public MenuItemView {
@@ -191,6 +242,55 @@ class MenuControllerTest : public ViewsTestBase {
   }
 #endif  // defined(OS_LINUX) && defined(USE_X11)
 
+  void TestAsynchronousNestedExitAll() {
+    ASSERT_TRUE(test_message_loop_->is_running());
+
+    scoped_ptr<TestMenuControllerDelegate> nested_delegate(
+        new TestMenuControllerDelegate());
+
+    menu_controller()->AddNestedDelegate(nested_delegate.get());
+    menu_controller()->SetAsyncRun(true);
+
+    int mouse_event_flags = 0;
+    MenuItemView* run_result = menu_controller()->Run(
+        owner(), nullptr, menu_item(), gfx::Rect(), MENU_ANCHOR_TOPLEFT, false,
+        false, &mouse_event_flags);
+    EXPECT_EQ(run_result, nullptr);
+
+    // Exit all menus and check that the parent menu's message loop is
+    // terminated.
+    menu_controller()->Cancel(MenuController::EXIT_ALL);
+    EXPECT_EQ(MenuController::EXIT_ALL, menu_controller()->exit_type());
+    EXPECT_FALSE(test_message_loop_->is_running());
+  }
+
+  void TestAsynchronousNestedExitOutermost() {
+    ASSERT_TRUE(test_message_loop_->is_running());
+
+    scoped_ptr<TestMenuControllerDelegate> nested_delegate(
+        new TestMenuControllerDelegate());
+
+    menu_controller()->AddNestedDelegate(nested_delegate.get());
+    menu_controller()->SetAsyncRun(true);
+
+    int mouse_event_flags = 0;
+    MenuItemView* run_result = menu_controller()->Run(
+        owner(), nullptr, menu_item(), gfx::Rect(), MENU_ANCHOR_TOPLEFT, false,
+        false, &mouse_event_flags);
+    EXPECT_EQ(run_result, nullptr);
+
+    // Exit the nested menu and check that the parent menu's message loop is
+    // still running.
+    menu_controller()->Cancel(MenuController::EXIT_OUTERMOST);
+    EXPECT_EQ(MenuController::EXIT_NONE, menu_controller()->exit_type());
+    EXPECT_TRUE(test_message_loop_->is_running());
+
+    // Now, exit the parent menu and check that its message loop is terminated.
+    menu_controller()->Cancel(MenuController::EXIT_OUTERMOST);
+    EXPECT_EQ(MenuController::EXIT_OUTERMOST, menu_controller()->exit_type());
+    EXPECT_FALSE(test_message_loop_->is_running());
+  }
+
  protected:
   void SetPendingStateItem(MenuItemView* item) {
     menu_controller_->pending_state_.item = item;
@@ -252,11 +352,19 @@ class MenuControllerTest : public ViewsTestBase {
   }
 
   void RunMenu() {
+    menu_controller_->message_loop_depth_++;
     menu_controller_->RunMessageLoop(false);
+    menu_controller_->message_loop_depth_--;
   }
 
   void Accept(MenuItemView* item, int event_flags) {
     menu_controller_->Accept(item, event_flags);
+  }
+
+  void InstallTestMenuMessageLoop() {
+    test_message_loop_ =
+        new TestMenuMessageLoop(std::move(menu_controller_->message_loop_));
+    menu_controller_->message_loop_.reset(test_message_loop_);
   }
 
   Widget* owner() { return owner_.get(); }
@@ -283,6 +391,12 @@ class MenuControllerTest : public ViewsTestBase {
         new ui::test::EventGenerator(GetContext(), owner_->GetNativeWindow()));
     owner_->Show();
 
+#if defined(OS_WIN)
+    dispatcher_client_.reset(new DesktopDispatcherClient);
+    aura::client::SetDispatcherClient(owner_->GetNativeView()->GetRootWindow(),
+                                      dispatcher_client_.get());
+#endif
+
     SetupMenuItem();
 
     SetupMenuController();
@@ -308,12 +422,17 @@ class MenuControllerTest : public ViewsTestBase {
     menu_item_->SetController(menu_controller_);
   }
 
+#if defined(OS_WIN)
+  scoped_ptr<aura::client::DispatcherClient> dispatcher_client_;
+#endif
+
   scoped_ptr<Widget> owner_;
   scoped_ptr<ui::test::EventGenerator> event_generator_;
   scoped_ptr<TestMenuItemViewShown> menu_item_;
   scoped_ptr<TestMenuControllerDelegate> menu_controller_delegate_;
   scoped_ptr<MenuDelegate> menu_delegate_;
   MenuController* menu_controller_;
+  TestMenuMessageLoop* test_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuControllerTest);
 };
@@ -600,6 +719,32 @@ TEST_F(MenuControllerTest, AsynchronousNestedDelegate) {
   EXPECT_EQ(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
             nested_delegate->on_menu_closed_notify_type());
   EXPECT_EQ(MenuController::EXIT_ALL, controller->exit_type());
+}
+
+// Tests that if you exit all menus when an asynchrnous menu is nested within a
+// synchronous menu, the message loop for the parent menu finishes running.
+TEST_F(MenuControllerTest, AsynchronousNestedExitAll) {
+  InstallTestMenuMessageLoop();
+
+  base::MessageLoopForUI::current()->PostTask(
+      FROM_HERE, base::Bind(&MenuControllerTest::TestAsynchronousNestedExitAll,
+                            base::Unretained(this)));
+
+  RunMenu();
+}
+
+// Tests that if you exit the nested menu when an asynchrnous menu is nested
+// within a synchronous menu, the message loop for the parent menu remains
+// running.
+TEST_F(MenuControllerTest, AsynchronousNestedExitOutermost) {
+  InstallTestMenuMessageLoop();
+
+  base::MessageLoopForUI::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&MenuControllerTest::TestAsynchronousNestedExitOutermost,
+                 base::Unretained(this)));
+
+  RunMenu();
 }
 
 }  // namespace test

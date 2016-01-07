@@ -41,7 +41,7 @@ void MenuKeyEventHandler::OnKeyEvent(ui::KeyEvent* event) {
     // not quit till the action's base::RunLoop ends. IDC_BOOKMARK_BAR_OPEN_ALL
     // sometimes opens a modal dialog. The modal dialog starts a base::RunLoop
     // and keeps the base::RunLoop running for the duration of its lifetime.
-    menu_controller->TerminateNestedMessageLoop();
+    menu_controller->TerminateNestedMessageLoopIfNecessary();
     return;
   }
 
@@ -58,9 +58,7 @@ void MenuKeyEventHandler::OnKeyEvent(ui::KeyEvent* event) {
     }
   }
 
-  if (menu_controller->exit_type() != MenuController::EXIT_NONE) {
-    menu_controller->TerminateNestedMessageLoop();
-  } else {
+  if (!menu_controller->TerminateNestedMessageLoopIfNecessary()) {
     ui::Accelerator accelerator(*event);
     ViewsDelegate::ProcessMenuAcceleratorResult result =
         ViewsDelegate::GetInstance()->ProcessAcceleratorWhileMenuShowing(
