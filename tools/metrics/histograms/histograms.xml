@@ -20099,6 +20099,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Memory.ShmemDir.AmountOfFreeSpace" units="MB">
+  <owner>reveman@chromium.org</owner>
+  <summary>
+    The amount of free space in temporary directory for shared memory files.
+    Recorded each time a new discardable memory manager instance is created.
+  </summary>
+</histogram>
+
 <histogram name="Memory.Stats.Win.AvailPageFile" units="MB">
   <owner>georgseak@chromium.org</owner>
   <summary>

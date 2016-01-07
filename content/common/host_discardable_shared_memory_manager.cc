@@ -28,6 +28,12 @@
 #include "content/common/discardable_shared_memory_heap.h"
 #include "content/public/common/child_process_host.h"
 
+#if defined(OS_LINUX)
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/metrics/histogram.h"
+#endif
+
 namespace content {
 namespace {
 
@@ -88,15 +94,56 @@ class DiscardableMemoryImpl : public base::DiscardableMemory {
   DISALLOW_COPY_AND_ASSIGN(DiscardableMemoryImpl);
 };
 
-base::LazyInstance<HostDiscardableSharedMemoryManager>
-    g_discardable_shared_memory_manager = LAZY_INSTANCE_INITIALIZER;
+// Returns the default memory limit to use for discardable memory, taking
+// the amount physical memory available and other platform specific constraints
+// into account.
+int64_t GetDefaultMemoryLimit() {
+  const int kMegabyte = 1024 * 1024;
 
 #if defined(OS_ANDROID)
-// Limits the number of FDs used to 32, assuming a 4MB allocation size.
-const int64_t kMaxDefaultMemoryLimit = 128 * 1024 * 1024;
+  // Limits the number of FDs used to 32, assuming a 4MB allocation size.
+  int64_t max_default_memory_limit = 128 * kMegabyte;
 #else
-const int64_t kMaxDefaultMemoryLimit = 512 * 1024 * 1024;
+  int64_t max_default_memory_limit = 512 * kMegabyte;
 #endif
+
+  // Use 1/8th of discardable memory on low-end devices.
+  if (base::SysInfo::IsLowEndDevice())
+    max_default_memory_limit /= 8;
+
+#if defined(OS_LINUX)
+  base::FilePath shmem_dir;
+  if (base::GetShmemTempDir(false, &shmem_dir)) {
+    int64_t shmem_dir_amount_of_free_space =
+        base::SysInfo::AmountOfFreeDiskSpace(shmem_dir);
+    DCHECK_GT(shmem_dir_amount_of_free_space, 0);
+    int64_t shmem_dir_amount_of_free_space_mb =
+        shmem_dir_amount_of_free_space / kMegabyte;
+
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Memory.ShmemDir.AmountOfFreeSpace",
+                                shmem_dir_amount_of_free_space_mb, 1,
+                                4 * 1024,  // 4 GB
+                                50);
+
+    if (shmem_dir_amount_of_free_space_mb < 64) {
+      LOG(WARNING) << "Less than 64MB of free space in temporary directory for "
+                      "shared memory files: "
+                   << shmem_dir_amount_of_free_space_mb;
+    }
+
+    // Allow 1/2 of available shmem dir space to be used for discardable memory.
+    max_default_memory_limit =
+        std::min(max_default_memory_limit, shmem_dir_amount_of_free_space / 2);
+  }
+#endif
+
+  // Allow 25% of physical memory to be used for discardable memory.
+  return std::min(max_default_memory_limit,
+                  base::SysInfo::AmountOfPhysicalMemory() / 4);
+}
+
+base::LazyInstance<HostDiscardableSharedMemoryManager>
+    g_discardable_shared_memory_manager = LAZY_INSTANCE_INITIALIZER;
 
 const int kEnforceMemoryPolicyDelayMs = 1000;
 
@@ -113,14 +160,7 @@ HostDiscardableSharedMemoryManager::MemorySegment::~MemorySegment() {
 }
 
 HostDiscardableSharedMemoryManager::HostDiscardableSharedMemoryManager()
-    : memory_limit_(
-          // Allow 25% of physical memory to be used for discardable memory.
-          std::min(base::SysInfo::AmountOfPhysicalMemory() / 4,
-                   base::SysInfo::IsLowEndDevice()
-                       ?
-                       // Use 1/8th of discardable memory on low-end devices.
-                       kMaxDefaultMemoryLimit / 8
-                       : kMaxDefaultMemoryLimit)),
+    : memory_limit_(GetDefaultMemoryLimit()),
       bytes_allocated_(0),
       memory_pressure_listener_(new base::MemoryPressureListener(
           base::Bind(&HostDiscardableSharedMemoryManager::OnMemoryPressure,
