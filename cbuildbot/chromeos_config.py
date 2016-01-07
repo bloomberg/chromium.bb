@@ -1537,6 +1537,7 @@ def GetConfig():
       'test-ap-group',
       site_config.Add('stumpy-test-ap', _test_ap, boards=['stumpy']),
       site_config.Add('panther-test-ap', _test_ap, boards=['panther']),
+      site_config.Add('whirlwind-test-ap', _test_ap, boards=['whirlwind']),
   )
 
   ### Master paladin (CQ builder).

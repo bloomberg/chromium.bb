@@ -19119,6 +19119,14 @@
                 ],
                 "grouped": true,
                 "name": "panther-test-ap"
+            },
+            {
+                "_template": "test-ap",
+                "boards": [
+                    "whirlwind"
+                ],
+                "grouped": true,
+                "name": "whirlwind-test-ap"
             }
         ]
     },
@@ -22606,6 +22614,12 @@
         "chrome_sdk": false,
         "sync_chrome": false,
         "vm_tests": []
+    },
+    "whirlwind-test-ap": {
+        "_template": "test-ap",
+        "boards": [
+            "whirlwind"
+        ]
     },
     "whirlwind-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
