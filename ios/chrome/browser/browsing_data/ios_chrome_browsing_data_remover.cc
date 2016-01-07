@@ -34,7 +34,6 @@
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
-#include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
@@ -141,15 +140,6 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask,
   set_removing(true);
   remove_mask_ = remove_mask;
 
-  PrefService* prefs = browser_state_->GetPrefs();
-  bool may_delete_history =
-      prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory);
-
-  // All the UI entry points into the IOSChromeBrowsingDataRemover should be
-  // disabled, but this will fire if something was missed or added.
-  DCHECK(may_delete_history || (!(remove_mask & REMOVE_HISTORY) &&
-                                !(remove_mask & REMOVE_DOWNLOADS)));
-
   // On other platforms, it is possible to specify different types of origins
   // to clear data for (e.g., unprotected web vs. extensions). On iOS, this
   // mask is always implicitly the unprotected web, which is the only type that
@@ -157,7 +147,7 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask,
   web::RecordAction(
       UserMetricsAction("ClearBrowsingData_MaskContainsUnprotectedWeb"));
 
-  if ((remove_mask & REMOVE_HISTORY) && may_delete_history) {
+  if (remove_mask & REMOVE_HISTORY) {
     history::HistoryService* history_service =
         ios::HistoryServiceFactory::GetForBrowserState(
             browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
@@ -359,8 +349,10 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask,
   }
 
   // Remove omnibox zero-suggest cache results.
-  if ((remove_mask & (REMOVE_CACHE | REMOVE_COOKIES)))
-    prefs->SetString(omnibox::kZeroSuggestCachedResults, std::string());
+  if ((remove_mask & (REMOVE_CACHE | REMOVE_COOKIES))) {
+    browser_state_->GetPrefs()->SetString(omnibox::kZeroSuggestCachedResults,
+                                          std::string());
+  }
 
   // Always wipe accumulated network related data (TransportSecurityState and
   // HttpServerPropertiesManager data).

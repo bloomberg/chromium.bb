@@ -10,10 +10,6 @@ namespace prefs {
 // request.
 const char kAcceptLanguages[] = "intl.accept_languages";
 
-// Boolean controlling whether deleting browsing and download history is
-// permitted.
-const char kAllowDeletingBrowserHistory[] = "history.deleting_enabled";
-
 // The application locale.
 const char kApplicationLocale[] = "intl.app_locale";
 

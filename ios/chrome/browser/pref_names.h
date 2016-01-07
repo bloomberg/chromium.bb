@@ -8,7 +8,6 @@
 namespace prefs {
 
 extern const char kAcceptLanguages[];
-extern const char kAllowDeletingBrowserHistory[];
 extern const char kApplicationLocale[];
 extern const char kBrowserStateInfoCache[];
 extern const char kBrowserStateLastUsed[];
