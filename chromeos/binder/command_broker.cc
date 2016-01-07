@@ -75,7 +75,7 @@ bool CommandBroker::Transact(int32_t handle,
                  << response_type;
       return false;
     }
-    *reply = response_data.Pass();
+    *reply = std::move(response_data);
   }
   return true;
 }
@@ -104,7 +104,7 @@ void CommandBroker::OnReply(scoped_ptr<TransactionData> data) {
   DCHECK_EQ(response_type_, RESPONSE_TYPE_NONE);
   DCHECK(!response_data_);
   response_type_ = RESPONSE_TYPE_TRANSACTION_REPLY;
-  response_data_ = data.Pass();
+  response_data_ = std::move(data);
 }
 
 void CommandBroker::OnDeadReply() {
@@ -145,7 +145,7 @@ CommandBroker::ResponseType CommandBroker::WaitForResponse(
   }
   ResponseType response_type = response_type_;
   response_type_ = RESPONSE_TYPE_NONE;
-  *data = response_data_.Pass();
+  *data = std::move(response_data_);
   return response_type;
 }
 

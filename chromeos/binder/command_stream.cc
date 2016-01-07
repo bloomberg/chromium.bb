@@ -123,7 +123,7 @@ bool CommandStream::OnIncomingCommand(uint32_t command, BufferReader* reader) {
         LOG(ERROR) << "Failed to read transaction data.";
         return false;
       }
-      incoming_command_handler_->OnReply(data.Pass());
+      incoming_command_handler_->OnReply(std::move(data));
       break;
     }
     case BR_ACQUIRE_RESULT:
