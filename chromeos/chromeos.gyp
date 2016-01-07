@@ -210,6 +210,8 @@
       'disks/disk_mount_manager.h',
       'disks/suspend_unmount_manager.cc',
       'disks/suspend_unmount_manager.h',
+      'hugepage_text/hugepage_text.cc',
+      'hugepage_text/hugepage_text.h',
       'geolocation/geoposition.cc',
       'geolocation/geoposition.h',
       'geolocation/simple_geolocation_provider.cc',

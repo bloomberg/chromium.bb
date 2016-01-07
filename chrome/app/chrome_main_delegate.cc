@@ -91,6 +91,7 @@
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/hugepage_text/hugepage_text.h"
 #endif
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
@@ -944,6 +945,10 @@ bool ChromeMainDelegate::DelaySandboxInitialization(
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
 void ChromeMainDelegate::ZygoteStarting(
     ScopedVector<content::ZygoteForkDelegate>* delegates) {
+#if defined(OS_CHROMEOS)
+    chromeos::ReloadElfTextInHugePages();
+#endif
+
 #if !defined(DISABLE_NACL)
   nacl::AddNaClZygoteForkDelegates(delegates);
 #endif
