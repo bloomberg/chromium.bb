@@ -29,9 +29,8 @@ void Release(int* release_call_count) {
 
 TEST_F(BufferTest, ReleaseCallback) {
   gfx::Size buffer_size(256, 256);
-  scoped_ptr<Buffer> buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size).Pass(),
-                 GL_TEXTURE_2D));
+  scoped_ptr<Buffer> buffer(new Buffer(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
 
   // Set the release callback.
   int release_call_count = 0;
@@ -53,9 +52,8 @@ TEST_F(BufferTest, ReleaseCallback) {
 
 TEST_F(BufferTest, IsLost) {
   gfx::Size buffer_size(256, 256);
-  scoped_ptr<Buffer> buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size).Pass(),
-                 GL_TEXTURE_2D));
+  scoped_ptr<Buffer> buffer(new Buffer(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
 
   // Acquire a texture mailbox for the contents of the buffer.
   cc::TextureMailbox texture_mailbox;

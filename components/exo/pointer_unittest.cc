@@ -38,9 +38,8 @@ TEST_F(PointerTest, OnPointerEnter) {
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   shell_surface->SetToplevel();
   gfx::Size buffer_size(10, 10);
-  scoped_ptr<Buffer> buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size).Pass(),
-                 GL_TEXTURE_2D));
+  scoped_ptr<Buffer> buffer(new Buffer(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
   surface->Attach(buffer.get());
   surface->Commit();
 
@@ -62,9 +61,8 @@ TEST_F(PointerTest, OnPointerLeave) {
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   shell_surface->SetToplevel();
   gfx::Size buffer_size(10, 10);
-  scoped_ptr<Buffer> buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size).Pass(),
-                 GL_TEXTURE_2D));
+  scoped_ptr<Buffer> buffer(new Buffer(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
   surface->Attach(buffer.get());
   surface->Commit();
 
@@ -89,9 +87,8 @@ TEST_F(PointerTest, OnPointerMotion) {
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   shell_surface->SetToplevel();
   gfx::Size buffer_size(10, 10);
-  scoped_ptr<Buffer> buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size).Pass(),
-                 GL_TEXTURE_2D));
+  scoped_ptr<Buffer> buffer(new Buffer(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
   surface->Attach(buffer.get());
   surface->Commit();
 
@@ -117,9 +114,8 @@ TEST_F(PointerTest, OnPointerButton) {
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   shell_surface->SetToplevel();
   gfx::Size buffer_size(10, 10);
-  scoped_ptr<Buffer> buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size).Pass(),
-                 GL_TEXTURE_2D));
+  scoped_ptr<Buffer> buffer(new Buffer(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
   surface->Attach(buffer.get());
   surface->Commit();
 
@@ -147,9 +143,8 @@ TEST_F(PointerTest, OnPointerWheel) {
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   shell_surface->SetToplevel();
   gfx::Size buffer_size(10, 10);
-  scoped_ptr<Buffer> buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size).Pass(),
-                 GL_TEXTURE_2D));
+  scoped_ptr<Buffer> buffer(new Buffer(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
   surface->Attach(buffer.get());
   surface->Commit();
 
