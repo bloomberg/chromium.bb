@@ -252,7 +252,8 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         break;
     default:
         if (info.Length() >= 0) {
-            throwArityTypeError(exceptionState, "[0, 1, 2, 3, 7, 8, 9]", info.Length());
+            setArityTypeError(exceptionState, "[0, 1, 2, 3, 7, 8, 9]", info.Length());
+            exceptionState.throwIfNeeded();
             return;
         }
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));

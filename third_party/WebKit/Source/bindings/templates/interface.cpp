@@ -535,7 +535,8 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         {# Report full list of valid arities if gaps and above minimum #}
         {% if constructor_overloads.valid_arities %}
         if (info.Length() >= {{constructor_overloads.length}}) {
-            throwArityTypeError(exceptionState, "{{constructor_overloads.valid_arities}}", info.Length());
+            setArityTypeError(exceptionState, "{{constructor_overloads.valid_arities}}", info.Length());
+            exceptionState.throwIfNeeded();
             return;
         }
         {% endif %}
