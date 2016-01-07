@@ -27,9 +27,10 @@
   'targets': [
     {
       'target_name': 'gles2_conform_test',
-      'type': 'executable',
+      'type': '<(gtest_target_type)',
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/base/base.gyp:test_support_base',
         '<(DEPTH)/gpu/gpu.gyp:gpu',
         '<(DEPTH)/testing/gtest.gyp:gtest',
       ],

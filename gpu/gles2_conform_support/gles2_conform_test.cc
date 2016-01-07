@@ -9,7 +9,6 @@
 
 #include <string>
 
-#include "base/at_exit.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -21,9 +20,19 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/strings/string_util.h"
+#include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/test_suite.h"
 #include "gpu/config/gpu_test_config.h"
 #include "gpu/config/gpu_test_expectations_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+int RunHelper(base::TestSuite* test_suite) {
+  return test_suite->Run();
+}
+
+}  // namespace
 
 bool RunGLES2ConformTest(const char* path) {
   // Load test expectations, and return early if a test is marked as FAIL.
@@ -116,14 +125,15 @@ bool RunGLES2ConformTest(const char* path) {
 }
 
 int main(int argc, char** argv) {
-  base::AtExitManager exit_manager;
   base::CommandLine::Init(argc, argv);
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool pool;
 #endif
   ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+  base::TestSuite test_suite(argc, argv);
+  int rt = base::LaunchUnitTestsSerially(
+      argc,
+      argv,
+      base::Bind(&RunHelper, base::Unretained(&test_suite)));
+  return rt;
 }
-
-
-

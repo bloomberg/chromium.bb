@@ -190,6 +190,7 @@ test("gles2_conform_test") {
   ]
   deps = [
     "//base",
+    "//base/test:test_support",
     "//gpu/config",
     "//testing/gtest",
   ]
