@@ -499,7 +499,7 @@ void drm_create_prime_buffer(wl_client* client,
   buffer->set_release_callback(
       base::Bind(&wl_buffer_send_release, base::Unretained(buffer_resource)));
 
-  SetImplementation(buffer_resource, &buffer_implementation, buffer.Pass());
+  SetImplementation(buffer_resource, &buffer_implementation, std::move(buffer));
 }
 
 const struct wl_drm_interface drm_implementation = {

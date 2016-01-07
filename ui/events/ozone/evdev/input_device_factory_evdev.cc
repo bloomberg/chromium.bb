@@ -95,7 +95,7 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
             params.id, params.cursor, params.gesture_property_provider,
             params.dispatcher));
     return make_scoped_ptr(new EventReaderLibevdevCros(
-        fd, params.path, params.id, devinfo, gesture_interp.Pass()));
+        fd, params.path, params.id, devinfo, std::move(gesture_interp)));
   }
 #endif
 
@@ -303,7 +303,7 @@ void InputDeviceFactoryEvdev::GetTouchEventLog(
       new std::vector<base::FilePath>);
 #if defined(USE_EVDEV_GESTURES)
   DumpTouchEventLog(converters_, gesture_property_provider_.get(), out_dir,
-                    log_paths.Pass(), reply);
+                    std::move(log_paths), reply);
 #else
   reply.Run(std::move(log_paths));
 #endif

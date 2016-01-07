@@ -4,6 +4,8 @@
 
 #include "components/exo/display.h"
 
+#include <utility>
+
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "components/exo/shared_memory.h"
@@ -54,7 +56,7 @@ scoped_ptr<Buffer> Display::CreatePrimeBuffer(base::ScopedFD fd,
 
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::OZONE_NATIVE_PIXMAP;
-  handle.native_pixmap_handle.fd = base::FileDescriptor(fd.Pass());
+  handle.native_pixmap_handle.fd = base::FileDescriptor(std::move(fd));
   handle.native_pixmap_handle.stride = stride;
 
   scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
@@ -68,7 +70,7 @@ scoped_ptr<Buffer> Display::CreatePrimeBuffer(base::ScopedFD fd,
   }
 
   return make_scoped_ptr(
-      new Buffer(gpu_memory_buffer.Pass(), GL_TEXTURE_EXTERNAL_OES));
+      new Buffer(std::move(gpu_memory_buffer), GL_TEXTURE_EXTERNAL_OES));
 }
 #endif
 

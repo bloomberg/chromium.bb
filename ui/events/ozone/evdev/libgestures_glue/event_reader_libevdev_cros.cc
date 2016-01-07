@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <libevdev/libevdev.h>
 #include <linux/input.h>
+#include <utility>
 
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
@@ -42,7 +43,7 @@ EventReaderLibevdevCros::EventReaderLibevdevCros(int fd,
       has_mouse_(devinfo.HasMouse()),
       has_touchpad_(devinfo.HasTouchpad()),
       has_caps_lock_led_(devinfo.HasLedEvent(LED_CAPSL)),
-      delegate_(delegate.Pass()) {
+      delegate_(std::move(delegate)) {
   // This class assumes it does not deal with internal keyboards.
   CHECK(!has_keyboard_ || type() != INPUT_DEVICE_INTERNAL);
 

@@ -4,6 +4,8 @@
 
 #include "ash/host/ash_window_tree_host.h"
 
+#include <utility>
+
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/ash_window_tree_host_unified.h"
 #include "ash/host/root_window_transformer.h"
@@ -85,7 +87,7 @@ void AshWindowTreeHostOzone::UnConfineCursor() {
 
 void AshWindowTreeHostOzone::SetRootWindowTransformer(
     scoped_ptr<RootWindowTransformer> transformer) {
-  transformer_helper_.SetRootWindowTransformer(transformer.Pass());
+  transformer_helper_.SetRootWindowTransformer(std::move(transformer));
   ConfineCursorToRootWindow();
 }
 

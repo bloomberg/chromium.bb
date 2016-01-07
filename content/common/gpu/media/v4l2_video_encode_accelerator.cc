@@ -9,6 +9,7 @@
 #include <sys/eventfd.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -53,7 +54,7 @@ struct V4L2VideoEncodeAccelerator::BitstreamBufferRef {
   BitstreamBufferRef(int32_t id,
                      scoped_ptr<base::SharedMemory> shm,
                      size_t size)
-      : id(id), shm(shm.Pass()), size(size) {}
+      : id(id), shm(std::move(shm)), size(size) {}
   const int32_t id;
   const scoped_ptr<base::SharedMemory> shm;
   const size_t size;
@@ -238,7 +239,7 @@ void V4L2VideoEncodeAccelerator::UseOutputBitstreamBuffer(
   }
 
   scoped_ptr<BitstreamBufferRef> buffer_ref(
-      new BitstreamBufferRef(buffer.id(), shm.Pass(), buffer.size()));
+      new BitstreamBufferRef(buffer.id(), std::move(shm), buffer.size()));
   encoder_thread_.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&V4L2VideoEncodeAccelerator::UseOutputBitstreamBufferTask,
