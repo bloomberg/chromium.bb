@@ -1797,7 +1797,8 @@ StyleDifference LayoutObject::adjustStyleDifference(StyleDifference diff) const
             // Caret is painted in text color.
             || (isLayoutBlock() && toLayoutBlock(this)->hasCaret())
             || (isSVG() && style()->svgStyle().isFillColorCurrentColor())
-            || (isSVG() && style()->svgStyle().isStrokeColorCurrentColor()))
+            || (isSVG() && style()->svgStyle().isStrokeColorCurrentColor())
+            || isListMarker())
             diff.setNeedsPaintInvalidationObject();
     }
 
