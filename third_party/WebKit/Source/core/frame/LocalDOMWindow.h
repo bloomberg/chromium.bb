@@ -182,8 +182,6 @@ public:
 
     void finishedLoading();
 
-    ApplicationCache* optionalApplicationCache() const { return m_applicationCache.get(); }
-
     // Dispatch the (deprecated) orientationchange event to this DOMWindow and
     // recurse on its child frames.
     void sendOrientationChangeEvent();
@@ -239,8 +237,6 @@ private:
 
     explicit LocalDOMWindow(LocalFrame&);
     void dispose();
-
-    Page* page();
 
     void clearDocument();
     void willDestroyDocumentInFrame();
