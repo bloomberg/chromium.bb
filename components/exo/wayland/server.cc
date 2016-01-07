@@ -13,6 +13,9 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/display/display_info.h"
+#include "ash/display/display_manager.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
@@ -733,6 +736,55 @@ void bind_shell(wl_client* client, void* data, uint32_t version, uint32_t id) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// wl_output_interface:
+
+const uint32_t output_version = 2;
+
+void bind_output(wl_client* client, void* data, uint32_t version, uint32_t id) {
+  wl_resource* resource = wl_resource_create(
+      client, &wl_output_interface, std::min(version, output_version), id);
+  if (!resource) {
+    wl_client_post_no_memory(client);
+    return;
+  }
+
+  // TODO(reveman): Watch for display changes and report them.
+  // TODO(reveman): Multi-display support.
+  ash::DisplayManager* display_manager =
+      ash::Shell::GetInstance()->display_manager();
+  const gfx::Display& primary = display_manager->GetPrimaryDisplayCandidate();
+
+  const ash::DisplayInfo& info = display_manager->GetDisplayInfo(primary.id());
+  const float kInchInMm = 25.4f;
+  const char* kUnknownMake = "unknown";
+  const char* kUnknownModel = "unknown";
+  gfx::Rect bounds = info.bounds_in_native();
+  // TODO(reveman): Send the actual active device rotation.
+  wl_output_send_geometry(
+      resource, bounds.x(), bounds.y(),
+      static_cast<int>(kInchInMm * bounds.width() / info.device_dpi()),
+      static_cast<int>(kInchInMm * bounds.height() / info.device_dpi()),
+      WL_OUTPUT_SUBPIXEL_UNKNOWN, kUnknownMake, kUnknownModel,
+      WL_OUTPUT_TRANSFORM_NORMAL);
+
+  // TODO(reveman): Send correct device scale factor when surface API respects
+  // scale.
+  if (version >= WL_OUTPUT_SCALE_SINCE_VERSION)
+    wl_output_send_scale(resource, 1);
+
+  // TODO(reveman): Send real list of modes after adding multi-display support.
+  ash::DisplayMode mode =
+      display_manager->GetActiveModeForDisplayId(primary.id());
+  wl_output_send_mode(resource,
+                      WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED,
+                      mode.size.width(), mode.size.height(),
+                      static_cast<int>(mode.refresh_rate * 1000));
+
+  if (version >= WL_OUTPUT_DONE_SINCE_VERSION)
+    wl_output_send_done(resource);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // xdg_surface_interface:
 
 void xdg_surface_destroy(wl_client* client, wl_resource* resource) {
@@ -1423,6 +1475,8 @@ Server::Server(Display* display)
                    bind_subcompositor);
   wl_global_create(wl_display_.get(), &wl_shell_interface, 1, display_,
                    bind_shell);
+  wl_global_create(wl_display_.get(), &wl_output_interface, 2, display_,
+                   bind_output);
   wl_global_create(wl_display_.get(), &xdg_shell_interface, 1, display_,
                    bind_xdg_shell);
   wl_global_create(wl_display_.get(), &wl_data_device_manager_interface, 1,

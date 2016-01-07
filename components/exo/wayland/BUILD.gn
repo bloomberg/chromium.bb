@@ -22,6 +22,7 @@ source_set("wayland") {
   defines = [ "EXO_IMPLEMENTATION" ]
 
   deps = [
+    "//ash",
     "//base",
     "//components/exo",
     "//skia",
