@@ -648,20 +648,24 @@ void StyleBuilderFunctions::applyInheritCSSPropertyWillChange(StyleResolverState
 
 void StyleBuilderFunctions::applyValueCSSPropertyWillChange(StyleResolverState& state, CSSValue* value)
 {
-    ASSERT(value->isValueList());
     bool willChangeContents = false;
     bool willChangeScrollPosition = false;
     Vector<CSSPropertyID> willChangeProperties;
 
-    for (auto& willChangeValue : toCSSValueList(*value)) {
-        if (willChangeValue->isCustomIdentValue())
-            willChangeProperties.append(toCSSCustomIdentValue(*willChangeValue).valueAsPropertyID());
-        else if (toCSSPrimitiveValue(*willChangeValue).getValueID() == CSSValueContents)
-            willChangeContents = true;
-        else if (toCSSPrimitiveValue(*willChangeValue).getValueID() == CSSValueScrollPosition)
-            willChangeScrollPosition = true;
-        else
-            ASSERT_NOT_REACHED();
+    if (value->isPrimitiveValue()) {
+        ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueAuto);
+    } else {
+        ASSERT(value->isValueList());
+        for (auto& willChangeValue : toCSSValueList(*value)) {
+            if (willChangeValue->isCustomIdentValue())
+                willChangeProperties.append(toCSSCustomIdentValue(*willChangeValue).valueAsPropertyID());
+            else if (toCSSPrimitiveValue(*willChangeValue).getValueID() == CSSValueContents)
+                willChangeContents = true;
+            else if (toCSSPrimitiveValue(*willChangeValue).getValueID() == CSSValueScrollPosition)
+                willChangeScrollPosition = true;
+            else
+                ASSERT_NOT_REACHED();
+        }
     }
     state.style()->setWillChangeContents(willChangeContents);
     state.style()->setWillChangeScrollPosition(willChangeScrollPosition);

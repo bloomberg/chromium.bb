@@ -870,12 +870,10 @@ static inline bool isCSSWideKeyword(const CSSValueID& id)
 // Methods for consuming non-shorthand properties starts here.
 static PassRefPtrWillBeRawPtr<CSSValue> consumeWillChange(CSSParserTokenRange& range)
 {
-    RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createCommaSeparated();
-    if (range.peek().id() == CSSValueAuto) {
-        // FIXME: This will be read back as an empty string instead of auto
-        return values.release();
-    }
+    if (range.peek().id() == CSSValueAuto)
+        return consumeIdent(range);
 
+    RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createCommaSeparated();
     // Every comma-separated list of identifiers is a valid will-change value,
     // unless the list includes an explicitly disallowed identifier.
     while (true) {
@@ -1228,8 +1226,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeCounter(CSSParserTokenRange& rang
     if (range.peek().id() == CSSValueNone)
         return consumeIdent(range);
 
-    // TODO(rwlbuis): should be space separated list.
-    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     do {
         RefPtrWillBeRawPtr<CSSCustomIdentValue> counterName = consumeCustomIdent(range);
         if (!counterName)
@@ -1238,7 +1235,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeCounter(CSSParserTokenRange& rang
         if (RefPtrWillBeRawPtr<CSSPrimitiveValue> counterValue = consumeInteger(range))
             i = clampTo<int>(counterValue->getDoubleValue());
         list->append(CSSValuePair::create(counterName.release(),
-            cssValuePool().createValue(i, CSSPrimitiveValue::UnitType::Number),
+            cssValuePool().createValue(i, CSSPrimitiveValue::UnitType::Integer),
             CSSValuePair::DropIdenticalValues));
     } while (!range.atEnd());
     return list.release();
@@ -2358,7 +2355,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeImageSet(CSSParserTokenRange& ran
 static PassRefPtrWillBeRawPtr<CSSValue> consumeCursor(CSSParserTokenRange& range, const CSSParserContext& context, bool inQuirksMode)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = nullptr;
-    while (!range.atEnd()) {
+    while (true) {
         RefPtrWillBeRawPtr<CSSValue> image = nullptr;
         AtomicString uri(consumeUrl(range));
         if (!uri.isNull()) {
@@ -2399,17 +2396,19 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeCursor(CSSParserTokenRange& range
     }
     RefPtrWillBeRawPtr<CSSValue> cursorType = nullptr;
     if (id == CSSValueHand) {
-        if (inQuirksMode) // Non-standard behavior
-            cursorType = cssValuePool().createIdentifierValue(CSSValuePointer);
+        if (!inQuirksMode) // Non-standard behavior
+            return nullptr;
+        cursorType = cssValuePool().createIdentifierValue(CSSValuePointer);
         range.consumeIncludingWhitespace();
     } else if ((id >= CSSValueAuto && id <= CSSValueWebkitZoomOut) || id == CSSValueCopy || id == CSSValueNone) {
         cursorType = consumeIdent(range);
+    } else {
+        return nullptr;
     }
 
     if (!list)
         return cursorType.release();
-    if (cursorType)
-        list->append(cursorType.release());
+    list->append(cursorType.release());
     return list.release();
 }
 
@@ -3467,25 +3466,27 @@ bool CSSPropertyParser::parseViewportDescriptor(CSSPropertyID propId, bool impor
     }
 }
 
-static void consumeColumnWidthOrCount(CSSParserTokenRange& range, CSSParserMode cssParserMode, RefPtrWillBeRawPtr<CSSValue> &columnWidth, RefPtrWillBeRawPtr<CSSValue> &columnCount)
+static bool consumeColumnWidthOrCount(CSSParserTokenRange& range, CSSParserMode cssParserMode, RefPtrWillBeRawPtr<CSSValue> &columnWidth, RefPtrWillBeRawPtr<CSSValue> &columnCount)
 {
     if (range.peek().id() == CSSValueAuto) {
         consumeIdent(range);
-        return;
+        return true;
     }
     if (!columnWidth) {
         if ((columnWidth = consumeColumnWidth(range)))
-            return;
+            return true;
     }
     if (!columnCount)
         columnCount = consumeColumnCount(range);
+    return columnCount;
 }
 
 bool CSSPropertyParser::consumeColumns(bool important)
 {
     RefPtrWillBeRawPtr<CSSValue> columnWidth = nullptr;
     RefPtrWillBeRawPtr<CSSValue> columnCount = nullptr;
-    consumeColumnWidthOrCount(m_range, m_context.mode(), columnWidth, columnCount);
+    if (!consumeColumnWidthOrCount(m_range, m_context.mode(), columnWidth, columnCount))
+        return false;
     consumeColumnWidthOrCount(m_range, m_context.mode(), columnWidth, columnCount);
     if (!m_range.atEnd())
         return false;
@@ -3569,17 +3570,18 @@ bool CSSPropertyParser::consumeFlex(bool important)
                     return false;
             }
         }
+        if (index == 0)
+            return false;
+        if (flexGrow == unsetValue)
+            flexGrow = 1;
+        if (flexShrink == unsetValue)
+            flexShrink = 1;
+        if (!flexBasis)
+            flexBasis = cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::Percentage);
     }
+
     if (!m_range.atEnd())
         return false;
-
-    if (flexGrow == unsetValue)
-        flexGrow = 1;
-    if (flexShrink == unsetValue)
-        flexShrink = 1;
-    if (!flexBasis)
-        flexBasis = cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::Percentage);
-
     addProperty(CSSPropertyFlexGrow, cssValuePool().createValue(clampTo<float>(flexGrow), CSSPrimitiveValue::UnitType::Number), important);
     addProperty(CSSPropertyFlexShrink, cssValuePool().createValue(clampTo<float>(flexShrink), CSSPrimitiveValue::UnitType::Number), important);
     addProperty(CSSPropertyFlexBasis, flexBasis, important);

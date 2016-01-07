@@ -27,11 +27,13 @@ PASS roundtripCssRule(`cursor: ltr;`) is ""
 PASS roundtripCssRule(`cursor: inline;`) is ""
 PASS roundtripCssRule(`cursor: hand;`) is ""
 PASS roundtripCssRule(`cursor: url("file:///foo.png");`) is ""
+PASS roundtripCssRule(`cursor: url("file:///foo.png"),;`) is ""
 PASS roundtripCssRule(`cursor: url("file:///foo.png"), url("file:///foo2.png");`) is ""
 PASS roundtripCssRule(`cursor: url("file:///foo.png") 12;`) is ""
 PASS roundtripCssRule(`cursor: url("file:///foo.png") 12 3 5;`) is ""
 PASS roundtripCssRule(`cursor: url("file:///foo.png") x y;`) is ""
 PASS roundtripCssRule(`cursor: url("file:///foo.png") auto;`) is ""
+PASS roundtripCssRule(`cursor: url("file:///foo.png") hand;`) is ""
 PASS successfullyParsed is true
 
 TEST COMPLETE

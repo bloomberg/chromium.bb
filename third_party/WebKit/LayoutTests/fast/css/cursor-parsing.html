@@ -64,11 +64,13 @@ testInvalidCursorRule('ltr');
 testInvalidCursorRule('inline');
 testInvalidCursorRule('hand');
 testInvalidCursorRule('url("file:///foo.png")');
+testInvalidCursorRule('url("file:///foo.png"),');
 testInvalidCursorRule('url("file:///foo.png"), url("file:///foo2.png")');
 testInvalidCursorRule('url("file:///foo.png") 12');
 testInvalidCursorRule('url("file:///foo.png") 12 3 5');
 testInvalidCursorRule('url("file:///foo.png") x y');
 testInvalidCursorRule('url("file:///foo.png") auto');
+testInvalidCursorRule('url("file:///foo.png") hand');
 
 successfullyParsed = true;
 </script>
