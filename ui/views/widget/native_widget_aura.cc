@@ -181,6 +181,8 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
       GetWidget()->GetRootView()));
 }
 
+void NativeWidgetAura::OnWidgetInitDone() {}
+
 NonClientFrameView* NativeWidgetAura::CreateNonClientFrameView() {
   return NULL;
 }

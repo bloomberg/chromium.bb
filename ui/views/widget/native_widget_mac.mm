@@ -139,6 +139,8 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   bridge_->CreateLayer(params.layer_type, translucent);
 }
 
+void NativeWidgetMac::OnWidgetInitDone() {}
+
 NonClientFrameView* NativeWidgetMac::CreateNonClientFrameView() {
   return new NativeFrameView(GetWidget());
 }

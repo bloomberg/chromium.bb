@@ -309,6 +309,14 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   native_widget_delegate_->OnNativeWidgetCreated(false);
 }
 
+void NativeWidgetMus::OnWidgetInitDone() {
+  // The client area is calculated from the NonClientView. During
+  // InitNativeWidget() the NonClientView has not been created. When this
+  // function is called the NonClientView has been created, so that we can
+  // correctly calculate the client area and push it to the mus::Window.
+  UpdateClientArea();
+}
+
 bool NativeWidgetMus::ShouldUseNativeFrame() const {
   // NOTIMPLEMENTED();
   return false;

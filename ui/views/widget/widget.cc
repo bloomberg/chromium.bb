@@ -397,6 +397,7 @@ void Widget::Init(const InitParams& in_params) {
   // the correct NativeTheme (on Linux). See http://crbug.com/384492
   observer_manager_.Add(GetNativeTheme());
   native_widget_initialized_ = true;
+  native_widget_->OnWidgetInitDone();
 }
 
 // Unconverted methods (see header) --------------------------------------------

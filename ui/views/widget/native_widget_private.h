@@ -74,6 +74,10 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   // Initializes the NativeWidget.
   virtual void InitNativeWidget(const Widget::InitParams& params) = 0;
 
+  // Called at the end of Widget::Init(), after Widget has completed
+  // initialization.
+  virtual void OnWidgetInitDone() = 0;
+
   // Returns a NonClientFrameView for the widget's NonClientView, or NULL if
   // the NativeWidget wants no special NonClientFrameView.
   virtual NonClientFrameView* CreateNonClientFrameView() = 0;

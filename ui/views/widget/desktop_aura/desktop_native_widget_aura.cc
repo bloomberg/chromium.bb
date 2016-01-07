@@ -546,6 +546,8 @@ void DesktopNativeWidgetAura::InitNativeWidget(
       GetWidget()->GetRootView()));
 }
 
+void DesktopNativeWidgetAura::OnWidgetInitDone() {}
+
 NonClientFrameView* DesktopNativeWidgetAura::CreateNonClientFrameView() {
   return ShouldUseNativeFrame() ? new NativeFrameView(GetWidget()) : NULL;
 }

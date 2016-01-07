@@ -182,6 +182,8 @@ void NativeWidgetAndroid::InitNativeWidget(const Widget::InitParams& params) {
   // the necessary parts that exists in desktop_native_widget_aura.
 }
 
+void NativeWidgetAndroid::OnWidgetInitDone() {}
+
 NonClientFrameView* NativeWidgetAndroid::CreateNonClientFrameView() {
   NOTIMPLEMENTED();
   return nullptr;
