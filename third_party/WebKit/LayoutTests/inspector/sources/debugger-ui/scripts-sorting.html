@@ -7,11 +7,6 @@
 <script>
 function test()
 {
-    function dumpNavigator(sourcesNavigatorView)
-    {
-        InspectorTest.dumpNavigatorView(sourcesNavigatorView);
-    }
-
     function createNavigatorView(constructor)
     {
         var navigatorView = new constructor();
@@ -32,31 +27,18 @@ function test()
         uiSourceCodes.push(uiSourceCode);
     }
 
-    function dumpNavigator(view)
-    {
-        ["frame", "frame/domain", "frame/domain/folder", "domain", "domain/folder"].forEach(dumpNavigatorInMode.bind(null, view));
-    }
-
-    function dumpNavigatorInMode(view, mode)
-    {
-        InspectorTest.addResult(view === sourcesNavigatorView ? "Sources:" : "Content Scripts:");
-        WebInspector.moduleSetting("navigatorGrouping").set(mode);
-        InspectorTest.addResult("-------- Setting mode: [" + mode + "]");
-        InspectorTest.dumpNavigatorView(view);
-    }
-
     function dumpScriptsList()
     {
-        dumpNavigator(sourcesNavigatorView);
-        dumpNavigator(contentScriptsNavigatorView);
+        InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
+        InspectorTest.dumpNavigatorViewInAllModes(contentScriptsNavigatorView);
 
         for (var i = 0; i < uiSourceCodes.length; ++i) {
             sourcesNavigatorView.revealUISourceCode(uiSourceCodes[i]);
             contentScriptsNavigatorView.revealUISourceCode(uiSourceCodes[i]);
         }
 
-        dumpNavigator(sourcesNavigatorView);
-        dumpNavigator(contentScriptsNavigatorView);
+        InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
+        InspectorTest.dumpNavigatorViewInAllModes(contentScriptsNavigatorView);
     }
 
     var scripts = [
