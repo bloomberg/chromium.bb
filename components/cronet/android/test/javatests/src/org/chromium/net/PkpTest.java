@@ -62,6 +62,7 @@ public class PkpTest extends CronetTestBase {
      */
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testErrorCodeIfPinDoesNotMatch() throws Exception {
         byte[] nonMatchingHash = generateSomeSha256();
         addPkpSha256(mServerHost, nonMatchingHash, EXCLUDE_SUBDOMAINS, DISTANT_FUTURE);
@@ -80,6 +81,7 @@ public class PkpTest extends CronetTestBase {
      */
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testSuccessIfPinMatches() throws Exception {
         // Get PKP hash of the real certificate
         X509Certificate cert = readCertFromFileInPemFormat(CERT_USED);
@@ -102,6 +104,7 @@ public class PkpTest extends CronetTestBase {
      */
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testIncludeSubdomainsFlagEqualTrue() throws Exception {
         byte[] nonMatchingHash = generateSomeSha256();
         addPkpSha256(mDomain, nonMatchingHash, INCLUDE_SUBDOMAINS, DISTANT_FUTURE);
@@ -121,6 +124,7 @@ public class PkpTest extends CronetTestBase {
      */
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testIncludeSubdomainsFlagEqualFalse() throws Exception {
         byte[] nonMatchingHash = generateSomeSha256();
         addPkpSha256(mDomain, nonMatchingHash, EXCLUDE_SUBDOMAINS, DISTANT_FUTURE);
@@ -140,6 +144,7 @@ public class PkpTest extends CronetTestBase {
      */
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testSuccessIfNoPinSpecified() throws Exception {
         byte[] nonMatchingHash = generateSomeSha256();
         addPkpSha256("otherhost.com", nonMatchingHash, INCLUDE_SUBDOMAINS, DISTANT_FUTURE);
@@ -158,6 +163,7 @@ public class PkpTest extends CronetTestBase {
      */
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testSoonExpiringPin() throws Exception {
         final int tenSecondsAhead = 10;
         byte[] nonMatchingHash = generateSomeSha256();
@@ -177,6 +183,7 @@ public class PkpTest extends CronetTestBase {
      */
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testRecentlyExpiredPin() throws Exception {
         final int oneSecondAgo = -1;
         byte[] nonMatchingHash = generateSomeSha256();
@@ -195,6 +202,7 @@ public class PkpTest extends CronetTestBase {
      */
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testPinsAreNotPersisted() throws Exception {
         byte[] nonMatchingHash = generateSomeSha256();
         addPkpSha256(mServerHost, nonMatchingHash, EXCLUDE_SUBDOMAINS, DISTANT_FUTURE);

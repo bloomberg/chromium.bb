@@ -7,6 +7,7 @@ package org.chromium.net;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.CronetTestBase.OnlyRunNativeCronet;
 
 import java.util.Arrays;
 import java.util.List;
@@ -49,8 +50,8 @@ public class CronetUploadTest extends CronetTestBase {
      */
     @SmallTest
     @Feature({"Cronet"})
-    public void testInitTriggersRewindAndInitBeforeRewindCompletes()
-            throws Exception {
+    @OnlyRunNativeCronet
+    public void testInitTriggersRewindAndInitBeforeRewindCompletes() throws Exception {
         // Init completes synchronously and read succeeds.
         assertTrue(mHandler.init());
         mHandler.read();
@@ -98,8 +99,8 @@ public class CronetUploadTest extends CronetTestBase {
      */
     @SmallTest
     @Feature({"Cronet"})
-    public void testInitTriggersRewindAndInitAfterRewindCompletes()
-            throws Exception {
+    @OnlyRunNativeCronet
+    public void testInitTriggersRewindAndInitAfterRewindCompletes() throws Exception {
         // Init completes synchronously and read succeeds.
         assertTrue(mHandler.init());
         mHandler.read();
@@ -146,6 +147,7 @@ public class CronetUploadTest extends CronetTestBase {
      */
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testReadCompleteTriggerRewind() throws Exception {
         // Reset and init before read completes.
         assertTrue(mHandler.init());
@@ -180,6 +182,7 @@ public class CronetUploadTest extends CronetTestBase {
      */
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testReadCompleteTriggerRewindOnlyOneRewind() throws Exception {
         testReadCompleteTriggerRewind();
         // Reset and Init again, no rewind should happen.
@@ -197,8 +200,8 @@ public class CronetUploadTest extends CronetTestBase {
      */
     @SmallTest
     @Feature({"Cronet"})
-    public void testResetBeforeReadCompleteAndInitTriggerRewind()
-            throws Exception {
+    @OnlyRunNativeCronet
+    public void testResetBeforeReadCompleteAndInitTriggerRewind() throws Exception {
         // Reset before read completes. Rewind is not triggered.
         assertTrue(mHandler.init());
         mHandler.read();
@@ -232,8 +235,8 @@ public class CronetUploadTest extends CronetTestBase {
      */
     @SmallTest
     @Feature({"Cronet"})
-    public void testDestroyNativeStreamBeforeReadComplete()
-            throws Exception {
+    @OnlyRunNativeCronet
+    public void testDestroyNativeStreamBeforeReadComplete() throws Exception {
         // Start a read and wait for it to be pending.
         assertTrue(mHandler.init());
         mHandler.read();
@@ -263,8 +266,8 @@ public class CronetUploadTest extends CronetTestBase {
      */
     @SmallTest
     @Feature({"Cronet"})
-    public void testDestroyNativeStreamBeforeRewindComplete()
-            throws Exception {
+    @OnlyRunNativeCronet
+    public void testDestroyNativeStreamBeforeRewindComplete() throws Exception {
         // Start a read and wait for it to complete.
         assertTrue(mHandler.init());
         mHandler.read();

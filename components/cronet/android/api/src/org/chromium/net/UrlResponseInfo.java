@@ -61,8 +61,7 @@ public final class UrlResponseInfo {
             if (mHeadersMap != null) {
                 return mHeadersMap;
             }
-            Map<String, List<String>> map =
-                    new TreeMap<String, List<String>>(String.CASE_INSENSITIVE_ORDER);
+            Map<String, List<String>> map = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
             for (Map.Entry<String, String> entry : mAllHeadersList) {
                 List<String> values = new ArrayList<String>();
                 if (map.containsKey(entry.getKey())) {
@@ -205,10 +204,12 @@ public final class UrlResponseInfo {
 
     @Override
     public String toString() {
-        return String.format(Locale.ROOT, "UrlResponseInfo[%s]: urlChain = %s, "
+        return String.format(Locale.ROOT, "UrlResponseInfo@[%s][%s]: urlChain = %s, "
                         + "httpStatus = %d %s, headers = %s, wasCached = %b, "
                         + "negotiatedProtocol = %s, proxyServer= %s, receivedBytesCount = %d",
-                getUrl(), getUrlChain().toString(), getHttpStatusCode(), getHttpStatusText(),
+                // Prevent asserting on the contents of this string
+                Integer.toHexString(System.identityHashCode(this)), getUrl(),
+                getUrlChain().toString(), getHttpStatusCode(), getHttpStatusText(),
                 getAllHeadersAsList().toString(), wasCached(), getNegotiatedProtocol(),
                 getProxyServer(), getReceivedBytesCount());
     }

@@ -25,7 +25,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandlerFactory;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -122,22 +121,6 @@ class CronetUrlRequestContext extends CronetEngine {
                     pkp.mExpirationDate.getTime());
         }
         return urlRequestContextConfig;
-    }
-
-    @Override
-    public UrlRequest createRequest(String url, UrlRequest.Callback callback, Executor executor) {
-        return createRequest(url, callback, executor, UrlRequest.Builder.REQUEST_PRIORITY_MEDIUM,
-                Collections.emptyList());
-    }
-
-    @Override
-    public UrlRequest createRequest(String url, UrlRequest.Callback callback, Executor executor,
-            @UrlRequest.Builder.RequestPriority int priority) {
-        synchronized (mLock) {
-            checkHaveAdapter();
-            return new CronetUrlRequest(this, mUrlRequestContextAdapter, url, priority, callback,
-                    executor, Collections.emptyList(), mNetworkQualityEstimatorEnabled);
-        }
     }
 
     @Override

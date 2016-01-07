@@ -135,10 +135,15 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         String userAgentName = "User-Agent";
         String userAgentValue = "User-Agent-Value";
         CronetEngine.Builder cronetEngineBuilder = new CronetEngine.Builder(getContext());
+        if (testingJavaImpl()) {
+            cronetEngineBuilder.enableLegacyMode(true);
+        }
         cronetEngineBuilder.setUserAgent(userAgentValue);
         cronetEngineBuilder.setLibraryName("cronet_tests");
         mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(
                 TEST_URL, cronetEngineBuilder);
+        NativeTestServer.shutdownNativeTestServer(); // startNativeTestServer returns false if it's
+        // already running
         assertTrue(NativeTestServer.startNativeTestServer(getContext()));
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder urlRequestBuilder =
@@ -151,6 +156,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     // TODO(xunjieli): Remove annotation after crbug.com/539519 is fixed.
     @SuppressWarnings("deprecation")
     public void testDataReductionProxyEnabled() throws Exception {
@@ -560,6 +566,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet // No netlogs for pure java impl
     public void testNetLog() throws Exception {
         Context context = getContext();
         File directory = new File(PathUtils.getDataDirectory(context));
@@ -662,6 +669,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testNetLogWithBytes() throws Exception {
         Context context = getContext();
         File directory = new File(PathUtils.getDataDirectory(context));
@@ -732,6 +740,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testEnableHttpCacheDisabled() throws Exception {
         enableCache(CronetEngine.Builder.HTTP_CACHE_DISABLED);
         String url = NativeTestServer.getFileURL("/cacheable.txt");
@@ -764,6 +773,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testEnableHttpCacheDiskNoHttp() throws Exception {
         enableCache(CronetEngine.Builder.HTTP_CACHE_DISABLED);
         String url = NativeTestServer.getFileURL("/cacheable.txt");

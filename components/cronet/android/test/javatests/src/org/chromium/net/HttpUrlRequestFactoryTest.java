@@ -8,6 +8,7 @@ import android.content.Context;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.CronetTestBase.OnlyRunNativeCronet;
 
 import java.io.File;
 import java.util.HashMap;
@@ -43,6 +44,7 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testCreateLegacyFactory() {
         HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
         config.enableLegacyMode(true);
@@ -66,6 +68,7 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testCreateLegacyFactoryUsingUrlRequestContextConfig() {
         UrlRequestContextConfig config = new UrlRequestContextConfig();
         config.enableLegacyMode(true);

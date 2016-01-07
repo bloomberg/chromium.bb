@@ -256,6 +256,7 @@ final class CronetUrlRequest implements UrlRequest {
                 throw new IllegalArgumentException(
                         "ByteBuffer is already full.");
             }
+            Preconditions.checkDirect(buffer);
 
             if (!mWaitingOnRead) {
                 throw new IllegalStateException("Unexpected read attempt.");
@@ -276,21 +277,16 @@ final class CronetUrlRequest implements UrlRequest {
                 // Still waiting on read. This is just to have consistent
                 // behavior with the other error cases.
                 mWaitingOnRead = true;
-                // Since accessing byteBuffer's memory failed, it's presumably
-                // not a direct ByteBuffer.
-                throw new IllegalArgumentException(
-                        "byteBuffer must be a direct ByteBuffer.");
+                throw new IllegalArgumentException("Unable to call native read");
             }
         }
     }
 
     @Override
     public void readNew(ByteBuffer buffer) {
+        Preconditions.checkHasRemaining(buffer);
+        Preconditions.checkDirect(buffer);
         synchronized (mUrlRequestAdapterLock) {
-            if (!buffer.hasRemaining()) {
-                throw new IllegalArgumentException("ByteBuffer is already full.");
-            }
-
             if (!mWaitingOnRead) {
                 throw new IllegalStateException("Unexpected read attempt.");
             }
@@ -305,9 +301,7 @@ final class CronetUrlRequest implements UrlRequest {
                 // Still waiting on read. This is just to have consistent
                 // behavior with the other error cases.
                 mWaitingOnRead = true;
-                // Since accessing byteBuffer's memory failed, it's presumably
-                // not a direct ByteBuffer.
-                throw new IllegalArgumentException("byteBuffer must be a direct ByteBuffer.");
+                throw new IllegalArgumentException("Unable to call native read");
             }
         }
     }

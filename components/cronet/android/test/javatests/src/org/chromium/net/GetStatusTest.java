@@ -73,8 +73,9 @@ public class GetStatusTest extends CronetTestBase {
         urlRequest.getStatus(statusListener1);
         statusListener1.waitUntilOnStatusCalled();
         assertTrue(statusListener1.mOnStatusCalled);
-        assertTrue(statusListener1.mStatus >= Status.IDLE);
-        assertTrue(statusListener1.mStatus <= Status.READING_RESPONSE);
+        assertTrue("Status is :" + statusListener1.mStatus, statusListener1.mStatus >= Status.IDLE);
+        assertTrue("Status is :" + statusListener1.mStatus,
+                statusListener1.mStatus <= Status.READING_RESPONSE);
 
         callback.waitForNextStep();
         assertEquals(ResponseStep.ON_RESPONSE_STARTED, callback.mResponseStep);

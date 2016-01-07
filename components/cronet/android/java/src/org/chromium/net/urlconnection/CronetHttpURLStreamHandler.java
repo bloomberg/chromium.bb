@@ -44,7 +44,7 @@ class CronetHttpURLStreamHandler extends URLStreamHandler {
      * @return an {@link java.net.HttpURLConnection} instance implemented by Cronet.
      */
     @Override
-    public URLConnection openConnection(URL url, Proxy proxy) {
+    public URLConnection openConnection(URL url, Proxy proxy) throws IOException {
         return mCronetEngine.openConnection(url, proxy);
     }
 }

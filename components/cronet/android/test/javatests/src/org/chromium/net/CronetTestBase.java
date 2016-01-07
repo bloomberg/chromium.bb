@@ -24,6 +24,7 @@ public class CronetTestBase extends AndroidTestCase {
     private CronetTestFramework mCronetTestFramework;
     // {@code true} when test is being run against system HttpURLConnection implementation.
     private boolean mTestingSystemHttpURLConnection;
+    private boolean mTestingJavaImpl = false;
 
     @Override
     protected void setUp() throws Exception {
@@ -95,35 +96,57 @@ public class CronetTestBase extends AndroidTestCase {
         return mTestingSystemHttpURLConnection;
     }
 
+    /**
+     * Returns {@code true} when test is being run against the java implementation of CronetEngine.
+     */
+    protected boolean testingJavaImpl() {
+        return mTestingJavaImpl;
+    }
+
     @Override
     protected void runTest() throws Throwable {
         mTestingSystemHttpURLConnection = false;
-        if (!getClass().getPackage().getName().equals(
-                "org.chromium.net.urlconnection")) {
-            super.runTest();
-            return;
-        }
-        try {
-            Method method = getClass().getMethod(getName(), (Class[]) null);
-            if (method.isAnnotationPresent(CompareDefaultWithCronet.class)) {
-                // Run with the default HttpURLConnection implementation first.
-                mTestingSystemHttpURLConnection = true;
-                super.runTest();
-                // Use Cronet's implementation, and run the same test.
-                mTestingSystemHttpURLConnection = false;
-                URL.setURLStreamHandlerFactory(mCronetTestFramework.mStreamHandlerFactory);
-                super.runTest();
-            } else if (method.isAnnotationPresent(
-                    OnlyRunCronetHttpURLConnection.class)) {
-                // Run only with Cronet's implementation.
-                URL.setURLStreamHandlerFactory(mCronetTestFramework.mStreamHandlerFactory);
-                super.runTest();
-            } else {
-                // For all other tests.
-                super.runTest();
+        mTestingJavaImpl = false;
+        String packageName = getClass().getPackage().getName();
+        if (packageName.equals("org.chromium.net.urlconnection")) {
+            try {
+                Method method = getClass().getMethod(getName(), (Class[]) null);
+                if (method.isAnnotationPresent(CompareDefaultWithCronet.class)) {
+                    // Run with the default HttpURLConnection implementation first.
+                    mTestingSystemHttpURLConnection = true;
+                    super.runTest();
+                    // Use Cronet's implementation, and run the same test.
+                    mTestingSystemHttpURLConnection = false;
+                    URL.setURLStreamHandlerFactory(mCronetTestFramework.mStreamHandlerFactory);
+                    super.runTest();
+                } else if (method.isAnnotationPresent(OnlyRunCronetHttpURLConnection.class)) {
+                    // Run only with Cronet's implementation.
+                    URL.setURLStreamHandlerFactory(mCronetTestFramework.mStreamHandlerFactory);
+                    super.runTest();
+                } else {
+                    // For all other tests.
+                    super.runTest();
+                }
+            } catch (Throwable e) {
+                throw new Throwable("CronetTestBase#runTest failed.", e);
             }
-        } catch (Throwable e) {
-            throw new Throwable("CronetTestBase#runTest failed.", e);
+        } else if (packageName.equals("org.chromium.net")) {
+            try {
+                Method method = getClass().getMethod(getName(), (Class[]) null);
+                super.runTest();
+                if (!method.isAnnotationPresent(OnlyRunNativeCronet.class)) {
+                    if (mCronetTestFramework != null) {
+                        mCronetTestFramework.mCronetEngine =
+                                new JavaCronetEngine(UserAgent.from(getContext()));
+                    }
+                    mTestingJavaImpl = true;
+                    super.runTest();
+                }
+            } catch (Throwable e) {
+                throw new Throwable("CronetTestBase#runTest failed.", e);
+            }
+        } else {
+            super.runTest();
         }
     }
 
@@ -162,4 +185,7 @@ public class CronetTestBase extends AndroidTestCase {
     public @interface OnlyRunCronetHttpURLConnection {
     }
 
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface OnlyRunNativeCronet {}
 }

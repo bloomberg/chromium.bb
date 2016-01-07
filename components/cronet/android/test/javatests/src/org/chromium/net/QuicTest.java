@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.CronetTestBase.OnlyRunNativeCronet;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -63,6 +64,7 @@ public class QuicTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     @SuppressWarnings("deprecation")
+    @OnlyRunNativeCronet
     public void testQuicLoadUrl_LegacyAPI() throws Exception {
         String[] commandLineArgs = {
                 CronetTestFramework.LIBRARY_INIT_KEY, CronetTestFramework.LibraryInitType.LEGACY};
@@ -90,6 +92,7 @@ public class QuicTest extends CronetTestBase {
 
     @LargeTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testQuicLoadUrl() throws Exception {
         mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, mBuilder);
         registerHostResolver(mTestFramework);

@@ -55,6 +55,7 @@ public class CronetUrlTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet // No NetLog from HttpURLConnection
     public void testNetLog() throws Exception {
         Context context = getContext();
         File directory = new File(PathUtils.getDataDirectory(context));

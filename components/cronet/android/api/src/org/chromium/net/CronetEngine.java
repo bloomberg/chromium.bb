@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Constructor;
@@ -19,6 +20,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandlerFactory;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -571,8 +573,10 @@ public abstract class CronetEngine {
      * @deprecated Use {@link UrlRequest.Builder#build}.
      */
     @Deprecated
-    public abstract UrlRequest createRequest(
-            String url, UrlRequest.Callback callback, Executor executor);
+    public final UrlRequest createRequest(
+            String url, UrlRequest.Callback callback, Executor executor) {
+        return createRequest(url, callback, executor, UrlRequest.Builder.REQUEST_PRIORITY_MEDIUM);
+    }
 
     /**
      * Creates a {@link UrlRequest} object. All callbacks will
@@ -590,8 +594,10 @@ public abstract class CronetEngine {
      * @deprecated Use {@link UrlRequest.Builder#build}.
      */
     @Deprecated
-    public abstract UrlRequest createRequest(String url, UrlRequest.Callback callback,
-            Executor executor, @UrlRequest.Builder.RequestPriority int priority);
+    public final UrlRequest createRequest(String url, UrlRequest.Callback callback,
+            Executor executor, @UrlRequest.Builder.RequestPriority int priority) {
+        return createRequest(url, callback, executor, priority, Collections.emptyList());
+    }
 
     /**
      * Creates a {@link UrlRequest} object. All callbacks will
@@ -781,7 +787,7 @@ public abstract class CronetEngine {
      * @param url URL of resource to connect to.
      * @return an {@link java.net.HttpURLConnection} instance implemented by this CronetEngine.
      */
-    public abstract URLConnection openConnection(URL url);
+    public abstract URLConnection openConnection(URL url) throws IOException;
 
     /**
      * Establishes a new connection to the resource specified by the {@link URL} {@code url}
@@ -800,7 +806,7 @@ public abstract class CronetEngine {
      */
     @Deprecated
     @SuppressWarnings("DepAnn")
-    public abstract URLConnection openConnection(URL url, Proxy proxy);
+    public abstract URLConnection openConnection(URL url, Proxy proxy) throws IOException;
 
     /**
      * Creates a {@link URLStreamHandlerFactory} to handle HTTP and HTTPS
@@ -853,9 +859,7 @@ public abstract class CronetEngine {
             cronetEngine = createCronetEngine(builder);
         }
         if (cronetEngine == null) {
-            // TODO(mef): Fallback to stub implementation. Once stub
-            // implementation is available merge with createCronetFactory.
-            cronetEngine = createCronetEngine(builder);
+            cronetEngine = new JavaCronetEngine(builder.getUserAgent());
         }
         Log.i(TAG, "Using network stack: " + cronetEngine.getVersionString());
         return cronetEngine;

@@ -8,6 +8,7 @@ import android.os.ConditionVariable;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.CronetTestBase.OnlyRunNativeCronet;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -69,6 +70,7 @@ public class SdchTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     @SuppressWarnings("deprecation")
+    @OnlyRunNativeCronet
     public void testSdchEnabled_LegacyApi() throws Exception {
         setUp(Sdch.ENABLED, Api.LEGACY);
         String targetUrl = NativeTestServer.getSdchURL() + "/sdch/test";
@@ -98,6 +100,7 @@ public class SdchTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     @SuppressWarnings("deprecation")
+    @OnlyRunNativeCronet
     public void testSdchDisabled_LegacyApi() throws Exception {
         setUp(Sdch.DISABLED, Api.LEGACY);
         // Make a request to /sdch/index.
@@ -113,6 +116,7 @@ public class SdchTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     @SuppressWarnings("deprecation")
+    @OnlyRunNativeCronet
     public void testDictionaryNotFound_LegacyApi() throws Exception {
         setUp(Sdch.ENABLED, Api.LEGACY);
         // Make a request to /sdch/index which advertises a bad dictionary that
@@ -134,6 +138,7 @@ public class SdchTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testSdchEnabled() throws Exception {
         setUp(Sdch.ENABLED, Api.ASYNC);
         String targetUrl = NativeTestServer.getSdchURL() + "/sdch/test";
@@ -187,6 +192,7 @@ public class SdchTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testSdchDisabled() throws Exception {
         setUp(Sdch.DISABLED, Api.ASYNC);
         // Make a request to /sdch.
@@ -200,6 +206,7 @@ public class SdchTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testDictionaryNotFound() throws Exception {
         setUp(Sdch.ENABLED, Api.ASYNC);
         // Make a request to /sdch/index which advertises a bad dictionary that
