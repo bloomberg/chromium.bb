@@ -67,7 +67,7 @@ namespace url {
 //     origin.scheme(); // "https"
 //     origin.host(); // "example.com"
 //     origin.port(); // 443
-//     origin.IsUnique(); // false
+//     origin.unique(); // false
 //
 // * To answer the question "Are |this| and |that| "same-origin" with each
 //   other?", use |Origin::IsSameOriginWith|:
