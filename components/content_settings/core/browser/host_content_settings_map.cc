@@ -335,7 +335,8 @@ void HostContentSettingsMap::SetNarrowestContentSetting(
     primary_pattern = ContentSettingsPattern::FromURLNoWildcard(primary_url);
     secondary_pattern =
         ContentSettingsPattern::FromURLNoWildcard(secondary_url);
-  } else if (type == CONTENT_SETTINGS_TYPE_IMAGES ||
+  } else if (type == CONTENT_SETTINGS_TYPE_COOKIES ||
+             type == CONTENT_SETTINGS_TYPE_IMAGES ||
              type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
              type == CONTENT_SETTINGS_TYPE_PLUGINS ||
              type == CONTENT_SETTINGS_TYPE_POPUPS ||
@@ -346,7 +347,8 @@ void HostContentSettingsMap::SetNarrowestContentSetting(
     secondary_pattern = ContentSettingsPattern::Wildcard();
   } else if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
              type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA ||
-             type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+             type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
+             type == CONTENT_SETTINGS_TYPE_PPAPI_BROKER) {
     primary_pattern = ContentSettingsPattern::FromURLNoWildcard(primary_url);
     secondary_pattern = ContentSettingsPattern::Wildcard();
   } else {
