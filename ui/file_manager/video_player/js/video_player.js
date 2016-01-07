@@ -29,6 +29,7 @@ function FullWindowVideoControls(
   currentWindow.onRestored.addListener(
       this.onFullScreenChanged.bind(this, false));
   document.addEventListener('keydown', function(e) {
+    this.inactivityWatcher_.kick();
     switch (util.getKeyModifiers(e) + e.keyIdentifier) {
       // Handle debug shortcut keys.
       case 'Ctrl-Shift-U+0049': // Ctrl+Shift+I
@@ -66,6 +67,9 @@ function FullWindowVideoControls(
         // TODO: Define "Stop" behavior.
         break;
     }
+  }.wrap(this));
+  document.addEventListener('keypress', function(e) {
+    this.inactivityWatcher_.kick();
   }.wrap(this));
 
   // TODO(mtomasz): Simplify. crbug.com/254318.
