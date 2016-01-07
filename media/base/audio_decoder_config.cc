@@ -114,14 +114,14 @@ std::string AudioDecoderConfig::GetHumanReadableCodecName() const {
       return "amr_nb";
     case kCodecAMR_WB:
       return "amr_wb";
-    case kCodecGSM_MS:
-      return "gsm_ms";
-    case kCodecPCM_ALAW:
-      return "pcm_alaw";
     case kCodecPCM_MULAW:
       return "pcm_mulaw";
+    case kCodecGSM_MS:
+      return "gsm_ms";
     case kCodecOpus:
       return "opus";
+    case kCodecPCM_ALAW:
+      return "pcm_alaw";
     case kCodecALAC:
       return "alac";
   }

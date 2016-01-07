@@ -145,12 +145,22 @@ static bool IsCodecSupportedOnAndroid(MimeUtil::Codec codec) {
     case MimeUtil::MPEG4_AAC_LC:
     case MimeUtil::MPEG4_AAC_SBR_v1:
     case MimeUtil::MPEG4_AAC_SBR_PS_v2:
+    case MimeUtil::VORBIS:
     case MimeUtil::H264_BASELINE:
     case MimeUtil::H264_MAIN:
     case MimeUtil::H264_HIGH:
     case MimeUtil::VP8:
-    case MimeUtil::VORBIS:
       return true;
+
+    case MimeUtil::MPEG2_AAC_LC:
+    case MimeUtil::MPEG2_AAC_MAIN:
+    case MimeUtil::MPEG2_AAC_SSR:
+      // MPEG-2 variants of AAC are not supported on Android.
+      return false;
+
+    case MimeUtil::OPUS:
+      // Opus is supported only in Lollipop+ (API Level 21).
+      return base::android::BuildInfo::GetInstance()->sdk_int() >= 21;
 
     case MimeUtil::HEVC_MAIN:
 #if defined(ENABLE_HEVC_DEMUXING)
@@ -161,19 +171,9 @@ static bool IsCodecSupportedOnAndroid(MimeUtil::Codec codec) {
       return false;
 #endif
 
-    case MimeUtil::MPEG2_AAC_LC:
-    case MimeUtil::MPEG2_AAC_MAIN:
-    case MimeUtil::MPEG2_AAC_SSR:
-      // MPEG-2 variants of AAC are not supported on Android.
-      return false;
-
     case MimeUtil::VP9:
       // VP9 is supported only in KitKat+ (API Level 19).
       return base::android::BuildInfo::GetInstance()->sdk_int() >= 19;
-
-    case MimeUtil::OPUS:
-      // Opus is supported only in Lollipop+ (API Level 21).
-      return base::android::BuildInfo::GetInstance()->sdk_int() >= 21;
 
     case MimeUtil::THEORA:
       return false;
@@ -279,6 +279,7 @@ struct CodecIDMappings {
 static const CodecIDMappings kUnambiguousCodecStringMap[] = {
     {"1", MimeUtil::PCM},  // We only allow this for WAV so it isn't ambiguous.
     // avc1/avc3.XXXXXX may be unambiguous; handled by ParseH264CodecID().
+    // hev1/hvc1.XXXXXX may be unambiguous; handled by ParseHEVCCodecID().
     {"mp3", MimeUtil::MP3},
     {"mp4a.66", MimeUtil::MPEG2_AAC_MAIN},
     {"mp4a.67", MimeUtil::MPEG2_AAC_LC},
