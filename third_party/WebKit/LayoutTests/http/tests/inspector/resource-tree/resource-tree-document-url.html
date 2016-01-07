@@ -5,12 +5,25 @@
 <script src="resource-tree-test.js"></script>
 
 <script>
+function loadIframe()
+{
+    var iframe = document.createElement("iframe");
+    iframe.src = "resources/dummy-iframe.html";
+    document.body.appendChild(iframe);
+}
 
 function test()
 {
-    InspectorTest.runAfterResourcesAreFinished(["dummy-iframe.html", "inspector-test.js", "resources-test.js", "resource-tree-test.js"], step1);
+    InspectorTest.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameNavigated, waitForResources);
+    InspectorTest.evaluateInPage("loadIframe()");
 
-    function step1()
+    function waitForResources()
+    {
+        InspectorTest.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameNavigated, waitForResources);
+        InspectorTest.runAfterResourcesAreFinished(["dummy-iframe.html", "inspector-test.js", "resources-test.js", "resource-tree-test.js"], dump);
+    }
+
+    function dump()
     {
         function formatter(resource)
         {
@@ -26,12 +39,10 @@ function test()
 
 </head>
 
-<body>
+<body onload="runTest()">
 <p>
 Tests that resources have proper documentURL set in the tree model.
 </p>
-
-<iframe src="resources/dummy-iframe.html" onload="runTest()">
 
 </body>
 </html>
