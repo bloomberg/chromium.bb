@@ -428,10 +428,11 @@ void RuleFeatureSet::addFeaturesToInvalidationSet(InvalidationSet& invalidationS
         invalidationSet.setTreeBoundaryCrossing();
     if (features.insertionPointCrossing)
         invalidationSet.setInsertionPointCrossing();
-    if (features.forceSubtree) {
+    if (features.forceSubtree)
         invalidationSet.setWholeSubtreeInvalid();
+    if (features.contentPseudoCrossing || features.forceSubtree)
         return;
-    }
+
     if (!features.id.isEmpty())
         invalidationSet.addId(features.id);
     if (!features.tagName.isEmpty())
@@ -472,8 +473,11 @@ void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector* selector, 
         } else {
             if (current->isHostPseudoClass())
                 descendantFeatures.treeBoundaryCrossing = true;
-            if (current->isInsertionPointCrossing())
+            if (current->isInsertionPointCrossing()) {
                 descendantFeatures.insertionPointCrossing = true;
+                if (current->pseudoType() == CSSSelector::PseudoContent)
+                    descendantFeatures.contentPseudoCrossing = true;
+            }
             if (const CSSSelectorList* selectorList = current->selectorList()) {
                 ASSERT(supportsInvalidationWithSelectorList(current->pseudoType()));
                 for (const CSSSelector* subSelector = selectorList->first(); subSelector; subSelector = CSSSelectorList::next(*subSelector))

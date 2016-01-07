@@ -321,4 +321,20 @@ TEST_F(RuleFeatureSetTest, tagName)
     expectTagNameInvalidation("e", invalidationLists.descendants);
 }
 
+TEST_F(RuleFeatureSetTest, contentPseudo)
+{
+    updateInvalidationSets(".a ::content .b");
+    updateInvalidationSets(".a .c");
+
+    InvalidationLists invalidationLists;
+    collectInvalidationSetsForClass(invalidationLists, "a");
+    expectClassInvalidation("c", invalidationLists.descendants);
+
+    updateInvalidationSets(".a .b");
+
+    invalidationLists.descendants.clear();
+    collectInvalidationSetsForClass(invalidationLists, "a");
+    expectClassesInvalidation("b", "c", invalidationLists.descendants);
+}
+
 } // namespace blink
