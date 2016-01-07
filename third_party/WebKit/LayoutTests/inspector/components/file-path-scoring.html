@@ -45,7 +45,7 @@ function test()
         var scorer = new WebInspector.FilePathScoreFunction(query);
         var bestScore = -1;
         var bestIndex = -1;
-        var filter = WebInspector.FilePathScoreFunction.filterRegex(query);
+        var filter = WebInspector.FilteredListWidget.filterRegex(query);
         for(var i = 0; i < paths.length; ++i) {
             if (!filter.test(paths[i]))
                 continue;

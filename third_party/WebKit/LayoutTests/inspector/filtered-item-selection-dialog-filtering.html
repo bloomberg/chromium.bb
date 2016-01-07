@@ -13,7 +13,7 @@ function test()
 
     function StubDelegate()
     {
-        WebInspector.SelectionDialogContentProvider.call(this, history);
+        WebInspector.FilteredListWidget.Delegate.call(this, history);
     }
     StubDelegate.prototype = {
         itemKeyAt: function(itemIndex) { return overridenInput[itemIndex]; },
@@ -25,7 +25,7 @@ function test()
         },
         shouldShowMatchingItems: function() { return overrideShowMatchingItems; },
 
-        __proto__: WebInspector.SelectionDialogContentProvider.prototype
+        __proto__: WebInspector.FilteredListWidget.Delegate.prototype
     }
 
     var delegate = new StubDelegate();
@@ -37,7 +37,8 @@ function test()
 
         InspectorTest.addResult("Input:" + JSON.stringify(input));
 
-        var filteredSelectionDialog = new WebInspector.FilteredItemSelectionDialog(delegate);
+        var filteredSelectionDialog = new WebInspector.FilteredListWidget(delegate);
+        filteredSelectionDialog.showAsDialog();
         InspectorTest.addSniffer(filteredSelectionDialog, "_autocompletedForTests", onautocomplete);
         filteredSelectionDialog.setQuery(query);
         filteredSelectionDialog._updateAfterItemsLoaded();

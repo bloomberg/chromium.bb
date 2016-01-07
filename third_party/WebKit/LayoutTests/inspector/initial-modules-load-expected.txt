@@ -37,6 +37,7 @@ Loaded modules:
     common
     components
     components_lazy
+    diff
     elements
     emulation
     extensions
