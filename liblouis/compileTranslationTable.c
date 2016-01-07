@@ -5434,8 +5434,9 @@ resolveSubtable (const char *table, const char *base, const char *searchPath)
   //
   if (base)
     {
-      int k = (int)strlen (tableFile);
+      int k;
       strcpy (tableFile, base);
+      k = (int)strlen (tableFile);
       while (k >= 0 && tableFile[k] != DIR_SEP) k--;
       tableFile[++k] = '\0';
       strcat (tableFile, table);
