@@ -72,6 +72,11 @@ public:
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }
 
+    void calculateGeometry(WebPluginContainerImpl* pluginContainerImpl, IntRect& windowRect, IntRect& clipRect, IntRect& unobscuredRect, Vector<IntRect>& cutOutRects)
+    {
+        pluginContainerImpl->calculateGeometry(windowRect, clipRect, unobscuredRect, cutOutRects);
+    }
+
 protected:
     std::string m_baseURL;
 };
@@ -400,6 +405,46 @@ TEST_F(WebPluginContainerTest, IsRectTopmostTest)
     webViewHelper.reset();
 
     EXPECT_FALSE(pluginContainerImpl->isRectTopmost(rect));
+}
+
+#define EXPECT_RECT_EQ(expected, actual) \
+    do { \
+        const IntRect& actualRect = actual; \
+        EXPECT_EQ(expected.x(), actualRect.x()); \
+        EXPECT_EQ(expected.y(), actualRect.y()); \
+        EXPECT_EQ(expected.width(), actualRect.width()); \
+        EXPECT_EQ(expected.height(), actualRect.height()); \
+    } while (false)
+
+TEST_F(WebPluginContainerTest, ClippedRectsForIframedElement)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("plugin_container.html"));
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("plugin_containing_page.html"));
+
+    TestPluginWebFrameClient pluginWebFrameClient; // Must outlive webViewHelper.
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_containing_page.html", true, &pluginWebFrameClient);
+    ASSERT(webView);
+    webView->settings()->setPluginsEnabled(true);
+    webView->resize(WebSize(300, 300));
+    webView->updateAllLifecyclePhases();
+    runPendingTasks();
+
+    WebElement pluginElement = webView->mainFrame()->firstChild()->document().getElementById("translated-plugin");
+    RefPtrWillBeRawPtr<WebPluginContainerImpl> pluginContainerImpl = toWebPluginContainerImpl(pluginElement.pluginContainer());
+
+    ASSERT(pluginContainerImpl.get());
+    pluginContainerImpl->setFrameRect(IntRect(0, 0, 300, 300));
+
+    IntRect windowRect, clipRect, unobscuredRect;
+    Vector<IntRect> cutOutRects;
+    calculateGeometry(pluginContainerImpl.get(), windowRect, clipRect, unobscuredRect, cutOutRects);
+    EXPECT_RECT_EQ(IntRect(10, 210, 300, 300), windowRect);
+    EXPECT_RECT_EQ(IntRect(0, 0, 240, 90), clipRect);
+    EXPECT_RECT_EQ(IntRect(0, 0, 240, 160), unobscuredRect);
+
+    // Cause the plugin's frame to be detached.
+    webViewHelper.reset();
 }
 
 TEST_F(WebPluginContainerTest, TopmostAfterDetachTest)

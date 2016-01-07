@@ -191,6 +191,8 @@ private:
         const IntRect& frameRect,
         Vector<IntRect>& cutOutRects);
 
+    friend class WebPluginContainerTest;
+
     RawPtrWillBeMember<HTMLPlugInElement> m_element;
     WebPlugin* m_webPlugin;
 

@@ -927,7 +927,7 @@ void WebPluginContainerImpl::computeClipRectsForPlugin(
 
     LayoutBox* box = toLayoutBox(ownerElement->layoutObject());
 
-    // Plugin frameRects are in absolute screen space.
+    // Plugin frameRects are in absolute space within their frame.
     IntRect frameRectInOwnerElementSpace = box->absoluteToLocalQuad(FloatRect(frameRect()), UseTransforms).enclosingBoundingBox();
 
     LayoutRect unclippedAbsoluteRect(frameRectInOwnerElementSpace);
@@ -945,8 +945,8 @@ void WebPluginContainerImpl::computeClipRectsForPlugin(
     clippedLocalRect.intersect(rootView->frameView()->visibleContentRect());
 
     // TODO(chrishtr): intentionally ignore transform, because the positioning of frameRect() does also. This is probably wrong.
-    unclippedIntLocalRect = box->absoluteToLocalQuad(FloatRect(unclippedIntLocalRect)).enclosingBoundingBox();
-    clippedLocalRect = box->absoluteToLocalQuad(FloatRect(clippedLocalRect)).enclosingBoundingBox();
+    unclippedIntLocalRect = box->absoluteToLocalQuad(FloatRect(unclippedIntLocalRect), TraverseDocumentBoundaries).enclosingBoundingBox();
+    clippedLocalRect = box->absoluteToLocalQuad(FloatRect(clippedLocalRect), TraverseDocumentBoundaries).enclosingBoundingBox();
 }
 
 void WebPluginContainerImpl::calculateGeometry(IntRect& windowRect, IntRect& clipRect, IntRect& unobscuredRect, Vector<IntRect>& cutOutRects)
@@ -965,4 +965,4 @@ void WebPluginContainerImpl::calculateGeometry(IntRect& windowRect, IntRect& cli
         cutOutRects[i].move(-frameRect().x(), -frameRect().y());
 }
 
-} // namespace blinkf
+} // namespace blink
