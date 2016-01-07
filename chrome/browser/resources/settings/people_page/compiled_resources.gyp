@@ -32,6 +32,20 @@
       'includes': ['../../../../../third_party/closure_compiler/compile_js.gypi'],
     },
     {
+      'target_name': 'sync_page',
+      'variables': {
+        'depends': [
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:assert',
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:cr',
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
+          '../../../../../ui/webui/resources/js/i18n_behavior.js',
+          '../settings_page/settings_animated_pages.js',
+          'sync_private_api.js',
+        ],
+      },
+      'includes': ['../../../../../third_party/closure_compiler/compile_js.gypi'],
+    },
+    {
       'target_name': 'sync_private_api',
       'variables': {
         'depends': [

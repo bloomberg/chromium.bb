@@ -132,6 +132,15 @@ Polymer({
       subpage: ['search-engines', 'search-engines-advanced'],
       subpageTitles: ['searchEnginesPageTitle', 'advancedPageTitle'],
     },
+<if expr="not chromeos">
+    {
+      url: '/manageProfile',
+      page: 'basic',
+      section: 'people',
+      subpage: ['manageProfile'],
+      subpageTitles: ['editPerson'],
+    },
+</if>
     {
       url: '/syncSetup',
       page: 'basic',

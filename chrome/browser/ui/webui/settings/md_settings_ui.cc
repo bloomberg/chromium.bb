@@ -26,6 +26,10 @@
 #include "grit/settings_resources.h"
 #include "grit/settings_resources_map.h"
 
+#if !defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/settings/settings_manage_profile_handler.h"
+#endif
+
 namespace settings {
 
 SettingsPageUIHandler::SettingsPageUIHandler() {
@@ -36,20 +40,24 @@ SettingsPageUIHandler::~SettingsPageUIHandler() {
 
 MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
+  Profile* profile = Profile::FromWebUI(web_ui);
   AddSettingsPageUIHandler(new AppearanceHandler(web_ui));
   AddSettingsPageUIHandler(new ClearBrowsingDataHandler(web_ui));
   AddSettingsPageUIHandler(new DefaultBrowserHandler(web_ui));
   AddSettingsPageUIHandler(new DownloadsHandler());
   AddSettingsPageUIHandler(new FontHandler(web_ui));
   AddSettingsPageUIHandler(new LanguagesHandler(web_ui));
-  AddSettingsPageUIHandler(new PeopleHandler(Profile::FromWebUI(web_ui)));
+  AddSettingsPageUIHandler(new PeopleHandler(profile));
   AddSettingsPageUIHandler(new StartupPagesHandler(web_ui));
+
+#if !defined(OS_CHROMEOS)
+  AddSettingsPageUIHandler(new ManageProfileHandler(profile));
+#endif
 
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUIMdSettingsHost);
 
-  AddSettingsPageUIHandler(ResetSettingsHandler::Create(
-      html_source, Profile::FromWebUI(web_ui)));
+  AddSettingsPageUIHandler(ResetSettingsHandler::Create(html_source, profile));
 
   // Add all settings resources.
   for (size_t i = 0; i < kSettingsResourcesSize; ++i) {
@@ -57,7 +65,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
                                  kSettingsResources[i].value);
   }
 
-  AddLocalizedStrings(html_source, Profile::FromWebUI(web_ui));
+  AddLocalizedStrings(html_source, profile);
   html_source->SetDefaultResource(IDR_SETTINGS_SETTINGS_HTML);
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),

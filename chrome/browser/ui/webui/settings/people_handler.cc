@@ -215,10 +215,15 @@ PeopleHandler::PeopleHandler(Profile* profile)
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_));
   if (sync_service)
     sync_service_observer_.Add(sync_service);
+
+  g_browser_process->profile_manager()->GetProfileInfoCache().AddObserver(this);
 }
 
 PeopleHandler::~PeopleHandler() {
-  // Just exit if running unit tests (no actual WebUI is attached).
+  g_browser_process->profile_manager()->
+      GetProfileInfoCache().RemoveObserver(this);
+
+  // Early exit if running unit tests (no actual WebUI is attached).
   if (!web_ui())
     return;
 
@@ -257,6 +262,9 @@ bool PeopleHandler::IsActiveLogin() const {
 }
 
 void PeopleHandler::RegisterMessages() {
+  web_ui()->RegisterMessageCallback(
+      "getProfileInfo",
+      base::Bind(&PeopleHandler::HandleGetProfileInfo, base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "SyncSetupDidClosePage",
       base::Bind(&PeopleHandler::OnDidClosePage, base::Unretained(this)));
@@ -428,6 +436,16 @@ ProfileSyncService* PeopleHandler::GetSyncService() const {
   return profile_->IsSyncAllowed()
              ? ProfileSyncServiceFactory::GetForProfile(profile_)
              : nullptr;
+}
+
+void PeopleHandler::HandleGetProfileInfo(const base::ListValue* args) {
+  std::string name;
+  std::string icon_url;
+  GetAccountNameAndIcon(*profile_, &name, &icon_url);
+
+  web_ui()->CallJavascriptFunction("settings.SyncPrivateApi.receiveProfileInfo",
+                                   base::StringValue(name),
+                                   base::StringValue(icon_url));
 }
 
 void PeopleHandler::HandleConfigure(const base::ListValue* args) {
@@ -765,6 +783,17 @@ void PeopleHandler::OnStateChanged() {
   UpdateSyncState();
 }
 
+void PeopleHandler::OnProfileNameChanged(
+    const base::FilePath& /* profile_path */,
+    const base::string16& /* old_profile_name */) {
+  HandleGetProfileInfo(nullptr);
+}
+
+void PeopleHandler::OnProfileAvatarChanged(
+    const base::FilePath& /* profile_path */) {
+  HandleGetProfileInfo(nullptr);
+}
+
 scoped_ptr<base::DictionaryValue> PeopleHandler::GetSyncStateDictionary() {
   // The items which are to be written into |sync_status| are also described in
   // chrome/browser/resources/options/browser_options.js in @typedef
@@ -814,12 +843,6 @@ scoped_ptr<base::DictionaryValue> PeopleHandler::GetSyncStateDictionary() {
   sync_status->SetBoolean("signedIn", signin->IsAuthenticated());
   sync_status->SetBoolean("hasUnrecoverableError",
                           service && service->HasUnrecoverableError());
-
-  std::string name;
-  std::string icon_url;
-  GetAccountNameAndIcon(*profile_, &name, &icon_url);
-  sync_status->SetString("name", name);
-  sync_status->SetString("iconURL", icon_url);
 
   return sync_status;
 }
