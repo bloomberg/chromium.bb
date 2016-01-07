@@ -4,9 +4,17 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <sys/types.h>
+
+#include <linux/android/binder.h>
 
 #include <vector>
 
+#include "base/message_loop/message_loop.h"
+#include "chromeos/binder/command_broker.h"
+#include "chromeos/binder/driver.h"
+#include "chromeos/binder/local_object.h"
+#include "chromeos/binder/remote_object.h"
 #include "chromeos/binder/transaction_data_reader.h"
 #include "chromeos/binder/writable_transaction_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -81,6 +89,42 @@ TEST(BinderTransactionDataReaderTest, ReadScalarValues) {
     EXPECT_TRUE(reader.ReadDouble(&result));
     EXPECT_EQ(kDoubleValue, result);
   }
+  EXPECT_FALSE(reader.HasMoreData());
+}
+
+TEST(TransactionDataReaderTest, ReadObject) {
+  base::MessageLoopForIO message_loop;
+
+  Driver driver;
+  ASSERT_TRUE(driver.Initialize());
+  CommandBroker command_broker(&driver);
+
+  scoped_refptr<LocalObject> local(
+      new LocalObject(scoped_ptr<LocalObject::TransactionHandler>()));
+
+  const int32_t kDummyHandle = 42;
+  scoped_refptr<RemoteObject> remote(
+      new RemoteObject(&command_broker, kDummyHandle));
+
+  // Write a local object & a remote object.
+  WritableTransactionData data;
+  data.WriteObject(local);
+  data.WriteObject(remote);
+
+  // Read the local object.
+  TransactionDataReader reader(data);
+  scoped_refptr<Object> result = reader.ReadObject(&command_broker);
+  ASSERT_TRUE(result);
+  ASSERT_EQ(Object::TYPE_LOCAL, result->GetType());
+  EXPECT_EQ(local.get(), static_cast<LocalObject*>(result.get()));
+
+  // Read the remote object.
+  result = reader.ReadObject(&command_broker);
+  ASSERT_TRUE(result);
+  ASSERT_EQ(Object::TYPE_REMOTE, result->GetType());
+  EXPECT_EQ(kDummyHandle,
+            static_cast<RemoteObject*>(result.get())->GetHandle());
+
   EXPECT_FALSE(reader.HasMoreData());
 }
 

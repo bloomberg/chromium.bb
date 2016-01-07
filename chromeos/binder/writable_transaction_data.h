@@ -11,10 +11,13 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "chromeos/binder/transaction_data.h"
 #include "chromeos/chromeos_export.h"
 
 namespace binder {
+
+class Object;
 
 // Use this class to construct TransactionData (as parameters and replies) to
 // transact with remote objects.
@@ -66,6 +69,9 @@ class CHROMEOS_EXPORT WritableTransactionData : public TransactionData {
 
   // Appends a double value.
   void WriteDouble(double value);
+
+  // Appends an object.
+  void WriteObject(scoped_refptr<Object> object);
   // TODO(hashimoto): Support more types (i.e. strings, FDs, objects).
 
  private:
@@ -73,6 +79,7 @@ class CHROMEOS_EXPORT WritableTransactionData : public TransactionData {
   bool is_one_way_ = false;
   std::vector<char> data_;
   std::vector<uintptr_t> object_offsets_;
+  std::vector<scoped_refptr<Object>> objects_;
 
   DISALLOW_COPY_AND_ASSIGN(WritableTransactionData);
 };

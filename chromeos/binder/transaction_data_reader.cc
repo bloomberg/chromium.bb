@@ -7,6 +7,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <linux/android/binder.h>
+
+#include "chromeos/binder/local_object.h"
+#include "chromeos/binder/object.h"
+#include "chromeos/binder/remote_object.h"
 #include "chromeos/binder/transaction_data.h"
 
 namespace binder {
@@ -32,6 +37,7 @@ bool TransactionDataReader::HasMoreData() const {
 }
 
 bool TransactionDataReader::ReadData(void* buf, size_t n) {
+  DCHECK(buf);
   return reader_.Read(buf, n) && reader_.Skip(AddPadding(n) - n);
 }
 
@@ -57,6 +63,22 @@ bool TransactionDataReader::ReadFloat(float* value) {
 
 bool TransactionDataReader::ReadDouble(double* value) {
   return ReadData(value, sizeof(*value));
+}
+
+scoped_refptr<Object> TransactionDataReader::ReadObject(
+    CommandBroker* command_broker) {
+  DCHECK(command_broker);
+  flat_binder_object obj = {};
+  if (!ReadData(&obj, sizeof(obj))) {
+    return scoped_refptr<Object>();
+  }
+  switch (obj.type) {
+    case BINDER_TYPE_HANDLE:
+      return make_scoped_refptr(new RemoteObject(command_broker, obj.handle));
+    case BINDER_TYPE_BINDER:
+      return make_scoped_refptr(reinterpret_cast<LocalObject*>(obj.cookie));
+  }
+  return scoped_refptr<Object>();
 }
 
 }  // namespace binder
