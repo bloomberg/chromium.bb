@@ -379,12 +379,16 @@ endif
 
 #
 # Convert a source path to a object file path.
+# If source path is absolute then just use the basename of for the object
+# file name (absolute sources paths with the same basename are not allowed).
+# For relative paths use the full path to the source in the object file path
+# name.
 #
 # $1 = Source Name
 # $2 = Arch suffix
 #
 define SRC_TO_OBJ
-$(OUTDIR)/$(basename $(subst ..,__,$(1)))$(2).o
+$(if $(filter /%,$(1)), $(OUTDIR)/$(basename $(notdir $(1)))$(2).o, $(OUTDIR)/$(basename $(subst ..,__,$(1)))$(2).o)
 endef
 
 

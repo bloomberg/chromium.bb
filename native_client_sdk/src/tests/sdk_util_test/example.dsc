@@ -11,7 +11,17 @@
         'string_util_test.cc',
       ],
       'DEPS': ['ppapi_simple_cpp', 'sdk_util', 'nacl_io'],
-      'LIBS': ['ppapi_simple_cpp', 'ppapi_cpp', 'gmock', 'nacl_io', 'ppapi', 'gtest', 'pthread'],
+      'LIBS': ['ppapi_simple_cpp', 'ppapi_cpp', 'nacl_io', 'ppapi', 'pthread'],
+      'INCLUDES': [
+        '../../src/gtest/include',
+        '../../src/gtest',
+        '../../src/gmock/include',
+        '../../src/gmock'
+      ],
+      'EXTRA_SOURCES' : [
+        '../../src/gtest/src/gtest-all.cc',
+        '../../src/gmock/src/gmock-all.cc'
+      ],
       'CXXFLAGS': ['-Wno-sign-compare']
     }
   ],

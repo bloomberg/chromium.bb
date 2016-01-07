@@ -11,7 +11,12 @@
         'echo_server.h',
       ],
       'DEPS': ['ppapi_simple_cpp', 'nacl_io'],
-      'LIBS': ['ppapi_simple_cpp', 'ppapi_cpp', 'gmock', 'ppapi', 'gtest', 'nacl_io', 'pthread'],
+      'LIBS': ['ppapi_simple_cpp', 'ppapi_cpp', 'ppapi', 'nacl_io', 'pthread'],
+      'EXTRA_SOURCES' : ['../../src/gtest/src/gtest-all.cc'],
+      'INCLUDES': [
+        '../../src/gtest/include',
+        '../../src/gtest'
+      ],
       'CXXFLAGS': ['-Wno-sign-compare']
     }
   ],

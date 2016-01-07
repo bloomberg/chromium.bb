@@ -148,7 +148,7 @@ def UpdateProjects(pepperdir, project_tree, toolchains,
     if clobber:
       buildbot_common.RemoveDir(dirpath)
     buildbot_common.MakeDir(dirpath)
-    targets = [desc['NAME'] for desc in projects]
+    targets = [desc['NAME'] for desc in projects if 'TARGETS' in desc]
     deps = GetDeps(projects)
 
     # Generate master make for this branch of projects

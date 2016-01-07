@@ -1,80 +1,43 @@
 {
   'SEARCH': [
-    '.',
-    '../../../../testing/gtest/include/gtest',
-    '../../../../testing/gtest/include/gtest/internal',
-    '../../../../testing/gtest/src',
+    '../../../../testing/gtest',
   ],
-  'TARGETS': [
-    {
-      'NAME' : 'gtest',
-      'TYPE' : 'lib',
-      'SOURCES' : [
-        'gtest.cc',
-        'gtest-death-test.cc',
-        'gtest-filepath.cc',
-        'gtest-port.cc',
-        'gtest-printers.cc',
-        'gtest-test-part.cc',
-        'gtest-typed-test.cc',
-      ],
-      'INCLUDES': [
-        # See comment below about gtest-internal-inl.h
-        '$(NACL_SDK_ROOT)/include/gtest/internal',
-      ],
-    }
-  ],
-  'HEADERS': [
-    {
-      'FILES': [
-        'gtest-death-test.h',
-        'gtest.h',
-        'gtest-message.h',
-        'gtest-param-test.h',
-        'gtest_pred_impl.h',
-        'gtest-printers.h',
-        'gtest_prod.h',
-        'gtest-spi.h',
-        'gtest-test-part.h',
-        'gtest-typed-test.h',
-      ],
-      'DEST': 'include/gtest',
-    },
-    {
-      'FILES': [
-        'gtest-death-test-internal.h',
-        'gtest-filepath.h',
-        'gtest-internal.h',
-        'gtest-linked_ptr.h',
-        'gtest-param-util-generated.h',
-        'gtest-param-util.h',
-        'gtest-port-arch.h',
-        'gtest-port.h',
-        'gtest-string.h',
-        'gtest-tuple.h',
-        'gtest-type-util.h',
-      ],
-      'DEST': 'include/gtest/internal',
-    },
-    {
-      'FILES': [
-        'gtest.h',
-        'gtest-port.h',
-        'gtest-printers.h',
-      ],
-      'DEST': 'include/gtest/internal/custom',
-    },
-    {
-      # This is cheesy, but gtest.cc includes "src/gtest-internal-inl.h". Since
-      # gtest is not installed in the SDK, I don't really care about the
-      # directory layout.
-      # TODO(binji): If we decide to include gtest, put this file in a better
-      # spot.
-      'FILES': [
-        'gtest-internal-inl.h',
-      ],
-      'DEST': 'include/gtest/internal/src',
-    },
+  'DATA': [
+    'src/gtest.cc',
+    'src/gtest_main.cc',
+    'src/gtest-death-test.cc',
+    'src/gtest-all.cc',
+    'src/gtest-filepath.cc',
+    'src/gtest-port.cc',
+    'src/gtest-printers.cc',
+    'src/gtest-test-part.cc',
+    'src/gtest-typed-test.cc',
+    'src/gtest-internal-inl.h',
+    'include/gtest/gtest.h',
+    'include/gtest/gtest-death-test.h',
+    'include/gtest/gtest.h',
+    'include/gtest/gtest-message.h',
+    'include/gtest/gtest-param-test.h',
+    'include/gtest/gtest_pred_impl.h',
+    'include/gtest/gtest-printers.h',
+    'include/gtest/gtest_prod.h',
+    'include/gtest/gtest-spi.h',
+    'include/gtest/gtest-test-part.h',
+    'include/gtest/gtest-typed-test.h',
+    'include/gtest/internal/gtest-death-test-internal.h',
+    'include/gtest/internal/gtest-filepath.h',
+    'include/gtest/internal/gtest-internal.h',
+    'include/gtest/internal/gtest-linked_ptr.h',
+    'include/gtest/internal/gtest-param-util-generated.h',
+    'include/gtest/internal/gtest-param-util.h',
+    'include/gtest/internal/gtest-port-arch.h',
+    'include/gtest/internal/gtest-port.h',
+    'include/gtest/internal/gtest-string.h',
+    'include/gtest/internal/gtest-tuple.h',
+    'include/gtest/internal/gtest-type-util.h',
+    'include/gtest/internal/custom/gtest.h',
+    'include/gtest/internal/custom/gtest-port.h',
+    'include/gtest/internal/custom/gtest-printers.h',
   ],
   'DEST': 'src',
   'NAME': 'gtest',

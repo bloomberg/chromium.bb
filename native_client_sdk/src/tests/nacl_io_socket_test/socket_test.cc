@@ -15,7 +15,6 @@
 #include <string>
 
 #include "echo_server.h"
-#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "nacl_io/kernel_intercept.h"
 #include "nacl_io/kernel_proxy.h"

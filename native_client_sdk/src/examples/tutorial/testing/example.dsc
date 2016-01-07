@@ -6,7 +6,9 @@
       'NAME' : 'testing',
       'TYPE' : 'main',
       'SOURCES' : ['testing.cc'],
-      'LIBS' : ['ppapi_simple_cpp', 'ppapi_cpp', 'ppapi', 'gtest', 'nacl_io', 'pthread'],
+      'LIBS' : ['ppapi_simple_cpp', 'ppapi_cpp', 'ppapi', 'nacl_io', 'pthread'],
+      'INCLUDES': ['../../../src/gtest/include', '../../../src/gtest'],
+      'EXTRA_SOURCES' : ['../../../src/gtest/src/gtest-all.cc'],
       'CXXFLAGS': ['-Wno-sign-compare']
     }
   ],

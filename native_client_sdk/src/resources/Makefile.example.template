@@ -52,7 +52,8 @@ CHROME_ARGS += --allow-nacl-socket-api=localhost
 [[ExpandDict('LIBS', targets[0].get('LIBS', []))]]
 
 [[for target in targets:]]
-[[  source_list = (s for s in sorted(target['SOURCES']) if not s.endswith('.h'))]]
+[[  source_list = sorted(target['SOURCES'] + target.get('EXTRA_SOURCES', []))]]
+[[  source_list = (s for s in source_list if not s.endswith('.h'))]]
 [[  source_list = ' \\\n  '.join(source_list)]]
 [[  sources = target['NAME'] + '_SOURCES']]
 [[  cflags = target['NAME'] + '_CFLAGS']]

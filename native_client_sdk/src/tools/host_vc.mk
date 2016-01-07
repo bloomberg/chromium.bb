@@ -77,7 +77,7 @@ $(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(OSNAME)_x86_32_host/$(CONFIG)/$(1).lib
 	@echo "TOUCHED $$@" > $(STAMPDIR)/$(1).stamp
 
 all:$(LIBDIR)/$(OSNAME)_x86_32_host/$(CONFIG)/$(1).lib
-$(LIBDIR)/$(OSNAME)_x86_32_host/$(CONFIG)/$(1).lib: $(foreach src,$(2),$(OUTDIR)/$(basename $(src)).o)
+$(LIBDIR)/$(OSNAME)_x86_32_host/$(CONFIG)/$(1).lib: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src)))
 	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,LIB,$$@,$(HOST_LIB) /OUT:$$@ $$^ $(WIN_LDFLAGS))
 endef
@@ -111,7 +111,7 @@ endef
 # $6 = VC Linker Switches
 #
 define LINK_RULE
-$(call LINKER_RULE,$(OUTDIR)/$(1)$(HOST_EXT),$(foreach src,$(2),$(OUTDIR)/$(basename $(src)).o),$(3),$(4),$(LIB_PATHS),$(6))
+$(call LINKER_RULE,$(OUTDIR)/$(1)$(HOST_EXT),$(foreach src,$(2),$(call SRC_TO_OBJ,$(src))),$(3),$(4),$(LIB_PATHS),$(6))
 endef
 
 
