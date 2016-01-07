@@ -5044,8 +5044,12 @@
         'mac_bundle': 0,
         'xcode_settings': {
           'ALWAYS_SEARCH_USER_PATHS': 'NO',
+          'CLANG_CXX_LANGUAGE_STANDARD': 'c++11',  # -std=c++11
           # Don't link in libarclite_macosx.a, see http://crbug.com/156530.
           'CLANG_LINK_OBJC_RUNTIME': 'NO',          # -fno-objc-link-runtime
+          # Warn if automatic synthesis is triggered with
+          # the -Wobjc-missing-property-synthesis flag.
+          'CLANG_WARN_OBJC_MISSING_PROPERTY_SYNTHESIS': 'YES',
           'COPY_PHASE_STRIP': 'NO',
           'GCC_C_LANGUAGE_STANDARD': 'c99',         # -std=c99
           'GCC_CW_ASM_SYNTAX': 'NO',                # No -fasm-blocks
@@ -5057,7 +5061,7 @@
           'GCC_OBJC_CALL_CXX_CDTORS': 'YES',        # -fobjc-call-cxx-cdtors
           'GCC_THREADSAFE_STATICS': 'NO',           # -fno-threadsafe-statics
           'GCC_TREAT_WARNINGS_AS_ERRORS': 'YES',    # -Werror
-          'GCC_VERSION': '4.2',
+          'GCC_VERSION': 'com.apple.compilers.llvm.clang.1_0',
           'GCC_WARN_ABOUT_MISSING_NEWLINE': 'YES',  # -Wnewline-eof
           'USE_HEADERMAP': 'NO',
           'WARNING_CFLAGS': [
@@ -5068,6 +5072,11 @@
             # Don't warn about the "struct foo f = {0};" initialization
             # pattern.
             '-Wno-missing-field-initializers',
+            # This warns on selectors from Cocoa headers (-length, -set).
+            # cfe-dev is currently discussing the merits of this warning.
+            # TODO(thakis): Reevaluate what to do with this, based on the
+            # cfe-dev discussion.
+            '-Wno-selector-type-mismatch',
           ],
           'conditions': [
             ['chromium_mac_pch', {'GCC_PRECOMPILE_PREFIX_HEADER': 'YES'},
@@ -5075,25 +5084,9 @@
             ],
             # Note that the prebuilt Clang binaries should not be used for iOS
             # development except for ASan builds.
-            ['clang==1', {
-              'CLANG_CXX_LANGUAGE_STANDARD': 'c++11',  # -std=c++11
-              # Warn if automatic synthesis is triggered with
-              # the -Wobjc-missing-property-synthesis flag.
-              'CLANG_WARN_OBJC_MISSING_PROPERTY_SYNTHESIS': 'YES',
-              'GCC_VERSION': 'com.apple.compilers.llvm.clang.1_0',
-              'WARNING_CFLAGS': [
-                # This warns on selectors from Cocoa headers (-length, -set).
-                # cfe-dev is currently discussing the merits of this warning.
-                # TODO(thakis): Reevaluate what to do with this, based one
-                # cfe-dev discussion.
-                '-Wno-selector-type-mismatch',
-              ],
-              'conditions': [
-                ['clang_xcode==0', {
-                  'CC': '$(SOURCE_ROOT)/<(clang_dir)/clang',
-                  'LDPLUSPLUS': '$(SOURCE_ROOT)/<(clang_dir)/clang++',
-                }],
-              ],
+            ['clang_xcode==0', {
+              'CC': '$(SOURCE_ROOT)/<(clang_dir)/clang',
+              'LDPLUSPLUS': '$(SOURCE_ROOT)/<(clang_dir)/clang++',
             }],
             ['clang==1 and clang_xcode==0 and clang_use_chrome_plugins==1', {
               'OTHER_CFLAGS': [
