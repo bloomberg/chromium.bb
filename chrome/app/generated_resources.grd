@@ -7656,6 +7656,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FEEDBACK_SEND_REPORT" desc="Text for OK button of the send feedback dialog">
           Send feedback
         </message>
+        <message name="IDS_FEEDBACK_SYSINFO_PAGE_TITLE" desc="The title of the system information preview page">
+          System Information Preview
+        </message>
+        <message name="IDS_FEEDBACK_SYSINFO_PAGE_LOADING" desc="The message showing the status of the system information preview page that it is still loading">
+          Loading...
+        </message>
       </if>
 
       <!-- Clear Browsing Data -->

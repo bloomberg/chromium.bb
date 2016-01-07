@@ -132,6 +132,15 @@ bool FeedbackPrivateGetStringsFunction::RunSync() {
   SET_STRING("privacy-note", IDS_FEEDBACK_PRIVACY_NOTE);
   SET_STRING("performance-trace",
              IDS_FEEDBACK_INCLUDE_PERFORMANCE_TRACE_CHECKBOX);
+  // Add the localized strings needed for the "system information" page.
+  SET_STRING("sysinfoPageTitle", IDS_FEEDBACK_SYSINFO_PAGE_TITLE);
+  SET_STRING("sysinfoPageDescription", IDS_ABOUT_SYS_DESC);
+  SET_STRING("sysinfoPageTableTitle", IDS_ABOUT_SYS_TABLE_TITLE);
+  SET_STRING("sysinfoPageExpandAllBtn", IDS_ABOUT_SYS_EXPAND_ALL);
+  SET_STRING("sysinfoPageCollapseAllBtn", IDS_ABOUT_SYS_COLLAPSE_ALL);
+  SET_STRING("sysinfoPageExpandBtn", IDS_ABOUT_SYS_EXPAND);
+  SET_STRING("sysinfoPageCollapseBtn", IDS_ABOUT_SYS_COLLAPSE);
+  SET_STRING("sysinfoPageStatusLoading", IDS_FEEDBACK_SYSINFO_PAGE_LOADING);
 #undef SET_STRING
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();

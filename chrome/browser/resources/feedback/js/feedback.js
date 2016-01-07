@@ -49,6 +49,9 @@ var lastReader = null;
 var feedbackInfo = null;
 var systemInfo = null;
 
+var isSystemInfoReady = false;
+var onSystemInfoReadyCallback = null;
+
 /**
  * Reads the selected file when the user selects a file.
  * @param {Event} fileSelectedEvent The onChanged event for the file input box.
@@ -233,6 +236,17 @@ function resizeAppWindow() {
 }
 
 /**
+ * @return {Object} the full anonymized system information we got from the
+ * system as well as the extra-app added data.
+ */
+function getFullSystemInformation() {
+  var sysInfo = feedbackInfo.systemInformation;
+  if (systemInfo != null)
+    sysInfo = sysInfo.concat(systemInfo);
+  return sysInfo;
+}
+
+/**
  * Initializes our page.
  * Flow:
  * .) DOMContent Loaded        -> . Request feedbackInfo object
@@ -273,6 +287,9 @@ function initialize() {
 
       chrome.feedbackPrivate.getSystemInformation(function(sysInfo) {
         systemInfo = sysInfo;
+        isSystemInfoReady = true;
+        if (onSystemInfoReadyCallback != null)
+          onSystemInfoReadyCallback(getFullSystemInformation());
       });
 
       // An extension called us with an attached file.
@@ -298,9 +315,38 @@ function initialize() {
         i18nTemplate.process(document, loadTimeData);
 
         if ($('sys-info-url')) {
-          // Opens a new window showing the current system info.
-          $('sys-info-url').onclick =
-              windowOpener(SYSINFO_WINDOW_ID, 'chrome://system');
+          // Opens a new window showing the full anonymized system+app
+          // information.
+          $('sys-info-url').onclick = function() {
+            var win = chrome.app.window.get('sys-info-window');
+            if (win) {
+              win.show();
+              return;
+            }
+            chrome.app.window.create(
+              '/html/sys_info.html', {
+                frame: 'chrome',
+                id: 'sys-info-window',
+                width: 600,
+                height: 400,
+                hidden: false,
+                resizable: true
+              }, function(appWindow) {
+                // Define two functions for the newly created window so that it
+                // can retrieve its needed data.
+                appWindow.contentWindow.getFullSystemInfo =
+                    function(onSysInfoReady) {
+                      if (isSystemInfoReady) {
+                        onSysInfoReady(getFullSystemInformation());
+                        return;
+                      }
+                      onSystemInfoReadyCallback = onSysInfoReady;
+                    };
+                appWindow.contentWindow.getLoadTimeData = function() {
+                  return loadTimeData;
+                };
+            });
+          };
         }
         if ($('histograms-url')) {
           // Opens a new window showing the histogram metrics.
