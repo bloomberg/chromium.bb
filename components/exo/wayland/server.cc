@@ -1475,8 +1475,8 @@ Server::Server(Display* display)
                    bind_subcompositor);
   wl_global_create(wl_display_.get(), &wl_shell_interface, 1, display_,
                    bind_shell);
-  wl_global_create(wl_display_.get(), &wl_output_interface, 2, display_,
-                   bind_output);
+  wl_global_create(wl_display_.get(), &wl_output_interface, output_version,
+                   display_, bind_output);
   wl_global_create(wl_display_.get(), &xdg_shell_interface, 1, display_,
                    bind_xdg_shell);
   wl_global_create(wl_display_.get(), &wl_data_device_manager_interface, 1,
