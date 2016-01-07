@@ -27,6 +27,20 @@
 
 namespace {
 
+// ARC runs as 32-bit in all platforms, so we need to make sure to send a
+// struct input_event that is the same size it expects.
+struct timeval32 {
+  int32_t tv_sec;
+  int32_t tv_usec;
+};
+
+struct input_event32 {
+  struct timeval32 time;
+  uint16_t type;
+  uint16_t code;
+  int32_t value;
+};
+
 // input_event values for keyboard events.
 const int kKeyReleased = 0;
 const int kKeyPressed = 1;
@@ -256,7 +270,7 @@ void ArcInputBridgeImpl::SendKernelEvent(const base::ScopedFD& fd,
                                          int value) {
   DCHECK(fd.is_valid());
 
-  struct input_event event;
+  struct input_event32 event;
   event.time.tv_sec = time_stamp.InSeconds();
   base::TimeDelta remainder =
       time_stamp - base::TimeDelta::FromSeconds(event.time.tv_sec);
@@ -267,8 +281,8 @@ void ArcInputBridgeImpl::SendKernelEvent(const base::ScopedFD& fd,
 
   // Write event to file descriptor
   size_t num_written = write(fd.get(), reinterpret_cast<void*>(&event),
-                             sizeof(struct input_event));
-  DCHECK_EQ(num_written, sizeof(struct input_event));
+                             sizeof(struct input_event32));
+  DCHECK_EQ(num_written, sizeof(struct input_event32));
 }
 
 void ArcInputBridgeImpl::SendSynReport(const base::ScopedFD& fd,
