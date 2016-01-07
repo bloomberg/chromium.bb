@@ -2039,6 +2039,8 @@
             'paint/PaintPhase.h',
             'paint/PaintPropertyTreeBuilder.cpp',
             'paint/PaintPropertyTreeBuilder.h',
+            'paint/PaintPropertyTreePrinter.cpp',
+            'paint/PaintPropertyTreePrinter.h',
             'paint/PaintTiming.cpp',
             'paint/PaintTiming.h',
             'paint/PartPainter.cpp',

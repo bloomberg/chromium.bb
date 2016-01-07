@@ -21,7 +21,6 @@ public:
     void buildPropertyTrees(FrameView& rootFrame);
 
 private:
-
     void walk(FrameView&, const PaintPropertyTreeBuilderContext&);
     void walk(LayoutObject&, const PaintPropertyTreeBuilderContext&);
 };
