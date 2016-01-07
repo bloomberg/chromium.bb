@@ -64,6 +64,8 @@ struct OZONE_EXPORT OverlayCheck_Params {
   // Higher the value, the more important it is to ensure that this
   // overlay candidate finds a compatible free hardware plane to use.
   uint32_t weight;
+  // By default we mark this configuration valid for promoting it to an overlay.
+  bool is_overlay_candidate = true;
   // Will be set in GPU process. These are unique plane ids of primary display
   // supporting this configuration.
   std::vector<uint32_t> plane_ids;

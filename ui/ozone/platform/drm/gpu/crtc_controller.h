@@ -60,6 +60,10 @@ class OZONE_EXPORT CrtcController
   std::vector<uint32_t> GetCompatibleHardwarePlaneIds(
       const OverlayPlane& plane) const;
 
+  // Returns true if hardware plane with z_order equal to |z_order| can support
+  // |fourcc_format| format.
+  bool IsFormatSupported(uint32_t fourcc_format, uint32_t z_order) const;
+
   // Called if the page flip event wasn't scheduled (ie: page flip fails). This
   // will then signal the request such that the caller doesn't wait for the
   // event forever.

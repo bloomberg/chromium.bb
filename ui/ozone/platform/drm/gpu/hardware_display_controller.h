@@ -128,6 +128,8 @@ class OZONE_EXPORT HardwareDisplayController {
   std::vector<uint32_t> GetCompatibleHardwarePlaneIds(
       const OverlayPlane& plane) const;
 
+  bool IsFormatSupported(uint32_t fourcc_format, uint32_t z_order) const;
+
   // Set the hardware cursor to show the contents of |surface|.
   bool SetCursor(const scoped_refptr<ScanoutBuffer>& buffer);
 

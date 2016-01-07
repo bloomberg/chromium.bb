@@ -119,6 +119,12 @@ std::vector<uint32_t> CrtcController::GetCompatibleHardwarePlaneIds(
   return drm_->plane_manager()->GetCompatibleHardwarePlaneIds(plane, crtc_);
 }
 
+bool CrtcController::IsFormatSupported(uint32_t fourcc_format,
+                                       uint32_t z_order) const {
+  return drm_->plane_manager()->IsFormatSupported(fourcc_format, z_order,
+                                                  crtc_);
+}
+
 void CrtcController::OnPageFlipEvent(unsigned int frame,
                                      unsigned int seconds,
                                      unsigned int useconds) {

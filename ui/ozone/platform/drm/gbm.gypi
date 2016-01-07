@@ -14,10 +14,22 @@
       'gbm',
     ],
     'use_mesa_platform_null%': 0,
-
     'use_drm_atomic%': 0,
   },
   'targets': [
+    {
+      'target_name': 'drm_atomic',
+      'type': 'none',
+      'conditions': [
+        ['use_drm_atomic==1', {
+          'direct_dependent_settings': {
+            'defines': [
+              'USE_DRM_ATOMIC',
+            ],
+          },
+        }],
+      ],
+    },
     {
       'target_name': 'ozone_platform_gbm',
       'type': 'static_library',
@@ -38,6 +50,7 @@
         '../events/platform/events_platform.gyp:events_platform',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
+        'drm_atomic',
       ],
       'defines': [
         'OZONE_IMPLEMENTATION',
@@ -68,6 +81,8 @@
         'gpu/drm_gpu_display_manager.h',
         'gpu/drm_gpu_platform_support.cc',
         'gpu/drm_gpu_platform_support.h',
+        'gpu/drm_overlay_validator.cc',
+	'gpu/drm_overlay_validator.h',
         'gpu/drm_thread.cc',
         'gpu/drm_thread.h',
         'gpu/drm_thread_message_proxy.cc',
@@ -149,9 +164,6 @@
             'gpu/hardware_display_plane_manager_atomic.cc',
             'gpu/hardware_display_plane_manager_atomic.h',
           ],
-          'defines': [
-            'USE_DRM_ATOMIC=1',
-          ],
         }],
       ],
     },
@@ -164,14 +176,17 @@
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
         'ozone.gyp:ozone',
+        'drm_atomic',
       ],
       'export_dependent_settings': [
         '../../build/linux/system.gyp:libdrm',
         '../../skia/skia.gyp:skia',
         '../gfx/gfx.gyp:gfx_geometry',
+        'drm_atomic',
       ],
       'direct_dependent_settings': {
         'sources': [
+          'gpu/drm_overlay_validator_unittest.cc',
           'gpu/drm_window_unittest.cc',
           'gpu/fake_plane_info.cc',
           'gpu/fake_plane_info.h',
@@ -185,6 +200,8 @@
           'gpu/mock_hardware_display_plane_manager.h',
           'gpu/mock_scanout_buffer.cc',
           'gpu/mock_scanout_buffer.h',
+          'gpu/mock_scanout_buffer_generator.cc',
+          'gpu/mock_scanout_buffer_generator.h',
           'gpu/screen_manager_unittest.cc',
         ],
       },

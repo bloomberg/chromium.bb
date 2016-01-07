@@ -153,6 +153,17 @@ std::vector<uint32_t> HardwareDisplayController::GetCompatibleHardwarePlaneIds(
   return plane_ids;
 }
 
+bool HardwareDisplayController::IsFormatSupported(uint32_t fourcc_format,
+                                                  uint32_t z_order) const {
+  for (size_t i = 0; i < crtc_controllers_.size(); ++i) {
+    // Make sure all displays have overlay to support this format.
+    if (!crtc_controllers_[i]->IsFormatSupported(fourcc_format, z_order))
+      return false;
+  }
+
+  return true;
+}
+
 bool HardwareDisplayController::SetCursor(
     const scoped_refptr<ScanoutBuffer>& buffer) {
   bool status = true;

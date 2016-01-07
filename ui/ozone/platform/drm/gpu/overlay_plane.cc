@@ -30,6 +30,12 @@ OverlayPlane::OverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
 OverlayPlane::~OverlayPlane() {
 }
 
+bool OverlayPlane::operator<(const OverlayPlane& plane) const {
+  return std::tie(z_order, display_bounds, crop_rect, plane_transform) <
+         std::tie(plane.z_order, plane.display_bounds, plane.crop_rect,
+                  plane.plane_transform);
+}
+
 // static
 const OverlayPlane* OverlayPlane::GetPrimaryPlane(
     const OverlayPlaneList& overlays) {

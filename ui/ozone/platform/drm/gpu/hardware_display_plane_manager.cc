@@ -299,4 +299,37 @@ HardwareDisplayPlaneManager::GetCompatibleHardwarePlaneIds(
   return plane_ids;
 }
 
+bool HardwareDisplayPlaneManager::IsFormatSupported(uint32_t fourcc_format,
+                                                    uint32_t z_order,
+                                                    uint32_t crtc_id) const {
+  bool format_supported = false;
+  int crtc_index = LookupCrtcIndex(crtc_id);
+  if (crtc_index < 0) {
+    LOG(ERROR) << "Cannot find crtc " << crtc_id;
+    return format_supported;
+  }
+
+  // We dont have a way to query z_order of a plane. This is a temporary
+  // solution till driver exposes z_order property.
+  uint32_t plane_z_order = 0;
+  for (const auto& hardware_plane : planes_) {
+    if (plane_z_order > z_order)
+      break;
+
+    if (!hardware_plane->CanUseForCrtc(crtc_index))
+      continue;
+
+    if (plane_z_order == z_order) {
+      if (hardware_plane->IsSupportedFormat(fourcc_format))
+        format_supported = true;
+
+      break;
+    } else {
+      plane_z_order++;
+    }
+  }
+
+  return format_supported;
+}
+
 }  // namespace ui

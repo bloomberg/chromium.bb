@@ -30,6 +30,8 @@ struct OZONE_EXPORT OverlayPlane {
                const gfx::Rect& display_bounds,
                const gfx::RectF& crop_rect);
 
+  bool operator<(const OverlayPlane& plane) const;
+
   ~OverlayPlane();
 
   // Returns the primary plane in |overlays|.

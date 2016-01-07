@@ -43,6 +43,8 @@ MockHardwareDisplayPlaneManager::MockHardwareDisplayPlaneManager(
   drm_ = drm;
 }
 
+MockHardwareDisplayPlaneManager::~MockHardwareDisplayPlaneManager() {}
+
 void MockHardwareDisplayPlaneManager::InitForTest(
     const FakePlaneInfo* planes,
     size_t count,
@@ -63,6 +65,34 @@ void MockHardwareDisplayPlaneManager::InitForTest(
             });
 }
 
+void MockHardwareDisplayPlaneManager::SetPlaneProperties(
+    const std::vector<FakePlaneInfo>& planes) {
+  planes_.clear();
+  uint32_t count = planes.size();
+  for (size_t i = 0; i < count; i++) {
+    scoped_ptr<HardwareDisplayPlane> plane(
+        new HardwareDisplayPlane(planes[i].id, planes[i].allowed_crtc_mask));
+    plane->Initialize(drm_, planes[i].allowed_formats, false, true);
+    planes_.push_back(std::move(plane));
+  }
+
+  // The real HDPM uses sorted planes, so sort them for consistency.
+  std::sort(planes_.begin(), planes_.end(),
+            [](const scoped_ptr<HardwareDisplayPlane>& l,
+               const scoped_ptr<HardwareDisplayPlane>& r) {
+              return l->plane_id() < r->plane_id();
+            });
+
+  ResetPlaneCount();
+}
+
+void MockHardwareDisplayPlaneManager::SetCrtcInfo(
+    const std::vector<uint32_t>& crtcs) {
+  crtcs_ = crtcs;
+  planes_.clear();
+  ResetPlaneCount();
+}
+
 bool MockHardwareDisplayPlaneManager::SetPlaneData(
     HardwareDisplayPlaneList* plane_list,
     HardwareDisplayPlane* hw_plane,
@@ -81,6 +111,10 @@ bool MockHardwareDisplayPlaneManager::SetPlaneData(
 
 int MockHardwareDisplayPlaneManager::plane_count() const {
   return plane_count_;
+}
+
+void MockHardwareDisplayPlaneManager::ResetPlaneCount() {
+  plane_count_ = 0;
 }
 
 }  // namespace ui

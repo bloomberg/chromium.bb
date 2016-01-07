@@ -22,11 +22,16 @@ class MockHardwareDisplayPlaneManager
 
   explicit MockHardwareDisplayPlaneManager(DrmDevice* drm);
 
+  ~MockHardwareDisplayPlaneManager() override;
+
   // Normally we'd use DRM to figure out the controller configuration. But we
   // can't use DRM in unit tests, so we just create a fake configuration.
   void InitForTest(const FakePlaneInfo* planes,
                    size_t count,
                    const std::vector<uint32_t>& crtcs);
+
+  void SetPlaneProperties(const std::vector<FakePlaneInfo>& planes);
+  void SetCrtcInfo(const std::vector<uint32_t>& crtcs);
 
   bool SetPlaneData(HardwareDisplayPlaneList* plane_list,
                     HardwareDisplayPlane* hw_plane,
@@ -36,6 +41,7 @@ class MockHardwareDisplayPlaneManager
                     CrtcController* crtc) override;
 
   int plane_count() const;
+  void ResetPlaneCount();
 
  private:
   int plane_count_ = 0;
