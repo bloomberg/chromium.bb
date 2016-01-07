@@ -246,6 +246,17 @@ MediaControls.prototype.initPlayButton = function(opt_parent) {
 MediaControls.PROGRESS_RANGE = 5000;
 
 /**
+ * 5 seconds should be skipped when left/right key is pressed on progress bar.
+ */
+MediaControls.PROGRESS_MAX_SECONDS_TO_SKIP = 5;
+
+/**
+ * 10% of duration should be skipped when the video is too short to skip 5
+ * seconds.
+ */
+MediaControls.PROGRESS_MAX_RATIO_TO_SKIP = 0.1;
+
+/**
  * @param {HTMLElement=} opt_parent Parent container.
  */
 MediaControls.prototype.initTimeControls = function(opt_parent) {
@@ -272,6 +283,10 @@ MediaControls.prototype.initTimeControls = function(opt_parent) {
       function(event) {
         this.onProgressDrag_();
       }.bind(this));
+  this.progressSlider_.addEventListener('keydown',
+      this.onProgressKeyDownOrKeyPress_.bind(this));
+  this.progressSlider_.addEventListener('keypress',
+      this.onProgressKeyDownOrKeyPress_.bind(this));
   timeControls.appendChild(this.progressSlider_);
 };
 
@@ -321,6 +336,38 @@ MediaControls.prototype.onProgressDrag_ = function() {
         this.progressSlider_.immediateValue / this.progressSlider_.max;
     var current = this.media_.duration * immediateRatio;
     this.updateTimeLabel_(current);
+  }
+};
+
+/**
+ * Handles ArrowRight/ArrowLeft key on progress slider to skip forward/backword.
+ * @param {!Event} event
+ * @private
+ */
+MediaControls.prototype.onProgressKeyDownOrKeyPress_ = function(event) {
+  if (event.code !== 'ArrowRight' && event.code !== 'ArrowLeft')
+    return;
+
+  event.preventDefault();
+
+  if (this.media_ && this.media_.duration > 0) {
+    // On left/right key for progress bar, min(5 seconds, 10% of video) should
+    // be skipped.
+    var secondsToSkip = Math.min(
+        MediaControls.PROGRESS_MAX_SECONDS_TO_SKIP,
+        this.media_.duration * MediaControls.PROGRESS_MAX_RATIO_TO_SKIP);
+    var stepsToSkip = MediaControls.PROGRESS_RANGE *
+        (secondsToSkip / this.media_.duration);
+
+    if (event.code === 'ArrowRight') {
+      this.progressSlider_.value = Math.min(
+          this.progressSlider_.value + stepsToSkip,
+          this.progressSlider_.max);
+    } else {
+      this.progressSlider_.value = Math.max(
+          this.progressSlider_.value - stepsToSkip, 0);
+    }
+    this.onProgressChange_(this.progressSlider_.ratio);
   }
 };
 
