@@ -43,6 +43,10 @@ namespace chrome {
 struct NavigateParams;
 }
 
+namespace chrome_browser_net {
+enum class NetworkPredictionStatus;
+}
+
 namespace content {
 class WebContents;
 }
@@ -273,9 +277,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // recorded.
   void RecordNetworkBytes(Origin origin, bool used, int64_t prerender_bytes);
 
-  // Returns whether prerendering is currently enabled for this manager.
-  bool IsEnabled() const;
-
   // Add to the running tally of bytes transferred over the network for this
   // profile if prerendering is currently enabled.
   void AddProfileNetworkBytesIfEnabled(int64_t bytes);
@@ -382,6 +383,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   static const int kNavigationRecordWindowMs = 5000;
 
   void OnCancelPrerenderHandle(PrerenderData* prerender_data);
+
+  // Returns whether prerendering is currently enabled or the reason why it is
+  // disabled.
+  chrome_browser_net::NetworkPredictionStatus GetPredictionStatus() const;
 
   // Adds a prerender for |url| from |referrer|. The |origin| specifies how the
   // prerender was added. If |size| is empty, then

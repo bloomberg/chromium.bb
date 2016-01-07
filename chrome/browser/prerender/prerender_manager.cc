@@ -63,6 +63,7 @@ using content::BrowserThread;
 using content::RenderViewHost;
 using content::SessionStorageNamespace;
 using content::WebContents;
+using namespace chrome_browser_net;
 
 namespace prerender {
 
@@ -574,7 +575,7 @@ void PrerenderManager::RecordPerceivedPageLoadTime(
     double fraction_plt_elapsed_at_swap_in,
     const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!IsEnabled())
+  if (GetPredictionStatus() != NetworkPredictionStatus::ENABLED)
     return;
 
   histograms_->RecordPerceivedPageLoadTime(
@@ -774,7 +775,8 @@ base::DictionaryValue* PrerenderManager::GetAsValue() const {
   base::DictionaryValue* dict_value = new base::DictionaryValue();
   dict_value->Set("history", prerender_history_->GetEntriesAsValue());
   dict_value->Set("active", GetActivePrerendersAsValue());
-  dict_value->SetBoolean("enabled", IsEnabled());
+  dict_value->SetBoolean("enabled",
+      GetPredictionStatus() == NetworkPredictionStatus::ENABLED);
   dict_value->SetBoolean("omnibox_enabled", IsOmniboxEnabled(profile_));
   // If prerender is disabled via a flag this method is not even called.
   std::string enabled_note;
@@ -905,9 +907,6 @@ PrerenderHandle* PrerenderManager::AddPrerender(
     SessionStorageNamespace* session_storage_namespace) {
   DCHECK(CalledOnValidThread());
 
-  if (!IsEnabled())
-    return NULL;
-
   if ((origin == ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN ||
        origin == ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN) &&
       IsGoogleSearchResultURL(referrer.url)) {
@@ -922,6 +921,17 @@ PrerenderHandle* PrerenderManager::AddPrerender(
   // From here on, we will record a FinalStatus so we need to register with the
   // histogram tracking.
   histograms_->RecordPrerender(origin, url_arg);
+
+  NetworkPredictionStatus prerendering_status = GetPredictionStatus();
+  if (prerendering_status != NetworkPredictionStatus::ENABLED) {
+    FinalStatus final_status =
+        prerendering_status == NetworkPredictionStatus::DISABLED_DUE_TO_NETWORK
+            ? FINAL_STATUS_CELLULAR_NETWORK
+            : FINAL_STATUS_PRERENDERING_DISABLED;
+    RecordFinalStatusWithoutCreatingPrerenderContents(url, origin,
+                                                      final_status);
+    return nullptr;
+  }
 
   if (PrerenderData* preexisting_prerender_data =
           FindPrerenderData(url, session_storage_namespace)) {
@@ -1258,15 +1268,15 @@ void PrerenderManager::RecordNetworkBytes(Origin origin,
       origin, used, prerender_bytes, recent_profile_bytes);
 }
 
-bool PrerenderManager::IsEnabled() const {
+NetworkPredictionStatus PrerenderManager::GetPredictionStatus() const {
   DCHECK(CalledOnValidThread());
-
-  return chrome_browser_net::CanPrefetchAndPrerenderUI(profile_->GetPrefs());
+  return CanPrefetchAndPrerenderUI(profile_->GetPrefs());
 }
 
 void PrerenderManager::AddProfileNetworkBytesIfEnabled(int64_t bytes) {
   DCHECK_GE(bytes, 0);
-  if (IsEnabled() && ActuallyPrerendering())
+  if (GetPredictionStatus() == NetworkPredictionStatus::ENABLED &&
+      ActuallyPrerendering())
     profile_network_bytes_ += bytes;
 }
 

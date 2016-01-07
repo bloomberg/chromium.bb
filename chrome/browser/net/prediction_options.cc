@@ -18,17 +18,21 @@ namespace {
 
 // Since looking up preferences and current network connection are presumably
 // both cheap, we do not cache them here.
-bool CanPrefetchAndPrerender(int network_prediction_options) {
+NetworkPredictionStatus CanPrefetchAndPrerender(
+    int network_prediction_options) {
   switch (network_prediction_options) {
     case NETWORK_PREDICTION_ALWAYS:
-      return true;
+      break;
     case NETWORK_PREDICTION_NEVER:
-      return false;
+      return NetworkPredictionStatus::DISABLED_ALWAYS;
     default:
       DCHECK_EQ(NETWORK_PREDICTION_WIFI_ONLY, network_prediction_options);
-      return !net::NetworkChangeNotifier::IsConnectionCellular(
-                 net::NetworkChangeNotifier::GetConnectionType());
+      if (net::NetworkChangeNotifier::IsConnectionCellular(
+                 net::NetworkChangeNotifier::GetConnectionType())) {
+        return NetworkPredictionStatus::DISABLED_DUE_TO_NETWORK;
+      }
   }
+  return NetworkPredictionStatus::ENABLED;
 }
 
 bool CanPreresolveAndPreconnect(int network_prediction_options) {
@@ -47,14 +51,15 @@ void RegisterPredictionOptionsProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
-bool CanPrefetchAndPrerenderIO(ProfileIOData* profile_io_data) {
+NetworkPredictionStatus CanPrefetchAndPrerenderIO(
+    ProfileIOData* profile_io_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(profile_io_data);
   return CanPrefetchAndPrerender(
       profile_io_data->network_prediction_options()->GetValue());
 }
 
-bool CanPrefetchAndPrerenderUI(PrefService* prefs) {
+NetworkPredictionStatus CanPrefetchAndPrerenderUI(PrefService* prefs) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(prefs);
   return CanPrefetchAndPrerender(

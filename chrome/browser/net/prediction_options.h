@@ -24,6 +24,12 @@ enum NetworkPredictionOptions {
   NETWORK_PREDICTION_DEFAULT = NETWORK_PREDICTION_WIFI_ONLY,
 };
 
+enum class NetworkPredictionStatus {
+  ENABLED,
+  DISABLED_ALWAYS,
+  DISABLED_DUE_TO_NETWORK,
+};
+
 void RegisterPredictionOptionsProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry);
 
@@ -31,10 +37,11 @@ void RegisterPredictionOptionsProfilePrefs(
 // and prerendering are enabled, based on preferences and network type.
 
 // To be executed on the IO thread only.
-bool CanPrefetchAndPrerenderIO(ProfileIOData* profile_io_data);
+NetworkPredictionStatus CanPrefetchAndPrerenderIO(
+    ProfileIOData* profile_io_data);
 
 // To be executed on the UI thread only.
-bool CanPrefetchAndPrerenderUI(PrefService* prefs);
+NetworkPredictionStatus CanPrefetchAndPrerenderUI(PrefService* prefs);
 
 // The following two global functions determine whether TCP preconnect
 // and DNS preresolution are enabled, based on preferences.

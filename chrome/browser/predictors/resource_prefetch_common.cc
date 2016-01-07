@@ -227,7 +227,8 @@ bool ResourcePrefetchPredictorConfig::IsURLPrefetchingEnabled(
     Profile* profile) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!profile || !profile->GetPrefs() ||
-      !chrome_browser_net::CanPrefetchAndPrerenderUI(profile->GetPrefs())) {
+      chrome_browser_net::CanPrefetchAndPrerenderUI(profile->GetPrefs()) !=
+      chrome_browser_net::NetworkPredictionStatus::ENABLED) {
     return false;
   }
   return (mode & URL_PREFETCHING) > 0;
@@ -237,7 +238,8 @@ bool ResourcePrefetchPredictorConfig::IsHostPrefetchingEnabled(
     Profile* profile) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!profile || !profile->GetPrefs() ||
-      !chrome_browser_net::CanPrefetchAndPrerenderUI(profile->GetPrefs())) {
+      chrome_browser_net::CanPrefetchAndPrerenderUI(profile->GetPrefs()) !=
+      chrome_browser_net::NetworkPredictionStatus::ENABLED) {
     return false;
   }
   return (mode & HOST_PRFETCHING) > 0;

@@ -899,12 +899,14 @@ void Predictor::PredictFrameSubresources(const GURL& url,
 }
 
 bool Predictor::CanPrefetchAndPrerender() const {
+  chrome_browser_net::NetworkPredictionStatus status;
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    return chrome_browser_net::CanPrefetchAndPrerenderUI(user_prefs_);
+    status = chrome_browser_net::CanPrefetchAndPrerenderUI(user_prefs_);
   } else {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    return chrome_browser_net::CanPrefetchAndPrerenderIO(profile_io_data_);
+    status = chrome_browser_net::CanPrefetchAndPrerenderIO(profile_io_data_);
   }
+  return status == chrome_browser_net::NetworkPredictionStatus::ENABLED;
 }
 
 bool Predictor::CanPreresolveAndPreconnect() const {

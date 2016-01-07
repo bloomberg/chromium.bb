@@ -434,7 +434,8 @@ bool IsJavascriptEnabled(content::WebContents* contents) {
 }
 
 bool IsNetworkPredictionEnabled(PrefService* prefs) {
-  return chrome_browser_net::CanPrefetchAndPrerenderUI(prefs);
+  return chrome_browser_net::CanPrefetchAndPrerenderUI(prefs) ==
+      chrome_browser_net::NetworkPredictionStatus::ENABLED;
 }
 
 void CopyPluginListAndQuit(std::vector<content::WebPluginInfo>* out,

@@ -19,7 +19,8 @@ bool IsPrefetchEnabled(content::ResourceContext* resource_context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
-  return chrome_browser_net::CanPrefetchAndPrerenderIO(io_data) &&
+  return chrome_browser_net::CanPrefetchAndPrerenderIO(io_data) ==
+         chrome_browser_net::NetworkPredictionStatus::ENABLED &&
          !DisableForFieldTrial();
 }
 

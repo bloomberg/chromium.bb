@@ -632,7 +632,8 @@ static void SetCrashReporting(JNIEnv* env,
 
 static jboolean CanPredictNetworkActions(JNIEnv* env,
                                          const JavaParamRef<jobject>& obj) {
-  return chrome_browser_net::CanPrefetchAndPrerenderUI(GetPrefService());
+  return chrome_browser_net::CanPrefetchAndPrerenderUI(GetPrefService()) ==
+      chrome_browser_net::NetworkPredictionStatus::ENABLED;
 }
 
 static void SetDoNotTrackEnabled(JNIEnv* env,
