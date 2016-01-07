@@ -100,16 +100,16 @@ TEST_F(BrowserCommandControllerTest, IsReservedCommandOrKey) {
   // USE_AURA is #defined.
   EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
       IDC_NEW_WINDOW, content::NativeWebKeyboardEvent(ui::KeyEvent(
-                          ui::ET_KEY_PRESSED, ui::VKEY_N, ui::DomCode::KEY_N,
+                          ui::ET_KEY_PRESSED, ui::VKEY_N, ui::DomCode::US_N,
                           ui::EF_CONTROL_DOWN))));
   EXPECT_TRUE(browser()->command_controller()->IsReservedCommandOrKey(
       IDC_CLOSE_TAB, content::NativeWebKeyboardEvent(ui::KeyEvent(
-                         ui::ET_KEY_PRESSED, ui::VKEY_W, ui::DomCode::KEY_W,
+                         ui::ET_KEY_PRESSED, ui::VKEY_W, ui::DomCode::US_W,
                          ui::EF_CONTROL_DOWN))));
   EXPECT_FALSE(browser()->command_controller()->IsReservedCommandOrKey(
       IDC_FIND, content::NativeWebKeyboardEvent(
                     ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_F,
-                                 ui::DomCode::KEY_F, ui::EF_CONTROL_DOWN))));
+                                 ui::DomCode::US_F, ui::EF_CONTROL_DOWN))));
 #endif  // USE_AURA
 }
 
@@ -138,16 +138,16 @@ TEST_F(BrowserCommandControllerTest, IsReservedCommandOrKeyIsApp) {
   // USE_AURA is #defined.
   EXPECT_FALSE(browser()->command_controller()->IsReservedCommandOrKey(
       IDC_NEW_WINDOW, content::NativeWebKeyboardEvent(ui::KeyEvent(
-                          ui::ET_KEY_PRESSED, ui::VKEY_N, ui::DomCode::KEY_N,
+                          ui::ET_KEY_PRESSED, ui::VKEY_N, ui::DomCode::US_N,
                           ui::EF_CONTROL_DOWN))));
   EXPECT_FALSE(browser()->command_controller()->IsReservedCommandOrKey(
       IDC_CLOSE_TAB, content::NativeWebKeyboardEvent(ui::KeyEvent(
-                         ui::ET_KEY_PRESSED, ui::VKEY_W, ui::DomCode::KEY_W,
+                         ui::ET_KEY_PRESSED, ui::VKEY_W, ui::DomCode::US_W,
                          ui::EF_CONTROL_DOWN))));
   EXPECT_FALSE(browser()->command_controller()->IsReservedCommandOrKey(
       IDC_FIND, content::NativeWebKeyboardEvent(
                     ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_F,
-                                 ui::DomCode::KEY_F, ui::EF_CONTROL_DOWN))));
+                                 ui::DomCode::US_F, ui::EF_CONTROL_DOWN))));
 #endif  // USE_AURA
 }
 

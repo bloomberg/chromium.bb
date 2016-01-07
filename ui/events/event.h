@@ -810,7 +810,7 @@ class EVENTS_EXPORT KeyEvent : public Event {
 
   KeyboardCode key_code_;
 
-  // DOM KeyboardEvent |code| (e.g. DomCode::KEY_A, DomCode::SPACE).
+  // DOM KeyboardEvent |code| (e.g. DomCode::US_A, DomCode::SPACE).
   // http://www.w3.org/TR/DOM-Level-3-Events-code/
   //
   // This value represents the physical position in the keyboard and can be

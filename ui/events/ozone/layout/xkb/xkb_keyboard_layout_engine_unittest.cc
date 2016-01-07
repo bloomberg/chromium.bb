@@ -195,9 +195,9 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // apostrophe, unmapped, *
       /* 12 */ {{0x0027, 0x0000, 0x2461, DomCode::BACKSLASH}, VKEY_OEM_5},
       // apostrophe, quotation mark, unmapped
-      /* 13 */ {{0x0027, 0x0022, 0x2461, DomCode::KEY_Z}, VKEY_Z},
+      /* 13 */ {{0x0027, 0x0022, 0x2461, DomCode::US_Z}, VKEY_Z},
       // apostrophe, quotation mark, R caron
-      /* 14 */ {{0x0027, 0x0022, 0x0158, DomCode::KEY_Z}, VKEY_OEM_7},
+      /* 14 */ {{0x0027, 0x0022, 0x0158, DomCode::US_Z}, VKEY_OEM_7},
       // apostrophe, quotation mark, *
       /* 15 */ {{0x0027, 0x0022, 0x2461, DomCode::BACKQUOTE}, VKEY_OEM_3},
       // apostrophe, quotation mark, *
@@ -223,7 +223,7 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // apostrophe, *, *
       /* 26 */ {{0x0027, 0x2460, 0x2461, DomCode::DIGIT4}, VKEY_4},
       // apostrophe, *, *
-      /* 27 */ {{0x0027, 0x2460, 0x2461, DomCode::KEY_Q}, VKEY_OEM_7},
+      /* 27 */ {{0x0027, 0x2460, 0x2461, DomCode::US_Q}, VKEY_OEM_7},
       // apostrophe, *, *
       /* 28 */ {{0x0027, 0x2460, 0x2461, DomCode::SLASH}, VKEY_OEM_7},
       // left parenthesis, *, *
@@ -272,11 +272,11 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // comma, *, *
       /* 50 */ {{0x002C, 0x2460, 0x2461, DomCode::DIGIT9}, VKEY_9},
       // comma, *, *
-      /* 51 */ {{0x002C, 0x2460, 0x2461, DomCode::KEY_M}, VKEY_OEM_COMMA},
+      /* 51 */ {{0x002C, 0x2460, 0x2461, DomCode::US_M}, VKEY_OEM_COMMA},
       // comma, *, *
-      /* 52 */ {{0x002C, 0x2460, 0x2461, DomCode::KEY_V}, VKEY_OEM_COMMA},
+      /* 52 */ {{0x002C, 0x2460, 0x2461, DomCode::US_V}, VKEY_OEM_COMMA},
       // comma, *, *
-      /* 53 */ {{0x002C, 0x2460, 0x2461, DomCode::KEY_W}, VKEY_OEM_COMMA},
+      /* 53 */ {{0x002C, 0x2460, 0x2461, DomCode::US_W}, VKEY_OEM_COMMA},
       // hyphen-minus, equals sign, *
       /* 54 */ {{0x002D, 0x003D, 0x2461, DomCode::SLASH}, VKEY_OEM_MINUS},
       // hyphen-minus, low line, unmapped
@@ -296,7 +296,7 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // hyphen-minus, *, *
       /* 62 */ {{0x002D, 0x2460, 0x2461, DomCode::DIGIT6}, VKEY_6},
       // hyphen-minus, *, *
-      /* 63 */ {{0x002D, 0x2460, 0x2461, DomCode::KEY_A}, VKEY_OEM_MINUS},
+      /* 63 */ {{0x002D, 0x2460, 0x2461, DomCode::US_A}, VKEY_OEM_MINUS},
       // hyphen-minus, *, *
       /* 64 */ {{0x002D, 0x2460, 0x2461, DomCode::MINUS}, VKEY_OEM_MINUS},
       // hyphen-minus, *, *
@@ -306,11 +306,11 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // full stop, *, *
       /* 67 */ {{0x002E, 0x2460, 0x2461, DomCode::DIGIT8}, VKEY_8},
       // full stop, *, *
-      /* 68 */ {{0x002E, 0x2460, 0x2461, DomCode::KEY_E}, VKEY_OEM_PERIOD},
+      /* 68 */ {{0x002E, 0x2460, 0x2461, DomCode::US_E}, VKEY_OEM_PERIOD},
       // full stop, *, *
-      /* 69 */ {{0x002E, 0x2460, 0x2461, DomCode::KEY_O}, VKEY_OEM_PERIOD},
+      /* 69 */ {{0x002E, 0x2460, 0x2461, DomCode::US_O}, VKEY_OEM_PERIOD},
       // full stop, *, *
-      /* 70 */ {{0x002E, 0x2460, 0x2461, DomCode::KEY_R}, VKEY_OEM_PERIOD},
+      /* 70 */ {{0x002E, 0x2460, 0x2461, DomCode::US_R}, VKEY_OEM_PERIOD},
       // full stop, *, *
       /* 71 */ {{0x002E, 0x2460, 0x2461, DomCode::PERIOD}, VKEY_OEM_PERIOD},
       // full stop, *, *
@@ -356,9 +356,9 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // semicolon, *, *
       /* 92 */ {{0x003B, 0x2460, 0x2461, DomCode::DIGIT8}, VKEY_8},
       // semicolon, *, *
-      /* 93 */ {{0x003B, 0x2460, 0x2461, DomCode::KEY_Q}, VKEY_OEM_1},
+      /* 93 */ {{0x003B, 0x2460, 0x2461, DomCode::US_Q}, VKEY_OEM_1},
       // semicolon, *, *
-      /* 94 */ {{0x003B, 0x2460, 0x2461, DomCode::KEY_Z}, VKEY_OEM_1},
+      /* 94 */ {{0x003B, 0x2460, 0x2461, DomCode::US_Z}, VKEY_OEM_1},
       // semicolon, *, *
       /* 95 */ {{0x003B, 0x2460, 0x2461, DomCode::SEMICOLON}, VKEY_OEM_1},
       // semicolon, *, *
@@ -617,7 +617,7 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // u diaeresis, e grave, *
       /* 222 */ {{0x00FC, 0x00E8, 0x2461, DomCode::BRACKET_LEFT}, VKEY_OEM_1},
       // u diaeresis, *, *
-      /* 223 */ {{0x00FC, 0x2460, 0x2461, DomCode::KEY_W}, VKEY_W},
+      /* 223 */ {{0x00FC, 0x2460, 0x2461, DomCode::US_W}, VKEY_W},
       // y acute, *, *
       /* 224 */ {{0x00FD, 0x2460, 0x2461, DomCode::NONE}, VKEY_7},
       // thorn, *, *
@@ -631,7 +631,7 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // a ogonek, *, *
       /* 229 */ {{0x0105, 0x2460, 0x2461, DomCode::DIGIT1}, VKEY_1},
       // a ogonek, *, *
-      /* 230 */ {{0x0105, 0x2460, 0x2461, DomCode::KEY_Q}, VKEY_Q},
+      /* 230 */ {{0x0105, 0x2460, 0x2461, DomCode::US_Q}, VKEY_Q},
       // a ogonek, *, *
       /* 231 */ {{0x0105, 0x2460, 0x2461, DomCode::QUOTE}, VKEY_OEM_7},
       // c acute, *, *
@@ -645,7 +645,7 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // c caron, *, *
       /* 236 */ {{0x010D, 0x2460, 0x2461, DomCode::DIGIT4}, VKEY_4},
       // c caron, *, *
-      /* 237 */ {{0x010D, 0x2460, 0x2461, DomCode::KEY_P}, VKEY_X},
+      /* 237 */ {{0x010D, 0x2460, 0x2461, DomCode::US_P}, VKEY_X},
       // c caron, *, *
       /* 238 */ {{0x010D, 0x2460, 0x2461, DomCode::SEMICOLON}, VKEY_OEM_1},
       // d stroke, *, *
@@ -709,9 +709,9 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // s caron, *, *
       /* 268 */ {{0x0161, 0x2460, 0x2461, DomCode::DIGIT6}, VKEY_6},
       // s caron, *, *
-      /* 269 */ {{0x0161, 0x2460, 0x2461, DomCode::KEY_A}, VKEY_OEM_1},
+      /* 269 */ {{0x0161, 0x2460, 0x2461, DomCode::US_A}, VKEY_OEM_1},
       // s caron, *, *
-      /* 270 */ {{0x0161, 0x2460, 0x2461, DomCode::KEY_F}, VKEY_F},
+      /* 270 */ {{0x0161, 0x2460, 0x2461, DomCode::US_F}, VKEY_F},
       // s caron, *, *
       /* 271 */ {{0x0161, 0x2460, 0x2461, DomCode::PERIOD}, VKEY_OEM_PERIOD},
       // t cedilla, *, *
@@ -721,9 +721,9 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // u macron, *, *
       /* 274 */ {{0x016B, 0x2460, 0x2461, DomCode::DIGIT8}, VKEY_8},
       // u macron, *, *
-      /* 275 */ {{0x016B, 0x2460, 0x2461, DomCode::KEY_Q}, VKEY_Q},
+      /* 275 */ {{0x016B, 0x2460, 0x2461, DomCode::US_Q}, VKEY_Q},
       // u macron, *, *
-      /* 276 */ {{0x016B, 0x2460, 0x2461, DomCode::KEY_X}, VKEY_X},
+      /* 276 */ {{0x016B, 0x2460, 0x2461, DomCode::US_X}, VKEY_X},
       // u ring above, *, *
       /* 277 */ {{0x016F, 0x2460, 0x2461, DomCode::NONE}, VKEY_OEM_1},
       // u double acute, *, *
@@ -747,7 +747,7 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // z caron, *, *
       /* 287 */ {{0x017E, 0x2460, 0x2461, DomCode::EQUAL}, VKEY_OEM_PLUS},
       // z caron, *, *
-      /* 288 */ {{0x017E, 0x2460, 0x2461, DomCode::KEY_W}, VKEY_W},
+      /* 288 */ {{0x017E, 0x2460, 0x2461, DomCode::US_W}, VKEY_W},
       // o horn, *, *
       /* 289 */ {{0x01A1, 0x2460, 0x2461, DomCode::NONE}, VKEY_OEM_6},
       // u horn, *, *

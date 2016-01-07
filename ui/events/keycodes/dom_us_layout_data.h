@@ -16,32 +16,32 @@ const struct PrintableCodeEntry {
   DomCode dom_code;
   base::char16 character[2];  // normal, shift
 } kPrintableCodeMap[] = {
-    {DomCode::KEY_A, {'a', 'A'}},
-    {DomCode::KEY_B, {'b', 'B'}},
-    {DomCode::KEY_C, {'c', 'C'}},
-    {DomCode::KEY_D, {'d', 'D'}},
-    {DomCode::KEY_E, {'e', 'E'}},
-    {DomCode::KEY_F, {'f', 'F'}},
-    {DomCode::KEY_G, {'g', 'G'}},
-    {DomCode::KEY_H, {'h', 'H'}},
-    {DomCode::KEY_I, {'i', 'I'}},
-    {DomCode::KEY_J, {'j', 'J'}},
-    {DomCode::KEY_K, {'k', 'K'}},
-    {DomCode::KEY_L, {'l', 'L'}},
-    {DomCode::KEY_M, {'m', 'M'}},
-    {DomCode::KEY_N, {'n', 'N'}},
-    {DomCode::KEY_O, {'o', 'O'}},
-    {DomCode::KEY_P, {'p', 'P'}},
-    {DomCode::KEY_Q, {'q', 'Q'}},
-    {DomCode::KEY_R, {'r', 'R'}},
-    {DomCode::KEY_S, {'s', 'S'}},
-    {DomCode::KEY_T, {'t', 'T'}},
-    {DomCode::KEY_U, {'u', 'U'}},
-    {DomCode::KEY_V, {'v', 'V'}},
-    {DomCode::KEY_W, {'w', 'W'}},
-    {DomCode::KEY_X, {'x', 'X'}},
-    {DomCode::KEY_Y, {'y', 'Y'}},
-    {DomCode::KEY_Z, {'z', 'Z'}},
+    {DomCode::US_A, {'a', 'A'}},
+    {DomCode::US_B, {'b', 'B'}},
+    {DomCode::US_C, {'c', 'C'}},
+    {DomCode::US_D, {'d', 'D'}},
+    {DomCode::US_E, {'e', 'E'}},
+    {DomCode::US_F, {'f', 'F'}},
+    {DomCode::US_G, {'g', 'G'}},
+    {DomCode::US_H, {'h', 'H'}},
+    {DomCode::US_I, {'i', 'I'}},
+    {DomCode::US_J, {'j', 'J'}},
+    {DomCode::US_K, {'k', 'K'}},
+    {DomCode::US_L, {'l', 'L'}},
+    {DomCode::US_M, {'m', 'M'}},
+    {DomCode::US_N, {'n', 'N'}},
+    {DomCode::US_O, {'o', 'O'}},
+    {DomCode::US_P, {'p', 'P'}},
+    {DomCode::US_Q, {'q', 'Q'}},
+    {DomCode::US_R, {'r', 'R'}},
+    {DomCode::US_S, {'s', 'S'}},
+    {DomCode::US_T, {'t', 'T'}},
+    {DomCode::US_U, {'u', 'U'}},
+    {DomCode::US_V, {'v', 'V'}},
+    {DomCode::US_W, {'w', 'W'}},
+    {DomCode::US_X, {'x', 'X'}},
+    {DomCode::US_Y, {'y', 'Y'}},
+    {DomCode::US_Z, {'z', 'Z'}},
     {DomCode::DIGIT1, {'1', '!'}},
     {DomCode::DIGIT2, {'2', '@'}},
     {DomCode::DIGIT3, {'3', '#'}},
@@ -387,32 +387,32 @@ const struct DomCodeToKeyboardCodeEntry {
     // DomCode::TURBO                              0x000016 Turbo
     {DomCode::SLEEP, VKEY_SLEEP},               // 0x010082 Sleep
     // DomCode::WAKE_UP                            0x010083 WakeUp
-    {DomCode::KEY_A, VKEY_A},                   // 0x070004 KeyA
-    {DomCode::KEY_B, VKEY_B},                   // 0x070005 KeyB
-    {DomCode::KEY_C, VKEY_C},                   // 0x070006 KeyC
-    {DomCode::KEY_D, VKEY_D},                   // 0x070007 KeyD
-    {DomCode::KEY_E, VKEY_E},                   // 0x070008 KeyE
-    {DomCode::KEY_F, VKEY_F},                   // 0x070009 KeyF
-    {DomCode::KEY_G, VKEY_G},                   // 0x07000A KeyG
-    {DomCode::KEY_H, VKEY_H},                   // 0x07000B KeyH
-    {DomCode::KEY_I, VKEY_I},                   // 0x07000C KeyI
-    {DomCode::KEY_J, VKEY_J},                   // 0x07000D KeyJ
-    {DomCode::KEY_K, VKEY_K},                   // 0x07000E KeyK
-    {DomCode::KEY_L, VKEY_L},                   // 0x07000F KeyL
-    {DomCode::KEY_M, VKEY_M},                   // 0x070010 KeyM
-    {DomCode::KEY_N, VKEY_N},                   // 0x070011 KeyN
-    {DomCode::KEY_O, VKEY_O},                   // 0x070012 KeyO
-    {DomCode::KEY_P, VKEY_P},                   // 0x070013 KeyP
-    {DomCode::KEY_Q, VKEY_Q},                   // 0x070014 KeyQ
-    {DomCode::KEY_R, VKEY_R},                   // 0x070015 KeyR
-    {DomCode::KEY_S, VKEY_S},                   // 0x070016 KeyS
-    {DomCode::KEY_T, VKEY_T},                   // 0x070017 KeyT
-    {DomCode::KEY_U, VKEY_U},                   // 0x070018 KeyU
-    {DomCode::KEY_V, VKEY_V},                   // 0x070019 KeyV
-    {DomCode::KEY_W, VKEY_W},                   // 0x07001A KeyW
-    {DomCode::KEY_X, VKEY_X},                   // 0x07001B KeyX
-    {DomCode::KEY_Y, VKEY_Y},                   // 0x07001C KeyY
-    {DomCode::KEY_Z, VKEY_Z},                   // 0x07001D KeyZ
+    {DomCode::US_A, VKEY_A},                   // 0x070004 KeyA
+    {DomCode::US_B, VKEY_B},                   // 0x070005 KeyB
+    {DomCode::US_C, VKEY_C},                   // 0x070006 KeyC
+    {DomCode::US_D, VKEY_D},                   // 0x070007 KeyD
+    {DomCode::US_E, VKEY_E},                   // 0x070008 KeyE
+    {DomCode::US_F, VKEY_F},                   // 0x070009 KeyF
+    {DomCode::US_G, VKEY_G},                   // 0x07000A KeyG
+    {DomCode::US_H, VKEY_H},                   // 0x07000B KeyH
+    {DomCode::US_I, VKEY_I},                   // 0x07000C KeyI
+    {DomCode::US_J, VKEY_J},                   // 0x07000D KeyJ
+    {DomCode::US_K, VKEY_K},                   // 0x07000E KeyK
+    {DomCode::US_L, VKEY_L},                   // 0x07000F KeyL
+    {DomCode::US_M, VKEY_M},                   // 0x070010 KeyM
+    {DomCode::US_N, VKEY_N},                   // 0x070011 KeyN
+    {DomCode::US_O, VKEY_O},                   // 0x070012 KeyO
+    {DomCode::US_P, VKEY_P},                   // 0x070013 KeyP
+    {DomCode::US_Q, VKEY_Q},                   // 0x070014 KeyQ
+    {DomCode::US_R, VKEY_R},                   // 0x070015 KeyR
+    {DomCode::US_S, VKEY_S},                   // 0x070016 KeyS
+    {DomCode::US_T, VKEY_T},                   // 0x070017 KeyT
+    {DomCode::US_U, VKEY_U},                   // 0x070018 KeyU
+    {DomCode::US_V, VKEY_V},                   // 0x070019 KeyV
+    {DomCode::US_W, VKEY_W},                   // 0x07001A KeyW
+    {DomCode::US_X, VKEY_X},                   // 0x07001B KeyX
+    {DomCode::US_Y, VKEY_Y},                   // 0x07001C KeyY
+    {DomCode::US_Z, VKEY_Z},                   // 0x07001D KeyZ
     {DomCode::DIGIT1, VKEY_1},                  // 0x07001E Digit1
     {DomCode::DIGIT2, VKEY_2},                  // 0x07001F Digit2
     {DomCode::DIGIT3, VKEY_3},                  // 0x070020 Digit3

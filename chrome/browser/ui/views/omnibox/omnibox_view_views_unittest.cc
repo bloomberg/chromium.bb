@@ -121,7 +121,7 @@ class OmniboxViewViewsTest : public testing::Test {
 // Checks that a single change of the text in the omnibox invokes
 // only one call to OmniboxViewViews::UpdatePopup().
 TEST_F(OmniboxViewViewsTest, UpdatePopupCall) {
-  ui::KeyEvent char_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::DomCode::KEY_A, 0,
+  ui::KeyEvent char_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::DomCode::US_A, 0,
                           ui::DomKey::FromCharacter('a'),
                           ui::EventTimeForNow());
   omnibox_textfield()->InsertChar(char_event);
@@ -129,7 +129,7 @@ TEST_F(OmniboxViewViewsTest, UpdatePopupCall) {
       1, base::ASCIIToUTF16("a"), gfx::Range(1));
 
   char_event =
-      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_B, ui::DomCode::KEY_B, 0,
+      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_B, ui::DomCode::US_B, 0,
                    ui::DomKey::FromCharacter('b'), ui::EventTimeForNow());
   omnibox_textfield()->InsertChar(char_event);
   omnibox_view()->CheckUpdatePopupCallInfo(

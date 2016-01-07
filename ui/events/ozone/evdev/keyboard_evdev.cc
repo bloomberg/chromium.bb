@@ -9,6 +9,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/ozone/evdev/event_modifiers_evdev.h"
 #include "ui/events/ozone/evdev/keyboard_util_evdev.h"
@@ -17,15 +18,6 @@
 #include "ui/events/ozone/layout/layout_util.h"
 
 namespace ui {
-
-// We can't include ui/events/keycodes/dom/dom_code.h here because of
-// conflicts with preprocessor macros in <linux/input.h>, so we use the
-// same underlying data with an additional prefix.
-#define USB_KEYMAP(usb, evdev, xkb, win, mac, code, id) DOM_CODE_ ## id = usb
-#define USB_KEYMAP_DECLARATION enum class DomCode
-#include "ui/events/keycodes/dom/keycode_converter_data.inc"
-#undef USB_KEYMAP
-#undef USB_KEYMAP_DECLARATION
 
 namespace {
 
@@ -161,7 +153,7 @@ void KeyboardEvdev::RefreshModifiers() {
       continue;
     DomCode dom_code =
         KeycodeConverter::NativeKeycodeToDomCode(EvdevCodeToNativeCode(key));
-    if (dom_code == DomCode::DOM_CODE_NONE)
+    if (dom_code == DomCode::NONE)
       continue;
     DomKey dom_key;
     KeyboardCode keycode;
@@ -235,7 +227,7 @@ void KeyboardEvdev::DispatchKey(unsigned int key,
                                 int device_id) {
   DomCode dom_code =
       KeycodeConverter::NativeKeycodeToDomCode(EvdevCodeToNativeCode(key));
-  if (dom_code == DomCode::DOM_CODE_NONE)
+  if (dom_code == DomCode::NONE)
     return;
   int flags = modifiers_->GetModifierFlags();
   DomKey dom_key;

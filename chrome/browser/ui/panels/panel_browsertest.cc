@@ -1702,7 +1702,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_Accelerator) {
       chrome::NOTIFICATION_PANEL_CLOSED,
       content::Source<Panel>(panel));
 
-  ui::KeyEvent ui_event(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::DomCode::KEY_W,
+  ui::KeyEvent ui_event(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::DomCode::US_W,
                         ui::EF_CONTROL_DOWN);
   content::NativeWebKeyboardEvent key_event(ui_event);
   panel->HandleKeyboardEvent(key_event);

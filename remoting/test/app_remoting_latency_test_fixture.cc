@@ -162,7 +162,7 @@ void AppRemotingLatencyTestFixture::ResetApplicationState() {
 
   // Press 'N' to choose not save and wait for 1 second for the input to be
   // delivered and processed.
-  PressAndReleaseKey(ui::DomCode::KEY_N);
+  PressAndReleaseKey(ui::DomCode::US_N);
 
   run_loop_.reset(new base::RunLoop());
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

@@ -440,9 +440,9 @@ void AdvanceKeyEventTimestamp(MSG& msg) {
 #if defined(USE_X11) || defined(OS_WIN)
 TEST(EventTest, AutoRepeat) {
   const uint16_t kNativeCodeA =
-      ui::KeycodeConverter::DomCodeToNativeKeycode(DomCode::KEY_A);
+      ui::KeycodeConverter::DomCodeToNativeKeycode(DomCode::US_A);
   const uint16_t kNativeCodeB =
-      ui::KeycodeConverter::DomCodeToNativeKeycode(DomCode::KEY_B);
+      ui::KeycodeConverter::DomCodeToNativeKeycode(DomCode::US_B);
 #if defined(USE_X11)
   ScopedXI2Event native_event_a_pressed;
   native_event_a_pressed.InitKeyEvent(ET_KEY_PRESSED, VKEY_A, kNativeCodeA);

@@ -209,7 +209,7 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
   DCHECK(textInputClient_->IsEditCommandEnabled(IDS_APP_UNDO));
   [self handleAction:IDS_APP_UNDO
              keyCode:ui::VKEY_Z
-             domCode:ui::DomCode::KEY_Z
+             domCode:ui::DomCode::US_Z
           eventFlags:ui::EF_CONTROL_DOWN];
 }
 
@@ -217,7 +217,7 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
   DCHECK(textInputClient_->IsEditCommandEnabled(IDS_APP_REDO));
   [self handleAction:IDS_APP_REDO
              keyCode:ui::VKEY_Z
-             domCode:ui::DomCode::KEY_Z
+             domCode:ui::DomCode::US_Z
           eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
 }
 
@@ -225,7 +225,7 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
   DCHECK(textInputClient_->IsEditCommandEnabled(IDS_APP_CUT));
   [self handleAction:IDS_APP_CUT
              keyCode:ui::VKEY_X
-             domCode:ui::DomCode::KEY_X
+             domCode:ui::DomCode::US_X
           eventFlags:ui::EF_CONTROL_DOWN];
 }
 
@@ -233,7 +233,7 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
   DCHECK(textInputClient_->IsEditCommandEnabled(IDS_APP_COPY));
   [self handleAction:IDS_APP_COPY
              keyCode:ui::VKEY_C
-             domCode:ui::DomCode::KEY_C
+             domCode:ui::DomCode::US_C
           eventFlags:ui::EF_CONTROL_DOWN];
 }
 
@@ -241,7 +241,7 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
   DCHECK(textInputClient_->IsEditCommandEnabled(IDS_APP_PASTE));
   [self handleAction:IDS_APP_PASTE
              keyCode:ui::VKEY_V
-             domCode:ui::DomCode::KEY_V
+             domCode:ui::DomCode::US_V
           eventFlags:ui::EF_CONTROL_DOWN];
 }
 
@@ -249,7 +249,7 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
   DCHECK(textInputClient_->IsEditCommandEnabled(IDS_APP_SELECT_ALL));
   [self handleAction:IDS_APP_SELECT_ALL
              keyCode:ui::VKEY_A
-             domCode:ui::DomCode::KEY_A
+             domCode:ui::DomCode::US_A
           eventFlags:ui::EF_CONTROL_DOWN];
 }
 

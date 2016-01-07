@@ -3491,7 +3491,7 @@ TEST_F(RenderWidgetHostViewAuraTest, KeyEvent) {
   view_->InitAsChild(NULL);
   view_->Show();
 
-  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::DomCode::KEY_A,
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::DomCode::US_A,
                          ui::EF_NONE);
   view_->OnKeyEvent(&key_event);
 
