@@ -317,9 +317,9 @@ def main():
         (total_size / 1e9, count, version_match_count, WIN_VERSION, ' '*50))
     return 0
   if missing_files:
-    raise 'One or more files were missing - aborting'
+    raise Exception('One or more files were missing - aborting')
   if version_match_count == 0:
-    raise 'No files found that match the specified winversion'
+    raise Exception('No files found that match the specified winversion')
   sys.stdout.write('\rWrote to %s.%s\n' % (output, ' '*50))
   sys.stdout.flush()
 
