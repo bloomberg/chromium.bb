@@ -93,7 +93,8 @@ bool isSupportedCSSUnitType(CSSPrimitiveValue::UnitType type)
     return type != CSSPrimitiveValue::UnitType::Unknown
         && (type <= CSSPrimitiveValue::UnitType::UserUnits
             || type == CSSPrimitiveValue::UnitType::Chs
-            || type == CSSPrimitiveValue::UnitType::Rems);
+            || type == CSSPrimitiveValue::UnitType::Rems
+            || (type >= CSSPrimitiveValue::UnitType::ViewportWidth && type <= CSSPrimitiveValue::UnitType::ViewportMax));
 }
 
 void SVGLength::setUnitType(CSSPrimitiveValue::UnitType type)

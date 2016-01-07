@@ -469,13 +469,10 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLength(CSSParserTokenRan
         case CSSPrimitiveValue::UnitType::Points:
         case CSSPrimitiveValue::UnitType::Picas:
         case CSSPrimitiveValue::UnitType::UserUnits:
-            break;
         case CSSPrimitiveValue::UnitType::ViewportWidth:
         case CSSPrimitiveValue::UnitType::ViewportHeight:
         case CSSPrimitiveValue::UnitType::ViewportMin:
         case CSSPrimitiveValue::UnitType::ViewportMax:
-            if (cssParserMode == SVGAttributeMode)
-                return nullptr;
             break;
         default:
             return nullptr;

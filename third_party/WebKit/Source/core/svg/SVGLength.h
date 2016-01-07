@@ -87,7 +87,8 @@ public:
             || unitType == CSSPrimitiveValue::UnitType::Ems
             || unitType == CSSPrimitiveValue::UnitType::Exs
             || unitType == CSSPrimitiveValue::UnitType::Rems
-            || unitType == CSSPrimitiveValue::UnitType::Chs;
+            || unitType == CSSPrimitiveValue::UnitType::Chs
+            || (unitType >= CSSPrimitiveValue::UnitType::ViewportWidth && unitType <= CSSPrimitiveValue::UnitType::ViewportMax);
     }
     inline bool isRelative() const { return isRelativeUnit(m_value->typeWithCalcResolved()); }
 

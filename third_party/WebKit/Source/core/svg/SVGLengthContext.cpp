@@ -25,6 +25,7 @@
 #include "core/css/CSSHelper.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/dom/NodeComputedStyle.h"
+#include "core/frame/FrameView.h"
 #include "core/layout/LayoutObject.h"
 #include "core/style/ComputedStyle.h"
 #include "core/svg/SVGSVGElement.h"
@@ -98,6 +99,57 @@ static float convertValueFromEMSToUserUnits(const ComputedStyle* style, float va
     if (!style)
         return 0;
     return value * style->specifiedFontSize();
+}
+
+static inline float viewportLengthPercent(const float widthOrHeight)
+{
+    return widthOrHeight / 100;
+}
+
+static inline float viewportMinPercent(const FloatSize& viewportSize)
+{
+    return std::min(viewportSize.width(), viewportSize.height()) / 100;
+}
+
+static inline float viewportMaxPercent(const FloatSize& viewportSize)
+{
+    return std::max(viewportSize.width(), viewportSize.height()) / 100;
+}
+
+static inline float dimensionForViewportUnit(const SVGElement* context, CSSPrimitiveValue::UnitType unit)
+{
+    if (!context)
+        return 0;
+
+    const Document& document = context->document();
+    FrameView* view = document.view();
+    if (!view)
+        return 0;
+
+    const ComputedStyle* style = computedStyleForLengthResolving(context);
+    if (!style)
+        return 0;
+
+    FloatSize viewportSize(view->width(), view->height());
+
+    switch (unit) {
+    case CSSPrimitiveValue::UnitType::ViewportWidth:
+        return viewportLengthPercent(viewportSize.width()) / style->effectiveZoom();
+
+    case CSSPrimitiveValue::UnitType::ViewportHeight:
+        return viewportLengthPercent(viewportSize.height()) / style->effectiveZoom();
+
+    case CSSPrimitiveValue::UnitType::ViewportMin:
+        return viewportMinPercent(viewportSize) / style->effectiveZoom();
+
+    case CSSPrimitiveValue::UnitType::ViewportMax:
+        return viewportMaxPercent(viewportSize) / style->effectiveZoom();
+    default:
+        break;
+    }
+
+    ASSERT_NOT_REACHED();
+    return 0;
 }
 
 SVGLengthContext::SVGLengthContext(const SVGElement* context)
@@ -225,6 +277,12 @@ float SVGLengthContext::convertValueToUserUnits(float value, SVGLengthMode mode,
     case CSSPrimitiveValue::UnitType::Chs:
         userUnits = convertValueFromCHSToUserUnits(value);
         break;
+    case CSSPrimitiveValue::UnitType::ViewportWidth:
+    case CSSPrimitiveValue::UnitType::ViewportHeight:
+    case CSSPrimitiveValue::UnitType::ViewportMin:
+    case CSSPrimitiveValue::UnitType::ViewportMax:
+        userUnits = value * dimensionForViewportUnit(m_context, fromUnit);
+        break;
     default:
         ASSERT_NOT_REACHED();
         break;
@@ -272,6 +330,11 @@ float SVGLengthContext::convertValueFromUserUnits(float value, SVGLengthMode mod
         return value / cssPixelsPerPoint;
     case CSSPrimitiveValue::UnitType::Picas:
         return value / cssPixelsPerPica;
+    case CSSPrimitiveValue::UnitType::ViewportWidth:
+    case CSSPrimitiveValue::UnitType::ViewportHeight:
+    case CSSPrimitiveValue::UnitType::ViewportMin:
+    case CSSPrimitiveValue::UnitType::ViewportMax:
+        return value / dimensionForViewportUnit(m_context, toUnit);
     default:
         break;
     }
