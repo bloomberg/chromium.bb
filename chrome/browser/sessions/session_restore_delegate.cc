@@ -61,12 +61,8 @@ bool SessionRestoreDelegate::RestoredTab::operator<(
   // Apps should be loaded before normal tabs.
   if (is_app_ != right.is_app_)
     return is_app_;
-  // Restore using MRU. Behind an experiment for now.
-  if (SessionRestore::GetSmartRestoreMode() ==
-      SessionRestore::SMART_RESTORE_MODE_MRU)
-    return contents_->GetLastActiveTime() >
-           right.contents_->GetLastActiveTime();
-  return false;
+  // Finally, older tabs should be deferred first.
+  return contents_->GetLastActiveTime() > right.contents_->GetLastActiveTime();
 }
 
 // static
@@ -83,29 +79,5 @@ void SessionRestoreDelegate::RestoreTabs(
     favicon_driver->FetchFavicon(favicon_driver->GetActiveURL());
   }
 
-  // This experiment allows us to have comparative numbers for session restore
-  // metrics. It will be removed once those numbers are obtained.
-  // TODO(georgesak): Remove this experiment when stats are collected.
-  base::FieldTrial* trial =
-      base::FieldTrialList::Find("IntelligentSessionRestore");
-  if (!trial || trial->group_name() != "DontRestoreBackgroundTabs") {
-    TabLoader::RestoreTabs(tabs, restore_started);
-  } else {
-    // A TabLoader will not be used for this session restore, so manually create
-    // and use a SessionRestoreStatsCollector, normally owned by the TabLoader.
-    scoped_ptr<SessionRestoreStatsCollector::StatsReportingDelegate>
-        reporting_delegate(
-            new SessionRestoreStatsCollector::UmaStatsReportingDelegate());
-    scoped_refptr<SessionRestoreStatsCollector> stats_collector =
-        new SessionRestoreStatsCollector(restore_started,
-                                         std::move(reporting_delegate));
-    stats_collector->TrackTabs(tabs);
-    for (const auto& restored_tab : tabs) {
-      if (!restored_tab.is_active()) {
-        // Non-active tabs aren't being loaded, so mark them as deferred.
-        auto tab_controller = &restored_tab.contents()->GetController();
-        stats_collector->DeferTab(tab_controller);
-      }
-    }
-  }
+  TabLoader::RestoreTabs(tabs, restore_started);
 }

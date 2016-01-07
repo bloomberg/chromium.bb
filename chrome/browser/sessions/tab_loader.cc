@@ -243,13 +243,6 @@ void TabLoader::HandleTabClosedOrLoaded(NavigationController* controller) {
 
 base::MemoryPressureListener::MemoryPressureLevel
     TabLoader::CurrentMemoryPressureLevel() {
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
-  // Check for explicit memory pressure integration.
-  std::string react_to_memory_pressure = variations::GetVariationParamValue(
-      "IntelligentSessionRestore", "ReactToMemoryPressure");
-  if (react_to_memory_pressure != "true")
-    return base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
-#endif  // defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
   if (base::MemoryPressureMonitor::Get())
     return base::MemoryPressureMonitor::Get()->GetCurrentPressureLevel();
 
@@ -258,16 +251,6 @@ base::MemoryPressureListener::MemoryPressureLevel
 
 void TabLoader::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
-  // On Windows and Mac this mechanism is only experimentally enabled.
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
-  // If memory pressure integration isn't explicitly enabled then ignore these
-  // calls.
-  std::string react_to_memory_pressure = variations::GetVariationParamValue(
-      "IntelligentSessionRestore", "ReactToMemoryPressure");
-  if (react_to_memory_pressure != "true")
-    return;
-#endif
-
   // When receiving a resource pressure level warning, we stop pre-loading more
   // tabs since we are running in danger of loading more tabs by throwing out
   // old ones.

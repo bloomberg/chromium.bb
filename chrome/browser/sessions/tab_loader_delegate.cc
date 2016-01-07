@@ -17,6 +17,12 @@ namespace {
 // the loading time is a mix of server response and data bandwidth.
 static const int kInitialDelayTimerMS = 1500;
 
+// Similar to the above constant, but the timeout that is afforded to the
+// visible tab only. Having this be a longer value ensures the visible time has
+// more time during which it is the only one loading, decreasing the time to
+// first paint and interactivity of the foreground tab.
+static const int kFirstTabLoadTimeoutMS = 60000;
+
 class TabLoaderDelegateImpl
     : public TabLoaderDelegate,
       public net::NetworkChangeNotifier::ConnectionTypeObserver {
@@ -60,27 +66,8 @@ TabLoaderDelegateImpl::TabLoaderDelegateImpl(TabLoaderCallback* callback)
     callback->SetTabLoadingEnabled(false);
   }
 
-  // Initialize the timeouts to use from the session restore field trial.
-  // Default to the usual value if none is specified.
-
-  static const char kIntelligentSessionRestore[] = "IntelligentSessionRestore";
-  std::string timeout = variations::GetVariationParamValue(
-      kIntelligentSessionRestore, "FirstTabLoadTimeoutMs");
-  int timeout_ms = 0;
-  if (timeout.empty() || !base::StringToInt(timeout, &timeout_ms) ||
-      timeout_ms <= 0) {
-    timeout_ms = kInitialDelayTimerMS;
-  }
-  first_timeout_ = base::TimeDelta::FromMilliseconds(timeout_ms);
-
-  timeout = variations::GetVariationParamValue(
-      kIntelligentSessionRestore, "TabLoadTimeoutMs");
-  timeout_ms = 0;
-  if (timeout.empty() || !base::StringToInt(timeout, &timeout_ms) ||
-      timeout_ms <= 0) {
-    timeout_ms = kInitialDelayTimerMS;
-  }
-  timeout_ = base::TimeDelta::FromMilliseconds(timeout_ms);
+  first_timeout_ = base::TimeDelta::FromMilliseconds(kFirstTabLoadTimeoutMS);
+  timeout_ = base::TimeDelta::FromMilliseconds(kInitialDelayTimerMS);
 }
 
 TabLoaderDelegateImpl::~TabLoaderDelegateImpl() {

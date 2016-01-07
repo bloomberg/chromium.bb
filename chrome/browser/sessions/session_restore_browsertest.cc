@@ -206,12 +206,11 @@ class SessionRestoreTest : public InProcessBrowserTest {
   const BrowserList* active_browser_list_;
 };
 
-// Activates the smart restore behaviour in "simple" mode and tracks the loading
-// of tabs.
-class SmartSessionRestoreSimpleTest : public SessionRestoreTest,
+// Activates the smart restore behaviour and tracks the loading of tabs.
+class SmartSessionRestoreTest : public SessionRestoreTest,
                                       public content::NotificationObserver {
  public:
-  SmartSessionRestoreSimpleTest() {}
+  SmartSessionRestoreTest() {}
   void StartObserving(int num_tabs) {
     // Start by clearing everything so it can be reused in the same test.
     web_contents_.clear();
@@ -246,13 +245,6 @@ class SmartSessionRestoreSimpleTest : public SessionRestoreTest,
  protected:
   static const int kExpectedNumTabs;
   static const char* const kUrls[];
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kForceFieldTrials, "IntelligentSessionRestore/TestGroup/");
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kForceFieldTrialParams,
-        "IntelligentSessionRestore.TestGroup:PrioritizeTabs/simple");
-  }
 
  private:
   content::NotificationRegistrar registrar_;
@@ -261,30 +253,13 @@ class SmartSessionRestoreSimpleTest : public SessionRestoreTest,
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
   int num_tabs_;
 
-  DISALLOW_COPY_AND_ASSIGN(SmartSessionRestoreSimpleTest);
-};
-
-class SmartSessionRestoreMRUTest : public SmartSessionRestoreSimpleTest {
- public:
-  SmartSessionRestoreMRUTest() {}
-
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kForceFieldTrials, "IntelligentSessionRestore/TestGroup/");
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kForceFieldTrialParams,
-        "IntelligentSessionRestore.TestGroup:PrioritizeTabs/mru");
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SmartSessionRestoreMRUTest);
+  DISALLOW_COPY_AND_ASSIGN(SmartSessionRestoreTest);
 };
 
 // static
-const int SmartSessionRestoreSimpleTest::kExpectedNumTabs = 6;
+const int SmartSessionRestoreTest::kExpectedNumTabs = 6;
 // static
-const char* const SmartSessionRestoreSimpleTest::kUrls[] = {
+const char* const SmartSessionRestoreTest::kUrls[] = {
     "http://google.com/1",
     "http://google.com/2",
     "http://google.com/3",
@@ -1378,78 +1353,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, SessionStorageAfterTabReplace) {
   EXPECT_EQ(1, new_browser->tab_strip_model()->count());
 }
 
-IN_PROC_BROWSER_TEST_F(SmartSessionRestoreSimpleTest, CorrectLoadingOrder) {
-  ASSERT_EQ(SessionRestore::SMART_RESTORE_MODE_SIMPLE,
-            SessionRestore::GetSmartRestoreMode());
-
-  // Start observing the loading of tabs, to make sure the order is correct.
-  StartObserving(kExpectedNumTabs);
-
-  struct TabInfo {
-    GURL url;
-    bool pinned;
-    int expected_load_order;
-  };
-
-  TabInfo tab_info[kExpectedNumTabs] = {
-      // This will be the foreground tab and will always load first.
-      {GURL("http://google.com/1"), false, 1},
-      {GURL("http://google.com/2"), false, 3},
-      // Internal page, should load last.
-      {GURL(chrome::kChromeUINewTabURL), false, 6},
-      {GURL("http://google.com/4"), false, 4},
-      {GURL("http://google.com/5"), true, 2},  // Pinned, should load second.
-      {GURL("http://google.com/6"), false, 5},
-  };
-
-  // Set up the restore data.
-  std::vector<const sessions::SessionWindow*> session;
-  sessions::SessionWindow window;
-  sessions::SessionTab tab[kExpectedNumTabs];
-
-  for (int i = 0; i < kExpectedNumTabs; i++) {
-    SerializedNavigationEntry nav =
-        SerializedNavigationEntryTestHelper::CreateNavigation(
-            tab_info[i].url.spec(), tab_info[i].url.spec().c_str());
-    sync_pb::SessionTab sync_data;
-    sync_data.set_tab_visual_index(0);
-    sync_data.set_current_navigation_index(0);
-    sync_data.add_navigation()->CopyFrom(nav.ToSyncData());
-    sync_data.set_pinned(tab_info[i].pinned);
-    tab[i].SetFromSyncData(sync_data, base::Time::Now());
-    window.tabs.push_back(tab + i);
-  }
-
-  session.push_back(&window);
-  Profile* profile = browser()->profile();
-  std::vector<Browser*> browsers = SessionRestore::RestoreForeignSessionWindows(
-      profile, browser()->host_desktop_type(), session.begin(), session.end());
-
-  ASSERT_EQ(1u, browsers.size());
-  ASSERT_TRUE(browsers[0]);
-  ASSERT_EQ(kExpectedNumTabs, browsers[0]->tab_strip_model()->count());
-
-  WaitForAllTabsToStartLoading();
-
-  ASSERT_EQ(static_cast<size_t>(kExpectedNumTabs), web_contents().size());
-
-  // Make sure that contents are loaded in the correct order, ie. each tab rank
-  // is higher that its preceding one.
-  std::map<GURL, int> ranks;
-  for (auto t : tab_info)
-    ranks[t.url] = t.expected_load_order;
-  for (size_t i = 1; i < web_contents().size(); i++) {
-    int current_rank = ranks[web_contents()[i]->GetLastCommittedURL()];
-    int previous_rank = ranks[web_contents()[i - 1]->GetLastCommittedURL()];
-    ASSERT_LT(previous_rank, current_rank);
-  }
-
-  // The SessionWindow destructor deletes the tabs, so we have to clear them
-  // here to avoid a crash.
-  window.tabs.clear();
-}
-
-IN_PROC_BROWSER_TEST_F(SmartSessionRestoreMRUTest, PRE_CorrectLoadingOrder) {
+IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, PRE_CorrectLoadingOrder) {
   Profile* profile = browser()->profile();
 
   int activation_order[] = {4, 2, 1, 5, 0, 3};
@@ -1464,7 +1368,7 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreMRUTest, PRE_CorrectLoadingOrder) {
 
   ASSERT_EQ(kExpectedNumTabs, browser()->tab_strip_model()->count());
 
-  // Activate the tabs one by one following the random activation order.
+  // Activate the tabs one by one following the specified activation order.
   for (auto i : activation_order)
     browser()->tab_strip_model()->ActivateTabAt(i, true);
 
@@ -1500,7 +1404,7 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreMRUTest, PRE_CorrectLoadingOrder) {
   new_browser->tab_strip_model()->ActivateTabAt(1, true);
 }
 
-IN_PROC_BROWSER_TEST_F(SmartSessionRestoreMRUTest, CorrectLoadingOrder) {
+IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, CorrectLoadingOrder) {
   int activation_order[] = {4, 2, 5, 0, 3, 1};
   Profile* profile = browser()->profile();
 

@@ -743,12 +743,9 @@ void SessionService::BuildCommandsForTab(const SessionID& window_id,
         sessions::CreatePinnedStateCommand(session_id, true));
   }
 
-  if (SessionRestore::GetSmartRestoreMode() ==
-      SessionRestore::SMART_RESTORE_MODE_MRU) {
-    base_session_service_->AppendRebuildCommand(
-        sessions::CreateLastActiveTimeCommand(session_id,
-                                              tab->GetLastActiveTime()));
-  }
+  base_session_service_->AppendRebuildCommand(
+      sessions::CreateLastActiveTimeCommand(session_id,
+                                            tab->GetLastActiveTime()));
 
   extensions::TabHelper* extensions_tab_helper =
       extensions::TabHelper::FromWebContents(tab);
