@@ -20,8 +20,8 @@ RUN chown -R blimp_user /engine
 USER blimp_user
 WORKDIR "/engine"
 
-ENTRYPOINT ["/engine/blimp_engine_app", "--disable-gpu",
-                                        "--use-remote-compositing",
+ENTRYPOINT ["/engine/blimp_engine_app", "--disable-gpu", \
+                                        "--use-remote-compositing", \
                                         # Retains display items for
                                         # serialization on the engine.
                                         "--disable-cached-picture-raster"]
