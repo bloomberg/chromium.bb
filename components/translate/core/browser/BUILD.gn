@@ -20,6 +20,8 @@ source_set("browser") {
     "translate_error_details.h",
     "translate_event_details.cc",
     "translate_event_details.h",
+    "translate_experiment.cc",
+    "translate_experiment.h",
     "translate_language_list.cc",
     "translate_language_list.h",
     "translate_manager.cc",

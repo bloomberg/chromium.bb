@@ -81,6 +81,11 @@ class TranslatePrefs {
                  const char* accept_languages_pref,
                  const char* preferred_languages_pref);
 
+  // Sets the country that the application is run in. Determined by the
+  // VariationsService, can be left empty. Used by TranslateExperiment.
+  void SetCountry(const std::string& country);
+  std::string GetCountry() const;
+
   // Resets the blocked languages list, the sites blacklist, the languages
   // whitelist, and the accepted/denied counts.
   void ResetToDefaults();
@@ -189,6 +194,8 @@ class TranslatePrefs {
   base::DictionaryValue* GetTranslationAcceptedCountDictionary() const;
 
   PrefService* prefs_;  // Weak.
+
+  std::string country_;  // The country the app runs in.
 
   DISALLOW_COPY_AND_ASSIGN(TranslatePrefs);
 };

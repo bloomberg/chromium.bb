@@ -42,6 +42,8 @@
         'translate/core/browser/translate_error_details.h',
         'translate/core/browser/translate_event_details.cc',
         'translate/core/browser/translate_event_details.h',
+        'translate/core/browser/translate_experiment.cc',
+        'translate/core/browser/translate_experiment.h',
         'translate/core/browser/translate_language_list.cc',
         'translate/core/browser/translate_language_list.h',
         'translate/core/browser/translate_manager.cc',

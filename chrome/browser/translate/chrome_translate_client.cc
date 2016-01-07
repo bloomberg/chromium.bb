@@ -11,6 +11,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -35,6 +36,7 @@
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/language_detection_details.h"
+#include "components/variations/service/variations_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -99,8 +101,21 @@ ChromeTranslateClient::CreateTranslatePrefs(PrefService* prefs) {
 #else
   const char* preferred_languages_prefs = NULL;
 #endif
-  return scoped_ptr<translate::TranslatePrefs>(new translate::TranslatePrefs(
-      prefs, prefs::kAcceptLanguages, preferred_languages_prefs));
+  scoped_ptr<translate::TranslatePrefs> translate_prefs(
+      new translate::TranslatePrefs(prefs, prefs::kAcceptLanguages,
+                                    preferred_languages_prefs));
+
+  // We need to obtain the country here, since it comes from VariationsService.
+  // components/ does not have access to that.
+  DCHECK(g_browser_process);
+  variations::VariationsService* variations_service =
+      g_browser_process->variations_service();
+  if (variations_service) {
+    translate_prefs->SetCountry(
+        variations_service->GetStoredPermanentCountry());
+  }
+
+  return translate_prefs;
 }
 
 // static

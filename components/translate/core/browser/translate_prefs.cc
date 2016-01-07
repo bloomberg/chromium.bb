@@ -14,6 +14,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/translate/core/browser/translate_experiment.h"
 #include "components/translate/core/common/translate_util.h"
 
 namespace translate {
@@ -158,6 +159,14 @@ TranslatePrefs::TranslatePrefs(PrefService* user_prefs,
 #else
   DCHECK(!preferred_languages_pref);
 #endif
+}
+
+void TranslatePrefs::SetCountry(const std::string& country) {
+  country_ = country;
+}
+
+std::string TranslatePrefs::GetCountry() const {
+  return country_;
 }
 
 void TranslatePrefs::ResetToDefaults() {
@@ -396,6 +405,13 @@ bool TranslatePrefs::CanTranslateLanguage(
   bool can_be_accept_language =
       TranslateAcceptLanguages::CanBeAcceptLanguage(language);
   bool is_accept_language = accept_languages->IsAcceptLanguage(language);
+
+  // For the translate language experiment, blocklists can be overridden.
+  const std::string& app_locale =
+      TranslateDownloadManager::GetInstance()->application_locale();
+  std::string ui_lang = TranslateDownloadManager::GetLanguageCode(app_locale);
+  if (TranslateExperiment::ShouldOverrideBlocking(ui_lang, language))
+    return true;
 
   // Don't translate any user black-listed languages. Checking
   // |is_accept_language| is necessary because if the user eliminates the

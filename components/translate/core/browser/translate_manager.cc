@@ -20,6 +20,7 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_driver.h"
 #include "components/translate/core/browser/translate_error_details.h"
+#include "components/translate/core/browser/translate_experiment.h"
 #include "components/translate/core/browser/translate_language_list.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/browser/translate_script.h"
@@ -359,6 +360,8 @@ std::string TranslateManager::GetTargetLanguage(const TranslatePrefs* prefs) {
   std::string ui_lang = TranslateDownloadManager::GetLanguageCode(
       TranslateDownloadManager::GetInstance()->application_locale());
   translate::ToTranslateLanguageSynonym(&ui_lang);
+
+  TranslateExperiment::OverrideUiLanguage(prefs->GetCountry(), &ui_lang);
 
   if (TranslateDownloadManager::IsSupportedLanguage(ui_lang))
     return ui_lang;
