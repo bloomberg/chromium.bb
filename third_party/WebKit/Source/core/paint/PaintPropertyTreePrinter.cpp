@@ -42,6 +42,12 @@ private:
         Traits::addFrameViewProperties(frameView, *this);
         if (LayoutView* layoutView = frameView.layoutView())
             collectPropertyNodes(*layoutView);
+        for (Frame* child = frameView.frame().tree().firstChild(); child; child = child->tree().nextSibling()) {
+            if (!child->isLocalFrame())
+                continue;
+            if (FrameView* childView = toLocalFrame(child)->view())
+                collectPropertyNodes(*childView);
+        }
     }
 
     void collectPropertyNodes(const LayoutObject& object)

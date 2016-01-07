@@ -97,6 +97,13 @@ void PaintPropertyTreeBuilder::walk(FrameView& frameView, const PaintPropertyTre
 
     if (LayoutView* layoutView = frameView.layoutView())
         walk(*layoutView, localContext);
+
+    for (Frame* child = frameView.frame().tree().firstChild(); child; child = child->tree().nextSibling()) {
+        if (!child->isLocalFrame())
+            continue;
+        if (FrameView* childView = toLocalFrame(child)->view())
+            walk(*childView, localContext);
+    }
 }
 
 static void deriveBorderBoxFromContainerContext(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
@@ -327,8 +334,6 @@ void PaintPropertyTreeBuilder::walk(LayoutObject& object, const PaintPropertyTre
     } else {
         object.clearObjectPaintProperties();
     }
-
-    // TODO(trchen): Walk subframes for LayoutFrame.
 
     for (LayoutObject* child = object.slowFirstChild(); child; child = child->nextSibling()) {
         if (child->isBoxModelObject() || child->isSVG())
