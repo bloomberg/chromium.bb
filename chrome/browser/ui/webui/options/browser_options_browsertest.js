@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+GEN_INCLUDE(['options_browsertest_base.js']);
+
 /**
  * TestFixture for browser options WebUI testing.
  * @extends {testing.Test}
@@ -73,10 +75,27 @@ TEST_F('BrowserOptionsOverlayWebUITest', 'testNavigationInBackground',
 function BrowserOptionsFrameWebUITest() {}
 
 BrowserOptionsFrameWebUITest.prototype = {
-  __proto__: testing.Test.prototype,
+  __proto__: OptionsBrowsertestBase.prototype,
 
   /** @override */
   browsePreload: 'chrome://settings-frame/',
+
+  /** @override */
+  setUp: function() {
+    OptionsBrowsertestBase.prototype.setUp.call(this);
+
+    // Enable when failure is resolved.
+    // AX_TEXT_04: http://crbug.com/570721
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'linkWithUnclearPurpose',
+        '#sync-overview > A');
+
+    // Enable when failure is resolved.
+    // AX_ARIA_10: http://crbug.com/570723
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'unsupportedAriaAttribute',
+        '#profiles-list');
+  },
 };
 
 TEST_F('BrowserOptionsFrameWebUITest', 'testAdvancedSettingsHiddenByDefault',
@@ -92,7 +111,7 @@ TEST_F('BrowserOptionsFrameWebUITest', 'testAdvancedSettingsHiddenByDefault',
 function AdvancedSettingsWebUITest() {}
 
 AdvancedSettingsWebUITest.prototype = {
-  __proto__: testing.Test.prototype,
+  __proto__: OptionsBrowsertestBase.prototype,
 
   /** @override */
   browsePreload: 'chrome://settings-frame/autofill',

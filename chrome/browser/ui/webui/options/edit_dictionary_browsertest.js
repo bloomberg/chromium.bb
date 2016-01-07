@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+GEN_INCLUDE(['options_browsertest_base.js']);
+
 /**
  * TestFixture for EditDictionaryOverlay WebUI testing.
  * @extends {testing.Test}
@@ -10,7 +12,7 @@
 function EditDictionaryWebUITest() {}
 
 EditDictionaryWebUITest.prototype = {
-  __proto__: testing.Test.prototype,
+  __proto__: OptionsBrowsertestBase.prototype,
 
   /**
    * Browse to the edit dictionary page & call our preLoad().
@@ -32,6 +34,28 @@ EditDictionaryWebUITest.prototype = {
         }));
     this.mockHandler.stubs().addDictionaryWord(ANYTHING);
     this.mockHandler.stubs().removeDictionaryWord(ANYTHING);
+  },
+
+  /** @override */
+  setUp: function() {
+    OptionsBrowsertestBase.prototype.setUp.call(this);
+
+    // Enable when failure is resolved.
+    // AX_TEXT_01: http://crbug.com/570556
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'controlsWithoutLabel',
+        '#language-dictionary-overlay-word-list > .deletable-item > *');
+
+    var unsupportedAriaAttributeSelectors = [
+      '#language-dictionary-overlay-word-list',
+      '#language-options-list',
+    ];
+
+    // Enable when failure is resolved.
+    // AX_ARIA_10: http://crbug.com/570559
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'unsupportedAriaAttribute',
+        unsupportedAriaAttributeSelectors);
   },
 };
 

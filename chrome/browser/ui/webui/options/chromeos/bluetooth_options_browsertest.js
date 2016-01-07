@@ -4,10 +4,12 @@
 
 GEN('#if defined(OS_CHROMEOS)');
 
+GEN_INCLUDE(['../options_browsertest_base.js']);
+
 function BluetoothWebUITestAsync() {}
 
 BluetoothWebUITestAsync.prototype = {
-  __proto__: testing.Test.prototype,
+  __proto__: OptionsBrowsertestBase.prototype,
 
   /** @override */
   isAsync: true,
@@ -50,6 +52,22 @@ BluetoothWebUITestAsync.prototype = {
     paired: false
   },
 
+  /** @override */
+  setUp: function() {
+    OptionsBrowsertestBase.prototype.setUp.call(this);
+
+    var unsupportedAriaAttributeSelectors = [
+      '#bluetooth-paired-devices-list',
+      '#bluetooth-unpaired-devices-list',
+    ];
+
+    // Enable when failure is resolved.
+    // AX_ARIA_10: http://crbug.com/570564
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'unsupportedAriaAttribute',
+        unsupportedAriaAttributeSelectors);
+  },
+
   /**
    * Retrieves the list item associated with a Bluetooth device.
    * @param {!Element} listElement Element containing a list of devices.
@@ -86,7 +104,6 @@ BluetoothWebUITestAsync.prototype = {
     element.value = text;
     cr.dispatchSimpleEvent(element, 'input');
   },
-
 };
 
 TEST_F('BluetoothWebUITestAsync', 'testEnableBluetooth', function() {

@@ -56,6 +56,8 @@ var NetInternalsTest = (function() {
     isAsync: true,
 
     setUp: function() {
+      testing.Test.prototype.setUp.call(this);
+
       // Enforce accessibility auditing, but suppress some false positives.
       this.accessibilityIssuesAreErrors = true;
       // False positive because a unicode character is used to draw a square.
@@ -78,6 +80,25 @@ var NetInternalsTest = (function() {
       // https://github.com/GoogleChrome/accessibility-developer-tools/issues/69
       this.accessibilityAuditConfig.auditRulesToIgnore.push(
           'focusableElementNotVisibleAndNotAriaHidden');
+
+      var controlsWithoutLabelSelectors = [
+        '#export-view-user-comments',
+        '#hsts-view-add-input',
+        '#hsts-view-delete-input',
+        '#hsts-view-query-input',
+      ];
+
+      // Enable when failure is resolved.
+      // AX_TEXT_01: http://crbug.com/559203
+      this.accessibilityAuditConfig.ignoreSelectors(
+          'controlsWithoutLabel',
+          controlsWithoutLabelSelectors);
+
+      // Enable when warning is resolved.
+      // AX_HTML_01: http://crbug.com/559204
+      this.accessibilityAuditConfig.ignoreSelectors(
+          'humanLangMissing',
+          'html');
 
       // Wrap g_browser.receive around a test function so that assert and expect
       // functions can be called from observers.

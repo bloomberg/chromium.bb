@@ -6,6 +6,8 @@
 // isn't implemented if OpenSSL is used.
 GEN('#if defined(USE_NSS_CERTS)');
 
+GEN_INCLUDE(['options_browsertest_base.js']);
+
 /**
  * URL of the Certificates dialog in the Settings page.
  * @const
@@ -32,7 +34,7 @@ GEN('#endif  // defined(OS_CHROMEOS)');
 function CertificateManagerWebUIBaseTest() {}
 
 CertificateManagerWebUIBaseTest.prototype = {
-  __proto__: testing.Test.prototype,
+  __proto__: OptionsBrowsertestBase.prototype,
 
   /** @override */
   preLoad: function() {
@@ -52,6 +54,44 @@ CertificateManagerWebUIBaseTest.prototype = {
           'populateCertificateManager',
           'viewCertificate',
         ]);
+  },
+
+  /** @override */
+  setUp: function() {
+    OptionsBrowsertestBase.prototype.setUp.call(this);
+
+    var ariaRoleNotScopedSelectors = [
+      '#tree-item-autogen-id-0',
+      '#tree-item-autogen-id-1',
+      '#tree-item-autogen-id-2',
+      '#tree-item-autogen-id-3',
+      '#tree-item-autogen-id-4',
+    ];
+
+    // Enable when failure is resolved.
+    // AX_ARIA_09: http://crbug.com/570567
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'ariaRoleNotScoped',
+        ariaRoleNotScopedSelectors);
+
+    // Enable when failure is resolved.
+    // AX_ARIA_10: http://crbug.com/570566
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'unsupportedAriaAttribute',
+        '#caCertsTab-tree');
+
+    var focusableElementNotVisibleAndNotAriaHiddenSelectors = [
+      '#personalCertsTab-tree',
+      '#personalCertsTab-import',
+      '#personalCertsTab-import-and-bind',
+      '#certificate-confirm',
+    ];
+
+    // Enable when failure is resolved.
+    // AX_FOCUS_01: http://crbug.com/570568
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'focusableElementNotVisibleAndNotAriaHidden',
+        focusableElementNotVisibleAndNotAriaHiddenSelectors);
   },
 };
 

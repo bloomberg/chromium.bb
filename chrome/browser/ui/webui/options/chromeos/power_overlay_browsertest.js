@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+GEN_INCLUDE(['../options_browsertest_base.js']);
+
 function PowerOverlayWebUITest() {}
 
 PowerOverlayWebUITest.prototype = {
-  __proto__: testing.Test.prototype,
+  __proto__: OptionsBrowsertestBase.prototype,
 
   browsePreload: 'chrome://settings-frame/',
 

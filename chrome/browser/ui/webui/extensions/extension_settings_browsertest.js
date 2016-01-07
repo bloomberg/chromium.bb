@@ -51,7 +51,14 @@ ExtensionSettingsWebUITest.prototype = {
 
   /** @override */
   setUp: function() {
+    testing.Test.prototype.setUp.call(this);
     testing.Test.disableAnimationsAndTransitions();
+
+    // Enable when failure is resolved.
+    // AX_ARIA_08: http://crbug.com/560903
+    this.accessibilityAuditConfig.ignoreSelectors(
+      'requiredOwnedAriaRoleMissing',
+      '#kiosk-app-list');
   },
 
   /**

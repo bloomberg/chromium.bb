@@ -47,6 +47,8 @@ BaseDownloadsWebUITest.prototype = {
    * @override
    */
   setUp: function() {
+    testing.Test.prototype.setUp.call(this);
+
     this.createdDownloads = [];
 
     // The entries will begin at 1:00 AM on Sept 2, 2008, and will be spaced
@@ -58,6 +60,26 @@ BaseDownloadsWebUITest.prototype = {
     }
     downloads.Manager.updateAll(this.createdDownloads);
     expectEquals(downloads.Manager.size(), TOTAL_RESULT_COUNT);
+
+    this.updateAccessibilityAuditConfig();
+  },
+
+  /**
+   * Disables failing accessibility audits. This should be removed when all
+   * audit issues have been resolved.
+   */
+  updateAccessibilityAuditConfig: function() {
+    // Enable when failure is resolved.
+    // AX_TEXT_01: http://crbug.com/559217
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'controlsWithoutLabel',
+        '#term');
+
+    // Enable when failure is resolved.
+    // AX_FOCUS_03: http://crbug.com/559219
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'tabIndexGreaterThanZero',
+        '#term');
   },
 
   /**

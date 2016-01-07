@@ -166,6 +166,7 @@ PrintPreviewWebUITest.prototype = {
    * @override
    */
   setUp: function() {
+    testing.Test.prototype.setUp.call(this);
     Mock4JS.clearMocksToVerify();
 
     this.initialSettings_ = new print_preview.NativeInitialSettings(
@@ -189,6 +190,12 @@ PrintPreviewWebUITest.prototype = {
     this.nativeLayer_ = printPreview.nativeLayer_;
 
     testing.Test.disableAnimationsAndTransitions();
+
+    // Enable when failure is resolved.
+    // AX_TEXT_03: http://crbug.com/559209
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'multipleLabelableElementsPerLabel',
+        '#page-settings > .right-column > *');
   }
 };
 

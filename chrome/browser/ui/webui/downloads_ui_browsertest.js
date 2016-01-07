@@ -120,6 +120,8 @@ EmptyDownloadsWebUITest.prototype = {
   setUp: function() {
     // Doesn't create any fake downloads.
     assertEquals(0, downloads.Manager.size());
+
+    this.updateAccessibilityAuditConfig();
   },
 };
 

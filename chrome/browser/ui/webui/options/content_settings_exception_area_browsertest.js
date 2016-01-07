@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+GEN_INCLUDE(['options_browsertest_base.js']);
+
 /**
  * TestFixture for content settings exception area WebUI testing.
  * @extends {testing.Test}
@@ -37,13 +39,30 @@ TEST_F('ContentSettingsExceptionAreaWebUITest',
 function ContentSettingsExceptionsAreaAsyncWebUITest() {}
 
 ContentSettingsExceptionsAreaAsyncWebUITest.prototype = {
-  __proto__: testing.Test.prototype,
+  __proto__: OptionsBrowsertestBase.prototype,
 
   /** @override */
   browsePreload: 'chrome://settings-frame/contentExceptions',
 
   /** @override */
   isAsync: true,
+
+  /** @override */
+  setUp: function() {
+    OptionsBrowsertestBase.prototype.setUp.call(this);
+
+    // Enable when failure is resolved.
+    // AX_TEXT_01: http://crbug.com/570562
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'controlsWithoutLabel',
+        '#content-settings-exceptions-area > .content-area > *');
+
+    // Enable when failure is resolved.
+    // AX_TEXT_04: http://crbug.com/570563
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'linkWithUnclearPurpose',
+        '#content-settings-exceptions-area > .action-area > *');
+  },
 };
 
 // Adds and removes a location content setting exception.

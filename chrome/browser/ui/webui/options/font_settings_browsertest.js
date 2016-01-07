@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+GEN_INCLUDE(['options_browsertest_base.js']);
+
 /**
  * TestFixture for font settings WebUI testing.
  * @extends {testing.Test}
@@ -10,7 +12,7 @@
 function FontSettingsWebUITest() {}
 
 FontSettingsWebUITest.prototype = {
-  __proto__: testing.Test.prototype,
+  __proto__: OptionsBrowsertestBase.prototype,
 
   /**
    * Browse to the font settings page.
@@ -20,7 +22,23 @@ FontSettingsWebUITest.prototype = {
   /** @override */
   preLoad: function() {
     this.makeAndRegisterMockHandler(['openAdvancedFontSettingsOptions']);
-  }
+  },
+
+  /** @override */
+  setUp: function() {
+    OptionsBrowsertestBase.prototype.setUp.call(this);
+
+    var controlsWithoutLabelSelectors = [
+      '#standard-font-size',
+      '#minimum-font-size',
+    ];
+
+    // Enable when failure is resolved.
+    // AX_TEXT_01: http://crbug.com/570555
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'controlsWithoutLabel',
+        controlsWithoutLabelSelectors);
+  },
 };
 
 // Test opening font settings has correct location.

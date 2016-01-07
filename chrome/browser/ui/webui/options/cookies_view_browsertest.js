@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+GEN_INCLUDE(['options_browsertest_base.js']);
+
 /**
  * TestFixture for cookies view WebUI testing.
  * @extends {testing.Test}
@@ -10,12 +12,23 @@
 function CookiesViewWebUITest() {}
 
 CookiesViewWebUITest.prototype = {
-  __proto__: testing.Test.prototype,
+  __proto__: OptionsBrowsertestBase.prototype,
 
   /**
    * Browse to the cookies view.
    */
   browsePreload: 'chrome://settings-frame/cookies',
+
+  /** @override */
+  setUp: function() {
+    OptionsBrowsertestBase.prototype.setUp.call(this);
+
+    // Enable when failure is resolved.
+    // AX_TEXT_01: http://crbug.com/570560
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'controlsWithoutLabel',
+        '#cookies-view-page > .content-area.cookies-list-content-area > *');
+  },
 };
 
 // Test opening the cookies view has correct location.

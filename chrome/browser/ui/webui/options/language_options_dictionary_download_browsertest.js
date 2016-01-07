@@ -4,6 +4,7 @@
 
 GEN('#include "chrome/browser/ui/webui/options/' +
     'single_language_options_browsertest.h"');
+GEN_INCLUDE(['options_browsertest_base.js']);
 
 /**
  * TestFixture for testing messages of dictionary download progress in language
@@ -14,7 +15,7 @@ GEN('#include "chrome/browser/ui/webui/options/' +
 function LanguagesOptionsDictionaryDownloadWebUITest() {}
 
 LanguagesOptionsDictionaryDownloadWebUITest.prototype = {
-  __proto__: testing.Test.prototype,
+  __proto__: OptionsBrowsertestBase.prototype,
 
   /**
    * Browse to languages options.
@@ -33,6 +34,23 @@ LanguagesOptionsDictionaryDownloadWebUITest.prototype = {
         will(callFunction(function() {
           options.LanguageOptions.onDictionaryDownloadBegin('en-US');
         }));
+  },
+
+  /** @override */
+  setUp: function() {
+    OptionsBrowsertestBase.prototype.setUp.call(this);
+
+    // Enable when failure is resolved.
+    // AX_ARIA_10: http://crbug.com/570554
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'unsupportedAriaAttribute',
+        '#language-options-list');
+
+    // Enable when failure is resolved.
+    // AX_TEXT_04: http://crbug.com/570553
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'linkWithUnclearPurpose',
+        '#languagePage > .content-area > .language-options-header > A');
   },
 };
 
