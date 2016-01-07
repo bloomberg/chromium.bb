@@ -129,4 +129,10 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
       kMediaRecorderHtmlFile);
 }
 
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
+                       MediaRecorderIllegalRequestDataThrowsDOMError) {
+  MakeTypicalCall("testIllegalRequestDataThrowsDOMError();",
+    kMediaRecorderHtmlFile);
+}
+
 }  // namespace content

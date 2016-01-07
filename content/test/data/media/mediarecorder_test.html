@@ -383,7 +383,7 @@ function testPausePreventsDataavailableFromBeingFired() {
       });
 }
 
-// Tests that MediaRecorder's pause() throws an exception if 'state' is not
+// Tests that MediaRecorder's pause() throws an exception if |state| is not
 // 'recording'.
 function testIllegalPauseThrowsDOMError() {
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
@@ -396,7 +396,7 @@ function testIllegalPauseThrowsDOMError() {
       });
 }
 
-// Tests that MediaRecorder's stop() throws an exception if 'state' is not
+// Tests that MediaRecorder's stop() throws an exception if |state| is not
 // 'recording'.
 function testIllegalStopThrowsDOMError() {
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
@@ -409,7 +409,7 @@ function testIllegalStopThrowsDOMError() {
       });
 }
 
-// Tests that MediaRecorder's start() throws an exception if 'state' is
+// Tests that MediaRecorder's start() throws an exception if |state| is
 // 'recording'.
 function testIllegalStartInRecordingStateThrowsDOMError() {
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
@@ -422,7 +422,7 @@ function testIllegalStartInRecordingStateThrowsDOMError() {
       });
 }
 
-// Tests that MediaRecorder's start() throws an exception if 'state' is
+// Tests that MediaRecorder's start() throws an exception if |state| is
 // 'paused'.
 function testIllegalStartInPausedStateThrowsDOMError() {
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
@@ -467,6 +467,20 @@ function testTwoChannelAudio() {
       .then(function() {
         console.log('audioSize', audioSize);
         reportTestSuccess();
+      });
+}
+
+// Tests that MediaRecorder's requestData() throws an exception if |state| is
+// 'inactive'.
+function testIllegalRequestDataThrowsDOMError() {
+  navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
+      .then(function(stream) {
+        return createMediaRecorder(stream, DEFAULT_RECORDER_MIME_TYPE);
+      })
+      .then(function(recorder) {
+        assertThrows(function() {recorder.requestData()},
+            'Calling requestdata() in inactive state should throw a DOM ' +
+            'Exception');
       });
 }
 
