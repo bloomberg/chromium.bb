@@ -61,7 +61,6 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   mojo::ApplicationImpl* app_;
   mus::mojom::WindowManagerPtr window_manager_;
   scoped_ptr<ui::mojo::UIInit> ui_init_;
-  scoped_ptr<mus::WindowTreeConnection> window_tree_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerConnection);
 };
