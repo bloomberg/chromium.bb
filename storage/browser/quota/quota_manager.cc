@@ -1695,7 +1695,7 @@ void QuotaManager::DidInitialize(int64_t* temporary_quota_override,
   db_initialization_callbacks_.Run();
   GetTemporaryGlobalQuota(
       base::Bind(&QuotaManager::DidGetInitialTemporaryGlobalQuota,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr(), base::TimeTicks::Now()));
 }
 
 void QuotaManager::DidGetLRUOrigin(const GURL* origin,
@@ -1706,8 +1706,14 @@ void QuotaManager::DidGetLRUOrigin(const GURL* origin,
   lru_origin_callback_.Reset();
 }
 
-void QuotaManager::DidGetInitialTemporaryGlobalQuota(QuotaStatusCode status,
-                                                     int64_t quota_unused) {
+void QuotaManager::DidGetInitialTemporaryGlobalQuota(
+    base::TimeTicks start_ticks,
+    QuotaStatusCode status,
+    int64_t quota_unused) {
+  UMA_HISTOGRAM_LONG_TIMES(
+      "Quota.TimeToInitializeGlobalQuota",
+      base::TimeTicks::Now() - start_ticks);
+
   if (eviction_disabled_)
     return;
 

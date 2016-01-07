@@ -428,7 +428,8 @@ class STORAGE_EXPORT QuotaManager
                      bool success);
   void DidGetLRUOrigin(const GURL* origin,
                        bool success);
-  void DidGetInitialTemporaryGlobalQuota(QuotaStatusCode status,
+  void DidGetInitialTemporaryGlobalQuota(base::TimeTicks start_ticks,
+                                         QuotaStatusCode status,
                                          int64_t quota_unused);
   void DidInitializeTemporaryOriginsInfo(bool success);
   void DidGetAvailableSpace(int64_t space);

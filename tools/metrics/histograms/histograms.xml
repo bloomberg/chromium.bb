@@ -38577,6 +38577,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time spent to an eviction round.</summary>
 </histogram>
 
+<histogram name="Quota.TimeToInitializeGlobalQuota" units="milliseconds">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    Time spent initializing the global quota. Logged when the storage
+    partition's quota manager is initialized.
+  </summary>
+</histogram>
+
 <histogram name="Quota.TotalDiskSpace" units="MB">
   <owner>micaheln@chromium.org</owner>
   <summary>
