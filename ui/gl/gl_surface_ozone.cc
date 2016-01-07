@@ -262,12 +262,13 @@ gfx::SwapResult GLSurfaceOzoneSurfaceless::SwapBuffers() {
     EGLDisplay display = GetDisplay();
     WaitForFence(display, fence);
     eglDestroySyncKHR(display, fence);
-  } else if (ozone_surface_->IsUniversalDisplayLinkDevice()) {
-    glFinish();
   }
 
   unsubmitted_frames_.back()->ScheduleOverlayPlanes(widget_);
   unsubmitted_frames_.back()->overlays.clear();
+
+  if (ozone_surface_->IsUniversalDisplayLinkDevice())
+    glFinish();
 
   return ozone_surface_->OnSwapBuffers() ? gfx::SwapResult::SWAP_ACK
                                          : gfx::SwapResult::SWAP_FAILED;
@@ -347,9 +348,6 @@ void GLSurfaceOzoneSurfaceless::SwapBuffersAsync(
     return;  // Defer frame submission until fence signals.
   }
 
-  if (ozone_surface_->IsUniversalDisplayLinkDevice())
-    glFinish();
-
   frame->ready = true;
   SubmitFrame();
 }
@@ -382,6 +380,9 @@ void GLSurfaceOzoneSurfaceless::SubmitFrame() {
       frame->callback.Run(gfx::SwapResult::SWAP_FAILED);
       return;
     }
+
+    if (ozone_surface_->IsUniversalDisplayLinkDevice())
+      glFinish();
 
     ozone_surface_->OnSwapBuffersAsync(frame->callback);
   }
