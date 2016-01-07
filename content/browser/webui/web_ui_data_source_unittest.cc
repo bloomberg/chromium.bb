@@ -41,8 +41,8 @@ class TestClient : public TestContentClient {
       bytes = new base::RefCountedStaticMemory(
           kDummyDefaultResource, arraysize(kDummyDefaultResource));
     } else if (resource_id == kDummyResourceId) {
-      bytes = new base::RefCountedStaticMemory(
-          kDummyResource, arraysize(kDummyResource));
+      bytes = new base::RefCountedStaticMemory(kDummyResource,
+                                               arraysize(kDummyResource));
     }
     return bytes;
   }
@@ -68,7 +68,15 @@ class WebUIDataSourceTest : public testing::Test {
     return source_->GetMimeType(path);
   }
 
+  bool HandleRequest(const std::string& path,
+                     const WebUIDataSourceImpl::GotDataCallback&) {
+    request_path_ = path;
+    return true;
+  }
+
+ protected:
   scoped_refptr<base::RefCountedMemory> result_data_;
+  std::string request_path_;
 
  private:
   void SetUp() override {
@@ -135,6 +143,18 @@ TEST_F(WebUIDataSourceTest, NamedResourceWithQueryString) {
   StartDataRequest("foobar?query?string");
   std::string result(result_data_->front_as<char>(), result_data_->size());
   EXPECT_NE(result.find(kDummyResource), std::string::npos);
+}
+
+TEST_F(WebUIDataSourceTest, RequestFilterQueryString) {
+  request_path_ = std::string();
+  source()->SetRequestFilter(
+      base::Bind(&WebUIDataSourceTest::HandleRequest, base::Unretained(this)));
+  source()->SetDefaultResource(kDummyDefaultResourceId);
+  source()->AddResourcePath("foobar", kDummyResourceId);
+  StartDataRequest("foobar?query?string");
+  // Check that the query string is passed to the request filter (and not
+  // trimmed).
+  EXPECT_EQ("foobar?query?string", request_path_);
 }
 
 TEST_F(WebUIDataSourceTest, MimeType) {
