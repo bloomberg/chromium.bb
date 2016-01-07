@@ -74,8 +74,20 @@ class ChromeProxyHTTPSBypass(ChromeProxyValidation):
     self._metrics.AddResultsForHTTPSBypass(tab, results)
 
 
+class ChromeProxyYouTube(ChromeProxyValidation):
+  """Correctness measurement for youtube video playback."""
+
+  def __init__(self):
+    super(ChromeProxyYouTube, self).__init__(
+        restart_after_each_page=True,
+        metrics=metrics.ChromeProxyMetric())
+
+  def AddResults(self, tab, results):
+    self._metrics.AddResultsForYouTube(tab, results)
+
+
 class ChromeProxyHTML5Test(ChromeProxyValidation):
-  """Correctness measurement for bypass responses."""
+  """Correctness measurement for html5test page."""
 
   def __init__(self):
     super(ChromeProxyHTML5Test, self).__init__(

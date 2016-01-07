@@ -352,6 +352,11 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     tab.WaitForJavaScriptExpression(
         'document.getElementsByClassName("pointsPanel")', 15)
 
+  def AddResultsForYouTube(self, tab, results):
+    # Wait for the video to begin playing.
+    tab.WaitForJavaScriptExpression(
+        'window.playerState == YT.PlayerState.PLAYING', 30)
+
   def AddResultsForBypass(self, tab, results, url_pattern=""):
     bypass_count = 0
     skipped_count = 0
