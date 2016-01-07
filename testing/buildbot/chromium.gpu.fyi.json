@@ -2272,7 +2272,7 @@
         "args": [
           "webgl_conformance",
           "--show-stdout",
-          "--browser=debug",
+          "--browser=release",
           "-v",
           "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9\""
         ],
@@ -2295,7 +2295,7 @@
         "args": [
           "webgl_conformance",
           "--show-stdout",
-          "--browser=debug",
+          "--browser=release",
           "-v",
           "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc --use-angle=gl\""
         ],
