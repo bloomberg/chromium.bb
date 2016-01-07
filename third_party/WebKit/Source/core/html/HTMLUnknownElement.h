@@ -43,8 +43,7 @@ public:
     }
 
 private:
-    HTMLUnknownElement(const QualifiedName& tagName, Document& document)
-        : HTMLElement(tagName, document) { }
+    HTMLUnknownElement(const QualifiedName&, Document&);
 
     bool isHTMLUnknownElement() const override { return true; }
 };

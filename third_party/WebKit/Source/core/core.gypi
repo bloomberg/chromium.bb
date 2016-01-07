@@ -2884,6 +2884,7 @@
             'html/HTMLTrackElement.h',
             'html/HTMLUListElement.cpp',
             'html/HTMLUListElement.h',
+            'html/HTMLUnknownElement.cpp',
             'html/HTMLUnknownElement.h',
             'html/HTMLVideoElement.cpp',
             'html/HTMLVideoElement.h',
