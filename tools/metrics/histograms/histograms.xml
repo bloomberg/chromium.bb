@@ -11915,17 +11915,38 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.Database.Database.Restore"
+    enum="LevelDBDatabaseCorruptionRestoreValue">
+  <owner>cmumford@chromium.org</owner>
+  <summary>
+    The result of an attempt to recover from an attempt to open a database that
+    failed as a result of corruption.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.Database.Open" enum="LevelDBStatus">
   <owner>cmumford@chromium.org</owner>
   <summary>The result of an open attempt to an Extensions database.</summary>
 </histogram>
 
 <histogram name="Extensions.Database.Restore"
-    enum="LevelDBCorruptionRestoreValue">
+    enum="LevelDBDatabaseCorruptionRestoreValue">
   <owner>cmumford@chromium.org</owner>
+  <obsolete>
+    Shipped only in M48. Superceded by Extensions.Database.Database.Restore and
+    Extensions.Database.Value.Restore.
+  </obsolete>
   <summary>
     The result of an attempt to recover from an attempt to open a database that
     failed as a result of corruption.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Database.Value.Restore"
+    enum="LevelDBValueCorruptionDeleteValue">
+  <owner>cmumford@chromium.org</owner>
+  <summary>
+    The result of an attempt to delete a corrupted value from a database.
   </summary>
 </histogram>
 
@@ -68621,9 +68642,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="LevelDBCorruptionRestoreValue" type="int">
-  <int value="0" label="Delete Success"/>
-  <int value="1" label="Delete Failure"/>
-  <int value="2" label="Repair Success"/>
+  <int value="0" label="Database Delete Success"/>
+  <int value="1" label="Database Delete Failure"/>
+  <int value="2" label="Database Repair Success"/>
 </enum>
 
 <enum name="LevelDBCorruptionTypes" type="int">
@@ -68659,6 +68680,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="29" label="bad block type"/>
   <int value="30" label="bad magic number"/>
   <int value="31" label="file is too short"/>
+</enum>
+
+<enum name="LevelDBDatabaseCorruptionRestoreValue" type="int">
+  <int value="0" label="Delete Success"/>
+  <int value="1" label="Delete Failure"/>
+  <int value="2" label="Repair Success"/>
 </enum>
 
 <enum name="LevelDBErrorCount" type="int">
@@ -68704,6 +68731,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="Not Supported"/>
   <int value="4" label="Invalid Argument"/>
   <int value="5" label="IO Error"/>
+</enum>
+
+<enum name="LevelDBValueCorruptionDeleteValue" type="int">
+  <int value="0" label="Delete Success"/>
+  <int value="1" label="Delete Failure"/>
 </enum>
 
 <enum name="LibraryLoadFromApkStatus" type="int">

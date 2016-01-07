@@ -115,7 +115,8 @@ class LeveldbValueStore : public ValueStore,
   // Database is corrupt - restoration failed.
   bool db_unrecoverable_;
   base::HistogramBase* open_histogram_;
-  base::HistogramBase* restore_histogram_;
+  base::HistogramBase* db_restore_histogram_;
+  base::HistogramBase* value_restore_histogram_;
 
   DISALLOW_COPY_AND_ASSIGN(LeveldbValueStore);
 };

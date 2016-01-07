@@ -134,7 +134,7 @@ TEST_F(LeveldbValueStoreUnitTest, RestoreDoesMinimumNecessary) {
   ValueStore::ReadResult result = store()->Get();
   ASSERT_FALSE(result->status().ok());
   ASSERT_EQ(ValueStore::CORRUPTION, result->status().code);
-  ASSERT_EQ(ValueStore::RESTORE_REPAIR_SUCCESS,
+  ASSERT_EQ(ValueStore::VALUE_RESTORE_DELETE_SUCCESS,
             result->status().restore_status);
 
   // We should still have all valid pairs present in the database.
@@ -183,7 +183,7 @@ TEST_F(LeveldbValueStoreUnitTest, RestoreFullDatabase) {
 
   // We couldn't recover anything, but we should be in a sane state again.
   ValueStore::ReadResult result = store()->Get();
-  ASSERT_EQ(ValueStore::RESTORE_REPAIR_SUCCESS,
+  ASSERT_EQ(ValueStore::DB_RESTORE_REPAIR_SUCCESS,
             result->status().restore_status);
   EXPECT_TRUE(result->status().ok());
   EXPECT_EQ(0u, result->settings().size());

@@ -47,11 +47,15 @@ class ValueStore {
     // No restore attempted.
     RESTORE_NONE,
     // Corrupted backing store successfully deleted.
-    RESTORE_DELETE_SUCCESS,
+    DB_RESTORE_DELETE_SUCCESS,
     // Corrupted backing store cannot be deleted.
-    RESTORE_DELETE_FAILURE,
+    DB_RESTORE_DELETE_FAILURE,
     // Corrupted backing store successfully repaired.
-    RESTORE_REPAIR_SUCCESS,
+    DB_RESTORE_REPAIR_SUCCESS,
+    // Corrupted value successfully deleted.
+    VALUE_RESTORE_DELETE_SUCCESS,
+    // Corrupted value cannot be deleted.
+    VALUE_RESTORE_DELETE_FAILURE,
   };
 
   // The status (result) of an operation on a ValueStore.

@@ -36,11 +36,20 @@ const char kRestoredDuringOpen[] = "Database corruption repaired during open";
 // UMA values used when recovering from a corrupted leveldb.
 // Do not change/delete these values as you will break reporting for older
 // copies of Chrome. Only add new values to the end.
-enum LevelDBCorruptionRecoveryValue {
-  LEVELDB_RESTORE_DELETE_SUCCESS = 0,
-  LEVELDB_RESTORE_DELETE_FAILURE,
-  LEVELDB_RESTORE_REPAIR_SUCCESS,
-  LEVELDB_RESTORE_MAX
+enum LevelDBDatabaseCorruptionRecoveryValue {
+  LEVELDB_DB_RESTORE_DELETE_SUCCESS = 0,
+  LEVELDB_DB_RESTORE_DELETE_FAILURE,
+  LEVELDB_DB_RESTORE_REPAIR_SUCCESS,
+  LEVELDB_DB_RESTORE_MAX
+};
+
+// UMA values used when recovering from a corrupted leveldb.
+// Do not change/delete these values as you will break reporting for older
+// copies of Chrome. Only add new values to the end.
+enum LevelDBValueCorruptionRecoveryValue {
+  LEVELDB_VALUE_RESTORE_DELETE_SUCCESS,
+  LEVELDB_VALUE_RESTORE_DELETE_FAILURE,
+  LEVELDB_VALUE_RESTORE_MAX
 };
 
 // Scoped leveldb snapshot which releases the snapshot on destruction.
@@ -80,7 +89,8 @@ LeveldbValueStore::LeveldbValueStore(const std::string& uma_client_name,
     : db_path_(db_path),
       db_unrecoverable_(false),
       open_histogram_(nullptr),
-      restore_histogram_(nullptr) {
+      db_restore_histogram_(nullptr),
+      value_restore_histogram_(nullptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   open_options_.max_open_files = 0;  // Use minimum.
@@ -96,9 +106,14 @@ LeveldbValueStore::LeveldbValueStore(const std::string& uma_client_name,
       "Extensions.Database.Open." + uma_client_name, 1,
       leveldb_env::LEVELDB_STATUS_MAX, leveldb_env::LEVELDB_STATUS_MAX + 1,
       base::Histogram::kUmaTargetedHistogramFlag);
-  restore_histogram_ = base::LinearHistogram::FactoryGet(
-      "Extensions.Database.Restore." + uma_client_name, 1, LEVELDB_RESTORE_MAX,
-      LEVELDB_RESTORE_MAX + 1, base::Histogram::kUmaTargetedHistogramFlag);
+  db_restore_histogram_ = base::LinearHistogram::FactoryGet(
+      "Extensions.Database.Database.Restore." + uma_client_name, 1,
+      LEVELDB_DB_RESTORE_MAX, LEVELDB_DB_RESTORE_MAX + 1,
+      base::Histogram::kUmaTargetedHistogramFlag);
+  value_restore_histogram_ = base::LinearHistogram::FactoryGet(
+      "Extensions.Database.Value.Restore." + uma_client_name, 1,
+      LEVELDB_VALUE_RESTORE_MAX, LEVELDB_VALUE_RESTORE_MAX + 1,
+      base::Histogram::kUmaTargetedHistogramFlag);
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "LeveldbValueStore", base::ThreadTaskRunnerHandle::Get());
 }
@@ -196,10 +211,10 @@ ValueStore::ReadResult LeveldbValueStore::Get() {
     scoped_ptr<base::Value> value =
         json_reader.ReadToValue(it->value().ToString());
     if (!value) {
-      return MakeReadResult(Status(
-          CORRUPTION,
-          Delete(key).ok() ? RESTORE_REPAIR_SUCCESS : RESTORE_DELETE_FAILURE,
-          kInvalidJson));
+      return MakeReadResult(
+          Status(CORRUPTION, Delete(key).ok() ? VALUE_RESTORE_DELETE_SUCCESS
+                                              : VALUE_RESTORE_DELETE_FAILURE,
+                 kInvalidJson));
     }
     settings->SetWithoutPathExpansion(key, std::move(value));
   }
@@ -360,14 +375,20 @@ ValueStore::BackingStoreRestoreStatus LeveldbValueStore::LogRestoreStatus(
     case RESTORE_NONE:
       NOTREACHED();
       break;
-    case RESTORE_DELETE_SUCCESS:
-      restore_histogram_->Add(LEVELDB_RESTORE_DELETE_SUCCESS);
+    case DB_RESTORE_DELETE_SUCCESS:
+      db_restore_histogram_->Add(LEVELDB_DB_RESTORE_DELETE_SUCCESS);
       break;
-    case RESTORE_DELETE_FAILURE:
-      restore_histogram_->Add(LEVELDB_RESTORE_DELETE_FAILURE);
+    case DB_RESTORE_DELETE_FAILURE:
+      db_restore_histogram_->Add(LEVELDB_DB_RESTORE_DELETE_FAILURE);
       break;
-    case RESTORE_REPAIR_SUCCESS:
-      restore_histogram_->Add(LEVELDB_RESTORE_REPAIR_SUCCESS);
+    case DB_RESTORE_REPAIR_SUCCESS:
+      db_restore_histogram_->Add(LEVELDB_DB_RESTORE_REPAIR_SUCCESS);
+      break;
+    case VALUE_RESTORE_DELETE_SUCCESS:
+      value_restore_histogram_->Add(LEVELDB_VALUE_RESTORE_DELETE_SUCCESS);
+      break;
+    case VALUE_RESTORE_DELETE_FAILURE:
+      value_restore_histogram_->Add(LEVELDB_VALUE_RESTORE_DELETE_FAILURE);
       break;
   }
   return restore_status;
@@ -381,9 +402,9 @@ ValueStore::BackingStoreRestoreStatus LeveldbValueStore::FixCorruption(
     // Deleting involves writing to the log, so it's possible to have a
     // perfectly OK database but still have a delete fail.
     if (s.ok())
-      return LogRestoreStatus(RESTORE_REPAIR_SUCCESS);
+      return LogRestoreStatus(VALUE_RESTORE_DELETE_SUCCESS);
     else if (s.IsIOError())
-      return LogRestoreStatus(RESTORE_DELETE_FAILURE);
+      return LogRestoreStatus(VALUE_RESTORE_DELETE_FAILURE);
     // Any other kind of failure triggers a db repair.
   }
 
@@ -402,16 +423,16 @@ ValueStore::BackingStoreRestoreStatus LeveldbValueStore::FixCorruption(
 
   leveldb::DB* db = nullptr;
   if (s.ok()) {
-    restore_status = RESTORE_REPAIR_SUCCESS;
+    restore_status = DB_RESTORE_REPAIR_SUCCESS;
     s = leveldb::DB::Open(open_options_, db_path_.AsUTF8Unsafe(), &db);
   }
 
   if (!s.ok()) {
     if (DeleteDbFile()) {
-      restore_status = RESTORE_DELETE_SUCCESS;
+      restore_status = DB_RESTORE_DELETE_SUCCESS;
       s = leveldb::DB::Open(open_options_, db_path_.AsUTF8Unsafe(), &db);
     } else {
-      restore_status = RESTORE_DELETE_FAILURE;
+      restore_status = DB_RESTORE_DELETE_FAILURE;
     }
   }
 
@@ -423,14 +444,14 @@ ValueStore::BackingStoreRestoreStatus LeveldbValueStore::FixCorruption(
   if (s.ok() && key) {
     s = Delete(*key);
     if (s.ok()) {
-      restore_status = RESTORE_REPAIR_SUCCESS;
+      restore_status = VALUE_RESTORE_DELETE_SUCCESS;
     } else if (s.IsIOError()) {
-      restore_status = RESTORE_DELETE_FAILURE;
+      restore_status = VALUE_RESTORE_DELETE_FAILURE;
     } else {
       db_.reset(db);
       if (!DeleteDbFile())
         db_unrecoverable_ = true;
-      restore_status = RESTORE_DELETE_FAILURE;
+      restore_status = DB_RESTORE_DELETE_FAILURE;
     }
   }
 
@@ -448,7 +469,7 @@ ValueStore::Status LeveldbValueStore::EnsureDbIsOpen() {
 
   if (db_unrecoverable_) {
     return ValueStore::Status(ValueStore::CORRUPTION,
-                              ValueStore::RESTORE_DELETE_FAILURE,
+                              ValueStore::DB_RESTORE_DELETE_FAILURE,
                               "Database corrupted");
   }
 
@@ -461,7 +482,7 @@ ValueStore::Status LeveldbValueStore::EnsureDbIsOpen() {
     db_.reset(db);
   } else if (ldb_status.IsCorruption()) {
     status.restore_status = FixCorruption(nullptr);
-    if (status.restore_status != RESTORE_DELETE_FAILURE) {
+    if (status.restore_status != DB_RESTORE_DELETE_FAILURE) {
       status.code = OK;
       status.message = kRestoredDuringOpen;
     }
