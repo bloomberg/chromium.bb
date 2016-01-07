@@ -53,6 +53,7 @@
     'command_buffer/service/gl_context_virtual.h',
     'command_buffer/service/gl_state_restorer_impl.cc',
     'command_buffer/service/gl_state_restorer_impl.h',
+    'command_buffer/service/gl_utils.cc',
     'command_buffer/service/gl_utils.h',
     'command_buffer/service/gles2_cmd_clear_framebuffer.cc',
     'command_buffer/service/gles2_cmd_clear_framebuffer.h',

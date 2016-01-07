@@ -51,6 +51,7 @@ source_set("service_sources") {
     "gl_context_virtual.h",
     "gl_state_restorer_impl.cc",
     "gl_state_restorer_impl.h",
+    "gl_utils.cc",
     "gl_utils.h",
     "gles2_cmd_clear_framebuffer.cc",
     "gles2_cmd_clear_framebuffer.h",

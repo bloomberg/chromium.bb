@@ -13,6 +13,7 @@
 
 #include "base/bits.h"
 #include "base/lazy_instance.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -2262,6 +2263,13 @@ void TextureManager::DoTexImage(
     }
   }
   GLenum error = ERRORSTATE_PEEK_GL_ERROR(error_state, function_name);
+  if (args.command_type == DoTexImageArguments::kTexImage3D) {
+    UMA_HISTOGRAM_CUSTOM_ENUMERATION("GPU.Error.TexImage3D", error,
+        GetAllGLErrors());
+  } else {
+    UMA_HISTOGRAM_CUSTOM_ENUMERATION("GPU.Error.TexImage2D", error,
+        GetAllGLErrors());
+  }
   if (error == GL_NO_ERROR) {
     SetLevelInfo(
         texture_ref, args.target, args.level, args.internal_format, args.width,

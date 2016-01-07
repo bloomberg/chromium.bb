@@ -8,6 +8,8 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GL_UTILS_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GL_UTILS_H_
 
+#include <vector>
+
 #include "build/build_config.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -21,5 +23,13 @@
 #else  // GL_ERROR_DEBUGGING
 #define CHECK_GL_ERROR() void(0)
 #endif  // GL_ERROR_DEBUGGING
+
+namespace gpu {
+namespace gles2 {
+
+std::vector<int> GetAllGLErrors();
+
+} // gles2
+} // gpu
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GL_UTILS_H_
