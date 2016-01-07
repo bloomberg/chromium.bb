@@ -5,15 +5,20 @@
 #ifndef UI_OZONE_PLATFORM_DRM_HOST_DRM_CURSOR_H_
 #define UI_OZONE_PLATFORM_DRM_HOST_DRM_CURSOR_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/platform/drm/host/drm_cursor_core.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 
 namespace gfx {
@@ -23,10 +28,7 @@ class Rect;
 }
 
 namespace ui {
-
-class BitmapCursorOzone;
 class BitmapCursorFactoryOzone;
-class DrmGpuPlatformSupportHost;
 class DrmWindowHostManager;
 
 class DrmCursor : public CursorDelegateEvdev {
@@ -66,54 +68,41 @@ class DrmCursor : public CursorDelegateEvdev {
   bool OnMessageReceived(const IPC::Message& message);
 
  private:
-  // Set the location (clamps to cursor bounds).
-  void SetCursorLocationLocked(const gfx::PointF& location);
+  // An IPC-based implementation of the DrmCursorProxy that ships
+  // messages to the GPU process.
+  class CursorIPC : public DrmCursorProxy {
+   public:
+    explicit CursorIPC(base::Lock* lock);
+    ~CursorIPC();
 
-  // The location of the bitmap (the cursor location is the hotspot location).
-  gfx::Point GetBitmapLocationLocked();
+    bool IsConnectedLocked();
+    void SendLocked(IPC::Message* message);
 
-  // IPC-related functions.
-  bool IsConnectedLocked();
-  void SendCursorShowLocked();
-  void SendCursorHideLocked();
-  void SendCursorMoveLocked();
-  void SendLocked(IPC::Message* message);
-
-  DrmWindowHostManager* window_manager_;  // Not owned.
-
-  // Task runner for main thread.
-  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
-
-  struct CursorState {
-    CursorState();
-    ~CursorState();
-
-    // The current cursor bitmap (immutable).
-    scoped_refptr<BitmapCursorOzone> bitmap;
-
-    // The window under the cursor.
-    gfx::AcceleratedWidget window;
-
-    // The location of the cursor within the window.
-    gfx::PointF location;
-
-    // The bounds of the display under the cursor.
-    gfx::Rect display_bounds_in_screen;
-
-    // The bounds that the cursor is confined to in |window|.
-    gfx::Rect confined_bounds;
+    // DrmCursorProxy implementation.
+    void CursorSet(gfx::AcceleratedWidget window,
+                   const std::vector<SkBitmap>& bitmaps,
+                   gfx::Point point,
+                   int frame_delay_ms) override;
+    void Move(gfx::AcceleratedWidget window, gfx::Point point) override;
 
     int host_id;
 
     // Callback for IPC updates.
     base::Callback<void(IPC::Message*)> send_callback;
     scoped_refptr<base::SingleThreadTaskRunner> send_runner;
-
-    // The mutex synchronizing this object.
-    base::Lock lock;
+    base::Lock* lock;
   };
 
-  CursorState state_;
+  // The mutex synchronizing this object.
+  base::Lock lock_;
+
+  // Enforce our threading constraints.
+  base::ThreadChecker thread_checker_;
+
+  CursorIPC ipc_;
+  std::unique_ptr<DrmCursorCore> core_;
+
+  DISALLOW_COPY_AND_ASSIGN(DrmCursor);
 };
 
 }  // namespace ui
