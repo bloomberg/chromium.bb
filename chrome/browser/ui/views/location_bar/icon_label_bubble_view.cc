@@ -115,7 +115,7 @@ double IconLabelBubbleView::WidthMultiplier() const {
 int IconLabelBubbleView::GetImageAndPaddingWidth() const {
   const int image_width = image_->GetPreferredSize().width();
   return image_width
-             ? image_width - GetLayoutConstant(ICON_LABEL_VIEW_INTERNAL_PADDING)
+             ? image_width + GetLayoutConstant(ICON_LABEL_VIEW_INTERNAL_PADDING)
              : 0;
 }
 
