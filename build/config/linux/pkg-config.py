@@ -26,6 +26,15 @@ from optparse import OptionParser
 # When using a sysroot, you must also specify the architecture via
 # "-a <arch>" where arch is either "x86" or "x64".
 #
+# CrOS systemroots place pkgconfig files at <systemroot>/usr/share/pkgconfig
+# and one of <systemroot>/usr/lib/pkgconfig or <systemroot>/usr/lib64/pkgconfig
+# depending on whether the systemroot is for a 32 or 64 bit architecture. They
+# specify the 'lib' or 'lib64' of the pkgconfig path by defining the
+# 'system_libdir' variable in the args.gn file. pkg_config.gni communicates this
+# variable to this script with the "--system_libdir <system_libdir>" flag. If no
+# flag is provided, then pkgconfig files are assumed to come from
+# <systemroot>/usr/lib/pkgconfig.
+#
 # Additionally, you can specify the option --atleast-version. This will skip
 # the normal outputting of a dictionary and instead print true or false,
 # depending on the return value of pkg-config for the given package.
@@ -52,13 +61,8 @@ def SetConfigPath(options):
     print "You must specify an architecture via -a if using a sysroot."
     sys.exit(1)
 
-  # In the gyp world this is configurable via the 'system_libdir' variable,
-  # which doesn't seem to have an equivelent in gn yet.
-  # TOOD(sbc): Make this configurable like it is under gyp.
-  libpath = 'lib'
-
   # Add the sysroot path to the environment's PKG_CONFIG_PATH
-  config_path = sysroot + '/usr/' + libpath + '/pkgconfig'
+  config_path = sysroot + '/usr/' + options.system_libdir + '/pkgconfig'
   config_path += ':' + sysroot + '/usr/share/pkgconfig'
   if 'PKG_CONFIG_PATH' in os.environ:
     os.environ['PKG_CONFIG_PATH'] += ':' + config_path
@@ -110,6 +114,8 @@ parser.add_option('-p', action='store', dest='pkg_config', type='string',
 parser.add_option('-v', action='append', dest='strip_out', type='string')
 parser.add_option('-s', action='store', dest='sysroot', type='string')
 parser.add_option('-a', action='store', dest='arch', type='string')
+parser.add_option('--system_libdir', action='store', dest='system_libdir',
+                  type='string', default='lib')
 parser.add_option('--atleast-version', action='store',
                   dest='atleast_version', type='string')
 parser.add_option('--libdir', action='store_true', dest='libdir')

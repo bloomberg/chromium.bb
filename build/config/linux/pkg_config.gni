@@ -31,6 +31,17 @@ declare_args() {
   # Leaving it blank defaults to searching PATH for 'pkg-config' and relying on
   # the sysroot mechanism to find the right .pc files.
   pkg_config = ""
+
+  # CrOS systemroots place pkgconfig files at <systemroot>/usr/share/pkgconfig
+  # and one of <systemroot>/usr/lib/pkgconfig or <systemroot>/usr/lib64/pkgconfig
+  # depending on whether the systemroot is for a 32 or 64 bit architecture.
+  #
+  # When build under GYP, CrOS board builds specify the 'system_libdir' variable
+  # as part of the GYP_DEFINES provided by the CrOS emerge build or simple
+  # chrome build scheme. This variable permits controlling this for GN builds
+  # in similar fashion by setting the `system_libdir` variable in the build's
+  # args.gn file to 'lib' or 'lib64' as appropriate for the target architecture.
+  system_libdir = "lib"
 }
 
 pkg_config_script = "//build/config/linux/pkg-config.py"
@@ -44,11 +55,15 @@ if (sysroot != "") {
     sysroot,
     "-a",
     current_cpu,
+    "--system_libdir",
+    system_libdir,
   ]
 } else if (pkg_config != "") {
   pkg_config_args = [
     "-p",
     pkg_config,
+    "--system_libdir",
+    system_libdir,
   ]
 } else {
   pkg_config_args = []
