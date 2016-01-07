@@ -61,7 +61,11 @@ void LayerClipRecorder::collectRoundedRectClips(PaintLayer& paintLayer, const Pa
         if (layer->layoutObject()->hasOverflowClip() && layer->layoutObject()->style()->hasBorderRadius() && inContainingBlockChain(&paintLayer, layer)) {
             LayoutPoint delta(fragmentOffset);
             layer->convertToLayerCoords(localPaintingInfo.rootLayer, delta);
-            roundedRectClips.append(layer->layoutObject()->style()->getRoundedInnerBorderFor(LayoutRect(delta, LayoutSize(layer->size()))));
+
+            // The PaintLayer's size is pixel-snapped if it is a LayoutBox. We can't use a pre-snapped border rect for clipping, since getRoundedInnerBorderFor assumes
+            // it has not been snapped yet.
+            LayoutSize size(layer->layoutBox() ? toLayoutBox(layer->layoutObject())->size() : LayoutSize(layer->size()));
+            roundedRectClips.append(layer->layoutObject()->style()->getRoundedInnerBorderFor(LayoutRect(delta, size)));
         }
 
         if (layer == localPaintingInfo.rootLayer)
