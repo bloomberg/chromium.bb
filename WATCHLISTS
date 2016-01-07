@@ -29,6 +29,9 @@
       'filepath': 'chrome/browser/extensions/activity_log/' \
                   '|chrome/browser/extensions/api/activity_log_private/'
     },
+    'android_infobars': {
+      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/infobar/'
+    },
     'android_infra': {
       'filepath': 'build/android/' \
                   '|testing/android/' \
@@ -1226,6 +1229,7 @@
                       'plundblad+watch@chromium.org',
                       'yuzo+watch@chromium.org'],
     'activity_log': ['felt@chromium.org'],
+    'android_infobars': ['dfalcantara+watch@chromium.org'],
     'android_infra': ['yfriedman+watch@chromium.org',
                       'klundberg+watch@chromium.org',
                       'jbudorick+watch@chromium.org',
