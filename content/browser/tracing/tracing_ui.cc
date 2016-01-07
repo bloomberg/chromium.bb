@@ -49,7 +49,7 @@ void OnGotCategories(const WebUIDataSource::GotDataCallback& callback,
     category_list.AppendString(*it);
   }
 
-  base::RefCountedString* res = new base::RefCountedString();
+  scoped_refptr<base::RefCountedString> res(new base::RefCountedString());
   base::JSONWriter::Write(category_list, &res->data());
   callback.Run(res);
 }
@@ -119,8 +119,8 @@ bool BeginRecording(const std::string& data64,
 }
 
 void OnRecordingEnabledAck(const WebUIDataSource::GotDataCallback& callback) {
-  base::RefCountedString* res = new base::RefCountedString();
-  callback.Run(res);
+  callback.Run(
+      scoped_refptr<base::RefCountedMemory>(new base::RefCountedString()));
 }
 
 void OnTraceBufferUsageResult(const WebUIDataSource::GotDataCallback& callback,

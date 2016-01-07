@@ -52,7 +52,7 @@ class TestClient : public TestContentClient {
 
 class WebUIDataSourceTest : public testing::Test {
  public:
-  WebUIDataSourceTest() : result_data_(NULL) {}
+  WebUIDataSourceTest() {}
   ~WebUIDataSourceTest() override {}
   WebUIDataSourceImpl* source() { return source_.get(); }
 
@@ -89,7 +89,7 @@ class WebUIDataSourceTest : public testing::Test {
   }
 
   // Store response for later comparisons.
-  void SendResult(base::RefCountedMemory* data) {
+  void SendResult(scoped_refptr<base::RefCountedMemory> data) {
     result_data_ = data;
   }
 

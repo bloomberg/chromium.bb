@@ -161,7 +161,7 @@ void WebUIIOSDataSourceImpl::SendFromResourceBundle(
     int idr) {
   scoped_refptr<base::RefCountedStaticMemory> response(
       GetWebClient()->GetDataResourceBytes(idr));
-  callback.Run(response.get());
+  callback.Run(response);
 }
 
 }  // namespace web

@@ -62,8 +62,9 @@ RefCountedString::RefCountedString() {}
 RefCountedString::~RefCountedString() {}
 
 // static
-RefCountedString* RefCountedString::TakeString(std::string* to_destroy) {
-  RefCountedString* self = new RefCountedString;
+scoped_refptr<RefCountedString> RefCountedString::TakeString(
+    std::string* to_destroy) {
+  scoped_refptr<RefCountedString> self(new RefCountedString);
   to_destroy->swap(self->data_);
   return self;
 }

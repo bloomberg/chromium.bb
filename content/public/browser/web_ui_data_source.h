@@ -59,7 +59,8 @@ class WebUIDataSource {
   // Used as a parameter to GotDataCallback. The caller has to run this callback
   // with the result for the path that they filtered, passing ownership of the
   // memory.
-  typedef base::Callback<void(base::RefCountedMemory*)> GotDataCallback;
+  typedef base::Callback<void(scoped_refptr<base::RefCountedMemory>)>
+      GotDataCallback;
 
   // Used by SetRequestFilter. The string parameter is the path of the request.
   // If the callee doesn't want to handle the data, false is returned. Otherwise

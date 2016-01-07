@@ -142,7 +142,7 @@ class IframeSourceTest : public testing::Test {
 
   void TearDown() override { source_.reset(); }
 
-  void SaveResponse(base::RefCountedMemory* data) {
+  void SaveResponse(scoped_refptr<base::RefCountedMemory> data) {
     response_ = data;
   }
 

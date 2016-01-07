@@ -46,7 +46,7 @@ class WebUISourcesTest : public testing::Test {
     profile_.reset();
   }
 
-  void SendResponse(base::RefCountedMemory* data) {
+  void SendResponse(scoped_refptr<base::RefCountedMemory> data) {
     result_data_size_ = data ? data->size() : 0;
   }
 

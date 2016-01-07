@@ -38,8 +38,8 @@ void ArticleAttachmentsData::CreateSyncAttachments(
   CHECK(attachments_key);
   std::string serialized_article(distilled_article_.SerializeAsString());
   syncer::Attachment attachment(
-      syncer::Attachment::Create(make_scoped_refptr(
-          base::RefCountedString::TakeString(&serialized_article))));
+      syncer::Attachment::Create(
+          base::RefCountedString::TakeString(&serialized_article)));
   *attachments_key->mutable_distilled_article() =
       attachment.GetId().GetProto();
   attachment_list->push_back(attachment);

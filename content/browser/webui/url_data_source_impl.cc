@@ -25,9 +25,7 @@ URLDataSourceImpl::~URLDataSourceImpl() {
 
 void URLDataSourceImpl::SendResponse(
     int request_id,
-    base::RefCountedMemory* bytes) {
-  // Take a ref-pointer on entry so byte->Release() will always get called.
-  scoped_refptr<base::RefCountedMemory> bytes_ptr(bytes);
+    scoped_refptr<base::RefCountedMemory> bytes) {
   if (URLDataManager::IsScheduledForDeletion(this)) {
     // We're scheduled for deletion. Servicing the request would result in
     // this->AddRef being invoked, even though the ref count is 0 and 'this' is
@@ -42,10 +40,9 @@ void URLDataSourceImpl::SendResponse(
     // when the object is deleted.
     return;
   }
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&URLDataSourceImpl::SendResponseOnIOThread, this, request_id,
-                 bytes_ptr));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&URLDataSourceImpl::SendResponseOnIOThread,
+                                     this, request_id, std::move(bytes)));
 }
 
 void URLDataSourceImpl::SendResponseOnIOThread(

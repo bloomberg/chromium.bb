@@ -37,9 +37,7 @@ void CallbackWithLoadedResource(
   if (!origin.empty())
     base::ReplaceFirstSubstringAfterOffset(&output, 0, "{{ORIGIN}}", origin);
 
-  scoped_refptr<base::RefCountedString> response(
-      base::RefCountedString::TakeString(&output));
-  callback.Run(response.get());
+  callback.Run(base::RefCountedString::TakeString(&output));
 }
 
 // Read a file to a string and return.
@@ -58,7 +56,7 @@ namespace local_ntp {
 void FlattenLocalInclude(
     const content::URLDataSource::GotDataCallback& callback,
     std::string topLevelResource,
-    base::RefCountedMemory* inlineResource);
+    scoped_refptr<base::RefCountedMemory> inlineResource);
 
 // Helper method invoked by both CheckLocalIncludes and FlattenLocalInclude.
 // Checks for any <include> directives; if any are found, loads the associated
@@ -81,9 +79,8 @@ void CheckLocalIncludesHelper(
 
 // Wrapper around the above helper function for use as a callback. Processes
 // local files to inline any files indicated by an <include> directive.
-void CheckLocalIncludes(
-    const content::URLDataSource::GotDataCallback& callback,
-    base::RefCountedMemory* resource) {
+void CheckLocalIncludes(const content::URLDataSource::GotDataCallback& callback,
+                        scoped_refptr<base::RefCountedMemory> resource) {
   std::string resourceAsStr(resource->front_as<char>(), resource->size());
   CheckLocalIncludesHelper(callback, resourceAsStr);
 }
@@ -95,7 +92,7 @@ void CheckLocalIncludes(
 void FlattenLocalInclude(
     const content::URLDataSource::GotDataCallback& callback,
     std::string topLevelResource,
-    base::RefCountedMemory* inlineResource) {
+    scoped_refptr<base::RefCountedMemory> inlineResource) {
   std::string inlineAsStr(inlineResource->front_as<char>(),
                           inlineResource->size());
   re2::RE2::Replace(&topLevelResource, kInlineResourceRegex, inlineAsStr);

@@ -107,7 +107,7 @@ class BASE_EXPORT RefCountedString : public RefCountedMemory {
   // Constructs a RefCountedString object by performing a swap. (To non
   // destructively build a RefCountedString, use the default constructor and
   // copy into object->data()).
-  static RefCountedString* TakeString(std::string* to_destroy);
+  static scoped_refptr<RefCountedString> TakeString(std::string* to_destroy);
 
   // Overridden from RefCountedMemory:
   const unsigned char* front() const override;

@@ -5,6 +5,7 @@
 #include "chrome/browser/search/most_visited_iframe_source.h"
 
 #include "base/command_line.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -58,7 +59,7 @@ void MostVisitedIframeSource::StartDataRequest(
     if (path == kSingleJSPath) {
       std::string origin;
       if (!GetOrigin(render_process_id, render_frame_id, &origin)) {
-        callback.Run(NULL);
+        callback.Run(nullptr);
         return;
       }
       local_ntp::SendLocalFileResourceWithOrigin(rel_path, origin, callback);

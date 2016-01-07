@@ -57,7 +57,8 @@ class URLDataSourceIOSImpl
   // Report that a request has resulted in the data |bytes|.
   // If the request can't be satisfied, pass NULL for |bytes| to indicate
   // the request is over.
-  virtual void SendResponse(int request_id, base::RefCountedMemory* bytes);
+  virtual void SendResponse(int request_id,
+                            scoped_refptr<base::RefCountedMemory> bytes);
 
   const std::string& source_name() const { return source_name_; }
   URLDataSourceIOS* source() const { return source_.get(); }

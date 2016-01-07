@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 
 namespace base {
 class MessageLoop;
@@ -44,7 +45,8 @@ class URLDataSourceIOS {
 
   // Used by StartDataRequest so that the child class can return the data when
   // it's available.
-  typedef base::Callback<void(base::RefCountedMemory*)> GotDataCallback;
+  typedef base::Callback<void(scoped_refptr<base::RefCountedMemory>)>
+      GotDataCallback;
 
   // Called by URLDataSourceIOS to request data at |path|. The string parameter
   // is the path of the request. The child class should run |callback| when the
