@@ -1062,7 +1062,7 @@ void FrameView::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidation
 
     lifecycle().advanceTo(DocumentLifecycle::InPaintInvalidation);
 
-    ASSERT(layoutView());
+    RELEASE_ASSERT(layoutView());
     LayoutView& rootForPaintInvalidation = *layoutView();
     ASSERT(!rootForPaintInvalidation.needsLayout());
 
@@ -2592,7 +2592,7 @@ void FrameView::updateStyleAndLayoutIfNeededRecursive()
 
 void FrameView::invalidateTreeIfNeededRecursive()
 {
-    ASSERT(layoutView());
+    RELEASE_ASSERT(layoutView());
 
     // We need to stop recursing here since a child frame view might not be throttled
     // even though we are (e.g., it didn't compute its visibility yet).
@@ -2612,8 +2612,15 @@ void FrameView::invalidateTreeIfNeededRecursive()
     // We need to call invalidateTreeIfNeededRecursive() for such frames to finish required
     // paint invalidation and advance their life cycle state.
     for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
-        if (child->isLocalFrame())
-            toLocalFrame(child)->view()->invalidateTreeIfNeededRecursive();
+        if (child->isLocalFrame()) {
+            FrameView& childFrameView = *toLocalFrame(child)->view();
+            // The children frames can be in any state, including stopping.
+            // Thus we have to check that it makes sense to do paint
+            // invalidation onto them here.
+            if (!childFrameView.layoutView())
+                continue;
+            childFrameView.invalidateTreeIfNeededRecursive();
+        }
     }
 
     // Process objects needing paint invalidation on the next frame. See the definition of PaintInvalidationDelayedFull for more details.
