@@ -169,7 +169,7 @@ DoublePoint RootFrameViewport::scrollPositionDouble() const
 
 IntPoint RootFrameViewport::minimumScrollPosition() const
 {
-    return IntPoint(layoutViewport().minimumScrollPosition() - visualViewport().minimumScrollPosition());
+    return IntPoint(layoutViewport().minimumScrollPosition() + visualViewport().minimumScrollPosition());
 }
 
 IntPoint RootFrameViewport::maximumScrollPosition() const
