@@ -30,6 +30,62 @@
 #import "HTTPMultipartUpload.h"
 #import "GTMDefines.h"
 
+#include <Availability.h>
+#include <AvailabilityMacros.h>
+
+// As -[NSString stringByAddingPercentEscapesUsingEncoding:] has been
+// deprecated with iOS 9.0 / OS X 10.11 SDKs, this function re-implements it
+// using -[NSString stringByAddingPercentEncodingWithAllowedCharacters:] when
+// using those SDKs.
+static NSString *PercentEncodeNSString(NSString *key) {
+#if (defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && defined(__IPHONE_9_0) &&     \
+     __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_9_0) ||                      \
+    (defined(MAC_OS_X_VERSION_MIN_REQUIRED) &&                                 \
+     defined(MAC_OS_X_VERSION_10_11) &&                                        \
+     MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_11)
+  return [key stringByAddingPercentEncodingWithAllowedCharacters:
+                  [NSCharacterSet alphanumericCharacterSet]];
+#else
+  return [key stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+#endif
+}
+
+// As -[NSURLConnection sendSynchronousRequest:returningResponse:error:] has
+// been deprecated with iOS 9.0 / OS X 10.11 SDKs, this function re-implements
+// it using -[NSURLSession dataTaskWithRequest:completionHandler:] when using
+// those SDKs.
+static NSData *SendSynchronousNSURLRequest(NSURLRequest *req,
+                                           NSURLResponse **response,
+                                           NSError **error) {
+#if (defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && defined(__IPHONE_9_0) &&     \
+     __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_9_0) ||                      \
+    (defined(MAC_OS_X_VERSION_MIN_REQUIRED) &&                                 \
+     defined(MAC_OS_X_VERSION_10_11) &&                                        \
+     MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_11)
+  __block NSData* result = nil;
+     dispatch_semaphore_t wait_semaphone = dispatch_semaphore_create(0);
+     [[[NSURLSession sharedSession]
+         dataTaskWithRequest:req
+           completionHandler:^(NSData *data, NSURLResponse *resp,
+                               NSError *err) {
+             if (error)
+               *error = err;
+             if (response)
+               *response = resp;
+             if (err == nil)
+               result = data;
+             dispatch_semaphore_signal(wait_semaphone);
+           }] resume];
+     dispatch_semaphore_wait(wait_semaphone, DISPATCH_TIME_FOREVER);
+     dispatch_release(wait_semaphone);
+     return result;
+#else
+  return [NSURLConnection sendSynchronousRequest:req
+                               returningResponse:response
+                                           error:error];
+#endif
+}
+
 @interface HTTPMultipartUpload(PrivateMethods)
 - (NSString *)multipartBoundary;
 // Each of the following methods will append the starting multipart boundary,
@@ -52,8 +108,7 @@
 
 //=============================================================================
 - (NSData *)formDataForKey:(NSString *)key value:(NSString *)value {
-  NSString *escaped =
-    [key stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+  NSString *escaped = PercentEncodeNSString(key);
   NSString *fmt =
     @"--%@\r\nContent-Disposition: form-data; name=\"%@\"\r\n\r\n%@\r\n";
   NSString *form = [NSString stringWithFormat:fmt, boundary_, escaped, value];
@@ -64,8 +119,7 @@
 //=============================================================================
 - (NSData *)formDataForFileContents:(NSData *)contents name:(NSString *)name {
   NSMutableData *data = [NSMutableData data];
-  NSString *escaped =
-    [name stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+  NSString *escaped = PercentEncodeNSString(name);
   NSString *fmt = @"--%@\r\nContent-Disposition: form-data; name=\"%@\"; "
     "filename=\"minidump.dmp\"\r\nContent-Type: application/octet-stream\r\n\r\n";
   NSString *pre = [NSString stringWithFormat:fmt, boundary_, escaped];
@@ -196,9 +250,7 @@
     [[req HTTPBody] writeToURL:[req URL] options:0 error:error];
   } else {
     NSURLResponse *response = nil;
-    data = [NSURLConnection sendSynchronousRequest:req
-                                 returningResponse:&response
-                                             error:error];
+    data = SendSynchronousNSURLRequest(req, &response, error);
     response_ = (NSHTTPURLResponse *)[response retain];
   }
   [req release];
