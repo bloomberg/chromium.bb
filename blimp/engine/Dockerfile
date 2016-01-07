@@ -2,12 +2,10 @@ FROM ubuntu:trusty
 
 # Run the command below to update the lib list.
 # ldd ./blimp_engine_app | grep usr/lib | awk '{print $3}' | xargs -n1 \
-#   dpkg-query -S | awk -F: '{print $1}'
+#   dpkg-query -S | awk -F: '{print $1}' | sort | uniq
 RUN apt-get update && \
-  apt-get install -yq libnss3 libnss3 libnss3 libnspr4 libnspr4 libnspr4 \
-  libfreetype6 libfontconfig1 libdrm2 libasound2 libcups2 libgssapi-krb5-2 \
-  libkrb5-3 libk5crypto3 libstdc++6 libgnutls26 libavahi-common3 \
-  libavahi-client3 libkrb5support0 libtasn1-6 libp11-kit0 libffi6
+  apt-get install -yq libdrm2 libfontconfig1 libfreetype6 libgraphite2-3 \
+  libharfbuzz0b libnspr4 libnss3 libstdc++6
 
 RUN mkdir /engine
 
