@@ -35,6 +35,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
+#include <utility>
 
 namespace blink {
 class MediaQueryExp;
@@ -48,13 +49,13 @@ public:
         Only, Not, None
     };
 
+    static PassOwnPtrWillBeRawPtr<MediaQuery> create(Restrictor, String mediaType, ExpressionHeapVector);
     static PassOwnPtrWillBeRawPtr<MediaQuery> createNotAll();
 
-    MediaQuery(Restrictor, const String& mediaType, PassOwnPtrWillBeRawPtr<ExpressionHeapVector> exprs);
     ~MediaQuery();
 
     Restrictor restrictor() const { return m_restrictor; }
-    const ExpressionHeapVector& expressions() const { return *m_expressions; }
+    const ExpressionHeapVector& expressions() const { return m_expressions; }
     const String& mediaType() const { return m_mediaType; }
     bool operator==(const MediaQuery& other) const;
     String cssText() const;
@@ -64,11 +65,14 @@ public:
     DECLARE_TRACE();
 
 private:
+    MediaQuery(Restrictor, String mediaType, ExpressionHeapVector);
     MediaQuery(const MediaQuery&);
+
+    MediaQuery& operator=(const MediaQuery&) = delete;
 
     Restrictor m_restrictor;
     String m_mediaType;
-    OwnPtrWillBeMember<ExpressionHeapVector> m_expressions;
+    ExpressionHeapVector m_expressions;
     String m_serializationCache;
 
     String serialize() const;

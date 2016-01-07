@@ -234,7 +234,6 @@ PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseImpl(CSSParserToken
 MediaQueryData::MediaQueryData()
     : m_restrictor(MediaQuery::None)
     , m_mediaType(MediaTypeNames::all)
-    , m_expressions(adoptPtrWillBeNoop(new ExpressionHeapVector))
     , m_mediaTypeSet(false)
 {
 }
@@ -246,12 +245,12 @@ void MediaQueryData::clear()
     m_mediaTypeSet = false;
     m_mediaFeature = String();
     m_valueList.clear();
-    m_expressions = adoptPtrWillBeNoop(new ExpressionHeapVector);
+    m_expressions.clear();
 }
 
 PassOwnPtrWillBeRawPtr<MediaQuery> MediaQueryData::takeMediaQuery()
 {
-    OwnPtrWillBeRawPtr<MediaQuery> mediaQuery = adoptPtrWillBeNoop(new MediaQuery(m_restrictor, m_mediaType, m_expressions.release()));
+    OwnPtrWillBeRawPtr<MediaQuery> mediaQuery = MediaQuery::create(m_restrictor, std::move(m_mediaType), std::move(m_expressions));
     clear();
     return mediaQuery.release();
 }
@@ -260,7 +259,7 @@ bool MediaQueryData::addExpression()
 {
     OwnPtrWillBeRawPtr<MediaQueryExp> expression = MediaQueryExp::createIfValid(m_mediaFeature, m_valueList);
     bool isValid = !!expression;
-    m_expressions->append(expression.release());
+    m_expressions.append(expression.release());
     m_valueList.clear();
     return isValid;
 }

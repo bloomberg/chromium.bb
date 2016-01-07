@@ -51,7 +51,7 @@ String MediaQuery::serialize() const
         break;
     }
 
-    if (m_expressions->isEmpty()) {
+    if (m_expressions.isEmpty()) {
         result.append(m_mediaType);
         return result.toString();
     }
@@ -61,10 +61,10 @@ String MediaQuery::serialize() const
         result.appendLiteral(" and ");
     }
 
-    result.append(m_expressions->at(0)->serialize());
-    for (size_t i = 1; i < m_expressions->size(); ++i) {
+    result.append(m_expressions.at(0)->serialize());
+    for (size_t i = 1; i < m_expressions.size(); ++i) {
         result.appendLiteral(" and ");
-        result.append(m_expressions->at(i)->serialize());
+        result.append(m_expressions.at(i)->serialize());
     }
     return result.toString();
 }
@@ -76,28 +76,28 @@ static bool expressionCompare(const OwnPtrWillBeMember<MediaQueryExp>& a, const 
 
 PassOwnPtrWillBeRawPtr<MediaQuery> MediaQuery::createNotAll()
 {
-    return adoptPtrWillBeNoop(new MediaQuery(MediaQuery::Not, MediaTypeNames::all, nullptr));
+    return adoptPtrWillBeNoop(new MediaQuery(MediaQuery::Not, MediaTypeNames::all, ExpressionHeapVector()));
 }
 
-MediaQuery::MediaQuery(Restrictor r, const String& mediaType, PassOwnPtrWillBeRawPtr<ExpressionHeapVector> expressions)
+PassOwnPtrWillBeRawPtr<MediaQuery> MediaQuery::create(Restrictor restrictor, String mediaType, ExpressionHeapVector expressions)
+{
+    return adoptPtrWillBeNoop(new MediaQuery(restrictor, std::move(mediaType), std::move(expressions)));
+}
+
+MediaQuery::MediaQuery(Restrictor r, String mediaType, ExpressionHeapVector expressions)
     : m_restrictor(r)
     , m_mediaType(attemptStaticStringCreation(mediaType.lower()))
-    , m_expressions(expressions)
+    , m_expressions(std::move(expressions))
 {
-    if (!m_expressions) {
-        m_expressions = adoptPtrWillBeNoop(new ExpressionHeapVector);
-        return;
-    }
-
-    nonCopyingSort(m_expressions->begin(), m_expressions->end(), expressionCompare);
+    nonCopyingSort(m_expressions.begin(), m_expressions.end(), expressionCompare);
 
     // Remove all duplicated expressions.
     MediaQueryExp* key = 0;
-    for (int i = m_expressions->size() - 1; i >= 0; --i) {
-        MediaQueryExp* exp = m_expressions->at(i).get();
+    for (int i = m_expressions.size() - 1; i >= 0; --i) {
+        MediaQueryExp* exp = m_expressions.at(i).get();
 
         if (key && *exp == *key)
-            m_expressions->remove(i);
+            m_expressions.remove(i);
         else
             key = exp;
     }
@@ -106,11 +106,11 @@ MediaQuery::MediaQuery(Restrictor r, const String& mediaType, PassOwnPtrWillBeRa
 MediaQuery::MediaQuery(const MediaQuery& o)
     : m_restrictor(o.m_restrictor)
     , m_mediaType(o.m_mediaType)
-    , m_expressions(adoptPtrWillBeNoop(new ExpressionHeapVector(o.m_expressions->size())))
     , m_serializationCache(o.m_serializationCache)
 {
-    for (unsigned i = 0; i < m_expressions->size(); ++i)
-        (*m_expressions)[i] = o.m_expressions->at(i)->copy();
+    m_expressions.reserveInitialCapacity(o.m_expressions.size());
+    for (unsigned i = 0; i < o.m_expressions.size(); ++i)
+        m_expressions.append(o.m_expressions[i]->copy());
 }
 
 MediaQuery::~MediaQuery()

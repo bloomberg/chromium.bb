@@ -20,10 +20,11 @@ class MediaQuerySet;
 
 class MediaQueryData {
     STACK_ALLOCATED();
+    WTF_MAKE_NONCOPYABLE(MediaQueryData);
 private:
     MediaQuery::Restrictor m_restrictor;
     String m_mediaType;
-    OwnPtrWillBeMember<ExpressionHeapVector> m_expressions;
+    ExpressionHeapVector m_expressions;
     String m_mediaFeature;
     Vector<CSSParserToken, 4> m_valueList;
     bool m_mediaTypeSet;
@@ -38,7 +39,7 @@ public:
 
     inline bool currentMediaQueryChanged() const
     {
-        return (m_restrictor != MediaQuery::None || m_mediaTypeSet || m_expressions->size() > 0);
+        return (m_restrictor != MediaQuery::None || m_mediaTypeSet || m_expressions.size() > 0);
     }
     inline MediaQuery::Restrictor restrictor() { return m_restrictor; }
 
