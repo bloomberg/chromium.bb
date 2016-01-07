@@ -4,10 +4,12 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
-import android.test.suitebuilder.annotation.MediumTest;
+import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.DeletePageCallback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
@@ -27,6 +29,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 /** Unit tests for {@link OfflinePageBridge}. */
+@CommandLineFlags.Add({ChromeSwitches.ENABLE_OFFLINE_PAGES})
 public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String TEST_PAGE =
             TestHttpServerClient.getUrl("chrome/test/data/android/about.html");
@@ -69,13 +72,13 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
         startMainActivityOnBlankPage();
     }
 
-    @MediumTest
+    @SmallTest
     public void testLoadOfflinePagesWhenEmpty() throws Exception {
         List<OfflinePageItem> offlinePages = getAllPages();
         assertEquals("Offline pages count incorrect.", 0, offlinePages.size());
     }
 
-    @MediumTest
+    @SmallTest
     public void testAddOfflinePageAndLoad() throws Exception {
         loadUrl(TEST_PAGE);
         savePage(SavePageResult.SUCCESS, TEST_PAGE);
@@ -105,7 +108,7 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
         assertTrue("Offline page item size is incorrect: " + size, 600 < size && size < 800);
     }
 
-    @MediumTest
+    @SmallTest
     public void testMarkPageAccessed() throws Exception {
         loadUrl(TEST_PAGE);
         savePage(SavePageResult.SUCCESS, TEST_PAGE);
@@ -116,7 +119,7 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
         markPageAccessed(BOOKMARK_ID, 1);
     }
 
-    @MediumTest
+    @SmallTest
     public void testGetPageByBookmarkId() throws Exception {
         loadUrl(TEST_PAGE);
         savePage(SavePageResult.SUCCESS, TEST_PAGE);
@@ -135,7 +138,7 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
                 mOfflinePageBridge.getPageByBookmarkId(new BookmarkId(-42, BookmarkType.NORMAL)));
     }
 
-    @MediumTest
+    @SmallTest
     public void testDeleteOfflinePage() throws Exception {
         deletePage(BOOKMARK_ID, DeletePageResult.NOT_FOUND);
         loadUrl(TEST_PAGE);
@@ -145,6 +148,27 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
         deletePage(BOOKMARK_ID, DeletePageResult.SUCCESS);
         assertNull("Offline page should be gone, but it is available.",
                 mOfflinePageBridge.getPageByBookmarkId(BOOKMARK_ID));
+    }
+
+    @SmallTest
+    public void testGetOfflineUrlForOnlineUrl() throws Exception {
+        loadUrl(TEST_PAGE);
+        savePage(SavePageResult.SUCCESS, TEST_PAGE);
+        OfflinePageItem offlinePage = mOfflinePageBridge.getPageByBookmarkId(BOOKMARK_ID);
+        assertEquals("We should get the same offline URL, when querying using online URL",
+                offlinePage.getOfflineUrl(),
+                mOfflinePageBridge.getOfflineUrlForOnlineUrl(offlinePage.getUrl()));
+    }
+
+    @SmallTest
+    public void testIsOfflinePageUrl() throws Exception {
+        loadUrl(TEST_PAGE);
+        savePage(SavePageResult.SUCCESS, TEST_PAGE);
+        OfflinePageItem offlinePage = mOfflinePageBridge.getPageByBookmarkId(BOOKMARK_ID);
+        assertTrue("Offline URL of an offline page should clearly be an offline page URL",
+                mOfflinePageBridge.isOfflinePageUrl(offlinePage.getOfflineUrl()));
+        assertFalse("Online URL of an offline page should not be an offline page URL",
+                mOfflinePageBridge.isOfflinePageUrl(offlinePage.getUrl()));
     }
 
     private void savePage(final int expectedResult, final String expectedUrl)

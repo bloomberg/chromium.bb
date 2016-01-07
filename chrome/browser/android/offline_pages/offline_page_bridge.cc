@@ -10,6 +10,7 @@
 #include "base/android/jni_string.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
+#include "chrome/browser/android/offline_pages/offline_page_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "components/offline_pages/offline_page_feature.h"
@@ -82,6 +83,7 @@ OfflinePageBridge::OfflinePageBridge(JNIEnv* env,
                                      jobject obj,
                                      content::BrowserContext* browser_context)
     : weak_java_ref_(env, obj),
+      browser_context_(browser_context),
       offline_page_model_(
           OfflinePageModelFactory::GetForBrowserContext(browser_context)) {
   NotifyIfDoneLoading();
@@ -223,6 +225,24 @@ void OfflinePageBridge::CheckMetadataConsistency(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   offline_page_model_->CheckForExternalFileDeletion();
+}
+
+ScopedJavaLocalRef<jstring> OfflinePageBridge::GetOfflineUrlForOnlineUrl(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_online_url) {
+  GURL online_url(ConvertJavaStringToUTF8(env, j_online_url));
+  GURL offline_url =
+      OfflinePageUtils::GetOfflineURLForOnlineURL(browser_context_, online_url);
+  return ConvertUTF8ToJavaString(env, offline_url.spec());
+}
+
+jboolean OfflinePageBridge::IsOfflinePageUrl(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_offline_url) {
+  GURL offline_url(ConvertJavaStringToUTF8(env, j_offline_url));
+  return OfflinePageUtils::IsOfflinePage(browser_context_, offline_url);
 }
 
 void OfflinePageBridge::NotifyIfDoneLoading() const {

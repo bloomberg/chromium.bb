@@ -153,7 +153,6 @@ public final class OfflinePageBridge {
     /**
      * Creates offline pages bridge for a given profile.
      */
-    @VisibleForTesting
     public OfflinePageBridge(Profile profile) {
         mNativeOfflinePageBridge = nativeInit(profile);
     }
@@ -189,7 +188,6 @@ public final class OfflinePageBridge {
      * Adds an observer to offline page model changes.
      * @param observer The observer to be added.
      */
-    @VisibleForTesting
     public void addObserver(OfflinePageModelObserver observer) {
         mObservers.addObserver(observer);
     }
@@ -198,7 +196,6 @@ public final class OfflinePageBridge {
      * Removes an observer to offline page model changes.
      * @param observer The observer to be removed.
      */
-    @VisibleForTesting
     public void removeObserver(OfflinePageModelObserver observer) {
         mObservers.removeObserver(observer);
     }
@@ -206,7 +203,6 @@ public final class OfflinePageBridge {
     /**
      * @return Gets all available offline pages. Requires that the model is already loaded.
      */
-    @VisibleForTesting
     public List<OfflinePageItem> getAllPages() {
         assert mIsNativeOfflinePageModelLoaded;
         List<OfflinePageItem> result = new ArrayList<OfflinePageItem>();
@@ -221,7 +217,6 @@ public final class OfflinePageBridge {
      * @return An {@link OfflinePageItem} matching the bookmark Id or <code>null</code> if none
      * exist.
      */
-    @VisibleForTesting
     public OfflinePageItem getPageByBookmarkId(BookmarkId bookmarkId) {
         return nativeGetPageByBookmarkId(mNativeOfflinePageBridge, bookmarkId.getId());
     }
@@ -232,7 +227,6 @@ public final class OfflinePageBridge {
      * @param onlineURL URL of the page.
      * @return An {@link OfflinePageItem} matching the URL or <code>null</code> if none exist.
      */
-    @VisibleForTesting
     public OfflinePageItem getPageByOnlineURL(String onlineURL) {
         return nativeGetPageByOnlineURL(mNativeOfflinePageBridge, onlineURL);
     }
@@ -245,7 +239,6 @@ public final class OfflinePageBridge {
      * @param callback Interface that contains a callback.
      * @see SavePageCallback
      */
-    @VisibleForTesting
     public void savePage(final WebContents webContents, final BookmarkId bookmarkId,
             final SavePageCallback callback) {
         assert mIsNativeOfflinePageModelLoaded;
@@ -285,7 +278,6 @@ public final class OfflinePageBridge {
      * @param callback Interface that contains a callback.
      * @see DeletePageCallback
      */
-    @VisibleForTesting
     public void deletePage(final BookmarkId bookmarkId, DeletePageCallback callback) {
         assert mIsNativeOfflinePageModelLoaded;
 
@@ -340,6 +332,28 @@ public final class OfflinePageBridge {
      */
     public void checkOfflinePageMetadata() {
         nativeCheckMetadataConsistency(mNativeOfflinePageBridge);
+    }
+
+    /**
+     * Gets the offline URL of an offline page of that is saved for the online URL.
+     * @param onlineUrl Online URL, which might have offline copy.
+     * @return URL pointing to the offline copy or <code>null</code> if none exists.
+     */
+    @VisibleForTesting
+    public String getOfflineUrlForOnlineUrl(String onlineUrl) {
+        assert mIsNativeOfflinePageModelLoaded;
+        return nativeGetOfflineUrlForOnlineUrl(mNativeOfflinePageBridge, onlineUrl);
+    }
+
+    /**
+     * Returns <code>true</code> if offline URL points to a local copy of an offline page.
+     * @param offlineUrl A URL potentially pointing to an offline copy of an offline page.
+     * @return Whether a provided url points to an offline copy of an offline page.
+     */
+    @VisibleForTesting
+    public boolean isOfflinePageUrl(String offlineUrl) {
+        assert mIsNativeOfflinePageModelLoaded;
+        return nativeIsOfflinePageUrl(mNativeOfflinePageBridge, offlineUrl);
     }
 
     private DeletePageCallback wrapCallbackWithHistogramReporting(
@@ -420,4 +434,7 @@ public final class OfflinePageBridge {
     private native void nativeGetPagesToCleanUp(
             long nativeOfflinePageBridge, List<OfflinePageItem> offlinePages);
     private native void nativeCheckMetadataConsistency(long nativeOfflinePageBridge);
+    private native String nativeGetOfflineUrlForOnlineUrl(
+            long nativeOfflinePageBridge, String onlineUrl);
+    private native boolean nativeIsOfflinePageUrl(long nativeOfflinePageBridge, String offlineUrl);
 }
