@@ -790,14 +790,11 @@ config("default_warnings") {
       cflags += [ "-Werror" ]
     }
 
-    if (is_mac) {
-      cflags += [ "-Wnewline-eof" ]
-      if (!is_nacl) {
-        # When compiling Objective-C, warns if a method is used whose
-        # availability is newer than the deployment target. This is not
-        # required when compiling Chrome for iOS.
-        cflags += [ "-Wpartial-availability" ]
-      }
+    if (is_mac && !is_nacl) {
+      # When compiling Objective-C, warns if a method is used whose
+      # availability is newer than the deployment target. This is not
+      # required when compiling Chrome for iOS.
+      cflags += [ "-Wpartial-availability" ]
     }
 
     if (gcc_version >= 48) {
