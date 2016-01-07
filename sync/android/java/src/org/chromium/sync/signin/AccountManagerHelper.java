@@ -279,9 +279,7 @@ public class AccountManagerHelper {
     }
 
     /**
-     * This method is deprecated; please use the asynchronous version below instead.
-     *
-     * See http://crbug.com/517697 for details.
+     * @return Whether or not there is an account authenticator for Google accounts.
      */
     public boolean hasGoogleAccountAuthenticator() {
         AuthenticatorDescription[] descs = mAccountManager.getAuthenticatorTypes();
