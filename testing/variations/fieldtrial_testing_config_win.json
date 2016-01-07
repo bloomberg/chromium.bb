@@ -236,6 +236,11 @@
             "group_name": "enforce_always_with_extensions_and_dse"
         }
     ],
+    "SpdyEnableDependencies": [
+        {
+            "group_name": "Enable"
+        }
+    ],
     "StrictSecureCookies": [
         {
             "group_name": "Enabled"

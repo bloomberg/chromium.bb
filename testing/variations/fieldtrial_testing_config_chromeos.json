@@ -113,6 +113,11 @@
             "group_name": "Enabled"
         }
     ],
+    "SpdyEnableDependencies": [
+        {
+            "group_name": "Enable"
+        }
+    ],
     "StrictSecureCookies": [
         {
             "group_name": "Enabled"
