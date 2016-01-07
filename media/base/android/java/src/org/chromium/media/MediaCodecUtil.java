@@ -232,7 +232,10 @@ class MediaCodecUtil {
         if (isSecure && Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) return result;
 
         // Do not create codec for blacklisted devices.
-        if (!isDecoderSupportedForDevice(mime)) return result;
+        if (!isDecoderSupportedForDevice(mime)) {
+            Log.e(TAG, "Decoder for type " + mime + " is not supported on this device");
+            return result;
+        }
 
         try {
             // |isSecure| only applies to video decoders.
@@ -271,11 +274,24 @@ class MediaCodecUtil {
      */
     private static boolean isDecoderSupportedForDevice(String mime) {
         if (mime.equals("video/x-vnd.on2.vp8")) {
-            // Samsung Galaxy S4 Mini cannot render the frames decoded with VP8
-            if (Build.MANUFACTURER.toLowerCase(Locale.getDefault()).equals("samsung")
-                    && Build.MODEL.equals("GT-I9190")) {
-                Log.e(TAG, "VP8 video decoder is not supported on this device");
-                return false;
+            // Some Samsung devices cannot render VP8 video directly to the surface.
+            if (Build.MANUFACTURER.toLowerCase(Locale.getDefault()).equals("samsung")) {
+                // Samsung Galaxy S4.
+                // Only GT-I9505G with Android 4.3 and SPH-L720 (Sprint) with Android 5.0.1
+                // were tested. Only the first device has the problem.
+                // We blacklist popular Samsung Galaxy S4 models before Android L.
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP
+                        && (Build.MODEL.startsWith("GT-I9505")
+                                   || (Build.MODEL.startsWith("GT-I9500")))) {
+                    return false;
+                }
+
+                // Samsung Galaxy S4 Mini.
+                // Only GT-I9190 was tested with Android 4.4.2
+                // We blacklist it and the popular GT-I9195 for all Android versions.
+                if (Build.MODEL.startsWith("GT-I9190") || (Build.MODEL.startsWith("GT-I9195"))) {
+                    return false;
+                }
             }
         }
 
