@@ -314,7 +314,7 @@ void InsertParagraphSeparatorCommand::doApply()
     // it if visiblePos is at the start of a paragraph so that the
     // content will move down a line.
     if (isStartOfParagraph(visiblePos)) {
-        RefPtrWillBeRawPtr<HTMLBRElement> br = createBreakElement(document());
+        RefPtrWillBeRawPtr<HTMLBRElement> br = HTMLBRElement::create(document());
         insertNodeAt(br.get(), insertionPosition);
         insertionPosition = positionInParentAfterNode(*br);
         // If the insertion point is a break element, there is nothing else
@@ -389,7 +389,7 @@ void InsertParagraphSeparatorCommand::doApply()
     // created.  All of the nodes, starting at visiblePos, are about to be added to the new paragraph
     // element.  If the first node to be inserted won't be one that will hold an empty line open, add a br.
     if (isEndOfParagraph(visiblePos) && !lineBreakExistsAtVisiblePosition(visiblePos))
-        appendNode(createBreakElement(document()).get(), blockToInsert.get());
+        appendNode(HTMLBRElement::create(document()).get(), blockToInsert.get());
 
     // Move the start node and the siblings of the start node.
     if (createVisiblePosition(insertionPosition).deepEquivalent() != createVisiblePosition(positionBeforeNode(blockToInsert.get())).deepEquivalent()) {

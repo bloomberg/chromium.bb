@@ -1247,21 +1247,6 @@ PassRefPtrWillBeRawPtr<HTMLElement> createDefaultParagraphElement(Document& docu
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<HTMLBRElement> createBreakElement(Document& document)
-{
-    return HTMLBRElement::create(document);
-}
-
-PassRefPtrWillBeRawPtr<HTMLUListElement> createUnorderedListElement(Document& document)
-{
-    return HTMLUListElement::create(document);
-}
-
-PassRefPtrWillBeRawPtr<HTMLLIElement> createListItemElement(Document& document)
-{
-    return HTMLLIElement::create(document);
-}
-
 PassRefPtrWillBeRawPtr<HTMLElement> createHTMLElement(Document& document, const QualifiedName& name)
 {
     return HTMLElementFactory::createHTMLElement(name.localName(), document, 0, false);

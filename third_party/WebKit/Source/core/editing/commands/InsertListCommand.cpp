@@ -52,7 +52,7 @@ static Node* enclosingListChild(Node* node, Node* listNode)
 
 HTMLUListElement* InsertListCommand::fixOrphanedListChild(Node* node)
 {
-    RefPtrWillBeRawPtr<HTMLUListElement> listElement = createUnorderedListElement(document());
+    RefPtrWillBeRawPtr<HTMLUListElement> listElement = HTMLUListElement::create(document());
     insertNodeBefore(listElement, node);
     removeNode(node);
     appendNode(node, listElement);
@@ -300,12 +300,12 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
     }
     // When removing a list, we must always create a placeholder to act as a point of insertion
     // for the list content being removed.
-    RefPtrWillBeRawPtr<HTMLBRElement> placeholder = createBreakElement(document());
+    RefPtrWillBeRawPtr<HTMLBRElement> placeholder = HTMLBRElement::create(document());
     RefPtrWillBeRawPtr<HTMLElement> elementToInsert = placeholder;
     // If the content of the list item will be moved into another list, put it in a list item
     // so that we don't create an orphaned list child.
     if (enclosingList(listElement)) {
-        elementToInsert = createListItemElement(document());
+        elementToInsert = HTMLLIElement::create(document());
         appendNode(placeholder, elementToInsert);
     }
 
@@ -363,8 +363,8 @@ PassRefPtrWillBeRawPtr<HTMLElement> InsertListCommand::listifyParagraph(const Vi
         return nullptr;
 
     // Check for adjoining lists.
-    RefPtrWillBeRawPtr<HTMLElement> listItemElement = createListItemElement(document());
-    RefPtrWillBeRawPtr<HTMLBRElement> placeholder = createBreakElement(document());
+    RefPtrWillBeRawPtr<HTMLElement> listItemElement = HTMLLIElement::create(document());
+    RefPtrWillBeRawPtr<HTMLBRElement> placeholder = HTMLBRElement::create(document());
     appendNode(placeholder, listItemElement);
 
     // Place list item into adjoining lists.

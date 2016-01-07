@@ -263,9 +263,6 @@ VisiblePosition visiblePositionForIndex(int index, ContainerNode* scope);
 // Functions returning HTMLElement
 
 PassRefPtrWillBeRawPtr<HTMLElement> createDefaultParagraphElement(Document&);
-PassRefPtrWillBeRawPtr<HTMLBRElement> createBreakElement(Document&);
-PassRefPtrWillBeRawPtr<HTMLUListElement> createUnorderedListElement(Document&);
-PassRefPtrWillBeRawPtr<HTMLLIElement> createListItemElement(Document&);
 PassRefPtrWillBeRawPtr<HTMLElement> createHTMLElement(Document&, const QualifiedName&);
 
 HTMLElement* enclosingList(Node*);

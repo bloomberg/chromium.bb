@@ -100,7 +100,7 @@ void BreakBlockquoteCommand::doApply()
     if (!topBlockquote || !topBlockquote->parentNode())
         return;
 
-    RefPtrWillBeRawPtr<HTMLBRElement> breakElement = createBreakElement(document());
+    RefPtrWillBeRawPtr<HTMLBRElement> breakElement = HTMLBRElement::create(document());
 
     bool isLastVisPosInNode = isLastVisiblePositionInNode(visiblePos, topBlockquote);
 

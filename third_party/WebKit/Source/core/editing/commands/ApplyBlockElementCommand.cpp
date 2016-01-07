@@ -113,7 +113,7 @@ void ApplyBlockElementCommand::formatSelection(const VisiblePosition& startOfSel
     if (isAtUnsplittableElement(start)) {
         RefPtrWillBeRawPtr<HTMLElement> blockquote = createBlockElement();
         insertNodeAt(blockquote, start);
-        RefPtrWillBeRawPtr<HTMLBRElement> placeholder = createBreakElement(document());
+        RefPtrWillBeRawPtr<HTMLBRElement> placeholder = HTMLBRElement::create(document());
         appendNode(placeholder, blockquote);
         setEndingSelection(VisibleSelection(positionBeforeNode(placeholder.get()), TextAffinity::Downstream, endingSelection().isDirectional()));
         return;

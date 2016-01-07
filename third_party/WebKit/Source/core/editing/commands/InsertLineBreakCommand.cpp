@@ -84,7 +84,7 @@ void InsertLineBreakCommand::doApply()
 
     RefPtrWillBeRawPtr<Node> nodeToInsert = nullptr;
     if (shouldUseBreakElement(pos))
-        nodeToInsert = createBreakElement(document());
+        nodeToInsert = HTMLBRElement::create(document());
     else
         nodeToInsert = document().createTextNode("\n");
 

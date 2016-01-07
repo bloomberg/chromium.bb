@@ -631,7 +631,7 @@ void DeleteSelectionCommand::mergeParagraphs()
 
     // We need to merge into m_upstreamStart's block, but it's been emptied out and collapsed by deletion.
     if (!mergeDestination.deepEquivalent().anchorNode() || (!mergeDestination.deepEquivalent().anchorNode()->isDescendantOf(enclosingBlock(m_upstreamStart.computeContainerNode())) && (!mergeDestination.deepEquivalent().anchorNode()->hasChildren() || !m_upstreamStart.computeContainerNode()->hasChildren())) || (m_startsAtEmptyLine && mergeDestination.deepEquivalent() != startOfParagraphToMove.deepEquivalent())) {
-        insertNodeAt(createBreakElement(document()).get(), m_upstreamStart);
+        insertNodeAt(HTMLBRElement::create(document()).get(), m_upstreamStart);
         mergeDestination = createVisiblePosition(m_upstreamStart);
     }
 
@@ -852,7 +852,7 @@ void DeleteSelectionCommand::doApply()
         m_needPlaceholder = hasPlaceholder && lineBreakBeforeStart && !lineBreakAtEndOfSelectionToDelete;
     }
 
-    RefPtrWillBeRawPtr<HTMLBRElement> placeholder = m_needPlaceholder ? createBreakElement(document()) : nullptr;
+    RefPtrWillBeRawPtr<HTMLBRElement> placeholder = m_needPlaceholder ? HTMLBRElement::create(document()) : nullptr;
 
     if (placeholder) {
         if (m_sanitizeMarkup)

@@ -182,9 +182,9 @@ void IndentOutdentCommand::outdentParagraph()
         visibleStartOfParagraph = createVisiblePosition(visibleStartOfParagraph.deepEquivalent());
         visibleEndOfParagraph = createVisiblePosition(visibleEndOfParagraph.deepEquivalent());
         if (visibleStartOfParagraph.isNotNull() && !isStartOfParagraph(visibleStartOfParagraph))
-            insertNodeAt(createBreakElement(document()), visibleStartOfParagraph.deepEquivalent());
+            insertNodeAt(HTMLBRElement::create(document()), visibleStartOfParagraph.deepEquivalent());
         if (visibleEndOfParagraph.isNotNull() && !isEndOfParagraph(visibleEndOfParagraph))
-            insertNodeAt(createBreakElement(document()), visibleEndOfParagraph.deepEquivalent());
+            insertNodeAt(HTMLBRElement::create(document()), visibleEndOfParagraph.deepEquivalent());
 
         return;
     }
@@ -202,7 +202,7 @@ void IndentOutdentCommand::outdentParagraph()
     VisiblePosition endOfParagraphToMove = endOfParagraph(visibleEndOfParagraph);
     if (startOfParagraphToMove.isNull() || endOfParagraphToMove.isNull())
         return;
-    RefPtrWillBeRawPtr<HTMLBRElement> placeholder = createBreakElement(document());
+    RefPtrWillBeRawPtr<HTMLBRElement> placeholder = HTMLBRElement::create(document());
     insertNodeBefore(placeholder, splitBlockquoteNode);
     moveParagraph(startOfParagraphToMove, endOfParagraphToMove, createVisiblePosition(positionBeforeNode(placeholder.get())), true);
 }

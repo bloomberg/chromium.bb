@@ -470,7 +470,7 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromText(const EphemeralR
     if (shouldPreserveNewline(context)) {
         fragment->appendChild(document.createTextNode(string));
         if (string.endsWith('\n')) {
-            RefPtrWillBeRawPtr<HTMLBRElement> element = createBreakElement(document);
+            RefPtrWillBeRawPtr<HTMLBRElement> element = HTMLBRElement::create(document);
             element->setAttribute(classAttr, AppleInterchangeNewline);
             fragment->appendChild(element.release());
         }
@@ -500,10 +500,10 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromText(const EphemeralR
         RefPtrWillBeRawPtr<Element> element = nullptr;
         if (s.isEmpty() && i + 1 == numLines) {
             // For last line, use the "magic BR" rather than a P.
-            element = createBreakElement(document);
+            element = HTMLBRElement::create(document);
             element->setAttribute(classAttr, AppleInterchangeNewline);
         } else if (useLineBreak) {
-            element = createBreakElement(document);
+            element = HTMLBRElement::create(document);
             fillContainerFromString(fragment.get(), s);
         } else {
             if (useClonesOfEnclosingBlock)
