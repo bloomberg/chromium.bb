@@ -90,4 +90,8 @@ source_set("lib") {
       "//ui/events/platform/x11",
     ]
   }
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone:ozone" ]
+  }
 }

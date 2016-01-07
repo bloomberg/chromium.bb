@@ -43,6 +43,8 @@
 #include "ui/platform_window/x11/x11_window.h"
 #elif defined(OS_ANDROID)
 #include "ui/platform_window/android/platform_window_android.h"
+#elif defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
 #endif
 
 using mojo::Rect;
@@ -191,7 +193,10 @@ void DefaultDisplayManager::Init(DisplayManagerDelegate* delegate) {
 #elif defined(USE_X11)
   platform_window_.reset(new ui::X11Window(this));
 #elif defined(OS_ANDROID)
-  platform_window_.reset(new ui::PlatformWindowAndroid(this));
+  platform_window_. reset(new ui::PlatformWindowAndroid(this));
+#elif defined(USE_OZONE)
+  platform_window_ =
+      ui::OzonePlatform::GetInstance()->CreatePlatformWindow(this, bounds);
 #else
   NOTREACHED() << "Unsupported platform";
 #endif

@@ -28,6 +28,8 @@
 #include <X11/Xlib.h>
 #include "base/command_line.h"
 #include "ui/platform_window/x11/x11_window.h"
+#elif defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
 #endif
 
 using mojo::ApplicationConnection;
@@ -58,6 +60,14 @@ void MandolineUIServicesApp::Initialize(ApplicationImpl* app) {
     XInitThreads();
     ui::test::SetUseOverrideRedirectWindowByDefault(true);
   }
+#endif
+
+#if defined(USE_OZONE)
+  // The ozone platform can provide its own event source. So initialize the
+  // platform before creating the default event source.
+  // TODO(rjkroege): Add tracing here.
+  ui::OzonePlatform::InitializeForUI();
+  ui::OzonePlatform::InitializeForGPU();
 #endif
 
   bool hardware_rendering_available = true;

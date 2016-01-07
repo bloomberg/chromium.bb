@@ -86,6 +86,10 @@ source_set("lib") {
     "//ui/platform_window",
     "//ui/platform_window:platform_impls",
   ]
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone:ozone" ]
+  }
 }
 
 source_set("test_support") {
