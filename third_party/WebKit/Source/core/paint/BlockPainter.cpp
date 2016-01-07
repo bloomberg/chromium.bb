@@ -99,14 +99,14 @@ void BlockPainter::paintChild(const LayoutBox& child, const PaintInfo& paintInfo
 void BlockPainter::paintChildrenOfFlexibleBox(const LayoutFlexibleBox& layoutFlexibleBox, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     for (const LayoutBox* child = layoutFlexibleBox.orderIterator().first(); child; child = layoutFlexibleBox.orderIterator().next())
-        BlockPainter(layoutFlexibleBox).paintChildAsInlineBlock(*child, paintInfo, paintOffset);
+        BlockPainter(layoutFlexibleBox).paintChildAsPseudoStackingContext(*child, paintInfo, paintOffset);
 }
 
-void BlockPainter::paintChildAsInlineBlock(const LayoutBox& child, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BlockPainter::paintChildAsPseudoStackingContext(const LayoutBox& child, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     LayoutPoint childPoint = m_layoutBlock.flipForWritingModeForChild(&child, paintOffset);
     if (!child.hasSelfPaintingLayer() && !child.isFloating())
-        paintAsInlineBlock(child, paintInfo, childPoint);
+        ObjectPainter(child).paintAsPseudoStackingContext(paintInfo, childPoint);
 }
 
 void BlockPainter::paintInlineBox(const InlineBox& inlineBox, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
@@ -118,32 +118,7 @@ void BlockPainter::paintInlineBox(const InlineBox& inlineBox, const PaintInfo& p
     if (inlineBox.parent()->lineLayoutItem().style()->isFlippedBlocksWritingMode()) // Faster than calling containingBlock().
         childPoint = inlineBox.layoutObject().containingBlock()->flipForWritingModeForChild(&toLayoutBox(inlineBox.layoutObject()), childPoint);
 
-    paintAsInlineBlock(inlineBox.layoutObject(), paintInfo, childPoint);
-}
-
-void BlockPainter::paintAsInlineBlock(const LayoutObject& layoutObject, const PaintInfo& paintInfo, const LayoutPoint& childPoint)
-{
-    if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection)
-        return;
-
-    // Paint all phases atomically, as though the element established its own
-    // stacking context.  (See Appendix E.2, section 7.2.1.4 on
-    // inline block/table/replaced elements in the CSS2.1 specification.)
-    // This is also used by other elements (e.g. flex items and grid items).
-    bool preservePhase = paintInfo.phase == PaintPhaseSelection || paintInfo.phase == PaintPhaseTextClip;
-    PaintInfo info(paintInfo);
-    info.phase = preservePhase ? paintInfo.phase : PaintPhaseBlockBackground;
-    layoutObject.paint(info, childPoint);
-    if (!preservePhase) {
-        info.phase = PaintPhaseChildBlockBackgrounds;
-        layoutObject.paint(info, childPoint);
-        info.phase = PaintPhaseFloat;
-        layoutObject.paint(info, childPoint);
-        info.phase = PaintPhaseForeground;
-        layoutObject.paint(info, childPoint);
-        info.phase = PaintPhaseOutline;
-        layoutObject.paint(info, childPoint);
-    }
+    ObjectPainter(inlineBox.layoutObject()).paintAsPseudoStackingContext(paintInfo, childPoint);
 }
 
 void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
@@ -208,7 +183,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
             m_layoutBlock.paintSelection(contentsPaintInfo, paintOffset); // Fill in gaps in selection on lines and between blocks.
 
         if (paintPhase == PaintPhaseFloat || paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip)
-            m_layoutBlock.paintFloats(contentsPaintInfo, paintOffset, paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip);
+            m_layoutBlock.paintFloats(contentsPaintInfo, paintOffset);
     }
 
     if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseSelfOutline) && m_layoutBlock.style()->hasOutline() && m_layoutBlock.style()->visibility() == VISIBLE)

@@ -8,41 +8,35 @@
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/paint/ClipScope.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
+#include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 
 namespace blink {
 
-void BlockFlowPainter::paintFloats(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, bool preservePhase)
+void BlockFlowPainter::paintFloats(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (!m_layoutBlockFlow.floatingObjects())
         return;
 
-    const FloatingObjectSet& floatingObjectSet = m_layoutBlockFlow.floatingObjects()->set();
-    FloatingObjectSetIterator end = floatingObjectSet.end();
-    for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
-        const FloatingObject& floatingObject = *it->get();
-        // Only paint the object if our m_shouldPaint flag is set.
-        if (floatingObject.shouldPaint() && !floatingObject.layoutObject()->hasSelfPaintingLayer()) {
-            PaintInfo currentPaintInfo(paintInfo);
-            currentPaintInfo.phase = preservePhase ? paintInfo.phase : PaintPhaseBlockBackground;
-            // FIXME: LayoutPoint version of xPositionForFloatIncludingMargin would make this much cleaner.
-            LayoutPoint childPoint = m_layoutBlockFlow.flipFloatForWritingModeForChild(
-                floatingObject, LayoutPoint(paintOffset.x()
-                + m_layoutBlockFlow.xPositionForFloatIncludingMargin(floatingObject) - floatingObject.layoutObject()->location().x(), paintOffset.y()
-                + m_layoutBlockFlow.yPositionForFloatIncludingMargin(floatingObject) - floatingObject.layoutObject()->location().y()));
-            floatingObject.layoutObject()->paint(currentPaintInfo, childPoint);
-            if (!preservePhase) {
-                currentPaintInfo.phase = PaintPhaseChildBlockBackgrounds;
-                floatingObject.layoutObject()->paint(currentPaintInfo, childPoint);
-                currentPaintInfo.phase = PaintPhaseFloat;
-                floatingObject.layoutObject()->paint(currentPaintInfo, childPoint);
-                currentPaintInfo.phase = PaintPhaseForeground;
-                floatingObject.layoutObject()->paint(currentPaintInfo, childPoint);
-                currentPaintInfo.phase = PaintPhaseOutline;
-                floatingObject.layoutObject()->paint(currentPaintInfo, childPoint);
-            }
-        }
+    ASSERT(paintInfo.phase == PaintPhaseFloat);
+    PaintInfo floatPaintInfo(paintInfo);
+    floatPaintInfo.phase = PaintPhaseForeground;
+
+    for (const auto& floatingObject : m_layoutBlockFlow.floatingObjects()->set()) {
+        if (!floatingObject->shouldPaint())
+            continue;
+
+        const LayoutBox* floatingLayoutObject = floatingObject->layoutObject();
+        if (floatingLayoutObject->hasSelfPaintingLayer())
+            continue;
+
+        // FIXME: LayoutPoint version of xPositionForFloatIncludingMargin would make this much cleaner.
+        LayoutPoint childPoint = m_layoutBlockFlow.flipFloatForWritingModeForChild(
+            *floatingObject, LayoutPoint(paintOffset.x()
+            + m_layoutBlockFlow.xPositionForFloatIncludingMargin(*floatingObject) - floatingLayoutObject->location().x(), paintOffset.y()
+            + m_layoutBlockFlow.yPositionForFloatIncludingMargin(*floatingObject) - floatingLayoutObject->location().y()));
+        ObjectPainter(*floatingLayoutObject).paintAsPseudoStackingContext(floatPaintInfo, childPoint);
     }
 }
 

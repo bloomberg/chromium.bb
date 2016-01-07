@@ -355,7 +355,7 @@ private:
 
     void invalidatePaintForOverhangingFloats(bool paintAllDescendants) final;
     void invalidatePaintForOverflow() final;
-    void paintFloats(const PaintInfo&, const LayoutPoint&, bool preservePhase = false) const final;
+    void paintFloats(const PaintInfo&, const LayoutPoint&) const final;
     void paintSelection(const PaintInfo&, const LayoutPoint&) const final;
     virtual void clipOutFloatingObjects(const LayoutBlock*, ClipScope&, const LayoutPoint&, const LayoutSize&) const;
     void clearFloats(EClear);

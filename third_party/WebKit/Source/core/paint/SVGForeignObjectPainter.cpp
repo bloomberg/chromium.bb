@@ -8,12 +8,32 @@
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/FloatClipRecorder.h"
+#include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/SVGPaintContext.h"
 #include "core/paint/TransformRecorder.h"
 #include "wtf/Optional.h"
 
 namespace blink {
+
+namespace {
+
+class BlockPainterDelegate : public LayoutBlock {
+public:
+    BlockPainterDelegate(const LayoutSVGForeignObject& layoutSVGForeignObject)
+        : LayoutBlock(nullptr)
+        , m_layoutSVGForeignObject(layoutSVGForeignObject)
+    { }
+
+private:
+    void paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const final
+    {
+        BlockPainter(m_layoutSVGForeignObject).paint(paintInfo, paintOffset);
+    }
+    const LayoutSVGForeignObject& m_layoutSVGForeignObject;
+};
+
+} // namespace
 
 void SVGForeignObjectPainter::paint(const PaintInfo& paintInfo)
 {
@@ -35,20 +55,10 @@ void SVGForeignObjectPainter::paint(const PaintInfo& paintInfo)
 
     if (continueRendering) {
         // Paint all phases of FO elements atomically as though the FO element established its own stacking context.
-        bool preservePhase = paintContext.paintInfo().phase == PaintPhaseSelection || paintContext.paintInfo().phase == PaintPhaseTextClip;
-        const LayoutPoint childPoint = IntPoint();
-        paintContext.paintInfo().phase = preservePhase ? paintContext.paintInfo().phase : PaintPhaseBlockBackground;
-        BlockPainter(m_layoutSVGForeignObject).paint(paintContext.paintInfo(), childPoint);
-        if (!preservePhase) {
-            paintContext.paintInfo().phase = PaintPhaseChildBlockBackgrounds;
-            BlockPainter(m_layoutSVGForeignObject).paint(paintContext.paintInfo(), childPoint);
-            paintContext.paintInfo().phase = PaintPhaseFloat;
-            BlockPainter(m_layoutSVGForeignObject).paint(paintContext.paintInfo(), childPoint);
-            paintContext.paintInfo().phase = PaintPhaseForeground;
-            BlockPainter(m_layoutSVGForeignObject).paint(paintContext.paintInfo(), childPoint);
-            paintContext.paintInfo().phase = PaintPhaseOutline;
-            BlockPainter(m_layoutSVGForeignObject).paint(paintContext.paintInfo(), childPoint);
-        }
+        // The delegate forwards calls to paint() in LayoutObject::paintAsPseudoStackingContext() to
+        // BlockPainter::paint(), instead of m_layoutSVGForeignObject.paint() (which would call this method again).
+        BlockPainterDelegate delegate(m_layoutSVGForeignObject);
+        ObjectPainter(delegate).paintAsPseudoStackingContext(paintContext.paintInfo(), LayoutPoint());
     }
 }
 

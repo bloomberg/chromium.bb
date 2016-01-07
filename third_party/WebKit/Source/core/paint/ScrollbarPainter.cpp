@@ -6,7 +6,7 @@
 
 #include "core/layout/LayoutScrollbar.h"
 #include "core/layout/LayoutScrollbarPart.h"
-#include "core/paint/BlockPainter.h"
+#include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/graphics/GraphicsContext.h"
 
@@ -28,18 +28,8 @@ void ScrollbarPainter::paintIntoRect(const LayoutScrollbarPart& layoutScrollbarP
     const_cast<LayoutScrollbarPart&>(layoutScrollbarPart).setWidth(rect.width());
     const_cast<LayoutScrollbarPart&>(layoutScrollbarPart).setHeight(rect.height());
 
-    // Now do the paint.
-    PaintInfo paintInfo(graphicsContext, pixelSnappedIntRect(rect), PaintPhaseBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
-    BlockPainter blockPainter(layoutScrollbarPart);
-    blockPainter.paint(paintInfo, paintOffset);
-    paintInfo.phase = PaintPhaseChildBlockBackgrounds;
-    blockPainter.paint(paintInfo, paintOffset);
-    paintInfo.phase = PaintPhaseFloat;
-    blockPainter.paint(paintInfo, paintOffset);
-    paintInfo.phase = PaintPhaseForeground;
-    blockPainter.paint(paintInfo, paintOffset);
-    paintInfo.phase = PaintPhaseOutline;
-    blockPainter.paint(paintInfo, paintOffset);
+    PaintInfo paintInfo(graphicsContext, pixelSnappedIntRect(rect), PaintPhaseForeground, GlobalPaintNormalPhase, PaintLayerNoFlag);
+    ObjectPainter(layoutScrollbarPart).paintAsPseudoStackingContext(paintInfo, paintOffset);
 }
 
 } // namespace blink

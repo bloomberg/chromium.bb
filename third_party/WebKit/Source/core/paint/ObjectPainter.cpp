@@ -534,4 +534,25 @@ void ObjectPainter::drawSolidBoxSide(GraphicsContext& graphicsContext, int x1, i
     graphicsContext.fillPolygon(4, quad, color, antialias);
 }
 
+void ObjectPainter::paintAsPseudoStackingContext(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+{
+    bool preservePhase = paintInfo.phase == PaintPhaseSelection || paintInfo.phase == PaintPhaseTextClip;
+    if (!preservePhase && paintInfo.phase != PaintPhaseForeground)
+        return;
+
+    PaintInfo info(paintInfo);
+    info.phase = preservePhase ? paintInfo.phase : PaintPhaseBlockBackground;
+    m_layoutObject.paint(info, paintOffset);
+    if (!preservePhase) {
+        info.phase = PaintPhaseChildBlockBackgrounds;
+        m_layoutObject.paint(info, paintOffset);
+        info.phase = PaintPhaseFloat;
+        m_layoutObject.paint(info, paintOffset);
+        info.phase = PaintPhaseForeground;
+        m_layoutObject.paint(info, paintOffset);
+        info.phase = PaintPhaseOutline;
+        m_layoutObject.paint(info, paintOffset);
+    }
+}
+
 } // namespace blink

@@ -31,6 +31,18 @@ public:
 
     static void drawLineForBoxSide(GraphicsContext&, int x1, int y1, int x2, int y2, BoxSide, Color, EBorderStyle, int adjbw1, int adjbw2, bool antialias = false);
 
+    // Paints the object atomically as if it created a new stacking context, for:
+    // - inline blocks, inline tables, inline-level replaced elements (Section 7.2.1.4 in
+    //   http://www.w3.org/TR/CSS2/zindex.html#painting-order),
+    // - non-positioned floating objects (Section 5 in http://www.w3.org/TR/CSS2/zindex.html#painting-order),
+    // - flex items (http://www.w3.org/TR/css-flexbox-1/#painting),
+    // - grid items (http://www.w3.org/TR/css-grid-1/#z-order),
+    // - custom scrollbar parts.
+    // It is expected that the caller will call this function independent of the value of paintInfo.phase,
+    // and this function will do atomic paint (for PaintPhaseForeground), normal paint (for PaintPhaseSelection
+    // and PaintPhaseTextClip) or nothing (other paint phases) according to paintInfo.phase.
+    void paintAsPseudoStackingContext(const PaintInfo&, const LayoutPoint& paintOffset);
+
 private:
     static void drawDashedOrDottedBoxSide(GraphicsContext&, int x1, int y1, int x2, int y2,
         BoxSide, Color, int thickness, EBorderStyle, bool antialias);
