@@ -1218,7 +1218,8 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
                  base::Unretained(this)));
 
   SetResourceDispatchTaskQueue(renderer_scheduler_->LoadingTaskRunner());
-  if (!command_line.HasSwitch(switches::kDisableThreadedCompositing))
+  if (!command_line.HasSwitch(switches::kDisableThreadedCompositing) &&
+      !command_line.HasSwitch(switches::kUseRemoteCompositing))
     InitializeCompositorThread();
 
   if (!input_event_filter_.get()) {

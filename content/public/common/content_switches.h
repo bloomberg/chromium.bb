@@ -231,6 +231,7 @@ CONTENT_EXPORT extern const char kContentImageTextureTarget[];
 CONTENT_EXPORT extern const char kVideoImageTextureTarget[];
 CONTENT_EXPORT extern const char kUseMobileUserAgent[];
 CONTENT_EXPORT extern const char kUseNormalPriorityForTileTaskWorkerThreads[];
+CONTENT_EXPORT extern const char kUseRemoteCompositing[];
 extern const char kUseSurfaces[];
 CONTENT_EXPORT extern const char kDisableSurfaces[];
 extern const char kUtilityCmdPrefix[];

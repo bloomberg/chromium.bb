@@ -482,6 +482,11 @@ void RenderWidgetCompositor::Initialize() {
   cc::TaskGraphRunner* task_graph_runner =
       compositor_deps_->GetTaskGraphRunner();
 
+  bool use_remote_compositing = cmd->HasSwitch(switches::kUseRemoteCompositing);
+
+  if (use_remote_compositing)
+    settings.use_external_begin_frame_source = false;
+
   scoped_ptr<cc::BeginFrameSource> external_begin_frame_source;
   if (settings.use_external_begin_frame_source) {
     external_begin_frame_source =
@@ -496,7 +501,13 @@ void RenderWidgetCompositor::Initialize() {
   params.task_graph_runner = task_graph_runner;
   params.main_task_runner = main_thread_compositor_task_runner;
   params.external_begin_frame_source = std::move(external_begin_frame_source);
-  if (compositor_thread_task_runner.get()) {
+  if (use_remote_compositing) {
+    DCHECK(!compositor_thread_task_runner.get());
+
+    // TODO(khushalsagar): Replace this with LayerTreeHost::CreateRemote
+    // See crbug/550687.
+    layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
+  } else if (compositor_thread_task_runner.get()) {
     layer_tree_host_ = cc::LayerTreeHost::CreateThreaded(
         compositor_thread_task_runner, &params);
   } else {

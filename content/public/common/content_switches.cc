@@ -822,6 +822,9 @@ const char kUseMobileUserAgent[] = "use-mobile-user-agent";
 const char kUseNormalPriorityForTileTaskWorkerThreads[] =
     "use-normal-priority-for-tile-task-worker-threads";
 
+// Use remote compositor for the renderer.
+const char kUseRemoteCompositing[] = "use-remote-compositing";
+
 // Use the new surfaces system to handle compositor delegation.
 const char kUseSurfaces[] = "use-surfaces";
 

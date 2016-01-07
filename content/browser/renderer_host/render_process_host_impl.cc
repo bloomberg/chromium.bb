@@ -1460,6 +1460,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kUseMobileUserAgent,
     switches::kUseNewMediaCache,
     switches::kUseNormalPriorityForTileTaskWorkerThreads,
+    switches::kUseRemoteCompositing,
     switches::kV,
     switches::kVideoThreads,
     switches::kVideoUnderflowThresholdMs,
