@@ -21,6 +21,10 @@
       },
       'xcode_settings': {
         'CLANG_ENABLE_OBJC_ARC': 'YES',
+        # TODO(crbug.com/569158): Suppresses warnings that are treated as errors
+        # when minimum iOS version support is increased to iOS 9 and up.
+        # This should be removed once all deprecation violations have been fixed.
+        'WARNING_CFLAGS': ['-Wno-deprecated-declarations'],
       },
       'sources': [
         'src/GCDWebServer/Core/GCDWebServer.h',
