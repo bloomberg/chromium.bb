@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/package_manager/content_handler_connection.h"
+#include "mojo/shell/package_manager/content_handler_connection.h"
 
 #include <stdint.h>
 
@@ -15,12 +15,12 @@
 #include "mojo/shell/identity.h"
 
 namespace mojo {
-namespace package_manager {
+namespace shell {
 
 ContentHandlerConnection::ContentHandlerConnection(
-    shell::ApplicationManager* manager,
-    const shell::Identity& source,
-    const shell::Identity& content_handler,
+    ApplicationManager* manager,
+    const Identity& source,
+    const Identity& content_handler,
     uint32_t id,
     const ClosedCallback& connection_closed_callback)
     : connection_closed_callback_(connection_closed_callback),
@@ -30,8 +30,7 @@ ContentHandlerConnection::ContentHandlerConnection(
       ref_count_(0) {
   ServiceProviderPtr services;
 
-  scoped_ptr<shell::ConnectToApplicationParams> params(
-      new shell::ConnectToApplicationParams);
+  scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
   params->set_source(source);
   params->SetTarget(identity_);
   params->set_services(GetProxy(&services));
@@ -74,5 +73,5 @@ void ContentHandlerConnection::ApplicationDestructed() {
     CloseConnection();
 }
 
-}  // namespace package_manager
+}  // namespace shell
 }  // namespace mojo

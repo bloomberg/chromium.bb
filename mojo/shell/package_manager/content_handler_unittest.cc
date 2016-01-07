@@ -19,23 +19,23 @@
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
-#include "mojo/package_manager/package_manager_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/connect_util.h"
 #include "mojo/shell/fetcher.h"
+#include "mojo/shell/package_manager/package_manager_impl.h"
 #include "mojo/shell/test_package_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
-namespace package_manager {
+namespace shell {
 namespace test {
 namespace {
 
 const char kTestMimeType[] = "test/mime-type";
 
-class TestFetcher : public shell::Fetcher {
+class TestFetcher : public Fetcher {
  public:
   TestFetcher(const FetchCallback& fetch_callback,
               const GURL& url,
@@ -94,7 +94,7 @@ class TestContentHandler : public ContentHandler, public ApplicationDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestContentHandler);
 };
 
-class TestApplicationLoader : public shell::ApplicationLoader,
+class TestApplicationLoader : public ApplicationLoader,
                               public ApplicationDelegate,
                               public InterfaceFactory<ContentHandler> {
  public:
@@ -131,12 +131,12 @@ class TestApplicationLoader : public shell::ApplicationLoader,
   DISALLOW_COPY_AND_ASSIGN(TestApplicationLoader);
 };
 
-class TestPackageManager : public PackageManagerImpl {
+class TestPackageManagerImpl : public PackageManagerImpl {
  public:
-  explicit TestPackageManager(const base::FilePath& package_path)
+  explicit TestPackageManagerImpl(const base::FilePath& package_path)
       : PackageManagerImpl(package_path, nullptr),
         mime_type_(kTestMimeType) {}
-  ~TestPackageManager() override {}
+  ~TestPackageManagerImpl() override {}
 
   void set_mime_type(const std::string& mime_type) {
     mime_type_ = mime_type;
@@ -145,14 +145,14 @@ class TestPackageManager : public PackageManagerImpl {
   // PackageManagerImpl:
   void FetchRequest(
       URLRequestPtr request,
-      const shell::Fetcher::FetchCallback& loader_callback) override {
+      const Fetcher::FetchCallback& loader_callback) override {
     new TestFetcher(loader_callback, GURL(request->url), mime_type_);
   }
 
  private:
   std::string mime_type_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestPackageManager);
+  DISALLOW_COPY_AND_ASSIGN(TestPackageManagerImpl);
 };
 
 }  // namespace
@@ -167,10 +167,10 @@ class ContentHandlerTest : public testing::Test {
   void SetUp() override {
     base::FilePath shell_dir;
     PathService::Get(base::DIR_MODULE, &shell_dir);
-    test_package_manager_ = new TestPackageManager(shell_dir);
+    test_package_manager_ = new TestPackageManagerImpl(shell_dir);
     test_package_manager_->RegisterContentHandler(kTestMimeType,
                                                   content_handler_url_);
-    application_manager_.reset(new shell::ApplicationManager(
+    application_manager_.reset(new ApplicationManager(
         make_scoped_ptr(test_package_manager_)));
   }
 
@@ -184,9 +184,9 @@ class ContentHandlerTest : public testing::Test {
   const GURL requestor_url_;
 
   base::MessageLoop loop_;
-  scoped_ptr<shell::ApplicationManager> application_manager_;
+  scoped_ptr<ApplicationManager> application_manager_;
   // Owned by ApplicationManager.
-  TestPackageManager* test_package_manager_;
+  TestPackageManagerImpl* test_package_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentHandlerTest);
 };
@@ -194,13 +194,12 @@ class ContentHandlerTest : public testing::Test {
 TEST_F(ContentHandlerTest, ContentHandlerConnectionGetsRequestorURL) {
   TestApplicationLoader* loader = new TestApplicationLoader;
   application_manager_->SetLoaderForURL(
-      scoped_ptr<shell::ApplicationLoader>(loader),
+      scoped_ptr<ApplicationLoader>(loader),
       content_handler_url_);
 
   bool called = false;
-  scoped_ptr<shell::ConnectToApplicationParams> params(
-      new shell::ConnectToApplicationParams);
-  params->set_source(shell::Identity(requestor_url_));
+  scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
+  params->set_source(Identity(requestor_url_));
   params->SetTargetURL(GURL("test:test"));
   params->set_on_application_end(
       base::Bind(&QuitClosure, base::Unretained(&called)));
@@ -216,15 +215,15 @@ TEST_F(ContentHandlerTest,
        MultipleConnectionsToContentHandlerGetSameContentHandlerId) {
   TestApplicationLoader* content_handler_loader = new TestApplicationLoader;
   application_manager_->SetLoaderForURL(
-      scoped_ptr<shell::ApplicationLoader>(content_handler_loader),
+      scoped_ptr<ApplicationLoader>(content_handler_loader),
       content_handler_url_);
 
   uint32_t content_handler_id;
   {
     base::RunLoop run_loop;
-    scoped_ptr<shell::ConnectToApplicationParams> params(
-        new shell::ConnectToApplicationParams);
-    params->set_source(shell::Identity(requestor_url_));
+    scoped_ptr<ConnectToApplicationParams> params(
+        new ConnectToApplicationParams);
+    params->set_source(Identity(requestor_url_));
     params->SetTargetURL(GURL("test:test"));
     params->set_connect_callback([&content_handler_id, &run_loop](uint32_t t) {
       content_handler_id = t;
@@ -238,9 +237,9 @@ TEST_F(ContentHandlerTest,
   uint32_t content_handler_id2;
   {
     base::RunLoop run_loop;
-    scoped_ptr<shell::ConnectToApplicationParams> params(
-        new shell::ConnectToApplicationParams);
-    params->set_source(shell::Identity(requestor_url_));
+    scoped_ptr<ConnectToApplicationParams> params(
+        new ConnectToApplicationParams);
+    params->set_source(Identity(requestor_url_));
     params->SetTargetURL(GURL("test:test"));
     params->set_connect_callback([&content_handler_id2, &run_loop](uint32_t t) {
       content_handler_id2 = t;
@@ -256,15 +255,15 @@ TEST_F(ContentHandlerTest,
 TEST_F(ContentHandlerTest, DifferedContentHandlersGetDifferentIDs) {
   TestApplicationLoader* content_handler_loader = new TestApplicationLoader;
   application_manager_->SetLoaderForURL(
-      scoped_ptr<shell::ApplicationLoader>(content_handler_loader),
+      scoped_ptr<ApplicationLoader>(content_handler_loader),
       content_handler_url_);
 
   uint32_t content_handler_id;
   {
     base::RunLoop run_loop;
-    scoped_ptr<shell::ConnectToApplicationParams> params(
-        new shell::ConnectToApplicationParams);
-    params->set_source(shell::Identity(requestor_url_));
+    scoped_ptr<ConnectToApplicationParams> params(
+        new ConnectToApplicationParams);
+    params->set_source(Identity(requestor_url_));
     params->SetTargetURL(GURL("test:test"));
     params->set_connect_callback([&content_handler_id, &run_loop](uint32_t t) {
       content_handler_id = t;
@@ -283,15 +282,15 @@ TEST_F(ContentHandlerTest, DifferedContentHandlersGetDifferentIDs) {
 
   TestApplicationLoader* content_handler_loader2 = new TestApplicationLoader;
   application_manager_->SetLoaderForURL(
-      scoped_ptr<shell::ApplicationLoader>(content_handler_loader2),
+      scoped_ptr<ApplicationLoader>(content_handler_loader2),
       content_handler_url2);
 
   uint32_t content_handler_id2;
   {
     base::RunLoop run_loop;
-    scoped_ptr<shell::ConnectToApplicationParams> params(
-        new shell::ConnectToApplicationParams);
-    params->set_source(shell::Identity(requestor_url_));
+    scoped_ptr<ConnectToApplicationParams> params(
+        new ConnectToApplicationParams);
+    params->set_source(Identity(requestor_url_));
     params->SetTargetURL(GURL("test2:test2"));
     params->set_connect_callback([&content_handler_id2, &run_loop](uint32_t t) {
       content_handler_id2 = t;
@@ -307,12 +306,12 @@ TEST_F(ContentHandlerTest, DifferedContentHandlersGetDifferentIDs) {
 TEST_F(ContentHandlerTest,
        ConnectWithNoContentHandlerGetsInvalidContentHandlerId) {
   application_manager_->SetLoaderForURL(
-      scoped_ptr<shell::ApplicationLoader>(new TestApplicationLoader),
+      scoped_ptr<ApplicationLoader>(new TestApplicationLoader),
       GURL("test:test"));
 
   uint32_t content_handler_id = 1u;
-  scoped_ptr<shell::ConnectToApplicationParams> params(
-      new shell::ConnectToApplicationParams);
+  scoped_ptr<ConnectToApplicationParams> params(
+      new ConnectToApplicationParams);
   params->SetTargetURL(GURL("test:test"));
   params->set_connect_callback(
       [&content_handler_id](uint32_t t) { content_handler_id = t; });

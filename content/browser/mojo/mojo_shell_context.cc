@@ -22,12 +22,12 @@
 #include "content/public/common/service_registry.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/common/url_type_converters.h"
-#include "mojo/package_manager/package_manager_impl.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/connect_to_application_params.h"
 #include "mojo/shell/identity.h"
+#include "mojo/shell/package_manager/package_manager_impl.h"
 #include "mojo/shell/static_application_loader.h"
 
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS) || \
@@ -206,8 +206,8 @@ MojoShellContext::MojoShellContext() {
 
   // Construct with an empty filepath since mojo: urls can't be registered now
   // the url scheme registry is locked.
-  scoped_ptr<mojo::package_manager::PackageManagerImpl> package_manager(
-      new mojo::package_manager::PackageManagerImpl(base::FilePath(), nullptr));
+  scoped_ptr<mojo::shell::PackageManagerImpl> package_manager(
+      new mojo::shell::PackageManagerImpl(base::FilePath(), nullptr));
   application_manager_.reset(
       new mojo::shell::ApplicationManager(std::move(package_manager)));
 

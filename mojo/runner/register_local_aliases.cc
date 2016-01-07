@@ -7,7 +7,7 @@
 namespace mojo {
 namespace runner {
 
-void RegisterLocalAliases(mojo::package_manager::PackageManagerImpl* manager) {}
+void RegisterLocalAliases(shell::PackageManagerImpl* manager) {}
 
 }  // namespace runner
 }  // namespace mojo

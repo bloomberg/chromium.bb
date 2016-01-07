@@ -19,7 +19,7 @@
 #include "url/gurl.h"
 
 namespace mojo {
-namespace package_manager {
+namespace shell {
 class PackageManagerImpl;
 }
 namespace runner {
@@ -58,9 +58,7 @@ class Context : public embedder::ProcessDelegate {
     return application_manager_.get();
   }
 
-  package_manager::PackageManagerImpl* package_manager() {
-    return package_manager_;
-  }
+  shell::PackageManagerImpl* package_manager() { return package_manager_; }
 
  private:
   class NativeViewportApplicationLoader;
@@ -77,7 +75,7 @@ class Context : public embedder::ProcessDelegate {
   // that needs the IO thread to destruct cleanly.
   Tracer tracer_;
   // Owned by |application_manager_|.
-  package_manager::PackageManagerImpl* package_manager_;
+  shell::PackageManagerImpl* package_manager_;
   scoped_ptr<shell::ApplicationManager> application_manager_;
   base::Closure app_complete_callback_;
   base::Time main_entry_time_;

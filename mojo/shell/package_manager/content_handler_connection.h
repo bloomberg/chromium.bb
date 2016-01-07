@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PACKAGE_MANAGER_CONTENT_HANDLER_CONNECTION_H_
-#define MOJO_PACKAGE_MANAGER_CONTENT_HANDLER_CONNECTION_H_
+#ifndef MOJO_SHELL_PACKAGE_MANAGER_CONTENT_HANDLER_CONNECTION_H_
+#define MOJO_SHELL_PACKAGE_MANAGER_CONTENT_HANDLER_CONNECTION_H_
 
 #include <stdint.h>
 
@@ -18,8 +18,6 @@
 namespace mojo {
 namespace shell {
 class ApplicationManager;
-}
-namespace package_manager {
 
 // A ContentHandlerConnection is responsible for creating and maintaining a
 // connection to an app which provides the ContentHandler service.
@@ -31,9 +29,9 @@ class ContentHandlerConnection {
  public:
   using ClosedCallback = base::Callback<void(ContentHandlerConnection*)>;
   // |id| is a unique identifier for this content handler.
-  ContentHandlerConnection(shell::ApplicationManager* manager,
-                           const shell::Identity& source,
-                           const shell::Identity& content_handler,
+  ContentHandlerConnection(ApplicationManager* manager,
+                           const Identity& source,
+                           const Identity& content_handler,
                            uint32_t id,
                            const ClosedCallback& connection_closed_callback);
 
@@ -43,7 +41,7 @@ class ContentHandlerConnection {
   // Closes the connection and destroys |this| object.
   void CloseConnection();
 
-  const shell::Identity& identity() const { return identity_; }
+  const Identity& identity() const { return identity_; }
   uint32_t id() const { return id_; }
 
  private:
@@ -52,7 +50,7 @@ class ContentHandlerConnection {
   void ApplicationDestructed();
 
   ClosedCallback connection_closed_callback_;
-  shell::Identity identity_;
+  Identity identity_;
 
   ContentHandlerPtr content_handler_;
   bool connection_closed_;
@@ -63,7 +61,7 @@ class ContentHandlerConnection {
   DISALLOW_COPY_AND_ASSIGN(ContentHandlerConnection);
 };
 
-}  // namespace package_manager
+}  // namespace shell
 }  // namespace mojo
 
-#endif  // MOJO_PACKAGE_MANAGER_CONTENT_HANDLER_CONNECTION_H_
+#endif  // MOJO_SHELL_PACKAGE_MANAGER_CONTENT_HANDLER_CONNECTION_H_

@@ -20,9 +20,9 @@
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/common/weak_binding_set.h"
-#include "mojo/package_manager/package_manager_impl.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
+#include "mojo/shell/package_manager/package_manager_impl.h"
 #include "mojo/util/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -130,8 +130,8 @@ class AboutFetcherTest : public testing::Test {
   void SetUp() override {
     base::FilePath shell_dir;
     PathService::Get(base::DIR_MODULE, &shell_dir);
-    scoped_ptr<package_manager::PackageManagerImpl> package_manager(
-        new package_manager::PackageManagerImpl(shell_dir, nullptr));
+    scoped_ptr<shell::PackageManagerImpl> package_manager(
+      new shell::PackageManagerImpl(shell_dir, nullptr));
     package_manager->RegisterContentHandler(
         "text/html", GURL("test:html_content_handler"));
     application_manager_.reset(

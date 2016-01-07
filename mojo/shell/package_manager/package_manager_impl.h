@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PACKAGE_MANAGER_PACKAGE_MANAGER_IMPL_H_
-#define MOJO_PACKAGE_MANAGER_PACKAGE_MANAGER_IMPL_H_
+#ifndef MOJO_SHELL_PACKAGE_MANAGER_PACKAGE_MANAGER_IMPL_H_
+#define MOJO_SHELL_PACKAGE_MANAGER_PACKAGE_MANAGER_IMPL_H_
 
 #include <stdint.h>
 
@@ -21,16 +21,14 @@ class TaskRunner;
 namespace mojo {
 class ContentHandler;
 namespace shell {
+class ContentHandlerConnection;
 class Fetcher;
 class Identity;
-}
-namespace package_manager {
-class ContentHandlerConnection;
 
-// This is the default implementation of shell::PackageManager. It loads
-// http/s urls off the network as well as providing special handling for mojo:
-// and about: urls.
-class PackageManagerImpl : public shell::PackageManager {
+// This is the default implementation of PackageManager. It loads http/s urls
+// off the network as well as providing special handling for mojo: and about:
+// urls.
+class PackageManagerImpl : public PackageManager {
  public:
   // mojo: urls are only supported if |shell_file_root| is non-empty.
   // |task_runner| is used by Fetchers created by the PackageManager to complete
@@ -60,38 +58,38 @@ class PackageManagerImpl : public shell::PackageManager {
   using ApplicationPackagedAlias = std::map<GURL, std::pair<GURL, std::string>>;
   using MimeTypeToURLMap = std::map<std::string, GURL>;
   using IdentityToContentHandlerMap =
-      std::map<shell::Identity, ContentHandlerConnection*>;
+      std::map<Identity, ContentHandlerConnection*>;
 
-  // Overridden from shell::PackageManager:
-  void SetApplicationManager(shell::ApplicationManager* manager) override;
+  // Overridden from PackageManager:
+  void SetApplicationManager(ApplicationManager* manager) override;
   void FetchRequest(
       URLRequestPtr request,
-      const shell::Fetcher::FetchCallback& loader_callback) override;
+      const Fetcher::FetchCallback& loader_callback) override;
   uint32_t HandleWithContentHandler(
-      shell::Fetcher* fetcher,
-      const shell::Identity& source,
+      Fetcher* fetcher,
+      const Identity& source,
       const GURL& target_url,
-      const shell::CapabilityFilter& target_filter,
+      const CapabilityFilter& target_filter,
       InterfaceRequest<Application>* application_request) override;
 
   GURL ResolveURL(const GURL& url);
   bool ShouldHandleWithContentHandler(
-      shell::Fetcher* fetcher,
+      Fetcher* fetcher,
       const GURL& target_url,
-      const shell::CapabilityFilter& target_filter,
-      shell::Identity* content_handler_identity,
+      const CapabilityFilter& target_filter,
+      Identity* content_handler_identity,
       URLResponsePtr* response) const;
 
   // Returns a running ContentHandler for |content_handler_identity|, if there
   // is not one running one is started for |source_identity|.
   ContentHandlerConnection* GetContentHandler(
-      const shell::Identity& content_handler_identity,
-      const shell::Identity& source_identity);
+      const Identity& content_handler_identity,
+      const Identity& source_identity);
 
   void OnContentHandlerConnectionClosed(
       ContentHandlerConnection* content_handler);
 
-  shell::ApplicationManager* application_manager_;
+  ApplicationManager* application_manager_;
   scoped_ptr<fetcher::URLResolver> url_resolver_;
   const bool disable_cache_;
   NetworkServicePtr network_service_;
@@ -107,7 +105,7 @@ class PackageManagerImpl : public shell::PackageManager {
   DISALLOW_COPY_AND_ASSIGN(PackageManagerImpl);
 };
 
-}  // namespace package_manager
+}  // namespace shell
 }  // namespace mojo
 
-#endif  // MOJO_PACKAGE_MANAGER_PACKAGE_MANAGER_IMPL_H_
+#endif  // MOJO_SHELL_PACKAGE_MANAGER_PACKAGE_MANAGER_IMPL_H_

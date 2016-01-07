@@ -31,7 +31,6 @@
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/package_manager/package_manager_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/runner/host/in_process_native_runner.h"
 #include "mojo/runner/host/out_of_process_native_runner.h"
@@ -44,6 +43,7 @@
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/connect_to_application_params.h"
+#include "mojo/shell/package_manager/package_manager_impl.h"
 #include "mojo/shell/query_util.h"
 #include "mojo/shell/switches.h"
 #include "mojo/util/filename_util.h"
@@ -68,7 +68,7 @@ class Setup {
   DISALLOW_COPY_AND_ASSIGN(Setup);
 };
 
-void InitContentHandlers(package_manager::PackageManagerImpl* manager,
+void InitContentHandlers(shell::PackageManagerImpl* manager,
                          const base::CommandLine& command_line) {
   // Default content handlers.
   manager->RegisterContentHandler("application/javascript",
@@ -217,7 +217,7 @@ bool Context::Init(const base::FilePath& shell_file_root) {
                            task_runners_->io_runner(),
                            embedder::ScopedPlatformHandle());
 
-  package_manager_ = new package_manager::PackageManagerImpl(
+  package_manager_ = new shell::PackageManagerImpl(
       shell_file_root, task_runners_->blocking_pool());
   InitContentHandlers(package_manager_, command_line);
 

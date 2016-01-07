@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/package_manager/package_manager_impl.h"
+#include "mojo/shell/package_manager/package_manager_impl.h"
 
 #include <stdint.h>
 
@@ -16,16 +16,16 @@
 #include "mojo/fetcher/network_fetcher.h"
 #include "mojo/fetcher/switches.h"
 #include "mojo/fetcher/update_fetcher.h"
-#include "mojo/package_manager/content_handler_connection.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/connect_util.h"
+#include "mojo/shell/package_manager/content_handler_connection.h"
 #include "mojo/shell/query_util.h"
 #include "mojo/shell/switches.h"
 #include "mojo/util/filename_util.h"
 #include "url/gurl.h"
 
 namespace mojo {
-namespace package_manager {
+namespace shell {
 
 PackageManagerImpl::PackageManagerImpl(
     const base::FilePath& shell_file_root,
@@ -66,14 +66,13 @@ void PackageManagerImpl::RegisterApplicationPackageAlias(
       std::make_pair(content_handler_package, qualifier);
 }
 
-void PackageManagerImpl::SetApplicationManager(
-    shell::ApplicationManager* manager) {
+void PackageManagerImpl::SetApplicationManager(ApplicationManager* manager) {
   application_manager_ = manager;
 }
 
 void PackageManagerImpl::FetchRequest(
     URLRequestPtr request,
-    const shell::Fetcher::FetchCallback& loader_callback) {
+    const Fetcher::FetchCallback& loader_callback) {
   GURL url(request->url);
   if (url.SchemeIs(fetcher::AboutFetcher::kAboutScheme)) {
     fetcher::AboutFetcher::Start(url, loader_callback);
@@ -90,38 +89,21 @@ void PackageManagerImpl::FetchRequest(
     // LocalFetcher uses the network service to infer MIME types from URLs.
     // Skip this for mojo URLs to avoid recursively loading the network service.
     if (!network_service_ && !url.SchemeIs("mojo") && !url.SchemeIs("exe")) {
-      shell::ConnectToService(application_manager_,
-                              GURL("mojo:network_service"), &network_service_);
+      ConnectToService(application_manager_, GURL("mojo:network_service"),
+                       &network_service_);
     }
     // Ownership of this object is transferred to |loader_callback|.
     // TODO(beng): this is eff'n weird.
     new fetcher::LocalFetcher(
         network_service_.get(), resolved_url,
-        shell::GetBaseURLAndQuery(resolved_url, nullptr),
+        GetBaseURLAndQuery(resolved_url, nullptr),
         shell_file_root_, loader_callback);
     return;
   }
 
-#if 0
-  // TODO(beng): figure out how this should be integrated now that mapped_url
-  //             is toast.
-  // TODO(scottmg): to quote someone I know, if you liked this you shouldda put
-  //                a test on it.
-  if (url.SchemeIs("mojo") &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseUpdater)) {
-    shell::ConnectToService(application_manager_, GURL("mojo:updater"),
-                            &updater_);
-    // Ownership of this object is transferred to |loader_callback|.
-    // TODO(beng): this is eff'n weird.
-    new fetcher::UpdateFetcher(url, updater_.get(), loader_callback);
-    return;
-  }
-#endif
-
   if (!url_loader_factory_) {
-    shell::ConnectToService(application_manager_, GURL("mojo:network_service"),
-                            &url_loader_factory_);
+    ConnectToService(application_manager_, GURL("mojo:network_service"),
+                     &url_loader_factory_);
   }
 
   // Ownership of this object is transferred to |loader_callback|.
@@ -131,12 +113,12 @@ void PackageManagerImpl::FetchRequest(
 }
 
 uint32_t PackageManagerImpl::HandleWithContentHandler(
-    shell::Fetcher* fetcher,
-    const shell::Identity& source,
+    Fetcher* fetcher,
+    const Identity& source,
     const GURL& target_url,
-    const shell::CapabilityFilter& target_filter,
+    const CapabilityFilter& target_filter,
     InterfaceRequest<Application>* application_request) {
-  shell::Identity content_handler_identity;
+  Identity content_handler_identity;
   URLResponsePtr response;
   if (ShouldHandleWithContentHandler(fetcher,
                                      target_url,
@@ -157,10 +139,10 @@ GURL PackageManagerImpl::ResolveURL(const GURL& url) {
 }
 
 bool PackageManagerImpl::ShouldHandleWithContentHandler(
-  shell::Fetcher* fetcher,
+  Fetcher* fetcher,
   const GURL& target_url,
-  const shell::CapabilityFilter& target_filter,
-  shell::Identity* content_handler_identity,
+  const CapabilityFilter& target_filter,
+  Identity* content_handler_identity,
   URLResponsePtr* response) const {
   // TODO(beng): it seems like some delegate should/would want to have a say in
   //             configuring the qualifier also.
@@ -182,7 +164,7 @@ bool PackageManagerImpl::ShouldHandleWithContentHandler(
   if (fetcher->PeekContentHandler(&shebang, &content_handler_url)) {
     *response = fetcher->AsURLResponse(task_runner_,
                                        static_cast<int>(shebang.size()));
-    *content_handler_identity = shell::Identity(
+    *content_handler_identity = Identity(
         content_handler_url,
         use_real_qualifier ? (*response)->site.To<std::string>()
                            : std::string(),
@@ -194,7 +176,7 @@ bool PackageManagerImpl::ShouldHandleWithContentHandler(
   auto iter = mime_type_to_url_.find(fetcher->MimeType());
   if (iter != mime_type_to_url_.end()) {
     *response = fetcher->AsURLResponse(task_runner_, 0);
-    *content_handler_identity = shell::Identity(
+    *content_handler_identity = Identity(
         iter->second,
         use_real_qualifier ? (*response)->site.To<std::string>()
                            : std::string(),
@@ -208,7 +190,7 @@ bool PackageManagerImpl::ShouldHandleWithContentHandler(
     // We replace the qualifier with the one our package alias requested.
     *response = URLResponse::New();
     (*response)->url = target_url.spec();
-    *content_handler_identity = shell::Identity(
+    *content_handler_identity = Identity(
         alias_iter->second.first,
         use_real_qualifier ? alias_iter->second.second : std::string(),
         target_filter);
@@ -219,8 +201,8 @@ bool PackageManagerImpl::ShouldHandleWithContentHandler(
 }
 
 ContentHandlerConnection* PackageManagerImpl::GetContentHandler(
-    const shell::Identity& content_handler_identity,
-    const shell::Identity& source_identity) {
+    const Identity& content_handler_identity,
+    const Identity& source_identity) {
   auto it = identity_to_content_handler_.find(content_handler_identity);
   if (it != identity_to_content_handler_.end())
     return it->second;
@@ -243,5 +225,5 @@ void PackageManagerImpl::OnContentHandlerConnectionClosed(
   identity_to_content_handler_.erase(it);
 }
 
-}  // namespace package_manager
+}  // namespace shell
 }  // namespace mojo

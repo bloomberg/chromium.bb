@@ -14,13 +14,13 @@
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/common/weak_binding_set.h"
-#include "mojo/package_manager/package_manager_impl.h"
 #include "mojo/shell/capability_filter_test.h"
 #include "mojo/shell/fetcher.h"
+#include "mojo/shell/package_manager/package_manager_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
-namespace package_manager {
+namespace shell {
 namespace test {
 namespace {
 
@@ -28,10 +28,10 @@ const char kTestMimeType[] = "test/mime-type";
 
 // A custom Fetcher used to trigger a content handler for kTestMimeType for a
 // specific test.
-class TestFetcher : public shell::Fetcher {
+class TestFetcher : public Fetcher {
  public:
   TestFetcher(const GURL& url, const FetchCallback& callback)
-      : shell::Fetcher(callback),
+      : Fetcher(callback),
         url_(url) {
     loader_callback_.Run(make_scoped_ptr(this));
   }
@@ -70,7 +70,7 @@ class TestPackageManager : public PackageManagerImpl {
   // Overridden from PackageManagerImpl:
   void FetchRequest(
       URLRequestPtr request,
-      const shell::Fetcher::FetchCallback& loader_callback) override {
+      const Fetcher::FetchCallback& loader_callback) override {
     new TestFetcher(GURL(request->url), loader_callback);
   }
 
@@ -105,7 +105,7 @@ class TestContentHandler : public ApplicationDelegate,
       InterfaceRequest<Application> application,
       URLResponsePtr response,
       const Callback<void()>& destruct_callback) override {
-    scoped_ptr<ApplicationDelegate> delegate(new shell::test::TestApplication);
+    scoped_ptr<ApplicationDelegate> delegate(new test::TestApplication);
     embedded_apps_.push_back(
         new ApplicationImpl(delegate.get(), std::move(application)));
     embedded_app_delegates_.push_back(std::move(delegate));
@@ -122,8 +122,7 @@ class TestContentHandler : public ApplicationDelegate,
 
 }  // namespace
 
-class CapabilityFilterContentHandlerTest
-    : public shell::test::CapabilityFilterTest {
+class CapabilityFilterContentHandlerTest : public test::CapabilityFilterTest {
  public:
   CapabilityFilterContentHandlerTest()
       : package_manager_(nullptr) {
@@ -135,11 +134,11 @@ class CapabilityFilterContentHandlerTest
 
  private:
   // Overridden from CapabilityFilterTest:
-  shell::PackageManager* CreatePackageManager() override {
+  PackageManager* CreatePackageManager() override {
     return package_manager_;
   }
   void SetUp() override {
-    shell::test::CapabilityFilterTest::SetUp();
+    test::CapabilityFilterTest::SetUp();
 
     GURL content_handler_url("test:content_handler");
     package_manager_->RegisterContentHandler(kTestMimeType,
@@ -162,5 +161,5 @@ TEST_F(CapabilityFilterContentHandlerTest, Wildcards) {
 }
 
 }  // namespace test
-}  // namespace package_manager
+}  // namespace shell
 }  // namespace mojo

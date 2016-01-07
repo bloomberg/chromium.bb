@@ -95,10 +95,10 @@ group("tests") {
   ]
 
   deps += [
-    "//mojo/package_manager:unittests",
     "//mojo/services/network:apptests",
     "//mojo/shell:apptests",
     "//mojo/shell:mojo_shell_unittests",
+    "//mojo/shell/package_manager:unittests",
   ]
 
   if (is_android) {

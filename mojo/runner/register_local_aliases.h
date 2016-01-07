@@ -6,13 +6,13 @@
 #define MOJO_RUNNER_REGISTER_LOCAL_ALIASES_H_
 
 namespace mojo {
-namespace package_manager {
+namespace shell {
 class PackageManagerImpl;
 }
 
 namespace runner {
 
-void RegisterLocalAliases(mojo::package_manager::PackageManagerImpl* manager);
+void RegisterLocalAliases(shell::PackageManagerImpl* manager);
 
 }  // namespace runner
 }  // namespace mojo
