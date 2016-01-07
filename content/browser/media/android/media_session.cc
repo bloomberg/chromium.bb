@@ -93,24 +93,15 @@ bool MediaSession::AddPlayer(MediaSessionObserver* observer,
 }
 
 void MediaSession::RemovePlayer(MediaSessionObserver* observer,
-                                int player_id,
-                                RemoveReason remove_reason) {
+                                int player_id) {
   auto it = players_.find(PlayerIdentifier(observer, player_id));
-  if (it != players_.end()) {
-    if (RemoveReason::USER_PAUSE == remove_reason && players_.size() == 1) {
-      if (!IsSuspended())
-        Suspend();
-      return;
-    }
+  if (it != players_.end())
     players_.erase(it);
-  }
 
   AbandonSystemAudioFocusIfNeeded();
 }
 
-void MediaSession::RemovePlayers(MediaSessionObserver* observer,
-                                 RemoveReason remove_reason) {
-  DCHECK(remove_reason == RemoveReason::DESTROYED);
+void MediaSession::RemovePlayers(MediaSessionObserver* observer) {
   for (auto it = players_.begin(); it != players_.end();) {
     if (it->observer == observer)
       players_.erase(it++);
@@ -140,6 +131,20 @@ void MediaSession::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
     return;
 
   OnResumeInternal(SuspendType::SYSTEM);
+}
+
+void MediaSession::OnPlayerPaused(MediaSessionObserver* observer,
+                                  int player_id) {
+  // If there is more than one observer, remove the paused one from the session.
+  if (players_.size() != 1) {
+    RemovePlayer(observer, player_id);
+    return;
+  }
+
+  // Otherwise, suspend the session.
+  DCHECK(*players_.begin() == PlayerIdentifier(observer, player_id));
+  DCHECK(!IsSuspended());
+  OnSuspendInternal(SuspendType::CONTENT, State::SUSPENDED);
 }
 
 void MediaSession::Resume() {
@@ -212,34 +217,46 @@ void MediaSession::OnSuspendInternal(SuspendType type, State new_state) {
   // UI suspend cannot use State::INACTIVE.
   DCHECK(type == SuspendType::SYSTEM || new_state == State::SUSPENDED);
 
-  if (type == SuspendType::UI)
-    uma_helper_.RecordSessionSuspended(MediaSessionSuspendedSource::UI);
-  if (type == SuspendType::SYSTEM) {
-    switch (new_state) {
-      case State::SUSPENDED:
-        uma_helper_.RecordSessionSuspended(
-            MediaSessionSuspendedSource::SystemTransient);
-        break;
-      case State::INACTIVE:
-        uma_helper_.RecordSessionSuspended(
-            MediaSessionSuspendedSource::SystemPermanent);
-        break;
-      default:
-        break;
-    }
+  switch (type) {
+    case SuspendType::UI:
+      uma_helper_.RecordSessionSuspended(MediaSessionSuspendedSource::UI);
+      break;
+    case SuspendType::SYSTEM:
+      switch (new_state) {
+        case State::SUSPENDED:
+          uma_helper_.RecordSessionSuspended(
+              MediaSessionSuspendedSource::SystemTransient);
+          break;
+        case State::INACTIVE:
+          uma_helper_.RecordSessionSuspended(
+              MediaSessionSuspendedSource::SystemPermanent);
+          break;
+        case State::ACTIVE:
+          NOTREACHED();
+          break;
+      }
+      break;
+    case SuspendType::CONTENT:
+      uma_helper_.RecordSessionSuspended(MediaSessionSuspendedSource::CONTENT);
+      break;
   }
 
   SetAudioFocusState(new_state);
   suspend_type_ = type;
 
-  for (const auto& it : players_)
-    it.observer->OnSuspend(it.player_id);
+  if (type != SuspendType::CONTENT) {
+    // SuspendType::CONTENT happens when the suspend action came from
+    // the page in which case the player is already paused.
+    // Otherwise, the players need to be paused.
+    for (const auto& it : players_)
+      it.observer->OnSuspend(it.player_id);
+  }
 
   UpdateWebContents();
 }
 
 void MediaSession::OnResumeInternal(SuspendType type) {
-  if (suspend_type_ != type && type != SuspendType::UI)
+  if (type == SuspendType::SYSTEM && suspend_type_ != type)
     return;
 
   SetAudioFocusState(State::ACTIVE);

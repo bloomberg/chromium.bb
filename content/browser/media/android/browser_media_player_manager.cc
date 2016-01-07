@@ -228,8 +228,7 @@ BrowserMediaPlayerManager::~BrowserMediaPlayerManager() {
   for (MediaPlayerAndroid* player : players_)
     player->DeleteOnCorrectThread();
 
-  MediaSession::Get(web_contents())->RemovePlayers(
-      this, MediaSession::RemoveReason::DESTROYED);
+  MediaSession::Get(web_contents())->RemovePlayers(this);
   players_.weak_clear();
 }
 
@@ -305,8 +304,7 @@ void BrowserMediaPlayerManager::OnMediaMetadataChanged(
 
 void BrowserMediaPlayerManager::OnPlaybackComplete(int player_id) {
   Send(new MediaPlayerMsg_MediaPlaybackCompleted(RoutingID(), player_id));
-  MediaSession::Get(web_contents())->RemovePlayer(
-      this, player_id, MediaSession::RemoveReason::PLAYBACK_COMPLETE);
+  MediaSession::Get(web_contents())->RemovePlayer(this, player_id);
 
   if (fullscreen_player_id_ == player_id)
     video_view_->OnPlaybackComplete();
@@ -599,10 +597,8 @@ void BrowserMediaPlayerManager::OnPause(
   if (player)
     player->Pause(is_media_related_action);
 
-  if (is_media_related_action) {
-    MediaSession::Get(web_contents())->RemovePlayer(
-        this, player_id, MediaSession::RemoveReason::USER_PAUSE);
-  }
+  if (is_media_related_action)
+    MediaSession::Get(web_contents())->OnPlayerPaused(this, player_id);
 }
 
 void BrowserMediaPlayerManager::OnSetVolume(int player_id, double volume) {
@@ -620,10 +616,8 @@ void BrowserMediaPlayerManager::OnReleaseResources(int player_id) {
   if (player) {
     // Videos can't play in the background, so are removed from the media
     // session.
-    if (player->GetVideoWidth() > 0) {
-      MediaSession::Get(web_contents())->RemovePlayer(
-          this, player_id, MediaSession::RemoveReason::INVISIBLE);
-    }
+    if (player->GetVideoWidth() > 0)
+      MediaSession::Get(web_contents())->RemovePlayer(this, player_id);
 
     ReleasePlayer(player);
   }
@@ -660,8 +654,7 @@ void BrowserMediaPlayerManager::DestroyPlayer(int player_id) {
 #endif
       (*it)->DeleteOnCorrectThread();
       players_.weak_erase(it);
-      MediaSession::Get(web_contents())->RemovePlayer(
-          this, player_id, MediaSession::RemoveReason::DESTROYED);
+      MediaSession::Get(web_contents())->RemovePlayer(this, player_id);
       break;
     }
   }

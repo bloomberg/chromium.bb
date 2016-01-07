@@ -41,13 +41,6 @@ class CONTENT_EXPORT MediaSession
     Transient
   };
 
-  enum class RemoveReason {
-    PLAYBACK_COMPLETE,
-    INVISIBLE,
-    USER_PAUSE,
-    DESTROYED,
-  };
-
   static bool RegisterMediaSession(JNIEnv* env);
 
   // Returns the MediaSession associated to this WebContents. Creates one if
@@ -63,13 +56,11 @@ class CONTENT_EXPORT MediaSession
 
   // Removes the given player from the current media session. Abandons audio
   // focus if that was the last player in the session.
-  void RemovePlayer(MediaSessionObserver* observer, int player_id,
-                    RemoveReason remove_reason);
+  void RemovePlayer(MediaSessionObserver* observer, int player_id);
 
   // Removes all the players associated with |observer|. Abandons audio focus if
   // these were the last players in the session.
-  void RemovePlayers(MediaSessionObserver* observer,
-                     RemoveReason remove_reason);
+  void RemovePlayers(MediaSessionObserver* observer);
 
   // Called when the Android system requests the MediaSession to be suspended.
   // Called by Java through JNI.
@@ -80,6 +71,11 @@ class CONTENT_EXPORT MediaSession
   // Called when the Android system requests the MediaSession to be resumed.
   // Called by Java through JNI.
   void OnResume(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+
+  // Called when a player is paused in the content.
+  // If the paused player is the last player, we suspend the MediaSession.
+  // Otherwise, the paused player will be removed from the MediaSession.
+  void OnPlayerPaused(MediaSessionObserver* observer, int player_id);
 
   // Called when the user requests resuming the session. No-op if the session is
   // not controllable.
@@ -122,6 +118,8 @@ class CONTENT_EXPORT MediaSession
     SYSTEM,
     // Suspended by the UI.
     UI,
+    // Suspended by the page via script or user interaction.
+    CONTENT,
   };
 
   // Representation of a player for the MediaSession.
