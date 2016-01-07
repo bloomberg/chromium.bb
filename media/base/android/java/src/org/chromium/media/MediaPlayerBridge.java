@@ -6,6 +6,7 @@ package org.chromium.media;
 
 import android.content.Context;
 import android.media.MediaPlayer;
+import android.media.MediaPlayer.TrackInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -94,6 +95,40 @@ public class MediaPlayerBridge {
     @CalledByNative
     protected boolean isPlaying() {
         return getLocalPlayer().isPlaying();
+    }
+
+    @CalledByNative
+    protected boolean hasVideo() {
+        TrackInfo trackInfo[] = getLocalPlayer().getTrackInfo();
+
+        // HLS media does not have the track info, so we treat them conservatively.
+        if (trackInfo.length == 0) return true;
+
+        for (TrackInfo info : trackInfo) {
+            // TODO(zqzhang): may be we can have a histogram recording
+            // media track types in the future.
+            // See http://crbug.com/571411
+            if (TrackInfo.MEDIA_TRACK_TYPE_VIDEO == info.getTrackType()) return true;
+            if (TrackInfo.MEDIA_TRACK_TYPE_UNKNOWN == info.getTrackType()) return true;
+        }
+        return false;
+    }
+
+    @CalledByNative
+    protected boolean hasAudio() {
+        TrackInfo trackInfo[] = getLocalPlayer().getTrackInfo();
+
+        // HLS media does not have the track info, so we treat them conservatively.
+        if (trackInfo.length == 0) return true;
+
+        for (TrackInfo info : trackInfo) {
+            // TODO(zqzhang): may be we can have a histogram recording
+            // media track types in the future.
+            // See http://crbug.com/571411
+            if (TrackInfo.MEDIA_TRACK_TYPE_AUDIO == info.getTrackType()) return true;
+            if (TrackInfo.MEDIA_TRACK_TYPE_UNKNOWN == info.getTrackType()) return true;
+        }
+        return false;
     }
 
     @CalledByNative

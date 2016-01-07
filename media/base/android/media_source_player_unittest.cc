@@ -77,7 +77,9 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   MediaPlayerAndroid* GetPlayer(int player_id) override { return NULL; }
   void OnDecorderResourcesReleased(int player_id) {}
 
-  bool RequestPlay(int player_id, base::TimeDelta duration) override {
+  bool RequestPlay(int player_id,
+                   base::TimeDelta duration,
+                   bool has_audio) override {
     return allow_play_;
   }
 

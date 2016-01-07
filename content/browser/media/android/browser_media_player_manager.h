@@ -104,7 +104,8 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   media::MediaUrlInterceptor* GetMediaUrlInterceptor() override;
   media::MediaPlayerAndroid* GetFullscreenPlayer() override;
   media::MediaPlayerAndroid* GetPlayer(int player_id) override;
-  bool RequestPlay(int player_id, base::TimeDelta duration) override;
+  bool RequestPlay(int player_id, base::TimeDelta duration,
+                   bool has_audio) override;
 #if defined(VIDEO_HOLE)
   void AttachExternalVideoSurface(int player_id, jobject surface);
   void DetachExternalVideoSurface(int player_id);

@@ -65,6 +65,8 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   void SeekTo(base::TimeDelta timestamp) override;
   void Release() override;
   void SetVolume(double volume) override;
+  bool HasVideo() const override;
+  bool HasAudio() const override;
   int GetVideoWidth() override;
   int GetVideoHeight() override;
   base::TimeDelta GetCurrentTime() override;

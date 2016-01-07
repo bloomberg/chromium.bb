@@ -131,7 +131,9 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   void OnWaitingForDecryptionKey(int player_id) override {}
   MediaPlayerAndroid* GetFullscreenPlayer() override { return nullptr; }
   MediaPlayerAndroid* GetPlayer(int player_id) override { return nullptr; }
-  bool RequestPlay(int player_id, base::TimeDelta duration) override {
+  bool RequestPlay(int player_id,
+                   base::TimeDelta duration,
+                   bool has_audio) override {
     return playback_allowed_;
   }
 

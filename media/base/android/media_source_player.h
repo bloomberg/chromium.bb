@@ -55,6 +55,8 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   void SeekTo(base::TimeDelta timestamp) override;
   void Release() override;
   void SetVolume(double volume) override;
+  bool HasVideo() const override;
+  bool HasAudio() const override;
   int GetVideoWidth() override;
   int GetVideoHeight() override;
   base::TimeDelta GetCurrentTime() override;
@@ -110,10 +112,6 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // Called to decode more data.
   void DecodeMoreAudio();
   void DecodeMoreVideo();
-
-  // Functions check whether audio/video is present.
-  bool HasVideo() const;
-  bool HasAudio() const;
 
   // Functions that check whether audio/video stream has reached end of output
   // or are not present in player configuration.

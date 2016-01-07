@@ -401,7 +401,11 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::GetPlayer(int player_id) {
 }
 
 bool BrowserMediaPlayerManager::RequestPlay(int player_id,
-                                            base::TimeDelta duration) {
+                                            base::TimeDelta duration,
+                                            bool has_audio) {
+  if (!has_audio)
+    return true;
+
   MediaSession::Type media_session_type =
       duration == base::TimeDelta() ||
               duration.InSeconds() > kMinimumDurationForContentInSeconds

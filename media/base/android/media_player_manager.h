@@ -76,7 +76,9 @@ class MEDIA_EXPORT MediaPlayerManager {
   // manager should use this opportunity to check if the current context is
   // appropriate for a media to play.
   // Returns whether the request was granted.
-  virtual bool RequestPlay(int player_id, base::TimeDelta duration) = 0;
+  virtual bool RequestPlay(int player_id,
+                           base::TimeDelta duration,
+                           bool has_audio) = 0;
 };
 
 }  // namespace media

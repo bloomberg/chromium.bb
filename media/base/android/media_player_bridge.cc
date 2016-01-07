@@ -310,6 +310,16 @@ bool MediaPlayerBridge::IsPlaying() {
   return result;
 }
 
+bool MediaPlayerBridge::HasVideo() const {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_MediaPlayerBridge_hasVideo(env, j_media_player_bridge_.obj());
+}
+
+bool MediaPlayerBridge::HasAudio() const {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_MediaPlayerBridge_hasAudio(env, j_media_player_bridge_.obj());
+}
+
 int MediaPlayerBridge::GetVideoWidth() {
   if (!prepared_)
     return width_;
@@ -453,7 +463,7 @@ void MediaPlayerBridge::UpdateAllowedOperations() {
 }
 
 void MediaPlayerBridge::StartInternal() {
-  if (!manager()->RequestPlay(player_id(), duration_)) {
+  if (!manager()->RequestPlay(player_id(), duration_, HasAudio())) {
     Pause(true);
     return;
   }

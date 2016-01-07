@@ -66,6 +66,8 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   virtual void SetVolume(double volume) = 0;
 
   // Get the media information from the player.
+  virtual bool HasVideo() const = 0;
+  virtual bool HasAudio() const = 0;
   virtual int GetVideoWidth() = 0;
   virtual int GetVideoHeight() = 0;
   virtual base::TimeDelta GetDuration() = 0;
@@ -83,7 +85,8 @@ class MEDIA_EXPORT MediaPlayerAndroid {
 
   // Requests playback permission from MediaPlayerManager.
   // Overridden in MediaCodecPlayer to pass data between threads.
-  virtual void RequestPermissionAndPostResult(base::TimeDelta duration) {}
+  virtual void RequestPermissionAndPostResult(base::TimeDelta duration,
+                                              bool has_audio) {}
 
   // Overridden in MediaCodecPlayer to pass data between threads.
   virtual void OnMediaMetadataChanged(base::TimeDelta duration,

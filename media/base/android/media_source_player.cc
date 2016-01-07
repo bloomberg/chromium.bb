@@ -147,6 +147,14 @@ bool MediaSourcePlayer::IsPlaying() {
   return playing_;
 }
 
+bool MediaSourcePlayer::HasVideo() const {
+  return video_decoder_job_->HasStream();
+}
+
+bool MediaSourcePlayer::HasAudio() const {
+  return audio_decoder_job_->HasStream();
+}
+
 int MediaSourcePlayer::GetVideoWidth() {
   return video_decoder_job_->output_width();
 }
@@ -225,7 +233,7 @@ void MediaSourcePlayer::StartInternal() {
   if (pending_event_ != NO_EVENT_PENDING)
     return;
 
-  if (!manager()->RequestPlay(player_id(), duration_)) {
+  if (!manager()->RequestPlay(player_id(), duration_, HasAudio())) {
     Pause(true);
     return;
   }
@@ -673,14 +681,6 @@ void MediaSourcePlayer::ClearDecodingData() {
   audio_decoder_job_->Flush();
   video_decoder_job_->Flush();
   start_time_ticks_ = base::TimeTicks();
-}
-
-bool MediaSourcePlayer::HasVideo() const {
-  return video_decoder_job_->HasStream();
-}
-
-bool MediaSourcePlayer::HasAudio() const {
-  return audio_decoder_job_->HasStream();
 }
 
 bool MediaSourcePlayer::AudioFinished() {

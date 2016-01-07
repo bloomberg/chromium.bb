@@ -366,6 +366,16 @@ void MediaCodecPlayer::SetVolume(double volume) {
   audio_decoder_->SetVolume(volume);
 }
 
+bool MediaCodecPlayer::HasAudio() const {
+  DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
+  return audio_decoder_->HasStream();
+}
+
+bool MediaCodecPlayer::HasVideo() const {
+  DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
+  return video_decoder_->HasStream();
+}
+
 int MediaCodecPlayer::GetVideoWidth() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   return metadata_cache_.video_size.width();
@@ -611,12 +621,12 @@ bool MediaCodecPlayer::IsPrerollingForTests(DemuxerStream::Type type) const {
 
 // Events from Player, called on UI thread
 
-void MediaCodecPlayer::RequestPermissionAndPostResult(
-    base::TimeDelta duration) {
+void MediaCodecPlayer::RequestPermissionAndPostResult(base::TimeDelta duration,
+                                                      bool has_audio) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   DVLOG(1) << __FUNCTION__ << " duration:" << duration;
 
-  bool granted = manager()->RequestPlay(player_id(), duration);
+  bool granted = manager()->RequestPlay(player_id(), duration, has_audio);
   GetMediaTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&MediaCodecPlayer::OnPermissionDecided,
                             media_weak_this_, granted));
@@ -1022,16 +1032,6 @@ base::TimeDelta MediaCodecPlayer::GetPendingSeek() const {
   return pending_seek_;
 }
 
-bool MediaCodecPlayer::HasAudio() const {
-  DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
-  return audio_decoder_->HasStream();
-}
-
-bool MediaCodecPlayer::HasVideo() const {
-  DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
-  return video_decoder_->HasStream();
-}
-
 void MediaCodecPlayer::SetDemuxerConfigs(const DemuxerConfigs& configs) {
   DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
   DVLOG(1) << __FUNCTION__ << " " << configs;
@@ -1064,7 +1064,7 @@ void MediaCodecPlayer::RequestPlayPermission() {
 
   ui_task_runner_->PostTask(
       FROM_HERE, base::Bind(&MediaPlayerAndroid::RequestPermissionAndPostResult,
-                            WeakPtrForUIThread(), duration_));
+                            WeakPtrForUIThread(), duration_, HasAudio()));
 }
 
 void MediaCodecPlayer::StartPrefetchDecoders() {

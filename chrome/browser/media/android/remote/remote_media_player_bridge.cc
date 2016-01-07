@@ -79,6 +79,16 @@ RemoteMediaPlayerBridge::~RemoteMediaPlayerBridge() {
   Release();
 }
 
+bool RemoteMediaPlayerBridge::HasVideo() const {
+  NOTIMPLEMENTED();
+  return true;
+}
+
+bool RemoteMediaPlayerBridge::HasAudio() const {
+  NOTIMPLEMENTED();
+  return true;
+}
+
 int RemoteMediaPlayerBridge::GetVideoWidth() {
   return local_player_->GetVideoWidth();
 }
