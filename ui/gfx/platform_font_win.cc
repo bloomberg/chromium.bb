@@ -368,19 +368,19 @@ Font PlatformFontWin::DeriveFont(int size_delta, int style) const {
   return Font(new PlatformFontWin(CreateHFontRef(hfont)));
 }
 
-int PlatformFontWin::GetHeight() const {
+int PlatformFontWin::GetHeight() {
   return font_ref_->height();
 }
 
-int PlatformFontWin::GetBaseline() const {
+int PlatformFontWin::GetBaseline() {
   return font_ref_->baseline();
 }
 
-int PlatformFontWin::GetCapHeight() const {
+int PlatformFontWin::GetCapHeight() {
   return font_ref_->cap_height();
 }
 
-int PlatformFontWin::GetExpectedTextWidth(int length) const {
+int PlatformFontWin::GetExpectedTextWidth(int length) {
   return length * std::min(font_ref_->GetDluBaseX(),
                            font_ref_->ave_char_width());
 }

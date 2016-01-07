@@ -157,19 +157,23 @@ Font PlatformFontLinux::DeriveFont(int size_delta, int style) const {
                                     gfx::GetFontRenderParams(query, NULL)));
 }
 
-int PlatformFontLinux::GetHeight() const {
+int PlatformFontLinux::GetHeight() {
+  ComputeMetricsIfNecessary();
   return height_pixels_;
 }
 
-int PlatformFontLinux::GetBaseline() const {
+int PlatformFontLinux::GetBaseline() {
+  ComputeMetricsIfNecessary();
   return ascent_pixels_;
 }
 
-int PlatformFontLinux::GetCapHeight() const {
+int PlatformFontLinux::GetCapHeight() {
+  ComputeMetricsIfNecessary();
   return cap_height_pixels_;
 }
 
-int PlatformFontLinux::GetExpectedTextWidth(int length) const {
+int PlatformFontLinux::GetExpectedTextWidth(int length) {
+  ComputeMetricsIfNecessary();
   return round(static_cast<float>(length) * average_width_pixels_);
 }
 
@@ -238,20 +242,6 @@ void PlatformFontLinux::InitFromDetails(
 #endif
   font_render_params_ = render_params;
 
-  SkPaint paint;
-  paint.setAntiAlias(false);
-  paint.setSubpixelText(false);
-  paint.setTextSize(font_size_pixels_);
-  paint.setTypeface(typeface_.get());
-  paint.setFakeBoldText((Font::BOLD & style_) && !typeface_->isBold());
-  paint.setTextSkewX((Font::ITALIC & style_) && !typeface_->isItalic() ?
-                     -SK_Scalar1/4 : 0);
-  SkPaint::FontMetrics metrics;
-  paint.getFontMetrics(&metrics);
-  ascent_pixels_ = SkScalarCeilToInt(-metrics.fAscent);
-  height_pixels_ = ascent_pixels_ + SkScalarCeilToInt(metrics.fDescent);
-  cap_height_pixels_ = SkScalarCeilToInt(metrics.fCapHeight);
-  average_width_pixels_ = SkScalarToDouble(metrics.fAvgCharWidth);
 }
 
 void PlatformFontLinux::InitFromPlatformFont(const PlatformFontLinux* other) {
@@ -263,10 +253,35 @@ void PlatformFontLinux::InitFromPlatformFont(const PlatformFontLinux* other) {
   device_scale_factor_ = other->device_scale_factor_;
 #endif
   font_render_params_ = other->font_render_params_;
-  ascent_pixels_ = other->ascent_pixels_;
-  height_pixels_ = other->height_pixels_;
-  cap_height_pixels_ = other->cap_height_pixels_;
-  average_width_pixels_ = other->average_width_pixels_;
+
+  if (!other->metrics_need_computation_) {
+    metrics_need_computation_ = false;
+    ascent_pixels_ = other->ascent_pixels_;
+    height_pixels_ = other->height_pixels_;
+    cap_height_pixels_ = other->cap_height_pixels_;
+    average_width_pixels_ = other->average_width_pixels_;
+  }
+}
+
+void PlatformFontLinux::ComputeMetricsIfNecessary() {
+  if (metrics_need_computation_) {
+    metrics_need_computation_ = false;
+
+    SkPaint paint;
+    paint.setAntiAlias(false);
+    paint.setSubpixelText(false);
+    paint.setTextSize(font_size_pixels_);
+    paint.setTypeface(typeface_.get());
+    paint.setFakeBoldText((Font::BOLD & style_) && !typeface_->isBold());
+    paint.setTextSkewX((Font::ITALIC & style_) && !typeface_->isItalic() ?
+                       -SK_Scalar1/4 : 0);
+    SkPaint::FontMetrics metrics;
+    paint.getFontMetrics(&metrics);
+    ascent_pixels_ = SkScalarCeilToInt(-metrics.fAscent);
+    height_pixels_ = ascent_pixels_ + SkScalarCeilToInt(metrics.fDescent);
+    cap_height_pixels_ = SkScalarCeilToInt(metrics.fCapHeight);
+    average_width_pixels_ = SkScalarToDouble(metrics.fAvgCharWidth);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

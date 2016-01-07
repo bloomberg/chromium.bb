@@ -46,19 +46,19 @@ Font PlatformFontIOS::DeriveFont(int size_delta, int style) const {
   return Font(new PlatformFontIOS(font_name_, font_size_ + size_delta, style));
 }
 
-int PlatformFontIOS::GetHeight() const {
+int PlatformFontIOS::GetHeight() {
   return height_;
 }
 
-int PlatformFontIOS::GetBaseline() const {
+int PlatformFontIOS::GetBaseline() {
   return ascent_;
 }
 
-int PlatformFontIOS::GetCapHeight() const {
+int PlatformFontIOS::GetCapHeight() {
   return cap_height_;
 }
 
-int PlatformFontIOS::GetExpectedTextWidth(int length) const {
+int PlatformFontIOS::GetExpectedTextWidth(int length) {
   return length * average_width_;
 }
 

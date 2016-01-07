@@ -19,10 +19,10 @@ class PlatformFontIOS : public PlatformFont {
 
   // Overridden from PlatformFont:
   Font DeriveFont(int size_delta, int style) const override;
-  int GetHeight() const override;
-  int GetBaseline() const override;
-  int GetCapHeight() const override;
-  int GetExpectedTextWidth(int length) const override;
+  int GetHeight() override;
+  int GetBaseline() override;
+  int GetCapHeight() override;
+  int GetExpectedTextWidth(int length) override;
   int GetStyle() const override;
   const std::string& GetFontName() const override;
   std::string GetActualFontNameForTesting() const override;

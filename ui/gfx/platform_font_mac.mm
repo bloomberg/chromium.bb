@@ -99,19 +99,19 @@ Font PlatformFontMac::DeriveFont(int size_delta, int style) const {
   return Font(new PlatformFontMac(font_name_, font_size_ + size_delta, style));
 }
 
-int PlatformFontMac::GetHeight() const {
+int PlatformFontMac::GetHeight() {
   return height_;
 }
 
-int PlatformFontMac::GetBaseline() const {
+int PlatformFontMac::GetBaseline() {
   return ascent_;
 }
 
-int PlatformFontMac::GetCapHeight() const {
+int PlatformFontMac::GetCapHeight() {
   return cap_height_;
 }
 
-int PlatformFontMac::GetExpectedTextWidth(int length) const {
+int PlatformFontMac::GetExpectedTextWidth(int length) {
   return length * average_width_;
 }
 

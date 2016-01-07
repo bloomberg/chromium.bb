@@ -41,18 +41,18 @@ class GFX_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
   // greater than just ascent + descent.  Specifically, the Windows and Mac
   // implementations include leading and the Linux one does not.  This may
   // need to be revisited in the future.
-  virtual int GetHeight() const = 0;
+  virtual int GetHeight() = 0;
 
   // Returns the baseline, or ascent, of the font.
-  virtual int GetBaseline() const = 0;
+  virtual int GetBaseline() = 0;
 
   // Returns the cap height of the font.
-  virtual int GetCapHeight() const = 0;
+  virtual int GetCapHeight() = 0;
 
   // Returns the expected number of horizontal pixels needed to display the
   // specified length of characters. Call GetStringWidth() to retrieve the
   // actual number.
-  virtual int GetExpectedTextWidth(int length) const = 0;
+  virtual int GetExpectedTextWidth(int length) = 0;
 
   // Returns the style of the font.
   virtual int GetStyle() const = 0;
