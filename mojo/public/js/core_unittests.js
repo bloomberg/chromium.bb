@@ -9,10 +9,10 @@ define([
   ], function(expect, core, gc) {
 
   var HANDLE_SIGNAL_READWRITABLE = core.HANDLE_SIGNAL_WRITABLE |
-                      core.HANDLE_SIGNAL_READABLE;
+                                   core.HANDLE_SIGNAL_READABLE;
   var HANDLE_SIGNAL_ALL = core.HANDLE_SIGNAL_WRITABLE |
-                      core.HANDLE_SIGNAL_READABLE |
-                      core.HANDLE_SIGNAL_PEER_CLOSED;
+                          core.HANDLE_SIGNAL_READABLE |
+                          core.HANDLE_SIGNAL_PEER_CLOSED;
 
   runWithMessagePipe(testNop);
   runWithMessagePipe(testReadAndWriteMessage);
@@ -118,21 +118,19 @@ define([
 
     expect(result).toBe(core.RESULT_OK);
 
-    wait = core.waitMany(
-                  [pipe.handle0, pipe.handle1],
-                  [core.HANDLE_SIGNAL_WRITABLE,core.HANDLE_SIGNAL_WRITABLE],
-                  0);
+    wait = core.wait(pipe.handle0, core.HANDLE_SIGNAL_WRITABLE, 0);
     expect(wait.result).toBe(core.RESULT_OK);
-    expect(wait.index).toBe(0);
-    expect(wait.signalsState[0].satisfiedSignals).toBe(
-           core.HANDLE_SIGNAL_WRITABLE);
-    expect(wait.signalsState[0].satisfiableSignals).toBe(HANDLE_SIGNAL_ALL);
-    expect(wait.signalsState[1].satisfiedSignals).toBe(
-           HANDLE_SIGNAL_READWRITABLE);
-    expect(wait.signalsState[1].satisfiableSignals).toBe(HANDLE_SIGNAL_ALL);
+    expect(wait.signalsState.satisfiedSignals).toBe(
+        core.HANDLE_SIGNAL_WRITABLE);
+    expect(wait.signalsState.satisfiableSignals).toBe(HANDLE_SIGNAL_ALL);
 
-    var read = core.readMessage(
-      pipe.handle1, core.READ_MESSAGE_FLAG_NONE);
+    wait = core.wait(pipe.handle1, core.HANDLE_SIGNAL_READABLE,
+                     core.DEADLINE_INDEFINITE);
+    expect(wait.result).toBe(core.RESULT_OK);
+    expect(wait.signalsState.satisfiedSignals).toBe(HANDLE_SIGNAL_READWRITABLE);
+    expect(wait.signalsState.satisfiableSignals).toBe(HANDLE_SIGNAL_ALL);
+
+    var read = core.readMessage(pipe.handle1, core.READ_MESSAGE_FLAG_NONE);
 
     expect(read.result).toBe(core.RESULT_OK);
     expect(read.buffer.byteLength).toBe(42);
