@@ -38,6 +38,18 @@ cr.define('media_router', function() {
   }
 
   /**
+   * Reports the selected cast mode.
+   * Called when the user selects a cast mode from the picker.
+   *
+   * @param {{detail: {castModeType: number}}} data
+   * Parameters in |data|.detail:
+   *   castModeType - type of cast mode selected by the user.
+   */
+  function onCastModeSelected(data) {
+    media_router.browserApi.reportSelectedCastMode(data.detail.castModeType);
+  }
+
+  /**
    * Closes the dialog.
    * Called when the user clicks the close button on the dialog.
    */
@@ -64,18 +76,6 @@ cr.define('media_router', function() {
   }
 
   /**
-   * Reports the selected cast mode.
-   * Called when the user selects a cast mode from the picker.
-   *
-   * @param {{detail: {castModeType: number}}} data
-   * Parameters in |data|.detail:
-   *   castModeType - type of cast mode selected by the user.
-   */
-  function onCastModeSelected(data) {
-    media_router.browserApi.reportSelectedCastMode(data.detail.castModeType);
-  }
-
-  /**
    * Creates a media route.
    * Called when the user requests to create a media route.
    *
@@ -99,18 +99,6 @@ cr.define('media_router', function() {
    */
   function onCloseRouteClick(data) {
     media_router.browserApi.closeRoute(data.detail.route);
-  }
-
-  /**
-   * Reports the index of the sink that was clicked.
-   * Called when the user selects a sink on the sink list.
-   *
-   * @param {{detail: {index: number}}} data
-   * Paramters in |data|.detail:
-   *   index - the index of the clicked sink.
-   */
-  function onSinkClick(data) {
-    media_router.browserApi.reportClickedSinkIndex(data.detail.index);
   }
 
   /**
@@ -141,6 +129,18 @@ cr.define('media_router', function() {
   function onNavigateToSinkList() {
     media_router.browserApi.reportNavigateToView(
         media_router.MediaRouterView.SINK_LIST);
+  }
+
+  /**
+   * Reports the index of the sink that was clicked.
+   * Called when the user selects a sink on the sink list.
+   *
+   * @param {{detail: {index: number}}} data
+   * Paramters in |data|.detail:
+   *   index - the index of the clicked sink.
+   */
+  function onSinkClick(data) {
+    media_router.browserApi.reportClickedSinkIndex(data.detail.index);
   }
 
   /**
