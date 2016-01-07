@@ -83,13 +83,16 @@ class InitCommand(cr.Command):
         # Try to guess platform based on output name
         platforms = [p.name for p in cr.Platform.AllPlugins()]
         matches = [p for p in platforms if p in base]
-        if len(matches) != 1:
+        # Get the longest matching string and check if the others are
+        # substrings. This is done to support "linuxchromeos" and "linux".
+        platform = max(matches, key=len)
+        all_matches_are_substrings = all(p in platform for p in matches)
+        if all_matches_are_substrings or not matches:
           print 'Platform is not set, and could not be guessed from', base
           print 'Should be one of', ','.join(platforms)
           if len(matches) > 1:
             print 'Matched all of', ','.join(matches)
           exit(1)
-        platform = matches[0]
       generator = cr.context.args.CR_GENERATOR
       if not generator:
         generator = 'gyp'
