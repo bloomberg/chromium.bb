@@ -30,13 +30,6 @@ class StringProvider {
   // copy the URL for the current search query into the pasteboard.
   virtual std::string GetOmniboxCopyUrlString() = 0;
 
-  // Return the strings used to display spoofing attempt errors.
-  virtual base::string16 GetSpoofingInterstitialTitle();
-  virtual base::string16 GetSpoofingInterstitialHeadline();
-  virtual base::string16 GetSpoofingInterstitialMessage();
-  virtual base::string16 GetSpoofingInterstitialDetails();
-  virtual base::string16 GetSpoofingInterstitialFailure();
-
   // Return the resource IDs used to display unsafe port errors.
   virtual int GetUnsafePortTitleID();
   virtual int GetUnsafePortHeadlineID();

@@ -14,26 +14,6 @@ std::string StringProvider::GetOmniboxCopyUrlString() {
   return std::string();
 }
 
-base::string16 StringProvider::GetSpoofingInterstitialTitle() {
-  return base::string16();
-}
-
-base::string16 StringProvider::GetSpoofingInterstitialHeadline() {
-  return base::string16();
-}
-
-base::string16 StringProvider::GetSpoofingInterstitialMessage() {
-  return base::string16();
-}
-
-base::string16 StringProvider::GetSpoofingInterstitialDetails() {
-  return base::string16();
-}
-
-base::string16 StringProvider::GetSpoofingInterstitialFailure() {
-  return base::string16();
-}
-
 int StringProvider::GetUnsafePortTitleID() {
   return 0;
 }
