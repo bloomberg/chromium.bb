@@ -270,6 +270,8 @@ public:
 
     const char* name() const override { return "LayoutTableCell"; }
 
+    bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const override;
+
 protected:
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     void computePreferredLogicalWidths() override;

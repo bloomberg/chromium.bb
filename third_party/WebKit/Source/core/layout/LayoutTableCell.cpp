@@ -1011,4 +1011,13 @@ LayoutTableCell* LayoutTableCell::createAnonymousWithParent(const LayoutObject* 
     return newCell;
 }
 
+bool LayoutTableCell::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const
+{
+    // If this object has layer, the area of collapsed borders should be transparent
+    // to expose the collapsed borders painted on the underlying layer.
+    if (hasLayer() && table()->collapseBorders())
+        return false;
+    return LayoutBlockFlow::backgroundIsKnownToBeOpaqueInRect(localRect);
+}
+
 } // namespace blink

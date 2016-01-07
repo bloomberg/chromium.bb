@@ -25,19 +25,18 @@
 
 #include "core/layout/LayoutTableRow.h"
 
-#include "core/testing/DummyPageHolder.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "core/layout/LayoutTestHelper.h"
 
 namespace blink {
 
 namespace {
 
-class LayoutTableRowDeathTest : public testing::Test {
+class LayoutTableRowDeathTest : public RenderingTest {
 protected:
     virtual void SetUp()
     {
-        m_pageHolder = DummyPageHolder::create(IntSize(800, 600));
-        m_row = LayoutTableRow::createAnonymous(&m_pageHolder->document());
+        RenderingTest::SetUp();
+        m_row = LayoutTableRow::createAnonymous(&document());
     }
 
     virtual void TearDown()
@@ -45,7 +44,6 @@ protected:
         m_row->destroy();
     }
 
-    OwnPtr<DummyPageHolder> m_pageHolder;
     LayoutTableRow* m_row;
 };
 
@@ -77,6 +75,18 @@ TEST_F(LayoutTableRowDeathTest, CrashIfSettingUnsetRowIndex)
 }
 
 #endif
+
+using LayoutTableRowTest = RenderingTest;
+
+TEST_F(LayoutTableRowTest, BackgroundIsKnownToBeOpaqueWithLayerAndCollapsedBorder)
+{
+    setBodyInnerHTML("<table style='border-collapse: collapse'>"
+        "<tr style='will-change: transform; background-color: blue'><td>Cell</td></tr>"
+        "</table>");
+
+    LayoutTableRow* row = toLayoutTableRow(document().body()->firstChild()->firstChild()->firstChild()->layoutObject());
+    EXPECT_FALSE(row->backgroundIsKnownToBeOpaqueInRect(LayoutRect(0, 0, 1, 1)));
+}
 
 } // anonymous namespace
 

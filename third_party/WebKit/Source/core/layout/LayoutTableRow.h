@@ -126,6 +126,8 @@ public:
 
     const char* name() const override { return "LayoutTableRow"; }
 
+    bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const override;
+
 private:
     LayoutObjectChildList* virtualChildren() override { return children(); }
     const LayoutObjectChildList* virtualChildren() const override { return children(); }

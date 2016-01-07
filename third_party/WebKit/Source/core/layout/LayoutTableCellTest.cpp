@@ -76,7 +76,7 @@ TEST_F(LayoutTableCellDeathTest, CrashIfSettingUnsetColumnIndex)
 
 #endif
 
-class LayoutTableCellTest : public RenderingTest { };
+using LayoutTableCellTest = RenderingTest;
 
 TEST_F(LayoutTableCellTest, ResetColspanIfTooBig)
 {
@@ -108,6 +108,16 @@ TEST_F(LayoutTableCellTest, DoNotResetRowspanJustBelowBoundary)
 
     LayoutTableCell* cell = toLayoutTableCell(document().body()->firstChild()->firstChild()->firstChild()->firstChild()->layoutObject());
     ASSERT_EQ(cell->rowSpan(), 65534U);
+}
+
+TEST_F(LayoutTableCellTest, BackgroundIsKnownToBeOpaqueWithLayerAndCollapsedBorder)
+{
+    setBodyInnerHTML("<table style='border-collapse: collapse'>"
+        "<td style='will-change: transform; background-color: blue'>Cell></td>"
+        "</table>");
+
+    LayoutTableCell* cell = toLayoutTableCell(document().body()->firstChild()->firstChild()->firstChild()->firstChild()->layoutObject());
+    EXPECT_FALSE(cell->backgroundIsKnownToBeOpaqueInRect(LayoutRect(0, 0, 1, 1)));
 }
 
 }
