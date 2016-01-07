@@ -44,12 +44,12 @@ class NearbyUrlsAdapter extends ArrayAdapter<PwsResult> {
     }
 
     /**
-     * Clear the list, forgetting cached URL metadata and icons.
+     * Return true if we already know an icon for this URL.
+     * @param iconUrl The icon URL as returned by PWS
+     * @return true if the icon is present
      */
-    @Override
-    public void clear() {
-        super.clear();
-        mIconUrlToIconMap.clear();
+    public boolean hasIcon(String iconUrl) {
+        return mIconUrlToIconMap.containsKey(iconUrl);
     }
 
     /**

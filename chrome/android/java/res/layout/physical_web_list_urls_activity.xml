@@ -3,45 +3,48 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<merge
+<org.chromium.chrome.browser.physicalweb.SwipeRefreshWidget
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    android:id="@+id/physical_web_swipe_refresh_widget"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
 
-    <ListView
-        android:id="@android:id/list"
+    <FrameLayout
         android:layout_height="match_parent"
-        android:layout_width="match_parent"
-        android:divider="@null"/>
+        android:layout_width="match_parent" >
 
-    <LinearLayout
-        android:id="@android:id/empty"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:layout_gravity="center"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        tools:ignore="UseCompoundDrawables" >
+        <ListView
+            android:id="@+id/physical_web_urls_list"
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:divider="@null" />
 
-        <ImageView
-            android:id="@+id/physical_web_logo"
-            android:layout_height="140dp"
-            android:layout_width="140dp"
-            android:layout_marginBottom="5dp"
-            android:src="@drawable/physical_web_logo"
-            android:contentDescription="@null" />
+        <RelativeLayout
+            android:id="@+id/physical_web_empty"
+            android:layout_height="match_parent"
+            android:layout_width="match_parent" >
 
-        <TextView
-            android:id="@+id/physical_web_empty_list_text"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:text="@string/physical_web_empty_list_scanning"
-            android:textSize="16sp"
-            android:textColor="@color/light_normal_color" />
+            <TextView
+                android:id="@+id/physical_web_empty_list_text"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="@string/physical_web_empty_list_scanning"
+                android:textSize="16sp"
+                android:textColor="@color/light_normal_color" />
 
-        <View
-            android:layout_height="145dp"
-            android:layout_width="1dp" />
+            <ImageView
+                android:id="@+id/physical_web_logo"
+                android:layout_height="140dp"
+                android:layout_width="140dp"
+                android:layout_marginBottom="5dp"
+                android:layout_above="@id/physical_web_empty_list_text"
+                android:layout_centerHorizontal="true"
+                android:src="@drawable/physical_web_logo"
+                android:contentDescription="@null" />
 
-    </LinearLayout>
+        </RelativeLayout>
 
-</merge>
+    </FrameLayout>
+
+</org.chromium.chrome.browser.physicalweb.SwipeRefreshWidget>
