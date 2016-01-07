@@ -8,22 +8,13 @@
 #include <utility>
 
 #include "base/i18n/string_compare.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 
 namespace autofill {
 namespace l10n {
 
-CollatorWrapper::CollatorWrapper(scoped_ptr<icu::Collator> collator)
-    : collator_(std::move(collator)), is_valid_(collator_) {
-  CHECK(is_valid_);
-}
-
-CollatorWrapper::~CollatorWrapper() {
-  CHECK(is_valid_);
-  is_valid_ = false;
-}
-
-scoped_ptr<CollatorWrapper> GetCollatorForLocale(const icu::Locale& locale) {
+scoped_ptr<icu::Collator> GetCollatorForLocale(const icu::Locale& locale) {
   UErrorCode ignored = U_ZERO_ERROR;
   scoped_ptr<icu::Collator> collator(
       icu::Collator::createInstance(locale, ignored));
@@ -48,9 +39,7 @@ scoped_ptr<CollatorWrapper> GetCollatorForLocale(const icu::Locale& locale) {
   }
 
   UMA_HISTOGRAM_BOOLEAN("Autofill.IcuCollatorCreationSuccess", !!collator);
-  if (!collator)
-    return nullptr;
-  return make_scoped_ptr(new CollatorWrapper(std::move(collator)));
+  return collator;
 }
 
 CaseInsensitiveCompare::CaseInsensitiveCompare()
@@ -59,7 +48,7 @@ CaseInsensitiveCompare::CaseInsensitiveCompare()
 CaseInsensitiveCompare::CaseInsensitiveCompare(const icu::Locale& locale)
     : collator_(GetCollatorForLocale(locale)) {
   if (collator_)
-    collator_->collator()->setStrength(icu::Collator::PRIMARY);
+    collator_->setStrength(icu::Collator::PRIMARY);
 }
 
 CaseInsensitiveCompare::~CaseInsensitiveCompare() {
@@ -68,8 +57,8 @@ CaseInsensitiveCompare::~CaseInsensitiveCompare() {
 bool CaseInsensitiveCompare::StringsEqual(const base::string16& lhs,
                                           const base::string16& rhs) const {
   if (collator_) {
-    return base::i18n::CompareString16WithCollator(*collator_->collator(), lhs,
-                                                   rhs) == UCOL_EQUAL;
+    return base::i18n::CompareString16WithCollator(*collator_, lhs, rhs) ==
+           UCOL_EQUAL;
   }
   return lhs == rhs;
 }
