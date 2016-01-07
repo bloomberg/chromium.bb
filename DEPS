@@ -35,18 +35,26 @@
 deps = {
   # Logging code.
   "src/src/third_party/glog":
-    "http://google-glog.googlecode.com/svn/trunk@97",
+    "https://github.com/google/glog.git" +
+      "@ac3e91896917b5d9e8b4467bd912b20e8668488a",
 
   # Testing libraries and utilities.
-  "src/src/testing": "http://googlemock.googlecode.com/svn/trunk@408",
-  "src/src/testing/gtest": "http://googletest.googlecode.com/svn/trunk@615",
+  "src/src/testing":
+    "https://github.com/google/googlemock.git" +
+      "@ada23475e27babd85fb9c13250243f6acfd3ffd8",
+  "src/src/testing/gtest":
+    "https://github.com/google/googletest.git" +
+      "@a3b859162dd7a4a1798cf8753a03098f2cbdb62e",
 
   # Protobuf.
   "src/src/third_party/protobuf/protobuf":
-    "http://protobuf.googlecode.com/svn/trunk@407",
+    "https://github.com/google/protobuf.git" +
+      "@cb6dd4ef5f82e41e06179dcd57d3b1d9246ad6ac",
 
   # GYP project generator.
-  "src/src/tools/gyp": "http://gyp.googlecode.com/svn/trunk@1886",
+  "src/src/tools/gyp":
+    "https://chromium.googlesource.com/external/gyp/" +
+      "@e8ab0833a42691cd2184bd4c45d779e43821d3e0",
 
   # Linux syscall support.
   "src/src/third_party/lss":
