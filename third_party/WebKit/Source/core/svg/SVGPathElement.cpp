@@ -21,7 +21,6 @@
 #include "core/svg/SVGPathElement.h"
 
 #include "core/layout/svg/LayoutSVGPath.h"
-#include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGMPathElement.h"
 #include "core/svg/SVGPathQuery.h"
 #include "core/svg/SVGPathUtilities.h"
@@ -39,10 +38,8 @@ public:
     SVGParsingError setBaseValueAsString(const String& value) override
     {
         SVGParsingError parseStatus = SVGAnimatedNumber::setBaseValueAsString(value);
-
-        ASSERT(contextElement());
         if (parseStatus == NoError && baseValue()->value() < 0)
-            contextElement()->document().accessSVGExtensions().reportError("A negative value for path attribute <pathLength> is not allowed");
+            parseStatus = NegativeValueForbiddenError;
         return parseStatus;
     }
 
