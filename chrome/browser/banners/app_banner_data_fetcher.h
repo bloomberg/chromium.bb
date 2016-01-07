@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "chrome/common/web_application_info.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/manifest.h"
@@ -30,9 +31,10 @@ class AppBannerDataFetcher;
 
 // Fetches data required to show a web app banner for the URL currently shown by
 // the WebContents.
-class AppBannerDataFetcher
-    : public base::RefCounted<AppBannerDataFetcher>,
-      public content::WebContentsObserver {
+class AppBannerDataFetcher : public base::RefCountedThreadSafe<
+                                 AppBannerDataFetcher,
+                                 content::BrowserThread::DeleteOnUIThread>,
+                             public content::WebContentsObserver {
  public:
   class Observer {
    public:
@@ -188,6 +190,9 @@ class AppBannerDataFetcher
   base::string16 app_title_;
   content::Manifest web_app_data_;
 
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
+  friend class base::DeleteHelper<AppBannerDataFetcher>;
   friend class AppBannerDataFetcherUnitTest;
   friend class base::RefCounted<AppBannerDataFetcher>;
   DISALLOW_COPY_AND_ASSIGN(AppBannerDataFetcher);
