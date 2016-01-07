@@ -577,11 +577,6 @@ protected:
     };
     Vector<VertexAttribValue> m_vertexAttribValue;
     unsigned m_maxVertexAttribs;
-    PersistentWillBeMember<WebGLBuffer> m_vertexAttrib0Buffer;
-    long m_vertexAttrib0BufferSize;
-    GLfloat m_vertexAttrib0BufferValue[4];
-    bool m_forceAttrib0BufferRefill;
-    bool m_vertexAttrib0UsedBefore;
 
     PersistentWillBeMember<WebGLProgram> m_currentProgram;
     PersistentWillBeMember<WebGLFramebuffer> m_framebufferBinding;
@@ -973,9 +968,6 @@ protected:
     // the given format.
     bool validateCompressedTexSubDimensions(const char* functionName, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, WebGLTexture*);
 
-    // Helper function to validate mode for draw{Arrays/Elements}.
-    bool validateDrawMode(const char* functionName, GLenum);
-
     // Helper function to validate if front/back stencilMask and stencilFunc settings are the same.
     bool validateStencilSettings(const char* functionName);
 
@@ -1055,9 +1047,6 @@ protected:
 
     // Helper function to validate drawElements(Instanced) calls
     bool validateDrawElements(const char* functionName, GLenum mode, GLsizei count, GLenum type, long long offset);
-
-    // Helper function to validate draw*Instanced calls
-    bool validateDrawInstanced(const char* functionName, GLsizei primcount);
 
     // Helper functions for vertexAttribNf{v}.
     void vertexAttribfImpl(const char* functionName, GLuint index, GLsizei expectedSize, GLfloat, GLfloat, GLfloat, GLfloat);

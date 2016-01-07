@@ -1444,9 +1444,6 @@ void WebGL2RenderingContextBase::drawArraysInstanced(GLenum mode, GLint first, G
     if (!validateDrawArrays("drawArraysInstanced", mode, first, count))
         return;
 
-    if (!validateDrawInstanced("drawArraysInstanced", instanceCount))
-        return;
-
     clearIfComposited();
 
     handleTextureCompleteness("drawArraysInstanced", true);
@@ -1458,9 +1455,6 @@ void WebGL2RenderingContextBase::drawArraysInstanced(GLenum mode, GLint first, G
 void WebGL2RenderingContextBase::drawElementsInstanced(GLenum mode, GLsizei count, GLenum type, long long offset, GLsizei instanceCount)
 {
     if (!validateDrawElements("drawElementsInstanced", mode, count, type, offset))
-        return;
-
-    if (!validateDrawInstanced("drawElementsInstanced", instanceCount))
         return;
 
     if (transformFeedbackActive() && !transformFeedbackPaused()) {

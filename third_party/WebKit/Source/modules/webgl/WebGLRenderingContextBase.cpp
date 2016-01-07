@@ -1062,11 +1062,7 @@ void WebGLRenderingContextBase::initializeNewContext()
 
     m_readBufferOfDefaultFramebuffer = GL_BACK;
 
-    if (isWebGL2OrHigher()) {
-        m_defaultVertexArrayObject = WebGLVertexArrayObject::create(this, WebGLVertexArrayObjectBase::VaoTypeDefault);
-    } else {
-        m_defaultVertexArrayObject = WebGLVertexArrayObjectOES::create(this, WebGLVertexArrayObjectBase::VaoTypeDefault);
-    }
+    m_defaultVertexArrayObject = WebGLVertexArrayObject::create(this, WebGLVertexArrayObjectBase::VaoTypeDefault);
     addContextObject(m_defaultVertexArrayObject.get());
     // It's not convenient or necessary to pass a ScriptState this far down; while one is available
     // during WebGLRenderingContext construction, the wrapper for the context itself hasn't been
@@ -1155,7 +1151,6 @@ WebGLRenderingContextBase::~WebGLRenderingContextBase()
     m_boundArrayBuffer = nullptr;
     m_defaultVertexArrayObject = nullptr;
     m_boundVertexArrayObject = nullptr;
-    m_vertexAttrib0Buffer = nullptr;
     m_currentProgram = nullptr;
     m_framebufferBinding = nullptr;
     m_renderbufferBinding = nullptr;
@@ -1446,14 +1441,8 @@ void WebGLRenderingContextBase::bindAttribLocation(WebGLProgram* program, GLuint
         return;
     if (!validateLocationLength("bindAttribLocation", name))
         return;
-    if (!validateString("bindAttribLocation", name))
-        return;
     if (isPrefixReserved(name)) {
         synthesizeGLError(GL_INVALID_OPERATION, "bindAttribLocation", "reserved prefix");
-        return;
-    }
-    if (index >= m_maxVertexAttribs) {
-        synthesizeGLError(GL_INVALID_VALUE, "bindAttribLocation", "index out of range");
         return;
     }
     webContext()->bindAttribLocation(objectOrZero(program), index, name.utf8().data());
@@ -2074,15 +2063,6 @@ void WebGLRenderingContextBase::cullFace(GLenum mode)
 {
     if (isContextLost())
         return;
-    switch (mode) {
-    case GL_FRONT_AND_BACK:
-    case GL_FRONT:
-    case GL_BACK:
-        break;
-    default:
-        synthesizeGLError(GL_INVALID_ENUM, "cullFace", "invalid mode");
-        return;
-    }
     webContext()->cullFace(mode);
 }
 
@@ -2188,8 +2168,6 @@ void WebGLRenderingContextBase::depthFunc(GLenum func)
 {
     if (isContextLost())
         return;
-    if (!validateStencilOrDepthFunc("depthFunc", func))
-        return;
     webContext()->depthFunc(func);
 }
 
@@ -2205,6 +2183,7 @@ void WebGLRenderingContextBase::depthRange(GLfloat zNear, GLfloat zFar)
 {
     if (isContextLost())
         return;
+    // Check required by WebGL spec section 6.12
     if (zNear > zFar) {
         synthesizeGLError(GL_INVALID_OPERATION, "depthRange", "zNear > zFar");
         return;
@@ -2255,6 +2234,7 @@ void WebGLRenderingContextBase::disableVertexAttribArray(GLuint index)
 
 bool WebGLRenderingContextBase::validateRenderingState(const char* functionName)
 {
+    // Command buffer will not error if no program is bound.
     if (!m_currentProgram) {
         synthesizeGLError(GL_INVALID_OPERATION, functionName, "no valid shader program in use");
         return false;
@@ -2312,9 +2292,6 @@ void WebGLRenderingContextBase::drawArraysInstancedANGLE(GLenum mode, GLint firs
     if (!validateDrawArrays("drawArraysInstancedANGLE", mode, first, count))
         return;
 
-    if (!validateDrawInstanced("drawArraysInstancedANGLE", primcount))
-        return;
-
     clearIfComposited();
 
     handleTextureCompleteness("drawArraysInstancedANGLE", true);
@@ -2326,9 +2303,6 @@ void WebGLRenderingContextBase::drawArraysInstancedANGLE(GLenum mode, GLint firs
 void WebGLRenderingContextBase::drawElementsInstancedANGLE(GLenum mode, GLsizei count, GLenum type, long long offset, GLsizei primcount)
 {
     if (!validateDrawElements("drawElementsInstancedANGLE", mode, count, type, offset))
-        return;
-
-    if (!validateDrawInstanced("drawElementsInstancedANGLE", primcount))
         return;
 
     clearIfComposited();
@@ -2481,14 +2455,6 @@ void WebGLRenderingContextBase::frontFace(GLenum mode)
 {
     if (isContextLost())
         return;
-    switch (mode) {
-    case GL_CW:
-    case GL_CCW:
-        break;
-    default:
-        synthesizeGLError(GL_INVALID_ENUM, "frontFace", "invalid mode");
-        return;
-    }
     webContext()->frontFace(mode);
 }
 
@@ -3534,10 +3500,6 @@ long long WebGLRenderingContextBase::getVertexAttribOffset(GLuint index, GLenum 
 {
     if (isContextLost())
         return 0;
-    if (pname != GL_VERTEX_ATTRIB_ARRAY_POINTER) {
-        synthesizeGLError(GL_INVALID_ENUM, "getVertexAttribOffset", "invalid parameter name");
-        return 0;
-    }
     GLintptr result = webContext()->getVertexAttribOffset(index, pname);
     return static_cast<long long>(result);
 }
@@ -3977,8 +3939,6 @@ void WebGLRenderingContextBase::sampleCoverage(GLfloat value, GLboolean invert)
 void WebGLRenderingContextBase::scissor(GLint x, GLint y, GLsizei width, GLsizei height)
 {
     if (isContextLost())
-        return;
-    if (!validateSize("scissor", width, height))
         return;
     webContext()->scissor(x, y, width, height);
 }
@@ -5171,8 +5131,6 @@ void WebGLRenderingContextBase::viewport(GLint x, GLint y, GLsizei width, GLsize
 {
     if (isContextLost())
         return;
-    if (!validateSize("viewport", width, height))
-        return;
     webContext()->viewport(x, y, width, height);
 }
 
@@ -6190,23 +6148,6 @@ bool WebGLRenderingContextBase::validateCompressedTexSubDimensions(const char* f
     }
 }
 
-bool WebGLRenderingContextBase::validateDrawMode(const char* functionName, GLenum mode)
-{
-    switch (mode) {
-    case GL_POINTS:
-    case GL_LINE_STRIP:
-    case GL_LINE_LOOP:
-    case GL_LINES:
-    case GL_TRIANGLE_STRIP:
-    case GL_TRIANGLE_FAN:
-    case GL_TRIANGLES:
-        return true;
-    default:
-        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid draw mode");
-        return false;
-    }
-}
-
 bool WebGLRenderingContextBase::validateStencilSettings(const char* functionName)
 {
     if (m_stencilMask != m_stencilMaskBack || m_stencilFuncRef != m_stencilFuncRefBack || m_stencilFuncMask != m_stencilFuncMaskBack) {
@@ -6473,21 +6414,11 @@ bool WebGLRenderingContextBase::validateHTMLVideoElement(const char* functionNam
 
 bool WebGLRenderingContextBase::validateDrawArrays(const char* functionName, GLenum mode, GLint first, GLsizei count)
 {
-    if (isContextLost() || !validateDrawMode(functionName, mode))
+    if (isContextLost())
         return false;
 
     if (!validateStencilSettings(functionName))
         return false;
-
-    if (first < 0 || count < 0) {
-        synthesizeGLError(GL_INVALID_VALUE, functionName, "first or count < 0");
-        return false;
-    }
-
-    if (!count) {
-        markContextChanged(CanvasChanged);
-        return false;
-    }
 
     if (!validateRenderingState(functionName)) {
         return false;
@@ -6504,42 +6435,19 @@ bool WebGLRenderingContextBase::validateDrawArrays(const char* functionName, GLe
 
 bool WebGLRenderingContextBase::validateDrawElements(const char* functionName, GLenum mode, GLsizei count, GLenum type, long long offset)
 {
-    if (isContextLost() || !validateDrawMode(functionName, mode))
+    if (isContextLost())
         return false;
 
     if (!validateStencilSettings(functionName))
         return false;
 
-    switch (type) {
-    case GL_UNSIGNED_BYTE:
-    case GL_UNSIGNED_SHORT:
-        break;
-    case GL_UNSIGNED_INT:
-        if (extensionEnabled(OESElementIndexUintName) || isWebGL2OrHigher())
-            break;
-        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid type");
-        return false;
-    default:
+    if (type == GL_UNSIGNED_INT && !isWebGL2OrHigher() && !extensionEnabled(OESElementIndexUintName)) {
         synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid type");
         return false;
     }
 
-    if (count < 0) {
-        synthesizeGLError(GL_INVALID_VALUE, functionName, "count < 0");
-        return false;
-    }
     if (!validateValueFitNonNegInt32(functionName, "offset", offset))
         return false;
-
-    if (!count) {
-        markContextChanged(CanvasChanged);
-        return false;
-    }
-
-    if (!m_boundVertexArrayObject->boundElementArrayBuffer()) {
-        synthesizeGLError(GL_INVALID_OPERATION, functionName, "no ELEMENT_ARRAY_BUFFER bound");
-        return false;
-    }
 
     if (!validateRenderingState(functionName)) {
         return false;
@@ -6554,17 +6462,6 @@ bool WebGLRenderingContextBase::validateDrawElements(const char* functionName, G
     return true;
 }
 
-// Helper function to validate draw*Instanced calls
-bool WebGLRenderingContextBase::validateDrawInstanced(const char* functionName, GLsizei primcount)
-{
-    if (primcount < 0) {
-        synthesizeGLError(GL_INVALID_VALUE, functionName, "primcount < 0");
-        return false;
-    }
-
-    return true;
-}
-
 void WebGLRenderingContextBase::vertexAttribfImpl(const char* functionName, GLuint index, GLsizei expectedSize, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3)
 {
     if (isContextLost())
@@ -6573,7 +6470,7 @@ void WebGLRenderingContextBase::vertexAttribfImpl(const char* functionName, GLui
         synthesizeGLError(GL_INVALID_VALUE, functionName, "index out of range");
         return;
     }
-    // In GL, we skip setting vertexAttrib0 values.
+
     switch (expectedSize) {
     case 1:
         webContext()->vertexAttrib1f(index, v0);
@@ -6623,7 +6520,7 @@ void WebGLRenderingContextBase::vertexAttribfvImpl(const char* functionName, GLu
         synthesizeGLError(GL_INVALID_VALUE, functionName, "index out of range");
         return;
     }
-    // In GL, we skip setting vertexAttrib0 values.
+
     switch (expectedSize) {
     case 1:
         webContext()->vertexAttrib1fv(index, v);
@@ -6980,7 +6877,6 @@ DEFINE_TRACE(WebGLRenderingContextBase)
     visitor->trace(m_boundArrayBuffer);
     visitor->trace(m_defaultVertexArrayObject);
     visitor->trace(m_boundVertexArrayObject);
-    visitor->trace(m_vertexAttrib0Buffer);
     visitor->trace(m_currentProgram);
     visitor->trace(m_framebufferBinding);
     visitor->trace(m_renderbufferBinding);
