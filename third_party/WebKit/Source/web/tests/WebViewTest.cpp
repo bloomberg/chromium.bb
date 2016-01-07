@@ -2472,28 +2472,32 @@ TEST_F(WebViewTest, TextInputFlags)
     HTMLInputElement* inputElement = toHTMLInputElement(document->getElementById("input"));
     document->setFocusedElement(inputElement, FocusParams(SelectionBehaviorOnFocus::None, WebFocusTypeNone, nullptr));
     webViewImpl->setFocus(true);
-    WebTextInputInfo info = webViewImpl->textInputInfo();
+    WebTextInputInfo info1 = webViewImpl->textInputInfo();
     EXPECT_EQ(
         WebTextInputFlagAutocompleteOff | WebTextInputFlagAutocorrectOff | WebTextInputFlagSpellcheckOff | WebTextInputFlagAutocapitalizeNone,
-        info.flags);
+        info1.flags);
 
     // (A.2) Verifies autocorrect/autocomplete/spellcheck flags are On and
     // autocapitalize is set to sentences.
     inputElement = toHTMLInputElement(document->getElementById("input2"));
     document->setFocusedElement(inputElement, FocusParams(SelectionBehaviorOnFocus::None, WebFocusTypeNone, nullptr));
     webViewImpl->setFocus(true);
-    info = webViewImpl->textInputInfo();
+    WebTextInputInfo info2 = webViewImpl->textInputInfo();
     EXPECT_EQ(
         WebTextInputFlagAutocompleteOn | WebTextInputFlagAutocorrectOn | WebTextInputFlagSpellcheckOn | WebTextInputFlagAutocapitalizeSentences,
-        info.flags);
+        info2.flags);
 
     // (B) <textarea> Verifies the default text input flags are
     // WebTextInputFlagAutocapitalizeSentences.
     HTMLTextAreaElement* textAreaElement = toHTMLTextAreaElement(document->getElementById("textarea"));
     document->setFocusedElement(textAreaElement, FocusParams(SelectionBehaviorOnFocus::None, WebFocusTypeNone, nullptr));
     webViewImpl->setFocus(true);
-    info = webViewImpl->textInputInfo();
-    EXPECT_EQ(WebTextInputFlagAutocapitalizeSentences, info.flags);
+    WebTextInputInfo info3 = webViewImpl->textInputInfo();
+    EXPECT_EQ(WebTextInputFlagAutocapitalizeSentences, info3.flags);
+
+    // (C) Verifies the WebTextInputInfo's don't equal.
+    EXPECT_FALSE(info1.equals(info2));
+    EXPECT_FALSE(info2.equals(info3));
 
     // Free the webView before freeing the NonUserInputTextUpdateWebViewClient.
     m_webViewHelper.reset();
