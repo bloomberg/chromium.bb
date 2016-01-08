@@ -442,12 +442,10 @@ InspectorTest.dumpNavigatorViewInAllModes = function(view)
 InspectorTest.dumpNavigatorViewInMode = function(view, mode)
 {
     InspectorTest.addResult(view instanceof WebInspector.SourcesNavigatorView ? "Sources:" : "Content Scripts:");
-    if (WebInspector.moduleSetting("navigatorGroupByFrame").get() !== mode.includes("frame"))
-        WebInspector.moduleSetting("navigatorGroupByFrame").set(mode.includes("frame"));
-    if (WebInspector.moduleSetting("navigatorGroupByDomain") !== mode.includes("domain"))
-        WebInspector.moduleSetting("navigatorGroupByDomain").set(mode.includes("domain"));
-    if (WebInspector.moduleSetting("navigatorGroupByFolder") !== mode.includes("folder"))
-        WebInspector.moduleSetting("navigatorGroupByFolder").set(mode.includes("folder"));
+    view._groupByFrame = mode.includes("frame");
+    view._groupByDomain = mode.includes("domain");
+    view._groupByFolder = mode.includes("folder");
+    view._resetForTest();
     InspectorTest.addResult("-------- Setting mode: [" + mode + "]");
     InspectorTest.dumpNavigatorView(view);
 }
