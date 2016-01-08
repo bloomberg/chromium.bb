@@ -3537,7 +3537,8 @@
             '../net/net.gyp:net',
             '../base/base.gyp:base',
             '../base/base.gyp:test_support_base',
-            'utility',
+            # TODO(vitalybuka): Extract mdns code into lib or component.
+            'browser',
           ],
           'sources': [
             'tools/service_discovery_sniffer/service_discovery_sniffer.cc',

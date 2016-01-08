@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "chrome/common/local_discovery/service_discovery_client.h"
+#include "chrome/browser/local_discovery/service_discovery_client.h"
 
 namespace local_discovery {
 

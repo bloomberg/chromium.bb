@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "chrome/common/local_discovery/service_discovery_client.h"
+#include "chrome/browser/local_discovery/service_discovery_client.h"
 
 namespace local_discovery {
 

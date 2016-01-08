@@ -716,8 +716,8 @@
       'browser/task_manager/task_manager_util_unittest.cc',
     ],
     'chrome_unit_tests_mdns_sources': [
-      'common/local_discovery/local_domain_resolver_unittest.cc',
-      'common/local_discovery/service_discovery_client_unittest.cc',
+      'browser/local_discovery/local_domain_resolver_unittest.cc',
+      'browser/local_discovery/service_discovery_client_unittest.cc',
       'browser/printing/cloud_print/privet_device_lister_unittest.cc',
       'browser/printing/cloud_print/privet_local_printer_lister_unittest.cc',
     ],
