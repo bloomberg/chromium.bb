@@ -171,14 +171,17 @@ function setWindowRect(rect) {
 }
 
 function hideWindow() {
-    resizeWindow(1, 1);
+    setWindowRect(adjustWindowRect(1, 1, 1, 1));
 }
 
 /**
  * @return {!boolean}
  */
 function isWindowHidden() {
-    return window.innerWidth === 1 && window.innerHeight === 1;
+    // window.innerWidth and innerHeight are zoom-adjusted values.  If we call
+    // setWindowRect with width=100 and the zoom-level is 2.0, innerWidth will
+    // return 50.
+    return window.innerWidth <= 1 && window.innerHeight <= 1;
 }
 
 window.addEventListener("resize", function() {
