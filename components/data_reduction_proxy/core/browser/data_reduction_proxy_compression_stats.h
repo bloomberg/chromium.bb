@@ -14,7 +14,9 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_member.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -25,27 +27,12 @@
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
 #include "net/base/network_change_notifier.h"
 
-class PrefChangeRegistrar;
 class PrefService;
 
 namespace base {
 class ListValue;
 class Value;
 }
-
-// Custom std::hash for |ConnectionType| so that it can be used as a key in
-// |ScopedPtrHashMap|.
-namespace BASE_HASH_NAMESPACE {
-
-template <>
-struct hash<data_reduction_proxy::ConnectionType> {
-  std::size_t operator()(
-      const data_reduction_proxy::ConnectionType& type) const {
-    return hash<int>()(type);
-  }
-};
-
-}  // namespace BASE_HASH_NAMESPACE
 
 namespace data_reduction_proxy {
 class DataReductionProxyService;
@@ -144,6 +131,9 @@ class DataReductionProxyCompressionStats
   typedef base::ScopedPtrHashMap<const char*, scoped_ptr<base::ListValue>>
       DataReductionProxyListPrefMap;
 
+  class DailyContentLengthUpdate;
+  class DailyDataSavingUpdate;
+
   // Loads all data_reduction_proxy::prefs into the |pref_map_| and
   // |list_pref_map_|.
   void Init();
@@ -165,9 +155,9 @@ class DataReductionProxyCompressionStats
   // The pref is later written to |pref service_|.
   void SetInt64(const char* pref_path, int64_t pref_value);
 
-  // Increments the pref value in the |DataReductionProxyPrefMap| map.
+  // Increases the pref value in the |DataReductionProxyPrefMap| map.
   // The pref is later written to |pref service_|.
-  void IncrementInt64Pref(const char* pref_path, int64_t pref_increment);
+  void IncreaseInt64Pref(const char* pref_path, int64_t delta);
 
   // Gets the pref list at |pref_path| from the |DataReductionProxyPrefMap|.
   base::ListValue* GetList(const char* pref_path);
@@ -184,11 +174,6 @@ class DataReductionProxyCompressionStats
   // |to_list|.
   void TransferList(const base::ListValue& from_list,
                     base::ListValue* to_list);
-
-  // Gets an int64_t, stored as a string, in a ListPref at the specified
-  // index.
-  int64_t GetListPrefInt64Value(const base::ListValue& list_update,
-                                size_t index);
 
   // Records content length updates to prefs.
   void RecordRequestSizePrefs(int64_t compressed_size,
@@ -252,7 +237,7 @@ class DataReductionProxyCompressionStats
   const base::TimeDelta delay_;
   DataReductionProxyPrefMap pref_map_;
   DataReductionProxyListPrefMap list_pref_map_;
-  scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
+  PrefChangeRegistrar pref_change_registrar_;
   BooleanPrefMember data_usage_reporting_enabled_;
   ConnectionType connection_type_;
 
