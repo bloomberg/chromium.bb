@@ -9,7 +9,6 @@
 #include "blimp/common/proto/size.pb.h"
 #include "blimp/common/proto/tab_control.pb.h"
 #include "blimp/net/blimp_message_processor.h"
-#include "ui/gfx/geometry/size.h"
 
 namespace blimp {
 
@@ -24,6 +23,13 @@ void TabControlFeature::set_outgoing_message_processor(
 
 void TabControlFeature::SetSizeAndScale(const gfx::Size& size,
                                         float device_pixel_ratio) {
+  if (last_size_ == size && last_device_pixel_ratio_ == device_pixel_ratio) {
+    return;
+  }
+
+  last_size_ = size;
+  last_device_pixel_ratio_ = device_pixel_ratio;
+
   SizeMessage* size_details;
   scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&size_details);
   size_details->set_width(size.width());

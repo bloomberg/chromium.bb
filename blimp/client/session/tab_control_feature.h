@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "blimp/client/blimp_client_export.h"
 #include "blimp/net/blimp_message_processor.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace gfx {
 class Size;
@@ -40,6 +41,10 @@ class BLIMP_CLIENT_EXPORT TabControlFeature : public BlimpMessageProcessor {
 
   // Used to send BlimpMessage::TAB_CONTROL messages to the engine.
   scoped_ptr<BlimpMessageProcessor> outgoing_message_processor_;
+
+  // Used to avoid sending unnecessary messages to engine.
+  gfx::Size last_size_;
+  float last_device_pixel_ratio_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(TabControlFeature);
 };

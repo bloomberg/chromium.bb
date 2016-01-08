@@ -51,7 +51,40 @@ TEST_F(TabControlFeatureTest, CreatesCorrectSizeMessage) {
       *out_processor_,
       MockableProcessMessage(EqualsSizeMessage(width, height, dp_to_px), _))
       .Times(1);
-  feature_.SetSizeAndScale(gfx::Size(width, height), 1.23f);
+  feature_.SetSizeAndScale(gfx::Size(width, height), dp_to_px);
+}
+
+TEST_F(TabControlFeatureTest, NoDuplicateSizeMessage) {
+  uint64_t width = 10;
+  uint64_t height = 15;
+  float dp_to_px = 1.23f;
+
+  EXPECT_CALL(
+      *out_processor_,
+      MockableProcessMessage(EqualsSizeMessage(width, height, dp_to_px), _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(
+      *out_processor_,
+      MockableProcessMessage(EqualsSizeMessage(width, height, dp_to_px + 1), _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*out_processor_,
+              MockableProcessMessage(
+                  EqualsSizeMessage(width + 1, height, dp_to_px + 1), _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*out_processor_,
+              MockableProcessMessage(
+                  EqualsSizeMessage(width + 1, height + 1, dp_to_px + 1), _))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  feature_.SetSizeAndScale(gfx::Size(width, height), dp_to_px);
+  feature_.SetSizeAndScale(gfx::Size(width, height), dp_to_px);
+  feature_.SetSizeAndScale(gfx::Size(width, height), dp_to_px + 1);
+  feature_.SetSizeAndScale(gfx::Size(width + 1, height), dp_to_px + 1);
+  feature_.SetSizeAndScale(gfx::Size(width + 1, height + 1), dp_to_px + 1);
 }
 
 }  // namespace blimp
