@@ -61,11 +61,12 @@ def main(args):
 
   classpath = list(set(options.classpath))
   proguard.libraryjars(classpath)
+  proguard.verbose(options.verbose)
 
   input_paths = proguard.GetInputs()
 
   build_utils.CallAndWriteDepfileIfStale(
-      lambda: proguard.CheckOutput(options.verbose),
+      proguard.CheckOutput,
       options,
       input_paths=input_paths,
       input_strings=proguard.build(),

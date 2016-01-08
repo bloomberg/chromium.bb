@@ -44,6 +44,7 @@ class ProguardCmdBuilder(object):
     self._configs = None
     self._outjar = None
     self._cmd = None
+    self._verbose = False
 
   def outjar(self, path):
     assert self._cmd is None
@@ -81,6 +82,10 @@ class ProguardCmdBuilder(object):
     for p in paths:
       assert os.path.exists(p), p
     self._configs = paths
+
+  def verbose(self, verbose):
+    assert self._cmd is None
+    self._verbose = verbose
 
   def build(self):
     if self._cmd:
@@ -134,6 +139,10 @@ class ProguardCmdBuilder(object):
       '-printusage', self._outjar + '.usage',
       '-printmapping', self._outjar + '.mapping',
     ]
+
+    if self._verbose:
+      cmd.append('-verbose')
+
     self._cmd = cmd
     return self._cmd
 
@@ -149,7 +158,7 @@ class ProguardCmdBuilder(object):
     return inputs
 
 
-  def CheckOutput(self, verbose=False):
+  def CheckOutput(self):
     self.build()
     # Proguard will skip writing these files if they would be empty. Create
     # empty versions of them all now so that they are updated as the build
@@ -162,7 +171,7 @@ class ProguardCmdBuilder(object):
     # to stdout.
     stdout_filter = None
     stderr_filter = None
-    if not verbose:
+    if not self._verbose:
       stdout_filter = _ProguardOutputFilter()
       stderr_filter = _ProguardOutputFilter()
     build_utils.CheckOutput(self._cmd, print_stdout=True,

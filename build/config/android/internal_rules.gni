@@ -121,6 +121,9 @@ template("proguard") {
       "--classpath",
       _rebased_android_sdk_jar,
     ]
+    if (proguard_verbose) {
+      args += [ "--verbose" ]
+    }
     if (defined(invoker.args)) {
       args += invoker.args
     }

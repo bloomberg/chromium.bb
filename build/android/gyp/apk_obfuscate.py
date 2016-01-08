@@ -120,7 +120,8 @@ def DoProguard(options):
     configs.append(multidex_config)
 
   proguard.configs(configs)
-  proguard.CheckOutput(options.verbose)
+  proguard.verbose(options.verbose)
+  proguard.CheckOutput()
 
 
 def _PossibleMultidexConfig(options):
