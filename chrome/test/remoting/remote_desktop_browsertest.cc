@@ -587,10 +587,11 @@ void RemoteDesktopBrowserTest::ConnectToRemoteHost(
   EXPECT_FALSE(host_id.empty());
   std::string element_id = "host_" + host_id;
 
-  // Verify the host is online.
-  std::string host_div_class = ExecuteScriptAndExtractString(
-      "document.getElementById('" + element_id + "').parentNode.className");
-  EXPECT_NE(std::string::npos, host_div_class.find("host-online"));
+  ConditionalTimeoutWaiter hostOnlineWaiter(
+      base::TimeDelta::FromSeconds(30), base::TimeDelta::FromSeconds(5),
+      base::Bind(&RemoteDesktopBrowserTest::IsHostOnline,
+                 base::Unretained(this), host_id));
+  EXPECT_TRUE(hostOnlineWaiter.Wait());
 
   ClickOnControl(element_id);
 
@@ -816,6 +817,22 @@ void RemoteDesktopBrowserTest::WaitForConnection() {
   // CONNECTED. Wait for 2 seconds for the client to become ready.
   // TODO(weitaosu): Find a way to detect when the client is truly ready.
   TimeoutWaiter(base::TimeDelta::FromSeconds(2)).Wait();
+}
+
+bool RemoteDesktopBrowserTest::IsHostOnline(const std::string& host_id) {
+  bool refresh_host_list =
+      ExecuteScriptAndExtractBool("remoting.hostList.refreshAndDisplay()");
+
+  if (!refresh_host_list) {
+    return false;
+  }
+
+  // Verify the host is online.
+  std::string element_id = "host_" + host_id;
+  std::string host_div_class = ExecuteScriptAndExtractString(
+      "document.getElementById('" + element_id + "').parentNode.className");
+
+  return (std::string::npos != host_div_class.find("host-online"));
 }
 
 bool RemoteDesktopBrowserTest::IsLocalHostReady() {

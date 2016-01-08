@@ -311,6 +311,9 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   // Wait for the me2me connection to be established.
   void WaitForConnection();
 
+  // Checking whether the host is online.
+  bool IsHostOnline(const std::string& element_id);
+
   // Checking whether the localHost has been initialized.
   bool IsLocalHostReady();
 
