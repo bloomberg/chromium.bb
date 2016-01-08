@@ -35,6 +35,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
@@ -162,6 +163,16 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
     private static void initializeBrowser(final Application app) {
         ThreadUtils.assertOnUiThread();
         try {
+            // Loading the native library may spuriously trigger StrictMode violations when
+            // running instrumentation tests. This does not happen if full Chrome has
+            // started before reaching this point.
+            // crbug.com/574532
+            if (!LibraryLoader.isInitialized()) {
+                StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+                LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER)
+                        .ensureInitialized(app.getApplicationContext());
+                StrictMode.setThreadPolicy(oldPolicy);
+            }
             ChromeBrowserInitializer.getInstance(app).handleSynchronousStartup();
         } catch (ProcessInitException e) {
             Log.e(TAG, "ProcessInitException while starting the browser process.");
@@ -204,21 +215,7 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (!initialized) {
-                    // Loading the native library may spuriously trigger StrictMode violations when
-                    // running instrumentation tests. This does not happen if full Chrome has
-                    // started before reaching this point.
-                    // crbug.com/574532
-                    StrictMode.ThreadPolicy oldPolicy = null;
-                    if (!LibraryLoader.isInitialized()) {
-                        oldPolicy = StrictMode.allowThreadDiskReads();
-                    }
-                    try {
-                        initializeBrowser(mApplication);
-                    } finally {
-                        if (oldPolicy != null) StrictMode.setThreadPolicy(oldPolicy);
-                    }
-                }
+                if (!initialized) initializeBrowser(mApplication);
                 if (mayCreateSpareWebContents && mPrerender == null && !SysUtils.isLowEndDevice()) {
                     createSpareWebContents();
                 }
