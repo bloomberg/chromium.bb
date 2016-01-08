@@ -349,6 +349,16 @@ public:
         return m_layoutObject->localToAbsoluteQuad(quad, mode, wasFixed);
     }
 
+    int previousOffset(int current) const
+    {
+        return m_layoutObject->previousOffset(current);
+    }
+
+    int nextOffset(int current) const
+    {
+        return m_layoutObject->nextOffset(current);
+    }
+
 #ifndef NDEBUG
 
     const char* name() const

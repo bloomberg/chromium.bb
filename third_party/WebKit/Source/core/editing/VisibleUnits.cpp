@@ -53,6 +53,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/line/InlineIterator.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/paint/PaintLayer.h"
@@ -2907,22 +2908,22 @@ static PositionTemplate<Strategy> leftVisuallyDistinctCandidate(const VisiblePos
         if (!box)
             return primaryDirection == LTR ? previousVisuallyDistinctCandidate(deepPosition) : nextVisuallyDistinctCandidate(deepPosition);
 
-        LayoutObject* layoutObject = &box->layoutObject();
+        LineLayoutItem lineLayoutItem = box->lineLayoutItem();
 
         while (true) {
-            if ((layoutObject->isAtomicInlineLevel() || layoutObject->isBR()) && offset == box->caretRightmostOffset())
+            if ((lineLayoutItem.isAtomicInlineLevel() || lineLayoutItem.isBR()) && offset == box->caretRightmostOffset())
                 return box->isLeftToRightDirection() ? previousVisuallyDistinctCandidate(deepPosition) : nextVisuallyDistinctCandidate(deepPosition);
 
-            if (!layoutObject->node()) {
+            if (!lineLayoutItem.node()) {
                 box = box->prevLeafChild();
                 if (!box)
                     return primaryDirection == LTR ? previousVisuallyDistinctCandidate(deepPosition) : nextVisuallyDistinctCandidate(deepPosition);
-                layoutObject = &box->layoutObject();
+                lineLayoutItem = box->lineLayoutItem();
                 offset = box->caretRightmostOffset();
                 continue;
             }
 
-            offset = box->isLeftToRightDirection() ? layoutObject->previousOffset(offset) : layoutObject->nextOffset(offset);
+            offset = box->isLeftToRightDirection() ? lineLayoutItem.previousOffset(offset) : lineLayoutItem.nextOffset(offset);
 
             int caretMinOffset = box->caretMinOffset();
             int caretMaxOffset = box->caretMaxOffset();
@@ -2947,7 +2948,7 @@ static PositionTemplate<Strategy> leftVisuallyDistinctCandidate(const VisiblePos
                 // Reposition at the other logical position corresponding to our
                 // edge's visual position and go for another round.
                 box = prevBox;
-                layoutObject = &box->layoutObject();
+                lineLayoutItem = box->lineLayoutItem();
                 offset = prevBox->caretRightmostOffset();
                 continue;
             }
@@ -2962,7 +2963,7 @@ static PositionTemplate<Strategy> leftVisuallyDistinctCandidate(const VisiblePos
                     InlineBox* logicalStart = 0;
                     if (primaryDirection == LTR ? box->root().getLogicalStartBoxWithNode(logicalStart) : box->root().getLogicalEndBoxWithNode(logicalStart)) {
                         box = logicalStart;
-                        layoutObject = &box->layoutObject();
+                        lineLayoutItem = box->lineLayoutItem();
                         offset = primaryDirection == LTR ? box->caretMinOffset() : box->caretMaxOffset();
                     }
                     break;
@@ -2981,19 +2982,19 @@ static PositionTemplate<Strategy> leftVisuallyDistinctCandidate(const VisiblePos
                     break;
 
                 box = prevBox;
-                layoutObject = &box->layoutObject();
+                lineLayoutItem = box->lineLayoutItem();
                 offset = box->caretRightmostOffset();
                 if (box->direction() == primaryDirection)
                     break;
                 continue;
             }
 
-            while (prevBox && !prevBox->layoutObject().node())
+            while (prevBox && !prevBox->lineLayoutItem().node())
                 prevBox = prevBox->prevLeafChild();
 
             if (prevBox) {
                 box = prevBox;
-                layoutObject = &box->layoutObject();
+                lineLayoutItem = box->lineLayoutItem();
                 offset = box->caretRightmostOffset();
                 if (box->bidiLevel() > level) {
                     do {
@@ -3024,13 +3025,13 @@ static PositionTemplate<Strategy> leftVisuallyDistinctCandidate(const VisiblePos
                         break;
                     level = box->bidiLevel();
                 }
-                layoutObject = &box->layoutObject();
+                lineLayoutItem = box->lineLayoutItem();
                 offset = primaryDirection == LTR ? box->caretMinOffset() : box->caretMaxOffset();
             }
             break;
         }
 
-        p = PositionTemplate<Strategy>::editingPositionOf(layoutObject->node(), offset);
+        p = PositionTemplate<Strategy>::editingPositionOf(lineLayoutItem.node(), offset);
 
         if ((isVisuallyEquivalentCandidate(p) && mostForwardCaretPosition(p) != downstreamStart) || p.atStartOfTree() || p.atEndOfTree())
             return p;
