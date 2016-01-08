@@ -974,7 +974,7 @@ void InspectorCSSAgent::getCSSAnimationsForNode(ErrorString* errorString, int no
 
         // Find CSSOM wrapper.
         CSSKeyframesRule* cssKeyframesRule = nullptr;
-        for (auto& styleSheet : *m_documentToCSSStyleSheets.get(ownerDocument)) {
+        for (CSSStyleSheet* styleSheet : *m_documentToCSSStyleSheets.get(ownerDocument)) {
             ASSERT(styleSheet->ownerNode());
             RuleSet& ruleSet = styleSheet->contents()->ruleSet();
             for (auto& rule : ruleSet.keyframesRules()) {
