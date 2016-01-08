@@ -7,7 +7,9 @@
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 
+#include "base/callback_helpers.h"
 #include "base/ios/ios_util.h"
+#import "base/mac/bind_objc_block.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/histogram_tester.h"
@@ -1263,6 +1265,15 @@ TEST_F(WebControllerKeyboardTest, DismissKeyboard) {
   UIWebView* webView = static_cast<UIWebView*>(
       [webController_ containerView].webViewContentView.webView);
   EXPECT_TRUE(webView);
+
+  // Due to a bug in iOS ( http://www.openradar.me/22364739 ) the keyWindow
+  // needs to be manually restored, up to iOS 9.2.
+  UIWindow* keyWindow = [UIApplication sharedApplication].keyWindow;
+  base::ScopedClosureRunner runner(base::BindBlock(^{
+    if (!base::ios::IsRunningOnOrLater(9, 2, 0)) {
+      [keyWindow makeKeyAndVisible];
+    }
+  }));
 
   // Create the window and add the webview.
   base::scoped_nsobject<UIWindow> window(

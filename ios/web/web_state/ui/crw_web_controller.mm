@@ -1563,6 +1563,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
         [[CRWWebControllerContainerView alloc] initWithDelegate:self]);
     self.containerView.frame =
         [UIApplication sharedApplication].keyWindow.bounds;
+    DCHECK(!CGRectIsEmpty(self.containerView.frame));
     [self.containerView addGestureRecognizer:[self touchTrackingRecognizer]];
     [self.containerView setAccessibilityIdentifier:web::kContainerViewID];
     // Is |currentUrl| a web scheme or native chrome scheme.
