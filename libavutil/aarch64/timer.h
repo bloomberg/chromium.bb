@@ -1,7 +1,5 @@
 /*
- * Header file for hardcoded AAC SBR windows
- *
- * Copyright (c) 2014 Reimar Döffinger <Reimar.Doeffinger@gmx.de>
+ * Copyright (c) 2015 Janne Grunau <janne-libav@jannau.net>
  *
  * This file is part of FFmpeg.
  *
@@ -20,23 +18,27 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <stdlib.h>
-#include "libavutil/internal.h"
-#include "libavutil/common.h"
-#undef CONFIG_HARDCODED_TABLES
-#define CONFIG_HARDCODED_TABLES 0
-#define USE_FIXED 0
-#include "aacsbr_tablegen.h"
-#include "tableprint.h"
+#ifndef AVUTIL_AARCH64_TIMER_H
+#define AVUTIL_AARCH64_TIMER_H
 
-int main(void)
+#include <stdint.h>
+#include "config.h"
+
+#if HAVE_INLINE_ASM
+
+#define AV_READ_TIME read_time
+
+static inline uint64_t read_time(void)
 {
-    aacsbr_tableinit();
+    uint64_t cycle_counter;
+    __asm__ volatile(
+        "isb                   \t\n"
+        "mrs %0, pmccntr_el0       "
+        : "=r"(cycle_counter) :: "memory" );
 
-    write_fileheader();
-
-    WRITE_ARRAY_ALIGNED("static const", 32, float, sbr_qmf_window_ds);
-    WRITE_ARRAY_ALIGNED("static const", 32, float, sbr_qmf_window_us);
-
-    return 0;
+    return cycle_counter;
 }
+
+#endif /* HAVE_INLINE_ASM */
+
+#endif /* AVUTIL_AARCH64_TIMER_H */

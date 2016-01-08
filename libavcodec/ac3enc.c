@@ -43,6 +43,7 @@
 #include "ac3dsp.h"
 #include "ac3.h"
 #include "fft.h"
+#include "internal.h"
 #include "ac3enc.h"
 #include "eac3enc.h"
 
@@ -2430,8 +2431,6 @@ av_cold int ff_ac3_encode_init(AVCodecContext *avctx)
     s->avctx = avctx;
 
     s->eac3 = avctx->codec_id == AV_CODEC_ID_EAC3;
-
-    ff_ac3_common_init();
 
     ret = validate_options(s);
     if (ret)

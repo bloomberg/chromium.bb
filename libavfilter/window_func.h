@@ -1,7 +1,5 @@
 /*
- * Header file for hardcoded AAC SBR windows
- *
- * Copyright (c) 2014 Reimar Döffinger <Reimar.Doeffinger@gmx.de>
+ * Copyright (c) 2015 Paul B Mahol
  *
  * This file is part of FFmpeg.
  *
@@ -20,23 +18,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <stdlib.h>
-#include "libavutil/internal.h"
-#include "libavutil/common.h"
-#undef CONFIG_HARDCODED_TABLES
-#define CONFIG_HARDCODED_TABLES 0
-#define USE_FIXED 1
-#include "aacsbr_fixed_tablegen.h"
-#include "tableprint.h"
 
-int main(void)
-{
-    aacsbr_tableinit();
+#ifndef AVFILTER_WINDOW_FUNC_H
+#define AVFILTER_WINDOW_FUNC_H
 
-    write_fileheader();
+enum WindowFunc     { WFUNC_RECT, WFUNC_HANNING, WFUNC_HAMMING, WFUNC_BLACKMAN,
+                      WFUNC_BARTLETT, WFUNC_WELCH, WFUNC_FLATTOP,
+                      WFUNC_BHARRIS, WFUNC_BNUTTALL, WFUNC_SINE, WFUNC_NUTTALL,
+                      WFUNC_BHANN, WFUNC_LANCZOS, WFUNC_GAUSS, WFUNC_TUKEY, NB_WFUNC };
 
-    WRITE_ARRAY_ALIGNED("static const", 32, int32_t, sbr_qmf_window_ds);
-    WRITE_ARRAY_ALIGNED("static const", 32, int32_t, sbr_qmf_window_us);
+void ff_generate_window_func(float *lut, int N, int win_func, float *overlap);
 
-    return 0;
-}
+#endif /* AVFILTER_WINDOW_FUNC_H */

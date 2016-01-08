@@ -218,8 +218,19 @@ static AVInputFormat *iformat = NULL;
 
 static struct AVHashContext *hash;
 
-static const char *const binary_unit_prefixes [] = { "", "Ki", "Mi", "Gi", "Ti", "Pi" };
-static const char *const decimal_unit_prefixes[] = { "", "K" , "M" , "G" , "T" , "P"  };
+static const struct {
+    double bin_val;
+    double dec_val;
+    const char *bin_str;
+    const char *dec_str;
+} si_prefixes[] = {
+    { 1.0, 1.0, "", "" },
+    { 1.024e3, 1e3, "Ki", "K" },
+    { 1.048576e6, 1e6, "Mi", "M" },
+    { 1.073741824e9, 1e9, "Gi", "G" },
+    { 1.099511627776e12, 1e12, "Ti", "T" },
+    { 1.125899906842624e15, 1e15, "Pi", "P" },
+};
 
 static const char unit_second_str[]         = "s"    ;
 static const char unit_hertz_str[]          = "Hz"   ;
@@ -273,14 +284,14 @@ static char *value_string(char *buf, int buf_size, struct unit_value uv)
 
             if (uv.unit == unit_byte_str && use_byte_value_binary_prefix) {
                 index = (long long int) (log2(vald)) / 10;
-                index = av_clip(index, 0, FF_ARRAY_ELEMS(binary_unit_prefixes) - 1);
-                vald /= exp2(index * 10);
-                prefix_string = binary_unit_prefixes[index];
+                index = av_clip(index, 0, FF_ARRAY_ELEMS(si_prefixes) - 1);
+                vald /= si_prefixes[index].bin_val;
+                prefix_string = si_prefixes[index].bin_str;
             } else {
                 index = (long long int) (log10(vald)) / 3;
-                index = av_clip(index, 0, FF_ARRAY_ELEMS(decimal_unit_prefixes) - 1);
-                vald /= pow(10, index * 3);
-                prefix_string = decimal_unit_prefixes[index];
+                index = av_clip(index, 0, FF_ARRAY_ELEMS(si_prefixes) - 1);
+                vald /= si_prefixes[index].dec_val;
+                prefix_string = si_prefixes[index].dec_str;
             }
             vali = vald;
         }
@@ -1827,6 +1838,7 @@ static void show_frame(WriterContext *w, AVFrame *frame, AVStream *stream,
                        AVFormatContext *fmt_ctx)
 {
     AVBPrint pbuf;
+    char val_str[128];
     const char *s;
     int i;
 
@@ -1849,7 +1861,7 @@ static void show_frame(WriterContext *w, AVFrame *frame, AVStream *stream,
     print_duration_time("pkt_duration_time", av_frame_get_pkt_duration(frame), &stream->time_base);
     if (av_frame_get_pkt_pos (frame) != -1) print_fmt    ("pkt_pos", "%"PRId64, av_frame_get_pkt_pos(frame));
     else                      print_str_opt("pkt_pos", "N/A");
-    if (av_frame_get_pkt_size(frame) != -1) print_fmt    ("pkt_size", "%d", av_frame_get_pkt_size(frame));
+    if (av_frame_get_pkt_size(frame) != -1) print_val    ("pkt_size", av_frame_get_pkt_size(frame), unit_byte_str);
     else                       print_str_opt("pkt_size", "N/A");
 
     switch (stream->codec->codec_type) {
@@ -2148,10 +2160,16 @@ static int show_stream(WriterContext *w, AVFormatContext *fmt_ctx, int stream_id
             }
         }
 
-        if (dec && (profile = av_get_profile_name(dec, dec_ctx->profile)))
+        if (!do_bitexact && dec && (profile = av_get_profile_name(dec, dec_ctx->profile)))
             print_str("profile", profile);
-        else
-            print_str_opt("profile", "unknown");
+        else {
+            if (dec_ctx->profile != FF_PROFILE_UNKNOWN) {
+                char profile_num[12];
+                snprintf(profile_num, sizeof(profile_num), "%d", dec_ctx->profile);
+                print_str("profile", profile_num);
+            } else
+                print_str_opt("profile", "unknown");
+        }
 
         s = av_get_media_type_string(dec_ctx->codec_type);
         if (s) print_str    ("codec_type", s);

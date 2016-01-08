@@ -121,7 +121,7 @@ Specify the audio device by its index. Overrides anything given in the input fil
 @item -pixel_format <FORMAT>
 Request the video device to use a specific pixel format.
 If the specified format is not supported, a list of available formats is given
-und the first one in this list is used instead. Available pixel formats are:
+and the first one in this list is used instead. Available pixel formats are:
 @code{monob, rgb555be, rgb555le, rgb565be, rgb565le, rgb24, bgr24, 0rgb, bgr0, 0bgr, rgb0,
  bgr48be, uyvy422, yuva444p, yuva444p16le, yuv444p, yuv422p16, yuv422p10, yuv444p10,
  yuv420p, nv12, yuyv422, gray}
@@ -1352,17 +1352,13 @@ Set the video frame size. Default value is @code{vga}.
 Use the MIT-SHM extension for shared memory. Default value is @code{1}.
 It may be necessary to disable it for remote displays (legacy x11grab
 only).
+
+@item grab_x
+@item grab_y
+Set the grabbing region coordinates. They are expressed as offset from
+the top left corner of the X11 window and correspond to the
+@var{x_offset} and @var{y_offset} parameters in the device name. The
+default value for both options is 0.
 @end table
-
-@subsection @var{grab_x} @var{grab_y} AVOption
-
-The syntax is:
-@example
--grab_x @var{x_offset} -grab_y @var{y_offset}
-@end example
-
-Set the grabbing region coordinates. They are expressed as offset from the top left
-corner of the X11 window. The default value is 0.
-
 
 @c man end INPUT DEVICES

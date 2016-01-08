@@ -52,6 +52,15 @@ fate-sub-sami2: CMD = fmtstdout ass -i $(TARGET_SAMPLES)/sub/SAMI_multilang_twea
 FATE_SUBTITLES_ASS-$(call DEMDEC, SRT, SUBRIP) += fate-sub-srt
 fate-sub-srt: CMD = fmtstdout ass -i $(TARGET_SAMPLES)/sub/SubRip_capability_tester.srt
 
+FATE_SUBTITLES-$(call ALLYES, SRT_DEMUXER SUBRIP_DECODER SRT_MUXER) += fate-sub-srt-rrn-remux
+fate-sub-srt-rrn-remux: CMD = fmtstdout srt -i $(TARGET_SAMPLES)/sub/ticket5032-rrn.srt -c:s copy
+
+FATE_SUBTITLES-$(call ALLYES, SRT_DEMUXER SUBRIP_DECODER SRT_MUXER) += fate-sub-srt-madness-timeshift
+fate-sub-srt-madness-timeshift: CMD = fmtstdout srt -itsoffset 3.14 -i $(TARGET_SAMPLES)/sub/madness.srt -c:s copy
+
+FATE_SUBTITLES-$(call ALLYES, SRT_DEMUXER SUBRIP_DECODER SRT_MUXER) += fate-sub-srt-empty-events
+fate-sub-srt-empty-events: CMD = fmtstdout srt -i $(TARGET_SAMPLES)/sub/empty-events-2167.srt -c:s copy
+
 FATE_SUBTITLES_ASS-$(call DEMDEC, STL, STL) += fate-sub-stl
 fate-sub-stl: CMD = fmtstdout ass -i $(TARGET_SAMPLES)/sub/STL_capability_tester.stl
 
@@ -75,6 +84,9 @@ fate-sub-webvtt2: CMD = fmtstdout ass -i $(TARGET_SAMPLES)/sub/WebVTT_extended_t
 
 FATE_SUBTITLES-$(call ALLYES, SRT_DEMUXER SUBRIP_DECODER WEBVTT_ENCODER WEBVTT_MUXER) += fate-sub-webvttenc
 fate-sub-webvttenc: CMD = fmtstdout webvtt -i $(TARGET_SAMPLES)/sub/SubRip_capability_tester.srt
+
+FATE_SUBTITLES-$(call ALLYES, SRT_DEMUXER SUBRIP_DECODER TEXT_ENCODER SRT_MUXER) += fate-sub-textenc
+fate-sub-textenc: CMD = fmtstdout srt -i $(TARGET_SAMPLES)/sub/SubRip_capability_tester.srt -c:s text
 
 FATE_SUBTITLES_ASS-$(call ALLYES, MICRODVD_DEMUXER MICRODVD_DECODER ICONV) += fate-sub-charenc
 fate-sub-charenc: CMD = fmtstdout ass -sub_charenc cp1251 -i $(TARGET_SAMPLES)/sub/cp1251-subtitles.sub

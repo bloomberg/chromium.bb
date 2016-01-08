@@ -1,8 +1,4 @@
 /*
- * Generate a header file for hardcoded AAC tables
- *
- * Copyright (c) 2010 Alex Converse <alex.converse@gmail.com>
- *
  * This file is part of FFmpeg.
  *
  * FFmpeg is free software; you can redistribute it and/or
@@ -20,20 +16,40 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <stdlib.h>
-#define CONFIG_HARDCODED_TABLES 0
-#include "aac_tablegen.h"
-#include "tableprint.h"
+/**
+ * @file
+ * Compatibility libm for table generation files
+ */
 
-int main(void)
+#ifndef AVUTIL_TABLEGEN_H
+#define AVUTIL_TABLEGEN_H
+
+#include <math.h>
+
+// we lack some functions on all host platforms, and we don't care about
+// performance and/or strict ISO C semantics as it's performed at build time
+static inline double ff_cbrt(double x)
 {
-    ff_aac_tableinit();
-
-    write_fileheader();
-
-    WRITE_ARRAY("const", float, ff_aac_pow2sf_tab);
-
-    WRITE_ARRAY("const", float, ff_aac_pow34sf_tab);
-
-    return 0;
+    return x < 0 ? -pow(-x, 1.0 / 3.0) : pow(x, 1.0 / 3.0);
 }
+#define cbrt ff_cbrt
+
+static inline double ff_rint(double x)
+{
+    return x >= 0 ? floor(x + 0.5) : ceil(x - 0.5);
+}
+#define rint ff_rint
+
+static inline long long ff_llrint(double x)
+{
+    return rint(x);
+}
+#define llrint ff_llrint
+
+static inline long ff_lrint(double x)
+{
+    return rint(x);
+}
+#define lrint ff_lrint
+
+#endif /* AVUTIL_TABLEGEN_H */

@@ -80,7 +80,11 @@ static av_cold int rscc_init(AVCodecContext *avctx)
     if (!ctx->reference)
         return AVERROR(ENOMEM);
 
-    avctx->pix_fmt = AV_PIX_FMT_BGRA;
+    if (avctx->codec_tag == MKTAG('I','S','C','C')) {
+        avctx->pix_fmt = AV_PIX_FMT_BGRA;
+    } else {
+        avctx->pix_fmt = AV_PIX_FMT_BGR0;
+    }
 
     /* Store the value to check for keyframes */
     ctx->inflated_size = avctx->width * avctx->height * 4;
@@ -221,6 +225,11 @@ static int rscc_decode_frame(AVCodecContext *avctx, void *data,
 
     /* Get pixels buffer, it may be deflated or just raw */
     if (pixel_size == packed_size) {
+        if (bytestream2_get_bytes_left(gbc) < pixel_size) {
+            av_log(avctx, AV_LOG_ERROR, "Insufficient input for %d\n", pixel_size);
+            ret = AVERROR_INVALIDDATA;
+            goto end;
+        }
         pixels = gbc->buffer;
     } else {
         uLongf len = ctx->inflated_size;

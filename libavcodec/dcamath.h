@@ -1,8 +1,4 @@
 /*
- * Header file for hardcoded AAC tables
- *
- * Copyright (c) 2010 Alex Converse <alex.converse@gmail.com>
- *
  * This file is part of FFmpeg.
  *
  * FFmpeg is free software; you can redistribute it and/or
@@ -20,26 +16,27 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef AVCODEC_AAC_TABLEGEN_H
-#define AVCODEC_AAC_TABLEGEN_H
+#include "libavutil/common.h"
 
-#include "aac_tablegen_decl.h"
 
-#if CONFIG_HARDCODED_TABLES
-#include "libavcodec/aac_tables.h"
-#else
-#include "libavutil/mathematics.h"
-float ff_aac_pow2sf_tab[428];
-float ff_aac_pow34sf_tab[428];
-
-av_cold void ff_aac_tableinit(void)
+// clip a signed integer into the (-2^23), (2^23-1) range
+static inline int dca_clip23(int a)
 {
-    int i;
-    for (i = 0; i < 428; i++) {
-        ff_aac_pow2sf_tab[i] = pow(2, (i - POW_SF2_ZERO) / 4.0);
-        ff_aac_pow34sf_tab[i] = pow(ff_aac_pow2sf_tab[i], 3.0/4.0);
-    }
+    return av_clip_intp2(a, 23);
 }
-#endif /* CONFIG_HARDCODED_TABLES */
 
-#endif /* AVCODEC_AAC_TABLEGEN_H */
+static inline int32_t dca_norm(int64_t a, int bits)
+{
+    if (bits > 0)
+        return (int32_t)((a + (INT64_C(1) << (bits - 1))) >> bits);
+    else
+        return (int32_t)a;
+}
+
+static inline int64_t dca_round(int64_t a, int bits)
+{
+    if (bits > 0)
+        return (a + (INT64_C(1) << (bits - 1))) & ~((INT64_C(1) << bits) - 1);
+    else
+        return a;
+}

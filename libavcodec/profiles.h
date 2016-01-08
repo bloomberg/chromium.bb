@@ -1,5 +1,4 @@
 /*
- * Generate a header file for hardcoded DSD tables
  *
  * This file is part of FFmpeg.
  *
@@ -18,21 +17,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <stdlib.h>
-#define CONFIG_HARDCODED_TABLES 0
-#include "dsd_tablegen.h"
-#include "tableprint.h"
-#include <inttypes.h>
+#ifndef AVCODEC_PROFILES_H
+#define AVCODEC_PROFILES_H
 
-int main(void)
-{
-    dsd_ctables_tableinit();
+#include "avcodec.h"
 
-    write_fileheader();
+extern const AVProfile ff_aac_profiles[];
+extern const AVProfile ff_dca_profiles[];
+extern const AVProfile ff_h264_profiles[];
+extern const AVProfile ff_hevc_profiles[];
+extern const AVProfile ff_jpeg2000_profiles[];
+extern const AVProfile ff_mpeg2_video_profiles[];
+extern const AVProfile ff_mpeg4_video_profiles[];
+extern const AVProfile ff_vc1_profiles[];
+extern const AVProfile ff_vp9_profiles[];
 
-    printf("static const double ctables[CTABLES][256] = {\n");
-    write_float_2d_array(ctables, CTABLES, 256);
-    printf("};\n");
-
-    return 0;
-}
+#endif

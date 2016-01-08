@@ -138,6 +138,7 @@ void av_register_all(void)
     REGISTER_MUXER   (FRAMECRC,         framecrc);
     REGISTER_MUXER   (FRAMEMD5,         framemd5);
     REGISTER_DEMUXER (FRM,              frm);
+    REGISTER_DEMUXER (FSB,              fsb);
     REGISTER_MUXDEMUX(G722,             g722);
     REGISTER_MUXDEMUX(G723_1,           g723_1);
     REGISTER_DEMUXER (G729,             g729);
@@ -169,6 +170,7 @@ void av_register_all(void)
     REGISTER_DEMUXER (ISS,              iss);
     REGISTER_DEMUXER (IV8,              iv8);
     REGISTER_MUXDEMUX(IVF,              ivf);
+    REGISTER_DEMUXER (IVR,              ivr);
     REGISTER_MUXDEMUX(JACOSUB,          jacosub);
     REGISTER_DEMUXER (JV,               jv);
     REGISTER_MUXER   (LATM,             latm);
@@ -314,6 +316,8 @@ void av_register_all(void)
     REGISTER_DEMUXER (TXD,              txd);
     REGISTER_DEMUXER (TTY,              tty);
     REGISTER_MUXER   (UNCODEDFRAMECRC,  uncodedframecrc);
+    REGISTER_DEMUXER (V210,             v210);
+    REGISTER_DEMUXER (V210X,            v210x);
     REGISTER_DEMUXER (VAG,              vag);
     REGISTER_MUXDEMUX(VC1,              vc1);
     REGISTER_MUXDEMUX(VC1T,             vc1t);
@@ -321,6 +325,7 @@ void av_register_all(void)
     REGISTER_DEMUXER (VMD,              vmd);
     REGISTER_DEMUXER (VOBSUB,           vobsub);
     REGISTER_MUXDEMUX(VOC,              voc);
+    REGISTER_DEMUXER (VPK,              vpk);
     REGISTER_DEMUXER (VPLAYER,          vplayer);
     REGISTER_DEMUXER (VQF,              vqf);
     REGISTER_MUXDEMUX(W64,              w64);
@@ -393,6 +398,7 @@ void av_register_all(void)
     REGISTER_PROTOCOL(SRTP,             srtp);
     REGISTER_PROTOCOL(SUBFILE,          subfile);
     REGISTER_PROTOCOL(TCP,              tcp);
+    REGISTER_PROTOCOL(TLS_SCHANNEL,     tls_schannel);
     REGISTER_PROTOCOL(TLS_SECURETRANSPORT, tls_securetransport);
     REGISTER_PROTOCOL(TLS_GNUTLS,       tls_gnutls);
     REGISTER_PROTOCOL(TLS_OPENSSL,      tls_openssl);

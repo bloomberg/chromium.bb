@@ -241,11 +241,12 @@ static int film_read_header(AVFormatContext *s)
             film->sample_table[i].pts = AV_RB32(&scratch[8]) & 0x7FFFFFFF;
             film->sample_table[i].keyframe = (scratch[8] & 0x80) ? 0 : 1;
             video_frame_counter++;
-            av_add_index_entry(s->streams[film->video_stream_index],
-                               film->sample_table[i].sample_offset,
-                               film->sample_table[i].pts,
-                               film->sample_table[i].sample_size, 0,
-                               film->sample_table[i].keyframe);
+            if (film->video_type)
+                av_add_index_entry(s->streams[film->video_stream_index],
+                                   film->sample_table[i].sample_offset,
+                                   film->sample_table[i].pts,
+                                   film->sample_table[i].sample_size, 0,
+                                   film->sample_table[i].keyframe);
         }
     }
 
@@ -279,8 +280,7 @@ static int film_read_packet(AVFormatContext *s,
     /* position the stream (will probably be there anyway) */
     avio_seek(pb, sample->sample_offset, SEEK_SET);
 
-
-    ret= av_get_packet(pb, pkt, sample->sample_size);
+    ret = av_get_packet(pb, pkt, sample->sample_size);
     if (ret != sample->sample_size)
         ret = AVERROR(EIO);
 
@@ -296,13 +296,16 @@ static int film_read_seek(AVFormatContext *s, int stream_index, int64_t timestam
 {
     FilmDemuxContext *film = s->priv_data;
     AVStream *st = s->streams[stream_index];
-    int index = av_index_search_timestamp(st, timestamp, flags);
-    if (index < 0)
-        return -1;
-    if (avio_seek(s->pb, st->index_entries[index].pos, SEEK_SET) < 0)
-        return -1;
+    int64_t pos;
+    int ret = av_index_search_timestamp(st, timestamp, flags);
+    if (ret < 0)
+        return ret;
 
-    film->current_sample = index;
+    pos = avio_seek(s->pb, st->index_entries[ret].pos, SEEK_SET);
+    if (pos < 0)
+        return pos;
+
+    film->current_sample = ret;
 
     return 0;
 }

@@ -70,6 +70,8 @@ static int matroska_read_close(AVFormatContext *s);
 #include <zlib.h>
 #endif
 
+#include "qtpalette.h"
+
 typedef enum {
     EBML_NONE,
     EBML_UINT,
@@ -318,6 +320,9 @@ typedef struct MatroskaDemuxContext {
 
     /* WebM DASH Manifest live flag/ */
     int is_live;
+
+    uint32_t palette[AVPALETTE_COUNT];
+    int has_palette;
 } MatroskaDemuxContext;
 
 typedef struct MatroskaBlock {
@@ -1411,24 +1416,55 @@ static void matroska_convert_tags(AVFormatContext *s)
     for (i = 0; i < matroska->tags.nb_elem; i++) {
         if (tags[i].target.attachuid) {
             MatroskaAttachment *attachment = matroska->attachments.elem;
-            for (j = 0; j < matroska->attachments.nb_elem; j++)
+            int found = 0;
+            for (j = 0; j < matroska->attachments.nb_elem; j++) {
                 if (attachment[j].uid == tags[i].target.attachuid &&
-                    attachment[j].stream)
+                    attachment[j].stream) {
                     matroska_convert_tag(s, &tags[i].tag,
                                          &attachment[j].stream->metadata, NULL);
+                    found = 1;
+                }
+            }
+            if (!found) {
+                av_log(NULL, AV_LOG_WARNING,
+                       "The tags at index %d refer to a "
+                       "non-existent attachment %"PRId64".\n",
+                       i, tags[i].target.attachuid);
+            }
         } else if (tags[i].target.chapteruid) {
             MatroskaChapter *chapter = matroska->chapters.elem;
-            for (j = 0; j < matroska->chapters.nb_elem; j++)
+            int found = 0;
+            for (j = 0; j < matroska->chapters.nb_elem; j++) {
                 if (chapter[j].uid == tags[i].target.chapteruid &&
-                    chapter[j].chapter)
+                    chapter[j].chapter) {
                     matroska_convert_tag(s, &tags[i].tag,
                                          &chapter[j].chapter->metadata, NULL);
+                    found = 1;
+                }
+            }
+            if (!found) {
+                av_log(NULL, AV_LOG_WARNING,
+                       "The tags at index %d refer to a non-existent chapter "
+                       "%"PRId64".\n",
+                       i, tags[i].target.chapteruid);
+            }
         } else if (tags[i].target.trackuid) {
             MatroskaTrack *track = matroska->tracks.elem;
-            for (j = 0; j < matroska->tracks.nb_elem; j++)
-                if (track[j].uid == tags[i].target.trackuid && track[j].stream)
+            int found = 0;
+            for (j = 0; j < matroska->tracks.nb_elem; j++) {
+                if (track[j].uid == tags[i].target.trackuid &&
+                    track[j].stream) {
                     matroska_convert_tag(s, &tags[i].tag,
                                          &track[j].stream->metadata, NULL);
+                    found = 1;
+               }
+            }
+            if (!found) {
+                av_log(NULL, AV_LOG_WARNING,
+                       "The tags at index %d refer to a non-existent track "
+                       "%"PRId64".\n",
+                       i, tags[i].target.trackuid);
+            }
         } else {
             matroska_convert_tag(s, &tags[i].tag, &s->metadata,
                                  tags[i].target.type);
@@ -1654,6 +1690,30 @@ static int matroska_parse_flac(AVFormatContext *s,
     return 0;
 }
 
+static void mkv_stereo_mode_display_mul(int stereo_mode, int *h_width, int *h_height)
+{
+    switch (stereo_mode) {
+        case MATROSKA_VIDEO_STEREOMODE_TYPE_MONO:
+        case MATROSKA_VIDEO_STEREOMODE_TYPE_CHECKERBOARD_RL:
+        case MATROSKA_VIDEO_STEREOMODE_TYPE_CHECKERBOARD_LR:
+        case MATROSKA_VIDEO_STEREOMODE_TYPE_BOTH_EYES_BLOCK_RL:
+        case MATROSKA_VIDEO_STEREOMODE_TYPE_BOTH_EYES_BLOCK_LR:
+            break;
+        case MATROSKA_VIDEO_STEREOMODE_TYPE_RIGHT_LEFT:
+        case MATROSKA_VIDEO_STEREOMODE_TYPE_LEFT_RIGHT:
+        case MATROSKA_VIDEO_STEREOMODE_TYPE_COL_INTERLEAVED_RL:
+        case MATROSKA_VIDEO_STEREOMODE_TYPE_COL_INTERLEAVED_LR:
+            *h_width = 2;
+            break;
+        case MATROSKA_VIDEO_STEREOMODE_TYPE_BOTTOM_TOP:
+        case MATROSKA_VIDEO_STEREOMODE_TYPE_TOP_BOTTOM:
+        case MATROSKA_VIDEO_STEREOMODE_TYPE_ROW_INTERLEAVED_RL:
+        case MATROSKA_VIDEO_STEREOMODE_TYPE_ROW_INTERLEAVED_LR:
+            *h_height = 2;
+            break;
+    }
+}
+
 static int matroska_parse_tracks(AVFormatContext *s)
 {
     MatroskaDemuxContext *matroska = s->priv_data;
@@ -1804,15 +1864,25 @@ static int matroska_parse_tracks(AVFormatContext *s)
             if (ret < 0)
                 return ret;
             codec_id         = st->codec->codec_id;
+            fourcc           = st->codec->codec_tag;
             extradata_offset = FFMIN(track->codec_priv.size, 18);
         } else if (!strcmp(track->codec_id, "A_QUICKTIME")
-                   && (track->codec_priv.size >= 86)
+                   && (track->codec_priv.size >= 36)
                    && (track->codec_priv.data)) {
             fourcc = AV_RL32(track->codec_priv.data + 4);
             codec_id = ff_codec_get_id(ff_codec_movaudio_tags, fourcc);
             if (ff_codec_get_id(ff_codec_movaudio_tags, AV_RL32(track->codec_priv.data))) {
                 fourcc = AV_RL32(track->codec_priv.data);
                 codec_id = ff_codec_get_id(ff_codec_movaudio_tags, fourcc);
+            }
+            if (fourcc == 0) {
+                if (track->audio.bitdepth == 8) {
+                    fourcc = MKTAG('r','a','w',' ');
+                    codec_id = ff_codec_get_id(ff_codec_movaudio_tags, fourcc);
+                } else if (track->audio.bitdepth == 16) {
+                    fourcc = MKTAG('t','w','o','s');
+                    codec_id = ff_codec_get_id(ff_codec_movaudio_tags, fourcc);
+                }
             }
         } else if (!strcmp(track->codec_id, "V_QUICKTIME") &&
                    (track->codec_priv.size >= 21)          &&
@@ -1823,13 +1893,25 @@ static int matroska_parse_tracks(AVFormatContext *s)
                 fourcc   = AV_RL32(track->codec_priv.data);
                 codec_id = ff_codec_get_id(ff_codec_movvideo_tags, fourcc);
             }
-            if (codec_id == AV_CODEC_ID_NONE && AV_RL32(track->codec_priv.data+4) == AV_RL32("SMI "))
-                codec_id = AV_CODEC_ID_SVQ3;
+            if (codec_id == AV_CODEC_ID_NONE && AV_RL32(track->codec_priv.data+4) == AV_RL32("SMI ")) {
+                fourcc = MKTAG('S','V','Q','3');
+                codec_id = ff_codec_get_id(ff_codec_movvideo_tags, fourcc);
+            }
             if (codec_id == AV_CODEC_ID_NONE) {
                 char buf[32];
                 av_get_codec_tag_string(buf, sizeof(buf), fourcc);
                 av_log(matroska->ctx, AV_LOG_ERROR,
                        "mov FourCC not found %s.\n", buf);
+            }
+            if (track->codec_priv.size >= 86) {
+                bit_depth = AV_RB16(track->codec_priv.data + 82);
+                ffio_init_context(&b, track->codec_priv.data,
+                                  track->codec_priv.size,
+                                  0, NULL, NULL, NULL, NULL);
+                if (ff_get_qtpalette(codec_id, &b, matroska->palette)) {
+                    bit_depth &= 0x1F;
+                    matroska->has_palette = 1;
+                }
             }
         } else if (codec_id == AV_CODEC_ID_PCM_S16BE) {
             switch (track->audio.bitdepth) {
@@ -2019,6 +2101,8 @@ static int matroska_parse_tracks(AVFormatContext *s)
 
         if (track->type == MATROSKA_TRACK_TYPE_VIDEO) {
             MatroskaTrackPlane *planes = track->operation.combine_planes.elem;
+            int display_width_mul  = 1;
+            int display_height_mul = 1;
 
             st->codec->codec_type = AVMEDIA_TYPE_VIDEO;
             st->codec->codec_tag  = fourcc;
@@ -2026,10 +2110,14 @@ static int matroska_parse_tracks(AVFormatContext *s)
                 st->codec->bits_per_coded_sample = bit_depth;
             st->codec->width      = track->video.pixel_width;
             st->codec->height     = track->video.pixel_height;
+
+            if (track->video.stereo_mode && track->video.stereo_mode < MATROSKA_VIDEO_STEREOMODE_TYPE_NB)
+                mkv_stereo_mode_display_mul(track->video.stereo_mode, &display_width_mul, &display_height_mul);
+
             av_reduce(&st->sample_aspect_ratio.num,
                       &st->sample_aspect_ratio.den,
-                      st->codec->height * track->video.display_width,
-                      st->codec->width  * track->video.display_height,
+                      st->codec->height * track->video.display_width  * display_width_mul,
+                      st->codec->width  * track->video.display_height * display_height_mul,
                       255);
             if (st->codec->codec_id != AV_CODEC_ID_HEVC)
                 st->need_parsing = AVSTREAM_PARSE_HEADERS;
@@ -2075,6 +2163,7 @@ static int matroska_parse_tracks(AVFormatContext *s)
             }
         } else if (track->type == MATROSKA_TRACK_TYPE_AUDIO) {
             st->codec->codec_type  = AVMEDIA_TYPE_AUDIO;
+            st->codec->codec_tag   = fourcc;
             st->codec->sample_rate = track->audio.out_samplerate;
             st->codec->channels    = track->audio.channels;
             if (!st->codec->bits_per_coded_sample)
@@ -2275,6 +2364,15 @@ static int matroska_deliver_packet(MatroskaDemuxContext *matroska,
     if (matroska->num_packets > 0) {
         memcpy(pkt, matroska->packets[0], sizeof(AVPacket));
         av_freep(&matroska->packets[0]);
+        if (matroska->has_palette) {
+            uint8_t *pal = av_packet_new_side_data(pkt, AV_PKT_DATA_PALETTE, AVPALETTE_SIZE);
+            if (!pal) {
+                av_log(matroska->ctx, AV_LOG_ERROR, "Cannot append palette to packet\n");
+            } else {
+                memcpy(pal, matroska->palette, AVPALETTE_SIZE);
+            }
+            matroska->has_palette = 0;
+        }
         if (matroska->num_packets > 1) {
             void *newpackets;
             memmove(&matroska->packets[0], &matroska->packets[1],
@@ -3505,7 +3603,7 @@ static int webm_dash_manifest_read_packet(AVFormatContext *s, AVPacket *pkt)
 
 #define OFFSET(x) offsetof(MatroskaDemuxContext, x)
 static const AVOption options[] = {
-    { "live", "flag indicating that the input is a live file that only has the headers.", OFFSET(is_live), AV_OPT_TYPE_INT, {.i64 = 0}, 0, 1, AV_OPT_FLAG_DECODING_PARAM },
+    { "live", "flag indicating that the input is a live file that only has the headers.", OFFSET(is_live), AV_OPT_TYPE_BOOL, {.i64 = 0}, 0, 1, AV_OPT_FLAG_DECODING_PARAM },
     { NULL },
 };
 

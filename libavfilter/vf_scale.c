@@ -110,6 +110,8 @@ typedef struct ScaleContext {
     int in_v_chr_pos;
 
     int force_original_aspect_ratio;
+
+    int nb_slices;
 } ScaleContext;
 
 AVFilter ff_vf_scale2ref;
@@ -565,6 +567,8 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
             sws_setColorspaceDetails(scale->isws[1], inv_table, in_full,
                                      table, out_full,
                                      brightness, contrast, saturation);
+
+        av_frame_set_color_range(out, out_full ? AVCOL_RANGE_JPEG : AVCOL_RANGE_MPEG);
     }
 
     av_reduce(&out->sample_aspect_ratio.num, &out->sample_aspect_ratio.den,
@@ -575,6 +579,15 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
     if(scale->interlaced>0 || (scale->interlaced<0 && in->interlaced_frame)){
         scale_slice(link, out, in, scale->isws[0], 0, (link->h+1)/2, 2, 0);
         scale_slice(link, out, in, scale->isws[1], 0,  link->h   /2, 2, 1);
+    }else if (scale->nb_slices) {
+        int i, slice_h, slice_start, slice_end = 0;
+        const int nb_slices = FFMIN(scale->nb_slices, link->h);
+        for (i = 0; i < nb_slices; i++) {
+            slice_start = slice_end;
+            slice_end   = (link->h * (i+1)) / nb_slices;
+            slice_h     = slice_end - slice_start;
+            scale_slice(link, out, in, scale->sws, slice_start, slice_h, 1, 0);
+        }
     }else{
         scale_slice(link, out, in, scale->sws, 0, link->h, 1, 0);
     }
@@ -628,7 +641,7 @@ static const AVOption scale_options[] = {
     { "h",     "Output video height",         OFFSET(h_expr),    AV_OPT_TYPE_STRING,        .flags = FLAGS },
     { "height","Output video height",         OFFSET(h_expr),    AV_OPT_TYPE_STRING,        .flags = FLAGS },
     { "flags", "Flags to pass to libswscale", OFFSET(flags_str), AV_OPT_TYPE_STRING, { .str = "bilinear" }, .flags = FLAGS },
-    { "interl", "set interlacing", OFFSET(interlaced), AV_OPT_TYPE_INT, {.i64 = 0 }, -1, 1, FLAGS },
+    { "interl", "set interlacing", OFFSET(interlaced), AV_OPT_TYPE_BOOL, {.i64 = 0 }, -1, 1, FLAGS },
     { "size",   "set video size",          OFFSET(size_str), AV_OPT_TYPE_STRING, {.str = NULL}, 0, FLAGS },
     { "s",      "set video size",          OFFSET(size_str), AV_OPT_TYPE_STRING, {.str = NULL}, 0, FLAGS },
     {  "in_color_matrix", "set input YCbCr type",   OFFSET(in_color_matrix),  AV_OPT_TYPE_STRING, { .str = "auto" }, .flags = FLAGS },
@@ -651,6 +664,7 @@ static const AVOption scale_options[] = {
     { "increase", NULL, 0, AV_OPT_TYPE_CONST, {.i64 = 2 }, 0, 0, FLAGS, "force_oar" },
     { "param0", "Scaler param 0",             OFFSET(param[0]),  AV_OPT_TYPE_DOUBLE, { .dbl = SWS_PARAM_DEFAULT  }, INT_MIN, INT_MAX, FLAGS },
     { "param1", "Scaler param 1",             OFFSET(param[1]),  AV_OPT_TYPE_DOUBLE, { .dbl = SWS_PARAM_DEFAULT  }, INT_MIN, INT_MAX, FLAGS },
+    { "nb_slices", "set the number of slices (debug purpose only)", OFFSET(nb_slices), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, INT_MAX, FLAGS },
     { NULL }
 };
 

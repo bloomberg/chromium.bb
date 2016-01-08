@@ -130,7 +130,7 @@ static int get_packet_header(AVFormatContext *s)
     version     = bytestream_get_le32(&p);
     header_size = bytestream_get_le32(&p);
     if (version > 1)
-        avpriv_request_sample(s, "Unknown format version %"PRIu32"\n", version);
+        avpriv_request_sample(s, "Format version %"PRIu32, version);
 
     if (header_size < (version ? 72 : 60) ||
         header_size > LXF_MAX_PACKET_HEADER_SIZE ||
@@ -305,7 +305,7 @@ static int lxf_read_packet(AVFormatContext *s, AVPacket *pkt)
     if (stream > 1) {
         av_log(s, AV_LOG_WARNING,
                "got packet with illegal stream index %"PRIu32"\n", stream);
-        return AVERROR(EAGAIN);
+        return FFERROR_REDO;
     }
 
     if (stream == 1 && s->nb_streams < 2) {
