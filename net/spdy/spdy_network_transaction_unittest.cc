@@ -6449,6 +6449,47 @@ TEST_P(SpdyNetworkTransactionTest, LargeRequest) {
   EXPECT_EQ("hello!", out.response_data);
 }
 
+// Regression test for https://crbug.com/535629: response header exceeds 16 kB.
+TEST_P(SpdyNetworkTransactionTest, LargeResponseHeader) {
+  scoped_ptr<SpdyHeaderBlock> headers(
+      spdy_util_.ConstructGetHeaderBlock(GetDefaultUrl()));
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdySyn(1, *headers, LOWEST, false, true));
+  MockWrite writes[] = {
+      CreateMockWrite(*req, 0),
+  };
+
+  // HPACK decoder implementation limits string literal length to 16 kB.
+  const char* response_headers[2];
+  const std::string kKey(16 * 1024, 'a');
+  response_headers[0] = kKey.data();
+  const std::string kValue(16 * 1024, 'b');
+  response_headers[1] = kValue.data();
+
+  scoped_ptr<SpdyFrame> resp(
+      spdy_util_.ConstructSpdyGetSynReply(response_headers, 1, 1));
+  scoped_ptr<SpdyFrame> body(spdy_util_.ConstructSpdyBodyFrame(1, true));
+  MockRead reads[] = {
+      CreateMockRead(*resp, 1), CreateMockRead(*body, 2),
+      MockRead(ASYNC, 0, 3)  // EOF
+  };
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL(GetDefaultUrl());
+  NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY, BoundNetLog(),
+                                     GetParam(), nullptr);
+
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  helper.RunToCompletion(&data);
+  TransactionHelperResult out = helper.output();
+
+  EXPECT_EQ(OK, out.rv);
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
+  EXPECT_EQ("hello!", out.response_data);
+  ASSERT_TRUE(out.response_info.headers->HasHeaderValue(kKey, kValue));
+}
+
 class SpdyNetworkTransactionNoTLSUsageCheckTest
     : public SpdyNetworkTransactionTest {
  protected:

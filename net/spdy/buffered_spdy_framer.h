@@ -276,17 +276,13 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   int frames_received() const { return frames_received_; }
 
  private:
-  // The size of the header_buffer_.
-  enum { kHeaderBufferSize = 32 * 1024 };
-
   void InitHeaderStreaming(SpdyStreamId stream_id);
 
   SpdyFramer spdy_framer_;
   BufferedSpdyFramerVisitorInterface* visitor_;
 
   // Header block streaming state:
-  char header_buffer_[kHeaderBufferSize];
-  size_t header_buffer_used_;
+  std::string header_buffer_;
   bool header_buffer_valid_;
   SpdyStreamId header_stream_id_;
   int frames_received_;
