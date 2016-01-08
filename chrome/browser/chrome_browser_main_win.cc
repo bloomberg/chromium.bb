@@ -376,7 +376,7 @@ void ChromeBrowserMainPartsWin::PostProfileInit() {
 void ChromeBrowserMainPartsWin::PostBrowserStart() {
   ChromeBrowserMainParts::PostBrowserStart();
 
-  UMA_HISTOGRAM_BOOLEAN("Windows.Tablet", base::win::IsTabletDevice());
+  UMA_HISTOGRAM_BOOLEAN("Windows.Tablet", base::win::IsTabletDevice(nullptr));
 
   // Set up a task to verify installed modules in the current process.
   content::BrowserThread::PostAfterStartupTask(

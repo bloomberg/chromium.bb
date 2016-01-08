@@ -123,9 +123,14 @@ BASE_EXPORT bool ShouldCrashOnProcessDetach();
 BASE_EXPORT void SetAbortBehaviorForCrashReporting();
 
 // A tablet is a device that is touch enabled and also is being used
-// "like a tablet".  This is used primarily for metrics in order to gain some
-// insight into how users use Chrome.
-BASE_EXPORT bool IsTabletDevice();
+// "like a tablet". This is used by the following:-
+// 1. Metrics:- To gain insight into how users use Chrome.
+// 2. Physical keyboard presence :- If a device is in tablet mode, it means
+//    that there is no physical keyboard attached.
+// This function optionally sets the |reason| parameter to determine as to why
+// or why not a device was deemed to be a tablet.
+// Returns true if the device is in tablet mode.
+BASE_EXPORT bool IsTabletDevice(std::string* reason);
 
 // A slate is a touch device that may have a keyboard attached. This function
 // returns true if a keyboard is attached and optionally will set the reason

@@ -101,6 +101,12 @@ const wchar_t kWindows8OSKRegPath[] =
     L"Software\\Classes\\CLSID\\{054AAE20-4BEA-4347-8A35-64A533254A9D}"
     L"\\LocalServer32";
 
+// Returns the current platform role. We use the PowerDeterminePlatformRoleEx
+// API for that.
+POWER_PLATFORM_ROLE GetPlatformRole() {
+  return PowerDeterminePlatformRoleEx(POWER_PLATFORM_ROLE_V2);
+}
+
 }  // namespace
 
 // Returns true if a physical keyboard is detected on Windows 8 and up.
@@ -111,7 +117,7 @@ const wchar_t kWindows8OSKRegPath[] =
 bool IsKeyboardPresentOnSlate(std::string* reason) {
   bool result = false;
 
-  if (GetVersion() < VERSION_WIN7) {
+  if (GetVersion() < VERSION_WIN8) {
     *reason = "Detection not supported";
     return false;
   }
@@ -135,10 +141,13 @@ bool IsKeyboardPresentOnSlate(std::string* reason) {
     }
   }
 
-  // If the device is docked, the user is treating the device as a PC.
-  if (GetSystemMetrics(SM_SYSTEMDOCKED) != 0) {
+  if (IsTabletDevice(reason)) {
+    if (reason)
+      *reason += "Tablet device.\n";
+    return true;
+  } else {
     if (reason) {
-      *reason += "SM_SYSTEMDOCKED\n";
+      *reason += "Not a tablet device";
       result = true;
     } else {
       return true;
@@ -182,23 +191,6 @@ bool IsKeyboardPresentOnSlate(std::string* reason) {
         return true;
       }
     }
-  }
-
-  // Check if the device is being used as a laptop or a tablet. This can be
-  // checked by first checking the role of the device and then the
-  // corresponding system metric (SM_CONVERTIBLESLATEMODE). If it is being used
-  // as a tablet then we want the OSK to show up.
-  POWER_PLATFORM_ROLE role = PowerDeterminePlatformRole();
-
-  if (((role == PlatformRoleMobile) || (role == PlatformRoleSlate)) &&
-       (GetSystemMetrics(SM_CONVERTIBLESLATEMODE) == 0)) {
-      if (reason) {
-        *reason += (role == PlatformRoleMobile) ? "PlatformRoleMobile\n" :
-                                                  "PlatformRoleSlate\n";
-        // Don't change result here if it's already true.
-      } else {
-        return false;
-      }
   }
 
   const GUID KEYBOARD_CLASS_GUID =
@@ -392,30 +384,56 @@ void SetAbortBehaviorForCrashReporting() {
   signal(SIGABRT, ForceCrashOnSigAbort);
 }
 
-bool IsTabletDevice() {
-  if (GetSystemMetrics(SM_MAXIMUMTOUCHES) == 0)
+bool IsTabletDevice(std::string* reason) {
+  if (GetVersion() < VERSION_WIN8) {
+    if (reason)
+      *reason = "Tablet device detection not supported below Windows 8\n";
     return false;
+  }
 
-  Version version = GetVersion();
-  if (version == VERSION_XP)
-    return (GetSystemMetrics(SM_TABLETPC) != 0);
+  if (GetSystemMetrics(SM_MAXIMUMTOUCHES) == 0) {
+    if (reason) {
+      *reason += "Device does not support touch.\n";
+    } else {
+      return false;
+    }
+  }
 
   // If the device is docked, the user is treating the device as a PC.
-  if (GetSystemMetrics(SM_SYSTEMDOCKED) != 0)
-    return false;
+  if (GetSystemMetrics(SM_SYSTEMDOCKED) != 0) {
+    if (reason) {
+      *reason += "SM_SYSTEMDOCKED\n";
+    } else {
+      return false;
+    }
+  }
 
-  // PlatformRoleSlate was only added in Windows 8, but prior to Win8 it is
-  // still possible to check for a mobile power profile.
-  POWER_PLATFORM_ROLE role = PowerDeterminePlatformRole();
+  // PlatformRoleSlate was added in Windows 8+.
+  POWER_PLATFORM_ROLE role = GetPlatformRole();
   bool mobile_power_profile = (role == PlatformRoleMobile);
-  bool slate_power_profile = false;
-  if (version >= VERSION_WIN8)
-    slate_power_profile = (role == PlatformRoleSlate);
+  bool slate_power_profile = (role == PlatformRoleSlate);
 
-  if (mobile_power_profile || slate_power_profile)
-    return (GetSystemMetrics(SM_CONVERTIBLESLATEMODE) == 0);
+  bool is_tablet = false;
 
-  return false;
+  if (mobile_power_profile || slate_power_profile) {
+    is_tablet = !GetSystemMetrics(SM_CONVERTIBLESLATEMODE);
+    if (!is_tablet) {
+      if (reason) {
+        *reason += "Not in slate mode.\n";
+      } else {
+        return false;
+      }
+    } else {
+      if (reason) {
+        *reason += (role == PlatformRoleMobile) ? "PlatformRoleMobile\n" :
+                                                  "PlatformRoleSlate\n";
+      }
+    }
+  } else {
+    if (reason)
+      *reason += "Device role is not mobile or slate.\n";
+  }
+  return is_tablet;
 }
 
 bool DisplayVirtualKeyboard() {
