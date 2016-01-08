@@ -215,6 +215,12 @@ void Heap::doShutdown()
     ASSERT(Heap::allocatedSpace() == 0);
 }
 
+CrossThreadPersistentRegion& Heap::crossThreadPersistentRegion()
+{
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(CrossThreadPersistentRegion, persistentRegion, new CrossThreadPersistentRegion());
+    return persistentRegion;
+}
+
 #if ENABLE(ASSERT)
 BasePage* Heap::findPageFromAddress(Address address)
 {

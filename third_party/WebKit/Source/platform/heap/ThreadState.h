@@ -52,7 +52,6 @@ namespace blink {
 
 class BasePage;
 class CallbackStack;
-class CrossThreadPersistentRegion;
 struct GCInfo;
 class GarbageCollectedMixinConstructorMarker;
 class HeapObjectHeader;
@@ -368,7 +367,6 @@ public:
     // A region of PersistentNodes allocated on the given thread.
     PersistentRegion* persistentRegion() const { return m_persistentRegion.get(); }
     // A region of PersistentNodes not owned by any particular thread.
-    static CrossThreadPersistentRegion& crossThreadPersistentRegion();
 
     // Visit local thread stack and trace all pointers conservatively.
     void visitStack(Visitor*);

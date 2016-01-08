@@ -223,7 +223,7 @@ private:
 
         TraceCallback traceCallback = TraceMethodDelegate<PersistentBase<T, weaknessConfiguration, crossThreadnessConfiguration>, &PersistentBase<T, weaknessConfiguration, crossThreadnessConfiguration>::trace>::trampoline;
         if (crossThreadnessConfiguration == CrossThreadPersistentConfiguration) {
-            m_persistentNode = ThreadState::crossThreadPersistentRegion().allocatePersistentNode(this, traceCallback);
+            m_persistentNode = Heap::crossThreadPersistentRegion().allocatePersistentNode(this, traceCallback);
         } else {
             ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
             ASSERT(state->checkThread());
@@ -240,7 +240,7 @@ private:
             return;
 
         if (crossThreadnessConfiguration == CrossThreadPersistentConfiguration) {
-            ThreadState::crossThreadPersistentRegion().freePersistentNode(m_persistentNode);
+            Heap::crossThreadPersistentRegion().freePersistentNode(m_persistentNode);
         } else {
             ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
             ASSERT(state->checkThread());

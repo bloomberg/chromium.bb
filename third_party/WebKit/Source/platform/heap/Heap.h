@@ -44,6 +44,7 @@
 
 namespace blink {
 
+class CrossThreadPersistentRegion;
 template<typename T> class Member;
 template<typename T> class WeakMember;
 template<typename T> class UntracedMember;
@@ -75,6 +76,8 @@ public:
     static void init();
     static void shutdown();
     static void doShutdown();
+
+    static CrossThreadPersistentRegion& crossThreadPersistentRegion();
 
 #if ENABLE(ASSERT)
     static BasePage* findPageFromAddress(Address);

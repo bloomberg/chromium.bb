@@ -275,7 +275,7 @@ void ThreadState::cleanup()
         // thread local GC.
         prepareForThreadStateTermination();
 
-        ThreadState::crossThreadPersistentRegion().prepareForThreadStateTermination(this);
+        Heap::crossThreadPersistentRegion().prepareForThreadStateTermination(this);
 
         // Do thread local GC's as long as the count of thread local Persistents
         // changes and is above zero.
@@ -315,7 +315,7 @@ void ThreadState::detach()
 void ThreadState::visitPersistentRoots(Visitor* visitor)
 {
     TRACE_EVENT0("blink_gc", "ThreadState::visitPersistentRoots");
-    crossThreadPersistentRegion().tracePersistentNodes(visitor);
+    Heap::crossThreadPersistentRegion().tracePersistentNodes(visitor);
 
     for (ThreadState* state : attachedThreads())
         state->visitPersistents(visitor);
@@ -489,12 +489,6 @@ void ThreadState::threadLocalWeakProcessing()
         double timeForThreadLocalWeakProcessing = WTF::currentTimeMS() - startTime;
         Platform::current()->histogramCustomCounts("BlinkGC.timeForThreadLocalWeakProcessing", timeForThreadLocalWeakProcessing, 1, 10 * 1000, 50);
     }
-}
-
-CrossThreadPersistentRegion& ThreadState::crossThreadPersistentRegion()
-{
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(CrossThreadPersistentRegion, persistentRegion, new CrossThreadPersistentRegion());
-    return persistentRegion;
 }
 
 size_t ThreadState::totalMemorySize()

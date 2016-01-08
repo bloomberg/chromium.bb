@@ -13,6 +13,8 @@
 
 namespace blink {
 
+class CrossThreadPersistentRegion;
+
 class PersistentNode final {
 public:
     PersistentNode()
