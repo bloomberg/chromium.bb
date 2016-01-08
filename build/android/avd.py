@@ -55,7 +55,8 @@ def main(argv):
                           dest='kill_and_launch', default=True,
                           help='Kill all emulators at launch')
   run_parser.add_argument('--enable-kvm', action='store_true',
-                          dest='enable_kvm', default=False)
+                          dest='enable_kvm', default=False,
+                          help='Enable kvm for faster x86 emulator run')
 
   arguments = arg_parser.parse_args(argv[1:])
 
@@ -74,17 +75,18 @@ def main(argv):
     raise Exception('Emulator SDK not installed in %s'
                      % constants.ANDROID_SDK_ROOT)
 
-  # Check if KVM is enabled for x86 AVD's and check for x86 system images.
-  # TODO(andrewhayden) Since we can fix all of these with install_emulator_deps
-  # why don't we just run it?
+  # Check if KVM is enabled for x86 AVD
   if arguments.abi == 'x86':
     if not install_emulator_deps.CheckKVM():
       logging.warning('KVM is not installed or enabled')
       arguments.enable_kvm = False
-    elif not install_emulator_deps.CheckX86Image(arguments.api_level):
-      logging.critical('ERROR: System image for x86 AVD not installed. Run '
-                       'install_emulator_deps.py')
-      return 1
+
+  # Check if targeted system image exist
+  if not install_emulator_deps.CheckSystemImage(arguments.abi,
+                                                arguments.api_level):
+    logging.critical('ERROR: System image for %s AVD not installed. Run '
+                     'install_emulator_deps.py', arguments.abi)
+    return 1
 
   # If AVD is specified, check that the SDK has the required target. If not,
   # check that the SDK has the desired target for the temporary AVD's.

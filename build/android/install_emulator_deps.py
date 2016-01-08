@@ -23,6 +23,8 @@ from pylib import pexpect
 
 # Android API level
 DEFAULT_ANDROID_API_LEVEL = constants.ANDROID_SDK_VERSION
+# Android ABI/Arch
+DEFAULT_ABI = 'x86'
 
 # Default Time out for downloading SDK component
 DOWNLOAD_SYSTEM_IMAGE_TIMEOUT = 30
@@ -37,19 +39,26 @@ def CheckSDK():
   return os.path.exists(constants.ANDROID_SDK_ROOT)
 
 
-def CheckSDKPlatform(api_level=DEFAULT_ANDROID_API_LEVEL):
+def CheckSDKPlatform(api_level=DEFAULT_ANDROID_API_LEVEL, google=False):
   """Check if the "SDK Platform" for the specified API level is installed.
      This is necessary in order for the emulator to run when the target
      is specified.
 
   Args:
+    abi: target abi, x86 or arm
     api_level: the Android API level to check; defaults to the latest API.
+    google: use Google build system image instead of AOSP build
 
   Returns:
     True if the platform is already installed.
   """
   android_binary = os.path.join(constants.ANDROID_SDK_ROOT, 'tools', 'android')
-  pattern = re.compile('id: [0-9]+ or "android-%d"' % api_level)
+  if google:
+    pattern = re.compile('id: [0-9]+ or "Google Inc.:Google APIs:%s"' %
+                         api_level)
+  else:
+    pattern = re.compile('id: [0-9]+ or "android-%d"' % api_level)
+
   try:
     exit_code, stdout = cmd_helper.GetCmdStatusAndOutput(
         [android_binary, 'list'])
@@ -64,20 +73,35 @@ def CheckSDKPlatform(api_level=DEFAULT_ANDROID_API_LEVEL):
     return False
 
 
-def CheckX86Image(api_level=DEFAULT_ANDROID_API_LEVEL):
+def CheckSystemImage(abi, api_level=DEFAULT_ANDROID_API_LEVEL, google=False):
   """Check if Android system images have been installed.
 
   Args:
+    abi: target abi, x86 or arm
     api_level: the Android API level to check for; defaults to the latest API.
+    google: use Google build system image instead of AOSP build
 
   Returns:
     True if x86 image has been previously downloaded.
   """
   api_target = 'android-%d' % api_level
-  return os.path.exists(os.path.join(constants.ANDROID_SDK_ROOT,
-                                     'system-images', api_target, 'default',
-                                     'x86'))
-
+  system_image_root = os.path.join(constants.ANDROID_SDK_ROOT,
+                                   'system-images', api_target)
+  if abi == 'x86':
+    if google:
+      return os.path.exists(os.path.join(system_image_root, 'google_apis',
+                                         'x86'))
+    else:
+      return os.path.exists(os.path.join(system_image_root, 'default', 'x86'))
+  elif abi == 'arm':
+    if google:
+      return os.path.exists(os.path.join(system_image_root, 'google_apis',
+                                         'armeabi-v7a'))
+    else:
+      return os.path.exists(os.path.join(system_image_root, 'default',
+                                         'armeabi-v7a'))
+  else:
+    raise Exception("abi option invalid")
 
 def CheckKVM():
   """Quickly check whether KVM is enabled.
@@ -86,7 +110,6 @@ def CheckKVM():
     True iff /dev/kvm exists (Linux only).
   """
   return os.path.exists('/dev/kvm')
-
 
 def RunKvmOk():
   """Run kvm-ok as root to check that KVM is properly enabled after installation
@@ -166,25 +189,48 @@ def UpdateSDK(api_level, package_name, package_pattern, timeout):
         raise Exception('Failed to install platform update')
   raise Exception('Could not find android-%d update for the SDK!' % api_level)
 
-def GetX86Image(api_level=DEFAULT_ANDROID_API_LEVEL):
-  """Download x86 system image from Intel's website.
+def GetSystemImage(abi, api_level=DEFAULT_ANDROID_API_LEVEL, google=False):
+  """Download system image files
 
   Args:
+    abi: target abi, x86 or arm
     api_level: the Android API level to download for.
+    google: use Google build system image instead of AOSP build
   """
   logging.info('Download x86 system image directory into sdk directory.')
 
-  x86_package_pattern = re.compile(
-    r'\s*([0-9]+)- Intel x86 Atom System Image, Android API %d.*' % api_level)
+  if abi == 'x86':
+    if google:
+      package_name = 'Google Intel x86 Atom System Image'
+      pattern = re.compile(
+         r'\s*([0-9]+)- Google APIs Intel x86 Atom System Image, Google Inc.'
+        ' API %d.*' % api_level)
+    else:
+      package_name = 'Intel x86 system image'
+      pattern = re.compile(
+        r'\s*([0-9]+)- Intel x86 Atom System Image, Android API %d.*'
+        % api_level)
+  elif abi == 'arm':
+    if google:
+      package_name = 'Google arm system image'
+      pattern = re.compile(
+        r'\s*([0-9]+)- Google APIs ARM EABI v7a System Image, Google Inc. API '
+        '%d.*' % api_level)
+    else:
+      package_name = 'Android arm system image'
+      pattern = re.compile(
+        r'\s*([0-9]+)- ARM EABI v7a System Image, Android API %d.*' % api_level)
+  else:
+    raise Exception('abi option is invalid')
 
-  UpdateSDK(api_level, 'x86 system image', x86_package_pattern,
-            DOWNLOAD_SYSTEM_IMAGE_TIMEOUT)
+  UpdateSDK(api_level, package_name, pattern, DOWNLOAD_SYSTEM_IMAGE_TIMEOUT)
 
-def GetSDKPlatform(api_level=DEFAULT_ANDROID_API_LEVEL):
+def GetSDKPlatform(api_level=DEFAULT_ANDROID_API_LEVEL, google=False):
   """Update the SDK to include the platform specified.
 
   Args:
     api_level: the Android API level to download
+    google: use Google build system image instead of AOSP build
   """
   logging.info('Download SDK Platform directory into sdk directory.')
 
@@ -194,10 +240,21 @@ def GetSDKPlatform(api_level=DEFAULT_ANDROID_API_LEVEL):
   UpdateSDK(api_level, 'SDK Platform', platform_package_pattern,
             DOWNLOAD_SDK_PLATFORM_TIMEOUT)
 
+  if google:
+    google_api_package_pattern = re.compile(
+      r'\s*([0-9]+)- Google APIs, Android API %d.*' % api_level)
+    UpdateSDK(api_level, 'Google APIs', google_api_package_pattern,
+              DOWNLOAD_SDK_PLATFORM_TIMEOUT)
+
 
 def main(argv):
   opt_parser = optparse.OptionParser(
       description='Install dependencies for running the Android emulator')
+  opt_parser.add_option('--abi',
+                        dest='abi',
+                        help='The targeted abi for emulator system image',
+                        type='string',
+                        default=DEFAULT_ABI)
   opt_parser.add_option('--api-level',
                         dest='api_level',
                         help=('The API level (e.g., 19 for Android 4.4) to '
@@ -209,6 +266,12 @@ def main(argv):
                         default=1,
                         action='count',
                         help='Verbose level (multiple times for more)')
+  opt_parser.add_option('--google',
+                        dest='google',
+                        action='store_true',
+                        default=False,
+                        help='Install Google System Image instead of AOSP')
+
   options, _ = opt_parser.parse_args(argv[1:])
 
   run_tests_helper.SetLogLevel(verbose_count=options.verbosity)
@@ -222,26 +285,30 @@ def main(argv):
     return 1
 
   # Check target. The target has to be installed in order to run the emulator.
-  if CheckSDKPlatform(options.api_level):
-    logging.info('SDK platform android-%d already present, skipping.',
+  if CheckSDKPlatform(options.api_level, options.google):
+    logging.info('SDK platform %s %s android-%d already present, skipping.',
+                 'Google' if options.google else 'AOSP', options.abi,
                  options.api_level)
   else:
-    logging.info('SDK platform android-%d not present, installing.',
+    logging.info('SDK platform %s %s android-%d not present, installing.',
+                 'Google' if options.google else 'AOSP', options.abi,
                  options.api_level)
-    GetSDKPlatform(options.api_level)
+    GetSDKPlatform(options.api_level, options.google)
 
-  # Download the x86 system image only if needed.
-  if CheckX86Image(options.api_level):
-    logging.info('x86 image for android-%d already present, skipping.',
+  # Download the system image needed
+  if CheckSystemImage(options.abi, options.api_level, options.google):
+    logging.info('system image for %s %s android-%d already present, skipping.',
+                 'Google' if options.google else 'AOSP', options.abi,
                  options.api_level)
   else:
-    GetX86Image(options.api_level)
+    GetSystemImage(options.abi, options.api_level, options.google)
 
   # Make sure KVM packages are installed and enabled.
-  if CheckKVM():
-    logging.info('KVM already installed and enabled.')
-  else:
-    logging.warning('KVM is not installed or enabled.')
+  if options.abi == 'x86':
+    if CheckKVM():
+      logging.info('KVM already installed and enabled.')
+    else:
+      logging.warning('KVM is not installed or enabled.')
 
 
 if __name__ == '__main__':
