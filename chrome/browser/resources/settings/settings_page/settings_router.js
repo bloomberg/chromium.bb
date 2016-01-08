@@ -66,7 +66,12 @@ Polymer({
     currentRouteTitles: {
       notify: true,
       type: Object,
-      value: function() { return {}; },
+      value: function() {
+        return {
+          pageTitle: '',
+          subpageTitles: [],
+        };
+      },
     },
   },
 
@@ -127,6 +132,15 @@ Polymer({
       subpage: ['search-engines', 'search-engines-advanced'],
       subpageTitles: ['searchEnginesPageTitle', 'advancedPageTitle'],
     },
+<if expr="not chromeos">
+    {
+      url: '/manageProfile',
+      page: 'basic',
+      section: 'people',
+      subpage: ['manageProfile'],
+      subpageTitles: ['editPerson'],
+    },
+</if>
     {
       url: '/syncSetup',
       page: 'basic',
@@ -269,12 +283,12 @@ Polymer({
         // Push the current route to the history state, so when the user
         // navigates with the browser back button, we can recall the route.
         if (oldRoute) {
-          history.pushState(historicState, null, route.url);
+          window.history.pushState(historicState, document.title, route.url);
         } else {
           // For the very first route (oldRoute will be undefined), we replace
           // the existing state instead of pushing a new one. This is to allow
           // the user to use the browser back button to exit Settings entirely.
-          history.replaceState(historicState, null);
+          window.history.replaceState(historicState, document.title);
         }
 
         return;

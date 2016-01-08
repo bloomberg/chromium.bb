@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/sync/sync_startup_tracker.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
@@ -38,7 +39,8 @@ class PeopleHandler : public content::WebUIMessageHandler,
                       public SigninManagerBase::Observer,
                       public SyncStartupTracker::Observer,
                       public LoginUIService::LoginUI,
-                      public sync_driver::SyncServiceObserver {
+                      public sync_driver::SyncServiceObserver,
+                      public ProfileInfoCacheObserver {
  public:
   explicit PeopleHandler(Profile* profile);
   ~PeopleHandler() override;
@@ -63,6 +65,11 @@ class PeopleHandler : public content::WebUIMessageHandler,
 
   // sync_driver::SyncServiceObserver implementation.
   void OnStateChanged() override;
+
+  // ProfileInfoCacheObserver implementation.
+  void OnProfileNameChanged(const base::FilePath& profile_path,
+                            const base::string16& old_profile_name) override;
+  void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
 
   // Initializes the sync setup flow and shows the setup UI.
   void OpenSyncSetup(const base::ListValue* args);
@@ -118,6 +125,7 @@ class PeopleHandler : public content::WebUIMessageHandler,
 
  private:
   // Callbacks from the page.
+  void HandleGetProfileInfo(const base::ListValue* args);
   void OnDidClosePage(const base::ListValue* args);
   void HandleConfigure(const base::ListValue* args);
   void HandlePassphraseEntry(const base::ListValue* args);

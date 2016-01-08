@@ -1996,6 +1996,8 @@
       'browser/ui/webui/settings/settings_clear_browsing_data_handler.h',
       'browser/ui/webui/settings/settings_default_browser_handler.cc',
       'browser/ui/webui/settings/settings_default_browser_handler.h',
+      'browser/ui/webui/settings/settings_manage_profile_handler.cc',
+      'browser/ui/webui/settings/settings_manage_profile_handler.h',
       'browser/ui/webui/settings/settings_startup_pages_handler.cc',
       'browser/ui/webui/settings/settings_startup_pages_handler.h',
       'browser/ui/webui/signin/inline_login_handler.cc',
