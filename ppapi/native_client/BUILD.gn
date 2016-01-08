@@ -24,7 +24,6 @@ if (is_nacl) {
       "//media:shared_memory_support",
       "//native_client/src/shared/gio",
       "//native_client/src/shared/platform",
-      "//native_client/src/shared/srpc",
       "//native_client/src/tools/tls_edit($host_toolchain)",
       "//native_client/src/untrusted/irt:irt_core_lib",
       "//native_client/src/untrusted/nacl:imc_syscalls",
