@@ -802,7 +802,7 @@ config("default_warnings") {
         # See comment for -Wno-c++11-narrowing.
         "-Wno-narrowing",
       ]
-      if (!is_clang) {
+      if (!is_clang && is_chromeos) {
         cflags_cc += [
           # TODO(thakis): Remove, http://crbug.com/263960
           "-Wno-literal-suffix",
@@ -865,7 +865,7 @@ config("default_warnings") {
       "-Wno-inconsistent-missing-override",
     ]
 
-    if (is_posix && !is_mac && !is_ios) {
+    if (is_chromeos) {
       cflags += [
         # TODO(thakis): Remove, http://crbug.com/263960
         "-Wno-reserved-user-defined-literal",

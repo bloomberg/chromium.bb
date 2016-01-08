@@ -4315,16 +4315,18 @@
               }]]
           }],
           ['clang==1', {
-            'cflags': [
-              # TODO(thakis): Remove, http://crbug.com/263960
-              '-Wno-reserved-user-defined-literal',
-            ],
             'cflags_cc': [
               # gnu++11 instead of c++11 is needed because some code uses
               # typeof() (a GNU extension).
               # TODO(thakis): Eventually switch this to c++11 instead,
               # http://crbug.com/427584
               '-std=gnu++11',
+            ],
+          }],
+          ['clang==1 and chromeos==1', {
+            'cflags': [
+              # TODO(thakis): Remove, http://crbug.com/263960
+              '-Wno-reserved-user-defined-literal',
             ],
           }],
           ['clang==0 and host_clang==1', {
@@ -4712,8 +4714,6 @@
                   '-std=gnu++11',
                   # See comment for -Wno-c++11-narrowing.
                   '-Wno-narrowing',
-                  # TODO(thakis): Remove, http://crbug.com/263960
-                  '-Wno-literal-suffix',
                 ],
               }],
             ],
@@ -4725,6 +4725,24 @@
                   '-std=gnu++11',
                   # See comment for -Wno-c++11-narrowing.
                   '-Wno-narrowing',
+                ],
+              }],
+            ],
+          }],
+          ['gcc_version>=47 and clang==0 and chromeos==1', {
+            'target_conditions': [
+              ['_toolset=="target"', {
+                'cflags_cc': [
+                  # TODO(thakis): Remove, http://crbug.com/263960
+                  '-Wno-literal-suffix',
+                ],
+              }],
+            ],
+          }],
+          ['host_gcc_version>=47 and clang==0 and host_clang==0 and chromeos==1', {
+            'target_conditions': [
+              ['_toolset=="host"', {
+                'cflags_cc': [
                   # TODO(thakis): Remove, http://crbug.com/263960
                   '-Wno-literal-suffix',
                 ],

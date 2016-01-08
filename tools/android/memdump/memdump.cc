@@ -422,9 +422,9 @@ void DumpProcessesMemoryMapsInExtendedFormat(
       AppendAppSharedField(memory_map.app_shared_pages, &app_shared_buf);
       base::SStringPrintf(
           &buf,
-          "%"PRIx64"-%"PRIx64" %s %"PRIx64" private_unevictable=%d private=%d "
-          "shared_app=%s shared_other_unevictable=%d shared_other=%d "
-          "\"%s\" [%s]\n",
+          "%" PRIx64 "-%" PRIx64 " %s %" PRIx64 " private_unevictable=%d "
+          "private=%d shared_app=%s shared_other_unevictable=%d "
+          "shared_other=%d \"%s\" [%s]\n",
           memory_map.start_address,
           memory_map.end_address,
           memory_map.flags.c_str(),
