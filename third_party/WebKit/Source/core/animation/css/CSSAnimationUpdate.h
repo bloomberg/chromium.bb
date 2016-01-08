@@ -31,11 +31,6 @@ public:
     class NewAnimation {
         DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
-        NewAnimation()
-            : styleRuleVersion(0)
-        {
-        }
-
         NewAnimation(AtomicString name, size_t nameIndex, InertEffect* effect, Timing timing, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
             : name(name)
             , nameIndex(nameIndex)
@@ -63,11 +58,6 @@ public:
     class UpdatedAnimation {
         DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
-        UpdatedAnimation()
-            : styleRuleVersion(0)
-        {
-        }
-
         UpdatedAnimation(size_t index, Animation* animation, InertEffect* effect, Timing specifiedTiming, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
             : index(index)
             , animation(animation)
