@@ -19,7 +19,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "components/safe_browsing_db/util.h"
+#include "ios/chrome/browser/safe_browsing/util.h"
 #include "ios/web/public/web_thread.h"
 
 class PrefChangeRegistrar;

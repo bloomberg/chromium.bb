@@ -7,7 +7,7 @@
 #ifndef IOS_CHROME_BROWSER_SAFE_BROWSING_HIT_REPORT_H_
 #define IOS_CHROME_BROWSER_SAFE_BROWSING_HIT_REPORT_H_
 
-#include "components/safe_browsing_db/util.h"
+#include "ios/chrome/browser/safe_browsing/util.h"
 #include "url/gurl.h"
 
 namespace safe_browsing {

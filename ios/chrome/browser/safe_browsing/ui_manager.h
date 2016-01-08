@@ -18,8 +18,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "components/safe_browsing_db/util.h"
 #include "ios/chrome/browser/safe_browsing/hit_report.h"
+#include "ios/chrome/browser/safe_browsing/util.h"
 #include "url/gurl.h"
 
 namespace base {

@@ -14,9 +14,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/safe_browsing_db/util.h"
 #include "ios/chrome/browser/safe_browsing/hit_report.h"
 #include "ios/chrome/browser/safe_browsing/protocol_manager_helper.h"
+#include "ios/chrome/browser/safe_browsing/util.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 

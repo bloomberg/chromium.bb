@@ -3545,7 +3545,7 @@
           ],
           'sources': [ '<@(chrome_browser_plugins_sources)' ],
         }],
-        ['safe_browsing != 0', {
+        ['safe_browsing != 0 and OS != "ios"', {
           'sources': [ '<@(chrome_browser_safe_browsing_basic_sources)' ],
           'dependencies': [
             'safe_browsing_chunk_proto',
@@ -3566,7 +3566,7 @@
                 }],
               ],
             }],
-            ['safe_browsing == 2 and OS != "ios"', {
+            ['safe_browsing == 2', {
               'sources': [ '<@(chrome_browser_safe_browsing_mobile_sources)' ],
               'dependencies': [
                 'safe_browsing_proto',

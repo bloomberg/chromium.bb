@@ -93,7 +93,6 @@
         '../../components/components.gyp:pref_registry',
         '../../components/components.gyp:proxy_config',
         '../../components/components.gyp:rappor',
-        '../../components/components.gyp:safe_browsing_db',
         '../../components/components.gyp:search',
         '../../components/components.gyp:search_engines',
         '../../components/components.gyp:security_interstitials_core',
@@ -655,8 +654,11 @@
             'browser/safe_browsing/safe_browsing_service.h',
             'browser/safe_browsing/ui_manager.cc',
             'browser/safe_browsing/ui_manager.h',
+            'browser/safe_browsing/util.cc',
+            'browser/safe_browsing/util.h',
           ],
           'dependencies': [
+            '../../crypto/crypto.gyp:crypto',
             'ios_chrome_safe_browsing_proto',
           ],
         }]
