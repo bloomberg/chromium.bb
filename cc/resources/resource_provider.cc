@@ -586,8 +586,11 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
       if (resource->gl_id) {
         gl->DeleteTextures(1, &resource->gl_id);
         resource->gl_id = 0;
-        if (!lost_resource)
-          sync_token = gpu::SyncToken(gl->InsertSyncPointCHROMIUM());
+        if (!lost_resource) {
+          const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
+          gl->ShallowFlushCHROMIUM();
+          gl->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+        }
       }
     } else {
       DCHECK(resource->mailbox.IsSharedMemory());
@@ -1441,7 +1444,11 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
   }
   if (need_sync_token && child_info->needs_sync_tokens) {
     DCHECK(gl);
-    gpu::SyncToken sync_token(gl->InsertSyncPointCHROMIUM());
+    const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
+    gl->ShallowFlushCHROMIUM();
+
+    gpu::SyncToken sync_token;
+    gl->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
     for (size_t i = 0; i < to_return.size(); ++i) {
       if (!to_return[i].sync_token.HasData())
         to_return[i].sync_token = sync_token;

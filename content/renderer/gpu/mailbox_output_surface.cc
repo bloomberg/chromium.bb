@@ -207,9 +207,15 @@ void MailboxOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
              GL_NO_ERROR);
 
   frame->gl_frame_data->mailbox = current_backing_.mailbox;
-  context_provider_->ContextGL()->Flush();
-  frame->gl_frame_data->sync_token =
-      gpu::SyncToken(context_provider_->ContextGL()->InsertSyncPointCHROMIUM());
+
+  gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
+
+  const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
+  gl->Flush();
+
+  gl->GenSyncTokenCHROMIUM(fence_sync,
+                           frame->gl_frame_data->sync_token.GetData());
+
   CompositorOutputSurface::SwapBuffers(frame);
 
   pending_textures_.push_back(current_backing_);

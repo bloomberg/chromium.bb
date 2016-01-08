@@ -2719,7 +2719,12 @@ void GLRenderer::GetFramebufferPixelsAsync(
     }
     GetFramebufferTexture(texture_id, RGBA_8888, window_rect);
 
-    gpu::SyncToken sync_token(gl_->InsertSyncPointCHROMIUM());
+    const GLuint64 fence_sync = gl_->InsertFenceSyncCHROMIUM();
+    gl_->ShallowFlushCHROMIUM();
+
+    gpu::SyncToken sync_token;
+    gl_->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+
     TextureMailbox texture_mailbox(mailbox, sync_token, GL_TEXTURE_2D);
 
     scoped_ptr<SingleReleaseCallback> release_callback;

@@ -975,7 +975,11 @@ class LayerTreeHostCopyRequestTestProvideTexture
     gpu::gles2::GLES2Interface* gl = external_context_provider_->ContextGL();
     gpu::Mailbox mailbox;
     gl->GenMailboxCHROMIUM(mailbox.name);
-    sync_token_ = gpu::SyncToken(gl->InsertSyncPointCHROMIUM());
+
+    const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
+    gl->ShallowFlushCHROMIUM();
+    gl->GenSyncTokenCHROMIUM(fence_sync, sync_token_.GetData());
+
     request->SetTextureMailbox(
         TextureMailbox(mailbox, sync_token_, GL_TEXTURE_2D));
     EXPECT_TRUE(request->has_texture_mailbox());
