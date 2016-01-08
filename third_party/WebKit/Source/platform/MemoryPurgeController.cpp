@@ -4,6 +4,7 @@
 
 #include "platform/MemoryPurgeController.h"
 
+#include "base/sys_info.h"
 #include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "wtf/Partitions.h"
@@ -15,7 +16,7 @@ DEFINE_TRACE(MemoryPurgeClient)
 }
 
 MemoryPurgeController::MemoryPurgeController()
-    : m_deviceKind(Platform::current()->isLowEndDeviceMode() ? DeviceKind::LowEnd : DeviceKind::NotSpecified)
+    : m_deviceKind(base::SysInfo::IsLowEndDevice() ? DeviceKind::LowEnd : DeviceKind::NotSpecified)
 {
 }
 

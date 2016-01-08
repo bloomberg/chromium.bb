@@ -1252,10 +1252,6 @@ size_t BlinkPlatformImpl::virtualMemoryLimitMB() {
   return static_cast<size_t>(base::SysInfo::AmountOfVirtualMemoryMB());
 }
 
-bool BlinkPlatformImpl::isLowEndDeviceMode() {
-  return base::SysInfo::IsLowEndDevice();
-}
-
 size_t BlinkPlatformImpl::numberOfProcessors() {
   return static_cast<size_t>(base::SysInfo::NumberOfProcessors());
 }

@@ -84,7 +84,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   size_t actualMemoryUsageMB() override;
   size_t physicalMemoryMB() override;
   size_t virtualMemoryLimitMB() override;
-  bool isLowEndDeviceMode() override;
   size_t numberOfProcessors() override;
 
   blink::WebDiscardableMemory* allocateAndLockDiscardableMemory(
