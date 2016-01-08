@@ -30,6 +30,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageButton;
 
 import org.chromium.base.ThreadUtils;
@@ -752,6 +753,29 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         startActivityCompletely(createMinimalCustomTabIntent());
         assertNull("Should not have a tab switcher button.",
                 mActivity.findViewById(R.id.tab_switcher_button));
+    }
+
+    /**
+     * Test whether the url shown on prerender gets updated from about:blank.
+     * Non-regression test for crbug.com/554236.
+     */
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testPrerenderingCorrectUrl() throws Exception {
+        Context context = getInstrumentation().getTargetContext().getApplicationContext();
+        final CustomTabsConnection connection = warmUpAndWait();
+        ICustomTabsCallback cb = new CustomTabsTestUtils.DummyCallback();
+        connection.newSession(cb);
+        assertTrue(connection.mayLaunchUrl(cb, Uri.parse(TEST_PAGE), null, null));
+        try {
+            startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
+                    context, TEST_PAGE, cb.asBinder()));
+        } catch (InterruptedException e) {
+            fail();
+        }
+        assertEquals(Uri.parse(TEST_PAGE).getHost() + ":" + Uri.parse(TEST_PAGE).getPort(),
+                ((EditText) mActivity.findViewById(R.id.url_bar)).getText()
+                        .toString());
     }
 
     private void mayLaunchUrlWithoutWarmup(boolean noPrerendering) {
