@@ -321,11 +321,13 @@ GlobalRoutingID ResourceRequestInfoImpl::GetGlobalRoutingID() const {
 void ResourceRequestInfoImpl::UpdateForTransfer(
     int child_id,
     int route_id,
+    int render_frame_id,
     int origin_pid,
     int request_id,
     base::WeakPtr<ResourceMessageFilter> filter) {
   child_id_ = child_id;
   route_id_ = route_id;
+  render_frame_id_ = render_frame_id;
   origin_pid_ = origin_pid;
   request_id_ = request_id;
   filter_ = filter;

@@ -114,6 +114,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   // does not need to be updated.
   void UpdateForTransfer(int child_id,
                          int route_id,
+                         int render_frame_id,
                          int origin_pid,
                          int request_id,
                          base::WeakPtr<ResourceMessageFilter> filter);

@@ -1181,8 +1181,9 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
   // ResourceHandlers should always get state related to the request from the
   // ResourceRequestInfo rather than caching it locally.  This lets us update
   // the info object when a transfer occurs.
-  info->UpdateForTransfer(child_id, route_id, request_data.origin_pid,
-                          request_id, filter_->GetWeakPtr());
+  info->UpdateForTransfer(child_id, route_id, request_data.render_frame_id,
+                          request_data.origin_pid, request_id,
+                          filter_->GetWeakPtr());
 
   // Update maps that used the old IDs, if necessary.  Some transfers in tests
   // do not actually use a different ID, so not all maps need to be updated.
