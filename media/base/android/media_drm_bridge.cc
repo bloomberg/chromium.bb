@@ -292,6 +292,8 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateWithoutSessionSupport(
     const std::string& key_system,
     SecurityLevel security_level,
     const CreateFetcherCB& create_fetcher_cb) {
+  DVLOG(1) << __FUNCTION__;
+
   return MediaDrmBridge::Create(key_system, security_level, create_fetcher_cb,
                                 SessionMessageCB(), SessionClosedCB(),
                                 LegacySessionErrorCB(), SessionKeysChangeCB(),
@@ -730,6 +732,7 @@ MediaDrmBridge::MediaDrmBridge(
   ScopedJavaLocalRef<jstring> j_security_level =
       ConvertUTF8ToJavaString(env, security_level_str);
 
+  // Note: OnMediaCryptoReady() could be called in this call.
   j_media_drm_.Reset(Java_MediaDrmBridge_create(
       env, j_scheme_uuid.obj(), j_security_level.obj(),
       reinterpret_cast<intptr_t>(this)));

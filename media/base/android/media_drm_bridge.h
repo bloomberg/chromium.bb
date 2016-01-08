@@ -244,7 +244,8 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
 
   // Constructs a MediaDrmBridge for |scheme_uuid| and |security_level|. The
   // default security level will be used if |security_level| is
-  // SECURITY_LEVEL_DEFAULT.
+  // SECURITY_LEVEL_DEFAULT. Sessions should not be created if session callbacks
+  // are null.
   MediaDrmBridge(const std::vector<uint8_t>& scheme_uuid,
                  SecurityLevel security_level,
                  const CreateFetcherCB& create_fetcher_cb,
