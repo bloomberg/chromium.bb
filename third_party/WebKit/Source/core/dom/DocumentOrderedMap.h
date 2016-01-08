@@ -44,11 +44,11 @@ namespace blink {
 class Element;
 class TreeScope;
 
-class DocumentOrderedMap : public NoBaseWillBeGarbageCollectedFinalized<DocumentOrderedMap> {
+class DocumentOrderedMap : public NoBaseWillBeGarbageCollected<DocumentOrderedMap> {
     USING_FAST_MALLOC_WILL_BE_REMOVED(DocumentOrderedMap);
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DocumentOrderedMap);
 public:
     static PassOwnPtrWillBeRawPtr<DocumentOrderedMap> create();
-    ~DocumentOrderedMap();
 
     void add(const AtomicString&, Element*);
     void remove(const AtomicString&, Element*);
@@ -65,7 +65,24 @@ public:
     DECLARE_TRACE();
 
 #if ENABLE(ASSERT)
-    void willRemoveId(const AtomicString&);
+    // While removing a ContainerNode, ID lookups won't be precise should the tree
+    // have elements with duplicate IDs contained in the element being removed.
+    // Rare trees, but ID lookups may legitimately fail across such removals;
+    // this scope object informs DocumentOrderedMaps about the transitory
+    // state of the underlying tree.
+    class RemoveScope {
+        STACK_ALLOCATED();
+    public:
+        RemoveScope();
+        ~RemoveScope();
+    };
+#else
+    class RemoveScope {
+        STACK_ALLOCATED();
+    public:
+        RemoveScope() { }
+        ~RemoveScope() { }
+    };
 #endif
 
 private:
@@ -92,9 +109,6 @@ private:
     using Map = WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<MapEntry>>;
 
     mutable Map m_map;
-#if ENABLE(ASSERT)
-    AtomicString m_removingId;
-#endif
 };
 
 inline bool DocumentOrderedMap::contains(const AtomicString& id) const

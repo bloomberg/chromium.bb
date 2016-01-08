@@ -586,6 +586,7 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::removeChild(PassRefPtrWillBeRawPtr<N
 
     {
         HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
+        DocumentOrderedMap::RemoveScope treeRemoveScope;
 
         Node* prev = child->previousSibling();
         Node* next = child->nextSibling();
@@ -638,6 +639,8 @@ void ContainerNode::parserRemoveChild(Node& oldChild)
     oldChild.notifyMutationObserversNodeWillDetach();
 
     HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
+    DocumentOrderedMap::RemoveScope treeRemoveScope;
+
     Node* prev = oldChild.previousSibling();
     Node* next = oldChild.nextSibling();
     removeBetween(prev, next, oldChild);
@@ -685,7 +688,7 @@ void ContainerNode::removeChildren(SubtreeModificationAction action)
 #endif
     {
         HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
-
+        DocumentOrderedMap::RemoveScope treeRemoveScope;
         {
             EventDispatchForbiddenScope assertNoEventDispatch;
             ScriptForbiddenScope forbidScript;

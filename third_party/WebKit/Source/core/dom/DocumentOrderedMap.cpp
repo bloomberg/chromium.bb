@@ -50,9 +50,22 @@ DocumentOrderedMap::DocumentOrderedMap()
 {
 }
 
-DocumentOrderedMap::~DocumentOrderedMap()
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DocumentOrderedMap);
+
+#if ENABLE(ASSERT)
+static int s_removeScopeLevel = 0;
+
+DocumentOrderedMap::RemoveScope::RemoveScope()
 {
+    s_removeScopeLevel++;
 }
+
+DocumentOrderedMap::RemoveScope::~RemoveScope()
+{
+    ASSERT(s_removeScopeLevel);
+    s_removeScopeLevel--;
+}
+#endif
 
 inline bool keyMatchesId(const AtomicString& key, const Element& element)
 {
@@ -114,14 +127,6 @@ void DocumentOrderedMap::remove(const AtomicString& key, Element* element)
     }
 }
 
-#if ENABLE(ASSERT)
-void DocumentOrderedMap::willRemoveId(const AtomicString& key)
-{
-    ASSERT(m_removingId.isNull() || key.isNull());
-    m_removingId = key;
-}
-#endif
-
 template<bool keyMatches(const AtomicString&, const Element&)>
 inline Element* DocumentOrderedMap::get(const AtomicString& key, const TreeScope* scope) const
 {
@@ -138,20 +143,17 @@ inline Element* DocumentOrderedMap::get(const AtomicString& key, const TreeScope
 
     // Iterate to find the node that matches. Nothing will match iff an element
     // with children having duplicate IDs is being removed -- the tree traversal
-    // will be over an updated tree not having that element. In all other cases,
+    // will be over an updated tree not having that subtree. In all other cases,
     // a match is expected.
-    //
-    // Such calls to get()/getElementById() while handling element removals will
-    // legitimately happen when e.g., adjusting form ID associations. Quietly
-    // allow those lookups to (expectedly) fail by having the tree scope removal
-    // register the element ID it is in the process of removing.
     for (Element& element : ElementTraversal::startsAfter(scope->rootNode())) {
         if (!keyMatches(key, element))
             continue;
         entry->element = &element;
         return &element;
     }
-    ASSERT(key == m_removingId);
+    // As get()/getElementById() can legitimately be called while handling element
+    // removals, allow failure iff we're in the scope of node removals.
+    ASSERT(s_removeScopeLevel);
     return 0;
 }
 
