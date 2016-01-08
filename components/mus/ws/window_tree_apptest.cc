@@ -284,6 +284,10 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
     tracker()->OnEmbeddedAppDisconnected(window_id);
   }
   void OnUnembed(Id window_id) override { tracker()->OnUnembed(window_id); }
+  void OnTopLevelCreated(uint32_t change_id,
+                         mojom::WindowDataPtr data) override {
+    tracker()->OnTopLevelCreated(change_id, std::move(data));
+  }
   void OnWindowBoundsChanged(Id window_id,
                              RectPtr old_bounds,
                              RectPtr new_bounds) override {

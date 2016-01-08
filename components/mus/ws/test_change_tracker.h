@@ -39,6 +39,7 @@ enum ChangeType {
   CHANGE_TYPE_FOCUSED,
   CHANGE_TYPE_CURSOR_CHANGED,
   CHANGE_TYPE_ON_CHANGE_COMPLETED,
+  CHANGE_TYPE_ON_TOP_LEVEL_CREATED,
 };
 
 // TODO(sky): consider nuking and converting directly to WindowData.
@@ -153,6 +154,7 @@ class TestChangeTracker {
   void OnWindowFocused(Id window_id);
   void OnWindowPredefinedCursorChanged(Id window_id, mojom::Cursor cursor_id);
   void OnChangeCompleted(uint32_t change_id, bool success);
+  void OnTopLevelCreated(uint32_t change_id, mojom::WindowDataPtr window_data);
 
  private:
   void AddChange(const Change& change);

@@ -123,6 +123,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
 
   using IdToWindowMap = std::map<Id, Window*>;
 
+  // TODO(sky): this assumes change_ids never wrap, which is a bad assumption.
   using InFlightMap = std::map<uint32_t, scoped_ptr<InFlightChange>>;
 
   // Returns the oldest InFlightChange that matches |change|.
@@ -168,6 +169,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                uint32_t access_policy) override;
   void OnEmbeddedAppDisconnected(Id window_id) override;
   void OnUnembed(Id window_id) override;
+  void OnTopLevelCreated(uint32_t change_id,
+                         mojom::WindowDataPtr data) override;
   void OnWindowBoundsChanged(Id window_id,
                              mojo::RectPtr old_bounds,
                              mojo::RectPtr new_bounds) override;

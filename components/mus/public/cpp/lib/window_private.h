@@ -36,6 +36,7 @@ class WindowPrivate {
   void set_visible(bool visible) { window_->visible_ = visible; }
 
   void set_drawn(bool drawn) { window_->drawn_ = drawn; }
+  bool drawn() { return window_->drawn_; }
 
   void set_id(Id id) { window_->id_ = id; }
 

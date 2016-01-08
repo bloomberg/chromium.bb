@@ -93,7 +93,9 @@ interface WindowTree {
             uint32 window_id,
             map<string, array<uint8>>? properties);
 
-  // Requests the WindowManager to create a new top level window.
+  // Requests the WindowManager to create a new top level window. On success
+  // OnTopLevelCreated() is called with the WindowData for the new window. On
+  // failure OnChangeCompleted() is called.
   // TODO(sky): this likely needs context, maybe in |properties|.
   NewTopLevelWindow(uint32 change_id,
                     uint32 window_id,
@@ -264,6 +266,9 @@ interface WindowTreeClient {
   // Sent when another connection is embedded in the Window this connection was
   // previously embedded in. See Embed() for more information.
   OnUnembed(uint32 window);
+
+  // Called in response to NewTopLevelWindow() successfully completing.
+  OnTopLevelCreated(uint32 change_id, WindowData data);
 
   // Invoked when a window's bounds have changed.
   OnWindowBoundsChanged(uint32 window,

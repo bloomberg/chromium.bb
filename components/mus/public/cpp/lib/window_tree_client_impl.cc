@@ -36,8 +36,8 @@ Id MakeTransportId(ConnectionSpecificId connection_id,
 Window* AddWindowToConnection(WindowTreeClientImpl* client,
                               Window* parent,
                               const mojom::WindowDataPtr& window_data) {
-  // We don't use the cto that takes a WindowTreeConnection here, since it will
-  // call back to the service and attempt to create a new window.
+  // We don't use the ctor that takes a WindowTreeConnection here, since it
+  // will call back to the service and attempt to create a new window.
   Window* window = WindowPrivate::LocalCreate();
   WindowPrivate private_window(window);
   private_window.set_connection(client);
@@ -521,6 +521,68 @@ void WindowTreeClientImpl::OnUnembed(Id window_id) {
 
   delegate_->OnUnembed(window);
   WindowPrivate(window).LocalDestroy();
+}
+
+void WindowTreeClientImpl::OnTopLevelCreated(uint32_t change_id,
+                                             mojom::WindowDataPtr data) {
+  // The server ack'd the top level window we created and supplied the state
+  // of the window at the time the server created it. For properties we do not
+  // have changes in flight for we can update them immediately. For properties
+  // with changes in flight we set the revert value from the server.
+
+  scoped_ptr<InFlightChange> change(std::move(in_flight_map_[change_id]));
+  in_flight_map_.erase(change_id);
+  DCHECK(change);
+
+  Window* window = change->window();
+  WindowPrivate window_private(window);
+
+  // Drawn state and ViewportMetrics always come from the server (they can't
+  // be modified locally).
+  window_private.set_drawn(data->drawn);
+  window_private.LocalSetViewportMetrics(mojom::ViewportMetrics(),
+                                         *data->viewport_metrics);
+
+  // The default visibilty is false, we only need update visibility if it
+  // differs from that.
+  if (data->visible) {
+    InFlightVisibleChange visible_change(window, data->visible);
+    InFlightChange* current_change =
+        GetOldestInFlightChangeMatching(visible_change);
+    if (current_change)
+      current_change->SetRevertValueFrom(visible_change);
+    else
+      window_private.LocalSetVisible(true);
+  }
+
+  const gfx::Rect bounds(data->bounds.To<gfx::Rect>());
+  {
+    InFlightBoundsChange bounds_change(window, bounds);
+    InFlightChange* current_change =
+        GetOldestInFlightChangeMatching(bounds_change);
+    if (current_change)
+      current_change->SetRevertValueFrom(bounds_change);
+    else if (window->bounds() != bounds)
+      window_private.LocalSetBounds(window->bounds(), bounds);
+  }
+
+  // There is currently no API to bulk set properties, so we iterate over each
+  // property individually.
+  Window::SharedProperties properties =
+      data->properties.To<std::map<std::string, std::vector<uint8_t>>>();
+  for (const auto& pair : properties) {
+    InFlightPropertyChange property_change(
+        window, pair.first, mojo::Array<uint8_t>::From(pair.second));
+    InFlightChange* current_change =
+        GetOldestInFlightChangeMatching(property_change);
+    if (current_change)
+      current_change->SetRevertValueFrom(property_change);
+    else
+      window_private.LocalSetSharedProperty(pair.first, &(pair.second));
+  }
+
+  // Top level windows should not have a parent.
+  DCHECK_EQ(0u, data->parent_id);
 }
 
 void WindowTreeClientImpl::OnWindowBoundsChanged(Id window_id,

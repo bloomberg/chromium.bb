@@ -272,7 +272,7 @@ void WindowTreeImpl::OnWindowManagerCreatedTopLevelWindow(
   const ServerWindow* window = GetWindow(window_id);
   roots_.insert(window);
   GetUnknownWindowsFrom(window, &unused);
-  client_->OnChangeCompleted(client_change_id, true);
+  client_->OnTopLevelCreated(client_change_id, WindowToWindowData(window));
 }
 
 WindowId WindowTreeImpl::MapWindowIdFromClient(const WindowId& id) const {

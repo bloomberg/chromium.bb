@@ -121,6 +121,10 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
     tracker_.OnEmbeddedAppDisconnected(window);
   }
   void OnUnembed(Id window_id) override { tracker_.OnUnembed(window_id); }
+  void OnTopLevelCreated(uint32_t change_id,
+                         mojom::WindowDataPtr data) override {
+    tracker_.OnTopLevelCreated(change_id, std::move(data));
+  }
   void OnWindowBoundsChanged(uint32_t window,
                              mojo::RectPtr old_bounds,
                              mojo::RectPtr new_bounds) override {
@@ -835,7 +839,8 @@ TEST_F(WindowTreeTest, NewTopLevelWindow) {
       ->OnWmCreatedTopLevelWindow(wm_change_id,
                                   WindowIdToTransportId(embed_window_id2));
   EXPECT_FALSE(last_client_connection()->is_paused());
-  EXPECT_EQ("ChangeCompleted id=17 sucess=true",
+  EXPECT_EQ("TopLevelCreated id=17 window_id=" +
+                WindowIdToString(embed_window_id2_in_child),
             SingleChangeToDescription(*embed_connection->tracker()->changes()));
   embed_connection->tracker()->changes()->clear();
 

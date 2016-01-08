@@ -119,6 +119,11 @@ std::string ChangeToDescription1(const Change& change) {
       return base::StringPrintf("ChangeCompleted id=%d sucess=%s",
                                 change.change_id,
                                 change.bool_value ? "true" : "false");
+
+    case CHANGE_TYPE_ON_TOP_LEVEL_CREATED:
+      return base::StringPrintf("TopLevelCreated id=%d window_id=%s",
+                                change.change_id,
+                                WindowIdToString(change.window_id).c_str());
   }
   return std::string();
 }
@@ -352,6 +357,15 @@ void TestChangeTracker::OnChangeCompleted(uint32_t change_id, bool success) {
   change.type = CHANGE_TYPE_ON_CHANGE_COMPLETED;
   change.change_id = change_id;
   change.bool_value = success;
+  AddChange(change);
+}
+
+void TestChangeTracker::OnTopLevelCreated(uint32_t change_id,
+                                          mojom::WindowDataPtr window_data) {
+  Change change;
+  change.type = CHANGE_TYPE_ON_TOP_LEVEL_CREATED;
+  change.change_id = change_id;
+  change.window_id = window_data->window_id;
   AddChange(change);
 }
 
