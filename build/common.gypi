@@ -1943,18 +1943,16 @@
           # based on mac_sdk_min will be bypassed entirely.
           'conditions': [
             ['OS=="ios"', {
-              'mac_sdk_min%': '10.8',
               # The iOS build can use Xcode's clang, and that will complain
               # about -stdlib=libc++ if the deployment target is not at least
               # 10.7.
               'mac_deployment_target%': '10.7',
             }, {  # else OS!="ios"
-              'mac_sdk_min%': '10.10',
               'mac_deployment_target%': '10.6',
             }],
           ],
+          'mac_sdk_min': '10.10',
           'mac_sdk_path%': '',
-
         },
 
         'mac_sdk_min': '<(mac_sdk_min)',
