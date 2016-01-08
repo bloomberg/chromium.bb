@@ -10,6 +10,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
@@ -195,7 +196,7 @@ public class HttpNegotiateAuthenticatorTest {
         callback.run(makeFuture(new Account[]{}));
         verify(authenticator).nativeSetResult(
                 eq(42L),
-                eq(NetError.ERR_INVALID_AUTH_CREDENTIALS),
+                eq(NetError.ERR_MISSING_AUTH_CREDENTIALS),
                 isNull(String.class));
 
         // Should succeed, for a single account we use it for the AccountManager#getAuthToken call.
@@ -213,7 +214,7 @@ public class HttpNegotiateAuthenticatorTest {
         callback.run(makeFuture(new Account[]{new Account("a", type), new Account("b", type)}));
         verify(authenticator, times(2)).nativeSetResult(
                 eq(42L),
-                eq(NetError.ERR_INVALID_AUTH_CREDENTIALS),
+                eq(NetError.ERR_MISSING_AUTH_CREDENTIALS),
                 isNull(String.class));
     }
 
@@ -303,7 +304,8 @@ public class HttpNegotiateAuthenticatorTest {
         Robolectric.buildActivity(Activity.class).create().start().resume().visible();
         HttpNegotiateAuthenticator authenticator = createWithoutNative("Dummy_Account");
 
-        doReturn(false).when(authenticator).hasPermission(any(Context.class), anyString());
+        doReturn(true).when(authenticator)
+                .lacksPermission(any(Context.class), anyString(), anyBoolean());
 
         authenticator.getNextAuthToken(1234, "test_principal", "", true);
         verify(authenticator)
@@ -452,7 +454,9 @@ public class HttpNegotiateAuthenticatorTest {
         HttpNegotiateAuthenticator authenticator =
                 spy(HttpNegotiateAuthenticator.create(accountType));
         doNothing().when(authenticator).nativeSetResult(anyLong(), anyInt(), anyString());
-        doReturn(true).when(authenticator).hasPermission(any(Context.class), anyString());
+        doReturn(false)
+                .when(authenticator)
+                .lacksPermission(any(Context.class), anyString(), anyBoolean());
         return authenticator;
     }
 }
