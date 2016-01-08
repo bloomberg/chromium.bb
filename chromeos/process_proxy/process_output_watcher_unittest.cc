@@ -105,7 +105,9 @@ class ProcessOutputWatcherTest : public testing::Test {
       output_watch_thread_->Stop();
   }
 
-  void OnRead(ProcessOutputType type, const std::string& output) {
+  void OnRead(ProcessOutputType type,
+              const std::string& output,
+              const base::Closure& ack_callback) {
     ASSERT_FALSE(failed_);
     // There may be an EXIT signal sent during test tear down (which is sent
     // by process output watcher when master end of test pseudo-terminal is
@@ -123,6 +125,9 @@ class ProcessOutputWatcherTest : public testing::Test {
                                             test_case_done_callback_);
       test_case_done_callback_.Reset();
     }
+
+    ASSERT_FALSE(ack_callback.is_null());
+    message_loop_.task_runner()->PostTask(FROM_HERE, ack_callback);
   }
 
  protected:

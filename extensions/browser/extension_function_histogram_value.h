@@ -1160,6 +1160,7 @@ enum HistogramValue {
   DISPLAYSOURCE_REQUESTAUTHENTICATION,
   WEBRTCLOGGINGPRIVATE_STARTAUDIODEBUGRECORDINGS,
   WEBRTCLOGGINGPRIVATE_STOPAUDIODEBUGRECORDINGS,
+  TERMINALPRIVATE_ACKOUTPUT,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

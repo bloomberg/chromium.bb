@@ -43,30 +43,28 @@ ProcessProxy::ProcessProxy() : process_launched_(false), callback_set_(false) {
   ClearFdPair(pt_pair_);
 }
 
-bool ProcessProxy::Open(const std::string& command, pid_t* pid) {
+int ProcessProxy::Open(const std::string& command) {
   if (process_launched_)
-    return false;
+    return -1;
 
   if (!CreatePseudoTerminalPair(pt_pair_)) {
-    return false;
+    return -1;
   }
 
-  process_launched_ = LaunchProcess(command, pt_pair_[PT_SLAVE_FD], &pid_);
+  int process_id = LaunchProcess(command, pt_pair_[PT_SLAVE_FD]);
+  process_launched_ = process_id >= 0;
 
   if (process_launched_) {
-    // We won't need these anymore. These will be used by the launched process.
     CloseFd(&pt_pair_[PT_SLAVE_FD]);
-    *pid = pid_;
-    LOG(WARNING) << "Process launched: " << pid_;
   } else {
     CloseFdPair(pt_pair_);
   }
-  return process_launched_;
+  return process_id;
 }
 
 bool ProcessProxy::StartWatchingOutput(
     const scoped_refptr<base::SingleThreadTaskRunner>& watcher_runner,
-    const ProcessOutputCallback& callback) {
+    const OutputCallback& callback) {
   DCHECK(process_launched_);
   CHECK(!output_watcher_.get());
 
@@ -95,25 +93,35 @@ bool ProcessProxy::StartWatchingOutput(
 }
 
 void ProcessProxy::OnProcessOutput(ProcessOutputType type,
-                                   const std::string& output) {
+                                   const std::string& output,
+                                   const base::Closure& callback) {
   if (!callback_runner_.get())
     return;
 
   callback_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&ProcessProxy::CallOnProcessOutputCallback,
-                 this, type, output));
+      FROM_HERE, base::Bind(&ProcessProxy::CallOnProcessOutputCallback, this,
+                            type, output, callback));
 }
 
 void ProcessProxy::CallOnProcessOutputCallback(ProcessOutputType type,
-                                               const std::string& output) {
+                                               const std::string& output,
+                                               const base::Closure& callback) {
   // We may receive some output even after Close was called (crosh process does
   // not have to quit instantly, or there may be some trailing data left in
   // output stream fds). In that case owner of the callback may be gone so we
   // don't want to send it anything. |callback_set_| is reset when this gets
   // closed.
-  if (callback_set_)
+  if (callback_set_) {
+    output_ack_callback_ = callback;
     callback_.Run(type, output);
+  }
+}
+
+void ProcessProxy::AckOutput() {
+  if (!output_ack_callback_.is_null()) {
+    output_ack_callback_.Run();
+    output_ack_callback_.Reset();
+  }
 }
 
 void ProcessProxy::StopWatching() {
@@ -131,11 +139,10 @@ void ProcessProxy::Close() {
 
   process_launched_ = false;
   callback_set_ = false;
-  callback_ = ProcessOutputCallback();
+  callback_.Reset();
   callback_runner_ = NULL;
 
-  base::Process process = base::Process::DeprecatedGetProcessFromHandle(pid_);
-  process.Terminate(0, true /* wait */);
+  process_->Terminate(0, true /* wait */);
 
   StopWatching();
   CloseFdPair(pt_pair_);
@@ -195,8 +202,7 @@ bool ProcessProxy::CreatePseudoTerminalPair(int *pt_pair) {
   return true;
 }
 
-bool ProcessProxy::LaunchProcess(const std::string& command, int slave_fd,
-                                 pid_t* pid) {
+int ProcessProxy::LaunchProcess(const std::string& command, int slave_fd) {
   // Redirect crosh  process' output and input so we can read it.
   base::FileHandleMappingVector fds_mapping;
   fds_mapping.push_back(std::make_pair(slave_fd, STDIN_FILENO));
@@ -212,14 +218,13 @@ bool ProcessProxy::LaunchProcess(const std::string& command, int slave_fd,
   options.environ["TERM"] = "xterm";
 
   // Launch the process.
-  base::Process process =
-      base::LaunchProcess(base::CommandLine(base::FilePath(command)), options);
+  process_.reset(new base::Process(base::LaunchProcess(
+      base::CommandLine(base::FilePath(command)), options)));
 
   // TODO(rvargas) crbug/417532: This is somewhat wrong but the interface of
   // Open vends pid_t* so ownership is quite vague anyway, and Process::Close
   // doesn't do much in POSIX.
-  *pid = process.Pid();
-  return process.IsValid();
+  return process_->IsValid() ? process_->Pid() : -1;
 }
 
 void ProcessProxy::CloseFdPair(int* pipe) {

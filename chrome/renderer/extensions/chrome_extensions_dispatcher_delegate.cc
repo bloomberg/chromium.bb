@@ -192,6 +192,8 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
                              IDR_SYSTEM_INDICATOR_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("tabCapture", IDR_TAB_CAPTURE_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("tabs", IDR_TABS_CUSTOM_BINDINGS_JS);
+  source_map->RegisterSource("terminalPrivate",
+                             IDR_TERMINAL_PRIVATE_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("tts", IDR_TTS_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("ttsEngine", IDR_TTS_ENGINE_CUSTOM_BINDINGS_JS);
 #if defined(ENABLE_WEBRTC)

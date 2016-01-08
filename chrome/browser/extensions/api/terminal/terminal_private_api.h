@@ -7,28 +7,13 @@
 
 #include <string>
 
-#include "chrome/browser/extensions/chrome_extension_function.h"
+#include "extensions/browser/extension_function.h"
 
 namespace extensions {
-// Base class for all terminalPrivate function classes. Main purpose is to run
-// permission check before calling actual function implementation.
-class TerminalPrivateFunction : public ChromeAsyncExtensionFunction {
- public:
-  TerminalPrivateFunction();
 
- protected:
-  ~TerminalPrivateFunction() override;
-
-  // ExtensionFunction:
-  bool RunAsync() override;
-
-  // Override with actual extension function implementation.
-  virtual bool RunTerminalFunction() = 0;
-};
-
-// Opens new terminal process. Returns the new process id.
+// Opens new terminal process. Returns the new terminal id.
 class TerminalPrivateOpenTerminalProcessFunction
-    : public TerminalPrivateFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("terminalPrivate.openTerminalProcess",
                              TERMINALPRIVATE_OPENTERMINALPROCESS)
@@ -38,18 +23,25 @@ class TerminalPrivateOpenTerminalProcessFunction
  protected:
   ~TerminalPrivateOpenTerminalProcessFunction() override;
 
-  // TerminalPrivateFunction:
-  bool RunTerminalFunction() override;
+  ExtensionFunction::ResponseAction Run() override;
 
  private:
-  void OpenOnFileThread();
-  void RespondOnUIThread(pid_t pid);
+  using ProcessOutputCallback =
+      base::Callback<void(int terminal_id,
+                          const std::string& output_type,
+                          const std::string& output)>;
+  using OpenProcessCallback = base::Callback<void(int terminal_id)>;
+
+  void OpenOnFileThread(const ProcessOutputCallback& output_callback,
+                        const OpenProcessCallback& callback);
+  void RespondOnUIThread(int terminal_id);
 
   const char* command_;
 };
 
-// Send input to the terminal process specified by the pid sent as an argument.
-class TerminalPrivateSendInputFunction : public TerminalPrivateFunction {
+// Send input to the terminal process specified by the terminal ID, which is set
+// as an argument.
+class TerminalPrivateSendInputFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("terminalPrivate.sendInput",
                              TERMINALPRIVATE_SENDINPUT)
@@ -57,17 +49,16 @@ class TerminalPrivateSendInputFunction : public TerminalPrivateFunction {
  protected:
   ~TerminalPrivateSendInputFunction() override;
 
-  // TerminalPrivateFunction:
-  bool RunTerminalFunction() override;
+  ExtensionFunction::ResponseAction Run() override;
 
  private:
-  void SendInputOnFileThread(pid_t pid, const std::string& input);
+  void SendInputOnFileThread(int terminal_id, const std::string& input);
   void RespondOnUIThread(bool success);
 };
 
-// Closes terminal process with given pid.
+// Closes terminal process.
 class TerminalPrivateCloseTerminalProcessFunction
-    : public TerminalPrivateFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("terminalPrivate.closeTerminalProcess",
                              TERMINALPRIVATE_CLOSETERMINALPROCESS)
@@ -75,15 +66,16 @@ class TerminalPrivateCloseTerminalProcessFunction
  protected:
   ~TerminalPrivateCloseTerminalProcessFunction() override;
 
-  bool RunTerminalFunction() override;
+  ExtensionFunction::ResponseAction Run() override;
 
  private:
-  void CloseOnFileThread(pid_t pid);
+  void CloseOnFileThread(int terminal_id);
   void RespondOnUIThread(bool success);
 };
 
 // Called by extension when terminal size changes.
-class TerminalPrivateOnTerminalResizeFunction : public TerminalPrivateFunction {
+class TerminalPrivateOnTerminalResizeFunction
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("terminalPrivate.onTerminalResize",
                              TERMINALPRIVATE_ONTERMINALRESIZE)
@@ -91,11 +83,25 @@ class TerminalPrivateOnTerminalResizeFunction : public TerminalPrivateFunction {
  protected:
   ~TerminalPrivateOnTerminalResizeFunction() override;
 
-  bool RunTerminalFunction() override;
+  ExtensionFunction::ResponseAction Run() override;
 
  private:
-  void OnResizeOnFileThread(pid_t pid, int width, int height);
+  void OnResizeOnFileThread(int terminal_id, int width, int height);
   void RespondOnUIThread(bool success);
+};
+
+class TerminalPrivateAckOutputFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("terminalPrivate.ackOutput",
+                             TERMINALPRIVATE_ACKOUTPUT)
+
+ protected:
+  ~TerminalPrivateAckOutputFunction() override;
+
+  ExtensionFunction::ResponseAction Run() override;
+
+ private:
+  void AckOutputOnFileThread(int terminal_id);
 };
 
 }  // namespace extensions

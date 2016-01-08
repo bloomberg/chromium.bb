@@ -70,19 +70,19 @@ ProcessProxyRegistry* ProcessProxyRegistry::Get() {
   return g_process_proxy_registry.Pointer();
 }
 
-bool ProcessProxyRegistry::OpenProcess(
-    const std::string& command,
-    pid_t* pid,
-    const ProcessOutputCallbackWithPid& callback) {
+int ProcessProxyRegistry::OpenProcess(const std::string& command,
+                                      const OutputCallback& output_callback) {
   DCHECK(CalledOnValidThread());
 
   if (!EnsureWatcherThreadStarted())
-    return false;
+    return -1;
 
   // Create and open new proxy.
   scoped_refptr<ProcessProxy> proxy(new ProcessProxy());
-  if (!proxy->Open(command, pid))
-    return false;
+  // TODO(tbarzic): Use a random int as an id here instead of process pid.
+  int terminal_id = proxy->Open(command);
+  if (terminal_id < 0)
+    return -1;
 
   // Kick off watcher.
   // We can use Unretained because proxy will stop calling callback after it is
@@ -90,35 +90,31 @@ bool ProcessProxyRegistry::OpenProcess(
   if (!proxy->StartWatchingOutput(
           watcher_thread_->task_runner(),
           base::Bind(&ProcessProxyRegistry::OnProcessOutput,
-                     base::Unretained(this), *pid))) {
+                     base::Unretained(this), terminal_id))) {
     proxy->Close();
-    return false;
+    return -1;
   }
 
-  DCHECK(proxy_map_.find(*pid) == proxy_map_.end());
-
-  // Save info for newly created proxy. We cannot do this before ProcessProxy is
-  // created because we don't know |pid| then.
-  ProcessProxyInfo& info = proxy_map_[*pid];
+  ProcessProxyInfo& info = proxy_map_[terminal_id];
   info.proxy.swap(proxy);
-  info.process_id = *pid;
-  info.callback = callback;
-  return true;
+  info.callback = output_callback;
+
+  return terminal_id;
 }
 
-bool ProcessProxyRegistry::SendInput(pid_t pid, const std::string& data) {
+bool ProcessProxyRegistry::SendInput(int id, const std::string& data) {
   DCHECK(CalledOnValidThread());
 
-  std::map<pid_t, ProcessProxyInfo>::iterator it = proxy_map_.find(pid);
+  std::map<int, ProcessProxyInfo>::iterator it = proxy_map_.find(id);
   if (it == proxy_map_.end())
     return false;
   return it->second.proxy->Write(data);
 }
 
-bool ProcessProxyRegistry::CloseProcess(pid_t pid) {
+bool ProcessProxyRegistry::CloseProcess(int id) {
   DCHECK(CalledOnValidThread());
 
-  std::map<pid_t, ProcessProxyInfo>::iterator it = proxy_map_.find(pid);
+  std::map<int, ProcessProxyInfo>::iterator it = proxy_map_.find(id);
   if (it == proxy_map_.end())
     return false;
 
@@ -127,32 +123,43 @@ bool ProcessProxyRegistry::CloseProcess(pid_t pid) {
   return true;
 }
 
-bool ProcessProxyRegistry::OnTerminalResize(pid_t pid, int width, int height) {
+bool ProcessProxyRegistry::OnTerminalResize(int id, int width, int height) {
   DCHECK(CalledOnValidThread());
 
-  std::map<pid_t, ProcessProxyInfo>::iterator it = proxy_map_.find(pid);
+  std::map<int, ProcessProxyInfo>::iterator it = proxy_map_.find(id);
   if (it == proxy_map_.end())
     return false;
 
   return it->second.proxy->OnTerminalResize(width, height);
 }
 
-void ProcessProxyRegistry::OnProcessOutput(pid_t pid,
-    ProcessOutputType type, const std::string& data) {
+void ProcessProxyRegistry::AckOutput(int id) {
+  DCHECK(CalledOnValidThread());
+
+  std::map<int, ProcessProxyInfo>::iterator it = proxy_map_.find(id);
+  if (it == proxy_map_.end())
+    return;
+
+  it->second.proxy->AckOutput();
+}
+
+void ProcessProxyRegistry::OnProcessOutput(int id,
+                                           ProcessOutputType type,
+                                           const std::string& data) {
   DCHECK(CalledOnValidThread());
 
   const char* type_str = ProcessOutputTypeToString(type);
   DCHECK(type_str);
 
-  std::map<pid_t, ProcessProxyInfo>::iterator it = proxy_map_.find(pid);
+  std::map<int, ProcessProxyInfo>::iterator it = proxy_map_.find(id);
   if (it == proxy_map_.end())
     return;
-  it->second.callback.Run(pid, std::string(type_str), data);
+  it->second.callback.Run(id, std::string(type_str), data);
 
   // Contact with the slave end of the terminal has been lost. We have to close
   // the process.
   if (type == PROCESS_OUTPUT_TYPE_EXIT)
-    CloseProcess(pid);
+    CloseProcess(id);
 }
 
 bool ProcessProxyRegistry::EnsureWatcherThreadStarted() {

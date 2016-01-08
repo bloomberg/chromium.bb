@@ -12,10 +12,14 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/common/extensions/api/terminal_private.h"
 #include "chromeos/process_proxy/process_proxy_registry.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/event_router.h"
 
 namespace terminal_private = extensions::api::terminal_private;
@@ -23,7 +27,10 @@ namespace OnTerminalResize =
     extensions::api::terminal_private::OnTerminalResize;
 namespace OpenTerminalProcess =
     extensions::api::terminal_private::OpenTerminalProcess;
+namespace CloseTerminalProcess =
+    extensions::api::terminal_private::CloseTerminalProcess;
 namespace SendInput = extensions::api::terminal_private::SendInput;
+namespace AckOutput = extensions::api::terminal_private::AckOutput;
 
 namespace {
 
@@ -46,25 +53,29 @@ const char* GetProcessCommandForName(const std::string& name) {
     return NULL;
 }
 
-void NotifyProcessOutput(Profile* profile,
+void NotifyProcessOutput(content::BrowserContext* browser_context,
                          const std::string& extension_id,
-                         pid_t pid,
+                         int tab_id,
+                         int terminal_id,
                          const std::string& output_type,
                          const std::string& output) {
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&NotifyProcessOutput, profile, extension_id,
-                                         pid, output_type, output));
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&NotifyProcessOutput, browser_context, extension_id, tab_id,
+                   terminal_id, output_type, output));
     return;
   }
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(new base::FundamentalValue(pid));
+  args->Append(new base::FundamentalValue(tab_id));
+  args->Append(new base::FundamentalValue(terminal_id));
   args->Append(new base::StringValue(output_type));
   args->Append(new base::StringValue(output));
 
-  extensions::EventRouter* event_router = extensions::EventRouter::Get(profile);
-  if (profile && event_router) {
+  extensions::EventRouter* event_router =
+      extensions::EventRouter::Get(browser_context);
+  if (event_router) {
     scoped_ptr<extensions::Event> event(new extensions::Event(
         extensions::events::TERMINAL_PRIVATE_ON_PROCESS_OUTPUT,
         terminal_private::OnProcessOutput::kEventName, std::move(args)));
@@ -72,17 +83,21 @@ void NotifyProcessOutput(Profile* profile,
   }
 }
 
+// Returns tab ID, or window session ID (for platform apps) for |web_contents|.
+int GetTabOrWindowSessionId(content::BrowserContext* browser_context,
+                            content::WebContents* web_contents) {
+  int tab_id = extensions::ExtensionTabUtil::GetTabId(web_contents);
+  if (tab_id >= 0)
+    return tab_id;
+  extensions::AppWindow* window =
+      extensions::AppWindowRegistry::Get(browser_context)
+          ->GetAppWindowForWebContents(web_contents);
+  return window ? window->session_id().id() : -1;
+}
+
 }  // namespace
 
 namespace extensions {
-
-TerminalPrivateFunction::TerminalPrivateFunction() {}
-
-TerminalPrivateFunction::~TerminalPrivateFunction() {}
-
-bool TerminalPrivateFunction::RunAsync() {
-  return RunTerminalFunction();
-}
 
 TerminalPrivateOpenTerminalProcessFunction::
     TerminalPrivateOpenTerminalProcessFunction() : command_(NULL) {}
@@ -90,51 +105,75 @@ TerminalPrivateOpenTerminalProcessFunction::
 TerminalPrivateOpenTerminalProcessFunction::
     ~TerminalPrivateOpenTerminalProcessFunction() {}
 
-bool TerminalPrivateOpenTerminalProcessFunction::RunTerminalFunction() {
+ExtensionFunction::ResponseAction
+TerminalPrivateOpenTerminalProcessFunction::Run() {
   scoped_ptr<OpenTerminalProcess::Params> params(
       OpenTerminalProcess::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   command_ = GetProcessCommandForName(params->process_name);
-  if (!command_) {
-    error_ = "Invalid process name.";
-    return false;
-  }
+  if (!command_)
+    return RespondNow(Error("Invalid process name."));
+
+  content::WebContents* caller_contents = GetSenderWebContents();
+  if (!caller_contents)
+    return RespondNow(Error("No web contents."));
+
+  // Passed to terminalPrivate.ackOutput, which is called from the API's custom
+  // bindings after terminalPrivate.onProcessOutput is dispatched. It is used to
+  // determine whether ackOutput call should be handled or not. ackOutput will
+  // be called from every web contents in which a onProcessOutput listener
+  // exists (because the API custom bindings hooks are run in every web contents
+  // with a listener). Only ackOutput called from the web contents that has the
+  // target terminal instance should be handled.
+  // TODO(tbarzic): Instead of passing tab/app window session id around, keep
+  //     mapping from web_contents to terminal ID running in it. This will be
+  //     needed to fix crbug.com/210295.
+  int tab_id = GetTabOrWindowSessionId(browser_context(), caller_contents);
+  if (tab_id < 0)
+    return RespondNow(Error("Not called from a tab or app window"));
 
   // Registry lives on FILE thread.
-  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&TerminalPrivateOpenTerminalProcessFunction::OpenOnFileThread,
-                 this));
-  return true;
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(
+          &TerminalPrivateOpenTerminalProcessFunction::OpenOnFileThread, this,
+          base::Bind(&NotifyProcessOutput, browser_context(), extension_id(),
+                     tab_id),
+          base::Bind(
+              &TerminalPrivateOpenTerminalProcessFunction::RespondOnUIThread,
+              this)));
+  return RespondLater();
 }
 
-void TerminalPrivateOpenTerminalProcessFunction::OpenOnFileThread() {
+void TerminalPrivateOpenTerminalProcessFunction::OpenOnFileThread(
+    const ProcessOutputCallback& output_callback,
+    const OpenProcessCallback& callback) {
   DCHECK(command_);
 
   chromeos::ProcessProxyRegistry* registry =
       chromeos::ProcessProxyRegistry::Get();
-  pid_t pid;
-  if (!registry->OpenProcess(
-           command_,
-           &pid,
-           base::Bind(&NotifyProcessOutput, GetProfile(), extension_id()))) {
-    // If new process could not be opened, we return -1.
-    pid = -1;
-  }
+
+  int terminal_id = registry->OpenProcess(command_, output_callback);
 
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&TerminalPrivateOpenTerminalProcessFunction::RespondOnUIThread,
-                 this, pid));
+                                   base::Bind(callback, terminal_id));
 }
 
 TerminalPrivateSendInputFunction::~TerminalPrivateSendInputFunction() {}
 
-void TerminalPrivateOpenTerminalProcessFunction::RespondOnUIThread(pid_t pid) {
-  SetResult(new base::FundamentalValue(pid));
+void TerminalPrivateOpenTerminalProcessFunction::RespondOnUIThread(
+    int terminal_id) {
+  if (terminal_id < 0) {
+    SetError("Failed to open process.");
+    SendResponse(false);
+    return;
+  }
+  SetResult(new base::FundamentalValue(terminal_id));
   SendResponse(true);
 }
 
-bool TerminalPrivateSendInputFunction::RunTerminalFunction() {
+ExtensionFunction::ResponseAction TerminalPrivateSendInputFunction::Run() {
   scoped_ptr<SendInput::Params> params(SendInput::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -142,16 +181,19 @@ bool TerminalPrivateSendInputFunction::RunTerminalFunction() {
   content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&TerminalPrivateSendInputFunction::SendInputOnFileThread,
                  this, params->pid, params->input));
-  return true;
+  return RespondLater();
 }
 
-void TerminalPrivateSendInputFunction::SendInputOnFileThread(pid_t pid,
+void TerminalPrivateSendInputFunction::SendInputOnFileThread(
+    int terminal_id,
     const std::string& text) {
-  bool success = chromeos::ProcessProxyRegistry::Get()->SendInput(pid, text);
+  bool success =
+      chromeos::ProcessProxyRegistry::Get()->SendInput(terminal_id, text);
 
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
       base::Bind(&TerminalPrivateSendInputFunction::RespondOnUIThread, this,
-      success));
+                 success));
 }
 
 void TerminalPrivateSendInputFunction::RespondOnUIThread(bool success) {
@@ -162,23 +204,26 @@ void TerminalPrivateSendInputFunction::RespondOnUIThread(bool success) {
 TerminalPrivateCloseTerminalProcessFunction::
     ~TerminalPrivateCloseTerminalProcessFunction() {}
 
-bool TerminalPrivateCloseTerminalProcessFunction::RunTerminalFunction() {
-  if (args_->GetSize() != 1)
-    return false;
-  pid_t pid;
-  if (!args_->GetInteger(0, &pid))
-    return false;
+ExtensionFunction::ResponseAction
+TerminalPrivateCloseTerminalProcessFunction::Run() {
+  scoped_ptr<CloseTerminalProcess::Params> params(
+      CloseTerminalProcess::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // Registry lives on the FILE thread.
-  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&TerminalPrivateCloseTerminalProcessFunction::
-                 CloseOnFileThread, this, pid));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(
+          &TerminalPrivateCloseTerminalProcessFunction::CloseOnFileThread, this,
+          params->pid));
 
-  return true;
+  return RespondLater();
 }
 
-void TerminalPrivateCloseTerminalProcessFunction::CloseOnFileThread(pid_t pid) {
-  bool success = chromeos::ProcessProxyRegistry::Get()->CloseProcess(pid);
+void TerminalPrivateCloseTerminalProcessFunction::CloseOnFileThread(
+    int terminal_id) {
+  bool success =
+      chromeos::ProcessProxyRegistry::Get()->CloseProcess(terminal_id);
 
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
       base::Bind(&TerminalPrivateCloseTerminalProcessFunction::
@@ -194,7 +239,8 @@ void TerminalPrivateCloseTerminalProcessFunction::RespondOnUIThread(
 TerminalPrivateOnTerminalResizeFunction::
     ~TerminalPrivateOnTerminalResizeFunction() {}
 
-bool TerminalPrivateOnTerminalResizeFunction::RunTerminalFunction() {
+ExtensionFunction::ResponseAction
+TerminalPrivateOnTerminalResizeFunction::Run() {
   scoped_ptr<OnTerminalResize::Params> params(
       OnTerminalResize::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -204,13 +250,15 @@ bool TerminalPrivateOnTerminalResizeFunction::RunTerminalFunction() {
       base::Bind(&TerminalPrivateOnTerminalResizeFunction::OnResizeOnFileThread,
                  this, params->pid, params->width, params->height));
 
-  return true;
+  return RespondLater();
 }
 
-void TerminalPrivateOnTerminalResizeFunction::OnResizeOnFileThread(pid_t pid,
-                                                    int width, int height) {
+void TerminalPrivateOnTerminalResizeFunction::OnResizeOnFileThread(
+    int terminal_id,
+    int width,
+    int height) {
   bool success = chromeos::ProcessProxyRegistry::Get()->OnTerminalResize(
-      pid, width, height);
+      terminal_id, width, height);
 
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
       base::Bind(&TerminalPrivateOnTerminalResizeFunction::RespondOnUIThread,
@@ -220,6 +268,36 @@ void TerminalPrivateOnTerminalResizeFunction::OnResizeOnFileThread(pid_t pid,
 void TerminalPrivateOnTerminalResizeFunction::RespondOnUIThread(bool success) {
   SetResult(new base::FundamentalValue(success));
   SendResponse(true);
+}
+
+TerminalPrivateAckOutputFunction::~TerminalPrivateAckOutputFunction() {}
+
+ExtensionFunction::ResponseAction TerminalPrivateAckOutputFunction::Run() {
+  scoped_ptr<AckOutput::Params> params(AckOutput::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  content::WebContents* caller_contents = GetSenderWebContents();
+  if (!caller_contents)
+    return RespondNow(Error("No web contents."));
+
+  int tab_id = GetTabOrWindowSessionId(browser_context(), caller_contents);
+  if (tab_id < 0)
+    return RespondNow(Error("Not called from a tab or app window"));
+
+  if (tab_id != params->tab_id)
+    return RespondNow(NoArguments());
+
+  // Registry lives on the FILE thread.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&TerminalPrivateAckOutputFunction::AckOutputOnFileThread, this,
+                 params->pid));
+
+  return RespondNow(NoArguments());
+}
+
+void TerminalPrivateAckOutputFunction::AckOutputOnFileThread(int terminal_id) {
+  chromeos::ProcessProxyRegistry::Get()->AckOutput(terminal_id);
 }
 
 }  // namespace extensions

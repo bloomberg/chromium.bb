@@ -32,11 +32,11 @@
             "type": "function",
             "name": "callback",
             "optional": false,
-            "description": "Returns pid of the launched process. If no process was launched returns -1.",
+            "description": "Returns id of the launched process. If no process was launched returns -1.",
             "parameters": [
               {
                 "name": "pid",
-                "description": "Pid of the launched process.",
+                "description": "Id of the launched process.",
                 "type": "integer"
               }
             ]
@@ -70,12 +70,12 @@
       {
         "name": "sendInput",
         "type": "function",
-        "description": "Sends input that will be routed to stdin of the process with the specified pid.",
+        "description": "Sends input that will be routed to stdin of the process with the specified id.",
         "parameters": [
           {
             "name": "pid",
             "type": "integer",
-            "description": "The pid of the process to which we want to send input."
+            "description": "The id of the process to which we want to send input."
           },
           {
             "name": "input",
@@ -99,12 +99,12 @@
       {
         "name": "onTerminalResize",
         "type": "function",
-        "description": "Notify the process with the id pid that terminal window size has changed.",
+        "description": "Notify the process with the id id that terminal window size has changed.",
         "parameters": [
           {
             "name": "pid",
             "type": "integer",
-            "description": "The pid of the process."
+            "description": "The id of the process."
           },
           {
             "name": "width",
@@ -129,18 +129,35 @@
             ]
           }
         ]
+      },
+      {
+        "name": "ackOutput",
+        "type": "function",
+        "description": "Called from |onProcessOutput| when the event is dispatched to terminal extension. Observing the terminal process output will be paused after |onProcessOutput| is dispatched until this method is called.",
+        "parameters": [
+          {
+            "name": "tabId",
+            "type": "integer",
+            "description": "Tab ID from |onProcessOutput| event."
+          },
+          {
+            "name": "pid",
+            "type": "integer",
+            "description": "The id of the process to which |onProcessOutput| was dispatched."
+          }
+        ]
       }
     ],
     "events": [
       {
         "name": "onProcessOutput",
         "type": "function",
-        "description": "Fired when an opened process writes something to its output.",
+        "description": "Fired when an opened process writes something to its output. Observing further process output will be blocked until |ackOutput| for the terminal is called. Internally, first event argument will be ID of the tab that contains terminal instance for which this event is intended. This argument will be stripped before passing the event to the extension.",
         "parameters": [
           {
             "name": "pid",
             "type": "integer",
-            "description": "Pid of the process from which the output came."
+            "description": "Id of the process from which the output came."
           },
           {
             "name": "type",

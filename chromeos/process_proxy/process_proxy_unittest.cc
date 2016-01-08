@@ -32,21 +32,22 @@ const int kTestLineNum = 100;
 class TestRunner {
  public:
   virtual ~TestRunner() {}
-  virtual void SetupExpectations(pid_t pid) = 0;
-  virtual void OnSomeRead(pid_t pid, const std::string& type,
+  virtual void SetupExpectations(int terminal_id) = 0;
+  virtual void OnSomeRead(int terminal_id,
+                          const std::string& type,
                           const std::string& output) = 0;
   virtual void StartRegistryTest(ProcessProxyRegistry* registry) = 0;
 
  protected:
-  pid_t pid_;
+  int terminal_id_;
 };
 
 class RegistryTestRunner : public TestRunner {
  public:
   ~RegistryTestRunner() override {}
 
-  void SetupExpectations(pid_t pid) override {
-    pid_ = pid;
+  void SetupExpectations(int terminal_id) override {
+    terminal_id_ = terminal_id;
     left_to_check_index_[0] = 0;
     left_to_check_index_[1] = 0;
     // We consider that a line processing has started if a value in
@@ -63,11 +64,11 @@ class RegistryTestRunner : public TestRunner {
   // abc|abcdef|defgh|gh). To deal with that, we allow to test received text
   // against two lines. The lines MUST NOT have two same characters for this
   // algorithm to work.
-  void OnSomeRead(pid_t pid,
+  void OnSomeRead(int terminal_id,
                   const std::string& type,
                   const std::string& output) override {
     EXPECT_EQ(type, kStdoutType);
-    EXPECT_EQ(pid_, pid);
+    EXPECT_EQ(terminal_id_, terminal_id);
 
     bool valid = true;
     for (size_t i = 0; i < output.length(); i++) {
@@ -86,7 +87,7 @@ class RegistryTestRunner : public TestRunner {
 
   void StartRegistryTest(ProcessProxyRegistry* registry) override {
     for (int i = 0; i < kTestLineNum; i++) {
-      EXPECT_TRUE(registry->SendInput(pid_, kTestLineToSend));
+      EXPECT_TRUE(registry->SendInput(terminal_id_, kTestLineToSend));
     }
   }
 
@@ -123,21 +124,21 @@ class RegistryNotifiedOnProcessExitTestRunner : public TestRunner {
  public:
   ~RegistryNotifiedOnProcessExitTestRunner() override {}
 
-  void SetupExpectations(pid_t pid) override {
+  void SetupExpectations(int terminal_id) override {
     output_received_ = false;
-    pid_ = pid;
+    terminal_id_ = terminal_id;
   }
 
-  void OnSomeRead(pid_t pid,
+  void OnSomeRead(int terminal_id,
                   const std::string& type,
                   const std::string& output) override {
-    EXPECT_EQ(pid_, pid);
+    EXPECT_EQ(terminal_id_, terminal_id);
     if (!output_received_) {
       output_received_ = true;
       EXPECT_EQ(type, "stdout");
       EXPECT_EQ(output, "p");
       base::Process process =
-          base::Process::DeprecatedGetProcessFromHandle(pid_);
+          base::Process::DeprecatedGetProcessFromHandle(terminal_id_);
       process.Terminate(0, true);
       return;
     }
@@ -147,35 +148,11 @@ class RegistryNotifiedOnProcessExitTestRunner : public TestRunner {
   }
 
   void StartRegistryTest(ProcessProxyRegistry* registry) override {
-    EXPECT_TRUE(registry->SendInput(pid_, "p"));
+    EXPECT_TRUE(registry->SendInput(terminal_id_, "p"));
   }
 
  private:
   bool output_received_;
-};
-
-class SigIntTestRunner : public TestRunner {
- public:
-  ~SigIntTestRunner() override {}
-
-  void SetupExpectations(pid_t pid) override { pid_ = pid; }
-
-  void OnSomeRead(pid_t pid,
-                  const std::string& type,
-                  const std::string& output) override {
-    EXPECT_EQ(pid_, pid);
-    // We may receive ^C on stdout, but we don't care about that, as long as we
-    // eventually received exit event.
-    if (type == "exit") {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
-    }
-  }
-
-  void StartRegistryTest(ProcessProxyRegistry* registry) override {
-    // Send SingInt and verify the process exited.
-    EXPECT_TRUE(registry->SendInput(pid_, "\003"));
-  }
 };
 
 }  // namespace
@@ -189,23 +166,31 @@ class ProcessProxyTest : public testing::Test {
   void InitRegistryTest() {
     registry_ = ProcessProxyRegistry::Get();
 
-    EXPECT_TRUE(registry_->OpenProcess(
-                    kCatCommand, &pid_,
-                    base::Bind(&TestRunner::OnSomeRead,
-                               base::Unretained(test_runner_.get()))));
+    terminal_id_ = registry_->OpenProcess(
+        kCatCommand,
+        base::Bind(&ProcessProxyTest::HandleRead, base::Unretained(this)));
 
-    test_runner_->SetupExpectations(pid_);
+    EXPECT_GE(terminal_id_, 0);
+    test_runner_->SetupExpectations(terminal_id_);
     test_runner_->StartRegistryTest(registry_);
   }
 
-  void EndRegistryTest() {
-    registry_->CloseProcess(pid_);
+  void HandleRead(int terminal_id,
+                  const std::string& output_type,
+                  const std::string& output) {
+    test_runner_->OnSomeRead(terminal_id, output_type, output);
+    registry_->AckOutput(terminal_id);
+  }
 
-    base::TerminationStatus status = base::GetTerminationStatus(pid_, NULL);
+  void EndRegistryTest() {
+    registry_->CloseProcess(terminal_id_);
+
+    base::TerminationStatus status =
+        base::GetTerminationStatus(terminal_id_, NULL);
     EXPECT_NE(base::TERMINATION_STATUS_STILL_RUNNING, status);
     if (status == base::TERMINATION_STATUS_STILL_RUNNING) {
       base::Process process =
-          base::Process::DeprecatedGetProcessFromHandle(pid_);
+          base::Process::DeprecatedGetProcessFromHandle(terminal_id_);
       process.Terminate(0, true);
     }
 
@@ -236,7 +221,7 @@ class ProcessProxyTest : public testing::Test {
 
  private:
   ProcessProxyRegistry* registry_;
-  pid_t pid_;
+  int terminal_id_;
 
   base::MessageLoop message_loop_;
 };
@@ -251,13 +236,6 @@ TEST_F(ProcessProxyTest, RegistryTest) {
 // Open new process, then kill it. Verifiy that we detect when the process dies.
 TEST_F(ProcessProxyTest, RegistryNotifiedOnProcessExit) {
   test_runner_.reset(new RegistryNotifiedOnProcessExitTestRunner());
-  RunTest();
-}
-
-// Test verifies that \003 message send to process is processed as SigInt.
-// Timing out on the waterfall: http://crbug.com/115064
-TEST_F(ProcessProxyTest, DISABLED_SigInt) {
-  test_runner_.reset(new SigIntTestRunner());
   RunTest();
 }
 
