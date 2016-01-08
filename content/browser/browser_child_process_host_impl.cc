@@ -312,13 +312,17 @@ void BrowserChildProcessHostImpl::OnChannelError() {
 
 void BrowserChildProcessHostImpl::OnBadMessageReceived(
     const IPC::Message& message) {
+  TerminateOnBadMessageReceived(message.type());
+}
+
+void BrowserChildProcessHostImpl::TerminateOnBadMessageReceived(uint32_t type) {
   HistogramBadMessageTerminated(data_.process_type);
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableKillAfterBadIPC)) {
     return;
   }
   LOG(ERROR) << "Terminating child process for bad IPC message of type "
-      << message.type();
+             << type;
 
   // Create a memory dump. This will contain enough stack frames to work out
   // what the bad message was.

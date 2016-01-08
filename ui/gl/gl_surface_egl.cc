@@ -116,6 +116,7 @@ bool g_egl_sync_control_supported = false;
 bool g_egl_window_fixed_size_supported = false;
 bool g_egl_surfaceless_context_supported = false;
 bool g_egl_surface_orientation_supported = false;
+bool g_use_direct_composition = false;
 
 class EGLSyncControlVSyncProvider
     : public gfx::SyncControlVSyncProvider {
@@ -376,6 +377,9 @@ bool GLSurfaceEGL::InitializeOneOff() {
   g_egl_surface_orientation_supported =
       HasEGLExtension("EGL_ANGLE_surface_orientation");
 
+  g_use_direct_composition = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseDirectComposition);
+
   // TODO(oetuaho@nvidia.com): Surfaceless is disabled on Android as a temporary
   // workaround, since code written for Android WebView takes different paths
   // based on whether GL surface objects have underlying EGL surface handles,
@@ -436,6 +440,10 @@ bool GLSurfaceEGL::IsCreateContextRobustnessSupported() {
 
 bool GLSurfaceEGL::IsEGLSurfacelessContextSupported() {
   return g_egl_surfaceless_context_supported;
+}
+
+bool GLSurfaceEGL::IsDirectCompositionSupported() {
+  return g_use_direct_composition;
 }
 
 GLSurfaceEGL::~GLSurfaceEGL() {}
@@ -500,9 +508,10 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(EGLNativeWindowType window)
     : window_(window),
       config_(NULL),
       size_(1, 1),
+      alpha_(true),
+      enable_fixed_size_angle_(false),
       surface_(NULL),
       supports_post_sub_buffer_(false),
-      alpha_(true),
       flips_vertically_(false),
       swap_interval_(1) {
 #if defined(OS_ANDROID)
@@ -541,7 +550,7 @@ bool NativeViewGLSurfaceEGL::Initialize(
 
   std::vector<EGLint> egl_window_attributes;
 
-  if (g_egl_window_fixed_size_supported) {
+  if (g_egl_window_fixed_size_supported && enable_fixed_size_angle_) {
     egl_window_attributes.push_back(EGL_FIXED_SIZE_ANGLE);
     egl_window_attributes.push_back(EGL_TRUE);
     egl_window_attributes.push_back(EGL_WIDTH);

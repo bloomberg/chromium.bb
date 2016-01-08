@@ -206,6 +206,12 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void OnAcceleratedSurfaceBuffersSwapped(const IPC::Message& message);
 #endif
 
+#if defined(OS_WIN)
+  void OnAcceleratedSurfaceCreatedChildWindow(
+      const gfx::PluginWindowHandle& parent_handle,
+      const gfx::PluginWindowHandle& window_handle);
+#endif
+
   void CreateChannelCache(int32_t client_id);
   void OnDestroyChannel(int32_t client_id);
   void OnCacheShader(int32_t client_id,

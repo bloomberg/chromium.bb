@@ -65,6 +65,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   static bool HasEGLExtension(const char* name);
   static bool IsCreateContextRobustnessSupported();
   static bool IsEGLSurfacelessContextSupported();
+  static bool IsDirectCompositionSupported();
 
  protected:
   ~GLSurfaceEGL() override;
@@ -115,6 +116,8 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   EGLNativeWindowType window_;
   EGLConfig config_;
   gfx::Size size_;
+  bool alpha_;
+  bool enable_fixed_size_angle_;
 
   void OnSetSwapInterval(int interval) override;
 
@@ -125,7 +128,6 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
 
   EGLSurface surface_;
   bool supports_post_sub_buffer_;
-  bool alpha_;
   bool flips_vertically_;
 
   scoped_ptr<VSyncProvider> vsync_provider_;

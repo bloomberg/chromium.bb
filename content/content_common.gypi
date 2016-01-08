@@ -320,6 +320,8 @@
       'common/gpu/client/grcontext_for_webgraphicscontext3d.h',
       'common/gpu/client/webgraphicscontext3d_command_buffer_impl.cc',
       'common/gpu/client/webgraphicscontext3d_command_buffer_impl.h',
+      'common/gpu/child_window_surface_win.cc',
+      'common/gpu/child_window_surface_win.h',
       'common/gpu/gpu_channel.cc',
       'common/gpu/gpu_channel.h',
       'common/gpu/gpu_channel_manager.cc',

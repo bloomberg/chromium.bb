@@ -481,6 +481,12 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                      GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
 #endif
 
+#if defined(OS_WIN)
+IPC_MESSAGE_CONTROL2(GpuHostMsg_AcceleratedSurfaceCreatedChildWindow,
+                     gfx::PluginWindowHandle /* parent_window */,
+                     gfx::PluginWindowHandle /* child_window */)
+#endif
+
 IPC_MESSAGE_CONTROL1(GpuHostMsg_DidCreateOffscreenContext,
                      GURL /* url */)
 

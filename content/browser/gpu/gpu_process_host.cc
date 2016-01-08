@@ -617,12 +617,46 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
                         OnDestroyChannel)
     IPC_MESSAGE_HANDLER(GpuHostMsg_CacheShader,
                         OnCacheShader)
+#if defined(OS_WIN)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceCreatedChildWindow,
+                        OnAcceleratedSurfaceCreatedChildWindow)
+#endif
 
     IPC_MESSAGE_UNHANDLED(RouteOnUIThread(message))
   IPC_END_MESSAGE_MAP()
 
   return true;
 }
+
+#if defined(OS_WIN)
+void GpuProcessHost::OnAcceleratedSurfaceCreatedChildWindow(
+    const gfx::PluginWindowHandle& parent_handle,
+    const gfx::PluginWindowHandle& window_handle) {
+  DCHECK(process_);
+  {
+    DWORD process_id = 0;
+    DWORD thread_id = GetWindowThreadProcessId(parent_handle, &process_id);
+
+    if (!thread_id || process_id != ::GetCurrentProcessId()) {
+      process_->TerminateOnBadMessageReceived(
+          GpuHostMsg_AcceleratedSurfaceCreatedChildWindow::ID);
+      return;
+    }
+  }
+  {
+    DWORD process_id = 0;
+    DWORD thread_id = GetWindowThreadProcessId(window_handle, &process_id);
+
+    if (!thread_id || process_id != process_->GetProcess().Pid()) {
+      process_->TerminateOnBadMessageReceived(
+          GpuHostMsg_AcceleratedSurfaceCreatedChildWindow::ID);
+      return;
+    }
+  }
+
+  ::SetParent(window_handle, parent_handle);
+}
+#endif
 
 void GpuProcessHost::OnChannelConnected(int32_t peer_pid) {
   TRACE_EVENT0("gpu", "GpuProcessHost::OnChannelConnected");

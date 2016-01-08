@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/win/windows_version.h"
+#include "content/common/gpu/child_window_surface_win.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/common/content_switches.h"
 #include "ui/gfx/native_widget_types.h"
@@ -27,10 +28,17 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
     const gfx::GLSurfaceHandle& handle) {
   DCHECK(handle.handle);
   DCHECK_EQ(handle.transport_type, gfx::NATIVE_DIRECT);
-  scoped_refptr<gfx::GLSurface> surface =
-      gfx::GLSurface::CreateViewGLSurface(handle.handle);
-  if (!surface.get())
-    return surface;
+
+  scoped_refptr<gfx::GLSurface> surface;
+  if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
+      gfx::GLSurfaceEGL::IsDirectCompositionSupported()) {
+    surface = new ChildWindowSurfaceWin(manager, handle.handle);
+    if (!surface->Initialize())
+      return nullptr;
+  } else {
+    surface = gfx::GLSurface::CreateViewGLSurface(handle.handle);
+  }
+
   return scoped_refptr<gfx::GLSurface>(new PassThroughImageTransportSurface(
       manager, stub, surface.get()));
 }
