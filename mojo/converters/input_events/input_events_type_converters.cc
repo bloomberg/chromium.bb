@@ -90,8 +90,8 @@ void SetPointerDataLocationFromEvent(const ui::LocatedEvent& located_event,
 static_assert(static_cast<int32_t>(mus::mojom::EVENT_FLAGS_NONE) ==
                   static_cast<int32_t>(ui::EF_NONE),
               "EVENT_FLAGS must match");
-static_assert(static_cast<int32_t>(mus::mojom::EVENT_FLAGS_CAPS_LOCK_DOWN) ==
-                  static_cast<int32_t>(ui::EF_CAPS_LOCK_DOWN),
+static_assert(static_cast<int32_t>(mus::mojom::EVENT_FLAGS_IS_SYNTHESIZED) ==
+                  static_cast<int32_t>(ui::EF_IS_SYNTHESIZED),
               "EVENT_FLAGS must match");
 static_assert(static_cast<int32_t>(mus::mojom::EVENT_FLAGS_SHIFT_DOWN) ==
                   static_cast<int32_t>(ui::EF_SHIFT_DOWN),
@@ -101,6 +101,24 @@ static_assert(static_cast<int32_t>(mus::mojom::EVENT_FLAGS_CONTROL_DOWN) ==
               "EVENT_FLAGS must match");
 static_assert(static_cast<int32_t>(mus::mojom::EVENT_FLAGS_ALT_DOWN) ==
                   static_cast<int32_t>(ui::EF_ALT_DOWN),
+              "EVENT_FLAGS must match");
+static_assert(static_cast<int32_t>(mus::mojom::EVENT_FLAGS_COMMAND_DOWN) ==
+                  static_cast<int32_t>(ui::EF_COMMAND_DOWN),
+              "EVENT_FLAGS must match");
+static_assert(static_cast<int32_t>(mus::mojom::EVENT_FLAGS_ALTGR_DOWN) ==
+                  static_cast<int32_t>(ui::EF_ALTGR_DOWN),
+              "EVENT_FLAGS must match");
+static_assert(static_cast<int32_t>(mus::mojom::EVENT_FLAGS_MOD3_DOWN) ==
+                  static_cast<int32_t>(ui::EF_MOD3_DOWN),
+              "EVENT_FLAGS must match");
+static_assert(static_cast<int32_t>(mus::mojom::EVENT_FLAGS_NUM_LOCK_ON) ==
+                  static_cast<int32_t>(ui::EF_NUM_LOCK_ON),
+              "EVENT_FLAGS must match");
+static_assert(static_cast<int32_t>(mus::mojom::EVENT_FLAGS_CAPS_LOCK_ON) ==
+                  static_cast<int32_t>(ui::EF_CAPS_LOCK_ON),
+              "EVENT_FLAGS must match");
+static_assert(static_cast<int32_t>(mus::mojom::EVENT_FLAGS_SCROLL_LOCK_ON) ==
+                  static_cast<int32_t>(ui::EF_SCROLL_LOCK_ON),
               "EVENT_FLAGS must match");
 static_assert(static_cast<int32_t>(mus::mojom::EVENT_FLAGS_LEFT_MOUSE_BUTTON) ==
                   static_cast<int32_t>(ui::EF_LEFT_MOUSE_BUTTON),
@@ -113,21 +131,13 @@ static_assert(
     static_cast<int32_t>(mus::mojom::EVENT_FLAGS_RIGHT_MOUSE_BUTTON) ==
         static_cast<int32_t>(ui::EF_RIGHT_MOUSE_BUTTON),
     "EVENT_FLAGS must match");
-static_assert(static_cast<int32_t>(mus::mojom::EVENT_FLAGS_COMMAND_DOWN) ==
-                  static_cast<int32_t>(ui::EF_COMMAND_DOWN),
+static_assert(static_cast<int32_t>(mus::mojom::EVENT_FLAGS_BACK_MOUSE_BUTTON) ==
+                  static_cast<int32_t>(ui::EF_BACK_MOUSE_BUTTON),
               "EVENT_FLAGS must match");
-static_assert(static_cast<int32_t>(mus::mojom::EVENT_FLAGS_EXTENDED) ==
-                  static_cast<int32_t>(ui::EF_EXTENDED),
-              "EVENT_FLAGS must match");
-static_assert(static_cast<int32_t>(mus::mojom::EVENT_FLAGS_IS_SYNTHESIZED) ==
-                  static_cast<int32_t>(ui::EF_IS_SYNTHESIZED),
-              "EVENT_FLAGS must match");
-static_assert(static_cast<int32_t>(mus::mojom::EVENT_FLAGS_ALTGR_DOWN) ==
-                  static_cast<int32_t>(ui::EF_ALTGR_DOWN),
-              "EVENT_FLAGS must match");
-static_assert(static_cast<int32_t>(mus::mojom::EVENT_FLAGS_MOD3_DOWN) ==
-                  static_cast<int32_t>(ui::EF_MOD3_DOWN),
-              "EVENT_FLAGS must match");
+static_assert(
+    static_cast<int32_t>(mus::mojom::EVENT_FLAGS_FORWARD_MOUSE_BUTTON) ==
+        static_cast<int32_t>(ui::EF_FORWARD_MOUSE_BUTTON),
+    "EVENT_FLAGS must match");
 
 // static
 mus::mojom::EventType

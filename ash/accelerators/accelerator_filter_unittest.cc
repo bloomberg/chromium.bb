@@ -81,9 +81,9 @@ TEST_F(AcceleratorFilterTest, TestCapsLockMask) {
 
   // Check if AcceleratorFilter ignores the mask for Caps Lock. Note that there
   // is no ui::EF_ mask for Num Lock.
-  generator.PressKey(ui::VKEY_PRINT, ui::EF_CAPS_LOCK_DOWN);
+  generator.PressKey(ui::VKEY_PRINT, ui::EF_CAPS_LOCK_ON);
   EXPECT_EQ(2, delegate->handle_take_screenshot_count());
-  generator.ReleaseKey(ui::VKEY_PRINT, ui::EF_CAPS_LOCK_DOWN);
+  generator.ReleaseKey(ui::VKEY_PRINT, ui::EF_CAPS_LOCK_ON);
   EXPECT_EQ(2, delegate->handle_take_screenshot_count());
 }
 

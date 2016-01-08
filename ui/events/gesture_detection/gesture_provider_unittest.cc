@@ -282,7 +282,7 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     const float scroll_to_x = kFakeCoordX + 100;
     const float scroll_to_y = kFakeCoordY + 100;
     int motion_event_id = 3;
-    int motion_event_flags = EF_SHIFT_DOWN | EF_CAPS_LOCK_DOWN;
+    int motion_event_flags = EF_SHIFT_DOWN | EF_CAPS_LOCK_ON;
 
     MockMotionEvent event =
         ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
@@ -467,7 +467,7 @@ TEST_F(GestureProviderTest, GestureTap) {
 TEST_F(GestureProviderTest, GestureTapWithDelay) {
   base::TimeTicks event_time = base::TimeTicks::Now();
   int motion_event_id = 6;
-  int motion_event_flags = EF_CONTROL_DOWN | EF_ALT_DOWN | EF_CAPS_LOCK_DOWN;
+  int motion_event_flags = EF_CONTROL_DOWN | EF_ALT_DOWN | EF_CAPS_LOCK_ON;
 
   gesture_provider_->SetDoubleTapSupportForPlatformEnabled(true);
 

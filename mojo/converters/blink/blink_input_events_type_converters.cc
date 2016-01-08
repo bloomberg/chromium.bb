@@ -35,7 +35,7 @@ int EventFlagsToWebEventModifiers(int flags) {
     modifiers |= blink::WebInputEvent::MiddleButtonDown;
   if (flags & mus::mojom::EVENT_FLAGS_RIGHT_MOUSE_BUTTON)
     modifiers |= blink::WebInputEvent::RightButtonDown;
-  if (flags & mus::mojom::EVENT_FLAGS_CAPS_LOCK_DOWN)
+  if (flags & mus::mojom::EVENT_FLAGS_CAPS_LOCK_ON)
     modifiers |= blink::WebInputEvent::CapsLockOn;
   return modifiers;
 }
@@ -47,11 +47,11 @@ int EventFlagsToWebInputEventModifiers(int flags) {
          (flags & mus::mojom::EVENT_FLAGS_CONTROL_DOWN
               ? blink::WebInputEvent::ControlKey
               : 0) |
-         (flags & mus::mojom::EVENT_FLAGS_CAPS_LOCK_DOWN
-              ? blink::WebInputEvent::CapsLockOn
-              : 0) |
          (flags & mus::mojom::EVENT_FLAGS_ALT_DOWN
               ? blink::WebInputEvent::AltKey
+              : 0) |
+         (flags & mus::mojom::EVENT_FLAGS_CAPS_LOCK_ON
+              ? blink::WebInputEvent::CapsLockOn
               : 0);
 }
 

@@ -41,7 +41,7 @@ bool DomCodeToUsLayoutDomKey(DomCode dom_code,
     if (it.dom_code == dom_code) {
       int state = ((flags & EF_SHIFT_DOWN) == EF_SHIFT_DOWN);
       base::char16 ch = it.character[state];
-      if ((flags & EF_CAPS_LOCK_DOWN) == EF_CAPS_LOCK_DOWN) {
+      if ((flags & EF_CAPS_LOCK_ON) == EF_CAPS_LOCK_ON) {
         ch |= 0x20;
         if ((ch >= 'a') && (ch <= 'z'))
           ch = it.character[state ^ 1];

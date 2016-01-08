@@ -19,28 +19,27 @@ enum EventType {
 // TODO(morrita): Use shift operator once it is available.
 enum EventFlags {
   NONE                 =      0,
-  CAPS_LOCK_DOWN       =      1,
+  IS_SYNTHESIZED       =      1,
   SHIFT_DOWN           =      2,
   CONTROL_DOWN         =      4,
   ALT_DOWN             =      8,
-  LEFT_MOUSE_BUTTON    =     16,
-  MIDDLE_MOUSE_BUTTON  =     32,
-  RIGHT_MOUSE_BUTTON   =     64,
-  COMMAND_DOWN         =    128,
-  EXTENDED             =    256,
-  IS_SYNTHESIZED       =    512,
-  ALTGR_DOWN           =   1024,
-  MOD3_DOWN            =   2048,
-  BACK_MOUSE_BUTTON    =   4096,
-  FORWARD_MOUSE_BUTTON =   8192,
-  NUM_LOCK_DOWN        =  16384,
-  SCROLL_LOCK_DOWN     =  32768,
+  COMMAND_DOWN         =     16,
+  ALTGR_DOWN           =     32,
+  MOD3_DOWN            =     64,
+  NUM_LOCK_ON          =    128,
+  CAPS_LOCK_ON         =    256,
+  SCROLL_LOCK_ON       =    512,
+  LEFT_MOUSE_BUTTON    =   1024,
+  MIDDLE_MOUSE_BUTTON  =   2048,
+  RIGHT_MOUSE_BUTTON   =   4096,
+  BACK_MOUSE_BUTTON    =   8192,
+  FORWARD_MOUSE_BUTTON =  16384,
 };
 
 enum MouseEventFlags {
-  IS_DOUBLE_CLICK     =  65536,
-  IS_TRIPLE_CLICK     = 131072,
-  IS_NON_CLIENT       = 262144,
+  IS_DOUBLE_CLICK      =  32768,
+  IS_TRIPLE_CLICK      =  65536,
+  IS_NON_CLIENT        = 131072,
 
   // TODO(erg): Move accessibility flags and maybe synthetic touch events here.
 };

@@ -53,7 +53,7 @@ void SetVirtualKeyStates(uint32_t flags) {
   SetKeyState(keyboard_state, !!(flags & ui::EF_SHIFT_DOWN), VK_SHIFT);
   SetKeyState(keyboard_state, !!(flags & ui::EF_CONTROL_DOWN), VK_CONTROL);
   SetKeyState(keyboard_state, !!(flags & ui::EF_ALT_DOWN), VK_MENU);
-  SetKeyState(keyboard_state, !!(flags & ui::EF_CAPS_LOCK_DOWN), VK_CAPITAL);
+  SetKeyState(keyboard_state, !!(flags & ui::EF_CAPS_LOCK_ON), VK_CAPITAL);
   SetKeyState(keyboard_state, !!(flags & ui::EF_LEFT_MOUSE_BUTTON), VK_LBUTTON);
   SetKeyState(keyboard_state, !!(flags & ui::EF_RIGHT_MOUSE_BUTTON),
               VK_RBUTTON);

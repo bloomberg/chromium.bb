@@ -89,7 +89,7 @@ int FromAndroidMetaState(int meta_state) {
   if ((meta_state & AMETA_META_ON) != 0)
     flags |= ui::EF_COMMAND_DOWN;
   if ((meta_state & AMETA_CAPS_LOCK_ON) != 0)
-    flags |= ui::EF_CAPS_LOCK_DOWN;
+    flags |= ui::EF_CAPS_LOCK_ON;
   return flags;
 }
 

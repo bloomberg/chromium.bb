@@ -108,8 +108,8 @@ int KeyStateFlagsFromNative(const base::NativeEvent& native_event) {
   int flags = GetModifiersFromKeyState();
 
   // Check key messages for the extended key flag.
-  if (IsKeyEvent(native_event))
-    flags |= (HIWORD(native_event.lParam) & KF_EXTENDED) ? EF_EXTENDED : 0;
+  if (IsKeyEvent(native_event) && (HIWORD(native_event.lParam) & KF_EXTENDED))
+    flags |= EF_IS_EXTENDED_KEY;
 
   // Most client mouse messages include key state information.
   if (IsClientMouseEvent(native_event)) {
@@ -365,16 +365,16 @@ int GetModifiersFromKeyState() {
     modifiers |= EF_CONTROL_DOWN;
   if (ui::win::IsAltPressed())
     modifiers |= EF_ALT_DOWN;
-  if (ui::win::IsAltGrPressed())
-    modifiers |= EF_ALTGR_DOWN;
   if (ui::win::IsWindowsKeyPressed())
     modifiers |= EF_COMMAND_DOWN;
-  if (ui::win::IsCapsLockOn())
-    modifiers |= EF_CAPS_LOCK_DOWN;
+  if (ui::win::IsAltGrPressed())
+    modifiers |= EF_ALTGR_DOWN;
   if (ui::win::IsNumLockOn())
-    modifiers |= EF_NUM_LOCK_DOWN;
+    modifiers |= EF_NUM_LOCK_ON;
+  if (ui::win::IsCapsLockOn())
+    modifiers |= EF_CAPS_LOCK_ON;
   if (ui::win::IsScrollLockOn())
-    modifiers |= EF_SCROLL_LOCK_DOWN;
+    modifiers |= EF_SCROLL_LOCK_ON;
   return modifiers;
 }
 

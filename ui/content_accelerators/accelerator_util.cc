@@ -39,7 +39,7 @@ ui::Accelerator GetAcceleratorFromNativeWebKeyboardEvent(
   if (event.type == blink::WebInputEvent::KeyUp)
     accelerator.set_type(ui::ET_KEY_RELEASED);
 #if defined(USE_AURA)
-  if (event.os_event && event.os_event->IsRepeat())
+  if (event.os_event && static_cast<ui::KeyEvent*>(event.os_event)->is_repeat())
     accelerator.set_is_repeat(true);
 #endif
   return accelerator;

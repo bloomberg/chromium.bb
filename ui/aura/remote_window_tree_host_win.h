@@ -168,7 +168,7 @@ class AURA_EXPORT RemoteWindowTreeHostWin
 
   uint32_t key_event_flags() const {
     return event_flags_ & (ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
-                           ui::EF_ALT_DOWN | ui::EF_CAPS_LOCK_DOWN);
+                           ui::EF_ALT_DOWN | ui::EF_CAPS_LOCK_ON);
   }
 
   HWND remote_window_;

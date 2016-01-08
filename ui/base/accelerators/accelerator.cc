@@ -50,7 +50,7 @@ Accelerator::Accelerator(const KeyEvent& key_event)
     : key_code_(key_event.key_code()),
       type_(key_event.type()),
       modifiers_(MaskOutKeyEventFlags(key_event.flags())),
-      is_repeat_(key_event.IsRepeat()) {
+      is_repeat_(key_event.is_repeat()) {
 }
 
 Accelerator::Accelerator(const Accelerator& accelerator) {

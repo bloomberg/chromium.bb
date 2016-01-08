@@ -612,15 +612,15 @@ TEST_F(EventRewriterTest, TestRewriteModifiersNoRemapMultipleKeys) {
       // Press Search with Caps Lock mask. Confirm the event is not rewritten.
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_LWIN, ui::DomCode::OS_LEFT,
-        ui::EF_CAPS_LOCK_DOWN | ui::EF_COMMAND_DOWN, ui::DomKey::OS},
+        ui::EF_CAPS_LOCK_ON | ui::EF_COMMAND_DOWN, ui::DomKey::OS},
        {ui::VKEY_LWIN, ui::DomCode::OS_LEFT,
-        ui::EF_CAPS_LOCK_DOWN | ui::EF_COMMAND_DOWN, ui::DomKey::OS}},
+        ui::EF_CAPS_LOCK_ON | ui::EF_COMMAND_DOWN, ui::DomKey::OS}},
 
       // Release Search with Caps Lock mask. Confirm the event is not rewritten.
       {ui::ET_KEY_RELEASED,
-       {ui::VKEY_LWIN, ui::DomCode::OS_LEFT, ui::EF_CAPS_LOCK_DOWN,
+       {ui::VKEY_LWIN, ui::DomCode::OS_LEFT, ui::EF_CAPS_LOCK_ON,
         ui::DomKey::OS},
-       {ui::VKEY_LWIN, ui::DomCode::OS_LEFT, ui::EF_CAPS_LOCK_DOWN,
+       {ui::VKEY_LWIN, ui::DomCode::OS_LEFT, ui::EF_CAPS_LOCK_ON,
         ui::DomKey::OS}},
 
       // Press Shift+Ctrl+Alt+Search+A. Confirm the event is not rewritten.
@@ -958,10 +958,9 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
   EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
 
   // Press Search.
-  EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_PRESSED, ui::VKEY_CAPITAL,
-                                      ui::DomCode::CAPS_LOCK,
-                                      ui::EF_MOD3_DOWN | ui::EF_CAPS_LOCK_DOWN,
-                                      ui::DomKey::CAPS_LOCK),
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::ET_KEY_PRESSED, ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
+                ui::EF_MOD3_DOWN | ui::EF_CAPS_LOCK_ON, ui::DomKey::CAPS_LOCK),
             GetRewrittenEventAsString(&rewriter, ui::ET_KEY_PRESSED,
                                       ui::VKEY_LWIN, ui::DomCode::OS_LEFT,
                                       ui::EF_COMMAND_DOWN, ui::DomKey::OS));
@@ -979,13 +978,13 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
   EXPECT_TRUE(ime_keyboard.caps_lock_is_enabled_);
 
   // Press Search.
-  EXPECT_EQ(
-      GetExpectedResultAsString(
-          ui::ET_KEY_PRESSED, ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
-          ui::EF_CAPS_LOCK_DOWN | ui::EF_MOD3_DOWN, ui::DomKey::CAPS_LOCK),
-      GetRewrittenEventAsString(
-          &rewriter, ui::ET_KEY_PRESSED, ui::VKEY_LWIN, ui::DomCode::OS_LEFT,
-          ui::EF_COMMAND_DOWN | ui::EF_CAPS_LOCK_DOWN, ui::DomKey::OS));
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::ET_KEY_PRESSED, ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
+                ui::EF_CAPS_LOCK_ON | ui::EF_MOD3_DOWN, ui::DomKey::CAPS_LOCK),
+            GetRewrittenEventAsString(&rewriter, ui::ET_KEY_PRESSED,
+                                      ui::VKEY_LWIN, ui::DomCode::OS_LEFT,
+                                      ui::EF_COMMAND_DOWN | ui::EF_CAPS_LOCK_ON,
+                                      ui::DomKey::OS));
   // Confirm that the Caps Lock status is changed.
   EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
 
@@ -1000,13 +999,12 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
   EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
 
   // Press Caps Lock (on an external keyboard).
-  EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_PRESSED, ui::VKEY_CAPITAL,
-                                      ui::DomCode::CAPS_LOCK,
-                                      ui::EF_CAPS_LOCK_DOWN | ui::EF_MOD3_DOWN,
-                                      ui::DomKey::CAPS_LOCK),
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::ET_KEY_PRESSED, ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
+                ui::EF_CAPS_LOCK_ON | ui::EF_MOD3_DOWN, ui::DomKey::CAPS_LOCK),
             GetRewrittenEventAsString(&rewriter, ui::ET_KEY_PRESSED,
                                       ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
-                                      ui::EF_CAPS_LOCK_DOWN | ui::EF_MOD3_DOWN,
+                                      ui::EF_CAPS_LOCK_ON | ui::EF_MOD3_DOWN,
                                       ui::DomKey::CAPS_LOCK));
 
 #if defined(USE_X11)
@@ -1047,10 +1045,9 @@ TEST_F(EventRewriterTest, TestRewriteCapsLock) {
   EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
 
   // On Chrome OS, CapsLock is mapped to F16 with Mod3Mask.
-  EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_PRESSED, ui::VKEY_CAPITAL,
-                                      ui::DomCode::CAPS_LOCK,
-                                      ui::EF_CAPS_LOCK_DOWN | ui::EF_MOD3_DOWN,
-                                      ui::DomKey::CAPS_LOCK),
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::ET_KEY_PRESSED, ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
+                ui::EF_CAPS_LOCK_ON | ui::EF_MOD3_DOWN, ui::DomKey::CAPS_LOCK),
             GetRewrittenEventAsString(&rewriter, ui::ET_KEY_PRESSED,
                                       ui::VKEY_F16, ui::DomCode::F16,
                                       ui::EF_MOD3_DOWN, ui::DomKey::F16));
@@ -1217,17 +1214,16 @@ TEST_F(EventRewriterTest, TestRewriteDiamondKeyWithFlag) {
 
   diamond.SetValue(chromeos::input_method::kCapsLockKey);
 
-  EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_PRESSED, ui::VKEY_CAPITAL,
-                                      ui::DomCode::CAPS_LOCK,
-                                      ui::EF_CAPS_LOCK_DOWN | ui::EF_MOD3_DOWN,
-                                      ui::DomKey::CAPS_LOCK),
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::ET_KEY_PRESSED, ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
+                ui::EF_CAPS_LOCK_ON | ui::EF_MOD3_DOWN, ui::DomKey::CAPS_LOCK),
             GetRewrittenEventAsString(&rewriter, ui::ET_KEY_PRESSED,
                                       ui::VKEY_F15, ui::DomCode::F15,
                                       ui::EF_NONE, ui::DomKey::F15));
   // Check that Caps is applied to a subsequent key press.
   EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_PRESSED, ui::VKEY_A,
                                       ui::DomCode::US_A,
-                                      ui::EF_CAPS_LOCK_DOWN | ui::EF_MOD3_DOWN,
+                                      ui::EF_CAPS_LOCK_ON | ui::EF_MOD3_DOWN,
                                       ui::DomKey::Constant<'A'>::Character),
             GetRewrittenEventAsString(&rewriter, ui::ET_KEY_PRESSED, ui::VKEY_A,
                                       ui::DomCode::US_A, ui::EF_NONE,

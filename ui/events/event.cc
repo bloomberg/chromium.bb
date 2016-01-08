@@ -872,7 +872,7 @@ bool KeyEvent::IsUnicodeKeyCode() const {
   // Check whether the user is using the numeric keypad with num-lock off.
   // In that case, EF_EXTENDED will not be set; if it is set, the key event
   // originated from the relevant non-numpad dedicated key, e.g. [Insert].
-  return (!(flags() & EF_EXTENDED) &&
+  return (!(flags() & EF_IS_EXTENDED_KEY) &&
           (key == VKEY_INSERT || key == VKEY_END  || key == VKEY_DOWN ||
            key == VKEY_NEXT   || key == VKEY_LEFT || key == VKEY_CLEAR ||
            key == VKEY_RIGHT  || key == VKEY_HOME || key == VKEY_UP ||

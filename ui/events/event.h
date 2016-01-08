@@ -89,11 +89,10 @@ class EVENTS_EXPORT Event {
   // the time the event was created.
   bool IsShiftDown() const { return (flags_ & EF_SHIFT_DOWN) != 0; }
   bool IsControlDown() const { return (flags_ & EF_CONTROL_DOWN) != 0; }
-  bool IsCapsLockDown() const { return (flags_ & EF_CAPS_LOCK_DOWN) != 0; }
   bool IsAltDown() const { return (flags_ & EF_ALT_DOWN) != 0; }
-  bool IsAltGrDown() const { return (flags_ & EF_ALTGR_DOWN) != 0; }
   bool IsCommandDown() const { return (flags_ & EF_COMMAND_DOWN) != 0; }
-  bool IsRepeat() const { return (flags_ & EF_IS_REPEAT) != 0; }
+  bool IsAltGrDown() const { return (flags_ & EF_ALTGR_DOWN) != 0; }
+  bool IsCapsLockOn() const { return (flags_ & EF_CAPS_LOCK_ON) != 0; }
 
   bool IsKeyEvent() const {
     return type_ == ET_KEY_PRESSED || type_ == ET_KEY_RELEASED;
@@ -444,6 +443,13 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
     return button_flags() != 0;
   }
 
+  // Returns the flags for the mouse buttons.
+  int button_flags() const {
+    return flags() & (EF_LEFT_MOUSE_BUTTON | EF_MIDDLE_MOUSE_BUTTON |
+                      EF_RIGHT_MOUSE_BUTTON | EF_BACK_MOUSE_BUTTON |
+                      EF_FORWARD_MOUSE_BUTTON);
+  }
+
   // Compares two mouse down events and returns true if the second one should
   // be considered a repeat of the first.
   static bool IsRepeatedClickEvent(
@@ -475,13 +481,6 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
  private:
   FRIEND_TEST_ALL_PREFIXES(EventTest, DoubleClickRequiresRelease);
   FRIEND_TEST_ALL_PREFIXES(EventTest, SingleClickRightLeft);
-
-  // Returns the flags for the mouse buttons.
-  int button_flags() const {
-    return flags() & (EF_LEFT_MOUSE_BUTTON | EF_MIDDLE_MOUSE_BUTTON |
-                      EF_RIGHT_MOUSE_BUTTON | EF_BACK_MOUSE_BUTTON |
-                      EF_FORWARD_MOUSE_BUTTON);
-  }
 
   // Returns the repeat count based on the previous mouse click, if it is
   // recent enough and within a small enough distance.
@@ -758,15 +757,17 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // as GetUnmodifiedText().
   base::char16 GetText() const;
 
+  // True if this is a character event, false if this is a keystroke event.
+  bool is_char() const { return is_char_; }
+
+  bool is_repeat() const { return (flags() & EF_IS_REPEAT) != 0; }
+
   // Gets the associated (Windows-based) KeyboardCode for this key event.
   // Historically, this has also been used to obtain the character associated
   // with a character event, because both use the Window message 'wParam' field.
   // This should be avoided; if necessary for backwards compatibility, use
   // GetConflatedWindowsKeyCode().
   KeyboardCode key_code() const { return key_code_; }
-
-  // True if this is a character event, false if this is a keystroke event.
-  bool is_char() const { return is_char_; }
 
   // This is only intended to be used externally by classes that are modifying
   // events in an EventRewriter.

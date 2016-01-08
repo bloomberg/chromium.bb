@@ -50,8 +50,8 @@ TEST_F(KeyboardOverlayViewTest, TestCancelingKeysWithNonModifierFlags) {
       ShellContentState::GetInstance()->GetActiveBrowserContext(), &delegate,
       new ui::test::TestWebContentsHandler);
 
-  const int kNonModifierFlags = ui::EF_IS_REPEAT | ui::EF_IME_FABRICATED_KEY |
-                                ui::EF_NUM_LOCK_DOWN | ui::EF_IS_SYNTHESIZED;
+  const int kNonModifierFlags = ui::EF_IS_SYNTHESIZED | ui::EF_NUM_LOCK_ON |
+                                ui::EF_IME_FABRICATED_KEY | ui::EF_IS_REPEAT;
 
   std::vector<KeyboardOverlayView::KeyEventData> canceling_keys;
   KeyboardOverlayView::GetCancelingKeysForTesting(&canceling_keys);

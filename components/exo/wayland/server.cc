@@ -1264,13 +1264,13 @@ class WaylandKeyboardDelegate : public KeyboardDelegate {
       const char* xkb_name;
     } modifiers[] = {
         {ui::EF_SHIFT_DOWN, XKB_MOD_NAME_SHIFT},
-        {ui::EF_CAPS_LOCK_DOWN, XKB_MOD_NAME_CAPS},
         {ui::EF_CONTROL_DOWN, XKB_MOD_NAME_CTRL},
         {ui::EF_ALT_DOWN, XKB_MOD_NAME_ALT},
-        {ui::EF_NUM_LOCK_DOWN, XKB_MOD_NAME_NUM},
-        {ui::EF_MOD3_DOWN, "Mod3"},
         {ui::EF_COMMAND_DOWN, XKB_MOD_NAME_LOGO},
         {ui::EF_ALTGR_DOWN, "Mod5"},
+        {ui::EF_MOD3_DOWN, "Mod3"},
+        {ui::EF_NUM_LOCK_ON, XKB_MOD_NAME_NUM},
+        {ui::EF_CAPS_LOCK_ON, XKB_MOD_NAME_CAPS},
     };
     uint32_t xkb_modifiers = 0;
     for (auto modifier : modifiers) {

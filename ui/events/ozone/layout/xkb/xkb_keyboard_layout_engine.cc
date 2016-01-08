@@ -799,13 +799,13 @@ void XkbKeyboardLayoutEngine::SetKeymap(xkb_keymap* keymap) {
   static const struct {
     int ui_flag;
     const char* xkb_name;
-  } flags[] = {{ui::EF_CONTROL_DOWN, XKB_MOD_NAME_CTRL},
-               {ui::EF_SHIFT_DOWN, XKB_MOD_NAME_SHIFT},
+  } flags[] = {{ui::EF_SHIFT_DOWN, XKB_MOD_NAME_SHIFT},
+               {ui::EF_CONTROL_DOWN, XKB_MOD_NAME_CTRL},
                {ui::EF_ALT_DOWN, XKB_MOD_NAME_ALT},
-               {ui::EF_CAPS_LOCK_DOWN, XKB_MOD_NAME_CAPS},
                {ui::EF_COMMAND_DOWN, XKB_MOD_NAME_LOGO},
+               {ui::EF_ALTGR_DOWN, "Mod5"},
                {ui::EF_MOD3_DOWN, "Mod3"},
-               {ui::EF_ALTGR_DOWN, "Mod5"}};
+               {ui::EF_CAPS_LOCK_ON, XKB_MOD_NAME_CAPS}};
   xkb_flag_map_.clear();
   xkb_flag_map_.resize(arraysize(flags));
   for (size_t i = 0; i < arraysize(flags); ++i) {

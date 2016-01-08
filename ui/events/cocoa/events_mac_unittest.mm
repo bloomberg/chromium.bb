@@ -143,8 +143,7 @@ TEST_F(EventsMacTest, EventFlagsFromNative) {
   // Caps + Left
   NSEvent* caps = cocoa_test_event_utils::MouseEventWithType(
       NSLeftMouseUp, NSAlphaShiftKeyMask);
-  EXPECT_EQ(EF_LEFT_MOUSE_BUTTON | EF_CAPS_LOCK_DOWN,
-            EventFlagsFromNative(caps));
+  EXPECT_EQ(EF_LEFT_MOUSE_BUTTON | EF_CAPS_LOCK_ON, EventFlagsFromNative(caps));
 
   // Shift + Left
   NSEvent* shift = cocoa_test_event_utils::MouseEventWithType(NSLeftMouseUp,

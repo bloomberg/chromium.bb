@@ -439,9 +439,9 @@ TEST(MotionEventAuraTest, Flags) {
   EXPECT_EQ(EF_CONTROL_DOWN, event.GetFlags());
 
   TouchEvent press1 = TouchWithType(ET_TOUCH_PRESSED, ids[1]);
-  press1.set_flags(EF_CONTROL_DOWN | EF_CAPS_LOCK_DOWN);
+  press1.set_flags(EF_CONTROL_DOWN | EF_CAPS_LOCK_ON);
   EXPECT_TRUE(event.OnTouch(press1));
-  EXPECT_EQ(EF_CONTROL_DOWN | EF_CAPS_LOCK_DOWN, event.GetFlags());
+  EXPECT_EQ(EF_CONTROL_DOWN | EF_CAPS_LOCK_ON, event.GetFlags());
 }
 
 // Once crbug.com/446852 is fixed, we should ignore redundant presses.

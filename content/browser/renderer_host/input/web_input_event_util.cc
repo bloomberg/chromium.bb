@@ -37,19 +37,18 @@ int WebEventModifiersToEventFlags(int modifiers) {
     flags |= ui::EF_ALT_DOWN;
   if (modifiers & blink::WebInputEvent::MetaKey)
     flags |= ui::EF_COMMAND_DOWN;
-
+  if (modifiers & blink::WebInputEvent::CapsLockOn)
+    flags |= ui::EF_CAPS_LOCK_ON;
+  if (modifiers & blink::WebInputEvent::NumLockOn)
+    flags |= ui::EF_NUM_LOCK_ON;
+  if (modifiers & blink::WebInputEvent::ScrollLockOn)
+    flags |= ui::EF_SCROLL_LOCK_ON;
   if (modifiers & blink::WebInputEvent::LeftButtonDown)
     flags |= ui::EF_LEFT_MOUSE_BUTTON;
   if (modifiers & blink::WebInputEvent::MiddleButtonDown)
     flags |= ui::EF_MIDDLE_MOUSE_BUTTON;
   if (modifiers & blink::WebInputEvent::RightButtonDown)
     flags |= ui::EF_RIGHT_MOUSE_BUTTON;
-  if (modifiers & blink::WebInputEvent::CapsLockOn)
-    flags |= ui::EF_CAPS_LOCK_DOWN;
-  if (modifiers & blink::WebInputEvent::NumLockOn)
-    flags |= ui::EF_NUM_LOCK_DOWN;
-  if (modifiers & blink::WebInputEvent::ScrollLockOn)
-    flags |= ui::EF_SCROLL_LOCK_DOWN;
   if (modifiers & blink::WebInputEvent::IsAutoRepeat)
     flags |= ui::EF_IS_REPEAT;
 

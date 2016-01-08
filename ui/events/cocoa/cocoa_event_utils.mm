@@ -36,7 +36,7 @@ namespace ui {
 
 int EventFlagsFromModifiers(NSUInteger modifiers) {
   int flags = 0;
-  flags |= (modifiers & NSAlphaShiftKeyMask) ? ui::EF_CAPS_LOCK_DOWN : 0;
+  flags |= (modifiers & NSAlphaShiftKeyMask) ? ui::EF_CAPS_LOCK_ON : 0;
   flags |= (modifiers & NSShiftKeyMask) ? ui::EF_SHIFT_DOWN : 0;
   flags |= (modifiers & NSControlKeyMask) ? ui::EF_CONTROL_DOWN : 0;
   flags |= (modifiers & NSAlternateKeyMask) ? ui::EF_ALT_DOWN : 0;

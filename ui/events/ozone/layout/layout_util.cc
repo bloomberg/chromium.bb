@@ -20,7 +20,7 @@ int ModifierDomKeyToEventFlag(DomKey key) {
     // TODO post-X11: Switch to use CapsLock uniformly.
     case DomKey::F16:
     case DomKey::CAPS_LOCK:
-      return EF_CAPS_LOCK_DOWN;
+      return EF_CAPS_LOCK_ON;
     case DomKey::CONTROL:
       return EF_CONTROL_DOWN;
     case DomKey::META:

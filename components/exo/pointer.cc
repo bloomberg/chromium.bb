@@ -44,12 +44,8 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
     }
     // Second generate an enter event if focus moved to a new target.
     if (target) {
-      int button_flags =
-          event->flags() &
-          (ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON |
-           ui::EF_RIGHT_MOUSE_BUTTON | ui::EF_BACK_MOUSE_BUTTON |
-           ui::EF_FORWARD_MOUSE_BUTTON);
-      delegate_->OnPointerEnter(target, event->location(), button_flags);
+      delegate_->OnPointerEnter(target, event->location(),
+                                event->button_flags());
       location_ = event->location();
       focus_ = target;
       focus_->AddSurfaceObserver(this);

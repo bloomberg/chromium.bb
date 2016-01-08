@@ -361,9 +361,9 @@ TEST_F(CharacterComposerTest, HexadecimalCompositionWithAdditionalModifiers) {
                            base::string16(1, 0x3042));
 
   // Ctrl+Shift+u (CapsLock enabled)
-  ExpectUnicodeKeyNotFiltered(
-      VKEY_U, DomCode::US_U,
-      EF_SHIFT_DOWN | EF_CONTROL_DOWN | EF_CAPS_LOCK_DOWN, 'u');
+  ExpectUnicodeKeyNotFiltered(VKEY_U, DomCode::US_U,
+                              EF_SHIFT_DOWN | EF_CONTROL_DOWN | EF_CAPS_LOCK_ON,
+                              'u');
 }
 
 TEST_F(CharacterComposerTest, CancelHexadecimalComposition) {

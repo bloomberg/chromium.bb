@@ -36,10 +36,12 @@ Keyboard::~Keyboard() {
 // ui::EventHandler overrides:
 
 void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
-  const int kModifierMask = ui::EF_CAPS_LOCK_DOWN | ui::EF_SHIFT_DOWN |
-                            ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN |
-                            ui::EF_COMMAND_DOWN | ui::EF_ALTGR_DOWN |
-                            ui::EF_MOD3_DOWN | ui::EF_NUM_LOCK_DOWN;
+  // These modifiers reflect what Wayland is aware of.  For example,
+  // EF_SCROLL_LOCK_ON is missing because Wayland doesn't support scroll lock.
+  const int kModifierMask = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
+                            ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN |
+                            ui::EF_ALTGR_DOWN | ui::EF_MOD3_DOWN |
+                            ui::EF_NUM_LOCK_ON | ui::EF_CAPS_LOCK_ON;
   int modifier_flags = event->flags() & kModifierMask;
   if (modifier_flags != modifier_flags_) {
     modifier_flags_ = modifier_flags;

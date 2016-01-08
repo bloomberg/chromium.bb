@@ -484,10 +484,11 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     if (TestingNativeMac())
       std::swap(control, command);
 
-    int flags = (alt ? ui::EF_ALT_DOWN : 0) | (shift ? ui::EF_SHIFT_DOWN : 0) |
+    int flags = (shift ? ui::EF_SHIFT_DOWN : 0) |
                 (control ? ui::EF_CONTROL_DOWN : 0) |
+                (alt ? ui::EF_ALT_DOWN : 0) |
                 (command ? ui::EF_COMMAND_DOWN : 0) |
-                (caps_lock ? ui::EF_CAPS_LOCK_DOWN : 0);
+                (caps_lock ? ui::EF_CAPS_LOCK_ON : 0);
 
     SendKeyPress(key_code, flags);
   }

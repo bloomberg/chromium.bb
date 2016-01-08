@@ -109,10 +109,8 @@ void InputMethodChromeOS::DispatchKeyEvent(ui::KeyEvent* event) {
     if (manager) {
       chromeos::input_method::ImeKeyboard* keyboard = manager->GetImeKeyboard();
       if (keyboard && event->type() == ui::ET_KEY_PRESSED) {
-        bool caps = (event->key_code() == ui::VKEY_CAPITAL)
-            ? !keyboard->CapsLockIsEnabled()
-            : (event->flags() & EF_CAPS_LOCK_DOWN);
-        keyboard->SetCapsLockEnabled(caps);
+        keyboard->SetCapsLockEnabled((event->key_code() == ui::VKEY_CAPITAL) ?
+            !keyboard->CapsLockIsEnabled() : event->IsCapsLockOn());
       }
     }
   }

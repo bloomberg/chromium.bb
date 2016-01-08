@@ -223,10 +223,10 @@ TEST(EventDispatcherTest, EventMatching) {
   EXPECT_EQ(accelerator_1,
             event_dispatcher_delegate.GetAndClearLastAccelerator());
 
-  // EF_NUM_LOCK_DOWN should be ignored since CreateKeyMatcher defaults to
+  // EF_NUM_LOCK_ON should be ignored since CreateKeyMatcher defaults to
   // ignoring.
   key = ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_W,
-                     ui::EF_CONTROL_DOWN | ui::EF_NUM_LOCK_DOWN);
+                     ui::EF_CONTROL_DOWN | ui::EF_NUM_LOCK_ON);
   dispatcher.OnEvent(mojom::Event::From(key));
   EXPECT_EQ(accelerator_1,
             event_dispatcher_delegate.GetAndClearLastAccelerator());

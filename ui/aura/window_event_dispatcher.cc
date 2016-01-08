@@ -791,11 +791,6 @@ DispatchDetails WindowEventDispatcher::PreDispatchMouseEvent(
     }
   }
 
-  const int kMouseButtonFlagMask = ui::EF_LEFT_MOUSE_BUTTON |
-                                   ui::EF_MIDDLE_MOUSE_BUTTON |
-                                   ui::EF_RIGHT_MOUSE_BUTTON |
-                                   ui::EF_BACK_MOUSE_BUTTON |
-                                   ui::EF_FORWARD_MOUSE_BUTTON;
   switch (event->type()) {
     case ui::ET_MOUSE_EXITED:
       if (!target || target == window()) {
@@ -856,13 +851,12 @@ DispatchDetails WindowEventDispatcher::PreDispatchMouseEvent(
       // sent to the wrong target.
       if (!(event->flags() & ui::EF_IS_NON_CLIENT) && !mouse_pressed_handler_)
         mouse_pressed_handler_ = target;
-      Env::GetInstance()->set_mouse_button_flags(
-          event->flags() & kMouseButtonFlagMask);
+      Env::GetInstance()->set_mouse_button_flags(event->button_flags());
       break;
     case ui::ET_MOUSE_RELEASED:
       mouse_pressed_handler_ = NULL;
-      Env::GetInstance()->set_mouse_button_flags(event->flags() &
-          kMouseButtonFlagMask & ~event->changed_button_flags());
+      Env::GetInstance()->set_mouse_button_flags(
+          event->button_flags() & ~event->changed_button_flags());
       break;
     default:
       break;

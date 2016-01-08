@@ -153,12 +153,9 @@ void AutoclickControllerImpl::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void AutoclickControllerImpl::OnKeyEvent(ui::KeyEvent* event) {
-  int modifier_mask =
-      ui::EF_SHIFT_DOWN |
-      ui::EF_CONTROL_DOWN |
-      ui::EF_ALT_DOWN |
-      ui::EF_COMMAND_DOWN |
-      ui::EF_EXTENDED;
+  int modifier_mask = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
+                      ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN |
+                      ui::EF_IS_EXTENDED_KEY;
   int new_modifiers = event->flags() & modifier_mask;
   mouse_event_flags_ = (mouse_event_flags_ & ~modifier_mask) | new_modifiers;
 

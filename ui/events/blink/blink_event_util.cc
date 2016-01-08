@@ -225,25 +225,24 @@ int EventFlagsToWebEventModifiers(int flags) {
 #else
     modifiers |= blink::WebInputEvent::MetaKey;
 #endif
-
   if (flags & EF_ALTGR_DOWN)
     modifiers |= blink::WebInputEvent::AltGrKey;
+  if (flags & EF_NUM_LOCK_ON)
+    modifiers |= blink::WebInputEvent::NumLockOn;
+  if (flags & EF_CAPS_LOCK_ON)
+    modifiers |= blink::WebInputEvent::CapsLockOn;
+  if (flags & EF_SCROLL_LOCK_ON)
+    modifiers |= blink::WebInputEvent::ScrollLockOn;
   if (flags & EF_LEFT_MOUSE_BUTTON)
     modifiers |= blink::WebInputEvent::LeftButtonDown;
   if (flags & EF_MIDDLE_MOUSE_BUTTON)
     modifiers |= blink::WebInputEvent::MiddleButtonDown;
   if (flags & EF_RIGHT_MOUSE_BUTTON)
     modifiers |= blink::WebInputEvent::RightButtonDown;
-  if (flags & EF_CAPS_LOCK_DOWN)
-    modifiers |= blink::WebInputEvent::CapsLockOn;
   if (flags & EF_IS_REPEAT)
     modifiers |= blink::WebInputEvent::IsAutoRepeat;
-  if (flags & ui::EF_TOUCH_ACCESSIBILITY)
+  if (flags & EF_TOUCH_ACCESSIBILITY)
     modifiers |= blink::WebInputEvent::IsTouchAccessibility;
-  if (flags & ui::EF_NUM_LOCK_DOWN)
-    modifiers |= blink::WebInputEvent::NumLockOn;
-  if (flags & ui::EF_SCROLL_LOCK_DOWN)
-    modifiers |= blink::WebInputEvent::ScrollLockOn;
 
   return modifiers;
 }

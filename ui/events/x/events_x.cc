@@ -144,16 +144,16 @@ bool TouchEventIsGeneratedHack(const base::NativeEvent& native_event) {
 
 int GetEventFlagsFromXState(unsigned int state) {
   int flags = 0;
-  if (state & ControlMask)
-    flags |= ui::EF_CONTROL_DOWN;
   if (state & ShiftMask)
     flags |= ui::EF_SHIFT_DOWN;
+  if (state & LockMask)
+    flags |= ui::EF_CAPS_LOCK_ON;
+  if (state & ControlMask)
+    flags |= ui::EF_CONTROL_DOWN;
   if (state & Mod1Mask)
     flags |= ui::EF_ALT_DOWN;
-  if (state & LockMask)
-    flags |= ui::EF_CAPS_LOCK_DOWN;
   if (state & Mod2Mask)
-    flags |= ui::EF_NUM_LOCK_DOWN;
+    flags |= ui::EF_NUM_LOCK_ON;
   if (state & Mod3Mask)
     flags |= ui::EF_MOD3_DOWN;
   if (state & Mod4Mask)
@@ -299,13 +299,14 @@ unsigned int UpdateX11EventFlags(int ui_flags, unsigned int old_x_flags) {
     int ui;
     int x;
   } flags[] = {
-    {ui::EF_CONTROL_DOWN, ControlMask},
     {ui::EF_SHIFT_DOWN, ShiftMask},
+    {ui::EF_CAPS_LOCK_ON, LockMask},
+    {ui::EF_CONTROL_DOWN, ControlMask},
     {ui::EF_ALT_DOWN, Mod1Mask},
-    {ui::EF_CAPS_LOCK_DOWN, LockMask},
-    {ui::EF_ALTGR_DOWN, Mod5Mask},
-    {ui::EF_COMMAND_DOWN, Mod4Mask},
+    {ui::EF_NUM_LOCK_ON, Mod2Mask},
     {ui::EF_MOD3_DOWN, Mod3Mask},
+    {ui::EF_COMMAND_DOWN, Mod4Mask},
+    {ui::EF_ALTGR_DOWN, Mod5Mask},
     {ui::EF_LEFT_MOUSE_BUTTON, Button1Mask},
     {ui::EF_MIDDLE_MOUSE_BUTTON, Button2Mask},
     {ui::EF_RIGHT_MOUSE_BUTTON, Button3Mask},

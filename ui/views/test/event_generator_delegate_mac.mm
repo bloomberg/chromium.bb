@@ -47,11 +47,11 @@ NSPoint ConvertRootPointToTarget(NSWindow* target,
 // Inverse of ui::EventFlagsFromModifiers().
 NSUInteger EventFlagsToModifiers(int flags) {
   NSUInteger modifiers = 0;
-  modifiers |= (flags & ui::EF_CAPS_LOCK_DOWN) ? NSAlphaShiftKeyMask : 0;
   modifiers |= (flags & ui::EF_SHIFT_DOWN) ? NSShiftKeyMask : 0;
   modifiers |= (flags & ui::EF_CONTROL_DOWN) ? NSControlKeyMask : 0;
   modifiers |= (flags & ui::EF_ALT_DOWN) ? NSAlternateKeyMask : 0;
   modifiers |= (flags & ui::EF_COMMAND_DOWN) ? NSCommandKeyMask : 0;
+  modifiers |= (flags & ui::EF_CAPS_LOCK_ON) ? NSAlphaShiftKeyMask : 0;
   // ui::EF_*_MOUSE_BUTTON not handled here.
   // NSFunctionKeyMask, NSNumericPadKeyMask and NSHelpKeyMask not mapped.
   return modifiers;

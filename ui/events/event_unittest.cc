@@ -190,14 +190,14 @@ TEST(EventTest, KeyEvent) {
   } kTestData[] = {
     { VKEY_A, 0, 'a' },
     { VKEY_A, EF_SHIFT_DOWN, 'A' },
-    { VKEY_A, EF_CAPS_LOCK_DOWN, 'A' },
-    { VKEY_A, EF_SHIFT_DOWN | EF_CAPS_LOCK_DOWN, 'a' },
+    { VKEY_A, EF_CAPS_LOCK_ON, 'A' },
+    { VKEY_A, EF_SHIFT_DOWN | EF_CAPS_LOCK_ON, 'a' },
     { VKEY_A, EF_CONTROL_DOWN, 0x01 },
     { VKEY_A, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\x01' },
     { VKEY_Z, 0, 'z' },
     { VKEY_Z, EF_SHIFT_DOWN, 'Z' },
-    { VKEY_Z, EF_CAPS_LOCK_DOWN, 'Z' },
-    { VKEY_Z, EF_SHIFT_DOWN | EF_CAPS_LOCK_DOWN, 'z' },
+    { VKEY_Z, EF_CAPS_LOCK_ON, 'Z' },
+    { VKEY_Z, EF_SHIFT_DOWN | EF_CAPS_LOCK_ON, 'z' },
     { VKEY_Z, EF_CONTROL_DOWN, '\x1A' },
     { VKEY_Z, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\x1A' },
 
@@ -217,12 +217,12 @@ TEST(EventTest, KeyEvent) {
 
     { VKEY_0, 0, '0' },
     { VKEY_0, EF_SHIFT_DOWN, ')' },
-    { VKEY_0, EF_SHIFT_DOWN | EF_CAPS_LOCK_DOWN, ')' },
+    { VKEY_0, EF_SHIFT_DOWN | EF_CAPS_LOCK_ON, ')' },
     { VKEY_0, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\0' },
 
     { VKEY_9, 0, '9' },
     { VKEY_9, EF_SHIFT_DOWN, '(' },
-    { VKEY_9, EF_SHIFT_DOWN | EF_CAPS_LOCK_DOWN, '(' },
+    { VKEY_9, EF_SHIFT_DOWN | EF_CAPS_LOCK_ON, '(' },
     { VKEY_9, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\0' },
 
     { VKEY_NUMPAD0, EF_CONTROL_DOWN, '\0' },
@@ -477,72 +477,72 @@ TEST(EventTest, AutoRepeat) {
 
   {
     KeyEvent key_a1(native_event_a_pressed);
-    EXPECT_FALSE(key_a1.IsRepeat());
+    EXPECT_FALSE(key_a1.is_repeat());
 
     KeyEvent key_a1_with_same_event(native_event_a_pressed);
-    EXPECT_FALSE(key_a1_with_same_event.IsRepeat());
+    EXPECT_FALSE(key_a1_with_same_event.is_repeat());
 
     KeyEvent key_a1_released(native_event_a_released);
-    EXPECT_FALSE(key_a1_released.IsRepeat());
+    EXPECT_FALSE(key_a1_released.is_repeat());
 
     KeyEvent key_a2(native_event_a_pressed);
-    EXPECT_FALSE(key_a2.IsRepeat());
+    EXPECT_FALSE(key_a2.is_repeat());
 
     AdvanceKeyEventTimestamp(native_event_a_pressed);
     KeyEvent key_a2_repeated(native_event_a_pressed);
-    EXPECT_TRUE(key_a2_repeated.IsRepeat());
+    EXPECT_TRUE(key_a2_repeated.is_repeat());
 
     KeyEvent key_a2_released(native_event_a_released);
-    EXPECT_FALSE(key_a2_released.IsRepeat());
+    EXPECT_FALSE(key_a2_released.is_repeat());
   }
 
   // Interleaved with different key press.
   {
     KeyEvent key_a3(native_event_a_pressed);
-    EXPECT_FALSE(key_a3.IsRepeat());
+    EXPECT_FALSE(key_a3.is_repeat());
 
     KeyEvent key_b(native_event_b_pressed);
-    EXPECT_FALSE(key_b.IsRepeat());
+    EXPECT_FALSE(key_b.is_repeat());
 
     AdvanceKeyEventTimestamp(native_event_a_pressed);
     KeyEvent key_a3_again(native_event_a_pressed);
-    EXPECT_FALSE(key_a3_again.IsRepeat());
+    EXPECT_FALSE(key_a3_again.is_repeat());
 
     AdvanceKeyEventTimestamp(native_event_a_pressed);
     KeyEvent key_a3_repeated(native_event_a_pressed);
-    EXPECT_TRUE(key_a3_repeated.IsRepeat());
+    EXPECT_TRUE(key_a3_repeated.is_repeat());
 
     AdvanceKeyEventTimestamp(native_event_a_pressed);
     KeyEvent key_a3_repeated2(native_event_a_pressed);
-    EXPECT_TRUE(key_a3_repeated2.IsRepeat());
+    EXPECT_TRUE(key_a3_repeated2.is_repeat());
 
     KeyEvent key_a3_released(native_event_a_released);
-    EXPECT_FALSE(key_a3_released.IsRepeat());
+    EXPECT_FALSE(key_a3_released.is_repeat());
   }
 
   // Hold the key longer than max auto repeat timeout.
   {
     KeyEvent key_a4_0(native_event_a_pressed);
-    EXPECT_FALSE(key_a4_0.IsRepeat());
+    EXPECT_FALSE(key_a4_0.is_repeat());
 
     KeyEvent key_a4_1500(native_event_a_pressed_1500);
-    EXPECT_TRUE(key_a4_1500.IsRepeat());
+    EXPECT_TRUE(key_a4_1500.is_repeat());
 
     KeyEvent key_a4_3000(native_event_a_pressed_3000);
-    EXPECT_TRUE(key_a4_3000.IsRepeat());
+    EXPECT_TRUE(key_a4_3000.is_repeat());
 
     KeyEvent key_a4_released(native_event_a_released);
-    EXPECT_FALSE(key_a4_released.IsRepeat());
+    EXPECT_FALSE(key_a4_released.is_repeat());
   }
 
 #if defined(USE_X11)
   {
     KeyEvent key_a4_pressed(native_event_a_pressed);
-    EXPECT_FALSE(key_a4_pressed.IsRepeat());
+    EXPECT_FALSE(key_a4_pressed.is_repeat());
 
     KeyEvent key_a4_pressed_nonstandard_state(
         native_event_a_pressed_nonstandard_state);
-    EXPECT_FALSE(key_a4_pressed_nonstandard_state.IsRepeat());
+    EXPECT_FALSE(key_a4_pressed_nonstandard_state.is_repeat());
   }
 #endif
 }

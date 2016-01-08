@@ -26,18 +26,20 @@ const int kRepeatIntervalMs = 50;
 
 int EventFlagToEvdevModifier(int flag) {
   switch (flag) {
-    case EF_CAPS_LOCK_DOWN:
-      return EVDEV_MODIFIER_CAPS_LOCK;
     case EF_SHIFT_DOWN:
       return EVDEV_MODIFIER_SHIFT;
     case EF_CONTROL_DOWN:
       return EVDEV_MODIFIER_CONTROL;
     case EF_ALT_DOWN:
       return EVDEV_MODIFIER_ALT;
+    case EF_COMMAND_DOWN:
+      return EVDEV_MODIFIER_COMMAND;
     case EF_ALTGR_DOWN:
       return EVDEV_MODIFIER_ALTGR;
     case EF_MOD3_DOWN:
       return EVDEV_MODIFIER_MOD3;
+    case EF_CAPS_LOCK_ON:
+      return EVDEV_MODIFIER_CAPS_LOCK;
     case EF_LEFT_MOUSE_BUTTON:
       return EVDEV_MODIFIER_LEFT_MOUSE_BUTTON;
     case EF_MIDDLE_MOUSE_BUTTON:
@@ -48,8 +50,6 @@ int EventFlagToEvdevModifier(int flag) {
       return EVDEV_MODIFIER_BACK_MOUSE_BUTTON;
     case EF_FORWARD_MOUSE_BUTTON:
       return EVDEV_MODIFIER_FORWARD_MOUSE_BUTTON;
-    case EF_COMMAND_DOWN:
-      return EVDEV_MODIFIER_COMMAND;
     default:
       return EVDEV_MODIFIER_NONE;
   }
@@ -94,7 +94,7 @@ void KeyboardEvdev::SetCapsLockEnabled(bool enabled) {
 }
 
 bool KeyboardEvdev::IsCapsLockEnabled() {
-  return (modifiers_->GetModifierFlags() & EF_CAPS_LOCK_DOWN) != 0;
+  return (modifiers_->GetModifierFlags() & EF_CAPS_LOCK_ON) != 0;
 }
 
 bool KeyboardEvdev::IsAutoRepeatEnabled() {
@@ -133,7 +133,7 @@ void KeyboardEvdev::UpdateModifier(int modifier_flag, bool down) {
 
   // TODO post-X11: Revise remapping to not use EF_MOD3_DOWN.
   // Currently EF_MOD3_DOWN means that the CapsLock key is currently down,
-  // and EF_CAPS_LOCK_DOWN means the caps lock state is enabled (and the
+  // and EF_CAPS_LOCK_ON means the caps lock state is enabled (and the
   // key may or may not be down, but usually isn't). There does need to
   // to be two different flags, since the physical CapsLock key is subject
   // to remapping, but the caps lock state (which can be triggered in a
