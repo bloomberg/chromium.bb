@@ -92,7 +92,7 @@ void ConnectionManager::OnConnectionError(ClientConnection* connection) {
 
   // Notify remaining connections so that they can cleanup.
   for (auto& pair : connection_map_)
-    pair.second->service()->OnWillDestroyWindowTreeImpl(connection->service());
+    pair.second->service()->OnWindowDestroyingTreeImpl(connection->service());
 
   // Notify the hosts, taking care to only notify each host once.
   std::set<WindowTreeHostImpl*> hosts_notified;

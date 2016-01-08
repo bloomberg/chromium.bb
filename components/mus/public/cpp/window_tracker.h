@@ -9,39 +9,13 @@
 #include <set>
 
 #include "base/macros.h"
+#include "components/mus/common/window_tracker.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "mojo/public/cpp/system/macros.h"
 
 namespace mus {
 
-class WindowTracker : public WindowObserver {
- public:
-  using Windows = std::set<Window*>;
-
-  WindowTracker();
-  ~WindowTracker() override;
-
-  // Returns the set of windows being observed.
-  const std::set<Window*>& windows() const { return windows_; }
-
-  // Adds |window| to the set of Windows being tracked.
-  void Add(Window* window);
-
-  // Removes |window| from the set of windows being tracked.
-  void Remove(Window* window);
-
-  // Returns true if |window| was previously added and has not been removed or
-  // deleted.
-  bool Contains(Window* window);
-
-  // WindowObserver overrides:
-  void OnWindowDestroying(Window* window) override;
-
- private:
-  Windows windows_;
-
-  MOJO_DISALLOW_COPY_AND_ASSIGN(WindowTracker);
-};
+using WindowTracker = WindowTrackerTemplate<Window, WindowObserver>;
 
 }  // namespace mus
 

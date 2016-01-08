@@ -54,7 +54,7 @@ void ServerWindowDrawnTracker::RemoveObservers() {
   windows_.clear();
 }
 
-void ServerWindowDrawnTracker::OnWillDestroyWindow(ServerWindow* window) {
+void ServerWindowDrawnTracker::OnWindowDestroying(ServerWindow* window) {
   if (!drawn_)
     return;
   observer_->OnDrawnStateWillChange(window->parent(), window_, false);

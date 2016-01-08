@@ -38,7 +38,7 @@ class ServerWindowDrawnTracker : public ServerWindowObserver {
   void RemoveObservers();
 
   // ServerWindowObserver:
-  void OnWillDestroyWindow(ServerWindow* window) override;
+  void OnWindowDestroying(ServerWindow* window) override;
   void OnWindowDestroyed(ServerWindow* window) override;
   void OnWillChangeWindowHierarchy(ServerWindow* window,
                                    ServerWindow* new_parent,

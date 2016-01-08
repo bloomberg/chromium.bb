@@ -32,7 +32,6 @@ source_set("cpp") {
     "window_property.h",
     "window_surface.h",
     "window_surface_client.h",
-    "window_tracker.cc",
     "window_tracker.h",
     "window_tree_connection.h",
     "window_tree_connection_observer.h",

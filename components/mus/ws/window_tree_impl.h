@@ -78,7 +78,7 @@ class WindowTreeImpl : public mojom::WindowTree,
   }
 
   // Invoked when a connection is about to be destroyed.
-  void OnWillDestroyWindowTreeImpl(WindowTreeImpl* connection);
+  void OnWindowDestroyingTreeImpl(WindowTreeImpl* connection);
 
   void OnWillDestroyWindowTreeHost(WindowTreeHostImpl* tree_host);
 

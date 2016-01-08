@@ -43,8 +43,7 @@ ServerWindow::ServerWindow(ServerWindowDelegate* delegate,
 }
 
 ServerWindow::~ServerWindow() {
-  FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
-                    OnWillDestroyWindow(this));
+  FOR_EACH_OBSERVER(ServerWindowObserver, observers_, OnWindowDestroying(this));
 
   if (transient_parent_)
     transient_parent_->RemoveTransientWindow(this);

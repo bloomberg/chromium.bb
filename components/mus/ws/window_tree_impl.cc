@@ -127,7 +127,7 @@ const WindowTreeHostImpl* WindowTreeImpl::GetHost(
                 : nullptr;
 }
 
-void WindowTreeImpl::OnWillDestroyWindowTreeImpl(WindowTreeImpl* connection) {
+void WindowTreeImpl::OnWindowDestroyingTreeImpl(WindowTreeImpl* connection) {
   // Notify our client if |connection| was embedded in any of our views.
   for (const auto* connection_root : connection->roots_) {
     const bool owns_connection_root =

@@ -31,7 +31,7 @@ class ServerWindowObserver {
  public:
   // Invoked when a window is about to be destroyed; before any of the children
   // have been removed and before the window has been removed from its parent.
-  virtual void OnWillDestroyWindow(ServerWindow* window) {}
+  virtual void OnWindowDestroying(ServerWindow* window) {}
 
   // Invoked at the end of the window's destructor (after it has been removed
   // from the hierarchy.
