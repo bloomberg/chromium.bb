@@ -481,6 +481,22 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="Net.ErrAborted.Fast" type="ETLD_PLUS_ONE">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL that leads to a main frame ERR_ABORTED
+    error less than 100 ms after the request is created.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="Net.ErrAborted.Slow" type="ETLD_PLUS_ONE">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL that leads to a main frame ERR_ABORTED
+    error more than 100 ms after the request is created.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="PageLoad.CoarseTiming.NavigationToFirstContentfulPaint"
     type="UMA_RAPPOR_TYPE">
   <owner>csharrison@chromium.org</owner>

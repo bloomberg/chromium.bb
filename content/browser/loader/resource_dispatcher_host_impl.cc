@@ -454,6 +454,17 @@ bool IsUsingLoFi(LoFiState lofi_state,
   return lofi_state == LOFI_ON;
 }
 
+// Record RAPPOR for aborted main frame loads. Separate into a fast and
+// slow bucket because a shocking number of aborts happen under 100ms.
+void RecordAbortRapporOnUI(const GURL& url,
+                           base::TimeDelta request_loading_time) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (request_loading_time.InMilliseconds() < 100)
+    GetContentClient()->browser()->RecordURLMetric("Net.ErrAborted.Fast", url);
+  else
+    GetContentClient()->browser()->RecordURLMetric("Net.ErrAborted.Slow", url);
+}
+
 }  // namespace
 
 // static
@@ -972,6 +983,11 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
                                     1, 50000000, 50);
         UMA_HISTOGRAM_LONG_TIMES(
             "Net.RequestTime2.ErrAborted", request_loading_time);
+
+        BrowserThread::PostTask(
+            BrowserThread::UI, FROM_HERE,
+            base::Bind(&RecordAbortRapporOnUI, loader->request()->url(),
+                       request_loading_time));
         break;
       case net::ERR_CONNECTION_RESET:
         UMA_HISTOGRAM_LONG_TIMES(
