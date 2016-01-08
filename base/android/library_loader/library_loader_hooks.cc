@@ -144,9 +144,14 @@ void LibraryLoaderExitHook() {
 
 static jboolean ForkAndPrefetchNativeLibrary(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
-    jboolean is_cold_start) {
-  return NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary(is_cold_start);
+    const JavaParamRef<jclass>& clazz) {
+  return NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary();
+}
+
+static jint PercentageOfResidentNativeLibraryCode(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
+  return NativeLibraryPrefetcher::PercentageOfResidentNativeLibraryCode();
 }
 
 bool RegisterLibraryLoaderEntryHook(JNIEnv* env) {

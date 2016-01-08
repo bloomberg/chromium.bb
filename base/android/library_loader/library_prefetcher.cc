@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_util.h"
 
@@ -121,7 +120,7 @@ bool NativeLibraryPrefetcher::FindRanges(std::vector<AddressRange>* ranges) {
 }
 
 // static
-bool NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary(bool is_cold_start) {
+bool NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary() {
   // Avoid forking with cygprofile instrumentation because the latter performs
   // memory allocations.
 #if defined(CYGPROFILE_INSTRUMENTATION)
@@ -136,19 +135,6 @@ bool NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary(bool is_cold_start) {
   std::vector<AddressRange> ranges;
   if (!FindRanges(&ranges))
     return false;
-
-  int percentage = PercentageOfResidentCode(ranges);
-  if (percentage != -1) {
-    if (is_cold_start) {
-      UMA_HISTOGRAM_PERCENTAGE(
-          "LibraryLoader.PercentageOfResidentCodeBeforePrefetch_ColdStartup",
-          percentage);
-    } else {
-      UMA_HISTOGRAM_PERCENTAGE(
-          "LibraryLoader.PercentageOfResidentCodeBeforePrefetch_WarmStartup",
-          percentage);
-    }
-  }
 
   pid_t pid = fork();
   if (pid == 0) {
@@ -196,6 +182,14 @@ int NativeLibraryPrefetcher::PercentageOfResidentCode(
   if (total_pages == 0)
     return -1;
   return static_cast<int>((100 * resident_pages) / total_pages);
+}
+
+// static
+int NativeLibraryPrefetcher::PercentageOfResidentNativeLibraryCode() {
+  std::vector<AddressRange> ranges;
+  if (!FindRanges(&ranges))
+    return -1;
+  return PercentageOfResidentCode(ranges);
 }
 
 }  // namespace android

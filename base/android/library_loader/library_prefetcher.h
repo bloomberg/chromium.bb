@@ -30,7 +30,10 @@ class BASE_EXPORT NativeLibraryPrefetcher {
   // Finds the ranges matching the native library, forks a low priority
   // process pre-fetching these ranges and wait()s for it.
   // Returns true for success.
-  static bool ForkAndPrefetchNativeLibrary(bool is_cold_start);
+  static bool ForkAndPrefetchNativeLibrary();
+  // Returns the percentage of the native library code currently resident in
+  // memory, or -1 in case of error.
+  static int PercentageOfResidentNativeLibraryCode();
 
  private:
   using AddressRange = std::pair<uintptr_t, uintptr_t>;
@@ -44,8 +47,8 @@ class BASE_EXPORT NativeLibraryPrefetcher {
   // Returns true for success.
   static bool FindRanges(std::vector<AddressRange>* ranges);
 
-  // Returns the percentage of the given address ranges that are currently
-  // resident in memory, or -1 in case of error.
+  // Returns the percentage of the given address ranges currently resident in
+  // memory, or -1 in case of error.
   static int PercentageOfResidentCode(const std::vector<AddressRange>& ranges);
 
   FRIEND_TEST_ALL_PREFIXES(NativeLibraryPrefetcherTest,
