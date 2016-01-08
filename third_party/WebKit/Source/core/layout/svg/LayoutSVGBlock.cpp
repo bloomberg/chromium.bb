@@ -68,8 +68,11 @@ void LayoutSVGBlock::willBeDestroyed()
 
 void LayoutSVGBlock::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
-    if (diff.needsFullLayout())
+    if (diff.needsFullLayout()) {
         setNeedsBoundariesUpdate();
+        if (style()->hasTransform())
+            setNeedsTransformUpdate();
+    }
 
     if (isBlendingAllowed()) {
         bool hasBlendModeChanged = (oldStyle && oldStyle->hasBlendMode()) == !style()->hasBlendMode();
