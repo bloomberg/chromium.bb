@@ -11,6 +11,7 @@
 #include "base/sys_info.h"
 
 namespace {
+
 // Return a 3 elements array containing the major, minor and bug fix version of
 // the OS.
 const int32_t* OSVersionAsArray() {
@@ -19,6 +20,9 @@ const int32_t* OSVersionAsArray() {
       &digits[0], &digits[1], &digits[2]);
   return digits;
 }
+
+std::string* g_icudtl_path_override = nullptr;
+
 }  // namespace
 
 namespace base {
@@ -46,6 +50,18 @@ bool IsRunningOnOrLater(int32_t major, int32_t minor, int32_t bug_fix) {
 bool IsInForcedRTL() {
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   return [defaults boolForKey:@"NSForceRightToLeftWritingDirection"];
+}
+
+void OverridePathOfEmbeddedICU(const char* path) {
+  DCHECK(!g_icudtl_path_override);
+  g_icudtl_path_override = new std::string(path);
+}
+
+FilePath FilePathOfEmbeddedICU() {
+  if (g_icudtl_path_override) {
+    return FilePath(*g_icudtl_path_override);
+  }
+  return FilePath();
 }
 
 }  // namespace ios

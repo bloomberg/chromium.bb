@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/base_export.h"
+#include "base/files/file_path.h"
 
 namespace base {
 namespace ios {
@@ -29,6 +30,14 @@ BASE_EXPORT bool IsRunningOnOrLater(int32_t major,
 // return true in cases where the RTL text direction has been forced (for
 // example by using the "RTL Psuedolanguage" option when launching from XCode).
 BASE_EXPORT bool IsInForcedRTL();
+
+// Stores the |path| of the ICU dat file in a global to be referenced later by
+// FilePathOfICUFile().  This should only be called once.
+BASE_EXPORT void OverridePathOfEmbeddedICU(const char* path);
+
+// Returns the overriden path set by OverridePathOfEmbeddedICU(), otherwise
+// returns invalid FilePath.
+BASE_EXPORT FilePath FilePathOfEmbeddedICU();
 
 }  // namespace ios
 }  // namespace base

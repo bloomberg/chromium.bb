@@ -28,6 +28,10 @@
 #include "base/android/apk_assets.h"
 #endif
 
+#if defined(OS_IOS)
+#include "base/ios/ios_util.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include "base/mac/foundation_util.h"
 #endif
@@ -124,6 +128,12 @@ void LazyInitIcuDataFile() {
   ScopedCFTypeRef<CFStringRef> data_file_name(
       SysUTF8ToCFStringRef(kIcuDataFileName));
   FilePath data_path = mac::PathForFrameworkBundleResource(data_file_name);
+#if defined(OS_IOS)
+  FilePath override_data_path = base::ios::FilePathOfEmbeddedICU();
+  if (!override_data_path.empty()) {
+    data_path = override_data_path;
+  }
+#endif  // !defined(OS_IOS)
   if (data_path.empty()) {
     LOG(ERROR) << kIcuDataFileName << " not found in bundle";
     return;
