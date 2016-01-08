@@ -41,6 +41,7 @@ source_set("app") {
 
   public_deps = [
     ":app_non_mac_win",
+    "//third_party/kasko",
   ]
   deps = [
     "//base",

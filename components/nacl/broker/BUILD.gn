@@ -151,6 +151,7 @@ if (current_cpu == "x86") {
       "//components/policy",
       "//content/public/common:static_switches",
       "//ipc",
+      "//third_party/kasko:kasko_features",
     ]
   }
 }

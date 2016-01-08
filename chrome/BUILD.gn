@@ -316,6 +316,7 @@ if (is_mac || is_win) {
         "//base/trace_event/etw_manifest:chrome_events_win",
         "//chrome/app/theme:chrome_unscaled_resources",
         "//chrome_elf",
+        "//components/crash/content/app",
         "//content/app/resources",
         "//crypto",
         "//net:net_resources",

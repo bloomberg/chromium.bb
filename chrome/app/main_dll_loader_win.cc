@@ -122,7 +122,10 @@ void ClearDidRun(const base::FilePath& dll_path) {
 
 typedef int (*InitMetro)();
 
-#if defined(KASKO)
+#if BUILDFLAG(ENABLE_KASKO)
+
+// For ::GetProfileType().
+#pragma comment(lib, "userenv.lib")
 
 // For ::GetProfileType().
 #pragma comment(lib, "userenv.lib")
@@ -156,7 +159,7 @@ std::wstring GetProfileType() {
   return profile_type;
 }
 
-#endif  // KASKO
+#endif  // BUILDFLAG(ENABLE_KASKO)
 
 }  // namespace
 
@@ -317,9 +320,9 @@ class ChromeDllLoader : public MainDllLoader {
 
  private:
   scoped_ptr<ChromeWatcherClient> chrome_watcher_client_;
-#if defined(KASKO)
+#if BUILDFLAG(ENABLE_KASKO)
   scoped_ptr<KaskoClient> kasko_client_;
-#endif  // KASKO
+#endif
 };
 
 void ChromeDllLoader::OnBeforeLaunch(const std::string& process_type,
@@ -340,7 +343,7 @@ void ChromeDllLoader::OnBeforeLaunch(const std::string& process_type,
         chrome_watcher_client_.reset(new ChromeWatcherClient(
             base::Bind(&GenerateChromeWatcherCommandLine, exe_path)));
         if (chrome_watcher_client_->LaunchWatcher()) {
-#if defined(KASKO)
+#if BUILDFLAG(ENABLE_KASKO)
           kasko::api::MinidumpType minidump_type = kasko::api::SMALL_DUMP_TYPE;
           if (base::CommandLine::ForCurrentProcess()->HasSwitch(
                   switches::kFullMemoryCrashReport)) {
@@ -359,7 +362,7 @@ void ChromeDllLoader::OnBeforeLaunch(const std::string& process_type,
 
           kasko_client_.reset(
               new KaskoClient(chrome_watcher_client_.get(), minidump_type));
-#endif  // KASKO
+#endif  // BUILDFLAG(ENABLE_KASKO)
         }
       }
     }
@@ -382,9 +385,9 @@ int ChromeDllLoader::OnBeforeExit(int return_code,
     ClearDidRun(dll_path);
   }
 
-#if defined(KASKO)
+#if BUILDFLAG(ENABLE_KASKO)
   kasko_client_.reset();
-#endif  // KASKO
+#endif
   chrome_watcher_client_.reset();
 
   return return_code;

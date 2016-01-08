@@ -351,6 +351,7 @@
             '<@(chromium_child_dependencies)',
             '../components/components.gyp:browser_watcher_client',
             '../content/content.gyp:content_app_child',
+            '../third_party/kasko/kasko.gyp:kasko',
             'chrome_version_resources',
             'policy_path_parser',
           ],

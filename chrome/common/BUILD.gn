@@ -102,6 +102,7 @@ static_library("common") {
     "//net",
     "//skia",
     "//third_party/icu",
+    "//third_party/kasko:kasko_features",
     "//third_party/zlib:zip",
     "//ui/accessibility",
     "//ui/base",

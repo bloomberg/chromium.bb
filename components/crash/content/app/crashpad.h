@@ -11,10 +11,11 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "third_party/kasko/kasko_features.h"
 
-#if defined(KASKO)
+#if BUILDFLAG(ENABLE_KASKO)
 #include "syzygy/kasko/api/crash_key.h"
-#endif  // KASKO
+#endif  // BUILDFLAG(ENABLE_KASKO)
 
 namespace crash_reporter {
 
@@ -74,10 +75,10 @@ struct UploadedReport {
 // disabled.
 void GetUploadedReports(std::vector<UploadedReport>* uploaded_reports);
 
-#if defined(KASKO)
+#if BUILDFLAG(ENABLE_KASKO)
 // Returns a copy of the current crash keys for Kasko.
 void GetCrashKeysForKasko(std::vector<kasko::api::CrashKey>* crash_keys);
-#endif  // KASKO
+#endif  // BUILDFLAG(ENABLE_KASKO)
 
 namespace internal {
 

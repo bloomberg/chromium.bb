@@ -37,8 +37,9 @@
 #include "components/browser_watcher/endsession_watcher_window_win.h"
 #include "components/browser_watcher/exit_code_watcher_win.h"
 #include "components/browser_watcher/window_hang_monitor_win.h"
+#include "third_party/kasko/kasko_features.h"
 
-#ifdef KASKO
+#if BUILDFLAG(ENABLE_KASKO)
 #include "syzygy/kasko/api/reporter.h"
 #endif
 
@@ -194,7 +195,7 @@ void OnWindowEvent(
   }
 }
 
-#ifdef KASKO
+#if BUILDFLAG(ENABLE_KASKO)
 // Helper function for determining the crash server to use. Defaults to the
 // standard crash server, but can be overridden via an environment variable.
 // Enables easy integration testing.
@@ -342,7 +343,7 @@ void OnCrashReportUpload(void* context,
   // TODO(erikwright): Copy minidump to some "last dump" location?
 }
 
-#endif  // KASKO
+#endif  // BUILDFLAG(ENABLE_KASKO)
 
 }  // namespace
 
@@ -371,7 +372,7 @@ extern "C" int WatcherMain(const base::char16* registry_path,
 
   base::Callback<void(const base::Process&)> on_hung_callback;
 
-#ifdef KASKO
+#if BUILDFLAG(ENABLE_KASKO)
   base::string16 crash_server;
   GetKaskoCrashServerUrl(&crash_server);
 
@@ -389,14 +390,14 @@ extern "C" int WatcherMain(const base::char16* registry_path,
           .value()
           .c_str(),
       &OnCrashReportUpload, nullptr);
-#ifdef KASKO_HANG_REPORTS
+#if BUILDFLAG(ENABLE_KASKO_HANG_REPORTS)
   if (launched_kasko &&
       base::StringPiece16(channel_name) == installer::kChromeChannelCanary) {
     on_hung_callback =
         base::Bind(&DumpHungBrowserProcess, main_thread_id, channel_name);
   }
-#endif  // KASKO_HANG_REPORTS
-#endif  // KASKO
+#endif  // BUILDFLAG(ENABLE_KASKO_HANG_REPORTS)
+#endif  // BUILDFLAG(ENABLE_KASKO)
 
   // Run a UI message loop on the main thread.
   base::MessageLoop msg_loop(base::MessageLoop::TYPE_UI);
@@ -420,10 +421,10 @@ extern "C" int WatcherMain(const base::char16* registry_path,
     run_loop.Run();
   }
 
-#ifdef KASKO
+#if BUILDFLAG(ENABLE_KASKO)
   if (launched_kasko)
     kasko::api::ShutdownReporter();
-#endif  // KASKO
+#endif  // BUILDFLAG(ENABLE_KASKO)
 
   // Wind logging down.
   logging::LogEventProvider::Uninitialize();

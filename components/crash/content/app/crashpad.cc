@@ -243,7 +243,7 @@ void GetUploadedReports(std::vector<UploadedReport>* uploaded_reports) {
             });
 }
 
-#if defined(KASKO)
+#if BUILDFLAG(ENABLE_KASKO)
 
 void GetCrashKeysForKasko(std::vector<kasko::api::CrashKey>* crash_keys) {
   // Reserve room for an extra key, the guid.
@@ -282,7 +282,7 @@ void GetCrashKeysForKasko(std::vector<kasko::api::CrashKey>* crash_keys) {
   }
 }
 
-#endif  // KASKO
+#endif  // BUILDFLAG(ENABLE_KASKO)
 
 }  // namespace crash_reporter
 

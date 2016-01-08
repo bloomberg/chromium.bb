@@ -32,6 +32,7 @@ include_rules = [
   "+ppapi/c",
   "+ppapi/shared_impl",
   "+ppapi/thunk",
+  "+third_party/kasko",
 
   # FIXME - refactor code and remove these dependencies
   "+chrome/installer",

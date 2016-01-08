@@ -76,7 +76,7 @@ const char kSendAction[] = "sendaction";
 }  // namespace mac
 #endif
 
-#if defined(KASKO)
+#if BUILDFLAG(ENABLE_KASKO)
 const char kKaskoGuid[] = "kasko-guid";
 const char kKaskoEquivalentGuid[] = "kasko-equivalent-guid";
 #endif
@@ -141,7 +141,7 @@ size_t RegisterChromeCrashKeys() {
     // media/:
     { "VideoCaptureDeviceQTKit", kSmallSize },
 #endif
-#if defined(KASKO)
+#if BUILDFLAG(ENABLE_KASKO)
     { kKaskoGuid, kSmallSize },
     { kKaskoEquivalentGuid, kSmallSize },
 #endif

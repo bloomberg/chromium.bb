@@ -369,6 +369,7 @@ source_set("browser") {
       "//storage/common",
       "//third_party/WebKit/public:image_resources",
       "//third_party/WebKit/public:resources",
+      "//third_party/kasko",
       "//third_party/leveldatabase",
       "//third_party/libaddressinput",
       "//third_party/libyuv",
@@ -843,6 +844,7 @@ source_set("browser") {
     ]
     deps += [
       ":chrome_process_finder",
+      "//chrome/chrome_watcher:client",
       "//chrome/common:version_header",
       "//chrome/installer/util:strings",
       "//chrome_elf",

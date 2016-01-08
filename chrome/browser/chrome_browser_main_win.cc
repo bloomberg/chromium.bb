@@ -74,7 +74,7 @@
 #include "chrome/browser/google/did_run_updater_win.h"
 #endif
 
-#if defined(KASKO)
+#if BUILDFLAG(ENABLE_KASKO)
 #include "syzygy/kasko/api/reporter.h"
 #endif
 
@@ -122,7 +122,7 @@ void ExecuteFontCacheBuildTask(const base::FilePath& path) {
       new ChromeUtilityHostMsg_BuildDirectWriteFontCache(path));
 }
 
-#if defined(KASKO)
+#if BUILDFLAG(ENABLE_KASKO)
 void ObserveFailedCrashReportDirectory(const base::FilePath& path, bool error) {
   DCHECK(!error);
   if (error)
@@ -155,7 +155,7 @@ void StartFailedKaskoCrashReportWatcher(base::FilePathWatcher* watcher) {
     ObserveFailedCrashReportDirectory(permanent_failure_directory, false);
   }
 }
-#endif
+#endif  // BUILDFLAG(ENABLE_KASKO)
 
 void DetectFaultTolerantHeap() {
   enum FTHFlags {
@@ -385,13 +385,13 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
 
   InitializeChromeElf();
 
-#if defined(KASKO)
+#if BUILDFLAG(ENABLE_KASKO)
   content::BrowserThread::PostDelayedTask(
       content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&StartFailedKaskoCrashReportWatcher,
                  base::Unretained(&failed_kasko_crash_report_watcher_)),
       base::TimeDelta::FromMinutes(5));
-#endif
+#endif  // BUILDFLAG(ENABLE_KASKO)
 
 #if defined(GOOGLE_CHROME_BUILD)
   did_run_updater_.reset(new DidRunUpdater);

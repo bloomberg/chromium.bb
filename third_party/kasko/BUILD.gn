@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/features.gni")
+import("//build/buildflag_header.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 
 declare_args() {
@@ -13,6 +13,15 @@ declare_args() {
   enable_kasko_hang_reports = false
 }
 
+# GYP version: target 'kasko_features' in third_party/kasko/kasko.gyp
+buildflag_header("kasko_features") {
+  header = "kasko_features.h"
+  flags = [
+    "ENABLE_KASKO=$enable_kasko",
+    "ENABLE_KASKO_HANG_REPORTS=$enable_kasko_hang_reports",
+  ]
+}
+
 if (enable_kasko) {
   assert(is_win, "Kasko only support Windows.")
   assert(target_cpu == "x86", "Kasko only support 32 bits.")
@@ -21,15 +30,12 @@ if (enable_kasko) {
 
   config("kasko_config") {
     visibility = [ ":*" ]
-    defines = [ "KASKO" ]
-    if (enable_kasko_hang_reports) {
-      defines += [ "KASKO_HANG_REPORTS" ]
-    }
     include_dirs = [ "//third_party/kasko/binaries/include" ]
     lib_dirs = [ "//third_party/kasko/binaries" ]
     libs = [ "kasko.dll.lib" ]
   }
 
+  # GYP version: target 'copy_kasko_dll' in third_party/kasko/kasko.gyp
   copy("copy_kasko_dll") {
     visibility = [ ":*" ]
     sources = [
@@ -41,15 +47,18 @@ if (enable_kasko) {
     ]
   }
 
+  # GYP version: target 'kasko' in third_party/kasko/kasko.gyp
   group("kasko") {
-    if (enable_kasko) {
-      deps = [
-        ":copy_kasko_dll",
-      ]
-      public_configs = [ ":kasko_config" ]
-    }
+    public_deps = [
+      ":copy_kasko_dll",
+      ":kasko_features",
+    ]
+    public_configs = [ ":kasko_config" ]
   }
 } else {
   group("kasko") {
+    public_deps = [
+      ":kasko_features",
+    ]
   }
 }

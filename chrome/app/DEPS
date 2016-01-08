@@ -32,4 +32,5 @@ include_rules = [
   "+sandbox",
   "+syzygy/kasko/api",
   "+third_party/crashpad/crashpad",
+  "+third_party/kasko",
 ]

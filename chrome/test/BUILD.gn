@@ -2154,6 +2154,7 @@ if (is_win || (is_linux && !is_chromeos)) {
       "//chrome/child",
       "//components/crash/core/common",
       "//components/flags_ui:switches",
+      "//third_party/kasko:kasko_features",
     ]
     if (cld_version == 2) {
       # Use whatever CLD2 data access mode that the

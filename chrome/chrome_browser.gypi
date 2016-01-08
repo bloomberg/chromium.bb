@@ -3816,24 +3816,18 @@
             '../google_update/google_update.gyp:google_update',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
+            '../third_party/kasko/kasko.gyp:kasko',
             '../ui/metro_viewer/metro_viewer.gyp:metro_viewer_messages',
             '../ui/views/controls/webview/webview.gyp:webview',
             '../ui/views/views.gyp:views',
             '../win8/win8.gyp:metro_viewer',
           ],
           'export_dependent_settings': [
+            '../third_party/kasko/kasko.gyp:kasko',
             '../ui/views/controls/webview/webview.gyp:webview',
             '../ui/views/views.gyp:views',
           ],
           'conditions': [
-            ['kasko==1', {
-              'dependencies': [
-                'kasko_dll',
-              ],
-              'export_dependent_settings': [
-                'kasko_dll',
-              ],
-            }],
             ['branding!="Chrome"', {
               'dependencies!': [
                 '../google_update/google_update.gyp:google_update',

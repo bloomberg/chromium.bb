@@ -171,6 +171,7 @@ include_rules = [
   "+sync/util",  # Sync utilities like GetSessionName.
   "+syzygy/kasko",
   "+third_party/cros_system_api",
+  "+third_party/kasko",
   "+win8/util",
 
   # chrome only needs switches from cc. All usage of the compositor is from

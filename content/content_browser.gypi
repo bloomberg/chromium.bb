@@ -24,6 +24,7 @@
     '../skia/skia.gyp:skia',
     '../skia/skia.gyp:skia_mojo',
     '../sql/sql.gyp:sql',
+    '../third_party/kasko/kasko.gyp:kasko_features',
     '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
     '../third_party/re2/re2.gyp:re2',
     '../third_party/zlib/google/zip.gyp:zip',

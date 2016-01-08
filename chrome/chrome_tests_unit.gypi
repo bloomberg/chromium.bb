@@ -2889,6 +2889,7 @@
         '../components/components.gyp:crash_core_common',
         '../components/components.gyp:flags_ui_switches',
         '../content/content.gyp:content_app_both',
+        '../third_party/kasko/kasko.gyp:kasko_features',
         # 2) test-specific support libraries:
         '../base/base.gyp:run_all_unittests',
         '../testing/gmock.gyp:gmock',

@@ -64,13 +64,7 @@
         'installer_util',
         '../base/base.gyp:base',
         '../components/components.gyp:browser_watcher',
-      ],
-      'conditions': [
-        ['kasko==1', {
-          'dependencies': [
-            'kasko_dll',
-          ],
-        }],
+        '../third_party/kasko/kasko.gyp:kasko',
       ],
       'msvs_settings': {
         'VCLinkerTool': {

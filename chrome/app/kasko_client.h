@@ -5,7 +5,9 @@
 #ifndef CHROME_APP_KASKO_CLIENT_H_
 #define CHROME_APP_KASKO_CLIENT_H_
 
-#if defined(KASKO)
+#include "third_party/kasko/kasko_features.h"
+
+#if BUILDFLAG(ENABLE_KASKO)
 
 #include "base/macros.h"
 #include "syzygy/kasko/api/minidump_type.h"
@@ -28,6 +30,6 @@ class KaskoClient {
   DISALLOW_COPY_AND_ASSIGN(KaskoClient);
 };
 
-#endif  // KASKO
+#endif  // BUILDFLAG(ENABLE_KASKO)
 
 #endif  // CHROME_APP_KASKO_CLIENT_H_

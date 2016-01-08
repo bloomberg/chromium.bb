@@ -213,6 +213,7 @@
             'crash_component_non_mac_win',
             'crash_component_lib',
             '../base/base.gyp:base',
+            '../third_party/kasko/kasko.gyp:kasko',
           ],
           'defines': ['CRASH_IMPLEMENTATION'],
           'conditions': [

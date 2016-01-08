@@ -22,6 +22,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "third_party/kasko/kasko_features.h"
 #include "url/gurl.h"
 
 #if defined(ENABLE_PLUGINS)
@@ -42,7 +43,7 @@ const char kAsanCorruptHeapBlock[] = "/browser-corrupt-heap-block";
 const char kAsanCorruptHeap[] = "/browser-corrupt-heap";
 #endif
 
-#if defined(KASKO)
+#if BUILDFLAG(ENABLE_KASKO)
 // Define the Kasko debug URLs.
 const char kKaskoCrashDomain[] = "kasko";
 const char kKaskoSendReport[] = "/send-report";
@@ -66,7 +67,7 @@ void HandlePpapiFlashDebugURL(const GURL& url) {
 }
 
 bool IsKaskoDebugURL(const GURL& url) {
-#if defined(KASKO)
+#if BUILDFLAG(ENABLE_KASKO)
   return (url.is_valid() && url.SchemeIs(kChromeUIScheme) &&
           url.DomainIs(kKaskoCrashDomain) &&
           url.path() == kKaskoSendReport);
@@ -76,7 +77,7 @@ bool IsKaskoDebugURL(const GURL& url) {
 }
 
 void HandleKaskoDebugURL() {
-#if defined(KASKO)
+#if BUILDFLAG(ENABLE_KASKO)
   // Signature of the exported crash key setting function.
   using SetCrashKeyValueImplPtr = void(__cdecl *)(const wchar_t*,
                                                   const wchar_t*);
