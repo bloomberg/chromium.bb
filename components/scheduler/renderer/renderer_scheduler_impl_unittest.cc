@@ -370,6 +370,24 @@ class RendererSchedulerImplTest : public testing::Test {
     scheduler_->DidHandleInputEventOnCompositorThread(
         FakeInputEvent(blink::WebInputEvent::GestureScrollBegin),
         RendererScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
+    scheduler_->DidHandleInputEventOnCompositorThread(
+        FakeInputEvent(blink::WebInputEvent::GestureScrollUpdate),
+        RendererScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
+  }
+
+  void SimulateMainThreadGestureWithCancelledScroll() {
+    scheduler_->DidHandleInputEventOnCompositorThread(
+        FakeInputEvent(blink::WebInputEvent::TouchStart),
+        RendererScheduler::InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
+    scheduler_->DidHandleInputEventOnCompositorThread(
+        FakeInputEvent(blink::WebInputEvent::TouchMove),
+        RendererScheduler::InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
+    scheduler_->DidHandleInputEventOnCompositorThread(
+        FakeInputEvent(blink::WebInputEvent::GestureScrollBegin),
+        RendererScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
+    scheduler_->DidHandleInputEventOnCompositorThread(
+        FakeInputEvent(blink::WebInputEvent::TouchMove),
+        RendererScheduler::InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   }
 
   void SimulateMainThreadGestureStart(TouchEventPolicy touch_event_policy,
@@ -785,6 +803,22 @@ TEST_F(RendererSchedulerImplTest,
                                    std::string("D2"), std::string("I1"),
                                    std::string("C1"), std::string("C2")));
   EXPECT_EQ(RendererScheduler::UseCase::COMPOSITOR_GESTURE, CurrentUseCase());
+}
+
+TEST_F(RendererSchedulerImplTest,
+       TestCompositorPolicy_MainThreadHandlesInput_WithCancelledScroll) {
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
+
+  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
+  EnableIdleTasks();
+  SimulateMainThreadGestureWithCancelledScroll();
+  RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("C1"), std::string("C2"),
+                                   std::string("L1"), std::string("D1"),
+                                   std::string("D2"), std::string("I1")));
+  EXPECT_EQ(RendererScheduler::UseCase::MAIN_THREAD_GESTURE, CurrentUseCase());
 }
 
 TEST_F(RendererSchedulerImplTest,

@@ -469,8 +469,8 @@ void RendererSchedulerImpl::UpdateForInputEventOnCompositorThread(
         }
         break;
 
-      case blink::WebInputEvent::GesturePinchBegin:
-      case blink::WebInputEvent::GestureScrollBegin:
+      case blink::WebInputEvent::GesturePinchUpdate:
+      case blink::WebInputEvent::GestureScrollUpdate:
         AnyThread().last_gesture_was_compositor_driven =
             input_event_state == InputEventState::EVENT_CONSUMED_BY_COMPOSITOR;
         AnyThread().awaiting_touch_start_response = false;
