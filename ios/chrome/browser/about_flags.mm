@@ -195,10 +195,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     }
   }
 
-  // Populate command line flags from DisableKeyboardCommands.
-  if ([defaults boolForKey:@"DisableKeyboardCommands"])
-    command_line->AppendSwitch(switches::kDisableKeyboardCommands);
-
   // TODO(crbug.com/450311): Remove this compile-time flag once bots are passing
   // the compile-time flag.
 #if defined(FORCE_ENABLE_WKWEBVIEW)

@@ -44,9 +44,6 @@ bool IsInWKWebViewExperimentControlGroup();
 // omnibox search requests.  The returned value contains a leading "&".
 std::string GetWKWebViewSearchParams();
 
-// Whether keyboard commands are supported.
-bool AreKeyboardCommandsEnabled();
-
 // Whether viewing and copying passwords is enabled.
 bool IsViewCopyPasswordsEnabled();
 

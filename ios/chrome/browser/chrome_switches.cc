@@ -37,9 +37,6 @@ const char kDisableIOSWebResources[] = "disable-web-resources";
 // Disables the use of WKWebView instead of UIWebView.
 const char kDisableIOSWKWebView[] = "disable-wkwebview";
 
-// Disables support for keyboard commands.
-const char kDisableKeyboardCommands[] = "disable-keyboard-commands";
-
 // Disable the snapshots lru cache.
 const char kDisableLRUSnapshotCache[] = "disable-lru-snapshot-cache";
 

@@ -192,11 +192,6 @@ std::string GetWKWebViewSearchParams() {
   return variations::GetVariationParamValue(kWKWebViewTrialName, "esrch");
 }
 
-bool AreKeyboardCommandsEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableKeyboardCommands);
-}
-
 bool IsViewCopyPasswordsEnabled() {
   NSString* viewCopyPasswordFlag = [[NSUserDefaults standardUserDefaults]
       objectForKey:kEnableViewCopyPasswords];
