@@ -40,6 +40,7 @@ class GFX_EXPORT Transform {
   // Initialize with the concatenation of lhs * rhs.
   Transform(const Transform& lhs, const Transform& rhs)
       : matrix_(lhs.matrix_, rhs.matrix_) {}
+  explicit Transform(const SkMatrix44& matrix) : matrix_(matrix) {}
   // Constructs a transform from explicit 16 matrix elements. Elements
   // should be given in row-major order.
   Transform(SkMScalar col1row1,

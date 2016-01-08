@@ -115,6 +115,9 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       layer_animation_controller_->set_layer_animation_delegate(this);
     }
   }
+
+  layer_tree_impl_->AddToElementMap(this);
+
   SetNeedsPushProperties();
 }
 
@@ -131,6 +134,8 @@ LayerImpl::~LayerImpl() {
     layer_tree_impl()->RemoveLayerWithCopyOutputRequest(this);
   layer_tree_impl_->UnregisterScrollLayer(this);
   layer_tree_impl_->UnregisterLayer(this);
+
+  layer_tree_impl_->RemoveFromElementMap(this);
 
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerImpl", this);
@@ -1249,7 +1254,9 @@ void LayerImpl::SetElementId(uint64_t element_id) {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
                "LayerImpl::SetElementId", "id", element_id);
 
+  layer_tree_impl_->RemoveFromElementMap(this);
   element_id_ = element_id;
+  layer_tree_impl_->AddToElementMap(this);
   SetNeedsPushProperties();
 }
 
@@ -1261,6 +1268,8 @@ void LayerImpl::SetMutableProperties(uint32_t properties) {
                "LayerImpl::SetMutableProperties", "properties", properties);
 
   mutable_properties_ = properties;
+  // If this layer is already in the element map, update its properties.
+  layer_tree_impl_->AddToElementMap(this);
   SetNeedsPushProperties();
 }
 

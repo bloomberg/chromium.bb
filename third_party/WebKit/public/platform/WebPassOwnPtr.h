@@ -10,6 +10,8 @@
 
 #if INSIDE_BLINK
 #include "wtf/PassOwnPtr.h"
+#else
+#include <base/memory/scoped_ptr.h>
 #endif
 
 namespace blink {
@@ -49,6 +51,13 @@ public:
         T* ptr = m_ptr;
         m_ptr = nullptr;
         return adoptPtr(ptr);
+    }
+#else
+    operator scoped_ptr<T>()
+    {
+        T* ptr = m_ptr;
+        m_ptr = nullptr;
+        return scoped_ptr<T>(ptr);
     }
 #endif // INSIDE_BLINK
 

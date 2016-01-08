@@ -17,6 +17,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/keyframed_animation_curve.h"
+#include "cc/animation/mutable_properties.h"
 #include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/animation/scrollbar_animation_controller_linear_fade.h"
 #include "cc/animation/scrollbar_animation_controller_thinning.h"
@@ -45,6 +46,15 @@
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
 namespace cc {
+
+namespace {
+
+const uint32_t kMainLayerFlags =
+    kMutablePropertyOpacity | kMutablePropertyTransform;
+const uint32_t kScrollLayerFlags =
+    kMutablePropertyScrollLeft | kMutablePropertyScrollTop;
+
+}  // namespace
 
 LayerTreeImpl::LayerTreeImpl(
     LayerTreeHostImpl* layer_tree_host_impl,
@@ -358,6 +368,54 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
     target_tree->set_hud_layer(NULL);
 
   target_tree->has_ever_been_drawn_ = false;
+}
+void LayerTreeImpl::AddToElementMap(LayerImpl* layer) {
+  if (!layer->element_id())
+    return;
+
+  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
+               "LayerTreeImpl::AddToElementMap", "element_id",
+               layer->element_id(), "layer_id", layer->id());
+
+  ElementLayers& layers = element_layers_map_[layer->element_id()];
+  if (layer->mutable_properties() & kMainLayerFlags) {
+    if (!layers.main || layer->IsActive())
+      layers.main = layer;
+  }
+  if (layer->mutable_properties() & kScrollLayerFlags) {
+    if (!layers.scroll || layer->IsActive()) {
+      TRACE_EVENT2("compositor-worker", "LayerTreeImpl::AddToElementMap scroll",
+                   "element_id", layer->element_id(), "layer_id", layer->id());
+      layers.scroll = layer;
+    }
+  }
+}
+
+void LayerTreeImpl::RemoveFromElementMap(LayerImpl* layer) {
+  if (!layer->element_id())
+    return;
+
+  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
+               "LayerTreeImpl::RemoveFromElementMap", "element_id",
+               layer->element_id(), "layer_id", layer->id());
+
+  ElementLayers& layers = element_layers_map_[layer->element_id()];
+  if (layer->mutable_properties() & kMainLayerFlags)
+    layers.main = nullptr;
+  if (layer->mutable_properties() & kScrollLayerFlags)
+    layers.scroll = nullptr;
+
+  if (!layers.main && !layers.scroll)
+    element_layers_map_.erase(layer->element_id());
+}
+
+LayerTreeImpl::ElementLayers LayerTreeImpl::GetMutableLayers(
+    uint64_t element_id) {
+  auto iter = element_layers_map_.find(element_id);
+  if (iter == element_layers_map_.end())
+    return ElementLayers();
+
+  return iter->second;
 }
 
 LayerImpl* LayerTreeImpl::InnerViewportContainerLayer() const {
