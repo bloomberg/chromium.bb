@@ -10,9 +10,12 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/user_metrics.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/issue.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -27,6 +30,7 @@ const char kHelpPageUrlPrefix[] =
 // Message names.
 const char kRequestInitialData[] = "requestInitialData";
 const char kCreateRoute[] = "requestRoute";
+const char kAcknowledgeFirstRunFlow[] = "acknowledgeFirstRunFlow";
 const char kActOnIssue[] = "actOnIssue";
 const char kCloseRoute[] = "closeRoute";
 const char kJoinRoute[] = "joinRoute";
@@ -248,6 +252,10 @@ void MediaRouterWebUIMessageHandler::RegisterMessages() {
       base::Bind(&MediaRouterWebUIMessageHandler::OnCreateRoute,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      kAcknowledgeFirstRunFlow,
+      base::Bind(&MediaRouterWebUIMessageHandler::OnAcknowledgeFirstRunFlow,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       kActOnIssue,
       base::Bind(&MediaRouterWebUIMessageHandler::OnActOnIssue,
                  base::Unretained(this)));
@@ -309,6 +317,12 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
                        media_router_ui_->GetPresentationRequestSourceName()));
   initial_data.Set("castModes", cast_modes_list.release());
 
+  bool first_run_flow_acknowledged =
+      Profile::FromWebUI(web_ui())->GetPrefs()->GetBoolean(
+          prefs::kMediaRouterFirstRunFlowAcknowledged);
+  initial_data.SetBoolean("wasFirstRunFlowAcknowledged",
+                          first_run_flow_acknowledged);
+
   web_ui()->CallJavascriptFunction(kSetInitialData, initial_data);
   media_router_ui_->UIInitialized();
 }
@@ -362,6 +376,13 @@ void MediaRouterWebUIMessageHandler::OnCreateRoute(
     // request.
     DVLOG(1) << "Error initiating route request.";
   }
+}
+
+void MediaRouterWebUIMessageHandler::OnAcknowledgeFirstRunFlow(
+    const base::ListValue* args) {
+  DVLOG(1) << "OnAcknowledgeFirstRunFlow";
+  Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
+      prefs::kMediaRouterFirstRunFlowAcknowledged, true);
 }
 
 void MediaRouterWebUIMessageHandler::OnActOnIssue(

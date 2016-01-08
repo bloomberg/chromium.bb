@@ -792,6 +792,10 @@ extern const char kAllowDinosaurEasterEgg[];
 extern const char kClickedUpdateMenuItem[];
 #endif
 
+#if defined(ENABLE_MEDIA_ROUTER)
+extern const char kMediaRouterFirstRunFlowAcknowledged[];
+#endif
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

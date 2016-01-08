@@ -22,6 +22,8 @@ cr.define('media_router', function() {
     container = $('media-router-container');
     media_router.ui.setContainer(container);
 
+    container.addEventListener('acknowledge-first-run-flow',
+                               onAcknowledgeFirstRunFlow);
     container.addEventListener('back-click', onNavigateToSinkList);
     container.addEventListener('cast-mode-selected', onCastModeSelected);
     container.addEventListener('close-button-click', onCloseDialogEvent);
@@ -48,6 +50,15 @@ cr.define('media_router', function() {
    */
   function onCastModeSelected(data) {
     media_router.browserApi.reportSelectedCastMode(data.detail.castModeType);
+  }
+
+  /**
+   * Updates the preference that the user has seen the first run flow.
+   * Called when the user clicks on the acknowledgement button on the first run
+   * flow.
+   */
+  function onAcknowledgeFirstRunFlow() {
+    media_router.browserApi.acknowledgeFirstRunFlow();
   }
 
   /**

@@ -53,7 +53,8 @@ cr.define('media_router.ui', function() {
    * @param {deviceMissingUrl: string,
    *         sinks: !Array<!media_router.Sink>,
    *         routes: !Array<!media_router.Route>,
-   *         castModes: !Array<!media_router.CastMode>} data
+   *         castModes: !Array<!media_router.CastMode>,
+   *         wasFirstRunFlowAcknowledged: boolean} data
    * Parameters in data:
    *   deviceMissingUrl - url to be opened on "Device missing?" clicked.
    *   sinks - list of sinks to be displayed.
@@ -65,6 +66,7 @@ cr.define('media_router.ui', function() {
     container.castModeList = data['castModes'];
     container.allSinks = data['sinks'];
     container.routeList = data['routes'];
+    container.showFirstRunFlow = !data['wasFirstRunFlowAcknowledged'];
     container.maybeShowRouteDetailsOnOpen();
     media_router.browserApi.onInitialDataReceived();
   }
@@ -112,6 +114,13 @@ cr.define('media_router.ui', function() {
 // API invoked by this UI to communicate with the browser WebUI message handler.
 cr.define('media_router.browserApi', function() {
   'use strict';
+
+  /**
+   * Indicates that the user has acknowledged the first run flow.
+   */
+  function acknowledgeFirstRunFlow() {
+    chrome.send('acknowledgeFirstRunFlow');
+  }
 
   /**
    * Acts on the given issue.
@@ -214,6 +223,7 @@ cr.define('media_router.browserApi', function() {
   }
 
   return {
+    acknowledgeFirstRunFlow: acknowledgeFirstRunFlow,
     actOnIssue: actOnIssue,
     closeDialog: closeDialog,
     closeRoute: closeRoute,

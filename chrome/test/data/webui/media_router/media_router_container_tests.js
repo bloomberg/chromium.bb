@@ -56,6 +56,7 @@ cr.define('media_router_container', function() {
         'cast-mode-list',
         'container-header',
         'device-missing',
+        'first-run-flow',
         'issue-banner',
         'route-details',
         'sink-list',
@@ -169,7 +170,7 @@ cr.define('media_router_container', function() {
       // Tests for 'acknowledge-first-run-flow' event firing when the
       // 'first-run-button' button is clicked.
       test('first run button click', function(done) {
-        container.showFirstRunFlow_ = true;
+        container.showFirstRunFlow = true;
 
         setTimeout(function() {
           container.addEventListener('acknowledge-first-run-flow', function() {
@@ -452,6 +453,23 @@ cr.define('media_router_container', function() {
                                           'issue-banner']);
               done();
             });
+          });
+        });
+      });
+
+      // Tests for the expected visible UI when interacting with the first run
+      // flow.
+      test('first run button visibility', function(done) {
+        container.showFirstRunFlow = true;
+
+        setTimeout(function() {
+          checkElementVisibleWithId(true, 'first-run-flow');
+          MockInteractions.tap(container.shadowRoot.getElementById(
+              'first-run-button'));
+
+          setTimeout(function() {
+            checkElementVisibleWithId(false, 'first-run-flow');
+            done();
           });
         });
       });

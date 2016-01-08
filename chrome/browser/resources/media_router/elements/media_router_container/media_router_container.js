@@ -202,9 +202,9 @@ Polymer({
 
     /**
      * Whether to show the first run flow.
-     * @private {boolean}
+     * @type {boolean}
      */
-    showFirstRunFlow_: {
+    showFirstRunFlow: {
       type: Boolean,
       value: false,
     },
@@ -287,12 +287,13 @@ Polymer({
   },
 
   /**
-   * Fires an acknowledge-first-run-flow event. This is call when the first run
-   * flow button is clicked.
+   * Fires an acknowledge-first-run-flow event and hides the first run flow.
+   * This is call when the first run flow button is clicked.
    *
    * @private
    */
   acknowledgeFirstRunFlow_: function() {
+    this.showFirstRunFlow = false;
     this.fire('acknowledge-first-run-flow');
   },
 

@@ -2175,4 +2175,11 @@ const char kAllowDinosaurEasterEgg[] =
 const char kClickedUpdateMenuItem[] = "omaha.clicked_update_menu_item";
 #endif
 
+#if defined(ENABLE_MEDIA_ROUTER)
+// Whether or not the Media Router first run flow has been acknowledged by the
+// user.
+const char kMediaRouterFirstRunFlowAcknowledged[] =
+    "media_router.firstrunflow.acknowledged";
+#endif
+
 }  // namespace prefs

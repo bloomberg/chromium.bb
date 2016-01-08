@@ -56,6 +56,7 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   // See media_router_ui_interface.js for documentation on parameters.
   void OnRequestInitialData(const base::ListValue* args);
   void OnCreateRoute(const base::ListValue* args);
+  void OnAcknowledgeFirstRunFlow(const base::ListValue* args);
   void OnActOnIssue(const base::ListValue* args);
   void OnCloseRoute(const base::ListValue* args);
   void OnJoinRoute(const base::ListValue* args);

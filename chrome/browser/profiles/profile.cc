@@ -150,6 +150,13 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #if defined(OS_ANDROID)
   registry->RegisterBooleanPref(prefs::kClickedUpdateMenuItem, false);
 #endif
+
+#if defined(ENABLE_MEDIA_ROUTER)
+  registry->RegisterBooleanPref(
+      prefs::kMediaRouterFirstRunFlowAcknowledged,
+      false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+#endif
 }
 
 std::string Profile::GetDebugName() {
