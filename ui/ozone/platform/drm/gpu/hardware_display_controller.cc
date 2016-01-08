@@ -133,26 +133,6 @@ bool HardwareDisplayController::ActualSchedulePageFlip(
   return status;
 }
 
-std::vector<uint32_t> HardwareDisplayController::GetCompatibleHardwarePlaneIds(
-    const OverlayPlane& plane) const {
-  std::vector<uint32_t> plane_ids =
-      crtc_controllers_[0]->GetCompatibleHardwarePlaneIds(plane);
-
-  if (plane_ids.empty())
-    return plane_ids;
-
-  for (size_t i = 1; i < crtc_controllers_.size(); ++i) {
-    // Make sure all mirrored displays have overlays to support this
-    // plane.
-    if (crtc_controllers_[i]->GetCompatibleHardwarePlaneIds(plane).empty())
-      return std::vector<uint32_t>();
-  }
-
-  // TODO(kalyank): We Should ensure that this list doesn't contain any planes
-  // which mirrored displays share with primary.
-  return plane_ids;
-}
-
 bool HardwareDisplayController::IsFormatSupported(uint32_t fourcc_format,
                                                   uint32_t z_order) const {
   for (size_t i = 0; i < crtc_controllers_.size(); ++i) {

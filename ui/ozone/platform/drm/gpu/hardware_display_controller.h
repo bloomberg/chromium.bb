@@ -125,9 +125,6 @@ class OZONE_EXPORT HardwareDisplayController {
   // doesn't change any state.
   bool TestPageFlip(const OverlayPlaneList& plane_list);
 
-  std::vector<uint32_t> GetCompatibleHardwarePlaneIds(
-      const OverlayPlane& plane) const;
-
   bool IsFormatSupported(uint32_t fourcc_format, uint32_t z_order) const;
 
   // Set the hardware cursor to show the contents of |surface|.

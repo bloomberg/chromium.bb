@@ -96,9 +96,6 @@ class OZONE_EXPORT HardwareDisplayPlaneManager {
     return planes_;
   }
 
-  std::vector<uint32_t> GetCompatibleHardwarePlaneIds(const OverlayPlane& plane,
-                                                      uint32_t crtc_id) const;
-
   bool IsFormatSupported(uint32_t fourcc_format,
                          uint32_t z_order,
                          uint32_t crtc_id) const;

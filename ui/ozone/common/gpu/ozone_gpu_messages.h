@@ -71,9 +71,7 @@ IPC_STRUCT_TRAITS_BEGIN(ui::OverlayCheck_Params)
   IPC_STRUCT_TRAITS_MEMBER(display_rect)
   IPC_STRUCT_TRAITS_MEMBER(crop_rect)
   IPC_STRUCT_TRAITS_MEMBER(plane_z_order)
-  IPC_STRUCT_TRAITS_MEMBER(weight)
   IPC_STRUCT_TRAITS_MEMBER(is_overlay_candidate)
-  IPC_STRUCT_TRAITS_MEMBER(plane_ids)
 IPC_STRUCT_TRAITS_END()
 
 // clang-format on

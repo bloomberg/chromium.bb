@@ -4,7 +4,6 @@
 
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 
-#include <drm_fourcc.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -15,12 +14,11 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
-#include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
-#include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
+#include "ui/ozone/platform/drm/gpu/drm_overlay_validator.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 
 namespace ui {
@@ -67,6 +65,7 @@ void DrmWindow::Initialize() {
   TRACE_EVENT1("drm", "DrmWindow::Initialize", "widget", widget_);
 
   device_manager_->UpdateDrmDevice(widget_, nullptr);
+  overlay_validator_ = make_scoped_ptr(new DrmOverlayValidator(this));
 }
 
 void DrmWindow::Shutdown() {
@@ -85,8 +84,10 @@ HardwareDisplayController* DrmWindow::GetController() {
 void DrmWindow::SetBounds(const gfx::Rect& bounds) {
   TRACE_EVENT2("drm", "DrmWindow::SetBounds", "widget", widget_, "bounds",
                bounds.ToString());
-  if (bounds_.size() != bounds.size())
+  if (bounds_.size() != bounds.size()) {
     last_submitted_planes_.clear();
+    overlay_validator_->ClearCache();
+  }
 
   bounds_ = bounds;
   screen_manager_->UpdateControllerToWindowMapping();
@@ -144,61 +145,10 @@ void DrmWindow::SchedulePageFlip(const std::vector<OverlayPlane>& planes,
 }
 
 std::vector<OverlayCheck_Params> DrmWindow::TestPageFlip(
-    const std::vector<OverlayCheck_Params>& overlays,
+    const std::vector<OverlayCheck_Params>& overlay_params,
     ScanoutBufferGenerator* buffer_generator) {
-  std::vector<OverlayCheck_Params> params;
-  if (!controller_) {
-    // Nothing much we can do here.
-    return params;
-  }
-
-  OverlayPlaneList compatible_test_list;
-  scoped_refptr<DrmDevice> drm = controller_->GetAllocationDrmDevice();
-  for (const auto& overlay : overlays) {
-    OverlayCheck_Params overlay_params(overlay);
-    gfx::Size size =
-        (overlay.plane_z_order == 0) ? bounds().size() : overlay.buffer_size;
-    scoped_refptr<ScanoutBuffer> buffer;
-    // Check if we can re-use existing buffers.
-    for (const auto& plane : last_submitted_planes_) {
-      uint32_t format = GetFourCCFormatForFramebuffer(overlay.format);
-      if (plane.buffer->GetFramebufferPixelFormat() == format &&
-          plane.z_order == overlay.plane_z_order &&
-          plane.display_bounds == overlay.display_rect &&
-          plane.buffer->GetSize() == size) {
-        buffer = plane.buffer;
-        break;
-      }
-    }
-
-    if (!buffer)
-      buffer = buffer_generator->Create(drm, overlay.format, size);
-
-    if (!buffer)
-      continue;
-
-    OverlayPlane plane(buffer, overlay.plane_z_order, overlay.transform,
-                       overlay.display_rect, overlay.crop_rect);
-
-    // Buffer for Primary plane should always be present for compatibility test.
-    if (!compatible_test_list.size() && overlay.plane_z_order != 0) {
-      compatible_test_list.push_back(
-          *OverlayPlane::GetPrimaryPlane(last_submitted_planes_));
-    }
-
-    compatible_test_list.push_back(plane);
-
-    if (controller_->TestPageFlip(compatible_test_list)) {
-      overlay_params.plane_ids =
-          controller_->GetCompatibleHardwarePlaneIds(plane);
-      params.push_back(overlay_params);
-    }
-
-    if (compatible_test_list.size() > 1)
-      compatible_test_list.pop_back();
-  }
-
-  return params;
+  return overlay_validator_->TestPageFlip(
+      overlay_params, last_submitted_planes_, buffer_generator);
 }
 
 const OverlayPlane* DrmWindow::GetLastModesetBuffer() {
@@ -271,6 +221,8 @@ void DrmWindow::SetController(HardwareDisplayController* controller) {
   UpdateCursorBuffers();
   // We changed displays, so we want to update the cursor as well.
   ResetCursor(false /* bitmap_only */);
+  // Reset any cache in Validator.
+  overlay_validator_->ClearCache();
 }
 
 void DrmWindow::UpdateCursorBuffers() {

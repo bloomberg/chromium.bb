@@ -280,25 +280,6 @@ bool HardwareDisplayPlaneManager::AssignOverlayPlanes(
   return true;
 }
 
-std::vector<uint32_t>
-HardwareDisplayPlaneManager::GetCompatibleHardwarePlaneIds(
-    const OverlayPlane& plane,
-    uint32_t crtc_id) const {
-  int crtc_index = LookupCrtcIndex(crtc_id);
-  if (crtc_index < 0) {
-    LOG(ERROR) << "Cannot find crtc " << crtc_id;
-    return std::vector<uint32_t>();
-  }
-
-  std::vector<uint32_t> plane_ids;
-  for (const auto& hardware_plane : planes_) {
-    if (IsCompatible(hardware_plane.get(), plane, crtc_index))
-      plane_ids.push_back(hardware_plane->plane_id());
-  }
-
-  return plane_ids;
-}
-
 bool HardwareDisplayPlaneManager::IsFormatSupported(uint32_t fourcc_format,
                                                     uint32_t z_order,
                                                     uint32_t crtc_id) const {

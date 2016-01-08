@@ -31,6 +31,7 @@ namespace ui {
 class DrmBuffer;
 class DrmDevice;
 class DrmDeviceManager;
+class DrmOverlayValidator;
 class HardwareDisplayController;
 struct OverlayCheck_Params;
 class ScanoutBufferGenerator;
@@ -88,7 +89,7 @@ class OZONE_EXPORT DrmWindow {
   void SchedulePageFlip(const std::vector<OverlayPlane>& planes,
                         const SwapCompletionCallback& callback);
   std::vector<OverlayCheck_Params> TestPageFlip(
-      const std::vector<OverlayCheck_Params>& planes,
+      const std::vector<OverlayCheck_Params>& overlay_params,
       ScanoutBufferGenerator* buffer_generator);
 
   // Returns the last buffer associated with this window.
@@ -119,6 +120,7 @@ class OZONE_EXPORT DrmWindow {
   // The controller associated with the current window. This may be nullptr if
   // the window isn't over an active display.
   HardwareDisplayController* controller_ = nullptr;
+  scoped_ptr<DrmOverlayValidator> overlay_validator_;
 
   base::RepeatingTimer cursor_timer_;
 
