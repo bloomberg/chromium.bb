@@ -15,7 +15,4 @@ const char kCloudPrintURL[] = "cloud-print-url";
 // print service has been enabled. Used for testing.
 const char kCloudPrintXmppEndpoint[] = "cloud-print-xmpp-endpoint";
 
-// The URL of the cloud devices service to use.
-const char kCloudDevicesURL[] = "cloud-devices-url";
-
 }  // namespace switches

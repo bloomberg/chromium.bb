@@ -41,20 +41,6 @@ GCDApiFlow::GCDApiFlow() {
 GCDApiFlow::~GCDApiFlow() {
 }
 
-GCDApiFlowRequest::GCDApiFlowRequest() {
-}
-
-GCDApiFlowRequest::~GCDApiFlowRequest() {
-}
-
-std::string GCDApiFlowRequest::GetOAuthScope() {
-  return cloud_devices::kCloudDevicesAuthScope;
-}
-
-std::vector<std::string> GCDApiFlowRequest::GetExtraRequestHeaders() {
-  return std::vector<std::string>();
-}
-
 CloudPrintApiFlowRequest::CloudPrintApiFlowRequest() {
 }
 

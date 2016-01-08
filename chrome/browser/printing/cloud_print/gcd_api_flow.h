@@ -68,19 +68,6 @@ class GCDApiFlow {
   DISALLOW_COPY_AND_ASSIGN(GCDApiFlow);
 };
 
-class GCDApiFlowRequest : public GCDApiFlow::Request {
- public:
-  GCDApiFlowRequest();
-  ~GCDApiFlowRequest() override;
-
-  // GCDApiFlowRequest implementation
-  std::string GetOAuthScope() override;
-  std::vector<std::string> GetExtraRequestHeaders() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GCDApiFlowRequest);
-};
-
 class CloudPrintApiFlowRequest : public GCDApiFlow::Request {
  public:
   CloudPrintApiFlowRequest();

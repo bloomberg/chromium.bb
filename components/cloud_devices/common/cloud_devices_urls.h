@@ -25,9 +25,6 @@ GURL GetCloudPrintSigninURL();
 GURL GetCloudPrintAddAccountURL();
 bool IsCloudPrintURL(const GURL& url);
 
-GURL GetCloudDevicesURL();
-GURL GetCloudDevicesRelativeURL(const std::string& relative_path);
-
 }  // namespace cloud_devices
 
 #endif  // COMPONENTS_CLOUD_DEVICES_COMMON_CLOUD_DEVICES_URLS_H_

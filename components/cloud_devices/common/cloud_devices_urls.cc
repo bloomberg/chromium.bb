@@ -16,9 +16,6 @@ namespace cloud_devices {
 const char kCloudPrintAuthScope[] =
     "https://www.googleapis.com/auth/cloudprint";
 
-const char kCloudDevicesAuthScope[] =
-    "https://www.googleapis.com/auth/clouddevices";
-
 const char kCloudPrintLearnMoreURL[] =
     "https://www.google.com/support/cloudprint";
 
@@ -31,8 +28,6 @@ namespace {
 // cloud_print_app/manifest.json. If it's matched, print driver dialog will
 // open sign-in page in separate window.
 const char kCloudPrintURL[] = "https://www.google.com/cloudprint";
-
-const char kCloudDevicesUrl[] = "https://www.googleapis.com/clouddevices/v1";
 
 }
 
@@ -108,30 +103,6 @@ GURL GetCloudPrintManageDeviceURL(const std::string& device_id) {
   GURL::Replacements replacements;
   replacements.SetRefStr(ref);
   return GetCloudPrintURL().ReplaceComponents(replacements);
-}
-
-GURL GetCloudDevicesURL() {
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  GURL cloud_print_url(
-      command_line->GetSwitchValueASCII(switches::kCloudDevicesURL));
-  if (cloud_print_url.is_empty())
-    cloud_print_url = GURL(kCloudDevicesUrl);
-  return cloud_print_url;
-}
-
-GURL GetCloudDevicesRelativeURL(const std::string& relative_path) {
-  GURL url = GetCloudDevicesURL();
-  std::string path;
-  const char kURLPathSeparator[] = "/";
-  base::TrimString(url.path(), kURLPathSeparator, &path);
-  std::string trimmed_path;
-  base::TrimString(relative_path, kURLPathSeparator, &trimmed_path);
-  path += kURLPathSeparator;
-  path += trimmed_path;
-  GURL::Replacements replacements;
-  replacements.SetPathStr(path);
-  return url.ReplaceComponents(replacements);
 }
 
 }  // namespace cloud_devices

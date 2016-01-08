@@ -9,7 +9,6 @@ namespace switches {
 
 extern const char kCloudPrintURL[];
 extern const char kCloudPrintXmppEndpoint[];
-extern const char kCloudDevicesURL[];
 
 }  // namespace switches
 
