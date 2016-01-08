@@ -31,6 +31,7 @@ source_set("suggestions") {
   ]
   deps = [
     "//components/data_use_measurement/core",
+    "//components/google/core/browser",
     "//components/keyed_service/core",
     "//components/leveldb_proto",
     "//components/pref_registry",

@@ -17,6 +17,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/google/core/browser/google_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/suggestions/blacklist_store.h"
@@ -79,14 +80,26 @@ const int kSchedulingBackoffMultiplier = 2;
 // this are rejected. This means the maximum backoff is at least 5 / 2 minutes.
 const int kSchedulingMaxDelaySec = 5 * 60;
 
+const char kDefaultGoogleBaseURL[] = "https://www.google.com/";
+
+GURL GetGoogleBaseURL() {
+  GURL url(google_util::CommandLineGoogleBaseURL());
+  if (url.is_valid())
+    return url;
+  return GURL(kDefaultGoogleBaseURL);
+}
+
+// Format strings for the various suggestions URLs. They all have two string
+// params: The Google base URL and the device type.
 // TODO(mathp): Put this in TemplateURL.
 const char kSuggestionsURLFormat[] =
-    "https://www.google.com/chromesuggestions?t=%s";
+    "%schromesuggestions?t=%s";
 const char kSuggestionsBlacklistURLPrefixFormat[] =
-    "https://www.google.com/chromesuggestions/blacklist?t=%s&url=";
-const char kSuggestionsBlacklistURLParam[] = "url";
+    "%schromesuggestions/blacklist?t=%s&url=";
 const char kSuggestionsBlacklistClearURLFormat[] =
-    "https://www.google.com/chromesuggestions/blacklist/clear?t=%s";
+    "%schromesuggestions/blacklist/clear?t=%s";
+
+const char kSuggestionsBlacklistURLParam[] = "url";
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 const char kDeviceType[] = "2";
@@ -303,12 +316,15 @@ bool SuggestionsService::UseOAuth2() {
 
 // static
 GURL SuggestionsService::BuildSuggestionsURL() {
-  return GURL(base::StringPrintf(kSuggestionsURLFormat, kDeviceType));
+  return GURL(base::StringPrintf(kSuggestionsURLFormat,
+                                 GetGoogleBaseURL().spec().c_str(),
+                                 kDeviceType));
 }
 
 // static
 std::string SuggestionsService::BuildSuggestionsBlacklistURLPrefix() {
-  return base::StringPrintf(kSuggestionsBlacklistURLPrefixFormat, kDeviceType);
+  return base::StringPrintf(kSuggestionsBlacklistURLPrefixFormat,
+                            GetGoogleBaseURL().spec().c_str(), kDeviceType);
 }
 
 // static
@@ -321,6 +337,7 @@ GURL SuggestionsService::BuildSuggestionsBlacklistURL(
 // static
 GURL SuggestionsService::BuildSuggestionsBlacklistClearURL() {
   return GURL(base::StringPrintf(kSuggestionsBlacklistClearURLFormat,
+                                 GetGoogleBaseURL().spec().c_str(),
                                  kDeviceType));
 }
 
