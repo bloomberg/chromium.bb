@@ -12,6 +12,7 @@
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/view.h"
@@ -43,7 +44,9 @@ ButtonExample::~ButtonExample() {
 
 void ButtonExample::CreateExampleView(View* container) {
   container->set_background(Background::CreateSolidBackground(SK_ColorWHITE));
-  container->SetLayoutManager(new BoxLayout(BoxLayout::kVertical, 10, 10, 10));
+  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical, 10, 10, 10);
+  layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+  container->SetLayoutManager(layout);
 
   label_button_ = new LabelButton(this, ASCIIToUTF16(kLabelButton));
   label_button_->SetFocusable(true);
@@ -61,6 +64,9 @@ void ButtonExample::CreateExampleView(View* container) {
   container->AddChildView(disabled_button);
 
   container->AddChildView(new BlueButton(this, ASCIIToUTF16("Blue Button")));
+
+  container->AddChildView(
+      new MdTextButton(nullptr, base::ASCIIToUTF16("Material design")));
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   image_button_ = new ImageButton(this);
