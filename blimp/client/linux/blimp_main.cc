@@ -26,10 +26,10 @@ int main(int argc, const char**argv) {
 
   XInitThreads();
 
-  blimp::InitializeLogging();
-  blimp::InitializeMainMessageLoop();
+  blimp::client::InitializeLogging();
+  blimp::client::InitializeMainMessageLoop();
 
-  blimp::BlimpClientSessionLinux session;
+  blimp::client::BlimpClientSessionLinux session;
   session.GetTabControlFeature()->CreateTab(kDummyTabId);
 
   // If there is a non-switch argument to the command line, load that url.

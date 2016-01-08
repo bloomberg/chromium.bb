@@ -14,6 +14,7 @@ class Layer;
 }
 
 namespace blimp {
+namespace client {
 
 // A test class that drives changes to a layer every 16ms.  This can be used to
 // make sure the compositor is rendering layers properly.  In this case, colors
@@ -38,6 +39,7 @@ class DummyLayerDriver {
   DISALLOW_COPY_AND_ASSIGN(DummyLayerDriver);
 };
 
+}  // namespace client
 }  // namespace blimp
 
 #endif  // BLIMP_CLIENT_COMPOSITOR_TEST_DUMMY_LAYER_DRIVER_H_

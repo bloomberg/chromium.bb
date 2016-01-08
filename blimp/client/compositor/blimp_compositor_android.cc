@@ -15,6 +15,7 @@ const int kMinimumTileContentWidthPixels = 64;
 }
 
 namespace blimp {
+namespace client {
 
 // static
 scoped_ptr<BlimpCompositorAndroid> BlimpCompositorAndroid::Create(
@@ -90,4 +91,5 @@ void BlimpCompositorAndroid::GenerateLayerTreeSettings(
   settings->default_tile_size.SetSize(default_tile_size, default_tile_size);
 }
 
+}  // namespace client
 }  // namespace blimp

@@ -10,6 +10,7 @@
 #include "blimp/client/session/blimp_client_session.h"
 
 namespace blimp {
+namespace client {
 
 class BlimpClientSessionAndroid : public BlimpClientSession {
  public:
@@ -31,6 +32,7 @@ class BlimpClientSessionAndroid : public BlimpClientSession {
   DISALLOW_COPY_AND_ASSIGN(BlimpClientSessionAndroid);
 };
 
+}  // namespace client
 }  // namespace blimp
 
 #endif  // BLIMP_CLIENT_SESSION_BLIMP_CLIENT_SESSION_ANDROID_H_

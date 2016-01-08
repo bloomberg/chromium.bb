@@ -13,6 +13,7 @@ class GURL;
 class SkBitmap;
 
 namespace blimp {
+namespace client {
 
 // The native component of org.chromium.blimp.toolbar.Toolbar.  This handles
 // marshalling calls between Java and native.  Specifically, this passes calls
@@ -57,6 +58,7 @@ class Toolbar : public NavigationFeature::NavigationFeatureDelegate {
   DISALLOW_COPY_AND_ASSIGN(Toolbar);
 };
 
+}  // namespace client
 }  // namespace blimp
 
 #endif  // BLIMP_CLIENT_ANDROID_TOOLBAR_H_

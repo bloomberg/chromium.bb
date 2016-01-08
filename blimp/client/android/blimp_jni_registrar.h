@@ -8,12 +8,14 @@
 #include <jni.h>
 
 namespace blimp {
+namespace client {
 
 // Registers native method hooks with the Java runtime specified by |env|.
 // Returns false if registration fails, in which case native methods are
 // unavailable to Java.
 bool RegisterBlimpJni(JNIEnv* env);
 
+}  // namespace client
 }  // namespace blimp
 
 #endif  // BLIMP_CLIENT_ANDROID_BLIMP_JNI_REGISTRAR_H_

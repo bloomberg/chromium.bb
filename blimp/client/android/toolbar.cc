@@ -12,6 +12,7 @@
 #include "url/gurl.h"
 
 namespace blimp {
+namespace client {
 
 namespace {
 
@@ -107,4 +108,5 @@ void Toolbar::OnLoadingChanged(int tab_id, bool loading) {
                                    static_cast<jboolean>(loading));
 }
 
+}  // namespace client
 }  // namespace blimp

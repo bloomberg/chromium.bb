@@ -33,6 +33,8 @@ namespace blimp {
 
 class BlimpMessage;
 
+namespace client {
+
 // BlimpCompositor provides the basic framework and setup to host a
 // LayerTreeHost.  The class that owns the LayerTreeHost is usually called the
 // compositor, but the LayerTreeHost does the compositing work.  The rendering
@@ -177,6 +179,7 @@ class BLIMP_CLIENT_EXPORT BlimpCompositor
   DISALLOW_COPY_AND_ASSIGN(BlimpCompositor);
 };
 
+}  // namespace client
 }  // namespace blimp
 
 #endif  // BLIMP_CLIENT_COMPOSITOR_BLIMP_COMPOSITOR_H_

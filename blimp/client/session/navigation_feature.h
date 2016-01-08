@@ -14,6 +14,7 @@ class GURL;
 class SkBitmap;
 
 namespace blimp {
+namespace client {
 
 // Handles all incoming and outgoing protobuf messages of type
 // RenderWidget::NAVIGATION.  Delegates can be added to be notified of incoming
@@ -65,6 +66,7 @@ class BLIMP_CLIENT_EXPORT NavigationFeature : public BlimpMessageProcessor {
   DISALLOW_COPY_AND_ASSIGN(NavigationFeature);
 };
 
+}  // namespace client
 }  // namespace blimp
 
 #endif  // BLIMP_CLIENT_SESSION_NAVIGATION_FEATURE_H_

@@ -15,6 +15,7 @@ class Size;
 }
 
 namespace blimp {
+namespace client {
 
 class BlimpCompositorAndroid;
 class RenderWidgetFeature;
@@ -106,6 +107,7 @@ class BlimpView {
   DISALLOW_COPY_AND_ASSIGN(BlimpView);
 };
 
+}  // namespace client
 }  // namespace blimp
 
 #endif  // BLIMP_CLIENT_ANDROID_BLIMP_VIEW_H_

@@ -10,6 +10,7 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace blimp {
+namespace client {
 
 static jlong Init(JNIEnv* env,
                   const JavaParamRef<jobject>& jobj,
@@ -53,4 +54,5 @@ void TabControlFeatureAndroid::OnContentAreaSizeChanged(
   tab_control_feature_->SetSizeAndScale(gfx::Size(width, height), dp_to_px);
 }
 
+}  // namespace client
 }  // namespace blimp

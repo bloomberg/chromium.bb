@@ -19,7 +19,7 @@ import org.chromium.base.library_loader.ProcessInitException;
 /**
  * Asynchronously loads and registers the native libraries associated with Blimp.
  */
-@JNINamespace("blimp")
+@JNINamespace("blimp::client")
 public final class BlimpLibraryLoader {
     /**
      * A callback interface that is notified with the native library load results.

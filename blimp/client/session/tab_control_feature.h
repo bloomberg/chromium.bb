@@ -16,6 +16,7 @@ class Size;
 }
 
 namespace blimp {
+namespace client {
 
 class BLIMP_CLIENT_EXPORT TabControlFeature : public BlimpMessageProcessor {
  public:
@@ -49,6 +50,7 @@ class BLIMP_CLIENT_EXPORT TabControlFeature : public BlimpMessageProcessor {
   DISALLOW_COPY_AND_ASSIGN(TabControlFeature);
 };
 
+}  // namespace client
 }  // namespace blimp
 
 #endif  // BLIMP_CLIENT_SESSION_TAB_CONTROL_FEATURE_H_

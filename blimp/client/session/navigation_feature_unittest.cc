@@ -18,6 +18,7 @@
 using testing::_;
 
 namespace blimp {
+namespace client {
 
 class MockNavigationFeatureDelegate
     : public NavigationFeature::NavigationFeatureDelegate {
@@ -155,4 +156,5 @@ TEST_F(NavigationFeatureTest, TestNavigateReloadMessage) {
   feature_.Reload(1);
 }
 
+}  // namespace client
 }  // namespace blimp

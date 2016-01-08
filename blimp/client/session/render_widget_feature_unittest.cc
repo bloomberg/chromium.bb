@@ -21,6 +21,7 @@ using testing::InSequence;
 using testing::Sequence;
 
 namespace blimp {
+namespace client {
 
 namespace {
 
@@ -126,4 +127,5 @@ TEST_F(RenderWidgetFeatureTest, RepliesHaveCorrectRenderWidgetId) {
   feature_.SendCompositorMessage(2, cc::proto::CompositorMessage());
 }
 
+}  // namespace client
 }  // namespace blimp

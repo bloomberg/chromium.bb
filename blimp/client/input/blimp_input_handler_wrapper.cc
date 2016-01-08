@@ -11,6 +11,7 @@
 #include "ui/events/gestures/blink/web_gesture_curve_impl.h"
 
 namespace blimp {
+namespace client {
 
 BlimpInputHandlerWrapper::BlimpInputHandlerWrapper(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
@@ -94,4 +95,5 @@ void BlimpInputHandlerWrapper::DidAnimateForInput() {
   DCHECK(compositor_thread_checker_.CalledOnValidThread());
 }
 
+}  // namespace client
 }  // namespace blimp

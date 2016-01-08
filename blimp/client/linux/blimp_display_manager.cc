@@ -13,6 +13,7 @@
 #include "ui/platform_window/x11/x11_window.h"
 
 namespace blimp {
+namespace client {
 
 BlimpDisplayManager::BlimpDisplayManager(
     const gfx::Size& window_size,
@@ -79,4 +80,5 @@ void BlimpDisplayManager::OnAcceleratedWidgetDestroyed() {
 
 void BlimpDisplayManager::OnActivationChanged(bool active) {}
 
+}  // namespace client
 }  // namespace blimp

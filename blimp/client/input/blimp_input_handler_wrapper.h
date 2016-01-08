@@ -12,6 +12,8 @@
 #include "ui/events/blink/input_handler_proxy_client.h"
 
 namespace blimp {
+namespace client {
+
 class BlimpInputManager;
 
 // The BlimpInputHandlerWrapper isolates all input handling processing done on
@@ -62,6 +64,7 @@ class BlimpInputHandlerWrapper : public ui::InputHandlerProxyClient {
   DISALLOW_COPY_AND_ASSIGN(BlimpInputHandlerWrapper);
 };
 
+}  // namespace client
 }  // namespace blimp
 
 #endif  // BLIMP_CLIENT_INPUT_BLIMP_INPUT_HANDLER_WRAPPER_H_

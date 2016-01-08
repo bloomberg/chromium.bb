@@ -19,6 +19,9 @@ class BlimpMessageProcessor;
 class BlimpMessageThreadPipe;
 class BrowserConnectionHandler;
 class ClientConnectionManager;
+
+namespace client {
+
 class ClientNetworkComponents;
 class NavigationFeature;
 class RenderWidgetFeature;
@@ -68,6 +71,7 @@ class BLIMP_CLIENT_EXPORT BlimpClientSession {
   DISALLOW_COPY_AND_ASSIGN(BlimpClientSession);
 };
 
+}  // namespace client
 }  // namespace blimp
 
 #endif  // BLIMP_CLIENT_SESSION_BLIMP_CLIENT_SESSION_H_

@@ -10,6 +10,7 @@
 #include "gpu/command_buffer/client/context_support.h"
 
 namespace blimp {
+namespace client {
 
 BlimpOutputSurface::BlimpOutputSurface(
     const scoped_refptr<cc::ContextProvider>& context_provider)
@@ -25,4 +26,5 @@ void BlimpOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   cc::OutputSurface::PostSwapBuffersComplete();
 }
 
+}  // namespace client
 }  // namespace blimp

@@ -10,6 +10,7 @@
 #include "blimp/net/blimp_message_processor.h"
 
 namespace blimp {
+namespace client {
 
 TabControlFeature::TabControlFeature() {}
 
@@ -63,4 +64,5 @@ void TabControlFeature::ProcessMessage(
   NOTIMPLEMENTED();
 }
 
+}  // namespace client
 }  // namespace blimp

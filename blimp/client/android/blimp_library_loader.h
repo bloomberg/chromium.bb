@@ -8,9 +8,11 @@
 #include <jni.h>
 
 namespace blimp {
+namespace client {
 
 bool RegisterBlimpLibraryLoaderJni(JNIEnv* env);
 
+}  // namespace client
 }  // namespace blimp
 
 #endif  // BLIMP_CLIENT_ANDROID_BLIMP_LIBRARY_LOADER_H_

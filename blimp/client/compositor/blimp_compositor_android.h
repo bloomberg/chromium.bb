@@ -21,6 +21,7 @@ class LayerTreeHost;
 }
 
 namespace blimp {
+namespace client {
 
 class RenderWidgetFeature;
 
@@ -68,6 +69,7 @@ class BlimpCompositorAndroid : public BlimpCompositor {
   DISALLOW_COPY_AND_ASSIGN(BlimpCompositorAndroid);
 };
 
+}  // namespace client
 }  // namespace blimp
 
 #endif  // BLIMP_CLIENT_COMPOSITOR_BLIMP_COMPOSITOR_ANDROID_H_

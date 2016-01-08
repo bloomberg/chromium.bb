@@ -21,7 +21,7 @@ import org.chromium.blimp.session.BlimpClientSession;
  * A {@link View} that will visually represent the Blimp rendered content.  This {@link View} starts
  * a native compositor.
  */
-@JNINamespace("blimp")
+@JNINamespace("blimp::client")
 public class BlimpView extends SurfaceView implements SurfaceHolder.Callback2 {
     private long mNativeBlimpViewPtr;
 

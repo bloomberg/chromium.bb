@@ -12,7 +12,7 @@ import org.chromium.base.annotations.JNINamespace;
  * to the native session methods and to facilitate passing a BlimpClientSession object between Java
  * classes with native counterparts.
  */
-@JNINamespace("blimp")
+@JNINamespace("blimp::client")
 public class BlimpClientSession {
     private long mNativeBlimpClientSessionAndroidPtr;
 

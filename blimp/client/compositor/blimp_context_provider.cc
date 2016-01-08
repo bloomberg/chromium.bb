@@ -14,6 +14,8 @@
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 
+namespace blimp {
+namespace client {
 namespace {
 
 // Singleton used to initialize and terminate the gles2 library.
@@ -31,15 +33,13 @@ base::LazyInstance<GLES2Initializer> g_gles2_initializer =
     LAZY_INSTANCE_INITIALIZER;
 
 static void BindGrContextCallback(const GrGLInterface* interface) {
-  blimp::BlimpContextProvider* context_provider =
-      reinterpret_cast<blimp::BlimpContextProvider*>(interface->fCallbackData);
+  BlimpContextProvider* context_provider =
+      reinterpret_cast<BlimpContextProvider*>(interface->fCallbackData);
 
   gles2::SetGLContext(context_provider->ContextGL());
 }
 
 }  // namespace
-
-namespace blimp {
 
 // static
 scoped_refptr<BlimpContextProvider> BlimpContextProvider::Create(
@@ -160,4 +160,5 @@ void BlimpContextProvider::OnLostContext() {
     gr_context_->abandonContext();
 }
 
+}  // namespace client
 }  // namespace blimp

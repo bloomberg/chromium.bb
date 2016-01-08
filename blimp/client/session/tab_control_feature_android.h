@@ -9,6 +9,7 @@
 #include "base/macros.h"
 
 namespace blimp {
+namespace client {
 
 class TabControlFeature;
 
@@ -40,6 +41,7 @@ class TabControlFeatureAndroid {
   DISALLOW_COPY_AND_ASSIGN(TabControlFeatureAndroid);
 };
 
+}  // namespace client
 }  // namespace blimp
 
 #endif  // BLIMP_CLIENT_SESSION_TAB_CONTROL_FEATURE_ANDROID_H_

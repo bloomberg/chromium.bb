@@ -11,6 +11,7 @@
 #include "cc/output/output_surface.h"
 
 namespace blimp {
+namespace client {
 
 // Minimal implementation of cc::OutputSurface.
 class BlimpOutputSurface : public cc::OutputSurface {
@@ -26,6 +27,7 @@ class BlimpOutputSurface : public cc::OutputSurface {
   DISALLOW_COPY_AND_ASSIGN(BlimpOutputSurface);
 };
 
+}  // namespace client
 }  // namespace blimp
 
 #endif  // BLIMP_CLIENT_COMPOSITOR_BLIMP_OUTPUT_SURFACE_H_

@@ -14,6 +14,7 @@ class PlatformEventSource;
 }
 
 namespace blimp {
+namespace client {
 
 class BlimpClientSessionLinux : public BlimpClientSession,
                                 public BlimpDisplayManagerDelegate {
@@ -31,6 +32,7 @@ class BlimpClientSessionLinux : public BlimpClientSession,
   DISALLOW_COPY_AND_ASSIGN(BlimpClientSessionLinux);
 };
 
+}  // namespace client
 }  // namespace blimp
 
 #endif  // BLIMP_CLIENT_SESSION_BLIMP_CLIENT_SESSION_LINUX_H_

@@ -17,6 +17,7 @@
 #include "blimp/net/tcp_client_transport.h"
 
 namespace blimp {
+namespace client {
 namespace {
 
 // TODO(kmarshall): Take values from configuration data.
@@ -182,4 +183,5 @@ RenderWidgetFeature* BlimpClientSession::GetRenderWidgetFeature() const {
   return render_widget_feature_.get();
 }
 
+}  // namespace client
 }  // namespace blimp

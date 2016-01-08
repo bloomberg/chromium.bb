@@ -8,11 +8,13 @@
 #include "blimp/client/blimp_client_export.h"
 
 namespace blimp {
+namespace client {
 
 BLIMP_CLIENT_EXPORT void InitializeLogging();
 
 BLIMP_CLIENT_EXPORT bool InitializeMainMessageLoop();
 
+}  // namespace client
 }  // namespace blimp
 
 #endif  // BLIMP_CLIENT_BLIMP_STARTUP_H_

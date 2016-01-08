@@ -27,6 +27,8 @@
 #include "net/base/net_errors.h"
 #include "ui/gl/gl_surface.h"
 
+namespace blimp {
+namespace client {
 namespace {
 
 base::LazyInstance<blimp::BlimpTaskGraphRunner> g_task_graph_runner =
@@ -36,12 +38,10 @@ const int kDummyTabId = 0;
 
 // TODO(dtrainor): Replace this when Layer content comes from the server (see
 // crbug.com/527200 for details).
-base::LazyInstance<blimp::DummyLayerDriver> g_dummy_layer_driver =
+base::LazyInstance<DummyLayerDriver> g_dummy_layer_driver =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
-
-namespace blimp {
 
 BlimpCompositor::BlimpCompositor(float dp_to_px,
                                  RenderWidgetFeature* render_widget_feature)
@@ -319,4 +319,5 @@ cc::LayerSettings BlimpCompositor::LayerSettings() {
   return settings;
 }
 
+}  // namespace client
 }  // namespace blimp

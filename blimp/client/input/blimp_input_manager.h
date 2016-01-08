@@ -15,6 +15,7 @@
 #include "ui/events/gesture_detection/motion_event.h"
 
 namespace blimp {
+namespace client {
 
 class BlimpInputManagerClient {
  public:
@@ -101,6 +102,7 @@ class BlimpInputManager : public ui::GestureProviderClient {
   DISALLOW_COPY_AND_ASSIGN(BlimpInputManager);
 };
 
+}  // namespace client
 }  // namespace blimp
 
 #endif  // BLIMP_CLIENT_INPUT_BLIMP_INPUT_MANAGER_H_

@@ -10,6 +10,7 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace blimp {
+namespace client {
 
 BlimpClientSessionLinux::BlimpClientSessionLinux()
     : event_source_(ui::PlatformEventSource::CreateDefault()) {
@@ -25,4 +26,5 @@ void BlimpClientSessionLinux::OnClosed() {
   base::MessageLoop::current()->QuitNow();
 }
 
+}  // namespace client
 }  // namespace blimp

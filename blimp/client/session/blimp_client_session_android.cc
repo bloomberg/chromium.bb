@@ -7,6 +7,7 @@
 #include "jni/BlimpClientSession_jni.h"
 
 namespace blimp {
+namespace client {
 
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
   return reinterpret_cast<intptr_t>(new BlimpClientSessionAndroid(env, jobj));
@@ -39,4 +40,5 @@ void BlimpClientSessionAndroid::Destroy(JNIEnv* env,
   delete this;
 }
 
+}  // namespace client
 }  // namespace blimp

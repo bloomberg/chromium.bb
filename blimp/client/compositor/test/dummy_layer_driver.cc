@@ -16,6 +16,7 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace blimp {
+namespace client {
 
 DummyLayerDriver::DummyLayerDriver()
     : layer_(cc::SolidColorLayer::Create(BlimpCompositor::LayerSettings())),
@@ -59,4 +60,5 @@ void DummyLayerDriver::StepAnimation() {
       base::TimeDelta::FromMilliseconds(16));
 }
 
+}  // namespace client
 }  // namespace blimp

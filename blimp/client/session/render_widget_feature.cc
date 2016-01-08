@@ -14,6 +14,7 @@
 #include "net/base/net_errors.h"
 
 namespace blimp {
+namespace client {
 
 RenderWidgetFeature::RenderWidgetFeature() {}
 
@@ -131,4 +132,5 @@ uint32_t RenderWidgetFeature::GetRenderWidgetId(const int tab_id) {
   return 0U;
 }
 
+}  // namespace client
 }  // namespace blimp

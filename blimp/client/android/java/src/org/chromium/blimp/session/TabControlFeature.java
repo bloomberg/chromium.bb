@@ -12,7 +12,7 @@ import org.chromium.base.annotations.JNINamespace;
  * A Java representation of the native ControlFeature class.  Provides easy access for Java control
  * UI to interact with the native content-lite feature proxy and talk to the engine.
  */
-@JNINamespace("blimp")
+@JNINamespace("blimp::client")
 public class TabControlFeature implements View.OnLayoutChangeListener {
     private final float mDpToPx;
 

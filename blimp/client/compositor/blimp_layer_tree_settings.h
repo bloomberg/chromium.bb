@@ -18,6 +18,7 @@ class Size;
 }
 
 namespace blimp {
+namespace client {
 
 // Populates client |settings| based on defaults & command line flags.  This
 // might have to be tweaked into a message protocol if it turns out
@@ -25,6 +26,7 @@ namespace blimp {
 // client.
 void PopulateCommonLayerTreeSettings(cc::LayerTreeSettings* settings);
 
+}  // namespace client
 }  // namespace blimp
 
 #endif  // BLIMP_CLIENT_COMPOSITOR_BLIMP_LAYER_TREE_SETTINGS_H_

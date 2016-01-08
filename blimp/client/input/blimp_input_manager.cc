@@ -11,6 +11,7 @@
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 
 namespace blimp {
+namespace client {
 
 scoped_ptr<BlimpInputManager> BlimpInputManager::Create(
       BlimpInputManagerClient* client,
@@ -152,4 +153,5 @@ bool BlimpInputManager::IsCompositorThread() const {
   return compositor_task_runner_->BelongsToCurrentThread();
 }
 
+}  // namespace client
 }  // namespace blimp

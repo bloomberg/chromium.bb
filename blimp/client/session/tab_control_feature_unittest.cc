@@ -17,6 +17,7 @@
 using testing::_;
 
 namespace blimp {
+namespace client {
 
 MATCHER_P3(EqualsSizeMessage, width, height, dp_to_px, "") {
   return arg.tab_control().type() == TabControlMessage::SIZE &&
@@ -86,4 +87,5 @@ TEST_F(TabControlFeatureTest, NoDuplicateSizeMessage) {
   feature_.SetSizeAndScale(gfx::Size(width + 1, height + 1), dp_to_px + 1);
 }
 
+}  // namespace client
 }  // namespace blimp

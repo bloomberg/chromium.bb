@@ -13,6 +13,7 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace blimp {
+namespace client {
 
 static jlong Init(JNIEnv* env,
                   const JavaParamRef<jobject>& jobj,
@@ -176,4 +177,5 @@ jboolean BlimpView::OnTouchEvent(JNIEnv* env,
   return compositor_->OnTouchEvent(event);
 }
 
+}  // namespace client
 }  // namespace blimp

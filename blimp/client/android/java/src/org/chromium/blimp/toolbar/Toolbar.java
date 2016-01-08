@@ -22,7 +22,7 @@ import org.chromium.blimp.session.BlimpClientSession;
  * A {@link View} that visually represents the Blimp toolbar, which lets users issue navigation
  * commands and displays relevant navigation UI.
  */
-@JNINamespace("blimp")
+@JNINamespace("blimp::client")
 public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver,
         View.OnClickListener {
     private long mNativeToolbarPtr;

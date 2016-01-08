@@ -17,6 +17,7 @@
 #include "ui/gl/gl_surface.h"
 
 namespace blimp {
+namespace client {
 
 // Helper class to provide a graphics context for the compositor.
 class BlimpContextProvider : public cc::ContextProvider {
@@ -59,6 +60,7 @@ class BlimpContextProvider : public cc::ContextProvider {
   DISALLOW_COPY_AND_ASSIGN(BlimpContextProvider);
 };
 
+}  // namespace client
 }  // namespace blimp
 
 #endif  // BLIMP_CLIENT_COMPOSITOR_BLIMP_CONTEXT_PROVIDER_H_

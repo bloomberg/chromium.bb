@@ -18,6 +18,7 @@ base::LazyInstance<scoped_ptr<base::MessageLoopForUI>> g_main_message_loop =
 }
 
 namespace blimp {
+namespace client {
 
 void InitializeLogging() {
   logging::LoggingSettings settings;
@@ -50,4 +51,5 @@ bool InitializeMainMessageLoop() {
   return true;
 }
 
+}  // namespace client
 }  // namespace blimp

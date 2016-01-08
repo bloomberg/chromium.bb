@@ -18,6 +18,7 @@ class PlatformWindow;
 }
 
 namespace blimp {
+namespace client {
 
 class BlimpCompositor;
 class RenderWidgetFeature;
@@ -61,6 +62,7 @@ class BlimpDisplayManager : public ui::PlatformWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(BlimpDisplayManager);
 };
 
+}  // namespace client
 }  // namespace blimp
 
 #endif  // BLIMP_CLIENT_LINUX_BLIMP_DISPLAY_MANAGER_H_

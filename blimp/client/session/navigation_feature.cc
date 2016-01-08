@@ -11,6 +11,7 @@
 #include "url/gurl.h"
 
 namespace blimp {
+namespace client {
 
 NavigationFeature::NavigationFeature() {}
 
@@ -130,4 +131,5 @@ NavigationFeature::NavigationFeatureDelegate* NavigationFeature::FindDelegate(
   return nullptr;
 }
 
+}  // namespace client
 }  // namespace blimp

@@ -25,6 +25,7 @@ class CompositorMessage;
 }
 
 namespace blimp {
+namespace client {
 
 // Handles all incoming and outgoing protobuf message types tied to a specific
 // RenderWidget. This includes BlimpMessage::INPUT, BlimpMessage::COMPOSITOR,
@@ -103,6 +104,7 @@ class BLIMP_CLIENT_EXPORT RenderWidgetFeature : public BlimpMessageProcessor {
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetFeature);
 };
 
+}  // namespace client
 }  // namespace blimp
 
 #endif  // BLIMP_CLIENT_SESSION_RENDER_WIDGET_FEATURE_H_

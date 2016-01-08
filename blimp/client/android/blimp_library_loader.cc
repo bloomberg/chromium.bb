@@ -20,7 +20,7 @@
 namespace {
 
 bool OnLibrariesLoaded(JNIEnv* env, jclass clazz) {
-  blimp::InitializeLogging();
+  blimp::client::InitializeLogging();
   return true;
 }
 
@@ -33,7 +33,7 @@ bool RegisterJni(JNIEnv* env) {
   if (!base::android::RegisterJni(env))
     return false;
 
-  if (!blimp::RegisterBlimpJni(env))
+  if (!blimp::client::RegisterBlimpJni(env))
     return false;
 
   return true;
@@ -42,9 +42,10 @@ bool RegisterJni(JNIEnv* env) {
 }  // namespace
 
 namespace blimp {
+namespace client {
 
 static jboolean StartBlimp(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
-  if (!blimp::InitializeMainMessageLoop())
+  if (!InitializeMainMessageLoop())
     return false;
 
   base::MessageLoopForUI::current()->Start();
@@ -56,6 +57,7 @@ bool RegisterBlimpLibraryLoaderJni(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
+}  // namespace client
 }  // namespace blimp
 
 JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
