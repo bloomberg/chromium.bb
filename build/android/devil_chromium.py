@@ -47,7 +47,7 @@ _DEVIL_BUILD_PRODUCT_DEPS = {
   ],
   'forwarder_host': [
     {
-      'platform': 'linux',
+      'platform': 'linux2',
       'arch': 'x86_64',
       'name': 'host_forwarder',
     },
@@ -86,7 +86,7 @@ _DEVIL_BUILD_PRODUCT_DEPS = {
   ],
   'md5sum_host': [
     {
-      'platform': 'linux',
+      'platform': 'linux2',
       'arch': 'x86_64',
       'name': 'md5sum_bin_host',
     },
