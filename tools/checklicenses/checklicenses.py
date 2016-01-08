@@ -504,6 +504,17 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
+    # BSD License. http://bugzilla.maptools.org/show_bug.cgi?id=2532
+    'third_party/pdfium/third_party/libtiff/tif_ojpeg.c': [
+        'UNKNOWN',
+    ],
+    'third_party/pdfium/third_party/libtiff/tiffvers.h': [
+        'UNKNOWN',
+    ],
+    'third_party/pdfium/third_party/libtiff/uvcode.h': [
+        'UNKNOWN',
+    ],
+
     'third_party/talloc': [
         'GPL (v3 or later)',
         'UNKNOWN',  # http://crbug.com/98588
