@@ -47,8 +47,13 @@ int errors = 0;
 int count = 0;
 
 void
-simple_error (const char *msg, yaml_event_t *event) {
-  error_at_line(EXIT_FAILURE, 0, file_name, event->start_mark.line, "%s", msg);
+simple_error (const char *msg, yaml_parser_t *parser, yaml_event_t *event) {
+  error_at_line(EXIT_FAILURE, 0, file_name, event->start_mark.line ? event->start_mark.line : parser->problem_mark.line, "%s", msg);
+}
+
+void
+yaml_parse_error (yaml_parser_t *parser) {
+  error_at_line(EXIT_FAILURE, 0, file_name, parser->problem_mark.line, "%s", parser->problem);
 }
 
 void
@@ -64,7 +69,7 @@ read_tables (yaml_parser_t *parser, char *tables_list) {
   if (!yaml_parser_parse(parser, &event) ||
       (event.type != YAML_SCALAR_EVENT) ||
       strcmp(event.data.scalar.value, "tables")) {
-    simple_error("tables expected", &event);
+    simple_error("tables expected", parser, &event);
   }
 
   yaml_event_delete(&event);
@@ -79,7 +84,7 @@ read_tables (yaml_parser_t *parser, char *tables_list) {
   char *p = tables_list;
   while (!done) {
     if (!yaml_parser_parse(parser, &event)) {
-      simple_error("Error in YAML", &event);
+      yaml_parse_error(parser);
     }
     if (event.type == YAML_SEQUENCE_END_EVENT) {
       done = 1;
@@ -129,7 +134,7 @@ read_flags (yaml_parser_t *parser, int *direction, int *hyphenation) {
     }
   }
   if (!parse_error)
-    simple_error("Error in YAML", &event);
+    yaml_parse_error(parser);
   if (event.type != YAML_MAPPING_END_EVENT)
     yaml_error(YAML_MAPPING_END_EVENT, &event);
   yaml_event_delete(&event);
@@ -187,7 +192,7 @@ read_mode (yaml_parser_t *parser) {
     yaml_event_delete(&event);
   }
   if (!parse_error)
-    simple_error("Error in YAML", &event);
+    yaml_parse_error(parser);
   if (event.type != YAML_SEQUENCE_END_EVENT)
     yaml_error(YAML_SEQUENCE_END_EVENT, &event);
   yaml_event_delete(&event);
@@ -220,7 +225,7 @@ read_cursorPos (yaml_parser_t *parser, int len) {
     error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
 		  "Too many or too few cursor positions (%i) for word of length %i\n", i, len);
   if (!parse_error)
-    simple_error("Error in YAML", &event);
+    yaml_parse_error(parser);
   if (event.type != YAML_SEQUENCE_END_EVENT)
     yaml_error(YAML_SEQUENCE_END_EVENT, &event);
   yaml_event_delete(&event);
@@ -300,7 +305,7 @@ read_typeforms (yaml_parser_t *parser, int len) {
     }
   }
   if (!parse_error)
-    simple_error("Error in YAML", &event);
+    yaml_parse_error(parser);
 
   if (event.type != YAML_MAPPING_END_EVENT)
     yaml_error(YAML_MAPPING_END_EVENT, &event);
@@ -343,7 +348,7 @@ read_options (yaml_parser_t *parser, int len,
     }
   }
   if (!parse_error)
-    simple_error("Error in YAML", &event);
+    yaml_parse_error(parser);
   if (event.type != YAML_MAPPING_END_EVENT)
     yaml_error(YAML_MAPPING_END_EVENT, &event);
   yaml_event_delete(&event);
@@ -373,20 +378,20 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
 
   if (!yaml_parser_parse(parser, &event) ||
       (event.type != YAML_SCALAR_EVENT))
-    simple_error("Word expected", &event);
+    simple_error("Word expected", parser, &event);
 
   word = strndup(event.data.scalar.value, event.data.scalar.length);
   yaml_event_delete(&event);
 
   if (!yaml_parser_parse(parser, &event) ||
       (event.type != YAML_SCALAR_EVENT))
-    simple_error("Translation expected", &event);
+    simple_error("Translation expected", parser, &event);
 
   translation = strndup(event.data.scalar.value, event.data.scalar.length);
   yaml_event_delete(&event);
 
   if (!yaml_parser_parse(parser, &event))
-    simple_error("Error in YAML", &event);
+    yaml_parse_error(parser);
 
   /* Handle an optional description */
   if (event.type == YAML_SCALAR_EVENT) {
@@ -396,7 +401,7 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
     yaml_event_delete(&event);
 
     if (!yaml_parser_parse(parser, &event))
-      simple_error("Error in YAML", &event);
+      yaml_parse_error(parser);
   }
 
   if (event.type == YAML_MAPPING_START_EVENT) {
@@ -461,7 +466,7 @@ read_tests(yaml_parser_t *parser, char *tables_list, int direction, int hyphenat
   int done = 0;
   while (!done) {
     if (!yaml_parser_parse(parser, &event)) {
-      simple_error("Error in YAML", &event);
+      yaml_parse_error(parser);
     }
     if (event.type == YAML_SEQUENCE_END_EVENT) {
       done = 1;
@@ -548,7 +553,7 @@ main(int argc, char *argv[]) {
     if (!yaml_parser_parse(&parser, &event) ||
 	(event.type != YAML_SCALAR_EVENT) ||
 	strcmp(event.data.scalar.value, "tests")) {
-      simple_error("tests expected", &event);
+      simple_error("tests expected", &parser, &event);
     }
     yaml_event_delete(&event);
     read_tests(&parser, tables_list, direction, hyphenation);
@@ -557,7 +562,7 @@ main(int argc, char *argv[]) {
     yaml_event_delete(&event);
     read_tests(&parser, tables_list, direction, hyphenation);
   } else {
-    simple_error("flags or tests expected", &event);
+    simple_error("flags or tests expected", &parser, &event);
   }
 
   if (!yaml_parser_parse(&parser, &event) ||
