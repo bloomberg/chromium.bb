@@ -411,7 +411,7 @@ bool ServiceWorkerProviderHost::CanAssociateRegistration(
   return true;
 }
 
-void ServiceWorkerProviderHost::PostMessage(
+void ServiceWorkerProviderHost::PostMessageToClient(
     ServiceWorkerVersion* version,
     const base::string16& message,
     const std::vector<TransferredMessagePort>& sent_message_ports) {

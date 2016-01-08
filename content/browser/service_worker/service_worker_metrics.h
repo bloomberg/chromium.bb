@@ -72,11 +72,19 @@ class ServiceWorkerMetrics {
     NUM_TYPES
   };
 
-  enum EventType {
-    EVENT_TYPE_FETCH,
+  // Used for UMA. Append-only.
+  enum class EventType {
+    ACTIVATE,
+    INSTALL,
+    FETCH,
+    SYNC,
+    NOTIFICATION_CLICK,
+    PUSH,
+    GEOFENCING,
+    SERVICE_PORT_CONNECT,
     // Add new events to record here.
 
-    NUM_EVENT_TYPES
+    NUM_TYPES
   };
 
   // Used for UMA. Append only.
@@ -130,6 +138,9 @@ class ServiceWorkerMetrics {
   static void RecordEventHandledRatio(EventType event,
                                       size_t handled_events,
                                       size_t fired_events);
+
+  // Records how often a dispatched event times out.
+  static void RecordEventTimeout(EventType event);
 
   // Records the result of dispatching a fetch event to a service worker.
   static void RecordFetchEventStatus(bool is_main_resource,

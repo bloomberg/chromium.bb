@@ -158,13 +158,6 @@ void RunErrorMessageCallback(
   callback.Run(status);
 }
 
-void RunErrorServicePortConnectCallback(
-    const ServiceWorkerVersion::ServicePortConnectCallback& callback,
-    ServiceWorkerStatusCode status) {
-  callback.Run(status, false /* accept_connection */, base::string16(),
-               base::string16());
-}
-
 void KillEmbeddedWorkerProcess(int process_id, ResultCode code) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderProcessHost* render_process_host =
@@ -480,6 +473,31 @@ void ServiceWorkerVersion::DeferScheduledUpdate() {
     update_timer_.Reset();
 }
 
+int ServiceWorkerVersion::StartRequest(
+    ServiceWorkerMetrics::EventType event_type,
+    const StatusCallback& error_callback) {
+  OnBeginEvent();
+  DCHECK_EQ(RUNNING, running_status())
+      << "Can only start a request with a running worker.";
+  return AddRequest(error_callback, &custom_requests_, REQUEST_CUSTOM,
+                    event_type);
+}
+
+bool ServiceWorkerVersion::FinishRequest(int request_id) {
+  PendingRequest<StatusCallback>* request = custom_requests_.Lookup(request_id);
+  if (!request)
+    return false;
+  RemoveCallbackAndStopIfRedundant(&custom_requests_, request_id);
+  return true;
+}
+
+void ServiceWorkerVersion::RunAfterStartWorker(
+    const StatusCallback& error_callback,
+    const base::Closure& task) {
+  StartWorker(base::Bind(&RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(),
+                         error_callback, task));
+}
+
 void ServiceWorkerVersion::DispatchMessageEvent(
     const base::string16& message,
     const std::vector<TransferredMessagePort>& sent_message_ports,
@@ -581,7 +599,8 @@ void ServiceWorkerVersion::DispatchFetchEvent(
 
   prepare_callback.Run();
 
-  int request_id = AddRequest(fetch_callback, &fetch_requests_, REQUEST_FETCH);
+  int request_id = AddRequest(fetch_callback, &fetch_requests_, REQUEST_FETCH,
+                              ServiceWorkerMetrics::EventType::FETCH);
   ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
       ServiceWorkerMsg_FetchEvent(request_id, request));
   if (status != SERVICE_WORKER_OK) {
@@ -610,6 +629,7 @@ void ServiceWorkerVersion::DispatchSyncEvent(
 
   int request_id =
       AddRequestWithExpiration(callback, &sync_requests_, REQUEST_SYNC,
+                               ServiceWorkerMetrics::EventType::SYNC,
                                base::TimeTicks::Now() + max_duration);
   if (!background_sync_dispatcher_) {
     embedded_worker_->GetServiceRegistry()->ConnectToRemoteService(
@@ -643,8 +663,9 @@ void ServiceWorkerVersion::DispatchNotificationClickEvent(
     return;
   }
 
-  int request_id = AddRequest(callback, &notification_click_requests_,
-                              REQUEST_NOTIFICATION_CLICK);
+  int request_id = AddRequest(
+      callback, &notification_click_requests_, REQUEST_NOTIFICATION_CLICK,
+      ServiceWorkerMetrics::EventType::NOTIFICATION_CLICK);
   ServiceWorkerStatusCode status =
       embedded_worker_->SendMessage(ServiceWorkerMsg_NotificationClickEvent(
           request_id, persistent_notification_id, notification_data,
@@ -669,7 +690,8 @@ void ServiceWorkerVersion::DispatchPushEvent(const StatusCallback& callback,
     return;
   }
 
-  int request_id = AddRequest(callback, &push_requests_, REQUEST_PUSH);
+  int request_id = AddRequest(callback, &push_requests_, REQUEST_PUSH,
+                              ServiceWorkerMetrics::EventType::PUSH);
   ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
       ServiceWorkerMsg_PushEvent(request_id, data));
   if (status != SERVICE_WORKER_OK) {
@@ -707,7 +729,8 @@ void ServiceWorkerVersion::DispatchGeofencingEvent(
   }
 
   int request_id =
-      AddRequest(callback, &geofencing_requests_, REQUEST_GEOFENCING);
+      AddRequest(callback, &geofencing_requests_, REQUEST_GEOFENCING,
+                 ServiceWorkerMetrics::EventType::GEOFENCING);
   ServiceWorkerStatusCode status =
       embedded_worker_->SendMessage(ServiceWorkerMsg_GeofencingEvent(
           request_id, event_type, region_id, region));
@@ -715,47 +738,6 @@ void ServiceWorkerVersion::DispatchGeofencingEvent(
     geofencing_requests_.Remove(request_id);
     RunSoon(base::Bind(callback, status));
   }
-}
-
-void ServiceWorkerVersion::DispatchServicePortConnectEvent(
-    const ServicePortConnectCallback& callback,
-    const GURL& target_url,
-    const GURL& origin,
-    int port_id) {
-  OnBeginEvent();
-  DCHECK_EQ(ACTIVATED, status()) << status();
-
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
-    callback.Run(SERVICE_WORKER_ERROR_ABORT, false, base::string16(),
-                 base::string16());
-    return;
-  }
-
-  if (running_status() != RUNNING) {
-    // Schedule calling this method after starting the worker.
-    StartWorker(
-        base::Bind(&RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(),
-                   base::Bind(&RunErrorServicePortConnectCallback, callback),
-                   base::Bind(&self::DispatchServicePortConnectEvent,
-                              weak_factory_.GetWeakPtr(), callback, target_url,
-                              origin, port_id)));
-    return;
-  }
-
-  int request_id = AddRequest(callback, &service_port_connect_requests_,
-                              REQUEST_SERVICE_PORT_CONNECT);
-  if (!service_port_dispatcher_) {
-    embedded_worker_->GetServiceRegistry()->ConnectToRemoteService(
-        mojo::GetProxy(&service_port_dispatcher_));
-    service_port_dispatcher_.set_connection_error_handler(base::Bind(
-        &ServiceWorkerVersion::OnServicePortDispatcherConnectionError,
-        weak_factory_.GetWeakPtr()));
-  }
-  service_port_dispatcher_->Connect(
-      mojo::String::From(target_url), mojo::String::From(origin), port_id,
-      base::Bind(&ServiceWorkerVersion::OnServicePortConnectEventFinished,
-                 weak_factory_.GetWeakPtr(), request_id));
 }
 
 void ServiceWorkerVersion::DispatchCrossOriginMessageEvent(
@@ -910,8 +892,9 @@ ServiceWorkerVersion::GetMainScriptHttpResponseInfo() {
 ServiceWorkerVersion::RequestInfo::RequestInfo(
     int id,
     RequestType type,
+    ServiceWorkerMetrics::EventType event_type,
     const base::TimeTicks& expiration)
-    : id(id), type(type), expiration(expiration) {}
+    : id(id), type(type), event_type(event_type), expiration(expiration) {}
 
 ServiceWorkerVersion::RequestInfo::~RequestInfo() {
 }
@@ -930,6 +913,24 @@ ServiceWorkerVersion::PendingRequest<CallbackType>::PendingRequest(
 
 template <typename CallbackType>
 ServiceWorkerVersion::PendingRequest<CallbackType>::~PendingRequest() {
+}
+
+ServiceWorkerVersion::BaseMojoServiceWrapper::BaseMojoServiceWrapper(
+    ServiceWorkerVersion* worker,
+    const char* service_name)
+    : worker_(worker), service_name_(service_name) {}
+
+ServiceWorkerVersion::BaseMojoServiceWrapper::~BaseMojoServiceWrapper() {
+  IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer>::iterator iter(
+      &worker_->custom_requests_);
+  while (!iter.IsAtEnd()) {
+    PendingRequest<StatusCallback>* request = iter.GetCurrentValue();
+    if (request->mojo_service == service_name_) {
+      request->callback.Run(SERVICE_WORKER_ERROR_FAILED);
+      worker_->custom_requests_.Remove(iter.GetCurrentKey());
+    }
+    iter.Advance();
+  }
 }
 
 void ServiceWorkerVersion::OnThreadStarted() {
@@ -1083,7 +1084,8 @@ void ServiceWorkerVersion::DispatchInstallEventAfterStartWorker(
   DCHECK_EQ(RUNNING, running_status())
       << "Worker stopped too soon after it was started.";
 
-  int request_id = AddRequest(callback, &install_requests_, REQUEST_INSTALL);
+  int request_id = AddRequest(callback, &install_requests_, REQUEST_INSTALL,
+                              ServiceWorkerMetrics::EventType::INSTALL);
   ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
       ServiceWorkerMsg_InstallEvent(request_id));
   if (status != SERVICE_WORKER_OK) {
@@ -1097,7 +1099,8 @@ void ServiceWorkerVersion::DispatchActivateEventAfterStartWorker(
   DCHECK_EQ(RUNNING, running_status())
       << "Worker stopped too soon after it was started.";
 
-  int request_id = AddRequest(callback, &activate_requests_, REQUEST_ACTIVATE);
+  int request_id = AddRequest(callback, &activate_requests_, REQUEST_ACTIVATE,
+                              ServiceWorkerMetrics::EventType::ACTIVATE);
   ServiceWorkerStatusCode status =
       embedded_worker_->SendMessage(ServiceWorkerMsg_ActivateEvent(request_id));
   if (status != SERVICE_WORKER_OK) {
@@ -1202,7 +1205,7 @@ void ServiceWorkerVersion::OnFetchEventFinished(
 
   // TODO(kinuko): Record other event statuses too.
   const bool handled = (result == SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE);
-  metrics_->RecordEventHandledStatus(ServiceWorkerMetrics::EVENT_TYPE_FETCH,
+  metrics_->RecordEventHandledStatus(ServiceWorkerMetrics::EventType::FETCH,
                                      handled);
 
   ServiceWorkerMetrics::RecordFetchEventTime(
@@ -1291,28 +1294,6 @@ void ServiceWorkerVersion::OnGeofencingEventFinished(int request_id) {
   scoped_refptr<ServiceWorkerVersion> protect(this);
   request->callback.Run(SERVICE_WORKER_OK);
   RemoveCallbackAndStopIfRedundant(&geofencing_requests_, request_id);
-}
-
-void ServiceWorkerVersion::OnServicePortConnectEventFinished(
-    int request_id,
-    ServicePortConnectResult result,
-    const mojo::String& name,
-    const mojo::String& data) {
-  TRACE_EVENT1("ServiceWorker",
-               "ServiceWorkerVersion::OnServicePortConnectEventFinished",
-               "Request id", request_id);
-  PendingRequest<ServicePortConnectCallback>* request =
-      service_port_connect_requests_.Lookup(request_id);
-  if (!request) {
-    NOTREACHED() << "Got unexpected message: " << request_id;
-    return;
-  }
-
-  scoped_refptr<ServiceWorkerVersion> protect(this);
-  request->callback.Run(SERVICE_WORKER_OK,
-                        result == SERVICE_PORT_CONNECT_RESULT_ACCEPT,
-                        name.To<base::string16>(), data.To<base::string16>());
-  RemoveCallbackAndStopIfRedundant(&service_port_connect_requests_, request_id);
 }
 
 void ServiceWorkerVersion::OnOpenWindow(int request_id, GURL url) {
@@ -1436,7 +1417,7 @@ void ServiceWorkerVersion::OnPostMessageToClient(
     // possibly due to timing issue or bad message.
     return;
   }
-  provider_host->PostMessage(this, message, sent_message_ports);
+  provider_host->PostMessageToClient(this, message, sent_message_ports);
 }
 
 void ServiceWorkerVersion::OnFocusClient(int request_id,
@@ -1799,8 +1780,7 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
       break;
     if (MaybeTimeOutRequest(info)) {
       stop_for_timeout = stop_for_timeout || ShouldStopIfRequestTimesOut(info);
-      UMA_HISTOGRAM_ENUMERATION("ServiceWorker.RequestTimeouts.Count",
-                                info.type, NUM_REQUEST_TYPES);
+      ServiceWorkerMetrics::RecordEventTimeout(info.event_type);
     }
     requests_.pop();
   }
@@ -1851,8 +1831,7 @@ bool ServiceWorkerVersion::HasInflightRequests() const {
   return !activate_requests_.IsEmpty() || !install_requests_.IsEmpty() ||
          !fetch_requests_.IsEmpty() || !sync_requests_.IsEmpty() ||
          !notification_click_requests_.IsEmpty() || !push_requests_.IsEmpty() ||
-         !geofencing_requests_.IsEmpty() ||
-         !service_port_connect_requests_.IsEmpty() ||
+         !geofencing_requests_.IsEmpty() || !custom_requests_.IsEmpty() ||
          !streaming_url_request_jobs_.empty();
 }
 
@@ -1910,12 +1889,13 @@ template <typename CallbackType>
 int ServiceWorkerVersion::AddRequest(
     const CallbackType& callback,
     IDMap<PendingRequest<CallbackType>, IDMapOwnPointer>* callback_map,
-    RequestType request_type) {
+    RequestType request_type,
+    ServiceWorkerMetrics::EventType event_type) {
   base::TimeTicks expiration_time =
       base::TimeTicks::Now() +
       base::TimeDelta::FromMinutes(kRequestTimeoutMinutes);
   return AddRequestWithExpiration(callback, callback_map, request_type,
-                                  expiration_time);
+                                  event_type, expiration_time);
 }
 
 template <typename CallbackType>
@@ -1923,10 +1903,11 @@ int ServiceWorkerVersion::AddRequestWithExpiration(
     const CallbackType& callback,
     IDMap<PendingRequest<CallbackType>, IDMapOwnPointer>* callback_map,
     RequestType request_type,
+    ServiceWorkerMetrics::EventType event_type,
     base::TimeTicks expiration) {
   int request_id = callback_map->Add(
       new PendingRequest<CallbackType>(callback, base::TimeTicks::Now()));
-  requests_.push(RequestInfo(request_id, request_type, expiration));
+  requests_.push(RequestInfo(request_id, request_type, event_type, expiration));
   return request_id;
 }
 
@@ -1955,11 +1936,9 @@ bool ServiceWorkerVersion::MaybeTimeOutRequest(const RequestInfo& info) {
     case REQUEST_GEOFENCING:
       return RunIDMapCallback(&geofencing_requests_, info.id,
                               SERVICE_WORKER_ERROR_TIMEOUT);
-    case REQUEST_SERVICE_PORT_CONNECT:
-      return RunIDMapCallback(&service_port_connect_requests_, info.id,
-                              SERVICE_WORKER_ERROR_TIMEOUT,
-                              false /* accept_connection */, base::string16(),
-                              base::string16());
+    case REQUEST_CUSTOM:
+      return RunIDMapCallback(&custom_requests_, info.id,
+                              SERVICE_WORKER_ERROR_TIMEOUT);
     case NUM_REQUEST_TYPES:
       break;
   }
@@ -1981,7 +1960,10 @@ bool ServiceWorkerVersion::ShouldStopIfRequestTimesOut(
     case REQUEST_NOTIFICATION_CLICK:
     case REQUEST_PUSH:
     case REQUEST_GEOFENCING:
-    case REQUEST_SERVICE_PORT_CONNECT:
+      return true;
+    case REQUEST_CUSTOM:
+      // TODO(mek): Custom requests need some way to specify their timeout
+      // behavior.
       return true;
     case NUM_REQUEST_TYPES:
       NOTREACHED() << "Got unexpected request type: " << info.type;
@@ -2102,11 +2084,11 @@ void ServiceWorkerVersion::OnStoppedInternal(
   RunIDMapCallbacks(&notification_click_requests_, SERVICE_WORKER_ERROR_FAILED);
   RunIDMapCallbacks(&push_requests_, SERVICE_WORKER_ERROR_FAILED);
   RunIDMapCallbacks(&geofencing_requests_, SERVICE_WORKER_ERROR_FAILED);
+  RunIDMapCallbacks(&custom_requests_, SERVICE_WORKER_ERROR_FAILED);
 
   // Close all mojo services. This will also fire and clear all callbacks
   // for messages that are still outstanding for those services.
-  OnServicePortDispatcherConnectionError();
-
+  mojo_services_.clear();
   OnBackgroundSyncDispatcherConnectionError();
 
   // TODO(falken): Call SWURLRequestJob::ClearStream here?
@@ -2118,16 +2100,15 @@ void ServiceWorkerVersion::OnStoppedInternal(
     StartWorkerInternal();
 }
 
-void ServiceWorkerVersion::OnServicePortDispatcherConnectionError() {
-  RunIDMapCallbacks(&service_port_connect_requests_,
-                    SERVICE_WORKER_ERROR_FAILED, false, base::string16(),
-                    base::string16());
-  service_port_dispatcher_.reset();
-}
-
 void ServiceWorkerVersion::OnBackgroundSyncDispatcherConnectionError() {
   RunIDMapCallbacks(&sync_requests_, SERVICE_WORKER_ERROR_FAILED);
   background_sync_dispatcher_.reset();
+}
+
+void ServiceWorkerVersion::OnMojoConnectionError(const char* service_name) {
+  // Simply deleting the service will cause error callbacks to be called from
+  // the destructor of the MojoServiceWrapper instance.
+  mojo_services_.erase(service_name);
 }
 
 void ServiceWorkerVersion::OnBeginEvent() {

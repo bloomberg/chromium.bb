@@ -12,8 +12,10 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/mojo/service_registry_impl.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -99,6 +101,10 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
                                  int embedded_worker_id,
                                  const IPC::Message& message);
 
+  // Called to setup mojo for a new embedded worker. Override to register
+  // services the worker should expose to the browser.
+  virtual void OnSetupMojo(ServiceRegistry* service_registry);
+
   // On*Event handlers. Called by the default implementation of
   // OnMessageToWorker when events are sent to the embedded
   // worker. By default they just return success via
@@ -126,6 +132,8 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   EmbeddedWorkerRegistry* registry();
 
  private:
+  class MockEmbeddedWorkerSetup;
+
   void OnStartWorkerStub(const EmbeddedWorkerMsg_StartWorker_Params& params);
   void OnStopWorkerStub(int embedded_worker_id);
   void OnMessageToWorkerStub(int thread_id,
@@ -136,6 +144,9 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   void OnFetchEventStub(int request_id,
                         const ServiceWorkerFetchRequest& request);
   void OnPushEventStub(int request_id, const std::string& data);
+  void OnSetupMojoStub(int thread_id,
+                       mojo::InterfaceRequest<mojo::ServiceProvider> services,
+                       mojo::ServiceProviderPtr exposed_services);
 
   MessagePortMessageFilter* NewMessagePortMessageFilter();
 
@@ -150,7 +161,14 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   int next_thread_id_;
   int mock_render_process_id_;
 
+  ServiceRegistryImpl render_process_service_registry_;
+
   std::map<int, int64_t> embedded_worker_id_service_worker_version_id_map_;
+
+  // Stores the ServiceRegistries that are associated with each individual
+  // service worker.
+  base::ScopedPtrHashMap<int, scoped_ptr<ServiceRegistryImpl>>
+      thread_id_service_registry_map_;
 
   // Updated each time MessageToWorker message is received.
   int current_embedded_worker_id_;

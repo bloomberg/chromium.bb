@@ -263,7 +263,7 @@ void MockRenderProcessHost::NotifyTimezoneChange(const std::string& zone_id) {
 }
 
 ServiceRegistry* MockRenderProcessHost::GetServiceRegistry() {
-  return NULL;
+  return service_registry_.get();
 }
 
 const base::TimeTicks& MockRenderProcessHost::GetInitTimeForNavigationMetrics()

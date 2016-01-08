@@ -26,12 +26,14 @@ CreateReceiver(BrowserThread::ID run_quit_thread,
   return base::Bind(&ReceiveResult<Arg>, run_quit_thread, quit, out);
 }
 
-template <typename Arg> base::Callback<void(Arg)>
-CreateReceiverOnCurrentThread(Arg* out) {
+template <typename Arg>
+base::Callback<void(Arg)> CreateReceiverOnCurrentThread(
+    Arg* out,
+    const base::Closure& quit = base::Closure()) {
   BrowserThread::ID id;
   bool ret = BrowserThread::GetCurrentThreadIdentifier(&id);
   DCHECK(ret);
-  return base::Bind(&ReceiveResult<Arg>, id, base::Closure(), out);
+  return base::Bind(&ReceiveResult<Arg>, id, quit, out);
 }
 
 }  // namespace content

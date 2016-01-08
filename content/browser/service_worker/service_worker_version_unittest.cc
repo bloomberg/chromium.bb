@@ -17,6 +17,8 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_mojo_service.mojom.h"
+#include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -175,6 +177,27 @@ base::Time GetYesterday() {
   return base::Time::Now() - base::TimeDelta::FromDays(1) -
          base::TimeDelta::FromSeconds(1);
 }
+
+class TestMojoServiceImpl : public TestMojoService {
+ public:
+  static void Create(mojo::InterfaceRequest<TestMojoService> request) {
+    new TestMojoServiceImpl(std::move(request));
+  }
+
+  void DoSomething(const DoSomethingCallback& callback) override {
+    callback.Run();
+  }
+
+  void GetRequestorURL(const GetRequestorURLCallback& callback) override {
+    callback.Run(mojo::String(""));
+  }
+
+ private:
+  explicit TestMojoServiceImpl(mojo::InterfaceRequest<TestMojoService> request)
+      : binding_(this, std::move(request)) {}
+
+  mojo::StrongBinding<TestMojoService> binding_;
+};
 
 }  // namespace
 
@@ -338,6 +361,31 @@ class ServiceWorkerWaitForeverInFetchTest : public ServiceWorkerVersionTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerWaitForeverInFetchTest);
+};
+
+class MessageReceiverMojoTestService : public MessageReceiver {
+ public:
+  MessageReceiverMojoTestService() : MessageReceiver() {}
+  ~MessageReceiverMojoTestService() override {}
+
+  void OnSetupMojo(ServiceRegistry* service_registry) override {
+    service_registry->AddService(base::Bind(&TestMojoServiceImpl::Create));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MessageReceiverMojoTestService);
+};
+
+class ServiceWorkerVersionWithMojoTest : public ServiceWorkerVersionTest {
+ protected:
+  ServiceWorkerVersionWithMojoTest() : ServiceWorkerVersionTest() {}
+
+  scoped_ptr<MessageReceiver> GetMessageReceiver() override {
+    return make_scoped_ptr(new MessageReceiverMojoTestService());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerVersionWithMojoTest);
 };
 
 TEST_F(ServiceWorkerVersionTest, ConcurrentStartAndStop) {
@@ -613,6 +661,17 @@ TEST_F(ServiceWorkerVersionTest, IdleTimeout) {
   EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_LT(idle_time, version_->idle_time_);
 
+  // Starting and finishing a request resets the idle time.
+  version_->idle_time_ -= kOneSecond;
+  idle_time = version_->idle_time_;
+  int request_id =
+      version_->StartRequest(ServiceWorkerMetrics::EventType::SYNC,
+                             CreateReceiverOnCurrentThread(&status));
+  EXPECT_TRUE(version_->FinishRequest(request_id));
+
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_LT(idle_time, version_->idle_time_);
+
   // Dispatching a message event resets the idle time.
   std::vector<TransferredMessagePort> ports;
   SetUpDummyMessagePort(&ports);
@@ -880,6 +939,35 @@ TEST_F(ServiceWorkerWaitForeverInFetchTest, MixedRequestTimeouts) {
   EXPECT_EQ(ServiceWorkerVersion::STOPPED, version_->running_status());
 }
 
+TEST_F(ServiceWorkerVersionTest, RequestTimeout) {
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
+
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  version_->StartWorker(base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+  base::RunLoop().RunUntilIdle();
+  int request_id =
+      version_->StartRequest(ServiceWorkerMetrics::EventType::SYNC,
+                             CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+
+  // Callback has not completed yet.
+  EXPECT_EQ(SERVICE_WORKER_ERROR_NETWORK, status);
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
+
+  // Simulate timeout.
+  EXPECT_TRUE(version_->timeout_timer_.IsRunning());
+  version_->SetAllRequestExpirations(
+      base::TimeTicks::Now() -
+      base::TimeDelta::FromMinutes(
+          ServiceWorkerVersion::kRequestTimeoutMinutes + 1));
+  version_->timeout_timer_.user_task().Run();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_ERROR_TIMEOUT, status);
+  EXPECT_EQ(ServiceWorkerVersion::STOPPED, version_->running_status());
+
+  EXPECT_FALSE(version_->FinishRequest(request_id));
+}
+
 TEST_F(ServiceWorkerFailToStartTest, RendererCrash) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
   version_->StartWorker(
@@ -1053,6 +1141,87 @@ TEST_F(ServiceWorkerVersionTest, RegisterForeignFetchScopes) {
   EXPECT_EQ(2u, version_->foreign_fetch_scopes_.size());
   EXPECT_EQ(valid_scope_1, version_->foreign_fetch_scopes_[0]);
   EXPECT_EQ(valid_scope_2, version_->foreign_fetch_scopes_[1]);
+}
+
+TEST_F(ServiceWorkerVersionTest, RendererCrashDuringEvent) {
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
+
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  version_->StartWorker(CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
+
+  int request_id =
+      version_->StartRequest(ServiceWorkerMetrics::EventType::SYNC,
+                             CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+
+  // Callback has not completed yet.
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+
+  // Simulate renderer crash: do what
+  // ServiceWorkerDispatcherHost::OnFilterRemoved does.
+  int process_id = helper_->mock_render_process_id();
+  helper_->context()->RemoveAllProviderHostsForProcess(process_id);
+  helper_->context()->embedded_worker_registry()->RemoveChildProcessSender(
+      process_id);
+  base::RunLoop().RunUntilIdle();
+
+  // Callback completed.
+  EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED, status);
+  EXPECT_EQ(ServiceWorkerVersion::STOPPED, version_->running_status());
+
+  // Request already failed, calling finsh should return false.
+  EXPECT_FALSE(version_->FinishRequest(request_id));
+}
+
+TEST_F(ServiceWorkerVersionWithMojoTest, MojoService) {
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
+
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  version_->StartWorker(CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
+
+  scoped_refptr<MessageLoopRunner> runner(new MessageLoopRunner);
+  int request_id = version_->StartRequest(
+      ServiceWorkerMetrics::EventType::SYNC,
+      CreateReceiverOnCurrentThread(&status, runner->QuitClosure()));
+  base::WeakPtr<TestMojoService> service =
+      version_->GetMojoServiceForRequest<TestMojoService>(request_id);
+  service->DoSomething(runner->QuitClosure());
+  runner->Run();
+
+  // Mojo service does exist in worker, so error callback should not have been
+  // called and FinishRequest should return true.
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_TRUE(version_->FinishRequest(request_id));
+}
+
+TEST_F(ServiceWorkerVersionTest, NonExistentMojoService) {
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
+
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  version_->StartWorker(CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
+
+  scoped_refptr<MessageLoopRunner> runner(new MessageLoopRunner);
+  int request_id = version_->StartRequest(
+      ServiceWorkerMetrics::EventType::SYNC,
+      CreateReceiverOnCurrentThread(&status, runner->QuitClosure()));
+  base::WeakPtr<TestMojoService> service =
+      version_->GetMojoServiceForRequest<TestMojoService>(request_id);
+  service->DoSomething(runner->QuitClosure());
+  runner->Run();
+
+  // Mojo service doesn't exist in worker, so error callback should have been
+  // called and FinishRequest should return false.
+  EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED, status);
+  EXPECT_FALSE(version_->FinishRequest(request_id));
 }
 
 }  // namespace content

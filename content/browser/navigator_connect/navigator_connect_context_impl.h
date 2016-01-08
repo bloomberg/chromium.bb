@@ -9,6 +9,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
+#include "content/common/service_port_service.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/browser/navigator_connect_context.h"
 
@@ -23,6 +24,7 @@ struct NavigatorConnectClient;
 class ServicePortServiceImpl;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerRegistration;
+class ServiceWorkerVersion;
 struct TransferredMessagePort;
 
 // Tracks all active navigator.services connections, as well as available
@@ -81,16 +83,30 @@ class NavigatorConnectContextImpl : public NavigatorConnectContext {
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
 
-  // Callback called by service factories when a connection succeeded or failed.
+  void DispatchConnectEvent(const ConnectCallback& callback,
+                            int client_port_id,
+                            int service_port_id,
+                            const scoped_refptr<ServiceWorkerRegistration>&
+                                service_worker_registration,
+                            const scoped_refptr<ServiceWorkerVersion>& worker);
+
+  // Callback called when dispatching a connect event failed.
+  void OnConnectError(const ConnectCallback& calback,
+                      int client_port_id,
+                      int service_port_id,
+                      ServiceWorkerStatusCode status);
+
+  // Callback called with the response to a connect event.
   void OnConnectResult(const ConnectCallback& callback,
                        int client_port_id,
                        int service_port_id,
                        const scoped_refptr<ServiceWorkerRegistration>&
                            service_worker_registration,
-                       ServiceWorkerStatusCode status,
-                       bool accept_connection,
-                       const base::string16& name,
-                       const base::string16& data);
+                       const scoped_refptr<ServiceWorkerVersion>& worker,
+                       int request_id,
+                       ServicePortConnectResult result,
+                       const mojo::String& name,
+                       const mojo::String& data);
 
   // Callback called when a ServiceWorkerRegistration has been located to
   // deliver a message to.

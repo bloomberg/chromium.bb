@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_factory.h"
+#include "content/public/common/service_registry.h"
 #include "ipc/ipc_test_sink.h"
 
 class StoragePartition;
@@ -136,6 +137,10 @@ class MockRenderProcessHost : public RenderProcessHost {
 
   int worker_ref_count() const { return worker_ref_count_; }
 
+  void SetServiceRegistry(scoped_ptr<ServiceRegistry> service_registry) {
+    service_registry_ = std::move(service_registry);
+  }
+
  private:
   // Stores IPC messages that would have been sent to the renderer.
   IPC::TestSink sink_;
@@ -155,6 +160,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool is_process_backgrounded_;
   scoped_ptr<base::ProcessHandle> process_handle;
   int worker_ref_count_;
+  scoped_ptr<ServiceRegistry> service_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);
 };

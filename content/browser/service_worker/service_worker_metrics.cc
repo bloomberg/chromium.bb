@@ -168,10 +168,18 @@ void ServiceWorkerMetrics::RecordEventHandledRatio(EventType event,
     type = EVENT_HANDLED_ALL;
   else if (handled_events == 0)
     type = EVENT_HANDLED_NONE;
+
   // For now Fetch is the only type that is recorded.
-  DCHECK_EQ(EVENT_TYPE_FETCH, event);
+  if (event != EventType::FETCH)
+    return;
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.EventHandledRatioType.Fetch", type,
                             NUM_EVENT_HANDLED_RATIO_TYPE);
+}
+
+void ServiceWorkerMetrics::RecordEventTimeout(EventType event) {
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.RequestTimeouts.Count",
+                            static_cast<int>(event),
+                            static_cast<int>(EventType::NUM_TYPES));
 }
 
 void ServiceWorkerMetrics::RecordFetchEventStatus(

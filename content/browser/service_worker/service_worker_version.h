@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/id_map.h"
 #include "base/macros.h"
@@ -23,10 +24,10 @@
 #include "base/timer/timer.h"
 #include "content/browser/background_sync/background_sync_registration_handle.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
+#include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
 #include "content/common/background_sync_service.mojom.h"
 #include "content/common/content_export.h"
-#include "content/common/service_port_service.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/service_registry.h"
@@ -74,11 +75,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   typedef base::Callback<void(ServiceWorkerStatusCode,
                               ServiceWorkerFetchEventResult,
                               const ServiceWorkerResponse&)> FetchCallback;
-  typedef base::Callback<void(ServiceWorkerStatusCode,
-                              bool /* accept_connction */,
-                              const base::string16& /* name */,
-                              const base::string16& /* data */)>
-      ServicePortConnectCallback;
 
   enum RunningStatus {
     STOPPED = EmbeddedWorkerInstance::STOPPED,
@@ -178,6 +174,36 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Starts an update now.
   void StartUpdate();
 
+  // Starts the worker if it isn't already running, and calls |task| when the
+  // worker is running, or |error_callback| if starting the worker failed.
+  void RunAfterStartWorker(const StatusCallback& error_callback,
+                           const base::Closure& task);
+
+  // Call this while the worker is running before dispatching an event to the
+  // worker. This informs ServiceWorkerVersion about the event in progress.
+  // Returns a request id, which should later be passed to FinishRequest when
+  // the event finished.
+  // The |error_callback| is called if either ServiceWorkerVersion decides the
+  // event is taking too long, or if for some reason the worker stops or is
+  // killed before the request finishes.
+  int StartRequest(ServiceWorkerMetrics::EventType event_type,
+                   const StatusCallback& error_callback);
+
+  // Informs ServiceWorkerVersion that an event has finished being dispatched.
+  // Returns false if no pending requests with the provided id exist, for
+  // example if the request has already timed out.
+  bool FinishRequest(int request_id);
+
+  // Connects to a specific mojo service exposed by the (running) service
+  // worker. If a connection to a service for the same Interface already exists
+  // this will return that existing connection. The |request_id| must be a value
+  // previously returned by StartRequest. If the connection to the service
+  // fails or closes before the request finished, the error callback associated
+  // with |request_id| is called.
+  // Only call GetMojoServiceForRequest once for a specific |request_id|.
+  template <typename Interface>
+  base::WeakPtr<Interface> GetMojoServiceForRequest(int request_id);
+
   // Sends a message event to the associated embedded worker.
   void DispatchMessageEvent(
       const base::string16& message,
@@ -253,16 +279,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
       blink::WebGeofencingEventType event_type,
       const std::string& region_id,
       const blink::WebCircularGeofencingRegion& region);
-
-  // Sends a ServicePort connect event to the associated embedded worker and
-  // asynchronously calls |callback| with the response from the worker.
-  //
-  // This must be called when the status() is ACTIVATED.
-  void DispatchServicePortConnectEvent(
-      const ServicePortConnectCallback& callback,
-      const GURL& target_url,
-      const GURL& origin,
-      int port_id);
 
   // Sends a cross origin message event to the associated embedded worker and
   // asynchronously calls |callback| when the message was sent (or failed to
@@ -366,6 +382,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest,
                            StaleUpdate_DoNotDeferTimer);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWaitForeverInFetchTest, RequestTimeout);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, RequestTimeout);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerFailToStartTest, Timeout);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionBrowserTest,
                            TimeoutStartingWorker);
@@ -382,7 +399,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   class Metrics;
   class PingController;
 
-  // Used for UMA; add new entries to the end, before NUM_REQUEST_TYPES.
   enum RequestType {
     REQUEST_ACTIVATE,
     REQUEST_INSTALL,
@@ -391,16 +407,20 @@ class CONTENT_EXPORT ServiceWorkerVersion
     REQUEST_NOTIFICATION_CLICK,
     REQUEST_PUSH,
     REQUEST_GEOFENCING,
-    REQUEST_SERVICE_PORT_CONNECT,
+    REQUEST_CUSTOM,
     NUM_REQUEST_TYPES
   };
 
   struct RequestInfo {
-    RequestInfo(int id, RequestType type, const base::TimeTicks& expiration);
+    RequestInfo(int id,
+                RequestType type,
+                ServiceWorkerMetrics::EventType event_type,
+                const base::TimeTicks& expiration);
     ~RequestInfo();
     bool operator>(const RequestInfo& other) const;
     int id;
     RequestType type;
+    ServiceWorkerMetrics::EventType event_type;
     base::TimeTicks expiration;
   };
 
@@ -411,6 +431,47 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
     CallbackType callback;
     base::TimeTicks start_time;
+    // Name of the mojo service this request is associated with. Used to call
+    // the callback when a connection closes with outstanding requests.
+    // Compared as pointer, so should only contain static strings. Typically
+    // this would be Interface::Name_ for some mojo interface.
+    const char* mojo_service = nullptr;
+  };
+
+  // Base class to enable storing a list of mojo interface pointers for
+  // arbitrary interfaces. The destructor is also responsible for calling the
+  // error callbacks for any outstanding requests using this service.
+  class CONTENT_EXPORT BaseMojoServiceWrapper {
+   public:
+    BaseMojoServiceWrapper(ServiceWorkerVersion* worker,
+                           const char* service_name);
+    virtual ~BaseMojoServiceWrapper();
+
+   private:
+    ServiceWorkerVersion* worker_;
+    const char* service_name_;
+
+    DISALLOW_COPY_AND_ASSIGN(BaseMojoServiceWrapper);
+  };
+
+  // Wrapper around a mojo::InterfacePtr, which passes out WeakPtr's to the
+  // interface.
+  template <typename Interface>
+  class MojoServiceWrapper : public BaseMojoServiceWrapper {
+   public:
+    MojoServiceWrapper(ServiceWorkerVersion* worker,
+                       mojo::InterfacePtr<Interface> interface)
+        : BaseMojoServiceWrapper(worker, Interface::Name_),
+          interface_(std::move(interface)),
+          weak_ptr_factory_(interface_.get()) {}
+
+    base::WeakPtr<Interface> GetWeakPtr() {
+      return weak_ptr_factory_.GetWeakPtr();
+    }
+
+   private:
+    mojo::InterfacePtr<Interface> interface_;
+    base::WeakPtrFactory<Interface> weak_ptr_factory_;
   };
 
   typedef ServiceWorkerVersion self;
@@ -481,10 +542,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnPushEventFinished(int request_id,
                            blink::WebServiceWorkerEventResult result);
   void OnGeofencingEventFinished(int request_id);
-  void OnServicePortConnectEventFinished(int request_id,
-                                         ServicePortConnectResult result,
-                                         const mojo::String& name,
-                                         const mojo::String& data);
   void OnOpenWindow(int request_id, GURL url);
   void OnOpenWindowFinished(int request_id,
                             ServiceWorkerStatusCode status,
@@ -555,13 +612,15 @@ class CONTENT_EXPORT ServiceWorkerVersion
   int AddRequest(
       const CallbackType& callback,
       IDMap<PendingRequest<CallbackType>, IDMapOwnPointer>* callback_map,
-      RequestType request_type);
+      RequestType request_type,
+      ServiceWorkerMetrics::EventType event_type);
 
   template <typename CallbackType>
   int AddRequestWithExpiration(
       const CallbackType& callback,
       IDMap<PendingRequest<CallbackType>, IDMapOwnPointer>* callback_map,
       RequestType request_type,
+      ServiceWorkerMetrics::EventType event_type,
       base::TimeTicks expiration);
 
   bool MaybeTimeOutRequest(const RequestInfo& info);
@@ -587,8 +646,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Called when a connection to a mojo event Dispatcher drops or fails.
   // Calls callbacks for any outstanding requests to the dispatcher as well
   // as cleans up the dispatcher.
-  void OnServicePortDispatcherConnectionError();
   void OnBackgroundSyncDispatcherConnectionError();
+
+  // Called when the remote side of a connection to a mojo service is lost.
+  void OnMojoConnectionError(const char* service_name);
 
   // Called at the beginning of each Dispatch*Event function: records
   // the time elapsed since idle (generally the time since the previous
@@ -617,11 +678,17 @@ class CONTENT_EXPORT ServiceWorkerVersion
       notification_click_requests_;
   IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> push_requests_;
   IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> geofencing_requests_;
-  IDMap<PendingRequest<ServicePortConnectCallback>, IDMapOwnPointer>
-      service_port_connect_requests_;
+  IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> custom_requests_;
 
-  ServicePortDispatcherPtr service_port_dispatcher_;
   BackgroundSyncServiceClientPtr background_sync_dispatcher_;
+
+  // Stores all open connections to mojo services. Maps the service name to
+  // the actual interface pointer. When a connection is closed it is removed
+  // from this map.
+  // mojo_services_[Interface::Name_] is assumed to always contain a
+  // MojoServiceWrapper<Interface> instance.
+  base::ScopedPtrHashMap<const char*, scoped_ptr<BaseMojoServiceWrapper>>
+      mojo_services_;
 
   std::set<const ServiceWorkerURLRequestJob*> streaming_url_request_jobs_;
 
@@ -676,6 +743,32 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerVersion);
 };
+
+template <typename Interface>
+base::WeakPtr<Interface> ServiceWorkerVersion::GetMojoServiceForRequest(
+    int request_id) {
+  DCHECK_EQ(RUNNING, running_status());
+  PendingRequest<StatusCallback>* request = custom_requests_.Lookup(request_id);
+  DCHECK(request) << "Invalid request id";
+  DCHECK(!request->mojo_service)
+      << "Request is already associated with a mojo service";
+
+  MojoServiceWrapper<Interface>* service =
+      static_cast<MojoServiceWrapper<Interface>*>(
+          mojo_services_.get(Interface::Name_));
+  if (!service) {
+    mojo::InterfacePtr<Interface> interface;
+    embedded_worker_->GetServiceRegistry()->ConnectToRemoteService(
+        mojo::GetProxy(&interface));
+    interface.set_connection_error_handler(
+        base::Bind(&ServiceWorkerVersion::OnMojoConnectionError,
+                   weak_factory_.GetWeakPtr(), Interface::Name_));
+    service = new MojoServiceWrapper<Interface>(this, std::move(interface));
+    mojo_services_.add(Interface::Name_, make_scoped_ptr(service));
+  }
+  request->mojo_service = Interface::Name_;
+  return service->GetWeakPtr();
+}
 
 }  // namespace content
 
