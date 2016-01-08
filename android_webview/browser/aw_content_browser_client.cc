@@ -26,8 +26,10 @@
 #include "base/android/locale_utils.h"
 #include "base/base_paths_android.h"
 #include "base/command_line.h"
+#include "base/files/scoped_file.h"
 #include "base/path_service.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
+#include "components/crash/content/browser/crash_micro_dump_manager_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/access_token_store.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -433,9 +435,15 @@ content::AccessTokenStore* AwContentBrowserClient::CreateAccessTokenStore() {
 }
 
 bool AwContentBrowserClient::IsFastShutdownPossible() {
-  NOTREACHED() << "Android WebView is single process, so IsFastShutdownPossible"
-               << " should never be called";
-  return false;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSingleProcess)) {
+    NOTREACHED()
+        << "Android WebView is single process, so IsFastShutdownPossible"
+        << " should never be called";
+    return false;
+  } else {
+    return true;
+  }
 }
 
 void AwContentBrowserClient::ClearCache(content::RenderFrameHost* rfh) {
@@ -487,6 +495,14 @@ void AwContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 
   fd = ui::GetLocalePackFd(&(*regions)[kAndroidWebViewLocalePakDescriptor]);
   mappings->Share(kAndroidWebViewLocalePakDescriptor, fd);
+
+  base::ScopedFD crash_signal_file =
+      breakpad::CrashMicroDumpManager::GetInstance()->CreateCrashInfoChannel(
+          child_process_id);
+  if (crash_signal_file.is_valid()) {
+    mappings->Transfer(kAndroidWebViewCrashSignalDescriptor,
+                       std::move(crash_signal_file));
+  }
 }
 
 void AwContentBrowserClient::OverrideWebkitPrefs(

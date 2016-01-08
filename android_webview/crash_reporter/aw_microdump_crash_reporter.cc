@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/content/app/crash_reporter_client.h"
+#include "content/public/common/content_switches.h"
 
 namespace android_webview {
 namespace crash_reporter {
@@ -22,6 +23,9 @@ namespace {
 class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
  public:
   AwCrashReporterClient() : dump_fd_(-1) {}
+
+  // Does not use lock, can only be called immediately after creation.
+  void set_crash_signal_fd(int fd) { dump_fd_ = fd; }
 
   // crash_reporter::CrashReporterClient implementation.
   bool IsRunningUnattended() override { return false; }
@@ -40,6 +44,7 @@ class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
   int GetAndroidMinidumpDescriptor() override { return dump_fd_; }
 
   bool DumpWithoutCrashingToFd(int fd) {
+    DCHECK(dump_fd_ == -1);
     base::AutoLock lock(dump_lock_);
     dump_fd_ = fd;
     base::debug::DumpWithoutCrashing();
@@ -109,7 +114,8 @@ bool SafeToUseSignalHandler() {
 
 }  // namespace
 
-void EnableMicrodumpCrashReporter(const std::string& process_type) {
+void EnableMicrodumpCrashReporter(const std::string& process_type,
+                                  int crash_signal_fd) {
   if (g_enabled) {
     NOTREACHED() << "EnableMicrodumpCrashReporter called more than once";
     return;
@@ -122,7 +128,11 @@ void EnableMicrodumpCrashReporter(const std::string& process_type) {
   }
 #endif
 
-  ::crash_reporter::SetCrashReporterClient(g_crash_reporter_client.Pointer());
+  AwCrashReporterClient* client = g_crash_reporter_client.Pointer();
+  if (process_type == switches::kRendererProcess && crash_signal_fd != -1) {
+    client->set_crash_signal_fd(crash_signal_fd);
+  }
+  ::crash_reporter::SetCrashReporterClient(client);
 
   breakpad::InitMicrodumpCrashHandlerIfNecessary(process_type);
   g_enabled = true;

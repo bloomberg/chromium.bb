@@ -100,8 +100,10 @@ ExceptionHandler* g_breakpad = nullptr;
 const char* g_asan_report_str = nullptr;
 #endif
 #if defined(OS_ANDROID)
+const char kWebViewProcessType[] = "webview";
 char* g_process_type = nullptr;
 ExceptionHandler* g_microdump = nullptr;
+int g_signal_code_pipe_fd = -1;
 
 class MicrodumpInfo {
  public:
@@ -741,7 +743,24 @@ bool MicrodumpCrashDone(const MinidumpDescriptor& minidump,
 
   const bool is_browser_process = (context != nullptr);
   return FinalizeCrashDoneAndroid(is_browser_process);
- }
+}
+
+bool WriteSignalCodeToPipe(const void* crash_context,
+                           size_t crash_context_size,
+                           void* context) {
+  if (g_signal_code_pipe_fd == -1)
+    return false;
+  int signo = INT_MAX;
+  if (crash_context_size == sizeof(ExceptionHandler::CrashContext)) {
+    const ExceptionHandler::CrashContext* eh_context =
+        static_cast<const ExceptionHandler::CrashContext*>(crash_context);
+    signo = eh_context->siginfo.si_signo;
+  }
+  sys_write(g_signal_code_pipe_fd, &signo, sizeof(signo));
+  IGNORE_RET(sys_close(g_signal_code_pipe_fd));
+  g_signal_code_pipe_fd = -1;
+  return false;
+}
 
 bool CrashDoneInProcessNoUpload(
     const google_breakpad::MinidumpDescriptor& descriptor,
@@ -834,7 +853,8 @@ void MicrodumpInfo::Initialize(const std::string& process_type,
                                const char* android_build_fp) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!g_microdump);
-  bool is_browser_process = process_type.empty() || process_type == "webview";
+  bool is_browser_process =
+      process_type.empty() || process_type == kWebViewProcessType;
 
   MinidumpDescriptor descriptor(MinidumpDescriptor::kMicrodumpOnConsole);
 
@@ -863,7 +883,7 @@ void MicrodumpInfo::Initialize(const std::string& process_type,
                            true,  // Install handlers.
                            -1);   // Server file descriptor. -1 for in-process.
 
-  if (process_type == "webview") {
+  if (process_type == kWebViewProcessType) {
     // We do not use |DumpProcess()| for handling programatically
     // generated dumps for WebView because we only know the file
     // descriptor to which we are dumping at the time of the call to
@@ -873,6 +893,11 @@ void MicrodumpInfo::Initialize(const std::string& process_type,
     // time.
     base::debug::SetDumpWithoutCrashingFunction(
         &GenerateMinidumpOnDemandForAndroid);
+  } else if (!process_type.empty()) {
+    g_signal_code_pipe_fd =
+        GetCrashReporterClient()->GetAndroidMinidumpDescriptor();
+    if (g_signal_code_pipe_fd != -1)
+      g_microdump->set_crash_handler(WriteSignalCodeToPipe);
   }
 }
 

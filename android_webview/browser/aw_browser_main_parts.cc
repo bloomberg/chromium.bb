@@ -18,6 +18,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "components/crash/content/browser/crash_micro_dump_manager_android.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -75,6 +76,11 @@ int AwBrowserMainParts::PreCreateThreads() {
   base::android::MemoryPressureListenerAndroid::RegisterSystemCallback(
       base::android::AttachCurrentThread());
   DeferredGpuCommandService::SetInstance();
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSingleProcess)) {
+    // Create the renderers crash manager on the UI thread.
+    breakpad::CrashMicroDumpManager::GetInstance();
+  }
 
   return content::RESULT_CODE_NORMAL_EXIT;
 }

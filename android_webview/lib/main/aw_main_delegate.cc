@@ -141,6 +141,7 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   if (cl->HasSwitch(switches::kWebViewSandboxedRenderer)) {
     cl->AppendSwitch(switches::kInProcessGPU);
     cl->AppendSwitchASCII(switches::kRendererProcessLimit, "1");
+    cl->AppendSwitch(switches::kDisableRendererBackgrounding);
   }
 
   return false;
@@ -157,6 +158,7 @@ void AwMainDelegate::PreSandboxStartup() {
       *base::CommandLine::ForCurrentProcess();
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
+  int crash_signal_fd = -1;
   if (process_type == switches::kRendererProcess) {
     auto global_descriptors = base::GlobalDescriptors::GetInstance();
     int pak_fd = global_descriptors->Get(kAndroidWebViewLocalePakDescriptor);
@@ -169,6 +171,8 @@ void AwMainDelegate::PreSandboxStartup() {
         global_descriptors->GetRegion(kAndroidWebViewMainPakDescriptor);
     ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
         base::File(pak_fd), pak_region, ui::SCALE_FACTOR_NONE);
+    crash_signal_fd =
+        global_descriptors->Get(kAndroidWebViewCrashSignalDescriptor);
   }
   if (process_type.empty() &&
       command_line.HasSwitch(switches::kSingleProcess)) {
@@ -176,7 +180,7 @@ void AwMainDelegate::PreSandboxStartup() {
     process_type = "webview";
   }
 
-  crash_reporter::EnableMicrodumpCrashReporter(process_type);
+  crash_reporter::EnableMicrodumpCrashReporter(process_type, crash_signal_fd);
 }
 
 int AwMainDelegate::RunProcess(

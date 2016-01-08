@@ -10,7 +10,8 @@
 namespace android_webview {
 namespace crash_reporter {
 
-void EnableMicrodumpCrashReporter(const std::string& process_type);
+void EnableMicrodumpCrashReporter(const std::string& process_type,
+                                  int crash_signal_fd);
 void AddGpuFingerprintToMicrodumpCrashHandler(
     const std::string& gpu_fingerprint);
 bool DumpWithoutCrashingToFd(int fd);
