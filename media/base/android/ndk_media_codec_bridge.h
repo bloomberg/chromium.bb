@@ -42,7 +42,7 @@ class MEDIA_EXPORT NdkMediaCodecBridge : public MediaCodecBridge {
       const SubsampleEntry* subsamples,
       int subsamples_size,
       const base::TimeDelta& presentation_time) override;
-  void QueueEOS(int input_buffer_index);
+  void QueueEOS(int input_buffer_index) override;
   MediaCodecStatus DequeueInputBuffer(const base::TimeDelta& timeout,
                                       int* index) override;
   MediaCodecStatus DequeueOutputBuffer(const base::TimeDelta& timeout,
