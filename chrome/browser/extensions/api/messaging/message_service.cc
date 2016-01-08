@@ -440,6 +440,8 @@ void MessageService::OpenChannelToNativeApp(
       new ExtensionMessagePort(weak_factory_.GetWeakPtr(),
                                GET_OPPOSITE_PORT_ID(receiver_port_id),
                                source_extension_id, source, false));
+  if (!channel->opener->IsValidPort())
+    return;
 
   // Get handle of the native view and pass it to the native messaging host.
   gfx::NativeView native_view = source ? source->GetNativeView() : nullptr;
@@ -560,11 +562,15 @@ void MessageService::OpenChannelImpl(BrowserContext* browser_context,
     return;
   }
 
-  MessageChannel* channel(new MessageChannel);
-  channel->opener.reset(
+  scoped_ptr<MessagePort> opener(
       new ExtensionMessagePort(weak_factory_.GetWeakPtr(),
                                GET_OPPOSITE_PORT_ID(params->receiver_port_id),
                                params->source_extension_id, source, false));
+  if (!opener->IsValidPort())
+    return;
+
+  MessageChannel* channel(new MessageChannel());
+  channel->opener.reset(opener.release());
   channel->receiver.reset(params->receiver.release());
   AddChannel(channel, params->receiver_port_id);
 
@@ -976,6 +982,8 @@ void MessageService::DispatchOnDisconnect(content::RenderFrameHost* source,
 
   ExtensionMessagePort port(weak_factory_.GetWeakPtr(),
                             GET_OPPOSITE_PORT_ID(port_id), "", source, false);
+  if (!port.IsValidPort())
+    return;
   port.DispatchOnDisconnect(error_message);
 }
 

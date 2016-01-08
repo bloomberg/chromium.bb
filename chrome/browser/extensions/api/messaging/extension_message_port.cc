@@ -200,7 +200,12 @@ void ExtensionMessagePort::CloseChannel() {
 }
 
 void ExtensionMessagePort::RegisterFrame(content::RenderFrameHost* rfh) {
-  frames_.insert(rfh);
+  // Only register a RenderFrameHost whose RenderFrame has been created, to
+  // ensure that we are notified of frame destruction. Without this check,
+  // |frames_| can eventually contain a stale pointer because RenderFrameDeleted
+  // is not triggered for |rfh|.
+  if (rfh->IsRenderFrameLive())
+    frames_.insert(rfh);
 }
 
 void ExtensionMessagePort::UnregisterFrame(content::RenderFrameHost* rfh) {
