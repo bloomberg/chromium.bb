@@ -24,6 +24,9 @@
 #include "net/cert/ct_verifier.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/test_root_certs.h"
+#include "net/der/input.h"
+#include "net/der/parser.h"
+#include "net/der/tag.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
@@ -2380,15 +2383,14 @@ TEST_F(SSLClientSocketTest, EVCertStatusRemovedForNonCompliantCert) {
 namespace {
 
 bool IsValidOCSPResponse(const base::StringPiece& input) {
-  base::StringPiece ocsp_response = input;
-  base::StringPiece sequence, response_status, response_bytes;
-  return asn1::GetElement(&ocsp_response, asn1::kSEQUENCE, &sequence) &&
-      ocsp_response.empty() &&
-      asn1::GetElement(&sequence, asn1::kENUMERATED, &response_status) &&
-      asn1::GetElement(&sequence,
-                       asn1::kContextSpecific | asn1::kConstructed | 0,
-                       &response_status) &&
-      sequence.empty();
+  der::Parser parser(der::Input(reinterpret_cast<const uint8_t*>(input.data()),
+                                input.length()));
+  der::Parser sequence;
+  return parser.ReadSequence(&sequence) && !parser.HasMore() &&
+         sequence.SkipTag(der::kEnumerated) &&
+         sequence.SkipTag(der::kTagContextSpecific | der::kTagConstructed |
+                          0) &&
+         !sequence.HasMore();
 }
 
 }  // namespace

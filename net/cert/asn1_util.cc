@@ -4,98 +4,20 @@
 
 #include "net/cert/asn1_util.h"
 
+#include "net/der/input.h"
+#include "net/der/parser.h"
+
 namespace net {
 
 namespace asn1 {
 
-bool ParseElement(base::StringPiece* in,
-                  unsigned tag_value,
-                  base::StringPiece* out,
-                  unsigned *out_header_len) {
-  const uint8_t* data = reinterpret_cast<const uint8_t*>(in->data());
+namespace {
 
-  // We don't support kAny and kOptional at the same time.
-  if ((tag_value & kAny) && (tag_value & kOptional))
-    return false;
-
-  if (in->empty() && (tag_value & kOptional)) {
-    if (out_header_len)
-      *out_header_len = 0;
-    if (out)
-      *out = base::StringPiece();
-    return true;
-  }
-
-  if (in->size() < 2)
-    return false;
-
-  if (tag_value != kAny &&
-      static_cast<unsigned char>(data[0]) != (tag_value & 0xff)) {
-    if (tag_value & kOptional) {
-      if (out_header_len)
-        *out_header_len = 0;
-      if (out)
-        *out = base::StringPiece();
-      return true;
-    }
-    return false;
-  }
-
-  size_t len = 0;
-  if ((data[1] & 0x80) == 0) {
-    // short form length
-    if (out_header_len)
-      *out_header_len = 2;
-    len = static_cast<size_t>(data[1]) + 2;
-  } else {
-    // long form length
-    const unsigned num_bytes = data[1] & 0x7f;
-    if (num_bytes == 0 || num_bytes > 2)
-      return false;
-    if (in->size() < 2 + num_bytes)
-      return false;
-    len = data[2];
-    if (num_bytes == 2) {
-      if (len == 0) {
-        // the length encoding must be minimal.
-        return false;
-      }
-      len <<= 8;
-      len += data[3];
-    }
-    if (len < 128) {
-      // the length should have been encoded in short form. This distinguishes
-      // DER from BER encoding.
-      return false;
-    }
-    if (out_header_len)
-      *out_header_len = 2 + num_bytes;
-    len += 2 + num_bytes;
-  }
-
-  if (in->size() < len)
-    return false;
-  if (out)
-    *out = base::StringPiece(in->data(), len);
-  in->remove_prefix(len);
-  return true;
-}
-
-bool GetElement(base::StringPiece* in,
-                unsigned tag_value,
-                base::StringPiece* out) {
-  unsigned header_len;
-  if (!ParseElement(in, tag_value, out, &header_len))
-    return false;
-  if (out)
-    out->remove_prefix(header_len);
-  return true;
-}
-
-// SeekToSPKI changes |cert| so that it points to a suffix of the
-// TBSCertificate where the suffix begins at the start of the ASN.1
-// SubjectPublicKeyInfo value.
-static bool SeekToSPKI(base::StringPiece* cert) {
+// Parses input |in| which should point to the beginning of a Certificate, and
+// sets |*tbs_certificate| ready to parse the SubjectPublicKeyInfo. If parsing
+// fails, this function returns false and |*tbs_certificate| is left in an
+// undefined state.
+bool SeekToSPKI(der::Input in, der::Parser* tbs_certificate) {
   // From RFC 5280, section 4.1
   //    Certificate  ::=  SEQUENCE  {
   //      tbsCertificate       TBSCertificate,
@@ -110,50 +32,64 @@ static bool SeekToSPKI(base::StringPiece* cert) {
   //      validity             Validity,
   //      subject              Name,
   //      subjectPublicKeyInfo SubjectPublicKeyInfo,
+  //      ... }
 
-  base::StringPiece certificate;
-  if (!GetElement(cert, kSEQUENCE, &certificate))
+  der::Parser parser(in);
+  der::Parser certificate;
+  if (!parser.ReadSequence(&certificate))
     return false;
 
   // We don't allow junk after the certificate.
-  if (!cert->empty())
+  if (parser.HasMore())
     return false;
 
-  base::StringPiece tbs_certificate;
-  if (!GetElement(&certificate, kSEQUENCE, &tbs_certificate))
+  if (!certificate.ReadSequence(tbs_certificate))
     return false;
 
-  if (!GetElement(&tbs_certificate,
-                  kOptional | kConstructed | kContextSpecific | 0,
-                  NULL)) {
+  bool unused;
+  if (!tbs_certificate->SkipOptionalTag(
+          der::kTagConstructed | der::kTagContextSpecific | 0, &unused)) {
     return false;
   }
 
   // serialNumber
-  if (!GetElement(&tbs_certificate, kINTEGER, NULL))
+  if (!tbs_certificate->SkipTag(der::kInteger))
     return false;
   // signature
-  if (!GetElement(&tbs_certificate, kSEQUENCE, NULL))
+  if (!tbs_certificate->SkipTag(der::kSequence))
     return false;
   // issuer
-  if (!GetElement(&tbs_certificate, kSEQUENCE, NULL))
+  if (!tbs_certificate->SkipTag(der::kSequence))
     return false;
   // validity
-  if (!GetElement(&tbs_certificate, kSEQUENCE, NULL))
+  if (!tbs_certificate->SkipTag(der::kSequence))
     return false;
   // subject
-  if (!GetElement(&tbs_certificate, kSEQUENCE, NULL))
+  if (!tbs_certificate->SkipTag(der::kSequence))
     return false;
-  *cert = tbs_certificate;
   return true;
 }
 
+der::Input InputFromStringPiece(base::StringPiece in) {
+  return der::Input(reinterpret_cast<const uint8_t*>(in.data()), in.length());
+}
+
+base::StringPiece StringPieceFromInput(der::Input in) {
+  return base::StringPiece(reinterpret_cast<const char*>(in.UnsafeData()),
+                           in.Length());
+}
+
+}  // namespace
+
 bool ExtractSPKIFromDERCert(base::StringPiece cert,
                             base::StringPiece* spki_out) {
-  if (!SeekToSPKI(&cert))
+  der::Parser parser;
+  if (!SeekToSPKI(InputFromStringPiece(cert), &parser))
     return false;
-  if (!ParseElement(&cert, kSEQUENCE, spki_out, NULL))
+  der::Input spki;
+  if (!parser.ReadRawTLV(&spki))
     return false;
+  *spki_out = StringPieceFromInput(spki);
   return true;
 }
 
@@ -169,18 +105,20 @@ bool ExtractSubjectPublicKeyFromSPKI(base::StringPiece spki,
   //     parameters              ANY DEFINED BY algorithm OPTIONAL  }
 
   // Step into SubjectPublicKeyInfo sequence.
-  base::StringPiece spki_contents;
-  if (!asn1::GetElement(&spki, asn1::kSEQUENCE, &spki_contents))
+  der::Parser parser(InputFromStringPiece(spki));
+  der::Parser spki_parser;
+  if (!parser.ReadSequence(&spki_parser))
     return false;
 
   // Step over algorithm field (a SEQUENCE).
-  base::StringPiece algorithm;
-  if (!asn1::GetElement(&spki_contents, asn1::kSEQUENCE, &algorithm))
+  if (!spki_parser.SkipTag(der::kSequence))
     return false;
 
   // Extract the subjectPublicKey field.
-  if (!asn1::GetElement(&spki_contents, asn1::kBITSTRING, spk_out))
+  der::Input spk;
+  if (!spki_parser.ReadTag(der::kBitString, &spk))
     return false;
+  *spk_out = StringPieceFromInput(spk);
   return true;
 }
 
@@ -190,7 +128,9 @@ bool ExtractCRLURLsFromDERCert(base::StringPiece cert,
   urls_out->clear();
   std::vector<base::StringPiece> tmp_urls_out;
 
-  if (!SeekToSPKI(&cert))
+  bool present;
+  der::Parser tbs_cert_parser;
+  if (!SeekToSPKI(InputFromStringPiece(cert), &tbs_cert_parser))
     return false;
 
   // From RFC 5280, section 4.1
@@ -199,63 +139,71 @@ bool ExtractCRLURLsFromDERCert(base::StringPiece cert,
   //      subjectPublicKeyInfo SubjectPublicKeyInfo,
   //      issuerUniqueID  [1]  IMPLICIT UniqueIdentifier OPTIONAL,
   //      subjectUniqueID [2]  IMPLICIT UniqueIdentifier OPTIONAL,
-  //      extensions      [3]  EXPLICIT Extensions OPTIONAL
+  //      extensions      [3]  EXPLICIT Extensions OPTIONAL }
 
   // subjectPublicKeyInfo
-  if (!GetElement(&cert, kSEQUENCE, NULL))
+  if (!tbs_cert_parser.SkipTag(der::kSequence))
     return false;
   // issuerUniqueID
-  if (!GetElement(&cert, kOptional | kConstructed | kContextSpecific | 1, NULL))
+  if (!tbs_cert_parser.SkipOptionalTag(
+          der::kTagConstructed | der::kTagContextSpecific | 1, &present)) {
     return false;
+  }
   // subjectUniqueID
-  if (!GetElement(&cert, kOptional | kConstructed | kContextSpecific | 2, NULL))
-    return false;
-
-  base::StringPiece extensions_seq;
-  if (!GetElement(&cert, kOptional | kConstructed | kContextSpecific | 3,
-                  &extensions_seq)) {
+  if (!tbs_cert_parser.SkipOptionalTag(
+          der::kTagConstructed | der::kTagContextSpecific | 2, &present)) {
     return false;
   }
 
-  if (extensions_seq.empty())
+  der::Input extensions;
+  if (!tbs_cert_parser.ReadOptionalTag(
+          der::kTagConstructed | der::kTagContextSpecific | 3, &extensions,
+          &present)) {
+    return false;
+  }
+
+  if (!present)
     return true;
 
   // Extensions  ::=  SEQUENCE SIZE (1..MAX) OF Extension
   // Extension   ::=  SEQUENCE  {
   //      extnID      OBJECT IDENTIFIER,
   //      critical    BOOLEAN DEFAULT FALSE,
-  //      extnValue   OCTET STRING
+  //      extnValue   OCTET STRING }
 
-  // |extensions_seq| was EXPLICITly tagged, so we still need to remove the
+  // |extensions| was EXPLICITly tagged, so we still need to remove the
   // ASN.1 SEQUENCE header.
-  base::StringPiece extensions;
-  if (!GetElement(&extensions_seq, kSEQUENCE, &extensions))
+  der::Parser explicit_extensions_parser(extensions);
+  der::Parser extensions_parser;
+  if (!explicit_extensions_parser.ReadSequence(&extensions_parser))
     return false;
 
-  while (extensions.size() > 0) {
-    base::StringPiece extension;
-    if (!GetElement(&extensions, kSEQUENCE, &extension))
+  if (explicit_extensions_parser.HasMore())
+    return false;
+
+  while (extensions_parser.HasMore()) {
+    der::Parser extension_parser;
+    if (!extensions_parser.ReadSequence(&extension_parser))
       return false;
 
-    base::StringPiece oid;
-    if (!GetElement(&extension, kOID, &oid))
+    der::Input oid;
+    if (!extension_parser.ReadTag(der::kOid, &oid))
       return false;
 
     // kCRLDistributionPointsOID is the DER encoding of the OID for the X.509
     // CRL Distribution Points extension.
     static const uint8_t kCRLDistributionPointsOID[] = {0x55, 0x1d, 0x1f};
 
-    if (oid.size() != sizeof(kCRLDistributionPointsOID) ||
-        memcmp(oid.data(), kCRLDistributionPointsOID, oid.size()) != 0) {
+    if (!oid.Equals(der::Input(kCRLDistributionPointsOID)))
       continue;
-    }
 
     // critical
-    GetElement(&extension, kBOOLEAN, NULL);
+    if (!extension_parser.SkipOptionalTag(der::kBool, &present))
+      return false;
 
     // extnValue
-    base::StringPiece extension_value;
-    if (!GetElement(&extension, kOCTETSTRING, &extension_value))
+    der::Input extension_value;
+    if (!extension_parser.ReadTag(der::kOctetString, &extension_value))
       return false;
 
     // RFC 5280, section 4.2.1.13.
@@ -267,56 +215,80 @@ bool ExtractCRLURLsFromDERCert(base::StringPiece cert,
     //  reasons                 [1]     ReasonFlags OPTIONAL,
     //  cRLIssuer               [2]     GeneralNames OPTIONAL }
 
-    base::StringPiece distribution_points;
-    if (!GetElement(&extension_value, kSEQUENCE, &distribution_points))
+    der::Parser extension_value_parser(extension_value);
+    der::Parser distribution_points_parser;
+    if (!extension_value_parser.ReadSequence(&distribution_points_parser))
+      return false;
+    if (extension_value_parser.HasMore())
       return false;
 
-    while (distribution_points.size() > 0) {
-      base::StringPiece distrib_point;
-      if (!GetElement(&distribution_points, kSEQUENCE, &distrib_point))
+    while (distribution_points_parser.HasMore()) {
+      der::Parser distrib_point_parser;
+      if (!distribution_points_parser.ReadSequence(&distrib_point_parser))
         return false;
 
-      base::StringPiece name;
-      if (!GetElement(&distrib_point, kContextSpecific | kConstructed | 0,
-                      &name)) {
-        // If it doesn't contain a name then we skip it.
-        continue;
+      der::Input name;
+      if (!distrib_point_parser.ReadOptionalTag(
+              der::kTagContextSpecific | der::kTagConstructed | 0, &name,
+              &present)) {
+        return false;
       }
+      // If it doesn't contain a name then we skip it.
+      if (!present)
+        continue;
 
-      if (GetElement(&distrib_point, kContextSpecific | 1, NULL)) {
-        // If it contains a subset of reasons then we skip it. We aren't
-        // interested in subsets of CRLs and the RFC states that there MUST be
-        // a CRL that covers all reasons.
-        continue;
+      if (!distrib_point_parser.SkipOptionalTag(der::kTagContextSpecific | 1,
+                                                &present)) {
+        return false;
       }
+      // If it contains a subset of reasons then we skip it. We aren't
+      // interested in subsets of CRLs and the RFC states that there MUST be
+      // a CRL that covers all reasons.
+      if (present)
+        continue;
 
-      if (GetElement(&distrib_point,
-                     kContextSpecific | kConstructed | 2, NULL)) {
-        // If it contains a alternative issuer, then we skip it.
-        continue;
+      if (!distrib_point_parser.SkipOptionalTag(
+              der::kTagContextSpecific | der::kTagConstructed | 2, &present)) {
+        return false;
       }
+      // If it contains a alternative issuer, then we skip it.
+      if (present)
+        continue;
 
       // DistributionPointName ::= CHOICE {
       //   fullName                [0]     GeneralNames,
       //   nameRelativeToCRLIssuer [1]     RelativeDistinguishedName }
-      base::StringPiece general_names;
-      if (!GetElement(&name,
-                      kContextSpecific | kConstructed | 0, &general_names)) {
-        continue;
+      der::Input general_names;
+      if (!der::Parser(name).ReadOptionalTag(
+              der::kTagContextSpecific | der::kTagConstructed | 0,
+              &general_names, &present)) {
+        return false;
       }
+      if (!present)
+        continue;
 
       // GeneralNames ::= SEQUENCE SIZE (1..MAX) OF GeneralName
       // GeneralName ::= CHOICE {
       //   ...
       //   uniformResourceIdentifier [6]  IA5String,
-      //   ...
-      while (general_names.size() > 0) {
-        base::StringPiece url;
-        if (GetElement(&general_names, kContextSpecific | 6, &url)) {
-          tmp_urls_out.push_back(url);
+      //   ... }
+      der::Parser general_names_parser(general_names);
+      while (general_names_parser.HasMore()) {
+        der::Input url;
+        if (!general_names_parser.ReadOptionalTag(der::kTagContextSpecific | 6,
+                                                  &url, &present)) {
+          return false;
+        }
+        if (present) {
+          // This does not validate that |url| is a valid IA5String.
+          tmp_urls_out.push_back(StringPieceFromInput(url));
         } else {
-          if (!GetElement(&general_names, kAny, NULL))
+          der::Tag unused_tag;
+          der::Input unused_value;
+          if (!general_names_parser.ReadTagAndValue(&unused_tag,
+                                                    &unused_value)) {
             return false;
+          }
         }
       }
     }

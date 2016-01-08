@@ -17,6 +17,8 @@
 #include "net/cert/asn1_util.h"
 #include "net/cert/scoped_nss_types.h"
 #include "net/cert/signed_certificate_timestamp.h"
+#include "net/der/input.h"
+#include "net/der/parser.h"
 
 namespace net {
 
@@ -148,14 +150,13 @@ bool GetCertOctetStringExtension(CERTCertificate* cert,
   if (rv != SECSuccess)
     return false;
 
-  base::StringPiece raw_data(reinterpret_cast<char*>(extension.data),
-                             extension.len);
-  base::StringPiece parsed_data;
-  if (!asn1::GetElement(&raw_data, asn1::kOCTETSTRING, &parsed_data) ||
-      raw_data.size() > 0) { // Decoding failure or raw data left
+  der::Parser parser(der::Input(extension.data, extension.len));
+  der::Input parsed_extension;
+  if (!parser.ReadTag(der::kOctetString, &parsed_extension) ||
+      parser.HasMore()) {  // Decoding failure or raw data left
     rv = SECFailure;
   } else {
-    parsed_data.CopyToString(extension_data);
+    *extension_data = parsed_extension.AsString();
   }
 
   SECITEM_FreeItem(&extension, PR_FALSE);

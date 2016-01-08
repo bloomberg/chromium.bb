@@ -28,6 +28,7 @@ const Tag kBitString = 0x03;
 const Tag kOctetString = 0x04;
 const Tag kNull = 0x05;
 const Tag kOid = 0x06;
+const Tag kEnumerated = 0x0A;
 const Tag kUtf8String = 0x0C;
 const Tag kPrintableString = 0x13;
 const Tag kIA5String = 0x16;
