@@ -974,6 +974,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case RTCPeerConnectionCreateOfferLegacyNoFailureCallback:
         return "RTCPeerConnection.CreateOffer without a failure callback is deprecated. The failure callback will be a required parameter in M50. See https://www.chromestatus.com/feature/5663288008376320 for more details";
 
+    case ObjectObserve:
+        return willBeRemoved("'Object.observe'", 50, "6147094632988672");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

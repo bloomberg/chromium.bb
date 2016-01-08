@@ -56,6 +56,7 @@ static bool runningUnitTest()
 static void useCounterCallback(v8::Isolate* isolate, v8::Isolate::UseCounterFeature feature)
 {
     UseCounter::Feature blinkFeature;
+    bool deprecated = false;
     switch (feature) {
     case v8::Isolate::kUseAsm:
         blinkFeature = UseCounter::UseAsm;
@@ -68,6 +69,7 @@ static void useCounterCallback(v8::Isolate* isolate, v8::Isolate::UseCounterFeat
         break;
     case v8::Isolate::kObjectObserve:
         blinkFeature = UseCounter::ObjectObserve;
+        deprecated = true;
         break;
     case v8::Isolate::kSloppyMode:
         blinkFeature = UseCounter::V8SloppyMode;
@@ -89,7 +91,10 @@ static void useCounterCallback(v8::Isolate* isolate, v8::Isolate::UseCounterFeat
         // does not know about. It's harmless.
         return;
     }
-    UseCounter::count(callingExecutionContext(isolate), blinkFeature);
+    if (deprecated)
+        UseCounter::countDeprecation(callingExecutionContext(isolate), blinkFeature);
+    else
+        UseCounter::count(callingExecutionContext(isolate), blinkFeature);
 }
 
 V8PerIsolateData::V8PerIsolateData()
