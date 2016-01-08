@@ -6,13 +6,13 @@ in PartitionAlloc.h.
 
 [TOC]
 
-# Overview
+## Overview
 
 PartitionAlloc is a memory allocator optimized for performance and security
 in Blink. All objects in Blink are expected to be allocated with
 PartitionAlloc or Oilpan (but not yet done).
 
-# Partitions and buckets
+## Partitions and buckets
 
 PartitionAlloc has four partitions. A partition is a heap that contains
 certain types of objects. Specifically, PartitionAlloc allocates objects
@@ -48,7 +48,7 @@ chosen to keep the worst-case memory overhead less than 10%.
 
 Large allocations (> 1 MB) are realized by direct memory mmapping.
 
-# Performance
+## Performance
 
 PartitionAlloc doesn't acquire a lock when allocating on the Node partition and
 the LayoutObject partition, because it's guaranteed that Nodes and LayoutObjects
@@ -66,7 +66,7 @@ is minimized, leading to the possibility of inlining.
 Having the dedicated partitions for Nodes and LayoutObjects is helpful
 to improve cache locality and thus improve performance.
 
-# Security
+## Security
 
 Security is one of the most important goals of PartitionAlloc.
 
@@ -98,4 +98,3 @@ One page can contain only similar-sized objects.
 * Partial pointer overwrite of freelist pointer should fault.
 
 * Large allocations are guard-paged at the beginning and end.
-
