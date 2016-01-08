@@ -52,6 +52,14 @@
 
 namespace blink {
 
+// Marker used to annotate persistent objects and collections with,
+// so as to enable reliable testing for persistent references via
+// a type trait (see TypeTraits.h's IsPersistentReferenceType<>.)
+#define IS_PERSISTENT_REFERENCE_TYPE()               \
+    public:                                          \
+        using IsPersistentReferenceTypeMarker = int; \
+    private:
+
 enum WeaknessPersistentConfiguration {
     NonWeakPersistentConfiguration,
     WeakPersistentConfiguration
@@ -64,6 +72,7 @@ enum CrossThreadnessPersistentConfiguration {
 
 template<typename T, WeaknessPersistentConfiguration weaknessConfiguration, CrossThreadnessPersistentConfiguration crossThreadnessConfiguration>
 class PersistentBase {
+    IS_PERSISTENT_REFERENCE_TYPE();
 public:
     PersistentBase() : m_raw(nullptr)
     {
@@ -531,6 +540,7 @@ class PersistentHeapCollectionBase : public Collection {
     // heap collections are always allocated off-heap. This allows persistent collections to be used in
     // DEFINE_STATIC_LOCAL et. al.
     WTF_USE_ALLOCATOR(PersistentHeapCollectionBase, WTF::PartitionAllocator);
+    IS_PERSISTENT_REFERENCE_TYPE();
 public:
     PersistentHeapCollectionBase()
     {

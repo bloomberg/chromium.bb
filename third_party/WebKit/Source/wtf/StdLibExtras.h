@@ -59,6 +59,14 @@ private:
 };
 #endif
 
+// A direct static local to a Blink garbage collected objects isn't allowed;
+// must be wrapped up with a persistent reference.
+#define STATIC_ASSERT_FOR_LOCAL_WITH_GARBAGE_COLLECTED_TYPE(Name, Type) \
+    using Name##NoConstType = std::remove_const<Type>::type; \
+    using Name##NoPointerType = std::remove_pointer<Name##NoConstType>::type; \
+    using Name##NoReferenceType = std::remove_reference<Name##NoPointerType>::type; \
+    static_assert(!WTF::IsGarbageCollectedType<Name##NoReferenceType>::value || WTF::IsPersistentReferenceType<Name##NoReferenceType>::value, "Garbage collected static local needs to be wrapped up with a persistent reference")
+
 // Use DEFINE_STATIC_LOCAL() to declare and define a static local variable (static T;)
 // so that it is leaked and its destructors are not called at exit.
 //
@@ -68,13 +76,15 @@ private:
 // LEAK_SANITIZER_REGISTER_STATIC_LOCAL() takes care of the details.
 //
 #if ENABLE(ASSERT)
-#define DEFINE_STATIC_LOCAL(type, name, arguments)        \
-    static StaticLocalVerifier name##StaticLocalVerifier; \
-    ASSERT(name##StaticLocalVerifier.isNotRacy());        \
-    static type& name = *LEAK_SANITIZER_REGISTER_STATIC_LOCAL(type, new type arguments)
+#define DEFINE_STATIC_LOCAL(Type, Name, Arguments)        \
+    STATIC_ASSERT_FOR_LOCAL_WITH_GARBAGE_COLLECTED_TYPE(Name, Type); \
+    static StaticLocalVerifier Name##StaticLocalVerifier; \
+    ASSERT(Name##StaticLocalVerifier.isNotRacy());        \
+    static Type& Name = *LEAK_SANITIZER_REGISTER_STATIC_LOCAL(Type, new Type Arguments)
 #else
-#define DEFINE_STATIC_LOCAL(type, name, arguments) \
-    static type& name = *LEAK_SANITIZER_REGISTER_STATIC_LOCAL(type, new type arguments)
+#define DEFINE_STATIC_LOCAL(Type, Name, Arguments) \
+    STATIC_ASSERT_FOR_LOCAL_WITH_GARBAGE_COLLECTED_TYPE(Name, Type); \
+    static Type& Name = *LEAK_SANITIZER_REGISTER_STATIC_LOCAL(Type, new Type Arguments)
 #endif
 
 // Use this to declare and define a static local pointer to a ref-counted object so that

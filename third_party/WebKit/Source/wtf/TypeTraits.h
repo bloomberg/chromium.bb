@@ -228,6 +228,19 @@ public:
 };
 
 template<typename T>
+class IsPersistentReferenceType {
+    typedef char YesType;
+    typedef struct NoType {
+        char padding[8];
+    } NoType;
+
+    template <typename U> static YesType checkPersistentReferenceType(typename U::IsPersistentReferenceTypeMarker*);
+    template <typename U> static NoType checkPersistentReferenceType(...);
+public:
+    static const bool value = (sizeof(YesType) == sizeof(checkPersistentReferenceType<T>(nullptr)));
+};
+
+template<typename T>
 class IsPointerToGarbageCollectedType {
 public:
     static const bool value = false;
