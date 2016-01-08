@@ -816,15 +816,13 @@ TEST_F(WindowServerTest, ActivationNext) {
   Window* child31 = NewVisibleWindow(GetFirstRoot(embedded3), embedded3);
   WaitForTreeSizeToMatch(parent, 7);
 
-  Window* expecteds[] = { child1, child2, child3, child1, nullptr };
-  Window* focused[] = { child11, child21, child31, child11, nullptr };
+  Window* expecteds[] = { child3, child2, child1, child3, nullptr };
+  Window* focused[] = { child31, child21, child11, child31, nullptr };
   for (size_t index = 0; expecteds[index]; ++index) {
     host()->ActivateNextWindow();
-    ASSERT_TRUE(WaitForOrderChange(window_manager(), expecteds[index]))
-        << " Failure at " << index;
-
     WaitForWindowToHaveFocus(focused[index]);
     EXPECT_TRUE(focused[index]->HasFocus());
+    EXPECT_EQ(parent->children().back(), expecteds[index]);
   }
 }
 

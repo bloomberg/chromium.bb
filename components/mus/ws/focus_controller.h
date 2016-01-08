@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "components/mus/ws/server_window_drawn_tracker_observer.h"
+#include "components/mus/ws/server_window_tracker.h"
 
 namespace mus {
 
@@ -18,6 +19,7 @@ class FocusControllerDelegate;
 class FocusControllerObserver;
 class ServerWindow;
 class ServerWindowDrawnTracker;
+struct WindowId;
 
 // Describes the source of the change.
 enum class FocusControllerChangeSource {
@@ -44,7 +46,13 @@ class FocusController : public ServerWindowDrawnTrackerObserver {
   void RemoveObserver(FocusControllerObserver* observer);
 
  private:
-  void SetActiveWindow(ServerWindow* window);
+  enum class ActivationChangeReason {
+    UNKNONW,
+    CYCLE,  // Activation changed because of ActivateNextWindow().
+    FOCUS,  // Focus change required a different window to be activated.
+    DRAWN_STATE_CHANGED,  // Active window was hidden or destroyed.
+  };
+  void SetActiveWindow(ServerWindow* window, ActivationChangeReason reason);
 
   // Returns whether |window| can be focused or activated.
   bool CanBeFocused(ServerWindow* window) const;
@@ -71,6 +79,13 @@ class FocusController : public ServerWindowDrawnTrackerObserver {
   ServerWindow* root_;
   ServerWindow* focused_window_;
   ServerWindow* active_window_;
+  // Tracks what caused |active_window_| to be activated.
+  ActivationChangeReason activation_reason_;
+
+  // Keeps track of the list of windows that have already been visited during a
+  // window cycle. This is only active when |activation_reason_| is set to
+  // CYCLE.
+  scoped_ptr<ServerWindowTracker> cycle_windows_;
 
   base::ObserverList<FocusControllerObserver> observers_;
 

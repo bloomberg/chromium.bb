@@ -148,13 +148,13 @@ TEST(FocusControllerTest, FocusShiftsOnDestroy) {
   ServerWindow parent(&server_window_delegate, WindowId());
   server_window_delegate.set_root_window(&parent);
   parent.SetVisible(true);
-  scoped_ptr<ServerWindow> child_first(
+  ServerWindow child_first(&server_window_delegate, WindowId());
+  child_first.SetVisible(true);
+  parent.Add(&child_first);
+  scoped_ptr<ServerWindow> child_second(
       new ServerWindow(&server_window_delegate, WindowId()));
-  child_first->SetVisible(true);
-  parent.Add(child_first.get());
-  ServerWindow child_second(&server_window_delegate, WindowId());
-  child_second.SetVisible(true);
-  parent.Add(&child_second);
+  child_second->SetVisible(true);
+  parent.Add(child_second.get());
   std::vector<uint8_t> dummy;
   // Allow only |parent| to be activated.
   parent.SetProperty(kDisallowActiveChildren, &dummy);
@@ -168,13 +168,13 @@ TEST(FocusControllerTest, FocusShiftsOnDestroy) {
   EXPECT_EQ(nullptr, focus_observer.old_active_window());
   EXPECT_EQ(&parent, focus_observer.new_active_window());
   EXPECT_EQ(nullptr, focus_observer.old_focused_window());
-  EXPECT_EQ(child_first.get(), focus_observer.new_focused_window());
+  EXPECT_EQ(child_second.get(), focus_observer.new_focused_window());
   focus_observer.ClearAll();
 
-  // Destroying |child_first| should move focus to |child_second|.
-  child_first.reset();
+  // Destroying |child_second| should move focus to |child_first|.
+  child_second.reset();
   EXPECT_NE(nullptr, focus_observer.old_focused_window());
-  EXPECT_EQ(&child_second, focus_observer.new_focused_window());
+  EXPECT_EQ(&child_first, focus_observer.new_focused_window());
 
   focus_controller.RemoveObserver(&focus_observer);
 }
@@ -203,32 +203,32 @@ TEST(FocusControllerTest, ActivationSkipsOverHiddenWindow) {
   focus_controller.AddObserver(&focus_observer);
 
   // Since |child_second| is invisible, activation should cycle from
-  // |child_first|, to |child_third|, to |parent|, back to |child_first|.
+  // |child_third|, to |child_first|, to |parent|, back to |child_third|.
   focus_controller.ActivateNextWindow();
   EXPECT_EQ(nullptr, focus_observer.old_active_window());
-  EXPECT_EQ(&child_first, focus_observer.new_active_window());
-  focus_observer.ClearAll();
-
-  focus_controller.ActivateNextWindow();
-  EXPECT_EQ(&child_first, focus_observer.old_active_window());
   EXPECT_EQ(&child_third, focus_observer.new_active_window());
   focus_observer.ClearAll();
 
   focus_controller.ActivateNextWindow();
   EXPECT_EQ(&child_third, focus_observer.old_active_window());
+  EXPECT_EQ(&child_first, focus_observer.new_active_window());
+  focus_observer.ClearAll();
+
+  focus_controller.ActivateNextWindow();
+  EXPECT_EQ(&child_first, focus_observer.old_active_window());
   EXPECT_EQ(&parent, focus_observer.new_active_window());
   focus_observer.ClearAll();
 
   focus_controller.ActivateNextWindow();
   EXPECT_EQ(&parent, focus_observer.old_active_window());
-  EXPECT_EQ(&child_first, focus_observer.new_active_window());
+  EXPECT_EQ(&child_third, focus_observer.new_active_window());
   focus_observer.ClearAll();
 
   // Once |child_second| is made visible, activation should go from
-  // |child_first| to |child_second|.
+  // |child_third| to |child_second|.
   child_second.SetVisible(true);
   focus_controller.ActivateNextWindow();
-  EXPECT_EQ(&child_first, focus_observer.old_active_window());
+  EXPECT_EQ(&child_third, focus_observer.old_active_window());
   EXPECT_EQ(&child_second, focus_observer.new_active_window());
 }
 

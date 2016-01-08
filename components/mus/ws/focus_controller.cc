@@ -16,9 +16,9 @@ namespace ws {
 
 namespace {
 
-ServerWindow* GetDeepestFirstDescendant(ServerWindow* window) {
+ServerWindow* GetDeepestLastDescendant(ServerWindow* window) {
   while (!window->children().empty())
-    window = window->children()[0];
+    window = window->children().back();
   return window;
 }
 
@@ -31,18 +31,18 @@ class WindowTreeIterator {
 
   ServerWindow* GetNext(ServerWindow* window) const {
     if (window == root_ || window == nullptr)
-      return GetDeepestFirstDescendant(root_);
+      return GetDeepestLastDescendant(root_);
 
     // Return the next sibling.
     ServerWindow* parent = window->parent();
     if (parent) {
       const ServerWindow::Windows& siblings = parent->children();
-      ServerWindow::Windows::const_iterator iter =
-          std::find(siblings.begin(), siblings.end(), window);
-      DCHECK(iter != siblings.end());
+      ServerWindow::Windows::const_reverse_iterator iter =
+          std::find(siblings.rbegin(), siblings.rend(), window);
+      DCHECK(iter != siblings.rend());
       ++iter;
-      if (iter != siblings.end())
-        return GetDeepestFirstDescendant(*iter);
+      if (iter != siblings.rend())
+        return GetDeepestLastDescendant(*iter);
     }
 
     // All children and siblings have been explored. Next is the parent.
@@ -62,12 +62,14 @@ FocusController::FocusController(FocusControllerDelegate* delegate,
     : delegate_(delegate),
       root_(root),
       focused_window_(nullptr),
-      active_window_(nullptr) {
+      active_window_(nullptr),
+      activation_reason_(ActivationChangeReason::UNKNONW) {
   DCHECK(delegate_);
   DCHECK(root_);
 }
 
-FocusController::~FocusController() {}
+FocusController::~FocusController() {
+}
 
 void FocusController::SetFocusedWindow(ServerWindow* window) {
   if (GetFocusedWindow() == window)
@@ -83,10 +85,26 @@ ServerWindow* FocusController::GetFocusedWindow() {
 void FocusController::ActivateNextWindow() {
   WindowTreeIterator iter(root_);
   ServerWindow* activate = active_window_;
-  do {
+  while (true) {
     activate = iter.GetNext(activate);
-  } while (activate != active_window_ && !CanBeActivated(activate));
-  SetActiveWindow(activate);
+    if (activation_reason_ == ActivationChangeReason::CYCLE) {
+      if (activate == active_window_) {
+        // We have cycled over all the activatable windows. Remove the oldest
+        // window that was cycled.
+        if (!cycle_windows_->windows().empty()) {
+          cycle_windows_->Remove(cycle_windows_->windows().front());
+          continue;
+        }
+      } else if (cycle_windows_->Contains(activate)) {
+        // We are cycling between activated windows, and this window has already
+        // been through the cycle. So skip over it.
+        continue;
+      }
+    }
+    if (activate == active_window_ || CanBeActivated(activate))
+      break;
+  }
+  SetActiveWindow(activate, ActivationChangeReason::CYCLE);
 
   if (active_window_) {
     // Do not shift focus if the focused window already lives in the active
@@ -113,16 +131,27 @@ void FocusController::RemoveObserver(FocusControllerObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void FocusController::SetActiveWindow(ServerWindow* window) {
+void FocusController::SetActiveWindow(ServerWindow* window,
+                                      ActivationChangeReason reason) {
   DCHECK(!window || CanBeActivated(window));
   if (active_window_ == window)
     return;
+  if (reason != ActivationChangeReason::CYCLE) {
+    cycle_windows_.reset();
+  } else if (activation_reason_ != ActivationChangeReason::CYCLE) {
+    DCHECK(!cycle_windows_);
+    cycle_windows_.reset(new ServerWindowTracker());
+    if (active_window_)
+      cycle_windows_->Add(active_window_);
+  }
+
   ServerWindow* old_active = active_window_;
   active_window_ = window;
-  if (old_active != active_window_) {
-    FOR_EACH_OBSERVER(FocusControllerObserver, observers_,
-                      OnActivationChanged(old_active, active_window_));
-  }
+  activation_reason_ = reason;
+  FOR_EACH_OBSERVER(FocusControllerObserver, observers_,
+                    OnActivationChanged(old_active, active_window_));
+  if (active_window_ && activation_reason_ == ActivationChangeReason::CYCLE)
+    cycle_windows_->Add(active_window_);
 }
 
 bool FocusController::CanBeFocused(ServerWindow* window) const {
@@ -187,7 +216,8 @@ void FocusController::SetFocusedWindowImpl(
   // Activate the closest activatable ancestor window.
   // TODO(sad): The window to activate doesn't necessarily have to be a direct
   // ancestor (e.g. could be a transient parent).
-  SetActiveWindow(GetActivatableAncestorOf(window));
+  SetActiveWindow(GetActivatableAncestorOf(window),
+                  ActivationChangeReason::FOCUS);
 
   FOR_EACH_OBSERVER(FocusControllerObserver, observers_,
                     OnFocusChanged(change_source, old_focused, window));
@@ -229,7 +259,7 @@ void FocusController::OnDrawnStateWillChange(ServerWindow* ancestor,
              (will_be_hidden(activate) || !CanBeActivated(activate)));
     if (activate == window)
       activate = nullptr;
-    SetActiveWindow(activate);
+    SetActiveWindow(activate, ActivationChangeReason::DRAWN_STATE_CHANGED);
 
     // Now make sure focus is in the active window.
     ServerWindow* focus = nullptr;
