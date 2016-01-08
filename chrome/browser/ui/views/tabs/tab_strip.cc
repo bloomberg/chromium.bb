@@ -511,7 +511,7 @@ void NewTabButton::GetBorderPath(float button_y,
   } else {
     path->rCubicTo(-0.5 * scale, -1.125 * scale, 0.5 * scale, -scale - 2, scale,
                    -scale - 2);
-    path->lineTo((width() - 4) * scale - diag_width + 1, scale - 1);
+    path->lineTo((width() - 4) * scale - diag_width + 1, button_y + scale - 1);
     path->rCubicTo(0.75 * scale, 0, 1.625 * scale, 0.5 * scale, 2 * scale,
                    1.5 * scale);
     path->rLineTo(diag_width, diag_height);
