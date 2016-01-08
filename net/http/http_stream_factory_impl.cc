@@ -120,23 +120,30 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestStreamInternal(
   Request* request = new Request(request_info.url, this, delegate,
                                  websocket_handshake_stream_create_helper,
                                  net_log, Request::HTTP_STREAM);
+  HostPortPair server = HostPortPair::FromURL(request_info.url);
+  GURL origin_url = ApplyHostMappingRules(request_info.url, &server);
+
   Job* job = new Job(this, session_, request_info, priority, server_ssl_config,
-                     proxy_ssl_config, net_log.net_log());
+                     proxy_ssl_config, server, origin_url, net_log.net_log());
   request->AttachJob(job);
 
-  const AlternativeServiceVector alternative_service_vector =
-      GetAlternativeServicesFor(request_info.url, delegate);
+  const AlternativeService alternative_service =
+      GetAlternativeServiceFor(request_info, delegate);
 
-  if (!alternative_service_vector.empty()) {
-    // TODO(bnc): Pass on multiple alternative services to Job.
-    const AlternativeService& alternative_service =
-        alternative_service_vector[0];
+  if (alternative_service.protocol != UNINITIALIZED_ALTERNATE_PROTOCOL) {
     // Never share connection with other jobs for FTP requests.
+    DVLOG(1) << "Selected alternative service (host: "
+             << alternative_service.host_port_pair().host()
+             << " port: " << alternative_service.host_port_pair().port() << ")";
+
     DCHECK(!request_info.url.SchemeIs("ftp"));
+    HostPortPair server = alternative_service.host_port_pair();
+    GURL origin_url = ApplyHostMappingRules(request_info.url, &server);
 
     Job* alternative_job =
         new Job(this, session_, request_info, priority, server_ssl_config,
-                proxy_ssl_config, alternative_service, net_log.net_log());
+                proxy_ssl_config, server, origin_url, alternative_service,
+                net_log.net_log());
     request->AttachJob(alternative_job);
 
     job->WaitFor(alternative_job);
@@ -159,27 +166,28 @@ void HttpStreamFactoryImpl::PreconnectStreams(
     const SSLConfig& server_ssl_config,
     const SSLConfig& proxy_ssl_config) {
   DCHECK(!for_websockets_);
-  AlternativeService alternative_service;
-  AlternativeServiceVector alternative_service_vector =
-      GetAlternativeServicesFor(request_info.url, nullptr);
-  if (!alternative_service_vector.empty()) {
-    // TODO(bnc): Pass on multiple alternative services to Job.
-    alternative_service = alternative_service_vector[0];
+  AlternativeService alternative_service =
+      GetAlternativeServiceFor(request_info, nullptr);
+  HostPortPair server;
+  if (alternative_service.protocol != UNINITIALIZED_ALTERNATE_PROTOCOL) {
+    server = alternative_service.host_port_pair();
     if (session_->params().quic_disable_preconnect_if_0rtt &&
         alternative_service.protocol == QUIC &&
         session_->quic_stream_factory()->ZeroRTTEnabledFor(QuicServerId(
             alternative_service.host_port_pair(), request_info.privacy_mode))) {
       return;
     }
+  } else {
+    server = HostPortPair::FromURL(request_info.url);
   }
-
+  GURL origin_url = ApplyHostMappingRules(request_info.url, &server);
   // Due to how the socket pools handle priorities and idle sockets, only IDLE
   // priority currently makes sense for preconnects. The priority for
   // preconnects is currently ignored (see RequestSocketsForPool()), but could
   // be used at some point for proxy resolution or something.
-  Job* job =
-      new Job(this, session_, request_info, IDLE, server_ssl_config,
-              proxy_ssl_config, alternative_service, session_->net_log());
+  Job* job = new Job(this, session_, request_info, IDLE, server_ssl_config,
+                     proxy_ssl_config, server, origin_url, alternative_service,
+                     session_->net_log());
   preconnect_job_set_.insert(job);
   job->Preconnect(num_streams);
 }
@@ -188,11 +196,13 @@ const HostMappingRules* HttpStreamFactoryImpl::GetHostMappingRules() const {
   return session_->params().host_mapping_rules;
 }
 
-AlternativeServiceVector HttpStreamFactoryImpl::GetAlternativeServicesFor(
-    const GURL& original_url,
+AlternativeService HttpStreamFactoryImpl::GetAlternativeServiceFor(
+    const HttpRequestInfo& request_info,
     HttpStreamRequest::Delegate* delegate) {
+  GURL original_url = request_info.url;
+
   if (original_url.SchemeIs("ftp"))
-    return AlternativeServiceVector();
+    return AlternativeService();
 
   HostPortPair origin = HostPortPair::FromURL(original_url);
   HttpServerProperties& http_server_properties =
@@ -200,7 +210,7 @@ AlternativeServiceVector HttpStreamFactoryImpl::GetAlternativeServicesFor(
   const AlternativeServiceVector alternative_service_vector =
       http_server_properties.GetAlternativeServices(origin);
   if (alternative_service_vector.empty())
-    return AlternativeServiceVector();
+    return AlternativeService();
 
   bool quic_advertised = false;
   bool quic_all_broken = true;
@@ -208,7 +218,9 @@ AlternativeServiceVector HttpStreamFactoryImpl::GetAlternativeServicesFor(
   const bool enable_different_host =
       session_->params().use_alternative_services;
 
-  AlternativeServiceVector enabled_alternative_service_vector;
+  // First Alt-Svc that is not marked as broken.
+  AlternativeService first_alternative_service;
+
   for (const AlternativeService& alternative_service :
        alternative_service_vector) {
     DCHECK(IsAlternateProtocolValid(alternative_service.protocol));
@@ -244,7 +256,10 @@ AlternativeServiceVector HttpStreamFactoryImpl::GetAlternativeServicesFor(
       if (session_->HasSpdyExclusion(origin))
         continue;
 
-      enabled_alternative_service_vector.push_back(alternative_service);
+      // Cache this entry if we don't have a non-broken Alt-Svc yet.
+      if (first_alternative_service.protocol ==
+          UNINITIALIZED_ALTERNATE_PROTOCOL)
+        first_alternative_service = alternative_service;
       continue;
     }
 
@@ -259,11 +274,25 @@ AlternativeServiceVector HttpStreamFactoryImpl::GetAlternativeServicesFor(
     if (!original_url.SchemeIs("https"))
       continue;
 
-    enabled_alternative_service_vector.push_back(alternative_service);
+    // Check whether there's an existing session to use for this QUIC Alt-Svc.
+    HostPortPair destination = alternative_service.host_port_pair();
+    std::string origin_host =
+        ApplyHostMappingRules(request_info.url, &destination).host();
+    QuicServerId server_id(destination, request_info.privacy_mode);
+    if (session_->quic_stream_factory()->CanUseExistingSession(
+            server_id, request_info.privacy_mode, origin_host))
+      return alternative_service;
+
+    // Cache this entry if we don't have a non-broken Alt-Svc yet.
+    if (first_alternative_service.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL)
+      first_alternative_service = alternative_service;
   }
+
+  // Ask delegate to mark QUIC as broken for the origin.
   if (quic_advertised && quic_all_broken && delegate != nullptr)
     delegate->OnQuicBroken();
-  return enabled_alternative_service_vector;
+
+  return first_alternative_service;
 }
 
 void HttpStreamFactoryImpl::OrphanJob(Job* job, const Request* request) {

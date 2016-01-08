@@ -85,8 +85,8 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
       WebSocketHandshakeStreamBase::CreateHelper* create_helper,
       const BoundNetLog& net_log);
 
-  AlternativeServiceVector GetAlternativeServicesFor(
-      const GURL& original_url,
+  AlternativeService GetAlternativeServiceFor(
+      const HttpRequestInfo& request_info,
       HttpStreamRequest::Delegate* delegate);
 
   // Detaches |job| from |request|.

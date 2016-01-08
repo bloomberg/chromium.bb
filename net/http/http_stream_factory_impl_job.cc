@@ -96,6 +96,8 @@ HttpStreamFactoryImpl::Job::Job(HttpStreamFactoryImpl* stream_factory,
                                 RequestPriority priority,
                                 const SSLConfig& server_ssl_config,
                                 const SSLConfig& proxy_ssl_config,
+                                HostPortPair server,
+                                GURL origin_url,
                                 NetLog* net_log)
     : Job(stream_factory,
           session,
@@ -103,9 +105,10 @@ HttpStreamFactoryImpl::Job::Job(HttpStreamFactoryImpl* stream_factory,
           priority,
           server_ssl_config,
           proxy_ssl_config,
+          server,
+          origin_url,
           AlternativeService(),
-          net_log) {
-}
+          net_log) {}
 
 HttpStreamFactoryImpl::Job::Job(HttpStreamFactoryImpl* stream_factory,
                                 HttpNetworkSession* session,
@@ -113,6 +116,8 @@ HttpStreamFactoryImpl::Job::Job(HttpStreamFactoryImpl* stream_factory,
                                 RequestPriority priority,
                                 const SSLConfig& server_ssl_config,
                                 const SSLConfig& proxy_ssl_config,
+                                HostPortPair server,
+                                GURL origin_url,
                                 AlternativeService alternative_service,
                                 NetLog* net_log)
     : request_(NULL),
@@ -127,6 +132,8 @@ HttpStreamFactoryImpl::Job::Job(HttpStreamFactoryImpl* stream_factory,
       stream_factory_(stream_factory),
       next_state_(STATE_NONE),
       pac_request_(NULL),
+      server_(server),
+      origin_url_(origin_url),
       alternative_service_(alternative_service),
       blocking_job_(NULL),
       waiting_job_(NULL),
@@ -722,13 +729,6 @@ int HttpStreamFactoryImpl::Job::StartInternal() {
 }
 
 int HttpStreamFactoryImpl::Job::DoStart() {
-  if (IsSpdyAlternative() || IsQuicAlternative()) {
-    server_ = alternative_service_.host_port_pair();
-  } else {
-    server_ = HostPortPair::FromURL(request_info_.url);
-  }
-  origin_url_ =
-      stream_factory_->ApplyHostMappingRules(request_info_.url, &server_);
   valid_spdy_session_pool_.reset(new ValidSpdySessionPool(
       session_->spdy_session_pool(), origin_url_, IsSpdyAlternative()));
 

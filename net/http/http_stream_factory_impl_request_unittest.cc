@@ -80,14 +80,14 @@ TEST_P(HttpStreamFactoryImplRequestTest, SetPriority) {
       GURL(), factory, &request_delegate, NULL, BoundNetLog(),
       HttpStreamFactoryImpl::Request::HTTP_STREAM);
 
-  HttpStreamFactoryImpl::Job* job =
-      new HttpStreamFactoryImpl::Job(factory,
-                                     session.get(),
-                                     HttpRequestInfo(),
-                                     DEFAULT_PRIORITY,
-                                     SSLConfig(),
-                                     SSLConfig(),
-                                     NULL);
+  HttpRequestInfo request_info;
+
+  HostPortPair server = HostPortPair::FromURL(request_info.url);
+  GURL original_url = factory->ApplyHostMappingRules(request_info.url, &server);
+
+  HttpStreamFactoryImpl::Job* job = new HttpStreamFactoryImpl::Job(
+      factory, session.get(), request_info, DEFAULT_PRIORITY, SSLConfig(),
+      SSLConfig(), server, original_url, NULL);
   request.AttachJob(job);
   EXPECT_EQ(DEFAULT_PRIORITY, job->priority());
 

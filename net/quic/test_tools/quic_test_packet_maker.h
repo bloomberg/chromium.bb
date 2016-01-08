@@ -58,6 +58,12 @@ class QuicTestPacketMaker {
       QuicPacketNumber largest_received,
       QuicPacketNumber least_unacked,
       bool send_feedback);
+  scoped_ptr<QuicEncryptedPacket> MakeAckPacket(
+      QuicPacketNumber packet_number,
+      QuicPacketNumber largest_received,
+      QuicPacketNumber ack_least_unacked,
+      QuicPacketNumber stop_least_unacked,
+      bool send_feedback);
   scoped_ptr<QuicEncryptedPacket> MakeDataPacket(QuicPacketNumber packet_number,
                                                  QuicStreamId stream_id,
                                                  bool should_include_version,
@@ -76,18 +82,38 @@ class QuicTestPacketMaker {
       const SpdyHeaderBlock& headers,
       size_t* spdy_headers_frame_length);
 
-  // Convenience method for calling MakeRequestHeadersPacket with nullptr for
-  // |spdy_headers_frame_length|.
   scoped_ptr<QuicEncryptedPacket> MakeRequestHeadersPacket(
       QuicPacketNumber packet_number,
       QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
       SpdyPriority priority,
-      const SpdyHeaderBlock& headers);
+      const SpdyHeaderBlock& headers,
+      size_t* spdy_headers_frame_length,
+      QuicStreamOffset* offset);
+
+  // Convenience method for calling MakeRequestHeadersPacket with nullptr for
+  // |spdy_headers_frame_length|.
+  scoped_ptr<QuicEncryptedPacket> MakeRequestHeadersPacketWithOffsetTracking(
+      QuicPacketNumber packet_number,
+      QuicStreamId stream_id,
+      bool should_include_version,
+      bool fin,
+      SpdyPriority priority,
+      const SpdyHeaderBlock& headers,
+      QuicStreamOffset* offset);
 
   // If |spdy_headers_frame_length| is non-null, it will be set to the size of
   // the SPDY headers frame created for this packet.
+  scoped_ptr<QuicEncryptedPacket> MakeResponseHeadersPacket(
+      QuicPacketNumber packet_number,
+      QuicStreamId stream_id,
+      bool should_include_version,
+      bool fin,
+      const SpdyHeaderBlock& headers,
+      size_t* spdy_headers_frame_length,
+      QuicStreamOffset* offset);
+
   scoped_ptr<QuicEncryptedPacket> MakeResponseHeadersPacket(
       QuicPacketNumber packet_number,
       QuicStreamId stream_id,
@@ -98,17 +124,21 @@ class QuicTestPacketMaker {
 
   // Convenience method for calling MakeResponseHeadersPacket with nullptr for
   // |spdy_headers_frame_length|.
-  scoped_ptr<QuicEncryptedPacket> MakeResponseHeadersPacket(
+  scoped_ptr<QuicEncryptedPacket> MakeResponseHeadersPacketWithOffsetTracking(
       QuicPacketNumber packet_number,
       QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      const SpdyHeaderBlock& headers);
+      const SpdyHeaderBlock& headers,
+      QuicStreamOffset* offset);
 
   SpdyHeaderBlock GetRequestHeaders(const std::string& method,
                                     const std::string& scheme,
                                     const std::string& path);
   SpdyHeaderBlock GetResponseHeaders(const std::string& status);
+
+  SpdyHeaderBlock GetResponseHeaders(const std::string& status,
+                                     const std::string& alt_svc);
 
  private:
   scoped_ptr<QuicEncryptedPacket> MakePacket(const QuicPacketHeader& header,

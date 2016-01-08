@@ -167,10 +167,22 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeConnectionClosePacket(
   return scoped_ptr<QuicEncryptedPacket>(MakePacket(header, QuicFrame(&close)));
 }
 
+// Sets both least_unacked fields in stop waiting frame and ack frame
+// to be |least_unacked|.
 scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckPacket(
     QuicPacketNumber packet_number,
     QuicPacketNumber largest_received,
     QuicPacketNumber least_unacked,
+    bool send_feedback) {
+  return MakeAckPacket(packet_number, largest_received, least_unacked,
+                       least_unacked, send_feedback);
+}
+
+scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckPacket(
+    QuicPacketNumber packet_number,
+    QuicPacketNumber largest_received,
+    QuicPacketNumber ack_least_unacked,
+    QuicPacketNumber stop_least_unacked,
     bool send_feedback) {
   QuicPacketHeader header;
   header.public_header.connection_id = connection_id_;
@@ -184,7 +196,7 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckPacket(
 
   QuicAckFrame ack(MakeAckFrame(largest_received));
   ack.delta_time_largest_observed = QuicTime::Delta::Zero();
-  for (QuicPacketNumber i = least_unacked; i <= largest_received; ++i) {
+  for (QuicPacketNumber i = ack_least_unacked; i <= largest_received; ++i) {
     ack.received_packet_times.push_back(make_pair(i, clock_->Now()));
   }
 
@@ -194,7 +206,7 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckPacket(
   frames.push_back(QuicFrame(&ack));
 
   QuicStopWaitingFrame stop_waiting;
-  stop_waiting.least_unacked = least_unacked;
+  stop_waiting.least_unacked = stop_least_unacked;
   frames.push_back(QuicFrame(&stop_waiting));
 
   scoped_ptr<QuicPacket> packet(
@@ -228,6 +240,22 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeRequestHeadersPacket(
     SpdyPriority priority,
     const SpdyHeaderBlock& headers,
     size_t* spdy_headers_frame_length) {
+  return MakeRequestHeadersPacket(packet_number, stream_id,
+                                  should_include_version, fin, priority,
+                                  headers, spdy_headers_frame_length, nullptr);
+}
+
+// If |offset| is provided, will use the value when creating the packet.
+// Will also update the value after packet creation.
+scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeRequestHeadersPacket(
+    QuicPacketNumber packet_number,
+    QuicStreamId stream_id,
+    bool should_include_version,
+    bool fin,
+    SpdyPriority priority,
+    const SpdyHeaderBlock& headers,
+    size_t* spdy_headers_frame_length,
+    QuicStreamOffset* offset) {
   InitializeHeader(packet_number, should_include_version);
   scoped_ptr<SpdySerializedFrame> spdy_frame;
   if (spdy_request_framer_.protocol_version() == SPDY3) {
@@ -247,22 +275,75 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeRequestHeadersPacket(
   if (spdy_headers_frame_length) {
     *spdy_headers_frame_length = spdy_frame->size();
   }
-  QuicStreamFrame frame(
-      kHeadersStreamId, false, 0,
-      base::StringPiece(spdy_frame->data(), spdy_frame->size()));
-  return MakePacket(header_, QuicFrame(&frame));
+  if (offset != nullptr) {
+    QuicStreamFrame frame(
+        kHeadersStreamId, false, *offset,
+        base::StringPiece(spdy_frame->data(), spdy_frame->size()));
+    *offset += spdy_frame->size();
+    return MakePacket(header_, QuicFrame(&frame));
+  } else {
+    QuicStreamFrame frame(
+        kHeadersStreamId, false, 0,
+        base::StringPiece(spdy_frame->data(), spdy_frame->size()));
+
+    return MakePacket(header_, QuicFrame(&frame));
+  }
 }
 
-scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeRequestHeadersPacket(
+// Convenience method for calling MakeRequestHeadersPacket with nullptr for
+// |spdy_headers_frame_length|.
+scoped_ptr<QuicEncryptedPacket>
+QuicTestPacketMaker::MakeRequestHeadersPacketWithOffsetTracking(
     QuicPacketNumber packet_number,
     QuicStreamId stream_id,
     bool should_include_version,
     bool fin,
     SpdyPriority priority,
-    const SpdyHeaderBlock& headers) {
+    const SpdyHeaderBlock& headers,
+    QuicStreamOffset* offset) {
   return MakeRequestHeadersPacket(packet_number, stream_id,
                                   should_include_version, fin, priority,
-                                  headers, nullptr);
+                                  headers, nullptr, offset);
+}
+
+// If |offset| is provided, will use the value when creating the packet.
+// Will also update the value after packet creation.
+scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeResponseHeadersPacket(
+    QuicPacketNumber packet_number,
+    QuicStreamId stream_id,
+    bool should_include_version,
+    bool fin,
+    const SpdyHeaderBlock& headers,
+    size_t* spdy_headers_frame_length,
+    QuicStreamOffset* offset) {
+  InitializeHeader(packet_number, should_include_version);
+  scoped_ptr<SpdySerializedFrame> spdy_frame;
+  if (spdy_response_framer_.protocol_version() == SPDY3) {
+    SpdySynReplyIR syn_reply(stream_id);
+    syn_reply.set_header_block(headers);
+    syn_reply.set_fin(fin);
+    spdy_frame.reset(spdy_response_framer_.SerializeSynReply(syn_reply));
+  } else {
+    SpdyHeadersIR headers_frame(stream_id);
+    headers_frame.set_header_block(headers);
+    headers_frame.set_fin(fin);
+    spdy_frame.reset(spdy_response_framer_.SerializeFrame(headers_frame));
+  }
+  if (spdy_headers_frame_length) {
+    *spdy_headers_frame_length = spdy_frame->size();
+  }
+  if (offset != nullptr) {
+    QuicStreamFrame frame(
+        kHeadersStreamId, false, *offset,
+        base::StringPiece(spdy_frame->data(), spdy_frame->size()));
+    *offset += spdy_frame->size();
+    return MakePacket(header_, QuicFrame(&frame));
+  } else {
+    QuicStreamFrame frame(
+        kHeadersStreamId, false, 0,
+        base::StringPiece(spdy_frame->data(), spdy_frame->size()));
+    return MakePacket(header_, QuicFrame(&frame));
+  }
 }
 
 scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeResponseHeadersPacket(
@@ -272,36 +353,24 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeResponseHeadersPacket(
     bool fin,
     const SpdyHeaderBlock& headers,
     size_t* spdy_headers_frame_length) {
-  InitializeHeader(packet_number, should_include_version);
-  scoped_ptr<SpdySerializedFrame> spdy_frame;
-  if (spdy_request_framer_.protocol_version() == SPDY3) {
-    SpdySynReplyIR syn_reply(stream_id);
-    syn_reply.set_header_block(headers);
-    syn_reply.set_fin(fin);
-    spdy_frame.reset(spdy_response_framer_.SerializeSynReply(syn_reply));
-  } else {
-    SpdyHeadersIR headers_frame(stream_id);
-    headers_frame.set_header_block(headers);
-    headers_frame.set_fin(fin);
-    spdy_frame.reset(spdy_request_framer_.SerializeFrame(headers_frame));
-  }
-  if (spdy_headers_frame_length) {
-    *spdy_headers_frame_length = spdy_frame->size();
-  }
-  QuicStreamFrame frame(
-      kHeadersStreamId, false, 0,
-      base::StringPiece(spdy_frame->data(), spdy_frame->size()));
-  return MakePacket(header_, QuicFrame(&frame));
+  return MakeResponseHeadersPacket(packet_number, stream_id,
+                                   should_include_version, fin, headers,
+                                   spdy_headers_frame_length, nullptr);
 }
 
-scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeResponseHeadersPacket(
+// Convenience method for calling MakeResponseHeadersPacket with nullptr for
+// |spdy_headers_frame_length|.
+scoped_ptr<QuicEncryptedPacket>
+QuicTestPacketMaker::MakeResponseHeadersPacketWithOffsetTracking(
     QuicPacketNumber packet_number,
     QuicStreamId stream_id,
     bool should_include_version,
     bool fin,
-    const SpdyHeaderBlock& headers) {
-  return MakeResponseHeadersPacket(
-      packet_number, stream_id, should_include_version, fin, headers, nullptr);
+    const SpdyHeaderBlock& headers,
+    QuicStreamOffset* offset) {
+  return MakeResponseHeadersPacket(packet_number, stream_id,
+                                   should_include_version, fin, headers,
+                                   nullptr, offset);
 }
 
 SpdyHeaderBlock QuicTestPacketMaker::GetRequestHeaders(
@@ -320,6 +389,16 @@ SpdyHeaderBlock QuicTestPacketMaker::GetResponseHeaders(
     const std::string& status) {
   SpdyHeaderBlock headers;
   headers[":status"] = status;
+  headers["content-type"] = "text/plain";
+  return headers;
+}
+
+SpdyHeaderBlock QuicTestPacketMaker::GetResponseHeaders(
+    const std::string& status,
+    const std::string& alt_svc) {
+  SpdyHeaderBlock headers;
+  headers[":status"] = status;
+  headers["Alt-Svc"] = alt_svc;
   headers["content-type"] = "text/plain";
   return headers;
 }

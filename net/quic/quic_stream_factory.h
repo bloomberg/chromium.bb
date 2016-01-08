@@ -23,6 +23,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/network_change_notifier.h"
 #include "net/cert/cert_database.h"
+#include "net/http/http_server_properties.h"
 #include "net/log/net_log.h"
 #include "net/proxy/proxy_server.h"
 #include "net/quic/network_connection.h"
@@ -150,6 +151,12 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       int idle_connection_timeout_seconds,
       const QuicTagVector& connection_options);
   ~QuicStreamFactory() override;
+
+  // Returns true if there is an existing session to |server_id| which can be
+  // used for request to |origin_host|.
+  bool CanUseExistingSession(QuicServerId server_id,
+                             PrivacyMode privacy_mode,
+                             StringPiece origin_host);
 
   // Creates a new QuicHttpStream to |host_port_pair| which will be
   // owned by |request|.

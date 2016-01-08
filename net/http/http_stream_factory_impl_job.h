@@ -46,6 +46,8 @@ class HttpStreamFactoryImpl::Job {
       RequestPriority priority,
       const SSLConfig& server_ssl_config,
       const SSLConfig& proxy_ssl_config,
+      HostPortPair server,
+      GURL origin_url,
       NetLog* net_log);
   // Constructor for alternative Job.
   Job(HttpStreamFactoryImpl* stream_factory,
@@ -54,6 +56,8 @@ class HttpStreamFactoryImpl::Job {
       RequestPriority priority,
       const SSLConfig& server_ssl_config,
       const SSLConfig& proxy_ssl_config,
+      HostPortPair server,
+      GURL origin_url,
       AlternativeService alternative_service,
       NetLog* net_log);
   ~Job();
