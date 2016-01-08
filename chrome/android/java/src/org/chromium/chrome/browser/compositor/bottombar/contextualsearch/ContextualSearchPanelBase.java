@@ -149,7 +149,7 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
     /**
      * Ratio of dps per pixel.
      */
-    private float mPxToDp;
+    protected float mPxToDp;
 
     /**
      * The approximate Y coordinate of the selection in pixels.

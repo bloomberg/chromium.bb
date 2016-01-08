@@ -280,6 +280,17 @@ public class ReaderModePanel extends OverlayPanel {
     }
 
     @Override
+    public float getOffsetY() {
+        float toolbarOffset = 0.0f;
+        if (mActivity != null) {
+            toolbarOffset = -mActivity.getFullscreenManager().getControlOffset() * mPxToDp;
+        }
+        // This will cause the reader mode bar to behave like the top controls; sliding out of
+        // view as the page scrolls.
+        return super.getOffsetY() + toolbarOffset;
+    }
+
+    @Override
     public float getArrowIconOpacity() {
         // TODO(mdjones): This will not be needed once Reader Mode has its own scene layer.
         // Never show the arrow icon.
