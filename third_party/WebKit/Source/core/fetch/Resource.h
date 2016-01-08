@@ -79,7 +79,8 @@ public:
         LinkSubresource,
         TextTrack,
         ImportResource,
-        Media // Audio or video file requested by a HTML5 media element
+        Media, // Audio or video file requested by a HTML5 media element
+        Manifest
     };
 
     enum Status {

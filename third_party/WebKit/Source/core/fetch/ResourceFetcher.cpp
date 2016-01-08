@@ -86,6 +86,7 @@ static ResourceLoadPriority typeToPriority(Resource::Type type)
     case Resource::Script:
     case Resource::Font:
     case Resource::ImportResource:
+    case Resource::Manifest:
         return ResourceLoadPriorityMedium;
     case Resource::LinkSubresource:
     case Resource::TextTrack:
@@ -158,6 +159,8 @@ static WebURLRequest::RequestContext requestContextFromType(bool isMainFrame, Re
         return WebURLRequest::RequestContextImage;
     case Resource::Media: // TODO: Split this.
         return WebURLRequest::RequestContextVideo;
+    case Resource::Manifest:
+        return WebURLRequest::RequestContextManifest;
     }
     ASSERT_NOT_REACHED();
     return WebURLRequest::RequestContextSubresource;

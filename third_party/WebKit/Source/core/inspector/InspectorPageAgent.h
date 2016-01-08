@@ -77,6 +77,7 @@ public:
         FetchResource,
         EventSourceResource,
         WebSocketResource,
+        ManifestResource,
         OtherResource
     };
 

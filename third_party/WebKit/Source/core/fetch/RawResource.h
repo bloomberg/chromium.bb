@@ -45,6 +45,7 @@ public:
     static ResourcePtr<RawResource> fetchImport(FetchRequest&, ResourceFetcher*);
     static ResourcePtr<RawResource> fetchMedia(FetchRequest&, ResourceFetcher*);
     static ResourcePtr<RawResource> fetchTextTrack(FetchRequest&, ResourceFetcher*);
+    static ResourcePtr<RawResource> fetchManifest(FetchRequest&, ResourceFetcher*);
 
     // Exposed for testing
     RawResource(const ResourceRequest&, Type);
@@ -86,7 +87,7 @@ private:
 inline bool isRawResource(const Resource& resource)
 {
     Resource::Type type = resource.type();
-    return type == Resource::MainResource || type == Resource::Raw || type == Resource::TextTrack || type == Resource::Media || type == Resource::ImportResource;
+    return type == Resource::MainResource || type == Resource::Raw || type == Resource::TextTrack || type == Resource::Media || type == Resource::Manifest || type == Resource::ImportResource;
 }
 #endif
 inline RawResource* toRawResource(const ResourcePtr<Resource>& resource)

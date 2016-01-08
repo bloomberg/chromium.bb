@@ -431,6 +431,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(Resource::Typ
     case Resource::TextTrack:
     case Resource::ImportResource:
     case Resource::Media:
+    case Resource::Manifest:
         // By default these types of resources can be loaded from any origin.
         // FIXME: Are we sure about Resource::Font?
         if (originRestriction == FetchRequest::RestrictToSameOrigin && !securityOrigin->canRequest(url)) {
@@ -507,6 +508,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(Resource::Typ
     case Resource::Raw:
     case Resource::LinkPrefetch:
     case Resource::LinkSubresource:
+    case Resource::Manifest:
         break;
     case Resource::Media:
     case Resource::TextTrack:

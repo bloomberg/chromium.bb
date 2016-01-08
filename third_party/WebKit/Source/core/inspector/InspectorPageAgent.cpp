@@ -303,6 +303,8 @@ TypeBuilder::Page::ResourceType::Enum InspectorPageAgent::resourceTypeJson(Inspe
         return TypeBuilder::Page::ResourceType::EventSource;
     case WebSocketResource:
         return TypeBuilder::Page::ResourceType::WebSocket;
+    case ManifestResource:
+        return TypeBuilder::Page::ResourceType::Manifest;
     case OtherResource:
         return TypeBuilder::Page::ResourceType::Other;
     }
@@ -318,6 +320,8 @@ InspectorPageAgent::ResourceType InspectorPageAgent::cachedResourceType(const Re
         return InspectorPageAgent::FontResource;
     case Resource::Media:
         return InspectorPageAgent::MediaResource;
+    case Resource::Manifest:
+        return InspectorPageAgent::ManifestResource;
     case Resource::TextTrack:
         return InspectorPageAgent::TextTrackResource;
     case Resource::CSSStyleSheet:

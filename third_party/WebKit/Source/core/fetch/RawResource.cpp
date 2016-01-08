@@ -79,6 +79,13 @@ ResourcePtr<RawResource> RawResource::fetchTextTrack(FetchRequest& request, Reso
     return toRawResource(fetcher->requestResource(request, RawResourceFactory(Resource::TextTrack)));
 }
 
+ResourcePtr<RawResource> RawResource::fetchManifest(FetchRequest& request, ResourceFetcher* fetcher)
+{
+    ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
+    ASSERT(request.resourceRequest().requestContext() == WebURLRequest::RequestContextManifest);
+    return toRawResource(fetcher->requestResource(request, RawResourceFactory(Resource::Manifest)));
+}
+
 RawResource::RawResource(const ResourceRequest& resourceRequest, Type type)
     : Resource(resourceRequest, type)
 {

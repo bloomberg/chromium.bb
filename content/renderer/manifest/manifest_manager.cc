@@ -164,6 +164,8 @@ void ManifestManager::OnManifestFetchComplete(
     blink::WebConsoleMessage message;
     message.level = blink::WebConsoleMessage::LevelError;
     message.text = blink::WebString::fromUTF8(msg);
+    message.url =
+        render_frame()->GetWebFrame()->document().manifestURL().string();
     render_frame()->GetWebFrame()->addMessageToConsole(message);
   }
 

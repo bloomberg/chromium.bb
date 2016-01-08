@@ -800,6 +800,8 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
         ASSERT(!resource());
         if (request.requestContext() == WebURLRequest::RequestContextVideo || request.requestContext() == WebURLRequest::RequestContextAudio)
             setResource(RawResource::fetchMedia(newRequest, document().fetcher()));
+        else if (request.requestContext() == WebURLRequest::RequestContextManifest)
+            setResource(RawResource::fetchManifest(newRequest, document().fetcher()));
         else
             setResource(RawResource::fetch(newRequest, document().fetcher()));
         if (resource() && resource()->loader()) {

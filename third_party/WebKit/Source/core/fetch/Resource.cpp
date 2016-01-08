@@ -1123,6 +1123,8 @@ const char* Resource::resourceTypeToString(Type type, const FetchInitiatorInfo& 
         return "Imported resource";
     case Resource::Media:
         return "Media";
+    case Resource::Manifest:
+        return "Manifest";
     }
     ASSERT_NOT_REACHED();
     return initatorTypeNameToString(initiatorInfo.name);
@@ -1172,6 +1174,8 @@ const char* ResourceTypeName(Resource::Type type)
         return "ImportResource";
     case Resource::Media:
         return "Media";
+    case Resource::Manifest:
+        return "Manifest";
     }
     ASSERT_NOT_REACHED();
     return "Unknown";

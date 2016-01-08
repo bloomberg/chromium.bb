@@ -48,12 +48,17 @@ struct WebConsoleMessage {
 
     Level level;
     WebString text;
+    WebString url;
 
     WebConsoleMessage()
         : level(LevelLog) { }
     WebConsoleMessage(Level level, const WebString& text)
         : level(level)
         , text(text) { }
+    WebConsoleMessage(Level level, const WebString& text, const WebString& url)
+        : level(level)
+        , text(text)
+        , url(url) { }
 };
 
 } // namespace blink
