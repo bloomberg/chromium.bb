@@ -161,7 +161,10 @@ const char kFrameRecorderBufferKbName[] = "frame-recorder-buffer-kb";
 const char kWindowIdSwitchName[] = "window-id";
 
 // Command line switch used to enable WebRTC-based protocol.
-const char kEnableWebrtc[] = "enable-webrtc";
+const char kEnableWebrtcSwitchName[] = "enable-webrtc";
+
+// Command line switch used to enable WebRTC-based protocol.
+const char kDisableAuthenticationSwitchName[] = "disable-authentication";
 
 // Maximum time to wait for clean shutdown to occur, before forcing termination
 // of the process.
@@ -763,13 +766,17 @@ void HostProcess::CreateAuthenticatorFactory() {
   if (state_ != HOST_STARTED)
     return;
 
-#if !defined(NDEBUG)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableWebrtc)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kDisableAuthenticationSwitchName)) {
+#if defined(NDEBUG)
+    LOG(ERROR) << "Authentication can be disabled only in debug builds.";
+    ShutdownHost(kInitializationFailed);
+#else  // defined(NDEBUG)
     host_->SetAuthenticatorFactory(
         make_scoped_ptr(new NoopAuthenticatorFactory()));
+#endif  // !defined(NDEBUG)
     return;
   }
-#endif  // !defined(NDEBUG)
 
   std::string local_certificate = key_pair_->GenerateCertificate();
   if (local_certificate.empty()) {
@@ -895,14 +902,6 @@ void HostProcess::StartOnUiThread() {
   if (!gnubby_socket_name.empty())
     remoting::GnubbyAuthHandler::SetGnubbySocketName(gnubby_socket_name);
 #endif  // defined(OS_LINUX)
-
-#if defined(NDEBUG)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableWebrtc)) {
-    LOG(ERROR) << "WebRTC is enabled only in debug builds.";
-    ShutdownHost(kUsageExitCode);
-    return;
-  }
-#endif  // defined(NDEBUG)
 
   // Create a desktop environment factory appropriate to the build type &
   // platform.
@@ -1536,11 +1535,10 @@ void HostProcess::StartHost() {
     protocol_config->DisableAudioChannel();
   if (enable_vp9_)
     protocol_config->set_vp9_experiment_enabled(true);
-#if !defined(NDEBUG)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableWebrtc)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kEnableWebrtcSwitchName)) {
     protocol_config->set_webrtc_supported(true);
   }
-#endif  // !defined(NDEBUG)
   session_manager->set_protocol_config(std::move(protocol_config));
 
   host_.reset(new ChromotingHost(
