@@ -45,6 +45,7 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "components/guest_view/browser/guest_view_base.h"
+#include "extensions/browser/view_type_utils.h"
 #endif
 
 using autofill::PasswordForm;
@@ -138,7 +139,11 @@ void ShowLoginPrompt(const GURL& request_url,
 #if defined(ENABLE_EXTENSIONS)
     // A WebContents in a <webview> (a GuestView type) does not have a password
     // manager, but still needs to be able to show login prompts.
-    if (guest_view::GuestViewBase::FromWebContents(parent_contents)) {
+    const auto* guest =
+        guest_view::GuestViewBase::FromWebContents(parent_contents);
+    if (guest &&
+        extensions::GetViewType(guest->owner_web_contents()) !=
+            extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
       handler->BuildViewWithoutPasswordManager(authority, explanation);
       return;
     }

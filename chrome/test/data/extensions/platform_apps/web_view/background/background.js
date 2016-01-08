@@ -21,5 +21,27 @@ chrome.test.runTests([
     webview.addEventListener('contentload', pass());
     webview.src = WEBVIEW_SRC;
     document.body.appendChild(webview);
+  },
+  // Tests that requests from <webview> that require auth are cancelled properly
+  // and there is no crash.
+  function webViewResourceNeedsAuth() {
+    chrome.test.getConfig(function(config) {
+      var port = config.testServer.port;
+      var url = 'http://localhost:' + port +
+          '/extensions/platform_apps/web_view/background/webview_auth.html';
+      var authUrl = 'http://localhost:' + port + '/auth-basic';
+      var webview = document.createElement('webview');
+      webview.onloadstop = function(e) {
+        webview.request.onCompleted.addListener(function(details) {
+          if (authUrl == details.url) {
+            chrome.test.assertEq(401, details.statusCode);
+            chrome.test.succeed();
+          }
+        }, {urls: ['<all_urls>']});
+        webview.contentWindow.postMessage({request: 'xhr', url: authUrl}, '*');
+      };
+      webview.setAttribute('src', url);
+      document.body.appendChild(webview);
+    });
   }
 ]);

@@ -2539,6 +2539,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TestPlugin) {
 #define MAYBE_WebViewInBackgroundPage WebViewInBackgroundPage
 #endif
 IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_WebViewInBackgroundPage) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("platform_apps/web_view/background"))
       << message_;
 }
