@@ -34,16 +34,14 @@ namespace content {
 class CONTENT_EXPORT CanvasCaptureHandler final
     : public NON_EXPORTED_BASE(blink::WebCanvasCaptureHandler) {
  public:
-  // A VideoCapturerSource instance is created, which is responsible for handing
-  // stop&start callbacks back to CanvasCaptureHandler. That VideoCapturerSource
-  // is then plugged into a MediaStreamTrack passed as |track|, and it is owned
-  // by the Blink side MediaStreamSource.
-  CanvasCaptureHandler(
+  ~CanvasCaptureHandler() override;
+
+  // Creates a CanvasCaptureHandler instance and updates UMA histogram.
+  static CanvasCaptureHandler* CreateCanvasCaptureHandler(
       const blink::WebSize& size,
       double frame_rate,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       blink::WebMediaStreamTrack* track);
-  ~CanvasCaptureHandler() override;
 
   // blink::WebCanvasCaptureHandler Implementation.
   void sendNewFrame(const SkImage* image) override;
@@ -59,6 +57,16 @@ class CONTENT_EXPORT CanvasCaptureHandler final
   blink::WebSize GetSourceSize() const { return size_; }
 
  private:
+  // A VideoCapturerSource instance is created, which is responsible for handing
+  // stop&start callbacks back to CanvasCaptureHandler. That VideoCapturerSource
+  // is then plugged into a MediaStreamTrack passed as |track|, and it is owned
+  // by the Blink side MediaStreamSource.
+  CanvasCaptureHandler(
+      const blink::WebSize& size,
+      double frame_rate,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+      blink::WebMediaStreamTrack* track);
+
   void CreateNewFrame(const SkImage* image);
   void AddVideoCapturerSourceToVideoTrack(
       scoped_ptr<media::VideoCapturerSource> source,

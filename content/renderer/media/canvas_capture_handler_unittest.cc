@@ -42,10 +42,11 @@ class CanvasCaptureHandlerTest : public Test {
   CanvasCaptureHandlerTest() {}
 
   void SetUp() override {
-    canvas_capture_handler_.reset(new CanvasCaptureHandler(
-        blink::WebSize(kTestCanvasCaptureWidth, kTestCanvasCaptureHeight),
-        kTestCanvasCaptureFramesPerSecond, message_loop_.task_runner(),
-        &track_));
+    canvas_capture_handler_.reset(
+        CanvasCaptureHandler::CreateCanvasCaptureHandler(
+            blink::WebSize(kTestCanvasCaptureWidth, kTestCanvasCaptureHeight),
+            kTestCanvasCaptureFramesPerSecond, message_loop_.task_runner(),
+            &track_));
   }
 
   void TearDown() override {

@@ -933,7 +933,7 @@ WebCanvasCaptureHandler* RendererBlinkPlatformImpl::createCanvasCaptureHandler(
     double frame_rate,
     WebMediaStreamTrack* track) {
 #if defined(ENABLE_WEBRTC)
-  return new CanvasCaptureHandler(
+  return CanvasCaptureHandler::CreateCanvasCaptureHandler(
       size, frame_rate, RenderThread::Get()->GetIOMessageLoopProxy(), track);
 #else
   return nullptr;

@@ -15,6 +15,7 @@
 #include "content/renderer/media/media_stream_video_capturer_source.h"
 #include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
+#include "content/renderer/media/webrtc_uma_histograms.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -113,6 +114,19 @@ CanvasCaptureHandler::~CanvasCaptureHandler() {
   DVLOG(3) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
   io_task_runner_->DeleteSoon(FROM_HERE, delegate_.release());
+}
+
+// static
+CanvasCaptureHandler* CanvasCaptureHandler::CreateCanvasCaptureHandler(
+    const blink::WebSize& size,
+    double frame_rate,
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+    blink::WebMediaStreamTrack* track) {
+  // Save histogram data so we can see how much CanvasCapture is used.
+  // The histogram counts the number of calls to the JS API.
+  UpdateWebRTCMethodCount(WEBKIT_CANVAS_CAPTURE_STREAM);
+
+  return new CanvasCaptureHandler(size, frame_rate, io_task_runner, track);
 }
 
 void CanvasCaptureHandler::sendNewFrame(const SkImage* image) {
