@@ -20,7 +20,6 @@ using base::ASCIIToUTF16;
 
 namespace {
 const char kLabelButton[] = "Label Button";
-const char kMultiLineText[] = "Multi-Line\nButton Text Is Here To Stay!\n123";
 const char kLongText[] = "Start of Really Really Really Really Really Really "
                          "Really Really Really Really Really Really Really "
                          "Really Really Really Really Really Long Button Text";
@@ -79,15 +78,10 @@ void ButtonExample::LabelButtonPressed(const ui::Event& event) {
   PrintStatus("Label Button Pressed! count: %d", ++count_);
   if (event.IsControlDown()) {
     if (event.IsShiftDown()) {
-      if (event.IsAltDown()) {
-        label_button_->SetTextMultiLine(!label_button_->GetTextMultiLine());
-        label_button_->SetText(ASCIIToUTF16(
-            label_button_->GetTextMultiLine() ? kMultiLineText : kLabelButton));
-      } else {
-        label_button_->SetText(ASCIIToUTF16(
-            label_button_->GetText().empty() ? kLongText :
-                label_button_->GetText().length() > 50 ? kLabelButton : ""));
-      }
+      label_button_->SetText(ASCIIToUTF16(
+          label_button_->GetText().empty()
+              ? kLongText
+              : label_button_->GetText().length() > 50 ? kLabelButton : ""));
     } else if (event.IsAltDown()) {
       label_button_->SetImage(Button::STATE_NORMAL,
           label_button_->GetImage(Button::STATE_NORMAL).isNull() ?

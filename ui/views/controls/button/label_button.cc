@@ -134,14 +134,6 @@ void LabelButton::SetTextSubpixelRenderingEnabled(bool enabled) {
   label_->SetSubpixelRenderingEnabled(enabled);
 }
 
-bool LabelButton::GetTextMultiLine() const {
-  return label_->multi_line();
-}
-
-void LabelButton::SetTextMultiLine(bool text_multi_line) {
-  label_->SetMultiLine(text_multi_line);
-}
-
 const gfx::FontList& LabelButton::GetFontList() const {
   return label_->font_list();
 }
@@ -231,7 +223,6 @@ gfx::Size LabelButton::GetPreferredSize() const {
   // Use a temporary label copy for sizing to avoid calculation side-effects.
   Label label(GetText(), cached_normal_font_list_);
   label.SetShadows(label_->shadows());
-  label.SetMultiLine(GetTextMultiLine());
 
   if (style() == STYLE_BUTTON) {
     // Some text appears wider when rendered normally than when rendered bold.

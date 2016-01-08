@@ -57,10 +57,6 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   // Sets whether subpixel rendering is used on the label.
   void SetTextSubpixelRenderingEnabled(bool enabled);
 
-  // Gets or sets the text's multi-line property to break on '\n', etc.
-  bool GetTextMultiLine() const;
-  void SetTextMultiLine(bool text_multi_line);
-
   // Gets or sets the font list used by this button.
   const gfx::FontList& GetFontList() const;
   void SetFontList(const gfx::FontList& font_list);
