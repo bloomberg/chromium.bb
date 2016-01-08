@@ -595,7 +595,7 @@ void RootInlineBox::ascentAndDescentForBox(InlineBox* box, GlyphOverflowAndFallb
 {
     bool ascentDescentSet = false;
 
-    if (box->layoutObject().isAtomicInlineLevel()) {
+    if (box->lineLayoutItem().isAtomicInlineLevel()) {
         ascent = box->baselinePosition(baselineType());
         descent = box->lineHeight() - ascent;
 
