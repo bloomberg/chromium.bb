@@ -23,8 +23,8 @@ using content::WebContents;
 
 MouseLockController::MouseLockController(ExclusiveAccessManager* manager)
     : ExclusiveAccessControllerBase(manager),
-      mouse_lock_state_(MOUSELOCK_NOT_REQUESTED) {
-}
+      mouse_lock_state_(MOUSELOCK_NOT_REQUESTED),
+      fake_mouse_lock_for_test_(false) {}
 
 MouseLockController::~MouseLockController() {
 }
@@ -70,7 +70,8 @@ void MouseLockController::RequestToLockMouse(WebContents* web_contents,
         mouse_lock_state_ = MOUSELOCK_REQUESTED;
       } else {
         // Lock mouse.
-        if (web_contents->GotResponseToLockMouseRequest(true)) {
+        if (fake_mouse_lock_for_test_ ||
+            web_contents->GotResponseToLockMouseRequest(true)) {
           if (last_unlocked_by_target) {
             mouse_lock_state_ = MOUSELOCK_ACCEPTED_SILENTLY;
           } else {

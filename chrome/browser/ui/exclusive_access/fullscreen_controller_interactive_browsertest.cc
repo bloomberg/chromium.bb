@@ -420,25 +420,31 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest, EscapingMouseLock) {
         content::NotificationService::AllSources()));
   }
   ASSERT_FALSE(IsFullscreenPermissionRequested());
-  ASSERT_TRUE(IsMouseLockPermissionRequested());
 
-  // Escape, no prompts should remain.
-  SendEscapeToFullscreenController();
-  ASSERT_FALSE(IsFullscreenPermissionRequested());
-  ASSERT_FALSE(IsMouseLockPermissionRequested());
+  // In simplified mode, the mouse will automatically lock, so we can skip
+  // testing the permission requested and manually accepting.
+  if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
+    ASSERT_TRUE(IsMouseLockPermissionRequested());
 
-  // Request to lock the mouse.
-  {
-    ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
-        browser(), ui::VKEY_1, false, false, false, false,
-        chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
-        content::NotificationService::AllSources()));
+    // Escape, no prompts should remain.
+    SendEscapeToFullscreenController();
+    ASSERT_FALSE(IsFullscreenPermissionRequested());
+    ASSERT_FALSE(IsMouseLockPermissionRequested());
+
+    // Request to lock the mouse.
+    {
+      ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+          browser(), ui::VKEY_1, false, false, false, false,
+          chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
+          content::NotificationService::AllSources()));
+    }
+    ASSERT_FALSE(IsFullscreenPermissionRequested());
+    ASSERT_TRUE(IsMouseLockPermissionRequested());
+
+    // Accept mouse lock, confirm it and that there is no prompt.
+    AcceptCurrentFullscreenOrMouseLockRequest();
   }
-  ASSERT_FALSE(IsFullscreenPermissionRequested());
-  ASSERT_TRUE(IsMouseLockPermissionRequested());
 
-  // Accept mouse lock, confirm it and that there is no prompt.
-  AcceptCurrentFullscreenOrMouseLockRequest();
   ASSERT_TRUE(IsMouseLocked());
   ASSERT_FALSE(IsWindowFullscreenForTabOrPending());
   ASSERT_FALSE(IsFullscreenPermissionRequested());
@@ -767,11 +773,17 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
       chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
       content::NotificationService::AllSources()));
   ASSERT_TRUE(IsFullscreenBubbleDisplayed());
-  ASSERT_TRUE(IsMouseLockPermissionRequested());
-  ASSERT_FALSE(IsMouseLocked());
 
-  // Accept mouse lock.
-  AcceptCurrentFullscreenOrMouseLockRequest();
+  // In simplified mode, the mouse will automatically lock, so we can skip
+  // testing the permission requested and manually accepting.
+  if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
+    ASSERT_TRUE(IsMouseLockPermissionRequested());
+    ASSERT_FALSE(IsMouseLocked());
+
+    // Accept mouse lock.
+    AcceptCurrentFullscreenOrMouseLockRequest();
+  }
+
   ASSERT_TRUE(IsMouseLocked());
 
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab"));
@@ -795,11 +807,17 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
       chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
       content::NotificationService::AllSources()));
   ASSERT_TRUE(IsFullscreenBubbleDisplayed());
-  ASSERT_TRUE(IsMouseLockPermissionRequested());
-  ASSERT_FALSE(IsMouseLocked());
 
-  // Accept mouse lock.
-  AcceptCurrentFullscreenOrMouseLockRequest();
+  // In simplified mode, the mouse will automatically lock, so we can skip
+  // testing the permission requested and manually accepting.
+  if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
+    ASSERT_TRUE(IsMouseLockPermissionRequested());
+    ASSERT_FALSE(IsMouseLocked());
+
+    // Accept mouse lock.
+    AcceptCurrentFullscreenOrMouseLockRequest();
+  }
+
   ASSERT_TRUE(IsMouseLocked());
 
   GoBack();
@@ -832,11 +850,17 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
       chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
       content::NotificationService::AllSources()));
   ASSERT_TRUE(IsFullscreenBubbleDisplayed());
-  ASSERT_TRUE(IsMouseLockPermissionRequested());
-  ASSERT_FALSE(IsMouseLocked());
 
-  // Accept mouse lock.
-  AcceptCurrentFullscreenOrMouseLockRequest();
+  // In simplified mode, the mouse will automatically lock, so we can skip
+  // testing the permission requested and manually accepting.
+  if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
+    ASSERT_TRUE(IsMouseLockPermissionRequested());
+    ASSERT_FALSE(IsMouseLocked());
+
+    // Accept mouse lock.
+    AcceptCurrentFullscreenOrMouseLockRequest();
+  }
+
   ASSERT_TRUE(IsMouseLocked());
 
   // Navigate to url with fragment. Mouse lock should persist.

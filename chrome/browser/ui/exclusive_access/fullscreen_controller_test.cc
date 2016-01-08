@@ -25,8 +25,12 @@ void FullscreenControllerTest::RequestToLockMouse(
     bool user_gesture,
     bool last_unlocked_by_target) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  MouseLockController* mouse_lock_controller =
+      GetExclusiveAccessManager()->mouse_lock_controller();
+  mouse_lock_controller->set_fake_mouse_lock_for_test(true);
   browser()->RequestToLockMouse(tab, user_gesture,
       last_unlocked_by_target);
+  mouse_lock_controller->set_fake_mouse_lock_for_test(false);
 }
 
 FullscreenController* FullscreenControllerTest::GetFullscreenController() {

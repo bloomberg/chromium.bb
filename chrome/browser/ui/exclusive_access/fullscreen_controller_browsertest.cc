@@ -21,6 +21,11 @@ using ui::PAGE_TRANSITION_TYPED;
 
 IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
                        PendingMouseLockExitsOnTabSwitch) {
+  // This test doesn't make sense in simplified mode, since we never prompt for
+  // mouse lock.
+  if (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled())
+    return;
+
   AddTabAtIndex(0, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED);
   AddTabAtIndex(0, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED);
   WebContents* tab1 = browser()->tab_strip_model()->GetActiveWebContents();
@@ -54,6 +59,11 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
 
 IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
                        PendingMouseLockExitsOnTabClose) {
+  // This test doesn't make sense in simplified mode, since we never prompt for
+  // mouse lock.
+  if (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled())
+    return;
+
   // Add more tabs.
   AddTabAtIndex(0, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED);
   AddTabAtIndex(0, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED);
@@ -80,7 +90,10 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, MouseLockOnFileURL) {
   AddTabAtIndex(0, file_url, PAGE_TRANSITION_TYPED);
   RequestToLockMouse(true, false);
   ASSERT_TRUE(IsFullscreenBubbleDisplayed());
-  ASSERT_TRUE(IsFullscreenBubbleDisplayingButtons());
+  if (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled())
+    ASSERT_FALSE(IsFullscreenBubbleDisplayingButtons());
+  else
+    ASSERT_TRUE(IsFullscreenBubbleDisplayingButtons());
 }
 
 IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, FullscreenOnFileURL) {
@@ -90,9 +103,14 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, FullscreenOnFileURL) {
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kEmptyFile)));
   AddTabAtIndex(0, file_url, PAGE_TRANSITION_TYPED);
-  RequestToLockMouse(true, false);
+  GetFullscreenController()->EnterFullscreenModeForTab(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      file_url.GetOrigin());
   ASSERT_TRUE(IsFullscreenBubbleDisplayed());
-  ASSERT_TRUE(IsFullscreenBubbleDisplayingButtons());
+  if (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled())
+    ASSERT_FALSE(IsFullscreenBubbleDisplayingButtons());
+  else
+    ASSERT_TRUE(IsFullscreenBubbleDisplayingButtons());
 }
 
 IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, PermissionContentSettings) {
@@ -124,16 +142,22 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, PermissionContentSettings) {
                               CONTENT_SETTINGS_TYPE_FULLSCREEN,
                               std::string()));
 
-  AcceptCurrentFullscreenOrMouseLockRequest();
+  if (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
+    ASSERT_FALSE(IsFullscreenBubbleDisplayingButtons());
+  } else {
+    ASSERT_TRUE(IsFullscreenBubbleDisplayingButtons());
+    // It only makes sense to test this on the non-simplified mode. In the
+    // simplified mode, you cannot accept the request (as it is auto-accepted)
+    // so you can't set ALLOW.
+    AcceptCurrentFullscreenOrMouseLockRequest();
 
-  // The content's origin is allowed to go fullscreen.
-  EXPECT_EQ(
-      CONTENT_SETTING_ALLOW,
-      HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-          ->GetContentSetting(url.GetOrigin(),
-                              url.GetOrigin(),
-                              CONTENT_SETTINGS_TYPE_FULLSCREEN,
-                              std::string()));
+    // The content's origin is allowed to go fullscreen.
+    EXPECT_EQ(CONTENT_SETTING_ALLOW,
+              HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+                  ->GetContentSetting(url.GetOrigin(), url.GetOrigin(),
+                                      CONTENT_SETTINGS_TYPE_FULLSCREEN,
+                                      std::string()));
+  }
 
   // The primary and secondary patterns have been set when setting the
   // permission, thus setting another secondary pattern shouldn't work.

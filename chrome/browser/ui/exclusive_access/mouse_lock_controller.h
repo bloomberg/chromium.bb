@@ -35,6 +35,14 @@ class MouseLockController : public ExclusiveAccessControllerBase {
 
   void UnlockMouse();
 
+  // If true, does not call into the WebContents to lock the mouse. Just assumes
+  // that it works. This may be necessary when calling
+  // Browser::RequestToLockMouse in tests, because the proper signal will not
+  // have been passed to the RenderViewHost.
+  void set_fake_mouse_lock_for_test(bool value) {
+    fake_mouse_lock_for_test_ = value;
+  }
+
  private:
   enum MouseLockState {
     MOUSELOCK_NOT_REQUESTED,
@@ -55,6 +63,8 @@ class MouseLockController : public ExclusiveAccessControllerBase {
   ContentSetting GetMouseLockSetting(const GURL& url) const;
 
   MouseLockState mouse_lock_state_;
+
+  bool fake_mouse_lock_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(MouseLockController);
 };
