@@ -968,6 +968,12 @@ String UseCounter::deprecationMessage(Feature feature)
     case V8TouchEvent_InitTouchEvent_Method:
         return replacedWillBeRemoved("'TouchEvent.initTouchEvent'", "the TouchEvent constructor", 53, "5730982598541312");
 
+    case RTCPeerConnectionCreateAnswerLegacyNoFailureCallback:
+        return "RTCPeerConnection.CreateAnswer without a failure callback is deprecated. The failure callback will be a required parameter in M50. See https://www.chromestatus.com/feature/5663288008376320 for more details";
+
+    case RTCPeerConnectionCreateOfferLegacyNoFailureCallback:
+        return "RTCPeerConnection.CreateOffer without a failure callback is deprecated. The failure callback will be a required parameter in M50. See https://www.chromestatus.com/feature/5663288008376320 for more details";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

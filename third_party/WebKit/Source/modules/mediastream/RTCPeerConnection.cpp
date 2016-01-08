@@ -392,7 +392,7 @@ void RTCPeerConnection::createOffer(ExecutionContext* context, RTCSessionDescrip
     if (errorCallback)
         UseCounter::count(context, UseCounter::RTCPeerConnectionCreateOfferLegacyFailureCallback);
     else
-        UseCounter::count(context, UseCounter::RTCPeerConnectionCreateOfferLegacyNoFailureCallback);
+        UseCounter::countDeprecation(context, UseCounter::RTCPeerConnectionCreateOfferLegacyNoFailureCallback);
 
     if (throwExceptionIfSignalingStateClosed(m_signalingState, exceptionState))
         return;
@@ -431,7 +431,7 @@ void RTCPeerConnection::createAnswer(ExecutionContext* context, RTCSessionDescri
     if (errorCallback)
         UseCounter::count(context, UseCounter::RTCPeerConnectionCreateAnswerLegacyFailureCallback);
     else
-        UseCounter::count(context, UseCounter::RTCPeerConnectionCreateAnswerLegacyNoFailureCallback);
+        UseCounter::countDeprecation(context, UseCounter::RTCPeerConnectionCreateAnswerLegacyNoFailureCallback);
 
     if (mediaConstraints.isObject())
         UseCounter::count(context, UseCounter::RTCPeerConnectionCreateAnswerLegacyConstraints);
