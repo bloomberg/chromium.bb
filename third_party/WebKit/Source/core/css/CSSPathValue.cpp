@@ -33,22 +33,9 @@ CSSPathValue::~CSSPathValue()
 {
 }
 
-namespace {
-
-PassRefPtrWillBeRawPtr<CSSPathValue> createPathValue()
-{
-    OwnPtr<SVGPathByteStream> pathByteStream = SVGPathByteStream::create();
-    // Need to be registered as LSan ignored, as it will be reachable and
-    // separately referred to by emptyPathValue() callers.
-    LEAK_SANITIZER_IGNORE_OBJECT(pathByteStream.get());
-    return CSSPathValue::create(pathByteStream.release());
-}
-
-}
-
 CSSPathValue* CSSPathValue::emptyPathValue()
 {
-    DEFINE_STATIC_LOCAL(RefPtrWillBePersistent<CSSPathValue>, empty, (createPathValue()));
+    DEFINE_STATIC_LOCAL(RefPtrWillBePersistent<CSSPathValue>, empty, (CSSPathValue::create(SVGPathByteStream::create())));
     return empty.get();
 }
 
