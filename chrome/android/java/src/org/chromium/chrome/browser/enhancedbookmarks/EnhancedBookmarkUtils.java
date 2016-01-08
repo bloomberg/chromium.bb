@@ -65,7 +65,11 @@ public class EnhancedBookmarkUtils {
             return;
         }
 
-        BookmarkId parent = getLastUsedParent(activity, bookmarkModel);
+        BookmarkId parent = getLastUsedParent(activity);
+        if (parent == null || !bookmarkModel.doesBookmarkExist(parent)) {
+            parent = bookmarkModel.getDefaultFolder();
+        }
+
         bookmarkModel.addBookmarkAsync(parent, bookmarkModel.getChildCount(parent), tab.getTitle(),
                 tab.getUrl(), tab.getWebContents(), tab.isShowingErrorPage(),
                 createAddBookmarkCallback(bookmarkModel, snackbarManager, activity));
@@ -103,8 +107,15 @@ public class EnhancedBookmarkUtils {
                     .getBookmarkTitle(bookmarkModel.getBookmarkById(bookmarkId).getParentId());
             SnackbarController snackbarController = createSnackbarControllerForEditButton(
                     bookmarkModel, activity, bookmarkId);
-            snackbar = Snackbar.make(folderName, snackbarController)
-                    .setTemplateText(activity.getString(R.string.enhanced_bookmark_page_saved))
+            if (getLastUsedParent(activity) == null) {
+                snackbar = Snackbar.make(activity.getString(R.string.enhanced_bookmark_page_saved),
+                        snackbarController);
+            } else {
+                snackbar = Snackbar.make(folderName, snackbarController)
+                        .setTemplateText(activity.getString(
+                                R.string.enhanced_bookmark_page_saved_folder));
+            }
+            snackbar = snackbar.setSingleLine(false)
                     .setAction(activity.getString(R.string.enhanced_bookmark_item_edit), null);
         } else {
             SnackbarController snackbarController = null;
@@ -318,20 +329,15 @@ public class EnhancedBookmarkUtils {
     }
 
     /**
-     * @return The parent {@link BookmarkId} that the user used the last time,
-     *         or the default folder if no previous user action has been recorded.
+     * @return The parent {@link BookmarkId} that the user used the last time or null if the user
+     *         has never selected a parent folder to use.
      */
-    static BookmarkId getLastUsedParent(Context context, EnhancedBookmarksModel model) {
-        BookmarkId parentId = null;
+    static BookmarkId getLastUsedParent(Context context) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        if (preferences.contains(PREF_LAST_USED_PARENT)) {
-            parentId = BookmarkId
-                    .getBookmarkIdFromString(preferences.getString(PREF_LAST_USED_PARENT, null));
-        }
-        if (parentId == null || !model.doesBookmarkExist(parentId)) {
-            parentId = model.getDefaultFolder();
-        }
-        return parentId;
+        if (!preferences.contains(PREF_LAST_USED_PARENT)) return null;
+
+        return BookmarkId.getBookmarkIdFromString(
+                preferences.getString(PREF_LAST_USED_PARENT, null));
     }
 
     /**
