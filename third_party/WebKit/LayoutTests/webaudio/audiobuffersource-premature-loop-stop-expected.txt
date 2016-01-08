@@ -1,0 +1,12 @@
+Test if AudioBufferSourceNode stops prematurely after the loop attribute change.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Region #1 contains only the constant 1.
+PASS Region #2 (looped) contains only the constant 2.
+PASS Region #3 contains only the constant 3.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
