@@ -2261,11 +2261,6 @@ Even if you have downloaded files from this website before, the website might ha
       </message>
 
       <!-- Bookmark app bubble -->
-      <if expr="is_win">
-        <message name="IDS_ADD_TO_TASKBAR_BUBBLE_TITLE" desc="Title of the bubble for adding a bookmark app to the taskbar.">
-          Add to taskbar
-        </message>
-      </if>
       <if expr="is_macosx">
         <message name="IDS_ADD_TO_APPLICATIONS_BUBBLE_TITLE" desc="Title of the bubble adding a bookmark app to the Applications Folder.">
           Add to Applications
@@ -2311,11 +2306,6 @@ Even if you have downloaded files from this website before, the website might ha
       </if>
 
       <!-- "Create application shortcuts" menu item -->
-      <if expr="is_win">
-        <message name="IDS_ADD_TO_TASKBAR" desc="Button text for adding a bookmark app to the taskbar.">
-          Add to taskbar...
-        </message>
-      </if>
       <if expr="is_macosx">
         <message name="IDS_ADD_TO_APPLICATIONS" desc="Button text for adding a bookmark app to the Applications Folder.">
           Add to Applications...

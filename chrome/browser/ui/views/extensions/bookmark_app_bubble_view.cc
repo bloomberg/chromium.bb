@@ -262,10 +262,6 @@ void BookmarkAppBubbleView::UpdateAddButtonState() {
 
 int BookmarkAppBubbleView::TitleStringId() {
   int string_id = IDS_ADD_TO_DESKTOP_BUBBLE_TITLE;
-#if defined(OS_WIN)
-  if (base::win::CanPinShortcutToTaskbar())
-    string_id = IDS_ADD_TO_TASKBAR_BUBBLE_TITLE;
-#endif  // defined(OS_WIN)
 #if defined(USE_ASH)
   if (chrome::GetHostDesktopTypeForNativeWindow(
           anchor_widget()->GetNativeWindow()) ==

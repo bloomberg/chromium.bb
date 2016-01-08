@@ -700,18 +700,14 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
   chrome::HostDesktopType desktop = browser->host_desktop_type();
   if (desktop != chrome::HOST_DESKTOP_TYPE_ASH) {
     web_app::ShortcutLocations creation_locations;
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_WIN)
     creation_locations.on_desktop = true;
-#elif defined(OS_WIN)
-    // Create the shortcut on the desktop if it's not possible to pin to the
-    // taskbar.
-    creation_locations.on_desktop = !base::win::CanPinShortcutToTaskbar();
 #else
     creation_locations.on_desktop = false;
 #endif
     creation_locations.applications_menu_location =
         web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
-    creation_locations.in_quick_launch_bar = true;
+    creation_locations.in_quick_launch_bar = false;
     web_app::CreateShortcuts(web_app::SHORTCUT_CREATION_BY_USER,
                              creation_locations, current_profile, extension);
 #if defined(USE_ASH)

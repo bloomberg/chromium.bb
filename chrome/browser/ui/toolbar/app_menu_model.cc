@@ -280,7 +280,7 @@ ToolsMenuModel::ToolsMenuModel(ui::SimpleMenuModel::Delegate* delegate,
 ToolsMenuModel::~ToolsMenuModel() {}
 
 // More tools submenu is constructed as follows:
-// - Page specific actions overflow (save page, adding to taskbar).
+// - Page specific actions overflow (save page, adding to desktop).
 // - Browser / OS level tools (extensions, task manager).
 // - Developer tools.
 // - Option to enable profiling.
@@ -297,9 +297,6 @@ void ToolsMenuModel::Build(Browser* browser) {
     int string_id = IDS_ADD_TO_DESKTOP;
 #if defined(OS_MACOSX)
     string_id = IDS_ADD_TO_APPLICATIONS;
-#elif defined(OS_WIN)
-    if (base::win::CanPinShortcutToTaskbar())
-      string_id = IDS_ADD_TO_TASKBAR;
 #endif
 #if defined(USE_ASH)
     if (browser->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
