@@ -34,7 +34,7 @@ class IPC_EXPORT AttachmentBrokerPrivilegedWin
   void OnDuplicateWinHandle(const Message& message);
 
   // Duplicates |wire_Format| from |source_process| into its destination
-  // process.
+  // process. Closes the original HANDLE.
   HandleWireFormat DuplicateWinHandle(const HandleWireFormat& wire_format,
                                       base::ProcessId source_process);
 

@@ -58,10 +58,9 @@ class IPC_EXPORT HandleAttachmentWin : public BrokerableAttachment {
   // result. Should only be called by the sender of a Chrome IPC message.
   HandleAttachmentWin(const HANDLE& handle, HandleWin::Permissions permissions);
 
-  // These constructors do not take ownership of the HANDLE, and should only be
-  // called by the receiver of a Chrome IPC message.
+  // This constructor takes ownership of |wire_format.handle| without making a
+  // copy. Should only be called by the receiver of a Chrome IPC message.
   explicit HandleAttachmentWin(const WireFormat& wire_format);
-  explicit HandleAttachmentWin(const BrokerableAttachment::AttachmentId& id);
 
   BrokerableType GetBrokerableType() const override;
 
@@ -71,7 +70,10 @@ class IPC_EXPORT HandleAttachmentWin : public BrokerableAttachment {
   HANDLE get_handle() const { return handle_; }
 
   // The caller of this method has taken ownership of |handle_|.
-  void reset_handle_ownership() { owns_handle_ = false; }
+  void reset_handle_ownership() {
+    owns_handle_ = false;
+    handle_ = INVALID_HANDLE_VALUE;
+  }
 
  private:
   ~HandleAttachmentWin() override;
@@ -81,9 +83,8 @@ class IPC_EXPORT HandleAttachmentWin : public BrokerableAttachment {
   // In the sender process, the attachment owns the HANDLE of a newly created
   // message. The attachment broker will eventually take ownership, and set
   // this member to |false|.
-  // In the destination process, the attachment never owns the Mach port. The
-  // client code that receives the Chrome IPC message is always expected to take
-  // ownership.
+  // In the destination process, the attachment owns the Mach port until a call
+  // to ParamTraits<HandleWin>::Read() takes ownership.
   bool owns_handle_;
 };
 

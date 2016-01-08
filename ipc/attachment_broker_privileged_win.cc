@@ -23,12 +23,13 @@ bool AttachmentBrokerPrivilegedWin::SendAttachmentToProcess(
     base::ProcessId destination_process) {
   switch (attachment->GetBrokerableType()) {
     case BrokerableAttachment::WIN_HANDLE: {
-      const internal::HandleAttachmentWin* handle_attachment =
-          static_cast<const internal::HandleAttachmentWin*>(attachment.get());
+      internal::HandleAttachmentWin* handle_attachment =
+          static_cast<internal::HandleAttachmentWin*>(attachment.get());
       HandleWireFormat wire_format =
           handle_attachment->GetWireFormat(destination_process);
       HandleWireFormat new_wire_format =
           DuplicateWinHandle(wire_format, base::Process::Current().Pid());
+      handle_attachment->reset_handle_ownership();
       if (new_wire_format.handle == 0)
         return false;
       RouteDuplicatedHandle(new_wire_format);
@@ -105,6 +106,10 @@ AttachmentBrokerPrivilegedWin::DuplicateWinHandle(
   // If the source process is the destination process, then no additional work
   // is required.
   if (source_pid == wire_format.destination_process)
+    return wire_format;
+
+  // If the handle is not valid, no additional work is required.
+  if (wire_format.handle == 0)
     return wire_format;
 
   base::Process source_process =

@@ -47,6 +47,7 @@ bool ParamTraits<HandleWin>::Read(const Message* m,
   IPC::internal::HandleAttachmentWin* handle_attachment =
       static_cast<IPC::internal::HandleAttachmentWin*>(brokerable_attachment);
   r->set_handle(handle_attachment->get_handle());
+  handle_attachment->reset_handle_ownership();
   return true;
 }
 

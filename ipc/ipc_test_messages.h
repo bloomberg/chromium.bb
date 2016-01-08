@@ -9,10 +9,12 @@
 #define IPC_MESSAGE_START IPCTestMsgStart
 
 #if defined(OS_WIN)
+#include "base/memory/shared_memory_handle.h"
 #include "ipc/handle_win.h"
 
 IPC_MESSAGE_CONTROL3(TestHandleWinMsg, int, IPC::HandleWin, int)
 IPC_MESSAGE_CONTROL2(TestTwoHandleWinMsg, IPC::HandleWin, IPC::HandleWin)
+IPC_MESSAGE_CONTROL1(TestSharedMemoryHandleMsg1, base::SharedMemoryHandle)
 #endif  // defined(OS_WIN)
 
 #if defined(OS_MACOSX)
