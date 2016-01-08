@@ -28,12 +28,10 @@ class ConfirmInfoBar : public InfoBarAndroid {
  private:
   void ProcessButton(int action) override;
 
-  base::android::ScopedJavaGlobalRef<jobject> java_confirm_delegate_;
-
   DISALLOW_COPY_AND_ASSIGN(ConfirmInfoBar);
 };
 
 // Registers native methods.
-bool RegisterConfirmInfoBarDelegate(JNIEnv* env);
+bool RegisterConfirmInfoBar(JNIEnv* env);
 
 #endif  // CHROME_BROWSER_UI_ANDROID_INFOBARS_CONFIRM_INFOBAR_H_

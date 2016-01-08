@@ -231,7 +231,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      media_router::MediaRouterDialogControllerAndroid::Register},
 #endif
     {"CompositorView", RegisterCompositorView},
-    {"ConfirmInfoBarDelegate", RegisterConfirmInfoBarDelegate},
+    {"ConfirmInfoBar", RegisterConfirmInfoBar},
     {"ConnectionInfoPopupAndroid",
      ConnectionInfoPopupAndroid::RegisterConnectionInfoPopupAndroid},
     {"SecurityStateModel", RegisterSecurityStateModelAndroid},
