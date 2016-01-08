@@ -270,7 +270,7 @@ void PnaclCoordinator::BitcodeStreamCacheHit(PP_FileHandle handle) {
   }
   temp_nexe_file_.reset(new TempFile(plugin_, handle));
   // Open it for reading as the cached nexe file.
-  NexeReadDidOpen(temp_nexe_file_->Open(false));
+  NexeReadDidOpen(temp_nexe_file_->CheckValidity());
 }
 
 void PnaclCoordinator::BitcodeStreamCacheMiss(int64_t expected_pexe_size,
@@ -308,7 +308,7 @@ void PnaclCoordinator::BitcodeStreamCacheMiss(int64_t expected_pexe_size,
     PP_FileHandle obj_handle =
         plugin_->nacl_interface()->CreateTemporaryFile(plugin_->pp_instance());
     nacl::scoped_ptr<TempFile> temp_file(new TempFile(plugin_, obj_handle));
-    int32_t pp_error = temp_file->Open(true);
+    int32_t pp_error = temp_file->CheckValidity();
     if (pp_error != PP_OK) {
       ReportPpapiError(PP_NACL_ERROR_PNACL_CREATE_TEMP,
                        pp_error,
@@ -323,7 +323,7 @@ void PnaclCoordinator::BitcodeStreamCacheMiss(int64_t expected_pexe_size,
   temp_nexe_file_.reset(new TempFile(plugin_, nexe_handle));
   // Open the nexe file for connecting ld and sel_ldr.
   // Start translation when done with this last step of setup!
-  int32_t pp_error = temp_nexe_file_->Open(true);
+  int32_t pp_error = temp_nexe_file_->CheckValidity();
   if (pp_error != PP_OK) {
     ReportNonPpapiError(
         PP_NACL_ERROR_PNACL_CREATE_TEMP,

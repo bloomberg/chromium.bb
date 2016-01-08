@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 
 #include "ppapi/c/private/pp_file_handle.h"
 
@@ -44,24 +43,14 @@ class TempFile {
   TempFile(Plugin* plugin, PP_FileHandle handle);
   ~TempFile();
 
-  // Opens a temporary file object and descriptor wrapper referring to the file.
-  // If |writeable| is true, the descriptor will be opened for writing, and
-  // write_wrapper will return a valid pointer, otherwise it will return NULL.
-  int32_t Open(bool writeable);
+  int32_t CheckValidity();
   // Resets file position of the handle, for reuse.
   bool Reset();
 
   // Returns the current size of this file.
   int64_t GetLength();
 
-  // Accessors.
-  // The nacl::DescWrapper* for the writeable version of the file.
-  nacl::DescWrapper* write_wrapper() { return write_wrapper_.get(); }
-  nacl::DescWrapper* read_wrapper() { return read_wrapper_.get(); }
-
-  // Returns a handle to the file, transferring ownership of it.  Note that
-  // the objects returned by write_wrapper() and read_wrapper() remain
-  // valid after TakeFileHandle() is called.
+  // Returns a handle to the file, transferring ownership of it.
   PP_FileHandle TakeFileHandle();
 
   // Returns a handle to the file, without transferring ownership of it.
@@ -72,11 +61,7 @@ class TempFile {
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(TempFile);
 
-  nacl::DescWrapper* MakeDescWrapper(int nacl_file_flags);
-
   Plugin* plugin_;
-  scoped_ptr<nacl::DescWrapper> read_wrapper_;
-  scoped_ptr<nacl::DescWrapper> write_wrapper_;
   base::File file_handle_;
 };
 
