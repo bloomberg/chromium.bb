@@ -120,4 +120,112 @@ WebThread* TestingPlatformSupport::currentThread()
     return m_oldPlatform ? m_oldPlatform->currentThread() : nullptr;
 }
 
+class TestingPlatformMockWebTaskRunner : public WebTaskRunner {
+    WTF_MAKE_NONCOPYABLE(TestingPlatformMockWebTaskRunner);
+public:
+    explicit TestingPlatformMockWebTaskRunner(Deque<OwnPtr<WebTaskRunner::Task>>* tasks) : m_tasks(tasks) { }
+    ~TestingPlatformMockWebTaskRunner() override { }
+
+    void postTask(const WebTraceLocation&, Task* task) override
+    {
+        m_tasks->append(adoptPtr(task));
+    }
+
+    void postDelayedTask(const WebTraceLocation&, Task*, double delayMs) override
+    {
+        ASSERT_NOT_REACHED();
+    }
+
+    WebTaskRunner* clone() override
+    {
+        ASSERT_NOT_REACHED();
+        return nullptr;
+    }
+
+private:
+    Deque<OwnPtr<WebTaskRunner::Task>>* m_tasks; // NOT OWNED
+};
+
+// TestingPlatformMockScheduler definition:
+
+TestingPlatformMockScheduler::TestingPlatformMockScheduler()
+    : m_mockWebTaskRunner(adoptPtr(new TestingPlatformMockWebTaskRunner(&m_tasks))) { }
+
+TestingPlatformMockScheduler::~TestingPlatformMockScheduler() { }
+
+WebTaskRunner* TestingPlatformMockScheduler::loadingTaskRunner()
+{
+    return m_mockWebTaskRunner.get();
+}
+
+WebTaskRunner* TestingPlatformMockScheduler::timerTaskRunner()
+{
+    return m_mockWebTaskRunner.get();
+}
+
+void TestingPlatformMockScheduler::runSingleTask()
+{
+    if (m_tasks.isEmpty())
+        return;
+    m_tasks.takeFirst()->run();
+}
+
+void TestingPlatformMockScheduler::runAllTasks()
+{
+    while (!m_tasks.isEmpty())
+        m_tasks.takeFirst()->run();
+}
+
+class TestingPlatformMockWebThread : public WebThread {
+    WTF_MAKE_NONCOPYABLE(TestingPlatformMockWebThread);
+public:
+    TestingPlatformMockWebThread() : m_mockWebScheduler(adoptPtr(new TestingPlatformMockScheduler)) { }
+    ~TestingPlatformMockWebThread() override { }
+
+    WebTaskRunner* taskRunner() override
+    {
+        return m_mockWebScheduler->timerTaskRunner();
+    }
+
+    bool isCurrentThread() const override
+    {
+        ASSERT_NOT_REACHED();
+        return true;
+    }
+
+    WebScheduler* scheduler() const override
+    {
+        return m_mockWebScheduler.get();
+    }
+
+    TestingPlatformMockScheduler* mockWebScheduler()
+    {
+        return m_mockWebScheduler.get();
+    }
+
+private:
+    OwnPtr<TestingPlatformMockScheduler> m_mockWebScheduler;
+};
+
+// TestingPlatformSupportWithMockScheduler definition:
+
+TestingPlatformSupportWithMockScheduler::TestingPlatformSupportWithMockScheduler()
+    : m_mockWebThread(adoptPtr(new TestingPlatformMockWebThread())) { }
+
+TestingPlatformSupportWithMockScheduler::TestingPlatformSupportWithMockScheduler(const Config& config)
+    : TestingPlatformSupport(config)
+    , m_mockWebThread(adoptPtr(new TestingPlatformMockWebThread())) { }
+
+TestingPlatformSupportWithMockScheduler::~TestingPlatformSupportWithMockScheduler() { }
+
+WebThread* TestingPlatformSupportWithMockScheduler::currentThread()
+{
+    return m_mockWebThread.get();
+}
+
+TestingPlatformMockScheduler* TestingPlatformSupportWithMockScheduler::mockWebScheduler()
+{
+    return m_mockWebThread->mockWebScheduler();
+}
+
 } // namespace blink

@@ -40,15 +40,18 @@
 
 namespace blink {
 
-TimerBase::TimerBase()
+TimerBase::TimerBase() : TimerBase(Platform::current()->currentThread()->scheduler()->timerTaskRunner()) { }
+
+TimerBase::TimerBase(WebTaskRunner* webTaskRunner)
     : m_nextFireTime(0)
     , m_repeatInterval(0)
     , m_cancellableTimerTask(nullptr)
-    , m_webScheduler(Platform::current()->currentThread()->scheduler())
+    , m_webTaskRunner(webTaskRunner)
 #if ENABLE(ASSERT)
     , m_thread(currentThread())
 #endif
 {
+    ASSERT(m_webTaskRunner);
 }
 
 TimerBase::~TimerBase()
@@ -87,7 +90,7 @@ double TimerBase::nextFireInterval() const
 
 WebTaskRunner* TimerBase::timerTaskRunner()
 {
-    return m_webScheduler->timerTaskRunner();
+    return m_webTaskRunner;
 }
 
 void TimerBase::setNextFireTime(double now, double delay)
@@ -135,6 +138,12 @@ void TimerBase::runInternal()
 bool TimerBase::Comparator::operator()(const TimerBase* a, const TimerBase* b) const
 {
     return a->m_nextFireTime < b->m_nextFireTime;
+}
+
+// static
+WebTaskRunner* TimerBase::UnthrottledWebTaskRunner()
+{
+    return Platform::current()->currentThread()->taskRunner();
 }
 
 } // namespace blink

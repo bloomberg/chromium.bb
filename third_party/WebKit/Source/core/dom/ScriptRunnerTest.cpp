@@ -39,116 +39,6 @@ private:
     }
 };
 
-class MockWebThread : public WebThread {
-public:
-    explicit MockWebThread(WebScheduler* webScheduler) : m_webScheduler(webScheduler) { }
-    ~MockWebThread() override { }
-
-    bool isCurrentThread() const override
-    {
-        ASSERT_NOT_REACHED();
-        return false;
-    }
-
-    PlatformThreadId threadId() const override
-    {
-        ASSERT_NOT_REACHED();
-        return 0;
-    }
-
-    WebTaskRunner* taskRunner() override
-    {
-        ASSERT_NOT_REACHED();
-        return nullptr;
-    }
-
-    void addTaskObserver(TaskObserver*) override { ASSERT_NOT_REACHED(); }
-    void removeTaskObserver(TaskObserver*) override { ASSERT_NOT_REACHED(); }
-
-    WebScheduler* scheduler() const override { return m_webScheduler; }
-
-private:
-    WebScheduler* m_webScheduler;
-};
-
-class MockWebTaskRunner : public WebTaskRunner {
-public:
-    explicit MockWebTaskRunner(Deque<OwnPtr<WebTaskRunner::Task>>* tasks) : m_tasks(tasks) { }
-    ~MockWebTaskRunner() override { }
-
-    void postTask(const WebTraceLocation&, Task* task) override
-    {
-        m_tasks->append(adoptPtr(task));
-    }
-
-    void postDelayedTask(const WebTraceLocation&, Task* task, double delayMs) override
-    {
-        ASSERT_NOT_REACHED();
-    }
-
-    WebTaskRunner* clone() override
-    {
-        ASSERT_NOT_REACHED();
-        return nullptr;
-    }
-
-    Deque<OwnPtr<WebTaskRunner::Task>>* m_tasks; // NOT OWNED
-};
-
-class MockPlatform : public TestingPlatformSupport, public WebScheduler {
-public:
-    MockPlatform()
-        : m_mockWebThread(this)
-        , m_mockWebTaskRunner(&m_tasks)
-    {
-    }
-
-    WebThread* currentThread() override { return &m_mockWebThread; }
-
-    void runSingleTask()
-    {
-        if (m_tasks.isEmpty())
-            return;
-        m_tasks.takeFirst()->run();
-    }
-
-    void runAllTasks()
-    {
-        while (!m_tasks.isEmpty())
-            m_tasks.takeFirst()->run();
-    }
-
-    // WebScheduler implementation.
-    WebTaskRunner* loadingTaskRunner() override
-    {
-        return &m_mockWebTaskRunner;
-    }
-
-    WebTaskRunner* timerTaskRunner() override
-    {
-        ASSERT_NOT_REACHED();
-        return nullptr;
-    }
-
-    void shutdown() override {}
-    bool shouldYieldForHighPriorityWork() override { return false; }
-    bool canExceedIdleDeadlineIfRequired() override { return false; }
-    void postIdleTask(const WebTraceLocation&, WebThread::IdleTask*) override { }
-    void postNonNestableIdleTask(const WebTraceLocation&, WebThread::IdleTask*) override { }
-    void postIdleTaskAfterWakeup(const WebTraceLocation&, WebThread::IdleTask*) override { }
-    WebPassOwnPtr<WebViewScheduler> createWebViewScheduler(blink::WebView*) override { return nullptr; }
-    void suspendTimerQueue() override { }
-    void resumeTimerQueue() override { }
-    void addPendingNavigation() override { }
-    void removePendingNavigation() override { }
-    void onNavigationStarted() override { }
-
-private:
-    MockWebThread m_mockWebThread;
-    Deque<OwnPtr<WebTaskRunner::Task>> m_tasks;
-    MockWebTaskRunner m_mockWebTaskRunner;
-};
-
 class ScriptRunnerTest : public testing::Test {
 public:
     ScriptRunnerTest()
@@ -172,7 +62,7 @@ public:
 
     RefPtrWillBePersistent<Document> m_document;
     RefPtrWillBePersistent<Element> m_element;
-    MockPlatform m_platform;
+    TestingPlatformSupportWithMockScheduler m_platform;
     OwnPtrWillBePersistent<ScriptRunner> m_scriptRunner;
     WTF::Vector<int> m_order;
 };
@@ -184,7 +74,7 @@ TEST_F(ScriptRunnerTest, QueueSingleScript_Async)
     m_scriptRunner->notifyScriptReady(scriptLoader.get(), ScriptRunner::ASYNC_EXECUTION);
 
     EXPECT_CALL(*scriptLoader, execute());
-    m_platform.runAllTasks();
+    m_platform.mockWebScheduler()->runAllTasks();
 }
 
 TEST_F(ScriptRunnerTest, QueueSingleScript_InOrder)
@@ -197,7 +87,7 @@ TEST_F(ScriptRunnerTest, QueueSingleScript_InOrder)
 
     m_scriptRunner->notifyScriptReady(scriptLoader.get(), ScriptRunner::IN_ORDER_EXECUTION);
 
-    m_platform.runAllTasks();
+    m_platform.mockWebScheduler()->runAllTasks();
 }
 
 TEST_F(ScriptRunnerTest, QueueMultipleScripts_InOrder)
@@ -235,7 +125,7 @@ TEST_F(ScriptRunnerTest, QueueMultipleScripts_InOrder)
     for (int i = 2; i >= 0; i--) {
         isReady[i] = true;
         m_scriptRunner->notifyScriptReady(scriptLoaders[i], ScriptRunner::IN_ORDER_EXECUTION);
-        m_platform.runAllTasks();
+        m_platform.mockWebScheduler()->runAllTasks();
     }
 
     // But ensure the scripts were run in the expected order.
@@ -290,7 +180,7 @@ TEST_F(ScriptRunnerTest, QueueMixedScripts)
         m_order.append(5);
     }));
 
-    m_platform.runAllTasks();
+    m_platform.mockWebScheduler()->runAllTasks();
 
     // Async tasks are expected to run first.
     EXPECT_THAT(m_order, ElementsAre(4, 5, 1, 2, 3));
@@ -325,13 +215,13 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_Async)
 
     // Make sure that re-entrant calls to notifyScriptReady don't cause ScriptRunner::execute to do
     // more work than expected.
-    m_platform.runSingleTask();
+    m_platform.mockWebScheduler()->runSingleTask();
     EXPECT_THAT(m_order, ElementsAre(1));
 
-    m_platform.runSingleTask();
+    m_platform.mockWebScheduler()->runSingleTask();
     EXPECT_THAT(m_order, ElementsAre(1, 2));
 
-    m_platform.runSingleTask();
+    m_platform.mockWebScheduler()->runSingleTask();
     EXPECT_THAT(m_order, ElementsAre(1, 2, 3));
 }
 
@@ -370,13 +260,13 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_InOrder)
 
     // Make sure that re-entrant calls to queueScriptForExecution don't cause ScriptRunner::execute to do
     // more work than expected.
-    m_platform.runSingleTask();
+    m_platform.mockWebScheduler()->runSingleTask();
     EXPECT_THAT(m_order, ElementsAre(1));
 
-    m_platform.runSingleTask();
+    m_platform.mockWebScheduler()->runSingleTask();
     EXPECT_THAT(m_order, ElementsAre(1, 2));
 
-    m_platform.runSingleTask();
+    m_platform.mockWebScheduler()->runSingleTask();
     EXPECT_THAT(m_order, ElementsAre(1, 2, 3));
 }
 
@@ -408,7 +298,7 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_ManyAsyncScripts)
         m_order.append(0);
     }));
 
-    m_platform.runAllTasks();
+    m_platform.mockWebScheduler()->runAllTasks();
 
     int expected[] = {
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
@@ -458,10 +348,10 @@ TEST_F(ScriptRunnerTest, ResumeAndSuspend_InOrder)
         .WillRepeatedly(Return(true));
     m_scriptRunner->notifyScriptReady(scriptLoader3.get(), ScriptRunner::IN_ORDER_EXECUTION);
 
-    m_platform.runSingleTask();
+    m_platform.mockWebScheduler()->runSingleTask();
     m_scriptRunner->suspend();
     m_scriptRunner->resume();
-    m_platform.runAllTasks();
+    m_platform.mockWebScheduler()->runAllTasks();
 
     // Make sure elements are correct and in right order.
     EXPECT_THAT(m_order, ElementsAre(1, 2, 3));
@@ -494,10 +384,10 @@ TEST_F(ScriptRunnerTest, ResumeAndSuspend_Async)
             m_order.append(3);
         }));
 
-    m_platform.runSingleTask();
+    m_platform.mockWebScheduler()->runSingleTask();
     m_scriptRunner->suspend();
     m_scriptRunner->resume();
-    m_platform.runAllTasks();
+    m_platform.mockWebScheduler()->runAllTasks();
 
     // Make sure elements are correct.
     EXPECT_THAT(m_order, WhenSorted(ElementsAre(1, 2, 3)));
@@ -522,11 +412,11 @@ TEST_F(ScriptRunnerTest, LateNotifications)
     }));
 
     m_scriptRunner->notifyScriptReady(scriptLoader1.get(), ScriptRunner::IN_ORDER_EXECUTION);
-    m_platform.runAllTasks();
+    m_platform.mockWebScheduler()->runAllTasks();
 
     // At this moment all tasks can be already executed. Make sure that we do not crash here.
     m_scriptRunner->notifyScriptReady(scriptLoader2.get(), ScriptRunner::IN_ORDER_EXECUTION);
-    m_platform.runAllTasks();
+    m_platform.mockWebScheduler()->runAllTasks();
 
     EXPECT_THAT(m_order, ElementsAre(1, 2));
 }
@@ -555,7 +445,7 @@ TEST_F(ScriptRunnerTest, TasksWithDeadScriptRunner)
     EXPECT_CALL(*scriptLoader1, execute()).Times(0);
     EXPECT_CALL(*scriptLoader2, execute()).Times(0);
 
-    m_platform.runAllTasks();
+    m_platform.mockWebScheduler()->runAllTasks();
 }
 
 } // namespace blink

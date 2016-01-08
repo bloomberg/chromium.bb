@@ -9,8 +9,6 @@
 #include "platform/scroll/ScrollbarThemeMock.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebScheduler.h"
-#include "public/platform/WebThread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,46 +62,6 @@ private:
     IntPoint m_maximumScrollPosition;
 };
 
-class FakeWebThread : public WebThread {
-public:
-    FakeWebThread() { }
-    ~FakeWebThread() override { }
-
-    WebTaskRunner* taskRunner() override
-    {
-        ASSERT_NOT_REACHED();
-        return nullptr;
-    }
-
-    bool isCurrentThread() const override
-    {
-        ASSERT_NOT_REACHED();
-        return true;
-    }
-
-    WebScheduler* scheduler() const override
-    {
-        return nullptr;
-    }
-};
-
-// The FakePlatform is needed because ScrollAnimatorMac's constructor creates several timers.
-// We need just enough scaffolding for the Timer constructor to not segfault.
-class FakePlatform : public TestingPlatformSupport {
-public:
-    explicit FakePlatform(Config& config) : TestingPlatformSupport(config) { }
-
-    ~FakePlatform() override { }
-
-    WebThread* currentThread() override
-    {
-        return &m_webThread;
-    }
-
-private:
-    FakeWebThread m_webThread;
-};
-
 } // namespace
 
 class ScrollableAreaTest : public testing::Test {
@@ -115,7 +73,7 @@ public:
         m_oldPlatform = Platform::current();
         TestingPlatformSupport::Config config;
         config.compositorSupport = m_oldPlatform->compositorSupport();
-        m_fakePlatform = adoptPtr(new FakePlatform(config));
+        m_fakePlatform = adoptPtr(new TestingPlatformSupportWithMockScheduler(config));
         Platform::initialize(m_fakePlatform.get());
     }
 
@@ -126,7 +84,7 @@ public:
     }
 
 private:
-    OwnPtr<FakePlatform> m_fakePlatform;
+    OwnPtr<TestingPlatformSupportWithMockScheduler> m_fakePlatform;
     Platform* m_oldPlatform; // Not owned.
 };
 

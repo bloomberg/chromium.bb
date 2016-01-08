@@ -44,6 +44,7 @@ class PLATFORM_EXPORT TimerBase {
     WTF_MAKE_NONCOPYABLE(TimerBase);
 public:
     TimerBase();
+    explicit TimerBase(WebTaskRunner*);
     virtual ~TimerBase();
 
     void start(double nextFireInterval, double repeatInterval, const WebTraceLocation&);
@@ -73,6 +74,9 @@ public:
     struct PLATFORM_EXPORT Comparator {
         bool operator()(const TimerBase* a, const TimerBase* b) const;
     };
+
+protected:
+    static WebTaskRunner* UnthrottledWebTaskRunner();
 
 private:
     virtual void fired() = 0;
@@ -122,7 +126,7 @@ private:
     double m_repeatInterval; // 0 if not repeating
     WebTraceLocation m_location;
     CancellableTimerTask* m_cancellableTimerTask; // NOT OWNED
-    WebScheduler* m_webScheduler; // Not owned.
+    WebTaskRunner* m_webTaskRunner; // Not owned.
 
 #if ENABLE(ASSERT)
     ThreadIdentifier m_thread;
@@ -151,12 +155,14 @@ public:
 template <typename TimerFiredClass>
 class Timer : public TimerBase {
 public:
-    typedef void (TimerFiredClass::*TimerFiredFunction)(Timer*);
+    using TimerFiredFunction = void (TimerFiredClass::*)(Timer<TimerFiredClass>*);
 
     Timer(TimerFiredClass* o, TimerFiredFunction f)
         : m_object(o), m_function(f)
     {
     }
+
+    ~Timer() override { }
 
 protected:
     void fired() override
@@ -173,6 +179,11 @@ protected:
         return TimerIsObjectAliveTrait<TimerFiredClass>::isHeapObjectAlive(m_object);
     }
 
+    Timer(TimerFiredClass* o, TimerFiredFunction f, WebTaskRunner* webTaskRunner)
+        : TimerBase(webTaskRunner), m_object(o), m_function(f)
+    {
+    }
+
 private:
     // FIXME: Oilpan: TimerBase should be moved to the heap and m_object should be traced.
     // This raw pointer is safe as long as Timer<X> is held by the X itself (That's the case
@@ -180,6 +191,21 @@ private:
     GC_PLUGIN_IGNORE("363031")
     TimerFiredClass* m_object;
     TimerFiredFunction m_function;
+};
+
+// This subclass of Timer posts its tasks on the current thread's default task runner.
+// Tasks posted on there are not throttled when the tab is in the background.
+template <typename TimerFiredClass>
+class UnthrottledTimer : public Timer<TimerFiredClass> {
+public:
+    using TimerFiredFunction = void (TimerFiredClass::*)(Timer<TimerFiredClass>*);
+
+    ~UnthrottledTimer() override { }
+
+    UnthrottledTimer(TimerFiredClass* timerFiredClass, TimerFiredFunction timerFiredFunction)
+        : Timer<TimerFiredClass>(timerFiredClass, timerFiredFunction, TimerBase::UnthrottledWebTaskRunner())
+    {
+    }
 };
 
 NO_LAZY_SWEEP_SANITIZE_ADDRESS

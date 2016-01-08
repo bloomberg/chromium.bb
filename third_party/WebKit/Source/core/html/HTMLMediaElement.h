@@ -455,10 +455,10 @@ private:
     // TODO(liberato): remove once autoplay gesture override experiment concludes.
     void triggerAutoplayViewportCheckForTesting();
 
-    Timer<HTMLMediaElement> m_loadTimer;
-    Timer<HTMLMediaElement> m_progressEventTimer;
-    Timer<HTMLMediaElement> m_playbackProgressTimer;
-    Timer<HTMLMediaElement> m_audioTracksTimer;
+    UnthrottledTimer<HTMLMediaElement> m_loadTimer;
+    UnthrottledTimer<HTMLMediaElement> m_progressEventTimer;
+    UnthrottledTimer<HTMLMediaElement> m_playbackProgressTimer;
+    UnthrottledTimer<HTMLMediaElement> m_audioTracksTimer;
     PersistentWillBeMember<TimeRanges> m_playedTimeRanges;
     OwnPtrWillBeMember<GenericEventQueue> m_asyncEventQueue;
 

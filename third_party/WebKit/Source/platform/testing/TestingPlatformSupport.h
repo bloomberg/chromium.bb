@@ -35,10 +35,14 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebDiscardableMemory.h"
+#include "public/platform/WebScheduler.h"
+#include "public/platform/WebThread.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
+class TestingPlatformMockWebTaskRunner;
+class TestingPlatformMockWebThread;
 class WebCompositorSupport;
 class WebThread;
 
@@ -61,7 +65,38 @@ private:
 class TestingCompositorSupport : public WebCompositorSupport {
 };
 
+class TestingPlatformMockScheduler : public WebScheduler {
+    WTF_MAKE_NONCOPYABLE(TestingPlatformMockScheduler);
+public:
+    TestingPlatformMockScheduler();
+    ~TestingPlatformMockScheduler() override;
+
+    void runSingleTask();
+    void runAllTasks();
+
+    // WebScheduler implementation:
+    WebTaskRunner* loadingTaskRunner() override;
+    WebTaskRunner* timerTaskRunner() override;
+    void shutdown() override {}
+    bool shouldYieldForHighPriorityWork() override { return false; }
+    bool canExceedIdleDeadlineIfRequired() override { return false; }
+    void postIdleTask(const WebTraceLocation&, WebThread::IdleTask*) override { }
+    void postNonNestableIdleTask(const WebTraceLocation&, WebThread::IdleTask*) override { }
+    void postIdleTaskAfterWakeup(const WebTraceLocation&, WebThread::IdleTask*) override { }
+    WebPassOwnPtr<WebViewScheduler> createWebViewScheduler(blink::WebView*) override { return nullptr; }
+    void suspendTimerQueue() override { }
+    void resumeTimerQueue() override { }
+    void addPendingNavigation() override { }
+    void removePendingNavigation() override { }
+    void onNavigationStarted() override { }
+
+private:
+    Deque<OwnPtr<WebTaskRunner::Task>> m_tasks;
+    OwnPtr<TestingPlatformMockWebTaskRunner> m_mockWebTaskRunner;
+};
+
 class TestingPlatformSupport : public Platform {
+    WTF_MAKE_NONCOPYABLE(TestingPlatformSupport);
 public:
     struct Config {
         Config()
@@ -89,6 +124,21 @@ public:
 protected:
     const Config m_config;
     Platform* const m_oldPlatform;
+};
+
+class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
+    WTF_MAKE_NONCOPYABLE(TestingPlatformSupportWithMockScheduler);
+public:
+    TestingPlatformSupportWithMockScheduler();
+    explicit TestingPlatformSupportWithMockScheduler(const Config&);
+    ~TestingPlatformSupportWithMockScheduler() override;
+
+    // Platform:
+    WebThread* currentThread() override;
+    TestingPlatformMockScheduler* mockWebScheduler();
+
+protected:
+    OwnPtr<TestingPlatformMockWebThread> m_mockWebThread;
 };
 
 } // namespace blink

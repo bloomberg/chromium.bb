@@ -734,5 +734,30 @@ TEST_F(TimerTest, RepeatingTimerDoesNotDrift)
         m_startTime + 28.0));
 }
 
+template <typename TimerFiredClass>
+class TimerForTest : public Timer<TimerFiredClass> {
+public:
+    using TimerFiredFunction = void (TimerFiredClass::*)(Timer<TimerFiredClass>*);
+
+    ~TimerForTest() override { }
+
+    TimerForTest(TimerFiredClass* timerFiredClass, TimerFiredFunction timerFiredFunction, WebTaskRunner* webTaskRunner)
+        : Timer<TimerFiredClass>(timerFiredClass, timerFiredFunction, webTaskRunner)
+    {
+    }
+};
+
+TEST_F(TimerTest, UserSuppliedWebTaskRunner)
+{
+    std::priority_queue<DelayedTask> timerTasks;
+    MockWebTaskRunner taskRunner(&timerTasks);
+    TimerForTest<TimerTest> timer(this, &TimerTest::countingTask, &taskRunner);
+    timer.startOneShot(0, BLINK_FROM_HERE);
+
+    // Make sure the task was posted on taskRunner.
+    EXPECT_FALSE(timerTasks.empty());
+}
+
+
 } // namespace
 } // namespace blink
