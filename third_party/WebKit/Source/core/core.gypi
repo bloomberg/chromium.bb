@@ -3936,6 +3936,7 @@
             'html/HTMLSelectElementTest.cpp',
             'html/HTMLTableRowElementTest.cpp',
             'html/HTMLTextFormControlElementTest.cpp',
+            'html/HTMLVideoElementTest.cpp',
             'html/LinkRelAttributeTest.cpp',
             'html/TimeRangesTest.cpp',
             'html/canvas/CanvasFontCacheTest.cpp',
