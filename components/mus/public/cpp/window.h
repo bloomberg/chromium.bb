@@ -68,9 +68,12 @@ class Window {
   // Configuration.
   Id id() const { return id_; }
 
-  // Geometric disposition.
+  // Geometric disposition relative to parent window.
   const gfx::Rect& bounds() const { return bounds_; }
   void SetBounds(const gfx::Rect& bounds);
+
+  // Geometric disposition relative to root window.
+  gfx::Rect GetBoundsInRoot() const;
 
   const gfx::Insets& client_area() const { return client_area_; }
   const std::vector<gfx::Rect>& additional_client_areas() {

@@ -196,6 +196,13 @@ void Window::SetBounds(const gfx::Rect& bounds) {
   LocalSetBounds(bounds_, bounds);
 }
 
+gfx::Rect Window::GetBoundsInRoot() const {
+  gfx::Vector2d offset;
+  for (const Window* w = parent(); w != nullptr; w = w->parent())
+    offset += w->bounds().OffsetFromOrigin();
+  return bounds() + offset;
+}
+
 void Window::SetClientArea(
     const gfx::Insets& client_area,
     const std::vector<gfx::Rect>& additional_client_areas) {
