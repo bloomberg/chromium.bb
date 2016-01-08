@@ -1656,11 +1656,6 @@ bool ResourceProvider::OnMemoryDump(
   for (const auto& resource_entry : resources_) {
     const auto& resource = resource_entry.second;
 
-    if (!resource.allocated) {
-      // Don't log unallocated resources - they have no backing memory.
-      continue;
-    }
-
     // Resource IDs are not process-unique, so log with the ResourceProvider's
     // unique id.
     std::string dump_name =
@@ -1675,31 +1670,28 @@ bool ResourceProvider::OnMemoryDump(
                     base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                     static_cast<uint64_t>(total_bytes));
 
-    // Resources may be shared across processes and require a shared GUID to
-    // prevent double counting the memory.
+    // Resources which are shared across processes require a shared GUID to
+    // prevent double counting the memory. We currently support shared GUIDs for
+    // GpuMemoryBuffer, SharedBitmap, and GL backed resources.
     base::trace_event::MemoryAllocatorDumpGuid guid;
-    switch (resource.type) {
-      case RESOURCE_TYPE_GPU_MEMORY_BUFFER:
-        guid = gfx::GetGpuMemoryBufferGUIDForTracing(
-            tracing_process_id, resource.gpu_memory_buffer->GetHandle().id);
-        break;
-      case RESOURCE_TYPE_GL_TEXTURE:
-        guid = gfx::GetGLTextureClientGUIDForTracing(
-            output_surface_->context_provider()
-                ->ContextSupport()
-                ->ShareGroupTracingGUID(),
-            resource.gl_id);
-        break;
-      case RESOURCE_TYPE_BITMAP:
-        guid = GetSharedBitmapGUIDForTracing(resource.shared_bitmap->id());
-        break;
+    if (resource.gpu_memory_buffer) {
+      guid = gfx::GetGpuMemoryBufferGUIDForTracing(
+          tracing_process_id, resource.gpu_memory_buffer->GetHandle().id);
+    } else if (resource.shared_bitmap) {
+      guid = GetSharedBitmapGUIDForTracing(resource.shared_bitmap->id());
+    } else if (resource.gl_id && resource.allocated) {
+      guid = gfx::GetGLTextureClientGUIDForTracing(
+          output_surface_->context_provider()
+              ->ContextSupport()
+              ->ShareGroupTracingGUID(),
+          resource.gl_id);
     }
 
-    DCHECK(!guid.empty());
-
-    const int kImportance = 2;
-    pmd->CreateSharedGlobalAllocatorDump(guid);
-    pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
+    if (!guid.empty()) {
+      const int kImportance = 2;
+      pmd->CreateSharedGlobalAllocatorDump(guid);
+      pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
+    }
   }
 
   return true;
