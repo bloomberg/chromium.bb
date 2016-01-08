@@ -22,3 +22,7 @@ void F() {
 }
 
 }  // namespace blink
+
+void G() {
+  blink::TestFunctionThatTakesTwoInts(1, 2);
+}

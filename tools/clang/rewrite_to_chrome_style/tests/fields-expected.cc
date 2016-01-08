@@ -9,14 +9,16 @@ class C {
   // Make sure initializers are updated to use the new names.
   C() : flag_field_(~0), field_mentioning_http_and_https_(1) {}
 
-  int method() {
+  int Method() {
     // Test that references to fields are updated correctly.
     return instance_count_ + flag_field_ + field_mentioning_http_and_https_;
   }
 
- private:
-  // The m_ prefix, if any, should be removed.
+  // Test that a field without a m_ prefix is correctly renamed.
   static int instance_count_;
+
+ private:
+  // Test that a field with a m_ prefix is correctly renamed.
   const int flag_field_;
   // Statics should be named with s_, but make sure s_ and m_ are both correctly
   // stripped.
@@ -44,3 +46,8 @@ union U {
 };
 
 }  // namespace blink
+
+void F() {
+  // Test that references to a static field are correctly rewritten.
+  blink::C::instance_count_++;
+}

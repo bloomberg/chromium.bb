@@ -8,6 +8,8 @@ namespace blink {
 const char helloWorldConstant[] = "Hello world!";
 // Make sure a one-character constant doesn't get mangled.
 const float e = 2.718281828;
+// Some constants start with a capital letter already.
+const int SpeedOfLightInMetresPerSecond = 299792458;
 
 // Already Chrome style, so shouldn't change.
 const float kPi = 3.141592654;

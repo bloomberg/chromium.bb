@@ -14,9 +14,11 @@ class C {
     return instanceCount + m_flagField + m_fieldMentioningHTTPAndHTTPS;
   }
 
- private:
-  // The m_ prefix, if any, should be removed.
+  // Test that a field without a m_ prefix is correctly renamed.
   static int instanceCount;
+
+ private:
+  // Test that a field with a m_ prefix is correctly renamed.
   const int m_flagField;
   // Statics should be named with s_, but make sure s_ and m_ are both correctly
   // stripped.
@@ -44,3 +46,8 @@ union U {
 };
 
 }  // namespace blink
+
+void F() {
+  // Test that references to a static field are correctly rewritten.
+  blink::C::instanceCount++;
+}
