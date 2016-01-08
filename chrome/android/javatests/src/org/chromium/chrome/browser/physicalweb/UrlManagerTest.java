@@ -58,6 +58,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
         results.add(new PwsResult(URL1, URL1, null, TITLE1, DESC1));
         mMockPwsClient.addPwsResults(results);
         mUrlManager.addUrl(URL1);
+        getInstrumentation().waitForIdleSync();
 
         // Make sure that a resolution was *not* attempted.
         List<Collection<String>> resolveCalls = mMockPwsClient.getResolveCalls();
@@ -76,6 +77,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
     public void testAddUrlNoResolutionDoesNothing() throws Exception {
         mMockPwsClient.addPwsResults(new ArrayList<PwsResult>());
         mUrlManager.addUrl(URL1);
+        getInstrumentation().waitForIdleSync();
 
         // Make sure that a resolution was attempted.
         List<Collection<String>> resolveCalls = mMockPwsClient.getResolveCalls();
@@ -99,6 +101,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
         results.add(new PwsResult(URL1, URL1, null, TITLE1, DESC1));
         mMockPwsClient.addPwsResults(results);
         mUrlManager.addUrl(URL1);
+        getInstrumentation().waitForIdleSync();
 
         // Make sure that a resolution was attempted.
         List<Collection<String>> resolveCalls = mMockPwsClient.getResolveCalls();

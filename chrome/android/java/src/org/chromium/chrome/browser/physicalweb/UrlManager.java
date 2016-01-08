@@ -13,6 +13,8 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
 
@@ -260,18 +262,22 @@ class UrlManager {
         final long timestamp = SystemClock.elapsedRealtime();
         mPwsClient.resolve(urls, new PwsClient.ResolveScanCallback() {
             @Override
-            public void onPwsResults(Collection<PwsResult> pwsResults) {
+            public void onPwsResults(final Collection<PwsResult> pwsResults) {
                 long duration = SystemClock.elapsedRealtime() - timestamp;
                 PhysicalWebUma.onBackgroundPwsResolution(mContext, duration);
-
-                for (PwsResult pwsResult : pwsResults) {
-                    String requestUrl = pwsResult.requestUrl;
-                    if (url.equalsIgnoreCase(requestUrl)) {
-                        addResolvedUrl(url);
-                        return;
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (PwsResult pwsResult : pwsResults) {
+                            String requestUrl = pwsResult.requestUrl;
+                            if (url.equalsIgnoreCase(requestUrl)) {
+                                addResolvedUrl(url);
+                                return;
+                            }
+                        }
+                        removeResolvedUrl(url);
                     }
-                }
-                removeResolvedUrl(url);
+                });
             }
         });
     }
