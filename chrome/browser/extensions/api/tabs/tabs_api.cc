@@ -988,13 +988,20 @@ bool TabsQueryFunction::RunSync() {
         continue;
       }
 
-      if (!title.empty() && !base::MatchPattern(web_contents->GetTitle(),
-                                                base::UTF8ToUTF16(title)))
-        continue;
+      // "title" and "url" properties are considered privileged data and can
+      // only be checked if the extension has the "tabs" permission. Otherwise,
+      // these properties are ignored.
+      if (extension_->permissions_data()->HasAPIPermissionForTab(
+              ExtensionTabUtil::GetTabId(web_contents), APIPermission::kTab)) {
+        if (!title.empty() &&
+            !base::MatchPattern(web_contents->GetTitle(),
+                                base::UTF8ToUTF16(title)))
+          continue;
 
-      if (!url_patterns.is_empty() &&
-          !url_patterns.MatchesURL(web_contents->GetURL()))
-        continue;
+        if (!url_patterns.is_empty() &&
+            !url_patterns.MatchesURL(web_contents->GetURL()))
+          continue;
+      }
 
       if (loading_status_set && loading != web_contents->IsLoading())
         continue;
