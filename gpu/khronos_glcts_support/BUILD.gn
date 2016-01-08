@@ -138,8 +138,6 @@ if (internal_khronos_glcts_tests) {
       ":dethread",
     ]
 
-    libs = [ "rt" ]
-
     configs += [ ":defaults_config" ]
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]

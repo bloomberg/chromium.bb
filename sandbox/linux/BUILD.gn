@@ -119,11 +119,6 @@ source_set("sandbox_linux_unittests_sources") {
     defines = [ "SANDBOX_USES_BASE_TEST_SUITE" ]
   }
 
-  if (is_linux) {
-    # Don't use this on Android.
-    libs = [ "rt" ]
-  }
-
   if (compile_suid_client) {
     sources += [
       "suid/client/setuid_sandbox_client_unittest.cc",

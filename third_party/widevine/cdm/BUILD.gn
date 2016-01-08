@@ -134,7 +134,6 @@ if ((is_chrome_branded || enable_widevine) && enable_pepper_cdms) {
     if (is_linux) {
       ldflags =
           [ rebase_path("$root_out_dir/libwidevinecdm.so", root_build_dir) ]
-      libs = [ "rt" ]
     } else if (is_win) {
       ldflags =
           [ rebase_path("$root_out_dir/widevinecdm.dll.lib", root_build_dir) ]

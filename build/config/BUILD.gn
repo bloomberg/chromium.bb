@@ -388,7 +388,10 @@ config("default_libs") {
       "Foundation.framework",
     ]
   } else if (is_linux) {
-    libs = [ "dl" ]
+    libs = [
+      "dl",
+      "rt",
+    ]
   }
 }
 

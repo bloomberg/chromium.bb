@@ -170,10 +170,6 @@ test("device_unittests") {
     deps += [ "//dbus" ]
   }
 
-  if (is_posix && !is_android && !is_mac) {
-    libs = [ "rt" ]
-  }
-
   if (is_mac) {
     deps += [ "//third_party/ocmock" ]
     ldflags = [ "-ObjC" ]
