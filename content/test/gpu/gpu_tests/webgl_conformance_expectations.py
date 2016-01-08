@@ -40,6 +40,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         bug=540900)
     self.Fail('conformance/textures/misc/cube-incomplete-fbo.html',
         bug=559362)
+    # Remove after we roll in https://github.com/KhronosGroup/WebGL/pull/1408.
+    self.Fail('conformance/textures/misc/tex-input-validation.html',
+        bug=574618)
 
     # Win failures
     self.Fail('conformance/glsl/bugs/' +

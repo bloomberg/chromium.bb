@@ -291,18 +291,18 @@ public:
     void stencilOp(GLenum fail, GLenum zfail, GLenum zpass);
     void stencilOpSeparate(GLenum face, GLenum fail, GLenum zfail, GLenum zpass);
 
-    void texImage2D(GLenum target, GLint level, GLenum internalformat,
+    void texImage2D(GLenum target, GLint level, GLint internalformat,
         GLsizei width, GLsizei height, GLint border,
         GLenum format, GLenum type, DOMArrayBufferView*);
-    void texImage2D(GLenum target, GLint level, GLenum internalformat,
+    void texImage2D(GLenum target, GLint level, GLint internalformat,
         GLenum format, GLenum type, ImageData*);
-    void texImage2D(GLenum target, GLint level, GLenum internalformat,
+    void texImage2D(GLenum target, GLint level, GLint internalformat,
         GLenum format, GLenum type, HTMLImageElement*, ExceptionState&);
-    void texImage2D(GLenum target, GLint level, GLenum internalformat,
+    void texImage2D(GLenum target, GLint level, GLint internalformat,
         GLenum format, GLenum type, HTMLCanvasElement*, ExceptionState&);
-    void texImage2D(GLenum target, GLint level, GLenum internalformat,
+    void texImage2D(GLenum target, GLint level, GLint internalformat,
         GLenum format, GLenum type, HTMLVideoElement*, ExceptionState&);
-    void texImage2D(GLenum target, GLint level, GLenum internalformat,
+    void texImage2D(GLenum target, GLint level, GLint internalformat,
         GLenum format, GLenum type, PassRefPtrWillBeRawPtr<ImageBitmap>);
 
     void texParameterf(GLenum target, GLenum pname, GLfloat param);
@@ -808,14 +808,16 @@ protected:
     // Convert texture internal format.
     GLenum convertTexInternalFormat(GLenum internalformat, GLenum type);
 
-    void texImage2DBase(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void* pixels);
-    void texImage2DImpl(GLenum target, GLint level, GLenum internalformat, GLenum format, GLenum type, Image*, WebGLImageConversion::ImageHtmlDomSource, bool flipY, bool premultiplyAlpha);
+    void texImage2DBase(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void* pixels);
+    void texImage2DImpl(GLenum target, GLint level, GLint internalformat, GLenum format, GLenum type, Image*, WebGLImageConversion::ImageHtmlDomSource, bool flipY, bool premultiplyAlpha);
     void texSubImage2DBase(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void* pixels);
     void texSubImage2DImpl(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLenum format, GLenum type, Image*, WebGLImageConversion::ImageHtmlDomSource, bool flipY, bool premultiplyAlpha);
 
     enum TexImageFunctionType {
-        NotTexSubImage,
-        TexSubImage
+        TexImage,
+        TexSubImage,
+        CopyTexImage,
+        CompressedTexImage
     };
     enum TexImageByGPUType {
         TexImage2DByGPU,
@@ -824,8 +826,8 @@ protected:
     };
     // Copy from the canvas element directly to the texture via the GPU, without a read-back to system memory.
     void texImageCanvasByGPU(TexImageByGPUType, WebGLTexture*, GLenum target, GLint level,
-        GLenum internalformat, GLenum type, GLint xoffset, GLint yoffset, GLint zoffset, HTMLCanvasElement*);
-    bool canUseTexImageCanvasByGPU(GLenum internalformat, GLenum type);
+        GLint internalformat, GLenum type, GLint xoffset, GLint yoffset, GLint zoffset, HTMLCanvasElement*);
+    bool canUseTexImageCanvasByGPU(GLint internalformat, GLenum type);
 
     void handleTextureCompleteness(const char*, bool);
     void createFallbackBlackTextures1x1();
@@ -857,7 +859,7 @@ protected:
 
     // Helper function to check input internalformat/format/type for functions {copy}Tex{Sub}Image.
     // Generates GL error and returns false if parameters are invalid.
-    bool validateTexFuncFormatAndType(const char* functionName, GLenum internalformat, GLenum format, GLenum type, GLint level);
+    bool validateTexFuncFormatAndType(const char* functionName, TexImageFunctionType, GLenum internalformat, GLenum format, GLenum type, GLint level);
 
     // Helper function to check readbuffer validity for readPixels and copyTex{Sub}Image.
     // If yes, obtains the readbuffer's format, type, the bound read framebuffer, returns true.

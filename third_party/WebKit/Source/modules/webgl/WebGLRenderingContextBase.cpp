@@ -1849,7 +1849,7 @@ void WebGLRenderingContextBase::compressedTexImage2D(GLenum target, GLint level,
         synthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D", "border not 0");
         return;
     }
-    if (!validateCompressedTexDimensions("compressedTexImage2D", NotTexSubImage, target, level, width, height, 1, internalformat))
+    if (!validateCompressedTexDimensions("compressedTexImage2D", CompressedTexImage, target, level, width, height, 1, internalformat))
         return;
     if (!validateCompressedTexFuncData("compressedTexImage2D", width, height, 1, internalformat, data))
         return;
@@ -1908,7 +1908,7 @@ void WebGLRenderingContextBase::copyTexImage2D(GLenum target, GLint level, GLenu
         return;
     if (!validateTexFuncLevel("copyTexImage2D", target, level))
         return;
-    if (!validateTexFuncParameters("copyTexImage2D", NotTexSubImage, target, level, internalformat, width, height, 1, border, internalformat, GL_UNSIGNED_BYTE))
+    if (!validateTexFuncParameters("copyTexImage2D", CopyTexImage, target, level, internalformat, width, height, 1, border, internalformat, GL_UNSIGNED_BYTE))
         return;
     if (!validateSettableTexFormat("copyTexImage2D", internalformat))
         return;
@@ -4120,7 +4120,7 @@ GLenum WebGLRenderingContextBase::convertTexInternalFormat(GLenum internalformat
     return internalformat;
 }
 
-void WebGLRenderingContextBase::texImage2DBase(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void* pixels)
+void WebGLRenderingContextBase::texImage2DBase(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void* pixels)
 {
     // All calling functions check isContextLost, so a duplicate check is not needed here.
     WebGLTexture* tex = validateTextureBinding("texImage2D", target, true);
@@ -4129,7 +4129,7 @@ void WebGLRenderingContextBase::texImage2DBase(GLenum target, GLint level, GLenu
     tex->setLevelInfo(target, level, internalformat, width, height, 1, type);
 }
 
-void WebGLRenderingContextBase::texImage2DImpl(GLenum target, GLint level, GLenum internalformat, GLenum format, GLenum type, Image* image, WebGLImageConversion::ImageHtmlDomSource domSource, bool flipY, bool premultiplyAlpha)
+void WebGLRenderingContextBase::texImage2DImpl(GLenum target, GLint level, GLint internalformat, GLenum format, GLenum type, Image* image, WebGLImageConversion::ImageHtmlDomSource domSource, bool flipY, bool premultiplyAlpha)
 {
     // All calling functions check isContextLost, so a duplicate check is not needed here.
     if (type == GL_UNSIGNED_INT_10F_11F_11F_REV) {
@@ -4181,24 +4181,7 @@ bool WebGLRenderingContextBase::validateTexFunc(const char* functionName, TexIma
     if (!validateTexFuncParameters(functionName, functionType, target, level, internalformat, width, height, depth, border, format, type))
         return false;
 
-    if (functionType == NotTexSubImage) {
-        if (texture->isImmutable()) {
-            synthesizeGLError(GL_INVALID_OPERATION, functionName, "attempted to modify immutable texture");
-            return false;
-        }
-
-        // Depth is for WebGL 2.0 only where iSNPOTStrict() is always false.
-        if (isNPOTStrict() && level && WebGLTexture::isNPOT(width, height)) {
-            synthesizeGLError(GL_INVALID_VALUE, functionName, "level > 0 not power of 2");
-            return false;
-        }
-        // For SourceArrayBufferView, function validateTexFuncData() would handle whether to validate the SettableTexFormat
-        // by checking if the ArrayBufferView is null or not.
-        if (sourceType != SourceArrayBufferView) {
-            if (!validateSettableTexFormat(functionName, format))
-                return false;
-        }
-    } else {
+    if (functionType == TexSubImage) {
         if (!validateSettableTexFormat(functionName, format))
             return false;
         if (!validateSize(functionName, xoffset, yoffset, zoffset))
@@ -4218,6 +4201,23 @@ bool WebGLRenderingContextBase::validateTexFunc(const char* functionName, TexIma
         if (!isWebGL2OrHigher() && texture->getType(target, level) != type) {
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "type of incoming data does not match that used to define the texture");
             return false;
+        }
+    } else {
+        if (texture->isImmutable()) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "attempted to modify immutable texture");
+            return false;
+        }
+
+        // Depth is for WebGL 2.0 only where iSNPOTStrict() is always false.
+        if (isNPOTStrict() && level && WebGLTexture::isNPOT(width, height)) {
+            synthesizeGLError(GL_INVALID_VALUE, functionName, "level > 0 not power of 2");
+            return false;
+        }
+        // For SourceArrayBufferView, function validateTexFuncData() would handle whether to validate the SettableTexFormat
+        // by checking if the ArrayBufferView is null or not.
+        if (sourceType != SourceArrayBufferView) {
+            if (!validateSettableTexFormat(functionName, format))
+                return false;
         }
     }
 
@@ -4264,11 +4264,11 @@ PassRefPtr<Image> WebGLRenderingContextBase::drawImageIntoBuffer(PassRefPtr<Imag
     return buf->newImageSnapshot();
 }
 
-void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum internalformat,
+void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat,
     GLsizei width, GLsizei height, GLint border,
     GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
-    if (isContextLost() || !validateTexFunc("texImage2D", NotTexSubImage, SourceArrayBufferView, target, level, internalformat, width, height, 1, border, format, type, 0, 0, 0)
+    if (isContextLost() || !validateTexFunc("texImage2D", TexImage, SourceArrayBufferView, target, level, internalformat, width, height, 1, border, format, type, 0, 0, 0)
         || !validateTexFuncData("texImage2D", level, width, height, 1, format, type, pixels, NullAllowed))
         return;
     void* data = pixels ? pixels->baseAddress() : 0;
@@ -4287,7 +4287,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
         restoreUnpackParameters();
 }
 
-void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum internalformat,
+void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat,
     GLenum format, GLenum type, ImageData* pixels)
 {
     if (!pixels) {
@@ -4298,7 +4298,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
         synthesizeGLError(GL_INVALID_VALUE, "texImage2D", "The source data has been neutered.");
         return;
     }
-    if (isContextLost() || !validateTexFunc("texImage2D", NotTexSubImage, SourceImageData, target, level, internalformat, pixels->width(), pixels->height(), 1, 0, format, type, 0, 0, 0))
+    if (isContextLost() || !validateTexFunc("texImage2D", TexImage, SourceImageData, target, level, internalformat, pixels->width(), pixels->height(), 1, 0, format, type, 0, 0, 0))
         return;
     if (type == GL_UNSIGNED_INT_10F_11F_11F_REV) {
         // The UNSIGNED_INT_10F_11F_11F_REV type pack/unpack isn't implemented.
@@ -4321,7 +4321,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
     restoreUnpackParameters();
 }
 
-void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum internalformat,
+void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat,
     GLenum format, GLenum type, HTMLImageElement* image, ExceptionState& exceptionState)
 {
     if (isContextLost() || !validateHTMLImageElement("texImage2D", image, exceptionState))
@@ -4335,13 +4335,13 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
     if (imageForRender && imageForRender->isSVGImage())
         imageForRender = drawImageIntoBuffer(imageForRender.release(), image->width(), image->height(), "texImage2D");
 
-    if (!imageForRender || !validateTexFunc("texImage2D", NotTexSubImage, SourceHTMLImageElement, target, level, internalformat, imageForRender->width(), imageForRender->height(), 1, 0, format, type, 0, 0, 0))
+    if (!imageForRender || !validateTexFunc("texImage2D", TexImage, SourceHTMLImageElement, target, level, internalformat, imageForRender->width(), imageForRender->height(), 1, 0, format, type, 0, 0, 0))
         return;
 
     texImage2DImpl(target, level, internalformat, format, type, imageForRender.get(), WebGLImageConversion::HtmlDomImage, m_unpackFlipY, m_unpackPremultiplyAlpha);
 }
 
-bool WebGLRenderingContextBase::canUseTexImageCanvasByGPU(GLenum internalformat, GLenum type)
+bool WebGLRenderingContextBase::canUseTexImageCanvasByGPU(GLint internalformat, GLenum type)
 {
     if (isFloatType(type) || isIntegerFormat(internalformat) || isSRGBFormat(internalformat))
         return false;
@@ -4349,7 +4349,7 @@ bool WebGLRenderingContextBase::canUseTexImageCanvasByGPU(GLenum internalformat,
 }
 
 void WebGLRenderingContextBase::texImageCanvasByGPU(TexImageByGPUType functionType, WebGLTexture* texture, GLenum target,
-    GLint level, GLenum internalformat, GLenum type, GLint xoffset, GLint yoffset, GLint zoffset, HTMLCanvasElement* canvas)
+    GLint level, GLint internalformat, GLenum type, GLint xoffset, GLint yoffset, GLint zoffset, HTMLCanvasElement* canvas)
 {
     ScopedTexture2DRestorer restorer(this);
 
@@ -4411,10 +4411,10 @@ void WebGLRenderingContextBase::texImageCanvasByGPU(TexImageByGPUType functionTy
     }
 }
 
-void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum internalformat,
+void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat,
     GLenum format, GLenum type, HTMLCanvasElement* canvas, ExceptionState& exceptionState)
 {
-    if (isContextLost() || !validateHTMLCanvasElement("texImage2D", canvas, exceptionState) || !validateTexFunc("texImage2D", NotTexSubImage, SourceHTMLCanvasElement, target, level, internalformat, canvas->width(), canvas->height(), 1, 0, format, type, 0, 0, 0))
+    if (isContextLost() || !validateHTMLCanvasElement("texImage2D", canvas, exceptionState) || !validateTexFunc("texImage2D", TexImage, SourceHTMLCanvasElement, target, level, internalformat, canvas->width(), canvas->height(), 1, 0, format, type, 0, 0, 0))
         return;
 
     WebGLTexture* texture = validateTextureBinding("texImage2D", target, true);
@@ -4447,11 +4447,11 @@ PassRefPtr<Image> WebGLRenderingContextBase::videoFrameToImage(HTMLVideoElement*
     return buf->newImageSnapshot();
 }
 
-void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum internalformat,
+void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat,
     GLenum format, GLenum type, HTMLVideoElement* video, ExceptionState& exceptionState)
 {
     if (isContextLost() || !validateHTMLVideoElement("texImage2D", video, exceptionState)
-        || !validateTexFunc("texImage2D", NotTexSubImage, SourceHTMLVideoElement, target, level, internalformat, video->videoWidth(), video->videoHeight(), 1, 0, format, type, 0, 0, 0))
+        || !validateTexFunc("texImage2D", TexImage, SourceHTMLVideoElement, target, level, internalformat, video->videoWidth(), video->videoHeight(), 1, 0, format, type, 0, 0, 0))
         return;
 
     // Go through the fast path doing a GPU-GPU textures copy without a readback to system memory if possible.
@@ -4492,7 +4492,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
     texImage2DImpl(target, level, internalformat, format, type, image.get(), WebGLImageConversion::HtmlDomVideo, m_unpackFlipY, m_unpackPremultiplyAlpha);
 }
 
-void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum internalformat,
+void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat,
     GLenum format, GLenum type, PassRefPtrWillBeRawPtr<ImageBitmap> bitmap)
 {
     ASSERT(bitmap->bitmapImage());
@@ -4500,7 +4500,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
         synthesizeGLError(GL_INVALID_VALUE, "texImage2D", "The source data has been neutered.");
         return;
     }
-    if (isContextLost() || !validateTexFunc("texImage2D", NotTexSubImage, SourceImageBitmap, target, level, 0, bitmap->width(), bitmap->height(), 1, 0, format, type, 0, 0, 0))
+    if (isContextLost() || !validateTexFunc("texImage2D", TexImage, SourceImageBitmap, target, level, 0, bitmap->width(), bitmap->height(), 1, 0, format, type, 0, 0, 0))
         return;
     StaticBitmapImage* imageForRender = bitmap->bitmapImage();
     texImage2DImpl(target, level, internalformat, format, type, imageForRender, WebGLImageConversion::HtmlDomImage, m_unpackFlipY, m_unpackPremultiplyAlpha);
@@ -4692,7 +4692,7 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
     WebGLTexture* texture = validateTextureBinding("texSubImage2D", target, true);
     ASSERT(texture);
 
-    GLenum internalformat = texture->getInternalFormat(target, level);
+    GLint internalformat = texture->getInternalFormat(target, level);
     // texImageCanvasByGPU relies on copyTextureCHROMIUM which doesn't support float/integer/sRGB internal format.
     // FIXME: relax the constrains if copyTextureCHROMIUM is upgraded to handle more formats.
     if (!canvas->renderingContext() || !canvas->renderingContext()->isAccelerated() || !canUseTexImageCanvasByGPU(internalformat, type)) {
@@ -5611,7 +5611,7 @@ bool WebGLRenderingContextBase::validateString(const char* functionName, const S
     return true;
 }
 
-bool WebGLRenderingContextBase::validateTexFuncFormatAndType(const char* functionName, GLenum internalformat, GLenum format, GLenum type, GLint level)
+bool WebGLRenderingContextBase::validateTexFuncFormatAndType(const char* functionName, TexImageFunctionType functionType, GLenum internalformat, GLenum format, GLenum type, GLint level)
 {
     if (!m_isWebGL2FormatsTypesAdded && isWebGL2OrHigher()) {
         ADD_VALUES_TO_SET(m_supportedInternalFormats, kSupportedInternalFormatsES3);
@@ -5651,7 +5651,11 @@ bool WebGLRenderingContextBase::validateTexFuncFormatAndType(const char* functio
     }
 
     if (m_supportedInternalFormats.find(internalformat) == m_supportedInternalFormats.end()) {
-        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid internalformat");
+        if (functionType == TexImage) {
+            synthesizeGLError(GL_INVALID_VALUE, functionName, "invalid internalformat");
+        } else {
+            synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid internalformat");
+        }
         return false;
     }
     if (m_supportedFormats.find(format) == m_supportedFormats.end()) {
@@ -5767,7 +5771,7 @@ bool WebGLRenderingContextBase::validateTexFuncParameters(const char* functionNa
     // We absolutely have to validate the format and type combination.
     // The texImage2D entry points taking HTMLImage, etc. will produce
     // temporary data based on this combination, so it must be legal.
-    if (!validateTexFuncFormatAndType(functionName, internalformat, format, type, level))
+    if (!validateTexFuncFormatAndType(functionName, functionType, internalformat, format, type, level))
         return false;
 
     if (!validateTexFuncDimensions(functionName, functionType, target, level, width, height, depth))

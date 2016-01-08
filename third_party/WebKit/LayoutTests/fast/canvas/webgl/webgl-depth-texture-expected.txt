@@ -5,8 +5,8 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS WebGL context exists
 Testing binding enum with extension disabled
-PASS gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, 1, 1, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null) generated expected GL error: INVALID_ENUM.
-PASS gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, 1, 1, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null) generated expected GL error: INVALID_ENUM.
+PASS gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, 1, 1, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null) generated one of expected GL errors: INVALID_ENUM or INVALID_VALUE.
+PASS gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, 1, 1, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null) generated one of expected GL errors: INVALID_ENUM or INVALID_VALUE.
 PASS Successfully enabled WEBGL_depth_texture extension
 PASS WEBGL_depth_texture listed as supported and getExtension succeeded
 Testing WEBGL_depth_texture

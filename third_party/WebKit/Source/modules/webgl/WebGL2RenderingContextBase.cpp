@@ -858,7 +858,7 @@ void WebGL2RenderingContextBase::texStorage3D(GLenum target, GLsizei levels, GLe
 void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
     if (isContextLost() || !validateTexFunc3DTarget("texImage3D", target)
-        || !validateTexFunc("texImage3D", NotTexSubImage, SourceArrayBufferView, target, level, internalformat, width, height, depth, border, format, type, 0, 0, 0)
+        || !validateTexFunc("texImage3D", TexImage, SourceArrayBufferView, target, level, internalformat, width, height, depth, border, format, type, 0, 0, 0)
         || !validateTexFuncData("texImage3D", level, width, height, depth, format, type, pixels, NullAllowed))
         return;
 
@@ -1044,7 +1044,7 @@ void WebGL2RenderingContextBase::compressedTexImage3D(GLenum target, GLint level
         synthesizeGLError(GL_INVALID_VALUE, "compressedTexImage3D", "border not 0");
         return;
     }
-    if (!validateCompressedTexDimensions("compressedTexImage3D", NotTexSubImage, target, level, width, height, depth, internalformat))
+    if (!validateCompressedTexDimensions("compressedTexImage3D", CompressedTexImage, target, level, width, height, depth, internalformat))
         return;
     if (!validateCompressedTexFuncData("compressedTexImage3D", width, height, depth, internalformat, data))
         return;

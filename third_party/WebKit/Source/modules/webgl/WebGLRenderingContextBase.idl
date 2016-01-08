@@ -616,23 +616,23 @@ typedef unrestricted float GLclampf;
     // FIXME: should be union type
     // https://www.khronos.org/bugzilla/show_bug.cgi?id=1172
     void texImage2D(
-        GLenum target, GLint level, GLenum internalformat,
+        GLenum target, GLint level, GLint internalformat,
         GLsizei width, GLsizei height, GLint border,
         GLenum format, GLenum type, ArrayBufferView? pixels);
     void texImage2D(
-        GLenum target, GLint level, GLenum internalformat,
+        GLenum target, GLint level, GLint internalformat,
         GLenum format, GLenum type, ImageData? pixels);
     [RaisesException] void texImage2D(
-        GLenum target, GLint level, GLenum internalformat,
+        GLenum target, GLint level, GLint internalformat,
         GLenum format, GLenum type, HTMLImageElement image);
     [RaisesException] void texImage2D(
-        GLenum target, GLint level, GLenum internalformat,
+        GLenum target, GLint level, GLint internalformat,
         GLenum format, GLenum type, HTMLCanvasElement canvas);
     [RaisesException] void texImage2D(
-        GLenum target, GLint level, GLenum internalformat,
+        GLenum target, GLint level, GLint internalformat,
         GLenum format, GLenum type, HTMLVideoElement video);
     [RuntimeEnabled=ExperimentalCanvasFeatures] void texImage2D(
-        GLenum target, GLint level, GLenum internalformat,
+        GLenum target, GLint level, GLint internalformat,
         GLenum format, GLenum type, ImageBitmap bitmap);
 
     void texSubImage2D(

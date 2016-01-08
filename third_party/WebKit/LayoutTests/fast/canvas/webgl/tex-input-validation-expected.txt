@@ -8,7 +8,7 @@ PASS getError was expected value: NO_ERROR :
 
 Checking TexImage2D: a set of inputs that are valid in GL but invalid in GLES2
 PASS getError was expected value: INVALID_ENUM :  internalFormat: RGBA target: 0x8064 format: RGBA type: UNSIGNED_BYTE border: 0
-PASS getError was expected value: INVALID_ENUM :  internalFormat: 0x1903 target: TEXTURE_2D format: 0x1903 type: UNSIGNED_BYTE border: 0
+PASS getError was one of: INVALID_ENUM or INVALID_VALUE :  internalFormat: 0x1903 target: TEXTURE_2D format: 0x1903 type: UNSIGNED_BYTE border: 0
 PASS getError was expected value: INVALID_VALUE :  internalFormat: RGBA target: TEXTURE_2D format: RGBA type: UNSIGNED_BYTE border: 1
 PASS getError was expected value: INVALID_OPERATION :  internalFormat: RGBA target: TEXTURE_2D format: RGB type: UNSIGNED_BYTE border: 0
 PASS getError was expected value: INVALID_ENUM :  internalFormat: RGBA target: TEXTURE_2D format: RGBA type: BYTE border: 0
