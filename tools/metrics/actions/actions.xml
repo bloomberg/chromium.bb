@@ -12095,6 +12095,13 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Signin_AddAccountToDevice">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when the user chooses to add an account to device.
+  </description>
+</action>
+
 <action name="Signin_EnterpriseAccountPrompt_Cancel">
   <owner>gogerald@chromium.org</owner>
   <description>
@@ -12157,6 +12164,13 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_Impression_FromBookmarkManager">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when showing sign in entry in the bookmark manager.
+  </description>
+</action>
+
 <action name="Signin_Impression_FromCloudPrint">
   <owner>gogerald@chromium.org</owner>
   <description>
@@ -12187,6 +12201,27 @@ should be able to be added at any place in this file.
   <owner>gogerald@chromium.org</owner>
   <description>
     Recorded when showing sign in entry in the new tab page.
+  </description>
+</action>
+
+<action name="Signin_Impression_FromRecentTabs">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when showing sign in entry in the recent tabs page.
+  </description>
+</action>
+
+<action name="Signin_Impression_FromSigninPromo">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when showing sign in entry in the sign in promo.
+  </description>
+</action>
+
+<action name="Signin_Impression_FromStartPage">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when showing sign in entry in the first run experience.
   </description>
 </action>
 

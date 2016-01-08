@@ -21,11 +21,13 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSession;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionTab;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionWindow;
+import org.chromium.chrome.browser.ntp.RecentTabsPromoView.UserActionListener;
 import org.chromium.chrome.browser.ntp.RecentlyClosedBridge.RecentlyClosedTab;
 import org.chromium.ui.WindowOpenDisposition;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -591,7 +593,20 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         View getChildView(int childPosition, boolean isLastChild, View convertView,
                 ViewGroup parent) {
             if (convertView == null) {
-                convertView = new RecentTabsPromoView(mActivity, mRecentTabsManager, null);
+                convertView = new RecentTabsPromoView(
+                        mActivity, mRecentTabsManager, new UserActionListener() {
+                            @Override
+                            public void onAccountSelectionConfirmed() {
+                                RecordUserAction.record("Signin_Signin_FromRecentTabs");
+                            }
+                            @Override
+                            public void onNewAccount() {
+                                RecordUserAction.record("Signin_AddAccountToDevice");
+                            }
+                        });
+            }
+            if (!mRecentTabsManager.isSignedIn()) {
+                RecordUserAction.record("Signin_Impression_FromRecentTabs");
             }
             return convertView;
         }

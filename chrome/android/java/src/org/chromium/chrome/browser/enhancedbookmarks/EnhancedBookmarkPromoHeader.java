@@ -72,6 +72,7 @@ class EnhancedBookmarkPromoHeader implements AndroidSyncSettingsObserver,
             PreferenceManager.getDefaultSharedPreferences(mContext).edit()
                     .putInt(PREF_SIGNIN_PROMO_SHOW_COUNT, promoShowCount).apply();
             RecordUserAction.record("Stars_SignInPromoHeader_Displayed");
+            RecordUserAction.record("Signin_Impression_FromBookmarkManager");
         }
     }
 

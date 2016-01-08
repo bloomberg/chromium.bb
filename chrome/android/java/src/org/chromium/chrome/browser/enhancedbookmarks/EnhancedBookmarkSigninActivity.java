@@ -120,11 +120,13 @@ public class EnhancedBookmarkSigninActivity extends EnhancedBookmarkActivityBase
     @Override
     public void onAccountSelectionConfirmed() {
         RecordUserAction.record("Stars_SignInPromoActivity_SignedIn");
+        RecordUserAction.record("Signin_Signin_FromBookmarkManager");
     }
 
     @Override
     public void onNewAccount() {
         RecordUserAction.record("Stars_SignInPromoActivity_NewAccount");
+        RecordUserAction.record("Signin_AddAccountToDevice");
     }
 
     @Override

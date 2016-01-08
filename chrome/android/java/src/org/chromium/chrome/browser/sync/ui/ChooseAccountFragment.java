@@ -11,6 +11,7 @@ import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 
 import java.util.List;
@@ -39,6 +40,7 @@ public class ChooseAccountFragment extends DialogFragment implements OnClickList
     }
 
     protected void selectAccount(final String account) {
+        RecordUserAction.record("Signin_Signin_FromSettings");
         ConfirmAccountChangeFragment.confirmSyncAccount(account, getActivity());
     }
 

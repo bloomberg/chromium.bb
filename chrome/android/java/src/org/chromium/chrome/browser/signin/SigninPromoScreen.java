@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.firstrun.AccountFirstRunView;
 import org.chromium.chrome.browser.firstrun.ProfileDataCache;
@@ -89,6 +90,7 @@ public class SigninPromoScreen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         SigninPromoUma.recordAction(SigninPromoUma.SIGNIN_PROMO_SHOWN);
+        RecordUserAction.record("Signin_Impression_FromSigninPromo");
     }
 
     @Override
@@ -108,6 +110,7 @@ public class SigninPromoScreen
                 mAccountFirstRunView.switchToSignedMode();
                 SigninManager.get(getOwnerActivity()).logInSignedInUser();
                 SigninPromoUma.recordAction(SigninPromoUma.SIGNIN_PROMO_ACCEPTED);
+                RecordUserAction.record("Signin_Signin_Succeed");
             }
 
             @Override
@@ -116,6 +119,7 @@ public class SigninPromoScreen
                 dismiss();
             }
         };
+        RecordUserAction.record("Signin_Signin_FromSigninPromo");
         SigninManager.get(getOwnerActivity().getApplicationContext())
                 .signInToSelectedAccount(getOwnerActivity(), account,
                         SigninManager.SIGNIN_TYPE_INTERACTIVE, signInCallback);
