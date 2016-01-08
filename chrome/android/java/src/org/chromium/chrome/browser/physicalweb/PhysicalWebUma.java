@@ -44,7 +44,10 @@ public class PhysicalWebUma {
     private static final String PWS_BACKGROUND_RESOLVE_TIMES = "PhysicalWeb.ResolveTime.Background";
     private static final String PWS_FOREGROUND_RESOLVE_TIMES = "PhysicalWeb.ResolveTime.Foreground";
     private static final String URL_SELECTED_COUNT = "PhysicalWeb.UrlSelected";
-    private static final String URLS_DISPLAYED_COUNTS = "PhysicalWeb.TotalBeaconsDetected";
+    private static final String TOTAL_URLS_INITIAL_COUNTS =
+            "PhysicalWeb.TotalUrls.OnInitialDisplay";
+    private static final String TOTAL_URLS_REFRESH_COUNTS =
+            "PhysicalWeb.TotalUrls.OnRefresh";
     private static boolean sUploadAllowed = false;
 
     /**
@@ -143,14 +146,26 @@ public class PhysicalWebUma {
     }
 
     /**
-     * Records number of URLs displayed to a user.
+     * Records number of URLs displayed to a user when the URL list is first displayed.
      * @param numUrls The number of URLs displayed to a user.
      */
     public static void onUrlsDisplayed(Context context, int numUrls) {
         if (sUploadAllowed) {
-            RecordHistogram.recordCountHistogram(URLS_DISPLAYED_COUNTS, numUrls);
+            RecordHistogram.recordCountHistogram(TOTAL_URLS_INITIAL_COUNTS, numUrls);
         } else {
-            storeValue(context, URLS_DISPLAYED_COUNTS, numUrls);
+            storeValue(context, TOTAL_URLS_INITIAL_COUNTS, numUrls);
+        }
+    }
+
+    /**
+     * Records number of URLs displayed to a user when the user refreshes the URL list.
+     * @param numUrls The number of URLs displayed to a user.
+     */
+    public static void onUrlsRefreshed(Context context, int numUrls) {
+        if (sUploadAllowed) {
+            RecordHistogram.recordCountHistogram(TOTAL_URLS_REFRESH_COUNTS, numUrls);
+        } else {
+            storeValue(context, TOTAL_URLS_REFRESH_COUNTS, numUrls);
         }
     }
 
@@ -181,7 +196,8 @@ public class PhysicalWebUma {
         uploader.prefsLocationGrantedCount = prefs.getInt(PREFS_LOCATION_GRANTED_COUNT, 0);
         uploader.pwsBackgroundResolveTimes = prefs.getString(PWS_BACKGROUND_RESOLVE_TIMES, "[]");
         uploader.pwsForegroundResolveTimes = prefs.getString(PWS_FOREGROUND_RESOLVE_TIMES, "[]");
-        uploader.urlsDisplayedCounts = prefs.getString(URLS_DISPLAYED_COUNTS, "[]");
+        uploader.totalUrlsInitialCounts = prefs.getString(TOTAL_URLS_INITIAL_COUNTS, "[]");
+        uploader.totalUrlsRefreshCounts = prefs.getString(TOTAL_URLS_REFRESH_COUNTS, "[]");
 
         // If the metrics are empty, we are done.
         if (uploader.isEmpty()) {
@@ -203,7 +219,8 @@ public class PhysicalWebUma {
                 .remove(PREFS_LOCATION_GRANTED_COUNT)
                 .remove(PWS_BACKGROUND_RESOLVE_TIMES)
                 .remove(PWS_FOREGROUND_RESOLVE_TIMES)
-                .remove(URLS_DISPLAYED_COUNTS)
+                .remove(TOTAL_URLS_INITIAL_COUNTS)
+                .remove(TOTAL_URLS_REFRESH_COUNTS)
                 .apply();
 
         // Finally, upload the metrics.
@@ -262,7 +279,8 @@ public class PhysicalWebUma {
         public int prefsLocationGrantedCount;
         public String pwsBackgroundResolveTimes;
         public String pwsForegroundResolveTimes;
-        public String urlsDisplayedCounts;
+        public String totalUrlsInitialCounts;
+        public String totalUrlsRefreshCounts;
 
         public boolean isEmpty() {
             return notificationPressCount == 0
@@ -278,7 +296,8 @@ public class PhysicalWebUma {
                     && prefsLocationGrantedCount == 0
                     && pwsBackgroundResolveTimes.equals("[]")
                     && pwsForegroundResolveTimes.equals("[]")
-                    && urlsDisplayedCounts.equals("[]");
+                    && totalUrlsInitialCounts.equals("[]")
+                    && totalUrlsRefreshCounts.equals("[]");
         }
 
         UmaUploader() {
@@ -303,7 +322,8 @@ public class PhysicalWebUma {
                     TimeUnit.MILLISECONDS);
             uploadTimes(pwsForegroundResolveTimes, PWS_FOREGROUND_RESOLVE_TIMES,
                     TimeUnit.MILLISECONDS);
-            uploadCounts(urlsDisplayedCounts, URLS_DISPLAYED_COUNTS);
+            uploadCounts(totalUrlsInitialCounts, TOTAL_URLS_INITIAL_COUNTS);
+            uploadCounts(totalUrlsRefreshCounts, TOTAL_URLS_REFRESH_COUNTS);
         }
 
         private static void uploadActions(int count, String key) {

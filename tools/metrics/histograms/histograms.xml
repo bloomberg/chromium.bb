@@ -32960,6 +32960,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PhysicalWeb.TotalUrls.OnInitialDisplay" units="urls">
+  <owner>cco3@chromium.org</owner>
+  <owner>mattreynolds@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <summary>
+    The number of URLs displayed to a user when a list of nearby URLs is first
+    displayed.
+  </summary>
+</histogram>
+
+<histogram name="PhysicalWeb.TotalUrls.OnRefresh" units="urls">
+  <owner>cco3@chromium.org</owner>
+  <owner>mattreynolds@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <summary>
+    The number of URLs displayed to a user when a list of nearby URLs is
+    displayed after refreshing.
+  </summary>
+</histogram>
+
 <histogram name="Platform.AsvGroup">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>

@@ -218,8 +218,9 @@ public class ListUrlsActivity extends AppCompatActivity
         if (!mIsInitialDisplayRecorded) {
             mIsInitialDisplayRecorded = true;
             PhysicalWebUma.onUrlsDisplayed(this, mAdapter.getCount());
+        } else if (mIsRefreshUserInitiated) {
+            PhysicalWebUma.onUrlsRefreshed(this, mAdapter.getCount());
         }
-        // TODO(mattreynolds): add UMA for user-initiated refreshes.
 
         mIsRefreshing = false;
     }
