@@ -16,9 +16,13 @@
 
 namespace courgette {
 
-LabelManager::RvaVisitor::~RvaVisitor() {}
+LabelManager::LabelManager() {}
 
-LabelManager::SimpleIndexAssigner::SimpleIndexAssigner(LabelVector* labels)
+LabelManager::~LabelManager() {}
+
+LabelManagerImpl::RvaVisitor::~RvaVisitor() {}
+
+LabelManagerImpl::SimpleIndexAssigner::SimpleIndexAssigner(LabelVector* labels)
     : labels_(labels) {
   // Find the maximum assigned index. Not bounded by |labels_| size.
   int max_index = -1;
@@ -42,9 +46,9 @@ LabelManager::SimpleIndexAssigner::SimpleIndexAssigner(LabelVector* labels)
   VLOG(1) << used << " of " << labels_->size() << " labels pre-assigned.";
 }
 
-LabelManager::SimpleIndexAssigner::~SimpleIndexAssigner() {}
+LabelManagerImpl::SimpleIndexAssigner::~SimpleIndexAssigner() {}
 
-void LabelManager::SimpleIndexAssigner::DoForwardFill() {
+void LabelManagerImpl::SimpleIndexAssigner::DoForwardFill() {
   size_t count = 0;
   // Inside the loop, if |prev_index| == |kNoIndex| then we try to assign 0.
   // This allows 0 (if unused) to be assigned in middle of |labels_|.
@@ -63,7 +67,7 @@ void LabelManager::SimpleIndexAssigner::DoForwardFill() {
   VLOG(1) << "  fill forward " << count;
 }
 
-void LabelManager::SimpleIndexAssigner::DoBackwardFill() {
+void LabelManagerImpl::SimpleIndexAssigner::DoBackwardFill() {
   size_t count = 0;
   // This is asymmetric from DoForwardFill(), to preserve old behavior.
   // Inside the loop, if |prev_index| == |kNoIndex| then we skip assignment.
@@ -85,7 +89,7 @@ void LabelManager::SimpleIndexAssigner::DoBackwardFill() {
   VLOG(1) << "  fill backward " << count;
 }
 
-void LabelManager::SimpleIndexAssigner::DoInFill() {
+void LabelManagerImpl::SimpleIndexAssigner::DoInFill() {
   size_t count = 0;
   int index = 0;
   for (Label& label : *labels_) {
@@ -101,9 +105,9 @@ void LabelManager::SimpleIndexAssigner::DoInFill() {
   VLOG(1) << "  infill " << count;
 }
 
-LabelManager::LabelManager() {}
+LabelManagerImpl::LabelManagerImpl() {}
 
-LabelManager::~LabelManager() {}
+LabelManagerImpl::~LabelManagerImpl() {}
 
 // We wish to minimize peak memory usage here. Analysis: Let
 //   m = number of (RVA) elements in |rva_visitor|,
@@ -115,7 +119,7 @@ LabelManager::~LabelManager() {}
 // For our typical usage (i.e. Chrome) we see m = ~4n, so we use 16 * n bytes of
 // extra contiguous memory during computation. Assuming memory fragmentation
 // would not be an issue, this is much better than using std::map.
-void LabelManager::Read(RvaVisitor* rva_visitor) {
+void LabelManagerImpl::Read(RvaVisitor* rva_visitor) {
   // Write all values in |rva_visitor| to |rvas|.
   size_t num_rva = rva_visitor->Remaining();
   std::vector<RVA> rvas(num_rva);
@@ -139,7 +143,19 @@ void LabelManager::Read(RvaVisitor* rva_visitor) {
   }
 }
 
-void LabelManager::RemoveUnderusedLabels(int32_t count_threshold) {
+size_t LabelManagerImpl::Size() const {
+  return labels_.size();
+}
+
+// Uses binary search to find |rva|.
+Label* LabelManagerImpl::Find(RVA rva) {
+  auto it = std::lower_bound(
+      labels_.begin(), labels_.end(), Label(rva),
+      [](const Label& l1, const Label& l2) { return l1.rva_ < l2.rva_; });
+  return it == labels_.end() || it->rva_ != rva ? nullptr : &(*it);
+}
+
+void LabelManagerImpl::RemoveUnderusedLabels(int32_t count_threshold) {
   if (count_threshold <= 0)
     return;
   labels_.erase(std::remove_if(labels_.begin(), labels_.end(),
@@ -150,20 +166,12 @@ void LabelManager::RemoveUnderusedLabels(int32_t count_threshold) {
   // Not shrinking |labels_|, since this may cause reallocation.
 }
 
-// Uses binary search to find |rva|.
-Label* LabelManager::Find(RVA rva) {
-  auto it = std::lower_bound(
-      labels_.begin(), labels_.end(), Label(rva),
-      [](const Label& l1, const Label& l2) { return l1.rva_ < l2.rva_; });
-  return it == labels_.end() || it->rva_ != rva ? nullptr : &(*it);
-}
-
-void LabelManager::UnassignIndexes() {
+void LabelManagerImpl::UnassignIndexes() {
   for (Label& label : labels_)
     label.index_ = Label::kNoIndex;
 }
 
-void LabelManager::DefaultAssignIndexes() {
+void LabelManagerImpl::DefaultAssignIndexes() {
   int cur_index = 0;
   for (Label& label : labels_) {
     CHECK_EQ(Label::kNoIndex, label.index_);
@@ -171,13 +179,17 @@ void LabelManager::DefaultAssignIndexes() {
   }
 }
 
-void LabelManager::AssignRemainingIndexes() {
+void LabelManagerImpl::AssignRemainingIndexes() {
   // This adds some memory overhead, about 1 bit per Label (more if indexes >=
   // |labels_.size()| get used).
   SimpleIndexAssigner assigner(&labels_);
   assigner.DoForwardFill();
   assigner.DoBackwardFill();
   assigner.DoInFill();
+}
+
+void LabelManagerImpl::SetLabels(const LabelVector& labels) {
+  labels_ = labels;
 }
 
 }  // namespace courgette

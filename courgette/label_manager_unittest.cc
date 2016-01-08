@@ -23,7 +23,7 @@ namespace courgette {
 namespace {
 
 // Test version of RvaVisitor: Just wrap std::vector<RVA>.
-class TestRvaVisitor : public LabelManager::RvaVisitor {
+class TestRvaVisitor : public LabelManagerImpl::RvaVisitor {
  public:
   explicit TestRvaVisitor(std::vector<RVA>::const_iterator rva_begin,
                           std::vector<RVA>::const_iterator rva_end)
@@ -42,20 +42,9 @@ class TestRvaVisitor : public LabelManager::RvaVisitor {
   std::vector<RVA>::const_iterator rva_end_;
 };
 
-// Test version of LabelManager: Expose data to test implementation.
-class TestLabelManager : public LabelManager {
- public:
-  TestLabelManager() {}
-
-  // Using move semantics to optimize injection of test LabelVector.
-  explicit TestLabelManager(LabelVector&& labels) { labels_ = labels; }
-
-  const LabelVector& Labels() const { return labels_; }
-};
-
-void CheckLabelManagerContent(TestLabelManager* label_manager,
+void CheckLabelManagerContent(LabelManager* label_manager,
                               const std::map<RVA, int32_t>& expected) {
-  EXPECT_EQ(expected.size(), label_manager->Labels().size());
+  EXPECT_EQ(expected.size(), label_manager->Size());
   for (const auto& rva_and_count : expected) {
     Label* label = label_manager->Find(rva_and_count.first);
     EXPECT_TRUE(label != nullptr);
@@ -64,7 +53,7 @@ void CheckLabelManagerContent(TestLabelManager* label_manager,
   }
 }
 
-// Instantiates a LabelVector with |n| elements. The |rva_| fields are assigned
+// Instantiates a LabelVector with |n| instances. The |rva_| fields are assigned
 // 0, ..., |n| - 1. The other fields are uninitialized.
 LabelVector CreateLabelVectorBasic(size_t n) {
   LabelVector labels;
@@ -106,7 +95,7 @@ LabelVector CreateLabelVectorWithIndexes(const std::string& encoded_index) {
   return labels;
 }
 
-// Returns a string encoding for |index_| assignments for |label_| elements,
+// Returns a string encoding for |index_| assignments for |label_| instances,
 // with kNoIndex => '.', 0 => 'A', ..., '25' => 'Z'. Fails if any |index_|
 // does not fit the above.
 std::string EncodeLabelIndexes(const LabelVector& labels) {
@@ -143,7 +132,7 @@ TEST(LabelManagerTest, Basic) {
   TestRvaVisitor visitor(test_targets.begin(), test_targets.end());
 
   // Preallocate targets, then populate.
-  TestLabelManager label_manager;
+  LabelManagerImpl label_manager;
   label_manager.Read(&visitor);
 
   static const std::pair<RVA, int32_t> kExpected1Raw[] = {
@@ -177,9 +166,9 @@ TEST(LabelManagerTest, Single) {
     // Test data: |dup| copies of kRva.
     std::vector<RVA> test_targets(dup, kRva);
     TestRvaVisitor visitor(test_targets.begin(), test_targets.end());
-    TestLabelManager label_manager;
+    LabelManagerImpl label_manager;
     label_manager.Read(&visitor);
-    EXPECT_EQ(1U, label_manager.Labels().size());  // Deduped to 1 Label.
+    EXPECT_EQ(1U, label_manager.Size());  // Deduped to 1 Label.
 
     Label* label = label_manager.Find(kRva);
     EXPECT_NE(nullptr, label);
@@ -196,15 +185,15 @@ TEST(LabelManagerTest, Single) {
 TEST(LabelManagerTest, Empty) {
   std::vector<RVA> empty_test_targets;
   TestRvaVisitor visitor(empty_test_targets.begin(), empty_test_targets.end());
-  TestLabelManager label_manager;
+  LabelManagerImpl label_manager;
   label_manager.Read(&visitor);
-  EXPECT_EQ(0U, label_manager.Labels().size());
+  EXPECT_EQ(0U, label_manager.Size());
   for (RVA rva = 0U; rva < 16U; ++rva)
     EXPECT_EQ(nullptr, label_manager.Find(rva));
 }
 
 TEST(LabelManagerTest, EmptyAssign) {
-  TestLabelManager label_manager_empty;
+  LabelManagerImpl label_manager_empty;
   label_manager_empty.DefaultAssignIndexes();
   label_manager_empty.UnassignIndexes();
   label_manager_empty.AssignRemainingIndexes();
@@ -212,7 +201,9 @@ TEST(LabelManagerTest, EmptyAssign) {
 
 TEST(LabelManagerTest, TrivialAssign) {
   for (size_t size = 0; size < 20; ++size) {
-    TestLabelManager label_manager(CreateLabelVectorBasic(size));
+    LabelManagerImpl label_manager;
+    label_manager.SetLabels(CreateLabelVectorBasic(size));
+
     // Sanity check.
     for (size_t i = 0; i < size; ++i)
       EXPECT_EQ(Label::kNoIndex, label_manager.Labels()[i].index_);
@@ -236,7 +227,7 @@ TEST(LabelManagerTest, TrivialAssign) {
 
 // Tests SimpleIndexAssigner fill strategies independently.
 TEST(LabelManagerTest, SimpleIndexAssigner) {
-  using SimpleIndexAssigner = LabelManager::SimpleIndexAssigner;
+  using SimpleIndexAssigner = LabelManagerImpl::SimpleIndexAssigner;
   // See CreateLabelVectorWithIndexes() explanation on how we encode LabelVector
   // |index_| values as a string.
   const struct TestCase {
@@ -353,8 +344,9 @@ TEST(LabelManagerTest, AssignRemainingIndexes) {
     {"..FE..GD..", "ABFECHGDIJ"}, // Forward: "AB"; backward: "IJ"; in: "CH".
   };
   for (const auto& test_case : kTestCases) {
-    TestLabelManager label_manager(
-        CreateLabelVectorWithIndexes(test_case.input));
+    LabelManagerImpl label_manager;
+    label_manager.SetLabels(CreateLabelVectorWithIndexes(test_case.input));
+
     label_manager.AssignRemainingIndexes();
     std::string result = EncodeLabelIndexes(label_manager.Labels());
     EXPECT_EQ(test_case.expect, result);
