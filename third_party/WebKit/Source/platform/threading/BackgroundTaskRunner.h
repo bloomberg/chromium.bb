@@ -11,6 +11,8 @@
 
 namespace blink {
 
+class WebTraceLocation;
+
 namespace BackgroundTaskRunner {
 
 enum TaskSize {
@@ -18,7 +20,7 @@ enum TaskSize {
     TaskSizeLongRunningTask,
 };
 
-PLATFORM_EXPORT void postOnBackgroundThread(PassOwnPtr<Closure>, TaskSize);
+PLATFORM_EXPORT void postOnBackgroundThread(const WebTraceLocation&, PassOwnPtr<Closure>, TaskSize);
 
 } // BackgroundTaskRunner
 
