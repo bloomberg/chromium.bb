@@ -21,6 +21,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_listener.h"
@@ -178,6 +179,12 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
 
     // Debugging for https://code.google.com/p/chromium/issues/detail?id=527588.
     int data_offset = -1;
+#if defined(OS_WIN)
+    // This handle is passed through Chrome IPC as a raw int.
+    int handle1 = -2;
+    // This handle is passed through Chrome IPC as a raw int + 3.
+    int handle2 = -2;
+#endif
   };
   using PendingRequestMap = std::map<int, scoped_ptr<PendingRequestInfo>>;
 
@@ -195,6 +202,10 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   void OnReceivedRedirect(int request_id,
                           const net::RedirectInfo& redirect_info,
                           const ResourceResponseHead& response_head);
+#if defined(OS_WIN)
+  void OnSetDataBufferDebug1(int request_id, int handle);
+  void OnSetDataBufferDebug2(int request_id, int handle);
+#endif
   void OnSetDataBuffer(int request_id,
                        base::SharedMemoryHandle shm_handle,
                        int shm_size,

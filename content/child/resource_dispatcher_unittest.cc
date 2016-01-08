@@ -17,6 +17,7 @@
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/request_info.h"
 #include "content/common/appcache_interfaces.h"
@@ -298,6 +299,12 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
     base::SharedMemoryHandle duplicate_handle;
     EXPECT_TRUE(shared_memory->ShareToProcess(base::GetCurrentProcessHandle(),
                                               &duplicate_handle));
+#if defined(OS_WIN)
+    EXPECT_TRUE(dispatcher_.OnMessageReceived(ResourceMsg_SetDataBufferDebug1(
+        request_id, HandleToLong(duplicate_handle.GetHandle()))));
+    EXPECT_TRUE(dispatcher_.OnMessageReceived(ResourceMsg_SetDataBufferDebug2(
+        request_id, HandleToLong(duplicate_handle.GetHandle()) + 3)));
+#endif
     EXPECT_TRUE(dispatcher_.OnMessageReceived(
         ResourceMsg_SetDataBuffer(request_id, duplicate_handle,
                                   shared_memory->requested_size(), 0)));
