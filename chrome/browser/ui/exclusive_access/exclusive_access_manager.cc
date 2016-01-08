@@ -101,7 +101,12 @@ bool ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() {
     return false;
   }
 
+  // Enabled by default on Aura platforms only.
+#if defined(USE_AURA)
+  return true;
+#else
   return false;
+#endif  // defined(USE_AURA)
 }
 
 void ExclusiveAccessManager::OnTabDeactivated(WebContents* web_contents) {
