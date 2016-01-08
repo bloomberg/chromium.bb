@@ -88,12 +88,7 @@ class SyncTest : public InProcessBrowserTest {
     // TODO(pvalenzuela): Delete this value when all TWO_CLIENT_LEGACY tests are
     // compatible with FakeServer and switched to TWO_CLIENT. See
     // crbug.com/323265.
-    TWO_CLIENT_LEGACY,
-
-    // Tests where three or more client profiles are synced with the server.
-    // Typically, these tests create client side races and verify that sync
-    // works.
-    MULTIPLE_CLIENT
+    TWO_CLIENT_LEGACY
   };
 
   // The type of server we're running against.
@@ -374,8 +369,8 @@ class SyncTest : public InProcessBrowserTest {
   // Helper class to whitelist the notification port.
   scoped_ptr<net::ScopedPortException> xmpp_port_;
 
-  // Used to differentiate between single-client, two-client, multi-client and
-  // many-client tests.
+  // Used to differentiate between single-client and two-client tests as well
+  // as wher the in-process FakeServer is used.
   TestType test_type_;
 
   // Tells us what kind of server we're using (some tests run only on certain

@@ -144,6 +144,34 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Delete) {
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 }
 
+IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
+                       SetPassphraseAndThenSetupSync) {
+  ASSERT_TRUE(SetupClients());
+
+  ASSERT_TRUE(GetClient(0)->SetupSync());
+  SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);
+  ASSERT_TRUE(AwaitPassphraseAccepted(GetSyncService(0)));
+
+  // When client 1 hits a passphrase required state, we can infer that
+  // client 0's passphrase has been committed. to the server.
+  GetClient(1)->SetupSync();
+  ASSERT_TRUE(AwaitPassphraseRequired(GetSyncService(1)));
+
+  // Get client 1 out of the passphrase required state.
+  ASSERT_TRUE(SetDecryptionPassphrase(1, kValidPassphrase));
+  ASSERT_TRUE(AwaitPassphraseAccepted(GetSyncService(1)));
+
+  // For some reason, the tests won't pass unless these flags are set.
+  GetSyncService(1)->SetSyncSetupCompleted();
+  GetSyncService(1)->SetSetupInProgress(false);
+
+  // Move around some passwords to make sure it's all working.
+  PasswordForm form0 = CreateTestPasswordForm(0);
+  AddLogin(GetPasswordStore(0), form0);
+
+  ASSERT_TRUE(AwaitAllProfilesContainSamePasswordForms());
+}
+
 IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, E2E_ONLY(Delete)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordForms());

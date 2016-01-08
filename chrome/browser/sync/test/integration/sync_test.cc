@@ -207,10 +207,8 @@ SyncTest::SyncTest(TestType test_type)
       num_clients_ = 2;
       break;
     }
-    case MULTIPLE_CLIENT: {
-      num_clients_ = 3;
-      break;
-    }
+    default:
+      NOTREACHED() << "Invalid test type specified.";
   }
 }
 
@@ -788,7 +786,6 @@ void SyncTest::DecideServerType() {
       switch (test_type_) {
         case SINGLE_CLIENT:
         case TWO_CLIENT:
-        case MULTIPLE_CLIENT:
           server_type_ = IN_PROCESS_FAKE_SERVER;
           break;
         default:

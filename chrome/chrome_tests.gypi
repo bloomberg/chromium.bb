@@ -1437,8 +1437,6 @@
       'app/chrome_version.rc.version',
       'browser/sync/test/integration/enable_disable_test.cc',
       'browser/sync/test/integration/migration_test.cc',
-      'browser/sync/test/integration/multiple_client_dictionary_sync_test.cc',
-      'browser/sync/test/integration/multiple_client_passwords_sync_test.cc',
       'browser/sync/test/integration/single_client_app_list_sync_test.cc',
       'browser/sync/test/integration/single_client_apps_sync_test.cc',
       'browser/sync/test/integration/single_client_backup_rollback_test.cc',
@@ -2936,7 +2934,6 @@
           # Dictionary sync is disabled on Mac.
           # Note: list duplicated in GN build.
           'sources!': [
-            'browser/sync/test/integration/multiple_client_dictionary_sync_test.cc',
             'browser/sync/test/integration/single_client_dictionary_sync_test.cc',
             'browser/sync/test/integration/two_client_dictionary_sync_test.cc',
           ],
