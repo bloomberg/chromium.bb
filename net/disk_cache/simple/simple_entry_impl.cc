@@ -479,6 +479,11 @@ int SimpleEntryImpl::ReadSparseData(int64_t offset,
                                     const CompletionCallback& callback) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
 
+  if (net_log_.IsCapturing()) {
+    net_log_.AddEvent(net::NetLog::TYPE_SIMPLE_CACHE_ENTRY_READ_SPARSE_CALL,
+                      CreateNetLogSparseOperationCallback(offset, buf_len));
+  }
+
   ScopedOperationRunner operation_runner(this);
   pending_operations_.push(SimpleEntryOperation::ReadSparseOperation(
       this, offset, buf_len, buf, callback));
@@ -490,6 +495,11 @@ int SimpleEntryImpl::WriteSparseData(int64_t offset,
                                      int buf_len,
                                      const CompletionCallback& callback) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
+
+  if (net_log_.IsCapturing()) {
+    net_log_.AddEvent(net::NetLog::TYPE_SIMPLE_CACHE_ENTRY_WRITE_SPARSE_CALL,
+                      CreateNetLogSparseOperationCallback(offset, buf_len));
+  }
 
   ScopedOperationRunner operation_runner(this);
   pending_operations_.push(SimpleEntryOperation::WriteSparseOperation(
@@ -992,6 +1002,12 @@ void SimpleEntryImpl::ReadSparseDataInternal(
   DCHECK(io_thread_checker_.CalledOnValidThread());
   ScopedOperationRunner operation_runner(this);
 
+  if (net_log_.IsCapturing()) {
+    net_log_.AddEvent(
+        net::NetLog::TYPE_SIMPLE_CACHE_ENTRY_READ_SPARSE_BEGIN,
+        CreateNetLogSparseOperationCallback(sparse_offset, buf_len));
+  }
+
   DCHECK_EQ(STATE_READY, state_);
   state_ = STATE_IO_PENDING;
 
@@ -1019,6 +1035,12 @@ void SimpleEntryImpl::WriteSparseDataInternal(
     const CompletionCallback& callback) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   ScopedOperationRunner operation_runner(this);
+
+  if (net_log_.IsCapturing()) {
+    net_log_.AddEvent(
+        net::NetLog::TYPE_SIMPLE_CACHE_ENTRY_WRITE_SPARSE_BEGIN,
+        CreateNetLogSparseOperationCallback(sparse_offset, buf_len));
+  }
 
   DCHECK_EQ(STATE_READY, state_);
   state_ = STATE_IO_PENDING;
@@ -1264,6 +1286,11 @@ void SimpleEntryImpl::ReadSparseOperationComplete(
   DCHECK(synchronous_entry_);
   DCHECK(result);
 
+  if (net_log_.IsCapturing()) {
+    net_log_.AddEvent(net::NetLog::TYPE_SIMPLE_CACHE_ENTRY_READ_SPARSE_END,
+                      CreateNetLogReadWriteCompleteCallback(*result));
+  }
+
   SimpleEntryStat entry_stat(*last_used, last_modified_, data_size_,
                              sparse_data_size_);
   EntryOperationComplete(completion_callback, entry_stat, std::move(result));
@@ -1276,6 +1303,11 @@ void SimpleEntryImpl::WriteSparseOperationComplete(
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(synchronous_entry_);
   DCHECK(result);
+
+  if (net_log_.IsCapturing()) {
+    net_log_.AddEvent(net::NetLog::TYPE_SIMPLE_CACHE_ENTRY_WRITE_SPARSE_END,
+                      CreateNetLogReadWriteCompleteCallback(*result));
+  }
 
   EntryOperationComplete(completion_callback, *entry_stat, std::move(result));
 }

@@ -2426,14 +2426,12 @@ EVENT_TYPE(SIMPLE_CACHE_ENTRY_CREATE_BEGIN)
 // }
 EVENT_TYPE(SIMPLE_CACHE_ENTRY_CREATE_END)
 
-// This event is created when ReadEntry is called.
+// This event is created when ReadData is called.
 // It contains the following parameters:
 //   {
 //     "index": <Index being read/written>,
 //     "offset": <Offset being read/written>,
 //     "buf_len": <Length of buffer being read to/written from>,
-//     "truncate": <If present for a write, the truncate flag is set to true.
-//                  Not present in reads or writes where it is false>,
 //   }
 EVENT_TYPE(SIMPLE_CACHE_ENTRY_READ_CALL)
 
@@ -2444,12 +2442,10 @@ EVENT_TYPE(SIMPLE_CACHE_ENTRY_READ_CALL)
 //     "index": <Index being read/written>,
 //     "offset": <Offset being read/written>,
 //     "buf_len": <Length of buffer being read to/written from>,
-//     "truncate": <If present for a write, the truncate flag is set to true.
-//                  Not present in reads or writes where it is false>,
 //   }
 EVENT_TYPE(SIMPLE_CACHE_ENTRY_READ_BEGIN)
 
-// This event is created when the Simple Cache finishes a ReadEntry call.
+// This event is created when the Simple Cache finishes a ReadData call.
 // It contains the following parameters:
 //   {
 //     "bytes_copied": <Number of bytes copied.  Not present on error>,
@@ -2470,7 +2466,7 @@ EVENT_TYPE(SIMPLE_CACHE_ENTRY_CHECKSUM_BEGIN)
 // }
 EVENT_TYPE(SIMPLE_CACHE_ENTRY_CHECKSUM_END)
 
-// This event is created when WriteEntry is called.
+// This event is created when WriteData is called.
 // It contains the following parameters:
 //   {
 //     "index": <Index being read/written>,
@@ -2502,13 +2498,67 @@ EVENT_TYPE(SIMPLE_CACHE_ENTRY_WRITE_OPTIMISTIC)
 //   }
 EVENT_TYPE(SIMPLE_CACHE_ENTRY_WRITE_BEGIN)
 
-// This event is created when the Simple Cache finishes a WriteEntry call.
+// This event is created when the Simple Cache finishes a WriteData call.
 // It contains the following parameters:
 //   {
 //     "bytes_copied": <Number of bytes copied.  Not present on error>,
 //     "net_error": <Network error code.  Only present on error>,
 //   }
 EVENT_TYPE(SIMPLE_CACHE_ENTRY_WRITE_END)
+
+// This event is created when ReadSparseData is called.
+// It contains the following parameters:
+//   {
+//     "offset": <Offset being read/written>,
+//     "buf_len": <Length of buffer being read to/written from>,
+//     "truncate": <If present for a write, the truncate flag is set to true.
+//                  Not present in reads or writes where it is false>,
+//   }
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_READ_SPARSE_CALL)
+
+// This event is created when the Simple Cache actually begins reading sparse
+// data from the cache entry.
+// It contains the following parameters:
+//   {
+//     "offset": <Offset being read/written>,
+//     "buf_len": <Length of buffer being read to/written from>,
+//     "truncate": <If present for a write, the truncate flag is set to true.
+//                  Not present in reads or writes where it is false>,
+//   }
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_READ_SPARSE_BEGIN)
+
+// This event is created when the Simple Cache finishes a ReadSparseData call.
+// It contains the following parameters:
+//   {
+//     "bytes_copied": <Number of bytes copied.  Not present on error>,
+//     "net_error": <Network error code.  Only present on error>,
+//   }
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_READ_SPARSE_END)
+
+// This event is created when WriteSparseData is called.
+// It contains the following parameters:
+//   {
+//     "offset": <Offset being read/written>,
+//     "buf_len": <Length of buffer being read to/written from>,
+//   }
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_WRITE_SPARSE_CALL)
+
+// This event is created when the Simple Cache actually begins writing sparse
+// data to the cache entry.
+// It contains the following parameters:
+//   {
+//     "offset": <Offset being read/written>,
+//     "buf_len": <Length of buffer being read to/written from>,
+//   }
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_WRITE_SPARSE_BEGIN)
+
+// This event is created when the Simple Cache finishes a WriteSparseData call.
+// It contains the following parameters:
+//   {
+//     "bytes_copied": <Number of bytes copied.  Not present on error>,
+//     "net_error": <Network error code.  Only present on error>,
+//   }
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_WRITE_SPARSE_END)
 
 // This event is created when DoomEntry is called.  It contains no parameters.
 EVENT_TYPE(SIMPLE_CACHE_ENTRY_DOOM_CALL)
