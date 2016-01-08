@@ -1591,19 +1591,15 @@ bool FrameView::computeCompositedSelection(LocalFrame& frame, CompositedSelectio
 
     VisiblePosition visibleStart(visibleSelection.visibleStart());
     RenderedPosition renderedStart(visibleStart);
-    renderedStart.positionInGraphicsLayerBacking(selection.start);
+    renderedStart.positionInGraphicsLayerBacking(selection.start, true);
     if (!selection.start.layer)
         return false;
 
-    if (visibleSelection.isCaret()) {
-        selection.end = selection.start;
-    } else {
-        VisiblePosition visibleEnd(visibleSelection.visibleEnd());
-        RenderedPosition renderedEnd(visibleEnd);
-        renderedEnd.positionInGraphicsLayerBacking(selection.end);
-        if (!selection.end.layer)
-            return false;
-    }
+    VisiblePosition visibleEnd(visibleSelection.visibleEnd());
+    RenderedPosition renderedEnd(visibleEnd);
+    renderedEnd.positionInGraphicsLayerBacking(selection.end, false);
+    if (!selection.end.layer)
+        return false;
 
     selection.type = visibleSelection.selectionType();
     selection.isEditable = visibleSelection.isContentEditable();
@@ -1611,8 +1607,8 @@ bool FrameView::computeCompositedSelection(LocalFrame& frame, CompositedSelectio
         if (HTMLTextFormControlElement* enclosingTextFormControlElement = enclosingTextFormControl(visibleSelection.rootEditableElement()))
             selection.isEmptyTextFormControl = enclosingTextFormControlElement->value().isEmpty();
     }
-    selection.start.isTextDirectionRTL = primaryDirectionOf(*visibleSelection.start().anchorNode()) == RTL;
-    selection.end.isTextDirectionRTL = primaryDirectionOf(*visibleSelection.end().anchorNode()) == RTL;
+    selection.start.isTextDirectionRTL |= primaryDirectionOf(*visibleSelection.start().anchorNode()) == RTL;
+    selection.end.isTextDirectionRTL |= primaryDirectionOf(*visibleSelection.end().anchorNode()) == RTL;
 
     return true;
 }

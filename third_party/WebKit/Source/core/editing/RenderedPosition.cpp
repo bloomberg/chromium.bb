@@ -234,7 +234,7 @@ IntRect RenderedPosition::absoluteRect(LayoutUnit* extraWidthToEndOfLine) const
     return localRect == IntRect() ? IntRect() : m_layoutObject->localToAbsoluteQuad(FloatRect(localRect)).enclosingBoundingBox();
 }
 
-void RenderedPosition::positionInGraphicsLayerBacking(CompositedSelectionBound& bound) const
+void RenderedPosition::positionInGraphicsLayerBacking(CompositedSelectionBound& bound, bool selectionStart) const
 {
     bound.layer = nullptr;
     bound.edgeTopInLayer = bound.edgeBottomInLayer = FloatPoint();
@@ -244,8 +244,26 @@ void RenderedPosition::positionInGraphicsLayerBacking(CompositedSelectionBound& 
 
     LayoutRect rect = m_layoutObject->localCaretRect(m_inlineBox, m_offset);
     PaintLayer* layer = nullptr;
-    bound.edgeTopInLayer = m_layoutObject->localToInvalidationBackingPoint(rect.minXMinYCorner(), &layer);
-    bound.edgeBottomInLayer = m_layoutObject->localToInvalidationBackingPoint(rect.minXMaxYCorner(), nullptr);
+    if (m_layoutObject->style()->isHorizontalWritingMode()) {
+        bound.edgeTopInLayer = m_layoutObject->localToInvalidationBackingPoint(rect.minXMinYCorner(), &layer);
+        bound.edgeBottomInLayer = m_layoutObject->localToInvalidationBackingPoint(rect.minXMaxYCorner(), nullptr);
+    } else {
+        bound.edgeTopInLayer = m_layoutObject->localToInvalidationBackingPoint(rect.minXMinYCorner(), &layer);
+        bound.edgeBottomInLayer = m_layoutObject->localToInvalidationBackingPoint(rect.maxXMinYCorner(), nullptr);
+
+        // When text is vertical, it looks better for the start handle baseline to
+        // be at the starting edge, to enclose the selection fully between the
+        // handles.
+        if (selectionStart) {
+            float xSwap = bound.edgeBottomInLayer.x();
+            bound.edgeBottomInLayer.setX(bound.edgeTopInLayer.x());
+            bound.edgeTopInLayer.setX(xSwap);
+        }
+
+        // Flipped blocks writing mode is not only vertical but also right to left.
+        bound.isTextDirectionRTL = m_layoutObject->hasFlippedBlocksWritingMode();
+    }
+
     bound.layer = layer ? layer->graphicsLayerBacking() : nullptr;
 }
 

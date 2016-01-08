@@ -72,7 +72,8 @@ public:
     Position positionAtRightBoundaryOfBiDiRun() const;
 
     IntRect absoluteRect(LayoutUnit* extraWidthToEndOfLine = 0) const;
-    void positionInGraphicsLayerBacking(CompositedSelectionBound&) const;
+
+    void positionInGraphicsLayerBacking(CompositedSelectionBound&, bool selectionStart) const;
 
 private:
     bool operator==(const RenderedPosition&) const { return false; }
