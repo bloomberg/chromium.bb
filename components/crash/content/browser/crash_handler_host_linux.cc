@@ -91,7 +91,7 @@ CrashHandlerHostLinux::CrashHandlerHostLinux(const std::string& process_type,
       dumps_path_(dumps_path),
       upload_(upload),
       shutting_down_(false),
-      worker_pool_token_(BrowserThread::GetBlockingPool()->GetSequenceToken()) {
+      worker_pool_token_(base::SequencedWorkerPool::GetSequenceToken()) {
   int fds[2];
   // We use SOCK_SEQPACKET rather than SOCK_DGRAM to prevent the process from
   // sending datagrams to other sockets on the system. The sandbox may prevent

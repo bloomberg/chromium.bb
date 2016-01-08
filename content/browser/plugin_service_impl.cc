@@ -177,7 +177,7 @@ PluginServiceImpl::~PluginServiceImpl() {
 }
 
 void PluginServiceImpl::Init() {
-  plugin_list_token_ = BrowserThread::GetBlockingPool()->GetSequenceToken();
+  plugin_list_token_ = base::SequencedWorkerPool::GetSequenceToken();
   PluginList::Singleton()->set_will_load_plugins_callback(
       base::Bind(&WillLoadPluginsCallback, plugin_list_token_));
 

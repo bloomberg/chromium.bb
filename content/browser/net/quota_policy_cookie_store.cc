@@ -154,7 +154,7 @@ net::CookieStore* CreateCookieStore(const CookieStoreConfig& config) {
     if (!background_task_runner.get()) {
       background_task_runner =
           BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
-              BrowserThread::GetBlockingPool()->GetSequenceToken());
+              base::SequencedWorkerPool::GetSequenceToken());
     }
 
     scoped_refptr<net::SQLitePersistentCookieStore> sqlite_store(

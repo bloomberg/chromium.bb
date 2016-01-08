@@ -36,7 +36,7 @@ void CacheStorageContextImpl::Init(
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> cache_task_runner =
       pool->GetSequencedTaskRunnerWithShutdownBehavior(
-          BrowserThread::GetBlockingPool()->GetSequenceToken(),
+          base::SequencedWorkerPool::GetSequenceToken(),
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 
   // This thread-hopping antipattern is needed here for some unit tests, where
