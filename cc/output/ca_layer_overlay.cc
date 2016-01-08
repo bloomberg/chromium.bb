@@ -83,9 +83,15 @@ CALayerResult FromTextureQuad(ResourceProvider* resource_provider,
   unsigned resource_id = quad->resource_id();
   if (!resource_provider->IsOverlayCandidate(resource_id))
     return CA_LAYER_FAILED_TEXTURE_NOT_CANDIDATE;
-  // TODO(ccameron): Merge the y flip into the layer transform.
-  if (quad->y_flipped)
-    return CA_LAYER_FAILED_TEXTURE_Y_FLIPPED;
+  if (quad->y_flipped) {
+    // The anchor point is at the bottom-left corner of the CALayer. The
+    // transformation that flips the contents of the layer without changing its
+    // frame is the composition of a vertical flip about the anchor point, and a
+    // translation by the height of the layer.
+    ca_layer_overlay->transform.preTranslate(
+        0, ca_layer_overlay->bounds_size.height(), 0);
+    ca_layer_overlay->transform.preScale(1, -1, 1);
+  }
   ca_layer_overlay->contents_resource_id = resource_id;
   ca_layer_overlay->contents_rect =
       BoundingRect(quad->uv_top_left, quad->uv_bottom_right);
