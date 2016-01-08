@@ -14,6 +14,7 @@ group("all") {
     "//mash/quick_launch",
     "//mash/shell",
     "//mash/task_viewer",
+    "//mash/wallpaper",
     "//mash/wm",
   ]
 }

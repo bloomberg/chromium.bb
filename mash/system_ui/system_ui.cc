@@ -19,43 +19,7 @@
 
 namespace mash {
 namespace system_ui {
-
 namespace {
-
-class DesktopBackground : public views::WidgetDelegateView {
- public:
-  static void Create(mojo::Shell* shell) {
-    views::Widget* widget = new views::Widget;
-    views::Widget::InitParams params(
-        views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    params.delegate = new DesktopBackground;
-
-    std::map<std::string, std::vector<uint8_t>> properties;
-    properties[mash::wm::mojom::kWindowContainer_Property] =
-        mojo::TypeConverter<const std::vector<uint8_t>, int32_t>::Convert(
-            mash::wm::mojom::CONTAINER_USER_BACKGROUND);
-    mus::Window* window =
-        views::WindowManagerConnection::Get()->NewWindow(properties);
-    params.native_widget = new views::NativeWidgetMus(
-        widget, shell, window, mus::mojom::SURFACE_TYPE_DEFAULT);
-    widget->Init(params);
-    widget->Show();
-  }
-
- private:
-  DesktopBackground() {}
-  ~DesktopBackground() override {}
-
-  // Overridden from views::View:
-  void OnPaint(gfx::Canvas* canvas) override {
-    canvas->FillRect(GetLocalBounds(), SK_ColorRED);
-  }
-
-  // Overridden from views::WidgetDelegate:
-  views::View* GetContentsView() override { return this; }
-
-  DISALLOW_COPY_AND_ASSIGN(DesktopBackground);
-};
 
 class Shelf : public views::WidgetDelegateView {
  public:
@@ -106,7 +70,6 @@ void SystemUI::Initialize(mojo::ApplicationImpl* app) {
   aura_init_.reset(new views::AuraInit(app, "views_mus_resources.pak"));
   views::WindowManagerConnection::Create(app);
 
-  DesktopBackground::Create(app->shell());
   Shelf::Create(app->shell());
 }
 

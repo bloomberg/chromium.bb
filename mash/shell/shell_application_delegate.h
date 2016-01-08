@@ -31,6 +31,7 @@ class ShellApplicationDelegate : public mojo::ApplicationDelegate {
       mojo::ApplicationConnection* connection) override;
 
   void StartWindowManager();
+  void StartWallpaper();
   void StartSystemUI();
   void StartBrowserDriver();
   void StartQuickLaunch();
