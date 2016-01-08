@@ -2087,9 +2087,7 @@ content.dll!content::WebMediaPlayerMSCompositor::ReplaceCurrentFrameWithACopy
 
 INVALID HEAP ARGUMENT
 name=bug_571551_a
-drmemorylib.dll!replace_operator_delete_nothrow
-media.dll!mkvmuxer::Segment::WriteFramesLessThan
-media.dll!mkvmuxer::Segment::MakeNewCluster
+...
 media.dll!mkvmuxer::Segment::DoNewClusterProcessing
 media.dll!mkvmuxer::Segment::AddGenericFrame
 media.dll!mkvmuxer::Segment::AddFrame
