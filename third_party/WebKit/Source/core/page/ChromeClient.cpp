@@ -32,7 +32,6 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/network/NetworkHints.h"
 #include "public/platform/WebScreenInfo.h"
-#include "wtf/Utility.h"
 #include <algorithm>
 
 namespace blink {
@@ -77,22 +76,16 @@ void ChromeClient::setWindowFeatures(const WindowFeatures& features)
     setResizable(features.resizable);
 }
 
-template<typename... DelegateArgs, typename... Args>
-bool openJavaScriptDialog(
-    ChromeClient* chromeClient,
-    bool(ChromeClient::*function)(LocalFrame*, const String& message, DelegateArgs...),
-    LocalFrame& frame,
-    const String& message,
-    ChromeClient::DialogType dialogType,
-    Args&&... args)
+template <typename Delegate>
+static bool openJavaScriptDialog(LocalFrame* frame, const String& message, ChromeClient::DialogType dialogType, const Delegate& delegate)
 {
     // Defer loads in case the client method runs a new event loop that would
     // otherwise cause the load to continue while we're in the middle of
     // executing JavaScript.
     ScopedPageLoadDeferrer deferrer;
 
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRunJavaScriptDialog(&frame, message, dialogType);
-    bool result = (chromeClient->*function)(&frame, message, WTF::forward<Args>(args)...);
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRunJavaScriptDialog(frame, message, dialogType);
+    bool result = delegate();
     InspectorInstrumentation::didRunJavaScriptDialog(cookie, result);
     return result;
 }
@@ -100,7 +93,9 @@ bool openJavaScriptDialog(
 bool ChromeClient::openBeforeUnloadConfirmPanel(const String& message, LocalFrame* frame, bool isReload)
 {
     ASSERT(frame);
-    return openJavaScriptDialog(this, &ChromeClient::openBeforeUnloadConfirmPanelDelegate, *frame, message, ChromeClient::HTMLDialog, isReload);
+    return openJavaScriptDialog(frame, message, ChromeClient::HTMLDialog, [this, frame, &message, isReload]() {
+        return openBeforeUnloadConfirmPanelDelegate(frame, message, isReload);
+    });
 }
 
 bool ChromeClient::openJavaScriptAlert(LocalFrame* frame, const String& message)
@@ -108,7 +103,9 @@ bool ChromeClient::openJavaScriptAlert(LocalFrame* frame, const String& message)
     ASSERT(frame);
     if (!canOpenModalIfDuringPageDismissal(frame->tree().top(), ChromeClient::AlertDialog, message))
         return false;
-    return openJavaScriptDialog(this, &ChromeClient::openJavaScriptAlertDelegate, *frame, message, ChromeClient::AlertDialog);
+    return openJavaScriptDialog(frame, message, ChromeClient::AlertDialog, [this, frame, &message]() {
+        return openJavaScriptAlertDelegate(frame, message);
+    });
 }
 
 bool ChromeClient::openJavaScriptConfirm(LocalFrame* frame, const String& message)
@@ -116,7 +113,9 @@ bool ChromeClient::openJavaScriptConfirm(LocalFrame* frame, const String& messag
     ASSERT(frame);
     if (!canOpenModalIfDuringPageDismissal(frame->tree().top(), ChromeClient::ConfirmDialog, message))
         return false;
-    return openJavaScriptDialog(this, &ChromeClient::openJavaScriptConfirmDelegate, *frame, message, ChromeClient::ConfirmDialog);
+    return openJavaScriptDialog(frame, message, ChromeClient::ConfirmDialog, [this, frame, &message]() {
+        return openJavaScriptConfirmDelegate(frame, message);
+    });
 }
 
 bool ChromeClient::openJavaScriptPrompt(LocalFrame* frame, const String& prompt, const String& defaultValue, String& result)
@@ -124,7 +123,9 @@ bool ChromeClient::openJavaScriptPrompt(LocalFrame* frame, const String& prompt,
     ASSERT(frame);
     if (!canOpenModalIfDuringPageDismissal(frame->tree().top(), ChromeClient::PromptDialog, prompt))
         return false;
-    return openJavaScriptDialog(this, &ChromeClient::openJavaScriptPromptDelegate, *frame, prompt, ChromeClient::PromptDialog, defaultValue, result);
+    return openJavaScriptDialog(frame, prompt, ChromeClient::PromptDialog, [this, frame, &prompt, &defaultValue, &result]() {
+        return openJavaScriptPromptDelegate(frame, prompt, defaultValue, result);
+    });
 }
 
 void ChromeClient::mouseDidMoveOverElement(const HitTestResult& result)
