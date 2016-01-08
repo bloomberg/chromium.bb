@@ -282,15 +282,18 @@ void ImportSettings(Profile* profile,
                     int items_to_import) {
   const importer::SourceProfile& source_profile =
       importer_list->GetSourceProfileAt(0);
+  // If no items to import then skip entirely.
+  if (!items_to_import)
+    return;
 
   // Ensure that importers aren't requested to import items that they do not
   // support. If there is no overlap, skip.
   items_to_import &= source_profile.services_supported;
-  if (items_to_import == 0)
-    return;
+  if (items_to_import) {
+    ImportFromSourceProfile(importer_host, source_profile, profile,
+                            items_to_import);
+  }
 
-  ImportFromSourceProfile(importer_host, source_profile, profile,
-                          items_to_import);
   g_auto_import_state |= first_run::AUTO_IMPORT_PROFILE_IMPORTED;
 }
 
