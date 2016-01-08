@@ -86,6 +86,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/rendering/draw-buffers.html', bug=483282)
     self.Fail('conformance2/samplers/sampler-drawing-test.html', bug=483282)
     self.Skip('conformance2/textures/webgl_canvas/*', bug=483282)
+    # Remove after we roll in https://github.com/KhronosGroup/WebGL/pull/1408.
+    self.Fail('conformance2/textures/misc/tex-input-validation.html',
+        bug=575550)
 
     # Windows only.
     self.Skip('deqp/functional/gles3/readpixel.html', ['win'], bug=483282)
@@ -101,8 +104,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win'], bug=483282)
     self.Fail('conformance2/textures/canvas/*', ['win'], bug=483282)
     self.Fail('conformance2/textures/misc/gl-get-tex-parameter.html',
-        ['win'], bug=483282)
-    self.Fail('conformance2/textures/misc/tex-input-validation.html',
         ['win'], bug=483282)
     self.Skip('conformance2/textures/misc/tex-mipmap-levels.html',
         ['win'], bug=483282)
