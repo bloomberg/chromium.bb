@@ -264,23 +264,31 @@ scoped_ptr<BlimpMessageProcessor> BlimpEngineSession::RegisterFeature(
   return outgoing_proxy;
 }
 
-void BlimpEngineSession::CreateWebContents(const int target_tab_id) {
+bool BlimpEngineSession::CreateWebContents(const int target_tab_id) {
+  DVLOG(1) << "Create tab " << target_tab_id;
   // TODO(haibinlu): Support more than one active WebContents (crbug/547231).
-  DCHECK(!web_contents_);
+  if (web_contents_) {
+    DLOG(WARNING) << "Tab " << target_tab_id << " already existed";
+    return false;
+  }
+
   content::WebContents::CreateParams create_params(browser_context_.get(),
                                                    nullptr);
   scoped_ptr<content::WebContents> new_contents =
       make_scoped_ptr(content::WebContents::Create(create_params));
   PlatformSetContents(std::move(new_contents));
+  return true;
 }
 
 void BlimpEngineSession::CloseWebContents(const int target_tab_id) {
+  DVLOG(1) << "Close tab " << target_tab_id;
   DCHECK(web_contents_);
   web_contents_->Close();
 }
 
 void BlimpEngineSession::HandleResize(float device_pixel_ratio,
                                       const gfx::Size& size) {
+  DVLOG(1) << "Resize to " << size.ToString() << ", " << device_pixel_ratio;
   screen_->UpdateDisplayScaleAndSize(device_pixel_ratio, size);
   if (web_contents_ && web_contents_->GetRenderViewHost() &&
       web_contents_->GetRenderViewHost()->GetWidget()) {
@@ -289,8 +297,10 @@ void BlimpEngineSession::HandleResize(float device_pixel_ratio,
 }
 
 void BlimpEngineSession::LoadUrl(const int target_tab_id, const GURL& url) {
-  if (url.is_empty() || !web_contents_)
+  DVLOG(1) << "Load URL " << url << " in tab " << target_tab_id;
+  if (url.is_empty()) {
     return;
+  }
 
   // TODO(dtrainor, haibinlu): Fix up the URL with url_fixer.h.  If that doesn't
   // produce a valid spec() then try to build a search query?
@@ -302,23 +312,17 @@ void BlimpEngineSession::LoadUrl(const int target_tab_id, const GURL& url) {
 }
 
 void BlimpEngineSession::GoBack(const int target_tab_id) {
-  if (!web_contents_)
-    return;
-
+  DVLOG(1) << "Back in tab " << target_tab_id;
   web_contents_->GetController().GoBack();
 }
 
 void BlimpEngineSession::GoForward(const int target_tab_id) {
-  if (!web_contents_)
-    return;
-
+  DVLOG(1) << "Forward in tab " << target_tab_id;
   web_contents_->GetController().GoForward();
 }
 
 void BlimpEngineSession::Reload(const int target_tab_id) {
-  if (!web_contents_)
-    return;
-
+  DVLOG(1) << "Reload in tab " << target_tab_id;
   web_contents_->GetController().Reload(true);
 }
 
@@ -352,10 +356,11 @@ void BlimpEngineSession::ProcessMessage(
   DCHECK(message->type() == BlimpMessage::TAB_CONTROL ||
          message->type() == BlimpMessage::NAVIGATION);
 
+  bool result = true;
   if (message->type() == BlimpMessage::TAB_CONTROL) {
     switch (message->tab_control().type()) {
       case TabControlMessage::CREATE_TAB:
-        CreateWebContents(message->target_tab_id());
+        result = CreateWebContents(message->target_tab_id());
         break;
       case TabControlMessage::CLOSE_TAB:
         CloseWebContents(message->target_tab_id());
@@ -385,10 +390,12 @@ void BlimpEngineSession::ProcessMessage(
       default:
         NOTIMPLEMENTED();
     }
+  } else {
+    result = false;
   }
 
   if (!callback.is_null()) {
-    callback.Run(net::OK);
+    callback.Run(result ? net::OK : net::ERR_FAILED);
   }
 }
 
@@ -491,6 +498,8 @@ void BlimpEngineSession::NavigationStateChanged(
 void BlimpEngineSession::RenderViewHostChanged(
     content::RenderViewHost* old_host,
     content::RenderViewHost* new_host) {
+  // Informs client that WebContents swaps its visible RenderViewHost with
+  // another one.
   render_widget_feature_.OnRenderWidgetInitialized(kDummyTabId);
 }
 

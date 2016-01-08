@@ -183,6 +183,8 @@ void BlimpCompositor::SendCompositorProto(
 }
 
 void BlimpCompositor::OnRenderWidgetInitialized() {
+  DVLOG(1) << "OnRenderWidgetInitialized";
+
   // Tear down the output surface connection with the old LayerTreeHost
   // instance.
   SetVisible(false);
@@ -201,6 +203,10 @@ void BlimpCompositor::OnRenderWidgetInitialized() {
 
   // Make sure we don't have a receiver at this point.
   DCHECK(!remote_proto_channel_receiver_);
+
+  // TODO(khushalsagar): re-initialize compositor and input state for the new
+  // render widget.
+  SetVisible(true);
 }
 
 void BlimpCompositor::OnCompositorMessageReceived(

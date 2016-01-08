@@ -8,7 +8,6 @@
 #include "blimp/common/proto/input.pb.h"
 #include "blimp/common/proto/navigation.pb.h"
 #include "blimp/common/proto/render_widget.pb.h"
-#include "blimp/common/proto/size.pb.h"
 #include "blimp/common/proto/tab_control.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

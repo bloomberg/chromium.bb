@@ -6,7 +6,6 @@
 
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
-#include "blimp/common/proto/size.pb.h"
 #include "blimp/common/proto/tab_control.pb.h"
 #include "blimp/net/blimp_message_processor.h"
 

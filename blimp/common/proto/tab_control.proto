@@ -8,9 +8,15 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
-import "size.proto";
-
 package blimp;
+
+// Contains display information that represents resize events coming from the
+// client device.
+message SizeMessage {
+  optional uint64 width = 1;
+  optional uint64 height = 2;
+  optional float device_pixel_ratio = 3;
+}
 
 message TabControlMessage {
   enum Type {

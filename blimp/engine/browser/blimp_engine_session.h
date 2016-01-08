@@ -95,7 +95,9 @@ class BlimpEngineSession
 
   // TabControlMessage handler methods.
   // Creates a new WebContents, which will be indexed by |target_tab_id|.
-  void CreateWebContents(const int target_tab_id);
+  // Returns true if a new WebContents is created, false otherwise.
+  bool CreateWebContents(const int target_tab_id);
+
   void CloseWebContents(const int target_tab_id);
   void HandleResize(float device_pixel_ratio, const gfx::Size& size);
 

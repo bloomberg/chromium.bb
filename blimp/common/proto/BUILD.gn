@@ -31,7 +31,6 @@ proto_library("proto_internal") {
     "navigation.proto",
     "protocol_control.proto",
     "render_widget.proto",
-    "size.proto",
     "tab_control.proto",
   ]
 

@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "blimp/common/proto/blimp_message.pb.h"
-#include "blimp/common/proto/size.pb.h"
 #include "blimp/common/proto/tab_control.pb.h"
 #include "blimp/net/test_common.h"
 #include "net/base/net_errors.h"
