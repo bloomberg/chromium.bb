@@ -102,7 +102,7 @@ scoped_ptr<base::SharedMemory> GetSharedMemoryFromSharedMemoryHandleMsg1(
       new base::SharedMemory(handle, false));
 
   shared_memory->Map(size);
-  return std::move(shared_memory);
+  return shared_memory;
 }
 
 // |message| must be deserializable as a TestTwoHandleWinMsg. Returns the
