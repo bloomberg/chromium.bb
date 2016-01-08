@@ -56,7 +56,6 @@ HTMLUListElement* InsertListCommand::fixOrphanedListChild(Node* node)
     insertNodeBefore(listElement, node);
     removeNode(node);
     appendNode(node, listElement);
-    m_listElement = listElement;
     return listElement.get();
 }
 
@@ -272,7 +271,7 @@ bool InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
     }
 
     if (!listChildNode || switchListType || forceCreateList)
-        m_listElement = listifyParagraph(endingSelection().visibleStart(), listTag);
+        listifyParagraph(endingSelection().visibleStart(), listTag);
 
     return true;
 }
@@ -354,13 +353,13 @@ static HTMLElement* adjacentEnclosingList(const VisiblePosition& pos, const Visi
     return listElement;
 }
 
-PassRefPtrWillBeRawPtr<HTMLElement> InsertListCommand::listifyParagraph(const VisiblePosition& originalStart, const HTMLQualifiedName& listTag)
+void InsertListCommand::listifyParagraph(const VisiblePosition& originalStart, const HTMLQualifiedName& listTag)
 {
     VisiblePosition start = startOfParagraph(originalStart, CanSkipOverEditingBoundary);
     VisiblePosition end = endOfParagraph(start, CanSkipOverEditingBoundary);
 
     if (start.isNull() || end.isNull())
-        return nullptr;
+        return;
 
     // Check for adjoining lists.
     RefPtrWillBeRawPtr<HTMLElement> listItemElement = HTMLLIElement::create(document());
@@ -418,17 +417,13 @@ PassRefPtrWillBeRawPtr<HTMLElement> InsertListCommand::listifyParagraph(const Vi
     moveParagraph(start, end, createVisiblePosition(positionBeforeNode(placeholder.get())), true);
 
     if (listElement)
-        return mergeWithNeighboringLists(listElement);
-
-    if (canMergeLists(previousList, nextList))
+        mergeWithNeighboringLists(listElement);
+    else if (canMergeLists(previousList, nextList))
         mergeIdenticalElements(previousList, nextList);
-
-    return listElement;
 }
 
 DEFINE_TRACE(InsertListCommand)
 {
-    visitor->trace(m_listElement);
     CompositeEditCommand::trace(visitor);
 }
 

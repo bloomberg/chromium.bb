@@ -57,9 +57,8 @@ private:
     PassRefPtrWillBeRawPtr<HTMLElement> mergeWithNeighboringLists(PassRefPtrWillBeRawPtr<HTMLElement>);
     bool doApplyForSingleParagraph(bool forceCreateList, const HTMLQualifiedName&, Range& currentSelection);
     void unlistifyParagraph(const VisiblePosition& originalStart, HTMLElement* listNode, Node* listChildNode);
-    PassRefPtrWillBeRawPtr<HTMLElement> listifyParagraph(const VisiblePosition& originalStart, const HTMLQualifiedName& listTag);
+    void listifyParagraph(const VisiblePosition& originalStart, const HTMLQualifiedName& listTag);
 
-    RefPtrWillBeMember<HTMLElement> m_listElement;
     Type m_type;
 };
 
