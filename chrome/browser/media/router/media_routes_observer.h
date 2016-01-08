@@ -15,21 +15,34 @@ namespace media_router {
 class MediaRouter;
 
 // Base class for observing when the set of MediaRoutes and their associated
-// MediaSinks have been updated.
+// MediaSinks have been updated.  When an object is instantiated with a
+// |source_id|, the observer expects that |routes| reported by
+// |OnRoutesUpdated| that match the route IDs contained in the
+// |joinable_route_ids| can be connected joined by the source.  If no
+// |source_id| is supplied, then the idea of joinable routes no longer applies.
 class MediaRoutesObserver {
  public:
-  explicit MediaRoutesObserver(MediaRouter* router);
+  explicit MediaRoutesObserver(MediaRouter* router) :
+    MediaRoutesObserver(router, MediaSource::Id()) {}
+  MediaRoutesObserver(MediaRouter* router, const MediaSource::Id source_id);
   virtual ~MediaRoutesObserver();
 
   // Invoked when the list of routes and their associated sinks have been
-  // updated.
+  // updated with the context of the |source_id|.  This will return a list of
+  // |routes| and a list of |joinable_route_ids|.  A route is joinable only if
+  // it is joinable in the context of the |source_id|.
   // Implementations may not perform operations that modify the Media Router's
   // observer list. In particular, invoking this observer's destructor within
   // OnRoutesUpdated will result in undefined behavior.
-  virtual void OnRoutesUpdated(const std::vector<MediaRoute>& routes) {}
+  virtual void OnRoutesUpdated(
+      const std::vector<MediaRoute>& routes,
+      const std::vector<MediaRoute::Id>& joinable_route_ids) {}
+
+  const MediaSource::Id source_id() const { return source_id_; }
 
  private:
   MediaRouter* router_;
+  const MediaSource::Id source_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRoutesObserver);
 };

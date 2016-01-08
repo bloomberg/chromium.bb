@@ -34,7 +34,8 @@ class MediaSinksObserver;
 class PresentationConnectionStateObserver;
 class PresentationSessionMessagesObserver;
 
-// Type of callback used in |CreateRoute()| and |JoinRoute()|. Callback is
+// Type of callback used in |CreateRoute()|, |JoinRoute()|, and
+// |ConnectRouteByRouteId()|. Callback is
 // invoked when the route request either succeeded or failed.
 // On success:
 // |route|: The route created or joined.
@@ -83,6 +84,23 @@ class MediaRouter : public KeyedService {
   virtual void CreateRoute(
       const MediaSource::Id& source_id,
       const MediaSink::Id& sink_id,
+      const GURL& origin,
+      content::WebContents* web_contents,
+      const std::vector<MediaRouteResponseCallback>& callbacks) = 0;
+
+  // Creates a route and connects it to an existing route identified by
+  // |route_id|. |route_id| must refer to a non-local route, unnassociated with
+  // a Presentation ID, because a new Presentation ID will be created.
+  // |source|: The source to route to the existing route.
+  // |route_id|: Route ID of the existing route.
+  // |origin|, |web_contents|: Origin and WebContents of the join route request.
+  // Used for validation when enforcing same-origin and/or same-tab scope.
+  // (See CreateRoute documentation).
+  // Each callback in |callbacks| is invoked with a response indicating
+  // success or failure, in the order they are listed.
+  virtual void ConnectRouteByRouteId(
+      const MediaSource::Id& source_id,
+      const MediaRoute::Id& route_id,
       const GURL& origin,
       content::WebContents* web_contents,
       const std::vector<MediaRouteResponseCallback>& callbacks) = 0;

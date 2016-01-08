@@ -105,16 +105,19 @@ class MediaRouterUI::UIIssuesObserver : public IssuesObserver {
 };
 
 MediaRouterUI::UIMediaRoutesObserver::UIMediaRoutesObserver(
-    MediaRouter* router, const RoutesUpdatedCallback& callback)
-    : MediaRoutesObserver(router), callback_(callback) {
+    MediaRouter* router, const MediaSource::Id& source_id,
+    const RoutesUpdatedCallback& callback)
+    : MediaRoutesObserver(router, source_id), callback_(callback) {
   DCHECK(!callback_.is_null());
 }
 
 MediaRouterUI::UIMediaRoutesObserver::~UIMediaRoutesObserver() {}
 
 void MediaRouterUI::UIMediaRoutesObserver::OnRoutesUpdated(
-    const std::vector<MediaRoute>& routes) {
+    const std::vector<MediaRoute>& routes,
+    const std::vector<MediaRoute::Id>& joinable_route_ids) {
   std::vector<MediaRoute> routes_for_display;
+  std::vector<MediaRoute::Id> joinable_route_ids_for_display;
   for (const MediaRoute& route : routes) {
     if (route.for_display()) {
 #ifndef NDEBUG
@@ -127,11 +130,15 @@ void MediaRouterUI::UIMediaRoutesObserver::OnRoutesUpdated(
         }
       }
 #endif
+      if (ContainsValue(joinable_route_ids, route.media_route_id())) {
+        joinable_route_ids_for_display.push_back(route.media_route_id());
+      }
+
       routes_for_display.push_back(route);
     }
   }
 
-  callback_.Run(routes_for_display);
+  callback_.Run(routes_for_display, joinable_route_ids_for_display);
 }
 
 MediaRouterUI::MediaRouterUI(content::WebUI* web_ui)
@@ -197,6 +204,10 @@ void MediaRouterUI::InitWithDefaultMediaSource(
   if (presentation_service_delegate_->HasDefaultPresentationRequest()) {
     OnDefaultPresentationChanged(
         presentation_service_delegate_->GetDefaultPresentationRequest());
+  } else {
+    // Register for MediaRoute updates without a media source.
+    routes_observer_.reset(new UIMediaRoutesObserver(router_, MediaSource::Id(),
+          base::Bind(&MediaRouterUI::OnRoutesUpdated, base::Unretained(this))));
   }
 }
 
@@ -221,10 +232,6 @@ void MediaRouterUI::InitCommon(content::WebContents* initiator) {
 
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT1("media_router", "UI", initiator,
                                       "MediaRouterUI::InitCommon", this);
-  // Register for MediaRoute updates.
-  routes_observer_.reset(new UIMediaRoutesObserver(
-      router_,
-      base::Bind(&MediaRouterUI::OnRoutesUpdated, base::Unretained(this))));
 
   // Create |collator_| before |query_result_manager_| so that |collator_| is
   // already set up when we get a callback from |query_result_manager_|.
@@ -253,15 +260,24 @@ void MediaRouterUI::InitCommon(content::WebContents* initiator) {
 
 void MediaRouterUI::OnDefaultPresentationChanged(
     const PresentationRequest& presentation_request) {
+  MediaSource source = presentation_request.GetMediaSource();
   presentation_request_.reset(new PresentationRequest(presentation_request));
-  query_result_manager_->StartSinksQuery(
-      MediaCastMode::DEFAULT, presentation_request_->GetMediaSource());
+  query_result_manager_->StartSinksQuery(MediaCastMode::DEFAULT, source);
+  // Register for MediaRoute updates.
+  routes_observer_.reset(new UIMediaRoutesObserver(
+      router_, source.id(),
+      base::Bind(&MediaRouterUI::OnRoutesUpdated, base::Unretained(this))));
+
   UpdateCastModes();
 }
 
 void MediaRouterUI::OnDefaultPresentationRemoved() {
   presentation_request_.reset();
   query_result_manager_->StopSinksQuery(MediaCastMode::DEFAULT);
+  // Register for MediaRoute updates without a media source.
+  routes_observer_.reset(new UIMediaRoutesObserver(
+        router_, MediaSource::Id(),
+        base::Bind(&MediaRouterUI::OnRoutesUpdated, base::Unretained(this))));
   UpdateCastModes();
 }
 
@@ -293,6 +309,12 @@ void MediaRouterUI::UIInitialized() {
 
 bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
                                 MediaCastMode cast_mode) {
+  return CreateOrConnectRoute(sink_id, cast_mode, MediaRoute::Id());
+}
+
+bool MediaRouterUI::CreateOrConnectRoute(const MediaSink::Id& sink_id,
+                                              MediaCastMode cast_mode,
+                                              const MediaRoute::Id& route_id) {
   DCHECK(query_result_manager_.get());
   DCHECK(initiator_);
 
@@ -362,9 +384,19 @@ bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
       FROM_HERE, base::TimeDelta::FromSeconds(kCreateRouteTimeoutSeconds), this,
       &MediaRouterUI::RouteCreationTimeout);
 
-  router_->CreateRoute(source.id(), sink_id, origin, initiator_,
-                       route_response_callbacks);
+  if (route_id.empty()) {
+    router_->CreateRoute(source.id(), sink_id, origin, initiator_,
+                         route_response_callbacks);
+  } else {
+    router_->ConnectRouteByRouteId(source.id(), route_id, origin,
+                                   initiator_, route_response_callbacks);
+  }
   return true;
+}
+
+bool MediaRouterUI::ConnectRoute(const MediaSink::Id& sink_id,
+                                 const MediaRoute::Id& route_id) {
+  return CreateOrConnectRoute(sink_id, MediaCastMode::DEFAULT, route_id);
 }
 
 void MediaRouterUI::CloseRoute(const MediaRoute::Id& route_id) {
@@ -411,9 +443,12 @@ void MediaRouterUI::SetIssue(const Issue* issue) {
   if (ui_initialized_) handler_->UpdateIssue(issue);
 }
 
-void MediaRouterUI::OnRoutesUpdated(const std::vector<MediaRoute>& routes) {
+void MediaRouterUI::OnRoutesUpdated(
+    const std::vector<MediaRoute>& routes,
+    const std::vector<MediaRoute::Id>& joinable_route_ids) {
   routes_ = routes;
-  if (ui_initialized_) handler_->UpdateRoutes(routes_);
+  joinable_route_ids_ = joinable_route_ids;
+  if (ui_initialized_) handler_->UpdateRoutes(routes_, joinable_route_ids_);
 }
 
 void MediaRouterUI::OnRouteResponseReceived(const int route_request_id,

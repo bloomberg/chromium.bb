@@ -118,16 +118,19 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateRoutes) {
   MediaRoute::Id route_id("routeId123");
   MediaSink::Id sink_id("sinkId123");
   MediaSink sink(sink_id, "The sink", MediaSink::IconType::CAST);
+  MediaSource media_source("mediaSource");
   std::string description("This is a route");
   bool is_local = true;
   std::vector<MediaRoute> routes;
-  routes.push_back(MediaRoute(route_id, MediaSource("mediaSource"), sink_id,
+  routes.push_back(MediaRoute(route_id, media_source, sink_id,
                               description, is_local, kControllerPathForTesting,
                               true));
+  std::vector<MediaRoute::Id> joinable_route_ids;
+  joinable_route_ids.push_back(route_id);
 
   EXPECT_CALL(*mock_media_router_ui_, GetRouteProviderExtensionId()).WillOnce(
       ReturnRef(provider_extension_id()));
-  handler_->UpdateRoutes(routes);
+  handler_->UpdateRoutes(routes, joinable_route_ids);
   EXPECT_EQ(1u, web_ui_->call_data().size());
   const content::TestWebUI::CallData& call_data = *web_ui_->call_data()[0];
   EXPECT_EQ("media_router.ui.setRouteList", call_data.function_name());
@@ -148,6 +151,9 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateRoutes) {
   bool actual_is_local = false;
   EXPECT_TRUE(route_value->GetBoolean("isLocal", &actual_is_local));
   EXPECT_EQ(is_local, actual_is_local);
+  bool actual_can_join = false;
+  EXPECT_TRUE(route_value->GetBoolean("canJoin", &actual_can_join));
+  EXPECT_TRUE(actual_can_join);
 
   std::string custom_controller_path;
   EXPECT_TRUE(route_value->GetString("customControllerPath",

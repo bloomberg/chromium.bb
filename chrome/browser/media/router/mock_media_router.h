@@ -37,6 +37,12 @@ class MockMediaRouter : public MediaRouter {
                     const GURL& origin,
                     content::WebContents* web_contents,
                     const std::vector<MediaRouteResponseCallback>& callbacks));
+  MOCK_METHOD5(ConnectRouteByRouteId,
+               void(const MediaSource::Id& source,
+                    const MediaRoute::Id& route_id,
+                    const GURL& origin,
+                    content::WebContents* web_contents,
+                    const std::vector<MediaRouteResponseCallback>& callbacks));
   MOCK_METHOD1(DetachRoute, void(const MediaRoute::Id& route_id));
   MOCK_METHOD1(TerminateRoute, void(const MediaRoute::Id& route_id));
   MOCK_METHOD3(SendRouteMessage,

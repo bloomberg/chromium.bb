@@ -44,6 +44,12 @@ class MediaRouterAndroid : public MediaRouterBase {
       const GURL& origin,
       content::WebContents* web_contents,
       const std::vector<MediaRouteResponseCallback>& callbacks) override;
+  void ConnectRouteByRouteId(
+      const MediaSource::Id& source,
+      const MediaRoute::Id& route_id,
+      const GURL& origin,
+      content::WebContents* web_contents,
+      const std::vector<MediaRouteResponseCallback>& callbacks) override;
   void DetachRoute(const MediaRoute::Id& route_id) override;
   void TerminateRoute(const MediaRoute::Id& route_id) override;
   void SendRouteMessage(const MediaRoute::Id& route_id,

@@ -116,6 +116,15 @@ void MediaRouterAndroid::CreateRoute(
       route_request_id);
 }
 
+void MediaRouterAndroid::ConnectRouteByRouteId(
+    const MediaSource::Id& source,
+    const MediaRoute::Id& route_id,
+    const GURL& origin,
+    content::WebContents* web_contents,
+    const std::vector<MediaRouteResponseCallback>& callbacks) {
+  NOTIMPLEMENTED();
+}
+
 void MediaRouterAndroid::JoinRoute(
     const MediaSource::Id& source_id,
     const std::string& presentation_id,
@@ -270,6 +279,9 @@ void MediaRouterAndroid::UnregisterMediaSinksObserver(
 void MediaRouterAndroid::RegisterMediaRoutesObserver(
     MediaRoutesObserver* observer) {
   DVLOG(2) << "Added MediaRoutesObserver: " << observer;
+  if (!observer->source_id().empty())
+    NOTIMPLEMENTED() << "Joinable routes query not implemented.";
+
   routes_observers_.AddObserver(observer);
 }
 
@@ -375,7 +387,7 @@ void MediaRouterAndroid::OnRouteCreated(
 
   active_routes_.push_back(route);
   FOR_EACH_OBSERVER(MediaRoutesObserver, routes_observers_,
-                    OnRoutesUpdated(active_routes_));
+      OnRoutesUpdated(active_routes_, std::vector<MediaRoute::Id>()));
 }
 
 void MediaRouterAndroid::OnRouteRequestError(
@@ -407,7 +419,7 @@ void MediaRouterAndroid::OnRouteClosed(
     }
 
   FOR_EACH_OBSERVER(MediaRoutesObserver, routes_observers_,
-                    OnRoutesUpdated(active_routes_));
+      OnRoutesUpdated(active_routes_, std::vector<MediaRoute::Id>()));
 }
 
 void MediaRouterAndroid::OnMessageSentResult(JNIEnv* env,

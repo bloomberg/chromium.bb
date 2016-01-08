@@ -17,8 +17,9 @@ MockMediaSinksObserver::MockMediaSinksObserver(MediaRouter* router,
 MockMediaSinksObserver::~MockMediaSinksObserver() {
 }
 
-MockMediaRoutesObserver::MockMediaRoutesObserver(MediaRouter* router)
-    : MediaRoutesObserver(router) {
+MockMediaRoutesObserver::MockMediaRoutesObserver(MediaRouter* router,
+    const MediaSource::Id source_id)
+    : MediaRoutesObserver(router, source_id) {
 }
 MockMediaRoutesObserver::~MockMediaRoutesObserver() {
 }

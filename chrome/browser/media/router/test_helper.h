@@ -101,6 +101,13 @@ class MockMediaRouteProvider : public interfaces::MediaRouteProvider {
                     const mojo::String& origin,
                     int tab_id,
                     const JoinRouteCallback& callback));
+  MOCK_METHOD6(ConnectRouteByRouteId,
+               void(const mojo::String& source_urn,
+                    const mojo::String& route_id,
+                    const mojo::String& presentation_id,
+                    const mojo::String& origin,
+                    int tab_id,
+                    const JoinRouteCallback& callback));
   MOCK_METHOD1(DetachRoute, void(const mojo::String& route_id));
   MOCK_METHOD1(TerminateRoute, void(const mojo::String& route_id));
   MOCK_METHOD1(StartObservingMediaSinks, void(const mojo::String& source));
@@ -126,8 +133,8 @@ class MockMediaRouteProvider : public interfaces::MediaRouteProvider {
                void(const mojo::String& route_id));
   MOCK_METHOD1(OnPresentationSessionDetached,
                void(const mojo::String& route_id));
-  MOCK_METHOD0(StartObservingMediaRoutes, void());
-  MOCK_METHOD0(StopObservingMediaRoutes, void());
+  MOCK_METHOD1(StartObservingMediaRoutes, void(const mojo::String& source));
+  MOCK_METHOD1(StopObservingMediaRoutes, void(const mojo::String& source));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMediaRouteProvider);
@@ -143,10 +150,12 @@ class MockMediaSinksObserver : public MediaSinksObserver {
 
 class MockMediaRoutesObserver : public MediaRoutesObserver {
  public:
-  explicit MockMediaRoutesObserver(MediaRouter* router);
+  explicit MockMediaRoutesObserver(MediaRouter* router,
+      const MediaSource::Id source_id = std::string());
   ~MockMediaRoutesObserver() override;
 
-  MOCK_METHOD1(OnRoutesUpdated, void(const std::vector<MediaRoute>& sinks));
+  MOCK_METHOD2(OnRoutesUpdated, void(const std::vector<MediaRoute>& routes,
+      const std::vector<MediaRoute::Id>& joinable_route_ids));
 };
 
 class MockEventPageTracker : public extensions::EventPageTracker {

@@ -29,6 +29,7 @@ const char kRequestInitialData[] = "requestInitialData";
 const char kCreateRoute[] = "requestRoute";
 const char kActOnIssue[] = "actOnIssue";
 const char kCloseRoute[] = "closeRoute";
+const char kJoinRoute[] = "joinRoute";
 const char kCloseDialog[] = "closeDialog";
 const char kReportClickedSinkIndex[] = "reportClickedSinkIndex";
 const char kReportNavigateToView[] = "reportNavigateToView";
@@ -74,12 +75,13 @@ scoped_ptr<base::ListValue> SinksToValue(
 }
 
 scoped_ptr<base::DictionaryValue> RouteToValue(
-    const MediaRoute& route, const std::string& extension_id) {
+    const MediaRoute& route, bool canJoin, const std::string& extension_id) {
   scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue);
   dictionary->SetString("id", route.media_route_id());
   dictionary->SetString("sinkId", route.media_sink_id());
   dictionary->SetString("description", route.description());
   dictionary->SetBoolean("isLocal", route.is_local());
+  dictionary->SetBoolean("canJoin", canJoin);
 
   const std::string& custom_path = route.custom_controller_path();
   if (!custom_path.empty()) {
@@ -95,12 +97,15 @@ scoped_ptr<base::DictionaryValue> RouteToValue(
 }
 
 scoped_ptr<base::ListValue> RoutesToValue(
-    const std::vector<MediaRoute>& routes, const std::string& extension_id) {
+    const std::vector<MediaRoute>& routes,
+    const std::vector<MediaRoute::Id>& joinable_route_ids,
+    const std::string& extension_id) {
   scoped_ptr<base::ListValue> value(new base::ListValue);
 
   for (const MediaRoute& route : routes) {
+    bool canJoin = ContainsValue(joinable_route_ids, route.media_route_id());
     scoped_ptr<base::DictionaryValue> route_val(RouteToValue(route,
-        extension_id));
+        canJoin, extension_id));
     value->Append(route_val.release());
   }
 
@@ -185,9 +190,10 @@ void MediaRouterWebUIMessageHandler::UpdateSinks(
 }
 
 void MediaRouterWebUIMessageHandler::UpdateRoutes(
-    const std::vector<MediaRoute>& routes) {
-  DVLOG(2) << "UpdateRoutes";
+    const std::vector<MediaRoute>& routes,
+    const std::vector<MediaRoute::Id>& joinable_route_ids) {
   scoped_ptr<base::ListValue> routes_val(RoutesToValue(routes,
+      joinable_route_ids,
       media_router_ui_->GetRouteProviderExtensionId()));
   web_ui()->CallJavascriptFunction(kSetRouteList, *routes_val);
 }
@@ -206,7 +212,7 @@ void MediaRouterWebUIMessageHandler::OnCreateRouteResponseReceived(
     const MediaRoute* route) {
   DVLOG(2) << "OnCreateRouteResponseReceived";
   if (route) {
-    scoped_ptr<base::DictionaryValue> route_value(RouteToValue(*route,
+    scoped_ptr<base::DictionaryValue> route_value(RouteToValue(*route, false,
         media_router_ui_->GetRouteProviderExtensionId()));
     web_ui()->CallJavascriptFunction(kOnCreateRouteResponseReceived,
                                      base::StringValue(sink_id), *route_value);
@@ -250,6 +256,10 @@ void MediaRouterWebUIMessageHandler::RegisterMessages() {
       base::Bind(&MediaRouterWebUIMessageHandler::OnCloseRoute,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      kJoinRoute,
+      base::Bind(&MediaRouterWebUIMessageHandler::OnJoinRoute,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       kCloseDialog,
       base::Bind(&MediaRouterWebUIMessageHandler::OnCloseDialog,
                  base::Unretained(this)));
@@ -289,6 +299,7 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
   initial_data.Set("sinks", sinks.release());
 
   scoped_ptr<base::ListValue> routes(RoutesToValue(media_router_ui_->routes(),
+      media_router_ui_->joinable_route_ids(),
       media_router_ui_->GetRouteProviderExtensionId()));
   initial_data.Set("routes", routes.release());
 
@@ -376,8 +387,51 @@ void MediaRouterWebUIMessageHandler::OnActOnIssue(
   media_router_ui_->ClearIssue(issue_id);
 }
 
-void MediaRouterWebUIMessageHandler::OnCloseRoute(
-    const base::ListValue* args) {
+void MediaRouterWebUIMessageHandler::OnJoinRoute(const base::ListValue* args) {
+  DVLOG(1) << "OnJoinRoute";
+  const base::DictionaryValue* args_dict = nullptr;
+  std::string route_id;
+  std::string sink_id;
+  if (!args->GetDictionary(0, &args_dict) ||
+      !args_dict->GetString("sinkId", &sink_id) ||
+      !args_dict->GetString("routeId", &route_id)) {
+    DVLOG(1) << "Unable to extract args.";
+    return;
+  }
+
+  if (sink_id.empty()) {
+    DVLOG(1) << "Media Route UI did not respond with a "
+             << "valid sink ID. Aborting.";
+    return;
+  }
+
+  if (route_id.empty()) {
+    DVLOG(1) << "Media Route UI did not respond with a "
+             << "valid route ID. Aborting.";
+    return;
+  }
+
+  MediaRouterUI* media_router_ui =
+      static_cast<MediaRouterUI*>(web_ui()->GetController());
+  if (media_router_ui->HasPendingRouteRequest()) {
+    DVLOG(1) << "UI already has pending route request. Ignoring.";
+    Issue issue(
+        l10n_util::GetStringUTF8(IDS_MEDIA_ROUTER_ISSUE_PENDING_ROUTE),
+        std::string(), IssueAction(IssueAction::TYPE_DISMISS),
+        std::vector<IssueAction>(), std::string(), Issue::NOTIFICATION,
+        false, std::string());
+    media_router_ui_->AddIssue(issue);
+    return;
+  }
+
+  if (!media_router_ui_->ConnectRoute(sink_id, route_id)) {
+    // TODO(boetger): Need to add an issue if failed to initiate a JoinRoute
+    // request.
+    DVLOG(1) << "Error initiating route join request.";
+  }
+}
+
+void MediaRouterWebUIMessageHandler::OnCloseRoute(const base::ListValue* args) {
   DVLOG(1) << "OnCloseRoute";
   const base::DictionaryValue* args_dict = nullptr;
   std::string route_id;

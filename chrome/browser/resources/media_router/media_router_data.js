@@ -133,12 +133,13 @@ cr.define('media_router', function() {
    * @param {?number} tabId The ID of the tab in which web app is running and
    *                  accessing the route.
    * @param {boolean} isLocal True if this is a locally created route.
+   * @param {boolean} canJoin True if this route can be joined.
    * @param {?string} customControllerPath non-empty if this route has custom
    *                  controller.
    * @constructor
    * @struct
    */
-  var Route = function(id, sinkId, description, tabId, isLocal,
+  var Route = function(id, sinkId, description, tabId, isLocal, canJoin,
       customControllerPath) {
     /** @type {string} */
     this.id = id;
@@ -154,6 +155,9 @@ cr.define('media_router', function() {
 
     /** @type {boolean} */
     this.isLocal = isLocal;
+
+    /** @type {boolean} */
+    this.canJoin = canJoin;
 
     /** @type {?string} */
     this.customControllerPath = customControllerPath;

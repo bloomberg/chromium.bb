@@ -280,9 +280,23 @@ define('media_router_bindings', [
    * Called by the provider manager when the set of active routes
    * has been updated.
    * @param {!Array<MediaRoute>} routes The active set of media routes.
+   * @param {string=} opt_sourceUrn The sourceUrn associated with this route
+   *     query. This parameter is optional and can be empty.
+   * @param {Array<string>=} opt_joinableRouteIds The active set of joinable
+   *     media routes. This parameter is optional and can be empty.
    */
-  MediaRouter.prototype.onRoutesUpdated = function(routes) {
-    this.service_.onRoutesUpdated(routes.map(routeToMojo_));
+  MediaRouter.prototype.onRoutesUpdated =
+      function(routes, opt_sourceUrn, opt_joinableRouteIds) {
+    // TODO(boetger): This check allows backward compatibility with the Cast SDK
+    // and can be removed when the Cast SDK is updated.
+    if (typeof(opt_sourceUrn) != 'string') {
+      opt_sourceUrn = '';
+    }
+
+    this.service_.onRoutesUpdated(
+        routes.map(routeToMojo_),
+        opt_sourceUrn || '',
+        opt_joinableRouteIds || []);
   };
 
   /**
@@ -373,6 +387,11 @@ define('media_router_bindings', [
      * @type {function()}
      */
     this.stopObservingMediaRoutes = null;
+
+    /**
+     * @type {function()}
+     */
+    this.connectRouteByRouteId = null;
   };
 
   /**
@@ -419,7 +438,8 @@ define('media_router_bindings', [
       'joinRoute',
       'createRoute',
       'stopObservingMediaSinks',
-      'startObservingMediaRoutes'
+      'startObservingMediaRoutes',
+      'connectRouteByRouteId'
     ];
     requiredHandlers.forEach(function(nextHandler) {
       if (handlers[nextHandler] === undefined) {
@@ -489,6 +509,31 @@ define('media_router_bindings', [
   MediaRouteProvider.prototype.joinRoute =
       function(sourceUrn, presentationId, origin, tabId) {
     return this.handlers_.joinRoute(sourceUrn, presentationId, origin, tabId)
+        .then(function(newRoute) {
+          return {route: routeToMojo_(newRoute)};
+        },
+        function(err) {
+          return {error_text: 'Error joining route: ' + err.message};
+        });
+  };
+
+  /**
+   * Handles a request via the Presentation API to join an existing route given
+   * by |sourceUrn| and |routeId|. |origin| and |tabId| are used for
+   * validating same-origin/tab scope.
+   * @param {!string} sourceUrn Media source to render.
+   * @param {!string} routeId Route ID to join.
+   * @param {!string} presentationId Presentation ID to join.
+   * @param {!string} origin Origin of site requesting join.
+   * @param {!number} tabId ID of tab requesting join.
+   * @return {!Promise.<!Object>} A Promise resolving to an object describing
+   *     the newly created media route, or rejecting with an error message on
+   *     failure.
+   */
+  MediaRouteProvider.prototype.connectRouteByRouteId =
+      function(sourceUrn, routeId, presentationId, origin, tabId) {
+    return this.handlers_.connectRouteByRouteId(
+        sourceUrn, routeId, presentationId, origin, tabId)
         .then(function(newRoute) {
           return {route: routeToMojo_(newRoute)};
         },
@@ -578,17 +623,19 @@ define('media_router_bindings', [
   /**
    * Requests that the provider manager start sending information about active
    * media routes to the Media Router.
+   * @param {!string} sourceUrn
    */
-  MediaRouteProvider.prototype.startObservingMediaRoutes = function() {
-    this.handlers_.startObservingMediaRoutes();
+  MediaRouteProvider.prototype.startObservingMediaRoutes = function(sourceUrn) {
+    this.handlers_.startObservingMediaRoutes(sourceUrn);
   };
 
   /**
    * Requests that the provider manager stop sending information about active
    * media routes to the Media Router.
+   * @param {!string} sourceUrn
    */
-  MediaRouteProvider.prototype.stopObservingMediaRoutes = function() {
-    this.handlers_.stopObservingMediaRoutes();
+  MediaRouteProvider.prototype.stopObservingMediaRoutes = function(sourceUrn) {
+    this.handlers_.stopObservingMediaRoutes(sourceUrn);
   };
 
   mediaRouter = new MediaRouter(connector.bindHandleToProxy(

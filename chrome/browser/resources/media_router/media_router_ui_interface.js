@@ -142,6 +142,15 @@ cr.define('media_router.browserApi', function() {
   }
 
   /**
+   * Joins the given route.
+   *
+   * @param {!media_router.Route} route
+   */
+  function joinRoute(route) {
+    chrome.send('joinRoute', [{sinkId: route.sinkId, routeId: route.id}]);
+  }
+
+  /**
    * Indicates that the initial data has been received.
    */
   function onInitialDataReceived() {
@@ -208,6 +217,7 @@ cr.define('media_router.browserApi', function() {
     actOnIssue: actOnIssue,
     closeDialog: closeDialog,
     closeRoute: closeRoute,
+    joinRoute: joinRoute,
     onInitialDataReceived: onInitialDataReceived,
     reportClickedSinkIndex: reportClickedSinkIndex,
     reportNavigateToView: reportNavigateToView,

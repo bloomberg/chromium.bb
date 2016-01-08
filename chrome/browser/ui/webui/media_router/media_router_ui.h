@@ -103,6 +103,10 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   // completes.
   bool CreateRoute(const MediaSink::Id& sink_id, MediaCastMode cast_mode);
 
+  // Calls MediaRouter to join the given route.
+  bool ConnectRoute(const MediaSink::Id& sink_id,
+                    const MediaRoute::Id& route_id);
+
   // Calls MediaRouter to close the given route.
   void CloseRoute(const MediaRoute::Id& route_id);
 
@@ -120,6 +124,9 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   }
   const std::vector<MediaSinkWithCastModes>& sinks() const { return sinks_; }
   const std::vector<MediaRoute>& routes() const { return routes_; }
+  const std::vector<MediaRoute::Id>& joinable_route_ids() const {
+    return joinable_route_ids_;
+  }
   const std::set<MediaCastMode>& cast_modes() const { return cast_modes_; }
   const content::WebContents* initiator() const { return initiator_; }
 
@@ -135,6 +142,8 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, SortedSinks);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
                            UIMediaRoutesObserverFiltersNonDisplayRoutes);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
+      UIMediaRoutesObserverFiltersNonDisplayJoinableRoutes);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, GetExtensionNameExtensionPresent);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
                            GetExtensionNameEmptyWhenNotInstalled);
@@ -142,16 +151,20 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
                            GetExtensionNameEmptyWhenNotExtensionURL);
 
   class UIIssuesObserver;
+
   class UIMediaRoutesObserver : public MediaRoutesObserver {
    public:
     using RoutesUpdatedCallback =
-        base::Callback<void(const std::vector<MediaRoute>&)>;
-    UIMediaRoutesObserver(MediaRouter* router,
+        base::Callback<void(const std::vector<MediaRoute>&,
+            const std::vector<MediaRoute::Id>&)>;
+    UIMediaRoutesObserver(MediaRouter* router, const MediaSource::Id& source_id,
                           const RoutesUpdatedCallback& callback);
     ~UIMediaRoutesObserver() override;
 
     // MediaRoutesObserver
-    void OnRoutesUpdated(const std::vector<MediaRoute>& routes) override;
+    void OnRoutesUpdated(
+        const std::vector<MediaRoute>& routes,
+        const std::vector<MediaRoute::Id>& joinable_route_ids) override;
 
    private:
     // Callback to the owning MediaRouterUI instance.
@@ -173,7 +186,8 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   void SetIssue(const Issue* issue);
 
   // Called by |routes_observer_| when the set of active routes has changed.
-  void OnRoutesUpdated(const std::vector<MediaRoute>& routes);
+  void OnRoutesUpdated(const std::vector<MediaRoute>& routes,
+      const std::vector<MediaRoute::Id>& joinable_route_ids);
 
   // Callback passed to MediaRouter to receive response to route creation
   // requests.
@@ -193,6 +207,15 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   void OnDefaultPresentationChanged(
       const PresentationRequest& presentation_request) override;
   void OnDefaultPresentationRemoved() override;
+
+  // Creates a brand new route or, if a |route_id| is supplied, connects to a
+  // non-local route. This is used for connecting to a non-local route.
+  // Returns true if a route request is successfully submitted.
+  // OnRouteResponseReceived() will be invoked when the route request
+  // completes.
+  bool CreateOrConnectRoute(const MediaSink::Id& sink_id,
+                            MediaCastMode cast_mode,
+                            const MediaRoute::Id& route_id);
 
   // Updates the set of supported cast modes and sends the updated set to
   // |handler_|.
@@ -227,6 +250,7 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
 
   std::vector<MediaSinkWithCastModes> sinks_;
   std::vector<MediaRoute> routes_;
+  std::vector<MediaRoute::Id> joinable_route_ids_;
   CastModeSet cast_modes_;
 
   scoped_ptr<QueryResultManager> query_result_manager_;

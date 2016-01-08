@@ -29,6 +29,7 @@ cr.define('media_router', function() {
     container.addEventListener('close-route-click', onCloseRouteClick);
     container.addEventListener('create-route', onCreateRoute);
     container.addEventListener('issue-action-click', onIssueActionClick);
+    container.addEventListener('join-route-click', onJoinRouteClick);
     container.addEventListener('navigate-sink-list-to-details',
                                onNavigateToDetails);
     container.addEventListener('navigate-to-cast-mode-list',
@@ -93,12 +94,36 @@ cr.define('media_router', function() {
    * Stops a route.
    * Called when the user requests to stop a media route.
    *
-   * @param {{detail: {route: string}}} data
+   * @param {{detail: {route: media_router.Route}}} data
    * Parameters in |data|.detail:
-   *   route - route ID.
+   *   route - route to close.
    */
   function onCloseRouteClick(data) {
     media_router.browserApi.closeRoute(data.detail.route);
+  }
+
+  /**
+   * Joins a route.
+   * Called when the user requests to join a media route.
+   *
+   * @param {{detail: {route: media_router.Route}}} data
+   * Parameters in |data|.detail:
+   *   route - route to join.
+   */
+  function onJoinRouteClick(data) {
+    media_router.browserApi.joinRoute(data.detail.route);
+  }
+
+  /**
+   * Reports the index of the sink that was clicked.
+   * Called when the user selects a sink on the sink list.
+   *
+   * @param {{detail: {index: number}}} data
+   * Paramters in |data|.detail:
+   *   index - the index of the clicked sink.
+   */
+  function onSinkClick(data) {
+    media_router.browserApi.reportClickedSinkIndex(data.detail.index);
   }
 
   /**

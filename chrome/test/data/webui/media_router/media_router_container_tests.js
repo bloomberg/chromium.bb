@@ -126,13 +126,17 @@ cr.define('media_router_container', function() {
         ];
 
         fakeRouteList = [
-          new media_router.Route('id 1', 'sink id 1', 'Title 1', 0, true),
-          new media_router.Route('id 2', 'sink id 2', 'Title 2', 1, false),
+          new media_router.Route('id 1', 'sink id 1',
+                                 'Title 1', 0, true, false),
+          new media_router.Route('id 2', 'sink id 2',
+                                 'Title 2', 1, false, true),
         ];
 
         fakeRouteListWithLocalRoutesOnly = [
-          new media_router.Route('id 1', 'sink id 1', 'Title 1', 0, true),
-          new media_router.Route('id 2', 'sink id 2', 'Title 2', 1, true),
+          new media_router.Route('id 1', 'sink id 1',
+                                 'Title 1', 0, true, false),
+          new media_router.Route('id 2', 'sink id 2',
+                                 'Title 2', 1, true, false),
         ];
 
         var castModeBitset = 0x2 | 0x4 | 0x8;
@@ -627,7 +631,8 @@ cr.define('media_router_container', function() {
 
         container.allSinks = newSinks;
         container.routeList = [
-          new media_router.Route('id 1', 'sink id 30', 'Title 1', 1, false),
+          new media_router.Route('id 1', 'sink id 30',
+                                 'Title 1', 1, false, false),
         ];
 
         setTimeout(function() {

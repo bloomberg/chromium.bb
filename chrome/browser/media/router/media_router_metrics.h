@@ -40,9 +40,10 @@ enum class MediaRouteProviderWakeReason {
   STOP_LISTENING_FOR_ROUTE_MESSAGES = 11,
   CONNECTION_ERROR = 12,
   REGISTER_MEDIA_ROUTE_PROVIDER = 13,
+  CONNECT_ROUTE_BY_ROUTE_ID = 14,
 
   // NOTE: Add entries only immediately above this line.
-  TOTAL_COUNT = 14
+  TOTAL_COUNT = 15
 };
 
 class MediaRouterMetrics {

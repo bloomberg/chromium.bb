@@ -58,6 +58,8 @@ const char kSource[] = "source1";
 const char kSource2[] = "source2";
 const char kRouteId[] = "routeId";
 const char kRouteId2[] = "routeId2";
+const char kJoinableRouteId[] = "joinableRouteId";
+const char kJoinableRouteId2[] = "joinableRouteId2";
 const char kSinkId[] = "sink";
 const char kSinkId2[] = "sink2";
 const char kSinkName[] = "sinkName";
@@ -175,7 +177,8 @@ class RegisterMediaRouteProviderHandler {
 };
 
 TEST_F(MediaRouterMojoImplTest, CreateRoute) {
-  MediaRoute expected_route(kRouteId, MediaSource(std::string(kSource)),
+  MediaSource media_source(kSource);
+  MediaRoute expected_route(kRouteId, media_source,
                             kSinkId, "", false, "", false);
   interfaces::MediaRoutePtr route = interfaces::MediaRoute::New();
   route->media_source = kSource;
@@ -198,12 +201,11 @@ TEST_F(MediaRouterMojoImplTest, CreateRoute) {
           const interfaces::MediaRouteProvider::CreateRouteCallback& cb) {
         cb.Run(std::move(route), mojo::String());
       }));
-
   // MediaRouterMojoImpl will start observing local displayable routes as a
   // result of having one created.
   base::RunLoop run_loop;
-  EXPECT_CALL(mock_media_route_provider_, StartObservingMediaRoutes())
-      .WillOnce(InvokeWithoutArgs([&run_loop]() {
+  EXPECT_CALL(mock_media_route_provider_, StartObservingMediaRoutes(_))
+      .WillOnce(Invoke([&run_loop](const mojo::String& source) {
         run_loop.Quit();
       }));
 
@@ -244,7 +246,8 @@ TEST_F(MediaRouterMojoImplTest, CreateRouteFails) {
 }
 
 TEST_F(MediaRouterMojoImplTest, JoinRoute) {
-  MediaRoute expected_route(kRouteId, MediaSource(std::string(kSource)),
+  MediaSource media_source(kSource);
+  MediaRoute expected_route(kRouteId, media_source,
                             kSinkId, "", false, "", false);
   interfaces::MediaRoutePtr route = interfaces::MediaRoute::New();
   route->media_source = kSource;
@@ -270,8 +273,8 @@ TEST_F(MediaRouterMojoImplTest, JoinRoute) {
   // MediaRouterMojoImpl will start observing local displayable routes as a
   // result of having one created.
   base::RunLoop run_loop;
-  EXPECT_CALL(mock_media_route_provider_, StartObservingMediaRoutes())
-      .WillOnce(InvokeWithoutArgs([&run_loop]() {
+  EXPECT_CALL(mock_media_route_provider_, StartObservingMediaRoutes(_))
+      .WillOnce(Invoke([&run_loop](const mojo::String& source) {
         run_loop.Quit();
       }));
 
@@ -308,6 +311,69 @@ TEST_F(MediaRouterMojoImplTest, JoinRouteFails) {
   router()->JoinRoute(kSource, kPresentationId, GURL(kOrigin), nullptr,
                       route_response_callbacks);
   run_loop.Run();
+}
+
+TEST_F(MediaRouterMojoImplTest, ConnectRouteByRouteId) {
+  MediaSource media_source(kSource);
+  MediaRoute expected_route(kRouteId, media_source,
+                            kSinkId, "", false, "", false);
+  interfaces::MediaRoutePtr route = interfaces::MediaRoute::New();
+  route->media_source = kSource;
+  route->media_sink_id = kSinkId;
+  route->media_route_id = kRouteId;
+  route->description = kDescription;
+  route->is_local = true;
+  route->for_display = true;
+
+  // Use a lambda function as an invocation target here to work around
+  // a limitation with GMock::Invoke that prevents it from using move-only types
+  // in runnable parameter lists.
+  EXPECT_CALL(mock_media_route_provider_,
+              ConnectRouteByRouteId(mojo::String(kSource),
+                                    mojo::String(kRouteId), _,
+                                    mojo::String(kOrigin), kInvalidTabId, _))
+      .WillOnce(Invoke([&route](
+          const mojo::String& source, const mojo::String& route_id,
+          const mojo::String& presentation_id,
+          const mojo::String& origin, int tab_id,
+          const interfaces::MediaRouteProvider::JoinRouteCallback& cb) {
+        cb.Run(std::move(route), mojo::String());
+      }));
+  EXPECT_CALL(mock_media_route_provider_,
+      StartObservingMediaRoutes(mojo::String("")));
+
+  RouteResponseCallbackHandler handler;
+  EXPECT_CALL(handler, Invoke(Pointee(Equals(expected_route)), Not(""), ""));
+  std::vector<MediaRouteResponseCallback> route_response_callbacks;
+  route_response_callbacks.push_back(base::Bind(
+      &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
+  router()->ConnectRouteByRouteId(kSource, kRouteId, GURL(kOrigin), nullptr,
+                                  route_response_callbacks);
+  ProcessEventLoop();
+}
+
+TEST_F(MediaRouterMojoImplTest, ConnectRouteByRouteIdFails) {
+  EXPECT_CALL(mock_media_route_provider_,
+              ConnectRouteByRouteId(mojo::String(kSource),
+                                    mojo::String(kRouteId), _,
+                                    mojo::String(kOrigin), kInvalidTabId, _))
+      .WillOnce(Invoke(
+          [](const mojo::String& source,
+             const mojo::String& route_id,
+             const mojo::String& presentation_id,
+             const mojo::String& origin, int tab_id,
+             const interfaces::MediaRouteProvider::JoinRouteCallback& cb) {
+            cb.Run(interfaces::MediaRoutePtr(), mojo::String(kError));
+          }));
+
+  RouteResponseCallbackHandler handler;
+  EXPECT_CALL(handler, Invoke(nullptr, "", kError));
+  std::vector<MediaRouteResponseCallback> route_response_callbacks;
+  route_response_callbacks.push_back(base::Bind(
+      &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
+  router()->ConnectRouteByRouteId(kSource, kRouteId, GURL(kOrigin), nullptr,
+                                  route_response_callbacks);
+  ProcessEventLoop();
 }
 
 TEST_F(MediaRouterMojoImplTest, DetachRoute) {
@@ -552,24 +618,42 @@ TEST_F(MediaRouterMojoImplTest,
 
 TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaRoutesObserver) {
   MockMediaRouter mock_router;
-  EXPECT_CALL(mock_media_route_provider_, StartObservingMediaRoutes()).Times(2);
+  MediaSource media_source(kSource);
+  MediaSource different_media_source(kSource2);
+  EXPECT_CALL(mock_media_route_provider_,
+      StartObservingMediaRoutes(mojo::String(media_source.id()))).Times(2);
+  EXPECT_CALL(mock_media_route_provider_,
+      StartObservingMediaRoutes(
+          mojo::String(different_media_source.id()))).Times(1);
 
   MediaRoutesObserver* observer_captured;
   EXPECT_CALL(mock_router, RegisterMediaRoutesObserver(_))
-      .Times(2)
+      .Times(3)
       .WillRepeatedly(SaveArg<0>(&observer_captured));
-  MockMediaRoutesObserver routes_observer(&mock_router);
+  MockMediaRoutesObserver routes_observer(&mock_router, media_source.id());
   EXPECT_EQ(observer_captured, &routes_observer);
-  MockMediaRoutesObserver extra_routes_observer(&mock_router);
+  MockMediaRoutesObserver extra_routes_observer(&mock_router,
+      media_source.id());
   EXPECT_EQ(observer_captured, &extra_routes_observer);
+  MockMediaRoutesObserver different_routes_observer(&mock_router,
+      different_media_source.id());
+  EXPECT_EQ(observer_captured, &different_routes_observer);
   router()->RegisterMediaRoutesObserver(&routes_observer);
   router()->RegisterMediaRoutesObserver(&extra_routes_observer);
+  router()->RegisterMediaRoutesObserver(&different_routes_observer);
 
   std::vector<MediaRoute> expected_routes;
-  expected_routes.push_back(MediaRoute(kRouteId, MediaSource(kSource), kSinkId,
+  expected_routes.push_back(MediaRoute(kRouteId, media_source, kSinkId,
                                        kDescription, false, "", false));
-  expected_routes.push_back(MediaRoute(kRouteId2, MediaSource(kSource), kSinkId,
+  expected_routes.push_back(MediaRoute(kRouteId2, media_source, kSinkId,
                                        kDescription, false, "", false));
+  std::vector<MediaRoute::Id> expected_joinable_route_ids;
+  expected_joinable_route_ids.push_back(kJoinableRouteId);
+  expected_joinable_route_ids.push_back(kJoinableRouteId2);
+
+  mojo::Array<mojo::String> mojo_joinable_routes(2);
+  mojo_joinable_routes[0] = kJoinableRouteId;
+  mojo_joinable_routes[1] = kJoinableRouteId2;
 
   mojo::Array<interfaces::MediaRoutePtr> mojo_routes(2);
   mojo_routes[0] = interfaces::MediaRoute::New();
@@ -586,18 +670,33 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaRoutesObserver) {
   mojo_routes[1]->is_local = false;
 
   EXPECT_CALL(routes_observer,
-              OnRoutesUpdated(SequenceEquals(expected_routes)));
+              OnRoutesUpdated(SequenceEquals(expected_routes),
+                              expected_joinable_route_ids));
   EXPECT_CALL(extra_routes_observer,
-              OnRoutesUpdated(SequenceEquals(expected_routes)));
-  media_router_proxy_->OnRoutesUpdated(std::move(mojo_routes));
+              OnRoutesUpdated(SequenceEquals(expected_routes),
+                              expected_joinable_route_ids));
+  EXPECT_CALL(different_routes_observer,
+              OnRoutesUpdated(SequenceEquals(expected_routes),
+                              expected_joinable_route_ids)).Times(0);
+  media_router_proxy_->OnRoutesUpdated(std::move(mojo_routes),
+                                       media_source.id(),
+                                       std::move(mojo_joinable_routes));
   ProcessEventLoop();
 
   EXPECT_CALL(mock_router, UnregisterMediaRoutesObserver(&routes_observer));
   EXPECT_CALL(mock_router,
               UnregisterMediaRoutesObserver(&extra_routes_observer));
+  EXPECT_CALL(mock_router,
+              UnregisterMediaRoutesObserver(&different_routes_observer));
   router()->UnregisterMediaRoutesObserver(&routes_observer);
   router()->UnregisterMediaRoutesObserver(&extra_routes_observer);
-  EXPECT_CALL(mock_media_route_provider_, StopObservingMediaRoutes());
+  router()->UnregisterMediaRoutesObserver(&different_routes_observer);
+  EXPECT_CALL(mock_media_route_provider_,
+              StopObservingMediaRoutes(
+                  mojo::String(media_source.id()))).Times(1);
+  EXPECT_CALL(mock_media_route_provider_,
+              StopObservingMediaRoutes(
+                  mojo::String(different_media_source.id())));
   ProcessEventLoop();
 }
 

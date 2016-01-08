@@ -76,6 +76,12 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       const GURL& origin,
       content::WebContents* web_contents,
       const std::vector<MediaRouteResponseCallback>& callbacks) override;
+  void ConnectRouteByRouteId(
+      const MediaSource::Id& source,
+      const MediaRoute::Id& route_id,
+      const GURL& origin,
+      content::WebContents* web_contents,
+      const std::vector<MediaRouteResponseCallback>& callbacks) override;
   void TerminateRoute(const MediaRoute::Id& route_id) override;
   void DetachRoute(const MediaRoute::Id& route_id) override;
   void SendRouteMessage(const MediaRoute::Id& route_id,
@@ -138,7 +144,9 @@ class MediaRouterMojoImpl : public MediaRouterBase,
     ~MediaRouterMediaRoutesObserver() override;
 
     // media_router::MediaRoutesObserver:
-    void OnRoutesUpdated(const std::vector<media_router::MediaRoute>& routes)
+    void OnRoutesUpdated(
+        const std::vector<media_router::MediaRoute>& routes,
+        const std::vector<media_router::MediaRoute::Id>& joinable_route_ids)
         override;
 
    private:
@@ -159,6 +167,18 @@ class MediaRouterMojoImpl : public MediaRouterBase,
     base::ObserverList<MediaSinksObserver> observers;
 
     DISALLOW_COPY_AND_ASSIGN(MediaSinksQuery);
+  };
+
+  struct MediaRoutesQuery {
+   public:
+    MediaRoutesQuery();
+    ~MediaRoutesQuery();
+
+    // True if the query has been sent to the MRPM.  False otherwise.
+    bool is_active = false;
+    base::ObserverList<MediaRoutesObserver> observers;
+
+    DISALLOW_COPY_AND_ASSIGN(MediaRoutesQuery);
   };
 
   // Standard constructor, used by
@@ -187,6 +207,9 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   // component extension and further reattempts are unlikely to help.
   void DrainPendingRequests();
 
+  bool HasRoutesObservers(const MediaSource::Id& source_id) const;
+  bool HasSinksObservers(const MediaSource::Id& source_id) const;
+
   // MediaRouter implementation.
   bool RegisterMediaSinksObserver(MediaSinksObserver* observer) override;
   void UnregisterMediaSinksObserver(MediaSinksObserver* observer) override;
@@ -214,6 +237,11 @@ class MediaRouterMojoImpl : public MediaRouterBase,
                    const std::string& origin,
                    int tab_id,
                    const std::vector<MediaRouteResponseCallback>& callbacks);
+  void DoConnectRouteByRouteId(const MediaSource::Id& source_id,
+                   const MediaRoute::Id& route_id,
+                   const std::string& origin,
+                   int tab_id,
+                   const std::vector<MediaRouteResponseCallback>& callbacks);
   void DoTerminateRoute(const MediaRoute::Id& route_id);
   void DoDetachRoute(const MediaRoute::Id& route_id);
   void DoSendSessionMessage(const MediaRoute::Id& route_id,
@@ -226,8 +254,8 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   void DoStopListeningForRouteMessages(const MediaRoute::Id& route_id);
   void DoStartObservingMediaSinks(const MediaSource::Id& source_id);
   void DoStopObservingMediaSinks(const MediaSource::Id& source_id);
-  void DoStartObservingMediaRoutes();
-  void DoStopObservingMediaRoutes();
+  void DoStartObservingMediaRoutes(const MediaSource::Id& source_id);
+  void DoStopObservingMediaRoutes(const MediaSource::Id& source_id);
 
   // Invoked when the next batch of messages arrives.
   // |route_id|: ID of route of the messages.
@@ -249,7 +277,9 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   void OnIssue(interfaces::IssuePtr issue) override;
   void OnSinksReceived(const mojo::String& media_source,
                        mojo::Array<interfaces::MediaSinkPtr> sinks) override;
-  void OnRoutesUpdated(mojo::Array<interfaces::MediaRoutePtr> routes) override;
+  void OnRoutesUpdated(mojo::Array<interfaces::MediaRoutePtr> routes,
+      const mojo::String& media_source,
+      mojo::Array<mojo::String> joinable_route_ids) override;
   void OnSinkAvailabilityUpdated(
       interfaces::MediaRouter::SinkAvailability availability) override;
   void OnPresentationConnectionStateChanged(
@@ -297,9 +327,10 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   base::ScopedPtrHashMap<MediaSource::Id, scoped_ptr<MediaSinksQuery>>
       sinks_queries_;
 
-  base::ObserverList<LocalMediaRoutesObserver> local_routes_observers_;
+  base::ScopedPtrHashMap<MediaSource::Id, scoped_ptr<MediaRoutesQuery>>
+      routes_queries_;
 
-  base::ObserverList<MediaRoutesObserver> routes_observers_;
+  base::ObserverList<LocalMediaRoutesObserver> local_routes_observers_;
 
   using PresentationSessionMessagesObserverList =
       base::ObserverList<PresentationSessionMessagesObserver>;

@@ -48,6 +48,7 @@ class CastDeviceCache : public media_router::MediaRoutesObserver,
  public:
   using MediaSinks = std::vector<media_router::MediaSink>;
   using MediaRoutes = std::vector<media_router::MediaRoute>;
+  using MediaRouteIds = std::vector<media_router::MediaRoute::Id>;
 
   explicit CastDeviceCache(ash::CastConfigDelegate* cast_config_delegate);
   ~CastDeviceCache() override;
@@ -64,7 +65,8 @@ class CastDeviceCache : public media_router::MediaRoutesObserver,
   void OnSinksReceived(const MediaSinks& sinks) override;
 
   // media_router::MediaRoutesObserver:
-  void OnRoutesUpdated(const MediaRoutes& routes) override;
+  void OnRoutesUpdated(const MediaRoutes& routes,
+                       const MediaRouteIds& unused_joinable_route_ids) override;
 
   MediaSinks sinks_;
   MediaRoutes routes_;
@@ -93,7 +95,9 @@ void CastDeviceCache::OnSinksReceived(const MediaSinks& sinks) {
   cast_config_delegate_->RequestDeviceRefresh();
 }
 
-void CastDeviceCache::OnRoutesUpdated(const MediaRoutes& routes) {
+void CastDeviceCache::OnRoutesUpdated(
+    const MediaRoutes& routes,
+    const MediaRouteIds& unused_joinable_route_ids) {
   routes_ = routes;
   cast_config_delegate_->RequestDeviceRefresh();
 }

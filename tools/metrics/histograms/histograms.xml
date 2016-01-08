@@ -70623,6 +70623,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="11" label="StopListeningForRouteMessages"/>
   <int value="12" label="ConnectionError"/>
   <int value="13" label="RegisterMediaRouteProvider"/>
+  <int value="14" label="ConnectRouteByRouteId"/>
 </enum>
 
 <enum name="MediaRouterDialogOpenOrigin" type="int">
