@@ -3173,12 +3173,12 @@ bool LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
 }
 
 bool LayerTreeHostImpl::AnimateTopControls(base::TimeTicks time) {
-  if (!top_controls_manager_->animation())
+  if (!top_controls_manager_->has_animation())
     return false;
 
   gfx::Vector2dF scroll = top_controls_manager_->Animate(time);
 
-  if (top_controls_manager_->animation())
+  if (top_controls_manager_->has_animation())
     SetNeedsOneBeginImplFrame();
 
   if (active_tree_->TotalScrollOffset().y() == 0.f)

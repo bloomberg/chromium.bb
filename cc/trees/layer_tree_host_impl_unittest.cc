@@ -7976,7 +7976,7 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationAtOrigin) {
 
   // End the scroll while the controls are still offset from their limit.
   host_impl_->ScrollEnd();
-  ASSERT_TRUE(host_impl_->top_controls_manager()->animation());
+  ASSERT_TRUE(host_impl_->top_controls_manager()->has_animation());
   EXPECT_TRUE(did_request_next_frame_);
   EXPECT_TRUE(did_request_redraw_);
   EXPECT_FALSE(did_request_commit_);
@@ -8010,12 +8010,12 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationAtOrigin) {
       EXPECT_TRUE(did_request_redraw_);
 
     if (new_offset != 0) {
-      EXPECT_TRUE(host_impl_->top_controls_manager()->animation());
+      EXPECT_TRUE(host_impl_->top_controls_manager()->has_animation());
       EXPECT_TRUE(did_request_next_frame_);
     }
     host_impl_->DidFinishImplFrame();
   }
-  EXPECT_FALSE(host_impl_->top_controls_manager()->animation());
+  EXPECT_FALSE(host_impl_->top_controls_manager()->has_animation());
 }
 
 TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationAfterScroll) {
@@ -8050,7 +8050,7 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationAfterScroll) {
 
   // End the scroll while the controls are still offset from the limit.
   host_impl_->ScrollEnd();
-  ASSERT_TRUE(host_impl_->top_controls_manager()->animation());
+  ASSERT_TRUE(host_impl_->top_controls_manager()->has_animation());
   EXPECT_TRUE(did_request_next_frame_);
   EXPECT_TRUE(did_request_redraw_);
   EXPECT_FALSE(did_request_commit_);
@@ -8079,7 +8079,7 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationAfterScroll) {
     }
     host_impl_->DidFinishImplFrame();
   }
-  EXPECT_FALSE(host_impl_->top_controls_manager()->animation());
+  EXPECT_FALSE(host_impl_->top_controls_manager()->has_animation());
   EXPECT_EQ(-top_controls_height_,
             host_impl_->top_controls_manager()->ControlsTopOffset());
 }
@@ -8117,7 +8117,7 @@ TEST_F(LayerTreeHostImplWithTopControlsTest,
 
   // End the fling while the controls are still offset from the limit.
   host_impl_->MainThreadHasStoppedFlinging();
-  ASSERT_TRUE(host_impl_->top_controls_manager()->animation());
+  ASSERT_TRUE(host_impl_->top_controls_manager()->has_animation());
   EXPECT_TRUE(did_request_next_frame_);
   EXPECT_TRUE(did_request_redraw_);
   EXPECT_FALSE(did_request_commit_);
@@ -8144,7 +8144,7 @@ TEST_F(LayerTreeHostImplWithTopControlsTest,
     }
     host_impl_->DidFinishImplFrame();
   }
-  EXPECT_FALSE(host_impl_->top_controls_manager()->animation());
+  EXPECT_FALSE(host_impl_->top_controls_manager()->has_animation());
   EXPECT_EQ(-top_controls_height_,
             host_impl_->top_controls_manager()->ControlsTopOffset());
 }

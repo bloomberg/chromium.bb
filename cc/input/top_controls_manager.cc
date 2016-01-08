@@ -161,10 +161,10 @@ gfx::Vector2dF TopControlsManager::Animate(base::TimeTicks monotonic_time) {
   base::TimeDelta time = monotonic_time - base::TimeTicks();
 
   float old_offset = ContentTopOffset();
-  client_->SetCurrentTopControlsShownRatio(
-      top_controls_animation_->GetValue(time));
+  float new_ratio = top_controls_animation_->GetValue(time);
+  client_->SetCurrentTopControlsShownRatio(new_ratio);
 
-  if (IsAnimationCompleteAtTime(monotonic_time))
+  if (IsAnimationComplete(new_ratio))
     ResetAnimations();
 
   gfx::Vector2dF scroll_delta(0.f, ContentTopOffset() - old_offset);
@@ -222,18 +222,9 @@ void TopControlsManager::StartAnimationIfNecessary() {
   }
 }
 
-bool TopControlsManager::IsAnimationCompleteAtTime(base::TimeTicks time) {
-  if (!top_controls_animation_)
-    return true;
-
-  base::TimeDelta animation_time = time - base::TimeTicks();
-  float new_ratio = top_controls_animation_->GetValue(animation_time);
-
-  if ((animation_direction_ == SHOWING_CONTROLS && new_ratio >= 1.f) ||
-      (animation_direction_ == HIDING_CONTROLS && new_ratio <= 0.f)) {
-    return true;
-  }
-  return false;
+bool TopControlsManager::IsAnimationComplete(float new_ratio) {
+  return (animation_direction_ == SHOWING_CONTROLS && new_ratio >= 1.f) ||
+         (animation_direction_ == HIDING_CONTROLS && new_ratio <= 0.f);
 }
 
 void TopControlsManager::ResetBaseline() {

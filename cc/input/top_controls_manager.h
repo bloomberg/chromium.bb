@@ -44,9 +44,7 @@ class CC_EXPORT TopControlsManager
   float TopControlsShownRatio() const;
   float TopControlsHeight() const;
 
-  KeyframedFloatAnimationCurve* animation() {
-    return top_controls_animation_.get();
-  }
+  bool has_animation() const { return top_controls_animation_; }
   AnimationDirection animation_direction() { return animation_direction_; }
 
   void UpdateTopControlsState(TopControlsState constraints,
@@ -75,7 +73,7 @@ class CC_EXPORT TopControlsManager
   void ResetAnimations();
   void SetupAnimation(AnimationDirection direction);
   void StartAnimationIfNecessary();
-  bool IsAnimationCompleteAtTime(base::TimeTicks time);
+  bool IsAnimationComplete(float new_ratio);
   void ResetBaseline();
 
   TopControlsManagerClient* client_;  // The client manages the lifecycle of
