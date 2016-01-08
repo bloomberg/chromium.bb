@@ -143,6 +143,9 @@ PermissionManager* TestBrowserContext::GetPermissionManager() {
 }
 
 BackgroundSyncController* TestBrowserContext::GetBackgroundSyncController() {
+  if (!background_sync_controller_)
+    background_sync_controller_.reset(new BackgroundSyncController());
+
   return background_sync_controller_.get();
 }
 

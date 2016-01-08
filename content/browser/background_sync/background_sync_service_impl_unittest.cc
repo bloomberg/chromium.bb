@@ -17,8 +17,10 @@
 #include "content/browser/background_sync/background_sync_network_observer.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/background_sync_test_util.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "net/base/network_change_notifier.h"
@@ -113,6 +115,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
     background_sync_test_util::SetIgnoreNetworkChangeNotifier(true);
 
     CreateTestHelper();
+    CreateStoragePartition();
     CreateBackgroundSyncContext();
     CreateServiceWorkerRegistration();
     CreateBackgroundSyncServiceImpl();
@@ -134,6 +137,17 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   void CreateTestHelper() {
     embedded_worker_helper_.reset(
         new EmbeddedWorkerTestHelper(base::FilePath()));
+  }
+
+  void CreateStoragePartition() {
+    // Creates a StoragePartition so that the BackgroundSyncManager can
+    // use it to access the BrowserContext.
+    storage_partition_impl_.reset(new StoragePartitionImpl(
+        embedded_worker_helper_->browser_context(), base::FilePath(), nullptr,
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr));
+    embedded_worker_helper_->context_wrapper()->set_storage_partition(
+        storage_partition_impl_.get());
   }
 
   void CreateBackgroundSyncContext() {
@@ -232,6 +246,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   scoped_ptr<TestBrowserThreadBundle> thread_bundle_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_ptr<EmbeddedWorkerTestHelper> embedded_worker_helper_;
+  scoped_ptr<StoragePartitionImpl> storage_partition_impl_;
   scoped_ptr<base::PowerMonitor> power_monitor_;
   scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;
   int64_t sw_registration_id_;

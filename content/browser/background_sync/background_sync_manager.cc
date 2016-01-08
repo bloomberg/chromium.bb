@@ -111,7 +111,9 @@ scoped_ptr<BackgroundSyncParameters> GetControllerParameters(
       GetBackgroundSyncControllerOnUIThread(sw_context_wrapper);
 
   if (!background_sync_controller) {
-    // Return default ParameterOverrides which don't disable and don't override.
+    // If there is no controller then BackgroundSync can't run in the
+    // background, disable it.
+    parameters->disable = true;
     return parameters;
   }
 

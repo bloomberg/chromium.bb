@@ -111,6 +111,7 @@ class ShellBrowserContext : public BrowserContext {
   bool ignore_certificate_errors_;
   scoped_ptr<ShellDownloadManagerDelegate> download_manager_delegate_;
   scoped_ptr<PermissionManager> permission_manager_;
+  scoped_ptr<BackgroundSyncController> background_sync_controller_;
 
  private:
   // Performs initialization of the ShellBrowserContext while IO is still

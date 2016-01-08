@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "content/public/browser/background_sync_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
@@ -207,7 +208,9 @@ PermissionManager* ShellBrowserContext::GetPermissionManager() {
 }
 
 BackgroundSyncController* ShellBrowserContext::GetBackgroundSyncController() {
-  return nullptr;
+  if (!background_sync_controller_)
+    background_sync_controller_.reset(new BackgroundSyncController());
+  return background_sync_controller_.get();
 }
 
 }  // namespace content
