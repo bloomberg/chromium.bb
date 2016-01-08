@@ -5,6 +5,7 @@
 # Individual libfuzzer tests that didn't find their home yet.
 
 import("//build/config/features.gni")
+import("//media/media_options.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
 fuzzer_test("empty_fuzzer") {
@@ -85,7 +86,9 @@ if (proprietary_codecs) {
       "//media",
     ]
   }
+}
 
+if (enable_mpeg2ts_stream_parser) {
   fuzzer_test("es_parser_adts_fuzzer") {
     sources = [
       "es_parser_adts_fuzzer.cc",
