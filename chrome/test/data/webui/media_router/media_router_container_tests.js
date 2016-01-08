@@ -532,7 +532,7 @@ cr.define('media_router_container', function() {
 
       // Tests for expected visible UI when the view is SINK_LIST, and there is
       // a non blocking issue.
-      test('sink list visibilitynon blocking issue', function(done) {
+      test('sink list visibility non blocking issue', function(done) {
         container.showSinkList_();
 
         // Set an non-empty sink list.
