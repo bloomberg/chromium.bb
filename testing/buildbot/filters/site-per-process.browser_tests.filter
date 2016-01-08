@@ -1,17 +1,10 @@
+# crbug.com/417518: Get tests working with --site-per-process
 -AllUrlsApiTest.WhitelistedExtension
 -BrowserNavigatorTest.NavigateFromNTPToOptionsInSameTab
 -BrowserTest.OtherRedirectsDontForkProcess
--BrowserTest.WindowOpenClose
 -ChromeRenderProcessHostTest.*
 -ChromeRenderProcessHostTestWithCommandLine.*
 -ErrorPageTest.*
--ExtensionApiTest.Tabs2
--ExtensionApiTest.TabMove
--ExtensionApiTest.TabsOnUpdated
--ExtensionURLRewriteBrowserTest.NewTabPageURL
--IsolatedAppTest.*
--PhishingClassifierDelegateTest.*
--PhishingDOMFeatureExtractorTest.SubFrames
 -PolicyTest.HomepageLocation
 -PrerenderBrowserTest.*
 -ProcessManagementTest.*
@@ -24,3 +17,20 @@
 -WebNavigationApiTest.ServerRedirectSingleProcess
 -WebNavigationApiTest.CrossProcessHistory
 -WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabs
+
+# crbug.com/467126: BrowserTest.WindowOpenClose is flaky in --site-per-process
+# mode:
+-BrowserTest.WindowOpenClose
+
+# crbug.com/448592: Get extension browsertests to pass in --site-per-process
+# mode:
+-ExtensionApiTest.Tabs2
+-ExtensionApiTest.TabMove
+-ExtensionApiTest.TabsOnUpdated
+-ExtensionURLRewriteBrowserTest.NewTabPageURL
+-IsolatedAppTest.*
+
+# crbug.com/568710: Some PhishingClassifierDelegateTest are not compatible
+# with out-of-process iframes:
+-PhishingClassifierDelegateTest.*
+-PhishingDOMFeatureExtractorTest.SubFrames
