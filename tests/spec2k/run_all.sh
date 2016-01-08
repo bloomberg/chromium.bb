@@ -952,7 +952,7 @@ PopulateFromSpecHarness() {
 #@ BuildPrerequisites <platform> <bitcode>
 #@
 #@   Invoke scons to build some potentially missing  components, e.g.
-#@   sel_ldr, sel_universal, irt, some untrusted libraries.
+#@   sel_ldr, irt, some untrusted libraries.
 #@   Those compoents should be present in the SDK but are not in the
 #@   standard toolchain tarballs.
 BuildPrerequisites() {
@@ -963,7 +963,7 @@ BuildPrerequisites() {
   # Sel universal is only used for the pnacl sandboxed translator,
   # but prepare it just in case.
   # IRT is used both to run the tests and to run the pnacl sandboxed translator.
-  build-runtime "${platforms}" "sel_ldr sel_universal irt_core elf_loader" \
+  build-runtime "${platforms}" "sel_ldr irt_core elf_loader" \
     ${extrabuild} ${extra_flags}
   if [ ${bitcode} == "bitcode" ] ; then
      build-libs-pnacl

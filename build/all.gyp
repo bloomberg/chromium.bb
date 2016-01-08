@@ -20,7 +20,6 @@
         '../src/trusted/nonnacl_util/nonnacl_util.gyp:*',
         '../src/trusted/perf_counter/perf_counter.gyp:*',
         '../src/trusted/platform_qualify/platform_qualify.gyp:*',
-        '../src/trusted/sel_universal/sel_universal.gyp:*',
         '../src/trusted/service_runtime/service_runtime.gyp:*',
         '../src/untrusted/elf_loader/elf_loader.gyp:*',
         '../src/untrusted/irt/irt.gyp:irt_core_nexe',

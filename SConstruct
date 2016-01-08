@@ -1449,66 +1449,6 @@ def ProgramNameForNmf(env, basename):
 pre_base_env.AddMethod(ProgramNameForNmf)
 
 
-def SelUniversalTest(env,
-                     name,
-                     nexe,
-                     args=None,
-                     sel_universal_flags=None,
-                     **kwargs):
-  # The dynamic linker's ability to receive arguments over IPC at
-  # startup currently requires it to reject the plugin's first
-  # connection, but this interferes with the sel_universal-based
-  # testing because sel_universal does not retry the connection.
-  # TODO(mseaborn): Fix by retrying the connection or by adding an
-  # option to ld.so to disable its argv-over-IPC feature.
-  if env.Bit('nacl_glibc') and not env.Bit('nacl_static_link'):
-    return []
-
-  # TODO(petarj): Sel_universal hangs on qemu-mips. Enable when fixed.
-  if env.Bit('build_mips32') and env.UsingEmulator():
-    return []
-
-  if sel_universal_flags is None:
-    sel_universal_flags = []
-
-  # When run under qemu, sel_universal must sneak in qemu to the execv
-  # call that spawns sel_ldr.
-  if env.UsingEmulator():
-    sel_universal_flags.append('--command_prefix')
-    sel_universal_flags.append(env.GetEmulator())
-
-  if 'TRUSTED_ENV' not in env:
-    return []
-  sel_universal = env['TRUSTED_ENV'].File(
-      '${STAGING_DIR}/${PROGPREFIX}sel_universal${PROGSUFFIX}')
-
-  # Point to sel_ldr using an environment variable.
-  sel_ldr = env.GetSelLdr()
-  if sel_ldr is None:
-    print 'WARNING: no sel_ldr found. Skipping test %s' % name
-    return []
-  kwargs.setdefault('osenv', []).append('NACL_SEL_LDR=' + sel_ldr.abspath)
-  bootstrap, _ = env.GetBootstrap()
-  if bootstrap is not None:
-    kwargs['osenv'].append('NACL_SEL_LDR_BOOTSTRAP=%s' % bootstrap.abspath)
-
-  node = CommandSelLdrTestNacl(env,
-                               name,
-                               nexe,
-                               args=args,
-                               loader=sel_universal,
-                               sel_ldr_flags=sel_universal_flags,
-                               skip_bootstrap=True,
-                               **kwargs)
-  if not env.Bit('built_elsewhere'):
-    env.Depends(node, sel_ldr)
-    if bootstrap is not None:
-      env.Depends(node, bootstrap)
-  return node
-
-pre_base_env.AddMethod(SelUniversalTest)
-
-
 def MakeNaClLogOption(env, target):
   """ Make up a filename related to the [target], for use with NACLLOG.
   The file should end up in the build directory (scons-out/...).
@@ -2247,7 +2187,6 @@ def MakeBaseTrustedEnv(platform=None):
       'src/trusted/perf_counter/build.scons',
       'src/trusted/platform_qualify/build.scons',
       'src/trusted/seccomp_bpf/build.scons',
-      'src/trusted/sel_universal/build.scons',
       'src/trusted/service_runtime/build.scons',
       'src/trusted/simple_service/build.scons',
       'src/trusted/threading/build.scons',
@@ -3380,7 +3319,6 @@ irt_variant_tests = [
     'tests/signal_handler/nacl.scons',
     'tests/simd/nacl.scons',
     'tests/sleep/nacl.scons',
-    'tests/srpc/nacl.scons',
     'tests/srpc_message/nacl.scons',
     'tests/stack_alignment/nacl.scons',
     'tests/stubout_mode/nacl.scons',

@@ -34,8 +34,7 @@ class CoverageHelper(object):
   # Set of results to ignore by path.
   #
   def Filter(self):
-    filters = [
-      'src/trusted/sel_universal', 'src/third_party/valgrind', 'src/tools']
+    filters = ['src/third_party/valgrind', 'src/tools']
     return set([os.path.realpath(path) for path in filters])
 
   #
