@@ -655,12 +655,26 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
 }
 
 void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
-  html_source->AddLocalizedString("siteSettingsPageTitle",
-                                  IDS_SETTINGS_SITE_SETTINGS);
-  // TODO(finnur): Would be nice to show 'Location'/'Camera' instead of hard-
-  // coding this.
   html_source->AddLocalizedString("siteSettingsCategoryPageTitle",
                                   IDS_SETTINGS_SITE_SETTINGS_CATEGORY);
+  html_source->AddLocalizedString("siteSettingsCategoryCamera",
+                                  IDS_SETTINGS_SITE_SETTINGS_CAMERA);
+  html_source->AddLocalizedString("siteSettingsCategoryCookies",
+                                  IDS_SETTINGS_SITE_SETTINGS_COOKIES);
+  html_source->AddLocalizedString("siteSettingsCategoryFullscreen",
+                                  IDS_SETTINGS_SITE_SETTINGS_FULLSCREEN);
+  html_source->AddLocalizedString("siteSettingsCategoryImages",
+                                  IDS_SETTINGS_SITE_SETTINGS_IMAGES);
+  html_source->AddLocalizedString("siteSettingsCategoryLocation",
+                                  IDS_SETTINGS_SITE_SETTINGS_LOCATION);
+  html_source->AddLocalizedString("siteSettingsCategoryJavascript",
+                                  IDS_SETTINGS_SITE_SETTINGS_JAVASCRIPT);
+  html_source->AddLocalizedString("siteSettingsCategoryMicrophone",
+                                  IDS_SETTINGS_SITE_SETTINGS_MIC);
+  html_source->AddLocalizedString("siteSettingsCategoryNotifications",
+                                  IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS);
+  html_source->AddLocalizedString("siteSettingsCategoryPopups",
+                                  IDS_SETTINGS_SITE_SETTINGS_POPUPS);
   html_source->AddLocalizedString("siteSettingsSiteDetailsPageTitle",
                                   IDS_SETTINGS_SITE_SETTINGS_SITE_DETAILS);
   html_source->AddLocalizedString("siteSettingsAllSites",

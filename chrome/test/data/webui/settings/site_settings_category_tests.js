@@ -64,6 +64,32 @@ cr.define('site_settings_category', function() {
         MockInteractions.tap(testElement.$.toggle);
         assertTrue(testElement.categoryEnabled);
       });
+
+      test('basic category tests', function() {
+        for (var key in settings.ContentSettingsTypes) {
+          var category = settings.ContentSettingsTypes[key];
+
+          // All categories have a textId, an icon, a title, and pref names.
+          assertNotEquals('', testElement.computeCategoryTextId(category));
+          assertNotEquals(
+              '', testElement.computeIconForContentCategory(category));
+          assertNotEquals(
+              '', testElement.computeTitleForContentCategory(category));
+          assertNotEquals(
+              '', testElement.computeCategoryPrefName(category));
+          assertNotEquals(
+              '', testElement.computeCategoryExceptionsPrefName(category));
+
+          assertNotEquals(
+              '', testElement.computeCategoryDesc(category, true, true));
+          assertNotEquals(
+              '', testElement.computeCategoryDesc(category, true, false));
+          assertNotEquals(
+              '', testElement.computeCategoryDesc(category, false, true));
+          assertNotEquals(
+              '', testElement.computeCategoryDesc(category, false, false));
+        }
+      });
     });
   }
 

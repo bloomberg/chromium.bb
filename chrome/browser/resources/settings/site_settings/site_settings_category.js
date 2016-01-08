@@ -35,9 +35,7 @@ Polymer({
      * example, the Location category can be set to Block/Ask so false, in that
      * case, represents Block and true represents Ask.
      */
-    categoryEnabled: {
-      type: Boolean,
-    },
+    categoryEnabled: Boolean,
 
     /**
      * The origin that was selected by the user in the dropdown list.
@@ -62,9 +60,6 @@ Polymer({
   ],
 
   ready: function() {
-    // TODO(finnur): Handle dynamic routes, so that we can link directly into
-    // individual categories without having to first stop by the site settings
-    // page to select a category.
     this.$.blockList.categorySubtype = settings.PermissionValues.BLOCK;
     this.$.allowList.categorySubtype = settings.PermissionValues.ALLOW;
   },
@@ -84,7 +79,7 @@ Polymer({
                               settings.PermissionValues.ALLOW :
                               settings.PermissionValues.BLOCK);
         break;
-      case settings.ContentSettingsTypes.NOTIFICATION:
+      case settings.ContentSettingsTypes.NOTIFICATIONS:
       case settings.ContentSettingsTypes.GEOLOCATION:
       case settings.ContentSettingsTypes.CAMERA:
       case settings.ContentSettingsTypes.MIC:

@@ -70,6 +70,37 @@ var SiteSettingsBehaviorImpl = {
   },
 
   /**
+   * A utility function to lookup a category name from its enum.
+   * @param {number} category The category ID to look up.
+   * @return {string} The category found or blank string if not found.
+   * @protected
+   */
+  computeCategoryTextId: function(category) {
+    switch (category) {
+      case settings.ContentSettingsTypes.CAMERA:
+        return 'camera';
+      case settings.ContentSettingsTypes.COOKIES:
+        return 'cookies';
+      case settings.ContentSettingsTypes.FULLSCREEN:
+        return 'fullscreen';
+      case settings.ContentSettingsTypes.GEOLOCATION:
+        return 'location';
+      case settings.ContentSettingsTypes.IMAGES:
+        return 'images';
+      case settings.ContentSettingsTypes.JAVASCRIPT:
+        return 'javascript';
+      case settings.ContentSettingsTypes.MIC:
+        return 'microphone';
+      case settings.ContentSettingsTypes.NOTIFICATIONS:
+        return 'notifications';
+      case settings.ContentSettingsTypes.POPUPS:
+        return 'popups';
+      default:
+        return '';
+    }
+  },
+
+  /**
    * A utility function to compute the icon to use for the category.
    * @param {number} category The category to show the icon for.
    * @return {string} The id of the icon for the given category.
@@ -91,7 +122,7 @@ var SiteSettingsBehaviorImpl = {
         return 'icons:input';
       case settings.ContentSettingsTypes.MIC:
         return 'av:mic';
-      case settings.ContentSettingsTypes.NOTIFICATION:
+      case settings.ContentSettingsTypes.NOTIFICATIONS:
         return 'social:notifications';
       case settings.ContentSettingsTypes.POPUPS:
         return 'icons:open-in-new';
@@ -123,7 +154,7 @@ var SiteSettingsBehaviorImpl = {
         return loadTimeData.getString('siteSettingsJavascript');
       case settings.ContentSettingsTypes.MIC:
         return loadTimeData.getString('siteSettingsMic');
-      case settings.ContentSettingsTypes.NOTIFICATION:
+      case settings.ContentSettingsTypes.NOTIFICATIONS:
         return loadTimeData.getString('siteSettingsNotifications');
       case settings.ContentSettingsTypes.POPUPS:
         return loadTimeData.getString('siteSettingsPopups');
@@ -179,7 +210,7 @@ var SiteSettingsBehaviorImpl = {
         return 'javascript';
       case settings.ContentSettingsTypes.MIC:
         return 'media_stream_mic';
-      case settings.ContentSettingsTypes.NOTIFICATION:
+      case settings.ContentSettingsTypes.NOTIFICATIONS:
         return 'notifications';
       case settings.ContentSettingsTypes.POPUPS:
         return 'popups';
@@ -216,7 +247,7 @@ var SiteSettingsBehaviorImpl = {
         return showRecommendation ?
             loadTimeData.getString('siteSettingsBlockedRecommended') :
             loadTimeData.getString('siteSettingsBlocked');
-      case settings.ContentSettingsTypes.NOTIFICATION:
+      case settings.ContentSettingsTypes.NOTIFICATIONS:
         // "Ask before sending (recommended)" vs "Blocked".
         if (!categoryEnabled) {
           return loadTimeData.getString('siteSettingsBlocked');

@@ -17,7 +17,7 @@ cr.define('settings', function() {
     JAVASCRIPT: 2,
     POPUPS: 4,
     GEOLOCATION: 5,
-    NOTIFICATION: 6,
+    NOTIFICATIONS: 6,
     FULLSCREEN: 8,
     MIC: 12,
     CAMERA: 13,

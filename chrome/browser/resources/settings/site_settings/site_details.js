@@ -47,7 +47,7 @@ Polymer({
     this.$.javascript.category = settings.ContentSettingsTypes.JAVASCRIPT;
     this.$.popups.category = settings.ContentSettingsTypes.POPUPS;
     this.$.geolocation.category = settings.ContentSettingsTypes.GEOLOCATION;
-    this.$.notification.category = settings.ContentSettingsTypes.NOTIFICATION;
+    this.$.notification.category = settings.ContentSettingsTypes.NOTIFICATIONS;
     this.$.fullscreen.category = settings.ContentSettingsTypes.FULLSCREEN;
     this.$.camera.category = settings.ContentSettingsTypes.CAMERA;
     this.$.mic.category = settings.ContentSettingsTypes.MIC;

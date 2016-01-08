@@ -39,14 +39,6 @@ Polymer({
       type: Object,
       notify: true,
     },
-
-    /**
-     * The category selected by the user.
-     */
-    categorySelected: {
-      type: Number,
-      notify: true,
-    },
   },
 
   ready: function() {
@@ -59,7 +51,7 @@ Polymer({
       this.addCategory(settings.ContentSettingsTypes.JAVASCRIPT);
       this.addCategory(settings.ContentSettingsTypes.POPUPS);
       this.addCategory(settings.ContentSettingsTypes.FULLSCREEN);
-      this.addCategory(settings.ContentSettingsTypes.NOTIFICATION);
+      this.addCategory(settings.ContentSettingsTypes.NOTIFICATIONS);
       this.addCategory(settings.ContentSettingsTypes.IMAGES);
     }.bind(this));
   },
@@ -100,12 +92,12 @@ Polymer({
    */
   onTapCategory: function(event) {
     var description = event.currentTarget.querySelector('.flex').innerText;
-    this.categorySelected = this.computeCategoryFromDesc(description);
-
+    var page = this.computeCategoryTextId(
+        this.computeCategoryFromDesc(description));
     this.currentRoute = {
       page: this.currentRoute.page,
       section: 'privacy',
-      subpage: ['site-settings', 'site-settings-category'],
+      subpage: ['site-settings', 'site-settings-category-' + page],
     };
   },
 });

@@ -100,7 +100,8 @@ Polymer({
   },
 
   observers: [
-    'onCategoryChanged_(prefs.profile.content_settings.exceptions.*, category)',
+    'onCategoryChanged_(prefs.profile.content_settings.exceptions.*, ' +
+        'category, categorySubtype)',
   ],
 
   ready: function() {
