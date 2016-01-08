@@ -92,11 +92,13 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestBidirectionalStreamJob(
 
 // TODO(xunjieli): Create QUIC's version of BidirectionalStreamJob.
 #if defined(ENABLE_BIDIRECTIONAL_STREAM)
+  HostPortPair server = HostPortPair::FromURL(request_info.url);
+  GURL origin_url = ApplyHostMappingRules(request_info.url, &server);
   Request* request =
       new Request(request_info.url, this, delegate, nullptr, net_log,
                   Request::BIDIRECTIONAL_STREAM_SPDY_JOB);
   Job* job = new Job(this, session_, request_info, priority, server_ssl_config,
-                     proxy_ssl_config, net_log.net_log());
+                     proxy_ssl_config, server, origin_url, net_log.net_log());
   request->AttachJob(job);
 
   job->Start(request);
