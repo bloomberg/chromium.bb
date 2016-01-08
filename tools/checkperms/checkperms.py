@@ -302,9 +302,8 @@ def check_file(root_path, rel_path):
   try:
     bit = has_executable_bit(full_path)
   except OSError:
-    # It's faster to catch exception than call os.path.islink(). Chromium
-    # tree happens to have invalid symlinks under
-    # third_party/openssl/openssl/test/.
+    # It's faster to catch exception than call os.path.islink(). The Chromium
+    # tree may have invalid symlinks.
     return None
 
   if must_be_executable(rel_path):

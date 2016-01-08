@@ -1974,7 +1974,7 @@ int SSLClientSocketOpenSSL::CertVerifyCallback(X509_STORE_CTX* store_ctx) {
 
 // SelectNextProtoCallback is called by OpenSSL during the handshake. If the
 // server supports NPN, selects a protocol from the list that the server
-// provides. According to third_party/openssl/openssl/ssl/ssl_lib.c, the
+// provides. According to third_party/boringssl/src/ssl/ssl_lib.c, the
 // callback can assume that |in| is syntactically valid.
 int SSLClientSocketOpenSSL::SelectNextProtoCallback(unsigned char** out,
                                                     unsigned char* outlen,

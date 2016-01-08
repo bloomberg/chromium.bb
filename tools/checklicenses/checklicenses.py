@@ -119,7 +119,7 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     ],
 
     'buildtools/third_party/libc++/trunk/test': [
-        # http://llvm.org/bugs/show_bug.cgi?id=18291
+        # http://llvm.org/bugs/show_bug.cgi?id=25980
         'UNKNOWN',
     ],
     # http://llvm.org/bugs/show_bug.cgi?id=25976
@@ -194,11 +194,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     ],
 
     # http://crbug.com/333508
-    'third_party/clang_format/script': [
-        'UNKNOWN',
-    ],
-
-    # http://crbug.com/333508
     'buildtools/clang_format/script': [
         'UNKNOWN',
     ],
@@ -220,25 +215,16 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/catapult/third_party/apiclient': [
         'UNKNOWN',
     ],
-    'third_party/catapult/dashboard/third_party/apiclient': [
-        'UNKNOWN',
-    ],
 
     # https://bugs.launchpad.net/beautifulsoup/+bug/1481316
     # MIT license.
     'third_party/catapult/third_party/beautifulsoup': [
         'UNKNOWN'
     ],
-    'third_party/catapult/dashboard/third_party/beautifulsoup': [
-        'UNKNOWN'
-    ],
 
     # https://code.google.com/p/graphy/issues/detail?id=6
     # Apache (v2.0)
     'third_party/catapult/third_party/graphy': [
-        'UNKNOWN',
-    ],
-    'third_party/catapult/dashboard/third_party/graphy': [
         'UNKNOWN',
     ],
 
@@ -297,6 +283,7 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     ],
 
     # https://bitbucket.org/gutworth/six/issues/137/please-add-per-file-licenses
+    # Already fixed upstream. https://crbug.com/573341
     'third_party/catapult/third_party/gsutil/third_party/six': [
         'UNKNOWN',
     ],
@@ -307,21 +294,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
-    # https://github.com/jcgregorio/httplib2/issues/307
-    # MIT license.
-    'third_party/catapult/third_party/httplib2': [
-        'UNKNOWN',
-    ],
-    'third_party/catapult/dashboard/third_party/httplib2': [
-        'UNKNOWN',
-    ],
-
     # https://github.com/GoogleCloudPlatform/appengine-mapreduce/issues/71
     # Apache (v2.0)
     'third_party/catapult/third_party/mapreduce': [
-        'UNKNOWN',
-    ],
-    'third_party/catapult/dashboard/third_party/mapreduce': [
         'UNKNOWN',
     ],
 
@@ -330,16 +305,10 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/catapult/third_party/webapp2': [
         'UNKNOWN',
     ],
-    'third_party/catapult/dashboard/third_party/webapp2': [
-        'UNKNOWN',
-    ],
 
     # https://github.com/Pylons/webob/issues/211
     # MIT license.
     'third_party/catapult/third_party/WebOb': [
-        'UNKNOWN',
-    ],
-    'third_party/catapult/dashboard/third_party/WebOb': [
         'UNKNOWN',
     ],
 
@@ -348,34 +317,16 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/catapult/third_party/webtest': [
         'UNKNOWN',
     ],
-    'third_party/catapult/dashboard/third_party/webtest': [
-        'UNKNOWN',
-    ],
 
     # https://bitbucket.org/ianb/paste/issues/12/add-license-headers-to-source-files
     # MIT license.
     'third_party/catapult/third_party/Paste': [
         'UNKNOWN',
     ],
-    'third_party/catapult/dashboard/third_party/Paste': [
-        'UNKNOWN',
-    ],
-
-    # https://github.com/google/oauth2client/issues/231
-    # Apache v2.0.
-    'third_party/catapult/third_party/oauth2client': [
-        'UNKNOWN',
-    ],
-    'third_party/catapult/dashboard/third_party/oauth2client': [
-        'UNKNOWN',
-    ],
 
     # https://bitbucket.org/gutworth/six/issues/129/add-license-headers-to-source-files
     # MIT license.
     'third_party/catapult/third_party/six': [
-        'UNKNOWN',
-    ],
-    'third_party/catapult/dashboard/third_party/six': [
         'UNKNOWN',
     ],
 
@@ -413,6 +364,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
     'third_party/junit/src': [
+        # Pulled in via DEPS for Android only.
+        # Eclipse Public License / not shipped.
+        # Bug filed but upstream prefers not to fix.
         # https://github.com/junit-team/junit/issues/1132
         'UNKNOWN',
     ],
@@ -435,10 +389,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     # tracked in https://github.com/liblouis/liblouis/issues/22.
     'third_party/liblouis/src': [
         'GPL (v3 or later)',
-        'UNKNOWN',
-    ],
-
-    'third_party/libpng': [  # http://crbug.com/98318
         'UNKNOWN',
     ],
 
@@ -475,16 +425,10 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/openmax_dl/dl' : [
         'Khronos Group',
     ],
-    'third_party/openssl': [  # http://crbug.com/98451
-        'UNKNOWN',
-    ],
     'third_party/boringssl': [
         # There are some files in BoringSSL which came from OpenSSL and have no
         # license in them. We don't wish to add the license header ourselves
         # thus we don't expect to pass license checks.
-        'UNKNOWN',
-    ],
-    'third_party/ots/tools/ttf-checksum.py': [  # http://code.google.com/p/ots/issues/detail?id=2
         'UNKNOWN',
     ],
     'third_party/molokocacao': [  # http://crbug.com/98453
@@ -625,12 +569,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     ],
     'tools/telemetry/third_party/pyserial': [
         # https://sourceforge.net/p/pyserial/feature-requests/35/
-        'UNKNOWN',
-    ],
-    'v8/test/cctest': [  # http://crbug.com/98597
-        'UNKNOWN',
-    ],
-    'v8/src/third_party/kernel/tools/perf/util/jitdump.h': [  # http://crbug.com/391716
         'UNKNOWN',
     ],
 }
