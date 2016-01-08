@@ -231,8 +231,16 @@ paper-slider::shadow .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
   pointer-events: auto;
 }
 
+.gallery:not([tools]) > files-tooltip {
+  opacity: 0;
+}
+
 /* Hide immediately when entering the slideshow. */
 .gallery[tools][slideshow] > .toolbar {
+  transition-duration: 0ms;
+}
+
+.gallery[tools][slideshow] > files-tooltip {
   transition-duration: 0ms;
 }
 
