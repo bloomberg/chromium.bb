@@ -25,15 +25,20 @@ function test()
         if (request.url.indexOf("styles-initial") === -1)
             return;
         resource = InspectorTest.resourceMatchingURL("styles-initial");
-        if (!resource || !resource.request || contentWasRequested)
-            return;
+        if (!resource || !resource.request || contentWasRequested) {
+            InspectorTest.addResult("Cannot find resource");
+            InspectorTest.completeTest();
+        }
         resource.requestContent(contentLoaded);
         contentWasRequested = true;
     }
 
     function pageAgentGetResourceContentCalled()
     {
-        InspectorTest.assertTrue(resource.request.finished);
+        if (!resource.request.finished) {
+            InspectorTest.addResult("Request must be finished before calling getResourceContent");
+            InspectorTest.completeTest();
+        }
     }
 
     function contentLoaded(content)
