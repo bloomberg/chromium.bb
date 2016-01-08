@@ -21,6 +21,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate.h"
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
+#include "components/data_reduction_proxy/core/common/lofi_ui_service.h"
 
 namespace base {
 class Value;
@@ -176,6 +177,13 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
     lofi_decider_ = std::move(lofi_decider);
   }
 
+  LoFiUIService* lofi_ui_service() const { return lofi_ui_service_.get(); }
+
+  // Takes ownership of |lofi_ui_service|.
+  void set_lofi_ui_service(scoped_ptr<LoFiUIService> lofi_ui_service) const {
+    lofi_ui_service_ = std::move(lofi_ui_service);
+  }
+
  private:
   friend class TestDataReductionProxyIOData;
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyIODataTest, TestConstruction);
@@ -215,6 +223,9 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
 
   // Handles getting if a request is in Lo-Fi mode.
   mutable scoped_ptr<LoFiDecider> lofi_decider_;
+
+  // Handles showing Lo-Fi UI when a Lo-Fi response is received.
+  mutable scoped_ptr<LoFiUIService> lofi_ui_service_;
 
   // Creates Data Reduction Proxy-related events for logging.
   scoped_ptr<DataReductionProxyEventCreator> event_creator_;

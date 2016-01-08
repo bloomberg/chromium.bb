@@ -87,7 +87,6 @@ import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
-import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.nfc.BeamController;
 import org.chromium.chrome.browser.nfc.BeamProvider;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
@@ -100,14 +99,11 @@ import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.snackbar.DataUseSnackbarController;
-import org.chromium.chrome.browser.snackbar.LoFiBarPopupController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModel;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
@@ -211,7 +207,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private ContextualSearchManager mContextualSearchManager;
     private ReaderModeManager mReaderModeManager;
     private SnackbarManager mSnackbarManager;
-    private LoFiBarPopupController mLoFiBarPopupController;
     private DataUseSnackbarController mDataUseSnackbarController;
     private AppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
     private AppMenuHandler mAppMenuHandler;
@@ -259,7 +254,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 .createActivityWindowAndroid(this);
         mWindowAndroid.restoreInstanceState(getSavedInstanceState());
         mSnackbarManager = new SnackbarManager(getWindow());
-        mLoFiBarPopupController = new LoFiBarPopupController(this, getSnackbarManager());
         mDataUseSnackbarController = new DataUseSnackbarController(this, getSnackbarManager());
 
         mAssistStatusHandler = createAssistStatusHandler();
@@ -478,24 +472,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                         && DataUseTabUIManager.checkAndResetDataUseTrackingEnded(tab)) {
                     mDataUseSnackbarController.showDataUseTrackingEndedBar();
                 }
-
-                if (!tab.isNativePage() && !tab.isIncognito()
-                        && DataReductionProxySettings.getInstance().wasLoFiModeActiveOnMainFrame()
-                        && DataReductionProxySettings.getInstance().canUseDataReductionProxy(
-                                tab.getUrl())) {
-                    if (tab.isHidden()) {
-                        TabObserver tabObserver = new EmptyTabObserver() {
-                            @Override
-                            public void onShown(Tab tab) {
-                                mLoFiBarPopupController.showLoFiBar(tab);
-                                tab.removeObserver(this);
-                            }
-                        };
-                        tab.addObserver(tabObserver);
-                        return;
-                    }
-                    mLoFiBarPopupController.showLoFiBar(tab);
-                }
             }
 
             @Override
@@ -505,13 +481,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
             @Override
             public void onHidden(Tab tab) {
-                mLoFiBarPopupController.dismissLoFiBar();
                 mDataUseSnackbarController.dismissDataUseBar();
             }
 
             @Override
             public void onDestroyed(Tab tab) {
-                mLoFiBarPopupController.dismissLoFiBar();
                 mDataUseSnackbarController.dismissDataUseBar();
             }
 

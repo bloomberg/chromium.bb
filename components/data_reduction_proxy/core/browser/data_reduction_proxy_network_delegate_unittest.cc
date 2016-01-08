@@ -111,6 +111,21 @@ class TestLoFiDecider : public LoFiDecider {
   bool should_request_lofi_resource_;
 };
 
+class TestLoFiUIService : public LoFiUIService {
+ public:
+  TestLoFiUIService() : on_lofi_response_(false) {}
+  ~TestLoFiUIService() override {}
+
+  bool DidNotifyLoFiResponse() const { return on_lofi_response_; }
+
+  void OnLoFiReponseReceived(const net::URLRequest& request) override {
+    on_lofi_response_ = true;
+  }
+
+ private:
+  bool on_lofi_response_;
+};
+
 }  // namespace
 
 class DataReductionProxyNetworkDelegateTest : public testing::Test {
@@ -142,6 +157,10 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     scoped_ptr<TestLoFiDecider> lofi_decider(new TestLoFiDecider());
     lofi_decider_ = lofi_decider.get();
     io_data()->set_lofi_decider(std::move(lofi_decider));
+
+    scoped_ptr<TestLoFiUIService> lofi_ui_service(new TestLoFiUIService());
+    lofi_ui_service_ = lofi_ui_service.get();
+    io_data()->set_lofi_ui_service(std::move(lofi_ui_service));
   }
 
   const net::ProxyConfig& GetProxyConfig() const { return config_; }
@@ -163,6 +182,10 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     test_context_->RunUntilIdle();
     EXPECT_EQ(expected_value,
               test_context_->settings()->WasLoFiModeActiveOnMainFrame());
+  }
+
+  void VerifyDidNotifyLoFiResponse(bool lofi_response) {
+    EXPECT_EQ(lofi_response, lofi_ui_service_->DidNotifyLoFiResponse());
   }
 
   int64_t total_received_bytes() {
@@ -238,6 +261,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
   net::ProxyConfig config_;
   net::NetworkDelegate* network_delegate_;
   TestLoFiDecider* lofi_decider_;
+  TestLoFiUIService* lofi_ui_service_;
   scoped_ptr<DataReductionProxyTestContext> test_context_;
   scoped_ptr<DataReductionProxyBypassStats> bypass_stats_;
 };
@@ -678,6 +702,42 @@ TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedInternal) {
   // is removed from each header line.
   EXPECT_EQ(kOriginalContentLength + static_cast<int64_t>(raw_headers.size()),
             total_original_received_bytes());
+}
+
+TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedInternalLoFi) {
+  const int64_t kResponseContentLength = 140;
+  const int64_t kOriginalContentLength = 200;
+
+  set_network_delegate(data_reduction_proxy_network_delegate_.get());
+
+  // Enable Lo-Fi.
+  const struct {
+    bool lofi_response;
+  } tests[] = {
+      {false}, {true},
+  };
+
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    std::string raw_headers =
+        "HTTP/1.1 200 OK\n"
+        "Date: Wed, 28 Nov 2007 09:40:09 GMT\n"
+        "Expires: Mon, 24 Nov 2014 12:45:26 GMT\n"
+        "Via: 1.1 Chrome-Compression-Proxy\n"
+        "x-original-content-length: " +
+        base::Int64ToString(kOriginalContentLength) + "\n";
+
+    if (tests[i].lofi_response)
+      raw_headers += "Chrome-Proxy: q=low\n";
+
+    HeadersToRaw(&raw_headers);
+    std::string response_headers =
+        net::HttpUtil::ConvertHeadersBackToHTTPResponse(raw_headers);
+
+    FetchURLRequest(GURL("http://www.google.com/"), response_headers,
+                    kResponseContentLength);
+
+    VerifyDidNotifyLoFiResponse(tests[i].lofi_response);
+  }
 }
 
 }  // namespace data_reduction_proxy

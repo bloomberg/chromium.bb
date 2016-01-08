@@ -128,6 +128,8 @@ class TabAndroid : public CoreTabHelperDelegate,
   void ShowOfflinePages();
   void LoadOfflineCopy(const GURL& url);
 
+  void OnLoFiResponseReceived();
+
   // Overridden from CoreTabHelperDelegate:
   void SwapTabContents(content::WebContents* old_contents,
                        content::WebContents* new_contents,

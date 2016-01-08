@@ -202,6 +202,13 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
   if (data_reduction_proxy_bypass_stats_)
     data_reduction_proxy_bypass_stats_->OnUrlRequestCompleted(request, started);
 
+  if (data_reduction_proxy_io_data_ && request->response_info().headers &&
+      request->response_headers()->HasHeaderValue(
+          chrome_proxy_header(), chrome_proxy_lo_fi_directive())) {
+    data_reduction_proxy_io_data_->lofi_ui_service()->OnLoFiReponseReceived(
+        *request);
+  }
+
   // For better accuracy, we use the actual bytes read instead of the length
   // specified with the Content-Length header, which may be inaccurate,
   // or missing, as is the case with chunked encoding.

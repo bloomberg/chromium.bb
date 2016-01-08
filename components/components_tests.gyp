@@ -136,6 +136,7 @@
     ],
     'data_reduction_proxy_unittest_sources': [
       'data_reduction_proxy/content/browser/content_lofi_decider_unittest.cc',
+      'data_reduction_proxy/content/browser/content_lofi_ui_service_unittest.cc',
       'data_reduction_proxy/content/browser/data_reduction_proxy_message_filter_unittest.cc',
       'data_reduction_proxy/core/browser/data_reduction_proxy_bypass_protocol_unittest.cc',
       'data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats_unittest.cc',

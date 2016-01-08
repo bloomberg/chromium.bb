@@ -63,6 +63,7 @@ import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.snackbar.LoFiBarPopupController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
@@ -360,6 +361,8 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
 
     protected Handler mHandler;
 
+    private LoFiBarPopupController mLoFiBarPopupController;
+
     private class TabContentViewClient extends ContentViewClient {
         @Override
         public void onBackgroundColorChanged(int color) {
@@ -553,6 +556,9 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
                 activity.getApplicationContext(), ChromeActivity.getThemeId()) : null;
         mWindowAndroid = window;
         mLaunchType = type;
+        if (mActivity != null) {
+            mLoFiBarPopupController = new LoFiBarPopupController(activity, getSnackbarManager());
+        }
         if (mThemedApplicationContext != null) {
             Resources resources = mThemedApplicationContext.getResources();
             mIdealFaviconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);
@@ -1412,6 +1418,10 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
         mIsFullscreenWaitingForLoad = !DomDistillerUrlUtils.isDistilledPage(validatedUrl);
 
         mIsShowingErrorPage = showingErrorPage;
+
+        if (mLoFiBarPopupController != null) {
+            mLoFiBarPopupController.resetLoFiPopupShownForPageLoad();
+        }
 
         updateTitle();
         removeSadTabIfPresent();
@@ -2578,6 +2588,16 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
     public void showOfflinePages() {
         // The offline pages filter view will be loaded by default when offline.
         EnhancedBookmarkUtils.showBookmarkManager(mActivity);
+    }
+
+    /**
+     * If a Lo-Fi snackbar has not been shown yet for this page load, a Lo-Fi snackbar is shown.
+     */
+    @CalledByNative
+    public void onLoFiResponseReceived() {
+        if (mLoFiBarPopupController != null) {
+            mLoFiBarPopupController.maybeCreateLoFiBar(this);
+        }
     }
 
     /**

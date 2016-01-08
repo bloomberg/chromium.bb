@@ -81,6 +81,8 @@
         'data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h',
         'data_reduction_proxy/core/common/data_reduction_proxy_switches.cc',
         'data_reduction_proxy/core/common/data_reduction_proxy_switches.h',
+        'data_reduction_proxy/core/common/lofi_decider.h',
+        'data_reduction_proxy/core/common/lofi_ui_service.h',
      ],
   },
   'conditions': [
@@ -132,7 +134,6 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../content/content.gyp:content_browser',
-            '../skia/skia.gyp:skia',
             '../ui/base/ui_base.gyp:ui_base',
             'components_resources.gyp:components_resources',
             'components_strings.gyp:components_strings',
@@ -175,12 +176,15 @@
           'dependencies': [
             '../content/content.gyp:content_common',
             '../ipc/ipc.gyp:ipc',
+            '../skia/skia.gyp:skia',
             'data_reduction_proxy_content_common',
           ],
           'include_dirs': [
             '..',
           ],
           'sources': [
+            'data_reduction_proxy/content/browser/content_lofi_ui_service.cc',
+            'data_reduction_proxy/content/browser/content_lofi_ui_service.h',
             'data_reduction_proxy/content/browser/content_lofi_decider.cc',
             'data_reduction_proxy/content/browser/content_lofi_decider.h',
             'data_reduction_proxy/content/browser/data_reduction_proxy_message_filter.cc',

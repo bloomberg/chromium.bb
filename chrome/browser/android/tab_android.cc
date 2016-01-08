@@ -825,6 +825,11 @@ void TabAndroid::LoadOfflineCopy(const GURL& url) {
   web_contents()->GetController().LoadURLWithParams(load_params);
 }
 
+void TabAndroid::OnLoFiResponseReceived() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_Tab_onLoFiResponseReceived(env, weak_java_tab_.get(env).obj());
+}
+
 jboolean TabAndroid::HasOfflineCopy(JNIEnv* env,
                                     const JavaParamRef<jobject>& obj) {
   GURL url = dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
