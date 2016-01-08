@@ -435,6 +435,10 @@ void MagnificationControllerImpl::HandleFocusedNodeChanged(
   if (is_editable_node)
     return;
 
+  // Nothing to recenter on.
+  if (node_bounds_in_screen.IsEmpty())
+    return;
+
   gfx::Rect node_bounds_in_root =
       ScreenUtil::ConvertRectFromScreen(root_window_, node_bounds_in_screen);
   if (GetViewportRect().Contains(node_bounds_in_root))

@@ -266,6 +266,33 @@ TEST_F(MagnificationControllerTest, PointOfInterest) {
   EXPECT_EQ("450,350", CurrentPointOfInterest());
 }
 
+TEST_F(MagnificationControllerTest, FollowFocusChanged) {
+  // Enables magnifier and confirm the viewport is at center.
+  GetMagnificationController()->SetEnabled(true);
+  EXPECT_EQ(2.0f, GetMagnificationController()->GetScale());
+  EXPECT_EQ("200,150 400x300", GetViewport().ToString());
+
+  // Don't move viewport when focusing edit box.
+  GetMagnificationController()->HandleFocusedNodeChanged(
+      true, gfx::Rect(0, 0, 10, 10));
+  EXPECT_EQ("200,150 400x300", GetViewport().ToString());
+
+  // Move viewport to element in upper left.
+  GetMagnificationController()->HandleFocusedNodeChanged(
+      false, gfx::Rect(0, 0, 10, 10));
+  EXPECT_EQ("0,0 400x300", GetViewport().ToString());
+
+  // Move viewport to element in lower right.
+  GetMagnificationController()->HandleFocusedNodeChanged(
+      false, gfx::Rect(790, 590, 10, 10));
+  EXPECT_EQ("400,300 400x300", GetViewport().ToString());
+
+  // Don't follow focus onto empty rectangle.
+  GetMagnificationController()->HandleFocusedNodeChanged(
+      false, gfx::Rect(0, 0, 0, 0));
+  EXPECT_EQ("400,300 400x300", GetViewport().ToString());
+}
+
 TEST_F(MagnificationControllerTest, PanWindow2xLeftToRight) {
   const aura::Env* env = aura::Env::GetInstance();
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
