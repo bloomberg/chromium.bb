@@ -72,7 +72,7 @@ extern void armSP_FFTInv_CCSToR_F32_preTwiddleRadix2(
 /*
  * Scale FFT data by 1/|length|. |length| must be a power of two
  */
-static inline ScaleRFFTData(OMX_F32* fftData, unsigned length) {
+static inline void ScaleRFFTData(OMX_F32* fftData, unsigned length) {
   float32_t* data = (float32_t*)fftData;
   float32_t scale = 2.0f / length;
 

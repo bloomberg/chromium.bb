@@ -66,7 +66,7 @@ extern void armSP_FFTInv_CToC_FC32_Radix8_fs_OutOfPlace(
 /*
  * Scale FFT data by 1/|length|. |length| must be a power of two
  */
-static inline ScaleFFTData(OMX_FC32* fftData, unsigned length) {
+static inline void ScaleFFTData(OMX_FC32* fftData, unsigned length) {
   float32_t* data = (float32_t*)fftData;
   float32_t scale = 1.0f / length;
 
