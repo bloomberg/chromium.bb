@@ -8,6 +8,8 @@
     'common_constants_sources': [
       'common/chrome_constants.cc',
       'common/chrome_constants.h',
+      'common/chrome_features.cc',
+      'common/chrome_features.h',
       'common/chrome_icon_resources_win.cc',
       'common/chrome_icon_resources_win.h',
       'common/chrome_paths.cc',

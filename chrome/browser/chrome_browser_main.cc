@@ -95,6 +95,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
@@ -1187,12 +1188,9 @@ void ChromeBrowserMainParts::PreBrowserStart() {
 #if defined(OS_CHROMEOS)
   g_browser_process->GetTabManager()->Start(false);
 #elif defined(OS_WIN) || defined(OS_MACOSX)
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("AutomaticTabDiscarding");
-  if (base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE)) {
-    bool enabled_once = base::StartsWith(group_name, "Enabled_Once",
-                                         base::CompareCase::SENSITIVE);
-    g_browser_process->GetTabManager()->Start(enabled_once);
+  if (base::FeatureList::IsEnabled(features::kAutomaticTabDiscarding)) {
+    // The default behavior is to only discard once (for now).
+    g_browser_process->GetTabManager()->Start(true);
   }
 #endif
 }

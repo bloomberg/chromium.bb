@@ -13,12 +13,13 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
 #include "url/gurl.h"
 
@@ -35,8 +36,8 @@ class TabManagerTest : public InProcessBrowserTest {
   // behavior it turned on.
   void SetUpCommandLine(base::CommandLine* command_line) override {
 #if !defined(OS_CHROMEOS)
-    command_line->AppendSwitchASCII(switches::kForceFieldTrials,
-                                    "AutomaticTabDiscarding/Enabled/");
+    command_line->AppendSwitchASCII(switches::kEnableFeatures,
+                                    features::kAutomaticTabDiscarding.name);
 #endif
   }
 };

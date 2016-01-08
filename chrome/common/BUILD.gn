@@ -290,6 +290,8 @@ static_library("constants") {
   sources = [
     "chrome_constants.cc",
     "chrome_constants.h",
+    "chrome_features.cc",
+    "chrome_features.h",
     "chrome_icon_resources_win.cc",
     "chrome_icon_resources_win.h",
     "chrome_paths.cc",
