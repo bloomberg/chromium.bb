@@ -46,6 +46,7 @@ public class ListUrlsActivity extends AppCompatActivity
     private ImageView mScanningImageView;
     private SwipeRefreshWidget mSwipeRefreshWidget;
     private boolean mIsInitialDisplayRecorded;
+    private boolean mIsRefreshing;
     private boolean mIsRefreshUserInitiated;
 
     @Override
@@ -76,6 +77,7 @@ public class ListUrlsActivity extends AppCompatActivity
             PhysicalWebUma.onNotificationPressed(this);
         }
         mIsInitialDisplayRecorded = false;
+        mIsRefreshing = false;
         mIsRefreshUserInitiated = false;
     }
 
@@ -165,6 +167,11 @@ public class ListUrlsActivity extends AppCompatActivity
     }
 
     private void startRefresh(boolean isUserInitiated, boolean isSwipeInitiated) {
+        if (mIsRefreshing) {
+            return;
+        }
+
+        mIsRefreshing = true;
         mIsRefreshUserInitiated = isUserInitiated;
 
         // Clear the list adapter to trigger the empty list display.
@@ -213,6 +220,8 @@ public class ListUrlsActivity extends AppCompatActivity
             PhysicalWebUma.onUrlsDisplayed(this, mAdapter.getCount());
         }
         // TODO(mattreynolds): add UMA for user-initiated refreshes.
+
+        mIsRefreshing = false;
     }
 
     private void fetchIcon(String iconUrl) {
