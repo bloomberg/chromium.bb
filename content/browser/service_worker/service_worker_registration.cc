@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_registration.h"
 
+#include <vector>
+
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
@@ -366,25 +368,34 @@ void ServiceWorkerRegistration::Clear() {
   if (context_)
     context_->storage()->NotifyDoneUninstallingRegistration(this);
 
+  std::vector<scoped_refptr<ServiceWorkerVersion>> versions_to_doom;
   ChangedVersionAttributesMask mask;
   if (installing_version_.get()) {
-    installing_version_->Doom();
-    installing_version_ = NULL;
+    versions_to_doom.push_back(installing_version_);
+    installing_version_ = nullptr;
     mask.add(ChangedVersionAttributesMask::INSTALLING_VERSION);
   }
   if (waiting_version_.get()) {
-    waiting_version_->Doom();
-    waiting_version_ = NULL;
+    versions_to_doom.push_back(waiting_version_);
+    waiting_version_ = nullptr;
     mask.add(ChangedVersionAttributesMask::WAITING_VERSION);
   }
   if (active_version_.get()) {
-    active_version_->Doom();
+    versions_to_doom.push_back(active_version_);
     active_version_->RemoveListener(this);
-    active_version_ = NULL;
+    active_version_ = nullptr;
     mask.add(ChangedVersionAttributesMask::ACTIVE_VERSION);
   }
-  if (mask.changed())
+
+  if (mask.changed()) {
     NotifyVersionAttributesChanged(mask);
+
+    // Doom only after notifying attributes changed, because the spec requires
+    // the attributes to be cleared by the time the statechange event is
+    // dispatched.
+    for (const auto& version : versions_to_doom)
+      version->Doom();
+  }
 
   FOR_EACH_OBSERVER(
       Listener, listeners_, OnRegistrationFinishedUninstalling(this));

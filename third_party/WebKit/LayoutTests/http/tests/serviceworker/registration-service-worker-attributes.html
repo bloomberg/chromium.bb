@@ -54,8 +54,12 @@ async_test(function(t) {
                         'installing after redundant');
           assert_equals(registration.waiting, null,
                         'waiting after redundant');
-          assert_equals(registration.active.scriptURL, expected_url,
-                        'active after redundant');
+          // According to spec, Clear Registration runs Update State which is
+          // immediately followed by setting active to null, which means by the
+          // time the event loop turns and the Promise for statechange is
+          // resolved, this will be gone.
+          assert_equals(registration.active, null,
+                        'active should be null after redundant');
           t.done();
         })
       .catch(unreached_rejection(t));
