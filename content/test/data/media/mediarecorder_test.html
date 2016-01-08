@@ -6,6 +6,7 @@
 <body>
   <div> Record Real-Time video content browser test.</div>
   <video id="video" autoplay></video>
+  <video id="remoteVideo" autoplay></video>
 </body>
 <script type="text/javascript" src="mediarecorder_test_utils.js"></script>
 <script type="text/javascript" src="webrtc_test_utilities.js"></script>
@@ -34,6 +35,52 @@ function assertThrows(func, description) {
     console.log(e);
     reportTestSuccess();
   }
+}
+
+// TODO(cpaulin): factor this method out of here, http://crbug.com/574503.
+function setupPeerConnection(stream) {
+  return new Promise(function(resolve, reject) {
+    var localStream = stream;
+    var remoteStream = null;
+    var localPeerConnection = new webkitRTCPeerConnection(null);
+    var remotePeerConnection = new webkitRTCPeerConnection(null);
+
+    function createAnswer(description) {
+      remotePeerConnection.createAnswer(function(description) {
+        remotePeerConnection.setLocalDescription(description);
+        localPeerConnection.setRemoteDescription(description);
+      });
+    }
+
+    localPeerConnection.onicecandidate = function(event) {
+      if (event.candidate) {
+        remotePeerConnection.addIceCandidate(new RTCIceCandidate(
+            event.candidate));
+      }
+    };
+    remotePeerConnection.onicecandidate = function(event) {
+      if (event.candidate) {
+        localPeerConnection.addIceCandidate(new RTCIceCandidate(
+            event.candidate));
+      }
+    };
+    remotePeerConnection.onaddstream = function(event) {
+      document.getElementById("remoteVideo").src = URL.createObjectURL(
+          event.stream);
+      remoteStream = event.stream;
+      resolve(remoteStream);
+    };
+
+    localPeerConnection.addStream(localStream);
+
+    localPeerConnection.createOffer(function(description) {
+      localPeerConnection.setLocalDescription(description);
+      remotePeerConnection.setRemoteDescription(description);
+      createAnswer(description);
+    });
+
+    document.getElementById("video").src = URL.createObjectURL(localStream);
+  });
 }
 
 function createAndStartMediaRecorder(stream, mimeType, slice) {
@@ -235,19 +282,14 @@ function testResumeAndRecorderState() {
 }
 
 // Tests that is it not possible to resume an inactive MediaRecorder.
-function testNoResumeWhileRecorderInactive() {
+function testIllegalResumeThrowsDOMError() {
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
       .then(function(stream) {
         return createMediaRecorder(stream, DEFAULT_RECORDER_MIME_TYPE);
       })
       .then(function(recorder) {
-        recorder.resume();
-      })
-      .then(function() {
-        return failTest('Recorder resumed recording from inactive state.');
-      })
-      .catch(function(err) {
-        reportTestSuccess();
+        assertThrows(function() {recorder.resume()}, 'Calling resume() in' +
+            ' inactive state should cause a DOM error');
       });
 }
 
@@ -392,7 +434,39 @@ function testIllegalPauseThrowsDOMError() {
       })
       .then(function(recorder) {
         assertThrows(function() {recorder.pause()}, 'Calling pause() in' +
-          ' inactive state should cause a DOM error');
+            ' inactive state should cause a DOM error');
+      });
+}
+
+// Tests that a remote peer connection stream can be successfully recorded.
+function testRecordRemotePeerConnection() {
+  var videoSize = 0;
+  var timeStamps = [];
+  navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
+      .then(function(localStream) {
+        return setupPeerConnection(localStream);
+      })
+      .then(function(remoteStream) {
+        return createMediaRecorder(remoteStream, DEFAULT_RECORDER_MIME_TYPE);
+      })
+      .then(function(recorder) {
+        recorder.ondataavailable = function(event) {
+          timeStamps.push(event.timeStamp);
+          videoSize  += event.data.size;
+        };
+        recorder.start();
+      })
+      .then(function() {
+        return waitFor('Making sure the recording has data',
+            function() {
+              return videoSize > 0 && timeStamps.length > 100;
+            });
+      })
+      .catch(function(err) {
+        return failTest(err.toString());
+      })
+      .then(function() {
+        reportTestSuccess();
       });
 }
 
