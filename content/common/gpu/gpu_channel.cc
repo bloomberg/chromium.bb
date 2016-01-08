@@ -165,6 +165,11 @@ void GpuChannelMessageQueue::BeginMessageProcessing(
   sync_point_order_data_->BeginProcessingOrderNumber(msg->order_number);
 }
 
+void GpuChannelMessageQueue::PauseMessageProcessing(
+    const GpuChannelMessage* msg) {
+  sync_point_order_data_->PauseProcessingOrderNumber(msg->order_number);
+}
+
 bool GpuChannelMessageQueue::MessageProcessed() {
   base::AutoLock auto_lock(channel_messages_lock_);
   DCHECK(!channel_messages_.empty());
@@ -858,6 +863,7 @@ void GpuChannel::HandleMessage() {
   // a flush. In this case we should not pop the message from the queue.
   if (stub && stub->HasUnprocessedCommands()) {
     DCHECK_EQ((uint32_t)GpuCommandBufferMsg_AsyncFlush::ID, message.type());
+    message_queue_->PauseMessageProcessing(m);
     // If the stub is still scheduled then we were preempted and need to
     // schedule a wakeup otherwise some other event will wake us up e.g. sync
     // point completion. No DCHECK for preemption flag because that can change

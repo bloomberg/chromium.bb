@@ -64,6 +64,7 @@ void SyncPointOrderData::BeginProcessingOrderNumber(uint32_t order_num) {
   DCHECK(processing_thread_checker_.CalledOnValidThread());
   DCHECK_GE(order_num, current_order_num_);
   current_order_num_ = order_num;
+  paused_ = false;
 
   // Catch invalid waits which were waiting on fence syncs that do not exist.
   // When we begin processing an order number, we should release any fence
@@ -88,9 +89,17 @@ void SyncPointOrderData::BeginProcessingOrderNumber(uint32_t order_num) {
   }
 }
 
+void SyncPointOrderData::PauseProcessingOrderNumber(uint32_t order_num) {
+  DCHECK(processing_thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(current_order_num_, order_num);
+  DCHECK(!paused_);
+  paused_ = true;
+}
+
 void SyncPointOrderData::FinishProcessingOrderNumber(uint32_t order_num) {
   DCHECK(processing_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(current_order_num_, order_num);
+  DCHECK(!paused_);
 
   // Catch invalid waits which were waiting on fence syncs that do not exist.
   // When we end processing an order number, we should release any fence syncs
@@ -128,6 +137,7 @@ SyncPointOrderData::OrderFence::~OrderFence() {}
 
 SyncPointOrderData::SyncPointOrderData()
     : current_order_num_(0),
+      paused_(false),
       destroyed_(false),
       processed_order_num_(0),
       unprocessed_order_num_(0) {}
@@ -242,15 +252,21 @@ void SyncPointClientState::ReleaseFenceSyncLocked(
 }
 
 SyncPointClient::~SyncPointClient() {
-  // Release all fences on destruction.
-  ReleaseFenceSync(UINT64_MAX);
+  if (namespace_id_ != gpu::CommandBufferNamespace::INVALID) {
+    // Release all fences on destruction.
+    client_state_->ReleaseFenceSync(UINT64_MAX);
 
-  sync_point_manager_->DestroySyncPointClient(namespace_id_, client_id_);
+    sync_point_manager_->DestroySyncPointClient(namespace_id_, client_id_);
+  }
 }
 
 bool SyncPointClient::Wait(SyncPointClientState* release_state,
                            uint64_t release_count,
                            const base::Closure& wait_complete_callback) {
+  // Validate that this Wait call is between BeginProcessingOrderNumber() and
+  // FinishProcessingOrderNumber(), or else we may deadlock.
+  DCHECK(client_state_->order_data()->IsProcessingOrderNumber());
+
   const uint32_t wait_order_number =
       client_state_->order_data()->current_order_num();
 
@@ -273,22 +289,15 @@ bool SyncPointClient::WaitNonThreadSafe(
               base::Bind(&RunOnThread, runner, wait_complete_callback));
 }
 
-void SyncPointClient::ReleaseFenceSync(uint64_t release) {
-  client_state_->ReleaseFenceSync(release);
-}
+bool SyncPointClient::WaitOutOfOrder(
+    SyncPointClientState* release_state,
+    uint64_t release_count,
+    const base::Closure& wait_complete_callback) {
+  // Validate that this Wait call is not between BeginProcessingOrderNumber()
+  // and FinishProcessingOrderNumber(), or else we may deadlock.
+  DCHECK(!client_state_ ||
+         !client_state_->order_data()->IsProcessingOrderNumber());
 
-SyncPointClient::SyncPointClient(SyncPointManager* sync_point_manager,
-                                 scoped_refptr<SyncPointOrderData> order_data,
-                                 CommandBufferNamespace namespace_id,
-                                 uint64_t client_id)
-    : sync_point_manager_(sync_point_manager),
-      client_state_(new SyncPointClientState(order_data)),
-      namespace_id_(namespace_id),
-      client_id_(client_id) {}
-
-bool SyncPointClientWaiter::Wait(SyncPointClientState* release_state,
-                                 uint64_t release_count,
-                                 const base::Closure& wait_complete_callback) {
   // No order number associated with the current execution context, using
   // UINT32_MAX will just assume the release is in the SyncPointClientState's
   // order numbers to be executed.
@@ -300,14 +309,36 @@ bool SyncPointClientWaiter::Wait(SyncPointClientState* release_state,
   return true;
 }
 
-bool SyncPointClientWaiter::WaitNonThreadSafe(
+bool SyncPointClient::WaitOutOfOrderNonThreadSafe(
     SyncPointClientState* release_state,
     uint64_t release_count,
     scoped_refptr<base::SingleThreadTaskRunner> runner,
     const base::Closure& wait_complete_callback) {
-  return Wait(release_state, release_count,
-              base::Bind(&RunOnThread, runner, wait_complete_callback));
+  return WaitOutOfOrder(
+      release_state, release_count,
+      base::Bind(&RunOnThread, runner, wait_complete_callback));
 }
+
+void SyncPointClient::ReleaseFenceSync(uint64_t release) {
+  // Validate that this Release call is between BeginProcessingOrderNumber() and
+  // FinishProcessingOrderNumber(), or else we may deadlock.
+  DCHECK(client_state_->order_data()->IsProcessingOrderNumber());
+  client_state_->ReleaseFenceSync(release);
+}
+
+SyncPointClient::SyncPointClient()
+    : sync_point_manager_(nullptr),
+      namespace_id_(gpu::CommandBufferNamespace::INVALID),
+      client_id_(0) {}
+
+SyncPointClient::SyncPointClient(SyncPointManager* sync_point_manager,
+                                 scoped_refptr<SyncPointOrderData> order_data,
+                                 CommandBufferNamespace namespace_id,
+                                 uint64_t client_id)
+    : sync_point_manager_(sync_point_manager),
+      client_state_(new SyncPointClientState(order_data)),
+      namespace_id_(namespace_id),
+      client_id_(client_id) {}
 
 SyncPointManager::SyncPointManager(bool allow_threaded_wait)
     : allow_threaded_wait_(allow_threaded_wait),
@@ -340,6 +371,10 @@ scoped_ptr<SyncPointClient> SyncPointManager::CreateSyncPointClient(
   DCHECK(result.second);
 
   return make_scoped_ptr(result.first->second);
+}
+
+scoped_ptr<SyncPointClient> SyncPointManager::CreateSyncPointClientWaiter() {
+  return make_scoped_ptr(new SyncPointClient);
 }
 
 scoped_refptr<SyncPointClientState> SyncPointManager::GetSyncPointClientState(

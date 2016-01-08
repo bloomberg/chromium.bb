@@ -21,6 +21,7 @@
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
@@ -122,6 +123,8 @@ GLManager::Options::Options()
 GLManager::GLManager()
     : sync_point_manager_(nullptr),
       context_lost_allowed_(false),
+      pause_commands_(false),
+      paused_order_num_(0),
       command_buffer_id_(g_next_command_buffer_id++),
       next_fence_sync_release_(1) {
   SetupBaseContext();
@@ -402,9 +405,23 @@ void GLManager::PumpCommands() {
   uint32_t order_num = 0;
   if (sync_point_manager_) {
     // If sync point manager is supported, assign order numbers to commands.
-    order_num = sync_point_order_data_->GenerateUnprocessedOrderNumber(
-        sync_point_manager_);
+    if (paused_order_num_) {
+      // Was previous paused, continue to process the order number.
+      order_num = paused_order_num_;
+      paused_order_num_ = 0;
+    } else {
+      order_num = sync_point_order_data_->GenerateUnprocessedOrderNumber(
+          sync_point_manager_);
+    }
     sync_point_order_data_->BeginProcessingOrderNumber(order_num);
+  }
+
+  if (pause_commands_) {
+    // Do not process commands, simply store the current order number.
+    paused_order_num_ = order_num;
+
+    sync_point_order_data_->PauseProcessingOrderNumber(order_num);
+    return;
   }
 
   gpu_scheduler_->PutChanged();
@@ -533,7 +550,20 @@ bool GLManager::IsFenceSyncFlushReceived(uint64_t release) {
 
 void GLManager::SignalSyncToken(const gpu::SyncToken& sync_token,
                                 const base::Closure& callback) {
-  NOTIMPLEMENTED();
+  if (sync_point_manager_) {
+    scoped_refptr<gpu::SyncPointClientState> release_state =
+        sync_point_manager_->GetSyncPointClientState(
+            sync_token.namespace_id(), sync_token.command_buffer_id());
+
+    if (release_state) {
+      sync_point_client_->WaitOutOfOrder(release_state.get(),
+                                         sync_token.release_count(), callback);
+      return;
+    }
+  }
+
+  // Something went wrong, just run the callback now.
+  callback.Run();
 }
 
 bool GLManager::CanWaitUnverifiedSyncToken(const gpu::SyncToken* sync_token) {

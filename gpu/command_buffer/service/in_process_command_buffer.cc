@@ -942,8 +942,8 @@ void InProcessCommandBuffer::SignalSyncTokenOnGpuThread(
     return;
   }
 
-  sync_point_client_->Wait(release_state.get(), sync_token.release_count(),
-                           WrapCallback(callback));
+  sync_point_client_->WaitOutOfOrder(
+      release_state.get(), sync_token.release_count(), WrapCallback(callback));
 }
 
 void InProcessCommandBuffer::SignalQuery(unsigned query_id,

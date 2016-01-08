@@ -92,6 +92,8 @@ class GLManager : private GpuControl {
 
   void SetSurface(gfx::GLSurface* surface);
 
+  void SetCommandsPaused(bool paused) { pause_commands_ = paused; }
+
   gles2::GLES2Decoder* decoder() const {
     return decoder_.get();
   }
@@ -169,6 +171,8 @@ class GLManager : private GpuControl {
   scoped_ptr<TransferBuffer> transfer_buffer_;
   scoped_ptr<gles2::GLES2Implementation> gles2_implementation_;
   bool context_lost_allowed_;
+  bool pause_commands_;
+  uint32_t paused_order_num_;
 
   const uint64_t command_buffer_id_;
   uint64_t next_fence_sync_release_;

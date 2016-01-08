@@ -432,7 +432,11 @@ class GpuChannelMessageQueue
 
   GpuChannelMessage* GetNextMessage() const;
 
+  // Should be called before a message begins to be processed.
   void BeginMessageProcessing(const GpuChannelMessage* msg);
+
+  // Should be called if a message began processing but did not finish.
+  void PauseMessageProcessing(const GpuChannelMessage* msg);
 
   // Should be called after a message returned by GetNextMessage is processed.
   // Returns true if there are more messages on the queue.

@@ -60,7 +60,8 @@ GpuChannelManager::GpuChannelManager(
       mailbox_manager_(gpu::gles2::MailboxManager::Create()),
       gpu_memory_manager_(this),
       sync_point_manager_(sync_point_manager),
-      sync_point_client_waiter_(new gpu::SyncPointClientWaiter),
+      sync_point_client_waiter_(
+          sync_point_manager->CreateSyncPointClientWaiter()),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       weak_factory_(this) {
   DCHECK(task_runner);
@@ -234,7 +235,7 @@ void GpuChannelManager::OnDestroyGpuMemoryBuffer(
         sync_point_manager()->GetSyncPointClientState(
             sync_token.namespace_id(), sync_token.command_buffer_id());
     if (release_state) {
-      sync_point_client_waiter_->Wait(
+      sync_point_client_waiter_->WaitOutOfOrder(
           release_state.get(), sync_token.release_count(),
           base::Bind(&GpuChannelManager::DestroyGpuMemoryBuffer,
                      base::Unretained(this), id, client_id));

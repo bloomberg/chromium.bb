@@ -214,7 +214,9 @@ bool CommandBufferImpl::FlushHelper(int32_t put_offset,
   // Return false if the Flush is not finished, so the CommandBufferTaskRunner
   // will not remove this task from the task queue.
   const bool complete = !driver_->HasUnprocessedCommands();
-  if (complete)
+  if (!complete)
+    driver_->sync_point_order_data()->PauseProcessingOrderNumber(order_num);
+  else
     driver_->sync_point_order_data()->FinishProcessingOrderNumber(order_num);
   return complete;
 }

@@ -67,4 +67,34 @@ TEST_F(GLFenceSyncTest, SimpleReleaseWait) {
   EXPECT_EQ(0u, gl2_client_state->fence_sync_release());
 }
 
+static void TestCallback(int* storage, int assign) {
+  *storage = assign;
+}
+
+TEST_F(GLFenceSyncTest, SimpleReleaseSignal) {
+  gl1_.MakeCurrent();
+
+  // Pause the command buffer so the fence sync does not immediately trigger.
+  gl1_.SetCommandsPaused(true);
+
+  const GLuint64 fence_sync = glInsertFenceSyncCHROMIUM();
+  SyncToken sync_token;
+  glGenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+  glFlush();
+  ASSERT_TRUE(sync_token.HasData());
+
+  gl2_.MakeCurrent();
+  int callback_called = 0;
+  gl2_.SignalSyncToken(sync_token,
+                       base::Bind(TestCallback, &callback_called, 1));
+
+  gl1_.MakeCurrent();
+  EXPECT_EQ(0, callback_called);
+
+  gl1_.SetCommandsPaused(false);
+  glFinish();
+
+  EXPECT_EQ(1, callback_called);
+}
+
 }  // namespace gpu

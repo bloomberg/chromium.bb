@@ -85,11 +85,19 @@ TEST_F(SyncPointManagerTest, BasicSyncPointOrderDataTest) {
   EXPECT_EQ(order_num, order_data->current_order_num());
   EXPECT_EQ(0u, order_data->processed_order_num());
   EXPECT_EQ(order_num, order_data->unprocessed_order_num());
+  EXPECT_TRUE(order_data->IsProcessingOrderNumber());
+
+  order_data->PauseProcessingOrderNumber(order_num);
+  EXPECT_FALSE(order_data->IsProcessingOrderNumber());
+
+  order_data->BeginProcessingOrderNumber(order_num);
+  EXPECT_TRUE(order_data->IsProcessingOrderNumber());
 
   order_data->FinishProcessingOrderNumber(order_num);
   EXPECT_EQ(order_num, order_data->current_order_num());
   EXPECT_EQ(order_num, order_data->processed_order_num());
   EXPECT_EQ(order_num, order_data->unprocessed_order_num());
+  EXPECT_FALSE(order_data->IsProcessingOrderNumber());
 }
 
 TEST_F(SyncPointManagerTest, SyncPointClientRegistration) {
@@ -127,7 +135,11 @@ TEST_F(SyncPointManagerTest, BasicFenceSyncRelease) {
   EXPECT_EQ(0u, client_state->fence_sync_release());
   EXPECT_FALSE(client_state->IsFenceSyncReleased(1));
 
+  const uint32_t order_num =
+      order_data->GenerateUnprocessedOrderNumber(sync_point_manager_.get());
+  order_data->BeginProcessingOrderNumber(order_num);
   client->ReleaseFenceSync(1);
+  order_data->FinishProcessingOrderNumber(order_num);
 
   EXPECT_EQ(1u, client_state->fence_sync_release());
   EXPECT_TRUE(client_state->IsFenceSyncReleased(1));
@@ -150,7 +162,11 @@ TEST_F(SyncPointManagerTest, MultipleClientsPerOrderData) {
   scoped_refptr<SyncPointClientState> client_state1 = client1->client_state();
   scoped_refptr<SyncPointClientState> client_state2 = client2->client_state();
 
+  const uint32_t order_num =
+      order_data->GenerateUnprocessedOrderNumber(sync_point_manager_.get());
+  order_data->BeginProcessingOrderNumber(order_num);
   client1->ReleaseFenceSync(1);
+  order_data->FinishProcessingOrderNumber(order_num);
 
   EXPECT_TRUE(client_state1->IsFenceSyncReleased(1));
   EXPECT_FALSE(client_state2->IsFenceSyncReleased(1));
