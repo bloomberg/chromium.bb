@@ -76,6 +76,9 @@ m4_include(m4/ax_pthread.m4)
 AX_PTHREAD
 AC_CHECK_HEADERS([a.out.h])
 
+m4_include(m4/ax_cxx_compile_stdcxx.m4)
+AX_CXX_COMPILE_STDCXX(11, noext, mandatory)
+
 # Only build Linux client libs when compiling for Linux
 case $host in
   *-*-linux* | *-android* )
