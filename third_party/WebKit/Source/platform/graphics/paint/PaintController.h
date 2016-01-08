@@ -21,8 +21,8 @@
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/Utility.h"
 #include "wtf/Vector.h"
+#include <utility>
 
 namespace blink {
 
@@ -77,7 +77,7 @@ public:
 
         if (displayItemConstructionIsDisabled())
             return;
-        DisplayItemClass& displayItem = m_newDisplayItemList.allocateAndConstruct<DisplayItemClass>(WTF::forward<Args>(args)...);
+        DisplayItemClass& displayItem = m_newDisplayItemList.allocateAndConstruct<DisplayItemClass>(std::forward<Args>(args)...);
         processNewItem(displayItem);
     }
 
@@ -94,7 +94,7 @@ public:
         if (lastDisplayItemIsNoopBegin())
             removeLastDisplayItem();
         else
-            createAndAppend<DisplayItemClass>(WTF::forward<Args>(args)...);
+            createAndAppend<DisplayItemClass>(std::forward<Args>(args)...);
     }
 
     // Scopes must be used to avoid duplicated display item ids when we paint some object

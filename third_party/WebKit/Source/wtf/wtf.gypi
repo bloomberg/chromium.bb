@@ -124,7 +124,6 @@
             'Uint16Array.h',
             'Uint32Array.h',
             'Uint8Array.h',
-            'Utility.h',
             'Vector.h',
             'VectorTraits.h',
             'WTF.cpp',

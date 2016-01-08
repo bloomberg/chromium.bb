@@ -12,10 +12,10 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/TypeTraits.h"
-#include "wtf/Utility.h"
 #include "wtf/Vector.h"
 #include <cstddef>
 #include <iterator>
+#include <utility>
 
 namespace blink {
 
@@ -151,7 +151,7 @@ public:
         static_assert(alignment % WTF_ALIGN_OF(DerivedElementType) == 0,
             "Derived type requires stronger alignment.");
         size_t allocSize = align(sizeof(DerivedElementType));
-        return *new (allocate(allocSize, WTF_HEAP_PROFILER_TYPE_NAME(DerivedElementType))) DerivedElementType(WTF::forward<Args>(args)...);
+        return *new (allocate(allocSize, WTF_HEAP_PROFILER_TYPE_NAME(DerivedElementType))) DerivedElementType(std::forward<Args>(args)...);
     }
 
     void removeLast()

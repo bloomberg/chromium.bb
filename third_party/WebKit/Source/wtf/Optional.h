@@ -9,9 +9,9 @@
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/StdLibExtras.h"
-#include "wtf/Utility.h"
 
 #include <new>
+#include <utility>
 
 namespace WTF {
 
@@ -54,7 +54,7 @@ public:
     {
         RELEASE_ASSERT(!m_ptr);
         m_ptr = reinterpret_cast_ptr<T*>(&m_storage.buffer);
-        new (m_ptr) T(forward<Args>(args)...);
+        new (m_ptr) T(std::forward<Args>(args)...);
     }
 
 private:
