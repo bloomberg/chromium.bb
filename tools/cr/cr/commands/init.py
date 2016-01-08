@@ -87,7 +87,7 @@ class InitCommand(cr.Command):
         # substrings. This is done to support "linuxchromeos" and "linux".
         platform = max(matches, key=len)
         all_matches_are_substrings = all(p in platform for p in matches)
-        if all_matches_are_substrings or not matches:
+        if not all_matches_are_substrings or not matches:
           print 'Platform is not set, and could not be guessed from', base
           print 'Should be one of', ','.join(platforms)
           if len(matches) > 1:
