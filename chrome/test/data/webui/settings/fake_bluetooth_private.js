@@ -14,18 +14,27 @@ cr.define('settings', function() {
    */
   function FakeBluetoothPrivate(bluetoothApi) {
     /** @private {!Bluetooth} */ this.bluetoothApi_ = bluetoothApi;
+
+    /** @type {!Set<string>} */ this.connectedDevices_ = new Set();
+
+    /** @type {!Object<!chrome.bluetoothPrivate.SetPairingResponseOptions>} */
+    this.pairingResponses_ = {};
   }
 
   FakeBluetoothPrivate.prototype = {
     /** @override */
     setAdapterState: function(state, opt_callback) {
-      this.bluetoothApi_.enabled = state.powered;
+      this.bluetoothApi_.adapterState = state;
       if (opt_callback)
         setTimeout(opt_callback);
     },
 
     /** @override */
-    setPairingResponse: assertNotReached,
+    setPairingResponse: function(options, opt_callback) {
+      this.pairingResponses_[options.device.address] = options;
+      if (opt_callback)
+        setTimeout(opt_callback);
+    },
 
     /** @override */
     disconnectAll: assertNotReached,
@@ -37,7 +46,11 @@ cr.define('settings', function() {
     setDiscoveryFilter: assertNotReached,
 
     /** @override */
-    connect: assertNotReached,
+    connect: function(address, opt_callback) {
+      this.connectedDevices_.add(address);
+      if (opt_callback)
+        setTimeout(opt_callback);
+    },
 
     /** @override */
     pair: assertNotReached,

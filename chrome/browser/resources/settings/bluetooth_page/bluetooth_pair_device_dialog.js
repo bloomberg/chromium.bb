@@ -172,6 +172,8 @@ Polymer({
   /** @private */
   onCancelTap_: function() {
     this.sendResponse_(chrome.bluetoothPrivate.PairingResponse.CANCEL);
+    // Close the dialog immediately.
+    this.fire('close-dialog', '');
   },
 
   /** @private */

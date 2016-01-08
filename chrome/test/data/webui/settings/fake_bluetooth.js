@@ -12,13 +12,27 @@ cr.define('settings', function() {
    * @implements {Bluetooth}
    */
   function FakeBluetooth() {
-    /** @type {boolean} */ this.enabled = false;
+    /** @type {!chrome.bluettoth.AdapterState} */ this.adapterState = {
+      address: '00:11:22:33:44:55:66',
+      name: 'Fake Adapter',
+      powered: false,
+      available: true,
+      discovering: false
+    };
 
     /** @type {!Array<!chrome.bluetooth.Device>} */ this.devices = [];
   }
 
   FakeBluetooth.prototype = {
     // Public testing methods.
+    /**
+     * @param {boolean} enabled
+     */
+    setEnabled: function(enabled) {
+      this.adapterState.powered = enabled;
+      this.onAdapterStateChanged.callListeners(this.adapterState);
+    },
+
     /**
      * @param {!Array<!chrome.bluetooth.Device>} devices
      */
@@ -34,13 +48,7 @@ cr.define('settings', function() {
     /** @override */
     getAdapterState: function(callback) {
       setTimeout(function() {
-        callback({
-          address: '00:11:22:33:44:55:66',
-          name: 'Fake Adapter',
-          powered: this.enabled,
-          available: true,
-          discovering: false
-        });
+        callback(this.adapterState);
       }.bind(this));
     },
 

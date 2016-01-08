@@ -86,11 +86,16 @@ TEST_F('SettingsBluetoothPageBrowserTest', 'MAYBE_Bluetooth', function() {
       name: 'FakeUnPairedDevice1',
       paired: false,
     },
+    {
+      address: '00:00:00:00:00:02',
+      name: 'FakeUnPairedDevice2',
+      paired: false,
+    },
   ];
 
   suite('SettingsBluetoothPage', function() {
     test('enable', function() {
-      assertFalse(self.bluetoothApi_.enabled);
+      assertFalse(self.bluetoothApi_.adapterState.powered);
       var bluetoothSection = self.getSection(advanced, 'bluetooth');
       assertTrue(!!bluetoothSection);
       var bluetooth =
@@ -103,10 +108,10 @@ TEST_F('SettingsBluetoothPageBrowserTest', 'MAYBE_Bluetooth', function() {
       // Test that tapping the enable checkbox changes its value and calls
       // bluetooth.setAdapterState with powered = false.
       MockInteractions.tap(enable);
-      expectTrue(enable.checked);
-      expectTrue(self.bluetoothApi_.enabled);
-      // Confirm that 'bluetoothEnabled' remains set to true.
       Polymer.dom.flush();
+      expectTrue(enable.checked);
+      expectTrue(self.bluetoothApi_.adapterState.powered);
+      // Confirm that 'bluetoothEnabled' remains set to true.
       expectTrue(bluetooth.bluetoothEnabled);
       // Set 'bluetoothEnabled' directly and confirm that the checkbox
       // toggles.
@@ -123,8 +128,7 @@ TEST_F('SettingsBluetoothPageBrowserTest', 'MAYBE_Bluetooth', function() {
       var deviceList = bluetooth.$.deviceList;
       assertTrue(!!deviceList);
       // Set enabled, with default (empty) device list.
-      self.bluetoothApi_.enabled = true;
-      bluetooth.bluetoothEnabled = true;
+      self.bluetoothApi_.setEnabled(true);
       Polymer.dom.flush();
       // Ensure that initially the 'device list empty' span is visible.
       expectFalse(deviceList.hidden);
@@ -143,6 +147,48 @@ TEST_F('SettingsBluetoothPageBrowserTest', 'MAYBE_Bluetooth', function() {
       assertTrue(devices[0].device.connected);
       assertFalse(devices[1].device.connected);
       assertTrue(devices[1].device.connecting);
+    });
+
+    test('device dialog', function() {
+      var bluetoothSection = self.getSection(advanced, 'bluetooth');
+      var bluetooth =
+          bluetoothSection.querySelector('settings-bluetooth-page');
+      assertTrue(!!bluetooth);
+      self.bluetoothApi_.setEnabled(true);
+
+      // Tap the 'add device' button.
+      MockInteractions.tap(bluetooth.$.addDevice);
+      Polymer.dom.flush();
+      // Ensure the dialog appears.
+      var dialog = bluetooth.$.deviceDialog;
+      assertTrue(!!dialog);
+      assertTrue(dialog.opened);
+      var addDialog = bluetooth.$$('settings-bluetooth-add-device-dialog');
+      assertTrue(!!addDialog);
+      // Ensure the dialog has the expected devices.
+      var devicesDiv = addDialog.$.dialogDeviceList;
+      var devices = devicesDiv.querySelectorAll('bluetooth-device-list-item');
+      assertEquals(2, devices.length);
+
+      // Select a device.
+      MockInteractions.tap(devices[0].$$('div'));
+      Polymer.dom.flush();
+      // Ensure the pairing dialog is shown.
+      var pairDialog = bluetooth.$$('settings-bluetooth-pair-device-dialog');
+      assertTrue(!!pairDialog);
+      // Ensure the device is connected to.
+      expectEquals(1, self.bluetoothPrivateApi_.connectedDevices_.size);
+      var deviceAddress =
+          self.bluetoothPrivateApi_.connectedDevices_.keys().next().value;
+
+      // Close the dialog.
+      MockInteractions.tap(pairDialog.$.close);
+      Polymer.dom.flush();
+      expectFalse(dialog.opened);
+      var response = self.bluetoothPrivateApi_.pairingResponses_[deviceAddress];
+      assertTrue(!!response);
+      expectEquals(chrome.bluetoothPrivate.PairingResponse.CANCEL,
+                   response.response);
     });
   });
 
