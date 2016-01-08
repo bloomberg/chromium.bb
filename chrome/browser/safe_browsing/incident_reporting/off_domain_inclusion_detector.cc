@@ -29,34 +29,6 @@ using content::BrowserThread;
 
 namespace safe_browsing {
 
-// A static data structure to carry information specific to a given off-domain
-// inclusions across threads, this data will be readable even after the
-// underlying request has been deleted.
-struct OffDomainInclusionDetector::OffDomainInclusionInfo {
-  OffDomainInclusionInfo()
-      : resource_type(content::RESOURCE_TYPE_LAST_TYPE), render_process_id(0) {}
-
-  content::ResourceType resource_type;
-
-  // ID of the render process from which this inclusion originates, used to
-  // figure out which profile this request belongs to (from the UI thread) if
-  // later required during this analysis.
-  int render_process_id;
-
-  // The URL of the off-domain inclusion.
-  GURL request_url;
-
-  // The URL of the main frame the inclusion was requested by.
-  GURL main_frame_url;
-
-  // Cache of the top-level domain contained in |main_frame_url|.
-  // This could be an IP address.
-  std::string main_frame_domain;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(OffDomainInclusionInfo);
-};
-
 OffDomainInclusionDetector::OffDomainInclusionDetector(
     const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager)
     : OffDomainInclusionDetector(database_manager,
@@ -78,31 +50,144 @@ OffDomainInclusionDetector::~OffDomainInclusionDetector() {
 
 void OffDomainInclusionDetector::OnResourceRequest(
     const net::URLRequest* request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!ShouldAnalyzeRequest(request))
     return;
-
-  scoped_ptr<OffDomainInclusionInfo> off_domain_inclusion_info(
-      new OffDomainInclusionInfo);
 
   const content::ResourceRequestInfo* resource_request_info =
       content::ResourceRequestInfo::ForRequest(request);
 
-  off_domain_inclusion_info->resource_type =
+  const content::ResourceType resource_type =
       resource_request_info->GetResourceType();
 
-  off_domain_inclusion_info->render_process_id =
-      resource_request_info->GetChildID();
-
-  off_domain_inclusion_info->request_url = request->url();
+  const GURL request_url = request->url();
 
   // Only requests for subresources of the main frame are analyzed and the
   // referrer URL is always the URL of the main frame itself in such requests.
-  off_domain_inclusion_info->main_frame_url = GURL(request->referrer());
+  const GURL main_frame_url(request->referrer());
 
-  main_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&OffDomainInclusionDetector::BeginAnalysis,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            base::Passed(&off_domain_inclusion_info)));
+  if (!main_frame_url.is_valid()) {
+    // A live experiment confirmed that the only reason the |main_frame_url|
+    // would be invalid is if it's empty. The |main_frame_url| can be empty in
+    // a few scenarios where the referrer is dropped (e.g., HTTPS => HTTP
+    // requests). Consider adding the original referrer to ResourceRequestInfo
+    // if that's an issue.
+    DCHECK(main_frame_url.is_empty());
+    ReportAnalysisResult(resource_type,
+                         AnalysisEvent::ABORT_EMPTY_MAIN_FRAME_URL);
+    return;
+  }
+
+  // Cache of the top-level domain contained in |main_frame_url|.  This could
+  // be an IP address.
+  std::string main_frame_domain;
+
+  const bool main_frame_is_ip = main_frame_url.HostIsIPAddress();
+  if (main_frame_is_ip) {
+    main_frame_domain = main_frame_url.host();
+  } else {
+    main_frame_domain = net::registry_controlled_domains::GetDomainAndRegistry(
+        main_frame_url,
+        net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  }
+  const bool request_is_ip = request_url.HostIsIPAddress();
+
+  // Check if this is indeed an off-domain inclusion.
+  bool is_off_domain = false;
+  if (main_frame_is_ip && request_is_ip) {
+    // Both are IP addresses: compare them as strings
+    is_off_domain = main_frame_domain != request_url.host();
+  } else if (!main_frame_is_ip && !request_is_ip) {
+    // Neither are: compare as domains
+    is_off_domain = !request_url.DomainIs(main_frame_domain);
+  } else {
+    // Just one is an IP
+    is_off_domain = true;
+  }
+
+  if (!is_off_domain)
+    return;
+
+  // Upon detecting that |request_url| is an off-domain inclusion, compare it
+  // against the inclusion whitelist.
+  //
+  // This function must be called on the IO thread. The code above could be
+  // called from any thread, in theory.
+  if (database_manager_->MatchInclusionWhitelistUrl(request_url)) {
+    ReportAnalysisResult(resource_type,
+                         AnalysisEvent::OFF_DOMAIN_INCLUSION_WHITELISTED);
+    return;
+  }
+
+  // On a negative result from the whitelist, query the HistoryService to see
+  // if this url has been seen before.
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&OffDomainInclusionDetector::ContinueAnalysisWithHistoryCheck,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 resource_type,
+                 request_url,
+                 resource_request_info->GetChildID()));
+}
+
+void OffDomainInclusionDetector::ContinueAnalysisWithHistoryCheck(
+    const content::ResourceType resource_type,
+    const GURL& request_url,
+    int render_process_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  Profile* profile =
+      ProfileFromRenderProcessId(render_process_id);
+  if (!profile) {
+    ReportAnalysisResult(resource_type,
+                         AnalysisEvent::ABORT_NO_PROFILE);
+    return;
+  }
+
+  if (profile->IsOffTheRecord()) {
+    ReportAnalysisResult(resource_type,
+                         AnalysisEvent::ABORT_INCOGNITO);
+    return;
+  }
+
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfileWithoutCreating(profile);
+
+  if (!history_service) {
+    // Should only happen very early during startup, receiving many such reports
+    // relative to other report types would indicate that something is wrong.
+    ReportAnalysisResult(resource_type,
+                         AnalysisEvent::ABORT_NO_HISTORY_SERVICE);
+    return;
+  }
+
+  history_service->GetVisibleVisitCountToHost(
+      request_url,
+      base::Bind(&OffDomainInclusionDetector::ContinueAnalysisOnHistoryResult,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 resource_type),
+      &history_task_tracker_);
+}
+
+void OffDomainInclusionDetector::ContinueAnalysisOnHistoryResult(
+    const content::ResourceType resource_type,
+    bool success,
+    int num_visits,
+    base::Time /* first_visit_time */) {
+  if (!success) {
+    ReportAnalysisResult(resource_type,
+                         AnalysisEvent::ABORT_HISTORY_LOOKUP_FAILED);
+    return;
+  }
+
+  if (num_visits > 0) {
+    ReportAnalysisResult(resource_type,
+                         AnalysisEvent::OFF_DOMAIN_INCLUSION_IN_HISTORY);
+  } else {
+    ReportAnalysisResult(resource_type,
+                         AnalysisEvent::OFF_DOMAIN_INCLUSION_SUSPICIOUS);
+  }
 }
 
 Profile* OffDomainInclusionDetector::ProfileFromRenderProcessId(
@@ -168,155 +253,13 @@ bool OffDomainInclusionDetector::ShouldAnalyzeRequest(
   return false;
 }
 
-void OffDomainInclusionDetector::BeginAnalysis(
-    scoped_ptr<OffDomainInclusionInfo> off_domain_inclusion_info) {
-  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
-
-  if (!off_domain_inclusion_info->main_frame_url.is_valid()) {
-    // A live experiment confirmed that the only reason the |main_frame_url|
-    // would be invalid is if it's empty. The |main_frame_url| can be empty in
-    // a few scenarios where the referrer is dropped (e.g., HTTPS => HTTP
-    // requests). Consider adding the original referrer to ResourceRequestInfo
-    // if that's an issue.
-    DCHECK(off_domain_inclusion_info->main_frame_url.is_empty());
-    ReportAnalysisResult(std::move(off_domain_inclusion_info),
-                         AnalysisEvent::ABORT_EMPTY_MAIN_FRAME_URL);
-    return;
-  }
-
-  const bool main_frame_is_ip =
-      off_domain_inclusion_info->main_frame_url.HostIsIPAddress();
-  if (main_frame_is_ip) {
-    off_domain_inclusion_info->main_frame_domain =
-        off_domain_inclusion_info->main_frame_url.host();
-  } else {
-    off_domain_inclusion_info->main_frame_domain =
-        net::registry_controlled_domains::GetDomainAndRegistry(
-            off_domain_inclusion_info->main_frame_url,
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-  }
-  const bool request_is_ip =
-      off_domain_inclusion_info->request_url.HostIsIPAddress();
-
-  bool is_off_domain = false;
-  if (main_frame_is_ip && request_is_ip) {
-    // Both are IP addresses: compare them as strings
-    is_off_domain = off_domain_inclusion_info->main_frame_domain !=
-                    off_domain_inclusion_info->request_url.host();
-  } else if (!main_frame_is_ip && !request_is_ip) {
-    // Neither are: compare as domains
-    is_off_domain = !off_domain_inclusion_info->request_url.DomainIs(
-        off_domain_inclusion_info->main_frame_domain);
-  } else {
-    // Just one is an IP
-    is_off_domain = true;
-  }
-
-  if (is_off_domain) {
-    // Upon detecting that |request_url| is an off-domain inclusion, compare it
-    // against the inclusion whitelist.
-
-    // Note: |request_url| sadly needs to be copied below as the scoped_ptr
-    // currently owning it will be passed on to a temporary/unaccessible
-    // scoped_ptr in the Reply Callback and a ConstRef of it therefore can't be
-    // used in the Task Callback.
-    const GURL copied_request_url(off_domain_inclusion_info->request_url);
-    BrowserThread::PostTaskAndReplyWithResult(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&SafeBrowsingDatabaseManager::MatchInclusionWhitelistUrl,
-                   database_manager_, copied_request_url),
-        base::Bind(
-            &OffDomainInclusionDetector::ContinueAnalysisOnWhitelistResult,
-            weak_ptr_factory_.GetWeakPtr(),
-            base::Passed(&off_domain_inclusion_info)));
-  }
-}
-
-void OffDomainInclusionDetector::ContinueAnalysisOnWhitelistResult(
-    scoped_ptr<const OffDomainInclusionInfo> off_domain_inclusion_info,
-    bool request_url_is_on_inclusion_whitelist) {
-  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
-
-  if (request_url_is_on_inclusion_whitelist) {
-    ReportAnalysisResult(std::move(off_domain_inclusion_info),
-                         AnalysisEvent::OFF_DOMAIN_INCLUSION_WHITELISTED);
-  } else {
-    ContinueAnalysisWithHistoryCheck(std::move(off_domain_inclusion_info));
-  }
-}
-
-void OffDomainInclusionDetector::ContinueAnalysisWithHistoryCheck(
-    scoped_ptr<const OffDomainInclusionInfo> off_domain_inclusion_info) {
-  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
-
-  // The |main_thread_task_runner_| is the UI thread in practice currently so
-  // this call can be made synchronously, but this would need to be made
-  // asynchronous should this ever change.
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  Profile* profile =
-      ProfileFromRenderProcessId(off_domain_inclusion_info->render_process_id);
-  if (!profile) {
-    ReportAnalysisResult(std::move(off_domain_inclusion_info),
-                         AnalysisEvent::ABORT_NO_PROFILE);
-    return;
-  } else if (profile->IsOffTheRecord()) {
-    ReportAnalysisResult(std::move(off_domain_inclusion_info),
-                         AnalysisEvent::ABORT_INCOGNITO);
-    return;
-  }
-
-  history::HistoryService* history_service =
-      HistoryServiceFactory::GetForProfileWithoutCreating(profile);
-
-  if (!history_service) {
-    // Should only happen very early during startup, receiving many such reports
-    // relative to other report types would indicate that something is wrong.
-    ReportAnalysisResult(std::move(off_domain_inclusion_info),
-                         AnalysisEvent::ABORT_NO_HISTORY_SERVICE);
-    return;
-  }
-
-  // Need to explicitly copy |request_url| here or this code would depend on
-  // parameter evaluation order as |off_domain_inclusion_info| is being handed
-  // off.
-  const GURL copied_request_url(off_domain_inclusion_info->request_url);
-  history_service->GetVisibleVisitCountToHost(
-      copied_request_url,
-      base::Bind(&OffDomainInclusionDetector::ContinueAnalysisOnHistoryResult,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&off_domain_inclusion_info)),
-      &history_task_tracker_);
-}
-
-void OffDomainInclusionDetector::ContinueAnalysisOnHistoryResult(
-    scoped_ptr<const OffDomainInclusionInfo> off_domain_inclusion_info,
-    bool success,
-    int num_visits,
-    base::Time /* first_visit_time */) {
-  if (!success) {
-    ReportAnalysisResult(std::move(off_domain_inclusion_info),
-                         AnalysisEvent::ABORT_HISTORY_LOOKUP_FAILED);
-    return;
-  }
-
-  if (num_visits > 0) {
-    ReportAnalysisResult(std::move(off_domain_inclusion_info),
-                         AnalysisEvent::OFF_DOMAIN_INCLUSION_IN_HISTORY);
-  } else {
-    ReportAnalysisResult(std::move(off_domain_inclusion_info),
-                         AnalysisEvent::OFF_DOMAIN_INCLUSION_SUSPICIOUS);
-  }
-}
-
 void OffDomainInclusionDetector::ReportAnalysisResult(
-    scoped_ptr<const OffDomainInclusionInfo> off_domain_inclusion_info,
+    const content::ResourceType resource_type,
     AnalysisEvent analysis_event) {
-  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
-
   // Always record this histogram for the resource type analyzed to be able to
   // do ratio analysis w.r.t. other histograms below.
   UMA_HISTOGRAM_ENUMERATION("SBOffDomainInclusion2.RequestAnalyzed",
-                            off_domain_inclusion_info->resource_type,
+                            resource_type,
                             content::RESOURCE_TYPE_LAST_TYPE);
 
   // Log a histogram for the analysis result along with the associated
@@ -358,12 +301,19 @@ void OffDomainInclusionDetector::ReportAnalysisResult(
         content::RESOURCE_TYPE_LAST_TYPE,      // maximum
         content::RESOURCE_TYPE_LAST_TYPE + 1,  // bucket_count
         base::HistogramBase::kUmaTargetedHistogramFlag)
-        ->Add(off_domain_inclusion_info->resource_type);
+        ->Add(resource_type);
   }
 
   if (!report_analysis_event_callback_.is_null() &&
       analysis_event != AnalysisEvent::NO_EVENT) {
-    report_analysis_event_callback_.Run(analysis_event);
+    // Accessing report_analysis_event_callback_ is threadsafe since the member
+    // is only read and never written after construction. The function it
+    // points to may not be threadsafe, though, so always call it on the main
+    // thread. (We might already be on the main thread, but this callback should
+    // be rare enough that it's not worth testing first.)
+    main_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(report_analysis_event_callback_, analysis_event));
   }
 }
 

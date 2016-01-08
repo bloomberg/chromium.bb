@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "content/public/common/resource_type.h"
 
+class GURL;
 class Profile;
 
 namespace base {
@@ -74,38 +75,29 @@ class OffDomainInclusionDetector {
   virtual Profile* ProfileFromRenderProcessId(int render_process_id);
 
  private:
-  struct OffDomainInclusionInfo;
-
   // Returns true if |request| should be analyzed for off-domain inclusions.
   static bool ShouldAnalyzeRequest(const net::URLRequest* request);
 
-  // Upon receiving a |request| via OnResourceRequest() (and as long as
-  // ShouldAnalyzeRequest() returns true) the key parts of |request| are
-  // packaged in an OffDomainInclusionInfo object which is sent up an async
-  // chain of checks on the main thread as described below:
-  //   1) Check if it is indeed an off-domain inclusion and, if so: check the
-  //      inclusion against the safe browsing inclusion whitelist.
-  //   2) Upon receiving the whitelist result, either: stop if it's positive or
-  //      query the HistoryService if it's not.
-  //   3) Upon receiving the HistoryService's result: report accordingly.
-  void BeginAnalysis(
-      scoped_ptr<OffDomainInclusionInfo> off_domain_inclusion_info);
-  void ContinueAnalysisOnWhitelistResult(
-      scoped_ptr<const OffDomainInclusionInfo> off_domain_inclusion_info,
-      bool request_url_is_on_inclusion_whitelist);
+  // Queries the HistoryService for |request_url|. Must be called from the UI
+  // thread so that it can call ProfileFromRenderProcessId.
   void ContinueAnalysisWithHistoryCheck(
-      scoped_ptr<const OffDomainInclusionInfo> off_domain_inclusion_info);
+      const content::ResourceType resource_type,
+      const GURL& request_url,
+      int render_process_id);
+
+  // Reports an off-domain inclusion including the HistoryService's result.
   void ContinueAnalysisOnHistoryResult(
-      scoped_ptr<const OffDomainInclusionInfo> off_domain_inclusion_info,
+      const content::ResourceType resource_type,
       bool success,
       int num_visits,
       base::Time first_visit_time);
 
-  // Reports the result of an off-domain inclusion analysis via UMA (as well
-  // as via |report_analysis_event_callback_| if it is set). May be called from
-  // the main thread at any point in the above analysis.
+  // Reports the result of an off-domain inclusion analysis via UMA (as well as
+  // via |report_analysis_event_callback_| if it is set). May be called from any
+  // thread at any point in the above analysis;
+  // |report_analysis_event_callback_| will always be called on the main thread.
   void ReportAnalysisResult(
-      scoped_ptr<const OffDomainInclusionInfo> off_domain_inclusion_info,
+      const content::ResourceType resource_type,
       AnalysisEvent analysis_event);
 
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
