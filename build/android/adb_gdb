@@ -21,11 +21,6 @@ LC_ALL=C
 # Location of Chromium-top-level sources.
 CHROMIUM_SRC=$(cd "$PROGDIR"/../.. >/dev/null && pwd 2>/dev/null)
 
-# Location of Chromium out/ directory.
-if [ -z "$CHROMIUM_OUT_DIR" ]; then
-  CHROMIUM_OUT_DIR=out
-fi
-
 TMPDIR=
 GDBSERVER_PIDFILE=
 TARGET_GDBSERVER=
@@ -189,6 +184,9 @@ for opt; do
     --symbol-dir=*)
       SYMBOL_DIR=$optarg
       ;;
+    --output-dir=*)
+      CHROMIUM_OUTPUT_DIR=$optarg
+      ;;
     --out-dir=*)
       CHROMIUM_OUT_DIR=$optarg
       ;;
@@ -222,11 +220,6 @@ for opt; do
       ;;
   esac
 done
-
-print_help_options () {
-  cat <<EOF
-EOF
-}
 
 if [ "$HELP" ]; then
   if [ "$ADB_GDB_PROGNAME" ]; then
@@ -269,13 +262,11 @@ directory.
 The script tries to find the most recent version of the debug version of
 shared libraries under one of the following directories:
 
-  \$CHROMIUM_SRC/<out>/Release/lib/             (used by GYP builds)
-  \$CHROMIUM_SRC/<out>/Debug/lib/               (used by GYP builds)
-  \$CHROMIUM_SRC/<out>/Release/lib.unstripped/  (used by GN builds)
-  \$CHROMIUM_SRC/<out>/Debug/lib.unstripped/    (used by GN builds)
+  \$CHROMIUM_SRC/<out>/lib/                (used by GYP builds)
+  \$CHROMIUM_SRC/<out>/lib.unstripped/     (used by GN builds)
 
-Where <out> is 'out' by default, unless the --out=<name> option is used or
-the CHROMIUM_OUT_DIR environment variable is defined.
+Where <out> is 'out' is determined by CHROMIUM_OUT_DIR, CHROMIUM_OUTPUT_DIR, or
+the --out-dir, --output-dir flags.
 
 You can restrict this search by using --release or --debug to specify the
 build type, or simply use --symbol-dir=<path> to specify the file manually.
@@ -319,7 +310,8 @@ Valid options:
   --sandboxed           Debug first sandboxed process we find.
   --sandboxed=<num>     Debug specific sandboxed process.
   --symbol-dir=<path>   Specify directory with symbol shared libraries.
-  --out-dir=<path>      Specify the out directory.
+  --out-dir=<path>      Specify the out directory (e.g. "out").
+  --output-dir=<path>   Specify the output directory (e.g. "out/Debug").
   --package-name=<name> Specify package name (alternative to 1st argument).
   --privileged          Debug first privileged process we find.
   --privileged=<num>    Debug specific privileged process.
@@ -703,25 +695,37 @@ get_file_timestamp () {
 
 # Detect the build type and symbol directory. This is done by finding
 # the most recent sub-directory containing debug shared libraries under
-# $CHROMIUM_SRC/$CHROMIUM_OUT_DIR/
+# (in order of priority):
+# 1. $CHROMIUM_OUTPUT_DIR
+# 2. $CHROMIUM_SRC/$CHROMIUM_OUT_DIR/$BUILDTYPE (if $BUILDTYPE is set)
+# 3. $CHROMIUM_SRC/$CHROMIUM_OUT_DIR/{Debug,Release}
 #
-# $1: $BUILDTYPE value, can be empty
 # Out: nothing, but this sets SYMBOL_DIR
 #
 detect_symbol_dir () {
-  local SUBDIRS SUBDIR LIST DIR DIR_LIBS TSTAMP
+  local PARENT_DIR SUBDIRS SUBDIR LIST DIR DIR_LIBS TSTAMP
   # GYP places unstripped libraries under out/$BUILDTYPE/lib
   # GN places them under out/$BUILDTYPE/lib.unstripped
-  if [ "$1" ]; then
-    SUBDIRS="$1/lib $1/lib.unstripped"
+  if [[ -n "$CHROMIUM_OUTPUT_DIR" ]]; then
+    PARENT_DIR="$CHROMIUM_OUTPUT_DIR"
+    SUBDIRS="lib.unstripped lib"
   else
-    SUBDIRS="Release/lib Debug/lib"
-    SUBDIRS+=" Release/lib.unstripped Debug/lib.unstripped"
+    PARENT_DIR="$CHROMIUM_OUT_DIR"
+    if [[ -n "$BUILDTYPE" ]]; then
+      PARENT_DIR="$PARENT_DIR/$BUILDTYPE"
+      SUBDIRS="lib.unstripped lib"
+    else
+      SUBDIRS="Release/lib.unstripped Debug/lib.unstripped "
+      SUBDIRS+="Release/lib Debug/lib"
+    fi
+  fi
+  if [[ ! -e "$PARENT_DIR" ]]; then
+    PARENT_DIR="$CHROMIUM_SRC/$PARENT_DIR"
   fi
   LIST=$TMPDIR/scan-subdirs-$$.txt
   printf "" > "$LIST"
   for SUBDIR in $SUBDIRS; do
-    DIR=$CHROMIUM_SRC/$CHROMIUM_OUT_DIR/$SUBDIR
+    DIR="$PARENT_DIR/$SUBDIR"
     if [ -d "$DIR" ]; then
       # Ignore build directories that don't contain symbol versions
       # of the shared libraries.
@@ -737,22 +741,17 @@ detect_symbol_dir () {
   SUBDIR=$(cat $LIST | sort -r | head -1 | cut -d" " -f2)
   rm -f "$LIST"
 
-  if [ -z "$SUBDIR" ]; then
-    if [ -z "$1" ]; then
-      panic "Could not find any build directory under \
-$CHROMIUM_SRC/$CHROMIUM_OUT_DIR. Please build the program first!"
-    else
-      panic "Could not find any $1 directory under \
-$CHROMIUM_SRC/$CHROMIUM_OUT_DIR. Check your build type!"
-    fi
+  if [[ -z "$SUBDIR" ]]; then
+    panic "Could not find any build directory under \
+$PARENT_DIR/{${SUBDIRS// /,}}. Please build the program first!"
   fi
 
-  SYMBOL_DIR=$CHROMIUM_SRC/$CHROMIUM_OUT_DIR/$SUBDIR
+  SYMBOL_DIR=$PARENT_DIR/$SUBDIR
   log "Auto-config: --symbol-dir=$SYMBOL_DIR"
 }
 
 if [ -z "$SYMBOL_DIR" ]; then
-  detect_symbol_dir "$BUILDTYPE"
+  detect_symbol_dir
 fi
 
 # Allow several concurrent debugging sessions
