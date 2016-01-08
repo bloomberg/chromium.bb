@@ -15,7 +15,6 @@
 #include "components/nacl/renderer/plugin/plugin.h"
 #include "components/nacl/renderer/plugin/plugin_error.h"
 #include "components/nacl/renderer/plugin/sel_ldr_launcher_chrome.h"
-#include "components/nacl/renderer/plugin/srpc_client.h"
 #include "components/nacl/renderer/plugin/utility.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
@@ -105,18 +104,6 @@ void ServiceRuntime::StartNexe() {
 void ServiceRuntime::ReportLoadError(const ErrorInfo& error_info) {
   if (main_service_runtime_) {
     plugin_->ReportLoadError(error_info);
-  }
-}
-
-SrpcClient* ServiceRuntime::SetupAppChannel() {
-  nacl::DescWrapper* connect_desc = subprocess_->socket_addr()->Connect();
-  if (NULL == connect_desc) {
-    LOG(ERROR) << "ServiceRuntime::SetupAppChannel (connect failed)";
-    return NULL;
-  } else {
-    SrpcClient* srpc_client = SrpcClient::New(connect_desc);
-    delete connect_desc;
-    return srpc_client;
   }
 }
 

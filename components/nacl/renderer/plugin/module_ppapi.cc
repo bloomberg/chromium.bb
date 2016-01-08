@@ -23,7 +23,6 @@ ModulePpapi::ModulePpapi() : pp::Module(),
 
 ModulePpapi::~ModulePpapi() {
   if (init_was_successful_) {
-    NaClSrpcModuleFini();
     NaClNrdAllModulesFini();
   }
   MODULE_PRINTF(("ModulePpapi::~ModulePpapi (this=%p)\n",
@@ -53,7 +52,6 @@ bool ModulePpapi::Init() {
   // In the plugin, we don't need high resolution time of day.
   NaClAllowLowResolutionTimeOfDay();
   NaClNrdAllModulesInit();
-  NaClSrpcModuleInit();
 
 #if NACL_WINDOWS
   NaClSetBrokerDuplicateHandleFunc(private_interface_->BrokerDuplicateHandle);

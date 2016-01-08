@@ -15,8 +15,6 @@
       'ppapi_entrypoints.cc',
       'sel_ldr_launcher_chrome.cc',
       'service_runtime.cc',
-      'srpc_client.cc',
-      'srpc_params.cc',
       'temporary_file.cc',
       'utility.cc',
     ],

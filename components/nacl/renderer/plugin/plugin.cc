@@ -140,7 +140,7 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
 
 Plugin::Plugin(PP_Instance pp_instance)
     : pp::Instance(pp_instance),
-      main_subprocess_("main subprocess", NULL, NULL),
+      main_subprocess_("main subprocess", NULL),
       uses_nonsfi_mode_(false),
       wrapper_factory_(NULL),
       nacl_interface_(NULL),

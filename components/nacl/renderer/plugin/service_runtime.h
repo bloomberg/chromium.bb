@@ -20,7 +20,6 @@
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/public/imc_types.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
-#include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "ppapi/cpp/completion_callback.h"
 
 namespace plugin {
@@ -28,7 +27,6 @@ namespace plugin {
 class ErrorInfo;
 class Plugin;
 class SelLdrLauncherChrome;
-class SrpcClient;
 class ServiceRuntime;
 
 // Struct of params used by StartSelLdr.  Use a struct so that callback
@@ -64,9 +62,6 @@ class ServiceRuntime {
   // This function must be called on the main thread.
   // This function must only be called once.
   void StartNexe();
-
-  // Starts the application channel to the nexe.
-  SrpcClient* SetupAppChannel();
 
   Plugin* plugin() const { return plugin_; }
   void Shutdown();
