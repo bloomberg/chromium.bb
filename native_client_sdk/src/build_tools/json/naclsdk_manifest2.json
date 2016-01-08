@@ -85,16 +85,6 @@
     },
     {
       "archives": [],
-      "description": "Chrome 48 bundle, revision xxxxx",
-      "name": "pepper_48",
-      "recommended": "no",
-      "repath": "pepper_48",
-      "revision": 0,
-      "stability": "post_stable",
-      "version": 48
-    },
-    {
-      "archives": [],
       "description": "Chrome 49 bundle, revision xxxxx",
       "name": "pepper_49",
       "recommended": "no",
