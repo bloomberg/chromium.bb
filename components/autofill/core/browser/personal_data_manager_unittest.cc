@@ -202,12 +202,12 @@ class PersonalDataManagerTest : public testing::Test {
     test::SetCreditCardInfo(&credit_card0, "Clyde Barrow",
                             "347666888555" /* American Express */, "04",
                             "2015");
-    credit_card0.set_use_count(2);
+    credit_card0.set_use_count(3);
     personal_data_->AddCreditCard(credit_card0);
 
     CreditCard credit_card1("1141084B-72D7-4B73-90CF-3D6AC154673B",
                             "https://www.example.com");
-    credit_card1.set_use_count(3);
+    credit_card1.set_use_count(5);
     test::SetCreditCardInfo(&credit_card1, "John Dillinger", "", "01", "2010");
     personal_data_->AddCreditCard(credit_card1);
 
@@ -2824,8 +2824,7 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_LocalCardsRanking) {
               base::string16::npos);
 }
 
-// Test that server cards are suggested after local credit cards even if they
-// have a higher use count.
+// Test that local and server cards are ordered by MFU.
 TEST_F(PersonalDataManagerTest,
        GetCreditCardSuggestions_LocalAndServerCardsRanking) {
   EnableWalletCardImport();
@@ -2836,14 +2835,13 @@ TEST_F(PersonalDataManagerTest,
   server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b459"));
   test::SetCreditCardInfo(&server_cards.back(), "Emmet Dalton", "2110", "12",
                           "2012");
-  server_cards.back().set_use_count(0);
+  server_cards.back().set_use_count(2);
   server_cards.back().SetTypeForMaskedCard(kVisaCard);
 
-  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b460"));
+  server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "b460"));
   test::SetCreditCardInfo(&server_cards.back(), "Jesse James", "2109", "12",
                           "2012");
-  server_cards.back().set_use_count(4);
-  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+  server_cards.back().set_use_count(6);
 
   test::SetServerCreditCards(autofill_table_, server_cards);
   personal_data_->Refresh();
@@ -2857,12 +2855,12 @@ TEST_F(PersonalDataManagerTest,
           /* field_contents= */ base::string16());
   ASSERT_EQ(5U, suggestions.size());
 
-  // First local cards ordered by MFU, then server cards (not sorted).
-  EXPECT_EQ(ASCIIToUTF16("John Dillinger"), suggestions[0].value);
-  EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), suggestions[1].value);
-  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[2].value);
+  // All cards should be ordered by MFU.
+  EXPECT_EQ(ASCIIToUTF16("Jesse James"), suggestions[0].value);
+  EXPECT_EQ(ASCIIToUTF16("John Dillinger"), suggestions[1].value);
+  EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), suggestions[2].value);
   EXPECT_EQ(ASCIIToUTF16("Emmet Dalton"), suggestions[3].value);
-  EXPECT_EQ(ASCIIToUTF16("Jesse James"), suggestions[4].value);
+  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[4].value);
 }
 
 // Test that a card that doesn't have a number is not shown in the suggestions

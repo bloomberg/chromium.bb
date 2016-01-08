@@ -1273,6 +1273,9 @@ void AutofillTable::SetServerCreditCards(
 
     masked_insert.Run();
     masked_insert.Reset(true);
+
+    // Save the use count and use date of the card.
+    UpdateServerCardUsageStats(card);
   }
 
   // Delete all items in the unmasked table that aren't in the new set.
