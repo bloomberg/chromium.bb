@@ -153,19 +153,13 @@ IN_PROC_BROWSER_TEST_F(TracingBrowserTest, BeginTracingWithWatch) {
   ASSERT_TRUE(EndTracing(&json_events));
 }
 
-#if defined(OS_WIN)
-#define MAYBE_TestMemoryInfra DISABLED_TestMemoryInfra
-#else
-#define MAYBE_TestMemoryInfra TestMemoryInfra
-#endif
-
 // Multi-process mode.
-IN_PROC_BROWSER_TEST_F(TracingBrowserTest, MAYBE_TestMemoryInfra) {
+IN_PROC_BROWSER_TEST_F(TracingBrowserTest, TestMemoryInfra) {
   PerformDumpMemoryTestActions();
 }
 
 // Single-process mode.
-IN_PROC_BROWSER_TEST_F(SingleProcessTracingBrowserTest, MAYBE_TestMemoryInfra) {
+IN_PROC_BROWSER_TEST_F(SingleProcessTracingBrowserTest, TestMemoryInfra) {
   PerformDumpMemoryTestActions();
 }
 
