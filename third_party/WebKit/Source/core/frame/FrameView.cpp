@@ -204,7 +204,6 @@ void FrameView::reset()
     m_hasPendingLayout = false;
     m_doFullPaintInvalidation = false;
     m_layoutSchedulingEnabled = true;
-    m_inPerformLayout = false;
     m_inSynchronousPostLayout = false;
     m_layoutCount = 0;
     m_nestedLayoutCount = 0;
@@ -824,8 +823,6 @@ void FrameView::performLayout(bool inSubtreeLayout)
 
     ASSERT(!isInPerformLayout());
     lifecycle().advanceTo(DocumentLifecycle::InPerformLayout);
-
-    TemporaryChange<bool> changeInPerformLayout(m_inPerformLayout, true);
 
     // performLayout is the actual guts of layout().
     // FIXME: The 300 other lines in layout() probably belong in other helper functions
@@ -1766,8 +1763,7 @@ bool FrameView::layoutPending() const
 
 bool FrameView::isInPerformLayout() const
 {
-    ASSERT(m_inPerformLayout == (lifecycle().state() == DocumentLifecycle::InPerformLayout));
-    return m_inPerformLayout;
+    return lifecycle().state() == DocumentLifecycle::InPerformLayout;
 }
 
 bool FrameView::needsLayout() const

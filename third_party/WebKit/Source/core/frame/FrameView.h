@@ -782,7 +782,6 @@ private:
     LayoutSubtreeRootList m_layoutSubtreeRootList;
 
     bool m_layoutSchedulingEnabled;
-    bool m_inPerformLayout;
     bool m_inSynchronousPostLayout;
     int m_layoutCount;
     unsigned m_nestedLayoutCount;
