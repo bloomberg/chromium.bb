@@ -40,6 +40,11 @@
             }
         }
     ],
+    "CreditCardScan": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "CustomTabs": [
         {
             "group_name": "Enabled"
