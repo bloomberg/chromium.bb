@@ -364,6 +364,7 @@ bool NaClMessageScanner::ScanMessage(
     CASE_FOR_MESSAGE(PpapiMsg_PPBAudio_NotifyAudioStreamCreated)
     CASE_FOR_MESSAGE(PpapiMsg_PPPMessaging_HandleMessage)
     CASE_FOR_MESSAGE(PpapiPluginMsg_ResourceReply)
+    CASE_FOR_SYNC_MESSAGE(PpapiMsg_PnaclTranslatorCompileInit)
     CASE_FOR_SYNC_MESSAGE(PpapiMsg_PnaclTranslatorLink)
     CASE_FOR_REPLY(PpapiHostMsg_OpenResource)
     CASE_FOR_REPLY(PpapiHostMsg_PPBGraphics3D_Create)

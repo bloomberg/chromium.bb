@@ -2,115 +2,108 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <argz.h>
-#include <stddef.h>
-#include <string.h>
-
+#include "base/macros.h"
 #include "build/build_config.h"
-#include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "ipc/ipc_listener.h"
+#include "ipc/ipc_sync_channel.h"
 #include "native_client/src/untrusted/irt/irt_dev.h"
 #include "ppapi/nacl_irt/irt_interfaces.h"
+#include "ppapi/nacl_irt/plugin_startup.h"
+#include "ppapi/proxy/ppapi_messages.h"
 
 #if !defined(OS_NACL_NONSFI)
 
 namespace {
 
-const int kMaxObjectFiles = 16;
-
-const struct nacl_irt_pnacl_compile_funcs* g_funcs;
-
-void StreamInitWithSplit(NaClSrpcRpc* rpc,
-                         NaClSrpcArg** in_args,
-                         NaClSrpcArg** out_args,
-                         NaClSrpcClosure* done) {
-  int num_threads = in_args[0]->u.ival;
-  if (num_threads < 0 || num_threads > kMaxObjectFiles) {
-    NaClLog(LOG_FATAL, "Invalid # of threads (%d)\n", num_threads);
+class TranslatorCompileListener : public IPC::Listener {
+ public:
+  TranslatorCompileListener(const IPC::ChannelHandle& handle,
+                            const struct nacl_irt_pnacl_compile_funcs* funcs)
+      : funcs_(funcs) {
+    channel_ = IPC::Channel::Create(handle, IPC::Channel::MODE_SERVER, this);
+    CHECK(channel_->Connect());
   }
-  int fd_start = 1;
-  int i = fd_start;
-  int num_valid_fds = 0;
-  int obj_fds[kMaxObjectFiles];
-  while (num_valid_fds < kMaxObjectFiles && in_args[i]->u.hval >= 0) {
-    obj_fds[num_valid_fds] = in_args[i]->u.hval;
-    ++i;
-    ++num_valid_fds;
-  }
-  // Convert the null-delimited strings into an array of
-  // null-terminated strings.
-  char* cmd_argz = in_args[kMaxObjectFiles + fd_start]->arrays.carr;
-  size_t cmd_argz_len = in_args[kMaxObjectFiles + fd_start]->u.count;
-  size_t argc = argz_count(cmd_argz, cmd_argz_len);
-  char** argv = (char**)malloc((argc + 1) * sizeof(char*));
-  argz_extract(cmd_argz, cmd_argz_len, argv);
-  char* result =
-      g_funcs->init_callback(num_threads, obj_fds, num_valid_fds, argv, argc);
-  free(argv);
-  if (result != NULL) {
-    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-    // SRPC wants to free() the string, so just strdup here so that the
-    // init_callback implementation doesn't have to know if the string
-    // comes from malloc or new.  On error, we don't care so much
-    // about leaking this bit of memory.
-    out_args[0]->arrays.str = strdup(result);
-  } else {
-    rpc->result = NACL_SRPC_RESULT_OK;
-    out_args[0]->arrays.str = strdup("");
-  }
-  done->Run(done);
-}
 
-void StreamChunk(NaClSrpcRpc* rpc,
-                 NaClSrpcArg** in_args,
-                 NaClSrpcArg** out_args,
-                 NaClSrpcClosure* done) {
-  int result =
-      g_funcs->data_callback(in_args[0]->arrays.carr, in_args[0]->u.count);
-  rpc->result = result == 0 ? NACL_SRPC_RESULT_OK : NACL_SRPC_RESULT_APP_ERROR;
-  done->Run(done);
-}
-
-void StreamEnd(NaClSrpcRpc* rpc,
-               NaClSrpcArg** in_args,
-               NaClSrpcArg** out_args,
-               NaClSrpcClosure* done) {
-  char* result = g_funcs->end_callback();
-  // Fill in the deprecated return values with dummy values.
-  out_args[0]->u.ival = 0;
-  out_args[1]->arrays.str = strdup("");
-  out_args[2]->arrays.str = strdup("");
-  if (result != NULL) {
-    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-    // SRPC wants to free(), so strdup() and leak to hide this detail.
-    out_args[3]->arrays.str = strdup(result);
-  } else {
-    rpc->result = NACL_SRPC_RESULT_OK;
-    out_args[3]->arrays.str = strdup("");
+  // Needed for handling sync messages in OnMessageReceived().
+  bool Send(IPC::Message* message) {
+    return channel_->Send(message);
   }
-  done->Run(done);
-}
 
-const struct NaClSrpcHandlerDesc kSrpcMethods[] = {
-  // Protocol for streaming:
-  // StreamInitWithSplit(num_threads, obj_fd x 16, cmdline_flags) -> error_str
-  // StreamChunk(data) +
-  // TODO(jvoung): remove these is_shared_lib, etc.
-  // StreamEnd() -> (is_shared_lib, soname, dependencies, error_str)
-  { "StreamInitWithSplit:ihhhhhhhhhhhhhhhhC:s", StreamInitWithSplit },
-  { "StreamChunk:C:", StreamChunk },
-  { "StreamEnd::isss", StreamEnd },
-  { NULL, NULL },
+  virtual bool OnMessageReceived(const IPC::Message& msg) {
+    bool handled = false;
+    IPC_BEGIN_MESSAGE_MAP(TranslatorCompileListener, msg)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(PpapiMsg_PnaclTranslatorCompileInit,
+                                      OnPnaclTranslatorCompileInit)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(PpapiMsg_PnaclTranslatorCompileChunk,
+                                      OnPnaclTranslatorCompileChunk)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(PpapiMsg_PnaclTranslatorCompileEnd,
+                                      OnPnaclTranslatorCompileEnd)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+    return handled;
+  }
+
+ private:
+  void OnPnaclTranslatorCompileInit(
+      int num_threads,
+      const std::vector<ppapi::proxy::SerializedHandle>& obj_files,
+      const std::vector<std::string>& cmd_flags,
+      IPC::Message* reply_msg) {
+    std::vector<int> obj_file_fds(obj_files.size());
+    for (size_t i = 0; i < obj_files.size(); ++i) {
+      CHECK(obj_files[i].is_file());
+      obj_file_fds[i] = obj_files[i].descriptor().fd;
+    }
+
+    std::vector<char*> cmd_flags_cstrings(cmd_flags.size());
+    for (size_t i = 0; i < cmd_flags.size(); ++i) {
+      // It's OK to use const_cast here because the callee (the translator)
+      // is not supposed to modify the strings.  (The interface definition
+      // should have used "const char* const*".)
+      cmd_flags_cstrings[i] = const_cast<char*>(cmd_flags[i].c_str());
+    }
+
+    char* error_cstr = funcs_->init_callback(num_threads,
+                                             obj_file_fds.data(),
+                                             obj_file_fds.size(),
+                                             cmd_flags_cstrings.data(),
+                                             cmd_flags_cstrings.size());
+    bool success = !error_cstr;
+    std::string error_str(error_cstr ? error_cstr : "");
+    PpapiMsg_PnaclTranslatorCompileInit::WriteReplyParams(
+        reply_msg, success, error_str);
+    Send(reply_msg);
+  }
+
+  void OnPnaclTranslatorCompileChunk(const std::string& data_chunk,
+                                     IPC::Message* reply_msg) {
+    int result = funcs_->data_callback(data_chunk.data(), data_chunk.size());
+    bool success = !result;
+    PpapiMsg_PnaclTranslatorCompileChunk::WriteReplyParams(reply_msg, success);
+    Send(reply_msg);
+  }
+
+  void OnPnaclTranslatorCompileEnd(IPC::Message* reply_msg) {
+    char* error_cstr = funcs_->end_callback();
+    bool success = !error_cstr;
+    std::string error_str(error_cstr ? error_cstr : "");
+    PpapiMsg_PnaclTranslatorCompileEnd::WriteReplyParams(
+        reply_msg, success, error_str);
+    Send(reply_msg);
+  }
+
+  scoped_ptr<IPC::Channel> channel_;
+  const struct nacl_irt_pnacl_compile_funcs* funcs_;
+
+  DISALLOW_COPY_AND_ASSIGN(TranslatorCompileListener);
 };
 
 void ServeTranslateRequest(const struct nacl_irt_pnacl_compile_funcs* funcs) {
-  g_funcs = funcs;
-  if (!NaClSrpcModuleInit()) {
-    NaClLog(LOG_FATAL, "NaClSrpcModuleInit() failed\n");
-  }
-  if (!NaClSrpcAcceptClientConnection(kSrpcMethods)) {
-    NaClLog(LOG_FATAL, "NaClSrpcAcceptClientConnection() failed\n");
-  }
+  base::MessageLoop loop;
+  int fd = ppapi::GetRendererIPCFileDescriptor();
+  IPC::ChannelHandle handle("NaCl IPC", base::FileDescriptor(fd, false));
+  new TranslatorCompileListener(handle, funcs);
+  loop.Run();
 }
 
 }

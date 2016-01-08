@@ -871,6 +871,45 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPInstancePrivate_GetInstanceObject,
 
 #endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
 
+// This message is sent from the renderer to the PNaCl compiler process
+// (NaCl untrusted code -- a nexe).  This implements the init_callback()
+// IRT interface.  This message initializes the translation process,
+// providing an array of object file FDs for writing output to, along with
+// other parameters.
+IPC_SYNC_MESSAGE_CONTROL3_2(PpapiMsg_PnaclTranslatorCompileInit,
+                            /* number of threads to use */
+                            int,
+                            /* object file FDs for outputs */
+                            std::vector<ppapi::proxy::SerializedHandle>,
+                            /* list of command line flags */
+                            std::vector<std::string>,
+                            /* success status result */
+                            bool,
+                            /* error string if the success field is false */
+                            std::string)
+
+// This message is sent from the renderer to the PNaCl compiler process
+// (NaCl untrusted code -- a nexe).  This implements the data_callback()
+// IRT interface.  This message sends the next chunk of input bitcode data
+// to the compiler process.  If the success result is false (for failure),
+// the renderer can still invoke PpapiMsg_PnaclTranslatorCompileEnd to get
+// a message describing the error.
+IPC_SYNC_MESSAGE_CONTROL1_1(PpapiMsg_PnaclTranslatorCompileChunk,
+                            /* chunk of data for the input pexe file */
+                            std::string,
+                            /* success status result */
+                            bool)
+
+// This message is sent from the renderer to the PNaCl compiler process
+// (NaCl untrusted code -- a nexe).  This implements the end_callback() IRT
+// interface.  This blocks until translation is complete or an error has
+// occurred.
+IPC_SYNC_MESSAGE_CONTROL0_2(PpapiMsg_PnaclTranslatorCompileEnd,
+                            /* success status result */
+                            bool,
+                            /* error string if the success field is false */
+                            std::string)
+
 // This message is sent from the renderer to the PNaCl linker process
 // (NaCl untrusted code -- a nexe).  This message tells the PNaCl
 // linker to link the given object files together to produce a nexe

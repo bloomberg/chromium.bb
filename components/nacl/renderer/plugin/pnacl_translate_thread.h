@@ -85,8 +85,8 @@ class PnaclTranslateThread {
   bool started() const { return coordinator_ != NULL; }
 
  private:
-  ppapi::proxy::SerializedHandle GetHandleForSubprocess(TempFile* file,
-                                                        int32_t open_flags);
+  ppapi::proxy::SerializedHandle GetHandleForSubprocess(
+      TempFile* file, int32_t open_flags, base::ProcessId peer_pid);
 
   // Helper thread entry point for compilation. Takes a pointer to
   // PnaclTranslateThread and calls DoCompile().
@@ -137,7 +137,7 @@ class PnaclTranslateThread {
   struct NaClMutex cond_mu_;
   // Data buffers from FileDownloader are enqueued here to pass from the
   // main thread to the SRPC thread. Protected by cond_mu_
-  std::deque<std::vector<char> > data_buffers_;
+  std::deque<std::string> data_buffers_;
   // Whether all data has been downloaded and copied to translation thread.
   // Associated with buffer_cond_
   bool done_;
@@ -154,12 +154,15 @@ class PnaclTranslateThread {
   std::string architecture_attributes_;
   PnaclCoordinator* coordinator_;
 
-  // This IPC::SyncChannel can only be used and freed by the parent thread.
+  // These IPC::SyncChannels can only be used and freed by the parent thread.
+  scoped_ptr<IPC::SyncChannel> compiler_channel_;
   scoped_ptr<IPC::SyncChannel> ld_channel_;
-  // This IPC::SyncMessageFilter can be used by the child thread.
+  // These IPC::SyncMessageFilters can be used by the child thread.
+  scoped_refptr<IPC::SyncMessageFilter> compiler_channel_filter_;
   scoped_refptr<IPC::SyncMessageFilter> ld_channel_filter_;
-  // PID of the subprocess, needed for copying handles to the subprocess on
-  // Windows.  This is used by the child thread.
+  // PIDs of the subprocesses, needed for copying handles to the subprocess
+  // on Windows.  These are used by the child thread.
+  base::ProcessId compiler_channel_peer_pid_;
   base::ProcessId ld_channel_peer_pid_;
 
  private:
