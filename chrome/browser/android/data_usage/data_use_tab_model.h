@@ -158,6 +158,10 @@ class DataUseTabModel {
   // Returns the current time.
   base::TimeTicks NowTicks() const;
 
+  // Returns true if the |tab_id| is a custom tab and started tracking due to
+  // package name match.
+  bool IsCustomTabPackageMatch(SessionID::id_type tab_id) const;
+
  protected:
   // Notifies the observers that a data usage tracking session started for
   // |tab_id|. Protected for testing.
@@ -207,8 +211,11 @@ class DataUseTabModel {
                                                bool* is_package_match) const;
 
   // Initiates a new tracking session with the |label| for tab with id |tab_id|.
+  // |is_custom_tab_package_match| is true if |tab_id| is a custom tab and
+  // started tracking due to package name match.
   void StartTrackingDataUse(SessionID::id_type tab_id,
-                            const std::string& label);
+                            const std::string& label,
+                            bool is_custom_tab_package_match);
 
   // Ends the current tracking session for tab with id |tab_id|.
   void EndTrackingDataUse(SessionID::id_type tab_id);

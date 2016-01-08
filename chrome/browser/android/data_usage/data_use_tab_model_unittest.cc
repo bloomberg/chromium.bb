@@ -166,7 +166,7 @@ class DataUseTabModelTest : public testing::Test {
 
   void StartTrackingDataUse(SessionID::id_type tab_id,
                             const std::string& label) {
-    data_use_tab_model_->StartTrackingDataUse(tab_id, label);
+    data_use_tab_model_->StartTrackingDataUse(tab_id, label, false);
   }
 
   void EndTrackingDataUse(SessionID::id_type tab_id) {

@@ -106,7 +106,7 @@ public class DataUseTabUIManager {
      */
     public static void onCustomTabInitialNavigation(Tab tab, String packageName, String url) {
         nativeOnCustomTabInitialNavigation(SessionTabHelper.sessionIdForTab(tab.getWebContents()),
-                url, packageName, tab.getProfile());
+                packageName, url, tab.getProfile());
     }
 
     /**

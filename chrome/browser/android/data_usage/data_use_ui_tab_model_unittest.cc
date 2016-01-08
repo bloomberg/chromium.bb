@@ -160,16 +160,14 @@ TEST_F(DataUseUITabModelTest, ReportTabEventsTest) {
     EXPECT_EQ(std::string(), got_label) << i;
   }
 
+  // Start a custom tab with matching package name and verify if tracking
+  // started is not being set.
   const SessionID::id_type bar_tab_id = foo_tab_id + 1;
   EXPECT_FALSE(
       data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(bar_tab_id));
   data_use_ui_tab_model()->ReportCustomTabInitialNavigation(
       bar_tab_id, kFooPackage, std::string());
 
-  // |data_use_ui_tab_model| should receive callback about starting of
-  // tracking of data usage for |bar_tab_id|.
-  EXPECT_TRUE(
-      data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(bar_tab_id));
   EXPECT_FALSE(
       data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(bar_tab_id));
   EXPECT_FALSE(

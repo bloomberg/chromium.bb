@@ -89,6 +89,10 @@ base::WeakPtr<DataUseUITabModel> DataUseUITabModel::GetWeakPtr() {
 void DataUseUITabModel::NotifyTrackingStarting(SessionID::id_type tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  // Do not show tracking started UI for custom tabs with package match.
+  if (data_use_tab_model_->IsCustomTabPackageMatch(tab_id))
+    return;
+
   // Clear out the previous state if is equal to DATA_USE_CONTINUE_CLICKED. This
   // ensures that MaybeCreateTabEvent can successfully insert |tab_id| into the
   // map, and update its value to DATA_USE_TRACKING_STARTED.
@@ -103,6 +107,7 @@ void DataUseUITabModel::NotifyTrackingStarting(SessionID::id_type tab_id) {
 
 void DataUseUITabModel::NotifyTrackingEnding(SessionID::id_type tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!data_use_tab_model_->IsCustomTabPackageMatch(tab_id));
 
   if (MaybeCreateTabEvent(tab_id, DATA_USE_TRACKING_ENDED))
     return;

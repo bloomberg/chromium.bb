@@ -179,12 +179,9 @@ void DataUseTabModel::OnNavigationEvent(SessionID::id_type tab_id,
   if (!current_label.empty() && new_label.empty()) {
     EndTrackingDataUse(tab_id);
   } else if (current_label.empty() && !new_label.empty()) {
-    StartTrackingDataUse(tab_id, new_label);
-    if (transition == TRANSITION_CUSTOM_TAB && is_package_match) {
-      auto tab_entry_iterator = active_tabs_.find(tab_id);
-      DCHECK(tab_entry_iterator != active_tabs_.end());
-      tab_entry_iterator->second.set_custom_tab_package_match(true);
-    }
+    StartTrackingDataUse(
+        tab_id, new_label,
+        ((transition == TRANSITION_CUSTOM_TAB) && is_package_match));
   }
 }
 
@@ -268,6 +265,13 @@ void DataUseTabModel::OnControlAppInstalled() {
 base::TimeTicks DataUseTabModel::NowTicks() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return tick_clock_->NowTicks();
+}
+
+bool DataUseTabModel::IsCustomTabPackageMatch(SessionID::id_type tab_id) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  TabEntryMap::const_iterator tab_entry_iterator = active_tabs_.find(tab_id);
+  return (tab_entry_iterator != active_tabs_.end()) &&
+         tab_entry_iterator->second.is_custom_tab_package_match();
 }
 
 void DataUseTabModel::NotifyObserversOfTrackingStarting(
@@ -356,7 +360,10 @@ void DataUseTabModel::GetCurrentAndNewLabelForNavigationEvent(
 }
 
 void DataUseTabModel::StartTrackingDataUse(SessionID::id_type tab_id,
-                                           const std::string& label) {
+                                           const std::string& label,
+                                           bool is_custom_tab_package_match) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   // TODO(rajendrant): Explore ability to handle changes in label for current
   // session.
   bool new_tab_entry_added = false;
@@ -369,14 +376,19 @@ void DataUseTabModel::StartTrackingDataUse(SessionID::id_type tab_id,
     DCHECK(!tab_entry_iterator->second.IsTrackingDataUse());
     new_tab_entry_added = true;
   }
-  if (tab_entry_iterator->second.StartTracking(label))
+  if (tab_entry_iterator->second.StartTracking(label)) {
+    tab_entry_iterator->second.set_custom_tab_package_match(
+        is_custom_tab_package_match);
     NotifyObserversOfTrackingStarting(tab_id);
+  }
 
   if (new_tab_entry_added)
     CompactTabEntries();  // Keep total number of tab entries within limit.
 }
 
 void DataUseTabModel::EndTrackingDataUse(SessionID::id_type tab_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   TabEntryMap::iterator tab_entry_iterator = active_tabs_.find(tab_id);
   if (tab_entry_iterator != active_tabs_.end() &&
       tab_entry_iterator->second.EndTracking()) {
