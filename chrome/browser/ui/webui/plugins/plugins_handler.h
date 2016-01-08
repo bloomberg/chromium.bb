@@ -49,6 +49,17 @@ class PluginsHandler : public content::WebUIMessageHandler,
   // Called on the UI thread when the plugin information is ready.
   void PluginsLoaded(const std::vector<content::WebPluginInfo>& plugins);
 
+  // Detect a plugin's enabled mode (one of enabledByUser, disabledByUser,
+  // enabledByPolicy, disabledByPolicy).
+  std::string GetPluginEnabledMode(const base::string16& plugin_name,
+                                   const base::string16& group_name,
+                                   bool plugin_enabled) const;
+
+  // Detect a plugin group's enabled mode (one of enabledByUser, disabledByUser,
+  // enabledByPolicy, disabledByPolicy, managedByPolicy).
+  std::string GetPluginGroupEnabledMode(const base::ListValue& plugin_files,
+                                        bool group_enabled) const;
+
   content::NotificationRegistrar registrar_;
 
   // This pref guards the value whether about:plugins is in the details mode or

@@ -283,9 +283,6 @@ void PluginsHandler::PluginsLoaded(
     base::string16 group_name = plugin_metadata->name();
     std::string group_identifier = plugin_metadata->identifier();
     bool group_enabled = false;
-    bool all_plugins_enabled_by_policy = true;
-    bool all_plugins_disabled_by_policy = true;
-    bool all_plugins_managed_by_policy = true;
     const WebPluginInfo* active_plugin = NULL;
     for (size_t j = 0; j < group_plugins.size(); ++j) {
       const WebPluginInfo& group_plugin = *group_plugins[j];
@@ -299,37 +296,17 @@ void PluginsHandler::PluginsLoaded(
       plugin_file->Set("mimeTypes", GetPluginMimeTypes(group_plugin));
 
       bool plugin_enabled = plugin_prefs->IsPluginEnabled(group_plugin);
+      plugin_file->SetString(
+          "enabledMode",
+          GetPluginEnabledMode(group_plugin.name, group_name, plugin_enabled));
+      plugin_files->Append(plugin_file);
 
       if (!active_plugin || (plugin_enabled && !group_enabled))
         active_plugin = &group_plugin;
       group_enabled = plugin_enabled || group_enabled;
-
-      std::string enabled_mode;
-      PluginPrefs::PolicyStatus plugin_status =
-          plugin_prefs->PolicyStatusForPlugin(group_plugin.name);
-      PluginPrefs::PolicyStatus group_status =
-          plugin_prefs->PolicyStatusForPlugin(group_name);
-      if (plugin_status == PluginPrefs::POLICY_ENABLED ||
-          group_status == PluginPrefs::POLICY_ENABLED) {
-        enabled_mode = "enabledByPolicy";
-        all_plugins_disabled_by_policy = false;
-      } else {
-        all_plugins_enabled_by_policy = false;
-        if (plugin_status == PluginPrefs::POLICY_DISABLED ||
-            group_status == PluginPrefs::POLICY_DISABLED) {
-          enabled_mode = "disabledByPolicy";
-        } else {
-          all_plugins_disabled_by_policy = false;
-          all_plugins_managed_by_policy = false;
-          enabled_mode = plugin_enabled ? "enabledByUser" : "disabledByUser";
-        }
-      }
-      plugin_file->SetString("enabledMode", enabled_mode);
-
-      plugin_files->Append(plugin_file);
     }
-    base::DictionaryValue* group_data = new base::DictionaryValue();
 
+    base::DictionaryValue* group_data = new base::DictionaryValue();
     group_data->Set("plugin_files", plugin_files);
     group_data->SetString("name", group_name);
     group_data->SetString("id", group_identifier);
@@ -343,19 +320,8 @@ void PluginsHandler::PluginsLoaded(
     group_data->SetString("update_url", plugin_metadata->plugin_url().spec());
 #endif
 
-    std::string enabled_mode;
-    if (all_plugins_enabled_by_policy) {
-      enabled_mode = "enabledByPolicy";
-    } else if (all_plugins_disabled_by_policy) {
-      enabled_mode = "disabledByPolicy";
-    } else if (all_plugins_managed_by_policy) {
-      enabled_mode = "managedByPolicy";
-    } else if (group_enabled) {
-      enabled_mode = "enabledByUser";
-    } else {
-      enabled_mode = "disabledByUser";
-    }
-    group_data->SetString("enabledMode", enabled_mode);
+    group_data->SetString(
+        "enabledMode", GetPluginGroupEnabledMode(*plugin_files, group_enabled));
 
     bool always_allowed = false;
     if (group_enabled) {
@@ -371,4 +337,57 @@ void PluginsHandler::PluginsLoaded(
   base::DictionaryValue results;
   results.Set("plugins", plugin_groups_data);
   web_ui()->CallJavascriptFunction("returnPluginsData", results);
+}
+
+std::string PluginsHandler::GetPluginEnabledMode(
+    const base::string16& plugin_name,
+    const base::string16& group_name,
+    bool plugin_enabled) const {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile).get();
+  PluginPrefs::PolicyStatus plugin_status =
+      plugin_prefs->PolicyStatusForPlugin(plugin_name);
+  PluginPrefs::PolicyStatus group_status =
+      plugin_prefs->PolicyStatusForPlugin(group_name);
+
+  if (plugin_status == PluginPrefs::POLICY_ENABLED ||
+      group_status == PluginPrefs::POLICY_ENABLED) {
+    return "enabledByPolicy";
+  }
+  if (plugin_status == PluginPrefs::POLICY_DISABLED ||
+      group_status == PluginPrefs::POLICY_DISABLED) {
+    return "disabledByPolicy";
+  }
+  return plugin_enabled ? "enabledByUser" : "disabledByUser";
+}
+
+std::string PluginsHandler::GetPluginGroupEnabledMode(
+    const base::ListValue& plugin_files, bool group_enabled) const {
+  bool plugins_enabled_by_policy = true;
+  bool plugins_disabled_by_policy = true;
+  bool plugins_managed_by_policy = true;
+
+  for (base::ListValue::const_iterator it = plugin_files.begin();
+       it != plugin_files.end(); ++it) {
+    base::DictionaryValue* plugin_dict;
+    CHECK((*it)->GetAsDictionary(&plugin_dict));
+    std::string plugin_enabled_mode;
+    CHECK(plugin_dict->GetString("enabledMode", &plugin_enabled_mode));
+
+    plugins_enabled_by_policy = plugins_enabled_by_policy &&
+        plugin_enabled_mode == "enabledByPolicy";
+    plugins_disabled_by_policy = plugins_disabled_by_policy &&
+        plugin_enabled_mode == "disabledByPolicy";
+    plugins_managed_by_policy = plugins_managed_by_policy &&
+        (plugin_enabled_mode == "enabledByPolicy" ||
+         plugin_enabled_mode == "disabledByPolicy");
+  }
+
+  if (plugins_enabled_by_policy)
+    return "enabledByPolicy";
+  if (plugins_disabled_by_policy)
+    return "disabledByPolicy";
+  if (plugins_managed_by_policy)
+    return "managedByPolicy";
+  return group_enabled ? "enabledByUser" : "disabledByUser";
 }
