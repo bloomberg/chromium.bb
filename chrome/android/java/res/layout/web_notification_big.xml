@@ -68,15 +68,37 @@
 
         </RelativeLayout>
 
-        <TextView
-            android:id="@+id/body"
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:id="@+id/body_container"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginTop="-2dp"
-            android:ellipsize="end"
-            style="@style/WebNotificationBodyBig"/>
+            android:layout_marginTop="-4dp"
+            android:layout_marginBottom="5dp">
+
+            <TextView
+                android:id="@+id/body"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_toStartOf="@+id/work_profile_badge"
+                android:ellipsize="end"
+                style="@style/WebNotificationBodyBig"/>
+
+            <ImageView
+                android:id="@id/work_profile_badge"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginEnd="8dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="1dp"
+                android:scaleType="centerInside"
+                android:contentDescription="@string/notification_work_profile_badge_content_description"
+                android:visibility="gone"/>
+
+        </RelativeLayout>
 
         <ImageView
             android:id="@+id/button_divider"

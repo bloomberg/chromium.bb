@@ -18,6 +18,7 @@ import android.content.res.Resources;
 import android.content.res.Resources.NotFoundException;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.PowerManager;
@@ -412,6 +413,20 @@ public class ApiCompatibilityUtils {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             PackageManager packageManager = context.getPackageManager();
             drawable = packageManager.getUserBadgedIcon(drawable, Process.myUserHandle());
+        }
+        return drawable;
+    }
+
+    /**
+     * @see android.content.pm.PackageManager#getUserBadgedDrawableForDensity(Drawable drawable,
+     * UserHandle user, Rect badgeLocation, int badgeDensity).
+     */
+    public static Drawable getUserBadgedDrawableForDensity(
+            Context context, Drawable drawable, Rect badgeLocation, int density) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            PackageManager packageManager = context.getPackageManager();
+            return packageManager.getUserBadgedDrawableForDensity(
+                    drawable, Process.myUserHandle(), badgeLocation, density);
         }
         return drawable;
     }

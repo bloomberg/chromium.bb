@@ -10,6 +10,8 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationCompat.Action;
@@ -19,6 +21,7 @@ import android.util.TypedValue;
 import android.view.View;
 import android.widget.RemoteViews;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.ui.base.LocalizationUtils;
@@ -76,6 +79,11 @@ public class CustomNotificationBuilder implements NotificationBuilder {
     private static final int BUTTON_ICON_PADDING_DP = 8;
 
     /**
+     * The size of the work profile badge (width and height).
+     */
+    private static final int WORK_PROFILE_BADGE_SIZE_DP = 16;
+
+    /**
      * Material Grey 600 - to be applied to action button icons in the Material theme.
      */
     private static final int BUTTON_ICON_COLOR_MATERIAL = 0xff757575;
@@ -128,7 +136,8 @@ public class CustomNotificationBuilder implements NotificationBuilder {
             view.setTextViewText(R.id.origin, mOrigin);
             view.setImageViewBitmap(R.id.icon, mLargeIcon);
             view.setViewPadding(R.id.title, 0, scaledPadding, 0, 0);
-            view.setViewPadding(R.id.body, 0, scaledPadding, 0, scaledPadding);
+            view.setViewPadding(R.id.body_container, 0, scaledPadding, 0, scaledPadding);
+            addWorkProfileBadge(view);
         }
         addActionButtons(bigView);
 
@@ -278,6 +287,31 @@ public class CustomNotificationBuilder implements NotificationBuilder {
             view.setTextViewText(R.id.button, action.getTitle());
             view.setOnClickPendingIntent(R.id.button, action.getActionIntent());
             bigView.addView(R.id.buttons, view);
+        }
+    }
+
+    /**
+     * Shows the work profile badge if it is needed.
+     */
+    private void addWorkProfileBadge(RemoteViews view) {
+        Resources resources = mContext.getResources();
+        DisplayMetrics metrics = resources.getDisplayMetrics();
+        int size = dpToPx(WORK_PROFILE_BADGE_SIZE_DP, metrics);
+        int[] colors = new int[size * size];
+
+        // Create an immutable bitmap, so that it can not be reused for painting a badge into it.
+        Bitmap bitmap = Bitmap.createBitmap(colors, size, size, Bitmap.Config.ARGB_8888);
+
+        Drawable inputDrawable = new BitmapDrawable(resources, bitmap);
+        Drawable outputDrawable = ApiCompatibilityUtils.getUserBadgedDrawableForDensity(
+                mContext, inputDrawable, null /* badgeLocation */, metrics.densityDpi);
+
+        // The input bitmap is immutable, so the output drawable will be a different instance from
+        // the input drawable if the work profile badge was applied.
+        if (inputDrawable != outputDrawable && outputDrawable instanceof BitmapDrawable) {
+            view.setImageViewBitmap(
+                    R.id.work_profile_badge, ((BitmapDrawable) outputDrawable).getBitmap());
+            view.setViewVisibility(R.id.work_profile_badge, View.VISIBLE);
         }
     }
 
