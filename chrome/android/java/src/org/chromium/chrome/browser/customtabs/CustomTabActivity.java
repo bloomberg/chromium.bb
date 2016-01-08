@@ -16,7 +16,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.view.Window;
+import android.widget.ImageButton;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
@@ -46,12 +48,16 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.chrome.browser.widget.FadingShadow;
+import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
+
+import java.util.List;
 
 /**
  * The activity for custom tabs. It will be launched on top of a client's task.
@@ -126,19 +132,19 @@ public class CustomTabActivity extends ChromeActivity {
 
     /**
      * Checks whether the active {@link CustomTabContentHandler} belongs to the given session, and
-     * if true, update toolbar's action button.
+     * if true, update toolbar's custom button.
      * @param session     The {@link IBinder} that the calling client represents.
      * @param bitmap      The new icon for action button.
      * @param description The new content description for the action button.
      * @return Whether the update is successful.
      */
-    static boolean updateActionButton(IBinder session, Bitmap bitmap, String description) {
+    static boolean updateCustomButton(IBinder session, int id, Bitmap bitmap, String description) {
         ThreadUtils.assertOnUiThread();
         // Do nothing if there is no activity or the activity does not belong to this session.
         if (sActiveContentHandler == null || !sActiveContentHandler.getSession().equals(session)) {
             return false;
         }
-        return sActiveContentHandler.updateActionButton(bitmap, description);
+        return sActiveContentHandler.updateCustomButton(id, bitmap, description);
     }
 
     @Override
@@ -175,7 +181,7 @@ public class CustomTabActivity extends ChromeActivity {
         setTabModelSelector(new TabModelSelectorImpl(this, 0, getWindowAndroid(), false));
         getToolbarManager().setCloseButtonDrawable(mIntentDataProvider.getCloseButtonDrawable());
         getToolbarManager().setShowTitle(mIntentDataProvider.getTitleVisibilityState()
-                == CustomTabIntentDataProvider.SHOW_PAGE_TITLE);
+                == CustomTabsIntent.SHOW_PAGE_TITLE);
         int toolbarColor = mIntentDataProvider.getToolbarColor();
         getToolbarManager().updatePrimaryColor(toolbarColor);
         if (toolbarColor != ApiCompatibilityUtils.getColor(
@@ -186,7 +192,8 @@ public class CustomTabActivity extends ChromeActivity {
 
         // Setting task title and icon to be null will preserve the client app's title and icon.
         ApiCompatibilityUtils.setTaskDescription(this, null, null, toolbarColor);
-        showActionButton();
+        showCustomButtonOnToolbar();
+        showBottomBarIfNecessary();
     }
 
     @Override
@@ -238,9 +245,15 @@ public class CustomTabActivity extends ChromeActivity {
             }
 
             @Override
-            public boolean updateActionButton(Bitmap bitmap, String description) {
-                mIntentDataProvider.getActionButtonParams().update(bitmap, description);
-                return showActionButton();
+            public boolean updateCustomButton(int id, Bitmap bitmap, String description) {
+                List<CustomButtonParams> list = mIntentDataProvider.getAllCustomButtons();
+                for (CustomButtonParams params : list) {
+                    if (params.getId() == id) {
+                        params.update(bitmap, description);
+                    }
+                }
+                // TODO(ianwen): support bottom bar here.
+                return showCustomButtonOnToolbar();
             }
         };
         DataUseTabUIManager.onCustomTabInitialNavigation(mainTab,
@@ -432,12 +445,11 @@ public class CustomTabActivity extends ChromeActivity {
     }
 
     /**
-     * Properly setup action button on the toolbar. Does nothing if invalid data is provided by
-     * clients.
+     * Configures the custom button on toolbar. Does nothing if invalid data is provided by clients.
      */
-    private boolean showActionButton() {
-        if (!mIntentDataProvider.shouldShowActionButton()) return false;
-        ActionButtonParams params = mIntentDataProvider.getActionButtonParams();
+    private boolean showCustomButtonOnToolbar() {
+        CustomButtonParams params = mIntentDataProvider.getCustomButtonOnToolbar();
+        if (params == null) return false;
         getToolbarManager().setCustomActionButton(
                 params.getIcon(getResources()),
                 params.getDescription(),
@@ -450,6 +462,34 @@ public class CustomTabActivity extends ChromeActivity {
                     }
                 });
         return true;
+    }
+
+    /**
+     * Inflates the bottom bar {@link ViewStub} and its shadow, and populates it with items.
+     */
+    private void showBottomBarIfNecessary() {
+        // TODO (ianwen): if button icon is too wide, show them in overflow menu instead. If button
+        // id is not specified, the overflow sequence should be toolbar -> bottom bar -> menu.
+        if (!mIntentDataProvider.shouldShowBottomBar()) return;
+
+        ViewStub bottomBarStub = ((ViewStub) findViewById(R.id.bottombar_stub));
+        bottomBarStub.setLayoutResource(R.layout.custom_tabs_bottombar);
+        bottomBarStub.inflate();
+
+        // Unlike others, this shadow docks itself at bottom and casts graphics upwards.
+        FadingShadowView shadow = (FadingShadowView) findViewById(R.id.bottombar_shadow);
+        shadow.setVisibility(View.VISIBLE);
+        shadow.init(ApiCompatibilityUtils.getColor(getResources(),
+                R.color.bottom_bar_shadow_color), FadingShadow.POSITION_BOTTOM);
+
+        ViewGroup bottomBar = (ViewGroup) findViewById(R.id.bottombar);
+        bottomBar.setBackgroundColor(mIntentDataProvider.getToolbarColor());
+        List<CustomButtonParams> items = mIntentDataProvider.getCustomButtonsOnBottombar();
+        for (CustomButtonParams params : items) {
+            if (params.showOnToolbar()) continue;
+            ImageButton button = params.buildBottomBarButton(this, bottomBar);
+            bottomBar.addView(button);
+        }
     }
 
     @Override

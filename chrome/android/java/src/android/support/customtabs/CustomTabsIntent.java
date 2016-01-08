@@ -17,6 +17,7 @@ import android.os.IBinder;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 
 /**
  * Constants and utilities that will be used for low level control on customizing the UI and
@@ -45,8 +46,13 @@ public class CustomTabsIntent {
             "android.support.customtabs.extra.ENABLE_URLBAR_HIDING";
 
     /**
-     * Bundle used for adding a custom action button to the custom tab toolbar. The client can
-     * provide an icon {@link Bitmap} and a {@link PendingIntent} for the button.
+     * Bundle used for adding custom action buttons to the custom tab. The client should provide a
+     * unique id, an icon {@link Bitmap} and a {@link PendingIntent} for each button.
+     * <p>
+     * The data associated with this extra can be either a bundle or an {@link ArrayList} of
+     * bundles. If an {@link ArrayList} is given, only the bundle with the id of
+     * {@link #TOOLBAR_ACTION_BUTTON_ID} will be displayed on toolbar; the rest will be put on a
+     * bottom bar.
      */
     public static final String EXTRA_ACTION_BUTTON_BUNDLE =
             "android.support.customtabs.extra.ACTION_BUTTON_BUNDLE";
@@ -92,10 +98,53 @@ public class CustomTabsIntent {
             "android.support.customtabs.extra.EXIT_ANIMATION_BUNDLE";
 
     /**
+     * Extra bitmap that specifies the icon of the back button on the toolbar. If the client chooses
+     * not to customize it, a default close button will be used.
+     */
+    public static final String EXTRA_CLOSE_BUTTON_ICON =
+            "android.support.customtabs.extra.CLOSE_BUTTON_ICON";
+
+    /**
+     * Extra int that specifies state for showing the page title. Default is showing only the domain
+     * and no information about the title.
+     */
+    public static final String EXTRA_TITLE_VISIBILITY_STATE =
+            "android.support.customtabs.extra.TITLE_VISIBILITY";
+
+    /**
+     * Don't show any title. Shows only the domain.
+     */
+    public static final int NO_TITLE = 0;
+
+    /**
+     * Shows the page title and the domain.
+     */
+    public static final int SHOW_PAGE_TITLE = 1;
+
+    /**
+     * Extra boolean that specifies whether the custom action buttons should be tinted. Default is
+     * false and the action buttons will not be tinted. If true, all buttons will be tinted,
+     * regardless of their positions.
+     */
+    public static final String EXTRA_TINT_ACTION_BUTTON =
+            "android.support.customtabs.extra.TINT_ACTION_BUTTON";
+
+    /**
      * Boolean that specifies whether a default share button will be shown in the menu.
      */
     public static final String EXTRA_DEFAULT_SHARE_MENU_ITEM =
             "android.support.customtabs.extra.SHARE_MENU_ITEM";
+
+    /**
+     * Key that specifies the unique id for an action button. To make a button to show on the
+     * toolbar, use {@link #TOOLBAR_ACTION_BUTTON_ID} as its id.
+     */
+    public static final String KEY_ID = "android.support.customtabs.customaction.ID";
+
+    /**
+     * The id allocated to the custom action button that is shown on the toolbar.
+     */
+    public static final int TOOLBAR_ACTION_BUTTON_ID = 0;
 
     /**
      * Convenience method to create a VIEW intent without a session for the given package.

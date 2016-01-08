@@ -55,9 +55,7 @@ public class EnhancedBookmarkContentView extends RelativeLayout implements
             shadow.setVisibility(View.GONE);
         } else {
             shadow.init(ApiCompatibilityUtils.getColor(getResources(),
-                    R.color.enhanced_bookmark_app_bar_shadow_color),
-                    FadingShadow.POSITION_TOP);
-            shadow.setStrength(1.0f);
+                    R.color.enhanced_bookmark_app_bar_shadow_color), FadingShadow.POSITION_TOP);
         }
     }
 

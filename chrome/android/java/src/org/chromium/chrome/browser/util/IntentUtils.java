@@ -71,6 +71,19 @@ public class IntentUtils {
     }
 
     /**
+     * Just like {@link Bundle#getInt(String, int)} but doesn't throw exceptions.
+     */
+    public static int safeGetInt(Bundle bundle, String name, int defaultValue) {
+        try {
+            return bundle.getInt(name, defaultValue);
+        } catch (Throwable t) {
+            // Catches un-parceling exceptions.
+            Log.e(TAG, "getInt failed on bundle " + bundle);
+            return defaultValue;
+        }
+    }
+
+    /**
      * Just like {@link Intent#getLongExtra(String, long)} but doesn't throw exceptions.
      */
     public static long safeGetLongExtra(Intent intent, String name, long defaultValue) {

@@ -38,8 +38,8 @@ public interface CustomTabContentHandler {
     boolean shouldIgnoreIntent(Intent intent);
 
     /**
-     * Updates the content of custom action button shown on the toolbar.
+     * Finds the action button with the given id, and updates it with the new content.
      * @return Whether the action button has been updated.
      */
-    boolean updateActionButton(Bitmap bitmap, String description);
+    boolean updateCustomButton(int id, Bitmap bitmap, String description);
 }

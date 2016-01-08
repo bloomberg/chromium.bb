@@ -29,6 +29,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 
 import org.chromium.base.ThreadUtils;
@@ -99,6 +100,8 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             "chrome/test/data/android/test.html");
     private static final String TEST_MENU_TITLE = "testMenuTitle";
 
+    private static int sIdToIncrement = 1;
+
     private CustomTabActivity mActivity;
 
     @Override
@@ -161,6 +164,21 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         return pi;
     }
 
+    private Bundle makeBottomBarBundle(int id, Bitmap icon, String description) {
+        Bundle bundle = new Bundle();
+        Intent testIntent = new Intent();
+        testIntent.setClass(getInstrumentation().getContext(), DummyBroadcastReceiver.class);
+        testIntent.setAction(TEST_ACTION);
+        PendingIntent pi = PendingIntent.getBroadcast(getInstrumentation().getTargetContext(), 0,
+                testIntent, 0);
+
+        bundle.putInt(CustomTabsIntent.KEY_ID, sIdToIncrement++);
+        bundle.putString(CustomTabsIntent.KEY_DESCRIPTION, description);
+        bundle.putParcelable(CustomTabsIntent.KEY_PENDING_INTENT, pi);
+        bundle.putParcelable(CustomTabsIntent.KEY_ICON, icon);
+        return bundle;
+    }
+
     private void openAppMenuAndAssertMenuShown() throws InterruptedException {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
@@ -187,6 +205,13 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             if (item.isVisible() && item.isEnabled()) actualMenuSize++;
         }
         return actualMenuSize;
+    }
+
+    private Bitmap createTestBitmap(int widthDp, int heightDp) {
+        Resources testRes = getInstrumentation().getTargetContext().getResources();
+        float density = testRes.getDisplayMetrics().density;
+        return Bitmap.createBitmap((int) (widthDp * density),
+                (int) (heightDp * density), Bitmap.Config.ARGB_8888);
     }
 
     /**
@@ -412,13 +437,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
      */
     @SmallTest
     public void testActionButton() throws InterruptedException {
-        final int iconHeightDp = 48;
-        final int iconWidthDp = 96;
-        Resources testRes = getInstrumentation().getTargetContext().getResources();
-        float density = testRes.getDisplayMetrics().density;
-        Bitmap expectedIcon = Bitmap.createBitmap((int) (iconWidthDp * density),
-                (int) (iconHeightDp * density), Bitmap.Config.ARGB_8888);
-
+        Bitmap expectedIcon = createTestBitmap(96, 48);
         Intent intent = createMinimalCustomTabIntent();
         final PendingIntent pi = addActionButtonToIntent(intent, expectedIcon, "Good test");
         startCustomTabActivityWithIntent(intent);
@@ -460,13 +479,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
      */
     @SmallTest
     public void testActionButtonBadRatio() throws InterruptedException {
-        final int iconHeightDp = 20;
-        final int iconWidthDp = 60;
-        Resources testRes = getInstrumentation().getTargetContext().getResources();
-        float density = testRes.getDisplayMetrics().density;
-        Bitmap expectedIcon = Bitmap.createBitmap((int) (iconWidthDp * density),
-                (int) (iconHeightDp * density), Bitmap.Config.ARGB_8888);
-
+        Bitmap expectedIcon = createTestBitmap(60, 20);
         Intent intent = createMinimalCustomTabIntent();
         addActionButtonToIntent(intent, expectedIcon, "Good test");
         startCustomTabActivityWithIntent(intent);
@@ -481,7 +494,34 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                 View.VISIBLE != actionButton.getVisibility());
 
         CustomTabIntentDataProvider dataProvider = mActivity.getIntentDataProvider();
-        assertNull(dataProvider.getActionButtonParams());
+        assertNull(dataProvider.getCustomButtonOnToolbar());
+    }
+
+    @SmallTest
+    public void testBottomBar() throws InterruptedException {
+        final int numItems = 3;
+        final Bitmap expectedIcon = createTestBitmap(48, 24);
+
+        Intent intent = createMinimalCustomTabIntent();
+        ArrayList<Bundle> bundles = new ArrayList<>();
+        for (int i = 1; i <= numItems; i++) {
+            Bundle bundle = makeBottomBarBundle(i, expectedIcon, Integer.toString(i));
+            bundles.add(bundle);
+        }
+        intent.putExtra(CustomTabsIntent.EXTRA_ACTION_BUTTON_BUNDLE, bundles);
+        startCustomTabActivityWithIntent(intent);
+
+        ViewGroup bottomBar = (ViewGroup) getActivity().findViewById(R.id.bottombar);
+        assertNotNull(bottomBar);
+        assertEquals("Bottom Bar showing incorrect number of buttons.",
+                numItems, bottomBar.getChildCount());
+        for (int i = 1; i <= numItems; i++) {
+            ImageButton button = (ImageButton) bottomBar.getChildAt(i - 1);
+            assertTrue("Bottom Bar button does not have the correct bitmap.",
+                    expectedIcon.sameAs(((BitmapDrawable) button.getDrawable()).getBitmap()));
+            assertEquals("Bottom Bar button does not have correct content description",
+                    Integer.toString(i), button.getContentDescription());
+        }
     }
 
     @SmallTest

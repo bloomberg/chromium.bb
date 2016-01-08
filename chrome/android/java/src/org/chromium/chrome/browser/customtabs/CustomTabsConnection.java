@@ -386,21 +386,21 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
 
     @Override
     public boolean updateVisuals(final ICustomTabsCallback callback, Bundle bundle) {
+        // TODO(ianwen): add update logic here to support bundle list and bottom bar items.
         final Bundle actionButtonBundle = IntentUtils.safeGetBundle(bundle,
                 CustomTabsIntent.EXTRA_ACTION_BUTTON_BUNDLE);
         if (actionButtonBundle == null) return false;
 
-        final Bitmap bitmap = ActionButtonParams.tryParseBitmapFromBundle(mApplication,
-                actionButtonBundle);
-        final String description = ActionButtonParams
-                .tryParseDescriptionFromBundle(actionButtonBundle);
+        final Bitmap bitmap = CustomButtonParams.parseBitmapFromBundle(actionButtonBundle);
+        final String description = CustomButtonParams
+                .parseDescriptionFromBundle(actionButtonBundle);
         if (bitmap == null || description == null) return false;
 
         try {
             return ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
-                    return CustomTabActivity.updateActionButton(callback.asBinder(), bitmap,
+                    return CustomTabActivity.updateCustomButton(callback.asBinder(), 0, bitmap,
                             description);
                 }
             });
