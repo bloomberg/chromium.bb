@@ -5,6 +5,7 @@
 [
     Constructor([EnforceRange] unsigned long width, [EnforceRange] unsigned long height),
     GarbageCollected,
+    Exposed=(Window,Worker),
     RuntimeEnabled=ExperimentalCanvasFeatures,
 ] interface OffScreenCanvas {
     [EnforceRange] attribute unsigned long width;
