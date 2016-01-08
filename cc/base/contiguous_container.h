@@ -6,6 +6,7 @@
 #define CC_BASE_CONTIGUOUS_CONTAINER_H_
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -164,12 +165,12 @@ class ContiguousContainer : public ContiguousContainerBase {
   }
 
   template <class DerivedElementType, typename... Args>
-  DerivedElementType& AllocateAndConstruct(const Args&... args) {
+  DerivedElementType& AllocateAndConstruct(Args&&... args) {
     static_assert(alignment % ALIGNOF(DerivedElementType) == 0,
                   "Derived type requires stronger alignment.");
     size_t alloc_size = Align(sizeof(DerivedElementType));
-    // TODO(enne): This should forward the args.
-    return *new (Allocate(alloc_size)) DerivedElementType(args...);
+    return *new (Allocate(alloc_size))
+        DerivedElementType(std::forward<Args>(args)...);
   }
 
   void RemoveLast() {

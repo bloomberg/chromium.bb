@@ -6,6 +6,7 @@
 #define CC_PLAYBACK_DISPLAY_ITEM_LIST_H_
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -70,10 +71,10 @@ class CC_EXPORT DisplayItemList
   // type needs to be const, to prevent set-after-processing mistakes.
   template <typename DisplayItemType, typename... Args>
   const DisplayItemType& CreateAndAppendItem(const gfx::Rect& visual_rect,
-                                             const Args&... args) {
+                                             Args&&... args) {
     visual_rects_.push_back(visual_rect);
-    // TODO(enne): This should forward the args.
-    auto* item = &items_.AllocateAndConstruct<DisplayItemType>(args...);
+    auto* item = &items_.AllocateAndConstruct<DisplayItemType>(
+        std::forward<Args>(args)...);
     approximate_op_count_ += item->ApproximateOpCount();
     // TODO(crbug.com/513016): None of the items might individually trigger a
     // veto even though they collectively have enough "bad" operations that a
