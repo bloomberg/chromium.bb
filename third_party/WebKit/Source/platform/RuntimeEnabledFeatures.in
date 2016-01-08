@@ -94,6 +94,7 @@ ImageRenderingPixelated status=stable
 IndexedDBExperimental status=experimental
 InputDeviceCapabilities status=stable
 InputModeAttribute status=experimental
+IntersectionObserver status=experimental
 IterableCollections status=experimental
 KeyboardEventCode status=stable
 KeyboardEventKey status=experimental

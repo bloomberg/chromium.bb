@@ -516,6 +516,23 @@ function shouldEvaluateTo(actual, expected, opt_tolerance) {
   }
 }
 
+function shouldEvaluateToSameObject(actual, expected, quiet) {
+  if (typeof actual != "string")
+    debug("WARN: shouldEvaluateToSameObject() expects the first argument (actual) to be a string.");
+  try {
+    actualEvaled = eval(actual);
+  } catch (e) {
+    testFailed("Evaluating " + actual + ": Threw exception " + e);
+    return;
+  }
+  if (isResultCorrect(actualEvaled, expected)) {
+    if (!quiet)
+      testPassed(actual + " is " + stringify(expected));
+  } else {
+    testFailed(actual + " should be " + stringify(expected) + ". Was " + stringify(actualEvaled));
+  }
+}
+
 function shouldBeNonZero(_a)
 {
   var _exception;

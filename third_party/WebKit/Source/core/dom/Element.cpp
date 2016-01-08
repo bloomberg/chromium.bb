@@ -54,6 +54,7 @@
 #include "core/dom/ClientRectList.h"
 #include "core/dom/DatasetDOMStringMap.h"
 #include "core/dom/ElementDataCache.h"
+#include "core/dom/ElementIntersectionObserverData.h"
 #include "core/dom/ElementRareData.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
@@ -1457,8 +1458,12 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
     if (!insertionPoint->isInTreeScope())
         return InsertionDone;
 
-    if (hasRareData())
-        elementRareData()->clearClassListValueForQuirksMode();
+    if (hasRareData()) {
+        ElementRareData* rareData = elementRareData();
+        rareData->clearClassListValueForQuirksMode();
+        if (rareData->intersectionObserverData())
+            rareData->intersectionObserverData()->activateValidIntersectionObservers(*this);
+    }
 
     if (isUpgradedCustomElement() && inDocument())
         CustomElement::didAttach(this, document());
@@ -1536,6 +1541,9 @@ void Element::removedFrom(ContainerNode* insertionPoint)
 
         if (ElementAnimations* elementAnimations = data->elementAnimations())
             elementAnimations->cssAnimations().cancel();
+
+        if (data->intersectionObserverData())
+            data->intersectionObserverData()->deactivateAllIntersectionObservers(*this);
     }
 }
 
@@ -2584,6 +2592,18 @@ Node* Element::insertAdjacent(const String& where, Node* newChild, ExceptionStat
 
     exceptionState.throwDOMException(SyntaxError, "The value provided ('" + where + "') is not one of 'beforeBegin', 'afterBegin', 'beforeEnd', or 'afterEnd'.");
     return nullptr;
+}
+
+ElementIntersectionObserverData* Element::intersectionObserverData() const
+{
+    if (elementRareData())
+        return elementRareData()->intersectionObserverData();
+    return nullptr;
+}
+
+ElementIntersectionObserverData& Element::ensureIntersectionObserverData()
+{
+    return ensureElementRareData().ensureIntersectionObserverData();
 }
 
 // Step 1 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()

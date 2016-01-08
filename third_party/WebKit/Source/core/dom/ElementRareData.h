@@ -26,6 +26,7 @@
 #include "core/dom/Attr.h"
 #include "core/dom/CompositorProxiedPropertySet.h"
 #include "core/dom/DatasetDOMStringMap.h"
+#include "core/dom/ElementIntersectionObserverData.h"
 #include "core/dom/NamedNodeMap.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/PseudoElement.h"
@@ -34,6 +35,7 @@
 #include "core/html/ClassList.h"
 #include "core/style/StyleInheritedData.h"
 #include "platform/heap/Handle.h"
+#include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
@@ -123,6 +125,14 @@ public:
     AttrNodeList* attrNodeList() { return m_attrNodeList.get(); }
     void removeAttrNodeList() { m_attrNodeList.clear(); }
 
+    ElementIntersectionObserverData* intersectionObserverData() const { return m_intersectionObserverData.get(); }
+    ElementIntersectionObserverData& ensureIntersectionObserverData()
+    {
+        if (!m_intersectionObserverData)
+            m_intersectionObserverData = new ElementIntersectionObserverData();
+        return *m_intersectionObserverData;
+    }
+
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
@@ -139,9 +149,11 @@ private:
     OwnPtrWillBeMember<ElementShadow> m_shadow;
     OwnPtrWillBeMember<NamedNodeMap> m_attributeMap;
     OwnPtrWillBeMember<AttrNodeList> m_attrNodeList;
-    PersistentWillBeMember<ElementAnimations> m_elementAnimations;
     OwnPtrWillBeMember<InlineCSSStyleDeclaration> m_cssomWrapper;
     OwnPtr<CompositorProxiedPropertySet> m_proxiedProperties;
+
+    PersistentWillBeMember<ElementAnimations> m_elementAnimations;
+    PersistentWillBeMember<ElementIntersectionObserverData> m_intersectionObserverData;
 
     RefPtr<ComputedStyle> m_computedStyle;
     RefPtrWillBeMember<CustomElementDefinition> m_customElementDefinition;
@@ -172,6 +184,8 @@ inline ElementRareData::~ElementRareData()
 #if !ENABLE(OILPAN)
     if (m_elementAnimations)
         m_elementAnimations->dispose();
+    if (m_intersectionObserverData)
+        m_intersectionObserverData->dispose();
     ASSERT(!m_shadow);
 #endif
     ASSERT(!m_generatedBefore);

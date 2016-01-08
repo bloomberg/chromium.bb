@@ -32,6 +32,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/Fullscreen.h"
+#include "core/dom/IntersectionObserverController.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/RenderedPosition.h"
@@ -120,7 +121,7 @@ FrameView::FrameView(LocalFrame* frame)
     , m_inSynchronousPostLayout(false)
     , m_postLayoutTasksTimer(this, &FrameView::postLayoutTimerFired)
     , m_updateWidgetsTimer(this, &FrameView::updateWidgetsTimerFired)
-    , m_intersectionObserverNotificationFactory(CancellableTaskFactory::create(this, &FrameView::notifyIntersectionObservers))
+    , m_renderThrottlingObserverNotificationFactory(CancellableTaskFactory::create(this, &FrameView::notifyRenderThrottlingObservers))
     , m_isTransparent(false)
     , m_baseBackgroundColor(Color::white)
     , m_mediaType(MediaTypeNames::screen)
@@ -284,7 +285,7 @@ void FrameView::dispose()
 
     if (m_didScrollTimer.isActive())
         m_didScrollTimer.stop();
-    m_intersectionObserverNotificationFactory->cancel();
+    m_renderThrottlingObserverNotificationFactory->cancel();
 
     // FIXME: Do we need to do something here for OOPI?
     HTMLFrameOwnerElement* ownerElement = m_frame->deprecatedLocalOwner();
@@ -2368,7 +2369,7 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
     RefPtrWillBeRawPtr<FrameView> protector(this);
 
     if (shouldThrottleRendering()) {
-        updateViewportIntersectionsForSubtree();
+        updateViewportIntersectionsForSubtree(std::min(phases, OnlyUpToCompositingCleanPlusScrolling));
         return;
     }
 
@@ -2376,7 +2377,7 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
     ASSERT(lifecycle().state() >= DocumentLifecycle::LayoutClean);
 
     if (phases == OnlyUpToLayoutClean) {
-        updateViewportIntersectionsForSubtree();
+        updateViewportIntersectionsForSubtree(phases);
         return;
     }
 
@@ -2420,7 +2421,7 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
         }
     }
 
-    updateViewportIntersectionsForSubtree();
+    updateViewportIntersectionsForSubtree(phases);
 }
 
 void FrameView::updatePaintProperties()
@@ -3923,12 +3924,10 @@ void FrameView::setNeedsUpdateViewportIntersection()
 
 void FrameView::updateViewportIntersectionIfNeeded()
 {
-    // TODO(skyostil): Replace this with a real intersection observer.
     if (!m_needsUpdateViewportIntersection)
         return;
     m_needsUpdateViewportIntersection = false;
     m_viewportIntersectionValid = true;
-
     FrameView* parent = parentFrameView();
     if (!parent) {
         m_viewportIntersection = frameRect();
@@ -3955,14 +3954,20 @@ void FrameView::updateViewportIntersectionIfNeeded()
     m_viewportIntersection.intersect(viewport);
 }
 
-void FrameView::updateViewportIntersectionsForSubtree()
+void FrameView::updateViewportIntersectionsForSubtree(LifeCycleUpdateOption phases)
 {
     bool hadValidIntersection = m_viewportIntersectionValid;
     bool hadEmptyIntersection = m_viewportIntersection.isEmpty();
     updateViewportIntersectionIfNeeded();
+
+    // Notify javascript IntersectionObservers
+    if (phases == AllPhases)
+        frame().document()->ensureIntersectionObserverController().computeTrackedIntersectionObservations();
+
+    // Adjust render throttling for iframes based on visibility
     bool shouldNotify = !hadValidIntersection || hadEmptyIntersection != m_viewportIntersection.isEmpty();
-    if (shouldNotify && !m_intersectionObserverNotificationFactory->isPending())
-        m_frame->frameScheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, m_intersectionObserverNotificationFactory->cancelAndCreate());
+    if (shouldNotify && !m_renderThrottlingObserverNotificationFactory->isPending())
+        m_frame->frameScheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, m_renderThrottlingObserverNotificationFactory->cancelAndCreate());
 
     if (!m_needsUpdateViewportIntersectionInSubtree)
         return;
@@ -3972,13 +3977,13 @@ void FrameView::updateViewportIntersectionsForSubtree()
         if (!child->isLocalFrame())
             continue;
         if (FrameView* view = toLocalFrame(child)->view())
-            view->updateViewportIntersectionsForSubtree();
+            view->updateViewportIntersectionsForSubtree(phases);
     }
 }
 
-void FrameView::notifyIntersectionObservers()
+void FrameView::notifyRenderThrottlingObservers()
 {
-    TRACE_EVENT0("blink", "FrameView::notifyIntersectionObservers");
+    TRACE_EVENT0("blink", "FrameView::notifyRenderThrottlingObservers");
     ASSERT(!isInPerformLayout());
     ASSERT(!m_frame->document()->inStyleRecalc());
     bool wasThrottled = canThrottleRendering();

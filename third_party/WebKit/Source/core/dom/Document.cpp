@@ -75,6 +75,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/FrameRequestCallback.h"
+#include "core/dom/IntersectionObserverController.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/MainThreadTaskRunner.h"
 #include "core/dom/Microtask.h"
@@ -4583,11 +4584,7 @@ WeakPtrWillBeRawPtr<Document> Document::contextDocument()
     if (m_contextDocument)
         return m_contextDocument;
     if (m_frame) {
-#if ENABLE(OILPAN)
-        return this;
-#else
-        return m_weakFactory.createWeakPtr();
-#endif
+        return createWeakPtr();
     }
     return nullptr;
 }
@@ -5061,6 +5058,22 @@ void Document::parseDNSPrefetchControlHeader(const String& dnsPrefetchControl)
 
     m_isDNSPrefetchEnabled = false;
     m_haveExplicitlyDisabledDNSPrefetch = true;
+}
+
+WeakPtrWillBeRawPtr<Document> Document::createWeakPtr()
+{
+#if ENABLE(OILPAN)
+    return this;
+#else
+    return m_weakFactory.createWeakPtr();
+#endif
+}
+
+IntersectionObserverController& Document::ensureIntersectionObserverController()
+{
+    if (!m_intersectionObserverController)
+        m_intersectionObserverController = new IntersectionObserverController();
+    return *m_intersectionObserverController;
 }
 
 void Document::reportBlockedScriptExecutionToInspector(const String& directiveText)
@@ -5866,6 +5879,7 @@ DEFINE_TRACE(Document)
     visitor->trace(m_compositorPendingAnimations);
     visitor->trace(m_contextDocument);
     visitor->trace(m_canvasFontCache);
+    visitor->trace(m_intersectionObserverController);
     WillBeHeapSupplementable<Document>::trace(visitor);
 #endif
     TreeScope::trace(visitor);

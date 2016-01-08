@@ -747,9 +747,9 @@ private:
     template <typename Function> void forAllNonThrottledFrameViews(Function);
 
     void setNeedsUpdateViewportIntersection();
-    void updateViewportIntersectionsForSubtree();
+    void updateViewportIntersectionsForSubtree(LifeCycleUpdateOption);
     void updateViewportIntersectionIfNeeded();
-    void notifyIntersectionObservers();
+    void notifyRenderThrottlingObservers();
 
     // PaintInvalidationCapableScrollableArea
     LayoutBox& boxForScrollControlPaintInvalidation() const override;
@@ -787,7 +787,7 @@ private:
     unsigned m_nestedLayoutCount;
     Timer<FrameView> m_postLayoutTasksTimer;
     Timer<FrameView> m_updateWidgetsTimer;
-    OwnPtr<CancellableTaskFactory> m_intersectionObserverNotificationFactory;
+    OwnPtr<CancellableTaskFactory> m_renderThrottlingObserverNotificationFactory;
 
     bool m_firstLayout;
     bool m_isTransparent;

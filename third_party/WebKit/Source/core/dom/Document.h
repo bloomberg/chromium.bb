@@ -126,6 +126,7 @@ class HitTestRequest;
 class IdleRequestCallback;
 class IdleRequestOptions;
 class InputDeviceCapabilities;
+class IntersectionObserverController;
 class LayoutPoint;
 class LiveNodeListBase;
 class Locale;
@@ -683,6 +684,10 @@ public:
     }
     bool hasMutationObservers() const { return m_mutationObserverTypes; }
     void addMutationObserverTypes(MutationObserverOptions types) { m_mutationObserverTypes |= types; }
+
+    WeakPtrWillBeRawPtr<Document> createWeakPtr();
+
+    IntersectionObserverController& ensureIntersectionObserverController();
 
     void updateViewportDescription();
     void processReferrerPolicy(const String& policy);
@@ -1397,6 +1402,8 @@ private:
     ClientHintsPreferences m_clientHintsPreferences;
 
     PersistentWillBeMember<CanvasFontCache> m_canvasFontCache;
+
+    PersistentWillBeMember<IntersectionObserverController> m_intersectionObserverController;
 
     int m_nodeCount;
 };

@@ -52,6 +52,7 @@ class CustomElementDefinition;
 class DOMStringMap;
 class DOMTokenList;
 class Dictionary;
+class ElementIntersectionObserverData;
 class ElementRareData;
 class ElementShadow;
 class ExceptionState;
@@ -552,6 +553,9 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     SpellcheckAttributeState spellcheckAttributeState() const;
+
+    ElementIntersectionObserverData* intersectionObserverData() const;
+    ElementIntersectionObserverData& ensureIntersectionObserverData();
 
 protected:
     Element(const QualifiedName& tagName, Document*, ConstructionType);

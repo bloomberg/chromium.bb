@@ -3116,6 +3116,19 @@ interface ImageData
 interface InputDeviceCapabilities
     getter firesTouchEvents
     method constructor
+interface IntersectionObserver
+    method constructor
+    method disconnect
+    method observe
+    method takeRecords
+    method unobserve
+interface IntersectionObserverEntry
+    getter boundingClientRect
+    getter intersectionRect
+    getter rootBounds
+    getter target
+    getter time
+    method constructor
 interface KeyboardEvent : UIEvent
     attribute DOM_KEY_LOCATION_LEFT
     attribute DOM_KEY_LOCATION_NUMPAD

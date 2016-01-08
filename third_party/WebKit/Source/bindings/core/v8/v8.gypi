@@ -130,6 +130,8 @@
             'V8IdleTaskRunner.h',
             'V8Initializer.cpp',
             'V8Initializer.h',
+            'V8IntersectionObserverCallback.cpp',
+            'V8IntersectionObserverCallback.h',
             'V8IteratorResultValue.cpp',
             'V8IteratorResultValue.h',
             'V8LazyEventListener.cpp',
