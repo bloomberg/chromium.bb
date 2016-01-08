@@ -117,6 +117,7 @@ PassRefPtrWillBeRawPtr<Element> PendingScript::releaseElementAndClear()
     setScriptResource(0);
     m_watchingForLoad = false;
     m_startingPosition = TextPosition::belowRangePosition();
+    m_integrityFailure = false;
     if (m_streamer)
         m_streamer->cancel();
     m_streamer.release();
