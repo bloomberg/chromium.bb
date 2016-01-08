@@ -935,7 +935,7 @@ bool View::HitTestRect(const gfx::Rect& rect) const {
   return GetEffectiveViewTargeter()->DoesIntersectRect(this, rect);
 }
 
-bool View::IsMouseHovered() {
+bool View::IsMouseHovered() const {
   // If we haven't yet been placed in an onscreen view hierarchy, we can't be
   // hovered.
   if (!GetWidget())
@@ -1611,8 +1611,8 @@ void View::WriteDragData(const gfx::Point& press_pt, OSExchangeData* data) {
   drag_controller_->WriteDragDataForView(this, press_pt, data);
 }
 
-bool View::InDrag() {
-  Widget* widget = GetWidget();
+bool View::InDrag() const {
+  const Widget* widget = GetWidget();
   return widget ? widget->dragged_view() == this : false;
 }
 

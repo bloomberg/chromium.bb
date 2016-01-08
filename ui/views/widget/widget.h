@@ -589,7 +589,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Returns the view that requested the current drag operation via
   // RunShellDrag(), or NULL if there is no such view or drag operation.
-  View* dragged_view() { return dragged_view_; }
+  View* dragged_view() {
+    return const_cast<View*>(const_cast<const Widget*>(this)->dragged_view());
+  }
+  const View* dragged_view() const { return dragged_view_; }
 
   // Adds the specified |rect| in client area coordinates to the rectangle to be
   // redrawn.
