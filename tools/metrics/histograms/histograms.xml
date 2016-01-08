@@ -47713,6 +47713,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Startup.TimeSinceLastStartup" units="minutes">
+  <owner>fdoray@chromium.org</owner>
+  <summary>
+    Time elapsed since the last startup that went up to the main message loop
+    start. This is recorded just before the main message loop starts.
+  </summary>
+</histogram>
+
 <histogram name="Startup.WarmStartTimeFromRemoteProcessStart"
     units="milliseconds">
   <owner>jeremy@chromium.org</owner>
@@ -85573,6 +85581,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Startup.LoadTime.ProcessCreateToDllMain"/>
   <affected-histogram name="Startup.LoadTime.ProcessCreateToExeMain"/>
   <affected-histogram name="Startup.SystemUptime"/>
+  <affected-histogram name="Startup.TimeSinceLastStartup"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="StartupTimeBombAlarm" separator=".">

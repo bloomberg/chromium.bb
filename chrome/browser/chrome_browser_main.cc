@@ -794,6 +794,9 @@ void ChromeBrowserMainParts::RecordBrowserStartupTime() {
   // Record collected startup metrics.
   startup_metric_utils::RecordBrowserMainMessageLoopStart(
       base::TimeTicks::Now(), is_first_run);
+
+  startup_metric_utils::RecordTimeSinceLastStartup(
+      g_browser_process->local_state());
 }
 
 // -----------------------------------------------------------------------------

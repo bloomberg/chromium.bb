@@ -11,6 +11,9 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
+#include "base/process/process_info.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
@@ -26,6 +29,9 @@
 namespace startup_metric_utils {
 
 namespace {
+
+const char kLastStartupTimestampPref[] =
+    "startup_metric.last_startup_timestamp";
 
 // Mark as volatile to defensively make sure usage is thread-safe.
 // Note that at the time of this writing, access is only on the UI thread.
@@ -96,6 +102,9 @@ typedef NTSTATUS (WINAPI *NtQuerySystemInformationPtr)(
     SYSTEM_INFORMATION_CLASS, PVOID, ULONG, PULONG);
 #endif  // defined(OS_WIN)
 
+#define UMA_HISTOGRAM_TIME_IN_MINUTES_MONTH_RANGE(name, sample) \
+  UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, 1,                  \
+                              base::TimeDelta::FromDays(30).InMinutes(), 50)
 
 // Helper macro for splitting out an UMA histogram based on cold or warm start.
 // |type| is the histogram type, and corresponds to an UMA macro like
@@ -382,6 +391,11 @@ bool GetHardFaultCountForCurrentProcess(uint32_t* hard_fault_count) {
 }
 #endif  // defined(OS_WIN)
 
+void RegisterPrefs(PrefRegistrySimple* registry) {
+  DCHECK(registry);
+  registry->RegisterInt64Pref(kLastStartupTimestampPref, 0);
+}
+
 bool WasNonBrowserUIDisplayed() {
   return g_non_browser_ui_displayed;
 }
@@ -475,6 +489,39 @@ void RecordBrowserMainMessageLoopStart(const base::TimeTicks& ticks,
           g_browser_main_entry_point_ticks.Get() - process_creation_ticks);
     }
   }
+}
+
+void RecordTimeSinceLastStartup(PrefService* pref_service) {
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
+  DCHECK(pref_service);
+
+  // Get the timestamp of the current startup.
+  const base::Time process_start_time =
+      base::CurrentProcessInfo::CreationTime();
+
+  // Get the timestamp of the last startup from |pref_service|.
+  const int64_t last_startup_timestamp_internal =
+      pref_service->GetInt64(kLastStartupTimestampPref);
+  if (last_startup_timestamp_internal != 0) {
+    // Log the Startup.TimeSinceLastStartup histogram.
+    const base::Time last_startup_timestamp =
+        base::Time::FromInternalValue(last_startup_timestamp_internal);
+    const base::TimeDelta time_since_last_startup =
+        process_start_time - last_startup_timestamp;
+    const int minutes_since_last_startup = time_since_last_startup.InMinutes();
+
+    // Ignore negative values, which can be caused by system clock changes.
+    if (minutes_since_last_startup >= 0) {
+      UMA_HISTOGRAM_WITH_STARTUP_TEMPERATURE(
+          UMA_HISTOGRAM_TIME_IN_MINUTES_MONTH_RANGE,
+          "Startup.TimeSinceLastStartup", minutes_since_last_startup);
+    }
+  }
+
+  // Write the timestamp of the current startup in |pref_service|.
+  pref_service->SetInt64(kLastStartupTimestampPref,
+                         process_start_time.ToInternalValue());
+#endif  // defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
 }
 
 void RecordBrowserWindowDisplay(const base::TimeTicks& ticks) {
