@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_UPLOAD_JOB_IMPL_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_UPLOAD_JOB_IMPL_H_
 
-#include <stddef.h>
-
 #include <map>
 #include <string>
 
@@ -36,7 +34,7 @@ class UploadJobImpl : public UploadJob,
    public:
     virtual ~MimeBoundaryGenerator();
 
-    virtual std::string GenerateBoundary(size_t length) const = 0;
+    virtual std::string GenerateBoundary() const = 0;
 
    private:
     DISALLOW_ASSIGN(MimeBoundaryGenerator);
@@ -48,8 +46,7 @@ class UploadJobImpl : public UploadJob,
    public:
     ~RandomMimeBoundaryGenerator() override;
 
-    std::string GenerateBoundary(
-        size_t length) const override;  // MimeBoundaryGenerator
+    std::string GenerateBoundary() const override;  // MimeBoundaryGenerator
   };
 
   UploadJobImpl(const GURL& upload_url,

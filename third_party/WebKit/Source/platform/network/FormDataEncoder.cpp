@@ -99,6 +99,7 @@ WTF::TextEncoding FormDataEncoder::encodingFromAcceptCharset(const String& accep
     return charset;
 }
 
+// TODO(lukasza): Reuse net::GenerateMimeMultipartBoundary instead.
 Vector<char> FormDataEncoder::generateUniqueBoundaryString()
 {
     Vector<char> boundary;

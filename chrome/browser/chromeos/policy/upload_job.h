@@ -30,7 +30,6 @@ class UploadJob {
   // If the upload fails, the Delegate's OnFailure() method is invoked with
   // one of these error codes.
   enum ErrorCode {
-    CONTENT_ENCODING_ERROR = 0,  // Failed to encode content.
     NETWORK_ERROR = 1,           // Network failure.
     AUTHENTICATION_ERROR = 2,    // Authentication failure.
     SERVER_ERROR = 3             // Server returned error or malformed reply.

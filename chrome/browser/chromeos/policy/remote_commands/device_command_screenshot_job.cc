@@ -124,9 +124,6 @@ void DeviceCommandScreenshotJob::OnFailure(UploadJob::ErrorCode error_code) {
     case UploadJob::SERVER_ERROR:
       result_code = FAILURE_SERVER;
       break;
-    case UploadJob::CONTENT_ENCODING_ERROR:
-      result_code = FAILURE_CLIENT;
-      break;
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,

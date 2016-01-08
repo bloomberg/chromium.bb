@@ -70,9 +70,6 @@ scoped_ptr<base::DictionaryValue> ParseResponseJSON(
 // Returns the MIME type of multipart with |mime_boundary|.
 std::string GetMultipartMimeType(const std::string& mime_boundary);
 
-// Create a MIME boundary marker (27 '-' characters followed by 16 hex digits).
-void CreateMimeBoundaryForUpload(std::string *out);
-
 // Returns an MD5 hash for |printer_tags| and the default required tags.
 std::string GetHashOfPrinterTags(const PrinterTags& printer_tags);
 

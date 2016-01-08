@@ -12,7 +12,6 @@
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -27,6 +26,7 @@
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
+#include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
@@ -75,13 +75,6 @@ const char kMultipartItemHeaderFormat[] = "--%s\nContent-Type: %s\n\n";
 
 // Footer for whole multipart message.
 const char kMultipartFooterFormat[] = "--%s--";
-
-// Characters to be used for multipart/related boundary.
-const char kBoundaryCharacters[] =
-    "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-// Size of multipart/related's boundary.
-const char kBoundarySize = 70;
 
 // Parses JSON passed in |json| on |blocking_task_runner|. Runs |callback| on
 // the calling thread when finished with either success or failure.
@@ -227,13 +220,7 @@ void GenerateMultipartBody(MultipartType multipart_type,
   // Generate random boundary.
   if (predetermined_boundary.empty()) {
     while (true) {
-      boundary.resize(kBoundarySize);
-      for (int i = 0; i < kBoundarySize; ++i) {
-        // Subtract 2 from the array size to exclude '\0', and to turn the size
-        // into the last index.
-        const int last_char_index = arraysize(kBoundaryCharacters) - 2;
-        boundary[i] = kBoundaryCharacters[base::RandInt(0,  last_char_index)];
-      }
+      boundary = net::GenerateMimeMultipartBoundary();
       bool conflict_with_content = false;
       for (auto& part : parts) {
         if (part.data.find(boundary, 0) != std::string::npos) {

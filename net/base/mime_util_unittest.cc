@@ -273,6 +273,34 @@ TEST(MimeUtilTest, TestGetExtensionsForMimeType) {
   }
 }
 
+TEST(MimeUtilTest, TestGenerateMimeMultipartBoundary) {
+  std::string boundary1 = GenerateMimeMultipartBoundary();
+  std::string boundary2 = GenerateMimeMultipartBoundary();
+
+  // RFC 1341 says: the boundary parameter [...] consists of 1 to 70 characters.
+  EXPECT_GE(70u, boundary1.size());
+  EXPECT_GE(70u, boundary2.size());
+
+  // RFC 1341 asks to: exercise care to choose a unique boundary.
+  EXPECT_NE(boundary1, boundary2);
+  ASSERT_LE(16u, boundary1.size());
+  ASSERT_LE(16u, boundary2.size());
+
+  // Expect that we don't pick '\0' character from the array/string
+  // where we take the characters from.
+  EXPECT_EQ(std::string::npos, boundary1.find('\0'));
+  EXPECT_EQ(std::string::npos, boundary2.find('\0'));
+
+  // Asserts below are not RFC 1341 requirements, but are here
+  // to improve readability of generated MIME documents and to
+  // try to preserve some aspects of the old boundary generation code.
+  EXPECT_EQ("--", boundary1.substr(0, 2));
+  EXPECT_EQ("--", boundary2.substr(0, 2));
+  EXPECT_NE(std::string::npos, boundary1.find("MultipartBoundary"));
+  EXPECT_NE(std::string::npos, boundary2.find("MultipartBoundary"));
+  EXPECT_EQ("--", boundary1.substr(boundary1.size() - 2, 2));
+  EXPECT_EQ("--", boundary2.substr(boundary2.size() - 2, 2));
+}
 
 TEST(MimeUtilTest, TestAddMultipartValueForUpload) {
   const char ref_output[] =

@@ -684,8 +684,7 @@ void PrinterJobHandler::OnReceivePrinterCaps(
     printer_watcher_->GetCurrentPrinterInfo(&printer_info);
 
   std::string post_data;
-  std::string mime_boundary;
-  CreateMimeBoundaryForUpload(&mime_boundary);
+  std::string mime_boundary = net::GenerateMimeMultipartBoundary();
 
   if (succeeded) {
     std::string caps_hash =

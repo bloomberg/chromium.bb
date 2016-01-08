@@ -2141,7 +2141,7 @@ TEST_F(DriveApiRequestsTest, BatchUploadRequestProgress) {
       new TestBatchableDelegate(GURL("http://example.com/test"),
                                 "application/binary", std::string(0, 'c'),
                                 base::Bind(&EmptyClosure))};
-  const size_t kExpectedUploadDataPosition[] = {208, 517, 776};
+  const size_t kExpectedUploadDataPosition[] = {207, 515, 773};
   const size_t kExpectedUploadDataSize = 851;
   request->AddRequest(requests[0]);
   request->AddRequest(requests[1]);

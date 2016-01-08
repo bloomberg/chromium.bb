@@ -12,10 +12,8 @@
 #include "base/files/file.h"
 #include "base/guid.h"
 #include "base/macros.h"
-#include "base/rand_util.h"
 #include "base/scoped_observer.h"
 #include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -26,6 +24,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents.h"
+#include "net/base/mime_util.h"
 
 namespace content {
 
@@ -73,7 +72,6 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
   void RenderProcessHostDestroyed(RenderProcessHost* host) override;
 
  private:
-  static std::string GenerateMHTMLBoundaryMarker();
   static int64_t CloseFileOnFileThread(base::File file);
   void AddFrame(RenderFrameHost* render_frame_host);
 
@@ -124,7 +122,7 @@ MHTMLGenerationManager::Job::Job(int job_id,
                                  GenerateMHTMLCallback callback)
     : job_id_(job_id),
       frame_tree_node_id_of_busy_frame_(FrameTreeNode::kFrameTreeNodeInvalidId),
-      mhtml_boundary_marker_(GenerateMHTMLBoundaryMarker()),
+      mhtml_boundary_marker_(net::GenerateMimeMultipartBoundary()),
       salt_(base::GenerateGUID()),
       callback_(callback),
       observed_renderer_process_host_(this) {
@@ -278,25 +276,6 @@ int64_t MHTMLGenerationManager::Job::CloseFileOnFileThread(base::File file) {
   int64_t file_size = file.GetLength();
   file.Close();
   return file_size;
-}
-
-// static
-std::string MHTMLGenerationManager::Job::GenerateMHTMLBoundaryMarker() {
-  // TODO(lukasza): Introduce and use a shared helper function in
-  // net/base/mime_util.h instead of having the ad-hoc code below.
-
-  // Trying to generate random boundaries similar to IE/UnMHT
-  // (ex: ----=_NextPart_000_001B_01CC157B.96F808A0).
-  uint8_t random_values[10];
-  base::RandBytes(random_values, sizeof(random_values));
-
-  std::string result("----=_NextPart_000_");
-  result += base::HexEncode(random_values + 0, 2);
-  result += '_';
-  result += base::HexEncode(random_values + 2, 4);
-  result += '.';
-  result += base::HexEncode(random_values + 6, 4);
-  return result;
 }
 
 MHTMLGenerationManager* MHTMLGenerationManager::GetInstance() {

@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/values.h"
@@ -205,13 +204,6 @@ scoped_ptr<base::DictionaryValue> ParseResponseJSON(
 
 std::string GetMultipartMimeType(const std::string& mime_boundary) {
   return std::string("multipart/form-data; boundary=") + mime_boundary;
-}
-
-// Create a MIME boundary marker (27 '-' characters followed by 16 hex digits).
-void CreateMimeBoundaryForUpload(std::string* out) {
-  int r1 = base::RandInt(0, std::numeric_limits<int32_t>::max());
-  int r2 = base::RandInt(0, std::numeric_limits<int32_t>::max());
-  base::SStringPrintf(out, "---------------------------%08X%08X", r1, r2);
 }
 
 std::string GetHashOfPrinterTags(const PrinterTags& printer_tags) {

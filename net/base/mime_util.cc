@@ -7,9 +7,11 @@
 #include <map>
 #include <string>
 
+#include "base/base64.h"
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -511,6 +513,17 @@ void HashSetToVector(base::hash_set<T>* source, std::vector<T>* target) {
     (*target)[old_target_size + i] = *iter;
 }
 
+// Characters to be used for mime multipart boundary.
+// The RFC 2046 spec says the alphanumeric characters plus the
+// following characters are legal for boundaries:  '()+_,-./:=?
+// However the following characters, though legal, cause some sites
+// to fail: (),./:=+
+const char kMimeBoundaryCharacters[] =
+    "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+// Size of mime multipart boundary.
+const size_t kMimeBoundarySize = 69;
+
 }  // namespace
 
 void GetExtensionsForMimeType(
@@ -555,6 +568,42 @@ void GetExtensionsForMimeType(
   }
 
   HashSetToVector(&unique_extensions, extensions);
+}
+
+NET_EXPORT std::string GenerateMimeMultipartBoundary() {
+  // Based on RFC 1341, section "7.2.1 Multipart: The common syntax":
+  //   Because encapsulation boundaries must not appear in the body parts being
+  //   encapsulated, a user agent must exercise care to choose a unique
+  //   boundary. The boundary in the example above could have been the result of
+  //   an algorithm designed to produce boundaries with a very low probability
+  //   of already existing in the data to be encapsulated without having to
+  //   prescan the data.
+  //   [...]
+  //   the boundary parameter [...] consists of 1 to 70 characters from a set of
+  //   characters known to be very robust through email gateways, and NOT ending
+  //   with white space.
+  //   [...]
+  //   boundary := 0*69<bchars> bcharsnospace
+  //   bchars := bcharsnospace / " "
+  //   bcharsnospace := DIGIT / ALPHA / "'" / "(" / ")" / "+" /
+  //            "_" / "," / "-" / "." / "/" / ":" / "=" / "?"
+
+  std::string result;
+  result.reserve(kMimeBoundarySize);
+  result.append("----MultipartBoundary--");
+  while (result.size() < (kMimeBoundarySize - 4)) {
+    // Subtract 2 from the array size to 1) exclude '\0', and 2) turn the size
+    // into the last index.
+    const int last_char_index = sizeof(kMimeBoundaryCharacters) - 2;
+    char c = kMimeBoundaryCharacters[base::RandInt(0, last_char_index)];
+    result.push_back(c);
+  }
+  result.append("----");
+
+  // Not a strict requirement - documentation only.
+  DCHECK_EQ(kMimeBoundarySize, result.size());
+
+  return result;
 }
 
 void AddMultipartValueForUpload(const std::string& value_name,

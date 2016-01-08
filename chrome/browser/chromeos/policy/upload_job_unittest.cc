@@ -51,8 +51,9 @@ class RepeatingMimeBoundaryGenerator
   ~RepeatingMimeBoundaryGenerator() override {}
 
   // MimeBoundaryGenerator:
-  std::string GenerateBoundary(size_t length) const override {
-    return std::string(length, character_);
+  std::string GenerateBoundary() const override {
+    const int kMimeBoundarySize = 32;
+    return std::string(kMimeBoundarySize, character_);
   }
 
  private:

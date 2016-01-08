@@ -12,7 +12,6 @@
 #include "base/json/json_writer.h"
 #include "base/md5.h"
 #include "base/message_loop/message_loop.h"
-#include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "cloud_print/gcp20/prototype/cloud_print_url_request_context_getter.h"
 #include "google_apis/google_api_keys.h"
@@ -125,11 +124,7 @@ void CloudPrintRequester::StartRegistration(const std::string& proxy_id,
                                             const std::string& user,
                                             const LocalSettings& settings,
                                             const std::string& cdd) {
-  std::string mime_boundary;
-  int r1 = base::RandInt(0, std::numeric_limits<int32_t>::max());
-  int r2 = base::RandInt(0, std::numeric_limits<int32_t>::max());
-  base::SStringPrintf(&mime_boundary,
-                      "---------------------------%08X%08X", r1, r2);
+  std::string mime_boundary = net::GenerateMimeMultipartBoundary();
 
   std::string data;
   std::string data_mimetype;
