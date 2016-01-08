@@ -7,26 +7,26 @@
 namespace binder {
 
 BufferReader::BufferReader(const char* data, size_t size)
-    : data_(data), size_(size), position_(0) {}
+    : data_(data), size_(size), current_(data) {}
 
 BufferReader::~BufferReader() {}
 
 bool BufferReader::HasMoreData() const {
-  return position_ < size_;
+  return current_ < data_ + size_;
 }
 
 bool BufferReader::Read(void* out, size_t num_bytes) {
-  if (position_ + num_bytes > size_)
+  if (current_ + num_bytes > data_ + size_)
     return false;
-  memcpy(out, data_ + position_, num_bytes);
-  position_ += num_bytes;
+  memcpy(out, current_, num_bytes);
+  current_ += num_bytes;
   return true;
 }
 
 bool BufferReader::Skip(size_t num_bytes) {
-  if (position_ + num_bytes > size_)
+  if (current_ + num_bytes > data_ + size_)
     return false;
-  position_ += num_bytes;
+  current_ += num_bytes;
   return true;
 }
 

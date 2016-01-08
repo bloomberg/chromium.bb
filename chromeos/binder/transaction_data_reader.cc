@@ -65,6 +65,53 @@ bool TransactionDataReader::ReadDouble(double* value) {
   return ReadData(value, sizeof(*value));
 }
 
+bool TransactionDataReader::ReadCString(const char** value) {
+  *value = reader_.current();
+  for (size_t len = 0; reader_.HasMoreData(); ++len) {
+    char c = 0;
+    if (!reader_.Read(&c, sizeof(c))) {
+      return false;
+    }
+    if (c == 0) {
+      return reader_.Skip(AddPadding(len + 1) - (len + 1));
+    }
+  }
+  return false;
+}
+
+bool TransactionDataReader::ReadString(std::string* value) {
+  int32_t len = 0;
+  if (!ReadInt32(&len)) {
+    return false;
+  }
+  if (len == 0) {
+    // Read only when the string is not empty.
+    // This is different from ReadString16().
+    value->clear();
+    return true;
+  }
+  const char* start = reader_.current();
+  if (!reader_.Skip(AddPadding(len + 1))) {
+    return false;
+  }
+  value->assign(start, len);
+  return true;
+}
+
+bool TransactionDataReader::ReadString16(base::string16* value) {
+  int32_t len = 0;
+  if (!ReadInt32(&len)) {
+    return false;
+  }
+  const base::char16* start =
+      reinterpret_cast<const base::char16*>(reader_.current());
+  if (!reader_.Skip(AddPadding((len + 1) * sizeof(base::char16)))) {
+    return false;
+  }
+  value->assign(start, len);
+  return true;
+}
+
 scoped_refptr<Object> TransactionDataReader::ReadObject(
     CommandBroker* command_broker) {
   DCHECK(command_broker);

@@ -18,6 +18,9 @@ const uint32_t kFirstTransactionCode = 0x00000001;
 const uint32_t kLastTransactionCode = 0x00ffffff;
 const uint32_t kPingTransactionCode = BINDER_PACK_CHARS('_', 'P', 'N', 'G');
 
+// Note: must be kept in sync with PENALTY_GATHER in Android's StrictMode.java.
+const int32_t kStrictModePenaltyGather = (0x40 << 16);
+
 }  // namespace binder
 
 #endif  // CHROMEOS_BINDER_CONSTANTS_H_

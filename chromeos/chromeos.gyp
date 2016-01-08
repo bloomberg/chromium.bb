@@ -421,8 +421,7 @@
       'binder/command_broker_unittest.cc',
       'binder/command_stream_unittest.cc',
       'binder/driver_unittest.cc',
-      'binder/transaction_data_reader_unittest.cc',
-      'binder/writable_transaction_data_unittest.cc',
+      'binder/transaction_data_read_write_unittest.cc',
     ],
     'chromeos_test_sources': [
       'app_mode/kiosk_oem_manifest_parser_unittest.cc',

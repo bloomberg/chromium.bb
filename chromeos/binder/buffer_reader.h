@@ -20,7 +20,7 @@ class CHROMEOS_EXPORT BufferReader {
 
   const char* data() const { return data_; }
   size_t size() const { return size_; }
-  size_t position() const { return position_; }
+  const char* current() const { return current_; }
 
   // Returns true when there is some data to read.
   bool HasMoreData() const;
@@ -35,7 +35,7 @@ class CHROMEOS_EXPORT BufferReader {
  private:
   const char* data_;
   size_t size_;
-  size_t position_;
+  const char* current_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferReader);
 };

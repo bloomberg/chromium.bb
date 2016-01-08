@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string16.h"
 #include "chromeos/binder/buffer_reader.h"
 #include "chromeos/chromeos_export.h"
 
@@ -51,6 +52,15 @@ class CHROMEOS_EXPORT TransactionDataReader {
 
   // Reads a double value. Returns true on success.
   bool ReadDouble(double* value);
+
+  // Reads a null-terminated C string.
+  bool ReadCString(const char** value);
+
+  // Reads a string.
+  bool ReadString(std::string* value);
+
+  // Reads a UTF-16 string.
+  bool ReadString16(base::string16* value);
 
   // Reads an object. Returns null on failure.
   // |command_broker| will be used for object ref-count operations.

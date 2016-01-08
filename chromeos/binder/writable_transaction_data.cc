@@ -6,6 +6,7 @@
 
 #include <linux/android/binder.h>
 
+#include "chromeos/binder/constants.h"
 #include "chromeos/binder/local_object.h"
 #include "chromeos/binder/object.h"
 #include "chromeos/binder/remote_object.h"
@@ -73,8 +74,6 @@ void WritableTransactionData::WriteData(const void* data, size_t n) {
 }
 
 void WritableTransactionData::WriteInt32(int32_t value) {
-  // Binder is not used for inter-device communication, so no endian conversion.
-  // The same applies to other Write() methods.
   WriteData(&value, sizeof(value));
 }
 
@@ -96,6 +95,36 @@ void WritableTransactionData::WriteFloat(float value) {
 
 void WritableTransactionData::WriteDouble(double value) {
   WriteData(&value, sizeof(value));
+}
+
+void WritableTransactionData::WriteCString(const char* value) {
+  WriteData(value, strlen(value) + 1);
+}
+
+void WritableTransactionData::WriteString(const std::string& value) {
+  WriteInt32(value.size());
+  if (value.size() > 0) {
+    // Write only when the string is not empty.
+    // This is different from WriteString16().
+    //
+    // Despite having the length info, null-terminate the data to be consistent
+    // with libbinder.
+    WriteData(value.c_str(), value.size() + 1);
+  }
+}
+
+void WritableTransactionData::WriteString16(const base::string16& value) {
+  WriteInt32(value.size());
+  // Despite having the length info, null-terminate the data to be consistent
+  // with libbinder.
+  WriteData(value.c_str(), (value.size() + 1) * sizeof(base::char16));
+}
+
+void WritableTransactionData::WriteInterfaceToken(
+    const base::string16& interface,
+    int32_t strict_mode_policy) {
+  WriteInt32(kStrictModePenaltyGather | strict_mode_policy);
+  WriteString16(interface);
 }
 
 void WritableTransactionData::WriteObject(scoped_refptr<Object> object) {
