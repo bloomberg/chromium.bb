@@ -669,7 +669,7 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
     // Delay playback by writing silence if we haven't reached the first
     // timestamp yet; this can occur if the video starts before the audio.
     if (algorithm_->frames_buffered() > 0) {
-      DCHECK(first_packet_timestamp_ != kNoTimestamp());
+      CHECK(first_packet_timestamp_ != kNoTimestamp());
       const base::TimeDelta play_delay =
           first_packet_timestamp_ - audio_clock_->back_timestamp();
       if (play_delay > base::TimeDelta()) {
