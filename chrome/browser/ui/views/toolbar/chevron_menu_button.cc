@@ -197,22 +197,9 @@ void ChevronMenuButton::MenuController::RunMenu(views::Widget* window) {
   views::View::ConvertPointToScreen(owner_, &screen_loc);
   bounds.set_x(screen_loc.x());
   bounds.set_y(screen_loc.y());
-
-  if (menu_runner_->RunMenuAt(window,
-                              owner_,
-                              bounds,
-                              views::MENU_ANCHOR_TOPRIGHT,
-                              ui::MENU_SOURCE_NONE) ==
-          views::MenuRunner::MENU_DELETED)
-    return;
-
-  if (!for_drop_) {
-    // Give the context menu (if any) a chance to execute the user-selected
-    // command.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&ChevronMenuButton::MenuDone,
-                              owner_->weak_factory_.GetWeakPtr()));
-  }
+  ignore_result(menu_runner_->RunMenuAt(window, owner_, bounds,
+                                        views::MENU_ANCHOR_TOPRIGHT,
+                                        ui::MENU_SOURCE_NONE));
 }
 
 void ChevronMenuButton::MenuController::CloseMenu() {
@@ -338,7 +325,14 @@ int ChevronMenuButton::MenuController::OnPerformDrop(
 void ChevronMenuButton::MenuController::OnMenuClosed(
     views::MenuItemView* menu,
     views::MenuRunner::RunResult result) {
-  owner_->MenuDone();
+  if (result == views::MenuRunner::MENU_DELETED)
+    return;
+
+  // Give the context menu (if any) a chance to execute the user-selected
+  // command.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&ChevronMenuButton::MenuDone,
+                            owner_->weak_factory_.GetWeakPtr()));
 }
 
 bool ChevronMenuButton::MenuController::CanDrag(views::MenuItemView* menu) {
