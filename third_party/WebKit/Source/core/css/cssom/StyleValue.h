@@ -20,7 +20,7 @@ class CORE_EXPORT StyleValue : public RefCountedWillBeGarbageCollectedFinalized<
 
 public:
     enum StyleValueType {
-        KeywordValueType, SimpleLengthType, CalcLengthType, NumberType
+        KeywordValueType, SimpleLengthType, CalcLengthType, NumberType, TransformValueType
     };
 
     virtual StyleValueType type() const = 0;

@@ -5348,6 +5348,9 @@ interface TrackDefaultList
 interface TrackEvent : Event
     getter track
     method constructor
+interface TransformValue : StyleValue
+    method constructor
+    method is2D
 interface TransitionEvent : Event
     getter elapsedTime
     getter propertyName
