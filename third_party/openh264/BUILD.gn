@@ -20,6 +20,7 @@ config("config") {
   if (!is_win) {
     # GCC flags
     cflags += [
+      "-Wno-format",
       "-Wno-header-hygiene",
       "-Wno-unused-value",
     ]

@@ -11,14 +11,15 @@
       # Settings shared by all openh264 targets.
       'target_defaults': {
         'variables': {
-          'chromium_code': 0,
           'conditions': [
             ['OS!="win"', {
               # GCC flags
               'openh264_cflags_add': [
+                '-Wno-format',
                 '-Wno-unused-value',
               ],
               'openh264_cflags_remove': [
+                '-Wall',
                 '-Wheader-hygiene',
               ],
             },{
