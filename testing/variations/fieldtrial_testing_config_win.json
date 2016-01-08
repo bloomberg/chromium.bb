@@ -24,6 +24,9 @@
     ],
     "AutomaticTabDiscarding": [
         {
+            "enable_features": [
+                "AutomaticTabDiscarding"
+            ],
             "group_name": "Enabled_Once"
         }
     ],
