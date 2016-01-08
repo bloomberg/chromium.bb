@@ -384,6 +384,33 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, FetchArbitraryPaths) {
             NavigateAndExtractInnerText(extension->GetResourceURL("")));
 }
 
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, SWServedBackgroundPageReceivesEvent) {
+  const Extension* extension =
+      StartTestFromBackgroundPage("replace_background.js", kExpectSuccess);
+  ExtensionHost* background_page =
+      process_manager()->GetBackgroundHostForExtension(extension->id());
+  ASSERT_TRUE(background_page);
+
+  // Close the background page and start it again so that the service worker
+  // will start controlling pages.
+  background_page->Close();
+  BackgroundPageWatcher(process_manager(), extension).WaitForClose();
+  background_page = nullptr;
+  process_manager()->WakeEventPage(extension->id(),
+                                   base::Bind(&DoNothingWithBool));
+  BackgroundPageWatcher(process_manager(), extension).WaitForOpen();
+
+  // Since the SW is now controlling the extension, the SW serves the background
+  // script. page.html sends a message to the background script and we verify
+  // that the SW served background script correctly receives the message/event.
+  ExtensionTestMessageListener listener("onMessage/SW BG.", false);
+  listener.set_failure_message("onMessage/original BG.");
+  content::WebContents* web_contents =
+      AddTab(browser(), extension->GetResourceURL("page.html"));
+  ASSERT_TRUE(web_contents);
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+}
+
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTest,
                        LoadingBackgroundPageBypassesServiceWorker) {
   const Extension* extension =
