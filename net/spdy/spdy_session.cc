@@ -465,15 +465,11 @@ void SplitPushedHeadersToRequestAndResponse(const SpdyHeaderBlock& headers,
        it != headers.end();
        ++it) {
     SpdyHeaderBlock* to_insert = response_headers;
-    if (protocol_version == SPDY2) {
-      if (it->first == "url")
-        to_insert = request_headers;
-    } else {
-      const char* host = protocol_version >= HTTP2 ? ":authority" : ":host";
-      static const char scheme[] = ":scheme";
-      static const char path[] = ":path";
-      if (it->first == host || it->first == scheme || it->first == path)
-        to_insert = request_headers;
+    const char* host = protocol_version >= HTTP2 ? ":authority" : ":host";
+    static const char scheme[] = ":scheme";
+    static const char path[] = ":path";
+    if (it->first == host || it->first == scheme || it->first == path) {
+      to_insert = request_headers;
     }
     to_insert->insert(*it);
   }
@@ -767,10 +763,8 @@ void SpdySession::InitializeWithSocket(
     flow_control_state_ = FLOW_CONTROL_STREAM_AND_SESSION;
     session_send_window_size_ = GetDefaultInitialWindowSize(protocol_);
     session_recv_window_size_ = GetDefaultInitialWindowSize(protocol_);
-  } else if (protocol_ >= kProtoSPDY3) {
-    flow_control_state_ = FLOW_CONTROL_STREAM;
   } else {
-    flow_control_state_ = FLOW_CONTROL_NONE;
+    flow_control_state_ = FLOW_CONTROL_STREAM;
   }
 
   buffered_spdy_framer_.reset(
@@ -2640,20 +2634,17 @@ bool SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
   // Server-initiated streams should have even sequence numbers.
   if ((stream_id & 0x1) != 0) {
     LOG(WARNING) << "Received invalid push stream id " << stream_id;
-    if (GetProtocolVersion() > SPDY2)
-      CloseSessionOnError(ERR_SPDY_PROTOCOL_ERROR, "Odd push stream id.");
+    CloseSessionOnError(ERR_SPDY_PROTOCOL_ERROR, "Odd push stream id.");
     return false;
   }
 
-  if (GetProtocolVersion() > SPDY2) {
-    if (stream_id <= last_accepted_push_stream_id_) {
-      LOG(WARNING) << "Received push stream id lesser or equal to the last "
-                   << "accepted before " << stream_id;
-      CloseSessionOnError(
-          ERR_SPDY_PROTOCOL_ERROR,
-          "New push stream id must be greater than the last accepted.");
-      return false;
-    }
+  if (stream_id <= last_accepted_push_stream_id_) {
+    LOG(WARNING) << "Received push stream id lesser or equal to the last "
+                 << "accepted before " << stream_id;
+    CloseSessionOnError(
+        ERR_SPDY_PROTOCOL_ERROR,
+        "New push stream id must be greater than the last accepted.");
+    return false;
   }
 
   if (IsStreamActive(stream_id)) {

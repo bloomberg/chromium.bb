@@ -92,7 +92,6 @@ void SetFrameFlags(SpdyFrame* frame,
                    uint8_t flags,
                    SpdyMajorVersion spdy_version) {
   switch (spdy_version) {
-    case SPDY2:
     case SPDY3:
     case HTTP2:
       frame->data()[4] = flags;
@@ -106,12 +105,11 @@ void SetFrameLength(SpdyFrame* frame,
                     size_t length,
                     SpdyMajorVersion spdy_version) {
   switch (spdy_version) {
-    case SPDY2:
     case SPDY3:
       CHECK_EQ(0u, length & ~kLengthMask);
       {
         int32_t wire_length = base::HostToNet32(length);
-        // The length field in SPDY 2 and 3 is a 24-bit (3B) integer starting at
+        // The length field in SPDY 3 is a 24-bit (3B) integer starting at
         // offset 5.
         memcpy(frame->data() + 5, reinterpret_cast<char*>(&wire_length) + 1, 3);
       }

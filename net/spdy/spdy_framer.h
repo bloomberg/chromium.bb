@@ -64,8 +64,6 @@ class NET_EXPORT_PRIVATE SettingsFlagsAndId {
   uint8_t flags() const { return flags_; }
 
  private:
-  static void ConvertFlagsAndIdForSpdy2(uint32_t* val);
-
   uint8_t flags_;
   uint32_t id_;
 };
@@ -548,9 +546,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   bool probable_http_response() const { return probable_http_response_; }
 
-  SpdyPriority GetLowestPriority() const {
-    return protocol_version_ < SPDY3 ? 3 : 7;
-  }
+  SpdyPriority GetLowestPriority() const { return 7; }
 
   SpdyPriority GetHighestPriority() const { return 0; }
 

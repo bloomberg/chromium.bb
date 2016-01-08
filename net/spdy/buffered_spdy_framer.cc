@@ -21,8 +21,6 @@ size_t kHeaderBufferMaxSize = 256 * 1024;
 
 SpdyMajorVersion NextProtoToSpdyMajorVersion(NextProto next_proto) {
   switch (next_proto) {
-    case kProtoDeprecatedSPDY2:
-      return SPDY2;
     case kProtoSPDY3:
     case kProtoSPDY31:
       return SPDY3;
@@ -34,7 +32,7 @@ SpdyMajorVersion NextProtoToSpdyMajorVersion(NextProto next_proto) {
       break;
   }
   NOTREACHED();
-  return SPDY2;
+  return HTTP2;
 }
 
 BufferedSpdyFramer::BufferedSpdyFramer(SpdyMajorVersion version,

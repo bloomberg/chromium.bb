@@ -14,14 +14,17 @@ const SpdyStreamId kInvalidStreamId = 0;
 
 }  // anonymous namespace
 
+namespace {
+const size_t kLengthFieldSize = sizeof(uint32_t);
+}  // anonymous namespace
+
 const size_t SpdyHeadersBlockParser::kMaximumFieldLength = 16 * 1024;
 
 SpdyHeadersBlockParser::SpdyHeadersBlockParser(
     SpdyMajorVersion spdy_version,
     SpdyHeadersHandlerInterface* handler)
     : state_(READING_HEADER_BLOCK_LEN),
-      length_field_size_(LengthFieldSizeForVersion(spdy_version)),
-      max_headers_in_block_(MaxNumberOfHeadersForVersion(spdy_version)),
+      max_headers_in_block_(MaxNumberOfHeaders()),
       total_bytes_received_(0),
       remaining_key_value_pairs_for_frame_(0),
       handler_(handler),
@@ -162,37 +165,22 @@ void SpdyHeadersBlockParser::ParseFieldLength(Reader* reader) {
 void SpdyHeadersBlockParser::ParseLength(Reader* reader,
                                          uint32_t* parsed_length) {
   char buffer[] = {0, 0, 0, 0};
-  if (!reader->ReadN(length_field_size_, buffer)) {
+  if (!reader->ReadN(kLengthFieldSize, buffer)) {
     error_ = NEED_MORE_DATA;
     return;
   }
   // Convert from network to host order and return the parsed out integer.
-  if (length_field_size_ == sizeof(uint32_t)) {
-    *parsed_length =
-        base::NetToHost32(*reinterpret_cast<const uint32_t *>(buffer));
-  } else {
-    *parsed_length =
-        base::NetToHost16(*reinterpret_cast<const uint16_t *>(buffer));
-  }
+  *parsed_length =
+      base::NetToHost32(*reinterpret_cast<const uint32_t*>(buffer));
 }
 
-size_t SpdyHeadersBlockParser::LengthFieldSizeForVersion(
-    SpdyMajorVersion spdy_version) {
-  if (spdy_version < SPDY3) {
-    return sizeof(uint16_t);
-  }
-  return sizeof(uint32_t);
-}
-
-size_t SpdyHeadersBlockParser::MaxNumberOfHeadersForVersion(
-    SpdyMajorVersion spdy_version) {
+size_t SpdyHeadersBlockParser::MaxNumberOfHeaders() {
   // Account for the length of the header block field.
-  size_t max_bytes_for_headers =
-      kMaximumFieldLength - LengthFieldSizeForVersion(spdy_version);
+  size_t max_bytes_for_headers = kMaximumFieldLength - kLengthFieldSize;
 
   // A minimal size header is twice the length field size (and has a
   // zero-lengthed key and a zero-lengthed value).
-  return max_bytes_for_headers / (2 * LengthFieldSizeForVersion(spdy_version));
+  return max_bytes_for_headers / (2 * kLengthFieldSize);
 }
 
 }  // namespace net

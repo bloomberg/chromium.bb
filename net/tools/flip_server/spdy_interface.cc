@@ -139,39 +139,19 @@ int SpdySM::SpdyHandleNewStream(SpdyStreamId stream_id,
 
   std::string path_string, host_string, version_string;
 
-  if (spdy_version() == SPDY2) {
-    url = headers.find("url");
-    method = headers.find("method");
-    version = headers.find("version");
-    scheme = headers.find("scheme");
-    if (url == headers.end() || method == headers.end() ||
-        version == headers.end() || scheme == headers.end()) {
-      VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: A mandatory header is "
-              << "missing. Not creating stream";
-      return 0;
-    }
-    // url->second here only ever seems to contain just the path. When this
-    // path contains a query string with a http:// in one of its values,
-    // UrlUtilities::GetUrlPath will fail and always return a / breaking
-    // the request. GetUrlPath assumes the absolute URL is being passed in.
-    path_string = UrlUtilities::GetUrlPath(url->second.as_string());
-    host_string = UrlUtilities::GetUrlHost(url->second.as_string());
-    version_string = version->second.as_string();
-  } else {
-    method = headers.find(":method");
-    host = headers.find(":host");
-    path = headers.find(":path");
-    scheme = headers.find(":scheme");
-    if (method == headers.end() || host == headers.end() ||
-        path == headers.end() || scheme == headers.end()) {
-      VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: A mandatory header is "
-              << "missing. Not creating stream";
-      return 0;
-    }
-    host_string = host->second.as_string();
-    path_string = path->second.as_string();
-    version_string = "HTTP/1.1";
+  method = headers.find(":method");
+  host = headers.find(":host");
+  path = headers.find(":path");
+  scheme = headers.find(":scheme");
+  if (method == headers.end() || host == headers.end() ||
+      path == headers.end() || scheme == headers.end()) {
+    VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: A mandatory header is "
+            << "missing. Not creating stream";
+    return 0;
   }
+  host_string = host->second.as_string();
+  path_string = path->second.as_string();
+  version_string = "HTTP/1.1";
 
   if (scheme->second.compare("https") == 0) {
     *is_https_scheme = true;
@@ -472,31 +452,17 @@ size_t SpdySM::SendSynStreamImpl(uint32_t stream_id,
                                  const BalsaHeaders& headers) {
   SpdyHeaderBlock block;
   CopyHeaders(block, headers);
-  if (spdy_version() == SPDY2) {
-    block["method"] = headers.request_method().as_string();
-    if (!headers.HasHeader("version"))
-      block["version"] = headers.request_version().as_string();
-    if (headers.HasHeader("X-Original-Url")) {
-      std::string original_url =
-          headers.GetHeader("X-Original-Url").as_string();
-      block["url"] = UrlUtilities::GetUrlPath(original_url);
-    } else {
-      block["url"] = headers.request_uri().as_string();
-    }
+  block[":method"] = headers.request_method().as_string();
+  block[":version"] = headers.request_version().as_string();
+  if (headers.HasHeader("X-Original-Url")) {
+    std::string original_url = headers.GetHeader("X-Original-Url").as_string();
+    block[":path"] = UrlUtilities::GetUrlPath(original_url);
+    block[":host"] = UrlUtilities::GetUrlPath(original_url);
   } else {
-    block[":method"] = headers.request_method().as_string();
-    block[":version"] = headers.request_version().as_string();
-    if (headers.HasHeader("X-Original-Url")) {
-      std::string original_url =
-          headers.GetHeader("X-Original-Url").as_string();
-      block[":path"] = UrlUtilities::GetUrlPath(original_url);
-      block[":host"] = UrlUtilities::GetUrlPath(original_url);
-    } else {
-      block[":path"] = headers.request_uri().as_string();
-      if (block.find("host") != block.end()) {
-        block[":host"] = headers.GetHeader("Host").as_string();
-        block.erase("host");
-      }
+    block[":path"] = headers.request_uri().as_string();
+    if (block.find("host") != block.end()) {
+      block[":host"] = headers.GetHeader("Host").as_string();
+      block.erase("host");
     }
   }
 
@@ -515,15 +481,9 @@ size_t SpdySM::SendSynReplyImpl(uint32_t stream_id,
                                 const BalsaHeaders& headers) {
   SpdyHeaderBlock block;
   CopyHeaders(block, headers);
-  if (spdy_version() == SPDY2) {
-    block["status"] = headers.response_code().as_string() + " " +
-        headers.response_reason_phrase().as_string();
-    block["version"] = headers.response_version().as_string();
-  } else {
-    block[":status"] = headers.response_code().as_string() + " " +
-        headers.response_reason_phrase().as_string();
-    block[":version"] = headers.response_version().as_string();
-  }
+  block[":status"] = headers.response_code().as_string() + " " +
+                     headers.response_reason_phrase().as_string();
+  block[":version"] = headers.response_version().as_string();
 
   DCHECK(buffered_spdy_framer_);
   SpdyFrame* fsrcf = buffered_spdy_framer_->CreateSynReply(

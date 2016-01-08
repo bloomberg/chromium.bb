@@ -18,15 +18,14 @@ namespace net {
 // are used to collect statistics on UMA.  Also, values must be in [0,499),
 // because of the way TLS protocol negotiation extension information is added to
 // UMA histogram.
+const int kProtoSPDYHistogramOffset = 100;
 enum NextProto {
   kProtoUnknown = 0,
   kProtoHTTP11 = 1,
   kProtoMinimumVersion = kProtoHTTP11,
 
-  kProtoDeprecatedSPDY2 = 100,
-  kProtoSPDYMinimumVersion = kProtoDeprecatedSPDY2,
-  kProtoSPDYHistogramOffset = kProtoDeprecatedSPDY2,
   kProtoSPDY3 = 101,
+  kProtoSPDYMinimumVersion = kProtoSPDY3,
   kProtoSPDY31 = 102,
   // kProtoHTTP2_14 = 103,  // HTTP/2 draft-14
   // kProtoHTTP2_15 = 104,  // HTTP/2 draft-15

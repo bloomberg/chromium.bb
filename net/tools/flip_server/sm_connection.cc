@@ -319,12 +319,6 @@ bool SMConnection::WasSpdyNegotiated(SpdyMajorVersion* version_negotiated) {
       VLOG(1) << log_prefix_ << ACCEPTOR_CLIENT_IDENT
               << "NPN protocol detected: " << npn_proto_str;
       if (!strncmp(reinterpret_cast<const char*>(npn_proto),
-                   "spdy/2",
-                   npn_proto_len)) {
-        *version_negotiated = SPDY2;
-        return true;
-      }
-      if (!strncmp(reinterpret_cast<const char*>(npn_proto),
                    "spdy/3",
                    npn_proto_len)) {
         *version_negotiated = SPDY3;

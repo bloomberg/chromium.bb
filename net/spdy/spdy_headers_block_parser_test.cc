@@ -40,8 +40,6 @@ class SpdyHeadersBlockParserTest :
     spdy_version_ = GetParam();
 
     parser_.reset(new SpdyHeadersBlockParser(spdy_version_, &handler_));
-    length_field_size_ =
-        SpdyHeadersBlockParser::LengthFieldSizeForVersion(spdy_version_);
   }
 
   // Create a header block with a specified number of headers.
@@ -80,19 +78,11 @@ class SpdyHeadersBlockParserTest :
 
   string EncodeLength(uint32_t len) {
     char buffer[4];
-    if (length_field_size_ == sizeof(uint32_t)) {
-      uint32_t net_order_len = base::HostToNet32(len);
-      memcpy(buffer, &net_order_len, length_field_size_);
-    } else if (length_field_size_ == sizeof(uint16_t)) {
-      uint16_t net_order_len = base::HostToNet16(static_cast<uint16_t>(len));
-      memcpy(buffer, &net_order_len, length_field_size_);
-    } else {
-      CHECK(false) << "Invalid length field size";
-    }
-    return string(buffer, length_field_size_);
+    uint32_t net_order_len = base::HostToNet32(len);
+    memcpy(buffer, &net_order_len, sizeof(uint32_t));
+    return string(buffer, sizeof(uint32_t));
   }
 
-  size_t length_field_size_;
   SpdyMajorVersion spdy_version_;
 
   MockSpdyHeadersHandler handler_;
@@ -109,10 +99,10 @@ class SpdyHeadersBlockParserTest :
 const char *const SpdyHeadersBlockParserTest::kBaseKey = "test_key";
 const char *const SpdyHeadersBlockParserTest::kBaseValue = "test_value";
 
-// All tests are run with 3 different SPDY versions: SPDY/2, SPDY/3, HTTP/2.
+// All tests are run with SPDY/3 and HTTP/2.
 INSTANTIATE_TEST_CASE_P(SpdyHeadersBlockParserTests,
                         SpdyHeadersBlockParserTest,
-                        ::testing::Values(SPDY2, SPDY3, HTTP2));
+                        ::testing::Values(SPDY3, HTTP2));
 
 TEST_P(SpdyHeadersBlockParserTest, BasicTest) {
   // Sanity test, verify that we parse out correctly a block with
@@ -218,8 +208,7 @@ TEST_P(SpdyHeadersBlockParserTest, HandlesEmptyCallsTest) {
 TEST_P(SpdyHeadersBlockParserTest, LargeBlocksDiscardedTest) {
   // Header block with too many headers.
   {
-    string headers = EncodeLength(
-        parser_->MaxNumberOfHeadersForVersion(spdy_version_) + 1);
+    string headers = EncodeLength(parser_->MaxNumberOfHeaders() + 1);
     EXPECT_FALSE(parser_->
         HandleControlFrameHeadersData(1, headers.c_str(), headers.length()));
     EXPECT_EQ(SpdyHeadersBlockParser::HEADER_BLOCK_TOO_LARGE,

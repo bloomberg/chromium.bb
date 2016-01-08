@@ -389,8 +389,6 @@ void HttpResponseInfo::Persist(base::Pickle* pickle,
 HttpResponseInfo::ConnectionInfo HttpResponseInfo::ConnectionInfoFromNextProto(
     NextProto next_proto) {
   switch (next_proto) {
-    case kProtoDeprecatedSPDY2:
-      return CONNECTION_INFO_DEPRECATED_SPDY2;
     case kProtoSPDY3:
     case kProtoSPDY31:
       return CONNECTION_INFO_SPDY3;
@@ -417,7 +415,8 @@ std::string HttpResponseInfo::ConnectionInfoToString(
     case CONNECTION_INFO_HTTP1:
       return "http/1";
     case CONNECTION_INFO_DEPRECATED_SPDY2:
-      return "spdy/2";
+      NOTREACHED();
+      return "";
     case CONNECTION_INFO_SPDY3:
       return "spdy/3";
     // Since ConnectionInfo is persisted to disk, deprecated values have to be

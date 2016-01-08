@@ -84,7 +84,7 @@ bool SpdyHeadersToHttpResponse(const SpdyHeaderBlock& headers,
         tval = value.substr(start, (end - start));
       else
         tval = value.substr(start);
-      if (protocol_version >= 3 && it->first[0] == ':')
+      if (it->first[0] == ':')
         raw_headers.append(it->first.as_string().substr(1));
       else
         raw_headers.append(it->first.as_string());
@@ -107,19 +107,6 @@ void CreateSpdyHeadersFromHttpRequest(const HttpRequestInfo& info,
                                       SpdyHeaderBlock* headers) {
   static const char kHttpProtocolVersion[] = "HTTP/1.1";
   switch (protocol_version) {
-    case SPDY2:
-      // TODO(bnc): Remove this code now that SPDY/2 is deprecated.
-      (*headers)["version"] = kHttpProtocolVersion;
-      (*headers)["method"] = info.method;
-      (*headers)["host"] = GetHostAndOptionalPort(info.url);
-      if (info.method == "CONNECT") {
-        (*headers)["url"] = GetHostAndPort(info.url);
-      } else {
-        (*headers)["scheme"] = info.url.scheme();
-        (*headers)["url"] = direct ? info.url.PathForRequest()
-                                   : HttpUtil::SpecForRequest(info.url);
-      }
-      break;
     case SPDY3:
       (*headers)[":version"] = kHttpProtocolVersion;
       (*headers)[":method"] = info.method;

@@ -20,7 +20,6 @@ namespace {
 // The order of these strings much match the order of the enum definition
 // for AlternateProtocol.
 const char* const kAlternateProtocolStrings[] = {
-    "npn-spdy/2",
     "npn-spdy/3",
     "npn-spdy/3.1",
     "npn-h2",
@@ -50,7 +49,6 @@ bool IsAlternateProtocolValid(AlternateProtocol protocol) {
 
 const char* AlternateProtocolToString(AlternateProtocol protocol) {
   switch (protocol) {
-    case DEPRECATED_NPN_SPDY_2:
     case NPN_SPDY_3:
     case NPN_SPDY_3_1:
     case NPN_HTTP_2:
@@ -77,8 +75,6 @@ AlternateProtocol AlternateProtocolFromString(const std::string& str) {
 
 AlternateProtocol AlternateProtocolFromNextProto(NextProto next_proto) {
   switch (next_proto) {
-    case kProtoDeprecatedSPDY2:
-      return DEPRECATED_NPN_SPDY_2;
     case kProtoSPDY3:
       return NPN_SPDY_3;
     case kProtoSPDY31:
