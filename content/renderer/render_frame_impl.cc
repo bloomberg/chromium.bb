@@ -707,7 +707,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
       RenderFrameImpl::Create(render_view, routing_id);
   WebLocalFrame* web_frame =
       WebLocalFrame::create(blink::WebTreeScopeType::Document, render_frame);
-  render_frame->SetWebFrame(web_frame);
+  render_frame->BindToWebFrame(web_frame);
   render_view->webview()->setMainFrame(web_frame);
   render_frame->render_widget_ = RenderWidget::CreateForFrame(
       widget_routing_id, hidden, screen_info, compositor_deps, web_frame);
@@ -775,7 +775,7 @@ void RenderFrameImpl::CreateFrame(
         render_frame, proxy->web_frame(), replicated_state.sandbox_flags,
         frame_owner_properties);
   }
-  render_frame->SetWebFrame(web_frame);
+  render_frame->BindToWebFrame(web_frame);
   CHECK(parent_routing_id != MSG_ROUTING_NONE || !web_frame->parent());
 
   WebFrame* opener = ResolveOpener(opener_routing_id, nullptr);
@@ -962,7 +962,7 @@ RenderFrameImpl::~RenderFrameImpl() {
   RenderThread::Get()->RemoveRoute(routing_id_);
 }
 
-void RenderFrameImpl::SetWebFrame(blink::WebLocalFrame* web_frame) {
+void RenderFrameImpl::BindToWebFrame(blink::WebLocalFrame* web_frame) {
   DCHECK(!frame_);
 
   std::pair<FrameMap::iterator, bool> result = g_frame_map.Get().insert(
@@ -2522,7 +2522,7 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
       render_view_.get(), child_routing_id);
   blink::WebLocalFrame* web_frame =
       WebLocalFrame::create(scope, child_render_frame);
-  child_render_frame->SetWebFrame(web_frame);
+  child_render_frame->BindToWebFrame(web_frame);
 
   // Add the frame to the frame tree and initialize it.
   parent->appendChild(web_frame);
