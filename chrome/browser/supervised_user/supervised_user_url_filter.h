@@ -139,7 +139,7 @@ class SupervisedUserURLFilter
       const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists);
 
   // Sets the static blacklist of blocked hosts.
-  void SetBlacklist(SupervisedUserBlacklist* blacklist);
+  void SetBlacklist(const SupervisedUserBlacklist* blacklist);
   // Returns whether the static blacklist is set up.
   bool HasBlacklist() const;
 
@@ -154,6 +154,10 @@ class SupervisedUserURLFilter
 
   // Initializes the experimental asynchronous checker.
   void InitAsyncURLChecker(net::URLRequestContextGetter* context);
+
+  // Clears any asynchronous checker.
+  void ClearAsyncURLChecker();
+
   // Returns whether the asynchronous checker is set up.
   bool HasAsyncURLChecker() const;
 
@@ -197,7 +201,7 @@ class SupervisedUserURLFilter
   std::map<std::string, bool> host_map_;
 
   // Not owned.
-  SupervisedUserBlacklist* blacklist_;
+  const SupervisedUserBlacklist* blacklist_;
 
   scoped_ptr<SupervisedUserAsyncURLChecker> async_url_checker_;
 

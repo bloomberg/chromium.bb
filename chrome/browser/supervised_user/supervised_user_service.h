@@ -223,13 +223,17 @@ class SupervisedUserService : public KeyedService,
         SupervisedUserURLFilter::FilteringBehavior behavior);
     void LoadWhitelists(
         const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists);
-    void LoadBlacklist(const base::FilePath& path,
-                       const base::Closure& callback);
+    // TODO(treib): Make SupervisedUserBlacklist refcounted, so the IO thread
+    // will retain a reference to the blacklist.
+    void SetBlacklist(const SupervisedUserBlacklist* blacklist);
+    bool HasBlacklist() const;
     void SetManualHosts(scoped_ptr<std::map<std::string, bool>> host_map);
     void SetManualURLs(scoped_ptr<std::map<GURL, bool>> url_map);
 
     void InitAsyncURLChecker(
         const scoped_refptr<net::URLRequestContextGetter>& context);
+    bool HasAsyncURLChecker() const;
+    void ClearAsyncURLChecker();
 
     void Clear();
 
@@ -244,8 +248,6 @@ class SupervisedUserService : public KeyedService,
     // should not be used anymore either).
     scoped_refptr<SupervisedUserURLFilter> ui_url_filter_;
     scoped_refptr<SupervisedUserURLFilter> io_url_filter_;
-
-    SupervisedUserBlacklist blacklist_;
 
     DISALLOW_COPY_AND_ASSIGN(URLFilterContext);
   };
@@ -305,6 +307,8 @@ class SupervisedUserService : public KeyedService,
 
   void OnDefaultFilteringBehaviorChanged();
 
+  void OnSafeSitesSettingChanged();
+
   void OnSiteListsChanged(
       const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists);
 
@@ -324,6 +328,8 @@ class SupervisedUserService : public KeyedService,
   void OnBlacklistDownloadDone(const base::FilePath& path, bool success);
 
   void OnBlacklistLoaded();
+
+  void UpdateBlacklist();
 
   // Updates the manual overrides for hosts in the URL filters when the
   // corresponding preference is changed.
@@ -371,6 +377,14 @@ class SupervisedUserService : public KeyedService,
   bool did_shutdown_;
 
   URLFilterContext url_filter_context_;
+
+  enum class BlacklistLoadState {
+    NOT_LOADED,
+    LOAD_STARTED,
+    LOADED
+  } blacklist_state_;
+
+  SupervisedUserBlacklist blacklist_;
   scoped_ptr<FileDownloader> blacklist_downloader_;
 
   scoped_ptr<SupervisedUserWhitelistService> whitelist_service_;

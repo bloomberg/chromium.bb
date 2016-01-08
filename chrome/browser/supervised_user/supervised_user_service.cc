@@ -428,16 +428,19 @@ void SupervisedUserService::URLFilterContext::LoadWhitelists(
                                      io_url_filter_, site_lists));
 }
 
-void SupervisedUserService::URLFilterContext::LoadBlacklist(
-    const base::FilePath& path,
-    const base::Closure& callback) {
-  // For now, support loading only once. If we want to support re-load, we'll
-  // have to clear the blacklist pointer in the url filters first.
-  DCHECK_EQ(0u, blacklist_.GetEntryCount());
-  blacklist_.ReadFromFile(
-      path,
-      base::Bind(&SupervisedUserService::URLFilterContext::OnBlacklistLoaded,
-                 base::Unretained(this), callback));
+void SupervisedUserService::URLFilterContext::SetBlacklist(
+    const SupervisedUserBlacklist* blacklist) {
+  ui_url_filter_->SetBlacklist(blacklist);
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&SupervisedUserURLFilter::SetBlacklist,
+                 io_url_filter_,
+                 blacklist));
+}
+
+bool SupervisedUserService::URLFilterContext::HasBlacklist() const {
+  return ui_url_filter_->HasBlacklist();
 }
 
 void SupervisedUserService::URLFilterContext::SetManualHosts(
@@ -479,16 +482,17 @@ void SupervisedUserService::URLFilterContext::InitAsyncURLChecker(
                  io_url_filter_, context));
 }
 
-void SupervisedUserService::URLFilterContext::OnBlacklistLoaded(
-    const base::Closure& callback) {
-  ui_url_filter_->SetBlacklist(&blacklist_);
+bool SupervisedUserService::URLFilterContext::HasAsyncURLChecker() const {
+  return ui_url_filter_->HasAsyncURLChecker();
+}
+
+void SupervisedUserService::URLFilterContext::ClearAsyncURLChecker() {
+  ui_url_filter_->ClearAsyncURLChecker();
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&SupervisedUserURLFilter::SetBlacklist,
-                 io_url_filter_,
-                 &blacklist_));
-  callback.Run();
+      base::Bind(&SupervisedUserURLFilter::ClearAsyncURLChecker,
+                 io_url_filter_));
 }
 
 SupervisedUserService::SupervisedUserService(Profile* profile)
@@ -500,6 +504,7 @@ SupervisedUserService::SupervisedUserService(Profile* profile)
       is_profile_active_(false),
       did_init_(false),
       did_shutdown_(false),
+      blacklist_state_(BlacklistLoadState::NOT_LOADED),
       weak_ptr_factory_(this) {
   url_filter_context_.ui_url_filter()->AddObserver(this);
 }
@@ -566,6 +571,9 @@ void SupervisedUserService::SetActive(bool active) {
         prefs::kDefaultSupervisedUserFilteringBehavior,
         base::Bind(&SupervisedUserService::OnDefaultFilteringBehaviorChanged,
             base::Unretained(this)));
+    pref_change_registrar_.Add(prefs::kSupervisedUserSafeSites,
+        base::Bind(&SupervisedUserService::OnSafeSitesSettingChanged,
+                   base::Unretained(this)));
     pref_change_registrar_.Add(prefs::kSupervisedUserManualHosts,
         base::Bind(&SupervisedUserService::UpdateManualHosts,
                    base::Unretained(this)));
@@ -580,13 +588,10 @@ void SupervisedUserService::SetActive(bool active) {
 
     // Initialize the filter.
     OnDefaultFilteringBehaviorChanged();
+    OnSafeSitesSettingChanged();
     whitelist_service_->Init();
     UpdateManualHosts();
     UpdateManualURLs();
-    if (supervised_users::IsSafeSitesBlacklistEnabled(profile_))
-      LoadBlacklist(GetBlacklistPath(), GURL(kBlacklistURL));
-    if (supervised_users::IsSafeSitesOnlineCheckEnabled(profile_))
-      url_filter_context_.InitAsyncURLChecker(profile_->GetRequestContext());
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
     // TODO(bauerb): Get rid of the platform-specific #ifdef here.
@@ -763,6 +768,31 @@ void SupervisedUserService::OnDefaultFilteringBehaviorChanged() {
       SupervisedUserServiceObserver, observer_list_, OnURLFilterChanged());
 }
 
+void SupervisedUserService::OnSafeSitesSettingChanged() {
+  bool use_blacklist = supervised_users::IsSafeSitesBlacklistEnabled(profile_);
+  if (use_blacklist != url_filter_context_.HasBlacklist()) {
+    if (use_blacklist && blacklist_state_ == BlacklistLoadState::NOT_LOADED) {
+      LoadBlacklist(GetBlacklistPath(), GURL(kBlacklistURL));
+    } else if (!use_blacklist ||
+               blacklist_state_ == BlacklistLoadState::LOADED) {
+      // Either the blacklist was turned off, or it was turned on but has
+      // already been loaded previously. Just update the setting.
+      UpdateBlacklist();
+    }
+    // Else: The blacklist was enabled, but the load is already in progress.
+    // Do nothing - we'll check the setting again when the load finishes.
+  }
+
+  bool use_online_check =
+      supervised_users::IsSafeSitesOnlineCheckEnabled(profile_);
+  if (use_online_check != !url_filter_context_.HasAsyncURLChecker()) {
+    if (use_online_check)
+      url_filter_context_.InitAsyncURLChecker(profile_->GetRequestContext());
+    else
+      url_filter_context_.ClearAsyncURLChecker();
+  }
+}
+
 void SupervisedUserService::OnSiteListsChanged(
     const std::vector<scoped_refptr<SupervisedUserSiteList> >& site_lists) {
   url_filter_context_.LoadWhitelists(site_lists);
@@ -770,6 +800,8 @@ void SupervisedUserService::OnSiteListsChanged(
 
 void SupervisedUserService::LoadBlacklist(const base::FilePath& path,
                                           const GURL& url) {
+  DCHECK(blacklist_state_ == BlacklistLoadState::NOT_LOADED);
+  blacklist_state_ = BlacklistLoadState::LOAD_STARTED;
   base::PostTaskAndReplyWithResult(
       BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
           base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN).get(),
@@ -782,6 +814,7 @@ void SupervisedUserService::LoadBlacklist(const base::FilePath& path,
 void SupervisedUserService::OnBlacklistFileChecked(const base::FilePath& path,
                                                    const GURL& url,
                                                    bool file_exists) {
+  DCHECK(blacklist_state_ == BlacklistLoadState::LOAD_STARTED);
   if (file_exists) {
     LoadBlacklistFromFile(path);
     return;
@@ -798,24 +831,34 @@ void SupervisedUserService::OnBlacklistFileChecked(const base::FilePath& path,
 }
 
 void SupervisedUserService::LoadBlacklistFromFile(const base::FilePath& path) {
-  // This object is guaranteed to outlive the URLFilterContext, so we can bind a
-  // raw pointer to it in the callback.
-  url_filter_context_.LoadBlacklist(
-      path, base::Bind(&SupervisedUserService::OnBlacklistLoaded,
-                       base::Unretained(this)));
+  DCHECK(blacklist_state_ == BlacklistLoadState::LOAD_STARTED);
+  blacklist_.ReadFromFile(
+      path,
+      base::Bind(&SupervisedUserService::OnBlacklistLoaded,
+                 base::Unretained(this)));
 }
 
 void SupervisedUserService::OnBlacklistDownloadDone(const base::FilePath& path,
                                                     bool success) {
+  DCHECK(blacklist_state_ == BlacklistLoadState::LOAD_STARTED);
   if (success) {
     LoadBlacklistFromFile(path);
   } else {
     LOG(WARNING) << "Blacklist download failed";
+    // TODO(treib): Retry downloading after some time?
   }
   blacklist_downloader_.reset();
 }
 
 void SupervisedUserService::OnBlacklistLoaded() {
+  DCHECK(blacklist_state_ == BlacklistLoadState::LOAD_STARTED);
+  blacklist_state_ = BlacklistLoadState::LOADED;
+  UpdateBlacklist();
+}
+
+void SupervisedUserService::UpdateBlacklist() {
+  bool use_blacklist = supervised_users::IsSafeSitesBlacklistEnabled(profile_);
+  url_filter_context_.SetBlacklist(use_blacklist ? &blacklist_ : nullptr);
   FOR_EACH_OBSERVER(
       SupervisedUserServiceObserver, observer_list_, OnURLFilterChanged());
 }

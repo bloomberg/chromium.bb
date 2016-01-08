@@ -408,7 +408,8 @@ void SupervisedUserURLFilter::LoadWhitelists(
       base::Bind(&SupervisedUserURLFilter::SetContents, this));
 }
 
-void SupervisedUserURLFilter::SetBlacklist(SupervisedUserBlacklist* blacklist) {
+void SupervisedUserURLFilter::SetBlacklist(
+    const SupervisedUserBlacklist* blacklist) {
   blacklist_ = blacklist;
 }
 
@@ -442,6 +443,10 @@ void SupervisedUserURLFilter::SetManualURLs(
 void SupervisedUserURLFilter::InitAsyncURLChecker(
     net::URLRequestContextGetter* context) {
   async_url_checker_.reset(new SupervisedUserAsyncURLChecker(context));
+}
+
+void SupervisedUserURLFilter::ClearAsyncURLChecker() {
+  async_url_checker_.reset();
 }
 
 bool SupervisedUserURLFilter::HasAsyncURLChecker() const {
