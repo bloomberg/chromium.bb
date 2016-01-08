@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
+#include "chrome/browser/extensions/extension_install_prompt_test_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
@@ -30,35 +31,6 @@ using extensions::PermissionIDSet;
 using extensions::PermissionMessage;
 using extensions::PermissionMessages;
 
-// A simple delegate implementation that counts the number of times
-// |InstallUIProceed| and |InstallUIAbort| are called.
-class MockExtensionInstallPromptDelegate
-    : public ExtensionInstallPrompt::Delegate {
- public:
-  MockExtensionInstallPromptDelegate()
-      : proceed_count_(0),
-        abort_count_(0) {}
-
-  // ExtensionInstallPrompt::Delegate overrides.
-  void InstallUIProceed() override;
-  void InstallUIAbort(bool user_initiated) override;
-
-  int proceed_count() { return proceed_count_; }
-  int abort_count() { return abort_count_; }
-
- protected:
-  int proceed_count_;
-  int abort_count_;
-};
-
-void MockExtensionInstallPromptDelegate::InstallUIProceed() {
-  ++proceed_count_;
-}
-
-void MockExtensionInstallPromptDelegate::InstallUIAbort(bool user_initiated) {
-  ++abort_count_;
-}
-
 class ExtensionInstallDialogViewTestBase : public ExtensionBrowserTest {
  protected:
   explicit ExtensionInstallDialogViewTestBase(
@@ -74,13 +46,11 @@ class ExtensionInstallDialogViewTestBase : public ExtensionBrowserTest {
       const PermissionMessages& permissions);
 
   content::WebContents* web_contents() { return web_contents_; }
-  MockExtensionInstallPromptDelegate* delegate() { return &delegate_; }
 
  private:
   const extensions::Extension* extension_;
   ExtensionInstallPrompt::PromptType prompt_type_;
   content::WebContents* web_contents_;
-  MockExtensionInstallPromptDelegate delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogViewTestBase);
 };
@@ -131,7 +101,8 @@ ScrollbarTest::ScrollbarTest()
 bool ScrollbarTest::IsScrollbarVisible(
     scoped_ptr<ExtensionInstallPrompt::Prompt> prompt) {
   ExtensionInstallDialogView* dialog = new ExtensionInstallDialogView(
-      profile(), web_contents(), delegate(), std::move(prompt));
+      profile(), web_contents(), ExtensionInstallPrompt::DoneCallback(),
+      std::move(prompt));
 
   // Create the modal view around the install dialog view.
   views::Widget* modal = constrained_window::CreateBrowserModalDialogViews(
@@ -189,10 +160,10 @@ class ExtensionInstallDialogViewTest
 // cancel the install.
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, NotifyDelegate) {
   {
-    // The user confirms the install.
-    MockExtensionInstallPromptDelegate delegate;
+    ExtensionInstallPromptTestHelper helper;
     scoped_ptr<ExtensionInstallDialogView> dialog(
-        new ExtensionInstallDialogView(profile(), web_contents(), &delegate,
+        new ExtensionInstallDialogView(profile(), web_contents(),
+                                       helper.GetCallback(),
                                        CreatePrompt()));
     views::DialogDelegateView* delegate_view = dialog.get();
 
@@ -200,15 +171,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, NotifyDelegate) {
     delegate_view->OnClosed();
     dialog.reset();
 
-    EXPECT_EQ(0, delegate.abort_count());
-    EXPECT_EQ(1, delegate.proceed_count());
+    EXPECT_EQ(ExtensionInstallPrompt::Result::ACCEPTED, helper.result());
   }
 
   {
     // The user cancels the install.
-    MockExtensionInstallPromptDelegate delegate;
+    ExtensionInstallPromptTestHelper helper;
     scoped_ptr<ExtensionInstallDialogView> dialog(
-        new ExtensionInstallDialogView(profile(), web_contents(), &delegate,
+        new ExtensionInstallDialogView(profile(), web_contents(),
+                                       helper.GetCallback(),
                                        CreatePrompt()));
     views::DialogDelegateView* delegate_view = dialog.get();
 
@@ -216,20 +187,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, NotifyDelegate) {
     delegate_view->OnClosed();
     dialog.reset();
 
-    EXPECT_EQ(1, delegate.abort_count());
-    EXPECT_EQ(0, delegate.proceed_count());
+    EXPECT_EQ(ExtensionInstallPrompt::Result::USER_CANCELED, helper.result());
   }
 
   {
     // Corner case: Dialog is closed without the user explicitly choosing to
     // proceed or cancel.
-    MockExtensionInstallPromptDelegate delegate;
+    ExtensionInstallPromptTestHelper helper;
     scoped_ptr<ExtensionInstallDialogView> dialog(
-        new ExtensionInstallDialogView(profile(), web_contents(), &delegate,
+        new ExtensionInstallDialogView(profile(), web_contents(),
+                                       helper.GetCallback(),
                                        CreatePrompt()));
     dialog.reset();
 
-    EXPECT_EQ(1, delegate.abort_count());
-    EXPECT_EQ(0, delegate.proceed_count());
+    // TODO(devlin): Should this be ABORTED?
+    EXPECT_EQ(ExtensionInstallPrompt::Result::USER_CANCELED, helper.result());
   }
 }

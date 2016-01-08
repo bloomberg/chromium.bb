@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -51,8 +52,7 @@ class PermissionsRemoveFunction : public ChromeSyncExtensionFunction {
 };
 
 // chrome.permissions.request
-class PermissionsRequestFunction : public ChromeAsyncExtensionFunction,
-                                   public ExtensionInstallPrompt::Delegate {
+class PermissionsRequestFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("permissions.request", PERMISSIONS_REQUEST)
 
@@ -62,10 +62,6 @@ class PermissionsRequestFunction : public ChromeAsyncExtensionFunction,
   static void SetAutoConfirmForTests(bool should_proceed);
   static void SetIgnoreUserGestureForTests(bool ignore);
 
-  // ExtensionInstallPrompt::Delegate:
-  void InstallUIProceed() override;
-  void InstallUIAbort(bool user_initiated) override;
-
  protected:
   ~PermissionsRequestFunction() override;
 
@@ -73,8 +69,12 @@ class PermissionsRequestFunction : public ChromeAsyncExtensionFunction,
   bool RunAsync() override;
 
  private:
+  void OnInstallPromptDone(ExtensionInstallPrompt::Result result);
+
   scoped_ptr<ExtensionInstallPrompt> install_ui_;
   scoped_ptr<const PermissionSet> requested_permissions_;
+
+  DISALLOW_COPY_AND_ASSIGN(PermissionsRequestFunction);
 };
 
 }  // namespace extensions

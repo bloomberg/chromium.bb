@@ -135,9 +135,9 @@ void WebstoreStandaloneInstaller::ProceedWithInstallPrompt() {
   install_prompt_ = CreateInstallPrompt();
   if (install_prompt_.get()) {
     ShowInstallUI();
-    // Control flow finishes up in InstallUIProceed or InstallUIAbort.
+    // Control flow finishes up in OnInstallPromptDone().
   } else {
-    InstallUIProceed();
+    OnInstallPromptDone(ExtensionInstallPrompt::Result::ACCEPTED);
   }
 }
 
@@ -189,11 +189,20 @@ WebstoreStandaloneInstaller::CreateApproval() const {
   return approval;
 }
 
-void WebstoreStandaloneInstaller::InstallUIProceed() {
-  if (!CheckRequestorAlive()) {
+void WebstoreStandaloneInstaller::OnInstallPromptDone(
+    ExtensionInstallPrompt::Result result) {
+  if (result == ExtensionInstallPrompt::Result::USER_CANCELED) {
+    CompleteInstall(webstore_install::USER_CANCELLED, kUserCancelledError);
+    return;
+  }
+
+  if (result == ExtensionInstallPrompt::Result::ABORTED ||
+      !CheckRequestorAlive()) {
     CompleteInstall(webstore_install::ABORTED, std::string());
     return;
   }
+
+  DCHECK(result == ExtensionInstallPrompt::Result::ACCEPTED);
 
   scoped_ptr<WebstoreInstaller::Approval> approval = CreateApproval();
 
@@ -226,10 +235,6 @@ void WebstoreStandaloneInstaller::InstallUIProceed() {
       new WebstoreInstaller(profile_, this, GetWebContents(), id_,
                             std::move(approval), install_source_);
   installer->Start();
-}
-
-void WebstoreStandaloneInstaller::InstallUIAbort(bool user_initiated) {
-  CompleteInstall(webstore_install::USER_CANCELLED, kUserCancelledError);
 }
 
 void WebstoreStandaloneInstaller::OnWebstoreRequestFailure() {
@@ -404,7 +409,8 @@ void WebstoreStandaloneInstaller::ShowInstallUI() {
 
   install_ui_ = CreateInstallUI();
   install_ui_->ShowDialog(
-      this, localized_extension.get(), &icon_, std::move(install_prompt_),
+      base::Bind(&WebstoreStandaloneInstaller::OnInstallPromptDone, this),
+      localized_extension.get(), &icon_, std::move(install_prompt_),
       ExtensionInstallPrompt::GetDefaultShowDialogCallback());
 }
 

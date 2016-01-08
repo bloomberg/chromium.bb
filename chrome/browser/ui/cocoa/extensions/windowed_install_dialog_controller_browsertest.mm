@@ -4,8 +4,11 @@
 
 #import "chrome/browser/ui/cocoa/extensions/windowed_install_dialog_controller.h"
 
+#include <utility>
+
 #include "base/run_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/extensions/extension_install_prompt_test_helper.h"
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_install_prompt_test_utils.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_install_view_controller.h"
@@ -21,10 +24,11 @@ namespace {
 void TestingShowAppListInstallDialogController(
     WindowedInstallDialogController** controller,
     ExtensionInstallPromptShowParams* show_params,
-    ExtensionInstallPrompt::Delegate* delegate,
+    const ExtensionInstallPrompt::DoneCallback& done_callback,
     scoped_ptr<ExtensionInstallPrompt::Prompt> prompt) {
   *controller =
-      new WindowedInstallDialogController(show_params, delegate, prompt.Pass());
+      new WindowedInstallDialogController(show_params, done_callback,
+                                          std::move(prompt));
 }
 
 typedef InProcessBrowserTest WindowedInstallDialogControllerBrowserTest;
@@ -40,11 +44,11 @@ IN_PROC_BROWSER_TEST_F(WindowedInstallDialogControllerBrowserTest,
       new ExtensionInstallPrompt(browser()->profile(), NULL));
 
   WindowedInstallDialogController* controller = NULL;
-  chrome::MockExtensionInstallPromptDelegate delegate;
+  ExtensionInstallPromptTestHelper test_helper;
   scoped_refptr<extensions::Extension> extension =
       chrome::LoadInstallPromptExtension("permissions", "many-apis.json");
   prompt->ShowDialog(
-      &delegate, extension.get(), nullptr,
+      test_helper.GetCallback(), extension.get(), nullptr,
       base::Bind(&TestingShowAppListInstallDialogController, &controller));
 
   // The prompt needs to load the image, which happens on the blocking pool.
@@ -55,12 +59,13 @@ IN_PROC_BROWSER_TEST_F(WindowedInstallDialogControllerBrowserTest,
       [[[controller->GetViewController() view] window] retain]);
   EXPECT_TRUE([window isVisible]);
   EXPECT_TRUE([window delegate]);
-  EXPECT_EQ(0, delegate.abort_count());
+  EXPECT_FALSE(test_helper.has_result());
 
   // Press cancel to close the window.
   [[controller->GetViewController() cancelButton] performClick:nil];
   EXPECT_FALSE([window delegate]);
-  EXPECT_EQ(1, delegate.abort_count());
+  EXPECT_EQ(ExtensionInstallPrompt::Result::USER_CANCELED,
+            test_helper.result());
 
   // Ensure the window is closed.
   EXPECT_FALSE([window isVisible]);

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -68,28 +69,24 @@ static const int kIconSize = extension_misc::EXTENSION_ICON_SMALL;
 
 // ExtensionDisabledDialogDelegate --------------------------------------------
 
-class ExtensionDisabledDialogDelegate
-    : public ExtensionInstallPrompt::Delegate,
-      public base::RefCountedThreadSafe<ExtensionDisabledDialogDelegate> {
+class ExtensionDisabledDialogDelegate {
  public:
   ExtensionDisabledDialogDelegate(ExtensionService* service,
                                   scoped_ptr<ExtensionInstallPrompt> install_ui,
                                   const Extension* extension);
 
  private:
-  friend class base::RefCountedThreadSafe<ExtensionDisabledDialogDelegate>;
+  ~ExtensionDisabledDialogDelegate();
 
-  ~ExtensionDisabledDialogDelegate() override;
-
-  // ExtensionInstallPrompt::Delegate:
-  void InstallUIProceed() override;
-  void InstallUIAbort(bool user_initiated) override;
+  void InstallPromptDone(ExtensionInstallPrompt::Result result);
 
   // The UI for showing the install dialog when enabling.
   scoped_ptr<ExtensionInstallPrompt> install_ui_;
 
   ExtensionService* service_;
   const Extension* extension_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionDisabledDialogDelegate);
 };
 
 ExtensionDisabledDialogDelegate::ExtensionDisabledDialogDelegate(
@@ -99,12 +96,15 @@ ExtensionDisabledDialogDelegate::ExtensionDisabledDialogDelegate(
     : install_ui_(std::move(install_ui)),
       service_(service),
       extension_(extension) {
-  AddRef();  // Balanced in Proceed or Abort.
   ExtensionInstallPrompt::PromptType type =
       ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(
           service_->profile(), extension);
+  // Unretained() is safe since this object manages its own lifetime and deletes
+  // itself only once the prompt finishes.
   install_ui_->ShowDialog(
-      this, extension_, nullptr,
+      base::Bind(&ExtensionDisabledDialogDelegate::InstallPromptDone,
+                 base::Unretained(this)),
+      extension_, nullptr,
       make_scoped_ptr(new ExtensionInstallPrompt::Prompt(type)),
       ExtensionInstallPrompt::GetDefaultShowDialogCallback());
 }
@@ -112,19 +112,21 @@ ExtensionDisabledDialogDelegate::ExtensionDisabledDialogDelegate(
 ExtensionDisabledDialogDelegate::~ExtensionDisabledDialogDelegate() {
 }
 
-void ExtensionDisabledDialogDelegate::InstallUIProceed() {
-  service_->GrantPermissionsAndEnableExtension(extension_);
-  Release();
-}
+void ExtensionDisabledDialogDelegate::InstallPromptDone(
+    ExtensionInstallPrompt::Result result) {
+  if (result == ExtensionInstallPrompt::Result::ACCEPTED) {
+    service_->GrantPermissionsAndEnableExtension(extension_);
+  } else {
+    const char* histogram_name =
+        result == ExtensionInstallPrompt::Result::USER_CANCELED
+            ? "ReEnableCancel"
+            : "ReEnableAbort";
+    ExtensionService::RecordPermissionMessagesHistogram(extension_,
+                                                        histogram_name);
+    // Do nothing. The extension will remain disabled.
+  }
 
-void ExtensionDisabledDialogDelegate::InstallUIAbort(bool user_initiated) {
-  std::string histogram_name = user_initiated ? "ReEnableCancel"
-                                              : "ReEnableAbort";
-  ExtensionService::RecordPermissionMessagesHistogram(
-      extension_, histogram_name.c_str());
-
-  // Do nothing. The extension will remain disabled.
-  Release();
+  delete this;
 }
 
 // ExtensionDisabledGlobalError -----------------------------------------------

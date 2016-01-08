@@ -14,6 +14,7 @@
 
 namespace content {
 class BrowserContext;
+class WebContents;
 }  // namespace content
 
 namespace extensions {
@@ -78,8 +79,10 @@ class ManagementAPIDelegate {
   // Used to show a dialog prompt in chrome when management.setEnabled extension
   // function is called.
   virtual scoped_ptr<InstallPromptDelegate> SetEnabledFunctionDelegate(
-      ManagementSetEnabledFunction* function,
-      const Extension* extension) const = 0;
+      content::WebContents* web_contents,
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      const base::Callback<void(bool)>& callback) const = 0;
 
   // Returns a new RequirementsChecker.
   virtual scoped_ptr<RequirementsChecker> CreateRequirementsChecker() const = 0;

@@ -147,9 +147,13 @@ void DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::
 
   install_prompt_.reset(new ExtensionInstallPrompt(web_contents));
   install_prompt_->ShowDialog(
-      this, dummy_extension_.get(), &icon, std::move(prompt),
+      base::Bind(
+          &DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::
+              OnInstallPromptDone,
+          this),
+      dummy_extension_.get(), &icon, std::move(prompt),
       ExtensionInstallPrompt::GetDefaultShowDialogCallback());
-  // Control flow finishes up in InstallUIProceed or InstallUIAbort.
+  // Control flow finishes up in OnInstallPromptDone().
 }
 
 void DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::
@@ -167,20 +171,16 @@ void DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::
 }
 
 void DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::
-    InstallUIProceed() {
-  Respond(BuildResponse(api::dashboard_private::RESULT_SUCCESS, std::string()));
+    OnInstallPromptDone(ExtensionInstallPrompt::Result result) {
+  if (result == ExtensionInstallPrompt::Result::ACCEPTED) {
+    Respond(
+        BuildResponse(api::dashboard_private::RESULT_SUCCESS, std::string()));
+  } else {
+    Respond(BuildResponse(api::dashboard_private::RESULT_USER_CANCELLED,
+                          kUserCancelledError));
+  }
 
-  // Matches the AddRef in Run().
-  Release();
-}
-
-void DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::
-    InstallUIAbort(bool user_initiated) {
-  Respond(BuildResponse(api::dashboard_private::RESULT_USER_CANCELLED,
-                        kUserCancelledError));
-
-  // Matches the AddRef in Run().
-  Release();
+  Release();  // Matches the AddRef in Run().
 }
 
 ExtensionFunction::ResponseValue

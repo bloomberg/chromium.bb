@@ -451,8 +451,10 @@ ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
       if (!user_gesture())
         return RespondNow(Error(keys::kGestureNeededForEscalationError));
 
-      AddRef();  // Matched in InstallUIProceed/InstallUIAbort
-      install_prompt_ = delegate->SetEnabledFunctionDelegate(this, extension);
+      AddRef();  // Matched in OnInstallPromptDone().
+      install_prompt_ = delegate->SetEnabledFunctionDelegate(
+          GetSenderWebContents(), browser_context(), extension,
+          base::Bind(&ManagementSetEnabledFunction::OnInstallPromptDone, this));
       return RespondLater();
     }
     if (prefs->GetDisableReasons(extension_id_) &
@@ -474,18 +476,18 @@ ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
   return RespondNow(NoArguments());
 }
 
-void ManagementSetEnabledFunction::InstallUIProceed() {
-  ManagementAPI::GetFactoryInstance()
-      ->Get(browser_context())
-      ->GetDelegate()
-      ->EnableExtension(browser_context(), extension_id_);
-  Respond(OneArgument(new base::FundamentalValue(true)));
-  Release();
-}
+void ManagementSetEnabledFunction::OnInstallPromptDone(bool did_accept) {
+  if (did_accept) {
+    ManagementAPI::GetFactoryInstance()
+        ->Get(browser_context())
+        ->GetDelegate()
+        ->EnableExtension(browser_context(), extension_id_);
+    Respond(OneArgument(new base::FundamentalValue(true)));
+  } else {
+    Respond(Error(keys::kUserDidNotReEnableError));
+  }
 
-void ManagementSetEnabledFunction::InstallUIAbort(bool user_initiated) {
-  Respond(Error(keys::kUserDidNotReEnableError));
-  Release();
+  Release();  // Balanced in Run().
 }
 
 void ManagementSetEnabledFunction::OnRequirementsChecked(

@@ -33,8 +33,7 @@ class WebstoreDataFetcher;
 // possible) and will handle adding itself to the GlobalErrorService when
 // initialized and removing itself from the GlobalErrorService upon
 // destruction.
-class ExternalInstallError : public ExtensionInstallPrompt::Delegate,
-                             public WebstoreDataFetcherDelegate {
+class ExternalInstallError : public WebstoreDataFetcherDelegate {
  public:
   // The possible types of errors to show. A menu alert adds a menu item to the
   // wrench, which spawns an extension install dialog when clicked. The bubble
@@ -51,9 +50,7 @@ class ExternalInstallError : public ExtensionInstallPrompt::Delegate,
                        ExternalInstallManager* manager);
   ~ExternalInstallError() override;
 
-  // ExtensionInstallPrompt::Delegate implementation.
-  void InstallUIProceed() override;
-  void InstallUIAbort(bool user_initiated) override;
+  void OnInstallPromptDone(ExtensionInstallPrompt::Result result);
 
   // Show the associated dialog. This should only be called once the dialog is
   // ready.
@@ -78,7 +75,7 @@ class ExternalInstallError : public ExtensionInstallPrompt::Delegate,
   // Called when the dialog has been successfully populated, and is ready to be
   // shown.
   void OnDialogReady(ExtensionInstallPromptShowParams* show_params,
-                     ExtensionInstallPrompt::Delegate* prompt_delegate,
+                     const ExtensionInstallPrompt::DoneCallback& done_callback,
                      scoped_ptr<ExtensionInstallPrompt::Prompt> prompt);
 
   // The associated BrowserContext.

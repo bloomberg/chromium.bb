@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/webstore_data_fetcher_delegate.h"
@@ -28,8 +29,7 @@ class WebstoreDataFetcher;
 // increase.
 // TODO(devlin): Once we get the UI figured out, we should also have this handle
 // other disable reasons.
-class ExtensionReenabler : public ExtensionInstallPrompt::Delegate,
-                           public ExtensionRegistryObserver,
+class ExtensionReenabler : public ExtensionRegistryObserver,
                            public WebstoreDataFetcherDelegate {
  public:
   enum ReenableResult {
@@ -72,9 +72,7 @@ class ExtensionReenabler : public ExtensionInstallPrompt::Delegate,
       content::WebContents* web_contents,
       const ExtensionInstallPrompt::ShowDialogCallback& show_callback);
 
-  // ExtensionInstallPrompt::Delegate:
-  void InstallUIProceed() override;
-  void InstallUIAbort(bool user_initiated) override;
+  void OnInstallPromptDone(ExtensionInstallPrompt::Result result);
 
   // ExtensionRegistryObserver:
   void OnExtensionLoaded(content::BrowserContext* browser_context,
@@ -119,6 +117,8 @@ class ExtensionReenabler : public ExtensionInstallPrompt::Delegate,
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       registry_observer_;
+
+  base::WeakPtrFactory<ExtensionReenabler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionReenabler);
 };

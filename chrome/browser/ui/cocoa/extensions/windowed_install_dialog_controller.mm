@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/extensions/windowed_install_dialog_controller.h"
 
+#import "base/callback_helpers.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
@@ -31,9 +32,9 @@
 
 WindowedInstallDialogController::WindowedInstallDialogController(
     ExtensionInstallPromptShowParams* show_params,
-    ExtensionInstallPrompt::Delegate* delegate,
+    const ExtensionInstallPrompt::DoneCallback& done_callback,
     scoped_ptr<ExtensionInstallPrompt::Prompt> prompt)
-    : delegate_(delegate) {
+    : done_callback_(done_callback) {
   install_controller_.reset([[WindowedInstallController alloc]
       initWithProfile:show_params->profile()
             navigator:show_params->GetParentWebContents()
@@ -44,14 +45,14 @@ WindowedInstallDialogController::WindowedInstallDialogController(
 
 WindowedInstallDialogController::~WindowedInstallDialogController() {
   DCHECK(!install_controller_);
-  DCHECK(!delegate_);
+  DCHECK(done_callback_.is_null());
 }
 
 void WindowedInstallDialogController::OnWindowClosing() {
   install_controller_.reset();
-  if (delegate_) {
-    delegate_->InstallUIAbort(false);
-    delegate_ = NULL;
+  if (!done_callback_.is_null()) {
+    base::ResetAndReturn(&done_callback_).Run(
+        ExtensionInstallPrompt::Result::ABORTED);
   }
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
@@ -61,15 +62,21 @@ WindowedInstallDialogController::GetViewController() {
   return [install_controller_ viewController];
 }
 
-void WindowedInstallDialogController::InstallUIProceed() {
-  delegate_->InstallUIProceed();
-  delegate_ = NULL;
+void WindowedInstallDialogController::OnOkButtonClicked() {
+  base::ResetAndReturn(&done_callback_).Run(
+      ExtensionInstallPrompt::Result::ACCEPTED);
   [[install_controller_ window] close];
 }
 
-void WindowedInstallDialogController::InstallUIAbort(bool user_initiated) {
-  delegate_->InstallUIAbort(user_initiated);
-  delegate_ = NULL;
+void WindowedInstallDialogController::OnCancelButtonClicked() {
+  base::ResetAndReturn(&done_callback_).Run(
+      ExtensionInstallPrompt::Result::USER_CANCELED);
+  [[install_controller_ window] close];
+}
+
+void WindowedInstallDialogController::OnStoreLinkClicked() {
+  base::ResetAndReturn(&done_callback_).Run(
+      ExtensionInstallPrompt::Result::USER_CANCELED);
   [[install_controller_ window] close];
 }
 

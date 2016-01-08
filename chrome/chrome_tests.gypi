@@ -242,6 +242,8 @@
       'browser/extensions/extension_icon_source_apitest.cc',
       'browser/extensions/extension_incognito_apitest.cc',
       'browser/extensions/extension_install_prompt_browsertest.cc',
+      'browser/extensions/extension_install_prompt_test_helper.cc',
+      'browser/extensions/extension_install_prompt_test_helper.h',
       'browser/extensions/extension_install_ui_browsertest.cc',
       'browser/extensions/extension_javascript_url_apitest.cc',
       'browser/extensions/extension_loading_browsertest.cc',

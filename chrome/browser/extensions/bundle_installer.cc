@@ -113,7 +113,8 @@ BundleInstaller::BundleInstaller(Browser* browser,
       authuser_(authuser),
       delegated_username_(delegated_username),
       host_desktop_type_(browser->host_desktop_type()),
-      profile_(browser->profile()) {
+      profile_(browser->profile()),
+      weak_factory_(this) {
   BrowserList::AddObserver(this);
   for (size_t i = 0; i < items.size(); ++i) {
     items_[items[i].id] = items[i];
@@ -270,9 +271,9 @@ void BundleInstaller::ShowPrompt() {
   }
 
   if (g_auto_approve_for_test == PROCEED) {
-    InstallUIProceed();
+    OnInstallPromptDone(ExtensionInstallPrompt::Result::ACCEPTED);
   } else if (g_auto_approve_for_test == ABORT) {
-    InstallUIAbort(true);
+    OnInstallPromptDone(ExtensionInstallPrompt::Result::USER_CANCELED);
   } else {
     Browser* browser = browser_;
     if (!browser) {
@@ -295,7 +296,9 @@ void BundleInstaller::ShowPrompt() {
     }
     prompt->set_bundle(this);
     install_ui_->ShowDialog(
-        this, nullptr, &icon_, std::move(prompt), std::move(permissions),
+        base::Bind(&BundleInstaller::OnInstallPromptDone,
+                   weak_factory_.GetWeakPtr()),
+        nullptr, &icon_, std::move(prompt), std::move(permissions),
         ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   }
 }
@@ -332,16 +335,21 @@ void BundleInstaller::OnWebstoreParseFailure(
   ShowPromptIfDoneParsing();
 }
 
-void BundleInstaller::InstallUIProceed() {
-  approved_ = true;
-  approval_callback_.Run(APPROVED);
-}
+void BundleInstaller::OnInstallPromptDone(
+    ExtensionInstallPrompt::Result result) {
+  ApprovalState state = APPROVED;
+  if (result == ExtensionInstallPrompt::Result::ACCEPTED) {
+    approved_ = true;
+    state = APPROVED;
+  } else {
+    for (std::pair<const std::string, Item>& entry : items_)
+      entry.second.state = Item::STATE_FAILED;
 
-void BundleInstaller::InstallUIAbort(bool user_initiated) {
-  for (std::pair<const std::string, Item>& entry : items_)
-    entry.second.state = Item::STATE_FAILED;
-
-  approval_callback_.Run(user_initiated ? USER_CANCELED : APPROVAL_ERROR);
+    state = result == ExtensionInstallPrompt::Result::USER_CANCELED
+                ? USER_CANCELED
+                : APPROVAL_ERROR;
+  }
+  approval_callback_.Run(state);
 }
 
 void BundleInstaller::OnExtensionInstallSuccess(const std::string& id) {

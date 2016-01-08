@@ -141,22 +141,6 @@ void PermissionsRequestFunction::SetIgnoreUserGestureForTests(
 
 PermissionsRequestFunction::PermissionsRequestFunction() {}
 
-void PermissionsRequestFunction::InstallUIProceed() {
-  PermissionsUpdater perms_updater(GetProfile());
-  perms_updater.AddPermissions(extension(), *requested_permissions_);
-
-  results_ = Request::Results::Create(true);
-  SendResponse(true);
-
-  Release();  // Balanced in RunAsync().
-}
-
-void PermissionsRequestFunction::InstallUIAbort(bool user_initiated) {
-  SendResponse(true);
-
-  Release();  // Balanced in RunAsync().
-}
-
 PermissionsRequestFunction::~PermissionsRequestFunction() {}
 
 bool PermissionsRequestFunction::RunAsync() {
@@ -227,7 +211,7 @@ bool PermissionsRequestFunction::RunAsync() {
       *requested_permissions_,
       extension()->permissions_data()->active_permissions());
 
-  AddRef();  // Balanced in InstallUIProceed() / InstallUIAbort().
+  AddRef();  // Balanced in OnInstallPromptDone().
 
   // We don't need to show the prompt if there are no new warnings, or if
   // we're skipping the confirmation UI. All extension types but INTERNAL
@@ -241,15 +225,16 @@ bool PermissionsRequestFunction::RunAsync() {
           .empty();
   if (auto_confirm_for_tests == PROCEED || has_no_warnings ||
       extension_->location() == Manifest::COMPONENT) {
-    InstallUIProceed();
+    OnInstallPromptDone(ExtensionInstallPrompt::Result::ACCEPTED);
   } else if (auto_confirm_for_tests == ABORT) {
     // Pretend the user clicked cancel.
-    InstallUIAbort(true);
+    OnInstallPromptDone(ExtensionInstallPrompt::Result::USER_CANCELED);
   } else {
     CHECK_EQ(DO_NOT_SKIP, auto_confirm_for_tests);
     install_ui_.reset(new ExtensionInstallPrompt(GetAssociatedWebContents()));
     install_ui_->ShowDialog(
-        this, extension(), nullptr,
+        base::Bind(&PermissionsRequestFunction::OnInstallPromptDone, this),
+        extension(), nullptr,
         make_scoped_ptr(new ExtensionInstallPrompt::Prompt(
             ExtensionInstallPrompt::PERMISSIONS_PROMPT)),
         requested_permissions_->Clone(),
@@ -257,6 +242,19 @@ bool PermissionsRequestFunction::RunAsync() {
   }
 
   return true;
+}
+
+void PermissionsRequestFunction::OnInstallPromptDone(
+    ExtensionInstallPrompt::Result result) {
+  if (result == ExtensionInstallPrompt::Result::ACCEPTED) {
+    PermissionsUpdater perms_updater(GetProfile());
+    perms_updater.AddPermissions(extension(), *requested_permissions_);
+
+    results_ = Request::Results::Create(true);
+  }
+
+  SendResponse(true);
+  Release();  // Balanced in RunAsync().
 }
 
 }  // namespace extensions

@@ -114,9 +114,6 @@ class ManagementSetEnabledFunction : public UIThreadExtensionFunction {
 
   ManagementSetEnabledFunction();
 
-  void InstallUIProceed();
-  void InstallUIAbort(bool user_initiated);
-
  protected:
   ~ManagementSetEnabledFunction() override;
 
@@ -124,6 +121,8 @@ class ManagementSetEnabledFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 
  private:
+  void OnInstallPromptDone(bool did_accept);
+
   void OnRequirementsChecked(const std::vector<std::string>& requirements);
 
   std::string extension_id_;

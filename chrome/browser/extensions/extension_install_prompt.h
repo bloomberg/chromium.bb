@@ -259,21 +259,16 @@ class ExtensionInstallPrompt
   static const int kMinExtensionRating = 0;
   static const int kMaxExtensionRating = 5;
 
-  class Delegate {
-   public:
-    // We call this method to signal that the installation should continue.
-    virtual void InstallUIProceed() = 0;
-
-    // We call this method to signal that the installation should stop, with
-    // |user_initiated| true if the installation was stopped by the user.
-    virtual void InstallUIAbort(bool user_initiated) = 0;
-
-   protected:
-    virtual ~Delegate() {}
+  enum class Result {
+    ACCEPTED,
+    USER_CANCELED,
+    ABORTED,
   };
 
+  using DoneCallback = base::Callback<void(Result result)>;
+
   typedef base::Callback<void(ExtensionInstallPromptShowParams*,
-                              ExtensionInstallPrompt::Delegate*,
+                              const DoneCallback&,
                               scoped_ptr<ExtensionInstallPrompt::Prompt>)>
       ShowDialogCallback;
 
@@ -323,12 +318,12 @@ class ExtensionInstallPrompt
   // |custom_permissions| will be used if provided; otherwise, the extensions
   // current permissions are used.
   //
-  // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
-  void ShowDialog(Delegate* delegate,
+  // The |install_callback| *MUST* eventually be called.
+  void ShowDialog(const DoneCallback& install_callback,
                   const extensions::Extension* extension,
                   const SkBitmap* icon,
                   const ShowDialogCallback& show_dialog_callback);
-  void ShowDialog(Delegate* delegate,
+  void ShowDialog(const DoneCallback& install_callback,
                   const extensions::Extension* extension,
                   const SkBitmap* icon,
                   scoped_ptr<Prompt> prompt,
@@ -337,7 +332,7 @@ class ExtensionInstallPrompt
   // Note: if all you want to do is automatically confirm or cancel, prefer
   // ScopedTestDialogAutoConfirm from extension_dialog_auto_confirm.h
   virtual void ShowDialog(
-      Delegate* delegate,
+      const DoneCallback& install_callback,
       const extensions::Extension* extension,
       const SkBitmap* icon,
       scoped_ptr<Prompt> prompt,
@@ -396,8 +391,8 @@ class ExtensionInstallPrompt
   // Parameters to show the confirmation UI.
   scoped_ptr<ExtensionInstallPromptShowParams> show_params_;
 
-  // The delegate we will call Proceed/Abort on after confirmation UI.
-  Delegate* delegate_;
+  // The callback to run with the result.
+  DoneCallback done_callback_;
 
   // A pre-filled prompt.
   scoped_ptr<Prompt> prompt_;

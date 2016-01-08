@@ -15,14 +15,6 @@ using extensions::Extension;
 
 namespace chrome {
 
-void MockExtensionInstallPromptDelegate::InstallUIProceed() {
-  ++proceed_count_;
-}
-
-void MockExtensionInstallPromptDelegate::InstallUIAbort(bool user_initiated) {
-  ++abort_count_;
-}
-
 scoped_refptr<extensions::Extension> LoadInstallPromptExtension(
     const char* extension_dir_name,
     const char* manifest_file) {

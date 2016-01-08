@@ -27,8 +27,8 @@ ExtensionEnableFlow::ExtensionEnableFlow(Profile* profile,
       delegate_(delegate),
       parent_contents_(NULL),
       parent_window_(NULL),
-      extension_registry_observer_(this) {
-}
+      extension_registry_observer_(this),
+      weak_ptr_factory_(this) {}
 
 ExtensionEnableFlow::~ExtensionEnableFlow() {
 }
@@ -117,7 +117,9 @@ void ExtensionEnableFlow::CheckPermissionAndMaybePromptUser() {
   ExtensionInstallPrompt::PromptType type =
       ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(profile_,
                                                                 extension);
-  prompt_->ShowDialog(this, extension, nullptr,
+  prompt_->ShowDialog(base::Bind(&ExtensionEnableFlow::InstallPromptDone,
+                                 weak_ptr_factory_.GetWeakPtr()),
+                      extension, nullptr,
                       make_scoped_ptr(new ExtensionInstallPrompt::Prompt(type)),
                       ExtensionInstallPrompt::GetDefaultShowDialogCallback());
 }
@@ -170,23 +172,25 @@ void ExtensionEnableFlow::OnExtensionUninstalled(
   }
 }
 
-void ExtensionEnableFlow::InstallUIProceed() {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
+void ExtensionEnableFlow::InstallPromptDone(
+    ExtensionInstallPrompt::Result result) {
+  if (result == ExtensionInstallPrompt::Result::ACCEPTED) {
+    ExtensionService* service =
+        extensions::ExtensionSystem::Get(profile_)->extension_service();
 
-  // The extension can be uninstalled in another window while the UI was
-  // showing. Treat it as a cancellation and notify |delegate_|.
-  const Extension* extension = service->GetExtensionById(extension_id_, true);
-  if (!extension) {
-    delegate_->ExtensionEnableFlowAborted(true);
-    return;
+    // The extension can be uninstalled in another window while the UI was
+    // showing. Treat it as a cancellation and notify |delegate_|.
+    const Extension* extension = service->GetExtensionById(extension_id_, true);
+    if (!extension) {
+      delegate_->ExtensionEnableFlowAborted(true);
+      return;
+    }
+
+    service->GrantPermissionsAndEnableExtension(extension);
+    delegate_->ExtensionEnableFlowFinished();  // |delegate_| may delete us.
+  } else {
+    delegate_->ExtensionEnableFlowAborted(
+        result == ExtensionInstallPrompt::Result::USER_CANCELED);
+    // |delegate_| may delete us.
   }
-
-  service->GrantPermissionsAndEnableExtension(extension);
-  delegate_->ExtensionEnableFlowFinished();  // |delegate_| may delete us.
-}
-
-void ExtensionEnableFlow::InstallUIAbort(bool user_initiated) {
-  delegate_->ExtensionEnableFlowAborted(user_initiated);
-  // |delegate_| may delete us.
 }

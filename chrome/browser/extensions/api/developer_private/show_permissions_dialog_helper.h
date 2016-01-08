@@ -23,7 +23,7 @@ class Extension;
 // Helper class to handle showing a permissions dialog for an extension. Will
 // show either the newer AppInfo-style permissions dialog, or the traditional,
 // install-prompt style dialog.
-class ShowPermissionsDialogHelper : public ExtensionInstallPrompt::Delegate {
+class ShowPermissionsDialogHelper {
  public:
   static void Show(content::BrowserContext* browser_context,
                    content::WebContents* web_contents,
@@ -34,15 +34,13 @@ class ShowPermissionsDialogHelper : public ExtensionInstallPrompt::Delegate {
  private:
   ShowPermissionsDialogHelper(Profile* profile,
                               const base::Closure& on_complete);
-  ~ShowPermissionsDialogHelper() override;  // Manages its own lifetime.
+  ~ShowPermissionsDialogHelper();  // Manages its own lifetime.
 
   // Shows the old-style (not AppInfo) permissions dialog.
   void ShowPermissionsDialog(content::WebContents* web_contents,
                              const Extension* extension);
 
-  // ExtensionInstallPrompt::Delegate:
-  void InstallUIProceed() override;
-  void InstallUIAbort(bool user_initiated) override;
+  void OnInstallPromptDone(ExtensionInstallPrompt::Result result);
 
   scoped_ptr<ExtensionInstallPrompt> prompt_;
 

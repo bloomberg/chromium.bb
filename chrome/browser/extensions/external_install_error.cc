@@ -265,12 +265,12 @@ void ExternalInstallBubbleAlert::OnBubbleViewDidClose(Browser* browser) {
 
 void ExternalInstallBubbleAlert::BubbleViewAcceptButtonPressed(
     Browser* browser) {
-  error_->InstallUIProceed();
+  error_->OnInstallPromptDone(ExtensionInstallPrompt::Result::ACCEPTED);
 }
 
 void ExternalInstallBubbleAlert::BubbleViewCancelButtonPressed(
     Browser* browser) {
-  error_->InstallUIAbort(true);
+  error_->OnInstallPromptDone(ExtensionInstallPrompt::Result::USER_CANCELED);
 }
 
 }  // namespace
@@ -303,34 +303,37 @@ ExternalInstallError::~ExternalInstallError() {
     error_service_->RemoveGlobalError(global_error_.get());
 }
 
-void ExternalInstallError::InstallUIProceed() {
+void ExternalInstallError::OnInstallPromptDone(
+    ExtensionInstallPrompt::Result result) {
   const Extension* extension = GetExtension();
-  if (extension) {
-    ExtensionSystem::Get(browser_context_)
-        ->extension_service()
-        ->GrantPermissionsAndEnableExtension(extension);
-    // Since the manager listens for the extension to be loaded, this will
-    // remove the error...
-  } else {
-    // ... Otherwise we have to do it explicitly.
-    manager_->RemoveExternalInstallError(extension_id_);
+  bool did_remove_error = false;
+  switch (result) {
+    case ExtensionInstallPrompt::Result::ACCEPTED:
+      if (extension) {
+        ExtensionSystem::Get(browser_context_)
+            ->extension_service()
+            ->GrantPermissionsAndEnableExtension(extension);
+        // Since the manager listens for the extension to be loaded, this will
+        // remove the error.
+        did_remove_error = true;
+      }
+      break;
+    case ExtensionInstallPrompt::Result::USER_CANCELED:
+      if (extension) {
+        ExtensionSystem::Get(browser_context_)
+            ->extension_service()
+            ->UninstallExtension(extension_id_,
+                                 extensions::UNINSTALL_REASON_INSTALL_CANCELED,
+                                 base::Bind(&base::DoNothing),
+                                 nullptr);  // Ignore error.
+        did_remove_error = true;
+      }
+      break;
+    case ExtensionInstallPrompt::Result::ABORTED:
+      break;
   }
-}
-
-void ExternalInstallError::InstallUIAbort(bool user_initiated) {
-  if (user_initiated && GetExtension()) {
-    ExtensionSystem::Get(browser_context_)
-        ->extension_service()
-        ->UninstallExtension(extension_id_,
-                             extensions::UNINSTALL_REASON_INSTALL_CANCELED,
-                             base::Bind(&base::DoNothing),
-                             NULL);  // Ignore error.
-    // Since the manager listens for the extension to be removed, this will
-    // remove the error...
-  } else {
-    // ... Otherwise we have to do it explicitly.
+  if (!did_remove_error)
     manager_->RemoveExternalInstallError(extension_id_);
-  }
 }
 
 void ExternalInstallError::ShowDialog(Browser* browser) {
@@ -342,7 +345,10 @@ void ExternalInstallError::ShowDialog(Browser* browser) {
   install_ui_show_params_.reset(
       new ExtensionInstallPromptShowParams(web_contents));
   ExtensionInstallPrompt::GetDefaultShowDialogCallback().Run(
-      install_ui_show_params_.get(), this, std::move(prompt_));
+      install_ui_show_params_.get(),
+      base::Bind(&ExternalInstallError::OnInstallPromptDone,
+                 weak_factory_.GetWeakPtr()),
+      std::move(prompt_));
 }
 
 const Extension* ExternalInstallError::GetExtension() const {
@@ -389,7 +395,9 @@ void ExternalInstallError::OnFetchComplete() {
       new ExtensionInstallPrompt(Profile::FromBrowserContext(browser_context_),
                                  NULL));  // NULL native window.
 
-  install_ui_->ShowDialog(this, GetExtension(),
+  install_ui_->ShowDialog(base::Bind(&ExternalInstallError::OnInstallPromptDone,
+                                     weak_factory_.GetWeakPtr()),
+                          GetExtension(),
                           nullptr,  // Force a fetch of the icon.
                           std::move(prompt_),
                           base::Bind(&ExternalInstallError::OnDialogReady,
@@ -398,9 +406,8 @@ void ExternalInstallError::OnFetchComplete() {
 
 void ExternalInstallError::OnDialogReady(
     ExtensionInstallPromptShowParams* show_params,
-    ExtensionInstallPrompt::Delegate* prompt_delegate,
+    const ExtensionInstallPrompt::DoneCallback& callback,
     scoped_ptr<ExtensionInstallPrompt::Prompt> prompt) {
-  DCHECK_EQ(this, prompt_delegate);
   prompt_ = std::move(prompt);
 
   if (alert_type_ == BUBBLE_ALERT) {

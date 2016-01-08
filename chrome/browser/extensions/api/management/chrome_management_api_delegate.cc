@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/management/chrome_management_api_delegate.h"
 
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
@@ -41,37 +42,42 @@
 namespace {
 
 class ManagementSetEnabledFunctionInstallPromptDelegate
-    : public ExtensionInstallPrompt::Delegate,
-      public extensions::InstallPromptDelegate {
+    : public extensions::InstallPromptDelegate {
  public:
   ManagementSetEnabledFunctionInstallPromptDelegate(
-      extensions::ManagementSetEnabledFunction* function,
-      const extensions::Extension* extension)
-      : function_(function) {
-    install_prompt_.reset(
-        new ExtensionInstallPrompt(function->GetSenderWebContents()));
+      content::WebContents* web_contents,
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      const base::Callback<void(bool)>& callback)
+      : install_prompt_(new ExtensionInstallPrompt(web_contents)),
+        callback_(callback),
+        weak_factory_(this) {
     ExtensionInstallPrompt::PromptType type =
         ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(
-            function->browser_context(), extension);
+            browser_context, extension);
     install_prompt_->ShowDialog(
-        this, extension, nullptr,
+        base::Bind(&ManagementSetEnabledFunctionInstallPromptDelegate::
+                       OnInstallPromptDone,
+                   weak_factory_.GetWeakPtr()),
+        extension, nullptr,
         make_scoped_ptr(new ExtensionInstallPrompt::Prompt(type)),
         ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   }
   ~ManagementSetEnabledFunctionInstallPromptDelegate() override {}
 
- protected:
-  // ExtensionInstallPrompt::Delegate.
-  void InstallUIProceed() override { function_->InstallUIProceed(); }
-  void InstallUIAbort(bool user_initiated) override {
-    function_->InstallUIAbort(user_initiated);
-  }
-
  private:
-  extensions::ManagementSetEnabledFunction* function_;
+  void OnInstallPromptDone(ExtensionInstallPrompt::Result result) {
+    base::ResetAndReturn(&callback_).Run(
+        result == ExtensionInstallPrompt::Result::ACCEPTED);
+  }
 
   // Used for prompting to re-enable items with permissions escalation updates.
   scoped_ptr<ExtensionInstallPrompt> install_prompt_;
+
+  base::Callback<void(bool)> callback_;
+
+  base::WeakPtrFactory<ManagementSetEnabledFunctionInstallPromptDelegate>
+      weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagementSetEnabledFunctionInstallPromptDelegate);
 };
@@ -209,11 +215,13 @@ void ChromeManagementAPIDelegate::
 
 scoped_ptr<extensions::InstallPromptDelegate>
 ChromeManagementAPIDelegate::SetEnabledFunctionDelegate(
-    extensions::ManagementSetEnabledFunction* function,
-    const extensions::Extension* extension) const {
+    content::WebContents* web_contents,
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    const base::Callback<void(bool)>& callback) const {
   return scoped_ptr<ManagementSetEnabledFunctionInstallPromptDelegate>(
-      new ManagementSetEnabledFunctionInstallPromptDelegate(function,
-                                                            extension));
+      new ManagementSetEnabledFunctionInstallPromptDelegate(
+          web_contents, browser_context, extension, callback));
 }
 
 scoped_ptr<extensions::RequirementsChecker>

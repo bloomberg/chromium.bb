@@ -627,8 +627,9 @@ void CrxInstaller::ConfirmInstall() {
   if (client_ &&
       (!allow_silent_install_ || !approved_) &&
       !update_from_settings_page_) {
-    AddRef();  // Balanced in InstallUIProceed() and InstallUIAbort().
-    client_->ShowDialog(this, extension(), nullptr, show_dialog_callback_);
+    AddRef();  // Balanced in OnInstallPromptDone().
+    client_->ShowDialog(base::Bind(&CrxInstaller::OnInstallPromptDone, this),
+                        extension(), nullptr, show_dialog_callback_);
   } else {
     if (!installer_task_runner_->PostTask(
             FROM_HERE,
@@ -638,37 +639,30 @@ void CrxInstaller::ConfirmInstall() {
   return;
 }
 
-void CrxInstaller::InstallUIProceed() {
+void CrxInstaller::OnInstallPromptDone(ExtensionInstallPrompt::Result result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  ExtensionService* service = service_weak_.get();
-  if (!service || service->browser_terminating())
-    return;
-
   // If update_from_settings_page_ boolean is true, this functions is
   // getting called in response to ExtensionInstallPrompt::ConfirmReEnable()
   // and if it is false, this function is called in response to
   // ExtensionInstallPrompt::ShowDialog().
-  if (update_from_settings_page_) {
-    service->GrantPermissionsAndEnableExtension(extension());
-  } else {
-    if (!installer_task_runner_->PostTask(
-            FROM_HERE,
-            base::Bind(&CrxInstaller::CompleteInstall, this)))
+  if (result == ExtensionInstallPrompt::Result::ACCEPTED) {
+    ExtensionService* service = service_weak_.get();
+    if (!service || service->browser_terminating())
+      return;
+
+    if (update_from_settings_page_) {
+      service->GrantPermissionsAndEnableExtension(extension());
+    } else if (!installer_task_runner_->PostTask(
+                   FROM_HERE,
+                   base::Bind(&CrxInstaller::CompleteInstall, this))) {
       NOTREACHED();
-  }
-
-  Release();  // balanced in ConfirmInstall() or ConfirmReEnable().
-}
-
-void CrxInstaller::InstallUIAbort(bool user_initiated) {
-  // If update_from_settings_page_ boolean is true, this functions is
-  // getting called in response to ExtensionInstallPrompt::ConfirmReEnable()
-  // and if it is false, this function is called in response to
-  // ExtensionInstallPrompt::ShowDialog().
-  if (!update_from_settings_page_) {
-    const char* histogram_name = user_initiated ? "InstallCancel"
-                                                : "InstallAbort";
+    }
+  } else if (!update_from_settings_page_) {
+    const char* histogram_name =
+        result == ExtensionInstallPrompt::Result::USER_CANCELED
+            ? "InstallCancel"
+            : "InstallAbort";
     ExtensionService::RecordPermissionMessagesHistogram(
         extension(), histogram_name);
 
@@ -676,9 +670,6 @@ void CrxInstaller::InstallUIAbort(bool user_initiated) {
   }
 
   Release();  // balanced in ConfirmInstall() or ConfirmReEnable().
-
-  // We're done. Since we don't post any more tasks to ourself, our ref count
-  // should go to zero and we die. The destructor will clean up the temp dir.
 }
 
 void CrxInstaller::CompleteInstall() {
@@ -912,13 +903,13 @@ void CrxInstaller::ConfirmReEnable() {
     return;
 
   if (client_) {
-    AddRef();  // Balanced in InstallUIProceed() and InstallUIAbort().
+    AddRef();  // Balanced in OnInstallPromptDone().
     ExtensionInstallPrompt::PromptType type =
         ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(
             service->profile(), extension());
     client_->ShowDialog(
-        this, extension(), nullptr,
-        make_scoped_ptr(new ExtensionInstallPrompt::Prompt(type)),
+        base::Bind(&CrxInstaller::OnInstallPromptDone, this), extension(),
+        nullptr, make_scoped_ptr(new ExtensionInstallPrompt::Prompt(type)),
         ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   }
 }

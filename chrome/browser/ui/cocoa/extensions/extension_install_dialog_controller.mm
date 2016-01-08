@@ -4,7 +4,10 @@
 
 #import "chrome/browser/ui/cocoa/extensions/extension_install_dialog_controller.h"
 
+#include <utility>
+
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
@@ -14,7 +17,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
-#import "chrome/browser/ui/cocoa/extensions/extension_install_view_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/windowed_install_dialog_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/web_contents.h"
@@ -25,30 +27,32 @@ namespace {
 
 void ShowExtensionInstallDialogImpl(
     ExtensionInstallPromptShowParams* show_params,
-    ExtensionInstallPrompt::Delegate* delegate,
+    const ExtensionInstallPrompt::DoneCallback& done_callback,
     scoped_ptr<ExtensionInstallPrompt::Prompt> prompt) {
   // These objects will delete themselves when the dialog closes.
   if (!show_params->GetParentWebContents()) {
-    new WindowedInstallDialogController(show_params, delegate, prompt.Pass());
+    new WindowedInstallDialogController(show_params, done_callback,
+                                        std::move(prompt));
     return;
   }
 
-  new ExtensionInstallDialogController(show_params, delegate, prompt.Pass());
+  new ExtensionInstallDialogController(show_params, done_callback,
+                                       std::move(prompt));
 }
 
 }  // namespace
 
 ExtensionInstallDialogController::ExtensionInstallDialogController(
     ExtensionInstallPromptShowParams* show_params,
-    ExtensionInstallPrompt::Delegate* delegate,
+    const ExtensionInstallPrompt::DoneCallback& done_callback,
     scoped_ptr<ExtensionInstallPrompt::Prompt> prompt)
-    : delegate_(delegate) {
+    : done_callback_(done_callback) {
   ExtensionInstallPrompt::PromptType promptType = prompt->type();
   view_controller_.reset([[ExtensionInstallViewController alloc]
       initWithProfile:show_params->profile()
             navigator:show_params->GetParentWebContents()
              delegate:this
-               prompt:prompt.Pass()]);
+               prompt:std::move(prompt)]);
 
   base::scoped_nsobject<NSWindow> window([[ConstrainedWindowCustomWindow alloc]
       initWithContentRect:[[view_controller_ view] bounds]]);
@@ -68,27 +72,37 @@ ExtensionInstallDialogController::ExtensionInstallDialogController(
 ExtensionInstallDialogController::~ExtensionInstallDialogController() {
 }
 
-void ExtensionInstallDialogController::InstallUIProceed() {
-  if (sampling_event_.get())
-    sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kProceed);
-  delegate_->InstallUIProceed();
-  delegate_ = NULL;
-  constrained_window_->CloseWebContentsModalDialog();
+void ExtensionInstallDialogController::OnOkButtonClicked() {
+  OnPromptButtonClicked(ExtensionInstallPrompt::Result::ACCEPTED,
+                        ExperienceSamplingEvent::kProceed);
 }
 
-void ExtensionInstallDialogController::InstallUIAbort(bool user_initiated) {
-  if (sampling_event_.get())
-    sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kDeny);
-  delegate_->InstallUIAbort(user_initiated);
-  delegate_ = NULL;
-  constrained_window_->CloseWebContentsModalDialog();
+void ExtensionInstallDialogController::OnCancelButtonClicked() {
+  OnPromptButtonClicked(ExtensionInstallPrompt::Result::USER_CANCELED,
+                        ExperienceSamplingEvent::kDeny);
+}
+
+void ExtensionInstallDialogController::OnStoreLinkClicked() {
+  OnPromptButtonClicked(ExtensionInstallPrompt::Result::USER_CANCELED,
+                        ExperienceSamplingEvent::kDeny);
 }
 
 void ExtensionInstallDialogController::OnConstrainedWindowClosed(
     ConstrainedWindowMac* window) {
-  if (delegate_)
-    delegate_->InstallUIAbort(false);
+  if (!done_callback_.is_null()) {
+    base::ResetAndReturn(&done_callback_).Run(
+        ExtensionInstallPrompt::Result::ABORTED);
+  }
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+}
+
+void ExtensionInstallDialogController::OnPromptButtonClicked(
+    ExtensionInstallPrompt::Result result,
+    const char* decision_event) {
+  if (sampling_event_.get())
+    sampling_event_->CreateUserDecisionEvent(decision_event);
+  base::ResetAndReturn(&done_callback_).Run(result);
+  constrained_window_->CloseWebContentsModalDialog();
 }
 
 // static

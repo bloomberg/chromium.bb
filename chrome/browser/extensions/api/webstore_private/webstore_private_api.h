@@ -46,7 +46,6 @@ class WebstorePrivateApi {
 
 class WebstorePrivateBeginInstallWithManifest3Function
     : public UIThreadExtensionFunction,
-      public ExtensionInstallPrompt::Delegate,
       public WebstoreInstallHelper::Delegate {
  public:
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.beginInstallWithManifest3",
@@ -70,9 +69,10 @@ class WebstorePrivateBeginInstallWithManifest3Function
                               InstallHelperResultCode result,
                               const std::string& error_message) override;
 
-  // ExtensionInstallPrompt::Delegate:
-  void InstallUIProceed() override;
-  void InstallUIAbort(bool user_initiated) override;
+  void OnInstallPromptDone(ExtensionInstallPrompt::Result result);
+
+  void HandleInstallProceed();
+  void HandleInstallAbort(bool user_initiated);
 
   ExtensionFunction::ResponseValue BuildResponse(
       api::webstore_private::Result result,

@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
@@ -103,13 +104,13 @@ base::string16 PrepareForDisplay(const base::string16& message,
 
 void ShowExtensionInstallDialogImpl(
     ExtensionInstallPromptShowParams* show_params,
-    ExtensionInstallPrompt::Delegate* delegate,
+    const ExtensionInstallPrompt::DoneCallback& done_callback,
     scoped_ptr<ExtensionInstallPrompt::Prompt> prompt) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   bool use_tab_modal_dialog = prompt->ShouldUseTabModalDialog();
   ExtensionInstallDialogView* dialog = new ExtensionInstallDialogView(
-      show_params->profile(), show_params->GetParentWebContents(), delegate,
-      std::move(prompt));
+      show_params->profile(), show_params->GetParentWebContents(),
+      done_callback, std::move(prompt));
   if (use_tab_modal_dialog) {
     content::WebContents* parent_web_contents =
         show_params->GetParentWebContents();
@@ -198,11 +199,11 @@ IconedView::IconedView(views::View* view, const gfx::ImageSkia& image) {
 ExtensionInstallDialogView::ExtensionInstallDialogView(
     Profile* profile,
     content::PageNavigator* navigator,
-    ExtensionInstallPrompt::Delegate* delegate,
+    const ExtensionInstallPrompt::DoneCallback& done_callback,
     scoped_ptr<ExtensionInstallPrompt::Prompt> prompt)
     : profile_(profile),
       navigator_(navigator),
-      delegate_(delegate),
+      done_callback_(done_callback),
       prompt_(std::move(prompt)),
       container_(NULL),
       scroll_view_(NULL),
@@ -211,8 +212,10 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
 }
 
 ExtensionInstallDialogView::~ExtensionInstallDialogView() {
-  if (!handled_result_)
-    delegate_->InstallUIAbort(true);
+  if (!handled_result_ && !done_callback_.is_null()) {
+    base::ResetAndReturn(&done_callback_)
+        .Run(ExtensionInstallPrompt::Result::USER_CANCELED);
+  }
 }
 
 void ExtensionInstallDialogView::InitView() {
@@ -593,7 +596,8 @@ bool ExtensionInstallDialogView::Cancel() {
   UpdateInstallResultHistogram(false);
   if (sampling_event_)
     sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kDeny);
-  delegate_->InstallUIAbort(true);
+  base::ResetAndReturn(&done_callback_)
+      .Run(ExtensionInstallPrompt::Result::USER_CANCELED);
   return true;
 }
 
@@ -604,7 +608,8 @@ bool ExtensionInstallDialogView::Accept() {
   UpdateInstallResultHistogram(true);
   if (sampling_event_)
     sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kProceed);
-  delegate_->InstallUIProceed();
+  base::ResetAndReturn(&done_callback_)
+      .Run(ExtensionInstallPrompt::Result::ACCEPTED);
   return true;
 }
 

@@ -225,7 +225,7 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
 
 - (id)initWithProfile:(Profile*)profile
             navigator:(content::PageNavigator*)navigator
-             delegate:(ExtensionInstallPrompt::Delegate*)delegate
+             delegate:(ExtensionInstallViewDelegate*)delegate
                prompt:(scoped_ptr<ExtensionInstallPrompt::Prompt>)prompt {
   // We use a different XIB in the case of bundle installs, installs with
   // webstore data, or no permission warnings. These are laid out nicely for
@@ -267,15 +267,15 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
     displayer.browser()->OpenURL(params);
   }
 
-  delegate_->InstallUIAbort(/*user_initiated=*/true);
+  delegate_->OnStoreLinkClicked();
 }
 
 - (IBAction)cancel:(id)sender {
-  delegate_->InstallUIAbort(/*user_initiated=*/true);
+  delegate_->OnCancelButtonClicked();
 }
 
 - (IBAction)ok:(id)sender {
-  delegate_->InstallUIProceed();
+  delegate_->OnOkButtonClicked();
 }
 
 - (void)awakeFromNib {

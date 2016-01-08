@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
@@ -64,35 +65,39 @@ class ProgrammableInstallPrompt : public ExtensionInstallPrompt {
       : ExtensionInstallPrompt(contents)
   {}
 
-  ~ProgrammableInstallPrompt() override {}
+  ~ProgrammableInstallPrompt() override { g_done_callback = nullptr; }
 
   void ShowDialog(
-      Delegate* delegate,
+      const ExtensionInstallPrompt::DoneCallback& done_callback,
       const Extension* extension,
       const SkBitmap* icon,
       scoped_ptr<ExtensionInstallPrompt::Prompt> prompt,
       scoped_ptr<const extensions::PermissionSet> custom_permissions,
-      const ShowDialogCallback& callback) override {
-    delegate_ = delegate;
+      const ShowDialogCallback& show_dialog_callback) override {
+    done_callback_ = done_callback;
+    g_done_callback = &done_callback_;
   }
 
-  static bool Ready() {
-    return delegate_ != NULL;
-  }
+  static bool Ready() { return g_done_callback != nullptr; }
 
   static void Accept() {
-    delegate_->InstallUIProceed();
+    g_done_callback->Run(ExtensionInstallPrompt::Result::ACCEPTED);
   }
 
   static void Reject() {
-    delegate_->InstallUIAbort(true);
+    g_done_callback->Run(ExtensionInstallPrompt::Result::USER_CANCELED);
   }
 
  private:
-  static Delegate* delegate_;
+  static ExtensionInstallPrompt::DoneCallback* g_done_callback;
+
+  ExtensionInstallPrompt::DoneCallback done_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProgrammableInstallPrompt);
 };
 
-ExtensionInstallPrompt::Delegate* ProgrammableInstallPrompt::delegate_;
+ExtensionInstallPrompt::DoneCallback*
+    ProgrammableInstallPrompt::g_done_callback = nullptr;
 
 // Fake inline installer which creates a programmable prompt in place of
 // the normal dialog UI.

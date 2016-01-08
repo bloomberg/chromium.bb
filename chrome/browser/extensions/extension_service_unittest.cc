@@ -6042,13 +6042,15 @@ TEST_F(ExtensionServiceTest, MultipleExternalInstallErrors) {
 
   // Accept the first extension, this will remove the error associated with
   // this extension. Also verify the other errors still exist.
-  GetError(extension_ids[0])->InstallUIProceed();
+  GetError(extension_ids[0])->OnInstallPromptDone(
+      ExtensionInstallPrompt::Result::ACCEPTED);
   EXPECT_FALSE(GetError(extension_ids[0]));
   ASSERT_TRUE(GetError(extension_ids[1]));
   EXPECT_TRUE(GetError(extension_ids[2]));
 
   // Abort the second extension.
-  GetError(extension_ids[1])->InstallUIAbort(true);
+  GetError(extension_ids[1])->OnInstallPromptDone(
+      ExtensionInstallPrompt::Result::USER_CANCELED);
   EXPECT_FALSE(GetError(extension_ids[0]));
   EXPECT_FALSE(GetError(extension_ids[1]));
   ASSERT_TRUE(GetError(extension_ids[2]));
@@ -6160,7 +6162,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallClickToRemove) {
   // Click the negative response.
   service_->external_install_manager()
       ->GetErrorsForTesting()[0]
-      ->InstallUIAbort(true);
+      ->OnInstallPromptDone(ExtensionInstallPrompt::Result::USER_CANCELED);
   // The Extension should be uninstalled.
   EXPECT_FALSE(registry()->GetExtensionById(updates_from_webstore,
                                             ExtensionRegistry::EVERYTHING));
@@ -6203,7 +6205,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallClickToKeep) {
   // Accept the extension.
   service_->external_install_manager()
       ->GetErrorsForTesting()[0]
-      ->InstallUIProceed();
+      ->OnInstallPromptDone(ExtensionInstallPrompt::Result::ACCEPTED);
 
   // It should be enabled again.
   EXPECT_TRUE(registry()->enabled_extensions().GetByID(updates_from_webstore));

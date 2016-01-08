@@ -86,7 +86,13 @@ void WebstoreReinstaller::WebContentsDestroyed() {
   AbortInstall();
 }
 
-void WebstoreReinstaller::InstallUIProceed() {
+void WebstoreReinstaller::OnInstallPromptDone(
+    ExtensionInstallPrompt::Result result) {
+  if (result != ExtensionInstallPrompt::Result::ACCEPTED) {
+    WebstoreStandaloneInstaller::OnInstallPromptDone(result);
+    return;
+  }
+
   if (!ExtensionSystem::Get(profile())->extension_service()->UninstallExtension(
           id(),
           UNINSTALL_REASON_REINSTALL,
@@ -100,7 +106,8 @@ void WebstoreReinstaller::InstallUIProceed() {
 }
 
 void WebstoreReinstaller::OnDeletionDone() {
-  WebstoreStandaloneInstaller::InstallUIProceed();
+  WebstoreStandaloneInstaller::OnInstallPromptDone(
+      ExtensionInstallPrompt::Result::ACCEPTED);
 }
 
 }  // namespace extensions

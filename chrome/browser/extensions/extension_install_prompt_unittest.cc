@@ -40,7 +40,7 @@ void VerifyPromptIconCallback(
     const base::Closure& quit_closure,
     const SkBitmap& expected_bitmap,
     ExtensionInstallPromptShowParams* params,
-    ExtensionInstallPrompt::Delegate* delegate,
+    const ExtensionInstallPrompt::DoneCallback& done_callback,
     scoped_ptr<ExtensionInstallPrompt::Prompt> prompt) {
   EXPECT_TRUE(gfx::BitmapsAreEqual(prompt->icon().AsBitmap(), expected_bitmap));
   quit_closure.Run();
@@ -51,7 +51,7 @@ void VerifyPromptPermissionsCallback(
     size_t regular_permissions_count,
     size_t withheld_permissions_count,
     ExtensionInstallPromptShowParams* params,
-    ExtensionInstallPrompt::Delegate* delegate,
+    const ExtensionInstallPrompt::DoneCallback& done_callback,
     scoped_ptr<ExtensionInstallPrompt::Prompt> install_prompt) {
   ASSERT_TRUE(install_prompt.get());
   EXPECT_EQ(regular_permissions_count,
@@ -113,8 +113,7 @@ TEST_F(ExtensionInstallPromptUnitTest, PromptShowsPermissionWarnings) {
   ExtensionInstallPrompt prompt(factory.CreateWebContents(profile()));
   base::RunLoop run_loop;
   prompt.ShowDialog(
-      nullptr,  // no delegate
-      extension.get(), nullptr,
+      ExtensionInstallPrompt::DoneCallback(), extension.get(), nullptr,
       make_scoped_ptr(new ExtensionInstallPrompt::Prompt(
           ExtensionInstallPrompt::PERMISSIONS_PROMPT)),
       std::move(permission_set),
@@ -151,7 +150,7 @@ TEST_F(ExtensionInstallPromptUnitTest, PromptShowsWithheldPermissions) {
   // We expect <all_hosts> to be withheld, but http://www.google.com/ and tabs
   // permissions should be granted as regular permissions.
   prompt.ShowDialog(
-      nullptr, extension.get(), nullptr,
+      ExtensionInstallPrompt::DoneCallback(), extension.get(), nullptr,
       base::Bind(&VerifyPromptPermissionsCallback, run_loop.QuitClosure(),
                  2u,    // |regular_permissions_count|.
                  1u));  // |withheld_permissions_count|.
@@ -183,8 +182,8 @@ TEST_F(ExtensionInstallPromptUnitTest,
           ExtensionInstallPrompt::DELEGATED_PERMISSIONS_PROMPT));
   sub_prompt->set_delegated_username("Username");
   prompt.ShowDialog(
-      nullptr,  // no delegate
-      extension.get(), nullptr, std::move(sub_prompt),
+      ExtensionInstallPrompt::DoneCallback(), extension.get(), nullptr,
+      std::move(sub_prompt),
       base::Bind(&VerifyPromptPermissionsCallback, run_loop.QuitClosure(),
                  2u,    // |regular_permissions_count|.
                  0u));  // |withheld_permissions_count|.
@@ -221,7 +220,7 @@ TEST_F(ExtensionInstallPromptTestWithService, ExtensionInstallPromptIconsTest) {
   {
     ExtensionInstallPrompt prompt(web_contents);
     base::RunLoop run_loop;
-    prompt.ShowDialog(nullptr,  // No delegate.
+    prompt.ShowDialog(ExtensionInstallPrompt::DoneCallback(),
                       extension,
                       nullptr,  // Force an icon fetch.
                       base::Bind(&VerifyPromptIconCallback,
@@ -233,7 +232,7 @@ TEST_F(ExtensionInstallPromptTestWithService, ExtensionInstallPromptIconsTest) {
     ExtensionInstallPrompt prompt(web_contents);
     base::RunLoop run_loop;
     gfx::ImageSkia app_icon = util::GetDefaultAppIcon();
-    prompt.ShowDialog(nullptr,  // No delegate.
+    prompt.ShowDialog(ExtensionInstallPrompt::DoneCallback(),
                       extension,
                       app_icon.bitmap(),  // Use a different icon.
                       base::Bind(&VerifyPromptIconCallback,

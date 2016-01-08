@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "content/public/browser/notification_observer.h"
@@ -33,8 +34,7 @@ class ExtensionRegistry;
 // extension is enabled already). Otherwise, a re-enable install prompt is
 // shown to user. The extension is enabled when user acknowledges it or the
 // flow is aborted when user declines it.
-class ExtensionEnableFlow : public ExtensionInstallPrompt::Delegate,
-                            public content::NotificationObserver,
+class ExtensionEnableFlow : public content::NotificationObserver,
                             public extensions::ExtensionRegistryObserver {
  public:
   ExtensionEnableFlow(Profile* profile,
@@ -88,9 +88,7 @@ class ExtensionEnableFlow : public ExtensionInstallPrompt::Delegate,
                               const extensions::Extension* extension,
                               extensions::UninstallReason reason) override;
 
-  // ExtensionInstallPrompt::Delegate overrides:
-  void InstallUIProceed() override;
-  void InstallUIAbort(bool user_initiated) override;
+  void InstallPromptDone(ExtensionInstallPrompt::Result result);
 
   Profile* const profile_;
   const std::string extension_id_;
@@ -115,6 +113,8 @@ class ExtensionEnableFlow : public ExtensionInstallPrompt::Delegate,
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
       extension_registry_observer_;
+
+  base::WeakPtrFactory<ExtensionEnableFlow> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionEnableFlow);
 };

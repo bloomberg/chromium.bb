@@ -22,6 +22,38 @@ using extensions::PermissionIDSet;
 using extensions::PermissionMessage;
 using extensions::PermissionMessages;
 
+namespace {
+
+class MockExtensionInstallViewDelegate : public ExtensionInstallViewDelegate {
+ public:
+  enum class Action {
+    UNDEFINED,
+    OKAY,
+    CANCEL,
+    LINK,
+  };
+
+  MockExtensionInstallViewDelegate() : action_(Action::UNDEFINED) {}
+  ~MockExtensionInstallViewDelegate() override {}
+
+  void OnOkButtonClicked() override { SetAction(Action::OKAY); }
+  void OnCancelButtonClicked() override { SetAction(Action::CANCEL); }
+  void OnStoreLinkClicked() override { SetAction(Action::LINK); }
+
+  Action action() const { return action_; }
+
+ private:
+  void SetAction(Action action) {
+    if (action_ != Action::UNDEFINED)
+      ADD_FAILURE() << "SetAction() called twice!";
+    action_ = action;
+  }
+
+  Action action_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockExtensionInstallViewDelegate);
+};
+
 // Base class for our tests.
 class ExtensionInstallViewControllerTest : public CocoaProfileTest {
  public:
@@ -33,10 +65,12 @@ class ExtensionInstallViewControllerTest : public CocoaProfileTest {
   scoped_refptr<extensions::Extension> extension_;
 };
 
+}  // namespace
+
 // Test that we can load the two kinds of prompts correctly, that the outlets
 // are hooked up, and that the dialog calls cancel when cancel is pressed.
 TEST_F(ExtensionInstallViewControllerTest, BasicsNormalCancel) {
-  chrome::MockExtensionInstallPromptDelegate delegate;
+  MockExtensionInstallViewDelegate delegate;
 
   scoped_ptr<ExtensionInstallPrompt::Prompt> prompt(
       chrome::BuildExtensionInstallPrompt(extension_.get()));
@@ -86,14 +120,14 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsNormalCancel) {
   EXPECT_NE(0u, [[[controller okButton] stringValue] length]);
   EXPECT_NE('^', [[[controller okButton] stringValue] characterAtIndex:0]);
 
-  // Test that cancel calls our delegate.
+  // Test that cancel calls our callback.
   [controller cancel:nil];
-  EXPECT_EQ(1, delegate.abort_count());
-  EXPECT_EQ(0, delegate.proceed_count());
+  EXPECT_EQ(MockExtensionInstallViewDelegate::Action::CANCEL,
+            delegate.action());
 }
 
 TEST_F(ExtensionInstallViewControllerTest, BasicsNormalOK) {
-  chrome::MockExtensionInstallPromptDelegate delegate;
+  MockExtensionInstallViewDelegate delegate;
 
   scoped_ptr<ExtensionInstallPrompt::Prompt> prompt(
       chrome::BuildExtensionInstallPrompt(extension_.get()));
@@ -114,15 +148,15 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsNormalOK) {
   [controller view];  // Force nib load.
   [controller ok:nil];
 
-  EXPECT_EQ(0, delegate.abort_count());
-  EXPECT_EQ(1, delegate.proceed_count());
+  EXPECT_EQ(MockExtensionInstallViewDelegate::Action::OKAY,
+            delegate.action());
 }
 
 // Test that controls get repositioned when there are two warnings vs one
 // warning.
 TEST_F(ExtensionInstallViewControllerTest, MultipleWarnings) {
-  chrome::MockExtensionInstallPromptDelegate delegate1;
-  chrome::MockExtensionInstallPromptDelegate delegate2;
+  MockExtensionInstallViewDelegate delegate1;
+  MockExtensionInstallViewDelegate delegate2;
 
   scoped_ptr<ExtensionInstallPrompt::Prompt> one_warning_prompt(
       chrome::BuildExtensionInstallPrompt(extension_.get()));
@@ -171,7 +205,7 @@ TEST_F(ExtensionInstallViewControllerTest, MultipleWarnings) {
 // Test that we can load the skinny prompt correctly, and that the outlets are
 // are hooked up.
 TEST_F(ExtensionInstallViewControllerTest, BasicsSkinny) {
-  chrome::MockExtensionInstallPromptDelegate delegate;
+  MockExtensionInstallViewDelegate delegate;
 
   // No warnings should trigger skinny prompt.
   scoped_ptr<ExtensionInstallPrompt::Prompt> no_warnings_prompt(
@@ -213,7 +247,7 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsSkinny) {
 // Test that we can load the inline prompt correctly, and that the outlets are
 // are hooked up.
 TEST_F(ExtensionInstallViewControllerTest, BasicsInline) {
-  chrome::MockExtensionInstallPromptDelegate delegate;
+  MockExtensionInstallViewDelegate delegate;
 
   // No warnings should trigger skinny prompt.
   scoped_ptr<ExtensionInstallPrompt::Prompt> inline_prompt(
@@ -273,7 +307,7 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsInline) {
 }
 
 TEST_F(ExtensionInstallViewControllerTest, PostInstallPermissionsPrompt) {
-  chrome::MockExtensionInstallPromptDelegate delegate;
+  MockExtensionInstallViewDelegate delegate;
 
   scoped_ptr<ExtensionInstallPrompt::Prompt> prompt(
       chrome::BuildExtensionPostInstallPermissionsPrompt(extension_.get()));
@@ -297,12 +331,13 @@ TEST_F(ExtensionInstallViewControllerTest, PostInstallPermissionsPrompt) {
   EXPECT_FALSE([controller okButton]);
 
   [controller cancel:nil];
-  EXPECT_EQ(1, delegate.abort_count());
+  EXPECT_EQ(MockExtensionInstallViewDelegate::Action::CANCEL,
+            delegate.action());
 }
 
 // Test that permission details show up.
 TEST_F(ExtensionInstallViewControllerTest, PermissionsDetails) {
-  chrome::MockExtensionInstallPromptDelegate delegate;
+  MockExtensionInstallViewDelegate delegate;
 
   scoped_ptr<ExtensionInstallPrompt::Prompt> prompt(
       chrome::BuildExtensionInstallPrompt(extension_.get()));

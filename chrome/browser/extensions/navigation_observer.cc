@@ -19,7 +19,8 @@ using content::NavigationEntry;
 
 namespace extensions {
 
-NavigationObserver::NavigationObserver(Profile* profile) : profile_(profile) {
+NavigationObserver::NavigationObserver(Profile* profile)
+    : profile_(profile), weak_factory_(this) {
   RegisterForNotifications();
 }
 
@@ -72,7 +73,7 @@ void NavigationObserver::PromptToEnableExtensionIfNecessary(
   ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
   if (extension_prefs->DidExtensionEscalatePermissions(extension->id())) {
     // Keep track of the extension id and nav controller we're prompting for.
-    // These must be reset in InstallUIProceed and InstallUIAbort.
+    // These must be reset in OnInstallPromptDone.
     in_progress_prompt_extension_id_ = extension->id();
     in_progress_prompt_navigation_controller_ = nav_controller;
 
@@ -82,45 +83,42 @@ void NavigationObserver::PromptToEnableExtensionIfNecessary(
         ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(profile_,
                                                                   extension);
     extension_install_prompt_->ShowDialog(
-        this, extension, nullptr,
+        base::Bind(&NavigationObserver::OnInstallPromptDone,
+                   weak_factory_.GetWeakPtr()),
+        extension, nullptr,
         make_scoped_ptr(new ExtensionInstallPrompt::Prompt(type)),
         ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   }
 }
 
-void NavigationObserver::InstallUIProceed() {
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  const Extension* extension = extension_service->GetExtensionById(
-      in_progress_prompt_extension_id_, true);
-  NavigationController* nav_controller =
-      in_progress_prompt_navigation_controller_;
-  CHECK(extension);
-  CHECK(nav_controller);
-
-  in_progress_prompt_extension_id_ = "";
-  in_progress_prompt_navigation_controller_ = NULL;
-  extension_install_prompt_.reset();
-
-  // Grant permissions, re-enable the extension, and then reload the tab.
-  extension_service->GrantPermissionsAndEnableExtension(extension);
-  nav_controller->Reload(true);
-}
-
-void NavigationObserver::InstallUIAbort(bool user_initiated) {
+void NavigationObserver::OnInstallPromptDone(
+    ExtensionInstallPrompt::Result result) {
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   const Extension* extension = extension_service->GetExtensionById(
       in_progress_prompt_extension_id_, true);
 
-  in_progress_prompt_extension_id_ = "";
-  in_progress_prompt_navigation_controller_ = NULL;
-  extension_install_prompt_.reset();
+  if (result == ExtensionInstallPrompt::Result::ACCEPTED) {
+    NavigationController* nav_controller =
+        in_progress_prompt_navigation_controller_;
+    CHECK(extension);
+    CHECK(nav_controller);
 
-  std::string histogram_name = user_initiated ? "ReEnableCancel"
-                                              : "ReEnableAbort";
-  ExtensionService::RecordPermissionMessagesHistogram(
-      extension, histogram_name.c_str());
+    // Grant permissions, re-enable the extension, and then reload the tab.
+    extension_service->GrantPermissionsAndEnableExtension(extension);
+    nav_controller->Reload(true);
+  } else {
+    std::string histogram_name =
+        result == ExtensionInstallPrompt::Result::USER_CANCELED
+            ? "ReEnableCancel"
+            : "ReEnableAbort";
+    ExtensionService::RecordPermissionMessagesHistogram(extension,
+                                                        histogram_name.c_str());
+  }
+
+  in_progress_prompt_extension_id_ = std::string();
+  in_progress_prompt_navigation_controller_ = nullptr;
+  extension_install_prompt_.reset();
 }
 
 }  // namespace extensions

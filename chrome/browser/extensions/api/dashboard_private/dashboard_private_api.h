@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"
 #include "chrome/browser/extensions/bundle_installer.h"
@@ -29,7 +30,6 @@ class Extension;
 
 class DashboardPrivateShowPermissionPromptForDelegatedInstallFunction
     : public UIThreadExtensionFunction,
-      public ExtensionInstallPrompt::Delegate,
       public WebstoreInstallHelper::Delegate {
  public:
   DECLARE_EXTENSION_FUNCTION(
@@ -55,9 +55,7 @@ class DashboardPrivateShowPermissionPromptForDelegatedInstallFunction
                               InstallHelperResultCode result,
                               const std::string& error_message) override;
 
-  // ExtensionInstallPrompt::Delegate:
-  void InstallUIProceed() override;
-  void InstallUIAbort(bool user_initiated) override;
+  void OnInstallPromptDone(ExtensionInstallPrompt::Result result);
 
   ExtensionFunction::ResponseValue BuildResponse(
       api::dashboard_private::Result result,
@@ -74,6 +72,9 @@ class DashboardPrivateShowPermissionPromptForDelegatedInstallFunction
   scoped_refptr<Extension> dummy_extension_;
 
   scoped_ptr<ExtensionInstallPrompt> install_prompt_;
+
+  DISALLOW_COPY_AND_ASSIGN(
+      DashboardPrivateShowPermissionPromptForDelegatedInstallFunction);
 };
 
 class DashboardPrivateShowPermissionPromptForDelegatedBundleInstallFunction

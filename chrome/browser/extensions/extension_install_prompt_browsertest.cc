@@ -7,14 +7,18 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_install_prompt_show_params.h"
+#include "chrome/browser/extensions/extension_install_prompt_test_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
+
+using extensions::ScopedTestDialogAutoConfirm;
 
 namespace {
 
@@ -25,49 +29,6 @@ scoped_refptr<extensions::Extension> BuildTestExtension() {
                                  .Set("version", "1.0")))
       .Build();
 }
-
-// ExtensionInstallPrompt::ShowDialogCallback which proceeds without showing the
-// prompt.
-void TestShowDialogCallback(ExtensionInstallPromptShowParams* params,
-                            ExtensionInstallPrompt::Delegate* delegate,
-                            scoped_ptr<ExtensionInstallPrompt::Prompt> prompt) {
-  delegate->InstallUIProceed();
-}
-
-class TestExtensionInstallPromptDelegate
-    : public ExtensionInstallPrompt::Delegate {
- public:
-  explicit TestExtensionInstallPromptDelegate(const base::Closure& quit_closure)
-      : quit_closure_(quit_closure), proceeded_(false), aborted_(false) {}
-
-  ~TestExtensionInstallPromptDelegate() override {
-  }
-
-  bool DidProceed() {
-    return proceeded_;
-  }
-
-  bool DidAbort() {
-    return aborted_;
-  }
-
- private:
-  void InstallUIProceed() override {
-    proceeded_ = true;
-    quit_closure_.Run();
-  }
-
-  void InstallUIAbort(bool user_initiated) override {
-    aborted_ = true;
-    quit_closure_.Run();
-  }
-
-  base::Closure quit_closure_;
-  bool proceeded_;
-  bool aborted_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestExtensionInstallPromptDelegate);
-};
 
 }  // namespace
 
@@ -86,17 +47,21 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallPromptBrowserTest,
   int web_contents_index = tab_strip_model->GetIndexOfWebContents(web_contents);
   scoped_refptr<extensions::Extension> extension(BuildTestExtension());
 
+  ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);
+
   ExtensionInstallPrompt prompt(web_contents);
   tab_strip_model->CloseWebContentsAt(web_contents_index,
                                       TabStripModel::CLOSE_NONE);
   content::RunAllPendingInMessageLoop();
 
   base::RunLoop run_loop;
-  TestExtensionInstallPromptDelegate delegate(run_loop.QuitClosure());
-  prompt.ShowDialog(&delegate, extension.get(), nullptr,
-                    base::Bind(&TestShowDialogCallback));
+  ExtensionInstallPromptTestHelper helper(run_loop.QuitClosure());
+  prompt.ShowDialog(
+      helper.GetCallback(),
+      extension.get(), nullptr,
+      ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   run_loop.Run();
-  EXPECT_TRUE(delegate.DidAbort());
+  EXPECT_EQ(ExtensionInstallPrompt::Result::ABORTED, helper.result());
 }
 
 // Test that ExtensionInstallPrompt aborts the install if the gfx::NativeWindow
@@ -109,17 +74,21 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallPromptBrowserTest,
 
   scoped_refptr<extensions::Extension> extension(BuildTestExtension());
 
+  ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);
+
   ExtensionInstallPrompt prompt(browser()->profile(),
                                 browser()->window()->GetNativeWindow());
   browser()->window()->Close();
   content::RunAllPendingInMessageLoop();
 
   base::RunLoop run_loop;
-  TestExtensionInstallPromptDelegate delegate(run_loop.QuitClosure());
-  prompt.ShowDialog(&delegate, extension.get(), nullptr,
-                    base::Bind(&TestShowDialogCallback));
+  ExtensionInstallPromptTestHelper helper(run_loop.QuitClosure());
+  prompt.ShowDialog(
+      helper.GetCallback(),
+      extension.get(), nullptr,
+      ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   run_loop.Run();
-  EXPECT_TRUE(delegate.DidAbort());
+  EXPECT_EQ(ExtensionInstallPrompt::Result::ABORTED, helper.result());
 }
 
 // Test that ExtensionInstallPrompt shows the dialog normally if no parent
@@ -128,13 +97,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallPromptBrowserTest,
 IN_PROC_BROWSER_TEST_F(ExtensionInstallPromptBrowserTest, NoParent) {
   scoped_refptr<extensions::Extension> extension(BuildTestExtension());
 
+  ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);
+
   ExtensionInstallPrompt prompt(browser()->profile(), NULL);
   base::RunLoop run_loop;
-  TestExtensionInstallPromptDelegate delegate(run_loop.QuitClosure());
-  prompt.ShowDialog(&delegate, extension.get(), nullptr,
-                    base::Bind(&TestShowDialogCallback));
+  ExtensionInstallPromptTestHelper helper(run_loop.QuitClosure());
+  prompt.ShowDialog(
+      helper.GetCallback(),
+      extension.get(), nullptr,
+      ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   run_loop.Run();
-
-  // TestShowDialogCallback() should have signaled the install to proceed.
-  EXPECT_TRUE(delegate.DidProceed());
+  EXPECT_EQ(ExtensionInstallPrompt::Result::ACCEPTED, helper.result());
 }

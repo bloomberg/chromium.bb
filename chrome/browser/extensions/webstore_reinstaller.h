@@ -40,7 +40,7 @@ class WebstoreReinstaller : public WebstoreStandaloneInstaller,
                                    std::string* error) const override;
   bool CheckRequestorPermitted(const base::DictionaryValue& webstore_data,
                                std::string* error) const override;
-  void InstallUIProceed() override;
+  void OnInstallPromptDone(ExtensionInstallPrompt::Result result) override;
 
   // content::WebContentsObserver:
   void WebContentsDestroyed() override;

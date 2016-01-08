@@ -10,27 +10,6 @@
 
 namespace chrome {
 
-// A simple delegate implementation that counts the number of times
-// |InstallUIProceed| and |InstallUIAbort| are called.
-class MockExtensionInstallPromptDelegate
-    : public ExtensionInstallPrompt::Delegate {
- public:
-  MockExtensionInstallPromptDelegate()
-      : proceed_count_(0),
-        abort_count_(0) {}
-
-  // ExtensionInstallPrompt::Delegate overrides.
-  void InstallUIProceed() override;
-  void InstallUIAbort(bool user_initiated) override;
-
-  int proceed_count() { return proceed_count_; }
-  int abort_count() { return abort_count_; }
-
- protected:
-  int proceed_count_;
-  int abort_count_;
-};
-
 // Loads the test extension from the given test directory and manifest file.
 scoped_refptr<extensions::Extension> LoadInstallPromptExtension(
     const char* extension_dir_name,

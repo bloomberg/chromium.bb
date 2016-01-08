@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -147,25 +148,22 @@ SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
 
 // If auto confirm is enabled then posts a task to proceed with or cancel the
 // install and returns true. Otherwise returns false.
-bool AutoConfirmPrompt(ExtensionInstallPrompt::Delegate* delegate) {
+bool AutoConfirmPrompt(ExtensionInstallPrompt::DoneCallback* callback) {
   switch (extensions::ScopedTestDialogAutoConfirm::GetAutoConfirmValue()) {
     case extensions::ScopedTestDialogAutoConfirm::NONE:
       return false;
-    // We use PostTask instead of calling the delegate directly here, because in
+    // We use PostTask instead of calling the callback directly here, because in
     // the real implementations it's highly likely the message loop will be
     // pumping a few times before the user clicks accept or cancel.
     case extensions::ScopedTestDialogAutoConfirm::ACCEPT:
       base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&ExtensionInstallPrompt::Delegate::InstallUIProceed,
-                     base::Unretained(delegate)));
+          FROM_HERE, base::Bind(base::ResetAndReturn(callback),
+                                ExtensionInstallPrompt::Result::ACCEPTED));
       return true;
     case extensions::ScopedTestDialogAutoConfirm::CANCEL:
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(&ExtensionInstallPrompt::Delegate::InstallUIAbort,
-                     base::Unretained(delegate),
-                     true));
+          FROM_HERE, base::Bind(base::ResetAndReturn(callback),
+                                ExtensionInstallPrompt::Result::USER_CANCELED));
       return true;
   }
 
@@ -625,7 +623,6 @@ ExtensionInstallPrompt::ExtensionInstallPrompt(content::WebContents* contents)
       install_ui_(extensions::CreateExtensionInstallUI(
           ProfileForWebContents(contents))),
       show_params_(new ExtensionInstallPromptShowParams(contents)),
-      delegate_(NULL),
       did_call_show_dialog_(false) {
 }
 
@@ -637,7 +634,6 @@ ExtensionInstallPrompt::ExtensionInstallPrompt(Profile* profile,
       install_ui_(extensions::CreateExtensionInstallUI(profile)),
       show_params_(
           new ExtensionInstallPromptShowParams(profile, native_window)),
-      delegate_(NULL),
       did_call_show_dialog_(false) {
 }
 
@@ -645,26 +641,26 @@ ExtensionInstallPrompt::~ExtensionInstallPrompt() {
 }
 
 void ExtensionInstallPrompt::ShowDialog(
-    Delegate* delegate,
+    const DoneCallback& done_callback,
     const Extension* extension,
     const SkBitmap* icon,
     const ShowDialogCallback& show_dialog_callback) {
-  ShowDialog(delegate, extension, icon,
+  ShowDialog(done_callback, extension, icon,
              make_scoped_ptr(new Prompt(INSTALL_PROMPT)), show_dialog_callback);
 }
 
 void ExtensionInstallPrompt::ShowDialog(
-    Delegate* delegate,
+    const DoneCallback& done_callback,
     const Extension* extension,
     const SkBitmap* icon,
     scoped_ptr<Prompt> prompt,
     const ShowDialogCallback& show_dialog_callback) {
-  ShowDialog(delegate, extension, icon, std::move(prompt), nullptr,
+  ShowDialog(done_callback, extension, icon, std::move(prompt), nullptr,
              show_dialog_callback);
 }
 
 void ExtensionInstallPrompt::ShowDialog(
-    Delegate* delegate,
+    const DoneCallback& done_callback,
     const Extension* extension,
     const SkBitmap* icon,
     scoped_ptr<Prompt> prompt,
@@ -673,7 +669,7 @@ void ExtensionInstallPrompt::ShowDialog(
   DCHECK(ui_loop_ == base::MessageLoop::current());
   DCHECK(prompt);
   extension_ = extension;
-  delegate_ = delegate;
+  done_callback_ = done_callback;
   if (icon && !icon->empty())
     SetIcon(icon);
   prompt_ = std::move(prompt);
@@ -690,7 +686,7 @@ void ExtensionInstallPrompt::ShowDialog(
   if (extension->is_theme()) {
     if (extension->from_webstore() ||
         extensions::FeatureSwitch::easy_off_store_install()->IsEnabled()) {
-      delegate->InstallUIProceed();
+      base::ResetAndReturn(&done_callback_).Run(Result::ACCEPTED);
       return;
     }
   }
@@ -834,20 +830,19 @@ void ExtensionInstallPrompt::ShowConfirmation() {
   prompt_->set_icon(gfx::Image::CreateFrom1xBitmap(icon_));
 
   if (show_params_->WasParentDestroyed()) {
-    delegate_->InstallUIAbort(false);
+    base::ResetAndReturn(&done_callback_).Run(Result::ABORTED);
     return;
   }
 
   g_last_prompt_type_for_tests = prompt_->type();
   did_call_show_dialog_ = true;
 
-  if (AutoConfirmPrompt(delegate_))
+  if (AutoConfirmPrompt(&done_callback_))
     return;
 
   if (show_dialog_callback_.is_null())
-    GetDefaultShowDialogCallback().Run(show_params_.get(), delegate_,
-                                       std::move(prompt_));
-  else
-    show_dialog_callback_.Run(show_params_.get(), delegate_,
-                              std::move(prompt_));
+    show_dialog_callback_ = GetDefaultShowDialogCallback();
+  base::ResetAndReturn(&show_dialog_callback_)
+      .Run(show_params_.get(), base::ResetAndReturn(&done_callback_),
+           std::move(prompt_));
 }

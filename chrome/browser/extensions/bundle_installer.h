@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
@@ -44,7 +45,6 @@ namespace extensions {
 //  2) CompleteInstall: install the CRXs and show confirmation bubble
 //
 class BundleInstaller : public WebstoreInstallHelper::Delegate,
-                        public ExtensionInstallPrompt::Delegate,
                         public WebstoreInstaller::Delegate,
                         public chrome::BrowserListObserver {
  public:
@@ -158,10 +158,6 @@ class BundleInstaller : public WebstoreInstallHelper::Delegate,
                               InstallHelperResultCode result_code,
                               const std::string& error_message) override;
 
-  // ExtensionInstallPrompt::Delegate implementation:
-  void InstallUIProceed() override;
-  void InstallUIAbort(bool user_initiated) override;
-
   // WebstoreInstaller::Delegate implementation:
   void OnExtensionInstallSuccess(const std::string& id) override;
   void OnExtensionInstallFailure(
@@ -171,6 +167,8 @@ class BundleInstaller : public WebstoreInstallHelper::Delegate,
 
   // chrome::BrowserListObserver implementation:
   void OnBrowserRemoved(Browser* browser) override;
+
+  void OnInstallPromptDone(ExtensionInstallPrompt::Result result);
 
   // Holds the Extensions used to generate the permission warnings.
   ExtensionList dummy_extensions_;
@@ -212,6 +210,8 @@ class BundleInstaller : public WebstoreInstallHelper::Delegate,
 
   ApprovalCallback approval_callback_;
   base::Closure install_callback_;
+
+  base::WeakPtrFactory<BundleInstaller> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BundleInstaller);
 };

@@ -67,9 +67,7 @@ class RequirementsChecker;
 // terminating during the install. We can't listen for the app termination
 // notification here in this class because it can be destroyed on any thread
 // and won't safely be able to clean up UI thread notification listeners.
-class CrxInstaller
-    : public SandboxedUnpackerClient,
-      public ExtensionInstallPrompt::Delegate {
+class CrxInstaller : public SandboxedUnpackerClient {
  public:
   // Used in histograms; do not change order.
   enum OffStoreInstallAllowReason {
@@ -108,9 +106,7 @@ class CrxInstaller
   // Convert the specified web app into an extension and install it.
   void InstallWebApp(const WebApplicationInfo& web_app);
 
-  // Overridden from ExtensionInstallPrompt::Delegate:
-  void InstallUIProceed() override;
-  void InstallUIAbort(bool user_initiated) override;
+  void OnInstallPromptDone(ExtensionInstallPrompt::Result result);
 
   int creation_flags() const { return creation_flags_; }
   void set_creation_flags(int val) { creation_flags_ = val; }

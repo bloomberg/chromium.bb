@@ -291,9 +291,12 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
   }
   install_prompt_.reset(new ExtensionInstallPrompt(web_contents));
   install_prompt_->ShowDialog(
-      this, dummy_extension_.get(), &icon_,
+      base::Bind(&WebstorePrivateBeginInstallWithManifest3Function::
+                     OnInstallPromptDone,
+                 this),
+      dummy_extension_.get(), &icon_,
       ExtensionInstallPrompt::GetDefaultShowDialogCallback());
-  // Control flow finishes up in InstallUIProceed or InstallUIAbort.
+  // Control flow finishes up in OnInstallPromptDone.
 }
 
 void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseFailure(
@@ -309,7 +312,19 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseFailure(
   Release();
 }
 
-void WebstorePrivateBeginInstallWithManifest3Function::InstallUIProceed() {
+void WebstorePrivateBeginInstallWithManifest3Function::OnInstallPromptDone(
+    ExtensionInstallPrompt::Result result) {
+  if (result == ExtensionInstallPrompt::Result::ACCEPTED) {
+    HandleInstallProceed();
+  } else {
+    HandleInstallAbort(result == ExtensionInstallPrompt::Result::USER_CANCELED);
+  }
+
+  // Matches the AddRef in Run().
+  Release();
+}
+
+void WebstorePrivateBeginInstallWithManifest3Function::HandleInstallProceed() {
   // This gets cleared in CrxInstaller::ConfirmInstall(). TODO(asargent) - in
   // the future we may also want to add time-based expiration, where a whitelist
   // entry is only valid for some number of minutes.
@@ -338,12 +353,9 @@ void WebstorePrivateBeginInstallWithManifest3Function::InstallUIProceed() {
       dummy_extension_.get(), "WebStoreInstall");
 
   Respond(BuildResponse(api::webstore_private::RESULT_SUCCESS, std::string()));
-
-  // Matches the AddRef in Run().
-  Release();
 }
 
-void WebstorePrivateBeginInstallWithManifest3Function::InstallUIAbort(
+void WebstorePrivateBeginInstallWithManifest3Function::HandleInstallAbort(
     bool user_initiated) {
   // The web store install histograms are a subset of the install histograms.
   // We need to record both histograms here since CrxInstaller::InstallUIAbort
@@ -359,9 +371,6 @@ void WebstorePrivateBeginInstallWithManifest3Function::InstallUIAbort(
 
   Respond(BuildResponse(api::webstore_private::RESULT_USER_CANCELLED,
                         kUserCancelledError));
-
-  // Matches the AddRef in Run().
-  Release();
 }
 
 ExtensionFunction::ResponseValue

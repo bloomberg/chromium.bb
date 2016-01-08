@@ -45,7 +45,6 @@ class WebstoreDataFetcher;
 
 class WebstoreStandaloneInstaller
     : public base::RefCountedThreadSafe<WebstoreStandaloneInstaller>,
-      public ExtensionInstallPrompt::Delegate,
       public WebstoreDataFetcherDelegate,
       public WebstoreInstaller::Delegate,
       public WebstoreInstallHelper::Delegate {
@@ -152,9 +151,8 @@ class WebstoreStandaloneInstaller
   // Create an approval to pass installation parameters to the CrxInstaller.
   virtual scoped_ptr<WebstoreInstaller::Approval> CreateApproval() const;
 
-  // ExtensionInstallPrompt::Delegate interface implementation.
-  void InstallUIProceed() override;
-  void InstallUIAbort(bool user_initiated) override;
+  // Called once the install prompt has finished.
+  virtual void OnInstallPromptDone(ExtensionInstallPrompt::Result result);
 
   // Accessors to be used by subclasses.
   bool show_user_count() const { return show_user_count_; }
