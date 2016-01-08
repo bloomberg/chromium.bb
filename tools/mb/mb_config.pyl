@@ -510,7 +510,7 @@
       'WebKit Linux': 'swarming_gn_release_bot_x64',
       'WebKit Linux Trusty': 'swarming_gn_release_bot_x64',
       'WebKit Linux 32': 'swarming_gyp_release_bot_x86',
-      'WebKit Linux Oilpan': 'swarming_gn_oilpan_release_bot_x64',
+      'WebKit Linux Oilpan Builder': 'swarming_gn_oilpan_release_bot_x64',
       'WebKit Linux ASAN': 'swarming_gyp_asan_lsan_release_bot_x64',
       'WebKit Linux Oilpan ASAN': 'swarming_gyp_oilpan_asan_lsan_release_bot_x64',
       'WebKit Linux MSAN': 'swarming_gyp_msan_release_bot_x64',
