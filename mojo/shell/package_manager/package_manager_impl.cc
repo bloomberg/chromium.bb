@@ -10,14 +10,13 @@
 
 #include "base/bind.h"
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
-#include "mojo/fetcher/about_fetcher.h"
-#include "mojo/fetcher/data_fetcher.h"
-#include "mojo/fetcher/local_fetcher.h"
-#include "mojo/fetcher/network_fetcher.h"
-#include "mojo/fetcher/switches.h"
-#include "mojo/fetcher/update_fetcher.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/connect_util.h"
+#include "mojo/shell/fetcher/about_fetcher.h"
+#include "mojo/shell/fetcher/data_fetcher.h"
+#include "mojo/shell/fetcher/local_fetcher.h"
+#include "mojo/shell/fetcher/network_fetcher.h"
+#include "mojo/shell/fetcher/switches.h"
 #include "mojo/shell/package_manager/content_handler_connection.h"
 #include "mojo/shell/query_util.h"
 #include "mojo/shell/switches.h"
@@ -39,7 +38,7 @@ PackageManagerImpl::PackageManagerImpl(
   if (!shell_file_root.empty()) {
     GURL mojo_root_file_url =
         util::FilePathToFileURL(shell_file_root).Resolve(std::string());
-    url_resolver_.reset(new fetcher::URLResolver(mojo_root_file_url));
+    url_resolver_.reset(new URLResolver(mojo_root_file_url));
   }
 }
 
@@ -74,13 +73,13 @@ void PackageManagerImpl::FetchRequest(
     URLRequestPtr request,
     const Fetcher::FetchCallback& loader_callback) {
   GURL url(request->url);
-  if (url.SchemeIs(fetcher::AboutFetcher::kAboutScheme)) {
-    fetcher::AboutFetcher::Start(url, loader_callback);
+  if (url.SchemeIs(AboutFetcher::kAboutScheme)) {
+    AboutFetcher::Start(url, loader_callback);
     return;
   }
 
   if (url.SchemeIs(url::kDataScheme)) {
-    fetcher::DataFetcher::Start(url, loader_callback);
+    DataFetcher::Start(url, loader_callback);
     return;
   }
 
@@ -94,10 +93,9 @@ void PackageManagerImpl::FetchRequest(
     }
     // Ownership of this object is transferred to |loader_callback|.
     // TODO(beng): this is eff'n weird.
-    new fetcher::LocalFetcher(
-        network_service_.get(), resolved_url,
-        GetBaseURLAndQuery(resolved_url, nullptr),
-        shell_file_root_, loader_callback);
+    new LocalFetcher(network_service_.get(), resolved_url,
+                     GetBaseURLAndQuery(resolved_url, nullptr),
+                     shell_file_root_, loader_callback);
     return;
   }
 
@@ -108,8 +106,8 @@ void PackageManagerImpl::FetchRequest(
 
   // Ownership of this object is transferred to |loader_callback|.
   // TODO(beng): this is eff'n weird.
-  new fetcher::NetworkFetcher(disable_cache_, std::move(request),
-                              url_loader_factory_.get(), loader_callback);
+  new NetworkFetcher(disable_cache_, std::move(request),
+                     url_loader_factory_.get(), loader_callback);
 }
 
 uint32_t PackageManagerImpl::HandleWithContentHandler(

@@ -9,9 +9,9 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "mojo/fetcher/url_resolver.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "mojo/shell/fetcher/url_resolver.h"
 #include "mojo/shell/package_manager.h"
 
 namespace base {
@@ -90,7 +90,7 @@ class PackageManagerImpl : public PackageManager {
       ContentHandlerConnection* content_handler);
 
   ApplicationManager* application_manager_;
-  scoped_ptr<fetcher::URLResolver> url_resolver_;
+  scoped_ptr<URLResolver> url_resolver_;
   const bool disable_cache_;
   NetworkServicePtr network_service_;
   URLLoaderFactoryPtr url_loader_factory_;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/fetcher/data_fetcher.h"
+#include "mojo/shell/fetcher/data_fetcher.h"
 
 #include <stdint.h>
 
@@ -18,7 +18,7 @@
 #include "net/base/data_url.h"
 
 namespace mojo {
-namespace fetcher {
+namespace shell {
 
 ScopedDataPipeConsumerHandle CreateConsumerHandleForString(
     const std::string& data) {
@@ -115,5 +115,5 @@ bool DataFetcher::PeekFirstLine(std::string* line) {
   return false;
 }
 
-}  // namespace fetcher
+}  // namespace shell
 }  // namespace mojo

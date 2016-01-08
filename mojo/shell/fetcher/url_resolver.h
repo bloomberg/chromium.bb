@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_FETCHER_URL_RESOLVER_H_
-#define MOJO_FETCHER_URL_RESOLVER_H_
+#ifndef MOJO_SHELL_FETCHER_URL_RESOLVER_H_
+#define MOJO_SHELL_FETCHER_URL_RESOLVER_H_
 
 #include <map>
 #include <set>
@@ -14,7 +14,7 @@
 #include "url/gurl.h"
 
 namespace mojo {
-namespace fetcher {
+namespace shell {
 
 // Supports resolving "mojo:" URLs to a file location, with ".mojo" appended.
 class URLResolver {
@@ -32,7 +32,7 @@ class URLResolver {
   DISALLOW_COPY_AND_ASSIGN(URLResolver);
 };
 
-}  // namespace fetcher
+}  // namespace shell
 }  // namespace mojo
 
-#endif  // MOJO_FETCHER_URL_RESOLVER_H_
+#endif  // MOJO_SHELL_FETCHER_URL_RESOLVER_H_

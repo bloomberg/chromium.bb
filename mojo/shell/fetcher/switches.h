@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_FETCHER_SWITCHES_H_
-#define MOJO_FETCHER_SWITCHES_H_
+#ifndef MOJO_SHELL_FETCHER_SWITCHES_H_
+#define MOJO_SHELL_FETCHER_SWITCHES_H_
 
 namespace switches {
 
@@ -13,4 +13,4 @@ extern const char kDisableCache[];
 
 }  // namespace switches
 
-#endif  // MOJO_FETCHER_SWITCHES_H_
+#endif  // MOJO_SHELL_FETCHER_SWITCHES_H_

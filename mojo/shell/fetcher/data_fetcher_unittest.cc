@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/fetcher/data_fetcher.h"
+#include "mojo/shell/fetcher/data_fetcher.h"
 
 #include <stdint.h>
 
@@ -19,7 +19,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
-namespace fetcher {
+namespace shell {
 namespace {
 
 class FetchCallbackHelper {
@@ -27,7 +27,7 @@ class FetchCallbackHelper {
   FetchCallbackHelper() : run_loop_(nullptr) {}
   ~FetchCallbackHelper() {}
 
-  shell::Fetcher::FetchCallback GetCallback() {
+  Fetcher::FetchCallback GetCallback() {
     return base::Bind(&FetchCallbackHelper::CallbackHandler,
                       base::Unretained(this));
   }
@@ -38,10 +38,10 @@ class FetchCallbackHelper {
     run_loop.Run();
   }
 
-  shell::Fetcher* fetcher() const { return fetcher_.get(); }
+  Fetcher* fetcher() const { return fetcher_.get(); }
 
  private:
-  void CallbackHandler(scoped_ptr<shell::Fetcher> fetcher) {
+  void CallbackHandler(scoped_ptr<Fetcher> fetcher) {
     fetcher_ = std::move(fetcher);
     if (run_loop_)
       run_loop_->Quit();
@@ -50,7 +50,7 @@ class FetchCallbackHelper {
   // If it is not null, it points to a stack-allocated base::RunLoop instance in
   // WaitForCallback().
   base::RunLoop* run_loop_;
-  scoped_ptr<shell::Fetcher> fetcher_;
+  scoped_ptr<Fetcher> fetcher_;
   DISALLOW_COPY_AND_ASSIGN(FetchCallbackHelper);
 };
 
@@ -115,5 +115,5 @@ TEST_F(DataFetcherTest, BasicFailure) {
 }
 
 }  // namespace
-}  // namespace fetcher
+}  // namespace shell
 }  // namespace mojo

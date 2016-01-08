@@ -13,8 +13,8 @@ source_set("package_manager") {
   ]
 
   deps = [
-    "//mojo/fetcher",
     "//mojo/shell",
+    "//mojo/shell/fetcher",
     "//mojo/util:filename_util",
   ]
 }

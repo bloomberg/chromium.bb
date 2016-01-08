@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/fetcher/about_fetcher.h"
+#include "mojo/shell/fetcher/about_fetcher.h"
 
 #include <stdint.h>
 
@@ -15,11 +15,11 @@
 #include "base/message_loop/message_loop.h"
 
 namespace mojo {
-namespace fetcher {
+namespace shell {
 namespace {
 
-void RunFetcherCallback(const shell::Fetcher::FetchCallback& callback,
-                        scoped_ptr<shell::Fetcher> fetcher,
+void RunFetcherCallback(const Fetcher::FetchCallback& callback,
+                        scoped_ptr<Fetcher> fetcher,
                         bool success) {
   callback.Run(success ? std::move(fetcher) : nullptr);
 }
@@ -112,5 +112,5 @@ bool AboutFetcher::PeekFirstLine(std::string* line) {
   return false;
 }
 
-}  // namespace fetcher
+}  // namespace shell
 }  // namespace mojo

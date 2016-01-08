@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_FETCHER_LOCAL_FETCHER_H_
-#define MOJO_FETCHER_LOCAL_FETCHER_H_
+#ifndef MOJO_SHELL_FETCHER_LOCAL_FETCHER_H_
+#define MOJO_SHELL_FETCHER_LOCAL_FETCHER_H_
 
 #include <stdint.h>
 
@@ -18,10 +18,10 @@ namespace mojo {
 
 class NetworkService;
 
-namespace fetcher {
+namespace shell {
 
 // Implements Fetcher for file:// URLs.
-class LocalFetcher : public shell::Fetcher {
+class LocalFetcher : public Fetcher {
  public:
   LocalFetcher(NetworkService* network_service,
                const GURL& url,
@@ -59,7 +59,7 @@ class LocalFetcher : public shell::Fetcher {
   DISALLOW_COPY_AND_ASSIGN(LocalFetcher);
 };
 
-}  // namespace fetcher
+}  // namespace shell
 }  // namespace mojo
 
-#endif  // MOJO_FETCHER_LOCAL_FETCHER_H_
+#endif  // MOJO_SHELL_FETCHER_LOCAL_FETCHER_H_

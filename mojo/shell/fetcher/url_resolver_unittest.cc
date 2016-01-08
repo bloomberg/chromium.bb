@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/fetcher/url_resolver.h"
+#include "mojo/shell/fetcher/url_resolver.h"
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -11,7 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
-namespace fetcher {
+namespace shell {
 namespace test {
 namespace {
 
@@ -31,5 +31,5 @@ TEST_F(URLResolverTest, TestQueryForBaseHttpURL) {
 
 }  // namespace
 }  // namespace test
-}  // namespace fetcher
+}  // namespace shell
 }  // namespace mojo

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/fetcher/url_resolver.h"
+#include "mojo/shell/fetcher/url_resolver.h"
 
 #include "base/base_paths.h"
 #include "base/logging.h"
@@ -12,7 +12,7 @@
 #include "url/url_util.h"
 
 namespace mojo {
-namespace fetcher {
+namespace shell {
 
 URLResolver::URLResolver(const GURL& mojo_base_url)
     : mojo_base_url_(util::AddTrailingSlashIfNeeded(mojo_base_url)) {
@@ -29,7 +29,7 @@ GURL URLResolver::ResolveMojoURL(const GURL& mojo_url) const {
   if (mojo_url.SchemeIs("mojo")) {
     // It's still a mojo: URL, use the default mapping scheme.
     std::string query;
-    GURL base_url = shell::GetBaseURLAndQuery(mojo_url, &query);
+    GURL base_url = GetBaseURLAndQuery(mojo_url, &query);
     const std::string host = base_url.host();
     return mojo_base_url_.Resolve(host + "/" + host + ".mojo" + query);
   } else if (mojo_url.SchemeIs("exe")) {
@@ -39,7 +39,7 @@ GURL URLResolver::ResolveMojoURL(const GURL& mojo_url) const {
     std::string extension;
 #endif
     std::string query;
-    GURL base_url = shell::GetBaseURLAndQuery(mojo_url, &query);
+    GURL base_url = GetBaseURLAndQuery(mojo_url, &query);
     return mojo_base_url_.Resolve(base_url.host() + extension);
   } else {
     // The mapping has produced some sort of non-mojo: URL - file:, http:, etc.
@@ -47,5 +47,5 @@ GURL URLResolver::ResolveMojoURL(const GURL& mojo_url) const {
   }
 }
 
-}  // namespace fetcher
+}  // namespace shell
 }  // namespace mojo

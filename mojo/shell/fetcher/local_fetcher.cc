@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/fetcher/local_fetcher.h"
+#include "mojo/shell/fetcher/local_fetcher.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -26,7 +26,7 @@
 #include "url/url_util.h"
 
 namespace mojo {
-namespace fetcher {
+namespace shell {
 
 namespace {
 void IgnoreResult(bool result) {
@@ -149,5 +149,5 @@ bool LocalFetcher::PeekFirstLine(std::string* line) {
   return true;
 }
 
-}  // namespace fetcher
+}  // namespace shell
 }  // namespace mojo

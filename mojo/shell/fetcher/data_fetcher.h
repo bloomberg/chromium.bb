@@ -2,35 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_FETCHER_UPDATE_FETCHER_H_
-#define MOJO_FETCHER_UPDATE_FETCHER_H_
+#ifndef MOJO_SHELL_FETCHER_DATA_FETCHER_H_
+#define MOJO_SHELL_FETCHER_DATA_FETCHER_H_
 
 #include "mojo/shell/fetcher.h"
 
 #include <stdint.h>
 
-#include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "mojo/services/updater/updater.mojom.h"
+#include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "url/gurl.h"
 
 namespace mojo {
+namespace shell {
 
-class URLLoaderFactory;
-
-namespace fetcher {
-
-class UpdateFetcher : public shell::Fetcher {
+// Implements Fetcher for data: URLs.
+class DataFetcher : public Fetcher {
  public:
-  UpdateFetcher(const GURL& url,
-                updater::Updater* updater,
-                const FetchCallback& loader_callback);
-
-  ~UpdateFetcher() override;
+  static void Start(const GURL& url, const FetchCallback& loader_callback);
 
  private:
-  // Fetcher implementation:
+  DataFetcher(const GURL& url, const FetchCallback& loader_callback);
+  ~DataFetcher() override;
+
+  void BuildAndDispatchResponse();
+
+  // Fetcher implementation.
   const GURL& GetURL() const override;
   GURL GetRedirectURL() const override;
   GURL GetRedirectReferer() const override;
@@ -43,16 +40,13 @@ class UpdateFetcher : public shell::Fetcher {
   bool HasMojoMagic() override;
   bool PeekFirstLine(std::string* line) override;
 
-  void OnGetAppPath(const mojo::String& path);
-
   const GURL url_;
-  base::FilePath path_;
-  base::WeakPtrFactory<UpdateFetcher> weak_ptr_factory_;
+  URLResponsePtr response_;
 
-  DISALLOW_COPY_AND_ASSIGN(UpdateFetcher);
+  DISALLOW_COPY_AND_ASSIGN(DataFetcher);
 };
 
-}  // namespace fetcher
+}  // namespace shell
 }  // namespace mojo
 
-#endif  // MOJO_FETCHER_UPDATE_FETCHER_H_
+#endif  // MOJO_SHELL_FETCHER_DATA_FETCHER_H_

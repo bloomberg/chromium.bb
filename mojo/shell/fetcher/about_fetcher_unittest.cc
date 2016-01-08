@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/fetcher/about_fetcher.h"
+#include "mojo/shell/fetcher/about_fetcher.h"
 
 #include <stddef.h>
 
@@ -27,7 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
-namespace fetcher {
+namespace shell {
 namespace {
 
 class TestContentHandler : public ApplicationDelegate,
@@ -77,7 +77,7 @@ class TestContentHandler : public ApplicationDelegate,
   DISALLOW_COPY_AND_ASSIGN(TestContentHandler);
 };
 
-class TestLoader : public shell::ApplicationLoader {
+class TestLoader : public ApplicationLoader {
  public:
   explicit TestLoader(ApplicationDelegate* delegate) : delegate_(delegate) {}
   ~TestLoader() override {}
@@ -117,8 +117,8 @@ class AboutFetcherTest : public testing::Test {
     service_provider.set_connection_error_handler(
         [&run_loop]() { run_loop.Quit(); });
 
-    scoped_ptr<shell::ConnectToApplicationParams> params(
-        new shell::ConnectToApplicationParams);
+    scoped_ptr<ConnectToApplicationParams> params(
+        new ConnectToApplicationParams);
     params->SetTargetURL(GURL(url));
     params->set_services(std::move(service_provider_request));
     application_manager_->ConnectToApplication(std::move(params));
@@ -130,12 +130,12 @@ class AboutFetcherTest : public testing::Test {
   void SetUp() override {
     base::FilePath shell_dir;
     PathService::Get(base::DIR_MODULE, &shell_dir);
-    scoped_ptr<shell::PackageManagerImpl> package_manager(
-      new shell::PackageManagerImpl(shell_dir, nullptr));
+    scoped_ptr<PackageManagerImpl> package_manager(
+      new PackageManagerImpl(shell_dir, nullptr));
     package_manager->RegisterContentHandler(
         "text/html", GURL("test:html_content_handler"));
     application_manager_.reset(
-        new shell::ApplicationManager(std::move(package_manager)));
+        new ApplicationManager(std::move(package_manager)));
     application_manager_->SetLoaderForURL(
         make_scoped_ptr(new TestLoader(&html_content_handler_)),
         GURL("test:html_content_handler"));
@@ -147,7 +147,7 @@ class AboutFetcherTest : public testing::Test {
   base::ShadowingAtExitManager at_exit_;
   TestContentHandler html_content_handler_;
   base::MessageLoop loop_;
-  scoped_ptr<shell::ApplicationManager> application_manager_;
+  scoped_ptr<ApplicationManager> application_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AboutFetcherTest);
 };
@@ -177,5 +177,5 @@ TEST_F(AboutFetcherTest, UnrecognizedURL) {
 }
 
 }  // namespace
-}  // namespace fetcher
+}  // namespace shell
 }  // namespace mojo

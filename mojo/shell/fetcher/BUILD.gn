@@ -16,8 +16,6 @@ source_set("fetcher") {
     "network_fetcher.h",
     "switches.cc",
     "switches.h",
-    "update_fetcher.cc",
-    "update_fetcher.h",
     "url_resolver.cc",
     "url_resolver.h",
   ]

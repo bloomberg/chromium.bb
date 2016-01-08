@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_FETCHER_DATA_FETCHER_H_
-#define MOJO_FETCHER_DATA_FETCHER_H_
+#ifndef MOJO_SHELL_FETCHER_ABOUT_FETCHER_H_
+#define MOJO_SHELL_FETCHER_ABOUT_FETCHER_H_
 
 #include "mojo/shell/fetcher.h"
 
@@ -14,18 +14,26 @@
 #include "url/gurl.h"
 
 namespace mojo {
-namespace fetcher {
+namespace shell {
 
-// Implements Fetcher for data: URLs.
-class DataFetcher : public shell::Fetcher {
+// Implements Fetcher for about: URLs.
+class AboutFetcher : public shell::Fetcher {
  public:
+  static const char kAboutScheme[];
+  static const char kAboutBlankURL[];
+
   static void Start(const GURL& url, const FetchCallback& loader_callback);
 
  private:
-  DataFetcher(const GURL& url, const FetchCallback& loader_callback);
-  ~DataFetcher() override;
+  AboutFetcher(const GURL& url, const FetchCallback& loader_callback);
+  ~AboutFetcher() override;
 
-  void BuildAndDispatchResponse();
+  void BuildResponse();
+
+  // Must be called exactly once to run the loader callback (asynchrously). On
+  // success, the ownership of this object is passed to the loader callback;
+  // otherwise, the callback is run with a nullptr and this object is destroyed.
+  void PostToRunCallback(bool success);
 
   // shell::Fetcher implementation.
   const GURL& GetURL() const override;
@@ -43,10 +51,10 @@ class DataFetcher : public shell::Fetcher {
   const GURL url_;
   URLResponsePtr response_;
 
-  DISALLOW_COPY_AND_ASSIGN(DataFetcher);
+  DISALLOW_COPY_AND_ASSIGN(AboutFetcher);
 };
 
-}  // namespace fetcher
+}  // namespace shell
 }  // namespace mojo
 
-#endif  // MOJO_FETCHER_DATA_FETCHER_H_
+#endif  // MOJO_SHELL_FETCHER_ABOUT_FETCHER_H_
