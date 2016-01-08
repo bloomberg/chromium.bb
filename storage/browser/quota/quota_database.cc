@@ -60,6 +60,15 @@ void HistogramOriginType(const OriginType& entry) {
   UMA_HISTOGRAM_ENUMERATION("Quota.LRUOriginTypes", entry, MAX_ORIGIN_TYPE);
 }
 
+void LogDaysSinceLastAccess(base::Time this_time,
+                            const QuotaDatabase::OriginInfoTableEntry& entry) {
+  base::TimeDelta time_since = this_time - std::max(entry.last_access_time,
+                                                    entry.last_modified_time);
+  if (time_since.InDays() < 1)
+    return;
+  UMA_HISTOGRAM_COUNTS_1000("Quota.DaysSinceLastAccess", time_since.InDays());
+}
+
 }  // anonymous namespace
 
 // static
@@ -203,22 +212,24 @@ bool QuotaDatabase::SetOriginLastAccessTime(
 
   sql::Statement statement;
 
-  int used_count = 1;
-  if (FindOriginUsedCount(origin, type, &used_count)) {
-    ++used_count;
+  OriginInfoTableEntry entry;
+  if (GetOriginInfo(origin, type, &entry)) {
+    LogDaysSinceLastAccess(last_access_time, entry);
+    ++entry.used_count;
     const char* kSql =
         "UPDATE OriginInfoTable"
         " SET used_count = ?, last_access_time = ?"
         " WHERE origin = ? AND type = ?";
     statement.Assign(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   } else  {
+    entry.used_count = 1;
     const char* kSql =
         "INSERT INTO OriginInfoTable"
         " (used_count, last_access_time, origin, type)"
         " VALUES (?, ?, ?, ?)";
     statement.Assign(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   }
-  statement.BindInt(0, used_count);
+  statement.BindInt(0, entry.used_count);
   statement.BindInt64(1, last_access_time.ToInternalValue());
   statement.BindString(2, origin.spec());
   statement.BindInt(3, static_cast<int>(type));
@@ -237,8 +248,9 @@ bool QuotaDatabase::SetOriginLastModifiedTime(
 
   sql::Statement statement;
 
-  int dummy;
-  if (FindOriginUsedCount(origin, type, &dummy)) {
+  OriginInfoTableEntry entry;
+  if (GetOriginInfo(origin, type, &entry)) {
+    LogDaysSinceLastAccess(last_modified_time, entry);
     const char* kSql =
         "UPDATE OriginInfoTable"
         " SET last_modified_time = ?"
@@ -526,27 +538,6 @@ void QuotaDatabase::ScheduleCommit() {
     return;
   timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kCommitIntervalMs),
                this, &QuotaDatabase::Commit);
-}
-
-bool QuotaDatabase::FindOriginUsedCount(
-    const GURL& origin, StorageType type, int* used_count) {
-  DCHECK(used_count);
-  if (!LazyOpen(false))
-    return false;
-
-  const char* kSql =
-      "SELECT used_count FROM OriginInfoTable"
-      " WHERE origin = ? AND type = ?";
-
-  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
-  statement.BindString(0, origin.spec());
-  statement.BindInt(1, static_cast<int>(type));
-
-  if (!statement.Step())
-    return false;
-
-  *used_count = statement.ColumnInt(0);
-  return true;
 }
 
 bool QuotaDatabase::LazyOpen(bool create_if_needed) {

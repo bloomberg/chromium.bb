@@ -167,10 +167,6 @@ class STORAGE_EXPORT QuotaDatabase {
   void Commit();
   void ScheduleCommit();
 
-  bool FindOriginUsedCount(const GURL& origin,
-                           StorageType type,
-                           int* used_count);
-
   bool LazyOpen(bool create_if_needed);
   bool EnsureDatabaseVersion();
   bool ResetSchema();

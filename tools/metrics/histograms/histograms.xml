@@ -38424,6 +38424,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Quota.DaysSinceLastAccess" units="days">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    The number of days since an origin's data was last accessed. Logged upon
+    access when the time since last access is at least 24 hours.
+  </summary>
+</histogram>
+
 <histogram name="Quota.DiskspaceShortage" units="MB">
   <owner>tzik@chromium.org</owner>
   <summary>

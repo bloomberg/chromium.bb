@@ -367,28 +367,26 @@ class QuotaDatabaseTest : public testing::Test {
 
     EXPECT_TRUE(db.RegisterInitialOriginInfo(origins, kStorageTypeTemporary));
 
-    int used_count = -1;
-    EXPECT_TRUE(db.FindOriginUsedCount(GURL("http://a/"),
-                                       kStorageTypeTemporary,
-                                       &used_count));
-    EXPECT_EQ(0, used_count);
+    QuotaDatabase::OriginInfoTableEntry info;
+    info.used_count = -1;
+    EXPECT_TRUE(db.GetOriginInfo(
+        GURL("http://a/"), kStorageTypeTemporary, &info));
+    EXPECT_EQ(0, info.used_count);
 
     EXPECT_TRUE(db.SetOriginLastAccessTime(
         GURL("http://a/"), kStorageTypeTemporary,
         base::Time::FromDoubleT(1.0)));
-    used_count = -1;
-    EXPECT_TRUE(db.FindOriginUsedCount(GURL("http://a/"),
-                                       kStorageTypeTemporary,
-                                       &used_count));
-    EXPECT_EQ(1, used_count);
+    info.used_count = -1;
+    EXPECT_TRUE(db.GetOriginInfo(
+        GURL("http://a/"), kStorageTypeTemporary, &info));
+    EXPECT_EQ(1, info.used_count);
 
     EXPECT_TRUE(db.RegisterInitialOriginInfo(origins, kStorageTypeTemporary));
 
-    used_count = -1;
-    EXPECT_TRUE(db.FindOriginUsedCount(GURL("http://a/"),
-                                       kStorageTypeTemporary,
-                                       &used_count));
-    EXPECT_EQ(1, used_count);
+    info.used_count = -1;
+    EXPECT_TRUE(db.GetOriginInfo(
+        GURL("http://a/"), kStorageTypeTemporary, &info));
+    EXPECT_EQ(1, info.used_count);
   }
 
   template <typename EntryType>
