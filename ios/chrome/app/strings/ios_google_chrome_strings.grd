@@ -151,6 +151,9 @@ all other OS specific variables will be false.
       <message name="IDS_IOS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT" desc="Info bar message to save a password. [Length: 60em]">
         Do you want Google Chrome to save your password for this site?
       </message>
+      <message name="IDS_IOS_UPGRADE_AVAILABLE" desc="Text to inform the user of the presence of a new version of the application">
+        Chrome just got better! A new version is available.
+      </message>
     </messages>
   </release>
 </grit>

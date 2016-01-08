@@ -296,6 +296,9 @@ brand. [Length: 70em]">
         The site you are trying to access is acting strangely, and Chrome is unable to verify that its URL is correct. For security reasons, you should not proceed, and perhaps try again tomorrow or go somewhere else.
       </message>
 
+      <message name="IDS_IOS_UPGRADE_AVAILABLE_BUTTON" desc="Displayed on a button the user can use to upgrade the a more recent version of the application. [Length: 10em]">
+        Update
+      </message>
     </messages>
   </release>
 </grit>

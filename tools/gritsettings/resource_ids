@@ -205,9 +205,10 @@
   },
   "ios/chrome/app/resources/ios_resources.grd": {
     "structures": [26150],
+    "includes": [26160],
   },
   "ios/chrome/app/theme/ios_theme_resources.grd": {
-    "structures": [26155],
+    "structures": [26170],
   },
   "ios/chrome/today_extension/strings/ios_today_extension_strings.grd": {
     "messages": [26635],
