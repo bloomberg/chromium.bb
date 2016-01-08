@@ -129,7 +129,7 @@ public:
     bool setText(const String&, ExceptionState&) override;
     bool getText(String* result) override;
     RefPtrWillBeRawPtr<CSSStyleRule>  setRuleSelector(const SourceRange&, const String& selector, SourceRange* newRange, String* oldSelector, ExceptionState&);
-    RefPtrWillBeRawPtr<CSSStyleRule>  setStyleText(const SourceRange&, const String& text, SourceRange* newRange, String* oldSelector, ExceptionState&);
+    PassRefPtrWillBeRawPtr<CSSRule>  setStyleText(const SourceRange&, const String& text, SourceRange* newRange, String* oldSelector, ExceptionState&);
     RefPtrWillBeRawPtr<CSSMediaRule>  setMediaRuleText(const SourceRange&, const String& selector, SourceRange* newRange, String* oldSelector, ExceptionState&);
     RefPtrWillBeRawPtr<CSSStyleRule>  addRule(const String& ruleText, const SourceRange& location, SourceRange* addedRange, ExceptionState&);
     bool deleteRule(const SourceRange&, ExceptionState&);
@@ -165,7 +165,7 @@ private:
     void mapSourceDataToCSSOM();
     bool resourceStyleSheetText(String* result);
     bool inlineStyleSheetText(String* result);
-    PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::Selector>> selectorsFromSource(CSSRuleSourceData*, const String&);
+    PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::Value>> selectorsFromSource(CSSRuleSourceData*, const String&);
     String url();
     bool hasSourceURL();
     bool startsAtZero();

@@ -1,0 +1,76 @@
+<html>
+<head>
+
+<link rel="stylesheet" href="../styles/resources/keyframes.css">
+
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<style>
+@keyframes animName {
+    from, 20% {
+        height: 200px;
+        color: red;
+    }
+    to {
+        height: 500px;
+    }
+}
+</style>
+<script>
+
+function test()
+{
+    function dumpRule(rule)
+    {
+        InspectorTest.addResult("\n" + rule.animationName.text + " @" + InspectorTest.rangeText(rule.animationName.range));
+        for (var keyframe of rule.keyframes) {
+            InspectorTest.addResult(keyframe.keyText.text + " @" + InspectorTest.rangeText(keyframe.keyText.range)
+                + " {} @" + InspectorTest.rangeText(keyframe.style.range));
+            var allProperties = keyframe.style.cssProperties;
+            for (var i = 0; i < allProperties.length; ++i) {
+                var property = allProperties[i];
+                if (!property.range)
+                    continue;
+                InspectorTest.addResult(property.name + ":" + property.value + (property.important ? " !important" : "") + (("parsedOk" in property) ? " non-parsed" : "") +" @" + InspectorTest.rangeText(property.range));
+            }
+        }
+    }
+
+    InspectorTest.selectNodeWithId("element", step1);
+
+    function step1(node)
+    {
+        InspectorTest.CSSAgent.getCSSAnimationsForNode(node.id, onCSSAnimations.bind(null, node.id));
+    }
+
+    function onCSSAnimations(nodeId, error, rules)
+    {
+        for (var i = 0; i < rules.length; ++i)
+            dumpRule(rules[i]);
+
+        InspectorTest.addResult("\n>> Modifying keyframe rule");
+        var style = new WebInspector.CSSStyleDeclaration(InspectorTest.cssModel, null, rules[1].keyframes[0].style, WebInspector.CSSStyleDeclaration.Type.Regular);
+        style.setText("width: 123px");
+
+        InspectorTest.CSSAgent.getCSSAnimationsForNode(nodeId, onModifiedAnimations);
+    }
+
+    function onModifiedAnimations(error, rules)
+    {
+        for (var i = 0; i < rules.length; ++i)
+            dumpRule(rules[i]);
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<div id="element"></div>
+<p>
+Tests that proper data and start/end offset positions are reported for CSS keyframes.
+</p>
+
+</body>
+</html>

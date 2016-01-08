@@ -141,7 +141,7 @@ struct CSSRuleSourceData : public RefCountedWillBeGarbageCollected<CSSRuleSource
     CSSRuleSourceData(StyleRule::Type type)
         : type(type)
     {
-        if (type == StyleRule::Style || type == StyleRule::FontFace || type == StyleRule::Page)
+        if (type == StyleRule::Style || type == StyleRule::FontFace || type == StyleRule::Page || type == StyleRule::Keyframe)
             styleSourceData = CSSStyleSourceData::create();
         if (type == StyleRule::Media || type == StyleRule::Import)
             mediaSourceData = CSSMediaSourceData::create();

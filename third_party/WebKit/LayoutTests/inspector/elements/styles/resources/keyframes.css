@@ -1,0 +1,26 @@
+#element {
+    animation: animName 1s 2s, mediaAnim 2s, doesNotExist 3s, styleSheetAnim 0s;
+}
+
+@keyframes styleSheetAnim {
+    from {
+        width: 100px;
+    }
+    10% {
+        width: 150px;
+    }
+    100% {
+        width: 200px;
+    }
+}
+
+@media (min-width: 1px) {
+    @keyframes mediaAnim {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+}

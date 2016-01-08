@@ -86,7 +86,7 @@ InspectorTest.dumpRuleMatch = function(ruleMatch)
         var matching = matchingSelectors.indexOf(i) !== -1;
         if (matching)
             selectorLine += "*";
-        selectorLine += selectors[i].value;
+        selectorLine += selectors[i].text;
         if (matching)
             selectorLine += "*";
     }
@@ -153,9 +153,9 @@ InspectorTest.loadAndDumpCSSAnimationsForNode = function(nodeId, callback)
     {
         InspectorTest.log("Dumping CSS keyframed animations: ");
         for (var keyframesRule of result.cssKeyframesRules) {
-            InspectorTest.log("@keyframes " + keyframesRule.animationName + " {");
+            InspectorTest.log("@keyframes " + keyframesRule.animationName.text + " {");
             for (var keyframe of keyframesRule.keyframes) {
-                indentLog(4, keyframe.keyText + " {");
+                indentLog(4, keyframe.keyText.text + " {");
                 InspectorTest.dumpStyle(keyframe.style, 4);
                 indentLog(4, "}");
             }

@@ -920,7 +920,7 @@ InspectorTest.matchingSelectors = function(rule)
 {
     var selectors = [];
     for (var i = 0; i < rule.matchingSelectors.length; ++i)
-        selectors.push(rule.selectors[rule.matchingSelectors[i]].value);
+        selectors.push(rule.selectors[rule.matchingSelectors[i]].text);
     return "[" + selectors.join(", ") + "]";
 }
 

@@ -86,6 +86,8 @@ public:
 
     ~CSSKeyframesRule() override;
 
+    StyleRuleKeyframes* keyframes() { return m_keyframesRule.get(); }
+
     String cssText() const override;
     void reattach(StyleRuleBase*) override;
 

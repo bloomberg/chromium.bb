@@ -29,6 +29,7 @@
 #include "bindings/core/v8/ScriptRegexp.h"
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSImportRule.h"
+#include "core/css/CSSKeyframeRule.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSMediaRule.h"
 #include "core/css/CSSRuleList.h"
@@ -442,11 +443,12 @@ void flattenSourceData(RuleSourceDataList* dataList, RuleSourceDataList* result)
         case StyleRule::Page:
         case StyleRule::FontFace:
         case StyleRule::Viewport:
-        case StyleRule::Keyframes:
+        case StyleRule::Keyframe:
             result->append(data);
             break;
         case StyleRule::Media:
         case StyleRule::Supports:
+        case StyleRule::Keyframes:
             result->append(data);
             flattenSourceData(&data->childRules, result);
             break;
@@ -466,6 +468,9 @@ PassRefPtrWillBeRawPtr<CSSRuleList> asCSSRuleList(CSSRule* rule)
 
     if (rule->type() == CSSRule::SUPPORTS_RULE)
         return toCSSSupportsRule(rule)->cssRules();
+
+    if (rule->type() == CSSRule::KEYFRAMES_RULE)
+        return toCSSKeyframesRule(rule)->cssRules();
 
     return nullptr;
 }
@@ -487,11 +492,12 @@ void collectFlatRules(RuleList ruleList, CSSRuleVector* result)
         case CSSRule::PAGE_RULE:
         case CSSRule::FONT_FACE_RULE:
         case CSSRule::VIEWPORT_RULE:
-        case CSSRule::KEYFRAMES_RULE:
+        case CSSRule::KEYFRAME_RULE:
             result->append(rule);
             break;
         case CSSRule::MEDIA_RULE:
         case CSSRule::SUPPORTS_RULE:
+        case CSSRule::KEYFRAMES_RULE:
             result->append(rule);
             collectFlatRules(asCSSRuleList(rule), result);
             break;
@@ -989,7 +995,7 @@ RefPtrWillBeRawPtr<CSSStyleRule> InspectorStyleSheet::setRuleSelector(const Sour
     return styleRule;
 }
 
-RefPtrWillBeRawPtr<CSSStyleRule> InspectorStyleSheet::setStyleText(const SourceRange& range, const String& text, SourceRange* newRange, String* oldText, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<CSSRule> InspectorStyleSheet::setStyleText(const SourceRange& range, const String& text, SourceRange* newRange, String* oldText, ExceptionState& exceptionState)
 {
     if (!verifyStyleText(m_pageStyleSheet->ownerDocument(), text)) {
         exceptionState.throwDOMException(SyntaxError, "Style text is not valid.");
@@ -1003,18 +1009,22 @@ RefPtrWillBeRawPtr<CSSStyleRule> InspectorStyleSheet::setStyleText(const SourceR
     }
 
     RefPtrWillBeRawPtr<CSSRule> rule = ruleForSourceData(sourceData);
-    if (!rule || !rule->parentStyleSheet() || rule->type() != CSSRule::STYLE_RULE) {
+    if (!rule || !rule->parentStyleSheet() || (rule->type() != CSSRule::STYLE_RULE && rule->type() != CSSRule::KEYFRAME_RULE)) {
         exceptionState.throwDOMException(NotFoundError, "Source range didn't match existing style source range");
         return nullptr;
     }
 
-    RefPtrWillBeRawPtr<CSSStyleRule> styleRule = InspectorCSSAgent::asCSSStyleRule(rule.get());
-    styleRule->style()->setCSSText(text, exceptionState);
+    RefPtrWillBeRawPtr<CSSStyleDeclaration> style = nullptr;
+    if (rule->type() == CSSRule::STYLE_RULE)
+        style = toCSSStyleRule(rule.get())->style();
+    else if (rule->type() == CSSRule::KEYFRAME_RULE)
+        style = toCSSKeyframeRule(rule.get())->style();
+    style->setCSSText(text, exceptionState);
 
     replaceText(sourceData->ruleBodyRange, text, newRange, oldText);
     onStyleSheetTextChanged();
 
-    return styleRule;
+    return rule;
 }
 
 RefPtrWillBeRawPtr<CSSMediaRule> InspectorStyleSheet::setMediaRuleText(const SourceRange& range, const String& text, SourceRange* newRange, String* oldText, ExceptionState& exceptionState)
@@ -1289,10 +1299,10 @@ PassRefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> InspectorStyleSheet::buildObje
     return result.release();
 }
 
-PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::Selector>> InspectorStyleSheet::selectorsFromSource(CSSRuleSourceData* sourceData, const String& sheetText)
+PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::Value>> InspectorStyleSheet::selectorsFromSource(CSSRuleSourceData* sourceData, const String& sheetText)
 {
     ScriptRegexp comment("/\\*[^]*?\\*/", TextCaseSensitive, MultilineEnabled);
-    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::Selector> > result = TypeBuilder::Array<TypeBuilder::CSS::Selector>::create();
+    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::Value>> result = TypeBuilder::Array<TypeBuilder::CSS::Value>::create();
     const SelectorRangeList& ranges = sourceData->selectorRanges;
     for (size_t i = 0, size = ranges.size(); i < size; ++i) {
         const SourceRange& range = ranges.at(i);
@@ -1304,8 +1314,8 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::Selector>> InspectorStyleSheet::
         while ((offset = comment.match(selector, offset, &matchLength)) >= 0)
             selector.replace(offset, matchLength, "");
 
-        RefPtr<TypeBuilder::CSS::Selector> simpleSelector = TypeBuilder::CSS::Selector::create()
-            .setValue(selector.stripWhiteSpace());
+        RefPtr<TypeBuilder::CSS::Value> simpleSelector = TypeBuilder::CSS::Value::create()
+            .setText(selector.stripWhiteSpace());
         simpleSelector->setRange(buildSourceRangeObject(range));
         result->addItem(simpleSelector.release());
     }
@@ -1315,7 +1325,7 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::Selector>> InspectorStyleSheet::
 PassRefPtr<TypeBuilder::CSS::SelectorList> InspectorStyleSheet::buildObjectForSelectorList(CSSStyleRule* rule)
 {
     RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = sourceDataForRule(rule);
-    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::Selector> > selectors;
+    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::Value>> selectors;
 
     // This intentionally does not rely on the source data to avoid catching the trailing comments (before the declaration starting '{').
     String selectorText = rule->selectorText();
@@ -1323,10 +1333,10 @@ PassRefPtr<TypeBuilder::CSS::SelectorList> InspectorStyleSheet::buildObjectForSe
     if (sourceData) {
         selectors = selectorsFromSource(sourceData.get(), m_text);
     } else {
-        selectors = TypeBuilder::Array<TypeBuilder::CSS::Selector>::create();
+        selectors = TypeBuilder::Array<TypeBuilder::CSS::Value>::create();
         const CSSSelectorList& selectorList = rule->styleRule()->selectorList();
         for (const CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(*selector))
-            selectors->addItem(TypeBuilder::CSS::Selector::create().setValue(selector->selectorText()).release());
+            selectors->addItem(TypeBuilder::CSS::Value::create().setText(selector->selectorText()).release());
     }
     RefPtr<TypeBuilder::CSS::SelectorList> result = TypeBuilder::CSS::SelectorList::create()
         .setSelectors(selectors)
