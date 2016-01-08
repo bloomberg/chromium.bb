@@ -48,6 +48,10 @@ bool XPCMessageServer::Initialize() {
   return true;
 }
 
+void XPCMessageServer::Shutdown() {
+  dispatch_source_.reset();
+}
+
 pid_t XPCMessageServer::GetMessageSenderPID(IPCMessage request) {
   audit_token_t token;
   xpc_dictionary_get_audit_token(request.xpc, &token);

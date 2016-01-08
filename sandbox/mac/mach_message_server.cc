@@ -76,6 +76,10 @@ bool MachMessageServer::Initialize() {
   return true;
 }
 
+void MachMessageServer::Shutdown() {
+  dispatch_source_.reset();
+}
+
 pid_t MachMessageServer::GetMessageSenderPID(IPCMessage request) {
   // Get the PID of the task that sent this request. This requires getting at
   // the trailer of the message, from the header.

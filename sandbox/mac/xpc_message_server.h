@@ -31,6 +31,7 @@ class SANDBOX_EXPORT XPCMessageServer : public MessageServer {
 
   // MessageServer:
   bool Initialize() override;
+  void Shutdown() override;
   pid_t GetMessageSenderPID(IPCMessage request) override;
   IPCMessage CreateReply(IPCMessage request) override;
   bool SendReply(IPCMessage reply) override;

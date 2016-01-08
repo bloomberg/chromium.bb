@@ -44,6 +44,11 @@ class MessageServer {
   // returns false, no other methods may be called on this class.
   virtual bool Initialize() = 0;
 
+  // Blocks the calling thread while the server shuts down. This prevents
+  // the server from receiving new messages. After this method is called,
+  // no other methods may be called on this class.
+  virtual void Shutdown() = 0;
+
   // Given a received request message, returns the PID of the sending process.
   virtual pid_t GetMessageSenderPID(IPCMessage request) = 0;
 

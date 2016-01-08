@@ -32,6 +32,7 @@ LaunchdInterceptionServer::LaunchdInterceptionServer(
 }
 
 LaunchdInterceptionServer::~LaunchdInterceptionServer() {
+  message_server_->Shutdown();
 }
 
 bool LaunchdInterceptionServer::Initialize(mach_port_t server_receive_right) {
