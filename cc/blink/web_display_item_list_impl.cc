@@ -54,10 +54,9 @@ void WebDisplayItemListImpl::appendDrawingItem(
     const SkPicture* picture) {
   if (display_item_list_->RetainsIndividualDisplayItems()) {
     display_item_list_->CreateAndAppendItem<cc::DrawingDisplayItem>(
-        visual_rect, skia::SharePtr(const_cast<SkPicture*>(picture)));
+        visual_rect, skia::SharePtr(picture));
   } else {
-    cc::DrawingDisplayItem item(
-        skia::SharePtr(const_cast<SkPicture*>(picture)));
+    cc::DrawingDisplayItem item(skia::SharePtr(picture));
     display_item_list_->RasterIntoCanvas(item);
   }
 }

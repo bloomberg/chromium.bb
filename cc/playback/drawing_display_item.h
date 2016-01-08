@@ -21,7 +21,7 @@ namespace cc {
 class CC_EXPORT DrawingDisplayItem : public DisplayItem {
  public:
   DrawingDisplayItem();
-  explicit DrawingDisplayItem(skia::RefPtr<SkPicture> picture);
+  explicit DrawingDisplayItem(skia::RefPtr<const SkPicture> picture);
   explicit DrawingDisplayItem(const proto::DisplayItem& proto);
   explicit DrawingDisplayItem(const DrawingDisplayItem& item);
   ~DrawingDisplayItem() override;
@@ -40,9 +40,9 @@ class CC_EXPORT DrawingDisplayItem : public DisplayItem {
   void CloneTo(DrawingDisplayItem* item) const;
 
  private:
-  void SetNew(skia::RefPtr<SkPicture> picture);
+  void SetNew(skia::RefPtr<const SkPicture> picture);
 
-  skia::RefPtr<SkPicture> picture_;
+  skia::RefPtr<const SkPicture> picture_;
 };
 
 }  // namespace cc

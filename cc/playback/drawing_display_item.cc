@@ -25,7 +25,7 @@ namespace cc {
 
 DrawingDisplayItem::DrawingDisplayItem() {}
 
-DrawingDisplayItem::DrawingDisplayItem(skia::RefPtr<SkPicture> picture) {
+DrawingDisplayItem::DrawingDisplayItem(skia::RefPtr<const SkPicture> picture) {
   SetNew(std::move(picture));
 }
 
@@ -51,7 +51,7 @@ DrawingDisplayItem::DrawingDisplayItem(const DrawingDisplayItem& item) {
 DrawingDisplayItem::~DrawingDisplayItem() {
 }
 
-void DrawingDisplayItem::SetNew(skia::RefPtr<SkPicture> picture) {
+void DrawingDisplayItem::SetNew(skia::RefPtr<const SkPicture> picture) {
   picture_ = std::move(picture);
 }
 
