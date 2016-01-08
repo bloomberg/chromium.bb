@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_LOCAL_DISCOVERY_SERVICE_DISCOVERY_SHARED_CLIENT_H_
 
 #include "base/macros.h"
-#include "chrome/browser/local_discovery/service_discovery_client.h"
+#include "chrome/common/local_discovery/service_discovery_client.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace local_discovery {

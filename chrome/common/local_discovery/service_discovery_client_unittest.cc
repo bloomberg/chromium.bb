@@ -9,7 +9,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/local_discovery/service_discovery_client_impl.h"
+#include "chrome/common/local_discovery/service_discovery_client_impl.h"
 #include "net/base/net_errors.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/mdns_client_impl.h"
@@ -253,7 +253,7 @@ TEST_F(ServiceDiscoveryTest, AddRemoveService) {
       .Times(Exactly(1));
 
   RunFor(base::TimeDelta::FromSeconds(2));
-}
+};
 
 TEST_F(ServiceDiscoveryTest, DiscoverNewServices) {
   StrictMock<MockServiceWatcherClient> delegate;
@@ -271,7 +271,7 @@ TEST_F(ServiceDiscoveryTest, DiscoverNewServices) {
   EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(2);
 
   RunFor(base::TimeDelta::FromSeconds(2));
-}
+};
 
 TEST_F(ServiceDiscoveryTest, ReadCachedServices) {
   socket_factory_.SimulateReceive(kSamplePacketPTR, sizeof(kSamplePacketPTR));
@@ -289,7 +289,7 @@ TEST_F(ServiceDiscoveryTest, ReadCachedServices) {
       .Times(Exactly(1));
 
   base::MessageLoop::current()->RunUntilIdle();
-}
+};
 
 
 TEST_F(ServiceDiscoveryTest, ReadCachedServicesMultiple) {
@@ -311,7 +311,7 @@ TEST_F(ServiceDiscoveryTest, ReadCachedServicesMultiple) {
       .Times(Exactly(1));
 
   base::MessageLoop::current()->RunUntilIdle();
-}
+};
 
 
 TEST_F(ServiceDiscoveryTest, OnServiceChanged) {
@@ -339,7 +339,7 @@ TEST_F(ServiceDiscoveryTest, OnServiceChanged) {
   socket_factory_.SimulateReceive(kSamplePacketTXT, sizeof(kSamplePacketTXT));
 
   base::MessageLoop::current()->RunUntilIdle();
-}
+};
 
 TEST_F(ServiceDiscoveryTest, SinglePacket) {
   StrictMock<MockServiceWatcherClient> delegate;
@@ -367,7 +367,7 @@ TEST_F(ServiceDiscoveryTest, SinglePacket) {
   socket_factory_.SimulateReceive(kSamplePacketTXT, sizeof(kSamplePacketTXT));
 
   base::MessageLoop::current()->RunUntilIdle();
-}
+};
 
 TEST_F(ServiceDiscoveryTest, ActivelyRefreshServices) {
   StrictMock<MockServiceWatcherClient> delegate;
@@ -404,7 +404,7 @@ TEST_F(ServiceDiscoveryTest, ActivelyRefreshServices) {
   RunFor(base::TimeDelta::FromSeconds(2));
 
   base::MessageLoop::current()->RunUntilIdle();
-}
+};
 
 
 class ServiceResolverTest : public ServiceDiscoveryTest {
@@ -466,7 +466,7 @@ TEST_F(ServiceResolverTest, TxtAndSrvButNoA) {
                                           net::IPAddressNumber()));
 
   socket_factory_.SimulateReceive(kSamplePacketTXT, sizeof(kSamplePacketTXT));
-}
+};
 
 TEST_F(ServiceResolverTest, TxtSrvAndA) {
   EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(4);
@@ -482,7 +482,7 @@ TEST_F(ServiceResolverTest, TxtSrvAndA) {
   socket_factory_.SimulateReceive(kSamplePacketTXT, sizeof(kSamplePacketTXT));
 
   socket_factory_.SimulateReceive(kSamplePacketSRVA, sizeof(kSamplePacketSRVA));
-}
+};
 
 TEST_F(ServiceResolverTest, JustSrv) {
   EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(4);
@@ -500,7 +500,7 @@ TEST_F(ServiceResolverTest, JustSrv) {
   // TODO(noamsml): When NSEC record support is added, change this to use an
   // NSEC record.
   RunFor(base::TimeDelta::FromSeconds(4));
-}
+};
 
 TEST_F(ServiceResolverTest, WithNothing) {
   EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(4);
@@ -513,7 +513,7 @@ TEST_F(ServiceResolverTest, WithNothing) {
   // TODO(noamsml): When NSEC record support is added, change this to use an
   // NSEC record.
   RunFor(base::TimeDelta::FromSeconds(4));
-}
+};
 
 }  // namespace
 

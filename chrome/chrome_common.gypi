@@ -485,6 +485,18 @@
         ['enable_print_preview==1', {
           'sources': [ '<@(chrome_common_service_process_sources)' ],
         }],
+        ['enable_service_discovery==1', {
+          'sources' : [
+            'common/local_discovery/service_discovery_client.cc',
+            'common/local_discovery/service_discovery_client.h',
+           ]
+        }],
+        ['enable_mdns==1', {
+          'sources' : [
+            'common/local_discovery/service_discovery_client_impl.cc',
+            'common/local_discovery/service_discovery_client_impl.h',
+          ]
+        }],
         ['OS=="android"', {
           'sources!': [
             'common/channel_info_posix.cc',

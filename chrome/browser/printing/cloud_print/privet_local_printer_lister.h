@@ -9,10 +9,10 @@
 #include <string>
 
 #include "base/memory/linked_ptr.h"
-#include "chrome/browser/local_discovery/service_discovery_client.h"
 #include "chrome/browser/printing/cloud_print/privet_device_lister.h"
 #include "chrome/browser/printing/cloud_print/privet_http.h"
 #include "chrome/browser/printing/cloud_print/privet_http_asynchronous_factory.h"
+#include "chrome/common/local_discovery/service_discovery_client.h"
 #include "net/url_request/url_request_context.h"
 
 namespace cloud_print {

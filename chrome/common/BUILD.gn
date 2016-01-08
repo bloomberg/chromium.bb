@@ -213,6 +213,19 @@ static_library("common") {
     }
   }
 
+  if (enable_service_discovery) {
+    sources += [
+      "local_discovery/service_discovery_client.cc",
+      "local_discovery/service_discovery_client.h",
+    ]
+  }
+  if (enable_mdns) {
+    sources += [
+      "local_discovery/service_discovery_client_impl.cc",
+      "local_discovery/service_discovery_client_impl.h",
+    ]
+  }
+
   if (is_android) {
     sources -= [
       "channel_info_posix.cc",

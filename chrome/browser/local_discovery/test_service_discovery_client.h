@@ -7,8 +7,8 @@
 
 #include <stdint.h>
 
-#include "chrome/browser/local_discovery/service_discovery_client.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
+#include "chrome/common/local_discovery/service_discovery_client.h"
 #include "net/dns/mdns_client.h"
 #include "net/dns/mock_mdns_socket_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
