@@ -10,7 +10,6 @@ import android.content.pm.ActivityInfo;
 import android.test.suitebuilder.annotation.LargeTest;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton;
@@ -125,13 +124,9 @@ public class TabStripTest extends ChromeTabbedActivityTestBase {
      * activates the incognito TabStrip.
      * @throws InterruptedException
      */
-    /*
-     * @LargeTest
-     * @Restriction(RESTRICTION_TYPE_TABLET)
-     * @Feature({"TabStrip"})
-     * Bug crbug.com/258495
-     */
-    @DisabledTest
+    @LargeTest
+    @Restriction(RESTRICTION_TYPE_TABLET)
+    @Feature({"TabStrip"})
     public void testNewIncognitoTabFromMenuAtNormalStrip() throws InterruptedException {
         getInstrumentation().waitForIdleSync();
         assertFalse("Expected normal strip to be selected",
@@ -171,23 +166,21 @@ public class TabStripTest extends ChromeTabbedActivityTestBase {
      * also check that the visible tab ordering is correct.
      * @throws InterruptedException
      */
-    /*
-     * @LargeTest
-     * @Restriction(RESTRICTION_TYPE_TABLET)
-     * @Feature({"TabStrip"})
-     * Bug crbug.com/258495
-     */
-    @DisabledTest
+    @LargeTest
+    @Restriction(RESTRICTION_TYPE_TABLET)
+    @Feature({"TabStrip"})
     public void testSelectWithManyTabs() throws InterruptedException {
         ChromeTabUtils.newTabsFromMenu(getInstrumentation(), getActivity(), 4);
         getInstrumentation().waitForIdleSync();
         assertEquals("The last tab is not selected",
                 getActivity().getCurrentTabModel().index(), 4);
         compareAllTabStripsWithModel();
-        selectTab(false, getActivity().getCurrentTabModel().getTabAt(2).getId());
+        // Note: if the tab is not visible, this will fail. Currently that's not a problem, because
+        // the devices we test on are wide enough.
+        selectTab(false, getActivity().getCurrentTabModel().getTabAt(0).getId());
         getInstrumentation().waitForIdleSync();
         assertEquals("The middle tab is not selected",
-                getActivity().getCurrentTabModel().index(), 2);
+                getActivity().getCurrentTabModel().index(), 0);
         compareAllTabStripsWithModel();
     }
 
@@ -227,8 +220,6 @@ public class TabStripTest extends ChromeTabbedActivityTestBase {
     @Restriction(RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
     public void testCloseTabWithManyTabs() throws InterruptedException {
-        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-
         ChromeTabUtils.newTabsFromMenu(getInstrumentation(), getActivity(), 4);
         getInstrumentation().waitForIdleSync();
         assertEquals("There are not five tabs present",
@@ -236,7 +227,9 @@ public class TabStripTest extends ChromeTabbedActivityTestBase {
         assertEquals("The last tab is not selected",
                 getActivity().getCurrentTabModel().index(), 4);
         int initialSelectedId = getActivity().getActivityTab().getId();
-        closeTab(false, getActivity().getCurrentTabModel().getTabAt(2).getId());
+        // Note: if the tab is not visible, this will fail. Currently that's not a problem, because
+        // the devices we test on are wide enough.
+        closeTab(false, getActivity().getCurrentTabModel().getTabAt(0).getId());
         getInstrumentation().waitForIdleSync();
         assertEquals("There are not four tabs present",
                 getActivity().getCurrentTabModel().getCount(), 4);
@@ -351,13 +344,10 @@ public class TabStripTest extends ChromeTabbedActivityTestBase {
      * and normal TabStrips.
      * @throws InterruptedException
      */
-    /*
-     * @LargeTest
-     * @Restriction(RESTRICTION_TYPE_TABLET)
-     * @Feature({"TabStrip"})
-     * Bug crbug.com/258495
-     */
-    @DisabledTest
+
+    @LargeTest
+    @Restriction(RESTRICTION_TYPE_TABLET)
+    @Feature({"TabStrip"})
     public void testToggleIncognitoMode() throws InterruptedException {
         getInstrumentation().waitForIdleSync();
         assertFalse("Expected normal strip to be selected",

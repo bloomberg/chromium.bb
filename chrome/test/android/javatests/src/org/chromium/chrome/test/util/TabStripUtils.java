@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.test.util;
 
-import android.view.View;
-
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelper;
@@ -14,7 +12,6 @@ import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutTab;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.TestTouchUtils;
 
 /**
  * A utility class that contains methods generic to all TabStrip test classes.
@@ -72,19 +69,24 @@ public class TabStripUtils {
     }
 
     /**
-     * Click a compositor tab strip tab;
+     * Click a compositor tab strip tab.
      * @param tab The tab to click.
      * @param base The ChromeTabbedActivityTestBase where we're calling this from.
      */
     public static void clickTab(StripLayoutTab tab, ChromeTabbedActivityTestBase base) {
-        View view = base.getActivity().getTabsView();
-        final float x = tab.getDrawX() + tab.getWidth() / 2;
-        final float y = tab.getDrawY() + tab.getHeight() / 2;
-        TestTouchUtils.singleClickView(base.getInstrumentation(), view, (int) x, (int) y);
+        final StripLayoutHelperManager manager = getStripLayoutHelperManager(base.getActivity());
+        final float x = (tab.getDrawX() + tab.getWidth() / 2);
+        final float y = (tab.getDrawY() + tab.getHeight() / 2);
+        base.getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                manager.click(0, x, y, false, 0);
+            }
+        });
     }
 
     /**
-     * Click a compositor button;
+     * Click a compositor button.
      * @param button The button to click.
      * @param base The ChromeTabbedActivityTestBase where we're calling this from.
      */
