@@ -212,9 +212,6 @@ protected:
     bool validateBufferBaseTarget(const char* functionName, GLenum target);
     bool validateAndUpdateBufferBindBaseTarget(const char* functionName, GLenum, GLuint, WebGLBuffer*);
 
-    void vertexAttribIivImpl(const char*, GLuint, const GLint*, GLsizei);
-    void vertexAttribIuivImpl(const char*, GLuint, const GLuint*, GLsizei);
-
     bool checkAndTranslateAttachments(const char* functionName, GLenum, const Vector<GLenum>&, Vector<GLenum>&);
 
     /* WebGLRenderingContextBase overrides */

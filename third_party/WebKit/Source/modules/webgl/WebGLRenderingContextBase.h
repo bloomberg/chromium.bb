@@ -552,31 +552,9 @@ protected:
         Uint32ArrayType,
     };
 
-    class VertexAttribValue {
-    public:
-        VertexAttribValue()
-            : type(Float32ArrayType)
-        {
-            initValue();
-        }
-
-        void initValue()
-        {
-            value.floatValue[0] = 0.0f;
-            value.floatValue[1] = 0.0f;
-            value.floatValue[2] = 0.0f;
-            value.floatValue[3] = 1.0f;
-        }
-
-        VertexAttribValueType type;
-        union {
-            GLfloat floatValue[4];
-            GLint intValue[4];
-            GLuint uintValue[4];
-        } value;
-    };
-    Vector<VertexAttribValue> m_vertexAttribValue;
+    Vector<VertexAttribValueType> m_vertexAttribType;
     unsigned m_maxVertexAttribs;
+    void setVertexAttribType(GLuint index, VertexAttribValueType);
 
     PersistentWillBeMember<WebGLProgram> m_currentProgram;
     PersistentWillBeMember<WebGLFramebuffer> m_framebufferBinding;
@@ -1047,11 +1025,6 @@ protected:
 
     // Helper function to validate drawElements(Instanced) calls
     bool validateDrawElements(const char* functionName, GLenum mode, GLsizei count, GLenum type, long long offset);
-
-    // Helper functions for vertexAttribNf{v}.
-    void vertexAttribfImpl(const char* functionName, GLuint index, GLsizei expectedSize, GLfloat, GLfloat, GLfloat, GLfloat);
-    void vertexAttribfvImpl(const char* functionName, GLuint index, const DOMFloat32Array*, GLsizei expectedSize);
-    void vertexAttribfvImpl(const char* functionName, GLuint index, const GLfloat*, GLsizei, GLsizei expectedSize);
 
     // Helper functions to bufferData() and bufferSubData().
     void bufferDataImpl(GLenum target, long long size, const void* data, GLenum usage);

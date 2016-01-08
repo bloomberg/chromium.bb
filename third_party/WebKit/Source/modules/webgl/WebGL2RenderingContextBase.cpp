@@ -1298,112 +1298,64 @@ void WebGL2RenderingContextBase::vertexAttribI4i(GLuint index, GLint x, GLint y,
 {
     if (isContextLost())
         return;
+    webContext()->vertexAttribI4i(index, x, y, z, w);
+    setVertexAttribType(index, Int32ArrayType);
+}
 
-    if (index >= m_maxVertexAttribs) {
-        synthesizeGLError(GL_INVALID_VALUE, "vertexAttribI4i", "index out of range");
+void WebGL2RenderingContextBase::vertexAttribI4iv(GLuint index, const DOMInt32Array* v)
+{
+    if (isContextLost())
+        return;
+    if (!v || v->length() < 4) {
+        synthesizeGLError(GL_INVALID_VALUE, "vertexAttribI4iv", "invalid array");
         return;
     }
-
-    webContext()->vertexAttribI4i(index, x, y, z, w);
-    VertexAttribValue& attribValue = m_vertexAttribValue[index];
-    attribValue.type = Int32ArrayType;
-    attribValue.value.intValue[0] = x;
-    attribValue.value.intValue[1] = y;
-    attribValue.value.intValue[2] = z;
-    attribValue.value.intValue[3] = w;
+    webContext()->vertexAttribI4iv(index, v->data());
+    setVertexAttribType(index, Int32ArrayType);
 }
 
-void WebGL2RenderingContextBase::vertexAttribI4iv(GLuint index, const DOMInt32Array* value)
+void WebGL2RenderingContextBase::vertexAttribI4iv(GLuint index, const Vector<GLint>& v)
 {
-    vertexAttribIivImpl("vertexAttribI4iv", index, value->data(), value->length());
-}
-
-void WebGL2RenderingContextBase::vertexAttribI4iv(GLuint index, const Vector<GLint>& value)
-{
-    vertexAttribIivImpl("vertexAttribI4iv", index, value.data(), value.size());
+    if (isContextLost())
+        return;
+    if (v.size() < 4) {
+        synthesizeGLError(GL_INVALID_VALUE, "vertexAttribI4iv", "invalid array");
+        return;
+    }
+    webContext()->vertexAttribI4iv(index, v.data());
+    setVertexAttribType(index, Int32ArrayType);
 }
 
 void WebGL2RenderingContextBase::vertexAttribI4ui(GLuint index, GLuint x, GLuint y, GLuint z, GLuint w)
 {
     if (isContextLost())
         return;
-
-    if (index >= m_maxVertexAttribs) {
-        synthesizeGLError(GL_INVALID_VALUE, "vertexAttribI4ui", "index out of range");
-        return;
-    }
-
     webContext()->vertexAttribI4ui(index, x, y, z, w);
-    VertexAttribValue& attribValue = m_vertexAttribValue[index];
-    attribValue.type = Uint32ArrayType;
-    attribValue.value.uintValue[0] = x;
-    attribValue.value.uintValue[1] = y;
-    attribValue.value.uintValue[2] = z;
-    attribValue.value.uintValue[3] = w;
+    setVertexAttribType(index, Uint32ArrayType);
 }
 
-void WebGL2RenderingContextBase::vertexAttribI4uiv(GLuint index, const DOMUint32Array* value)
-{
-    vertexAttribIuivImpl("vertexAttribI4uiv", index, value->data(), value->length());
-}
-
-void WebGL2RenderingContextBase::vertexAttribI4uiv(GLuint index, const Vector<GLuint>& value)
-{
-    vertexAttribIuivImpl("vertexAttribI4uiv", index, value.data(), value.size());
-}
-
-void WebGL2RenderingContextBase::vertexAttribIivImpl(const char* functionName, GLuint index, const GLint* value, GLsizei size)
+void WebGL2RenderingContextBase::vertexAttribI4uiv(GLuint index, const DOMUint32Array* v)
 {
     if (isContextLost())
         return;
-
-    if (!value) {
-        synthesizeGLError(GL_INVALID_VALUE, functionName, "no array");
+    if (!v || v->length() < 4) {
+        synthesizeGLError(GL_INVALID_VALUE, "vertexAttribI4uiv", "invalid array");
         return;
     }
-    if (size < 4) {
-        synthesizeGLError(GL_INVALID_VALUE, functionName, "invalid size");
-        return;
-    }
-    if (index >= m_maxVertexAttribs) {
-        synthesizeGLError(GL_INVALID_VALUE, functionName, "index out of range");
-        return;
-    }
-
-    webContext()->vertexAttribI4iv(index, value);
-    VertexAttribValue& attribValue = m_vertexAttribValue[index];
-    attribValue.type = Int32ArrayType;
-    attribValue.value.intValue[0] = value[0];
-    attribValue.value.intValue[1] = value[1];
-    attribValue.value.intValue[2] = value[2];
-    attribValue.value.intValue[3] = value[3];
+    webContext()->vertexAttribI4uiv(index, v->data());
+    setVertexAttribType(index, Uint32ArrayType);
 }
 
-void WebGL2RenderingContextBase::vertexAttribIuivImpl(const char* functionName, GLuint index, const GLuint* value, GLsizei size)
+void WebGL2RenderingContextBase::vertexAttribI4uiv(GLuint index, const Vector<GLuint>& v)
 {
     if (isContextLost())
         return;
-
-    if (!value) {
-        synthesizeGLError(GL_INVALID_VALUE, functionName, "no array");
+    if (v.size() < 4) {
+        synthesizeGLError(GL_INVALID_VALUE, "vertexAttribI4uiv", "invalid array");
         return;
     }
-    if (size < 4) {
-        synthesizeGLError(GL_INVALID_VALUE, functionName, "invalid size");
-        return;
-    }
-    if (index >= m_maxVertexAttribs) {
-        synthesizeGLError(GL_INVALID_VALUE, functionName, "index out of range");
-        return;
-    }
-
-    webContext()->vertexAttribI4uiv(index, value);
-    VertexAttribValue& attribValue = m_vertexAttribValue[index];
-    attribValue.type = Uint32ArrayType;
-    attribValue.value.uintValue[0] = value[0];
-    attribValue.value.uintValue[1] = value[1];
-    attribValue.value.uintValue[2] = value[2];
-    attribValue.value.uintValue[3] = value[3];
+    webContext()->vertexAttribI4uiv(index, v.data());
+    setVertexAttribType(index, Uint32ArrayType);
 }
 
 void WebGL2RenderingContextBase::vertexAttribIPointer(GLuint index, GLint size, GLenum type, GLsizei stride, long long offset)
