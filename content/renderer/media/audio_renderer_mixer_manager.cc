@@ -89,16 +89,24 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   int sample_rate = params.sample_rate();
 #else
-  int sample_rate = hardware_params.sample_rate();
+  int sample_rate =
+      hardware_params.format() != media::AudioParameters::AUDIO_FAKE
+          ? hardware_params.sample_rate()
+          : params.sample_rate();
 #endif
+
+  int buffer_size =
+      hardware_params.format() != media::AudioParameters::AUDIO_FAKE
+          ? media::AudioHardwareConfig::GetHighLatencyBufferSize(
+                hardware_params)
+          : params.frames_per_buffer();
 
   // Create output parameters based on the audio hardware configuration for
   // passing on to the output sink.  Force to 16-bit output for now since we
   // know that works everywhere; ChromeOS does not support other bit depths.
   media::AudioParameters output_params(
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY, params.channel_layout(),
-      sample_rate, 16,
-      media::AudioHardwareConfig::GetHighLatencyBufferSize(hardware_params));
+      sample_rate, 16, buffer_size);
 
   // If we've created invalid output parameters, simply pass on the input
   // params and let the browser side handle automatic fallback.

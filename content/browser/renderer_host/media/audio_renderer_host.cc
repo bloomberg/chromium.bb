@@ -73,9 +73,10 @@ void NotifyResourceDispatcherOfAudioStateChange(int render_process_id,
 }
 
 media::AudioParameters DummyParams() {
-  return media::AudioParameters(media::AudioParameters::AUDIO_PCM_LINEAR,
-                                media::CHANNEL_LAYOUT_STEREO,
-                                media::limits::kMinSampleRate, 1, 1);
+  return media::AudioParameters(
+      media::AudioParameters::AUDIO_FAKE, media::CHANNEL_LAYOUT_STEREO,
+      media::AudioParameters::kAudioCDSampleRate, 16,
+      media::AudioParameters::kAudioCDSampleRate / 10);
 }
 
 std::pair<int, std::pair<bool, std::string>> MakeAuthorizationData(
@@ -134,6 +135,19 @@ void NotifyRenderProcessHostThatAudioStateChanged(int render_process_id) {
 
   if (render_process_host)
     render_process_host->AudioStateChanged();
+}
+
+void MaybeFixAudioParameters(media::AudioParameters* params) {
+  // If the number of output channels is greater than the maximum, use the
+  // maximum allowed value. Hardware channels are ignored upstream, so it is
+  // better to report a valid value if this is the only problem.
+  if (params->channels() > media::limits::kMaxChannels)
+    params->set_channels_for_discrete(media::limits::kMaxChannels);
+
+  // If hardware parameters are still invalid, use dummy parameters with
+  // fake audio path and let the client handle the error.
+  if (!params->IsValid())
+    *params = DummyParams();
 }
 
 }  // namespace
@@ -460,6 +474,7 @@ void AudioRendererHost::OnRequestDeviceAuthorization(
       output_params.set_effects(info->device.matched_output.effects);
       authorizations_.insert(MakeAuthorizationData(
           stream_id, true, info->device.matched_output_device_id));
+      MaybeFixAudioParameters(&output_params);
       Send(new AudioMsg_NotifyDeviceAuthorized(
           stream_id, media::OUTPUT_DEVICE_STATUS_OK, output_params));
       return;
@@ -535,8 +550,11 @@ void AudioRendererHost::OnDeviceIDTranslated(
 
   auth_data->second.first = true;
   auth_data->second.second = device_info.unique_id;
+
+  media::AudioParameters output_params = device_info.output_params;
+  MaybeFixAudioParameters(&output_params);
   Send(new AudioMsg_NotifyDeviceAuthorized(
-      stream_id, media::OUTPUT_DEVICE_STATUS_OK, device_info.output_params));
+      stream_id, media::OUTPUT_DEVICE_STATUS_OK, output_params));
 }
 
 void AudioRendererHost::OnCreateStream(int stream_id,

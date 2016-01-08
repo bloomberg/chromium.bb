@@ -341,7 +341,8 @@ void AudioRendererImpl::Initialize(
 
   const AudioParameters& hw_params = hardware_config_.GetOutputConfig();
   expecting_config_changes_ = stream->SupportsConfigChanges();
-  if (!expecting_config_changes_ || !hw_params.IsValid()) {
+  if (!expecting_config_changes_ || !hw_params.IsValid() ||
+      hw_params.format() == AudioParameters::AUDIO_FAKE) {
     // The actual buffer size is controlled via the size of the AudioBus
     // provided to Render(), so just choose something reasonable here for looks.
     int buffer_size = stream->audio_decoder_config().samples_per_second() / 100;
