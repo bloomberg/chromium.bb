@@ -51,14 +51,14 @@ CSSDefaultStyleSheets& CSSDefaultStyleSheets::instance()
 
 static const MediaQueryEvaluator& screenEval()
 {
-    DEFINE_STATIC_LOCAL(const MediaQueryEvaluator, staticScreenEval, ("screen"));
-    return staticScreenEval;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<MediaQueryEvaluator>, staticScreenEval, (adoptPtrWillBeNoop (new MediaQueryEvaluator("screen"))));
+    return *staticScreenEval;
 }
 
 static const MediaQueryEvaluator& printEval()
 {
-    DEFINE_STATIC_LOCAL(const MediaQueryEvaluator, staticPrintEval, ("print"));
-    return staticPrintEval;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<MediaQueryEvaluator>, staticPrintEval, (adoptPtrWillBeNoop (new MediaQueryEvaluator("print"))));
+    return *staticPrintEval;
 }
 
 static PassRefPtrWillBeRawPtr<StyleSheetContents> parseUASheet(const String& str)
