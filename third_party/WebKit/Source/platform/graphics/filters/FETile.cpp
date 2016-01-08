@@ -46,7 +46,7 @@ FloatRect FETile::mapPaintRect(const FloatRect& rect, bool forward)
 PassRefPtr<SkImageFilter> FETile::createImageFilter(SkiaImageFilterBuilder& builder)
 {
     RefPtr<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
-    FloatRect srcRect = inputEffect(0)->applyEffectBoundaries(filter()->filterRegion());
+    FloatRect srcRect = inputEffect(0)->filterPrimitiveSubregion();
     FloatRect dstRect = applyEffectBoundaries(filter()->filterRegion());
     return adoptRef(SkTileImageFilter::Create(srcRect, dstRect, input.get()));
 }
