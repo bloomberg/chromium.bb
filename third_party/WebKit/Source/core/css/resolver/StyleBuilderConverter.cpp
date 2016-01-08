@@ -32,6 +32,7 @@
 #include "core/css/CSSFontFeatureValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGridLineNamesValue.h"
+#include "core/css/CSSPathValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSQuadValue.h"
 #include "core/css/CSSReflectValue.h"
@@ -953,9 +954,9 @@ RespectImageOrientationEnum StyleBuilderConverter::convertImageOrientation(Style
     return primitiveValue.getValueID() == CSSValueFromImage ? RespectImageOrientation : DoNotRespectImageOrientation;
 }
 
-CSSPathValue* StyleBuilderConverter::convertPath(StyleResolverState&, CSSValue& value)
+PassRefPtr<StylePath> StyleBuilderConverter::convertPath(StyleResolverState&, CSSValue& value)
 {
-    return toCSSPathValue(&value);
+    return toCSSPathValue(value).cachedPath();
 }
 
 } // namespace blink

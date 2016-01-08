@@ -7,33 +7,33 @@
 
 #include "core/CoreExport.h"
 #include "core/animation/animatable/AnimatableValue.h"
-#include "core/css/CSSPathValue.h"
+#include "core/style/StylePath.h"
 
 namespace blink {
 
 class CORE_EXPORT AnimatablePath final : public AnimatableValue {
 public:
     ~AnimatablePath() override { }
-    static PassRefPtr<AnimatablePath> create(PassRefPtrWillBeRawPtr<CSSPathValue> pathValue)
+    static PassRefPtr<AnimatablePath> create(PassRefPtr<StylePath> path)
     {
-        return adoptRef(new AnimatablePath(pathValue));
+        return adoptRef(new AnimatablePath(path));
     }
 
-    CSSPathValue* pathValue() const { return m_pathValue.get(); }
+    StylePath* path() const;
 
 protected:
     PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
     bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
 private:
-    explicit AnimatablePath(PassRefPtrWillBeRawPtr<CSSPathValue> pathValue)
-        : m_pathValue(pathValue)
+    explicit AnimatablePath(PassRefPtr<StylePath> path)
+        : m_path(path)
     {
-        ASSERT(m_pathValue);
+        ASSERT(m_path);
     }
     AnimatableType type() const override { return TypePath; }
     bool equalTo(const AnimatableValue*) const override;
-    const RefPtrWillBePersistent<CSSPathValue> m_pathValue;
+    const RefPtr<StylePath> m_path;
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatablePath, isPath());

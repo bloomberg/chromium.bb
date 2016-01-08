@@ -247,9 +247,9 @@ inline static PassRefPtr<AnimatableValue> createFromShapeValue(ShapeValue* value
     return AnimatableUnknown::create(CSSValueNone);
 }
 
-static PassRefPtr<AnimatableValue> createFromPath(CSSPathValue* pathValue)
+static PassRefPtr<AnimatableValue> createFromPath(StylePath* path)
 {
-    return AnimatablePath::create(pathValue);
+    return AnimatablePath::create(path);
 }
 
 static double fontStretchToDouble(FontStretch fontStretch)

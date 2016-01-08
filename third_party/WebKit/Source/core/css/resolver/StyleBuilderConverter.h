@@ -46,6 +46,7 @@ namespace blink {
 class RotateTransformOperation;
 class TranslateTransformOperation;
 class ScaleTransformOperation;
+class StylePath;
 
 // Note that we assume the parser only allows valid CSSValue types.
 class StyleBuilderConverter {
@@ -104,7 +105,7 @@ public:
     static PassRefPtr<RotateTransformOperation> convertRotate(StyleResolverState&, const CSSValue&);
     static PassRefPtr<ScaleTransformOperation> convertScale(StyleResolverState&, const CSSValue&);
     static RespectImageOrientationEnum convertImageOrientation(StyleResolverState&, const CSSValue&);
-    static CSSPathValue* convertPath(StyleResolverState&, CSSValue&);
+    static PassRefPtr<StylePath> convertPath(StyleResolverState&, CSSValue&);
 };
 
 template <typename T>

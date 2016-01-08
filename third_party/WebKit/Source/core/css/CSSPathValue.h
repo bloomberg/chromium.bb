@@ -7,23 +7,22 @@
 
 #include "core/css/CSSValue.h"
 #include "core/svg/SVGPathByteStream.h"
-#include "platform/graphics/Path.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
+class StylePath;
+
 class CSSPathValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSPathValue> create(PassOwnPtr<SVGPathByteStream> pathByteStream)
-    {
-        return adoptRefWillBeNoop(new CSSPathValue(pathByteStream));
-    }
-
+    static PassRefPtrWillBeRawPtr<CSSPathValue> create(PassRefPtr<SVGPathByteStream>, StylePath* = nullptr);
     static PassRefPtrWillBeRawPtr<CSSPathValue> create(const String&);
+    ~CSSPathValue();
 
     static CSSPathValue* emptyPathValue();
 
+    StylePath* cachedPath();
     String customCSSText() const;
 
     bool equals(const CSSPathValue&) const;
@@ -32,13 +31,12 @@ public:
 
     const SVGPathByteStream& byteStream() const { return *m_pathByteStream; }
     String pathString() const;
-    const Path& path() const { return m_path; }
 
 private:
-    CSSPathValue(PassOwnPtr<SVGPathByteStream>);
+    CSSPathValue(PassRefPtr<SVGPathByteStream>, StylePath*);
 
-    OwnPtr<SVGPathByteStream> m_pathByteStream;
-    Path m_path;
+    RefPtr<SVGPathByteStream> m_pathByteStream;
+    RefPtr<StylePath> m_cachedPath;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSPathValue, isPathValue());

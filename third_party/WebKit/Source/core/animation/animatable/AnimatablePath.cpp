@@ -7,7 +7,6 @@
 #include "core/svg/SVGPathBlender.h"
 #include "core/svg/SVGPathByteStreamBuilder.h"
 #include "core/svg/SVGPathByteStreamSource.h"
-#include "core/svg/SVGPathUtilities.h"
 
 namespace blink {
 
@@ -16,8 +15,8 @@ bool AnimatablePath::usesDefaultInterpolationWith(const AnimatableValue* value) 
     // Default interpolation is used if the paths have different lengths,
     // or the paths have a segment with different types (ignoring "relativeness").
 
-    SVGPathByteStreamSource fromSource(pathValue()->byteStream());
-    SVGPathByteStreamSource toSource(toAnimatablePath(value)->pathValue()->byteStream());
+    SVGPathByteStreamSource fromSource(path()->byteStream());
+    SVGPathByteStreamSource toSource(toAnimatablePath(value)->path()->byteStream());
 
     while (fromSource.hasMoreData()) {
         if (!toSource.hasMoreData())
@@ -40,21 +39,26 @@ PassRefPtr<AnimatableValue> AnimatablePath::interpolateTo(const AnimatableValue*
     if (usesDefaultInterpolationWith(value))
         return defaultInterpolateTo(this, value, fraction);
 
-    OwnPtr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
+    RefPtr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
     SVGPathByteStreamBuilder builder(*byteStream);
 
-    SVGPathByteStreamSource fromSource(pathValue()->byteStream());
-    SVGPathByteStreamSource toSource(toAnimatablePath(value)->pathValue()->byteStream());
+    SVGPathByteStreamSource fromSource(path()->byteStream());
+    SVGPathByteStreamSource toSource(toAnimatablePath(value)->path()->byteStream());
 
     SVGPathBlender blender(&fromSource, &toSource, &builder);
     bool ok = blender.blendAnimatedPath(fraction);
     ASSERT_UNUSED(ok, ok);
-    return AnimatablePath::create(CSSPathValue::create(byteStream.release()));
+    return AnimatablePath::create(StylePath::create(byteStream.release()));
+}
+
+StylePath* AnimatablePath::path() const
+{
+    return m_path.get();
 }
 
 bool AnimatablePath::equalTo(const AnimatableValue* value) const
 {
-    return pathValue()->equals(*toAnimatablePath(value)->pathValue());
+    return m_path->equals(*toAnimatablePath(value)->path());
 }
 
 } // namespace blink

@@ -35,9 +35,9 @@ namespace blink {
 
 namespace {
 
-PassOwnPtr<SVGPathByteStream> blendPathByteStreams(const SVGPathByteStream& fromStream, const SVGPathByteStream& toStream, float progress)
+PassRefPtr<SVGPathByteStream> blendPathByteStreams(const SVGPathByteStream& fromStream, const SVGPathByteStream& toStream, float progress)
 {
-    OwnPtr<SVGPathByteStream> resultStream = SVGPathByteStream::create();
+    RefPtr<SVGPathByteStream> resultStream = SVGPathByteStream::create();
     SVGPathByteStreamBuilder builder(*resultStream);
     SVGPathByteStreamSource fromSource(fromStream);
     SVGPathByteStreamSource toSource(toStream);
@@ -46,9 +46,9 @@ PassOwnPtr<SVGPathByteStream> blendPathByteStreams(const SVGPathByteStream& from
     return resultStream.release();
 }
 
-PassOwnPtr<SVGPathByteStream> addPathByteStreams(const SVGPathByteStream& fromStream, const SVGPathByteStream& byStream, unsigned repeatCount = 1)
+PassRefPtr<SVGPathByteStream> addPathByteStreams(const SVGPathByteStream& fromStream, const SVGPathByteStream& byStream, unsigned repeatCount = 1)
 {
-    OwnPtr<SVGPathByteStream> resultStream = SVGPathByteStream::create();
+    RefPtr<SVGPathByteStream> resultStream = SVGPathByteStream::create();
     SVGPathByteStreamBuilder builder(*resultStream);
     SVGPathByteStreamSource fromSource(fromStream);
     SVGPathByteStreamSource bySource(byStream);
@@ -57,7 +57,7 @@ PassOwnPtr<SVGPathByteStream> addPathByteStreams(const SVGPathByteStream& fromSt
     return resultStream.release();
 }
 
-PassOwnPtr<SVGPathByteStream> conditionallyAddPathByteStreams(PassOwnPtr<SVGPathByteStream> fromStream, const SVGPathByteStream& byStream, unsigned repeatCount = 1)
+PassRefPtr<SVGPathByteStream> conditionallyAddPathByteStreams(PassRefPtr<SVGPathByteStream> fromStream, const SVGPathByteStream& byStream, unsigned repeatCount = 1)
 {
     if (fromStream->isEmpty() || byStream.isEmpty())
         return fromStream;
@@ -96,7 +96,7 @@ PassRefPtrWillBeRawPtr<SVGPath> SVGPath::clone() const
 SVGParsingError SVGPath::setValueAsString(const String& string)
 {
     SVGParsingError parseStatus = NoError;
-    OwnPtr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
+    RefPtr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
     if (!buildByteStreamFromString(string, *byteStream))
         parseStatus = ParsingAttributeFailedError;
     m_pathValue = CSSPathValue::create(byteStream.release());
@@ -134,9 +134,9 @@ void SVGPath::calculateAnimatedValue(SVGAnimationElement* animationElement, floa
     const RefPtrWillBeRawPtr<SVGPath> from = toSVGPath(fromValue);
     const SVGPathByteStream* fromStream = &from->byteStream();
 
-    OwnPtr<SVGPathByteStream> copy;
+    RefPtr<SVGPathByteStream> copy;
     if (isToAnimation) {
-        copy = byteStream().copy();
+        copy = byteStream().clone();
         fromStream = copy.get();
     }
 
@@ -153,7 +153,7 @@ void SVGPath::calculateAnimatedValue(SVGAnimationElement* animationElement, floa
         }
     }
 
-    OwnPtr<SVGPathByteStream> newStream = blendPathByteStreams(*fromStream, toStream, percentage);
+    RefPtr<SVGPathByteStream> newStream = blendPathByteStreams(*fromStream, toStream, percentage);
 
     // Handle additive='sum'.
     if (animationElement->isAdditive() && !isToAnimation)

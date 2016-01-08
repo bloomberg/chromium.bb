@@ -790,6 +790,8 @@
             'style/StyleMotionData.h',
             'style/StyleMotionPath.h',
             'style/StyleMultiColData.cpp',
+            'style/StylePath.cpp',
+            'style/StylePath.h',
             'style/StylePendingImage.h',
             'style/StyleRareInheritedData.cpp',
             'style/StyleRareNonInheritedData.cpp',

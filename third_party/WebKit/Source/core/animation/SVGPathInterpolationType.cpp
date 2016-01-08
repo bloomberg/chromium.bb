@@ -157,7 +157,7 @@ void SVGPathInterpolationType::composite(UnderlyingValue& underlyingValue, doubl
 
 PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGPathInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue) const
 {
-    OwnPtr<SVGPathByteStream> pathByteStream = SVGPathByteStream::create();
+    RefPtr<SVGPathByteStream> pathByteStream = SVGPathByteStream::create();
     InterpolatedSVGPathSource source(
         toInterpolableList(*toInterpolableList(interpolableValue).get(PathArgsIndex)),
         toSVGPathNonInterpolableValue(nonInterpolableValue)->pathSegTypes());

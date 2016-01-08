@@ -200,7 +200,7 @@ bool StyleInheritedResourceData::operator==(const StyleInheritedResourceData& ot
 }
 
 StyleLayoutData::StyleLayoutData()
-    : d(CSSPathValue::emptyPathValue())
+    : d(SVGComputedStyle::initialD())
     , cx(SVGComputedStyle::initialCx())
     , cy(SVGComputedStyle::initialCy())
     , x(SVGComputedStyle::initialX())

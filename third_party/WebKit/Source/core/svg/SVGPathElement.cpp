@@ -75,7 +75,7 @@ Path SVGPathElement::asPath() const
         return svgStyle.d()->path();
     }
 
-    return m_path->currentValue()->pathValue()->path();
+    return m_path->currentValue()->pathValue()->cachedPath()->path();
 }
 
 const SVGPathByteStream& SVGPathElement::pathByteStream() const

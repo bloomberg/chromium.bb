@@ -682,7 +682,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setZIndex(clampTo<int>(round(toAnimatableDouble(value)->toDouble())));
         return;
     case CSSPropertyD:
-        style->setD(toAnimatablePath(value)->pathValue());
+        style->setD(toAnimatablePath(value)->path());
         return;
     case CSSPropertyCx:
         style->setCx(animatableValueToLength(value, state));

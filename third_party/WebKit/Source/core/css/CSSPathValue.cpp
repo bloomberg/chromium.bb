@@ -4,29 +4,46 @@
 
 #include "core/css/CSSPathValue.h"
 
+#include "core/style/StylePath.h"
 #include "core/svg/SVGPathUtilities.h"
 
 namespace blink {
 
+PassRefPtrWillBeRawPtr<CSSPathValue> CSSPathValue::create(PassRefPtr<SVGPathByteStream> pathByteStream, StylePath* cachedPath)
+{
+    return adoptRefWillBeNoop(new CSSPathValue(pathByteStream, cachedPath));
+}
+
 PassRefPtrWillBeRawPtr<CSSPathValue> CSSPathValue::create(const String& pathString)
 {
-    OwnPtr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
+    RefPtr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
     buildByteStreamFromString(pathString, *byteStream);
     return CSSPathValue::create(byteStream.release());
 }
 
-CSSPathValue::CSSPathValue(PassOwnPtr<SVGPathByteStream> pathByteStream)
+CSSPathValue::CSSPathValue(PassRefPtr<SVGPathByteStream> pathByteStream, StylePath* cachedPath)
     : CSSValue(PathClass)
     , m_pathByteStream(pathByteStream)
+    , m_cachedPath(cachedPath)
 {
     ASSERT(m_pathByteStream);
-    buildPathFromByteStream(*m_pathByteStream, m_path);
+}
+
+CSSPathValue::~CSSPathValue()
+{
 }
 
 CSSPathValue* CSSPathValue::emptyPathValue()
 {
     DEFINE_STATIC_LOCAL(RefPtrWillBePersistent<CSSPathValue>, empty, (CSSPathValue::create(SVGPathByteStream::create())));
     return empty.get();
+}
+
+StylePath* CSSPathValue::cachedPath()
+{
+    if (!m_cachedPath)
+        m_cachedPath = StylePath::create(m_pathByteStream);
+    return m_cachedPath.get();
 }
 
 String CSSPathValue::customCSSText() const
