@@ -133,7 +133,6 @@ const PrintableSubEntry kU002B[] = {
     {DomCode::BRACKET_RIGHT, 0, 0, kAny, kAny, VKEY_OEM_PLUS},
     {DomCode::SEMICOLON, 0, 0, kAny, kAny, VKEY_OEM_PLUS},
     {DomCode::BACKSLASH, 0, 0, kAny, kAny, VKEY_OEM_2},
-    {DomCode::MINUS, 1, 1, 0x003F, 0x005C, VKEY_OEM_MINUS},  // ?, backslash
     {DomCode::MINUS, 1, 0, 0x003F, kAny, VKEY_OEM_PLUS}};    // ?
 
 // U+002C comma
