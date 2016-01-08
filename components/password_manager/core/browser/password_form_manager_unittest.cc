@@ -1321,25 +1321,56 @@ TEST_F(PasswordFormManagerTest, AndroidCredentialsAreAutofilled) {
   EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_));
 
   // Although Android-based credentials are treated similarly to PSL-matched
-  // credentials in most respects, they should be autofilled as opposed to be
+  // credentials in some respects, they should be autofilled as opposed to be
   // filled on username-select.
-  ScopedVector<PasswordForm> simulated_results;
-  simulated_results.push_back(new PasswordForm());
-  simulated_results[0]->signon_realm = "android://hash@com.google.android";
-  simulated_results[0]->origin = observed_form()->origin;
-  simulated_results[0]->username_value = saved_match()->username_value;
-  simulated_results[0]->password_value = saved_match()->password_value;
-
-  form_manager()->SimulateFetchMatchingLoginsFromPasswordStore();
+  PasswordForm android_login;
+  android_login.signon_realm = "android://hash@com.google.android";
+  android_login.origin = GURL("android://hash@com.google.android/");
+  android_login.is_affiliation_based_match = true;
+  android_login.username_value = saved_match()->username_value;
+  android_login.password_value = saved_match()->password_value;
+  android_login.preferred = false;
+  android_login.times_used = 42;
 
   autofill::PasswordFormFillData fill_data;
   EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_))
       .WillOnce(SaveArg<0>(&fill_data));
 
+  ScopedVector<PasswordForm> simulated_results;
+  simulated_results.push_back(new PasswordForm(android_login));
+  form_manager()->SimulateFetchMatchingLoginsFromPasswordStore();
   form_manager()->OnGetPasswordStoreResults(std::move(simulated_results));
   EXPECT_TRUE(fill_data.additional_logins.empty());
   EXPECT_FALSE(fill_data.wait_for_username);
   EXPECT_EQ(1u, form_manager()->best_matches().size());
+
+  // When the user submits the filled form, no copy of the credential should be
+  // created, instead the usage counter of the original credential should be
+  // incremented in-place, as if it were a regular credential for that website.
+  PasswordForm credential(*observed_form());
+  credential.username_value = android_login.username_value;
+  credential.password_value = android_login.password_value;
+  credential.preferred = true;
+  form_manager()->ProvisionallySave(
+      credential, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  EXPECT_FALSE(form_manager()->IsNewLogin());
+
+  PasswordForm updated_credential;
+  EXPECT_CALL(*mock_store(), UpdateLogin(_))
+      .WillOnce(testing::SaveArg<0>(&updated_credential));
+  EXPECT_CALL(*mock_store(), UpdateLoginWithPrimaryKey(_, _)).Times(0);
+  EXPECT_CALL(*mock_store(), AddLogin(_)).Times(0);
+  form_manager()->Save();
+  Mock::VerifyAndClearExpectations(mock_store());
+
+  EXPECT_EQ(android_login.username_value, updated_credential.username_value);
+  EXPECT_EQ(android_login.password_value, updated_credential.password_value);
+  EXPECT_EQ(android_login.times_used + 1, updated_credential.times_used);
+  EXPECT_TRUE(updated_credential.preferred);
+  EXPECT_EQ(GURL(), updated_credential.action);
+  EXPECT_EQ(base::string16(), updated_credential.username_element);
+  EXPECT_EQ(base::string16(), updated_credential.password_element);
+  EXPECT_EQ(base::string16(), updated_credential.submit_element);
 }
 
 // Credentials saved through Android apps should always be shown in the drop-

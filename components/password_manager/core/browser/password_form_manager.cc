@@ -735,6 +735,7 @@ void PasswordFormManager::UpdateLogin() {
     password_store->UpdateLoginWithPrimaryKey(pending_credentials_,
                                               old_primary_key);
   } else if (observed_form_.new_password_element.empty() &&
+             !IsValidAndroidFacetURI(pending_credentials_.signon_realm) &&
              (pending_credentials_.password_element.empty() ||
               pending_credentials_.username_element.empty() ||
               pending_credentials_.submit_element.empty())) {
@@ -991,8 +992,7 @@ void PasswordFormManager::CreatePendingCredentials() {
     pending_credentials_ = *saved_form;
     password_overridden_ =
         pending_credentials_.password_value != password_to_save;
-    if (IsPendingCredentialsPublicSuffixMatch() ||
-        IsValidAndroidFacetURI(preferred_match_->signon_realm)) {
+    if (IsPendingCredentialsPublicSuffixMatch()) {
       // If the autofilled credentials were a PSL match or credentials stored
       // from Android apps store a copy with the current origin and signon
       // realm. This ensures that on the next visit, a precise match is found.
@@ -1089,13 +1089,14 @@ void PasswordFormManager::CreatePendingCredentials() {
     CreatePendingCredentialsForNewCredentials();
   }
 
-  pending_credentials_.action = provisionally_saved_form_->action;
-
-  // If the user selected credentials we autofilled from a PasswordForm
-  // that contained no action URL (IE6/7 imported passwords, for example),
-  // bless it with the action URL from the observed form. See bug 1107719.
-  if (pending_credentials_.action.is_empty())
-    pending_credentials_.action = observed_form_.action;
+  if (!IsValidAndroidFacetURI(pending_credentials_.signon_realm)) {
+    pending_credentials_.action = provisionally_saved_form_->action;
+    // If the user selected credentials we autofilled from a PasswordForm
+    // that contained no action URL (IE6/7 imported passwords, for example),
+    // bless it with the action URL from the observed form. See bug 1107719.
+    if (pending_credentials_.action.is_empty())
+      pending_credentials_.action = observed_form_.action;
+  }
 
   pending_credentials_.password_value = password_to_save;
   pending_credentials_.preferred = provisionally_saved_form_->preferred;

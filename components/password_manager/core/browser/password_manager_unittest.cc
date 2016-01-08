@@ -1313,6 +1313,22 @@ TEST_F(PasswordManagerTest, AutofillingOfAffiliatedCredentials) {
   EXPECT_EQ(android_form.password_value, form_data.password_field.value);
   EXPECT_FALSE(form_data.wait_for_username);
   EXPECT_EQ(android_form.signon_realm, form_data.preferred_realm);
+
+  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+
+  PasswordForm filled_form(form);
+  filled_form.username_value = android_form.username_value;
+  filled_form.password_value = android_form.password_value;
+  OnPasswordFormSubmitted(filled_form);
+
+  observed.clear();
+  EXPECT_CALL(*store_, UpdateLogin(_));
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_, _)).Times(0);
+  EXPECT_CALL(*store_, AddLogin(_)).Times(0);
+  EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(_, _)).Times(0);
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
 }
 
 }  // namespace password_manager
