@@ -1326,6 +1326,3 @@ crbug.com/572723 [ Mac Release ] inspector/sources/debugger/debugger-uncaught-pr
 
 crbug.com/572726 inspector/tracing/timeline-node-reference.html [ Timeout Pass Crash ]
 
-crbug.com/575037 [ Android ] webaudio/codec-tests/aac/vbr-128kbps-44khz.html [ Skip ]
-crbug.com/575037 [ Android ] webaudio/codec-tests/mp3/128kbps-44khz.html [ Skip ]
-crbug.com/575037 [ Android ] webaudio/codec-tests/wav/24bit-22khz-resample.html [ Skip ]

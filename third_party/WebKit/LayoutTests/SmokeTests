@@ -226,8 +226,6 @@ virtual/stable/webexposed/internal-properties-should-not-be-exposed.html
 webaudio/codec-tests/vorbis/vbr-96kbps-44khz.html
 webaudio/codec-tests/vorbis/vbr-128kbps-44khz.html
 webaudio/codec-tests/vorbis/vbr-70kbps-44khz.html
-webaudio/codec-tests/aac/vbr-128kbps-44khz.html
-webaudio/codec-tests/mp3/128kbps-44khz.html
 webaudio/codec-tests/wav/wav-369760.html
 webaudio/codec-tests/wav/24bit-44khz.html
 webaudio/codec-tests/wav/24bit-22khz-resample.html
