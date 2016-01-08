@@ -1933,6 +1933,8 @@
       'android/java/src/org/chromium/chrome/browser/webapps/WebappRegistry.java',
     ],
     'chrome_browser_mdns_sources': [
+      'browser/local_discovery/service_discovery_client_impl.cc',
+      'browser/local_discovery/service_discovery_client_impl.h',
       'browser/local_discovery/service_discovery_client_mdns.cc',
       'browser/local_discovery/service_discovery_client_mdns.h',
       'browser/printing/cloud_print/privet_traffic_detector.cc',
@@ -2658,6 +2660,8 @@
     'chrome_browser_service_discovery_sources': [
       'browser/local_discovery/endpoint_resolver.cc',
       'browser/local_discovery/endpoint_resolver.h',
+      'browser/local_discovery/service_discovery_client.cc',
+      'browser/local_discovery/service_discovery_client.h',
       'browser/local_discovery/service_discovery_client_mac.h',
       'browser/local_discovery/service_discovery_client_mac.mm',
       'browser/local_discovery/service_discovery_client_mac_factory.h',

@@ -11,8 +11,8 @@
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "chrome/browser/local_discovery/service_discovery_client.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
-#include "chrome/common/local_discovery/service_discovery_client.h"
 #include "net/base/network_change_notifier.h"
 #include "net/dns/mdns_client.h"
 

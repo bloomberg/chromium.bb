@@ -8,8 +8,8 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/local_discovery/service_discovery_client.h"
 #include "chrome/browser/printing/cloud_print/privet_constants.h"
-#include "chrome/common/local_discovery/service_discovery_client.h"
 
 namespace cloud_print {
 
