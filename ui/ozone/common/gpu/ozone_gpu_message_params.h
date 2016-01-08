@@ -15,12 +15,12 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/overlay_transform.h"
-#include "ui/ozone/ozone_export.h"
+#include "ui/ozone/ozone_base_export.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 
 namespace ui {
 
-struct OZONE_EXPORT DisplayMode_Params {
+struct OZONE_BASE_EXPORT DisplayMode_Params {
   DisplayMode_Params();
   ~DisplayMode_Params();
 
@@ -29,7 +29,7 @@ struct OZONE_EXPORT DisplayMode_Params {
   float refresh_rate = 0.0f;
 };
 
-struct OZONE_EXPORT DisplaySnapshot_Params {
+struct OZONE_BASE_EXPORT DisplaySnapshot_Params {
   DisplaySnapshot_Params();
   ~DisplaySnapshot_Params();
 
@@ -49,7 +49,7 @@ struct OZONE_EXPORT DisplaySnapshot_Params {
   std::string string_representation;
 };
 
-struct OZONE_EXPORT OverlayCheck_Params {
+struct OZONE_BASE_EXPORT OverlayCheck_Params {
   OverlayCheck_Params();
   OverlayCheck_Params(
       const OverlayCandidatesOzone::OverlaySurfaceCandidate& candidate);

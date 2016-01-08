@@ -7,12 +7,13 @@
 
 #include "base/macros.h"
 #include "ui/display/types/display_snapshot.h"
+#include "ui/ozone/ozone_base_export.h"
 
 namespace ui {
 
 struct DisplaySnapshot_Params;
 
-class DisplaySnapshotProxy : public DisplaySnapshot {
+class OZONE_BASE_EXPORT DisplaySnapshotProxy : public DisplaySnapshot {
  public:
   DisplaySnapshotProxy(const DisplaySnapshot_Params& params);
   ~DisplaySnapshotProxy() override;

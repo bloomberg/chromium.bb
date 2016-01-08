@@ -1270,6 +1270,7 @@
         ['use_ozone == 1', {
           'dependencies': [
             '../ui/ozone/ozone.gyp:ozone',
+            '../ui/ozone/ozone.gyp:ozone_base',
           ],
         }],
       ],
