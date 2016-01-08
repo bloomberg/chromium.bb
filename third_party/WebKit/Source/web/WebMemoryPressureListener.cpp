@@ -9,9 +9,10 @@
 
 namespace blink {
 
-void WebMemoryPressureListener::onMemoryPressure()
+void WebMemoryPressureListener::onMemoryPressure(WebMemoryPressureLevel pressureLevel)
 {
     Page::onMemoryPressure();
+    MemoryPurgeController::onMemoryPressure(pressureLevel);
 }
 
 } // namespace blink

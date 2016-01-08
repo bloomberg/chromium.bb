@@ -149,7 +149,6 @@
 #include "third_party/WebKit/public/web/WebDatabase.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
-#include "third_party/WebKit/public/web/WebImageCache.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebMemoryPressureListener.h"
 #include "third_party/WebKit/public/web/WebNetworkStateNotifier.h"
@@ -1933,7 +1932,8 @@ void RenderThreadImpl::OnMemoryPressure(
 
   // Do not call into blink if it is not initialized.
   if (blink_platform_impl_) {
-    blink::WebMemoryPressureListener::onMemoryPressure();
+    blink::WebMemoryPressureListener::onMemoryPressure(
+        static_cast<blink::WebMemoryPressureLevel>(memory_pressure_level));
 
     if (blink::mainThreadIsolate()) {
       // Trigger full v8 garbage collection on memory pressure notifications.
@@ -1947,9 +1947,6 @@ void RenderThreadImpl::OnMemoryPressure(
 
     if (memory_pressure_level ==
         base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
-      // Clear the image cache.
-      blink::WebImageCache::clear();
-
       // Purge Skia font cache, by setting it to 0 and then again to the
       // previous limit.
       size_t font_cache_limit = SkGraphics::SetFontCacheLimit(0);

@@ -6,13 +6,14 @@
 #define WebMemoryPressureListener_h
 
 #include "public/platform/WebCommon.h"
+#include "public/platform/WebMemoryPressureLevel.h"
 
 namespace blink {
 
 class WebMemoryPressureListener {
 public:
     // Called when a memory pressure notification is received.
-    BLINK_EXPORT static void onMemoryPressure();
+    BLINK_EXPORT static void onMemoryPressure(WebMemoryPressureLevel);
 };
 
 } // namespace blink

@@ -146,6 +146,7 @@
       "platform/WebMediaStreamTrackSourcesRequest.h",
       "platform/WebMemoryAllocatorDump.h",
       "platform/WebMemoryDumpProvider.h",
+      "platform/WebMemoryPressureLevel.h",
       "platform/WebMessagePortChannel.h",
       "platform/WebMessagePortChannelClient.h",
       "platform/WebMimeRegistry.h",

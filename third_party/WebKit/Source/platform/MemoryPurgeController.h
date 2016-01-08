@@ -8,6 +8,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebMemoryPressureLevel.h"
 #include "wtf/MainThread.h"
 
 namespace blink {
@@ -40,7 +41,7 @@ class PLATFORM_EXPORT MemoryPurgeController final : public NoBaseWillBeGarbageCo
     USING_FAST_MALLOC_WILL_BE_REMOVED(MemoryPurgeController);
     WTF_MAKE_NONCOPYABLE(MemoryPurgeController);
 public:
-    static void onMemoryPressure();
+    static void onMemoryPressure(WebMemoryPressureLevel);
 
     static PassOwnPtrWillBeRawPtr<MemoryPurgeController> create()
     {
