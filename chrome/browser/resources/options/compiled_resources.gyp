@@ -49,6 +49,7 @@
           '../../../../third_party/closure_compiler/externs/bluetooth.js',
           '../../../../third_party/closure_compiler/externs/bluetooth_private.js',
           '../../../../third_party/closure_compiler/externs/management.js',
+          '../../../../third_party/closure_compiler/externs/metrics_private.js',
           '../../../../third_party/closure_compiler/externs/networking_private.js',
           '../../../../third_party/closure_compiler/externs/chrome_send.js',
           '../../../../ui/webui/resources/cr_elements/network/cr_network_icon_externs.js',

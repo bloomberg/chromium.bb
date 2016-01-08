@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -594,10 +594,18 @@
     "dependencies": ["permission:mediaPlayerPrivate"],
     "contexts": ["blessed_extension"]
   },
-  "metricsPrivate": {
+  "metricsPrivate": [{
     "dependencies": ["permission:metricsPrivate"],
     "contexts": ["blessed_extension"]
-  },
+  }, {
+    "channel": "trunk",
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://md-settings/*",
+      "chrome://settings/*",
+      "chrome://settings-frame/*"
+    ]
+  }],
   "mdns": {
     "dependencies": ["permission:mdns"],
     "contexts": ["blessed_extension"]

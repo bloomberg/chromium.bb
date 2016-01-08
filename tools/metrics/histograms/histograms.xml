@@ -26870,7 +26870,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Net.SpdyVersion" enum="ProtocolVersion">
   <obsolete>
     Deprecated on 2014-09-11, because the uploaded values were changing as
-    protocols were removed, therefore statistics couldn't be combined accross
+    protocols were removed, therefore statistics couldn't be combined across
     different builds.  Replaced by Net.SpdyVersion2.
   </obsolete>
   <owner>rch@chromium.org</owner>
@@ -44592,6 +44592,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The time elapsed in milliseconds in between startup URLs pref migration. A
     value of 0 indicates that the last migration time was in the future due to
     e.g. an incorrect system time.
+  </summary>
+</histogram>
+
+<histogram name="Settings.TimeToFirstSearch" units="milliseconds">
+  <owner>dschuyler@chromium.org</owner>
+  <summary>
+    The time between when the chrome://settings page is opened to the first time
+    a search is done within that page.  This is intended to evaluate how long a
+    user looks for a setting before giving up and searching for it.
   </summary>
 </histogram>
 

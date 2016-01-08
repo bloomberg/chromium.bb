@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -147,6 +147,13 @@ cr.define('options', function() {
     __proto__: Page.prototype,
 
     /**
+     * Only send the time of first search once.
+     * @type {boolean}
+     * @private
+     */
+    hasSentFirstSearchTime_: false,
+
+    /**
      * A boolean to prevent recursion. Used by setSearchText_().
      * @type {boolean}
      * @private
@@ -156,6 +163,9 @@ cr.define('options', function() {
     /** @override */
     initializePage: function() {
       Page.prototype.initializePage.call(this);
+
+      // Record the start time for use in reporting metrics.
+      this.createdTimestamp_ = Date.now();
 
       this.searchField = $('search-field');
 
@@ -301,6 +311,12 @@ cr.define('options', function() {
           PageManager.showDefaultPage();
         this.insideSetSearchText_ = false;
         return;
+      }
+
+      if (!this.hasSentFirstSearchTime_) {
+        this.hasSentFirstSearchTime_ = true;
+        chrome.metricsPrivate.recordMediumTime('Settings.TimeToFirstSearch',
+            Date.now() - this.createdTimestamp_);
       }
 
       // Toggle the search page if necessary. Otherwise, update the hash.
