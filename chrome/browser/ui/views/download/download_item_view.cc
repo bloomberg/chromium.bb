@@ -241,10 +241,10 @@ void DownloadItemView::StartDownloadProgress() {
   if (progress_timer_.IsRunning())
     return;
   progress_start_time_ = base::TimeTicks::Now();
-  progress_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(DownloadShelf::kProgressRateMs),
-      base::Bind(&DownloadItemView::SchedulePaint, base::Unretained(this)));
+  progress_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(
+                                       DownloadShelf::kProgressRateMs),
+                        base::Bind(&DownloadItemView::ProgressTimerFired,
+                                   base::Unretained(this)));
 }
 
 void DownloadItemView::StopDownloadProgress() {
@@ -272,20 +272,13 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download_item) {
     return;
   }
 
-  if (IsShowingWarningDialog() && !model_.IsDangerous()) {
-    // We have been approved.
-    ClearWarningDialog();
-  } else if (!IsShowingWarningDialog() && model_.IsDangerous()) {
-    ShowWarningDialog();
-    // Force the shelf to layout again as our size has changed.
-    shelf_->Layout();
-    SchedulePaint();
+  if (IsShowingWarningDialog() != model_.IsDangerous()) {
+    ToggleWarningDialog();
   } else {
-    base::string16 status_text = model_.GetStatusText();
     switch (download()->GetState()) {
       case DownloadItem::IN_PROGRESS:
-        download()->IsPaused() ?
-            StopDownloadProgress() : StartDownloadProgress();
+        download()->IsPaused() ? StopDownloadProgress()
+                               : StartDownloadProgress();
         LoadIconIfItemPathChanged();
         break;
       case DownloadItem::INTERRUPTED:
@@ -294,7 +287,6 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download_item) {
         complete_animation_->SetSlideDuration(kInterruptedAnimationDurationMs);
         complete_animation_->SetTweenType(gfx::Tween::LINEAR);
         complete_animation_->Show();
-        SchedulePaint();
         LoadIcon();
         break;
       case DownloadItem::COMPLETE:
@@ -307,7 +299,6 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download_item) {
         complete_animation_->SetSlideDuration(kCompleteAnimationDurationMs);
         complete_animation_->SetTweenType(gfx::Tween::LINEAR);
         complete_animation_->Show();
-        SchedulePaint();
         LoadIcon();
         break;
       case DownloadItem::CANCELLED:
@@ -319,7 +310,8 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download_item) {
       default:
         NOTREACHED();
     }
-    status_text_ = status_text;
+    status_text_ = model_.GetStatusText();
+    SchedulePaint();
   }
 
   base::string16 new_tip = model_.GetTooltipText(font_list_, kTooltipMaxWidth);
@@ -329,11 +321,6 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download_item) {
   }
 
   UpdateAccessibleName();
-
-  // We use the parent's (DownloadShelfView's) SchedulePaint, since there
-  // are spaces between each DownloadItemView that the parent is responsible
-  // for painting.
-  shelf_->SchedulePaint();
 }
 
 void DownloadItemView::OnDownloadDestroyed(DownloadItem* download) {
@@ -1137,6 +1124,19 @@ void DownloadItemView::SetState(State new_body_state, State new_drop_state) {
   SchedulePaint();
 }
 
+void DownloadItemView::ToggleWarningDialog() {
+  if (model_.IsDangerous())
+    ShowWarningDialog();
+  else
+    ClearWarningDialog();
+
+  UpdateDropDownButtonPosition();
+
+  // Force the shelf to layout again as our size has changed.
+  shelf_->Layout();
+  shelf_->SchedulePaint();
+}
+
 void DownloadItemView::ClearWarningDialog() {
   DCHECK(download()->GetDangerType() ==
          content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED);
@@ -1166,19 +1166,8 @@ void DownloadItemView::ClearWarningDialog() {
   dangerous_download_label_sized_ = false;
   cached_button_size_.SetSize(0,0);
 
-  // Set the accessible name back to the status and filename instead of the
-  // download warning.
-  UpdateAccessibleName();
-  UpdateDropDownButtonPosition();
-
   // We need to load the icon now that the download has the real path.
   LoadIcon();
-
-  // Force the shelf to layout again as our size has changed.
-  shelf_->Layout();
-  shelf_->SchedulePaint();
-
-  TooltipTextChanged();
 }
 
 void DownloadItemView::ShowWarningDialog() {
@@ -1248,8 +1237,6 @@ void DownloadItemView::ShowWarningDialog() {
   dangerous_download_label_->SetAutoColorReadabilityEnabled(false);
   AddChildView(dangerous_download_label_);
   SizeLabelToMinWidth();
-  UpdateDropDownButtonPosition();
-  TooltipTextChanged();
 }
 
 gfx::Size DownloadItemView::GetButtonSize() const {
@@ -1397,4 +1384,11 @@ void DownloadItemView::AnimateStateTransition(State from, State to,
   } else if (from != to) {
     animation->Reset((to == HOT) ? 1.0 : 0.0);
   }
+}
+
+void DownloadItemView::ProgressTimerFired() {
+  // Only repaint for the indeterminate size case. Otherwise, we'll repaint only
+  // when there's an update notified via OnDownloadUpdated().
+  if (model_.PercentComplete() < 0)
+    SchedulePaint();
 }

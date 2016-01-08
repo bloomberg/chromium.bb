@@ -175,6 +175,9 @@ class DownloadItemViewMd : public views::ButtonListener,
     return mode_ == DANGEROUS_MODE || mode_ == MALICIOUS_MODE;
   }
 
+  // Clears or shows the warning dialog as per the state of |model_|.
+  void ToggleWarningDialog();
+
   // Reverts from dangerous mode to normal download mode.
   void ClearWarningDialog();
 
@@ -212,6 +215,9 @@ class DownloadItemViewMd : public views::ButtonListener,
   void AnimateStateTransition(State from,
                               State to,
                               gfx::SlideAnimation* animation);
+
+  // Callback for |progress_timer_|.
+  void ProgressTimerFired();
 
   // Returns the base text color.
   SkColor GetTextColor();
