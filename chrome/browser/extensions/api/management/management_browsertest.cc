@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -108,6 +109,7 @@ class ExtensionManagementTest : public ExtensionBrowserTest {
 
  private:
   policy::MockConfigurationPolicyProvider policy_provider_;
+  extensions::ScopedInstallVerifierBypassForTest install_verifier_bypass_;
 };
 
 #if defined(OS_LINUX) || defined(OS_WIN)
@@ -439,13 +441,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   notification_listener.Reset();
 }
 
-// Temporarily disabled in official builds. See crbug.com/567497 for details.
-#if defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
-#define MAYBE_ExternalUrlUpdate DISABLED_ExternalUrlUpdate
-#else
-#define MAYBE_ExternalUrlUpdate ExternalUrlUpdate
-#endif  // defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_ExternalUrlUpdate) {
+IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
   const char kExtensionId[] = "ogjcoiohnmldgjemafoockdghcjciccf";

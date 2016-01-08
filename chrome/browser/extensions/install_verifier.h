@@ -181,6 +181,21 @@ class InstallVerifier : public KeyedService,
   DISALLOW_COPY_AND_ASSIGN(InstallVerifier);
 };
 
+// Instances of this class can be constructed to disable install verification
+// during tests.
+class ScopedInstallVerifierBypassForTest {
+ public:
+  ScopedInstallVerifierBypassForTest();
+  ~ScopedInstallVerifierBypassForTest();
+
+  // Should install verification be bypassed?
+  static bool ShouldBypass();
+
+ private:
+  bool old_value_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedInstallVerifierBypassForTest);
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_INSTALL_VERIFIER_H_

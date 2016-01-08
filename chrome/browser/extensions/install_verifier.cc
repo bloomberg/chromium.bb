@@ -39,6 +39,9 @@ namespace extensions {
 
 namespace {
 
+// This should only be set during tests.
+bool g_bypass_for_test = false;
+
 enum VerifyStatus {
   NONE = 0,   // Do not request install signatures, and do not enforce them.
   BOOTSTRAP,  // Request install signatures, but do not enforce them.
@@ -110,7 +113,10 @@ VerifyStatus GetCommandLineStatus() {
 }
 
 VerifyStatus GetStatus() {
-  return std::max(GetExperimentStatus(), GetCommandLineStatus());
+  if (g_bypass_for_test)
+    return NONE;
+  else
+    return std::max(GetExperimentStatus(), GetCommandLineStatus());
 }
 
 bool ShouldFetchSignature() {
@@ -651,6 +657,20 @@ void InstallVerifier::SignatureCallback(
 
   if (!operation_queue_.empty())
     BeginFetch();
+}
+
+ScopedInstallVerifierBypassForTest::ScopedInstallVerifierBypassForTest()
+    : old_value_(ShouldBypass()) {
+  g_bypass_for_test = true;
+}
+
+ScopedInstallVerifierBypassForTest::~ScopedInstallVerifierBypassForTest() {
+  g_bypass_for_test = old_value_;
+}
+
+// static
+bool ScopedInstallVerifierBypassForTest::ShouldBypass() {
+  return g_bypass_for_test;
 }
 
 }  // namespace extensions

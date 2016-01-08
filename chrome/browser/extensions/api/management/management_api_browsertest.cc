@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -44,6 +45,9 @@ class ExtensionManagementApiBrowserTest : public ExtensionBrowserTest {
     content::CrashTab(background_host->host_contents());
     return true;
   }
+
+ private:
+  ScopedInstallVerifierBypassForTest install_verifier_bypass_;
 };
 
 // We test this here instead of in an ExtensionApiTest because normal extensions
@@ -234,14 +238,8 @@ class ExtensionManagementApiEscalationTest :
 const char ExtensionManagementApiEscalationTest::kId[] =
     "pgdpcfcocojkjfbgpiianjngphoopgmo";
 
-// Temporarily disabled in official builds. See crbug.com/567497 for details.
-#if defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
-#define MAYBE_DisabledReason DISABLED_DisabledReason
-#else
-#define MAYBE_DisabledReason DisabledReason
-#endif  // defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
-                       MAYBE_DisabledReason) {
+                       DisabledReason) {
   scoped_refptr<ManagementGetFunction> function =
       new ManagementGetFunction();
   scoped_ptr<base::Value> result(util::RunFunctionAndReturnSingleResult(
@@ -257,13 +255,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
   EXPECT_EQ(reason, std::string(keys::kDisabledReasonPermissionsIncrease));
 }
 
-// Temporarily disabled in official builds. See crbug.com/567497 for details.
-#if defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
-#define MAYBE_SetEnabled DISABLED_SetEnabled
-#else
-#define MAYBE_SetEnabled SetEnabled
-#endif  // defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest, MAYBE_SetEnabled) {
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
+                       SetEnabled) {
   // Expect an error about no gesture.
   SetEnabled(true, false, keys::kGestureNeededForEscalationError);
 
