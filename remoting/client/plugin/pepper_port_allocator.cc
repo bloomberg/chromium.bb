@@ -29,11 +29,10 @@ namespace {
 // URLLoader. Normally the response from URL loader is smaller than 1kB.
 const int kReadSize = 1024;
 
-class PepperPortAllocatorSession
-    : public cricket::HttpPortAllocatorSessionBase {
+class PepperPortAllocatorSession : public protocol::PortAllocatorSessionBase {
  public:
   PepperPortAllocatorSession(
-      cricket::HttpPortAllocatorBase* allocator,
+      protocol::PortAllocatorBase* allocator,
       const std::string& content_name,
       int component,
       const std::string& ice_username_fragment,
@@ -44,10 +43,10 @@ class PepperPortAllocatorSession
       const pp::InstanceHandle& instance);
   ~PepperPortAllocatorSession() override;
 
-  // cricket::HttpPortAllocatorBase overrides.
+  // PortAllocatorBase overrides.
   void ConfigReady(cricket::PortConfiguration* config) override;
   void GetPortConfigurations() override;
-  void SendSessionRequest(const std::string& host, int port) override;
+  void SendSessionRequest(const std::string& host) override;
 
  private:
   void OnUrlOpened(int32_t result);
@@ -60,7 +59,7 @@ class PepperPortAllocatorSession
 
   scoped_ptr<pp::URLLoader> relay_url_loader_;
   std::vector<char> relay_response_body_;
-  bool relay_response_received_;
+  bool relay_response_received_ = false;
 
   pp::CompletionCallbackFactory<PepperPortAllocatorSession> callback_factory_;
 
@@ -68,7 +67,7 @@ class PepperPortAllocatorSession
 };
 
 PepperPortAllocatorSession::PepperPortAllocatorSession(
-    cricket::HttpPortAllocatorBase* allocator,
+    protocol::PortAllocatorBase* allocator,
     const std::string& content_name,
     int component,
     const std::string& ice_username_fragment,
@@ -77,23 +76,19 @@ PepperPortAllocatorSession::PepperPortAllocatorSession(
     const std::vector<std::string>& relay_hosts,
     const std::string& relay_token,
     const pp::InstanceHandle& instance)
-    : HttpPortAllocatorSessionBase(allocator,
-                                   content_name,
-                                   component,
-                                   ice_username_fragment,
-                                   ice_password,
-                                   stun_hosts,
-                                   relay_hosts,
-                                   relay_token,
-                                   std::string()),
+    : PortAllocatorSessionBase(allocator,
+                               content_name,
+                               component,
+                               ice_username_fragment,
+                               ice_password,
+                               stun_hosts,
+                               relay_hosts,
+                               relay_token),
       instance_(instance),
       stun_hosts_(stun_hosts.begin(), stun_hosts.end()),
-      relay_response_received_(false),
-      callback_factory_(this) {
-}
+      callback_factory_(this) {}
 
-PepperPortAllocatorSession::~PepperPortAllocatorSession() {
-}
+PepperPortAllocatorSession::~PepperPortAllocatorSession() {}
 
 void PepperPortAllocatorSession::ConfigReady(
     cricket::PortConfiguration* config) {
@@ -121,13 +116,10 @@ void PepperPortAllocatorSession::GetPortConfigurations() {
   TryCreateRelaySession();
 }
 
-void PepperPortAllocatorSession::SendSessionRequest(
-    const std::string& host,
-    int port) {
+void PepperPortAllocatorSession::SendSessionRequest(const std::string& host) {
   relay_url_loader_.reset(new pp::URLLoader(instance_));
   pp::URLRequestInfo request_info(instance_);
-  std::string url = "https://" + host + ":" + base::IntToString(port) +
-      GetSessionRequestUrl() + "&sn=1";
+  std::string url = "https://" + host + GetSessionRequestUrl() + "&sn=1";
   request_info.SetURL(url);
   request_info.SetMethod("GET");
   std::stringstream headers;
@@ -220,9 +212,7 @@ PepperPortAllocator::PepperPortAllocator(
     const pp::InstanceHandle& instance,
     scoped_ptr<rtc::NetworkManager> network_manager,
     scoped_ptr<rtc::PacketSocketFactory> socket_factory)
-    : HttpPortAllocatorBase(network_manager.get(),
-                            socket_factory.get(),
-                            std::string()),
+    : PortAllocatorBase(network_manager.get(), socket_factory.get()),
       instance_(instance),
       network_manager_(std::move(network_manager)),
       socket_factory_(std::move(socket_factory)) {}
@@ -245,7 +235,7 @@ PepperPortAllocatorFactory::PepperPortAllocatorFactory(
 
 PepperPortAllocatorFactory::~PepperPortAllocatorFactory() {}
 
-scoped_ptr<cricket::HttpPortAllocatorBase>
+scoped_ptr<protocol::PortAllocatorBase>
 PepperPortAllocatorFactory::CreatePortAllocator() {
   return PepperPortAllocator::Create(instance_);
 }

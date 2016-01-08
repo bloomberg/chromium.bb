@@ -14,11 +14,10 @@ namespace remoting {
 
 namespace {
 
-class FakePortAllocatorSession
-    : public cricket::HttpPortAllocatorSessionBase {
+class FakePortAllocatorSession : public protocol::PortAllocatorSessionBase {
  public:
   FakePortAllocatorSession(
-      cricket::HttpPortAllocatorBase* allocator,
+      protocol::PortAllocatorBase* allocator,
       const std::string& content_name,
       int component,
       const std::string& ice_username_fragment,
@@ -28,16 +27,16 @@ class FakePortAllocatorSession
       const std::string& relay);
   ~FakePortAllocatorSession() override;
 
-  // cricket::HttpPortAllocatorBase overrides.
+  // protocol::PortAllocatorBase overrides.
   void ConfigReady(cricket::PortConfiguration* config) override;
-  void SendSessionRequest(const std::string& host, int port) override;
+  void SendSessionRequest(const std::string& host) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakePortAllocatorSession);
 };
 
 FakePortAllocatorSession::FakePortAllocatorSession(
-    cricket::HttpPortAllocatorBase* allocator,
+    protocol::PortAllocatorBase* allocator,
     const std::string& content_name,
     int component,
     const std::string& ice_username_fragment,
@@ -45,19 +44,16 @@ FakePortAllocatorSession::FakePortAllocatorSession(
     const std::vector<rtc::SocketAddress>& stun_hosts,
     const std::vector<std::string>& relay_hosts,
     const std::string& relay)
-    : HttpPortAllocatorSessionBase(allocator,
-                                   content_name,
-                                   component,
-                                   ice_username_fragment,
-                                   ice_password,
-                                   stun_hosts,
-                                   relay_hosts,
-                                   relay,
-                                   std::string()) {
-}
+    : PortAllocatorSessionBase(allocator,
+                               content_name,
+                               component,
+                               ice_username_fragment,
+                               ice_password,
+                               stun_hosts,
+                               relay_hosts,
+                               relay) {}
 
-FakePortAllocatorSession::~FakePortAllocatorSession() {
-}
+FakePortAllocatorSession::~FakePortAllocatorSession() {}
 
 void FakePortAllocatorSession::ConfigReady(
     cricket::PortConfiguration* config) {
@@ -76,9 +72,7 @@ void FakePortAllocatorSession::ConfigReady(
   cricket::BasicPortAllocatorSession::ConfigReady(config);
 }
 
-void FakePortAllocatorSession::SendSessionRequest(
-    const std::string& host,
-    int port) {
+void FakePortAllocatorSession::SendSessionRequest(const std::string& host) {
   ReceiveSessionResponse(std::string());
 }
 
@@ -86,7 +80,7 @@ void FakePortAllocatorSession::SendSessionRequest(
 
 FakePortAllocator::FakePortAllocator(rtc::NetworkManager* network_manager,
                                      FakePacketSocketFactory* socket_factory)
-    : HttpPortAllocatorBase(network_manager, socket_factory, std::string()) {}
+    : PortAllocatorBase(network_manager, socket_factory) {}
 FakePortAllocator::~FakePortAllocator() {}
 
 cricket::PortAllocatorSession* FakePortAllocator::CreateSessionInternal(
@@ -108,7 +102,7 @@ FakePortAllocatorFactory::FakePortAllocatorFactory(
 
 FakePortAllocatorFactory::~FakePortAllocatorFactory() {}
 
-scoped_ptr<cricket::HttpPortAllocatorBase>
+scoped_ptr<protocol::PortAllocatorBase>
 FakePortAllocatorFactory::CreatePortAllocator() {
   return make_scoped_ptr(
       new FakePortAllocator(network_manager_.get(), socket_factory_.get()));

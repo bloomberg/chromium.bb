@@ -22,12 +22,11 @@ namespace protocol {
 
 namespace {
 
-class ChromiumPortAllocatorSession
-    : public cricket::HttpPortAllocatorSessionBase,
-      public net::URLFetcherDelegate {
+class ChromiumPortAllocatorSession : public PortAllocatorSessionBase,
+                                     public net::URLFetcherDelegate {
  public:
   ChromiumPortAllocatorSession(
-      cricket::HttpPortAllocatorBase* allocator,
+      PortAllocatorBase* allocator,
       const std::string& content_name,
       int component,
       const std::string& ice_username_fragment,
@@ -38,9 +37,9 @@ class ChromiumPortAllocatorSession
       const scoped_refptr<net::URLRequestContextGetter>& url_context);
   ~ChromiumPortAllocatorSession() override;
 
-  // cricket::HttpPortAllocatorBase overrides.
+  // PortAllocatorBase overrides.
   void ConfigReady(cricket::PortConfiguration* config) override;
-  void SendSessionRequest(const std::string& host, int port) override;
+  void SendSessionRequest(const std::string& host) override;
 
   // net::URLFetcherDelegate interface.
   void OnURLFetchComplete(const net::URLFetcher* url_fetcher) override;
@@ -53,7 +52,7 @@ class ChromiumPortAllocatorSession
 };
 
 ChromiumPortAllocatorSession::ChromiumPortAllocatorSession(
-    cricket::HttpPortAllocatorBase* allocator,
+    PortAllocatorBase* allocator,
     const std::string& content_name,
     int component,
     const std::string& ice_username_fragment,
@@ -62,15 +61,14 @@ ChromiumPortAllocatorSession::ChromiumPortAllocatorSession(
     const std::vector<std::string>& relay_hosts,
     const std::string& relay,
     const scoped_refptr<net::URLRequestContextGetter>& url_context)
-    : HttpPortAllocatorSessionBase(allocator,
-                                   content_name,
-                                   component,
-                                   ice_username_fragment,
-                                   ice_password,
-                                   stun_hosts,
-                                   relay_hosts,
-                                   relay,
-                                   std::string()),
+    : PortAllocatorSessionBase(allocator,
+                               content_name,
+                               component,
+                               ice_username_fragment,
+                               ice_password,
+                               stun_hosts,
+                               relay_hosts,
+                               relay),
       url_context_(url_context) {}
 
 ChromiumPortAllocatorSession::~ChromiumPortAllocatorSession() {
@@ -94,11 +92,8 @@ void ChromiumPortAllocatorSession::ConfigReady(
   cricket::BasicPortAllocatorSession::ConfigReady(config);
 }
 
-void ChromiumPortAllocatorSession::SendSessionRequest(
-    const std::string& host,
-    int port) {
-  GURL url("https://" + host + ":" + base::IntToString(port) +
-           GetSessionRequestUrl() + "&sn=1");
+void ChromiumPortAllocatorSession::SendSessionRequest(const std::string& host) {
+  GURL url("https://" + host + GetSessionRequestUrl() + "&sn=1");
   scoped_ptr<net::URLFetcher> url_fetcher =
       net::URLFetcher::Create(url, net::URLFetcher::GET, this);
   url_fetcher->SetRequestContext(url_context_.get());
@@ -146,9 +141,7 @@ ChromiumPortAllocator::ChromiumPortAllocator(
     const scoped_refptr<net::URLRequestContextGetter>& url_context,
     scoped_ptr<rtc::NetworkManager> network_manager,
     scoped_ptr<rtc::PacketSocketFactory> socket_factory)
-    : HttpPortAllocatorBase(network_manager.get(),
-                            socket_factory.get(),
-                            std::string()),
+    : PortAllocatorBase(network_manager.get(), socket_factory.get()),
       url_context_(url_context),
       network_manager_(std::move(network_manager)),
       socket_factory_(std::move(socket_factory)) {}
@@ -171,7 +164,7 @@ ChromiumPortAllocatorFactory::ChromiumPortAllocatorFactory(
 
 ChromiumPortAllocatorFactory::~ChromiumPortAllocatorFactory() {}
 
-scoped_ptr<cricket::HttpPortAllocatorBase>
+scoped_ptr<PortAllocatorBase>
 ChromiumPortAllocatorFactory::CreatePortAllocator() {
   return ChromiumPortAllocator::Create(url_request_context_getter_);
 }

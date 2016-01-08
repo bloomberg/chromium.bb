@@ -9,27 +9,20 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/cpp/instance_handle.h"
+#include "remoting/protocol/port_allocator_base.h"
 #include "remoting/protocol/port_allocator_factory.h"
-#include "third_party/webrtc/p2p/client/httpportallocator.h"
 
 namespace remoting {
 
-// An implementation of cricket::PortAllocator for libjingle that is
-// used by the client plugin. There are two differences from
-// cricket::HttpPortAllocator:
-//   * PepperPortAllocator uses Pepper URLLoader API when creating
-//     relay sessions.
-//   * PepperPortAllocator resolves STUN DNS names and passes IP
-//     addresses to BasicPortAllocator (it uses HostResolverPrivate API
-//     for that). This is needed because libjingle's DNS resolution
-//     code doesn't work in sandbox.
-class PepperPortAllocator : public cricket::HttpPortAllocatorBase {
+// An implementation of cricket::PortAllocator for libjingle that is used by the
+// client plugin. It uses Pepper URLLoader API when creating relay sessions.
+class PepperPortAllocator : public protocol::PortAllocatorBase {
  public:
   static scoped_ptr<PepperPortAllocator> Create(
       const pp::InstanceHandle& instance);
   ~PepperPortAllocator() override;
 
-  // cricket::HttpPortAllocatorBase overrides.
+  // PortAllocatorBase overrides.
   cricket::PortAllocatorSession* CreateSessionInternal(
       const std::string& content_name,
       int component,
@@ -55,7 +48,7 @@ class PepperPortAllocatorFactory : public protocol::PortAllocatorFactory {
   ~PepperPortAllocatorFactory() override;
 
    // PortAllocatorFactory interface.
-  scoped_ptr<cricket::HttpPortAllocatorBase> CreatePortAllocator() override;
+  scoped_ptr<protocol::PortAllocatorBase> CreatePortAllocator() override;
 
  private:
   pp::InstanceHandle instance_;

@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "remoting/protocol/port_allocator_base.h"
 #include "remoting/protocol/port_allocator_factory.h"
-#include "third_party/webrtc/p2p/client/httpportallocator.h"
 
 namespace rtc {
 class NetworkManager;
@@ -22,7 +22,7 @@ namespace remoting {
 class FakeNetworkDispatcher;
 class FakePacketSocketFactory;
 
-class FakePortAllocator : public cricket::HttpPortAllocatorBase {
+class FakePortAllocator : public protocol::PortAllocatorBase {
  public:
   FakePortAllocator(rtc::NetworkManager* network_manager,
                     FakePacketSocketFactory* socket_factory);
@@ -48,7 +48,7 @@ class FakePortAllocatorFactory : public protocol::PortAllocatorFactory {
   FakePacketSocketFactory* socket_factory() { return socket_factory_.get(); }
 
    // PortAllocatorFactory interface.
-  scoped_ptr<cricket::HttpPortAllocatorBase> CreatePortAllocator() override;
+  scoped_ptr<protocol::PortAllocatorBase> CreatePortAllocator() override;
 
  private:
   scoped_ptr<rtc::NetworkManager> network_manager_;

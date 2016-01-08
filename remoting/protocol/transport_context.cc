@@ -10,8 +10,8 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "remoting/protocol/port_allocator_base.h"
 #include "remoting/protocol/port_allocator_factory.h"
-#include "third_party/webrtc/p2p/client/httpportallocator.h"
 
 #if !defined(OS_NACL)
 #include "jingle/glue/thread_wrapper.h"
@@ -108,7 +108,7 @@ void TransportContext::OnJingleInfo(
 
 scoped_ptr<cricket::PortAllocator>
 TransportContext::CreatePortAllocatorInternal() {
-  scoped_ptr<cricket::HttpPortAllocatorBase> result =
+  scoped_ptr<PortAllocatorBase> result =
       port_allocator_factory_->CreatePortAllocator();
 
   if (!relay_token_.empty() && !relay_hosts_.empty()) {

@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "remoting/protocol/port_allocator_base.h"
 #include "remoting/protocol/port_allocator_factory.h"
-#include "third_party/webrtc/p2p/client/httpportallocator.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -24,14 +24,14 @@ struct NetworkSettings;
 
 // An implementation of cricket::PortAllocator that uses Chromium's network
 // stack.
-class ChromiumPortAllocator : public cricket::HttpPortAllocatorBase {
+class ChromiumPortAllocator : public PortAllocatorBase {
  public:
   static scoped_ptr<ChromiumPortAllocator> Create(
       const scoped_refptr<net::URLRequestContextGetter>& url_context);
 
   ~ChromiumPortAllocator() override;
 
-  // cricket::HttpPortAllocatorBase overrides.
+  // PortAllocatorBase overrides.
   cricket::PortAllocatorSession* CreateSessionInternal(
       const std::string& content_name,
       int component,
@@ -58,7 +58,7 @@ class ChromiumPortAllocatorFactory : public PortAllocatorFactory {
   ~ChromiumPortAllocatorFactory() override;
 
    // PortAllocatorFactory interface.
-  scoped_ptr<cricket::HttpPortAllocatorBase> CreatePortAllocator() override;
+  scoped_ptr<PortAllocatorBase> CreatePortAllocator() override;
 
  private:
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;

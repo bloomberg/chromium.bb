@@ -7,20 +7,18 @@
 
 #include "base/memory/scoped_ptr.h"
 
-namespace cricket {
-class HttpPortAllocatorBase;
-}  // namespace cricket
-
 namespace remoting {
 namespace protocol {
 
+class PortAllocatorBase;
+
 // Factory class used for creating cricket::PortAllocator that is used
-// for ICE negotiation.
+// to allocate ICE candidates.
 class PortAllocatorFactory {
  public:
-  virtual scoped_ptr<cricket::HttpPortAllocatorBase> CreatePortAllocator() = 0;
-
   virtual ~PortAllocatorFactory() {}
+
+  virtual scoped_ptr<PortAllocatorBase> CreatePortAllocator() = 0;
 };
 
 }  // namespace protocol
