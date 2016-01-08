@@ -376,6 +376,11 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
   CommitPending();
   WebContentsObserver::Observe(WebContents::FromRenderFrameHost(host));
 
+  if (web_contents() && web_contents()->GetCrashedStatus() !=
+      base::TERMINATION_STATUS_STILL_RUNNING) {
+      current_frame_crashed_ = true;
+  }
+
   g_instances.Get().push_back(this);
   AddRef();  // Balanced in RenderFrameHostDestroyed.
 }
