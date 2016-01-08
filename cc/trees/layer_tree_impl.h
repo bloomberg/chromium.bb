@@ -138,7 +138,9 @@ class CC_EXPORT LayerTreeImpl {
 
   void PushPropertiesTo(LayerTreeImpl* tree_impl);
 
-  struct CC_EXPORT ElementLayers {
+  // TODO(thakis): Consider marking this CC_EXPORT once we understand
+  // http://crbug.com/575700 better.
+  struct ElementLayers {
     // Transform and opacity mutations apply to this layer.
     LayerImpl* main = nullptr;
     // Scroll mutations apply to this layer.
