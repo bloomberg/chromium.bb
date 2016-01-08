@@ -438,6 +438,7 @@ _x86_internal_release_boards = frozenset([
     'rikku',
     'samus',
     'sentry',
+    'setzer',
     'slippy',
     'squawks',
     'stout',
@@ -588,10 +589,12 @@ _waterfall_config_map = {
 
         # Experimental Canaries
         'kayle-release',
+        'kunimitsu-release-group',
         'lakitu_next-release',
         'nyan_freon-release',
         'rush_ryu-release',
         'smaug-release',
+        'strago-c-release-group',
         'guado_moblab-release',
 
         # Incremental Builders.
@@ -2599,7 +2602,9 @@ def GetConfig():
 
   _AddGroupConfig(
       'strago-c', 'edgar', (
+          'setzer',
       ),
+      important=False,
   )
 
   # oak-based boards
@@ -2734,6 +2739,7 @@ def GetConfig():
       'rikku',
       'samus',
       'sentry',
+      'setzer',
       'slippy',
       'smaug',
       'squawks',
