@@ -219,13 +219,12 @@ void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamInfo> stream,
 void LaunchURL(
     const GURL& url,
     int render_process_id,
-    int render_view_id,
+    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     ui::PageTransition page_transition,
     bool has_user_gesture) {
   // If there is no longer a WebContents, the request may have raced with tab
   // closing. Don't fire the external request. (It may have been a prerender.)
-  content::WebContents* web_contents =
-      tab_util::GetWebContentsByID(render_process_id, render_view_id);
+  content::WebContents* web_contents = web_contents_getter.Run();
   if (!web_contents)
     return;
 
@@ -239,12 +238,8 @@ void LaunchURL(
   }
 
   ExternalProtocolHandler::LaunchUrlWithDelegate(
-      url,
-      render_process_id,
-      render_view_id,
-      page_transition,
-      has_user_gesture,
-      g_external_protocol_handler_delegate);
+      url, render_process_id, web_contents->GetRoutingID(), page_transition,
+      has_user_gesture, g_external_protocol_handler_delegate);
 }
 
 #if !defined(DISABLE_NACL)
@@ -453,7 +448,7 @@ ResourceDispatcherHostLoginDelegate*
 bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
     const GURL& url,
     int child_id,
-    int route_id,
+    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     bool is_main_frame,
     ui::PageTransition page_transition,
     bool has_user_gesture) {
@@ -475,10 +470,9 @@ bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
 #endif  // defined(ANDROID)
 
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&LaunchURL, url, child_id, route_id, page_transition,
-                 has_user_gesture));
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&LaunchURL, url, child_id, web_contents_getter,
+                 page_transition, has_user_gesture));
   return true;
 }
 

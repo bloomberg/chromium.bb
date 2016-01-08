@@ -4,6 +4,7 @@
 
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/stream_info.h"
 
 namespace content {
@@ -45,7 +46,7 @@ ResourceDispatcherHostLoginDelegate*
 bool ResourceDispatcherHostDelegate::HandleExternalProtocol(
     const GURL& url,
     int child_id,
-    int route_id,
+    const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     bool is_main_frame,
     ui::PageTransition page_transition,
     bool has_user_gesture) {

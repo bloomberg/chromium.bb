@@ -845,8 +845,8 @@ bool ResourceDispatcherHostImpl::HandleExternalProtocol(ResourceLoader* loader,
     return false;
 
   return delegate_->HandleExternalProtocol(
-      url, info->GetChildID(), info->GetRouteID(), info->IsMainFrame(),
-      info->GetPageTransition(), info->HasUserGesture());
+      url, info->GetChildID(), info->GetWebContentsGetterForRequest(),
+      info->IsMainFrame(), info->GetPageTransition(), info->HasUserGesture());
 }
 
 void ResourceDispatcherHostImpl::DidStartRequest(ResourceLoader* loader) {
