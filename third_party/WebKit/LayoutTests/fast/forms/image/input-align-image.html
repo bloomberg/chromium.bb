@@ -4,11 +4,11 @@
 </head>
 <body>
     <p>The following 4 images should be all be rendered exactly the same, aligned to the right side.</p>
-    <input type='image' align='right' src='resources/apple.gif' />
+    <input type='image' align='right' src='../resources/apple.gif' />
     <br><br>
-    <input align='right' src='resources/apple.gif' type='image' />
+    <input align='right' src='../resources/apple.gif' type='image' />
     <br><br>
-    <input type='image' id='test1' src='resources/apple.gif' />
+    <input type='image' id='test1' src='../resources/apple.gif' />
     <br><br>
 
     <script>
@@ -26,7 +26,7 @@
         var ins = document.getElementById('insertionpoint');
         var obj2 = document.createElement('INPUT');
         obj2.setAttribute('align', 'right');
-        obj2.setAttribute('src', 'resources/apple.gif');
+        obj2.setAttribute('src', '../resources/apple.gif');
         obj2.setAttribute('type', 'image'); 
         ins.appendChild(obj2);
     //-->
