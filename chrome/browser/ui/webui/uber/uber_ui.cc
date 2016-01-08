@@ -27,6 +27,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
 #include "grit/browser_resources.h"
+#include "grit/components_strings.h"
 
 using content::NavigationController;
 using content::NavigationEntry;
