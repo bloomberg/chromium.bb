@@ -138,7 +138,7 @@ void PltHistogramWithGwsPreview(const char* name,
     if (scheme_type & URLPattern::SCHEME_HTTPS) {                       \
       if (!https_drp_counter) {                                         \
         https_drp_counter = base::Histogram::FactoryTimeGet(            \
-            std::string(name) + "_ HTTPS_DataReductionProxy",           \
+            std::string(name) + "_HTTPS_DataReductionProxy",            \
             kPLTMin(), kPLTMax(), kPLTCount,                            \
             base::Histogram::kUmaTargetedHistogramFlag);                \
       }                                                                 \
