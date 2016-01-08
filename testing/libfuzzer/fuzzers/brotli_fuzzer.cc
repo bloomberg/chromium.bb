@@ -3,14 +3,29 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
-#include <vector>
 
 #include "third_party/brotli/dec/decode.h"
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
-  std::vector<uint8_t> uncompressed_buf(128 << 10);
-  size_t uncompressed_size = uncompressed_buf.size();
-  BrotliDecompressBuffer(size, data, &uncompressed_size, &uncompressed_buf[0]);
+  int kBufferSize = 1024;
+  uint8_t* buffer = new uint8_t[kBufferSize];
+  BrotliState* state = new BrotliState();
+  BrotliStateInit(state);
+
+  size_t avail_in = size;
+  const uint8_t* next_in = data;
+  BrotliResult result = BROTLI_RESULT_NEEDS_MORE_OUTPUT;
+  while (result == BROTLI_RESULT_NEEDS_MORE_OUTPUT) {
+    size_t avail_out = kBufferSize;
+    uint8_t* next_out = buffer;
+    size_t total_out;
+    result = BrotliDecompressStream(
+        &avail_in, &next_in, &avail_out, &next_out, &total_out, state);
+  }
+
+  BrotliStateCleanup(state);
+  delete state;
+  delete[] buffer;
   return 0;
 }
