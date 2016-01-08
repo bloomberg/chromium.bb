@@ -1004,7 +1004,7 @@ class MinidumpWriter {
           new(allocator) ProcCpuInfoReader(fd);
       const char* field;
       while (reader->GetNextField(&field)) {
-        for (const CpuInfoEntry& entry : cpu_info_table) {
+        for (const CpuIdEntry& entry : cpu_id_entries) {
           if (my_strcmp(entry.field, field) != 0)
             continue;
           uintptr_t result = 0;
@@ -1083,7 +1083,7 @@ class MinidumpWriter {
               tag_len = strlen(tag);
               value_len = 0;
             }
-            for (const CpuInfoEntry& entry : cpu_features_entries) {
+            for (const CpuFeaturesEntry& entry : cpu_features_entries) {
               if (tag_len == strlen(entry.tag) &&
                   !memcmp(tag, entry.tag, tag_len)) {
                 sys_info->cpu.arm_cpu_info.elf_hwcaps |= entry.hwcaps;
