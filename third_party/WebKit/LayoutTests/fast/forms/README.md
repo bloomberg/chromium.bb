@@ -7,7 +7,7 @@ to fast/dom/HTML*Element/ for HTML forms.
 		
 *   button/
 
-    &lt;button> tests
+    `<button>` tests
 
 *   calendar-picker/
 
@@ -15,55 +15,55 @@ to fast/dom/HTML*Element/ for HTML forms.
 
 *   checkbox/
 
-    &lt;input type=checkbox>
+    `<input type=checkbox>`
 
 *   color/
 
-    &lt;input type=color>
+    `<input type=color>`
 
 *   datalist/
 
-    &lt;datalist> except picker UI
+    `<datalist>` except picker UI
 
 *   date/
 
-    &lt;input type=date>
+    `<input type=date>`
 
 *   date-multiple-fields/
 
-    Inline UI of &lt;input type=date> on desktop platforms.
+    Inline UI of `<input type=date>` on desktop platforms.
 
 *   datetimelocal/
 
-    &lt;input type=datetime-local>
+    `<input type=datetime-local>`
 
 *   datetimelocal-multiple-fields/
 
-    Inline UI of &lt;input type=datetime-local> on desktop platforms.
+    Inline UI of `<input type=datetime-local>` on desktop platforms.
 
 *   fieldset/
 
-    &lt;fieldset> and &lt;legend>
+    `<fieldset>` and `<legend>`
 
 *   file/
 
-    &lt;input type=file>
+    `<input type=file>`
 
 *   hidden/
 
-    &lt;input type=hidden>
+    `<input type=hidden>`
 
 *   image/
 
-    &lt;input type=image>
+    `<input type=image>`
 
 *   input-button/
 
-    &lt;input type=button>
+    `<input type=button>`
 
 *   label/
 
-    &lt;label>
+    `<label>`
 
 *   mailto/
 
@@ -71,15 +71,15 @@ to fast/dom/HTML*Element/ for HTML forms.
 
 *   month/
 
-    &lt;input type=month>
+    `<input type=month>`
 
 *   month-multiple-fields/
 
-    Inline UI of &lt;input type=month> on desktop platforms.
+    Inline UI of `<input type=month>` on desktop platforms.
 
 *   number/
 
-    &lt;input type=number>
+    `<input type=number>`
 
 *   page-popup/
 
@@ -87,52 +87,52 @@ to fast/dom/HTML*Element/ for HTML forms.
 
 *   radio/
 
-    &lt;input type=radio>
+    `<input type=radio>`
 
 *   range/
 
-    &lt;input type=range>
+    `<input type=range>`
 
 *   search/
 
-    &lt;input type=search>
+    `<input type=search>`
 
 *   select/
 
-    &lt;select>
+    `<select>`
 
 *   submit/
 
-    &lt;input type=submit>
+    `<input type=submit>`
 
 *   suggestion-picker/
 
-    &lt;datalist> picker UI
+    `<datalist>` picker UI
 
 *   text/
 
-    &lt;input type=text> and common behavior of text-like input types.
+    `<input type=text>` and common behavior of text-like input types.
 
 *   textarea/
 
-    &lt;textarea>
+    `<textarea>`
 
 *   time/
 
-    &lt;input type=time>
+    `<input type=time>`
 
 *   time-multiple-fields/
 
-    Inline UI of &lt;input type=time> on desktop platforms.
+    Inline UI of `<input type=time>` on desktop platforms.
 
 *   url/
 
-    &lt;input type=url>
+    `<input type=url>`
 
 *   week/
 
-    &lt;input type=week>
+    `<input type=week>`
 
 *   week-multiple-fields/
 
-    Inline UI of &lt;input type=week> on desktop platforms.
+    Inline UI of `<input type=week>` on desktop platforms.
