@@ -618,7 +618,7 @@ lou_findTable(const char * query)
       logMessage(LOG_WARN, "Tables have not been indexed yet. Indexing LOUIS_TABLEPATH.");
       searchPath = getTablePath();
       tables = listFiles(searchPath);
-      tablesArray = list_toArray(tables, NULL);
+      tablesArray = (const char **)list_toArray(tables, NULL);
       lou_indexTables(tablesArray);
       free(searchPath);
       list_free(tables);

@@ -47,7 +47,7 @@
 wchar_t wchar;
 #endif
 
-/* Contributed by Michel Such <michel.such@free.fr */
+/* Contributed by Michel Such <michel.such@free.fr> */
 #ifdef _WIN32
 
 /* Adapted from BRLTTY code (see sys_progs_wihdows.h) */
@@ -80,7 +80,7 @@ lou_getProgramPath ()
 
   if ((handle = GetModuleHandle (NULL)))
     {
-      size_t size = 0X80;
+      DWORD size = 0X80;
       char *buffer = NULL;
 
       while (1)
@@ -1423,7 +1423,7 @@ allocateCharacterClasses ()
   while (characterClassNames[k])
     {
       widechar wname[MAXSTRING];
-      int length = strlen (characterClassNames[k]);
+      int length = (int)strlen (characterClassNames[k]);
       int kk;
       for (kk = 0; kk < length; kk++)
 	wname[kk] = (widechar) characterClassNames[k][kk];
@@ -1468,7 +1468,7 @@ findOpcodeNumber (const char *toFind)
 /* Used by tools such as lou_debug */
   static TranslationTableOpcode lastOpcode = 0;
   TranslationTableOpcode opcode = lastOpcode;
-  int length = strlen (toFind);
+  int length = (int)strlen (toFind);
   do
     {
       if (length == opcodeLengths[opcode] && strcasecmp (toFind,
@@ -2229,7 +2229,7 @@ static int
 passIsKeyword (const char *token)
 {
   int k;
-  int length = strlen (token);
+  int length = (int)strlen (token);
   int ch = passLine.chars[passLinepos + length + 1];
   if (((ch | 32) >= 'a' && (ch | 32) <= 'z') || (ch >= '0' && ch <= '9'))
     return 0;
@@ -5436,8 +5436,8 @@ resolveSubtable (const char *table, const char *base, const char *searchPath)
     {
       int k;
       strcpy (tableFile, base);
-      for (k = strlen (tableFile); k >= 0 && tableFile[k] != DIR_SEP; k--)
-	;
+      k = (int)strlen (tableFile);
+      while (k >= 0 && tableFile[k] != DIR_SEP) k--;
       tableFile[++k] = '\0';
       strcat (tableFile, table);
       if (stat (tableFile, &info) == 0 && !(info.st_mode & S_IFDIR))
@@ -5775,7 +5775,7 @@ getTable (const char *tableList)
   if (tableList == NULL || *tableList == 0)
     return NULL;
   errorCount = fileCount = 0;
-  tableListLen = strlen (tableList);
+  tableListLen = (int)strlen (tableList);
   /*See if this is the last table used. */
   if (lastTrans != NULL)
     if (tableListLen == lastTrans->tableListLength && (memcmp
