@@ -300,7 +300,7 @@ void SharedRendererState::DrawGL(AwDrawGLInfo* draw_info) {
     return;
   }
 
-  hardware_renderer_->DrawGL(state_restore.stencil_enabled(), draw_info);
+  hardware_renderer_->DrawGL(draw_info, state_restore);
   DeferredGpuCommandService::GetInstance()->PerformIdleWork(false);
 }
 

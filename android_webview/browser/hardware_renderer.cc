@@ -87,8 +87,8 @@ void HardwareRenderer::CommitFrame() {
   DCHECK(!child_frame_->frame->gl_frame_data);
 }
 
-void HardwareRenderer::DrawGL(bool stencil_enabled,
-                              AwDrawGLInfo* draw_info) {
+void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info,
+                              const ScopedAppGLStateRestore& gl_state) {
   TRACE_EVENT0("android_webview", "HardwareRenderer::DrawGL");
 
   // We need to watch if the current Android context has changed and enforce
@@ -211,7 +211,7 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
     output_surface_ = output_surface_holder.get();
     display_->Initialize(std::move(output_surface_holder), nullptr);
   }
-  output_surface_->SetExternalStencilTest(stencil_enabled);
+  output_surface_->SetGLState(gl_state);
   display_->SetExternalClip(clip);
   display_->DrawAndSwap();
 }

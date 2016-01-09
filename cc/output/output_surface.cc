@@ -191,6 +191,8 @@ bool OutputSurface::HasExternalStencilTest() const {
   return external_stencil_test_enabled_;
 }
 
+void OutputSurface::ApplyExternalStencil() {}
+
 bool OutputSurface::BindToClient(OutputSurfaceClient* client) {
   DCHECK(client_thread_checker_.CalledOnValidThread());
   DCHECK(client);

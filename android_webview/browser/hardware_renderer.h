@@ -26,6 +26,7 @@ namespace android_webview {
 class AwGLSurface;
 class ChildFrame;
 class ParentOutputSurface;
+class ScopedAppGLStateRestore;
 
 class HardwareRenderer : public cc::DisplayClient,
                          public cc::SurfaceFactoryClient {
@@ -33,8 +34,7 @@ class HardwareRenderer : public cc::DisplayClient,
   explicit HardwareRenderer(SharedRendererState* state);
   ~HardwareRenderer() override;
 
-  void DrawGL(bool stencil_enabled,
-              AwDrawGLInfo* draw_info);
+  void DrawGL(AwDrawGLInfo* draw_info, const ScopedAppGLStateRestore& gl_state);
   void CommitFrame();
 
   void SetBackingFrameBufferObject(int framebuffer_binding_ext);

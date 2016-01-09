@@ -92,6 +92,7 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   }
 
   virtual bool HasExternalStencilTest() const;
+  virtual void ApplyExternalStencil();
 
   // Obtain the 3d context or the software device associated with this output
   // surface. Either of these may return a null pointer, but not both.

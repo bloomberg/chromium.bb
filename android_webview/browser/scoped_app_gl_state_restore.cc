@@ -72,10 +72,10 @@ namespace internal {
 
 class ScopedAppGLStateRestoreImpl {
  public:
-  ScopedAppGLStateRestoreImpl(ScopedAppGLStateRestore::CallMode mode);
+  explicit ScopedAppGLStateRestoreImpl(ScopedAppGLStateRestore::CallMode mode);
   ~ScopedAppGLStateRestoreImpl();
 
-  bool stencil_enabled() const { return stencil_test_; }
+  StencilState stencil_state() const { return stencil_state_; }
   GLint framebuffer_binding_ext() const { return framebuffer_binding_ext_; }
 
  private:
@@ -135,22 +135,7 @@ class ScopedAppGLStateRestoreImpl {
   GLboolean scissor_test_;
   GLint scissor_box_[4];
 
-  GLboolean stencil_test_;
-  GLint stencil_front_func_;
-  GLint stencil_front_ref_;
-  GLint stencil_front_mask_;
-  GLint stencil_back_func_;
-  GLint stencil_back_ref_;
-  GLint stencil_back_mask_;
-  GLint stencil_clear_;
-  GLint stencil_front_writemask_;
-  GLint stencil_back_writemask_;
-  GLint stencil_front_fail_op_;
-  GLint stencil_front_z_fail_op_;
-  GLint stencil_front_z_pass_op_;
-  GLint stencil_back_fail_op_;
-  GLint stencil_back_z_fail_op_;
-  GLint stencil_back_z_pass_op_;
+  StencilState stencil_state_;
 
   GLint framebuffer_binding_ext_;
 
@@ -239,22 +224,27 @@ ScopedAppGLStateRestoreImpl::ScopedAppGLStateRestoreImpl(
   glGetBooleanv(GL_SAMPLE_ALPHA_TO_COVERAGE, &enable_sample_alpha_to_coverage_);
   glGetBooleanv(GL_SAMPLE_COVERAGE, &enable_sample_coverage_);
 
-  glGetBooleanv(GL_STENCIL_TEST, &stencil_test_);
-  glGetIntegerv(GL_STENCIL_FUNC, &stencil_front_func_);
-  glGetIntegerv(GL_STENCIL_VALUE_MASK, &stencil_front_mask_);
-  glGetIntegerv(GL_STENCIL_REF, &stencil_front_ref_);
-  glGetIntegerv(GL_STENCIL_BACK_FUNC, &stencil_back_func_);
-  glGetIntegerv(GL_STENCIL_BACK_VALUE_MASK, &stencil_back_mask_);
-  glGetIntegerv(GL_STENCIL_BACK_REF, &stencil_back_ref_);
-  glGetIntegerv(GL_STENCIL_CLEAR_VALUE, &stencil_clear_);
-  glGetIntegerv(GL_STENCIL_WRITEMASK, &stencil_front_writemask_);
-  glGetIntegerv(GL_STENCIL_BACK_WRITEMASK, &stencil_back_writemask_);
-  glGetIntegerv(GL_STENCIL_FAIL, &stencil_front_fail_op_);
-  glGetIntegerv(GL_STENCIL_PASS_DEPTH_FAIL, &stencil_front_z_fail_op_);
-  glGetIntegerv(GL_STENCIL_PASS_DEPTH_PASS, &stencil_front_z_pass_op_);
-  glGetIntegerv(GL_STENCIL_BACK_FAIL, &stencil_back_fail_op_);
-  glGetIntegerv(GL_STENCIL_BACK_PASS_DEPTH_FAIL, &stencil_back_z_fail_op_);
-  glGetIntegerv(GL_STENCIL_BACK_PASS_DEPTH_PASS, &stencil_back_z_pass_op_);
+  glGetBooleanv(GL_STENCIL_TEST, &stencil_state_.stencil_test_enabled);
+  glGetIntegerv(GL_STENCIL_FUNC, &stencil_state_.stencil_front_func);
+  glGetIntegerv(GL_STENCIL_VALUE_MASK, &stencil_state_.stencil_front_mask);
+  glGetIntegerv(GL_STENCIL_REF, &stencil_state_.stencil_front_ref);
+  glGetIntegerv(GL_STENCIL_BACK_FUNC, &stencil_state_.stencil_back_func);
+  glGetIntegerv(GL_STENCIL_BACK_VALUE_MASK, &stencil_state_.stencil_back_mask);
+  glGetIntegerv(GL_STENCIL_BACK_REF, &stencil_state_.stencil_back_ref);
+  glGetIntegerv(GL_STENCIL_CLEAR_VALUE, &stencil_state_.stencil_clear);
+  glGetIntegerv(GL_STENCIL_WRITEMASK, &stencil_state_.stencil_front_writemask);
+  glGetIntegerv(GL_STENCIL_BACK_WRITEMASK,
+                &stencil_state_.stencil_back_writemask);
+  glGetIntegerv(GL_STENCIL_FAIL, &stencil_state_.stencil_front_fail_op);
+  glGetIntegerv(GL_STENCIL_PASS_DEPTH_FAIL,
+                &stencil_state_.stencil_front_z_fail_op);
+  glGetIntegerv(GL_STENCIL_PASS_DEPTH_PASS,
+                &stencil_state_.stencil_front_z_pass_op);
+  glGetIntegerv(GL_STENCIL_BACK_FAIL, &stencil_state_.stencil_back_fail_op);
+  glGetIntegerv(GL_STENCIL_BACK_PASS_DEPTH_FAIL,
+                &stencil_state_.stencil_back_z_fail_op);
+  glGetIntegerv(GL_STENCIL_BACK_PASS_DEPTH_PASS,
+                &stencil_state_.stencil_back_z_pass_op);
 
   glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &framebuffer_binding_ext_);
 
@@ -402,22 +392,22 @@ ScopedAppGLStateRestoreImpl::~ScopedAppGLStateRestoreImpl() {
       break;
   }
 
-  GLEnableDisable(GL_STENCIL_TEST, stencil_test_);
-  glStencilFuncSeparate(
-      GL_FRONT, stencil_front_func_, stencil_front_mask_, stencil_front_ref_);
-  glStencilFuncSeparate(
-      GL_BACK, stencil_back_func_, stencil_back_mask_, stencil_back_ref_);
-  glClearStencil(stencil_clear_);
-  glStencilMaskSeparate(GL_FRONT, stencil_front_writemask_);
-  glStencilMaskSeparate(GL_BACK, stencil_back_writemask_);
-  glStencilOpSeparate(GL_FRONT,
-                      stencil_front_fail_op_,
-                      stencil_front_z_fail_op_,
-                      stencil_front_z_pass_op_);
-  glStencilOpSeparate(GL_BACK,
-                      stencil_back_fail_op_,
-                      stencil_back_z_fail_op_,
-                      stencil_back_z_pass_op_);
+  GLEnableDisable(GL_STENCIL_TEST, stencil_state_.stencil_test_enabled);
+  glStencilFuncSeparate(GL_FRONT, stencil_state_.stencil_front_func,
+                        stencil_state_.stencil_front_mask,
+                        stencil_state_.stencil_front_ref);
+  glStencilFuncSeparate(GL_BACK, stencil_state_.stencil_back_func,
+                        stencil_state_.stencil_back_mask,
+                        stencil_state_.stencil_back_ref);
+  glClearStencil(stencil_state_.stencil_clear);
+  glStencilMaskSeparate(GL_FRONT, stencil_state_.stencil_front_writemask);
+  glStencilMaskSeparate(GL_BACK, stencil_state_.stencil_back_writemask);
+  glStencilOpSeparate(GL_FRONT, stencil_state_.stencil_front_fail_op,
+                      stencil_state_.stencil_front_z_fail_op,
+                      stencil_state_.stencil_front_z_pass_op);
+  glStencilOpSeparate(GL_BACK, stencil_state_.stencil_back_fail_op,
+                      stencil_state_.stencil_back_z_fail_op,
+                      stencil_state_.stencil_back_z_pass_op);
 
   // Do not leak GLError out of chromium.
   ClearGLErrors(true, "Chromium GLError");
@@ -431,8 +421,8 @@ ScopedAppGLStateRestore::ScopedAppGLStateRestore(CallMode mode)
 
 ScopedAppGLStateRestore::~ScopedAppGLStateRestore() {}
 
-bool ScopedAppGLStateRestore::stencil_enabled() const {
-  return impl_->stencil_enabled();
+StencilState ScopedAppGLStateRestore::stencil_state() const {
+  return impl_->stencil_state();
 }
 int ScopedAppGLStateRestore::framebuffer_binding_ext() const {
   return impl_->framebuffer_binding_ext();

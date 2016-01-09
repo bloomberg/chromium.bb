@@ -2926,8 +2926,8 @@ void GLRenderer::BindFramebufferToOutputSurface(DrawingFrame* frame) {
   output_surface_->BindFramebuffer();
 
   if (output_surface_->HasExternalStencilTest()) {
+    output_surface_->ApplyExternalStencil();
     SetStencilEnabled(true);
-    gl_->StencilFunc(GL_EQUAL, 1, 1);
   } else {
     SetStencilEnabled(false);
   }

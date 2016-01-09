@@ -17,6 +17,25 @@ namespace internal {
 class ScopedAppGLStateRestoreImpl;
 }
 
+struct StencilState {
+  unsigned char stencil_test_enabled;
+  int stencil_front_func;
+  int stencil_front_ref;
+  int stencil_front_mask;
+  int stencil_back_func;
+  int stencil_back_ref;
+  int stencil_back_mask;
+  int stencil_clear;
+  int stencil_front_writemask;
+  int stencil_back_writemask;
+  int stencil_front_fail_op;
+  int stencil_front_z_fail_op;
+  int stencil_front_z_pass_op;
+  int stencil_back_fail_op;
+  int stencil_back_z_fail_op;
+  int stencil_back_z_pass_op;
+};
+
 // This class is not thread safe and should only be used on the UI thread.
 class ScopedAppGLStateRestore {
  public:
@@ -28,7 +47,7 @@ class ScopedAppGLStateRestore {
   explicit ScopedAppGLStateRestore(CallMode mode);
   ~ScopedAppGLStateRestore();
 
-  bool stencil_enabled() const;
+  StencilState stencil_state() const;
   int framebuffer_binding_ext() const;
 
  private:

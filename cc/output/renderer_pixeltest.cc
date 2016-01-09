@@ -1889,6 +1889,7 @@ class ExternalStencilPixelTest : public GLRendererPixelTest {
                 device_viewport_size_.width(),
                 device_viewport_size_.height());
     gl->Clear(GL_STENCIL_BUFFER_BIT);
+    gl->StencilFunc(GL_EQUAL, 1, 1);
   }
 };
 

@@ -53,7 +53,7 @@ AwRenderThreadContextProvider::AwRenderThreadContextProvider(
   blink::WebGraphicsContext3D::Attributes attributes;
   attributes.antialias = false;
   attributes.depth = false;
-  attributes.stencil = false;
+  attributes.stencil = true;
   attributes.shareResources = true;
   attributes.noAutomaticFlushes = true;
   gpu::gles2::ContextCreationAttribHelper attribs_for_gles2;
