@@ -26,7 +26,7 @@ const char kAllCommands[] = "shell:"
     "echo " SEPARATOR "\n"
     "dumpsys user\n";
 
-const char kSeparator[] = SEPARATOR "\r\n";
+const char kSeparator[] = SEPARATOR;
 
 #undef SEPARATOR
 
