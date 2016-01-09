@@ -2820,8 +2820,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 
   if ([[request HTTPMethod] isEqualToString:@"POST"]) {
-    [self cachePOSTDataForRequest:request
-                   inSessionEntry:[self currentSessionEntry]];
+    CRWSessionEntry* currentEntry = [self currentSessionEntry];
+    // TODO(crbug.com/570699): Remove this check once it's no longer possible to
+    // have no current entries.
+    if (currentEntry)
+      [self cachePOSTDataForRequest:request inSessionEntry:currentEntry];
   }
 
   return YES;
