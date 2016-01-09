@@ -7210,7 +7210,7 @@ void GLES2DecoderImpl::DoUniform1fv(
     for (GLsizei ii = 0; ii < count; ++ii) {
       temp[ii] = static_cast<GLint>(value[ii] != 0.0f);
     }
-    DoUniform1iv(real_location, count, temp.get());
+    glUniform1iv(real_location, count, temp.get());
   } else {
     glUniform1fv(real_location, count, value);
   }
