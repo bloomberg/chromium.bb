@@ -3806,6 +3806,20 @@ DOMArrayBufferView::ViewType WebGLRenderingContextBase::readPixelsExpectedArrayB
     }
 }
 
+WebGLImageConversion::PixelStoreParams WebGLRenderingContextBase::getPackPixelStoreParams()
+{
+    WebGLImageConversion::PixelStoreParams params;
+    params.alignment = m_packAlignment;
+    return params;
+}
+
+WebGLImageConversion::PixelStoreParams WebGLRenderingContextBase::getUnpackPixelStoreParams()
+{
+    WebGLImageConversion::PixelStoreParams params;
+    params.alignment = m_unpackAlignment;
+    return params;
+}
+
 bool WebGLRenderingContextBase::validateReadPixelsFuncParameters(GLsizei width, GLsizei height, GLenum format, GLenum type, long long bufferSize)
 {
     if (!validateReadPixelsFormatAndType(format, type))
@@ -3817,15 +3831,14 @@ bool WebGLRenderingContextBase::validateReadPixelsFuncParameters(GLsizei width, 
     if (!validateReadPixelsFormatTypeCombination(format, type, readBufferInternalFormat, readBufferType))
         return false;
 
-    // Calculate array size, taking into consideration of PACK_ALIGNMENT.
-    unsigned totalBytesRequired = 0;
-    unsigned padding = 0;
-    GLenum error = WebGLImageConversion::computeImageSizeInBytes(format, type, width, height, 1, m_packAlignment, &totalBytesRequired, &padding);
+    // Calculate array size, taking into consideration of pack parameters.
+    unsigned totalBytesRequired = 0, totalSkipBytes = 0;
+    GLenum error = WebGLImageConversion::computeImageSizeInBytes(format, type, width, height, 1, getPackPixelStoreParams(), &totalBytesRequired, 0, &totalSkipBytes);
     if (error != GL_NO_ERROR) {
         synthesizeGLError(error, "readPixels", "invalid dimensions");
         return false;
     }
-    if (bufferSize < static_cast<long long>(totalBytesRequired)) {
+    if (bufferSize < static_cast<long long>(totalBytesRequired + totalSkipBytes)) {
         synthesizeGLError(GL_INVALID_OPERATION, "readPixels", "buffer is not large enough for dimensions");
         return false;
     }
@@ -5862,19 +5875,12 @@ bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, GL
     }
 
     unsigned totalBytesRequired;
-    GLenum error = WebGLImageConversion::computeImageSizeInBytes(format, type, width, height, depth, m_unpackAlignment, &totalBytesRequired, 0);
+    GLenum error = WebGLImageConversion::computeImageSizeInBytes(format, type, width, height, depth, getUnpackPixelStoreParams(), &totalBytesRequired, 0, 0);
     if (error != GL_NO_ERROR) {
         synthesizeGLError(error, functionName, "invalid texture dimensions");
         return false;
     }
     if (pixels->byteLength() < totalBytesRequired) {
-        if (m_unpackAlignment != 1) {
-            error = WebGLImageConversion::computeImageSizeInBytes(format, type, width, height, depth, 1, &totalBytesRequired, 0);
-            if (pixels->byteLength() == totalBytesRequired) {
-                synthesizeGLError(GL_INVALID_OPERATION, functionName, "ArrayBufferView not big enough for request with UNPACK_ALIGNMENT > 1");
-                return false;
-            }
-        }
         synthesizeGLError(GL_INVALID_OPERATION, functionName, "ArrayBufferView not big enough for request");
         return false;
     }

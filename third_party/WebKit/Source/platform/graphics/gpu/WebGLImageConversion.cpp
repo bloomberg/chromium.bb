@@ -1923,7 +1923,25 @@ void FormatConverter::convert()
     return;
 }
 
+bool frameIsValid(const SkBitmap& frameBitmap)
+{
+    return !frameBitmap.isNull()
+        && !frameBitmap.empty()
+        && frameBitmap.isImmutable()
+        && frameBitmap.colorType() == kN32_SkColorType;
+}
+
 } // anonymous namespace
+
+WebGLImageConversion::PixelStoreParams::PixelStoreParams()
+    : alignment(4)
+    , rowLength(0)
+    , imageHeight(0)
+    , skipPixels(0)
+    , skipRows(0)
+    , skipImages(0)
+{
+}
 
 bool WebGLImageConversion::computeFormatAndTypeParameters(GLenum format, GLenum type, unsigned* componentsPerPixel, unsigned* bytesPerComponent)
 {
@@ -2000,40 +2018,102 @@ bool WebGLImageConversion::computeFormatAndTypeParameters(GLenum format, GLenum 
     return true;
 }
 
-GLenum WebGLImageConversion::computeImageSizeInBytes(GLenum format, GLenum type, GLsizei width, GLsizei height, GLsizei depth, GLint alignment, unsigned* imageSizeInBytes, unsigned* paddingInBytes)
+GLenum WebGLImageConversion::computeImageSizeInBytes(GLenum format, GLenum type, GLsizei width, GLsizei height, GLsizei depth, const PixelStoreParams& params, unsigned* imageSizeInBytes, unsigned* paddingInBytes, unsigned* skipSizeInBytes)
 {
     ASSERT(imageSizeInBytes);
-    ASSERT(alignment == 1 || alignment == 2 || alignment == 4 || alignment == 8);
+    ASSERT(params.alignment == 1 || params.alignment == 2 || params.alignment == 4 || params.alignment == 8);
+    ASSERT(params.rowLength >= 0 && params.imageHeight >= 0);
+    ASSERT(params.skipPixels >= 0 && params.skipRows >= 0 && params.skipImages >= 0);
     if (width < 0 || height < 0 || depth < 0)
         return GL_INVALID_VALUE;
-    unsigned bytesPerComponent, componentsPerPixel;
-    if (!computeFormatAndTypeParameters(format, type, &bytesPerComponent, &componentsPerPixel))
-        return GL_INVALID_ENUM;
     if (!width || !height || !depth) {
         *imageSizeInBytes = 0;
         if (paddingInBytes)
             *paddingInBytes = 0;
+        if (skipSizeInBytes)
+            *skipSizeInBytes = 0;
         return GL_NO_ERROR;
     }
-    CheckedInt<uint32_t> checkedValue(bytesPerComponent * componentsPerPixel);
-    checkedValue *=  width;
+
+    int rowLength = params.rowLength > 0 ? params.rowLength : width;
+    int imageHeight = params.imageHeight > 0 ? params.imageHeight : height;
+
+    unsigned bytesPerComponent, componentsPerPixel;
+    if (!computeFormatAndTypeParameters(format, type, &bytesPerComponent, &componentsPerPixel))
+        return GL_INVALID_ENUM;
+    unsigned bytesPerGroup = bytesPerComponent * componentsPerPixel;
+    CheckedInt<uint32_t> checkedValue = static_cast<uint32_t>(rowLength);
+    checkedValue *=  bytesPerGroup;
     if (!checkedValue.isValid())
         return GL_INVALID_VALUE;
-    unsigned validRowSize = checkedValue.value();
+
+    unsigned lastRowSize;
+    if (params.rowLength > 0 && params.rowLength != width) {
+        CheckedInt<uint32_t> tmp = width;
+        tmp *= bytesPerGroup;
+        if (!tmp.isValid())
+            return GL_INVALID_VALUE;
+        lastRowSize = tmp.value();
+    } else {
+        lastRowSize = checkedValue.value();
+    }
+
     unsigned padding = 0;
-    unsigned residual = validRowSize % alignment;
+    unsigned residual = checkedValue.value() % params.alignment;
     if (residual) {
-        padding = alignment - residual;
+        padding = params.alignment - residual;
         checkedValue += padding;
     }
-    // Last row needs no padding.
-    checkedValue *= (height * depth - 1);
-    checkedValue += validRowSize;
+    if (!checkedValue.isValid())
+        return GL_INVALID_VALUE;
+    unsigned paddedRowSize = checkedValue.value();
+
+    CheckedInt<uint32_t> rows = imageHeight;
+    rows *= (depth - 1);
+    // Last image is not affected by IMAGE_HEIGHT parameter.
+    rows += height;
+    if (!rows.isValid())
+        return GL_INVALID_VALUE;
+    checkedValue *= (rows.value() - 1);
+    // Last row is not affected by ROW_LENGTH parameter.
+    checkedValue += lastRowSize;
     if (!checkedValue.isValid())
         return GL_INVALID_VALUE;
     *imageSizeInBytes = checkedValue.value();
     if (paddingInBytes)
         *paddingInBytes = padding;
+
+    CheckedInt<uint32_t> skipSize = 0;
+    if (params.skipImages > 0) {
+        CheckedInt<uint32_t> tmp = paddedRowSize;
+        tmp *= imageHeight;
+        tmp *= params.skipImages;
+        if (!tmp.isValid())
+            return GL_INVALID_VALUE;
+        skipSize += tmp.value();
+    }
+    if (params.skipRows > 0) {
+        CheckedInt<uint32_t> tmp = paddedRowSize;
+        tmp *= params.skipRows;
+        if (!tmp.isValid())
+            return GL_INVALID_VALUE;
+        skipSize += tmp.value();
+    }
+    if (params.skipPixels > 0) {
+        CheckedInt<uint32_t> tmp = bytesPerGroup;
+        tmp *= params.skipPixels;
+        if (!tmp.isValid())
+            return GL_INVALID_VALUE;
+        skipSize += tmp.value();
+    }
+    if (!skipSize.isValid())
+        return GL_INVALID_VALUE;
+    if (skipSizeInBytes)
+        *skipSizeInBytes = skipSize.value();
+
+    checkedValue += skipSize.value();
+    if (!checkedValue.isValid())
+        return GL_INVALID_VALUE;
     return GL_NO_ERROR;
 }
 
@@ -2043,18 +2123,6 @@ WebGLImageConversion::ImageExtractor::ImageExtractor(Image* image, ImageHtmlDomS
     m_imageHtmlDomSource = imageHtmlDomSource;
     extractImage(premultiplyAlpha, ignoreGammaAndColorProfile);
 }
-
-namespace {
-
-bool frameIsValid(const SkBitmap& frameBitmap)
-{
-    return !frameBitmap.isNull()
-        && !frameBitmap.empty()
-        && frameBitmap.isImmutable()
-        && frameBitmap.colorType() == kN32_SkColorType;
-}
-
-} // anonymous namespace
 
 void WebGLImageConversion::ImageExtractor::extractImage(bool premultiplyAlpha, bool ignoreGammaAndColorProfile)
 {
@@ -2230,7 +2298,9 @@ bool WebGLImageConversion::packImageData(
 
     unsigned packedSize;
     // Output data is tightly packed (alignment == 1).
-    if (computeImageSizeInBytes(format, type, width, height, 1, 1, &packedSize, 0) != GL_NO_ERROR)
+    PixelStoreParams params;
+    params.alignment = 1;
+    if (computeImageSizeInBytes(format, type, width, height, 1, params, &packedSize, 0, 0) != GL_NO_ERROR)
         return false;
     data.resize(packedSize);
 
@@ -2257,7 +2327,9 @@ bool WebGLImageConversion::extractImageData(
 
     unsigned packedSize;
     // Output data is tightly packed (alignment == 1).
-    if (computeImageSizeInBytes(format, type, width, height, 1, 1, &packedSize, 0) != GL_NO_ERROR)
+    PixelStoreParams params;
+    params.alignment = 1;
+    if (computeImageSizeInBytes(format, type, width, height, 1, params, &packedSize, 0, 0) != GL_NO_ERROR)
         return false;
     data.resize(packedSize);
 

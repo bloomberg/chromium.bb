@@ -832,6 +832,9 @@ protected:
     void handleTextureCompleteness(const char*, bool);
     void createFallbackBlackTextures1x1();
 
+    virtual WebGLImageConversion::PixelStoreParams getPackPixelStoreParams();
+    virtual WebGLImageConversion::PixelStoreParams getUnpackPixelStoreParams();
+
     // Helper function for copyTex{Sub}Image, check whether the internalformat
     // and the color buffer format of the current bound framebuffer combination
     // is valid.

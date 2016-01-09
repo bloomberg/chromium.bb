@@ -3443,4 +3443,26 @@ const WebGLSamplerState* WebGL2RenderingContextBase::getTextureUnitSamplerState(
     return WebGLRenderingContextBase::getTextureUnitSamplerState(target, unit);
 }
 
+WebGLImageConversion::PixelStoreParams WebGL2RenderingContextBase::getPackPixelStoreParams()
+{
+    WebGLImageConversion::PixelStoreParams params;
+    params.alignment = m_packAlignment;
+    params.rowLength = m_packRowLength;
+    params.skipPixels = m_packSkipPixels;
+    params.skipRows = m_packSkipRows;
+    return params;
+}
+
+WebGLImageConversion::PixelStoreParams WebGL2RenderingContextBase::getUnpackPixelStoreParams()
+{
+    WebGLImageConversion::PixelStoreParams params;
+    params.alignment = m_unpackAlignment;
+    params.rowLength = m_unpackRowLength;
+    params.imageHeight = m_unpackImageHeight;
+    params.skipPixels = m_unpackSkipPixels;
+    params.skipRows = m_unpackSkipRows;
+    params.skipImages = m_unpackSkipImages;
+    return params;
+}
+
 } // namespace blink

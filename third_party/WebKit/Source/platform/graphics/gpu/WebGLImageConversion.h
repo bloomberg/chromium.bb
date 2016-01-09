@@ -115,6 +115,17 @@ public:
         HtmlDomNone = 3
     };
 
+    struct PLATFORM_EXPORT PixelStoreParams final {
+        PixelStoreParams();
+
+        GLint alignment;
+        GLint rowLength;
+        GLint imageHeight;
+        GLint skipPixels;
+        GLint skipRows;
+        GLint skipImages;
+    };
+
     class PLATFORM_EXPORT ImageExtractor final {
         STACK_ALLOCATED();
     public:
@@ -152,7 +163,12 @@ public:
     // return the suggested GL error indicating the cause of the failure:
     //   INVALID_VALUE if width/height/depth is negative or overflow happens.
     //   INVALID_ENUM if format/type is illegal.
-    static GLenum computeImageSizeInBytes(GLenum format, GLenum type, GLsizei width, GLsizei height, GLsizei depth, GLint alignment, unsigned* imageSizeInBytes, unsigned* paddingInBytes);
+    // Note that imageSizeBytes does not include skipSizeInBytes, but it is
+    // guaranteed if NO_ERROR is returned, adding the two sizes won't cause
+    // overflow.
+    // |paddingInBytes| and |skipSizeInBytes| are optional and can be null, but
+    // the overflow validation is still performed.
+    static GLenum computeImageSizeInBytes(GLenum format, GLenum type, GLsizei width, GLsizei height, GLsizei depth, const PixelStoreParams&, unsigned* imageSizeInBytes, unsigned* paddingInBytes, unsigned* skipSizeInBytes);
 
     // Check if the format is one of the formats from the ImageData or DOM elements.
     // The formats from ImageData is always RGBA8.

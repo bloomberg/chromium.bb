@@ -212,6 +212,9 @@ protected:
     bool validateBufferBaseTarget(const char* functionName, GLenum target);
     bool validateAndUpdateBufferBindBaseTarget(const char* functionName, GLenum, GLuint, WebGLBuffer*);
 
+    WebGLImageConversion::PixelStoreParams getPackPixelStoreParams() override;
+    WebGLImageConversion::PixelStoreParams getUnpackPixelStoreParams() override;
+
     bool checkAndTranslateAttachments(const char* functionName, GLenum, const Vector<GLenum>&, Vector<GLenum>&);
 
     /* WebGLRenderingContextBase overrides */
