@@ -36,6 +36,7 @@ class RendererWebMediaPlayerDelegate
   void PlayerGone(blink::WebMediaPlayer* player) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
+  bool IsHidden() override;
 
   // content::RenderFrameObserver overrides.
   void WasHidden() override;

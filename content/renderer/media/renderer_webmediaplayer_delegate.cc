@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "content/common/frame_messages.h"
+#include "content/public/renderer/render_frame.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 
 namespace media {
@@ -47,6 +48,10 @@ void RendererWebMediaPlayerDelegate::WasHidden() {
 
 void RendererWebMediaPlayerDelegate::WasShown() {
   FOR_EACH_OBSERVER(Observer, observer_list_, OnShown());
+}
+
+bool RendererWebMediaPlayerDelegate::IsHidden() {
+  return render_frame()->IsHidden();
 }
 
 }  // namespace media

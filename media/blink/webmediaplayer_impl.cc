@@ -970,6 +970,11 @@ void WebMediaPlayerImpl::OnPipelineMetadata(
     video_weblayer_->layer()->SetContentsOpaque(opaque_);
     video_weblayer_->SetContentsOpaqueIsFixed(true);
     client_->setWebLayer(video_weblayer_.get());
+
+    // If there is video and the frame is hidden, then it may be time to suspend
+    // playback.
+    if (delegate_ && delegate_->IsHidden())
+      OnHidden();
   }
 }
 
@@ -1045,7 +1050,7 @@ void WebMediaPlayerImpl::OnHidden() {
     return;
   }
 
-  if (!pipeline_.IsRunning())
+  if (!pipeline_.IsRunning() || !hasVideo())
     return;
 
   if (resuming_ || seeking_) {

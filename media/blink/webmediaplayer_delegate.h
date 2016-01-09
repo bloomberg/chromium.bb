@@ -38,6 +38,9 @@ class WebMediaPlayerDelegate {
   // Unsubscribe from observer callbacks.
   virtual void RemoveObserver(Observer* observer) = 0;
 
+  // Returns whether the render frame is currently hidden.
+  virtual bool IsHidden() = 0;
+
  protected:
   virtual ~WebMediaPlayerDelegate() {}
 };
