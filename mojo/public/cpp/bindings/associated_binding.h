@@ -63,7 +63,7 @@ class AssociatedBinding {
     AssociatedInterfaceRequest<Interface> request;
     associated_group->CreateAssociatedInterface(AssociatedGroup::WILL_PASS_PTR,
                                                 ptr_info, &request);
-    Bind(request.Pass());
+    Bind(std::move(request));
   }
 
   // Sets up this object as the implementation side of an associated interface.
