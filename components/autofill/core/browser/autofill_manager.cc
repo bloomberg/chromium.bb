@@ -166,11 +166,14 @@ void AutofillManager::ShowAutofillSettings() {
 
 bool AutofillManager::ShouldShowScanCreditCard(const FormData& form,
                                                const FormFieldData& field) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableCreditCardScan) &&
-      (base::FieldTrialList::FindFullName("CreditCardScan") != "Enabled" ||
-       base::CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kDisableCreditCardScan))) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableCreditCardScan)) {
+    return false;
+  }
+
+  if (base::FieldTrialList::FindFullName("CreditCardScan") == "Control" &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableCreditCardScan)) {
     return false;
   }
 
