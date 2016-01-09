@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.37",
+  "version": "8.38",
   "entries": [
     {
       "id": 1,
@@ -1672,6 +1672,17 @@ LONG_STRING_CONST(
       "gl_renderer": "Adreno \\(TM\\) 4.*", // Originally on 418.
       "features": [
         "disable_ext_srgb"
+      ]
+    },
+    {
+      "id": 141,
+      "cr_bugs": [570897],
+      "description": "Framebuffer discarding can hurt performance on non-tilers",
+      "os": {
+        "type": "win"
+      },
+      "features": [
+        "disable_discard_framebuffer"
       ]
     }
   ]
