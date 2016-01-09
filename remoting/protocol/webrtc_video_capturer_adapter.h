@@ -21,11 +21,16 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
+namespace cricket {
+class VideoFrame;
+}  // namespace cricket
+
 namespace webrtc {
 class DesktopFrame;
 }  // namespace webrtc
 
 namespace remoting {
+namespace protocol {
 
 // This class controls the capture of video frames from the desktop and is used
 // to construct a VideoSource as part of the webrtc PeerConnection API.
@@ -39,14 +44,7 @@ class WebrtcVideoCapturerAdapter : public cricket::VideoCapturer,
  public:
   explicit WebrtcVideoCapturerAdapter(
       scoped_ptr<webrtc::DesktopCapturer> capturer);
-
   ~WebrtcVideoCapturerAdapter() override;
-
-  // webrtc::DesktopCapturer::Callback implementation.
-  webrtc::SharedMemory* CreateSharedMemory(size_t size) override;
-  // Converts |frame| to a cricket::CapturedFrame and emits that via
-  // SignalFrameCaptured for the base::VideoCapturer implementation to process.
-  void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
 
   // cricket::VideoCapturer implementation.
   bool GetBestCaptureFormat(const cricket::VideoFormat& desired,
@@ -60,22 +58,31 @@ class WebrtcVideoCapturerAdapter : public cricket::VideoCapturer,
   bool GetPreferredFourccs(std::vector<uint32_t>* fourccs) override;
 
  private:
-  // Kicks off the next frame capture using |desktop_capturer_|.
-  // The captured frame will be passed to OnCaptureCompleted().
+  // webrtc::DesktopCapturer::Callback implementation.
+  webrtc::SharedMemory* CreateSharedMemory(size_t size) override;
+  void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
+
+  // Kicks off the next frame capture using |desktop_capturer_|. The captured
+  // frame will be passed to OnCaptureCompleted().
   void CaptureNextFrame();
 
-  // |thread_checker_| is bound to the peer connection worker thread.
   base::ThreadChecker thread_checker_;
 
-  // Used to capture frames.
   scoped_ptr<webrtc::DesktopCapturer> desktop_capturer_;
 
-  // Used to schedule periodic screen captures.
+  // Timer to call CaptureNextFrame().
   scoped_ptr<base::RepeatingTimer> capture_timer_;
+
+  // Video frame is kept between captures to avoid YUV conversion for static
+  // parts of the screen.
+  scoped_ptr<cricket::VideoFrame> yuv_frame_;
+
+  bool capture_pending_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebrtcVideoCapturerAdapter);
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
 #endif  // REMOTING_PROTOCOL_WEBRTC_VIDEO_CAPTURER_ADAPTER_H_

@@ -28,6 +28,7 @@ source_set("protocol") {
     "//remoting/base",
     "//remoting/codec",
     "//remoting/signaling",
+    "//third_party/libyuv",
   ]
 
   if (!is_nacl) {

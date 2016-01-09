@@ -529,8 +529,8 @@ bool CastExtensionSession::SetupVideoStream(
     return false;
   }
 
-  scoped_ptr<WebrtcVideoCapturerAdapter> video_capturer_adapter(
-      new WebrtcVideoCapturerAdapter(std::move(desktop_capturer)));
+  scoped_ptr<protocol::WebrtcVideoCapturerAdapter> video_capturer_adapter(
+      new protocol::WebrtcVideoCapturerAdapter(std::move(desktop_capturer)));
 
   // Set video stream constraints.
   webrtc::FakeConstraints video_constraints;
