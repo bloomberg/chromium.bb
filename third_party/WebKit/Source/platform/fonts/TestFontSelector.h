@@ -33,8 +33,7 @@
 
 #include "platform/fonts/FontCustomPlatformData.h"
 #include "platform/fonts/FontSelector.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebUnitTestSupport.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicString.h"
@@ -45,10 +44,7 @@ class TestFontSelector : public FontSelector {
 public:
     static PassRefPtrWillBeRawPtr<TestFontSelector> create(const String& path)
     {
-        WebUnitTestSupport* unitTestSupport = Platform::current()->
-            unitTestSupport();
-        RefPtr<SharedBuffer> fontBuffer = static_cast<PassRefPtr<SharedBuffer>>(
-            unitTestSupport->readFromFile(path));
+        RefPtr<SharedBuffer> fontBuffer = testing::readFromFile(path);
         String otsParseMessage;
         return adoptRefWillBeNoop(new TestFontSelector(FontCustomPlatformData::create(
             fontBuffer.get(), otsParseMessage)));

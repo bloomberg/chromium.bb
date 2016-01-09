@@ -26,14 +26,23 @@
 #ifndef UnitTestHelpers_h
 #define UnitTestHelpers_h
 
+#include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
+
+class SharedBuffer;
+
 namespace testing {
 
 void runPendingTasks();
 
 String blinkRootDir();
+
+PassRefPtr<SharedBuffer> readFromFile(const String& path);
+
+void enterRunLoop();
+void exitRunLoop();
 
 } // namespace testing
 } // namespace blink

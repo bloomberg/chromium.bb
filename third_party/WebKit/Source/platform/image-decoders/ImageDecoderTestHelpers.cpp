@@ -8,8 +8,6 @@
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/image-decoders/ImageFrame.h"
 #include "platform/testing/UnitTestHelpers.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebUnitTestSupport.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/StringHasher.h"
@@ -20,7 +18,7 @@ PassRefPtr<SharedBuffer> readFile(const char* fileName)
 {
     String filePath = testing::blinkRootDir();
     filePath.append(fileName);
-    return Platform::current()->unitTestSupport()->readFromFile(filePath);
+    return testing::readFromFile(filePath);
 }
 
 PassRefPtr<SharedBuffer> readFile(const char* dir, const char* fileName)
@@ -31,7 +29,7 @@ PassRefPtr<SharedBuffer> readFile(const char* dir, const char* fileName)
     filePath.append("/");
     filePath.append(fileName);
 
-    return Platform::current()->unitTestSupport()->readFromFile(filePath);
+    return testing::readFromFile(filePath);
 }
 
 unsigned hashBitmap(const SkBitmap& bitmap)

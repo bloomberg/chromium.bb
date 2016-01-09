@@ -360,16 +360,6 @@ blink::WebThread* TestBlinkWebUnitTestSupport::currentThread() {
   return BlinkPlatformImpl::currentThread();
 }
 
-void TestBlinkWebUnitTestSupport::enterRunLoop() {
-  DCHECK(base::MessageLoop::current());
-  DCHECK(!base::MessageLoop::current()->is_running());
-  base::MessageLoop::current()->Run();
-}
-
-void TestBlinkWebUnitTestSupport::exitRunLoop() {
-  base::MessageLoop::current()->QuitWhenIdle();
-}
-
 void TestBlinkWebUnitTestSupport::getPluginList(
     bool refresh, blink::WebPluginListBuilder* builder) {
   builder->addPlugin("pdf", "pdf", "pdf-files");

@@ -3,4 +3,5 @@ include_rules = [
     # directories and files instead of writing 'base/'.
     "+base/files",
     "+base/path_service.h",
+    "+base/message_loop",
 ]

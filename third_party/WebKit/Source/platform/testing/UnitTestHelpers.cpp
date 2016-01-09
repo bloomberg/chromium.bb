@@ -27,12 +27,15 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "platform/SharedBuffer.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "wtf/text/StringUTF8Adaptor.h"
 
 namespace blink {
 namespace testing {
@@ -41,14 +44,14 @@ class QuitTask : public WebTaskRunner::Task {
 public:
     virtual void run()
     {
-        Platform::current()->unitTestSupport()->exitRunLoop();
+        exitRunLoop();
     }
 };
 
 void runPendingTasks()
 {
     Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, new QuitTask);
-    Platform::current()->unitTestSupport()->enterRunLoop();
+    enterRunLoop();
 }
 
 String blinkRootDir()
@@ -58,6 +61,26 @@ String blinkRootDir()
     path = path.Append(FILE_PATH_LITERAL("third_party/WebKit"));
     path = base::MakeAbsoluteFilePath(path);
     return String::fromUTF8(path.MaybeAsASCII().c_str());
+}
+
+PassRefPtr<SharedBuffer> readFromFile(const String& path)
+{
+    StringUTF8Adaptor utf8(path);
+    base::FilePath file_path = base::FilePath::FromUTF8Unsafe(
+        std::string(utf8.data(), utf8.length()));
+    std::string buffer;
+    base::ReadFileToString(file_path, &buffer);
+    return SharedBuffer::create(buffer.data(), buffer.size());
+}
+
+void enterRunLoop()
+{
+    base::MessageLoop::current()->Run();
+}
+
+void exitRunLoop()
+{
+    base::MessageLoop::current()->QuitWhenIdle();
 }
 
 }

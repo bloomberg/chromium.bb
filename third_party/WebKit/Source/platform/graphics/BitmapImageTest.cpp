@@ -34,8 +34,6 @@
 #include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/graphics/ImageObserver.h"
 #include "platform/testing/UnitTestHelpers.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebUnitTestSupport.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -66,7 +64,7 @@ public:
     {
         String filePath = testing::blinkRootDir();
         filePath.append(fileName);
-        return Platform::current()->unitTestSupport()->readFromFile(filePath);
+        return testing::readFromFile(filePath);
     }
 
     // Accessors to BitmapImage's protected methods.

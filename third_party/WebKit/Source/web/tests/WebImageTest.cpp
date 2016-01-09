@@ -32,10 +32,8 @@
 
 #include "platform/SharedBuffer.h"
 #include "platform/testing/UnitTestHelpers.h"
-#include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebSize.h"
-#include "public/platform/WebUnitTestSupport.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -46,7 +44,7 @@ static PassRefPtr<SharedBuffer> readFile(const char* fileName)
     filePath.append("/Source/web/tests/data/");
     filePath.append(fileName);
 
-    return Platform::current()->unitTestSupport()->readFromFile(filePath);
+    return testing::readFromFile(filePath);
 }
 
 TEST(WebImageTest, PNGImage)

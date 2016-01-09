@@ -61,9 +61,6 @@ public:
     virtual WebLayerTreeView* createLayerTreeViewForTesting() { return nullptr; }
 
     virtual WebData readFromFile(const WebString& path) { return WebData(); }
-
-    virtual void enterRunLoop() { }
-    virtual void exitRunLoop() { }
 };
 
 }

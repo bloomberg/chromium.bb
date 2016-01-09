@@ -87,8 +87,6 @@ class TestBlinkWebUnitTestSupport : public blink::WebUnitTestSupport,
   blink::WebLayerTreeView* createLayerTreeViewForTesting() override;
   blink::WebData readFromFile(const blink::WebString& path) override;
   blink::WebThread* currentThread() override;
-  void enterRunLoop() override;
-  void exitRunLoop() override;
 
   void getPluginList(bool refresh,
                      blink::WebPluginListBuilder* builder) override;

@@ -9,8 +9,6 @@
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/text/TextStream.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebUnitTestSupport.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
@@ -28,8 +26,8 @@ public:
         String fullPath = testing::blinkRootDir();
         fullPath.append("/Source/core/paint/test_data/");
         fullPath.append(fileName);
-        WebData inputBuffer = Platform::current()->unitTestSupport()->readFromFile(fullPath);
-        setBodyInnerHTML(String(inputBuffer.data(), inputBuffer.size()));
+        RefPtr<SharedBuffer> inputBuffer = testing::readFromFile(fullPath);
+        setBodyInnerHTML(String(inputBuffer->data(), inputBuffer->size()));
     }
 
 private:
