@@ -437,6 +437,7 @@ _x86_internal_release_boards = frozenset([
     'reks',
     'rikku',
     'samus',
+    'sentry',
     'slippy',
     'squawks',
     'stout',
@@ -2627,7 +2628,9 @@ def GetConfig():
   _AddGroupConfig(
       'kunimitsu', 'kunimitsu', (
           'lars',
+          'sentry',
       ),
+      important=False,
   )
 
   # Factory and Firmware releases much inherit from these classes.
@@ -2730,6 +2733,7 @@ def GetConfig():
       'reks',
       'rikku',
       'samus',
+      'sentry',
       'slippy',
       'smaug',
       'squawks',
