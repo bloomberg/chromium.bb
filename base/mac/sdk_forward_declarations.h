@@ -292,6 +292,7 @@ BASE_EXPORT extern NSString* const NSAppearanceNameVibrantDark;
     MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7
 
 @interface NSEvent (LionSDK)
+@property(readonly) NSInteger stage;
 + (BOOL)isSwipeTrackingFromScrollEventsEnabled;
 - (NSEventPhase)momentumPhase;
 - (NSEventPhase)phase;

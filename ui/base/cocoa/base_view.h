@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/mac/sdk_forward_declarations.h"
 #import "ui/base/cocoa/tracking_area.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/gfx/geometry/rect.h"
@@ -28,14 +29,18 @@ UI_BASE_EXPORT
   ui::ScopedCrTrackingArea trackingArea_;
   BOOL dragging_;
   base::scoped_nsobject<NSEvent> pendingExitEvent_;
+  NSInteger pressureEventStage_;
 }
 
-// Override these methods (mouseEvent, keyEvent) in a subclass.
+// Override these methods (mouseEvent, keyEvent, forceTouchEvent) in a
+// subclass.
 - (void)mouseEvent:(NSEvent *)theEvent;
 
 // keyEvent should return kEventHandled if it handled the event, or
 // kEventNotHandled if it should be forwarded to BaseView's super class.
 - (EventHandled)keyEvent:(NSEvent *)theEvent;
+
+- (void)forceTouchEvent:(NSEvent*)theEvent;
 
 // Useful rect conversions (doing coordinate flipping)
 - (gfx::Rect)flipNSRectToRect:(NSRect)rect;

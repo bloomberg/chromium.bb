@@ -78,6 +78,10 @@ NSString* kSelectionDirection = @"Chromium.kSelectionDirection";
   return kEventNotHandled;
 }
 
+- (void)forceTouchEvent:(NSEvent*)theEvent {
+  // This method left intentionally blank.
+}
+
 - (void)mouseDown:(NSEvent*)theEvent {
   dragging_ = YES;
   [self mouseEvent:theEvent];
@@ -164,6 +168,19 @@ NSString* kSelectionDirection = @"Chromium.kSelectionDirection";
 - (void)keyUp:(NSEvent*)theEvent {
   if ([self keyEvent:theEvent] != kEventHandled)
     [super keyUp:theEvent];
+}
+
+- (void)pressureChangeWithEvent:(NSEvent*)theEvent {
+  NSInteger newStage = [theEvent stage];
+  if (pressureEventStage_ == newStage)
+    return;
+
+  // Call the force touch event when the stage reaches 2, which is the value
+  // for force touch.
+  if (newStage == 2) {
+    [self forceTouchEvent:theEvent];
+  }
+  pressureEventStage_ = newStage;
 }
 
 - (void)flagsChanged:(NSEvent*)theEvent {
