@@ -2525,13 +2525,11 @@ void CopySubTextureCHROMIUM(GLenum source_id,
   }
 }
 
-void CompressedCopyTextureCHROMIUM(GLenum target,
-                                   GLenum source_id,
-                                   GLenum dest_id) {
+void CompressedCopyTextureCHROMIUM(GLenum source_id, GLenum dest_id) {
   gles2::cmds::CompressedCopyTextureCHROMIUM* c =
       GetCmdSpace<gles2::cmds::CompressedCopyTextureCHROMIUM>();
   if (c) {
-    c->Init(target, source_id, dest_id);
+    c->Init(source_id, dest_id);
   }
 }
 

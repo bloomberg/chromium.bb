@@ -2836,9 +2836,9 @@ TEST_F(GLES2ImplementationTest, CompressedCopyTextureCHROMIUM) {
     cmds::CompressedCopyTextureCHROMIUM cmd;
   };
   Cmds expected;
-  expected.cmd.Init(1, 2, 3);
+  expected.cmd.Init(1, 2);
 
-  gl_->CompressedCopyTextureCHROMIUM(1, 2, 3);
+  gl_->CompressedCopyTextureCHROMIUM(1, 2);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 

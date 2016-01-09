@@ -706,8 +706,7 @@ virtual void CopySubTextureCHROMIUM(GLenum source_id,
                                     GLboolean unpack_flip_y,
                                     GLboolean unpack_premultiply_alpha,
                                     GLboolean unpack_unmultiply_alpha) = 0;
-virtual void CompressedCopyTextureCHROMIUM(GLenum target,
-                                           GLenum source_id,
+virtual void CompressedCopyTextureCHROMIUM(GLenum source_id,
                                            GLenum dest_id) = 0;
 virtual void DrawArraysInstancedANGLE(GLenum mode,
                                       GLint first,

@@ -39,8 +39,7 @@ New Procedures and Functions
 
     The command
 
-        void glCompressedCopyTextureCHROMIUM (GLenum target, GLenum source_id,
-                                              GLenum dest_id)
+        void glCompressedCopyTextureCHROMIUM (GLenum source_id, GLenum dest_id)
 
     Copies the contents of a compressed texture referred to by <source_id> to
     <dest_id> texture.
@@ -55,8 +54,6 @@ New Procedures and Functions
 
     The destination texture will be created or replaced with the same internal
     format as the source texture.
-
-    <target> uses the same parameters as TexImage2D.
 
     INVALID_OPERATION is generated if internal format of source texture is not
     one of the valid formats described above.
@@ -88,3 +85,4 @@ Revision History
     15/6/2015    Documented the extension.
     5/8/2015     Added glCompressedCopySubTextureCHROMIUM.
     1/6/2016     Remove glCompressedCopySubTextureCHROMIUM.
+    1/8/2016     Remove <target> argument.

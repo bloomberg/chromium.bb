@@ -1971,12 +1971,11 @@ void GLES2TraceImplementation::CopySubTextureCHROMIUM(
                               unpack_unmultiply_alpha);
 }
 
-void GLES2TraceImplementation::CompressedCopyTextureCHROMIUM(GLenum target,
-                                                             GLenum source_id,
+void GLES2TraceImplementation::CompressedCopyTextureCHROMIUM(GLenum source_id,
                                                              GLenum dest_id) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
                                 "GLES2Trace::CompressedCopyTextureCHROMIUM");
-  gl_->CompressedCopyTextureCHROMIUM(target, source_id, dest_id);
+  gl_->CompressedCopyTextureCHROMIUM(source_id, dest_id);
 }
 
 void GLES2TraceImplementation::DrawArraysInstancedANGLE(GLenum mode,

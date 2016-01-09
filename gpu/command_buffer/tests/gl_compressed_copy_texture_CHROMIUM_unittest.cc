@@ -123,7 +123,7 @@ TEST_F(GLCompressedCopyTextureCHROMIUMTest, Basic) {
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glCompressedCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1]);
+  glCompressedCopyTextureCHROMIUM(textures_[0], textures_[1]);
   EXPECT_TRUE(glGetError() == GL_NO_ERROR);
 
   // Load shader program.
@@ -209,7 +209,7 @@ TEST_F(GLCompressedCopyTextureCHROMIUMTest, InternalFormat) {
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glCompressedCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1]);
+    glCompressedCopyTextureCHROMIUM(textures_[0], textures_[1]);
     EXPECT_TRUE(GL_NO_ERROR == glGetError());
   }
 }
@@ -239,7 +239,7 @@ TEST_F(GLCompressedCopyTextureCHROMIUMTest, InternalFormatNotSupported) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
   // Check that the GL_RGBA format reports an error.
-  glCompressedCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1]);
+  glCompressedCopyTextureCHROMIUM(textures_[0], textures_[1]);
   EXPECT_TRUE(GL_INVALID_OPERATION == glGetError());
 }
 
@@ -266,16 +266,16 @@ TEST_F(GLCompressedCopyTextureCHROMIUMTest, InvalidTextureIds) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-  glCompressedCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], 99993);
+  glCompressedCopyTextureCHROMIUM(textures_[0], 99993);
   EXPECT_TRUE(glGetError() == GL_INVALID_VALUE);
 
-  glCompressedCopyTextureCHROMIUM(GL_TEXTURE_2D, 99994, textures_[1]);
+  glCompressedCopyTextureCHROMIUM(99994, textures_[1]);
   EXPECT_TRUE(glGetError() == GL_INVALID_VALUE);
 
-  glCompressedCopyTextureCHROMIUM(GL_TEXTURE_2D, 99995, 99996);
+  glCompressedCopyTextureCHROMIUM(99995, 99996);
   EXPECT_TRUE(glGetError() == GL_INVALID_VALUE);
 
-  glCompressedCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1]);
+  glCompressedCopyTextureCHROMIUM(textures_[0], textures_[1]);
   EXPECT_TRUE(glGetError() == GL_NO_ERROR);
 }
 
@@ -316,7 +316,7 @@ TEST_F(GLCompressedCopyTextureCHROMIUMTest, BasicStatePreservation) {
     glDepthMask(setting);
 
     glActiveTexture(GL_TEXTURE1 + x);
-    glCompressedCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1]);
+    glCompressedCopyTextureCHROMIUM(textures_[0], textures_[1]);
     EXPECT_TRUE(glGetError() == GL_NO_ERROR);
 
     EXPECT_EQ(setting, glIsEnabled(GL_DEPTH_TEST));
@@ -378,7 +378,7 @@ TEST_F(GLCompressedCopyTextureCHROMIUMTest, TextureStatePreserved) {
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, texture_ids[1]);
 
-  glCompressedCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1]);
+  glCompressedCopyTextureCHROMIUM(textures_[0], textures_[1]);
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
   GLint active_texture = 0;

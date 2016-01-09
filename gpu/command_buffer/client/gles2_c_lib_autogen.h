@@ -1361,11 +1361,9 @@ GLES2CopySubTextureCHROMIUM(GLenum source_id,
       source_id, dest_id, xoffset, yoffset, x, y, width, height, unpack_flip_y,
       unpack_premultiply_alpha, unpack_unmultiply_alpha);
 }
-void GL_APIENTRY GLES2CompressedCopyTextureCHROMIUM(GLenum target,
-                                                    GLenum source_id,
+void GL_APIENTRY GLES2CompressedCopyTextureCHROMIUM(GLenum source_id,
                                                     GLenum dest_id) {
-  gles2::GetGLContext()->CompressedCopyTextureCHROMIUM(target, source_id,
-                                                       dest_id);
+  gles2::GetGLContext()->CompressedCopyTextureCHROMIUM(source_id, dest_id);
 }
 void GL_APIENTRY GLES2DrawArraysInstancedANGLE(GLenum mode,
                                                GLint first,

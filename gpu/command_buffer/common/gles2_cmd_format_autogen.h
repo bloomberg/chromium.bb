@@ -12504,34 +12504,30 @@ struct CompressedCopyTextureCHROMIUM {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(GLenum _target, GLenum _source_id, GLenum _dest_id) {
+  void Init(GLenum _source_id, GLenum _dest_id) {
     SetHeader();
-    target = _target;
     source_id = _source_id;
     dest_id = _dest_id;
   }
 
-  void* Set(void* cmd, GLenum _target, GLenum _source_id, GLenum _dest_id) {
-    static_cast<ValueType*>(cmd)->Init(_target, _source_id, _dest_id);
+  void* Set(void* cmd, GLenum _source_id, GLenum _dest_id) {
+    static_cast<ValueType*>(cmd)->Init(_source_id, _dest_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
-  uint32_t target;
   uint32_t source_id;
   uint32_t dest_id;
 };
 
-static_assert(sizeof(CompressedCopyTextureCHROMIUM) == 16,
-              "size of CompressedCopyTextureCHROMIUM should be 16");
+static_assert(sizeof(CompressedCopyTextureCHROMIUM) == 12,
+              "size of CompressedCopyTextureCHROMIUM should be 12");
 static_assert(offsetof(CompressedCopyTextureCHROMIUM, header) == 0,
               "offset of CompressedCopyTextureCHROMIUM header should be 0");
-static_assert(offsetof(CompressedCopyTextureCHROMIUM, target) == 4,
-              "offset of CompressedCopyTextureCHROMIUM target should be 4");
-static_assert(offsetof(CompressedCopyTextureCHROMIUM, source_id) == 8,
-              "offset of CompressedCopyTextureCHROMIUM source_id should be 8");
-static_assert(offsetof(CompressedCopyTextureCHROMIUM, dest_id) == 12,
-              "offset of CompressedCopyTextureCHROMIUM dest_id should be 12");
+static_assert(offsetof(CompressedCopyTextureCHROMIUM, source_id) == 4,
+              "offset of CompressedCopyTextureCHROMIUM source_id should be 4");
+static_assert(offsetof(CompressedCopyTextureCHROMIUM, dest_id) == 8,
+              "offset of CompressedCopyTextureCHROMIUM dest_id should be 8");
 
 struct DrawArraysInstancedANGLE {
   typedef DrawArraysInstancedANGLE ValueType;

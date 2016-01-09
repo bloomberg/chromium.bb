@@ -3228,15 +3228,13 @@ void GLES2Implementation::CopySubTextureCHROMIUM(
   CheckGLError();
 }
 
-void GLES2Implementation::CompressedCopyTextureCHROMIUM(GLenum target,
-                                                        GLenum source_id,
+void GLES2Implementation::CompressedCopyTextureCHROMIUM(GLenum source_id,
                                                         GLenum dest_id) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glCompressedCopyTextureCHROMIUM("
-                     << GLES2Util::GetStringEnum(target) << ", "
                      << GLES2Util::GetStringEnum(source_id) << ", "
                      << GLES2Util::GetStringEnum(dest_id) << ")");
-  helper_->CompressedCopyTextureCHROMIUM(target, source_id, dest_id);
+  helper_->CompressedCopyTextureCHROMIUM(source_id, dest_id);
   CheckGLError();
 }
 

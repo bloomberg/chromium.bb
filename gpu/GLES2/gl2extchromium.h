@@ -416,10 +416,10 @@ typedef void(GL_APIENTRYP PFNGLCOPYSUBTEXTURECHROMIUMPROC)(
 #define GL_CHROMIUM_compressed_copy_texture 1
 #ifdef GL_GLEXT_PROTOTYPES
 GL_APICALL void GL_APIENTRY glCompressedCopyTextureCHROMIUM(
-    GLenum target, GLenum source_id, GLenum dest_id);
+    GLenum source_id, GLenum dest_id);
 #endif
 typedef void(GL_APIENTRYP PFNGLCOMPRESSEDCOPYTEXTURECHROMIUMPROC)(
-    GLenum target, GLenum source_id, GLenum dest_id);
+    GLenum source_id, GLenum dest_id);
 #endif  /* GL_CHROMIUM_compressed_copy_texture */
 
 /* GL_CHROMIUM_lose_context */

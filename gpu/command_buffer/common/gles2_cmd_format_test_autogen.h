@@ -4188,14 +4188,13 @@ TEST_F(GLES2FormatTest, CopySubTextureCHROMIUM) {
 TEST_F(GLES2FormatTest, CompressedCopyTextureCHROMIUM) {
   cmds::CompressedCopyTextureCHROMIUM& cmd =
       *GetBufferAs<cmds::CompressedCopyTextureCHROMIUM>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11),
-                           static_cast<GLenum>(12), static_cast<GLenum>(13));
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLenum>(12));
   EXPECT_EQ(static_cast<uint32_t>(cmds::CompressedCopyTextureCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
-  EXPECT_EQ(static_cast<GLenum>(12), cmd.source_id);
-  EXPECT_EQ(static_cast<GLenum>(13), cmd.dest_id);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.source_id);
+  EXPECT_EQ(static_cast<GLenum>(12), cmd.dest_id);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

@@ -1517,11 +1517,10 @@ void MojoGLES2Impl::CopySubTextureCHROMIUM(GLenum source_id,
                            height, unpack_flip_y, unpack_premultiply_alpha,
                            unpack_unmultiply_alpha);
 }
-void MojoGLES2Impl::CompressedCopyTextureCHROMIUM(GLenum target,
-                                                  GLenum source_id,
+void MojoGLES2Impl::CompressedCopyTextureCHROMIUM(GLenum source_id,
                                                   GLenum dest_id) {
   MojoGLES2MakeCurrent(context_);
-  glCompressedCopyTextureCHROMIUM(target, source_id, dest_id);
+  glCompressedCopyTextureCHROMIUM(source_id, dest_id);
 }
 void MojoGLES2Impl::DrawArraysInstancedANGLE(GLenum mode,
                                              GLint first,

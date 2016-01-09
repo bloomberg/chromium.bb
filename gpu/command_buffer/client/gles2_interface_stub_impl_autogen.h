@@ -931,8 +931,7 @@ void GLES2InterfaceStub::CopySubTextureCHROMIUM(
     GLboolean /* unpack_flip_y */,
     GLboolean /* unpack_premultiply_alpha */,
     GLboolean /* unpack_unmultiply_alpha */) {}
-void GLES2InterfaceStub::CompressedCopyTextureCHROMIUM(GLenum /* target */,
-                                                       GLenum /* source_id */,
+void GLES2InterfaceStub::CompressedCopyTextureCHROMIUM(GLenum /* source_id */,
                                                        GLenum /* dest_id */) {}
 void GLES2InterfaceStub::DrawArraysInstancedANGLE(GLenum /* mode */,
                                                   GLint /* first */,

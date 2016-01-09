@@ -223,8 +223,8 @@ VISIT_GL_CALL(CopySubTextureCHROMIUM,
                unpack_unmultiply_alpha))
 VISIT_GL_CALL(CompressedCopyTextureCHROMIUM,
               void,
-              (GLenum target, GLenum source_id, GLenum dest_id),
-              (target, source_id, dest_id))
+              (GLenum source_id, GLenum dest_id),
+              (source_id, dest_id))
 VISIT_GL_CALL(DrawArraysInstancedANGLE,
               void,
               (GLenum mode, GLint first, GLsizei count, GLsizei primcount),
