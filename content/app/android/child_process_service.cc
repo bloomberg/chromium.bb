@@ -123,6 +123,14 @@ class SurfaceTextureManagerImpl : public SurfaceTextureManager,
     return native_window;
   }
 
+  // Overridden from GpuSurfaceLookup:
+  gfx::ScopedJavaSurface AcquireJavaSurface(int surface_id) override {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    return gfx::ScopedJavaSurface(
+        content::Java_ChildProcessService_getViewSurface(env, service_.obj(),
+                                                         surface_id));
+  }
+
  private:
   // The instance of org.chromium.content.app.ChildProcessService.
   base::android::ScopedJavaGlobalRef<jobject> service_;
