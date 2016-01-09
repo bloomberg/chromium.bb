@@ -16,16 +16,18 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/multi_animation.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme.h"
 
-#if !defined(OS_MACOSX)
+#if defined(OS_MACOSX)
+#include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
+#else
 #include "ui/gfx/paint_vector_icon.h"
 #endif
 
@@ -167,23 +169,13 @@ TabMediaState GetTabMediaStateForContents(content::WebContents* contents) {
 
 gfx::Image GetTabMediaIndicatorImage(TabMediaState media_state,
                                      SkColor button_color) {
+#if defined(OS_MACOSX)
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   switch (media_state) {
-#if !defined(OS_MACOSX)
-    case TAB_MEDIA_STATE_AUDIO_PLAYING:
-    case TAB_MEDIA_STATE_AUDIO_MUTING: {
-      return gfx::Image(
-          gfx::CreateVectorIcon(media_state == TAB_MEDIA_STATE_AUDIO_PLAYING
-                                    ? gfx::VectorIconId::TAB_AUDIO
-                                    : gfx::VectorIconId::TAB_AUDIO_MUTING,
-                                16, button_color));
-    }
-#else
     case TAB_MEDIA_STATE_AUDIO_PLAYING:
       return rb->GetNativeImageNamed(IDR_TAB_AUDIO_INDICATOR);
     case TAB_MEDIA_STATE_AUDIO_MUTING:
       return rb->GetNativeImageNamed(IDR_TAB_AUDIO_MUTING_INDICATOR);
-#endif
     case TAB_MEDIA_STATE_RECORDING:
       return rb->GetNativeImageNamed(IDR_TAB_RECORDING_INDICATOR);
     case TAB_MEDIA_STATE_CAPTURING:
@@ -191,6 +183,27 @@ gfx::Image GetTabMediaIndicatorImage(TabMediaState media_state,
     case TAB_MEDIA_STATE_NONE:
       break;
   }
+#else
+  gfx::VectorIconId icon_id = gfx::VectorIconId::VECTOR_ICON_NONE;
+  switch (media_state) {
+    case TAB_MEDIA_STATE_AUDIO_PLAYING:
+      icon_id = gfx::VectorIconId::TAB_AUDIO;
+      break;
+    case TAB_MEDIA_STATE_AUDIO_MUTING:
+      icon_id = gfx::VectorIconId::TAB_AUDIO_MUTING;
+      break;
+    case TAB_MEDIA_STATE_RECORDING:
+      icon_id = gfx::VectorIconId::TAB_MEDIA_RECORDING;
+      break;
+    case TAB_MEDIA_STATE_CAPTURING:
+      icon_id = gfx::VectorIconId::TAB_MEDIA_CAPTURING;
+      break;
+    case TAB_MEDIA_STATE_NONE:
+      break;
+  }
+  if (icon_id != gfx::VectorIconId::VECTOR_ICON_NONE)
+    return gfx::Image(gfx::CreateVectorIcon(icon_id, 16, button_color));
+#endif
   NOTREACHED();
   return gfx::Image();
 }
