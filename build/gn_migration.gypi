@@ -367,7 +367,6 @@
             '../third_party/codesighs/codesighs.gyp:maptsvdifftool',
             '../third_party/pdfium/samples/samples.gyp:pdfium_diff',
             '../third_party/pdfium/samples/samples.gyp:pdfium_test',
-            '../tools/gn/gn.gyp:generate_test_gn_data',
             '../tools/gn/gn.gyp:gn',
             '../tools/gn/gn.gyp:gn_unittests',
             '../tools/perf/clear_system_cache/clear_system_cache.gyp:clear_system_cache',

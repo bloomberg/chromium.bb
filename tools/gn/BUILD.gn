@@ -312,13 +312,3 @@ test("gn_unittests") {
     "//testing/gtest",
   ]
 }
-
-executable("generate_test_gn_data") {
-  sources = [
-    "generate_test_gn_data.cc",
-  ]
-  deps = [
-    "//base",
-    "//build/config/sanitizers:deps",
-  ]
-}

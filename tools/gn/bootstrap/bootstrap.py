@@ -152,7 +152,7 @@ def write_ninja(path, options):
       continue
     if name.endswith('_unittest.cc'):
       continue
-    if name in ['generate_test_gn_data.cc', 'run_all_unittests.cc']:
+    if name == 'run_all_unittests.cc':
       continue
     full_path = os.path.join(GN_ROOT, name)
     static_libraries['gn']['sources'].append(
