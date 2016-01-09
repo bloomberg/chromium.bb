@@ -59245,6 +59245,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Checksum does not exist"/>
   <int value="2" label="Checksum read error"/>
   <int value="3" label="Checksum mismatch"/>
+  <int value="4" label="Checksum out of sync"/>
 </enum>
 
 <enum name="CryptohomeError" type="int">
