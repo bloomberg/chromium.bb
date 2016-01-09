@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/thread_task_runner_handle.h"
+#include "cc/layers/append_quads_data.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/empty_content_layer_client.h"
 #include "cc/layers/layer_settings.h"
@@ -15,10 +16,12 @@
 #include "cc/proto/layer.pb.h"
 #include "cc/test/fake_display_list_recording_source.h"
 #include "cc/test/fake_layer_tree_host.h"
+#include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_proxy.h"
 #include "cc/test/layer_tree_settings_for_testing.h"
+#include "cc/test/skia_common.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -198,6 +201,85 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
   EXPECT_TRUE(layer_impl->bounds() == gfx::Size(0, 0));
   EXPECT_EQ(gfx::Size(), layer_impl->raster_source()->GetSize());
   EXPECT_FALSE(layer_impl->raster_source()->HasRecordings());
+}
+
+TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
+  gfx::Size layer_size(50, 50);
+  FakeContentLayerClient client;
+  client.set_bounds(layer_size);
+  skia::RefPtr<SkImage> image = CreateDiscardableImage(layer_size);
+  client.add_draw_image(image.get(), gfx::Point(), SkPaint());
+  scoped_refptr<PictureLayer> layer =
+      PictureLayer::Create(LayerSettings(), &client);
+  layer->SetBounds(gfx::Size(10, 10));
+
+  FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
+  TestTaskGraphRunner task_graph_runner;
+  scoped_ptr<FakeLayerTreeHost> host =
+      FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
+  host->SetRootLayer(layer);
+  layer->SetIsDrawable(true);
+  layer->SavePaintProperties();
+  layer->Update();
+
+  EXPECT_EQ(0, host->source_frame_number());
+  host->CommitComplete();
+  EXPECT_EQ(1, host->source_frame_number());
+
+  layer->SavePaintProperties();
+  layer->Update();
+
+  FakeImplTaskRunnerProvider impl_task_runner_provider;
+
+  TestSharedBitmapManager shared_bitmap_manager;
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d());
+  LayerTreeSettings layer_tree_settings = LayerTreeSettingsForTesting();
+  layer_tree_settings.image_decode_tasks_enabled = true;
+  FakeLayerTreeHostImpl host_impl(layer_tree_settings,
+                                  &impl_task_runner_provider,
+                                  &shared_bitmap_manager, &task_graph_runner);
+  host_impl.SetVisible(true);
+  EXPECT_TRUE(host_impl.InitializeRenderer(output_surface.get()));
+
+  host_impl.CreatePendingTree();
+  host_impl.pending_tree()->SetRootLayer(
+      FakePictureLayerImpl::Create(host_impl.pending_tree(), 1));
+
+  FakePictureLayerImpl* layer_impl = static_cast<FakePictureLayerImpl*>(
+      host_impl.pending_tree()->root_layer());
+
+  layer->PushPropertiesTo(layer_impl);
+
+  host->CommitComplete();
+  EXPECT_EQ(2, host->source_frame_number());
+
+  host_impl.ActivateSyncTree();
+
+  // By updating the draw proprties on the active tree, we will set the viewport
+  // rect for tile priorities to something non-empty.
+  const bool can_use_lcd_text = false;
+  host_impl.active_tree()->property_trees()->needs_rebuild = true;
+  host_impl.active_tree()->BuildPropertyTreesForTesting();
+  host_impl.active_tree()->UpdateDrawProperties(can_use_lcd_text);
+
+  layer->SetBounds(gfx::Size(11, 11));
+  layer->SavePaintProperties();
+
+  host_impl.CreatePendingTree();
+  layer_impl = static_cast<FakePictureLayerImpl*>(
+      host_impl.pending_tree()->root_layer());
+
+  // We should now have invalid contents and should therefore clear the
+  // recording source.
+  layer->PushPropertiesTo(layer_impl);
+
+  host_impl.ActivateSyncTree();
+
+  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  AppendQuadsData data;
+  host_impl.active_tree()->root_layer()->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
+  host_impl.active_tree()->root_layer()->AppendQuads(render_pass.get(), &data);
+  host_impl.active_tree()->root_layer()->DidDraw(nullptr);
 }
 
 TEST(PictureLayerTest, SuitableForGpuRasterization) {
