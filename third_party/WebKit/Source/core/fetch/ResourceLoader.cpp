@@ -515,8 +515,15 @@ void ResourceLoader::requestSynchronously()
         return;
     RefPtr<ResourceLoadInfo> resourceLoadInfo = responseOut.toResourceResponse().resourceLoadInfo();
     int64_t encodedDataLength = resourceLoadInfo ? resourceLoadInfo->encodedDataLength : WebURLLoaderClient::kUnknownEncodedDataLength;
-    m_fetcher->didReceiveData(m_resource, dataOut.data(), dataOut.size(), encodedDataLength);
-    m_resource->setResourceBuffer(dataOut);
+
+    // Follow the async case convention of not calling didReceiveData or
+    // appending data to m_resource if the response body is empty. Copying the
+    // empty buffer is a noop in most cases, but is destructive in the case of
+    // a 304, where it will overwrite the cached data we should be reusing.
+    if (dataOut.size()) {
+        m_fetcher->didReceiveData(m_resource, dataOut.data(), dataOut.size(), encodedDataLength);
+        m_resource->setResourceBuffer(dataOut);
+    }
     didFinishLoading(0, monotonicallyIncreasingTime(), encodedDataLength);
 }
 
