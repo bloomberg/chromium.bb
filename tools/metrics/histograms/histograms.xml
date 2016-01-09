@@ -49407,6 +49407,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Data type that first requests sync initialization.</summary>
 </histogram>
 
+<histogram name="Sync.StopSource" enum="SyncStopSource">
+  <owner>maxbogue@chromium.org</owner>
+  <summary>
+    Tracks how sync was turned off. Logged every time sync is told to stop
+    permanently by the user (e.g. it won't come back on by itself).
+  </summary>
+</histogram>
+
 <histogram name="Sync.SyncAuthError" enum="SyncAuthError">
   <owner>zea@chromium.org</owner>
   <summary>
@@ -78798,6 +78806,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="ABORTED"/>
   <int value="6" label="UNRECOVERABLE_ERROR"/>
   <int value="7" label="NEEDS_CRYPTO"/>
+</enum>
+
+<enum name="SyncStopSource" type="int">
+  <int value="0" label="Profile destruction"/>
+  <int value="1" label="Sign out"/>
+  <int value="2" label="Birthday error"/>
+  <int value="3" label="Chrome sync settings"/>
+  <int value="4" label="Android Chrome sync setting"/>
+  <int value="5" label="Android master sync setting"/>
 </enum>
 
 <enum name="SyncUnrecoverableErrorReason" type="int">

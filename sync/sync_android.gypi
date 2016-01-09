@@ -15,6 +15,7 @@
           },
           'dependencies': [
             'model_type_java',
+            'stop_source_java',
             'sync_jni_headers',
             '../base/base.gyp:base_java',
             '../net/net.gyp:net_java',
@@ -35,12 +36,20 @@
           },
           'includes': [ '../build/jni_generator.gypi' ],
         },
+        # GN: //sync/android:java_enums
         {
-          # GN: //chrome/android:chrome_android_java_enums_srcjar
           'target_name': 'model_type_java',
           'type': 'none',
           'variables': {
             'source_file': 'internal_api/public/base/model_type.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
+        },
+        {
+          'target_name': 'stop_source_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'internal_api/public/base/stop_source.h',
           },
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },

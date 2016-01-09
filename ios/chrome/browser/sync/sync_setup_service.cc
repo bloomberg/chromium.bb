@@ -7,6 +7,7 @@
 #include <stdio.h>
 
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "components/sync_driver/sync_service.h"
@@ -14,6 +15,7 @@
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 #include "net/base/network_change_notifier.h"
+#include "sync/internal_api/public/base/stop_source.h"
 #include "sync/protocol/sync_protocol_error.h"
 
 namespace {
@@ -190,8 +192,11 @@ bool SyncSetupService::HasUncommittedChanges() {
 void SyncSetupService::SetSyncEnabledWithoutChangingDatatypes(
     bool sync_enabled) {
   sync_service_->SetSetupInProgress(true);
-  if (sync_enabled)
+  if (sync_enabled) {
     sync_service_->RequestStart();
-  else
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Sync.StopSource", syncer::CHROME_SYNC_SETTINGS,
+                              syncer::STOP_SOURCE_LIMIT);
     sync_service_->RequestStop(sync_driver::SyncService::KEEP_DATA);
+  }
 }

@@ -68,6 +68,7 @@
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "sync/api/sync_error.h"
+#include "sync/internal_api/public/base/stop_source.h"
 #include "sync/internal_api/public/configure_reason.h"
 #include "sync/internal_api/public/http_bridge_network_resources.h"
 #include "sync/internal_api/public/network_resources.h"
@@ -1367,6 +1368,10 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
       backup_rollback_controller_->OnRollbackReceived();
       // Fall through to shutdown backend and sign user out.
     case syncer::DISABLE_SYNC_ON_CLIENT:
+      if (error.error_type == syncer::NOT_MY_BIRTHDAY) {
+        UMA_HISTOGRAM_ENUMERATION("Sync.StopSource", syncer::BIRTHDAY_ERROR,
+                                  syncer::STOP_SOURCE_LIMIT);
+      }
       RequestStop(CLEAR_DATA);
 #if !defined(OS_CHROMEOS)
       // On desktop Chrome, sign out the user after a dashboard clear.
@@ -2251,6 +2256,8 @@ void ProfileSyncService::GoogleSigninSucceeded(const std::string& account_id,
 void ProfileSyncService::GoogleSignedOut(const std::string& account_id,
                                          const std::string& username) {
   sync_disabled_by_admin_ = false;
+  UMA_HISTOGRAM_ENUMERATION("Sync.StopSource", syncer::SIGN_OUT,
+                            syncer::STOP_SOURCE_LIMIT);
   RequestStop(CLEAR_DATA);
 
   if (sync_driver::BackupRollbackController::IsBackupEnabled()) {

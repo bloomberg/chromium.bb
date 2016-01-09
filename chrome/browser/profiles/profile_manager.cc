@@ -86,6 +86,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job.h"
+#include "sync/internal_api/public/base/stop_source.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(ENABLE_EXTENSIONS)
@@ -1291,6 +1292,15 @@ void ProfileManager::FinishDeletingProfile(
     // Disable sync for doomed profile.
     if (ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(
         profile)) {
+      ProfileSyncService* sync_service =
+          ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+      if (sync_service->IsSyncRequested()) {
+        // Record sync stopped by profile destruction if it was on before.
+        UMA_HISTOGRAM_ENUMERATION("Sync.StopSource",
+                                  syncer::PROFILE_DESTRUCTION,
+                                  syncer::STOP_SOURCE_LIMIT);
+      }
+      // Ensure data is cleared even if sync was already off.
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(
           profile)->RequestStop(ProfileSyncService::CLEAR_DATA);
     }

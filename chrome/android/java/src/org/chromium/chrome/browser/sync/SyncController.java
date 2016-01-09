@@ -13,6 +13,7 @@ import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
@@ -23,6 +24,7 @@ import org.chromium.chrome.browser.sync.ui.PassphraseActivity;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.ModelType;
 import org.chromium.sync.PassphraseType;
+import org.chromium.sync.StopSource;
 import org.chromium.sync.signin.ChromeSigninController;
 
 import javax.annotation.Nullable;
@@ -142,6 +144,13 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         if (isSyncEnabled) {
             mProfileSyncService.requestStart();
         } else {
+            if (AndroidSyncSettings.isMasterSyncEnabled(mContext)) {
+                RecordHistogram.recordEnumeratedHistogram("Sync.StopSource",
+                        StopSource.ANDROID_CHROME_SYNC, StopSource.STOP_SOURCE_LIMIT);
+            } else {
+                RecordHistogram.recordEnumeratedHistogram("Sync.StopSource",
+                        StopSource.ANDROID_MASTER_SYNC, StopSource.STOP_SOURCE_LIMIT);
+            }
             mProfileSyncService.requestStop();
         }
     }

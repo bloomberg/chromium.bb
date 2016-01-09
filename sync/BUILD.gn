@@ -206,6 +206,7 @@ source_set("sync_core") {
     "internal_api/public/base/ordinal.h",
     "internal_api/public/base/progress_marker_map.cc",
     "internal_api/public/base/progress_marker_map.h",
+    "internal_api/public/base/stop_source.h",
     "internal_api/public/base/unique_position.cc",
     "internal_api/public/base/unique_position.h",
     "internal_api/public/base_node.h",

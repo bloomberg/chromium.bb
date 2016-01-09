@@ -167,6 +167,7 @@ include_rules = [
   "+skia/ext",
   "+sync/api",  # Sync API files.
   "+sync/internal_api/public/attachments",  # Needed for tests.
+  "+sync/internal_api/public/base",
   "+sync/protocol",  # Sync protobuf files.
   "+sync/util",  # Sync utilities like GetSessionName.
   "+syzygy/kasko",

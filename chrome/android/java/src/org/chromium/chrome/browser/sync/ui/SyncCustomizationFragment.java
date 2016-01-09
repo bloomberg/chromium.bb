@@ -26,6 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.childaccounts.ChildAccountService;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
@@ -34,6 +35,7 @@ import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.ModelType;
 import org.chromium.sync.PassphraseType;
+import org.chromium.sync.StopSource;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -153,7 +155,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
                 if ((boolean) newValue) {
                     mProfileSyncService.requestStart();
                 } else {
-                    mProfileSyncService.requestStop();
+                    stopSync();
                 }
                 // Must be done asynchronously because the switch state isn't updated
                 // until after this function exits.
@@ -560,10 +562,18 @@ public class SyncCustomizationFragment extends PreferenceFragment
                 || !canDisableSync()) {
             return false;
         }
-        mProfileSyncService.requestStop();
+        stopSync();
         mSyncSwitchPreference.setChecked(false);
         // setChecked doesn't trigger the callback, so update manually.
         updateSyncStateFromSwitch();
         return true;
+    }
+
+    private void stopSync() {
+        if (mProfileSyncService.isSyncRequested()) {
+            RecordHistogram.recordEnumeratedHistogram("Sync.StopSource",
+                    StopSource.CHROME_SYNC_SETTINGS, StopSource.STOP_SOURCE_LIMIT);
+            mProfileSyncService.requestStop();
+        }
     }
 }

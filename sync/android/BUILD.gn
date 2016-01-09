@@ -37,6 +37,7 @@ android_library("sync_javatests") {
 java_cpp_enum("java_enums") {
   sources = [
     "//sync/internal_api/public/base/model_type.h",
+    "//sync/internal_api/public/base/stop_source.h",
   ]
 }
 
