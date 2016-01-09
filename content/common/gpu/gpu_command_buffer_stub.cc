@@ -960,19 +960,22 @@ bool GpuCommandBufferStub::OnWaitSyncPoint(uint32_t sync_point) {
   TRACE_EVENT_ASYNC_BEGIN1("gpu", "WaitSyncPoint", this, "GpuCommandBufferStub",
                            this);
 
-  scheduler_->SetScheduled(false);
   waiting_for_sync_point_ = true;
   sync_point_manager_->AddSyncPointCallback(
       sync_point,
       base::Bind(&RunOnThread, task_runner_,
                  base::Bind(&GpuCommandBufferStub::OnWaitSyncPointCompleted,
                             this->AsWeakPtr(), sync_point)));
-  return !waiting_for_sync_point_;
+
+  if (!waiting_for_sync_point_)
+    return true;
+
+  scheduler_->SetScheduled(false);
+  return false;
 }
 
 void GpuCommandBufferStub::OnWaitSyncPointCompleted(uint32_t sync_point) {
   DCHECK(waiting_for_sync_point_);
-  DCHECK(!scheduler_->scheduled());
   TRACE_EVENT_ASYNC_END1("gpu", "WaitSyncPoint", this, "GpuCommandBufferStub",
                          this);
   // Old sync points are global and do not have a command buffer ID,
@@ -1078,14 +1081,17 @@ bool GpuCommandBufferStub::OnWaitFenceSync(
 
   TRACE_EVENT_ASYNC_BEGIN1("gpu", "WaitFenceSync", this, "GpuCommandBufferStub",
                            this);
-  scheduler_->SetScheduled(false);
   waiting_for_sync_point_ = true;
   sync_point_client_->WaitNonThreadSafe(
       release_state.get(), release, task_runner_,
       base::Bind(&GpuCommandBufferStub::OnWaitFenceSyncCompleted,
                  this->AsWeakPtr(), namespace_id, command_buffer_id, release));
 
-  return scheduler_->scheduled();
+  if (!waiting_for_sync_point_)
+    return true;
+
+  scheduler_->SetScheduled(false);
+  return false;
 }
 
 void GpuCommandBufferStub::OnWaitFenceSyncCompleted(
@@ -1093,7 +1099,6 @@ void GpuCommandBufferStub::OnWaitFenceSyncCompleted(
     uint64_t command_buffer_id,
     uint64_t release) {
   DCHECK(waiting_for_sync_point_);
-  DCHECK(!scheduler_->scheduled());
   TRACE_EVENT_ASYNC_END1("gpu", "WaitFenceSync", this, "GpuCommandBufferStub",
                          this);
   PullTextureUpdates(namespace_id, command_buffer_id, release);
