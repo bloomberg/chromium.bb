@@ -33,7 +33,8 @@ import subprocess2
 
 ROOT = os.path.abspath(os.path.dirname(__file__))
 
-GIT_EXE = ROOT+'\\git.bat' if sys.platform.startswith('win') else 'git'
+IS_WIN = sys.platform == 'win32'
+GIT_EXE = ROOT+'\\git.bat' if IS_WIN else 'git'
 TEST_MODE = False
 
 FREEZE = 'FREEZE'
@@ -284,11 +285,20 @@ def branch_config(branch, option, default=None):
   return config('branch.%s.%s' % (branch, option), default=default)
 
 
+def config_regexp(pattern):
+  if IS_WIN: # pragma: no cover
+    # this madness is because we call git.bat which calls git.exe which calls
+    # bash.exe (or something to that effect). Each layer divides the number of
+    # ^'s by 2.
+    pattern = pattern.replace('^', '^' * 8)
+  return run('config', '--get-regexp', pattern).splitlines()
+
+
 def branch_config_map(option):
   """Return {branch: <|option| value>} for all branches."""
   try:
     reg = re.compile(r'^branch\.(.*)\.%s$' % option)
-    lines = run('config', '--get-regexp', reg.pattern).splitlines()
+    lines = config_regexp(reg.pattern)
     return {reg.match(k).group(1): v for k, v in (l.split() for l in lines)}
   except subprocess2.CalledProcessError:
     return {}
@@ -553,7 +563,6 @@ def run_with_retcode(*cmd, **kwargs):
   except subprocess2.CalledProcessError as cpe:
     return cpe.returncode
 
-
 def run_stream(*cmd, **kwargs):
   """Runs a git command. Returns stdout as a PIPE (file-like object).
 
@@ -562,6 +571,7 @@ def run_stream(*cmd, **kwargs):
   """
   kwargs.setdefault('stderr', subprocess2.VOID)
   kwargs.setdefault('stdout', subprocess2.PIPE)
+  kwargs.setdefault('shell', False)
   cmd = (GIT_EXE, '-c', 'color.ui=never') + cmd
   proc = subprocess2.Popen(cmd, **kwargs)
   return proc.stdout
@@ -578,6 +588,7 @@ def run_stream_with_retcode(*cmd, **kwargs):
   """
   kwargs.setdefault('stderr', subprocess2.VOID)
   kwargs.setdefault('stdout', subprocess2.PIPE)
+  kwargs.setdefault('shell', False)
   cmd = (GIT_EXE, '-c', 'color.ui=never') + cmd
   try:
     proc = subprocess2.Popen(cmd, **kwargs)
@@ -601,6 +612,7 @@ def run_with_stderr(*cmd, **kwargs):
   kwargs.setdefault('stdin', subprocess2.PIPE)
   kwargs.setdefault('stdout', subprocess2.PIPE)
   kwargs.setdefault('stderr', subprocess2.PIPE)
+  kwargs.setdefault('shell', False)
   autostrip = kwargs.pop('autostrip', True)
   indata = kwargs.pop('indata', None)
 
