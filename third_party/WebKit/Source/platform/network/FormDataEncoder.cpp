@@ -99,15 +99,16 @@ WTF::TextEncoding FormDataEncoder::encodingFromAcceptCharset(const String& accep
     return charset;
 }
 
-// TODO(lukasza): Reuse net::GenerateMimeMultipartBoundary instead.
 Vector<char> FormDataEncoder::generateUniqueBoundaryString()
 {
     Vector<char> boundary;
 
+    // TODO(rsleevi): crbug.com/575779: Follow the spec or fix the spec.
     // The RFC 2046 spec says the alphanumeric characters plus the
     // following characters are legal for boundaries:  '()+_,-./:=?
     // However the following characters, though legal, cause some sites
     // to fail: (),./:=+
+    //
     // Note that our algorithm makes it twice as much likely for 'A' or 'B'
     // to appear in the boundary string, because 0x41 and 0x42 are present in
     // the below array twice.

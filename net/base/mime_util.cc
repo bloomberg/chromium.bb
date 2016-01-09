@@ -514,6 +514,8 @@ void HashSetToVector(base::hash_set<T>* source, std::vector<T>* target) {
 }
 
 // Characters to be used for mime multipart boundary.
+//
+// TODO(rsleevi): crbug.com/575779: Follow the spec or fix the spec.
 // The RFC 2046 spec says the alphanumeric characters plus the
 // following characters are legal for boundaries:  '()+_,-./:=?
 // However the following characters, though legal, cause some sites
