@@ -34,6 +34,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
+#include "media/base/android/media_codec_util.h"
 #include "media/base/android/media_common_android.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/bind_to_current_loop.h"
@@ -1926,29 +1927,9 @@ void WebMediaPlayerAndroid::enterFullscreen() {
   suppress_deleting_texture_ = false;
 }
 
-// Test whether the path of a URL ends with '.m3u8'.
-static bool IsHLSPath(const GURL& url) {
-  if (!url.SchemeIsHTTPOrHTTPS() && !url.SchemeIsFile())
-    return false;
-
-  std::string path = url.path();
-  return base::EndsWith(path, ".m3u8", base::CompareCase::INSENSITIVE_ASCII);
-}
-
-// Predict whether NuPlayer will use HTTPLiveSource.
-static bool IsHLSURL(const GURL& url) {
-  if (!url.SchemeIsHTTPOrHTTPS() && !url.SchemeIsFile())
-    return false;
-
-  std::string spec = url.spec();
-  if (base::EndsWith(spec, ".m3u8", base::CompareCase::INSENSITIVE_ASCII))
-    return true;
-  return (spec.find("m3u8") != std::string::npos);
-}
-
 bool WebMediaPlayerAndroid::IsHLSStream() const {
   const GURL& url = redirected_url_.is_empty() ? url_ : redirected_url_;
-  return IsHLSURL(url);
+  return media::MediaCodecUtil::IsHLSURL(url);
 }
 
 void WebMediaPlayerAndroid::ReportHLSMetrics() const {
@@ -1963,8 +1944,8 @@ void WebMediaPlayerAndroid::ReportHLSMetrics() const {
   }
 
   // Assuming that |is_hls| is the ground truth, test predictions.
-  bool is_hls_path = IsHLSPath(url_);
-  bool is_hls_url = IsHLSURL(url_);
+  bool is_hls_path = media::MediaCodecUtil::IsHLSPath(url_);
+  bool is_hls_url = media::MediaCodecUtil::IsHLSURL(url_);
   MediaTypePredictionResult result = PREDICTION_RESULT_ALL_INCORRECT;
   if (is_hls_path == is_hls && is_hls_url == is_hls) {
     result = PREDICTION_RESULT_ALL_CORRECT;

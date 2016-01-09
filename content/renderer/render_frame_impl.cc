@@ -200,6 +200,7 @@
 #include "content/renderer/media/android/stream_texture_factory_impl.h"
 #include "content/renderer/media/android/webmediaplayer_android.h"
 #include "content/renderer/media/android/webmediasession_android.h"
+#include "media/base/android/media_codec_util.h"
 #else
 #include "cc/blink/context_provider_web_context.h"
 #include "device/devices_app/public/cpp/constants.h"
@@ -2361,10 +2362,14 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       GetMediaPermission(), initial_cdm);
 
 #if defined(OS_ANDROID)
+  // We must use WMPA in when accelerated video decode is disabled becuase WMPI
+  // is unlikely to have a fallback decoder.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableUnifiedMediaPipeline)) {
-    // TODO(sandersd): This check should be grown to include HLS and blacklist
-    // checks.  http://crbug.com/516765
+          switches::kEnableUnifiedMediaPipeline) ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableAcceleratedVideoDecode) ||
+      !media::MediaCodecUtil::IsMediaCodecAvailable() ||
+      media::MediaCodecUtil::IsHLSPath(url)) {
     return CreateAndroidWebMediaPlayer(client, encrypted_client, params);
   }
 #endif  // defined(OS_ANDROID)
