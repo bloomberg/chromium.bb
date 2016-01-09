@@ -5,3 +5,7 @@
 :host {
   display: block;
 }
+
+paper-radio-group {
+  width: 100%;
+}
