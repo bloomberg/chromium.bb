@@ -1793,8 +1793,8 @@ void ResourceDispatcherHostImpl::OnAudioRenderHostStreamStateChanged(
 // This function is only used for saving feature.
 void ResourceDispatcherHostImpl::BeginSaveFile(const GURL& url,
                                                const Referrer& referrer,
-                                               int save_item_id,
-                                               int save_package_id,
+                                               SaveItemId save_item_id,
+                                               SavePackageId save_package_id,
                                                int child_id,
                                                int render_view_route_id,
                                                int render_frame_route_id,

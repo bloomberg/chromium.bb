@@ -92,7 +92,7 @@ class SaveFileManager : public base::RefCountedThreadSafe<SaveFileManager> {
 
   // Save the specified URL. Called on the UI thread and forwarded to the
   // ResourceDispatcherHostImpl on the IO thread.
-  void SaveURL(int save_item_id,
+  void SaveURL(SaveItemId save_item_id,
                const GURL& url,
                const Referrer& referrer,
                int render_process_host_id,
@@ -105,16 +105,20 @@ class SaveFileManager : public base::RefCountedThreadSafe<SaveFileManager> {
 
   // Notifications sent from the IO thread and run on the file thread:
   void StartSave(SaveFileCreateInfo* info);
-  void UpdateSaveProgress(int save_item_id, net::IOBuffer* data, int size);
-  void SaveFinished(int save_item_id, int save_package_id, bool is_success);
+  void UpdateSaveProgress(SaveItemId save_item_id,
+                          net::IOBuffer* data,
+                          int size);
+  void SaveFinished(SaveItemId save_item_id,
+                    SavePackageId save_package_id,
+                    bool is_success);
 
   // Notifications sent from the UI thread and run on the file thread.
   // Cancel a SaveFile instance which has specified save item id.
-  void CancelSave(int save_item_id);
+  void CancelSave(SaveItemId save_item_id);
 
   // Called on the UI thread to remove a save package from SaveFileManager's
   // tracking map.
-  void RemoveSaveFile(int save_item_id, SavePackage* package);
+  void RemoveSaveFile(SaveItemId save_item_id, SavePackage* package);
 
   // Helper function for deleting specified file.
   void DeleteDirectoryOrFile(const base::FilePath& full_path, bool is_dir);
@@ -122,19 +126,19 @@ class SaveFileManager : public base::RefCountedThreadSafe<SaveFileManager> {
   // Runs on file thread to save a file by copying from file system when
   // original url is using file scheme.
   void SaveLocalFile(const GURL& original_file_url,
-                     int save_item_id,
-                     int save_package_id);
+                     SaveItemId save_item_id,
+                     SavePackageId save_package_id);
 
   // Renames all the successfully saved files.
   void RenameAllFiles(const FinalNamesMap& final_names,
                       const base::FilePath& resource_dir,
                       int render_process_id,
                       int render_frame_routing_id,
-                      int save_package_id);
+                      SavePackageId save_package_id);
 
   // When the user cancels the saving, we need to remove all remaining saved
   // files of this page saving job from save_file_map_.
-  void RemoveSavedFileFromFileMap(const std::vector<int>& save_item_ids);
+  void RemoveSavedFileFromFileMap(const std::vector<SaveItemId>& save_item_ids);
 
  private:
   friend class base::RefCountedThreadSafe<SaveFileManager>;
@@ -150,14 +154,14 @@ class SaveFileManager : public base::RefCountedThreadSafe<SaveFileManager> {
                                                   int render_frame_routing_id);
 
   // Look up the SavePackage according to save item id.
-  SavePackage* LookupPackage(int save_item_id);
+  SavePackage* LookupPackage(SaveItemId save_item_id);
 
   // Called only on the file thread.
   // Look up one in-progress saving item according to save item id.
-  SaveFile* LookupSaveFile(int save_item_id);
+  SaveFile* LookupSaveFile(SaveItemId save_item_id);
 
   // Help function for sending notification of canceling specific request.
-  void SendCancelRequest(int save_item_id);
+  void SendCancelRequest(SaveItemId save_item_id);
 
   // Notifications sent from the file thread and run on the UI thread.
 
@@ -166,16 +170,18 @@ class SaveFileManager : public base::RefCountedThreadSafe<SaveFileManager> {
   void OnStartSave(const SaveFileCreateInfo& info);
   // Update the SavePackage with the current state of a started saving job.
   // If the SavePackage for this saving job is gone, cancel the request.
-  void OnUpdateSaveProgress(int save_item_id,
+  void OnUpdateSaveProgress(SaveItemId save_item_id,
                             int64_t bytes_so_far,
                             bool write_success);
   // Update the SavePackage with the finish state, and remove the request
   // tracking entries.
-  void OnSaveFinished(int save_item_id, int64_t bytes_so_far, bool is_success);
+  void OnSaveFinished(SaveItemId save_item_id,
+                      int64_t bytes_so_far,
+                      bool is_success);
   // Notifies SavePackage that the whole page saving job is finished.
   void OnFinishSavePageJob(int render_process_id,
                            int render_frame_routing_id,
-                           int save_package_id);
+                           SavePackageId save_package_id);
 
   // Notifications sent from the UI thread and run on the file thread.
 
@@ -187,8 +193,8 @@ class SaveFileManager : public base::RefCountedThreadSafe<SaveFileManager> {
   // Initiates a request for URL to be saved.
   void OnSaveURL(const GURL& url,
                  const Referrer& referrer,
-                 int save_item_id,
-                 int save_package_id,
+                 SaveItemId save_item_id,
+                 SavePackageId save_package_id,
                  int render_process_host_id,
                  int render_view_routing_id,
                  int render_frame_routing_id,
@@ -198,12 +204,12 @@ class SaveFileManager : public base::RefCountedThreadSafe<SaveFileManager> {
   void ExecuteCancelSaveRequest(int render_process_id, int request_id);
 
   // A map from save_item_id into SaveFiles.
-  typedef base::hash_map<int, SaveFile*> SaveFileMap;
+  typedef base::hash_map<SaveItemId, SaveFile*> SaveFileMap;
   SaveFileMap save_file_map_;
 
   // Tracks which SavePackage to send data to, called only on UI thread.
   // SavePackageMap maps save item ids to their SavePackage.
-  typedef base::hash_map<int, SavePackage*> SavePackageMap;
+  typedef base::hash_map<SaveItemId, SavePackage*> SavePackageMap;
   SavePackageMap packages_;
 
   DISALLOW_COPY_AND_ASSIGN(SaveFileManager);

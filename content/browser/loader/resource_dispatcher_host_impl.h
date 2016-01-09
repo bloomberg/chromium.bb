@@ -27,6 +27,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/browser/download/download_resource_handler.h"
+#include "content/browser/download/save_types.h"
 #include "content/browser/loader/global_routing_id.h"
 #include "content/browser/loader/resource_loader.h"
 #include "content/browser/loader/resource_loader_delegate.h"
@@ -131,8 +132,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // request from the renderer or another child process).
   void BeginSaveFile(const GURL& url,
                      const Referrer& referrer,
-                     int save_item_id,
-                     int save_package_id,
+                     SaveItemId save_item_id,
+                     SavePackageId save_package_id,
                      int child_id,
                      int render_view_route_id,
                      int render_frame_route_id,

@@ -59,8 +59,11 @@ using base::Time;
 namespace content {
 namespace {
 
-// A counter for uniquely identifying each save package.
-int g_save_package_id = 0;
+// Generates unique ids for SavePackage::unique_id_ field.
+SavePackageId GetNextSavePackageId() {
+  static int g_save_package_id = 0;
+  return SavePackageId::FromUnsafeValue(g_save_package_id++);
+}
 
 // Default name which will be used when we can not get proper name from
 // resource URL.
@@ -163,7 +166,7 @@ SavePackage::SavePackage(WebContents* web_contents,
       all_save_items_count_(0),
       file_name_set_(&base::FilePath::CompareLessIgnoreCase),
       wait_state_(INITIALIZE),
-      unique_id_(g_save_package_id++),
+      unique_id_(GetNextSavePackageId()),
       wrote_to_completed_file_(false),
       wrote_to_failed_file_(false) {
   DCHECK(page_url_.is_valid());
@@ -195,7 +198,7 @@ SavePackage::SavePackage(WebContents* web_contents)
       all_save_items_count_(0),
       file_name_set_(&base::FilePath::CompareLessIgnoreCase),
       wait_state_(INITIALIZE),
-      unique_id_(g_save_package_id++),
+      unique_id_(GetNextSavePackageId()),
       wrote_to_completed_file_(false),
       wrote_to_failed_file_(false) {
   DCHECK(page_url_.is_valid());
@@ -224,7 +227,7 @@ SavePackage::SavePackage(WebContents* web_contents,
       all_save_items_count_(0),
       file_name_set_(&base::FilePath::CompareLessIgnoreCase),
       wait_state_(INITIALIZE),
-      unique_id_(g_save_package_id++),
+      unique_id_(GetNextSavePackageId()),
       wrote_to_completed_file_(false),
       wrote_to_failed_file_(false) {}
 
@@ -628,7 +631,7 @@ void SavePackage::StartSave(const SaveFileCreateInfo* info) {
   }
 }
 
-SaveItem* SavePackage::LookupSaveItemInProcess(int32_t save_item_id) {
+SaveItem* SavePackage::LookupSaveItemInProcess(SaveItemId save_item_id) {
   auto it = in_progress_items_.find(save_item_id);
   if (it != in_progress_items_.end()) {
     SaveItem* save_item = it->second;
@@ -658,7 +661,7 @@ void SavePackage::PutInProgressItemToSavedMap(SaveItem* save_item) {
 }
 
 // Called for updating saving state.
-bool SavePackage::UpdateSaveProgress(int32_t save_item_id,
+bool SavePackage::UpdateSaveProgress(SaveItemId save_item_id,
                                      int64_t size,
                                      bool write_success) {
   // Because we might have canceled this saving job before,
@@ -688,9 +691,8 @@ void SavePackage::Stop() {
   // When stopping, if it still has some items in in_progress, cancel them.
   DCHECK(canceled());
   if (in_process_count()) {
-    SaveItemIdMap::iterator it = in_progress_items_.begin();
-    for (; it != in_progress_items_.end(); ++it) {
-      SaveItem* save_item = it->second;
+    for (const auto& it : in_progress_items_) {
+      SaveItem* save_item = it.second;
       DCHECK_EQ(SaveItem::IN_PROGRESS, save_item->state());
       save_item->Cancel();
     }
@@ -703,7 +705,7 @@ void SavePackage::Stop() {
 
   // This vector contains the save ids of the save files which SaveFileManager
   // needs to remove from its save_file_map_.
-  std::vector<int> save_item_ids;
+  std::vector<SaveItemId> save_item_ids;
   for (const auto& it : saved_success_items_)
     save_item_ids.push_back(it.first);
   for (const auto& it : saved_failed_items_)
@@ -768,7 +770,7 @@ void SavePackage::Finish() {
 
   // This vector contains the save ids of the save files which SaveFileManager
   // needs to remove from its save_file_map_.
-  std::vector<int> list_of_failed_save_item_ids;
+  std::vector<SaveItemId> list_of_failed_save_item_ids;
   for (const auto& it : saved_failed_items_) {
     SaveItem* save_item = it.second;
     DCHECK_EQ(it.first, save_item->id());
@@ -797,7 +799,7 @@ void SavePackage::Finish() {
 }
 
 // Called for updating end state.
-void SavePackage::SaveFinished(int32_t save_item_id,
+void SavePackage::SaveFinished(SaveItemId save_item_id,
                                int64_t size,
                                bool is_success) {
   // Because we might have canceled this saving job before,
@@ -1044,9 +1046,8 @@ void SavePackage::OnSerializedHtmlWithLocalLinksResponse(
   SaveItem* save_item = it->second;
   DCHECK_EQ(SaveFileCreateInfo::SAVE_FILE_FROM_DOM, save_item->save_source());
   if (save_item->state() != SaveItem::IN_PROGRESS) {
-    for (SavedItemMap::iterator saved_it = saved_success_items_.begin();
-      saved_it != saved_success_items_.end(); ++saved_it) {
-      if (saved_it->second->url() == save_item->url()) {
+    for (const auto& saved_it : saved_success_items_) {
+      if (saved_it.second->url() == save_item->url()) {
         wrote_to_completed_file_ = true;
         break;
       }

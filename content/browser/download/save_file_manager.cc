@@ -46,23 +46,23 @@ void SaveFileManager::OnShutdown() {
   STLDeleteValues(&save_file_map_);
 }
 
-SaveFile* SaveFileManager::LookupSaveFile(int save_item_id) {
+SaveFile* SaveFileManager::LookupSaveFile(SaveItemId save_item_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   SaveFileMap::iterator it = save_file_map_.find(save_item_id);
-  return it == save_file_map_.end() ? NULL : it->second;
+  return it == save_file_map_.end() ? nullptr : it->second;
 }
 
 // Look up a SavePackage according to a save id.
-SavePackage* SaveFileManager::LookupPackage(int save_item_id) {
+SavePackage* SaveFileManager::LookupPackage(SaveItemId save_item_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   SavePackageMap::iterator it = packages_.find(save_item_id);
   if (it != packages_.end())
     return it->second;
-  return NULL;
+  return nullptr;
 }
 
 // Call from SavePackage for starting a saving job
-void SaveFileManager::SaveURL(int save_item_id,
+void SaveFileManager::SaveURL(SaveItemId save_item_id,
                               const GURL& url,
                               const Referrer& referrer,
                               int render_process_host_id,
@@ -100,7 +100,7 @@ void SaveFileManager::SaveURL(int save_item_id,
 // Utility function for look up table maintenance, called on the UI thread.
 // A manager may have multiple save page job (SavePackage) in progress,
 // so we just look up the save id and remove it from the tracking table.
-void SaveFileManager::RemoveSaveFile(int save_item_id,
+void SaveFileManager::RemoveSaveFile(SaveItemId save_item_id,
                                      SavePackage* save_package) {
   DCHECK(save_package);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -138,9 +138,9 @@ void SaveFileManager::DeleteDirectoryOrFile(const base::FilePath& full_path,
           this, full_path, is_dir));
 }
 
-void SaveFileManager::SendCancelRequest(int save_item_id) {
+void SaveFileManager::SendCancelRequest(SaveItemId save_item_id) {
   // Cancel the request which has specific save id.
-  DCHECK_GT(save_item_id, -1);
+  DCHECK(!save_item_id.is_null());
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&SaveFileManager::CancelSave, this, save_item_id));
@@ -173,7 +173,7 @@ void SaveFileManager::StartSave(SaveFileCreateInfo* info) {
 // update the UI. If the user has canceled the saving action (in the UI
 // thread). We may receive a few more updates before the IO thread gets the
 // cancel message. We just delete the data since the SaveFile has been deleted.
-void SaveFileManager::UpdateSaveProgress(int save_item_id,
+void SaveFileManager::UpdateSaveProgress(SaveItemId save_item_id,
                                          net::IOBuffer* data,
                                          int data_len) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
@@ -193,19 +193,17 @@ void SaveFileManager::UpdateSaveProgress(int save_item_id,
 
 // The IO thread will call this when saving is completed or it got error when
 // fetching data. We forward the message to OnSaveFinished in UI thread.
-void SaveFileManager::SaveFinished(int save_item_id,
-                                   int save_package_id,
+void SaveFileManager::SaveFinished(SaveItemId save_item_id,
+                                   SavePackageId save_package_id,
                                    bool is_success) {
   DVLOG(20) << " " << __FUNCTION__ << "()"
             << " save_item_id = " << save_item_id
             << " save_package_id = " << save_package_id
             << " is_success = " << is_success;
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  SaveFileMap::iterator it = save_file_map_.find(save_item_id);
-  if (it != save_file_map_.end()) {
-    SaveFile* save_file = it->second;
+  SaveFile* save_file = LookupSaveFile(save_item_id);
+  if (save_file != nullptr) {
     DCHECK(save_file->InProgress());
-
     DVLOG(20) << " " << __FUNCTION__ << "()"
               << " save_file = " << save_file->DebugString();
     BrowserThread::PostTask(
@@ -231,15 +229,14 @@ void SaveFileManager::OnStartSave(const SaveFileCreateInfo& info) {
   }
 
   // Insert started saving job to tracking list.
-  SavePackageMap::iterator sit = packages_.find(info.save_item_id);
-  DCHECK(sit == packages_.end());
+  DCHECK(packages_.find(info.save_item_id) == packages_.end());
   packages_[info.save_item_id] = save_package;
 
   // Forward this message to SavePackage.
   save_package->StartSave(&info);
 }
 
-void SaveFileManager::OnUpdateSaveProgress(int save_item_id,
+void SaveFileManager::OnUpdateSaveProgress(SaveItemId save_item_id,
                                            int64_t bytes_so_far,
                                            bool write_success) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -250,7 +247,7 @@ void SaveFileManager::OnUpdateSaveProgress(int save_item_id,
     SendCancelRequest(save_item_id);
 }
 
-void SaveFileManager::OnSaveFinished(int save_item_id,
+void SaveFileManager::OnSaveFinished(SaveItemId save_item_id,
                                      int64_t bytes_so_far,
                                      bool is_success) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -263,8 +260,8 @@ void SaveFileManager::OnSaveFinished(int save_item_id,
 
 void SaveFileManager::OnSaveURL(const GURL& url,
                                 const Referrer& referrer,
-                                int save_item_id,
-                                int save_package_id,
+                                SaveItemId save_item_id,
+                                SavePackageId save_package_id,
                                 int render_process_host_id,
                                 int render_view_routing_id,
                                 int render_frame_routing_id,
@@ -289,7 +286,7 @@ void SaveFileManager::ExecuteCancelSaveRequest(int render_process_id,
 // but we do forward the cancel to the IO thread. Since this message has been
 // sent from the UI thread, the saving job may have already completed and
 // won't exist in our map.
-void SaveFileManager::CancelSave(int save_item_id) {
+void SaveFileManager::CancelSave(SaveItemId save_item_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   SaveFileMap::iterator it = save_file_map_.find(save_item_id);
   if (it != save_file_map_.end()) {
@@ -324,8 +321,8 @@ void SaveFileManager::CancelSave(int save_item_id) {
 // before this function runs. So if we can not find corresponding SaveFile by
 // using specified save_item_id, just return.
 void SaveFileManager::SaveLocalFile(const GURL& original_file_url,
-                                    int save_item_id,
-                                    int save_package_id) {
+                                    SaveItemId save_item_id,
+                                    SavePackageId save_package_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   SaveFile* save_file = LookupSaveFile(save_item_id);
   if (!save_file)
@@ -366,14 +363,14 @@ void SaveFileManager::RenameAllFiles(const FinalNamesMap& final_names,
                                      const base::FilePath& resource_dir,
                                      int render_process_id,
                                      int render_frame_routing_id,
-                                     int save_package_id) {
+                                     SavePackageId save_package_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   if (!resource_dir.empty() && !base::PathExists(resource_dir))
     base::CreateDirectory(resource_dir);
 
   for (const auto& i : final_names) {
-    int save_item_id = i.first;
+    SaveItemId save_item_id = i.first;
     const base::FilePath& final_name = i.second;
 
     SaveFileMap::iterator it = save_file_map_.find(save_item_id);
@@ -394,7 +391,7 @@ void SaveFileManager::RenameAllFiles(const FinalNamesMap& final_names,
 
 void SaveFileManager::OnFinishSavePageJob(int render_process_id,
                                           int render_frame_routing_id,
-                                          int save_package_id) {
+                                          SavePackageId save_package_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   SavePackage* save_package =
@@ -405,10 +402,10 @@ void SaveFileManager::OnFinishSavePageJob(int render_process_id,
 }
 
 void SaveFileManager::RemoveSavedFileFromFileMap(
-    const std::vector<int>& save_item_ids) {
+    const std::vector<SaveItemId>& save_item_ids) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
-  for (const int save_item_id : save_item_ids) {
+  for (const SaveItemId save_item_id : save_item_ids) {
     SaveFileMap::iterator it = save_file_map_.find(save_item_id);
     if (it != save_file_map_.end()) {
       SaveFile* save_file = it->second;

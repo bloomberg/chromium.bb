@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "content/browser/download/save_types.h"
 #include "content/browser/loader/resource_handler.h"
 #include "url/gurl.h"
 
@@ -25,8 +26,8 @@ class SaveFileManager;
 class SaveFileResourceHandler : public ResourceHandler {
  public:
   SaveFileResourceHandler(net::URLRequest* request,
-                          int save_item_id,
-                          int save_package_id,
+                          SaveItemId save_item_id,
+                          SavePackageId save_package_id,
                           int render_process_host_id,
                           int render_frame_routing_id,
                           const GURL& url,
@@ -76,8 +77,8 @@ class SaveFileResourceHandler : public ResourceHandler {
   }
 
  private:
-  int save_item_id_;
-  int save_package_id_;
+  SaveItemId save_item_id_;
+  SavePackageId save_package_id_;
   int render_process_id_;
   int render_frame_routing_id_;
   scoped_refptr<net::IOBuffer> read_buffer_;

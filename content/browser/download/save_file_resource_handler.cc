@@ -17,8 +17,8 @@
 namespace content {
 
 SaveFileResourceHandler::SaveFileResourceHandler(net::URLRequest* request,
-                                                 int save_item_id,
-                                                 int save_package_id,
+                                                 SaveItemId save_item_id,
+                                                 SavePackageId save_package_id,
                                                  int render_process_host_id,
                                                  int render_frame_routing_id,
                                                  const GURL& url,

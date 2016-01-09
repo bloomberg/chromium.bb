@@ -13,12 +13,19 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "content/common/id_type.h"
 #include "url/gurl.h"
 
 namespace content {
 
+class SavePackage;
+using SavePackageId = IdType32<SavePackage>;
+
+class SaveItem;
+using SaveItemId = IdType32<SaveItem>;
+
 // Map from save_item_id into final file path.
-typedef std::map<int, base::FilePath> FinalNamesMap;
+using FinalNamesMap = std::map<SaveItemId, base::FilePath>;
 
 // This structure is used to handle and deliver some info
 // when processing each save item job.
@@ -39,8 +46,8 @@ struct SaveFileCreateInfo {
   // Constructor for SAVE_FILE_FROM_DOM and/or SAVE_FILE_FROM_FILE.
   SaveFileCreateInfo(const base::FilePath& path,
                      const GURL& url,
-                     int save_item_id,
-                     int save_package_id,
+                     SaveItemId save_item_id,
+                     SavePackageId save_package_id,
                      int render_process_id,
                      int render_frame_routing_id,
                      SaveFileSource save_source);
@@ -48,8 +55,8 @@ struct SaveFileCreateInfo {
   // Constructor for SAVE_FILE_FROM_NET case.
   SaveFileCreateInfo(const GURL& url,
                      const GURL& final_url,
-                     int save_item_id,
-                     int save_package_id,
+                     SaveItemId save_item_id,
+                     SavePackageId save_package_id,
                      int render_process_id,
                      int render_frame_routing_id,
                      int request_id,
@@ -66,9 +73,9 @@ struct SaveFileCreateInfo {
   // Final URL of the saved resource since some URL might be redirected.
   GURL final_url;
   // The unique identifier of SaveItem object associated with this job.
-  int save_item_id;
+  SaveItemId save_item_id;
   // ID of SavePackage object.
-  int save_package_id;
+  SavePackageId save_package_id;
   // IDs for looking up the contents we are associated with.
   int render_process_id;
   int render_frame_routing_id;

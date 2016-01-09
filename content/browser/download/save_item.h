@@ -55,7 +55,7 @@ class SaveItem {
   void SetTotalBytes(int64_t total_bytes);
 
   // Accessors.
-  int id() const { return save_item_id_; }
+  SaveItemId id() const { return save_item_id_; }
   SaveState state() const { return state_; }
   const base::FilePath& full_path() const { return full_path_; }
   const base::FilePath& file_name() const { return file_name_; }
@@ -75,7 +75,7 @@ class SaveItem {
   void UpdateSize(int64_t size);
 
   // Unique identifier for this SaveItem instance.
-  const int save_item_id_;
+  const SaveItemId save_item_id_;
 
   // Full path to the save item file.
   base::FilePath full_path_;

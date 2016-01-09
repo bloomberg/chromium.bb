@@ -10,8 +10,8 @@ namespace content {
 
 SaveFileCreateInfo::SaveFileCreateInfo(const base::FilePath& path,
                                        const GURL& url,
-                                       int save_item_id,
-                                       int save_package_id,
+                                       SaveItemId save_item_id,
+                                       SavePackageId save_package_id,
                                        int render_process_id,
                                        int render_frame_routing_id,
                                        SaveFileSource save_source)
@@ -27,8 +27,8 @@ SaveFileCreateInfo::SaveFileCreateInfo(const base::FilePath& path,
 
 SaveFileCreateInfo::SaveFileCreateInfo(const GURL& url,
                                        const GURL& final_url,
-                                       int save_item_id,
-                                       int save_package_id,
+                                       SaveItemId save_item_id,
+                                       SavePackageId save_package_id,
                                        int render_process_id,
                                        int render_frame_routing_id,
                                        int request_id,

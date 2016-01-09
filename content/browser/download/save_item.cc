@@ -15,10 +15,10 @@ namespace content {
 
 namespace {
 
-int GetNextSaveItemId() {
-  static int g_next_save_item_id = 0;
+SaveItemId GetNextSaveItemId() {
+  static int g_next_save_item_id = 1;
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return g_next_save_item_id++;
+  return SaveItemId::FromUnsafeValue(g_next_save_item_id++);
 }
 
 }  // namespace

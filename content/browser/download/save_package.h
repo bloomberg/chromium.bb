@@ -110,10 +110,10 @@ class CONTENT_EXPORT SavePackage
 
   // Notifications sent from the file thread to the UI thread.
   void StartSave(const SaveFileCreateInfo* info);
-  bool UpdateSaveProgress(int32_t save_item_id,
+  bool UpdateSaveProgress(SaveItemId save_item_id,
                           int64_t size,
                           bool write_success);
-  void SaveFinished(int32_t save_item_id, int64_t size, bool is_success);
+  void SaveFinished(SaveItemId save_item_id, int64_t size, bool is_success);
   void SaveCanceled(SaveItem* save_item);
 
   // Rough percent complete, -1 means we don't know (since we didn't receive a
@@ -123,7 +123,8 @@ class CONTENT_EXPORT SavePackage
   bool canceled() const { return user_canceled_ || disk_error_occurred_; }
   bool finished() const { return finished_; }
   SavePageType save_type() const { return save_type_; }
-  int id() const { return unique_id_; }
+
+  SavePackageId id() const { return unique_id_; }
 
   void GetSaveInfo();
 
@@ -256,7 +257,7 @@ class CONTENT_EXPORT SavePackage
                                               bool end_of_data);
 
   // Look up SaveItem by save item id from in progress map.
-  SaveItem* LookupSaveItemInProcess(int32_t save_item_id);
+  SaveItem* LookupSaveItemInProcess(SaveItemId save_item_id);
 
   // Remove SaveItem from in progress map and put it to saved map.
   void PutInProgressItemToSavedMap(SaveItem* save_item);
@@ -277,7 +278,7 @@ class CONTENT_EXPORT SavePackage
       const SavePackageDownloadCreatedCallback& cb);
 
   // Map from SaveItem::id() (aka save_item_id) into a SaveItem.
-  typedef base::hash_map<int, SaveItem*> SaveItemIdMap;
+  typedef base::hash_map<SaveItemId, SaveItem*> SaveItemIdMap;
   // in_progress_items_ is map of all saving job in in-progress state.
   SaveItemIdMap in_progress_items_;
   // saved_failed_items_ is map of all saving job which are failed.
@@ -350,9 +351,8 @@ class CONTENT_EXPORT SavePackage
   // Number of frames that we still need to get a response from.
   int number_of_frames_pending_response_;
 
-  typedef base::hash_map<int32_t, SaveItem*> SavedItemMap;
   // saved_success_items_ is map of all saving job which are successfully saved.
-  SavedItemMap saved_success_items_;
+  base::hash_map<SaveItemId, SaveItem*> saved_success_items_;
 
   // Non-owning pointer for handling file writing on the file thread.
   SaveFileManager* file_manager_;
@@ -406,7 +406,7 @@ class CONTENT_EXPORT SavePackage
   WaitState wait_state_;
 
   // Unique ID for this SavePackage.
-  const int unique_id_;
+  const SavePackageId unique_id_;
 
   // Variables to record errors that happened so we can record them via
   // UMA statistics.
