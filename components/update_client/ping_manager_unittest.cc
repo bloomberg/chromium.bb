@@ -43,7 +43,7 @@ ComponentUpdaterPingManagerTest::ComponentUpdaterPingManagerTest() {
 void ComponentUpdaterPingManagerTest::SetUp() {
   config_ = new TestConfigurator(base::ThreadTaskRunnerHandle::Get(),
                                  base::ThreadTaskRunnerHandle::Get());
-  ping_manager_.reset(new PingManager(*config_));
+  ping_manager_.reset(new PingManager(config_));
 }
 
 void ComponentUpdaterPingManagerTest::TearDown() {

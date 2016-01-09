@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -34,7 +35,7 @@ class RequestSender : public net::URLFetcherDelegate {
   typedef base::Callback<void(const net::URLFetcher* source)>
       RequestSenderCallback;
 
-  explicit RequestSender(const Configurator& config);
+  explicit RequestSender(const scoped_refptr<Configurator>& config);
   ~RequestSender() override;
 
   void Send(const std::string& request_string,
@@ -47,7 +48,7 @@ class RequestSender : public net::URLFetcherDelegate {
   // Overrides for URLFetcherDelegate.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  const Configurator& config_;
+  const scoped_refptr<Configurator> config_;
   std::vector<GURL> urls_;
   std::vector<GURL>::const_iterator cur_url_;
   scoped_ptr<net::URLFetcher> url_fetcher_;

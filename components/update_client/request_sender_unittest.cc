@@ -128,7 +128,7 @@ TEST_F(RequestSenderTest, RequestSendSuccess) {
   std::vector<GURL> urls;
   urls.push_back(GURL(kUrl1));
   urls.push_back(GURL(kUrl2));
-  request_sender_.reset(new RequestSender(*config_));
+  request_sender_.reset(new RequestSender(config_));
   request_sender_->Send("test", urls,
                         base::Bind(&RequestSenderTest::RequestSenderComplete,
                                    base::Unretained(this)));
@@ -154,7 +154,7 @@ TEST_F(RequestSenderTest, RequestSendSuccessWithFallback) {
   std::vector<GURL> urls;
   urls.push_back(GURL(kUrl1));
   urls.push_back(GURL(kUrl2));
-  request_sender_.reset(new RequestSender(*config_));
+  request_sender_.reset(new RequestSender(config_));
   request_sender_->Send("test", urls,
                         base::Bind(&RequestSenderTest::RequestSenderComplete,
                                    base::Unretained(this)));
@@ -185,7 +185,7 @@ TEST_F(RequestSenderTest, RequestSendFailed) {
   std::vector<GURL> urls;
   urls.push_back(GURL(kUrl1));
   urls.push_back(GURL(kUrl2));
-  request_sender_.reset(new RequestSender(*config_));
+  request_sender_.reset(new RequestSender(config_));
   request_sender_->Send("test", urls,
                         base::Bind(&RequestSenderTest::RequestSenderComplete,
                                    base::Unretained(this)));
@@ -209,7 +209,7 @@ TEST_F(RequestSenderTest, RequestSendFailed) {
 // Tests that the request fails when no urls are provided.
 TEST_F(RequestSenderTest, RequestSendFailedNoUrls) {
   std::vector<GURL> urls;
-  request_sender_.reset(new RequestSender(*config_));
+  request_sender_.reset(new RequestSender(config_));
   request_sender_->Send("test", urls,
                         base::Bind(&RequestSenderTest::RequestSenderComplete,
                                    base::Unretained(this)));

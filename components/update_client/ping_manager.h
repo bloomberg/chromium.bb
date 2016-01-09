@@ -6,23 +6,23 @@
 #define COMPONENTS_UPDATE_CLIENT_PING_MANAGER_H_
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 
 namespace update_client {
 
 class Configurator;
 struct CrxUpdateItem;
 
-// Provides an event sink for completion events from ComponentUpdateService
-// and sends fire-and-forget pings when handling these events.
+// Sends fire-and-forget pings.
 class PingManager {
  public:
-  explicit PingManager(const Configurator& config);
+  explicit PingManager(const scoped_refptr<Configurator>& config);
   virtual ~PingManager();
 
   virtual void OnUpdateComplete(const CrxUpdateItem* item);
 
  private:
-  const Configurator& config_;
+  const scoped_refptr<Configurator> config_;
 
   DISALLOW_COPY_AND_ASSIGN(PingManager);
 };

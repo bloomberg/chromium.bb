@@ -94,7 +94,7 @@ void OnDemandTester::CheckOnDemand(Events event, const std::string& id) {
 
 class FakePingManagerImpl : public PingManager {
  public:
-  explicit FakePingManagerImpl(const Configurator& config);
+  explicit FakePingManagerImpl(const scoped_refptr<Configurator>& config);
   ~FakePingManagerImpl() override;
 
   void OnUpdateComplete(const CrxUpdateItem* item) override;
@@ -106,9 +106,9 @@ class FakePingManagerImpl : public PingManager {
   DISALLOW_COPY_AND_ASSIGN(FakePingManagerImpl);
 };
 
-FakePingManagerImpl::FakePingManagerImpl(const Configurator& config)
-    : PingManager(config) {
-}
+FakePingManagerImpl::FakePingManagerImpl(
+    const scoped_refptr<Configurator>& config)
+    : PingManager(config) {}
 
 FakePingManagerImpl::~FakePingManagerImpl() {
 }
@@ -216,7 +216,8 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
 
   class FakeUpdateChecker : public UpdateChecker {
    public:
-    static scoped_ptr<UpdateChecker> Create(const Configurator& config) {
+    static scoped_ptr<UpdateChecker> Create(
+        const scoped_refptr<Configurator>& config) {
       return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
@@ -250,12 +251,12 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const Configurator& config)
+    explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
     ~FakePingManager() override { EXPECT_TRUE(items().empty()); }
   };
 
-  scoped_ptr<PingManager> ping_manager(new FakePingManager(*config()));
+  scoped_ptr<PingManager> ping_manager(new FakePingManager(config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
       config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
@@ -321,7 +322,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
 
   class FakeUpdateChecker : public UpdateChecker {
    public:
-    static scoped_ptr<UpdateChecker> Create(const Configurator& config) {
+    static scoped_ptr<UpdateChecker> Create(
+        const scoped_refptr<Configurator>& config) {
       return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
@@ -413,7 +415,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const Configurator& config)
+    explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
     ~FakePingManager() override {
       const auto& ping_items = items();
@@ -426,7 +428,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
     }
   };
 
-  scoped_ptr<PingManager> ping_manager(new FakePingManager(*config()));
+  scoped_ptr<PingManager> ping_manager(new FakePingManager(config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
       config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
@@ -501,7 +503,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
 
   class FakeUpdateChecker : public UpdateChecker {
    public:
-    static scoped_ptr<UpdateChecker> Create(const Configurator& config) {
+    static scoped_ptr<UpdateChecker> Create(
+        const scoped_refptr<Configurator>& config) {
       return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
@@ -636,7 +639,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const Configurator& config)
+    explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
     ~FakePingManager() override {
       const auto& ping_items = items();
@@ -654,7 +657,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
     }
   };
 
-  scoped_ptr<FakePingManager> ping_manager(new FakePingManager(*config()));
+  scoped_ptr<FakePingManager> ping_manager(new FakePingManager(config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
       config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
@@ -739,7 +742,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
 
   class FakeUpdateChecker : public UpdateChecker {
    public:
-    static scoped_ptr<UpdateChecker> Create(const Configurator& config) {
+    static scoped_ptr<UpdateChecker> Create(
+        const scoped_refptr<Configurator>& config) {
       return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
@@ -874,7 +878,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const Configurator& config)
+    explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
     ~FakePingManager() override {
       const auto& ping_items = items();
@@ -892,7 +896,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
     }
   };
 
-  scoped_ptr<FakePingManager> ping_manager(new FakePingManager(*config()));
+  scoped_ptr<FakePingManager> ping_manager(new FakePingManager(config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
       config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
@@ -980,7 +984,8 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
 
   class FakeUpdateChecker : public UpdateChecker {
    public:
-    static scoped_ptr<UpdateChecker> Create(const Configurator& config) {
+    static scoped_ptr<UpdateChecker> Create(
+        const scoped_refptr<Configurator>& config) {
       return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
@@ -1132,7 +1137,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const Configurator& config)
+    explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
     ~FakePingManager() override {
       const auto& ping_items = items();
@@ -1150,7 +1155,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
     }
   };
 
-  scoped_ptr<FakePingManager> ping_manager(new FakePingManager(*config()));
+  scoped_ptr<FakePingManager> ping_manager(new FakePingManager(config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
       config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
@@ -1257,7 +1262,8 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
 
   class FakeUpdateChecker : public UpdateChecker {
    public:
-    static scoped_ptr<UpdateChecker> Create(const Configurator& config) {
+    static scoped_ptr<UpdateChecker> Create(
+        const scoped_refptr<Configurator>& config) {
       return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
@@ -1349,7 +1355,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const Configurator& config)
+    explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
     ~FakePingManager() override {
       const auto& ping_items = items();
@@ -1362,7 +1368,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
     }
   };
 
-  scoped_ptr<PingManager> ping_manager(new FakePingManager(*config()));
+  scoped_ptr<PingManager> ping_manager(new FakePingManager(config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
       config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
@@ -1436,7 +1442,8 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
 
   class FakeUpdateChecker : public UpdateChecker {
    public:
-    static scoped_ptr<UpdateChecker> Create(const Configurator& config) {
+    static scoped_ptr<UpdateChecker> Create(
+        const scoped_refptr<Configurator>& config) {
       return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
@@ -1603,7 +1610,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const Configurator& config)
+    explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
     ~FakePingManager() override {
       const auto& ping_items = items();
@@ -1622,7 +1629,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
     }
   };
 
-  scoped_ptr<FakePingManager> ping_manager(new FakePingManager(*config()));
+  scoped_ptr<FakePingManager> ping_manager(new FakePingManager(config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
       config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
@@ -1711,7 +1718,8 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
 
   class FakeUpdateChecker : public UpdateChecker {
    public:
-    static scoped_ptr<UpdateChecker> Create(const Configurator& config) {
+    static scoped_ptr<UpdateChecker> Create(
+        const scoped_refptr<Configurator>& config) {
       return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
@@ -1745,12 +1753,12 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const Configurator& config)
+    explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
     ~FakePingManager() override { EXPECT_TRUE(items().empty()); }
   };
 
-  scoped_ptr<PingManager> ping_manager(new FakePingManager(*config()));
+  scoped_ptr<PingManager> ping_manager(new FakePingManager(config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
       config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
@@ -1809,7 +1817,8 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
 
   class FakeUpdateChecker : public UpdateChecker {
    public:
-    static scoped_ptr<UpdateChecker> Create(const Configurator& config) {
+    static scoped_ptr<UpdateChecker> Create(
+        const scoped_refptr<Configurator>& config) {
       return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
@@ -1905,7 +1914,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const Configurator& config)
+    explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
     ~FakePingManager() override {
       const auto& ping_items = items();
@@ -1918,7 +1927,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
     }
   };
 
-  scoped_ptr<FakePingManager> ping_manager(new FakePingManager(*config()));
+  scoped_ptr<FakePingManager> ping_manager(new FakePingManager(config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
       config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
@@ -1991,7 +2000,8 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
 
   class FakeUpdateChecker : public UpdateChecker {
    public:
-    static scoped_ptr<UpdateChecker> Create(const Configurator& config) {
+    static scoped_ptr<UpdateChecker> Create(
+        const scoped_refptr<Configurator>& config) {
       return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
@@ -2025,12 +2035,12 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const Configurator& config)
+    explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
     ~FakePingManager() override { EXPECT_TRUE(items().empty()); }
   };
 
-  scoped_ptr<FakePingManager> ping_manager(new FakePingManager(*config()));
+  scoped_ptr<FakePingManager> ping_manager(new FakePingManager(config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
       config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
@@ -2083,7 +2093,8 @@ TEST_F(UpdateClientTest, EmptyIdList) {
   };
   class FakeUpdateChecker : public UpdateChecker {
    public:
-    static scoped_ptr<UpdateChecker> Create(const Configurator& config) {
+    static scoped_ptr<UpdateChecker> Create(
+        const scoped_refptr<Configurator>& config) {
       return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
@@ -2113,7 +2124,7 @@ TEST_F(UpdateClientTest, EmptyIdList) {
   };
 
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
-      config(), make_scoped_ptr(new FakePingManagerImpl(*config())),
+      config(), make_scoped_ptr(new FakePingManagerImpl(config())),
       &FakeUpdateChecker::Create, &FakeCrxDownloader::Create));
 
   std::vector<std::string> empty_id_list;

@@ -77,7 +77,7 @@ std::string BuildUpdateCheckRequest(const Configurator& config,
 
 class UpdateCheckerImpl : public UpdateChecker {
  public:
-  explicit UpdateCheckerImpl(const Configurator& config);
+  explicit UpdateCheckerImpl(const scoped_refptr<Configurator>& config);
   ~UpdateCheckerImpl() override;
 
   // Overrides for UpdateChecker.
@@ -89,7 +89,7 @@ class UpdateCheckerImpl : public UpdateChecker {
  private:
   void OnRequestSenderComplete(const net::URLFetcher* source);
 
-  const Configurator& config_;
+  const scoped_refptr<Configurator> config_;
   UpdateCheckCallback update_check_callback_;
   scoped_ptr<RequestSender> request_sender_;
 
@@ -98,9 +98,8 @@ class UpdateCheckerImpl : public UpdateChecker {
   DISALLOW_COPY_AND_ASSIGN(UpdateCheckerImpl);
 };
 
-UpdateCheckerImpl::UpdateCheckerImpl(const Configurator& config)
-    : config_(config) {
-}
+UpdateCheckerImpl::UpdateCheckerImpl(const scoped_refptr<Configurator>& config)
+    : config_(config) {}
 
 UpdateCheckerImpl::~UpdateCheckerImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -121,8 +120,8 @@ bool UpdateCheckerImpl::CheckForUpdates(
 
   request_sender_.reset(new RequestSender(config_));
   request_sender_->Send(
-      BuildUpdateCheckRequest(config_, items_to_check, additional_attributes),
-      config_.UpdateUrl(),
+      BuildUpdateCheckRequest(*config_, items_to_check, additional_attributes),
+      config_->UpdateUrl(),
       base::Bind(&UpdateCheckerImpl::OnRequestSenderComplete,
                  base::Unretained(this)));
   return true;
@@ -168,7 +167,8 @@ void UpdateCheckerImpl::OnRequestSenderComplete(const net::URLFetcher* source) {
 
 }  // namespace
 
-scoped_ptr<UpdateChecker> UpdateChecker::Create(const Configurator& config) {
+scoped_ptr<UpdateChecker> UpdateChecker::Create(
+    const scoped_refptr<Configurator>& config) {
   return scoped_ptr<UpdateChecker>(new UpdateCheckerImpl(config));
 }
 

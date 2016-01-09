@@ -228,7 +228,7 @@ void UpdateClientImpl::Stop() {
 
 scoped_refptr<UpdateClient> UpdateClientFactory(
     const scoped_refptr<Configurator>& config) {
-  scoped_ptr<PingManager> ping_manager(new PingManager(*config));
+  scoped_ptr<PingManager> ping_manager(new PingManager(config));
   return new UpdateClientImpl(config, std::move(ping_manager),
                               &UpdateChecker::Create, &CrxDownloader::Create);
 }

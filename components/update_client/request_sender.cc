@@ -16,8 +16,8 @@
 
 namespace update_client {
 
-RequestSender::RequestSender(const Configurator& config) : config_(config) {
-}
+RequestSender::RequestSender(const scoped_refptr<Configurator>& config)
+    : config_(config) {}
 
 RequestSender::~RequestSender() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -48,7 +48,7 @@ void RequestSender::SendInternal() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   url_fetcher_ = SendProtocolRequest(*cur_url_, request_string_, this,
-                                     config_.RequestContext());
+                                     config_->RequestContext());
 }
 
 void RequestSender::OnURLFetchComplete(const net::URLFetcher* source) {

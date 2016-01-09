@@ -142,7 +142,7 @@ std::string BuildPing(const Configurator& config, const CrxUpdateItem* item) {
 // can send only one ping.
 class PingSender {
  public:
-  explicit PingSender(const Configurator& config);
+  explicit PingSender(const scoped_refptr<Configurator>& config);
   ~PingSender();
 
   bool SendPing(const CrxUpdateItem* item);
@@ -150,15 +150,15 @@ class PingSender {
  private:
   void OnRequestSenderComplete(const net::URLFetcher* source);
 
-  const Configurator& config_;
+  const scoped_refptr<Configurator> config_;
   scoped_ptr<RequestSender> request_sender_;
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(PingSender);
 };
 
-PingSender::PingSender(const Configurator& config) : config_(config) {
-}
+PingSender::PingSender(const scoped_refptr<Configurator>& config)
+    : config_(config) {}
 
 PingSender::~PingSender() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -173,22 +173,22 @@ bool PingSender::SendPing(const CrxUpdateItem* item) {
   DCHECK(item);
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  std::vector<GURL> urls(config_.PingUrl());
+  std::vector<GURL> urls(config_->PingUrl());
 
   if (urls.empty())
     return false;
 
   request_sender_.reset(new RequestSender(config_));
   request_sender_->Send(
-      BuildPing(config_, item), urls,
+      BuildPing(*config_, item), urls,
       base::Bind(&PingSender::OnRequestSenderComplete, base::Unretained(this)));
   return true;
 }
 
 }  // namespace
 
-PingManager::PingManager(const Configurator& config) : config_(config) {
-}
+PingManager::PingManager(const scoped_refptr<Configurator>& config)
+    : config_(config) {}
 
 PingManager::~PingManager() {
 }
