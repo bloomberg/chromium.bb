@@ -133,30 +133,6 @@ void BluetoothHostPairingController::SendHostStatus() {
                  ptr_factory_.GetWeakPtr()));
 }
 
-void BluetoothHostPairingController::AbortWithError(
-    int code,
-    const std::string& message) {
-  if (controller_socket_.get()) {
-    pairing_api::Error error;
-
-    error.set_api_version(kPairingAPIVersion);
-    error.mutable_parameters()->set_code(PAIRING_ERROR_PAIRING_OR_ENROLLMENT);
-    error.mutable_parameters()->set_description(message);
-
-    int size = 0;
-    scoped_refptr<net::IOBuffer> io_buffer(
-        ProtoDecoder::SendError(error, &size));
-
-    controller_socket_->Send(
-        io_buffer, size,
-        base::Bind(&BluetoothHostPairingController::OnSendComplete,
-                   ptr_factory_.GetWeakPtr()),
-        base::Bind(&BluetoothHostPairingController::OnSendError,
-                   ptr_factory_.GetWeakPtr()));
-  }
-  Reset();
-}
-
 void BluetoothHostPairingController::Reset() {
   if (controller_socket_.get()) {
     controller_socket_->Close();
@@ -286,12 +262,14 @@ void BluetoothHostPairingController::OnReceiveComplete(
   DCHECK(thread_checker_.CalledOnValidThread());
   proto_decoder_->DecodeIOBuffer(bytes, io_buffer);
 
-  controller_socket_->Receive(
-      kReceiveSize,
-      base::Bind(&BluetoothHostPairingController::OnReceiveComplete,
-                 ptr_factory_.GetWeakPtr()),
-      base::Bind(&BluetoothHostPairingController::OnReceiveError,
-                 ptr_factory_.GetWeakPtr()));
+  if (controller_socket_.get()) {
+    controller_socket_->Receive(
+        kReceiveSize,
+        base::Bind(&BluetoothHostPairingController::OnReceiveComplete,
+                   ptr_factory_.GetWeakPtr()),
+        base::Bind(&BluetoothHostPairingController::OnReceiveError,
+                   ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void BluetoothHostPairingController::OnCreateServiceError(
@@ -359,12 +337,11 @@ void BluetoothHostPairingController::OnCompleteSetupMessage(
   DCHECK(thread_checker_.CalledOnValidThread());
   if (current_stage_ != STAGE_ENROLLMENT_SUCCESS) {
     ChangeStage(STAGE_ENROLLMENT_ERROR);
-    AbortWithError(PAIRING_ERROR_PAIRING_OR_ENROLLMENT, kErrorInvalidProtocol);
-    return;
+  } else {
+    // TODO(zork): Handle adding another controller. (http://crbug.com/405757)
+    ChangeStage(STAGE_FINISHED);
   }
-
-  // TODO(zork): Handle adding another controller. (http://crbug.com/405757)
-  ChangeStage(STAGE_FINISHED);
+  Reset();
 }
 
 void BluetoothHostPairingController::OnErrorMessage(
@@ -454,8 +431,6 @@ void BluetoothHostPairingController::OnEnrollmentStatusChanged(
     ChangeStage(STAGE_ENROLLMENT_SUCCESS);
   } else if (enrollment_status == ENROLLMENT_STATUS_FAILURE) {
     ChangeStage(STAGE_ENROLLMENT_ERROR);
-    AbortWithError(PAIRING_ERROR_PAIRING_OR_ENROLLMENT,
-                   kErrorEnrollmentFailed);
   }
   SendHostStatus();
 }

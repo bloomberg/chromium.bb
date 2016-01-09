@@ -381,13 +381,20 @@ void BluetoothControllerPairingController::OnHostStatusMessage(
       message.parameters().update_status();
   pairing_api::HostStatusParameters::EnrollmentStatus enrollment_status =
       message.parameters().enrollment_status();
+  pairing_api::HostStatusParameters::Connectivity connectivity =
+      message.parameters().connectivity();
   VLOG(1) << "OnHostStatusMessage, update_status=" << update_status;
   // TODO(zork): Check domain. (http://crbug.com/405761)
-  if (enrollment_status ==
+  if (connectivity == pairing_api::HostStatusParameters::CONNECTIVITY_NONE) {
+    ChangeStage(STAGE_HOST_NETWORK_ERROR);
+  } else if (enrollment_status ==
       pairing_api::HostStatusParameters::ENROLLMENT_STATUS_SUCCESS) {
     // TODO(achuith, zork): Need to ensure that controller has also successfully
     // enrolled.
     CompleteSetup();
+  } else if (enrollment_status ==
+             pairing_api::HostStatusParameters::ENROLLMENT_STATUS_FAILURE) {
+    ChangeStage(STAGE_HOST_ENROLLMENT_ERROR);
   } else if (update_status ==
       pairing_api::HostStatusParameters::UPDATE_STATUS_UPDATING) {
     ChangeStage(STAGE_HOST_UPDATE_IN_PROGRESS);

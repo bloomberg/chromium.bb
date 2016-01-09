@@ -93,6 +93,8 @@ void ControllerPairingScreenHandler::DeclareLocalizedValues(
                IDS_PAIRING_CONTROLLER_CONNECTION_LOST_TITLE);
   builder->Add(prefix + "ConnectionLostText",
                IDS_PAIRING_CONTROLLER_CONNECTION_LOST_TEXT);
+  builder->Add(prefix + "HostNetworkErrorTitle",
+               IDS_PAIRING_CONTROLLER_HOST_NETWORK_ERROR_TITLE);
   builder->Add(prefix + "EnrollTitle", IDS_PAIRING_ENROLL_TITLE);
   builder->Add(prefix + "EnrollText1", IDS_PAIRING_CONTROLLER_ENROLL_TEXT_1);
   builder->Add(prefix + "EnrollText2", IDS_PAIRING_CONTROLLER_ENROLL_TEXT_2);
@@ -130,6 +132,8 @@ void ControllerPairingScreenHandler::DeclareLocalizedValues(
     builder->Add(prefix + "ConnectionLostText",
                  " Lost connection to your Chrome OS device. Please move "
                  "closer, or check your device and try again.");
+    builder->Add(prefix + "HostNetworkErrorTitle",
+                 "Failed to set up your Chrome OS device\'s network");
   }
 }
 

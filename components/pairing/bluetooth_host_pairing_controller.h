@@ -42,7 +42,6 @@ class BluetoothHostPairingController
  private:
   void ChangeStage(Stage new_stage);
   void SendHostStatus();
-  void AbortWithError(int code, const std::string& message);
   void Reset();
 
   void OnGetAdapter(scoped_refptr<device::BluetoothAdapter> adapter);

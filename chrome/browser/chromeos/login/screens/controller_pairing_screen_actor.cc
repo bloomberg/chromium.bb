@@ -24,6 +24,7 @@ const char kPageDeviceNotFound[] = "device-not-found";
 const char kPageEstablishingConnection[] = "establishing-connection";
 const char kPageEstablishingConnectionError[] = "establishing-connection-error";
 const char kPageCodeConfirmation[] = "code-confirmation";
+const char kPageHostNetworkError[] = "host-network-error";
 const char kPageHostUpdate[] = "host-update";
 const char kPageHostConnectionLost[] = "host-connection-lost";
 const char kPageEnrollmentIntroduction[] = "enrollment-introduction";

@@ -107,6 +107,10 @@ void ControllerPairingScreen::PairingStageChanged(Stage new_stage) {
       }
       break;
     }
+    case ControllerPairingController::STAGE_HOST_NETWORK_ERROR: {
+      desired_page = kPageHostNetworkError;
+      break;
+    }
     case ControllerPairingController::STAGE_HOST_UPDATE_IN_PROGRESS: {
       desired_page = kPageHostUpdate;
       break;

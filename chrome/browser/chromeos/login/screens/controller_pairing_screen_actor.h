@@ -39,6 +39,7 @@ extern const char kPageDeviceNotFound[];
 extern const char kPageEstablishingConnection[];
 extern const char kPageEstablishingConnectionError[];
 extern const char kPageCodeConfirmation[];
+extern const char kPageHostNetworkError[];
 extern const char kPageHostUpdate[];
 extern const char kPageHostConnectionLost[];
 extern const char kPageEnrollmentIntroduction[];
