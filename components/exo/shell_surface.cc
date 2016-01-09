@@ -252,6 +252,12 @@ bool ShellSurface::IsSurfaceSynchronized() const {
 void ShellSurface::OnSurfaceDestroying(Surface* surface) {
   surface->RemoveSurfaceObserver(this);
   surface_ = nullptr;
+
+  // Note: In its use in the Wayland server implementation, the surface
+  // destroyed callback may destroy the ShellSurface instance. This call needs
+  // to be last so that the instance can be destroyed.
+  if (!surface_destroyed_callback_.is_null())
+    surface_destroyed_callback_.Run();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

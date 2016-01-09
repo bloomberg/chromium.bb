@@ -40,6 +40,12 @@ class ShellSurface : public SurfaceDelegate,
     close_callback_ = close_callback;
   }
 
+  // Set the callback to run when the surface is destroyed.
+  void set_surface_destroyed_callback(
+      const base::Closure& surface_destroyed_callback) {
+    surface_destroyed_callback_ = surface_destroyed_callback;
+  }
+
   // Show surface as a toplevel window.
   void SetToplevel();
 
@@ -100,6 +106,7 @@ class ShellSurface : public SurfaceDelegate,
   std::string application_id_;
   gfx::Rect geometry_;
   base::Closure close_callback_;
+  base::Closure surface_destroyed_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellSurface);
 };

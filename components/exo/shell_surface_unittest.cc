@@ -157,5 +157,20 @@ TEST_F(ShellSurfaceTest, CloseCallback) {
   EXPECT_EQ(1, close_call_count);
 }
 
+TEST_F(ShellSurfaceTest, SurfaceDestroyedCallback) {
+  scoped_ptr<Surface> surface(new Surface);
+  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+
+  shell_surface->set_surface_destroyed_callback(
+      base::Bind(&DestroyShellSurface, base::Unretained(&shell_surface)));
+
+  shell_surface->SetToplevel();
+  surface->Commit();
+
+  EXPECT_TRUE(shell_surface.get());
+  surface.reset();
+  EXPECT_FALSE(shell_surface.get());
+}
+
 }  // namespace
 }  // namespace exo

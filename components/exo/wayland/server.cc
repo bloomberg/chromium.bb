@@ -717,6 +717,9 @@ void shell_get_shell_surface(wl_client* client,
     return;
   }
 
+  shell_surface->set_surface_destroyed_callback(base::Bind(
+      &wl_resource_destroy, base::Unretained(shell_surface_resource)));
+
   SetImplementation(shell_surface_resource, &shell_surface_implementation,
                     std::move(shell_surface));
 }
