@@ -623,6 +623,10 @@ bool DesktopWindowTreeHostWin::CanActivate() const {
   return native_widget_delegate_->CanActivate();
 }
 
+bool DesktopWindowTreeHostWin::WantsMouseEventsWhenInactive() const {
+  return false;
+}
+
 bool DesktopWindowTreeHostWin::WidgetSizeIsClientSize() const {
   const Widget* widget = GetWidget()->GetTopLevelWidget();
   return IsMaximized() || (widget && widget->ShouldUseNativeFrame());

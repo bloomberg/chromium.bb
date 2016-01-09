@@ -1536,8 +1536,13 @@ LRESULT HWNDMessageHandler::OnMouseActivate(UINT message,
 
   // TODO(beng): resolve this with the GetWindowLong() check on the subsequent
   //             line.
-  if (delegate_->IsWidgetWindow())
-    return delegate_->CanActivate() ? MA_ACTIVATE : MA_NOACTIVATEANDEAT;
+  if (delegate_->IsWidgetWindow()) {
+    if (delegate_->CanActivate())
+      return MA_ACTIVATE;
+    if (delegate_->WantsMouseEventsWhenInactive())
+      return MA_NOACTIVATE;
+    return MA_NOACTIVATEANDEAT;
+  }
   if (GetWindowLong(hwnd(), GWL_EXSTYLE) & WS_EX_NOACTIVATE)
     return MA_NOACTIVATE;
   SetMsgHandled(FALSE);

@@ -135,6 +135,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   bool CanMaximize() const override;
   bool CanMinimize() const override;
   bool CanActivate() const override;
+  bool WantsMouseEventsWhenInactive() const override;
   bool WidgetSizeIsClientSize() const override;
   bool IsModal() const override;
   int GetInitialShowState() const override;
