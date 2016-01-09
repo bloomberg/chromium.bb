@@ -220,9 +220,18 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
       const AudioSampleEntry& entry = samp_descr.audio_entries[desc_idx];
       const AAC& aac = entry.esds.aac;
 
-      if (!(entry.format == FOURCC_MP4A ||
-            (entry.format == FOURCC_ENCA &&
-             entry.sinf.format.format == FOURCC_MP4A))) {
+      // For encrypted audio streams entry.format is FOURCC_ENCA and actual
+      // format is in entry.sinf.format.format.
+      FourCC audio_format = (entry.format == FOURCC_ENCA)
+                                ? entry.sinf.format.format
+                                : entry.format;
+
+#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+      if (audio_format != FOURCC_MP4A && audio_format != FOURCC_AC3 &&
+          audio_format != FOURCC_EAC3) {
+#else
+      if (audio_format != FOURCC_MP4A) {
+#endif
         MEDIA_LOG(ERROR, media_log_) << "Unsupported audio format 0x"
                                      << std::hex << entry.format
                                      << " in stsd box.";
@@ -230,12 +239,20 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
       }
 
       uint8_t audio_type = entry.esds.object_type;
-      DVLOG(1) << "audio_type " << std::hex << static_cast<int>(audio_type);
+#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+      if (audio_type == kForbidden) {
+        if (audio_format == FOURCC_AC3)
+          audio_type = kAC3;
+        if (audio_format == FOURCC_EAC3)
+          audio_type = kEAC3;
+      }
+#endif
+      DVLOG(1) << "audio_type 0x" << std::hex << static_cast<int>(audio_type);
       if (audio_object_types_.find(audio_type) == audio_object_types_.end()) {
         MEDIA_LOG(ERROR, media_log_)
-            << "audio object type 0x" << std::hex << audio_type
-            << " does not match what is specified in the"
-            << " mimetype.";
+            << "audio object type 0x" << std::hex
+            << static_cast<int>(audio_type)
+            << " does not match what is specified in the mimetype.";
         return false;
       }
 
@@ -252,9 +269,20 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
 #if defined(OS_ANDROID)
         extra_data = aac.codec_specific_data();
 #endif
+#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+      } else if (audio_type == kAC3) {
+        codec = kCodecAC3;
+        channel_layout = GuessChannelLayout(entry.channelcount);
+        sample_per_second = entry.samplerate;
+      } else if (audio_type == kEAC3) {
+        codec = kCodecEAC3;
+        channel_layout = GuessChannelLayout(entry.channelcount);
+        sample_per_second = entry.samplerate;
+#endif
       } else {
         MEDIA_LOG(ERROR, media_log_) << "Unsupported audio object type 0x"
-                                     << std::hex << audio_type << " in esds.";
+                                     << std::hex << static_cast<int>(audio_type)
+                                     << " in esds.";
         return false;
       }
 

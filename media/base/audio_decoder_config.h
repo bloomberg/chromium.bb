@@ -36,16 +36,17 @@ enum AudioCodec {
   kCodecPCM_S16BE = 10,
   kCodecPCM_S24BE = 11,
   kCodecOpus = 12,
-  // kCodecEAC3 = 13,
+  kCodecEAC3 = 13,
   kCodecPCM_ALAW = 14,
   kCodecALAC = 15,
+  kCodecAC3 = 16,
   // DO NOT ADD RANDOM AUDIO CODECS!
   //
   // The only acceptable time to add a new codec is if there is production code
   // that uses said codec in the same CL.
 
   // Must always be equal to the largest entry ever logged.
-  kAudioCodecMax = kCodecALAC,
+  kAudioCodecMax = kCodecAC3,
 };
 
 // TODO(dalecurtis): FFmpeg API uses |bytes_per_channel| instead of

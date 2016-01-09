@@ -66,8 +66,10 @@ const char* AsString(AudioCodec codec) {
     RETURN_STRING(kCodecPCM_S16BE);
     RETURN_STRING(kCodecPCM_S24BE);
     RETURN_STRING(kCodecOpus);
+    RETURN_STRING(kCodecEAC3);
     RETURN_STRING(kCodecPCM_ALAW);
     RETURN_STRING(kCodecALAC);
+    RETURN_STRING(kCodecAC3);
   }
   NOTREACHED();
   return nullptr;  // crash early

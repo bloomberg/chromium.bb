@@ -22,6 +22,7 @@
 #include "media/base/video_decoder_config.h"
 #include "media/formats/mp4/es_descriptor.h"
 #include "media/formats/mp4/mp4_stream_parser.h"
+#include "media/media_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -340,6 +341,28 @@ TEST_F(MP4StreamParserTest, NaturalSizeWithPASP) {
   EXPECT_TRUE(AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
   EXPECT_EQ(gfx::Size(639, 360), video_decoder_config_.natural_size());
 }
+
+#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+TEST_F(MP4StreamParserTest, DemuxingAC3) {
+  std::set<int> audio_object_types;
+  audio_object_types.insert(kAC3);
+  parser_.reset(new MP4StreamParser(audio_object_types, false));
+  InitializeParserAndExpectLiveness(DemuxerStream::LIVENESS_RECORDED);
+  scoped_refptr<DecoderBuffer> buffer =
+      ReadTestDataFile("bear-ac3-only-frag.mp4");
+  EXPECT_TRUE(AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
+}
+
+TEST_F(MP4StreamParserTest, DemuxingEAC3) {
+  std::set<int> audio_object_types;
+  audio_object_types.insert(kEAC3);
+  parser_.reset(new MP4StreamParser(audio_object_types, false));
+  InitializeParserAndExpectLiveness(DemuxerStream::LIVENESS_RECORDED);
+  scoped_refptr<DecoderBuffer> buffer =
+      ReadTestDataFile("bear-eac3-only-frag.mp4");
+  EXPECT_TRUE(AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
+}
+#endif
 
 }  // namespace mp4
 }  // namespace media

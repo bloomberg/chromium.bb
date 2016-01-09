@@ -29,10 +29,11 @@ enum AudioCodec {
   PCM_S16BE = 10,
   PCM_S24BE = 11,
   Opus = 12,
-  // EAC3 = 13,
+  EAC3 = 13,
   PCM_ALAW = 14,
   ALAC = 15,
-  MAX = ALAC,
+  AC3 = 16,
+  MAX = AC3,
 };
 
 // See media/base/channel_layout.h for descriptions.

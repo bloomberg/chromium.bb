@@ -122,8 +122,12 @@ std::string AudioDecoderConfig::GetHumanReadableCodecName() const {
       return "opus";
     case kCodecPCM_ALAW:
       return "pcm_alaw";
+    case kCodecEAC3:
+      return "eac3";
     case kCodecALAC:
       return "alac";
+    case kCodecAC3:
+      return "ac3";
   }
   NOTREACHED();
   return "";

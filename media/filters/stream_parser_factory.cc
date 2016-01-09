@@ -58,7 +58,8 @@ struct CodecInfo {
     HISTOGRAM_MP3,
     HISTOGRAM_OPUS,
     HISTOGRAM_HEVC,
-    HISTOGRAM_MAX = HISTOGRAM_HEVC  // Must be equal to largest logged entry.
+    HISTOGRAM_AC3,
+    HISTOGRAM_MAX = HISTOGRAM_AC3  // Must be equal to largest logged entry.
   };
 
   const char* pattern;
@@ -166,6 +167,26 @@ static const CodecInfo kMPEG4AACCodecInfo = { "mp4a.40.*", CodecInfo::AUDIO,
 static const CodecInfo kMPEG2AACLCCodecInfo = { "mp4a.67", CodecInfo::AUDIO,
                                                 NULL,
                                                 CodecInfo::HISTOGRAM_MPEG2AAC };
+#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+// The 'ac-3' and 'ec-3' are mime codec ids for AC3 and EAC3 according to
+// http://www.mp4ra.org/codecs.html
+// The object types for AC3 and EAC3 in MP4 container are 0xa5 and 0xa6, so
+// according to RFC 6381 this corresponds to codec ids 'mp4a.A5' and 'mp4a.A6'.
+// Codec ids with lower case oti (mp4a.a5 and mp4a.a6) are supported for
+// backward compatibility.
+static const CodecInfo kAC3CodecInfo1 = {"ac-3", CodecInfo::AUDIO, NULL,
+                                         CodecInfo::HISTOGRAM_AC3};
+static const CodecInfo kAC3CodecInfo2 = {"mp4a.a5", CodecInfo::AUDIO, NULL,
+                                         CodecInfo::HISTOGRAM_AC3};
+static const CodecInfo kAC3CodecInfo3 = {"mp4a.A5", CodecInfo::AUDIO, NULL,
+                                         CodecInfo::HISTOGRAM_AC3};
+static const CodecInfo kEAC3CodecInfo1 = {"ec-3", CodecInfo::AUDIO, NULL,
+                                          CodecInfo::HISTOGRAM_EAC3};
+static const CodecInfo kEAC3CodecInfo2 = {"mp4a.a6", CodecInfo::AUDIO, NULL,
+                                          CodecInfo::HISTOGRAM_EAC3};
+static const CodecInfo kEAC3CodecInfo3 = {"mp4a.A6", CodecInfo::AUDIO, NULL,
+                                          CodecInfo::HISTOGRAM_EAC3};
+#endif
 
 static const CodecInfo* kVideoMP4Codecs[] = {
   &kH264AVC1CodecInfo,
@@ -179,11 +200,17 @@ static const CodecInfo* kVideoMP4Codecs[] = {
   NULL
 };
 
-static const CodecInfo* kAudioMP4Codecs[] = {
-  &kMPEG4AACCodecInfo,
-  &kMPEG2AACLCCodecInfo,
-  NULL
-};
+static const CodecInfo* kAudioMP4Codecs[] = {&kMPEG4AACCodecInfo,
+                                             &kMPEG2AACLCCodecInfo,
+#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+                                             &kAC3CodecInfo1,
+                                             &kAC3CodecInfo2,
+                                             &kAC3CodecInfo3,
+                                             &kEAC3CodecInfo1,
+                                             &kEAC3CodecInfo2,
+                                             &kEAC3CodecInfo3,
+#endif
+                                             NULL};
 
 static StreamParser* BuildMP4Parser(const std::vector<std::string>& codecs,
                                     const scoped_refptr<MediaLog>& media_log) {
@@ -205,6 +232,16 @@ static StreamParser* BuildMP4Parser(const std::vector<std::string>& codecs,
         has_sbr = true;
         break;
       }
+#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+    } else if (base::MatchPattern(codec_id, kAC3CodecInfo1.pattern) ||
+               base::MatchPattern(codec_id, kAC3CodecInfo2.pattern) ||
+               base::MatchPattern(codec_id, kAC3CodecInfo3.pattern)) {
+      audio_object_types.insert(mp4::kAC3);
+    } else if (base::MatchPattern(codec_id, kEAC3CodecInfo1.pattern) ||
+               base::MatchPattern(codec_id, kEAC3CodecInfo2.pattern) ||
+               base::MatchPattern(codec_id, kEAC3CodecInfo3.pattern)) {
+      audio_object_types.insert(mp4::kEAC3);
+#endif
     }
   }
 

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/chromecast_build.gni")
+import("//build/config/features.gni")
 import("//build/config/headless_build.gni")
 
 declare_args() {
@@ -48,7 +49,12 @@ declare_args() {
   # Use low-memory buffers on non-Android builds of Chromecast.
   use_low_memory_buffer = is_chromecast && !is_android
 
-  enable_mse_mpeg2ts_stream_parser = is_chromecast
+  # Enables AC3/EAC3 audio demuxing. This is enabled only on Chromecast, since
+  # it only provides demuxing, and is only useful for AC3/EAC3 audio
+  # pass-through to HDMI sink on Chromecast.
+  enable_ac3_eac3_audio_demuxing = proprietary_codecs && is_chromecast
+
+  enable_mse_mpeg2ts_stream_parser = proprietary_codecs && is_chromecast
 
   # Enable HEVC/H265 demuxing. Actual decoding must be provided by the
   # platform. Enable by default for Chromecast.

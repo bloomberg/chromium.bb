@@ -197,3 +197,12 @@ media/test/data/bear-640x360-non_square_pixel-with_pasp.mp4
 media/test/data/bear-640x360-non_square_pixel-without_pasp.mp4
   Size in TKHD is (639.2x360) and size in STSD is (470x360). No PASP box is
   present.
+
+// MP4 files with AC3 and EAC3 audio
+media/test/data/bear-ac3-only-frag.mp4
+  AC3 audio in framented MP4, generated with
+  ffmpeg -i bear.ac3 -acodec copy -movflags frag_keyframe bear-ac3-only-frag.mp4
+
+media/test/data/bear-eac3-only-frag.mp4
+  EAC3 audio in framented MP4, generated with
+  ffmpeg -i bear.eac3 -acodec copy -movflags frag_keyframe bear-eac3-only-frag.mp4

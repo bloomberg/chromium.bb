@@ -24,6 +24,7 @@
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/file_data_source.h"
 #include "media/formats/mp4/avc.h"
+#include "media/media_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::AnyNumber;
@@ -1131,5 +1132,37 @@ TEST_F(FFmpegDemuxerTest, HEVC_in_MP4_container) {
   message_loop_.Run();
 }
 #endif
+
+#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+TEST_F(FFmpegDemuxerTest, Read_AC3_Audio) {
+  CreateDemuxer("bear-ac3-only-frag.mp4");
+  InitializeDemuxer();
+
+  // Attempt a read from the audio stream and run the message loop until done.
+  DemuxerStream* audio = demuxer_->GetStream(DemuxerStream::AUDIO);
+
+  // Read the first two frames and check that we are getting expected data
+  audio->Read(NewReadCB(FROM_HERE, 834, 0, true));
+  message_loop_.Run();
+
+  audio->Read(NewReadCB(FROM_HERE, 836, 34830, true));
+  message_loop_.Run();
+}
+
+TEST_F(FFmpegDemuxerTest, Read_EAC3_Audio) {
+  CreateDemuxer("bear-eac3-only-frag.mp4");
+  InitializeDemuxer();
+
+  // Attempt a read from the audio stream and run the message loop until done.
+  DemuxerStream* audio = demuxer_->GetStream(DemuxerStream::AUDIO);
+
+  // Read the first two frames and check that we are getting expected data
+  audio->Read(NewReadCB(FROM_HERE, 870, 0, true));
+  message_loop_.Run();
+
+  audio->Read(NewReadCB(FROM_HERE, 872, 34830, true));
+  message_loop_.Run();
+}
+#endif  // ENABLE_AC3_EAC3_AUDIO_DEMUXING
 
 }  // namespace media

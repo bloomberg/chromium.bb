@@ -30,6 +30,8 @@ class MimeUtil {
     INVALID_CODEC,
     PCM,
     MP3,
+    AC3,
+    EAC3,
     MPEG2_AAC_LC,
     MPEG2_AAC_MAIN,
     MPEG2_AAC_SSR,
@@ -152,6 +154,11 @@ static bool IsCodecSupportedOnAndroid(MimeUtil::Codec codec) {
     case MimeUtil::VP8:
       return true;
 
+    case MimeUtil::AC3:
+    case MimeUtil::EAC3:
+      // TODO(servolk): Revisit this for AC3/EAC3 support on AndroidTV
+      return false;
+
     case MimeUtil::MPEG2_AAC_LC:
     case MimeUtil::MPEG2_AAC_MAIN:
     case MimeUtil::MPEG2_AAC_SSR:
@@ -210,6 +217,11 @@ struct MediaFormat {
 //   avc1.6400xx - H.264 High
 static const char kMP4AudioCodecsExpression[] =
     "mp4a.66,mp4a.67,mp4a.68,mp4a.69,mp4a.6B,mp4a.40.2,mp4a.40.02,mp4a.40.5,"
+#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+    // Only one variant each of ac3 and eac3 codec string is sufficient here,
+    // since these strings are parsed and mapped to MimeUtil::Codec enum values.
+    "ac-3,ec-3,"
+#endif
     "mp4a.40.05,mp4a.40.29";
 static const char kMP4VideoCodecsExpression[] =
     // This is not a complete list of supported avc1 codecs. It is simply used
@@ -225,6 +237,11 @@ static const char kMP4VideoCodecsExpression[] =
     "hev1.1.6.L93.B0,"
 #endif
     "mp4a.66,mp4a.67,mp4a.68,mp4a.69,mp4a.6B,mp4a.40.2,mp4a.40.02,mp4a.40.5,"
+#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+    // Only one variant each of ac3 and eac3 codec string is sufficient here,
+    // since these strings are parsed and mapped to MimeUtil::Codec enum values.
+    "ac-3,ec-3,"
+#endif
     "mp4a.40.05,mp4a.40.29";
 #endif  // USE_PROPRIETARY_CODECS
 
@@ -291,6 +308,20 @@ static const CodecIDMappings kUnambiguousCodecStringMap[] = {
     {"mp4a.40.5", MimeUtil::MPEG4_AAC_SBR_v1},
     {"mp4a.40.05", MimeUtil::MPEG4_AAC_SBR_v1},
     {"mp4a.40.29", MimeUtil::MPEG4_AAC_SBR_PS_v2},
+#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+    // TODO(servolk): Strictly speaking only mp4a.A5 and mp4a.A6 codec ids are
+    // valid according to RFC 6381 section 3.3, 3.4. Lower-case oti (mp4a.a5 and
+    // mp4a.a6) should be rejected. But we used to allow those in older versions
+    // of Chromecast firmware and some apps (notably MPL) depend on those codec
+    // types being supported, so they should be allowed for now
+    // (crbug.com/564960).
+    {"ac-3", MimeUtil::AC3},
+    {"mp4a.a5", MimeUtil::AC3},
+    {"mp4a.A5", MimeUtil::AC3},
+    {"ec-3", MimeUtil::EAC3},
+    {"mp4a.a6", MimeUtil::EAC3},
+    {"mp4a.A6", MimeUtil::EAC3},
+#endif
     {"vorbis", MimeUtil::VORBIS},
     {"opus", MimeUtil::OPUS},
     {"vp8", MimeUtil::VP8},
@@ -638,6 +669,8 @@ bool MimeUtil::IsCodecSupported(Codec codec) const {
 bool MimeUtil::IsCodecProprietary(Codec codec) const {
   switch (codec) {
     case INVALID_CODEC:
+    case AC3:
+    case EAC3:
     case MP3:
     case MPEG2_AAC_LC:
     case MPEG2_AAC_MAIN:
