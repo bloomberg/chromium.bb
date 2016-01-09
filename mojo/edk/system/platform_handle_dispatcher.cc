@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <limits>
 #include <utility>
 
 #include "base/logging.h"
@@ -16,10 +17,10 @@ namespace edk {
 
 namespace {
 
-const size_t kInvalidPlatformHandleIndex = static_cast<size_t>(-1);
+const uint32_t kInvalidPlatformHandleIndex = static_cast<uint32_t>(-1);
 
 struct MOJO_ALIGNAS(8) SerializedPlatformHandleDispatcher {
-  size_t platform_handle_index;  // (Or |kInvalidPlatformHandleIndex|.)
+  uint32_t platform_handle_index;  // (Or |kInvalidPlatformHandleIndex|.)
 };
 
 }  // namespace
@@ -98,7 +99,9 @@ bool PlatformHandleDispatcher::EndSerializeAndCloseImplNoLock(
   SerializedPlatformHandleDispatcher* serialization =
       static_cast<SerializedPlatformHandleDispatcher*>(destination);
   if (platform_handle_.is_valid()) {
-    serialization->platform_handle_index = platform_handles->size();
+    DCHECK(platform_handles->size() < std::numeric_limits<uint32_t>::max());
+    serialization->platform_handle_index =
+        static_cast<uint32_t>(platform_handles->size());
     platform_handles->push_back(platform_handle_.release());
   } else {
     serialization->platform_handle_index = kInvalidPlatformHandleIndex;

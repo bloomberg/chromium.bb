@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <limits>
 #include <utility>
 
@@ -24,8 +25,8 @@ namespace edk {
 namespace {
 
 struct MOJO_ALIGNAS(8) SerializedSharedBufferDispatcher {
-  size_t num_bytes;
-  size_t platform_handle_index;
+  uint32_t num_bytes;
+  uint32_t platform_handle_index;
 };
 
 }  // namespace
@@ -257,8 +258,12 @@ bool SharedBufferDispatcher::EndSerializeAndCloseImplNoLock(
     return false;
   }
 
-  serialization->num_bytes = shared_buffer_->GetNumBytes();
-  serialization->platform_handle_index = platform_handles->size();
+  DCHECK(shared_buffer_->GetNumBytes() < std::numeric_limits<uint32_t>::max());
+  serialization->num_bytes =
+      static_cast<uint32_t>(shared_buffer_->GetNumBytes());
+  DCHECK(platform_handles->size() < std::numeric_limits<uint32_t>::max());
+  serialization->platform_handle_index =
+      static_cast<uint32_t>(platform_handles->size());
   platform_handles->push_back(platform_handle.release());
   *actual_size = sizeof(SerializedSharedBufferDispatcher);
 

@@ -12,6 +12,7 @@
 
 #include <string.h>
 #include <algorithm>
+#include <limits>
 #include <utility>
 
 #include "base/logging.h"
@@ -170,7 +171,7 @@ bool LocalDataPipeImpl::ProducerEndSerialize(
 
   if (!consumer_open()) {
     // Case 1: The consumer is closed.
-    s->consumer_num_bytes = static_cast<size_t>(-1);
+    s->consumer_num_bytes = static_cast<uint32_t>(-1);
     *actual_size = sizeof(SerializedDataPipeProducerDispatcher);
     return true;
   }
@@ -178,7 +179,8 @@ bool LocalDataPipeImpl::ProducerEndSerialize(
   // Case 2: The consumer isn't closed. We'll replace ourselves with a
   // |RemoteProducerDataPipeImpl|.
 
-  s->consumer_num_bytes = current_num_bytes_;
+  DCHECK(current_num_bytes_ < std::numeric_limits<uint32_t>::max());
+  s->consumer_num_bytes = static_cast<uint32_t>(current_num_bytes_);
   // Note: We don't use |port|.
   scoped_refptr<ChannelEndpoint> channel_endpoint =
       channel->SerializeEndpointWithLocalPeer(destination_for_endpoint, nullptr,

@@ -140,9 +140,9 @@ struct MOJO_ALIGNAS(8) SerializedDataPipeProducerDispatcher {
   // However, the deserializer must revalidate (as with everything received).
   MojoCreateDataPipeOptions validated_options;
   // Number of bytes already enqueued to the consumer. Set to
-  // |static_cast<size_t>(-1)| if the consumer is already closed, in which case
-  // this will *not* be followed by a serialized |ChannelEndpoint|.
-  size_t consumer_num_bytes;
+  // |static_cast<uint32_t>(-1)| if the consumer is already closed, in which
+  // case this will *not* be followed by a serialized |ChannelEndpoint|.
+  uint32_t consumer_num_bytes;
 };
 
 // Serialized form of a consumer dispatcher. This will actually be followed by a

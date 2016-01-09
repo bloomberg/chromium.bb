@@ -6,6 +6,7 @@
 
 #include <string.h>
 #include <algorithm>
+#include <limits>
 #include <utility>
 
 #include "base/logging.h"
@@ -284,7 +285,7 @@ bool RemoteConsumerDataPipeImpl::ProducerEndSerialize(
 
   if (!consumer_open()) {
     // Case 1: The consumer is closed.
-    s->consumer_num_bytes = static_cast<size_t>(-1);
+    s->consumer_num_bytes = static_cast<uint32_t>(-1);
     *actual_size = sizeof(SerializedDataPipeProducerDispatcher);
     return true;
   }
@@ -292,7 +293,8 @@ bool RemoteConsumerDataPipeImpl::ProducerEndSerialize(
   // Case 2: The consumer isn't closed. We pass |channel_endpoint| back to the
   // |Channel|. There's no reason for us to continue to exist afterwards.
 
-  s->consumer_num_bytes = consumer_num_bytes_;
+  DCHECK(consumer_num_bytes_ < std::numeric_limits<uint32_t>::max());
+  s->consumer_num_bytes = static_cast<uint32_t>(consumer_num_bytes_);
   // Note: We don't use |port|.
   scoped_refptr<ChannelEndpoint> channel_endpoint;
   channel_endpoint.swap(channel_endpoint_);

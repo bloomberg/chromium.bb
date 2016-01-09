@@ -7,7 +7,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <limits>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/debug/stack_trace.h"
@@ -28,7 +30,7 @@ namespace edk {
 
 namespace {
 
-const size_t kInvalidMessagePipeHandleIndex = static_cast<size_t>(-1);
+const uint32_t kInvalidMessagePipeHandleIndex = static_cast<uint32_t>(-1);
 
 struct MOJO_ALIGNAS(8) SerializedMessagePipeHandleDispatcher {
   bool transferable;
@@ -37,21 +39,22 @@ struct MOJO_ALIGNAS(8) SerializedMessagePipeHandleDispatcher {
   // The following members are only set if transferable is true.
   // Could be |kInvalidMessagePipeHandleIndex| if the other endpoint of the MP
   // was closed.
-  size_t platform_handle_index;
+  uint32_t platform_handle_index;
 
-  size_t shared_memory_handle_index;  // (Or |kInvalidMessagePipeHandleIndex|.)
+  uint32_t
+      shared_memory_handle_index;  // (Or |kInvalidMessagePipeHandleIndex|.)
   uint32_t shared_memory_size;
 
-  size_t serialized_read_buffer_size;
-  size_t serialized_write_buffer_size;
-  size_t serialized_message_queue_size;
+  uint32_t serialized_read_buffer_size;
+  uint32_t serialized_write_buffer_size;
+  uint32_t serialized_message_queue_size;
 
   // These are the FDs required as part of serializing channel_ and
   // message_queue_. This is only used on POSIX.
-  size_t serialized_fds_index;  // (Or |kInvalidMessagePipeHandleIndex|.)
-  size_t serialized_read_fds_length;
-  size_t serialized_write_fds_length;
-  size_t serialized_message_fds_length;
+  uint32_t serialized_fds_index;  // (Or |kInvalidMessagePipeHandleIndex|.)
+  uint32_t serialized_read_fds_length;
+  uint32_t serialized_write_fds_length;
+  uint32_t serialized_message_fds_length;
 };
 
 char* SerializeBuffer(char* start, std::vector<char>* buffer) {
@@ -805,17 +808,26 @@ bool MessagePipeDispatcher::EndSerializeAndCloseImplNoLock(
   serialization->transferable = transferable_;
   serialization->pipe_id = pipe_id_;
   if (serialized_platform_handle_.is_valid()) {
-    serialization->platform_handle_index = platform_handles->size();
+    DCHECK(platform_handles->size() < std::numeric_limits<uint32_t>::max());
+    serialization->platform_handle_index =
+        static_cast<uint32_t>(platform_handles->size());
     platform_handles->push_back(serialized_platform_handle_.release());
   } else {
     serialization->platform_handle_index = kInvalidMessagePipeHandleIndex;
   }
 
   serialization->write_error = write_error_;
-  serialization->serialized_read_buffer_size = serialized_read_buffer_.size();
-  serialization->serialized_write_buffer_size = serialized_write_buffer_.size();
+  DCHECK(serialized_read_buffer_.size() < std::numeric_limits<uint32_t>::max());
+  serialization->serialized_read_buffer_size =
+      static_cast<uint32_t>(serialized_read_buffer_.size());
+  DCHECK(serialized_write_buffer_.size() <
+         std::numeric_limits<uint32_t>::max());
+  serialization->serialized_write_buffer_size =
+      static_cast<uint32_t>(serialized_write_buffer_.size());
+  DCHECK(serialized_message_queue_.size() <
+         std::numeric_limits<uint32_t>::max());
   serialization->serialized_message_queue_size =
-      serialized_message_queue_.size();
+      static_cast<uint32_t>(serialized_message_queue_.size());
 
   serialization->shared_memory_size = static_cast<uint32_t>(
       serialization->serialized_read_buffer_size +
@@ -832,20 +844,30 @@ bool MessagePipeDispatcher::EndSerializeAndCloseImplNoLock(
     start = SerializeBuffer(start, &serialized_write_buffer_);
     start = SerializeBuffer(start, &serialized_message_queue_);
 
-    serialization->shared_memory_handle_index = platform_handles->size();
+    DCHECK(platform_handles->size() < std::numeric_limits<uint32_t>::max());
+    serialization->shared_memory_handle_index =
+        static_cast<uint32_t>(platform_handles->size());
     platform_handles->push_back(shared_buffer->PassPlatformHandle().release());
   } else {
     serialization->shared_memory_handle_index = kInvalidMessagePipeHandleIndex;
   }
 
-  serialization->serialized_read_fds_length = serialized_read_fds_length_;
-  serialization->serialized_write_fds_length = serialized_write_fds_length_;
-  serialization->serialized_message_fds_length = serialized_message_fds_length_;
+  DCHECK(serialized_read_fds_length_ < std::numeric_limits<uint32_t>::max());
+  serialization->serialized_read_fds_length =
+      static_cast<uint32_t>(serialized_read_fds_length_);
+  DCHECK(serialized_write_fds_length_ < std::numeric_limits<uint32_t>::max());
+  serialization->serialized_write_fds_length =
+      static_cast<uint32_t>(serialized_write_fds_length_);
+  DCHECK(serialized_message_fds_length_ < std::numeric_limits<uint32_t>::max());
+  serialization->serialized_message_fds_length =
+      static_cast<uint32_t>(serialized_message_fds_length_);
   if (serialized_fds_.empty()) {
     serialization->serialized_fds_index = kInvalidMessagePipeHandleIndex;
   } else {
 #if defined(OS_POSIX)
-    serialization->serialized_fds_index = platform_handles->size();
+    DCHECK(platform_handles->size() < std::numeric_limits<uint32_t>::max());
+    serialization->serialized_fds_index =
+        static_cast<uint32_t>(platform_handles->size());
     for (size_t i = 0; i < serialized_fds_.size(); ++i)
       platform_handles->push_back(PlatformHandle(serialized_fds_[i]));
     serialized_fds_.clear();

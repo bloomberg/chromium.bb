@@ -187,7 +187,7 @@ bool DataPipe::ProducerDeserialize(Channel* channel,
   }
 
   if (!consumer_open) {
-    if (s->consumer_num_bytes != static_cast<size_t>(-1)) {
+    if (s->consumer_num_bytes != static_cast<uint32_t>(-1)) {
       LOG(ERROR)
           << "Invalid serialized data pipe producer (bad consumer_num_bytes)";
       return false;
