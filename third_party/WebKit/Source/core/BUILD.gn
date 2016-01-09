@@ -372,6 +372,8 @@ source_set("core_generated") {
     "$blink_core_output_dir/XLinkNames.cpp",
     "$blink_core_output_dir/XMLNSNames.cpp",
     "$blink_core_output_dir/XMLNames.cpp",
+    "$blink_core_output_dir/experiments/ExperimentalFeatures.cpp",
+    "$blink_core_output_dir/experiments/ExperimentalFeatures.h",
     "$blink_core_output_dir/fetch/FetchInitiatorTypeNames.cpp",
 
     # Generated from HTMLEntityNames.in

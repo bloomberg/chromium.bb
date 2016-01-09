@@ -12,18 +12,25 @@ namespace blink {
 class ExecutionContext;
 
 // A class that stores dynamic tests for experimental features which can be
-// enabled through the experimental framwork via API keys.
+// enabled through the experimental framework via API keys.
 
 class CORE_EXPORT ExperimentalFeatures {
 public:
     {% for feature in features %}
     {% if feature.api_name %}
     static bool {{feature.first_lowered_name}}Enabled(ExecutionContext* executionContext, String& errorMessage);
+    static bool {{feature.first_lowered_name}}Enabled(ExecutionContext* executionContext);
     {% endif %}
     {% endfor %}
 
 private:
     ExperimentalFeatures() { }
+
+    {% for feature in features %}
+    {% if feature.api_name %}
+    static bool {{feature.first_lowered_name}}EnabledImpl(ExecutionContext* executionContext, String* errorMessage);
+    {% endif %}
+    {% endfor %}
 };
 
 } // namespace blink

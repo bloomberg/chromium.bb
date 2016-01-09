@@ -6,19 +6,15 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/experiments/Experiments.h"
+#include "core/experiments/ExperimentalFeatures.h"
 
 namespace blink {
-
-namespace {
-const char* kFrobulateAPIName = "Frobulate";
-}
 
 // static
 bool InternalsFrobulate::frobulate(ScriptState* scriptState, Internals& internals, ExceptionState& exceptionState)
 {
     String errorMessage;
-    if (!Experiments::isApiEnabled(scriptState->executionContext(), kFrobulateAPIName, errorMessage)) {
+    if (!ExperimentalFeatures::experimentalFrameworkSampleAPIEnabled(scriptState->executionContext(), errorMessage)) {
         exceptionState.throwDOMException(NotSupportedError, errorMessage);
         return false;
     }

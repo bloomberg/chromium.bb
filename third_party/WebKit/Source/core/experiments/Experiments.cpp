@@ -28,7 +28,7 @@ String getDisabledMessage(const String& apiName)
     return "The '" + apiName + "' API is currently enabled in limited experiments. Please see [Chrome experiments website URL] for information on enabling this experiment on your site.";
 }
 
-bool hasValidAPIKey(ExecutionContext* executionContext, const String& apiName, String& errorMessage)
+bool hasValidAPIKey(ExecutionContext* executionContext, const String& apiName, String* errorMessage)
 {
     bool foundAnyKey = false;
     String origin = getCurrentOrigin(executionContext);
@@ -44,20 +44,26 @@ bool hasValidAPIKey(ExecutionContext* executionContext, const String& apiName, S
             }
         }
     }
-    if (foundAnyKey) {
-        errorMessage = "The provided key(s) are not valid for the '" + apiName + "' API.";
-    } else {
-        errorMessage = getDisabledMessage(apiName);
+
+    if (errorMessage) {
+        if (foundAnyKey) {
+            *errorMessage = "The provided key(s) are not valid for the '" + apiName + "' API.";
+        } else {
+            *errorMessage = getDisabledMessage(apiName);
+        }
     }
     return false;
 }
 
 } // namespace
 
-bool Experiments::isApiEnabled(ExecutionContext* executionContext, const String& apiName, String& errorMessage)
+// static
+bool Experiments::isApiEnabled(ExecutionContext* executionContext, const String& apiName, String* errorMessage)
 {
     if (!RuntimeEnabledFeatures::experimentalFrameworkEnabled()) {
-        errorMessage = "Experimental Framework is not enabled.";
+        if (errorMessage) {
+            *errorMessage = "Experimental Framework is not enabled.";
+        }
         return false;
     }
 
@@ -67,13 +73,17 @@ bool Experiments::isApiEnabled(ExecutionContext* executionContext, const String&
     }
 
     // Experiments are only enabled for secure origins
-    if (!executionContext->isSecureContext(errorMessage)) {
+    bool isSecure = errorMessage
+        ? executionContext->isSecureContext(*errorMessage)
+        : executionContext->isSecureContext();
+    if (!isSecure) {
         return false;
     }
 
     return hasValidAPIKey(executionContext, apiName, errorMessage);
 }
 
+// static
 DOMException* Experiments::createApiDisabledException(const String& apiName)
 {
     return DOMException::create(NotSupportedError, getDisabledMessage(apiName));

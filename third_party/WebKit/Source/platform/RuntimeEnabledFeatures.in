@@ -20,8 +20,11 @@
 // condition=ENABLE_NAME is used for wrapping features in compile-time
 // #if ENABLE(FEATURE) guards.  These are deprecated and should all be removed.
 //
-// api_name=API_NAME is used to enable the feature through the experimental framework, so that the feature can be
+// api_name=API_NAME is used to integrate the feature with the experimental framework, so that the feature can be
 // enabled at runtime on a per-page basis through a signed API key for the corresponding API name.
+// Declaring the api_name will cause a static method to be generated in
+// ExperimentalFeatures.h/cpp. This static method allows the feature
+// implementation to check if it is enabled for the current context.
 
 AdditiveAnimations status=experimental, depends_on=StackedCSSPropertyAnimations
 AppBanner status=stable
@@ -75,6 +78,11 @@ EventListenerOptions status=experimental
 ExperimentalCanvasFeatures status=test
 ExperimentalContentSecurityPolicyFeatures status=experimental
 ExperimentalFramework status=test
+// Define a sample API for testing integration with the Experimental Framework.
+// The sample API is used in both unit and layout tests for the Experimental
+// Framework. Do not change this flag to stable, as it exists solely to generate
+// code used by the sample API implementation.
+ExperimentalFrameworkSampleAPI api_name=Frobulate
 ExperimentalV8Extras status=experimental
 FastMobileScrolling
 FileAPIBlobClose status=experimental

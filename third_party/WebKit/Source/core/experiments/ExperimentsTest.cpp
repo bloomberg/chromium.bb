@@ -24,6 +24,8 @@ const char* kFrobulateAPIName = "Frobulate";
 const char* kFrobulateEnabledOrigin = "https://www.example.com";
 const char* kFrobulateEnabledOriginUnsecure = "http://www.example.com";
 
+} // namespace
+
 class ExperimentsTest : public ::testing::Test {
 protected:
     ExperimentsTest()
@@ -83,11 +85,16 @@ protected:
         head->appendChild(meta.release());
     }
 
-    bool isApiEnabled(const String& origin, const String& apiName, const char* apiKeyValue, String& errorMessage)
+    bool isApiEnabled(const String& origin, const String& apiName, const char* apiKeyValue, String* errorMessage)
     {
         setPageOrigin(origin);
         addApiKey(apiKeyValue);
         return Experiments::isApiEnabled(executionContext(), apiName, errorMessage);
+    }
+
+    bool isApiEnabledWithoutErrorMessage(const String& origin, const String& apiName, const char* apiKeyValue)
+    {
+        return isApiEnabled(origin, apiName, apiKeyValue, nullptr);
     }
 
 private:
@@ -102,9 +109,18 @@ TEST_F(ExperimentsTest, EnabledNonExistingAPI)
     bool isNonExistingApiEnabled = isApiEnabled(kFrobulateEnabledOrigin,
         kNonExistingAPIName,
         kFrobulateAPIName /* Use existing api name as the key value */,
-        errorMessage);
+        &errorMessage);
     EXPECT_FALSE(isNonExistingApiEnabled);
     EXPECT_EQ(("The provided key(s) are not valid for the 'This API does not exist' API."), errorMessage);
+}
+
+TEST_F(ExperimentsTest, EnabledNonExistingAPIWithoutErrorMessage)
+{
+    bool isNonExistingApiEnabled = isApiEnabledWithoutErrorMessage(
+        kFrobulateEnabledOrigin,
+        kNonExistingAPIName,
+        kFrobulateAPIName /* Use existing api name as the key value */);
+    EXPECT_FALSE(isNonExistingApiEnabled);
 }
 
 // The API should be enabled if a valid key for the origin is provided
@@ -114,9 +130,18 @@ TEST_F(ExperimentsTest, EnabledSecureRegisteredOrigin)
     bool isOriginEnabled = isApiEnabled(kFrobulateEnabledOrigin,
         kFrobulateAPIName,
         kFrobulateAPIName /* Use just the api name as the key value */,
-        errorMessage);
+        &errorMessage);
     EXPECT_TRUE(isOriginEnabled);
     EXPECT_TRUE(errorMessage.isEmpty());
+}
+
+TEST_F(ExperimentsTest, EnabledSecureRegisteredOriginWithoutErrorMessage)
+{
+    bool isOriginEnabled = isApiEnabledWithoutErrorMessage(
+        kFrobulateEnabledOrigin,
+        kFrobulateAPIName,
+        kFrobulateAPIName /* Use just the api name as the key value */);
+    EXPECT_TRUE(isOriginEnabled);
 }
 
 // The API should not be enabled if the origin is unsecure, even if a valid
@@ -127,7 +152,7 @@ TEST_F(ExperimentsTest, EnabledNonSecureRegisteredOrigin)
     bool isOriginEnabled = isApiEnabled(kFrobulateEnabledOriginUnsecure,
         kFrobulateAPIName,
         kFrobulateAPIName /* Use just the api name as the key value */,
-        errorMessage);
+        &errorMessage);
     EXPECT_FALSE(isOriginEnabled);
     EXPECT_TRUE(errorMessage.contains("secure origin")) << "Message should indicate only secure origins are allowed, was: " << errorMessage;
 }
@@ -140,5 +165,4 @@ TEST_F(ExperimentsTest, DisabledException)
     EXPECT_TRUE(disabledException->message().contains(kNonExistingAPIName)) << "Message should contain the API name, was: " << disabledException->message();
 }
 
-} // namespace
 } // namespace blink
