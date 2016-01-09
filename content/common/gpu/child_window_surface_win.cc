@@ -10,7 +10,10 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "ui/base/win/hidden_window.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gl/egl_util.h"
+#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/scoped_make_current.h"
 
 namespace content {
 
@@ -72,6 +75,36 @@ ChildWindowSurfaceWin::ChildWindowSurfaceWin(GpuChannelManager* manager,
   enable_fixed_size_angle_ = false;
 }
 
+EGLConfig ChildWindowSurfaceWin::GetConfig() {
+  if (!config_) {
+    int alpha_size = alpha_ ? 8 : EGL_DONT_CARE;
+
+    EGLint config_attribs[] = {EGL_ALPHA_SIZE,
+                               alpha_size,
+                               EGL_BLUE_SIZE,
+                               8,
+                               EGL_GREEN_SIZE,
+                               8,
+                               EGL_RED_SIZE,
+                               8,
+                               EGL_RENDERABLE_TYPE,
+                               EGL_OPENGL_ES2_BIT,
+                               EGL_SURFACE_TYPE,
+                               EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
+                               EGL_NONE};
+
+    EGLDisplay display = GetHardwareDisplay();
+    EGLint num_configs;
+    if (!eglChooseConfig(display, config_attribs, &config_, 1, &num_configs)) {
+      LOG(ERROR) << "eglChooseConfig failed with error "
+                 << ui::GetLastEGLErrorString();
+      return NULL;
+    }
+  }
+
+  return config_;
+}
+
 bool ChildWindowSurfaceWin::InitializeNativeWindow() {
   if (window_)
     return true;
@@ -103,14 +136,34 @@ bool ChildWindowSurfaceWin::Resize(const gfx::Size& size,
     if (size == GetSize() && has_alpha == alpha_)
       return true;
 
-    alpha_ = has_alpha;
-    size_ = size;
     if (!MoveWindow(window_, 0, 0, size.width(), size.height(), FALSE)) {
       return false;
     }
-    // A 0-size PostSubBuffer doesn't swap but forces the swap chain to resize
-    // to match the window.
-    PostSubBuffer(0, 0, 0, 0);
+    size_ = size;
+    if (has_alpha == alpha_) {
+      // A 0-size PostSubBuffer doesn't swap but forces the swap chain to resize
+      // to match the window.
+      PostSubBuffer(0, 0, 0, 0);
+    } else {
+      alpha_ = has_alpha;
+      config_ = nullptr;
+
+      scoped_ptr<ui::ScopedMakeCurrent> scoped_make_current;
+      gfx::GLContext* current_context = gfx::GLContext::GetCurrent();
+      bool was_current = current_context && current_context->IsCurrent(this);
+      if (was_current) {
+        scoped_make_current.reset(
+            new ui::ScopedMakeCurrent(current_context, this));
+        current_context->ReleaseCurrent(this);
+      }
+
+      Destroy();
+
+      if (!Initialize()) {
+        LOG(ERROR) << "Failed to resize window.";
+        return false;
+      }
+    }
     return true;
   }
 }

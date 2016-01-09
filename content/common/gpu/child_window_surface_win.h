@@ -17,6 +17,7 @@ class ChildWindowSurfaceWin : public gfx::NativeViewGLSurfaceEGL {
   ChildWindowSurfaceWin(GpuChannelManager* manager, HWND parent_window);
 
   // GLSurface implementation.
+  EGLConfig GetConfig() override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
               bool has_alpha) override;

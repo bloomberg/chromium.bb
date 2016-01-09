@@ -92,6 +92,16 @@ extern "C" {
 #define EGL_SURFACE_ORIENTATION_INVERT_Y_ANGLE 0x0002
 #endif /* EGL_ANGLE_surface_orientation */
 
+#ifndef EGL_ANGLE_direct_composition
+#define EGL_ANGLE_direct_composition 1
+#define EGL_DIRECT_COMPOSITION_ANGLE 0x33A5
+#endif /* EGL_ANGLE_direct_composition */
+
+#ifndef EGL_ANGLE_flexible_surface_compatibility
+#define EGL_ANGLE_flexible_surface_compatibility 1
+#define EGL_FLEXIBLE_SURFACE_COMPATIBILITY_SUPPORTED_ANGLE 0x33A6
+#endif /* EGL_ANGLE_flexible_surface_compatibility */
+
 using ui::GetLastEGLErrorString;
 
 namespace gfx {
@@ -377,8 +387,13 @@ bool GLSurfaceEGL::InitializeOneOff() {
   g_egl_surface_orientation_supported =
       HasEGLExtension("EGL_ANGLE_surface_orientation");
 
-  g_use_direct_composition = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseDirectComposition);
+  // Need EGL_ANGLE_flexible_surface_compatibility to allow surfaces with and
+  // without alpha to be bound to the same context.
+  g_use_direct_composition =
+      HasEGLExtension("EGL_ANGLE_direct_composition") &&
+      HasEGLExtension("EGL_ANGLE_flexible_surface_compatibility") &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseDirectComposition);
 
   // TODO(oetuaho@nvidia.com): Surfaceless is disabled on Android as a temporary
   // workaround, since code written for Android WebView takes different paths
@@ -574,6 +589,14 @@ bool NativeViewGLSurfaceEGL::Initialize(
   if (flips_vertically_) {
     egl_window_attributes.push_back(EGL_SURFACE_ORIENTATION_ANGLE);
     egl_window_attributes.push_back(EGL_SURFACE_ORIENTATION_INVERT_Y_ANGLE);
+  }
+
+  if (g_use_direct_composition) {
+    egl_window_attributes.push_back(
+        EGL_FLEXIBLE_SURFACE_COMPATIBILITY_SUPPORTED_ANGLE);
+    egl_window_attributes.push_back(EGL_TRUE);
+    egl_window_attributes.push_back(EGL_DIRECT_COMPOSITION_ANGLE);
+    egl_window_attributes.push_back(EGL_TRUE);
   }
 
   egl_window_attributes.push_back(EGL_NONE);
@@ -845,15 +868,22 @@ bool PbufferGLSurfaceEGL::Initialize() {
   // they have different addresses. If they have the same address then a
   // future call to MakeCurrent might early out because it appears the current
   // context and surface have not changed.
-  const EGLint pbuffer_attribs[] = {
-    EGL_WIDTH, size_.width(),
-    EGL_HEIGHT, size_.height(),
-    EGL_NONE
-  };
+  std::vector<EGLint> pbuffer_attribs;
+  pbuffer_attribs.push_back(EGL_WIDTH);
+  pbuffer_attribs.push_back(size_.width());
+  pbuffer_attribs.push_back(EGL_HEIGHT);
+  pbuffer_attribs.push_back(size_.height());
 
-  EGLSurface new_surface = eglCreatePbufferSurface(display,
-                                                   GetConfig(),
-                                                   pbuffer_attribs);
+  if (g_use_direct_composition) {
+    pbuffer_attribs.push_back(
+        EGL_FLEXIBLE_SURFACE_COMPATIBILITY_SUPPORTED_ANGLE);
+    pbuffer_attribs.push_back(EGL_TRUE);
+  }
+
+  pbuffer_attribs.push_back(EGL_NONE);
+
+  EGLSurface new_surface =
+      eglCreatePbufferSurface(display, GetConfig(), &pbuffer_attribs[0]);
   if (!new_surface) {
     LOG(ERROR) << "eglCreatePbufferSurface failed with error "
                << GetLastEGLErrorString();
