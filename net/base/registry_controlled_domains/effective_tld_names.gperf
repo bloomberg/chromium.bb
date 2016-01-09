@@ -70,6 +70,7 @@ ac.ma, 0
 ac.me, 0
 ac.mu, 0
 ac.mw, 0
+ac.ni, 0
 ac.nz, 0
 ac.pa, 0
 ac.pr, 0
@@ -245,7 +246,6 @@ amsterdam.museum, 0
 amur.ru, 0
 amursk.ru, 0
 amusement.aero, 0
-an, 0
 an.it, 0
 analytics, 0
 anamizu.ishikawa.jp, 0
@@ -301,6 +301,7 @@ ar, 0
 ar.com, 4
 ar.it, 0
 ar.us, 0
+arab, 0
 arai.shizuoka.jp, 0
 arakawa.saitama.jp, 0
 arakawa.tokyo.jp, 0
@@ -540,6 +541,7 @@ be.eu.org, 4
 bearalvahki.no, 0
 beardu.no, 0
 beats, 0
+beauty, 0
 beauxarts.museum, 0
 bedzin.pl, 0
 beeldengeluid.museum, 0
@@ -612,6 +614,7 @@ biz.id, 0
 biz.ki, 0
 biz.mv, 0
 biz.mw, 0
+biz.ni, 0
 biz.nr, 0
 biz.pk, 0
 biz.pl, 0
@@ -747,6 +750,7 @@ booking, 0
 boots, 0
 bosch, 0
 bostik, 0
+boston, 0
 boston.museum, 0
 bot, 0
 botanical.museum, 0
@@ -754,6 +758,7 @@ botanicalgarden.museum, 0
 botanicgarden.museum, 0
 botany.museum, 0
 boutique, 0
+box, 0
 bozen.it, 0
 br, 0
 br.com, 4
@@ -1090,6 +1095,7 @@ cloudapp.net, 4
 cloudcontrolapp.com, 4
 cloudcontrolled.com, 4
 cloudfront.net, 4
+cloudfunctions.net, 4
 club, 0
 club.aero, 0
 club.tw, 0
@@ -1140,6 +1146,7 @@ co.mg, 0
 co.mu, 0
 co.mw, 0
 co.na, 0
+co.ni, 0
 co.nl, 4
 co.no, 4
 co.nz, 0
@@ -1185,7 +1192,6 @@ com.af, 0
 com.ag, 0
 com.ai, 0
 com.al, 0
-com.an, 0
 com.ar, 0
 com.au, 0
 com.aw, 0
@@ -1263,6 +1269,7 @@ com.my, 0
 com.na, 0
 com.nf, 0
 com.ng, 0
+com.ni, 0
 com.nr, 0
 com.om, 0
 com.pa, 0
@@ -1384,6 +1391,7 @@ crimea.ua, 0
 crotone.it, 0
 crown, 0
 crs, 0
+cruise, 0
 cruises, 0
 cs.it, 0
 csc, 0
@@ -1485,6 +1493,7 @@ discount, 0
 discover, 0
 discovery.museum, 0
 dish, 0
+diskstation.me, 4
 divtasvuodna.no, 0
 divttasvuotna.no, 0
 diy, 0
@@ -1536,6 +1545,12 @@ drangedal.no, 0
 dreamhosters.com, 4
 drive, 0
 drobak.no, 0
+dscloud.biz, 4
+dscloud.me, 4
+dscloud.mobi, 4
+dsmynas.com, 4
+dsmynas.net, 4
+dsmynas.org, 4
 dstv, 0
 dtv, 0
 dubai, 0
@@ -1604,7 +1619,6 @@ edu, 0
 edu.ac, 0
 edu.af, 0
 edu.al, 0
-edu.an, 0
 edu.ar, 0
 edu.au, 0
 edu.az, 0
@@ -1675,6 +1689,7 @@ edu.mw, 0
 edu.mx, 0
 edu.my, 0
 edu.ng, 0
+edu.ni, 0
 edu.nr, 0
 edu.om, 0
 edu.pa, 0
@@ -1846,6 +1861,9 @@ faith, 0
 fam.pk, 0
 family, 0
 family.museum, 0
+familyds.com, 4
+familyds.net, 4
+familyds.org, 4
 fan, 0
 fans, 0
 far.br, 0
@@ -1987,6 +2005,7 @@ francaise.museum, 0
 frankfurt.museum, 0
 franziskaner.museum, 0
 fredrikstad.no, 0
+free, 0
 freemasonry.museum, 0
 frei.no, 0
 freiburg.museum, 0
@@ -2264,6 +2283,7 @@ gob.es, 0
 gob.gt, 0
 gob.hn, 0
 gob.mx, 0
+gob.ni, 0
 gob.pa, 0
 gob.pe, 0
 gob.pk, 0
@@ -2536,6 +2556,7 @@ haga.tochigi.jp, 0
 hagebostad.no, 0
 hagi.yamaguchi.jp, 0
 haibara.shizuoka.jp, 0
+hair, 0
 hakata.fukuoka.jp, 0
 hakodate.hokkaido.jp, 0
 hakone.kanagawa.jp, 0
@@ -2577,6 +2598,7 @@ harstad.no, 0
 harvestcelebration.museum, 0
 hasama.oita.jp, 0
 hasami.nagasaki.jp, 0
+hashbang.sh, 4
 hashikami.aomori.jp, 0
 hashima.gifu.jp, 0
 hashimoto.wakayama.jp, 0
@@ -2805,6 +2827,7 @@ hyundai, 0
 i.bg, 0
 i.ph, 0
 i.se, 0
+i234.me, 4
 ia.us, 0
 iamallama.com, 4
 ibara.okayama.jp, 0
@@ -2892,6 +2915,7 @@ in-the-band.net, 4
 in.eu.org, 4
 in.na, 0
 in.net, 4
+in.ni, 0
 in.rs, 0
 in.th, 0
 in.ua, 0
@@ -2940,6 +2964,7 @@ info.la, 0
 info.mv, 0
 info.na, 0
 info.nf, 0
+info.ni, 0
 info.nr, 0
 info.pk, 0
 info.pl, 0
@@ -2973,6 +2998,7 @@ int.la, 0
 int.lk, 0
 int.mv, 0
 int.mw, 0
+int.ni, 0
 int.pt, 0
 int.ru, 0
 int.rw, 0
@@ -3978,7 +4004,6 @@ madrid.museum, 0
 maebashi.gunma.jp, 0
 magadan.ru, 0
 magazine.aero, 0
-magnitka.ru, 0
 maibara.shiga.jp, 0
 maif, 0
 mail.pl, 0
@@ -4018,7 +4043,6 @@ maritimo.museum, 0
 marker.no, 0
 market, 0
 marketing, 0
-marketplace.aero, 0
 markets, 0
 marnardal.no, 0
 marriott, 0
@@ -4188,6 +4212,7 @@ mil.mg, 0
 mil.mv, 0
 mil.my, 0
 mil.ng, 0
+mil.ni, 0
 mil.no, 0
 mil.nz, 0
 mil.pe, 0
@@ -4455,6 +4480,7 @@ mx.na, 0
 my, 0
 my.eu.org, 4
 my.id, 0
+myds.me, 4
 mykolaiv.ua, 0
 myoko.niigata.jp, 0
 mypets.ws, 4
@@ -4631,7 +4657,6 @@ net.af, 0
 net.ag, 0
 net.ai, 0
 net.al, 0
-net.an, 0
 net.ar, 0
 net.au, 0
 net.az, 0
@@ -4704,6 +4729,7 @@ net.mx, 0
 net.my, 0
 net.nf, 0
 net.ng, 0
+net.ni, 0
 net.nr, 0
 net.nz, 0
 net.om, 0
@@ -4782,7 +4808,7 @@ ngrok.io, 4
 nh.us, 0
 nhk, 0
 nhs.uk, 0
-ni, 2
+ni, 0
 nic.in, 0
 nic.tj, 0
 nichinan.miyazaki.jp, 0
@@ -4864,6 +4890,7 @@ nom.es, 0
 nom.fr, 0
 nom.km, 0
 nom.mg, 0
+nom.ni, 0
 nom.pa, 0
 nom.pe, 0
 nom.pl, 0
@@ -5117,7 +5144,6 @@ org.af, 0
 org.ag, 0
 org.ai, 0
 org.al, 0
-org.an, 0
 org.ar, 0
 org.au, 0
 org.az, 0
@@ -5198,6 +5224,7 @@ org.mx, 0
 org.my, 0
 org.na, 0
 org.ng, 0
+org.ni, 0
 org.nr, 0
 org.nz, 0
 org.om, 0
@@ -5337,6 +5364,7 @@ paderborn.museum, 0
 padova.it, 0
 padua.it, 0
 page, 0
+pagefrontapp.com, 4
 pagespeedmobilizer.com, 4
 palace.museum, 0
 palana.ru, 0
@@ -5598,6 +5626,8 @@ r.cdn77.net, 4
 r.se, 0
 ra.it, 0
 racing, 0
+rackmaze.com, 4
+rackmaze.net, 4
 rade.no, 0
 radio.br, 0
 radom.pl, 0
@@ -5703,6 +5733,7 @@ ritto.shiga.jp, 0
 rivne.ua, 0
 rl.no, 0
 rm.it, 0
+rmit, 0
 rn.it, 0
 rnd.ru, 0
 rnrt.tn, 0
@@ -6398,6 +6429,7 @@ sydney, 0
 sydney.museum, 0
 sykkylven.no, 0
 symantec, 0
+synology.me, 4
 systems, 0
 syzran.ru, 0
 sz, 0
@@ -6514,7 +6546,6 @@ tattoo, 0
 tawaramoto.nara.jp, 0
 tax, 0
 taxi, 0
-taxi.aero, 0
 taxi.br, 0
 tc, 0
 tci, 0
@@ -7093,6 +7124,7 @@ volkenkunde.museum, 0
 volkswagen, 0
 vologda.ru, 0
 vologda.su, 0
+volvo, 0
 volyn.ua, 0
 voronezh.ru, 0
 voss.no, 0
@@ -7157,6 +7189,7 @@ web.do, 0
 web.id, 0
 web.lk, 0
 web.nf, 0
+web.ni, 0
 web.pk, 0
 web.tj, 0
 web.tr, 0
@@ -7500,6 +7533,7 @@ xn--mxtq1m, 0
 xn--mxtq1m.hk, 0
 xn--ngbc5azd, 0
 xn--ngbe9e0a, 0
+xn--ngbrx, 0
 xn--nit225k.jp, 0
 xn--nmesjevuemie-tcba.no, 0
 xn--nnx388a, 0
