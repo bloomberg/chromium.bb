@@ -322,11 +322,15 @@ source_set("test_support") {
   deps = [
     "//base",
     "//chrome/browser",
+    "//chrome/browser/policy:path_parser",
     "//chrome/child",
     "//chrome/common",
     "//chrome/plugin",
     "//chrome/renderer",
     "//chrome/utility",
+    "//components/crash/content/app",
+    "//components/crash/content/app:lib",
+    "//components/startup_metric_utils/browser:lib",
     "//content/public/app:both",
     "//content/public/common",
     "//ui/base",
@@ -334,9 +338,29 @@ source_set("test_support") {
 
   if (is_mac) {
     sources += [ "chrome_main_mac.mm" ]
+
+    deps += [ "//chrome:main_dll" ]
+  }
+
+  if (is_win) {
+    deps += [
+      "//chrome:chrome_initial",
+      "//sandbox/win:sandbox",
+    ]
+  }
+
+  if (is_chromeos) {
+    deps += [ "//chrome/browser/chromeos" ]
+  }
+
+  if (enable_pdf) {
+    deps += [ "//pdf" ]
   }
 
   if (enable_plugins && enable_nacl) {
-    deps += [ "//components/nacl/renderer/plugin:nacl_trusted_plugin" ]
+    deps += [
+      "//components/nacl/browser",
+      "//components/nacl/renderer/plugin:nacl_trusted_plugin",
+    ]
   }
 }
