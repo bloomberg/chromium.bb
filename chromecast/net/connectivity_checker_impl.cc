@@ -36,6 +36,11 @@ const unsigned int kRequestTimeoutInSeconds = 3;
 const char kDefaultConnectivityCheckUrl[] =
     "https://clients3.google.com/generate_204";
 
+// Delay notification of network change events to smooth out rapid flipping.
+// Histogram "Cast.Network.Down.Duration.In.Seconds" shows 40% of network
+// downtime is less than 3 seconds.
+const char kNetworkChangedDelayInSeconds = 3;
+
 }  // namespace
 
 ConnectivityCheckerImpl::ConnectivityCheckerImpl(
@@ -43,7 +48,9 @@ ConnectivityCheckerImpl::ConnectivityCheckerImpl(
     : ConnectivityChecker(),
       task_runner_(task_runner),
       connected_(false),
-      check_errors_(0) {
+      connection_type_(net::NetworkChangeNotifier::CONNECTION_NONE),
+      check_errors_(0),
+      network_changed_pending_(false) {
   DCHECK(task_runner_.get());
   task_runner->PostTask(FROM_HERE,
                         base::Bind(&ConnectivityCheckerImpl::Initialize, this));
@@ -125,9 +132,22 @@ void ConnectivityCheckerImpl::Check() {
 void ConnectivityCheckerImpl::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   VLOG(2) << "OnNetworkChanged " << type;
+  connection_type_ = type;
+
+  if (network_changed_pending_)
+    return;
+  network_changed_pending_ = true;
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&ConnectivityCheckerImpl::OnNetworkChangedInternal, this),
+      base::TimeDelta::FromSeconds(kNetworkChangedDelayInSeconds));
+}
+
+void ConnectivityCheckerImpl::OnNetworkChangedInternal() {
+  network_changed_pending_ = false;
   Cancel();
 
-  if (type == net::NetworkChangeNotifier::CONNECTION_NONE) {
+  if (connection_type_ == net::NetworkChangeNotifier::CONNECTION_NONE) {
     SetConnected(false);
     return;
   }

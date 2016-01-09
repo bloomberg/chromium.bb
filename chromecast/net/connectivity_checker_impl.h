@@ -57,6 +57,8 @@ class ConnectivityCheckerImpl
   void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
+  void OnNetworkChangedInternal();
+
   // Cancels current connectivity checking in progress.
   void Cancel();
 
@@ -74,8 +76,10 @@ class ConnectivityCheckerImpl
   scoped_ptr<net::URLRequest> url_request_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   bool connected_;
+  net::NetworkChangeNotifier::ConnectionType connection_type_;
   // Number of connectivity check errors.
   unsigned int check_errors_;
+  bool network_changed_pending_;
   // Timeout handler for connectivity checks.
   // Note: Cancelling this timeout can cause the destructor for this class to be
   //       to be called.
