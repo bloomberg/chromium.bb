@@ -104,7 +104,8 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
       last_render_length_(base::TimeDelta::FromSecondsD(1.0 / 60.0)),
       total_frame_count_(0),
       dropped_frame_count_(0),
-      stopped_(true) {
+      stopped_(true),
+      weak_ptr_factory_(this) {
   main_message_loop_ = base::MessageLoop::current();
 
   const blink::WebMediaStream web_stream(
@@ -272,7 +273,7 @@ void WebMediaPlayerMSCompositor::StartRendering() {
   DCHECK(thread_checker_.CalledOnValidThread());
   compositor_task_runner_->PostTask(
       FROM_HERE, base::Bind(&WebMediaPlayerMSCompositor::StartRenderingInternal,
-                            base::Unretained(this)));
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebMediaPlayerMSCompositor::StartRenderingInternal() {
@@ -287,7 +288,7 @@ void WebMediaPlayerMSCompositor::StopRendering() {
   DCHECK(thread_checker_.CalledOnValidThread());
   compositor_task_runner_->PostTask(
       FROM_HERE, base::Bind(&WebMediaPlayerMSCompositor::StopRenderingInternal,
-                            base::Unretained(this)));
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebMediaPlayerMSCompositor::StopRenderingInternal() {

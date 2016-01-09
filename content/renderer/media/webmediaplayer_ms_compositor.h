@@ -148,6 +148,11 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   // |current_frame_lock_| protects |current_frame_used_by_compositor_|,
   // |current_frame_|, and |rendering_frame_buffer_|.
   base::Lock current_frame_lock_;
+
+  // Make sure the weak pointer factory member is the last member of the class.
+  base::WeakPtrFactory<WebMediaPlayerMSCompositor> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerMSCompositor);
 };
 }
 
