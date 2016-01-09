@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/android/build_info.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -353,15 +354,15 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
     size_t offset = 0;
     size_t size = 0;
 
-    TRACE_EVENT_BEGIN0("media", "AVDA::DequeueOutputBuffer");
+    TRACE_EVENT_BEGIN0("media", "AVDA::DequeueOutput");
     media::MediaCodecStatus status = media_codec_->DequeueOutputBuffer(
         NoWaitTimeOut(), &buf_index, &offset, &size, &presentation_timestamp,
         &eos, NULL);
-    TRACE_EVENT_END2("media", "AVDA::DequeueOutputBuffer", "status", status,
+    TRACE_EVENT_END2("media", "AVDA::DequeueOutput", "status", status,
                      "presentation_timestamp (ms)",
                      presentation_timestamp.InMilliseconds());
 
-    DVLOG(3) << "AVDA::DequeueOutputBuffer: pts:" << presentation_timestamp
+    DVLOG(3) << "AVDA::DequeueOutput: pts:" << presentation_timestamp
              << " buf_index:" << buf_index << " offset:" << offset
              << " size:" << size << " eos:" << eos;
 
@@ -385,8 +386,8 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
           // Dynamic resolution change support is not specified by the Android
           // platform at and before JB-MR1, so it's not possible to smoothly
           // continue playback at this point.  Instead, error out immediately,
-          // expecting clients to Reset() as appropriate to avoid this.
-          // b/7093648
+          // expecting clients to Flush() or Reset() as appropriate to avoid
+          // this. b/7093648
           RETURN_ON_FAILURE(this, size_ == gfx::Size(width, height),
                             "Dynamic resolution change is not supported.",
                             PLATFORM_FAILURE, false);
@@ -420,13 +421,15 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
   auto it = eos ? bitstream_buffers_in_decoder_.end()
                 : bitstream_buffers_in_decoder_.find(presentation_timestamp);
 
-  if (it == bitstream_buffers_in_decoder_.end()) {
-    media_codec_->ReleaseOutputBuffer(buf_index, false);
+  if (eos) {
+    DVLOG(3) << "AVDA::DequeueOutput: Resetting output state after EOS";
+    ResetCodecState();
+
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&AndroidVideoDecodeAccelerator::NotifyFlushDone,
                    weak_this_factory_.GetWeakPtr()));
-  } else {
+  } else if (it != bitstream_buffers_in_decoder_.end()) {
     const int32_t bitstream_buffer_id = it->second;
     bitstream_buffers_in_decoder_.erase(bitstream_buffers_in_decoder_.begin(),
                                         ++it);
@@ -448,6 +451,11 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
         break;
       }
     }
+  } else {
+    DVLOG(3) << "AVDA::DequeueOutput: Releasing buffer with unexpected PTS: "
+             << presentation_timestamp;
+    media_codec_->ReleaseOutputBuffer(buf_index, false);
+    should_try_again = true;
   }
 
   return should_try_again;
@@ -590,6 +598,42 @@ bool AndroidVideoDecodeAccelerator::ConfigureMediaCodec() {
   return true;
 }
 
+void AndroidVideoDecodeAccelerator::ResetCodecState() {
+  // TODO(chcunningham): This will likely dismiss a handful of decoded frames
+  // that have not yet been drawn and returned to us for re-use. Consider
+  // a more complicated design that would wait for these to be drawn before
+  // dismissing.
+  for (const auto& it : output_picture_buffers_) {
+    strategy_->DismissOnePictureBuffer(it.second);
+    client_->DismissPictureBuffer(it.first);
+    dismissed_picture_ids_.insert(it.first);
+  }
+  output_picture_buffers_.clear();
+  std::queue<int32_t> empty;
+  std::swap(free_picture_ids_, empty);
+  CHECK(free_picture_ids_.empty());
+  picturebuffers_requested_ = false;
+  bitstream_buffers_in_decoder_.clear();
+
+  // When codec is not in error state we can quickly reset (internally calls
+  // flush()) for JB-MR2 and beyond. Prior to JB-MR2, flush() had several bugs
+  // (b/8125974, b/8347958) so we must stop() and reconfigure MediaCodec. The
+  // full reconfigure is much slower and may cause visible freezing if done
+  // mid-stream.
+  if (state_ == NO_ERROR &&
+      base::android::BuildInfo::GetInstance()->sdk_int() >= 18) {
+    DVLOG(3) << __FUNCTION__ << " Doing fast MediaCodec reset (flush).";
+    media_codec_->Reset();
+  } else {
+    DVLOG(3) << __FUNCTION__
+             << " Doing slow MediaCodec reset (stop/re-configure).";
+    io_timer_.Stop();
+    media_codec_->Stop();
+    ConfigureMediaCodec();
+    state_ = NO_ERROR;
+  }
+}
+
 void AndroidVideoDecodeAccelerator::Reset() {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("media", "AVDA::Reset");
@@ -608,28 +652,7 @@ void AndroidVideoDecodeAccelerator::Reset() {
   TRACE_COUNTER1("media", "AVDA::PendingBitstreamBufferCount", 0);
   bitstreams_notified_in_advance_.clear();
 
-  for (OutputBufferMap::iterator it = output_picture_buffers_.begin();
-       it != output_picture_buffers_.end();
-       ++it) {
-    strategy_->DismissOnePictureBuffer(it->second);
-    client_->DismissPictureBuffer(it->first);
-    dismissed_picture_ids_.insert(it->first);
-  }
-  output_picture_buffers_.clear();
-  std::queue<int32_t> empty;
-  std::swap(free_picture_ids_, empty);
-  CHECK(free_picture_ids_.empty());
-  picturebuffers_requested_ = false;
-  bitstream_buffers_in_decoder_.clear();
-
-  // On some devices, and up to at least JB-MR1,
-  // - flush() can fail after EOS (b/8125974); and
-  // - mid-stream resolution change is unsupported (b/7093648).
-  // To cope with these facts, we always stop & restart the codec on Reset().
-  io_timer_.Stop();
-  media_codec_->Stop();
-  ConfigureMediaCodec();
-  state_ = NO_ERROR;
+  ResetCodecState();
 
   base::MessageLoop::current()->PostTask(
       FROM_HERE,

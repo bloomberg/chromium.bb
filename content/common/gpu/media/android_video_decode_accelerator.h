@@ -178,6 +178,12 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   // start the timer.  Calling it with false may stop the timer.
   void ManageTimer(bool did_work);
 
+  // Resets MediaCodec and buffers/containers used for storing output. These
+  // components need to be reset upon EOS to decode a later stream. Input state
+  // (e.g. queued BitstreamBuffers) is not reset, as input following an EOS
+  // is still valid and should be processed.
+  void ResetCodecState();
+
   // Return true if and only if we should use deferred rendering.
   static bool UseDeferredRenderingStrategy();
 

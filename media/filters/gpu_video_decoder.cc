@@ -177,6 +177,8 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   output_cb_ = BindToCurrentLoop(output_cb);
 
   if (previously_initialized) {
+    DVLOG(3) << __FUNCTION__
+             << " Expecting initialized VDA to detect in-stream config change.";
     // Reinitialization with a different config (but same codec and profile).
     // VDA should handle it by detecting this in-stream by itself,
     // no need to notify it.
@@ -290,6 +292,7 @@ void GpuVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   DCHECK_EQ(state_, kNormal);
 
   if (buffer->end_of_stream()) {
+    DVLOG(3) << __FUNCTION__ << " Initiating Flush for EOS.";
     state_ = kDrainingDecoder;
     eos_decode_cb_ = bound_decode_cb;
     vda_->Flush();
