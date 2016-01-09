@@ -1182,7 +1182,6 @@ qcms_profile* qcms_profile_create_rgb_with_gamma(
 	if (!profile)
 		return NO_MEM_PROFILE;
 
-	//XXX: should store the whitepoint
 	if (!set_rgb_colorants(profile, white_point, primaries)) {
 		qcms_profile_release(profile);
 		return INVALID_PROFILE;
@@ -1196,6 +1195,7 @@ qcms_profile* qcms_profile_create_rgb_with_gamma(
 		qcms_profile_release(profile);
 		return NO_MEM_PROFILE;
 	}
+
 	profile->class = DISPLAY_DEVICE_PROFILE;
 	profile->rendering_intent = QCMS_INTENT_PERCEPTUAL;
 	profile->color_space = RGB_SIGNATURE;
@@ -1212,7 +1212,6 @@ qcms_profile* qcms_profile_create_rgb_with_table(
 	if (!profile)
 		return NO_MEM_PROFILE;
 
-	//XXX: should store the whitepoint
 	if (!set_rgb_colorants(profile, white_point, primaries)) {
 		qcms_profile_release(profile);
 		return INVALID_PROFILE;
@@ -1226,6 +1225,7 @@ qcms_profile* qcms_profile_create_rgb_with_table(
 		qcms_profile_release(profile);
 		return NO_MEM_PROFILE;
 	}
+
 	profile->class = DISPLAY_DEVICE_PROFILE;
 	profile->rendering_intent = QCMS_INTENT_PERCEPTUAL;
 	profile->color_space = RGB_SIGNATURE;

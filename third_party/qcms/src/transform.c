@@ -200,23 +200,26 @@ adaption_matrix(struct CIE_XYZ source_illumination, struct CIE_XYZ target_illumi
 }
 
 /* from lcms: cmsAdaptMatrixToD50 */
-static struct matrix adapt_matrix_to_D50(struct matrix r, qcms_CIE_xyY source_white_pt)
+static struct matrix adapt_matrix_to_D50(struct matrix r, qcms_CIE_xyY source_white_point)
 {
-	struct CIE_XYZ Dn;
+	struct CIE_XYZ DNN_XYZ;
 	struct matrix Bradford;
 
-	if (source_white_pt.y == 0.0)
+	if (source_white_point.y == 0.0)
 		return matrix_invalid();
 
-	Dn = xyY2XYZ(source_white_pt);
+	DNN_XYZ = xyY2XYZ(source_white_point);
 
-	Bradford = adaption_matrix(Dn, D50_XYZ);
+	Bradford = adaption_matrix(DNN_XYZ, D50_XYZ);
+
 	return matrix_multiply(Bradford, r);
 }
 
 qcms_bool set_rgb_colorants(qcms_profile *profile, qcms_CIE_xyY white_point, qcms_CIE_xyYTRIPLE primaries)
 {
+	struct CIE_XYZ source_white;
 	struct matrix colorants;
+
 	colorants = build_RGB_to_XYZ_transfer_matrix(white_point, primaries);
 	colorants = adapt_matrix_to_D50(colorants, white_point);
 
@@ -235,6 +238,12 @@ qcms_bool set_rgb_colorants(qcms_profile *profile, qcms_CIE_xyY white_point, qcm
 	profile->blueColorant.X = double_to_s15Fixed16Number(colorants.m[0][2]);
 	profile->blueColorant.Y = double_to_s15Fixed16Number(colorants.m[1][2]);
 	profile->blueColorant.Z = double_to_s15Fixed16Number(colorants.m[2][2]);
+
+	/* Store the media white point */
+	source_white = xyY2XYZ(white_point);
+	profile->mediaWhitePoint.X = double_to_s15Fixed16Number(source_white.X);
+	profile->mediaWhitePoint.Y = double_to_s15Fixed16Number(source_white.Y);
+	profile->mediaWhitePoint.Z = double_to_s15Fixed16Number(source_white.Z);
 
 	return true;
 }
