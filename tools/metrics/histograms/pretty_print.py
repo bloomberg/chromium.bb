@@ -44,6 +44,26 @@ class Error(Exception):
   pass
 
 
+UNIT_REWRITES = {
+  'milliseconds': 'ms',
+  'kb': 'KB',
+  'kB': 'KB',
+  'kilobytes': 'KB',
+  'kbits/s': 'kbps',
+  'percent': '%',
+  'Percent': '%',
+}
+
+
+def canonicalizeUnits(tree):
+  """Canonicalize the spelling of certain units in histograms."""
+  histograms = tree.getElementsByTagName('histogram')
+  for histogram in histograms:
+    units = histogram.attributes.get('units')
+    if units and units.value in UNIT_REWRITES:
+      histogram.attributes['units'] = UNIT_REWRITES[units.value]
+
+
 def unsafeAppendChild(parent, child):
   """Append child to parent's list of children, ignoring the possibility that it
   is already in another node's childNodes list.  Requires that the previous
@@ -127,6 +147,7 @@ def PrettyPrint(raw_xml):
   """
   tree = xml.dom.minidom.parseString(raw_xml)
   tree = TransformByAlphabetizing(tree)
+  canonicalizeUnits(tree)
   return print_style.GetPrintStyle().PrettyPrintNode(tree)
 
 
