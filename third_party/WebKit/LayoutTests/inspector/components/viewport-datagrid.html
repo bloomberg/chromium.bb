@@ -115,6 +115,8 @@ function test()
     dumpNodes();
     detach(a, ab);
     dumpNodes();
+    root.removeChildren();
+    dumpNodes();
 
     // crbug.com/542553 -- the below should not produce exceptions.
     dataGrid.setStickToBottom(true);

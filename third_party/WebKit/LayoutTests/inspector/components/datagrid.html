@@ -104,6 +104,8 @@ function test()
     dumpNodes();
     detach(a, ab);
     dumpNodes();
+    root.removeChildren();
+    dumpNodes();
 
     InspectorTest.completeTest();
 }

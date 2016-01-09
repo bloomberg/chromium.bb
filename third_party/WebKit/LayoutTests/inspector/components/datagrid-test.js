@@ -33,6 +33,8 @@ InspectorTest.validateDataGrid = function(root)
     }
     var selectedNode = root.dataGrid.selectedNode;
     if (!root.parent && selectedNode) {
+        if (!selectedNode.selectable)
+            throw "Selected node is not selectable";
         for (var node = selectedNode; node && node !== root; node = node.parent) { }
         if (!node)
             throw "Selected node (" + selectedNode.data.id + ") is not within the DataGrid";
