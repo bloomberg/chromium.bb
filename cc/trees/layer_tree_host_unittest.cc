@@ -5186,17 +5186,17 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
     posted_ = false;
     client_.set_fill_with_nonsolid_color(true);
 
-    scoped_refptr<Layer> root = Layer::Create(layer_settings());
-    root->SetBounds(gfx::Size(500, 500));
-    scoped_refptr<Layer> clip = Layer::Create(layer_settings());
-    clip->SetBounds(gfx::Size(500, 500));
+    scoped_refptr<Layer> root_clip = Layer::Create(layer_settings());
+    root_clip->SetBounds(gfx::Size(500, 500));
+    scoped_refptr<Layer> page_scale_layer = Layer::Create(layer_settings());
+    page_scale_layer->SetBounds(gfx::Size(500, 500));
 
     scoped_refptr<Layer> pinch = Layer::Create(layer_settings());
     pinch->SetBounds(gfx::Size(500, 500));
-    pinch->SetScrollClipLayerId(clip->id());
+    pinch->SetScrollClipLayerId(root_clip->id());
     pinch->SetIsContainerForFixedPositionLayers(true);
-    clip->AddChild(pinch);
-    root->AddChild(clip);
+    page_scale_layer->AddChild(pinch);
+    root_clip->AddChild(page_scale_layer);
 
     scoped_ptr<FakeDisplayListRecordingSource> recording(
         new FakeDisplayListRecordingSource);
@@ -5210,11 +5210,12 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
     // pinch.
     pinch->AddChild(layer);
 
-    layer_tree_host()->RegisterViewportLayers(NULL, root, pinch, nullptr);
+    layer_tree_host()->RegisterViewportLayers(NULL, page_scale_layer, pinch,
+                                              nullptr);
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 1.f, 4.f);
-    layer_tree_host()->SetRootLayer(root);
+    layer_tree_host()->SetRootLayer(root_clip);
     LayerTreeHostTest::SetupTree();
-    client_.set_bounds(root->bounds());
+    client_.set_bounds(root_clip->bounds());
   }
 
   // Returns the delta scale of all quads in the frame's root pass from their
@@ -5490,17 +5491,17 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
     continuous_draws_ = 0;
     client_.set_fill_with_nonsolid_color(true);
 
-    scoped_refptr<Layer> root = Layer::Create(layer_settings());
-    root->SetBounds(gfx::Size(500, 500));
-    scoped_refptr<Layer> clip = Layer::Create(layer_settings());
-    clip->SetBounds(gfx::Size(500, 500));
+    scoped_refptr<Layer> root_clip = Layer::Create(layer_settings());
+    root_clip->SetBounds(gfx::Size(500, 500));
+    scoped_refptr<Layer> page_scale_layer = Layer::Create(layer_settings());
+    page_scale_layer->SetBounds(gfx::Size(500, 500));
 
     scoped_refptr<Layer> pinch = Layer::Create(layer_settings());
     pinch->SetBounds(gfx::Size(500, 500));
-    pinch->SetScrollClipLayerId(clip->id());
+    pinch->SetScrollClipLayerId(root_clip->id());
     pinch->SetIsContainerForFixedPositionLayers(true);
-    clip->AddChild(pinch);
-    root->AddChild(clip);
+    page_scale_layer->AddChild(pinch);
+    root_clip->AddChild(page_scale_layer);
 
     scoped_ptr<FakeDisplayListRecordingSource> recording(
         new FakeDisplayListRecordingSource);
@@ -5514,11 +5515,12 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
     // pinch.
     pinch->AddChild(layer);
 
-    layer_tree_host()->RegisterViewportLayers(NULL, root, pinch, nullptr);
+    layer_tree_host()->RegisterViewportLayers(NULL, page_scale_layer, pinch,
+                                              nullptr);
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 1.f, 4.f);
-    layer_tree_host()->SetRootLayer(root);
+    layer_tree_host()->SetRootLayer(root_clip);
     LayerTreeHostTest::SetupTree();
-    client_.set_bounds(clip->bounds());
+    client_.set_bounds(root_clip->bounds());
   }
 
   // Returns the delta scale of all quads in the frame's root pass from their

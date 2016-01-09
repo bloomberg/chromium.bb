@@ -400,17 +400,17 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostPictureTestRSLLMembership);
 class LayerTreeHostPictureTestRSLLMembershipWithScale
     : public LayerTreeHostPictureTest {
   void SetupTree() override {
-    scoped_refptr<Layer> root = Layer::Create(layer_settings());
-    root->SetBounds(gfx::Size(100, 100));
-    scoped_refptr<Layer> clip = Layer::Create(layer_settings());
-    clip->SetBounds(gfx::Size(100, 100));
+    scoped_refptr<Layer> root_clip = Layer::Create(layer_settings());
+    root_clip->SetBounds(gfx::Size(100, 100));
+    scoped_refptr<Layer> page_scale_layer = Layer::Create(layer_settings());
+    page_scale_layer->SetBounds(gfx::Size(100, 100));
 
     pinch_ = Layer::Create(layer_settings());
     pinch_->SetBounds(gfx::Size(500, 500));
-    pinch_->SetScrollClipLayerId(clip->id());
+    pinch_->SetScrollClipLayerId(root_clip->id());
     pinch_->SetIsContainerForFixedPositionLayers(true);
-    clip->AddChild(pinch_);
-    root->AddChild(clip);
+    page_scale_layer->AddChild(pinch_);
+    root_clip->AddChild(page_scale_layer);
 
     // Don't be solid color so the layer has tilings/tiles.
     client_.set_fill_with_nonsolid_color(true);
@@ -418,9 +418,10 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
     picture_->SetBounds(gfx::Size(100, 100));
     pinch_->AddChild(picture_);
 
-    layer_tree_host()->RegisterViewportLayers(NULL, root, pinch_, nullptr);
+    layer_tree_host()->RegisterViewportLayers(NULL, page_scale_layer, pinch_,
+                                              nullptr);
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 1.f, 4.f);
-    layer_tree_host()->SetRootLayer(root);
+    layer_tree_host()->SetRootLayer(root_clip);
     LayerTreeHostPictureTest::SetupTree();
     client_.set_bounds(picture_->bounds());
   }
