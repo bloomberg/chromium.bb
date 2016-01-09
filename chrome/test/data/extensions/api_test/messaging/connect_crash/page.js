@@ -15,10 +15,6 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
   // Keep the callback around to avoid test flakiness due to GC.
   ref = sendResponse;
 
-  // TODO(robwu): Remove the following line once crbug.com/439780 is fixed.
-  // (the response callback is not automatically invoked when the tab crashes).
-  sendResponse();
-
   // Keep the port open - do not send a response.
   return true;
 });

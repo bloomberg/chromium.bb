@@ -335,9 +335,13 @@
       return;
     }
 
-    // Ensure the callback exists for the older sendRequest API.
-    if (!responseCallback)
-      responseCallback = function() {};
+    function sendResponseAndClearCallback(response) {
+      // Save a reference so that we don't re-entrantly call responseCallback.
+      var sendResponse = responseCallback;
+      responseCallback = null;
+      sendResponse(response);
+    }
+
 
     // Note: make sure to manually remove the onMessage/onDisconnect listeners
     // that we added before destroying the Port, a workaround to a bug in Port
@@ -346,14 +350,27 @@
     // http://crbug.com/320723 tracks a sustainable fix.
 
     function disconnectListener() {
-      // For onDisconnects, we only notify the callback if there was an error.
-      if (chrome.runtime && chrome.runtime.lastError)
-        responseCallback();
+      if (!responseCallback)
+        return;
+
+      if (lastError.hasError(chrome)) {
+        sendResponseAndClearCallback();
+      } else {
+        lastError.set(
+            port.name, 'The message port closed before a reponse was received.',
+            null, chrome);
+        try {
+          sendResponseAndClearCallback();
+        } finally {
+          lastError.clear(chrome);
+        }
+      }
     }
 
     function messageListener(response) {
       try {
-        responseCallback(response);
+        if (responseCallback)
+          sendResponseAndClearCallback(response);
       } finally {
         port.disconnect();
       }
