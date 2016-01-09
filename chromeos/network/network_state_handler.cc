@@ -105,9 +105,6 @@ void NetworkStateHandler::AddObserver(
       from_here.file_name(), from_here.line_number(),
       device_event_log::LOG_TYPE_NETWORK, device_event_log::LOG_LEVEL_DEBUG,
       base::StringPrintf("NetworkStateHandler::AddObserver: 0x%p", observer));
-
-  LOG(ERROR) << "ADD Observer: " << from_here.file_name() << ":"
-             << from_here.line_number() << ": " << observer;
 }
 
 void NetworkStateHandler::RemoveObserver(
@@ -119,9 +116,6 @@ void NetworkStateHandler::RemoveObserver(
       device_event_log::LOG_TYPE_NETWORK, device_event_log::LOG_LEVEL_DEBUG,
       base::StringPrintf("NetworkStateHandler::RemoveObserver: 0x%p",
                          observer));
-
-  LOG(ERROR) << "REM Observer: " << from_here.file_name() << ":"
-             << from_here.line_number() << ": " << observer;
 }
 
 NetworkStateHandler::TechnologyState NetworkStateHandler::GetTechnologyState(
