@@ -1040,6 +1040,9 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     @Override
     public void doneHiding() {
         super.doneHiding();
+
+        mInnerMarginPercent = 0.0f;
+        mStackOffsetYPercent = 0.0f;
         mTabModelSelector.commitAllTabClosures();
     }
 

@@ -1389,6 +1389,7 @@ public class ToolbarPhone extends ToolbarLayout
         setAlpha(1.f);
         mClipRect = null;
         mUIAnimatingTabSwitcherTransition = false;
+        mTabSwitcherModePercent = mIsInTabSwitcherMode ? 1.0f : 0.0f;
 
         if (mShowMenuBadge && !mIsInTabSwitcherMode) {
             // If mInTabSwitcherMode is true, the menu button drawable will be updated in
