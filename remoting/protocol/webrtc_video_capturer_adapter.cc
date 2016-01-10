@@ -18,7 +18,7 @@ const int kFramesPerSec = 30;
 
 WebrtcVideoCapturerAdapter::WebrtcVideoCapturerAdapter(
     scoped_ptr<webrtc::DesktopCapturer> capturer)
-    : desktop_capturer_(std::move(capturer)) {
+    : desktop_capturer_(std::move(capturer)), weak_factory_(this) {
   DCHECK(desktop_capturer_);
 
   // Disable video adaptation since we don't intend to use it.
@@ -27,6 +27,17 @@ WebrtcVideoCapturerAdapter::WebrtcVideoCapturerAdapter(
 
 WebrtcVideoCapturerAdapter::~WebrtcVideoCapturerAdapter() {
   DCHECK(!capture_timer_);
+}
+
+void WebrtcVideoCapturerAdapter::SetSizeCallback(
+    const SizeCallback& size_callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  size_callback_ = size_callback;
+}
+
+base::WeakPtr<WebrtcVideoCapturerAdapter>
+WebrtcVideoCapturerAdapter::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 bool WebrtcVideoCapturerAdapter::GetBestCaptureFormat(
@@ -160,6 +171,9 @@ void WebrtcVideoCapturerAdapter::OnCaptureCompleted(
   size_t height = frame->size().height();
   if (!yuv_frame_ || yuv_frame_->GetWidth() != width ||
       yuv_frame_->GetHeight() != height) {
+    if (!size_callback_.is_null())
+      size_callback_.Run(frame->size());
+
     scoped_ptr<cricket::WebRtcVideoFrame> webrtc_frame(
         new cricket::WebRtcVideoFrame());
     webrtc_frame->InitToEmptyBuffer(width, height, 1, 1, 0);

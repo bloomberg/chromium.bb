@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "third_party/libjingle/source/talk/media/base/videocapturer.h"
@@ -42,9 +43,14 @@ namespace protocol {
 class WebrtcVideoCapturerAdapter : public cricket::VideoCapturer,
                                    public webrtc::DesktopCapturer::Callback {
  public:
+  typedef base::Callback<void(const webrtc::DesktopSize& size)> SizeCallback;
+
   explicit WebrtcVideoCapturerAdapter(
       scoped_ptr<webrtc::DesktopCapturer> capturer);
   ~WebrtcVideoCapturerAdapter() override;
+
+  void SetSizeCallback(const SizeCallback& size_callback);
+  base::WeakPtr<WebrtcVideoCapturerAdapter> GetWeakPtr();
 
   // cricket::VideoCapturer implementation.
   bool GetBestCaptureFormat(const cricket::VideoFormat& desired,
@@ -70,6 +76,8 @@ class WebrtcVideoCapturerAdapter : public cricket::VideoCapturer,
 
   scoped_ptr<webrtc::DesktopCapturer> desktop_capturer_;
 
+  SizeCallback size_callback_;
+
   // Timer to call CaptureNextFrame().
   scoped_ptr<base::RepeatingTimer> capture_timer_;
 
@@ -78,6 +86,8 @@ class WebrtcVideoCapturerAdapter : public cricket::VideoCapturer,
   scoped_ptr<cricket::VideoFrame> yuv_frame_;
 
   bool capture_pending_ = false;
+
+  base::WeakPtrFactory<WebrtcVideoCapturerAdapter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebrtcVideoCapturerAdapter);
 };

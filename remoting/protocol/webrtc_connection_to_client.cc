@@ -31,9 +31,6 @@
 namespace remoting {
 namespace protocol {
 
-const char kStreamLabel[] = "screen_stream";
-const char kVideoLabel[] = "screen_video";
-
 // Currently the network thread is also used as worker thread for webrtc.
 //
 // TODO(sergeyu): Figure out if we would benefit from using a separate
@@ -79,31 +76,13 @@ void WebrtcConnectionToClient::OnInputEventReceived(int64_t timestamp) {
 
 scoped_ptr<VideoStream> WebrtcConnectionToClient::StartVideoStream(
     scoped_ptr<webrtc::DesktopCapturer> desktop_capturer) {
-  scoped_ptr<WebrtcVideoCapturerAdapter> video_capturer_adapter(
-      new WebrtcVideoCapturerAdapter(std::move(desktop_capturer)));
-
-  // Set video stream constraints.
-  webrtc::FakeConstraints video_constraints;
-  video_constraints.AddMandatory(
-      webrtc::MediaConstraintsInterface::kMinFrameRate, 5);
-
-  rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track =
-      transport_.peer_connection_factory()->CreateVideoTrack(
-          kVideoLabel,
-          transport_.peer_connection_factory()->CreateVideoSource(
-              video_capturer_adapter.release(), &video_constraints));
-
-  rtc::scoped_refptr<webrtc::MediaStreamInterface> video_stream =
-      transport_.peer_connection_factory()->CreateLocalMediaStream(
-          kStreamLabel);
-
-  if (!video_stream->AddTrack(video_track) ||
-      !transport_.peer_connection()->AddStream(video_stream)) {
+  scoped_ptr<WebrtcVideoStream> stream(new WebrtcVideoStream());
+  if (!stream->Start(std::move(desktop_capturer), transport_.peer_connection(),
+                     transport_.peer_connection_factory())) {
     return nullptr;
   }
+  return std::move(stream);
 
-  return make_scoped_ptr(
-      new WebrtcVideoStream(transport_.peer_connection(), video_stream));
 }
 
 AudioStub* WebrtcConnectionToClient::audio_stub() {

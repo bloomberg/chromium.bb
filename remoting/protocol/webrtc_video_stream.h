@@ -8,23 +8,34 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "remoting/protocol/video_stream.h"
-#include "third_party/webrtc/base/scoped_ref_ptr.h"
 
 namespace webrtc {
+class DesktopSize;
+class DesktopCapturer;
 class MediaStreamInterface;
 class PeerConnectionInterface;
+class PeerConnectionFactoryInterface;
+class VideoTrackInterface;
 }  // namespace webrtc
 
 namespace remoting {
 namespace protocol {
 
+class WebrtcVideoCapturerAdapter;
+
 class WebrtcVideoStream : public VideoStream {
  public:
-  WebrtcVideoStream(
-      rtc::scoped_refptr<webrtc::PeerConnectionInterface> connection,
-      rtc::scoped_refptr<webrtc::MediaStreamInterface> stream);
+  WebrtcVideoStream();
   ~WebrtcVideoStream() override;
+
+  bool Start(scoped_ptr<webrtc::DesktopCapturer> desktop_capturer,
+             scoped_refptr<webrtc::PeerConnectionInterface> connection,
+             scoped_refptr<webrtc::PeerConnectionFactoryInterface>
+                 peer_connection_factory);
 
   // VideoStream interface.
   void Pause(bool pause) override;
@@ -34,8 +45,11 @@ class WebrtcVideoStream : public VideoStream {
   void SetSizeCallback(const SizeCallback& size_callback) override;
 
  private:
-  rtc::scoped_refptr<webrtc::PeerConnectionInterface> connection_;
-  rtc::scoped_refptr<webrtc::MediaStreamInterface> stream_;
+  scoped_refptr<webrtc::PeerConnectionInterface> connection_;
+  scoped_refptr<webrtc::MediaStreamInterface> stream_;
+
+  // Owned by the |stream_|.
+  base::WeakPtr<WebrtcVideoCapturerAdapter> capturer_adapter_;
 
   DISALLOW_COPY_AND_ASSIGN(WebrtcVideoStream);
 };
