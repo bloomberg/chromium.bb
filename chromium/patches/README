@@ -1,5 +1,9 @@
 Current Status as of January 8, 2016
 
+Upstream cherry-picks:
+  Commit 63c9b30f98ce7d160b3a6dec1b36dc05fbb71941 fixes crash in qtpalette.c.
+  See https//crbug.com/583354.
+
 Autorename:
   autorename_* files are renamed copies of various files that would cause
     base name collisions from mac libtool. These files are generated
