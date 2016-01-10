@@ -106,6 +106,7 @@
       'inputs': [
         '<(bindings_scripts_dir)/aggregate_generated_bindings.py',
         '<(core_idl_files_list)',
+        '<@(core_interface_idl_files)',
       ],
       'outputs': [
         '<@(bindings_core_v8_generated_aggregate_files)',

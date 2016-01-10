@@ -95,6 +95,7 @@
       'inputs': [
         '<(bindings_scripts_dir)/aggregate_generated_bindings.py',
         '<(modules_idl_files_list)',
+        '<@(modules_interface_idl_files)',
       ],
       'outputs': [
         '<@(bindings_modules_v8_generated_aggregate_files)',
