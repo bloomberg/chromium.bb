@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<body>
+<script src="../interpolation/resources/interpolation-test.js"></script>
+<script>
+assertComposition({
+  property: 'font-weight',
+  underlying: '500',
+  addFrom: '100',
+  addTo: '500',
+}, [
+  {at: -0.3, is: '500'},
+  {at: 0, is: '600'},
+  {at: 0.5, is: '800'},
+  {at: 1, is: '900'},
+  {at: 1.5, is: '900'},
+]);
+
+assertComposition({
+  property: 'font-weight',
+  underlying: '200',
+  addFrom: '600',
+  replaceTo: '500',
+}, [
+  {at: -0.3, is: '900'},
+  {at: 0, is: '800'},
+  {at: 0.5, is: '700'},
+  {at: 1, is: '500'},
+  {at: 1.5, is: '400'},
+]);
+</script>
+</body>

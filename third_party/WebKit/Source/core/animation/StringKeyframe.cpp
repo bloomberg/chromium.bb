@@ -6,6 +6,7 @@
 
 #include "core/XLinkNames.h"
 #include "core/animation/CSSColorInterpolationType.h"
+#include "core/animation/CSSFontWeightInterpolationType.h"
 #include "core/animation/CSSImageInterpolationType.h"
 #include "core/animation/CSSImageListInterpolationType.h"
 #include "core/animation/CSSLengthInterpolationType.h"
@@ -255,6 +256,9 @@ const InterpolationTypes* applicableTypesForProperty(PropertyHandle property)
             break;
         case CSSPropertyStrokeDasharray:
             applicableTypes->append(adoptPtr(new CSSLengthListInterpolationType(cssProperty)));
+            break;
+        case CSSPropertyFontWeight:
+            applicableTypes->append(adoptPtr(new CSSFontWeightInterpolationType(cssProperty)));
             break;
         default:
             // TODO(alancutter): Support all interpolable CSS properties here so we can stop falling back to the old StyleInterpolation implementation.

@@ -837,6 +837,8 @@
             'animation/AnimationTranslationUtil.h',
             'animation/CSSColorInterpolationType.cpp',
             'animation/CSSColorInterpolationType.h',
+            'animation/CSSFontWeightInterpolationType.cpp',
+            'animation/CSSFontWeightInterpolationType.h',
             'animation/CSSImageInterpolationType.cpp',
             'animation/CSSImageInterpolationType.h',
             'animation/CSSImageListInterpolationType.cpp',
