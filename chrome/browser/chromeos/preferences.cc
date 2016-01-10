@@ -285,6 +285,8 @@ void Preferences::RegisterProfilePrefs(
                                 true);
 
   registry->RegisterBooleanPref(prefs::kForceMaximizeOnFirstRun, false);
+
+  registry->RegisterBooleanPref(prefs::kLangugaeImeMenuActivated, false);
 }
 
 void Preferences::InitUserPrefs(syncable_prefs::PrefServiceSyncable* prefs) {
@@ -317,6 +319,7 @@ void Preferences::InitUserPrefs(syncable_prefs::PrefServiceSyncable* prefs) {
                              prefs, callback);
   previous_input_method_.Init(prefs::kLanguagePreviousInputMethod,
                               prefs, callback);
+  ime_menu_activated_.Init(prefs::kLangugaeImeMenuActivated, prefs, callback);
 
   xkb_auto_repeat_enabled_.Init(
       prefs::kLanguageXkbAutoRepeatEnabled, prefs, callback);
@@ -580,6 +583,16 @@ void Preferences::ApplyPreferences(ApplyReason reason,
                                        base::SPLIT_WANT_ALL);
     }
     ime_state_->SetEnabledExtensionImes(&split_values);
+  }
+
+  if (pref_name == prefs::kLangugaeImeMenuActivated &&
+      (reason == REASON_PREF_CHANGED || reason == REASON_ACTIVE_USER_CHANGED)) {
+    const bool activated = ime_menu_activated_.GetValue();
+    if (activated)
+      DVLOG(1) << "IME menu is activated.";
+    else
+      DVLOG(1) << "IME menu is deactivated.";
+    // TODO(azurewei): Fire inputMethodPrivate API event.
   }
 
   if (user_is_active) {

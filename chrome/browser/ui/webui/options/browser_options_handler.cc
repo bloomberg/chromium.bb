@@ -694,6 +694,8 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   values->SetBoolean("resolveTimezoneByGeolocationInitialValue",
                      Profile::FromWebUI(web_ui())->GetPrefs()->GetBoolean(
                          prefs::kResolveTimezoneByGeolocation));
+  values->SetBoolean("enableLanguageOptionsImeMenu",
+                     chromeos::switches::IsImeMenuEnabled());
 #endif
 }
 

@@ -505,6 +505,9 @@ const char kLanguageEnabledExtensionImes[] =
 const char kLanguageEnabledExtensionImesSyncable[] =
     "settings.language.enabled_extension_imes_syncable";
 
+// A boolean pref set to true if the IME menu is activated.
+const char kLangugaeImeMenuActivated[] = "settings.language.ime_menu_activated";
+
 // A boolean pref to indicate whether we still need to add the globally synced
 // input methods. False after the initial post-OOBE sync.
 const char kLanguageShouldMergeInputMethods[] =

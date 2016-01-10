@@ -66,6 +66,13 @@ cr.define('options', function() {
    */
   var ENABLE_TRANSLATE = 'translate.enabled';
 
+  /**
+   * The preference is a boolean that activates/deactivates IME menu on shelf.
+   * @type {string}
+   * @const
+   */
+  var ACTIVATE_IME_MENU_PREF = 'settings.language.ime_menu_activated';
+
   /////////////////////////////////////////////////////////////////////////////
   // LanguageOptions class:
 
@@ -270,6 +277,18 @@ cr.define('options', function() {
       // Public session users cannot change the locale.
       if (cr.isChromeOS && UIAccountTweaks.loggedInAsPublicAccount())
         $('language-options-ui-language-section').hidden = true;
+
+      // IME menu (CrOS only).
+      if (cr.isChromeOS) {
+        // Show the 'activate-ime-menu' checkbox if the flag is tured on.
+        if (loadTimeData.getBoolean('enableLanguageOptionsImeMenu'))
+          $('language-options-ime-menu-template').hidden = false;
+
+        // Listen to check on 'activate-ime-menu' checkbox.
+        var checkboxImeMenu = $('activate-ime-menu');
+        checkboxImeMenu.addEventListener('click',
+            this.handleActivateImeMenuCheckboxClick_.bind(this));
+      }
     },
 
     /**
@@ -1417,6 +1436,19 @@ cr.define('options', function() {
       }
 
       return main;
+    },
+
+    /**
+     * Handles activate-ime-menu checkbox's click event.
+     * @param {Event} e Click event.
+     * @private
+     */
+    handleActivateImeMenuCheckboxClick_: function(e) {
+      if (cr.isChromeOS) {
+        var checkbox = e.target;
+        Preferences.setBooleanPref(ACTIVATE_IME_MENU_PREF,
+                                   checkbox.checked, true);
+      }
     },
   };
 

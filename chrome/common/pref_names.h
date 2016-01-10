@@ -190,6 +190,7 @@ extern const char kLanguagePreloadEngines[];
 extern const char kLanguagePreloadEnginesSyncable[];
 extern const char kLanguageEnabledExtensionImes[];
 extern const char kLanguageEnabledExtensionImesSyncable[];
+extern const char kLangugaeImeMenuActivated[];
 extern const char kLanguageShouldMergeInputMethods[];
 extern const char kLanguageRemapCapsLockKeyTo[];
 extern const char kLanguageRemapSearchKeyTo[];

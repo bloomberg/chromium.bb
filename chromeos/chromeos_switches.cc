@@ -327,6 +327,9 @@ const char kCrosRegionsModeHide[] = "hide";
 // Forces CrOS region value.
 const char kCrosRegion[] = "cros-region";
 
+// Enables IME menu
+const char kEnableImeMenu[] = "enable-ime-menu";
+
 bool WakeOnWifiEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
 }
@@ -371,6 +374,10 @@ GetMemoryPressureThresholds() {
     return MemoryPressureMonitor::THRESHOLD_AGGRESSIVE;
 
   return MemoryPressureMonitor::THRESHOLD_DEFAULT;
+}
+
+bool IsImeMenuEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableImeMenu);
 }
 
 }  // namespace switches

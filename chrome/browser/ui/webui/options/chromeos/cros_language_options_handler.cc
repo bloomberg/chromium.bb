@@ -85,6 +85,12 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("noInputMethods",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_NO_INPUT_METHODS));
+  localized_strings->SetString("activateImeMenu",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_ACTIVATE_IME_MENU));
+  localized_strings->SetString("activateImeMenuDesc",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_ACTIVATE_IME_MENU_DESCRIPTION));
 
   // GetSupportedInputMethods() never returns NULL.
   localized_strings->Set("languageList", GetAcceptLanguageList().release());

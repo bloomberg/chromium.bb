@@ -91,6 +91,13 @@
   margin-top: 0.65em;
 }
 
+.language-options-ime-menu-desc {
+  -webkit-margin-start: 22px;
+  font-size: 80%;
+  margin-top: -6px;
+  padding-bottom: 2px;
+}
+
 #language-options-list {
   -webkit-box-flex: 1;
   outline: none;

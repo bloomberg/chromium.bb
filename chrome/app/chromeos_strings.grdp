@@ -3550,6 +3550,14 @@ Press any key to continue exploring.
            desc="The label for languages with no Input Methods">
     This language doesn't have any input methods
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_ACTIVATE_IME_MENU"
+           desc="The label for activating IME menu on the shelf.">
+    Show the input method menu on the shelf.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_ACTIVATE_IME_MENU_DESCRIPTION"
+           desc="The label for the description of showing input method menu.">
+    For easier switching of input methods and access to more input features: voice input, handwriting and emoji.
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_THIRD_PARTY_WARNING_TITLE"
            desc="The title showing in the warning dialog when enabling a 3rd party Input Method">
     Third party input method

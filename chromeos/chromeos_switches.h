@@ -59,6 +59,7 @@ CHROMEOS_EXPORT extern const char kEnableArc[];
 CHROMEOS_EXPORT extern const char kEnableConsumerManagement[];
 CHROMEOS_EXPORT extern const char kEnableExtensionAssetsSharing[];
 CHROMEOS_EXPORT extern const char kEnableFirstRunUITransitions[];
+CHROMEOS_EXPORT extern const char kEnableImeMenu[];
 CHROMEOS_EXPORT extern const char kEnableKioskMode[];
 CHROMEOS_EXPORT extern const char kEnableNetworkPortalNotification[];
 CHROMEOS_EXPORT extern const char kDisableNewKoreanIme[];
@@ -117,6 +118,8 @@ CHROMEOS_EXPORT bool WakeOnWifiEnabled();
 CHROMEOS_EXPORT bool MemoryPressureHandlingEnabled();
 CHROMEOS_EXPORT base::chromeos::MemoryPressureMonitor::MemoryPressureThresholds
 GetMemoryPressureThresholds();
+
+CHROMEOS_EXPORT bool IsImeMenuEnabled();
 
 }  // namespace switches
 }  // namespace chromeos
