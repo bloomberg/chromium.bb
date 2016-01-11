@@ -5,9 +5,9 @@
 # GYP version: components/memory_pressure.gypi:memory_pressure
 source_set("memory_pressure") {
   sources = [
-    "direct_memory_pressure_calculator.cc",
     "direct_memory_pressure_calculator.h",
     "direct_memory_pressure_calculator_win.cc",
+    "direct_memory_pressure_calculator_win.h",
     "filtered_memory_pressure_calculator.cc",
     "filtered_memory_pressure_calculator.h",
     "memory_pressure_calculator.h",

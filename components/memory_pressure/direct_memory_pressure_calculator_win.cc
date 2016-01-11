@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/memory_pressure/direct_memory_pressure_calculator.h"
+#include "components/memory_pressure/direct_memory_pressure_calculator_win.h"
 
 namespace memory_pressure {
 
@@ -80,6 +80,11 @@ DirectMemoryPressureCalculator::CalculateCurrentPressureLevel() {
 
   // No memory pressure was detected.
   return MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
+}
+
+bool DirectMemoryPressureCalculator::GetSystemMemoryInfo(
+    base::SystemMemoryInfoKB* mem_info) const {
+  return base::GetSystemMemoryInfo(mem_info);
 }
 
 void DirectMemoryPressureCalculator::InferThresholds() {

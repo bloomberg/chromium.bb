@@ -15,9 +15,9 @@
         '../base/base.gyp:base',
       ],
       'sources': [
-        'memory_pressure/direct_memory_pressure_calculator.cc',
         'memory_pressure/direct_memory_pressure_calculator.h',
         'memory_pressure/direct_memory_pressure_calculator_win.cc',
+        'memory_pressure/direct_memory_pressure_calculator_win.h',
         'memory_pressure/filtered_memory_pressure_calculator.cc',
         'memory_pressure/filtered_memory_pressure_calculator.h',
         'memory_pressure/memory_pressure_calculator.h',
