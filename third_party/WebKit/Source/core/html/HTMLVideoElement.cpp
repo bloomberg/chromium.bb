@@ -340,16 +340,7 @@ ScriptPromise HTMLVideoElement::createImageBitmap(ScriptState* scriptState, Even
         exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
         return ScriptPromise();
     }
-    if (!hasSingleSecurityOrigin()) {
-        exceptionState.throwSecurityError("The source video contains image data from multiple origins.");
-        return ScriptPromise();
-    }
-    if (!webMediaPlayer()->didPassCORSAccessCheck()
-        && eventTarget.toDOMWindow()->document()->securityOrigin()->taintsCanvas(currentSrc())) {
-        exceptionState.throwSecurityError("Cross-origin access to the source video is denied.");
-        return ScriptPromise();
-    }
-    return ImageBitmapSource::fulfillImageBitmap(scriptState, ImageBitmap::create(this, IntRect(sx, sy, sw, sh)));
+    return ImageBitmapSource::fulfillImageBitmap(scriptState, ImageBitmap::create(this, IntRect(sx, sy, sw, sh), eventTarget.toDOMWindow()->document()));
 }
 
 } // namespace blink

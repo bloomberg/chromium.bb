@@ -1,15 +1,17 @@
-The image bitmap factories should throw exceptions on cross-origin access.
+The image bitmap factories should not throw exceptions on cross-origin access.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS Rejected as expected: image
-PASS reason instanceof Error is true
-SecurityError: Failed to execute 'createImageBitmap' on 'Window': Cross-origin access to the source image is denied.
-PASS Rejected as expected: video
-PASS reason instanceof Error is true
-SecurityError: Failed to execute 'createImageBitmap' on 'Window': Cross-origin access to the source video is denied.
+PASS Resolved as expected: image
+PASS ImageBitmap is tainted. Threw error: SecurityError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': The canvas has been tainted by cross-origin data.
+PASS Resolved as expected: canvas
+PASS ImageBitmap is tainted. Threw error: SecurityError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': The canvas has been tainted by cross-origin data.
+PASS Resolved as expected: imageBitmap
+PASS ImageBitmap is tainted. Threw error: SecurityError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': The canvas has been tainted by cross-origin data.
+PASS Resolved as expected: video
+PASS ImageBitmap is tainted. Threw error: SecurityError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': The canvas has been tainted by cross-origin data.
 PASS successfullyParsed is true
 
 TEST COMPLETE
- 
+

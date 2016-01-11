@@ -1003,10 +1003,6 @@ IntSize HTMLCanvasElement::bitmapSourceSize() const
 ScriptPromise HTMLCanvasElement::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, int sx, int sy, int sw, int sh, ExceptionState& exceptionState)
 {
     ASSERT(eventTarget.toDOMWindow());
-    if (!originClean()) {
-        exceptionState.throwSecurityError("The canvas element provided is tainted with cross-origin data.");
-        return ScriptPromise();
-    }
     if (!sw || !sh) {
         exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
         return ScriptPromise();

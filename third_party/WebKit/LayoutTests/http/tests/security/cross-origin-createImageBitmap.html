@@ -3,44 +3,80 @@
 <body>
 <script src="/js-test-resources/js-test.js"></script>
 <script>
-description("The image bitmap factories should throw exceptions on cross-origin access.");
+description("The image bitmap factories should not throw exceptions on cross-origin access.");
 
 window.jsTestIsAsync = true;
 var reason;
 
-function shouldBeRejected(promise, message) {
-    return promise.then(function() {
-        testFailed('Resolved unexpectedly: ' + message);
+function shouldBeAcceptedAndTainted(promise, message) {
+    return promise.then(function(imageBitmap) {
+        testPassed('Resolved as expected: ' + message);
+        shouldBeTainted(imageBitmap);
     }, function(e) {
         reason = e;
-        testPassed('Rejected as expected: ' + message);
+        testFailed('Rejected unexpectedly: ' + message);
         shouldBeTrue('reason instanceof Error');
         debug(e);
     });
 }
 
-Promise.resolve().then(function() {
-    return new Promise(function(resolve, reject) {
-        var image = document.createElement('img');
-        image.addEventListener('load', resolve.bind(undefined, image));
-        image.src = 'http://localhost:8080/security/resources/abe.png';
-        document.body.appendChild(image);
-    }).then(function(image) {
-        return shouldBeRejected(createImageBitmap(image, 0, 0, 10, 10), 'image');
-    });
-}).then(function() {
-    return new Promise(function(resolve, reject) {
-        var video = document.createElement('video');
-        video.src = 'http://localhost:8080/media/resources/load-video.php?name=test.ogv&amp;type=video/ogv';
-        video.addEventListener('playing', resolve.bind(undefined, video));
-        document.body.appendChild(video);
-        video.play();
-    }).then(function(video) {
-        return shouldBeRejected(createImageBitmap(video, 0, 0, 10, 10), 'video');
-    });
-}).catch(function(e) {
-    testFailed('Unexpected rejection: ' + e);
-}).then(finishJSTest, finishJSTest);
+function shouldBeTainted(imageBitmap) {
+    var canvas = document.createElement("canvas");
+    canvas.width = 10;
+    canvas.height = 10;
+    var context = canvas.getContext("2d");
+    context.drawImage(imageBitmap, 0, 0, 10, 10);
+    try {
+        var imageData = context.getImageData(0, 0, 10, 10);
+        testFailed("ImageBitmap is not tainted.");
+    } catch (e) {
+        testPassed("ImageBitmap is tainted. Threw error: " + e);
+    }
+}
+
+var image = document.createElement('img');
+image.src = 'http://localhost:8080/security/resources/abe.png';
+var video = document.createElement('video');
+video.src = 'http://localhost:8080/media/resources/load-video.php?name=test.ogv&amp;type=video/ogv';
+
+image.addEventListener('load', function() {
+    document.body.appendChild(image);
+    shouldBeAcceptedAndTainted(createImageBitmap(image, 0, 0, 10, 10), 'image')
+.then(function() {
+    var canvas = document.createElement("canvas");
+    canvas.width = 10;
+    canvas.height = 10;
+    var context = canvas.getContext("2d");
+    // taint the canvas
+    context.drawImage(image, 0, 0, 10, 10);
+    shouldBeAcceptedAndTainted(createImageBitmap(canvas, 0, 0, 10, 10), 'canvas')
+.then(function() {
+    createImageBitmap(image).then(imageBitmap => {
+    shouldBeAcceptedAndTainted(createImageBitmap(imageBitmap, 0, 0, 10, 10), 'imageBitmap')
+.then(function() {
+    document.body.appendChild(video);
+    video.play();
+    video.addEventListener('playing', function() {
+      shouldBeAcceptedAndTainted(createImageBitmap(video, 0, 0, 10, 10), 'video')
+.then(finishJSTest, ()=> {
+    testFailed("Unexpected failure");
+    finishJSTest();
+});
+});
+}, ()=> {
+    testFailed("Unexpected failure");
+    finishJSTest();
+});
+});
+}, ()=> {
+    testFailed("Unexpected failure");
+    finishJSTest();
+});
+}, ()=> {
+    testFailed("Unexpected failure");
+    finishJSTest();
+});
+});
 </script>
 </body>
 </html>

@@ -23,10 +23,13 @@ public:
 
     PassRefPtr<SkImage> imageForCurrentFrame() override;
 
+    bool originClean() const { return m_isOriginClean; }
+    void setOriginClean(bool flag) { m_isOriginClean = flag; }
 protected:
     StaticBitmapImage(PassRefPtr<SkImage>);
 
     RefPtr<SkImage> m_image;
+    bool m_isOriginClean = true;
 };
 
 } // namespace blink
