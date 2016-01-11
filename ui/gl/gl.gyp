@@ -203,6 +203,8 @@
             'gl_surface_wgl.h',
             'gl_wgl_api_implementation.cc',
             'gl_wgl_api_implementation.h',
+            'vsync_provider_win.cc',
+            'vsync_provider_win.h',
           ],
           'msvs_settings': {
             'VCLinkerTool': {

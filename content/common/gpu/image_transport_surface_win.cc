@@ -18,6 +18,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/vsync_provider_win.h"
 
 namespace content {
 
@@ -32,8 +33,14 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
   scoped_refptr<gfx::GLSurface> surface;
   if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
       gfx::GLSurfaceEGL::IsDirectCompositionSupported()) {
-    surface = new ChildWindowSurfaceWin(manager, handle.handle);
-    if (!surface->Initialize())
+    scoped_refptr<ChildWindowSurfaceWin> egl_surface(
+        new ChildWindowSurfaceWin(manager, handle.handle));
+    surface = egl_surface;
+
+    // TODO(jbauman): Get frame statistics from DirectComposition
+    scoped_ptr<gfx::VSyncProvider> vsync_provider(
+        new gfx::VSyncProviderWin(handle.handle));
+    if (!egl_surface->Initialize(std::move(vsync_provider)))
       return nullptr;
   } else {
     surface = gfx::GLSurface::CreateViewGLSurface(handle.handle);
