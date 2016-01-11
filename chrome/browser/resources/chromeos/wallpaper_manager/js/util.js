@@ -247,7 +247,7 @@ WallpaperUtil.setCustomWallpaperFromSyncFS = function(
                 WallpaperUtil.storeWallpaperToLocalFS(wallpaperFilename,
                     reader.result, Constants.WallpaperDirNameEnum.ORIGINAL);
                 WallpaperUtil.storeWallpaperToLocalFS(wallpaperFilename,
-                    reader.result, Constants.WallpaperDirNameEnum.THUMBNAIL);
+                    thumbnailData, Constants.WallpaperDirNameEnum.THUMBNAIL);
                 if (onSuccess)
                   onSuccess();
               });
