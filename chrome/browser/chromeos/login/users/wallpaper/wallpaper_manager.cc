@@ -643,6 +643,10 @@ void WallpaperManager::ScheduleSetUserWallpaper(const AccountId& account_id,
     LOG(ERROR) << "User is ephemeral or guest! Fallback to default wallpaper.";
     InitInitialUserWallpaper(account_id, false);
     GetPendingWallpaper(account_id, delayed)->ResetSetDefaultWallpaper();
+    if (base::SysInfo::IsRunningOnChromeOS()) {
+      LOG(ERROR)
+          << "User is ephemeral or guest! Fallback to default wallpaper.";
+    }
     return;
   }
 
