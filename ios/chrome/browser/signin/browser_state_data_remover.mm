@@ -7,14 +7,11 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
-#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/signin/core/common/signin_pref_names.h"
-#include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/clear_browsing_data_command.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
-
-using bookmarks::BookmarkNode;
 
 namespace {
 const int kRemoveAllDataMask = ~0;
@@ -53,22 +50,10 @@ void BrowserStateDataRemover::RemoveBrowserStateData(ProceduralBlock callback) {
 void BrowserStateDataRemover::NotifyWithDetails(
     const IOSChromeBrowsingDataRemover::NotificationDetails& details) {
   // Remove bookmarks once all browsing data was removed.
-  bookmarks::BookmarkModel* bookmarkModel =
-      ios::BookmarkModelFactory::GetForBrowserState(browser_state_);
-  DCHECK(bookmarkModel->loaded())
-      << "Sync is started lazily by the profile once the bookmark model is "
-      << "loaded. Expecting the bookmark model to be loaded when the user "
-      << "attempts to swap his accounts.";
-  bookmarkModel->RemoveAllUserBookmarks();
-
-  bookmarks::BookmarkClient* client = bookmarkModel->client();
-  const BookmarkNode* root = bookmarkModel->root_node();
-  for (int i = 0; i < root->child_count(); ++i) {
-    // Check that remaining bookmarks are all not user-editable.
-    if (!client->CanBeEditedByUser(root->GetChild(i)))
-      continue;
-    CHECK(root->GetChild(i)->empty()) << "Failed to remove all user bookmarks.";
-  }
+  // Removal of browsing data waits for the bookmark model to be loaded, so
+  // there should be no issue calling the function here.
+  CHECK(RemoveAllUserBookmarksIOS(browser_state_))
+      << "Failed to remove all user bookmarks.";
 
   if (details.removal_mask != kRemoveAllDataMask) {
     NOTREACHED() << "Unexpected partial remove browsing data request "

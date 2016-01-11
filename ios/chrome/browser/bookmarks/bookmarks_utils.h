@@ -5,6 +5,12 @@
 #ifndef IOS_CHROME_BROWSER_BOOKMARKS_BOOKMARKS_UTILS_H_
 #define IOS_CHROME_BROWSER_BOOKMARKS_BOOKMARKS_UTILS_H_
 
+#include "base/compiler_specific.h"
+
+namespace ios {
+class ChromeBrowserState;
+}
+
 // Possible locations where a bookmark can be opened from.
 enum BookmarkLaunchLocation {
   BOOKMARK_LAUNCH_LOCATION_ALL_ITEMS,
@@ -18,6 +24,12 @@ enum BookmarkLaunchLocation {
 };
 
 // Records the proper metric based on the launch location.
-void RecordBookmarkLaunch(BookmarkLaunchLocation launchLocation);
+void RecordBookmarkLaunch(BookmarkLaunchLocation launch_location);
+
+// Removes all user bookmarks and clears bookmark-related pref. Requires
+// bookmark model to be loaded.
+// Return true if the bookmarks were successfully removed and false otherwise.
+bool RemoveAllUserBookmarksIOS(ios::ChromeBrowserState* browser_state)
+    WARN_UNUSED_RESULT;
 
 #endif  // IOS_CHROME_BROWSER_BOOKMARKS_BOOKMARKS_UTILS_H_
