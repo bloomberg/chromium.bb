@@ -45,7 +45,6 @@
 #import "ios/web/web_state/js/crw_js_window_id_manager.h"
 #import "ios/web/web_state/ui/crw_web_controller+protected.h"
 #import "ios/web/web_state/ui/crw_wk_script_message_router.h"
-#import "ios/web/web_state/ui/crw_wk_web_view_crash_detector.h"
 #import "ios/web/web_state/ui/web_view_js_utils.h"
 #import "ios/web/web_state/ui/wk_back_forward_list_item_holder.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
@@ -157,9 +156,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 @interface CRWWKWebViewWebController ()<WKNavigationDelegate, WKUIDelegate> {
   // The WKWebView managed by this instance.
   base::scoped_nsobject<WKWebView> _wkWebView;
-
-  // The Watch Dog that detects and reports WKWebView crashes.
-  base::scoped_nsobject<CRWWKWebViewCrashDetector> _crashDetector;
 
   // The actual URL of the document object (i.e., the last committed URL).
   // TODO(crbug.com/549616): Remove this in favor of just updating the
@@ -299,10 +295,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 // Returns YES if the given WKBackForwardListItem is valid to use for
 // navigation.
 - (BOOL)isBackForwardListItemValid:(WKBackForwardListItem*)item;
-
-// Returns a new CRWWKWebViewCrashDetector created with the given |webView| or
-// nil if |webView| is nil. Callers are responsible for releasing the object.
-- (CRWWKWebViewCrashDetector*)newCrashDetectorWithWebView:(WKWebView*)webView;
 
 // Called when web view process has been terminated.
 - (void)webViewWebProcessDidCrash;
@@ -856,7 +848,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
     [_wkWebView addObserver:self forKeyPath:keyPath options:0 context:nullptr];
   }
   _injectedScriptManagers.reset([[NSMutableSet alloc] init]);
-  _crashDetector.reset([self newCrashDetectorWithWebView:_wkWebView]);
   [self setDocumentURL:[self defaultURL]];
 }
 
@@ -952,19 +943,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   return list.currentItem == item ||
          [list.forwardList indexOfObject:item] != NSNotFound ||
          [list.backList indexOfObject:item] != NSNotFound;
-}
-
-- (CRWWKWebViewCrashDetector*)newCrashDetectorWithWebView:(WKWebView*)webView {
-  // iOS9 provides crash detection API.
-  if (!webView || base::ios::IsRunningOnIOS9OrLater())
-    return nil;
-
-  base::WeakNSObject<CRWWKWebViewWebController> weakSelf(self);
-  id crashHandler = ^{
-    [weakSelf webViewWebProcessDidCrash];
-  };
-  return [[CRWWKWebViewCrashDetector alloc] initWithWebView:webView
-                                               crashHandler:crashHandler];
 }
 
 - (void)webViewWebProcessDidCrash {

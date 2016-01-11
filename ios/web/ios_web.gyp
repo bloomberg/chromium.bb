@@ -274,8 +274,6 @@
         'web_state/ui/crw_wk_script_message_router.mm',
         'web_state/ui/crw_wk_simple_web_view_controller.h',
         'web_state/ui/crw_wk_simple_web_view_controller.mm',
-        'web_state/ui/crw_wk_web_view_crash_detector.h',
-        'web_state/ui/crw_wk_web_view_crash_detector.mm',
         'web_state/ui/crw_wk_web_view_web_controller.h',
         'web_state/ui/crw_wk_web_view_web_controller.mm',
         'web_state/ui/web_view_js_utils.h',
