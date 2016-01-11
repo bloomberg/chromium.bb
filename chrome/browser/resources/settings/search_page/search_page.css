@@ -2,18 +2,8 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.manage-search-engines {
-  -webkit-margin-start: 10px;
-}
-
 paper-button.search-engines-advanced {
   margin-top: 10px;
-}
-
-paper-button.search-engines {
-  align-items: center;
-  display: flex;
-  margin-top: 20px;
 }
 
 #searchEnginesMenu {

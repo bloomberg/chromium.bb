@@ -434,7 +434,7 @@
     Search
   </message>
   <message name="IDS_SETTINGS_SEARCH_EXPLANATION" desc="Explanation for the search engine dropdown setting.">
-    Set which search engine is used when searching from the omnibox.
+    Search engine used when searching from the omnibox
   </message>
   <message name="IDS_SETTINGS_SEARCH_MANAGE_BUTTON_LABEL" desc="Label for the Manage Search Engines button.">
     Manage Search Engines
