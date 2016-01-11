@@ -4998,6 +4998,11 @@ interface SVGZoomEvent : UIEvent
     getter previousTranslate
     getter zoomRectScreen
     method constructor
+interface ScaleTransformComponent : TransformComponent
+    getter x
+    getter y
+    getter z
+    method constructor
 interface Screen
     getter availHeight
     getter availLeft
@@ -5361,6 +5366,10 @@ interface TrackDefaultList
 interface TrackEvent : Event
     getter track
     method constructor
+interface TransformComponent
+    getter cssString
+    method constructor
+    method is2DComponent
 interface TransformValue : StyleValue
     method constructor
     method is2D
