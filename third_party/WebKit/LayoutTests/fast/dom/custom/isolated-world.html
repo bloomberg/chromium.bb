@@ -12,7 +12,7 @@ shouldBeNonNull('window.testRunner', 'this test requires testRunner');
 var containerA = document.querySelector('#container-a');
 
 // Access an upgrade candidate from an isolated world.
-const world = 1;
+var world = 1;
 testRunner.evaluateScriptInIsolatedWorld(
     world,
     'window.containerA = document.querySelector("#container-a"); ' +
@@ -57,7 +57,7 @@ shouldBe('invocations', '["y entered (main)"]',
 // Insert from the isolated world
 
 invocations = [];
-testRunner.evaluateScriptInIsolatedWorld(world++,
+testRunner.evaluateScriptInIsolatedWorld(world,
                                          'document.body.appendChild(a);');
 shouldBe('invocations', '["x entered (main)"]',
          'modification in the isolated world should have caused callbacks ' +
