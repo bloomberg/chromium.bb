@@ -45,12 +45,13 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& crop
     return StaticBitmapImage::create(adoptRef(surface->newImageSnapshot()));
 }
 
-ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect)
+ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect, Document* document)
 {
     m_image = cropImage(image->cachedImage()->image(), cropRect);
+    m_image->setOriginClean(!image->wouldTaintOrigin(document->securityOrigin()));
 }
 
-ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect)
+ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect, Document* document)
 {
     IntSize playerSize;
     if (video->webMediaPlayer())
@@ -65,12 +66,14 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect)
     IntPoint dstPoint = IntPoint(std::max(0, -cropRect.x()), std::max(0, -cropRect.y()));
     video->paintCurrentFrame(buffer->canvas(), IntRect(dstPoint, srcRect.size()), nullptr);
     m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration));
+    m_image->setOriginClean(!video->wouldTaintOrigin(document->securityOrigin()));
 }
 
 ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect)
 {
     ASSERT(canvas->isPaintable());
     m_image = cropImage(canvas->copiedImage(BackBuffer, PreferAcceleration).get(), cropRect);
+    m_image->setOriginClean(canvas->originClean());
 }
 
 ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect)
@@ -98,11 +101,13 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect)
 ImageBitmap::ImageBitmap(ImageBitmap* bitmap, const IntRect& cropRect)
 {
     m_image = cropImage(bitmap->bitmapImage(), cropRect);
+    m_image->setOriginClean(bitmap->originClean());
 }
 
-ImageBitmap::ImageBitmap(Image* image, const IntRect& cropRect)
+ImageBitmap::ImageBitmap(PassRefPtr<StaticBitmapImage> image, const IntRect& cropRect)
 {
-    m_image = cropImage(image, cropRect);
+    m_image = cropImage(image.get(), cropRect);
+    m_image->setOriginClean(image->originClean());
 }
 
 ImageBitmap::ImageBitmap(PassRefPtr<StaticBitmapImage> image)
@@ -121,16 +126,16 @@ ImageBitmap::~ImageBitmap()
 {
 }
 
-PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(HTMLImageElement* image, const IntRect& cropRect)
+PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(HTMLImageElement* image, const IntRect& cropRect, Document* document)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
-    return adoptRefWillBeNoop(new ImageBitmap(image, normalizedCropRect));
+    return adoptRefWillBeNoop(new ImageBitmap(image, normalizedCropRect, document));
 }
 
-PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(HTMLVideoElement* video, const IntRect& cropRect)
+PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(HTMLVideoElement* video, const IntRect& cropRect, Document* document)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
-    return adoptRefWillBeNoop(new ImageBitmap(video, normalizedCropRect));
+    return adoptRefWillBeNoop(new ImageBitmap(video, normalizedCropRect, document));
 }
 
 PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(HTMLCanvasElement* canvas, const IntRect& cropRect)
@@ -151,7 +156,7 @@ PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(ImageBitmap* bitmap, con
     return adoptRefWillBeNoop(new ImageBitmap(bitmap, normalizedCropRect));
 }
 
-PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(Image* image, const IntRect& cropRect)
+PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(PassRefPtr<StaticBitmapImage> image, const IntRect& cropRect)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
     return adoptRefWillBeNoop(new ImageBitmap(image, normalizedCropRect));

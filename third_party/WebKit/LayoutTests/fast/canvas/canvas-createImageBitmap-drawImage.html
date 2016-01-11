@@ -154,7 +154,6 @@ function loaded() {
     if (imageLoaded && imageBitmapLoaded && blobLoaded) {
         // check all of these elements
         elements = [image, aCanvas, d, testBitmap, blob];
-
         // wait for callback to finish before each check to ensure synchronous behavior
         nextCheck(0);
     }
