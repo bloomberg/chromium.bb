@@ -312,6 +312,22 @@ scoped_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
                   params_.origin_to_force_quic_on.ToString());
   dict->SetDouble("alternative_service_probability_threshold",
                   params_.alternative_service_probability_threshold);
+  dict->SetDouble("load_server_info_timeout_srtt_multiplier",
+                  params_.quic_load_server_info_timeout_srtt_multiplier);
+  dict->SetBoolean("enable_connection_racing",
+                   params_.quic_enable_connection_racing);
+  dict->SetBoolean("disable_disk_cache", params_.quic_disable_disk_cache);
+  dict->SetBoolean("prefer_aes", params_.quic_prefer_aes);
+  dict->SetInteger("max_number_of_lossy_connections",
+                   params_.quic_max_number_of_lossy_connections);
+  dict->SetDouble("packet_loss_threshold", params_.quic_packet_loss_threshold);
+  dict->SetBoolean("delay_tcp_race", params_.quic_delay_tcp_race);
+  dict->SetBoolean("store_server_configs_in_properties",
+                   params_.quic_store_server_configs_in_properties);
+  dict->SetInteger("idle_connection_timeout_seconds",
+                   params_.quic_idle_connection_timeout_seconds);
+  dict->SetBoolean("disable_preconnect_if_0rtt",
+                   params_.quic_disable_preconnect_if_0rtt);
   dict->SetString("disabled_reason",
                   quic_stream_factory_.QuicDisabledReasonString());
   return std::move(dict);
