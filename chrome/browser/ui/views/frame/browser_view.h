@@ -352,7 +352,8 @@ class BrowserView : public BrowserWindow,
       Profile* profile,
       content::WebContents* web_contents,
       const GURL& url,
-      const SecurityStateModel::SecurityInfo& security_info) override;
+      const security_state::SecurityStateModel::SecurityInfo& security_info)
+      override;
   void ShowAppMenu() override;
   bool PreHandleKeyboardEvent(const content::NativeWebKeyboardEvent& event,
                               bool* is_keyboard_shortcut) override;

@@ -12,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ssl/chrome_security_state_model_client.h"
-#include "chrome/browser/ssl/security_state_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -21,6 +20,7 @@
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/security_state/security_state_model.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/cert_store.h"
@@ -42,6 +42,7 @@
 using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
+using security_state::SecurityStateModel;
 
 ToolbarModelImpl::ToolbarModelImpl(ToolbarModelDelegate* delegate)
     : delegate_(delegate) {

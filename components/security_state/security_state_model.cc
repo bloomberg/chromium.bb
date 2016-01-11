@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/security_state_model.h"
+#include "components/security_state/security_state_model.h"
 
 #include <stdint.h>
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/ssl/security_state_model_client.h"
-#include "chrome/common/chrome_switches.h"
+#include "components/security_state/security_state_model_client.h"
+#include "components/security_state/switches.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
+
+namespace security_state {
 
 namespace {
 
 SecurityStateModel::SecurityLevel GetSecurityLevelForNonSecureFieldTrial() {
-  // TODO(estark): componentize switches::kMarkNonSecureAs.
-  // https://crbug.com/515071
   std::string choice =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kMarkNonSecureAs);
@@ -278,3 +278,5 @@ bool SecurityStateModel::VisibleSecurityState::operator==(
           displayed_mixed_content == other.displayed_mixed_content &&
           ran_mixed_content == other.ran_mixed_content);
 }
+
+}  // namespace security_state

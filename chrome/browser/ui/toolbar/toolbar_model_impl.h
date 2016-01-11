@@ -42,7 +42,7 @@ class ToolbarModelImpl : public ChromeToolbarModel {
   base::string16 GetCorpusNameForMobile() const override;
   GURL GetURL() const override;
   bool WouldPerformSearchTermReplacement(bool ignore_editing) const override;
-  SecurityStateModel::SecurityLevel GetSecurityLevel(
+  security_state::SecurityStateModel::SecurityLevel GetSecurityLevel(
       bool ignore_editing) const override;
   int GetIcon() const override;
   gfx::VectorIconId GetVectorIcon() const override;

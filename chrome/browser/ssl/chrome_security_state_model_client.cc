@@ -20,6 +20,8 @@
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeSecurityStateModelClient);
 
+using security_state::SecurityStateModel;
+
 namespace {
 
 // Converts a content::SecurityStyle (an indicator of a request's

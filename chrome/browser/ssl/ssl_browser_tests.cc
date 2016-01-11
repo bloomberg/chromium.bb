@@ -36,7 +36,6 @@
 #include "chrome/browser/ssl/chrome_security_state_model_client.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/common_name_mismatch_handler.h"
-#include "chrome/browser/ssl/security_state_model.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
 #include "chrome/browser/ui/browser.h"
@@ -53,6 +52,8 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
+#include "components/security_state/security_state_model.h"
+#include "components/security_state/switches.h"
 #include "components/ssl_errors/error_classification.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -1122,7 +1123,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndGoForward) {
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestMarkNonSecureAs) {
   scoped_refptr<base::FieldTrial> trial =
       base::FieldTrialList::CreateFieldTrial(
-          "MarkNonSecureAs", switches::kMarkNonSecureAsNonSecure);
+          "MarkNonSecureAs",
+          security_state::switches::kMarkNonSecureAsNonSecure);
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1133,21 +1135,21 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestMarkNonSecureAs) {
   ASSERT_TRUE(model_client);
 
   ui_test_utils::NavigateToURL(browser(), GURL("file:/"));
-  EXPECT_EQ(SecurityStateModel::NONE,
+  EXPECT_EQ(security_state::SecurityStateModel::NONE,
             model_client->GetSecurityInfo().security_level);
 
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  EXPECT_EQ(SecurityStateModel::NONE,
+  EXPECT_EQ(security_state::SecurityStateModel::NONE,
             model_client->GetSecurityInfo().security_level);
 
   ui_test_utils::NavigateToURL(browser(), GURL("data:text/plain,hello"));
-  EXPECT_EQ(SecurityStateModel::NONE,
+  EXPECT_EQ(security_state::SecurityStateModel::NONE,
             model_client->GetSecurityInfo().security_level);
 
   ui_test_utils::NavigateToURL(
       browser(),
       GURL("blob:chrome%3A//newtab/49a463bb-fac8-476c-97bf-5d7076c3ea1a"));
-  EXPECT_EQ(SecurityStateModel::NONE,
+  EXPECT_EQ(security_state::SecurityStateModel::NONE,
             model_client->GetSecurityInfo().security_level);
 }
 

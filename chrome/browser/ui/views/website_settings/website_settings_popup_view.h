@@ -10,9 +10,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/ssl/security_state_model.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view_observer.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
+#include "components/security_state/security_state_model.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
@@ -52,12 +52,13 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
   ~WebsiteSettingsPopupView() override;
 
   // If |anchor_view| is null, |anchor_rect| is used to anchor the bubble.
-  static void ShowPopup(views::View* anchor_view,
-                        const gfx::Rect& anchor_rect,
-                        Profile* profile,
-                        content::WebContents* web_contents,
-                        const GURL& url,
-                        const SecurityStateModel::SecurityInfo& security_info);
+  static void ShowPopup(
+      views::View* anchor_view,
+      const gfx::Rect& anchor_rect,
+      Profile* profile,
+      content::WebContents* web_contents,
+      const GURL& url,
+      const security_state::SecurityStateModel::SecurityInfo& security_info);
 
   static bool IsPopupShowing();
 
@@ -70,7 +71,7 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
       Profile* profile,
       content::WebContents* web_contents,
       const GURL& url,
-      const SecurityStateModel::SecurityInfo& security_info);
+      const security_state::SecurityStateModel::SecurityInfo& security_info);
 
   // WebContentsObserver implementation.
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;

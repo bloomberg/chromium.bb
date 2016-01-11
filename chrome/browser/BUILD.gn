@@ -159,6 +159,7 @@ source_set("browser") {
     "//components/search_engines",
     "//components/search_provider_logos",
     "//components/security_interstitials/core",
+    "//components/security_state",
     "//components/signin/core/browser",
     "//components/ssl_errors",
     "//components/startup_metric_utils/browser:lib",

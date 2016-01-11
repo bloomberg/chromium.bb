@@ -661,6 +661,9 @@
       'search_provider_logos/logo_cache_unittest.cc',
       'search_provider_logos/logo_tracker_unittest.cc',
     ],
+    'security_state_unittest_sources': [
+      'security_state/security_state_model_unittest.cc',
+    ],
     'sessions_unittest_sources': [
       'sessions/content/content_serialized_navigation_builder_unittest.cc',
       'sessions/content/content_serialized_navigation_driver_unittest.cc',
@@ -941,6 +944,7 @@
         '<@(search_engines_unittest_sources)',
         '<@(search_provider_logos_unittest_sources)',
         '<@(search_unittest_sources)',
+        '<@(security_state_unittest_sources)',
         '<@(sessions_unittest_sources)',
         '<@(signin_unittest_sources)',
         '<@(ssl_config_unittest_sources)',
@@ -1070,6 +1074,7 @@
         'components.gyp:search_engines',
         'components.gyp:search_engines_test_support',
         'components.gyp:search_provider_logos',
+        'components.gyp:security_state',
         'components.gyp:sessions_test_support',
         'components.gyp:signin_core_browser',
         'components.gyp:signin_core_browser_test_support',

@@ -9,7 +9,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
-import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
+import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.common.ScreenOrientationValues;
 
 /**

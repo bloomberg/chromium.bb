@@ -1308,7 +1308,7 @@ void WebsiteSettingsUIBridge::Show(
     Profile* profile,
     content::WebContents* web_contents,
     const GURL& url,
-    const SecurityStateModel::SecurityInfo& security_info) {
+    const security_state::SecurityStateModel::SecurityInfo& security_info) {
   if (chrome::ToolkitViewsDialogsEnabled()) {
     chrome::ShowWebsiteSettingsBubbleViewsAtPoint(
         gfx::ScreenPointFromNSPoint(AnchorPointForWindow(parent)), profile,

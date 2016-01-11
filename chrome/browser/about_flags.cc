@@ -48,6 +48,7 @@
 #include "components/password_manager/core/common/password_manager_switches.h"
 #include "components/proximity_auth/switches.h"
 #include "components/search/search_switches.h"
+#include "components/security_state/switches.h"
 #include "components/signin/core/common/signin_switches.h"
 #include "components/sync_driver/sync_driver_switches.h"
 #include "components/tracing/tracing_switches.h"
@@ -178,12 +179,12 @@ const FeatureEntry::Choice kNaClDebugMaskChoices[] = {
 #endif
 
 const FeatureEntry::Choice kMarkNonSecureAsChoices[] = {
-    { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-    { IDS_MARK_NON_SECURE_AS_NEUTRAL,
-        switches::kMarkNonSecureAs, switches::kMarkNonSecureAsNeutral},
-    { IDS_MARK_NON_SECURE_AS_NON_SECURE,
-        switches::kMarkNonSecureAs, switches::kMarkNonSecureAsNonSecure}
-};
+    {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
+    {IDS_MARK_NON_SECURE_AS_NEUTRAL, security_state::switches::kMarkNonSecureAs,
+     security_state::switches::kMarkNonSecureAsNeutral},
+    {IDS_MARK_NON_SECURE_AS_NON_SECURE,
+     security_state::switches::kMarkNonSecureAs,
+     security_state::switches::kMarkNonSecureAsNonSecure}};
 
 const FeatureEntry::Choice kDataReductionProxyLoFiChoices[] = {
     { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },

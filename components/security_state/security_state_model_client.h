@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SSL_SECURITY_STATE_MODEL_CLIENT_H_
-#define CHROME_BROWSER_SSL_SECURITY_STATE_MODEL_CLIENT_H_
+#ifndef COMPONENTS_SECURITY_STATE_SECURITY_STATE_MODEL_CLIENT_H_
+#define COMPONENTS_SECURITY_STATE_SECURITY_STATE_MODEL_CLIENT_H_
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/ssl/security_state_model.h"
+#include "components/security_state/security_state_model.h"
 #include "net/cert/cert_status_flags.h"
 
 namespace net {
 class X509Certificate;
 }  // namespace net
+
+namespace security_state {
 
 // Provides embedder-specific information that a SecurityStateModel
 // needs to determine the page's security status.
@@ -40,4 +42,6 @@ class SecurityStateModelClient {
   DISALLOW_COPY_AND_ASSIGN(SecurityStateModelClient);
 };
 
-#endif  // CHROME_BROWSER_SSL_SECURITY_STATE_MODEL_CLIENT_H_
+}  // namespace security_state
+
+#endif  // COMPONENTS_SECURITY_STATE_SECURITY_STATE_MODEL_CLIENT_H_

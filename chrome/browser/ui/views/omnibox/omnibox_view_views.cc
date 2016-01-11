@@ -143,7 +143,7 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
           make_scoped_ptr(new ChromeOmniboxClient(controller, profile))),
       profile_(profile),
       popup_window_mode_(popup_window_mode),
-      security_level_(SecurityStateModel::NONE),
+      security_level_(security_state::SecurityStateModel::NONE),
       saved_selection_for_focus_change_(gfx::Range::InvalidRange()),
       ime_composing_before_change_(false),
       delete_at_end_pressed_(false),
@@ -228,7 +228,8 @@ void OmniboxViewViews::ResetTabState(content::WebContents* web_contents) {
 }
 
 void OmniboxViewViews::Update() {
-  const SecurityStateModel::SecurityLevel old_security_level = security_level_;
+  const security_state::SecurityStateModel::SecurityLevel old_security_level =
+      security_level_;
   UpdateSecurityLevel();
   if (model()->UpdatePermanentText()) {
     // Something visibly changed.  Re-enable URL replacement.
@@ -648,10 +649,12 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   // may have incorrectly identified a qualifier as a scheme.
   SetStyle(gfx::DIAGONAL_STRIKE, false);
   if (!model()->user_input_in_progress() && text_is_url &&
-      scheme.is_nonempty() && (security_level_ != SecurityStateModel::NONE)) {
+      scheme.is_nonempty() &&
+      (security_level_ != security_state::SecurityStateModel::NONE)) {
     SkColor security_color =
         location_bar_view_->GetSecureTextColor(security_level_);
-    const bool strike = (security_level_ == SecurityStateModel::SECURITY_ERROR);
+    const bool strike =
+        (security_level_ == security_state::SecurityStateModel::SECURITY_ERROR);
     const gfx::Range scheme_range(scheme.begin, scheme.end());
     ApplyColor(security_color, scheme_range);
     ApplyStyle(gfx::DIAGONAL_STRIKE, strike, scheme_range);

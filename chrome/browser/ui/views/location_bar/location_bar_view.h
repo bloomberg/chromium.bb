@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
-#include "chrome/browser/ssl/security_state_model.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
 #include "chrome/browser/ui/toolbar/chrome_toolbar_model.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "components/search_engines/template_url_service_observer.h"
+#include "components/security_state/security_state_model.h"
 #include "components/ui/zoom/zoom_event_manager_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -106,7 +106,8 @@ class LocationBarView : public LocationBar,
     virtual void ShowWebsiteSettings(
         content::WebContents* web_contents,
         const GURL& url,
-        const SecurityStateModel::SecurityInfo& security_info) = 0;
+        const security_state::SecurityStateModel::SecurityInfo&
+            security_info) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -142,7 +143,7 @@ class LocationBarView : public LocationBar,
   // Returns the color to be used for security text in the context of
   // |security_level|.
   SkColor GetSecureTextColor(
-      SecurityStateModel::SecurityLevel security_level) const;
+      security_state::SecurityStateModel::SecurityLevel security_level) const;
 
   // Returns the delegate.
   Delegate* delegate() const { return delegate_; }

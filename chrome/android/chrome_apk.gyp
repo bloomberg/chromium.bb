@@ -293,6 +293,7 @@
         '../../components/components.gyp:gcm_driver_java',
         '../../components/components.gyp:offline_pages_enums_java',
         '../../components/components.gyp:precache_javatests',
+        '../../components/components.gyp:security_state_enums_java',
         '../../components/components.gyp:web_contents_delegate_android_java',
         '../../content/content_shell_and_tests.gyp:content_java_test_support',
         '../../net/net.gyp:net_java',

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SSL_SECURITY_STATE_MODEL_H_
-#define CHROME_BROWSER_SSL_SECURITY_STATE_MODEL_H_
+#ifndef COMPONENTS_SECURITY_STATE_SECURITY_STATE_MODEL_H_
+#define COMPONENTS_SECURITY_STATE_SECURITY_STATE_MODEL_H_
 
 #include "base/macros.h"
 #include "net/cert/cert_status_flags.h"
@@ -11,7 +11,8 @@
 #include "net/cert/x509_certificate.h"
 #include "url/gurl.h"
 
-class Profile;
+namespace security_state {
+
 class SecurityStateModelClient;
 
 // SecurityStateModel provides high-level security information about a
@@ -30,7 +31,7 @@ class SecurityStateModel {
   // update the UI icons in ToolbarModelImpl::GetIconForSecurityLevel.
   //
   // A Java counterpart will be generated for this enum.
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.ssl
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.security_state
   // GENERATED_JAVA_CLASS_NAME_OVERRIDE: ConnectionSecurityLevel
   enum SecurityLevel {
     // HTTP/no URL/HTTPS but with insecure passive content on the page
@@ -163,4 +164,6 @@ class SecurityStateModel {
   DISALLOW_COPY_AND_ASSIGN(SecurityStateModel);
 };
 
-#endif  // CHROME_BROWSER_SSL_SECURITY_STATE_MODEL_H_
+}  // namespace security_state
+
+#endif  // COMPONENTS_SECURITY_STATE_SECURITY_STATE_MODEL_H_

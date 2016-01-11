@@ -41,7 +41,7 @@ jboolean IsDeprecatedSHA1Present(JNIEnv* env,
       ChromeSecurityStateModelClient::FromWebContents(web_contents);
   DCHECK(model_client);
   return model_client->GetSecurityInfo().sha1_deprecation_status !=
-         SecurityStateModel::NO_DEPRECATED_SHA1;
+         security_state::SecurityStateModel::NO_DEPRECATED_SHA1;
 }
 
 // static
@@ -57,7 +57,8 @@ jboolean IsPassiveMixedContentPresent(
       ChromeSecurityStateModelClient::FromWebContents(web_contents);
   DCHECK(model_client);
   return model_client->GetSecurityInfo().mixed_content_status ==
-             SecurityStateModel::DISPLAYED_MIXED_CONTENT ||
+             security_state::SecurityStateModel::DISPLAYED_MIXED_CONTENT ||
          model_client->GetSecurityInfo().mixed_content_status ==
-             SecurityStateModel::RAN_AND_DISPLAYED_MIXED_CONTENT;
+             security_state::SecurityStateModel::
+                 RAN_AND_DISPLAYED_MIXED_CONTENT;
 }

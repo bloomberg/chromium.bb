@@ -29,6 +29,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::SSLStatus;
+using security_state::SecurityStateModel;
 using testing::_;
 using testing::AnyNumber;
 using testing::Return;

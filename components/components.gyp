@@ -78,6 +78,7 @@
     'search_engines.gypi',
     'search_provider_logos.gypi',
     'security_interstitials.gypi',
+    'security_state.gypi',
     'sessions.gypi',
     'signin.gypi',
     'ssl_config.gypi',

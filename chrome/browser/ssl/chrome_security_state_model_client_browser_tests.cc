@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/security_state_model.h"
+#include "chrome/browser/ssl/chrome_security_state_model_client.h"
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -37,6 +37,8 @@
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/url_request/url_request_filter.h"
+
+using security_state::SecurityStateModel;
 
 namespace {
 
@@ -90,9 +92,9 @@ void CheckSecurityInfoForNonSecure(content::WebContents* contents) {
   EXPECT_EQ(0, security_info.cert_id);
 }
 
-class SecurityStateModelTest : public CertVerifierBrowserTest {
+class ChromeSecurityStateModelClientTest : public CertVerifierBrowserTest {
  public:
-  SecurityStateModelTest()
+  ChromeSecurityStateModelClientTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
     https_server_.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
   }
@@ -141,10 +143,10 @@ class SecurityStateModelTest : public CertVerifierBrowserTest {
   net::EmbeddedTestServer https_server_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SecurityStateModelTest);
+  DISALLOW_COPY_AND_ASSIGN(ChromeSecurityStateModelClientTest);
 };
 
-IN_PROC_BROWSER_TEST_F(SecurityStateModelTest, HttpPage) {
+IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, HttpPage) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/ssl/google.html"));
@@ -170,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateModelTest, HttpPage) {
   EXPECT_EQ(0, security_info.connection_status);
 }
 
-IN_PROC_BROWSER_TEST_F(SecurityStateModelTest, HttpsPage) {
+IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, HttpsPage) {
   ASSERT_TRUE(https_server_.Start());
   SetUpMockCertVerifierForHttpsServer(0, net::OK);
 
@@ -183,7 +185,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateModelTest, HttpsPage) {
       false /* expect cert status error */);
 }
 
-IN_PROC_BROWSER_TEST_F(SecurityStateModelTest, SHA1Broken) {
+IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, SHA1Broken) {
   ASSERT_TRUE(https_server_.Start());
   // The test server uses a long-lived cert by default, so a SHA1
   // signature in it will register as a "broken" condition rather than
@@ -201,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateModelTest, SHA1Broken) {
       false /* expect cert status error */);
 }
 
-IN_PROC_BROWSER_TEST_F(SecurityStateModelTest, MixedContent) {
+IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, MixedContent) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
   SetUpMockCertVerifierForHttpsServer(0, net::OK);
@@ -290,7 +292,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStateModelTest, MixedContent) {
 }
 
 // Same as the test above but with a long-lived SHA1 cert.
-IN_PROC_BROWSER_TEST_F(SecurityStateModelTest, MixedContentWithBrokenSHA1) {
+IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
+                       MixedContentWithBrokenSHA1) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
   // The test server uses a long-lived cert by default, so a SHA1
@@ -365,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateModelTest, MixedContentWithBrokenSHA1) {
       false /* expect cert status error */);
 }
 
-IN_PROC_BROWSER_TEST_F(SecurityStateModelTest, BrokenHTTPS) {
+IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, BrokenHTTPS) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
   SetUpMockCertVerifierForHttpsServer(net::CERT_STATUS_DATE_INVALID,
@@ -431,9 +434,10 @@ void InstallLoadingInterceptor(const std::string& host) {
       scoped_ptr<net::URLRequestInterceptor>(new PendingJobInterceptor()));
 }
 
-class SecurityStateModelLoadingTest : public SecurityStateModelTest {
+class SecurityStateModelLoadingTest
+    : public ChromeSecurityStateModelClientTest {
  public:
-  SecurityStateModelLoadingTest() : SecurityStateModelTest() {}
+  SecurityStateModelLoadingTest() : ChromeSecurityStateModelClientTest() {}
   ~SecurityStateModelLoadingTest() override{};
 
  protected:
@@ -475,7 +479,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateModelLoadingTest, NavigationStateChanges) {
 
 // Tests that the SecurityStateModel for a WebContents is up-to-date
 // when the WebContents is inserted into a Browser's TabStripModel.
-IN_PROC_BROWSER_TEST_F(SecurityStateModelTest, AddedTab) {
+IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, AddedTab) {
   ASSERT_TRUE(https_server_.Start());
   SetUpMockCertVerifierForHttpsServer(0, net::OK);
 

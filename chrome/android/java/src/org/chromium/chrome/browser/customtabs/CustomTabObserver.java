@@ -10,10 +10,10 @@ import android.os.SystemClock;
 import android.support.customtabs.CustomTabsCallback;
 
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.util.concurrent.TimeUnit;

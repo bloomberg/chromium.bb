@@ -2,23 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/security_state_model.h"
+#include "components/security_state/security_state_model.h"
 
 #include <stdint.h>
 
-#include "chrome/browser/ssl/security_state_model_client.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/cert_store.h"
-#include "content/public/common/origin_util.h"
-#include "content/public/test/mock_render_process_host.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "components/security_state/security_state_model_client.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_certificate_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace security_state {
 
 namespace {
 
@@ -79,9 +75,9 @@ class TestSecurityStateModelClient : public SecurityStateModelClient {
 
   bool UsedPolicyInstalledCertificate() override { return false; }
 
-  bool IsOriginSecure(const GURL& url) override {
-    return content::IsOriginSecure(url);
-  }
+  // Always returns true because all unit tests in this file test
+  // scenarios in which the origin is secure.
+  bool IsOriginSecure(const GURL& url) override { return true; }
 
  private:
   SecurityStateModel::SecurityLevel initial_security_level_;
@@ -92,11 +88,9 @@ class TestSecurityStateModelClient : public SecurityStateModelClient {
   bool ran_mixed_content_;
 };
 
-class SecurityStateModelTest : public ChromeRenderViewHostTestHarness {};
-
 // Tests that SHA1-signed certificates expiring in 2016 downgrade the
 // security state of the page.
-TEST_F(SecurityStateModelTest, SHA1Warning) {
+TEST(SecurityStateModelTest, SHA1Warning) {
   TestSecurityStateModelClient client;
   SecurityStateModel model;
   model.SetClient(&client);
@@ -109,7 +103,7 @@ TEST_F(SecurityStateModelTest, SHA1Warning) {
 
 // Tests that SHA1 warnings don't interfere with the handling of mixed
 // content.
-TEST_F(SecurityStateModelTest, SHA1WarningMixedContent) {
+TEST(SecurityStateModelTest, SHA1WarningMixedContent) {
   TestSecurityStateModelClient client;
   SecurityStateModel model;
   model.SetClient(&client);
@@ -136,7 +130,7 @@ TEST_F(SecurityStateModelTest, SHA1WarningMixedContent) {
 
 // Tests that SHA1 warnings don't interfere with the handling of major
 // cert errors.
-TEST_F(SecurityStateModelTest, SHA1WarningBrokenHTTPS) {
+TEST(SecurityStateModelTest, SHA1WarningBrokenHTTPS) {
   TestSecurityStateModelClient client;
   SecurityStateModel model;
   model.SetClient(&client);
@@ -151,7 +145,7 @@ TEST_F(SecurityStateModelTest, SHA1WarningBrokenHTTPS) {
 
 // Tests that |security_info.is_secure_protocol_and_ciphersuite| is
 // computed correctly.
-TEST_F(SecurityStateModelTest, SecureProtocolAndCiphersuite) {
+TEST(SecurityStateModelTest, SecureProtocolAndCiphersuite) {
   TestSecurityStateModelClient client;
   SecurityStateModel model;
   model.SetClient(&client);
@@ -166,7 +160,7 @@ TEST_F(SecurityStateModelTest, SecureProtocolAndCiphersuite) {
   EXPECT_TRUE(security_info.is_secure_protocol_and_ciphersuite);
 }
 
-TEST_F(SecurityStateModelTest, NonsecureProtocol) {
+TEST(SecurityStateModelTest, NonsecureProtocol) {
   TestSecurityStateModelClient client;
   SecurityStateModel model;
   model.SetClient(&client);
@@ -181,7 +175,7 @@ TEST_F(SecurityStateModelTest, NonsecureProtocol) {
   EXPECT_FALSE(security_info.is_secure_protocol_and_ciphersuite);
 }
 
-TEST_F(SecurityStateModelTest, NonsecureCiphersuite) {
+TEST(SecurityStateModelTest, NonsecureCiphersuite) {
   TestSecurityStateModelClient client;
   SecurityStateModel model;
   model.SetClient(&client);
@@ -197,3 +191,5 @@ TEST_F(SecurityStateModelTest, NonsecureCiphersuite) {
 }
 
 }  // namespace
+
+}  // namespace security_state

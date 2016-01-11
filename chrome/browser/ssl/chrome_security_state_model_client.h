@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_SSL_CHROME_SECURITY_STATE_MODEL_CLIENT_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ssl/security_state_model.h"
-#include "chrome/browser/ssl/security_state_model_client.h"
+#include "components/security_state/security_state_model.h"
+#include "components/security_state/security_state_model_client.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace content {
@@ -17,16 +17,17 @@ class WebContents;
 // Uses a WebContents to provide a SecurityStateModel with the
 // information that it needs to determine the page's security status.
 class ChromeSecurityStateModelClient
-    : public SecurityStateModelClient,
+    : public security_state::SecurityStateModelClient,
       public content::WebContentsUserData<ChromeSecurityStateModelClient> {
  public:
   ~ChromeSecurityStateModelClient() override;
 
-  const SecurityStateModel::SecurityInfo& GetSecurityInfo() const;
+  const security_state::SecurityStateModel::SecurityInfo& GetSecurityInfo()
+      const;
 
   // SecurityStateModelClient:
   void GetVisibleSecurityState(
-      SecurityStateModel::VisibleSecurityState* state) override;
+      security_state::SecurityStateModel::VisibleSecurityState* state) override;
   bool RetrieveCert(scoped_refptr<net::X509Certificate>* cert) override;
   bool UsedPolicyInstalledCertificate() override;
   bool IsOriginSecure(const GURL& url) override;
@@ -36,7 +37,7 @@ class ChromeSecurityStateModelClient
   friend class content::WebContentsUserData<ChromeSecurityStateModelClient>;
 
   content::WebContents* web_contents_;
-  scoped_ptr<SecurityStateModel> security_state_model_;
+  scoped_ptr<security_state::SecurityStateModel> security_state_model_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeSecurityStateModelClient);
 };

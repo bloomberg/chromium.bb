@@ -8,9 +8,9 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/ssl/security_state_model.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/security_state/security_state_model.h"
 #include "content/public/common/signed_certificate_timestamp_id_and_status.h"
 #include "url/gurl.h"
 
@@ -96,13 +96,14 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   // Creates a WebsiteSettings for the passed |url| using the given |ssl| status
   // object to determine the status of the site's connection. The
   // |WebsiteSettings| takes ownership of the |ui|.
-  WebsiteSettings(WebsiteSettingsUI* ui,
-                  Profile* profile,
-                  TabSpecificContentSettings* tab_specific_content_settings,
-                  content::WebContents* web_contents,
-                  const GURL& url,
-                  const SecurityStateModel::SecurityInfo& security_info,
-                  content::CertStore* cert_store);
+  WebsiteSettings(
+      WebsiteSettingsUI* ui,
+      Profile* profile,
+      TabSpecificContentSettings* tab_specific_content_settings,
+      content::WebContents* web_contents,
+      const GURL& url,
+      const security_state::SecurityStateModel::SecurityInfo& security_info,
+      content::CertStore* cert_store);
   ~WebsiteSettings() override;
 
   void RecordWebsiteSettingsAction(WebsiteSettingsAction action);
@@ -145,8 +146,9 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
 
  private:
   // Initializes the |WebsiteSettings|.
-  void Init(const GURL& url,
-            const SecurityStateModel::SecurityInfo& security_info);
+  void Init(
+      const GURL& url,
+      const security_state::SecurityStateModel::SecurityInfo& security_info);
 
   // Sets (presents) the information about the site's permissions in the |ui_|.
   void PresentSitePermissions();

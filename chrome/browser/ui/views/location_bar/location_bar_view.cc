@@ -326,22 +326,22 @@ SkColor LocationBarView::GetColor(
 }
 
 SkColor LocationBarView::GetSecureTextColor(
-    SecurityStateModel::SecurityLevel security_level) const {
+    security_state::SecurityStateModel::SecurityLevel security_level) const {
   bool inverted = color_utils::IsDark(GetColor(BACKGROUND));
   SkColor color;
   switch (security_level) {
-    case SecurityStateModel::EV_SECURE:
-    case SecurityStateModel::SECURE:
+    case security_state::SecurityStateModel::EV_SECURE:
+    case security_state::SecurityStateModel::SECURE:
       if (ui::MaterialDesignController::IsModeMaterial() && inverted)
         return GetColor(TEXT);
       color = GetColor(EV_BUBBLE_TEXT_AND_BORDER);
       break;
 
-    case SecurityStateModel::SECURITY_POLICY_WARNING:
+    case security_state::SecurityStateModel::SECURITY_POLICY_WARNING:
       return GetColor(DEEMPHASIZED_TEXT);
       break;
 
-    case SecurityStateModel::SECURITY_ERROR: {
+    case security_state::SecurityStateModel::SECURITY_ERROR: {
       bool md = ui::MaterialDesignController::IsModeMaterial();
       if (md && inverted)
         return GetColor(TEXT);
@@ -349,7 +349,7 @@ SkColor LocationBarView::GetSecureTextColor(
       break;
     }
 
-    case SecurityStateModel::SECURITY_WARNING:
+    case security_state::SecurityStateModel::SECURITY_WARNING:
       return GetColor(TEXT);
       break;
 
@@ -1043,7 +1043,7 @@ bool LocationBarView::ShouldShowEVBubble() const {
   const ChromeToolbarModel* chrome_toolbar_model =
       static_cast<const ChromeToolbarModel*>(GetToolbarModel());
   return (chrome_toolbar_model->GetSecurityLevel(false) ==
-          SecurityStateModel::EV_SECURE);
+          security_state::SecurityStateModel::EV_SECURE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -9,12 +9,12 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
-#include "chrome/browser/ssl/security_state_model.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/security_state/security_state_model.h"
 #include "ui/base/ui_base_types.h"
 
 class Browser;
@@ -145,7 +145,8 @@ class BrowserWindowCocoa
       Profile* profile,
       content::WebContents* web_contents,
       const GURL& url,
-      const SecurityStateModel::SecurityInfo& security_info) override;
+      const security_state::SecurityStateModel::SecurityInfo& security_info)
+      override;
   void ShowAppMenu() override;
   bool PreHandleKeyboardEvent(const content::NativeWebKeyboardEvent& event,
                               bool* is_keyboard_shortcut) override;

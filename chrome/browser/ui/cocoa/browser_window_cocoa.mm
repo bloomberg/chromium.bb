@@ -735,7 +735,7 @@ void BrowserWindowCocoa::ShowWebsiteSettings(
     Profile* profile,
     content::WebContents* web_contents,
     const GURL& url,
-    const SecurityStateModel::SecurityInfo& security_info) {
+    const security_state::SecurityStateModel::SecurityInfo& security_info) {
   WebsiteSettingsUIBridge::Show(window(), profile, web_contents, url,
                                 security_info);
 }

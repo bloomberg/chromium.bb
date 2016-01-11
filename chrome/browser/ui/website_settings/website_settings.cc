@@ -72,6 +72,7 @@ using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
 using content::BrowserThread;
+using security_state::SecurityStateModel;
 
 namespace {
 

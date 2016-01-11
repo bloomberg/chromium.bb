@@ -398,7 +398,7 @@ ToolbarView::GetContentSettingBubbleModelDelegate() {
 void ToolbarView::ShowWebsiteSettings(
     content::WebContents* web_contents,
     const GURL& url,
-    const SecurityStateModel::SecurityInfo& security_info) {
+    const security_state::SecurityStateModel::SecurityInfo& security_info) {
   chrome::ShowWebsiteSettings(browser_, web_contents, url, security_info);
 }
 

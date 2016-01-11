@@ -450,7 +450,7 @@ void LocationBarViewMac::Layout() {
     selected_keyword_decoration_->SetKeyword(short_name, is_extension_keyword);
     selected_keyword_decoration_->SetImage(GetKeywordImage(keyword));
   } else if (chrome_toolbar_model->GetSecurityLevel(false) ==
-             SecurityStateModel::EV_SECURE) {
+             security_state::SecurityStateModel::EV_SECURE) {
     // Switch from location icon to show the EV bubble instead.
     location_icon_decoration_->SetVisible(false);
     ev_bubble_decoration_->SetVisible(true);
