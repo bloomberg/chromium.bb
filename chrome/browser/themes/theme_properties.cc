@@ -232,14 +232,15 @@ const std::set<int>& ThemeProperties::GetTintableToolbarButtons() {
 
 // static
 color_utils::HSL ThemeProperties::GetDefaultTint(int id, bool otr) {
+  bool otr_tint = otr && ui::MaterialDesignController::IsModeMaterial();
   switch (id) {
     case TINT_FRAME:
-      return otr ? kDefaultTintFrameIncognito : kDefaultTintFrame;
+      return otr_tint ? kDefaultTintFrameIncognito : kDefaultTintFrame;
     case TINT_FRAME_INACTIVE:
-      return otr ? kDefaultTintFrameIncognitoInactive
-                 : kDefaultTintFrameInactive;
+      return otr_tint ? kDefaultTintFrameIncognitoInactive
+                      : kDefaultTintFrameInactive;
     case TINT_BUTTONS:
-      return otr ? kDefaultTintButtonsIncognito : kDefaultTintButtons;
+      return otr_tint ? kDefaultTintButtonsIncognito : kDefaultTintButtons;
     case TINT_BACKGROUND_TAB:
       return kDefaultTintBackgroundTab;
     case TINT_FRAME_INCOGNITO:
