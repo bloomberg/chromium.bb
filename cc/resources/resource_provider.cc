@@ -375,7 +375,9 @@ ResourceProvider::~ResourceProvider() {
 bool ResourceProvider::InUseByConsumer(ResourceId id) {
   Resource* resource = GetResource(id);
   return resource->lock_for_read_count > 0 || resource->exported_count > 0 ||
-         resource->lost;
+         resource->lost ||
+         (resource->gpu_memory_buffer &&
+          resource->gpu_memory_buffer->IsInUseByMacOSWindowServer());
 }
 
 bool ResourceProvider::IsLost(ResourceId id) {
@@ -774,7 +776,9 @@ bool ResourceProvider::CanLockForWrite(ResourceId id) {
   Resource* resource = GetResource(id);
   return !resource->locked_for_write && !resource->lock_for_read_count &&
          !resource->exported_count && resource->origin == Resource::INTERNAL &&
-         !resource->lost && ReadLockFenceHasPassed(resource);
+         !resource->lost && ReadLockFenceHasPassed(resource) &&
+         !(resource->gpu_memory_buffer &&
+           resource->gpu_memory_buffer->IsInUseByMacOSWindowServer());
 }
 
 bool ResourceProvider::IsOverlayCandidate(ResourceId id) {

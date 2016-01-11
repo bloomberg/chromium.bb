@@ -71,6 +71,8 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
     fail_to_allocate_gpu_memory_buffer_ = fail;
   }
 
+  void SetGpuMemoryBuffersInUseByMacOSWindowServer(bool in_use);
+
   scoped_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
 
   scoped_ptr<VideoDecodeAccelerator> CreateVideoDecodeAccelerator() override;

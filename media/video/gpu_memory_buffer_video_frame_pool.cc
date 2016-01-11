@@ -84,9 +84,24 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
   // All the resources needed to compose a frame.
   struct FrameResources {
     explicit FrameResources(const gfx::Size& size) : size(size) {}
-    bool in_use = true;
-    gfx::Size size;
+    void SetIsInUse(bool in_use) { in_use_ = in_use; }
+    bool IsInUse() const {
+      if (in_use_)
+        return true;
+      for (const PlaneResource& plane_resource : plane_resources) {
+        if (plane_resource.gpu_memory_buffer &&
+            plane_resource.gpu_memory_buffer->IsInUseByMacOSWindowServer()) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    const gfx::Size size;
     PlaneResource plane_resources[VideoFrame::kMaxPlanes];
+
+   private:
+    bool in_use_ = true;
   };
 
   // Copy |video_frame| data into |frame_resouces|
@@ -415,7 +430,7 @@ bool GpuMemoryBufferVideoFramePool::PoolImpl::OnMemoryDump(
                         buffer_size_in_bytes);
         dump->AddScalar("free_size",
                         base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                        frame_resources->in_use ? 0 : buffer_size_in_bytes);
+                        frame_resources->IsInUse() ? 0 : buffer_size_in_bytes);
         base::trace_event::MemoryAllocatorDumpGuid shared_buffer_guid =
             gfx::GetGpuMemoryBufferGUIDForTracing(tracing_process_id,
                                                   buffer_id);
@@ -630,9 +645,9 @@ GpuMemoryBufferVideoFramePool::PoolImpl::GetOrCreateFrameResources(
   auto it = resources_pool_.begin();
   while (it != resources_pool_.end()) {
     FrameResources* frame_resources = *it;
-    if (!frame_resources->in_use) {
+    if (!frame_resources->IsInUse()) {
       if (AreFrameResourcesCompatible(frame_resources, size)) {
-        frame_resources->in_use = true;
+        frame_resources->SetIsInUse(true);
         return frame_resources;
       } else {
         resources_pool_.erase(it++);
@@ -720,7 +735,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::ReturnFrameResources(
   // This minimizes the chances of locking the buffer that might be
   // still needed for drawing.
   std::swap(*it, resources_pool_.back());
-  frame_resources->in_use = false;
+  frame_resources->SetIsInUse(false);
 }
 
 GpuMemoryBufferVideoFramePool::GpuMemoryBufferVideoFramePool() {}

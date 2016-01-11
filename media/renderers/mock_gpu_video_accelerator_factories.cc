@@ -11,6 +11,8 @@ namespace media {
 
 namespace {
 
+bool gpu_memory_buffers_in_use_by_window_server = false;
+
 class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
   GpuMemoryBufferImpl(const gfx::Size& size, gfx::BufferFormat format)
@@ -43,6 +45,9 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   void Unmap() override {
     DCHECK(mapped_);
     mapped_ = false;
+  }
+  bool IsInUseByMacOSWindowServer() const override {
+    return gpu_memory_buffers_in_use_by_window_server;
   }
   gfx::Size GetSize() const override { return size_; }
   gfx::BufferFormat GetFormat() const override {
@@ -96,6 +101,11 @@ MockGpuVideoAcceleratorFactories::AllocateGpuMemoryBuffer(
     return nullptr;
   return make_scoped_ptr<gfx::GpuMemoryBuffer>(
       new GpuMemoryBufferImpl(size, format));
+}
+
+void MockGpuVideoAcceleratorFactories::
+    SetGpuMemoryBuffersInUseByMacOSWindowServer(bool in_use) {
+  gpu_memory_buffers_in_use_by_window_server = in_use;
 }
 
 scoped_ptr<base::SharedMemory>

@@ -15,6 +15,10 @@ class TestGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
   TestGpuMemoryBufferManager();
   ~TestGpuMemoryBufferManager() override;
 
+  void SetGpuMemoryBufferIsInUseByMacOSWindowServer(
+      gfx::GpuMemoryBuffer* gpu_memory_buffer,
+      bool in_use);
+
   // Overridden from gpu::GpuMemoryBufferManager:
   scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       const gfx::Size& size,

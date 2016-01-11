@@ -27,7 +27,8 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
         shared_memory_(std::move(shared_memory)),
         offset_(offset),
         stride_(stride),
-        mapped_(false) {}
+        mapped_(false),
+        is_in_use_by_window_server_(false) {}
 
   // Overridden from gfx::GpuMemoryBuffer:
   bool Map() override {
@@ -49,6 +50,9 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
     DCHECK(mapped_);
     shared_memory_->Unmap();
     mapped_ = false;
+  }
+  bool IsInUseByMacOSWindowServer() const override {
+    return is_in_use_by_window_server_;
   }
   gfx::Size GetSize() const override { return size_; }
   gfx::BufferFormat GetFormat() const override { return format_; }
@@ -73,6 +77,10 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
     return reinterpret_cast<ClientBuffer>(this);
   }
 
+  void SetIsInUseByMacOSWindowServer(bool value) {
+    is_in_use_by_window_server_ = value;
+  }
+
  private:
   const gfx::Size size_;
   gfx::BufferFormat format_;
@@ -80,6 +88,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   size_t offset_;
   size_t stride_;
   bool mapped_;
+  bool is_in_use_by_window_server_;
 };
 
 }  // namespace
@@ -88,6 +97,13 @@ TestGpuMemoryBufferManager::TestGpuMemoryBufferManager() {
 }
 
 TestGpuMemoryBufferManager::~TestGpuMemoryBufferManager() {
+}
+
+void TestGpuMemoryBufferManager::SetGpuMemoryBufferIsInUseByMacOSWindowServer(
+    gfx::GpuMemoryBuffer* gpu_memory_buffer,
+    bool in_use) {
+  static_cast<GpuMemoryBufferImpl*>(gpu_memory_buffer)
+      ->SetIsInUseByMacOSWindowServer(in_use);
 }
 
 scoped_ptr<gfx::GpuMemoryBuffer>
