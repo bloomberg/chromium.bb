@@ -63,8 +63,11 @@ void CalculateWindowStylesFromInitParams(
   //    style.
   // 5- When the window is created but before it is presented, call
   //    DwmExtendFrameIntoClientArea passing -1 as the margins.
+  // We also set the WS_EX_COMPOSITED style for software composited translucent
+  // windows, which ensures that they are updated via the layered window code
+  // path in the software compositor.
   if (params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW) {
-    if (ui::win::IsAeroGlassEnabled())
+    if (ui::win::IsAeroGlassEnabled() || params.force_software_compositing)
       *ex_style |= WS_EX_COMPOSITED;
   }
   if (params.shadow_type == Widget::InitParams::SHADOW_TYPE_DROP) {

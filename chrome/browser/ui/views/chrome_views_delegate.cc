@@ -333,7 +333,7 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
   bool use_non_toplevel_window =
       params->parent &&
-      params->type != views::Widget::InitParams::TYPE_MENU &&
+      !params->force_software_compositing &&
       params->type != views::Widget::InitParams::TYPE_TOOLTIP;
 
 #if defined(OS_WIN)
@@ -357,7 +357,7 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
     // transparency will be broken with a toplevel window, so force the use of
     // a non toplevel window.
     if (params->opacity == views::Widget::InitParams::TRANSLUCENT_WINDOW &&
-        params->type != views::Widget::InitParams::TYPE_MENU)
+        !params->force_software_compositing)
       use_non_toplevel_window = true;
   } else {
     // If we're on Vista+ with composition enabled, then we can use toplevel
