@@ -22,6 +22,7 @@ config("config") {
     cflags += [
       "-Wno-format",
       "-Wno-header-hygiene",
+      "-Wno-unused-function",
       "-Wno-unused-value",
     ]
   }
