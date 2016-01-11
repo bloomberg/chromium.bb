@@ -136,7 +136,7 @@ class AssociatedInterfacePtr {
   // Returns the associated group that this object belongs to. Returns null if
   // the object is not bound.
   AssociatedGroup* associated_group() {
-    return internal_state_->associated_group();
+    return internal_state_.associated_group();
   }
 
   // DO NOT USE. Exposed only for internal use and for testing.
