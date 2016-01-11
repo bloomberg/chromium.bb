@@ -170,6 +170,53 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="ContentSettings.PermissionActions_AudioCapture.Denied.Url"
+    type="ETLD_PLUS_ONE">
+  <owner>kcarattini@chromium.org</owner>
+  <owner>miguelg@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    The domain for which a AudioCapture permission prompt was Denied. Also
+    recorded as a multi-dimensional metric in Permissions.Action.AudioCapture.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_AudioCapture.Dismissed.Url"
+    type="ETLD_PLUS_ONE">
+  <owner>kcarattini@chromium.org</owner>
+  <owner>miguelg@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    The domain for which a AudioCapture permission prompt was Dismissed. Also
+    recorded as a multi-dimensional metric in Permissions.Action.AudioCapture.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_AudioCapture.Granted.Url"
+    type="ETLD_PLUS_ONE">
+  <owner>kcarattini@chromium.org</owner>
+  <owner>miguelg@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    The domain for which a AudioCapture permission prompt was accepted. Also
+    recorded as a multi-dimensional metric in Permissions.Action.AudioCapture.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_AudioCapture.Ignored.Url"
+    type="ETLD_PLUS_ONE">
+  <owner>kcarattini@chromium.org</owner>
+  <owner>miguelg@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    The domain for which a AudioCapture permission prompt was Ignored. Also
+    recorded as a multi-dimensional metric in Permissions.Action.AudioCapture.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="ContentSettings.PermissionActions_Camera.Revoked.Url"
     type="ETLD_PLUS_ONE">
   <owner>jialiul@chromium.org</owner>
@@ -285,6 +332,53 @@ components/rappor/rappor_service.cc.
   <owner>jialiul@chromium.org</owner>
   <summary>
     The domain for which a Notification permission was revoked.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="ContentSettings.PermissionActions_VideoCapture.Denied.Url"
+    type="ETLD_PLUS_ONE">
+  <owner>kcarattini@chromium.org</owner>
+  <owner>miguelg@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    The domain for which a VideoCapture permission prompt was Denied. Also
+    recorded as a multi-dimensional metric in Permissions.Action.VideoCapture.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_VideoCapture.Dismissed.Url"
+    type="ETLD_PLUS_ONE">
+  <owner>kcarattini@chromium.org</owner>
+  <owner>miguelg@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    The domain for which a VideoCapture permission prompt was Dismissed. Also
+    recorded as a multi-dimensional metric in Permissions.Action.VideoCapture.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_VideoCapture.Granted.Url"
+    type="ETLD_PLUS_ONE">
+  <owner>kcarattini@chromium.org</owner>
+  <owner>miguelg@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    The domain for which a VideoCapture permission prompt was accepted. Also
+    recorded as a multi-dimensional metric in Permissions.Action.VideoCapture.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="ContentSettings.PermissionActions_VideoCapture.Ignored.Url"
+    type="ETLD_PLUS_ONE">
+  <owner>kcarattini@chromium.org</owner>
+  <owner>miguelg@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    The domain for which a VideoCapture permission prompt was Ignored. Also
+    recorded as a multi-dimensional metric in Permissions.Action.VideoCapture.
   </summary>
 </rappor-metric>
 

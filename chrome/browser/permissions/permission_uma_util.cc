@@ -74,12 +74,6 @@ const std::string GetRapporMetric(PermissionType permission,
       break;
   }
 
-  // Do not record the deprecated RAPPOR metrics for media permissions.
-  if (permission == PermissionType::AUDIO_CAPTURE ||
-      permission == PermissionType::VIDEO_CAPTURE) {
-    return "";
-  }
-
   std::string permission_str =
       PermissionUtil::GetPermissionString(permission);
   if (permission_str.empty())
