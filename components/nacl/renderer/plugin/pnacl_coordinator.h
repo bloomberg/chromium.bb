@@ -48,9 +48,6 @@ class TempFile;
 // (2) ld links the object code in obj_file_ and produces a nexe in nexe_file_.
 class PnaclCoordinator {
  public:
-  // Maximum number of object files passable to the translator. Cannot be
-  // changed without changing the RPC signatures.
-  const static size_t kMaxTranslatorObjectFiles = 16;
   virtual ~PnaclCoordinator();
 
   // The factory method for translations.
