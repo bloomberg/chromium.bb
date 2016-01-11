@@ -58,7 +58,7 @@ public:
     bool hasActiveAnimationsOnCompositor(CSSPropertyID) const;
 
     using PropertyHandleFilter = bool (*)(const PropertyHandle&);
-    static ActiveInterpolationsMap activeInterpolations(AnimationStack*, const HeapVector<Member<InertEffect>>* newAnimations, const HeapHashSet<Member<const Animation>>* suppressedAnimations, KeyframeEffect::Priority, PropertyHandleFilter = nullptr);
+    static ActiveInterpolationsMap activeInterpolations(AnimationStack*, const HeapVector<Member<const InertEffect>>* newAnimations, const HeapHashSet<Member<const Animation>>* suppressedAnimations, KeyframeEffect::Priority, PropertyHandleFilter = nullptr);
 
     bool getAnimatedBoundingBox(FloatBox&, CSSPropertyID) const;
     DECLARE_TRACE();

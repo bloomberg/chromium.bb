@@ -41,7 +41,7 @@ namespace blink {
 class CORE_EXPORT InertEffect final : public AnimationEffect {
 public:
     static InertEffect* create(EffectModel*, const Timing&, bool paused, double inheritedTime);
-    void sample(Vector<RefPtr<Interpolation>>&);
+    void sample(Vector<RefPtr<Interpolation>>&) const;
     EffectModel* model() const { return m_model.get(); }
     bool paused() const { return m_paused; }
 

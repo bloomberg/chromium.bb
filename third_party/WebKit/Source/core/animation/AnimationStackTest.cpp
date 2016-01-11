@@ -98,7 +98,7 @@ TEST_F(AnimationAnimationStackTest, NewAnimations)
 {
     play(makeKeyframeEffect(makeEffectModel(CSSPropertyFontSize, AnimatableDouble::create(1))), 15);
     play(makeKeyframeEffect(makeEffectModel(CSSPropertyZIndex, AnimatableDouble::create(2))), 10);
-    HeapVector<Member<InertEffect>> newAnimations;
+    HeapVector<Member<const InertEffect>> newAnimations;
     InertEffect* inert1 = makeInertEffect(makeEffectModel(CSSPropertyFontSize, AnimatableDouble::create(3)));
     InertEffect* inert2 = makeInertEffect(makeEffectModel(CSSPropertyZIndex, AnimatableDouble::create(4)));
     newAnimations.append(inert1);

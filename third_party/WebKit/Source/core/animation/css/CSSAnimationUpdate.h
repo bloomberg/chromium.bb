@@ -31,7 +31,7 @@ public:
     class NewAnimation {
         DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
-        NewAnimation(AtomicString name, size_t nameIndex, InertEffect* effect, Timing timing, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
+        NewAnimation(AtomicString name, size_t nameIndex, const InertEffect& effect, Timing timing, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
             : name(name)
             , nameIndex(nameIndex)
             , effect(effect)
@@ -49,7 +49,7 @@ public:
 
         AtomicString name;
         size_t nameIndex;
-        Member<InertEffect> effect;
+        Member<const InertEffect> effect;
         Timing timing;
         RefPtrWillBeMember<StyleRuleKeyframes> styleRule;
         unsigned styleRuleVersion;
@@ -58,10 +58,10 @@ public:
     class UpdatedAnimation {
         DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
-        UpdatedAnimation(size_t index, Animation* animation, InertEffect* effect, Timing specifiedTiming, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
+        UpdatedAnimation(size_t index, Animation* animation, const InertEffect& effect, Timing specifiedTiming, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
             : index(index)
             , animation(animation)
-            , effect(effect)
+            , effect(&effect)
             , specifiedTiming(specifiedTiming)
             , styleRule(styleRule)
             , styleRuleVersion(this->styleRule->version())
@@ -77,7 +77,7 @@ public:
 
         size_t index;
         Member<Animation> animation;
-        Member<InertEffect> effect;
+        Member<const InertEffect> effect;
         Timing specifiedTiming;
         RefPtrWillBeMember<StyleRuleKeyframes> styleRule;
         unsigned styleRuleVersion;
@@ -123,9 +123,8 @@ public:
         m_updatedCompositorKeyframes.clear();
     }
 
-    void startAnimation(const AtomicString& animationName, size_t nameIndex, InertEffect* effect, const Timing& timing, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
+    void startAnimation(const AtomicString& animationName, size_t nameIndex, const InertEffect& effect, const Timing& timing, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
     {
-        effect->setName(animationName);
         m_newAnimations.append(NewAnimation(animationName, nameIndex, effect, timing, styleRule));
     }
     // Returns whether animation has been suppressed and should be filtered during style application.
@@ -139,7 +138,7 @@ public:
     {
         m_animationIndicesWithPauseToggled.append(index);
     }
-    void updateAnimation(size_t index, Animation* animation, InertEffect* effect, const Timing& specifiedTiming,
+    void updateAnimation(size_t index, Animation* animation, const InertEffect& effect, const Timing& specifiedTiming,
         PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
     {
         m_animationsWithUpdates.append(UpdatedAnimation(index, animation, effect, specifiedTiming, styleRule));
@@ -150,14 +149,13 @@ public:
         m_updatedCompositorKeyframes.append(animation);
     }
 
-    void startTransition(CSSPropertyID id, const AnimatableValue* from, const AnimatableValue* to, InertEffect* effect)
+    void startTransition(CSSPropertyID id, const AnimatableValue* from, const AnimatableValue* to, const InertEffect& effect)
     {
-        effect->setName(getPropertyName(id));
         NewTransition newTransition;
         newTransition.id = id;
         newTransition.from = from;
         newTransition.to = to;
-        newTransition.effect = effect;
+        newTransition.effect = &effect;
         m_newTransitions.set(id, newTransition);
     }
     bool isCancelledTransition(CSSPropertyID id) const { return m_cancelledTransitions.contains(id); }
@@ -182,7 +180,7 @@ public:
         CSSPropertyID id;
         const AnimatableValue* from;
         const AnimatableValue* to;
-        Member<InertEffect> effect;
+        Member<const InertEffect> effect;
     };
     using NewTransitionMap = HeapHashMap<CSSPropertyID, NewTransition>;
     const NewTransitionMap& newTransitions() const { return m_newTransitions; }
