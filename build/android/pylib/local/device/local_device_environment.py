@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import datetime
 import logging
 import os
 import threading
@@ -9,6 +10,7 @@ import threading
 from devil.android import device_blacklist
 from devil.android import device_errors
 from devil.android import device_utils
+from devil.android import logcat_monitor
 from devil.utils import parallelizer
 from pylib import constants
 from pylib.base import environment
@@ -34,6 +36,8 @@ class LocalDeviceEnvironment(environment.Environment):
     self._enable_device_cache = args.enable_device_cache
     self._incremental_install = args.incremental_install
     self._concurrent_adb = args.enable_concurrent_adb
+    self._logcat_output_dir = args.logcat_output_dir
+    self._logcat_monitors = []
 
   #override
   def SetUp(self):
@@ -58,6 +62,16 @@ class LocalDeviceEnvironment(environment.Environment):
           with open(cache_path) as f:
             d.LoadCacheData(f.read())
           os.unlink(cache_path)
+    if self._logcat_output_dir:
+      for d in self._devices:
+        logcat_file = os.path.join(
+            self._logcat_output_dir,
+            '%s_%s' % (d.adb.GetDeviceSerial(),
+                       datetime.datetime.utcnow().strftime('%Y%m%dT%H%M%S')))
+        monitor = logcat_monitor.LogcatMonitor(
+            d.adb, clear=True, output_file=logcat_file)
+        self._logcat_monitors.append(monitor)
+        monitor.Start()
 
   @property
   def devices(self):
@@ -95,6 +109,9 @@ class LocalDeviceEnvironment(environment.Environment):
       with open(cache_path, 'w') as f:
         f.write(d.DumpCacheData())
         logging.info('Wrote device cache: %s', cache_path)
+    for m in self._logcat_monitors:
+      m.Stop()
+      m.Close()
 
   def BlacklistDevice(self, device, reason='local_device_failure'):
     if not self._blacklist:
