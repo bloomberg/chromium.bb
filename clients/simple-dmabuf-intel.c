@@ -35,9 +35,9 @@
 #include <fcntl.h>
 
 #include <xf86drm.h>
-#include <libdrm/i915_drm.h>
-#include <libdrm/intel_bufmgr.h>
-#include <libdrm/drm_fourcc.h>
+#include <i915_drm.h>
+#include <intel_bufmgr.h>
+#include <drm_fourcc.h>
 
 #include <wayland-client.h>
 #include "xdg-shell-unstable-v5-client-protocol.h"
@@ -204,6 +204,7 @@ create_failed(void *data, struct zwp_linux_buffer_params_v1 *params)
 	struct buffer *buffer = data;
 
 	buffer->buffer = NULL;
+	running = 0;
 
 	zwp_linux_buffer_params_v1_destroy(params);
 
@@ -274,13 +275,6 @@ create_dmabuf_buffer(struct display *display, struct buffer *buffer,
 					  DRM_FORMAT_XRGB8888,
 					  flags);
 
-	/* params is destroyed by the event handlers */
-
-	wl_display_roundtrip(display->display);
-	if (buffer->buffer == NULL) {
-		goto error2;
-	}
-
 	return 0;
 
 error2:
@@ -313,6 +307,8 @@ static struct window *
 create_window(struct display *display, int width, int height)
 {
 	struct window *window;
+	int i;
+	int ret;
 
 	window = calloc(1, sizeof *window);
 	if (!window)
@@ -342,6 +338,14 @@ create_window(struct display *display, int width, int height)
 							NULL);
 	} else {
 		assert(0);
+	}
+
+	for (i = 0; i < 2; ++i) {
+		ret = create_dmabuf_buffer(display, &window->buffers[i],
+		                               width, height);
+
+		if (ret < 0)
+			return NULL;
 	}
 
 	return window;
@@ -375,7 +379,6 @@ static struct buffer *
 window_next_buffer(struct window *window)
 {
 	struct buffer *buffer;
-	int ret = 0;
 
 	if (!window->buffers[0].busy)
 		buffer = &window->buffers[0];
@@ -383,14 +386,6 @@ window_next_buffer(struct window *window)
 		buffer = &window->buffers[1];
 	else
 		return NULL;
-
-	if (!buffer->buffer) {
-		ret = create_dmabuf_buffer(window->display, buffer,
-					   window->width, window->height);
-
-		if (ret < 0)
-			return NULL;
-	}
 
 	return buffer;
 }
@@ -574,9 +569,11 @@ main(int argc, char **argv)
 	sigint.sa_flags = SA_RESETHAND;
 	sigaction(SIGINT, &sigint, NULL);
 
-	/* Initialise damage to full surface, so the padding gets painted */
-	wl_surface_damage(window->surface, 0, 0,
-			  window->width, window->height);
+	/* Here we retrieve the linux-dmabuf objects, or error */
+	wl_display_roundtrip(display->display);
+
+	if (!running)
+		return 1;
 
 	redraw(window, NULL, 0);
 
