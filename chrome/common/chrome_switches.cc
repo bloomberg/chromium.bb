@@ -1375,8 +1375,12 @@ bool PowerOverlayEnabled() {
 
 #if defined(ENABLE_TASK_MANAGER)
 bool NewTaskManagerEnabled() {
+#if defined(OS_MACOSX)
+  return false;  // The new task manager hasn't been adopted on Mac yet.
+#else
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableNewTaskManager);
+#endif  // defined(OS_MACOSX)
 }
 #endif  // defined(ENABLE_TASK_MANAGER)
 
