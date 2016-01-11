@@ -67,9 +67,6 @@ public:
 
     void operator=(std::nullptr_t) { m_data = nullptr; }
 private:
-    // TODO(Oilpan): remove this once the GC plugin change in r359074 has
-    // rolled out & been deployed.
-    GC_PLUGIN_IGNORE("553613")
     RefPtr<T> m_data;
 };
 
