@@ -40,6 +40,13 @@ enum GestureMetricsType {
   kGestureMetricsTypeUnknown,
 };
 
+// A bitfield describing which scroll axes are enabled for a device.
+enum ScrollType {
+  SCROLL_TYPE_NO_SCROLL = 0,
+  SCROLL_TYPE_HORIZONTAL = 1 << 0,
+  SCROLL_TYPE_VERTICAL = 1 << 1,
+};
+
 // A class that extracts and tracks the input events data. It currently handles
 // mouse, touchpad and touchscreen devices.
 class EVENTS_DEVICES_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
@@ -152,6 +159,16 @@ class EVENTS_DEVICES_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
   // is a CMT event (e.g. it could be a mouse pointer move).
   bool IsCMTDeviceEvent(const base::NativeEvent& native_event) const;
 
+  // Check if the event contains information about a ScrollClass, and
+  // report which scroll axes are contained in this event, defined by
+  // ScrollType.
+  int GetScrollClassEventDetail(const base::NativeEvent& native_event) const;
+
+  // Check if the event comes from a device that has a ScrollClass, and
+  // report which scroll axes it supports as a bit field, defined by
+  // ScrollType.
+  int GetScrollClassDeviceDetail(const base::NativeEvent& native_event) const;
+
   // Check if the event is one of the CMT gesture events (scroll, fling,
   // metrics etc.).
   bool IsCMTGestureEvent(const base::NativeEvent& native_event) const;
@@ -173,6 +190,17 @@ class EVENTS_DEVICES_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
                         float* x_offset_ordinal,
                         float* y_offset_ordinal,
                         int* finger_count);
+
+  // Extract data from a scroll class event (smooth scrolling). User must
+  // first verify the event type with GetScrollClassEventDetail.
+  // Pointers shouldn't be NULL.
+  void GetScrollClassOffsets(const base::NativeEvent& native_event,
+                             double* x_offset,
+                             double* y_offset);
+
+  // Invalidate stored scroll class counters, since they can change when
+  // pointing at other windows.
+  void InvalidateScrollClasses();
 
   // Extract data from a fling event. User must first verify the event type
   // with IsFlingEvent. Pointers shouldn't be NULL.
@@ -255,6 +283,23 @@ class EVENTS_DEVICES_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
       const std::vector<KeyboardDevice>& devices) override;
 
  private:
+  // Information about scroll valuators
+  struct ScrollInfo {
+    struct AxisInfo {
+      // The scroll valuator number of this scroll axis.
+      int number;
+      // The scroll increment; a value of n indicates n movement equals one
+      // traditional scroll unit.
+      double increment;
+      // Current scroll position; used to find the difference between events.
+      double position;
+      // If true then scroll has been seen in this direction.
+      bool seen;
+    };
+
+    AxisInfo vertical, horizontal;
+  };
+
   DeviceDataManagerX11();
   ~DeviceDataManagerX11() override;
 
@@ -266,6 +311,25 @@ class EVENTS_DEVICES_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
                                   int end_valuator,
                                   double min_value,
                                   double max_value);
+
+  // Updates a device based on a Valuator class info. Returns true if the
+  // device is a possible CMT device.
+  bool UpdateValuatorClassDevice(XIValuatorClassInfo* valuator_class_info,
+                                 Atom* atoms,
+                                 int deviceid);
+
+  // Updates a device based on a Scroll class info.
+  void UpdateScrollClassDevice(XIScrollClassInfo* scroll_class_info,
+                               int deviceid);
+
+  // Normalize the scroll amount according to the increment size.
+  // *value /= increment
+  // *value is expected to be 1 or -1.
+  // Returns true and sets the normalized value in |value| if normalization is
+  // successful. Returns false and |value| is unchanged otherwise.
+  double ExtractAndUpdateScrollOffset(
+      DeviceDataManagerX11::ScrollInfo::AxisInfo* axis,
+      double valuator) const;
 
   static const int kMaxXIEventType = XI_LASTEVENT + 1;
   static const int kMaxSlotNum = 10;
@@ -280,6 +344,7 @@ class EVENTS_DEVICES_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
   // should be processed.
   std::bitset<kMaxDeviceNum> cmt_devices_;
   std::bitset<kMaxDeviceNum> touchpads_;
+  std::bitset<kMaxDeviceNum> scrollclass_devices_;
 
   // List of the master pointer devices.
   std::vector<int> master_pointers_;
@@ -297,6 +362,10 @@ class EVENTS_DEVICES_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
   // Index table to find the valuator for DataType on the specific device
   // by valuator_lookup_[device_id][data_type].
   std::vector<int> valuator_lookup_[kMaxDeviceNum];
+
+  // Index table to find the horizontal and vertical scroll valuator
+  // numbers, scroll increments and scroll position.
+  ScrollInfo scroll_data_[kMaxDeviceNum];
 
   // Index table to find the DataType for valuator on the specific device
   // by data_type_lookup_[device_id][valuator].

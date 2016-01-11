@@ -221,6 +221,10 @@ void TouchFactory::SetupXI2ForXWindow(Window window) {
   XISetMask(mask, XI_ButtonPress);
   XISetMask(mask, XI_ButtonRelease);
   XISetMask(mask, XI_Motion);
+  // HierarchyChanged and DeviceChanged allow X11EventSource to still pick up
+  // these events.
+  XISetMask(mask, XI_HierarchyChanged);
+  XISetMask(mask, XI_DeviceChanged);
 #if defined(OS_CHROMEOS)
   // XGrabKey() must be replaced with XI2 keyboard grab if XI2 key events are
   // enabled on desktop Linux.

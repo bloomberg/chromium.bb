@@ -135,9 +135,17 @@ uint32_t X11EventSource::ExtractCookieDataDispatchEvent(XEvent* xevent) {
 uint32_t X11EventSource::DispatchEvent(XEvent* xevent) {
   uint32_t action = PlatformEventSource::DispatchEvent(xevent);
   if (xevent->type == GenericEvent &&
-      xevent->xgeneric.evtype == XI_HierarchyChanged) {
+      (xevent->xgeneric.evtype == XI_HierarchyChanged ||
+       xevent->xgeneric.evtype == XI_DeviceChanged)) {
     ui::UpdateDeviceList();
     hotplug_event_handler_->OnHotplugEvent();
+  }
+
+  if (xevent->type == EnterNotify &&
+      xevent->xcrossing.detail != NotifyInferior &&
+      xevent->xcrossing.mode != NotifyUngrab) {
+    // Clear stored scroll data
+    ui::DeviceDataManagerX11::GetInstance()->InvalidateScrollClasses();
   }
   return action;
 }

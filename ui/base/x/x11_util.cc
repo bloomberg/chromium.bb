@@ -374,9 +374,7 @@ XcursorImage* SkBitmapToXcursorImage(const SkBitmap* cursor_image,
   return image;
 }
 
-
-int CoalescePendingMotionEvents(const XEvent* xev,
-                                XEvent* last_event) {
+int CoalescePendingMotionEvents(const XEvent* xev, XEvent* last_event) {
   XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
   int num_coalesced = 0;
   XDisplay* display = xev->xany.display;
@@ -405,7 +403,9 @@ int CoalescePendingMotionEvents(const XEvent* xev,
     if (next_event.type == GenericEvent &&
         next_event.xgeneric.evtype == event_type &&
         !ui::DeviceDataManagerX11::GetInstance()->IsCMTGestureEvent(
-            &next_event)) {
+            &next_event) &&
+        ui::DeviceDataManagerX11::GetInstance()->GetScrollClassEventDetail(
+            &next_event) == SCROLL_TYPE_NO_SCROLL) {
       XIDeviceEvent* next_xievent =
           static_cast<XIDeviceEvent*>(next_event.xcookie.data);
       // Confirm that the motion event is targeted at the same window
@@ -414,8 +414,7 @@ int CoalescePendingMotionEvents(const XEvent* xev,
           xievent->child == next_xievent->child &&
           xievent->detail == next_xievent->detail &&
           xievent->buttons.mask_len == next_xievent->buttons.mask_len &&
-          (memcmp(xievent->buttons.mask,
-                  next_xievent->buttons.mask,
+          (memcmp(xievent->buttons.mask, next_xievent->buttons.mask,
                   xievent->buttons.mask_len) == 0) &&
           xievent->mods.base == next_xievent->mods.base &&
           xievent->mods.latched == next_xievent->mods.latched &&

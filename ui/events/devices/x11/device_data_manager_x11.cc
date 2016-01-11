@@ -218,6 +218,7 @@ bool DeviceDataManagerX11::IsXInput2Available() const {
 void DeviceDataManagerX11::UpdateDeviceList(Display* display) {
   cmt_devices_.reset();
   touchpads_.reset();
+  scrollclass_devices_.reset();
   master_pointers_.clear();
   for (int i = 0; i < kMaxDeviceNum; ++i) {
     valuator_count_[i] = 0;
@@ -225,6 +226,10 @@ void DeviceDataManagerX11::UpdateDeviceList(Display* display) {
     data_type_lookup_[i].clear();
     valuator_min_[i].clear();
     valuator_max_[i].clear();
+    scroll_data_[i].horizontal.number = -1;
+    scroll_data_[i].horizontal.seen = false;
+    scroll_data_[i].vertical.number = -1;
+    scroll_data_[i].vertical.seen = false;
     for (int j = 0; j < kMaxSlotNum; j++)
       last_seen_valuator_[i][j].clear();
   }
@@ -280,21 +285,14 @@ void DeviceDataManagerX11::UpdateDeviceList(Display* display) {
     for (int j = 0; j < kMaxSlotNum; j++)
       last_seen_valuator_[deviceid][j].resize(DT_LAST_ENTRY, 0);
     for (int j = 0; j < info.num_classes; ++j) {
-      if (info.classes[j]->type != XIValuatorClass)
-        continue;
-
-      XIValuatorClassInfo* v =
-          reinterpret_cast<XIValuatorClassInfo*>(info.classes[j]);
-      for (int data_type = 0; data_type < DT_LAST_ENTRY; ++data_type) {
-        if (v->label == atoms[data_type]) {
-          valuator_lookup_[deviceid][data_type] = v->number;
-          data_type_lookup_[deviceid][v->number] = data_type;
-          valuator_min_[deviceid][data_type] = v->min;
-          valuator_max_[deviceid][data_type] = v->max;
-          if (IsCMTDataType(data_type))
-            possible_cmt = true;
-          break;
-        }
+      if (info.classes[j]->type == XIValuatorClass) {
+        if (UpdateValuatorClassDevice(
+                reinterpret_cast<XIValuatorClassInfo*>(info.classes[j]), atoms,
+                deviceid))
+          possible_cmt = true;
+      } else if (info.classes[j]->type == XIScrollClass) {
+        UpdateScrollClassDevice(
+            reinterpret_cast<XIScrollClassInfo*>(info.classes[j]), deviceid);
       }
     }
 
@@ -425,6 +423,42 @@ bool DeviceDataManagerX11::IsCMTDeviceEvent(
   return cmt_devices_[xievent->sourceid];
 }
 
+int DeviceDataManagerX11::GetScrollClassEventDetail(
+    const base::NativeEvent& native_event) const {
+  if (native_event->type != GenericEvent)
+    return SCROLL_TYPE_NO_SCROLL;
+
+  XIDeviceEvent* xievent =
+      static_cast<XIDeviceEvent*>(native_event->xcookie.data);
+  if (xievent->sourceid >= kMaxDeviceNum)
+    return SCROLL_TYPE_NO_SCROLL;
+  if (!scrollclass_devices_[xievent->sourceid])
+    return SCROLL_TYPE_NO_SCROLL;
+  int horizontal_id = scroll_data_[xievent->sourceid].horizontal.number;
+  int vertical_id = scroll_data_[xievent->sourceid].vertical.number;
+  return (XIMaskIsSet(xievent->valuators.mask, horizontal_id)
+              ? SCROLL_TYPE_HORIZONTAL
+              : 0) |
+         (XIMaskIsSet(xievent->valuators.mask, vertical_id)
+              ? SCROLL_TYPE_VERTICAL
+              : 0);
+}
+
+int DeviceDataManagerX11::GetScrollClassDeviceDetail(
+    const base::NativeEvent& native_event) const {
+  XEvent& xev = *native_event;
+  if (xev.type != GenericEvent)
+    return SCROLL_TYPE_NO_SCROLL;
+
+  XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev.xcookie.data);
+  if (xiev->sourceid >= kMaxDeviceNum || xiev->deviceid >= kMaxDeviceNum)
+    return SCROLL_TYPE_NO_SCROLL;
+  const int sourceid = xiev->sourceid;
+  const ScrollInfo& device_data = scroll_data_[sourceid];
+  return (device_data.vertical.number >= 0 ? SCROLL_TYPE_VERTICAL : 0) |
+         (device_data.horizontal.number >= 0 ? SCROLL_TYPE_HORIZONTAL : 0);
+}
+
 bool DeviceDataManagerX11::IsCMTGestureEvent(
     const base::NativeEvent& native_event) const {
   return (IsScrollEvent(native_event) ||
@@ -515,6 +549,49 @@ void DeviceDataManagerX11::GetScrollOffsets(
     *y_offset_ordinal = data[DT_CMT_ORDINAL_Y];
   if (data.find(DT_CMT_FINGER_COUNT) != data.end())
     *finger_count = static_cast<int>(data[DT_CMT_FINGER_COUNT]);
+}
+
+void DeviceDataManagerX11::GetScrollClassOffsets(
+    const base::NativeEvent& native_event,
+    double* x_offset,
+    double* y_offset) {
+  DCHECK_NE(SCROLL_TYPE_NO_SCROLL, GetScrollClassDeviceDetail(native_event));
+  XEvent& xev = *native_event;
+
+  *x_offset = 0;
+  *y_offset = 0;
+
+  if (xev.type != GenericEvent)
+    return;
+
+  XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev.xcookie.data);
+  if (xiev->sourceid >= kMaxDeviceNum || xiev->deviceid >= kMaxDeviceNum)
+    return;
+  const int sourceid = xiev->sourceid;
+  double* valuators = xiev->valuators.values;
+
+  ScrollInfo* info = &scroll_data_[sourceid];
+
+  const int horizontal_number = info->horizontal.number;
+  const int vertical_number = info->vertical.number;
+
+  for (int i = 0; i <= valuator_count_[sourceid]; ++i) {
+    if (!XIMaskIsSet(xiev->valuators.mask, i))
+      continue;
+    if (i == horizontal_number) {
+      *x_offset = ExtractAndUpdateScrollOffset(&info->horizontal, *valuators);
+    } else if (i == vertical_number) {
+      *y_offset = ExtractAndUpdateScrollOffset(&info->vertical, *valuators);
+    }
+    valuators++;
+  }
+}
+
+void DeviceDataManagerX11::InvalidateScrollClasses() {
+  for (int i = 0; i < kMaxDeviceNum; i++) {
+    scroll_data_[i].horizontal.seen = false;
+    scroll_data_[i].vertical.seen = false;
+  }
 }
 
 void DeviceDataManagerX11::GetFlingData(
@@ -695,6 +772,60 @@ void DeviceDataManagerX11::InitializeValuatorsForTest(int deviceid,
     valuator_max_[deviceid][j] = max_value;
     valuator_count_[deviceid]++;
   }
+}
+
+bool DeviceDataManagerX11::UpdateValuatorClassDevice(
+    XIValuatorClassInfo* valuator_class_info,
+    Atom* atoms,
+    int deviceid) {
+  DCHECK(deviceid >= 0 && deviceid < kMaxDeviceNum);
+  Atom* label =
+      std::find(atoms, atoms + DT_LAST_ENTRY, valuator_class_info->label);
+  if (label == atoms + DT_LAST_ENTRY) {
+    return false;
+  }
+  int data_type = label - atoms;
+  DCHECK_GE(data_type, 0);
+  DCHECK_LT(data_type, DT_LAST_ENTRY);
+
+  valuator_lookup_[deviceid][data_type] = valuator_class_info->number;
+  data_type_lookup_[deviceid][valuator_class_info->number] = data_type;
+  valuator_min_[deviceid][data_type] = valuator_class_info->min;
+  valuator_max_[deviceid][data_type] = valuator_class_info->max;
+  return IsCMTDataType(data_type);
+}
+
+void DeviceDataManagerX11::UpdateScrollClassDevice(
+    XIScrollClassInfo* scroll_class_info,
+    int deviceid) {
+  DCHECK(deviceid >= 0 && deviceid < kMaxDeviceNum);
+  ScrollInfo& info = scroll_data_[deviceid];
+  switch (scroll_class_info->scroll_type) {
+    case XIScrollTypeVertical:
+      info.vertical.number = scroll_class_info->number;
+      info.vertical.increment = scroll_class_info->increment;
+      info.vertical.position = 0;
+      info.vertical.seen = false;
+      break;
+    case XIScrollTypeHorizontal:
+      info.horizontal.number = scroll_class_info->number;
+      info.horizontal.increment = scroll_class_info->increment;
+      info.horizontal.position = 0;
+      info.horizontal.seen = false;
+      break;
+  }
+  scrollclass_devices_[deviceid] = true;
+}
+
+double DeviceDataManagerX11::ExtractAndUpdateScrollOffset(
+    ScrollInfo::AxisInfo* axis,
+    double valuator) const {
+  double offset = 0;
+  if (axis->seen)
+    offset = axis->position - valuator;
+  axis->seen = true;
+  axis->position = valuator;
+  return offset / axis->increment;
 }
 
 bool DeviceDataManagerX11::TouchEventNeedsCalibrate(int touch_device_id) const {

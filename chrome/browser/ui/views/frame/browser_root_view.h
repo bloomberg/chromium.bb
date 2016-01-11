@@ -40,6 +40,7 @@ class BrowserRootView : public views::internal::RootView {
   int OnPerformDrop(const ui::DropTargetEvent& event) override;
   const char* GetClassName() const override;
   bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
 
  private:
   // ui::EventProcessor:
@@ -68,6 +69,11 @@ class BrowserRootView : public views::internal::RootView {
   // This is used to determine when to send OnDragEntered and OnDragExited
   // to the tab strip.
   bool forwarding_to_tab_strip_;
+
+  // Used to calculate partial offsets in scrolls that occur for a smooth
+  // scroll device.
+  int scroll_remainder_x_;
+  int scroll_remainder_y_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserRootView);
 };

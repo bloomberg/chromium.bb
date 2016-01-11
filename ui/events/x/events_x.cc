@@ -444,6 +444,9 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
             return devices->IsTouchpadXInputEvent(native_event) ? ET_SCROLL
                                                                 : ET_MOUSEWHEEL;
           }
+          if (devices->GetScrollClassEventDetail(native_event) !=
+              SCROLL_TYPE_NO_SCROLL)
+            return ET_MOUSEWHEEL;
           if (devices->IsCMTMetricsEvent(native_event))
             return ET_UMA_DATA;
           if (GetButtonMaskForX2Event(xievent))
@@ -787,30 +790,38 @@ bool GetScrollOffsets(const base::NativeEvent& native_event,
                       float* x_offset_ordinal,
                       float* y_offset_ordinal,
                       int* finger_count) {
-  if (!DeviceDataManagerX11::GetInstance()->IsScrollEvent(native_event))
-    return false;
+  if (DeviceDataManagerX11::GetInstance()->IsScrollEvent(native_event)) {
+    // Temp values to prevent passing NULLs to DeviceDataManager.
+    float x_offset_, y_offset_;
+    float x_offset_ordinal_, y_offset_ordinal_;
+    int finger_count_;
+    if (!x_offset)
+      x_offset = &x_offset_;
+    if (!y_offset)
+      y_offset = &y_offset_;
+    if (!x_offset_ordinal)
+      x_offset_ordinal = &x_offset_ordinal_;
+    if (!y_offset_ordinal)
+      y_offset_ordinal = &y_offset_ordinal_;
+    if (!finger_count)
+      finger_count = &finger_count_;
 
-  // Temp values to prevent passing NULLs to DeviceDataManager.
-  float x_offset_, y_offset_;
-  float x_offset_ordinal_, y_offset_ordinal_;
-  int finger_count_;
-  if (!x_offset)
-    x_offset = &x_offset_;
-  if (!y_offset)
-    y_offset = &y_offset_;
-  if (!x_offset_ordinal)
-    x_offset_ordinal = &x_offset_ordinal_;
-  if (!y_offset_ordinal)
-    y_offset_ordinal = &y_offset_ordinal_;
-  if (!finger_count)
-    finger_count = &finger_count_;
+    DeviceDataManagerX11::GetInstance()->GetScrollOffsets(
+        native_event, x_offset, y_offset, x_offset_ordinal, y_offset_ordinal,
+        finger_count);
+    return true;
+  }
 
-  DeviceDataManagerX11::GetInstance()->GetScrollOffsets(
-      native_event,
-      x_offset, y_offset,
-      x_offset_ordinal, y_offset_ordinal,
-      finger_count);
-  return true;
+  if (DeviceDataManagerX11::GetInstance()->GetScrollClassDeviceDetail(
+          native_event) != SCROLL_TYPE_NO_SCROLL) {
+    double x_scroll_offset, y_scroll_offset;
+    DeviceDataManagerX11::GetInstance()->GetScrollClassOffsets(
+        native_event, &x_scroll_offset, &y_scroll_offset);
+    *x_offset = x_scroll_offset * kWheelScrollAmount;
+    *y_offset = y_scroll_offset * kWheelScrollAmount;
+    return true;
+  }
+  return false;
 }
 
 bool GetFlingData(const base::NativeEvent& native_event,
