@@ -2,3 +2,5 @@
 WebrtcTransportTest.Connects
 WebrtcTransportTest.DataStream
 Webrtc/ConnectionTest.*
+# http://crbug.com/576251
+WebrtcTransportTest.DataStreamLate
