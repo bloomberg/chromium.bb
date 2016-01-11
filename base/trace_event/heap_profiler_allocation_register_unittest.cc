@@ -110,20 +110,24 @@ TEST_F(AllocationRegisterTest, DoubleInsertOverwrites) {
   ctx.backtrace.frames[0] = frame1;
   reg.Insert(reinterpret_cast<void*>(1), 11, ctx);
 
-  auto elem = *reg.begin();
+  {
+    AllocationRegister::Allocation elem = *reg.begin();
 
-  EXPECT_EQ(frame1, elem.context.backtrace.frames[0]);
-  EXPECT_EQ(11u, elem.size);
-  EXPECT_EQ(reinterpret_cast<void*>(1), elem.address);
+    EXPECT_EQ(frame1, elem.context.backtrace.frames[0]);
+    EXPECT_EQ(11u, elem.size);
+    EXPECT_EQ(reinterpret_cast<void*>(1), elem.address);
+  }
 
   ctx.backtrace.frames[0] = frame2;
   reg.Insert(reinterpret_cast<void*>(1), 13, ctx);
 
-  elem = *reg.begin();
+  {
+    AllocationRegister::Allocation elem = *reg.begin();
 
-  EXPECT_EQ(frame2, elem.context.backtrace.frames[0]);
-  EXPECT_EQ(13u, elem.size);
-  EXPECT_EQ(reinterpret_cast<void*>(1), elem.address);
+    EXPECT_EQ(frame2, elem.context.backtrace.frames[0]);
+    EXPECT_EQ(13u, elem.size);
+    EXPECT_EQ(reinterpret_cast<void*>(1), elem.address);
+  }
 }
 
 // Check that even if more entries than the number of buckets are inserted, the
@@ -203,6 +207,52 @@ TEST_F(AllocationRegisterTest, InsertRemoveRandomOrder) {
   // Inserting one more entry should use a fresh cell again.
   reg.Insert(reinterpret_cast<void*>(prime), 0, ctx);
   ASSERT_EQ(prime - 1, GetHighWaterMark(reg) - initial_water_mark);
+}
+
+TEST_F(AllocationRegisterTest, ChangeContextAfterInsertion) {
+  using Allocation = AllocationRegister::Allocation;
+  const char kStdString[] = "std::string";
+  AllocationRegister reg;
+  AllocationContext ctx = AllocationContext::Empty();
+
+  reg.Insert(reinterpret_cast<void*>(17), 1, ctx);
+  reg.Insert(reinterpret_cast<void*>(19), 2, ctx);
+  reg.Insert(reinterpret_cast<void*>(23), 3, ctx);
+
+  // Looking up addresses that were not inserted should return null.
+  // A null pointer lookup is a valid thing to do.
+  EXPECT_EQ(nullptr, reg.Get(nullptr));
+  EXPECT_EQ(nullptr, reg.Get(reinterpret_cast<void*>(13)));
+
+  Allocation* a17 = reg.Get(reinterpret_cast<void*>(17));
+  Allocation* a19 = reg.Get(reinterpret_cast<void*>(19));
+  Allocation* a23 = reg.Get(reinterpret_cast<void*>(23));
+
+  EXPECT_NE(nullptr, a17);
+  EXPECT_NE(nullptr, a19);
+  EXPECT_NE(nullptr, a23);
+
+  a17->size = 100;
+  a19->context.type_name = kStdString;
+
+  reg.Remove(reinterpret_cast<void*>(23));
+
+  // Lookup should not find any garbage after removal.
+  EXPECT_EQ(nullptr, reg.Get(reinterpret_cast<void*>(23)));
+
+  // Mutating allocations should have modified the allocations in the register.
+  for (const Allocation& allocation : reg) {
+     if (allocation.address == reinterpret_cast<void*>(17))
+       EXPECT_EQ(100u, allocation.size);
+     if (allocation.address == reinterpret_cast<void*>(19))
+       EXPECT_EQ(kStdString, allocation.context.type_name);
+  }
+
+  reg.Remove(reinterpret_cast<void*>(17));
+  reg.Remove(reinterpret_cast<void*>(19));
+
+  EXPECT_EQ(nullptr, reg.Get(reinterpret_cast<void*>(17)));
+  EXPECT_EQ(nullptr, reg.Get(reinterpret_cast<void*>(19)));
 }
 
 // Check that the process aborts due to hitting the guard page when inserting

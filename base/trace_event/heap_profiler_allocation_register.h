@@ -34,7 +34,7 @@ class BASE_EXPORT AllocationRegister {
   // The data stored in the hash table;
   // contains the details about an allocation.
   struct Allocation {
-    void* address;
+    void* const address;
     size_t size;
     AllocationContext context;
   };
@@ -74,6 +74,11 @@ class BASE_EXPORT AllocationRegister {
   // Removes the address from the table if it is present. It is ok to call this
   // with a null pointer.
   void Remove(void* address);
+
+  // Returns a pointer to the allocation at the address, or null if there is no
+  // allocation at that address. This can be used to change the allocation
+  // context after insertion, for example to change the type name.
+  Allocation* Get(void* address);
 
   ConstIterator begin() const;
   ConstIterator end() const;

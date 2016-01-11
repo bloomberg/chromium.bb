@@ -43,7 +43,11 @@ void AllocationRegister::Insert(void* address,
   if (*idx_ptr == 0) {
     *idx_ptr = GetFreeCell();
 
-    cells_[*idx_ptr].allocation.address = address;
+    // The address stored in a cell is const as long as it is exposed (via the
+    // iterators or |Get|), but because cells are re-used, a const cast is
+    // required to set it on insert and remove.
+    void* const& allocation_address = cells_[*idx_ptr].allocation.address;
+    const_cast<void*&>(allocation_address) = address;
     cells_[*idx_ptr].next = 0;
   }
 
@@ -71,7 +75,14 @@ void AllocationRegister::Remove(void* address) {
   free_list_ = freed_idx;
 
   // Reset the address, so that on iteration the free cell is ignored.
-  freed_cell->allocation.address = nullptr;
+  const_cast<void*&>(freed_cell->allocation.address) = nullptr;
+}
+
+AllocationRegister::Allocation* AllocationRegister::Get(void* address) {
+  CellIndex* idx_ptr = Lookup(address);
+
+  // If the index is 0, the address is not present in the table.
+  return *idx_ptr == 0 ? nullptr : &cells_[*idx_ptr].allocation;
 }
 
 AllocationRegister::ConstIterator AllocationRegister::begin() const {
