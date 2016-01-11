@@ -63,16 +63,17 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
       dialog_contents, sink_name_script);
   ASSERT_EQ(kTestSinkName, sink_name);
 
-  // Close route.
-  CloseRouteOnUI();
-
   // Simulate moving the mouse off the dialog. Confirm that the dialog closes
   // automatically after the route is closed.
+  // In tests, it sometimes takes too long to CloseRouteOnUI() to finish so
+  // the timer started when the route is initially closed times out before the
+  // mouseleave event is dispatched. In that case, the dialog remains open.
   std::string mouse_leave_script = base::StringPrintf(
       "domAutomationController.send("
       "window.document.getElementById('media-router-container').dispatchEvent("
       "new Event('mouseleave')))");
   ASSERT_TRUE(content::ExecuteScript(dialog_contents, mouse_leave_script));
+  CloseRouteOnUI();
   WaitUntilDialogClosed(web_contents);
 }
 
