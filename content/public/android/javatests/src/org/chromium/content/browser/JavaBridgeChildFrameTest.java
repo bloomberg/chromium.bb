@@ -223,7 +223,9 @@ public class JavaBridgeChildFrameTest extends JavaBridgeTestBase {
                         "(function(){ "
                         + "var f = document.getElementById('frame2');"
                         + "f.parentNode.removeChild(f); return typeof f; })()"));
-        executeJavaScriptAndGetResult(getWebContents(), "gc();");
+        // Perform two major GCs at the end to flush out all wrappers
+        // and other Blink (Oilpan) objects.
+        executeJavaScriptAndGetResult(getWebContents(), "for (var i = 0; i < 2; ++i) gc();");
         // Check that returned Java object is being held by the Java bridge, thus it's not
         // collected.  Note that despite that what JavaDoc says about invoking "gc()", both Dalvik
         // and ART actually run the collector.
@@ -237,7 +239,7 @@ public class JavaBridgeChildFrameTest extends JavaBridgeTestBase {
                         "(function(){ "
                         + "var f = document.getElementById('frame1');"
                         + "f.parentNode.removeChild(f); return typeof f; })()"));
-        executeJavaScriptAndGetResult(getWebContents(), "gc();");
+        executeJavaScriptAndGetResult(getWebContents(), "for (var i = 0; i < 2; ++i) gc();");
         Runtime.getRuntime().gc();
         assertNull(testObject.mWeakRefForInner.get());
     }
