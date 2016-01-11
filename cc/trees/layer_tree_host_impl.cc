@@ -860,10 +860,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
   // clear all of the copy request flags so that sanity checks for the counts
   // succeed.
   if (!active_tree_->LayersWithCopyOutputRequest().empty()) {
-    LayerTreeHostCommon::CallFunctionForSubtree(
-        active_tree_->root_layer(), [](LayerImpl* layer) {
-          layer->set_num_layer_or_descendant_with_copy_request(0);
-        });
+    active_tree()->property_trees()->effect_tree.ClearCopyRequests();
   }
 
   // Grab this region here before iterating layers. Taking copy requests from

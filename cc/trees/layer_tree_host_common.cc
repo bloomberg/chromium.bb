@@ -595,7 +595,7 @@ static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
 
   // When we need to do a readback/copy of a layer's output, we can not skip
   // it or any of its ancestors.
-  if (layer->num_layer_or_descendants_with_copy_request() > 0)
+  if (layer->num_copy_requests_in_target_subtree() > 0)
     return false;
 
   // We cannot skip the the subtree if a descendant has a wheel or touch handler
@@ -1088,8 +1088,6 @@ static void PreCalculateMetaInformationInternal(
 
   layer->set_num_unclipped_descendants(
       recursive_data->num_unclipped_descendants);
-  layer->set_num_layer_or_descendant_with_copy_request(
-      recursive_data->num_layer_or_descendants_with_copy_request);
 
   if (IsRootLayer(layer))
     layer->layer_tree_host()->SetNeedsMetaInfoRecomputation(false);
@@ -1142,8 +1140,6 @@ static void PreCalculateMetaInformationInternal(
       (recursive_data->num_layer_or_descendants_with_input_handler != 0));
   // TODO(enne): this should be synced from the main thread, so is only
   // for tests constructing layers on the compositor thread.
-  layer->set_num_layer_or_descendant_with_copy_request(
-      recursive_data->num_layer_or_descendants_with_copy_request);
   layer->SetNumDescendantsThatDrawContent(
       recursive_data->num_descendants_that_draw_content);
 

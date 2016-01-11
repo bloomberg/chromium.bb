@@ -670,8 +670,16 @@ int SanityCheckCopyRequestCounts(LayerImpl* layer) {
   for (size_t i = 0; i < layer->children().size(); ++i) {
     count += SanityCheckCopyRequestCounts(layer->child_at(i));
   }
-  DCHECK_EQ(count, layer->num_layer_or_descendants_with_copy_request())
-      << ", id: " << layer->id();
+  if (layer->layer_tree_impl()
+          ->property_trees()
+          ->effect_tree.Node(layer->effect_tree_index())
+          ->owner_id == layer->id()) {
+    DCHECK_EQ(count, layer->num_copy_requests_in_target_subtree())
+        << ", id: " << layer->id();
+  } else {
+    DCHECK_LE(count, layer->num_copy_requests_in_target_subtree())
+        << ", id: " << layer->id();
+  }
   return count;
 }
 #endif

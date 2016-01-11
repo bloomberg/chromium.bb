@@ -242,6 +242,7 @@ struct CC_EXPORT EffectNodeData {
   float screen_space_opacity;
 
   bool has_render_surface;
+  int num_copy_requests_in_subtree;
   int transform_id;
   int clip_id;
 
@@ -288,6 +289,7 @@ class CC_EXPORT PropertyTree {
   void set_needs_update(bool needs_update) { needs_update_ = needs_update; }
   bool needs_update() const { return needs_update_; }
 
+  std::vector<T>& nodes() { return nodes_; }
   const std::vector<T>& nodes() const { return nodes_; }
 
   int next_available_id() const { return static_cast<int>(size()); }
@@ -474,6 +476,8 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   bool operator==(const EffectTree& other) const;
 
   void UpdateEffects(int id);
+
+  void ClearCopyRequests();
 
   void ToProtobuf(proto::PropertyTree* proto) const;
   void FromProtobuf(const proto::PropertyTree& proto);

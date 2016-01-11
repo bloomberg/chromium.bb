@@ -81,8 +81,9 @@ message EffectNodeData {
   optional float opacity = 1;
   optional float screen_space_opacity = 2;
   optional bool has_render_surface = 3;
-  optional int64 transform_id = 4;
-  optional int64 clip_id = 5;
+  optional int64 num_copy_requests_in_subtree = 4;
+  optional int64 transform_id = 5;
+  optional int64 clip_id = 6;
 }
 
 // This defines the proto used for all types of struct TreeNode.

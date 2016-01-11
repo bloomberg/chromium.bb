@@ -413,6 +413,7 @@ EffectNodeData::EffectNodeData()
     : opacity(1.f),
       screen_space_opacity(1.f),
       has_render_surface(false),
+      num_copy_requests_in_subtree(0),
       transform_id(0),
       clip_id(0) {}
 
@@ -420,6 +421,7 @@ bool EffectNodeData::operator==(const EffectNodeData& other) const {
   return opacity == other.opacity &&
          screen_space_opacity == other.screen_space_opacity &&
          has_render_surface == other.has_render_surface &&
+         num_copy_requests_in_subtree == other.num_copy_requests_in_subtree &&
          transform_id == other.transform_id && clip_id == other.clip_id;
 }
 
@@ -429,6 +431,7 @@ void EffectNodeData::ToProtobuf(proto::TreeNode* proto) const {
   data->set_opacity(opacity);
   data->set_screen_space_opacity(screen_space_opacity);
   data->set_has_render_surface(has_render_surface);
+  data->set_num_copy_requests_in_subtree(num_copy_requests_in_subtree);
   data->set_transform_id(transform_id);
   data->set_clip_id(clip_id);
 }
@@ -440,6 +443,7 @@ void EffectNodeData::FromProtobuf(const proto::TreeNode& proto) {
   opacity = data.opacity();
   screen_space_opacity = data.screen_space_opacity();
   has_render_surface = data.has_render_surface();
+  num_copy_requests_in_subtree = data.num_copy_requests_in_subtree();
   transform_id = data.transform_id();
   clip_id = data.clip_id();
 }
@@ -1034,6 +1038,11 @@ void EffectTree::UpdateEffects(int id) {
   EffectNode* parent_node = parent(node);
 
   UpdateOpacities(node, parent_node);
+}
+
+void EffectTree::ClearCopyRequests() {
+  for (auto& node : nodes())
+    node.data.num_copy_requests_in_subtree = 0;
 }
 
 void TransformTree::UpdateNodeAndAncestorsHaveIntegerTranslations(

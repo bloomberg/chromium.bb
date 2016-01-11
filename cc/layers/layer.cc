@@ -65,7 +65,6 @@ Layer::Layer(const LayerSettings& settings)
       effect_tree_index_(-1),
       clip_tree_index_(-1),
       property_tree_sequence_number_(-1),
-      num_layer_or_descendants_with_copy_request_(0),
       element_id_(0),
       mutable_properties_(kMutablePropertyNone),
       should_flatten_transform_from_property_tree_(false),
@@ -272,15 +271,7 @@ void Layer::SetParent(Layer* layer) {
       layer->AddDependentNeedsPushProperties();
   }
 
-  if (parent_) {
-    parent_->UpdateNumCopyRequestsForSubtree(
-        -num_layer_or_descendants_with_copy_request_);
-  }
   parent_ = layer;
-  if (parent_) {
-    parent_->UpdateNumCopyRequestsForSubtree(
-        num_layer_or_descendants_with_copy_request_);
-  }
   SetLayerTreeHost(parent_ ? parent_->layer_tree_host() : nullptr);
 
   if (!layer_tree_host_)
@@ -422,7 +413,6 @@ bool Layer::HasAncestor(const Layer* ancestor) const {
 void Layer::RequestCopyOfOutput(
     scoped_ptr<CopyOutputRequest> request) {
   DCHECK(IsPropertyChangeAllowed());
-  bool had_no_copy_requests = copy_requests_.empty();
   if (void* source = request->source()) {
     auto it = std::find_if(copy_requests_.begin(), copy_requests_.end(),
                            [source](const scoped_ptr<CopyOutputRequest>& x) {
@@ -434,20 +424,7 @@ void Layer::RequestCopyOfOutput(
   if (request->IsEmpty())
     return;
   copy_requests_.push_back(std::move(request));
-  if (had_no_copy_requests) {
-    UpdateNumCopyRequestsForSubtree(1);
-  }
   SetNeedsCommit();
-}
-
-void Layer::UpdateNumCopyRequestsForSubtree(int delta) {
-  if (!delta)
-    return;
-  for (Layer* layer = this; layer; layer = layer->parent()) {
-    layer->num_layer_or_descendants_with_copy_request_ += delta;
-    layer->SetNeedsPushProperties();
-    DCHECK_GE(layer->num_layer_or_descendants_with_copy_request_, 0);
-  }
 }
 
 void Layer::SetBackgroundColor(SkColor background_color) {
@@ -1238,8 +1215,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetShouldFlattenTransform(should_flatten_transform_);
   layer->set_should_flatten_transform_from_property_tree(
       should_flatten_transform_from_property_tree_);
-  layer->set_num_layer_or_descendant_with_copy_request(
-      num_layer_or_descendants_with_copy_request_);
   layer->set_draw_blend_mode(draw_blend_mode_);
   layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
   if (!layer->TransformIsAnimatingOnImplOnly() && !TransformIsAnimating())
@@ -1311,7 +1286,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetScrollCompensationAdjustment(ScrollCompensationAdjustment());
 
   // Wrap the copy_requests_ in a PostTask to the main thread.
-  bool had_copy_requests = !copy_requests_.empty();
   std::vector<scoped_ptr<CopyOutputRequest>> main_thread_copy_requests;
   for (auto it = copy_requests_.begin(); it != copy_requests_.end(); ++it) {
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
@@ -1328,8 +1302,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   }
   if (!copy_requests_.empty() && layer_tree_host_)
     layer_tree_host_->property_trees()->needs_rebuild = true;
-  if (had_copy_requests)
-    UpdateNumCopyRequestsForSubtree(-1);
 
   copy_requests_.clear();
   layer->PassCopyRequests(&main_thread_copy_requests);
@@ -1512,8 +1484,6 @@ void Layer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto) {
   base->set_should_flatten_transform(should_flatten_transform_);
   base->set_should_flatten_transform_from_property_tree(
       should_flatten_transform_from_property_tree_);
-  base->set_num_layer_or_descendants_with_copy_request(
-      num_layer_or_descendants_with_copy_request_);
   base->set_draw_blend_mode(SkXfermodeModeToProto(draw_blend_mode_));
   base->set_use_parent_backface_visibility(use_parent_backface_visibility_);
   TransformToProto(transform_, base->mutable_transform());
@@ -1600,8 +1570,6 @@ void Layer::FromLayerSpecificPropertiesProto(
   should_flatten_transform_ = base.should_flatten_transform();
   should_flatten_transform_from_property_tree_ =
       base.should_flatten_transform_from_property_tree();
-  num_layer_or_descendants_with_copy_request_ =
-      base.num_layer_or_descendants_with_copy_request();
   draw_blend_mode_ = SkXfermodeModeFromProto(base.draw_blend_mode());
   use_parent_backface_visibility_ = base.use_parent_backface_visibility();
   transform_ = ProtoToTransform(base.transform());
@@ -1999,6 +1967,13 @@ void Layer::DidBeginTracing() {
   // side -- otherwise this won't happen for the the layers that
   // remain unchanged since tracing started.
   SetNeedsPushProperties();
+}
+
+int Layer::num_copy_requests_in_target_subtree() {
+  return layer_tree_host()
+      ->property_trees()
+      ->effect_tree.Node(effect_tree_index())
+      ->data.num_copy_requests_in_subtree;
 }
 
 void Layer::set_visited(bool visited) {

@@ -94,7 +94,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       element_id_(0),
       mutable_properties_(kMutablePropertyNone),
       force_render_surface_(false),
-      num_layer_or_descendants_with_copy_request_(0),
       frame_timing_requests_dirty_(false),
       visited_(false),
       layer_or_descendant_is_drawn_(false),
@@ -687,9 +686,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
   layer->SetStackingOrderChanged(stacking_order_changed_);
   layer->SetDebugInfo(debug_info_);
-  layer->set_num_layer_or_descendant_with_copy_request(
-      num_layer_or_descendants_with_copy_request_);
-  set_num_layer_or_descendant_with_copy_request(0);
 
   if (frame_timing_requests_dirty_) {
     layer->SetFrameTimingRequests(frame_timing_requests_);
@@ -847,6 +843,13 @@ void LayerImpl::ResetAllChangeTrackingForSubtree() {
 
   needs_push_properties_ = false;
   num_dependents_need_push_properties_ = 0;
+}
+
+int LayerImpl::num_copy_requests_in_target_subtree() {
+  return layer_tree_impl()
+      ->property_trees()
+      ->effect_tree.Node(effect_tree_index())
+      ->data.num_copy_requests_in_subtree;
 }
 
 void LayerImpl::UpdatePropertyTreeTransform() {

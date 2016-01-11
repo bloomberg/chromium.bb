@@ -5507,18 +5507,10 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
-  EXPECT_GT(root->num_layer_or_descendants_with_copy_request(), 0);
-  EXPECT_GT(
-      copy_grand_parent_layer->num_layer_or_descendants_with_copy_request(), 0);
-  EXPECT_GT(copy_parent_layer->num_layer_or_descendants_with_copy_request(), 0);
-  EXPECT_GT(copy_layer->num_layer_or_descendants_with_copy_request(), 0);
-  EXPECT_EQ(copy_child_layer->num_layer_or_descendants_with_copy_request(), 0);
-  EXPECT_EQ(copy_grand_parent_sibling_before_layer
-                ->num_layer_or_descendants_with_copy_request(),
-            0);
-  EXPECT_EQ(copy_grand_parent_sibling_after_layer
-                ->num_layer_or_descendants_with_copy_request(),
-            0);
+  EXPECT_GT(root->num_copy_requests_in_target_subtree(), 0);
+  EXPECT_GT(copy_grand_parent_layer->num_copy_requests_in_target_subtree(), 0);
+  EXPECT_GT(copy_parent_layer->num_copy_requests_in_target_subtree(), 0);
+  EXPECT_GT(copy_layer->num_copy_requests_in_target_subtree(), 0);
 
   // We should have three render surfaces, one for the root, one for the parent
   // since it owns a surface, and one for the copy_layer.
@@ -8572,6 +8564,40 @@ TEST_F(LayerTreeHostCommonTest, UpdateScrollChildPosition) {
 static void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
 }
 
+TEST_F(LayerTreeHostCommonTest, NumCopyRequestsInTargetSubtree) {
+  // If the layer has a node in effect_tree, the return value of
+  // num_copy_requests_in_target_subtree()  must be equal to the actual number
+  // of copy requests in the sub-layer_tree; Otherwise, the number is expected
+  // to be the value of its nearest ancestor that owns an effect node and
+  // greater than or equal to the actual number of copy requests in the
+  // sub-layer_tree.
+
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child1 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child2 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> grandchild = Layer::Create(layer_settings());
+  scoped_refptr<Layer> greatgrandchild = Layer::Create(layer_settings());
+
+  root->AddChild(child1);
+  root->AddChild(child2);
+  child1->AddChild(grandchild);
+  grandchild->AddChild(greatgrandchild);
+  host()->SetRootLayer(root);
+
+  child1->RequestCopyOfOutput(
+      CopyOutputRequest::CreateBitmapRequest(base::Bind(&CopyOutputCallback)));
+  greatgrandchild->RequestCopyOfOutput(
+      CopyOutputRequest::CreateBitmapRequest(base::Bind(&CopyOutputCallback)));
+  child2->SetOpacity(0.f);
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+
+  EXPECT_EQ(root->num_copy_requests_in_target_subtree(), 2);
+  EXPECT_EQ(child1->num_copy_requests_in_target_subtree(), 2);
+  EXPECT_EQ(child2->num_copy_requests_in_target_subtree(), 0);
+  EXPECT_EQ(grandchild->num_copy_requests_in_target_subtree(), 2);
+  EXPECT_EQ(greatgrandchild->num_copy_requests_in_target_subtree(), 1);
+}
+
 TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   gfx::Transform identity;
   scoped_refptr<Layer> root = Layer::Create(layer_settings());
@@ -8757,6 +8783,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeImpl) {
   requests.push_back(CopyOutputRequest::CreateEmptyRequest());
 
   greatgrandchild_ptr->PassCopyRequests(&requests);
+  root.get()->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
   EXPECT_EQ(gfx::Rect(10, 10),
             grandchild_ptr->visible_rect_from_property_trees());
@@ -8828,14 +8855,15 @@ TEST_F(LayerTreeHostCommonTest, LayerTreeRebuildTest) {
 
   host()->SetRootLayer(root);
 
-  ExecuteCalculateDrawProperties(root.get());
-  EXPECT_EQ(parent->num_unclipped_descendants(), 1u);
-
   child->RequestCopyOfOutput(
       CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
-  EXPECT_GT(root->num_layer_or_descendants_with_copy_request(), 0);
-  ExecuteCalculateDrawProperties(root.get());
-  EXPECT_GT(root->num_layer_or_descendants_with_copy_request(), 0);
+
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  EXPECT_EQ(parent->num_unclipped_descendants(), 1u);
+
+  EXPECT_GT(root->num_copy_requests_in_target_subtree(), 0);
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  EXPECT_GT(root->num_copy_requests_in_target_subtree(), 0);
 }
 
 TEST_F(LayerTreeHostCommonTest, InputHandlersRecursiveUpdateTest) {

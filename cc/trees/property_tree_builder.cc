@@ -56,6 +56,17 @@ struct DataForRecursion {
 };
 
 template <typename LayerType>
+struct DataForRecursionFromChild {
+  int num_copy_requests_in_subtree;
+
+  DataForRecursionFromChild() : num_copy_requests_in_subtree(0) {}
+
+  void Merge(const DataForRecursionFromChild& data) {
+    num_copy_requests_in_subtree += data.num_copy_requests_in_subtree;
+  }
+};
+
+template <typename LayerType>
 static LayerType* GetTransformParent(const DataForRecursion<LayerType>& data,
                                      LayerType* layer) {
   return layer->position_constraint().is_fixed_position()
@@ -602,7 +613,8 @@ bool AddEffectNodeIfNeeded(
 template <typename LayerType>
 void BuildPropertyTreesInternal(
     LayerType* layer,
-    const DataForRecursion<LayerType>& data_from_parent) {
+    const DataForRecursion<LayerType>& data_from_parent,
+    DataForRecursionFromChild<LayerType>* data_to_parent) {
   layer->set_property_tree_sequence_number(data_from_parent.sequence_number);
   if (layer->mask_layer())
     layer->mask_layer()->set_property_tree_sequence_number(
@@ -631,7 +643,10 @@ void BuildPropertyTreesInternal(
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
     if (!layer->child_at(i)->scroll_parent()) {
-      BuildPropertyTreesInternal(layer->child_at(i), data_for_children);
+      DataForRecursionFromChild<LayerType> data_from_child;
+      BuildPropertyTreesInternal(layer->child_at(i), data_for_children,
+                                 &data_from_child);
+      data_to_parent->Merge(data_from_child);
     } else {
       // The child should be included in its scroll parent's list of scroll
       // children.
@@ -643,12 +658,28 @@ void BuildPropertyTreesInternal(
   if (layer->scroll_children()) {
     for (LayerType* scroll_child : *layer->scroll_children()) {
       DCHECK_EQ(scroll_child->scroll_parent(), layer);
-      BuildPropertyTreesInternal(scroll_child, data_for_children);
+      DataForRecursionFromChild<LayerType> data_from_child;
+      BuildPropertyTreesInternal(scroll_child, data_for_children,
+                                 &data_from_child);
+      data_to_parent->Merge(data_from_child);
     }
   }
 
-  if (layer->has_replica())
-    BuildPropertyTreesInternal(layer->replica_layer(), data_for_children);
+  if (layer->has_replica()) {
+    DataForRecursionFromChild<LayerType> data_from_child;
+    BuildPropertyTreesInternal(layer->replica_layer(), data_for_children,
+                               &data_from_child);
+    data_to_parent->Merge(data_from_child);
+  }
+
+  if (layer->HasCopyRequest())
+    data_to_parent->num_copy_requests_in_subtree++;
+
+  if (data_for_children.effect_tree->Node(data_for_children.effect_tree_parent)
+          ->owner_id == layer->id())
+    data_for_children.effect_tree->Node(data_for_children.effect_tree_parent)
+        ->data.num_copy_requests_in_subtree =
+        data_to_parent->num_copy_requests_in_subtree;
 }
 
 }  // namespace
@@ -719,7 +750,9 @@ void BuildPropertyTreesTopLevelInternal(
   root_clip.data.transform_id = kRootPropertyTreeNodeId;
   data_for_recursion.clip_tree_parent =
       data_for_recursion.clip_tree->Insert(root_clip, kRootPropertyTreeNodeId);
-  BuildPropertyTreesInternal(root_layer, data_for_recursion);
+
+  DataForRecursionFromChild<LayerType> data_from_child;
+  BuildPropertyTreesInternal(root_layer, data_for_recursion, &data_from_child);
   property_trees->needs_rebuild = false;
 
   // The transform tree is kept up-to-date as it is built, but the

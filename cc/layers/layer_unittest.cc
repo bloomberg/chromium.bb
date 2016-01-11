@@ -154,8 +154,6 @@ class LayerSerializationTest : public testing::Test {
     EXPECT_EQ(src->should_flatten_transform_, dest->should_flatten_transform_);
     EXPECT_EQ(src->should_flatten_transform_from_property_tree_,
               dest->should_flatten_transform_from_property_tree_);
-    EXPECT_EQ(src->num_layer_or_descendants_with_copy_request_,
-              dest->num_layer_or_descendants_with_copy_request_);
     EXPECT_EQ(src->draw_blend_mode_, dest->draw_blend_mode_);
     EXPECT_EQ(src->use_parent_backface_visibility_,
               dest->use_parent_backface_visibility_);
@@ -268,7 +266,6 @@ class LayerSerializationTest : public testing::Test {
     layer->position_constraint_ = pos_con;
     layer->should_flatten_transform_ = true;
     layer->should_flatten_transform_from_property_tree_ = true;
-    layer->num_layer_or_descendants_with_copy_request_ = 19;
     layer->draw_blend_mode_ = SkXfermode::kSrcOut_Mode;
     layer->use_parent_backface_visibility_ = true;
     gfx::Transform transform;
@@ -322,7 +319,6 @@ class LayerSerializationTest : public testing::Test {
     layer->should_flatten_transform_ = !layer->should_flatten_transform_;
     layer->should_flatten_transform_from_property_tree_ =
         !layer->should_flatten_transform_from_property_tree_;
-    layer->num_layer_or_descendants_with_copy_request_ = 19;
     layer->draw_blend_mode_ = SkXfermode::kSrcOut_Mode;
     layer->use_parent_backface_visibility_ =
         !layer->use_parent_backface_visibility_;

@@ -5902,15 +5902,33 @@ class LayerTreeHostTestUpdateCopyRequests : public LayerTreeHostTest {
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
+  void WillCommit() override {
+    switch (layer_tree_host()->source_frame_number()) {
+      case 1:
+        EXPECT_GT(root->num_copy_requests_in_target_subtree(), 0);
+        break;
+    }
+  }
+
   void DidCommit() override {
+    gfx::Transform transform;
     switch (layer_tree_host()->source_frame_number()) {
       case 1:
         child->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
             base::Bind(CopyOutputCallback)));
-        EXPECT_GT(root->num_layer_or_descendants_with_copy_request(), 0);
+        transform.Scale(2.0, 2.0);
+        child->SetTransform(transform);
         break;
       case 2:
-        EXPECT_EQ(root->num_layer_or_descendants_with_copy_request(), 0);
+        // By changing the scale of a layer which already owns a transform node,
+        // a commit will be triggered but a property tree rebuild will not, this
+        // is used to test sure that clearing copy requestts does trigger a
+        // rebuild whenever next commit happens.
+        transform.Scale(1.5, 1.5);
+        child->SetTransform(transform);
+        break;
+      case 3:
+        EXPECT_EQ(root->num_copy_requests_in_target_subtree(), 0);
         EndTest();
         break;
     }

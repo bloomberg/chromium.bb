@@ -543,15 +543,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   }
 
   void DidBeginTracing();
-  // TODO(weiliangc): this should move to the effect tree.
-  void set_num_layer_or_descendant_with_copy_request(
-      int num_layer_or_descendants_with_copy_request) {
-    num_layer_or_descendants_with_copy_request_ =
-        num_layer_or_descendants_with_copy_request;
-  }
-  int num_layer_or_descendants_with_copy_request() {
-    return num_layer_or_descendants_with_copy_request_;
-  }
+
+  int num_copy_requests_in_target_subtree();
 
   void SetElementId(uint64_t id);
   uint64_t element_id() const { return element_id_; }
@@ -703,8 +696,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // indices becomes invalid.
   void InvalidatePropertyTreesIndices();
 
-  void UpdateNumCopyRequestsForSubtree(int delta);
-
   LayerList children_;
   Layer* parent_;
 
@@ -729,7 +720,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   int effect_tree_index_;
   int clip_tree_index_;
   int property_tree_sequence_number_;
-  int num_layer_or_descendants_with_copy_request_;
   uint64_t element_id_;
   uint32_t mutable_properties_;
   gfx::Vector2dF offset_to_transform_parent_;
