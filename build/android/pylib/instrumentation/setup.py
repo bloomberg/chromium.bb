@@ -8,9 +8,9 @@ import logging
 import os
 
 from devil.android import device_utils
-from pylib import constants
 from pylib import valgrind_tools
 from pylib.base import base_setup
+from pylib.constants import host_paths
 from pylib.instrumentation import test_package
 from pylib.instrumentation import test_runner
 
@@ -35,7 +35,7 @@ def _PushExtraSuiteDataDeps(device, test_apk):
                   'CronetTestInstrumentation']:
     test_files = 'net/data/ssl/certificates'
     host_device_file_tuple = [
-        (os.path.join(constants.DIR_SOURCE_ROOT, test_files),
+        (os.path.join(host_paths.DIR_SOURCE_ROOT, test_files),
          os.path.join(device.GetExternalStoragePath(), test_files))]
     device.PushChangedFiles(host_device_file_tuple)
 
@@ -50,7 +50,7 @@ def _PushDataDeps(device, test_options):
     dst_src = dest_host_pair.split(':', 1)
     dst_layer = dst_src[0]
     host_src = dst_src[1]
-    host_test_files_path = os.path.join(constants.DIR_SOURCE_ROOT, host_src)
+    host_test_files_path = os.path.join(host_paths.DIR_SOURCE_ROOT, host_src)
     if os.path.exists(host_test_files_path):
       host_device_file_tuples += [(
           host_test_files_path,

@@ -14,7 +14,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'gyp'))
 
-from pylib import constants
+from pylib.constants import host_paths
 from util import build_utils
 
 
@@ -125,7 +125,7 @@ def main(args):
     script_dir = os.path.dirname(options.script_output_path)
     return path and os.path.relpath(path, script_dir)
 
-  installer_path = os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'android',
+  installer_path = os.path.join(host_paths.DIR_SOURCE_ROOT, 'build', 'android',
                                 'incremental_install', 'installer.py')
   pformat = pprint.pformat
   template_args = {

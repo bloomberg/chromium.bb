@@ -16,11 +16,14 @@ import optparse
 import sys
 import time
 
+import devil_chromium
+
 from devil.android import device_blacklist
 from devil.android import device_errors
 from devil.android import device_utils
 from devil.android import forwarder
 from devil.utils import run_tests_helper
+
 from pylib import constants
 
 
@@ -43,6 +46,8 @@ def main(argv):
 
   options, args = parser.parse_args(argv)
   run_tests_helper.SetLogLevel(options.verbose_count)
+
+  devil_chromium.Initialize()
 
   if len(args) < 2 or not len(args) % 2:
     parser.error('Need even number of port pairs')

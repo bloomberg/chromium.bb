@@ -8,14 +8,15 @@ import xml.dom.minidom
 
 from devil.utils import cmd_helper
 from pylib import constants
+from pylib.constants import host_paths
 
 
-_FINDBUGS_HOME = os.path.join(constants.DIR_SOURCE_ROOT, 'third_party',
+_FINDBUGS_HOME = os.path.join(host_paths.DIR_SOURCE_ROOT, 'third_party',
                               'findbugs')
 _FINDBUGS_JAR = os.path.join(_FINDBUGS_HOME, 'lib', 'findbugs.jar')
 _FINDBUGS_MAX_HEAP = 768
 _FINDBUGS_PLUGIN_PATH = os.path.join(
-    constants.DIR_SOURCE_ROOT, 'tools', 'android', 'findbugs_plugin', 'lib',
+    host_paths.DIR_SOURCE_ROOT, 'tools', 'android', 'findbugs_plugin', 'lib',
     'chromiumPlugin.jar')
 
 

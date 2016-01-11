@@ -23,10 +23,11 @@ from devil.android import device_errors
 from devil.android import device_list
 from devil.android import device_utils
 from devil.android.sdk import adb_wrapper
+from devil.constants import exit_codes
 from devil.utils import lsusb
 from devil.utils import reset_usb
 from devil.utils import run_tests_helper
-from pylib import constants
+from pylib.constants import host_paths
 
 _RE_DEVICE_ID = re.compile(r'Device ID = (\d+)')
 
@@ -297,7 +298,7 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--out-dir',
                       help='Directory where the device path is stored',
-                      default=os.path.join(constants.DIR_SOURCE_ROOT, 'out'))
+                      default=os.path.join(host_paths.DIR_SOURCE_ROOT, 'out'))
   parser.add_argument('--restart-usb', action='store_true',
                       help='DEPRECATED. '
                            'This script now always tries to reset USB.')
@@ -390,7 +391,7 @@ def main():
                       and not _IsBlacklisted(status['serial'], blacklist))]
 
   # If all devices failed, or if there are no devices, it's an infra error.
-  return 0 if live_devices else constants.INFRA_EXIT_CODE
+  return 0 if live_devices else exit_codes.INFRA
 
 
 if __name__ == '__main__':

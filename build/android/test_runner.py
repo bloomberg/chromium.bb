@@ -17,7 +17,6 @@ import threading
 import unittest
 
 import devil_chromium
-
 from devil import base_error
 from devil import devil_env
 from devil.android import apk_helper
@@ -30,6 +29,7 @@ from devil.utils import reraiser_thread
 from devil.utils import run_tests_helper
 
 from pylib import constants
+from pylib.constants import host_paths
 from pylib.base import base_test_result
 from pylib.base import environment_factory
 from pylib.base import test_dispatcher
@@ -51,7 +51,7 @@ from pylib.results import report_results
 
 
 _DEVIL_STATIC_CONFIG_FILE = os.path.abspath(os.path.join(
-    constants.DIR_SOURCE_ROOT, 'build', 'android', 'devil_config.json'))
+    host_paths.DIR_SOURCE_ROOT, 'build', 'android', 'devil_config.json'))
 
 
 def AddCommonOptions(parser):

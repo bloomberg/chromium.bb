@@ -16,6 +16,7 @@ import os
 import re
 import sys
 
+import devil_chromium
 from devil.utils import cmd_helper
 from devil.utils import run_tests_helper
 from pylib import constants
@@ -275,6 +276,8 @@ def main(argv):
   options, _ = opt_parser.parse_args(argv[1:])
 
   run_tests_helper.SetLogLevel(verbose_count=options.verbosity)
+
+  devil_chromium.Initialize()
 
   # Calls below will download emulator SDK and/or system images only if needed.
   if CheckSDK():

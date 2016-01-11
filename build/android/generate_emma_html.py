@@ -12,8 +12,10 @@ import optparse
 import os
 import sys
 
+import devil_chromium
 from devil.utils import cmd_helper
 from pylib import constants
+from pylib.constants import host_paths
 
 
 def _GetFilesWithExt(root_dir, ext):
@@ -49,6 +51,8 @@ def main():
                                  'runtime.'))
   options, _ = option_parser.parse_args()
 
+  devil_chromium.Initialize()
+
   if not (options.coverage_dir and options.metadata_dir and options.output):
     option_parser.error('One or more mandatory options are missing.')
 
@@ -62,7 +66,7 @@ def main():
     sources_file = os.path.splitext(f)[0] + '_sources.txt'
     with open(sources_file, 'r') as sf:
       sources.extend(json.load(sf))
-  sources = [os.path.join(constants.DIR_SOURCE_ROOT, s) for s in sources]
+  sources = [os.path.join(host_paths.DIR_SOURCE_ROOT, s) for s in sources]
   print 'Sources: %s' % sources
 
   input_args = []

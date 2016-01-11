@@ -17,6 +17,7 @@ import bb_utils
 import bb_annotations
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import devil_chromium
 import provision_devices
 from devil.android import device_utils
 from pylib import constants
@@ -741,6 +742,8 @@ def GetDeviceStepsOptParser():
 def main(argv):
   parser = GetDeviceStepsOptParser()
   options, args = parser.parse_args(argv[1:])
+
+  devil_chromium.Initialize()
 
   if args:
     return sys.exit('Unused args %s' % args)

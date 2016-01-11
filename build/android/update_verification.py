@@ -28,6 +28,8 @@ import argparse
 import logging
 import sys
 
+import devil_chromium
+
 from devil.android import apk_helper
 from devil.android import device_blacklist
 from devil.android import device_errors
@@ -86,6 +88,8 @@ def main():
 
   args = parser.parse_args()
   run_tests_helper.SetLogLevel(args.verbose)
+
+  devil_chromium.Initialize()
 
   blacklist = (device_blacklist.Blacklist(args.blacklist_file)
                if args.blacklist_file

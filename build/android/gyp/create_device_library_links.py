@@ -27,7 +27,7 @@ from devil.android import apk_helper
 from pylib import constants
 
 def RunShellCommand(device, cmd):
-  output = device.RunShellCommand(cmd)
+  output = device.RunShellCommand(cmd, check_return=True)
 
   if output:
     raise Exception(

@@ -13,10 +13,6 @@ import sys
 
 from util import build_utils
 
-BUILD_ANDROID_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '..', '..'))
-sys.path.append(BUILD_ANDROID_DIR)
-
 from devil.android import device_errors
 from devil.android import device_utils
 from devil.android.sdk import adb_wrapper

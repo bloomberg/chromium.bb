@@ -6,17 +6,12 @@
 
 import logging
 import os
-import sys
 
+from pylib.constants import host_paths
 from pylib.host_driven import tests_annotations
 
-from pylib import constants
-
-sys.path.insert(0,
-                os.path.join(constants.DIR_SOURCE_ROOT,
-                             'build', 'util', 'lib', 'common'))
-
-import unittest_util # pylint: disable=F0401
+with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):
+  import unittest_util # pylint: disable=import-error
 
 class TestInfo(object):
   """An object containing and representing a test function, plus metadata."""

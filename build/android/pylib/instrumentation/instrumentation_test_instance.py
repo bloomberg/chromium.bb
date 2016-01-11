@@ -8,20 +8,19 @@ import logging
 import os
 import pickle
 import re
-import sys
 
 from devil.android import apk_helper
 from devil.android import md5sum
 from pylib import constants
 from pylib.base import base_test_result
 from pylib.base import test_instance
+from pylib.constants import host_paths
 from pylib.instrumentation import test_result
 from pylib.instrumentation import instrumentation_parser
 from pylib.utils import proguard
 
-sys.path.append(
-    os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'util', 'lib', 'common'))
-import unittest_util # pylint: disable=import-error
+with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):
+  import unittest_util # pylint: disable=import-error
 
 # Ref: http://developer.android.com/reference/android/app/Activity.html
 _ACTIVITY_RESULT_CANCELED = 0
@@ -441,7 +440,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     if self._test_data:
       for t in self._test_data:
         device_rel_path, host_rel_path = t.split(':')
-        host_abs_path = os.path.join(constants.DIR_SOURCE_ROOT, host_rel_path)
+        host_abs_path = os.path.join(host_paths.DIR_SOURCE_ROOT, host_rel_path)
         self._data_deps.extend(
             [(host_abs_path,
               [None, 'chrome', 'test', 'data', device_rel_path])])

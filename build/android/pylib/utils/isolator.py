@@ -11,15 +11,16 @@ import tempfile
 
 from devil.utils import cmd_helper
 from pylib import constants
+from pylib.constants import host_paths
 
 
 _ISOLATE_SCRIPT = os.path.join(
-    constants.DIR_SOURCE_ROOT, 'tools', 'swarming_client', 'isolate.py')
+    host_paths.DIR_SOURCE_ROOT, 'tools', 'swarming_client', 'isolate.py')
 
 
 def DefaultPathVariables():
   return {
-    'DEPTH': constants.DIR_SOURCE_ROOT,
+    'DEPTH': host_paths.DIR_SOURCE_ROOT,
     'PRODUCT_DIR': constants.GetOutDirectory(),
   }
 
@@ -159,7 +160,7 @@ class Isolator(object):
     deps_out_dir = os.path.join(
         self._isolate_deps_dir,
         os.path.relpath(os.path.join(constants.GetOutDirectory(), os.pardir),
-                        constants.DIR_SOURCE_ROOT))
+                        host_paths.DIR_SOURCE_ROOT))
     for root, _, filenames in os.walk(deps_out_dir):
       for filename in fnmatch.filter(filenames, '*.pak'):
         shutil.move(os.path.join(root, filename), paks_dir)

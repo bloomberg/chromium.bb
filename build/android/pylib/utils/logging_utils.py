@@ -5,12 +5,14 @@
 import contextlib
 import logging
 import os
-import sys
 
-from pylib import constants
-sys.path.insert(0, os.path.join(constants.DIR_SOURCE_ROOT,
-                                'third_party', 'colorama', 'src'))
-import colorama
+from pylib.constants import host_paths
+
+_COLORAMA_PATH = os.path.join(
+    host_paths.DIR_SOURCE_ROOT, 'third_party', 'colorama', 'src')
+
+with host_paths.SysPath(_COLORAMA_PATH):
+  import colorama
 
 class ColorStreamHandler(logging.StreamHandler):
   """Handler that can be used to colorize logging output.

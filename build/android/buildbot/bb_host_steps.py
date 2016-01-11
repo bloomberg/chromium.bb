@@ -11,20 +11,20 @@ import bb_utils
 import bb_annotations
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from pylib import constants
+from pylib.constants import host_paths
 
 
 SLAVE_SCRIPTS_DIR = os.path.join(bb_utils.BB_BUILD_DIR, 'scripts', 'slave')
 VALID_HOST_TESTS = set(['check_webview_licenses'])
 
-DIR_BUILD_ROOT = os.path.dirname(constants.DIR_SOURCE_ROOT)
+DIR_BUILD_ROOT = os.path.dirname(host_paths.DIR_SOURCE_ROOT)
 
 # Short hand for RunCmd which is used extensively in this file.
 RunCmd = bb_utils.RunCmd
 
 
 def SrcPath(*path):
-  return os.path.join(constants.DIR_SOURCE_ROOT, *path)
+  return os.path.join(host_paths.DIR_SOURCE_ROOT, *path)
 
 
 def CheckWebViewLicenses(_):
@@ -68,7 +68,7 @@ def ZipBuild(options):
   bb_annotations.PrintNamedStep('zip_build')
   RunCmd([
       os.path.join(SLAVE_SCRIPTS_DIR, 'zip_build.py'),
-      '--src-dir', constants.DIR_SOURCE_ROOT,
+      '--src-dir', host_paths.DIR_SOURCE_ROOT,
       '--exclude-files', 'lib.target,gen,android_webview,jingle_unittests']
       + bb_utils.EncodeProperties(options), cwd=DIR_BUILD_ROOT)
 
@@ -84,9 +84,9 @@ def BisectPerfRegression(options):
   if options.extra_src:
     args = ['--extra_src', options.extra_src]
   RunCmd([SrcPath('tools', 'prepare-bisect-perf-regression.py'),
-          '-w', os.path.join(constants.DIR_SOURCE_ROOT, os.pardir)])
+          '-w', os.path.join(host_paths.DIR_SOURCE_ROOT, os.pardir)])
   RunCmd([SrcPath('tools', 'run-bisect-perf-regression.py'),
-          '-w', os.path.join(constants.DIR_SOURCE_ROOT, os.pardir),
+          '-w', os.path.join(host_paths.DIR_SOURCE_ROOT, os.pardir),
           '--build-properties=%s' % json.dumps(options.build_properties)] +
           args)
 

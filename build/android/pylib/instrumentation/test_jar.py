@@ -9,18 +9,15 @@ import logging
 import os
 import pickle
 import re
-import sys
 
 from devil.android import device_utils
 from devil.android import md5sum
 from pylib import constants
+from pylib.constants import host_paths
 from pylib.utils import proguard
 
-sys.path.insert(0,
-                os.path.join(constants.DIR_SOURCE_ROOT,
-                             'build', 'util', 'lib', 'common'))
-
-import unittest_util # pylint: disable=F0401
+with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):
+  import unittest_util # pylint: disable=import-error
 
 # If you change the cached output of proguard, increment this number
 PICKLE_FORMAT_VERSION = 4

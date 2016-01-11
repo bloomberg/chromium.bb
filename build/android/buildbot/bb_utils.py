@@ -11,6 +11,7 @@ import sys
 import bb_annotations
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import devil_chromium # pylint: disable=unused-import
 from devil.utils import cmd_helper
 from pylib import constants
 

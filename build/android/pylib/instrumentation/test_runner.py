@@ -8,7 +8,6 @@ import collections
 import logging
 import os
 import re
-import sys
 import time
 
 from devil.android import device_errors
@@ -17,14 +16,14 @@ from pylib import flag_changer
 from pylib import valgrind_tools
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
+from pylib.constants import host_paths
 from pylib.instrumentation import instrumentation_test_instance
 from pylib.instrumentation import json_perf_parser
 from pylib.instrumentation import test_result
 from pylib.local.device import local_device_instrumentation_test_run
 
-sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'util', 'lib',
-                             'common'))
-import perf_tests_results_helper # pylint: disable=F0401
+with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):
+  import perf_tests_results_helper # pylint: disable=import-error
 
 
 _PERF_TEST_ANNOTATION = 'PerfTest'
@@ -109,7 +108,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     # because it may have race condition when multiple processes are trying to
     # launch lighttpd with same port at same time.
     self.LaunchTestHttpServer(
-        os.path.join(constants.DIR_SOURCE_ROOT), self._lighttp_port)
+        os.path.join(host_paths.DIR_SOURCE_ROOT), self._lighttp_port)
     if self.flags:
       flags_to_add = ['--disable-fre', '--enable-test-intents']
       if self.options.device_flags:

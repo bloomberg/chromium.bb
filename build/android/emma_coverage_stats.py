@@ -24,6 +24,7 @@ import re
 import sys
 from xml.etree import ElementTree
 
+import devil_chromium
 from devil.utils import run_tests_helper
 
 NOT_EXECUTABLE = -1
@@ -470,6 +471,7 @@ def main():
                          help='Print verbose log information.')
   args = argparser.parse_args()
   run_tests_helper.SetLogLevel(args.verbose)
+  devil_chromium.Initialize()
   GenerateCoverageReport(args.lines_for_coverage_file, args.out, args.emma_dir)
 
 

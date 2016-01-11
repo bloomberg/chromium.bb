@@ -20,15 +20,17 @@ import argparse
 import os
 import sys
 
+import devil_chromium
 from devil.utils import run_tests_helper
-from pylib import constants
+
+from pylib.constants import host_paths
 from pylib.utils import findbugs
 
 _DEFAULT_BASE_DIR = os.path.join(
-    constants.DIR_SOURCE_ROOT, 'build', 'android', 'findbugs_filter')
+    host_paths.DIR_SOURCE_ROOT, 'build', 'android', 'findbugs_filter')
 
 sys.path.append(
-    os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'android', 'gyp'))
+    os.path.join(host_paths.DIR_SOURCE_ROOT, 'build', 'android', 'gyp'))
 from util import build_utils # pylint: disable=import-error
 
 
@@ -74,6 +76,8 @@ def main():
   args = parser.parse_args(build_utils.ExpandFileArgs(sys.argv[1:]))
 
   run_tests_helper.SetLogLevel(args.verbose)
+
+  devil_chromium.Initialize()
 
   if args.auxclasspath:
     args.auxclasspath = args.auxclasspath.split(':')

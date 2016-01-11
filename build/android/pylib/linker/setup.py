@@ -5,17 +5,13 @@
 """Setup for linker tests."""
 
 import logging
-import os
-import sys
 
-from pylib import constants
+from pylib.constants import host_paths
 from pylib.linker import test_case
 from pylib.linker import test_runner
 
-sys.path.insert(0,
-                os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'util', 'lib',
-                             'common'))
-import unittest_util # pylint: disable=F0401
+with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):
+  import unittest_util # pylint: disable=import-error
 
 # ModernLinker requires Android M (API level 23) or later.
 _VERSION_SDK_PROPERTY = 'ro.build.version.sdk'

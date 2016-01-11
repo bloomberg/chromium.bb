@@ -11,10 +11,11 @@ import sys
 import tempfile
 import zipfile
 
+import devil_chromium
 from devil.android.sdk import dexdump
-from pylib import constants
+from pylib.constants import host_paths
 
-sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'util', 'lib',
+sys.path.append(os.path.join(host_paths.DIR_SOURCE_ROOT, 'build', 'util', 'lib',
                              'common'))
 import perf_tests_results_helper # pylint: disable=import-error
 
@@ -52,6 +53,8 @@ def main():
   parser.add_argument('dexfile')
 
   args = parser.parse_args()
+
+  devil_chromium.Initialize()
 
   if not args.apk_name:
     dirname, basename = os.path.split(args.dexfile)

@@ -5,7 +5,9 @@
 
 import sys
 
+import devil_chromium
 from devil.android.tools import screenshot
 
 if __name__ == '__main__':
+  devil_chromium.Initialize()
   sys.exit(screenshot.main())

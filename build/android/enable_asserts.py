@@ -9,6 +9,7 @@
 import argparse
 import sys
 
+import devil_chromium
 from devil.android import device_blacklist
 from devil.android import device_utils
 
@@ -27,6 +28,8 @@ def main():
       help='Removes the dalvik.vm.enableassertions property')
 
   args = parser.parse_args()
+
+  devil_chromium.Initialize()
 
   blacklist = (device_blacklist.Blacklist(args.blacklist_file)
                if args.blacklist_file

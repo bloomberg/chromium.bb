@@ -6,19 +6,14 @@
 
 """Unit tests for instrumentation.TestRunner."""
 
-# pylint: disable=W0212
-
-import os
-import sys
 import unittest
 
-from pylib import constants
 from pylib.base import base_test_result
+from pylib.constants import host_paths
 from pylib.instrumentation import instrumentation_test_instance
 
-sys.path.append(os.path.join(
-    constants.DIR_SOURCE_ROOT, 'third_party', 'pymock'))
-import mock  # pylint: disable=F0401
+with host_paths.SysPath(host_paths.PYMOCK_PATH):
+  import mock  # pylint: disable=import-error
 
 
 class InstrumentationTestInstanceTest(unittest.TestCase):

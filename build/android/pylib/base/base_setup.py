@@ -9,6 +9,7 @@ import os
 
 from pylib import constants
 from pylib import valgrind_tools
+from pylib.constants import host_paths
 from pylib.utils import isolator
 
 def GenerateDepsDirUsingIsolate(suite_name, isolate_file_path,
@@ -30,14 +31,15 @@ def GenerateDepsDirUsingIsolate(suite_name, isolate_file_path,
     if os.path.isabs(isolate_file_path):
       isolate_abs_path = isolate_file_path
     else:
-      isolate_abs_path = os.path.join(constants.DIR_SOURCE_ROOT,
+      isolate_abs_path = os.path.join(host_paths.DIR_SOURCE_ROOT,
                                       isolate_file_path)
   else:
     isolate_rel_path = isolate_file_paths.get(suite_name)
     if not isolate_rel_path:
       logging.info('Did not find an isolate file for the test suite.')
       return
-    isolate_abs_path = os.path.join(constants.DIR_SOURCE_ROOT, isolate_rel_path)
+    isolate_abs_path = os.path.join(host_paths.DIR_SOURCE_ROOT,
+                                    isolate_rel_path)
 
   isolated_abs_path = os.path.join(
       constants.GetOutDirectory(), '%s.isolated' % suite_name)

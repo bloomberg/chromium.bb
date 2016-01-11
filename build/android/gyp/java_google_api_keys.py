@@ -20,7 +20,7 @@ import google_api_keys
 
 sys.path.append(os.path.abspath(os.path.join(
     os.path.dirname(__file__), os.pardir)))
-from pylib import constants
+from pylib.constants import host_paths
 
 
 PACKAGE = 'org.chromium.chrome'
@@ -28,7 +28,7 @@ CLASSNAME = 'GoogleAPIKeys'
 
 
 def GetScriptName():
-  return os.path.relpath(__file__, constants.DIR_SOURCE_ROOT)
+  return os.path.relpath(__file__, host_paths.DIR_SOURCE_ROOT)
 
 
 def GenerateOutput(constant_definitions):

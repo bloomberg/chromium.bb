@@ -4,25 +4,23 @@
 # found in the LICENSE file.
 
 """Unittests for test_dispatcher.py."""
-# pylint: disable=R0201
-# pylint: disable=W0212
 
-import os
-import sys
+# pylint: disable=no-self-use
+# pylint: disable=protected-access
+
 import unittest
-
 
 from devil.android import device_utils
 from devil.android.sdk import adb_wrapper
+from devil.constants import exit_codes
 from devil.utils import watchdog_timer
-from pylib import constants
 from pylib.base import base_test_result
 from pylib.base import test_collection
 from pylib.base import test_dispatcher
+from pylib.constants import host_paths
 
-sys.path.append(
-    os.path.join(constants.DIR_SOURCE_ROOT, 'third_party', 'pymock'))
-import mock # pylint: disable=import-error
+with host_paths.SysPath(host_paths.PYMOCK_PATH):
+  import mock # pylint: disable=import-error
 
 
 class TestException(Exception):
@@ -175,7 +173,7 @@ class TestThreadGroupFunctions(unittest.TestCase):
     results, exit_code = test_dispatcher._RunAllTests(
         runners, self.test_collection_factory, 0)
     self.assertEqual(len(results.GetFail()), len(self.tests))
-    self.assertEqual(exit_code, constants.ERROR_EXIT_CODE)
+    self.assertEqual(exit_code, exit_codes.ERROR)
 
   def testReraise(self):
     runners = test_dispatcher._CreateRunners(
@@ -201,13 +199,13 @@ class TestShard(unittest.TestCase):
     results, exit_code = TestShard._RunShard(MockRunnerFail)
     self.assertEqual(len(results.GetPass()), 0)
     self.assertEqual(len(results.GetFail()), 3)
-    self.assertEqual(exit_code, constants.ERROR_EXIT_CODE)
+    self.assertEqual(exit_code, exit_codes.ERROR)
 
   def testNoTests(self):
     results, exit_code = test_dispatcher.RunTests(
         [], MockRunner, [_MockDevice('0'), _MockDevice('1')], shard=True)
     self.assertEqual(len(results.GetAll()), 0)
-    self.assertEqual(exit_code, constants.ERROR_EXIT_CODE)
+    self.assertEqual(exit_code, exit_codes.ERROR)
 
 
 class TestReplicate(unittest.TestCase):
@@ -228,13 +226,13 @@ class TestReplicate(unittest.TestCase):
     results, exit_code = TestReplicate._RunReplicate(MockRunnerFail)
     self.assertEqual(len(results.GetPass()), 0)
     self.assertEqual(len(results.GetFail()), 6)
-    self.assertEqual(exit_code, constants.ERROR_EXIT_CODE)
+    self.assertEqual(exit_code, exit_codes.ERROR)
 
   def testNoTests(self):
     results, exit_code = test_dispatcher.RunTests(
         [], MockRunner, [_MockDevice('0'), _MockDevice('1')], shard=False)
     self.assertEqual(len(results.GetAll()), 0)
-    self.assertEqual(exit_code, constants.ERROR_EXIT_CODE)
+    self.assertEqual(exit_code, exit_codes.ERROR)
 
 
 if __name__ == '__main__':

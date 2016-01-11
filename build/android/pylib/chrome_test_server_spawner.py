@@ -25,16 +25,17 @@ from devil.android import forwarder
 from devil.android import ports
 
 from pylib import constants
+from pylib.constants import host_paths
 
 
 # Path that are needed to import necessary modules when launching a testserver.
 os.environ['PYTHONPATH'] = os.environ.get('PYTHONPATH', '') + (':%s:%s:%s:%s:%s'
-    % (os.path.join(constants.DIR_SOURCE_ROOT, 'third_party'),
-       os.path.join(constants.DIR_SOURCE_ROOT, 'third_party', 'tlslite'),
-       os.path.join(constants.DIR_SOURCE_ROOT, 'third_party', 'pyftpdlib',
+    % (os.path.join(host_paths.DIR_SOURCE_ROOT, 'third_party'),
+       os.path.join(host_paths.DIR_SOURCE_ROOT, 'third_party', 'tlslite'),
+       os.path.join(host_paths.DIR_SOURCE_ROOT, 'third_party', 'pyftpdlib',
                     'src'),
-       os.path.join(constants.DIR_SOURCE_ROOT, 'net', 'tools', 'testserver'),
-       os.path.join(constants.DIR_SOURCE_ROOT, 'sync', 'tools', 'testserver')))
+       os.path.join(host_paths.DIR_SOURCE_ROOT, 'net', 'tools', 'testserver'),
+       os.path.join(host_paths.DIR_SOURCE_ROOT, 'sync', 'tools', 'testserver')))
 
 
 SERVER_TYPES = {
@@ -216,7 +217,7 @@ class TestServerThread(threading.Thread):
     logging.info('Start running the thread!')
     self.wait_event.clear()
     self._GenerateCommandLineArguments()
-    command = constants.DIR_SOURCE_ROOT
+    command = host_paths.DIR_SOURCE_ROOT
     if self.arguments['server-type'] == 'sync':
       command = [os.path.join(command, 'sync', 'tools', 'testserver',
                               'sync_testserver.py')] + self.command_line
@@ -233,7 +234,7 @@ class TestServerThread(threading.Thread):
     # paths in the arguments are resolved correctly.
     self.process = subprocess.Popen(
         command, preexec_fn=self._CloseUnnecessaryFDsForTestServerProcess,
-        cwd=constants.DIR_SOURCE_ROOT)
+        cwd=host_paths.DIR_SOURCE_ROOT)
     if unbuf:
       os.environ['PYTHONUNBUFFERED'] = unbuf
     if self.process:

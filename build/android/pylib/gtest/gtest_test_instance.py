@@ -5,17 +5,16 @@
 import logging
 import os
 import re
-import sys
 import tempfile
 
 from devil.android import apk_helper
 from pylib import constants
+from pylib.constants import host_paths
 from pylib.base import base_test_result
 from pylib.base import test_instance
 
-sys.path.append(os.path.join(
-    constants.DIR_SOURCE_ROOT, 'build', 'util', 'lib', 'common'))
-import unittest_util # pylint: disable=import-error
+with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):
+  import unittest_util # pylint: disable=import-error
 
 
 BROWSER_TEST_SUITES = [
@@ -176,7 +175,7 @@ class GtestTestInstance(test_instance.TestInstance):
       default_isolate_file_path = _DEFAULT_ISOLATE_FILE_PATHS.get(self._suite)
       if default_isolate_file_path:
         args.isolate_file_path = os.path.join(
-            constants.DIR_SOURCE_ROOT, default_isolate_file_path)
+            host_paths.DIR_SOURCE_ROOT, default_isolate_file_path)
 
     if args.isolate_file_path:
       self._isolate_abs_path = os.path.abspath(args.isolate_file_path)
@@ -315,7 +314,7 @@ class GtestTestInstance(test_instance.TestInstance):
     disabled_filter_items += ['*.%s*' % dp for dp in disabled_prefixes]
 
     disabled_tests_file_path = os.path.join(
-        constants.DIR_SOURCE_ROOT, 'build', 'android', 'pylib', 'gtest',
+        host_paths.DIR_SOURCE_ROOT, 'build', 'android', 'pylib', 'gtest',
         'filter', '%s_disabled' % self._suite)
     if disabled_tests_file_path and os.path.exists(disabled_tests_file_path):
       with open(disabled_tests_file_path) as disabled_tests_file:

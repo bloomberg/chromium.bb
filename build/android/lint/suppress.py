@@ -18,7 +18,7 @@ from xml.dom import minidom
 _BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(_BUILD_ANDROID_DIR)
 
-from pylib import constants
+from pylib.constants import host_paths
 
 
 _THIS_FILE = os.path.abspath(__file__)
@@ -36,7 +36,7 @@ _DOC = (
     '  globally if it is not applicable to the project.\n'
     '- You can also automatically add issues found so for in the\n'
     '  build process by running:\n\n'
-    '    ' + os.path.relpath(_THIS_FILE, constants.DIR_SOURCE_ROOT) + '\n\n'
+    '    ' + os.path.relpath(_THIS_FILE, host_paths.DIR_SOURCE_ROOT) + '\n\n'
     '  which will generate this file (Comments are not preserved).\n'
     '  Note: PRODUCT_DIR will be substituted at run-time with actual\n'
     '  directory path (e.g. out/Debug)\n'

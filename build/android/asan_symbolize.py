@@ -11,13 +11,13 @@ import os
 import re
 import sys
 
-from pylib import constants
+from pylib.constants import host_paths
 
 # Uses symbol.py from third_party/android_platform, not python's.
-sys.path.insert(0,
-                os.path.join(constants.DIR_SOURCE_ROOT,
-                            'third_party/android_platform/development/scripts'))
-import symbol
+with host_paths.SysPath(
+    host_paths.ANDROID_PLATFORM_DEVELOPMENT_SCRIPTS_PATH,
+    position=0):
+  import symbol
 
 
 _RE_ASAN = re.compile(r'(.*?)(#\S*?) (\S*?) \((.*?)\+(.*?)\)')
@@ -35,7 +35,7 @@ def _ParseAsanLogLine(line):
 
 
 def _FindASanLibraries():
-  asan_lib_dir = os.path.join(constants.DIR_SOURCE_ROOT,
+  asan_lib_dir = os.path.join(host_paths.DIR_SOURCE_ROOT,
                               'third_party', 'llvm-build',
                               'Release+Asserts', 'lib')
   asan_libs = []

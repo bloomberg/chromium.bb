@@ -20,14 +20,17 @@ import tempfile
 import zipfile
 import zlib
 
+import devil_chromium
 from devil.utils import cmd_helper
-from pylib import constants
+from pylib.constants import host_paths
 
-sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT, 'tools', 'grit'))
-from grit.format import data_pack # pylint: disable=import-error
-sys.path.append(os.path.join(
-    constants.DIR_SOURCE_ROOT, 'build', 'util', 'lib', 'common'))
-import perf_tests_results_helper # pylint: disable=import-error
+_GRIT_PATH = os.path.join(host_paths.DIR_SOURCE_ROOT, 'tools', 'grit')
+
+with host_paths.SysPath(_GRIT_PATH):
+  from grit.format import data_pack # pylint: disable=import-error
+
+with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):
+  import perf_tests_results_helper # pylint: disable=import-error
 
 
 # Static initializers expected in official builds. Note that this list is built
@@ -271,7 +274,7 @@ def PrintPakAnalysis(apk_filename, min_pak_resource_size, build_type):
 
 def _GetResourceIdNameMap(build_type):
   """Returns a map of {resource_id: resource_name}."""
-  out_dir = os.path.join(constants.DIR_SOURCE_ROOT, 'out', build_type)
+  out_dir = os.path.join(host_paths.DIR_SOURCE_ROOT, 'out', build_type)
   assert os.path.isdir(out_dir), 'Failed to locate out dir at %s' % out_dir
   print 'Looking at resources in: %s' % out_dir
 
@@ -366,6 +369,8 @@ Pass any number of files to graph their sizes. Any files with the extension
 
   if not files:
     option_parser.error('Must specify a file')
+
+  devil_chromium.Initialize()
 
   if options.so_with_symbols_path:
     PrintStaticInitializersCount(

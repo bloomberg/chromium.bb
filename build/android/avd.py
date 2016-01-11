@@ -14,6 +14,7 @@ import os
 import re
 import sys
 
+import devil_chromium
 import install_emulator_deps
 
 from devil.utils import cmd_helper
@@ -61,6 +62,8 @@ def main(argv):
   arguments = arg_parser.parse_args(argv[1:])
 
   logging.root.setLevel(logging.INFO)
+
+  devil_chromium.Initialize()
 
   if arguments.command == 'kill':
     logging.info('Killing all existing emulator and existing the program')

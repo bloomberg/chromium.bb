@@ -23,6 +23,7 @@ import time
 import urllib2
 
 from pylib import constants
+from pylib.constants import host_paths
 
 # NOTE: when adding or modifying these lines, omit any leading slashes!
 # Otherwise os.path.join() will (correctly) treat them as absolute paths
@@ -87,7 +88,7 @@ class TestServer(object):
     self.host = _TEST_SERVER_HOST
     self.port = test_server_port + shard_index
 
-    src_dir = constants.DIR_SOURCE_ROOT
+    src_dir = host_paths.DIR_SOURCE_ROOT
     # Make dirs into a list of absolute paths.
     abs_dirs = [os.path.join(src_dir, d) for d in _PYTHONPATH_DIRS]
     # Add the generated python files to the path
