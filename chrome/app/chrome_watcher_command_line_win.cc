@@ -19,9 +19,9 @@
 
 namespace {
 
+const char kMainThreadIdSwitch[] = "main-thread-id";
 const char kOnIninitializedEventHandleSwitch[] = "on-initialized-event-handle";
 const char kParentHandleSwitch[] = "parent-handle";
-const char kMainThreadIdSwitch[] = "main-thread-id";
 
 void AppendHandleSwitch(const std::string& switch_name,
                         HANDLE handle,
@@ -48,6 +48,95 @@ HANDLE ReadHandleFromSwitch(const base::CommandLine& command_line,
 }
 
 }  // namespace
+
+ChromeWatcherCommandLineGenerator::ChromeWatcherCommandLineGenerator(
+    const base::FilePath& chrome_exe) : chrome_exe_(chrome_exe) {
+}
+
+bool ChromeWatcherCommandLineGenerator::SetOnInitializedEventHandle(
+    HANDLE on_initialized_event_handle) {
+  return SetHandle(on_initialized_event_handle, &on_initialized_event_handle_);
+}
+
+bool ChromeWatcherCommandLineGenerator::SetParentProcessHandle(
+    HANDLE parent_process_handle) {
+  return SetHandle(parent_process_handle, &parent_process_handle_);
+}
+
+// Generates a command-line representing this configuration.
+base::CommandLine ChromeWatcherCommandLineGenerator::GenerateCommandLine() {
+  // TODO(chrisha): Get rid of the following function and move the
+  // implementation here.
+  return GenerateChromeWatcherCommandLine(
+      chrome_exe_, parent_process_handle_.Get(), ::GetCurrentThreadId(),
+      on_initialized_event_handle_.Get());
+}
+
+void ChromeWatcherCommandLineGenerator::GetInheritedHandles(
+    std::vector<HANDLE>* inherited_handles) const {
+  if (on_initialized_event_handle_.IsValid())
+    inherited_handles->push_back(on_initialized_event_handle_.Get());
+  if (parent_process_handle_.IsValid())
+    inherited_handles->push_back(parent_process_handle_.Get());
+}
+
+bool ChromeWatcherCommandLineGenerator::SetHandle(
+    HANDLE handle, base::win::ScopedHandle* scoped_handle) {
+  // Create a duplicate handle that is inheritable.
+  HANDLE proc = ::GetCurrentProcess();
+  HANDLE new_handle = 0;
+  if (!::DuplicateHandle(proc, handle, proc, &new_handle, 0, TRUE,
+                         DUPLICATE_SAME_ACCESS)) {
+    return false;
+  }
+
+  scoped_handle->Set(new_handle);
+  return true;
+}
+
+ChromeWatcherCommandLine::ChromeWatcherCommandLine(
+    HANDLE on_initialized_event_handle,
+    HANDLE parent_process_handle,
+    DWORD main_thread_id)
+    : on_initialized_event_handle_(on_initialized_event_handle),
+      parent_process_handle_(parent_process_handle),
+      main_thread_id_(main_thread_id) {
+}
+
+ChromeWatcherCommandLine::~ChromeWatcherCommandLine() {
+  // If any handles were not taken then die violently.
+  CHECK(!on_initialized_event_handle_.IsValid() &&
+        !parent_process_handle_.IsValid())
+      << "Handles left untaken.";
+}
+
+scoped_ptr<ChromeWatcherCommandLine>
+ChromeWatcherCommandLine::InterpretCommandLine(
+    const base::CommandLine& command_line) {
+  base::win::ScopedHandle on_initialized_event_handle;
+  base::win::ScopedHandle parent_process_handle;
+  DWORD main_thread_id = 0;
+
+  // TODO(chrisha): Get rid of the following function and move the
+  // implementation here.
+  if (!InterpretChromeWatcherCommandLine(
+      command_line, &parent_process_handle, &main_thread_id,
+      &on_initialized_event_handle))
+    return scoped_ptr<ChromeWatcherCommandLine>();
+
+  return scoped_ptr<ChromeWatcherCommandLine>(new ChromeWatcherCommandLine(
+      on_initialized_event_handle.Take(), parent_process_handle.Take(),
+      main_thread_id));
+}
+
+base::win::ScopedHandle
+ChromeWatcherCommandLine::TakeOnInitializedEventHandle() {
+  return std::move(on_initialized_event_handle_);
+}
+
+base::win::ScopedHandle ChromeWatcherCommandLine::TakeParentProcessHandle() {
+  return std::move(parent_process_handle_);
+}
 
 base::CommandLine GenerateChromeWatcherCommandLine(
     const base::FilePath& chrome_exe,
