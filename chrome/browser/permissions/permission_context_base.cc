@@ -96,19 +96,12 @@ void PermissionContextBase::RequestPermission(
     return;
   }
 
-  if (IsRestrictedToSecureOrigins() &&
-      !content::IsOriginSecure(requesting_origin)) {
-    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                        false /* persist */, CONTENT_SETTING_BLOCK);
-    return;
-  }
-
   ContentSetting content_setting =
-      HostContentSettingsMapFactory::GetForProfile(profile_)
-          ->GetContentSettingAndMaybeUpdateLastUsage(
-              requesting_origin, embedding_origin, content_settings_type_,
-              std::string());
-
+      GetPermissionStatus(requesting_origin, embedding_origin);
+  if (content_setting == CONTENT_SETTING_ALLOW) {
+    HostContentSettingsMapFactory::GetForProfile(profile_)->UpdateLastUsage(
+        requesting_origin, embedding_origin, content_settings_type_);
+  }
   if (content_setting == CONTENT_SETTING_ALLOW ||
       content_setting == CONTENT_SETTING_BLOCK) {
     NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,

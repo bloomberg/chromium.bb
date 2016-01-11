@@ -237,6 +237,41 @@ TEST_F(PushMessagingPermissionContextTest, RequestPermission) {
             context.GetPermissionStatus(GURL(kOriginA), GURL(kOriginA)));
 }
 
+TEST_F(PushMessagingPermissionContextTest, RequestAfterRevokingNotifications) {
+  TestingProfile profile;
+  TestPushMessagingPermissionContext context(&profile);
+  PermissionRequestID request_id(-1, -1, -1);
+  BrowserPermissionCallback callback = base::Bind(DoNothing);
+
+  SetContentSetting(&profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                    CONTENT_SETTING_ALLOW);
+
+  SetContents(CreateTestWebContents());
+  NavigateAndCommit(GURL(kOriginA));
+  context.RequestPermission(web_contents(), request_id, GURL(kOriginA),
+                            true /* user_gesture */, callback);
+  EXPECT_TRUE(context.was_persisted());
+  EXPECT_TRUE(context.was_granted());
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            context.GetPermissionStatus(GURL(kOriginA), GURL(kOriginA)));
+
+  // Revoke notifications permission. This should revoke push, and prevent
+  // future requests for push from succeeding.
+  SetContentSetting(&profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                    CONTENT_SETTING_BLOCK);
+
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            context.GetPermissionStatus(GURL(kOriginA), GURL(kOriginA)));
+
+  context.RequestPermission(web_contents(), request_id, GURL(kOriginA),
+                            true /* user_gesture */, callback);
+  EXPECT_FALSE(context.was_persisted());
+  EXPECT_FALSE(context.was_granted());
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            context.GetPermissionStatus(GURL(kOriginA), GURL(kOriginA)));
+}
+
 TEST_F(PushMessagingPermissionContextTest, GetPermissionStatusInsecureOrigin) {
   TestingProfile profile;
   TestPushMessagingPermissionContext context(&profile);

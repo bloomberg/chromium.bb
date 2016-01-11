@@ -29,6 +29,10 @@ PushMessagingPermissionContext::~PushMessagingPermissionContext() {}
 ContentSetting PushMessagingPermissionContext::GetPermissionStatus(
     const GURL& requesting_origin,
     const GURL& embedding_origin) const {
+  // It's possible for this to return CONTENT_SETTING_BLOCK in cases where
+  // HostContentSettingsMap::GetContentSetting returns CONTENT_SETTING_ALLOW.
+  // TODO(johnme): This is likely to break assumptions made elsewhere, so we
+  // should try to remove this quirk.
 #if defined(ENABLE_NOTIFICATIONS)
   if (requesting_origin != embedding_origin)
     return CONTENT_SETTING_BLOCK;
