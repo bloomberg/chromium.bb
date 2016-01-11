@@ -84,6 +84,13 @@ var tests = [
           chrome.test.assertEq(viewportPosition.position.x, 100);
           chrome.test.assertEq(viewportPosition.position.y, 200);
     });
+
+    // Checking #toolbar=0 to disable the toolbar.
+    var uiParams = paramsParser.getUiUrlParams(url + "#toolbar=0");
+    chrome.test.assertFalse(uiParams.toolbar);
+    uiParams = paramsParser.getUiUrlParams(url + "#toolbar=1");
+    chrome.test.assertTrue(uiParams.toolbar);
+
     chrome.test.succeed();
   }
 ];

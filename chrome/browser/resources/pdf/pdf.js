@@ -122,6 +122,7 @@ PDFViewer.DARK_BACKGROUND_COLOR = '0xFF525659';
  */
 function PDFViewer(browserApi) {
   this.browserApi_ = browserApi;
+  this.originalUrl_ = this.browserApi_.getStreamInfo().originalUrl;
   this.loadState_ = LoadState.LOADING;
   this.parentWindow_ = null;
   this.parentOrigin_ = null;
@@ -129,8 +130,14 @@ function PDFViewer(browserApi) {
 
   this.delayedScriptingMessages_ = [];
 
-  this.isPrintPreview_ = this.browserApi_.getStreamInfo().originalUrl.indexOf(
+  this.isPrintPreview_ = this.originalUrl_.indexOf(
                              'chrome://print') == 0;
+  // Parse open pdf parameters.
+  this.paramsParser_ =
+      new OpenPDFParamsParser(this.getNamedDestination_.bind(this));
+  var toolbarEnabled =
+      this.paramsParser_.getUiUrlParams(this.originalUrl_).toolbar &&
+      !this.isPrintPreview_;
 
   // The sizer element is placed behind the plugin element to cause scrollbars
   // to be displayed in the window. It is sized according to the document size
@@ -151,9 +158,8 @@ function PDFViewer(browserApi) {
 
   // Create the viewport.
   var shortWindow = window.innerHeight < PDFViewer.TOOLBAR_WINDOW_MIN_HEIGHT;
-  var topToolbarHeight = (!this.isPrintPreview_ && !shortWindow) ?
-                             PDFViewer.MATERIAL_TOOLBAR_HEIGHT :
-                             0;
+  var topToolbarHeight =
+      (toolbarEnabled) ? PDFViewer.MATERIAL_TOOLBAR_HEIGHT : 0;
   this.viewport_ = new Viewport(window,
                                 this.sizer_,
                                 this.viewportChanged_.bind(this),
@@ -182,7 +188,7 @@ function PDFViewer(browserApi) {
                           false);
 
   this.plugin_.setAttribute('src',
-                            this.browserApi_.getStreamInfo().originalUrl);
+                            this.originalUrl_);
   this.plugin_.setAttribute('stream-url',
                             this.browserApi_.getStreamInfo().streamUrl);
   var headers = '';
@@ -211,7 +217,7 @@ function PDFViewer(browserApi) {
   this.zoomToolbar_.addEventListener('zoom-out',
       this.viewport_.zoomOut.bind(this.viewport_));
 
-  if (!this.isPrintPreview_) {
+  if (toolbarEnabled) {
     this.toolbar_ = $('toolbar');
     this.toolbar_.hidden = false;
     this.toolbar_.addEventListener('save', this.save_.bind(this));
@@ -224,7 +230,7 @@ function PDFViewer(browserApi) {
         this.toolbar_.hideDropdowns.bind(this.toolbar_));
 
     this.toolbar_.docTitle =
-        getFilenameFromURL(this.browserApi_.getStreamInfo().originalUrl);
+        getFilenameFromURL(this.originalUrl_);
   }
 
   document.body.addEventListener('change-page', function(e) {
@@ -246,13 +252,10 @@ function PDFViewer(browserApi) {
   document.addEventListener('mousemove', this.handleMouseEvent_.bind(this));
   document.addEventListener('mouseout', this.handleMouseEvent_.bind(this));
 
-  // Parse open pdf parameters.
-  this.paramsParser_ =
-      new OpenPDFParamsParser(this.getNamedDestination_.bind(this));
   var isInTab = this.browserApi_.getStreamInfo().tabId != -1;
   var isSourceFileUrl =
-      this.browserApi_.getStreamInfo().originalUrl.indexOf('file://') == 0;
-  this.navigator_ = new Navigator(this.browserApi_.getStreamInfo().originalUrl,
+      this.originalUrl_.indexOf('file://') == 0;
+  this.navigator_ = new Navigator(this.originalUrl_,
                                   this.viewport_, this.paramsParser_,
                                   onNavigateInCurrentTab.bind(undefined,
                                                               isInTab,
@@ -532,7 +535,7 @@ PDFViewer.prototype = {
       if (this.lastViewportPosition_)
         this.viewport_.position = this.lastViewportPosition_;
       this.paramsParser_.getViewportFromUrlParams(
-          this.browserApi_.getStreamInfo().originalUrl,
+          this.originalUrl_,
           this.handleURLParams_.bind(this));
       this.loadState_ = LoadState.SUCCESS;
       this.sendDocumentLoadedMessage_();
@@ -640,7 +643,7 @@ PDFViewer.prototype = {
           document.title = message.data.title;
         } else {
           document.title =
-              getFilenameFromURL(this.browserApi_.getStreamInfo().originalUrl);
+              getFilenameFromURL(this.originalUrl_);
         }
         this.bookmarks_ = message.data.bookmarks;
         if (this.toolbar_) {
@@ -855,7 +858,7 @@ PDFViewer.prototype = {
       else if (message.type == 'documentLoaded')
         targetOrigin = '*';
       else
-        targetOrigin = this.browserApi_.getStreamInfo().originalUrl;
+        targetOrigin = this.originalUrl_;
       this.parentWindow_.postMessage(message, targetOrigin);
     }
   },

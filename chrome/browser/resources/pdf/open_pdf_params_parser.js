@@ -48,7 +48,55 @@ OpenPDFParamsParser.prototype = {
   },
 
   /**
+   * Parse the parameters encoded in the fragment of a URL into a dictionary.
    * @private
+   * @param {string} url to parse
+   * @return {Object} Key-value pairs of URL parameters
+   */
+  parseUrlParams_: function(url) {
+    var params = {};
+
+    var paramIndex = url.search('#');
+    if (paramIndex == -1)
+      return params;
+
+    var paramTokens = url.substring(paramIndex + 1).split('&');
+    if ((paramTokens.length == 1) && (paramTokens[0].search('=') == -1)) {
+      // Handle the case of http://foo.com/bar#NAMEDDEST. This is not
+      // explicitly mentioned except by example in the Adobe
+      // "PDF Open Parameters" document.
+      params['nameddest'] = paramTokens[0];
+      return params;
+    }
+
+    for (var i = 0; i < paramTokens.length; ++i) {
+      var keyValueSplit = paramTokens[i].split('=');
+      if (keyValueSplit.length != 2)
+        continue;
+      params[keyValueSplit[0]] = keyValueSplit[1];
+    }
+
+    return params;
+  },
+
+  /**
+   * Parse PDF url parameters used for controlling the state of UI. These need
+   * to be available when the UI is being initialized, rather than when the PDF
+   * is finished loading.
+   * @param {string} url that needs to be parsed.
+   * @return {Object} parsed url parameters.
+   */
+  getUiUrlParams: function(url) {
+    var params = this.parseUrlParams_(url);
+    var uiParams = {toolbar: true};
+
+    if ('toolbar' in params && params['toolbar'] == 0)
+      uiParams.toolbar = false;
+
+    return uiParams;
+  },
+
+  /**
    * Parse PDF url parameters. These parameters are mentioned in the url
    * and specify actions to be performed when opening pdf files.
    * See http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/
@@ -59,32 +107,8 @@ OpenPDFParamsParser.prototype = {
   getViewportFromUrlParams: function(url, callback) {
     var viewportPosition = {};
     viewportPosition['url'] = url;
-    var paramIndex = url.search('#');
-    if (paramIndex == -1) {
-      callback(viewportPosition);
-      return;
-    }
 
-    var paramTokens = url.substring(paramIndex + 1).split('&');
-    if ((paramTokens.length == 1) && (paramTokens[0].search('=') == -1)) {
-      // Handle the case of http://foo.com/bar#NAMEDDEST. This is not
-      // explicitly mentioned except by example in the Adobe
-      // "PDF Open Parameters" document.
-      this.outstandingRequests_.push({
-        callback: callback,
-        viewportPosition: viewportPosition
-      });
-      this.getNamedDestinationsFunction_(paramTokens[0]);
-      return;
-    }
-
-    var paramsDictionary = {};
-    for (var i = 0; i < paramTokens.length; ++i) {
-      var keyValueSplit = paramTokens[i].split('=');
-      if (keyValueSplit.length != 2)
-        continue;
-      paramsDictionary[keyValueSplit[0]] = keyValueSplit[1];
-    }
+    var paramsDictionary = this.parseUrlParams_(url);
 
     if ('page' in paramsDictionary) {
       // |pageNumber| is 1-based, but goToPage() take a zero-based page number.
