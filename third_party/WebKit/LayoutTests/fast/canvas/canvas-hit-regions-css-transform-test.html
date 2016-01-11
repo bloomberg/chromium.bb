@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<title>HitRegion CSS Size/Transform Test</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="./resources/test-helpers.js"></script>
+<canvas width="400" height="400"></canvas>
+<style>
+
+body {
+  margin : 0px;
+  padding : 0px;
+}
+
+</style>
+<script>
+
+var canvas = document.querySelector('canvas');
+var context = canvas.getContext('2d');
+
+createFace(context);
+
+function transformX(x, y, degree)
+{
+  var paddingLeft = parseInt(canvas.style.paddingLeft) || 0;
+  var borderLeft = parseInt(canvas.style.borderLeft) || 0;
+  var cssWidth = parseInt(canvas.style.width) || canvas.width;
+  var scale = cssWidth / canvas.width;
+  var tx = x;
+  if (degree) {
+    var cos = Math.cos(degree * Math.PI / 180);
+    var sin = Math.sin(degree * Math.PI / 180);
+    tx = (x - canvas.width / 2) * cos -
+        (y - canvas.height / 2) * sin +
+        canvas.width / 2;
+  }
+  return paddingLeft + borderLeft + tx * scale;
+}
+
+function transformY(x, y, degree)
+{
+  var paddingTop = parseInt(canvas.style.paddingTop) || 0;
+  var borderTop = parseInt(canvas.style.borderTop) || 0;
+  var cssHeight = parseInt(canvas.style.height) || canvas.height;
+  var scale = cssHeight / canvas.height;
+  var ty = y;
+  if (degree) {
+    var cos = Math.cos(degree * Math.PI / 180);
+    var sin = Math.sin(degree * Math.PI / 180);
+    var ty = (x - canvas.width / 2) * sin +
+        (y - canvas.height / 2) * cos +
+        canvas.height / 2;
+  }
+  return paddingTop + borderTop + ty * scale;
+}
+
+function hit_region_with_css_test(test_set) {
+  return new Promise(function(resolve, reject) {
+    coroutine(function*() {
+      var tests = [];
+      for (var i = 0; i < test_set.length; i++) {
+        var x = parseInt(transformX(test_set[i].x, test_set[i].y, test_set[i].rotate));
+        var y = parseInt(transformY(test_set[i].x, test_set[i].y, test_set[i].rotate));
+        tests.push([ test_set[i].id, yield clickOrTouch(x, y), test_set[i].id ]);
+      }
+      generate_tests(assert_equals, tests, 'ssss');
+      resolve();
+    });
+  });
+}
+
+coroutine(function*() {
+  setup({ explicit_done : true, explicit_timeout : true });
+
+  var test_set = [
+      { id : 'face', x : 100, y : 100 },
+      { id : 'nose', x : 200, y : 200 },
+      { id : 'mouth', x : 127, y : 242 },
+      { id : 'eye', x : 150, y : 125 },
+      { id : 'eye', x : 250, y : 125 },
+      { id : 'face', x : 200, y : 120 },
+      { id : null, x : 20, y : 10 }
+  ];
+  yield hit_region_with_css_test(test_set);
+
+  canvas.style.width = '200px';
+  canvas.style.height = '200px';
+  yield hit_region_with_css_test(test_set);
+
+  canvas.style.padding = '100px';
+  yield hit_region_with_css_test(test_set);
+
+  canvas.style.border = '100px solid black';
+  yield hit_region_with_css_test(test_set);
+
+  var test_set_with_rotate = [
+      { id : 'face', x : 100, y : 100, rotate : 72 },
+      { id : 'nose', x : 200, y : 200, rotate : 72 },
+      { id : 'mouth', x : 127, y : 242, rotate : 72 },
+      { id : 'eye', x : 150, y : 125, rotate : 72 },
+      { id : 'eye', x : 250, y : 125, rotate : 72 },
+      { id : 'face', x : 200, y : 120, rotate : 72 },
+      { id : null, x : 20, y : 10, rotate : 72 }
+  ];
+  canvas.style.transform = 'rotate(72deg)';
+  yield hit_region_with_css_test(test_set_with_rotate);
+
+  done();
+});
+
+</script>
