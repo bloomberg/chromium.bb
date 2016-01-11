@@ -49,6 +49,7 @@ source_set("browser") {
     "//skia",
     "//sql",
     "//third_party/WebKit/public:blink_headers",
+    "//third_party/kasko:kasko_features",
     "//third_party/npapi",
     "//third_party/re2",
     "//third_party/zlib",
