@@ -15,6 +15,7 @@
 #include "base/message_loop/message_pump.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "mojo/message_pump/mojo_message_pump_export.h"
 #include "mojo/public/cpp/system/core.h"
@@ -93,6 +94,8 @@ class MOJO_MESSAGE_PUMP_EXPORT MessagePumpMojo : public base::MessagePump {
   // handle has become ready, |false| otherwise.
   bool DoInternalWork(const RunState& run_state, bool block);
 
+  bool DoNonMojoWork(const RunState& run_state, bool block);
+
   // Waits for handles in the wait set to become ready. Returns |true| if ready
   // handles may be available, or |false| if the wait's deadline was exceeded.
   // Note, ready handles may be unavailable, even though |true| was returned.
@@ -153,6 +156,10 @@ class MOJO_MESSAGE_PUMP_EXPORT MessagePumpMojo : public base::MessagePump {
   // Used to wake up run loop from |SignalControlPipe()|.
   ScopedMessagePipeHandle read_handle_;
   ScopedMessagePipeHandle write_handle_;
+
+  // Used to sleep until there is more work to do, when the Mojo EDK is shutting
+  // down.
+  base::WaitableEvent event_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePumpMojo);
 };

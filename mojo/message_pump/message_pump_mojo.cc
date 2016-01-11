@@ -15,6 +15,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/threading/thread_local.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "mojo/message_pump/message_pump_mojo_handler.h"
 #include "mojo/message_pump/time_helper.h"
@@ -48,7 +49,8 @@ struct MessagePumpMojo::RunState {
   bool should_quit;
 };
 
-MessagePumpMojo::MessagePumpMojo() : run_state_(NULL), next_handler_id_(0) {
+MessagePumpMojo::MessagePumpMojo()
+    : run_state_(NULL), next_handler_id_(0), event_(false, false) {
   DCHECK(!current())
       << "There is already a MessagePumpMojo instance on this thread.";
   g_tls_current_pump.Pointer()->Set(this);
@@ -170,7 +172,11 @@ void MessagePumpMojo::DoRunLoop(RunState* run_state, Delegate* delegate) {
   bool more_work_is_plausible = true;
   for (;;) {
     const bool block = !more_work_is_plausible;
-    more_work_is_plausible = DoInternalWork(*run_state, block);
+    if (read_handle_.is_valid()) {
+      more_work_is_plausible = DoInternalWork(*run_state, block);
+    } else {
+      more_work_is_plausible = DoNonMojoWork(*run_state, block);
+    }
 
     if (run_state->should_quit)
       break;
@@ -204,6 +210,30 @@ bool MessagePumpMojo::DoInternalWork(const RunState& run_state, bool block) {
   }
 
   did_work |= ProcessReadyHandles();
+  did_work |= RemoveExpiredHandles();
+
+  return did_work;
+}
+
+bool MessagePumpMojo::DoNonMojoWork(const RunState& run_state, bool block) {
+  bool did_work = block;
+  if (block) {
+    const MojoDeadline deadline = GetDeadlineForWait(run_state);
+    // Stolen from base/message_loop/message_pump_default.cc
+    base::ThreadRestrictions::ScopedAllowWait allow_wait;
+    if (deadline == MOJO_DEADLINE_INDEFINITE) {
+      event_.Wait();
+    } else {
+      if (deadline > 0) {
+        event_.TimedWait(base::TimeDelta::FromMicroseconds(deadline));
+      } else {
+        did_work = false;
+      }
+    }
+    // Since event_ is auto-reset, we don't need to do anything special here
+    // other than service each delegate method.
+  }
+
   did_work |= RemoveExpiredHandles();
 
   return did_work;
@@ -290,10 +320,15 @@ bool MessagePumpMojo::ProcessReadyHandles() {
         DVLOG(1) << "Error: " << handle_results[i]
                  << " handle: " << handle.value();
         if (handle.value() == read_handle_.get().value()) {
-          // The Mojo EDK is shutting down. The ThreadQuitHelper task in
-          // base::Thread won't get run since the control pipe depends on the
-          // EDK staying alive. So quit manually to avoid this thread hanging.
-          Quit();
+          // The Mojo EDK is shutting down. We can't just quit the message pump
+          // because that may cause the thread to quit, which causes the
+          // thread's MessageLoop to be destroyed, which races with any use of
+          // |Thread::task_runner()|. So instead, we enter a "dumb" mode which
+          // bypasses Mojo and just acts like a trivial message pump. That way,
+          // we can wait for the usual thread exiting mechanism to happen.
+          // The dumb mode is indicated by releasing the control pipe's read
+          // handle.
+          read_handle_.reset();
         } else {
           RemoveInvalidHandle(handle_results[i], handle);
         }
@@ -375,6 +410,7 @@ void MessagePumpMojo::SignalControlPipe() {
                       MOJO_WRITE_MESSAGE_FLAG_NONE);
   if (result == MOJO_RESULT_FAILED_PRECONDITION) {
     // Mojo EDK is shutting down.
+    event_.Signal();
     return;
   }
 
