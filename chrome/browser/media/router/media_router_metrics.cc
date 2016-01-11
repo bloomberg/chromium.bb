@@ -11,7 +11,8 @@ namespace media_router {
 // static
 void MediaRouterMetrics::RecordMediaRouterDialogOrigin(
     MediaRouterDialogOpenOrigin origin) {
-  DCHECK(origin != MediaRouterDialogOpenOrigin::TOTAL_COUNT);
+  DCHECK_NE(static_cast<int>(origin),
+            static_cast<int>(MediaRouterDialogOpenOrigin::TOTAL_COUNT));
   UMA_HISTOGRAM_ENUMERATION(
       "MediaRouter.Icon.Click.Location", static_cast<int>(origin),
       static_cast<int>(MediaRouterDialogOpenOrigin::TOTAL_COUNT));
@@ -20,7 +21,8 @@ void MediaRouterMetrics::RecordMediaRouterDialogOrigin(
 // static
 void MediaRouterMetrics::RecordMediaRouteProviderWakeReason(
     MediaRouteProviderWakeReason reason) {
-  DCHECK(reason != MediaRouteProviderWakeReason::TOTAL_COUNT);
+  DCHECK_NE(static_cast<int>(reason),
+            static_cast<int>(MediaRouteProviderWakeReason::TOTAL_COUNT));
   UMA_HISTOGRAM_ENUMERATION(
       "MediaRouter.Provider.WakeReason", static_cast<int>(reason),
       static_cast<int>(MediaRouteProviderWakeReason::TOTAL_COUNT));
