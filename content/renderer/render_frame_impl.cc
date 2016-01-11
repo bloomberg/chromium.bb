@@ -213,14 +213,14 @@
 #endif
 
 #if defined(ENABLE_MOJO_MEDIA)
-#include "media/mojo/services/mojo_cdm_factory.h"
+#include "media/mojo/services/mojo_cdm_factory.h"  // nogncheck
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #endif
 
 #if defined(ENABLE_MOJO_MEDIA) && !defined(OS_ANDROID)
-#include "media/mojo/services/mojo_renderer_factory.h"
+#include "media/mojo/services/mojo_renderer_factory.h"  // nogncheck
 #else
 #include "media/renderers/default_renderer_factory.h"
 #endif

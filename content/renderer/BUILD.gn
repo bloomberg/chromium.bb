@@ -52,10 +52,12 @@ source_set("renderer") {
     "//gpu",
     "//gpu/blink",
     "//gpu/command_buffer/client:gles2_interface",
+    "//ipc/mojo",
     "//jingle:jingle_glue",
     "//media",
     "//media/blink",
     "//media/midi",
+    "//mojo/application/public/cpp",
     "//mojo/application/public/interfaces",
     "//mojo/common:url_type_converters",
     "//mojo/converters/geometry",
@@ -215,7 +217,10 @@ source_set("renderer") {
   }
 
   if (enable_mojo_media != "none") {
-    deps += [ "//media/mojo/services:proxy" ]
+    deps += [
+      "//media/mojo/interfaces",
+      "//media/mojo/services:proxy",
+    ]
   }
 
   if (enable_webvr) {

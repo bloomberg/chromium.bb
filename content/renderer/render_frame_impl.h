@@ -59,7 +59,7 @@
 #endif
 
 #if defined(ENABLE_MOJO_MEDIA)
-#include "media/mojo/interfaces/service_factory.mojom.h"
+#include "media/mojo/interfaces/service_factory.mojom.h"  // nogncheck
 #endif
 
 class TransportDIB;
