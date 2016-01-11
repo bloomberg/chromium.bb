@@ -51,6 +51,9 @@ def _problem_info(code):
         'kProblemUnsafeLoadStore': ['This load/store instruction is not '
             'preceded by a valid store mask instruction',
             1, 0],
+        'kProblemUnsafeLoadStoreThreadPointer': ['This is not a valid '
+            'load/store instruction for accessing thread pointer.',
+            0, 0],
         'kProblemUnsafeJumpRegister': ['This indirect jump instruction is not '
             'preceded by a valid jump mask instruction',
             1, 0],

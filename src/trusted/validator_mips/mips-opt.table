@@ -30,10 +30,10 @@ pat0(31:0)
 000010xxxxxxxxxxxxxxxxxxxxxxxxxx  =JmpImm
 001111xxxxxxxxxxxxxxxxxxxxxxxxxx  ->arithm2_1
 011111xxxxxxxxxxxxxxxxxxxxxxxxxx  ->special3
-100110xxxxxxxxxxxxxxxxxxxxxxxxxx  =Load
+100011xxxxxxxxxxxxxxxxxxxxxxxxxx  =LoadWord
 110000xxxxxxxxxxxxxxxxxxxxxxxxxx  =Load
-10010xxxxxxxxxxxxxxxxxxxxxxxxxxx  =Load
-1000xxxxxxxxxxxxxxxxxxxxxxxxxxxx  =Load
+100x0xxxxxxxxxxxxxxxxxxxxxxxxxxx  =Load
+100x10xxxxxxxxxxxxxxxxxxxxxxxxxx  =Load
 
 -- special (See Table A.3)
 pat0(31:0)                        

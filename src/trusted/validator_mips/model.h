@@ -42,7 +42,8 @@ class Register {
 
   static const Number kJumpMask       = 14;  // $t6 = holds mask for jr.
   static const Number kLoadStoreMask  = 15;  // $t7 = holds mask for load/store.
-  static const Number kTls            = 24;  // $t8 = holds tls index.
+  static const Number kTls            = 24;  // $t8 = holds address of
+                                             // tls_value1 in NaClThreadContext.
   static const Number kSp             = 29;  // Stack pointer.
 
   static const Number kNone           = 32;
@@ -174,7 +175,7 @@ uint32_t const kBundleAlign = 0xFFFFFFF0;
 // Opcode for nop instruction.
 uint32_t const kNop = 0x0;
 
-}  // namespace
+}  // namespace nacl_mips_dec
 
 // Definitions for our inlined functions.
 #include "native_client/src/trusted/validator_mips/model-inl.h"

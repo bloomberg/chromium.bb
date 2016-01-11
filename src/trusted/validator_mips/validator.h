@@ -274,6 +274,14 @@ class DecodedInstruction {
     return decoder_->IsLoadStore();
   }
 
+  bool IsLoadWord() const {
+    return decoder_->IsLoadWord();
+  }
+
+  uint32_t GetImm() const {
+    return decoder_->GetImm(inst_);
+  }
+
   bool IsDirectJump() const {
     return decoder_->IsDirectJump();
   }
@@ -385,6 +393,9 @@ const char * const kProblemBranchSplitsPattern = "kProblemBranchSplitsPattern";
 const char * const kProblemBranchInvalidDest = "kProblemBranchInvalidDest";
 // A load/store uses an unsafe (non-masked) base address.
 const char * const kProblemUnsafeLoadStore = "kProblemUnsafeLoadStore";
+// A thread pointer load/store is unsafe.
+const char * const kProblemUnsafeLoadStoreThreadPointer =
+    "kProblemUnsafeLoadStoreThreadPointer";
 // An instruction updates a data-address register (e.g. SP) without masking.
 const char * const kProblemUnsafeDataWrite = "kProblemUnsafeDataWrite";
 // An instruction updates a read-only register (e.g. t6, t7, t8).

@@ -216,6 +216,33 @@ static PatternMatch CheckLoadStore(const SfiValidator &sfi,
 
 
 /*
+ * A thread pointer access is only allowed by these two instructions:
+ * lw Rn, 0($t8)  ; load user thread pointer.
+ * lw Rn, 4($t8)  ; load IRT thread pointer.
+ */
+static PatternMatch CheckLoadThreadPointer(const SfiValidator &sfi,
+                                           const DecodedInstruction &instr,
+                                           ProblemSink *out) {
+  UNREFERENCED_PARAMETER(sfi);
+  if (!instr.IsLoadStore())
+    return NO_MATCH;
+
+  Register base_addr_reg = instr.BaseAddressRegister();
+  if (!base_addr_reg.Equals(Register::Tls()))
+    return NO_MATCH;
+
+  if (instr.IsLoadWord()) {
+    uint32_t offset = instr.GetImm();
+    if (offset == 0 || offset == 4)
+      return PATTERN_SAFE;
+  }
+
+  out->ReportProblem(instr.addr(), instr.safety(),
+                     kProblemUnsafeLoadStoreThreadPointer);
+  return PATTERN_UNSAFE;
+}
+
+/*
  * Checks if there is jump/branch in the delay slot.
  */
 static PatternMatch CheckBranchInDelaySlot(const SfiValidator &sfi,
@@ -423,7 +450,8 @@ bool SfiValidator::ApplyPatterns(const DecodedInstruction &inst,
     &CheckSafety,
     &CheckReadOnly,
     &CheckCallPosition,
-    &CheckJumpDestAddr
+    &CheckJumpDestAddr,
+    &CheckLoadThreadPointer
   };
 
   bool complete_success = true;

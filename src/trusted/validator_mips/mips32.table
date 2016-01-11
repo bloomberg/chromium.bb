@@ -62,7 +62,7 @@ opcode(31:26)
 100000  =Load            #  lb
 100001  =Load            #  lh
 100010  =Load            #  lwl
-100011  =Load            #  lw
+100011  =LoadWord        #  lw
 100100  =Load            #  lbu
 100101  =Load            #  lhu
 100110  =Load            #  lwr

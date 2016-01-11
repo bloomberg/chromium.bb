@@ -28,6 +28,7 @@ struct DecoderState {
   const BranchAndLink _BranchAndLink_instance;
   const JalReg _JalReg_instance;
   const NaClHalt _NaClHalt_instance;
+  const LoadWord _LoadWord_instance;
   const StoreConditional _StoreConditional_instance;
   const FPLoadStore _FPLoadStore_instance;
   const JmpImm _JmpImm_instance;
@@ -45,6 +46,7 @@ struct DecoderState {
   , _BranchAndLink_instance()
   , _JalReg_instance()
   , _NaClHalt_instance()
+  , _LoadWord_instance()
   , _StoreConditional_instance()
   , _FPLoadStore_instance()
   , _JmpImm_instance()
@@ -192,8 +194,8 @@ static inline const ClassDecoder
     return decode_special3(insn, state);
   }
 
-  if (((insn & 0xFC000000) == 0x98000000)) {
-    return state->_Load_instance;
+  if (((insn & 0xFC000000) == 0x8C000000)) {
+    return state->_LoadWord_instance;
   }
 
   if (((insn & 0xFC000000) == 0xB8000000)) {
@@ -220,7 +222,7 @@ static inline const ClassDecoder
     return state->_Arithm2_instance;
   }
 
-  if (((insn & 0xF8000000) == 0x90000000)) {
+  if (((insn & 0xEC000000) == 0x88000000)) {
     return state->_Load_instance;
   }
 
@@ -256,7 +258,7 @@ static inline const ClassDecoder
     return state->_Forbidden_instance;
   }
 
-  if (((insn & 0xF0000000) == 0x80000000)) {
+  if (((insn & 0xE8000000) == 0x80000000)) {
     return state->_Load_instance;
   }
 

@@ -97,6 +97,7 @@ if env.Bit('linux'):
     'test_read_only_regs': 1,
     'test_invalid_dest': 1,
     'test_unpredicted': 1,
+    'test_tp_access': 1,
   }
 
   if env.Bit('build_mips32'):

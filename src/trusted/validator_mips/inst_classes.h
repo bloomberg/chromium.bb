@@ -136,6 +136,13 @@ class ClassDecoder {
   }
 
   /*
+   * For lw instruction.
+   */
+  virtual bool IsLoadWord() const {
+    return false;
+  }
+
+  /*
    * For direct jumps, returning the destination address.
    */
   virtual uint32_t DestAddr(const Instruction instr, uint32_t addr) const {
@@ -171,12 +178,12 @@ class ClassDecoder {
  * Current MIPS NaCl halt (break).
  */
 class NaClHalt : public ClassDecoder {
-  public:
-    virtual ~NaClHalt() {}
-    virtual SafetyLevel safety(const Instruction instr) const {
-      UNREFERENCED_PARAMETER(instr);
-      return MAY_BE_SAFE;
-    }
+ public:
+  virtual ~NaClHalt() {}
+  virtual SafetyLevel safety(const Instruction instr) const {
+    UNREFERENCED_PARAMETER(instr);
+    return MAY_BE_SAFE;
+  }
 };
 
 /*
@@ -288,6 +295,9 @@ class AbstractLoadStore : public ClassDecoder {
   virtual Register BaseAddressRegister(const Instruction instr) const {
     return instr.Reg(25, 21);
   }
+  virtual uint32_t GetImm(const Instruction instr) const {
+    return instr.Bits(15, 0);
+  }
 };
 
 /*
@@ -310,6 +320,17 @@ class Load : public AbstractLoadStore {
 };
 
 /*
+ * Load word instruction, for loading thread pointer.
+ */
+class LoadWord : public Load {
+ public:
+  virtual ~LoadWord() {}
+  virtual bool IsLoadWord() const {
+    return true;
+  }
+};
+
+  /*
  * Floating point load and store instructions.
  */
 class FPLoadStore : public AbstractLoadStore {
@@ -432,6 +453,6 @@ class Unrecognized : public ClassDecoder {
     return FORBIDDEN;
   }
 };
-}  // namespace
+}  // namespace nacl_mips_dec
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_MIPS_INST_CLASSES_H
