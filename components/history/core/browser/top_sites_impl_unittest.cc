@@ -970,16 +970,16 @@ TEST_F(TopSitesImplTest, DeleteNotifications) {
 
 // Makes sure GetUpdateDelay is updated appropriately.
 TEST_F(TopSitesImplTest, GetUpdateDelay) {
-#if defined(OS_IOS)
+#if defined(OS_IOS) || defined(OS_ANDROID)
   const int64_t kExpectedUpdateDelayInSecondEmpty = 30;
-  const int64_t kExpectedUpdateDelayInSecond0Changed = 5;
-  const int64_t kExpectedUpdateDelayInSecond3Changed = 5;
-  const int64_t kExpectedUpdateDelayInSecond20Changed = 1;
+  const int64_t kExpectedUpdateDelayInMinute0Changed = 1;
+  const int64_t kExpectedUpdateDelayInMinute3Changed = 1;
+  const int64_t kExpectedUpdateDelayInMinute20Changed = 1;
 #else
   const int64_t kExpectedUpdateDelayInSecondEmpty = 30;
-  const int64_t kExpectedUpdateDelayInSecond0Changed = 60;
-  const int64_t kExpectedUpdateDelayInSecond3Changed = 52;
-  const int64_t kExpectedUpdateDelayInSecond20Changed = 1;
+  const int64_t kExpectedUpdateDelayInMinute0Changed = 60;
+  const int64_t kExpectedUpdateDelayInMinute3Changed = 52;
+  const int64_t kExpectedUpdateDelayInMinute20Changed = 1;
 #endif
 
   SetLastNumUrlsChanged(0);
@@ -995,13 +995,13 @@ TEST_F(TopSitesImplTest, GetUpdateDelay) {
   SetTopSites(url_list);
   EXPECT_EQ(20u, last_num_urls_changed());
   SetLastNumUrlsChanged(0);
-  EXPECT_EQ(kExpectedUpdateDelayInSecond0Changed, GetUpdateDelay().InMinutes());
+  EXPECT_EQ(kExpectedUpdateDelayInMinute0Changed, GetUpdateDelay().InMinutes());
 
   SetLastNumUrlsChanged(3);
-  EXPECT_EQ(kExpectedUpdateDelayInSecond3Changed, GetUpdateDelay().InMinutes());
+  EXPECT_EQ(kExpectedUpdateDelayInMinute3Changed, GetUpdateDelay().InMinutes());
 
   SetLastNumUrlsChanged(20);
-  EXPECT_EQ(kExpectedUpdateDelayInSecond20Changed,
+  EXPECT_EQ(kExpectedUpdateDelayInMinute20Changed,
             GetUpdateDelay().InMinutes());
 }
 
