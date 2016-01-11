@@ -312,14 +312,28 @@
               ],
               'link_settings': {
                 'libraries': [
-                  '-lm',
-                  '-lz',
                 ],
               },
               'conditions': [
                 ['OS != "android"', {
                   'link_settings': {
+                    # OS=android requires that both -lz and -lm occur
+                    # after -lc++_shared on the link command
+                    # line. Android link rules already include -lm, and
+                    # we get -lz as a transitive dependency of
+                    # libandroid.so, so simply moving both to the
+                    # non-Android section solves the problem.
+                    #
+                    # The root cause of this problem is certain system
+                    # libraries (libm starting with MNC and libz before
+                    # MNC, among others) re-export the libgcc unwinder,
+                    # and libc++ exports the libc++abi unwinder. As we
+                    # build against libc++ headers, libc++ must be the
+                    # first in the runtime symbol lookup order (among
+                    # all unwinder-providing libraries).
                     'libraries': [
+                      '-lm',
+                      '-lz',
                       '-lrt',
                     ],
                   },

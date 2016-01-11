@@ -237,13 +237,22 @@ source_set("ffmpeg_internal") {
     ldflags = [
       "-L", rebase_path(target_gen_dir, root_build_dir),
     ]
-    libs = [
-      "m",
-      "z",
-    ]
     if (!is_android) {
-      # for clock_gettime on precise
-      libs += [ "rt" ]
+      # OS=android requires that both -lz and -lm occur after
+      # -lc++_shared on the link command line. Android link rules
+      # already include -lm, and we get -lz as a transitive dependency
+      # of libandroid.so, so simply moving both to the non-Android
+      # section solves the problem.
+      #
+      # The root cause of this problem is certain system libraries
+      # (libm starting with MNC and libz before MNC, among others)
+      # re-export the libgcc unwinder, and libc++ exports the
+      # libc++abi unwinder. As we build against libc++ headers, libc++
+      # must be the first in the runtime symbol lookup order (among
+      # all unwinder-providing libraries).
+
+      # librt for clock_gettime on precise
+      libs += [ "m", "z", "rt" ]
     }
     if (is_component_ffmpeg) {
       # Export all symbols when building as component.
