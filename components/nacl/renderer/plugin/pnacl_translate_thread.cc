@@ -16,7 +16,6 @@
 #include "components/nacl/renderer/plugin/utility.h"
 #include "content/public/common/sandbox_init.h"
 #include "native_client/src/shared/platform/nacl_sync_raii.h"
-#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -87,7 +86,6 @@ void PnaclTranslateThread::SetupState(
     const std::vector<TempFile*>* obj_files,
     int num_threads,
     TempFile* nexe_file,
-    nacl::DescWrapper* invalid_desc_wrapper,
     ErrorInfo* error_info,
     PP_PNaClOptions* pnacl_options,
     const std::string& architecture_attributes,
@@ -98,7 +96,6 @@ void PnaclTranslateThread::SetupState(
   obj_files_ = obj_files;
   num_threads_ = num_threads;
   nexe_file_ = nexe_file;
-  invalid_desc_wrapper_ = invalid_desc_wrapper;
   coordinator_error_info_ = error_info;
   pnacl_options_ = pnacl_options;
   architecture_attributes_ = architecture_attributes;

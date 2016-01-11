@@ -15,7 +15,6 @@
 #include "components/nacl/renderer/plugin/plugin_error.h"
 #include "components/nacl/renderer/plugin/pnacl_resources.h"
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
@@ -167,7 +166,6 @@ class PnaclCoordinator {
 
   // Object file, produced by the translator and consumed by the linker.
   std::vector<TempFile*> obj_files_;
-  nacl::scoped_ptr<nacl::DescWrapper> invalid_desc_wrapper_;
   // Number of split modules for llc.
   int split_module_count_;
   // Number of threads for llc / subzero.

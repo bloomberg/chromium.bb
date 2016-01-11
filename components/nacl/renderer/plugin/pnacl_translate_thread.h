@@ -21,11 +21,6 @@
 
 struct PP_PNaClOptions;
 
-namespace nacl {
-class DescWrapper;
-}
-
-
 namespace plugin {
 
 class NaClSubprocess;
@@ -46,7 +41,6 @@ class PnaclTranslateThread {
                   const std::vector<TempFile*>* obj_files,
                   int num_threads,
                   TempFile* nexe_file,
-                  nacl::DescWrapper* invalid_desc_wrapper,
                   ErrorInfo* error_info,
                   PP_PNaClOptions* pnacl_options,
                   const std::string& architecture_attributes,
@@ -148,7 +142,6 @@ class PnaclTranslateThread {
   const std::vector<TempFile*>* obj_files_;
   int num_threads_;
   TempFile* nexe_file_;
-  nacl::DescWrapper* invalid_desc_wrapper_;
   ErrorInfo* coordinator_error_info_;
   PP_PNaClOptions* pnacl_options_;
   std::string architecture_attributes_;

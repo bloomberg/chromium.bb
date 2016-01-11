@@ -20,7 +20,6 @@
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
-#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/module.h"
 
@@ -106,7 +105,6 @@ void Plugin::LoadHelperNaClModule(const std::string& helper_url,
 // failure. Note that module loading functions will log their own errors.
 bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   nacl_interface_->InitializePlugin(pp_instance(), argc, argn, argv);
-  wrapper_factory_ = new nacl::DescWrapperFactory();
   pp::CompletionCallback open_cb =
       callback_factory_.NewCallback(&Plugin::NaClManifestFileDidOpen);
   nacl_interface_->RequestNaClManifest(pp_instance(),
@@ -118,7 +116,6 @@ Plugin::Plugin(PP_Instance pp_instance)
     : pp::Instance(pp_instance),
       main_subprocess_("main subprocess", NULL),
       uses_nonsfi_mode_(false),
-      wrapper_factory_(NULL),
       nacl_interface_(NULL),
       uma_interface_(this) {
   callback_factory_.Initialize(this);
@@ -162,8 +159,6 @@ Plugin::~Plugin() {
   // though the Shutdown method may have been called, during the
   // lifetime of the service threads.
   ShutDownSubprocesses();
-
-  delete wrapper_factory_;
 }
 
 bool Plugin::HandleDocumentLoad(const pp::URLLoader& url_loader) {

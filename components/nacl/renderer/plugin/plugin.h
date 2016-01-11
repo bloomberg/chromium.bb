@@ -29,11 +29,6 @@
 #include "ppapi/cpp/view.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
-namespace nacl {
-class DescWrapper;
-class DescWrapperFactory;
-}  // namespace nacl
-
 namespace pp {
 class CompletionCallback;
 class URLLoader;
@@ -99,8 +94,6 @@ class Plugin : public pp::Instance {
   // Report an error that was encountered while loading a module.
   void ReportLoadError(const ErrorInfo& error_info);
 
-  nacl::DescWrapperFactory* wrapper_factory() const { return wrapper_factory_; }
-
   const PPB_NaCl_Private* nacl_interface() const { return nacl_interface_; }
 
  private:
@@ -144,8 +137,6 @@ class Plugin : public pp::Instance {
   NaClSubprocess main_subprocess_;
 
   bool uses_nonsfi_mode_;
-
-  nacl::DescWrapperFactory* wrapper_factory_;
 
   pp::CompletionCallbackFactory<Plugin> callback_factory_;
 

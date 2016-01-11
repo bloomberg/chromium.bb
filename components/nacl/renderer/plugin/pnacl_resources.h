@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "components/nacl/renderer/ppb_nacl_private.h"
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "ppapi/cpp/completion_callback.h"
 
 namespace plugin {
