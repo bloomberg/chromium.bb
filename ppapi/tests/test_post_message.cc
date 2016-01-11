@@ -132,23 +132,6 @@ bool VarsEqual(const pp::Var& expected,
   return VarsEqual(expected, actual, &visited_ids);
 }
 
-class ScopedArrayBufferSizeSetter {
- public:
-  ScopedArrayBufferSizeSetter(const PPB_Testing_Private* interface,
-                              PP_Instance instance,
-                              uint32_t threshold)
-     : interface_(interface),
-       instance_(instance) {
-    interface_->SetMinimumArrayBufferSizeForShmem(instance_, threshold);
-  }
-  ~ScopedArrayBufferSizeSetter() {
-    interface_->SetMinimumArrayBufferSizeForShmem(instance_, 0);
-  }
- private:
-  const PPB_Testing_Private* interface_;
-  PP_Instance instance_;
-};
-
 #define FINISHED_WAITING_MESSAGE "TEST_POST_MESSAGE_FINISHED_WAITING"
 
 }  // namespace

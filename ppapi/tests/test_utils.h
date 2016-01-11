@@ -296,4 +296,25 @@ do { \
 #define PPAPI_POSIX 1
 #endif
 
+// By default, ArrayBuffers over a certain size are sent via shared memory. In
+// order to test for this without sending huge buffers, tests can use this
+// class to set the minimum array buffer size used for shared memory temporarily
+// lower.
+class ScopedArrayBufferSizeSetter {
+ public:
+  ScopedArrayBufferSizeSetter(const PPB_Testing_Private* interface,
+                              PP_Instance instance,
+                              uint32_t threshold)
+     : interface_(interface),
+       instance_(instance) {
+    interface_->SetMinimumArrayBufferSizeForShmem(instance_, threshold);
+  }
+  ~ScopedArrayBufferSizeSetter() {
+    interface_->SetMinimumArrayBufferSizeForShmem(instance_, 0);
+  }
+ private:
+  const PPB_Testing_Private* interface_;
+  PP_Instance instance_;
+};
+
 #endif  // PPAPI_TESTS_TEST_UTILS_H_

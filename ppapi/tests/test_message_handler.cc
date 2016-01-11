@@ -221,6 +221,7 @@ bool TestMessageHandler::Init() {
 void TestMessageHandler::RunTests(const std::string& filter) {
   RUN_TEST(RegisterErrorConditions, filter);
   RUN_TEST(PostMessageAndAwaitResponse, filter);
+  RUN_TEST(ArrayBuffer, filter);
   RUN_TEST(Exceptions, filter);
 }
 
@@ -294,6 +295,40 @@ std::string TestMessageHandler::TestPostMessageAndAwaitResponse() {
     js_code += "  InternalError(\" Failed postMessageAndAwaitResponse for: ";
     js_code +=      values_to_test[i];
     js_code +=    " result: \" + result);\n";
+  }
+  instance_->EvalScript(js_code);
+  instance_->EvalScript("plugin.postMessage('FINISHED_TEST');\n");
+  handler.WaitForTestFinishedMessage();
+  handler.Unregister();
+  ASSERT_SUBTEST_SUCCESS(handler.WaitForDestroy());
+
+  PASS();
+}
+
+std::string TestMessageHandler::TestArrayBuffer() {
+  // Set the array buffer shared memory threshold so that some of the
+  // ArrayBuffer values will be sent as shared memory.
+  ScopedArrayBufferSizeSetter setter(testing_interface_,
+                                     instance_->pp_instance(),
+                                     200);
+  const char* const sizes[] = { "0", "128", "1024", "4096", NULL };
+  MyMessageHandler handler(instance(),
+                           handler_thread_.message_loop());
+  handler.Register();
+  std::string js_code("var plugin = document.getElementById('plugin');\n");
+  js_code += "var result = undefined;\n";
+  js_code += "var param = undefined;\n";
+  for (size_t i = 0; sizes[i]; ++i) {
+    js_code += "param = new ArrayBuffer(";
+    js_code += sizes[i];
+    js_code += ");";
+    // TODO(dmichael): It would be better to set specific values in param.
+    js_code += "result = plugin.postMessageAndAwaitResponse(param);";
+    js_code += "if (!deepCompare(result, param))\n";
+    js_code += "  InternalError(\" Failed postMessageAndAwaitResponse for ";
+    js_code += "ArrayBuffer of size: ";
+    js_code +=     sizes[i];
+    js_code += " result: \" + result);\n";
   }
   instance_->EvalScript(js_code);
   instance_->EvalScript("plugin.postMessage('FINISHED_TEST');\n");

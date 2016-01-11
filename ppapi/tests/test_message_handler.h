@@ -26,6 +26,7 @@ class TestMessageHandler : public TestCase {
 
   std::string TestRegisterErrorConditions();
   std::string TestPostMessageAndAwaitResponse();
+  std::string TestArrayBuffer();
   std::string TestExceptions();
 
   // Wait for HandleMessage to be called, and return the Var it received.
