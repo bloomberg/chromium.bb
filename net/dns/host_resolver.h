@@ -176,10 +176,9 @@ class NET_EXPORT HostResolver {
   // Used primarily to clear the cache and for getting debug information.
   virtual HostCache* GetHostCache();
 
-  // Returns the current DNS configuration |this| is using, as a Value, or NULL
-  // if it's configured to always use the system host resolver.  Caller takes
-  // ownership of the returned Value.
-  virtual base::Value* GetDnsConfigAsValue() const;
+  // Returns the current DNS configuration |this| is using, as a Value, or
+  // nullptr if it's configured to always use the system host resolver.
+  virtual scoped_ptr<base::Value> GetDnsConfigAsValue() const;
 
   // Creates a HostResolver implementation that queries the underlying system.
   // (Except if a unit-test has changed the global HostResolverProc using

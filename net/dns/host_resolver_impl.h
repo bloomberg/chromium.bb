@@ -138,7 +138,7 @@ class NET_EXPORT HostResolverImpl
   void CancelRequest(RequestHandle req) override;
   void SetDnsClientEnabled(bool enabled) override;
   HostCache* GetHostCache() override;
-  base::Value* GetDnsConfigAsValue() const override;
+  scoped_ptr<base::Value> GetDnsConfigAsValue() const override;
 
   void set_proc_params_for_test(const ProcTaskParams& proc_params) {
     proc_params_ = proc_params;

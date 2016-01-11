@@ -57,7 +57,7 @@ class NET_EXPORT MappedHostResolver : public HostResolver {
   void CancelRequest(RequestHandle req) override;
   void SetDnsClientEnabled(bool enabled) override;
   HostCache* GetHostCache() override;
-  base::Value* GetDnsConfigAsValue() const override;
+  scoped_ptr<base::Value> GetDnsConfigAsValue() const override;
 
  private:
   // Modify the request |info| according to |rules_|. Returns either OK or

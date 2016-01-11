@@ -8,6 +8,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/values.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config_service.h"
 #include "net/dns/host_cache.h"
@@ -106,8 +107,8 @@ HostCache* HostResolver::GetHostCache() {
   return NULL;
 }
 
-base::Value* HostResolver::GetDnsConfigAsValue() const {
-  return NULL;
+scoped_ptr<base::Value> HostResolver::GetDnsConfigAsValue() const {
+  return nullptr;
 }
 
 // static

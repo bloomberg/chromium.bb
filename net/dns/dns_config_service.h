@@ -74,10 +74,9 @@ struct NET_EXPORT_PRIVATE DnsConfig {
 
   void CopyIgnoreHosts(const DnsConfig& src);
 
-  // Returns a Value representation of |this|.  Caller takes ownership of the
-  // returned Value.  For performance reasons, the Value only contains the
-  // number of hosts rather than the full list.
-  base::Value* ToValue() const;
+  // Returns a Value representation of |this|. For performance reasons, the
+  // Value only contains the number of hosts rather than the full list.
+  scoped_ptr<base::Value> ToValue() const;
 
   bool IsValid() const {
     return !nameservers.empty();

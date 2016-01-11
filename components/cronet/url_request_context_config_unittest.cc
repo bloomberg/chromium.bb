@@ -4,6 +4,7 @@
 
 #include "components/cronet/url_request_context_config.h"
 
+#include "base/values.h"
 #include "net/cert/cert_verifier.h"
 #include "net/http/http_network_session.h"
 #include "net/proxy/proxy_config.h"
@@ -82,7 +83,7 @@ TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
   EXPECT_EQ(300, params->quic_idle_connection_timeout_seconds);
 
   // Check AsyncDNS resolver is enabled.
-  EXPECT_NE(nullptr, context->host_resolver()->GetDnsConfigAsValue());
+  EXPECT_TRUE(context->host_resolver()->GetDnsConfigAsValue());
 }
 
 }  // namespace cronet

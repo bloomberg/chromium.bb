@@ -402,7 +402,7 @@ scoped_ptr<base::Value> NetLogJobAttachCallback(
 scoped_ptr<base::Value> NetLogDnsConfigCallback(
     const DnsConfig* config,
     NetLogCaptureMode /* capture_mode */) {
-  return make_scoped_ptr(config->ToValue());
+  return config->ToValue();
 }
 
 scoped_ptr<base::Value> NetLogIPv6AvailableCallback(
@@ -2038,16 +2038,16 @@ HostCache* HostResolverImpl::GetHostCache() {
   return cache_.get();
 }
 
-base::Value* HostResolverImpl::GetDnsConfigAsValue() const {
+scoped_ptr<base::Value> HostResolverImpl::GetDnsConfigAsValue() const {
   // Check if async DNS is disabled.
   if (!dns_client_.get())
-    return NULL;
+    return nullptr;
 
   // Check if async DNS is enabled, but we currently have no configuration
   // for it.
   const DnsConfig* dns_config = dns_client_->GetConfig();
   if (dns_config == NULL)
-    return new base::DictionaryValue();
+    return make_scoped_ptr(new base::DictionaryValue());
 
   return dns_config->ToValue();
 }

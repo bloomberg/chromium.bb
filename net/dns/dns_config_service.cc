@@ -138,7 +138,7 @@ void DnsConfig::CopyIgnoreHosts(const DnsConfig& d) {
   use_local_ipv6 = d.use_local_ipv6;
 }
 
-base::Value* DnsConfig::ToValue() const {
+scoped_ptr<base::Value> DnsConfig::ToValue() const {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   base::ListValue* list = new base::ListValue();
@@ -161,7 +161,7 @@ base::Value* DnsConfig::ToValue() const {
   dict->SetBoolean("use_local_ipv6", use_local_ipv6);
   dict->SetInteger("num_hosts", hosts.size());
 
-  return dict.release();
+  return std::move(dict);
 }
 
 DnsConfigService::DnsConfigService()

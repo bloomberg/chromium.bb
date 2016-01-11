@@ -355,9 +355,9 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
     HostCache* cache = host_resolver->GetHostCache();
     if (cache) {
       scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-      base::Value* dns_config = host_resolver->GetDnsConfigAsValue();
+      scoped_ptr<base::Value> dns_config = host_resolver->GetDnsConfigAsValue();
       if (dns_config)
-        dict->Set("dns_config", dns_config);
+        dict->Set("dns_config", std::move(dns_config));
 
       base::DictionaryValue* cache_info_dict = new base::DictionaryValue();
 
