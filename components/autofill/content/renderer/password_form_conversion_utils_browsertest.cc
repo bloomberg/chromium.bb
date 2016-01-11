@@ -99,6 +99,29 @@ class PasswordFormBuilder {
         name_and_id, name_and_id, value);
   }
 
+  // Append a text field with "display: none".
+  void AddNonDisplayedTextField(const char* name_and_id,
+                                const char* value) {
+    // TODO(crbug.com/570628): Add tests with style="visibility: hidden;" too
+    // when IsWebNodeVisible in form_autofill_util.cc has changed according to
+    // esprehn's TODO in the function. Now tests with visibility attribute fail.
+    base::StringAppendF(
+            &html_,
+            "<INPUT type=\"text\" name=\"%s\" id=\"%s\" value=\"%s\""
+             "style=\"display: none;\"/>",
+            name_and_id, name_and_id, value);
+  }
+
+  // Append a password field with "display: none".
+  void AddNonDisplayedPasswordField(const char* name_and_id,
+                                    const char* value) {
+    base::StringAppendF(
+            &html_,
+            "<INPUT type=\"password\" name=\"%s\" id=\"%s\" value=\"%s\""
+            "style=\"display: none;\"/>",
+            name_and_id, name_and_id, value);
+  }
+
   // Appends a new submit-type field at the end of the form with the specified
   // |name|.
   void AddSubmitButton(const char* name) {
@@ -372,10 +395,10 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingTwoPasswordFields) {
     SCOPED_TRACE(testing::Message() << "Iteration " << i);
 
     PasswordFormBuilder builder(kTestFormActionURL);
-    builder.AddPasswordField("password1", cases[i].password_values[0], NULL);
     builder.AddTextField("username1", "William", NULL);
-    builder.AddPasswordField("password2", cases[i].password_values[1], NULL);
+    builder.AddPasswordField("password1", cases[i].password_values[0], NULL);
     builder.AddTextField("username2", "Smith", NULL);
+    builder.AddPasswordField("password2", cases[i].password_values[1], NULL);
     builder.AddSubmitButton("submit");
     std::string html = builder.ProduceHTML();
 
@@ -433,8 +456,8 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingThreePasswordFields) {
     SCOPED_TRACE(testing::Message() << "Iteration " << i);
 
     PasswordFormBuilder builder(kTestFormActionURL);
-    builder.AddPasswordField("password1", cases[i].password_values[0], NULL);
     builder.AddTextField("username1", "William", NULL);
+    builder.AddPasswordField("password1", cases[i].password_values[0], NULL);
     builder.AddPasswordField("password2", cases[i].password_values[1], NULL);
     builder.AddTextField("username2", "Smith", NULL);
     builder.AddPasswordField("password3", cases[i].password_values[2], NULL);
@@ -474,6 +497,8 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
     const char* expected_new_password_element;
     const char* expected_new_password_value;
     bool expected_new_password_marked_by_site;
+    const char* expected_username_element;
+    const char* expected_username_value;
   } cases[] = {
       // When there are elements marked with autocomplete='current-password',
       // but no elements with 'new-password', we should treat the first of the
@@ -481,87 +506,90 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
       // fields, assuming they are not intentionally not marked. They might be
       // for other purposes, such as PINs, OTPs, and the like. Actual values in
       // the password fields should be ignored in all cases below.
+      // Username is the element just before the first 'current-password' (even
+      // if 'new-password' comes earlier). If no 'current-password', then the
+      // element just before the first 'new-passwords'.
       {{"current-password", NULL, NULL},
-       "password1", "alpha", "", "", false},
+       "password1", "alpha", "", "", false, "username1", "William"},
       {{NULL, "current-password", NULL},
-       "password2", "beta", "", "", false},
+       "password2", "beta", "", "", false, "username2", "Smith"},
       {{NULL, NULL, "current-password"},
-       "password3", "gamma", "", "", false},
+       "password3", "gamma", "", "", false, "username2", "Smith"},
       {{NULL, "current-password", "current-password"},
-       "password2", "beta", "", "", false},
+       "password2", "beta", "", "", false, "username2", "Smith"},
       {{"current-password", NULL, "current-password"},
-       "password1", "alpha", "", "", false},
+       "password1", "alpha", "", "", false, "username1", "William"},
       {{"current-password", "current-password", NULL},
-       "password1", "alpha", "", "", false},
+       "password1", "alpha", "", "", false, "username1", "William"},
       {{"current-password", "current-password", "current-password"},
-       "password1", "alpha", "", "", false},
+       "password1", "alpha", "", "", false, "username1", "William"},
       // The same goes vice versa for autocomplete='new-password'.
       {{"new-password", NULL, NULL},
-       "", "", "password1", "alpha", true},
+       "", "", "password1", "alpha", true, "username1", "William"},
       {{NULL, "new-password", NULL},
-       "", "", "password2", "beta", true},
+       "", "", "password2", "beta", true, "username2", "Smith"},
       {{NULL, NULL, "new-password"},
-       "", "", "password3", "gamma", true},
+       "", "", "password3", "gamma", true, "username2", "Smith"},
       {{NULL, "new-password", "new-password"},
-       "", "", "password2", "beta", true},
+       "", "", "password2", "beta", true, "username2", "Smith"},
       {{"new-password", NULL, "new-password"},
-       "", "", "password1", "alpha", true},
+       "", "", "password1", "alpha", true, "username1", "William"},
       {{"new-password", "new-password", NULL},
-       "", "", "password1", "alpha", true},
+       "", "", "password1", "alpha", true, "username1", "William"},
       {{"new-password", "new-password", "new-password"},
-       "", "", "password1", "alpha", true},
+       "", "", "password1", "alpha", true, "username1", "William"},
       // When there is one element marked with autocomplete='current-password',
-      // and one with 'new-password', just comply, regardless of their order.
-      // Ignore the unmarked password field(s) for the same reason as above.
+      // and one with 'new-password', just comply. Ignore the unmarked password
+      // field(s) for the same reason as above.
       {{"current-password", "new-password", NULL},
-       "password1", "alpha", "password2", "beta", true},
+       "password1", "alpha", "password2", "beta", true, "username1", "William"},
       {{"current-password", NULL, "new-password"},
-       "password1", "alpha", "password3", "gamma", true},
+       "password1", "alpha", "password3", "gamma", true, "username1","William"},
       {{NULL, "current-password", "new-password"},
-       "password2", "beta", "password3", "gamma", true},
+       "password2", "beta", "password3", "gamma", true, "username2", "Smith"},
       {{"new-password", "current-password", NULL},
-       "password2", "beta", "password1", "alpha", true},
+       "password2", "beta", "password1", "alpha", true, "username2", "Smith"},
       {{"new-password", NULL, "current-password"},
-       "password3", "gamma", "password1", "alpha", true},
+       "password3", "gamma", "password1", "alpha", true, "username2","Smith"},
       {{NULL, "new-password", "current-password"},
-       "password3", "gamma", "password2", "beta", true},
+       "password3", "gamma", "password2", "beta", true, "username2", "Smith"},
       // In case of duplicated elements of either kind, go with the first one of
       // its kind.
       {{"current-password", "current-password", "new-password"},
-       "password1", "alpha", "password3", "gamma", true},
+       "password1", "alpha", "password3", "gamma", true, "username1","William"},
       {{"current-password", "new-password", "current-password"},
-       "password1", "alpha", "password2", "beta", true},
+       "password1", "alpha", "password2", "beta", true, "username1", "William"},
       {{"new-password", "current-password", "current-password"},
-       "password2", "beta", "password1", "alpha", true},
+       "password2", "beta", "password1", "alpha", true, "username2", "Smith"},
       {{"current-password", "new-password", "new-password"},
-       "password1", "alpha", "password2", "beta", true},
+       "password1", "alpha", "password2", "beta", true, "username1", "William"},
       {{"new-password", "current-password", "new-password"},
-       "password2", "beta", "password1", "alpha", true},
+       "password2", "beta", "password1", "alpha", true, "username2", "Smith"},
       {{"new-password", "new-password", "current-password"},
-       "password3", "gamma", "password1", "alpha", true},
+       "password3", "gamma", "password1", "alpha", true, "username2", "Smith"},
       // When there is an empty autocomplete attribute (i.e. autocomplete=""),
       // it should have the same effect as having no attribute whatsoever.
       {{"current-password", "", ""},
-       "password1", "alpha", "", "", false},
+       "password1", "alpha", "", "", false, "username1", "William"},
       {{"", "", "new-password"},
-       "", "", "password3", "gamma", true},
+       "", "", "password3", "gamma", true, "username2", "Smith"},
       {{"", "new-password", ""},
-       "", "", "password2", "beta", true},
+       "", "", "password2", "beta", true, "username2", "Smith"},
       {{"", "current-password", "current-password"},
-       "password2", "beta", "", "", false},
+       "password2", "beta", "", "", false, "username2", "Smith"},
       {{"new-password", "", "new-password"},
-       "", "", "password1", "alpha", true},
+       "", "", "password1", "alpha", true, "username1", "William"},
       {{"new-password", "", "current-password"},
-       "password3", "gamma", "password1", "alpha", true},
+       "password3", "gamma", "password1", "alpha", true, "username2","Smith"},
       // It should not matter if attribute values are upper or mixed case.
       {{NULL, "current-password", NULL},
-       "password2", "beta", "", "", false},
+       "password2", "beta", "", "", false, "username2", "Smith"},
       {{NULL, "CURRENT-PASSWORD", NULL},
-       "password2", "beta", "", "", false},
+       "password2", "beta", "", "", false, "username2", "Smith"},
       {{NULL, "new-password", NULL},
-       "", "", "password2", "beta", true},
+       "", "", "password2", "beta", true, "username2", "Smith"},
       {{NULL, "nEw-PaSsWoRd", NULL},
-       "", "", "password2", "beta", true}};
+       "", "", "password2", "beta", true, "username2", "Smith"}};
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(testing::Message() << "Iteration " << i);
@@ -569,10 +597,10 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
     PasswordFormBuilder builder(kTestFormActionURL);
     builder.AddPasswordField("pin1", "123456", NULL);
     builder.AddPasswordField("pin2", "789101", NULL);
-    builder.AddPasswordField("password1", "alpha", cases[i].autocomplete[0]);
     builder.AddTextField("username1", "William", NULL);
-    builder.AddPasswordField("password2", "beta", cases[i].autocomplete[1]);
+    builder.AddPasswordField("password1", "alpha", cases[i].autocomplete[0]);
     builder.AddTextField("username2", "Smith", NULL);
+    builder.AddPasswordField("password2", "beta", cases[i].autocomplete[1]);
     builder.AddPasswordField("password3", "gamma", cases[i].autocomplete[2]);
     builder.AddSubmitButton("submit");
     std::string html = builder.ProduceHTML();
@@ -583,12 +611,19 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
     ASSERT_TRUE(password_form);
 
     // In the absence of username autocomplete attributes, the username should
-    // be the text input field before the first password element.
-    // No constellation of password autocomplete attributes should change that.
-    EXPECT_EQ(base::UTF8ToUTF16("username1"), password_form->username_element);
-    EXPECT_EQ(base::UTF8ToUTF16("William"), password_form->username_value);
-    EXPECT_THAT(password_form->other_possible_usernames,
-                testing::ElementsAre(base::UTF8ToUTF16("Smith")));
+    // be the text input field just before 'current-password' or before
+    // 'new-password', if there is no 'current-password'.
+    EXPECT_EQ(base::UTF8ToUTF16(cases[i].expected_username_element),
+              password_form->username_element);
+    EXPECT_EQ(base::UTF8ToUTF16(cases[i].expected_username_value),
+              password_form->username_value);
+    if (strcmp(cases[i].expected_username_value, "William") == 0) {
+      EXPECT_THAT(password_form->other_possible_usernames,
+                  testing::ElementsAre(base::UTF8ToUTF16("Smith")));
+    } else {
+      EXPECT_THAT(password_form->other_possible_usernames,
+                  testing::ElementsAre(base::UTF8ToUTF16("William")));
+    }
     EXPECT_EQ(base::UTF8ToUTF16(cases[i].expected_password_element),
               password_form->password_element);
     EXPECT_EQ(base::UTF8ToUTF16(cases[i].expected_password_value),
@@ -600,6 +635,74 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
     EXPECT_EQ(cases[i].expected_new_password_marked_by_site,
               password_form->new_password_marked_by_site);
   }
+}
+
+TEST_F(MAYBE_PasswordFormConversionUtilsTest, IgnoreNonDisplayedTextFields) {
+  PasswordFormBuilder builder(kTestFormActionURL);
+
+  builder.AddNonDisplayedTextField("nondisplayed1", "nodispalyed_value1");
+  builder.AddTextField("username", "johnsmith", NULL);
+  builder.AddNonDisplayedTextField("nondisplayed2", "nodispalyed_value2");
+  builder.AddPasswordField("password", "secret", NULL);
+  builder.AddPasswordField("password", "secret", NULL);
+  builder.AddSubmitButton("submit");
+  std::string html = builder.ProduceHTML();
+
+  scoped_ptr<PasswordForm> password_form;
+  ASSERT_NO_FATAL_FAILURE(
+      LoadHTMLAndConvertForm(html, &password_form, nullptr));
+  ASSERT_TRUE(password_form);
+  EXPECT_EQ(base::UTF8ToUTF16("username"), password_form->username_element);
+  EXPECT_EQ(base::UTF8ToUTF16("johnsmith"), password_form->username_value);
+  EXPECT_EQ(base::UTF8ToUTF16(""), password_form->password_element);
+  EXPECT_EQ(base::UTF8ToUTF16("password"), password_form->new_password_element);
+  EXPECT_EQ(base::UTF8ToUTF16("secret"), password_form->new_password_value);
+}
+
+TEST_F(MAYBE_PasswordFormConversionUtilsTest, IgnoreNonDisplayedLoginPairs) {
+  PasswordFormBuilder builder(kTestFormActionURL);
+
+  builder.AddNonDisplayedTextField("nondisplayed1", "nodispalyed_value1");
+  builder.AddNonDisplayedPasswordField("nondisplayed2", "nodispalyed_value2");
+  builder.AddTextField("username", "johnsmith", NULL);
+  builder.AddNonDisplayedTextField("nondisplayed3", "nodispalyed_value3");
+  builder.AddNonDisplayedPasswordField("nondisplayed4", "nodispalyed_value4");
+  builder.AddPasswordField("password", "secret", NULL);
+  builder.AddPasswordField("password", "secret", NULL);
+  builder.AddSubmitButton("submit");
+  std::string html = builder.ProduceHTML();
+
+  scoped_ptr<PasswordForm> password_form;
+  ASSERT_NO_FATAL_FAILURE(
+      LoadHTMLAndConvertForm(html, &password_form, nullptr));
+  ASSERT_TRUE(password_form);
+  EXPECT_EQ(base::UTF8ToUTF16("username"), password_form->username_element);
+  EXPECT_EQ(base::UTF8ToUTF16("johnsmith"), password_form->username_value);
+  EXPECT_EQ(base::UTF8ToUTF16(""), password_form->password_element);
+  EXPECT_EQ(base::UTF8ToUTF16("password"), password_form->new_password_element);
+  EXPECT_EQ(base::UTF8ToUTF16("secret"), password_form->new_password_value);
+}
+
+TEST_F(MAYBE_PasswordFormConversionUtilsTest, OnlyNonDisplayedLoginPair) {
+  PasswordFormBuilder builder(kTestFormActionURL);
+
+  builder.AddNonDisplayedTextField("username", "William");
+  builder.AddNonDisplayedPasswordField("password", "secret");
+  builder.AddSubmitButton("submit");
+  std::string html = builder.ProduceHTML();
+
+  scoped_ptr<PasswordForm> password_form;
+  ASSERT_NO_FATAL_FAILURE(
+      LoadHTMLAndConvertForm(html, &password_form, nullptr));
+  ASSERT_TRUE(password_form);
+  EXPECT_EQ(base::UTF8ToUTF16("username"),
+            password_form->username_element);
+  EXPECT_EQ(base::UTF8ToUTF16("William"),
+            password_form->username_value);
+  EXPECT_EQ(base::UTF8ToUTF16("password"),
+            password_form->password_element);
+  EXPECT_EQ(base::UTF8ToUTF16("secret"),
+            password_form->password_value);
 }
 
 TEST_F(MAYBE_PasswordFormConversionUtilsTest, InvalidFormDueToBadActionURL) {

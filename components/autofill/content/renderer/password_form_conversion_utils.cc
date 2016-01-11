@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <string>
 
 #include "base/i18n/case_conversion.h"
@@ -136,6 +137,18 @@ void PopulateSyntheticFormFromWebForm(const WebFormElement& web_form,
                                           web_control_elements.end());
   synthetic_form->action = web_form.action();
   synthetic_form->document = web_form.document();
+}
+
+// Helper function that removes |username_element.value()| from the vector
+// |other_possible_usernames|, if the value presents in the vector.
+void ExcludeUsernameFromOtherUsernamesList(
+    const WebInputElement& username_element,
+    std::vector<base::string16>* other_possible_usernames) {
+  other_possible_usernames->erase(
+      std::remove(other_possible_usernames->begin(),
+                  other_possible_usernames->end(),
+                  username_element.value()),
+      other_possible_usernames->end());
 }
 
 // Helper to determine which password is the main (current) one, and which is
@@ -300,6 +313,19 @@ base::string16 FieldName(const WebInputElement& input_field,
   return field_name.empty() ? base::ASCIIToUTF16(dummy_name) : field_name;
 }
 
+bool FormContainsVisiblePasswordFields(const SyntheticForm& form) {
+  for (auto& control_element : form.control_elements) {
+    const WebInputElement* input_element = toWebInputElement(&control_element);
+    if (!input_element || !input_element->isEnabled())
+      continue;
+
+    if (input_element->isPasswordField() &&
+        form_util::IsWebNodeVisible(*input_element))
+      return true;
+  }
+  return false;
+}
+
 // Get information about a login form encapsulated in a PasswordForm struct.
 // If an element of |form| has an entry in |nonscript_modified_values|, the
 // associated string is used instead of the element's value to create
@@ -312,6 +338,8 @@ bool GetPasswordForm(const SyntheticForm& form,
   WebInputElement username_element;
   password_form->username_marked_by_site = false;
   std::vector<WebInputElement> passwords;
+  std::map<blink::WebInputElement, blink::WebInputElement>
+      last_text_input_before_password;
   std::vector<base::string16> other_possible_usernames;
 
   // Bail if this is a GAIA passwords site reauthentication form, so that
@@ -331,14 +359,15 @@ bool GetPasswordForm(const SyntheticForm& form,
 
   std::string layout_sequence;
   layout_sequence.reserve(form.control_elements.size());
-  bool visible_passwords_fields_found = false;
+  bool ignore_invisible_fields = FormContainsVisiblePasswordFields(form);
   for (size_t i = 0; i < form.control_elements.size(); ++i) {
     WebFormControlElement control_element = form.control_elements[i];
 
     WebInputElement* input_element = toWebInputElement(&control_element);
     if (!input_element || !input_element->isEnabled())
       continue;
-
+    if (ignore_invisible_fields && !form_util::IsWebNodeVisible(*input_element))
+      continue;
     if (input_element->isTextField()) {
       if (input_element->isPasswordField())
         layout_sequence.push_back('P');
@@ -363,17 +392,6 @@ bool GetPasswordForm(const SyntheticForm& form,
           nonscript_modified_values->find(*input_element) !=
               nonscript_modified_values->end()) ||
          password_marked_by_autocomplete_attribute)) {
-      if (form_util::IsWebNodeVisible(*input_element)) {
-        if (!visible_passwords_fields_found) {
-          // Remove all invisible passwords fields, we don't care about them
-          // anymore.
-          passwords.clear();
-          visible_passwords_fields_found = true;
-        }
-      } else {
-        if (visible_passwords_fields_found)
-          continue;
-      }
 
       // We add the field to the list of password fields if it was not flagged
       // as a special NOT_PASSWORD prediction by Autofill. The NOT_PASSWORD
@@ -388,20 +406,7 @@ bool GetPasswordForm(const SyntheticForm& form,
           possible_password_element_iterator->second !=
               PREDICTION_NOT_PASSWORD) {
         passwords.push_back(*input_element);
-      }
-      // If we have not yet considered any element to be the username so far,
-      // provisionally select the input element just before the first password
-      // element to be the username. This choice will be overruled if we later
-      // find an element with autocomplete='username'.
-      if (username_element.isNull() && !latest_input_element.isNull()) {
-        username_element = latest_input_element;
-        // Remove the selected username from other_possible_usernames.
-        if (!latest_input_element.value().isEmpty()) {
-          DCHECK(!other_possible_usernames.empty());
-          DCHECK_EQ(base::string16(latest_input_element.value()),
-                    other_possible_usernames.back());
-          other_possible_usernames.pop_back();
-        }
+        last_text_input_before_password[*input_element] = latest_input_element;
       }
     }
 
@@ -448,6 +453,23 @@ bool GetPasswordForm(const SyntheticForm& form,
       }
     }
   }
+
+  WebInputElement password;
+  WebInputElement new_password;
+  if (!LocateSpecificPasswords(passwords, &password, &new_password))
+    return false;
+
+  DCHECK_EQ(passwords.size(), last_text_input_before_password.size());
+  if (username_element.isNull()) {
+    if (!password.isNull())
+      username_element = last_text_input_before_password[password];
+    if (username_element.isNull() && !new_password.isNull())
+      username_element = last_text_input_before_password[new_password];
+    if (!username_element.isNull())
+      ExcludeUsernameFromOtherUsernamesList(username_element,
+                                            &other_possible_usernames);
+  }
+
   password_form->layout = SequenceToLayout(layout_sequence);
 
   WebInputElement predicted_username_element;
@@ -460,11 +482,8 @@ bool GetPasswordForm(const SyntheticForm& form,
   if (map_has_username_prediction &&
       (username_element_iterator == predicted_elements.end() ||
        username_element_iterator->second != PREDICTION_USERNAME)) {
-    auto it =
-        find(other_possible_usernames.begin(), other_possible_usernames.end(),
-             predicted_username_element.value());
-    if (it != other_possible_usernames.end())
-      other_possible_usernames.erase(it);
+    ExcludeUsernameFromOtherUsernamesList(predicted_username_element,
+                                          &other_possible_usernames);
     if (!username_element.isNull()) {
       other_possible_usernames.push_back(username_element.value());
     }
@@ -494,11 +513,6 @@ bool GetPasswordForm(const SyntheticForm& form,
     }
     password_form->username_value = username_value;
   }
-
-  WebInputElement password;
-  WebInputElement new_password;
-  if (!LocateSpecificPasswords(passwords, &password, &new_password))
-    return false;
 
   password_form->origin =
       form_util::GetCanonicalOriginForDocument(form.document);
