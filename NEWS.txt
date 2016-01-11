@@ -31,6 +31,38 @@ New in SVN
         representable using an Int64, or asDouble() combined with minInt64 and
         maxInt64 to figure out whether it is approximately representable.
 
+* Value
+  - Patch #10: BOOST_FOREACH compatibility. Made Json::iterator more 
+    standard compliant, added missing iterator_category and value_type 
+	typedefs (contribued by Robert A. Iannucci).
+		
+* Compilation
+
+  - New CMake based build system. Based in part on contribution from
+    Igor Okulist and Damien Buhl (Patch #14).
+    
+  - New header json/version.h now contains version number macros
+    (JSONCPP_VERSION_MAJOR, JSONCPP_VERSION_MINOR, JSONCPP_VERSION_PATCH
+    and JSONCPP_VERSION_HEXA).
+
+  - Patch #11: added missing JSON_API on some classes causing link issues
+    when building as a dynamic library on Windows 
+	(contributed by Francis Bolduc).
+    
+  - Visual Studio DLL: suppressed warning "C4251: <data member>: <type> 
+    needs to have dll-interface to be used by..." via pragma push/pop
+    in json-cpp headers.
+    
+  - Added Travis CI intregration: https://travis-ci.org/blep/jsoncpp-mirror
+		
+* Bug fixes
+  - Patch #15: Copy constructor does not initialize allocated_ for stringValue
+    (contributed by rmongia).
+
+  - Patch #16: Missing field copy in Json::Value::iterator causing infinite 
+    loop when using experimental internal map (#define JSON_VALUE_USE_INTERNAL_MAP)
+	(contributed by Ming-Lin Kao).
+		
 
   New in JsonCpp 0.6.0:
   ---------------------
