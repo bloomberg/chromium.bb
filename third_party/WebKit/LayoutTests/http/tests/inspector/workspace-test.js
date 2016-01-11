@@ -62,7 +62,7 @@ InspectorTest.createMockTarget = function(id, debuggerModelConstructor)
         __proto__: WebInspector.Target.prototype
     }
 
-    var target = new MockTarget("mock-target-" + id, new InspectorBackendClass.StubConnection());
+    var target = new MockTarget("mock-target-" + id, new WebInspector.StubConnection());
     InspectorTest.testTargetManager.addTarget(target);
     return target;
 }

@@ -9,7 +9,7 @@ function test()
     var scriptURL = "http://127.0.0.1:8000/inspector/service-workers/resources/service-worker-empty.js";
     var scope = "http://127.0.0.1:8000/inspector/service-workers/resources/scope1/";
 
-    InspectorTest.addSniffer(InspectorBackendClass.MainConnection.prototype, "sendMessage", function(message) {
+    InspectorTest.addSniffer(WebInspector.MainConnection.prototype, "sendMessage", function(message) {
         var messageString = JSON.stringify(message);
         if (!messageString.includes("ServiceWorker.sendMessage"))
             return;

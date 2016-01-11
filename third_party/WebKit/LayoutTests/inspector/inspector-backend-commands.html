@@ -65,7 +65,7 @@ function test()
             ]
         }]
     }]};
-    var commands = InspectorBackendClass._generateCommands(inspectorJson);
+    var commands = WebInspector.InspectorBackendHostedMode.generateCommands(inspectorJson);
     eval(commands);
 
     var sendMessageToBackendOriginal = InspectorFrontendHost.sendMessageToBackend;

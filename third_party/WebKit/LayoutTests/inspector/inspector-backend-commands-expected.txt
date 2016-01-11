@@ -1,6 +1,6 @@
 Tests correctness of promisified protocol commands.
 
-error: Request with id = ## failed. {"message":"this is the error message"}
+error: Request Profiler.commandError failed. {"message":"this is the error message"}
 commandError: then result: ["this is the error message"]
 commandArgs0: then result: [null]
 error: Protocol Error: Optional callback argument for method 'Profiler.commandArgs0' call must be a function but its type is 'number'.
