@@ -10,18 +10,18 @@
   <template>
     <template is="dom-repeat" items="[[startupPages_]]">
       <div class="list-item">
-        <paper-icon-item>
-          <iron-icon icon="image:brightness-1" item-icon></iron-icon>
+        <iron-icon icon="image:brightness-1"
+            item-icon></iron-icon>
+        <div>
           <div>[[item.title]]</div>
           <div>[[item.url]]</div>
-          <iron-icon on-tap="onRemoveUrlTap_" icon="clear">
-          </iron-icon>
-        </paper-icon-item>
+        </div>
+        <iron-icon on-tap="onRemoveUrlTap_" icon="clear"></iron-icon>
       </div>
     </template>
     <div class="list-item">
       <paper-button class="link-button" on-tap="onAddPageTap_"
-          i18n-content="onStartupSetPages">
+          i18n-content="onStartupAddNewPage">
       </paper-button>
     </div>
     <div class="list-item">
@@ -33,14 +33,14 @@
     <paper-dialog modal id="addUrlDialog" class="layout vertical">
       <div id="dialog-content">
         <div class="top-row">
-          <div class="title" i18n-content="onStartupAddPage"></div>
+          <div class="title" i18n-content="onStartupAddNewPage"></div>
           <paper-icon-button icon="clear" on-tap="onCancelTap_" id="close">
           </paper-icon-button>
         </div>
         <div class="body">
           <div class="explanation">
             <paper-input class="flex" always-float-label
-                i18n-values="label:onStartupEnterUrl" value="{{newUrl}}">
+                i18n-values="label:onStartupSiteUrl" value="{{newUrl}}">
             </paper-input>
           </div>
           <div class="button-container">
@@ -48,7 +48,7 @@
               <paper-button class="cancel-button" on-tap="onCancelTap_"
                   id="cancel" i18n-content="cancel"></paper-button>
               <paper-button class="action-button" id="addUrlButton"
-                  on-tap="onOkTap_" i18n-content="okButton">
+                  on-tap="onOkTap_" i18n-content="addLabel">
               </paper-button>
             </div>
           </div>

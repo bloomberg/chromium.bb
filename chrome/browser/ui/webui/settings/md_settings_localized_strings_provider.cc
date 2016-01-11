@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/settings/md_settings_localized_strings_provider.h"
 
+#include <string>
+
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -459,20 +461,14 @@ void AddOnStartupStrings(content::WebUIDataSource* html_source) {
       "onStartupOpenSpecific",
       IDS_SETTINGS_ON_STARTUP_OPEN_SPECIFIC);
   html_source->AddLocalizedString(
-      "onStartupAddPage",
-      IDS_SETTINGS_ON_STARTUP_ADD_PAGE);
-  html_source->AddLocalizedString(
-      "onStartupSetPages",
-      IDS_SETTINGS_ON_STARTUP_SET_PAGES);
-  html_source->AddLocalizedString(
       "onStartupUseCurrent",
       IDS_SETTINGS_ON_STARTUP_USE_CURRENT);
   html_source->AddLocalizedString(
       "onStartupAddNewPage",
       IDS_SETTINGS_ON_STARTUP_ADD_NEW_PAGE);
   html_source->AddLocalizedString(
-      "onStartupEnterUrl",
-      IDS_SETTINGS_ON_STARTUP_ENTER_URL);
+      "onStartupSiteUrl",
+      IDS_SETTINGS_ON_STARTUP_SITE_URL);
 }
 
 void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {

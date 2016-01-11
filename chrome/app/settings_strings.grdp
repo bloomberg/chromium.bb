@@ -325,20 +325,14 @@
   <message name="IDS_SETTINGS_ON_STARTUP_OPEN_SPECIFIC" desc="Radio button option to open a specific set of pages.">
     Open a specific page or set of pages
   </message>
-  <message name="IDS_SETTINGS_ON_STARTUP_ADD_PAGE" desc="Button to add a page.">
-    Add Page
-  </message>
-  <message name="IDS_SETTINGS_ON_STARTUP_SET_PAGES" desc="Button to set pages.">
-    Set Pages
-  </message>
   <message name="IDS_SETTINGS_ON_STARTUP_USE_CURRENT" desc="Button to use current pages.">
-    Use Current Pages
+    Use current pages
   </message>
   <message name="IDS_SETTINGS_ON_STARTUP_ADD_NEW_PAGE" desc="Entry prompt to add a new page.">
     Add a new page
   </message>
-  <message name="IDS_SETTINGS_ON_STARTUP_ENTER_URL" desc="Example entry prompt to add a new page.">
-    Enter URL...
+  <message name="IDS_SETTINGS_ON_STARTUP_SITE_URL" desc="Prompt to add a new page.">
+    Site URL
   </message>
 
   <!-- Languages Page -->
