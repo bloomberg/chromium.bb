@@ -50,7 +50,6 @@ public:
     unsigned vendorID(bool& isNull);
     unsigned productID(bool& isNull);
     unsigned productVersion(bool& isNull);
-    bool paired();
     Vector<String> uuids();
 
 private:

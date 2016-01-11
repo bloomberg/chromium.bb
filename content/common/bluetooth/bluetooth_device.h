@@ -28,7 +28,6 @@ struct CONTENT_EXPORT BluetoothDevice {
                   uint16_t vendor_id,
                   uint16_t product_id,
                   uint16_t product_version,
-                  bool paired,
                   const std::vector<std::string>& uuids);
   ~BluetoothDevice();
 
@@ -51,7 +50,6 @@ struct CONTENT_EXPORT BluetoothDevice {
   uint16_t vendor_id;
   uint16_t product_id;
   uint16_t product_version;
-  bool paired;
   std::vector<std::string> uuids;  // 128bit UUIDs with dashes. 36 chars.
 };
 

@@ -310,7 +310,6 @@ interface BluetoothDevice
     getter id
     getter instanceID
     getter name
-    getter paired
     getter productID
     getter productVersion
     getter uuids

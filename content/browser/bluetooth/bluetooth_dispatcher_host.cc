@@ -1123,7 +1123,6 @@ void BluetoothDispatcherHost::FinishClosingChooser(
       device->GetVendorID(),          // vendor_id
       device->GetProductID(),         // product_id
       device->GetDeviceID(),          // product_version
-      device->IsPaired(),             // paired
       content::BluetoothDevice::UUIDsFromBluetoothUUIDs(
           device->GetUUIDs()));  // uuids
   RecordRequestDeviceOutcome(UMARequestDeviceOutcome::SUCCESS);

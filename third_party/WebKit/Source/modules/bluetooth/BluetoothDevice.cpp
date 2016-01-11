@@ -69,11 +69,6 @@ unsigned BluetoothDevice::productVersion(bool& isNull)
     return m_webDevice->productVersion;
 }
 
-bool BluetoothDevice::paired()
-{
-    return m_webDevice->paired;
-}
-
 Vector<String> BluetoothDevice::uuids()
 {
     Vector<String> uuids(m_webDevice->uuids.size());

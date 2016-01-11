@@ -19,7 +19,6 @@ BluetoothDevice::BluetoothDevice()
       vendor_id(0),
       product_id(0),
       product_version(0),
-      paired(false),
       uuids() {}
 
 BluetoothDevice::BluetoothDevice(
@@ -32,7 +31,6 @@ BluetoothDevice::BluetoothDevice(
     uint16_t vendor_id,
     uint16_t product_id,
     uint16_t product_version,
-    bool paired,
     const std::vector<std::string>& uuids)
     : id(id),
       name(name),
@@ -43,7 +41,6 @@ BluetoothDevice::BluetoothDevice(
       vendor_id(vendor_id),
       product_id(product_id),
       product_version(product_version),
-      paired(paired),
       uuids(uuids) {}
 
 BluetoothDevice::~BluetoothDevice() {

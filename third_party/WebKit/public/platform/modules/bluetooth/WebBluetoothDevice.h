@@ -27,7 +27,6 @@ struct WebBluetoothDevice {
         uint16_t vendorID,
         uint16_t productID,
         uint16_t productVersion,
-        bool paired,
         const WebVector<WebString>& uuids)
         : id(id)
         , name(name)
@@ -38,7 +37,6 @@ struct WebBluetoothDevice {
         , vendorID(vendorID)
         , productID(productID)
         , productVersion(productVersion)
-        , paired(paired)
         , uuids(uuids)
     {
     }
@@ -55,7 +53,6 @@ struct WebBluetoothDevice {
     const uint16_t vendorID;
     const uint16_t productID;
     const uint16_t productVersion;
-    const bool paired;
     const WebVector<WebString> uuids;
 };
 
