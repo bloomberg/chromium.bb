@@ -12,11 +12,12 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "base/thread_task_runner_handle.h"
 #include "remoting/host/client_session.h"
 #include "remoting/proto/control.pb.h"
-#include "remoting/protocol/chromium_port_allocator.h"
 #include "remoting/protocol/client_stub.h"
+#include "remoting/protocol/port_allocator_factory.h"
+#include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/webrtc_video_capturer_adapter.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "third_party/libjingle/source/talk/app/webrtc/test/fakeconstraints.h"
@@ -169,17 +170,12 @@ CastExtensionSession::~CastExtensionSession() {
 
 // static
 scoped_ptr<CastExtensionSession> CastExtensionSession::Create(
-    scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
-    const protocol::NetworkSettings& network_settings,
+    scoped_refptr<protocol::TransportContext> transport_context,
     ClientSessionControl* client_session_control,
     protocol::ClientStub* client_stub) {
   scoped_ptr<CastExtensionSession> cast_extension_session(
-      new CastExtensionSession(caller_task_runner,
-                               url_request_context_getter,
-                               network_settings,
-                               client_session_control,
-                               client_stub));
+      new CastExtensionSession(transport_context,
+                               client_session_control, client_stub));
   if (!cast_extension_session->WrapTasksAndSave() ||
       !cast_extension_session->InitializePeerConnection()) {
     return nullptr;
@@ -300,14 +296,11 @@ bool CastExtensionSession::OnExtensionMessage(
 // Private methods ------------------------------------------------------------
 
 CastExtensionSession::CastExtensionSession(
-    scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
-    const protocol::NetworkSettings& network_settings,
+    scoped_refptr<protocol::TransportContext> transport_context,
     ClientSessionControl* client_session_control,
     protocol::ClientStub* client_stub)
-    : caller_task_runner_(caller_task_runner),
-      url_request_context_getter_(url_request_context_getter),
-      network_settings_(network_settings),
+    : caller_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      transport_context_(transport_context),
       client_session_control_(client_session_control),
       client_stub_(client_stub),
       stats_observer_(CastStatsObserver::Create()),
@@ -317,7 +310,6 @@ CastExtensionSession::CastExtensionSession(
       worker_thread_wrapper_(nullptr),
       worker_thread_(kWorkerThreadName) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  DCHECK(url_request_context_getter_.get());
   DCHECK(client_session_control_);
   DCHECK(client_stub_);
 
@@ -490,7 +482,8 @@ bool CastExtensionSession::InitializePeerConnection() {
                            webrtc::MediaConstraintsInterface::kValueTrue);
 
   scoped_ptr<cricket::PortAllocator> port_allocator =
-      protocol::ChromiumPortAllocator::Create(url_request_context_getter_);
+      transport_context_->port_allocator_factory()->CreatePortAllocator(
+          transport_context_);
 
   webrtc::PeerConnectionInterface::RTCConfiguration rtc_config;
   peer_connection_ = peer_conn_factory_->CreatePeerConnection(

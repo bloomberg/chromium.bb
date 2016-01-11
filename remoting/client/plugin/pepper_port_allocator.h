@@ -18,9 +18,12 @@ namespace remoting {
 // client plugin. It uses Pepper URLLoader API when creating relay sessions.
 class PepperPortAllocator : public protocol::PortAllocatorBase {
  public:
-  static scoped_ptr<PepperPortAllocator> Create(
-      const pp::InstanceHandle& instance);
+  PepperPortAllocator(
+      scoped_refptr<protocol::TransportContext> transport_context,
+      pp::InstanceHandle pp_instance);
   ~PepperPortAllocator() override;
+
+  pp::InstanceHandle pp_instance() { return pp_instance_; }
 
   // PortAllocatorBase overrides.
   cricket::PortAllocatorSession* CreateSessionInternal(
@@ -30,12 +33,7 @@ class PepperPortAllocator : public protocol::PortAllocatorBase {
       const std::string& ice_password) override;
 
  private:
-  PepperPortAllocator(
-      const pp::InstanceHandle& instance,
-      scoped_ptr<rtc::NetworkManager> network_manager,
-      scoped_ptr<rtc::PacketSocketFactory> socket_factory);
-
-  pp::InstanceHandle instance_;
+  pp::InstanceHandle pp_instance_;
   scoped_ptr<rtc::NetworkManager> network_manager_;
   scoped_ptr<rtc::PacketSocketFactory> socket_factory_;
 
@@ -44,14 +42,15 @@ class PepperPortAllocator : public protocol::PortAllocatorBase {
 
 class PepperPortAllocatorFactory : public protocol::PortAllocatorFactory {
  public:
-  PepperPortAllocatorFactory(const pp::InstanceHandle& instance);
+  PepperPortAllocatorFactory(pp::InstanceHandle pp_instance);
   ~PepperPortAllocatorFactory() override;
 
    // PortAllocatorFactory interface.
-  scoped_ptr<protocol::PortAllocatorBase> CreatePortAllocator() override;
+  scoped_ptr<cricket::PortAllocator> CreatePortAllocator(
+      scoped_refptr<protocol::TransportContext> transport_context) override;
 
  private:
-  pp::InstanceHandle instance_;
+  pp::InstanceHandle pp_instance_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPortAllocatorFactory);
 };

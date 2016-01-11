@@ -12,27 +12,16 @@
 #include "base/memory/scoped_ptr.h"
 #include "remoting/host/host_extension.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
-
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
-
 namespace remoting {
 
 namespace protocol {
-struct NetworkSettings;
+class TransportContext;
 }  // namespace protocol
 
 // CastExtension extends HostExtension to enable WebRTC support.
 class CastExtension : public HostExtension {
  public:
-  CastExtension(
-      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
-      const protocol::NetworkSettings& network_settings);
+  CastExtension(scoped_refptr<protocol::TransportContext> transport_context);
   ~CastExtension() override;
 
   // HostExtension interface.
@@ -42,9 +31,7 @@ class CastExtension : public HostExtension {
       protocol::ClientStub* client_stub) override;
 
  private:
-  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
-  const protocol::NetworkSettings& network_settings_;
+  scoped_refptr<protocol::TransportContext> transport_context_;
 
   DISALLOW_COPY_AND_ASSIGN(CastExtension);
 };

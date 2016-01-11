@@ -10,8 +10,8 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "remoting/protocol/port_allocator_base.h"
 #include "remoting/protocol/port_allocator_factory.h"
+#include "third_party/webrtc/base/socketaddress.h"
 
 #if !defined(OS_NACL)
 #include "jingle/glue/thread_wrapper.h"
@@ -30,11 +30,11 @@ static const int kJingleInfoUpdatePeriodSeconds = 3600;
 scoped_refptr<TransportContext> TransportContext::ForTests(TransportRole role) {
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
   return new protocol::TransportContext(
-             nullptr, make_scoped_ptr(
-                          new protocol::ChromiumPortAllocatorFactory(nullptr)),
-             protocol::NetworkSettings(
-                 protocol::NetworkSettings::NAT_TRAVERSAL_OUTGOING),
-             role);
+      nullptr,
+      make_scoped_ptr(new protocol::ChromiumPortAllocatorFactory(nullptr)),
+      protocol::NetworkSettings(
+          protocol::NetworkSettings::NAT_TRAVERSAL_OUTGOING),
+      role);
 }
 #endif  // !defined(OS_NACL)
 
@@ -54,16 +54,15 @@ void TransportContext::Prepare() {
   EnsureFreshJingleInfo();
 }
 
-void TransportContext::CreatePortAllocator(
-    const CreatePortAllocatorCallback& callback) {
+void TransportContext::GetJingleInfo(const GetJingleInfoCallback& callback) {
   EnsureFreshJingleInfo();
 
-  // If there is a pending |jingle_info_request_| delay starting the new
-  // transport until the request is finished.
+  // If there is a pending |jingle_info_request_| delay the callback until the
+  // request is finished.
   if (jingle_info_request_) {
-    pending_port_allocator_requests_.push_back(callback);
+    pending_jingle_info_callbacks_.push_back(callback);
   } else {
-    callback.Run(CreatePortAllocatorInternal());
+    callback.Run(stun_hosts_, relay_hosts_, relay_token_);
   }
 }
 
@@ -99,44 +98,11 @@ void TransportContext::OnJingleInfo(
   if ((!relay_token.empty() && !relay_hosts.empty()) || !stun_hosts.empty())
     last_jingle_info_update_time_ = base::TimeTicks::Now();
 
-  while (!pending_port_allocator_requests_.empty()) {
-    pending_port_allocator_requests_.begin()->Run(
-        CreatePortAllocatorInternal());
-    pending_port_allocator_requests_.pop_front();
+  while (!pending_jingle_info_callbacks_.empty()) {
+    pending_jingle_info_callbacks_.begin()->Run(stun_hosts_, relay_hosts_,
+                                                relay_token_);
+    pending_jingle_info_callbacks_.pop_front();
   }
-}
-
-scoped_ptr<cricket::PortAllocator>
-TransportContext::CreatePortAllocatorInternal() {
-  scoped_ptr<PortAllocatorBase> result =
-      port_allocator_factory_->CreatePortAllocator();
-
-  if (!relay_token_.empty() && !relay_hosts_.empty()) {
-    result->SetRelayHosts(relay_hosts_);
-    result->SetRelayToken(relay_token_);
-  }
-  if (!stun_hosts_.empty())
-    result->SetStunHosts(stun_hosts_);
-
-  // We always use PseudoTcp to provide a reliable channel. It provides poor
-  // performance when combined with TCP-based transport, so we have to disable
-  // TCP ports. ENABLE_SHARED_UFRAG flag is specified so that the same username
-  // fragment is shared between all candidates.
-  int flags = cricket::PORTALLOCATOR_DISABLE_TCP |
-              cricket::PORTALLOCATOR_ENABLE_SHARED_UFRAG |
-              cricket::PORTALLOCATOR_ENABLE_IPV6;
-
- if (!(network_settings_.flags & NetworkSettings::NAT_TRAVERSAL_STUN))
-    flags |= cricket::PORTALLOCATOR_DISABLE_STUN;
-
-  if (!(network_settings_.flags & NetworkSettings::NAT_TRAVERSAL_RELAY))
-    flags |= cricket::PORTALLOCATOR_DISABLE_RELAY;
-
-  result->set_flags(flags);
-  result->SetPortRange(network_settings_.port_range.min_port,
-                       network_settings_.port_range.max_port);
-
-  return std::move(result);
 }
 
 }  // namespace protocol

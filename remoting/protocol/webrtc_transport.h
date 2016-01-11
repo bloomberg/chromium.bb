@@ -74,9 +74,6 @@ class WebrtcTransport : public Transport,
   bool ProcessTransportInfo(buzz::XmlElement* transport_info) override;
 
  private:
-  void OnPortAllocatorCreated(
-      scoped_ptr<cricket::PortAllocator> port_allocator);
-
   void OnLocalSessionDescriptionCreated(
       scoped_ptr<webrtc::SessionDescriptionInterface> description,
       const std::string& error);

@@ -26,10 +26,16 @@ struct NetworkSettings;
 // stack.
 class ChromiumPortAllocator : public PortAllocatorBase {
  public:
-  static scoped_ptr<ChromiumPortAllocator> Create(
-      const scoped_refptr<net::URLRequestContextGetter>& url_context);
-
+  ChromiumPortAllocator(
+      scoped_ptr<rtc::NetworkManager> network_manager,
+      scoped_ptr<rtc::PacketSocketFactory> socket_factory,
+      scoped_refptr<TransportContext> transport_context,
+      scoped_refptr<net::URLRequestContextGetter> url_context);
   ~ChromiumPortAllocator() override;
+
+  scoped_refptr<net::URLRequestContextGetter> url_context() {
+    return url_context_;
+  }
 
   // PortAllocatorBase overrides.
   cricket::PortAllocatorSession* CreateSessionInternal(
@@ -39,14 +45,7 @@ class ChromiumPortAllocator : public PortAllocatorBase {
       const std::string& ice_password) override;
 
  private:
-  ChromiumPortAllocator(
-      const scoped_refptr<net::URLRequestContextGetter>& url_context,
-      scoped_ptr<rtc::NetworkManager> network_manager,
-      scoped_ptr<rtc::PacketSocketFactory> socket_factory);
-
   scoped_refptr<net::URLRequestContextGetter> url_context_;
-  scoped_ptr<rtc::NetworkManager> network_manager_;
-  scoped_ptr<rtc::PacketSocketFactory> socket_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromiumPortAllocator);
 };
@@ -58,7 +57,8 @@ class ChromiumPortAllocatorFactory : public PortAllocatorFactory {
   ~ChromiumPortAllocatorFactory() override;
 
    // PortAllocatorFactory interface.
-  scoped_ptr<PortAllocatorBase> CreatePortAllocator() override;
+  scoped_ptr<cricket::PortAllocator> CreatePortAllocator(
+      scoped_refptr<TransportContext> transport_context) override;
 
  private:
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;

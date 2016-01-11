@@ -14,6 +14,7 @@
 #include "jingle/glue/utils.h"
 #include "net/base/net_errors.h"
 #include "remoting/protocol/channel_socket_adapter.h"
+#include "remoting/protocol/port_allocator_factory.h"
 #include "remoting/protocol/transport_context.h"
 #include "third_party/webrtc/base/network.h"
 #include "third_party/webrtc/p2p/base/constants.h"
@@ -83,16 +84,9 @@ void IceTransportChannel::Connect(const std::string& name,
   delegate_ = delegate;
   callback_ = callback;
 
-  transport_context_->CreatePortAllocator(
-      base::Bind(&IceTransportChannel::OnPortAllocatorCreated,
-                 weak_factory_.GetWeakPtr()));
-}
-
-void IceTransportChannel::OnPortAllocatorCreated(
-      scoped_ptr<cricket::PortAllocator> port_allocator){
-  DCHECK(!channel_.get());
-
-  port_allocator_ = std::move(port_allocator);
+  port_allocator_ =
+      transport_context_->port_allocator_factory()->CreatePortAllocator(
+          transport_context_);
 
   // Create P2PTransportChannel, attach signal handlers and connect it.
   // TODO(sergeyu): Specify correct component ID for the channel.

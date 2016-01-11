@@ -7,10 +7,13 @@
 #include <algorithm>
 #include <map>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "net/base/escape.h"
+#include "remoting/protocol/network_settings.h"
+#include "remoting/protocol/transport_context.h"
 
 namespace {
 
@@ -36,47 +39,66 @@ namespace protocol {
 
 const int PortAllocatorBase::kNumRetries = 5;
 
-PortAllocatorBase::PortAllocatorBase(rtc::NetworkManager* network_manager,
-                                     rtc::PacketSocketFactory* socket_factory)
-    : BasicPortAllocator(network_manager, socket_factory) {}
+PortAllocatorBase::PortAllocatorBase(
+    scoped_ptr<rtc::NetworkManager> network_manager,
+    scoped_ptr<rtc::PacketSocketFactory> socket_factory,
+    scoped_refptr<TransportContext> transport_context)
+    : BasicPortAllocator(network_manager.get(), socket_factory.get()),
+      network_manager_(std::move(network_manager)),
+      socket_factory_(std::move(socket_factory)),
+      transport_context_(transport_context) {
+  // We always use PseudoTcp to provide a reliable channel. It provides poor
+  // performance when combined with TCP-based transport, so we have to disable
+  // TCP ports. ENABLE_SHARED_UFRAG flag is specified so that the same username
+  // fragment is shared between all candidates.
+  int flags = cricket::PORTALLOCATOR_DISABLE_TCP |
+              cricket::PORTALLOCATOR_ENABLE_SHARED_UFRAG |
+              cricket::PORTALLOCATOR_ENABLE_IPV6;
+
+  NetworkSettings network_settings = transport_context_->network_settings();
+
+  if (!(network_settings.flags & NetworkSettings::NAT_TRAVERSAL_STUN))
+    flags |= cricket::PORTALLOCATOR_DISABLE_STUN;
+
+  if (!(network_settings.flags & NetworkSettings::NAT_TRAVERSAL_RELAY))
+    flags |= cricket::PORTALLOCATOR_DISABLE_RELAY;
+
+  set_flags(flags);
+  SetPortRange(network_settings.port_range.min_port,
+                       network_settings.port_range.max_port);
+}
 
 PortAllocatorBase::~PortAllocatorBase() {}
-
-void PortAllocatorBase::SetStunHosts(
-    const std::vector<rtc::SocketAddress>& hosts) {
-  stun_hosts_ = hosts;
-}
-
-void PortAllocatorBase::SetRelayHosts(const std::vector<std::string>& hosts) {
-  relay_hosts_ = hosts;
-}
-
-void PortAllocatorBase::SetRelayToken(const std::string& relay) {
-  relay_token_ = relay;
-}
 
 PortAllocatorSessionBase::PortAllocatorSessionBase(
     PortAllocatorBase* allocator,
     const std::string& content_name,
     int component,
     const std::string& ice_ufrag,
-    const std::string& ice_pwd,
-    const std::vector<rtc::SocketAddress>& stun_hosts,
-    const std::vector<std::string>& relay_hosts,
-    const std::string& relay_token)
+    const std::string& ice_pwd)
     : BasicPortAllocatorSession(allocator,
                                 content_name,
                                 component,
                                 ice_ufrag,
                                 ice_pwd),
-      relay_hosts_(relay_hosts),
-      stun_hosts_(stun_hosts),
-      relay_token_(relay_token),
-      attempts_(0) {}
+      transport_context_(allocator->transport_context()),
+      weak_factory_(this) {}
 
 PortAllocatorSessionBase::~PortAllocatorSessionBase() {}
 
 void PortAllocatorSessionBase::GetPortConfigurations() {
+  transport_context_->GetJingleInfo(base::Bind(
+      &PortAllocatorSessionBase::OnJingleInfo, weak_factory_.GetWeakPtr()));
+}
+
+void PortAllocatorSessionBase::OnJingleInfo(
+    std::vector<rtc::SocketAddress> stun_hosts,
+    std::vector<std::string> relay_hosts,
+    std::string relay_token) {
+  stun_hosts_ = stun_hosts;
+  relay_hosts_ = relay_hosts;
+  relay_token_ = relay_token;
+
   // Creating relay sessions can take time and is done asynchronously.
   // Creating stun sessions could also take time and could be done aysnc also,
   // but for now is done here and added to the initial config.  Note any later
@@ -94,7 +116,7 @@ void PortAllocatorSessionBase::GetPortConfigurations() {
 }
 
 void PortAllocatorSessionBase::TryCreateRelaySession() {
-  if (allocator()->flags() & cricket::PORTALLOCATOR_DISABLE_RELAY)
+  if (flags() & cricket::PORTALLOCATOR_DISABLE_RELAY)
     return;
 
   if (attempts_ == PortAllocatorBase::kNumRetries) {
@@ -117,11 +139,6 @@ void PortAllocatorSessionBase::TryCreateRelaySession() {
   std::string host = relay_hosts_[attempts_ % relay_hosts_.size()];
   attempts_++;
   SendSessionRequest(host);
-}
-
-PortAllocatorBase* PortAllocatorSessionBase::allocator() {
-  return static_cast<PortAllocatorBase*>(
-      BasicPortAllocatorSession::allocator());
 }
 
 std::string PortAllocatorSessionBase::GetSessionRequestUrl() {

@@ -122,20 +122,14 @@ void WebrtcTransport::Start(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(send_transport_info_callback_.is_null());
 
-  send_transport_info_callback_ = std::move(send_transport_info_callback);
-
-  // TODO(sergeyu): Use the |authenticator| to authenticate PeerConnection.
-
-  transport_context_->CreatePortAllocator(base::Bind(
-      &WebrtcTransport::OnPortAllocatorCreated, weak_factory_.GetWeakPtr()));
-}
-
-void WebrtcTransport::OnPortAllocatorCreated(
-    scoped_ptr<cricket::PortAllocator> port_allocator) {
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 
   // TODO(sergeyu): Investigate if it's possible to avoid Send().
   jingle_glue::JingleThreadWrapper::current()->set_send_allowed(true);
+
+  send_transport_info_callback_ = std::move(send_transport_info_callback);
+
+  // TODO(sergeyu): Use the |authenticator| to authenticate PeerConnection.
 
   fake_audio_device_module_.reset(new webrtc::FakeAudioDeviceModule());
 
@@ -152,6 +146,9 @@ void WebrtcTransport::OnPortAllocatorCreated(
   constraints.AddMandatory(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp,
                            webrtc::MediaConstraintsInterface::kValueTrue);
 
+  scoped_ptr<cricket::PortAllocator> port_allocator =
+      transport_context_->port_allocator_factory()->CreatePortAllocator(
+          transport_context_);
   peer_connection_ = peer_connection_factory_->CreatePeerConnection(
       rtc_config, &constraints,
       rtc::scoped_ptr<cricket::PortAllocator>(port_allocator.release()),

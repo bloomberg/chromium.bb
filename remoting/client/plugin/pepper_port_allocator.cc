@@ -20,6 +20,7 @@
 #include "remoting/client/plugin/pepper_network_manager.h"
 #include "remoting/client/plugin/pepper_packet_socket_factory.h"
 #include "remoting/client/plugin/pepper_util.h"
+#include "remoting/protocol/transport_context.h"
 
 namespace remoting {
 
@@ -32,20 +33,14 @@ const int kReadSize = 1024;
 class PepperPortAllocatorSession : public protocol::PortAllocatorSessionBase {
  public:
   PepperPortAllocatorSession(
-      protocol::PortAllocatorBase* allocator,
+      PepperPortAllocator* allocator,
       const std::string& content_name,
       int component,
       const std::string& ice_username_fragment,
-      const std::string& ice_password,
-      const std::vector<rtc::SocketAddress>& stun_hosts,
-      const std::vector<std::string>& relay_hosts,
-      const std::string& relay_token,
-      const pp::InstanceHandle& instance);
+      const std::string& ice_password);
   ~PepperPortAllocatorSession() override;
 
   // PortAllocatorBase overrides.
-  void ConfigReady(cricket::PortConfiguration* config) override;
-  void GetPortConfigurations() override;
   void SendSessionRequest(const std::string& host) override;
 
  private:
@@ -53,7 +48,7 @@ class PepperPortAllocatorSession : public protocol::PortAllocatorSessionBase {
   void ReadResponseBody();
   void OnResponseBodyRead(int32_t result);
 
-  pp::InstanceHandle instance_;
+  pp::InstanceHandle pp_instance_;
 
   cricket::ServerAddresses stun_hosts_;
 
@@ -67,58 +62,23 @@ class PepperPortAllocatorSession : public protocol::PortAllocatorSessionBase {
 };
 
 PepperPortAllocatorSession::PepperPortAllocatorSession(
-    protocol::PortAllocatorBase* allocator,
+    PepperPortAllocator* allocator,
     const std::string& content_name,
     int component,
     const std::string& ice_username_fragment,
-    const std::string& ice_password,
-    const std::vector<rtc::SocketAddress>& stun_hosts,
-    const std::vector<std::string>& relay_hosts,
-    const std::string& relay_token,
-    const pp::InstanceHandle& instance)
+    const std::string& ice_password)
     : PortAllocatorSessionBase(allocator,
                                content_name,
                                component,
                                ice_username_fragment,
-                               ice_password,
-                               stun_hosts,
-                               relay_hosts,
-                               relay_token),
-      instance_(instance),
-      stun_hosts_(stun_hosts.begin(), stun_hosts.end()),
-      callback_factory_(this) {}
+                               ice_password),
+      pp_instance_(allocator->pp_instance()) {}
 
 PepperPortAllocatorSession::~PepperPortAllocatorSession() {}
 
-void PepperPortAllocatorSession::ConfigReady(
-    cricket::PortConfiguration* config) {
-  // Filter out non-UDP relay ports, so that we don't try using TCP.
-  for (cricket::PortConfiguration::RelayList::iterator relay =
-           config->relays.begin(); relay != config->relays.end(); ++relay) {
-    cricket::PortList filtered_ports;
-    for (cricket::PortList::iterator port =
-             relay->ports.begin(); port != relay->ports.end(); ++port) {
-      if (port->proto == cricket::PROTO_UDP) {
-        filtered_ports.push_back(*port);
-      }
-    }
-    relay->ports = filtered_ports;
-  }
-  cricket::BasicPortAllocatorSession::ConfigReady(config);
-}
-
-void PepperPortAllocatorSession::GetPortConfigurations() {
-  // Add a configuration without relay response first so local and STUN
-  // candidates can be allocated without waiting for the relay response.
-  ConfigReady(new cricket::PortConfiguration(
-      stun_hosts_, std::string(), std::string()));
-
-  TryCreateRelaySession();
-}
-
 void PepperPortAllocatorSession::SendSessionRequest(const std::string& host) {
-  relay_url_loader_.reset(new pp::URLLoader(instance_));
-  pp::URLRequestInfo request_info(instance_);
+  relay_url_loader_.reset(new pp::URLLoader(pp_instance_));
+  pp::URLRequestInfo request_info(pp_instance_);
   std::string url = "https://" + host + GetSessionRequestUrl() + "&sn=1";
   request_info.SetURL(url);
   request_info.SetMethod("GET");
@@ -200,22 +160,14 @@ void PepperPortAllocatorSession::OnResponseBodyRead(int32_t result) {
 
 }  // namespace
 
-// static
-scoped_ptr<PepperPortAllocator> PepperPortAllocator::Create(
-    const pp::InstanceHandle& instance) {
-  return make_scoped_ptr(new PepperPortAllocator(
-      instance, make_scoped_ptr(new PepperNetworkManager(instance)),
-      make_scoped_ptr(new PepperPacketSocketFactory(instance))));
-}
-
 PepperPortAllocator::PepperPortAllocator(
-    const pp::InstanceHandle& instance,
-    scoped_ptr<rtc::NetworkManager> network_manager,
-    scoped_ptr<rtc::PacketSocketFactory> socket_factory)
-    : PortAllocatorBase(network_manager.get(), socket_factory.get()),
-      instance_(instance),
-      network_manager_(std::move(network_manager)),
-      socket_factory_(std::move(socket_factory)) {}
+    scoped_refptr<protocol::TransportContext> transport_context,
+    pp::InstanceHandle pp_instance)
+    : PortAllocatorBase(
+          make_scoped_ptr(new PepperNetworkManager(pp_instance)),
+          make_scoped_ptr(new PepperPacketSocketFactory(pp_instance)),
+          transport_context),
+      pp_instance_(pp_instance) {}
 
 PepperPortAllocator::~PepperPortAllocator() {}
 
@@ -224,20 +176,21 @@ cricket::PortAllocatorSession* PepperPortAllocator::CreateSessionInternal(
     int component,
     const std::string& ice_username_fragment,
     const std::string& ice_password) {
-   return new PepperPortAllocatorSession(
-       this, content_name, component, ice_username_fragment, ice_password,
-       stun_hosts(), relay_hosts(), relay_token(), instance_);
+  return new PepperPortAllocatorSession(this, content_name, component,
+                                        ice_username_fragment, ice_password);
 }
 
 PepperPortAllocatorFactory::PepperPortAllocatorFactory(
-    const pp::InstanceHandle& instance)
-    : instance_(instance) {}
+    pp::InstanceHandle pp_instance)
+    : pp_instance_(pp_instance) {}
 
 PepperPortAllocatorFactory::~PepperPortAllocatorFactory() {}
 
-scoped_ptr<protocol::PortAllocatorBase>
-PepperPortAllocatorFactory::CreatePortAllocator() {
-  return PepperPortAllocator::Create(instance_);
+scoped_ptr<cricket::PortAllocator>
+PepperPortAllocatorFactory::CreatePortAllocator(
+    scoped_refptr<protocol::TransportContext> transport_context) {
+  return make_scoped_ptr(
+      new PepperPortAllocator(transport_context, pp_instance_));
 }
 
 }  // namespace remoting
