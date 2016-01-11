@@ -8,12 +8,11 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/features.h"
 #include "components/rappor/rappor_utils.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/background_sync_parameters.h"
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include "chrome/browser/android/background_sync_launcher_android.h"
 #endif
 
@@ -39,6 +38,12 @@ BackgroundSyncControllerImpl::~BackgroundSyncControllerImpl() = default;
 void BackgroundSyncControllerImpl::GetParameterOverrides(
     content::BackgroundSyncParameters* parameters) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+#if defined(OS_ANDROID)
+  if (BackgroundSyncLauncherAndroid::ShouldDisableBackgroundSync()) {
+    parameters->disable = true;
+  }
+#endif
 
   std::map<std::string, std::string> field_params;
   if (!variations::GetVariationParams(kFieldTrialName, &field_params))
@@ -113,7 +118,7 @@ void BackgroundSyncControllerImpl::RunInBackground(bool enabled,
 
   if (profile_->IsOffTheRecord())
     return;
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   BackgroundSyncLauncherAndroid::LaunchBrowserIfStopped(enabled, min_ms);
 #else
 // TODO(jkarlin): Use BackgroundModeManager to enter background mode. See

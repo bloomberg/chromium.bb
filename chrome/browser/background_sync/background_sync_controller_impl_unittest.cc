@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "chrome/common/features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/rappor/test_rappor_service.h"
 #include "components/variations/variations_associated_data.h"
@@ -14,6 +15,10 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(ANDROID_JAVA_UI)
+#include "chrome/browser/android/background_sync_launcher_android.h"
+#endif
 
 namespace {
 
@@ -44,6 +49,10 @@ class BackgroundSyncControllerImplTest : public testing::Test {
         controller_(
             new TestBackgroundSyncControllerImpl(&profile_, &rappor_service_)) {
     ResetFieldTrialList();
+#if BUILDFLAG(ANDROID_JAVA_UI)
+    BackgroundSyncLauncherAndroid::SetPlayServicesVersionCheckDisabledForTests(
+        true);
+#endif
   }
 
   void ResetFieldTrialList() {

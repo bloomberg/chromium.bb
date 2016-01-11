@@ -13,6 +13,7 @@ import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.OneoffTask;
 import com.google.android.gms.gcm.Task;
 
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
@@ -27,6 +28,8 @@ import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
  * Thread model: This class is to be run on the UI thread only.
  */
 public class BackgroundSyncLauncher {
+    private static final String TAG = "BgSyncLauncher";
+
     static final String PREF_BACKGROUND_SYNC_LAUNCH_NEXT_ONLINE = "bgsync_launch_next_online";
     // The instance of BackgroundSyncLauncher currently owned by a C++
     // BackgroundSyncLauncherAndroid, if any. If it is non-null then the browser is running.
@@ -140,7 +143,7 @@ public class BackgroundSyncLauncher {
     }
 
     /**
-     * True if the native browser has started and created an instance of {@link
+     * Returns true if the native browser has started and created an instance of {@link
      * BackgroundSyncLauncher}.
      */
     protected static boolean hasInstance() {
@@ -148,24 +151,38 @@ public class BackgroundSyncLauncher {
     }
 
     protected BackgroundSyncLauncher(Context context) {
+        mScheduler = GcmNetworkManager.getInstance(context);
+        launchBrowserIfStopped(context, false, 0);
+    }
+
+    private static boolean canUseGooglePlayServices(Context context) {
+        return ExternalAuthUtils.getInstance().canUseGooglePlayServices(
+                context, new UserRecoverableErrorHandler.Silent());
+    }
+
+    /**
+     * Returns true if the Background Sync Manager should be automatically disabled on startup.
+     * This is currently only the case if Play Services is not up to date, since any sync attempts
+     * which fail cannot be reregistered. Better to wait until Play Services is updated before
+     * attempting them.
+     *
+     * @param context The application context.
+     */
+    @CalledByNative
+    private static boolean shouldDisableBackgroundSync(Context context) {
         // Check to see if Play Services is up to date, and disable GCM if not.
-        // This will not automatically set {@link sGCMEnabled} to true, in case it has been disabled
-        // in tests.
+        // This will not automatically set {@link sGCMEnabled} to true, in case it has been
+        // disabled in tests.
         if (sGCMEnabled) {
             if (!canUseGooglePlayServices(context)) {
                 setGCMEnabled(false);
+                Log.i(TAG, "Disabling Background Sync because Play Services is not up to date.");
                 recordBooleanHistogram("BackgroundSync.LaunchTask.PlayServicesAvailable", false);
             } else {
                 recordBooleanHistogram("BackgroundSync.LaunchTask.PlayServicesAvailable", true);
             }
         }
-        mScheduler = GcmNetworkManager.getInstance(context);
-        launchBrowserIfStopped(context, false, 0);
-    }
-
-    private boolean canUseGooglePlayServices(Context context) {
-        return ExternalAuthUtils.getInstance().canUseGooglePlayServices(
-                context, new UserRecoverableErrorHandler.Silent());
+        return !sGCMEnabled;
     }
 
     private static void scheduleLaunchTask(
