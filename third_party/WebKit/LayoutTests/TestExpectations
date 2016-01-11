@@ -1280,8 +1280,10 @@ crbug.com/568778 [ XP ] tables/mozilla/bugs/bug86708.html [ Failure ]
 crbug.com/568778 [ XP ] tables/mozilla_expected_failures/bugs/97619.html [ Failure ]
 crbug.com/568778 [ XP ] tables/mozilla_expected_failures/bugs/bug85016.html [ Failure ]
 
-crbug.com/504837 [ XP ] svg/batik/filters/feTile.svg [ Failure ]
+# crbug.com/504837 [ XP ] svg/batik/filters/feTile.svg [ Failure ]
 crbug.com/504837 [ XP ] svg/filters/feTile.svg [ Failure ]
+
+crbug.com/569950 svg/batik/filters/feTile.svg [ NeedsManualRebaseline ]
 
 crbug.com/568867 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
 crbug.com/568867 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
