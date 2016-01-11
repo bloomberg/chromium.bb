@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "blimp/client/linux/blimp_display_manager.h"
 #include "blimp/client/session/blimp_client_session.h"
+#include "blimp/client/session/navigation_feature.h"
 
 namespace ui {
 class PlatformEventSource;
@@ -28,6 +29,8 @@ class BlimpClientSessionLinux : public BlimpClientSession,
  private:
   scoped_ptr<ui::PlatformEventSource> event_source_;
   scoped_ptr<BlimpDisplayManager> blimp_display_manager_;
+  scoped_ptr<NavigationFeature::NavigationFeatureDelegate>
+      navigation_feature_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpClientSessionLinux);
 };
