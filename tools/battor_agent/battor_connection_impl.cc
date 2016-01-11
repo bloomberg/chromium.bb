@@ -35,7 +35,10 @@ size_t GetMaxBytesForMessageType(BattOrMessageType type) {
     case BATTOR_MESSAGE_TYPE_CONTROL:
       return 2 * sizeof(BattOrControlMessage) + 3;
     case BATTOR_MESSAGE_TYPE_CONTROL_ACK:
-      return 2 * sizeof(BattOrControlMessageAck) + 3;
+      // The BattOr EEPROM is sent back with this type, even though it's
+      // technically more of a response than an ack. We have to make sure that
+      // we read enough bytes to accommodate this behavior.
+      return 2 * sizeof(BattOrEEPROM) + 3;
     case BATTOR_MESSAGE_TYPE_SAMPLES:
       return 2 * kMaxMessageSizeBytes + 3;
     default:

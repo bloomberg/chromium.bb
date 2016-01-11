@@ -37,6 +37,65 @@ bool IsAckOfControlCommand(BattOrMessageType message_type,
   return true;
 }
 
+// Attempts to decode the specified vector of bytes decodes to a valid EEPROM.
+// Returns the new EEPROM, or nullptr if unsuccessful.
+scoped_ptr<BattOrEEPROM> ParseEEPROM(BattOrMessageType message_type,
+                                     const vector<char>& msg) {
+  if (message_type != BATTOR_MESSAGE_TYPE_CONTROL_ACK)
+    return nullptr;
+
+  if (msg.size() != sizeof(BattOrEEPROM))
+    return nullptr;
+
+  scoped_ptr<BattOrEEPROM> eeprom(new BattOrEEPROM());
+  memcpy(eeprom.get(), msg.data(), sizeof(BattOrEEPROM));
+  return eeprom;
+}
+
+// Returns true if the specified vector of bytes decodes to a valid BattOr
+// samples frame. The frame header and samples are returned via the frame_header
+// and samples paramaters.
+bool ParseSampleFrame(BattOrMessageType type,
+                      const vector<char>& msg,
+                      BattOrFrameHeader* frame_header,
+                      vector<RawBattOrSample>* samples) {
+  if (type != BATTOR_MESSAGE_TYPE_SAMPLES)
+    return false;
+
+  // Each frame should contain a header and an integer number of BattOr samples.
+  if ((msg.size() - sizeof(BattOrFrameHeader)) % sizeof(RawBattOrSample) != 0)
+    return false;
+
+  // The first bytes in the frame contain the frame header.
+  const char* frame_ptr = reinterpret_cast<const char*>(msg.data());
+  memcpy(frame_header, frame_ptr, sizeof(BattOrFrameHeader));
+  frame_ptr += sizeof(BattOrFrameHeader);
+
+  // The remaining bytes in the frame contain an array of raw samples.
+  // Therefore, the number of samples in the frame should correspond to number
+  // of total bytes remaining in the frame.
+  uint8_t samples_in_frame =
+      (msg.size() - sizeof(BattOrFrameHeader)) / sizeof(RawBattOrSample);
+
+  if (samples_in_frame != frame_header->length)
+    return false;
+
+  samples->resize(samples_in_frame);
+  memcpy(samples->data(), frame_ptr,
+         samples_in_frame * sizeof(RawBattOrSample));
+
+  return true;
+}
+
+std::string SamplesToString(const vector<RawBattOrSample>& samples) {
+  // TODO(charliea): Print the samples in a better trace format.
+  std::stringstream trace_stream;
+  for (auto sample : samples)
+    trace_stream << sample.voltage << "/" << sample.current << std::endl;
+
+  return trace_stream.str();
+}
+
 }  // namespace
 
 BattOrAgent::BattOrAgent(
@@ -65,6 +124,13 @@ void BattOrAgent::StartTracing() {
   PerformAction(Action::REQUEST_CONNECTION);
 }
 
+void BattOrAgent::StopTracing() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  command_ = Command::STOP_TRACING;
+  PerformAction(Action::REQUEST_CONNECTION);
+}
+
 void BattOrAgent::BeginConnect() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -80,7 +146,10 @@ void BattOrAgent::OnConnectionOpened(bool success) {
   switch (command_) {
     case Command::START_TRACING:
       PerformAction(Action::SEND_RESET);
-      break;
+      return;
+    case Command::STOP_TRACING:
+      PerformAction(Action::SEND_EEPROM_REQUEST);
+      return;
     case Command::INVALID:
       NOTREACHED();
   }
@@ -99,16 +168,23 @@ void BattOrAgent::OnBytesSent(bool success) {
       // Wait for the reset to happen before sending the init message.
       PerformDelayedAction(Action::SEND_INIT, base::TimeDelta::FromSeconds(
                                                   kBattOrResetTimeSeconds));
-      break;
+      return;
     case Action::SEND_INIT:
       PerformAction(Action::READ_INIT_ACK);
-      break;
+      return;
     case Action::SEND_SET_GAIN:
       PerformAction(Action::READ_SET_GAIN_ACK);
-      break;
+      return;
     case Action::SEND_START_TRACING:
       PerformAction(Action::READ_START_TRACING_ACK);
-      break;
+      return;
+    case Action::SEND_EEPROM_REQUEST:
+      PerformAction(Action::READ_EEPROM);
+      return;
+    case Action::SEND_SAMPLES_REQUEST:
+      PerformAction(Action::READ_SAMPLES_REQUEST_ACK);
+      return;
+
     default:
       CompleteCommand(BATTOR_ERROR_UNEXPECTED_MESSAGE);
   }
@@ -131,7 +207,7 @@ void BattOrAgent::OnMessageRead(bool success,
       }
 
       PerformAction(Action::SEND_SET_GAIN);
-      break;
+      return;
 
     case Action::READ_SET_GAIN_ACK:
       if (!IsAckOfControlCommand(type, BATTOR_CONTROL_MESSAGE_TYPE_SET_GAIN,
@@ -141,7 +217,7 @@ void BattOrAgent::OnMessageRead(bool success,
       }
 
       PerformAction(Action::SEND_START_TRACING);
-      break;
+      return;
 
     case Action::READ_START_TRACING_ACK:
       if (!IsAckOfControlCommand(
@@ -152,6 +228,63 @@ void BattOrAgent::OnMessageRead(bool success,
 
       CompleteCommand(BATTOR_ERROR_NONE);
       return;
+
+    case Action::READ_EEPROM:
+      battor_eeprom_ = ParseEEPROM(type, *bytes);
+      if (!battor_eeprom_) {
+        CompleteCommand(BATTOR_ERROR_UNEXPECTED_MESSAGE);
+        return;
+      }
+
+      PerformAction(Action::SEND_SAMPLES_REQUEST);
+      return;
+    case Action::READ_SAMPLES_REQUEST_ACK:
+      if (!IsAckOfControlCommand(type, BATTOR_CONTROL_MESSAGE_TYPE_READ_SD_UART,
+                                 *bytes)) {
+        CompleteCommand(BATTOR_ERROR_UNEXPECTED_MESSAGE);
+        return;
+      }
+
+      PerformAction(Action::READ_CALIBRATION_FRAME);
+      return;
+
+    case Action::READ_CALIBRATION_FRAME: {
+      BattOrFrameHeader frame_header;
+      if (!ParseSampleFrame(type, *bytes, &frame_header, &calibration_frame_)) {
+        CompleteCommand(BATTOR_ERROR_UNEXPECTED_MESSAGE);
+        return;
+      }
+
+      // Make sure that the calibration frame has actual samples in it.
+      if (calibration_frame_.empty()) {
+        CompleteCommand(BATTOR_ERROR_UNEXPECTED_MESSAGE);
+        return;
+      }
+
+      PerformAction(Action::READ_DATA_FRAME);
+      return;
+    }
+
+    case Action::READ_DATA_FRAME: {
+      BattOrFrameHeader frame_header;
+      vector<RawBattOrSample> frame;
+      if (!ParseSampleFrame(type, *bytes, &frame_header, &frame)) {
+        CompleteCommand(BATTOR_ERROR_UNEXPECTED_MESSAGE);
+        return;
+      }
+
+      // Check for the empty frame the BattOr uses to indicate it's done
+      // streaming samples.
+      if (frame.empty()) {
+        CompleteCommand(BATTOR_ERROR_NONE);
+        return;
+      }
+
+      samples_.insert(samples_.end(), frame.begin(), frame.end());
+
+      PerformAction(Action::READ_DATA_FRAME);
+      return;
+    }
 
     default:
       CompleteCommand(BATTOR_ERROR_UNEXPECTED_MESSAGE);
@@ -166,39 +299,71 @@ void BattOrAgent::PerformAction(Action action) {
   switch (action) {
     case Action::REQUEST_CONNECTION:
       BeginConnect();
-      break;
+      return;
 
+    // The following actions are required for StartTracing:
     case Action::SEND_RESET:
       // Reset the BattOr to clear any preexisting state. After sending the
       // reset signal, we need to wait for the reset to finish before issuing
       // further commands.
       SendControlMessage(BATTOR_CONTROL_MESSAGE_TYPE_RESET, 0, 0);
-      break;
+      return;
     case Action::SEND_INIT:
       // After resetting the BattOr, we need to make sure to flush the serial
       // stream. Strange data may have been written into it during the reset.
       connection_->Flush();
 
       SendControlMessage(BATTOR_CONTROL_MESSAGE_TYPE_INIT, 0, 0);
-      break;
+      return;
     case Action::READ_INIT_ACK:
       connection_->ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL_ACK);
-      break;
+      return;
     case Action::SEND_SET_GAIN:
       // Set the BattOr's gain. Setting the gain tells the BattOr the range of
       // power measurements that we expect to see.
       SendControlMessage(BATTOR_CONTROL_MESSAGE_TYPE_SET_GAIN, BATTOR_GAIN_LOW,
                          0);
-      break;
+      return;
     case Action::READ_SET_GAIN_ACK:
       connection_->ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL_ACK);
-      break;
+      return;
     case Action::SEND_START_TRACING:
       SendControlMessage(BATTOR_CONTROL_MESSAGE_TYPE_START_SAMPLING_SD, 0, 0);
-      break;
+      return;
     case Action::READ_START_TRACING_ACK:
       connection_->ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL_ACK);
-      break;
+      return;
+
+    // The following actions are required for StopTracing:
+    case Action::SEND_EEPROM_REQUEST:
+      // Read the BattOr's EEPROM to get calibration information that's required
+      // to convert the raw samples to accurate ones.
+      SendControlMessage(BATTOR_CONTROL_MESSAGE_TYPE_READ_EEPROM,
+                         sizeof(BattOrEEPROM), 0);
+      return;
+    case Action::READ_EEPROM:
+      connection_->ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL_ACK);
+      return;
+    case Action::SEND_SAMPLES_REQUEST:
+      // Send a request to the BattOr to tell it to start streaming the samples
+      // that it's stored on its SD card over the serial connection.
+      SendControlMessage(BATTOR_CONTROL_MESSAGE_TYPE_READ_SD_UART, 0, 0);
+      return;
+    case Action::READ_SAMPLES_REQUEST_ACK:
+      connection_->ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL_ACK);
+      return;
+    case Action::READ_CALIBRATION_FRAME:
+    case Action::READ_DATA_FRAME:
+      // The first frame sent back from the BattOr contains voltage and current
+      // data that excludes whatever device is being measured from the
+      // circuit. We use this first frame to establish a baseline voltage and
+      // current.
+      //
+      // All further frames contain real (but uncalibrated) voltage and current
+      // data.
+      connection_->ReadMessage(BATTOR_MESSAGE_TYPE_SAMPLES);
+      return;
+
     case Action::INVALID:
       NOTREACHED();
   }
@@ -224,12 +389,19 @@ void BattOrAgent::CompleteCommand(BattOrError error) {
     case Command::START_TRACING:
       listener_->OnStartTracingComplete(error);
       break;
+    case Command::STOP_TRACING: {
+      listener_->OnStopTracingComplete(SamplesToString(samples_), error);
+      break;
+    }
     case Command::INVALID:
       NOTREACHED();
   }
 
   last_action_ = Action::INVALID;
   command_ = Command::INVALID;
+  battor_eeprom_.reset();
+  calibration_frame_.clear();
+  samples_.clear();
 }
 
 }  // namespace battor

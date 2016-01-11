@@ -20,6 +20,7 @@
 #include "tools/battor_agent/battor_agent.h"
 #include "tools/battor_agent/battor_error.h"
 
+using std::cout;
 using std::endl;
 
 namespace {
@@ -30,20 +31,20 @@ const char kUiThreadName[] = "BattOr UI Thread";
 const int32_t kBattOrCommandTimeoutSeconds = 10;
 
 void PrintUsage() {
-  std::cout << "Usage: battor_agent <command> <arguments>" << endl
-            << endl
-            << "Commands:" << endl
-            << endl
-            << "  StartTracing <path>" << endl
-            << "  StopTracing <path>" << endl
-            << "  SupportsExplicitClockSync" << endl
-            << "  RecordClockSyncMarker <path> <marker>" << endl
-            << "  IssueClockSyncMarker <path>" << endl
-            << "  Help" << endl;
+  cout << "Usage: battor_agent <command> <arguments>" << endl
+       << endl
+       << "Commands:" << endl
+       << endl
+       << "  StartTracing <path>" << endl
+       << "  StopTracing <path>" << endl
+       << "  SupportsExplicitClockSync" << endl
+       << "  RecordClockSyncMarker <path> <marker>" << endl
+       << "  IssueClockSyncMarker <path>" << endl
+       << "  Help" << endl;
 }
 
 void PrintSupportsExplicitClockSync() {
-  std::cout << battor::BattOrAgent::SupportsExplicitClockSync() << endl;
+  cout << battor::BattOrAgent::SupportsExplicitClockSync() << endl;
 }
 
 // Retrieves argument argnum from the argument list, printing the usage
@@ -102,7 +103,7 @@ class BattOrAgentBin : public BattOrAgent::Listener {
     if (cmd == "StartTracing") {
       StartTracing();
     } else if (cmd == "StopTracing") {
-      // TODO(charliea): Write StopTracing.
+      StopTracing();
     } else if (cmd == "RecordClockSyncMarker") {
       // TODO(charliea): Write RecordClockSyncMarker.
     } else if (cmd == "IssueClockSyncMarker") {
@@ -150,6 +151,23 @@ class BattOrAgentBin : public BattOrAgent::Listener {
 
   void OnStartTracingComplete(BattOrError error) override {
     error_ = error;
+    done_.Signal();
+  }
+
+  void StopTracing() {
+    io_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&BattOrAgent::StopTracing, base::Unretained(agent_.get())));
+    CheckError(AwaitResult());
+  }
+
+  void OnStopTracingComplete(const std::string& trace,
+                             BattOrError error) override {
+    error_ = error;
+
+    if (error == BATTOR_ERROR_NONE)
+      cout << trace << endl;
+
     done_.Signal();
   }
 

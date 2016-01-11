@@ -60,6 +60,7 @@
       'sources': [
 	'battor_agent_unittest.cc',
         'battor_connection_impl_unittest.cc',
+        'battor_protocol_types_unittest.cc',
       ],
     },
   ],

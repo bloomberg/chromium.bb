@@ -36,6 +36,8 @@ class BattOrAgent : public BattOrConnection::Listener,
   class Listener {
    public:
     virtual void OnStartTracingComplete(BattOrError error) = 0;
+    virtual void OnStopTracingComplete(const std::string& trace,
+                                       BattOrError error) = 0;
   };
 
   BattOrAgent(
@@ -45,14 +47,14 @@ class BattOrAgent : public BattOrConnection::Listener,
       scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner);
   virtual ~BattOrAgent();
 
-  // Tells the BattOr to start tracing.
   void StartTracing();
+  void StopTracing();
 
   // Returns whether the BattOr is able to record clock sync markers in its own
   // trace log.
   static bool SupportsExplicitClockSync() { return true; }
 
-  // BattOrConnection::Listener implementations.
+  // BattOrConnection::Listener implementation.
   void OnConnectionOpened(bool success) override;
   void OnBytesSent(bool success) override;
   void OnMessageRead(bool success,
@@ -69,6 +71,7 @@ class BattOrAgent : public BattOrConnection::Listener,
   enum class Command {
     INVALID,
     START_TRACING,
+    STOP_TRACING,
   };
 
   enum class Action {
@@ -85,6 +88,14 @@ class BattOrAgent : public BattOrConnection::Listener,
     READ_SET_GAIN_ACK,
     SEND_START_TRACING,
     READ_START_TRACING_ACK,
+
+    // Actions required for stopping tracing.
+    SEND_EEPROM_REQUEST,
+    READ_EEPROM,
+    SEND_SAMPLES_REQUEST,
+    READ_SAMPLES_REQUEST_ACK,
+    READ_CALIBRATION_FRAME,
+    READ_DATA_FRAME,
   };
 
   // Performs an action.
@@ -115,6 +126,15 @@ class BattOrAgent : public BattOrConnection::Listener,
 
   // Checker to make sure that this is only ever called on the IO thread.
   base::ThreadChecker thread_checker_;
+
+  // The BattOr's EEPROM (which is required for calibration).
+  scoped_ptr<BattOrEEPROM> battor_eeprom_;
+
+  // The first frame (required for calibration).
+  std::vector<RawBattOrSample> calibration_frame_;
+
+  // The actual data samples recorded.
+  std::vector<RawBattOrSample> samples_;
 
   DISALLOW_COPY_AND_ASSIGN(BattOrAgent);
 };

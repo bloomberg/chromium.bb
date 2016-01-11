@@ -78,6 +78,54 @@ struct BattOrControlMessageAck {
   uint8_t param;
 };
 
+// TODO(charliea, aschulman): Write better descriptions for the EEPROM fields
+// when we actually start doing the math to convert raw BattOr readings to
+// accurate ones.
+
+// The BattOr's EEPROM is persistent storage that contains information that we
+// need in order to convert raw BattOr readings into accurate voltage and
+// current measurements.
+struct BattOrEEPROM {
+  uint8_t magic[4];
+  uint16_t version;
+  uint32_t timestamp;
+  float r1;
+  float r2;
+  float r3;
+  float low_gain;
+  float low_gain_correction_factor;
+  float low_gain_correction_offset;
+  uint16_t low_gain_amppot;
+  float high_gain;
+  float high_gain_correction_factor;
+  float high_gain_correction_offset;
+  uint32_t sd_sr;
+  uint16_t sd_tdiv;
+  uint16_t sd_tovf;
+  uint16_t sd_filpot;
+  uint32_t uart_sr;
+  uint16_t uart_tdiv;
+  uint16_t uart_tovf;
+  uint16_t uart_filpot;
+  uint16_t high_gain_amppot;
+  uint32_t crc32;
+};
+
+// The BattOrFrameHeader begins every frame containing BattOr samples.
+struct BattOrFrameHeader {
+  // The number of frames that have preceded this one.
+  uint32_t sequence_no;
+  // The number of samples in this frame.
+  uint16_t length;
+};
+
+// The RawBattOrSample is what's sent back from the BattOr to give the voltage
+// and current measurements.
+struct RawBattOrSample {
+  uint16_t voltage;
+  uint16_t current;
+};
+
 #pragma pack(pop)
 
 }  // namespace battor
