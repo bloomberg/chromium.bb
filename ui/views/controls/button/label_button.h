@@ -64,9 +64,8 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   // Sets the elide behavior of this button.
   void SetElideBehavior(gfx::ElideBehavior elide_behavior);
 
-  // Gets or sets the horizontal alignment used for the button; reversed in RTL.
-  // The optional image will lead the text, unless the button is right-aligned.
-  gfx::HorizontalAlignment GetHorizontalAlignment() const;
+  // Sets the horizontal alignment used for the button; reversed in RTL. The
+  // optional image will lead the text, unless the button is right-aligned.
   void SetHorizontalAlignment(gfx::HorizontalAlignment alignment);
 
   // Call SetMinSize(gfx::Size()) to clear the monotonically increasing size.
@@ -195,6 +194,12 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
 
   // Spacing between the image and the text.
   int image_label_spacing_;
+
+  // Alignment of the button. This can be different from the alignment of the
+  // text; for example, the label may be set to ALIGN_TO_HEAD (alignment matches
+  // text direction) while |this| is laid out as ALIGN_LEFT (alignment matches
+  // UI direction).
+  gfx::HorizontalAlignment horizontal_alignment_;
 
   scoped_ptr<Painter> focus_painter_;
 

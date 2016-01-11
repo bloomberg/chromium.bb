@@ -72,7 +72,8 @@ LabelButton::LabelButton(ButtonListener* listener, const base::string16& text)
       is_default_(false),
       style_(STYLE_TEXTBUTTON),
       border_is_themed_border_(true),
-      image_label_spacing_(kSpacing) {
+      image_label_spacing_(kSpacing),
+      horizontal_alignment_(gfx::ALIGN_LEFT) {
   SetAnimationDuration(kHoverAnimationDurationMs);
   SetText(text);
 
@@ -82,7 +83,7 @@ LabelButton::LabelButton(ButtonListener* listener, const base::string16& text)
   AddChildView(label_);
   label_->SetFontList(cached_normal_font_list_);
   label_->SetAutoColorReadabilityEnabled(false);
-  label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
 
   // Inset the button focus rect from the actual border; roughly match Windows.
   SetFocusPainter(Painter::CreateDashedFocusPainterWithInsets(gfx::Insets(
@@ -153,12 +154,9 @@ void LabelButton::SetElideBehavior(gfx::ElideBehavior elide_behavior) {
   label_->SetElideBehavior(elide_behavior);
 }
 
-gfx::HorizontalAlignment LabelButton::GetHorizontalAlignment() const {
-  return label_->horizontal_alignment();
-}
-
 void LabelButton::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
-  label_->SetHorizontalAlignment(alignment);
+  DCHECK_NE(gfx::ALIGN_TO_HEAD, alignment);
+  horizontal_alignment_ = alignment;
   InvalidateLayout();
 }
 
@@ -196,7 +194,7 @@ void LabelButton::SetStyle(ButtonStyle style) {
   style_ = style;
 
   SetFocusPainter(nullptr);
-  label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetFocusable(true);
   SetMinSize(gfx::Size(70, 33));
 
@@ -279,14 +277,11 @@ int LabelButton::GetHeightForWidth(int w) const {
 }
 
 void LabelButton::Layout() {
-  gfx::HorizontalAlignment adjusted_alignment = GetHorizontalAlignment();
-  if (base::i18n::IsRTL() && adjusted_alignment != gfx::ALIGN_CENTER)
-    adjusted_alignment = (adjusted_alignment == gfx::ALIGN_LEFT) ?
-        gfx::ALIGN_RIGHT : gfx::ALIGN_LEFT;
-
   // By default, GetChildAreaBounds() ignores the top and bottom border, but we
   // want the image to respect it.
   gfx::Rect child_area(GetChildAreaBounds());
+  // The space that the label can use. Its actual bounds may be smaller if the
+  // label is short.
   gfx::Rect label_area(child_area);
 
   gfx::Insets insets(GetInsets());
@@ -297,40 +292,43 @@ void LabelButton::Layout() {
   gfx::Size image_size(image_->GetPreferredSize());
   image_size.SetToMin(child_area.size());
 
-  // The label takes any remaining width after sizing the image, unless both
-  // views are centered. In that case, using the tighter preferred label width
-  // avoids wasted space within the label that would look like awkward padding.
-  gfx::Size label_size(label_area.size());
-  if (!image_size.IsEmpty() && !label_size.IsEmpty()) {
-    label_size.set_width(std::max(child_area.width() -
-        image_size.width() - image_label_spacing_, 0));
-    if (adjusted_alignment == gfx::ALIGN_CENTER) {
-      // Ensure multi-line labels paired with images use their available width.
-      label_size.set_width(
-          std::min(label_size.width(), label_->GetPreferredSize().width()));
-    }
+  if (!image_size.IsEmpty()) {
+    int image_space = image_size.width() + image_label_spacing_;
+    if (horizontal_alignment_ == gfx::ALIGN_RIGHT)
+      label_area.Inset(0, 0, image_space, 0);
+    else
+      label_area.Inset(image_space, 0, 0, 0);
   }
+
+  gfx::Size label_size(
+      std::min(label_area.width(), label_->GetPreferredSize().width()),
+      label_area.height());
 
   gfx::Point image_origin(child_area.origin());
   image_origin.Offset(0, (child_area.height() - image_size.height()) / 2);
-  if (adjusted_alignment == gfx::ALIGN_CENTER) {
+  if (horizontal_alignment_ == gfx::ALIGN_CENTER) {
     const int spacing = (image_size.width() > 0 && label_size.width() > 0) ?
         image_label_spacing_ : 0;
     const int total_width = image_size.width() + label_size.width() +
         spacing;
     image_origin.Offset((child_area.width() - total_width) / 2, 0);
-  } else if (adjusted_alignment == gfx::ALIGN_RIGHT) {
+  } else if (horizontal_alignment_ == gfx::ALIGN_RIGHT) {
     image_origin.Offset(child_area.width() - image_size.width(), 0);
   }
+  image_->SetBoundsRect(gfx::Rect(image_origin, image_size));
 
-  gfx::Point label_origin(label_area.origin());
-  if (!image_size.IsEmpty() && adjusted_alignment != gfx::ALIGN_RIGHT) {
-    label_origin.set_x(image_origin.x() + image_size.width() +
-        image_label_spacing_);
+  gfx::Rect label_bounds = label_area;
+  if (label_area.width() == label_size.width()) {
+    // Label takes up the whole area.
+  } else if (horizontal_alignment_ == gfx::ALIGN_CENTER) {
+    label_bounds.ClampToCenteredSize(label_size);
+  } else {
+    label_bounds.set_size(label_size);
+    if (horizontal_alignment_ == gfx::ALIGN_RIGHT)
+      label_bounds.Offset(label_area.width() - label_size.width(), 0);
   }
 
-  image_->SetBoundsRect(gfx::Rect(image_origin, image_size));
-  label_->SetBoundsRect(gfx::Rect(label_origin, label_size));
+  label_->SetBoundsRect(label_bounds);
   CustomButton::Layout();
 }
 

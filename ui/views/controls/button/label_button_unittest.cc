@@ -73,7 +73,6 @@ TEST_F(LabelButtonTest, Init) {
   EXPECT_EQ(ui::AX_ROLE_BUTTON, accessible_state.role);
   EXPECT_EQ(text, accessible_state.name);
 
-  EXPECT_EQ(gfx::ALIGN_LEFT, button.GetHorizontalAlignment());
   EXPECT_FALSE(button.is_default());
   EXPECT_EQ(button.style(), Button::STYLE_TEXTBUTTON);
   EXPECT_EQ(Button::STATE_NORMAL, button.state());
@@ -194,17 +193,20 @@ TEST_F(LabelButtonTest, LabelAndImage) {
 
   // Layout and ensure the image is left of the label except for ALIGN_RIGHT.
   // (A proper parent view or layout manager would Layout on its invalidations).
-  button_->SetSize(button_->GetPreferredSize());
+  // Also make sure CENTER alignment moves the label compared to LEFT alignment.
+  gfx::Size button_size = button_->GetPreferredSize();
+  button_size.Enlarge(50, 0);
+  button_->SetSize(button_size);
   button_->Layout();
-  EXPECT_EQ(gfx::ALIGN_LEFT, button_->GetHorizontalAlignment());
   EXPECT_LT(button_->image_->bounds().right(), button_->label_->bounds().x());
+  int left_align_label_midpoint = button_->label_->bounds().CenterPoint().x();
   button_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   button_->Layout();
-  EXPECT_EQ(gfx::ALIGN_CENTER, button_->GetHorizontalAlignment());
   EXPECT_LT(button_->image_->bounds().right(), button_->label_->bounds().x());
+  int center_align_label_midpoint = button_->label_->bounds().CenterPoint().x();
+  EXPECT_LT(left_align_label_midpoint, center_align_label_midpoint);
   button_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
   button_->Layout();
-  EXPECT_EQ(gfx::ALIGN_RIGHT, button_->GetHorizontalAlignment());
   EXPECT_LT(button_->label_->bounds().right(), button_->image_->bounds().x());
 
   button_->SetText(base::string16());

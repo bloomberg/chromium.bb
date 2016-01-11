@@ -264,14 +264,20 @@ class RightAlignedIconLabelButton : public views::LabelButton {
   RightAlignedIconLabelButton(views::ButtonListener* listener,
                               const base::string16& text)
       : views::LabelButton(listener, text) {
+    SetHorizontalAlignment(gfx::ALIGN_RIGHT);
+    label()->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   }
 
  protected:
   void Layout() override {
-    // This layout trick keeps the text left-aligned and the icon right-aligned.
-    SetHorizontalAlignment(gfx::ALIGN_RIGHT);
     views::LabelButton::Layout();
-    label()->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+
+    // Keep the text centered and the icon right-aligned by stretching the label
+    // to take up more of the content area and centering its contents.
+    gfx::Rect content_bounds = GetContentsBounds();
+    gfx::Rect label_bounds = label()->bounds();
+    label_bounds.Inset(content_bounds.x() - label_bounds.x(), 0, 0, 0);
+    label()->SetBoundsRect(label_bounds);
   }
 
  private:
@@ -388,7 +394,6 @@ class EditableProfileName : public views::View,
     const gfx::FontList& medium_font_list =
         rb->GetFontList(ui::ResourceBundle::MediumFont);
     button_->SetFontList(medium_font_list);
-    button_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
 
     if (!is_editing_allowed) {
       button_->SetBorder(views::Border::CreateEmptyBorder(2, 0, 2, 0));

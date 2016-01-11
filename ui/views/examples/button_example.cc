@@ -93,9 +93,9 @@ void ButtonExample::LabelButtonPressed(const ui::Event& event) {
           label_button_->GetImage(Button::STATE_NORMAL).isNull() ?
           *icon_ : gfx::ImageSkia());
     } else {
+      static int alignment = 0;
       label_button_->SetHorizontalAlignment(
-          static_cast<gfx::HorizontalAlignment>(
-              (label_button_->GetHorizontalAlignment() + 1) % 3));
+          static_cast<gfx::HorizontalAlignment>(++alignment % 3));
     }
   } else if (event.IsShiftDown()) {
     if (event.IsAltDown()) {
