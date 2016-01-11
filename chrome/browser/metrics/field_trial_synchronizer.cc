@@ -40,11 +40,16 @@ void FieldTrialSynchronizer::NotifyAllRenderers(
   // need to be on the UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  // Check that the sender's PID doesn't change between messages. We expect
+  // these IPCs to always be delivered from the same browser process, whose pid
+  // should not change.
+  // TODO(asvitkine): Remove this after http://crbug.com/359406 is fixed.
+  static base::ProcessId sender_pid = base::Process::Current().Pid();
   for (content::RenderProcessHost::iterator it(
           content::RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd(); it.Advance()) {
-    it.GetCurrentValue()->Send(
-        new ChromeViewMsg_SetFieldTrialGroup(field_trial_name, group_name));
+    it.GetCurrentValue()->Send(new ChromeViewMsg_SetFieldTrialGroup(
+        field_trial_name, group_name, sender_pid));
   }
 }
 

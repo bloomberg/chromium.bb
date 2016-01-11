@@ -348,12 +348,22 @@ void ChromeRenderProcessObserver::OnSetContentSettingRules(
 
 void ChromeRenderProcessObserver::OnSetFieldTrialGroup(
     const std::string& field_trial_name,
-    const std::string& group_name) {
+    const std::string& group_name,
+    base::ProcessId sender_pid) {
+  // Check that the sender's PID doesn't change between messages. We expect
+  // these IPCs to always be delivered from the same browser process, whose pid
+  // should not change.
+  // TODO(asvitkine): Remove this after http://crbug.com/359406 is fixed.
+  static base::ProcessId sender_pid_cached = sender_pid;
+  CHECK_EQ(sender_pid_cached, sender_pid) << sender_pid_cached << "/"
+                                          << sender_pid;
   base::FieldTrial* trial =
       base::FieldTrialList::CreateFieldTrial(field_trial_name, group_name);
   // TODO(mef): Remove this check after the investigation of 359406 is complete.
   CHECK(trial) << field_trial_name << ":" << group_name << "=>"
-               << base::FieldTrialList::FindFullName(field_trial_name);
+               << base::FieldTrialList::FindFullName(field_trial_name) << " | "
+               << base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                   switches::kForceFieldTrials);
   // Ensure the trial is marked as "used" by calling group() on it if it is
   // marked as activated.
   trial->group();

@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/process/process.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/renderer/render_process_observer.h"
 
@@ -65,7 +66,8 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver,
   void OnSetContentSettingRules(const RendererContentSettingRules& rules);
   void OnGetCacheResourceStats();
   void OnSetFieldTrialGroup(const std::string& fiel_trial_name,
-                            const std::string& group_name);
+                            const std::string& group_name,
+                            base::ProcessId sender_pid);
 
   static bool is_incognito_process_;
   scoped_ptr<content::ResourceDispatcherDelegate> resource_delegate_;
