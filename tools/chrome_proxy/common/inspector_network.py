@@ -146,6 +146,7 @@ class InspectorNetwork(object):
     self._served_from_cache = set()
     self._timeline_recorder = None
     self._initiators = {}
+    self._finished = {}
 
   def ClearCache(self, timeout=60):
     """Clears the browser's disk and memory cache."""
@@ -170,21 +171,51 @@ class InspectorNetwork(object):
 
   def StopMonitoringNetwork(self):
     """Stops monitoring network notifications and recording HTTP responses."""
-    self._inspector_websocket.UnregisterDomain('Network')
     request = {
         'method': 'Network.disable'
         }
     self._inspector_websocket.SyncRequest(request)
+    # There may be queued messages that don't appear until the SyncRequest
+    # happens. Wait to unregister until after sending the disable command.
+    self._inspector_websocket.UnregisterDomain('Network')
 
   def GetResponseData(self):
     """Returns all recorded HTTP responses."""
-    return self._http_responses
+    return [self._AugmentResponse(rsp) for rsp in self._http_responses]
 
   def ClearResponseData(self):
     """Clears recorded HTTP responses."""
     self._http_responses = []
     self._served_from_cache.clear()
     self._initiators.clear()
+
+  def _AugmentResponse(self, response):
+    """Augments an InspectorNetworkResponseData for final output.
+
+    Join the loadingFinished timing event to the response. This event is
+    timestamped with epoch seconds. In the response timing object, all timing
+    aside from requestTime is in millis relative to requestTime, so
+    loadingFinished is converted to be consistent.
+
+    Args:
+      response: an InspectorNetworkResponseData instance to augment.
+
+    Returns:
+      The same response, modifed as described above.
+
+    """
+    if response.timing is None:
+      return response
+
+    if response.request_id not in self._finished:
+      response.timing['loadingFinished'] = -1
+    else:
+      delta_ms = 1000 * (self._finished[response.request_id] -
+                         response.timing['requestTime'])
+      if delta_ms < 0:
+        delta_ms = -1
+      response.timing['loadingFinished'] = delta_ms
+    return response
 
   def _OnNetworkNotification(self, msg):
     if msg['method'] == 'Network.requestWillBeSent':
@@ -193,6 +224,9 @@ class InspectorNetwork(object):
       self._RecordHTTPResponse(msg['params'])
     elif msg['method'] == 'Network.requestServedFromCache':
       self._served_from_cache.add(msg['params']['requestId'])
+    elif msg['method'] == 'Network.loadingFinished':
+      assert msg['params']['requestId'] not in self._finished
+      self._finished[msg['params']['requestId']] = msg['params']['timestamp']
 
   def _ProcessRequestWillBeSent(self, params):
     request_id = params['requestId']
@@ -202,7 +236,7 @@ class InspectorNetwork(object):
     required_fields = ['requestId', 'timestamp', 'response']
     for field in required_fields:
       if field not in params:
-        logging.waring('HTTP Response missing required field: %s', field)
+        logging.warning('HTTP Response missing required field: %s', field)
         return
     request_id = params['requestId']
     assert request_id in self._initiators

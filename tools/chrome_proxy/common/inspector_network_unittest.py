@@ -1,6 +1,7 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import urlparse
 
 from common import inspector_network
 from common import network_metrics
@@ -71,6 +72,31 @@ class InspectorNetworkTabTest(tab_test_case.TabTestCase):
           self.assertFalse('<!DOCTYPE HTML>' in body)
           self.assertTrue(base64_encoded)
           self.assertEqual('parser', resp.initiator['type'])
+
+  def testNetworkTiming(self):
+    test = (
+        'image_decoding.html', InspectorNetworkTabTest.TestCase(
+            responses_count=2, subresources=['image.png'])
+        )
+
+    network = inspector_network.InspectorNetwork(
+        self._tab._inspector_backend._websocket)
+    network.StartMonitoringNetwork()
+    self.Navigate(test[0])
+    network.StopMonitoringNetwork()
+    response_data = network.GetResponseData()
+    path_to_response = {urlparse.urlparse(r.url).path: r
+                        for r in response_data}
+    self.assertTrue('/image_decoding.html' in path_to_response)
+    self.assertTrue(
+        path_to_response['/image_decoding.html'].timing['requestTime'] > 0)
+    self.assertTrue(
+        path_to_response['/image_decoding.html'].timing['loadingFinished'] > 0)
+    self.assertTrue('/image.png' in path_to_response)
+    self.assertTrue(
+        path_to_response['/image.png'].timing['requestTime'] > 0)
+    self.assertTrue(
+        path_to_response['/image.png'].timing['loadingFinished'] > 0)
 
   # Flaky on many platforms (at least Win, Linux, and Mac).
   # http://crbug.com/424706
