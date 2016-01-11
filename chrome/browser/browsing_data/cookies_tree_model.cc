@@ -597,8 +597,7 @@ CookieTreeRootNode::CookieTreeRootNode(CookiesTreeModel* model)
 
 CookieTreeRootNode::~CookieTreeRootNode() {}
 
-CookieTreeHostNode* CookieTreeRootNode::GetOrCreateHostNode(
-    const GURL& url) {
+CookieTreeHostNode* CookieTreeRootNode::GetOrCreateHostNode(const GURL& url) {
   scoped_ptr<CookieTreeHostNode> host_node(
       new CookieTreeHostNode(url));
 
@@ -1225,6 +1224,8 @@ void CookiesTreeModel::PopulateCookieInfoWithFilter(
   for (CookieList::iterator it = container->cookie_list_.begin();
        it != container->cookie_list_.end(); ++it) {
     GURL source = CanonicalizeCookieSource(*it);
+    if (!source.SchemeIsHTTPOrHTTPS())
+      continue;
     if (source.is_empty() || !group_by_cookie_source_) {
       std::string domain = it->Domain();
       if (domain.length() > 1 && domain[0] == '.')

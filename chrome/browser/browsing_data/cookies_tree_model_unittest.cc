@@ -1614,7 +1614,7 @@ TEST_F(CookiesTreeModelTest, CanonicalizeCookieSource) {
 
   cookies_model.UpdateSearchResults(
       base::string16(base::ASCIIToUTF16("file://")));
-  EXPECT_EQ("A", GetDisplayedCookies(&cookies_model));
+  EXPECT_EQ("", GetDisplayedCookies(&cookies_model));
   CheckContentSettingsUrlForHostNodes(
       cookies_model.GetRoot(), CookieTreeNode::DetailedInfo::TYPE_ROOT,
       cookie_settings, GURL("file:///test/tmp.html"));

@@ -75,9 +75,9 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
   size_t count = 0;
 
   // Count all cookies that have the same domain as the provided |origin|. This
-  // means count all cookies that has been set by a host that is not considered
-  // to be a third party regarding the domain of the provided |origin|.
-  // E.g. if the origin is "http://foo.com" then all cookies with domain foo.com,
+  // means count all cookies that have been set by a host that is not considered
+  // to be a third party regarding the domain of the provided |origin|. E.g. if
+  // the origin is "http://foo.com" then all cookies with domain foo.com,
   // a.foo.com, b.a.foo.com or *.foo.com will be counted.
   typedef CannedBrowsingDataCookieHelper::OriginCookieSetMap OriginCookieSetMap;
   const OriginCookieSetMap& origin_cookies_set_map =
@@ -99,7 +99,8 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
       // used as the scheme is ignored by the SameDomainOrHost method.
       GURL domain_url(std::string(url::kHttpScheme) +
                       url::kStandardSchemeSeparator + cookie_domain);
-      if (SameDomainOrHost(origin, domain_url))
+
+      if (origin.SchemeIsHTTPOrHTTPS() && SameDomainOrHost(origin, domain_url))
         ++count;
     }
   }
