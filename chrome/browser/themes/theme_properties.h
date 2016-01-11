@@ -83,12 +83,20 @@ class ThemeProperties {
   // OverwritableByUserThemeProperties.
   enum NotOverwritableByUserThemeProperty {
     COLOR_CONTROL_BACKGROUND = 1000,
-    COLOR_TOOLBAR_SEPARATOR,
+
+    // The color of the line separating the bottom of the toolbar from the
+    // contents.
+    COLOR_TOOLBAR_BOTTOM_SEPARATOR,
 
     // The color of a normal toolbar button's icon.
     COLOR_TOOLBAR_BUTTON_ICON,
     // The color of a disabled toolbar button's icon.
     COLOR_TOOLBAR_BUTTON_ICON_INACTIVE,
+
+    // The color of the line separating the top of the toolbar from the region
+    // above. For a tabbed browser window, this is the line along the bottom
+    // edge of the tabstrip.
+    COLOR_TOOLBAR_TOP_SEPARATOR,
 
     // Colors used for the detached (NTP) bookmark bar.
     COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND,

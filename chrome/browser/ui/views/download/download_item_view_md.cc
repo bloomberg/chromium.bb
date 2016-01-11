@@ -750,7 +750,8 @@ void DownloadItemViewMd::UpdateColorsFromTheme() {
   if (dangerous_download_label_)
     dangerous_download_label_->SetEnabledColor(GetTextColor());
   SetBorder(make_scoped_ptr(new SeparatorBorder(
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_SEPARATOR))));
+      GetThemeProvider()->GetColor(
+          ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR))));
 }
 
 void DownloadItemViewMd::ShowContextMenuImpl(const gfx::Rect& rect,

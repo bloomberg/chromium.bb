@@ -42,6 +42,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/mus/window_manager_frame_values.h"
@@ -585,10 +586,27 @@ void BrowserNonClientFrameViewMus::PaintToolbarBackground(gfx::Canvas* canvas) {
                          y - GetTopInset(false), x, y, w,
                          theme_toolbar->height());
 
+    // Draw the separator line atop the toolbar, on the left and right of the
+    // tabstrip.
+    // TODO(tdanderson): Draw the separator line for non-tabbed windows.
+    if (browser_view()->IsTabStripVisible()) {
+      gfx::Rect separator_rect(x, y, w, 0);
+      gfx::ScopedCanvas scoped_canvas(canvas);
+      gfx::Rect tabstrip_bounds(
+          GetBoundsForTabStrip(browser_view()->tabstrip()));
+      tabstrip_bounds.set_x(GetMirroredXForRect(tabstrip_bounds));
+      canvas->sk_canvas()->clipRect(gfx::RectToSkRect(tabstrip_bounds),
+                                    SkRegion::kDifference_Op);
+      separator_rect.set_y(tabstrip_bounds.bottom());
+      BrowserView::Paint1pxHorizontalLine(
+          canvas, tp->GetColor(ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR),
+          separator_rect, true);
+    }
+
     // Draw the content/toolbar separator.
     toolbar_bounds.Inset(kClientEdgeThickness, 0);
     BrowserView::Paint1pxHorizontalLine(
-        canvas, tp->GetColor(ThemeProperties::COLOR_TOOLBAR_SEPARATOR),
+        canvas, tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR),
         toolbar_bounds, true);
   } else {
     // Gross hack: We split the toolbar images into two pieces, since sometimes
@@ -639,7 +657,7 @@ void BrowserNonClientFrameViewMus::PaintToolbarBackground(gfx::Canvas* canvas) {
         gfx::Rect(x + kClientEdgeThickness,
                   toolbar_bounds.bottom() - kClientEdgeThickness,
                   w - (2 * kClientEdgeThickness), kClientEdgeThickness),
-        tp->GetColor(ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
+        tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR));
   }
 }
 
@@ -648,5 +666,6 @@ void BrowserNonClientFrameViewMus::PaintContentEdge(gfx::Canvas* canvas) {
   const int bottom = frame_values().normal_insets.bottom();
   canvas->FillRect(
       gfx::Rect(0, bottom, width(), kClientEdgeThickness),
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
+      GetThemeProvider()->GetColor(
+          ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR));
 }

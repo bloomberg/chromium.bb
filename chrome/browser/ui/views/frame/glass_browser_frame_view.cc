@@ -360,7 +360,7 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   const bool md = ui::MaterialDesignController::IsModeMaterial();
   const ui::ThemeProvider* tp = GetThemeProvider();
   const SkColor separator_color =
-      tp->GetColor(ThemeProperties::COLOR_TOOLBAR_SEPARATOR);
+      tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR);
 
   if (browser_view()->IsTabStripVisible()) {
     gfx::ImageSkia* bg = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
@@ -394,7 +394,8 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
                                     SkRegion::kDifference_Op);
       separator_rect.set_y(tabstrip_bounds.bottom());
       BrowserView::Paint1pxHorizontalLine(
-          canvas, SkColorSetA(SK_ColorBLACK, 0x40), separator_rect, true);
+          canvas, tp->GetColor(ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR),
+          separator_rect, true);
     } else {
       // Background.  The top stroke is drawn using the IDR_CONTENT_TOP_XXX
       // images, which overlay the toolbar.  The top 2 px of these images is the

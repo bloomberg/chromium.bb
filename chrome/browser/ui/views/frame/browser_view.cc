@@ -312,12 +312,13 @@ void PaintAttachedBookmarkBar(gfx::Canvas* canvas,
     if (ui::MaterialDesignController::IsModeMaterial()) {
       BrowserView::Paint1pxHorizontalLine(
           canvas, view->GetThemeProvider()->GetColor(
-                      ThemeProperties::COLOR_TOOLBAR_SEPARATOR),
+                      ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR),
           view->GetLocalBounds(), true);
     } else {
-      PaintHorizontalBorder(canvas, view, false,
-                            view->GetThemeProvider()->GetColor(
-                                ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
+      PaintHorizontalBorder(
+          canvas, view, false,
+          view->GetThemeProvider()->GetColor(
+              ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR));
     }
   }
 }
@@ -2043,7 +2044,8 @@ void BrowserView::OnOmniboxPopupShownOrHidden() {
 // BrowserView, InfoBarContainerDelegate overrides:
 
 SkColor BrowserView::GetInfoBarSeparatorColor() const {
-  return GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_SEPARATOR);
+  return GetThemeProvider()->GetColor(
+      ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR);
 }
 
 void BrowserView::InfoBarContainerStateChanged(bool is_animating) {

@@ -641,7 +641,7 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   const bool md = ui::MaterialDesignController::IsModeMaterial();
   const ui::ThemeProvider* tp = GetThemeProvider();
   const SkColor separator_color =
-      tp->GetColor(ThemeProperties::COLOR_TOOLBAR_SEPARATOR);
+      tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR);
 
   if (browser_view()->IsTabStripVisible()) {
     gfx::ImageSkia* bg = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
@@ -675,7 +675,8 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
                                     SkRegion::kDifference_Op);
       separator_rect.set_y(tabstrip_bounds.bottom());
       BrowserView::Paint1pxHorizontalLine(
-          canvas, SkColorSetA(SK_ColorBLACK, 0x40), separator_rect, true);
+          canvas, tp->GetColor(ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR),
+          separator_rect, true);
     } else {
       // Background.  We need to create a separate layer so we can mask off the
       // corners before compositing onto the frame.
@@ -777,7 +778,8 @@ void OpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) {
       // Shadow.
       client_bounds.Offset(0, img_y_offset);
       BrowserView::Paint1pxHorizontalLine(
-          canvas, SkColorSetA(SK_ColorBLACK, 0x40), client_bounds, true);
+          canvas, tp->GetColor(ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR),
+          client_bounds, true);
     } else {
       // Edge.
       canvas->FillRect(client_bounds, toolbar_color);

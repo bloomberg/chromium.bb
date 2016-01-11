@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -1523,7 +1524,10 @@ void TabStrip::PaintChildren(const ui::PaintContext& context) {
           SkRegion::kDifference_Op);
     }
     BrowserView::Paint1pxHorizontalLine(
-        canvas, SkColorSetA(SK_ColorBLACK, 0x40), GetLocalBounds(), true);
+        canvas,
+        GetThemeProvider()->GetColor(
+            ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR),
+        GetLocalBounds(), true);
   }
 }
 

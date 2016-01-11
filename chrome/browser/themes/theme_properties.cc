@@ -105,6 +105,7 @@ const SkColor kDefaultDetachedBookmarkBarSeparator[] = {
     SkColorSetRGB(170, 170, 171), SkColorSetRGB(182, 180, 182)};
 const SkColor kDefaultDetachedBookmarkBarSeparatorIncognito[] = {
     SkColorSetRGB(170, 170, 171), SkColorSetRGB(0x28, 0x28, 0x28)};
+const SkColor kDefaultToolbarTopSeparator = SkColorSetA(SK_ColorBLACK, 0x40);
 
 #if defined(OS_MACOSX)
 const SkColor kDefaultColorToolbarButtonStroke = SkColorSetARGB(75, 81, 81, 81);
@@ -317,13 +318,15 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool otr) {
     // Properties not stored in theme pack.
     case COLOR_CONTROL_BACKGROUND:
       return kDefaultColorControlBackground;
-    case COLOR_TOOLBAR_SEPARATOR:
+    case COLOR_TOOLBAR_BOTTOM_SEPARATOR:
     case COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR:
       return otr ? kDefaultDetachedBookmarkBarSeparatorIncognito[mode]
                  : kDefaultDetachedBookmarkBarSeparator[mode];
     case COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND:
       return otr ? kDefaultDetachedBookmarkBarBackgroundIncognito[mode]
                  : kDefaultDetachedBookmarkBarBackground[mode];
+    case COLOR_TOOLBAR_TOP_SEPARATOR:
+      return kDefaultToolbarTopSeparator;
 #if defined(OS_MACOSX)
     case COLOR_TOOLBAR_BUTTON_STROKE:
       return kDefaultColorToolbarButtonStroke;
