@@ -51,7 +51,7 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_failure_state.h"
 
-#if defined(ENABLE_BIDIRECTIONAL_STREAM)
+#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
 #include "net/http/bidirectional_stream_job.h"
 #include "net/spdy/bidirectional_stream_spdy_job.h"
 #endif
@@ -375,7 +375,7 @@ void HttpStreamFactoryImpl::Job::OnWebSocketHandshakeStreamReadyCallback() {
 }
 
 void HttpStreamFactoryImpl::Job::OnBidirectionalStreamJobReadyCallback() {
-#if defined(ENABLE_BIDIRECTIONAL_STREAM)
+#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
   DCHECK(bidirectional_stream_job_);
 
   MaybeCopyConnectionAttemptsFromSocketOrHandle();
@@ -396,7 +396,7 @@ void HttpStreamFactoryImpl::Job::OnBidirectionalStreamJobReadyCallback() {
 }
 
 void HttpStreamFactoryImpl::Job::OnNewSpdySessionReadyCallback() {
-#if defined(ENABLE_BIDIRECTIONAL_STREAM)
+#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
   DCHECK(stream_.get() || bidirectional_stream_job_.get());
 #else
   DCHECK(stream_.get());
@@ -421,7 +421,7 @@ void HttpStreamFactoryImpl::Job::OnNewSpdySessionReadyCallback() {
     stream_factory_->OnOrphanedJobComplete(this);
   } else {
     if (for_bidirectional_) {
-#if defined(ENABLE_BIDIRECTIONAL_STREAM)
+#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
       DCHECK(bidirectional_stream_job_);
       request_->OnNewSpdySessionReady(this, /*spdy_http_stream=*/nullptr,
                                       std::move(bidirectional_stream_job_),
@@ -623,7 +623,7 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
             FROM_HERE, base::Bind(&Job::OnWebSocketHandshakeStreamReadyCallback,
                                   ptr_factory_.GetWeakPtr()));
       } else if (for_bidirectional_) {
-#if defined(ENABLE_BIDIRECTIONAL_STREAM)
+#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
         if (!bidirectional_stream_job_) {
           base::ThreadTaskRunnerHandle::Get()->PostTask(
               FROM_HERE, base::Bind(&Job::OnStreamFailedCallback,
@@ -1214,7 +1214,7 @@ int HttpStreamFactoryImpl::Job::SetSpdyHttpStreamOrBidirectionalStreamJob(
   if (stream_factory_->for_websockets_)
     return ERR_NOT_IMPLEMENTED;
   if (for_bidirectional_) {
-#if defined(ENABLE_BIDIRECTIONAL_STREAM)
+#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
     // TODO(xunjieli): Create QUIC's version of BidirectionalStreamJob.
     bidirectional_stream_job_.reset(new BidirectionalStreamSpdyJob(session));
     return OK;

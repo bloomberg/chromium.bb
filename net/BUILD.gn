@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/crypto.gni")
@@ -43,6 +44,8 @@ enable_built_in_dns = !is_ios
 declare_args() {
   # Disables support for file URLs.  File URL support requires use of icu.
   disable_file_support = false
+
+  # Enables BidirectionalStream; Used in cronet, disabled by default.
   enable_bidirectional_stream = false
 
   # WebSockets and socket stream code are not used on iOS and are optional in
@@ -61,9 +64,6 @@ config("net_config") {
   }
   if (disable_ftp_support) {
     defines += [ "DISABLE_FTP_SUPPORT=1" ]
-  }
-  if (enable_bidirectional_stream) {
-    defines += [ "ENABLE_BIDIRECTIONAL_STREAM=1" ]
   }
 }
 
@@ -105,6 +105,7 @@ net_shared_configs = [
 ]
 
 net_shared_public_deps = [
+  ":features",
   ":net_quic_proto",
   "//crypto",
   "//crypto:platform",
@@ -491,6 +492,10 @@ if (is_android) {
 
     # Disable Brotli support.
     sources += [ "filter/brotli_filter_disabled.cc" ]
+
+    if (enable_bidirectional_stream) {
+      sources += gypi_values.net_bidirectional_stream_sources
+    }
   }
 }
 
@@ -1727,4 +1732,10 @@ executable("net_perftests") {
   } else {
     sources -= [ "proxy/proxy_resolver_perftest.cc" ]
   }
+}
+
+buildflag_header("features") {
+  header = "net_features.h"
+
+  flags = [ "ENABLE_BIDIRECTIONAL_STREAM=$enable_bidirectional_stream" ]
 }

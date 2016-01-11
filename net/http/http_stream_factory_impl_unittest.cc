@@ -25,6 +25,7 @@
 #include "net/http/http_stream.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
+#include "net/net_features.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_service.h"
 #include "net/quic/quic_server_id.h"
@@ -44,7 +45,7 @@
 #include "net/websockets/websocket_handshake_stream_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(ENABLE_BIDIRECTIONAL_STREAM)
+#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
 #include "net/http/bidirectional_stream_job.h"
 #endif
 
@@ -180,7 +181,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
     stream_done_ = true;
     if (waiting_for_stream_)
       base::MessageLoop::current()->QuitWhenIdle();
-#if defined(ENABLE_BIDIRECTIONAL_STREAM)
+#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
     bidirectional_stream_job_.reset(stream);
 #else
     DCHECK(!stream);
@@ -242,7 +243,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
     return static_cast<MockWebSocketHandshakeStream*>(websocket_stream_.get());
   }
 
-#if defined(ENABLE_BIDIRECTIONAL_STREAM)
+#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
   BidirectionalStreamJob* bidirectional_stream_job() {
     return bidirectional_stream_job_.get();
   }
@@ -256,7 +257,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
   bool stream_done_;
   scoped_ptr<HttpStream> stream_;
   scoped_ptr<WebSocketHandshakeStreamBase> websocket_stream_;
-#if defined(ENABLE_BIDIRECTIONAL_STREAM)
+#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
   scoped_ptr<BidirectionalStreamJob> bidirectional_stream_job_;
 #endif
   SSLConfig used_ssl_config_;
@@ -1384,7 +1385,7 @@ TEST_P(HttpStreamFactoryTest, RequestSpdyHttpStream) {
   EXPECT_TRUE(waiter.used_proxy_info().is_direct());
 }
 
-#if defined(ENABLE_BIDIRECTIONAL_STREAM)
+#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
 TEST_P(HttpStreamFactoryTest, RequestBidirectionalStreamJob) {
   SpdySessionDependencies session_deps(GetParam(),
                                        ProxyService::CreateDirect());

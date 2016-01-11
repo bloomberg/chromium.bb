@@ -15,6 +15,7 @@
     '../third_party/protobuf/protobuf.gyp:protobuf_lite',
     '../third_party/zlib/zlib.gyp:zlib',
     'net_derived_sources',
+    'net_features',
     'net_quic_proto',
     'net_resources',
   ],
@@ -96,9 +97,6 @@
       'sources': ['<@(net_ftp_support_sources)']
     }],
     ['enable_bidirectional_stream==1', {
-     'defines': [
-        'ENABLE_BIDIRECTIONAL_STREAM',
-      ],
       'sources': ['<@(net_bidirectional_stream_sources)']
     }],
     ['enable_built_in_dns==1', {

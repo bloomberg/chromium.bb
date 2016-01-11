@@ -11,7 +11,7 @@
 #include "net/spdy/spdy_http_stream.h"
 #include "net/spdy/spdy_session.h"
 
-#if defined(ENABLE_BIDIRECTIONAL_STREAM)
+#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
 #include "net/http/bidirectional_stream_job.h"
 #endif
 
@@ -275,7 +275,7 @@ bool HttpStreamFactoryImpl::Request::HasSpdySessionKey() const {
 void HttpStreamFactoryImpl::Request::OnNewSpdySessionReady(
     Job* job,
     scoped_ptr<HttpStream> stream,
-#if defined(ENABLE_BIDIRECTIONAL_STREAM)
+#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
     scoped_ptr<BidirectionalStreamJob> bidirectional_stream_job,
 #else
     void* bidirectional_stream_job,
@@ -317,7 +317,7 @@ void HttpStreamFactoryImpl::Request::OnNewSpdySessionReady(
   } else if (for_bidirectional_) {
     DCHECK(bidirectional_stream_job);
     DCHECK(!stream);
-#if defined(ENABLE_BIDIRECTIONAL_STREAM)
+#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
     delegate_->OnBidirectionalStreamJobReady(
         job->server_ssl_config(), job->proxy_info(),
         bidirectional_stream_job.release());

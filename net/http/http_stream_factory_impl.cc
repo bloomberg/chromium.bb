@@ -14,11 +14,12 @@
 #include "net/http/http_stream_factory_impl_job.h"
 #include "net/http/http_stream_factory_impl_request.h"
 #include "net/log/net_log.h"
+#include "net/net_features.h"
 #include "net/quic/quic_server_id.h"
 #include "net/spdy/spdy_http_stream.h"
 #include "url/gurl.h"
 
-#if defined(ENABLE_BIDIRECTIONAL_STREAM)
+#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
 #include "net/spdy/bidirectional_stream_spdy_job.h"
 #endif
 
@@ -91,7 +92,7 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestBidirectionalStreamJob(
   DCHECK(request_info.url.SchemeIs(url::kHttpsScheme));
 
 // TODO(xunjieli): Create QUIC's version of BidirectionalStreamJob.
-#if defined(ENABLE_BIDIRECTIONAL_STREAM)
+#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
   HostPortPair server = HostPortPair::FromURL(request_info.url);
   GURL origin_url = ApplyHostMappingRules(request_info.url, &server);
   Request* request =
@@ -337,7 +338,7 @@ void HttpStreamFactoryImpl::OnNewSpdySessionReady(
       // implementation is ready.
       NOTREACHED();
     } else if (request->for_bidirectional()) {
-#if defined(ENABLE_BIDIRECTIONAL_STREAM)
+#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
       request->OnBidirectionalStreamJobReady(
           nullptr, used_ssl_config, used_proxy_info,
           new BidirectionalStreamSpdyJob(spdy_session));

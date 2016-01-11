@@ -6,6 +6,8 @@
   'variables': {
     'chromium_code': 1,
     'linux_link_kerberos%': 0,
+    # Enables BidirectionalStream; Used in cronet, disabled by default.
+    'enable_bidirectional_stream%': 0,
     'conditions': [
       ['chromeos==1 or embedded==1 or OS=="ios"', {
         # Disable Kerberos on ChromeOS and iOS, at least for now.
@@ -112,6 +114,7 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../url/url.gyp:url_lib',
+        'net_features',
         'net_quic_proto',
       ],
       'sources': [
@@ -120,6 +123,17 @@
         'filter/brotli_filter.cc',
       ],
       'includes': [ 'net_common.gypi' ],
+    },
+    {
+      # GN version: //net:features
+      'target_name': 'net_features',
+      'includes': [ '../build/buildflag_header.gypi' ],
+      'variables': {
+        'buildflag_header_path': 'net/net_features.h',
+        'buildflag_flags': [
+          'ENABLE_BIDIRECTIONAL_STREAM=<(enable_bidirectional_stream)',
+        ],
+      },
     },
     {
       # GN version: //net:net_unittests
@@ -289,11 +303,7 @@
             'sources!': [
               'http/bidirectional_stream_unittest.cc',
             ],
-          }, { # else
-           'defines': [
-              'ENABLE_BIDIRECTIONAL_STREAM',
-            ],
-          }
+          },
         ],
         [ 'enable_built_in_dns!=1', {
             'sources!': [
@@ -1359,6 +1369,7 @@
           },
           'dependencies': [
             '../url/url.gyp:url_lib_use_icu_alternatives_on_android',
+            'net_features',
           ],
           'defines': [
             'USE_ICU_ALTERNATIVES_ON_ANDROID=1',

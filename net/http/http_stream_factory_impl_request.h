@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/http/http_stream_factory_impl.h"
 #include "net/log/net_log.h"
+#include "net/net_features.h"
 #include "net/socket/connection_attempts.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/spdy/spdy_session_key.h"
@@ -73,7 +74,7 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   void OnNewSpdySessionReady(
       Job* job,
       scoped_ptr<HttpStream> stream,
-#if defined(ENABLE_BIDIRECTIONAL_STREAM)
+#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
       scoped_ptr<BidirectionalStreamJob> bidirectional_stream_spdy_job,
 #else
       void* unused,
