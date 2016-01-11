@@ -266,34 +266,34 @@
     "includes": [27460],
   },
   "chrome/browser/resources/translate_internals_resources.grd": {
-    "includes": [27470],
+    "includes": [27660],
   },
   "chrome/browser/resources/sync_file_system_internals_resources.grd": {
-    "includes": [27480],
+    "includes": [28160],
   },
   "chrome/app/address_input_strings.grd": {
-    "messages": [27580],
+    "messages": [28260],
   },
   "remoting/resources/remoting_strings.grd": {
-    "messages": [28030],
+    "messages": [28710],
   },
   "components/components_strings.grd": {
-    "messages": [28480],
+    "messages": [29160],
   },
   # Chromium strings and Google Chrome strings must start at the same id.
   # We only use one file depending on whether we're building Chromium or
   # Google Chrome.
   "components/components_chromium_strings.grd": {
-    "messages": [29750],
+    "messages": [30150],
   },
   "components/components_google_chrome_strings.grd": {
-    "messages": [29750],
+    "messages": [30150],
   },
   "components/resources/components_resources.grd": {
-    "includes": [29800],
+    "includes": [30175],
   },
   "components/resources/components_scaled_resources.grd": {
-    "structures": [30150],
+    "structures": [30345],
   },
   "third_party/WebKit/public/blink_resources.grd": {
     "includes": [30370],
