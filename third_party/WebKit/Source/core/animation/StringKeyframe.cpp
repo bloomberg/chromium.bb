@@ -15,6 +15,7 @@
 #include "core/animation/CSSPaintInterpolationType.h"
 #include "core/animation/CSSShadowListInterpolationType.h"
 #include "core/animation/CSSValueInterpolationType.h"
+#include "core/animation/CSSVisibilityInterpolationType.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/ConstantStyleInterpolation.h"
 #include "core/animation/DefaultSVGInterpolation.h"
@@ -259,6 +260,9 @@ const InterpolationTypes* applicableTypesForProperty(PropertyHandle property)
             break;
         case CSSPropertyFontWeight:
             applicableTypes->append(adoptPtr(new CSSFontWeightInterpolationType(cssProperty)));
+            break;
+        case CSSPropertyVisibility:
+            applicableTypes->append(adoptPtr(new CSSVisibilityInterpolationType(cssProperty)));
             break;
         default:
             // TODO(alancutter): Support all interpolable CSS properties here so we can stop falling back to the old StyleInterpolation implementation.
