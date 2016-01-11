@@ -3,7 +3,6 @@ asanka@chromium.org
 bnc@chromium.org
 cbentzel@chromium.org
 davidben@chromium.org
-ellyjones@chromium.org
 eroman@chromium.org
 gavinp@chromium.org
 jar@chromium.org
@@ -21,8 +20,3 @@ xunjieli@chromium.org
 per-file *.isolate=maruel@chromium.org
 per-file *.isolate=tandrii@chromium.org
 per-file *.isolate=vadimsh@chromium.org
-
-# Don't use as a reviewer for new CLs, but still here
-# so he can continue to review some already in-progress
-# work.
-szym@chromium.org
