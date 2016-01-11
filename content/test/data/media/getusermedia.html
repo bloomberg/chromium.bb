@@ -359,11 +359,7 @@
       stream, callback, videoElementName) {
     attachMediaStream(stream, videoElementName);
     var videoElement = $(videoElementName);
-    var playbackTimeout = setTimeout(function() {
-      failTest("VideoElement playback not working.");
-    }, 1000);
     videoElement.onloadedmetadata = function () {
-      clearTimeout(playbackTimeout);
       detectAspectRatio(callback, videoElement);
     };
   }

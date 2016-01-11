@@ -604,16 +604,9 @@ IN_PROC_BROWSER_TEST_F(
       "VideoCaptureDeviceClient");
 }
 
-// Test fails under MSan, http://crbug.com/445745
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_TestGetUserMediaAspectRatio4To3 \
-  DISABLED_TestGetUserMediaAspectRatio4To3
-#else
-#define MAYBE_TestGetUserMediaAspectRatio4To3 TestGetUserMediaAspectRatio4To3
-#endif
 // This test calls getUserMedia and checks for aspect ratio behavior.
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       MAYBE_TestGetUserMediaAspectRatio4To3) {
+                       TestGetUserMediaAspectRatio4To3) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
@@ -626,16 +619,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
             ExecuteJavascriptAndReturnResult(constraints_4_3));
 }
 
-// Test fails under MSan, http://crbug.com/445745
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_TestGetUserMediaAspectRatio16To9 \
-  DISABLED_TestGetUserMediaAspectRatio16To9
-#else
-#define MAYBE_TestGetUserMediaAspectRatio16To9 TestGetUserMediaAspectRatio16To9
-#endif
 // This test calls getUserMedia and checks for aspect ratio behavior.
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       MAYBE_TestGetUserMediaAspectRatio16To9) {
+                       TestGetUserMediaAspectRatio16To9) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
@@ -648,16 +634,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
             ExecuteJavascriptAndReturnResult(constraints_16_9));
 }
 
-// Test fails under MSan, http://crbug.com/445745
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_TestGetUserMediaAspectRatio1To1 \
-  DISABLED_TestGetUserMediaAspectRatio1To1
-#else
-#define MAYBE_TestGetUserMediaAspectRatio1To1 TestGetUserMediaAspectRatio1To1
-#endif
 // This test calls getUserMedia and checks for aspect ratio behavior.
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       MAYBE_TestGetUserMediaAspectRatio1To1) {
+                       TestGetUserMediaAspectRatio1To1) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
