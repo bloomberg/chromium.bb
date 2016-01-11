@@ -268,23 +268,16 @@ public class Desktop
         return inputMode;
     }
 
-    private void toggleInputMode() {
-        if (mInputMode == InputMode.TRACKPAD) {
-            setInputMode(InputMode.TOUCH);
-        } else if (mInputMode == InputMode.TOUCH) {
-            setInputMode(InputMode.TRACKPAD);
-        }
-    }
-
     private void setInputMode(InputMode inputMode) {
-        String titleText;
-        int inputModeItemColorId;
+        Menu menu = mToolbar.getMenu();
+        MenuItem trackpadModeMenuItem = menu.findItem(R.id.actionbar_trackpad_mode);
+        MenuItem touchModeMenuItem = menu.findItem(R.id.actionbar_touch_mode);
         if (inputMode == InputMode.TRACKPAD) {
-            titleText = getString(R.string.select_trackpad_mode);
-            inputModeItemColorId = R.attr.colorControlNormal;
+            trackpadModeMenuItem.setVisible(true);
+            touchModeMenuItem.setVisible(false);
         } else if (inputMode == InputMode.TOUCH) {
-            titleText = getString(R.string.select_touch_mode);
-            inputModeItemColorId = R.attr.colorControlActivated;
+            touchModeMenuItem.setVisible(true);
+            trackpadModeMenuItem.setVisible(false);
         } else {
             assert false : "Unreached";
             return;
@@ -295,14 +288,6 @@ public class Desktop
                 .edit()
                 .putString(PREFERENCE_INPUT_MODE, mInputMode.name())
                 .apply();
-
-        Menu menu = mToolbar.getMenu();
-        MenuItem inputModeMenuItem = menu.findItem(R.id.actionbar_input_mode);
-        if (inputModeMenuItem != null) {
-            inputModeMenuItem.setTitle(titleText);
-            int color = ChromotingUtil.getColorAttribute(this, inputModeItemColorId);
-            ChromotingUtil.tintMenuIcon(inputModeMenuItem, color);
-        }
 
         mRemoteHostDesktop.changeInputMode(mInputMode, mHostTouchCapability);
     }
@@ -474,8 +459,14 @@ public class Desktop
             onCardboardItemSelected();
             return true;
         }
-        if (id == R.id.actionbar_input_mode) {
-            toggleInputMode();
+        if (id == R.id.actionbar_trackpad_mode) {
+            // When the trackpad icon is tapped, we want to switch the input mode to touch.
+            setInputMode(InputMode.TOUCH);
+            return true;
+        }
+        if (id == R.id.actionbar_touch_mode) {
+            // When the touch icon is tapped, we want to switch the input mode to trackpad.
+            setInputMode(InputMode.TRACKPAD);
             return true;
         }
         if (id == R.id.actionbar_keyboard) {
