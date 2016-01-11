@@ -183,14 +183,13 @@ void ImageBitmapFactories::ImageBitmapLoader::didFinishLoading()
         return;
     }
 
-    RefPtr<StaticBitmapImage> image = StaticBitmapImage::create(frame);
-    image->setOriginClean(true);
+    RefPtr<Image> image = StaticBitmapImage::create(frame);
     if (!m_cropRect.width() && !m_cropRect.height()) {
         // No cropping variant was called.
         m_cropRect = IntRect(IntPoint(), image->size());
     }
 
-    RefPtrWillBeRawPtr<ImageBitmap> imageBitmap = ImageBitmap::create(image, m_cropRect);
+    RefPtrWillBeRawPtr<ImageBitmap> imageBitmap = ImageBitmap::create(image.get(), m_cropRect);
     m_resolver->resolve(imageBitmap.release());
     m_factory->didFinishLoading(this);
 }

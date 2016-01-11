@@ -699,7 +699,16 @@ ScriptPromise HTMLImageElement::createImageBitmap(ScriptState* scriptState, Even
         exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
         return ScriptPromise();
     }
-    return ImageBitmapSource::fulfillImageBitmap(scriptState, ImageBitmap::create(this, IntRect(sx, sy, sw, sh), eventTarget.toDOMWindow()->document()));
+    if (!cachedImage()->image()->currentFrameHasSingleSecurityOrigin()) {
+        exceptionState.throwSecurityError("The source image contains image data from multiple origins.");
+        return ScriptPromise();
+    }
+    Document* document = eventTarget.toDOMWindow()->document();
+    if (!cachedImage()->passesAccessControlCheck(document->securityOrigin()) && document->securityOrigin()->taintsCanvas(src())) {
+        exceptionState.throwSecurityError("Cross-origin access to the source image is denied.");
+        return ScriptPromise();
+    }
+    return ImageBitmapSource::fulfillImageBitmap(scriptState, ImageBitmap::create(this, IntRect(sx, sy, sw, sh)));
 }
 
 void HTMLImageElement::selectSourceURL(ImageLoader::UpdateFromElementBehavior behavior)
