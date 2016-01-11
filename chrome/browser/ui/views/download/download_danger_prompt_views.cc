@@ -340,7 +340,7 @@ void DownloadDangerPromptViews::RunDone(Action action) {
     if (!download_->GetURL().is_empty() &&
         !download_->GetBrowserContext()->IsOffTheRecord()) {
       SendSafeBrowsingDownloadRecoveryReport(
-          action == DownloadDangerPrompt::ACCEPT, download_->GetURL());
+          action == DownloadDangerPrompt::ACCEPT, *download_);
     }
     download_->RemoveObserver(this);
     download_ = NULL;

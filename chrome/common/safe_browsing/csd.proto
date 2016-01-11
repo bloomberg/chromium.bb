@@ -681,7 +681,8 @@ message ClientSafeBrowsingReportRequest {
     URL_UNWANTED = 3;
     CLIENT_SIDE_PHISHING_URL = 4;
     CLIENT_SIDE_MALWARE_URL = 5;
-    MALICIOUS_DOWNLOAD_RECOVERY = 6;
+    DANGEROUS_DOWNLOAD_RECOVERY = 6;
+    DANGEROUS_DOWNLOAD_WARNING = 7;
   }
 
   message HTTPHeader {
@@ -733,7 +734,8 @@ message ClientSafeBrowsingReportRequest {
 
   optional ReportType type = 10;
 
-  // Only set if ReportType is MALICIOUS_DOWNLOAD_RECOVERY.
+  // Only set if ReportType is DANGEROUS_DOWNLOAD_RECOVERY or
+  // DANGEROUS_DOWNLOAD_WARNING.
   optional ClientDownloadResponse.Verdict download_verdict = 11;
 
   // URL of the page in the address bar.

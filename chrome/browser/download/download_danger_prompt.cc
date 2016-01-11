@@ -25,6 +25,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using extensions::ExperienceSamplingEvent;
+using safe_browsing::ClientDownloadResponse;
 using safe_browsing::ClientSafeBrowsingReportRequest;
 
 namespace {
@@ -252,7 +253,7 @@ void DownloadDangerPromptImpl::RunDone(Action action) {
     if (!download_->GetURL().is_empty() &&
         !download_->GetBrowserContext()->IsOffTheRecord()) {
       SendSafeBrowsingDownloadRecoveryReport(
-          action == DownloadDangerPrompt::ACCEPT, download_->GetURL());
+          action == DownloadDangerPrompt::ACCEPT, *download_);
     }
     download_->RemoveObserver(this);
     download_ = NULL;
@@ -280,12 +281,29 @@ DownloadDangerPrompt* DownloadDangerPrompt::Create(
 
 void DownloadDangerPrompt::SendSafeBrowsingDownloadRecoveryReport(
     bool did_proceed,
-    const GURL& url) {
+    const content::DownloadItem& download) {
   safe_browsing::SafeBrowsingService* sb_service =
       g_browser_process->safe_browsing_service();
   ClientSafeBrowsingReportRequest report;
-  report.set_type(ClientSafeBrowsingReportRequest::MALICIOUS_DOWNLOAD_RECOVERY);
-  report.set_url(url.spec());
+  report.set_type(ClientSafeBrowsingReportRequest::DANGEROUS_DOWNLOAD_RECOVERY);
+  switch (download.GetDangerType()) {
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
+      report.set_download_verdict(ClientDownloadResponse::DANGEROUS);
+      break;
+    case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
+      report.set_download_verdict(ClientDownloadResponse::UNCOMMON);
+      break;
+    case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
+      report.set_download_verdict(ClientDownloadResponse::POTENTIALLY_UNWANTED);
+      break;
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
+      report.set_download_verdict(ClientDownloadResponse::DANGEROUS_HOST);
+      break;
+    default:
+      break;
+  }
+  report.set_url(download.GetURL().spec());
   report.set_did_proceed(did_proceed);
 
   std::string serialized_report;
