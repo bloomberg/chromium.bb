@@ -556,19 +556,19 @@ cr.define('options', function() {
       case chrome.bluetoothPrivate.ConnectResultType.CONNECTION_CONGESTED:
         message = 'bluetoothConnectConnectionCongested';
         break;
-      case chrome.bluetoothPrivate.ConnctResultType.INSUFFICIENT_ENCRYPTION:
+      case chrome.bluetoothPrivate.ConnectResultType.INSUFFICIENT_ENCRYPTION:
         message = 'bluetoothConnectInsufficientEncryption';
         break;
-      case chrome.bluetoothPrivate.ConnctResultType.OFFSET_INVALID:
+      case chrome.bluetoothPrivate.ConnectResultType.OFFSET_INVALID:
         message = 'bluetoothConnectOffsetInvalid';
         break;
-      case chrome.bluetoothPrivate.ConnctResultType.READ_NOT_PERMITTED:
+      case chrome.bluetoothPrivate.ConnectResultType.READ_NOT_PERMITTED:
         message = 'bluetoothConnectReadNotPermitted';
         break;
-      case chrome.bluetoothPrivate.ConnctResultType.REQUEST_NOT_SUPPORTED:
+      case chrome.bluetoothPrivate.ConnectResultType.REQUEST_NOT_SUPPORTED:
         message = 'bluetoothConnectRequestNotSupported';
         break;
-      case chrome.bluetoothPrivate.ConnctResultType.WRITE_NOT_PERMITTED:
+      case chrome.bluetoothPrivate.ConnectResultType.WRITE_NOT_PERMITTED:
         message = 'bluetoothConnectWriteNotPermitted';
         break;
     }
