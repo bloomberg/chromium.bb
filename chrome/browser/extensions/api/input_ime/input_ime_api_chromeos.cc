@@ -83,20 +83,6 @@ class ImeObserverChromeOS : public ui::ImeObserver {
   ~ImeObserverChromeOS() override {}
 
   // ui::IMEEngineObserver overrides
-  void OnActivate(const std::string& component_id) override {
-    if (extension_id_.empty() ||
-        !HasListener(input_ime::OnActivate::kEventName))
-      return;
-
-    scoped_ptr<base::ListValue> args(input_ime::OnActivate::Create(
-        component_id,
-        input_ime::ParseScreenType(GetCurrentScreenType())));
-
-    DispatchEventToExtension(extensions::events::INPUT_IME_ON_ACTIVATE,
-                             input_ime::OnActivate::kEventName,
-                             std::move(args));
-  }
-
   void OnInputContextUpdate(
       const IMEEngineHandlerInterface::InputContext& context) override {
     if (extension_id_.empty() ||
@@ -114,10 +100,6 @@ class ImeObserverChromeOS : public ui::ImeObserver {
     DispatchEventToExtension(
         extensions::events::INPUT_IME_ON_INPUT_CONTEXT_UPDATE,
         input_ime::OnInputContextUpdate::kEventName, std::move(args));
-  }
-
-  bool IsInterestedInKeyEvent() const override {
-    return ShouldForwardKeyEvent();
   }
 
   void OnCandidateClicked(
@@ -165,28 +147,6 @@ class ImeObserverChromeOS : public ui::ImeObserver {
     DispatchEventToExtension(
         extensions::events::INPUT_IME_ON_MENU_ITEM_ACTIVATED,
         input_ime::OnMenuItemActivated::kEventName, std::move(args));
-  }
-
-  void OnSurroundingTextChanged(const std::string& component_id,
-                                const std::string& text,
-                                int cursor_pos,
-                                int anchor_pos,
-                                int offset_pos) override {
-    if (extension_id_.empty() ||
-        !HasListener(input_ime::OnSurroundingTextChanged::kEventName))
-      return;
-
-    input_ime::OnSurroundingTextChanged::SurroundingInfo info;
-    info.text = text;
-    info.focus = cursor_pos;
-    info.anchor = anchor_pos;
-    info.offset = offset_pos;
-    scoped_ptr<base::ListValue> args(
-        input_ime::OnSurroundingTextChanged::Create(component_id, info));
-
-    DispatchEventToExtension(
-        extensions::events::INPUT_IME_ON_SURROUNDING_TEXT_CHANGED,
-        input_ime::OnSurroundingTextChanged::kEventName, std::move(args));
   }
 
   void OnCompositionBoundsChanged(
@@ -261,7 +221,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
   // The component IME extensions need to know the current screen type (e.g.
   // lock screen, login screen, etc.) so that its on-screen keyboard page
   // won't open new windows/pages. See crbug.com/395621.
-  std::string GetCurrentScreenType() {
+  std::string GetCurrentScreenType() override {
     switch (chromeos::input_method::InputMethodManager::Get()
                 ->GetUISessionState()) {
       case chromeos::input_method::InputMethodManager::STATE_LOGIN_SCREEN:

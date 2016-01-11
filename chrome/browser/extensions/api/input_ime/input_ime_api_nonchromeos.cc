@@ -47,6 +47,10 @@ class ImeObserverNonChromeOS : public ui::ImeObserver {
         ->DispatchEventToExtension(extension_id_, std::move(event));
   }
 
+  std::string GetCurrentScreenType() override {
+    return "normal";
+  }
+
   DISALLOW_COPY_AND_ASSIGN(ImeObserverNonChromeOS);
 };
 

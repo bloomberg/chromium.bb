@@ -42,6 +42,7 @@ class ImeObserver : public IMEEngineObserver {
   ~ImeObserver() override {}
 
   // IMEEngineObserver overrides.
+  void OnActivate(const std::string& component_id) override;
   void OnFocus(const IMEEngineHandlerInterface::InputContext& context) override;
   void OnBlur(int context_id) override;
   void OnKeyEvent(
@@ -52,6 +53,12 @@ class ImeObserver : public IMEEngineObserver {
   void OnDeactivated(const std::string& component_id) override;
   void OnCompositionBoundsChanged(
       const std::vector<gfx::Rect>& bounds) override;
+  bool IsInterestedInKeyEvent() const override;
+  void OnSurroundingTextChanged(const std::string& component_id,
+                                const std::string& text,
+                                int cursor_pos,
+                                int anchor_pos,
+                                int offset_pos) override;
 
  protected:
   // Helper function used to forward the given event to the |profile_|'s event
@@ -60,6 +67,9 @@ class ImeObserver : public IMEEngineObserver {
       extensions::events::HistogramValue histogram_value,
       const std::string& event_name,
       scoped_ptr<base::ListValue> args) = 0;
+
+  // Returns the type of the current screen.
+  virtual std::string GetCurrentScreenType() = 0;
 
   // Returns true if the extension is ready to accept key event, otherwise
   // returns false.

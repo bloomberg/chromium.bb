@@ -20,6 +20,19 @@ namespace ui {
 ImeObserver::ImeObserver(const std::string& extension_id, Profile* profile)
     : extension_id_(extension_id), profile_(profile) {}
 
+void ImeObserver::OnActivate(const std::string& component_id) {
+  if (extension_id_.empty() || !HasListener(input_ime::OnActivate::kEventName))
+    return;
+
+  scoped_ptr<base::ListValue> args(input_ime::OnActivate::Create(
+    component_id,
+    input_ime::ParseScreenType(GetCurrentScreenType())));
+
+  DispatchEventToExtension(extensions::events::INPUT_IME_ON_ACTIVATE,
+                           input_ime::OnActivate::kEventName,
+                           std::move(args));
+}
+
 void ImeObserver::OnFocus(
     const IMEEngineHandlerInterface::InputContext& context) {
   if (extension_id_.empty() || !HasListener(input_ime::OnFocus::kEventName))
@@ -114,6 +127,32 @@ void ImeObserver::OnDeactivated(const std::string& component_id) {
 // platforms, while with some changing on the current code on ChromeOS.
 void ImeObserver::OnCompositionBoundsChanged(
     const std::vector<gfx::Rect>& bounds) {}
+
+bool ImeObserver::IsInterestedInKeyEvent() const {
+  return ShouldForwardKeyEvent();
+}
+
+void ImeObserver::OnSurroundingTextChanged(const std::string& component_id,
+                                           const std::string& text,
+                                           int cursor_pos,
+                                           int anchor_pos,
+                                           int offset_pos) {
+  if (extension_id_.empty() ||
+      !HasListener(input_ime::OnSurroundingTextChanged::kEventName))
+    return;
+
+  input_ime::OnSurroundingTextChanged::SurroundingInfo info;
+  info.text = text;
+  info.focus = cursor_pos;
+  info.anchor = anchor_pos;
+  info.offset = offset_pos;
+  scoped_ptr<base::ListValue> args(
+    input_ime::OnSurroundingTextChanged::Create(component_id, info));
+
+  DispatchEventToExtension(
+    extensions::events::INPUT_IME_ON_SURROUNDING_TEXT_CHANGED,
+    input_ime::OnSurroundingTextChanged::kEventName, std::move(args));
+}
 
 bool ImeObserver::ShouldForwardKeyEvent() const {
   // Only forward key events to extension if there are non-lazy listeners
