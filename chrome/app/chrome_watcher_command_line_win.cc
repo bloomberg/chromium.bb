@@ -53,6 +53,9 @@ ChromeWatcherCommandLineGenerator::ChromeWatcherCommandLineGenerator(
     const base::FilePath& chrome_exe) : chrome_exe_(chrome_exe) {
 }
 
+ChromeWatcherCommandLineGenerator::~ChromeWatcherCommandLineGenerator() {
+}
+
 bool ChromeWatcherCommandLineGenerator::SetOnInitializedEventHandle(
     HANDLE on_initialized_event_handle) {
   return SetHandle(on_initialized_event_handle, &on_initialized_event_handle_);

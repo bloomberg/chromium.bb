@@ -24,6 +24,7 @@
 class ChromeWatcherCommandLineGenerator {
  public:
   explicit ChromeWatcherCommandLineGenerator(const base::FilePath& chrome_exe);
+  ~ChromeWatcherCommandLineGenerator();
 
   // Sets a handle to be shared with the child process. This will duplicate the
   // handle with the inherit flag, with this object retaining ownership of the
