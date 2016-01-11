@@ -427,7 +427,7 @@ int MultiThreadedCertVerifier::Verify(X509Certificate* cert,
 
   requests_++;
 
-  const CertificateList empty_cert_list;
+  const CertificateList empty_cert_list = CertificateList();
   const CertificateList& additional_trust_anchors =
       trust_anchor_provider_ ?
           trust_anchor_provider_->GetAdditionalTrustAnchors() : empty_cert_list;
