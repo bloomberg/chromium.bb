@@ -44,7 +44,7 @@ class TaskExecutionTime(page_test.PageTest):
     config = tracing_config.TracingConfig()
     for category in self._CATEGORIES:
       config.tracing_category_filter.AddIncludedCategory(category)
-    config.tracing_options.enable_chrome_trace = True
+    config.enable_chrome_trace = True
 
     tab.browser.platform.tracing_controller.Start(
         config, self._TIME_OUT_IN_SECONDS)

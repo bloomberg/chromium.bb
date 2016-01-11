@@ -21,7 +21,7 @@ class DrawProperties(page_test.PageTest):
     config = tracing_config.TracingConfig()
     config.tracing_category_filter.AddDisabledByDefault(
         'disabled-by-default-cc.debug.cdp-perf')
-    config.tracing_options.enable_chrome_trace = True
+    config.enable_chrome_trace = True
     tab.browser.platform.tracing_controller.Start(config)
 
   def ComputeAverageOfDurations(self, timeline_model, name):
