@@ -735,24 +735,24 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
 
   DCHECK_EQ(element.document().frame(), render_frame()->GetWebFrame());
 
-  if (element.isPasswordField()) {
-    // Some login forms have event handlers that put a hash of the password into
-    // a hidden field and then clear the password (http://crbug.com/28910,
-    // http://crbug.com/391693). This method gets called before any of those
-    // handlers run, so save away a copy of the password in case it gets lost.
-    // To honor the user having explicitly cleared the password, even an empty
-    // password will be saved here.
-    scoped_ptr<PasswordForm> password_form;
-    if (element.form().isNull()) {
-      password_form = CreatePasswordFormFromUnownedInputElements(
-          *element.document().frame(), &nonscript_modified_values_,
-          &form_predictions_);
-    } else {
-      password_form = CreatePasswordFormFromWebForm(
-          element.form(), &nonscript_modified_values_, &form_predictions_);
-    }
-    ProvisionallySavePassword(std::move(password_form), RESTRICTION_NONE);
+  // Some login forms have event handlers that put a hash of the password into
+  // a hidden field and then clear the password (http://crbug.com/28910,
+  // http://crbug.com/391693). This method gets called before any of those
+  // handlers run, so save away a copy of the password in case it gets lost.
+  // To honor the user having explicitly cleared the password, even an empty
+  // password will be saved here.
+  scoped_ptr<PasswordForm> password_form;
+  if (element.form().isNull()) {
+    password_form = CreatePasswordFormFromUnownedInputElements(
+        *element.document().frame(), &nonscript_modified_values_,
+        &form_predictions_);
+  } else {
+    password_form = CreatePasswordFormFromWebForm(
+        element.form(), &nonscript_modified_values_, &form_predictions_);
+  }
+  ProvisionallySavePassword(std::move(password_form), RESTRICTION_NONE);
 
+  if (element.isPasswordField()) {
     PasswordToLoginMap::iterator iter = password_to_username_.find(element);
     if (iter != password_to_username_.end()) {
       web_input_to_password_info_[iter->second].password_was_edited_last = true;

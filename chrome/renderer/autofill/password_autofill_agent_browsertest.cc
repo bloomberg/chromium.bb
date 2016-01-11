@@ -2293,4 +2293,36 @@ TEST_F(PasswordAutofillAgentTest, ShowSuggestionForNonUsernameFieldForms) {
   CheckSuggestions(std::string(), false);
 }
 
+TEST_F(PasswordAutofillAgentTest,
+       UsernameChangedAfterPasswordInput_InPageNavigation) {
+  LoadHTML(kNoFormHTML);
+  UpdateUsernameAndPasswordElements();
+
+  SimulateUsernameChange("Bob");
+  SimulatePasswordChange("mypassword");
+  SimulateUsernameChange("Alice");
+
+  // Hide form elements to simulate successful login.
+  username_element_.setAttribute("style", "display:none;");
+  password_element_.setAttribute("style", "display:none;");
+
+  password_autofill_agent_->AJAXSucceeded();
+
+  ExpectInPageNavigationWithUsernameAndPasswords("Alice", "mypassword", "");
+}
+
+TEST_F(PasswordAutofillAgentTest,
+       UsernameChangedAfterPasswordInput_FormSubmitted) {
+  SimulateUsernameChange("Bob");
+  SimulatePasswordChange("mypassword");
+  SimulateUsernameChange("Alice");
+
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->WillSendSubmitEvent(username_element_.form());
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->WillSubmitForm(username_element_.form());
+
+  ExpectFormSubmittedWithUsernameAndPasswords("Alice", "mypassword", "");
+}
+
 }  // namespace autofill
