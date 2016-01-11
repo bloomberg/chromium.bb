@@ -356,6 +356,20 @@ if ! test "x$enable_simple_dmabuf_intel_client" = "xno"; then
 fi
 AM_CONDITIONAL(BUILD_SIMPLE_DMABUF_INTEL_CLIENT, test "x$enable_simple_dmabuf_intel_client" = "xyes")
 
+AC_ARG_ENABLE(simple-dmabuf-v4l-client,
+              AS_HELP_STRING([--disable-simple-dmabuf-v4l-client],
+                             [do not build the simple dmabuf v4l client]),,
+              enable_simple_dmabuf_v4l_client="auto")
+if ! test "x$enable_simple_dmabuf_v4l_client" = "xno"; then
+  PKG_CHECK_MODULES(SIMPLE_DMABUF_V4L_CLIENT, [wayland-client libdrm],
+		    have_simple_dmabuf_v4l_client=yes, have_simple_dmabuf_v4l_client=no)
+  if test "x$have_simple_dmabuf_v4l_client" = "xno" -a "x$enable_simple_dmabuf_v4l_client" = "xyes"; then
+    AC_MSG_ERROR([V4L dmabuf client explicitly enabled, but libdrm couldn't be found])
+  fi
+  enable_simple_dmabuf_v4l_client="$have_simple_dmabuf_v4l_client"
+fi
+AM_CONDITIONAL(BUILD_SIMPLE_DMABUF_V4L_CLIENT, test "x$enable_simple_dmabuf_v4l_client" = "xyes")
+
 AC_ARG_ENABLE(clients, [  --enable-clients],, enable_clients=yes)
 AM_CONDITIONAL(BUILD_CLIENTS, test x$enable_clients = xyes)
 if test x$enable_clients = xyes; then

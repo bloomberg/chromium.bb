@@ -538,6 +538,21 @@ weston_simple_dmabuf_intel_LDADD = $(SIMPLE_DMABUF_INTEL_CLIENT_LIBS) libshared.
 BUILT_SOURCES += protocol/linux-dmabuf-unstable-v1-client-protocol.h
 endif
 
+if BUILD_SIMPLE_DMABUF_V4L_CLIENT
+demo_clients += weston-simple-dmabuf-v4l
+weston_simple_dmabuf_v4l_SOURCES = clients/simple-dmabuf-v4l.c
+nodist_weston_simple_dmabuf_v4l_SOURCES =		\
+	protocol/xdg-shell-unstable-v5-protocol.c		\
+	protocol/xdg-shell-unstable-v5-client-protocol.h	\
+	protocol/fullscreen-shell-unstable-v1-protocol.c	\
+	protocol/fullscreen-shell-unstable-v1-client-protocol.h \
+	protocol/linux-dmabuf-unstable-v1-protocol.c \
+	protocol/linux-dmabuf-unstable-v1-client-protocol.h
+weston_simple_dmabuf_v4l_CFLAGS = $(AM_CFLAGS) $(SIMPLE_DMABUF_V4L_CLIENT_CFLAGS)
+weston_simple_dmabuf_v4l_LDADD = $(SIMPLE_DMABUF_V4L_CLIENT_LIBS) libshared.la
+BUILT_SOURCES += protocol/linux-dmabuf-unstable-v1-client-protocol.h
+endif
+
 noinst_LTLIBRARIES += libtoytoolkit.la
 
 libtoytoolkit_la_SOURCES =				\
