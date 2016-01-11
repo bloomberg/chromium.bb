@@ -3353,6 +3353,9 @@ interface PushSubscription
     method constructor
     method toJSON
     method unsubscribe
+interface RTCCertificate
+    getter expires
+    method constructor
 interface RTCIceCandidate
     getter candidate
     getter sdpMLineIndex
@@ -5691,6 +5694,7 @@ interface webkitOfflineAudioContext : AudioContext
     method suspend
     setter oncomplete
 interface webkitRTCPeerConnection : EventTarget
+    static method generateCertificate
     getter iceConnectionState
     getter iceGatheringState
     getter localDescription

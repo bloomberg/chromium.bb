@@ -159,7 +159,6 @@ RequestIdleCallback status=stable
 RequestAutocomplete status=test
 ResponseConstructedWithReadableStream status=experimental
 RestrictIFramePermissions
-RTCCertificate status=experimental
 SandboxBlocksModals status=stable
 ScreenOrientation status=stable
 ScriptedSpeech status=stable

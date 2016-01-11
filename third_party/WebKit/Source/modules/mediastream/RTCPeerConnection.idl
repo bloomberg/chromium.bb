@@ -133,5 +133,5 @@ enum RTCIceConnectionState {
 
     // Certificate management
     // http://w3c.github.io/webrtc-pc/#sec.cert-mgmt
-    [RuntimeEnabled=RTCCertificate, RaisesException, CallWith=ScriptState] static Promise<RTCCertificate> generateCertificate(AlgorithmIdentifier keygenAlgorithm);
+    [RaisesException, CallWith=ScriptState] static Promise<RTCCertificate> generateCertificate(AlgorithmIdentifier keygenAlgorithm);
 };
