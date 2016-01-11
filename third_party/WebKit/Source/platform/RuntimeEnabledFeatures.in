@@ -30,7 +30,7 @@ AdditiveAnimations status=experimental, depends_on=StackedCSSPropertyAnimations
 AppBanner status=stable
 AlwaysUseComplexText status=stable
 ApplicationCache status=stable
-AudioOutputDevices status=experimental
+AudioOutputDevices status=stable
 AudioVideoTracks depends_on=Media, status=experimental
 AuthorShadowDOMForAnyElement
 BackgroundSync status=stable

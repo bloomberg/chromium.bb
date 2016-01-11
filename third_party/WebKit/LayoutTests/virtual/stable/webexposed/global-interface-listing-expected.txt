@@ -2050,6 +2050,7 @@ interface HTMLMediaElement : HTMLElement
     getter readyState
     getter seekable
     getter seeking
+    getter sinkId
     getter src
     getter textTracks
     getter volume
@@ -2062,6 +2063,7 @@ interface HTMLMediaElement : HTMLElement
     method pause
     method play
     method setMediaKeys
+    method setSinkId
     setter autoplay
     setter controls
     setter crossOrigin

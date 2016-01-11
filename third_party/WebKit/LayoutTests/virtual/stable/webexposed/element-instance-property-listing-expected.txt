@@ -301,6 +301,8 @@ html element audio
     property seekable
     property seeking
     property setMediaKeys
+    property setSinkId
+    property sinkId
     property src
     property textTracks
     property volume
@@ -1017,6 +1019,8 @@ html element video
     property seekable
     property seeking
     property setMediaKeys
+    property setSinkId
+    property sinkId
     property src
     property textTracks
     property videoHeight
