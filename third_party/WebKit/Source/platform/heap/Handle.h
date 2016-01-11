@@ -1196,18 +1196,6 @@ template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeNoop(T* ptr) { retu
 
 #endif // ENABLE(OILPAN)
 
-template<typename T, bool = IsGarbageCollectedType<T>::value>
-class PointerFieldStorageTrait {
-public:
-    using Type = RawPtr<T>;
-};
-
-template<typename T>
-class PointerFieldStorageTrait<T, true> {
-public:
-    using Type = Member<T>;
-};
-
 // Abstraction for injecting calls to an object's 'dispose()' method
 // on leaving a stack scope, ensuring earlier release of resources
 // than waiting until the object is eventually GCed.
@@ -1229,6 +1217,18 @@ public:
     void clear() { m_object.clear(); }
 
 private:
+    template<typename U, bool = IsGarbageCollectedType<U>::value>
+    class PointerFieldStorageTrait {
+    public:
+        using Type = RawPtr<U>;
+    };
+
+    template<typename U>
+    class PointerFieldStorageTrait<U, true> {
+    public:
+        using Type = Member<U>;
+    };
+
     typename PointerFieldStorageTrait<T>::Type m_object;
 };
 
@@ -1580,6 +1580,7 @@ struct ParamStorageTraits<blink::AllowCrossThreadWeakPersistent<T>> {
     static T* unwrap(const StorageType& value) { return value.get(); }
 };
 
+// Adoption is not needed nor wanted for RefCountedGarbageCollected<>-derived types.
 template<typename T>
 PassRefPtr<T> adoptRef(blink::RefCountedGarbageCollected<T>*) = delete;
 
