@@ -39,11 +39,6 @@ namespace net {
 
 class AddressList;
 
-#if defined(OS_WIN)
-// Bluetooth address size. Windows Bluetooth is supported via winsock.
-static const size_t kBluetoothAddressSize = 6;
-#endif
-
 // Splits an input of the form <host>[":"<port>] into its consitituent parts.
 // Saves the result into |*host| and |*port|. If the input did not have
 // the optional port, sets |*port| to -1.
