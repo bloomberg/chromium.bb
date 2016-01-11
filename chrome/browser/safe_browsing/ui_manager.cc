@@ -28,6 +28,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "ipc/ipc_message.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/url_request_context.h"
@@ -69,7 +70,7 @@ SafeBrowsingUIManager::UnsafeResource::UnsafeResource()
     : is_subresource(false),
       threat_type(SB_THREAT_TYPE_SAFE),
       render_process_host_id(-1),
-      render_view_id(-1),
+      render_frame_id(MSG_ROUTING_NONE),
       threat_source(safe_browsing::ThreatSource::UNKNOWN) {}
 
 SafeBrowsingUIManager::UnsafeResource::~UnsafeResource() { }
@@ -91,8 +92,8 @@ bool SafeBrowsingUIManager::UnsafeResource::IsMainPageLoadBlocked() const {
 
 content::NavigationEntry*
 SafeBrowsingUIManager::UnsafeResource::GetNavigationEntryForResource() const {
-  WebContents* contents =
-      tab_util::GetWebContentsByID(render_process_host_id, render_view_id);
+  WebContents* contents = tab_util::GetWebContentsByFrameID(
+      render_process_host_id, render_frame_id);
   if (!contents)
     return nullptr;
   // If a safebrowsing hit occurs during main frame navigation, the navigation
@@ -169,9 +170,8 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
 
   // The tab might have been closed. If it was closed, just act as if "Don't
   // Proceed" had been chosen.
-  WebContents* web_contents =
-      tab_util::GetWebContentsByID(resource.render_process_host_id,
-                                   resource.render_view_id);
+  WebContents* web_contents = tab_util::GetWebContentsByFrameID(
+      resource.render_process_host_id, resource.render_frame_id);
   if (!web_contents) {
     std::vector<UnsafeResource> resources;
     resources.push_back(resource);
@@ -321,8 +321,8 @@ void SafeBrowsingUIManager::SendSerializedThreatDetails(
 // domain to an existing WhitelistUrlSet, or create a new WhitelistUrlSet.
 void SafeBrowsingUIManager::AddToWhitelist(const UnsafeResource& resource) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  WebContents* web_contents = tab_util::GetWebContentsByID(
-      resource.render_process_host_id, resource.render_view_id);
+  WebContents* web_contents = tab_util::GetWebContentsByFrameID(
+      resource.render_process_host_id, resource.render_frame_id);
 
   WhitelistUrlSet* site_list =
       static_cast<WhitelistUrlSet*>(web_contents->GetUserData(kWhitelistKey));
@@ -348,8 +348,8 @@ void SafeBrowsingUIManager::AddToWhitelist(const UnsafeResource& resource) {
 // top-level domain.
 bool SafeBrowsingUIManager::IsWhitelisted(const UnsafeResource& resource) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  WebContents* web_contents = tab_util::GetWebContentsByID(
-      resource.render_process_host_id, resource.render_view_id);
+  WebContents* web_contents = tab_util::GetWebContentsByFrameID(
+      resource.render_process_host_id, resource.render_frame_id);
 
   GURL maybe_whitelisted_url;
   if (resource.is_subresource) {

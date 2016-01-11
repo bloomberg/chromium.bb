@@ -89,8 +89,7 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
     resource.is_subresource = is_subresource;
     resource.render_process_host_id =
         web_contents()->GetRenderProcessHost()->GetID();
-    resource.render_view_id =
-        web_contents()->GetRenderViewHost()->GetRoutingID();
+    resource.render_frame_id = web_contents()->GetMainFrame()->GetRoutingID();
     resource.threat_type = SB_THREAT_TYPE_URL_MALWARE;
     return resource;
   }

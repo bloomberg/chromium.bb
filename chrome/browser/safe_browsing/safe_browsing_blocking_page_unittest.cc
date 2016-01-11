@@ -48,7 +48,7 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
                                  main_frame_url,
                                  unsafe_resources) {
     // Don't delay details at all for the unittest.
-    malware_details_proceed_delay_ms_ = 0;
+    threat_details_proceed_delay_ms_ = 0;
     DontCreateViewForTesting();
   }
 };
@@ -240,8 +240,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
     resource->threat_type = SB_THREAT_TYPE_URL_MALWARE;
     resource->render_process_host_id =
         web_contents()->GetRenderProcessHost()->GetID();
-    resource->render_view_id =
-        web_contents()->GetRenderViewHost()->GetRoutingID();
+    resource->render_frame_id = web_contents()->GetMainFrame()->GetRoutingID();
     resource->threat_source = safe_browsing::ThreatSource::LOCAL_PVER3;
   }
 

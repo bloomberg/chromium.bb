@@ -464,6 +464,10 @@ void ChromeContentRendererClient::RenderFrameCreated(
   new nacl::NaClHelper(render_frame);
 #endif
 
+#if defined(FULL_SAFE_BROWSING)
+  safe_browsing::ThreatDOMDetails::Create(render_frame);
+#endif
+
   new NetErrorHelper(render_frame);
 
   if (render_frame->IsMainFrame()) {
@@ -514,9 +518,6 @@ void ChromeContentRendererClient::RenderViewCreated(
   new SpellCheckProvider(render_view, spellcheck_.get());
 #endif
   new prerender::PrerendererClient(render_view);
-#if defined(FULL_SAFE_BROWSING)
-  safe_browsing::ThreatDOMDetails::Create(render_view);
-#endif
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kInstantProcess))

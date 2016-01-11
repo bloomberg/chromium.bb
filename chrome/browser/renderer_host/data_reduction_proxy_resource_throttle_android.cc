@@ -9,7 +9,7 @@
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_request_info.h"
@@ -99,7 +99,7 @@ void DataReductionProxyResourceThrottle::WillRedirectRequest(
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::IO);
   unsafe_resource.render_process_host_id = info->GetChildID();
-  unsafe_resource.render_view_id = info->GetRouteID();
+  unsafe_resource.render_frame_id = info->GetRenderFrameID();
   unsafe_resource.threat_source = safe_browsing::ThreatSource::DATA_SAVER;
 
   *defer = true;
@@ -122,11 +122,11 @@ void DataReductionProxyResourceThrottle::StartDisplayingBlockingPage(
     const SafeBrowsingUIManager::UnsafeResource& resource) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  content::RenderViewHost* rvh = content::RenderViewHost::FromID(
-      resource.render_process_host_id, resource.render_view_id);
-  if (rvh) {
+  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
+      resource.render_process_host_id, resource.render_frame_id);
+  if (rfh) {
     content::WebContents* web_contents =
-        content::WebContents::FromRenderViewHost(rvh);
+        content::WebContents::FromRenderFrameHost(rfh);
     prerender::PrerenderContents* prerender_contents =
         prerender::PrerenderContents::FromWebContents(web_contents);
     if (prerender_contents) {

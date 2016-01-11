@@ -18,8 +18,8 @@
 #include "components/grit/components_resources.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
 #include "content/public/browser/interstitial_page_delegate.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -217,7 +217,7 @@ safe_browsing::SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(
   resource.threat_type = threat_type;
   resource.render_process_host_id =
       web_contents->GetRenderProcessHost()->GetID();
-  resource.render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
+  resource.render_frame_id = web_contents->GetFocusedFrame()->GetRoutingID();
   resource.threat_source = safe_browsing::ThreatSource::LOCAL_PVER3;
 
   // Normally safebrowsing interstitial types which block the main page load

@@ -81,7 +81,7 @@ class SafeBrowsingUIManager
     UrlCheckCallback callback;  // This is called back on |callback_thread|.
     scoped_refptr<base::SingleThreadTaskRunner> callback_thread;
     int render_process_host_id;
-    int render_view_id;
+    int render_frame_id;
     safe_browsing::ThreatSource threat_source;
   };
 

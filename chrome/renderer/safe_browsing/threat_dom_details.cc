@@ -7,13 +7,13 @@
 #include "base/compiler_specific.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
-#include "content/public/renderer/render_view.h"
+#include "content/public/renderer/render_frame.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebElementCollection.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
-#include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace safe_browsing {
 
@@ -50,14 +50,14 @@ void HandleElement(
 uint32_t ThreatDOMDetails::kMaxNodes = 500;
 
 // static
-ThreatDOMDetails* ThreatDOMDetails::Create(content::RenderView* render_view) {
+ThreatDOMDetails* ThreatDOMDetails::Create(content::RenderFrame* render_frame) {
   // Private constructor and public static Create() method to facilitate
   // stubbing out this class for binary-size reduction purposes.
-  return new ThreatDOMDetails(render_view);
+  return new ThreatDOMDetails(render_frame);
 }
 
-ThreatDOMDetails::ThreatDOMDetails(content::RenderView* render_view)
-    : content::RenderViewObserver(render_view) {}
+ThreatDOMDetails::ThreatDOMDetails(content::RenderFrame* render_frame)
+    : content::RenderFrameObserver(render_frame) {}
 
 ThreatDOMDetails::~ThreatDOMDetails() {}
 
@@ -75,45 +75,36 @@ void ThreatDOMDetails::OnGetThreatDOMDetails() {
   std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node> resources;
   ExtractResources(&resources);
   // Notify the browser.
-  render_view()->Send(new SafeBrowsingHostMsg_ThreatDOMDetails(
-      render_view()->GetRoutingID(), resources));
+  Send(new SafeBrowsingHostMsg_ThreatDOMDetails(routing_id(), resources));
 }
 
 void ThreatDOMDetails::ExtractResources(
     std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node>* resources) {
-  blink::WebView* web_view = render_view()->GetWebView();
-  if (!web_view) {
-    NOTREACHED();
+  blink::WebFrame* frame = render_frame()->GetWebFrame();
+  if (!frame)
+    return;
+  SafeBrowsingHostMsg_ThreatDOMDetails_Node details_node;
+  blink::WebDocument document = frame->document();
+  details_node.url = GURL(document.url());
+  if (document.isNull()) {
+    // Nothing in this frame. Just report its URL.
+    resources->push_back(details_node);
     return;
   }
-  blink::WebFrame* frame = web_view->mainFrame();
-  for (; frame; frame = frame->traverseNext(false /* don't wrap */)) {
-    DCHECK(frame);
-    SafeBrowsingHostMsg_ThreatDOMDetails_Node details_node;
-    blink::WebDocument document = frame->document();
-    details_node.url = GURL(document.url());
-    if (document.isNull()) {
-      // Nothing in this frame, move on to the next one.
-      resources->push_back(details_node);
-      continue;
-    }
-
-    blink::WebElementCollection elements = document.all();
-    blink::WebElement element = elements.firstItem();
-    for (; !element.isNull(); element = elements.nextItem()) {
-      if (element.hasHTMLTagName("iframe") || element.hasHTMLTagName("frame") ||
-          element.hasHTMLTagName("embed") || element.hasHTMLTagName("script")) {
-        HandleElement(element, &details_node, resources);
-        if (resources->size() >= kMaxNodes) {
-          // We have reached kMaxNodes, exit early.
-          resources->push_back(details_node);
-          return;
-        }
+  blink::WebElementCollection elements = document.all();
+  blink::WebElement element = elements.firstItem();
+  for (; !element.isNull(); element = elements.nextItem()) {
+    if (element.hasHTMLTagName("iframe") || element.hasHTMLTagName("frame") ||
+        element.hasHTMLTagName("embed") || element.hasHTMLTagName("script")) {
+      HandleElement(element, &details_node, resources);
+      if (resources->size() >= kMaxNodes) {
+        // We have reached kMaxNodes, exit early.
+        resources->push_back(details_node);
+        return;
       }
     }
-
-    resources->push_back(details_node);
   }
+  resources->push_back(details_node);
 }
 
 }  // namespace safe_browsing

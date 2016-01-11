@@ -6,20 +6,22 @@
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "chrome/renderer/safe_browsing/threat_dom_details.h"
 #include "chrome/test/base/chrome_render_view_test.h"
+#include "content/public/renderer/render_view.h"
 #include "net/base/escape.h"
 
 typedef ChromeRenderViewTest ThreatDOMDetailsTest;
 
 TEST_F(ThreatDOMDetailsTest, Everything) {
   scoped_ptr<safe_browsing::ThreatDOMDetails> details(
-      safe_browsing::ThreatDOMDetails::Create(view_));
+      safe_browsing::ThreatDOMDetails::Create(view_->GetMainRenderFrame()));
   // Lower kMaxNodes for the test. Loading 500 subframes in a
   // debug build takes a while.
   details->kMaxNodes = 50;
 
   const char urlprefix[] = "data:text/html;charset=utf-8,";
 
-  {  // An page with an internal script
+  {
+    // A page with an internal script
     std::string html = "<html><head><script></script></head></html>";
     LoadHTML(html.c_str());
     std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node> params;
@@ -28,7 +30,8 @@ TEST_F(ThreatDOMDetailsTest, Everything) {
     EXPECT_EQ(GURL(urlprefix + html), params[0].url);
   }
 
-  {  // A page with 2 external scripts.
+  {
+    // A page with 2 external scripts.
     // Note: This part of the test causes 2 leaks: LEAK: 5 WebCoreNode
     // LEAK: 2 CachedResource.
     GURL script1_url("data:text/javascript;charset=utf-8,var a=1;");
@@ -49,10 +52,18 @@ TEST_F(ThreatDOMDetailsTest, Everything) {
     EXPECT_EQ(url, params[2].url);
   }
 
-  {  // A page with an iframe which in turn contains an iframe.
+  {
+    // A page with an iframe which in turn contains an iframe.
     //  html
     //   \ iframe1
     //    \ iframe2
+    // Since ThreatDOMDetails is a RenderFrameObserver, it will only
+    // extract resources from the frame it assigned to (in this case,
+    // the main frame). Extracting resources from all frames within a
+    // page is covered in SafeBrowsingBlockingPageBrowserTest.
+    // In this example, ExtractResources() will still touch iframe1
+    // since it is the direct child of the main frame, but it would not
+    // go inside of iframe1.
     std::string iframe2_html = "<html><body>iframe2</body></html>";
     GURL iframe2_url(urlprefix + iframe2_html);
     std::string iframe1_html = "<iframe src=\"" +
@@ -67,37 +78,24 @@ TEST_F(ThreatDOMDetailsTest, Everything) {
     LoadHTML(html.c_str());
     std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node> params;
     details->ExtractResources(&params);
-    ASSERT_EQ(5u, params.size());
+    ASSERT_EQ(2u, params.size());
+    std::sort(params.begin(), params.end(),
+              [](const SafeBrowsingHostMsg_ThreatDOMDetails_Node& a,
+                 const SafeBrowsingHostMsg_ThreatDOMDetails_Node& b) -> bool {
+                return a.parent < b.parent;
+              });
 
-    EXPECT_EQ(iframe1_url, params[0].url);
-    EXPECT_EQ(url, params[0].parent);
-    EXPECT_EQ(0u, params[0].children.size());
-    EXPECT_EQ("IFRAME", params[0].tag_name);
-
-    EXPECT_EQ(url, params[1].url);
-    EXPECT_EQ(GURL(), params[1].parent);
-    EXPECT_EQ(1u, params[1].children.size());
-    EXPECT_EQ(iframe1_url, params[1].children[0]);
-
-    EXPECT_EQ(iframe2_url, params[2].url);
-    EXPECT_EQ(iframe1_url, params[2].parent);
-    EXPECT_EQ(0u, params[2].children.size());
-    EXPECT_EQ("IFRAME", params[2].tag_name);
-
-    // The frames are added twice, once with the correct parent and tagname
-    // and once with the correct children. The caller in the browser
-    // is responsible for merging.
-    EXPECT_EQ(iframe1_url, params[3].url);
-    EXPECT_EQ(GURL(), params[3].parent);
-    EXPECT_EQ(1u, params[3].children.size());
-    EXPECT_EQ(iframe2_url, params[3].children[0]);
-
-    EXPECT_EQ(iframe2_url, params[4].url);
-    EXPECT_EQ(GURL(), params[4].parent);
-    EXPECT_EQ(0u, params[4].children.size());
+    EXPECT_EQ(url, params[0].url);
+    EXPECT_EQ(GURL(), params[0].parent);
+    EXPECT_EQ(1u, params[0].children.size());
+    EXPECT_EQ(iframe1_url, params[0].children[0]);
+    EXPECT_EQ(iframe1_url, params[1].url);
+    EXPECT_EQ(url, params[1].parent);
+    EXPECT_EQ(0u, params[1].children.size());
   }
 
-  {  // >50 subframes, to verify kMaxNodes.
+  {
+    // Test >50 subframes.
     std::string html;
     for (int i = 0; i < 55; ++i) {
       // The iframe contents is just a number.
@@ -113,7 +111,8 @@ TEST_F(ThreatDOMDetailsTest, Everything) {
     ASSERT_EQ(51u, params.size());
   }
 
-  {  // A page with >50 scripts, to verify kMaxNodes.
+  {
+    // A page with >50 scripts, to verify kMaxNodes.
     std::string html;
     for (int i = 0; i < 55; ++i) {
       // The iframe contents is just a number.

@@ -19,12 +19,13 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserThread;
 using content::NavigationEntry;
+using content::RenderFrameHost;
 using content::WebContents;
 
 // Keep in sync with KMaxNodes in renderer/safe_browsing/threat_dom_details
@@ -113,9 +114,10 @@ ThreatDetails::ThreatDetails(SafeBrowsingUIManager* ui_manager,
 
 ThreatDetails::~ThreatDetails() {}
 
-bool ThreatDetails::OnMessageReceived(const IPC::Message& message) {
+bool ThreatDetails::OnMessageReceived(const IPC::Message& message,
+                                      RenderFrameHost* render_frame_host) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ThreatDetails, message)
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(ThreatDetails, message, render_frame_host)
     IPC_MESSAGE_HANDLER(SafeBrowsingHostMsg_ThreatDOMDetails,
                         OnReceivedThreatDOMDetails)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -172,7 +174,15 @@ void ThreatDetails::AddUrl(const GURL& url,
          it != children->end(); ++it) {
       ClientSafeBrowsingReportRequest::Resource* child_resource =
           FindOrCreateResource(*it);
-      url_resource->add_child_ids(child_resource->id());
+      bool duplicate_child = false;
+      for (auto child_id : url_resource->child_ids()) {
+        if (child_id == child_resource->id()) {
+          duplicate_child = true;
+          break;
+        }
+      }
+      if (!duplicate_child)
+        url_resource->add_child_ids(child_resource->id());
     }
   }
 }
@@ -235,8 +245,8 @@ void ThreatDetails::StartCollection() {
     // OnReceivedThreatDOMDetails will be called when the renderer replies.
     // TODO(mattm): In theory, if the user proceeds through the warning DOM
     // detail collection could be started once the page loads.
-    content::RenderViewHost* view = web_contents()->GetRenderViewHost();
-    view->Send(new SafeBrowsingMsg_GetThreatDOMDetails(view->GetRoutingID()));
+    web_contents()->SendToAllFrames(
+        new SafeBrowsingMsg_GetThreatDOMDetails(MSG_ROUTING_NONE));
   }
 }
 

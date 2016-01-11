@@ -27,8 +27,8 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
@@ -415,10 +415,10 @@ void ClientSideDetectionHost::OnSafeBrowsingHit(
     return;
 
   // Check that this notification is really for us.
-  content::RenderViewHost* hit_rvh = content::RenderViewHost::FromID(
-      resource.render_process_host_id, resource.render_view_id);
-  if (!hit_rvh ||
-      web_contents() != content::WebContents::FromRenderViewHost(hit_rvh))
+  content::RenderFrameHost* hit_rfh = content::RenderFrameHost::FromID(
+      resource.render_process_host_id, resource.render_frame_id);
+  if (!hit_rfh ||
+      web_contents() != content::WebContents::FromRenderFrameHost(hit_rfh))
     return;
 
   NavigationEntry *entry = resource.GetNavigationEntryForResource();
@@ -454,9 +454,9 @@ void ClientSideDetectionHost::OnPhishingPreClassificationDone(
   if (browse_info_.get() && should_classify) {
     DVLOG(1) << "Instruct renderer to start phishing detection for URL: "
              << browse_info_->url;
-    content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
-    rvh->Send(new SafeBrowsingMsg_StartPhishingDetection(
-        rvh->GetRoutingID(), browse_info_->url));
+    content::RenderFrameHost* rfh = web_contents()->GetMainFrame();
+    rfh->Send(new SafeBrowsingMsg_StartPhishingDetection(rfh->GetRoutingID(),
+                                                         browse_info_->url));
   }
 }
 
@@ -555,8 +555,7 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
       resource.threat_type = SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL;
       resource.render_process_host_id =
           web_contents()->GetRenderProcessHost()->GetID();
-      resource.render_view_id =
-          web_contents()->GetRenderViewHost()->GetRoutingID();
+      resource.render_frame_id = web_contents()->GetMainFrame()->GetRoutingID();
       if (!ui_manager_->IsWhitelisted(resource)) {
         // We need to stop any pending navigations, otherwise the interstital
         // might not get created properly.
@@ -586,8 +585,8 @@ void ClientSideDetectionHost::MaybeShowMalwareWarning(GURL original_url,
       resource.threat_type = SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL;
       resource.render_process_host_id =
           web_contents()->GetRenderProcessHost()->GetID();
-      resource.render_view_id =
-          web_contents()->GetRenderViewHost()->GetRoutingID();
+      resource.render_frame_id = web_contents()->GetMainFrame()->GetRoutingID();
+
       if (!ui_manager_->IsWhitelisted(resource)) {
         // We need to stop any pending navigations, otherwise the interstital
         // might not get created properly.

@@ -76,10 +76,12 @@ class ThreatDetails : public base::RefCountedThreadSafe<
   void OnRedirectionCollectionReady();
 
   // content::WebContentsObserver implementation.
-  bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message,
+                         content::RenderFrameHost* render_frame_host) override;
 
  protected:
   friend class ThreatDetailsFactoryImpl;
+  friend class TestThreatDetailsFactory;
 
   ThreatDetails(SafeBrowsingUIManager* ui_manager,
                 content::WebContents* web_contents,

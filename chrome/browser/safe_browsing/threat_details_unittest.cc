@@ -237,8 +237,7 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
     resource->threat_type = threat_type;
     resource->render_process_host_id =
         web_contents()->GetRenderProcessHost()->GetID();
-    resource->render_view_id =
-        web_contents()->GetRenderViewHost()->GetRoutingID();
+    resource->render_frame_id = web_contents()->GetMainFrame()->GetRoutingID();
   }
 
   void VerifyResults(const ClientSafeBrowsingReportRequest& report_pb,

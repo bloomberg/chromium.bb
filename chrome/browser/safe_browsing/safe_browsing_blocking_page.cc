@@ -77,11 +77,11 @@ const char kLearnMorePhishingUrlV2[] =
 const char kSocialEngineeringTrial[] = "SafeBrowsingSocialEngineeringStrings";
 const char kSocialEngineeringEnabled[] = "Enabled";
 
-// After a malware interstitial where the user opted-in to the report
+// After a safe browsing interstitial where the user opted-in to the report
 // but clicked "proceed anyway", we delay the call to
 // ThreatDetails::FinishCollection() by this much time (in
 // milliseconds).
-const int64_t kMalwareDetailsProceedDelayMilliSeconds = 3000;
+const int64_t kThreatDetailsProceedDelayMilliSeconds = 3000;
 
 // Constants for the Experience Sampling instrumentation.
 const char kEventNameMalware[] = "safebrowsing_interstitial_";
@@ -141,8 +141,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
     const GURL& main_frame_url,
     const UnsafeResourceList& unsafe_resources)
     : SecurityInterstitialPage(web_contents, unsafe_resources[0].url),
-      malware_details_proceed_delay_ms_(
-          kMalwareDetailsProceedDelayMilliSeconds),
+      threat_details_proceed_delay_ms_(kThreatDetailsProceedDelayMilliSeconds),
       ui_manager_(ui_manager),
       is_main_frame_load_blocked_(IsMainPageLoadBlocked(unsafe_resources)),
       main_frame_url_(main_frame_url),
@@ -363,7 +362,7 @@ void SafeBrowsingBlockingPage::OverrideRendererPrefs(
 void SafeBrowsingBlockingPage::OnProceed() {
   proceeded_ = true;
   // Send the threat details, if we opted to.
-  FinishThreatDetails(malware_details_proceed_delay_ms_, true, /* did_proceed */
+  FinishThreatDetails(threat_details_proceed_delay_ms_, true, /* did_proceed */
                       metrics_helper()->NumVisits());
 
   ui_manager_->OnBlockingPageDone(unsafe_resources_, true);
@@ -491,8 +490,8 @@ void SafeBrowsingBlockingPage::ShowBlockingPage(
     SafeBrowsingUIManager* ui_manager,
     const UnsafeResource& unsafe_resource) {
   DVLOG(1) << __FUNCTION__ << " " << unsafe_resource.url.spec();
-  WebContents* web_contents = tab_util::GetWebContentsByID(
-      unsafe_resource.render_process_host_id, unsafe_resource.render_view_id);
+  WebContents* web_contents = tab_util::GetWebContentsByFrameID(
+      unsafe_resource.render_process_host_id, unsafe_resource.render_frame_id);
 
   InterstitialPage* interstitial =
       InterstitialPage::GetInterstitialPage(web_contents);
