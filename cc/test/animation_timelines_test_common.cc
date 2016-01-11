@@ -39,6 +39,7 @@ TestHostClient::TestHostClient(ThreadInstance thread_instance)
     : host_(AnimationHost::Create(thread_instance)),
       mutators_need_commit_(false) {
   host_->SetMutatorHostClient(this);
+  host_->SetSupportsScrollAnimations(true);
 }
 
 TestHostClient::~TestHostClient() {

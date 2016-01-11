@@ -59,11 +59,7 @@ class AnimationHost::ScrollOffsetAnimations : public AnimationDelegate {
     DCHECK(scroll_offset_animation_player_);
     DCHECK(scroll_offset_animation_player_->animation_timeline());
 
-    if (scroll_offset_animation_player_->layer_id() != layer_id) {
-      if (scroll_offset_animation_player_->layer_id())
-        scroll_offset_animation_player_->DetachLayer();
-      scroll_offset_animation_player_->AttachLayer(layer_id);
-    }
+    ReattachScrollOffsetPlayerIfNeeded(layer_id);
 
     scroll_offset_animation_player_->AddAnimation(std::move(animation));
   }
@@ -73,6 +69,9 @@ class AnimationHost::ScrollOffsetAnimations : public AnimationDelegate {
                                    const gfx::ScrollOffset& max_scroll_offset,
                                    base::TimeTicks frame_monotonic_time) {
     DCHECK(scroll_offset_animation_player_);
+    if (!scroll_offset_animation_player_->element_animations())
+      return false;
+
     DCHECK_EQ(layer_id, scroll_offset_animation_player_->layer_id());
 
     Animation* animation = scroll_offset_animation_player_->element_animations()
@@ -111,6 +110,15 @@ class AnimationHost::ScrollOffsetAnimations : public AnimationDelegate {
   }
 
  private:
+  void ReattachScrollOffsetPlayerIfNeeded(int layer_id) {
+    if (scroll_offset_animation_player_->layer_id() != layer_id) {
+      if (scroll_offset_animation_player_->layer_id())
+        scroll_offset_animation_player_->DetachLayer();
+      if (layer_id)
+        scroll_offset_animation_player_->AttachLayer(layer_id);
+    }
+  }
+
   AnimationHost* animation_host_;
   scoped_refptr<AnimationTimeline> scroll_offset_timeline_;
 
