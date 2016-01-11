@@ -40,6 +40,7 @@
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
+#include "components/omnibox/browser/omnibox_log.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "components/search/search.h"
 #include "components/search_engines/template_url_service.h"
@@ -403,8 +404,13 @@ void ChromeOmniboxClient::OnRevert() {
 }
 
 void ChromeOmniboxClient::OnURLOpenedFromOmnibox(OmniboxLog* log) {
+  const AutocompleteMatch& selected_match =
+      log->result.match_at(log->selected_index);
+  const bool update_database =
+      !AutocompleteMatch::IsSearchType(selected_match.type);
+
   predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_)
-      ->OnOmniboxOpenedUrl(*log);
+      ->OnOmniboxOpenedUrl(*log, update_database);
 }
 
 void ChromeOmniboxClient::OnBookmarkLaunched() {

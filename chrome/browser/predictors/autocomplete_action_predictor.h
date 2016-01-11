@@ -115,8 +115,10 @@ class AutocompleteActionPredictor
   // abandoned.
   bool IsPrerenderAbandonedForTesting();
 
-  // Should be called when a URL is opened from the omnibox.
-  void OnOmniboxOpenedUrl(const OmniboxLog& log);
+  // Outputs histograms, may update the database and clears the transitional
+  // matches. |update_database| must be set to false in cases when another
+  // service is in charge of the selected match (instant search for example).
+  void OnOmniboxOpenedUrl(const OmniboxLog& log, bool update_database);
 
  private:
   friend class AutocompleteActionPredictorTest;
@@ -184,6 +186,9 @@ class AutocompleteActionPredictor
   // it becoming available.
   void CreateCaches(
       std::vector<AutocompleteActionPredictorTable::Row>* row_buffer);
+
+  // Updates database with hits and misses according to transitional matches.
+  void UpdateDatabase(const base::string16& user_text, const GURL& opened_url);
 
   // Attempts to call DeleteOldEntries if the in-memory database has been loaded
   // by |service|. Returns success as a boolean.

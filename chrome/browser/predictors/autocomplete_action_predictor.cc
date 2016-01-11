@@ -40,9 +40,9 @@
 
 namespace {
 
-const float kConfidenceCutoff[] = {
-  0.8f,
-  0.5f
+const double kConfidenceCutoff[] = {
+  0.8,
+  0.5
 };
 
 static_assert(arraysize(kConfidenceCutoff) ==
@@ -220,7 +220,8 @@ bool AutocompleteActionPredictor::IsPrerenderAbandonedForTesting() {
   return prerender_handle_ && prerender_handle_->IsAbandoned();
 }
 
-void AutocompleteActionPredictor::OnOmniboxOpenedUrl(const OmniboxLog& log) {
+void AutocompleteActionPredictor::OnOmniboxOpenedUrl(const OmniboxLog& log,
+                                                     bool update_database) {
   if (!initialized_)
     return;
 
@@ -255,7 +256,27 @@ void AutocompleteActionPredictor::OnOmniboxOpenedUrl(const OmniboxLog& log) {
 
   const AutocompleteMatch& match = log.result.match_at(log.selected_index);
   const GURL& opened_url = match.destination_url;
-  const base::string16 lower_user_text(base::i18n::ToLower(log.text));
+
+  if (update_database)
+    UpdateDatabase(log.text, opened_url);
+
+  ClearTransitionalMatches();
+
+  // Check against tracked urls and log accuracy for the confidence we
+  // predicted.
+  for (auto& it : tracked_urls_) {
+    if (opened_url == it.first) {
+      UMA_HISTOGRAM_COUNTS_100("AutocompleteActionPredictor.AccurateCount",
+                               it.second * 100);
+    }
+  }
+  tracked_urls_.clear();
+}
+
+void AutocompleteActionPredictor::UpdateDatabase(
+    const base::string16& user_text,
+    const GURL& opened_url) {
+  const base::string16 lower_user_text(base::i18n::ToLower(user_text));
 
   // Traverse transitional matches for those that have a user_text that is a
   // prefix of |lower_user_text|.
@@ -299,20 +320,6 @@ void AutocompleteActionPredictor::OnOmniboxOpenedUrl(const OmniboxLog& log) {
   }
   if (rows_to_add.size() > 0 || rows_to_update.size() > 0)
     AddAndUpdateRows(rows_to_add, rows_to_update);
-
-  ClearTransitionalMatches();
-
-  // Check against tracked urls and log accuracy for the confidence we
-  // predicted.
-  for (std::vector<std::pair<GURL, double> >::const_iterator it =
-       tracked_urls_.begin(); it != tracked_urls_.end();
-       ++it) {
-    if (opened_url == it->first) {
-      UMA_HISTOGRAM_COUNTS_100("AutocompleteActionPredictor.AccurateCount",
-                               it->second * 100);
-    }
-  }
-  tracked_urls_.clear();
 }
 
 void AutocompleteActionPredictor::Observe(

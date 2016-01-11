@@ -246,8 +246,13 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
 
   OmniboxEventGlobalTracker::GetInstance()->OnURLOpened(&log);
 
+  const AutocompleteMatch& selected_match =
+      log.result.match_at(log.selected_index);
+  const bool update_database =
+      !AutocompleteMatch::IsSearchType(selected_match.type);
+
   predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_)
-      ->OnOmniboxOpenedUrl(log);
+      ->OnOmniboxOpenedUrl(log, update_database);
 }
 
 void AutocompleteControllerAndroid::DeleteSuggestion(
