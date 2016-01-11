@@ -13,6 +13,7 @@ namespace arc {
 
 class ArcAuthService;
 class ArcBridgeService;
+class ArcClipboardBridge;
 class ArcInputBridge;
 class ArcSettingsBridge;
 class ArcPowerBridge;
@@ -39,6 +40,7 @@ class ArcServiceManager {
 
   // Individual services
   scoped_ptr<ArcAuthService> arc_auth_service_;
+  scoped_ptr<ArcClipboardBridge> arc_clipboard_bridge_;
   scoped_ptr<ArcInputBridge> arc_input_bridge_;
   scoped_ptr<ArcSettingsBridge> arc_settings_bridge_;
   scoped_ptr<ArcPowerBridge> arc_power_bridge_;

@@ -9,6 +9,7 @@
 #include "components/arc/arc_bridge_bootstrap.h"
 #include "components/arc/arc_bridge_service_impl.h"
 #include "components/arc/auth/arc_auth_service.h"
+#include "components/arc/clipboard/arc_clipboard_bridge.h"
 #include "components/arc/input/arc_input_bridge.h"
 #include "components/arc/power/arc_power_bridge.h"
 #include "components/arc/settings/arc_settings_bridge.h"
@@ -28,6 +29,7 @@ ArcServiceManager::ArcServiceManager(
     : arc_bridge_service_(
           new ArcBridgeServiceImpl(ArcBridgeBootstrap::Create())),
       arc_auth_service_(std::move(auth_service)),
+      arc_clipboard_bridge_(new ArcClipboardBridge(arc_bridge_service_.get())),
       arc_input_bridge_(ArcInputBridge::Create(arc_bridge_service_.get())),
       arc_settings_bridge_(std::move(settings_bridge)),
       arc_power_bridge_(new ArcPowerBridge(arc_bridge_service_.get())) {

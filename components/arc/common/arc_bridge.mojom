@@ -6,6 +6,7 @@ module arc;
 
 import "app.mojom";
 import "auth.mojom";
+import "clipboard.mojom";
 import "input.mojom";
 import "notifications.mojom";
 import "power.mojom";
@@ -22,6 +23,9 @@ interface ArcBridgeHost {
 
   // Notifies Chrome that the AuthInstance interface is ready.
   [MinVersion=1] OnAuthInstanceReady@106(AuthInstance instance_ptr);
+
+  // Notifies Chrome that the ClipboardInstance interface is ready.
+  [MinVersion=2] OnClipboardInstanceReady@109(ClipboardInstance instance_ptr);
 
   // Notifies Chrome that the InputInstnace interface is ready.
   OnInputInstanceReady@101(InputInstance instance_ptr);

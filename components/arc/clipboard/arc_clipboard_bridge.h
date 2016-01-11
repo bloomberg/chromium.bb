@@ -1,0 +1,43 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_ARC_CLIPBOARD_ARC_CLIPBOARD_BRIDGE_H_
+#define COMPONENTS_ARC_CLIPBOARD_ARC_CLIPBOARD_BRIDGE_H_
+
+#include <string>
+
+#include "base/macros.h"
+#include "components/arc/arc_bridge_service.h"
+#include "mojo/public/cpp/bindings/binding.h"
+
+namespace arc {
+
+class ArcClipboardBridge : public ArcBridgeService::Observer,
+                           public ClipboardHost {
+ public:
+  explicit ArcClipboardBridge(ArcBridgeService* bridge_service);
+  ~ArcClipboardBridge() override;
+
+  // ArcBridgeService::Observer overrides.
+  void OnClipboardInstanceReady() override;
+
+  // ClipboardHost overrides.
+  void SetTextContent(const mojo::String& text) override;
+  void GetTextContent() override;
+
+ private:
+  bool CalledOnValidThread();
+
+  ArcBridgeService* bridge_service_;
+
+  mojo::Binding<ClipboardHost> binding_;
+
+  base::ThreadChecker thread_checker_;
+
+  DISALLOW_COPY_AND_ASSIGN(ArcClipboardBridge);
+};
+
+}  // namespace arc
+
+#endif  // COMPONENTS_ARC_CLIPBOARD_ARC_CLIPBOARD_BRIDGE_H_

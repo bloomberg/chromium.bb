@@ -104,6 +104,31 @@ void ArcBridgeService::CloseAuthChannel() {
   FOR_EACH_OBSERVER(Observer, observer_list(), OnAuthInstanceClosed());
 }
 
+void ArcBridgeService::OnClipboardInstanceReady(
+    ClipboardInstancePtr clipboard_ptr) {
+  DCHECK(CalledOnValidThread());
+  temporary_clipboard_ptr_ = std::move(clipboard_ptr);
+  temporary_clipboard_ptr_.QueryVersion(base::Bind(
+      &ArcBridgeService::OnClipboardVersionReady, weak_factory_.GetWeakPtr()));
+}
+
+void ArcBridgeService::OnClipboardVersionReady(int32_t version) {
+  DCHECK(CalledOnValidThread());
+  clipboard_ptr_ = std::move(temporary_clipboard_ptr_);
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnClipboardInstanceReady());
+  clipboard_ptr_.set_connection_error_handler(base::Bind(
+      &ArcBridgeService::CloseClipboardChannel, weak_factory_.GetWeakPtr()));
+}
+
+void ArcBridgeService::CloseClipboardChannel() {
+  DCHECK(CalledOnValidThread());
+  if (!clipboard_ptr_)
+    return;
+
+  clipboard_ptr_.reset();
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnClipboardInstanceClosed());
+}
+
 void ArcBridgeService::OnInputInstanceReady(InputInstancePtr input_ptr) {
   DCHECK(CalledOnValidThread());
   temporary_input_ptr_ = std::move(input_ptr);
@@ -251,6 +276,7 @@ void ArcBridgeService::CloseAllChannels() {
   // and notify any observers that the channel is closed.
   CloseAppChannel();
   CloseAuthChannel();
+  CloseClipboardChannel();
   CloseInputChannel();
   CloseNotificationsChannel();
   ClosePowerChannel();
