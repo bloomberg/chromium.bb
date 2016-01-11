@@ -67,7 +67,7 @@ void WebScrollbarThemePainter::paintTrackBackground(WebCanvas* canvas, const Web
     m_theme->paintTrackBackground(pictureBuilder.context(), *m_scrollbar, intRect);
     pictureBuilder.endRecording()->playback(canvas);
     if (!m_theme->shouldRepaintAllPartsOnInvalidation())
-        m_scrollbar->setTrackNeedsRepaint(false);
+        m_scrollbar->clearTrackNeedsRepaint();
 }
 
 void WebScrollbarThemePainter::paintBackTrackPart(WebCanvas* canvas, const WebRect& rect)
@@ -141,7 +141,7 @@ void WebScrollbarThemePainter::paintThumb(WebCanvas* canvas, const WebRect& rect
     m_theme->paintThumb(pictureBuilder.context(), *m_scrollbar, intRect);
     pictureBuilder.endRecording()->playback(canvas);
     if (!m_theme->shouldRepaintAllPartsOnInvalidation())
-        m_scrollbar->setThumbNeedsRepaint(false);
+        m_scrollbar->clearThumbNeedsRepaint();
 }
 
 WebScrollbarThemePainter::WebScrollbarThemePainter(ScrollbarTheme& theme, Scrollbar& scrollbar, float deviceScaleFactor)

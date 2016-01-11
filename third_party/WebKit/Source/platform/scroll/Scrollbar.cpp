@@ -136,7 +136,7 @@ void Scrollbar::offsetDidChange()
 
     int oldThumbPosition = theme().thumbPosition(*this);
     m_currentPos = position;
-    updateThumbPosition();
+    setNeedsPaintInvalidation();
     if (m_pressedPart == ThumbPart)
         setPressedPos(m_pressedPos + theme().thumbPosition(*this) - oldThumbPosition);
 }
@@ -154,22 +154,7 @@ void Scrollbar::setProportion(int visibleSize, int totalSize)
     m_visibleSize = visibleSize;
     m_totalSize = totalSize;
 
-    updateThumbProportion();
-}
-
-void Scrollbar::updateThumb()
-{
     setNeedsPaintInvalidation();
-}
-
-void Scrollbar::updateThumbPosition()
-{
-    updateThumb();
-}
-
-void Scrollbar::updateThumbProportion()
-{
-    updateThumb();
 }
 
 void Scrollbar::paint(GraphicsContext& context, const CullRect& cullRect) const
@@ -562,12 +547,14 @@ float Scrollbar::scrollableAreaCurrentPos() const
     return m_scrollableArea->scrollPosition().y() - m_scrollableArea->minimumScrollPosition().y();
 }
 
-void Scrollbar::setNeedsPaintInvalidation()
+void Scrollbar::setNeedsPaintInvalidation(ScrollbarPart invalidParts)
 {
-    if (m_theme.shouldRepaintAllPartsOnInvalidation()) {
+    if (m_theme.shouldRepaintAllPartsOnInvalidation())
+        invalidParts = AllParts;
+    if (invalidParts & ~ThumbPart)
         m_trackNeedsRepaint = true;
+    if (invalidParts & ThumbPart)
         m_thumbNeedsRepaint = true;
-    }
     if (m_scrollableArea)
         m_scrollableArea->setScrollbarNeedsPaintInvalidation(orientation());
 }

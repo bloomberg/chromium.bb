@@ -141,10 +141,12 @@ public:
     float elasticOverscroll() const override { return m_elasticOverscroll; }
     void setElasticOverscroll(float elasticOverscroll) override { m_elasticOverscroll = elasticOverscroll; }
 
+    // Use setNeedsPaintInvalidation to cause the scrollbar (or parts thereof)
+    // to repaint.
     bool trackNeedsRepaint() const { return m_trackNeedsRepaint; }
-    void setTrackNeedsRepaint(bool trackNeedsRepaint) { m_trackNeedsRepaint = trackNeedsRepaint; }
+    void clearTrackNeedsRepaint() { m_trackNeedsRepaint = false; }
     bool thumbNeedsRepaint() const { return m_thumbNeedsRepaint; }
-    void setThumbNeedsRepaint(bool thumbNeedsRepaint) { m_thumbNeedsRepaint = thumbNeedsRepaint; }
+    void clearThumbNeedsRepaint() { m_thumbNeedsRepaint = false; }
 
     bool overlapsResizer() const { return m_overlapsResizer; }
     void setOverlapsResizer(bool overlapsResizer) { m_overlapsResizer = overlapsResizer; }
@@ -154,7 +156,18 @@ public:
     // TODO(chrishtr): fix this.
     IntRect visualRect() const override { return IntRect(); }
 
-    void setNeedsPaintInvalidation();
+    // Marks the scrollbar as needing to be redrawn.
+    //
+    // If invalid parts are provided, then those parts will also be repainted.
+    // Otherwise, the ScrollableArea may redraw using cached renderings of
+    // individual parts. For instance, if the scrollbar is composited, the thumb
+    // may be cached in a GPU texture (and is only guaranteed to be repainted if
+    // ThumbPart is invalidated).
+    //
+    // Even if no parts are invalidated, the scrollbar may need to be redrawn
+    // if, for instance, the thumb moves without changing the appearance of any
+    // part.
+    void setNeedsPaintInvalidation(ScrollbarPart invalidParts = NoPart);
 
     // Promptly unregister from the theme manager + run finalizers of derived Scrollbars.
     EAGERLY_FINALIZE();
@@ -165,8 +178,6 @@ public:
 
 protected:
     Scrollbar(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize, ScrollbarTheme* = 0);
-
-    void updateThumb();
 
     void autoscrollTimerFired(Timer<Scrollbar>*);
     void startTimerIfNeeded(double delay);
@@ -206,9 +217,6 @@ private:
     void invalidateRect(const IntRect&) override { setNeedsPaintInvalidation(); }
 
     float scrollableAreaCurrentPos() const;
-
-    void updateThumbPosition();
-    void updateThumbProportion();
 
     bool m_trackNeedsRepaint;
     bool m_thumbNeedsRepaint;

@@ -117,8 +117,8 @@ TEST_F(ScrollableAreaTest, ScrollbarTrackAndThumbRepaint)
     EXPECT_TRUE(scrollbar->trackNeedsRepaint());
     EXPECT_TRUE(scrollbar->thumbNeedsRepaint());
 
-    scrollbar->setTrackNeedsRepaint(false);
-    scrollbar->setThumbNeedsRepaint(false);
+    scrollbar->clearTrackNeedsRepaint();
+    scrollbar->clearThumbNeedsRepaint();
     EXPECT_FALSE(scrollbar->trackNeedsRepaint());
     EXPECT_FALSE(scrollbar->thumbNeedsRepaint());
     scrollbar->setNeedsPaintInvalidation();
@@ -126,8 +126,8 @@ TEST_F(ScrollableAreaTest, ScrollbarTrackAndThumbRepaint)
     EXPECT_TRUE(scrollbar->thumbNeedsRepaint());
 
     EXPECT_CALL(theme, shouldRepaintAllPartsOnInvalidation()).WillRepeatedly(Return(false));
-    scrollbar->setTrackNeedsRepaint(false);
-    scrollbar->setThumbNeedsRepaint(false);
+    scrollbar->clearTrackNeedsRepaint();
+    scrollbar->clearThumbNeedsRepaint();
     EXPECT_FALSE(scrollbar->trackNeedsRepaint());
     EXPECT_FALSE(scrollbar->thumbNeedsRepaint());
     scrollbar->setNeedsPaintInvalidation();

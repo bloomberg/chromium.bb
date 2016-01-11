@@ -422,26 +422,26 @@ private:
     else
         currentValue = progress;
 
+    ScrollbarPart invalidParts = NoPart;
     switch (_featureToAnimate) {
     case ThumbAlpha:
         [_scrollbarPainter.get() setKnobAlpha:currentValue];
         break;
     case TrackAlpha:
         [_scrollbarPainter.get() setTrackAlpha:currentValue];
-        _scrollbar->setTrackNeedsRepaint(true);
+        invalidParts = static_cast<ScrollbarPart>(~ThumbPart);
         break;
     case UIStateTransition:
         [_scrollbarPainter.get() setUiStateTransitionProgress:currentValue];
-        _scrollbar->setThumbNeedsRepaint(true);
-        _scrollbar->setTrackNeedsRepaint(true);
+        invalidParts = AllParts;
         break;
     case ExpansionTransition:
         [_scrollbarPainter.get() setExpansionTransitionProgress:currentValue];
-        _scrollbar->setThumbNeedsRepaint(true);
+        invalidParts = ThumbPart;
         break;
     }
 
-    _scrollbar->setNeedsPaintInvalidation();
+    _scrollbar->setNeedsPaintInvalidation(invalidParts);
 }
 
 - (void)invalidate
@@ -657,7 +657,7 @@ private:
     if (newOverlayScrollerState == NSScrollerStateExpanded) {
         _hasExpandedSinceInvisible = YES;
     } else if (newOverlayScrollerState != NSScrollerStateInvisible && _hasExpandedSinceInvisible) {
-        _scrollbar->setThumbNeedsRepaint(true);
+        _scrollbar->setNeedsPaintInvalidation(ThumbPart);
         _hasExpandedSinceInvisible = NO;
     }
 }
@@ -1097,9 +1097,7 @@ void ScrollAnimatorMac::updateScrollerStyle()
     NSScrollerStyle newStyle = [m_scrollbarPainterController.get() scrollerStyle];
 
     if (Scrollbar* verticalScrollbar = scrollableArea()->verticalScrollbar()) {
-        verticalScrollbar->setTrackNeedsRepaint(true);
-        verticalScrollbar->setThumbNeedsRepaint(true);
-        verticalScrollbar->setNeedsPaintInvalidation();
+        verticalScrollbar->setNeedsPaintInvalidation(AllParts);
 
         ScrollbarPainter oldVerticalPainter = [m_scrollbarPainterController.get() verticalScrollerImp];
         ScrollbarPainter newVerticalPainter = [NSClassFromString(@"NSScrollerImp") scrollerImpWithStyle:newStyle
@@ -1117,9 +1115,7 @@ void ScrollAnimatorMac::updateScrollerStyle()
     }
 
     if (Scrollbar* horizontalScrollbar = scrollableArea()->horizontalScrollbar()) {
-        horizontalScrollbar->setTrackNeedsRepaint(true);
-        horizontalScrollbar->setThumbNeedsRepaint(true);
-        horizontalScrollbar->setNeedsPaintInvalidation();
+        horizontalScrollbar->setNeedsPaintInvalidation(AllParts);
 
         ScrollbarPainter oldHorizontalPainter = [m_scrollbarPainterController.get() horizontalScrollerImp];
         ScrollbarPainter newHorizontalPainter = [NSClassFromString(@"NSScrollerImp") scrollerImpWithStyle:newStyle
