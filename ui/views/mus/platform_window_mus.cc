@@ -212,6 +212,11 @@ void PlatformWindowMus::OnWindowInputEvent(
     mus::Window* view,
     mus::mojom::EventPtr event,
     scoped_ptr<base::Closure>* ack_callback) {
+  // It's possible dispatching the event will spin a nested message loop. Ack
+  // the callback now, otherwise we appear unresponsive for the life of the
+  // nested message loop.
+  (*ack_callback)->Run();
+  ack_callback->reset();
   scoped_ptr<ui::Event> ui_event(event.To<scoped_ptr<ui::Event>>());
   delegate_->DispatchEvent(ui_event.get());
 }
