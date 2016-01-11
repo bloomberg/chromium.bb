@@ -9,13 +9,11 @@ import json
 import operator
 import urlparse
 
-
 Timing = collections.namedtuple(
     'Timing',
     ['connectEnd', 'connectStart', 'dnsEnd', 'dnsStart', 'proxyEnd',
      'proxyStart', 'receiveHeadersEnd', 'requestTime', 'sendEnd', 'sendStart',
-     'serviceWorkerFetchEnd', 'serviceWorkerFetchReady',
-     'serviceWorkerFetchStart', 'sslEnd', 'sslStart'])
+     'sslEnd', 'sslStart', 'workerReady', 'workerStart', 'loadingFinished'])
 
 
 class Resource(object):
@@ -33,7 +31,7 @@ class Resource(object):
 
   def GetShortName(self):
     """Returns either the hostname of the resource, or the filename,
-    or the end of the path.
+    or the end of the path. Tries to include the domain as much as possible.
     """
     parsed = urlparse.urlparse(self.url)
     path = parsed.path
@@ -41,17 +39,22 @@ class Resource(object):
       last_path = parsed.path.split('/')[-1]
       if len(last_path) < 10:
         if len(path) < 10:
-          return path
+          return parsed.hostname + '/' + path
         else:
-          return parsed.path[-10:]
+          return parsed.hostname + '/..' + parsed.path[-10:]
+      elif len(last_path) > 10:
+        return parsed.hostname + '/..' + last_path[:5]
       else:
-        return last_path
+        return parsed.hostname + '/..' + last_path
     else:
       return parsed.hostname
 
   def GetContentType(self):
     mime = self.content_type
-    if mime == 'text/html':
+    if 'magic-debug-content' in mime:
+      # A silly hack to make the unittesting easier.
+      return 'magic-debug-content'
+    elif mime == 'text/html':
       return 'html'
     elif mime == 'text/css':
       return 'css'
