@@ -120,7 +120,7 @@ const char kPingURL[] =
 const int64_t kDefaultExpiryUsec = 168 * base::Time::kMicrosecondsPerHour;
 
 const base::Feature kOAuth2AuthenticationFeature {
-  "SuggestionsServiceOAuth2", base::FEATURE_DISABLED_BY_DEFAULT
+  "SuggestionsServiceOAuth2", base::FEATURE_ENABLED_BY_DEFAULT
 };
 
 }  // namespace
