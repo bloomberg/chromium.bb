@@ -156,6 +156,8 @@ class NetworkMetric(Metric):
 
   def IterResponses(self, tab):
     if self._events is None:
+      if self._timeline_model is None:
+        return
       self._events = self._timeline_model.GetAllEventsOfName('HTTPResponse')
     if len(self._events) == 0:
       return
