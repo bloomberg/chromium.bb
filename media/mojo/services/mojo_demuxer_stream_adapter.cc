@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/numerics/safe_conversions.h"
 #include "media/base/decoder_buffer.h"
 #include "media/mojo/services/media_type_converters.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -112,14 +113,16 @@ void MojoDemuxerStreamAdapter::OnBufferReady(
       buffer.To<scoped_refptr<DecoderBuffer>>());
 
   if (!media_buffer->end_of_stream()) {
-    DCHECK_GT(media_buffer->data_size(), 0);
+    DCHECK_GT(media_buffer->data_size(), 0u);
 
     // Read the inner data for the DecoderBuffer from our DataPipe.
-    uint32_t num_bytes = media_buffer->data_size();
+    uint32_t bytes_to_read =
+        base::checked_cast<size_t, uint32_t>(media_buffer->data_size());
+    uint32_t bytes_read = bytes_to_read;
     CHECK_EQ(ReadDataRaw(stream_pipe_.get(), media_buffer->writable_data(),
-                         &num_bytes, MOJO_READ_DATA_FLAG_ALL_OR_NONE),
+                         &bytes_read, MOJO_READ_DATA_FLAG_ALL_OR_NONE),
              MOJO_RESULT_OK);
-    CHECK_EQ(num_bytes, static_cast<uint32_t>(media_buffer->data_size()));
+    CHECK_EQ(bytes_to_read, bytes_read);
   }
 
   base::ResetAndReturn(&read_cb_).Run(DemuxerStream::kOk, media_buffer);

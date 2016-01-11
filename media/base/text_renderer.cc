@@ -181,7 +181,7 @@ void TextRenderer::BufferReady(
   }
 
   DCHECK_EQ(status, DemuxerStream::kOk);
-  DCHECK_GE(input->side_data_size(), 2);
+  DCHECK_GE(input->side_data_size(), 2u);
 
   // The side data contains both the cue id and cue settings,
   // each terminated with a NUL.
