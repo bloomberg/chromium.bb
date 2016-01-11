@@ -779,7 +779,8 @@ bind_display(struct wl_client *client, struct wl_display *display)
 	client->display_resource =
 		wl_resource_create(client, &wl_display_interface, 1, 1);
 	if (client->display_resource == NULL) {
-		wl_client_post_no_memory(client);
+		/* DON'T send no-memory error to client - it has no
+		 * resource to which it could post the event */
 		return -1;
 	}
 
