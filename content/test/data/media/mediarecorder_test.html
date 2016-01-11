@@ -14,7 +14,7 @@
 
 'use strict';
 
-const DEFAULT_CONSTRAINTS= {audio:true, video:true};
+const DEFAULT_CONSTRAINTS = {audio: true, video: true};
 const DEFAULT_RECORDER_MIME_TYPE = '';
 const DEFAULT_TIME_SLICE = 100;
 const FREQUENCY = 880;
@@ -128,7 +128,7 @@ function testStartAndRecorderState() {
       .then(function() {
         return waitFor('Make sure the start event was received',
             function() {
-              return startEventReceived == true;
+              return startEventReceived;
             });
       })
       .catch(function(err) {
@@ -158,7 +158,7 @@ function testStartStopAndRecorderState() {
       .then(function() {
         return waitFor('Make sure the stop event was received',
             function() {
-              return stopEventReceived == true;
+              return stopEventReceived;
             });
       })
       .catch(function(err) {
@@ -185,7 +185,7 @@ function testStartAndDataAvailable() {
         recorder.ondataavailable = function(event) {
           timeStamps.push(event.timeStamp);
           if (event.data.size > 0)
-            videoSize  += event.data.size;
+            videoSize += event.data.size;
           else
             emptyBlobs += 1;
         };
@@ -223,7 +223,7 @@ function testStartWithTimeSlice() {
         recorder.ondataavailable = function(event) {
           timeStamps.push(event.timeStamp);
           if (event.data.size > 0)
-            videoSize  += event.data.size;
+            videoSize += event.data.size;
           else
             emptyBlobs += 1;
         };
@@ -264,13 +264,13 @@ function testResumeAndRecorderState() {
         theRecorder.onresume = function(event) {
           resumeEventReceived = true;
           assertEquals('recording', theRecorder.state);
-        }
+        };
         theRecorder.resume();
       })
       .then(function() {
         return waitFor('Making sure the resume event has been received',
             function() {
-              return resumeEventReceived == true;
+              return resumeEventReceived;
             });
       })
       .catch(function(err) {
@@ -309,7 +309,7 @@ function testResumeAndDataAvailable() {
       .then(function() {
         theRecorder.ondataavailable = function(event) {
           if (event.data.size > 0) {
-            videoSize  += event.data.size;
+            videoSize += event.data.size;
           } else {
             console.log('This dataavailable event is empty', event);
             emptyBlobs += 1;
@@ -352,13 +352,13 @@ function testPauseAndRecorderState() {
         theRecorder.onpause = function(event) {
           pauseEventReceived = true;
           assertEquals('paused', theRecorder.state);
-        }
+        };
         theRecorder.pause();
       })
       .then(function() {
         return waitFor('Making sure the pause event has been received',
             function() {
-              return pauseEventReceived == true;
+              return pauseEventReceived;
             });
       })
       .catch(function(err) {
@@ -399,8 +399,6 @@ function testPauseStopAndRecorderState() {
 // function is called.
 function testPausePreventsDataavailableFromBeingFired() {
   var theRecorder;
-  var videoSize = 0;
-  var emptyBlobs = 0;
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
       .then(function(stream) {
         return createAndStartMediaRecorder(stream, DEFAULT_RECORDER_MIME_TYPE);
@@ -515,7 +513,7 @@ function testTwoChannelAudio() {
   var audioSize = 0;
   var context = new OfflineAudioContext(2, NUM_SAMPLES, SAMPLING_RATE);
   var oscillator = context.createOscillator();
-  oscillator.type = "sine";
+  oscillator.type = 'sine';
   oscillator.frequency.value = FREQUENCY;
   var dest = context.createMediaStreamDestination();
   dest.channelCount = 2;
