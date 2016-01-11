@@ -234,17 +234,6 @@ struct PPB_NaCl_Private {
    * /dev/urandom.  On non-POSIX systems, this function returns 0.
    */
   int32_t (*UrandomFD)(void);
-  /* This is Windows-specific.  This is a replacement for DuplicateHandle() for
-   * use inside the Windows sandbox.  Note that we provide this via dependency
-   * injection only to avoid the linkage problems that occur because the NaCl
-   * plugin is built as a separate DLL/DSO
-   * (see http://code.google.com/p/chromium/issues/detail?id=114439#c8).
-   */
-  int32_t (*BrokerDuplicateHandle)(PP_FileHandle source_handle,
-                                   uint32_t process_id,
-                                   PP_FileHandle* target_handle,
-                                   uint32_t desired_access,
-                                   uint32_t options);
   /* Returns a read-only (but executable) file descriptor / file info for
    * a url for pnacl translator tools. Returns an invalid handle on failure.
    */

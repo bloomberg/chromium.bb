@@ -45,7 +45,6 @@
 #include "components/nacl/renderer/trusted_plugin_channel.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/sandbox_init.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
@@ -633,20 +632,6 @@ int UrandomFD(void) {
   return base::GetUrandomFD();
 #else
   return -1;
-#endif
-}
-
-int32_t BrokerDuplicateHandle(PP_FileHandle source_handle,
-                              uint32_t process_id,
-                              PP_FileHandle* target_handle,
-                              uint32_t desired_access,
-                              uint32_t options) {
-#if defined(OS_WIN)
-  return content::BrokerDuplicateHandle(source_handle, process_id,
-                                        target_handle, desired_access,
-                                        options);
-#else
-  return 0;
 #endif
 }
 
@@ -1727,7 +1712,6 @@ void StreamPexe(PP_Instance instance,
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &UrandomFD,
-  &BrokerDuplicateHandle,
   &GetReadExecPnaclFd,
   &CreateTemporaryFile,
   &GetNumberOfProcessors,

@@ -7,7 +7,6 @@
 #include "components/nacl/renderer/plugin/module_ppapi.h"
 #include "components/nacl/renderer/plugin/plugin.h"
 #include "components/nacl/renderer/plugin/utility.h"
-#include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/platform/nacl_secure_random.h"
 #include "native_client/src/shared/platform/nacl_time.h"
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
@@ -52,10 +51,6 @@ bool ModulePpapi::Init() {
   // In the plugin, we don't need high resolution time of day.
   NaClAllowLowResolutionTimeOfDay();
   NaClNrdAllModulesInit();
-
-#if NACL_WINDOWS
-  NaClSetBrokerDuplicateHandleFunc(private_interface_->BrokerDuplicateHandle);
-#endif
 
   init_was_successful_ = true;
   return true;
