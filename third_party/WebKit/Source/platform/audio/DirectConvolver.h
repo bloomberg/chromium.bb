@@ -38,8 +38,6 @@
 #include <ipps.h>
 #endif // USE(WEBAUDIO_IPP)
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 class PLATFORM_EXPORT DirectConvolver {
@@ -62,7 +60,5 @@ private:
 };
 
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // DirectConvolver_h

@@ -23,8 +23,6 @@
  */
 
 #include "modules/webaudio/MediaStreamAudioSourceNode.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/Logging.h"
@@ -144,4 +142,3 @@ void MediaStreamAudioSourceNode::setFormat(size_t numberOfChannels, float source
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

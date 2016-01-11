@@ -23,8 +23,6 @@
  */
 
 #include "modules/webaudio/WaveShaperDSPKernel.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "wtf/MainThread.h"
 #include "wtf/Threading.h"
 #include <algorithm>
@@ -205,4 +203,3 @@ double WaveShaperDSPKernel::latencyTime() const
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

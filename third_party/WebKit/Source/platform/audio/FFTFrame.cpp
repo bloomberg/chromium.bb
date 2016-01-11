@@ -27,8 +27,6 @@
  */
 
 #include "platform/audio/FFTFrame.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "platform/audio/VectorMath.h"
 #include "platform/Logging.h"
 #include "wtf/MathExtras.h"
@@ -269,4 +267,3 @@ void FFTFrame::multiply(const FFTFrame& frame)
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

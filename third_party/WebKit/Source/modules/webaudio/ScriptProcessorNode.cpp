@@ -23,8 +23,6 @@
  */
 
 #include "modules/webaudio/ScriptProcessorNode.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/ExceptionCode.h"
@@ -298,4 +296,3 @@ size_t ScriptProcessorNode::bufferSize() const
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

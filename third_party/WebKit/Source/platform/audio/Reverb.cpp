@@ -27,8 +27,6 @@
  */
 
 #include "platform/audio/Reverb.h"
-
-#if ENABLE(WEB_AUDIO)
 #include <math.h>
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/VectorMath.h"
@@ -235,4 +233,3 @@ size_t Reverb::latencyFrames() const
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

@@ -40,8 +40,6 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 // HRTFElevation contains all of the HRTFKernels (one left ear and one right ear per azimuth angle) for a particular elevation.
@@ -105,7 +103,5 @@ private:
 };
 
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // HRTFElevation_h

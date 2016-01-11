@@ -31,9 +31,7 @@ enum OscillatorType {
 };
 
 // OscillatorNode is an audio generator of periodic waveforms.
-[
-    Conditional=WEB_AUDIO,
-] interface OscillatorNode : AudioSourceNode {
+interface OscillatorNode : AudioSourceNode {
 
     [RaisesException=Setter] attribute OscillatorType type;
 

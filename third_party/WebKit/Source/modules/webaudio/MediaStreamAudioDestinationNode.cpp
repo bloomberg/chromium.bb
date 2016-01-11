@@ -23,8 +23,6 @@
  */
 
 #include "modules/webaudio/MediaStreamAudioDestinationNode.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
@@ -136,4 +134,3 @@ MediaStream* MediaStreamAudioDestinationNode::stream() const
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

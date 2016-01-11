@@ -23,8 +23,6 @@
  */
 
 #include "modules/webaudio/BiquadFilterNode.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/AudioBasicProcessorHandler.h"
 
 namespace blink {
@@ -118,4 +116,3 @@ void BiquadFilterNode::getFrequencyResponse(const DOMFloat32Array* frequencyHz, 
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

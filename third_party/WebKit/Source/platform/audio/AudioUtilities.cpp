@@ -23,8 +23,6 @@
  */
 
 #include "platform/audio/AudioUtilities.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
 
@@ -79,4 +77,3 @@ float maxAudioBufferSampleRate()
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

@@ -67,7 +67,6 @@
       }, { # OS!=android
         'feature_defines': [
           'ENABLE_INPUT_MULTIPLE_FIELDS_UI=1',
-          'ENABLE_WEB_AUDIO=1',
           'WTF_USE_ICCJPEG=1',
           'WTF_USE_QCMSLIB=1'
         ],
@@ -86,9 +85,6 @@
       ['OS=="android" and use_openmax_dl_fft!=0', {
         'feature_defines': [
           'WTF_USE_WEBAUDIO_OPENMAX_DL_FFT=1',
-          # Enabling the FFT is enough to enable WebAudio support to
-          # allow most WebAudio features to work on Android.
-          'ENABLE_WEB_AUDIO=1',
         ],
       }],
       ['use_default_render_theme==1', {

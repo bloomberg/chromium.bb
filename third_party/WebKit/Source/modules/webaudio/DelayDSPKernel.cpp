@@ -23,8 +23,6 @@
  */
 
 #include "modules/webaudio/DelayDSPKernel.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "platform/audio/AudioUtilities.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
@@ -70,4 +68,3 @@ double DelayDSPKernel::delayTime(float)
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

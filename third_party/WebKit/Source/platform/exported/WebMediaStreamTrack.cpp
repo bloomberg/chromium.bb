@@ -118,11 +118,8 @@ void WebMediaStreamTrack::setExtraData(ExtraData* extraData)
 }
 
 void WebMediaStreamTrack::setSourceProvider(WebAudioSourceProvider* provider)
-{
-#if ENABLE(WEB_AUDIO)
-    ASSERT(!m_private.isNull());
+{    ASSERT(!m_private.isNull());
     m_private->setSourceProvider(provider);
-#endif // ENABLE(WEB_AUDIO)
 }
 
 void WebMediaStreamTrack::assign(const WebMediaStreamTrack& other)

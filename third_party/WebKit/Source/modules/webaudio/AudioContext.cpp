@@ -15,8 +15,6 @@
 #include <stdio.h>
 #endif
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 // Don't allow more than this number of simultaneous AudioContexts
@@ -197,4 +195,3 @@ void AudioContext::stopRendering()
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

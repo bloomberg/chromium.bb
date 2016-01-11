@@ -23,8 +23,6 @@
  */
 
 #include "platform/audio/AudioResampler.h"
-
-#if ENABLE(WEB_AUDIO)
 #include <algorithm>
 #include "wtf/MathExtras.h"
 
@@ -119,4 +117,3 @@ void AudioResampler::reset()
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

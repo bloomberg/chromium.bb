@@ -29,8 +29,6 @@
 #include "platform/audio/AudioDestination.h"
 #include "wtf/OwnPtr.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 class AbstractAudioContext;
@@ -70,7 +68,5 @@ private:
 };
 
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // DefaultAudioDestinationNode_h

@@ -38,8 +38,6 @@
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/build_config.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 class WebAudioSourceProvider;
@@ -61,7 +59,5 @@ private:
 };
 
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // MediaStreamWebAudioSource_h

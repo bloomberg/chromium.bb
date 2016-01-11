@@ -31,8 +31,6 @@
 #include "wtf/HashSet.h"
 #include "wtf/RefPtr.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 class AudioNodeInput;
@@ -166,7 +164,5 @@ private:
 };
 
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // AudioNodeOutput_h

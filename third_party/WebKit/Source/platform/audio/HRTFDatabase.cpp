@@ -28,8 +28,6 @@
 
 #include "platform/audio/HRTFDatabase.h"
 
-#if ENABLE(WEB_AUDIO)
-
 #include "wtf/MathExtras.h"
 
 namespace blink {
@@ -116,4 +114,3 @@ unsigned HRTFDatabase::indexFromElevationAngle(double elevationAngle)
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

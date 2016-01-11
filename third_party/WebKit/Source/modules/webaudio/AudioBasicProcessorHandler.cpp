@@ -23,8 +23,6 @@
  */
 
 #include "modules/webaudio/AudioBasicProcessorHandler.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/audio/AudioBus.h"
@@ -149,4 +147,3 @@ double AudioBasicProcessorHandler::latencyTime() const
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

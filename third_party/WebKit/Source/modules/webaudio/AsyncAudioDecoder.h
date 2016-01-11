@@ -30,8 +30,6 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/build_config.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 class AudioBuffer;
@@ -61,7 +59,5 @@ private:
 };
 
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // AsyncAudioDecoder_h

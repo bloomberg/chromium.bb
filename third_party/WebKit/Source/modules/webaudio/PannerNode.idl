@@ -35,7 +35,6 @@ enum DistanceModelType {
 
 [
     NoInterfaceObject,
-    Conditional=WEB_AUDIO,
 ] interface PannerNode : AudioNode {
     // Default model for stereo is equalpower.
     attribute PanningModelType panningModel;

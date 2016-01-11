@@ -23,8 +23,6 @@
  */
 
 #include "platform/audio/EqualPowerPanner.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioUtilities.h"
 #include "wtf/MathExtras.h"
@@ -151,4 +149,3 @@ void EqualPowerPanner::pan(double azimuth, double /*elevation*/, const AudioBus*
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

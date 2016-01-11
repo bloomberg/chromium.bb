@@ -29,8 +29,6 @@
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/WaveShaperProcessor.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 class AbstractAudioContext;
@@ -58,7 +56,5 @@ private:
 };
 
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // WaveShaperNode_h

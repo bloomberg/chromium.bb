@@ -28,8 +28,6 @@
 
 #include "wtf/build_config.h"
 
-#if ENABLE(WEB_AUDIO)
-
 #if USE(WEBAUDIO_FFMPEG)
 
 #include "platform/audio/FFTFrame.h"
@@ -179,4 +177,3 @@ RDFTContext* FFTFrame::contextForSize(unsigned fftSize, int trans)
 
 #endif // USE(WEBAUDIO_FFMPEG)
 
-#endif // ENABLE(WEB_AUDIO)

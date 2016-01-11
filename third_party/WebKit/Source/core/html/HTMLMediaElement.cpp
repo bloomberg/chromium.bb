@@ -71,9 +71,12 @@
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/audio/AudioBus.h"
+#include "platform/audio/AudioSourceProviderClient.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebAudioSourceProvider.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "public/platform/WebInbandTextTrack.h"
 #include "wtf/CurrentTime.h"
@@ -82,11 +85,6 @@
 #include "wtf/text/CString.h"
 #include <limits>
 
-#if ENABLE(WEB_AUDIO)
-#include "platform/audio/AudioBus.h"
-#include "platform/audio/AudioSourceProviderClient.h"
-#include "public/platform/WebAudioSourceProvider.h"
-#endif
 
 namespace blink {
 
@@ -151,7 +149,6 @@ static void removeElementFromDocumentMap(HTMLMediaElement* element, Document* do
 class AudioSourceProviderClientLockScope {
     STACK_ALLOCATED();
 public:
-#if ENABLE(WEB_AUDIO)
     AudioSourceProviderClientLockScope(HTMLMediaElement& element)
         : m_client(element.audioSourceNode())
     {
@@ -166,10 +163,6 @@ public:
 
 private:
     Member<AudioSourceProviderClient> m_client;
-#else
-    explicit AudioSourceProviderClientLockScope(HTMLMediaElement&) { }
-    ~AudioSourceProviderClientLockScope() { }
-#endif
 };
 
 static const AtomicString& AudioKindToString(WebMediaPlayerClient::AudioTrackKind kind)
@@ -342,9 +335,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_audioTracks(AudioTrackList::create(*this))
     , m_videoTracks(VideoTrackList::create(*this))
     , m_textTracks(nullptr)
-#if ENABLE(WEB_AUDIO)
     , m_audioSourceNode(nullptr)
-#endif
     , m_autoplayHelper(*this)
 {
 #if ENABLE(OILPAN)
@@ -395,13 +386,11 @@ HTMLMediaElement::~HTMLMediaElement()
     document().decrementLoadEventDelayCount();
 #endif
 
-#if ENABLE(WEB_AUDIO)
     // m_audioSourceNode is explicitly cleared by AudioNode::dispose().
     // Since AudioNode::dispose() is guaranteed to be always called before
     // the AudioNode is destructed, m_audioSourceNode is explicitly cleared
     // even if the AudioNode and the HTMLMediaElement die together.
     ASSERT(!m_audioSourceNode);
-#endif
 }
 
 #if ENABLE(OILPAN)
@@ -933,10 +922,8 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
     // cache is an internal detail not exposed through the media element API.
     m_currentSrc = url;
 
-#if ENABLE(WEB_AUDIO)
     if (m_audioSourceNode)
         m_audioSourceNode->onCurrentSrcChanged(m_currentSrc);
-#endif
 
     WTF_LOG(Media, "HTMLMediaElement::loadResource(%p) - m_currentSrc -> %s", this, urlForLoggingMedia(m_currentSrc).utf8().data());
 
@@ -1032,10 +1019,8 @@ void HTMLMediaElement::startPlayerLoad()
 
     if (layoutObject())
         layoutObject()->setShouldDoFullPaintInvalidation();
-#if ENABLE(WEB_AUDIO)
     // Make sure if we create/re-create the WebMediaPlayer that we update our wrapper.
     m_audioSourceProvider.wrap(m_webMediaPlayer->audioSourceProvider());
-#endif
     m_webMediaPlayer->setVolume(effectiveMediaVolume());
 
     m_webMediaPlayer->setPoster(posterImageURL());
@@ -2994,13 +2979,9 @@ void HTMLMediaElement::stopPeriodicTimers()
 
 void HTMLMediaElement::clearMediaPlayerAndAudioSourceProviderClientWithoutLocking()
 {
-#if ENABLE(WEB_AUDIO)
     audioSourceProvider().setClient(nullptr);
-#endif
     if (m_webMediaPlayer) {
-#if ENABLE(WEB_AUDIO)
         m_audioSourceProvider.wrap(nullptr);
-#endif
         m_webMediaPlayer.clear();
     }
 }
@@ -3424,13 +3405,10 @@ void HTMLMediaElement::resetMediaPlayerAndMediaSource()
     m_remoteRoutesAvailable = false;
     m_playingRemotely = false;
 
-#if ENABLE(WEB_AUDIO)
     if (m_audioSourceNode)
         audioSourceProvider().setClient(m_audioSourceNode);
-#endif
 }
 
-#if ENABLE(WEB_AUDIO)
 void HTMLMediaElement::setAudioSourceNode(AudioSourceProviderClient* sourceNode)
 {
     ASSERT(isMainThread());
@@ -3439,7 +3417,6 @@ void HTMLMediaElement::setAudioSourceNode(AudioSourceProviderClient* sourceNode)
     AudioSourceProviderClientLockScope scope(*this);
     audioSourceProvider().setClient(m_audioSourceNode);
 }
-#endif
 
 void HTMLMediaElement::setAllowHiddenVolumeControls(bool allow)
 {
@@ -3510,10 +3487,8 @@ DEFINE_TRACE(HTMLMediaElement)
     visitor->trace(m_cueTimeline);
     visitor->trace(m_textTracks);
     visitor->trace(m_textTracksWhenResourceSelectionBegan);
-#if ENABLE(WEB_AUDIO)
     visitor->trace(m_audioSourceProvider);
     visitor->template registerWeakMembers<HTMLMediaElement, &HTMLMediaElement::clearWeakMembers>(this);
-#endif
     visitor->trace(m_autoplayHelper);
     HeapSupplementable<HTMLMediaElement>::trace(visitor);
 #endif
@@ -3589,7 +3564,6 @@ void HTMLMediaElement::triggerAutoplayViewportCheckForTesting()
     m_autoplayHelper.triggerAutoplayViewportCheckForTesting();
 }
 
-#if ENABLE(WEB_AUDIO)
 void HTMLMediaElement::clearWeakMembers(Visitor* visitor)
 {
     if (!Heap::isHeapObjectAlive(m_audioSourceNode))
@@ -3655,6 +3629,5 @@ DEFINE_TRACE(HTMLMediaElement::AudioSourceProviderImpl)
 {
     visitor->trace(m_client);
 }
-#endif
 
 }

@@ -23,8 +23,6 @@
  */
 
 #include "modules/webaudio/AudioSummingJunction.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/AudioNodeOutput.h"
 #include <algorithm>
 
@@ -71,4 +69,3 @@ void AudioSummingJunction::updateRenderingState()
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

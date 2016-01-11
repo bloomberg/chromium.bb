@@ -23,8 +23,6 @@
  */
 
 #include "modules/webaudio/ChannelSplitterNode.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
@@ -88,4 +86,3 @@ ChannelSplitterNode* ChannelSplitterNode::create(AbstractAudioContext& context, 
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

@@ -23,8 +23,6 @@
  */
 
 #include "modules/webaudio/BiquadDSPKernel.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "platform/FloatConversion.h"
 #include "wtf/Vector.h"
 #include <limits.h>
@@ -188,4 +186,3 @@ double BiquadDSPKernel::latencyTime() const
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

@@ -31,8 +31,6 @@
 #include "wtf/Allocator.h"
 #include "wtf/HashSet.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 class AudioNodeOutput;
@@ -105,7 +103,5 @@ private:
 };
 
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // AudioNodeInput_h

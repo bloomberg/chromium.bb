@@ -27,8 +27,6 @@
  */
 
 #include "platform/audio/DynamicsCompressor.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioUtilities.h"
 #include "wtf/MathExtras.h"
@@ -206,4 +204,3 @@ void DynamicsCompressor::setNumberOfChannels(unsigned numberOfChannels)
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

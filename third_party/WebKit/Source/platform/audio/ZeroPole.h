@@ -33,8 +33,6 @@
 #include "wtf/Allocator.h"
 #include "wtf/build_config.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 // ZeroPole is a simple filter with one zero and one pole.
@@ -69,7 +67,5 @@ private:
 };
 
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // ZeroPole_h

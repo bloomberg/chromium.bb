@@ -22,8 +22,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Conditional=WEB_AUDIO
-] interface DelayNode : AudioNode {
+interface DelayNode : AudioNode {
     readonly attribute AudioParam delayTime;
 };

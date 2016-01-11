@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 #include "modules/webaudio/ScriptProcessorNode.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "core/testing/DummyPageHolder.h"
 #include "modules/webaudio/OfflineAudioContext.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,4 +27,3 @@ TEST(ScriptProcessorNodeTest, BufferLifetime)
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

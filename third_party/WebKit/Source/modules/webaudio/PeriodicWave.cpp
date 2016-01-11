@@ -27,8 +27,6 @@
  */
 
 #include "modules/webaudio/PeriodicWave.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/OscillatorNode.h"
 #include "platform/audio/FFTFrame.h"
 #include "platform/audio/VectorMath.h"
@@ -316,4 +314,3 @@ void PeriodicWave::generateBasicWaveform(int shape)
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

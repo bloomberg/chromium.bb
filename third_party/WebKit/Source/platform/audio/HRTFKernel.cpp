@@ -27,8 +27,6 @@
  */
 
 #include "platform/audio/HRTFKernel.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "platform/audio/AudioChannel.h"
 #include "platform/FloatConversion.h"
 #include "wtf/MathExtras.h"
@@ -128,4 +126,3 @@ PassOwnPtr<HRTFKernel> HRTFKernel::createInterpolatedKernel(HRTFKernel* kernel1,
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

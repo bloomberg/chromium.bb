@@ -34,8 +34,6 @@
 #include "platform/audio/AudioSourceProvider.h"
 #include "wtf/Allocator.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 // A FIFO (First In First Out) buffer to handle mismatches in buffer sizes between a provider and
@@ -75,7 +73,5 @@ private:
 };
 
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // AudioPullFIFO.h

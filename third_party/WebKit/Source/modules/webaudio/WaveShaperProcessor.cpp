@@ -23,8 +23,6 @@
  */
 
 #include "modules/webaudio/WaveShaperProcessor.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/WaveShaperDSPKernel.h"
 
 namespace blink {
@@ -95,4 +93,3 @@ void WaveShaperProcessor::process(const AudioBus* source, AudioBus* destination,
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

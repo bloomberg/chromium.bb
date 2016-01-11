@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 #include "modules/webaudio/AudioBasicProcessorHandler.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "core/testing/DummyPageHolder.h"
 #include "modules/webaudio/OfflineAudioContext.h"
 #include "platform/audio/AudioProcessor.h"
@@ -53,4 +51,3 @@ TEST(AudioBasicProcessorHandlerTest, ProcessorFinalization)
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

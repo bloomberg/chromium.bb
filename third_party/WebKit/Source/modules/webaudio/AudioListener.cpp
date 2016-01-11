@@ -27,8 +27,6 @@
  */
 
 #include "modules/webaudio/AudioListener.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/PannerNode.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/HRTFDatabaseLoader.h"
@@ -158,4 +156,3 @@ void AudioListener::setSpeedOfSound(double speedOfSound)
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

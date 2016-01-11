@@ -27,8 +27,6 @@
  */
 
 #include "platform/audio/MultiChannelResampler.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "platform/audio/AudioBus.h"
 
 namespace blink {
@@ -117,4 +115,3 @@ void MultiChannelResampler::process(AudioSourceProvider* provider, AudioBus* des
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

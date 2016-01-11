@@ -22,9 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Conditional=WEB_AUDIO
-] interface DynamicsCompressorNode : AudioNode {
+interface DynamicsCompressorNode : AudioNode {
     readonly attribute AudioParam threshold; // in Decibels
     readonly attribute AudioParam knee; // in Decibels
     readonly attribute AudioParam ratio; // unit-less

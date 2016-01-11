@@ -22,8 +22,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Conditional=WEB_AUDIO
-] interface MediaStreamAudioSourceNode : AudioSourceNode {
+interface MediaStreamAudioSourceNode : AudioSourceNode {
     readonly attribute MediaStream mediaStream;
 };

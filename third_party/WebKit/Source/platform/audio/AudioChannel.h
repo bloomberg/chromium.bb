@@ -34,8 +34,6 @@
 #include "wtf/Allocator.h"
 #include "wtf/PassOwnPtr.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 // An AudioChannel represents a buffer of non-interleaved floating-point audio samples.
@@ -140,7 +138,5 @@ private:
 };
 
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // AudioChannel_h

@@ -27,8 +27,6 @@
  */
 
 #include "platform/audio/HRTFDatabaseLoader.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "platform/Task.h"
 #include "platform/TaskSynchronizer.h"
 #include "platform/ThreadSafeFunctional.h"
@@ -128,4 +126,3 @@ void HRTFDatabaseLoader::waitForLoaderThreadCompletion()
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

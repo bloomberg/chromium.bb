@@ -196,7 +196,6 @@ void ConsumerWrapper::setFormat(size_t numberOfChannels, float sampleRate)
 
 void ConsumerWrapper::consumeAudio(AudioBus* bus, size_t numberOfFrames)
 {
-#if ENABLE(WEB_AUDIO)
     if (!bus)
         return;
 
@@ -207,7 +206,6 @@ void ConsumerWrapper::consumeAudio(AudioBus* bus, size_t numberOfFrames)
         busVector[i] = bus->channel(i)->data();
 
     m_consumer->consumeAudio(busVector, numberOfFrames);
-#endif
 }
 
 void WebMediaStreamSource::addAudioConsumer(WebAudioDestinationConsumer* consumer)

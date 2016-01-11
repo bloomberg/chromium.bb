@@ -27,8 +27,6 @@
  */
 
 #include "platform/audio/AudioChannel.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "platform/audio/VectorMath.h"
 #include "wtf/OwnPtr.h"
 #include <algorithm>
@@ -127,4 +125,3 @@ float AudioChannel::maxAbsValue() const
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

@@ -27,8 +27,6 @@
  */
 
 #include "modules/webaudio/AudioBuffer.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
@@ -308,4 +306,3 @@ void AudioBuffer::zero()
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

@@ -29,8 +29,6 @@
  */
 
 #include "platform/audio/AudioDSPKernelProcessor.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "platform/audio/AudioDSPKernel.h"
 #include "wtf/MainThread.h"
 
@@ -151,4 +149,3 @@ double AudioDSPKernelProcessor::latencyTime() const
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

@@ -30,8 +30,6 @@
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 class AudioNodeOutput;
@@ -88,7 +86,5 @@ protected:
 };
 
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // AudioSummingJunction_h

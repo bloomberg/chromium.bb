@@ -27,8 +27,6 @@
  */
 
 #include "platform/audio/ReverbConvolver.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "platform/Task.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/VectorMath.h"
@@ -192,4 +190,3 @@ size_t ReverbConvolver::latencyFrames() const
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

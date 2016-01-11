@@ -24,8 +24,6 @@
  */
 
 #include "modules/webaudio/AudioParamTimeline.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/FloatConversion.h"
@@ -764,4 +762,3 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

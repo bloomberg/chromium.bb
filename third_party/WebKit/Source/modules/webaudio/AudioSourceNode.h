@@ -31,8 +31,6 @@
 
 #include "modules/webaudio/AudioNode.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 class AbstractAudioContext;
@@ -45,7 +43,5 @@ public:
 };
 
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // AudioSourceNode_h

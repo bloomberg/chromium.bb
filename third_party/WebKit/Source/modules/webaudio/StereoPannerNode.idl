@@ -4,7 +4,6 @@
 
 [
     NoInterfaceObject,
-    Conditional=WEB_AUDIO
 ] interface StereoPannerNode : AudioNode {
 
     readonly attribute AudioParam pan;

@@ -23,8 +23,6 @@
  */
 
 #include "modules/webaudio/BiquadProcessor.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/BiquadDSPKernel.h"
 
 namespace blink {
@@ -118,4 +116,3 @@ void BiquadProcessor::getFrequencyResponse(int nFrequencies, const float* freque
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

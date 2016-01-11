@@ -27,8 +27,6 @@
  */
 
 #include "platform/audio/Cone.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "wtf/MathExtras.h"
 
 namespace blink {
@@ -75,4 +73,3 @@ double ConeEffect::gain(FloatPoint3D sourcePosition, FloatPoint3D sourceOrientat
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

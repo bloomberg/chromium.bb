@@ -27,8 +27,6 @@
  */
 
 #include "platform/audio/ReverbConvolverStage.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "platform/audio/ReverbAccumulationBuffer.h"
 #include "platform/audio/ReverbConvolver.h"
 #include "platform/audio/ReverbInputBuffer.h"
@@ -178,4 +176,3 @@ void ReverbConvolverStage::reset()
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

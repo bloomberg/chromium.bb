@@ -125,10 +125,8 @@ void MediaStreamCenter::didCreateMediaStreamTrack(MediaStreamComponent* track)
 PassOwnPtr<AudioSourceProvider> MediaStreamCenter::createWebAudioSourceFromMediaStreamTrack(MediaStreamComponent* track)
 {
     ASSERT_UNUSED(track, track);
-#if ENABLE(WEB_AUDIO)
     if (m_private)
         return MediaStreamWebAudioSource::create(adoptPtr(m_private->createWebAudioSourceFromMediaStreamTrack(track)));
-#endif
 
     return nullptr;
 }

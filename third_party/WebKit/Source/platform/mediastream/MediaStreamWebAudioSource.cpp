@@ -29,8 +29,6 @@
  */
 
 #include "platform/mediastream/MediaStreamWebAudioSource.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "platform/audio/AudioBus.h"
 #include "public/platform/WebAudioSourceProvider.h"
 
@@ -67,4 +65,3 @@ void MediaStreamWebAudioSource::provideInput(AudioBus* bus, size_t framesToProce
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

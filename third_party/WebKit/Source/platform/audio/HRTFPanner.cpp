@@ -23,8 +23,6 @@
  */
 
 #include "platform/audio/HRTFPanner.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/HRTFDatabase.h"
@@ -311,4 +309,3 @@ double HRTFPanner::latencyTime() const
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

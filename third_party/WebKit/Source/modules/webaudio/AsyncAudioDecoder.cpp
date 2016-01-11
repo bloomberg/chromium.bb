@@ -23,8 +23,6 @@
  */
 
 #include "modules/webaudio/AsyncAudioDecoder.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "core/dom/DOMArrayBuffer.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioBufferCallback.h"
@@ -86,4 +84,3 @@ void AsyncAudioDecoder::notifyComplete(DOMArrayBuffer* audioData, AudioBufferCal
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

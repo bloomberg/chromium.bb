@@ -28,7 +28,6 @@
 
 [
     GarbageCollected,
-    Conditional=WEB_AUDIO,
 ] interface AudioParam {
     attribute float value;
     readonly attribute float defaultValue;

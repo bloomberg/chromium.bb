@@ -27,8 +27,6 @@
  */
 
 #include "platform/audio/Distance.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "wtf/Assertions.h"
 #include <math.h>
 #include <algorithm>
@@ -84,4 +82,3 @@ double DistanceEffect::exponentialGain(double distance)
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

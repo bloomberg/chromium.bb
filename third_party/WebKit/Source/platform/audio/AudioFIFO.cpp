@@ -28,8 +28,6 @@
 
 #include "platform/audio/AudioFIFO.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 AudioFIFO::AudioFIFO(unsigned numberOfChannels, size_t fifoLength)
@@ -139,4 +137,3 @@ void AudioFIFO::findWrapLengths(size_t index, size_t size, size_t& part1Length, 
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

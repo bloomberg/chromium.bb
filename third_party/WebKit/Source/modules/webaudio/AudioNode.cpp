@@ -23,8 +23,6 @@
  */
 
 #include "modules/webaudio/AudioNode.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/inspector/InstanceCounters.h"
@@ -942,4 +940,3 @@ void AudioNode::didAddOutput(unsigned numberOfOutputs)
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

@@ -27,8 +27,6 @@
 
 #include "platform/audio/Panner.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 // Common type of stereo panner as found in normal audio mixing equipment.
@@ -54,7 +52,5 @@ private:
 };
 
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // EqualPowerPanner_h

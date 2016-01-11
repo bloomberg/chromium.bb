@@ -28,7 +28,6 @@
 
 #include "platform/audio/DirectConvolver.h"
 
-#if ENABLE(WEB_AUDIO)
 #if OS(MACOSX)
 #include <Accelerate/Accelerate.h>
 #endif
@@ -429,4 +428,3 @@ void DirectConvolver::reset()
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

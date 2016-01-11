@@ -23,8 +23,6 @@
  */
 
 #include "modules/webaudio/DelayProcessor.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/DelayDSPKernel.h"
 
 namespace blink {
@@ -49,4 +47,3 @@ PassOwnPtr<AudioDSPKernel> DelayProcessor::createKernel()
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

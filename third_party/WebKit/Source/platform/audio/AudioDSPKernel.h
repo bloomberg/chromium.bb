@@ -34,8 +34,6 @@
 #include "platform/audio/AudioDSPKernelProcessor.h"
 #include "wtf/Allocator.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 // AudioDSPKernel does the processing for one channel of an AudioDSPKernelProcessor.
@@ -78,7 +76,5 @@ protected:
 };
 
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // AudioDSPKernel_h

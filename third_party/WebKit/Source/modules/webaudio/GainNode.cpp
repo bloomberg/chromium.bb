@@ -23,8 +23,6 @@
  */
 
 #include "modules/webaudio/GainNode.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/audio/AudioBus.h"
@@ -141,4 +139,3 @@ DEFINE_TRACE(GainNode)
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

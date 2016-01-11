@@ -29,8 +29,6 @@
 #include "modules/webaudio/AudioNode.h"
 #include "wtf/Forward.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 class AudioNodeInput;
@@ -65,7 +63,5 @@ private:
 };
 
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // AudioBasicProcessorHandler_h

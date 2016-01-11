@@ -27,8 +27,6 @@
  */
 
 #include "platform/audio/ZeroPole.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "platform/audio/DenormalDisabler.h"
 
 namespace blink {
@@ -68,4 +66,3 @@ void ZeroPole::process(const float *source, float *destination, unsigned framesT
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

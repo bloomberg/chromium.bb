@@ -22,8 +22,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Conditional=WEB_AUDIO
-] interface AudioDestinationNode : AudioNode {
+interface AudioDestinationNode : AudioNode {
     readonly attribute unsigned long maxChannelCount;
 };

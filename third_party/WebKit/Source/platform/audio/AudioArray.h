@@ -35,8 +35,6 @@
 #include "wtf/build_config.h"
 #include <string.h>
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 template<typename T>
@@ -162,7 +160,5 @@ typedef AudioArray<float> AudioFloatArray;
 typedef AudioArray<double> AudioDoubleArray;
 
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // AudioArray_h

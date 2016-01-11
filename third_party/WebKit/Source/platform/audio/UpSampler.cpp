@@ -29,8 +29,6 @@
  */
 
 #include "platform/audio/UpSampler.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "wtf/MathExtras.h"
 
 namespace blink {
@@ -128,4 +126,3 @@ size_t UpSampler::latencyFrames() const
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

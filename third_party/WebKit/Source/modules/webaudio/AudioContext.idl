@@ -32,7 +32,6 @@ enum AudioContextState {
 [
     GarbageCollected,
     ActiveDOMObject,
-    Conditional=WEB_AUDIO,
     Constructor,
     ConstructorCallWith=Document,
     ImplementedAs=AbstractAudioContext,

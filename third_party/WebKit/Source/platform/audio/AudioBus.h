@@ -35,8 +35,6 @@
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/Vector.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 // An AudioBus represents a collection of one or more AudioChannels.
@@ -169,7 +167,5 @@ protected:
 };
 
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // AudioBus_h

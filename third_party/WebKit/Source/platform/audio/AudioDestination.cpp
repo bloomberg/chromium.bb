@@ -27,8 +27,6 @@
  */
 
 #include "platform/audio/AudioDestination.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "platform/audio/AudioFIFO.h"
 #include "platform/audio/AudioPullFIFO.h"
 #include "public/platform/Platform.h"
@@ -174,4 +172,3 @@ void AudioDestination::provideInput(AudioBus* bus, size_t framesToProcess)
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

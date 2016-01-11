@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 #include "platform/audio/Spatializer.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "platform/audio/StereoPanner.h"
 
 namespace blink {
@@ -26,4 +24,3 @@ Spatializer::~Spatializer()
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

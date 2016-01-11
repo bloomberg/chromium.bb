@@ -28,8 +28,6 @@
 
 #include "platform/audio/ReverbInputBuffer.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 ReverbInputBuffer::ReverbInputBuffer(size_t length)
@@ -84,4 +82,3 @@ void ReverbInputBuffer::reset()
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

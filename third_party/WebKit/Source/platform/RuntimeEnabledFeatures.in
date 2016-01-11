@@ -202,7 +202,7 @@ UnsandboxedAuxiliary status=stable
 UserSelectAll status=experimental
 WebAnimationsAPI status=experimental
 WebAnimationsSVG status=experimental
-WebAudio condition=WEB_AUDIO, status=stable
+WebAudio status=stable
 WebBluetooth
 WebGLDraftExtensions status=experimental
 WebGLImageChromium

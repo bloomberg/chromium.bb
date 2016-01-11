@@ -27,8 +27,6 @@
  */
 
 #include "platform/audio/ReverbAccumulationBuffer.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "platform/audio/VectorMath.h"
 
 namespace blink {
@@ -113,4 +111,3 @@ void ReverbAccumulationBuffer::reset()
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

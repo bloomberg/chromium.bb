@@ -27,8 +27,6 @@
  */
 
 #include "platform/audio/FFTConvolver.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "platform/audio/VectorMath.h"
 
 namespace blink {
@@ -114,4 +112,3 @@ void FFTConvolver::reset()
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

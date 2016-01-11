@@ -23,8 +23,6 @@
  */
 
 #include "modules/webaudio/DeferredTaskHandler.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/OfflineAudioContext.h"
@@ -284,4 +282,3 @@ void DeferredTaskHandler::clearHandlersToBeDeleted()
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

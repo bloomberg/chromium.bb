@@ -27,8 +27,6 @@
  */
 
 #include "platform/audio/DynamicsCompressorKernel.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/DenormalDisabler.h"
 #include "wtf/MathExtras.h"
@@ -471,4 +469,3 @@ void DynamicsCompressorKernel::reset()
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

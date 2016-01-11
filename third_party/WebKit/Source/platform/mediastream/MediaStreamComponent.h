@@ -68,11 +68,8 @@ public:
     void setEnabled(bool enabled) { m_enabled = enabled; }
     bool muted() const { return m_muted; }
     void setMuted(bool muted) { m_muted = muted; }
-
-#if ENABLE(WEB_AUDIO)
     AudioSourceProvider* audioSourceProvider() { return &m_sourceProvider; }
     void setSourceProvider(WebAudioSourceProvider* provider) { m_sourceProvider.wrap(provider); }
-#endif // ENABLE(WEB_AUDIO)
 
     ExtraData* extraData() const { return m_extraData.get(); }
     void setExtraData(PassOwnPtr<ExtraData> extraData) { m_extraData = std::move(extraData); }
@@ -82,7 +79,6 @@ public:
 private:
     MediaStreamComponent(const String& id, MediaStreamSource*);
 
-#if ENABLE(WEB_AUDIO)
     // AudioSourceProviderImpl wraps a WebAudioSourceProvider::provideInput()
     // calls into chromium to get a rendered audio stream.
 
@@ -107,8 +103,6 @@ private:
     };
 
     AudioSourceProviderImpl m_sourceProvider;
-#endif // ENABLE(WEB_AUDIO)
-
     Member<MediaStreamSource> m_source;
     String m_id;
     bool m_enabled;

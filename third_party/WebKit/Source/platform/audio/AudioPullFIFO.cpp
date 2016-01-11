@@ -28,8 +28,6 @@
 
 #include "platform/audio/AudioPullFIFO.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 AudioPullFIFO::AudioPullFIFO(AudioSourceProvider& audioProvider, unsigned numberOfChannels, size_t fifoLength, size_t providerSize)
@@ -70,4 +68,3 @@ void AudioPullFIFO::fillBuffer(size_t numberOfFrames)
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

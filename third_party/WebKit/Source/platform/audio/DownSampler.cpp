@@ -29,8 +29,6 @@
  */
 
 #include "platform/audio/DownSampler.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "wtf/MathExtras.h"
 
 namespace blink {
@@ -145,4 +143,3 @@ size_t DownSampler::latencyFrames() const
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

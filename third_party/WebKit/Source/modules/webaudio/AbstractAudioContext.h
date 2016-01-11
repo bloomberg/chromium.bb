@@ -44,8 +44,6 @@
 #include "wtf/Vector.h"
 #include "wtf/build_config.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 class AnalyserNode;
@@ -324,7 +322,5 @@ private:
 };
 
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // AbstractAudioContext_h

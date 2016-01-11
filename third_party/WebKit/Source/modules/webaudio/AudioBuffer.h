@@ -37,8 +37,6 @@
 #include "wtf/Vector.h"
 #include "wtf/build_config.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 class AudioBus;
@@ -88,7 +86,5 @@ protected:
 };
 
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // AudioBuffer_h

@@ -33,8 +33,6 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 class AbstractAudioContext;
@@ -113,7 +111,5 @@ private:
 };
 
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // ScriptProcessorNode_h

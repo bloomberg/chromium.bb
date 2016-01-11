@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 #include "modules/webaudio/ConvolverNode.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "core/testing/DummyPageHolder.h"
 #include "modules/webaudio/OfflineAudioContext.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,4 +26,3 @@ TEST(ConvolverNodeTest, ReverbLifetime)
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

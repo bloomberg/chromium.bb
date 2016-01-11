@@ -22,8 +22,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Conditional=WEB_AUDIO
-] callback interface AudioBufferCallback {
+callback interface AudioBufferCallback {
     void handleEvent(AudioBuffer audioBuffer);
 };

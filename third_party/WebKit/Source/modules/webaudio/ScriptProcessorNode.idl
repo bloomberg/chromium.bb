@@ -23,9 +23,7 @@
  */
 
 // For real-time audio stream synthesis/processing in JavaScript
-[
-    Conditional=WEB_AUDIO
-] interface ScriptProcessorNode : AudioNode {
+interface ScriptProcessorNode : AudioNode {
     // Rendering callback
     attribute EventHandler onaudioprocess;
 

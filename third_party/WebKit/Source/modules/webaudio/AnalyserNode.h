@@ -29,8 +29,6 @@
 #include "modules/webaudio/AudioBasicInspectorNode.h"
 #include "modules/webaudio/RealtimeAnalyser.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 class AbstractAudioContext;
@@ -94,7 +92,5 @@ private:
 };
 
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // AnalyserNode_h

@@ -23,8 +23,6 @@
  */
 
 #include "modules/webaudio/AudioNodeInput.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/AudioNodeOutput.h"
 #include <algorithm>
 
@@ -222,4 +220,3 @@ AudioBus* AudioNodeInput::pull(AudioBus* inPlaceBus, size_t framesToProcess)
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

@@ -33,9 +33,7 @@ enum BiquadFilterType {
     "allpass"
 };
 
-[
-    Conditional=WEB_AUDIO
-] interface BiquadFilterNode : AudioNode {
+interface BiquadFilterNode : AudioNode {
     attribute BiquadFilterType type;
 
     readonly attribute AudioParam frequency; // in Hertz

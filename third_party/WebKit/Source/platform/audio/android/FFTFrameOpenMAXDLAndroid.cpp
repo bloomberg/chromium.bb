@@ -24,8 +24,6 @@
 
 #include "wtf/build_config.h"
 
-#if ENABLE(WEB_AUDIO)
-
 #if OS(ANDROID) && USE(WEBAUDIO_OPENMAX_DL_FFT)
 
 #include "platform/audio/FFTFrame.h"
@@ -174,4 +172,3 @@ OMXFFTSpec_R_F32* FFTFrame::contextForSize(unsigned log2FFTSize)
 
 #endif // #if OS(ANDROID) && !USE(WEBAUDIO_OPENMAX_DL_FFT)
 
-#endif // ENABLE(WEB_AUDIO)

@@ -83,12 +83,22 @@ from v8_utilities import capitalize, cpp_name, conditional_string, v8_class_name
 from utilities import KNOWN_COMPONENTS, idl_filename_to_component, is_valid_component_dependency, is_testing_target
 
 
+def normalize_and_sort_includes(include_paths):
+    normalized_include_paths = []
+    for include_path in include_paths:
+        match = re.search(r'/gen/blink/(.*)$', posixpath.abspath(include_path))
+        if match:
+            include_path = match.group(1)
+        normalized_include_paths.append(include_path)
+    return sorted(normalized_include_paths)
+
+
 def render_template(include_paths, header_template, cpp_template,
                     template_context, component=None):
     template_context['code_generator'] = module_pyname
 
     # Add includes for any dependencies
-    template_context['header_includes'] = sorted(
+    template_context['header_includes'] = normalize_and_sort_includes(
         template_context['header_includes'])
 
     for include_path in include_paths:
@@ -97,7 +107,7 @@ def render_template(include_paths, header_template, cpp_template,
             assert is_valid_component_dependency(component, dependency)
         includes.add(include_path)
 
-    template_context['cpp_includes'] = sorted(includes)
+    template_context['cpp_includes'] = normalize_and_sort_includes(includes)
 
     header_text = header_template.render(template_context)
     cpp_text = cpp_template.render(template_context)
@@ -372,7 +382,7 @@ class CodeGeneratorUnionType(object):
             additional_header_includes.append(
                 'bindings/core/v8/UnionTypesCore.h')
 
-        template_context['header_includes'] = sorted(
+        template_context['header_includes'] = normalize_and_sort_includes(
             template_context['header_includes'] + additional_header_includes)
 
         header_text = header_template.render(template_context)

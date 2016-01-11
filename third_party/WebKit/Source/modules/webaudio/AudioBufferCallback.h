@@ -28,8 +28,6 @@
 #include "platform/heap/Handle.h"
 #include "wtf/build_config.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 class AudioBuffer;
@@ -42,7 +40,5 @@ public:
 };
 
 } // namespace
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // AudioBufferCallback_h

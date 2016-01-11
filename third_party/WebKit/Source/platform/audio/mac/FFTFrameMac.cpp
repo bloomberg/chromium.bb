@@ -30,8 +30,6 @@
 
 #include "wtf/build_config.h"
 
-#if ENABLE(WEB_AUDIO)
-
 #if OS(MACOSX)
 
 #include "platform/audio/FFTFrame.h"
@@ -157,4 +155,3 @@ void FFTFrame::cleanup()
 
 #endif // #if OS(MACOSX)
 
-#endif // ENABLE(WEB_AUDIO)

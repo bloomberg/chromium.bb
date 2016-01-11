@@ -23,8 +23,6 @@
  */
 
 #include "modules/webaudio/OfflineAudioDestinationNode.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "core/dom/CrossThreadTask.h"
 #include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
@@ -303,4 +301,3 @@ OfflineAudioDestinationNode* OfflineAudioDestinationNode::create(AbstractAudioCo
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

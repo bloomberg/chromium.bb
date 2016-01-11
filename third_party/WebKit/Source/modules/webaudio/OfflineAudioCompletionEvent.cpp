@@ -24,8 +24,6 @@
 
 #include "modules/webaudio/OfflineAudioCompletionEvent.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 PassRefPtrWillBeRawPtr<OfflineAudioCompletionEvent> OfflineAudioCompletionEvent::create()
@@ -65,4 +63,3 @@ DEFINE_TRACE(OfflineAudioCompletionEvent)
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

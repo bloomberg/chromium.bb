@@ -35,8 +35,6 @@
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 class AudioParamTimeline {
@@ -125,7 +123,5 @@ private:
 };
 
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // AudioParamTimeline_h

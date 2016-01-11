@@ -22,7 +22,5 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Conditional=WEB_AUDIO
-] interface ChannelSplitterNode : AudioNode {
+interface ChannelSplitterNode : AudioNode {
 };

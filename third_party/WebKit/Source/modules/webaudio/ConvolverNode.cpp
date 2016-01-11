@@ -23,8 +23,6 @@
  */
 
 #include "modules/webaudio/ConvolverNode.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/AudioBuffer.h"
@@ -206,4 +204,3 @@ void ConvolverNode::setNormalize(bool normalize)
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

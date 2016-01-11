@@ -29,8 +29,6 @@
 #include "wtf/build_config.h"
 #include <cstddef>
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 namespace AudioUtilities {
 
@@ -54,7 +52,5 @@ PLATFORM_EXPORT float minAudioBufferSampleRate();
 PLATFORM_EXPORT float maxAudioBufferSampleRate();
 } // AudioUtilites
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // AudioUtilities_h

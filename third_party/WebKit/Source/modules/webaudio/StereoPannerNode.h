@@ -11,8 +11,6 @@
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/Spatializer.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 class AbstractAudioContext;
@@ -56,7 +54,5 @@ private:
 };
 
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // StereoPannerNode_h

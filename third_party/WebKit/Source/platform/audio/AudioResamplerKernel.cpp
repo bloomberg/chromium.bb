@@ -23,8 +23,6 @@
  */
 
 #include "platform/audio/AudioResamplerKernel.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "platform/audio/AudioResampler.h"
 #include "wtf/MathExtras.h"
 
@@ -134,4 +132,3 @@ double AudioResamplerKernel::rate() const
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

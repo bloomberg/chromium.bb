@@ -24,8 +24,6 @@
 
 #include "modules/webaudio/AudioProcessingEvent.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 PassRefPtrWillBeRawPtr<AudioProcessingEvent> AudioProcessingEvent::create()
@@ -68,4 +66,3 @@ DEFINE_TRACE(AudioProcessingEvent)
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

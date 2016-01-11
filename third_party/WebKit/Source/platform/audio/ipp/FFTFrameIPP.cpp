@@ -29,8 +29,6 @@
 
 #include "wtf/build_config.h"
 
-#if ENABLE(WEB_AUDIO)
-
 #if USE(WEBAUDIO_IPP)
 
 #include "platform/audio/FFTFrame.h"
@@ -140,4 +138,3 @@ float* FFTFrame::getUpToDateComplexData()
 
 #endif // USE(WEBAUDIO_IPP)
 
-#endif // ENABLE(WEB_AUDIO)

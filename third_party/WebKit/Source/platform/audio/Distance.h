@@ -33,8 +33,6 @@
 #include "wtf/Allocator.h"
 #include "wtf/build_config.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 // Distance models are defined according to the OpenAL specification:
@@ -84,7 +82,5 @@ protected:
 };
 
 } // namespace blink
-
-#endif // ENABLE(WEB_AUDIO)
 
 #endif // Distance_h

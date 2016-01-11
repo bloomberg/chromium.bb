@@ -30,8 +30,6 @@
 
 #include "platform/audio/AudioDSPKernel.h"
 
-#if ENABLE(WEB_AUDIO)
-
 namespace blink {
 
 AudioDSPKernel::~AudioDSPKernel()
@@ -40,4 +38,3 @@ AudioDSPKernel::~AudioDSPKernel()
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

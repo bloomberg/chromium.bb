@@ -27,8 +27,6 @@
  */
 
 #include "platform/audio/HRTFElevation.h"
-
-#if ENABLE(WEB_AUDIO)
 #include <math.h>
 #include <algorithm>
 #include "platform/audio/AudioBus.h"
@@ -326,4 +324,3 @@ void HRTFElevation::getKernelsFromAzimuth(double azimuthBlend, unsigned azimuthI
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

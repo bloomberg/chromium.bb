@@ -27,8 +27,6 @@
  */
 
 #include "platform/audio/AudioBus.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "platform/audio/AudioFileReader.h"
 #include "platform/audio/DenormalDisabler.h"
 #include "platform/audio/SincResampler.h"
@@ -685,4 +683,3 @@ PassRefPtr<AudioBus> createBusFromInMemoryAudioFile(const void* data, size_t dat
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

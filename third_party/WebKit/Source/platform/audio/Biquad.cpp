@@ -27,8 +27,6 @@
  */
 
 #include "platform/audio/Biquad.h"
-
-#if ENABLE(WEB_AUDIO)
 #include <stdio.h>
 #include <algorithm>
 #include "platform/audio/DenormalDisabler.h"
@@ -564,4 +562,3 @@ void Biquad::getFrequencyResponse(int nFrequencies,
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

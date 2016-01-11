@@ -24,8 +24,6 @@
  */
 
 #include "modules/webaudio/AudioParam.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/FloatConversion.h"
@@ -269,4 +267,3 @@ AudioParam* AudioParam::cancelScheduledValues(double startTime, ExceptionState& 
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

@@ -22,8 +22,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Conditional=WEB_AUDIO
-] interface MediaElementAudioSourceNode : AudioSourceNode {
+interface MediaElementAudioSourceNode : AudioSourceNode {
     readonly attribute HTMLMediaElement mediaElement;
 };

@@ -64,7 +64,6 @@ if (is_android) {
   feature_defines_list += [ "WTF_USE_LOW_QUALITY_IMAGE_INTERPOLATION=1" ]
 } else {
   feature_defines_list += [
-    "ENABLE_WEB_AUDIO=1",
     "WTF_USE_ICCJPEG=1",
     "WTF_USE_QCMSLIB=1",
   ]
@@ -79,13 +78,7 @@ if (use_webaudio_ffmpeg) {
 }
 
 if (use_openmax_dl_fft) {
-  feature_defines_list += [
-    "WTF_USE_WEBAUDIO_OPENMAX_DL_FFT=1",
-
-    # Enabling the FFT is enough to enable WebAudio support to
-    # allow most WebAudio features to work on Android.
-    "ENABLE_WEB_AUDIO=1",
-  ]
+  feature_defines_list += [ "WTF_USE_WEBAUDIO_OPENMAX_DL_FFT=1" ]
 }
 
 if (use_default_render_theme) {

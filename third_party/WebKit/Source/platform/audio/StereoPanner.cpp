@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 #include "platform/audio/StereoPanner.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioUtilities.h"
 #include "wtf/MathExtras.h"
@@ -171,4 +169,3 @@ void StereoPanner::panToTargetValue(const AudioBus* inputBus, AudioBus* outputBu
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

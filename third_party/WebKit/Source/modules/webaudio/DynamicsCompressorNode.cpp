@@ -23,8 +23,6 @@
  */
 
 #include "modules/webaudio/DynamicsCompressorNode.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/audio/DynamicsCompressor.h"
@@ -180,4 +178,3 @@ AudioParam* DynamicsCompressorNode::release() const
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)

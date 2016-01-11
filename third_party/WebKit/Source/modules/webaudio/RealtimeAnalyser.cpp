@@ -23,8 +23,6 @@
  */
 
 #include "modules/webaudio/RealtimeAnalyser.h"
-
-#if ENABLE(WEB_AUDIO)
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/VectorMath.h"
@@ -309,4 +307,3 @@ void RealtimeAnalyser::getByteTimeDomainData(DOMUint8Array* destinationArray)
 
 } // namespace blink
 
-#endif // ENABLE(WEB_AUDIO)
