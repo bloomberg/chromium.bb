@@ -19,6 +19,9 @@
       <part file="flags_ui_scaled_resources.grdp" />
       <part file="omnibox_scaled_resources.grdp" />
       <part file="version_ui_scaled_resources.grdp" />
+
+      <!-- Generic resources -->
+      <structure type="chrome_scaled_image" name="IDR_HISTORY_FAVICON" file="favicon_history.png" />
     </structures>
   </release>
 </grit>
