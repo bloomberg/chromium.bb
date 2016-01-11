@@ -134,7 +134,7 @@ public:
     String acceptLanguages() override;
 
     // ChromeClientImpl:
-    void setCursorForPlugin(const WebCursorInfo&);
+    void setCursorForPlugin(const WebCursorInfo&, LocalFrame* localRoot);
     void setNewWindowNavigationPolicy(WebNavigationPolicy);
     void setCursorOverridden(bool);
 

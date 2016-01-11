@@ -699,9 +699,9 @@ void ChromeClientImpl::setCursor(const WebCursorInfo& cursor, LocalFrame* localR
     }
 }
 
-void ChromeClientImpl::setCursorForPlugin(const WebCursorInfo& cursor)
+void ChromeClientImpl::setCursorForPlugin(const WebCursorInfo& cursor, LocalFrame* localRoot)
 {
-    setCursor(cursor, m_webView->page()->deprecatedLocalMainFrame());
+    setCursor(cursor, localRoot);
 }
 
 void ChromeClientImpl::setCursorOverridden(bool overridden)
