@@ -215,6 +215,12 @@ crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-multiple-04.html [ Pass Failure ]
 crbug.com/352405 virtual/threaded/animations/transition-and-animation-1.html [ Pass Timeout ]
 
+crbug.com/176309 css1/font_properties/font.html [ NeedsRebaseline ]
+crbug.com/176309 css2.1/t100801-c544-valgn-02-d-agi.html [ NeedsRebaseline ]
+crbug.com/176309 css2.1/t100801-c544-valgn-04-d-agi.html [ NeedsRebaseline ]
+crbug.com/176309 css2.1/t1508-c527-font-09-b.html [ NeedsRebaseline ]
+crbug.com/176309 svg/custom/svg-fonts-in-html.html [ NeedsRebaseline ]
+
 crbug.com/461179 virtual/spv2/paint/invalidation/invalidate-when-receiving-paint-layer.html [ Failure ]
 
 crbug.com/542541 [ Debug ] fast/events/click-count.html [ Pass Failure ]
