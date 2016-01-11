@@ -118,14 +118,6 @@ class Plugin : public pp::Instance {
                    const SelLdrStartParams& params,
                    pp::CompletionCallback callback);
 
-  // This is invoked on the main thread.
-  void StartNexe(int32_t pp_error, ServiceRuntime* service_runtime);
-
-  // Continuation for LoadHelperNaClModule. This is invoked on the main thread.
-  void StartHelperNexe(int32_t pp_error,
-                       NaClSubprocess* subprocess_to_init,
-                       pp::CompletionCallback callback);
-
   // Callback used when getting the URL for the .nexe file.  If the URL loading
   // is successful, the file descriptor is opened and can be passed to sel_ldr
   // with the sandbox on.

@@ -58,11 +58,6 @@ class ServiceRuntime {
   void StartSelLdr(const SelLdrStartParams& params,
                    pp::CompletionCallback callback);
 
-  // Establish an SrpcClient to the sel_ldr instance and start the nexe.
-  // This function must be called on the main thread.
-  // This function must only be called once.
-  void StartNexe();
-
   Plugin* plugin() const { return plugin_; }
   void Shutdown();
 
@@ -78,8 +73,6 @@ class ServiceRuntime {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
-
-  bool SetupCommandChannel();
 
   void ReportLoadError(const ErrorInfo& error_info);
 

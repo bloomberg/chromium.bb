@@ -41,33 +41,6 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
       process_id_(base::kNullProcessId) {
 }
 
-bool ServiceRuntime::SetupCommandChannel() {
-  // Set up the bootstrap channel in our subprocess so that we can establish
-  // SRPC.
-  subprocess_->set_channel(bootstrap_channel_);
-
-  if (uses_nonsfi_mode_) {
-    // In non-SFI mode, no SRPC is used. Just skips and returns success.
-    return true;
-  }
-
-  if (!subprocess_->ConnectBootstrapSocket()) {
-    ErrorInfo error_info;
-    error_info.SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
-                         "ServiceRuntime: ConnectBootstrapSocket() failed");
-    ReportLoadError(error_info);
-    return false;
-  }
-  if (!subprocess_->RetrieveSockAddr()) {
-    ErrorInfo error_info;
-    error_info.SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
-                         "ServiceRuntime: RetrieveSockAddr() failed");
-    ReportLoadError(error_info);
-    return false;
-  }
-  return true;
-}
-
 void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
                                  pp::CompletionCallback callback) {
   nacl::scoped_ptr<SelLdrLauncherChrome>
@@ -95,10 +68,6 @@ void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
       &process_id_,
       callback.pp_completion_callback());
   subprocess_.reset(tmp_subprocess.release());
-}
-
-void ServiceRuntime::StartNexe() {
-  SetupCommandChannel();
 }
 
 void ServiceRuntime::ReportLoadError(const ErrorInfo& error_info) {

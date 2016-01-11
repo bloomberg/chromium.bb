@@ -24,6 +24,13 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/module.h"
 
+namespace {
+
+void NoOpCallback(void* user_data, int32_t result) {
+}
+
+}
+
 namespace plugin {
 
 void Plugin::ShutDownSubprocesses() {
@@ -72,18 +79,8 @@ void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,
     return;
   }
 
-  // We don't take any action once nexe loading has completed, so pass an empty
-  // callback here for |callback|.
-  pp::CompletionCallback callback = callback_factory_.NewCallback(
-      &Plugin::StartNexe, service_runtime);
-  StartSelLdr(service_runtime, params, callback);
-}
-
-void Plugin::StartNexe(int32_t pp_error, ServiceRuntime* service_runtime) {
-  CHECK(pp::Module::Get()->core()->IsMainThread());
-  if (pp_error != PP_OK)
-    return;
-  service_runtime->StartNexe();
+  StartSelLdr(service_runtime, params,
+              pp::CompletionCallback(NoOpCallback, NULL));
 }
 
 void Plugin::LoadHelperNaClModule(const std::string& helper_url,
@@ -101,28 +98,7 @@ void Plugin::LoadHelperNaClModule(const std::string& helper_url,
                          false,   // Not main_service_runtime.
                          false);  // No non-SFI mode (i.e. in SFI-mode).
   subprocess_to_init->set_service_runtime(service_runtime);
-  pp::CompletionCallback sel_ldr_callback = callback_factory_.NewCallback(
-      &Plugin::StartHelperNexe, subprocess_to_init, callback);
-  StartSelLdr(service_runtime, params, sel_ldr_callback);
-}
-
-void Plugin::StartHelperNexe(int32_t pp_error,
-                             NaClSubprocess* subprocess_to_init,
-                             pp::CompletionCallback callback) {
-  CHECK(pp::Module::Get()->core()->IsMainThread());
-  if (pp_error != PP_OK) {
-    callback.RunAndClear(pp_error);
-    return;
-  }
-  // TODO(jvoung): This operation blocks. That's bad because this is the
-  // main thread. However, we could make it so that StartHelperNexe isn't
-  // called until the blocking is minimized. There is a hook in
-  // sel_main_chrome which indicates when the nexe load is done. If we hook
-  // up that hook to StartSelLdr's callback, then we'll only
-  // call StartNexe once the nexe load is done instead of blocking here
-  // until the nexe load is done.
-  subprocess_to_init->service_runtime()->StartNexe();
-  callback.RunAndClear(PP_OK);
+  StartSelLdr(service_runtime, params, callback);
 }
 
 // All failures of this function will show up as "Missing Plugin-in", so
