@@ -233,6 +233,11 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
      */
     protected abstract void onClosed(StateChangeReason reason);
 
+    /**
+     * @return The absolute amount in DP that the top controls have shifted off screen.
+     */
+    protected abstract float getTopControlsOffsetDp();
+
     // ============================================================================================
     // General methods from Contextual Search Manager
     // ============================================================================================
@@ -376,15 +381,9 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
      * @return The fullscreen height.
      */
     private float getFullscreenHeight() {
-        float height = mLayoutHeight;
-        // NOTE(pedrosimonetti): getHeight() only returns the content height
-        // when the Toolbar is not showing. If we don't add the Toolbar height
-        // here, there will be a "jump" when swiping the Search Panel around.
-        // TODO(pedrosimonetti): Find better way to get the fullscreen height.
-        if (mIsToolbarShowing) {
-            height += mToolbarHeight;
-        }
-        return height;
+        // NOTE(mdjones): This value will always be the same for a particular orientation; it is
+        // the content height + visible toolbar height.
+        return mLayoutHeight + (getToolbarHeight() - getTopControlsOffsetDp());
     }
 
     /**

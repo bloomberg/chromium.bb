@@ -281,13 +281,9 @@ public class ReaderModePanel extends OverlayPanel {
 
     @Override
     public float getOffsetY() {
-        float toolbarOffset = 0.0f;
-        if (mActivity != null) {
-            toolbarOffset = -mActivity.getFullscreenManager().getControlOffset() * mPxToDp;
-        }
         // This will cause the reader mode bar to behave like the top controls; sliding out of
         // view as the page scrolls.
-        return super.getOffsetY() + toolbarOffset;
+        return super.getOffsetY() + getTopControlsOffsetDp();
     }
 
     @Override

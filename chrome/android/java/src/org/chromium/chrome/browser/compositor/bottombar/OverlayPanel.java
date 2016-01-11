@@ -268,6 +268,12 @@ public class OverlayPanel extends ContextualSearchPanelAnimation
         return false;
     }
 
+    @Override
+    protected float getTopControlsOffsetDp() {
+        if (mActivity == null || mActivity.getFullscreenManager() == null) return 0.0f;
+        return -mActivity.getFullscreenManager().getControlOffset() * mPxToDp;
+    }
+
     // ============================================================================================
     // ActivityStateListener
     // ============================================================================================
