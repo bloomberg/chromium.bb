@@ -5,6 +5,10 @@
 import("//build/config/allocator.gni")
 import("//build/config/compiler/compiler.gni")
 
+if (is_win) {
+  import("//build/config/win/visual_studio_version.gni")
+}
+
 declare_args() {
   # Provide a way to force disable debugallocation in Debug builds,
   # e.g. for profiling (it's more rare to profile Debug builds,
@@ -23,7 +27,7 @@ group("allocator") {
   }
 
   # This condition expresses the win_use_allocator_shim in the GYP build.
-  if (is_win && !is_component_build) {
+  if (is_win && !is_component_build && visual_studio_version != "2015") {
     public_deps += [ ":allocator_shim" ]
   }
 }
@@ -35,7 +39,7 @@ group("allocator") {
 # assumes that the library using it will eventually be linked with
 # //base/allocator in the default way. Clean this up and delete this.
 config("allocator_shim_define") {
-  if (is_win && !is_component_build) {
+  if (is_win && !is_component_build && visual_studio_version != "2015") {
     defines = [ "ALLOCATOR_SHIM" ]
   }
 }
@@ -69,8 +73,6 @@ config("tcmalloc_flags") {
 
 # This config and libc modification are only used on Windows.
 if (is_win) {
-  import("//build/config/win/visual_studio_version.gni")
-
   config("nocmt") {
     ldflags = [
       "/NODEFAULTLIB:libcmt",
@@ -79,7 +81,7 @@ if (is_win) {
     libs = [ rebase_path("$target_gen_dir/allocator/libcmt.lib") ]
   }
 
-  if (!is_component_build) {
+  if (!is_component_build && visual_studio_version != "2015") {
     action("prep_libc") {
       script = "prep_libc.py"
       outputs = [
