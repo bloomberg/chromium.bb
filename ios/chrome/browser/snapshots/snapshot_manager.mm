@@ -51,10 +51,12 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   // once the iOS 8 bugs have been fixed.
   BOOL useDrawViewHierarchy = ViewHierarchyContainsWKWebView(view);
 
+  BOOL snapshotSuccess = YES;
   CGContextSaveGState(context);
   CGContextTranslateCTM(context, -rect.origin.x, -rect.origin.y);
   if (useDrawViewHierarchy) {
-    [view drawViewHierarchyInRect:view.bounds afterScreenUpdates:NO];
+    snapshotSuccess =
+        [view drawViewHierarchyInRect:view.bounds afterScreenUpdates:NO];
   } else {
     [[view layer] renderInContext:context];
   }
@@ -79,7 +81,9 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
       CGContextRestoreGState(context);
     }
   }
-  UIImage* image = UIGraphicsGetImageFromCurrentImageContext();
+  UIImage* image = nil;
+  if (snapshotSuccess)
+    image = UIGraphicsGetImageFromCurrentImageContext();
   CGContextRestoreGState(context);
   UIGraphicsEndImageContext();
   return image;
