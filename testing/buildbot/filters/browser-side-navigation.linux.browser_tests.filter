@@ -50,6 +50,11 @@
 -DomDistillerViewerSourceBrowserTest.PrefChangeError
 -DomDistillerViewerSourceBrowserTest.PrefPersist
 -DomDistillerViewerSourceBrowserTest.TestBadUrlErrorPage
+-DownloadExtensionTest.DownloadExtensionTest_Download_ConflictAction
+-DownloadExtensionTest.DownloadExtensionTest_OnDeterminingFilename_DangerousOverride
+-DownloadExtensionTest.DownloadExtensionTest_OnDeterminingFilename_IncognitoSpanning
+-DownloadExtensionTest.DownloadExtensionTest_OnDeterminingFilename_Override
+-DownloadExtensionTest.DownloadExtensionTest_OnDeterminingFilename_Overwrite
 -DownloadTest.ChromeURLAfterDownload
 -DownloadTest.LoadURLExternallyReferrerPolicy
 -DownloadTest.SavePageNonHTMLViaPost
@@ -65,6 +70,9 @@
 -ExtensionApiTest.ContentScriptAboutBlankAndSrcdoc
 -ExtensionApiTest.CookiesEventsSpanning
 -ExtensionApiTest.Events
+-ExtensionApiTest.Incognito
+-ExtensionApiTest.JavasScriptEncodedURL
+-ExtensionApiTest.TabMove
 -ExtensionApiTest.TabsOnUpdated
 -ExtensionBrowserTest.WindowOpenExtension
 -ExtensionOverrideTest.OverrideNewTabIncognito
@@ -73,6 +81,8 @@
 -ExtensionResourceRequestPolicyTest.WebAccessibleResources
 -ExtensionTabsTest.DefaultToIncognitoWhenItIsForcedAndNoArgs
 -ExtensionURLRewriteBrowserTest.NewTabPageURL
+-ExtensionWebRequestApiTest.PostData1
+-ExtensionWebRequestApiTest.PostData2
 -ExtensionWebRequestApiTest.WebRequestBlocking
 -ExtensionWebRequestApiTest.WebRequestComplex
 -ExtensionWebRequestApiTest.WebRequestDeclarative1

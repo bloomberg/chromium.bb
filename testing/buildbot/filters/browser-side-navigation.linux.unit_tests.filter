@@ -46,5 +46,6 @@
 -SearchTest.ProcessIsolation
 -SearchTest.ProcessIsolation_RendererInitiated
 -SessionsSyncManagerTest.AssociateWindowsDontReloadTabs
+-TabsApiUnitTest.QueryWithoutTabsPermission
 -ToolbarModelTest.GoogleBaseURL
 -ToolbarModelTest.ShouldDisplayURL_QueryExtraction
