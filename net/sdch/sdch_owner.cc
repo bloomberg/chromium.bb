@@ -688,7 +688,7 @@ bool SdchOwner::HasDictionaryFromURLForTesting(const GURL& url) const {
 
 void SdchOwner::SetFetcherForTesting(
     scoped_ptr<SdchDictionaryFetcher> fetcher) {
-  fetcher_.reset(fetcher.release());
+  fetcher_ = std::move(fetcher);
 }
 
 void SdchOwner::OnMemoryPressure(
