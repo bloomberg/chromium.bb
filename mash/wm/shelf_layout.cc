@@ -28,6 +28,7 @@ void ShelfLayout::LayoutWindow(mus::Window* window) {
   gfx::Rect container_bounds = owner()->bounds();
   container_bounds.set_origin(
       gfx::Point(0, container_bounds.height() - preferred_size.height()));
+  container_bounds.set_height(preferred_size.height());
   window->SetBounds(container_bounds);
 }
 
