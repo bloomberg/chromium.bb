@@ -32,7 +32,7 @@ public:
         MutexLocker lock(m_mutex);
         if (m_queue.isEmpty())
             return nullptr;
-        return m_queue.takeFirst();
+        return m_queue.takeFirst().release();
     }
     void append(PassOwnPtr<Task> task)
     {

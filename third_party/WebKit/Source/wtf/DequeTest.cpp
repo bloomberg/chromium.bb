@@ -231,6 +231,54 @@ TEST(DequeTest, OwnPtr)
     EXPECT_EQ(count, static_cast<size_t>(destructNumber));
 }
 
+class MoveOnly {
+public:
+    explicit MoveOnly(int i = 0)
+        : m_i(i)
+    { }
+
+    MoveOnly(MoveOnly&& other)
+        : m_i(other.m_i)
+    {
+        other.m_i = 0;
+    }
+
+    MoveOnly& operator=(MoveOnly&& other)
+    {
+        if (this != &other) {
+            m_i = other.m_i;
+            other.m_i = 0;
+        }
+        return *this;
+    }
+
+    int value() const { return m_i; }
+
+private:
+    WTF_MAKE_NONCOPYABLE(MoveOnly);
+    int m_i;
+};
+
+TEST(DequeTest, MoveOnlyType)
+{
+    Deque<MoveOnly> deque;
+    deque.append(MoveOnly(1));
+    deque.append(MoveOnly(2));
+    EXPECT_EQ(2u, deque.size());
+
+    ASSERT_EQ(1, deque.first().value());
+    ASSERT_EQ(2, deque.last().value());
+
+    MoveOnly oldFirst = deque.takeFirst();
+    ASSERT_EQ(1, oldFirst.value());
+    EXPECT_EQ(1u, deque.size());
+
+    Deque<MoveOnly> otherDeque;
+    deque.swap(otherDeque);
+    EXPECT_EQ(1u, otherDeque.size());
+    EXPECT_EQ(0u, deque.size());
+}
+
 // WrappedInt class will fail if it was memmoved or memcpyed.
 HashSet<void*> constructedWrappedInts;
 

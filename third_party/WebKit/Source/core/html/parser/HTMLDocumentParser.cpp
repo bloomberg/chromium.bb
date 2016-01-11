@@ -583,7 +583,7 @@ void HTMLDocumentParser::pumpPendingSpeculations()
     SpeculationsPumpSession session(m_pumpSpeculationsSessionNestingLevel, contextForParsingSession());
     while (!m_speculations.isEmpty()) {
         ASSERT(!isScheduledForResume());
-        size_t elementTokenCount = processParsedChunkFromBackgroundParser(m_speculations.takeFirst());
+        size_t elementTokenCount = processParsedChunkFromBackgroundParser(m_speculations.takeFirst().release());
         session.addedElementTokens(elementTokenCount);
 
         // Always check isParsing first as m_document may be null.

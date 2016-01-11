@@ -33,7 +33,6 @@
 // FIXME: Could move what Vector and Deque share into a separate file.
 // Deque doesn't actually use Vector.
 
-#include "wtf/PassTraits.h"
 #include "wtf/Vector.h"
 #include <iterator>
 
@@ -51,8 +50,6 @@ public:
     typedef DequeConstIterator<T, inlineCapacity, Allocator> const_iterator;
     typedef std::reverse_iterator<iterator> reverse_iterator;
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-    typedef PassTraits<T> Pass;
-    typedef typename PassTraits<T>::PassType PassType;
 
     Deque();
     Deque(const Deque<T, inlineCapacity, Allocator>&);
@@ -79,11 +76,11 @@ public:
 
     T& first() { ASSERT(m_start != m_end); return m_buffer.buffer()[m_start]; }
     const T& first() const { ASSERT(m_start != m_end); return m_buffer.buffer()[m_start]; }
-    PassType takeFirst();
+    T takeFirst();
 
     T& last() { ASSERT(m_start != m_end); return *(--end()); }
     const T& last() const { ASSERT(m_start != m_end); return *(--end()); }
-    PassType takeLast();
+    T takeLast();
 
     T& at(size_t i)
     {
@@ -101,8 +98,8 @@ public:
     T& operator[](size_t i) { return at(i); }
     const T& operator[](size_t i) const { return at(i); }
 
-    template <typename U> void append(const U&);
-    template <typename U> void prepend(const U&);
+    template <typename U> void append(U&&);
+    template <typename U> void prepend(U&&);
     void removeFirst();
     void removeLast();
     void remove(iterator&);
@@ -365,27 +362,27 @@ void Deque<T, inlineCapacity, Allocator>::expandCapacity()
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
-inline typename Deque<T, inlineCapacity, Allocator>::PassType Deque<T, inlineCapacity, Allocator>::takeFirst()
+inline T Deque<T, inlineCapacity, Allocator>::takeFirst()
 {
-    T oldFirst = Pass::transfer(first());
+    T oldFirst = std::move(first());
     removeFirst();
-    return Pass::transfer(oldFirst);
+    return oldFirst;
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
-inline typename Deque<T, inlineCapacity, Allocator>::PassType Deque<T, inlineCapacity, Allocator>::takeLast()
+inline T Deque<T, inlineCapacity, Allocator>::takeLast()
 {
-    T oldLast = Pass::transfer(last());
+    T oldLast = std::move(last());
     removeLast();
-    return Pass::transfer(oldLast);
+    return oldLast;
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 template <typename U>
-inline void Deque<T, inlineCapacity, Allocator>::append(const U& value)
+inline void Deque<T, inlineCapacity, Allocator>::append(U&& value)
 {
     expandCapacityIfNeeded();
-    new (NotNull, &m_buffer.buffer()[m_end]) T(value);
+    new (NotNull, &m_buffer.buffer()[m_end]) T(std::forward<U>(value));
     if (m_end == m_buffer.capacity() - 1)
         m_end = 0;
     else
@@ -394,14 +391,14 @@ inline void Deque<T, inlineCapacity, Allocator>::append(const U& value)
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 template <typename U>
-inline void Deque<T, inlineCapacity, Allocator>::prepend(const U& value)
+inline void Deque<T, inlineCapacity, Allocator>::prepend(U&& value)
 {
     expandCapacityIfNeeded();
     if (!m_start)
         m_start = m_buffer.capacity() - 1;
     else
         --m_start;
-    new (NotNull, &m_buffer.buffer()[m_start]) T(value);
+    new (NotNull, &m_buffer.buffer()[m_start]) T(std::forward<U>(value));
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>

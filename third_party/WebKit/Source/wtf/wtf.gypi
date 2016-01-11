@@ -92,7 +92,6 @@
             'Partitions.h',
             'PassOwnPtr.h',
             'PassRefPtr.h',
-            'PassTraits.h',
             'PrintStream.cpp',
             'PrintStream.h',
             'RefCounted.h',

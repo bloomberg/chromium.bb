@@ -189,7 +189,7 @@ public:
         ASSERT_WITH_SECURITY_IMPLICATION(!m_queue.isEmpty());
         result = TaskReceived;
 
-        return m_queue.takeFirst();
+        return m_queue.takeFirst().release();
     }
 
     void kill()
