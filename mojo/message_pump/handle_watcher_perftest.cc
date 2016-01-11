@@ -106,7 +106,7 @@ TEST_P(HandleWatcherPerftest, StartStop) {
 }
 
 TEST_P(HandleWatcherPerftest, StartAllThenStop_1000Handles) {
-  const uint64_t kIterations = 10;
+  const uint64_t kIterations = 100;
   const uint64_t kHandles = 1000;
 
   struct TestData {
@@ -163,7 +163,7 @@ TEST_P(HandleWatcherPerftest, StartAndSignal) {
 }
 
 TEST_P(HandleWatcherPerftest, StartAndSignal_1000Waiting) {
-  const uint64_t kIterations = 1000;
+  const uint64_t kIterations = 10000;
   const uint64_t kWaitingHandles = 1000;
   const std::string kMessage = "hello";
   MessagePipe pipe;
