@@ -67,12 +67,6 @@ void ElementIntersectionObserverData::deactivateAllIntersectionObservers(Element
 #if !ENABLE(OILPAN)
 void ElementIntersectionObserverData::dispose()
 {
-    HeapVector<Member<IntersectionObservation>> observationsToDisconnect;
-    copyValuesToVector(m_intersectionObservations, observationsToDisconnect);
-    for (auto& observation : observationsToDisconnect)
-        observation->disconnect();
-    ASSERT(m_intersectionObservations.isEmpty());
-
     HeapVector<Member<IntersectionObserver>> observersToDisconnect;
     copyToVector(m_intersectionObservers, observersToDisconnect);
     for (auto& observer : observersToDisconnect)

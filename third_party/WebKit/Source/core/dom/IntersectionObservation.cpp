@@ -25,6 +25,7 @@ IntersectionObservation::IntersectionObservation(IntersectionObserver& observer,
 
 void IntersectionObservation::initializeGeometry(IntersectionGeometry& geometry)
 {
+    ASSERT(m_target);
     LayoutObject* targetLayoutObject = m_target->layoutObject();
     if (targetLayoutObject->isBoxModelObject())
         geometry.targetRect = toLayoutBoxModelObject(targetLayoutObject)->visualOverflowRect();
@@ -37,6 +38,7 @@ void IntersectionObservation::clipToRoot(LayoutRect& rect)
 {
     // Map and clip rect into root element coordinates.
     // TODO(szager): the writing mode flipping needs a test.
+    ASSERT(m_target);
     LayoutObject* rootLayoutObject = m_observer->rootLayoutObject();
     LayoutObject* targetLayoutObject = m_target->layoutObject();
     targetLayoutObject->mapToVisibleRectInAncestorSpace(toLayoutBoxModelObject(rootLayoutObject), rect, nullptr);
@@ -76,6 +78,7 @@ static void mapRectToDocumentCoordinates(LayoutObject& layoutObject, LayoutRect&
 
 bool IntersectionObservation::computeGeometry(IntersectionGeometry& geometry)
 {
+    ASSERT(m_target);
     LayoutObject* rootLayoutObject = m_observer->rootLayoutObject();
     LayoutObject* targetLayoutObject = m_target->layoutObject();
     if (!rootLayoutObject->isBoxModelObject())
@@ -145,10 +148,8 @@ void IntersectionObservation::computeIntersectionObservations(double timestamp)
 
 void IntersectionObservation::disconnect()
 {
-    if (m_target) {
+    if (m_target)
         m_target->ensureIntersectionObserverData().removeObservation(this->observer());
-        m_target.clear();
-    }
     m_observer->removeObservation(*this);
     m_observer.clear();
 }
