@@ -256,13 +256,6 @@
         },
     ], # targets
     'conditions': [
-        ['gcc_version>=46', {
-            'target_defaults': {
-                # Disable warnings about c++0x compatibility, as some names (such
-                # as nullptr) conflict with upcoming c++0x types.
-                'cflags_cc': ['-Wno-c++0x-compat'],
-            },
-        }],
         ['OS=="mac"', {
             'targets': [
                 {

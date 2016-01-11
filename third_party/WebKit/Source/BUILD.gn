@@ -50,19 +50,6 @@ config("config") {
     if (is_component_build) {
       defines += [ "USING_V8_SHARED" ]
     }
-  } else {  # ! Windows
-    # TODO(GYP) this should be based on gcc_version >= 46 but GN doesn't have a
-    # concept of GCC version yet.
-
-    # Disable warnings about c++0x compatibility, as some names (such as
-    # nullptr) conflict with upcoming c++0x types.
-    cflags_cc = [ "-Wno-c++0x-compat" ]
-  }
-
-  if (is_linux && current_cpu == "arm") {
-    # Due to a bug in gcc arm, we get warnings about uninitialized
-    # timesNewRoman.unstatic.3258 and colorTransparent.unstatic.4879.
-    cflags += [ "-Wno-uninitialized" ]
   }
 
   if (is_clang && blink_gc_plugin && clang_use_chrome_plugins) {

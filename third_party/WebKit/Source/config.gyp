@@ -93,16 +93,6 @@
           # Remove -g from all targets defined here.
           'cflags!': ['-g'],
         }],
-        ['gcc_version>=46', {
-          # Disable warnings about c++0x compatibility, as some names (such as
-          # nullptr) conflict with upcoming c++0x types.
-          'cflags_cc': ['-Wno-c++0x-compat'],
-        }],
-        ['OS=="linux" and target_arch=="arm"', {
-          # Due to a bug in gcc arm, we get warnings about uninitialized
-          # timesNewRoman.unstatic.3258 and colorTransparent.unstatic.4879.
-          'cflags': ['-Wno-uninitialized'],
-        }],
         # Only enable the blink_gc_plugin when using clang and chrome plugins.
         ['blink_gc_plugin==1 and clang==1 and clang_use_chrome_plugins==1', {
           'cflags': ['<!@(python <(DEPTH)/tools/clang/scripts/blink_gc_plugin_flags.py enable-oilpan=<(enable_oilpan) <(blink_gc_plugin_flags))'],

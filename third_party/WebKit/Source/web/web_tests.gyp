@@ -128,13 +128,6 @@
         }
     ], # targets
     'conditions': [
-        ['gcc_version>=46', {
-            'target_defaults': {
-                # Disable warnings about c++0x compatibility, as some names (such
-                # as nullptr) conflict with upcoming c++0x types.
-                'cflags_cc': ['-Wno-c++0x-compat'],
-            },
-        }],
         ['OS=="android" and gtest_target_type == "shared_library"', {
             # Wrap libwebkit_unit_tests.so into an android apk for execution.
             'targets': [{

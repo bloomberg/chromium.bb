@@ -253,12 +253,7 @@ source_set("remaining") {
     }
   }
 
-  if (is_android) {
-    # Due to a bug in gcc 4.6 in android NDK, we got warnings about
-    # uninitialized variable.
-    # TODO: try removing now that we are on GCC 4.8.
-    cflags += [ "-Wno-uninitialized" ]
-  } else {  # !is_android
+  if (!is_android) {
     sources -= [
       "layout/LayoutThemeAndroid.cpp",
       "layout/LayoutThemeAndroid.h",

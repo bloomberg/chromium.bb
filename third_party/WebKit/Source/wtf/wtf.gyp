@@ -31,15 +31,6 @@
     '../build/features.gypi',
     'wtf.gypi',
   ],
-  'conditions': [
-    ['gcc_version>=46', {
-      'target_defaults': {
-        # Disable warnings about c++0x compatibility, as some names (such as nullptr) conflict
-        # with upcoming c++0x types.
-        'cflags_cc': ['-Wno-c++0x-compat'],
-      },
-    }],
-  ],
   'targets': [
     {
       # This target sets up defines and includes that are required by WTF and
