@@ -1254,8 +1254,6 @@ crbug.com/558574 [ Win7 ] fast/text/emphasis.html [ Failure ]
 
 crbug.com/574196 fast/js/mozilla/strict/13.1.html [ NeedsManualRebaseline ]
 
-crbug.com/575799 http/tests/background_sync/oneshot.html [ Skip ]
-
 crbug.com/561595 [ XP ] plugins/webview-plugin-scroll.html [ Failure ]
 crbug.com/561595 [ XP ] plugins/webview-plugin-nested-iframe-scroll.html [ Failure ]
 

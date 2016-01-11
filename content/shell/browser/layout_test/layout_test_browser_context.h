@@ -43,6 +43,7 @@ class LayoutTestBrowserContext : public ShellBrowserContext {
  private:
   scoped_ptr<LayoutTestPushMessagingService> push_messaging_service_;
   scoped_ptr<PermissionManager> permission_manager_;
+  scoped_ptr<BackgroundSyncController> background_sync_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(LayoutTestBrowserContext);
 };

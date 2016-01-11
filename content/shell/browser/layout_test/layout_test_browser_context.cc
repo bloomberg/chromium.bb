@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "content/public/browser/background_sync_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/push_messaging_service.h"
 #include "content/public/browser/resource_context.h"
@@ -77,7 +78,9 @@ PermissionManager* LayoutTestBrowserContext::GetPermissionManager() {
 
 BackgroundSyncController*
 LayoutTestBrowserContext::GetBackgroundSyncController() {
-  return nullptr;
+  if (!background_sync_controller_)
+    background_sync_controller_.reset(new BackgroundSyncController());
+  return background_sync_controller_.get();
 }
 
 LayoutTestPermissionManager*
