@@ -6,9 +6,11 @@ package org.chromium.chrome.browser.bookmark;
 
 import android.content.ContentProvider;
 import android.content.ContentResolver;
+import android.content.pm.ProviderInfo;
 import android.test.IsolatedContext;
 import android.test.mock.MockContentResolver;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeBrowserProvider;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -34,11 +36,18 @@ public class ProviderTestBase extends ChromeActivityTestCaseBase<ChromeActivity>
     protected void setUp() throws Exception {
         super.setUp();
 
-        ChromeActivity activity = getActivity();
+        final ChromeActivity activity = getActivity();
         assertNotNull(activity);
 
-        ContentProvider provider = new ChromeBrowserProvider();
-        provider.attachInfo(activity, null);
+        final ContentProvider provider = new ChromeBrowserProvider();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ProviderInfo providerInfo = new ProviderInfo();
+                providerInfo.authority = ChromeBrowserProvider.getApiAuthority(activity);
+                provider.attachInfo(activity, providerInfo);
+            }
+        });
 
         MockContentResolver resolver = new MockContentResolver();
         resolver.addProvider(ChromeBrowserProvider.getApiAuthority(activity), provider);

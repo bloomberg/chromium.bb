@@ -8,11 +8,9 @@ import android.os.Parcel;
 import android.test.AndroidTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeBrowserProvider.BookmarkNode;
 import org.chromium.chrome.browser.ChromeBrowserProvider.Type;
-import org.chromium.chrome.test.util.browser.BookmarkUtils;
 
 import java.util.Random;
 
@@ -28,9 +26,9 @@ public class ProviderBookmarkNodeUnitTest extends AndroidTestCase {
         super.setUp();
 
         mImageBlobs = new byte[][] {
-            BookmarkUtils.getIcon("chrome/provider/icon1.png"),
-            BookmarkUtils.getIcon("chrome/provider/icon2.png"),
-            BookmarkUtils.getIcon("chrome/provider/icon3.png"),
+            { 1, 2, 3 },
+            { 4, 5, 6, 7 },
+            { 8, 9, 10, 11, 12 },
         };
 
         for (byte[] icon : mImageBlobs) {
@@ -127,32 +125,20 @@ public class ProviderBookmarkNodeUnitTest extends AndroidTestCase {
         return true;
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"Android-ContentProvider"})
-     * BUG 154683
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"Android-ContentProvider"})
     public void testBookmarkNodeParceling() throws InterruptedException {
         assertTrue(internalTestNodeHierarchyParceling(createMockHierarchy()));
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"Android-ContentProvider"})
-     * BUG 154683
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"Android-ContentProvider"})
     public void testBookmarkNodeParcelingWithImages() throws InterruptedException {
         assertTrue(internalTestNodeHierarchyParceling(createMockHierarchyWithImages()));
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"Android-ContentProvider"})
-     * BUG 154683
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"Android-ContentProvider"})
     public void testSingleNodeParceling() throws InterruptedException {
         BookmarkNode node = new BookmarkNode(1, Type.URL, "Google", "http://www.google.com/", null);
         assertTrue(internalTestNodeHierarchyParceling(node));

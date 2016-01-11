@@ -7,8 +7,9 @@ package org.chromium.chrome.browser.bookmark;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
+import android.test.suitebuilder.annotation.MediumTest;
 
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeBrowserProvider;
 
 import java.util.Date;
@@ -40,12 +41,8 @@ public class ProviderSearchesUriTest extends ProviderTestBase {
         return getContentResolver().insert(mSearchesUri, values);
     }
 
-    /**
-     * @MediumTest
-     * @Feature({"Android-ContentProvider"})
-     * BUG 154683
-     */
-    @DisabledTest
+    @MediumTest
+    @Feature({"Android-ContentProvider"})
     public void testAddSearchTerm() {
         long searchTime = System.currentTimeMillis();
         String searchTerm = "chrome";
@@ -65,12 +62,8 @@ public class ProviderSearchesUriTest extends ProviderTestBase {
         assertEquals(searchTime, cursor.getLong(index));
     }
 
-    /**
-     * @MediumTest
-     * @Feature({"Android-ContentProvider"})
-     * BUG 154683
-     */
-    @DisabledTest
+    @MediumTest
+    @Feature({"Android-ContentProvider"})
     public void testUpdateSearchTerm() {
         long[] searchTime = { System.currentTimeMillis(), System.currentTimeMillis() - 1000 };
         String[] searchTerm = { "chrome", "chromium" };
@@ -98,12 +91,8 @@ public class ProviderSearchesUriTest extends ProviderTestBase {
         assertEquals(searchTime[1], cursor.getLong(index));
     }
 
-    /**
-     * @MediumTest
-     * @Feature({"Android-ContentProvider"})
-     * BUG 154683
-     */
-    @DisabledTest
+    @MediumTest
+    @Feature({"Android-ContentProvider"})
     public void testDeleteSearchTerm() {
         long[] searchTime = { System.currentTimeMillis(), System.currentTimeMillis() - 1000 };
         String[] searchTerm = {"chrome", "chromium"};
@@ -136,12 +125,8 @@ public class ProviderSearchesUriTest extends ProviderTestBase {
     }
 
     // Copied from CTS test with minor adaptations.
-    /**
-     * @MediumTest
-     * @Feature({"Android-ContentProvider"})
-     * BUG 154683
-     */
-    @DisabledTest
+    @MediumTest
+    @Feature({"Android-ContentProvider"})
     public void testSearchesTable() {
         final int idIndex = 0;
         String insertSearch = "search_insert";

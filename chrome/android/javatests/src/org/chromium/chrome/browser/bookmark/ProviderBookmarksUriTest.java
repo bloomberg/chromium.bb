@@ -7,8 +7,9 @@ package org.chromium.chrome.browser.bookmark;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
+import android.test.suitebuilder.annotation.MediumTest;
 
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeBrowserProvider;
 import org.chromium.chrome.test.util.browser.BookmarkUtils;
 
@@ -19,7 +20,7 @@ import java.util.Date;
  */
 public class ProviderBookmarksUriTest extends ProviderTestBase {
     private static final String TAG = "ProviderBookmarkUriTest";
-    private static final String ICON_PATH = "chrome/provider/icon1.png";
+    private static final byte[] FAVICON_DATA = { 1, 2, 3 };
 
     private Uri mBookmarksUri;
 
@@ -49,12 +50,8 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
         return getContentResolver().insert(mBookmarksUri, values);
     }
 
-    /**
-     * @MediumTest
-     * @Feature({"Android-ContentProvider"})
-     * BUG 154683
-     */
-    @DisabledTest
+    @MediumTest
+    @Feature({"Android-ContentProvider"})
     public void testAddBookmark() {
         final long lastUpdateTime = System.currentTimeMillis();
         final long createdTime = lastUpdateTime - 1000 * 60 * 60;
@@ -65,7 +62,7 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
         values.put(BookmarkColumns.BOOKMARK, 0);
         values.put(BookmarkColumns.DATE, lastUpdateTime);
         values.put(BookmarkColumns.CREATED, createdTime);
-        values.put(BookmarkColumns.FAVICON, BookmarkUtils.getIcon(ICON_PATH));
+        values.put(BookmarkColumns.FAVICON, FAVICON_DATA);
         values.put(BookmarkColumns.URL, url);
         values.put(BookmarkColumns.VISITS, visits);
         values.put(BookmarkColumns.TITLE, title);
@@ -84,8 +81,7 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
         assertEquals(lastUpdateTime, cursor.getLong(index));
         index = cursor.getColumnIndex(BookmarkColumns.FAVICON);
         assertTrue(-1 != index);
-        assertTrue(BookmarkUtils.byteArrayEqual(BookmarkUtils.getIcon(ICON_PATH),
-                cursor.getBlob(index)));
+        assertTrue(BookmarkUtils.byteArrayEqual(FAVICON_DATA, cursor.getBlob(index)));
         index = cursor.getColumnIndex(BookmarkColumns.URL);
         assertTrue(-1 != index);
         assertEquals(url, cursor.getString(index));
@@ -94,12 +90,8 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
         assertEquals(visits, cursor.getInt(index));
     }
 
-    /**
-     * @MediumTest
-     * @Feature({"Android-ContentProvider"})
-     * BUG 154683
-     */
-    @DisabledTest
+    @MediumTest
+    @Feature({"Android-ContentProvider"})
     public void testQueryBookmark() {
         final long now = System.currentTimeMillis();
         final long lastUpdateTime[] = { now, now - 1000 * 60 };
@@ -109,7 +101,7 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
         final String title[] = { "Google", "Mail" };
         final int isBookmark[] = { 1, 0 };
         Uri[] uris = new Uri[2];
-        byte[][] icons = { BookmarkUtils.getIcon(ICON_PATH), null };
+        byte[][] icons = { FAVICON_DATA, null };
         for (int i = 0; i < uris.length; i++) {
             uris[i] = addBookmark(url[i], title[i], lastUpdateTime[i], createdTime[i], visits[i],
                     icons[i], isBookmark[i]);
@@ -120,7 +112,9 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
         String[] selectionArgs = { url[0], String.valueOf(lastUpdateTime[0]),
                 String.valueOf(visits[0]), String.valueOf(isBookmark[0]) };
         Cursor cursor = getContentResolver().query(mBookmarksUri, null,
-                "url = ? AND date = ? AND visits = ? AND bookmark = ? AND favicon IS NOT NULL",
+                BookmarkColumns.URL + " = ? AND " + BookmarkColumns.DATE + " = ? AND "
+                + BookmarkColumns.VISITS + " = ? AND " + BookmarkColumns.BOOKMARK + " = ? AND "
+                + BookmarkColumns.FAVICON + " IS NOT NULL",
                 selectionArgs, null);
         assertNotNull(cursor);
         assertEquals(1, cursor.getCount());
@@ -148,7 +142,9 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
         String[] selectionArgs2 = { url[1], String.valueOf(lastUpdateTime[1]),
                 String.valueOf(visits[1]), String.valueOf(isBookmark[1]) };
         cursor = getContentResolver().query(mBookmarksUri, null,
-                "url = ? AND date = ? AND visits = ? AND bookmark = ? AND favicon IS NULL",
+                BookmarkColumns.URL + " = ? AND " + BookmarkColumns.DATE + " = ? AND "
+                + BookmarkColumns.VISITS + " = ? AND " + BookmarkColumns.BOOKMARK + " = ? AND "
+                + BookmarkColumns.FAVICON + " IS NULL",
                 selectionArgs2, null);
         assertNotNull(cursor);
         assertEquals(1, cursor.getCount());
@@ -173,12 +169,8 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
         assertEquals(visits[1], cursor.getInt(index));
     }
 
-    /**
-     * @MediumTest
-     * @Feature({"Android-ContentProvider"})
-     * BUG 154683
-     */
-    @DisabledTest
+    @MediumTest
+    @Feature({"Android-ContentProvider"})
     public void testUpdateBookmark() {
         final long now = System.currentTimeMillis();
         final long lastUpdateTime[] = { now, now - 1000 * 60 };
@@ -188,7 +180,7 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
         final String title[] = { "Google", "Mail" };
         final int isBookmark[] = { 1, 0 };
 
-        byte[][] icons = { BookmarkUtils.getIcon(ICON_PATH), null };
+        byte[][] icons = { FAVICON_DATA, null };
         Uri uri = addBookmark(url[0], title[0], lastUpdateTime[0], createdTime[0], visits[0],
                 icons[0], isBookmark[0]);
         assertNotNull(uri);
@@ -228,12 +220,8 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
         assertEquals(visits[1], cursor.getInt(index));
     }
 
-    /**
-     * @MediumTest
-     * @Feature({"Android-ContentProvider"})
-     * BUG 154683
-     */
-    @DisabledTest
+    @MediumTest
+    @Feature({"Android-ContentProvider"})
     public void testDeleteBookmark() {
         final long now = System.currentTimeMillis();
         final long lastUpdateTime[] = { now, now - 1000 * 60 };
@@ -243,7 +231,7 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
         final String title[] = { "Google", "Mail" };
         final int isBookmark[] = { 1, 0 };
         Uri[] uris = new Uri[2];
-        byte[][] icons = { BookmarkUtils.getIcon(ICON_PATH), null };
+        byte[][] icons = { FAVICON_DATA, null };
         for (int i = 0; i < uris.length; i++) {
             uris[i] = addBookmark(url[i], title[i], lastUpdateTime[i], createdTime[i], visits[i],
                     icons[i], isBookmark[i]);
@@ -274,12 +262,8 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
     /*
      * Copied from CTS test with minor adaptations.
      */
-    /**
-     * @MediumTest
-     * @Feature({"Android-ContentProvider"})
-     * BUG 154683
-     */
-    @DisabledTest
+    @MediumTest
+    @Feature({"Android-ContentProvider"})
     public void testBookmarksTable() {
         final String[] bookmarksProjection = new String[] {
                 BookmarkColumns.ID, BookmarkColumns.URL, BookmarkColumns.VISITS,

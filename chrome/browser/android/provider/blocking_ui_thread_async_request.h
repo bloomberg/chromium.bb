@@ -26,7 +26,7 @@ class BlockingUIThreadAsyncRequest {
   // The request argument can be defined using base::Bind.
   template <typename Signature>
   void RunAsyncRequestOnUIThreadBlocking(base::Callback<Signature> request) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
     // Make the request in the UI thread.
     request_completed_.Reset();
