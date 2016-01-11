@@ -14,9 +14,6 @@ if (current_cpu == "arm") {
 if (current_cpu == "mipsel" || current_cpu == "mips64el") {
   import("//build/config/mips.gni")
 }
-if (is_posix) {
-  import("//build/config/gcc/gcc_version.gni")
-}
 if (is_win) {
   import("//build/config/win/visual_studio_version.gni")
 }
@@ -795,26 +792,18 @@ config("default_warnings") {
       cflags += [ "-Wpartial-availability" ]
     }
 
-    if (gcc_version >= 48) {
-      cflags_cc += [
-        # See comment for -Wno-c++11-narrowing.
-        "-Wno-narrowing",
-      ]
-      if (!is_clang && is_chromeos) {
-        cflags_cc += [
-          # TODO(thakis): Remove, http://crbug.com/263960
-          "-Wno-literal-suffix",
-        ]
-      }
-    }
-
     # Suppress warnings about ABI changes on ARM (Clang doesn't give this
     # warning).
     if (current_cpu == "arm" && !is_clang) {
       cflags += [ "-Wno-psabi" ]
     }
 
-    if (gcc_version >= 48) {
+    if (!is_clang) {
+      cflags_cc += [
+        # See comment for -Wno-c++11-narrowing.
+        "-Wno-narrowing",
+      ]
+
       # Don't warn about the "typedef 'foo' locally defined but not used"
       # for gcc 4.8.
       # TODO: remove this flag once all builds work. See crbug.com/227506
@@ -829,6 +818,15 @@ config("default_warnings") {
       "-Wno-missing-field-initializers",  # "struct foo f = {0};"
       "-Wno-unused-parameter",  # Unused function parameters.
     ]
+  }
+
+  if (is_chromeos) {
+    # TODO(thakis): Remove, http://crbug.com/263960
+    if (is_clang) {
+      cflags_cc += [ "-Wno-reserved-user-defined-literal" ]
+    } else {
+      cflags_cc += [ "-Wno-literal-suffix" ]
+    }
   }
 
   if (is_clang) {
@@ -862,13 +860,6 @@ config("default_warnings") {
       # TODO(hans): Get this cleaned up, http://crbug.com/428099
       "-Wno-inconsistent-missing-override",
     ]
-
-    if (is_chromeos) {
-      cflags += [
-        # TODO(thakis): Remove, http://crbug.com/263960
-        "-Wno-reserved-user-defined-literal",
-      ]
-    }
 
     # NaCl's Clang compiler and Chrome's hermetic Clang compiler will almost
     # always have different versions. Certain flags may not be recognized by

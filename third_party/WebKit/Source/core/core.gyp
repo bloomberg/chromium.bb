@@ -828,10 +828,6 @@
                 'layout/LayoutThemeMac.mm',
               ],
             }],
-            ['OS == "android" and target_arch == "ia32" and gcc_version == 46', {
-              # Due to a bug in gcc 4.6 in android NDK, we get warnings about uninitialized variable.
-              'cflags': ['-Wno-uninitialized'],
-            }],
             ['OS != "linux"', {
               'sources!': [
                 'layout/LayoutThemeLinux.cpp',

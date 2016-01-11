@@ -32,7 +32,7 @@ def ParseArgs(args):
   tool = args[1]
   if mode not in ('host', 'target'):
     raise Exception('Invalid mode: %s' % mode)
-  if tool not in ('assembler', 'compiler', 'linker'):
+  if tool not in ('assembler',):
     raise Exception('Invalid tool: %s' % tool)
   return mode, tool
 
@@ -53,26 +53,11 @@ def GetVersion(compiler, tool):
     return cached_version
   try:
     # Note that compiler could be something tricky like "distcc g++".
-    if tool == "compiler":
-      compiler = compiler + " -dumpversion"
-      # 4.6
-      version_re = re.compile(r"(\d+)\.(\d+)")
-    elif tool == "assembler":
+    if tool == "assembler":
       compiler = compiler + " -Xassembler --version -x assembler -c /dev/null"
       # Unmodified: GNU assembler (GNU Binutils) 2.24
       # Ubuntu: GNU assembler (GNU Binutils for Ubuntu) 2.22
       # Fedora: GNU assembler version 2.23.2
-      version_re = re.compile(r"^GNU [^ ]+ .* (\d+).(\d+).*?$", re.M)
-    elif tool == "linker":
-      compiler = compiler + " -Xlinker --version"
-      # Using BFD linker
-      # Unmodified: GNU ld (GNU Binutils) 2.24
-      # Ubuntu: GNU ld (GNU Binutils for Ubuntu) 2.22
-      # Fedora: GNU ld version 2.23.2
-      # Using Gold linker
-      # Unmodified: GNU gold (GNU Binutils 2.24) 1.11
-      # Ubuntu: GNU gold (GNU Binutils for Ubuntu 2.22) 1.11
-      # Fedora: GNU gold (version 2.23.2) 1.11
       version_re = re.compile(r"^GNU [^ ]+ .* (\d+).(\d+).*?$", re.M)
     else:
       raise Exception("Unknown tool %s" % tool)

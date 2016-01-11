@@ -77,15 +77,11 @@
       # TODO(jschuh): http://crbug.com/167187 size_t -> int
       'msvs_disabled_warnings': [ 4267 ],
       'conditions': [
-        ['os_posix == 1 and OS != "mac"', {
+        ['os_posix == 1 and OS != "mac" and clang==0', {
           'cflags': [
             '-Wno-unused-value',
             '-Wno-unused-variable',
             '-Wno-write-strings',
-          ],
-        }],
-        ['gcc_version >= 48', {
-          'cflags': [
             # affentry.hxx has NULL as default parameter for a FLAG in two
             # places.
             '-Wno-conversion-null',

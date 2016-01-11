@@ -82,7 +82,7 @@ source_set("hunspell") {
     ]
   }
 
-  if (is_posix && !is_mac) {
+  if (is_posix && !is_mac && !is_clang) {
     cflags += [
       "-Wno-unused-value",
       "-Wno-unused-variable",
@@ -90,7 +90,7 @@ source_set("hunspell") {
     ]
   }
 
-  if (is_posix && !is_mac && !is_ios) {
+  if (is_posix && !is_mac && !is_ios && !is_clang) {
     cflags += [
       # affentry.hxx has NULL as default parameter for a FLAG in two
       # places.

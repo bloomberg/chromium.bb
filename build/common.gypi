@@ -1614,26 +1614,6 @@
       }, {
         'binutils_version%': 0,
       }],
-      # The version of GCC in use, set later in platforms that use GCC and have
-      # not explicitly chosen to build with clang. Currently, this means all
-      # platforms except Windows, Mac and iOS.
-      # TODO(glider): set clang to 1 earlier for ASan and TSan builds so that
-      # it takes effect here.
-      ['os_posix==1 and OS!="mac" and OS!="ios" and clang==0 and asan==0 and lsan==0 and tsan==0 and msan==0 and ubsan_vptr==0', {
-        'conditions': [
-          ['OS=="android"', {
-            'host_gcc_version%': '<!pymod_do_main(compiler_version host compiler)',
-            # We directly set the gcc version since we know what we use.
-            'gcc_version%': 49,
-          }, {
-            'host_gcc_version%': '<!pymod_do_main(compiler_version host compiler)',
-            'gcc_version%': '<!pymod_do_main(compiler_version target compiler)',
-          }],
-        ],
-      }, {
-        'host_gcc_version%': 0,
-        'gcc_version%': 0,
-      }],
       ['OS=="win" and "<!pymod_do_main(dir_exists <(directx_sdk_default_path))"=="True"', {
         'directx_sdk_path%': '<(directx_sdk_default_path)',
       }, {
@@ -3769,10 +3749,7 @@
                 'cflags': ['-fno-unwind-tables', '-fno-asynchronous-unwind-tables'],
                 'defines': ['NO_UNWIND_TABLES'],
               }],
-              # TODO(mostynb): shuffle clang/gcc_version/binutils_version
-              # definitions in to the right scope to use them when setting
-              # linux_use_debug_fission, so it can be used here alone.
-              ['linux_use_debug_fission==1 and linux_use_gold_flags==1 and (clang==1 or gcc_version>=48) and binutils_version>=223', {
+              ['linux_use_debug_fission==1 and linux_use_gold_flags==1 and binutils_version>=223', {
                 'cflags': ['-gsplit-dwarf'],
               }],
             ],
@@ -4052,17 +4029,6 @@
                         '-fuse-ld=gold',
                     ],
                     'conditions': [
-                      ['gcc_version==48 and clang==0', {
-                        'cflags': [
-                          # The following 5 options are disabled to save on
-                          # binary size in GCC 4.8.
-                          '-fno-partial-inlining',
-                          '-fno-early-inlining',
-                          '-fno-tree-copy-prop',
-                          '-fno-tree-loop-optimize',
-                          '-fno-move-loop-invariants',
-                        ],
-                      }],
                       ['arm_thumb==1', {
                         'cflags': [ '-mthumb-interwork' ],
                       }],
@@ -4703,7 +4669,7 @@
               '-Wl,--disable-new-dtags',
             ],
           }],
-          ['gcc_version>=47 and clang==0', {
+          ['clang==0', {
             'target_conditions': [
               ['_toolset=="target"', {
                 'cflags_cc': [
@@ -4714,7 +4680,7 @@
               }],
             ],
           }],
-          ['host_gcc_version>=47 and clang==0 and host_clang==0', {
+          ['clang==0 and host_clang==0', {
             'target_conditions': [
               ['_toolset=="host"', {
                 'cflags_cc': [
@@ -4725,7 +4691,7 @@
               }],
             ],
           }],
-          ['gcc_version>=47 and clang==0 and chromeos==1', {
+          ['clang==0 and chromeos==1', {
             'target_conditions': [
               ['_toolset=="target"', {
                 'cflags_cc': [
@@ -4735,7 +4701,7 @@
               }],
             ],
           }],
-          ['host_gcc_version>=47 and clang==0 and host_clang==0 and chromeos==1', {
+          ['clang==0 and host_clang==0 and chromeos==1', {
             'target_conditions': [
               ['_toolset=="host"', {
                 'cflags_cc': [
@@ -6031,14 +5997,12 @@
     # Don't warn about the "typedef 'foo' locally defined but not used"
     # for gcc 4.8 and higher.
     # TODO: remove this flag once all builds work. See crbug.com/227506
-    ['gcc_version>=48 and clang==0', {
+    ['clang==0', {
       'target_defaults': {
-        'cflags': [
-          '-Wno-unused-local-typedefs',
-        ],
+        'cflags': [ '-Wno-unused-local-typedefs' ],
       },
     }],
-    ['gcc_version>=48 and clang==0 and host_clang==1', {
+    ['clang==0 and host_clang==1', {
       'target_defaults': {
         'target_conditions': [
           ['_toolset=="host"', { 'cflags!': [ '-Wno-unused-local-typedefs' ]}],
