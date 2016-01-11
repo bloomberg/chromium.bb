@@ -210,15 +210,27 @@ void BluetoothDeviceAndroid::OnConnectionStateChange(
   if (gatt_connected_) {
     DidConnectGatt();
   } else {
-    // TODO(scheib) Create new BluetoothDevice::ConnectErrorCode enums for
-    // android values not yet represented. http://crbug.com/531058
     switch (status) {   // Constants are from android.bluetooth.BluetoothGatt.
+      case 0x0000008f:  // GATT_CONNECTION_CONGESTED
+        return DidFailToConnectGatt(ERROR_CONNECTION_CONGESTED);
       case 0x00000101:  // GATT_FAILURE
         return DidFailToConnectGatt(ERROR_FAILED);
       case 0x00000005:  // GATT_INSUFFICIENT_AUTHENTICATION
         return DidFailToConnectGatt(ERROR_AUTH_FAILED);
+      case 0x0000000f:  // GATT_INSUFFICIENT_ENCRYPTION
+        return DidFailToConnectGatt(ERROR_INSUFFICIENT_ENCRYPTION);
+      case 0x0000000d:  // GATT_INVALID_ATTRIBUTE_LENGTH
+        return DidFailToConnectGatt(ERROR_ATTRIBUTE_LENGTH_INVALID);
+      case 0x00000007:  // GATT_INVALID_OFFSET
+        return DidFailToConnectGatt(ERROR_OFFSET_INVALID);
+      case 0x00000002:  // GATT_READ_NOT_PERMITTED
+        return DidFailToConnectGatt(ERROR_READ_NOT_PERMITTED);
+      case 0x00000006:  // GATT_REQUEST_NOT_SUPPORTED
+        return DidFailToConnectGatt(ERROR_REQUEST_NOT_SUPPORTED);
       case 0x00000000:  // GATT_SUCCESS
         return DidDisconnectGatt();
+      case 0x00000003:  // GATT_WRITE_NOT_PERMITTED
+        return DidFailToConnectGatt(ERROR_WRITE_NOT_PERMITTED);
       default:
         VLOG(1) << "Unhandled status: " << status;
         return DidFailToConnectGatt(ERROR_UNKNOWN);

@@ -550,6 +550,27 @@ cr.define('options', function() {
       case chrome.bluetoothPrivate.ConnectResultType.UNSUPPORTED_DEVICE:
         message = 'bluetoothConnectUnsupportedDevice';
         break;
+      case chrome.bluetoothPrivate.ConnectResultType.ATTRIBUTE_LENGTH_INVALID:
+        message = 'bluetoothConnectAttributeLengthInvalid';
+        break;
+      case chrome.bluetoothPrivate.ConnectResultType.CONNECTION_CONGESTED:
+        message = 'bluetoothConnectConnectionCongested';
+        break;
+      case chrome.bluetoothPrivate.ConnctResultType.INSUFFICIENT_ENCRYPTION:
+        message = 'bluetoothConnectInsufficientEncryption';
+        break;
+      case chrome.bluetoothPrivate.ConnctResultType.OFFSET_INVALID:
+        message = 'bluetoothConnectOffsetInvalid';
+        break;
+      case chrome.bluetoothPrivate.ConnctResultType.READ_NOT_PERMITTED:
+        message = 'bluetoothConnectReadNotPermitted';
+        break;
+      case chrome.bluetoothPrivate.ConnctResultType.REQUEST_NOT_SUPPORTED:
+        message = 'bluetoothConnectRequestNotSupported';
+        break;
+      case chrome.bluetoothPrivate.ConnctResultType.WRITE_NOT_PERMITTED:
+        message = 'bluetoothConnectWriteNotPermitted';
+        break;
     }
     if (message)
       BluetoothPairing.showMessage({message: message, address: address});

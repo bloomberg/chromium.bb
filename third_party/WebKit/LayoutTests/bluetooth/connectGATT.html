@@ -69,6 +69,41 @@ promise_test(() => {
   uuid: errorUUID(0x7),
   error: new DOMException('Unsupported device.',
                           'NetworkError')
+}, {
+  testName: 'A write operation exceeds the maximum length of the attribute.',
+  uuid: errorUUID(0x8),
+  error: new DOMException('Attribute length invalid.',
+                          'NetworkError')
+}, {
+  testName: 'A remote device connection is congested.',
+  uuid: errorUUID(0x9),
+  error: new DOMException('Connection congested.',
+                          'NetworkError')
+}, {
+  testName: 'Insufficient encryption for a given operation.',
+  uuid: errorUUID(0xa),
+  error: new DOMException('Insufficient encryption.',
+                          'NetworkError')
+}, {
+  testName: 'A read or write operation was requested with an invalid offset.',
+  uuid: errorUUID(0xb),
+  error: new DOMException('Offset invalid.',
+                          'NetworkError')
+}, {
+  testName: 'GATT read operation is not permitted.',
+  uuid: errorUUID(0xc),
+  error: new DOMException('Read not permitted.',
+                          'NetworkError')
+}, {
+  testName: 'The given request is not supported.',
+  uuid: errorUUID(0xd),
+  error: new DOMException('Request not supported.',
+                          'NetworkError')
+}, {
+  testName: 'GATT write operation is not permitted.',
+  uuid: errorUUID(0xe),
+  error: new DOMException('Write not permitted.',
+                          'NetworkError')
 }].forEach(testSpec => {
   promise_test(() => {
     testRunner.setBluetoothMockDataSet('FailingConnectionsAdapter');

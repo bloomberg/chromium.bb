@@ -45,16 +45,23 @@ namespace bluetoothPrivate {
 
   // Results for connect(). See function declaration for details.
   enum ConnectResultType {
-    success,
-    unknownError,
-    inProgress,
     alreadyConnected,
-    failed,
-    authFailed,
+    attributeLengthInvalid,
     authCanceled,
+    authFailed,
     authRejected,
     authTimeout,
-    unsupportedDevice
+    connectionCongested,
+    failed,
+    inProgress,
+    insufficientEncryption,
+    offsetInvalid,
+    readNotPermitted,
+    requestNotSupported,
+    success,
+    unknownError,
+    unsupportedDevice,
+    writeNotPermitted
   };
 
   // Valid pairing responses.

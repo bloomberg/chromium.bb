@@ -79930,6 +79930,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="7" label="Auth Rejected"/>
   <int value="8" label="Auth Timeout"/>
   <int value="9" label="Unsupported Device"/>
+  <int value="10" label="Invalid Attribute Length"/>
+  <int value="11" label="Congested Connection"/>
+  <int value="12" label="Insufficient Encryption"/>
+  <int value="13" label="Invalid Offset"/>
+  <int value="14" label="Read Not Permitted"/>
+  <int value="15" label="Unsupported Request"/>
+  <int value="16" label="Write Not Permitted"/>
 </enum>
 
 <enum name="WebBluetoothFunction" type="int">

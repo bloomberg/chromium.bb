@@ -138,6 +138,30 @@ WebBluetoothError TranslateConnectError(
     case device::BluetoothDevice::ERROR_UNSUPPORTED_DEVICE:
       RecordConnectGATTOutcome(UMAConnectGATTOutcome::UNSUPPORTED_DEVICE);
       return WebBluetoothError::ConnectUnsupportedDevice;
+    case device::BluetoothDevice::ERROR_ATTRIBUTE_LENGTH_INVALID:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::ATTRIBUTE_LENGTH_INVALID);
+      return WebBluetoothError::ConnectAttributeLengthInvalid;
+    case device::BluetoothDevice::ERROR_CONNECTION_CONGESTED:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::CONNECTION_CONGESTED);
+      return WebBluetoothError::ConnectConnectionCongested;
+    case device::BluetoothDevice::ERROR_INSUFFICIENT_ENCRYPTION:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::INSUFFICIENT_ENCRYPTION);
+      return WebBluetoothError::ConnectInsufficientEncryption;
+    case device::BluetoothDevice::ERROR_OFFSET_INVALID:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::OFFSET_INVALID);
+      return WebBluetoothError::ConnectOffsetInvalid;
+    case device::BluetoothDevice::ERROR_READ_NOT_PERMITTED:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::READ_NOT_PERMITTED);
+      return WebBluetoothError::ConnectReadNotPermitted;
+    case device::BluetoothDevice::ERROR_REQUEST_NOT_SUPPORTED:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::REQUEST_NOT_SUPPORTED);
+      return WebBluetoothError::ConnectRequestNotSupported;
+    case device::BluetoothDevice::ERROR_WRITE_NOT_PERMITTED:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::WRITE_NOT_PERMITTED);
+      return WebBluetoothError::ConnectWriteNotPermitted;
+    case device::BluetoothDevice::NUM_CONNECT_ERROR_CODES:
+      NOTREACHED();
+      return WebBluetoothError::UntranslatedConnectErrorCode;
   }
   NOTREACHED();
   return WebBluetoothError::UntranslatedConnectErrorCode;
