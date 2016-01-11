@@ -121,8 +121,8 @@ function test()
                 delete uiSourceCode1._contentLoaded;
                 uiSourceCode1.requestContent(contentCallback);
     
-                WebInspector.scriptSnippetModel.project().deleteFile(uiSourceCode1.path());
-                WebInspector.scriptSnippetModel.project().deleteFile(uiSourceCode2.path());
+                WebInspector.scriptSnippetModel.project().deleteFile(uiSourceCode1.url());
+                WebInspector.scriptSnippetModel.project().deleteFile(uiSourceCode2.url());
 
                 WebInspector.scriptSnippetModel.project().createFile("", null, "", step4.bind(this));
             }
@@ -131,7 +131,7 @@ function test()
             {
                 var uiSourceCode3 = uiSourceCode;
                 InspectorTest.addResult("Snippet3 created.");
-                WebInspector.scriptSnippetModel.project().deleteFile(uiSourceCode3.path());
+                WebInspector.scriptSnippetModel.project().deleteFile(uiSourceCode3.url());
                 InspectorTest.addResult("Snippet3 deleted.");
     
                 InspectorTest.addResult("Number of uiSourceCodes in workspace: " + workspace.uiSourceCodes().filter(filterSnippet).length);

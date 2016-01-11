@@ -35,7 +35,7 @@ function test()
                     return true;
                 }
             });
-            var uiLocation = WebInspector.workspace.uiSourceCodeForOriginURL(resource.url).uiLocation(2, 1);
+            var uiLocation = WebInspector.workspace.uiSourceCodeForURL(resource.url).uiLocation(2, 1);
             WebInspector.Revealer.reveal(uiLocation);
             InspectorTest.dumpLoadedModules(next);
         }

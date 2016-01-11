@@ -257,13 +257,13 @@ InspectorTest.createBreakpointManager = function(targetManager, debuggerWorkspac
     {
         var breakpoint = event.data.breakpoint;
         var uiLocation = event.data.uiLocation;
-        InspectorTest.addResult("    breakpointAdded(" + [uiLocation.uiSourceCode.originURL(), uiLocation.lineNumber, uiLocation.columnNumber, breakpoint.condition(), breakpoint.enabled()].join(", ") + ")");
+        InspectorTest.addResult("    breakpointAdded(" + [uiLocation.uiSourceCode.url(), uiLocation.lineNumber, uiLocation.columnNumber, breakpoint.condition(), breakpoint.enabled()].join(", ") + ")");
     }
 
     function breakpointRemoved(event)
     {
         var uiLocation = event.data.uiLocation;
-        InspectorTest.addResult("    breakpointRemoved(" + [uiLocation.uiSourceCode.originURL(), uiLocation.lineNumber, uiLocation.columnNumber].join(", ") + ")");
+        InspectorTest.addResult("    breakpointRemoved(" + [uiLocation.uiSourceCode.url(), uiLocation.lineNumber, uiLocation.columnNumber].join(", ") + ")");
     }
     var targets = targetManager.targets();
     var mappingForManager;
@@ -284,7 +284,7 @@ InspectorTest.createBreakpointManager = function(targetManager, debuggerWorkspac
 
 InspectorTest.setBreakpoint = function(breakpointManager, uiSourceCode, lineNumber, columnNumber, condition, enabled, setBreakpointCallback)
 {
-    InspectorTest.addResult("  Setting breakpoint at " + uiSourceCode.originURL() + ":" + lineNumber + ":" + columnNumber + " enabled:" + enabled + " condition:" + condition);
+    InspectorTest.addResult("  Setting breakpoint at " + uiSourceCode.url() + ":" + lineNumber + ":" + columnNumber + " enabled:" + enabled + " condition:" + condition);
     if (setBreakpointCallback)
         window.setBreakpointCallback = setBreakpointCallback;
     return breakpointManager.setBreakpoint(uiSourceCode, lineNumber, columnNumber, condition, enabled);
@@ -292,7 +292,7 @@ InspectorTest.setBreakpoint = function(breakpointManager, uiSourceCode, lineNumb
 
 InspectorTest.removeBreakpoint = function(breakpointManager, uiSourceCode, lineNumber, columnNumber)
 {
-    InspectorTest.addResult("  Removing breakpoint at " + uiSourceCode.originURL() + ":" + lineNumber + ":" + columnNumber);
+    InspectorTest.addResult("  Removing breakpoint at " + uiSourceCode.url() + ":" + lineNumber + ":" + columnNumber);
     breakpointManager.findBreakpoint(uiSourceCode, lineNumber, columnNumber).remove();
 }
 
@@ -317,7 +317,7 @@ InspectorTest.dumpBreakpointLocations = function(breakpointManager)
             return a.lineNumber - b.lineNumber;
         });
         var networkURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCode);
-        InspectorTest.addResult("    UISourceCode (url='" + networkURL + "', uri='" + uiSourceCode.uri() + "')");
+        InspectorTest.addResult("    UISourceCode (url='" + networkURL + "', uri='" + uiSourceCode.url() + "')");
         for (var i = 0; i < locations.length; ++i)
             InspectorTest.addResult("      Location: (" + locations[i].lineNumber + ", " + locations[i].columnNumber + ")");
     }

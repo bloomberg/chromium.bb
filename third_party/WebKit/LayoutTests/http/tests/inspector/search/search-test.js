@@ -41,7 +41,7 @@ InspectorTest.runSearchAndDumpResults = function(scope, searchConfig, sortByURI,
     {
         function comparator(searchResultA, searchResultB)
         {
-            return searchResultA.uiSourceCode.uri().compareTo(searchResultB.uiSourceCode.uri());
+            return searchResultA.uiSourceCode.url().compareTo(searchResultB.uiSourceCode.url());
         }
         if (sortByURI)
             searchResults.sort(comparator);
@@ -53,7 +53,7 @@ InspectorTest.runSearchAndDumpResults = function(scope, searchConfig, sortByURI,
 
             if (!searchMatches.length)
                 continue;
-            InspectorTest.addResult("Search result #" + (i + 1) + ": uiSourceCode.uri = " + uiSourceCode.uri());
+            InspectorTest.addResult("Search result #" + (i + 1) + ": uiSourceCode.url = " + uiSourceCode.url());
             for (var j = 0; j < searchMatches.length; ++j) {
                 var lineNumber = searchMatches[j].lineNumber;
                 var lineContent = searchMatches[j].lineContent;

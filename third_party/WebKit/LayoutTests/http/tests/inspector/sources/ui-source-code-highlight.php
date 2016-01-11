@@ -9,7 +9,7 @@ function test()
 
     for (var i = 0; i < uiSourceCodes.length; ++i) {
         var uiSourceCode = uiSourceCodes[i];
-        if (!/.php$/.test(uiSourceCode.originURL()))
+        if (!/.php$/.test(uiSourceCode.url()))
             continue;
         if (uiSourceCode.project().type() !== WebInspector.projectTypes.Network)
             continue;

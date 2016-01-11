@@ -37,7 +37,7 @@ function test()
 
             function didShowScriptSource(sourceFrame)
             {
-                InspectorTest.addResult("Editing filesystem resource: " + sourceFrame.uiSourceCode().originURL());
+                InspectorTest.addResult("Editing filesystem resource: " + sourceFrame.uiSourceCode().url());
                 InspectorTest.addSniffer(WebInspector.DebuggerModel.prototype, "_didEditScriptSource", didEditScriptSource);
                 InspectorTest.replaceInSource(sourceFrame, "return 0;", "return \"live-edited string\";");
                 InspectorTest.commitSource(sourceFrame);

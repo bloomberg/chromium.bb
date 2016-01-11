@@ -52,7 +52,7 @@ function test()
             }
         }
         
-        uiSourceCode = WebInspector.workspace.uiSourceCodeForOriginURL(InspectorTest.resourceTreeModel.inspectedPageURL());
+        uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(InspectorTest.resourceTreeModel.inspectedPageURL());
         var linkifyMe = "at triggerError (http://localhost/show/:22:11)";
         var fragment = WebInspector.linkifyStringAsFragment(linkifyMe);
         var anchor = fragment.querySelector('a');

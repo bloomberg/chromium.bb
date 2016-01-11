@@ -39,7 +39,7 @@ function test() {
                     return true;
                 }
             });
-            uiLocation = WebInspector.workspace.uiSourceCodeForOriginURL(resource.url).uiLocation(2, 1);
+            uiLocation = WebInspector.workspace.uiSourceCodeForURL(resource.url).uiLocation(2, 1);
 
             InspectorTest.nodeWithId("div", nodeCallback);
 

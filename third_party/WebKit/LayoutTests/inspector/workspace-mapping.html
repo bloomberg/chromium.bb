@@ -33,7 +33,7 @@ function test()
 
     function dumpHasMappingForURL(url)
     {
-        var result = networkMapping.hasMappingForURL(url)
+        var result = networkMapping.hasMappingForNetworkURL(url)
         if (result)
             InspectorTest.addResult("    url " + url + " is mapped.");
         else
@@ -43,12 +43,12 @@ function test()
     function dumpUISourceCodeForURL(url)
     {
         var uiSourceCode = networkMapping.uiSourceCodeForURLForAnyTarget(url);
-        InspectorTest.addResult("    url " + url + " is mapped to " + (uiSourceCode ? uiSourceCode.uri() : null));
+        InspectorTest.addResult("    url " + url + " is mapped to " + (uiSourceCode ? uiSourceCode.url() : null));
     }
 
     function dumpURLForPath(fileSystemPath, filePath)
     {
-        var url = networkMapping._urlForPath(fileSystemPath, fileSystemPath + "/" + filePath)
+        var url = networkMapping._networkURLForFileSystemURL(fileSystemPath, fileSystemPath + "/" + filePath)
         InspectorTest.addResult("    path " + fileSystemPath + " / " + filePath + " is mapped to " + (url ? url : null));
     }
     

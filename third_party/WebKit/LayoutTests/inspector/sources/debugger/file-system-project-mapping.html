@@ -33,7 +33,7 @@ function test()
         InspectorTest.addResult("UISourceCode uri to url mappings:");
         for (var i = 0; i < uiSourceCodes.length; ++i) {
             var networkURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCodes[i]);
-            InspectorTest.addResult("    " + uiSourceCodes[i].uri() + " -> " + networkURL);
+            InspectorTest.addResult("    " + uiSourceCodes[i].url() + " -> " + networkURL);
         }
     }
 
@@ -239,7 +239,7 @@ function test()
                 InspectorTest.addResult("Dumping uiSourceCodes origin URLs:");
                 var uiSourceCodes = InspectorTest.testWorkspace.uiSourceCodes();
                 for (var i = 0; i < uiSourceCodes.length; ++i)
-                    InspectorTest.addResult("  - " + uiSourceCodes[i].originURL());
+                    InspectorTest.addResult("  - " + uiSourceCodes[i].url());
             }
 
             createWorkspaceWithTarget();

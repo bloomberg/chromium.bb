@@ -62,13 +62,13 @@ function test()
 
     function cssUISourceCodeAdded(uiSourceCode)
     {
-        InspectorTest.addResult("Added CSS uiSourceCode: " + uiSourceCode.uri());
+        InspectorTest.addResult("Added CSS uiSourceCode: " + uiSourceCode.url());
         InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(scssUISourceCodeAdded);
     }
 
     function scssUISourceCodeAdded(uiSourceCode)
     {
-        InspectorTest.addResult("Added SCSS uiSourceCode: " + uiSourceCode.uri());
+        InspectorTest.addResult("Added SCSS uiSourceCode: " + uiSourceCode.url());
         setImmediate(afterStyleSheetAdded);
     }
 
@@ -80,8 +80,8 @@ function test()
 
     function afterStyleSheetAdded()
     {
-        var cssUISourceCode = InspectorTest.testWorkspace.uiSourceCodeForOriginURL(styleSheetURL);
-        var scssUISourceCode = InspectorTest.testWorkspace.uiSourceCodeForOriginURL("http://localhost:8000/inspector/resources/example.scss");
+        var cssUISourceCode = InspectorTest.testWorkspace.uiSourceCodeForURL(styleSheetURL);
+        var scssUISourceCode = InspectorTest.testWorkspace.uiSourceCodeForURL("http://localhost:8000/inspector/resources/example.scss");
 
         InspectorTest.checkUILocation(cssUISourceCode, 0, 3, rawLocationToUILocation(0, 3));
         InspectorTest.checkUILocation(scssUISourceCode, 1, 0, rawLocationToUILocation(1, 0));

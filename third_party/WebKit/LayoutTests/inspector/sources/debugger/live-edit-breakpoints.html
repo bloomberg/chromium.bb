@@ -38,10 +38,10 @@ function test()
         for (var i = 0; i < locations.length; ++i) {
             var uiLocation = locations[i].uiLocation;
             var uiSourceCode = uiLocation.uiSourceCode;
-            var originURL = uiSourceCode.originURL();
+            var url = uiSourceCode.url();
             var lineNumber = uiLocation.lineNumber;
             var project = uiSourceCode.project();
-            InspectorTest.addResult("        url: " + pathToFileName(originURL) + ", lineNumber: " + lineNumber + ", project type: " + project.type());
+            InspectorTest.addResult("        url: " + pathToFileName(url) + ", lineNumber: " + lineNumber + ", project type: " + project.type());
         }
 
         breakpoints = breakpointManager.allBreakpoints();
@@ -50,9 +50,9 @@ function test()
             var breakpoint = breakpoints[i];
             var uiSourceCode = breakpointManager._workspace.uiSourceCode(breakpoint.projectId(), breakpoint.path());
             var lineNumber = breakpoint.lineNumber();
-            var originURL = uiSourceCode.originURL();
+            var url = uiSourceCode.url();
             var project = uiSourceCode.project();
-            InspectorTest.addResult("        url: " + pathToFileName(originURL) + ", lineNumber: " + lineNumber + ", project type: " + project.type());
+            InspectorTest.addResult("        url: " + pathToFileName(url) + ", lineNumber: " + lineNumber + ", project type: " + project.type());
         }
     }
 

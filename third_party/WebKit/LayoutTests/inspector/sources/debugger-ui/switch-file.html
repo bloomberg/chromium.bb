@@ -47,8 +47,8 @@ function test()
     for (var i = 0; i < uiSourceCodes.length; ++i) {
         var uiSourceCode = uiSourceCodes[i];
         var nextUISourceCode = WebInspector.SourcesView.SwitchFileActionDelegate._nextFile(uiSourceCode);
-        var nextURI = nextUISourceCode ? nextUISourceCode.uri() : "<none>";
-        InspectorTest.addResult("Next file for " + uiSourceCode.uri() + " is " + nextURI + ".");
+        var nextURI = nextUISourceCode ? nextUISourceCode.url() : "<none>";
+        InspectorTest.addResult("Next file for " + uiSourceCode.url() + " is " + nextURI + ".");
     }
     InspectorTest.completeTest();
 }

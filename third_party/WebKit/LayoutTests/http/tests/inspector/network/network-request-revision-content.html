@@ -22,10 +22,10 @@ function test()
     function step2(event)
     {
         var eventUISourceCode = event.data;
-        if (eventUISourceCode.originURL().indexOf("style.css") == -1)
+        if (eventUISourceCode.url().indexOf("style.css") == -1)
             return;
         var request = InspectorTest.networkRequests().pop();
-        uiSourceCode = WebInspector.workspace.uiSourceCodeForOriginURL(request.url);
+        uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(request.url);
         if (!uiSourceCode)
             return;
         uiSourceCode.addRevision("");
@@ -34,7 +34,7 @@ function test()
 
     function step3(content)
     {
-        InspectorTest.addResult(uiSourceCode.originURL());
+        InspectorTest.addResult(uiSourceCode.url());
         InspectorTest.addResult(content);
         InspectorTest.completeTest();
     }

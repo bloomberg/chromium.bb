@@ -54,8 +54,8 @@ function test()
 
     function dumpFileForURL(fileSystemMapping, url)
     {
-        var hasMappingForURL = fileSystemMapping.hasMappingForURL(url);
-        InspectorTest.addResult("    Has mapping for '" + url + "': " + hasMappingForURL);
+        var hasMappingForNetworkURL = fileSystemMapping.hasMappingForNetworkURL(url);
+        InspectorTest.addResult("    Has mapping for '" + url + "': " + hasMappingForNetworkURL);
         var fileForURL = fileSystemMapping.fileForURL(url);
         if (!fileForURL)
             InspectorTest.addResult("    File for '" + url + "': null");
@@ -65,7 +65,7 @@ function test()
 
     function dumpURLForPath(fileSystemMapping, fileSystemPath, filePath)
     {
-        var url = fileSystemMapping.urlForPath(fileSystemPath, filePath);
+        var url = fileSystemMapping.networkURLForFileSystemURL(fileSystemPath, filePath);
         InspectorTest.addResult("    URL for path '" + filePath + "': " + url);
     }
 

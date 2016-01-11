@@ -20,9 +20,9 @@ function test()
 
     function reportAdded(event)
     {
-        if (event.data.originURL().indexOf("MyScript.js") === -1)
+        if (event.data.url().indexOf("MyScript.js") === -1)
             return;
-        InspectorTest.addResult("Added: " + event.data.originURL().replace(/VM[\d]+/, "VMXX") + " to " + event.data.project().type());
+        InspectorTest.addResult("Added: " + event.data.url().replace(/VM[\d]+/, "VMXX") + " to " + event.data.project().type());
         if (event.data.project().type() !== "network")
             return;
         event.data.requestContent(function(it, content) {
@@ -34,9 +34,9 @@ function test()
 
     function reportRemoved(event)
     {
-        if (event.data.originURL() !== "MyScript.js")
+        if (event.data.url() !== "MyScript.js")
             return;
-        InspectorTest.addResult("Removed: " + event.data.originURL() + " from " + event.data.project().type());
+        InspectorTest.addResult("Removed: " + event.data.url() + " from " + event.data.project().type());
     }
 }
 

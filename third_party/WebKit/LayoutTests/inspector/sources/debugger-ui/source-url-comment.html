@@ -72,7 +72,7 @@ function test()
                 var uiSourceCodes = panel._workspace.uiSourceCodes();
                 var ignored = true;
                 for (var i = 0; i < uiSourceCodes.length && ignored; ++i) {
-                    if (uiSourceCodes[i].originURL().indexOf("inlineScriptURL.js") !== -1)
+                    if (uiSourceCodes[i].url().indexOf("inlineScriptURL.js") !== -1)
                         ignored = false;
                 }
                 if (ignored)
@@ -104,7 +104,7 @@ function test()
                 var panel = WebInspector.panels.sources;
                 var uiSourceCodes = panel._workspace.uiSourceCodes();
                 for (var i = 0; i < uiSourceCodes.length; ++i) {
-                    if (uiSourceCodes[i].originURL().indexOf("scriptWithPoorSourceURL.js") !== -1)
+                    if (uiSourceCodes[i].url().indexOf("scriptWithPoorSourceURL.js") !== -1)
                         InspectorTest.addResult("FAILED: poor sourceURL comment in script was used as a script name");
                 }
                 next();
