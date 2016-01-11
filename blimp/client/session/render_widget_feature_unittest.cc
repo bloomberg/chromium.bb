@@ -13,6 +13,7 @@
 #include "blimp/net/test_common.h"
 #include "cc/proto/compositor_message.pb.h"
 #include "net/base/net_errors.h"
+#include "net/base/test_completion_callback.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -54,7 +55,9 @@ void SendRenderWidgetMessage(BlimpMessageProcessor* processor,
   scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&details, tab_id);
   details->set_type(RenderWidgetMessage::INITIALIZE);
   details->set_render_widget_id(rw_id);
-  processor->ProcessMessage(std::move(message), net::CompletionCallback());
+  net::TestCompletionCallback cb;
+  processor->ProcessMessage(std::move(message), cb.callback());
+  EXPECT_EQ(net::OK, cb.WaitForResult());
 }
 
 void SendCompositorMessage(BlimpMessageProcessor* processor,
@@ -63,7 +66,9 @@ void SendCompositorMessage(BlimpMessageProcessor* processor,
   CompositorMessage* details;
   scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&details, tab_id);
   details->set_render_widget_id(rw_id);
-  processor->ProcessMessage(std::move(message), net::CompletionCallback());
+  net::TestCompletionCallback cb;
+  processor->ProcessMessage(std::move(message), cb.callback());
+  EXPECT_EQ(net::OK, cb.WaitForResult());
 }
 
 }  // namespace

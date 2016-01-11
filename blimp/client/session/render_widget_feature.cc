@@ -82,14 +82,14 @@ void RenderWidgetFeature::RemoveDelegate(const int tab_id) {
 void RenderWidgetFeature::ProcessMessage(
     scoped_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
+  DCHECK(!callback.is_null());
   DCHECK(message->type() == BlimpMessage::RENDER_WIDGET ||
          message->type() == BlimpMessage::COMPOSITOR);
 
   int target_tab_id = message->target_tab_id();
   RenderWidgetFeatureDelegate* delegate = FindDelegate(target_tab_id);
-  DCHECK(delegate);
-  if (!delegate)
-    return;
+  DCHECK(delegate) << "RenderWidgetFeatureDelegate not found for "
+                   << target_tab_id;
 
   switch (message->type()) {
     case BlimpMessage::RENDER_WIDGET:
@@ -112,9 +112,7 @@ void RenderWidgetFeature::ProcessMessage(
       NOTIMPLEMENTED();
   }
 
-  if (!callback.is_null()) {
-    callback.Run(net::OK);
-  }
+  callback.Run(net::OK);
 }
 
 RenderWidgetFeature::RenderWidgetFeatureDelegate*

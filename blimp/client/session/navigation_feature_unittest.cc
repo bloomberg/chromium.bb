@@ -10,6 +10,7 @@
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/test_common.h"
 #include "net/base/net_errors.h"
+#include "net/base/test_completion_callback.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -50,7 +51,9 @@ void SendMockNavigationStateChangedMessage(BlimpMessageProcessor* processor,
   if (loading)
     state->set_loading(*loading);
 
-  processor->ProcessMessage(std::move(message), net::CompletionCallback());
+  net::TestCompletionCallback cb;
+  processor->ProcessMessage(std::move(message), cb.callback());
+  EXPECT_EQ(net::OK, cb.WaitForResult());
 }
 
 MATCHER_P2(EqualsNavigateToUrlText, tab_id, text, "") {

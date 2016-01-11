@@ -59,6 +59,7 @@ void BlimpMessagePump::OnReadPacketComplete(int result) {
   if (result == net::OK) {
     scoped_ptr<BlimpMessage> message(new BlimpMessage);
     if (message->ParseFromArray(buffer_->StartOfBuffer(), buffer_->offset())) {
+      DVLOG(2) << "OnReadPacketComplete, result=" << *message;
       processor_->ProcessMessage(std::move(message),
                                  process_msg_callback_.callback());
     } else {

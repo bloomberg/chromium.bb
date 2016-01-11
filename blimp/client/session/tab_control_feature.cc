@@ -8,6 +8,7 @@
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/tab_control.pb.h"
 #include "blimp/net/blimp_message_processor.h"
+#include "net/base/net_errors.h"
 
 namespace blimp {
 namespace client {
@@ -61,6 +62,9 @@ void TabControlFeature::CloseTab(int tab_id) {
 void TabControlFeature::ProcessMessage(
     scoped_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
+  DCHECK(!callback.is_null());
+  callback.Run(net::OK);
+
   NOTIMPLEMENTED();
 }
 

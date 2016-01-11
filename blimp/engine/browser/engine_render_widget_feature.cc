@@ -85,6 +85,7 @@ void EngineRenderWidgetFeature::RemoveDelegate(const int tab_id) {
 void EngineRenderWidgetFeature::ProcessMessage(
     scoped_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
+  DCHECK(!callback.is_null());
   DCHECK(message->type() == BlimpMessage::RENDER_WIDGET ||
          message->type() == BlimpMessage::INPUT ||
          message->type() == BlimpMessage::COMPOSITOR);
@@ -118,9 +119,7 @@ void EngineRenderWidgetFeature::ProcessMessage(
       NOTREACHED();
   }
 
-  if (!callback.is_null()) {
-    callback.Run(net::OK);
-  }
+  callback.Run(net::OK);
 }
 
 EngineRenderWidgetFeature::RenderWidgetMessageDelegate*
