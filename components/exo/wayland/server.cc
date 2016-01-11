@@ -776,12 +776,9 @@ void bind_output(wl_client* client, void* data, uint32_t version, uint32_t id) {
     wl_output_send_scale(resource, 1);
 
   // TODO(reveman): Send real list of modes after adding multi-display support.
-  ash::DisplayMode mode =
-      display_manager->GetActiveModeForDisplayId(primary.id());
   wl_output_send_mode(resource,
                       WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED,
-                      mode.size.width(), mode.size.height(),
-                      static_cast<int>(mode.refresh_rate * 1000));
+                      bounds.width(), bounds.height(), static_cast<int>(60000));
 
   if (version >= WL_OUTPUT_DONE_SINCE_VERSION)
     wl_output_send_done(resource);
