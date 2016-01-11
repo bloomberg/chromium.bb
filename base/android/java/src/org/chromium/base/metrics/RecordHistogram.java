@@ -103,6 +103,16 @@ public class RecordHistogram {
     }
 
     /**
+     * Records a sample in a percentage histogram. This is the Java equivalent of the
+     * UMA_HISTOGRAM_PERCENTAGE C++ macro.
+     * @param name name of the histogram
+     * @param sample sample to be recorded, at least 0 and at most 100.
+     */
+    public static void recordPercentageHistogram(String name, int sample) {
+        nativeRecordEnumeratedHistogram(name, System.identityHashCode(name), sample, 101);
+    }
+
+    /**
     * Records a sparse histogram. This is the Java equivalent of UMA_HISTOGRAM_SPARSE_SLOWLY.
     * @param name name of the histogram
     * @param sample sample to be recorded. All values of |sample| are valid, including negative

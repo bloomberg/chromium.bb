@@ -105,7 +105,7 @@ public final class OfflinePageBridge {
             protected Void doInBackground(Void... params) {
                 int percentage = (int) (1.0 * OfflinePageUtils.getFreeSpaceInBytes()
                         / OfflinePageUtils.getTotalSpaceInBytes() * 100);
-                RecordHistogram.recordEnumeratedHistogram(percentageName, percentage, 101);
+                RecordHistogram.recordPercentageHistogram(percentageName, percentage);
                 int bytesInMB = (int) (OfflinePageUtils.getFreeSpaceInBytes() / (1024 * 1024));
                 RecordHistogram.recordCustomCountHistogram(bytesName, bytesInMB, 1, 500000, 50);
                 return null;
@@ -133,17 +133,17 @@ public final class OfflinePageBridge {
                 // How much of the total space the offline pages take.
                 int totalPageSizePercentage = (int) (1.0 * totalPageSizeAfter
                         / OfflinePageUtils.getTotalSpaceInBytes() * 100);
-                RecordHistogram.recordEnumeratedHistogram(
-                        "OfflinePages.TotalPageSizePercentage", totalPageSizePercentage, 101);
+                RecordHistogram.recordPercentageHistogram(
+                        "OfflinePages.TotalPageSizePercentage", totalPageSizePercentage);
                 if (totalPageSizeBefore > 0) {
                     // If the user is deleting the pages, perhaps they are running out of free
                     // space. Report the size before the operation, where a base for calculation
                     // of total free space includes space taken by offline pages.
                     int percentageOfFree = (int) (1.0 * totalPageSizeBefore
                             / (totalPageSizeBefore + OfflinePageUtils.getFreeSpaceInBytes()) * 100);
-                    RecordHistogram.recordEnumeratedHistogram(
+                    RecordHistogram.recordPercentageHistogram(
                             "OfflinePages.DeletePage.TotalPageSizeAsPercentageOfFreeSpace",
-                            percentageOfFree, 101);
+                            percentageOfFree);
                 }
                 return null;
             }

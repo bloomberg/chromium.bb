@@ -192,7 +192,7 @@ public class LibraryLoader {
                 if (percentage != -1) {
                     String histogram = "LibraryLoader.PercentageOfResidentCodeBeforePrefetch"
                             + (coldStart ? "_ColdStartup" : "_WarmStartup");
-                    RecordHistogram.recordEnumeratedHistogram(histogram, percentage, 101);
+                    RecordHistogram.recordPercentageHistogram(histogram, percentage);
                 }
                 TraceEvent.end("LibraryLoader.asyncPrefetchLibrariesToMemory");
                 return null;
