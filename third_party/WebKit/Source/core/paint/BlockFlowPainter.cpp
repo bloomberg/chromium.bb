@@ -19,9 +19,10 @@ void BlockFlowPainter::paintFloats(const PaintInfo& paintInfo, const LayoutPoint
     if (!m_layoutBlockFlow.floatingObjects())
         return;
 
-    ASSERT(paintInfo.phase == PaintPhaseFloat);
+    ASSERT(paintInfo.phase == PaintPhaseFloat || paintInfo.phase == PaintPhaseSelection || paintInfo.phase == PaintPhaseTextClip);
     PaintInfo floatPaintInfo(paintInfo);
-    floatPaintInfo.phase = PaintPhaseForeground;
+    if (paintInfo.phase == PaintPhaseFloat)
+        floatPaintInfo.phase = PaintPhaseForeground;
 
     for (const auto& floatingObject : m_layoutBlockFlow.floatingObjects()->set()) {
         if (!floatingObject->shouldPaint())
