@@ -223,6 +223,7 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
   }
 
   if (IsTheHotNewBubbleUIEnabled()) {
+#if !BUILDFLAG(ANDROID_JAVA_UI)
     PasswordsClientUIDelegate* manage_passwords_ui_controller =
         PasswordsClientUIDelegateFromWebContents(web_contents());
     if (update_password && IsUpdatePasswordUIEnabled()) {
@@ -232,6 +233,7 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
       manage_passwords_ui_controller->OnPasswordSubmitted(
           std::move(form_to_save));
     }
+#endif
   } else {
 #if defined(OS_MACOSX) || BUILDFLAG(ANDROID_JAVA_UI)
     if (form_to_save->IsBlacklisted())
@@ -305,10 +307,12 @@ void ChromePasswordManagerClient::AutomaticPasswordSave(
 void ChromePasswordManagerClient::PasswordWasAutofilled(
     const autofill::PasswordFormMap& best_matches,
     const GURL& origin) const {
+#if !BUILDFLAG(ANDROID_JAVA_UI)
   PasswordsClientUIDelegate* manage_passwords_ui_controller =
       PasswordsClientUIDelegateFromWebContents(web_contents());
   if (manage_passwords_ui_controller && IsTheHotNewBubbleUIEnabled())
     manage_passwords_ui_controller->OnPasswordAutofilled(best_matches, origin);
+#endif
 }
 
 void ChromePasswordManagerClient::HidePasswordGenerationPopup() {
