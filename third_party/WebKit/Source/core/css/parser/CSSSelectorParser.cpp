@@ -563,7 +563,7 @@ const AtomicString& CSSSelectorParser::determineNamespace(const AtomicString& pr
 
 void CSSSelectorParser::prependTypeSelectorIfNeeded(const AtomicString& namespacePrefix, const AtomicString& elementName, CSSParserSelector* compoundSelector)
 {
-    if (elementName.isNull() && defaultNamespace() == starAtom && !compoundSelector->crossesTreeScopes())
+    if (elementName.isNull() && defaultNamespace() == starAtom && !compoundSelector->needsImplicitShadowCrossingCombinatorForMatching())
         return;
 
     AtomicString determinedElementName = elementName.isNull() ? starAtom : elementName;
@@ -572,7 +572,7 @@ void CSSSelectorParser::prependTypeSelectorIfNeeded(const AtomicString& namespac
         return;
     QualifiedName tag = QualifiedName(namespacePrefix, determinedElementName, namespaceURI);
 
-    if (compoundSelector->crossesTreeScopes())
+    if (compoundSelector->needsImplicitShadowCrossingCombinatorForMatching())
         return rewriteSpecifiersWithElementNameForCustomPseudoElement(tag, compoundSelector, elementName.isNull());
 
     if (compoundSelector->pseudoType() == CSSSelector::PseudoContent)
@@ -591,11 +591,14 @@ void CSSSelectorParser::rewriteSpecifiersWithElementNameForCustomPseudoElement(c
     CSSParserSelector* history = specifiers;
     while (history->tagHistory()) {
         history = history->tagHistory();
-        if (history->crossesTreeScopes() || history->hasShadowPseudo())
+        if (history->needsImplicitShadowCrossingCombinatorForMatching()
+            || history->hasImplicitShadowCrossingCombinatorForMatching()) {
             lastShadowPseudo = history;
+        }
     }
 
     if (lastShadowPseudo->tagHistory()) {
+        ASSERT(lastShadowPseudo->hasImplicitShadowCrossingCombinatorForMatching());
         if (tag != anyQName())
             lastShadowPseudo->tagHistory()->prependTagSelector(tag, tagIsImplicit);
         return;
@@ -662,14 +665,14 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::addSimpleSelectorToCompound(Pas
 
     CSSSelector::Relation relation = CSSSelector::SubSelector;
 
-    if (simpleSelector->crossesTreeScopes() || simpleSelector->pseudoType() == CSSSelector::PseudoContent) {
-        if (simpleSelector->crossesTreeScopes())
+    if (simpleSelector->needsImplicitShadowCrossingCombinatorForMatching() || simpleSelector->pseudoType() == CSSSelector::PseudoContent) {
+        if (simpleSelector->needsImplicitShadowCrossingCombinatorForMatching())
             relation = CSSSelector::ShadowPseudo;
         simpleSelector->appendTagHistory(relation, compoundSelector);
         return simpleSelector;
     }
-    if (compoundSelector->crossesTreeScopes() || compoundSelector->pseudoType() == CSSSelector::PseudoContent) {
-        if (compoundSelector->crossesTreeScopes())
+    if (compoundSelector->needsImplicitShadowCrossingCombinatorForMatching() || compoundSelector->pseudoType() == CSSSelector::PseudoContent) {
+        if (compoundSelector->needsImplicitShadowCrossingCombinatorForMatching())
             relation = CSSSelector::ShadowPseudo;
         compoundSelector->insertTagHistory(CSSSelector::SubSelector, simpleSelector, relation);
         return compoundSelector;

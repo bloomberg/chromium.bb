@@ -59,11 +59,10 @@ public:
 
     CSSSelector::PseudoType pseudoType() const { return m_selector->pseudoType(); }
 
-    // TODO(esprehn): This set of cases doesn't make sense, why PseudoShadow but not a check for ::content or /deep/ ?
-    bool crossesTreeScopes() const { return pseudoType() == CSSSelector::PseudoWebKitCustomElement || pseudoType() == CSSSelector::PseudoCue || pseudoType() == CSSSelector::PseudoShadow; }
+    bool needsImplicitShadowCrossingCombinatorForMatching() const { return pseudoType() == CSSSelector::PseudoWebKitCustomElement || pseudoType() == CSSSelector::PseudoCue || pseudoType() == CSSSelector::PseudoShadow; }
 
     bool isSimple() const;
-    bool hasShadowPseudo() const;
+    bool hasImplicitShadowCrossingCombinatorForMatching() const;
 
     CSSParserSelector* tagHistory() const { return m_tagHistory.get(); }
     void setTagHistory(PassOwnPtr<CSSParserSelector> selector) { m_tagHistory = selector; }
@@ -77,7 +76,7 @@ private:
     OwnPtr<CSSParserSelector> m_tagHistory;
 };
 
-inline bool CSSParserSelector::hasShadowPseudo() const
+inline bool CSSParserSelector::hasImplicitShadowCrossingCombinatorForMatching() const
 {
     return m_selector->relation() == CSSSelector::ShadowPseudo;
 }
