@@ -103,6 +103,7 @@ SystemProfileProto::Network::ConnectionType
 NetworkMetricsProvider::GetConnectionType() const {
   switch (connection_type_) {
     case net::NetworkChangeNotifier::CONNECTION_NONE:
+      return SystemProfileProto::Network::CONNECTION_NONE;
     case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
       return SystemProfileProto::Network::CONNECTION_UNKNOWN;
     case net::NetworkChangeNotifier::CONNECTION_ETHERNET:

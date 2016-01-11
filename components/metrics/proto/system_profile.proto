@@ -285,7 +285,8 @@ message SystemProfileProto {
     // Set to true if connection_type changed during the lifetime of the log.
     optional bool connection_type_is_ambiguous = 1;
 
-    // See net::NetworkChangeNotifier::ConnectionType.
+    // Derived from net::NetworkChangeNotifier::ConnectionType translated
+    // through NetworkMetricsProvider::GetConnectionType.
     enum ConnectionType {
       CONNECTION_UNKNOWN = 0;
       CONNECTION_ETHERNET = 1;
@@ -294,6 +295,7 @@ message SystemProfileProto {
       CONNECTION_3G = 4;
       CONNECTION_4G = 5;
       CONNECTION_BLUETOOTH = 6;
+      CONNECTION_NONE = 7;
     }
     // The connection type according to NetworkChangeNotifier.
     optional ConnectionType connection_type = 2;
