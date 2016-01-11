@@ -231,16 +231,28 @@ bool Connector::ReadSingleMessage(MojoResult* read_result) {
   bool* previous_destroyed_flag = destroyed_flag_;
   destroyed_flag_ = &was_destroyed_during_dispatch;
 
-  MojoResult rv = ReadAndDispatchMessage(
-      message_pipe_.get(), incoming_receiver_, &receiver_result);
-  if (read_result)
-    *read_result = rv;
+  Message message;
+  const MojoResult rv = ReadMessage(message_pipe_.get(), &message);
+  *read_result = rv;
+
+  if (rv == MOJO_RESULT_OK) {
+    // Dispatching the message may spin in a nested message loop. To ensure we
+    // continue dispatching messages when this happens start listening for
+    // messagse now.
+    if (!async_wait_id_) {
+      // TODO: Need to evaluate the perf impact of this.
+      WaitToReadMore();
+    }
+    receiver_result =
+        incoming_receiver_ && incoming_receiver_->Accept(&message);
+  }
 
   if (was_destroyed_during_dispatch) {
     if (previous_destroyed_flag)
       *previous_destroyed_flag = true;  // Propagate flag.
     return false;
   }
+
   destroyed_flag_ = previous_destroyed_flag;
 
   if (rv == MOJO_RESULT_SHOULD_WAIT)

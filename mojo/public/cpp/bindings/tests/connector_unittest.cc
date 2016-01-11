@@ -28,9 +28,11 @@ class MessageAccumulator : public MessageReceiver {
 
   bool Accept(Message* message) override {
     queue_.Push(message);
-    if (!closure_.is_null())
-      closure_.Run();
-    closure_.reset();
+    if (!closure_.is_null()) {
+      Closure closure = closure_;
+      closure_.reset();
+      closure.Run();
+    }
     return true;
   }
 
@@ -38,9 +40,7 @@ class MessageAccumulator : public MessageReceiver {
 
   void Pop(Message* message) { queue_.Pop(message); }
 
-  void set_closure(const base::Closure& closure) {
-    closure_ = closure;
-  }
+  void set_closure(const Closure& closure) { closure_ = closure; }
 
   size_t size() const { return queue_.size(); }
 
@@ -524,6 +524,40 @@ TEST_F(ConnectorTest, PauseWithQueuedMessages) {
   // As we paused after the first message we should only have gotten one
   // message.
   ASSERT_EQ(1u, accumulator.size());
+}
+
+TEST_F(ConnectorTest, ProcessWhenNested) {
+  internal::Connector connector0(std::move(handle0_),
+                                 internal::Connector::SINGLE_THREADED_SEND);
+  internal::Connector connector1(std::move(handle1_),
+                                 internal::Connector::SINGLE_THREADED_SEND);
+
+  const char kText[] = "hello world";
+
+  Message message;
+  AllocMessage(kText, &message);
+
+  // Queue up two messages.
+  connector0.Accept(&message);
+  connector0.Accept(&message);
+
+  base::RunLoop run_loop;
+  MessageAccumulator accumulator;
+  // When the accumulator gets the first message it spins a nested message
+  // loop. The loop is quit when another message is received.
+  accumulator.set_closure([&accumulator, &connector1, &run_loop]() {
+    base::RunLoop nested_run_loop;
+    base::MessageLoop::ScopedNestableTaskAllower allow(
+        base::MessageLoop::current());
+    accumulator.set_closure([&nested_run_loop]() { nested_run_loop.Quit(); });
+    nested_run_loop.Run();
+    run_loop.Quit();
+  });
+  connector1.set_incoming_receiver(&accumulator);
+
+  run_loop.Run();
+
+  ASSERT_EQ(2u, accumulator.size());
 }
 
 }  // namespace

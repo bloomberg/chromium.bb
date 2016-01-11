@@ -160,16 +160,14 @@ class MessageReceiverWithResponderStatus : public MessageReceiver {
       MOJO_WARN_UNUSED_RESULT = 0;
 };
 
-// Read a single message from the pipe and dispatch to the given receiver.  The
-// receiver may be null, in which case the message is simply discarded.
-// Returns MOJO_RESULT_SHOULD_WAIT if the caller should wait on the handle to
-// become readable. Returns MOJO_RESULT_OK if a message was dispatched and
-// otherwise returns an error code if something went wrong.
+// Read a single message from the pipe. The caller should have created the
+// Message, but not called Initialize(). Returns MOJO_RESULT_SHOULD_WAIT if
+// the caller should wait on the handle to become readable. Returns
+// MOJO_RESULT_OK if the message was read successfully and should be
+// dispatched, otherwise returns an error code if something went wrong.
 //
 // NOTE: The message hasn't been validated and may be malformed!
-MojoResult ReadAndDispatchMessage(MessagePipeHandle handle,
-                                  MessageReceiver* receiver,
-                                  bool* receiver_result);
+MojoResult ReadMessage(MessagePipeHandle handle, Message* message);
 
 }  // namespace mojo
 

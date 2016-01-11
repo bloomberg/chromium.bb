@@ -46,9 +46,7 @@ void Message::CloseHandles() {
   }
 }
 
-MojoResult ReadAndDispatchMessage(MessagePipeHandle handle,
-                                  MessageReceiver* receiver,
-                                  bool* receiver_result) {
+MojoResult ReadMessage(MessagePipeHandle handle, Message* message) {
   MojoResult rv;
 
   uint32_t num_bytes = 0, num_handles = 0;
@@ -61,24 +59,17 @@ MojoResult ReadAndDispatchMessage(MessagePipeHandle handle,
   if (rv != MOJO_RESULT_RESOURCE_EXHAUSTED)
     return rv;
 
-  Message message;
-  message.Initialize(num_bytes, false /* zero_initialized */);
+  message->Initialize(num_bytes, false /* zero_initialized */);
 
-  void* mutable_data = message.buffer()->Allocate(num_bytes);
-  message.mutable_handles()->resize(num_handles);
+  void* mutable_data = message->buffer()->Allocate(num_bytes);
+  message->mutable_handles()->resize(num_handles);
 
   rv = ReadMessageRaw(
-      handle,
-      mutable_data,
-      &num_bytes,
-      message.mutable_handles()->empty()
+      handle, mutable_data, &num_bytes,
+      message->mutable_handles()->empty()
           ? nullptr
-          : reinterpret_cast<MojoHandle*>(message.mutable_handles()->data()),
-      &num_handles,
-      MOJO_READ_MESSAGE_FLAG_NONE);
-  if (receiver && rv == MOJO_RESULT_OK)
-    *receiver_result = receiver->Accept(&message);
-
+          : reinterpret_cast<MojoHandle*>(message->mutable_handles()->data()),
+      &num_handles, MOJO_READ_MESSAGE_FLAG_NONE);
   return rv;
 }
 
