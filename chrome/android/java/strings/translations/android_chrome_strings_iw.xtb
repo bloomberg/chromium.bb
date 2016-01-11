@@ -18,7 +18,7 @@
 <translation id="1206892813135768548">העתק טקסט קישור</translation>
 <translation id="1240668123557180468">‏תוכל לגלות דפי אינטרנט שנשלחו על ידי אובייקטים בקרבת מקום. Chrome אוסף דפי אינטרנט המשויכים לאובייקטים בסביבה, ושולח אותם בצורה אנונימית לשירות של Google כדי למצוא את הדפים המועילים ביותר עבורך. לאחר מכן הוא מציג אותם.
 
-כדי להשתמש באינטרנט הווירטופיזי, עליך להפעיל את Bluetooth ואת ה'מיקום'.</translation>
+כדי להשתמש באינטרנט הווירטופיזי, עליך להפעיל את Bluetooth ואת שירותי המיקום.</translation>
 <translation id="1258753120186372309">‏דודל של Google‏: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">הפסק</translation>
 <translation id="1285320974508926690">לעולם אל תתרגם אתר זה</translation>
@@ -83,7 +83,7 @@
 <translation id="2100273922101894616">כניסה אוטומטית</translation>
 <translation id="2126426811489709554">‏מבוסס על Chrome</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> נסגר</translation>
-<translation id="2138201775715568214">מחפש דפים של האינטרנט הווירטופיזי לאובייקטים בקרבת מקום</translation>
+<translation id="2138201775715568214">מחפש דפים של האינטרנט הווירטופיזי בקרבת מקום</translation>
 <translation id="2139186145475833000">הוסף למסך דף הבית</translation>
 <translation id="2154710561487035718">העתק כתובת אתר</translation>
 <translation id="219985413780390209">הגן על עצמך ועל המכשיר מפני אתרים מסוכנים</translation>
@@ -102,7 +102,6 @@
 <translation id="2414886740292270097">כהה</translation>
 <translation id="2433507940547922241">מראה</translation>
 <translation id="2440823041667407902">גישה למיקום</translation>
-<translation id="2441637511528789386">‏אתה מחובר כעת ל-Chrome.</translation>
 <translation id="2470327855284432041"><ph name="PAGE_SIZE_STRING" /> הדף נשמר באופן לא מקוון</translation>
 <translation id="2476578072172137802">הגדרות אתר</translation>
 <translation id="2482878487686419369">התראות</translation>
@@ -150,6 +149,7 @@
 <translation id="3137521801621304719">צא ממצב גלישה בסתר</translation>
 <translation id="3190152372525844641">‏הפעל הרשאות בשביל Chrome ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">נתונים מאוחסנים בנפח <ph name="STORAGE_AMOUNT" /></translation>
+<translation id="3207960819495026254">מסומן בסימניה</translation>
 <translation id="3227137524299004712">מיקרופון</translation>
 <translation id="3232754137068452469">אפליקציית אינטרנט</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -210,6 +210,9 @@
 <translation id="4170011742729630528">השירות אינו זמין. נסה שוב מאוחר יותר.</translation>
 <translation id="4195643157523330669">פתח בכרטיסייה חדשה</translation>
 <translation id="423410644998903704">‏Chrome זקוק לגישה אל ההרשאות כדי לשתף אותן עם האתר הזה.</translation>
+<translation id="424696723690217687">‏מצא דפי אינטרנט שנשלחו בידי עצמים שנמצאים בקרבת מקום.
+
+Chrome יסרוק ויחפש דפים בקרבת מקום כשהמכשיר אינו נעול. דפים אלה יעברו דרך שירות Google כדי לשפר את תוצאות איכות הדף.</translation>
 <translation id="4256782883801055595">רישיונות קוד פתוח</translation>
 <translation id="4259722352634471385">הניווט חסום: <ph name="URL" /></translation>
 <translation id="4269820728363426813">העתק כתובת של קישור</translation>
@@ -447,9 +450,10 @@
 <translation id="7029809446516969842">סיסמאות</translation>
 <translation id="7053983685419859001">חסום</translation>
 <translation id="7063006564040364415">לא ניתן היה להתחבר אל שרת הסנכרון.</translation>
-<translation id="7094922512924405309">לא נמצאו דפים של האינטרנט הווירטופיזי לאובייקטים בקרבת מקום</translation>
+<translation id="7094922512924405309">לא נמצאו דפים של האינטרנט הווירטופיזי בקרבת מקום</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> כרטיסיות פתוחות</translation>
 <translation id="7096034533295549981">טוען סרטון</translation>
+<translation id="7180611975245234373">רענן</translation>
 <translation id="7191430249889272776">הכרטיסייה נפתחה ברקע.</translation>
 <translation id="7201341158316793215">מסיר…</translation>
 <translation id="7208788139759694678">‏חוסך הנתונים (Data Saver) מושבת</translation>
@@ -508,7 +512,6 @@
 <translation id="7851858861565204677">מכשירים אחרים</translation>
 <translation id="7876243839304621966">הסר הכל</translation>
 <translation id="7925108652071887026">נתוני מילוי אוטומטי</translation>
-<translation id="7926911226829060241">‏הסימניות הפתוחות, ההיסטוריה, הסיסמאות ונתונים נוספים מסתנכרנים עם חשבון Google שלך.</translation>
 <translation id="7947953824732555851">קבל והיכנס</translation>
 <translation id="7961015016161918242">אף פעם</translation>
 <translation id="7963646190083259054">ספק:</translation>

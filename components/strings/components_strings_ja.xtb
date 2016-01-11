@@ -26,20 +26,26 @@
 <translation id="1146673768181266552">クラッシュ ID <ph name="CRASH_ID" />（<ph name="CRASH_LOCAL_ID" />）</translation>
 <translation id="1150979032973867961">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は、ご使用のパソコンのオペレーティング システムによって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="1152921474424827756"><ph name="URL" /> の<ph name="BEGIN_LINK" />キャッシュ コピー<ph name="END_LINK" />にアクセスします</translation>
+<translation id="1181037720776840403">削除</translation>
 <translation id="1195447618553298278">不明なエラーです。</translation>
+<translation id="1201402288615127009">次へ</translation>
+<translation id="1201895884277373915">このサイトからの他の履歴</translation>
 <translation id="1202290638211552064">ゲートウェイ サーバーまたはプロキシ サーバーが、上流のサーバーからの応答を待つ間にタイムアウトしました。</translation>
 <translation id="121201262018556460"><ph name="DOMAIN" /> にアクセスしようとしましたが、サーバーから提示された証明書には脆弱な暗号鍵が含まれています。悪意のあるユーザーによって秘密鍵が破られた可能性があり、アクセスしようとしたサーバーとは異なるサーバーであるおそれがあります（悪意のあるユーザーと通信している可能性があります）。</translation>
 <translation id="1219129156119358924">システム セキュリティ</translation>
 <translation id="1227224963052638717">不明なポリシー。</translation>
 <translation id="1227633850867390598">値を非表示</translation>
 <translation id="1228893227497259893">エンティティ識別子が正しくありません</translation>
+<translation id="1270699273812232624">アイテムを許可</translation>
 <translation id="1285320974508926690">このサイトは翻訳しない</translation>
 <translation id="1339601241726513588">登録ドメイン:</translation>
 <translation id="1344588688991793829">Chromium の自動入力設定...</translation>
 <translation id="1375198122581997741">バージョン情報</translation>
+<translation id="1407135791313364759">すべて開く</translation>
 <translation id="1413809658975081374">プライバシー エラー</translation>
 <translation id="1426410128494586442">はい</translation>
 <translation id="1430915738399379752">印刷</translation>
+<translation id="1442912890475371290"><ph name="BEGIN_LINK" /><ph name="DOMAIN" /> のページへのアクセス<ph name="END_LINK" />がブロックされました。</translation>
 <translation id="1452265419286795001">パソコンがスリープモードまたは休止モードになったため、ウェブページを読み込むことができませんでした。
       この状態になると、ネットワークから切断され、新たなネットワーク リクエストも
       受け付けられません。問題を解決するには、ページを再読み込みしてください。</translation>
@@ -61,6 +67,7 @@
     サーバーがメンテナンスのために停止しているか、正しく設定されていない可能性があります。</translation>
 <translation id="1640180200866533862">ユーザー ポリシー</translation>
 <translation id="1644184664548287040">ネットワーク設定が無効なためインポートできませんでした。</translation>
+<translation id="1644574205037202324">履歴</translation>
 <translation id="1655462015569774233">{1,plural, =1{このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。セキュリティ証明書の有効期限が昨日付けで切れています。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。パソコンの時計は現在 <ph name="CURRENT_DATE" />に設定されています。この時刻が正しくない場合は、システムの時計を修正した後このページを更新してください。}other{このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。セキュリティ証明書の有効期限が # 日前に切れています。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。パソコンの時計は現在 <ph name="CURRENT_DATE" />に設定されています。この時刻が正しくない場合は、システムの時計を修正した後このページを更新してください。}}</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> では通常、暗号化して情報を保護しています。今回、Google Chrome から <ph name="SITE" /> への接続試行時に、このウェブサイトからいつもとは異なる誤った認証情報が返されました。悪意のあるユーザーが <ph name="SITE" /> になりすまそうとしているか、Wi-Fi ログイン画面で接続が中断された可能性があります。データのやり取りが行われる前に Google Chrome によって接続が停止されたため、情報は引き続き保護されています。</translation>
 <translation id="168841957122794586">サーバー証明書に脆弱な暗号鍵が含まれています。</translation>
@@ -70,11 +77,14 @@
 <translation id="1737968601308870607">バグを報告</translation>
 <translation id="1753706481035618306">ページ番号</translation>
 <translation id="1763864636252898013">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は、ご使用のデバイスのオペレーティング システムによって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
+<translation id="1775135663370355363">このデバイスから履歴を表示しています。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">無効なリクエストまたはリクエスト パラメータです</translation>
 <translation id="1871208020102129563">プロキシは .pac スクリプト URL ではなく固定プロキシ サーバーを使用するように設定されています。</translation>
+<translation id="1883255238294161206">リストを折りたたむ</translation>
 <translation id="1898423065542865115">フィルタ</translation>
 <translation id="194030505837763158"><ph name="LINK" /> に移動します</translation>
+<translation id="1958820272620550857">アイテムをブロック</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> のブックマーク</translation>
 <translation id="1973335181906896915">シリアル化エラーです</translation>
 <translation id="1974060860693918893">詳細設定</translation>
@@ -91,6 +101,7 @@
 <translation id="2114841414352855701"><ph name="POLICY_NAME" /> によって上書きされるため無視されます。</translation>
 <translation id="2128531968068887769">ネイティブ クライアント</translation>
 <translation id="213826338245044447">モバイルのブックマーク</translation>
+<translation id="2148716181193084225">今日</translation>
 <translation id="2153530520610387456">以下の順にアクセスします。
       <ph name="BEGIN_BOLD" />
       [スタート] &gt; [コントロール パネル] &gt; [ネットワークとインターネット] &gt; [ネットワークと共有センター] &gt; [問題のトラブルシューティング]（ウィンドウの下部）&gt; [インターネット接続]
@@ -130,9 +141,10 @@
 <translation id="2479410451996844060">検索 URL が無効です。</translation>
 <translation id="2491120439723279231">サーバーの証明書にエラーがあります。</translation>
 <translation id="2495083838625180221">JSON パーサー</translation>
-<translation id="2495093607237746763">チェックボックスをオンにすると、Chromium がカード情報のコピーをこの端末に保存するためフォームにすばやく入力できるようになります。</translation>
+<translation id="2495093607237746763">チェックボックスをオンにすると、Chromium がカード情報をこの端末に保存するためフォームにすばやく入力できるようになります。</translation>
 <translation id="2498091847651709837">新しいカードをスキャン</translation>
 <translation id="2516305470678292029">代替ユーザーインターフェース</translation>
+<translation id="2552545117464357659">新しい</translation>
 <translation id="2556876185419854533">編集の取り消し（&amp;U）</translation>
 <translation id="2581221116934462656">次回、<ph name="PRODUCT_NAME" /> でこのサイトの<ph name="LANGUAGE_NAME" />ページを翻訳しますか？</translation>
 <translation id="2587841377698384444">Directory API ID:</translation>
@@ -143,9 +155,11 @@
 <translation id="2639739919103226564">ステータス:</translation>
 <translation id="2650446666397867134">ファイルへのアクセスが拒否されました</translation>
 <translation id="2653659639078652383">送信</translation>
+<translation id="2674170444375937751">履歴からこれらのページを削除してもよろしいですか？</translation>
 <translation id="2704283930420550640">値が有効な形式ではありません。</translation>
 <translation id="2721148159707890343">リクエストを正常に送信しました</translation>
 <translation id="2728127805433021124">サーバーの証明書は脆弱な署名アルゴリズムを使用して署名されています。</translation>
+<translation id="2742870351467570537">選択したアイテムを削除</translation>
 <translation id="277499241957683684">デバイス レコードがありません</translation>
 <translation id="2784949926578158345">接続がリセットされました。</translation>
 <translation id="2835170189407361413">フォームをクリア</translation>
@@ -168,7 +182,7 @@
 <translation id="2958431318199492670">ネットワーク設定が ONC 標準に準拠していません。設定の一部がインポートされない可能性があります。</translation>
 <translation id="2969319727213777354">安全な接続を確立するには、時計が正しく設定されている必要があります。これは、ウェブサイトが自身を証明するために使用する証明書には有効期限があるためです。デバイスの時計が正しくないため、Google Chrome でこれらの証明書を確認することができません。</translation>
 <translation id="2972581237482394796">やり直し(&amp;R)</translation>
-<translation id="2985306909656435243">有効にすると、Chromium がカード情報のコピーをこの端末に保存するためフォームにすばやく入力できるようになります。</translation>
+<translation id="2985306909656435243">有効にすると、Chromium がカード情報をこの端末に保存するためフォームにすばやく入力できるようになります。</translation>
 <translation id="2991174974383378012">ウェブサイトとの共有</translation>
 <translation id="3005723025932146533">保存済みのコピーを表示</translation>
 <translation id="3010559122411665027">リスト エントリ「<ph name="ENTRY_INDEX" />」: <ph name="ERROR" /></translation>
@@ -176,6 +190,7 @@
 <translation id="3093245981617870298">現在オフラインです。</translation>
 <translation id="3105172416063519923">アセット ID:</translation>
 <translation id="3118046075435288765">サーバーが途中で接続を切断しました。</translation>
+<translation id="31454997771848827">グループのドメイン</translation>
 <translation id="3145945101586104090">応答をデコードできませんでした</translation>
 <translation id="3147485256806412701">このサイトは新しいジェネリック トップレベル ドメインを使用しています。</translation>
 <translation id="3150653042067488994">一時的なサーバー エラーです</translation>
@@ -185,6 +200,8 @@
       動作しているかどうかを確認してください。プロキシ サーバーを使用していない場合は
       次の方法をお試しください。
       <ph name="PLATFORM_TEXT" /></translation>
+<translation id="3202578601642193415">最新</translation>
+<translation id="3207960819495026254">ブックマークしました</translation>
 <translation id="3219579145727097045">カードの表側に記載されている有効期限と 4 桁の CVC を入力します</translation>
 <translation id="3225579507836276307">サードパーティの拡張機能によってこのウェブページへのアクセスがブロックされました。</translation>
 <translation id="3225919329040284222">サーバーの提示した証明書が、組み込まれている想定の証明書と一致しません。これらの想定の証明書は、ユーザー保護のため、特定の安全性の高いウェブサイトについて用意されています。</translation>
@@ -212,18 +229,22 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">取得間隔:</translation>
 <translation id="3462200631372590220">詳細情報を表示しない</translation>
+<translation id="3516765099410062445">ログインしているデバイスから履歴を表示しています。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="3528171143076753409">サーバーの証明書を信頼できません。</translation>
 <translation id="3539171420378717834">このデバイスにこのカード情報のコピーを保存する</translation>
 <translation id="3542684924769048008">次のパスワードを使用:</translation>
+<translation id="3549761410225185768">他 <ph name="NUM_TABS_MORE" /> 個のタブ...</translation>
 <translation id="3566021033012934673">この接続ではプライバシーが保護されません</translation>
 <translation id="3583757800736429874">移動のやり直し（&amp;R）</translation>
 <translation id="3586931643579894722">詳細を非表示</translation>
+<translation id="3587482841069643663">すべて</translation>
 <translation id="3608308818141211642">クライアントとサーバーで、共通の SSL プロトコル バージョンまたは暗号化スイートがサポートされていません。原因として、サーバーで RC4 が要求されている可能性があります。RC4 は安全とみなされなくなりました。</translation>
 <translation id="3623476034248543066">値を表示</translation>
 <translation id="3648607100222897006">この試験運用機能は、随時変更、中断、提供中止されることがあります。これらの機能のいずれかを有効にした場合に生じる結果について、Google は一切保証しません。ブラウザによってすべてのデータが削除されたり、予期せぬ方法でセキュリティやプライバシーが侵害されたりする可能性があります。有効にした試験運用機能は同じブラウザを使用する全ユーザーに対して有効になります。続行する場合は十分ご注意ください。</translation>
 <translation id="3650584904733503804">検証が正常に完了しました</translation>
 <translation id="3651020361689274926">リクエストされたリソースが存在せず、転送アドレスは指定されていません。これは永続的な状態であると思われます。</translation>
 <translation id="3658742229777143148">変更履歴</translation>
+<translation id="3704609568417268905"><ph name="TIME" />、<ph name="TITLE" />（<ph name="DOMAIN" />）を<ph name="BOOKMARKED" /></translation>
 <translation id="370665806235115550">読み込み中...</translation>
 <translation id="3712624925041724820">ライセンスを使い切りました</translation>
 <translation id="3739623965217189342">コピーしたリンク</translation>
@@ -266,6 +287,7 @@
 <translation id="4258748452823770588">署名が不適切です</translation>
 <translation id="4268298190799576220">現在、Chromium でカードを確認できません。しばらくしてからもう一度お試しください。</translation>
 <translation id="4269787794583293679">（ユーザー名なし）</translation>
+<translation id="4278390842282768270">許可</translation>
 <translation id="4287689875748136217">サーバーからデータが送信されないためウェブページを読み込むことができません。</translation>
 <translation id="4300246636397505754">保護者からのおすすめ</translation>
 <translation id="4325863107915753736">記事が見つかりませんでした</translation>
@@ -273,9 +295,12 @@
 <translation id="4372948949327679948"><ph name="VALUE_TYPE" /> 値が想定されます。</translation>
 <translation id="4377125064752653719"><ph name="DOMAIN" /> にアクセスしようとしましたが、サーバーから提示された証明書は発行元により取り消されています。これは、サーバーから提示されたセキュリティ認証情報が信頼できないことを示しており、悪意のあるユーザーと通信しようとしている可能性があります。</translation>
 <translation id="4394049700291259645">無効にする</translation>
+<translation id="4395129973926795186"><ph name="START_DATE" />～<ph name="END_DATE" /></translation>
 <translation id="4405141258442788789">処理がタイムアウトしました。</translation>
+<translation id="4406896451731180161">検索結果</translation>
 <translation id="4424024547088906515">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は Chrome によって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="443673843213245140">プロキシの使用は無効ですが、プロキシの設定が明示的に指定されています。</translation>
+<translation id="4492190037599258964">「<ph name="SEARCH_STRING" />」の検索結果</translation>
 <translation id="4506176782989081258">検証エラー: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="450710068430902550">管理者との共有</translation>
 <translation id="4522570452068850558">詳細</translation>
@@ -309,11 +334,14 @@
 <translation id="4874648484377130814">このサイトは<ph name="BEGIN_LINK" />新しいジェネリック トップレベル ドメイン<ph name="END_LINK" />（gTLD）を使用しています。
     これまで <ph name="HOST_NAME" /> を使用して内部サイトにアクセスしていた場合は、
     ネットワーク管理者にお問い合わせください。</translation>
+<translation id="4880827082731008257">履歴を検索</translation>
 <translation id="49215695600353191">サーバーからの応答に重複したヘッダーが含まれていました。通常、この問題は
     ウェブサイトまたはプロキシの設定の誤りが原因です。この問題を修正できるのは、
     ウェブサイトまたはプロキシの管理者のみです。</translation>
 <translation id="4923417429809017348">このページは、不明な言語から<ph name="LANGUAGE_LANGUAGE" />に翻訳されました。</translation>
 <translation id="4926049483395192435">指定する必要があります。</translation>
+<translation id="495170559598752135">操作</translation>
+<translation id="4958444002117714549">リストを展開する</translation>
 <translation id="4980112683975062744">サーバーから重複したヘッダーを受信しました</translation>
 <translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE" />から<ph name="TARGET_LANGUAGE" />に翻訳しますか？</translation>
 <translation id="5002932099480077015">有効にすると、Chrome ではこの端末にカードのコピーが保存されます。これにより、フォームにすばやく入力できるようになります。</translation>
@@ -329,6 +357,7 @@
 <translation id="5109770625702925626"><ph name="HOST_NAME" /> を参照できませんでした。
     問題を診断してみてください...</translation>
 <translation id="5115563688576182185">（64 ビット）</translation>
+<translation id="5122371513570456792">「<ph name="SEARCH_STRING" />」に対し <ph name="NUMBER_OF_RESULTS" /> 件の<ph name="SEARCH_RESULTS" />が見つかりました。</translation>
 <translation id="5145883236150621069">ポリシー応答内にエラー コードがあります</translation>
 <translation id="5153978682603373396">プロキシ サーバーは、お使いの端末と他のサーバーの間を仲介するサーバーです。
       現在、お使いのシステムはプロキシを使用するように設定されていますが、
@@ -344,11 +373,14 @@
       受け付けられません。問題を解決するには、ページを再読み込みしてください。</translation>
 <translation id="5295309862264981122">ナビゲーションの確認</translation>
 <translation id="5299298092464848405">ポリシーの解析中にエラーが発生しました</translation>
+<translation id="5300589172476337783">表示</translation>
 <translation id="5303618139271450299">このウェブページは見つかりません</translation>
 <translation id="5308689395849655368">障害レポートが無効になっています。</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="536296301121032821">ポリシー設定を保存できませんでした</translation>
 <translation id="540969355065856584">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は現在有効ではありません。設定が不適切か、悪意のあるユーザーによって接続が妨害されている可能性があります。</translation>
+<translation id="5421136146218899937">閲覧履歴データの消去...</translation>
+<translation id="5430298929874300616">ブックマークを削除</translation>
 <translation id="5439770059721715174">「<ph name="ERROR_PATH" />」でスキーマ確認エラー: <ph name="ERROR" /></translation>
 <translation id="5447330194051379405">すべての保存ページを表示</translation>
 <translation id="5455374756549232013">ポリシーのタイムスタンプが不適切です</translation>
@@ -364,6 +396,8 @@
 <translation id="560412284261940334">管理はサポートされていません</translation>
 <translation id="5629630648637658800">ポリシー設定を読み込めませんでした</translation>
 <translation id="5631439013527180824">無効なデバイス管理トークンです</translation>
+<translation id="5650551054760837876">一致する情報はありません。</translation>
+<translation id="5677928146339483299">ブロック</translation>
 <translation id="5680545064257783621">拡張ブックマーク試験運用機能をオフにします</translation>
 <translation id="5720705177508910913">現在のユーザー</translation>
 <translation id="5813119285467412249">追加のやり直し（&amp;R）</translation>
@@ -373,6 +407,8 @@
 <translation id="59107663811261420">この販売者に対し、この種類のカードは Google ペイメントでご利用いただけません。別のカードを選択してください。</translation>
 <translation id="59174027418879706">有効</translation>
 <translation id="5949910269212525572">サーバーの DNS アドレスを解決できません。</translation>
+<translation id="5966707198760109579">週</translation>
+<translation id="5967867314010545767">履歴から削除</translation>
 <translation id="5975083100439434680">縮小する</translation>
 <translation id="5989320800837274978">固定プロキシ サーバーと .pac スクリプト URL のどちらも指定されていません。</translation>
 <translation id="5990559369517809815">サーバーへのリクエストは拡張機能によってブロックされています。</translation>
@@ -439,12 +475,14 @@
 <translation id="6644283850729428850">このポリシーは廃止されました。</translation>
 <translation id="6646897916597483132">カードの表側に記載されている 4 桁の CVC を入力します</translation>
 <translation id="6671697161687535275">Chromium から候補を削除してもよろしいですか？</translation>
+<translation id="6710213216561001401">前へ</translation>
 <translation id="674375294223700098">不明なサーバー証明書エラー</translation>
 <translation id="6746710319270251222">複数の異なる Content-Length ヘッダーを受信しました。これは、HTTP レスポンス
     分割攻撃を防ぐために禁止されています。</translation>
 <translation id="6753269504797312559">ポリシーの値</translation>
 <translation id="6771079623344431310">プロキシ サーバーに接続できません</translation>
 <translation id="6781404225664080496">この URL へのリクエストは一時的に制限されています。</translation>
+<translation id="6800914069727136216">コンテンツ パック内</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">ウェブページ（<ph name="URL" />）は現在表示できません。アクセスが集中しているか、メンテナンスのために停止している可能性があります。</translation>
 <translation id="6831043979455480757">翻訳</translation>
@@ -468,6 +506,7 @@
 <translation id="7050187094878475250"><ph name="DOMAIN" /> にアクセスしようとしましたが、サーバーに提示された証明書の有効期限が長すぎて信頼性を確認できませんでした。</translation>
 <translation id="7052500709156631672">ゲートウェイまたはプロキシ サーバーが、上流のサーバーから無効な応答を受信しました。</translation>
 <translation id="7087282848513945231">郡</translation>
+<translation id="7088615885725309056">古い</translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE" />に翻訳できませんでした。</translation>
 <translation id="7117303293717852287">このウェブページを再読み込みしてください</translation>
 <translation id="7117941875056403396"><ph name="PRODUCT_NAME" /> が <ph name="HOST_NAME" /> に接続しようとしましたが、拒否されました。
@@ -496,8 +535,13 @@
     <ph name="LINE_BREAK" />
     この問題が引き続き発生する場合は、キャッシュの消去をお試しください。</translation>
 <translation id="7353601530677266744">コマンドライン</translation>
+<translation id="7372973238305370288">検索結果</translation>
+<translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">いいえ</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7394102162464064926">履歴からこれらのページを削除してもよろしいですか？
+
+次回からシークレット モード（<ph name="SHORTCUT_KEY" />）をおすすめします。</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">プロフィール パス</translation>
 <translation id="7424977062513257142">このウェブページに埋め込まれているページの内容:</translation>
@@ -525,10 +569,13 @@
 <translation id="7637571805876720304">Chromium からクレジット カードを削除してもよろしいですか？</translation>
 <translation id="7643817847124207232">インターネットに接続できません。</translation>
 <translation id="765676359832457558">詳細設定を表示しない...</translation>
+<translation id="7658239707568436148">キャンセル</translation>
+<translation id="7668654391829183341">不明なデバイス</translation>
 <translation id="7674629440242451245">Chrome の新しい機能に関心をお持ちでしたら、chrome.com/dev から Dev チャンネルをお試しください。</translation>
 <translation id="7689727675296818638"><ph name="HOST_NAME" /> への接続はネットワーク接続の変更によって
     中断されました。</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /><ph name="SITE" /> にアクセスする（安全ではありません）<ph name="END_LINK" /></translation>
+<translation id="7733391738235763478">（<ph name="NUMBER_VISITS" />）</translation>
 <translation id="7752995774971033316">管理されていません</translation>
 <translation id="7760914272566804712">次の手順で問題を診断できます。
       <ph name="LINE_BREAK" />
@@ -554,6 +601,7 @@
 <translation id="7995512525968007366">指定なし</translation>
 <translation id="8016174103774548813">SSL サーバーが古い可能性があります。</translation>
 <translation id="8034522405403831421">このページの言語は<ph name="SOURCE_LANGUAGE" />です。<ph name="TARGET_LANGUAGE" />に翻訳しますか？</translation>
+<translation id="8034955203865359138">履歴エントリが見つかりません。</translation>
 <translation id="8088680233425245692">記事を表示できませんでした。</translation>
 <translation id="8091372947890762290">サーバーで有効化が保留になっています</translation>
 <translation id="8150722005171944719"><ph name="URL" /> のファイルを読むことができません。削除されたか移動された可能性があります。ファイルに対するアクセス権がない場合もあります。</translation>
@@ -595,6 +643,7 @@
 <translation id="8713130696108419660">無効なイニシャル署名です</translation>
 <translation id="8725066075913043281">やり直し</translation>
 <translation id="8729518820755801792">URL が開けません。</translation>
+<translation id="8730621377337864115">完了</translation>
 <translation id="8738058698779197622">安全な接続を確立するには時計が正しく設定されている必要があります。この理由は、本物のウェブサイトであることを示すためにウェブサイトで使用される証明書には、有効期間（発効日時と失効日時）が設定されているためです。デバイスの時計が正しくないため、Chromium ではこれらの証明書を確認できません。</translation>
 <translation id="8776174617851537652"><ph name="URL" /> のウェブページはリダイレクトの回数が多すぎます。
       このサイトの Cookie を削除するか、サードパーティの Cookie を許可すると
@@ -618,7 +667,9 @@
 <translation id="8903921497873541725">拡大する</translation>
 <translation id="8932102934695377596">時計が遅れています</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME" /> コマンドを実行: <ph name="SEARCH_TERMS" /></translation>
+<translation id="8954894007019320973">（続き）</translation>
 <translation id="8971063699422889582">サーバーの証明書の有効期限が切れています。</translation>
+<translation id="8987927404178983737">月</translation>
 <translation id="8988760548304185580">カードの裏面に記載されている有効期限と 3 桁の CVC を入力します</translation>
 <translation id="9013589315497579992">SSL クライアント認証証明書が不正です。</translation>
 <translation id="901974403500617787">システム全体に適用されるフラグは所有者（<ph name="OWNER_EMAIL" />）のみが設定できます。</translation>

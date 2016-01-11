@@ -6,7 +6,7 @@
 <translation id="1021311941847921177">Комбінація клавіш для вибору наступного методу введення змінилася. Тепер це <ph name="NEW_SHORTCUT" />, а не <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Автоматично ховати полицю</translation>
 <translation id="1195412055398077112">облямівка екрана</translation>
-<translation id="1252999807265626933">Заряджається від <ph name="POWER_SOURCE" /></translation>
+<translation id="1252999807265626933">Джерело заряджання: <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Екранну клавіатуру вимкнено</translation>
 <translation id="1272079795634619415">Зупинити</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -80,7 +80,7 @@
 <translation id="3147142846278915599">Панель запуску (синхронізація додатків…)</translation>
 <translation id="3157169093162779309">Заблокувати обертання</translation>
 <translation id="3294437725009624529">Гість</translation>
-<translation id="3371140690572404006">Пристрій, під’єднаний до порту USB-C (праворуч на передній панелі)</translation>
+<translation id="3371140690572404006">пристрій, під’єднаний до порту USB-C (праворуч на передній панелі)</translation>
 <translation id="3445925074670675829">Пристрій із портом USB типу C</translation>
 <translation id="3473479545200714844">Лупа</translation>
 <translation id="3573179567135747900">Повернутися до мови "<ph name="FROM_LOCALE" />" (потрібно перезавантажитися)</translation>
@@ -107,7 +107,7 @@
 <translation id="3963445509666917109">Динамік (внутрішній)</translation>
 <translation id="3967919079500697218">Можливість робити знімки екрана вимкнено адміністратором.</translation>
 <translation id="397105322502079400">Обчислення...</translation>
-<translation id="3995138139523574647">Пристрій, під’єднаний до порту USB-C (праворуч на задній панелі)</translation>
+<translation id="3995138139523574647">пристрій, під’єднаний до порту USB-C (праворуч на задній панелі)</translation>
 <translation id="4053612967614057854">Вимкнути екранну клавіатуру</translation>
 <translation id="412065659894267608"><ph name="HOUR" /> год. <ph name="MINUTE" /> хв. до повного зарядження</translation>
 <translation id="4250680216510889253">ні</translation>

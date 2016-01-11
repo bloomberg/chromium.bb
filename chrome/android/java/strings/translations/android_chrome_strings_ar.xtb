@@ -102,7 +102,6 @@
 <translation id="2414886740292270097">داكن</translation>
 <translation id="2433507940547922241">المظهر</translation>
 <translation id="2440823041667407902">الدخول إلى الموقع</translation>
-<translation id="2441637511528789386">‏تم تسجيل دخولك الآن إلى Chrome</translation>
 <translation id="2470327855284432041">تم حفظ صفحة <ph name="PAGE_SIZE_STRING" /> بلا اتصال</translation>
 <translation id="2476578072172137802">إعدادات الموقع</translation>
 <translation id="2482878487686419369">الاشعارات</translation>
@@ -150,6 +149,7 @@
 <translation id="3137521801621304719">مغادرة وضع التصفح المتخفي</translation>
 <translation id="3190152372525844641">‏تشغيل الأذونات لـ Chrome في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> من البيانات المخزنة</translation>
+<translation id="3207960819495026254">محدد بعلامة متابعة القراءة</translation>
 <translation id="3227137524299004712">الميكروفون</translation>
 <translation id="3232754137068452469">تطبيق الويب</translation>
 <translation id="3244271242291266297">الشهر</translation>
@@ -208,6 +208,9 @@
 <translation id="4170011742729630528">الخدمة غير متاحة، أعد المحاولة لاحقًا.</translation>
 <translation id="4195643157523330669">فتح الإشارة في علامة تبويب جديدة</translation>
 <translation id="423410644998903704">‏يحتاج Chrome إلى الحصول على حق الوصول إلى الأذونات لمشاركتها مع موقع الويب هذا.</translation>
+<translation id="424696723690217687">‏اكتشف صفحات الويب التي تم إرسالها عن طريق الأجهزة المجاورة.
+
+سيبحث Chrome عن صفحات الأجهزة المجاورة عند إلغاء قفل جهازك. وستمر هذه الصفحات عبر خدمة Google لتحسين جودة نتائج الصفحات.</translation>
 <translation id="4256782883801055595">تراخيص البرامج مفتوحة المصدر</translation>
 <translation id="4259722352634471385">التنقل محظور: <ph name="URL" /></translation>
 <translation id="4269820728363426813">نسخ عنوان الرابط</translation>
@@ -448,6 +451,7 @@
 <translation id="7094922512924405309">لم يتم العثور على صفحات الشبكة المادية المجاورة</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> من علامات التبويب المفتوحة</translation>
 <translation id="7096034533295549981">تحميل الفيديو</translation>
+<translation id="7180611975245234373">تحديث</translation>
 <translation id="7191430249889272776">تم فتح علامة التبويب في الخلفية.</translation>
 <translation id="7201341158316793215">جارٍ الإزالة…</translation>
 <translation id="7208788139759694678">تعطيل توفير البيانات</translation>
@@ -506,7 +510,6 @@
 <translation id="7851858861565204677">أجهزة أخرى</translation>
 <translation id="7876243839304621966">إزالة الكل</translation>
 <translation id="7925108652071887026">ملء البيانات تلقائيًا</translation>
-<translation id="7926911226829060241">‏تتم مزامنة الإشارات المرجعية المفتوحة والسجل وكلمات المرور وغير ذلك الكثير مع حسابك في Google.</translation>
 <translation id="7947953824732555851">قبول وتسجيل الدخول</translation>
 <translation id="7961015016161918242">مطلقًا</translation>
 <translation id="7963646190083259054">المورّد:</translation>

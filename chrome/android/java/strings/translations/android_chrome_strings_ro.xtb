@@ -102,7 +102,6 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="2414886740292270097">Întunecat</translation>
 <translation id="2433507940547922241">Aspect</translation>
 <translation id="2440823041667407902">Accesul la locație</translation>
-<translation id="2441637511528789386">Te-ai conectat la Chrome.</translation>
 <translation id="2470327855284432041">O pagină cu dimensiunea de <ph name="PAGE_SIZE_STRING" /> a fost salvată offline</translation>
 <translation id="2476578072172137802">Setări site</translation>
 <translation id="2482878487686419369">Notificări</translation>
@@ -150,6 +149,7 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="3137521801621304719">Ieși din modul incognito</translation>
 <translation id="3190152372525844641">Activează permisiunile pentru Chrome din <ph name="BEGIN_LINK" />Setări Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">Date stocate: <ph name="STORAGE_AMOUNT" /></translation>
+<translation id="3207960819495026254">Marcată</translation>
 <translation id="3227137524299004712">Microfonul</translation>
 <translation id="3232754137068452469">Aplicație web</translation>
 <translation id="3244271242291266297">LL</translation>
@@ -210,6 +210,9 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="4170011742729630528">Serviciul nu este disponibil. Încercați din nou mai târziu.</translation>
 <translation id="4195643157523330669">Deschide în filă nouă</translation>
 <translation id="423410644998903704">Chrome are nevoie de acces la permisiuni pentru a-l acorda acestui site.</translation>
+<translation id="424696723690217687">Descoperă paginile web trimise de obiectele din apropiere.
+
+Chrome va căuta pagini din apropiere când dispozitivul este deblocat. Aceste pagini vor fi procesate de un serviciu Google pentru a îmbunătăți calitatea rezultatelor cu pagini.</translation>
 <translation id="4256782883801055595">Licențe open source</translation>
 <translation id="4259722352634471385">Navigarea este blocată: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Copiați adresa linkului</translation>
@@ -450,6 +453,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7094922512924405309">Nu au fost găsite pagini din Webul material în apropiere</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> (de) file deschise</translation>
 <translation id="7096034533295549981">Se încarcă video</translation>
+<translation id="7180611975245234373">Actualizați</translation>
 <translation id="7191430249889272776">A fost deschisă o filă în fundal.</translation>
 <translation id="7201341158316793215">Se elimină...</translation>
 <translation id="7208788139759694678">Economizorul de date este dezactivat</translation>
@@ -508,7 +512,6 @@ Cu toate acestea, nu ești invizibil(ă). Trecerea în modul incognito nu ascund
 <translation id="7851858861565204677">Alte dispozitive</translation>
 <translation id="7876243839304621966">Elimină tot</translation>
 <translation id="7925108652071887026">Datele de completare automată</translation>
-<translation id="7926911226829060241">Marcajele deschise, istoricul, parolele și altele vor fi sincronizate cu Contul Google.</translation>
 <translation id="7947953824732555851">Accept și conectare</translation>
 <translation id="7961015016161918242">Niciodată</translation>
 <translation id="7963646190083259054">Producător:</translation>

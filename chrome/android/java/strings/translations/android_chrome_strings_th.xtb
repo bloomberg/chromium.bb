@@ -102,7 +102,6 @@
 <translation id="2414886740292270097">มืด</translation>
 <translation id="2433507940547922241">ลักษณะที่ปรากฏ</translation>
 <translation id="2440823041667407902">การเข้าถึงตำแหน่ง</translation>
-<translation id="2441637511528789386">คุณลงชื่อเข้าใช้ Chrome แล้ว</translation>
 <translation id="2470327855284432041">บันทึกหน้าขนาด <ph name="PAGE_SIZE_STRING" /> แบบออฟไลน์แล้ว</translation>
 <translation id="2476578072172137802">การตั้งค่าไซต์</translation>
 <translation id="2482878487686419369">การแจ้งเตือน</translation>
@@ -150,6 +149,7 @@
 <translation id="3137521801621304719">ออกจากโหมดไม่ระบุตัวตน</translation>
 <translation id="3190152372525844641">เปิดการใช้สิทธิ์สำหรับ Chrome ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="3198916472715691905">ข้อมูลที่จัดเก็บมี <ph name="STORAGE_AMOUNT" /></translation>
+<translation id="3207960819495026254">บุ๊กมาร์กแล้ว</translation>
 <translation id="3227137524299004712">ไมโครโฟน</translation>
 <translation id="3232754137068452469">เว็บแอป</translation>
 <translation id="3244271242291266297">ดด</translation>
@@ -210,6 +210,9 @@
 <translation id="4170011742729630528">บริการนี้ยังไม่สามารถใช้ได้ โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="4195643157523330669">เปิดในแท็บใหม่</translation>
 <translation id="423410644998903704">Chrome ต้องการเข้าถึงสิทธิ์เพื่อแชร์กับเว็บไซต์นี้</translation>
+<translation id="424696723690217687">ค้นหาหน้าเว็บที่ส่งมาจากออบเจ็กต์ใกล้เคียง
+
+Chrome จะสแกนหาหน้าที่อยู่ใกล้เคียงเมื่ออุปกรณ์ของคุณไม่ได้ล็อก โดยจะส่งหน้าเหล่านี้ผ่านบริการของ Google เพื่อปรับปรุงคุณภาพผลการค้นหาหน้า</translation>
 <translation id="4256782883801055595">ใบอนุญาตโอเพนซอร์ส</translation>
 <translation id="4259722352634471385">มีการบล็อกการนำทาง: <ph name="URL" /></translation>
 <translation id="4269820728363426813">คัดลอกที่อยู่ลิงก์</translation>
@@ -450,6 +453,7 @@
 <translation id="7094922512924405309">ไม่พบหน้า Physical Web ที่อยู่ใกล้เคียง</translation>
 <translation id="7095930899177687653">แท็บที่เปิด <ph name="OPEN_TABS" /> แท็บ</translation>
 <translation id="7096034533295549981">กำลังโหลดวิดีโอ</translation>
+<translation id="7180611975245234373">รีเฟรช</translation>
 <translation id="7191430249889272776">แท็บเปิดในพื้นหลัง</translation>
 <translation id="7201341158316793215">กำลังนำออก…</translation>
 <translation id="7208788139759694678">ปิดใช้โปรแกรมประหยัดอินเทอร์เน็ต</translation>
@@ -508,7 +512,6 @@
 <translation id="7851858861565204677">อุปกรณ์อื่นๆ</translation>
 <translation id="7876243839304621966">ลบทั้งหมด</translation>
 <translation id="7925108652071887026">ป้อนข้อมูลอัตโนมัติ</translation>
-<translation id="7926911226829060241">กำลังซิงค์บุ๊กมาร์กที่เปิด ประวัติการเข้าชม รหัสผ่าน และอื่นๆ กับบัญชี Google</translation>
 <translation id="7947953824732555851">ยอมรับและลงชื่อเข้าใช้</translation>
 <translation id="7961015016161918242">ไม่เคย</translation>
 <translation id="7963646190083259054">ผู้ขาย:</translation>

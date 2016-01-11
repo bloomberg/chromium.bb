@@ -102,7 +102,6 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="2414886740292270097">Ciemny</translation>
 <translation id="2433507940547922241">Wygląd</translation>
 <translation id="2440823041667407902">Dostęp do lokalizacji</translation>
-<translation id="2441637511528789386">Jesteś teraz zalogowany w Chrome.</translation>
 <translation id="2470327855284432041">Strona <ph name="PAGE_SIZE_STRING" /> została zapisana offline</translation>
 <translation id="2476578072172137802">Ustawienia witryny</translation>
 <translation id="2482878487686419369">Powiadomienia</translation>
@@ -150,6 +149,7 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="3137521801621304719">Wyłącz tryb incognito</translation>
 <translation id="3190152372525844641">Przyznaj Chrome uprawnienia w <ph name="BEGIN_LINK" />ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> zapisanych danych</translation>
+<translation id="3207960819495026254">Dodano do zakładek</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Aplikacja internetowa</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -210,6 +210,9 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4170011742729630528">Usługa jest niedostępna. Spróbuj ponownie później.</translation>
 <translation id="4195643157523330669">Otwórz w nowej karcie</translation>
 <translation id="423410644998903704">Aby zezwolić stronie na wykorzystanie uprawnień, Chrome musi je mieć.</translation>
+<translation id="424696723690217687">Poznawaj strony internetowe z pobliskich obiektów.
+
+Gdy Twoje urządzenie jest odblokowane, Chrome wyszukuje strony wysyłane przez obiekty w pobliżu. Następnie strony te trafiają do usługi Google, która zwiększa trafność wyników.</translation>
 <translation id="4256782883801055595">Licencje open source</translation>
 <translation id="4259722352634471385">Adres zablokowany: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopiuj adres linku</translation>
@@ -450,6 +453,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7094922512924405309">Nie znaleziono stron internetu rzeczy w pobliżu</translation>
 <translation id="7095930899177687653">Otwarte karty: <ph name="OPEN_TABS" /></translation>
 <translation id="7096034533295549981">Wczytuję film</translation>
+<translation id="7180611975245234373">Odśwież</translation>
 <translation id="7191430249889272776">Karta otwarta w tle.</translation>
 <translation id="7201341158316793215">Usuwam…</translation>
 <translation id="7208788139759694678">Oszczędzanie danych wyłączone</translation>
@@ -508,7 +512,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="7851858861565204677">Inne urządzenia</translation>
 <translation id="7876243839304621966">Usuń wszystkie</translation>
 <translation id="7925108652071887026">Dane autouzupełniania</translation>
-<translation id="7926911226829060241">Z Twoim kontem Google są teraz synchronizowane otwarte zakładki, historia, hasła i inne ustawienia.</translation>
 <translation id="7947953824732555851">Zaakceptuj i zaloguj się</translation>
 <translation id="7961015016161918242">Nigdy</translation>
 <translation id="7963646190083259054">Dostawca:</translation>

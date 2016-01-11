@@ -102,7 +102,6 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="2414886740292270097">Mørk</translation>
 <translation id="2433507940547922241">Udseende</translation>
 <translation id="2440823041667407902">Placeringsadgang</translation>
-<translation id="2441637511528789386">Du er nu logget ind på Chrome.</translation>
 <translation id="2470327855284432041">Side på <ph name="PAGE_SIZE_STRING" /> blev gemt offline</translation>
 <translation id="2476578072172137802">Indstillinger for websitet</translation>
 <translation id="2482878487686419369">Underretninger</translation>
@@ -150,6 +149,7 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="3137521801621304719">Slå inkognitotilstand fra</translation>
 <translation id="3190152372525844641">Aktivér tilladelse for Chrome i <ph name="BEGIN_LINK" />Indstillinger for Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> gemte data</translation>
+<translation id="3207960819495026254">Bogmærket</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Webapp</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -210,6 +210,9 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4170011742729630528">Tjenesten er ikke tilgængelig. Prøv igen senere.</translation>
 <translation id="4195643157523330669">Åbn på ny fane</translation>
 <translation id="423410644998903704">Chrome skal have adgangstilladelse for at kunne dele dem med dette website.</translation>
+<translation id="424696723690217687">Find websider, der udsendes af genstande i nærheden.
+
+Chrome scanner efter siderr i nærheden, når din enhed er låst op. Disse sider går gennem en Google-tjeneste for at forbedre kvaliteten af sideresultaterne.</translation>
 <translation id="4256782883801055595">Open source-licenser</translation>
 <translation id="4259722352634471385">Navigationen er blokeret: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopiér linkadresse</translation>
@@ -450,6 +453,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7094922512924405309">Der blev ikke fundet nogen Fysisk web-sider i nærheden</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> åbne faner</translation>
 <translation id="7096034533295549981">Videoen indlæses</translation>
+<translation id="7180611975245234373">Opdater</translation>
 <translation id="7191430249889272776">Fanen blev åbnet i baggrunden.</translation>
 <translation id="7201341158316793215">Fjerner…</translation>
 <translation id="7208788139759694678">Datasparefunktionen er deaktiveret</translation>
@@ -508,7 +512,6 @@ Husk, at du ikke er usynlig. Inkognitotilstanden skjuler ikke dine søgninger fo
 <translation id="7851858861565204677">Andre enheder</translation>
 <translation id="7876243839304621966">Fjern alt</translation>
 <translation id="7925108652071887026">AutoFyld-data</translation>
-<translation id="7926911226829060241">Åbne bogmærker, historik, adgangskoder m.m. er ved at blive synkroniseret med din Google-konto.</translation>
 <translation id="7947953824732555851">Acceptér og log ind</translation>
 <translation id="7961015016161918242">Aldrig</translation>
 <translation id="7963646190083259054">Leverandør:</translation>

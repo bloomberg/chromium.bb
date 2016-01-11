@@ -102,7 +102,6 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="2414886740292270097">Sötét</translation>
 <translation id="2433507940547922241">Megjelenés</translation>
 <translation id="2440823041667407902">Helyhozzáférés</translation>
-<translation id="2441637511528789386">Most már bejelentkezett a Chrome-ba.</translation>
 <translation id="2470327855284432041"><ph name="PAGE_SIZE_STRING" /> méretű oldal van mentve az offline megtekintéshez</translation>
 <translation id="2476578072172137802">Webhelybeállítások</translation>
 <translation id="2482878487686419369">Értesítések</translation>
@@ -150,6 +149,7 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="3137521801621304719">Kilépés inkognitómódból</translation>
 <translation id="3190152372525844641">A Chrome-ra vonatkozó engedélyek aktiválása az <ph name="BEGIN_LINK" />Android beállításaiban<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> tárolt adat</translation>
+<translation id="3207960819495026254">Könyvjelzőzött</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Internetes alkalmazás</translation>
 <translation id="3244271242291266297">HH</translation>
@@ -210,6 +210,9 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="4170011742729630528">A szolgáltatás nem érhető el, próbálja újra később.</translation>
 <translation id="4195643157523330669">Megnyitás új lapon</translation>
 <translation id="423410644998903704">A Chrome-nak rendelkeznie kell hozzáférési engedélyekkel, hogy megoszthassa őket ezzel a webhellyel.</translation>
+<translation id="424696723690217687">Felfedezheti a közeli objektumok által küldött weboldalakat.
+
+A Chrome megkeresi a közeli oldalakat, ha az eszköz lezárása fel van oldva. Ezek az oldalak egy Google-szolgáltatáson keresztül érkeznek, hogy javuljon a találatok minősége.</translation>
 <translation id="4256782883801055595">Nyílt forráskódú licencek</translation>
 <translation id="4259722352634471385">Le van tiltva az ide vezető navigáció: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Link másolása</translation>
@@ -450,6 +453,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7094922512924405309">A Fizikai web nem talált oldalakat a közelben</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> megnyitott lap</translation>
 <translation id="7096034533295549981">Videó betöltése</translation>
+<translation id="7180611975245234373">Frissítés</translation>
 <translation id="7191430249889272776">A lap megnyílt a háttérben.</translation>
 <translation id="7201341158316793215">Eltávolítás…</translation>
 <translation id="7208788139759694678">Az Adatforgalom-csökkentő ki van kapcsolva</translation>
@@ -508,7 +512,6 @@ Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem 
 <translation id="7851858861565204677">Egyéb eszközök</translation>
 <translation id="7876243839304621966">Összes eltávolítása</translation>
 <translation id="7925108652071887026">Automatikus kitöltés adatai</translation>
-<translation id="7926911226829060241">Folyamatban van a könyvjelzők, az előzmények és egyebek szinkronizálása a Google-fiókjával.</translation>
 <translation id="7947953824732555851">Elfogadás és bejelentkezés</translation>
 <translation id="7961015016161918242">Soha</translation>
 <translation id="7963646190083259054">Szolgáltató:</translation>

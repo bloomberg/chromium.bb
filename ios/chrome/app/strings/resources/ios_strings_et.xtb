@@ -21,8 +21,10 @@
 <translation id="385051799172605136">Tagasi</translation>
 <translation id="4098354747657067197">Avatav sait on petturlik</translation>
 <translation id="4121993058175073134">Netiekspordi andmete saatmiseks seadistage meilikonto rakenduses Seaded.</translation>
+<translation id="4399225372525667111">Chrome ei suuda kinnitada, et selle saidi URL on õige.</translation>
 <translation id="4522570452068850558">Üksikasjad</translation>
 <translation id="4728558894243024398">Platvorm</translation>
+<translation id="473775607612524610">Värskenda</translation>
 <translation id="5317780077021120954">Salvesta</translation>
 <translation id="5337705430875057403">Ründajad saidil <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> võivad teid meelitada ohtlikele tegevustele, nagu tarkvara installimine või isiklike andmete avaldamine (nt paroolid, telefoninumbrid või krediitkaardid).</translation>
 <translation id="5779929835642192302">Soovitused on saadaval</translation>
@@ -33,11 +35,13 @@
 <translation id="6264485186158353794">Tagasi turvalisusse</translation>
 <translation id="6314335155547195432">Parooli loomine</translation>
 <translation id="6456425917241817154">Chrome'i loodud parool</translation>
+<translation id="6535543971741225613">Sait, mida üritate avada, käitub kummaliselt ja Chrome ei suuda kinnitada, et selle URL on õige. Turvakaalutlustel ei soovitata teil jätkata. Proovige homme uuesti või külastage muud saiti.</translation>
 <translation id="6740369132746915122">Kui mõistate ohtusid oma turvalisusele, võite <ph name="BEGIN_LINK" />seda ebaturvalist saiti külastada<ph name="END_LINK" />.</translation>
 <translation id="7222245588540287464">Olenemata sellest, kas kontekstipõhine otsing on lubatud.</translation>
 <translation id="724691107663265825">Avatav veebisait sisaldab pahavara</translation>
 <translation id="7456847797759667638">Ava asukoht...</translation>
 <translation id="7481312909269577407">Edasta</translation>
+<translation id="7484580869648358686">Hoiatus: siin on midagi valesti.</translation>
 <translation id="7779249319235708104">Saidil on andmepüügirünnak</translation>
 <translation id="7961015016161918242">Mitte kunagi</translation>
 <translation id="820854170120587500">Google'i ohutu sirvimise teenus tuvastas hiljuti andmepüügi saidil <ph name="SITE" />. <ph name="BEGIN_LINK" />Andmepüügi saidid<ph name="END_LINK" /> teesklevad teie petmiseks, et tegemist on teise saidiga.</translation>

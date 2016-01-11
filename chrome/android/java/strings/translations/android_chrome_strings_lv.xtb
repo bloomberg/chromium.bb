@@ -102,7 +102,6 @@ Lai izmantotu fizisko tīmekli, ir jābūt ieslēgtam Bluetooth savienojumam un 
 <translation id="2414886740292270097">Tumšs</translation>
 <translation id="2433507940547922241">Izskats</translation>
 <translation id="2440823041667407902">Piekļuve atrašanās vietai</translation>
-<translation id="2441637511528789386">Jūs esat pierakstījies pārlūkā Chrome.</translation>
 <translation id="2470327855284432041"><ph name="PAGE_SIZE_STRING" /> liela lapa ir saglabāta bezsaistē.</translation>
 <translation id="2476578072172137802">Vietnes iestatījumi</translation>
 <translation id="2482878487686419369">Paziņojumi</translation>
@@ -150,6 +149,7 @@ Lai izmantotu fizisko tīmekli, ir jābūt ieslēgtam Bluetooth savienojumam un 
 <translation id="3137521801621304719">Iziet no inkognito režīma</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" /> ieslēdziet atļaujas pārlūkam Chrome.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> saglabātu datu</translation>
+<translation id="3207960819495026254">Atzīmēts kā grāmatzīme</translation>
 <translation id="3227137524299004712">Mikrofons</translation>
 <translation id="3232754137068452469">Tīmekļa lietotne</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -210,6 +210,9 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4170011742729630528">Pakalpojums nav pieejams. Vēlāk mēģiniet vēlreiz.</translation>
 <translation id="4195643157523330669">Atvērt jaunā cilnē</translation>
 <translation id="423410644998903704">Pārlūkam Chrome ir nepieciešama piekļuve atļaujām, lai kopīgotu tās ar šo vietni.</translation>
+<translation id="424696723690217687">Atklājiet tīmekļa lapas, ko nosūtījuši tuvumā esoši objekti.
+
+Kad jūsu ierīce būs atbloķēta, Chrome meklēs tuvumā esošas lapas. Šīs lapas tiks ievietotas Google pakalpojumā, lai uzlabotu lapu rezultātu kvalitāti.</translation>
 <translation id="4256782883801055595">Atklātā pirmkoda licences</translation>
 <translation id="4259722352634471385">Navigācija ir bloķēta: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopēt saites adresi</translation>
@@ -450,6 +453,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7094922512924405309">Tuvumā nav atrasta neviena fiziskā tīmekļa lapa</translation>
 <translation id="7095930899177687653">Atvērtas <ph name="OPEN_TABS" /> cilnes</translation>
 <translation id="7096034533295549981">Video ielāde</translation>
+<translation id="7180611975245234373">Atsvaidzināt</translation>
 <translation id="7191430249889272776">Cilne tika atvērta fonā.</translation>
 <translation id="7201341158316793215">Notiek noņemšana...</translation>
 <translation id="7208788139759694678">Datu lietojuma samazinātājs ir atspējots.</translation>
@@ -508,7 +512,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7851858861565204677">Citas ierīces</translation>
 <translation id="7876243839304621966">Noņemt visu</translation>
 <translation id="7925108652071887026">Automātiskās aizpildes dati</translation>
-<translation id="7926911226829060241">Jūsu atvērtās grāmatzīmes, vēsture, paroles un citi dati tiek sinhronizēti ar jūsu Google kontu.</translation>
 <translation id="7947953824732555851">Pieņemt un pierakst.</translation>
 <translation id="7961015016161918242">Nekad</translation>
 <translation id="7963646190083259054">Nodrošina:</translation>

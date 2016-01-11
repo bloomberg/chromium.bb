@@ -16,9 +16,9 @@
 <translation id="119944043368869598">सभी साफ़ करें</translation>
 <translation id="1201402288615127009">अगला</translation>
 <translation id="1206892813135768548">लिंक लेख की प्रतिलिपि बनाएं</translation>
-<translation id="1240668123557180468">आस-पास के ऑब्जेक्ट द्वारा भेजे गए वेब पृष्ठ खोजें. Chrome आपके आस-पास मौजूद ऑब्जेक्ट से संबद्ध वेब पृष्ठ एकत्र करता है, उन्हें अनाम रूप से किसी Google सेवा पर भेजता है ताकि उनमें से आपके लिए सर्वाधिक उपयोगी पृष्ठ खोजे जा सकें, फिर उन्हें प्रदर्शित किया जा सके.
+<translation id="1240668123557180468">आस-पास के ऑब्जेक्ट द्वारा भेजे गए वेब पृष्ठ खोजें. Chrome आपके आस-पास मौजूद ऑब्जेक्ट से संबद्ध वेब पृष्ठ एकत्र करता है, उन्हें अनाम रूप से किसी Google सेवा पर भेजता है ताकि उनमें से आपके लिए सर्वाधिक उपयोगी पृष्ठ खोजे जा सकें, फिर उन्हें प्रदर्शित करता है.
 
-वास्तविक वेब का उपयोग करने के लिए आपके पास ब्लूटूथ और स्थान चालू किया हुआ होना चाहिए.</translation>
+शारीरिक वेब का उपयोग करने के लिए आपके पास ब्लूटूथ और स्थान चालू किया हुआ होना चाहिए.</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">रोकें</translation>
 <translation id="1285320974508926690">कभी भी इस साइट का अनुवाद न करें</translation>
@@ -83,7 +83,7 @@
 <translation id="2100273922101894616">स्वतः प्रवेश करें</translation>
 <translation id="2126426811489709554">Chrome के द्वारा संचालित</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> बंद है</translation>
-<translation id="2138201775715568214">आस-पास के वास्तविक वेब पृष्‍ठ खोजे जा रहे हैं</translation>
+<translation id="2138201775715568214">आस-पास के शारीरिक वेब पृष्‍ठ खोजे जा रहे हैं</translation>
 <translation id="2139186145475833000">होम स्क्रीन में जोड़ें</translation>
 <translation id="2154710561487035718">URL की प्रतिलिपि बनाएं</translation>
 <translation id="219985413780390209">खतरनाक साइटों से आपकी और आपके डिवाइस की सुरक्षा करता है</translation>
@@ -102,7 +102,6 @@
 <translation id="2414886740292270097">गहरा</translation>
 <translation id="2433507940547922241">प्रकटन</translation>
 <translation id="2440823041667407902">स्‍थान की एक्‍सेस</translation>
-<translation id="2441637511528789386">अब आपने Chrome में प्रवेश कर लिया है.</translation>
 <translation id="2470327855284432041"><ph name="PAGE_SIZE_STRING" /> पृष्‍ठ ऑफ़लाइन सहेजा गया</translation>
 <translation id="2476578072172137802">साइट की सेटिंग</translation>
 <translation id="2482878487686419369">अधिसूचनाएं</translation>
@@ -150,6 +149,7 @@
 <translation id="3137521801621304719">गुप्त मोड छोड़ें</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android सेटिंग<ph name="END_LINK" /> में Chrome के लिए अनुमतियां चालू करें.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> संग्रहीत डेटा</translation>
+<translation id="3207960819495026254">बुकमार्क किया गया</translation>
 <translation id="3227137524299004712">माइक्रोफ़ोन</translation>
 <translation id="3232754137068452469">वेब ऐप</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -173,7 +173,7 @@
 <translation id="3492207499832628349">नया गुप्त टैब</translation>
 <translation id="3518985090088779359">स्‍वीकार करें और जारी रखें</translation>
 <translation id="3527085408025491307">फ़ोल्डर</translation>
-<translation id="3559647143395293616">वास्तविक वेब चालू करें</translation>
+<translation id="3559647143395293616">शारीरिक वेब चालू करें</translation>
 <translation id="360480449234699036">पृष्‍ठ को छोड़े बिना वेबसाइटों पर मौजूद विषयों के बारे में जानें. स्‍पर्श करने के लिए खोजें, Google खोज को एक शब्‍द और उसके आस-पास का संदर्भ भेजता है, जिससे वह परिभाषाएं, चित्र, खोज परिणाम और अन्‍य विवरण लौटाता है.
 
 अपने खोज शब्‍द को एडजस्‍ट करने के लिए, चुनने हेतु देर तक दबाएं. अपनी खोज को परिष्‍कृत करने के लिए, फलक को सीधे ऊपर स्‍लाइड करें और खोज बॉक्‍स को स्‍पर्श करें.</translation>
@@ -210,6 +210,9 @@
 <translation id="4170011742729630528">सेवा उपलब्ध नहीं है; बाद में पुन: प्रयास करें.</translation>
 <translation id="4195643157523330669">नए टैब में खोलें</translation>
 <translation id="423410644998903704">Chrome को अनुमति ऐक्सेस की आवश्यकता है ताकि अनुमति को इस साइट के साथ साझा किया जा सके.</translation>
+<translation id="424696723690217687">आस-पास के ऑब्‍जेक्‍ट द्वारा भेजे गए वेब पृष्‍ठ खोजें.
+
+आपका डिवाइस अनलॉक होने पर Chrome आस-पास के पृष्‍ठों के लिए स्‍कैन करेगा. पृष्‍ठ के परिणामों की गुणवत्‍ता बेहतर बनाने के लिए ये पृष्‍ठ एक Google सेवा से गुज़रेंगे.</translation>
 <translation id="4256782883801055595">ओपन सोर्स लाइसेंस</translation>
 <translation id="4259722352634471385">मार्गदर्शक अवरोधित है: <ph name="URL" /></translation>
 <translation id="4269820728363426813">लिंक पते की प्रतिलिपि बनाएं</translation>
@@ -447,9 +450,10 @@
 <translation id="7029809446516969842">पासवर्ड</translation>
 <translation id="7053983685419859001">अवरोधित करें</translation>
 <translation id="7063006564040364415">समन्‍वयन सर्वर से कनेक्‍ट नहीं किया जा सका.</translation>
-<translation id="7094922512924405309">आस-पास कोई भी वास्तविक वेब पृष्ठ नहीं मिला</translation>
+<translation id="7094922512924405309">आस-पास कोई भी शारीरिक वेब पृष्ठ नहीं मिला</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> खुले टैब</translation>
 <translation id="7096034533295549981">वीडियो लोड हो रहा है</translation>
+<translation id="7180611975245234373">रीफ्रेश करें</translation>
 <translation id="7191430249889272776">पृष्ठभूमि में टैब खोला गया.</translation>
 <translation id="7201341158316793215">निकाल रहा है…</translation>
 <translation id="7208788139759694678">डेटा बचतकर्ता अक्षम किया गया है</translation>
@@ -508,7 +512,6 @@
 <translation id="7851858861565204677">अन्य डिवाइस</translation>
 <translation id="7876243839304621966">सभी को निकालें</translation>
 <translation id="7925108652071887026">स्‍वत:-भरण डेटा</translation>
-<translation id="7926911226829060241">आपके खुले बुकमार्क, इतिहास, पासवर्ड आदि आपके Google खाते से समन्वयित किए जा रहे हैं.</translation>
 <translation id="7947953824732555851">स्वीकार करें और प्रवेश करें</translation>
 <translation id="7961015016161918242">कभी नहीं</translation>
 <translation id="7963646190083259054">विक्रेता:</translation>
@@ -598,7 +601,7 @@
 <translation id="9133515669113036225">डिवाइस प्रमाणिकता रीसेट करें</translation>
 <translation id="9137013805542155359">मूल दिखाएं</translation>
 <translation id="9156605176886108508">कोई बुकमार्क फ़ोल्डर नहीं</translation>
-<translation id="917685106653909562">आस-पास के वास्तविक वेब पृष्ठ</translation>
+<translation id="917685106653909562">आस-पास के शारीरिक वेब पृष्ठ</translation>
 <translation id="9187199695613236444">मोबाइल के अनुकूल दृश्‍य</translation>
 <translation id="9192643434065497760">युग्‍मन की अनुमति देने के लिए <ph name="BEGIN_LINK" />डिवाइस सेटिंग<ph name="END_LINK" /> में ब्‍लूटूथ चालू करें.</translation>
 <translation id="9206873250291191720">A</translation>

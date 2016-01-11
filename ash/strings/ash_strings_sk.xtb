@@ -6,7 +6,7 @@
 <translation id="1021311941847921177">Skratka prepnutia na ďalšiu metódu vstupu bola zmenená. Namiesto skratky <ph name="OLD_SHORTCUT" /> používajte kombináciu klávesov <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Automatické skrývanie poličky</translation>
 <translation id="1195412055398077112">presah obsahu</translation>
-<translation id="1252999807265626933">Prebieha nabíjanie zo <ph name="POWER_SOURCE" /></translation>
+<translation id="1252999807265626933">Nabíja sa zo <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Klávesnica na obrazovke je zakázaná</translation>
 <translation id="1272079795634619415">Zastaviť</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -161,7 +161,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="6047696787498798094">Keď prepnete na iného používateľa, zdieľanie obrazovky sa ukončí. Chcete pokračovať?</translation>
 <translation id="6062360702481658777">Odhlásenie prebehne automaticky o <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Váš počítač je viditeľný pre zariadenia Bluetooth v blízkosti a zobrazí sa ako <ph name="NAME" /> s adresou <ph name="ADDRESS" /></translation>
-<translation id="6106745654298855237">Prebieha nabíjanie zariadenia <ph name="POWER_SOURCE" /></translation>
+<translation id="6106745654298855237">Nabíja sa zariadenie <ph name="POWER_SOURCE" /></translation>
 <translation id="615957422585914272">Zobraziť klávesnicu na obrazovke</translation>
 <translation id="6165508094623778733">Viac informácií</translation>
 <translation id="6203030746557259519">Virtuálna obrazovka</translation>
@@ -209,7 +209,7 @@ Ak ho chcete zrušiť, stlačte klávesy Alt + Hľadať alebo Shift.</translatio
 <translation id="7573962313813535744">Režim v doku</translation>
 <translation id="7593891976182323525">Hľadať alebo Shift</translation>
 <translation id="7649070708921625228">Pomocník</translation>
-<translation id="7692480393933218409">Prebieha nabíjanie pripojených zariadení USB-C</translation>
+<translation id="7692480393933218409">Nabíjajú sa pripojené zariadenia USB-C</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> a <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Po synchronizácii vašich nastavení bol zmenený jazyk „<ph name="FROM_LOCALE" />“ na jazyk „<ph name="TO_LOCALE" />“.</translation>
 <translation id="785750925697875037">Zobraziť mobilný účet</translation>

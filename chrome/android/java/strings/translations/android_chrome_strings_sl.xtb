@@ -102,7 +102,6 @@
 <translation id="2414886740292270097">Temno</translation>
 <translation id="2433507940547922241">Videz</translation>
 <translation id="2440823041667407902">Dostop do lokacije</translation>
-<translation id="2441637511528789386">Zdaj ste prijavljeni v Chrome.</translation>
 <translation id="2470327855284432041">Stran velikosti <ph name="PAGE_SIZE_STRING" /> shranjena za način brez povezave</translation>
 <translation id="2476578072172137802">Nastavitve mesta</translation>
 <translation id="2482878487686419369">Obvestila</translation>
@@ -150,6 +149,7 @@
 <translation id="3137521801621304719">Izklop načina brez beleženja zgodovine</translation>
 <translation id="3190152372525844641">V <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" /> vklopite dovoljenja za Chrome.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> shranjenih podatkov</translation>
+<translation id="3207960819495026254">Zaznamovano</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Spletna aplikacija</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -210,6 +210,9 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="4170011742729630528">Storitev ni na voljo; poskusite znova pozneje.</translation>
 <translation id="4195643157523330669">Odpri v novem zavihku</translation>
 <translation id="423410644998903704">Chrome potrebuje dostop do dovoljenj, če želite, da temu spletnemu mestu omogoči dostop do njih.</translation>
+<translation id="424696723690217687">Odkrivanje spletnih strani, ki jih pošljejo predmeti v bližini.
+
+Ko je naprava odklenjena, bo Chrome iskal strani v bližini. Te strani bo zaradi izboljšanja kakovosti rezultatov iskanja strani obdelala Googlova storitev.</translation>
 <translation id="4256782883801055595">Odprtokodne licence</translation>
 <translation id="4259722352634471385">Krmarjenje je blokirano: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopiraj naslov povezave</translation>
@@ -450,6 +453,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7094922512924405309">Ni strani za Fizični splet v bližini</translation>
 <translation id="7095930899177687653">Odprtih je toliko zavihkov: <ph name="OPEN_TABS" /></translation>
 <translation id="7096034533295549981">Nalaganje videa</translation>
+<translation id="7180611975245234373">Osveži</translation>
 <translation id="7191430249889272776">Zavihek se je odprl v ozadju.</translation>
 <translation id="7201341158316793215">Odstranjevanje …</translation>
 <translation id="7208788139759694678">Varčevanje s podatki je onemogočeno</translation>
@@ -508,7 +512,6 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, brsk
 <translation id="7851858861565204677">Druge naprave</translation>
 <translation id="7876243839304621966">Odstrani vse</translation>
 <translation id="7925108652071887026">Samodejno izpolnjevanje podatkov</translation>
-<translation id="7926911226829060241">Odprti zaznamki, zgodovina, gesla in drugi podatki se sinhronizirajo z Google Računom.</translation>
 <translation id="7947953824732555851">Sprejem in prijava</translation>
 <translation id="7961015016161918242">Nikoli</translation>
 <translation id="7963646190083259054">Ponudnik:</translation>

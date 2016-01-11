@@ -21,8 +21,10 @@
 <translation id="385051799172605136">Nyuma</translation>
 <translation id="4098354747657067197">Kuna tovuti danganyifu mbele</translation>
 <translation id="4121993058175073134">Ili kutuma data ya uhamishaji nje ya mtandao, tafadhali sanidi akaunti yako ya barua pepe katika programu ya Mipangilio.</translation>
+<translation id="4399225372525667111">Chrome haiwezi kuthibitisha kuwa URL ya tovuti hii ni sahihi.</translation>
 <translation id="4522570452068850558">Maelezo</translation>
 <translation id="4728558894243024398">Mfumo wa uendeshaji</translation>
+<translation id="473775607612524610">Sasisha</translation>
 <translation id="5317780077021120954">Hifadhi</translation>
 <translation id="5337705430875057403">Huenda wavamizi kwenye <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> wakakulaghai ili ufanye kitu hatari kama vile kusakinisha programu au kuonyesha maelezo yako ya kibinafsi (kwa mfano, manenosiri, nambari za simu, au kadi za mikopo).</translation>
 <translation id="5779929835642192302">Mapendekezo yanapatikana</translation>
@@ -33,11 +35,13 @@
 <translation id="6264485186158353794">Rejea kwenye usalama</translation>
 <translation id="6314335155547195432">Unda Nenosiri</translation>
 <translation id="6456425917241817154">Nenosiri Lililoundwa na Chrome</translation>
+<translation id="6535543971741225613">Tovuti unayojaribu kufikia inaonekana si ya kawaida, na Chrome haiwezi kuthibitisha iwapo URL yake ni sahihi. Kwa sababu za usalama, hustahili kuendelea, labda ujaribu tena kesho au uende kwingine.</translation>
 <translation id="6740369132746915122">Ikiwa unaelewa kiwango cha hatari kinachoweza kutokea, unaweza <ph name="BEGIN_LINK" />kutembelea tovuti hii isiyo salama<ph name="END_LINK" />.</translation>
 <translation id="7222245588540287464">Iwapo Kutafuta katika Muktadha kumewashwa au la</translation>
 <translation id="724691107663265825">Tovuti iliyo mbele ina programu hasidi</translation>
 <translation id="7456847797759667638">Fungua Mahali...</translation>
 <translation id="7481312909269577407">Mbele</translation>
+<translation id="7484580869648358686">Onyo: Kuna Tatizo Limetokea Hapa!</translation>
 <translation id="7779249319235708104">Uvamizi wa kuhadaa ili kupata maelezo ya kibinafsi upo</translation>
 <translation id="7961015016161918242">Katu</translation>
 <translation id="820854170120587500">Mfumo wa Kuvinjari Salama kwenye Google uligundua jaribio la kuhadaa ili kupata maelezo ya kibinafsi kwenye <ph name="SITE" /> hivi karibuni. <ph name="BEGIN_LINK" />Tovuti za kuhadaa ili kupata maelezo ya kibinafsi<ph name="END_LINK" /> hujifanya kuwa tovuti nyingine unayoijua ili kukulaghai.</translation>

@@ -102,7 +102,6 @@
 <translation id="2414886740292270097">Тамнa</translation>
 <translation id="2433507940547922241">Изглед</translation>
 <translation id="2440823041667407902">Приступ локацији</translation>
-<translation id="2441637511528789386">Сада сте пријављени у Chrome.</translation>
 <translation id="2470327855284432041">Страница од <ph name="PAGE_SIZE_STRING" /> је сачувана офлајн</translation>
 <translation id="2476578072172137802">Подешавања сајта</translation>
 <translation id="2482878487686419369">Обавештења</translation>
@@ -150,6 +149,7 @@
 <translation id="3137521801621304719">Изађи из режима без архивирања</translation>
 <translation id="3190152372525844641">Укључите дозволе за Chrome у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> сачуваних података</translation>
+<translation id="3207960819495026254">Обележено</translation>
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="3232754137068452469">Веб-апликација</translation>
 <translation id="3244271242291266297">ММ</translation>
@@ -210,6 +210,9 @@
 <translation id="4170011742729630528">Услуга није доступна. Покушајте поново касније.</translation>
 <translation id="4195643157523330669">Отвори у новој картици</translation>
 <translation id="423410644998903704">Chrome-у је потребан приступ за дозволе да би их делио са овим сајтом.</translation>
+<translation id="424696723690217687">Откријте веб-странице које шаљу објекти у околини.
+
+Chrome скенира странице у близини када је уређај откључан. Те странице се шаљу Google услузи да би се побољшао квалитет резултата за странице.</translation>
 <translation id="4256782883801055595">Лиценце отвореног кода</translation>
 <translation id="4259722352634471385">Навигација је блокирана: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Копирај адресу линка</translation>
@@ -450,6 +453,7 @@
 <translation id="7094922512924405309">Није пронађена ниједна страница Интернета око нас у околини</translation>
 <translation id="7095930899177687653">Отворених картица: <ph name="OPEN_TABS" /></translation>
 <translation id="7096034533295549981">Учитавање видеа</translation>
+<translation id="7180611975245234373">Освежи</translation>
 <translation id="7191430249889272776">Картица је отворена у позадини.</translation>
 <translation id="7201341158316793215">Уклања се...</translation>
 <translation id="7208788139759694678">Уштеда података је онемогућена</translation>
@@ -508,7 +512,6 @@
 <translation id="7851858861565204677">Други уређаји</translation>
 <translation id="7876243839304621966">Уклони све</translation>
 <translation id="7925108652071887026">Подаци Аутоматског попуњавања</translation>
-<translation id="7926911226829060241">Отворени обележивачи, историја, лозинке и други садржај се синхронизују са Google налогом.</translation>
 <translation id="7947953824732555851">Прихвати и пријави ме</translation>
 <translation id="7961015016161918242">Никад</translation>
 <translation id="7963646190083259054">Продавац:</translation>

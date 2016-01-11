@@ -358,7 +358,7 @@
 
       Esta política determina as regras para a seleção da impressora predefinida no <ph name="PRODUCT_NAME" /> que ocorre quando a função de impressão é utilizada com um perfil pela primeira vez.
 
-      Quando esta política está definida, o <ph name="PRODUCT_NAME" /> tenta localizar uma impressora que corresponda a todos os atributos especificados e selecioná-la como impressora predefinida. É selecionada a primeira impressora localizada que corresponda à política. Se a correspondência não for única, pode ser selecionada qualquer impressora correspondente, dependendo da ordem pela qual as impressoras são detetadas.
+      Quando esta política está definida, o <ph name="PRODUCT_NAME" /> tenta localizar uma impressora que corresponda a todos os atributos especificados e selecioná-la como impressora predefinida. É selecionada a primeira impressora localizada que corresponda à política. Se a correspondência não for única, pode ser selecionada qualquer impressora correspondente, consoante a ordem pela qual as impressoras são detetadas.
 
       Se esta política não estiver definida ou não for encontrada uma impressora correspondente no limite de tempo, é predefinida a impressora PDF incorporada ou não é selecionada qualquer impressora quando a impressora PDF não está disponível.
 
@@ -1920,7 +1920,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       exemplo, num programa distribuído publicamente) é considerada um programa malicioso e, provavelmente,
       é etiquetada como programa malicioso pela Google e por fornecedores de antivírus.
 
-      Não é necessário configuras estas definições manualmente. Existem
+      Não é necessário configurar estas definições manualmente. Existem
       modelos de fácil utilização para Windows, Mac e Linux que podem ser transferidos a partir de <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
 
       A forma recomendada para configurar a política no Windows é através do GPO, embora

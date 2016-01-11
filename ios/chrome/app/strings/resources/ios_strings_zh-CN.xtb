@@ -21,8 +21,10 @@
 <translation id="385051799172605136">后退</translation>
 <translation id="4098354747657067197">您要访问的网站是欺骗性网站</translation>
 <translation id="4121993058175073134">要发送净导出数据，请在“设置”应用中指定您的电子邮件帐户。</translation>
+<translation id="4399225372525667111">Chrome 浏览器无法确认此网站的网址是否正确。</translation>
 <translation id="4522570452068850558">详细信息</translation>
 <translation id="4728558894243024398">平台</translation>
+<translation id="473775607612524610">更新</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5337705430875057403"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 上的攻击程序可能会诱骗您做一些危险的事情，如安装软件或泄露您的个人信息（例如密码、电话号码或信用卡信息）。</translation>
 <translation id="5779929835642192302">有自动填充建议</translation>
@@ -33,11 +35,13 @@
 <translation id="6264485186158353794">返回安全连接</translation>
 <translation id="6314335155547195432">生成密码</translation>
 <translation id="6456425917241817154">Chrome 生成的密码</translation>
+<translation id="6535543971741225613">您尝试访问的网站存在异常行为。Chrome 浏览器无法确认其网址是否正确。出于安全考虑，请不要继续访问，建议您改日重试或访问其他网站。</translation>
 <translation id="6740369132746915122">如果您了解自己将面临的安全风险，则可以<ph name="BEGIN_LINK" />访问这个不安全的网站<ph name="END_LINK" />。</translation>
 <translation id="7222245588540287464">是否启用环境相关搜索。</translation>
 <translation id="724691107663265825">要访问的网站包含恶意软件</translation>
 <translation id="7456847797759667638">打开位置...</translation>
 <translation id="7481312909269577407">前进</translation>
+<translation id="7484580869648358686">警告：此页面包含危险内容！</translation>
 <translation id="7779249319235708104">继续访问可能会遭到网上诱骗攻击</translation>
 <translation id="7961015016161918242">一律不</translation>
 <translation id="820854170120587500">Google安全浏览功能最近在<ph name="SITE" />上检测到了网上诱骗行为。<ph name="BEGIN_LINK" />网上诱骗网站<ph name="END_LINK" />会假冒其他网站来欺骗您。</translation>

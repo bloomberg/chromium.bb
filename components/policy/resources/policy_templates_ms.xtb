@@ -1767,7 +1767,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           Jika anda memilih 'Open New Tab Page', Halaman Tab Baharu akan sentiasa dibuka apabila anda memulakan <ph name="PRODUCT_NAME" />.
 
           Jika anda memilih 'Restore the last session', URL yang terbuka semasa kali terakhir <ph name="PRODUCT_NAME" /> ditutup akan dibuka semula dan sesi penyemakan imbas akan dipulihkan sebagaimana sesi itu ditinggalkan.
-          Pemilihan pilihan ini akan melumpuhkan sesetengah tetapan yang bergantung kepada sesi atau yang melaksanakan tindakan semasa keluar (seperti Kosongkan data penyemakan imbas semasa keluar atau kuki sesi sahaja).
+          Pemilihan pilihan ini akan melumpuhkan sesetengah tetapan yang bergantung kepada sesi atau yang melaksanakan tindakan semasa keluar (seperti Kosongkan data semakan imbas semasa keluar atau kuki sesi sahaja).
 
           Jika anda memilih 'Open a list of URLs', senarai 'URLs to open on startup' akan dibuka apabila pengguna memulakan <ph name="PRODUCT_NAME" />.
 

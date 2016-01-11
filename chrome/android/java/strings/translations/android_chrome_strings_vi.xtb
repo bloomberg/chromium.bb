@@ -16,7 +16,7 @@
 <translation id="119944043368869598">Xóa tất cả</translation>
 <translation id="1201402288615127009">Tiếp theo</translation>
 <translation id="1206892813135768548">Sao chép văn bản liên kết</translation>
-<translation id="1240668123557180468">Khám phá trang web do các đối tượng lân cận gửi. Chrome tập hợp các trang web được liên kết với các đối tượng xung quanh bạn, chuyển họ ẩn danh tới dịch vụ của Google để tìm những trang web hữu ích nhất cho bạn, sau đó hiển thị các trang đó.
+<translation id="1240668123557180468">Khám phá trang web do các đối tượng lân cận gửi. Chrome tập hợp các trang web được liên kết với các đối tượng xung quanh bạn, chuyển chúng một cách ẩn danh tới dịch vụ của Google để tìm những trang web hữu ích nhất cho bạn, sau đó hiển thị các trang đó.
 
 Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc sống.</translation>
 <translation id="1258753120186372309">Hình tượng trưng của Google: <ph name="DOODLE_DESCRIPTION" /></translation>
@@ -102,7 +102,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="2414886740292270097">Tối</translation>
 <translation id="2433507940547922241">Hình thức</translation>
 <translation id="2440823041667407902">Truy cập vị trí</translation>
-<translation id="2441637511528789386">Bạn hiện đã đăng nhập Chrome.</translation>
 <translation id="2470327855284432041">Trang <ph name="PAGE_SIZE_STRING" /> được lưu ngoại tuyến</translation>
 <translation id="2476578072172137802">Cài đặt trang web</translation>
 <translation id="2482878487686419369">Thông báo</translation>
@@ -150,6 +149,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="3137521801621304719">Thoát chế độ ẩn danh</translation>
 <translation id="3190152372525844641">Bật quyền cho Chrome trong <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> dữ liệu được lưu trữ</translation>
+<translation id="3207960819495026254">Đã được đánh dấu trang</translation>
 <translation id="3227137524299004712">Micrô</translation>
 <translation id="3232754137068452469">Ứng dụng web</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -210,6 +210,9 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="4170011742729630528">Dịch vụ không khả dụng; thử lại sau.</translation>
 <translation id="4195643157523330669">Mở bằng tab mới</translation>
 <translation id="423410644998903704">Chrome cần quyền truy cập quyền để chia sẻ quyền với trang web này.</translation>
+<translation id="424696723690217687">Khám phá trang web do đối tượng lân cận gửi.
+
+Chrome sẽ quét tìm các trang lân cận khi thiết bị của bạn được mở khóa. Các trang này sẽ được chuyển tới một dịch vụ của Google để cải thiện chất lượng của kết quả trang.</translation>
 <translation id="4256782883801055595">Giấy phép nguồn mở</translation>
 <translation id="4259722352634471385">Điều hướng bị chặn: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Sao chép địa chỉ liên kết</translation>
@@ -450,6 +453,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7094922512924405309">Không tìm thấy trang Web trong cuộc sống lân cận nào</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> tab đang mở</translation>
 <translation id="7096034533295549981">Đang tải video</translation>
+<translation id="7180611975245234373">Làm mới</translation>
 <translation id="7191430249889272776">Tab được mở dưới nền.</translation>
 <translation id="7201341158316793215">Đang xóa...</translation>
 <translation id="7208788139759694678">Đã tắt Trình tiết kiệm dữ liệu</translation>
@@ -508,7 +512,6 @@ Tuy nhiên, bạn không ẩn. Việc chuyển sang chế độ ẩn danh sẽ 
 <translation id="7851858861565204677">Thiết bị khác</translation>
 <translation id="7876243839304621966">Xóa tất cả</translation>
 <translation id="7925108652071887026">Tự động điền dữ liệu</translation>
-<translation id="7926911226829060241">Lịch sử, mật khẩu, dấu trang đang mở và nhiều nội dung khác đang được đồng bộ hóa với Tài khoản Google của bạn.</translation>
 <translation id="7947953824732555851">Chấp nhận &amp; đăng nhập</translation>
 <translation id="7961015016161918242">Chưa bao giờ</translation>
 <translation id="7963646190083259054">Nhà cung cấp:</translation>

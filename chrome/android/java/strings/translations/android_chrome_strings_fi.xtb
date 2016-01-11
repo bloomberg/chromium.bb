@@ -102,7 +102,6 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="2414886740292270097">Tumma</translation>
 <translation id="2433507940547922241">Ulkonäkö</translation>
 <translation id="2440823041667407902">Sijaintitietojen käyttöoikeus</translation>
-<translation id="2441637511528789386">Olet nyt kirjautunut Chromeen.</translation>
 <translation id="2470327855284432041">Tallennettiin offline-sivu, jonka koko on <ph name="PAGE_SIZE_STRING" />.</translation>
 <translation id="2476578072172137802">Sivuston asetukset</translation>
 <translation id="2482878487686419369">Ilmoitukset</translation>
@@ -150,6 +149,7 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="3137521801621304719">Poistu incognito-tilasta</translation>
 <translation id="3190152372525844641">Ota käyttöoikeudet käyttöön Chromelle <ph name="BEGIN_LINK" />Android-asetuksissa<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> tallennettua tietoa</translation>
+<translation id="3207960819495026254">Kirjanmerkeissä</translation>
 <translation id="3227137524299004712">mikrofoniasi</translation>
 <translation id="3232754137068452469">Verkkosovellus</translation>
 <translation id="3244271242291266297">KK</translation>
@@ -210,6 +210,9 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4170011742729630528">Palvelu ei ole käytettävissä. Yritä myöhemmin uudelleen.</translation>
 <translation id="4195643157523330669">Avaa uudessa välilehdessä</translation>
 <translation id="423410644998903704">Chrome tarvitsee käyttöoikeuksien käyttöoikeuden voidakseen jakaa sen tämän sivuston kanssa.</translation>
+<translation id="424696723690217687">Löydä lähellä olevien kohteiden lähettämiä verkkosivuja.
+
+Kun laitteesi lukitus avataan, Chrome etsii lähistöllä olevia sivuja. Google käsittelee sivut palvelussaan parantaakseen tuloksien laatua.</translation>
 <translation id="4256782883801055595">Avoimen lähdekoodin käyttöluvat</translation>
 <translation id="4259722352634471385">Kohde on estetty: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopioi linkin osoite</translation>
@@ -450,6 +453,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7094922512924405309">Fyysisen webin sivuja ei löytynyt lähistöltä.</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> avointa välilehteä</translation>
 <translation id="7096034533295549981">Videota ladataan</translation>
+<translation id="7180611975245234373">Päivitä</translation>
 <translation id="7191430249889272776">Välilehti avattiin taustalla.</translation>
 <translation id="7201341158316793215">Poistetaan…</translation>
 <translation id="7208788139759694678">Data Saver on poistettu käytöstä.</translation>
@@ -508,7 +512,6 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 <translation id="7851858861565204677">Muut laitteet</translation>
 <translation id="7876243839304621966">Poista kaikki</translation>
 <translation id="7925108652071887026">Tietojen automaattinen täyttö</translation>
-<translation id="7926911226829060241">Avoimet kirjanmerkit, historia, salasanat ja muita tietoja synkronoidaan Google-tilillesi.</translation>
 <translation id="7947953824732555851">Hyväksy ja kirjaudu sisään</translation>
 <translation id="7961015016161918242">Ei koskaan</translation>
 <translation id="7963646190083259054">Toimittaja:</translation>

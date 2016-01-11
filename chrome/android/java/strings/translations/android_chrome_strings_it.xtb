@@ -102,7 +102,6 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la localizzaz
 <translation id="2414886740292270097">Scuro</translation>
 <translation id="2433507940547922241">Aspetto</translation>
 <translation id="2440823041667407902">Accesso alla posizione</translation>
-<translation id="2441637511528789386">Hai eseguito l'accesso a Chrome.</translation>
 <translation id="2470327855284432041">Pagina salvata offline (<ph name="PAGE_SIZE_STRING" />)</translation>
 <translation id="2476578072172137802">Impostazioni sito</translation>
 <translation id="2482878487686419369">Notifiche</translation>
@@ -150,6 +149,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la localizzaz
 <translation id="3137521801621304719">Esci dalla modalità di navigazione in incognito</translation>
 <translation id="3190152372525844641">Abilita le autorizzazioni per Chrome in <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> di dati memorizzati</translation>
+<translation id="3207960819495026254">Aggiunto ai Preferiti</translation>
 <translation id="3227137524299004712">Microfono</translation>
 <translation id="3232754137068452469">App web</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -210,6 +210,9 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4170011742729630528">Il servizio non è disponibile, riprova più tardi.</translation>
 <translation id="4195643157523330669">Apri in un'altra scheda</translation>
 <translation id="423410644998903704">Chrome deve avere accesso alle autorizzazioni per condividerle con questo sito.</translation>
+<translation id="424696723690217687">Consente di trovare le pagine web inviate da oggetti vicini.
+
+Chrome cerca pagine nelle vicinanze quando il dispositivo è sbloccato. Tali pagine passeranno da un servizio di Google per migliorare la qualità dei risultati di pagine.</translation>
 <translation id="4256782883801055595">Licenze open source</translation>
 <translation id="4259722352634471385">Navigazione bloccata: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Copia indirizzo link</translation>
@@ -450,6 +453,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7094922512924405309">Nessuna pagina Physical Web trovata nelle vicinanze</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> schede aperte</translation>
 <translation id="7096034533295549981">Caricamento video</translation>
+<translation id="7180611975245234373">Aggiorna</translation>
 <translation id="7191430249889272776">Scheda aperta in background.</translation>
 <translation id="7201341158316793215">Rimozione…</translation>
 <translation id="7208788139759694678">Funzione Risparmio dati disattivata</translation>
@@ -508,7 +512,6 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="7851858861565204677">Altri dispositivi</translation>
 <translation id="7876243839304621966">Rimuovi tutto</translation>
 <translation id="7925108652071887026">Dati della Compilazione automatica</translation>
-<translation id="7926911226829060241">I Preferiti aperti, la cronologia, le password e altri dati sono in fase di sincronizzazione con il tuo account Google.</translation>
 <translation id="7947953824732555851">Accetta e accedi</translation>
 <translation id="7961015016161918242">Mai</translation>
 <translation id="7963646190083259054">Fornitore:</translation>

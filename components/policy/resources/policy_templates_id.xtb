@@ -351,7 +351,7 @@
 
       Kebijakan ini menentukan aturan untuk memilih printer default di <ph name="PRODUCT_NAME" /> yang terjadi saat fungsi cetak digunakan dengan profil untuk pertama kalinya.
 
-      Jika kebijakan ini disetel, <ph name="PRODUCT_NAME" /> akan mencoba menemukan printer yang sesuai dengan semua atribut yang ditentukan dan memilihnya sebagai printer default. Printer pertama yang ditemukan dan sesuai dengan kebijakan akan dipilih, jika ada printer non unik yang cocok maka printer tersebut dapat dapat dipilih, bergantung pada urutan printer yang ditemukan.
+      Jika kebijakan ini disetel, <ph name="PRODUCT_NAME" /> akan mencoba menemukan printer yang sesuai dengan semua atribut yang ditentukan dan memilihnya sebagai printer default. Printer pertama yang ditemukan dan sesuai dengan kebijakan akan dipilih, jika ada printer non unik yang cocok maka printer tersebut dapat dipilih, bergantung pada urutan printer yang ditemukan.
 
       Jika kebijakan ini tidak disetel atau printer yang sesuai tidak ditemukan selama waktu tunggu, printer PDF yang terpasang akan dipilih sebagai printer default, atau tidak ada printer yang dipilih jika printer PDF tidak tersedia.
 
@@ -377,7 +377,7 @@
       }
 
       Printer yang tersambung ke <ph name="CLOUD_PRINT_NAME" /> dianggap sebagai <ph name="PRINTER_TYPE_CLOUD" />, printer lainnya akan diklasifikasikan sebagai <ph name="PRINTER_TYPE_LOCAL" />.
-      Menghapus satu bidang berarti semua nilai sesuai, misalnya, tidak menentukan konektivitas akan menyebabkan Pratinjau Cetak mulai mencari semua jenis printer, lokal, dan awan.
+      Jika Anda menghapus satu bidang berarti semua nilai yang sesuai, misalnya, tidak menentukan konektivitas akan menyebabkan Pratinjau Cetak mulai mencari semua jenis printer, lokal, dan awan.
       Pola ekspresi reguler harus mengikuti sintaksis JavaScript RegExp, dan hasil yang sesuai peka huruf besar/kecil.</translation>
 <translation id="2426782419955104525">Mengaktifkan fitur Instan <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini.
 
@@ -1908,14 +1908,14 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       merujuk ke versi yang belum dirilis) dan oleh karena itu, kebijakan semacam ini dapat
       berubah atau dihapus tanpa pemberitahuan sebelumnya.
 
-      Kebijakan ini secara ketat ditujukan untuk mengonfigurasi contoh
+      Kebijakan ini hanya khusus ditujukan untuk mengonfigurasi contoh
       internal <ph name="PRODUCT_NAME" /> ke
-      organisasi Anda. Penggunaan kebijakan ini di luar organisasi Anda (misalnya
+      organisasi Anda. Bila kebijakan ini digunakan di luar organisasi (misalnya
       dalam program yang didistribusikan secara publik) akan dianggap sebagai perangkat lunak perusak dan mungkin
-      akan diberi label sebagai perangkat lunak perusak oleh Google dan vendor anti-virus.
+      akan diberi label sebagai perangkat lunak perusak oleh Google dan vendor antivirus.
 
       Setelan ini tidak perlu dikonfigurasi secara manual!  Template
-      yang mudah digunakan untuk Windows, Mac, dan Linux tersedia untuk diunduh dari <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+      yang mudah digunakan untuk Windows, Mac, dan Linux dapat diunduh dari <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
 
       Cara yang disarankan untuk mengonfigurasi kebijakan ini di Windows adalah melalui GPO, meskipun
       menyediakan kebijakan melalui registri masih didukung untuk Windows

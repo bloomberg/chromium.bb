@@ -399,7 +399,7 @@
 
       Kai ši politika nustatyta, „<ph name="PRODUCT_NAME" />“ bandys rasti visus nurodytus atributus atitinkantį spausdintuvą ir pasirinks jį kaip numatytąjį spausdintuvą. Pasirenkamas pirmas politiką atitikęs spausdintuvas. Jei atitiktis nėra unikali, gali būti pasirinktas bet koks spausdintuvas, atsižvelgiant į spausdintuvų aptikimo eilės tvarką.
 
-      Jei ši politika nenustatyta arba per skirtąjį laiką nerandamas atitinkantis spausdintuvas, kaip numatytasis spausdintuvas pasirenkamas įtaisytasis PDF spausdintuvas arba nepasirenkamas joks spausdintuvas, jei PDF spausdintuvas nepasiekiamas.
+      Jei ši politika nenustatyta arba per skirtą laiką nerandamas atitinkantis spausdintuvas, kaip numatytasis spausdintuvas pasirenkamas įtaisytasis PDF spausdintuvas arba nepasirenkamas joks spausdintuvas, jei PDF spausdintuvas nepasiekiamas.
 
       Vertė analizuojama kaip JSON objektas, atitinkantis toliau nurodytą schemą:
       {
@@ -2162,13 +2162,13 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įv
       nurodo neišleistos versijos programą), ir tokios politikos nuostatos gali
       būti pakeistos arba pašalintos be išankstinio įspėjimo.
 
-      Šie politikos nuostatos griežtai skirtos konfigūruoti tik
+      Šios politikos nuostatos griežtai skirtos konfigūruoti tik
       vidiniams sistemos „<ph name="PRODUCT_NAME" />“
       objektams. Šių politikos nuostatų naudojimas už organizacijos ribų (pvz.,
       viešai platinamoje programoje) laikomas kenkėjišku ir
       „Google“ bei antivirusinės programinės įrangos teikėjai tai tikriausiai laikys kenkėjiška programa.
 
-      Šių nustatymų nereikia sukonfigūruoti neautomatiškai! Lengvai naudojamų
+      Šių nustatymų nereikia sukonfigūruoti rankiniu būdu! Lengvai naudojamų
       šablonų, skirtų „Windows“, „Mac“ ir „Linux“, galite atsisiųsti adresu <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
 
       Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačiau

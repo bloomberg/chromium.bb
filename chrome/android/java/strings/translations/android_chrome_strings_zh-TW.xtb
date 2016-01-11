@@ -102,7 +102,6 @@
 <translation id="2414886740292270097">深色</translation>
 <translation id="2433507940547922241">外觀</translation>
 <translation id="2440823041667407902">位置資訊存取權</translation>
-<translation id="2441637511528789386">您現在已登入 Chrome。</translation>
 <translation id="2470327855284432041">已離線儲存網頁：<ph name="PAGE_SIZE_STRING" /></translation>
 <translation id="2476578072172137802">網站設定</translation>
 <translation id="2482878487686419369">通知</translation>
@@ -150,6 +149,7 @@
 <translation id="3137521801621304719">離開無痕模式</translation>
 <translation id="3190152372525844641">請在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中為 Chrome 啟用這些權限。</translation>
 <translation id="3198916472715691905">儲存了 <ph name="STORAGE_AMOUNT" /> 的資料</translation>
+<translation id="3207960819495026254">已加入書籤</translation>
 <translation id="3227137524299004712">麥克風</translation>
 <translation id="3232754137068452469">網路應用程式</translation>
 <translation id="3244271242291266297">月</translation>
@@ -210,6 +210,9 @@
 <translation id="4170011742729630528">服務無法使用，請稍後再試。</translation>
 <translation id="4195643157523330669">在新分頁中開啟</translation>
 <translation id="423410644998903704">Chrome 需要存取權限，才能與這個網站分享。</translation>
+<translation id="424696723690217687">偵測附近裝置傳送的網頁。
+
+Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Google 服務處理過後，可讓網頁搜尋結果的品質更臻完善。</translation>
 <translation id="4256782883801055595">開放原始碼授權</translation>
 <translation id="4259722352634471385">瀏覽的網址已封鎖：<ph name="URL" /></translation>
 <translation id="4269820728363426813">複製連結網址</translation>
@@ -450,6 +453,7 @@
 <translation id="7094922512924405309">找不到附近的實體化網路網頁</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> 個開啟的分頁</translation>
 <translation id="7096034533295549981">正在載入影片</translation>
+<translation id="7180611975245234373">重新整理</translation>
 <translation id="7191430249889272776">已在背景開啟分頁。</translation>
 <translation id="7201341158316793215">移除中…</translation>
 <translation id="7208788139759694678">已停用 Data Saver</translation>
@@ -508,7 +512,6 @@
 <translation id="7851858861565204677">其他裝置</translation>
 <translation id="7876243839304621966">全部移除</translation>
 <translation id="7925108652071887026">自動填入資料</translation>
-<translation id="7926911226829060241">系統正在將您的書籤、歷史紀錄、密碼和其他設定同步傳送到您的 Google 帳戶。</translation>
 <translation id="7947953824732555851">接受並登入</translation>
 <translation id="7961015016161918242">永不</translation>
 <translation id="7963646190083259054">供應商：</translation>

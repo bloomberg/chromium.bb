@@ -102,7 +102,6 @@ Lazima uwashe Bluetooth na kipengele cha Mahali ili uweze kutumia Wavuti Kila Ma
 <translation id="2414886740292270097">Giza</translation>
 <translation id="2433507940547922241">Sura</translation>
 <translation id="2440823041667407902">Ufikiaji wa eneo</translation>
-<translation id="2441637511528789386">Sasa umeingia katika Chrome.</translation>
 <translation id="2470327855284432041">Ukurasa wa <ph name="PAGE_SIZE_STRING" /> umehifadhiwa nje ya mtandao</translation>
 <translation id="2476578072172137802">Mipangilio ya Tovuti</translation>
 <translation id="2482878487686419369">Arifa</translation>
@@ -150,6 +149,7 @@ Lazima uwashe Bluetooth na kipengele cha Mahali ili uweze kutumia Wavuti Kila Ma
 <translation id="3137521801621304719">Ondoka kwenye hali fiche</translation>
 <translation id="3190152372525844641">Washa ruhusa za Chrome katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> za data iliyohifadhiwa</translation>
+<translation id="3207960819495026254">Imealamishwa</translation>
 <translation id="3227137524299004712">Maikrofoni</translation>
 <translation id="3232754137068452469">Programu ya Wavuti</translation>
 <translation id="3244271242291266297">MW</translation>
@@ -210,6 +210,9 @@ Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili kuchagua. Ili
 <translation id="4170011742729630528">Huduma haipatikani; jaribu tena baadaye.</translation>
 <translation id="4195643157523330669">Fungua katika kichupo kipya</translation>
 <translation id="423410644998903704">Chrome inahitaji idhini ya kufikia ruhusa ili izishiriki na tovuti hii.</translation>
+<translation id="424696723690217687">Gundua kurasa za wavuti zilizotumwa na vifaa vilivyo karibu.
+
+Chrome itachanganua kurasa zilizo karibu kifaa chako kitakapofunguliwa. Kurasa hizi zitapitia huduma ya Google ili kuimarisha ubora wa matokeo ya ukurasa.</translation>
 <translation id="4256782883801055595">Leseni za programu huria</translation>
 <translation id="4259722352634471385">Kudurusu kumezuiwa: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Nakili anwani ya kiungo</translation>
@@ -450,6 +453,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="7094922512924405309">Hakuna kurasa za Wavuti Kila Mahali zilizo karibu zilizopatikana</translation>
 <translation id="7095930899177687653">Vichupo <ph name="OPEN_TABS" /> vilivyo wazi</translation>
 <translation id="7096034533295549981">Inapakia video</translation>
+<translation id="7180611975245234373">Onyesha upya</translation>
 <translation id="7191430249889272776">Kichupo kimefunguliwa chini chini.</translation>
 <translation id="7201341158316793215">Inaondoa...</translation>
 <translation id="7208788139759694678">Kiokoa Data kimezimwa</translation>
@@ -508,7 +512,6 @@ Hata hivyo, unaonekana. Kuvinjari katika hali fiche hakufichi kuvinjari kwako ku
 <translation id="7851858861565204677">Vifaa vingine</translation>
 <translation id="7876243839304621966">Ondoa yote</translation>
 <translation id="7925108652071887026">Data ya kujaza otomatiki</translation>
-<translation id="7926911226829060241">Alamisho, historia, manenosiri yako, na zaidi vinasawazishwa pamoja na Akaunti yako ya Google.</translation>
 <translation id="7947953824732555851">Kubali na uingie</translation>
 <translation id="7961015016161918242">Katu</translation>
 <translation id="7963646190083259054">Mchuuzi:</translation>

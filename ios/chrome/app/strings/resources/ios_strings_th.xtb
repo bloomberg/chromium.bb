@@ -21,8 +21,10 @@
 <translation id="385051799172605136">กลับ</translation>
 <translation id="4098354747657067197">เว็บไซต์ข้างหน้ามีการหลอกลวง</translation>
 <translation id="4121993058175073134">หากต้องการส่งข้อมูล net-export โปรดกำหนดค่าบัญชีอีเมลของคุณในแอปการตั้งค่า</translation>
+<translation id="4399225372525667111">Chrome ไม่สามารถยืนยันได้ว่า URL ของไซต์นี้ถูกต้อง</translation>
 <translation id="4522570452068850558">รายละเอียด</translation>
 <translation id="4728558894243024398">แพลตฟอร์ม</translation>
+<translation id="473775607612524610">การอัปเดต</translation>
 <translation id="5317780077021120954">บันทึก</translation>
 <translation id="5337705430875057403">ผู้บุกรุกที่อยู่ใน <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> อาจหลอกล่อคุณเพื่อทำบางสิ่งที่อันตราย เช่น การติดตั้งซอฟต์แวร์หรือเปิดเผยข้อมูลส่วนบุคคล (ตัวอย่างเช่น รหัสผ่าน หมายเลขโทรศัพท์ หรือบัตรเครดิต)</translation>
 <translation id="5779929835642192302">มีคำแนะนำ</translation>
@@ -33,11 +35,13 @@
 <translation id="6264485186158353794">กลับสู่ความปลอดภัย</translation>
 <translation id="6314335155547195432">สร้างรหัสผ่าน</translation>
 <translation id="6456425917241817154">รหัสผ่านสร้างโดย Chrome</translation>
+<translation id="6535543971741225613">ไซต์ที่คุณกำลังพยายามเข้าถึงทำงานผิดปกติ และ Chrome ไม่สามารถยืนยันได้ว่า URL ของไซต์นี้ถูกต้อง เพื่อความปลอดภัย คุณไม่ควรดำเนินการต่อ หรืออาจลองอีกครั้งในวันพรุ่งนี้หรือไปที่ไซต์อื่น</translation>
 <translation id="6740369132746915122">หากคุณเข้าใจความเสี่ยงต่อความปลอดภัยของคุณ คุณสามารถ<ph name="BEGIN_LINK" />ไปที่เว็บไซต์ที่ไม่ปลอดภัย<ph name="END_LINK" /></translation>
 <translation id="7222245588540287464">ไม่ว่าจะเปิดค้นหาตามบริบทไว้หรือไม่ก็ตาม</translation>
 <translation id="724691107663265825">ไซต์ข้างหน้ามีมัลแวร์</translation>
 <translation id="7456847797759667638">เปิดตำแหน่ง...</translation>
 <translation id="7481312909269577407">ส่งต่อ</translation>
+<translation id="7484580869648358686">คำเตือน: มีบางอย่างที่นี่ไม่ถูกต้อง</translation>
 <translation id="7779249319235708104">มีการบุกรุกที่้เป็นฟิชชิงอยู่ข้างหน้า</translation>
 <translation id="7961015016161918242">ไม่เคย</translation>
 <translation id="820854170120587500">เมื่อเร็วๆ นี้ Google Safe Browsing ตรวจพบฟิชชิงใน <ph name="SITE" /> <ph name="BEGIN_LINK" />ไซต์ฟิชชิง<ph name="END_LINK" />ปลอมเป็นไซต์อื่นๆ เพื่อหลอกล่อคุณ</translation>

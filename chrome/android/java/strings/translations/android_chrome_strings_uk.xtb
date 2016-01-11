@@ -16,7 +16,7 @@
 <translation id="119944043368869598">Очистити все</translation>
 <translation id="1201402288615127009">Далі</translation>
 <translation id="1206892813135768548">Копіювати текст посилання</translation>
-<translation id="1240668123557180468">Переглядайте веб-сторінки, надіслані об’єктами поблизу. Chrome збирає веб-сторінки, пов’язані з об’єктами поблизу вас, анонімно надсилає їх службі Google, щоб показувати вам найцікавіші.
+<translation id="1240668123557180468">Переглядайте веб-сторінки, надіслані об’єктами поблизу. Chrome збирає веб-сторінки, пов’язані з об’єктами поблизу вас, і анонімно надсилає їх службі Google, щоб показувати вам найцікавіші.
 
 Увімкніть Bluetooth і службу локації, щоб користуватися сервісом "Інтернет навколо нас".</translation>
 <translation id="1258753120186372309">Дудл Google: <ph name="DOODLE_DESCRIPTION" /></translation>
@@ -102,7 +102,6 @@
 <translation id="2414886740292270097">Темна</translation>
 <translation id="2433507940547922241">Зовнішній вигляд</translation>
 <translation id="2440823041667407902">Доступ до геоданих</translation>
-<translation id="2441637511528789386">Ви ввійшли в обліковий запис у Chrome.</translation>
 <translation id="2470327855284432041">Сторінку (<ph name="PAGE_SIZE_STRING" />) збережено для перегляду в режимі офлайн</translation>
 <translation id="2476578072172137802">Налаштування сайту</translation>
 <translation id="2482878487686419369">Сповіщення</translation>
@@ -150,6 +149,7 @@
 <translation id="3137521801621304719">Вийти з режиму анонімного перегляду</translation>
 <translation id="3190152372525844641">Увімкніть дозволи для Chrome у <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> збережених даних</translation>
+<translation id="3207960819495026254">Створено закладку</translation>
 <translation id="3227137524299004712">Мікрофон</translation>
 <translation id="3232754137068452469">Веб-додаток</translation>
 <translation id="3244271242291266297">ММ</translation>
@@ -210,6 +210,9 @@
 <translation id="4170011742729630528">Служба не доступна. Повторіть спробу пізніше.</translation>
 <translation id="4195643157523330669">Відкрити в новій вкладці</translation>
 <translation id="423410644998903704">Chrome потрібен доступ до дозволів, щоб дозволити цьому сайту використовувати їх.</translation>
+<translation id="424696723690217687">Переглядайте веб-сторінки, які надсилають об’єкти поруч.
+
+Коли ваш пристрій розблоковано, Chrome шукатиме сторінки, які надсилають об’єкти поруч. Google оброблятиме ці сторінки, щоб покращити якість результатів.</translation>
 <translation id="4256782883801055595">Ліцензії ПЗ з відкритим кодом</translation>
 <translation id="4259722352634471385">Веб-сторінку <ph name="URL" /> заблоковано</translation>
 <translation id="4269820728363426813">Копіювати адресу посилання</translation>
@@ -450,6 +453,7 @@
 <translation id="7094922512924405309">Немає сторінок із сервісу "Інтернет навколо нас"</translation>
 <translation id="7095930899177687653">Відкрито вкладок: <ph name="OPEN_TABS" /></translation>
 <translation id="7096034533295549981">Завантаж. відео</translation>
+<translation id="7180611975245234373">Оновити</translation>
 <translation id="7191430249889272776">Вкладку відкрито у фоновому режимі.</translation>
 <translation id="7201341158316793215">Вилучення…</translation>
 <translation id="7208788139759694678">Заощадження трафіку вимкнено</translation>
@@ -508,7 +512,6 @@
 <translation id="7851858861565204677">Інші пристрої</translation>
 <translation id="7876243839304621966">Видалити все</translation>
 <translation id="7925108652071887026">Дані автозаповнення</translation>
-<translation id="7926911226829060241">Відкриті закладки, історія, паролі тощо синхронізуються з вашим обліковим записом Google.</translation>
 <translation id="7947953824732555851">Прийняти й увійти</translation>
 <translation id="7961015016161918242">Ніколи</translation>
 <translation id="7963646190083259054">Постачальник:</translation>

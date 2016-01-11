@@ -102,7 +102,6 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="2414886740292270097">Escuro</translation>
 <translation id="2433507940547922241">Aspeto</translation>
 <translation id="2440823041667407902">Acesso à localização</translation>
-<translation id="2441637511528789386">Tem agora sessão iniciada no Chrome.</translation>
 <translation id="2470327855284432041">Página de <ph name="PAGE_SIZE_STRING" /> guardada offline</translation>
 <translation id="2476578072172137802">Definições do site</translation>
 <translation id="2482878487686419369">Notificações</translation>
@@ -150,6 +149,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="3137521801621304719">Sair do modo de navegação anónima</translation>
 <translation id="3190152372525844641">Ative as autorizações para o Chrome nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de dados armazenados</translation>
+<translation id="3207960819495026254">Adicionado aos marcadores</translation>
 <translation id="3227137524299004712">Microfone</translation>
 <translation id="3232754137068452469">Aplicação Web</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -210,6 +210,9 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4170011742729630528">O serviço não está disponível. Tente novamente mais tarde.</translation>
 <translation id="4195643157523330669">Abrir num novo separador</translation>
 <translation id="423410644998903704">O Chrome necessita de acesso às autorizações para as partilhar com este site.</translation>
+<translation id="424696723690217687">Descobrir páginas Web enviadas por objetos próximos.
+
+O Chrome procura páginas próximas quando o seu dispositivo está desbloqueado. Estas páginas passam por um serviço Google para melhorar a qualidade dos resultados da página.</translation>
 <translation id="4256782883801055595">Licenças de código aberto</translation>
 <translation id="4259722352634471385">A navegação está bloqueada: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Copiar endereço do link</translation>
@@ -450,6 +453,7 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="7094922512924405309">Não foram encontradas páginas da Web física próximas</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> separadores abertos</translation>
 <translation id="7096034533295549981">A carregar vídeo</translation>
+<translation id="7180611975245234373">Atualizar</translation>
 <translation id="7191430249889272776">Separador aberto em segundo plano.</translation>
 <translation id="7201341158316793215">A remover…</translation>
 <translation id="7208788139759694678">Poupança de dados desativada</translation>
@@ -508,7 +512,6 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="7851858861565204677">Outros aparelhos</translation>
 <translation id="7876243839304621966">Remover tudo</translation>
 <translation id="7925108652071887026">Dados de preenchimento automático</translation>
-<translation id="7926911226829060241">Os marcadores abertos, o histórico, as palavras-passe e muito mais estão a ser sincronizados com a sua Conta Google.</translation>
 <translation id="7947953824732555851">Aceitar e in. sessão</translation>
 <translation id="7961015016161918242">Nunca</translation>
 <translation id="7963646190083259054">Fornecedor:</translation>

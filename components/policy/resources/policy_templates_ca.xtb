@@ -349,28 +349,28 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
       Si aquesta opció es desactiva, l'historial de navegació es desa.</translation>
 <translation id="2424023834246613232">Substitueix les regles de selecció de la impressora predeterminada a <ph name="PRODUCT_NAME" />.
 
-      Aquesta política determina les regles per seleccionar la impressora predeterminada a <ph name="PRODUCT_NAME" />, cosa que té lloc la primera vegada que s'utilitza la funció d'impressió amb un perfil.
+      Aquesta política determina les regles per seleccionar la impressora predeterminada a <ph name="PRODUCT_NAME" />. Això que té lloc la primera vegada que s'utilitza la funció d'imprimir amb un perfil.
 
-      Quan s'estableix la política, <ph name="PRODUCT_NAME" /> intenta trobar una impressora que compleixi tots els atributs especificats. Se selecciona com a predeterminada la primera impressora que compleixi la política però, si n'hi ha més d'una, se'n pot seleccionar qualsevol, en funció de l'ordre en què es detectin.
+      Quan s'estableix la política, <ph name="PRODUCT_NAME" /> intenta trobar una impressora que compleixi tots els atributs especificats i la selecciona com a impressora predeterminada. Se selecciona la primera impressora detectada que compleixi la política però, si n'hi ha més d'una, se'n pot seleccionar qualsevol, en funció de l'ordre en què es detectin.
 
-      Si no s'estableix la política o no es troba cap impressora adequada dins del temps d'espera, s'utilitza la impressora PDF integrada o, si no està disponible, no se'n selecciona cap.
+      Si no s'estableix la política o no es troba cap impressora adequada durant el temps d'espera, s'utilitza la impressora PDF integrada de manera predeterminada o, si no està disponible, no se'n selecciona cap.
 
       El valor s'analitza com un objecte JSON, d'acord amb l'esquema següent:
       {
         "type": "object",
         "properties": {
           "kind": {
-            "description": "Si es limita la cerca de la impressora a un conjunt específic d'impressores.",
+            "description": "Indica si es limita la cerca de la impressora a un grup específic d'impressores.",
             "type": {
               "enum": [ "local", "cloud" ]
             }
           },
           "idPattern": {
-            "description": "Expressió regular que ha de concordar amb l'identificador de la impressora.",
+            "description": "Expressió regular corresponent a l'identificador de la impressora.",
             "type": "string"
           },
           "namePattern": {
-            "description": "Expressió regular que ha de concordar amb el nom de visualització de la impressora.",
+            "description": "Expressió regular corresponent al nom de visualització de la impressora.",
             "type": "string"
           }
         }
@@ -1907,7 +1907,7 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8549772397068118889">Mostra un advertiment quan es visitin llocs no inclosos en paquets de contingut.</translation>
 <translation id="855339549837475534">Tant Chromium com Google Chrome admeten el mateix conjunt de polítiques.
       Tingueu en compte que aquest document pot incloure polítiques orientades
-      a versions no publicades del programari (és a dir, l'entrada Compatible amb
+      a versions no publicades del programari (és a dir, l'entrada "Compatible amb"
       pot fer referència a una versió que encara no s'ha publicat).
       A més, aquestes polítiques es poden canviar o suprimir sense avís previ.
 
@@ -1917,12 +1917,11 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
       en un programa distribuït públicament) es considera programari maliciós i és
       probable que Google i els proveïdors d'antivirus ho marquin com a tal.
 
-      No cal que ajusteu aquesta configuració manualment. Podeu baixar plantilles
+      No cal que configureu aquestes opcions manualment. Podeu baixar plantilles
       fàcils d'utilitzar per a Windows, per a Mac i per a Linux de la pàgina <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
 
       La manera recomanada de configurar la política a Windows és amb GPO,
-      tot i que encara es permet administrar la política mitjançant registre en
-      instàncies de Windows que formin part d'un domini d'Active Directory.</translation>
+      tot i que encara es permet administrar la política mitjançant el registre per a instàncies de Windows vinculades a un domini d'Active Directory.</translation>
 <translation id="8566842294717252664">Amaga Web Store a la pàgina Pestanya nova i al Menú d'aplicacions</translation>
 <translation id="8587229956764455752">Permet la creació de comptes d'usuari</translation>
 <translation id="8614804915612153606">Desactiva l'actualització automàtica</translation>

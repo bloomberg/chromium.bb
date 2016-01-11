@@ -36,13 +36,13 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="1409879593029778104">Stažení souboru <ph name="FILE_NAME" /> bylo zabráněno, protože soubor již existuje.</translation>
 <translation id="1416550906796893042">Verze aplikace</translation>
 <translation id="1423209968422390786">Přístup k poloze je v tomto zařízení <ph name="BEGIN_LINK" />vypnut<ph name="END_LINK" />.</translation>
-<translation id="1445680696957526815">Součásti prohlížeče Chrome navzájem nejsou kompatibilní. Je možné, že se Chrome zrovna upgraduje. Pokud problém přetrvává, zkuste Chrome odinstalovat a poté znovu nainstalovat.</translation>
+<translation id="1445680696957526815">Komponenty prohlížeče Chrome navzájem nejsou kompatibilní. Je možné, že se Chrome zrovna upgraduje. Pokud problém přetrvává, zkuste Chrome odinstalovat a poté znovu nainstalovat.</translation>
 <translation id="1446450296470737166">Povolit úplné ovládání zařízení MIDI</translation>
 <translation id="145097072038377568">Vypnuto v Nastavení pro Android</translation>
 <translation id="1477626028522505441">Stažení souboru <ph name="FILE_NAME" /> se nezdařilo z důvodu problémů se serverem.</translation>
 <translation id="1506061864768559482">Vyhledávač</translation>
 <translation id="1513352483775369820">Záložky a webová historie</translation>
-<translation id="1553358976309200471">Aktualizujte Chrome</translation>
+<translation id="1553358976309200471">Aktualizovat Chrome</translation>
 <translation id="1557201757634521564">Automaticky rozpoznávat kódování</translation>
 <translation id="1568822834048182062">Záložky, historie, hesla a další nastavení budou synchronizována s účtem Google.</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -102,7 +102,6 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="2414886740292270097">Tmavé</translation>
 <translation id="2433507940547922241">Vzhled</translation>
 <translation id="2440823041667407902">Přístup k poloze</translation>
-<translation id="2441637511528789386">Nyní jste do Chromu přihlášeni.</translation>
 <translation id="2470327855284432041">Stránka o velikosti <ph name="PAGE_SIZE_STRING" /> byla uložena offline</translation>
 <translation id="2476578072172137802">Nastavení webu</translation>
 <translation id="2482878487686419369">Oznámení</translation>
@@ -150,6 +149,7 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="3137521801621304719">Ukončit anonymní režim</translation>
 <translation id="3190152372525844641">Oprávnění pro Chrome zapnete v <ph name="BEGIN_LINK" />Nastavení pro Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">Uložená data: <ph name="STORAGE_AMOUNT" /></translation>
+<translation id="3207960819495026254">Přidáno do záložek</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Webová aplikace</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -210,6 +210,9 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4170011742729630528">Služba není k dispozici, zkuste to později.</translation>
 <translation id="4195643157523330669">Otevřít na nové kartě</translation>
 <translation id="423410644998903704">Aby Chrome mohl s těmito webovými stránkami sdílet oprávnění, musí k nim mít přístup.</translation>
+<translation id="424696723690217687">Objevujte webové stránky odesílané objekty v okolí.
+
+Když bude zařízení odemknuto, Chrome bude vyhledávat stránky v okolí. Tyto stránky budou za účelem zlepšení kvality zpracovávány službou Google.</translation>
 <translation id="4256782883801055595">Licence open source</translation>
 <translation id="4259722352634471385">Navigace je blokována: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Zkopírovat adresu odkazu</translation>
@@ -450,6 +453,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7094922512924405309">V okolí nebyly nalezeny žádné stránky fyzického webu</translation>
 <translation id="7095930899177687653">Otevřené karty: <ph name="OPEN_TABS" /></translation>
 <translation id="7096034533295549981">Načítání videa</translation>
+<translation id="7180611975245234373">Obnovit</translation>
 <translation id="7191430249889272776">Karta je otevřena na pozadí.</translation>
 <translation id="7201341158316793215">Odstraňování…</translation>
 <translation id="7208788139759694678">Spořič dat není aktivní</translation>
@@ -508,7 +512,6 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="7851858861565204677">Jiná zařízení</translation>
 <translation id="7876243839304621966">Odstranit vše</translation>
 <translation id="7925108652071887026">Data automatického vyplňování</translation>
-<translation id="7926911226829060241">Záložky, historie, hesla a další údaje se synchronizují s vaším účtem Google.</translation>
 <translation id="7947953824732555851">Přijmout a přihlásit</translation>
 <translation id="7961015016161918242">Nikdy</translation>
 <translation id="7963646190083259054">Dodavatel:</translation>

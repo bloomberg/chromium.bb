@@ -102,7 +102,6 @@
 <translation id="2414886740292270097">Σκούρο</translation>
 <translation id="2433507940547922241">Εμφάνιση</translation>
 <translation id="2440823041667407902">Πρόσβαση τοποθεσίας</translation>
-<translation id="2441637511528789386">Έχετε συνδεθεί στο Chrome.</translation>
 <translation id="2470327855284432041">Η σελίδα <ph name="PAGE_SIZE_STRING" /> αποθηκεύτηκε εκτός σύνδεσης</translation>
 <translation id="2476578072172137802">Ρυθμίσεις ιστότοπου</translation>
 <translation id="2482878487686419369">Ειδοποιήσεις</translation>
@@ -150,6 +149,7 @@
 <translation id="3137521801621304719">Έξοδος από την κατάσταση ανώνυμης περιήγησης</translation>
 <translation id="3190152372525844641">Ενεργοποίηση των αδειών για το Chrome στις <ph name="BEGIN_LINK" />Ρυθμίσεις Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> αποθηκευμένα δεδομένα</translation>
+<translation id="3207960819495026254">Προστέθηκε στους σελιδοδείκτες</translation>
 <translation id="3227137524299004712">Μικρόφωνο</translation>
 <translation id="3232754137068452469">Εφαρμογή ιστού</translation>
 <translation id="3244271242291266297">ΜΜ</translation>
@@ -210,6 +210,9 @@
 <translation id="4170011742729630528">Η υπηρεσία δεν είναι διαθέσιμη. Δοκιμάστε ξανά αργότερα.</translation>
 <translation id="4195643157523330669">Άνοιγμα σε νέα καρτέλα</translation>
 <translation id="423410644998903704">Το Chrome θα πρέπει να έχει πρόσβαση στις άδειες προκειμένου να τις μοιραστεί με αυτόν τον ιστότοπο.</translation>
+<translation id="424696723690217687">Ανακαλύψτε ιστοσελίδες που έχουν σταλεί από κοντινά αντικείμενα.
+
+Το Chrome θα σαρώσει τις κοντινές σελίδες όταν ξεκλειδωθεί η συσκευή σας. Αυτές οι σελίδες θα περάσουν από μια υπηρεσία Google για τη βελτίωση της ποιότητας των αποτελεσμάτων σελίδων.</translation>
 <translation id="4256782883801055595">Άδειες λογισμικού ανοικτού κώδικα</translation>
 <translation id="4259722352634471385">Αποκλείστηκε η μετάβαση στη διεύθυνση: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Αντιγρ. διεύθυνσης συνδέσμου</translation>
@@ -451,6 +454,7 @@
 <translation id="7094922512924405309">Δεν βρέθηκαν κοντινές σελίδες Φυσικού δικτύου</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> ανοικτές καρτέλες</translation>
 <translation id="7096034533295549981">Φόρτωση βίντεο</translation>
+<translation id="7180611975245234373">Ανανέωση</translation>
 <translation id="7191430249889272776">Η καρτέλα άνοιξε στο παρασκήνιο.</translation>
 <translation id="7201341158316793215">Κατάργηση…</translation>
 <translation id="7208788139759694678">Η Εξοικονόμηση δεδομένων είναι απενεργοποιημένη</translation>
@@ -509,7 +513,6 @@
 <translation id="7851858861565204677">Άλλες συσκευές</translation>
 <translation id="7876243839304621966">Κατάργηση όλων</translation>
 <translation id="7925108652071887026">Δεδομένα αυτόματης συμπλήρωσης</translation>
-<translation id="7926911226829060241">Οι ανοικτοί σελιδοδείκτες, το ιστορικό, οι κωδικοί πρόσβασης καθώς και άλλα δεδομένα συγχρονίζονται με το Λογαριασμό σας Google.</translation>
 <translation id="7947953824732555851">Αποδοχή και σύνδεση</translation>
 <translation id="7961015016161918242">Ποτέ</translation>
 <translation id="7963646190083259054">Προμηθευτής:</translation>

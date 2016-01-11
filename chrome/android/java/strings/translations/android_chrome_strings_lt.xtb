@@ -102,7 +102,6 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="2414886740292270097">Tamsi</translation>
 <translation id="2433507940547922241">Išvaizda</translation>
 <translation id="2440823041667407902">Prieiga prie vietovės</translation>
-<translation id="2441637511528789386">Esate prisijungę prie „Chrome“.</translation>
 <translation id="2470327855284432041"><ph name="PAGE_SIZE_STRING" /> puslapis išsaugotas naudoti neprisijungus</translation>
 <translation id="2476578072172137802">Svetainės nustatymai</translation>
 <translation id="2482878487686419369">Pranešimai</translation>
@@ -150,6 +149,7 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="3137521801621304719">Išjungti inkognito režimą</translation>
 <translation id="3190152372525844641">Įjunkite „Chrome“ leidimus <ph name="BEGIN_LINK" />„Android“ nustatymuose<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">Išsaugota duomenų: <ph name="STORAGE_AMOUNT" /></translation>
+<translation id="3207960819495026254">Pažymėta</translation>
 <translation id="3227137524299004712">Mikrofonas</translation>
 <translation id="3232754137068452469">Žiniatinklio programa</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -210,6 +210,9 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="4170011742729630528">Paslauga nepasiekiama; vėliau bandykite dar kartą.</translation>
 <translation id="4195643157523330669">Atidaryti naujame skirtuke</translation>
 <translation id="423410644998903704">„Chrome“ reikia pasiekiamumo leidimų, kad juos būtų galima bendrinti su šia svetaine.</translation>
+<translation id="424696723690217687">Atraskite tinklalapius, kurios išsiuntė netoliese esantys objektai.
+
+Kai įrenginys bus atrakintas, „Chrome“ nuskaitys netoliese esančių objektų puslapius. Šie puslapiai bus siunčiami naudojant „Google“ paslaugą siekiant patobulinti puslapių rezultatų kokybę.</translation>
 <translation id="4256782883801055595">Atvirojo šaltinio licencijos</translation>
 <translation id="4259722352634471385">Naršymas užblokuotas: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopijuoti nuorodos adresą</translation>
@@ -225,7 +228,7 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="4378154925671717803">Telefonas</translation>
 <translation id="4412992751769744546">Leisti trečiųjų šalių slapukus</translation>
 <translation id="4440256989292146959">Naršykite daugiau ir mokėkite mažiau</translation>
-<translation id="4452548195519783679">Sukurta <ph name="FOLDER_NAME" /> žymė</translation>
+<translation id="4452548195519783679">Sukurta „<ph name="FOLDER_NAME" />“ žymė</translation>
 <translation id="4505554159887937799">Išsaugoti naud. nepris.</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{Prieš # dieną}one{Prieš # dieną}few{Prieš # dienas}many{Prieš # dienos}other{Prieš # dienų}}</translation>
 <translation id="4522570452068850558">Išsami informacija</translation>
@@ -451,6 +454,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7094922512924405309">Nerasta jokių fizinių tinklalapių netoliese</translation>
 <translation id="7095930899177687653">Atidaryta skirtukų lapų: <ph name="OPEN_TABS" /></translation>
 <translation id="7096034533295549981">Įkel. v. įrašas</translation>
+<translation id="7180611975245234373">Atnaujinti</translation>
 <translation id="7191430249889272776">Skirtuko lapas atidarytas fone.</translation>
 <translation id="7201341158316793215">Pašalinama…</translation>
 <translation id="7208788139759694678">Duomenų taupymo priemonė išjungta</translation>
@@ -509,7 +513,6 @@ Tačiau nesate nematomi. Kai naudojate inkognito režimą, jūsų darbdavys, int
 <translation id="7851858861565204677">Kiti įrenginiai</translation>
 <translation id="7876243839304621966">Pašalinti viską</translation>
 <translation id="7925108652071887026">Automatinio pildymo duomenys</translation>
-<translation id="7926911226829060241">Atidarytos žymės, istorija, slaptažodžiai ir kiti duomenys yra sinchronizuojami „Google“ paskyroje.</translation>
 <translation id="7947953824732555851">Sutikti ir prisij.</translation>
 <translation id="7961015016161918242">Niekada</translation>
 <translation id="7963646190083259054">Paslaugos teikėjas:</translation>

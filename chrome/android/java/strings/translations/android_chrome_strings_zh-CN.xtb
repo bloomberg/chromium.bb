@@ -102,7 +102,6 @@
 <translation id="2414886740292270097">深色调</translation>
 <translation id="2433507940547922241">外观</translation>
 <translation id="2440823041667407902">位置信息使用权</translation>
-<translation id="2441637511528789386">您现已登录 Chrome。</translation>
 <translation id="2470327855284432041">已离线保存该网页 (<ph name="PAGE_SIZE_STRING" />)</translation>
 <translation id="2476578072172137802">网站设置</translation>
 <translation id="2482878487686419369">通知</translation>
@@ -150,6 +149,7 @@
 <translation id="3137521801621304719">退出隐身模式</translation>
 <translation id="3190152372525844641">在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中为 Chrome 启用这些权限。</translation>
 <translation id="3198916472715691905">已存储 <ph name="STORAGE_AMOUNT" /> 数据</translation>
+<translation id="3207960819495026254">已加书签</translation>
 <translation id="3227137524299004712">麦克风</translation>
 <translation id="3232754137068452469">网络应用</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -210,6 +210,9 @@
 <translation id="4170011742729630528">此服务目前无法使用，请稍后再试。</translation>
 <translation id="4195643157523330669">在新标签页中打开</translation>
 <translation id="423410644998903704">Chrome 需要具有这些功能的使用权限，才能批准此网站的分享请求。</translation>
+<translation id="424696723690217687">发现附近对象传送的网页。
+
+当您的设备处于解锁状态时，Chrome 会对附近对象传送的网页进行扫描。然后，相关的 Google 服务会对这些网页进行处理，以提升网页搜索结果的质量。</translation>
 <translation id="4256782883801055595">开放源代码许可</translation>
 <translation id="4259722352634471385">已屏蔽 <ph name="URL" /></translation>
 <translation id="4269820728363426813">复制链接地址</translation>
@@ -376,7 +379,7 @@
 <translation id="6192792657125177640">例外</translation>
 <translation id="6208263165776660488">Chrome 标签页已移至新的位置</translation>
 <translation id="6231464350722415003">允许在您指定的网站上运行 JavaScript，同时禁止在其他网站上运行 JavaScript</translation>
-<translation id="6232535412751077445">如果您启用了“请勿跟踪”，您的浏览流量中将会包含一项请求。具体影响取决于网站是否会回应该请求以及如何解读该请求。
+<translation id="6232535412751077445">如果您启用了“不跟踪”，您的浏览流量中将会包含一项请求。具体影响取决于网站是否会回应该请求以及如何解读该请求。
 
 例如：某些网站在收到该请求后，可能会向您展示相应的广告（这些广告并不是根据您访问过的其他网站而展示的）。许多网站仍会出于一些目的收集并使用您的浏览数据，例如，为了提高安全性，为了提供相关内容、广告和推荐内容，以及为了生成报告统计信息。</translation>
 <translation id="624558823898732418">翻译语言：<ph name="SOURCE_LANGUAGE" /></translation>
@@ -450,6 +453,7 @@
 <translation id="7094922512924405309">找不到附近的“实物网”网页</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> 个打开的标签页</translation>
 <translation id="7096034533295549981">加载视频</translation>
+<translation id="7180611975245234373">刷新</translation>
 <translation id="7191430249889272776">标签页已在后台打开。</translation>
 <translation id="7201341158316793215">正在移除…</translation>
 <translation id="7208788139759694678">流量节省程序已停用</translation>
@@ -508,7 +512,6 @@
 <translation id="7851858861565204677">来自其他设备的同步</translation>
 <translation id="7876243839304621966">全部删除</translation>
 <translation id="7925108652071887026">自动填充数据</translation>
-<translation id="7926911226829060241">正在将您保存的书签、历史记录、密码等同步到您的 Google 帐户。</translation>
 <translation id="7947953824732555851">接受并登录</translation>
 <translation id="7961015016161918242">一律不</translation>
 <translation id="7963646190083259054">供应商：</translation>

@@ -102,7 +102,6 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="2414886740292270097">Madilim</translation>
 <translation id="2433507940547922241">Hitsura</translation>
 <translation id="2440823041667407902">Access sa lokasyon</translation>
-<translation id="2441637511528789386">Naka-sign in ka na sa Chrome.</translation>
 <translation id="2470327855284432041"><ph name="PAGE_SIZE_STRING" /> na page ang na-save offline</translation>
 <translation id="2476578072172137802">Mga Setting ng Site</translation>
 <translation id="2482878487686419369">Mga Abiso</translation>
@@ -150,6 +149,7 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="3137521801621304719">Umalis sa mode na incognito</translation>
 <translation id="3190152372525844641">I-on ang mga pahintulot para sa Chrome sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> ang nakaimbak na data</translation>
+<translation id="3207960819495026254">Naka-bookmark</translation>
 <translation id="3227137524299004712">Mikropono</translation>
 <translation id="3232754137068452469">Web App</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -173,7 +173,7 @@ Nagsa-sign in ka sa isang pinamamahalaang account at nagbibigay sa administrator
 <translation id="3492207499832628349">Bagong tab na incognito</translation>
 <translation id="3518985090088779359">Tanggapin, magpatuloy</translation>
 <translation id="3527085408025491307">Folder</translation>
-<translation id="3559647143395293616">Buksan ang Physical Web</translation>
+<translation id="3559647143395293616">Buksan ang Pisikal na Web</translation>
 <translation id="360480449234699036">Matuto tungkol sa mga paksa sa mga website nang hindi umaalis sa page. Ipapadala ng Touch to Search ang isang salita at ang konteksto nito sa Google Search, at magbibigay ito ng mga pagpapakahulugan, larawan, resulta ng paghahanap at iba pang mga detalye.
 
 Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal upang mapili ito. Upang pinuhin ang iyong paghahanap, i-slide ang panel hanggang sa pinakaitaas at pindutin ang box para sa paghahanap.</translation>
@@ -210,6 +210,9 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="4170011742729630528">Hindi available ang serbisyo; subukang muli sa ibang pagkakataon.</translation>
 <translation id="4195643157523330669">Buksan sa bagong tab</translation>
 <translation id="423410644998903704">Kailangan ng Chrome ng access sa pahintulot upang maibahagi ang mga ito sa site na ito.</translation>
+<translation id="424696723690217687">Tuklasin ang mga web page na ipinadala ng mga kalapit na bagay.
+
+Magsa-scan ang Chrome para sa mga kalapit na page kapag naka-unlock ang iyong device. Mapapasailalim ang mga page na ito sa isang serbisyo ng Google upang mapahusay ang kalidad ng mga resulta ng page.</translation>
 <translation id="4256782883801055595">Mga lisensya ng open source</translation>
 <translation id="4259722352634471385">Naka-block ang navigation: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopyahin ang address ng link</translation>
@@ -450,6 +453,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7094922512924405309">Walang nakitang kalapit na mga page ng Pisikal na Web</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> (na) tab ang nakabukas</translation>
 <translation id="7096034533295549981">Naglo-load</translation>
+<translation id="7180611975245234373">I-refresh</translation>
 <translation id="7191430249889272776">Binuksan ang tab sa background.</translation>
 <translation id="7201341158316793215">Inaalis…</translation>
 <translation id="7208788139759694678">Naka-disable ang Data Saver</translation>
@@ -508,7 +512,6 @@ Gayunpaman, hindi ka invisible. Kahit na gumamit ka ng tab na incognito, hindi p
 <translation id="7851858861565204677">Iba pang mga device</translation>
 <translation id="7876243839304621966">Alisin lahat</translation>
 <translation id="7925108652071887026">Mag-autofill ng data</translation>
-<translation id="7926911226829060241">Isini-sync ang iyong mga nakabukas na bookmark, history, password at higit pa sa iyong Google Account.</translation>
 <translation id="7947953824732555851">I-accept, mag-sign in</translation>
 <translation id="7961015016161918242">Hindi Kailanman</translation>
 <translation id="7963646190083259054">Vendor:</translation>

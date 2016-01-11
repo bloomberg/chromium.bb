@@ -391,13 +391,13 @@
       Nếu cài đặt này bị tắt hoặc không được đặt thì lịch sử duyệt web sẽ được lưu.</translation>
 <translation id="2424023834246613232">Ghi đè quy tắc chọn máy in mặc định trong <ph name="PRODUCT_NAME" />.
 
-      Chính sách này xác định quy tắc chọn máy in mặc định trong <ph name="PRODUCT_NAME" />, điều này xảy ra vào lần đầu tiên chức năng in được sử dụng với một cấu hình.
+      Chính sách này xác định quy tắc chọn máy in mặc định trong <ph name="PRODUCT_NAME" />. Điều này xảy ra vào lần đầu tiên chức năng in được sử dụng với một cấu hình.
 
       Khi chính sách này được đặt, <ph name="PRODUCT_NAME" /> sẽ cố gắng tìm máy in khớp với tất cả các thuộc tính đã chỉ định và chọn thiết bị đó làm máy in mặc định. Máy in đầu tiên được tìm thấy phù hợp với chính sách sẽ được chọn, trong trường hợp kết quả trùng khớp không phải duy nhất, có thể chọn bất kỳ máy in trùng khớp nào tùy thuộc vào thứ tự mà máy in được tìm thấy.
 
       Nếu chính sách này chưa được đặt hoặc không tìm thấy máy in trùng khớp trong khoảng thời gian chờ thì máy in sẽ được đặt mặc định thành máy in PDF tích hợp hoặc không có máy in nào được chọn khi không có máy in PDF.
 
-      Giá trị này được phân tích cú pháp dưới dạng đối tượng JSON tuân theo giản đồ sau đây:
+      Giá trị này được phân tích cú pháp là đối tượng JSON tuân theo giản đồ sau đây:
       {
         "type": "object",
         "properties": {

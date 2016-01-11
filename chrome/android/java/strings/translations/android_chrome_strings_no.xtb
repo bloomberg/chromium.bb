@@ -102,7 +102,6 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="2414886740292270097">Mørk</translation>
 <translation id="2433507940547922241">Utseende</translation>
 <translation id="2440823041667407902">Posisjonstilgang</translation>
-<translation id="2441637511528789386">Du er nå logget på Chrome.</translation>
 <translation id="2470327855284432041"><ph name="PAGE_SIZE_STRING" /> er lagret lokalt for siden</translation>
 <translation id="2476578072172137802">Nettstedsinnstillinger</translation>
 <translation id="2482878487686419369">Varsler</translation>
@@ -150,6 +149,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="3137521801621304719">Avslutt inkognitomodus</translation>
 <translation id="3190152372525844641">Slå på tillatelsene for Chrome i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> lagrede data</translation>
+<translation id="3207960819495026254">Bokmerket</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Nettprogram</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -210,6 +210,9 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4170011742729630528">Tjenesten er ikke tilgjengelig. Prøv på nytt senere.</translation>
 <translation id="4195643157523330669">Åpne i ny fane</translation>
 <translation id="423410644998903704">Chrome må ha tilgang til tillatelsene for å kunne dele dem med dette nettstedet.</translation>
+<translation id="424696723690217687">Oppdag nettsider som sendes fra objekter i nærheten.
+
+Chrome skanner etter sider i nærheten når enheten er låst opp. Disse sidene går gjennom en Google-tjeneste som forbedrer kvaliteten på sideresultatene.</translation>
 <translation id="4256782883801055595">Lisenser for åpen kildekode</translation>
 <translation id="4259722352634471385">Nettadressen er blokkert: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopiér linkadressen</translation>
@@ -450,6 +453,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7094922512924405309">Fant ingen Fysisk nett-sider i nærheten</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> åpne faner</translation>
 <translation id="7096034533295549981">Laster inn videoen ...</translation>
+<translation id="7180611975245234373">Last inn på nytt</translation>
 <translation id="7191430249889272776">En fane ble åpnet i bakgrunnen.</translation>
 <translation id="7201341158316793215">Fjerner …</translation>
 <translation id="7208788139759694678">Datasparing er slått av</translation>
@@ -508,7 +512,6 @@ Du er imidlertid ikke usynlig. Inkognitomodus skjuler ikke surfingen din for arb
 <translation id="7851858861565204677">Andre enheter</translation>
 <translation id="7876243839304621966">Fjern alle</translation>
 <translation id="7925108652071887026">Autofyll data</translation>
-<translation id="7926911226829060241">Bokmerkene, loggen, passordene og annet som du har åpent, synkroniseres med Google-kontoen din.</translation>
 <translation id="7947953824732555851">Godta og logg på</translation>
 <translation id="7961015016161918242">Aldri</translation>
 <translation id="7963646190083259054">Leverandør:</translation>

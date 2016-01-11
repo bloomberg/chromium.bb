@@ -102,7 +102,6 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="2414886740292270097">Foncé</translation>
 <translation id="2433507940547922241">Apparence</translation>
 <translation id="2440823041667407902">Accès à la position</translation>
-<translation id="2441637511528789386">Vous êtes désormais connecté à Chrome.</translation>
 <translation id="2470327855284432041">Page enregistrée pour accès hors connexion (<ph name="PAGE_SIZE_STRING" />)</translation>
 <translation id="2476578072172137802">Paramètres du site</translation>
 <translation id="2482878487686419369">Notifications</translation>
@@ -150,6 +149,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="3137521801621304719">Désactiver le mode navigation privée</translation>
 <translation id="3190152372525844641">Activer les autorisations pour Chrome dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" /></translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de données stockées</translation>
+<translation id="3207960819495026254">Favori</translation>
 <translation id="3227137524299004712">Micro</translation>
 <translation id="3232754137068452469">Application Web</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -210,6 +210,9 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4170011742729630528">Service indisponible. Veuillez réessayer plus tard.</translation>
 <translation id="4195643157523330669">Ouvrir dans un nouvel onglet</translation>
 <translation id="423410644998903704">Chrome doit disposer de l'accès à certaines autorisations pour les partager avec ce site.</translation>
+<translation id="424696723690217687">Découvrez des pages Web envoyées par des objets à proximité.
+
+Chrome recherche les pages à proximité lorsque l'appareil est déverrouillé. Ces pages sont analysées par un service Google pour améliorer la qualité des résultats.</translation>
 <translation id="4256782883801055595">Licences Open Source</translation>
 <translation id="4259722352634471385">La navigation sur <ph name="URL" /> est bloquée.</translation>
 <translation id="4269820728363426813">Copier l'adresse du lien</translation>
@@ -451,6 +454,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7094922512924405309">Aucune page Web physique n'a été trouvée.</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> onglets ouverts</translation>
 <translation id="7096034533295549981">Chargement vidéo…</translation>
+<translation id="7180611975245234373">Actualiser</translation>
 <translation id="7191430249889272776">L'onglet a été ouvert en arrière-plan.</translation>
 <translation id="7201341158316793215">Suppression en cours…</translation>
 <translation id="7208788139759694678">Économiseur de données désactivé</translation>
@@ -509,7 +513,6 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="7851858861565204677">Autres appareils</translation>
 <translation id="7876243839304621966">Tout supprimer</translation>
 <translation id="7925108652071887026">Données de saisie automatique</translation>
-<translation id="7926911226829060241">Vos favoris ouverts, votre historique, vos mots de passe et d'autres éléments sont en cours de synchronisation avec votre compte Google.</translation>
 <translation id="7947953824732555851">Accepter/Se connecter</translation>
 <translation id="7961015016161918242">Jamais</translation>
 <translation id="7963646190083259054">Fournisseur :</translation>

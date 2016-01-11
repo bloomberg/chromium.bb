@@ -102,7 +102,6 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="2414886740292270097">Gelap</translation>
 <translation id="2433507940547922241">Tampilan</translation>
 <translation id="2440823041667407902">Akses lokasi</translation>
-<translation id="2441637511528789386">Anda sudah masuk ke Chrome.</translation>
 <translation id="2470327855284432041">Laman sebesar <ph name="PAGE_SIZE_STRING" /> disimpan untuk offline</translation>
 <translation id="2476578072172137802">Setelan Situs</translation>
 <translation id="2482878487686419369">Notifikasi</translation>
@@ -150,6 +149,7 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="3137521801621304719">Tutup mode penyamaran</translation>
 <translation id="3190152372525844641">Aktifkan izin untuk Chrome di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> data tersimpan</translation>
+<translation id="3207960819495026254">Diberi bookmark</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Aplikasi Web</translation>
 <translation id="3244271242291266297">BB</translation>
@@ -210,6 +210,9 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4170011742729630528">Layanan tidak tersedia; coba lagi nanti.</translation>
 <translation id="4195643157523330669">Buka di tab baru</translation>
 <translation id="423410644998903704">Chrome memerlukan akses izin untuk berbagi dengan situs ini.</translation>
+<translation id="424696723690217687">Temukan laman web yang dikirim oleh obyek di sekitar.
+
+Chrome akan memindai laman di sekitar saat perangkat Anda dibuka kuncinya. Laman ini akan melalui layanan Google guna meningkatkan kualitas hasil laman.</translation>
 <translation id="4256782883801055595">Lisensi sumber terbuka</translation>
 <translation id="4259722352634471385">Navigasi diblokir: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Salin alamat tautan</translation>
@@ -376,7 +379,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="6192792657125177640">Pengecualian</translation>
 <translation id="6208263165776660488">Tab Chrome telah dipindahkan</translation>
 <translation id="6231464350722415003">Mengizinkan JavaScript di situs web yang Anda tentukan dan memblokirnya untuk web lainnya</translation>
-<translation id="6232535412751077445">Jika ‘Jangan Lacak’ diaktifkan, permintaan akan disertakan dengan lalu lintas penjelajahan Anda. Dampak apa pun bergantung pada apakah situs web menanggapi permintaan, dan bagaimana permintaan diinterpretasikan.
+<translation id="6232535412751077445">Jika ‘Jangan Lacak’ diaktifkan, permintaan akan disertakan dengan lalu lintas penjelajahan Anda. Dampak apa pun yang muncul bergantung pada apakah situs web menanggapi permintaan, dan bagaimana permintaan diinterpretasikan.
 
 Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangkan iklan yang tidak berdasarkan pada situs web lainnya yang Anda kunjungi. Banyak situs web yang masih akan mengumpulkan dan menggunakan data penjelajahan Anda — misalnya, untuk meningkatkan keamanan, menyediakan konten, iklan, dan saran, serta untuk membuat statistik pelaporan.</translation>
 <translation id="624558823898732418">Bahasa Terjemahan: <ph name="SOURCE_LANGUAGE" /></translation>
@@ -450,6 +453,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7094922512924405309">Laman Web Fisik di sekitar tidak ditemukan</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> tab terbuka</translation>
 <translation id="7096034533295549981">Memuat video</translation>
+<translation id="7180611975245234373">Segarkan</translation>
 <translation id="7191430249889272776">Tab dibuka di latar belakang.</translation>
 <translation id="7201341158316793215">Menghapus...</translation>
 <translation id="7208788139759694678">Penghemat Data dinonaktifkan</translation>
@@ -508,7 +512,6 @@ Namun demikian, bukan berarti Anda tidak terlihat sama sekali. Menggunakan mode 
 <translation id="7851858861565204677">Perangkat lain</translation>
 <translation id="7876243839304621966">Hapus semua</translation>
 <translation id="7925108652071887026">Mengisi otomatis data</translation>
-<translation id="7926911226829060241">Bookmark yang dibuka, riwayat, sandi, dan lainnya sedang disinkronkan dengan Akun Google Anda.</translation>
 <translation id="7947953824732555851">Terima dan masuk</translation>
 <translation id="7961015016161918242">Tidak pernah</translation>
 <translation id="7963646190083259054">Vendor:</translation>

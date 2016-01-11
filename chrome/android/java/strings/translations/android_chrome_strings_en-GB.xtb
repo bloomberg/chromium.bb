@@ -102,7 +102,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2414886740292270097">Dark</translation>
 <translation id="2433507940547922241">Appearance</translation>
 <translation id="2440823041667407902">Location access</translation>
-<translation id="2441637511528789386">You’re now signed in to Chrome.</translation>
 <translation id="2470327855284432041"><ph name="PAGE_SIZE_STRING" /> page saved offline</translation>
 <translation id="2476578072172137802">Site Settings</translation>
 <translation id="2482878487686419369">Notifications</translation>
@@ -150,6 +149,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="3137521801621304719">Leave incognito mode</translation>
 <translation id="3190152372525844641">Turn on permissions for Chrome in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> stored data</translation>
+<translation id="3207960819495026254">Bookmarked</translation>
 <translation id="3227137524299004712">Microphone</translation>
 <translation id="3232754137068452469">Web App</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -210,6 +210,9 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4170011742729630528">The service is not available; try again later.</translation>
 <translation id="4195643157523330669">Open in new tab</translation>
 <translation id="423410644998903704">Chrome needs permissions access to share them with this site.</translation>
+<translation id="424696723690217687">Discover web pages sent by nearby objects.
+
+Chrome will scan for nearby pages when your device is unlocked. These pages will go through a Google service to improve the quality of page results.</translation>
 <translation id="4256782883801055595">Open-source licences</translation>
 <translation id="4259722352634471385">Navigation is blocked: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Copy link address</translation>
@@ -450,6 +453,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7094922512924405309">No nearby Physical Web pages found</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> open tabs</translation>
 <translation id="7096034533295549981">Loading video</translation>
+<translation id="7180611975245234373">Refresh</translation>
 <translation id="7191430249889272776">Tab opened in background.</translation>
 <translation id="7201341158316793215">Removing…</translation>
 <translation id="7208788139759694678">Data Saver disabled</translation>
@@ -508,7 +512,6 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="7851858861565204677">Other Devices</translation>
 <translation id="7876243839304621966">Remove all</translation>
 <translation id="7925108652071887026">Autofill data</translation>
-<translation id="7926911226829060241">Your open bookmarks, history, passwords and more are being synced with your Google Account.</translation>
 <translation id="7947953824732555851">Accept and sign in</translation>
 <translation id="7961015016161918242">Never</translation>
 <translation id="7963646190083259054">Vendor:</translation>

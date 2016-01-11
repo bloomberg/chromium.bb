@@ -16,7 +16,7 @@
 <translation id="119944043368869598">すべてクリア</translation>
 <translation id="1201402288615127009">次へ</translation>
 <translation id="1206892813135768548">リンク テキストをコピー</translation>
-<translation id="1240668123557180468">近くのオブジェクトから送信されているウェブページを検出します。Chrome があなたの周囲のオブジェクトに関連付けられたウェブページを収集して、あなたに最も役立つウェブページが見つかるよう匿名でそのウェブページを Google サービスに送信し、そのページが表示されます。
+<translation id="1240668123557180468">近くのオブジェクトから送信されているウェブページを検出します。Chrome はあなたの周囲のオブジェクトに関連付けられたウェブページを収集し、匿名でそのウェブページを Google サービスに送り、そこであなたに最も役立つと判断されたウェブページを表示します。
 
 フィジカル ウェブを使用するには、Bluetooth と現在地機能をオンにする必要があります。</translation>
 <translation id="1258753120186372309">Google Doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
@@ -102,7 +102,6 @@
 <translation id="2414886740292270097">暗</translation>
 <translation id="2433507940547922241">デザイン</translation>
 <translation id="2440823041667407902">現在地情報へのアクセス</translation>
-<translation id="2441637511528789386">Chrome にログインしています。</translation>
 <translation id="2470327855284432041"><ph name="PAGE_SIZE_STRING" /> のページがオフライン保存されています</translation>
 <translation id="2476578072172137802">サイト設定</translation>
 <translation id="2482878487686419369">通知</translation>
@@ -150,6 +149,7 @@
 <translation id="3137521801621304719">シークレット モードを終了</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />で Chrome の権限を有効にしてください。</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> の保存データ</translation>
+<translation id="3207960819495026254">ブックマークしました</translation>
 <translation id="3227137524299004712">マイク</translation>
 <translation id="3232754137068452469">ウェブアプリ</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -210,6 +210,9 @@
 <translation id="4170011742729630528">このサービスはご利用になれません。しばらくしてからもう一度お試しください。</translation>
 <translation id="4195643157523330669">新しいタブで開く</translation>
 <translation id="423410644998903704">このサイトと機能を共有するには Chrome にアクセスを許可する必要があります。</translation>
+<translation id="424696723690217687">近くのオブジェクトから送信されているウェブページを検出します。
+
+Chrome では端末のロックが解除されている場合に、近くで送信されているページをスキャンします。検出されたページは、Google のサービスを使用して精度が高められます。</translation>
 <translation id="4256782883801055595">オープンソース ライセンス</translation>
 <translation id="4259722352634471385"><ph name="URL" /> へのアクセスがブロックされました</translation>
 <translation id="4269820728363426813">リンクアドレスをコピー</translation>
@@ -450,6 +453,7 @@
 <translation id="7094922512924405309">近くにフィジカル ウェブページは見つかりませんでした</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> 個の開いているタブ</translation>
 <translation id="7096034533295549981">動画を読み込み中</translation>
+<translation id="7180611975245234373">更新</translation>
 <translation id="7191430249889272776">バックグラウンドでタブを開きました。</translation>
 <translation id="7201341158316793215">削除しています...</translation>
 <translation id="7208788139759694678">データセーバーは無効です</translation>
@@ -508,7 +512,6 @@
 <translation id="7851858861565204677">その他のデバイス</translation>
 <translation id="7876243839304621966">すべて削除</translation>
 <translation id="7925108652071887026">自動入力のデータ</translation>
-<translation id="7926911226829060241">開いているブックマーク、履歴、パスワード、その他の設定を Google アカウントに同期しています。</translation>
 <translation id="7947953824732555851">同意してログイン</translation>
 <translation id="7961015016161918242">使用しない</translation>
 <translation id="7963646190083259054">ベンダー:</translation>

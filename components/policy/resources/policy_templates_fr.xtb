@@ -400,7 +400,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Cette règle détermine les instructions de sélection de l'imprimante par défaut dans <ph name="PRODUCT_NAME" />, la première fois que la fonction d'impression est utilisée avec un profil donné.
 
-      Si cette règle est définie, <ph name="PRODUCT_NAME" /> essaiera de trouver une imprimante correspondant à tous les attributs spécifiés et en fera l'imprimante par défaut. La première imprimante retenue d'après ces critères sera sélectionnée. Si plusieurs imprimantes correspondent aux attributs spécifiés, l'une d'entre elles sera sélectionnée (selon l'ordre dans lequel elles auront été découvertes).
+      Si cette règle est définie, <ph name="PRODUCT_NAME" /> essaie de trouver une imprimante correspondant à tous les attributs spécifiés et en fait l'imprimante par défaut. La première imprimante retenue d'après ces critères est sélectionnée. Si plusieurs imprimantes correspondent aux attributs spécifiés, l'une d'entre elles est sélectionnée (selon l'ordre dans lequel elles ont été découvertes).
 
       Si cette règle n'est pas définie ou si aucune imprimante n'est retenue dans le délai imparti, l'imprimante par défaut est l'imprimante PDF intégrée à l'outil. Si l'imprimante PDF n'est pas disponible, aucune imprimante n'est sélectionnée.
 

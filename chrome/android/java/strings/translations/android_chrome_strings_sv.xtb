@@ -102,7 +102,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="2414886740292270097">Mörk</translation>
 <translation id="2433507940547922241">Utseende</translation>
 <translation id="2440823041667407902">Platsåtkomst</translation>
-<translation id="2441637511528789386">Du är nu inloggad i Chrome.</translation>
 <translation id="2470327855284432041"><ph name="PAGE_SIZE_STRING" /> sida har sparats offline</translation>
 <translation id="2476578072172137802">Inställningar för webbplatsen</translation>
 <translation id="2482878487686419369">Aviseringar</translation>
@@ -150,6 +149,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="3137521801621304719">Inaktivera inkognitoläge</translation>
 <translation id="3190152372525844641">Aktivera behörigheter för Chrome i <ph name="BEGIN_LINK" />Android-inställningar<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> sparad data</translation>
+<translation id="3207960819495026254">Bokmärkt</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Webbapp</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -210,6 +210,9 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4170011742729630528">Tjänsten är inte tillgänglig, försök igen senare.</translation>
 <translation id="4195643157523330669">Öppna i ny flik</translation>
 <translation id="423410644998903704">Chrome behöver tillgång till behörigheter för att kunna dela dem på den här webbplatsen.</translation>
+<translation id="424696723690217687">Upptäck webbsidor som har skickats av objekt i närheten.
+
+Chrome söker efter sidor i närheten när enheten är olåst. Sidorna skickas via en tjänst från Google för att förbättra kvaliteten på sidresultaten.</translation>
 <translation id="4256782883801055595">Licenser för öppen källkod</translation>
 <translation id="4259722352634471385">Webbadressen har blockerats: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopiera länkadress</translation>
@@ -450,6 +453,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7094922512924405309">Inga Physical Web-sidor hittades i närheten</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> öppna flikar</translation>
 <translation id="7096034533295549981">Videon läses in</translation>
+<translation id="7180611975245234373">Uppdatera</translation>
 <translation id="7191430249889272776">Fliken öppnades i bakgrunden.</translation>
 <translation id="7201341158316793215">Bokmärket tas bort …</translation>
 <translation id="7208788139759694678">Databesparing har inaktiverats</translation>
@@ -508,7 +512,6 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="7851858861565204677">Andra enheter</translation>
 <translation id="7876243839304621966">Ta bort alla</translation>
 <translation id="7925108652071887026">Fyll i uppgifter automatiskt</translation>
-<translation id="7926911226829060241">Bland annat bokmärken, historik och lösenord synkroniseras med ditt Google-konto.</translation>
 <translation id="7947953824732555851">Godkänn och logga in</translation>
 <translation id="7961015016161918242">Aldrig</translation>
 <translation id="7963646190083259054">Leverantör:</translation>

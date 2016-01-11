@@ -102,7 +102,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="2414886740292270097">Dunkel</translation>
 <translation id="2433507940547922241">Darstellung</translation>
 <translation id="2440823041667407902">Standortzugriff</translation>
-<translation id="2441637511528789386">Sie sind jetzt in Chrome angemeldet.</translation>
 <translation id="2470327855284432041">Seite mit <ph name="PAGE_SIZE_STRING" /> offline gespeichert</translation>
 <translation id="2476578072172137802">Website-Einstellungen</translation>
 <translation id="2482878487686419369">Benachrichtigungen</translation>
@@ -150,6 +149,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="3137521801621304719">Inkognitomodus deaktivieren</translation>
 <translation id="3190152372525844641">Berechtigungen für Chrome in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> gespeicherte Daten</translation>
+<translation id="3207960819495026254">Mit einem Lesezeichen versehen</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Web-App</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -210,6 +210,9 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4170011742729630528">Der Dienst ist momentan nicht verfügbar. Bitte versuchen Sie es später erneut.</translation>
 <translation id="4195643157523330669">In neuem Tab öffnen</translation>
 <translation id="423410644998903704">Chrome benötigt Zugriff auf die Berechtigungen, um sie für diese Website freizugeben.</translation>
+<translation id="424696723690217687">Entdecken Sie Webseiten, die von Objekten in Ihrer Nähe übermittelt werden.
+
+Chrome sucht nach Seiten in Ihrer Nähe, wenn Ihr Gerät entsperrt ist. Diese Seiten werden durch einen Google-Dienst überprüft, um die Qualität der Seitenergebnisse zu verbessern.</translation>
 <translation id="4256782883801055595">Open Source-Lizenzen</translation>
 <translation id="4259722352634471385">Die Navigation zu <ph name="URL" /> ist blockiert.</translation>
 <translation id="4269820728363426813">URL kopieren</translation>
@@ -450,6 +453,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7094922512924405309">Keine Physical Web-Seiten zu Objekten in der Nähe gefunden</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> geöffnete Tabs</translation>
 <translation id="7096034533295549981">Video wird geladen</translation>
+<translation id="7180611975245234373">Aktualisieren</translation>
 <translation id="7191430249889272776">Tab im Hintergrund geöffnet</translation>
 <translation id="7201341158316793215">Wird entfernt...</translation>
 <translation id="7208788139759694678">Datenkomprimierung deaktiviert</translation>
@@ -508,7 +512,6 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="7851858861565204677">Andere Geräte</translation>
 <translation id="7876243839304621966">Alle entfernen</translation>
 <translation id="7925108652071887026">AutoFill-Daten</translation>
-<translation id="7926911226829060241">Ihre Lesezeichen, Ihr Verlauf, Ihre Passwörter und andere Inhalte werden mit Ihrem Google-Konto synchronisiert.</translation>
 <translation id="7947953824732555851">Akzeptieren und anmelden</translation>
 <translation id="7961015016161918242">Nie</translation>
 <translation id="7963646190083259054">Anbieter:</translation>

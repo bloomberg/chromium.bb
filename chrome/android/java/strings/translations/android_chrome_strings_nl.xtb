@@ -83,7 +83,7 @@ Je moet Bluetooth en Locatie hebben ingeschakeld om het Fysieke web te gebruiken
 <translation id="2100273922101894616">Automatisch inloggen</translation>
 <translation id="2126426811489709554">Mogelijk gemaakt door Chrome</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> gesloten</translation>
-<translation id="2138201775715568214">Bezoek met zoeken naar Fysieke webpagina's in de buurt</translation>
+<translation id="2138201775715568214">Bezig met zoeken naar Fysieke webpagina's in de buurt</translation>
 <translation id="2139186145475833000">Toevoegen aan startscherm</translation>
 <translation id="2154710561487035718">URL kopiëren</translation>
 <translation id="219985413780390209">Jou en je apparaat beschermen tegen gevaar</translation>
@@ -102,7 +102,6 @@ Je moet Bluetooth en Locatie hebben ingeschakeld om het Fysieke web te gebruiken
 <translation id="2414886740292270097">Donker</translation>
 <translation id="2433507940547922241">Vormgeving</translation>
 <translation id="2440823041667407902">Locatietoegang</translation>
-<translation id="2441637511528789386">Je bent nu ingelogd bij Chrome.</translation>
 <translation id="2470327855284432041">Pagina van <ph name="PAGE_SIZE_STRING" /> offline opgeslagen</translation>
 <translation id="2476578072172137802">Site instellingen</translation>
 <translation id="2482878487686419369">Meldingen</translation>
@@ -150,6 +149,7 @@ Je moet Bluetooth en Locatie hebben ingeschakeld om het Fysieke web te gebruiken
 <translation id="3137521801621304719">Incognitomodus verlaten</translation>
 <translation id="3190152372525844641">Schakel rechten in voor Chrome via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> opgeslagen gegevens</translation>
+<translation id="3207960819495026254">Toegevoegd aan 'Bladwijzers'</translation>
 <translation id="3227137524299004712">Microfoon</translation>
 <translation id="3232754137068452469">Webapp</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -210,6 +210,9 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4170011742729630528">De service is niet beschikbaar. Probeer het later opnieuw.</translation>
 <translation id="4195643157523330669">Openen op nieuw tabblad</translation>
 <translation id="423410644998903704">Chrome heeft rechten nodig om het item te delen met deze site.</translation>
+<translation id="424696723690217687">Ontdek webpagina's die worden verzonden door objecten in de buurt.
+
+Chrome scant op webpagina's in de buurt wanneer je apparaat is ontgrendeld. Deze pagina's worden verwerkt door een Google-service om de kwaliteit van paginaresultaten te verbeteren.</translation>
 <translation id="4256782883801055595">Open-sourcelicenties</translation>
 <translation id="4259722352634471385">Navigatie is geblokkeerd: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Linkadres kopiëren</translation>
@@ -450,6 +453,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7094922512924405309">Geen Fysieke webpagina's in de buurt gevonden</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> geopende tabbladen</translation>
 <translation id="7096034533295549981">Video laden</translation>
+<translation id="7180611975245234373">Vernieuwen</translation>
 <translation id="7191430249889272776">Tabblad op de achtergrond geopend.</translation>
 <translation id="7201341158316793215">Verwijderen…</translation>
 <translation id="7208788139759694678">Databesparing uitgeschakeld</translation>
@@ -508,7 +512,6 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="7851858861565204677">Andere apparaten</translation>
 <translation id="7876243839304621966">Alles verwijderen</translation>
 <translation id="7925108652071887026">Gegevens van Automatisch aanvullen</translation>
-<translation id="7926911226829060241">Je geopende bladwijzers, geschiedenis, wachtwoorden en meer worden gesynchroniseerd met je Google-account.</translation>
 <translation id="7947953824732555851">Accepteren en inloggen</translation>
 <translation id="7961015016161918242">Nooit</translation>
 <translation id="7963646190083259054">Leverancier:</translation>

@@ -409,11 +409,11 @@
             }
           },
           "idPattern": {
-            "description": "Bežný výraz na priradenie identifikátora tlačiarne.",
+            "description": "Regulárny výraz na priradenie identifikátora tlačiarne.",
             "type": "string"
           },
           "namePattern": {
-            "description": "Bežný výraz na priradenie zobrazovaného názvu tlačiarne.",
+            "description": "Regulárny výraz na priradenie zobrazovaného názvu tlačiarne.",
             "type": "string"
           }
         }
@@ -1860,7 +1860,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="7424751532654212117">Zoznam výnimiek zo zoznamu zakázaných doplnkov</translation>
 <translation id="7426112309807051726">Určí, či bude optimalizácia <ph name="TLS_FALSE_START" /> zakázaná. Z historických dôvodov je toto pravidlo pomenované DisableSSLRecordSplitting.
 
-      Ak toto pravidlo nenastavíte alebo nastavíte na možnosť False, bude povolená funkcia <ph name="TLS_FALSE_START" />. Ak ho nastavíte na možnosť True, funkcia <ph name="TLS_FALSE_START" /> bude zakázaná.</translation>
+      Ak toto pravidlo nenastavíte alebo nastavíte na hodnotu False, bude povolená funkcia <ph name="TLS_FALSE_START" />. Ak ho nastavíte na hodnotu True, funkcia <ph name="TLS_FALSE_START" /> bude zakázaná.</translation>
 <translation id="7433714841194914373">Povoliť Dynamické vyhľadávanie</translation>
 <translation id="7443616896860707393">Požiadavky typu cross-origin štandardu HTTP Basic Auth</translation>
 <translation id="7468416082528382842">Umiestnenie v registri systému Windows:</translation>

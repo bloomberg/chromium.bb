@@ -102,7 +102,6 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="2414886740292270097">Tamno</translation>
 <translation id="2433507940547922241">Prikaz</translation>
 <translation id="2440823041667407902">Pristup lokaciji</translation>
-<translation id="2441637511528789386">Prijavljeni ste na Chrome</translation>
 <translation id="2470327855284432041">Stranica veličine <ph name="PAGE_SIZE_STRING" /> spremljena izvanmrežno</translation>
 <translation id="2476578072172137802">Postavke web-lokacije</translation>
 <translation id="2482878487686419369">Obavijesti</translation>
@@ -150,6 +149,7 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="3137521801621304719">Izlaz iz anonimnog načina</translation>
 <translation id="3190152372525844641">Uključite dopuštenja za Chrome u <ph name="BEGIN_LINK" />Postavkama Androida<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">Pohranjeni podaci: <ph name="STORAGE_AMOUNT" /></translation>
+<translation id="3207960819495026254">Označeno</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Web-aplikacija</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -210,6 +210,9 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="4170011742729630528">Usluga nije dostupna, pokušajte ponovo kasnije.</translation>
 <translation id="4195643157523330669">Otvori u novoj kartici</translation>
 <translation id="423410644998903704">Chrome treba imati pristup dopuštenjima da bi ih dijelio s ovom web-lokacijom.</translation>
+<translation id="424696723690217687">Otkrijte web-stranice koje šalju objekti u blizini.
+
+Chrome će tražiti stranice u blizini kad je uređaj otključan. Te će stranice obraditi Googleova usluga radi poboljšanja kvalitete rezultata stranica.</translation>
 <translation id="4256782883801055595">Licence otvorenog koda</translation>
 <translation id="4259722352634471385">Otvaranje je blokirano: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopiraj adresu veze</translation>
@@ -450,6 +453,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="7094922512924405309">Nisu pronađene stranice Fizičkog weba u blizini</translation>
 <translation id="7095930899177687653">Otvorene kartice (<ph name="OPEN_TABS" />)</translation>
 <translation id="7096034533295549981">Učitavanje videa</translation>
+<translation id="7180611975245234373">Osvježi</translation>
 <translation id="7191430249889272776">Kartica je otvorena u pozadini.</translation>
 <translation id="7201341158316793215">Uklanjanje…</translation>
 <translation id="7208788139759694678">Ušteda podataka nije omogućena</translation>
@@ -508,7 +512,6 @@ No niste nevidljivi. Anonimni način neće sakriti vaše pregledavanje od poslod
 <translation id="7851858861565204677">Ostali uređaji</translation>
 <translation id="7876243839304621966">Ukloni sve</translation>
 <translation id="7925108652071887026">Podaci automatskog popunjavanja</translation>
-<translation id="7926911226829060241">Otvorene oznake, povijest, zaporke i brojni drugi podaci sinkroniziraju se s vašim Google računom.</translation>
 <translation id="7947953824732555851">Prihv. i prijavi se</translation>
 <translation id="7961015016161918242">Nikad</translation>
 <translation id="7963646190083259054">Dobavljač:</translation>

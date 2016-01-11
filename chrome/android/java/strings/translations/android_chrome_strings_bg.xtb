@@ -102,7 +102,6 @@
 <translation id="2414886740292270097">Тъмно</translation>
 <translation id="2433507940547922241">Облик</translation>
 <translation id="2440823041667407902">Достъп до местоположението</translation>
-<translation id="2441637511528789386">Вече влязохте в Chrome.</translation>
 <translation id="2470327855284432041">Страница с обем <ph name="PAGE_SIZE_STRING" /> е запазена офлайн</translation>
 <translation id="2476578072172137802">Настройки за сайта</translation>
 <translation id="2482878487686419369">Известия</translation>
@@ -150,6 +149,7 @@
 <translation id="3137521801621304719">Напускане на режима „инкогнито“</translation>
 <translation id="3190152372525844641">Включете разрешенията за Chrome от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">Съхранявани данни: <ph name="STORAGE_AMOUNT" /></translation>
+<translation id="3207960819495026254">С отметка</translation>
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="3232754137068452469">Уеб приложение</translation>
 <translation id="3244271242291266297">ММ</translation>
@@ -210,6 +210,9 @@
 <translation id="4170011742729630528">Няма достъп до услугата. Опитайте отново по-късно.</translation>
 <translation id="4195643157523330669">Отваряне в нов раздел</translation>
 <translation id="423410644998903704">Chrome се нуждае от достъп до разрешенията, за да ги сподели с този сайт.</translation>
+<translation id="424696723690217687">Откривайте уеб страници, изпращани от обекти в близост.
+
+Chrome ще сканира за намиращи се наблизо страници, когато устройството ви е отключено. Те ще преминават през услуга на Google с цел подобряване на качеството на съответните резултати.</translation>
 <translation id="4256782883801055595">Лицензи за отворен код</translation>
 <translation id="4259722352634471385">Навигирането е блокирано: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Копиране на адреса на връзката</translation>
@@ -450,6 +453,7 @@
 <translation id="7094922512924405309">Няма намиращи се в близост страници във Физическата мрежа</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> отворени раздела</translation>
 <translation id="7096034533295549981">Клип: Зарежда се</translation>
+<translation id="7180611975245234373">Опресняване</translation>
 <translation id="7191430249889272776">Разделът е отворен на заден план.</translation>
 <translation id="7201341158316793215">Премахва се…</translation>
 <translation id="7208788139759694678">Деактивирахте Икономия на данни</translation>
@@ -508,7 +512,6 @@
 <translation id="7851858861565204677">Други устройства</translation>
 <translation id="7876243839304621966">Премахване на всички</translation>
 <translation id="7925108652071887026">Автоматично попълване на данни</translation>
-<translation id="7926911226829060241">Вашите отворени отметки, история, пароли и др. се синхронизират с профила ви в Google.</translation>
 <translation id="7947953824732555851">Приемам и влизам</translation>
 <translation id="7961015016161918242">Никога</translation>
 <translation id="7963646190083259054">Доставчик:</translation>
