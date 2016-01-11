@@ -1,7 +1,7 @@
 Name: harfbuzz-ng
 Short Name: harfbuzz-ng
 URL: http://harfbuzz.org
-Version: 1.1.1
+Version: 1.1.3
 Date: 20151124
 Security Critical: yes
 License: MIT
@@ -20,5 +20,5 @@ the NEWS file from HarfBuzz' release notes, and bump the version numbers
 in README.chromium.
 
 Local changes:
-* merge https://github.com/behdad/harfbuzz/pull/203
-* merge https://github.com/behdad/harfbuzz/pull/206
+* Disabled test_langs_sorted() in hb-ot-tag.cc to fix
+  "unused function" compile error
