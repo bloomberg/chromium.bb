@@ -2,21 +2,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os
 import sys
 
-def _GetTelemetryPath(input_api):
-  return os.path.join(
-      os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(
-      input_api.PresubmitLocalPath())))), 'tools', 'telemetry')
+
+def _GetChromiumSrcDir(input_api):
+  return input_api.os_path.abspath(input_api.os_path.join(
+      input_api.PresubmitLocalPath(), '..', '..', '..', '..'))
+
 
 def LoadSupport(input_api):
   if 'cloud_storage' not in globals():
     # Avoid leaking changes to global sys.path.
     _old_sys_path = sys.path
     try:
-      telemetry_path = _GetTelemetryPath(input_api)
-      sys.path = [telemetry_path] + sys.path
+      catapult_base_path = input_api.os_path.join(
+          _GetChromiumSrcDir(input_api), 'third_party', 'catapult',
+          'catapult_base')
+      sys.path = [catapult_base_path] + sys.path
       from catapult_base import cloud_storage
       globals()['cloud_storage'] = cloud_storage
     finally:
@@ -32,7 +34,7 @@ def _GetFilesNotInCloud(input_api):
   hash_paths = []
   for affected_file in input_api.AffectedFiles(include_deletes=False):
     hash_path = affected_file.AbsoluteLocalPath()
-    _, extension = os.path.splitext(hash_path)
+    _, extension = input_api.os_path.splitext(hash_path)
     if extension == '.sha1':
       hash_paths.append(hash_path)
   if not hash_paths:
@@ -67,11 +69,11 @@ def _VerifyFilesInCloud(input_api, output_api):
     results.append(output_api.PresubmitError(
         'Attemping to commit hash file, but corresponding '
         'data file is not in Cloud Storage: %s' % hash_path))
-    file_paths.append(os.path.splitext(hash_path)[0])
+    file_paths.append(input_api.os_path.splitext(hash_path)[0])
 
   if len(file_paths) > 0:
-    upload_script_path = os.path.join(
-        _GetTelemetryPath(input_api), 'cloud_storage')
+    upload_script_path = input_api.os_path.join(
+        _GetChromiumSrcDir(input_api), 'tools', 'telemetry', 'cloud_storage')
     results.append(output_api.PresubmitError(
           'To upload missing files, Run: \n'
           '%s upload %s google-only' %
