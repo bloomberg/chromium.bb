@@ -304,11 +304,12 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
   int input_buf_index = 0;
   media::MediaCodecStatus status =
       media_codec_->DequeueInputBuffer(NoWaitTimeOut(), &input_buf_index);
-  if (status != media::MEDIA_CODEC_OK) {
-    DCHECK(status == media::MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER ||
-           status == media::MEDIA_CODEC_ERROR);
+  DCHECK(status == media::MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER ||
+         status == media::MEDIA_CODEC_OK || status == media::MEDIA_CODEC_ERROR);
+  if (status == media::MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER)
     return false;
-  }
+  RETURN_ON_FAILURE(this, status == media::MEDIA_CODEC_OK,
+                    "Failed to DequeueInputBuffer", PLATFORM_FAILURE, false);
 
   base::Time queued_time = pending_bitstream_buffers_.front().second;
   UMA_HISTOGRAM_TIMES("Media.AVDA.InputQueueTime",
@@ -424,6 +425,8 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
     TRACE_EVENT_END2("media", "AVDA::DequeueOutput", "status", status,
                      "presentation_timestamp (ms)",
                      presentation_timestamp.InMilliseconds());
+    RETURN_ON_FAILURE(this, status != media::MEDIA_CODEC_ERROR,
+                      "DequeueOutputBuffer failed.", PLATFORM_FAILURE, false);
 
     DVLOG(3) << "AVDA::DequeueOutput: pts:" << presentation_timestamp
              << " buf_index:" << buf_index << " offset:" << offset
@@ -431,7 +434,6 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
 
     switch (status) {
       case media::MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER:
-      case media::MEDIA_CODEC_ERROR:
         return false;
 
       case media::MEDIA_CODEC_OUTPUT_FORMAT_CHANGED: {
