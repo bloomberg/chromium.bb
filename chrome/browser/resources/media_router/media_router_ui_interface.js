@@ -175,6 +175,15 @@ cr.define('media_router.browserApi', function() {
     chrome.send('reportClickedSinkIndex', [sinkIndex]);
   }
 
+  /*
+   * Reports the initial dialog view.
+   *
+   * @param {string} view
+   */
+  function reportInitialState(view) {
+    chrome.send('reportInitialState', [view]);
+  }
+
   /**
    * Reports the navigation to the specified view.
    *
@@ -230,6 +239,7 @@ cr.define('media_router.browserApi', function() {
     joinRoute: joinRoute,
     onInitialDataReceived: onInitialDataReceived,
     reportClickedSinkIndex: reportClickedSinkIndex,
+    reportInitialState: reportInitialState,
     reportNavigateToView: reportNavigateToView,
     reportSelectedCastMode: reportSelectedCastMode,
     reportSinkCount: reportSinkCount,

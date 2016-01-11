@@ -643,6 +643,7 @@ Polymer({
 
     if (localRoute)
       this.showRouteDetails_(localRoute);
+    this.fire('show-initial-state', {currentView: this.currentView_});
   },
 
   /**

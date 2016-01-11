@@ -51,8 +51,6 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   void RegisterMessages() override;
 
   // Handlers for JavaScript messages.
-  // In all cases, |args| consists of a single DictionaryValue containing the
-  // actual parameters.
   // See media_router_ui_interface.js for documentation on parameters.
   void OnRequestInitialData(const base::ListValue* args);
   void OnCreateRoute(const base::ListValue* args);
@@ -62,6 +60,7 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   void OnJoinRoute(const base::ListValue* args);
   void OnCloseDialog(const base::ListValue* args);
   void OnReportClickedSinkIndex(const base::ListValue* args);
+  void OnReportInitialState(const base::ListValue* args);
   void OnReportNavigateToView(const base::ListValue* args);
   void OnReportSelectedCastMode(const base::ListValue* args);
   void OnReportSinkCount(const base::ListValue* args);

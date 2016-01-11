@@ -19747,6 +19747,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="MediaRouter.Ui.InitialState" enum="MediaRouterInitialViews">
+  <owner>apacible@chromium.org</owner>
+  <summary>
+    The view that was shown when the Media Router dialog is initially opened.
+  </summary>
+</histogram>
+
 <histogram name="MediaRouter.Ui.Navigate.SourceSelection"
     enum="MediaRouterSourceTypes">
   <owner>apacible@chromium.org</owner>
@@ -70527,6 +70534,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Overflow Menu"/>
   <int value="2" label="Contextual Menu"/>
   <int value="3" label="Page"/>
+</enum>
+
+<enum name="MediaRouterInitialViews" type="int">
+  <int value="0" label="Route Details"/>
+  <int value="1" label="Sink List"/>
 </enum>
 
 <enum name="MediaRouterSinkPositionLabel" type="int">

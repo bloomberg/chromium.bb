@@ -36,6 +36,7 @@ const char kCloseRoute[] = "closeRoute";
 const char kJoinRoute[] = "joinRoute";
 const char kCloseDialog[] = "closeDialog";
 const char kReportClickedSinkIndex[] = "reportClickedSinkIndex";
+const char kReportInitialState[] = "reportInitialState";
 const char kReportNavigateToView[] = "reportNavigateToView";
 const char kReportSelectedCastMode[] = "reportSelectedCastMode";
 const char kReportSinkCount[] = "reportSinkCount";
@@ -276,6 +277,10 @@ void MediaRouterWebUIMessageHandler::RegisterMessages() {
       base::Bind(&MediaRouterWebUIMessageHandler::OnReportClickedSinkIndex,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      kReportInitialState,
+      base::Bind(&MediaRouterWebUIMessageHandler::OnReportInitialState,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       kReportSelectedCastMode,
       base::Bind(&MediaRouterWebUIMessageHandler::OnReportSelectedCastMode,
                  base::Unretained(this)));
@@ -487,6 +492,19 @@ void MediaRouterWebUIMessageHandler::OnReportClickedSinkIndex(
   }
   UMA_HISTOGRAM_SPARSE_SLOWLY("MediaRouter.Ui.Action.StartLocalPosition",
                               std::min(index, 100));
+}
+
+void MediaRouterWebUIMessageHandler::OnReportInitialState(
+    const base::ListValue* args) {
+  DVLOG(1) << "OnReportInitialState";
+  std::string initial_view;
+  if (!args->GetString(0, &initial_view)) {
+    DVLOG(1) << "Unable to extract args.";
+    return;
+  }
+  bool sink_list_state = initial_view == "sink-list";
+  DCHECK(sink_list_state || (initial_view == "route-details"));
+  UMA_HISTOGRAM_BOOLEAN("MediaRouter.Ui.InitialState", sink_list_state);
 }
 
 void MediaRouterWebUIMessageHandler::OnReportNavigateToView(

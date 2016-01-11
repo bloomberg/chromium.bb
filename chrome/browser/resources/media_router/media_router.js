@@ -37,6 +37,7 @@ cr.define('media_router', function() {
     container.addEventListener('navigate-to-cast-mode-list',
                                onNavigateToCastMode);
     container.addEventListener('report-sink-count', onSinkCountReported);
+    container.addEventListener('show-initial-state', onShowInitialState);
     container.addEventListener('sink-click', onSinkClick);
   }
 
@@ -165,6 +166,18 @@ cr.define('media_router', function() {
   function onNavigateToSinkList() {
     media_router.browserApi.reportNavigateToView(
         media_router.MediaRouterView.SINK_LIST);
+  }
+
+  /*
+   * Reports the initial state of the dialog after it is opened.
+   * Called after initial data is populated.
+   *
+   * @param {{detail: {currentView: string}}} data
+   * Parameters in |data|.detail:
+   *   currentView - the current dialog's current view.
+   */
+  function onShowInitialState(data) {
+    media_router.browserApi.reportInitialState(data.detail.currentView);
   }
 
   /**
