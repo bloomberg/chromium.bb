@@ -9,7 +9,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-
 #include "third_party/re2/src/re2/re2.h"
 
 using re2::RE2;

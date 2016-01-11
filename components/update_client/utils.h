@@ -6,7 +6,8 @@
 #define COMPONENTS_UPDATE_CLIENT_UTILS_H_
 
 #include <string>
-#include <base/memory/scoped_ptr.h>
+
+#include "base/memory/scoped_ptr.h"
 
 class GURL;
 
