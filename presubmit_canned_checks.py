@@ -26,6 +26,17 @@ DEFAULT_LINT_FILTERS = [
   '-whitespace/braces',
 ]
 
+# These filters will always be removed, even if the caller specifies a filter
+# set, as they are problematic or broken in some way.
+#
+# Justifications for each filter:
+# - build/c++11         : Rvalue ref checks are unreliable (false positives),
+#                         include file and feature blacklists are
+#                         google3-specific.
+BLACKLIST_LINT_FILTERS = [
+  '-build/c++11',
+]
+
 ### Description checks
 
 def CheckChangeHasTestField(input_api, output_api):
@@ -120,6 +131,7 @@ def CheckChangeLintsClean(input_api, output_api, source_file_filter=None,
   cpplint._cpplint_state.ResetErrorCounts()
 
   lint_filters = lint_filters or DEFAULT_LINT_FILTERS
+  lint_filters.extend(BLACKLIST_LINT_FILTERS)
   cpplint._SetFilters(','.join(lint_filters))
 
   # We currently are more strict with normal code than unit tests; 4 and 5 are
