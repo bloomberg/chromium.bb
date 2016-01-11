@@ -226,7 +226,9 @@ String StylePropertySerializer::asText() const
         CSSPropertyID shorthandPropertyID = CSSPropertyInvalid;
         CSSPropertyID borderFallbackShorthandProperty = CSSPropertyInvalid;
         String value;
-        ASSERT(!isShorthandProperty(propertyID));
+        // Shorthands with variable references are not expanded at parse time
+        // and hence may still be observed during serialization.
+        ASSERT(!isShorthandProperty(propertyID) || property.value()->isVariableReferenceValue());
 
         switch (propertyID) {
         case CSSPropertyBackgroundAttachment:
