@@ -33,4 +33,12 @@ TBD
 
 ## Running the engine
 
+### In a container
 For running the engine in a container, see [container](container.md).
+
+### On a workstation
+If you are running the engine on your workstation and are connected to the
+client device via USB, you'll need remote port forwarding to allow the Blimp
+client to talk to your computer. Follow the instructions
+[here](https://developer.chrome.com/devtools/docs/remote-debugging) to get
+started. You'll probably want to remap 25467 to "localhost:25467".
