@@ -41,6 +41,17 @@ class ChromeProxyLoFi(ChromeProxyBenchmark):
     return 'chrome_proxy_benchmark.lo_fi.lo_fi'
 
 
+@benchmark.Disabled(*WEBVIEW_PLATFORMS)
+class ChromeProxyPreviewLoFi(ChromeProxyBenchmark):
+  tag = 'lo_fi_preview'
+  test = measurements.ChromeProxyLoFiPreview
+  page_set = pagesets.LoFiPreviewStorySet
+
+  @classmethod
+  def Name(cls):
+    return 'chrome_proxy_benchmark.lo_fi_preview.lo_fi_preview'
+
+
 class ChromeProxyExpDirective(ChromeProxyBenchmark):
   tag = 'exp_directive'
   test = measurements.ChromeProxyExpDirective
