@@ -8,10 +8,12 @@ See [V8GCController.md](V8GCController.md) to learn the lifetime management.
 
 ## Isolate
 
-An isolate is a concept of a thread in V8.
-Isolates and threads are in 1:1 relationship.
+An isolate is a concept of an instance in V8.
+In Blink, isolates and threads are in 1:1 relationship.
 One isolate is associated with the main thread.
 One isolate is associated with one worker thread.
+An exception is a compositor worker where one isolate is shared by multiple
+compositor workers.
 
 ## Context
 
@@ -106,9 +108,9 @@ and the control returns back to V8 binding, V8 binding pops the context
 from the stack. Given that the control between V8 binding and V8 can be nested
 (i.e., V8 binding invokes JavaScript, which calls into V8 binding,
 which invokes another JavaScript etc), these contexts form a stack.
-The pushing and popping are done by calling v8::Context::Enter() and
-v8::Context::Exit() (or v8::Context::Scope). We call the most recently entered
-context an entered context.
+The pushing and popping are done by any V8 API that takes a context argument
+or by explicitly calling v8::Context::Enter() and v8::Context::Exit().
+We call the most recently entered context an entered context.
 
 In the above example, at the point when func() is running,
 the entered context is the context of the main frame
@@ -123,6 +125,10 @@ of the HTML spec.
 In summary, the entered context is a context from which the current JavaScript
 execution was started. The current context is a context of
 the JavaScript function that is currently running.
+
+There is another special context called a debugger context.
+If a debugger is active, the debugger context may be inserted to
+the context stack.
 
 ## World
 
@@ -193,9 +199,8 @@ The current context of the worker thread never changes.
 
 ## DOM wrappers and worlds
 
-For compatibility reasons (although this is not speced),
-we need to make sure that the same DOM wrapper is returned to JavaScript
-as long as the underlying C++ DOM object is alive.
+For compatibility reasons, we need to make sure that the same DOM wrapper
+is returned to JavaScript as long as the underlying C++ DOM object is alive.
 We should not return different DOM wrappers for the same C++ DOM object.
 
 Here is an example:
