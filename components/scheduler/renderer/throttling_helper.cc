@@ -21,13 +21,13 @@ ThrottlingHelper::ThrottlingHelper(RendererSchedulerImpl* renderer_scheduler,
       tick_clock_(renderer_scheduler->tick_clock()),
       tracing_category_(tracing_category),
       time_domain_(new VirtualTimeDomain(this, tick_clock_->NowTicks())),
-      pending_pump_throttled_tasks_(false),
       weak_factory_(this) {
-  pump_throttled_tasks_closure_ = base::Bind(
-      &ThrottlingHelper::PumpThrottledTasks, weak_factory_.GetWeakPtr());
+  suspend_timers_when_backgrounded_closure_.Reset(base::Bind(
+      &ThrottlingHelper::PumpThrottledTasks, weak_factory_.GetWeakPtr()));
   forward_immediate_work_closure_ =
       base::Bind(&ThrottlingHelper::OnTimeDomainHasImmediateWork,
                  weak_factory_.GetWeakPtr());
+
   renderer_scheduler_->RegisterTimeDomain(time_domain_.get());
 }
 
@@ -42,8 +42,13 @@ void ThrottlingHelper::Throttle(TaskQueue* task_queue) {
   task_queue->SetTimeDomain(time_domain_.get());
   task_queue->SetPumpPolicy(TaskQueue::PumpPolicy::MANUAL);
 
-  if (!task_queue->IsEmpty())
-    MaybeSchedulePumpThrottledTasksLocked(FROM_HERE);
+  if (!task_queue->IsEmpty()) {
+    if (task_queue->HasPendingImmediateWork()) {
+      OnTimeDomainHasImmediateWork();
+    } else {
+      OnTimeDomainHasDelayedWork();
+    }
+  }
 }
 
 void ThrottlingHelper::Unthrottle(TaskQueue* task_queue) {
@@ -61,20 +66,28 @@ void ThrottlingHelper::OnTimeDomainHasImmediateWork() {
   }
   TRACE_EVENT0(tracing_category_,
                "ThrottlingHelper::OnTimeDomainHasImmediateWork");
-  MaybeSchedulePumpThrottledTasksLocked(FROM_HERE);
+  base::TimeTicks now = tick_clock_->NowTicks();
+  MaybeSchedulePumpThrottledTasksLocked(FROM_HERE, now, now);
 }
 
 void ThrottlingHelper::OnTimeDomainHasDelayedWork() {
   TRACE_EVENT0(tracing_category_,
                "ThrottlingHelper::OnTimeDomainHasDelayedWork");
-  MaybeSchedulePumpThrottledTasksLocked(FROM_HERE);
+  base::TimeTicks next_scheduled_delayed_task;
+  bool has_delayed_task =
+      time_domain_->NextScheduledRunTime(&next_scheduled_delayed_task);
+  DCHECK(has_delayed_task);
+  base::TimeTicks now = tick_clock_->NowTicks();
+  MaybeSchedulePumpThrottledTasksLocked(FROM_HERE, now,
+                                        next_scheduled_delayed_task);
 }
 
 void ThrottlingHelper::PumpThrottledTasks() {
   TRACE_EVENT0(tracing_category_, "ThrottlingHelper::PumpThrottledTasks");
-  pending_pump_throttled_tasks_ = false;
+  pending_pump_throttled_tasks_runtime_ = base::TimeTicks();
 
-  time_domain_->AdvanceTo(tick_clock_->NowTicks());
+  base::TimeTicks now = tick_clock_->NowTicks();
+  time_domain_->AdvanceTo(now);
   for (TaskQueue* task_queue : throttled_queues_) {
     if (task_queue->IsEmpty())
       continue;
@@ -88,29 +101,38 @@ void ThrottlingHelper::PumpThrottledTasks() {
   // Maybe schedule a call to ThrottlingHelper::PumpThrottledTasks if there is
   // a pending delayed task. NOTE posting a non-delayed task in the future will
   // result in ThrottlingHelper::OnTimeDomainHasImmediateWork being called.
-  //
-  // TODO(alexclarke): Consider taking next_scheduled_delayed_task into account
-  // inside MaybeSchedulePumpThrottledTasksLocked.
-  if (time_domain_->NextScheduledRunTime(&next_scheduled_delayed_task))
-    MaybeSchedulePumpThrottledTasksLocked(FROM_HERE);
+  if (time_domain_->NextScheduledRunTime(&next_scheduled_delayed_task)) {
+    MaybeSchedulePumpThrottledTasksLocked(FROM_HERE, now,
+                                          next_scheduled_delayed_task);
+  }
 }
 
 /* static */
-base::TimeDelta ThrottlingHelper::DelayToNextRunTimeInSeconds(
-    base::TimeTicks now) {
+base::TimeTicks ThrottlingHelper::ThrottledRunTime(
+    base::TimeTicks unthrottled_runtime) {
   const base::TimeDelta one_second = base::TimeDelta::FromSeconds(1);
-  return one_second - ((now - base::TimeTicks()) % one_second);
+  return unthrottled_runtime + one_second -
+      ((unthrottled_runtime - base::TimeTicks()) % one_second);
 }
 
 void ThrottlingHelper::MaybeSchedulePumpThrottledTasksLocked(
-    const tracked_objects::Location& from_here) {
-  if (pending_pump_throttled_tasks_)
+    const tracked_objects::Location& from_here,
+    base::TimeTicks now,
+    base::TimeTicks unthrottled_runtime) {
+  base::TimeTicks throttled_runtime = ThrottledRunTime(unthrottled_runtime);
+  // If there is a pending call to PumpThrottledTasks and it's sooner than
+  // |unthrottled_runtime| then return.
+  if (!pending_pump_throttled_tasks_runtime_.is_null() &&
+      throttled_runtime >= pending_pump_throttled_tasks_runtime_) {
     return;
+  }
 
-  pending_pump_throttled_tasks_ = true;
+  pending_pump_throttled_tasks_runtime_ = throttled_runtime;
+
+  suspend_timers_when_backgrounded_closure_.Cancel();
   task_runner_->PostDelayedTask(
-      from_here, pump_throttled_tasks_closure_,
-      DelayToNextRunTimeInSeconds(tick_clock_->NowTicks()));
+      from_here, suspend_timers_when_backgrounded_closure_.callback(),
+      pending_pump_throttled_tasks_runtime_ - now);
 }
 
 }  // namespace scheduler

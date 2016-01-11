@@ -34,8 +34,7 @@ class SCHEDULER_EXPORT TimeDomain {
     virtual void OnTimeDomainHasImmediateWork() = 0;
 
     // Called when a TaskQueue registered with this TimeDomain has a delayed
-    // task enqueued and no other delayed tasks associated with this TimeDomain
-    // are pending.
+    // task enqueued.
     virtual void OnTimeDomainHasDelayedWork() = 0;
   };
 
@@ -102,6 +101,9 @@ class SCHEDULER_EXPORT TimeDomain {
 
   // The implementaion will secedule task processing to run with |delay| with
   // respect to the TimeDomain's time source.  Always called on the main thread.
+  // NOTE this is only called by ScheduleDelayedWork if the scheduled runtime
+  // is sooner than any previously sheduled work or if there is no other
+  // scheduled work.
   virtual void RequestWakeup(LazyNow* lazy_now, base::TimeDelta delay) = 0;
 
   // For implementation specific tracing.

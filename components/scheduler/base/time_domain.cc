@@ -83,17 +83,16 @@ void TimeDomain::ScheduleDelayedWork(internal::TaskQueueImpl* queue,
                                      LazyNow* lazy_now) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
-  bool delayed_wakeup_multimap_was_empty = delayed_wakeup_multimap_.empty();
-  if (delayed_wakeup_multimap_was_empty ||
+  if (delayed_wakeup_multimap_.empty() ||
       delayed_run_time < delayed_wakeup_multimap_.begin()->first) {
     base::TimeDelta delay =
         std::max(base::TimeDelta(), delayed_run_time - lazy_now->Now());
     RequestWakeup(lazy_now, delay);
   }
 
-  if (observer_ && delayed_wakeup_multimap_was_empty)
-    observer_->OnTimeDomainHasDelayedWork();
   delayed_wakeup_multimap_.insert(std::make_pair(delayed_run_time, queue));
+  if (observer_)
+    observer_->OnTimeDomainHasDelayedWork();
 }
 
 void TimeDomain::RegisterAsUpdatableTaskQueue(internal::TaskQueueImpl* queue) {

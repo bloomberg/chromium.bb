@@ -27,6 +27,9 @@ LazyNow RealTimeDomain::CreateLazyNow() {
 }
 
 void RealTimeDomain::RequestWakeup(LazyNow* lazy_now, base::TimeDelta delay) {
+  // NOTE this is only called if the scheduled runtime is sooner than any
+  // previously scheduled runtime, or there is no (outstanding) previously
+  // scheduled runtime.
   task_queue_manager_->MaybeScheduleDelayedWork(FROM_HERE, lazy_now, delay);
 }
 
@@ -37,8 +40,10 @@ bool RealTimeDomain::MaybeAdvanceTime() {
 
   LazyNow lazy_now = task_queue_manager_->CreateLazyNow();
   if (lazy_now.Now() >= next_run_time)
-    return true;
+    return true;  // Causes DoWork to post a continuation.
 
+  // The next task is sometime in the future, make sure we schedule a DoWork to
+  // run it.
   task_queue_manager_->MaybeScheduleDelayedWork(FROM_HERE, &lazy_now,
                                                 next_run_time - lazy_now.Now());
   return false;

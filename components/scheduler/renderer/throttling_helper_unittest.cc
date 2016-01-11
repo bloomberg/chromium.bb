@@ -56,45 +56,45 @@ class ThrottlingHelperTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ThrottlingHelperTest);
 };
 
-TEST_F(ThrottlingHelperTest, DelayToNextRunTimeInSeconds) {
-  EXPECT_EQ(base::TimeDelta::FromSecondsD(1.0),
-            ThrottlingHelper::DelayToNextRunTimeInSeconds(
+TEST_F(ThrottlingHelperTest, ThrottledRunTime) {
+  EXPECT_EQ(base::TimeTicks() + base::TimeDelta::FromSecondsD(1.0),
+            ThrottlingHelper::ThrottledRunTime(
                 base::TimeTicks() + base::TimeDelta::FromSecondsD(0.0)));
 
-  EXPECT_EQ(base::TimeDelta::FromSecondsD(0.9),
-            ThrottlingHelper::DelayToNextRunTimeInSeconds(
+  EXPECT_EQ(base::TimeTicks() + base::TimeDelta::FromSecondsD(1.0),
+            ThrottlingHelper::ThrottledRunTime(
                 base::TimeTicks() + base::TimeDelta::FromSecondsD(0.1)));
 
-  EXPECT_EQ(base::TimeDelta::FromSecondsD(0.8),
-            ThrottlingHelper::DelayToNextRunTimeInSeconds(
+  EXPECT_EQ(base::TimeTicks() + base::TimeDelta::FromSecondsD(1.0),
+            ThrottlingHelper::ThrottledRunTime(
                 base::TimeTicks() + base::TimeDelta::FromSecondsD(0.2)));
 
-  EXPECT_EQ(base::TimeDelta::FromSecondsD(0.5),
-            ThrottlingHelper::DelayToNextRunTimeInSeconds(
+  EXPECT_EQ(base::TimeTicks() + base::TimeDelta::FromSecondsD(1.0),
+            ThrottlingHelper::ThrottledRunTime(
                 base::TimeTicks() + base::TimeDelta::FromSecondsD(0.5)));
 
-  EXPECT_EQ(base::TimeDelta::FromSecondsD(0.2),
-            ThrottlingHelper::DelayToNextRunTimeInSeconds(
+  EXPECT_EQ(base::TimeTicks() + base::TimeDelta::FromSecondsD(1.0),
+            ThrottlingHelper::ThrottledRunTime(
                 base::TimeTicks() + base::TimeDelta::FromSecondsD(0.8)));
 
-  EXPECT_EQ(base::TimeDelta::FromSecondsD(0.1),
-            ThrottlingHelper::DelayToNextRunTimeInSeconds(
+  EXPECT_EQ(base::TimeTicks() + base::TimeDelta::FromSecondsD(1.0),
+            ThrottlingHelper::ThrottledRunTime(
                 base::TimeTicks() + base::TimeDelta::FromSecondsD(0.9)));
 
-  EXPECT_EQ(base::TimeDelta::FromSecondsD(1.0),
-            ThrottlingHelper::DelayToNextRunTimeInSeconds(
+  EXPECT_EQ(base::TimeTicks() + base::TimeDelta::FromSecondsD(2.0),
+            ThrottlingHelper::ThrottledRunTime(
                 base::TimeTicks() + base::TimeDelta::FromSecondsD(1.0)));
 
-  EXPECT_EQ(base::TimeDelta::FromSecondsD(0.9),
-            ThrottlingHelper::DelayToNextRunTimeInSeconds(
+  EXPECT_EQ(base::TimeTicks() + base::TimeDelta::FromSecondsD(2.0),
+            ThrottlingHelper::ThrottledRunTime(
                 base::TimeTicks() + base::TimeDelta::FromSecondsD(1.1)));
 
-  EXPECT_EQ(base::TimeDelta::FromSecondsD(1.0),
-            ThrottlingHelper::DelayToNextRunTimeInSeconds(
+  EXPECT_EQ(base::TimeTicks() + base::TimeDelta::FromSecondsD(9.0),
+            ThrottlingHelper::ThrottledRunTime(
                 base::TimeTicks() + base::TimeDelta::FromSecondsD(8.0)));
 
-  EXPECT_EQ(base::TimeDelta::FromSecondsD(0.9),
-            ThrottlingHelper::DelayToNextRunTimeInSeconds(
+  EXPECT_EQ(base::TimeTicks() + base::TimeDelta::FromSecondsD(9.0),
+            ThrottlingHelper::ThrottledRunTime(
                 base::TimeTicks() + base::TimeDelta::FromSecondsD(8.1)));
 }
 
@@ -232,6 +232,48 @@ TEST_F(ThrottlingHelperTest,
       base::Bind(&MessageLoopTaskCounter, &task_count));
 
   EXPECT_EQ(1u, task_count);
+}
+
+TEST_F(ThrottlingHelperTest,
+       SingleFutureThrottledTaskPumpedAndRunWithNoExtraneousMessageLoopTasks) {
+  throttling_helper_->Throttle(timer_queue_.get());
+
+  base::TimeDelta delay(base::TimeDelta::FromSecondsD(15.5));
+  timer_queue_->PostDelayedTask(FROM_HERE, base::Bind(&NopTask), delay);
+
+  size_t task_count = 0;
+  mock_task_runner_->RunTasksWhile(
+      base::Bind(&MessageLoopTaskCounter, &task_count));
+
+  EXPECT_EQ(1u, task_count);
+}
+
+TEST_F(ThrottlingHelperTest,
+       TwoFutureThrottledTaskPumpedAndRunWithNoExtraneousMessageLoopTasks) {
+  throttling_helper_->Throttle(timer_queue_.get());
+  std::vector<base::TimeTicks> run_times;
+
+  base::TimeDelta delay(base::TimeDelta::FromSecondsD(15.5));
+  timer_queue_->PostDelayedTask(FROM_HERE,
+                                base::Bind(&TestTask, &run_times, clock_.get()),
+                                delay);
+
+  base::TimeDelta delay2(base::TimeDelta::FromSecondsD(5.5));
+  timer_queue_->PostDelayedTask(FROM_HERE,
+                                base::Bind(&TestTask, &run_times, clock_.get()),
+                                delay2);
+
+  size_t task_count = 0;
+  mock_task_runner_->RunTasksWhile(
+      base::Bind(&MessageLoopTaskCounter, &task_count));
+
+  EXPECT_EQ(2u, task_count);  // There are two since the cancelled task runs in
+  // the same DoWork batch.
+
+  EXPECT_THAT(
+      run_times,
+      ElementsAre(base::TimeTicks() + base::TimeDelta::FromSeconds(6),
+                  base::TimeTicks() + base::TimeDelta::FromSeconds(16)));
 }
 
 }  // namespace scheduler

@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/macros.h"
+#include "components/scheduler/base/cancelable_closure_holder.h"
 #include "components/scheduler/base/time_domain.h"
 #include "components/scheduler/scheduler_export.h"
 #include "third_party/WebKit/public/platform/WebViewScheduler.h"
@@ -34,17 +35,18 @@ class SCHEDULER_EXPORT ThrottlingHelper : public TimeDomain::Observer {
 
   const VirtualTimeDomain* time_domain() const { return time_domain_.get(); }
 
-  static base::TimeDelta DelayToNextRunTimeInSeconds(base::TimeTicks now);
+  static base::TimeTicks ThrottledRunTime(base::TimeTicks unthrottled_runtime);
 
   const scoped_refptr<TaskQueue>& task_runner() const { return task_runner_; }
 
  private:
   void PumpThrottledTasks();
   void MaybeSchedulePumpThrottledTasksLocked(
-      const tracked_objects::Location& from_here);
+      const tracked_objects::Location& from_here,
+      base::TimeTicks now,
+      base::TimeTicks unthrottled_runtime);
 
   std::set<TaskQueue*> throttled_queues_;
-  base::Closure pump_throttled_tasks_closure_;
   base::Closure forward_immediate_work_closure_;
   scoped_refptr<TaskQueue> task_runner_;
   RendererSchedulerImpl* renderer_scheduler_;  // NOT OWNED
@@ -52,7 +54,8 @@ class SCHEDULER_EXPORT ThrottlingHelper : public TimeDomain::Observer {
   const char* tracing_category_;               // NOT OWNED
   scoped_ptr<VirtualTimeDomain> time_domain_;
 
-  bool pending_pump_throttled_tasks_;
+  CancelableClosureHolder suspend_timers_when_backgrounded_closure_;
+  base::TimeTicks pending_pump_throttled_tasks_runtime_;
 
   base::WeakPtrFactory<ThrottlingHelper> weak_factory_;
 

@@ -179,6 +179,8 @@ class SCHEDULER_EXPORT TaskQueueManager
 
   internal::EnqueueOrder GetNextSequenceNumber();
 
+  // Calls MaybeAdvanceTime on all time domains and returns true if one of them
+  // was able to advance.
   bool TryAdvanceTimeDomains();
 
   scoped_refptr<base::trace_event::ConvertableToTraceFormat>
