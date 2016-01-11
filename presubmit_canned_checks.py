@@ -16,8 +16,6 @@ _HERE = _os.path.dirname(_os.path.abspath(__file__))
 # - runtime/int         : Can be fixed long term; volume of errors too high
 # - runtime/virtual     : Broken now, but can be fixed in the future?
 # - whitespace/braces   : We have a lot of explicit scoping in chrome code.
-# - readability/inheritance : Temporary, while the OVERRIDE and FINAL fixup
-#                             is in progress.
 DEFAULT_LINT_FILTERS = [
   '-build/include',
   '-build/include_order',
@@ -26,7 +24,6 @@ DEFAULT_LINT_FILTERS = [
   '-runtime/int',
   '-runtime/virtual',
   '-whitespace/braces',
-  '-readability/inheritance'
 ]
 
 ### Description checks
