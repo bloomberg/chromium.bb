@@ -88,7 +88,7 @@ if (proprietary_codecs) {
   }
 }
 
-if (enable_mpeg2ts_stream_parser) {
+if (enable_mse_mpeg2ts_stream_parser) {
   fuzzer_test("es_parser_adts_fuzzer") {
     sources = [
       "es_parser_adts_fuzzer.cc",
