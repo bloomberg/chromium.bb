@@ -19,10 +19,8 @@ namespace net {
 DnsQuery::DnsQuery(uint16_t id, const base::StringPiece& qname, uint16_t qtype)
     : qname_size_(qname.size()) {
   DCHECK(!DNSDomainToString(qname).empty());
-  // QNAME + QTYPE + QCLASS
-  size_t question_size = qname_size_ + sizeof(uint16_t) + sizeof(uint16_t);
   io_buffer_ = new IOBufferWithSize(sizeof(dns_protocol::Header) +
-                                    question_size);
+                                    question_size());
   *header() = {};
   header()->id = base::HostToNet16(id);
   header()->flags = base::HostToNet16(dns_protocol::kFlagRD);
@@ -30,7 +28,7 @@ DnsQuery::DnsQuery(uint16_t id, const base::StringPiece& qname, uint16_t qtype)
 
   // Write question section after the header.
   base::BigEndianWriter writer(reinterpret_cast<char*>(header() + 1),
-                               question_size);
+                               question_size());
   writer.WriteBytes(qname.data(), qname.size());
   writer.WriteU16(qtype);
   writer.WriteU16(dns_protocol::kClassIN);
@@ -63,7 +61,7 @@ uint16_t DnsQuery::qtype() const {
 
 base::StringPiece DnsQuery::question() const {
   return base::StringPiece(io_buffer_->data() + sizeof(dns_protocol::Header),
-                           qname_size_ + sizeof(uint16_t) + sizeof(uint16_t));
+                           question_size());
 }
 
 void DnsQuery::set_flags(uint16_t flags) {

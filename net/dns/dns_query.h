@@ -54,6 +54,12 @@ class NET_EXPORT_PRIVATE DnsQuery {
   // Convenience for header access.
   dns_protocol::Header* header();
 
+  // Returns the size of the question section.
+  size_t question_size() const {
+    // QNAME + QTYPE + QCLASS
+    return qname_size_ + sizeof(uint16_t) + sizeof(uint16_t);
+  }
+
   // Size of the DNS name (*NOT* hostname) we are trying to resolve; used
   // to calculate offsets.
   size_t qname_size_;
