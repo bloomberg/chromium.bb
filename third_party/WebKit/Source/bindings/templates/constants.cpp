@@ -7,10 +7,10 @@ static void {{constant.name}}ConstantGetterCallback(v8::Local<v8::Name>, const v
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     {% if constant.deprecate_as %}
-    UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{constant.deprecate_as}});
+    UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{constant.deprecate_as}});
     {% endif %}
     {% if constant.measure_as %}
-    UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{constant.measure_as('ConstantGetter')}});
+    UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{constant.measure_as('ConstantGetter')}});
     {% endif %}
     {% if constant.is_api_experiment_enabled %}
     {{check_api_experiment(constant) | indent}}

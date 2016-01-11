@@ -175,10 +175,10 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     {% if attribute.deprecate_as %}
-    UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
+    UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
     {% endif %}
     {% if attribute.measure_as %}
-    UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as('AttributeGetter')}});
+    UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as('AttributeGetter')}});
     {% endif %}
     {% if attribute.is_api_experiment_enabled %}
     {{check_api_experiment(attribute) | indent}}
@@ -211,10 +211,10 @@ static void {{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Loca
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     {% if attribute.deprecate_as %}
-    UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
+    UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
     {% endif %}
     {% if attribute.measure_as %}
-    UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as('ConstructorGetter')}});
+    UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as('ConstructorGetter')}});
     {% endif %}
     {% if attribute.is_api_experiment_enabled %}
     {{check_api_experiment(attribute) | indent}}
@@ -376,10 +376,10 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
     {% if attribute.deprecate_as %}
-    UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
+    UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
     {% endif %}
     {% if attribute.measure_as %}
-    UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as('AttributeSetter')}});
+    UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as('AttributeSetter')}});
     {% endif %}
     {% if world_suffix in attribute.activity_logging_world_list_for_setter %}
     ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());

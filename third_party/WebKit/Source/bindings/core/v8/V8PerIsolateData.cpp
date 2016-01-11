@@ -92,9 +92,9 @@ static void useCounterCallback(v8::Isolate* isolate, v8::Isolate::UseCounterFeat
         return;
     }
     if (deprecated)
-        UseCounter::countDeprecation(callingExecutionContext(isolate), blinkFeature);
+        UseCounter::countDeprecation(currentExecutionContext(isolate), blinkFeature);
     else
-        UseCounter::count(callingExecutionContext(isolate), blinkFeature);
+        UseCounter::count(currentExecutionContext(isolate), blinkFeature);
 }
 
 V8PerIsolateData::V8PerIsolateData()

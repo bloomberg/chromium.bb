@@ -41,7 +41,7 @@ namespace {
 void addEventListenerMethodPrologueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, EventTarget*)
 {
     if (info.Length() >= 3 && info[2]->IsObject()) {
-        UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()),
+        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
             UseCounter::AddEventListenerThirdArgumentIsObject);
     }
 }
@@ -55,7 +55,7 @@ void addEventListenerMethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Val
 void removeEventListenerMethodPrologueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, EventTarget*)
 {
     if (info.Length() >= 3 && info[2]->IsObject()) {
-        UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()),
+        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
             UseCounter::RemoveEventListenerThirdArgumentIsObject);
     }
 }
