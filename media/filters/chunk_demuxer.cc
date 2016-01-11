@@ -688,7 +688,7 @@ bool SourceState::OnNewConfigs(
     if (!audio_ ||
         audio_->audio_decoder_config().codec() != audio_config.codec()) {
       media_log_->SetStringProperty("audio_codec_name",
-                                    audio_config.GetHumanReadableCodecName());
+                                    GetCodecName(audio_config.codec()));
     }
 
     if (!audio_) {
@@ -716,7 +716,7 @@ bool SourceState::OnNewConfigs(
     if (!video_ ||
         video_->video_decoder_config().codec() != video_config.codec()) {
       media_log_->SetStringProperty("video_codec_name",
-                                    video_config.GetHumanReadableCodecName());
+                                    GetCodecName(video_config.codec()));
     }
 
     if (!video_) {

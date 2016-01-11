@@ -83,6 +83,8 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
     Config(VideoCodecProfile profile);
     Config(const VideoDecoderConfig& video_decoder_config);
 
+    std::string AsHumanReadableString() const;
+
     // |profile| combines the information about the codec and its profile.
     VideoCodecProfile profile = VIDEO_CODEC_PROFILE_UNKNOWN;
 

@@ -8,6 +8,7 @@
 
 #include "base/android/build_info.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -18,6 +19,7 @@
 #include "content/common/gpu/media/android_deferred_rendering_backing_strategy.h"
 #include "content/common/gpu/media/avda_return_on_failure.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
@@ -148,9 +150,11 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       make_context_current_(make_context_current),
       codec_(media::kCodecH264),
       is_encrypted_(false),
+      needs_protected_surface_(false),
       state_(NO_ERROR),
       picturebuffers_requested_(false),
       gl_decoder_(decoder),
+      cdm_registration_id_(0),
       weak_this_factory_(this) {
   if (UseDeferredRenderingStrategy())
     strategy_.reset(new AndroidDeferredRenderingBackingStrategy());
@@ -160,6 +164,14 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
 
 AndroidVideoDecodeAccelerator::~AndroidVideoDecodeAccelerator() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+#if defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
+  if (cdm_) {
+    DCHECK(cdm_registration_id_);
+    static_cast<media::MediaDrmBridge*>(cdm_.get())
+        ->UnregisterPlayer(cdm_registration_id_);
+  }
+#endif  // defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
 }
 
 bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
@@ -168,9 +180,9 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("media", "AVDA::Initialize");
 
-  DVLOG(1) << __FUNCTION__ << ": profile:" << config.profile
-           << " is_encrypted:" << config.is_encrypted;
+  DVLOG(1) << __FUNCTION__ << ": " << config.AsHumanReadableString();
 
+  DCHECK(client);
   client_ = client;
   codec_ = VideoCodecProfileToVideoCodec(config.profile);
   is_encrypted_ = config.is_encrypted;
@@ -210,25 +222,61 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
   on_frame_available_handler_ =
       new OnFrameAvailableHandler(this, surface_texture_);
 
-  if (!ConfigureMediaCodec()) {
-    LOG(ERROR) << "Failed to create MediaCodec instance.";
-    return false;
-  }
+  // For encrypted streams we postpone configuration until MediaCrypto is
+  // available.
+  if (is_encrypted_)
+    return true;
 
-  return true;
+  return ConfigureMediaCodec();
 }
 
 void AndroidVideoDecodeAccelerator::SetCdm(int cdm_id) {
   DVLOG(2) << __FUNCTION__ << ": " << cdm_id;
 
 #if defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-  // TODO(timav): Implement CDM setting here. See http://crbug.com/542417
-  scoped_refptr<media::MediaKeys> cdm = media::MojoCdmService::GetCdm(cdm_id);
-  DCHECK(cdm);
-#endif
+  using media::MediaDrmBridge;
+
+  DCHECK(client_) << "SetCdm() must be called after Initialize().";
+
+  if (cdm_) {
+    NOTREACHED() << "We do not support resetting CDM.";
+    NotifyCdmAttached(false);
+    return;
+  }
+
+  cdm_ = media::MojoCdmService::GetCdm(cdm_id);
+  DCHECK(cdm_);
+
+  // On Android platform the MediaKeys will be its subclass MediaDrmBridge.
+  MediaDrmBridge* drm_bridge = static_cast<MediaDrmBridge*>(cdm_.get());
+
+  // Register CDM callbacks. The callbacks registered will be posted back to
+  // this thread via BindToCurrentLoop.
+
+  // Since |this| holds a reference to the |cdm_|, by the time the CDM is
+  // destructed, UnregisterPlayer() must have been called and |this| has been
+  // destructed as well. So the |cdm_unset_cb| will never have a chance to be
+  // called.
+  // TODO(xhwang): Remove |cdm_unset_cb| after it's not used on all platforms.
+  cdm_registration_id_ =
+      drm_bridge->RegisterPlayer(media::BindToCurrentLoop(base::Bind(
+                                     &AndroidVideoDecodeAccelerator::OnKeyAdded,
+                                     weak_this_factory_.GetWeakPtr())),
+                                 base::Bind(&base::DoNothing));
+
+  drm_bridge->SetMediaCryptoReadyCB(media::BindToCurrentLoop(
+      base::Bind(&AndroidVideoDecodeAccelerator::OnMediaCryptoReady,
+                 weak_this_factory_.GetWeakPtr())));
+
+  // Postpone NotifyCdmAttached() call till we create the MediaCodec after
+  // OnMediaCryptoReady().
+
+#else
 
   NOTIMPLEMENTED();
   NotifyCdmAttached(false);
+
+#endif  // !defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
 }
 
 void AndroidVideoDecodeAccelerator::DoIOTask() {
@@ -267,11 +315,12 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
                       base::Time::Now() - queued_time);
   media::BitstreamBuffer bitstream_buffer =
       pending_bitstream_buffers_.front().first;
-  pending_bitstream_buffers_.pop();
-  TRACE_COUNTER1("media", "AVDA::PendingBitstreamBufferCount",
-                 pending_bitstream_buffers_.size());
 
   if (bitstream_buffer.id() == -1) {
+    pending_bitstream_buffers_.pop();
+    TRACE_COUNTER1("media", "AVDA::PendingBitstreamBufferCount",
+                   pending_bitstream_buffers_.size());
+
     media_codec_->QueueEOS(input_buf_index);
     return true;
   }
@@ -311,8 +360,22 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
   }
 
   DVLOG(2) << __FUNCTION__
-           << ": QueueInputBuffer: pts:" << presentation_timestamp
+           << ": Queue(Secure)InputBuffer: pts:" << presentation_timestamp
            << " status:" << status;
+
+  if (status == media::MEDIA_CODEC_NO_KEY) {
+    // Keep trying to enqueue the front pending buffer.
+    //
+    // TODO(timav): Figure out whether stopping the pipeline in response to
+    // this error and restarting it in OnKeyAdded() has significant benefits
+    // (e.g. saving power).
+    DVLOG(1) << "QueueSecureInputBuffer failed: NO_KEY";
+    return true;
+  }
+
+  pending_bitstream_buffers_.pop();
+  TRACE_COUNTER1("media", "AVDA::PendingBitstreamBufferCount",
+                 pending_bitstream_buffers_.size());
 
   RETURN_ON_FAILURE(this, status == media::MEDIA_CODEC_OK,
                     "Failed to QueueInputBuffer: " << status, PLATFORM_FAILURE,
@@ -586,13 +649,21 @@ bool AndroidVideoDecodeAccelerator::ConfigureMediaCodec() {
 
   gfx::ScopedJavaSurface surface(surface_texture_.get());
 
+  jobject media_crypto = media_crypto_ ? media_crypto_->obj() : nullptr;
+
+  // |needs_protected_surface_| implies encrypted stream.
+  DCHECK(!needs_protected_surface_ || media_crypto);
+
   // Pass a dummy 320x240 canvas size and let the codec signal the real size
   // when it's known from the bitstream.
   media_codec_.reset(media::VideoCodecBridge::CreateDecoder(
-      codec_, false, gfx::Size(320, 240), surface.j_surface().obj(), NULL));
+      codec_, needs_protected_surface_, gfx::Size(320, 240),
+      surface.j_surface().obj(), media_crypto));
   strategy_->CodecChanged(media_codec_.get(), output_picture_buffers_);
-  if (!media_codec_)
+  if (!media_codec_) {
+    LOG(ERROR) << "Failed to create MediaCodec instance.";
     return false;
+  }
 
   ManageTimer(true);
   return true;
@@ -710,6 +781,38 @@ void AndroidVideoDecodeAccelerator::PostError(
       from_here, base::Bind(&AndroidVideoDecodeAccelerator::NotifyError,
                             weak_this_factory_.GetWeakPtr(), error));
   state_ = ERROR;
+}
+
+void AndroidVideoDecodeAccelerator::OnMediaCryptoReady(
+    media::MediaDrmBridge::JavaObjectPtr media_crypto,
+    bool needs_protected_surface) {
+  DVLOG(1) << __FUNCTION__;
+
+  if (!media_crypto) {
+    LOG(ERROR) << "MediaCrypto is not available, can't play encrypted stream.";
+    NotifyCdmAttached(false);
+    return;
+  }
+
+  DCHECK(!media_crypto->is_null());
+
+  // We assume this is a part of the initialization process, thus MediaCodec
+  // is not created yet.
+  DCHECK(!media_codec_);
+
+  media_crypto_ = std::move(media_crypto);
+  needs_protected_surface_ = needs_protected_surface;
+
+  // After receiving |media_crypto_| we can configure MediaCodec.
+  const bool success = ConfigureMediaCodec();
+  NotifyCdmAttached(success);
+}
+
+void AndroidVideoDecodeAccelerator::OnKeyAdded() {
+  DVLOG(1) << __FUNCTION__;
+  // TODO(timav): Figure out whether stopping the pipeline in response to
+  // NO_KEY error and restarting it here has significant benefits (e.g. saving
+  // power). Right now do nothing here.
 }
 
 void AndroidVideoDecodeAccelerator::NotifyCdmAttached(bool success) {

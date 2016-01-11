@@ -19,7 +19,9 @@
 #include "content/common/content_export.h"
 #include "content/common/gpu/media/avda_state_provider.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/sdk_media_codec_bridge.h"
+#include "media/base/media_keys.h"
 #include "media/video/video_decode_accelerator.h"
 
 namespace gfx {
@@ -154,6 +156,13 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   // Requests picture buffers from the client.
   void RequestPictureBuffers();
 
+  // This callback is called after CDM obtained a MediaCrypto object.
+  void OnMediaCryptoReady(media::MediaDrmBridge::JavaObjectPtr media_crypto,
+                          bool needs_protected_surface);
+
+  // This callback is called when a new key is added to CDM.
+  void OnKeyAdded();
+
   // Notifies the client of the CDM setting result.
   void NotifyCdmAttached(bool success);
 
@@ -201,6 +210,9 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
   // Whether the stream is encrypted.
   bool is_encrypted_;
+
+  // Whether encryption scheme requires to use protected surface.
+  bool needs_protected_surface_;
 
   // The current state of this class. For now, this is used only for setting
   // error state.
@@ -263,6 +275,19 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
   // Time at which we last did useful work on io_timer_.
   base::TimeTicks most_recent_work_;
+
+  // CDM related stuff.
+
+  // Holds a ref-count to the CDM.
+  scoped_refptr<media::MediaKeys> cdm_;
+
+  // MediaDrmBridge requires registration/unregistration of the player, this
+  // registration id is used for this.
+  int cdm_registration_id_;
+
+  // The MediaCrypto object is used in the MediaCodec.configure() in case of
+  // an encrypted stream.
+  media::MediaDrmBridge::JavaObjectPtr media_crypto_;
 
   // WeakPtrFactory for posting tasks back to |this|.
   base::WeakPtrFactory<AndroidVideoDecodeAccelerator> weak_this_factory_;

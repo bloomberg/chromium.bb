@@ -67,6 +67,8 @@ class MEDIA_EXPORT VideoDecoderConfig {
 
   std::string GetHumanReadableCodecName() const;
 
+  static std::string GetHumanReadableProfile(VideoCodecProfile profile);
+
   VideoCodec codec() const { return codec_; }
   VideoCodecProfile profile() const { return profile_; }
 

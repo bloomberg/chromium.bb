@@ -184,6 +184,8 @@ source_set("base") {
     "video_capture_types.h",
     "video_capturer_source.cc",
     "video_capturer_source.h",
+    "video_codecs.cc",
+    "video_codecs.h",
     "video_decoder.cc",
     "video_decoder.h",
     "video_decoder_config.cc",

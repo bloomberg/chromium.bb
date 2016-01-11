@@ -418,6 +418,8 @@
         'base/video_capture_types.h',
         'base/video_capturer_source.cc',
         'base/video_capturer_source.h',
+        'base/video_codecs.cc',
+        'base/video_codecs.h',
         'base/video_decoder.cc',
         'base/video_decoder.h',
         'base/video_decoder_config.cc',

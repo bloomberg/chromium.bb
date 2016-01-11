@@ -98,46 +98,16 @@ bool VideoDecoderConfig::Matches(const VideoDecoderConfig& config) const {
 
 std::string VideoDecoderConfig::AsHumanReadableString() const {
   std::ostringstream s;
-  s << "codec: " << GetHumanReadableCodecName()
-    << " format: " << format()
-    << " profile: " << profile()
-    << " coded size: [" << coded_size().width()
-    << "," << coded_size().height() << "]"
-    << " visible rect: [" << visible_rect().x()
-    << "," << visible_rect().y()
-    << "," << visible_rect().width()
-    << "," << visible_rect().height() << "]"
-    << " natural size: [" << natural_size().width()
-    << "," << natural_size().height() << "]"
+  s << "codec: " << GetCodecName(codec()) << " format: " << format()
+    << " profile: " << GetProfileName(profile()) << " coded size: ["
+    << coded_size().width() << "," << coded_size().height() << "]"
+    << " visible rect: [" << visible_rect().x() << "," << visible_rect().y()
+    << "," << visible_rect().width() << "," << visible_rect().height() << "]"
+    << " natural size: [" << natural_size().width() << ","
+    << natural_size().height() << "]"
     << " has extra data? " << (extra_data().empty() ? "false" : "true")
     << " encrypted? " << (is_encrypted() ? "true" : "false");
   return s.str();
-}
-
-// The names come from src/third_party/ffmpeg/libavcodec/codec_desc.c
-std::string VideoDecoderConfig::GetHumanReadableCodecName() const {
-  switch (codec()) {
-    case kUnknownVideoCodec:
-      return "unknown";
-    case kCodecH264:
-      return "h264";
-    case kCodecHEVC:
-      return "hevc";
-    case kCodecVC1:
-      return "vc1";
-    case kCodecMPEG2:
-      return "mpeg2video";
-    case kCodecMPEG4:
-      return "mpeg4";
-    case kCodecTheora:
-      return "theora";
-    case kCodecVP8:
-      return "vp8";
-    case kCodecVP9:
-      return "vp9";
-  }
-  NOTREACHED();
-  return "";
 }
 
 }  // namespace media

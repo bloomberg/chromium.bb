@@ -49,6 +49,8 @@ enum AudioCodec {
   kAudioCodecMax = kCodecAC3,
 };
 
+std::string MEDIA_EXPORT GetCodecName(AudioCodec codec);
+
 // TODO(dalecurtis): FFmpeg API uses |bytes_per_channel| instead of
 // |bits_per_channel|, we should switch over since bits are generally confusing
 // to work with.
@@ -89,8 +91,6 @@ class MEDIA_EXPORT AudioDecoderConfig {
   // Returns a human-readable string describing |*this|.  For debugging & test
   // output only.
   std::string AsHumanReadableString() const;
-
-  std::string GetHumanReadableCodecName() const;
 
   AudioCodec codec() const { return codec_; }
   int bits_per_channel() const { return bytes_per_channel_ * 8; }

@@ -17,6 +17,13 @@ VideoDecodeAccelerator::Config::Config(
     : profile(video_decoder_config.profile()),
       is_encrypted(video_decoder_config.is_encrypted()) {}
 
+std::string VideoDecodeAccelerator::Config::AsHumanReadableString() const {
+  std::ostringstream s;
+  s << "profile: " << GetProfileName(profile) << " encrypted? "
+    << (is_encrypted ? "true" : "false");
+  return s.str();
+}
+
 void VideoDecodeAccelerator::Client::NotifyCdmAttached(bool success) {
   NOTREACHED() << "By default CDM is not supported.";
 }
