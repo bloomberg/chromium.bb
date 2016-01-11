@@ -13,6 +13,9 @@
 namespace mojo {
 namespace edk {
 
+// Pack all structs here.
+#pragma pack(push, 1)
+
 // This header defines the message format between ChildBroker and
 // ChildBrokerHost.
 
@@ -20,7 +23,7 @@ namespace edk {
 // Windows only messages needed because sandboxed child processes need the
 // parent's help. They are sent synchronously from child to parent and each have
 // a response. They are sent over a raw pipe.
-enum WindowsSandboxMessages {
+enum WindowsSandboxMessages : uint32_t {
   // The reply is two HANDLEs.
   CREATE_PLATFORM_CHANNEL_PAIR = 0,
   // The reply is tokens of the same count of passed in handles.
@@ -51,7 +54,7 @@ const uint64_t kBrokerRouteId = 1;
 
 // Multiplexing related messages. They are all asynchronous messages.
 // They are sent over RawChannel.
-enum MultiplexMessages {
+enum MultiplexMessages : uint32_t {
   // Messages from child to parent.
 
   // Tells the parent that the given pipe id has been bound to a
@@ -102,6 +105,8 @@ struct PeerDiedMessage {
   MultiplexMessages type;  // PEER_DIED
   uint64_t pipe_id;
 };
+
+#pragma pack(pop)
 
 }  // namespace edk
 }  // namespace mojo
