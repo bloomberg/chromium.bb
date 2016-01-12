@@ -302,4 +302,23 @@ V4L2Device::GetSupportedDecodeProfiles(const size_t num_formats,
   return profiles;
 }
 
+bool V4L2Device::SupportsDecodeProfileForV4L2PixelFormats(
+    media::VideoCodecProfile profile,
+    const size_t num_formats,
+    const uint32_t pixelformats[]) {
+  // Get all supported profiles by this device, taking into account only fourccs
+  // in pixelformats.
+  const auto supported_profiles =
+      GetSupportedDecodeProfiles(num_formats, pixelformats);
+
+  // Try to find requested profile among the returned supported_profiles.
+  const auto iter = std::find_if(
+      supported_profiles.begin(), supported_profiles.end(),
+      [profile](const media::VideoDecodeAccelerator::SupportedProfile& p) {
+        return profile == p.profile;
+      });
+
+  return iter != supported_profiles.end();
+}
+
 }  //  namespace content

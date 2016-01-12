@@ -56,6 +56,11 @@
 
 namespace content {
 
+// static
+const uint32_t V4L2VideoDecodeAccelerator::supported_input_fourccs_[] = {
+    V4L2_PIX_FMT_H264, V4L2_PIX_FMT_VP8, V4L2_PIX_FMT_VP9,
+};
+
 struct V4L2VideoDecodeAccelerator::BitstreamBufferRef {
   BitstreamBufferRef(
       base::WeakPtr<Client>& client,
@@ -204,37 +209,24 @@ V4L2VideoDecodeAccelerator::~V4L2VideoDecodeAccelerator() {
 bool V4L2VideoDecodeAccelerator::Initialize(const Config& config,
                                             Client* client) {
   DVLOG(3) << "Initialize()";
+  DCHECK(child_task_runner_->BelongsToCurrentThread());
+  DCHECK_EQ(decoder_state_, kUninitialized);
+
   if (config.is_encrypted) {
     NOTREACHED() << "Encrypted streams are not supported for this VDA";
     return false;
   }
 
-  DCHECK(child_task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(decoder_state_, kUninitialized);
+  if (!device_->SupportsDecodeProfileForV4L2PixelFormats(
+          config.profile, arraysize(supported_input_fourccs_),
+          supported_input_fourccs_)) {
+    DVLOG(1) << "Initialize(): unsupported profile=" << config.profile;
+    return false;
+  }
 
   client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
   client_ = client_ptr_factory_->GetWeakPtr();
 
-  switch (config.profile) {
-    case media::H264PROFILE_BASELINE:
-      DVLOG(2) << "Initialize(): profile H264PROFILE_BASELINE";
-      break;
-    case media::H264PROFILE_MAIN:
-      DVLOG(2) << "Initialize(): profile H264PROFILE_MAIN";
-      break;
-    case media::H264PROFILE_HIGH:
-      DVLOG(2) << "Initialize(): profile H264PROFILE_HIGH";
-      break;
-    case media::VP8PROFILE_ANY:
-      DVLOG(2) << "Initialize(): profile VP8PROFILE_ANY";
-      break;
-    case media::VP9PROFILE_ANY:
-      DVLOG(2) << "Initialize(): profile VP9PROFILE_ANY";
-      break;
-    default:
-      DLOG(ERROR) << "Initialize(): unsupported profile=" << config.profile;
-      return false;
-  };
   video_profile_ = config.profile;
 
   if (egl_display_ == EGL_NO_DISPLAY) {
@@ -475,10 +467,8 @@ V4L2VideoDecodeAccelerator::GetSupportedProfiles() {
   if (!device)
     return SupportedProfiles();
 
-  const uint32_t supported_formats[] = {
-      V4L2_PIX_FMT_H264, V4L2_PIX_FMT_VP8, V4L2_PIX_FMT_VP9};
-  return device->GetSupportedDecodeProfiles(arraysize(supported_formats),
-                                            supported_formats);
+  return device->GetSupportedDecodeProfiles(arraysize(supported_input_fourccs_),
+                                            supported_input_fourccs_);
 }
 
 void V4L2VideoDecodeAccelerator::DecodeTask(

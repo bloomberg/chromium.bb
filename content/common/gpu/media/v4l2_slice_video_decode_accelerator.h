@@ -90,6 +90,9 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
   const size_t kInputBufferMaxSizeFor4k = 4 * kInputBufferMaxSizeFor1080p;
   const size_t kNumInputBuffers = 16;
 
+  // Input format V4L2 fourccs this class supports.
+  static const uint32_t supported_input_fourccs_[];
+
   //
   // Below methods are used by accelerator implementations.
   //

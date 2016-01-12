@@ -450,6 +450,9 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   // Chosen output format.
   uint32_t output_format_fourcc_;
 
+  // Input format V4L2 fourccs this class supports.
+  static const uint32_t supported_input_fourccs_[];
+
   // The WeakPtrFactory for |weak_this_|.
   base::WeakPtrFactory<V4L2VideoDecodeAccelerator> weak_this_factory_;
 

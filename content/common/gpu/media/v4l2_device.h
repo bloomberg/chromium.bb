@@ -123,6 +123,13 @@ class CONTENT_EXPORT V4L2Device
   media::VideoDecodeAccelerator::SupportedProfiles GetSupportedDecodeProfiles(
       const size_t num_formats, const uint32_t pixelformats[]);
 
+  // Return true if the device supports |profile|, taking into account only
+  // fourccs from the given array of |pixelformats| of size |num_formats|.
+  bool SupportsDecodeProfileForV4L2PixelFormats(
+      media::VideoCodecProfile profile,
+      const size_t num_formats,
+      const uint32_t pixelformats[]);
+
  protected:
   friend class base::RefCountedThreadSafe<V4L2Device>;
   explicit V4L2Device(Type type);

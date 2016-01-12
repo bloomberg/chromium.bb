@@ -55,6 +55,11 @@
 
 namespace content {
 
+// static
+const uint32_t V4L2SliceVideoDecodeAccelerator::supported_input_fourccs_[] = {
+    V4L2_PIX_FMT_H264_SLICE, V4L2_PIX_FMT_VP8_FRAME,
+};
+
 class V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface
     : public base::RefCounted<V4L2DecodeSurface> {
  public:
@@ -436,13 +441,20 @@ void V4L2SliceVideoDecodeAccelerator::NotifyError(Error error) {
 bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
                                                  Client* client) {
   DVLOGF(3) << "profile: " << config.profile;
+  DCHECK(child_task_runner_->BelongsToCurrentThread());
+  DCHECK_EQ(state_, kUninitialized);
+
   if (config.is_encrypted) {
     NOTREACHED() << "Encrypted streams are not supported for this VDA";
     return false;
   }
 
-  DCHECK(child_task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(state_, kUninitialized);
+  if (!device_->SupportsDecodeProfileForV4L2PixelFormats(
+          config.profile, arraysize(supported_input_fourccs_),
+          supported_input_fourccs_)) {
+    DVLOGF(1) << "unsupported profile " << config.profile;
+    return false;
+  }
 
   client_ptr_factory_.reset(
       new base::WeakPtrFactory<VideoDecodeAccelerator::Client>(client));
@@ -459,7 +471,7 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
     vp8_accelerator_.reset(new V4L2VP8Accelerator(this));
     decoder_.reset(new VP8Decoder(vp8_accelerator_.get()));
   } else {
-    DLOG(ERROR) << "Unsupported profile " << video_profile_;
+    NOTREACHED() << "Unsupported profile " << video_profile_;
     return false;
   }
 
@@ -2543,10 +2555,8 @@ V4L2SliceVideoDecodeAccelerator::GetSupportedProfiles() {
   if (!device)
     return SupportedProfiles();
 
-  const uint32_t supported_formats[] = {
-      V4L2_PIX_FMT_H264_SLICE, V4L2_PIX_FMT_VP8_FRAME};
-  return device->GetSupportedDecodeProfiles(arraysize(supported_formats),
-                                            supported_formats);
+  return device->GetSupportedDecodeProfiles(arraysize(supported_input_fourccs_),
+                                            supported_input_fourccs_);
 }
 
 }  // namespace content
