@@ -16,6 +16,7 @@
 #include "components/arc/power/arc_power_bridge.h"
 #include "components/arc/settings/arc_settings_bridge.h"
 #include "components/arc/video/arc_video_bridge.h"
+#include "ui/arc/notification/arc_notification_manager.h"
 
 namespace arc {
 
@@ -62,6 +63,14 @@ ArcServiceManager* ArcServiceManager::Get() {
 ArcBridgeService* ArcServiceManager::arc_bridge_service() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return arc_bridge_service_.get();
+}
+
+void ArcServiceManager::OnPrimaryUserProfilePrepared(
+    const AccountId& account_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  arc_notification_manager_.reset(
+      new ArcNotificationManager(arc_bridge_service(), account_id));
 }
 
 }  // namespace arc

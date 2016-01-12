@@ -17,6 +17,7 @@
         '../chromeos/chromeos.gyp:chromeos',
         '../chromeos/chromeos.gyp:power_manager_proto',
         '../ipc/ipc.gyp:ipc',
+        '../ui/arc/arc.gyp:arc',
         '../ui/aura/aura.gyp:aura',
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/events/events.gyp:events_base',

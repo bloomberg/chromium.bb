@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "components/signin/core/account_id/account_id.h"
 
 namespace arc {
 
@@ -15,6 +16,7 @@ class ArcAuthService;
 class ArcBridgeService;
 class ArcClipboardBridge;
 class ArcInputBridge;
+class ArcNotificationManager;
 class ArcPowerBridge;
 class ArcSettingsBridge;
 class ArcVideoBridge;
@@ -36,6 +38,9 @@ class ArcServiceManager {
   // called on the thread that this class was created on.
   static ArcServiceManager* Get();
 
+  // Called when the main profile is initialized after user logs in.
+  void OnPrimaryUserProfilePrepared(const AccountId& account_id);
+
  private:
   base::ThreadChecker thread_checker_;
   scoped_ptr<ArcBridgeService> arc_bridge_service_;
@@ -44,6 +49,7 @@ class ArcServiceManager {
   scoped_ptr<ArcAuthService> arc_auth_service_;
   scoped_ptr<ArcClipboardBridge> arc_clipboard_bridge_;
   scoped_ptr<ArcInputBridge> arc_input_bridge_;
+  scoped_ptr<ArcNotificationManager> arc_notification_manager_;
   scoped_ptr<ArcSettingsBridge> arc_settings_bridge_;
   scoped_ptr<ArcPowerBridge> arc_power_bridge_;
   scoped_ptr<ArcVideoBridge> arc_video_bridge_;

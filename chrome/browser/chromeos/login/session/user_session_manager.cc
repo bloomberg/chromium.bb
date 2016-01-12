@@ -76,6 +76,7 @@
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
 #include "chrome/browser/ui/app_list/start_page_service.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
@@ -91,6 +92,8 @@
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_service_manager.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -1124,6 +1127,13 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     InitializeCerts(profile);
     InitializeCRLSetFetcher(user);
     InitializeEVCertificatesWhitelistComponent(user);
+
+    if (arc::ArcBridgeService::GetEnabled(
+            base::CommandLine::ForCurrentProcess())) {
+      DCHECK(arc::ArcServiceManager::Get());
+      arc::ArcServiceManager::Get()->OnPrimaryUserProfilePrepared(
+          multi_user_util::GetAccountIdFromProfile(profile));
+    }
   }
 
   UpdateEasyUnlockKeys(user_context_);
