@@ -18,6 +18,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "content/test/test_frame_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
@@ -293,6 +294,160 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, OriginSetOnNavigation) {
       contents->GetMainFrame()->GetLastCommittedOrigin().Serialize() + '/');
   EXPECT_FALSE(contents->GetMainFrame()->GetLastCommittedOrigin().unique());
   EXPECT_EQ(root->current_origin().Serialize(), GetOriginFromRenderer(root));
+}
+
+// Tests a cross-origin navigation to a blob URL. The main frame initiates this
+// navigation on its grandchild. It should wind up in the main frame's process.
+IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, NavigateGrandchildToBlob) {
+  WebContents* contents = shell()->web_contents();
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(contents)->GetFrameTree()->root();
+
+  // First, snapshot the FrameTree for a normal A(B(A)) case where all frames
+  // are served over http. The blob test should result in the same structure.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL(
+                   "a.com", "/cross_site_iframe_factory.html?a(b(a))")));
+  std::string reference_tree = FrameTreeVisualizer().DepictFrameTree(root);
+
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // The root node will initiate the navigation; its grandchild node will be the
+  // target of the navigation.
+  FrameTreeNode* target = root->child_at(0)->child_at(0);
+
+  std::string blob_url_string;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      root->current_frame_host(),
+      "function receiveMessage(event) {"
+      "  document.body.appendChild(document.createTextNode(event.data));"
+      "  domAutomationController.send(event.source.location.href);"
+      "}"
+      "window.addEventListener('message', receiveMessage, false);"
+      "var blob = new Blob(["
+      "    '<html><body><div>This is blob content.</div><script>"
+      "         window.parent.parent.postMessage(\"HI\", document.origin);"
+      "     </script></body></html>'], {type: 'text/html'});"
+      "var blob_url = URL.createObjectURL(blob);"
+      "frames[0][0].location.href = blob_url;",
+      &blob_url_string));
+  EXPECT_EQ(GURL(blob_url_string), target->current_url());
+  EXPECT_EQ(url::kBlobScheme, target->current_url().scheme());
+  EXPECT_FALSE(target->current_origin().unique());
+  EXPECT_EQ("a.com", target->current_origin().host());
+  EXPECT_EQ(url::kHttpScheme, target->current_origin().scheme());
+
+  std::string document_body;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      target->current_frame_host(),
+      "domAutomationController.send(document.body.children[0].innerHTML);",
+      &document_body));
+  EXPECT_EQ("This is blob content.", document_body);
+  EXPECT_EQ(reference_tree, FrameTreeVisualizer().DepictFrameTree(root));
+}
+
+IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, NavigateChildToAboutBlank) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  WebContentsImpl* contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // The leaf node (c.com) will be navigated. Its parent node (b.com) will
+  // initiate the navigation.
+  FrameTreeNode* target =
+      contents->GetFrameTree()->root()->child_at(0)->child_at(0);
+  FrameTreeNode* initiator = target->parent();
+
+  // Give the target a name.
+  EXPECT_TRUE(
+      ExecuteScript(target->current_frame_host(), "window.name = 'target';"));
+
+  // Use window.open(about:blank), then poll the document for access.
+  std::string about_blank_origin;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      initiator->current_frame_host(),
+      "var didNavigate = false;"
+      "var intervalID = setInterval(function() {"
+      "  if (!didNavigate) {"
+      "    didNavigate = true;"
+      "    window.open('about:blank', 'target');"
+      "  }"
+      "  // Poll the document until it doesn't throw a SecurityError.\n"
+      "  try {"
+      "    frames[0].document.write('Hi from ' + document.domain);"
+      "  } catch (e) { return; }"
+      "  clearInterval(intervalID);"
+      "  domAutomationController.send(frames[0].document.origin);"
+      "}, 16);",
+      &about_blank_origin));
+  EXPECT_EQ(GURL(url::kAboutBlankURL), target->current_url());
+  EXPECT_EQ(url::kAboutScheme, target->current_url().scheme());
+  EXPECT_FALSE(target->current_origin().unique());
+  EXPECT_EQ("b.com", target->current_origin().host());
+  EXPECT_EQ(url::kHttpScheme, target->current_origin().scheme());
+  EXPECT_EQ(target->current_origin().Serialize(), about_blank_origin);
+
+  std::string document_body;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      target->current_frame_host(),
+      "domAutomationController.send(document.body.innerHTML);",
+      &document_body));
+  EXPECT_EQ("Hi from b.com", document_body);
+}
+
+// Nested iframes, three origins: A(B(C)). Frame A navigates C to about:blank
+// (via window.open). This should wind up in A's origin per the spec. Test fails
+// because of http://crbug.com/564292
+IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest,
+                       DISABLED_NavigateGrandchildToAboutBlank) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  WebContentsImpl* contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // The leaf node (c.com) will be navigated. Its grandparent node (a.com) will
+  // initiate the navigation.
+  FrameTreeNode* target =
+      contents->GetFrameTree()->root()->child_at(0)->child_at(0);
+  FrameTreeNode* initiator = target->parent()->parent();
+
+  // Give the target a name.
+  EXPECT_TRUE(
+      ExecuteScript(target->current_frame_host(), "window.name = 'target';"));
+
+  // Use window.open(about:blank), then poll the document for access.
+  std::string about_blank_origin;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      initiator->current_frame_host(),
+      "var didNavigate = false;"
+      "var intervalID = setInterval(function() {"
+      "  if (!didNavigate) {"
+      "    didNavigate = true;"
+      "    window.open('about:blank', 'target');"
+      "  }"
+      "  // May raise a SecurityError, that's expected.\n"
+      "  frames[0][0].document.write('Hi from ' + document.domain);"
+      "  clearInterval(intervalID);"
+      "  domAutomationController.send(frames[0][0].document.origin);"
+      "}, 16);",
+      &about_blank_origin));
+  EXPECT_EQ(GURL(url::kAboutBlankURL), target->current_url());
+  EXPECT_EQ(url::kAboutScheme, target->current_url().scheme());
+  EXPECT_FALSE(target->current_origin().unique());
+  EXPECT_EQ("a.com", target->current_origin().host());
+  EXPECT_EQ(url::kHttpScheme, target->current_origin().scheme());
+  EXPECT_EQ(target->current_origin().Serialize(), about_blank_origin);
+
+  std::string document_body;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      target->current_frame_host(),
+      "domAutomationController.send(document.body.innerHTML);",
+      &document_body));
+  EXPECT_EQ("Hi from a.com", document_body);
 }
 
 // Ensure that sandbox flags are correctly set when child frames are created.

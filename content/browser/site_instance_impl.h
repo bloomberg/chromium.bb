@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -22,6 +23,16 @@ class RenderProcessHostFactory;
 class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
                                         public RenderProcessHostObserver {
  public:
+  class Observer {
+   public:
+    // Called when this SiteInstance transitions to having no active frames,
+    // as measured by active_frame_count().
+    virtual void ActiveFrameCountIsZero(SiteInstanceImpl* site_instance) = 0;
+
+    // Called when the renderer process of this SiteInstance has exited.
+    virtual void RenderProcessGone(SiteInstanceImpl* site_instance) = 0;
+  };
+
   // SiteInstance interface overrides.
   int32_t GetId() override;
   bool HasProcess() const override;
@@ -53,12 +64,13 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
   // Increase the number of active frames in this SiteInstance. This is
   // increased when a frame is created, or a currently swapped out frame
   // is swapped in.
-  void increment_active_frame_count() { active_frame_count_++; }
+  void IncrementActiveFrameCount();
 
   // Decrease the number of active frames in this SiteInstance. This is
   // decreased when a frame is destroyed, or a currently active frame is
-  // swapped out.
-  void decrement_active_frame_count() { active_frame_count_--; }
+  // swapped out. Decrementing this to zero will notify observers, and may
+  // trigger deletion of proxies.
+  void DecrementActiveFrameCount();
 
   // Get the number of active frames which belong to this SiteInstance.  If
   // there are no active frames left, all frames in this SiteInstance can be
@@ -72,6 +84,9 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
   // Decrease the number of active WebContentses using this SiteInstance. Note
   // that, unlike active_frame_count, this does not count pending RFHs.
   void DecrementRelatedActiveContentsCount();
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Sets the global factory used to create new RenderProcessHosts.  It may be
   // NULL, in which case the default RenderProcessHost will be created (this is
@@ -113,6 +128,10 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
  private:
   // RenderProcessHostObserver implementation.
   void RenderProcessHostDestroyed(RenderProcessHost* host) override;
+  void RenderProcessWillExit(RenderProcessHost* host) override;
+  void RenderProcessExited(RenderProcessHost* host,
+                           base::TerminationStatus status,
+                           int exit_code) override;
 
   // Used to restrict a process' origin access rights.
   void LockToOrigin();
@@ -143,6 +162,8 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
 
   // Whether SetSite has been called.
   bool has_site_;
+
+  base::ObserverList<Observer, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SiteInstanceImpl);
 };

@@ -526,7 +526,7 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
 
   // Keep the number of active frames in orig_rfh's SiteInstance non-zero so
   // that orig_rfh doesn't get deleted when it gets swapped out.
-  orig_rfh->GetSiteInstance()->increment_active_frame_count();
+  orig_rfh->GetSiteInstance()->IncrementActiveFrameCount();
 
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(orig_rfh->GetRenderViewHost(), contents()->GetRenderViewHost());
@@ -563,7 +563,7 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   // Keep the number of active frames in pending_rfh's SiteInstance
   // non-zero so that orig_rfh doesn't get deleted when it gets
   // swapped out.
-  pending_rfh->GetSiteInstance()->increment_active_frame_count();
+  pending_rfh->GetSiteInstance()->IncrementActiveFrameCount();
 
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(pending_rfh, contents()->GetMainFrame());
@@ -781,7 +781,7 @@ TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
   // Keep the number of active frames in orig_rfh's SiteInstance
   // non-zero so that orig_rfh doesn't get deleted when it gets
   // swapped out.
-  orig_rfh->GetSiteInstance()->increment_active_frame_count();
+  orig_rfh->GetSiteInstance()->IncrementActiveFrameCount();
 
   EXPECT_EQ(orig_instance, contents()->GetSiteInstance());
   EXPECT_TRUE(

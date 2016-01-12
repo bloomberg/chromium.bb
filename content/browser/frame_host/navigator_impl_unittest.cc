@@ -949,7 +949,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
 
   // Increment active frame count to cause the RenderFrameHost to be swapped out
   // (instead of immediately destroyed).
-  rfh1->GetSiteInstance()->increment_active_frame_count();
+  rfh1->GetSiteInstance()->IncrementActiveFrameCount();
 
   // Navigate to another site to swap out the initial RenderFrameHost.
   const GURL kUrl2("http://chromium.org/");

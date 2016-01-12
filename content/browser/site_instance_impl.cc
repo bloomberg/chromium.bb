@@ -7,6 +7,7 @@
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/debug_urls.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/site_isolation_policy.h"
@@ -217,12 +218,29 @@ bool SiteInstanceImpl::RequiresDedicatedProcess() {
                                                            site_);
 }
 
+void SiteInstanceImpl::IncrementActiveFrameCount() {
+  active_frame_count_++;
+}
+
+void SiteInstanceImpl::DecrementActiveFrameCount() {
+  if (--active_frame_count_ == 0)
+    FOR_EACH_OBSERVER(Observer, observers_, ActiveFrameCountIsZero(this));
+}
+
 void SiteInstanceImpl::IncrementRelatedActiveContentsCount() {
   browsing_instance_->increment_active_contents_count();
 }
 
 void SiteInstanceImpl::DecrementRelatedActiveContentsCount() {
   browsing_instance_->decrement_active_contents_count();
+}
+
+void SiteInstanceImpl::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void SiteInstanceImpl::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void SiteInstanceImpl::set_render_process_host_factory(
@@ -362,6 +380,18 @@ void SiteInstanceImpl::RenderProcessHostDestroyed(RenderProcessHost* host) {
   DCHECK_EQ(process_, host);
   process_->RemoveObserver(this);
   process_ = NULL;
+}
+
+void SiteInstanceImpl::RenderProcessWillExit(RenderProcessHost* host) {
+  // TODO(nick): http://crbug.com/575400 - RenderProcessWillExit might not serve
+  // any purpose here.
+  FOR_EACH_OBSERVER(Observer, observers_, RenderProcessGone(this));
+}
+
+void SiteInstanceImpl::RenderProcessExited(RenderProcessHost* host,
+                                           base::TerminationStatus status,
+                                           int exit_code) {
+  FOR_EACH_OBSERVER(Observer, observers_, RenderProcessGone(this));
 }
 
 void SiteInstanceImpl::LockToOrigin() {

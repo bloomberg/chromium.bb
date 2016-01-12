@@ -218,7 +218,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
     rfh_state_ = STATE_SWAPPED_OUT;
   } else {
     rfh_state_ = STATE_DEFAULT;
-    GetSiteInstance()->increment_active_frame_count();
+    GetSiteInstance()->IncrementActiveFrameCount();
   }
 
   // New child frames should inherit the nav_entry_id of their parent.
@@ -266,7 +266,7 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // If this RenderFrameHost is swapped out, it already decremented the active
   // frame count of the SiteInstance it belongs to.
   if (is_active)
-    GetSiteInstance()->decrement_active_frame_count();
+    GetSiteInstance()->DecrementActiveFrameCount();
 
   // If this RenderFrameHost is swapping with a RenderFrameProxyHost, the
   // RenderFrame will already be deleted in the renderer process. Main frame
@@ -1114,7 +1114,6 @@ void RenderFrameHostImpl::SwapOut(
     return;
   }
 
-  SetState(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT);
   swapout_event_monitor_timeout_->Start(
       base::TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS));
 
@@ -1131,6 +1130,10 @@ void RenderFrameHostImpl::SwapOut(
     Send(new FrameMsg_SwapOut(routing_id_, proxy_routing_id, is_loading,
                               replication_state));
   }
+
+  // If this is the last active frame in the SiteInstance, the SetState call
+  // below will trigger the deletion of the SiteInstance's proxies.
+  SetState(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT);
 
   if (!GetParent())
     delegate_->SwappedOut(this);
@@ -1816,9 +1819,9 @@ void RenderFrameHostImpl::SetState(RenderFrameHostImplState rfh_state) {
   // We update the number of RenderFrameHosts in a SiteInstance when the swapped
   // out status of a RenderFrameHost gets flipped to/from active.
   if (!IsRFHStateActive(rfh_state_) && IsRFHStateActive(rfh_state))
-    GetSiteInstance()->increment_active_frame_count();
+    GetSiteInstance()->IncrementActiveFrameCount();
   else if (IsRFHStateActive(rfh_state_) && !IsRFHStateActive(rfh_state))
-    GetSiteInstance()->decrement_active_frame_count();
+    GetSiteInstance()->DecrementActiveFrameCount();
 
   // The active and swapped out state of the RVH is determined by its main
   // frame, since subframes should have their own widgets.

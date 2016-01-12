@@ -430,7 +430,7 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
     // Manually increase the number of active frames in the
     // SiteInstance that ntp_rfh belongs to, to prevent it from being
     // destroyed when it gets swapped out.
-    ntp_rfh->GetSiteInstance()->increment_active_frame_count();
+    ntp_rfh->GetSiteInstance()->IncrementActiveFrameCount();
 
     TestRenderFrameHost* dest_rfh = contents()->GetPendingMainFrame();
     CHECK(dest_rfh);
@@ -617,7 +617,7 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   // Create one more frame in the same SiteInstance where ntp_rfh
   // exists so that it doesn't get deleted on navigation to another
   // site.
-  ntp_rfh->GetSiteInstance()->increment_active_frame_count();
+  ntp_rfh->GetSiteInstance()->IncrementActiveFrameCount();
 
   // Navigate to a cross-site URL.
   NavigateActiveAndCommit(kDestUrl);
@@ -713,7 +713,7 @@ TEST_F(RenderFrameHostManagerTest, UpdateFaviconURLWhilePendingSwapOut) {
 
   // Create one more frame in the same SiteInstance where |rfh1| exists so that
   // it doesn't get deleted on navigation to another site.
-  rfh1->GetSiteInstance()->increment_active_frame_count();
+  rfh1->GetSiteInstance()->IncrementActiveFrameCount();
 
   // Navigate to a cross-site URL and commit the new page.
   controller().LoadURL(
@@ -775,7 +775,7 @@ TEST_F(RenderFrameHostManagerTest, DropCreateChildFrameWhileSwappedOut) {
   // Create one more frame in the same SiteInstance where initial_rfh
   // exists so that initial_rfh doesn't get deleted on navigation to another
   // site.
-  initial_rfh->GetSiteInstance()->increment_active_frame_count();
+  initial_rfh->GetSiteInstance()->IncrementActiveFrameCount();
 
   // Navigate to a cross-site URL.
   NavigateActiveAndCommit(kUrl2);
@@ -1417,11 +1417,11 @@ TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingSwapOutACK) {
 
   // Keep active_frame_count nonzero so that no swapped out frames in
   // this SiteInstance get forcefully deleted.
-  rfh1->GetSiteInstance()->increment_active_frame_count();
+  rfh1->GetSiteInstance()->IncrementActiveFrameCount();
 
   contents()->NavigateAndCommit(kUrl2);
   TestRenderFrameHost* rfh2 = main_test_rfh();
-  rfh2->GetSiteInstance()->increment_active_frame_count();
+  rfh2->GetSiteInstance()->IncrementActiveFrameCount();
 
   // Now go back, but suppose the SwapOut_ACK isn't received.  This shouldn't
   // happen, but we have seen it when going back quickly across many entries
@@ -2001,7 +2001,7 @@ TEST_F(RenderFrameHostManagerTest, SwapOutFrameAfterSwapOutACK) {
 
   // Increment the number of active frames in SiteInstanceImpl so that rfh1 is
   // not deleted on swap out.
-  rfh1->GetSiteInstance()->increment_active_frame_count();
+  rfh1->GetSiteInstance()->IncrementActiveFrameCount();
 
   // Navigate to new site, simulating onbeforeunload approval.
   controller().LoadURL(
@@ -2051,7 +2051,7 @@ TEST_F(RenderFrameHostManagerTest,
   // Increment the number of active frames in SiteInstanceImpl so that rfh1 is
   // not deleted on swap out.
   scoped_refptr<SiteInstanceImpl> site_instance = rfh1->GetSiteInstance();
-  site_instance->increment_active_frame_count();
+  site_instance->IncrementActiveFrameCount();
 
   // Navigate to new site, simulating onbeforeunload approval.
   controller().LoadURL(
@@ -2127,7 +2127,7 @@ TEST_F(RenderFrameHostManagerTest,
     // created.
     scoped_refptr<SiteInstanceImpl> site_instance =
         pending_rfh->GetSiteInstance();
-    site_instance->increment_active_frame_count();
+    site_instance->IncrementActiveFrameCount();
 
     contents()->GetMainFrame()->OnMessageReceived(
         FrameHostMsg_BeforeUnload_ACK(0, false, now, now));

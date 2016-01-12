@@ -10,6 +10,8 @@
 #include <list>
 #include <map>
 
+#include "base/containers/hash_tables.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -95,7 +97,8 @@ struct FrameReplicationState;
 //   RenderFrameProxyHost, to be used (for example) if the user goes back. The
 //   process only stays live if another tab is using it, but if so, the existing
 //   frame relationships will be maintained.
-class CONTENT_EXPORT RenderFrameHostManager {
+class CONTENT_EXPORT RenderFrameHostManager
+    : public SiteInstanceImpl::Observer {
  public:
   // Functions implemented by our owner that we need.
   //
@@ -490,6 +493,10 @@ class CONTENT_EXPORT RenderFrameHostManager {
   // the values are RenderFrameProxyHosts.
   std::map<int, RenderFrameProxyHost*> GetAllProxyHostsForTesting();
 
+  // SiteInstanceImpl::Observer
+  void ActiveFrameCountIsZero(SiteInstanceImpl* site_instance) override;
+  void RenderProcessGone(SiteInstanceImpl* site_instance) override;
+
  private:
   friend class NavigatorTestWithBrowserSideNavigation;
   friend class RenderFrameHostManagerTest;
@@ -519,14 +526,11 @@ class CONTENT_EXPORT RenderFrameHostManager {
     bool new_is_related_to_current;
   };
 
-  // Used with FrameTree::ForEach to erase RenderFrameProxyHosts from a
-  // FrameTreeNode's RenderFrameHostManager.
-  static bool ClearProxiesInSiteInstance(int32_t site_instance_id,
-                                         FrameTreeNode* node);
-  // Used with FrameTree::ForEach to reset initialized state of
-  // RenderFrameProxyHosts from a FrameTreeNode's RenderFrameHostManager.
-  static bool ResetProxiesInSiteInstance(int32_t site_instance_id,
-                                         FrameTreeNode* node);
+  // Create a RenderFrameProxyHost owned by this object.
+  RenderFrameProxyHost* CreateRenderFrameProxyHost(SiteInstance* site_instance,
+                                                   RenderViewHostImpl* rvh);
+  // Delete a RenderFrameProxyHost owned by this object.
+  void DeleteRenderFrameProxyHost(SiteInstance* site_instance);
 
   // Returns whether this tab should transition to a new renderer for
   // cross-site URLs.  Enabled unless we see the --process-per-tab command line
@@ -689,13 +693,6 @@ class CONTENT_EXPORT RenderFrameHostManager {
   void MoveToPendingDeleteHosts(
       scoped_ptr<RenderFrameHostImpl> render_frame_host);
 
-  // If |render_frame_host| is the last remaining active frame in its
-  // SiteInstance, this will shutdown all the RenderFrameProxyHosts in the
-  // SiteInstance. This is appropriate if |render_frame_host| is about to be
-  // destroyed.
-  void ShutdownProxiesIfLastActiveFrameInSiteInstance(
-      RenderFrameHostImpl* render_frame_host);
-
   // Helper method to terminate the pending RenderFrameHost. The frame may be
   // deleted immediately, or it may be kept around in hopes of later reuse.
   void CancelPending();
@@ -722,10 +719,6 @@ class CONTENT_EXPORT RenderFrameHostManager {
   // navigation.
   void UpdatePendingWebUIOnCurrentFrameHost(const GURL& dest_url,
                                             int entry_bindings);
-
-  // Called when a renderer process is starting to close.  We should not
-  // schedule new navigations in its swapped out RenderFrameHosts after this.
-  void RendererProcessClosing(RenderProcessHost* render_process_host);
 
   // For use in creating RenderFrameHosts.
   FrameTreeNode* frame_tree_node_;
@@ -763,8 +756,9 @@ class CONTENT_EXPORT RenderFrameHostManager {
   // navigations in PlzNavigate.
   scoped_ptr<NavigationHandleImpl> transfer_navigation_handle_;
 
-  class RenderFrameProxyHostMap;
-  scoped_ptr<RenderFrameProxyHostMap> proxy_hosts_;
+  // Proxy hosts, indexed by site instance ID.
+  base::ScopedPtrHashMap<int32_t, scoped_ptr<RenderFrameProxyHost>>
+      proxy_hosts_;
 
   // A list of RenderFrameHosts waiting to shut down after swapping out.  We use
   // a linked list since we expect frequent deletes and no indexed access, and

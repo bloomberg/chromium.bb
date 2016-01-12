@@ -2,3 +2,4 @@
 -SessionHistoryTest.FrameBackForward
 -NavigationControllerBrowserTest.ReloadOriginalRequest
 -*.RestoreSubframeFileAccessForHistoryNavigation
+-FrameTreeBrowserTest.NavigateGrandchildToBlob

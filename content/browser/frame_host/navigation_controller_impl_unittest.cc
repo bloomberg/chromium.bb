@@ -1200,7 +1200,7 @@ TEST_F(NavigationControllerTest, LoadURL_WithBindings) {
   // that orig_rfh belongs to, to prevent it from being destroyed when
   // it gets swapped out, so that we can reuse orig_rfh when the
   // controller goes back.
-  orig_rfh->GetSiteInstance()->increment_active_frame_count();
+  orig_rfh->GetSiteInstance()->IncrementActiveFrameCount();
 
   // Navigate to a second URL, simulate the beforeunload ack for the cross-site
   // transition, and set bindings on the pending RenderViewHost to simulate a

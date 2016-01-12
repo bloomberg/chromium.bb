@@ -86,122 +86,6 @@ bool OpenerForFrameTreeNode(
 
 }  // namespace
 
-// A helper class to hold all frame proxies and register as a
-// RenderProcessHostObserver for them.
-class RenderFrameHostManager::RenderFrameProxyHostMap
-    : public RenderProcessHostObserver {
- public:
-  using MapType = base::hash_map<int32_t, RenderFrameProxyHost*>;
-
-  RenderFrameProxyHostMap(RenderFrameHostManager* manager);
-  ~RenderFrameProxyHostMap() override;
-
-  // Read-only access to the underlying map of site instance ID to
-  // RenderFrameProxyHosts.
-  MapType::const_iterator begin() const { return map_.begin(); }
-  MapType::const_iterator end() const { return map_.end(); }
-  bool empty() const { return map_.empty(); }
-
-  // Returns the proxy with the specified ID, or nullptr if there is no such
-  // one.
-  RenderFrameProxyHost* Get(int32_t id);
-
-  // Adds the specified proxy with the specified ID. It is an error (and fatal)
-  // to add more than one proxy with the specified ID.
-  void Add(int32_t id, scoped_ptr<RenderFrameProxyHost> proxy);
-
-  // Removes the proxy with the specified site instance ID.
-  void Remove(int32_t id);
-
-  // Removes all proxies.
-  void Clear();
-
-  // RenderProcessHostObserver implementation.
-  void RenderProcessWillExit(RenderProcessHost* host) override;
-  void RenderProcessExited(RenderProcessHost* host,
-                           base::TerminationStatus status,
-                           int exit_code) override;
-
- private:
-  RenderFrameHostManager* manager_;
-  MapType map_;
-};
-
-RenderFrameHostManager::RenderFrameProxyHostMap::RenderFrameProxyHostMap(
-    RenderFrameHostManager* manager)
-    : manager_(manager) {}
-
-RenderFrameHostManager::RenderFrameProxyHostMap::~RenderFrameProxyHostMap() {
-  Clear();
-}
-
-RenderFrameProxyHost* RenderFrameHostManager::RenderFrameProxyHostMap::Get(
-    int32_t id) {
-  auto it = map_.find(id);
-  if (it != map_.end())
-    return it->second;
-  return nullptr;
-}
-
-void RenderFrameHostManager::RenderFrameProxyHostMap::Add(
-    int32_t id,
-    scoped_ptr<RenderFrameProxyHost> proxy) {
-  CHECK_EQ(0u, map_.count(id)) << "Inserting a duplicate item.";
-
-  // If this is the first proxy that has this process host, observe the
-  // process host.
-  RenderProcessHost* host = proxy->GetProcess();
-  size_t count =
-      std::count_if(begin(), end(), [host](MapType::value_type item) {
-        return item.second->GetProcess() == host;
-      });
-  if (count == 0)
-    host->AddObserver(this);
-
-  map_[id] = proxy.release();
-}
-
-void RenderFrameHostManager::RenderFrameProxyHostMap::Remove(int32_t id) {
-  auto it = map_.find(id);
-  if (it == map_.end())
-    return;
-
-  // If this is the last proxy that has this process host, stop observing the
-  // process host.
-  RenderProcessHost* host = it->second->GetProcess();
-  size_t count =
-      std::count_if(begin(), end(), [host](MapType::value_type item) {
-        return item.second->GetProcess() == host;
-      });
-  if (count == 1)
-    host->RemoveObserver(this);
-
-  delete it->second;
-  map_.erase(it);
-}
-
-void RenderFrameHostManager::RenderFrameProxyHostMap::Clear() {
-  std::set<RenderProcessHost*> hosts;
-  for (const auto& pair : map_)
-    hosts.insert(pair.second->GetProcess());
-  for (auto host : hosts)
-    host->RemoveObserver(this);
-
-  STLDeleteValues(&map_);
-}
-
-void RenderFrameHostManager::RenderFrameProxyHostMap::RenderProcessWillExit(
-    RenderProcessHost* host) {
-  manager_->RendererProcessClosing(host);
-}
-
-void RenderFrameHostManager::RenderFrameProxyHostMap::RenderProcessExited(
-    RenderProcessHost* host,
-    base::TerminationStatus status,
-    int exit_code) {
-  manager_->RendererProcessClosing(host);
-}
-
 // static
 bool RenderFrameHostManager::ClearRFHsPendingShutdown(FrameTreeNode* node) {
   node->render_manager()->pending_delete_hosts_.clear();
@@ -230,24 +114,17 @@ RenderFrameHostManager::RenderFrameHostManager(
       render_frame_delegate_(render_frame_delegate),
       render_view_delegate_(render_view_delegate),
       render_widget_delegate_(render_widget_delegate),
-      proxy_hosts_(new RenderFrameProxyHostMap(this)),
       interstitial_page_(nullptr),
       weak_factory_(this) {
   DCHECK(frame_tree_node_);
 }
 
 RenderFrameHostManager::~RenderFrameHostManager() {
-  if (pending_render_frame_host_) {
-    scoped_ptr<RenderFrameHostImpl> relic = UnsetPendingRenderFrameHost();
-    ShutdownProxiesIfLastActiveFrameInSiteInstance(relic.get());
-  }
+  if (pending_render_frame_host_)
+    UnsetPendingRenderFrameHost();
 
-  if (speculative_render_frame_host_) {
-    scoped_ptr<RenderFrameHostImpl> relic = UnsetSpeculativeRenderFrameHost();
-    ShutdownProxiesIfLastActiveFrameInSiteInstance(relic.get());
-  }
-
-  ShutdownProxiesIfLastActiveFrameInSiteInstance(render_frame_host_.get());
+  if (speculative_render_frame_host_)
+    UnsetSpeculativeRenderFrameHost();
 
   // Delete any RenderFrameProxyHosts and swapped out RenderFrameHosts.
   // It is important to delete those prior to deleting the current
@@ -344,11 +221,10 @@ RenderFrameProxyHost* RenderFrameHostManager::GetProxyToParent() {
   if (frame_tree_node_->IsMainFrame())
     return nullptr;
 
-  return proxy_hosts_->Get(frame_tree_node_->parent()
-                               ->render_manager()
-                               ->current_frame_host()
-                               ->GetSiteInstance()
-                               ->GetId());
+  return GetRenderFrameProxyHost(frame_tree_node_->parent()
+                                     ->render_manager()
+                                     ->current_frame_host()
+                                     ->GetSiteInstance());
 }
 
 RenderFrameProxyHost* RenderFrameHostManager::GetProxyToOuterDelegate() {
@@ -739,7 +615,7 @@ void RenderFrameHostManager::DidChangeOpener(
 
   frame_tree_node_->SetOpener(opener);
 
-  for (const auto& pair : *proxy_hosts_) {
+  for (const auto& pair : proxy_hosts_) {
     if (pair.second->GetSiteInstance() == source_site_instance)
       continue;
     pair.second->UpdateOpener();
@@ -775,49 +651,12 @@ void RenderFrameHostManager::CommitPendingSandboxFlags() {
   // the parent process since it already knows the latest flags.
   SiteInstance* parent_site_instance =
       frame_tree_node_->parent()->current_frame_host()->GetSiteInstance();
-  for (const auto& pair : *proxy_hosts_) {
+  for (const auto& pair : proxy_hosts_) {
     if (pair.second->GetSiteInstance() != parent_site_instance) {
       pair.second->Send(new FrameMsg_DidUpdateSandboxFlags(
           pair.second->GetRoutingID(),
           frame_tree_node_->current_replication_state().sandbox_flags));
     }
-  }
-}
-
-void RenderFrameHostManager::RendererProcessClosing(
-    RenderProcessHost* render_process_host) {
-  // Remove any swapped out RVHs from this process, so that we don't try to
-  // swap them back in while the process is exiting.  Start by finding them,
-  // since there could be more than one.
-  std::list<int> ids_to_remove;
-  // Do not remove proxies in the dead process that still have active frame
-  // count though, we just reset them to be uninitialized.
-  std::list<int> ids_to_keep;
-  for (const auto& pair : *proxy_hosts_) {
-    RenderFrameProxyHost* proxy = pair.second;
-    if (proxy->GetProcess() != render_process_host)
-      continue;
-
-    if (static_cast<SiteInstanceImpl*>(proxy->GetSiteInstance())
-            ->active_frame_count() >= 1U) {
-      ids_to_keep.push_back(pair.first);
-    } else {
-      ids_to_remove.push_back(pair.first);
-    }
-  }
-
-  // Now delete them.
-  while (!ids_to_remove.empty()) {
-    proxy_hosts_->Remove(ids_to_remove.back());
-    ids_to_remove.pop_back();
-  }
-
-  while (!ids_to_keep.empty()) {
-    frame_tree_node_->frame_tree()->ForEach(
-        base::Bind(
-            &RenderFrameHostManager::ResetProxiesInSiteInstance,
-            ids_to_keep.back()));
-    ids_to_keep.pop_back();
   }
 }
 
@@ -839,23 +678,13 @@ void RenderFrameHostManager::SwapOutOldFrame(
 
   // If the old RFH is not live, just return as there is no further work to do.
   // It will be deleted and there will be no proxy created.
-  int32_t old_site_instance_id =
-      old_render_frame_host->GetSiteInstance()->GetId();
-  if (!old_render_frame_host->IsRenderFrameLive()) {
-    ShutdownProxiesIfLastActiveFrameInSiteInstance(old_render_frame_host.get());
+  if (!old_render_frame_host->IsRenderFrameLive())
     return;
-  }
 
   // If there are no active frames besides this one, we can delete the old
   // RenderFrameHost once it runs its unload handler, without replacing it with
   // a proxy.
-  size_t active_frame_count =
-      old_render_frame_host->GetSiteInstance()->active_frame_count();
-  if (active_frame_count <= 1) {
-    // Clear out any proxies from this SiteInstance, in case this was the
-    // last one keeping other proxies alive.
-    ShutdownProxiesIfLastActiveFrameInSiteInstance(old_render_frame_host.get());
-
+  if (old_render_frame_host->GetSiteInstance()->active_frame_count() <= 1) {
     // Tell the old RenderFrameHost to swap out, with no proxy to replace it.
     old_render_frame_host->SwapOut(nullptr, true);
     MoveToPendingDeleteHosts(std::move(old_render_frame_host));
@@ -864,10 +693,9 @@ void RenderFrameHostManager::SwapOutOldFrame(
 
   // Otherwise there are active views and we need a proxy for the old RFH.
   // (There should not be one yet.)
-  RenderFrameProxyHost* proxy = new RenderFrameProxyHost(
-      old_render_frame_host->GetSiteInstance(),
-      old_render_frame_host->render_view_host(), frame_tree_node_);
-  proxy_hosts_->Add(old_site_instance_id, make_scoped_ptr(proxy));
+  RenderFrameProxyHost* proxy =
+      CreateRenderFrameProxyHost(old_render_frame_host->GetSiteInstance(),
+                                 old_render_frame_host->render_view_host());
 
   // Tell the old RenderFrameHost to swap out and be replaced by the proxy.
   old_render_frame_host->SwapOut(proxy, true);
@@ -910,12 +738,10 @@ void RenderFrameHostManager::DiscardUnusedFrame(
     // |render_frame_host|, as this method is only called to discard a pending
     // or speculative RenderFrameHost, i.e. one that has never hosted an actual
     // document.
-    RenderFrameProxyHost* proxy = proxy_hosts_->Get(site_instance->GetId());
+    RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(site_instance);
     if (!proxy) {
-      proxy = new RenderFrameProxyHost(site_instance,
-                                       render_frame_host->render_view_host(),
-                                       frame_tree_node_);
-      proxy_hosts_->Add(site_instance->GetId(), make_scoped_ptr(proxy));
+      proxy = CreateRenderFrameProxyHost(site_instance,
+                                         render_frame_host->render_view_host());
     }
 
     if (!SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
@@ -933,11 +759,7 @@ void RenderFrameHostManager::DiscardUnusedFrame(
     }
   }
 
-  if (render_frame_host) {
-    // We won't be coming back, so delete this one.
-    ShutdownProxiesIfLastActiveFrameInSiteInstance(render_frame_host.get());
-    render_frame_host.reset();
-  }
+  render_frame_host.reset();
 }
 
 void RenderFrameHostManager::MoveToPendingDeleteHosts(
@@ -980,7 +802,11 @@ bool RenderFrameHostManager::DeleteFromPendingList(
 }
 
 void RenderFrameHostManager::ResetProxyHosts() {
-  proxy_hosts_->Clear();
+  for (auto& pair : proxy_hosts_) {
+    static_cast<SiteInstanceImpl*>(pair.second->GetSiteInstance())
+        ->RemoveObserver(this);
+  }
+  proxy_hosts_.clear();
 }
 
 // PlzNavigate
@@ -1145,14 +971,14 @@ RenderFrameHostManager::UnsetSpeculativeRenderFrameHost() {
 }
 
 void RenderFrameHostManager::OnDidStartLoading() {
-  for (const auto& pair : *proxy_hosts_) {
+  for (const auto& pair : proxy_hosts_) {
     pair.second->Send(
         new FrameMsg_DidStartLoading(pair.second->GetRoutingID()));
   }
 }
 
 void RenderFrameHostManager::OnDidStopLoading() {
-  for (const auto& pair : *proxy_hosts_) {
+  for (const auto& pair : proxy_hosts_) {
     pair.second->Send(new FrameMsg_DidStopLoading(pair.second->GetRoutingID()));
   }
 }
@@ -1166,7 +992,7 @@ void RenderFrameHostManager::OnDidUpdateName(const std::string& name) {
   if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
     return;
 
-  for (const auto& pair : *proxy_hosts_) {
+  for (const auto& pair : proxy_hosts_) {
     pair.second->Send(
         new FrameMsg_DidUpdateName(pair.second->GetRoutingID(), name));
   }
@@ -1177,7 +1003,7 @@ void RenderFrameHostManager::OnEnforceStrictMixedContentChecking(
   if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
     return;
 
-  for (const auto& pair : *proxy_hosts_) {
+  for (const auto& pair : proxy_hosts_) {
     pair.second->Send(new FrameMsg_EnforceStrictMixedContentChecking(
         pair.second->GetRoutingID(), should_enforce));
   }
@@ -1187,7 +1013,7 @@ void RenderFrameHostManager::OnDidUpdateOrigin(const url::Origin& origin) {
   if (!SiteIsolationPolicy::IsSwappedOutStateForbidden())
     return;
 
-  for (const auto& pair : *proxy_hosts_) {
+  for (const auto& pair : proxy_hosts_) {
     pair.second->Send(
         new FrameMsg_DidUpdateOrigin(pair.second->GetRoutingID(), origin));
   }
@@ -1202,42 +1028,47 @@ RenderFrameHostManager::SiteInstanceDescriptor::SiteInstanceDescriptor(
   new_site_url = SiteInstance::GetSiteForURL(browser_context, dest_url);
 }
 
-// static
-bool RenderFrameHostManager::ClearProxiesInSiteInstance(
-    int32_t site_instance_id,
-    FrameTreeNode* node) {
-  RenderFrameProxyHost* proxy =
-      node->render_manager()->proxy_hosts_->Get(site_instance_id);
-  if (proxy) {
-    // Delete the proxy.  If it is for a main frame (and thus the RFH is stored
-    // in the proxy) and it was still pending swap out, move the RFH to the
-    // pending deletion list first.
-    if (node->IsMainFrame() &&
-        proxy->render_frame_host() &&
-        proxy->render_frame_host()->rfh_state() ==
-            RenderFrameHostImpl::STATE_PENDING_SWAP_OUT) {
-      DCHECK(!SiteIsolationPolicy::IsSwappedOutStateForbidden());
-      scoped_ptr<RenderFrameHostImpl> swapped_out_rfh =
-          proxy->PassFrameHostOwnership();
-      node->render_manager()->MoveToPendingDeleteHosts(
-          std::move(swapped_out_rfh));
-    }
-    node->render_manager()->proxy_hosts_->Remove(site_instance_id);
-  }
-
-  return true;
+void RenderFrameHostManager::RenderProcessGone(SiteInstanceImpl* instance) {
+  GetRenderFrameProxyHost(instance)->set_render_frame_proxy_created(false);
 }
 
-// static.
-bool RenderFrameHostManager::ResetProxiesInSiteInstance(
-    int32_t site_instance_id,
-    FrameTreeNode* node) {
-  RenderFrameProxyHost* proxy =
-      node->render_manager()->proxy_hosts_->Get(site_instance_id);
-  if (proxy)
-    proxy->set_render_frame_proxy_created(false);
+void RenderFrameHostManager::ActiveFrameCountIsZero(
+    SiteInstanceImpl* site_instance) {
+  // |site_instance| no longer contains any active RenderFrameHosts, so we don't
+  // need to maintain a proxy there anymore.
+  RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(site_instance);
+  CHECK(proxy);
 
-  return true;
+  // Delete the proxy.  If it is for a main frame (and the RFH is stored
+  // in the proxy) and it was still pending swap out, move the RFH to the
+  // pending deletion list first.
+  if (frame_tree_node_->IsMainFrame() && proxy->render_frame_host() &&
+      proxy->render_frame_host()->rfh_state() ==
+          RenderFrameHostImpl::STATE_PENDING_SWAP_OUT) {
+    DCHECK(!SiteIsolationPolicy::IsSwappedOutStateForbidden());
+    scoped_ptr<RenderFrameHostImpl> swapped_out_rfh =
+        proxy->PassFrameHostOwnership();
+    MoveToPendingDeleteHosts(std::move(swapped_out_rfh));
+  }
+
+  DeleteRenderFrameProxyHost(site_instance);
+}
+
+RenderFrameProxyHost* RenderFrameHostManager::CreateRenderFrameProxyHost(
+    SiteInstance* site_instance,
+    RenderViewHostImpl* rvh) {
+  auto result = proxy_hosts_.add(site_instance->GetId(),
+                                 make_scoped_ptr(new RenderFrameProxyHost(
+                                     site_instance, rvh, frame_tree_node_)));
+  CHECK(result.second) << "A proxy already existed for this SiteInstance.";
+  static_cast<SiteInstanceImpl*>(site_instance)->AddObserver(this);
+  return result.first->second;
+}
+
+void RenderFrameHostManager::DeleteRenderFrameProxyHost(
+    SiteInstance* site_instance) {
+  static_cast<SiteInstanceImpl*>(site_instance)->RemoveObserver(this);
+  proxy_hosts_.erase(site_instance->GetId());
 }
 
 bool RenderFrameHostManager::ShouldTransitionCrossSite() {
@@ -1842,7 +1673,7 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
       new_render_frame_host = proxy->PassFrameHostOwnership();
       new_render_frame_host->GetProcess()->AddPendingView();
 
-      proxy_hosts_->Remove(instance->GetId());
+      DeleteRenderFrameProxyHost(instance);
       // NB |proxy| is deleted at this point.
 
       // If we are reusing the RenderViewHost and it doesn't already have a
@@ -1877,10 +1708,9 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
     if (!swapped_out) {
       new_render_frame_host->GetProcess()->AddPendingView();
     } else {
-      proxy = new RenderFrameProxyHost(
-          new_render_frame_host->GetSiteInstance(),
-          new_render_frame_host->render_view_host(), frame_tree_node_);
-      proxy_hosts_->Add(instance->GetId(), make_scoped_ptr(proxy));
+      proxy =
+          CreateRenderFrameProxyHost(new_render_frame_host->GetSiteInstance(),
+                                     new_render_frame_host->render_view_host());
       proxy->TakeFrameHostOwnership(std::move(new_render_frame_host));
     }
 
@@ -1953,11 +1783,8 @@ int RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
   if (proxy && proxy->is_render_frame_proxy_live())
     return proxy->GetRoutingID();
 
-  if (!proxy) {
-    proxy =
-        new RenderFrameProxyHost(instance, render_view_host, frame_tree_node_);
-    proxy_hosts_->Add(instance->GetId(), make_scoped_ptr(proxy));
-  }
+  if (!proxy)
+    proxy = CreateRenderFrameProxyHost(instance, render_view_host);
 
   if (SiteIsolationPolicy::IsSwappedOutStateForbidden() &&
       frame_tree_node_->IsMainFrame()) {
@@ -1970,10 +1797,12 @@ int RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
 }
 
 void RenderFrameHostManager::CreateProxiesForChildFrame(FrameTreeNode* child) {
-  for (const auto& pair : *proxy_hosts_) {
+  RenderFrameProxyHost* outer_delegate_proxy =
+      ForInnerDelegate() ? GetProxyToOuterDelegate() : nullptr;
+  for (const auto& pair : proxy_hosts_) {
     // Do not create proxies for subframes in the outer delegate's process,
     // since the outer delegate does not need to interact with them.
-    if (ForInnerDelegate() && pair.second == GetProxyToOuterDelegate())
+    if (pair.second == outer_delegate_proxy)
       continue;
 
     child->render_manager()->CreateRenderFrameProxy(
@@ -2002,10 +1831,8 @@ void RenderFrameHostManager::CreateOuterDelegateProxy(
     SiteInstance* outer_contents_site_instance,
     RenderFrameHostImpl* render_frame_host) {
   CHECK(BrowserPluginGuestMode::UseCrossProcessFramesForGuests());
-  RenderFrameProxyHost* proxy = new RenderFrameProxyHost(
-      outer_contents_site_instance, nullptr, frame_tree_node_);
-  proxy_hosts_->Add(outer_contents_site_instance->GetId(),
-                    make_scoped_ptr(proxy));
+  RenderFrameProxyHost* proxy =
+      CreateRenderFrameProxyHost(outer_contents_site_instance, nullptr);
 
   // Swap the outer WebContents's frame with the proxy to inner WebContents.
   //
@@ -2250,7 +2077,7 @@ void RenderFrameHostManager::CommitPending() {
   if (SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
     // Since the new RenderFrameHost is now committed, there must be no proxies
     // for its SiteInstance. Delete any existing ones.
-    proxy_hosts_->Remove(render_frame_host_->GetSiteInstance()->GetId());
+    DeleteRenderFrameProxyHost(render_frame_host_->GetSiteInstance());
   }
 
   // If this is a subframe, it should have a CrossProcessFrameConnector
@@ -2268,46 +2095,7 @@ void RenderFrameHostManager::CommitPending() {
 
   // After all is done, there must never be a proxy in the list which has the
   // same SiteInstance as the current RenderFrameHost.
-  CHECK(!proxy_hosts_->Get(render_frame_host_->GetSiteInstance()->GetId()));
-}
-
-void RenderFrameHostManager::ShutdownProxiesIfLastActiveFrameInSiteInstance(
-    RenderFrameHostImpl* render_frame_host) {
-  if (!render_frame_host)
-    return;
-  if (!RenderFrameHostImpl::IsRFHStateActive(render_frame_host->rfh_state()))
-    return;
-  if (render_frame_host->GetSiteInstance()->active_frame_count() > 1U)
-    return;
-
-  // After |render_frame_host| goes away, there will be no active frames left in
-  // its SiteInstance, so we can delete all proxies created in that SiteInstance
-  // on behalf of frames anywhere in the BrowsingInstance.
-  int32_t site_instance_id = render_frame_host->GetSiteInstance()->GetId();
-
-  // First remove any proxies for this SiteInstance from our own list.
-  ClearProxiesInSiteInstance(site_instance_id, frame_tree_node_);
-
-  // Use the safe RenderWidgetHost iterator for now to find all RenderViewHosts
-  // in the SiteInstance, then tell their respective FrameTrees to remove all
-  // RenderFrameProxyHosts corresponding to them.
-  // TODO(creis): Replace this with a RenderFrameHostIterator that protects
-  // against use-after-frees if a later element is deleted before getting to it.
-  scoped_ptr<RenderWidgetHostIterator> widgets(
-      RenderWidgetHostImpl::GetAllRenderWidgetHosts());
-  while (RenderWidgetHost* widget = widgets->GetNextHost()) {
-    RenderViewHost* rvh = RenderViewHost::From(widget);
-    if (!rvh)
-      continue;
-    if (site_instance_id == rvh->GetSiteInstance()->GetId()) {
-      // This deletes all RenderFrameHosts using the |rvh|, which then causes
-      // |rvh| to Shutdown.
-      FrameTree* tree = rvh->GetDelegate()->GetFrameTree();
-      tree->ForEach(base::Bind(
-          &RenderFrameHostManager::ClearProxiesInSiteInstance,
-          site_instance_id));
-    }
-  }
+  CHECK(!GetRenderFrameProxyHost(render_frame_host_->GetSiteInstance()));
 }
 
 RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
@@ -2437,7 +2225,7 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
   // original site).  In that case, we have a proxy for the current RFH but
   // haven't deleted it yet.  The new navigation will swap it back in, so we can
   // delete the proxy.
-  proxy_hosts_->Remove(new_instance.get()->GetId());
+  DeleteRenderFrameProxyHost(new_instance.get());
 
   UpdatePendingWebUIOnCurrentFrameHost(dest_url, bindings);
 
@@ -2530,8 +2318,7 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::SetRenderFrameHost(
 
 bool RenderFrameHostManager::IsRVHOnSwappedOutList(
     RenderViewHostImpl* rvh) const {
-  RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(
-      rvh->GetSiteInstance());
+  RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(rvh->GetSiteInstance());
   if (!proxy)
     return false;
   // If there is a proxy without RFH, it is for a subframe in the SiteInstance
@@ -2546,8 +2333,7 @@ bool RenderFrameHostManager::IsOnSwappedOutList(
   if (!rfh->GetSiteInstance())
     return false;
 
-  RenderFrameProxyHost* host =
-      proxy_hosts_->Get(rfh->GetSiteInstance()->GetId());
+  RenderFrameProxyHost* host = GetRenderFrameProxyHost(rfh->GetSiteInstance());
   if (!host)
     return false;
 
@@ -2564,13 +2350,17 @@ RenderViewHostImpl* RenderFrameHostManager::GetSwappedOutRenderViewHost(
 
 RenderFrameProxyHost* RenderFrameHostManager::GetRenderFrameProxyHost(
     SiteInstance* instance) const {
-  return proxy_hosts_->Get(instance->GetId());
+  auto it = proxy_hosts_.find(instance->GetId());
+  if (it != proxy_hosts_.end())
+    return it->second;
+  return nullptr;
 }
 
 std::map<int, RenderFrameProxyHost*>
 RenderFrameHostManager::GetAllProxyHostsForTesting() {
   std::map<int, RenderFrameProxyHost*> result;
-  result.insert(proxy_hosts_->begin(), proxy_hosts_->end());
+  for (const auto& pair : proxy_hosts_)
+    result[pair.first] = pair.second;
   return result;
 }
 
