@@ -231,8 +231,7 @@ void DocumentLoader::mainReceivedError(const ResourceError& error)
         m_applicationCacheHost->failedLoadingMainResource();
     if (!frameLoader())
         return;
-    if (m_state < MainResourceDone)
-        m_state = MainResourceDone;
+    m_state = MainResourceDone;
     frameLoader()->receivedMainResourceError(this, error);
     clearMainResourceHandle();
 }

@@ -1220,18 +1220,15 @@ void FrameLoader::receivedMainResourceError(DocumentLoader* loader, const Resour
         if (loader != m_provisionalDocumentLoader)
             return;
         detachDocumentLoader(m_provisionalDocumentLoader);
-        // If the provisional load failed, and we haven't yet rendered anything
-        // into the frame, then act as though the non-provisional loader failed
-        // as well. If we don't do this, the main load will never finish.
-        if (!stateMachine()->committedFirstRealDocumentLoad())
-            m_documentLoader->setSentDidFinishLoad();
+        m_progressTracker->progressCompleted();
     } else {
         ASSERT(loader == m_documentLoader);
         if (m_frame->document()->parser())
             m_frame->document()->parser()->stopParsing();
-        if (!m_documentLoader->sentDidFinishLoad()) {
+        m_documentLoader->setSentDidFinishLoad();
+        if (!m_provisionalDocumentLoader && m_frame->isLoading()) {
             client()->dispatchDidFailLoad(error, historyCommitType);
-            m_documentLoader->setSentDidFinishLoad();
+            m_progressTracker->progressCompleted();
         }
     }
     checkCompleted();

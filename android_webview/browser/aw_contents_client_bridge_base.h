@@ -35,6 +35,8 @@ class AwContentsClientBridgeBase {
                         AwContentsClientBridgeBase* handler);
   static AwContentsClientBridgeBase* FromWebContents(
       content::WebContents* web_contents);
+  static AwContentsClientBridgeBase* FromID(int render_process_id,
+                                            int render_frame_id);
 
   virtual ~AwContentsClientBridgeBase();
 
@@ -60,6 +62,11 @@ class AwContentsClientBridgeBase {
       const base::string16& message_text,
       const content::JavaScriptDialogManager::DialogClosedCallback& callback)
       = 0;
+
+  virtual bool ShouldOverrideUrlLoading(const base::string16& url,
+                                        bool has_user_gesture,
+                                        bool is_redirect,
+                                        bool is_main_frame) = 0;
 };
 
 }  // namespace android_webview
