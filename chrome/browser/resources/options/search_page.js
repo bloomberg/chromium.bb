@@ -147,6 +147,13 @@ cr.define('options', function() {
     __proto__: Page.prototype,
 
     /**
+     * Wait a bit to see if the user is still entering search text.
+     * @type {object}
+     * @private
+     */
+    delayedSearchMetric_: undefined,
+
+    /**
      * Only send the time of first search once.
      * @type {boolean}
      * @private
@@ -388,9 +395,16 @@ cr.define('options', function() {
       $('searchPageNoMatches').hidden = foundMatches;
 
       // Create search balloons for sub-page results.
-      var length = bubbleControls.length;
-      for (var i = 0; i < length; i++)
+      var matchCount = bubbleControls.length;
+      for (var i = 0; i < matchCount; i++)
         this.createSearchBubble_(bubbleControls[i], text);
+
+      // If the search doesn't change for a couple seconds, send some metrics.
+      clearTimeout(this.delayedSearchMetric_);
+      this.delayedSearchMetric_ = setTimeout(function() {
+        chrome.metricsPrivate.recordSmallCount(
+            'Settings.SearchMatchCount', matchCount);
+      }, 2000);
 
       // Cleanup the recursion-prevention variable.
       this.insideSetSearchText_ = false;
