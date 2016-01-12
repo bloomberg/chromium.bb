@@ -44,17 +44,15 @@ infobars::InfoBar* PermissionUpdateInfoBarDelegate::Create(
         !window_android->HasPermission(android_permission)) {
       permissions.push_back(android_permission);
 
-      switch (content_settings_type) {
-        case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+      if (content_settings_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
           message_id = IDS_INFOBAR_MISSING_LOCATION_PERMISSION_TEXT;
-          break;
-        case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+      } else if (content_settings_type ==
+                 CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) {
           message_id = IDS_INFOBAR_MISSING_MICROPHONE_PERMISSION_TEXT;
-          break;
-        case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+      } else if (content_settings_type ==
+                 CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
           message_id = IDS_INFOBAR_MISSING_CAMERA_PERMISSION_TEXT;
-          break;
-        default:
+      } else {
           NOTREACHED();
           message_id = IDS_INFOBAR_MISSING_MULTIPLE_PERMISSIONS_TEXT;
       }
