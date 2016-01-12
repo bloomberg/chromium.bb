@@ -134,9 +134,9 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   // Configures |media_codec_| with the given codec parameters from the client.
   bool ConfigureMediaCodec();
 
-  // Sends the current picture on the surface to the client.
-  void SendCurrentSurfaceToClient(int32_t codec_buffer_index,
-                                  int32_t bitstream_id);
+  // Sends the decoded frame specified by |codec_buffer_index| to the client.
+  void SendDecodedFrameToClient(int32_t codec_buffer_index,
+                                int32_t bitstream_id);
 
   // Does pending IO tasks if any. Once this is called, it polls |media_codec_|
   // until it finishes pending tasks. For the polling, |kDecodePollDelay| is

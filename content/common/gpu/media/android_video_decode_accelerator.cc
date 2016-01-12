@@ -17,7 +17,6 @@
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/media/android_copying_backing_strategy.h"
 #include "content/common/gpu/media/android_deferred_rendering_backing_strategy.h"
-#include "content/common/gpu/media/avda_return_on_failure.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
@@ -35,13 +34,14 @@
 #include "media/mojo/services/mojo_cdm_service.h"
 #endif
 
+#define POST_ERROR(error_code, error_message)                        \
+  do {                                                               \
+    DLOG(ERROR) << error_message;                                    \
+    PostError(FROM_HERE, media::VideoDecodeAccelerator::error_code); \
+  } while (0)
+
 namespace content {
 
-// TODO(liberato): It is unclear if we have an issue with deadlock during
-// playback if we lower this.  Previously (crbug.com/176036), a deadlock
-// could occur during preroll.  More recent tests have shown some
-// instability with kNumPictureBuffers==2 with similar symptoms
-// during playback.  crbug.com/531588 .
 enum { kNumPictureBuffers = media::limits::kMaxVideoFrames + 1 };
 
 // Max number of bitstreams notified to the client with
@@ -304,12 +304,14 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
   int input_buf_index = 0;
   media::MediaCodecStatus status =
       media_codec_->DequeueInputBuffer(NoWaitTimeOut(), &input_buf_index);
-  DCHECK(status == media::MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER ||
-         status == media::MEDIA_CODEC_OK || status == media::MEDIA_CODEC_ERROR);
+
   if (status == media::MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER)
     return false;
-  RETURN_ON_FAILURE(this, status == media::MEDIA_CODEC_OK,
-                    "Failed to DequeueInputBuffer", PLATFORM_FAILURE, false);
+  if (status == media::MEDIA_CODEC_ERROR) {
+    POST_ERROR(PLATFORM_FAILURE, "Failed to DequeueInputBuffer");
+    return false;
+  }
+  DCHECK_EQ(status, media::MEDIA_CODEC_OK);
 
   base::Time queued_time = pending_bitstream_buffers_.front().second;
   UMA_HISTOGRAM_TIMES("Media.AVDA.InputQueueTime",
@@ -328,8 +330,10 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
 
   scoped_ptr<base::SharedMemory> shm(
       new base::SharedMemory(bitstream_buffer.handle(), true));
-  RETURN_ON_FAILURE(this, shm->Map(bitstream_buffer.size()),
-                    "Failed to SharedMemory::Map()", UNREADABLE_INPUT, false);
+  if (!shm->Map(bitstream_buffer.size())) {
+    POST_ERROR(UNREADABLE_INPUT, "Failed to SharedMemory::Map()");
+    return false;
+  }
 
   const base::TimeDelta presentation_timestamp =
       bitstream_buffer.presentation_timestamp();
@@ -378,9 +382,10 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
   TRACE_COUNTER1("media", "AVDA::PendingBitstreamBufferCount",
                  pending_bitstream_buffers_.size());
 
-  RETURN_ON_FAILURE(this, status == media::MEDIA_CODEC_OK,
-                    "Failed to QueueInputBuffer: " << status, PLATFORM_FAILURE,
-                    false);
+  if (status != media::MEDIA_CODEC_OK) {
+    POST_ERROR(PLATFORM_FAILURE, "Failed to QueueInputBuffer: " << status);
+    return false;
+  }
 
   // We should call NotifyEndOfBitstreamBuffer(), when no more decoded output
   // will be returned from the bitstream buffer. However, MediaCodec API is
@@ -392,8 +397,7 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&AndroidVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer,
-                 weak_this_factory_.GetWeakPtr(),
-                 bitstream_buffer.id()));
+                 weak_this_factory_.GetWeakPtr(), bitstream_buffer.id()));
   bitstreams_notified_in_advance_.push_back(bitstream_buffer.id());
 
   return true;
@@ -413,7 +417,6 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
   bool eos = false;
   base::TimeDelta presentation_timestamp;
   int32_t buf_index = 0;
-  bool should_try_again = false;
   do {
     size_t offset = 0;
     size_t size = 0;
@@ -425,14 +428,16 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
     TRACE_EVENT_END2("media", "AVDA::DequeueOutput", "status", status,
                      "presentation_timestamp (ms)",
                      presentation_timestamp.InMilliseconds());
-    RETURN_ON_FAILURE(this, status != media::MEDIA_CODEC_ERROR,
-                      "DequeueOutputBuffer failed.", PLATFORM_FAILURE, false);
 
     DVLOG(3) << "AVDA::DequeueOutput: pts:" << presentation_timestamp
              << " buf_index:" << buf_index << " offset:" << offset
              << " size:" << size << " eos:" << eos;
 
     switch (status) {
+      case media::MEDIA_CODEC_ERROR:
+        POST_ERROR(PLATFORM_FAILURE, "DequeueOutputBuffer failed.");
+        return false;
+
       case media::MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER:
         return false;
 
@@ -469,40 +474,29 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
     }
   } while (buf_index < 0);
 
-  // Normally we assume that the decoder makes at most one output frame for each
-  // distinct input timestamp. A VP9 alt ref frame is a case where an input
-  // buffer, with a possibly unique timestamp, will not result in a
-  // corresponding output frame.
-
-  // However MediaCodecBridge uses timestamp correction and provides
-  // non-decreasing timestamp sequence, which might result in timestamp
-  // duplicates. Discard the frame if we cannot get corresponding buffer id.
-
-  // Get the bitstream buffer id from the timestamp.
-  auto it = eos ? bitstream_buffers_in_decoder_.end()
-                : bitstream_buffers_in_decoder_.find(presentation_timestamp);
-
   if (eos) {
     DVLOG(3) << "AVDA::DequeueOutput: Resetting codec state after EOS";
     ResetCodecState();
 
     base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&AndroidVideoDecodeAccelerator::NotifyFlushDone,
-                   weak_this_factory_.GetWeakPtr()));
-  } else if (it != bitstream_buffers_in_decoder_.end()) {
+        FROM_HERE, base::Bind(&AndroidVideoDecodeAccelerator::NotifyFlushDone,
+                              weak_this_factory_.GetWeakPtr()));
+    return false;
+  }
+
+  // Get the bitstream buffer id from the timestamp.
+  auto it = bitstream_buffers_in_decoder_.find(presentation_timestamp);
+
+  if (it != bitstream_buffers_in_decoder_.end()) {
     const int32_t bitstream_buffer_id = it->second;
     bitstream_buffers_in_decoder_.erase(bitstream_buffers_in_decoder_.begin(),
                                         ++it);
-    SendCurrentSurfaceToClient(buf_index, bitstream_buffer_id);
-
-    // If we decoded a frame this time, then try for another.
-    should_try_again = true;
+    SendDecodedFrameToClient(buf_index, bitstream_buffer_id);
 
     // Removes ids former or equal than the id from decoder. Note that
     // |bitstreams_notified_in_advance_| does not mean bitstream ids in decoder
     // because of frame reordering issue. We just maintain this roughly and use
-    // for the throttling purpose.
+    // it for throttling.
     for (auto bitstream_it = bitstreams_notified_in_advance_.begin();
          bitstream_it != bitstreams_notified_in_advance_.end();
          ++bitstream_it) {
@@ -513,26 +507,32 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
       }
     }
   } else {
+    // Normally we assume that the decoder makes at most one output frame for
+    // each distinct input timestamp. However MediaCodecBridge uses timestamp
+    // correction and provides a non-decreasing timestamp sequence, which might
+    // result in timestamp duplicates. Discard the frame if we cannot get the
+    // corresponding buffer id.
     DVLOG(3) << "AVDA::DequeueOutput: Releasing buffer with unexpected PTS: "
              << presentation_timestamp;
     media_codec_->ReleaseOutputBuffer(buf_index, false);
-    should_try_again = true;
   }
 
-  return should_try_again;
+  // We got a decoded frame, so try for another.
+  return true;
 }
 
-void AndroidVideoDecodeAccelerator::SendCurrentSurfaceToClient(
+void AndroidVideoDecodeAccelerator::SendDecodedFrameToClient(
     int32_t codec_buffer_index,
     int32_t bitstream_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(bitstream_id, -1);
   DCHECK(!free_picture_ids_.empty());
-  TRACE_EVENT0("media", "AVDA::SendCurrentSurfaceToClient");
+  TRACE_EVENT0("media", "AVDA::SendDecodedFrameToClient");
 
-  RETURN_ON_FAILURE(this, make_context_current_.Run(),
-                    "Failed to make this decoder's GL context current.",
-                    PLATFORM_FAILURE);
+  if (!make_context_current_.Run()) {
+    POST_ERROR(PLATFORM_FAILURE, "Failed to make the GL context current.");
+    return;
+  }
 
   int32_t picture_buffer_id = free_picture_ids_.front();
   free_picture_ids_.pop();
@@ -540,16 +540,16 @@ void AndroidVideoDecodeAccelerator::SendCurrentSurfaceToClient(
 
   OutputBufferMap::const_iterator i =
       output_picture_buffers_.find(picture_buffer_id);
-  RETURN_ON_FAILURE(this, i != output_picture_buffers_.end(),
-                    "Can't find a PictureBuffer for " << picture_buffer_id,
-                    PLATFORM_FAILURE);
+  if (i == output_picture_buffers_.end()) {
+    POST_ERROR(PLATFORM_FAILURE,
+               "Can't find PictureBuffer id: " << picture_buffer_id);
+    return;
+  }
 
   // Connect the PictureBuffer to the decoded frame, via whatever
   // mechanism the strategy likes.
   strategy_->UseCodecBufferForPictureBuffer(codec_buffer_index, i->second);
 
-  // TODO(henryhsu): Pass (0, 0) as visible size will cause several test
-  // cases failed. We should make sure |size_| is coded size or visible size.
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&AndroidVideoDecodeAccelerator::NotifyPictureReady,
                             weak_this_factory_.GetWeakPtr(),
@@ -587,10 +587,19 @@ void AndroidVideoDecodeAccelerator::AssignPictureBuffers(
   DCHECK(output_picture_buffers_.empty());
   DCHECK(free_picture_ids_.empty());
 
+  if (buffers.size() < kNumPictureBuffers) {
+    POST_ERROR(INVALID_ARGUMENT, "Not enough picture buffers assigned.");
+    return;
+  }
+
   for (size_t i = 0; i < buffers.size(); ++i) {
-    RETURN_ON_FAILURE(this, buffers[i].size() == size_,
-                      "Invalid picture buffer size was passed.",
-                      INVALID_ARGUMENT);
+    if (buffers[i].size() != size_) {
+      POST_ERROR(INVALID_ARGUMENT,
+                 "Invalid picture buffer size assigned. Wanted "
+                     << size_.ToString() << ", but got "
+                     << buffers[i].size().ToString());
+      return;
+    }
     int32_t id = buffers[i].id();
     output_picture_buffers_.insert(std::make_pair(id, buffers[i]));
     free_picture_ids_.push(id);
@@ -602,9 +611,6 @@ void AndroidVideoDecodeAccelerator::AssignPictureBuffers(
     strategy_->AssignOnePictureBuffer(buffers[i]);
   }
   TRACE_COUNTER1("media", "AVDA::FreePictureIds", free_picture_ids_.size());
-
-  RETURN_ON_FAILURE(this, output_picture_buffers_.size() >= kNumPictureBuffers,
-                    "Invalid picture buffers were passed.", INVALID_ARGUMENT);
 
   DoIOTask();
 }
@@ -621,15 +627,17 @@ void AndroidVideoDecodeAccelerator::ReusePictureBuffer(
     return;
 
   free_picture_ids_.push(picture_buffer_id);
+  TRACE_COUNTER1("media", "AVDA::FreePictureIds", free_picture_ids_.size());
 
   OutputBufferMap::const_iterator i =
       output_picture_buffers_.find(picture_buffer_id);
-  RETURN_ON_FAILURE(this, i != output_picture_buffers_.end(),
-                    "Can't find a PictureBuffer for " << picture_buffer_id,
-                    PLATFORM_FAILURE);
-  strategy_->ReuseOnePictureBuffer(i->second);
+  if (i == output_picture_buffers_.end()) {
+    POST_ERROR(PLATFORM_FAILURE, "Can't find PictureBuffer id "
+                                     << picture_buffer_id);
+    return;
+  }
 
-  TRACE_COUNTER1("media", "AVDA::FreePictureIds", free_picture_ids_.size());
+  strategy_->ReuseOnePictureBuffer(i->second);
 
   DoIOTask();
 }
@@ -732,9 +740,8 @@ void AndroidVideoDecodeAccelerator::Reset() {
   ResetCodecState();
 
   base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&AndroidVideoDecodeAccelerator::NotifyResetDone,
-                 weak_this_factory_.GetWeakPtr()));
+      FROM_HERE, base::Bind(&AndroidVideoDecodeAccelerator::NotifyResetDone,
+                            weak_this_factory_.GetWeakPtr()));
 }
 
 void AndroidVideoDecodeAccelerator::Destroy() {
