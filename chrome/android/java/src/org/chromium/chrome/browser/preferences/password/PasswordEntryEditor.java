@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.preferences.password;
 
 import android.app.Fragment;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +13,8 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.PasswordUIView;
+import org.chromium.chrome.browser.PasswordUIView.PasswordListObserver;
 
 /**
  * Password entry editor that allows to view and delete passwords stored in Chrome.
@@ -64,24 +65,45 @@ public class PasswordEntryEditor extends Fragment {
 
     // Delete was clicked.
     private void removeItem() {
-        Intent data = new Intent();
-        data.putExtra(SavePasswordsPreferences.PASSWORD_LIST_DELETED_ID, mID);
-        data.putExtra(SavePasswordsPreferences.DELETED_ITEM_IS_EXCEPTION, mException);
-        getActivity().setResult(SavePasswordsPreferences.RESULT_DELETE_PASSWORD, data);
+        final PasswordUIView passwordUIView = new PasswordUIView();
+        final PasswordListObserver passwordDeleter = new PasswordListObserver() {
+            @Override
+            public void passwordListAvailable(int count) {
+                if (!mException) {
+                    passwordUIView.removeSavedPasswordEntry(mID);
+                    passwordUIView.destroy();
+                    getActivity().finish();
+                }
+            }
+
+            @Override
+            public void passwordExceptionListAvailable(int count) {
+                if (mException) {
+                    passwordUIView.removeSavedPasswordException(mID);
+                    passwordUIView.destroy();
+                    getActivity().finish();
+                }
+            }
+        };
+
+        passwordUIView.addObserver(passwordDeleter);
+        passwordUIView.updatePasswordLists();
     }
 
     private void hookupCancelDeleteButtons(View v) {
-        Button button = (Button) v.findViewById(R.id.password_entry_editor_delete);
-        button.setOnClickListener(new View.OnClickListener() {
+        final Button deleteButton = (Button) v.findViewById(R.id.password_entry_editor_delete);
+        final Button cancelButton = (Button) v.findViewById(R.id.password_entry_editor_cancel);
+
+        deleteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     removeItem();
-                    getActivity().finish();
+                    deleteButton.setEnabled(false);
+                    cancelButton.setEnabled(false);
                 }
             });
 
-        button = (Button) v.findViewById(R.id.password_entry_editor_cancel);
-        button.setOnClickListener(new View.OnClickListener() {
+        cancelButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     getActivity().finish();

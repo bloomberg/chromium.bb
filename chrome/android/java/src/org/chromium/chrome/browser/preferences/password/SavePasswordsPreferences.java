@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.ui.text.SpanApplier;
 
@@ -48,9 +49,6 @@ public class SavePasswordsPreferences extends PreferenceFragment
     // Used to pass the password id into a new activity.
     public static final String PASSWORD_LIST_ID = "id";
 
-    public static final String DELETED_ITEM_IS_EXCEPTION = "is_exception";
-    public static final String PASSWORD_LIST_DELETED_ID = "deleted_id";
-
     public static final String PREF_SAVE_PASSWORDS_SWITCH = "save_passwords_switch";
     public static final String PREF_AUTOSIGNIN_SWITCH = "autosignin_switch";
 
@@ -63,8 +61,6 @@ public class SavePasswordsPreferences extends PreferenceFragment
     private static final int ORDER_MANAGE_ACCOUNT_LINK = 2;
     private static final int ORDER_SAVED_PASSWORDS = 3;
     private static final int ORDER_EXCEPTIONS = 4;
-
-    public static final int RESULT_DELETE_PASSWORD = 1;
 
     private final PasswordUIView mPasswordManagerHandler = new PasswordUIView();
     private TextView mEmptyView;
@@ -221,38 +217,13 @@ public class SavePasswordsPreferences extends PreferenceFragment
         } else {
             // Launch preference activity with PasswordEntryEditor fragment with
             // intent extras specifying the object.
-            Intent intent = new Intent();
-            intent.setClassName(getActivity(), getActivity().getClass().getName());
-            intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT,
+            Intent intent = PreferencesLauncher.createIntentForSettingsPage(getActivity(),
                     PasswordEntryEditor.class.getName());
             intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS,
                     preference.getExtras());
-            startActivityForResult(intent, RESULT_DELETE_PASSWORD);
+            startActivity(intent);
         }
         return true;
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == RESULT_DELETE_PASSWORD && data != null) {
-            deletePassword(data);
-        }
-    }
-
-    /**
-     * Called when a Password is deleted from PasswordEntryEditor.
-     * @param data Intent with extras containing the index of deleted password.
-     */
-    private void deletePassword(Intent data) {
-        if (data != null && data.hasExtra(PASSWORD_LIST_DELETED_ID)) {
-            int deletedId = data.getIntExtra(PASSWORD_LIST_DELETED_ID, -1);
-            boolean isException = data.getBooleanExtra(DELETED_ITEM_IS_EXCEPTION, false);
-            if (isException) {
-                mPasswordManagerHandler.removeSavedPasswordException(deletedId);
-            } else {
-                mPasswordManagerHandler.removeSavedPasswordEntry(deletedId);
-            }
-        }
     }
 
     private void createSavePasswordsSwitch() {
