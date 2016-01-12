@@ -14,7 +14,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.SystemClock;
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 
@@ -224,11 +223,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
                 TestHttpServerClient.getUrl(NAVIGATION_FROM_USER_GESTURE_PAGE), true, true, true);
     }
 
-    /*
-     * crbug.com/485665.
-     * @SmallTest
-     */
-    @FlakyTest
+    @SmallTest
     public void testNavigationFromUserGestureInSubFrame() throws InterruptedException {
         loadUrlAndWaitForIntentUrl(
                 TestHttpServerClient.getUrl(NAVIGATION_FROM_USER_GESTURE_PARENT_FRAME_PAGE), true,
@@ -241,11 +236,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
                 TestHttpServerClient.getUrl(NAVIGATION_FROM_XHR_CALLBACK_PAGE), true, true, true);
     }
 
-    /*
-     * crbug.com/485665.
-     * @SmallTest
-     */
-    @FlakyTest
+    @SmallTest
     public void testNavigationFromXHRCallbackInSubFrame() throws InterruptedException {
         loadUrlAndWaitForIntentUrl(
                 TestHttpServerClient.getUrl(NAVIGATION_FROM_XHR_CALLBACK_PARENT_FRAME_PAGE), true,
