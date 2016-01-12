@@ -563,8 +563,8 @@ public:
     virtual InlineBox* createInlineBox();
     void dirtyLineBoxes(bool fullLayout);
 
-    // For inline replaced elements, this function returns the inline box that owns us.  Enables
-    // the replaced LayoutObject to quickly determine what line it is contained on and to easily
+    // For atomic inline elements, this function returns the inline box that contains us.  Enables
+    // the atomic inline LayoutObject to quickly determine what line it is contained on and to easily
     // iterate over structures on the line.
     InlineBox* inlineBoxWrapper() const { return m_inlineBoxWrapper; }
     void setInlineBoxWrapper(InlineBox*);
@@ -991,8 +991,7 @@ protected:
     OwnPtr<OverflowModel> m_overflow;
 
 private:
-    // The inline box containing this LayoutBox, forl inline replaced elements.
-    // It's not in m_rareData because of its high occurrence rate (12% of LayoutBoxes for top 10k sites).
+    // The inline box containing this LayoutBox, for atomic inline elements.
     InlineBox* m_inlineBoxWrapper;
 
     OwnPtr<LayoutBoxRareData> m_rareData;
