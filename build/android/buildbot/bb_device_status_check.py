@@ -17,6 +17,7 @@ import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import devil_chromium
+from devil import devil_env
 from devil.android import battery_utils
 from devil.android import device_blacklist
 from devil.android import device_errors
@@ -304,6 +305,8 @@ def main():
                            'This script now always tries to reset USB.')
   parser.add_argument('--json-output',
                       help='Output JSON information into a specified file.')
+  parser.add_argument('--adb-path',
+                      help='Absolute path to the adb binary to use.')
   parser.add_argument('--blacklist-file', help='Device blacklist JSON file.')
   parser.add_argument('-v', '--verbose', action='count', default=1,
                       help='Log more information.')
@@ -312,7 +315,15 @@ def main():
 
   run_tests_helper.SetLogLevel(args.verbose)
 
-  devil_chromium.Initialize()
+  devil_custom_deps = None
+  if args.adb_path:
+    devil_custom_deps = {
+      'adb': {
+        devil_env.GetPlatform(): [args.adb_path],
+      },
+    }
+
+  devil_chromium.Initialize(custom_deps=devil_custom_deps)
 
   blacklist = (device_blacklist.Blacklist(args.blacklist_file)
                if args.blacklist_file

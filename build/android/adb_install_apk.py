@@ -13,7 +13,7 @@ import os
 import sys
 
 import devil_chromium
-
+from devil import devil_env
 from devil.android import apk_helper
 from devil.android import device_blacklist
 from devil.android import device_errors
@@ -56,6 +56,8 @@ def main():
   parser.add_argument('-d', '--device', dest='devices', action='append',
                       help='Target device for apk to install on. Enter multiple'
                            ' times for multiple devices.')
+  parser.add_argument('--adb-path',
+                      help='Absolute path to the adb binary to use.')
   parser.add_argument('--blacklist-file', help='Device blacklist JSON file.')
   parser.add_argument('-v', '--verbose', action='count',
                       help='Enable verbose logging.')
@@ -67,7 +69,17 @@ def main():
   run_tests_helper.SetLogLevel(args.verbose)
   constants.SetBuildType(args.build_type)
 
-  devil_chromium.Initialize(output_directory=constants.GetOutDirectory())
+  devil_custom_deps = None
+  if args.adb_path:
+    devil_custom_deps = {
+      'adb': {
+        devil_env.GetPlatform(): [args.adb_path],
+      },
+    }
+
+  devil_chromium.Initialize(
+      output_directory=constants.GetOutDirectory(),
+      custom_deps=devil_custom_deps)
 
   apk = args.apk_path or args.apk_name
   if not apk.endswith('.apk'):
