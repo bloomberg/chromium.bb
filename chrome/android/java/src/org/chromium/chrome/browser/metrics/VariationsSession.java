@@ -44,12 +44,7 @@ public class VariationsSession {
      * should use for variation seed requests.
      */
     protected void getRestrictMode(Context context, Callback<String> callback) {
-        callback.onResult(getRestrictMode(context));
-    }
-
-    // TODO(maxbogue): Remove once downstream is updated to be async.
-    protected String getRestrictMode(Context context) {
-        return "";
+        callback.onResult("");
     }
 
     private native void nativeStartVariationsSession(String restrictMode);
