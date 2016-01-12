@@ -1424,11 +1424,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_READER_MODE_HEURISTICS_DESCRIPTION,
      kOsAndroid,
      MULTI_VALUE_TYPE(kReaderModeHeuristicsChoices)},
-    {"enable-dom-distiller-button-animation",
-     IDS_FLAGS_READER_MODE_BUTTON_ANIMATION,
-     IDS_FLAGS_READER_MODE_BUTTON_ANIMATION_DESCRIPTION,
-     kOsAndroid,
-     SINGLE_VALUE_TYPE(switches::kEnableDomDistillerButtonAnimation)},
 #endif
     {"num-raster-threads",
      IDS_FLAGS_NUM_RASTER_THREADS_NAME,

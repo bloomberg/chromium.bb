@@ -124,10 +124,6 @@ public abstract class ChromeSwitches {
     public static final String EXPERIMENTAL_WEB_PLAFTORM_FEATURES =
             "enable-experimental-web-platform-features";
 
-    /** Enable Reader Mode button animation. */
-    public static final String ENABLE_READER_MODE_BUTTON_ANIMATION =
-            "enable-dom-distiller-button-animation";
-
     /**
      * Use sandbox Wallet environment for requestAutocomplete.
      * Native switch - autofill::switches::kWalletServiceUseSandbox.

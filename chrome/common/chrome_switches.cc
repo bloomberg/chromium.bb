@@ -1119,10 +1119,6 @@ const char kEnableAccessibilityTabSwitcher[] =
 // Enables Contextual Search.
 const char kEnableContextualSearch[]        = "enable-contextual-search";
 
-// Enables the DOM distiller animated button UI for Android.
-const char kEnableDomDistillerButtonAnimation[] =
-    "enable-dom-distiller-button-animation";
-
 // Enables chrome hosted mode for Android.
 const char kEnableHostedMode[] = "enable-hosted-mode";
 

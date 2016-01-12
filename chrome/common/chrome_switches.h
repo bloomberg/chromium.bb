@@ -301,7 +301,6 @@ extern const char kAuthAndroidNegotiateAccountType[];
 extern const char kDisableContextualSearch[];
 extern const char kEnableAccessibilityTabSwitcher[];
 extern const char kEnableContextualSearch[];
-extern const char kEnableDomDistillerButtonAnimation[];
 extern const char kEnableHostedMode[];
 extern const char kEnableHungRendererInfoBar[];
 extern const char kProgressBarAnimation[];

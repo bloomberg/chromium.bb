@@ -13730,12 +13730,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         <message name="IDS_FLAGS_READER_MODE_HEURISTICS_ALWAYS_ON" desc="A choice in dropdown dialog on about:flags page to show the reader mode button on all pages">
           Always
         </message>
-        <message name="IDS_FLAGS_READER_MODE_BUTTON_ANIMATION" desc="Title for flag enabling the reader mode button animation">
-          Enable Reader Mode Button Animation
-        </message>
-        <message name="IDS_FLAGS_READER_MODE_BUTTON_ANIMATION_DESCRIPTION" desc="Describes the flag to enable reading mode UI button animation">
-          A reader mode button click slides up the reader mode version of a web page instead of navigating to it
-        </message>
       </if>
 
       <!-- Prefetch search results experiment flags -->
