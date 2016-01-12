@@ -7,6 +7,9 @@ unstable_protocols =								\
 	unstable/xdg-shell/xdg-shell-unstable-v5.xml				\
 	$(NULL)
 
+stable_protocols =								\
+	$(NULL)
+
 nobase_dist_pkgdata_DATA =							\
 	$(unstable_protocols)							\
 	$(NULL)
@@ -16,3 +19,10 @@ dist_noinst_DATA =								\
 	$(NULL)
 
 noarch_pkgconfig_DATA = wayland-protocols.pc
+
+dist_check_SCRIPTS = tests/scan.sh
+
+TESTS = $(unstable_protocols) $(stable_protocols)
+TEST_EXTENSIONS = .xml
+AM_TESTS_ENVIRONMENT = SCANNER='$(wayland_scanner)'; export SCANNER;
+XML_LOG_COMPILER = $(srcdir)/tests/scan.sh

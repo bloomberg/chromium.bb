@@ -15,6 +15,20 @@ AC_CONFIG_MACRO_DIR([m4])
 
 AC_SUBST([WAYLAND_PROTOCOLS_VERSION], [wayland_protocols_version])
 
+AC_CANONICAL_HOST
+AC_CANONICAL_BUILD
+
+AC_ARG_VAR([wayland_scanner], [The wayland-scanner executable])
+AC_PATH_PROG([wayland_scanner], [wayland-scanner])
+if test x$wayland_scanner = x; then
+        if test x$host = x$build; then
+                PKG_CHECK_MODULES(WAYLAND_SCANNER, [wayland-scanner])
+                wayland_scanner=`$PKG_CONFIG --variable=wayland_scanner wayland-scanner`
+        else
+                AC_MSG_WARN([You are cross compiling without wayland-scanner in your path.  make check will fail.])
+        fi
+fi
+
 AM_INIT_AUTOMAKE([1.11 foreign no-dist-gzip dist-xz])
 
 AM_SILENT_RULES([yes])

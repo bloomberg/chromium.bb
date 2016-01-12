@@ -9,3 +9,6 @@ missing
 *.pc
 autom4te.cache
 aclocal.m4
+*.trs
+*.log
+test-driver
