@@ -78,7 +78,7 @@ function updateCrashList(enabled, dynamicBackend, crashes, version) {
       template: 'Crash Report',
       comment: commentLines.join('\n'),
     };
-    var href = 'http://code.google.com/p/chromium/issues/entry';
+    var href = 'https://code.google.com/p/chromium/issues/entry';
     for (var param in params) {
       href = appendParam(href, param, params[param]);
     }
