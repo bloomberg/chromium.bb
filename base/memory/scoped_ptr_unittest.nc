@@ -25,7 +25,7 @@ class RefCountedClass : public base::RefCountedThreadSafe<RefCountedClass> {
 
 }  // namespace
 
-#if defined(NCTEST_NO_PASS_DOWNCAST)  // [r"fatal error: no viable conversion from returned value of type 'scoped_ptr<\(anonymous namespace\)::Parent, default_delete<\(anonymous namespace\)::Parent>>' to function return type 'scoped_ptr<\(anonymous namespace\)::Child, default_delete<\(anonymous namespace\)::Child>>'"]
+#if defined(NCTEST_NO_PASS_DOWNCAST)  // [r"fatal error: no viable conversion from returned value of type 'scoped_ptr<\(anonymous namespace\)::Parent>' to function return type 'scoped_ptr<\(anonymous namespace\)::Child>'"]
 
 scoped_ptr<Child> DowncastUsingPassAs(scoped_ptr<Parent> object) {
   return object;
