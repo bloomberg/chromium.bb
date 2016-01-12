@@ -3,54 +3,54 @@
 # found in the LICENSE file.
 
 # Linux should use system libexif
-if (!is_linux || is_chromeos) {
-  # TODO(thestig): Properly support building on Linux.
-  config("libexif_config") {
-    include_dirs = [ "sources" ]
-    if (is_clang) {
-      cflags = [
-        "-Wno-enum-conversion",
-        "-Wno-switch",
-        "-Wno-format",
+config("libexif_config") {
+  include_dirs = [ "sources" ]
+  if (is_clang) {
+    cflags = [
+      "-Wno-enum-conversion",
+      "-Wno-switch",
+      "-Wno-format",
 
-        # libexif uses fabs(int) to cast to float.
-        "-Wno-absolute-value",
-      ]
-    }
+      # libexif uses fabs(int) to cast to float.
+      "-Wno-absolute-value",
+    ]
   }
+}
 
+libexif_sources = [
+  "sources/libexif/canon/exif-mnote-data-canon.c",
+  "sources/libexif/canon/mnote-canon-entry.c",
+  "sources/libexif/canon/mnote-canon-tag.c",
+  "sources/libexif/exif-byte-order.c",
+  "sources/libexif/exif-content.c",
+  "sources/libexif/exif-data.c",
+  "sources/libexif/exif-entry.c",
+  "sources/libexif/exif-format.c",
+  "sources/libexif/exif-ifd.c",
+  "sources/libexif/exif-loader.c",
+  "sources/libexif/exif-log.c",
+  "sources/libexif/exif-mem.c",
+  "sources/libexif/exif-mnote-data.c",
+  "sources/libexif/exif-tag.c",
+  "sources/libexif/exif-utils.c",
+  "sources/libexif/fuji/exif-mnote-data-fuji.c",
+  "sources/libexif/fuji/mnote-fuji-entry.c",
+  "sources/libexif/fuji/mnote-fuji-tag.c",
+  "sources/libexif/olympus/exif-mnote-data-olympus.c",
+  "sources/libexif/olympus/mnote-olympus-entry.c",
+  "sources/libexif/olympus/mnote-olympus-tag.c",
+  "sources/libexif/pentax/exif-mnote-data-pentax.c",
+  "sources/libexif/pentax/mnote-pentax-entry.c",
+  "sources/libexif/pentax/mnote-pentax-tag.c",
+]
+
+if (!is_linux || is_chromeos) {
   loadable_module("libexif") {
     if (is_mac) {
       # Matches the output from GYP.
       output_name = "exif"
     }
-
-    sources = [
-      "sources/libexif/canon/exif-mnote-data-canon.c",
-      "sources/libexif/canon/mnote-canon-entry.c",
-      "sources/libexif/canon/mnote-canon-tag.c",
-      "sources/libexif/exif-byte-order.c",
-      "sources/libexif/exif-content.c",
-      "sources/libexif/exif-data.c",
-      "sources/libexif/exif-entry.c",
-      "sources/libexif/exif-format.c",
-      "sources/libexif/exif-ifd.c",
-      "sources/libexif/exif-loader.c",
-      "sources/libexif/exif-log.c",
-      "sources/libexif/exif-mem.c",
-      "sources/libexif/exif-mnote-data.c",
-      "sources/libexif/exif-tag.c",
-      "sources/libexif/exif-utils.c",
-      "sources/libexif/fuji/exif-mnote-data-fuji.c",
-      "sources/libexif/fuji/mnote-fuji-entry.c",
-      "sources/libexif/fuji/mnote-fuji-tag.c",
-      "sources/libexif/olympus/exif-mnote-data-olympus.c",
-      "sources/libexif/olympus/mnote-olympus-entry.c",
-      "sources/libexif/olympus/mnote-olympus-tag.c",
-      "sources/libexif/pentax/exif-mnote-data-pentax.c",
-      "sources/libexif/pentax/mnote-pentax-entry.c",
-      "sources/libexif/pentax/mnote-pentax-tag.c",
-    ]
+    sources = libexif_sources
 
     include_dirs = [ "sources" ]
 
@@ -82,4 +82,18 @@ if (!is_linux || is_chromeos) {
 
     public_configs = [ ":libexif_config" ]
   }
+}
+
+# used by libfuzzer fuzzers only atm.
+source_set("libexif_fuzzers") {
+  sources = libexif_sources
+
+  include_dirs = [ "sources" ]
+
+  libs = [ "m" ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  public_configs = [ ":libexif_config" ]
 }

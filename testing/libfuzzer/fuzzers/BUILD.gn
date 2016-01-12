@@ -277,3 +277,12 @@ fuzzer_test("unicode_string_codepage_create_fuzzer") {
     "//third_party/icu",
   ]
 }
+
+fuzzer_test("libexif_parser_fuzzer") {
+  sources = [
+    "libexif_parser_fuzzer.cc",
+  ]
+  deps = [
+    "//third_party/libexif:libexif_fuzzers",
+  ]
+}
