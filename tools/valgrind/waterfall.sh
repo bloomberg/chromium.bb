@@ -12,8 +12,8 @@ set -e
 
 THISDIR=$(dirname "${0}")
 LOGS_DIR=$THISDIR/waterfall.tmp
-WATERFALL_PAGE="http://build.chromium.org/p/chromium.memory/builders"
-WATERFALL_FYI_PAGE="http://build.chromium.org/p/chromium.memory.fyi/builders"
+WATERFALL_PAGE="https://build.chromium.org/p/chromium.memory/builders"
+WATERFALL_FYI_PAGE="https://build.chromium.org/p/chromium.memory.fyi/builders"
 
 download() {
   # Download a file.
