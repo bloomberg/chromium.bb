@@ -17,8 +17,8 @@
       <div class="icon"
           jseval="updateIconClass(this.classList, iconClass)"></div>
       <div id="main-message">
-        <h1 jsselect="heading" jsvalues=".innerHTML:$this"></h1>
-        <p jsselect="summary" jsvalues=".innerHTML:msg"></p>
+        <h1 i18n-content="heading"></h1>
+        <p hidden></p>
         <div class="error-code" jscontent="errorCode"></div>
       </div>
     </div>
@@ -51,11 +51,14 @@
         </button>
       </div>
       <button id="details-button" class="text-button small-link"
-         onclick="detailsButtonClick(); toggleHelpBox()" jscontent="details"
-         jsdisplay="(suggestions && suggestions.length) || searchUrl || diagnose"
+         onclick="detailsButtonClick(); toggleHelpBox()"
+         jsdisplay="details" jscontent="details"
          jsvalues=".detailsText:details; .hideDetailsText:hideDetails;"></button>
     </div>
     <div id="details" class="hidden">
+      <div jsselect="summary">
+        <span jsvalues=".innerHTML:msg"></span>
+      </div>
       <div class="suggestions" jsselect="suggestions">
         <div class="suggestion-header" jsvalues=".innerHTML:header"></div>
         <div class="suggestion-body" jsvalues=".innerHTML:body"></div>

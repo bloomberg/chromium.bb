@@ -125,10 +125,10 @@ bool WARN_UNUSED_RESULT IsDisplayingDiagnosticsButton(Browser* browser) {
 // Checks that the local error page is being displayed, without remotely
 // retrieved navigation corrections, and with the specified error code.
 void ExpectDisplayingLocalErrorPage(Browser* browser, net::Error error_code) {
-  EXPECT_TRUE(IsDisplayingNetError(browser, error_code));
-
   // Expand the help box so innerText will include text below the fold.
   ToggleHelpBox(browser);
+
+  EXPECT_TRUE(IsDisplayingNetError(browser, error_code));
 
   // Locally generated error pages should not have navigation corrections.
   EXPECT_FALSE(IsDisplayingText(browser, "http://correction1/"));
@@ -149,10 +149,10 @@ void ExpectDisplayingLocalErrorPage(Browser* browser, net::Error error_code) {
 // code.
 void ExpectDisplayingNavigationCorrections(Browser* browser,
                                            net::Error error_code) {
-  EXPECT_TRUE(IsDisplayingNetError(browser, error_code));
-
   // Expand the help box so innerText will include text below the fold.
   ToggleHelpBox(browser);
+
+  EXPECT_TRUE(IsDisplayingNetError(browser, error_code));
 
   // Check that the mock navigation corrections are displayed.
   EXPECT_TRUE(IsDisplayingText(browser, "http://correction1/"));
@@ -1110,8 +1110,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, ManualReloadNotSuppressed) {
   EXPECT_EQ(2, interceptor()->requests());
 
   ToggleHelpBox(browser());
-  EXPECT_TRUE(IsDisplayingText(browser(), l10n_util::GetStringUTF8(
-      IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_HEADER)));
+  EXPECT_TRUE(IsDisplayingText(browser(), "error.page.auto.reload"));
 
   content::WebContents* web_contents =
     browser()->tab_strip_model()->GetActiveWebContents();
@@ -1119,8 +1118,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, ManualReloadNotSuppressed) {
   web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
       base::ASCIIToUTF16("document.getElementById('reload-button').click();"));
   nav_observer.Wait();
-  EXPECT_FALSE(IsDisplayingText(browser(), l10n_util::GetStringUTF8(
-      IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_HEADER)));
+  EXPECT_FALSE(IsDisplayingText(browser(), "error.page.auto.reload"));
 }
 
 // Make sure that a same page navigation does not cause issues with the
@@ -1483,6 +1481,8 @@ IN_PROC_BROWSER_TEST_F(ErrorPageForIDNTest, IDN) {
       browser(),
       URLRequestFailedJob::GetMockHttpUrlForHostname(net::ERR_UNSAFE_PORT,
                                                      kHostname));
+
+  ToggleHelpBox(browser());
   EXPECT_TRUE(IsDisplayingText(browser(), kHostnameJSUnicode));
 }
 
