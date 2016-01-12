@@ -15,6 +15,7 @@
 
 #include <limits>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -273,7 +274,7 @@ ScopedVector<RegistryEntry> GetChromeDelegateExecuteEntries(
         sub_path, ShellUtil::kRegDelegateExecute, app_info.delegate_clsid));
   }
 
-  return entries.Pass();
+  return std::move(entries);
 }
 
 // Gets the registry entries to register an application in the Windows registry.
