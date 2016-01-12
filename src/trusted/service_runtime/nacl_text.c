@@ -19,6 +19,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_effector_trusted_mem.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
 #include "native_client/src/trusted/perf_counter/nacl_perf_counter.h"
+#include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
@@ -29,6 +30,9 @@
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/thread_suspension.h"
 
+#if NACL_OSX
+#include "native_client/src/trusted/desc/osx/nacl_desc_imc_shm_mach.h"
+#endif
 
 /* initial size of the malloced buffer for dynamic regions */
 static const int kMinDynamicRegionsAllocated = 32;
@@ -52,16 +56,55 @@ static void BitmapSetBit(uint8_t *bitmap, uint32_t index) {
   bitmap[index / kBitsPerByte] |= 1 << (index % kBitsPerByte);
 }
 
+#if NACL_OSX
+/*
+ * Helper function for NaClMakeDynamicTextShared.
+ */
+static struct NaClDesc *MakeImcShmMachDesc(uintptr_t size) {
+  struct NaClDescImcShmMach *shm =
+      (struct NaClDescImcShmMach *) malloc(sizeof(struct NaClDescImcShmMach));
+  CHECK(shm);
+
+  if (!NaClDescImcShmMachAllocCtor(shm, size, /* executable= */ 1)) {
+    free(shm);
+    NaClLog(4, "NaClMakeDynamicTextShared: shm alloc ctor for text failed\n");
+    return NULL;
+  }
+
+  return &shm->base;
+}
+#endif
+
+/*
+ * Helper function for NaClMakeDynamicTextShared.
+ */
+static struct NaClDesc *MakeImcShmDesc(uintptr_t size) {
+#if NACL_OSX
+  if (NaClOSX10Dot7OrLater())
+    return MakeImcShmMachDesc(size);
+#endif
+  struct NaClDescImcShm *shm =
+      (struct NaClDescImcShm *) malloc(sizeof(struct NaClDescImcShm));
+  CHECK(shm);
+
+  if (!NaClDescImcShmAllocCtor(shm, size, /* executable= */ 1)) {
+    free(shm);
+    NaClLog(4, "NaClMakeDynamicTextShared: shm alloc ctor for text failed\n");
+    return NULL;
+  }
+
+  return &shm->base;
+}
+
 NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
-  enum NaClErrorCode          retval = LOAD_INTERNAL;
   uintptr_t                   dynamic_text_size;
-  struct NaClDescImcShm       *shm = NULL;
   uintptr_t                   shm_vaddr_base;
   int                         mmap_protections;
   uintptr_t                   mmap_ret;
 
   uintptr_t                   shm_upper_bound;
   uintptr_t                   text_sysaddr;
+  struct NaClDesc *           shm;
 
   shm_vaddr_base = NaClEndOfStaticText(nap);
   NaClLog(4,
@@ -111,19 +154,9 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
     return LOAD_OK;
   }
 
-  shm = (struct NaClDescImcShm *) malloc(sizeof *shm);
-  if (NULL == shm) {
-    NaClLog(4, "NaClMakeDynamicTextShared: shm object allocation failed\n");
-    retval = LOAD_NO_MEMORY;
-    goto cleanup;
-  }
-  if (!NaClDescImcShmAllocCtor(shm, dynamic_text_size, /* executable= */ 1)) {
-    /* cleanup invariant is if ptr is non-NULL, it's fully ctor'd */
-    free(shm);
-    shm = NULL;
-    NaClLog(4, "NaClMakeDynamicTextShared: shm alloc ctor for text failed\n");
-    retval = LOAD_NO_MEMORY_FOR_DYNAMIC_TEXT;
-    goto cleanup;
+  shm = MakeImcShmDesc(dynamic_text_size);
+  if (!shm) {
+    return LOAD_NO_MEMORY_FOR_DYNAMIC_TEXT;
   }
 
   text_sysaddr = NaClUserToSys(nap, shm_vaddr_base);
@@ -169,8 +202,8 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
           (int) dynamic_text_size,
           mmap_protections,
           NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED);
-  mmap_ret = (*((struct NaClDescVtbl const *) shm->base.base.vtbl)->
-              Map)((struct NaClDesc *) shm,
+  mmap_ret = (*NACL_VTBL(NaClDesc, shm)->
+              Map)(shm,
                    NaClDescEffectorTrustedMem(),
                    (void *) text_sysaddr,
                    dynamic_text_size,
@@ -189,16 +222,8 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
 
   nap->dynamic_text_start = shm_vaddr_base;
   nap->dynamic_text_end = shm_upper_bound;
-  nap->text_shm = &shm->base;
-  retval = LOAD_OK;
-
- cleanup:
-  if (LOAD_OK != retval) {
-    NaClDescSafeUnref((struct NaClDesc *) shm);
-    free(shm);
-  }
-
-  return retval;
+  nap->text_shm = shm;
+  return LOAD_OK;
 }
 
 /*

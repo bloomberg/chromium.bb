@@ -61,7 +61,7 @@ static mach_port_t NaClCreateMachMemoryObject(size_t length, int executable) {
 }
 
 static void *NaClMachMap(void *start, size_t length, int prot,
-                         mach_port_t handle, off_t offset) {
+                         mach_port_t handle, off_t offset, int fixed) {
   /*
    * The flag VM_FLAGS_OVERWRITE isn't available before OSX 10.7.0.
    * https://code.google.com/p/chromium/issues/detail?id=547246#c8
@@ -69,7 +69,8 @@ static void *NaClMachMap(void *start, size_t length, int prot,
   CHECK(NaClOSX10Dot7OrLater());
 
   int copy = FALSE;
-  int mach_flags = VM_FLAGS_FIXED | VM_FLAGS_OVERWRITE;
+  int mach_flags =
+      fixed ? VM_FLAGS_FIXED | VM_FLAGS_OVERWRITE : VM_FLAGS_ANYWHERE;
 
   static const int kMachProt[] = {
       VM_PROT_NONE,
@@ -81,11 +82,13 @@ static void *NaClMachMap(void *start, size_t length, int prot,
       VM_PROT_WRITE | VM_PROT_EXECUTE,
       VM_PROT_READ | VM_PROT_WRITE | VM_PROT_EXECUTE};
 
+  /* Allow page permissions to be increased later. */
+  int max_prot = VM_PROT_ALL | VM_PROT_IS_MASK;
   mach_vm_address_t address = (mach_vm_address_t) start;
   kern_return_t kr =
       mach_vm_map(mach_task_self(), &address, length, 0,
                   mach_flags, handle, offset, copy, kMachProt[prot & 7],
-                  kMachProt[prot & 7] | VM_PROT_IS_MASK, VM_INHERIT_NONE);
+                  max_prot, VM_INHERIT_NONE);
 
   /*
    * On 32-bit architectures, this forces a down-cast.
@@ -189,9 +192,6 @@ static uintptr_t NaClDescImcShmMachMap(struct NaClDesc *vself,
                                        void *start_addr, size_t len, int prot,
                                        int flags, nacl_off64_t offset) {
   UNREFERENCED_PARAMETER(effp);
-  CHECK((flags & NACL_ABI_MAP_FIXED) != 0);
-  CHECK(start_addr != NULL);
-
   struct NaClDescImcShmMach *self = (struct NaClDescImcShmMach *) vself;
 
   void *result;
@@ -229,17 +229,18 @@ static uintptr_t NaClDescImcShmMachMap(struct NaClDesc *vself,
     return -NACL_ABI_EOVERFLOW;
   }
 
-  result = NaClMachMap((void *) start_addr, len, prot, self->h, offset);
+  result = NaClMachMap(start_addr, len, prot, self->h, offset,
+                       (flags & NACL_ABI_MAP_FIXED) != 0);
   if (NACL_ABI_MAP_FAILED == result) {
     return -NACL_ABI_E_MOVE_ADDRESS_SPACE;
   }
-  if (result != (void *) start_addr) {
+  if ((flags & NACL_ABI_MAP_FIXED) != 0 && result != start_addr) {
     NaClLog(
         LOG_FATAL,
         "NaClDescImcShmMachMap: NACL_ABI_MAP_FIXED but got %p instead of %p\n",
         result, start_addr);
   }
-  return (uintptr_t) start_addr;
+  return (uintptr_t) result;
 }
 
 static int NaClDescImcShmMachFstat(struct NaClDesc *vself,
