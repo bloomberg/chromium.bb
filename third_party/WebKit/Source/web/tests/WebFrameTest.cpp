@@ -8408,7 +8408,7 @@ private:
     TestWebRemoteFrameClientForVisibility m_remoteFrameClient;
     FrameTestHelpers::WebViewHelper m_webViewHelper;
     WebFrame* m_frame;
-    WebRemoteFrameImpl* m_webRemoteFrame;
+    RawPtrWillBePersistent<WebRemoteFrameImpl> m_webRemoteFrame;
 };
 
 TEST_F(WebFrameVisibilityChangeTest, RemoteFrameVisibilityChange)
