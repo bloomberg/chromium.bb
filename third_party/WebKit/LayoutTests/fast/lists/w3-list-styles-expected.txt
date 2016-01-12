@@ -227,12 +227,12 @@ The CSS2.0 specification doesn't define the algorithm for the Hebrew numbering.
 ג three, should show ג
 ד four, should show ד
 ה five, should show ה
-צז ninety-seven, undefined, may show צז
-צח ninety-eight, undefined, may show צח
-צט ninety-nine, undefined, may show צט
+זצ ninety-seven, undefined, may show צז
+חצ ninety-eight, undefined, may show צח
+טצ ninety-nine, undefined, may show צט
 ק hundred, undefined, may show ק
-קא a hundred and one, undefined, may show קא
-אפס zero, undefined, may show אפס
+אק a hundred and one, undefined, may show קא
+ספא zero, undefined, may show אפס
 א one, should show א
 georgian
 

@@ -158,32 +158,29 @@ static inline String toSymbolic(int number, const CharacterType(&alphabet)[size]
     return toSymbolic(number, alphabet, size);
 }
 
-static int toHebrewUnder1000(int number, UChar letters[5])
+static void toHebrewUnder1000(int number, Vector<UChar>& letters)
 {
     // FIXME: CSS3 mentions various refinements not implemented here.
     // FIXME: Should take a look at Mozilla's HebrewToText function (in nsBulletFrame).
     ASSERT(number >= 0 && number < 1000);
-    int length = 0;
     int fourHundreds = number / 400;
     for (int i = 0; i < fourHundreds; i++)
-        letters[length++] = 1511 + 3;
+        letters.prepend(1511 + 3);
     number %= 400;
     if (number / 100)
-        letters[length++] = 1511 + (number / 100) - 1;
+        letters.prepend(1511 + (number / 100) - 1);
     number %= 100;
     if (number == 15 || number == 16) {
-        letters[length++] = 1487 + 9;
-        letters[length++] = 1487 + number - 9;
+        letters.prepend(1487 + 9);
+        letters.prepend(1487 + number - 9);
     } else {
         if (int tens = number / 10) {
             static const UChar hebrewTens[9] = { 1497, 1499, 1500, 1502, 1504, 1505, 1506, 1508, 1510 };
-            letters[length++] = hebrewTens[tens - 1];
+            letters.prepend(hebrewTens[tens - 1]);
         }
         if (int ones = number % 10)
-            letters[length++] = 1487 + ones;
+            letters.prepend(1487 + ones);
     }
-    ASSERT(length <= 5);
-    return length;
 }
 
 static String toHebrew(int number)
@@ -192,25 +189,18 @@ static String toHebrew(int number)
     ASSERT(number >= 0 && number <= 999999);
 
     if (number == 0) {
-        static const UChar hebrewZero[3] = { 0x05D0, 0x05E4, 0x05E1 };
+        static const UChar hebrewZero[3] = { 0x05E1, 0x05E4, 0x05D0 };
         return String(hebrewZero, 3);
     }
 
-    const int lettersSize = 11; // big enough for two 5-digit sequences plus a quote mark between
-    UChar letters[lettersSize];
-
-    int length;
-    if (number < 1000) {
-        length = 0;
-    } else {
-        length = toHebrewUnder1000(number / 1000, letters);
-        letters[length++] = '\'';
+    Vector<UChar> letters;
+    if (number > 999) {
+        toHebrewUnder1000(number / 1000, letters);
+        letters.prepend('\'');
         number = number % 1000;
     }
-    length += toHebrewUnder1000(number, letters + length);
-
-    ASSERT(length <= lettersSize);
-    return String(letters, length);
+    toHebrewUnder1000(number, letters);
+    return String(letters);
 }
 
 static int toArmenianUnder10000(int number, bool upper, bool addCircumflex, UChar letters[9])
