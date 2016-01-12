@@ -225,11 +225,14 @@ class WebGLBench : public BenchCompositorObserver {
         GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
     gl->ClearColor(0.f, 1.f, 0.f, 1.f);
     gl->Clear(GL_COLOR_BUFFER_BIT);
+
+    const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
     gl->Flush();
 
-    GLuint sync_point = gl->InsertSyncPointCHROMIUM();
+    gpu::SyncToken sync_token;
+    gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
     webgl_.SetTextureMailbox(
-        cc::TextureMailbox(mailbox, gpu::SyncToken(sync_point), GL_TEXTURE_2D),
+        cc::TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D),
         cc::SingleReleaseCallback::Create(
             base::Bind(ReturnMailbox, context_provider_, texture)),
         bounds.size());
