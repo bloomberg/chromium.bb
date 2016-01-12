@@ -1342,7 +1342,7 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
      *                rendering content related to this {@link Tab}.
      */
     public void getAllContentViewCores(List<ContentViewCore> content) {
-        content.add(mContentViewCore);
+        if (mContentViewCore != null) content.add(mContentViewCore);
         for (int i = 0; i < mOverlayContentViewCores.size(); i++) {
             content.add(mOverlayContentViewCores.get(i));
         }
