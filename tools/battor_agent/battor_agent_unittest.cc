@@ -22,8 +22,6 @@ BattOrControlMessageAck kInitAck{BATTOR_CONTROL_MESSAGE_TYPE_INIT, 0};
 BattOrControlMessageAck kSetGainAck{BATTOR_CONTROL_MESSAGE_TYPE_SET_GAIN, 0};
 BattOrControlMessageAck kStartTracingAck{
     BATTOR_CONTROL_MESSAGE_TYPE_START_SAMPLING_SD, 0};
-BattOrControlMessageAck kRequestSamplesAck{
-    BATTOR_CONTROL_MESSAGE_TYPE_READ_SD_UART, 0};
 
 // Creates a byte vector copy of the specified object.
 template <typename T>
@@ -134,7 +132,6 @@ class BattOrAgentTest : public testing::Test, public BattOrAgent::Listener {
     EEPROM_REQUEST_SENT,
     EEPROM_RECEIVED,
     SAMPLES_REQUEST_SENT,
-    SAMPLES_REQUEST_ACKED,
   };
 
   // Runs BattOrAgent::StartTracing until it reaches the specified state by
@@ -225,16 +222,9 @@ class BattOrAgentTest : public testing::Test, public BattOrAgent::Listener {
     if (end_state == BattOrAgentState::EEPROM_RECEIVED)
       return;
 
+    DCHECK(end_state == BattOrAgentState::SAMPLES_REQUEST_SENT);
+
     GetAgent()->OnBytesSent(true);
-    GetTaskRunner()->RunUntilIdle();
-
-    if (end_state == BattOrAgentState::SAMPLES_REQUEST_SENT)
-      return;
-
-    DCHECK(end_state == BattOrAgentState::SAMPLES_REQUEST_ACKED);
-
-    GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_CONTROL_ACK,
-                              ToCharVector(kRequestSamplesAck));
     GetTaskRunner()->RunUntilIdle();
   }
 
@@ -430,16 +420,13 @@ TEST_F(BattOrAgentTest, StopTracing) {
                 BufferEq(&request_samples_msg, sizeof(request_samples_msg)),
                 sizeof(request_samples_msg)));
 
-  EXPECT_CALL(*GetAgent()->GetConnection(),
-              ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL_ACK));
-
   // We send the agent four frames: a calibration frame, and two real frames,
   // and one zero-length frame to indicate that we're done.
   EXPECT_CALL(*GetAgent()->GetConnection(),
               ReadMessage(BATTOR_MESSAGE_TYPE_SAMPLES))
       .Times(4);
 
-  RunStopTracingTo(BattOrAgentState::SAMPLES_REQUEST_ACKED);
+  RunStopTracingTo(BattOrAgentState::SAMPLES_REQUEST_SENT);
 
   // Send the calibration frame.
   BattOrFrameHeader cal_frame_header{0, 2};
@@ -520,27 +507,8 @@ TEST_F(BattOrAgentTest, StopTracingFailsIfRequestSamplesFails) {
   EXPECT_EQ(BATTOR_ERROR_SEND_ERROR, GetCommandError());
 }
 
-TEST_F(BattOrAgentTest, StopTracingFailsIfRequestSamplesAckReadFails) {
-  RunStopTracingTo(BattOrAgentState::SAMPLES_REQUEST_SENT);
-  GetAgent()->OnMessageRead(false, BATTOR_MESSAGE_TYPE_CONTROL_ACK, nullptr);
-  GetTaskRunner()->RunUntilIdle();
-
-  EXPECT_TRUE(IsCommandComplete());
-  EXPECT_EQ(BATTOR_ERROR_RECEIVE_ERROR, GetCommandError());
-}
-
-TEST_F(BattOrAgentTest, StopTracingFailsIfRequestSamplesWrongAckRead) {
-  RunStopTracingTo(BattOrAgentState::SAMPLES_REQUEST_SENT);
-  GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_CONTROL_ACK,
-                            ToCharVector(kInitAck));
-  GetTaskRunner()->RunUntilIdle();
-
-  EXPECT_TRUE(IsCommandComplete());
-  EXPECT_EQ(BATTOR_ERROR_UNEXPECTED_MESSAGE, GetCommandError());
-}
-
 TEST_F(BattOrAgentTest, StopTracingFailsIfSamplesReadFails) {
-  RunStopTracingTo(BattOrAgentState::SAMPLES_REQUEST_ACKED);
+  RunStopTracingTo(BattOrAgentState::SAMPLES_REQUEST_SENT);
   GetAgent()->OnMessageRead(false, BATTOR_MESSAGE_TYPE_SAMPLES, nullptr);
   GetTaskRunner()->RunUntilIdle();
 
@@ -549,7 +517,7 @@ TEST_F(BattOrAgentTest, StopTracingFailsIfSamplesReadFails) {
 }
 
 TEST_F(BattOrAgentTest, StopTracingFailsIfSamplesReadHasWrongType) {
-  RunStopTracingTo(BattOrAgentState::SAMPLES_REQUEST_ACKED);
+  RunStopTracingTo(BattOrAgentState::SAMPLES_REQUEST_SENT);
   GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_CONTROL_ACK,
                             ToCharVector(kInitAck));
   GetTaskRunner()->RunUntilIdle();
@@ -559,7 +527,7 @@ TEST_F(BattOrAgentTest, StopTracingFailsIfSamplesReadHasWrongType) {
 }
 
 TEST_F(BattOrAgentTest, StopTracingFailsIfCalibrationFrameHasWrongLength) {
-  RunStopTracingTo(BattOrAgentState::SAMPLES_REQUEST_ACKED);
+  RunStopTracingTo(BattOrAgentState::SAMPLES_REQUEST_SENT);
 
   // Send a calibration frame with a mismatch between the frame length in the
   // header and the actual frame length.
@@ -575,7 +543,7 @@ TEST_F(BattOrAgentTest, StopTracingFailsIfCalibrationFrameHasWrongLength) {
 }
 
 TEST_F(BattOrAgentTest, StopTracingFailsIfDataFrameHasWrongLength) {
-  RunStopTracingTo(BattOrAgentState::SAMPLES_REQUEST_ACKED);
+  RunStopTracingTo(BattOrAgentState::SAMPLES_REQUEST_SENT);
 
   BattOrFrameHeader cal_frame_header{0, 1};
   RawBattOrSample cal_frame[] = {
@@ -597,7 +565,7 @@ TEST_F(BattOrAgentTest, StopTracingFailsIfDataFrameHasWrongLength) {
 }
 
 TEST_F(BattOrAgentTest, StopTracingFailsIfCalibrationFrameMissingByte) {
-  RunStopTracingTo(BattOrAgentState::SAMPLES_REQUEST_ACKED);
+  RunStopTracingTo(BattOrAgentState::SAMPLES_REQUEST_SENT);
 
   BattOrFrameHeader cal_frame_header{0, 2};
   RawBattOrSample cal_frame[] = {
@@ -617,7 +585,7 @@ TEST_F(BattOrAgentTest, StopTracingFailsIfCalibrationFrameMissingByte) {
 }
 
 TEST_F(BattOrAgentTest, StopTracingFailsIfDataFrameMissingByte) {
-  RunStopTracingTo(BattOrAgentState::SAMPLES_REQUEST_ACKED);
+  RunStopTracingTo(BattOrAgentState::SAMPLES_REQUEST_SENT);
 
   BattOrFrameHeader cal_frame_header{0, 1};
   RawBattOrSample cal_frame[] = {

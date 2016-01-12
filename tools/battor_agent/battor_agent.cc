@@ -182,7 +182,7 @@ void BattOrAgent::OnBytesSent(bool success) {
       PerformAction(Action::READ_EEPROM);
       return;
     case Action::SEND_SAMPLES_REQUEST:
-      PerformAction(Action::READ_SAMPLES_REQUEST_ACK);
+      PerformAction(Action::READ_CALIBRATION_FRAME);
       return;
 
     default:
@@ -237,15 +237,6 @@ void BattOrAgent::OnMessageRead(bool success,
       }
 
       PerformAction(Action::SEND_SAMPLES_REQUEST);
-      return;
-    case Action::READ_SAMPLES_REQUEST_ACK:
-      if (!IsAckOfControlCommand(type, BATTOR_CONTROL_MESSAGE_TYPE_READ_SD_UART,
-                                 *bytes)) {
-        CompleteCommand(BATTOR_ERROR_UNEXPECTED_MESSAGE);
-        return;
-      }
-
-      PerformAction(Action::READ_CALIBRATION_FRAME);
       return;
 
     case Action::READ_CALIBRATION_FRAME: {
@@ -348,9 +339,6 @@ void BattOrAgent::PerformAction(Action action) {
       // Send a request to the BattOr to tell it to start streaming the samples
       // that it's stored on its SD card over the serial connection.
       SendControlMessage(BATTOR_CONTROL_MESSAGE_TYPE_READ_SD_UART, 0, 0);
-      return;
-    case Action::READ_SAMPLES_REQUEST_ACK:
-      connection_->ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL_ACK);
       return;
     case Action::READ_CALIBRATION_FRAME:
     case Action::READ_DATA_FRAME:

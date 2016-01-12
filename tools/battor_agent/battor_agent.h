@@ -93,7 +93,6 @@ class BattOrAgent : public BattOrConnection::Listener,
     SEND_EEPROM_REQUEST,
     READ_EEPROM,
     SEND_SAMPLES_REQUEST,
-    READ_SAMPLES_REQUEST_ACK,
     READ_CALIBRATION_FRAME,
     READ_DATA_FRAME,
   };
