@@ -391,7 +391,15 @@ TEST_F(WebRtcLocalAudioTrackTest, StartAndStopAudioTracks) {
 }
 
 // Create a new capturer with new source, connect it to a new audio track.
-TEST_F(WebRtcLocalAudioTrackTest, ConnectTracksToDifferentCapturers) {
+#if defined(THREAD_SANITIZER)
+// Fails under TSan, see https://crbug.com/576634.
+#define MAYBE_ConnectTracksToDifferentCapturers \
+    DISABLED_ConnectTracksToDifferentCapturers
+#else
+#define MAYBE_ConnectTracksToDifferentCapturers \
+    ConnectTracksToDifferentCapturers
+#endif
+TEST_F(WebRtcLocalAudioTrackTest, MAYBE_ConnectTracksToDifferentCapturers) {
   // Setup the first audio track and start it.
   scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter_1(
       WebRtcLocalAudioTrackAdapter::Create(std::string(), NULL));
