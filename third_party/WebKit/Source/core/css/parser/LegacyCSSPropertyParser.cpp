@@ -3823,8 +3823,8 @@ bool CSSPropertyParser::parseRadii(RefPtrWillBeRawPtr<CSSPrimitiveValue> radii[4
 {
 #if ENABLE(OILPAN)
     // Unconditionally zero initialize the arrays of raw pointers.
-    memset(&radii, 0, 4 * sizeof(radii[0]));
-    memset(&radii2, 0, 4 * sizeof(radii2[0]));
+    memset(radii, 0, 4 * sizeof(radii[0]));
+    memset(radii2, 0, 4 * sizeof(radii2[0]));
 #endif
     CSSParserValue* value = args->current();
     int i;
