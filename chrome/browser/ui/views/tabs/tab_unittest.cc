@@ -9,6 +9,7 @@
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/views/tabs/media_indicator_button.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
@@ -272,13 +273,16 @@ TEST_P(TabTest, HitTestTopPixel) {
   widget.GetContentsView()->AddChildView(&tab);
   tab.SetBoundsRect(gfx::Rect(gfx::Point(0, 0), Tab::GetStandardSize()));
 
-  // Tabs have some shadow in the top, so by default we don't hit the tab there.
-  int middle_x = tab.width() / 2;
-  EXPECT_FALSE(tab.HitTestPoint(gfx::Point(middle_x, 0)));
-
   // Tabs are slanted, so a click halfway down the left edge won't hit it.
   int middle_y = tab.height() / 2;
   EXPECT_FALSE(tab.HitTestPoint(gfx::Point(0, middle_y)));
+
+  // Normally, tabs should not be hit if we click in the exclusion region, only
+  // if we click below it.
+  const int exclusion = GetLayoutConstant(TAB_TOP_EXCLUSION_HEIGHT);
+  int middle_x = tab.width() / 2;
+  EXPECT_FALSE(tab.HitTestPoint(gfx::Point(middle_x, exclusion - 1)));
+  EXPECT_TRUE(tab.HitTestPoint(gfx::Point(middle_x, exclusion)));
 
   // If the window is maximized, however, we want clicks in the top edge to
   // select the tab.
