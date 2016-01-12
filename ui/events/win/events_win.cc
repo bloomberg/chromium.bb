@@ -218,7 +218,16 @@ int EventFlagsFromNative(const base::NativeEvent& native_event) {
 }
 
 base::TimeDelta EventTimeFromNative(const base::NativeEvent& native_event) {
-  return base::TimeDelta::FromMilliseconds(native_event.time);
+  // On Windows, the native input event timestamp (|native_event.time|) is
+  // coming from |GetTickCount()| clock [1], while in platform independent code
+  // path we get timestamps by calling |TimeTicks::Now()|, which, if using high-
+  // resolution timer as underlying implementation, could have different time
+  // origin than |GetTickCount()|. To avoid the mismatching, we use
+  // |TimeTicks::Now()| for event timestamp instead of the native timestamp to
+  // ensure computed input latency and web exposed timestamp is consistent with
+  // other components.
+  // [1] http://blogs.msdn.com/b/oldnewthing/archive/2014/01/22/10491576.aspx
+  return EventTimeForNow();
 }
 
 gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {

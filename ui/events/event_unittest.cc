@@ -479,9 +479,6 @@ TEST(EventTest, AutoRepeat) {
     KeyEvent key_a1(native_event_a_pressed);
     EXPECT_FALSE(key_a1.is_repeat());
 
-    KeyEvent key_a1_with_same_event(native_event_a_pressed);
-    EXPECT_FALSE(key_a1_with_same_event.is_repeat());
-
     KeyEvent key_a1_released(native_event_a_released);
     EXPECT_FALSE(key_a1_released.is_repeat());
 
@@ -543,6 +540,14 @@ TEST(EventTest, AutoRepeat) {
     KeyEvent key_a4_pressed_nonstandard_state(
         native_event_a_pressed_nonstandard_state);
     EXPECT_FALSE(key_a4_pressed_nonstandard_state.is_repeat());
+  }
+
+  {
+    KeyEvent key_a1(native_event_a_pressed);
+    EXPECT_FALSE(key_a1.is_repeat());
+
+    KeyEvent key_a1_with_same_event(native_event_a_pressed);
+    EXPECT_FALSE(key_a1_with_same_event.is_repeat());
   }
 #endif
 }

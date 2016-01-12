@@ -321,21 +321,6 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
     base::TimeTicks timestamp_now = base::TimeTicks::Now();
     base::TimeTicks timestamp_original = base::TimeTicks() +
         base::TimeDelta::FromSecondsD(event.timeStampSeconds);
-    // |event.timeStampSeconds| is the event's creation timestamp given
-    // by the OS. On Windows, for non-touch input events the timestamp is
-    // most likely from timeGetTime(), while in platform independent code
-    // path we usually get timestamps by calling TimeTicks::Now(), which,
-    // if using high-resolution timer as underlying implementation, could
-    // have different time origin than timeGetTime(). To avoid the mismatching,
-    // lets use TimeTicks::Now() instead of |event.timeStampSeconds| for
-    // INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT so to be consistent with
-    // other components.
-    // TODO(miletus): Remove this hack. crbug.com/527128.
-#if defined(OS_WIN)
-    if (!(blink::WebInputEvent::isTouchEventType(event.type) ||
-          blink::WebInputEvent::isGestureEventType(event.type)))
-      timestamp_original = timestamp_now;
-#endif  // defined(OS_WIN)
 
     // Timestamp from platform input can wrap, e.g. 32 bits timestamp
     // for Xserver and Window MSG time will wrap about 49.6 days. Do a

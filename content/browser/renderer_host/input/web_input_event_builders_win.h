@@ -18,7 +18,7 @@ class CONTENT_EXPORT WebKeyboardEventBuilder {
                                        UINT message,
                                        WPARAM wparam,
                                        LPARAM lparam,
-                                       DWORD time_ms);
+                                       double time_stamp);
 };
 
 class CONTENT_EXPORT WebMouseEventBuilder {
@@ -27,7 +27,7 @@ class CONTENT_EXPORT WebMouseEventBuilder {
                                     UINT message,
                                     WPARAM wparam,
                                     LPARAM lparam,
-                                    DWORD time_ms);
+                                    double time_stamp);
 };
 
 class CONTENT_EXPORT WebMouseWheelEventBuilder {
@@ -36,7 +36,7 @@ class CONTENT_EXPORT WebMouseWheelEventBuilder {
                                          UINT message,
                                          WPARAM wparam,
                                          LPARAM lparam,
-                                         DWORD time_ms);
+                                         double time_stamp);
 };
 
 } // namespace content

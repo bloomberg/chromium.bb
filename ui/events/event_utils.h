@@ -54,6 +54,8 @@ EVENTS_EXPORT EventType EventTypeFromNative(
 EVENTS_EXPORT int EventFlagsFromNative(const base::NativeEvent& native_event);
 
 // Get the timestamp from a native event.
+// Note: This is not a pure function meaning that multiple applications on the
+// same native event may return different values.
 EVENTS_EXPORT base::TimeDelta EventTimeFromNative(
     const base::NativeEvent& native_event);
 
