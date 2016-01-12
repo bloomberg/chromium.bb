@@ -71,7 +71,7 @@ public class EnhancedBookmarkUtils {
         }
 
         bookmarkModel.addBookmarkAsync(parent, bookmarkModel.getChildCount(parent), tab.getTitle(),
-                tab.getUrl(), tab.getWebContents(), tab.isShowingErrorPage(),
+                tab.getUrl(), tab.getWebContents(), shouldSkipSavingTabOffline(tab),
                 createAddBookmarkCallback(bookmarkModel, snackbarManager, activity));
     }
 
@@ -92,6 +92,12 @@ public class EnhancedBookmarkUtils {
         // Bail out if the ID no longer points to a valid bookmark, which might happen if the user
         // deleted the bookmark while the page was loading.
         if (!bookmarkModel.doesBookmarkExist(bookmarkId)) return;
+
+        // Skip saving the offline page for the bookmark if the tab
+        // cannot be saved currently (error or sad tab being shown).
+        // TODO(sansid, petewil): Snackbar triggering for error tabs should be handled.
+        //      See: http://crbug/568310 for details.
+        if (shouldSkipSavingTabOffline(tab)) return;
 
         bookmarkModel.saveOfflinePage(bookmarkId, tab.getWebContents(),
                 createAddBookmarkCallback(bookmarkModel, snackbarManager, activity));
@@ -415,5 +421,13 @@ public class EnhancedBookmarkUtils {
         if (context instanceof EnhancedBookmarkActivity) {
             ((Activity) context).finish();
         }
+    }
+
+    /**
+     * Indicates whether we should skip saving the given tab as an offline page.
+     * A tab shouldn't be saved offline if it shows an error page or a sad tab page.
+     */
+    private static boolean shouldSkipSavingTabOffline(Tab tab) {
+        return tab.isShowingErrorPage() || tab.isShowingSadTab();
     }
 }
