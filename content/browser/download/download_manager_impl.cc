@@ -329,6 +329,7 @@ void DownloadManagerImpl::Shutdown() {
       download->Cancel(false);
   }
   STLDeleteValues(&downloads_);
+  url_downloaders_.clear();
 
   // We'll have nothing more to report to the observers after this point.
   observers_.Clear();
