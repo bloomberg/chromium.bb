@@ -834,26 +834,32 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
         return element.isLink() && context.visitedMatchType == VisitedMatchEnabled;
     case CSSSelector::PseudoDrag:
         if (m_mode == ResolvingStyle) {
-            if (context.inRightmostCompound)
+            if (context.inRightmostCompound) {
                 context.elementStyle->setAffectedByDrag();
-            else
+            } else {
+                context.elementStyle->setUnique();
                 element.setChildrenOrSiblingsAffectedByDrag();
+            }
         }
         return element.layoutObject() && element.layoutObject()->isDragging();
     case CSSSelector::PseudoFocus:
         if (m_mode == ResolvingStyle) {
-            if (context.inRightmostCompound)
+            if (context.inRightmostCompound) {
                 context.elementStyle->setAffectedByFocus();
-            else
+            } else {
+                context.elementStyle->setUnique();
                 element.setChildrenOrSiblingsAffectedByFocus();
+            }
         }
         return matchesFocusPseudoClass(element);
     case CSSSelector::PseudoHover:
         if (m_mode == ResolvingStyle) {
-            if (context.inRightmostCompound)
+            if (context.inRightmostCompound) {
                 context.elementStyle->setAffectedByHover();
-            else
+            } else {
+                context.elementStyle->setUnique();
                 element.setChildrenOrSiblingsAffectedByHover();
+            }
         }
         if (!shouldMatchHoverOrActive(context))
             return false;
@@ -862,10 +868,12 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
         return element.hovered();
     case CSSSelector::PseudoActive:
         if (m_mode == ResolvingStyle) {
-            if (context.inRightmostCompound)
+            if (context.inRightmostCompound) {
                 context.elementStyle->setAffectedByActive();
-            else
+            } else {
+                context.elementStyle->setUnique();
                 element.setChildrenOrSiblingsAffectedByActive();
+            }
         }
         if (!shouldMatchHoverOrActive(context))
             return false;
