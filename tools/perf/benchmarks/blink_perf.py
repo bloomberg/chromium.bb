@@ -249,8 +249,7 @@ class BlinkPerfPaint(perf_benchmark.PerfBenchmark):
     return cls.IsSvelte(possible_browser)  # http://crbug.com/574483
 
 
-@benchmark.Disabled('win',     # crbug.com/488493
-                    'android') # crbug.com/527156
+@benchmark.Disabled('win')  # crbug.com/488493
 class BlinkPerfParser(perf_benchmark.PerfBenchmark):
   tag = 'parser'
   test = _BlinkPerfMeasurement
