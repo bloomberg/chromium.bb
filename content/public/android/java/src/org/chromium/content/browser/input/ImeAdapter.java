@@ -450,7 +450,7 @@ public class ImeAdapter {
                 flags));
     }
 
-    boolean sendCompositionToNative(CharSequence text, int newCursorPosition, boolean isCommit) {
+    boolean commitText(CharSequence text) {
         if (mNativeImeAdapterAndroid == 0) return false;
         mViewEmbedder.onImeEvent();
 
@@ -458,12 +458,22 @@ public class ImeAdapter {
         nativeSendSyntheticKeyEvent(mNativeImeAdapterAndroid, WebInputEventType.RawKeyDown,
                 timestampMs, COMPOSITION_KEY_CODE, 0, 0);
 
-        if (isCommit) {
-            nativeCommitText(mNativeImeAdapterAndroid, text.toString());
-        } else {
-            nativeSetComposingText(
-                    mNativeImeAdapterAndroid, text, text.toString(), newCursorPosition);
-        }
+        nativeCommitText(mNativeImeAdapterAndroid, text.toString());
+
+        nativeSendSyntheticKeyEvent(mNativeImeAdapterAndroid, WebInputEventType.KeyUp, timestampMs,
+                COMPOSITION_KEY_CODE, 0, 0);
+        return true;
+    }
+
+    boolean setComposingText(CharSequence text, int newCursorPosition) {
+        if (mNativeImeAdapterAndroid == 0) return false;
+        mViewEmbedder.onImeEvent();
+
+        long timestampMs = SystemClock.uptimeMillis();
+        nativeSendSyntheticKeyEvent(mNativeImeAdapterAndroid, WebInputEventType.RawKeyDown,
+                timestampMs, COMPOSITION_KEY_CODE, 0, 0);
+
+        nativeSetComposingText(mNativeImeAdapterAndroid, text, text.toString(), newCursorPosition);
 
         nativeSendSyntheticKeyEvent(mNativeImeAdapterAndroid, WebInputEventType.KeyUp,
                 timestampMs, COMPOSITION_KEY_CODE, 0, 0);
