@@ -97,12 +97,6 @@ ScopedJavaLocalRef<jobject> GetOpenSSLEngineForPrivateKey(
   return engine;
 }
 
-void ReleaseKey(jobject private_key_ref) {
-  JNIEnv* env = AttachCurrentThread();
-  Java_AndroidKeyStore_releaseKey(env, private_key_ref);
-  env->DeleteGlobalRef(private_key_ref);
-}
-
 bool RegisterKeyStore(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

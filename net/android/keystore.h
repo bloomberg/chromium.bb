@@ -101,8 +101,6 @@ AndroidEVP_PKEY* GetOpenSSLSystemHandleForPrivateKey(jobject private_key);
 base::android::ScopedJavaLocalRef<jobject> GetOpenSSLEngineForPrivateKey(
     jobject private_key);
 
-NET_EXPORT void ReleaseKey(jobject private_key);
-
 // Register JNI methods
 NET_EXPORT bool RegisterKeyStore(JNIEnv* env);
 

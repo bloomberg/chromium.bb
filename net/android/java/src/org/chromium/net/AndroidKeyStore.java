@@ -335,12 +335,4 @@ public class AndroidKeyStore {
             return null;
         }
     }
-
-    /**
-     * Called when the native OpenSSL engine no longer needs access to the underlying key.
-     */
-    @CalledByNative
-    private static void releaseKey(PrivateKey privateKey) {
-        // no-op for in-process. GC will handle key collection
-    }
 }
