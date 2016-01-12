@@ -38,7 +38,7 @@ using namespace HTMLNames;
 inline HTMLIFrameElement::HTMLIFrameElement(Document& document)
     : HTMLFrameElementBase(iframeTag, document)
     , m_didLoadNonEmptyDocument(false)
-    , m_sandbox(DOMSettableTokenList::create(this))
+    , m_sandbox(HTMLIFrameElementSandbox::create(this))
     , m_referrerPolicy(ReferrerPolicyDefault)
 {
 }

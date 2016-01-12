@@ -2798,6 +2798,8 @@
             'html/HTMLHtmlElement.cpp',
             'html/HTMLHtmlElement.h',
             'html/HTMLIFrameElement.cpp',
+            'html/HTMLIFrameElementSandbox.cpp',
+            'html/HTMLIFrameElementSandbox.h',
             'html/HTMLImageElement.cpp',
             'html/HTMLImageElement.h',
             'html/HTMLImageFallbackHelper.h',

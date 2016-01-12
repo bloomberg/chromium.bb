@@ -44,7 +44,7 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
-class CORE_EXPORT DOMSettableTokenList final
+class CORE_EXPORT DOMSettableTokenList
     : public DOMTokenList
 #if !ENABLE(OILPAN)
     , public RefCounted<DOMSettableTokenList>

@@ -24,8 +24,8 @@
 #ifndef HTMLIFrameElement_h
 #define HTMLIFrameElement_h
 
-#include "core/dom/DOMSettableTokenList.h"
 #include "core/html/HTMLFrameElementBase.h"
+#include "core/html/HTMLIFrameElementSandbox.h"
 
 namespace blink {
 
@@ -61,7 +61,7 @@ private:
 
     AtomicString m_name;
     bool m_didLoadNonEmptyDocument;
-    RefPtrWillBeMember<DOMSettableTokenList> m_sandbox;
+    RefPtrWillBeMember<HTMLIFrameElementSandbox> m_sandbox;
 
     ReferrerPolicy m_referrerPolicy;
 };
