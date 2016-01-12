@@ -5,6 +5,7 @@
 #include "extensions/browser/api/web_request/web_request_event_router_delegate.h"
 
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
+#include "extensions/browser/api/web_request/web_request_event_details.h"
 
 namespace keys = extension_web_request_api_constants;
 
@@ -17,7 +18,7 @@ WebRequestEventRouterDelegate::~WebRequestEventRouterDelegate() {
 }
 void WebRequestEventRouterDelegate::ExtractExtraRequestDetails(
     const net::URLRequest* request,
-    base::DictionaryValue* out) {
+    WebRequestEventDetails* out) {
   out->SetInteger(keys::kTabIdKey, -1);
 }
 

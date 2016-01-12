@@ -137,6 +137,33 @@ bool NullableEquals(const std::string* a, const std::string* b) {
 
 }  // namespace
 
+bool ExtraInfoSpec::InitFromValue(const base::ListValue& value,
+                                  int* extra_info_spec) {
+  *extra_info_spec = 0;
+  for (size_t i = 0; i < value.GetSize(); ++i) {
+    std::string str;
+    if (!value.GetString(i, &str))
+      return false;
+
+    if (str == "requestHeaders")
+      *extra_info_spec |= REQUEST_HEADERS;
+    else if (str == "responseHeaders")
+      *extra_info_spec |= RESPONSE_HEADERS;
+    else if (str == "blocking")
+      *extra_info_spec |= BLOCKING;
+    else if (str == "asyncBlocking")
+      *extra_info_spec |= ASYNC_BLOCKING;
+    else if (str == "requestBody")
+      *extra_info_spec |= REQUEST_BODY;
+    else
+      return false;
+  }
+  // BLOCKING and ASYNC_BLOCKING are mutually exclusive.
+  if ((*extra_info_spec & BLOCKING) && (*extra_info_spec & ASYNC_BLOCKING))
+    return false;
+  return true;
+}
+
 RequestCookie::RequestCookie() {}
 RequestCookie::~RequestCookie() {}
 

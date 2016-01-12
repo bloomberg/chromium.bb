@@ -22,25 +22,22 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/common/child_process_host.h"
 #include "extensions/browser/api/activity_log/web_request_constants.h"
 #include "extensions/browser/api/declarative/rules_registry_service.h"
 #include "extensions/browser/api/declarative_webrequest/request_stage.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_rules_registry.h"
 #include "extensions/browser/api/extensions_api_client.h"
-#include "extensions/browser/api/web_request/upload_data_presenter.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
+#include "extensions/browser/api/web_request/web_request_event_details.h"
 #include "extensions/browser/api/web_request/web_request_event_router_delegate.h"
 #include "extensions/browser/api/web_request/web_request_time_tracker.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -63,20 +60,14 @@
 #include "extensions/strings/grit/extensions_strings.h"
 #include "net/base/auth.h"
 #include "net/base/net_errors.h"
-#include "net/base/upload_data_stream.h"
-#include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-using base::DictionaryValue;
-using base::ListValue;
-using base::StringValue;
-using content::BrowserMessageFilter;
 using content::BrowserThread;
 using content::ResourceRequestInfo;
-using content::ResourceType;
+using extension_web_request_api_helpers::ExtraInfoSpec;
 
 namespace activity_log = activity_log_web_request_constants;
 namespace helpers = extension_web_request_api_helpers;
@@ -200,86 +191,6 @@ bool GetWebViewInfo(const net::URLRequest* request,
       render_process_host_id, routing_id, web_view_info);
 }
 
-void ExtractRequestInfoDetails(const net::URLRequest* request,
-                               bool* is_main_frame,
-                               int* render_frame_id,
-                               int* render_process_host_id,
-                               int* routing_id,
-                               ResourceType* resource_type) {
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-  if (!info)
-    return;
-
-  *render_frame_id = info->GetRenderFrameID();
-  *is_main_frame = info->IsMainFrame();
-  *render_process_host_id = info->GetChildID();
-  *routing_id = info->GetRouteID();
-
-  // Restrict the resource type to the values we care about.
-  if (helpers::IsRelevantResourceType(info->GetResourceType()))
-    *resource_type = info->GetResourceType();
-  else
-    *resource_type = content::RESOURCE_TYPE_LAST_TYPE;
-}
-
-// Extracts a pair of IDs to identify the RenderFrameHost. These IDs are used to
-// get the frame ID and parent frame ID from ExtensionApiFrameIdMap, and then
-// stored in |dict| by DispatchEventToListeners or SendOnMessageEventOnUI.
-void ExtractRenderFrameInfo(base::DictionaryValue* dict,
-                            int* render_process_id,
-                            int* render_frame_id) {
-  if (!dict->GetInteger(keys::kFrameIdKey, render_frame_id) ||
-      !dict->GetInteger(keys::kProcessIdKey, render_process_id)) {
-    *render_process_id = -1;
-    *render_frame_id = -1;
-  }
-  // kFrameIdKey will be overwritten later, so it's not removed here.
-  dict->Remove(keys::kProcessIdKey, nullptr);
-}
-
-// Extracts the body from |request| and writes the data into |out|.
-void ExtractRequestInfoBody(const net::URLRequest* request,
-                            base::DictionaryValue* out) {
-  const net::UploadDataStream* upload_data = request->get_upload();
-  if (!upload_data ||
-      (request->method() != "POST" && request->method() != "PUT")) {
-    return;  // Need to exit without "out->Set(keys::kRequestBodyKey, ...);" .
-  }
-
-  base::DictionaryValue* request_body = new base::DictionaryValue();
-  out->Set(keys::kRequestBodyKey, request_body);
-
-  // Get the data presenters, ordered by how specific they are.
-  ParsedDataPresenter parsed_data_presenter(*request);
-  RawDataPresenter raw_data_presenter;
-  UploadDataPresenter* const presenters[] = {
-      &parsed_data_presenter,  // 1: any parseable forms? (Specific to forms.)
-      &raw_data_presenter      // 2: any data at all? (Non-specific.)
-  };
-  // Keys for the results of the corresponding presenters.
-  static const char* const kKeys[] = {
-    keys::kRequestBodyFormDataKey,
-    keys::kRequestBodyRawKey
-  };
-
-  const std::vector<scoped_ptr<net::UploadElementReader>>* readers =
-      upload_data->GetElementReaders();
-  bool some_succeeded = false;
-  if (readers) {
-    for (size_t i = 0; i < arraysize(presenters); ++i) {
-      for (const auto& reader : *readers)
-        presenters[i]->FeedNext(*reader);
-      if (presenters[i]->Succeeded()) {
-        request_body->Set(kKeys[i], presenters[i]->Result().release());
-        some_succeeded = true;
-        break;
-      }
-    }
-  }
-  if (!some_succeeded)
-    request_body->SetString(keys::kRequestBodyErrorKey, "Unknown error.");
-}
-
 // Converts a HttpHeaders dictionary to a |name|, |value| pair. Returns
 // true if successful.
 bool FromHeaderDictionary(const base::DictionaryValue* header_value,
@@ -310,43 +221,6 @@ bool FromHeaderDictionary(const base::DictionaryValue* header_value,
   return true;
 }
 
-// Creates a list of HttpHeaders (see the extension API JSON). If |headers| is
-// NULL, the list is empty. Ownership is passed to the caller.
-base::ListValue* GetResponseHeadersList(
-    const net::HttpResponseHeaders* headers) {
-  base::ListValue* headers_value = new base::ListValue();
-  if (headers) {
-    void* iter = NULL;
-    std::string name;
-    std::string value;
-    while (headers->EnumerateHeaderLines(&iter, &name, &value))
-      headers_value->Append(helpers::CreateHeaderDictionary(name, value));
-  }
-  return headers_value;
-}
-
-base::ListValue* GetRequestHeadersList(const net::HttpRequestHeaders& headers) {
-  base::ListValue* headers_value = new base::ListValue();
-  for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext(); )
-    headers_value->Append(
-        helpers::CreateHeaderDictionary(it.name(), it.value()));
-  return headers_value;
-}
-
-// Creates a base::StringValue with the status line of |headers|. If |headers|
-// is NULL, an empty string is returned.  Ownership is passed to the caller.
-base::StringValue* GetStatusLine(net::HttpResponseHeaders* headers) {
-  return new base::StringValue(
-      headers ? headers->GetStatusLine() : std::string());
-}
-
-// Returns the response code from the response headers, or 200 by default.
-// |headers| may be NULL, e.g. UrlRequestFileJobs do not send headers, so
-// simulate their behavior.
-int GetResponseCodeWithDefault(net::HttpResponseHeaders* headers) {
-  return headers ? headers->response_code() : 200;
-}
-
 // Sends an event to subscribers of chrome.declarativeWebRequest.onMessage or
 // to subscribers of webview.onMessage if the action is being operated upon
 // a <webview> guest renderer.
@@ -354,13 +228,13 @@ int GetResponseCodeWithDefault(net::HttpResponseHeaders* headers) {
 // |is_web_view_guest| indicates whether the action is for a <webview>.
 // |web_view_info| is a struct containing information about the <webview>
 // embedder.
-// |event_argument| is passed to the event listener.
+// |event_details| is passed to the event listener.
 void SendOnMessageEventOnUI(
     void* browser_context_id,
     const std::string& extension_id,
     bool is_web_view_guest,
     const WebViewRendererState::WebViewInfo& web_view_info,
-    scoped_ptr<base::DictionaryValue> event_argument) {
+    scoped_ptr<WebRequestEventDetails> event_details) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content::BrowserContext* browser_context =
@@ -369,17 +243,8 @@ void SendOnMessageEventOnUI(
     return;
 
   scoped_ptr<base::ListValue> event_args(new base::ListValue);
-  int render_process_host_id = -1;
-  int render_frame_id = -1;
-  ExtractRenderFrameInfo(event_argument.get(), &render_process_host_id,
-                         &render_frame_id);
-  content::RenderFrameHost* rfh =
-      content::RenderFrameHost::FromID(render_process_host_id, render_frame_id);
-  event_argument->SetInteger(keys::kFrameIdKey,
-                             ExtensionApiFrameIdMap::GetFrameId(rfh));
-  event_argument->SetInteger(keys::kParentFrameIdKey,
-                             ExtensionApiFrameIdMap::GetParentFrameId(rfh));
-  event_args->Append(event_argument.release());
+  event_details->DetermineFrameIdOnUI();
+  event_args->Append(event_details->GetAndClearDict());
 
   EventRouter* event_router = EventRouter::Get(browser_context);
 
@@ -662,7 +527,7 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
         return false;
       for (size_t i = 0; i < types_value->GetSize(); ++i) {
         std::string type_str;
-        ResourceType type;
+        content::ResourceType type;
         if (!types_value->GetString(i, &type_str) ||
             !helpers::ParseResourceType(type_str, &type)) {
           return false;
@@ -681,36 +546,6 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
   }
   return true;
 }
-
-// static
-bool ExtensionWebRequestEventRouter::ExtraInfoSpec::InitFromValue(
-    const base::ListValue& value, int* extra_info_spec) {
-  *extra_info_spec = 0;
-  for (size_t i = 0; i < value.GetSize(); ++i) {
-    std::string str;
-    if (!value.GetString(i, &str))
-      return false;
-
-    if (str == "requestHeaders")
-      *extra_info_spec |= REQUEST_HEADERS;
-    else if (str == "responseHeaders")
-      *extra_info_spec |= RESPONSE_HEADERS;
-    else if (str == "blocking")
-      *extra_info_spec |= BLOCKING;
-    else if (str == "asyncBlocking")
-      *extra_info_spec |= ASYNC_BLOCKING;
-    else if (str == "requestBody")
-      *extra_info_spec |= REQUEST_BODY;
-    else
-      return false;
-
-    // BLOCKING and ASYNC_BLOCKING are mutually exclusive.
-    if ((*extra_info_spec & BLOCKING) && (*extra_info_spec & ASYNC_BLOCKING))
-      return false;
-  }
-  return true;
-}
-
 
 ExtensionWebRequestEventRouter::EventResponse::EventResponse(
     const std::string& extension_id, const base::Time& extension_install_time)
@@ -758,34 +593,18 @@ void ExtensionWebRequestEventRouter::RegisterRulesRegistry(
     rules_registries_.erase(key);
 }
 
-void ExtensionWebRequestEventRouter::ExtractRequestInfo(
+scoped_ptr<WebRequestEventDetails>
+ExtensionWebRequestEventRouter::CreateEventDetails(
     const net::URLRequest* request,
-    base::DictionaryValue* out) {
-  bool is_main_frame = false;
-  int render_frame_id = -1;
-  int render_process_host_id = -1;
-  int routing_id = -1;
-  ResourceType resource_type = content::RESOURCE_TYPE_LAST_TYPE;
-  ExtractRequestInfoDetails(request, &is_main_frame, &render_frame_id,
-                            &render_process_host_id, &routing_id,
-                            &resource_type);
+    int extra_info_spec) {
+  scoped_ptr<WebRequestEventDetails> event_details(
+      new WebRequestEventDetails(request, extra_info_spec));
 
-  out->SetString(keys::kRequestIdKey,
-                 base::Uint64ToString(request->identifier()));
-  out->SetString(keys::kUrlKey, request->url().spec());
-  out->SetString(keys::kMethodKey, request->method());
-  // Note: This (frameId, processId) pair is removed by ExtractRenderFrameInfo,
-  // and finally restored in DispatchEventToListeners or SendOnMessageEventOnUI.
-  // TODO(robwu): This is ugly. Create a proper data structure to separate these
-  // two IDs from the dictionary, so that kFrameIdKey has only one meaning.
-  out->SetInteger(keys::kFrameIdKey, render_frame_id);
-  out->SetInteger(keys::kProcessIdKey, render_process_host_id);
-  out->SetString(keys::kTypeKey, helpers::ResourceTypeToString(resource_type));
-  out->SetDouble(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
   if (web_request_event_router_delegate_) {
     web_request_event_router_delegate_->ExtractExtraRequestDetails(
-        request, out);
+        request, event_details.get());
   }
+  return event_details;
 }
 
 int ExtensionWebRequestEventRouter::OnBeforeRequest(
@@ -819,15 +638,12 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
       web_request::OnBeforeRequest::kEventName, request, &extra_info_spec);
   if (!listeners.empty() &&
       !GetAndSetSignaled(request->identifier(), kOnBeforeRequest)) {
-    base::ListValue args;
-    base::DictionaryValue* dict = new base::DictionaryValue();
-    ExtractRequestInfo(request, dict);
-    if (extra_info_spec & ExtraInfoSpec::REQUEST_BODY)
-      ExtractRequestInfoBody(request, dict);
-    args.Append(dict);
+    scoped_ptr<WebRequestEventDetails> event_details(
+        CreateEventDetails(request, extra_info_spec));
+    event_details->SetRequestBody(request);
 
-    initialize_blocked_requests |=
-        DispatchEvent(browser_context, request, listeners, args);
+    initialize_blocked_requests |= DispatchEvent(
+        browser_context, request, listeners, std::move(event_details));
   }
 
   if (!initialize_blocked_requests)
@@ -871,15 +687,12 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
       request, &extra_info_spec);
   if (!listeners.empty() &&
       !GetAndSetSignaled(request->identifier(), kOnBeforeSendHeaders)) {
-    base::ListValue args;
-    base::DictionaryValue* dict = new base::DictionaryValue();
-    ExtractRequestInfo(request, dict);
-    if (extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS)
-      dict->Set(keys::kRequestHeadersKey, GetRequestHeadersList(*headers));
-    args.Append(dict);
+    scoped_ptr<WebRequestEventDetails> event_details(
+        CreateEventDetails(request, extra_info_spec));
+    event_details->SetRequestHeaders(*headers);
 
-    initialize_blocked_requests |=
-        DispatchEvent(browser_context, request, listeners, args);
+    initialize_blocked_requests |= DispatchEvent(
+        browser_context, request, listeners, std::move(event_details));
   }
 
   if (!initialize_blocked_requests)
@@ -922,14 +735,11 @@ void ExtensionWebRequestEventRouter::OnSendHeaders(
   if (listeners.empty())
     return;
 
-  base::ListValue args;
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  ExtractRequestInfo(request, dict);
-  if (extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS)
-    dict->Set(keys::kRequestHeadersKey, GetRequestHeadersList(headers));
-  args.Append(dict);
+  scoped_ptr<WebRequestEventDetails> event_details(
+      CreateEventDetails(request, extra_info_spec));
+  event_details->SetRequestHeaders(headers);
 
-  DispatchEvent(browser_context, request, listeners, args);
+  DispatchEvent(browser_context, request, listeners, std::move(event_details));
 }
 
 int ExtensionWebRequestEventRouter::OnHeadersReceived(
@@ -956,21 +766,12 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
 
   if (!listeners.empty() &&
       !GetAndSetSignaled(request->identifier(), kOnHeadersReceived)) {
-    base::ListValue args;
-    base::DictionaryValue* dict = new base::DictionaryValue();
-    ExtractRequestInfo(request, dict);
-    dict->SetString(keys::kStatusLineKey,
-                    original_response_headers->GetStatusLine());
-    dict->SetInteger(keys::kStatusCodeKey,
-                     original_response_headers->response_code());
-    if (extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS) {
-      dict->Set(keys::kResponseHeadersKey,
-                GetResponseHeadersList(original_response_headers));
-    }
-    args.Append(dict);
+    scoped_ptr<WebRequestEventDetails> event_details(
+        CreateEventDetails(request, extra_info_spec));
+    event_details->SetResponseHeaders(request, original_response_headers);
 
-    initialize_blocked_requests |=
-        DispatchEvent(browser_context, request, listeners, args);
+    initialize_blocked_requests |= DispatchEvent(
+        browser_context, request, listeners, std::move(event_details));
   }
 
   if (!initialize_blocked_requests)
@@ -1017,30 +818,13 @@ ExtensionWebRequestEventRouter::OnAuthRequired(
   if (listeners.empty())
     return net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
 
-  base::ListValue args;
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  ExtractRequestInfo(request, dict);
-  dict->SetBoolean(keys::kIsProxyKey, auth_info.is_proxy);
-  if (!auth_info.scheme.empty())
-    dict->SetString(keys::kSchemeKey, auth_info.scheme);
-  if (!auth_info.realm.empty())
-    dict->SetString(keys::kRealmKey, auth_info.realm);
-  base::DictionaryValue* challenger = new base::DictionaryValue();
-  challenger->SetString(keys::kHostKey, auth_info.challenger.host());
-  challenger->SetInteger(keys::kPortKey, auth_info.challenger.port());
-  dict->Set(keys::kChallengerKey, challenger);
-  dict->Set(keys::kStatusLineKey, GetStatusLine(request->response_headers()));
-  if (request->response_headers()) {
-    dict->SetInteger(keys::kStatusCodeKey,
-                     request->response_headers()->response_code());
-  }
-  if (extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS) {
-    dict->Set(keys::kResponseHeadersKey,
-              GetResponseHeadersList(request->response_headers()));
-  }
-  args.Append(dict);
+  scoped_ptr<WebRequestEventDetails> event_details(
+      CreateEventDetails(request, extra_info_spec));
+  event_details->SetResponseHeaders(request, request->response_headers());
+  event_details->SetAuthInfo(auth_info);
 
-  if (DispatchEvent(browser_context, request, listeners, args)) {
+  if (DispatchEvent(browser_context, request, listeners,
+                    std::move(event_details))) {
     BlockedRequest& blocked_request = blocked_requests_[request->identifier()];
     blocked_request.event = kOnAuthRequired;
     blocked_request.is_incognito |= IsIncognitoBrowserContext(browser_context);
@@ -1076,26 +860,13 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
   if (listeners.empty())
     return;
 
-  int http_status_code = request->GetResponseCode();
+  scoped_ptr<WebRequestEventDetails> event_details(
+      CreateEventDetails(request, extra_info_spec));
+  event_details->SetResponseHeaders(request, request->response_headers());
+  event_details->SetResponseSource(request);
+  event_details->SetString(keys::kRedirectUrlKey, new_location.spec());
 
-  std::string response_ip = request->GetSocketAddress().host();
-
-  base::ListValue args;
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  ExtractRequestInfo(request, dict);
-  dict->SetString(keys::kRedirectUrlKey, new_location.spec());
-  dict->SetInteger(keys::kStatusCodeKey, http_status_code);
-  if (!response_ip.empty())
-    dict->SetString(keys::kIpKey, response_ip);
-  dict->SetBoolean(keys::kFromCache, request->was_cached());
-  dict->Set(keys::kStatusLineKey, GetStatusLine(request->response_headers()));
-  if (extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS) {
-    dict->Set(keys::kResponseHeadersKey,
-              GetResponseHeadersList(request->response_headers()));
-  }
-  args.Append(dict);
-
-  DispatchEvent(browser_context, request, listeners, args);
+  DispatchEvent(browser_context, request, listeners, std::move(event_details));
 }
 
 void ExtensionWebRequestEventRouter::OnResponseStarted(
@@ -1116,24 +887,12 @@ void ExtensionWebRequestEventRouter::OnResponseStarted(
   if (listeners.empty())
     return;
 
-  std::string response_ip = request->GetSocketAddress().host();
+  scoped_ptr<WebRequestEventDetails> event_details(
+      CreateEventDetails(request, extra_info_spec));
+  event_details->SetResponseHeaders(request, request->response_headers());
+  event_details->SetResponseSource(request);
 
-  base::ListValue args;
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  ExtractRequestInfo(request, dict);
-  if (!response_ip.empty())
-    dict->SetString(keys::kIpKey, response_ip);
-  dict->SetBoolean(keys::kFromCache, request->was_cached());
-  dict->SetInteger(keys::kStatusCodeKey,
-                   GetResponseCodeWithDefault(request->response_headers()));
-  dict->Set(keys::kStatusLineKey, GetStatusLine(request->response_headers()));
-  if (extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS) {
-    dict->Set(keys::kResponseHeadersKey,
-              GetResponseHeadersList(request->response_headers()));
-  }
-  args.Append(dict);
-
-  DispatchEvent(browser_context, request, listeners, args);
+  DispatchEvent(browser_context, request, listeners, std::move(event_details));
 }
 
 void ExtensionWebRequestEventRouter::OnCompleted(
@@ -1166,24 +925,12 @@ void ExtensionWebRequestEventRouter::OnCompleted(
   if (listeners.empty())
     return;
 
-  std::string response_ip = request->GetSocketAddress().host();
+  scoped_ptr<WebRequestEventDetails> event_details(
+      CreateEventDetails(request, extra_info_spec));
+  event_details->SetResponseHeaders(request, request->response_headers());
+  event_details->SetResponseSource(request);
 
-  base::ListValue args;
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  ExtractRequestInfo(request, dict);
-  dict->SetInteger(keys::kStatusCodeKey,
-                   GetResponseCodeWithDefault(request->response_headers()));
-  if (!response_ip.empty())
-    dict->SetString(keys::kIpKey, response_ip);
-  dict->SetBoolean(keys::kFromCache, request->was_cached());
-  dict->Set(keys::kStatusLineKey, GetStatusLine(request->response_headers()));
-  if (extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS) {
-    dict->Set(keys::kResponseHeadersKey,
-              GetResponseHeadersList(request->response_headers()));
-  }
-  args.Append(dict);
-
-  DispatchEvent(browser_context, request, listeners, args);
+  DispatchEvent(browser_context, request, listeners, std::move(event_details));
 }
 
 void ExtensionWebRequestEventRouter::OnErrorOccurred(
@@ -1218,20 +965,16 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
   if (listeners.empty())
     return;
 
-  base::ListValue args;
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  ExtractRequestInfo(request, dict);
-  if (started) {
-    std::string response_ip = request->GetSocketAddress().host();
-    if (!response_ip.empty())
-      dict->SetString(keys::kIpKey, response_ip);
-  }
-  dict->SetBoolean(keys::kFromCache, request->was_cached());
-  dict->SetString(keys::kErrorKey,
-                  net::ErrorToString(request->status().error()));
-  args.Append(dict);
+  scoped_ptr<WebRequestEventDetails> event_details(
+      CreateEventDetails(request, extra_info_spec));
+  if (started)
+    event_details->SetResponseSource(request);
+  else
+    event_details->SetBoolean(keys::kFromCache, request->was_cached());
+  event_details->SetString(keys::kErrorKey,
+                           net::ErrorToString(request->status().error()));
 
-  DispatchEvent(browser_context, request, listeners, args);
+  DispatchEvent(browser_context, request, listeners, std::move(event_details));
 }
 
 void ExtensionWebRequestEventRouter::OnURLRequestDestroyed(
@@ -1254,7 +997,7 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
     void* browser_context,
     net::URLRequest* request,
     const std::vector<const EventListener*>& listeners,
-    const base::ListValue& args) {
+    scoped_ptr<WebRequestEventDetails> event_details) {
   // TODO(mpcomplete): Consider consolidating common (extension_id,json_args)
   // pairs into a single message sent to a list of sub_event_names.
   int num_handlers_blocking = 0;
@@ -1281,21 +1024,9 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
     }
   }
 
-  // TODO(robwu): Avoid unnecessary copy, by changing |args| to be a
-  // scoped_ptr<base::DictionaryValue> and transferring the ownership.
-  const base::DictionaryValue* dict = nullptr;
-  CHECK(args.GetDictionary(0, &dict) && dict);
-  base::DictionaryValue* args_copy = dict->DeepCopy();
-
-  int render_process_host_id = -1;
-  int render_frame_id = -1;
-  ExtractRenderFrameInfo(args_copy, &render_process_host_id, &render_frame_id);
-
-  ExtensionApiFrameIdMap::Get()->GetFrameIdOnIO(
-      render_process_host_id, render_frame_id,
-      base::Bind(&ExtensionWebRequestEventRouter::DispatchEventToListeners,
-                 AsWeakPtr(), browser_context,
-                 base::Passed(&listeners_to_dispatch), base::Owned(args_copy)));
+  event_details.release()->DetermineFrameIdOnIO(base::Bind(
+      &ExtensionWebRequestEventRouter::DispatchEventToListeners, AsWeakPtr(),
+      browser_context, base::Passed(&listeners_to_dispatch)));
 
   if (num_handlers_blocking > 0) {
     BlockedRequest& blocked_request = blocked_requests_[request->identifier()];
@@ -1312,16 +1043,11 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
 void ExtensionWebRequestEventRouter::DispatchEventToListeners(
     void* browser_context,
     scoped_ptr<std::vector<EventListener>> listeners,
-    base::DictionaryValue* dict,
-    int extension_api_frame_id,
-    int extension_api_parent_frame_id) {
+    scoped_ptr<WebRequestEventDetails> event_details) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(listeners.get());
   DCHECK_GT(listeners->size(), 0UL);
-  DCHECK(dict);
-
-  dict->SetInteger(keys::kFrameIdKey, extension_api_frame_id);
-  dict->SetInteger(keys::kParentFrameIdKey, extension_api_parent_frame_id);
+  DCHECK(event_details.get());
 
   std::string event_name =
       EventRouter::GetBaseEventName((*listeners)[0].sub_event_name);
@@ -1348,11 +1074,8 @@ void ExtensionWebRequestEventRouter::DispatchEventToListeners(
 
     // Filter out the optional keys that this listener didn't request.
     scoped_ptr<base::ListValue> args_filtered(new base::ListValue);
-    args_filtered->Append(dict->DeepCopy());
-    if (!(listener->extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS))
-      dict->Remove(keys::kRequestHeadersKey, nullptr);
-    if (!(listener->extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS))
-      dict->Remove(keys::kResponseHeadersKey, nullptr);
+    args_filtered->Append(
+        event_details->GetFilteredDict(listener->extra_info_spec));
 
     EventRouter::DispatchEventToSender(
         listener->ipc_sender.get(), browser_context, listener->extension_id,
@@ -1514,17 +1237,11 @@ void ExtensionWebRequestEventRouter::AddCallbackForPageLoad(
 
 bool ExtensionWebRequestEventRouter::IsPageLoad(
     const net::URLRequest* request) const {
-  bool is_main_frame = false;
-  int render_frame_id = -1;
-  int render_process_host_id = -1;
-  int routing_id = -1;
-  ResourceType resource_type = content::RESOURCE_TYPE_LAST_TYPE;
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  if (!info)
+    return false;
 
-  ExtractRequestInfoDetails(request, &is_main_frame, &render_frame_id,
-                            &render_process_host_id, &routing_id,
-                            &resource_type);
-
-  return resource_type == content::RESOURCE_TYPE_MAIN_FRAME;
+  return info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME;
 }
 
 void ExtensionWebRequestEventRouter::NotifyPageLoad() {
@@ -1567,7 +1284,7 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     const GURL& url,
     int render_process_host_id,
     int routing_id,
-    ResourceType resource_type,
+    content::ResourceType resource_type,
     bool is_async_request,
     bool is_request_from_extension,
     int* extra_info_spec,
@@ -1661,24 +1378,24 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
   // listeners).
   *extra_info_spec = 0;
 
-  bool is_main_frame = false;
-  int render_frame_id = -1;
-  int render_process_host_id = -1;
-  int routing_id = -1;
-  ResourceType resource_type = content::RESOURCE_TYPE_LAST_TYPE;
   const GURL& url = request->url();
-
-  ExtractRequestInfoDetails(request, &is_main_frame, &render_frame_id,
-                            &render_process_host_id, &routing_id,
-                            &resource_type);
-
+  int render_process_host_id = content::ChildProcessHost::kInvalidUniqueID;
+  int routing_id = MSG_ROUTING_NONE;
+  content::ResourceType resource_type = content::RESOURCE_TYPE_LAST_TYPE;
+  // We are conservative here and assume requests are asynchronous in case
+  // we don't have an info object. We don't want to risk a deadlock.
+  bool is_async_request = false;
   bool is_request_from_extension =
       IsRequestFromExtension(request, extension_info_map);
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-  // We are conservative here and assume requests are asynchronous in case
-  // we don't have an info object. We don't want to risk a deadlock.
-  bool is_async_request = !info || info->IsAsync();
+  if (info) {
+    is_async_request = info->IsAsync();
+    if (helpers::IsRelevantResourceType(info->GetResourceType()))
+      resource_type = info->GetResourceType();
+    render_process_host_id = info->GetChildID();
+    routing_id = info->GetRouteID();
+  }
 
   EventListeners matching_listeners;
   GetMatchingListenersImpl(
@@ -1951,20 +1668,20 @@ void ExtensionWebRequestEventRouter::SendMessages(
   for (const auto& delta : deltas) {
     const std::set<std::string>& messages = delta->messages_to_extension;
     for (const std::string& message : messages) {
-      scoped_ptr<base::DictionaryValue> argument(new base::DictionaryValue);
-      ExtractRequestInfo(blocked_request.request, argument.get());
+      scoped_ptr<WebRequestEventDetails> event_details(
+          CreateEventDetails(blocked_request.request, /* extra_info_spec */ 0));
       WebViewRendererState::WebViewInfo web_view_info;
       bool is_web_view_guest = GetWebViewInfo(blocked_request.request,
                                               &web_view_info);
-      argument->SetString(keys::kMessageKey, message);
-      argument->SetString(keys::kStageKey,
-                          GetRequestStageAsString(blocked_request.event));
+      event_details->SetString(keys::kMessageKey, message);
+      event_details->SetString(keys::kStageKey,
+                               GetRequestStageAsString(blocked_request.event));
 
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           base::Bind(&SendOnMessageEventOnUI, browser_context,
                      delta->extension_id, is_web_view_guest, web_view_info,
-                     base::Passed(&argument)));
+                     base::Passed(&event_details)));
     }
   }
 }
@@ -2294,8 +2011,7 @@ bool WebRequestInternalAddEventListenerFunction::RunSync() {
     base::ListValue* value = NULL;
     EXTENSION_FUNCTION_VALIDATE(args_->GetList(2, &value));
     EXTENSION_FUNCTION_VALIDATE(
-        ExtensionWebRequestEventRouter::ExtraInfoSpec::InitFromValue(
-            *value, &extra_info_spec));
+        ExtraInfoSpec::InitFromValue(*value, &extra_info_spec));
   }
 
   std::string event_name;
@@ -2320,8 +2036,7 @@ bool WebRequestInternalAddEventListenerFunction::RunSync() {
     // permission. For blocking calls we require the additional permission
     // 'webRequestBlocking'.
     if ((extra_info_spec &
-         (ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING |
-          ExtensionWebRequestEventRouter::ExtraInfoSpec::ASYNC_BLOCKING)) &&
+         (ExtraInfoSpec::BLOCKING | ExtraInfoSpec::ASYNC_BLOCKING)) &&
         !extension->permissions_data()->HasAPIPermission(
             APIPermission::kWebRequestBlocking)) {
       error_ = keys::kBlockingPermissionRequired;

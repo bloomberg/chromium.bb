@@ -498,6 +498,8 @@
       'browser/api/web_request/web_request_api_constants.h',
       'browser/api/web_request/web_request_api_helpers.cc',
       'browser/api/web_request/web_request_api_helpers.h',
+      'browser/api/web_request/web_request_event_details.cc',
+      'browser/api/web_request/web_request_event_details.h',
       'browser/api/web_request/web_request_event_router_delegate.cc',
       'browser/api/web_request/web_request_event_router_delegate.h',
       'browser/api/web_request/web_request_permissions.cc',

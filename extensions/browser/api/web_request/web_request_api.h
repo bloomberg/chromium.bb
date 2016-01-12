@@ -57,6 +57,7 @@ class URLRequest;
 namespace extensions {
 
 class InfoMap;
+class WebRequestEventDetails;
 class WebRequestRulesRegistry;
 class WebRequestEventRouterDelegate;
 
@@ -125,22 +126,6 @@ class ExtensionWebRequestEventRouter
     std::vector<content::ResourceType> types;
     int tab_id;
     int window_id;
-  };
-
-  // Internal representation of the extraInfoSpec parameter on webRequest
-  // events, used to specify extra information to be included with network
-  // events.
-  struct ExtraInfoSpec {
-    enum Flags {
-      REQUEST_HEADERS = 1<<0,
-      RESPONSE_HEADERS = 1<<1,
-      BLOCKING = 1<<2,
-      ASYNC_BLOCKING = 1<<3,
-      REQUEST_BODY = 1<<4,
-    };
-
-    static bool InitFromValue(const base::ListValue& value,
-                              int* extra_info_spec);
   };
 
   // Contains an extension's response to a blocking event.
@@ -336,18 +321,15 @@ class ExtensionWebRequestEventRouter
   // destroyed safely.
   void ClearPendingCallbacks(const net::URLRequest* request);
 
-  bool DispatchEvent(
-      void* browser_context,
-      net::URLRequest* request,
-      const std::vector<const EventListener*>& listeners,
-      const base::ListValue& args);
+  bool DispatchEvent(void* browser_context,
+                     net::URLRequest* request,
+                     const std::vector<const EventListener*>& listeners,
+                     scoped_ptr<WebRequestEventDetails> event_details);
 
   void DispatchEventToListeners(
       void* browser_context,
       scoped_ptr<std::vector<EventListener>> listeners,
-      base::DictionaryValue* dict,
-      int extension_api_frame_id,
-      int extension_api_parent_frame_id);
+      scoped_ptr<WebRequestEventDetails> event_details);
 
   // Returns a list of event listeners that care about the given event, based
   // on their filter parameters. |extra_info_spec| will contain the combined
@@ -434,11 +416,10 @@ class ExtensionWebRequestEventRouter
                             uint64_t request_id,
                             extensions::RequestStage request_stage);
 
-  // Extracts from |request| information for the keys requestId, url, method,
-  // frameId, tabId, type, and timeStamp and writes these into |out| to be
-  // passed on to extensions.
-  void ExtractRequestInfo(const net::URLRequest* request,
-                          base::DictionaryValue* out);
+  // Returns event details for a given request.
+  scoped_ptr<WebRequestEventDetails> CreateEventDetails(
+      const net::URLRequest* request,
+      int extra_info_spec);
 
   // Sets the flag that |event_type| has been signaled for |request_id|.
   // Returns the value of the flag before setting it.

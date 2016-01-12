@@ -11,11 +11,9 @@
 #include "extensions/browser/api/activity_log/web_request_constants.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
-#include "extensions/browser/api/web_request/web_request_api_helpers.h"
+#include "extensions/browser/api/web_request/web_request_event_details.h"
 #include "net/url_request/url_request.h"
 
-namespace activitylog = activity_log_web_request_constants;
-namespace helpers = extension_web_request_api_helpers;
 namespace keys = extension_web_request_api_constants;
 
 namespace {
@@ -69,7 +67,7 @@ void ChromeExtensionWebRequestEventRouterDelegate::LogExtensionActivity(
 
 void ChromeExtensionWebRequestEventRouterDelegate::ExtractExtraRequestDetails(
     const net::URLRequest* request,
-    base::DictionaryValue* out) {
+    extensions::WebRequestEventDetails* out) {
   int tab_id = -1;
   int window_id = -1;
   ExtractExtraRequestDetailsInternal(request, &tab_id, &window_id);
